@@ -8,7 +8,7 @@
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 
 describe('parts auto-connectors — capture-session wiring', () => {
   let prevEnv: string | undefined;
@@ -23,7 +23,7 @@ describe('parts auto-connectors — capture-session wiring', () => {
 
   it('Shape.holes(...) emits bolt-holes-1..N on the session', () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const bracket = api.box(40, 20, 3).holes('top', {
       positions: [
         { u: -10, v: 0 },
@@ -45,7 +45,7 @@ describe('parts auto-connectors — capture-session wiring', () => {
 
   it('Shape.hole(...) emits bolt-holes-1', () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const bracket = api
       .box(40, 20, 3)
       .hole('top', { u: 0, v: 0, diameter: 3, depth: 'through' });
@@ -59,7 +59,7 @@ describe('parts auto-connectors — capture-session wiring', () => {
 
   it('lib.standard.boltSHCS attaches bundled connector frames', async () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const bolt = await api.lib.standard.boltSHCS({
       thread: 'M3',
       lengthMm: 12,

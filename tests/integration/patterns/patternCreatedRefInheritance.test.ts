@@ -15,7 +15,7 @@ import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 import { RecomputeEngine } from '../../../src/modeling/compute/recomputeEngine';
 import { OcctLowerer } from '../../../src/modeling/backends/occt/occtLowerer';
 import { initOcct, OcctBackend } from '../../../src/kernel/backends/occt/occtBackend';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 import { resolveFaceRef } from '../../../src/kernel/naming/resolveFaceRef';
 
 describe('W2.1 — created refs inherit through pattern instances', () => {
@@ -23,7 +23,7 @@ describe('W2.1 — created refs inherit through pattern instances', () => {
 
   it('hole.wall resolves on every linear-pattern instance via <sourceId>_pattern_<i>', async () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     // Small plates with a named hole → pattern 4 instances along X with
     // spacing > plate width so the plates DON'T overlap. The pattern lowerer
     // fuses the four disjoint plates; each plate's bore wall survives the

@@ -1,14 +1,14 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../../../src/kernel/backends/occt/occtBackend';
 import { CaptureSession } from '../../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../../src/modeling/api';
+import { createModelingApi } from '../../../../src/modeling/api';
 
 describe('arm.part(name, shape, { density }) — Task B2', () => {
   beforeAll(async () => { await initOcct(); });
 
   function makeArm() {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('arm');
     return { session, kcad, arm };
   }

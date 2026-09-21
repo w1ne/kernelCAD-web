@@ -3,7 +3,7 @@ import { CaptureSession } from '../../../../src/modeling/capture/captureSession'
 import { RecomputeEngine } from '../../../../src/modeling/compute/recomputeEngine';
 import { OcctLowerer } from '../../../../src/modeling/backends/occt/occtLowerer';
 import { initOcct, OcctBackend } from '../../../../src/kernel/backends/occt/occtBackend';
-import { createApi } from '../../../../src/modeling/api';
+import { createModelingApi } from '../../../../src/modeling/api';
 import { isSceneBackend, type SceneBackend } from '../../../../src/kernel/backends/sceneBackend';
 import { Transform } from '../../../../src/shared/runtime/se3';
 
@@ -12,7 +12,7 @@ describe('OCCT assembly lowerer', () => {
 
   it('keeps assembly part and mate records executable as geometry passthroughs', async () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('two-link arm');
     const base = arm.part('base', kcad.box(20, 20, 6), { at: [0, 0, 0] });
     const link = arm.part('link', kcad.box(80, 10, 6), { at: [30, 0, 6] });
@@ -46,7 +46,7 @@ describe('OCCT assembly lowerer', () => {
     // explicit Scene.toUnion() / Scene.toCompound() — see
     // sceneToCompoundUnion.test.ts.
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const assembly = kcad.assembly('static assembly');
     assembly.part('left', kcad.box(10, 10, 10), { at: [0, 0, 0] });
     assembly.part('right', kcad.box(10, 10, 10), { at: [30, 0, 0] });
@@ -91,7 +91,7 @@ describe('OCCT assembly lowerer', () => {
     // SceneBackend part per assembly.part(...); we assert the structural
     // properties and the per-part bbox extents instead of a unioned bbox.
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const assembly = kcad.assembly('connector assembly');
     const base = assembly.part('base', kcad.box(20, 20, 8), {
       at: [0, 0, 0],

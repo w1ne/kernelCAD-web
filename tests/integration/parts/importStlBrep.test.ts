@@ -21,7 +21,7 @@ import {
   countStlTriangles,
   StlParseError,
 } from '../../../src/kernel/backends/occt/importStl';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 import { KernelError } from '../../../src/shared/intent/kernelError';
 import { RecomputeEngine } from '../../../src/modeling/compute/recomputeEngine';
@@ -291,7 +291,7 @@ describe('lib.fromBREP / lib.fromSTL agent-facing surface', () => {
     writeFileSync(path, makeBox().exportBREP());
 
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const shape = await api.lib.fromBREP(path);
 
     const records = session.getRecords();
@@ -309,7 +309,7 @@ describe('lib.fromBREP / lib.fromSTL agent-facing surface', () => {
     writeFileSync(path, await makeBox().exportSTLAsync());
 
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const shape = await api.lib.fromSTL(path);
 
     const records = session.getRecords();
@@ -333,21 +333,21 @@ describe('lib.fromBREP / lib.fromSTL agent-facing surface', () => {
     );
 
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
 
     await expect(api.lib.fromSTL(path)).rejects.toThrow(KernelError);
     await expect(api.lib.fromSTL(path)).rejects.toThrow(/not watertight/);
 
     // Opt-in escape hatch still works and is recorded as not-solid.
     const session2 = new CaptureSession();
-    const api2 = createApi({ session: session2 });
+    const api2 = createModelingApi({ session: session2 });
     await api2.lib.fromSTL(path, { allowOpen: true });
     expect(session2.getRecords()[0].metadata?.isSolid).toBe(false);
   });
 
   it('raises a typed KernelError for a missing file and a bad path argument', async () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
 
     await expect(api.lib.fromBREP(join(dir, 'nope.brep'))).rejects.toThrow(KernelError);
     await expect(api.lib.fromSTL(join(dir, 'nope.stl'))).rejects.toThrow(KernelError);
@@ -366,7 +366,7 @@ describe('lib.fromBREP / lib.fromSTL agent-facing surface', () => {
     writeFileSync(path, makeBox().exportBREP());
 
     const session = new CaptureSession();
-    const api = createApi({ session, scriptDir: dir });
+    const api = createModelingApi({ session, scriptDir: dir });
     await api.lib.fromBREP('lower.brep');
     const records = session.getRecords();
 
@@ -386,7 +386,7 @@ describe('lib.fromBREP / lib.fromSTL agent-facing surface', () => {
     writeFileSync(path, await makeBox().exportSTLAsync());
 
     const session = new CaptureSession();
-    const api = createApi({ session, scriptDir: dir });
+    const api = createModelingApi({ session, scriptDir: dir });
     await api.lib.fromSTL('lower.stl');
     const records = session.getRecords();
 
@@ -406,7 +406,7 @@ describe('lib.fromBREP / lib.fromSTL agent-facing surface', () => {
     writeFileSync(path, 'DBRep_DrawableShape\nnot really\n');
 
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     await expect(api.lib.fromBREP(path)).rejects.toThrow(/failed to parse BREP/);
   });
 });

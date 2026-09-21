@@ -2,14 +2,14 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../../../../src/kernel/backends/occt/occtBackend';
 import { deriveAcm } from '../../../../../src/modeling/export/srdf/acmDerive';
 import { CaptureSession } from '../../../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../../../src/modeling/api';
+import { createModelingApi } from '../../../../../src/modeling/api';
 
 describe('deriveAcm — Task B4.B', () => {
   beforeAll(async () => { await initOcct(); });
 
   it('emits Adjacent for every link pair sharing a joint', async () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('a');
     const base = arm.part('base', kcad.box(10, 10, 10), { density: 2700 });
     const upper = arm.part('upper', kcad.box(80, 10, 10), { density: 2700 });
@@ -24,7 +24,7 @@ describe('deriveAcm — Task B4.B', () => {
 
   it('emits export.srdf.acm-sparse-sampling when samplesPerMate < 4', async () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('a');
     const base = arm.part('base', kcad.box(10, 10, 10), { density: 2700 });
     const tip = arm.part('tip', kcad.box(10, 10, 10), { density: 2700 });
@@ -37,7 +37,7 @@ describe('deriveAcm — Task B4.B', () => {
 
   it('user-declared disableCollision takes precedence and uses reason: User', async () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('a');
     arm.part('a', kcad.box(10, 10, 10), { density: 2700 });
     arm.part('b', kcad.box(10, 10, 10), { density: 2700 });

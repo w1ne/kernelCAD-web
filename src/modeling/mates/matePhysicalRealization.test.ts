@@ -21,7 +21,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { CaptureSession } from '../capture/captureSession';
-import { createApi } from '../api';
+import { createModelingApi } from '../api';
 import type { Assembly } from '../capture/assembly';
 import type { Vec3 } from '../../shared/intent/types';
 import { validateMatePhysicalRealization } from './matePhysicalRealization';
@@ -69,7 +69,7 @@ function buildHandBuiltClevis(opts?: {
   readonly pinR?: number;
 }): { arm: Assembly; session: CaptureSession } {
   const session = new CaptureSession();
-  const kcad = createApi({ session });
+  const kcad = createModelingApi({ session });
   const arm = kcad.assembly('hinge');
 
   const plateT = opts?.plateT ?? 4;
@@ -134,7 +134,7 @@ function buildHandBuiltClevis(opts?: {
  */
 function buildClevisPrimitiveAssembly(): { arm: Assembly; session: CaptureSession } {
   const session = new CaptureSession();
-  const kcad = createApi({ session });
+  const kcad = createModelingApi({ session });
   const arm = kcad.assembly('clevis-primitive');
 
   // The column terminates below the clevis pivot with enough clearance for
@@ -202,7 +202,7 @@ function buildClevisPrimitiveAssembly(): { arm: Assembly; session: CaptureSessio
  */
 function buildOverConstrainedClevis(): { arm: Assembly; session: CaptureSession } {
   const session = new CaptureSession();
-  const kcad = createApi({ session });
+  const kcad = createModelingApi({ session });
   const arm = kcad.assembly('over-constrained');
 
   const pinR = 3.5;
@@ -251,7 +251,7 @@ function buildOverConstrainedClevis(): { arm: Assembly; session: CaptureSession 
  */
 function buildPinEscapesHoleClevis(): { arm: Assembly; session: CaptureSession } {
   const session = new CaptureSession();
-  const kcad = createApi({ session });
+  const kcad = createModelingApi({ session });
   const arm = kcad.assembly('pin-escapes');
 
   const plateT = 4;
@@ -301,7 +301,7 @@ function buildPinEscapesHoleClevis(): { arm: Assembly; session: CaptureSession }
  */
 function buildBearingNotCoplanarClevis(): { arm: Assembly; session: CaptureSession } {
   const session = new CaptureSession();
-  const kcad = createApi({ session });
+  const kcad = createModelingApi({ session });
   const arm = kcad.assembly('bearing-off');
 
   const plateT = 4;
@@ -403,7 +403,7 @@ describe('validateMatePhysicalRealization (Gate 6)', () => {
 
   it('6. SKIP — fastened and ball mates are out of scope (no diagnostic)', async () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('skip-mates');
     const boxA = kcad.box(20, 20, 20, true);
     const boxB = kcad.box(20, 20, 20, true).translate(40, 0, 0);

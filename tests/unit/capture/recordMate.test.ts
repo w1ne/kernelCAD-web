@@ -8,12 +8,12 @@
 
 import { describe, expect, it } from 'vitest';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 import { KernelError } from '../../../src/shared/intent/kernelError';
 
 function makeRig() {
   const session = new CaptureSession();
-  const kcad = createApi({ session });
+  const kcad = createModelingApi({ session });
   const arm = kcad.assembly('rig');
   const base = arm.part('base', kcad.box(10, 10, 10));
   base.connector('ax', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });

@@ -12,7 +12,7 @@ import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { CaptureSession } from '../capture/captureSession';
-import { createApi } from '../api';
+import { createModelingApi } from '../api';
 import { OcctBackend, initOcct } from '../../kernel/backends/occt/occtBackend';
 import { RecomputeEngine } from '../compute/recomputeEngine';
 import { OcctLowerer } from '../backends/occt/occtLowerer';
@@ -36,7 +36,7 @@ afterAll(() => {
 describe('lib.fromSTEP', () => {
   it('imports a STEP file and returns a Shape with positive volume', async () => {
     const session = new CaptureSession();
-    const api = createApi({ session, scriptDir: tmpDir });
+    const api = createModelingApi({ session, scriptDir: tmpDir });
 
     const shape = await api.lib.fromSTEP('box.step');
     expect(shape).toBeDefined();
@@ -62,7 +62,7 @@ describe('lib.fromSTEP', () => {
 
   it('composes with .translate and .color', async () => {
     const session = new CaptureSession();
-    const api = createApi({ session, scriptDir: tmpDir });
+    const api = createModelingApi({ session, scriptDir: tmpDir });
 
     const shape = await api.lib.fromSTEP('box.step');
     const moved = shape.translate(10, 20, 30).color('servo');
@@ -78,20 +78,20 @@ describe('lib.fromSTEP', () => {
   it('accepts absolute paths', async () => {
     const session = new CaptureSession();
     // Note: scriptDir omitted on purpose — abs path should work without it.
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const shape = await api.lib.fromSTEP(stepPath);
     expect(shape).toBeDefined();
   });
 
   it('emits a structured diagnostic for missing files', async () => {
     const session = new CaptureSession();
-    const api = createApi({ session, scriptDir: tmpDir });
+    const api = createModelingApi({ session, scriptDir: tmpDir });
     await expect(api.lib.fromSTEP('does-not-exist.step')).rejects.toThrowError(/cannot read STEP/);
   });
 
   it('rejects empty path', async () => {
     const session = new CaptureSession();
-    const api = createApi({ session, scriptDir: tmpDir });
+    const api = createModelingApi({ session, scriptDir: tmpDir });
     await expect(api.lib.fromSTEP('')).rejects.toThrowError(/non-empty string/);
   });
 });

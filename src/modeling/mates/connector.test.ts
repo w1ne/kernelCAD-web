@@ -8,7 +8,7 @@ import {
   type ConnectorOrigin,
 } from './connector';
 import { CaptureSession } from '../capture/captureSession';
-import { createApi } from '../api';
+import { createModelingApi } from '../api';
 import { initOcct } from '../../kernel/backends/occt/occtBackend';
 
 describe('Connector (numeric origin)', () => {
@@ -43,7 +43,7 @@ describe('Connector (topology-bound origin)', () => {
 
   it('resolves face-center to the face centroid Vec3', async () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const box = api.box(10, 10, 10);  // anchored at origin corner: spans [0,10]^3
     const resolved = await resolveConnectorOrigin(box, {
       kind: 'topology',
@@ -58,7 +58,7 @@ describe('Connector (topology-bound origin)', () => {
 
   it('throws assembly.connector.topology-not-resolvable on missing face name', async () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const box = api.box(10, 10, 10);
     await expect(
       resolveConnectorOrigin(box, {
@@ -70,7 +70,7 @@ describe('Connector (topology-bound origin)', () => {
 
   it('passes through vec3 origin unchanged', async () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const box = api.box(10, 10, 10);
     const o: ConnectorOrigin = { kind: 'vec3', value: [1, 2, 3] };
     const resolved = await resolveConnectorOrigin(box, o);
@@ -86,7 +86,7 @@ describe('Connector (non-canonical face labels)', () => {
 
   it("resolves a user-defined face label via faceLabels: { lid: 'top' }", async () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const box = api.box(10, 10, 10, false, { faceLabels: { lid: 'top' } });
     const resolved = await resolveConnectorOrigin(
       box,
@@ -102,7 +102,7 @@ describe('Connector (non-canonical face labels)', () => {
 
   it('throws topology-not-resolvable when records are missing and label is non-canonical', async () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const box = api.box(10, 10, 10, false, { faceLabels: { lid: 'top' } });
     // Without records, only canonical names should work; 'lid' is non-canonical.
     await expect(
@@ -121,7 +121,7 @@ describe('Connector (vertex queries)', () => {
 
   it('throws topology-not-resolvable for vertex queries (deferred to v0.7)', async () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const box = api.box(10, 10, 10);
     await expect(
       resolveConnectorOrigin(
@@ -140,7 +140,7 @@ describe('Connector (edge-axis queries)', () => {
 
   it('resolves a canonical box edge axis by name (edge-top-front)', async () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const box = api.box(10, 10, 10);
     // 'edge-top-front' on a 10x10x10 box anchored at origin = edge at z=10, y=0,
     // running along X from (0, 0, 10) to (10, 0, 10). Midpoint = (5, 0, 10).
@@ -157,7 +157,7 @@ describe('Connector (edge-axis queries)', () => {
 
   it('resolves canonical box edge "edge-right-top" (Y-running edge at x=max,z=max)', async () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const box = api.box(10, 10, 10);
     const resolved = await resolveConnectorOrigin(
       box,
@@ -173,7 +173,7 @@ describe('Connector (edge-axis queries)', () => {
 
   it('throws topology-not-resolvable on unknown edge name', async () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const box = api.box(10, 10, 10);
     await expect(
       resolveConnectorOrigin(
@@ -192,7 +192,7 @@ describe('Connector (transformed primitives)', () => {
 
   it("resolves face-center correctly after .translate", async () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     // Box anchored at origin corner; translated by (5, 0, 0) → spans [5,15] x [0,10] x [0,10].
     const box = api.box(10, 10, 10).translate(5, 0, 0);
     const resolved = await resolveConnectorOrigin(

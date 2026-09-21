@@ -2,11 +2,11 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../../../../src/kernel/backends/occt/occtBackend';
 import { urdfSerialize } from '../../../../../src/modeling/export/urdf/urdfSerializer';
 import { CaptureSession } from '../../../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../../../src/modeling/api';
+import { createModelingApi } from '../../../../../src/modeling/api';
 import type { Vec3 } from '../../../../../src/shared/intent/types';
 
 /** Helper: declare an axis connector on a part. */
-function axisConn(part: ReturnType<ReturnType<typeof createApi>['assembly']>['part'], name: string, origin: Vec3, axis: Vec3) {
+function axisConn(part: ReturnType<ReturnType<typeof createModelingApi>['assembly']>['part'], name: string, origin: Vec3, axis: Vec3) {
   part.connector(name, {
     type: 'axis',
     origin: { kind: 'vec3', value: origin },
@@ -15,7 +15,7 @@ function axisConn(part: ReturnType<ReturnType<typeof createApi>['assembly']>['pa
 }
 
 /** Helper: declare a frame connector on a part. */
-function frameConn(part: ReturnType<ReturnType<typeof createApi>['assembly']>['part'], name: string, origin: Vec3) {
+function frameConn(part: ReturnType<ReturnType<typeof createModelingApi>['assembly']>['part'], name: string, origin: Vec3) {
   part.connector(name, {
     type: 'frame',
     origin: { kind: 'vec3', value: origin },
@@ -23,7 +23,7 @@ function frameConn(part: ReturnType<ReturnType<typeof createApi>['assembly']>['p
 }
 
 /** Helper: declare a ball connector on a part. */
-function ballConn(part: ReturnType<ReturnType<typeof createApi>['assembly']>['part'], name: string, origin: Vec3) {
+function ballConn(part: ReturnType<ReturnType<typeof createModelingApi>['assembly']>['part'], name: string, origin: Vec3) {
   part.connector(name, {
     type: 'ball',
     origin: { kind: 'vec3', value: origin },
@@ -35,7 +35,7 @@ describe('urdfSerialize — Task B3.C (G0 migrated to mate API)', () => {
 
   it('emits a well-formed <robot> with one link per part and one joint per mate', async () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('two-link');
     const base = arm.part('base', kcad.box(20, 20, 20), { density: 2700 });
     const link = arm.part('link', kcad.box(80, 10, 10), { density: 2700 });
@@ -51,7 +51,7 @@ describe('urdfSerialize — Task B3.C (G0 migrated to mate API)', () => {
 
   it('refuses export when the mate graph has a closed loop', async () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('4bar');
     const a = arm.part('a', kcad.box(10, 10, 10), { density: 2700 });
     const b = arm.part('b', kcad.box(10, 10, 10), { density: 2700 });
@@ -76,7 +76,7 @@ describe('urdfSerialize — Task B3.C (G0 migrated to mate API)', () => {
 
   it('emits inertia-density-declared warning for any link without explicit density', async () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('a');
     const base = arm.part('base', kcad.box(10, 10, 10));   // no density
     const tip = arm.part('tip', kcad.box(10, 10, 10), { density: 2700 });
@@ -89,7 +89,7 @@ describe('urdfSerialize — Task B3.C (G0 migrated to mate API)', () => {
 
   it('emits ball-decomposed diagnostic and 3 chained joints for a ball mate', async () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('a');
     const base = arm.part('base', kcad.box(10, 10, 10), { density: 2700 });
     const tip = arm.part('tip', kcad.box(10, 10, 10), { density: 2700 });
@@ -105,7 +105,7 @@ describe('urdfSerialize — Task B3.C (G0 migrated to mate API)', () => {
 
   it('emits package://kernelcad_export/meshes/<part>.stl by default', async () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('a');
     const base = arm.part('base', kcad.box(10, 10, 10), { density: 2700 });
     const tip = arm.part('tip', kcad.box(10, 10, 10), { density: 2700 });
@@ -118,7 +118,7 @@ describe('urdfSerialize — Task B3.C (G0 migrated to mate API)', () => {
 
   it('honors the meshPrefix option', async () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('a');
     const base = arm.part('base', kcad.box(10, 10, 10), { density: 2700 });
     const tip = arm.part('tip', kcad.box(10, 10, 10), { density: 2700 });
@@ -133,7 +133,7 @@ describe('urdfSerialize — Task B3.C (G0 migrated to mate API)', () => {
 describe('urdfSerialize — mesh geometry units', () => {
   it('stamps scale="0.001 0.001 0.001" on visual + collision meshes (link STLs are mm; URDF consumes metres)', async () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('a');
     const base = arm.part('base', kcad.box(10, 10, 10), { density: 2700 });
     const tip = arm.part('tip', kcad.box(10, 10, 10), { density: 2700 });

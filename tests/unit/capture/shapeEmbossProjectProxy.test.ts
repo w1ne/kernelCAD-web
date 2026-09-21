@@ -1,7 +1,7 @@
 // tests/unit/capture/shapeEmbossProjectProxy.test.ts
 import { describe, it, expect } from 'vitest';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 import type { SketchCommand } from '../../../src/shared/capture/sketchCommand';
 
 const SAMPLE_COMMANDS: SketchCommand[] = [
@@ -14,7 +14,7 @@ const SAMPLE_COMMANDS: SketchCommand[] = [
 describe('Shape.embossText / Shape.projectCurve proxy methods', () => {
   it('Shape.embossText returns a new Shape with a different featureId and registers an embossText record', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const plate = kcad.box(40, 10, 2);
     const result = plate.embossText({
       textContent: 'KC',
@@ -29,7 +29,7 @@ describe('Shape.embossText / Shape.projectCurve proxy methods', () => {
 
   it('Shape.projectCurve returns a new Shape with a different featureId and registers a projectCurve record', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const cyl = kcad.cylinder(8, 5);
     const result = cyl.projectCurve({
       source: { kind: 'sketchCommands', commands: SAMPLE_COMMANDS },

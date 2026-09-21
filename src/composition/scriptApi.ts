@@ -14,7 +14,7 @@
 // API-construction time. A script can only run through a facade that passes a
 // factory, so it can never silently observe a partial `kc.*` surface.
 import type { ApiContext, KernelCadApi } from '../modeling/api';
-import { createApi } from '../modeling/api';
+import { createModelingApi } from '../modeling/api';
 import * as kinematic from '../kinematic';
 import type {
   KinematicFacade,
@@ -44,7 +44,7 @@ export type ScriptApi = KernelCadApi & {
 export function createScriptApi(ctx: ApiContext, evaluator?: SweepEvaluator): ScriptApi {
   // `joint` is lifted out and re-attached after `kinematic` so the composed
   // key order matches the pre-flip API object (`kinematic` before `joint`).
-  const { joint, ...modeling } = createApi(ctx);
+  const { joint, ...modeling } = createModelingApi(ctx);
   const facade: ScriptKinematicFacade = {
     ...kinematic,
     sweepTolerance: (input) => kinematic.sweepTolerance(input, evaluator),

@@ -7,7 +7,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 import type { CompilerDiagnostic } from '../../../src/shared/diagnostics/diagnostic';
 import type { VariableSweepMetadata } from '../../../src/shared/intent/variableSweepRecord';
 import { KernelError } from '../../../src/shared/intent/kernelError';
@@ -31,7 +31,7 @@ function findSweepMeta(session: CaptureSession): VariableSweepMetadata | undefin
 describe('variableSweep()', () => {
   it('creates a variableSweep record with a Curve3D spine + 2 sections', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const spine = kcad.nurbsCurve([
       [0, 0, 0],
       [10, 0, 0],
@@ -69,7 +69,7 @@ describe('variableSweep()', () => {
 
   it('auto-converts a Vec3[] spine to a nurbsCurve', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const profile = kcad
       .path()
       .moveTo(-1, -1)
@@ -99,7 +99,7 @@ describe('variableSweep()', () => {
 
   it('emits feature.variable-sweep.sections-out-of-order when t is non-monotonic', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const spine = kcad.nurbsCurve([
       [0, 0, 0],
       [10, 0, 0],
@@ -124,7 +124,7 @@ describe('variableSweep()', () => {
 
   it('emits feature.variable-sweep.sections-not-spanning when t does not start at 0 or end at 1', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const spine = kcad.nurbsCurve([
       [0, 0, 0],
       [10, 0, 0],
@@ -147,7 +147,7 @@ describe('variableSweep()', () => {
 
   it('throws KernelError when fewer than 2 sections are passed', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const spine = kcad.nurbsCurve([
       [0, 0, 0],
       [10, 0, 0],
@@ -164,7 +164,7 @@ describe('variableSweep()', () => {
 
   it('throws KernelError for a Vec3[] spine with fewer than 2 points', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const profile = kcad
       .path()
       .moveTo(-1, -1)

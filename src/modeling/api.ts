@@ -589,7 +589,7 @@ export interface EditableHelixOptions {
   startAngle?: Editable<number>;
 }
 
-export function createApi(ctx: ApiContext): KernelCadApi {
+export function createModelingApi(ctx: ApiContext): KernelCadApi {
   const { session } = ctx;
   const api: KernelCadApi = {
     ...makePrimitiveMethods(session),

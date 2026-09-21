@@ -18,11 +18,11 @@ import type { MateLoadLimit, MateRecord } from './mate';
 import type { Assembly } from '../capture/assembly';
 import type { Vec3 } from '../../shared/intent/types';
 import { CaptureSession } from '../capture/captureSession';
-import { createApi } from '../api';
+import { createModelingApi } from '../api';
 
 function makeArm() {
   const session = new CaptureSession();
-  const kcad = createApi({ session });
+  const kcad = createModelingApi({ session });
   return { arm: kcad.assembly('rig'), kcad, session };
 }
 

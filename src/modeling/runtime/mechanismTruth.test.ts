@@ -24,16 +24,16 @@
 
 import { describe, expect, it } from 'vitest';
 import { CaptureSession } from '../capture/captureSession';
-import { createApi } from '../api';
+import { createModelingApi } from '../api';
 import type { Assembly } from '../capture/assembly';
 import { checkMechanismTruth } from './mechanismTruth';
 import { RecomputeEngine } from '../compute/recomputeEngine';
 import { createOcctLowerer } from '../backends/occt/occtLowerer';
 import { initOcct } from '../../kernel/backends/occt/occtBackend';
 
-function makeArm(name = 'rig'): { arm: Assembly; kcad: ReturnType<typeof createApi>; session: CaptureSession } {
+function makeArm(name = 'rig'): { arm: Assembly; kcad: ReturnType<typeof createModelingApi>; session: CaptureSession } {
   const session = new CaptureSession();
-  const kcad = createApi({ session });
+  const kcad = createModelingApi({ session });
   return { arm: kcad.assembly(name), kcad, session };
 }
 
@@ -676,7 +676,7 @@ describe('mechanism truth — pose-sweep grounded loop (P0)', () => {
     // verdict + failures show up on RecomputeResult.
     await initOcct();
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     void kcad.box(10, 10, 10);
     const engine = new RecomputeEngine(createOcctLowerer(session));
     const result = await engine.run(session.getRecords(), {
@@ -703,7 +703,7 @@ describe('mechanism truth — pose-sweep grounded loop (P0)', () => {
   it('integration: RecomputeEngine.run defaults mechanism to "unverified" when no probe is supplied', async () => {
     await initOcct();
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     void kcad.box(10, 10, 10);
     const engine = new RecomputeEngine(createOcctLowerer(session));
     const result = await engine.run(session.getRecords(), {

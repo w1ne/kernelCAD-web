@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it } from 'vitest';
 import type { ConnectorEntry } from '../../shared/parts/connectorManifestSchema';
-import { createApi } from '../api';
+import { createModelingApi } from '../api';
 import { CaptureSession } from './captureSession';
 
 const authoredConnectors = (): ConnectorEntry[] => [
@@ -23,7 +23,7 @@ const authoredConnectors = (): ConnectorEntry[] => [
 describe('Assembly catalog connector promotion', () => {
   it('promotes authored frame and axis entries to both connector APIs and mates', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('arm');
     const catalogShape = kcad.box(10, 10, 10);
     session.attachCatalogConnectors(catalogShape.id, authoredConnectors());
@@ -75,7 +75,7 @@ describe('Assembly catalog connector promotion', () => {
 
   it('uses a promoted catalog connector for legacy opts.connect placement', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('arm');
     const base = arm.part('base', kcad.box(10, 10, 10), {
       at: [10, 0, 0],
@@ -95,7 +95,7 @@ describe('Assembly catalog connector promotion', () => {
 
   it('does not promote generic auto connectors', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('arm');
     const genericShape = kcad.box(10, 10, 10);
     session.attachAutoConnectors(genericShape.id, [
@@ -111,7 +111,7 @@ describe('Assembly catalog connector promotion', () => {
 
   it('rejects a collision between catalog and user-declared legacy connectors', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('arm');
     const catalogShape = kcad.box(10, 10, 10);
     session.attachCatalogConnectors(catalogShape.id, authoredConnectors());
@@ -123,7 +123,7 @@ describe('Assembly catalog connector promotion', () => {
 
   it('applies declared literal translate and rotate transforms to catalog frames in order', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('arm');
     const catalogShape = kcad.box(10, 10, 10)
       .translate(10, 0, 0)
@@ -173,7 +173,7 @@ describe('Assembly catalog connector promotion', () => {
 
   it('rejects catalog connector promotion through scale', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('arm');
     const catalogShape = kcad.box(10, 10, 10).scale(2);
     session.attachCatalogConnectors(catalogShape.id, authoredConnectors());
@@ -183,7 +183,7 @@ describe('Assembly catalog connector promotion', () => {
 
   it('rejects catalog connector promotion through reflection', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('arm');
     const catalogShape = kcad.box(10, 10, 10).reflect('xy');
     session.attachCatalogConnectors(catalogShape.id, authoredConnectors());
@@ -193,7 +193,7 @@ describe('Assembly catalog connector promotion', () => {
 
   it('rejects catalog connector promotion through a ParamRef translate transform', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('arm');
     const offset = kcad.param('offset', 10);
     const catalogShape = kcad.box(10, 10, 10).translate(offset, 0, 0);
@@ -204,7 +204,7 @@ describe('Assembly catalog connector promotion', () => {
 
   it('rejects catalog connector promotion through a ParamRef rotate transform', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('arm');
     const degrees = kcad.param('degrees', 90);
     const catalogShape = kcad.box(10, 10, 10).rotate([0, 0, 1], degrees);
@@ -215,7 +215,7 @@ describe('Assembly catalog connector promotion', () => {
 
   it('does not re-promote catalog connectors while flattening a subassembly', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const source = kcad.assembly('source');
     const target = kcad.assembly('target');
     const catalogShape = kcad.box(10, 10, 10);

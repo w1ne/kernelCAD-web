@@ -37,7 +37,7 @@ vi.mock('./synthesizeConnectors', () => ({
 
 import '../runtime/hostFsNode';
 import { listFeaturesTool } from '../../agent/mcp/tools/listFeatures';
-import { createApi } from '../api';
+import { createModelingApi } from '../api';
 import { CaptureSession } from '../capture/captureSession';
 import { __resetUserCacheForTests } from '../../shared/cache/userCache';
 import {
@@ -164,7 +164,7 @@ describe('lib.fetchPart catalog semantic identity', () => {
     });
 
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const sensor = await api.lib.fetchPart(PART_ID, { partsBaseUrl: BASE_URL });
 
     const imported = session.getRecords().find((record) => record.id === sensor.id);

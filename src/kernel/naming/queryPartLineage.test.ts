@@ -12,7 +12,7 @@
 // `evaluateScript` test helper and a `session.parts` / `assemblyByName(...)`
 // accessor on the capture session. Neither exists in develop. Q1.5 therefore
 // lands the type surface + capture-site population through the existing
-// `createApi({ session })` test pattern (mirrors the Q1 unit test style and
+// `createModelingApi({ session })` test pattern (mirrors the Q1 unit test style and
 // `assembly.partNameUniqueness.test.ts`).
 //
 // PartLineage carries no propagation helper (unlike EdgeLineage) because parts
@@ -23,7 +23,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { CaptureSession } from '../../modeling/capture/captureSession';
-import { createApi } from '../../modeling/api';
+import { createModelingApi } from '../../modeling/api';
 import type { PartLineage, PartLineageMap } from './evolutionRecord';
 import type { Assembly } from '../../modeling/capture/assembly';
 
@@ -43,7 +43,7 @@ describe('PartLineage type slots — Q1.5', () => {
 describe('PartLineage capture-site population — Q1.5', () => {
   it('every captured part on an assembly carries PartLineage.featureId', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('arm') as Assembly;
     arm.part('base', kcad.box(20, 20, 10));
     arm.part('lid', kcad.box(20, 20, 2).translate(0, 0, 10));
@@ -61,7 +61,7 @@ describe('PartLineage capture-site population — Q1.5', () => {
 
   it('part featureName matches the user-supplied name to .part(...)', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('arm') as Assembly;
     arm.part('servo', kcad.box(10, 10, 10));
 
@@ -74,7 +74,7 @@ describe('PartLineage capture-site population — Q1.5', () => {
 
   it('two .part calls in two different assemblies get distinct featureIds', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const a = kcad.assembly('a') as Assembly;
     const b = kcad.assembly('b') as Assembly;
     a.part('base', kcad.box(5, 5, 5));
@@ -95,7 +95,7 @@ describe('PartLineage capture-site population — Q1.5', () => {
 
   it('partLineage map keys by user-supplied part name', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('arm') as Assembly;
     arm.part('base', kcad.box(20, 20, 10));
     arm.part('lid', kcad.box(20, 20, 2));
@@ -108,7 +108,7 @@ describe('PartLineage capture-site population — Q1.5', () => {
 
   it('partLineage featureId matches the AssemblyPartRef.id minted by session.assemblyPart', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('arm') as Assembly;
     const partRef = arm.part('base', kcad.box(20, 20, 10));
 

@@ -26,13 +26,13 @@
 
 import { describe, expect, it } from 'vitest';
 import { CaptureSession } from '../capture/captureSession';
-import { createApi } from '../api';
+import { createModelingApi } from '../api';
 import { computePivotLift, withDefaults } from './clevis';
 
 describe('joint.clevis — G1 design locks', () => {
   it('1. parent + child geometry compose; primitive returns a typed ClevisJoint with non-empty Shapes', () => {
     const session = new CaptureSession();
-    const kc = createApi({ session });
+    const kc = createModelingApi({ session });
     const baseBody = kc.box(60, 60, 30, true);
     const lowerBody = kc.box(200, 20, 20, true).translate(100, 0, 0);
 
@@ -74,7 +74,7 @@ describe('joint.clevis — G1 design locks', () => {
     // There should be EXACTLY two difference (subtract) operations: the
     // parent through-hole and the child tongue bore.
     const session = new CaptureSession();
-    const kc = createApi({ session });
+    const kc = createModelingApi({ session });
     const baseBody = kc.box(40, 40, 20, true);
     const childBody = kc.box(50, 20, 20, true).translate(25, 0, 0);
 
@@ -140,7 +140,7 @@ describe('joint.clevis — G1 design locks', () => {
     // guaranteeing symmetry by construction. We assert that by reading the
     // captured records.
     const session = new CaptureSession();
-    const kc = createApi({ session });
+    const kc = createModelingApi({ session });
     // Use Y axis so the pin axis is +Y; the fork plates should straddle
     // ±plateOffset along Y.
     kc.joint.clevis({
@@ -169,7 +169,7 @@ describe('joint.clevis — G1 design locks', () => {
 
   it('5. returned connectors bind to arm.mate(..., "revolute", ...) without coordinate fiddling (round-trip)', () => {
     const session = new CaptureSession();
-    const kc = createApi({ session });
+    const kc = createModelingApi({ session });
     const arm = kc.assembly('test-arm');
     const baseBody = kc.box(40, 40, 20, true);
     const childBody = kc.box(60, 18, 18, true).translate(30, 0, 0);
@@ -248,7 +248,7 @@ describe('joint.clevis — G1 design locks', () => {
 
     // Smoke test at the small end: build a real clevis with small style.
     const sessionA = new CaptureSession();
-    const kcA = createApi({ session: sessionA });
+    const kcA = createModelingApi({ session: sessionA });
     const jA = kcA.joint.clevis({
       parentBody: kcA.box(30, 30, 15, true),
       childBody: kcA.box(40, 10, 10, true).translate(20, 0, 0),
@@ -262,7 +262,7 @@ describe('joint.clevis — G1 design locks', () => {
 
     // Smoke test at the large end.
     const sessionB = new CaptureSession();
-    const kcB = createApi({ session: sessionB });
+    const kcB = createModelingApi({ session: sessionB });
     const jB = kcB.joint.clevis({
       parentBody: kcB.box(300, 300, 100, true),
       childBody: kcB.box(400, 100, 100, true).translate(200, 0, 0),
@@ -277,7 +277,7 @@ describe('joint.clevis — G1 design locks', () => {
 
   it('7. lifted fork support uses plate-local webs, not a cross-gap floating tab', () => {
     const session = new CaptureSession();
-    const kc = createApi({ session });
+    const kc = createModelingApi({ session });
     const style = withDefaults({ knuckleR: 10, forkGapY: 8, plateT: 4 });
     const lift = computePivotLift(style, [-90, 90]);
 
@@ -312,7 +312,7 @@ describe('joint.clevis — G1 design locks', () => {
 
   it('emits structural dimensions from the same resolved style used by geometry', () => {
     const session = new CaptureSession();
-    const kc = createApi({ session });
+    const kc = createModelingApi({ session });
     const steel = {
       name: 'test steel',
       model: 'isotropic-ductile' as const,
@@ -356,7 +356,7 @@ describe('joint.clevis — G1 design locks', () => {
 
   it('emits structural geometry without inventing engineering material', () => {
     const session = new CaptureSession();
-    const kc = createApi({ session });
+    const kc = createModelingApi({ session });
     const result = kc.joint.clevis({
       parentBody: kc.box(40, 40, 20, true),
       childBody: kc.box(50, 20, 20, true),
@@ -377,7 +377,7 @@ describe('joint.clevis — G1 design locks', () => {
     ['bad shear', { name: 'steel', model: 'isotropic-ductile', yieldStrengthMPa: 250, bearingStrengthMPa: 400, shearStrengthMPa: -1 }],
   ])('rejects invalid structural material: %s', (_label, material) => {
     const session = new CaptureSession();
-    const kc = createApi({ session });
+    const kc = createModelingApi({ session });
     expect(() => kc.joint.clevis({
       parentBody: kc.box(40, 40, 20, true),
       childBody: kc.box(50, 20, 20, true),
@@ -393,7 +393,7 @@ describe('joint.clevis — G1 design locks', () => {
 
   it('rejects a null engineering declaration with a kernel argument error', () => {
     const session = new CaptureSession();
-    const kc = createApi({ session });
+    const kc = createModelingApi({ session });
     expect(() => kc.joint.clevis({
       parentBody: kc.box(40, 40, 20, true),
       childBody: kc.box(50, 20, 20, true),
@@ -409,7 +409,7 @@ describe('joint.clevis — G1 design locks', () => {
 
   it('rejects axis as a non-finite vector', () => {
     const session = new CaptureSession();
-    const kc = createApi({ session });
+    const kc = createModelingApi({ session });
     expect(() =>
       kc.joint.clevis({
         parentBody: kc.box(10, 10, 10, true),
@@ -422,7 +422,7 @@ describe('joint.clevis — G1 design locks', () => {
 
   it('rejects pivotParent as a non-finite vector', () => {
     const session = new CaptureSession();
-    const kc = createApi({ session });
+    const kc = createModelingApi({ session });
     expect(() =>
       kc.joint.clevis({
         parentBody: kc.box(10, 10, 10, true),
@@ -456,7 +456,7 @@ describe('joint.clevis — G1 design locks', () => {
     expect(() => withDefaults(style)).toThrow(/pinCapThickness.*0\.5/i);
 
     const session = new CaptureSession();
-    const kc = createApi({ session });
+    const kc = createModelingApi({ session });
     expect(() => kc.joint.clevis({
       parentBody: kc.box(30, 30, 20, true),
       childBody: kc.box(40, 12, 12, true).translate(20, 0, 0),
@@ -468,7 +468,7 @@ describe('joint.clevis — G1 design locks', () => {
 
   it('accepts limitsDeg defaulting to [-90, 90] when omitted', () => {
     const session = new CaptureSession();
-    const kc = createApi({ session });
+    const kc = createModelingApi({ session });
     const j = kc.joint.clevis({
       parentBody: kc.box(50, 50, 30, true),
       childBody: kc.box(60, 18, 18, true),

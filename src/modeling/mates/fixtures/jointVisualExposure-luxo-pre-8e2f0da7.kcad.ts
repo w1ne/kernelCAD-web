@@ -23,7 +23,7 @@
 // the geometric proxy, which is documented to be approximate.)
 
 import { CaptureSession } from '../../capture/captureSession';
-import { createApi } from '../../api';
+import { createModelingApi } from '../../api';
 import type { Assembly } from '../../capture/assembly';
 
 const FORK_PLATE_X = 22;
@@ -36,7 +36,7 @@ const PIN_LEN = FORK_GAP_Y + 2 * FORK_PLATE_T + 8; // 28
 
 export function buildPreFixLuxoShoulder(): { arm: Assembly; session: CaptureSession } {
   const session = new CaptureSession();
-  const kcad = createApi({ session });
+  const kcad = createModelingApi({ session });
   const arm = kcad.assembly('luxo-pre');
 
   // Parent: clevis fork (two plates straddling Y=0) + pin (cylinder along Y).

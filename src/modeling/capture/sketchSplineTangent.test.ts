@@ -12,7 +12,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../kernel/backends/occt/occtBackend';
 import { CaptureSession } from './captureSession';
-import { createApi } from '../api';
+import { createModelingApi } from '../api';
 import { KernelError } from '../../shared/intent/kernelError';
 import type { SketchCommand } from '../../shared/capture/sketchCommand';
 
@@ -22,7 +22,7 @@ beforeAll(async () => {
 
 function makePath() {
   const session = new CaptureSession();
-  const kcad = createApi({ session });
+  const kcad = createModelingApi({ session });
   return kcad.path();
 }
 

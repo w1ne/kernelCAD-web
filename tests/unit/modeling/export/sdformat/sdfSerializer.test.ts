@@ -2,14 +2,14 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../../../../src/kernel/backends/occt/occtBackend';
 import { sdfSerialize } from '../../../../../src/modeling/export/sdformat/sdfSerializer';
 import { CaptureSession } from '../../../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../../../src/modeling/api';
+import { createModelingApi } from '../../../../../src/modeling/api';
 import type { Vec3 } from '../../../../../src/shared/intent/types';
 
-function axisConn(part: ReturnType<ReturnType<typeof createApi>['assembly']>['part'], name: string, origin: Vec3, axis: Vec3) {
+function axisConn(part: ReturnType<ReturnType<typeof createModelingApi>['assembly']>['part'], name: string, origin: Vec3, axis: Vec3) {
   part.connector(name, { type: 'axis', origin: { kind: 'vec3', value: origin }, axis });
 }
 
-function ballConn(part: ReturnType<ReturnType<typeof createApi>['assembly']>['part'], name: string, origin: Vec3) {
+function ballConn(part: ReturnType<ReturnType<typeof createModelingApi>['assembly']>['part'], name: string, origin: Vec3) {
   part.connector(name, { type: 'ball', origin: { kind: 'vec3', value: origin } });
 }
 
@@ -18,7 +18,7 @@ describe('sdfSerialize — Task B5.B (G0 migrated to mate API)', () => {
 
   it('emits <sdf version="1.10"> + <model> + per-link inertial/visual/collision', async () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('two-link');
     const base = arm.part('base', kcad.box(20, 20, 8), { density: 2700 });
     const upper = arm.part('upper', kcad.box(80, 12, 8), { density: 2700 });
@@ -34,7 +34,7 @@ describe('sdfSerialize — Task B5.B (G0 migrated to mate API)', () => {
 
   it('accepts a closed 4-bar linkage (the URDF differentiator)', async () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('4bar');
     const a = arm.part('a', kcad.box(10, 10, 10), { density: 2700 });
     const b = arm.part('b', kcad.box(10, 10, 10), { density: 2700 });
@@ -63,7 +63,7 @@ describe('sdfSerialize — Task B5.B (G0 migrated to mate API)', () => {
 
   it('emits no decomposition for a ball mate (native ball)', async () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('a');
     const base = arm.part('base', kcad.box(10, 10, 10), { density: 2700 });
     const tip = arm.part('tip', kcad.box(10, 10, 10), { density: 2700 });
@@ -81,7 +81,7 @@ describe('sdfSerialize — simulator-consumable output (links posed, meshes scal
 
   function parallelogram4Bar() {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('fourbar');
     const ground = arm.part('ground', kcad.box(60, 10, 10), { density: 2700 });
     const crank = arm.part('crank', kcad.box(10, 10, 35), { density: 2700 });
@@ -114,7 +114,7 @@ describe('sdfSerialize — simulator-consumable output (links posed, meshes scal
 
   it('warns pose-unsolved and falls back to identity link poses when the loop cannot close', async () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('badloop');
     const a = arm.part('a', kcad.box(10, 10, 10), { density: 2700 });
     const b = arm.part('b', kcad.box(10, 10, 10), { density: 2700 });

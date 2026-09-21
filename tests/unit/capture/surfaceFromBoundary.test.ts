@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { isKernelError } from '../../../src/shared/intent/kernelError';
 
@@ -15,7 +15,7 @@ describe('surfaceFromBoundary()', () => {
 
   it('captures a SurfaceProxy from 4 line-segment boundary curves', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const c1 = kcad.nurbsCurve([[0, 0, 0], [10, 0, 0]], { degree: 1 });
     const c2 = kcad.nurbsCurve([[10, 0, 0], [10, 10, 0]], { degree: 1 });
     const c3 = kcad.nurbsCurve([[10, 10, 0], [0, 10, 0]], { degree: 1 });
@@ -36,7 +36,7 @@ describe('surfaceFromBoundary()', () => {
 
   it('emits feature.surface-from-boundary.corner-mismatch when endpoints do not coincide', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const c1 = kcad.nurbsCurve([[0, 0, 0], [10, 0, 0]], { degree: 1 });
     // discontinuous start — does not match c1.end (10, 0, 0).
     const c2 = kcad.nurbsCurve([[99, 99, 99], [10, 10, 0]], { degree: 1 });
@@ -51,7 +51,7 @@ describe('surfaceFromBoundary()', () => {
 
   it('throws feature.surface-from-boundary.too-few-curves with fewer than 4 curves', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const c1 = kcad.nurbsCurve([[0, 0, 0], [10, 0, 0]], { degree: 1 });
     const c2 = kcad.nurbsCurve([[10, 0, 0], [10, 10, 0]], { degree: 1 });
     const c3 = kcad.nurbsCurve([[10, 10, 0], [0, 0, 0]], { degree: 1 });
@@ -69,7 +69,7 @@ describe('surfaceFromBoundary()', () => {
 
   it('throws feature.surface-from-boundary.too-many-curves with more than 4 curves', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const c1 = kcad.nurbsCurve([[0, 0, 0], [5, 0, 0]], { degree: 1 });
     const c2 = kcad.nurbsCurve([[5, 0, 0], [10, 0, 0]], { degree: 1 });
     const c3 = kcad.nurbsCurve([[10, 0, 0], [10, 10, 0]], { degree: 1 });
@@ -89,7 +89,7 @@ describe('surfaceFromBoundary()', () => {
 
   it('accepts a per-edge continuity array', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const c1 = kcad.nurbsCurve([[0, 0, 0], [10, 0, 0]], { degree: 1 });
     const c2 = kcad.nurbsCurve([[10, 0, 0], [10, 10, 0]], { degree: 1 });
     const c3 = kcad.nurbsCurve([[10, 10, 0], [0, 10, 0]], { degree: 1 });

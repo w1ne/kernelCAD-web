@@ -8,7 +8,7 @@ import {
   faceArea,
 } from '../../../../src/modeling/backends/occt/surfaceTrimLowerer';
 import { CaptureSession } from '../../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../../src/modeling/api';
+import { createModelingApi } from '../../../../src/modeling/api';
 import { RecomputeEngine } from '../../../../src/modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../../../src/modeling/backends/occt/occtLowerer';
 import type * as replicad from 'replicad';
@@ -82,7 +82,7 @@ describe('lowerSurfaceTrim', () => {
 
   it('composes end-to-end: nurbsSurface().trimTo(cutter).toShape() resolves to a trimmed shell', async () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const base = api.nurbsSurface({
       controls: [
         [[0, 0, 0], [0, 2, 0]],
@@ -155,7 +155,7 @@ describe('lowerSurfaceTrim', () => {
 
   it('lowers a curved trim through the dispatch arm without feature.surface-trim.non-planar', async () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const base = api.nurbsSurface({
       controls: [
         [[0, 0, 0], [0, 1, 0], [0, 2, 0]],
@@ -183,7 +183,7 @@ describe('lowerSurfaceTrim', () => {
 
   it('lowers both split halves through the dispatch arm without split-deferred warning', async () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const base = api.nurbsSurface({
       controls: [
         [[0, 0, 0], [0, 2, 0]],

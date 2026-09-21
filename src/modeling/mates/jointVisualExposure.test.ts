@@ -15,7 +15,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { CaptureSession } from '../capture/captureSession';
-import { createApi } from '../api';
+import { createModelingApi } from '../api';
 import type { Assembly } from '../capture/assembly';
 import { validateJointVisualExposure } from './jointVisualExposure';
 import { validateJointAxisBindingWithCache } from './jointAxisBinding';
@@ -71,7 +71,7 @@ function buildSyntheticHinge(opts: SyntheticHingeOpts): { arm: Assembly; session
   const { forkGapY, tongueY, pinLen } = opts;
 
   const session = new CaptureSession();
-  const kcad = createApi({ session });
+  const kcad = createModelingApi({ session });
   const arm = kcad.assembly('hinge');
 
   const plateOffsetY = forkGapY / 2 + forkPlateT / 2;

@@ -16,7 +16,7 @@ import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { CaptureSession } from '../capture/captureSession';
-import { createApi } from '../api';
+import { createModelingApi } from '../api';
 import { OcctBackend, initOcct } from '../../kernel/backends/occt/occtBackend';
 import { RecomputeEngine } from '../compute/recomputeEngine';
 import { OcctLowerer } from '../backends/occt/occtLowerer';
@@ -106,7 +106,7 @@ async function lower(session: CaptureSession, id: string): Promise<OcctBackend> 
 describe('lib.fromDXF — round trip to a solid', () => {
   it('imports a plate and extrudes it to the hand-computed volume', async () => {
     const session = new CaptureSession();
-    const api = createApi({ session, scriptDir: tmpDir });
+    const api = createModelingApi({ session, scriptDir: tmpDir });
 
     const sketches = await api.lib.fromDXF('plate.dxf');
     expect(sketches).toHaveLength(1);
@@ -119,7 +119,7 @@ describe('lib.fromDXF — round trip to a solid', () => {
 
   it('carries the DXF bulge through to real geometry with the right sign', async () => {
     const session = new CaptureSession();
-    const api = createApi({ session, scriptDir: tmpDir });
+    const api = createModelingApi({ session, scriptDir: tmpDir });
 
     const [profile] = await api.lib.fromDXF('bulged.dxf');
     const backend = await lower(session, profile.extrude(2).id);
@@ -134,7 +134,7 @@ describe('lib.fromDXF — round trip to a solid', () => {
 
   it('returns every closed region, largest first, so holes can be cut explicitly', async () => {
     const session = new CaptureSession();
-    const api = createApi({ session, scriptDir: tmpDir });
+    const api = createModelingApi({ session, scriptDir: tmpDir });
 
     const [outline, ...holes] = await api.lib.fromDXF('plate-hole.dxf');
     expect(holes).toHaveLength(1);
@@ -146,7 +146,7 @@ describe('lib.fromDXF — round trip to a solid', () => {
 
   it('records the unit decision on the sketch so it can be inspected later', async () => {
     const session = new CaptureSession();
-    const api = createApi({ session, scriptDir: tmpDir });
+    const api = createModelingApi({ session, scriptDir: tmpDir });
     await api.lib.fromDXF('plate.dxf');
 
     const record = session.getRecords()[0];
@@ -159,7 +159,7 @@ describe('lib.fromDXF — round trip to a solid', () => {
 
   it('opts.units rescales the imported profile', async () => {
     const session = new CaptureSession();
-    const api = createApi({ session, scriptDir: tmpDir });
+    const api = createModelingApi({ session, scriptDir: tmpDir });
     const [profile] = await api.lib.fromDXF('plate.dxf', { units: 'cm' });
     const backend = await lower(session, profile.extrude(1).id);
     expect(backend.volume()).toBeCloseTo(100 * 50 * 1, 4);
@@ -169,7 +169,7 @@ describe('lib.fromDXF — round trip to a solid', () => {
 describe('lib.fromSVG — round trip to a solid', () => {
   it('imports the L profile at true millimetre scale', async () => {
     const session = new CaptureSession();
-    const api = createApi({ session, scriptDir: tmpDir });
+    const api = createModelingApi({ session, scriptDir: tmpDir });
 
     const [profile] = await api.lib.fromSVG('ell.svg');
     const backend = await lower(session, profile.extrude(2).id);
@@ -178,7 +178,7 @@ describe('lib.fromSVG — round trip to a solid', () => {
 
   it('the extruded solid sits where the Y flip put it, not where SVG had it', async () => {
     const session = new CaptureSession();
-    const api = createApi({ session, scriptDir: tmpDir });
+    const api = createModelingApi({ session, scriptDir: tmpDir });
 
     const [profile] = await api.lib.fromSVG('ell.svg');
     const backend = await lower(session, profile.extrude(2).id);
@@ -194,7 +194,7 @@ describe('lib.fromSVG — round trip to a solid', () => {
 
   it('keeps a <circle> analytic — the extruded disc has the exact volume', async () => {
     const session = new CaptureSession();
-    const api = createApi({ session, scriptDir: tmpDir });
+    const api = createModelingApi({ session, scriptDir: tmpDir });
 
     const [disc] = await api.lib.fromSVG('disc.svg');
     const backend = await lower(session, disc.extrude(5).id);
@@ -215,21 +215,21 @@ describe('lib.fromDXF / lib.fromSVG — failures surface as actionable KernelErr
   }
 
   it('a missing file names the path', async () => {
-    const api = createApi({ session: new CaptureSession(), scriptDir: tmpDir });
+    const api = createModelingApi({ session: new CaptureSession(), scriptDir: tmpDir });
     const e = await failure(() => api.lib.fromDXF('nope.dxf'));
     expect(e.code).toBe('feature.invalid-args');
     expect(e.message).toMatch(/lib\.fromDXF: cannot read file at .*nope\.dxf/);
   });
 
   it('an empty path is rejected before any I/O', async () => {
-    const api = createApi({ session: new CaptureSession(), scriptDir: tmpDir });
+    const api = createModelingApi({ session: new CaptureSession(), scriptDir: tmpDir });
     const e = await failure(() => api.lib.fromSVG(''));
     expect(e.code).toBe('feature.invalid-args');
     expect(e.hint).toMatch(/invalid-args\.lib\.fromSVG/);
   });
 
   it('an open SVG contour reports the dangling end and how to fix it', async () => {
-    const api = createApi({ session: new CaptureSession(), scriptDir: tmpDir });
+    const api = createModelingApi({ session: new CaptureSession(), scriptDir: tmpDir });
     const e = await failure(() => api.lib.fromSVG('open.svg'));
     expect(e.code).toBe('feature.kernel-failed');
     expect(e.message).toMatch(/open contour/);
@@ -243,7 +243,7 @@ describe('lib.fromDXF / lib.fromSVG — failures surface as actionable KernelErr
   it('an unsupported DXF entity names the entity, the line, and the fix', async () => {
     const p = join(tmpDir, 'spline.dxf');
     writeFileSync(p, [0, 'SECTION', 2, 'ENTITIES', 0, 'SPLINE', 10, 0, 20, 0, 0, 'ENDSEC'].join('\n') + '\n');
-    const api = createApi({ session: new CaptureSession(), scriptDir: tmpDir });
+    const api = createModelingApi({ session: new CaptureSession(), scriptDir: tmpDir });
     const e = await failure(() => api.lib.fromDXF('spline.dxf'));
     expect(e.message).toMatch(/SPLINE at line \d+/);
     expect(e.hint).toMatch(/kernel-failed\.lib\.fromDXF\.unsupported-entity/);
@@ -254,7 +254,7 @@ describe('lib.fromDXF / lib.fromSVG — failures surface as actionable KernelErr
     const p = join(tmpDir, 'blank.svg');
     writeFileSync(p, '');
     const session = new CaptureSession();
-    const api = createApi({ session, scriptDir: tmpDir });
+    const api = createModelingApi({ session, scriptDir: tmpDir });
     const e = await failure(() => api.lib.fromSVG('blank.svg'));
     expect(e.message).toMatch(/SVG payload is empty/);
     // Nothing was registered — a failed import leaves no placeholder behind.

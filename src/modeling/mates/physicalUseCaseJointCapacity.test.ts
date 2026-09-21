@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it } from 'vitest';
 import { KernelError } from '../../shared/intent/kernelError';
-import { createApi } from '../api';
+import { createModelingApi } from '../api';
 import { CaptureSession } from '../capture/captureSession';
 import type { ClevisStructuralModel, StructuralMaterial } from '../joints/types';
 import type {
@@ -19,7 +19,7 @@ import type { PhysicalUseCaseJointReactionEvidence } from './physicalUseCaseJoin
 
 function makeArm() {
   const session = new CaptureSession();
-  const kcad = createApi({ session });
+  const kcad = createModelingApi({ session });
   const arm = kcad.assembly('capacity-rig');
   arm
     .part('base', kcad.box(10, 10, 10))
@@ -122,7 +122,7 @@ function structuralModel(): ClevisStructuralModel {
 describe('mate capacity capture', () => {
   it('preserves capacity and maxLoad as nested copies through subAssembly import', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const ratedSource = kcad.assembly('rated-source');
     ratedSource
       .part('base', kcad.box(10, 10, 10))

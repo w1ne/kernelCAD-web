@@ -16,7 +16,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 import type { ShapeTransform } from '../../../src/shared/intent/featureRecord';
 import { RecomputeEngine } from '../../../src/modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../../src/modeling/backends/occt/occtLowerer';
@@ -36,7 +36,7 @@ function transformsOf(session: CaptureSession): ShapeTransform[] {
 describe('Shape.translate accepts Editable<number> — per-coord capture', () => {
   it('translate stores ParamRef on x', () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const x = api.param('x', 5);
     api.box(10, 10, 10).translate(x, 0, 0);
     const ts = transformsOf(session);
@@ -51,7 +51,7 @@ describe('Shape.translate accepts Editable<number> — per-coord capture', () =>
 
   it('translate stores ParamRef on y and z too', () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const y = api.param('y', 7);
     const z = api.param('z', 9);
     api.box(10, 10, 10).translate(0, y, z);
@@ -65,7 +65,7 @@ describe('Shape.translate accepts Editable<number> — per-coord capture', () =>
 describe('Shape.rotate accepts Editable<number> — per-component capture', () => {
   it('rotate stores ParamRef on degrees', () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const deg = api.param('deg', 45);
     api.box(10, 10, 10).rotate([0, 0, 1], deg);
     const ts = transformsOf(session);
@@ -78,7 +78,7 @@ describe('Shape.rotate accepts Editable<number> — per-component capture', () =
 
   it('rotate axis components accept ParamRef (unitless)', () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const az = api.param('az', 1);
     api.box(10, 10, 10).rotate([0, 0, az], 45);
     const ts = transformsOf(session);
@@ -89,7 +89,7 @@ describe('Shape.rotate accepts Editable<number> — per-component capture', () =
 
   it('rotate pivot accepts ParamRef on each component (mm)', () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const px = api.param('px', 5);
     api.box(10, 10, 10).rotate([0, 0, 1], 45, [px, 0, 0]);
     const ts = transformsOf(session);
@@ -110,7 +110,7 @@ describe('Shape.translate Editable — params.update reactivity', () => {
     // Slice 2E: `params.update` requires an attached engine; `buildModel` does
     // this automatically, but this test drives the session directly.
     session.setEngine(new RecomputeEngine(createOcctLowerer(session)));
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const x = api.param('x', 5);
     const shape = api.box(10, 10, 10).translate(x, 0, 0);
 

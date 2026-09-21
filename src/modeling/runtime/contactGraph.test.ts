@@ -11,7 +11,7 @@
 // contact topology is exact and independent of the mate solver.
 
 import { describe, it, expect, beforeAll } from 'vitest';
-import { createApi } from '../api';
+import { createModelingApi } from '../api';
 import { CaptureSession } from '../capture/captureSession';
 import { initOcct } from '../../kernel/backends/occt/occtBackend';
 import type { OcctBackend } from '../../kernel/backends/occt/occtBackend';
@@ -21,7 +21,7 @@ import { analyzeContactGraph } from './contactGraph';
 
 async function box(sx: number, sy: number, sz: number): Promise<OcctBackend> {
   const session = new CaptureSession();
-  const kcad = createApi({ session });
+  const kcad = createModelingApi({ session });
   return (await kcad.box(sx, sy, sz, true).lower()) as OcctBackend;
 }
 

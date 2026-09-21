@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { CaptureSession } from '../capture/captureSession';
-import { createApi } from '../api';
+import { createModelingApi } from '../api';
 
 describe('lib.standard.* typed wrappers', () => {
   let prevEnv: string | undefined;
@@ -17,28 +17,28 @@ describe('lib.standard.* typed wrappers', () => {
 
   it('boltSHCS({ thread: M3, lengthMm: 12 }) resolves the bundled record', async () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const bolt = await api.lib.standard.boltSHCS({ thread: 'M3', lengthMm: 12 });
     expect(bolt).toBeDefined();
   });
 
   it('bearing608 resolves without arguments', async () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const b = await api.lib.standard.bearing608();
     expect(b).toBeDefined();
   });
 
   it('nutHex({ thread: M3 }) resolves', async () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const n = await api.lib.standard.nutHex({ thread: 'M3' });
     expect(n).toBeDefined();
   });
 
   it('nema17 resolves', async () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const m = await api.lib.standard.nema17();
     expect(m).toBeDefined();
   });

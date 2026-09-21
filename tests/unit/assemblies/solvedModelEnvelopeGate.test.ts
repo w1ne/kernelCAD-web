@@ -16,11 +16,11 @@
 
 import { describe, it, expect } from 'vitest';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 
 function makeArm() {
   const session = new CaptureSession();
-  const kcad = createApi({ session });
+  const kcad = createModelingApi({ session });
   return { arm: kcad.assembly('t'), kcad };
 }
 

@@ -4,7 +4,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { getOC } from 'replicad';
 import { initOcct, OcctBackend } from '../../../../src/kernel/backends/occt/occtBackend';
 import { CaptureSession } from '../../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../../src/modeling/api';
+import { createModelingApi } from '../../../../src/modeling/api';
 import { KernelError } from '../../../../src/shared/intent/kernelError';
 import { sectionShapes } from '../../../../src/modeling/backends/occt/surfaceIntersection';
 import type { Vec3 } from '../../../../src/shared/intent/types';
@@ -118,7 +118,7 @@ describe('surfaceIntersection OCCT math', () => {
 describe('surfaceIntersection public API', () => {
   it('returns Curve3Ds whose samples lie on both solids', async () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const cyl = kcad.cylinder(100, 10);
     const slab = kcad.box(80, 80, 0.02, true).rotateY(30).translate(0, 0, 50);
     const curves = await kcad.surfaceIntersection(cyl, slab);
@@ -132,7 +132,7 @@ describe('surfaceIntersection public API', () => {
 
   it('throws feature.surface-intersection.none when shapes miss', async () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const a = kcad.box(10, 10, 10);
     const b = kcad.box(10, 10, 10).translate(40, 0, 0);
     let caught: unknown = null;

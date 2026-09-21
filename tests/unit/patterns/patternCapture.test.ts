@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 
 describe('pattern capture contract', () => {
   it('captures a linear pattern as one feature with base input and spacing metadata', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
 
     const base = kcad.box(10, 5, 2);
     const pattern = base.patternLinear({ count: 4, direction: [1, 0, 0], spacing: 12 });
@@ -28,7 +28,7 @@ describe('pattern capture contract', () => {
 
   it('rejects invalid pattern counts before capture', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const base = kcad.box(10, 5, 2);
 
     expect(() => base.patternLinear({ count: 1, direction: [1, 0, 0], spacing: 12 }))
@@ -37,7 +37,7 @@ describe('pattern capture contract', () => {
 
   it('captures a circular pattern as one feature with axis metadata', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
 
     const base = kcad.cylinder(2, 1).translate(10, 0, 0);
     const pattern = base.patternCircular({ count: 6, axis: [0, 0, 1], angleDeg: 180 });
@@ -60,7 +60,7 @@ describe('pattern capture contract', () => {
 
   it('captures a grid pattern as one feature with x/y axes and counts', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
 
     const base = kcad.box(6, 3, 2);
     const pattern = base.patternGrid({
@@ -85,7 +85,7 @@ describe('pattern capture contract', () => {
 
   it('rejects invalid grid axis counts before capture', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const base = kcad.box(10, 5, 2);
 
     expect(() => base.patternGrid({
@@ -96,7 +96,7 @@ describe('pattern capture contract', () => {
 
   it('rejects invalid grid directions and spacing before capture', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const base = kcad.box(10, 5, 2);
 
     expect(() => base.patternGrid({

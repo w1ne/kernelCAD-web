@@ -9,13 +9,13 @@
 
 import { describe, expect, it } from 'vitest';
 import { CaptureSession } from '../capture/captureSession';
-import { createApi } from '../api';
+import { createModelingApi } from '../api';
 import type { Assembly } from '../capture/assembly';
 import { checkMechanismTruth } from './mechanismTruth';
 
-function makeArm(name = 'rig'): { arm: Assembly; kcad: ReturnType<typeof createApi>; session: CaptureSession } {
+function makeArm(name = 'rig'): { arm: Assembly; kcad: ReturnType<typeof createModelingApi>; session: CaptureSession } {
   const session = new CaptureSession();
-  const kcad = createApi({ session });
+  const kcad = createModelingApi({ session });
   return { arm: kcad.assembly(name), kcad, session };
 }
 

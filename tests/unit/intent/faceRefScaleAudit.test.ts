@@ -117,7 +117,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 
 describe('face-ref invariants under non-uniform scale (audit)', () => {
   // Task 6 (2026-05-09): Shape.scale now accepts Vec3. Capture-time
@@ -130,7 +130,7 @@ describe('face-ref invariants under non-uniform scale (audit)', () => {
 
   it('capture-time: non-uniform Vec3 scale is accepted and recorded per-axis', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const cube = kcad.box(10, 10, 10);
     expect(() => cube.scale([2, 1, 1])).not.toThrow();
     const records = session.getRecords();

@@ -34,7 +34,7 @@ import { FEA_MATERIAL_NAMES, resolveFeaMaterial } from '../../../../src/kernel/f
 import { FINISHES, isFinishToken } from '../../../../src/shared/render/finishes';
 import { isKernelError } from '../../../../src/shared/intent/kernelError';
 import { CaptureSession } from '../../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../../src/modeling/api';
+import { createModelingApi } from '../../../../src/modeling/api';
 
 describe('materialLibrary — name → { density, finish }', () => {
   it('resolves mild-steel to the catalog density (7850) and the steel finish', () => {
@@ -136,7 +136,7 @@ describe('materialLibrary — name → { density, finish }', () => {
 describe('Shape.finish(<material name>)', () => {
   const finishOf = (name: string) => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const shape = kcad.box(1, 1, 1).finish(name as never);
     return session.getRecords().find((r) => r.id === shape.id)?.metadata?.material;
   };

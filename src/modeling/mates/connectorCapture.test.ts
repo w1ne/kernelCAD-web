@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, it, expect } from 'vitest';
 import { CaptureSession } from '../capture/captureSession';
-import { createApi } from '../api';
+import { createModelingApi } from '../api';
 
 // v0.6 Task 4: arm.part(name, shape).connector(name, opts) chain method.
 //
@@ -15,7 +15,7 @@ import { createApi } from '../api';
 describe('arm.part(...).connector(...)', () => {
   it('records a connector on the part', async () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('test');
     const box = kcad.box(10, 10, 10);
     arm.part('p1', box).connector('mountFlange', {
@@ -33,7 +33,7 @@ describe('arm.part(...).connector(...)', () => {
 
   it('throws on duplicate connector name on same part', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('test');
     const box = kcad.box(10, 10, 10);
     expect(() =>

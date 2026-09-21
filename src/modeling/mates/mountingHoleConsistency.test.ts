@@ -12,11 +12,11 @@
 import { describe, it, expect } from 'vitest';
 import { validateMountingHoleConsistency } from './mountingHoleConsistency';
 import { CaptureSession } from '../capture/captureSession';
-import { createApi } from '../api';
+import { createModelingApi } from '../api';
 
 function makeArm() {
   const session = new CaptureSession();
-  const kcad = createApi({ session });
+  const kcad = createModelingApi({ session });
   return { arm: kcad.assembly('t'), kcad, session };
 }
 

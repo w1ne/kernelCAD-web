@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 import type { CompilerDiagnostic } from '../../../src/shared/diagnostics/diagnostic';
 
 function findCurveRecord(session: CaptureSession) {
@@ -19,7 +19,7 @@ function diagsOf(session: CaptureSession): CompilerDiagnostic[] {
 describe('nurbsCurve()', () => {
   it('creates a curve3d record with default cubic non-rational params', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const curve = kcad.nurbsCurve([
       [0, 0, 0],
       [10, 5, 0],
@@ -46,7 +46,7 @@ describe('nurbsCurve()', () => {
 
   it('respects custom degree and weights for a rational curve', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     kcad.nurbsCurve(
       [
         [10, 0, 0],
@@ -64,7 +64,7 @@ describe('nurbsCurve()', () => {
 
   it('emits feature.curve3d.degenerate-controls when too few points for degree', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     kcad.nurbsCurve(
       [
         [0, 0, 0],
@@ -78,7 +78,7 @@ describe('nurbsCurve()', () => {
 
   it('emits feature.curve3d.weights-length-mismatch when weights count differs', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     kcad.nurbsCurve(
       [
         [0, 0, 0],
@@ -94,7 +94,7 @@ describe('nurbsCurve()', () => {
 
   it('emits feature.curve3d.weights-non-positive when a weight is zero', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     kcad.nurbsCurve(
       [
         [0, 0, 0],
@@ -110,7 +110,7 @@ describe('nurbsCurve()', () => {
 
   it('emits feature.curve3d.knots-length-mismatch for a malformed knot vector', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     kcad.nurbsCurve(
       [
         [0, 0, 0],
@@ -126,7 +126,7 @@ describe('nurbsCurve()', () => {
 
   it('emits feature.curve3d.closed-endpoints-mismatch as warn when closed=true with unequal endpoints', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     kcad.nurbsCurve(
       [
         [0, 0, 0],
@@ -146,7 +146,7 @@ describe('nurbsCurve()', () => {
 describe('spline3d()', () => {
   it('builds a Curve3D from Catmull-Rom interpolation through the given points', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     kcad.spline3d([
       [0, 0, 0],
       [10, 5, 0],

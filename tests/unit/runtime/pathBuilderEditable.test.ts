@@ -16,7 +16,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 import type { SketchCommand } from '../../../src/modeling/capture/sketch';
 import { RecomputeEngine } from '../../../src/modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../../src/modeling/backends/occt/occtLowerer';
@@ -36,7 +36,7 @@ function getCommands(session: CaptureSession): SketchCommand[] {
 describe('PathBuilder accepts Editable<number> — per-method capture', () => {
   it('moveTo stores ParamRef on x and y', () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const r = api.param('r', 5);
     api.path().moveTo(r, 0).lineTo(10, 0).close();
     const cmds = getCommands(session);
@@ -47,7 +47,7 @@ describe('PathBuilder accepts Editable<number> — per-method capture', () => {
 
   it('lineTo stores ParamRef on x and y', () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const r = api.param('r', 5);
     api.path().moveTo(0, 0).lineTo(r, 0).close();
     const cmds = getCommands(session);
@@ -58,7 +58,7 @@ describe('PathBuilder accepts Editable<number> — per-method capture', () => {
 
   it('tangentArc stores ParamRef on x and y', () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const r = api.param('r', 5);
     api.path().moveTo(0, 0).lineTo(10, 0).tangentArc(r, 5).close();
     const cmds = getCommands(session);
@@ -69,7 +69,7 @@ describe('PathBuilder accepts Editable<number> — per-method capture', () => {
 
   it('threePointsArc stores ParamRef on midX', () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const m = api.param('m', 10);
     api.path().moveTo(0, 0).threePointsArc(20, 0, m, 5).close();
     const cmds = getCommands(session);
@@ -80,7 +80,7 @@ describe('PathBuilder accepts Editable<number> — per-method capture', () => {
 
   it('sagittaArc stores ParamRef on sagitta', () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const s = api.param('s', 5);
     api.path().moveTo(0, 0).sagittaArc(20, 0, s).close();
     const cmds = getCommands(session);
@@ -91,7 +91,7 @@ describe('PathBuilder accepts Editable<number> — per-method capture', () => {
 
   it('bulgeArc stores ParamRef on bulge (unitless)', () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const b = api.param('b', 0.5);
     api.path().moveTo(0, 0).bulgeArc(20, 0, b).close();
     const cmds = getCommands(session);
@@ -103,7 +103,7 @@ describe('PathBuilder accepts Editable<number> — per-method capture', () => {
 
   it('radiusArc stores ParamRef on radius', () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const radius = api.param('radius', 15);
     api.path().moveTo(0, 0).radiusArc(20, 0, radius).close();
     const cmds = getCommands(session);
@@ -119,7 +119,7 @@ describe('PathBuilder accepts Editable<number> — per-method capture', () => {
 describe('PathBuilder Editable — end-to-end lowering', () => {
   it('builds and lowers a parametric path with leaf + composed ParamRefs', async () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const r = api.param('r', 5);
     const shape = api.path()
       .moveTo(r, 0)
@@ -143,7 +143,7 @@ describe('PathBuilder Editable — params.update reactivity', () => {
     // Slice 2E: `params.update` requires an attached engine; `buildModel` does
     // this automatically, but this test drives the session directly.
     session.setEngine(new RecomputeEngine(createOcctLowerer(session)));
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const r = api.param('r', 5);
     // Washer profile: inner radius r, outer radius r+10, height 5.
     const shape = api.path()
@@ -176,7 +176,7 @@ describe('PathBuilder Editable — params.update reactivity', () => {
 describe('Sketch.extrude — Editable<number> depth', () => {
   it('stores a paramRef on the extrude depth and keeps a number literal as before', () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const t = api.param('t', 4);
     api.path().moveTo(0, 0).lineTo(10, 0).lineTo(10, 5).close().extrude(t);
     api.path().moveTo(0, 0).lineTo(10, 0).lineTo(10, 5).close().extrude(2);
@@ -188,7 +188,7 @@ describe('Sketch.extrude — Editable<number> depth', () => {
   it('updating the depth param changes the extruded volume', async () => {
     const session = new CaptureSession();
     session.setEngine(new RecomputeEngine(createOcctLowerer(session)));
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const t = api.param('t', 4);
     const shape = api.path().moveTo(0, 0).lineTo(10, 0).lineTo(10, 5).lineTo(0, 5).close().extrude(t);
     expect((await shape.lower()).volume()).toBeCloseTo(200, 6);

@@ -8,7 +8,7 @@
 
 import { describe, expect, it, beforeAll } from 'vitest';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 import { buildModel } from '../../../src/modeling/buildModel';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 
@@ -17,7 +17,7 @@ describe('Assembly.subAssembly', () => {
 
   function makeKcad() {
     const session = new CaptureSession();
-    return { kcad: createApi({ session }), session };
+    return { kcad: createModelingApi({ session }), session };
   }
 
   it('imports the other assembly\'s parts with the prefix', () => {

@@ -3,7 +3,7 @@
 import { describe, it, expect } from 'vitest';
 import { solveMates } from './solver';
 import { CaptureSession } from '../capture/captureSession';
-import { createApi } from '../api';
+import { createModelingApi } from '../api';
 
 // v0.6 Task 6: solveMates(arm) — tree-FK over the mate graph for all 7 mate
 // types. Closed-loop topologies return 'did-not-converge' with iterations=0
@@ -11,7 +11,7 @@ import { createApi } from '../api';
 
 function makeArm() {
   const session = new CaptureSession();
-  const kcad = createApi({ session });
+  const kcad = createModelingApi({ session });
   return { arm: kcad.assembly('t'), kcad };
 }
 
