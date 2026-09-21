@@ -23,6 +23,7 @@ Use this loop for every non-trivial model edit:
 8. **Inspect visual artifacts honestly**: when a PNG/MP4/render is produced, open/read it and report what is visible. If the image shows wrong proportions, floating parts, occlusion, unreadable details, or a bad camera crop, repair source and regenerate.
 9. **Packetize visual evidence**: when visual evidence matters, run `kernelcad render inspect <file> <outDir>` to produce a deterministic inspection bundle: a manifest naming the source file, command, generated artifacts, and caveats, plus canonical RGB views. Add `--channels rgb,mask,depth,normals` when machine-readable object masks, depth, or view-space normals are needed. Use `--focus <names>` or `--hide <names>` to isolate feature ids or assembly part names when clutter would obscure the check. Keep richer channels in the same manifest packet; do not replace the canonical RGB views.
 10. **Repair one cause at a time**: target the smallest source change that addresses the failing check, then rerun the same check. Do not loosen gates or silently skip failing evidence.
+11. **Never present an unverified model**: if the latest `evaluate` failed, fix it or report the blocker — do not export, render, or hand over a script whose last check failed.
 
 **Verify against geometry, not against your own summary.** Trust measured
 evidence — exact bbox/volume from `inspect({ of: 'shape' })`/`inspect({ of: 'step' })`, interference
@@ -31,6 +32,13 @@ script "should" have built. A green `evaluate` (`ok: true, featureCount: N`)
 proves the script ran, not that the geometry is correct. When a check cannot
 measure a thing (kernel error, unknown clearance status, an inconclusive
 render), treat that uncertainty as a failure to resolve, not a pass to assume.
+
+**Verify against the design intent, not just validity.** Diagnostics-clean is
+necessary but not sufficient: a solid block is valid geometry and still fails
+the design. Before finishing, re-read the request and confirm every must-have
+feature is actually modeled — openings, cavities, wall thickness, separate
+components, clearances, legroom, load paths, and the specified manufacturing
+method. Fix the source until those are visibly satisfied.
 
 ## Inner loop: render after every visible change
 
