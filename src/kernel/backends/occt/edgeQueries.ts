@@ -14,7 +14,7 @@
 
 import type { Edge, Face } from 'replicad';
 import { measureArea } from 'replicad';
-import { OcctBackend } from './occtBackend';
+import type { OcctBackend } from './occtBackend';
 import { KernelError } from '../../../shared/intent/kernelError';
 import type { Vec3 } from '../../../shared/intent/types';
 export type { Vec3 };
