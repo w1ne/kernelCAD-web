@@ -40,7 +40,9 @@ describe('validate_assembly MCP tool', () => {
       const errorsAndWarnings = r.diagnostics.filter((d) => d.severity !== 'info');
       expect(errorsAndWarnings).toEqual([]);
       expect(r.partCount).toBe(2);
-      expect(r.jointCount).toBe(0);
+      // Gap #12b — the MCP count must match the CLI: one v0.6 mate edge
+      // ('m1') is a joint even though no v0.5 `assemblyJoint` record exists.
+      expect(r.jointCount).toBe(1);
     }
   });
 

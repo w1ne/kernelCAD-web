@@ -47,7 +47,20 @@ export class CameraController {
     this.nudgeDurationMs = durationMs;
   }
 
+  /**
+   * Cancel an in-flight nudge tween. Call before any explicit camera fit
+   * (setRenderView / setRenderPose): a nudge interpolates the camera on every
+   * `advance()` and would otherwise override the fresh fit on the next frame.
+   */
+  cancelNudge(): void {
+    this.nudgeFromPos = null;
+    this.nudgeToPos = null;
+    this.nudgeDurationMs = 0;
+    this.nudgeStartMs = 0;
+  }
+
   startRotate(durationMs: number, currentMs: number): void {
+    this.cancelNudge();
     this.rotateStartMs = currentMs;
     this.rotateDurationMs = durationMs;
     // Z-up convention: camera orbits in the XY plane at fixed Z height.

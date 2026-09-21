@@ -46,6 +46,7 @@ import * as replicad from 'replicad';
 import { getOC } from 'replicad';
 import nurbsJs from 'verb-nurbs';
 import type { SketchCommand } from '../../../shared/capture/sketchCommand';
+import { rotateSketchCommands } from '../../../shared/capture/rotateSketchCommands';
 import { solveHermiteG2 } from '../../geometry/hermiteG2';
 import type { Vec3 } from '../../../shared/intent/types';
 import { clampedUniformKnots, decomposeKnots } from './nurbsKnots';
@@ -490,11 +491,29 @@ function closeLoop(state: PenRunState, plane: PlaneName, startX: number, startY:
  * consumer's `extrude(depth)` produces an axis-aligned solid; `revolve(axis)`
  * still takes an explicit axis argument as before.
  */
+/** Validate `opts.rotationDeg` and return the (possibly rotated) command
+ *  list. `undefined` / 0 keeps the historical no-rotation path. */
+function prepareRotatedCommands(
+  commands: SketchCommand[],
+  opts?: { rotationDeg?: number; rotationCenter?: [number, number] },
+): SketchCommand[] {
+  if (opts?.rotationDeg !== undefined && !Number.isFinite(opts.rotationDeg)) {
+    throw new Error(
+      `buildNurbsSketchOnPlane: opts.rotationDeg must be a finite number (got ${opts.rotationDeg}).`,
+    );
+  }
+  return opts?.rotationDeg !== undefined && opts.rotationDeg !== 0
+    ? rotateSketchCommands(commands, opts.rotationDeg, opts.rotationCenter)
+    : commands;
+}
+
 export function buildNurbsSketchOnPlane(
   commands: SketchCommand[],
   plane: PlaneName,
+  opts?: { origin?: Vec3; rotationDeg?: number; rotationCenter?: [number, number] },
 ): replicad.Sketch {
-  const { closeIdx, startX, startY } = resolveSketchStart(commands);
+  const cmds = prepareRotatedCommands(commands, opts);
+  const { closeIdx, startX, startY } = resolveSketchStart(cmds);
   const state: PenRunState = {
     currentX: startX,
     currentY: startY,
@@ -503,7 +522,7 @@ export function buildNurbsSketchOnPlane(
   };
 
   for (let i = 1; i < closeIdx; i++) {
-    processCommand(state, commands[i], plane);
+    processCommand(state, cmds[i], plane);
   }
 
   closeLoop(state, plane, startX, startY);
@@ -525,13 +544,16 @@ export function buildNurbsSketchOnPlane(
     );
   }
 
-  // Wrap as a `replicad.Sketch` on the target plane. Set `defaultDirection`
-  // to the plane normal so `Sketch.extrude(depth)` produces an axis-aligned
-  // solid; `revolve(axis)` already passes its axis explicitly so the default
+  // Wrap as a `replicad.Sketch` on the target plane. `opts.origin` places
+  // the wire at the plane's world position (the edge builders above lift
+  // relative to the plane origin). Set `defaultDirection` to the plane
+  // normal so `Sketch.extrude(depth)` produces an axis-aligned solid;
+  // `revolve(axis)` already passes its axis explicitly so the default
   // direction is informational there.
   const planeNormal: Vec3 = plane === 'XY' ? [0, 0, 1] : plane === 'XZ' ? [0, 1, 0] : [1, 0, 0];
-  return new replicad.Sketch(wire, {
-    defaultOrigin: [0, 0, 0],
+  const placed = opts?.origin ? wire.translate(opts.origin as never) : wire;
+  return new replicad.Sketch(placed, {
+    defaultOrigin: opts?.origin ?? [0, 0, 0],
     defaultDirection: planeNormal,
   });
 }

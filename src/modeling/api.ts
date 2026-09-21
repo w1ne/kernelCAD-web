@@ -115,6 +115,16 @@ export interface FaceLabelOpts {
   faceLabels?: FaceLabelsMap;
 }
 
+/** opts for the primitive `extrudeRect` / `extrudeCircle` / `extrudePolygon` /
+ *  `extrudeRoundedRect` builders: face labels plus an optional total twist. */
+export interface ExtrudeOpts extends FaceLabelOpts {
+  /** Total twist in degrees applied from bottom to top (number or ParamRef).
+   *  The profile rotates about the profile origin as it sweeps, so a profile
+   *  that does not touch the origin changes its bounding box. Defaults to 0
+   *  (straight extrude). Unknown option keys throw `feature.invalid-args`. */
+  twistAngle?: Editable<number>;
+}
+
 /** W2.2: opts for `sheetMetal(profile, opts)`. The kernel does not bake
  *  material tables; the agent picks `kFactor` per material/thickness. */
 export interface SheetMetalOpts {
@@ -165,10 +175,10 @@ export interface KernelCadApi {
    * along lamp arms.
    */
   spring(opts: SpringOptions): Shape;
-  extrudeRect(w: Editable<number>, h: Editable<number>, height: Editable<number>, opts?: FaceLabelOpts): Shape;
-  extrudeCircle(r: Editable<number>, height: Editable<number>, opts?: FaceLabelOpts): Shape;
-  extrudePolygon(points: Array<[Editable<number>, Editable<number>]>, depth: Editable<number>, opts?: FaceLabelOpts): Shape;
-  extrudeRoundedRect(width: Editable<number>, height: Editable<number>, radius: Editable<number>, depth: Editable<number>, opts?: FaceLabelOpts): Shape;
+  extrudeRect(w: Editable<number>, h: Editable<number>, height: Editable<number>, opts?: ExtrudeOpts): Shape;
+  extrudeCircle(r: Editable<number>, height: Editable<number>, opts?: ExtrudeOpts): Shape;
+  extrudePolygon(points: Array<[Editable<number>, Editable<number>]>, depth: Editable<number>, opts?: ExtrudeOpts): Shape;
+  extrudeRoundedRect(width: Editable<number>, height: Editable<number>, radius: Editable<number>, depth: Editable<number>, opts?: ExtrudeOpts): Shape;
   union(...shapes: Shape[]): Shape;
   assembly(name?: string): Assembly;
 
@@ -311,7 +321,11 @@ export interface KernelCadApi {
    * `min(3, points.length - 1)`).
    *
    * Sections must be strictly increasing in `t`; the first section MUST sit
-   * at `t = 0` and the last at `t = 1`. Continuity defaults to `'C1'`.
+   * at `t = 0` and the last at `t = 1`. Intermediate sections in `(0, 1)`
+   * are supported: the lowerer subdivides the spine at each station so the
+   * profile anchors to a real spine vertex. `t` is the spine's normalized
+   * curve parameter (the same mapping as `Curve3D.pointAt`), not normalized
+   * arc length. Continuity defaults to `'C1'`.
    */
   variableSweep(
     spine: Curve3D | Sketch | Vec3[],

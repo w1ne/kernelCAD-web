@@ -84,6 +84,54 @@ describe('variableSweep end-to-end (engine + lowerer)', () => {
     expect(model.health.get(sweepRec!.id)).toBe('healthy');
   });
 
+  it('lowers a 3-station sweep with an intermediate NURBS spine station', async () => {
+    // Intermediate stations force the spine-subdivision pass in the lowerer
+    // (the spine gets a wire vertex at t=0.5 before Add_2). This is the
+    // production dispatch path: sketch profiles lifted at z=0 with
+    // `withContact` + `withCorrection` translated/rotated onto the station.
+    const model = await buildModel({
+      fileName: 'variableSweep-3station.kcad.ts',
+      code: `
+        const spine = nurbsCurve([
+          [0, 0, 0],
+          [0, 0, 10],
+          [0, 0, 20],
+          [0, 0, 30],
+        ], { degree: 3 });
+        const small = path().circle(0, 0, 2);
+        const big = path().circle(0, 0, 5);
+        const tiny = path().circle(0, 0, 1);
+        return variableSweep(spine, [
+          { t: 0, profile: small },
+          { t: 0.5, profile: big },
+          { t: 1, profile: tiny },
+        ]);
+      `,
+    });
+
+    const errs = model.diagnostics.filter((d) => d.severity === 'error');
+    expect(errs).toEqual([]);
+    expect(model.tailShape).toBeDefined();
+
+    const shape = model.tailShape!;
+    const v = shape.volume();
+    expect(Number.isFinite(v)).toBe(true);
+    // The middle r=5 profile must participate: a 2-section r=2→r=1 sweep
+    // tops out at π·2²·30 ≈ 377 mm³, while the 3-station blend (with OCCT's
+    // contact placement of each sketch-lifted profile) lands near the
+    // pre-positioned volume (~1495 mm³). 1000 mm³ separates the two cleanly.
+    expect(v).toBeGreaterThan(1000);
+
+    const bbox = shape.boundingBox({ exact: true });
+    const zSpan = bbox.max[2] - bbox.min[2];
+    expect(zSpan).toBeGreaterThan(29);
+    expect(zSpan).toBeLessThan(31);
+
+    const sweepRec = model.records.find((r) => r.kind === 'variableSweep');
+    expect(sweepRec).toBeDefined();
+    expect(model.health.get(sweepRec!.id)).toBe('healthy');
+  });
+
   it('lowers a tapered sweep with a Sketch spine (triangle path, first edge is the rail)', async () => {
     // The capture API only emits closed sketches (`.close()` is mandatory).
     // The dispatch arm picks the lifted outer wire's first edge as the

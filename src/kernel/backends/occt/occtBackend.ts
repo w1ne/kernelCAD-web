@@ -21,6 +21,15 @@ import { resolveColor } from '../../../shared/render/palette';
 import { type PBRMaterial } from '../../../shared/intent/material';
 import { sceneToWorldFrameParts } from './sceneToWorldFrame';
 import { computeMassProperties, type MassProperties, type GyrationAxis } from '../../properties/massProperties';
+import { KernelError } from '../../../shared/intent/kernelError';
+import {
+  resolveExtrudeTwistAngle,
+  extrudeLiftedShape,
+  extrudeRectShape,
+  extrudeCircleShape,
+  extrudePolygonShape,
+  extrudeRoundedRectShape,
+} from './backendExtrudeProfiles';
 
 export { initOcct, type InitOcctOptions } from './backendInit';
 export { resetOcct, registerOcctResetHook, withOcctPoisonRecovery } from './backendInit';
@@ -165,24 +174,37 @@ export class OcctBackend implements ShapeBackend {
    * Extrude a centered axis-aligned rectangular profile (width × height) on
    * the XY plane up to `height` along Z. The resulting solid is centered
    * about the origin in X/Y and spans `Z = 0..height`.
+   *
+   * @param opts.twistAngle total twist in degrees applied from bottom to top,
+   *   rotating the profile about the profile origin (the sketch Z axis) as it
+   *   sweeps. 0 / omitted takes the exact legacy straight-extrude path.
    */
-  static extrudeRect(w: number, h: number, height: number): OcctBackend {
-    if (!isOcctInitialized()) throw new Error('OCCT not initialized — call initOcct() first');
-    const sketch = replicad.drawRectangle(w, h).sketchOnPlane('XY');
-    // `sketchOnPlane` may return Sketches for multi-face drawings; rect is single.
-    const single = sketch as unknown as { extrude: (d: number) => ReplicadShape3D };
-    return new OcctBackend(single.extrude(height));
+  static extrudeRect(
+    w: number,
+    h: number,
+    height: number,
+    opts: { twistAngle?: number } = {},
+  ): OcctBackend {
+    return new OcctBackend(extrudeRectShape(w, h, height, opts));
   }
 
   /**
    * Extrude a circle of radius `r` (centered at origin on the XY plane) up to
    * `height` along Z.
+   *
+   * @param opts.twistAngle total twist in degrees applied from bottom to top,
+   *   rotating the profile about the profile origin (the sketch Z axis) as it
+   *   sweeps. A circle centered on the twist axis is rotationally symmetric,
+   *   so the twist has little geometric effect (volume is preserved), though
+   *   the sweep may still reshape the lateral surface slightly. 0 / omitted
+   *   takes the exact legacy straight-extrude path.
    */
-  static extrudeCircle(r: number, height: number): OcctBackend {
-    if (!isOcctInitialized()) throw new Error('OCCT not initialized — call initOcct() first');
-    const sketch = replicad.drawCircle(r).sketchOnPlane('XY');
-    const single = sketch as unknown as { extrude: (d: number) => ReplicadShape3D };
-    return new OcctBackend(single.extrude(height));
+  static extrudeCircle(
+    r: number,
+    height: number,
+    opts: { twistAngle?: number } = {},
+  ): OcctBackend {
+    return new OcctBackend(extrudeCircleShape(r, height, opts));
   }
 
   /**
@@ -192,32 +214,19 @@ export class OcctBackend implements ShapeBackend {
    * — CW input is silently reversed to CCW before extrusion. The polygon must
    * have at least 3 distinct points; depth must be positive.
    *
+   * @param opts.twistAngle total twist in degrees applied from bottom to top,
+   *   rotating the profile about the profile origin (the sketch Z axis) as it
+   *   sweeps. 0 / omitted takes the exact legacy straight-extrude path.
+   *
    * @throws {Error} If fewer than 3 points or non-positive depth.
    * @throws {Error} If OCCT fails to construct or extrude (e.g. self-intersection).
    */
-  static extrudePolygon(points: [number, number][], depth: number): OcctBackend {
-    if (!isOcctInitialized()) throw new Error('OCCT not initialized — call initOcct() first');
-    if (points.length < 3) {
-      throw new Error(`OcctBackend.extrudePolygon: need at least 3 points (got ${points.length})`);
-    }
-    if (depth <= 0) {
-      throw new Error(`OcctBackend.extrudePolygon: depth must be positive (got ${depth})`);
-    }
-
-    const ccw = ensureCCW(points);
-
-    // Build a 2D drawing using replicad's DrawingPen API:
-    // draw(start).lineTo(p1)...lineTo(pn-1).close() returns a Drawing;
-    // sketchOnPlane('XY') promotes it to a Sketch; extrude lifts it to a
-    // 3D solid.
-    let pen = replicad.draw(ccw[0]);
-    for (let i = 1; i < ccw.length; i++) {
-      pen = pen.lineTo(ccw[i]) as typeof pen;
-    }
-    const drawing = pen.close();
-    const sketch = drawing.sketchOnPlane('XY');
-    const single = sketch as unknown as { extrude: (d: number) => ReplicadShape3D };
-    return new OcctBackend(single.extrude(depth));
+  static extrudePolygon(
+    points: [number, number][],
+    depth: number,
+    opts: { twistAngle?: number } = {},
+  ): OcctBackend {
+    return new OcctBackend(extrudePolygonShape(points, depth, opts));
   }
 
   /**
@@ -226,21 +235,20 @@ export class OcctBackend implements ShapeBackend {
    * `radius` is auto-clamped to `min(width/2, height/2)` so over-sized radii
    * don't trigger an OCCT error. Zero radius is treated as a sharp rectangle.
    *
+   * @param opts.twistAngle total twist in degrees applied from bottom to top,
+   *   rotating the profile about the profile origin (the sketch Z axis) as it
+   *   sweeps. 0 / omitted takes the exact legacy straight-extrude path.
+   *
    * @throws {Error} If `depth <= 0`.
    */
-  static extrudeRoundedRect(width: number, height: number, radius: number, depth: number): OcctBackend {
-    if (depth <= 0) {
-      throw new Error(`OcctBackend.extrudeRoundedRect: depth must be positive (got ${depth})`);
-    }
-    // Replicad's drawRoundedRectangle requires r < min(width/2, height/2) when
-    // building symmetric arcs — at the exact maximum the hLine segment becomes
-    // zero-length and the tangentArc call fails. Cap at 99.99 % of the limit.
-    const maxR = Math.min(width / 2, height / 2);
-    const clamped = Math.min(Math.max(0, radius), maxR * 0.9999);
-    const drawing = replicad.drawRoundedRectangle(width, height, clamped);
-    const sketch = drawing.sketchOnPlane('XY');
-    const single = sketch as unknown as { extrude: (d: number) => ReplicadShape3D };
-    return new OcctBackend(single.extrude(depth));
+  static extrudeRoundedRect(
+    width: number,
+    height: number,
+    radius: number,
+    depth: number,
+    opts: { twistAngle?: number } = {},
+  ): OcctBackend {
+    return new OcctBackend(extrudeRoundedRectShape(width, height, radius, depth, opts));
   }
 
   /**
@@ -319,13 +327,27 @@ export class OcctBackend implements ShapeBackend {
   /**
    * Extrude a sketch-tagged OcctBackend into a 3D solid.
    *
-   * The input must have `kind === 'sketch'` and a non-null `_drawing`. The
-   * returned OcctBackend is a normal 3D solid with no `kind` tag.
+   * The input must have `kind === 'sketch'` and a non-null `_drawing`, a
+   * NURBS command list, or a face-bound sketch. The returned OcctBackend is a
+   * normal 3D solid with no `kind` tag.
+   *
+   * @param opts.twistAngle total twist in degrees applied from bottom to top,
+   *   rotating the profile about the sketch origin as it sweeps. 0 / omitted
+   *   takes the exact legacy straight-extrude path. Not supported for
+   *   face-bound sketches (throws `feature.invalid-args`).
    *
    * @throws {Error} If `sketch` is not a sketch-tagged backend.
    * @throws {Error} If `depth <= 0`.
+   * @throws {KernelError} If `opts.twistAngle` is not finite
+   *   (`feature.invalid-args`).
+   * @throws {KernelError} If `opts.twistAngle` is non-zero for a face-bound
+   *   sketch (`feature.invalid-args`).
    */
-  static extrudeFromSketch(sketch: OcctBackend, depth: number): OcctBackend {
+  static extrudeFromSketch(
+    sketch: OcctBackend,
+    depth: number,
+    opts: { twistAngle?: number } = {},
+  ): OcctBackend {
     if (
       sketch.kind !== 'sketch'
       || (!sketch._drawing && !sketch._hasNurbs && !sketch._faceBoundSketch)
@@ -335,7 +357,16 @@ export class OcctBackend implements ShapeBackend {
     if (depth <= 0) {
       throw new Error(`OcctBackend.extrudeFromSketch: depth must be positive (got ${depth})`);
     }
+    const angle = resolveExtrudeTwistAngle(opts.twistAngle, 'extrudeFromSketch');
     if (sketch._faceBoundSketch) {
+      if (angle !== 0) {
+        throw new KernelError(
+          'feature.invalid-args',
+          'extrudeFromSketch: twistAngle is not supported for face-bound sketches.',
+          undefined,
+          'Remove twistAngle from this extrude, or author the profile as a path()...close() sketch instead of a face-bound sketch.',
+        );
+      }
       // W3: extrude the already face-bound sketch directly. replicad
       // extrudes along the face normal for face-bound sketches.
       const fb = sketch._faceBoundSketch as unknown as { extrude: (d: number) => ReplicadShape3D };
@@ -345,11 +376,10 @@ export class OcctBackend implements ShapeBackend {
       // NURBS path — build a fresh `replicad.Sketch` on XY from the captured
       // SketchCommand[], composing pen-run edges with direct-OCCT NURBS edges.
       const built = buildNurbsSketchOnPlane(sketch._commands, 'XY');
-      return new OcctBackend(built.extrude(depth) as ReplicadShape3D);
+      return new OcctBackend(extrudeLiftedShape(built, depth, angle));
     }
     const lifted = sketch._drawing!.sketchOnPlane('XY');
-    const single = lifted as unknown as { extrude: (d: number) => ReplicadShape3D };
-    return new OcctBackend(single.extrude(depth));
+    return new OcctBackend(extrudeLiftedShape(lifted, depth, angle));
   }
 
   /**
@@ -584,10 +614,14 @@ export class OcctBackend implements ShapeBackend {
    *
    * @param sketches in order: first section through last section. Length ≥ 2.
    * @param planes per-section plane specifications. Length must equal sketches.length.
+   *   `rotationDeg` rotates the section in-plane (CCW) about `opts.twistCenter`
+   *   before it is lifted onto `plane`.
    * @param opts.ruled if true, transitions between sections are STRAIGHT
    *   (ruled surface) rather than smoothly interpolated. Use for polyhedral lofts.
    * @param opts.startPoint optional explicit start point before first section.
    * @param opts.endPoint optional explicit end point after last section.
+   * @param opts.twistCenter section-space `[x, y]` rotation center for the
+   *   per-section `rotationDeg` values. Defaults to `[0, 0]`.
    *
    * @throws {Error} If fewer than 2 sketches.
    * @throws {Error} If planes.length !== sketches.length.
@@ -596,11 +630,12 @@ export class OcctBackend implements ShapeBackend {
    */
   static loftFromSketches(
     sketches: OcctBackend[],
-    planes: Array<{ plane: 'XY' | 'YZ' | 'XZ'; origin: [number, number, number] }>,
+    planes: Array<{ plane: 'XY' | 'YZ' | 'XZ'; origin: [number, number, number]; rotationDeg?: number }>,
     opts: {
       ruled?: boolean;
       startPoint?: [number, number, number];
       endPoint?: [number, number, number];
+      twistCenter?: [number, number];
     } = {},
   ): OcctBackend {
     if (sketches.length < 2) {
@@ -609,26 +644,15 @@ export class OcctBackend implements ShapeBackend {
     if (planes.length !== sketches.length) {
       throw new Error(`OcctBackend.loftFromSketches: planes count ${planes.length} must equal sketches count ${sketches.length}.`);
     }
-    // Lift each sketch onto its target plane.
-    const lifted: unknown[] = [];
-    for (let i = 0; i < sketches.length; i++) {
-      const s = sketches[i];
-      if (s.kind !== 'sketch' || (!s._drawing && !s._hasNurbs)) {
-        throw new Error(`OcctBackend.loftFromSketches: input ${i} is not a sketch.`);
-      }
-      const p = planes[i];
-      if (s._hasNurbs && s._commands) {
-        // NURBS path — build the sketch directly on the target plane. The
-        // `origin` offset isn't applied (loft for NURBS-bearing sketches
-        // currently assumes the path coordinates are already in their final
-        // position). If a non-zero origin is needed, the path can encode it
-        // explicitly via the SketchCommand coordinates.
-        lifted.push(buildNurbsSketchOnPlane(s._commands, p.plane));
-      } else {
-        const drawing = s._drawing!;
-        lifted.push(drawing.sketchOnPlane(p.plane, p.origin as unknown as Parameters<typeof drawing.sketchOnPlane>[1]));
-      }
+    // Lift each sketch onto its target plane, applying the per-section
+    // in-plane rotation (about `twistCenter`) where present.
+    const [cx, cy] = opts.twistCenter ?? [0, 0];
+    if (!Number.isFinite(cx) || !Number.isFinite(cy)) {
+      throw new Error(
+        `OcctBackend.loftFromSketches: opts.twistCenter must be a pair of finite numbers (got [${cx}, ${cy}]).`,
+      );
     }
+    const lifted = sketches.map((s, i) => OcctBackend.liftLoftSection(s, planes[i], cx, cy, i));
     // Replicad's Sketch.loftWith expects the receiver as the first section
     // and an array (or one) of "other" sections.
     const [first, ...rest] = lifted;
@@ -639,6 +663,38 @@ export class OcctBackend implements ShapeBackend {
     const lofted = (first as { loftWith: (others: unknown[], cfg: typeof loftConfig) => ReplicadShape3D })
       .loftWith(rest, loftConfig);
     return new OcctBackend(lofted);
+  }
+
+  /** Lift one loft section onto its target plane, applying the per-section
+   *  in-plane rotation (about the `twistCenter` passed as `cx`/`cy`). Returns
+   *  a `replicad.Sketch` for the `loftWith` chain. */
+  private static liftLoftSection(
+    s: OcctBackend,
+    p: { plane: 'XY' | 'YZ' | 'XZ'; origin: [number, number, number]; rotationDeg?: number },
+    cx: number,
+    cy: number,
+    i: number,
+  ): unknown {
+    if (s.kind !== 'sketch' || (!s._drawing && !s._hasNurbs)) {
+      throw new Error(`OcctBackend.loftFromSketches: input ${i} is not a sketch.`);
+    }
+    const rotationDeg = p.rotationDeg ?? 0;
+    if (!Number.isFinite(rotationDeg)) {
+      throw new Error(
+        `OcctBackend.loftFromSketches: planes[${i}].rotationDeg must be finite (got ${rotationDeg}).`,
+      );
+    }
+    if (s._hasNurbs && s._commands) {
+      return buildNurbsSketchOnPlane(s._commands, p.plane, {
+        origin: p.origin,
+        rotationDeg,
+        rotationCenter: [cx, cy],
+      });
+    }
+    const drawing = rotationDeg === 0 && cx === 0 && cy === 0
+      ? s._drawing!
+      : s._drawing!.rotate(rotationDeg, [cx, cy]);
+    return drawing.sketchOnPlane(p.plane, p.origin as never);
   }
 
   /**
@@ -1407,20 +1463,4 @@ export function pbrFromMetadata(metadata: Record<string, unknown> | undefined): 
     return { baseColor: metadata.color };
   }
   return undefined;
-}
-
-/**
- * Ensure polygon points are in counter-clockwise winding order.
- * Uses the shoelace formula: positive signed area => CCW, negative => CW.
- * CW input is silently reversed.
- */
-function ensureCCW(points: [number, number][]): [number, number][] {
-  // Shoelace area: positive => CCW, negative => CW
-  let area2 = 0;
-  for (let i = 0; i < points.length; i++) {
-    const [x1, y1] = points[i];
-    const [x2, y2] = points[(i + 1) % points.length];
-    area2 += x1 * y2 - x2 * y1;
-  }
-  return area2 < 0 ? (points.slice().reverse() as [number, number][]) : points;
 }

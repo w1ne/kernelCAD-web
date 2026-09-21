@@ -5,10 +5,12 @@ import type { Shape } from './capture/proxy';
 import { makePath } from './capture/sketch';
 import { validateFaceLabels } from './capture/faceLabels';
 import { helix } from './helix';
-import { formatScalarForError } from '../shared/intent/types';
+import { formatScalarForError, isValidEditableNumber, type Param } from '../shared/intent/types';
+import type { FaceLabelsMap } from '../shared/intent/featureRecord';
 import { KernelError } from '../shared/intent/kernelError';
+import { toParam } from '../shared/runtime/editableHelpers';
 import { mm, ul, assertEditableNumber, assertPositiveFinite } from './apiSupport';
-import type { KernelCadApi, SpringOptions } from './api';
+import type { KernelCadApi, SpringOptions, ExtrudeOpts } from './api';
 
 export function makePrimitiveMethods(
   session: CaptureSession,
@@ -216,44 +218,85 @@ export function makeSpringMethod(
   };
 }
 
+/** Option keys the primitive extrude builders accept. Anything else is a
+ *  likely typo and is rejected with `feature.invalid-args` instead of being
+ *  silently dropped, matching `Sketch.extrude`. */
+const ALLOWED_PRIMITIVE_EXTRUDE_KEYS = new Set(['faceLabels', 'twistAngle']);
+
+/** Validate the shared options of `extrudeRect` / `extrudeCircle` /
+ *  `extrudePolygon` / `extrudeRoundedRect` and box `twistAngle` as a `'deg'`
+ *  Param (default 0). Mirrors `Sketch.extrude`'s guards. */
+function resolvePrimitiveExtrudeOpts(
+  method: string,
+  opts: ExtrudeOpts | null | undefined,
+): { faceLabels: FaceLabelsMap | undefined; twistAngle: Param } {
+  // Tolerate an explicit `null` opts the same way `Sketch.extrude` does.
+  opts ??= {};
+  for (const key of Object.keys(opts)) {
+    if (!ALLOWED_PRIMITIVE_EXTRUDE_KEYS.has(key)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `${method}: unknown option '${key}'.`,
+        undefined,
+        `${method} accepts ${[...ALLOWED_PRIMITIVE_EXTRUDE_KEYS].join(', ')}.`,
+      );
+    }
+  }
+  if (opts.twistAngle !== undefined && !isValidEditableNumber(opts.twistAngle)) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `${method}: opts.twistAngle must be a number or ParamRef; got ${JSON.stringify(opts.twistAngle)}.`,
+      undefined,
+      'Pass opts.twistAngle as a total twist in degrees — a number or a param() reference.',
+    );
+  }
+  return {
+    faceLabels: validateFaceLabels(opts.faceLabels, 'extrude'),
+    twistAngle: toParam(opts.twistAngle ?? 0, 'deg'),
+  };
+}
+
 export function makeExtrudeMethods(
   session: CaptureSession,
 ): Pick<KernelCadApi, 'extrudeRect' | 'extrudeCircle' | 'extrudePolygon' | 'extrudeRoundedRect' | 'union'> {
   return {
     extrudeRect(w, h, height, opts) {
-      const faceLabels = validateFaceLabels(opts?.faceLabels, 'extrude');
+      const { faceLabels, twistAngle } = resolvePrimitiveExtrudeOpts('extrudeRect', opts);
       return session.createShape({
         kind: 'extrude',
         params: {
           profileKind: { expression: "'rect'", unit: 'unitless', evaluated: 0 },
           w: mm(w), h: mm(h),
           height: mm(height),
+          twistAngle,
         },
         inputs: {},
         metadata: faceLabels ? { faceLabels } : undefined,
       });
     },
     extrudeCircle(r, height, opts) {
-      const faceLabels = validateFaceLabels(opts?.faceLabels, 'extrude');
+      const { faceLabels, twistAngle } = resolvePrimitiveExtrudeOpts('extrudeCircle', opts);
       return session.createShape({
         kind: 'extrude',
         params: {
           profileKind: { expression: "'circle'", unit: 'unitless', evaluated: 0 },
           r: mm(r),
           height: mm(height),
+          twistAngle,
         },
         inputs: {},
         metadata: faceLabels ? { faceLabels } : undefined,
       });
     },
     extrudePolygon(points, depth, opts) {
-      const faceLabels = validateFaceLabels(opts?.faceLabels, 'extrude');
+      const { faceLabels, twistAngle } = resolvePrimitiveExtrudeOpts('extrudePolygon', opts);
       return session.createShape({
         kind: 'extrude',
         inputs: {},
         params: {
           profileKind: { expression: "'polygon'", unit: 'unitless', evaluated: 0 },
           depth: mm(depth),
+          twistAngle,
         },
         // Plain numbers stay plain; a ParamRef coordinate is boxed as a Param
         // so the dispatcher's pre-resolve substitutes it at lower time.
@@ -264,13 +307,14 @@ export function makeExtrudeMethods(
       });
     },
     extrudeRoundedRect(width, height, radius, depth, opts) {
-      const faceLabels = validateFaceLabels(opts?.faceLabels, 'extrude');
+      const { faceLabels, twistAngle } = resolvePrimitiveExtrudeOpts('extrudeRoundedRect', opts);
       return session.createShape({
         kind: 'extrude',
         inputs: {},
         params: {
           profileKind: { expression: "'rounded-rect'", unit: 'unitless', evaluated: 0 },
           width: mm(width), height: mm(height), radius: mm(radius), depth: mm(depth),
+          twistAngle,
         },
         metadata: faceLabels ? { faceLabels } : undefined,
       });

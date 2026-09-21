@@ -334,6 +334,34 @@ describe('mechanism truth — pose-sweep grounded loop (P0)', () => {
     expect(interps[0].message).toMatch(/overlap/);
   }, 90000);
 
+  it('5b. an overlapping pair declared in solvedModel({ ignore }) is not interpenetration (symmetric ignore honored)', async () => {
+    // Same geometry as test 5, but the model declares the overlap as an
+    // intended contact via `solvedModel({ ignore })` — the documented
+    // escape hatch. The mechanism-truth criterion must honor it, exactly
+    // like the validator diagnostic stream does.
+    const { arm, kcad } = makeArm('overlap-ignored');
+    const boxA = kcad.box(20, 20, 20, true);
+    const boxB = kcad.box(20, 20, 20, true).translate(15, 0, 0);
+    const partA = arm.part('a', boxA);
+    partA.connector('frame', {
+      type: 'frame',
+      origin: { kind: 'vec3', value: [0, 0, 0] },
+    });
+    const partB = arm.part('b', boxB);
+    partB.connector('frame', {
+      type: 'frame',
+      origin: { kind: 'vec3', value: [15, 0, 0] },
+    });
+    arm.mate('weld', 'a.frame', 'b.frame', 'fastened');
+    // Record the ignore list on the assembly. Reversed spelling on purpose:
+    // pairKey must silence (a,b) and (b,a) alike.
+    await arm.solvedModel({}, { ignore: [['b', 'a']] });
+
+    const result = await checkMechanismTruth(arm);
+    const interps = result.failures.filter((f) => f.code === 'mechanism.interpenetration');
+    expect(interps).toEqual([]);
+  }, 90000);
+
   it('6. spring with connector ON rotation axis but body offset elsewhere (P2 Luxo pattern) → broken with mechanism.disconnect at a bbox corner', async () => {
     // P0.1 regression test: a part can be fastened with a vec3 connector
     // that coincidentally sits ON the rotation axis where the single-

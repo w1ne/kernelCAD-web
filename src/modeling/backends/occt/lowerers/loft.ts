@@ -14,12 +14,13 @@ import { built, noShape, type LowerContext, type LowerOutcome } from './context'
  *  ParamRef (already pre-resolved by the dispatcher). */
 type Coord = number | { evaluated: number };
 
-type LoftPlane = { plane: 'XY' | 'YZ' | 'XZ'; origin: [number, number, number] };
+type LoftPlane = { plane: 'XY' | 'YZ' | 'XZ'; origin: [number, number, number]; rotationDeg?: number };
 
 interface LoftMeta {
   planes?: LoftPlane[];
   startPoint?: [number, number, number] | undefined;
   endPoint?: [number, number, number] | undefined;
+  twistCenter?: [number, number];
   rails?: string[];
 }
 
@@ -79,14 +80,52 @@ async function loftSketchSections(
   const planes = resolveLoftPlanes(ctx, r, sketches, sectionCount, meta);
   if (planes === undefined) return undefined;
   const ruled = (r.params.ruled?.evaluated ?? 0) > 0.5;
+  const twistDeg = r.params.twistDeg?.evaluated ?? 0;
+  const withTwist = applySectionTwist(planes, twistDeg);
   const railIds = readLoftRailIds(meta);
   if (!enforceLoftRailLimit(ctx, r, railIds)) return undefined;
   if (railIds.length > 0) {
-    const railEdges = resolveLoftRails(ctx, r, railIds);
-    if (railEdges === undefined) return undefined;
-    return buildRailLoft(ctx, r, sketches, planes, railEdges);
+    return buildRailGuidedLoft(ctx, r, sketches, planes, railIds, twistDeg, withTwist);
   }
-  return buildLoftFromSketches(ctx, r, sketches, planes, ruled, meta);
+  if (isCollapsedPlaneStack(withTwist, meta)) {
+    const e = emptyResultDiagnostic({
+      featureId: r.id, opLabel: 'loft',
+      volumeAfter: 0, isEmpty: true,
+    });
+    if (e) ctx.diagnostics.push(e);
+    return undefined;
+  }
+  return buildLoftFromSketches(ctx, r, sketches, withTwist, ruled, meta);
+}
+
+/** Rail-guided path. Rails follow their own curves, so there is no place to
+ *  apply a section rotation — reject the combination loudly rather than
+ *  silently producing an untwisted solid. */
+async function buildRailGuidedLoft(
+  ctx: LowerContext,
+  r: FeatureRecord,
+  sketches: OcctBackend[],
+  planes: LoftPlane[],
+  railIds: string[],
+  twistDeg: number,
+  withTwist: LoftPlane[],
+): Promise<ShapeBackend | undefined> {
+  const hasSectionRotation =
+    twistDeg !== 0 || withTwist.some((p) => (p.rotationDeg ?? 0) !== 0);
+  if (hasSectionRotation) {
+    ctx.diagnostics.push({
+      target: 'export-occt',
+      code: 'feature.invalid-args',
+      featureId: r.id,
+      severity: 'error',
+      message: `loft: rail-guided lofts do not support section rotation (twistDeg/rotationDeg); remove rails or rotation.`,
+      hint: 'Rail-guided lofts follow the rails — remove opts.rails to use twistDeg/rotationDeg, or drop the rotation.',
+    });
+    return undefined;
+  }
+  const railEdges = resolveLoftRails(ctx, r, railIds);
+  if (railEdges === undefined) return undefined;
+  return buildRailLoft(ctx, r, sketches, planes, railEdges);
 }
 
 function readLoftRailIds(meta: LoftMeta | undefined): string[] {
@@ -126,6 +165,7 @@ function buildLoftFromSketches(
       ruled,
       startPoint: meta?.startPoint,
       endPoint: meta?.endPoint,
+      twistCenter: meta?.twistCenter ?? [0, 0],
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
@@ -171,18 +211,57 @@ function readLoftMeta(r: FeatureRecord): LoftMeta | undefined {
   const num = (c: Coord): number => (typeof c === 'number' ? c : c.evaluated);
   const point3 = (p: Coord[] | undefined): [number, number, number] | undefined =>
     p === undefined ? undefined : [num(p[0]), num(p[1]), num(p[2])];
+  const point2 = (p: Coord[] | undefined): [number, number] | undefined =>
+    p === undefined ? undefined : [num(p[0]), num(p[1])];
   const rawMeta = r.metadata as {
-    planes?: Array<{ plane: 'XY' | 'YZ' | 'XZ'; origin: Coord[] }>;
+    planes?: Array<{ plane: 'XY' | 'YZ' | 'XZ'; origin: Coord[]; rotationDeg?: Coord }>;
     startPoint?: Coord[];
     endPoint?: Coord[];
+    twistCenter?: Coord[];
     rails?: string[];
   } | undefined;
   return rawMeta === undefined ? undefined : {
-    planes: rawMeta.planes?.map((p) => ({ plane: p.plane, origin: point3(p.origin)! })),
+    planes: rawMeta.planes?.map((p) => ({
+      plane: p.plane,
+      origin: point3(p.origin)!,
+      rotationDeg: p.rotationDeg === undefined ? undefined : num(p.rotationDeg),
+    })),
     startPoint: point3(rawMeta.startPoint),
     endPoint: point3(rawMeta.endPoint),
+    twistCenter: point2(rawMeta.twistCenter),
     rails: rawMeta.rails,
   };
+}
+
+/**
+ * Apply the per-section rotation: an explicit `planes[].rotationDeg` wins;
+ * otherwise the `twistDeg` shorthand is distributed evenly across the stack
+ * (first section at 0 deg, last at `twistDeg`).
+ */
+function applySectionTwist(planes: LoftPlane[], twistDeg: number): LoftPlane[] {
+  const n = planes.length;
+  return planes.map((p, i) => ({
+    ...p,
+    rotationDeg: p.rotationDeg ?? (n > 1 ? (twistDeg * i) / (n - 1) : 0),
+  }));
+}
+
+/**
+ * A stack whose sections all lie on the same plane cannot enclose volume on
+ * its own. OCCT's ThruSections throws a raw C++ exception for coincident wires
+ * (and returns a zero-volume shell for some non-identical ones), which would
+ * otherwise surface as a misleading kernel-failed. Start/end point
+ * terminations cone the stack out of the plane and make coplanar sections
+ * legitimate, so the gate skips those. Exact equality is deliberate: an offset
+ * by FP dust still hands off to OCCT (which may build a valid sliver) instead
+ * of being reported as an empty result.
+ */
+function isCollapsedPlaneStack(planes: LoftPlane[], meta: LoftMeta | undefined): boolean {
+  if (meta?.startPoint !== undefined || meta?.endPoint !== undefined) return false;
+  const first = planes[0];
+  const offsetIdx = first.plane === 'XY' ? 2 : first.plane === 'YZ' ? 0 : 1;
+  const planeOffset = first.origin[offsetIdx];
+  return planes.every((p) => p.plane === first.plane && p.origin[offsetIdx] === planeOffset);
 }
 
 /** Explicit metadata.planes wins; else z-stack with spacing. */
@@ -310,7 +389,9 @@ async function buildRailLoft(
       let lifted: { face: () => { outerWire: () => { wrapped: unknown } } };
       if (s._hasNurbs && s._commands) {
         const { buildNurbsSketchOnPlane } = await import('../../../../kernel/backends/occt/pathNurbsLowerer');
-        lifted = buildNurbsSketchOnPlane(s._commands as never, p.plane) as unknown as typeof lifted;
+        lifted = buildNurbsSketchOnPlane(s._commands as never, p.plane, {
+          origin: p.origin,
+        }) as unknown as typeof lifted;
       } else {
         lifted = s._drawing!.sketchOnPlane(
           p.plane,

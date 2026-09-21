@@ -30,10 +30,15 @@ interface Args {
   rotateOnly: boolean;
   heroArtifact: string;
   overrideApprovedBy: string | null;
+  fps: number;
+  width: number;
+  height: number;
+  hide: string[];
+  pose?: [number, number];
 }
 
 function parseArgs(argv: string[]): Args {
-  const a: Partial<Args> = { rotateOnly: false };
+  const a: Partial<Args> = { rotateOnly: false, fps: 30, width: 1920, height: 1080, hide: [] };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     const next = argv[i + 1];
@@ -47,10 +52,25 @@ function parseArgs(argv: string[]): Args {
     else if (arg === '--rotate-only') { a.rotateOnly = true; }
     else if (arg === '--hero-artifact') { a.heroArtifact = next; i++; }
     else if (arg === '--override-approved-by') { a.overrideApprovedBy = next; i++; }
+    else if (arg === '--fps') { a.fps = Number(next); i++; }
+    else if (arg === '--width') { a.width = Number(next); i++; }
+    else if (arg === '--height') { a.height = Number(next); i++; }
+    else if (arg === '--hide') { a.hide = (next ?? '').split(',').map((n) => n.trim()).filter(Boolean); i++; }
+    else if (arg === '--pose') { const [az, el] = (next ?? '').split(',').map(Number); a.pose = [az, el]; i++; }
   }
   if (!a.module || !a.output) {
-    console.error('Usage: captureDemo --module v0.X --output <dir> --hero-artifact <slug> (--task <id> | --script <path> --prompt <path>) [--override-approved-by "<name>: <reason>"]');
+    console.error('Usage: captureDemo --module v0.X --output <dir> --hero-artifact <slug> (--task <id> | --script <path> --prompt <path>) [--override-approved-by "<name>: <reason>"] [--fps <n>] [--width <n>] [--height <n>] [--hide <part-a,part-b>] [--pose <az,el>]');
     process.exit(2);
+  }
+  if (a.pose !== undefined && (!Number.isFinite(a.pose[0]) || !Number.isFinite(a.pose[1]))) {
+    console.error(`--pose must be "<azDeg>,<elDeg>"; got ${a.pose}`);
+    process.exit(2);
+  }
+  for (const [name, value] of [['fps', a.fps], ['width', a.width], ['height', a.height]] as const) {
+    if (!Number.isFinite(value) || (value as number) <= 0) {
+      console.error(`--${name} must be a positive number; got ${value}`);
+      process.exit(2);
+    }
   }
   if (!a.task && !(a.script && a.prompt)) {
     console.error('Must specify either --task or both --script and --prompt');
@@ -131,9 +151,27 @@ async function main(): Promise<void> {
   console.log(`captureDemo: module=${args.module}, output=${args.output}`);
   mkdirSync(args.output, { recursive: true });
 
+
+  const applyHideFilter = async (): Promise<void> => {
+    if (args.hide.length === 0) return;
+    await page.evaluate(
+      (patterns) => window.__demoPlayer!.applyObjectVisibilityFilter({ mode: 'hide', patterns }),
+      args.hide,
+    );
+    console.log(`hidden parts: ${args.hide.join(', ')}`);
+  };
+  const refitCamera = async (): Promise<void> => {
+    if (args.pose) {
+      const [az, el] = args.pose;
+      await page.evaluate(([a, e]) => window.__demoPlayer!.setRenderPose(a, e), [az, el] as const);
+      return;
+    }
+    await page.evaluate(() => window.__demoPlayer!.setRenderView('iso'));
+  };
+
   const vite = await ensureViteRunning();
   const browser: Browser = await chromium.launch({ args: ['--disable-dev-shm-usage'] });
-  const context = await browser.newContext({ viewport: { width: 1920, height: 1080 } });
+  const context = await browser.newContext({ viewport: { width: args.width, height: args.height } });
   const page: Page = await context.newPage();
   // Heavy NURBS / referenceImage scenes (v0.8 eyewear-wayfarer-front) can
   // block the WASM meshing thread for >30 s between frames. The default 30 s
@@ -179,6 +217,8 @@ async function main(): Promise<void> {
       { feats: serialized2, b: bounds2 },
     );
     console.log(`rotate-only: loaded ${serialized2.length} feature groups`);
+    await applyHideFilter();
+    await refitCamera();
 
     // Replay all events instantly to drive AnimationEngine to its settled state.
     // Without this, groups are loaded at opacity 0 and the rotate phase shows a black scene.
@@ -202,9 +242,10 @@ async function main(): Promise<void> {
 
     const ffmpeg = new FfmpegPipeline();
     const mp4Path = join(args.output, 'demo.mp4');
-    ffmpeg.start({ outputPath: mp4Path, fps: 30, width: 1920, height: 1080 });
+    ffmpeg.start({ outputPath: mp4Path, fps: args.fps, width: args.width, height: args.height });
+    await refitCamera();
     await page.evaluate((d) => window.__demoPlayer!.setRotatePhase(d), existingPacing.rotateDurationMs);
-    const frameMs = 1000 / 30;
+    const frameMs = 1000 / args.fps;
     const rotateFrames = Math.floor(existingPacing.rotateDurationMs / frameMs);
     for (let i = 0; i < rotateFrames; i++) {
       await page.evaluate((dtMs: number) => window.__demoPlayer!.advance(dtMs), frameMs);
@@ -307,6 +348,8 @@ async function main(): Promise<void> {
     { feats: serialized, b: bounds },
   );
   console.log(`loaded ${serialized.length} feature groups, bounds=[${bounds.min.map(v => v.toFixed(1)).join(',')}]→[${bounds.max.map(v => v.toFixed(1)).join(',')}]`);
+  await applyHideFilter();
+  await refitCamera();
 
   // Drive terminal lines (statements as a rough proxy — split source by newline).
   const sourceLines = loaded.source.split('\n').filter((l) => l.trim().length > 0);
@@ -330,9 +373,9 @@ async function main(): Promise<void> {
 
   const ffmpeg = new FfmpegPipeline();
   const mp4Path = join(args.output, 'demo.mp4');
-  ffmpeg.start({ outputPath: mp4Path, fps: 30, width: 1920, height: 1080 });
+  ffmpeg.start({ outputPath: mp4Path, fps: args.fps, width: args.width, height: args.height });
 
-  const frameMs = 1000 / 30;
+  const frameMs = 1000 / args.fps;
   const startWall = Date.now();
   const advance = async (toMs: number): Promise<void> => {
     const dt = toMs - (Date.now() - startWall);
@@ -406,6 +449,7 @@ async function main(): Promise<void> {
   }
 
   // Rotate phase.
+  await refitCamera();
   await page.evaluate((d) => window.__demoPlayer!.setRotatePhase(d), pacing.rotateDurationMs);
   const rotateFrames = Math.floor(pacing.rotateDurationMs / frameMs);
   for (let i = 0; i < rotateFrames; i++) {
@@ -417,7 +461,8 @@ async function main(): Promise<void> {
     await ffmpeg.pushFrame(buf);
   }
 
-  // Hero frame.
+  // Hero frame (refit so the panel image is framed regardless of orbit drift).
+  await refitCamera();
   const heroPath = join(args.output, 'hero-frame.png');
   await page.screenshot({ path: heroPath, type: 'png' });
 

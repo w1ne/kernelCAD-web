@@ -7,6 +7,8 @@ description: kernelCAD model authoring API — primitives, transforms, booleans,
 
 Author or modify kernelCAD models in TypeScript. Scripts live in `.kcad.ts` files; the kernelCAD CLI (`kernelcad evaluate <file>` and `kernelcad export stl|step|dxf|3mf|glb <file> -o <out>`) executes them via an OpenCASCADE WASM kernel.
 
+`.kcad.ts` scripts are single files: top-level `import`/`require` statements are not supported and are refused before execution with `feature.invalid-args` — define helpers in the same file.
+
 ## Agent authoring loop
 
 Use this loop for every non-trivial model edit:
@@ -192,11 +194,14 @@ box(x: number, y: number, z: number, centered?: boolean, opts?: { faceLabels?: R
 cylinder(h: number, r: number, segments?: number, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery> }): Shape;
 sphere(r: number): Shape;  // faceLabels NOT accepted — sphere has no canonical faces
 
-// Extrusion helpers — profile defined inline, extruded along Z.
-extrudeRect(w: number, h: number, height: number, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery> }): Shape;
-extrudeCircle(r: number, height: number, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery> }): Shape;
-extrudePolygon(points: Array<[Editable<number>, Editable<number>]>, depth: Editable<number>, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery> }): Shape;
-extrudeRoundedRect(width: number, height: number, radius: number, depth: number, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery> }): Shape;
+// Extrusion helpers — profile defined inline, extruded along Z. All four
+// accept opts.twistAngle (deg; number or ParamRef): the profile rotates about
+// the profile origin through the sweep. Unknown option keys throw
+// feature.invalid-args.
+extrudeRect(w: number, h: number, height: number, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery>; twistAngle?: Editable<number> }): Shape;
+extrudeCircle(r: number, height: number, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery>; twistAngle?: Editable<number> }): Shape;
+extrudePolygon(points: Array<[Editable<number>, Editable<number>]>, depth: Editable<number>, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery>; twistAngle?: Editable<number> }): Shape;
+extrudeRoundedRect(width: number, height: number, radius: number, depth: number, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery>; twistAngle?: Editable<number> }): Shape;
 
 // Path builder — chain moveTo / lineTo / arcs / .close() to get a Sketch. For
 // revolved geometry (washers, donut bodies, mug profiles, etc.) build a profile
@@ -520,8 +525,13 @@ Contracts worth knowing:
 A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape` (or another `Sketch` for `reflect`).
 
 ```typescript
-// Extrude closed sketch normal to its plane by `depth` (mm; number or ParamRef):
-.extrude(depth: Editable<number>): Shape
+// Extrude closed sketch normal to its plane by `depth` (mm; number or ParamRef).
+// twistAngle (deg; number or ParamRef) is real twisted-extrude geometry: the
+// profile rotates about the sketch origin through the sweep, so a profile that
+// does not touch the origin changes its bounding box. Face-bound extrudes
+// (projectCurve output) reject a non-zero twist with feature.invalid-args,
+// as does any unknown option key.
+.extrude(depth: Editable<number>, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery>; twistAngle?: Editable<number> }): Shape
 
 // Revolve around the Z axis (360 degrees unless angleDeg; number or ParamRef).
 // Profile coords are (radial-X, axial-Z); all x >= 0.
@@ -545,14 +555,23 @@ A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape
 .sweep(rail: [number, number, number][], opts?: { frenet?: boolean; transitionMode?: 'right' | 'transformed' | 'round'; spine?: 'polyline' | 'smooth' | 'helix' }): Shape
 
 // Loft through one or more additional sections to produce a 3D solid.
-// Use for nozzles (round-to-square), wings, fairings, transition pieces.
-// opts.spacing z-stacks sections axially; opts.planes overrides with explicit per-section placement.
+// Use for nozzles (round-to-square), wings, fairings, transition pieces,
+// twisted blades and staggered stacks.
+// opts.spacing stacks sections on XY planes at z = 0, spacing, 2*spacing, ...;
+// of the rotation controls only twistDeg/twistCenter apply there (per-plane
+// rotationDeg requires opts.planes). opts.planes overrides with explicit
+// per-section placement and each entry may add rotationDeg. Unknown option
+// keys (top-level or per-plane) throw feature.invalid-args.
 .loft(other: Sketch | Sketch[], opts?: {
   spacing?: Editable<number>;
-  planes?: { plane: 'XY' | 'YZ' | 'XZ'; origin: [Editable<number>, Editable<number>, Editable<number>] }[];
+  planes?: { plane: 'XY' | 'YZ' | 'XZ'; origin: [Editable<number>, Editable<number>, Editable<number>]; rotationDeg?: Editable<number> }[];
+  twistDeg?: Editable<number>;
+  twistCenter?: [Editable<number>, Editable<number>];
   ruled?: boolean;
   startPoint?: [Editable<number>, Editable<number>, Editable<number>];
   endPoint?: [Editable<number>, Editable<number>, Editable<number>];
+  faceLabels?: Record<string, CanonicalFace | FaceQuery>;
+  rails?: Curve3D[];
 }): Shape
 
 // Reflect this sketch's path across an axis, returning a new Sketch.
@@ -562,6 +581,23 @@ A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape
 // expressions, so the reflected sketch tracks param edits.
 .reflect(axis: 'x' | 'y' | { axis: 'x' | 'y'; offset: Editable<number> }): Sketch
 ```
+
+**Twisted blades / staggered sections.** Two ways to twist a loft. `twistDeg` distributes an even total twist across the sections — first section at 0°, last section at `twistDeg`. A per-plane `planes[].rotationDeg` overrides the distributed angle for that section only (`rotationDeg ?? twistDeg * i / (N - 1)`). Both rotate in section space about `twistCenter` (default `[0, 0]` — the sketch-local origin of each section, NOT the 3D plane `origin` you passed in `planes`), which is how a turbine blade profile is rotated about its stacking axis. In non-rail lofts, sections built from NURBS path segments (`.spline` / `.nurbsSegment` / `.hermiteG2`) honor `plane`, `origin`, and rotation exactly like ordinary sections. The twist option name differs by operation: extrude twists with `twistAngle`, loft with `twistDeg`.
+
+```ts
+// Twisted blade: two sections, the tip rotated 30° about its stacking center.
+const root = path().moveTo(-6, -1).lineTo(6, -1).lineTo(6, 1).lineTo(-6, 1).close();
+const tip  = path().moveTo(-3, -0.5).lineTo(3, -0.5).lineTo(3, 0.5).lineTo(-3, 0.5).close();
+const blade = root.loft(tip, {
+  planes: [
+    { plane: 'XY', origin: [0, 0, 0], rotationDeg: 0 },
+    { plane: 'XY', origin: [0, 0, 40], rotationDeg: 30 },
+  ],
+  twistCenter: [0, 0],
+});
+```
+
+**Rail-guided loft limitation.** `opts.rails` currently neither supports section rotation (any non-zero `twistDeg` or `rotationDeg` is rejected with a `feature.invalid-args` lowering error) nor applies `planes[].origin` to NURBS sections — use line/arc section sketches or drop the rails if you need either.
 
 ### PathBuilder methods
 

@@ -324,6 +324,84 @@ describe('render command', () => {
     expect(result.outputPaths).toContain(join(outDir, 'channels', 'normals', 'iso.png'));
   });
 
+  it('renderCommand declares --views on the inspect subcommand', () => {
+    const cmd = renderCommand();
+    const inspect = cmd.commands.find((subcommand) => subcommand.name() === 'inspect');
+    expect(inspect).toBeDefined();
+    const views = inspect?.options.find((o) => o.long === '--views');
+    expect(views).toBeDefined();
+    expect(views?.description).toBe(
+      'comma-separated views to capture (front, right, top, iso; default all four)',
+    );
+    // The top-level render command must not grow an identically-named flag.
+    expect(cmd.options.find((o) => o.long === '--views')).toBeUndefined();
+  });
+
+  it('captures only the requested --views subset and records it in the manifest', async () => {
+    const outDir = join(tmp, 'inspect-iso-only');
+
+    const result = await renderInspectBundle({
+      file: scriptPath,
+      outDir,
+      width: 640,
+      height: 480,
+      baseUrl: 'http://localhost:5173',
+      hideReferenceImages: false,
+      views: ['iso'],
+    });
+
+    expect(result.exitCode).toBe(0);
+    expect(mockHeadlessRender).toHaveBeenCalledOnce();
+    expect(mockHeadlessRender.mock.calls[0][0]).toMatchObject({ views: ['iso'] });
+
+    expect(existsSync(join(outDir, 'channels', 'rgb', 'iso.png'))).toBe(true);
+    for (const view of ['front', 'right', 'top']) {
+      expect(existsSync(join(outDir, 'channels', 'rgb', `${view}.png`))).toBe(false);
+    }
+
+    const manifest = JSON.parse(readFileSync(join(outDir, 'manifest.json'), 'utf8'));
+    expect(manifest.views).toEqual(['iso']);
+    expect(manifest.command.views).toEqual(['iso']);
+    expect(manifest.channels.rgb).toEqual({ iso: 'channels/rgb/iso.png' });
+    expect(result.outputPaths).toEqual([
+      join(outDir, 'manifest.json'),
+      join(outDir, 'channels', 'rgb', 'iso.png'),
+    ]);
+  });
+
+  it('accepts a comma list of views, trims it, and defaults to all four when omitted', async () => {
+    const outDir = join(tmp, 'inspect-view-list');
+
+    await renderInspectBundle({
+      file: scriptPath,
+      outDir,
+      width: 640,
+      height: 480,
+      baseUrl: 'http://localhost:5173',
+      hideReferenceImages: false,
+      views: [' front, iso '],
+    });
+
+    expect(mockHeadlessRender.mock.calls[0][0]).toMatchObject({ views: ['front', 'iso'] });
+  });
+
+  it('rejects unsupported views before rendering', async () => {
+    const outDir = join(tmp, 'inspect-unsupported-view');
+
+    const result = await renderInspectBundle({
+      file: scriptPath,
+      outDir,
+      width: 640,
+      height: 480,
+      baseUrl: 'http://localhost:5173',
+      hideReferenceImages: false,
+      views: ['iso', 'back'],
+    });
+
+    expect(result.exitCode).toBe(1);
+    expect(mockHeadlessRender).not.toHaveBeenCalled();
+  });
+
   it('parseSectionFlag parses <axis>=<pos>', () => {
     expect(parseSectionFlag('y=0')).toEqual({ axis: 'y', position: 0, positionRaw: '0' });
     expect(parseSectionFlag('z=10')).toEqual({ axis: 'z', position: 10, positionRaw: '10' });

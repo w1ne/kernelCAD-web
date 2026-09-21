@@ -59,6 +59,43 @@ export function normalizeUserScript(code: string): string {
 }
 
 /**
+ * Detect the first top-level module import the normalizer would STRIP.
+ *
+ * `normalizeUserScript` deletes `import` lines so a module-style script can
+ * run as a function body. That is fine for `export`, but an `import` that
+ * binds a name the script then uses dies later with a bare
+ * `ReferenceError: <name> is not defined` — the binding was deleted, not
+ * resolved. Execution entry points (`runScriptCore`) call this first and
+ * throw a structured `feature.invalid-args` KernelError instead, so the
+ * failure is actionable. The normalizer itself stays lenient: callers that
+ * never execute the script (line maps, static analysis) still get the
+ * stripped form.
+ *
+ * Covers the line-anchored ESM forms the normalizer drops (named, default,
+ * namespace, side-effect, `import type`) and the CommonJS forms
+ * (`const x = require('...')`, bare `require('...')`). Dynamic
+ * `import(...)` used mid-expression is not line-anchored and is ignored —
+ * same contract as the normalizer.
+ *
+ * Returns the offending statement text (trimmed), or `undefined` when the
+ * source has no top-level import.
+ */
+export function findTopLevelImport(code: string): string | undefined {
+  if (typeof code !== 'string' || code.trim() === '') return undefined;
+  for (const line of code.split('\n')) {
+    if (TOP_LEVEL_IMPORT_LINE_RES.some(re => re.test(line))) return line.trim();
+  }
+  return undefined;
+}
+
+/** Line-anchored top-level import / require forms (see `findTopLevelImport`). */
+const TOP_LEVEL_IMPORT_LINE_RES: readonly RegExp[] = [
+  /^[ \t]*import\b/,
+  /^[ \t]*(?:const|let|var)\s+[^\n]*\brequire\s*\(/,
+  /^[ \t]*require\s*\(/,
+];
+
+/**
  * Line map from the NORMALIZED script back to the original file.
  *
  * Two of the five transforms above delete whole lines (top-level `import`,

@@ -6,6 +6,7 @@ import { TANGENCY_ERROR_PREFIX } from '../../../../kernel/backends/occt/tangency
 import { HINT_TEMPLATES } from '../../../../shared/diagnostics/registry';
 import type { DiagnosticCode } from '../../../../shared/diagnostics/registry';
 import type { FeatureRecord } from '../../../../shared/intent/featureRecord';
+import { isKernelError } from '../../../../shared/intent/kernelError';
 import { emptyResultDiagnostic } from '../additiveNoOp';
 import { built, noShape, type LowerContext, type LowerOutcome } from './context';
 
@@ -102,21 +103,29 @@ function buildExtrudeProfile(
   r: FeatureRecord,
   profileKind: string,
 ): ShapeBackend | undefined {
+  // Every profile kind reads the same `twistAngle` param (default 0). Legacy
+  // records without the param keep the straight-extrude path.
+  const twistAngle = r.params.twistAngle?.evaluated ?? 0;
   if (profileKind === 'rect') {
     const height = r.params.height.evaluated;
-    return OcctBackend.extrudeRect(
-      r.params.w.evaluated,
-      r.params.h.evaluated,
-      height,
+    return extrudeGuarded(ctx, r, () =>
+      OcctBackend.extrudeRect(
+        r.params.w.evaluated,
+        r.params.h.evaluated,
+        height,
+        { twistAngle },
+      ),
     );
   }
   if (profileKind === 'circle') {
     const height = r.params.height.evaluated;
-    return OcctBackend.extrudeCircle(r.params.r.evaluated, height);
+    return extrudeGuarded(ctx, r, () =>
+      OcctBackend.extrudeCircle(r.params.r.evaluated, height, { twistAngle }),
+    );
   }
-  if (profileKind === 'polygon') return extrudePolygonProfile(ctx, r);
-  if (profileKind === 'rounded-rect') return extrudeRoundedRectProfile(ctx, r);
-  if (profileKind === 'sketch') return extrudeSketchProfile(ctx, r);
+  if (profileKind === 'polygon') return extrudePolygonProfile(ctx, r, twistAngle);
+  if (profileKind === 'rounded-rect') return extrudeRoundedRectProfile(ctx, r, twistAngle);
+  if (profileKind === 'sketch') return extrudeSketchProfile(ctx, r, twistAngle);
   ctx.diagnostics.push({
     target: ctx.target,
     code: 'feature.invalid-args',
@@ -131,7 +140,36 @@ function buildExtrudeProfile(
 const EXTRUDE_KERNEL_HINT =
   'OCCT could not extrude — check for self-intersecting profile, inconsistent polygon winding, or rounded-rect radius exceeding half of width/height.';
 
-function pushExtrudeKernelFailure(ctx: LowerContext, r: FeatureRecord, e: unknown): undefined {
+/** Run a primitive extrude builder, converting a thrown error into the
+ *  standard extrude diagnostic. */
+function extrudeGuarded(
+  ctx: LowerContext,
+  r: FeatureRecord,
+  build: () => ShapeBackend,
+): ShapeBackend | undefined {
+  try {
+    return build();
+  } catch (e) {
+    return pushExtrudeFailure(ctx, r, e);
+  }
+}
+
+/** Push the diagnostic for a failed extrude. Typed kernel errors (e.g. a
+ *  non-finite twistAngle) keep their own code + hint instead of being buried
+ *  under a generic kernel-failed one; everything else collapses into the
+ *  kernel-failed bucket. */
+function pushExtrudeFailure(ctx: LowerContext, r: FeatureRecord, e: unknown): undefined {
+  if (isKernelError(e)) {
+    ctx.diagnostics.push({
+      target: 'export-occt',
+      code: e.code,
+      featureId: r.id,
+      severity: 'error',
+      message: e.message,
+      hint: e.hint ?? HINT_TEMPLATES[e.code].template,
+    });
+    return undefined;
+  }
   const msg = e instanceof Error ? e.message : String(e);
   ctx.diagnostics.push({
     target: 'export-occt',
@@ -144,7 +182,11 @@ function pushExtrudeKernelFailure(ctx: LowerContext, r: FeatureRecord, e: unknow
   return undefined;
 }
 
-function extrudePolygonProfile(ctx: LowerContext, r: FeatureRecord): ShapeBackend | undefined {
+function extrudePolygonProfile(
+  ctx: LowerContext,
+  r: FeatureRecord,
+  twistAngle: number,
+): ShapeBackend | undefined {
   const depth = r.params.depth.evaluated;
   // Each coordinate is a plain number, or a Param (pre-resolved by the
   // dispatcher) when the author passed a ParamRef.
@@ -171,13 +213,17 @@ function extrudePolygonProfile(ctx: LowerContext, r: FeatureRecord): ShapeBacken
     return undefined;
   }
   try {
-    return OcctBackend.extrudePolygon(points as [number, number][], depth);
+    return OcctBackend.extrudePolygon(points as [number, number][], depth, { twistAngle });
   } catch (e) {
-    return pushExtrudeKernelFailure(ctx, r, e);
+    return pushExtrudeFailure(ctx, r, e);
   }
 }
 
-function extrudeRoundedRectProfile(ctx: LowerContext, r: FeatureRecord): ShapeBackend | undefined {
+function extrudeRoundedRectProfile(
+  ctx: LowerContext,
+  r: FeatureRecord,
+  twistAngle: number,
+): ShapeBackend | undefined {
   const width = r.params.width?.evaluated;
   const height = r.params.height?.evaluated;
   const radius = r.params.radius?.evaluated;
@@ -194,13 +240,17 @@ function extrudeRoundedRectProfile(ctx: LowerContext, r: FeatureRecord): ShapeBa
     return undefined;
   }
   try {
-    return OcctBackend.extrudeRoundedRect(width, height, radius, depth);
+    return OcctBackend.extrudeRoundedRect(width, height, radius, depth, { twistAngle });
   } catch (e) {
-    return pushExtrudeKernelFailure(ctx, r, e);
+    return pushExtrudeFailure(ctx, r, e);
   }
 }
 
-function extrudeSketchProfile(ctx: LowerContext, r: FeatureRecord): ShapeBackend | undefined {
+function extrudeSketchProfile(
+  ctx: LowerContext,
+  r: FeatureRecord,
+  twistAngle: number,
+): ShapeBackend | undefined {
   const depth = r.params.depth.evaluated;
   const sketchInput = ctx.inputs.byKey.sketch as OcctBackend | undefined;
   if (!sketchInput) {
@@ -215,8 +265,8 @@ function extrudeSketchProfile(ctx: LowerContext, r: FeatureRecord): ShapeBackend
     return undefined;
   }
   try {
-    return OcctBackend.extrudeFromSketch(sketchInput, depth);
+    return OcctBackend.extrudeFromSketch(sketchInput, depth, { twistAngle });
   } catch (e) {
-    return pushExtrudeKernelFailure(ctx, r, e);
+    return pushExtrudeFailure(ctx, r, e);
   }
 }

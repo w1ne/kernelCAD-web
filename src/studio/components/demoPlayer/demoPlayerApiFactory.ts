@@ -95,6 +95,9 @@ function currentSceneBounds(ctx: DemoPlayerSceneContext): THREE.Box3 {
 
 function setRenderView(deps: DemoPlayerApiDeps, view: RenderView, outputAspect?: number): void {
   const ctx = requireScene(deps);
+  // A build-phase nudge tween interpolates the camera on every advance();
+  // cancel it so this explicit fit is not overridden on the next frame.
+  deps.cameraCtrlRef.current?.cancelNudge();
   // Reuse the bounds the loadFeatureMeshes path computed (mesh groups are
   // already centered at origin; just re-aim the camera). Recompute
   // aggregate bounds from current scene contents to tolerate scenes loaded
@@ -113,6 +116,8 @@ function setRenderView(deps: DemoPlayerApiDeps, view: RenderView, outputAspect?:
 
 function setRenderPose(deps: DemoPlayerApiDeps, azDeg: number, elDeg: number, outputAspect?: number): void {
   const ctx = requireScene(deps);
+  // Same nudge-cancel rationale as setRenderView.
+  deps.cameraCtrlRef.current?.cancelNudge();
   const bbox = currentSceneBounds(ctx);
   if (bbox.isEmpty()) return;
   // az=0,el=0 = front view (camera at -Y looking at origin, Z up).
@@ -254,7 +259,70 @@ function applyObjectVisibilityFilter(
   };
 }
 
-function captureMaskPng(deps: DemoPlayerApiDeps): DemoPlayerMaskCapture {
+/**
+ * Longest-edge cap for a render-target mask capture. `undefined`, a
+ * non-finite value, or a value >= the canvas' longest edge returns
+ * `undefined` so the caller keeps the original canvas `toDataURL` path.
+ */
+function resolveMaskRenderSize(
+  ctx: DemoPlayerSceneContext,
+  maxSize: number | undefined,
+): { width: number; height: number } | undefined {
+  if (maxSize === undefined || !Number.isFinite(maxSize) || maxSize <= 0) return undefined;
+  const canvas = ctx.renderer.domElement;
+  const longest = Math.max(canvas.width, canvas.height);
+  if (longest <= maxSize) return undefined;
+  const scale = maxSize / longest;
+  return {
+    width: Math.max(1, Math.round(canvas.width * scale)),
+    height: Math.max(1, Math.round(canvas.height * scale)),
+  };
+}
+
+/**
+ * Render the (already material-swapped) mask scene into an offscreen render
+ * target at `size` and encode it as a PNG data URL. Masks are object-id
+ * channels, so a capped resolution loses no semantics — the CLI nearest-
+ * upscales the tile to the requested size. Mirrors the render-target
+ * lifecycle `captureInspectionChannels` uses.
+ *
+ * `colorSpace: SRGBColorSpace` is load-bearing: mask materials carry
+ * `#00000n` object-id colors which three.js converts sRGB→linear in the
+ * working space. A render target with the default (no) output encoding
+ * would read those linear bytes back, collapsing every low object id to 0.
+ * The sRGB output encoding round-trips the ids to their exact byte values,
+ * matching what the canvas `toDataURL` path produced.
+ */
+function renderMaskToDataUrl(
+  ctx: DemoPlayerSceneContext,
+  size: { width: number; height: number },
+): string {
+  const originalTarget = ctx.renderer.getRenderTarget();
+  const originalClearColor = new THREE.Color();
+  ctx.renderer.getClearColor(originalClearColor);
+  const originalClearAlpha = ctx.renderer.getClearAlpha();
+  const target = new THREE.WebGLRenderTarget(size.width, size.height, {
+    format: THREE.RGBAFormat,
+    type: THREE.UnsignedByteType,
+    colorSpace: THREE.SRGBColorSpace,
+    depthBuffer: true,
+    stencilBuffer: false,
+  });
+  try {
+    ctx.renderer.setClearColor(0x000000, 1);
+    ctx.renderer.setRenderTarget(target);
+    ctx.renderer.render(ctx.scene, ctx.camera);
+    const pixels = new Uint8Array(size.width * size.height * 4);
+    ctx.renderer.readRenderTargetPixels(target, 0, 0, size.width, size.height, pixels);
+    return rgbaPixelsToPngDataUrl(pixels, size.width, size.height);
+  } finally {
+    target.dispose();
+    ctx.renderer.setRenderTarget(originalTarget);
+    ctx.renderer.setClearColor(originalClearColor, originalClearAlpha);
+  }
+}
+
+function captureMaskPng(deps: DemoPlayerApiDeps, maxSize?: number): DemoPlayerMaskCapture {
   const ctx = requireScene(deps);
   const visibleGroups: THREE.Group[] = [];
   ctx.scene.traverse((obj) => {
@@ -314,9 +382,13 @@ function captureMaskPng(deps: DemoPlayerApiDeps): DemoPlayerMaskCapture {
       });
     });
 
-    ctx.renderer.render(ctx.scene, ctx.camera);
-    const pngDataUrl = ctx.renderer.domElement.toDataURL('image/png');
-    return { pngDataUrl, objects };
+    const renderSize = resolveMaskRenderSize(ctx, maxSize);
+    if (renderSize === undefined) {
+      ctx.renderer.render(ctx.scene, ctx.camera);
+      const pngDataUrl = ctx.renderer.domElement.toDataURL('image/png');
+      return { pngDataUrl, objects };
+    }
+    return { pngDataUrl: renderMaskToDataUrl(ctx, renderSize), objects };
   } finally {
     for (const original of originals) {
       original.mesh.material = original.material;
@@ -874,7 +946,7 @@ export function createDemoPlayerWindowApi(deps: DemoPlayerApiDeps): DemoPlayerWi
     forceFullOpacity: () => forceFullOpacity(deps),
     showOnlyTailFeatures: () => showOnlyTailFeatures(deps),
     applyObjectVisibilityFilter: (filter) => applyObjectVisibilityFilter(deps, filter),
-    captureMaskPng: () => captureMaskPng(deps),
+    captureMaskPng: (maxSize) => captureMaskPng(deps, maxSize),
     captureInspectionChannels: (input) => captureInspectionChannels(deps, input),
     loadFeatureMeshes: (perFeature, bounds) => loadFeatureMeshes(deps, perFeature, bounds),
     setReferenceImagesVisible: (visible) => setReferenceImagesVisible(deps, visible),

@@ -29,7 +29,7 @@ declare const window: {
     forceFullOpacity: () => void;
     showOnlyTailFeatures: () => void;
     applyObjectVisibilityFilter: (filter: HeadlessObjectFilter) => HeadlessObjectVisibility;
-    captureMaskPng: () => HeadlessMaskCapture;
+    captureMaskPng: (maxSize?: number) => HeadlessMaskCapture;
     captureInspectionChannels: (input: {
       channels: readonly HeadlessAuxInspectionChannel[];
       width: number;
@@ -124,6 +124,9 @@ export interface HeadlessRenderOpts {
   objectFilter?: HeadlessObjectFilter;
   /** Inspection channels requested by the bundle writer. Defaults to RGB only. */
   inspectionChannels?: readonly HeadlessInspectionChannel[];
+  /** Longest-edge cap for the internal mask render (gap #9). Defaults to
+   *  {@link MASK_CAPTURE_MAX_SIZE}; `0`/`Infinity` disables the cap. */
+  maskMaxSize?: number;
   /** Clip the model with a single axis-aligned section plane so captures show
    *  interior structure. Forwarded to the demo-player as
    *  `?section=<axis>:<pos>` (+ `?sectionflip=1`); the page applies it via
@@ -153,6 +156,14 @@ export interface HeadlessRenderResult {
  *  any other viewport clips the canvas. Static renders capture at this size
  *  then crop/resize; animation capture emits frames at exactly this size. */
 export const HEADLESS_VIEWPORT = { width: 1920, height: 1080 } as const;
+
+/** Longest-edge cap for the mask channel render, in pixels (gap #9). Masks
+ *  are machine-analysis channels (object ids), not beauty renders — the
+ *  full 1920×1080 pass per view is pure cost. The page renders the mask to
+ *  a render target at most this large (aspect preserved), and the CLI's
+ *  `normalizeInspectionTile` nearest-resizes the result up to the requested
+ *  tile size. Set to 0/Infinity to opt out and render masks at canvas size. */
+export const MASK_CAPTURE_MAX_SIZE = 1024;
 
 /** Single source of truth for the studio dev-server URL. The CLI render
  *  commands use this as the `--base-url` option default; no other port
@@ -304,6 +315,128 @@ export async function loadFeatureMeshesIntoPage(
   );
 }
 
+/** How long the page may spend loading + PMREM-prefiltering an HDRI before the
+ *  CLI gives up and keeps the default three-light rig (gap #14). */
+export const RENDER_ENVIRONMENT_TIMEOUT_MS = 30_000;
+
+/** Extra grace after the page-side timeout before the Node side stops waiting
+ *  for a page that no longer responds at all (crashed/wedged renderer). */
+export const RENDER_ENVIRONMENT_RESPONSE_SLACK_MS = 10_000;
+
+/** Bound for the best-effort reset call after a failed environment apply. */
+export const RENDER_ENVIRONMENT_RESET_TIMEOUT_MS = 5_000;
+
+export interface EnvironmentApplyOutcome {
+  applied: boolean;
+  /** Human-readable failure reason when `applied` is false. */
+  reason?: string;
+}
+
+const ENVIRONMENT_PRESETS = new Set(['studio', 'softbox', 'neutral', 'outdoor', 'warehouse']);
+
+/** Map a CLI `--environment` value to the bridge spec: preset key → preset,
+ *  'none' → null (explicit clear), anything else → custom URL/path. */
+export function renderEnvironmentSpecForCli(environment: string): unknown {
+  if (environment === 'none') return null;
+  return ENVIRONMENT_PRESETS.has(environment) ? { preset: environment } : { url: environment };
+}
+
+/**
+ * Browser-side half of the environment apply (runs via `page.evaluate`).
+ * Bounded: the apply may not run longer than `timeoutMs`. A timed-out apply
+ * that lands later is undone so it cannot leak into the fallback render.
+ * Never throws — failures come back as `{ applied: false, reason }` so the
+ * page protocol call itself stays resolvable.
+ */
+export async function pageApplyRenderEnvironment(args: {
+  spec: unknown;
+  timeoutMs: number;
+}): Promise<EnvironmentApplyOutcome> {
+  const player = window.__demoPlayer;
+  if (!player) return { applied: false, reason: 'demo-player bridge is unavailable' };
+  const apply = player.setRenderEnvironment(args.spec).then(
+    () => ({ applied: true }) as const,
+    (e: unknown) => ({ applied: false, reason: e instanceof Error ? e.message : String(e) }) as const,
+  );
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    const outcome = await Promise.race([
+      apply,
+      new Promise<EnvironmentApplyOutcome>((resolve) => {
+        timer = setTimeout(
+          () => resolve({ applied: false, reason: `timed out after ${args.timeoutMs} ms` }),
+          args.timeoutMs,
+        );
+      }),
+    ]);
+    if (!outcome.applied) {
+      // An apply that lands after the timeout would otherwise pop the HDRI
+      // into the scene mid-capture; undo it so the default rig stays
+      // authoritative for every captured view.
+      void apply.then((late) => {
+        if (late.applied) void player.setRenderEnvironment(null).catch(() => undefined);
+      });
+    }
+    return outcome;
+  } finally {
+    if (timer !== undefined) clearTimeout(timer);
+  }
+}
+
+async function withTimeout<T>(promise: Promise<T>, ms: number, onTimeout: () => T): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<T>((resolve) => {
+        timer = setTimeout(() => resolve(onTimeout()), ms);
+      }),
+    ]);
+  } finally {
+    if (timer !== undefined) clearTimeout(timer);
+  }
+}
+
+async function resetRenderEnvironmentBestEffort(page: Pick<Page, 'evaluate'>): Promise<void> {
+  await withTimeout(
+    page.evaluate(() => window.__demoPlayer?.setRenderEnvironment(null)).catch(() => undefined),
+    RENDER_ENVIRONMENT_RESET_TIMEOUT_MS,
+    () => undefined,
+  );
+}
+
+/**
+ * Apply a CLI `--environment` override without letting a broken, missing or
+ * hung HDRI abort the render (gap #14). On failure or timeout the failure is
+ * reported on stderr (naming the environment and the reason), the scene is
+ * reset to the default three-light rig, and rendering continues.
+ */
+export async function applyRenderEnvironmentWithFallback(
+  page: Pick<Page, 'evaluate'>,
+  environment: string,
+  timeoutMs: number = RENDER_ENVIRONMENT_TIMEOUT_MS,
+  responseSlackMs: number = RENDER_ENVIRONMENT_RESPONSE_SLACK_MS,
+): Promise<EnvironmentApplyOutcome> {
+  const spec = renderEnvironmentSpecForCli(environment);
+  let outcome: EnvironmentApplyOutcome;
+  try {
+    outcome = await withTimeout(
+      page.evaluate(pageApplyRenderEnvironment, { spec, timeoutMs }),
+      timeoutMs + responseSlackMs,
+      () => ({ applied: false, reason: `timed out after ${timeoutMs} ms (the render page stopped responding)` }),
+    );
+  } catch (e) {
+    outcome = { applied: false, reason: e instanceof Error ? e.message : String(e) };
+  }
+  if (outcome.applied) return outcome;
+  await resetRenderEnvironmentBestEffort(page);
+  console.error(
+    `kernelcad render: WARNING: environment '${environment}' could not be applied ` +
+      `(${outcome.reason ?? 'unknown error'}) — continuing with the default three-light rig.`,
+  );
+  return outcome;
+}
+
 /** Node-side meshing: load the script, resolve explode offsets when asked,
  *  mesh per feature and serialize for the browser bridge. */
 async function meshForHeadlessRender(opts: HeadlessRenderOpts): Promise<{
@@ -394,16 +527,11 @@ async function openRenderPage(
     }
 
     // 3c. CLI --environment override: takes precedence over the script's
-    // setRenderEnvironment() call. 'none' explicitly clears any env.
+    // setRenderEnvironment() call. 'none' explicitly clears any env. A load
+    // failure or hang warns on stderr and keeps the default three-light rig
+    // instead of aborting the whole render (gap #14).
     if (opts.environment !== undefined) {
-      const envArg = opts.environment;
-      const PRESETS = new Set(['studio', 'softbox', 'neutral', 'outdoor', 'warehouse']);
-      const spec: unknown = envArg === 'none'
-        ? null
-        : PRESETS.has(envArg)
-          ? { preset: envArg }
-          : { url: envArg };
-      await page.evaluate((s) => window.__demoPlayer!.setRenderEnvironment(s), spec);
+      await applyRenderEnvironmentWithFallback(page, opts.environment);
     }
 
     // Belt-and-suspenders: nuke ANY dev chrome AFTER mesh load and BEFORE the
@@ -473,7 +601,10 @@ async function captureViews(
       pngsByView[view] = buf;
     }
     if (captureMask) {
-      const mask = await page.evaluate(() => window.__demoPlayer!.captureMaskPng());
+      const mask = await page.evaluate(
+        (maxSize) => window.__demoPlayer!.captureMaskPng(maxSize),
+        opts.maskMaxSize ?? MASK_CAPTURE_MAX_SIZE,
+      );
       const maskBuffer = Buffer.from(mask.pngDataUrl.replace(/^data:image\/png;base64,/, ''), 'base64');
       maskPngsByView[view] = await normalizeInspectionTile(maskBuffer, opts, 'mask');
       if (maskObjects === undefined) maskObjects = mask.objects;
