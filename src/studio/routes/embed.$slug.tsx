@@ -59,17 +59,12 @@ type EmbedUiPhase =
   | 'viewer_failed'
   | 'source_error';
 
-function EmbedPage() {
-  const { slug } = Route.useParams();
-  const { mode, revision, meshUrl, instance } = Route.useSearch();
+function useEmbedSource(slug: string, revision: number | null | undefined, retryKey: number) {
   const sourceKey = `${slug}\u0000${revision === undefined ? 'current' : revision === null ? 'invalid' : revision}`;
   const [code, setCode] = useState<string | null>(null);
   const [loadedSourceKey, setLoadedSourceKey] = useState<string | null>(null);
   const [sourceState, setSourceState] = useState<'loading' | 'ready' | 'missing' | 'error'>('loading');
   const [err, setErr] = useState<string | null>(null);
-  const [viewerPhase, setViewerPhase] = useState<FunnelViewerPhase | null>(null);
-  const [viewerDetail, setViewerDetail] = useState<string | null>(null);
-  const [retryKey, setRetryKey] = useState(0);
 
   useEffect(() => {
     // `sourceState` starts at 'loading'; the fetch resolves it. No sync setState in body.
@@ -106,12 +101,27 @@ function EmbedPage() {
     return () => { disposed = true; };
   }, [slug, revision, sourceKey, retryKey]);
 
+  const resetSource = () => {
+    setErr(null);
+    setSourceState('loading');
+    setLoadedSourceKey(null);
+  };
+
+  return { code, sourceSettled: loadedSourceKey === sourceKey, sourceState, err, resetSource };
+}
+
+function EmbedPage() {
+  const { slug } = Route.useParams();
+  const { mode, revision, meshUrl, instance } = Route.useSearch();
+  const [viewerPhase, setViewerPhase] = useState<FunnelViewerPhase | null>(null);
+  const [viewerDetail, setViewerDetail] = useState<string | null>(null);
+  const [retryKey, setRetryKey] = useState(0);
+  const { code, sourceSettled, sourceState, err, resetSource } = useEmbedSource(slug, revision, retryKey);
+
   const onPhaseChange = useCallback((phase: FunnelViewerPhase, detail?: string | null) => {
     setViewerPhase(phase);
     setViewerDetail(detail ?? null);
   }, []);
-
-  const sourceSettled = loadedSourceKey === sourceKey;
 
   const uiPhase = deriveEmbedUiPhase({
     revision,
@@ -129,9 +139,7 @@ function EmbedPage() {
     setRetryKey((k) => k + 1);
   };
   const retrySource = () => {
-    setErr(null);
-    setSourceState('loading');
-    setLoadedSourceKey(null);
+    resetSource();
     setRetryKey((k) => k + 1);
   };
 
