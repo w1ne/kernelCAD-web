@@ -3,17 +3,23 @@
 import { useEffect, useState } from 'react';
 import { GeometryEngine } from '../../../shared/worker/geometryEngine';
 
-/** Owns the singleton in-browser worker engine and its readiness flag. */
-export function useEngineReady() {
+/** Owns the singleton in-browser worker engine and its readiness flag.
+ *  `enabled: false` skips worker init so a precomputed mesh can render
+ *  without booting the CAD runtime. */
+export function useEngineReady(enabled = true) {
     const engine = GeometryEngine.getInstance();
-    const [isReady, setIsReady] = useState(false);
+    const [isReady, setIsReady] = useState(!enabled);
 
-    // Initialize Engine
     useEffect(() => {
-        engine.initialize().then(() => setIsReady(true));
+        if (!enabled) return undefined;
+        let cancelled = false;
+        engine.initialize().then(() => {
+            if (!cancelled) setIsReady(true);
+        });
         return () => {
+            cancelled = true;
         };
-    }, [engine]);
+    }, [engine, enabled]);
 
-    return { engine, isReady };
+    return { engine, isReady: enabled ? isReady : true };
 }

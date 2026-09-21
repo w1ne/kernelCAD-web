@@ -64,9 +64,21 @@ export interface GeometryContextType {
 
 const GeometryContext = createContext<GeometryContextType | undefined>(undefined);
 
-export function GeometryProvider({ children, code }: { children: ReactNode; code: string }) {
+export function GeometryProvider({
+    children,
+    code,
+    suspendSourceExecution = false,
+    externalGeometries = null,
+}: {
+    children: ReactNode;
+    code: string;
+    /** Mesh-artifact path: do not evaluate `code`. */
+    suspendSourceExecution?: boolean;
+    /** Geometries loaded from a revision-matched mesh artifact. */
+    externalGeometries?: GeometryResult[] | null;
+}) {
     const studioScript = readStudioScriptParam();
-    const { engine, isReady } = useEngineReady();
+    const { engine, isReady } = useEngineReady(!suspendSourceExecution);
     const { showSketches, toggleSketchVisibility } = useShowSketches();
     const transforms = useGeometryTransforms();
     const {
@@ -84,9 +96,10 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
         transforms.setGeometryTransformOverrides,
         transforms.viewportDriverLockRef,
         setPreviewGeometries,
+        suspendSourceExecution,
     );
 
-    const displayGeometries = useMemo(
+    const sourceGeometries = useMemo(
         () => script.geometries.map((geometry) => {
             if (!geometry.assemblyPartName) return geometry;
             const transform = transforms.geometryTransformOverrides[geometry.assemblyPartName];
@@ -94,6 +107,7 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
         }),
         [script.geometries, transforms.geometryTransformOverrides],
     );
+    const displayGeometries = externalGeometries ?? sourceGeometries;
 
     const value: GeometryContextType = useMemo(() => ({
         geometries: displayGeometries,
@@ -101,9 +115,9 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
         sketchesGeometries: script.sketchesGeometries,
         showSketches,
         toggleSketchVisibility,
-        error: script.error,
-        isReady,
-        isComputing: script.isComputing,
+        error: externalGeometries ? null : script.error,
+        isReady: externalGeometries ? true : isReady,
+        isComputing: externalGeometries ? false : script.isComputing,
         executionCount: script.executionCount,
         currentCodeRevision: script.currentCodeRevision,
         lastSuccessfulRevision: script.lastSuccessfulRevision,
@@ -123,7 +137,7 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
         clearGeometryTransformOverrides: transforms.clearGeometryTransformOverrides,
         setViewportDriverLock: transforms.setViewportDriverLock,
     }), [
-        displayGeometries, previewGeometries, script.sketchesGeometries, showSketches,
+        displayGeometries, externalGeometries, previewGeometries, script.sketchesGeometries, showSketches,
         toggleSketchVisibility, script.error, isReady, script.isComputing, script.executionCount,
         script.currentCodeRevision, script.lastSuccessfulRevision, script.executionHistory,
         script.scriptParams, script.scriptReview, script.featureRecords, script.recomputeMs,

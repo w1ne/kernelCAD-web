@@ -1,6 +1,6 @@
 # Phase 3 — Versioned mesh artifact (design)
 
-Status: scaffolded hooks only in the viewer/embed PRs. Full pipeline is a follow-up.
+Status: the embed loads a revision-matched mesh artifact (materials and camera bounds) and keeps source evaluation as the fallback. Server-side artifact storage is still a follow-up; the viewer accepts the artifact URL directly.
 
 ## Goal
 
@@ -29,7 +29,7 @@ Deduplicate simultaneous same-build requests (single-flight). **Do not** remove 
 
 1. `open_in_studio` / project save enqueues or inline-builds artifact when cheap.
 2. Embed accepts `?meshUrl=` (already wired as a search-param hook).
-3. FunnelViewer accepts `meshUrl` prop (hook present; still executes source today).
+3. FunnelViewer loads `meshUrl` into the viewer without executing source. A failed or revision-mismatched artifact falls back to source evaluation.
 4. Widget iframe prefers `embedUrl` which can later point at mesh-backed embed.
 
 ## Non-goals for the first artifact PR

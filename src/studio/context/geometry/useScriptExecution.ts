@@ -32,6 +32,7 @@ export function useScriptExecution(
     setGeometryTransformOverrides: (next: Record<string, number[]>) => void,
     viewportDriverLockRef: MutableRefObject<boolean>,
     setPreviewGeometries: (geometries: GeometryResult[]) => void,
+    suspendSourceExecution = false,
 ) {
     const [geometries, setGeometries] = useState<GeometryResult[]>([]);
     const [sketchesGeometries, setSketchesGeometries] = useState<SketchGeometry[]>([]);
@@ -106,6 +107,7 @@ export function useScriptExecution(
 
     // Execution Loop
     useEffect(() => {
+        if (suspendSourceExecution) return;
         if (studioScript) return;
         // Hosted deploy (app.kernelcad.com): the in-process worker is the
         // legacy v0.1 runtime that throws on modern API globals, so this
@@ -126,7 +128,7 @@ export function useScriptExecution(
         }, 600);
         return () => clearTimeout(timer);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [code, isReady, engine, pushExecutionRecord, studioScript]);
+    }, [code, isReady, engine, pushExecutionRecord, studioScript, suspendSourceExecution]);
 
     const executeGeometry = useCallback(async (codeToExecute: string) => {
         // `?script=` models already live on the node kernel session. Validate
