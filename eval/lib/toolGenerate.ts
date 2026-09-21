@@ -49,6 +49,17 @@ export interface PickedArtifact {
 // Preference order: the final fenced block (the model's declared answer), then
 // the last candidate that evaluated cleanly (best verified), then the last
 // candidate evaluated at all (even if it failed), else no-script.
+export const PITFALLS = [
+  '## Common kernelCAD pitfalls (from real failure data)',
+  '',
+  '- ParamRef arithmetic: use `.add/.subtract/.multiply/.divide` — JS operators (`+ - * /`) on a ParamRef throw. Chain them for derived dimensions.',
+  '- Every numeric argument must be a finite number or a numeric ParamRef. Never pass NaN/undefined; derive values with ParamRef methods.',
+  '- Sketches must form a single closed loop before `extrude()`/`revolve()`: close the path, and avoid zero-length segments or duplicate points.',
+  '- Declare a connector on a part before referencing it in a mate; connector origins must be finite `[x, y, z]` Vec3s.',
+  '- Boolean cuts that remove no material are errors: make sure the tool actually intersects the body (check coordinates and axes).',
+  '- Fillets/chamfers fail on tight geometry: keep the radius below half the local wall/edge thickness.',
+].join('\n');
+
 export function pickArtifact(
   finalText: string,
   lastCleanCode?: string,
@@ -79,6 +90,7 @@ export interface GenerateCaseWithToolsArgs {
   skillMd: string;
   startedAt: string;
   maxCalls: number;
+  pitfalls?: boolean;
   maxTokens?: number;
   temperature?: number;
   cookbook?: CookbookInjection;
@@ -96,7 +108,9 @@ export async function generateCaseWithTools(args: GenerateCaseWithToolsArgs): Pr
   mkdirSync(callDir, { recursive: true });
 
   const addendum = args.cookbook?.systemPromptAddendum;
-  const system = `${args.skillMd}${addendum && addendum.length > 0 ? `\n\n${addendum}` : ''}\n\n---\n\n${TOOL_PROTOCOL}`;
+  const system = `${args.skillMd}${addendum && addendum.length > 0 ? `\n\n${addendum}` : ''}\n\n---\n\n${TOOL_PROTOCOL}${
+    args.pitfalls ? `\n\n---\n\n${PITFALLS}` : ''
+  }`;
 
   const events: TranscriptEvent[] = [];
   events.push({ kind: 'system_prompt', chars: system.length });

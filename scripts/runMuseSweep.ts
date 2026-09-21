@@ -44,6 +44,7 @@ interface SweepConfig {
   useCookbook: boolean;
   apiKeyEnv: string;
   judgeBaseUrl: string;
+  pitfalls: boolean;
   skipJudge: boolean;
   force: Set<string>;
   maxTokensIn: number;
@@ -74,6 +75,9 @@ export function resumeMismatch(
   const priorCookbook = prior.cookbook ?? true;
   const priorLoop = prior.toolLoop ?? false;
   const priorCalls = prior.toolMaxCalls ?? 8;
+  if ((prior.pitfalls ?? false) !== (cfg.pitfalls ?? false)) {
+    return `pitfalls=${prior.pitfalls ?? false}/${cfg.pitfalls ?? false}`;
+  }
   if (priorPreset !== cfg.promptPreset || priorCookbook !== cfg.useCookbook || priorLoop !== cfg.toolLoop) {
     return `promptPreset=${priorPreset}/${cfg.promptPreset} cookbook=${priorCookbook}/${cfg.useCookbook} toolLoop=${priorLoop}/${cfg.toolLoop}`;
   }
@@ -222,6 +226,7 @@ export function parseSweepArgs(argv: string[]): SweepConfig {
     useCookbook: !has('--no-cookbook'),
     apiKeyEnv: flagValue('--api-key-env') ?? 'DEEPINFRA_API_KEY',
     judgeBaseUrl: flagValue('--judge-base-url') ?? 'https://api.deepinfra.com/v1/openai',
+    pitfalls: has('--pitfalls'),
     skipJudge: has('--skip-judge'),
     force: new Set(multiList('--force')),
     maxTokensIn,
@@ -347,6 +352,7 @@ async function runOneCase(
             startedAt: cfg.startedAt,
             cookbook,
             maxCalls: cfg.toolMaxCalls,
+            pitfalls: cfg.pitfalls,
             maxTokens: cfg.maxTokens,
             temperature: cfg.temperature,
           })
@@ -605,6 +611,7 @@ async function main(): Promise<void> {
     protocol: PROTOCOL,
     judgeModel: JUDGE_MODEL,
     judgeBaseUrl: cfg.judgeBaseUrl,
+    pitfalls: cfg.pitfalls,
     startedAt: cfg.startedAt,
     caseCount: cases.length,
   };
