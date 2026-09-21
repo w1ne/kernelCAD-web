@@ -5,7 +5,7 @@ import { initOcct } from '../../../../src/kernel/backends/occt/occtBackend';
 import { buildNurbsFace } from '../../../../src/kernel/backends/occt/nurbsSurfaceLowerer';
 import { lowerSurfaceSew } from '../../../../src/kernel/backends/occt/surfaceSewLowerer';
 import { CaptureSession } from '../../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../../src/modeling/api';
+import { createModelingApi } from '../../../../src/modeling/api';
 import { RecomputeEngine } from '../../../../src/modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../../../src/modeling/backends/occt/occtLowerer';
 import type * as replicad from 'replicad';
@@ -75,7 +75,7 @@ describe('lowerSurfaceSew', () => {
 
   it('end-to-end: sew(...) with requireClosed builds a closed solid through the dispatch arm', async () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const p = (x: number, y: number, z: number): [number, number, number] => [x, y, z];
     const mk = (
       a: [number, number, number],
@@ -103,7 +103,7 @@ describe('lowerSurfaceSew', () => {
 
   it('emits feature.surface-sew.open-shell through the dispatch arm when requireClosed and the shell is open', async () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const p = (x: number, y: number, z: number): [number, number, number] => [x, y, z];
     const mk = (
       a: [number, number, number],
@@ -132,7 +132,7 @@ describe('lowerSurfaceSew', () => {
 
   it('does NOT emit open-shell when requireClosed is false even if the shell is open', async () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const p = (x: number, y: number, z: number): [number, number, number] => [x, y, z];
     const mk = (
       a: [number, number, number],

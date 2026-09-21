@@ -15,7 +15,7 @@
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { meshFeaturesPerFeature } from '../../../src/modeling/capture/featureMeshing';
 import {
@@ -31,7 +31,7 @@ beforeAll(async () => {
 describe('Shape.material({ face, ... }) — capture-time', () => {
   it('mutates metadata.materialByLabel and leaves metadata.material untouched', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const s = kcad.box(10, 10, 10, false, { faceLabels: { lid: 'top' } });
     const t = s.material({ face: 'lid', baseColor: '#0a0a0a', clearcoat: 1 });
     expect(t).toBe(s); // chainable
@@ -44,7 +44,7 @@ describe('Shape.material({ face, ... }) — capture-time', () => {
 
   it('accumulates per-face entries across multiple calls; last write wins on same label', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const s = kcad.box(10, 10, 10, false, {
       faceLabels: { lid: 'top', base: 'bottom' },
     });
@@ -61,7 +61,7 @@ describe('Shape.material({ face, ... }) — capture-time', () => {
 
   it('composes with whole-shape .material({baseColor}) as default for unmatched faces', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const s = kcad.box(10, 10, 10, false, { faceLabels: { lid: 'top' } });
     s.material({ baseColor: '#cccccc' }); // whole-shape default
     s.material({ face: 'lid', baseColor: '#0a0a0a' });
@@ -74,7 +74,7 @@ describe('Shape.material({ face, ... }) — capture-time', () => {
 
   it('rejects empty/non-string face label at capture time', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const s = kcad.box(10, 10, 10);
     expect(() => s.material({ face: '', baseColor: '#fff' })).toThrow(
       /non-empty string label/,
@@ -142,7 +142,7 @@ describe('Bridge serializer — materialByFaceId round-trip', () => {
 describe('meshFeaturesPerFeature — per-face material resolution', () => {
   it('resolves face labels to face indices and populates materialByFaceId', async () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const s = kcad.box(10, 10, 10, false, {
       faceLabels: { lid: 'top', base: 'bottom' },
     });
@@ -176,7 +176,7 @@ describe('meshFeaturesPerFeature — per-face material resolution', () => {
 
   it('surfaces a soft warning when face label does not resolve and continues the build', async () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     // Box has NO faceLabels declared upstream.
     const s = kcad.box(10, 10, 10);
     s.material({ face: 'rim', baseColor: '#0a0a0a' });
@@ -201,7 +201,7 @@ describe('meshFeaturesPerFeature — per-face material resolution', () => {
 
   it('whole-shape .material() without face does not populate materialByFaceId', async () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const s = kcad.box(10, 10, 10);
     s.material({ baseColor: '#cccccc' });
 

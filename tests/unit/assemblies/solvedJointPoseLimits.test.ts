@@ -11,12 +11,12 @@
 
 import { describe, it, expect } from 'vitest';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 
 describe('Issue #537 — joint pose out-of-limits diagnostic', () => {
   const setup = () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('leg');
     const thigh = arm.part('thigh', kcad.box(10, 10, 10));
     const shin = arm.part('shin', kcad.box(10, 10, 10), { at: [0, 0, 10] });

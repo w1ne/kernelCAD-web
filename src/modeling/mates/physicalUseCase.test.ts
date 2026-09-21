@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it } from 'vitest';
 import { CaptureSession } from '../capture/captureSession';
-import { createApi } from '../api';
+import { createModelingApi } from '../api';
 import {
   makePhysicalUseCaseRecord,
   reviewPhysicalUseCasesWithReachability,
@@ -10,7 +10,7 @@ import {
 
 function makeStaticReviewRig(maxTorqueNmm: number) {
   const session = new CaptureSession();
-  const kcad = createApi({ session });
+  const kcad = createModelingApi({ session });
   const arm = kcad.assembly('static review rig');
   arm
     .part('base', kcad.box(50, 20, 8))
@@ -56,7 +56,7 @@ function makeStructurallyRatedClevisRig(
   } = {},
 ) {
   const session = new CaptureSession();
-  const kcad = createApi({ session });
+  const kcad = createModelingApi({ session });
   const arm = kcad.assembly('rated clevis rig');
   const steel = {
     name: 'test steel',
@@ -259,7 +259,7 @@ describe('physical use case records', () => {
 
   it('reports a blocking diagnostic when contacts require different actuator poses', async () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('split-pose-review');
     arm
       .part('base', kcad.box(10, 10, 10))

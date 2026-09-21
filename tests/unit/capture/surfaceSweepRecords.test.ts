@@ -3,13 +3,13 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import ts from 'typescript';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 import { buildCoonsPatchSurfaceRecord } from '../../../src/modeling/capture/surfaceSweepRecords';
 
 describe('surface and sweep capture records', () => {
   it('exports byte-stable variableSweep and coonsPatch records', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
 
     const spine = kcad.nurbsCurve([[0, 0, 0], [10, 0, 0]], { degree: 1 });
     const profile = kcad

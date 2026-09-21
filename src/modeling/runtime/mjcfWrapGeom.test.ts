@@ -13,7 +13,7 @@ import { readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { CaptureSession } from '../capture/captureSession';
-import { createApi } from '../api';
+import { createModelingApi } from '../api';
 import { initOcct } from '../../kernel/backends/occt/occtBackend';
 import { assemblyToMjcf } from './mjcfExport';
 
@@ -35,7 +35,7 @@ async function loadMujocoInNode(): Promise<unknown> {
 async function buildWrappedHinge() {
     await initOcct();
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('wrapped-hinge');
 
     const baseBody = kcad.box(40, 40, 30, true).translate(0, 0, -15);
@@ -119,7 +119,7 @@ describe('assemblyToMjcf — wrap-geom routing (P11 Slice 2)', () => {
     it('leaves straight tendons (no wrapGeoms) as plain two-site spatials', async () => {
         await initOcct();
         const session = new CaptureSession();
-        const kcad = createApi({ session });
+        const kcad = createModelingApi({ session });
         const arm = kcad.assembly('straight');
         const baseBody = kcad.box(40, 40, 30, true).translate(0, 0, -15);
         const armBody = kcad.box(120, 20, 20, true).translate(70, 0, 0);

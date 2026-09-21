@@ -11,11 +11,11 @@
 
 import { describe, it, expect } from 'vitest';
 import { CaptureSession } from './captureSession';
-import { createApi } from '../api';
+import { createModelingApi } from '../api';
 
 function makeArm() {
   const session = new CaptureSession();
-  const kcad = createApi({ session });
+  const kcad = createModelingApi({ session });
   const arm = kcad.assembly('test');
   const a = kcad.box(10, 10, 100);
   const b = kcad.box(5, 5, 50);
@@ -37,7 +37,7 @@ describe('part.wrapGeom(name, opts) — capture validation', () => {
 
   it('records a wrap geom through the builder chain', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('w');
     const a = kcad.box(10, 10, 100);
     arm
@@ -56,15 +56,15 @@ describe('part.wrapGeom(name, opts) — capture validation', () => {
 
   it('omits halfLengthMm when not provided (infinite cylinder)', () => {
     const session = new CaptureSession();
-    const arm = createApi({ session }).assembly('w');
-    arm.part('a', createApi({ session }).box(10, 10, 100)).wrapGeom('w1', { axis: [1, 0, 0], radius: 4 });
+    const arm = createModelingApi({ session }).assembly('w');
+    arm.part('a', createModelingApi({ session }).box(10, 10, 100)).wrapGeom('w1', { axis: [1, 0, 0], radius: 4 });
     const part = arm.__parts()[0];
     expect(part.wrapGeoms[0].halfLengthMm).toBeUndefined();
   });
 
   it('rejects a duplicate wrap-geom name on the same part', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('w');
     const ref = arm.part('a', kcad.box(10, 10, 100));
     ref.wrapGeom('dup', { axis: [0, 0, 1], radius: 6 });
@@ -75,7 +75,7 @@ describe('part.wrapGeom(name, opts) — capture validation', () => {
 
   it('rejects a zero-length axis', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('w');
     expect(() =>
       arm.part('a', kcad.box(10, 10, 100)).wrapGeom('w', { axis: [0, 0, 0], radius: 6 }),
@@ -84,7 +84,7 @@ describe('part.wrapGeom(name, opts) — capture validation', () => {
 
   it('rejects a non-positive radius', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('w');
     expect(() =>
       arm.part('a', kcad.box(10, 10, 100)).wrapGeom('w', { axis: [0, 0, 1], radius: 0 }),
@@ -93,7 +93,7 @@ describe('part.wrapGeom(name, opts) — capture validation', () => {
 
   it('rejects a non-positive halfLengthMm when provided', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('w');
     expect(() =>
       arm
@@ -106,7 +106,7 @@ describe('part.wrapGeom(name, opts) — capture validation', () => {
 describe('arm.tendon(...).wrapGeoms — routing reference validation', () => {
   function armWithWrap() {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('t');
     arm
       .part('a', kcad.box(10, 10, 100))

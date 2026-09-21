@@ -6,14 +6,14 @@ import { evaluateAndBuildScript } from '../../agent/cli/commands/evaluate';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { CaptureSession } from '../capture/captureSession';
-import { createApi } from '../api';
+import { createModelingApi } from '../api';
 import { detectInterferences } from '../runtime/detectInterferences';
 import { KernelError } from '../../shared/intent/kernelError';
 import { withDefaults } from './clevis';
 
 function makeArm() {
   const session = new CaptureSession();
-  const kc = createApi({ session });
+  const kc = createModelingApi({ session });
   const arm = kc.assembly('hand');
   arm.part('palm', kc.box(80, 50, 20, true))
     .connector('index-mount', {

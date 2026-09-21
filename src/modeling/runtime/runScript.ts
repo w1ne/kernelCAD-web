@@ -22,7 +22,7 @@ import '../../shared/runtime/kernelcadVersionNode';
 
 import { transpileTs } from './transpile';
 import { ISOLATION_WRAP_OFFSET, runIsolated } from './isolation';
-import { createApi } from '../api';
+import { createModelingApi } from '../api';
 import {
   runScriptCore,
   type ScriptApiFactory,
@@ -44,7 +44,7 @@ export interface RunScriptInput {
 }
 
 export interface RunScriptFacadeOptions {
-  /** Script-API factory. Defaults to modeling's `createApi`; the composition
+  /** Script-API factory. Defaults to modeling's `createModelingApi`; the composition
    *  layer passes `createScriptApi` so cross-layer namespaces (`kc.kinematic`)
    *  are wired. See `src/composition/runScript.ts` — the supported entry. */
   apiFactory?: ScriptApiFactory;
@@ -75,7 +75,7 @@ export async function runScript(
     scriptDir,
     runner,
     transpile: transpileTs,
-    apiFactory: opts?.apiFactory ?? createApi,
+    apiFactory: opts?.apiFactory ?? createModelingApi,
     // Only the default runner's prologue is known here; a caller-supplied
     // runner wraps differently, so report identity rather than a wrong offset.
     wrapOffset: runner === runIsolated ? ISOLATION_WRAP_OFFSET : undefined,

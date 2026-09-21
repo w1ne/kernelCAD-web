@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 
 // Helper: get the rotateAxis transform that .alongAxis() appended (or null
 // if no rotation was appended — identity case).
@@ -23,7 +23,7 @@ function transformsCount(session: CaptureSession, id: string): number {
 describe('Shape.alongAxis', () => {
   it('alongAxis([0, 0, 1]) is a no-op (no rotation appended)', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const c = kcad.cylinder(20, 4).alongAxis([0, 0, 1]);
     expect(transformsCount(session, c.id)).toBe(0);
   });
@@ -31,7 +31,7 @@ describe('Shape.alongAxis', () => {
   it('alongAxis([0, 1, 0]) rotates 90° around -X (Z → +Y)', () => {
     // Z = [0,0,1], axis = [0,1,0]. Z × axis = [-1, 0, 0]. acos(0) = 90°.
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const c = kcad.cylinder(20, 4).alongAxis([0, 1, 0]);
     const r = lastRotation(session, c.id)!;
     expect(r.deg).toBeCloseTo(90);
@@ -43,7 +43,7 @@ describe('Shape.alongAxis', () => {
   it('alongAxis([1, 0, 0]) rotates 90° around +Y (Z → +X)', () => {
     // Z = [0,0,1], axis = [1,0,0]. Z × axis = [0, 1, 0]. acos(0) = 90°.
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const c = kcad.cylinder(20, 4).alongAxis([1, 0, 0]);
     const r = lastRotation(session, c.id)!;
     expect(r.deg).toBeCloseTo(90);
@@ -54,7 +54,7 @@ describe('Shape.alongAxis', () => {
 
   it('alongAxis([0, 0, -1]) rotates 180° around +X (antipodal, deterministic)', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const c = kcad.cylinder(20, 4).alongAxis([0, 0, -1]);
     const r = lastRotation(session, c.id)!;
     expect(r.deg).toBeCloseTo(180);
@@ -66,7 +66,7 @@ describe('Shape.alongAxis', () => {
   it('alongAxis([1, 1, 0]) rotates 90° around the bisector', () => {
     // Z × [1/√2, 1/√2, 0] = [-1/√2, 1/√2, 0]. acos(0) = 90°.
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const c = kcad.cylinder(20, 4).alongAxis([1, 1, 0]);
     const r = lastRotation(session, c.id)!;
     expect(r.deg).toBeCloseTo(90);
@@ -77,14 +77,14 @@ describe('Shape.alongAxis', () => {
 
   it('rejects zero-vector axis with feature.invalid-args', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     expect(() => kcad.cylinder(20, 4).alongAxis([0, 0, 0])).toThrow(/non-zero/i);
   });
 
   it('normalizes non-unit input', () => {
     // [0, 5, 0] should produce same rotation as [0, 1, 0].
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const c = kcad.cylinder(20, 4).alongAxis([0, 5, 0]);
     const r = lastRotation(session, c.id)!;
     expect(r.deg).toBeCloseTo(90);
@@ -93,7 +93,7 @@ describe('Shape.alongAxis', () => {
 
   it('chains: returns the same Shape for further chaining', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const c = kcad.cylinder(20, 4).alongAxis([0, 1, 0]).translate(5, 0, 0);
     expect(c).toBeDefined();
     // Should have 2 transforms: rotateAxis (from alongAxis), translate.

@@ -26,13 +26,13 @@
 
 import { describe, expect, it } from 'vitest';
 import { CaptureSession } from '../capture/captureSession';
-import { createApi } from '../api';
+import { createModelingApi } from '../api';
 import { reviewPoseEnvelope } from './poseEnvelope';
 import { validateWorkspaceReachability } from './workspaceReachability';
 
 function makeArm() {
   const session = new CaptureSession();
-  const kcad = createApi({ session });
+  const kcad = createModelingApi({ session });
   return { arm: kcad.assembly('rig'), kcad };
 }
 

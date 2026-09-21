@@ -3,7 +3,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 import { KernelError } from '../../../src/shared/intent/kernelError';
 import type { Curve3D } from '../../../src/modeling/capture/curveProxy';
 import type { Vec3 } from '../../../src/shared/intent/types';
@@ -43,7 +43,7 @@ function kappa(d1: Vec3, d2: Vec3): number {
 
 function makeApi() {
   const session = new CaptureSession();
-  return { session, kcad: createApi({ session }) };
+  return { session, kcad: createModelingApi({ session }) };
 }
 
 describe('Curve3D.bridge / curveBridge', () => {

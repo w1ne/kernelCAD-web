@@ -8,7 +8,7 @@ import {
   CURVE3D_METHODS,
   CURVE3D_ANALYTICS_METHODS,
 } from '../../../src/agent/mcp/tools/listApi';
-import { createApi } from '../../../src/modeling/api';
+import { createScriptApi } from '../../../src/composition/scriptApi';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 import { Shape } from '../../../src/modeling/capture/proxy';
 import { Sketch, PathBuilder } from '../../../src/modeling/capture/sketch';
@@ -19,9 +19,9 @@ import { Curve3DAnalyticsImpl } from '../../../src/modeling/capture/curveAnalyti
 import { ShapeList } from '../../../src/modeling/selection/shapeList';
 
 describe('list_api drift sentinels', () => {
-  it('GLOBALS matches the keys returned by createApi(ctx)', async () => {
+  it('GLOBALS matches the keys returned by createScriptApi(ctx)', async () => {
     const ctx = { session: new CaptureSession() };
-    const api = createApi(ctx);
+    const api = createScriptApi(ctx);
     const apiKeys = Object.keys(api).sort();
 
     const r = await listApiTool({});

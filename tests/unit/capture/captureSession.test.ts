@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 import { KernelError } from '../../../src/shared/intent/kernelError';
 
 describe('CaptureSession', () => {
@@ -82,7 +82,7 @@ describe('CaptureSession', () => {
 
 function makeApi() {
   const session = new CaptureSession();
-  const api = createApi({ session });
+  const api = createModelingApi({ session });
   return { session, api };
 }
 

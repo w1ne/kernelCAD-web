@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { solveHermiteG2 } from '../../../src/kernel/geometry/hermiteG2';
 import { KernelError } from '../../../src/shared/intent/kernelError';
@@ -95,7 +95,7 @@ describe('solveHermiteG2 (pure-JS solver)', () => {
 describe('hermiteG2() — capture-time API', () => {
   it('registers a curve3d record with degree 5 and 6 control points', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const curve = kcad.hermiteG2(
       { point: [0, 0, 0], tangent: [10, 0, 0] },
       { point: [10, 0, 0], tangent: [10, 0, 0] },
@@ -117,7 +117,7 @@ describe('hermiteG2() — OCCT evaluation', () => {
 
   it('linear case: equal collinear tangents produce a curve lying on the X axis', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const curve = kcad.hermiteG2(
       { point: [0, 0, 0], tangent: [10, 0, 0] },
       { point: [10, 0, 0], tangent: [10, 0, 0] },
@@ -136,7 +136,7 @@ describe('hermiteG2() — OCCT evaluation', () => {
     // both ends would cancel by symmetry, so this asymmetric pair is the
     // canonical "hump" probe.
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const curve = kcad.hermiteG2(
       { point: [0, 0, 0], tangent: [0, 10, 0] },
       { point: [10, 0, 0], tangent: [0, -10, 0] },
@@ -147,13 +147,13 @@ describe('hermiteG2() — OCCT evaluation', () => {
 
   it('G2 case: non-zero curvatures change the visible bulge vs the G1-only case', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const g1 = kcad.hermiteG2(
       { point: [0, 0, 0], tangent: [0, 10, 0] },
       { point: [10, 0, 0], tangent: [0, -10, 0] },
     );
     const session2 = new CaptureSession();
-    const kcad2 = createApi({ session: session2 });
+    const kcad2 = createModelingApi({ session: session2 });
     const g2 = kcad2.hermiteG2(
       { point: [0, 0, 0], tangent: [0, 10, 0], curvature: [0, 100, 0] },
       { point: [10, 0, 0], tangent: [0, -10, 0], curvature: [0, 100, 0] },
@@ -167,7 +167,7 @@ describe('hermiteG2() — OCCT evaluation', () => {
 
   it('endpoint interpolation: pointAt(0) ≈ a.point and pointAt(1) ≈ b.point', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const a = { point: [0, 0, 0] as [number, number, number], tangent: [5, 5, 0] as [number, number, number] };
     const b = { point: [10, 3, 2] as [number, number, number], tangent: [5, -2, 0] as [number, number, number] };
     const curve = kcad.hermiteG2(a, b);
@@ -183,7 +183,7 @@ describe('hermiteG2() — OCCT evaluation', () => {
 
   it('tangent matching: tangentAt(0) is parallel to a.tangent (normalized)', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const aTan: [number, number, number] = [3, 4, 0]; // magnitude 5
     const bTan: [number, number, number] = [0, 0, 7]; // magnitude 7
     const curve = kcad.hermiteG2(

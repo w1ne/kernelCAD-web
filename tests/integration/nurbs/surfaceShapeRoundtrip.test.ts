@@ -1,14 +1,14 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 
 describe('Surface to Shape roundtrip', () => {
   beforeAll(async () => { await initOcct(); });
 
   it('nurbsSurface(...).toShape().translate(50, 0, 0) composes correctly', async () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const shape = api
       .nurbsSurface({
         controls: [
@@ -27,7 +27,7 @@ describe('Surface to Shape roundtrip', () => {
 
   it('nurbsSurface(...).thicken(2) is a Shape and exposes boundingBox + volume', async () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const shape = api
       .nurbsSurface({
         controls: [

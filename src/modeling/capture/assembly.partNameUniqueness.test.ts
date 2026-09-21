@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, it, expect } from 'vitest';
 import { CaptureSession } from './captureSession';
-import { createApi } from '../api';
+import { createModelingApi } from '../api';
 import { KernelError } from '../../shared/intent/kernelError';
 
 // F-foundation Task 3: Assembly.part(name, ...) and partRef.connector(name, opts)
@@ -14,7 +14,7 @@ import { KernelError } from '../../shared/intent/kernelError';
 describe('Assembly part / connector name uniqueness (F-foundation)', () => {
   it('accepts a ref-safe part name', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('test');
     const box = kcad.box(10, 10, 10);
     expect(() => arm.part('lid', box)).not.toThrow();
@@ -22,7 +22,7 @@ describe('Assembly part / connector name uniqueness (F-foundation)', () => {
 
   it('rejects a part name containing a dot', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('test');
     const box = kcad.box(10, 10, 10);
     expect(() => arm.part('top.bottom', box)).toThrow(KernelError);
@@ -30,7 +30,7 @@ describe('Assembly part / connector name uniqueness (F-foundation)', () => {
 
   it('rejects a part name containing a slash', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('test');
     const box = kcad.box(10, 10, 10);
     expect(() => arm.part('arm/elbow', box)).toThrow(KernelError);
@@ -38,7 +38,7 @@ describe('Assembly part / connector name uniqueness (F-foundation)', () => {
 
   it('rejects a part name containing brackets', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('test');
     const box = kcad.box(10, 10, 10);
     expect(() => arm.part('flange[0]', box)).toThrow(KernelError);
@@ -46,7 +46,7 @@ describe('Assembly part / connector name uniqueness (F-foundation)', () => {
 
   it('rejects a part name starting with a digit', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('test');
     const box = kcad.box(10, 10, 10);
     expect(() => arm.part('1lid', box)).toThrow(KernelError);
@@ -54,7 +54,7 @@ describe('Assembly part / connector name uniqueness (F-foundation)', () => {
 
   it('rejects a connector name containing reserved chars in connector(name, opts)', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('test');
     const box = kcad.box(10, 10, 10);
     expect(() =>
@@ -67,7 +67,7 @@ describe('Assembly part / connector name uniqueness (F-foundation)', () => {
 
   it('accepts an alnum connector name', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('test');
     const box = kcad.box(10, 10, 10);
     expect(() =>
@@ -80,7 +80,7 @@ describe('Assembly part / connector name uniqueness (F-foundation)', () => {
 
   it('rejects a connector name containing the # modifier separator', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('test');
     const box = kcad.box(10, 10, 10);
     expect(() =>
@@ -95,7 +95,7 @@ describe('Assembly part / connector name uniqueness (F-foundation)', () => {
 describe('Assembly.part connectors inline-map — F-surface gate enforcement', () => {
   it('rejects an inline connector-map key containing a dot', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('test');
     const box = kcad.box(10, 10, 10);
     expect(() =>
@@ -109,7 +109,7 @@ describe('Assembly.part connectors inline-map — F-surface gate enforcement', (
 
   it('rejects an inline connector-map key containing a slash', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('test');
     const box = kcad.box(10, 10, 10);
     expect(() =>
@@ -123,7 +123,7 @@ describe('Assembly.part connectors inline-map — F-surface gate enforcement', (
 
   it('rejects an inline connector-map key containing the # modifier separator', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('test');
     const box = kcad.box(10, 10, 10);
     expect(() =>
@@ -137,7 +137,7 @@ describe('Assembly.part connectors inline-map — F-surface gate enforcement', (
 
   it('accepts an inline connector-map key matching the ref-safe grammar', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('test');
     const box = kcad.box(10, 10, 10);
     expect(() =>

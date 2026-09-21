@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it } from 'vitest';
 import { CaptureSession } from '../capture/captureSession';
-import { createApi } from '../api';
+import { createModelingApi } from '../api';
 import type { Assembly } from '../capture/assembly';
 import { makePhysicalUseCaseRecord, type PhysicalUseCaseRecord } from './physicalUseCase';
 import { assessPhysicalUseCaseReachability } from './physicalUseCaseReachability';
@@ -18,7 +18,7 @@ function makeSymmetricHoldRig(opts: {
   omitRightActuator?: boolean;
 } = {}): { arm: Assembly; useCase: PhysicalUseCaseRecord } {
   const session = new CaptureSession();
-  const kcad = createApi({ session });
+  const kcad = createModelingApi({ session });
   const arm = kcad.assembly('symmetric hold rig');
 
   arm
@@ -129,7 +129,7 @@ function makeSymmetricHoldRig(opts: {
 
 function makeOffsetContactRig(): { arm: Assembly; useCase: PhysicalUseCaseRecord } {
   const session = new CaptureSession();
-  const kcad = createApi({ session });
+  const kcad = createModelingApi({ session });
   const arm = kcad.assembly('offset contact rig');
 
   arm
@@ -184,7 +184,7 @@ function makeOffsetContactRig(): { arm: Assembly; useCase: PhysicalUseCaseRecord
 
 function makeRotatedNormalRig(): { arm: Assembly; useCase: PhysicalUseCaseRecord } {
   const session = new CaptureSession();
-  const kcad = createApi({ session });
+  const kcad = createModelingApi({ session });
   const arm = kcad.assembly('rotated normal rig');
 
   arm

@@ -4,11 +4,11 @@ import { describe, it, expect } from 'vitest';
 import { suggestLimitFix, type SuggestedLimits } from './limitFixSuggest';
 import type { PoseEnvelopeDiagnostic } from './poseEnvelope';
 import { CaptureSession } from '../capture/captureSession';
-import { createApi } from '../api';
+import { createModelingApi } from '../api';
 
 function makeArm() {
   const session = new CaptureSession();
-  const kcad = createApi({ session });
+  const kcad = createModelingApi({ session });
   return { arm: kcad.assembly('t'), kcad, session };
 }
 

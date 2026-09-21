@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, it, expect } from 'vitest';
 import { CaptureSession } from './captureSession';
-import { createApi } from '../api';
+import { createModelingApi } from '../api';
 
 // `assembly.part(a).part(b).part(c)` must register every part on the SAME
 // assembly and return the last part's ref. Previously `part()` returned a
@@ -13,7 +13,7 @@ import { createApi } from '../api';
 describe('Assembly.part(...) fluent chaining', () => {
   it('chains part(a).part(b).part(c) — all registered, last ref returned', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('arm');
 
     const refC = arm
@@ -30,7 +30,7 @@ describe('Assembly.part(...) fluent chaining', () => {
 
   it('a chained part still supports connector() and further chaining (no regression)', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('arm');
 
     const linkRef = arm
@@ -54,7 +54,7 @@ describe('Assembly.part(...) fluent chaining', () => {
 describe('Assembly.revolute(...) capture', () => {
   it('captures a revolute joint with kind/axis/origin/limitsDeg', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('arm');
 
     const base = arm.part('base', kcad.box(10, 10, 10));
@@ -86,7 +86,7 @@ describe('Assembly.revolute(...) capture', () => {
 
   it('drives forward kinematics via solve({ hinge })', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('arm');
 
     const base = arm.part('base', kcad.box(10, 10, 10));
@@ -101,7 +101,7 @@ describe('Assembly.revolute(...) capture', () => {
 
   it('rejects a non-finite axis', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('arm');
     const base = arm.part('base', kcad.box(10, 10, 10));
     const link = arm.part('link', kcad.box(10, 10, 10));
@@ -116,7 +116,7 @@ describe('Assembly.revolute(...) capture', () => {
 
   it('rejects a non-finite origin', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('arm');
     const base = arm.part('base', kcad.box(10, 10, 10));
     const link = arm.part('link', kcad.box(10, 10, 10));
@@ -131,7 +131,7 @@ describe('Assembly.revolute(...) capture', () => {
 
   it('rejects limitsDeg with min >= max', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('arm');
     const base = arm.part('base', kcad.box(10, 10, 10));
     const link = arm.part('link', kcad.box(10, 10, 10));
@@ -155,7 +155,7 @@ describe('Assembly.revolute(...) capture', () => {
 describe('Assembly.solve(...) rejects posing a mate name (issue #536)', () => {
   const buildMate = () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('arm');
     arm
       .part('base', kcad.box(10, 10, 10))
@@ -197,7 +197,7 @@ describe('Assembly.solve(...) rejects posing a mate name (issue #536)', () => {
 
   it('still solves a real joint pose (no regression)', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('arm');
     const base = arm.part('base', kcad.box(10, 10, 10));
     const link = arm.part('link', kcad.box(10, 10, 10), { at: [0, 0, 10] });

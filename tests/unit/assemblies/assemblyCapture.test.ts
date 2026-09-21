@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 import { isKernelError, KernelError } from '../../../src/shared/intent/kernelError';
 
 // Vec3Param assertion helper: assembly Vec3 surfaces store as
@@ -19,7 +19,7 @@ describe('assembly capture contract', () => {
 
   it('captures assembly.model() as one aggregate feature over all placed parts', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
 
     const lamp = kcad.assembly('desk lamp');
     const base = lamp.part('base', kcad.box(40, 40, 6), { at: [0, 0, 0] });
@@ -50,7 +50,7 @@ describe('assembly capture contract', () => {
 
   it('terminates the fluent part-chain: part(a).part(b).model() equals assembly.model()', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
 
     const lamp = kcad.assembly('desk lamp');
     const chained = lamp
@@ -73,7 +73,7 @@ describe('assembly capture contract', () => {
 
   it('captures posed mate metadata on assembly.model() for Studio joint controls', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
 
     const stroke = kcad.param('stroke', 8);
     const lift = kcad.assembly('lift');
@@ -122,7 +122,7 @@ describe('assembly capture contract', () => {
 
   it('rejects assembly.model() when no parts have been captured', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
 
     expect(() => kcad.assembly('empty').model()).toThrow(/assembly.model requires at least one part/);
   });
@@ -134,7 +134,7 @@ describe('assembly capture contract', () => {
 
   it('captures named connector frames and fixed placement between parts', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
 
     const arm = kcad.assembly('connector arm');
     const base = arm.part('base', kcad.box(20, 20, 8), {
@@ -209,7 +209,7 @@ describe('assembly capture contract', () => {
 
   it('captures explicit fixed connector records between already placed parts', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
 
     const hinge = kcad.assembly('hinge');
     const leafA = hinge.part('leafA', kcad.box(30, 10, 3), {
@@ -248,7 +248,7 @@ describe('assembly capture contract', () => {
 
   it('captures mechanical joint intent contracts for review_cad', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
 
     const arm = kcad.assembly('intent arm');
     arm
@@ -297,7 +297,7 @@ describe('assembly capture contract', () => {
 
   it('captures passive joint support intent records', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('passive support');
 
     const returned = arm.jointSupport('pip-bearing', {
@@ -339,7 +339,7 @@ describe('assembly capture contract', () => {
   // strings so a future move of this code cannot silently regress them.
   it('mate() capacity.structure that is not a joint.clevis() descriptor throws the fixed clevis-capacity hint (C1)', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('clevis hint regression');
     arm.part('a', kcad.box(10, 10, 10)).connector('pin', {
       type: 'axis',
@@ -370,7 +370,7 @@ describe('assembly capture contract', () => {
 
   it('mechanicalJoint() requiredSupport.minBearingLengthMm <= 0 throws the literal mechanical-joint hint (C2)', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('required-support hint regression');
     arm
       .part('base', kcad.box(40, 40, 4, true))
@@ -409,7 +409,7 @@ describe('assembly capture contract', () => {
 
   it('jointSupport() requiredSupport.clearanceMm < 0 throws the literal joint-support hint (C2)', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('joint-support hint regression');
     let thrown: unknown;
     try {
@@ -436,7 +436,7 @@ describe('assembly capture contract', () => {
 
   it('keeps Assembly.name an own enumerable property', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('own-name');
     expect(Object.keys(arm)).toContain('name');
     expect(arm.name).toBe('own-name');
@@ -444,7 +444,7 @@ describe('assembly capture contract', () => {
 
   it('stores contact target part roles', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('contact target');
 
     arm.part('grasp-cylinder', kcad.cylinder(20, 10), { role: 'contact-target' });
@@ -454,7 +454,7 @@ describe('assembly capture contract', () => {
 
   it('rejects unknown part roles', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('bad role');
 
     expect(() => arm.part('mystery', kcad.box(1, 1, 1), {
@@ -464,7 +464,7 @@ describe('assembly capture contract', () => {
 
   it('rejects duplicate or empty mechanical joint intent fields', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('bad intent');
 
     arm.mechanicalJoint('drive', {
@@ -502,7 +502,7 @@ describe('assembly capture contract', () => {
 
   it('rejects connector placement when the local connector is missing', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('bad connector');
     const base = arm.part('base', kcad.box(20, 20, 8), {
       connectors: { shoulder: { origin: [0, 0, 8] } },
@@ -516,7 +516,7 @@ describe('assembly capture contract', () => {
 
   it('rejects invalid connector frame vectors before capture', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('bad frame');
 
     expect(() => arm.part('base', kcad.box(20, 20, 8), {

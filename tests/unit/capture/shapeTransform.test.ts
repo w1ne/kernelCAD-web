@@ -7,7 +7,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 import { Transform } from '../../../src/shared/runtime/se3';
 import type { ShapeTransform } from '../../../src/shared/intent/featureRecord';
 
@@ -23,7 +23,7 @@ function transformsForId(session: CaptureSession, id: string): ShapeTransform[] 
 describe('Shape.transform', () => {
   it('identity transform appends nothing', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const s = kcad.box(10, 10, 10);
     s.transform(Transform.identity());
     expect(transformsForId(session, s.id)).toHaveLength(0);
@@ -31,7 +31,7 @@ describe('Shape.transform', () => {
 
   it('pure translation appends a translate transform', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const s = kcad.box(10, 10, 10);
     s.transform(Transform.translation(5, 0, -3));
     const ts = transformsForId(session, s.id);
@@ -46,7 +46,7 @@ describe('Shape.transform', () => {
 
   it('pure rotation appends a rotateAxis transform', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const s = kcad.box(10, 10, 10);
     s.transform(Transform.rotationAxisAngleDeg([0, 0, 1], 45));
     const ts = transformsForId(session, s.id);
@@ -65,7 +65,7 @@ describe('Shape.transform', () => {
     // T = Translate(5, 0, 0) · Rotate(Z, 90) — applied right-to-left, so
     // rotate first then translate.
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const s = kcad.box(10, 10, 10);
     const t = Transform.translation(5, 0, 0).compose(Transform.rotationAxisAngleDeg([0, 0, 1], 90));
     s.transform(t);
@@ -77,7 +77,7 @@ describe('Shape.transform', () => {
 
   it('chains: shape.transform(A).transform(B) appends A then B', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const s = kcad.box(10, 10, 10);
     s.transform(Transform.translation(1, 0, 0));
     s.transform(Transform.translation(0, 2, 0));

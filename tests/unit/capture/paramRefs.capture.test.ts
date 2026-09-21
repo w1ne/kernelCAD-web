@@ -6,12 +6,12 @@
 
 import { describe, it, expect } from 'vitest';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 
 describe('capture-time paramRef threading', () => {
   it('box(width: ParamRef) records {$param} in params + metadata.paramRefs', () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const w = api.param('plateW', 60);
     api.box(w, 40, 5);
     const rec = session.getRecords()[0];
@@ -21,7 +21,7 @@ describe('capture-time paramRef threading', () => {
 
   it('multi-param box deduplicates same name and lists all distinct refs', () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const p = api.params({ w: 60, h: 40, t: 5 });
     api.box(p.w, p.h, p.t);
     const rec = session.getRecords()[0];
@@ -30,7 +30,7 @@ describe('capture-time paramRef threading', () => {
 
   it('mixed literal + ParamRef only records ref names', () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const w = api.param('w', 60);
     api.box(w, 40, 5);
     const rec = session.getRecords()[0];
@@ -39,7 +39,7 @@ describe('capture-time paramRef threading', () => {
 
   it('all-literal records have NO paramRefs metadata key', () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     api.box(60, 40, 5);
     const rec = session.getRecords()[0];
     expect((rec.metadata as { paramRefs?: string[] } | undefined)?.paramRefs).toBeUndefined();
@@ -47,7 +47,7 @@ describe('capture-time paramRef threading', () => {
 
   it('hole({diameter: ParamRef}) records the ref in params and metadata.paramRefs', () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const dia = api.param('boltDia', 5, { min: 1, max: 20 });
     const plate = api.box(60, 40, 5);
     plate.hole('top', { u: 0, v: 0, diameter: dia, depth: 'through' });

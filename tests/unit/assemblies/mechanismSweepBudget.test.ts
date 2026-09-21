@@ -16,7 +16,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 import {
   checkMechanismTruth,
   effectiveSweepBudget,
@@ -25,7 +25,7 @@ import {
 
 function makeHinge() {
   const session = new CaptureSession();
-  const kcad = createApi({ session });
+  const kcad = createModelingApi({ session });
   const arm = kcad.assembly('hinge-fixture');
   arm.part('a', kcad.box(20, 10, 10))
      .connector('hinge', { type: 'axis', origin: { kind: 'vec3', value: [20, 5, 5] }, axis: [0, 0, 1] });

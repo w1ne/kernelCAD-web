@@ -11,7 +11,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 import { KernelError } from '../../../src/shared/intent/kernelError';
 import type { CompilerDiagnostic } from '../../../src/shared/diagnostics/diagnostic';
 import type { AnimationViewMetadata } from '../../../src/shared/intent/animationViewRecord';
@@ -20,7 +20,7 @@ type MetaWithDiagnostics = AnimationViewMetadata & { diagnostics?: CompilerDiagn
 
 function makeApi() {
   const session = new CaptureSession();
-  return { session, api: createApi({ session }) };
+  return { session, api: createModelingApi({ session }) };
 }
 
 function lastMeta(session: CaptureSession): MetaWithDiagnostics {

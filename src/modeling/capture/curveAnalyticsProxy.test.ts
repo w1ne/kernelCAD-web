@@ -6,14 +6,14 @@
 // divideByEqualArcLength / divideByArcLength / derivatives / tessellate).
 //
 // Construction follows the same pattern as tests/unit/capture/nurbsCurve.test.ts:
-// instantiate a CaptureSession, build the api via createApi, then call
-// kcad.nurbsCurve / kcad.spline3d. (`api.ts` exports createApi, NOT the
+// instantiate a CaptureSession, build the api via createModelingApi, then call
+// kcad.nurbsCurve / kcad.spline3d. (`api.ts` exports createModelingApi, NOT the
 // individual factories — they live on the returned KernelCadApi interface.)
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../kernel/backends/occt/occtBackend';
 import { CaptureSession } from './captureSession';
-import { createApi } from '../api';
+import { createModelingApi } from '../api';
 import { KernelError } from '../../shared/intent/kernelError';
 import type { Curve3D } from './curveProxy';
 
@@ -25,7 +25,7 @@ function quarterCircle(): Curve3D {
   // degree-2 rational quarter-circle (R=10) in xy plane. Standard NURBS
   // representation; weights for the middle pt = sqrt(2)/2.
   const session = new CaptureSession();
-  const kcad = createApi({ session });
+  const kcad = createModelingApi({ session });
   return kcad.nurbsCurve(
     [
       [10, 0, 0],
@@ -40,7 +40,7 @@ function helix(): Curve3D {
   // 1-turn helix sampled as a spline through 9 points; non-uniform arc-length
   // along the parametric direction.
   const session = new CaptureSession();
-  const kcad = createApi({ session });
+  const kcad = createModelingApi({ session });
   const pts: [number, number, number][] = [];
   for (let i = 0; i <= 8; i++) {
     const t = (i / 8) * 2 * Math.PI;
@@ -231,7 +231,7 @@ describe('Curve3DAnalytics — tessellate', () => {
 
 function xSplineA(): Curve3D {
   const session = new CaptureSession();
-  const kcad = createApi({ session });
+  const kcad = createModelingApi({ session });
   return kcad.spline3d([
     [-10, -10, 0],
     [0, 0, 0],
@@ -241,7 +241,7 @@ function xSplineA(): Curve3D {
 
 function xSplineB(): Curve3D {
   const session = new CaptureSession();
-  const kcad = createApi({ session });
+  const kcad = createModelingApi({ session });
   return kcad.spline3d([
     [-10, 10, 0],
     [0, 0, 0],
@@ -263,7 +263,7 @@ describe('Curve3DAnalytics — intersect(other) curve-curve overload', () => {
 
   it('returns zero hits for parallel non-intersecting splines', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const a = kcad.spline3d([
       [0, 0, 0],
       [10, 0, 0],
@@ -307,7 +307,7 @@ describe('Curve3DAnalytics — intersect(other) curve-curve overload', () => {
 describe('Curve3DAnalytics — intersect(other) curve-surface overload', () => {
   it('returns at least one hit for a spline piercing a planar nurbsSurface', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     // Authored planar patch at z=0 spanning [-10, 10] in x and y; a
     // bilinear (degree 1) NURBS surface is the simplest valid carrier.
     const patch = kcad.nurbsSurface({
@@ -335,7 +335,7 @@ describe('Curve3DAnalytics — intersect(other) curve-surface overload', () => {
 
   it('throws intersect-kernel-failed for an unsupported surface kind (Coons patch / surfaceFromBoundary)', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     // surfaceFromBoundary lowers to a Coons patch — no JS-side NURBS data
     // path today. The intersect call must surface a clean diagnostic
     // rather than silently producing garbage.

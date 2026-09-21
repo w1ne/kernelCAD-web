@@ -4,12 +4,12 @@
 
 import { describe, it, expect } from 'vitest';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 
 describe('Shape.material() — glass fields', () => {
   it('accepts non-negative finite mm thickness', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const s = kcad.box(10, 10, 10);
     s.material({ baseColor: '#88ddee', transmission: 0.9, thickness: 5 });
     const record = session.getRecords().find(r => r.id === s.id)!;
@@ -18,7 +18,7 @@ describe('Shape.material() — glass fields', () => {
 
   it('throws on negative thickness with feature.material.thickness-negative', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const s = kcad.box(10, 10, 10);
     expect(() => s.material({ baseColor: '#fff', thickness: -1 })).toThrow(
       /thickness/,
@@ -27,7 +27,7 @@ describe('Shape.material() — glass fields', () => {
 
   it('accepts attenuationColor via existing resolveColor', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const s = kcad.box(10, 10, 10);
     s.material({ baseColor: '#fff', attenuationColor: '#aabbcc' });
     const record = session.getRecords().find(r => r.id === s.id)!;
@@ -36,7 +36,7 @@ describe('Shape.material() — glass fields', () => {
 
   it('accepts attenuationDistance positive finite', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const s = kcad.box(10, 10, 10);
     s.material({ baseColor: '#fff', attenuationDistance: 10 });
     const record = session.getRecords().find(r => r.id === s.id)!;
@@ -45,7 +45,7 @@ describe('Shape.material() — glass fields', () => {
 
   it('accepts attenuationDistance Infinity', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const s = kcad.box(10, 10, 10);
     s.material({ baseColor: '#fff', attenuationDistance: Number.POSITIVE_INFINITY });
     const record = session.getRecords().find(r => r.id === s.id)!;
@@ -56,7 +56,7 @@ describe('Shape.material() — glass fields', () => {
 
   it('throws on non-positive attenuationDistance', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const s = kcad.box(10, 10, 10);
     expect(() => s.material({ baseColor: '#fff', attenuationDistance: 0 })).toThrow(
       /attenuationDistance/,
@@ -68,7 +68,7 @@ describe('Shape.material() — glass fields', () => {
 
   it('drops attenuationColor via value-clamped soft warning when unresolved', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const s = kcad.box(10, 10, 10);
     const warnsBefore = session.warnings.length;
     s.material({ baseColor: '#fff', attenuationColor: 'not-a-color' });

@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { evaluateAndBuildScript } from '../../agent/cli/commands/evaluate';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import { CaptureSession } from '../capture/captureSession';
-import { createApi } from '../api';
+import { createModelingApi } from '../api';
 import {
   buildPoseEnvelopeSamples,
   classifySampleStrategy,
@@ -26,7 +26,7 @@ vi.mock('../runtime/brepDistance', async (importOriginal) => {
 
 function makeArm() {
   const session = new CaptureSession();
-  const kcad = createApi({ session });
+  const kcad = createModelingApi({ session });
   return { arm: kcad.assembly('rig'), kcad };
 }
 

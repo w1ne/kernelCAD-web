@@ -17,7 +17,7 @@
 // No `assembly.joint.not-visible` diagnostic.
 
 import { CaptureSession } from '../../capture/captureSession';
-import { createApi } from '../../api';
+import { createModelingApi } from '../../api';
 import type { Assembly } from '../../capture/assembly';
 
 const FORK_PLATE_X = 22;
@@ -30,7 +30,7 @@ const PIN_LEN = FORK_GAP_Y + 2 * FORK_PLATE_T + 14; // 38
 
 export function buildPostFixLuxoShoulder(): { arm: Assembly; session: CaptureSession } {
   const session = new CaptureSession();
-  const kcad = createApi({ session });
+  const kcad = createModelingApi({ session });
   const arm = kcad.assembly('luxo-post');
 
   const plateOffsetY = FORK_GAP_Y / 2 + FORK_PLATE_T / 2;

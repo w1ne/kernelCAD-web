@@ -11,7 +11,7 @@ import {
   createSolvedAssemblyCaptureSpec,
 } from '../../../src/modeling/capture/assemblyCaptureValidation';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 import type { FeatureRecord } from '../../../src/shared/intent/featureRecord';
 
 describe('assembly capture validation', () => {
@@ -183,7 +183,7 @@ describe('assembly capture validation', () => {
 
   it('leaves record ownership, ids, and paramRefs in CaptureSession', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const yawDeg = kcad.param('yawDeg', 15);
     const baseShape = kcad.box(10, 10, 10);
     const linkShape = kcad.box(20, 10, 10);
