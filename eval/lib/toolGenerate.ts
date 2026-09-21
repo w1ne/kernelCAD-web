@@ -31,7 +31,12 @@ export const TOOL_PROTOCOL = [
   '',
   'You can call `evaluate_script({ code })` to run a candidate `.kcad.ts` and get real diagnostics back.',
   'Iterate: call it as many times as needed until the diagnostics are clean.',
-  'When satisfied, output the FINAL complete script in a single ```ts fenced block.',
+  '',
+  '## Before you finish',
+  '',
+  'Diagnostics-clean is necessary but not sufficient: a solid block is valid geometry and still fails the design.',
+  "Re-read the design specification and verify that every must-have requirement is actually modeled — openings, cavities, wall thickness, separate components, clearances, legroom, load paths, and the specified manufacturing method.",
+  'Fix the model until those requirements are visibly satisfied, then output the FINAL complete script in a single ```ts fenced block.',
 ].join('\n');
 
 export type ArtifactSource = 'fence' | 'last-clean' | 'last-evaluated' | 'none';
