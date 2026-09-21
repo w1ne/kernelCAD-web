@@ -12,7 +12,7 @@
  * Embed hosts get explicit build/display status so an empty canvas is never
  * presented as "ready" (iframe load alone is not enough).
  */
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Viewer from '../../studio/components/Viewer';
 import { hasNonemptyGeometry } from '../../studio/components/viewer/hasNonemptyGeometry';
 import { WorkbenchProvider, useWorkbench } from '../../studio/context/WorkbenchContext';
@@ -187,8 +187,6 @@ export function FunnelViewer({
   onPhaseChange,
   resetKey = 0,
 }: FunnelViewerProps) {
-  const codeRef = useRef(code);
-  codeRef.current = code;
   const [meshGeometries, setMeshGeometries] = useState<GeometryResult[] | null>(null);
   const [cameraBounds, setCameraBounds] = useState<MeshArtifactBounds | null>(null);
   const [useSourceFallback, setUseSourceFallback] = useState(false);
@@ -220,13 +218,13 @@ export function FunnelViewer({
       .catch((err: unknown) => {
         if (cancelled) return;
         const message = err instanceof Error ? err.message : String(err);
-        if (codeRef.current.trim()) setUseSourceFallback(true);
+        if (code.trim()) setUseSourceFallback(true);
         else setMeshError(message);
       });
     return () => {
       cancelled = true;
     };
-  }, [meshUrl, revision, resetKey]);
+  }, [meshUrl, revision, resetKey, code]);
 
   if (!meshUrl || useSourceFallback) {
     return (
