@@ -48,6 +48,43 @@ describe('parseSweepArgs prompt flags', () => {
   });
 });
 
+describe('parseSweepArgs token param', () => {
+  it('auto-detects max_completion_tokens for gpt-5.x', () => {
+    expect(parseSweepArgs(['--cases', 'stool', '--model', 'gpt-5.2']).tokenParam).toBe(
+      'max_completion_tokens',
+    );
+  });
+
+  it('auto-detects max_tokens for DeepSeek', () => {
+    expect(
+      parseSweepArgs(['--cases', 'stool', '--model', 'deepseek-ai/DeepSeek-V4.1-Flash']).tokenParam,
+    ).toBe('max_tokens');
+  });
+
+  it('honors an explicit --token-param', () => {
+    expect(
+      parseSweepArgs(['--cases', 'stool', '--model', 'gpt-5.2', '--token-param', 'max_tokens'])
+        .tokenParam,
+    ).toBe('max_tokens');
+    expect(
+      parseSweepArgs([
+        '--cases',
+        'stool',
+        '--model',
+        'deepseek-ai/DeepSeek-V4.1-Flash',
+        '--token-param',
+        'max_completion_tokens',
+      ]).tokenParam,
+    ).toBe('max_completion_tokens');
+  });
+
+  it('throws on an unknown --token-param', () => {
+    expect(() => parseSweepArgs(['--cases', 'stool', '--token-param', 'max_output_tokens'])).toThrow(
+      /--token-param must be one of/,
+    );
+  });
+});
+
 describe('resumeMismatch', () => {
   const priorControl = { promptPreset: 'full', cookbook: true, toolLoop: false, toolMaxCalls: 8 };
   const cfgControl = { promptPreset: 'full', useCookbook: true, toolLoop: false, toolMaxCalls: 8 };
@@ -76,6 +113,22 @@ describe('resumeMismatch', () => {
     const cfgTool = { ...cfgControl, toolLoop: true, toolMaxCalls: 5 };
     const priorTool = { ...priorControl, toolLoop: true, toolMaxCalls: 8 };
     expect(resumeMismatch(priorTool, cfgTool)).toContain('toolMaxCalls=8/5');
+  });
+
+  it('treats a legacy prior without tokenParam as max_tokens', () => {
+    expect(resumeMismatch({}, { ...cfgControl, tokenParam: 'max_tokens' })).toBeNull();
+    expect(resumeMismatch({}, { ...cfgControl, tokenParam: 'max_completion_tokens' })).toContain(
+      'tokenParam=max_tokens/max_completion_tokens',
+    );
+  });
+
+  it('flags tokenParam drift', () => {
+    expect(
+      resumeMismatch(
+        { ...priorControl, tokenParam: 'max_completion_tokens' },
+        { ...cfgControl, tokenParam: 'max_tokens' },
+      ),
+    ).toContain('tokenParam=max_completion_tokens/max_tokens');
   });
 });
 

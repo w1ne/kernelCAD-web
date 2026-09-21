@@ -3,6 +3,9 @@
 import type { AgentClient, AgentMessage, AgentResponse } from './types';
 import type { ToolChatClient, ToolChatMessage, ToolChatResult, ToolSpec } from './lib/toolLoop';
 
+/** Body key carrying the output-token budget. OpenAI frontier models (gpt-5.x, o-series) reject `max_tokens`. */
+export type TokenParam = 'max_tokens' | 'max_completion_tokens';
+
 export interface OpenAICompatOptions {
   baseUrl: string;
   apiKey: string;
@@ -11,6 +14,8 @@ export interface OpenAICompatOptions {
   retryBaseMs?: number;
   retryMaxMs?: number;
   fetchImpl?: typeof fetch;
+  /** Output-token budget key to send. Default 'max_tokens'. */
+  tokenParam?: TokenParam;
 }
 
 interface ChatCompletionResponse {
@@ -45,6 +50,7 @@ export class OpenAICompatAgentClient implements AgentClient, ToolChatClient {
   private readonly retryBaseMs: number;
   private readonly retryMaxMs: number;
   private readonly fetchImpl: typeof fetch;
+  private readonly tokenParam: TokenParam;
 
   constructor(opts: OpenAICompatOptions) {
     this.baseUrl = opts.baseUrl.replace(/\/+$/, '');
@@ -53,6 +59,7 @@ export class OpenAICompatAgentClient implements AgentClient, ToolChatClient {
     this.retryBaseMs = opts.retryBaseMs ?? 1000;
     this.retryMaxMs = opts.retryMaxMs ?? 30000;
     this.fetchImpl = opts.fetchImpl ?? fetch;
+    this.tokenParam = opts.tokenParam ?? 'max_tokens';
   }
 
   private async request(body: Record<string, unknown>): Promise<ChatCompletionResponse> {
@@ -110,7 +117,7 @@ export class OpenAICompatAgentClient implements AgentClient, ToolChatClient {
         : args.system;
     const base = {
       model: args.model,
-      max_tokens: args.max_tokens,
+      [this.tokenParam]: args.max_tokens,
       messages: [
         { role: 'system', content: system },
         ...args.messages.map((m) => ({ role: m.role, content: m.content })),
@@ -158,7 +165,7 @@ export class OpenAICompatAgentClient implements AgentClient, ToolChatClient {
   }): Promise<ToolChatResult> {
     const data = await this.request({
       model: args.model,
-      max_tokens: args.max_tokens,
+      [this.tokenParam]: args.max_tokens,
       messages: [{ role: 'system', content: args.system }, ...args.messages],
       tools: args.tools,
       tool_choice: 'auto',

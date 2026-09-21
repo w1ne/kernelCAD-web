@@ -39,6 +39,27 @@ describe('OpenAICompatAgentClient', () => {
     expect(body.model).toBe('deepseek-ai/DeepSeek-V4.1-Flash');
     expect(body.messages[0]).toEqual({ role: 'system', content: 'S' });
     expect(body.temperature).toBe(0.2);
+    expect(body.max_tokens).toBe(100);
+  });
+
+  it('sends max_completion_tokens in generate when tokenParam is set', async () => {
+    const fetchImpl = vi.fn(async () =>
+      jsonResponse({
+        choices: [{ message: { content: 'hello' } }],
+        usage: { prompt_tokens: 3, completion_tokens: 2 },
+      }),
+    );
+    const client = new OpenAICompatAgentClient({
+      baseUrl: 'https://api.example.com/v1',
+      apiKey: 'k',
+      tokenParam: 'max_completion_tokens',
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+    const out = await client.generate(REQ);
+    expect(out.text).toBe('hello');
+    const body = JSON.parse((fetchImpl.mock.calls[0][1] as RequestInit).body as string);
+    expect(body.max_completion_tokens).toBe(100);
+    expect('max_tokens' in body).toBe(false);
   });
 
   it('retries 429 then succeeds', async () => {
@@ -226,6 +247,32 @@ describe('OpenAICompatAgentClient', () => {
     expect(body.tools[0].function.name).toBe('evaluate_script');
     expect(body.tool_choice).toBe('auto');
     expect(body.messages[0]).toEqual({ role: 'system', content: 'S' });
+  });
+
+  it('chatWithTools sends max_completion_tokens when tokenParam is set', async () => {
+    const fetchImpl = vi.fn(async () =>
+      jsonResponse({
+        choices: [{ message: { content: 'ok' }, finish_reason: 'stop' }],
+        usage: { prompt_tokens: 1, completion_tokens: 1 },
+      }),
+    );
+    const client = new OpenAICompatAgentClient({
+      baseUrl: 'https://api.example.com/v1',
+      apiKey: 'k',
+      tokenParam: 'max_completion_tokens',
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+    const out = await client.chatWithTools({
+      system: 'S',
+      messages: [{ role: 'user', content: 'hi' }],
+      tools: [{ type: 'function', function: { name: 'evaluate_script', description: 'd', parameters: { type: 'object' } } }],
+      model: 'gpt-5.2',
+      max_tokens: 100,
+    });
+    expect(out.text).toBe('ok');
+    const body = JSON.parse((fetchImpl.mock.calls[0][1] as RequestInit).body as string);
+    expect(body.max_completion_tokens).toBe(100);
+    expect('max_tokens' in body).toBe(false);
   });
 
   it('chatWithTools falls back for missing id/arguments and drops unnamed calls', async () => {

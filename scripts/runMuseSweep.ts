@@ -5,7 +5,7 @@ import { execFile, execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { MockAgentClient } from '../eval/agent';
-import { OpenAICompatAgentClient } from '../eval/agentOpenAICompat';
+import { OpenAICompatAgentClient, type TokenParam } from '../eval/agentOpenAICompat';
 import { generateCase, scoreCase } from '../eval/runner';
 import { generateCaseWithTools } from '../eval/lib/toolGenerate';
 import type { ToolChatClient } from '../eval/lib/toolLoop';
@@ -36,6 +36,7 @@ interface SweepConfig {
   temperature: number;
   maxAttempts: number;
   maxTokens: number;
+  tokenParam: TokenParam;
   skills: string[];
   promptPreset: string;
   toolLoop: boolean;
@@ -52,8 +53,20 @@ interface SweepConfig {
 }
 
 export function resumeMismatch(
-  prior: { promptPreset?: string; cookbook?: boolean; toolLoop?: boolean; toolMaxCalls?: number },
-  cfg: { promptPreset: string; useCookbook: boolean; toolLoop: boolean; toolMaxCalls: number },
+  prior: {
+    promptPreset?: string;
+    cookbook?: boolean;
+    toolLoop?: boolean;
+    toolMaxCalls?: number;
+    tokenParam?: TokenParam;
+  },
+  cfg: {
+    promptPreset: string;
+    useCookbook: boolean;
+    toolLoop: boolean;
+    toolMaxCalls: number;
+    tokenParam?: TokenParam;
+  },
 ): string | null {
   const priorPreset = prior.promptPreset ?? 'full';
   const priorCookbook = prior.cookbook ?? true;
@@ -64,6 +77,12 @@ export function resumeMismatch(
   }
   if (cfg.toolLoop && priorCalls !== cfg.toolMaxCalls) {
     return `toolMaxCalls=${priorCalls}/${cfg.toolMaxCalls}`;
+  }
+  // Legacy run.json predates tokenParam; those runs always sent `max_tokens`.
+  const priorTokenParam = prior.tokenParam ?? 'max_tokens';
+  const cfgTokenParam = cfg.tokenParam ?? 'max_tokens';
+  if (priorTokenParam !== cfgTokenParam) {
+    return `tokenParam=${priorTokenParam}/${cfgTokenParam}`;
   }
   return null;
 }
@@ -137,6 +156,20 @@ export function parseSweepArgs(argv: string[]): SweepConfig {
   if (!Number.isInteger(maxAttempts) || maxAttempts < 1) fail(`--max-attempts must be an integer >= 1`);
   const maxTokens = Number(flagValue('--max-tokens') ?? 16000);
   if (!Number.isInteger(maxTokens) || maxTokens < 1) fail(`--max-tokens must be an integer >= 1`);
+  const tokenParamFlag = flagValue('--token-param');
+  if (
+    tokenParamFlag !== undefined &&
+    tokenParamFlag !== 'max_tokens' &&
+    tokenParamFlag !== 'max_completion_tokens'
+  ) {
+    // Thrown (not fail()) so parseSweepArgs stays unit-testable without process.exit.
+    throw new Error(
+      `--token-param must be one of max_tokens, max_completion_tokens; got '${tokenParamFlag}'`,
+    );
+  }
+  // gpt-5.x and o-series reasoning models reject `max_tokens`.
+  const tokenParam: TokenParam =
+    tokenParamFlag ?? (/^(gpt-5|o\d)/.test(model) ? 'max_completion_tokens' : 'max_tokens');
   const maxTokensIn = Number(flagValue('--max-tokens-in') ?? 60_000_000);
   if (!Number.isFinite(maxTokensIn)) fail(`--max-tokens-in must be a number`);
   const toolMaxCalls = Number(flagValue('--tool-max-calls') ?? 8);
@@ -179,6 +212,7 @@ export function parseSweepArgs(argv: string[]): SweepConfig {
     temperature,
     maxAttempts,
     maxTokens,
+    tokenParam,
     skills,
     promptPreset,
     toolLoop,
@@ -478,6 +512,7 @@ async function main(): Promise<void> {
       toolLoop?: boolean;
       toolMaxCalls?: number;
       cookbook?: boolean;
+      tokenParam?: TokenParam;
     };
     const mismatch = resumeMismatch(prior, cfg);
     if (mismatch !== null) {
@@ -534,6 +569,7 @@ async function main(): Promise<void> {
     : new OpenAICompatAgentClient({
         baseUrl: cfg.baseUrl,
         apiKey: cfg.env.DEEPINFRA_API_KEY ?? '',
+        tokenParam: cfg.tokenParam,
       });
 
   const totals = { tokensIn: 0, tokensOut: 0 };
@@ -547,6 +583,7 @@ async function main(): Promise<void> {
     temperature: cfg.temperature,
     maxAttempts: cfg.maxAttempts,
     maxTokens: cfg.maxTokens,
+    tokenParam: cfg.tokenParam,
     skills: plan.skills,
     promptPreset: cfg.promptPreset,
     toolLoop: cfg.toolLoop,
