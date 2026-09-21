@@ -187,18 +187,19 @@ export function FunnelViewer({
   onPhaseChange,
   resetKey = 0,
 }: FunnelViewerProps) {
-  const [meshGeometries, setMeshGeometries] = useState<GeometryResult[] | null>(null);
-  const [cameraBounds, setCameraBounds] = useState<MeshArtifactBounds | null>(null);
-  const [useSourceFallback, setUseSourceFallback] = useState(false);
-  const [meshError, setMeshError] = useState<string | null>(null);
+  const meshKey = meshUrl ? `${meshUrl}\n${revision ?? ''}\n${String(resetKey)}\n${code}` : '';
+  const [meshResult, setMeshResult] = useState<{
+    key: string;
+    geometries: GeometryResult[] | null;
+    bounds: MeshArtifactBounds | null;
+    fallback: boolean;
+    error: string | null;
+  } | null>(null);
 
   useEffect(() => {
     if (!meshUrl) return undefined;
+    const key = meshKey;
     let cancelled = false;
-    setUseSourceFallback(false);
-    setMeshGeometries(null);
-    setCameraBounds(null);
-    setMeshError(null);
     fetch(meshUrl)
       .then(async (response) => {
         const body: unknown = await response.json().catch(() => null);
@@ -212,19 +213,36 @@ export function FunnelViewer({
       })
       .then((artifact) => {
         if (cancelled) return;
-        setMeshGeometries(geometriesFromArtifact(artifact));
-        setCameraBounds(artifact.bounds);
+        setMeshResult({
+          key,
+          geometries: geometriesFromArtifact(artifact),
+          bounds: artifact.bounds,
+          fallback: false,
+          error: null,
+        });
       })
       .catch((err: unknown) => {
         if (cancelled) return;
         const message = err instanceof Error ? err.message : String(err);
-        if (code.trim()) setUseSourceFallback(true);
-        else setMeshError(message);
+        const fallback = code.trim().length > 0;
+        setMeshResult({
+          key,
+          geometries: null,
+          bounds: null,
+          fallback,
+          error: fallback ? null : message,
+        });
       });
     return () => {
       cancelled = true;
     };
-  }, [meshUrl, revision, resetKey, code]);
+  }, [meshUrl, meshKey, revision, code]);
+
+  const settled = meshResult !== null && meshResult.key === meshKey;
+  const useSourceFallback = settled && meshResult.fallback;
+  const meshError = settled ? meshResult.error : null;
+  const meshGeometries = settled ? meshResult.geometries : null;
+  const cameraBounds = settled ? meshResult.bounds : null;
 
   if (!meshUrl || useSourceFallback) {
     return (
