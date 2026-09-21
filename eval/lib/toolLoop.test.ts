@@ -93,7 +93,7 @@ describe('runToolLoop', () => {
     expect(r.toolCallCount).toBe(3);
   });
 
-  it('executes multiple tool calls in one turn and keeps last-evaluated-code wins', async () => {
+  it('executes multiple tool calls in one turn, last-evaluated wins while last-clean tracks the clean one', async () => {
     const client = clientFrom([
       {
         text: 'checking',
@@ -107,12 +107,11 @@ describe('runToolLoop', () => {
     ]);
     const r = await runToolLoop({
       client, system: 's', user: 'u', model: 'm', maxTokens: 100, maxCalls: 8, tools: [TOOL],
-      execute: async (_name, args) => ({
-        content: '{"ok":true}',
-        ok: true,
-        diagnostics: [],
-        evaluatedCode: String(args.code),
-      }),
+      execute: async (_name, args) => {
+        const code = String(args.code);
+        const ok = code === 'return second;';
+        return { content: ok ? '{"ok":true}' : '{"ok":false}', ok, diagnostics: [], evaluatedCode: code };
+      },
     });
     expect(r.stopReason).toBe('final');
     expect(r.toolCallCount).toBe(2);
@@ -120,6 +119,53 @@ describe('runToolLoop', () => {
     expect(toolMsgs).toHaveLength(2);
     expect(toolMsgs.map((m) => m.tool_call_id)).toEqual(['c1', 'c2']);
     expect(r.lastEvaluatedCode).toBe('return second;');
+    expect(r.lastCleanCode).toBe('return second;');
+  });
+
+  it('keeps the earlier clean candidate when a later call fails', async () => {
+    const client = clientFrom([
+      {
+        text: 'checking',
+        toolCalls: [
+          { id: 'c1', name: 'evaluate_script', arguments: '{"code":"return clean;"}' },
+          { id: 'c2', name: 'evaluate_script', arguments: '{"code":"return broken;"}' },
+        ],
+        finishReason: 'tool_calls', tokensIn: 5, tokensOut: 5,
+      },
+      { text: 'done', toolCalls: [], finishReason: 'stop', tokensIn: 5, tokensOut: 5 },
+    ]);
+    const r = await runToolLoop({
+      client, system: 's', user: 'u', model: 'm', maxTokens: 100, maxCalls: 8, tools: [TOOL],
+      execute: async (_name, args) => {
+        const code = String(args.code);
+        const ok = code === 'return clean;';
+        return { content: ok ? '{"ok":true}' : '{"ok":false}', ok, diagnostics: [], evaluatedCode: code };
+      },
+    });
+    expect(r.lastEvaluatedCode).toBe('return broken;');
+    expect(r.lastCleanCode).toBe('return clean;');
+  });
+
+  it('leaves lastCleanCode undefined when no call evaluates cleanly', async () => {
+    const client = clientFrom([
+      {
+        text: 'checking',
+        toolCalls: [{ id: 'c1', name: 'evaluate_script', arguments: '{"code":"return broken;"}' }],
+        finishReason: 'tool_calls', tokensIn: 5, tokensOut: 5,
+      },
+      { text: 'done', toolCalls: [], finishReason: 'stop', tokensIn: 5, tokensOut: 5 },
+    ]);
+    const r = await runToolLoop({
+      client, system: 's', user: 'u', model: 'm', maxTokens: 100, maxCalls: 8, tools: [TOOL],
+      execute: async (_name, args) => ({
+        content: '{"ok":false}',
+        ok: false,
+        diagnostics: ['feature.invalid-args'],
+        evaluatedCode: String(args.code),
+      }),
+    });
+    expect(r.lastEvaluatedCode).toBe('return broken;');
+    expect(r.lastCleanCode).toBeUndefined();
   });
 
   it('returns an error tool message when execute throws and continues the loop', async () => {

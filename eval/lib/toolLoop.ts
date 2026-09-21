@@ -57,6 +57,7 @@ export interface ToolLoopResult {
   tokensOut: number;
   stopReason: 'final' | 'cap';
   lastEvaluatedCode?: string;
+  lastCleanCode?: string;
   messages: ToolChatMessage[];
 }
 
@@ -77,6 +78,7 @@ export async function runToolLoop(opts: {
   let tokensOut = 0;
   let toolCallCount = 0;
   let lastEvaluatedCode: string | undefined;
+  let lastCleanCode: string | undefined;
   let finalText = '';
   let finishReason = '';
 
@@ -121,6 +123,7 @@ export async function runToolLoop(opts: {
         tokensOut,
         stopReason: 'final',
         lastEvaluatedCode,
+        lastCleanCode,
         messages,
       };
     }
@@ -163,7 +166,10 @@ export async function runToolLoop(opts: {
           diagnostics: ['tool-execute-failed'],
         };
       }
-      if (result.evaluatedCode !== undefined) lastEvaluatedCode = result.evaluatedCode;
+      if (result.evaluatedCode !== undefined) {
+        lastEvaluatedCode = result.evaluatedCode;
+        if (result.ok) lastCleanCode = result.evaluatedCode;
+      }
       messages.push({ role: 'tool', tool_call_id: tc.id, content: result.content });
       opts.onEvent?.({
         type: 'tool',
@@ -175,5 +181,15 @@ export async function runToolLoop(opts: {
     }
   }
 
-  return { finalText, finishReason, toolCallCount, tokensIn, tokensOut, stopReason: 'cap', lastEvaluatedCode, messages };
+  return {
+    finalText,
+    finishReason,
+    toolCallCount,
+    tokensIn,
+    tokensOut,
+    stopReason: 'cap',
+    lastEvaluatedCode,
+    lastCleanCode,
+    messages,
+  };
 }

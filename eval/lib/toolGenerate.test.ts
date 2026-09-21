@@ -40,15 +40,32 @@ function lastToolMessage(messages: ToolChatMessage[]): ToolChatMessage {
 }
 
 describe('pickArtifact', () => {
-  it('prefers the fenced block, falls back to the last evaluated code', () => {
-    expect(pickArtifact('text ```ts\nreturn A;\n```', 'return B;')).toBe('return A;');
-    expect(pickArtifact('no fence here', 'return B;')).toBe('return B;');
-    expect(pickArtifact('no fence', undefined)).toBeNull();
+  it('prefers the fenced block, then the last clean candidate, then the last evaluated one', () => {
+    expect(pickArtifact('text ```ts\nreturn A;\n```', 'return B;', 'return C;')).toEqual({
+      code: 'return A;',
+      source: 'fence',
+    });
+    expect(pickArtifact('no fence here', 'return B;', 'return C;')).toEqual({
+      code: 'return B;',
+      source: 'last-clean',
+    });
+    expect(pickArtifact('no fence here', undefined, 'return C;')).toEqual({
+      code: 'return C;',
+      source: 'last-evaluated',
+    });
+    expect(pickArtifact('no fence', undefined, undefined)).toBeNull();
   });
 
   it('treats an empty fenced block as absent', () => {
-    expect(pickArtifact('```ts\n\n```', 'return B;')).toBe('return B;');
-    expect(pickArtifact('```ts\n\n```', undefined)).toBeNull();
+    expect(pickArtifact('```ts\n\n```', 'return B;', 'return C;')).toEqual({
+      code: 'return B;',
+      source: 'last-clean',
+    });
+    expect(pickArtifact('```ts\n\n```', undefined, 'return C;')).toEqual({
+      code: 'return C;',
+      source: 'last-evaluated',
+    });
+    expect(pickArtifact('```ts\n\n```', undefined, undefined)).toBeNull();
   });
 });
 
@@ -81,6 +98,7 @@ describe('generateCaseWithTools', () => {
 
     const meta = readToolLoop(runDir);
     expect(meta.artifactSource).toBe('fence');
+    expect(meta.lastCleanAvailable).toBe(false);
     expect(meta.status).toBe('passed');
     expect(meta.maxCalls).toBe(4);
     expect(meta.startedAt).toBe('2026-09-20T00-00-00');
@@ -160,7 +178,132 @@ describe('generateCaseWithTools', () => {
     expect(readFileSync(result.outputScriptPath, 'utf8')).toBe('return last;');
     expect(result.status).toBe('gate_failed');
     expect(result.firstFailureCode).toBe('feature.invalid-args');
-    expect(readToolLoop(runDir).artifactSource).toBe('last-evaluated');
+
+    const meta = readToolLoop(runDir);
+    expect(meta.artifactSource).toBe('last-evaluated');
+    expect(meta.lastCleanAvailable).toBe(false);
+  });
+
+  it('uses the last evaluated candidate when no call was clean and there is no fence', async () => {
+    const runDir = mkdtempSync(join(tmpdir(), 'toolgen-'));
+    const client = clientFrom([
+      {
+        text: 'trying',
+        toolCalls: [
+          { id: 'c1', name: 'evaluate_script', arguments: '{"code":"return v1;"}' },
+          { id: 'c2', name: 'evaluate_script', arguments: '{"code":"return v2;"}' },
+        ],
+        finishReason: 'tool_calls',
+        tokensIn: 1,
+        tokensOut: 1,
+      },
+      { text: 'done', toolCalls: [], finishReason: 'stop', tokensIn: 1, tokensOut: 1 },
+    ]);
+    const result = await generateCaseWithTools({
+      taskDir: TASK_DIR,
+      runDir,
+      client,
+      model: 'mock',
+      skillMd: '# skills',
+      startedAt: '2026-09-20T00-00-00',
+      maxCalls: 4,
+      execute: async (_name, args) => ({
+        content: '{"ok":false}',
+        ok: false,
+        diagnostics: ['feature.invalid-args'],
+        evaluatedCode: String(args.code),
+      }),
+      evaluateArtifact: async () => ({ ok: false, diagnostics: [{ code: 'feature.invalid-args' }] }),
+    });
+    expect(readFileSync(result.outputScriptPath, 'utf8')).toBe('return v2;');
+    expect(result.status).toBe('gate_failed');
+
+    const meta = readToolLoop(runDir);
+    expect(meta.artifactSource).toBe('last-evaluated');
+    expect(meta.lastCleanAvailable).toBe(false);
+  });
+
+  it('prefers the earlier clean candidate when the last call fails and there is no fence', async () => {
+    const runDir = mkdtempSync(join(tmpdir(), 'toolgen-'));
+    const client = clientFrom([
+      {
+        text: 'trying',
+        toolCalls: [
+          { id: 'c1', name: 'evaluate_script', arguments: '{"code":"return clean;"}' },
+          { id: 'c2', name: 'evaluate_script', arguments: '{"code":"return broken;"}' },
+        ],
+        finishReason: 'tool_calls',
+        tokensIn: 1,
+        tokensOut: 1,
+      },
+      { text: 'done', toolCalls: [], finishReason: 'stop', tokensIn: 1, tokensOut: 1 },
+    ]);
+    const result = await generateCaseWithTools({
+      taskDir: TASK_DIR,
+      runDir,
+      client,
+      model: 'mock',
+      skillMd: '# skills',
+      startedAt: '2026-09-20T00-00-00',
+      maxCalls: 4,
+      execute: async (_name, args) => {
+        const code = String(args.code);
+        const ok = code === 'return clean;';
+        return { content: ok ? '{"ok":true}' : '{"ok":false}', ok, diagnostics: [], evaluatedCode: code };
+      },
+      evaluateArtifact: async () => ({ ok: true, diagnostics: [] }),
+    });
+    expect(readFileSync(result.outputScriptPath, 'utf8')).toBe('return clean;');
+    expect(result.status).toBe('passed');
+
+    const meta = readToolLoop(runDir);
+    expect(meta.artifactSource).toBe('last-clean');
+    expect(meta.lastCleanAvailable).toBe(true);
+  });
+
+  it('falls back to the last clean candidate when the final fence fails evaluation', async () => {
+    const runDir = mkdtempSync(join(tmpdir(), 'toolgen-'));
+    const client = clientFrom([
+      {
+        text: 'checking',
+        toolCalls: [{ id: 'c1', name: 'evaluate_script', arguments: '{"code":"return clean;"}' }],
+        finishReason: 'tool_calls',
+        tokensIn: 1,
+        tokensOut: 1,
+      },
+      { text: '```ts\nreturn fenced;\n```', toolCalls: [], finishReason: 'stop', tokensIn: 1, tokensOut: 1 },
+    ]);
+    const evaluated: string[] = [];
+    const result = await generateCaseWithTools({
+      taskDir: TASK_DIR,
+      runDir,
+      client,
+      model: 'mock',
+      skillMd: '# skills',
+      startedAt: '2026-09-20T00-00-00',
+      maxCalls: 4,
+      execute: async (_name, args) => ({
+        content: '{"ok":true}',
+        ok: true,
+        diagnostics: [],
+        evaluatedCode: String(args.code),
+      }),
+      evaluateArtifact: async (scriptPath) => {
+        const code = readFileSync(scriptPath, 'utf8');
+        evaluated.push(code);
+        return code === 'return fenced;'
+          ? { ok: false, diagnostics: [{ code: 'fence.broken' }] }
+          : { ok: true, diagnostics: [] };
+      },
+    });
+    expect(evaluated).toEqual(['return fenced;', 'return clean;']);
+    expect(readFileSync(result.outputScriptPath, 'utf8')).toBe('return clean;');
+    expect(result.status).toBe('passed');
+
+    const meta = readToolLoop(runDir);
+    expect(meta.artifactSource).toBe('last-clean');
+    expect(meta.lastCleanAvailable).toBe(true);
+    expect(meta.firstFailureCode).toBeUndefined();
   });
 
   it('writes the no-script placeholder when the model only emits prose', async () => {
@@ -185,6 +328,7 @@ describe('generateCaseWithTools', () => {
 
     const meta = readToolLoop(runDir);
     expect(meta.artifactSource).toBe('none');
+    expect(meta.lastCleanAvailable).toBe(false);
     expect(meta.status).toBe('no_script');
     expect(meta.firstFailureCode).toBe('eval.no-script-extracted');
   });
@@ -227,7 +371,8 @@ describe('generateCaseWithTools', () => {
 
     const meta = readToolLoop(runDir);
     expect(meta.stopReason).toBe('cap');
-    expect(meta.artifactSource).toBe('last-evaluated');
+    expect(meta.artifactSource).toBe('last-clean');
+    expect(meta.lastCleanAvailable).toBe(true);
     expect(meta.toolCallCount).toBe(2);
   });
 

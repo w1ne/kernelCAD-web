@@ -34,16 +34,32 @@ export const TOOL_PROTOCOL = [
   'When satisfied, output the FINAL complete script in a single ```ts fenced block.',
 ].join('\n');
 
-export function pickArtifact(finalText: string, lastEvaluatedCode?: string): string | null {
+export type ArtifactSource = 'fence' | 'last-clean' | 'last-evaluated' | 'none';
+
+export interface PickedArtifact {
+  code: string;
+  source: Exclude<ArtifactSource, 'none'>;
+}
+
+// Preference order: the final fenced block (the model's declared answer), then
+// the last candidate that evaluated cleanly (best verified), then the last
+// candidate evaluated at all (even if it failed), else no-script.
+export function pickArtifact(
+  finalText: string,
+  lastCleanCode?: string,
+  lastEvaluatedCode?: string,
+): PickedArtifact | null {
   const fenced = extractFencedScript(finalText);
-  if (fenced !== null && fenced.length > 0) return fenced;
-  return lastEvaluatedCode ?? null;
+  if (fenced !== null && fenced.length > 0) return { code: fenced, source: 'fence' };
+  if (lastCleanCode !== undefined) return { code: lastCleanCode, source: 'last-clean' };
+  if (lastEvaluatedCode !== undefined) return { code: lastEvaluatedCode, source: 'last-evaluated' };
+  return null;
 }
 
 // Strictness matters: extractScript falls back to the whole reply, so a truncated
 // or prose reply would be written as the artifact. extractFencedScript accepts
 // only a properly closed fenced block; otherwise fall back to the last code the
-// model actually evaluated (verified), else no-script.
+// model actually evaluated (clean preferred), else no-script.
 
 /**
  * Args for the tool arm. The returned `status` reflects `evaluateScript` (the
@@ -129,14 +145,9 @@ export async function generateCaseWithTools(args: GenerateCaseWithToolsArgs): Pr
     },
   });
 
-  const artifact = pickArtifact(loop.finalText, loop.lastEvaluatedCode);
-  const fenced = extractFencedScript(loop.finalText);
-  const hasFenced = fenced !== null && fenced.length > 0;
-  const artifactSource: 'fence' | 'last-evaluated' | 'none' = hasFenced
-    ? 'fence'
-    : artifact !== null
-      ? 'last-evaluated'
-      : 'none';
+  const picked = pickArtifact(loop.finalText, loop.lastCleanCode, loop.lastEvaluatedCode);
+  let artifact = picked?.code ?? null;
+  let artifactSource: ArtifactSource = picked?.source ?? 'none';
 
   let finalEvaluate: Pick<EvaluateResult, 'ok' | 'diagnostics'>;
   if (artifact === null) {
@@ -146,6 +157,14 @@ export async function generateCaseWithTools(args: GenerateCaseWithToolsArgs): Pr
     writeFileSync(outputScriptPath, artifact);
     const evaluateArtifact = args.evaluateArtifact ?? ((p: string) => evaluateScript(p));
     finalEvaluate = await evaluateArtifact(outputScriptPath);
+    // Bounded fallback: a failing final fence loses to the last verified clean
+    // candidate (at most one extra evaluation, and only for a different script).
+    if (!finalEvaluate.ok && artifactSource === 'fence' && loop.lastCleanCode !== undefined && loop.lastCleanCode !== artifact) {
+      artifact = loop.lastCleanCode;
+      artifactSource = 'last-clean';
+      writeFileSync(outputScriptPath, artifact);
+      finalEvaluate = await evaluateArtifact(outputScriptPath);
+    }
   }
 
   const status: GenerateCaseResult['status'] =
@@ -162,6 +181,7 @@ export async function generateCaseWithTools(args: GenerateCaseWithToolsArgs): Pr
         tokensIn: loop.tokensIn,
         tokensOut: loop.tokensOut,
         artifactSource,
+        lastCleanAvailable: loop.lastCleanCode !== undefined,
         status,
         firstFailureCode,
         maxCalls: args.maxCalls,
