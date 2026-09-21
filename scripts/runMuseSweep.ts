@@ -43,6 +43,7 @@ interface SweepConfig {
   toolMaxCalls: number;
   useCookbook: boolean;
   apiKeyEnv: string;
+  judgeBaseUrl: string;
   skipJudge: boolean;
   force: Set<string>;
   maxTokensIn: number;
@@ -220,6 +221,7 @@ export function parseSweepArgs(argv: string[]): SweepConfig {
     toolMaxCalls,
     useCookbook: !has('--no-cookbook'),
     apiKeyEnv: flagValue('--api-key-env') ?? 'DEEPINFRA_API_KEY',
+    judgeBaseUrl: flagValue('--judge-base-url') ?? 'https://api.deepinfra.com/v1/openai',
     skipJudge: has('--skip-judge'),
     force: new Set(multiList('--force')),
     maxTokensIn,
@@ -422,7 +424,7 @@ async function runOneCase(
           outPath: join(caseDir, 'judge.json'),
           museRoot,
           pythonBin,
-          baseUrl: cfg.baseUrl,
+          baseUrl: cfg.judgeBaseUrl,
           model: JUDGE_MODEL,
         },
         stage12Ok && candidatePng.length > 0,
@@ -456,8 +458,14 @@ async function runOneCase(
     };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
+    const current = readState(caseDir);
+    const reusable =
+      current !== null &&
+      (current.phase === 'generated' || current.phase === 'scored' || current.phase === 'judged')
+        ? current.phase
+        : undefined;
     writeState(caseDir, {
-      phase: 'infra_error',
+      phase: reusable ?? 'infra_error',
       attempts: state?.attempts ?? 0,
       tokens: state?.tokens ?? { in: 0, out: 0 },
       firstFailureCode: state?.firstFailureCode,
@@ -596,7 +604,7 @@ async function main(): Promise<void> {
     workers: cfg.workers,
     protocol: PROTOCOL,
     judgeModel: JUDGE_MODEL,
-    judgeBaseUrl: cfg.baseUrl,
+    judgeBaseUrl: cfg.judgeBaseUrl,
     startedAt: cfg.startedAt,
     caseCount: cases.length,
   };

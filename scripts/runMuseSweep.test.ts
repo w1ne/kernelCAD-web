@@ -26,6 +26,16 @@ describe('parseSweepArgs prompt flags', () => {
     ).toBe('OPENAI_API_KEY');
   });
 
+  it('keeps the judge base URL independent of the driver', () => {
+    expect(parseSweepArgs(['--cases', 'stool']).judgeBaseUrl).toBe(
+      'https://api.deepinfra.com/v1/openai',
+    );
+    expect(
+      parseSweepArgs(['--cases', 'stool', '--judge-base-url', 'https://example.test/v1'])
+        .judgeBaseUrl,
+    ).toBe('https://example.test/v1');
+  });
+
   it('rejects an unknown preset', () => {
     expect(() => parseSweepArgs(['--cases', 'stool', '--prompt-preset', 'nope'])).toThrow(
       /unknown prompt preset/,
