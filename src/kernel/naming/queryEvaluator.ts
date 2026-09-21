@@ -31,7 +31,7 @@ import { __installEvaluatorDelegates } from './query';
 import {
   parseTopoRef,
   formatTopoRef,
-} from './index';
+} from './topoRef';
 import type { FaceLineage, FaceHash } from './evolutionRecord';
 import {
   throwQueryEmpty,
