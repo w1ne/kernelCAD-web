@@ -11,11 +11,11 @@
 // Expected outcome: process exits 0 and prints a per-entry summary line.
 
 import { CaptureSession } from '../src/modeling/capture/captureSession';
-import { createApi } from '../src/modeling/api';
+import { createScriptApi } from '../src/composition/scriptApi';
 
 async function main(): Promise<void> {
   const session = new CaptureSession();
-  const kc = createApi({ session });
+  const kc = createScriptApi({ session });
   const arm = kc.assembly('smoke');
 
   // Mismatched-diameter fastened mate: side A has a 5mm hole, side B has 6mm.

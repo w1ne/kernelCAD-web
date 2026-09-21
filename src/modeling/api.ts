@@ -40,8 +40,6 @@ import type { FaceLabelsMap } from '../shared/intent/featureRecord';
 import type { ParamRef, TypedParamRef, Editable } from '../shared/runtime/paramRef';
 import type { ParamMetadata } from '../shared/runtime/paramTable';
 import { q as queryNamespace } from '../kernel/naming/queryConstructors';
-import * as kinematic from '../kinematic';
-import type { KinematicFacade } from '../kinematic/types';
 import { makeJointNamespace } from './joints';
 import type {
   ClevisJoint,
@@ -521,15 +519,6 @@ export interface KernelCadApi {
   dfmSpec(spec: DfmSpec): DfmSpecHandle;
 
   /**
-   * Kinematic-grounding checks namespace. Four in-process feasibility
-   * gates an agent can call before declaring a mechanism design done:
-   * mounting-hole consistency, swept-pose collision, IK reachability, and
-   * beam-mode load capacity. Every entry is sync compute wrapped in async
-   * and returns a typed envelope with `source: 'local'`.
-   */
-  kinematic: KinematicFacade;
-
-  /**
    * Mechanism-delivery joint helpers.
    *
    * `joint.clevis({ parentBody, childBody, axis, pivotParent, ... })` builds
@@ -616,7 +605,6 @@ export function createApi(ctx: ApiContext): KernelCadApi {
     ...makeSweepMethods(session),
     ...makeModuleNamespaces(session),
     ...makeCaptureMethods(session),
-    kinematic: kinematic satisfies KinematicFacade,
 
     // joint.* is bound below after the api object is fully constructed, so
     // the namespace closes over the FINAL `api` (including box/cylinder/etc.).

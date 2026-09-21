@@ -31,7 +31,7 @@ export interface ScriptKinematicFacade extends KinematicFacade {
 
 /** The full script-facing API: modeling's surface with the composed
  *  kinematic namespace attached. */
-export type ScriptApi = Omit<KernelCadApi, 'kinematic'> & {
+export type ScriptApi = KernelCadApi & {
   kinematic: ScriptKinematicFacade;
 };
 
@@ -42,10 +42,12 @@ export type ScriptApi = Omit<KernelCadApi, 'kinematic'> & {
  * `defaultSweepEvaluator`, so every script they run can sweep.
  */
 export function createScriptApi(ctx: ApiContext, evaluator?: SweepEvaluator): ScriptApi {
-  const api = createApi(ctx);
+  // `joint` is lifted out and re-attached after `kinematic` so the composed
+  // key order matches the pre-flip API object (`kinematic` before `joint`).
+  const { joint, ...modeling } = createApi(ctx);
   const facade: ScriptKinematicFacade = {
-    ...api.kinematic,
+    ...kinematic,
     sweepTolerance: (input) => kinematic.sweepTolerance(input, evaluator),
   };
-  return { ...api, kinematic: facade };
+  return { ...modeling, kinematic: facade, joint };
 }

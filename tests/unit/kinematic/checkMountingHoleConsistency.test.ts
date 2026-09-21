@@ -7,11 +7,11 @@
 
 import { describe, it, expect } from 'vitest';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createScriptApi } from '../../../src/composition/scriptApi';
 
 function makeArm() {
   const session = new CaptureSession();
-  const kc = createApi({ session });
+  const kc = createScriptApi({ session });
   return { kc, arm: kc.assembly('t') };
 }
 

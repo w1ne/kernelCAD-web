@@ -7,7 +7,7 @@
 // applicability envelope of the v1 cantilever approximation.
 
 import { CaptureSession } from '../../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../../src/modeling/api';
+import { createScriptApi } from '../../../../src/composition/scriptApi';
 import type { Assembly } from '../../../../src/modeling/capture/assembly';
 import type { AssemblyCrossSection } from '../../../../src/modeling/capture/assembly';
 
@@ -31,7 +31,7 @@ export function buildCantileverBracket(
   } = {},
 ): CantileverBracketFixture {
   const session = new CaptureSession();
-  const kc = createApi({ session });
+  const kc = createScriptApi({ session });
   const arm = kc.assembly('cantilever-bracket');
 
   const cs: AssemblyCrossSection = opts.crossSection ?? {
