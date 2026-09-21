@@ -42,6 +42,7 @@ interface SweepConfig {
   toolLoop: boolean;
   toolMaxCalls: number;
   useCookbook: boolean;
+  apiKeyEnv: string;
   skipJudge: boolean;
   force: Set<string>;
   maxTokensIn: number;
@@ -218,6 +219,7 @@ export function parseSweepArgs(argv: string[]): SweepConfig {
     toolLoop,
     toolMaxCalls,
     useCookbook: !has('--no-cookbook'),
+    apiKeyEnv: flagValue('--api-key-env') ?? 'DEEPINFRA_API_KEY',
     skipJudge: has('--skip-judge'),
     force: new Set(multiList('--force')),
     maxTokensIn,
@@ -568,7 +570,7 @@ async function main(): Promise<void> {
     ? new MockAgentClient(readCachedAgentResponses(cfg.mockFixture))
     : new OpenAICompatAgentClient({
         baseUrl: cfg.baseUrl,
-        apiKey: cfg.env.DEEPINFRA_API_KEY ?? '',
+        apiKey: cfg.env[cfg.apiKeyEnv] ?? '',
         tokenParam: cfg.tokenParam,
       });
 
@@ -586,6 +588,7 @@ async function main(): Promise<void> {
     tokenParam: cfg.tokenParam,
     skills: plan.skills,
     promptPreset: cfg.promptPreset,
+    apiKeyEnv: cfg.apiKeyEnv,
     toolLoop: cfg.toolLoop,
     toolMaxCalls: cfg.toolMaxCalls,
     promptBytes,

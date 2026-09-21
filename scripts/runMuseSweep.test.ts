@@ -19,6 +19,13 @@ describe('parseSweepArgs prompt flags', () => {
     expect(cfg.useCookbook).toBe(false);
   });
 
+  it('resolves the driver API key env', () => {
+    expect(parseSweepArgs(['--cases', 'stool']).apiKeyEnv).toBe('DEEPINFRA_API_KEY');
+    expect(
+      parseSweepArgs(['--cases', 'stool', '--api-key-env', 'OPENAI_API_KEY']).apiKeyEnv,
+    ).toBe('OPENAI_API_KEY');
+  });
+
   it('rejects an unknown preset', () => {
     expect(() => parseSweepArgs(['--cases', 'stool', '--prompt-preset', 'nope'])).toThrow(
       /unknown prompt preset/,
