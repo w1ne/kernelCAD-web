@@ -183,6 +183,8 @@ export async function generateCaseWithTools(args: GenerateCaseWithToolsArgs): Pr
         toolCallCount: loop.toolCallCount,
         stopReason: loop.stopReason,
         finishReason: loop.finishReason,
+        nudges: loop.nudges,
+        verified: loop.verified,
         tokensIn: loop.tokensIn,
         tokensOut: loop.tokensOut,
         artifactSource,

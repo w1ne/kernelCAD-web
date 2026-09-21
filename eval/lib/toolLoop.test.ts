@@ -23,6 +23,7 @@ describe('runToolLoop', () => {
   it('stops on an assistant message without tool calls', async () => {
     const client = clientFrom([
       { text: '```ts\nreturn box(1,1,1);\n```', toolCalls: [], finishReason: 'stop', tokensIn: 10, tokensOut: 5 },
+      { text: '```ts\nreturn box(1,1,1);\n```', toolCalls: [], finishReason: 'stop', tokensIn: 10, tokensOut: 5 },
     ]);
     const r = await runToolLoop({
       client, system: 's', user: 'u', model: 'm', maxTokens: 100, maxCalls: 8, tools: [TOOL],
@@ -31,7 +32,9 @@ describe('runToolLoop', () => {
     expect(r.stopReason).toBe('final');
     expect(r.toolCallCount).toBe(0);
     expect(r.finalText).toContain('box(1,1,1)');
-    expect(r.tokensIn).toBe(10);
+    expect(r.tokensIn).toBe(20);
+    expect(r.nudges).toBe(1);
+    expect(r.verified).toBe(false);
   });
 
   it('executes tool calls, feeds results back, and records the evaluated code', async () => {
@@ -67,6 +70,7 @@ describe('runToolLoop', () => {
         toolCalls: [{ id: 'c1', name: 'evaluate_script', arguments: '{not json' }],
         finishReason: 'tool_calls', tokensIn: 1, tokensOut: 1,
       },
+      { text: 'done', toolCalls: [], finishReason: 'stop', tokensIn: 1, tokensOut: 1 },
       { text: 'done', toolCalls: [], finishReason: 'stop', tokensIn: 1, tokensOut: 1 },
     ]);
     const r = await runToolLoop({
@@ -133,6 +137,8 @@ describe('runToolLoop', () => {
         finishReason: 'tool_calls', tokensIn: 5, tokensOut: 5,
       },
       { text: 'done', toolCalls: [], finishReason: 'stop', tokensIn: 5, tokensOut: 5 },
+      { text: 'done', toolCalls: [], finishReason: 'stop', tokensIn: 5, tokensOut: 5 },
+      { text: 'done', toolCalls: [], finishReason: 'stop', tokensIn: 5, tokensOut: 5 },
     ]);
     const r = await runToolLoop({
       client, system: 's', user: 'u', model: 'm', maxTokens: 100, maxCalls: 8, tools: [TOOL],
@@ -153,6 +159,8 @@ describe('runToolLoop', () => {
         toolCalls: [{ id: 'c1', name: 'evaluate_script', arguments: '{"code":"return broken;"}' }],
         finishReason: 'tool_calls', tokensIn: 5, tokensOut: 5,
       },
+      { text: 'done', toolCalls: [], finishReason: 'stop', tokensIn: 5, tokensOut: 5 },
+      { text: 'done', toolCalls: [], finishReason: 'stop', tokensIn: 5, tokensOut: 5 },
       { text: 'done', toolCalls: [], finishReason: 'stop', tokensIn: 5, tokensOut: 5 },
     ]);
     const r = await runToolLoop({
@@ -175,6 +183,8 @@ describe('runToolLoop', () => {
         toolCalls: [{ id: 'c1', name: 'evaluate_script', arguments: '{"code":"x"}' }],
         finishReason: 'tool_calls', tokensIn: 1, tokensOut: 1,
       },
+      { text: 'recovered', toolCalls: [], finishReason: 'stop', tokensIn: 1, tokensOut: 1 },
+      { text: 'recovered', toolCalls: [], finishReason: 'stop', tokensIn: 1, tokensOut: 1 },
       { text: 'recovered', toolCalls: [], finishReason: 'stop', tokensIn: 1, tokensOut: 1 },
     ]);
     const r = await runToolLoop({
@@ -218,6 +228,7 @@ describe('runToolLoop', () => {
   it('surfaces the last finish reason even when stopping on a final message', async () => {
     const client = clientFrom([
       { text: 'truncated', toolCalls: [], finishReason: 'length', tokensIn: 10, tokensOut: 5 },
+      { text: 'truncated', toolCalls: [], finishReason: 'length', tokensIn: 10, tokensOut: 5 },
     ]);
     const r = await runToolLoop({
       client, system: 's', user: 'u', model: 'm', maxTokens: 100, maxCalls: 8, tools: [TOOL],
@@ -225,5 +236,72 @@ describe('runToolLoop', () => {
     });
     expect(r.finishReason).toBe('length');
     expect(r.stopReason).toBe('final');
+  });
+
+  it('nudges after a failed evaluate_script and stops nudging after MAX_NUDGES', async () => {
+    const client = clientFrom([
+      {
+        text: 'checking',
+        toolCalls: [{ id: 'c1', name: 'evaluate_script', arguments: '{"code":"return broken;"}' }],
+        finishReason: 'tool_calls', tokensIn: 1, tokensOut: 1,
+      },
+      { text: 'final one', toolCalls: [], finishReason: 'stop', tokensIn: 1, tokensOut: 1 },
+      { text: 'final two', toolCalls: [], finishReason: 'stop', tokensIn: 1, tokensOut: 1 },
+      { text: 'final three', toolCalls: [], finishReason: 'stop', tokensIn: 1, tokensOut: 1 },
+    ]);
+    const r = await runToolLoop({
+      client, system: 's', user: 'u', model: 'm', maxTokens: 100, maxCalls: 8, tools: [TOOL],
+      execute: async () => ({ content: '{"ok":false}', ok: false, diagnostics: ['feature.invalid-args'] }),
+    });
+    expect(r.stopReason).toBe('final');
+    expect(r.nudges).toBe(2);
+    expect(r.verified).toBe(false);
+    expect(r.finalText).toBe('final three');
+    const nudgeMsgs = r.messages.filter((m) => m.role === 'user' && m.content.includes('did not pass'));
+    expect(nudgeMsgs).toHaveLength(2);
+    expect(r.messages.map((m) => m.role)).toEqual([
+      'user', 'assistant', 'tool', 'assistant', 'user', 'assistant', 'user', 'assistant',
+    ]);
+  });
+
+  it('nudges once when no tool was ever called, then accepts the answer', async () => {
+    const client = clientFrom([
+      { text: 'prose one', toolCalls: [], finishReason: 'stop', tokensIn: 1, tokensOut: 1 },
+      { text: 'prose two', toolCalls: [], finishReason: 'stop', tokensIn: 1, tokensOut: 1 },
+    ]);
+    const r = await runToolLoop({
+      client, system: 's', user: 'u', model: 'm', maxTokens: 100, maxCalls: 8, tools: [TOOL],
+      execute: async () => ({ content: '{}', ok: true, diagnostics: [] }),
+    });
+    expect(r.stopReason).toBe('final');
+    expect(r.nudges).toBe(1);
+    expect(r.verified).toBe(false);
+    expect(r.finalText).toBe('prose two');
+    expect(
+      r.messages.some((m) => m.role === 'user' && m.content.includes('You have not run evaluate_script yet')),
+    ).toBe(true);
+  });
+
+  it('does not nudge when the last evaluate_script passed', async () => {
+    const client = clientFrom([
+      {
+        text: 'checking',
+        toolCalls: [{ id: 'c1', name: 'evaluate_script', arguments: '{"code":"return box(1,1,1);"}' }],
+        finishReason: 'tool_calls', tokensIn: 1, tokensOut: 1,
+      },
+      { text: '```ts\nreturn box(1,1,1);\n```', toolCalls: [], finishReason: 'stop', tokensIn: 1, tokensOut: 1 },
+    ]);
+    const r = await runToolLoop({
+      client, system: 's', user: 'u', model: 'm', maxTokens: 100, maxCalls: 8, tools: [TOOL],
+      execute: async () => ({
+        content: '{"ok":true}',
+        ok: true,
+        diagnostics: [],
+        evaluatedCode: 'return box(1,1,1);',
+      }),
+    });
+    expect(r.nudges).toBe(0);
+    expect(r.verified).toBe(true);
+    expect(r.messages.map((m) => m.role)).toEqual(['user', 'assistant', 'tool', 'assistant']);
   });
 });

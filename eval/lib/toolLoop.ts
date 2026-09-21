@@ -58,8 +58,12 @@ export interface ToolLoopResult {
   stopReason: 'final' | 'cap';
   lastEvaluatedCode?: string;
   lastCleanCode?: string;
+  nudges: number;
+  verified: boolean;
   messages: ToolChatMessage[];
 }
+
+export const MAX_NUDGES = 2;
 
 export async function runToolLoop(opts: {
   client: ToolChatClient;
@@ -79,6 +83,8 @@ export async function runToolLoop(opts: {
   let toolCallCount = 0;
   let lastEvaluatedCode: string | undefined;
   let lastCleanCode: string | undefined;
+  let lastToolOk: boolean | undefined;
+  let nudges = 0;
   let finalText = '';
   let finishReason = '';
 
@@ -115,6 +121,18 @@ export async function runToolLoop(opts: {
     });
 
     if (resp.toolCalls.length === 0) {
+      const canNudge = lastToolOk === undefined ? nudges === 0 : nudges < MAX_NUDGES;
+      if (lastToolOk !== true && canNudge) {
+        nudges += 1;
+        messages.push({
+          role: 'user',
+          content:
+            lastToolOk === false
+              ? 'Your last evaluate_script did not pass. Fix the reported diagnostics and call evaluate_script again before finishing.'
+              : 'You have not run evaluate_script yet. Call it to verify your script before finishing.',
+        });
+        continue;
+      }
       return {
         finalText,
         finishReason,
@@ -124,6 +142,8 @@ export async function runToolLoop(opts: {
         stopReason: 'final',
         lastEvaluatedCode,
         lastCleanCode,
+        nudges,
+        verified: lastToolOk === true,
         messages,
       };
     }
@@ -170,6 +190,7 @@ export async function runToolLoop(opts: {
         lastEvaluatedCode = result.evaluatedCode;
         if (result.ok) lastCleanCode = result.evaluatedCode;
       }
+      lastToolOk = result.ok;
       messages.push({ role: 'tool', tool_call_id: tc.id, content: result.content });
       opts.onEvent?.({
         type: 'tool',
@@ -190,6 +211,8 @@ export async function runToolLoop(opts: {
     stopReason: 'cap',
     lastEvaluatedCode,
     lastCleanCode,
+    nudges,
+    verified: lastToolOk === true,
     messages,
   };
 }

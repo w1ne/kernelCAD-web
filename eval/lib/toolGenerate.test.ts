@@ -80,6 +80,13 @@ describe('generateCaseWithTools', () => {
         tokensIn: 100,
         tokensOut: 10,
       },
+      {
+        text: '```ts\nreturn box(1, 1, 1);\n```',
+        toolCalls: [],
+        finishReason: 'stop',
+        tokensIn: 100,
+        tokensOut: 10,
+      },
     ]);
     const result = await generateCaseWithTools({
       taskDir: TASK_DIR,
@@ -94,7 +101,7 @@ describe('generateCaseWithTools', () => {
     });
     expect(readFileSync(result.outputScriptPath, 'utf8')).toContain('box(1, 1, 1)');
     expect(result.status).toBe('passed');
-    expect(result.tokensIn).toBe(100);
+    expect(result.tokensIn).toBe(200);
 
     const meta = readToolLoop(runDir);
     expect(meta.artifactSource).toBe('fence');
@@ -102,6 +109,8 @@ describe('generateCaseWithTools', () => {
     expect(meta.status).toBe('passed');
     expect(meta.maxCalls).toBe(4);
     expect(meta.startedAt).toBe('2026-09-20T00-00-00');
+    expect(meta.nudges).toBe(1);
+    expect(meta.verified).toBe(false);
   });
 
   it('keeps the cookbook addendum in the tool-arm system prompt', async () => {
@@ -158,6 +167,8 @@ describe('generateCaseWithTools', () => {
         tokensOut: 1,
       },
       { text: 'done', toolCalls: [], finishReason: 'stop', tokensIn: 1, tokensOut: 1 },
+      { text: 'done', toolCalls: [], finishReason: 'stop', tokensIn: 1, tokensOut: 1 },
+      { text: 'done', toolCalls: [], finishReason: 'stop', tokensIn: 1, tokensOut: 1 },
     ]);
     const result = await generateCaseWithTools({
       taskDir: TASK_DIR,
@@ -198,6 +209,8 @@ describe('generateCaseWithTools', () => {
         tokensOut: 1,
       },
       { text: 'done', toolCalls: [], finishReason: 'stop', tokensIn: 1, tokensOut: 1 },
+      { text: 'done', toolCalls: [], finishReason: 'stop', tokensIn: 1, tokensOut: 1 },
+      { text: 'done', toolCalls: [], finishReason: 'stop', tokensIn: 1, tokensOut: 1 },
     ]);
     const result = await generateCaseWithTools({
       taskDir: TASK_DIR,
@@ -236,6 +249,8 @@ describe('generateCaseWithTools', () => {
         tokensIn: 1,
         tokensOut: 1,
       },
+      { text: 'done', toolCalls: [], finishReason: 'stop', tokensIn: 1, tokensOut: 1 },
+      { text: 'done', toolCalls: [], finishReason: 'stop', tokensIn: 1, tokensOut: 1 },
       { text: 'done', toolCalls: [], finishReason: 'stop', tokensIn: 1, tokensOut: 1 },
     ]);
     const result = await generateCaseWithTools({
@@ -309,6 +324,7 @@ describe('generateCaseWithTools', () => {
   it('writes the no-script placeholder when the model only emits prose', async () => {
     const runDir = mkdtempSync(join(tmpdir(), 'toolgen-'));
     const client = clientFrom([
+      { text: 'I could not produce a script, sorry.', toolCalls: [], finishReason: 'stop', tokensIn: 3, tokensOut: 4 },
       { text: 'I could not produce a script, sorry.', toolCalls: [], finishReason: 'stop', tokensIn: 3, tokensOut: 4 },
     ]);
     const result = await generateCaseWithTools({
