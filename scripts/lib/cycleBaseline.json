@@ -1,7 +1,1 @@
-[
-  "kernel/backends/occt/edgeQueries.ts > kernel/backends/occt/occtBackend.ts",
-  "kernel/backends/occt/nurbsSurfaceLowerer.ts > kernel/backends/occt/occtBackend.ts > kernel/backends/occt/pathNurbsLowerer.ts",
-  "kernel/backends/occt/nurbsSurfaceLowerer.ts > kernel/backends/occt/pathNurbsLowerer.ts",
-  "kernel/backends/occt/occtBackend.ts > kernel/backends/occt/sceneToWorldFrame.ts",
-  "kernel/naming/index.ts > kernel/naming/queryEvaluator.ts"
-]
+[]

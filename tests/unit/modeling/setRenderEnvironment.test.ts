@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 
 describe('setRenderEnvironment() top-level API', () => {
   it('captures a preset record and returns a handle', () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const handle = api.setRenderEnvironment({ preset: 'studio' });
     expect(handle.id).toMatch(/^renderEnvironment_/);
     expect(handle.metadata.preset).toBe('studio');
@@ -16,7 +16,7 @@ describe('setRenderEnvironment() top-level API', () => {
 
   it('captures a url spec with full options', () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const handle = api.setRenderEnvironment({ url: '/hdri/x.hdr', intensity: 1.5, rotation: 45 });
     expect(handle.metadata.url).toBe('/hdri/x.hdr');
     expect(handle.metadata.intensity).toBe(1.5);

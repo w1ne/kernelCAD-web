@@ -24,7 +24,7 @@ import * as replicad from 'replicad';
 import { getOC } from 'replicad';
 import type { Curve3DMetadataCarrier, SurfaceRecordCarrier } from '../../geometry/curveCarriers';
 import { KernelError } from '../../../shared/intent/kernelError';
-import { clampedUniformKnots, decomposeKnots } from '../occt/nurbsSurfaceLowerer';
+import { clampedUniformKnots, decomposeKnots } from '../occt/nurbsKnots';
 
 const VERB_CACHE = Symbol.for('kernelcad.curve3d.__verbCurve');
 const VERB_VERSION = Symbol.for('kernelcad.curve3d.__verbCurveVersion');
@@ -39,7 +39,7 @@ interface CacheCarrier {
 /**
  * Expand a (distinct, multiplicities) knot description into the flat
  * knot vector that the JS analytics module expects. Inverse of
- * `decomposeKnots` (from `nurbsSurfaceLowerer`).
+ * `decomposeKnots` (from `nurbsKnots`).
  */
 function expandKnots(distinctKnots: number[], multiplicities: number[]): number[] {
   const out: number[] = [];

@@ -4,7 +4,7 @@ import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 
 // Minimal 1x1 transparent PNG bytes (validated 89-byte IHDR-based PNG).
 const PNG_1X1 = Buffer.from(
@@ -21,7 +21,7 @@ describe('referenceImage()', () => {
 
       const session = new CaptureSession();
       session.scriptDir = tmpDir;
-      const kcad = createApi({ session });
+      const kcad = createModelingApi({ session });
       const handle = kcad.referenceImage('./test.png', {
         plane: 'xz',
         anchor: 'origin',
@@ -54,7 +54,7 @@ describe('referenceImage()', () => {
   it('emits feature.reference-image.path-not-found on missing file', () => {
     const session = new CaptureSession();
     session.scriptDir = '/tmp';
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const handle = kcad.referenceImage('./does-not-exist.png', { plane: 'xz' });
 
     const record = session.getRecords().find(r => r.id === handle.id)!;
@@ -68,7 +68,7 @@ describe('referenceImage()', () => {
   it('emits feature.reference-image.format-unsupported for unsupported format', () => {
     const session = new CaptureSession();
     session.scriptDir = '/tmp';
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const handle = kcad.referenceImage('./bad.gif', { plane: 'xz' });
 
     const record = session.getRecords().find(r => r.id === handle.id)!;

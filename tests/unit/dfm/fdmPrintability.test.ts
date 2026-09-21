@@ -22,7 +22,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { buildModel } from '../../../src/modeling/buildModel';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 import { KernelError } from '../../../src/shared/intent/kernelError';
 import type { DfmSpecMetadata } from '../../../src/shared/intent/dfmSpecRecord';
 import { runDfmChecksOnModel, type DfmCheckReport } from '../../../src/modeling/runtime/dfm/runDfmChecks';
@@ -53,9 +53,9 @@ function slopeBlock(deg: number): string {
 }
 
 describe('dfmSpec process: fdm capture', () => {
-  const meta = (spec: Parameters<ReturnType<typeof createApi>['dfmSpec']>[0]): DfmSpecMetadata => {
+  const meta = (spec: Parameters<ReturnType<typeof createModelingApi>['dfmSpec']>[0]): DfmSpecMetadata => {
     const session = new CaptureSession();
-    return createApi({ session }).dfmSpec(spec).metadata;
+    return createModelingApi({ session }).dfmSpec(spec).metadata;
   };
 
   it('normalizes the FDM defaults when only the process is declared', () => {
@@ -82,7 +82,7 @@ describe('dfmSpec process: fdm capture', () => {
     [{ process: 'fdm', printer: 'mystery-printer' }, /generic-fdm/],
   ])('throws KernelError for %j', (spec, why) => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     expect(() => api.dfmSpec(spec as never)).toThrow(KernelError);
     expect(() => api.dfmSpec(spec as never)).toThrow(why);
   });

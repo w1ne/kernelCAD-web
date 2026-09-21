@@ -47,7 +47,7 @@ export type ScriptTranspiler = (source: string, fileName: string) => TranspileOu
  * caller can never silently evaluate a script against a partial surface: the
  * composition layer owns the factory that attaches the cross-layer namespaces
  * (`kc.kinematic.*`) and their wiring. Modeling's own facade passes
- * `createApi`; the composition facade passes `createScriptApi`.
+ * `createModelingApi`; the composition facade passes `createScriptApi`.
  */
 export type ScriptApiFactory = (ctx: ApiContext) => KernelCadApi;
 

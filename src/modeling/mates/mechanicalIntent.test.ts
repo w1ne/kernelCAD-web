@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it } from 'vitest';
-import { createApi } from '../api';
+import { createModelingApi } from '../api';
 import { CaptureSession } from '../capture/captureSession';
 import { reviewMechanicalIntent } from './mechanicalIntent';
 
 function makeApi() {
   const session = new CaptureSession();
-  const kcad = createApi({ session });
+  const kcad = createModelingApi({ session });
   return { arm: kcad.assembly('rig'), kcad };
 }
 

@@ -14,7 +14,7 @@
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 import { buildModel } from '../../../src/modeling/buildModel';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { KernelError } from '../../../src/shared/intent/kernelError';
@@ -22,7 +22,7 @@ import type { DfmSpecMetadata } from '../../../src/shared/intent/dfmSpecRecord';
 
 function makeApi() {
   const session = new CaptureSession();
-  return { session, api: createApi({ session }) };
+  return { session, api: createModelingApi({ session }) };
 }
 
 function getMeta(session: CaptureSession): DfmSpecMetadata {

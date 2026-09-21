@@ -4,7 +4,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { reviewCadTool } from '../../agent/mcp/tools/reviewCad';
 import { initOcct } from '../../kernel/backends/occt/occtBackend';
-import { createApi } from '../api';
+import { createModelingApi } from '../api';
 import type { Assembly } from '../capture/assembly';
 import { CaptureSession } from '../capture/captureSession';
 
@@ -269,11 +269,11 @@ describe('joint.supportedServoRevolute', () => {
 });
 
 function makeSupportedArm(opts: { extraSupportAxis?: boolean; linkServoMount?: boolean } = {}): {
-  kcad: ReturnType<typeof createApi>;
+  kcad: ReturnType<typeof createModelingApi>;
   arm: Assembly;
 } {
   const session = new CaptureSession();
-  const kcad = createApi({ session });
+  const kcad = createModelingApi({ session });
   const arm = kcad.assembly('arm');
 
   const base = arm

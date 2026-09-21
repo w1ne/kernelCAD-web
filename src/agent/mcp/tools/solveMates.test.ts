@@ -9,11 +9,11 @@ import { describe, it, expect, afterEach } from 'vitest';
 import { solveMatesTool } from './solveMates';
 import { setActiveMcpSession, clearActiveMcpSession } from '../activeSession';
 import { CaptureSession } from '../../../modeling/capture/captureSession';
-import { createApi } from '../../../modeling/api';
+import { createModelingApi } from '../../../modeling/api';
 
 function makeArm() {
   const session = new CaptureSession();
-  const kcad = createApi({ session });
+  const kcad = createModelingApi({ session });
   return { session, kcad, arm: kcad.assembly('t') };
 }
 

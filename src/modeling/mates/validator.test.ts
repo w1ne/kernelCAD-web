@@ -13,7 +13,7 @@ import type { PoseEnvelopeReviewResult } from './poseEnvelope';
 import { CaptureSession } from '../capture/captureSession';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { Param, Vec3Param } from '../../shared/intent/types';
-import { createApi } from '../api';
+import { createModelingApi } from '../api';
 
 const p = (n: number): Param => ({ expression: String(n), unit: 'mm', evaluated: n });
 const v = (x: number, y: number, z: number): Vec3Param => ({ x: p(x), y: p(y), z: p(z) });
@@ -91,7 +91,7 @@ describe('validateAssembly', () => {
   // `solvedModel({})` but emitted spurious floating warnings via `.model()`.
   it('sees mate edges on an assemblyModel record — .model() path (issue #448)', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('t');
     arm
       .part('a', kcad.box(1, 1, 1))
@@ -108,7 +108,7 @@ describe('validateAssembly', () => {
 
   it('still flags a genuinely unmated part when siblings are mated via .model()', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('t');
     arm
       .part('a', kcad.box(1, 1, 1))
@@ -247,7 +247,7 @@ describe('validateAssembly', () => {
 // FeatureRecord factories above, those exercise the v0.5 path).
 function makeArm() {
   const session = new CaptureSession();
-  const kcad = createApi({ session });
+  const kcad = createModelingApi({ session });
   return { arm: kcad.assembly('t'), kcad };
 }
 

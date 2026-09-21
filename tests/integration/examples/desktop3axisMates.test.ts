@@ -30,7 +30,7 @@ import { evaluateAndBuildScript } from '../../../src/agent/cli/commands/evaluate
 import { runScript } from '../../../src/modeling/runtime/runScript';
 import { Scene } from '../../../src/modeling/validation/scene';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 import { reviewCadTool } from '../../../src/agent/mcp/tools/reviewCad';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -186,7 +186,7 @@ describe('desktop-3axis-mates hero (v0.6)', () => {
     // if a future regression slips overlapping geometry into the hero, the
     // hero's own `evaluates end-to-end with zero error diagnostics` test fires.
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('clash-fixture');
     arm
       .part('p', kcad.box(10, 10, 10))

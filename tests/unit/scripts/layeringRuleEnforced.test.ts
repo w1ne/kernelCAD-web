@@ -32,11 +32,11 @@ describe('import layering rule is live', () => {
     expect(ids).toContain('no-restricted-syntax');
   }, 120_000);
 
-  it('keeps the composition-root exceptions narrow', async () => {
-    const api = await ruleIdsFor('src/modeling/api.ts', "import { x } from '../agent/cli/index';\nexport const y = x;\n");
-    expect(api).toContain('no-restricted-imports');
-    const allowed = await ruleIdsFor('src/modeling/api.ts', "import * as kinematic from '../kinematic';\nexport const k = kinematic;\n");
-    expect(allowed).not.toContain('no-restricted-imports');
+  it('keeps modeling below kinematic now that composition owns the script API', async () => {
+    const kinematic = await ruleIdsFor('src/modeling/api.ts', "import * as kinematic from '../kinematic';\nexport const k = kinematic;\n");
+    expect(kinematic).toContain('no-restricted-imports');
+    const agent = await ruleIdsFor('src/modeling/api.ts', "import { x } from '../agent/cli/index';\nexport const y = x;\n");
+    expect(agent).toContain('no-restricted-imports');
   }, 120_000);
 
   it('binds composition above kinematic and below agent', async () => {
@@ -44,9 +44,27 @@ describe('import layering rule is live', () => {
     expect(upward).toContain('no-restricted-imports');
     const downward = await ruleIdsFor(
       'src/composition/layeringProbe.ts',
-      "import * as kinematic from '../kinematic';\nimport { createApi } from '../modeling/api';\nexport const k = { kinematic, createApi };\n",
+      "import * as kinematic from '../kinematic';\nimport { createModelingApi } from '../modeling/api';\nexport const k = { kinematic, createModelingApi };\n",
     );
     expect(downward).not.toContain('no-restricted-imports');
+  }, 120_000);
+
+  it('routes script construction through composition, not the modeling factory or core', async () => {
+    const modelingFactory = await ruleIdsFor(
+      'src/agent/layeringProbe.ts',
+      "import { createModelingApi } from '../modeling/api';\nexport const y = createModelingApi;\n",
+    );
+    expect(modelingFactory).toContain('no-restricted-imports');
+    const scriptCore = await ruleIdsFor(
+      'src/agent/layeringProbe.ts',
+      "import { runScriptCore } from '../modeling/runtime/runScriptCore';\nexport const y = runScriptCore;\n",
+    );
+    expect(scriptCore).toContain('no-restricted-imports');
+    const composed = await ruleIdsFor(
+      'src/composition/layeringProbe.ts',
+      "import { createModelingApi } from '../modeling/api';\nimport { runScriptCore } from '../modeling/runtime/runScriptCore';\nexport const y = { createModelingApi, runScriptCore };\n",
+    );
+    expect(composed).not.toContain('no-restricted-imports');
   }, 120_000);
 
   it('rejects a lower layer importing composition', async () => {

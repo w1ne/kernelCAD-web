@@ -9,12 +9,12 @@ import { describe, expect, it, beforeAll } from 'vitest';
 import { buildModel } from '../../../src/modeling/buildModel';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 import { KernelError } from '../../../src/shared/intent/kernelError';
 
 function makeApi() {
   const session = new CaptureSession();
-  return { session, api: createApi({ session }) };
+  return { session, api: createModelingApi({ session }) };
 }
 
 describe('path().circle(cx, cy, r)', () => {

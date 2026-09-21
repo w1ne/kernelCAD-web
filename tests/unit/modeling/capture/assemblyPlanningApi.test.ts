@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { CaptureSession } from '../../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../../src/modeling/api';
+import { createModelingApi } from '../../../../src/modeling/api';
 
 describe('Assembly planning-group capture-time API (Task B4.A)', () => {
   function makeArm() {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('two-link');
     arm.part('base', kcad.box(10, 10, 10), { density: 2700 });
     arm.part('upper', kcad.box(80, 10, 10), { density: 2700 });

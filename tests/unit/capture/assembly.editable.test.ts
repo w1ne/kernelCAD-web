@@ -10,7 +10,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Param, Vec3Param } from '../../../src/shared/intent/types';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 import type { ParamRefExpr } from '../../../src/shared/runtime/paramRef';
 
 function asVec3Param(v: unknown): Vec3Param {
@@ -24,7 +24,7 @@ function asParam(v: unknown): Param {
 describe('assembly capture — EditableVec3 surfaces', () => {
   it('captures connector origin with mixed numeric + ParamRef coords', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const baseX = kcad.param('baseX', 70);
 
     const arm = kcad.assembly('mixed');
@@ -77,7 +77,7 @@ describe('assembly capture — EditableVec3 surfaces', () => {
 
   it('reactive worldOrigin is symbolic when at and origin are parametric', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const baseX = kcad.param('baseX', 70);
 
     const arm = kcad.assembly('symbolic-world');
@@ -122,7 +122,7 @@ describe('assembly capture — EditableVec3 surfaces', () => {
 
   it('worldOrigin decays to literal arithmetic when no params are involved', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
 
     const arm = kcad.assembly('literal-world');
     const part = arm.part('plate', kcad.box(20, 20, 4), {
@@ -145,7 +145,7 @@ describe('assembly capture — EditableVec3 surfaces', () => {
 
   it('connect: subtraction is symbolic when world origin or local origin has params', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const baseX = kcad.param('baseX', 80);
 
     const arm = kcad.assembly('connect-symbolic');

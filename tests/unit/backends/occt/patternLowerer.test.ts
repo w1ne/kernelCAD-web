@@ -3,14 +3,14 @@ import { CaptureSession } from '../../../../src/modeling/capture/captureSession'
 import { RecomputeEngine } from '../../../../src/modeling/compute/recomputeEngine';
 import { OcctLowerer } from '../../../../src/modeling/backends/occt/occtLowerer';
 import { initOcct } from '../../../../src/kernel/backends/occt/occtBackend';
-import { createApi } from '../../../../src/modeling/api';
+import { createModelingApi } from '../../../../src/modeling/api';
 
 describe('OCCT pattern lowerer', () => {
   beforeAll(async () => { await initOcct(); });
 
   it('lowers a linear pattern into a fused repeated solid', async () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     kcad.box(2, 2, 2).patternLinear({ count: 3, direction: [1, 0, 0], spacing: 4 });
 
     const result = await new RecomputeEngine(new OcctLowerer()).run(session.getRecords());
@@ -25,7 +25,7 @@ describe('OCCT pattern lowerer', () => {
 
   it('lowers a circular pattern into a fused repeated solid around an axis', async () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     kcad.box(2, 2, 2).translate(6, 0, 0).patternCircular({ count: 4, axis: [0, 0, 1] });
 
     const result = await new RecomputeEngine(new OcctLowerer()).run(session.getRecords());
@@ -41,7 +41,7 @@ describe('OCCT pattern lowerer', () => {
 
   it('lowers a grid pattern into a fused 2D repeated solid', async () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     kcad.box(2, 2, 2).patternGrid({
       x: { count: 3, direction: [1, 0, 0], spacing: 4 },
       y: { count: 2, direction: [0, 1, 0], spacing: 5 },
@@ -60,7 +60,7 @@ describe('OCCT pattern lowerer', () => {
 
   it('linear pattern historyMap carries <sourceId>_pattern_<i> retags', async () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     // Disjoint plates (spacing 10 > plate width 6) so each instance's
     // bore wall survives the cumulative boolean union — confirms that the
     // pattern lowerer threads per-instance retags through the historyMap.

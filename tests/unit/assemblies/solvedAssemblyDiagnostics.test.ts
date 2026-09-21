@@ -25,7 +25,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 import { KernelError, isKernelError } from '../../../src/shared/intent/kernelError';
 
 /** Run `fn` and assert it throws a KernelError whose `hint` matches `re`.
@@ -43,7 +43,7 @@ function expectKernelHint(fn: () => unknown, re: RegExp): void {
 describe('solvedAssembly capture-time diagnostics', () => {
   const setup = () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('test');
     const base = arm.part('base', kcad.box(10, 10, 10));
     const upper = arm.part('upper', kcad.box(10, 10, 10));

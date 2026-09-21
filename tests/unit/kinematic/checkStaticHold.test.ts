@@ -16,7 +16,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { checkStaticHold } from '../../../src/kinematic/checkStaticHold';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createScriptApi } from '../../../src/composition/scriptApi';
 import type { Assembly } from '../../../src/modeling/capture/assembly';
 
 const LENGTH_MM = 300;
@@ -31,7 +31,7 @@ function buildHingedBeam(opts: {
   limitsDeg?: [number, number];
 } = {}): { arm: Assembly } {
   const session = new CaptureSession();
-  const kc = createApi({ session });
+  const kc = createScriptApi({ session });
   const arm = kc.assembly('hinged-beam');
   const wall = arm.part('wall', kc.box(40, 40, 40, true));
   const beam = arm.part(
@@ -114,7 +114,7 @@ describe('checkStaticHold — gravitational torque vs actuator capacity', () => 
 
   it('empty assembly / no joints is a vacuous pass', async () => {
     const session = new CaptureSession();
-    const kc = createApi({ session });
+    const kc = createScriptApi({ session });
     const arm = kc.assembly('empty');
     const r = await checkStaticHold(arm);
     expect(r.ok).toBe(true);

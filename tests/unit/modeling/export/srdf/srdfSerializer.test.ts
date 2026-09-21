@@ -2,14 +2,14 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../../../../src/kernel/backends/occt/occtBackend';
 import { srdfSerialize } from '../../../../../src/modeling/export/srdf/srdfSerializer';
 import { CaptureSession } from '../../../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../../../src/modeling/api';
+import { createModelingApi } from '../../../../../src/modeling/api';
 
 describe('srdfSerialize — Task B4.C', () => {
   beforeAll(async () => { await initOcct(); });
 
   function makeArm() {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('two-link');
     const base = arm.part('base', kcad.box(10, 10, 10), { density: 2700 });
     const upper = arm.part('upper', kcad.box(80, 10, 10), { density: 2700 });
@@ -31,7 +31,7 @@ describe('srdfSerialize — Task B4.C', () => {
 
   it('refuses export with planning-group-missing when no group declared', async () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const arm = kcad.assembly('a');
     arm.part('base', kcad.box(10, 10, 10), { density: 2700 });
     const r = await srdfSerialize(arm, {});

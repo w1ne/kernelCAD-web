@@ -12,7 +12,7 @@ import { readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { CaptureSession } from '../capture/captureSession';
-import { createApi } from '../api';
+import { createModelingApi } from '../api';
 import { initOcct } from '../../kernel/backends/occt/occtBackend';
 import {
     assemblyToMjcf,
@@ -102,7 +102,7 @@ describe('assemblyToMjcf', () => {
     it('round-trips a 1-revolute hinge into a parseable MJCF with 1 qpos slot', async () => {
         await initOcct();
         const session = new CaptureSession();
-        const kcad = createApi({ session });
+        const kcad = createModelingApi({ session });
         const arm = kcad.assembly('hinge');
 
         const baseBody = kcad.box(40, 40, 30, true).translate(0, 0, -15);
@@ -161,7 +161,7 @@ describe('assemblyToMjcf', () => {
     it('emits a fastened mate as nested body without a joint', async () => {
         await initOcct();
         const session = new CaptureSession();
-        const kcad = createApi({ session });
+        const kcad = createModelingApi({ session });
         const arm = kcad.assembly('rigid');
 
         const armBody = kcad.box(80, 20, 10, true).translate(40, 0, 0);
@@ -237,7 +237,7 @@ describe('assemblyToMjcf', () => {
     it('rejects a closed-loop mate graph', async () => {
         await initOcct();
         const session = new CaptureSession();
-        const kcad = createApi({ session });
+        const kcad = createModelingApi({ session });
         const arm = kcad.assembly('loop');
 
         // Three parts mutually linked: a→b, b→c, c→a is a cycle.
@@ -259,7 +259,7 @@ describe('assemblyToMjcf', () => {
     it('P7: emits <site> + <tendon><spatial> and tendon length matches site-to-site distance', async () => {
         await initOcct();
         const session = new CaptureSession();
-        const kcad = createApi({ session });
+        const kcad = createModelingApi({ session });
         const arm = kcad.assembly('tendon-roundtrip');
 
         // Two boxes joined by a revolute joint; one tendon between
@@ -366,7 +366,7 @@ describe('assemblyToMjcf', () => {
     it('regularizes a non-positive-definite (degenerate sliver) inertia in the emitted MJCF', async () => {
         await initOcct();
         const session = new CaptureSession();
-        const kcad = createApi({ session });
+        const kcad = createModelingApi({ session });
         const arm = kcad.assembly('degenerate-sliver');
 
         // A 1000 x 0.0001 x 1000 mm sliver. At this near-zero thickness the
@@ -425,7 +425,7 @@ describe('assemblyToMjcf', () => {
     it('P7: omits the <tendon> block entirely when no tendons declared', async () => {
         await initOcct();
         const session = new CaptureSession();
-        const kcad = createApi({ session });
+        const kcad = createModelingApi({ session });
         const arm = kcad.assembly('no-tendons');
 
         const a = kcad.box(20, 20, 20, true);

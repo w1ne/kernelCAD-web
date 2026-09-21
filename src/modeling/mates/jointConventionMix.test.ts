@@ -13,14 +13,14 @@
 
 import { describe, it, expect } from 'vitest';
 import { CaptureSession } from '../capture/captureSession';
-import { createApi } from '../api';
+import { createModelingApi } from '../api';
 import { validateJointConventionMix } from './jointConventionMix';
 
 const CODE = 'assembly.joint.child-modeled-in-place';
 
 function api() {
   const session = new CaptureSession();
-  return createApi({ session });
+  return createModelingApi({ session });
 }
 
 describe('validateJointConventionMix', () => {

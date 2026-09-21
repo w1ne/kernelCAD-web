@@ -11,7 +11,7 @@
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { CaptureSession } from '../capture/captureSession';
-import { createApi } from '../api';
+import { createModelingApi } from '../api';
 import { initOcct } from '../../kernel/backends/occt/occtBackend';
 import type { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
@@ -27,7 +27,7 @@ async function buildArm(opts: { wrapObstacle?: boolean } = {}): Promise<{
   boxes: Record<string, OcctBackend>;
 }> {
   const session = new CaptureSession();
-  const kcad = createApi({ session });
+  const kcad = createModelingApi({ session });
   const arm = kcad.assembly('det');
 
   const baseBox = kcad.box(20, 20, 20, true);

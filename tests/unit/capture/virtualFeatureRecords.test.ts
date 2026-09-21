@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync, writeFileSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 
 const PNG_1X1 = Buffer.from(
   '89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000d49444154789c62000000000005000150fdb88e0000000049454e44ae426082',
@@ -19,7 +19,7 @@ describe('virtual feature capture records', () => {
 
       const session = new CaptureSession();
       session.scriptDir = tmpDir;
-      const api = createApi({ session });
+      const api = createModelingApi({ session });
 
       api.param('angleDeg', 0, { min: 0, max: 180 });
       api.referenceImage('./overlay.png', {

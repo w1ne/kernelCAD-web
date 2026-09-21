@@ -71,9 +71,9 @@ describe('OcctLowerer fillet — Slice C Task 6 continuity', () => {
     // from reaching the lowerer. Verified via the KernelError thrown by
     // Shape.fillet when opts.continuity is not 'G1' | 'G2'.
     const { CaptureSession } = await import('../../../../src/modeling/capture/captureSession');
-    const { createApi } = await import('../../../../src/modeling/api');
+    const { createModelingApi } = await import('../../../../src/modeling/api');
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const box = kcad.box(10, 10, 10);
     expect(() => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -83,9 +83,9 @@ describe('OcctLowerer fillet — Slice C Task 6 continuity', () => {
 
   it("captures continuity: 'G2' on the FeatureRecord metadata", async () => {
     const { CaptureSession } = await import('../../../../src/modeling/capture/captureSession');
-    const { createApi } = await import('../../../../src/modeling/api');
+    const { createModelingApi } = await import('../../../../src/modeling/api');
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const box = kcad.box(10, 10, 10);
     box.fillet(2, undefined, { continuity: 'G2' });
     const records = session.getRecords();

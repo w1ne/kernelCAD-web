@@ -17,7 +17,7 @@ import { readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { CaptureSession } from '../capture/captureSession';
-import { createApi } from '../api';
+import { createModelingApi } from '../api';
 import { initOcct } from '../../kernel/backends/occt/occtBackend';
 import { assemblyToMjcf } from './mjcfExport';
 
@@ -55,7 +55,7 @@ describe('P11 Slice 1 — MuJoCo sees collision contacts on non-adjacent interpe
         // stays in MuJoCo's contact set and produces `ncon > 0`.
         await initOcct();
         const session = new CaptureSession();
-        const kcad = createApi({ session });
+        const kcad = createModelingApi({ session });
         const arm = kcad.assembly('three-cube-chain');
 
         // Three 40 mm cubes. Hinges chain them along +X; the second

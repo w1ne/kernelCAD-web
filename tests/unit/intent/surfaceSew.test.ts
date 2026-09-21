@@ -5,7 +5,7 @@
 // NO OCCT/geometry — pure capture-record assertions.
 import { describe, it, expect } from 'vitest';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 import { Shape } from '../../../src/modeling/capture/proxy';
 import { KernelError } from '../../../src/shared/intent/kernelError';
 
@@ -18,7 +18,7 @@ const UNIT_PATCH = {
 describe('sew() capture record', () => {
   it('mints a surfaceSew FeatureRecord with kind=surfaceSew', () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const s1 = api.nurbsSurface({ controls: UNIT_PATCH.controls, degree: UNIT_PATCH.degree });
     const s2 = api.nurbsSurface({ controls: UNIT_PATCH.controls, degree: UNIT_PATCH.degree });
     const result = api.sew([s1, s2]);
@@ -31,7 +31,7 @@ describe('sew() capture record', () => {
 
   it('record has data.requireClosed default false', () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const s1 = api.nurbsSurface({ controls: UNIT_PATCH.controls, degree: UNIT_PATCH.degree });
     const s2 = api.nurbsSurface({ controls: UNIT_PATCH.controls, degree: UNIT_PATCH.degree });
     const result = api.sew([s1, s2]);
@@ -42,7 +42,7 @@ describe('sew() capture record', () => {
 
   it('record has data.requireClosed=true when opts.requireClosed=true', () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const s1 = api.nurbsSurface({ controls: UNIT_PATCH.controls, degree: UNIT_PATCH.degree });
     const s2 = api.nurbsSurface({ controls: UNIT_PATCH.controls, degree: UNIT_PATCH.degree });
     const result = api.sew([s1, s2], { requireClosed: true });
@@ -52,7 +52,7 @@ describe('sew() capture record', () => {
 
   it('inputs map contains a surface ref for each input surface', () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const s1 = api.nurbsSurface({ controls: UNIT_PATCH.controls, degree: UNIT_PATCH.degree });
     const s2 = api.nurbsSurface({ controls: UNIT_PATCH.controls, degree: UNIT_PATCH.degree });
     const s3 = api.nurbsSurface({ controls: UNIT_PATCH.controls, degree: UNIT_PATCH.degree });
@@ -68,7 +68,7 @@ describe('sew() capture record', () => {
 
   it('record has a params.tolerance entry', () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const s1 = api.nurbsSurface({ controls: UNIT_PATCH.controls, degree: UNIT_PATCH.degree });
     const s2 = api.nurbsSurface({ controls: UNIT_PATCH.controls, degree: UNIT_PATCH.degree });
     const result = api.sew([s1, s2]);
@@ -79,7 +79,7 @@ describe('sew() capture record', () => {
 
   it('params.tolerance respects opts.tolerance', () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const s1 = api.nurbsSurface({ controls: UNIT_PATCH.controls, degree: UNIT_PATCH.degree });
     const s2 = api.nurbsSurface({ controls: UNIT_PATCH.controls, degree: UNIT_PATCH.degree });
     const result = api.sew([s1, s2], { tolerance: 0.01 });
@@ -89,7 +89,7 @@ describe('sew() capture record', () => {
 
   it('throws feature.invalid-args when fewer than 1 surface is provided', () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     expect(() => api.sew([])).toThrowError(KernelError);
     try {
       api.sew([]);
@@ -100,13 +100,13 @@ describe('sew() capture record', () => {
 
   it('throws feature.invalid-args for non-array input', () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     expect(() => api.sew(null as unknown as [])).toThrowError(KernelError);
   });
 
   it('sew with a single surface is accepted (open shell with 1 face)', () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const s1 = api.nurbsSurface({ controls: UNIT_PATCH.controls, degree: UNIT_PATCH.degree });
     const result = api.sew([s1]);
     expect(result).toBeInstanceOf(Shape);

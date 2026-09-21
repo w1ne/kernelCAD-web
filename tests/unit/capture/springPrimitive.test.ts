@@ -1,13 +1,13 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { buildModel } from '../../../src/modeling/buildModel';
 import { initOcct, type OcctBackend } from '../../../src/kernel/backends/occt/occtBackend';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 import { GLOBALS } from '../../../src/agent/mcp/tools/listApi';
 
 function makeApi() {
   const session = new CaptureSession();
-  return createApi({ session });
+  return createModelingApi({ session });
 }
 
 describe('spring({ length, coilRadius, wireRadius, turns })', () => {

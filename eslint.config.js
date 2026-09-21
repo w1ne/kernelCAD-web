@@ -36,46 +36,32 @@ export default defineConfig([
     { dir: 'modeling', forbid: ['kinematic', 'composition', 'agent', 'studio', 'server'] },
     { dir: 'kinematic', forbid: ['composition', 'agent', 'studio'] },
     { dir: 'composition', forbid: ['agent', 'studio', 'server'] },
-    { dir: 'agent', forbid: ['studio'] },
-  ].map(({ dir, forbid }) => ({
+    {
+      dir: 'agent',
+      forbid: ['studio'],
+      // Composition owns the only factories that evaluate a script against the
+      // full `kc.*` surface; agent code must not re-open the modeling-only
+      // factory or the raw script core it cannot supply an apiFactory for.
+      restrict: ['modeling/api', 'modeling/runtime/runScriptCore'],
+    },
+  ].map(({ dir, forbid, restrict = [] }) => ({
     files: [`src/${dir}/**/*.{ts,tsx}`],
     ignores: [
       // Tests may import across layers.
       '**/*.test.{ts,tsx}',
-      // modeling/api.ts is the script-API composition root: it is what
-      // exposes `kinematic.*` to user scripts, which structurally requires
-      // importing src/kinematic from modeling. Slice 8 moved the evaluator
-      // wiring to src/composition/ (sweepTolerance's agent edge is gone);
-      // flipping this last edge (createModelingApi rename + composition
-      // attaching kinematic) is the remaining slice-8 step, coordinated with
-      // kernelCAD-server (which also constructs this API outside this repo).
-      'src/modeling/api.ts',
     ],
     rules: {
       'no-restricted-imports': ['error', {
-        patterns: forbid.map((layer) => ({
-          regex: layerImportRegex(layer),
-          message: `src/${dir} must not import from src/${layer} (layering: shared -> kernel -> modeling -> kinematic -> composition -> agent -> studio).`,
-        })),
-      }],
-      'no-restricted-syntax': ['error', ...forbid.map((layer) => ({
-        selector: `ImportExpression[source.value=/${layerImportRegex(layer).replace(/\//g, '\\/')}/]`,
-        message: `src/${dir} must not import from src/${layer} (layering: shared -> kernel -> modeling -> kinematic -> composition -> agent -> studio).`,
-      }))],
-    },
-  })),
-  // The remaining composition-root exception is exempt only from the ONE edge
-  // its comment above documents; every other upward import is still an error.
-  ...[
-    { file: 'src/modeling/api.ts', dir: 'modeling', forbid: ['agent', 'studio', 'server'] },
-  ].map(({ file, dir, forbid }) => ({
-    files: [file],
-    rules: {
-      'no-restricted-imports': ['error', {
-        patterns: forbid.map((layer) => ({
-          regex: layerImportRegex(layer),
-          message: `src/${dir} must not import from src/${layer} (layering: shared -> kernel -> modeling -> kinematic -> composition -> agent -> studio).`,
-        })),
+        patterns: [
+          ...forbid.map((layer) => ({
+            regex: layerImportRegex(layer),
+            message: `src/${dir} must not import from src/${layer} (layering: shared -> kernel -> modeling -> kinematic -> composition -> agent -> studio).`,
+          })),
+          ...restrict.map((module) => ({
+            regex: `^((\\.\\./)+|(^|/)src/)${module.replace(/\//g, '\\/')}$`,
+            message: `src/${dir} must not import src/${module} directly: start scripts through src/composition.`,
+          })),
+        ],
       }],
       'no-restricted-syntax': ['error', ...forbid.map((layer) => ({
         selector: `ImportExpression[source.value=/${layerImportRegex(layer).replace(/\//g, '\\/')}/]`,

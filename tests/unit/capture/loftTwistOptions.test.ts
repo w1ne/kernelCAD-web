@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 import { KernelError } from '../../../src/shared/intent/kernelError';
 
 function session() {
   const s = new CaptureSession();
-  return { s, kcad: createApi({ session: s }) };
+  return { s, kcad: createModelingApi({ session: s }) };
 }
 
 interface CapturedParam {

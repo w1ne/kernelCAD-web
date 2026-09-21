@@ -25,7 +25,7 @@
 //        - `nurbsSegment` → `Geom_BSplineCurve_1` (no weights) or `_2`
 //          (rational), wrapped via `BRepBuilderAPI_MakeEdge_24`. Reuses
 //          `clampedUniformKnots(n, degree)` and `decomposeKnots(knots)` from
-//          the Slice B surface lowerer.
+//          the shared `nurbsKnots` leaf.
 //        - `hermiteG2_2d` → `solveHermiteG2` (lifted to 3D with Z=0 on a
 //          target-plane-agnostic basis, then the 6 Bezier poles are mapped
 //          onto the target plane), then a degree-5 `Geom_BSplineCurve_1` with
@@ -49,7 +49,7 @@ import type { SketchCommand } from '../../../shared/capture/sketchCommand';
 import { rotateSketchCommands } from '../../../shared/capture/rotateSketchCommands';
 import { solveHermiteG2 } from '../../geometry/hermiteG2';
 import type { Vec3 } from '../../../shared/intent/types';
-import { clampedUniformKnots, decomposeKnots } from './nurbsSurfaceLowerer';
+import { clampedUniformKnots, decomposeKnots } from './nurbsKnots';
 import { fromVerb } from '../verb/curveBridge';
 
 /**

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 import type { SketchCommand } from '../../../src/shared/capture/sketchCommand';
 
 const SAMPLE_COMMANDS: SketchCommand[] = [
@@ -15,7 +15,7 @@ const SAMPLE_COMMANDS: SketchCommand[] = [
 describe('authoring feature capture records', () => {
   it('exports byte-stable authoring feature records', () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
 
     const plate = api.box(40, 10, 2);
     api.dfmSpec({

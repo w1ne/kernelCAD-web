@@ -3,14 +3,14 @@ import { initOcct } from '../../src/kernel/backends/occt/occtBackend';
 import { RecomputeEngine } from '../../src/modeling/compute/recomputeEngine';
 import { OcctLowerer } from '../../src/modeling/backends/occt/occtLowerer';
 import { CaptureSession } from '../../src/modeling/capture/captureSession';
-import { createApi } from '../../src/modeling/api';
+import { createModelingApi } from '../../src/modeling/api';
 
 describe('v0.3 slice-3 session export/import', () => {
   beforeAll(async () => { await initOcct(); });
 
   it('round-trips schema v3 params and records', async () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const boltDia = api.param('boltDia', 5, { min: 1, max: 20 });
     const plate = api.box(60, 40, 5).hole('top', {
       u: 0,
@@ -42,7 +42,7 @@ describe('v0.3 slice-3 session export/import', () => {
 
   it('loads legacy sessions without params as an empty param table', () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     api.box(10, 10, 10);
 
     const imported = CaptureSession.importSession({
@@ -56,7 +56,7 @@ describe('v0.3 slice-3 session export/import', () => {
 
   it('rejects schema v3 records that reference params missing from the table', () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const boltDia = api.param('boltDia', 5);
     api.box(60, 40, 5).hole('top', {
       u: 0,

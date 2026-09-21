@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 
 describe('API surface', () => {
   it('box() returns a Shape and registers a feature', () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const s = api.box(10, 20, 30);
     const records = session.getRecords();
     expect(records).toHaveLength(1);
@@ -16,7 +16,7 @@ describe('API surface', () => {
 
   it('param() declares a symbolic ParamRef and registers it on the session table', () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const w = api.param('width', 100, { min: 50, max: 200 });
     expect(w._brand).toBe('ParamRef');
     expect(w.$param).toBe('width');
@@ -25,7 +25,7 @@ describe('API surface', () => {
 
   it('params() declares many params at once', () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const p = api.params({ w: 100, h: 50, on: true });
     expect(p.w._brand).toBe('ParamRef');
     expect(p.on._brand).toBe('ParamRef');
@@ -35,7 +35,7 @@ describe('API surface', () => {
 
   it('cylinder().translate().subtract() chains correctly', () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const base = api.box(20, 20, 20);
     const hole = api.cylinder(20, 5).translate(10, 10, 0);
     const result = base.subtract(hole);
@@ -48,7 +48,7 @@ describe('API surface', () => {
 
   it('chain ops accept ParamRef in numeric opts (symbolic capture)', () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const w = api.param('plateW', 60);
     const s = api.box(w, 40, 5);
     const rec = session.getRecords()[0];

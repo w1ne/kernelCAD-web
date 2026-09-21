@@ -4,12 +4,12 @@
 
 import { describe, it, expect } from 'vitest';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 
 describe('Shape.material() — anisotropy', () => {
   it('accepts anisotropy in [0, 1]', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const s = kcad.box(10, 10, 10);
     s.material({ baseColor: '#fff', metalness: 1, roughness: 0.3, anisotropy: 0.8 });
     const record = session.getRecords().find(r => r.id === s.id)!;
@@ -18,7 +18,7 @@ describe('Shape.material() — anisotropy', () => {
 
   it('clamps out-of-range anisotropy and emits value-clamped warn', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const s = kcad.box(10, 10, 10);
     const warnsBefore = session.warnings.length;
     s.material({ baseColor: '#fff', anisotropy: 1.5 });
@@ -32,7 +32,7 @@ describe('Shape.material() — anisotropy', () => {
 
   it('normalizes anisotropyRotation degrees to [0, 360)', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const s = kcad.box(10, 10, 10);
     s.material({ baseColor: '#fff', anisotropyRotation: 90 });
     const r1 = session.getRecords().find(r => r.id === s.id)!;
@@ -41,7 +41,7 @@ describe('Shape.material() — anisotropy', () => {
 
   it('normalizes negative anisotropyRotation with soft warn', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const s = kcad.box(10, 10, 10);
     const warnsBefore = session.warnings.length;
     s.material({ baseColor: '#fff', anisotropyRotation: -90 });
@@ -54,7 +54,7 @@ describe('Shape.material() — anisotropy', () => {
 
   it('normalizes over-360 anisotropyRotation with soft warn', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const s = kcad.box(10, 10, 10);
     const warnsBefore = session.warnings.length;
     s.material({ baseColor: '#fff', anisotropyRotation: 450 });
@@ -66,7 +66,7 @@ describe('Shape.material() — anisotropy', () => {
 
   it('rejects non-finite anisotropyRotation', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const s = kcad.box(10, 10, 10);
     expect(() => s.material({ baseColor: '#fff', anisotropyRotation: Number.NaN })).toThrow(/finite/);
   });

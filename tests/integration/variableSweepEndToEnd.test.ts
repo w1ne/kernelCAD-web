@@ -12,7 +12,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { buildModel } from '../../src/modeling/buildModel';
 import { initOcct } from '../../src/kernel/backends/occt/occtBackend';
 import { CaptureSession } from '../../src/modeling/capture/captureSession';
-import { createApi } from '../../src/modeling/api';
+import { createModelingApi } from '../../src/modeling/api';
 import { createOcctLowerer } from '../../src/modeling/backends/occt/occtLowerer';
 import { RecomputeEngine } from '../../src/modeling/compute/recomputeEngine';
 import type { FeatureRecord } from '../../src/shared/intent/featureRecord';
@@ -180,7 +180,7 @@ describe('variableSweep end-to-end (engine + lowerer)', () => {
     // sketch lift — must surface the structured spine diagnostic.
     await initOcct();
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const wrongSpine = kcad.box(1, 1, 30);
     const profileA = kcad
       .path()

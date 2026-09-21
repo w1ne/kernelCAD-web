@@ -9,7 +9,7 @@
 // the in-browser worker injected 11 hand-picked v0.1 globals and everything
 // else had to go to a node backend.
 //
-// It is the SAME engine as node: same `createApi`, same capture session, same
+// It is the SAME engine as node: same `createModelingApi`, same capture session, same
 // normalization, same FeatureRecords out. Only two pieces differ, and both are
 // injected rather than branched on:
 //
@@ -47,7 +47,7 @@
 
 import { REALM_WRAP_OFFSET, runInRealm } from './realmRunner';
 import { transpileBrowser } from './browserTranspile';
-import { createApi } from '../api';
+import { createModelingApi } from '../api';
 import {
   runScriptCore,
   type ScriptApiFactory,
@@ -77,7 +77,7 @@ export interface RunScriptInBrowserInput {
   /** Override the transpiler. Pass `transpileTs` from './transpile' to opt into
    *  full TypeScript support at a measured 3.40 MB / 0.97 MB gzipped. */
   transpile?: ScriptTranspiler;
-  /** Script-API factory. Defaults to modeling's `createApi`; the composition
+  /** Script-API factory. Defaults to modeling's `createModelingApi`; the composition
    *  layer passes its browser `createScriptApi` (see
    *  `src/composition/browserRuntime.ts`). */
   apiFactory?: ScriptApiFactory;
@@ -102,7 +102,7 @@ export async function runScriptInBrowser(
     scriptDir,
     runner = runInRealm,
     transpile = transpileBrowser,
-    apiFactory = createApi,
+    apiFactory = createModelingApi,
   } = input;
   return runScriptCore({
     code,

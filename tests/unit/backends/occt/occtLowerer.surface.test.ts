@@ -1,14 +1,14 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../../../src/kernel/backends/occt/occtBackend';
 import { CaptureSession } from '../../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../../src/modeling/api';
+import { createModelingApi } from '../../../../src/modeling/api';
 
 describe('OcctLowerer: surfaceThicken + surfaceToShape', () => {
   beforeAll(async () => { await initOcct(); });
 
   it('lowers nurbsSurface(...).thicken(2) to a non-empty solid with z span ≈ 2', async () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const surf = api.nurbsSurface({
       controls: [[[0, 0, 0], [0, 10, 0]], [[10, 0, 0], [10, 10, 0]]],
       degree: { u: 1, v: 1 },
@@ -22,7 +22,7 @@ describe('OcctLowerer: surfaceThicken + surfaceToShape', () => {
 
   it('lowers nurbsSurface(...).toShape() to a zero-volume shell with bbox spanning the panel', async () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const surf = api.nurbsSurface({
       controls: [[[0, 0, 0], [0, 10, 0]], [[10, 0, 0], [10, 10, 0]]],
       degree: { u: 1, v: 1 },
@@ -37,7 +37,7 @@ describe('OcctLowerer: surfaceThicken + surfaceToShape', () => {
 
   it('lowers a wavy 3x3 surface and thickens it to a non-empty solid', async () => {
     const session = new CaptureSession();
-    const api = createApi({ session });
+    const api = createModelingApi({ session });
     const surf = api.nurbsSurface({
       controls: [
         [[0, 0, 0], [0, 5, 1], [0, 10, 0]],

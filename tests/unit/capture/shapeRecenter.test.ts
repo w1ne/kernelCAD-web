@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 
 // These exercise the real lower-path (OCCT), so init the kernel once.
@@ -17,7 +17,7 @@ function transformsCount(session: CaptureSession, id: string): number {
 describe('Shape.boundingBox', () => {
   it('reports the corner-origin box AABB (min at origin)', async () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     // box(l,w,h) defaults to corner-origin: min corner at (0,0,0).
     const b = kcad.box(10, 20, 30);
     const bb = await b.boundingBox();
@@ -37,7 +37,7 @@ describe('Shape.boundingBox', () => {
 
   it('reflects transforms appended so far (post-translate world frame)', async () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const b = kcad.box(10, 10, 10).translate(100, 0, 0);
     const bb = await b.boundingBox();
     expect(bb.min[0]).toBeCloseTo(100);
@@ -49,7 +49,7 @@ describe('Shape.boundingBox', () => {
 describe('Shape.recenter', () => {
   it('moves the bbox center to the world origin', async () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const b = kcad.box(10, 20, 30);
     await b.recenter();
     const bb = await b.boundingBox();
@@ -64,7 +64,7 @@ describe('Shape.recenter', () => {
 
   it('recenter then translate places the CENTER at the target', async () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const b = kcad.box(10, 20, 30);
     (await b.recenter()).translate(50, 60, 70);
     const bb = await b.boundingBox();
@@ -75,7 +75,7 @@ describe('Shape.recenter', () => {
 
   it('per-axis: { z: false } centers x/y but leaves z untouched', async () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const b = kcad.box(10, 20, 30);
     await b.recenter({ z: false });
     const bb = await b.boundingBox();
@@ -88,7 +88,7 @@ describe('Shape.recenter', () => {
 
   it('returns the same Shape for chaining and appends one translate', async () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const b = kcad.box(10, 10, 10);
     const r = await b.recenter();
     expect(r).toBe(b);
@@ -99,7 +99,7 @@ describe('Shape.recenter', () => {
 describe('Shape.seatOnFloor', () => {
   it('drops the shape onto z = 0 and centers x/y', async () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     // Centered box: spans z in [-15, 15]; seatOnFloor should lift to [0, 30].
     const b = kcad.box(10, 20, 30, true);
     await b.seatOnFloor();
@@ -112,7 +112,7 @@ describe('Shape.seatOnFloor', () => {
 
   it('{ center: false } seats on z=0 without moving x/y', async () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     // Corner-origin box already sits on z=0 with footprint at x/y in [0, w].
     const b = kcad.box(10, 20, 30).translate(0, 0, 50);
     await b.seatOnFloor({ center: false });

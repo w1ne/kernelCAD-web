@@ -25,18 +25,18 @@ import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { checkLoadCapacity } from '../../../src/kinematic/checkLoadCapacity';
 import { buildCantileverBracket } from './fixtures/cantileverBracket';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createScriptApi } from '../../../src/composition/scriptApi';
 import type { AssemblyCrossSection } from '../../../src/modeling/capture/assembly';
 
 /** Build a cantilever anchored by a single directly-registered revolute
  *  joint (no mate) — issue #540 part B. Returns the assembly + the loaded
  *  part name. */
 function buildJointAnchoredCantilever(): {
-  arm: ReturnType<ReturnType<typeof createApi>['assembly']>;
+  arm: ReturnType<ReturnType<typeof createScriptApi>['assembly']>;
   partName: 'cantilever';
 } {
   const session = new CaptureSession();
-  const kc = createApi({ session });
+  const kc = createScriptApi({ session });
   const arm = kc.assembly('joint-cantilever');
   const cs: AssemblyCrossSection = {
     kind: 'rectangle',

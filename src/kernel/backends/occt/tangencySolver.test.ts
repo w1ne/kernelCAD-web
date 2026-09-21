@@ -16,7 +16,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { buildModel } from '../../../modeling/buildModel';
 import { initOcct } from './occtBackend';
 import { CaptureSession } from '../../../modeling/capture/captureSession';
-import { createApi } from '../../../modeling/api';
+import { createModelingApi } from '../../../modeling/api';
 import { KernelError } from '../../../shared/intent/kernelError';
 import { solveTangentCircle, solveTangentLine, TangencyError } from './tangencySolver';
 import type { TangentEntitySpec } from '../../../shared/capture/tangency';
@@ -261,7 +261,7 @@ describe('tangency solver — line tangent to two circles (belt/pulley)', () => 
 });
 
 describe('PathBuilder tangency capture-time validation', () => {
-  const api = () => createApi({ session: new CaptureSession() });
+  const api = () => createModelingApi({ session: new CaptureSession() });
 
   it('rejects two entities without a radius and three entities with one', () => {
     const l1 = { kind: 'line' as const, from: [0, 0] as [number, number], to: [1, 0] as [number, number] };

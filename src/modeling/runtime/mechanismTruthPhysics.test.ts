@@ -8,14 +8,14 @@
 
 import { describe, expect, it } from 'vitest';
 import { CaptureSession } from '../capture/captureSession';
-import { createApi } from '../api';
+import { createModelingApi } from '../api';
 import type { Assembly } from '../capture/assembly';
 import { checkMechanismTruth } from './mechanismTruth';
 import { initOcct } from '../../kernel/backends/occt/occtBackend';
 
-function makeArm(name = 'rig'): { arm: Assembly; kcad: ReturnType<typeof createApi> } {
+function makeArm(name = 'rig'): { arm: Assembly; kcad: ReturnType<typeof createModelingApi> } {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     return { arm: kcad.assembly(name), kcad };
 }
 

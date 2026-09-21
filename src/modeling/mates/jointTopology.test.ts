@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it } from 'vitest';
-import { createApi } from '../api';
+import { createModelingApi } from '../api';
 import { CaptureSession } from '../capture/captureSession';
 import type { Assembly } from '../capture/assembly';
 import { reviewJointTopology, type JointTopologyDiagnosticCode } from './jointTopology';
 
 function makeApi() {
   const session = new CaptureSession();
-  const kcad = createApi({ session });
+  const kcad = createModelingApi({ session });
   return { arm: kcad.assembly('hand'), kcad };
 }
 

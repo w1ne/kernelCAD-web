@@ -17,7 +17,7 @@ process.env.KERNELCAD_PARTS_BASE_URL ??= 'off';
 // through explicit ports rather than bare `node:fs` imports, so that the
 // modeling API can also be bundled for a browser. Node ENTRY POINTS install the
 // implementation; `runScript.ts` does it for anything that runs a user script.
-// Tests, though, frequently poke `CaptureSession` / `createApi` directly without
+// Tests, though, frequently poke `CaptureSession` / `createModelingApi` directly without
 // going through an entry point, so install here too — otherwise those tests
 // would silently observe browser-shaped behaviour.
 //

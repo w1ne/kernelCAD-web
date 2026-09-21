@@ -6,12 +6,12 @@
 
 import { describe, it, expect } from 'vitest';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createScriptApi } from '../../../src/composition/scriptApi';
 
 describe('kc.kinematic facade shape', () => {
   it('exposes the four entry points as functions', () => {
     const session = new CaptureSession();
-    const kc = createApi({ session });
+    const kc = createScriptApi({ session });
     expect(typeof kc.kinematic).toBe('object');
     expect(typeof kc.kinematic.checkMountingHoleConsistency).toBe('function');
     expect(typeof kc.kinematic.checkSweptCollision).toBe('function');
@@ -21,7 +21,7 @@ describe('kc.kinematic facade shape', () => {
 
   it('checkMountingHoleConsistency returns an envelope with source=local on an empty assembly', async () => {
     const session = new CaptureSession();
-    const kc = createApi({ session });
+    const kc = createScriptApi({ session });
     const arm = kc.assembly('empty');
     const r = await kc.kinematic.checkMountingHoleConsistency(arm);
     expect(r.source).toBe('local');
@@ -33,7 +33,7 @@ describe('kc.kinematic facade shape', () => {
 
   it('checkSweptCollision returns an envelope with source=local on an empty assembly', async () => {
     const session = new CaptureSession();
-    const kc = createApi({ session });
+    const kc = createScriptApi({ session });
     const arm = kc.assembly('empty');
     const r = await kc.kinematic.checkSweptCollision(arm);
     expect(r.source).toBe('local');
@@ -44,7 +44,7 @@ describe('kc.kinematic facade shape', () => {
 
   it('checkReachable reports kinematic.unreachable when the named tip part is absent', async () => {
     const session = new CaptureSession();
-    const kc = createApi({ session });
+    const kc = createScriptApi({ session });
     const arm = kc.assembly('empty');
     const r = await kc.kinematic.checkReachable(arm, {
       tipLink: 'tip',
@@ -60,7 +60,7 @@ describe('kc.kinematic facade shape', () => {
 
   it('checkLoadCapacity returns an envelope with source=local on an empty assembly', async () => {
     const session = new CaptureSession();
-    const kc = createApi({ session });
+    const kc = createScriptApi({ session });
     const arm = kc.assembly('empty');
     const r = await kc.kinematic.checkLoadCapacity(arm);
     expect(r.source).toBe('local');

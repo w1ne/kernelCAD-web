@@ -8,7 +8,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { CaptureSession } from '../../../src/modeling/capture/captureSession';
-import { createApi } from '../../../src/modeling/api';
+import { createModelingApi } from '../../../src/modeling/api';
 import { expandFinish } from '../../../src/shared/render/finishes';
 
 function materialOf(session: CaptureSession, id: string): unknown {
@@ -20,11 +20,11 @@ describe('Shape.finish()', () => {
     // Build the same appearance two ways: named finish vs the raw PBR the
     // finish expands to. The stored records must be byte-equal.
     const sf = new CaptureSession();
-    const kf = createApi({ session: sf });
+    const kf = createModelingApi({ session: sf });
     const finished = kf.box(10, 10, 10).finish('anodized-black');
 
     const sm = new CaptureSession();
-    const km = createApi({ session: sm });
+    const km = createModelingApi({ session: sm });
     const manual = km.box(10, 10, 10).material(expandFinish('anodized-black'));
 
     expect(materialOf(sf, finished.id)).toEqual(materialOf(sm, manual.id));
@@ -32,7 +32,7 @@ describe('Shape.finish()', () => {
 
   it('is chainable and returns the same Shape', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const s = kcad.box(10, 10, 10);
     expect(s.finish('brass')).toBe(s);
     expect(materialOf(session, s.id)).toEqual({
@@ -44,7 +44,7 @@ describe('Shape.finish()', () => {
 
   it('applies a hue override while keeping the finish surface', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const s = kcad.box(10, 10, 10).finish('abs', { color: '#c0392b' });
     expect(materialOf(session, s.id)).toEqual({
       baseColor: '#c0392b', // overridden
@@ -55,7 +55,7 @@ describe('Shape.finish()', () => {
 
   it('routes { face } to per-face material, same plumbing as .material({ face })', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const s = kcad.box(10, 10, 10, false, { faceLabels: { ring: 'top' } });
     s.finish('brass', { face: 'ring' });
     const record = session.getRecords().find((r) => r.id === s.id)!;
@@ -67,7 +67,7 @@ describe('Shape.finish()', () => {
 
   it('a PBR record from .finish() overrides a prior .color() hue on the same leaf', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const s = kcad.box(10, 10, 10).color('#aabbcc').finish('brass');
     const record = session.getRecords().find((r) => r.id === s.id)!;
     // Both slots exist; pbrFromMetadata prioritises metadata.material.
@@ -77,7 +77,7 @@ describe('Shape.finish()', () => {
 
   it('throws feature.finish.unknown-token on a bad name — no silent default', () => {
     const session = new CaptureSession();
-    const kcad = createApi({ session });
+    const kcad = createModelingApi({ session });
     const s = kcad.box(10, 10, 10);
     expect(() => s.finish('anodised-black' as never)).toThrow(/not a known finish/);
     // Nothing was written.
