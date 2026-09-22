@@ -204,8 +204,10 @@ const MESH_FETCH_TIMEOUT_MS = 60_000;
 const MESH_PENDING_BUDGET_MS = 90_000;
 
 class MeshHttpError extends Error {
-  constructor(message: string, readonly status: number) {
+  readonly status: number;
+  constructor(message: string, status: number) {
     super(message);
+    this.status = status;
   }
 }
 
