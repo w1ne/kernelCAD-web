@@ -1,6 +1,6 @@
 # Phase 3 — Versioned mesh artifact (design)
 
-Status: the embed loads a revision-matched mesh artifact (materials and camera bounds) and keeps source evaluation as the fallback. Server-side artifact storage is still a follow-up; the viewer accepts the artifact URL directly.
+Status: the embed loads a revision-matched mesh artifact (materials and camera bounds) and keeps source evaluation as the fallback. Server now exposes GET `/api/v1/projects/:slug/revisions/:version/mesh-artifact` and attaches `meshUrl` on Studio links; durable build_artifacts storage remains a follow-up.
 
 ## Goal
 

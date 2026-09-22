@@ -198,11 +198,24 @@ function meshHttpError(body: unknown, status: number): string {
   return `Mesh request failed (${status}).`;
 }
 
+const MESH_FETCH_TIMEOUT_MS = 30_000;
+
 async function fetchRevisionMesh(meshUrl: string, revision: number | null) {
-  const response = await fetch(meshUrl);
-  const body: unknown = await response.json().catch(() => null);
-  if (!response.ok) throw new Error(meshHttpError(body, response.status));
-  return parseMeshArtifact(body, revision);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), MESH_FETCH_TIMEOUT_MS);
+  try {
+    const response = await fetch(meshUrl, { signal: controller.signal });
+    const body: unknown = await response.json().catch(() => null);
+    if (!response.ok) throw new Error(meshHttpError(body, response.status));
+    return parseMeshArtifact(body, revision);
+  } catch (err) {
+    if (err instanceof DOMException && err.name === 'AbortError') {
+      throw new Error(`Mesh request timed out after ${MESH_FETCH_TIMEOUT_MS / 1000}s.`);
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 function meshFailure(key: string, err: unknown, code: string): MeshLoadResult {
@@ -250,10 +263,32 @@ function useRevisionMesh(props: FunnelViewerProps): MeshLoadResult | null {
   return meshResult;
 }
 
-function MeshStatus(props: { message: string }) {
+function MeshStatus(props: {
+  message: string;
+  phase?: FunnelViewerPhase;
+  revision?: number | null;
+  instanceId?: string;
+  onPhaseChange?: FunnelViewerProps['onPhaseChange'];
+}) {
+  const { message, revision = null, instanceId, onPhaseChange } = props;
+  const phase = props.phase ?? 'viewer_failed';
+  useEffect(() => {
+    onPhaseChange?.(phase, message);
+    if (typeof window === 'undefined' || window.parent === window) return;
+    const failed = phase === 'viewer_failed' || phase === 'build_failed';
+    window.parent.postMessage({
+      source: 'kernelcad-embed',
+      type: 'kernelcad.viewer-status',
+      status: failed ? 'error' : 'loading',
+      revision: revision ?? undefined,
+      instanceId,
+      detail: message,
+    }, '*');
+  }, [phase, message, revision, instanceId, onPhaseChange]);
+
   return (
     <div className="relative w-full h-full bg-code-bg grid place-items-center" data-testid="funnel-viewer-status" role="status">
-      <p className="text-ink-faint font-mono text-sm px-6 text-center">{props.message}</p>
+      <p className="text-ink-faint font-mono text-sm px-6 text-center">{message}</p>
     </div>
   );
 }
@@ -293,7 +328,26 @@ export function FunnelViewer(props: FunnelViewerProps) {
       </div>
     );
   }
-  if (mesh?.error) return <MeshStatus message={`Viewer failed: ${mesh.error}`} />;
-  if (!mesh?.geometries || !mesh.bounds) return <MeshStatus message="Loading mesh…" />;
+  if (mesh?.error) {
+    return (
+      <MeshStatus
+        message={`Viewer failed: ${mesh.error}`}
+        revision={props.revision}
+        instanceId={props.instanceId}
+        onPhaseChange={props.onPhaseChange}
+      />
+    );
+  }
+  if (!mesh?.geometries || !mesh.bounds) {
+    return (
+      <MeshStatus
+        message="Loading mesh…"
+        phase="loading_mesh"
+        revision={props.revision}
+        instanceId={props.instanceId}
+        onPhaseChange={props.onPhaseChange}
+      />
+    );
+  }
   return <LoadedMeshViewer {...props} geometries={mesh.geometries} bounds={mesh.bounds} />;
 }

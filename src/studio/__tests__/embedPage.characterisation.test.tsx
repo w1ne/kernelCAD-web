@@ -79,6 +79,8 @@ function statusText(): string | null {
   return el.tagName === 'P' ? el.textContent : el.querySelector('p')?.textContent ?? null;
 }
 
+const postMessageSpy = vi.fn();
+
 beforeEach(() => {
   cleanup();
   harness.params.slug = 'demo';
@@ -88,10 +90,15 @@ beforeEach(() => {
   harness.fetchProjectBySlug.mockReset();
   harness.fetchProjectRevisionBySlug.mockReset();
   harness.onPhaseChange = null;
+  postMessageSpy.mockReset();
+  vi.stubGlobal('parent', { postMessage: postMessageSpy });
+  // happy-dom: window.parent === window by default; force a distinct parent.
+  Object.defineProperty(window, 'parent', { configurable: true, value: { postMessage: postMessageSpy } });
 });
 
 afterEach(() => {
   cleanup();
+  vi.unstubAllGlobals();
 });
 
 describe('EmbedPage characterisation', () => {
@@ -131,7 +138,7 @@ describe('EmbedPage characterisation', () => {
     expect(screen.getByTestId('funnel-viewer').getAttribute('data-mesh-url')).toBe(
       'https://cdn.example/mesh.glb',
     );
-    expect(statusText()).toBe('Project saved. Building geometry…');
+    expect(statusText()).toBe('Loading mesh…');
 
     act(() => harness.onPhaseChange?.('building_geometry'));
     expect(statusText()).toBe('Building geometry…');
@@ -148,7 +155,7 @@ describe('EmbedPage characterisation', () => {
     act(() => {
       retry.click();
     });
-    expect(statusText()).toBe('Project saved. Building geometry…');
+    expect(statusText()).toBe('Loading mesh…');
     expect(screen.queryByRole('button', { name: 'Retry' })).toBeNull();
 
     act(() => harness.onPhaseChange?.('viewer_failed'));
@@ -187,4 +194,35 @@ describe('EmbedPage characterisation', () => {
     await waitFor(() => expect(statusText()).toBe('Model not available.'));
     expect(harness.fetchProjectBySlug).not.toHaveBeenCalled();
   });
+  it('posts failed status to the parent when the project is missing', async () => {
+    harness.fetchProjectBySlug.mockResolvedValue(null);
+    renderEmbed();
+    await waitFor(() => expect(statusText()).toBe('Model not available.'));
+    await waitFor(() => {
+      const payload = postMessageSpy.mock.calls.map((c) => c[0]).find((d) => d?.status === 'error');
+      expect(payload).toMatchObject({ source: 'kernelcad-embed', status: 'error' });
+    });
+  });
+
+  it('posts failed status to the parent when source loading fails', async () => {
+    harness.fetchProjectBySlug.mockRejectedValue(new Error('boom'));
+    renderEmbed();
+    await waitFor(() => expect(statusText()).toBe('Failed to load: Error: boom'));
+    await waitFor(() => {
+      const payload = postMessageSpy.mock.calls.map((c) => c[0]).find((d) => d?.status === 'error');
+      expect(payload).toMatchObject({ source: 'kernelcad-embed', status: 'error' });
+    });
+  });
+
+  it('posts failed status when the viewer reports mesh/build failure', async () => {
+    harness.fetchProjectBySlug.mockResolvedValue({ current_code: 'box(1);' });
+    renderEmbed();
+    await waitFor(() => expect(screen.getByTestId('funnel-viewer')).toBeTruthy());
+    act(() => harness.onPhaseChange?.('viewer_failed', 'mesh explode'));
+    await waitFor(() => {
+      const payload = postMessageSpy.mock.calls.map((c) => c[0]).find((d) => d?.status === 'error' && String(d?.detail ?? '').includes('mesh explode'));
+      expect(payload).toBeTruthy();
+    });
+  });
+
 });

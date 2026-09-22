@@ -103,4 +103,26 @@ describe('FunnelViewer mesh artifact', () => {
     expect(harness.props?.suspendSourceExecution).toBeFalsy();
     expect(harness.props?.initialCode).toBe('return sphere(20);');
   });
+
+  it('reports viewer_failed to onPhaseChange when mesh fails with no source fallback', async () => {
+    const onPhaseChange = vi.fn();
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: false,
+      status: 500,
+      json: async () => ({ error: 'mesh explode' }),
+    })));
+    render(
+      <FunnelViewer
+        code={''}
+        meshUrl="https://cdn.example/missing.json"
+        revision={7}
+        instanceId="widget-1"
+        onPhaseChange={onPhaseChange}
+      />,
+    );
+    await waitFor(() => expect(onPhaseChange).toHaveBeenCalledWith(
+      'viewer_failed',
+      expect.stringContaining('mesh explode'),
+    ));
+  });
 });
