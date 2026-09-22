@@ -28,6 +28,54 @@ import StudioApp from '../App';
 import { StudioConfigProvider } from '../config/StudioConfigContext';
 import { embedPresentationMode, embedRevision, loadEmbedCode } from './-embedConfig';
 
+/** Bound source fetches so a hung API cannot pin the outer ChatGPT overlay forever. */
+const SOURCE_FETCH_TIMEOUT_MS = 30_000;
+
+/** No-progress watchdog for the embed page itself (source + viewer). */
+const EMBED_NO_PROGRESS_TIMEOUT_MS = 45_000;
+
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = window.setTimeout(() => {
+      reject(new Error(`${label} timed out after ${ms / 1000}s.`));
+    }, ms);
+    promise.then(
+      (value) => {
+        window.clearTimeout(timer);
+        resolve(value);
+      },
+      (err: unknown) => {
+        window.clearTimeout(timer);
+        reject(err);
+      },
+    );
+  });
+}
+
+/** Parent (ChatGPT widget) status — covers EVERY embed branch, including EmbedPending. */
+function postEmbedStatus(args: {
+  status: string;
+  revision?: number | null;
+  instanceId?: string;
+  detail?: string | null;
+  geometryNonempty?: boolean;
+  cameraFitted?: boolean;
+  framePresented?: boolean;
+}) {
+  if (typeof window === 'undefined' || window.parent === window) return;
+  window.parent.postMessage({
+    source: 'kernelcad-embed',
+    type: 'kernelcad.viewer-status',
+    status: args.status,
+    revision: args.revision ?? undefined,
+    instanceId: args.instanceId,
+    detail: args.detail ?? undefined,
+    geometryNonempty: args.geometryNonempty === true,
+    cameraFitted: args.cameraFitted === true,
+    framePresented: args.framePresented === true,
+  }, '*');
+}
+
 function embedMeshUrl(value: unknown): string | undefined {
   if (typeof value !== 'string' || value.length === 0) return undefined;
   if (value.startsWith('https://')) return value;
@@ -57,7 +105,8 @@ type EmbedUiPhase =
   | 'missing'
   | 'build_failed'
   | 'viewer_failed'
-  | 'source_error';
+  | 'source_error'
+  | 'timed_out';
 
 function useEmbedSource(slug: string, revision: number | null | undefined, retryKey: number) {
   const sourceKey = `${slug}\u0000${revision === undefined ? 'current' : revision === null ? 'invalid' : revision}`;
@@ -70,8 +119,16 @@ function useEmbedSource(slug: string, revision: number | null | undefined, retry
     // `sourceState` starts at 'loading'; the fetch resolves it. No sync setState in body.
     let disposed = false;
     const source = loadEmbedCode(revision, {
-      loadCurrent: () => fetchProjectBySlug(slug).then((project) => project?.current_code ?? null),
-      loadRevision: (version) => fetchProjectRevisionBySlug(slug, version).then((saved) => saved.code),
+      loadCurrent: () => withTimeout(
+        fetchProjectBySlug(slug).then((project) => project?.current_code ?? null),
+        SOURCE_FETCH_TIMEOUT_MS,
+        'Source fetch',
+      ),
+      loadRevision: (version) => withTimeout(
+        fetchProjectRevisionBySlug(slug, version).then((saved) => saved.code),
+        SOURCE_FETCH_TIMEOUT_MS,
+        'Revision fetch',
+      ),
     });
     source
       .then((sourceCode) => {
@@ -116,6 +173,7 @@ function EmbedPage() {
   const [viewerPhase, setViewerPhase] = useState<FunnelViewerPhase | null>(null);
   const [viewerDetail, setViewerDetail] = useState<string | null>(null);
   const [retryKey, setRetryKey] = useState(0);
+  const [timedOut, setTimedOut] = useState(false);
   const { code, sourceSettled, sourceState, err, resetSource } = useEmbedSource(slug, revision, retryKey);
 
   const onPhaseChange = useCallback((phase: FunnelViewerPhase, detail?: string | null) => {
@@ -123,23 +181,56 @@ function EmbedPage() {
     setViewerDetail(detail ?? null);
   }, []);
 
-  const uiPhase = deriveEmbedUiPhase({
+  let uiPhase = deriveEmbedUiPhase({
     revision,
     sourceSettled,
     sourceState,
     viewerPhase,
     hasMesh: Boolean(meshUrl),
   });
+  if (timedOut && uiPhase !== 'model_displayed') uiPhase = 'timed_out';
   const statusMessage = embedStatusMessage(uiPhase, err, viewerDetail);
   const canRetry = canRetryEmbed(uiPhase);
+
+  // Top-level status → parent widget. Covers EmbedPending + viewer branches.
+  useEffect(() => {
+    const failed =
+      uiPhase === 'missing'
+      || uiPhase === 'source_error'
+      || uiPhase === 'build_failed'
+      || uiPhase === 'viewer_failed'
+      || uiPhase === 'timed_out';
+    const displayed = uiPhase === 'model_displayed';
+    postEmbedStatus({
+      status: displayed ? 'model_displayed' : failed ? 'error' : 'loading',
+      revision: typeof revision === 'number' ? revision : null,
+      instanceId: instance,
+      detail: statusMessage,
+      geometryNonempty: displayed,
+      cameraFitted: displayed,
+      framePresented: displayed,
+    });
+  }, [uiPhase, statusMessage, revision, instance]);
+
+  // No-progress timeout — NEVER converts to displayed.
+  useEffect(() => {
+    if (uiPhase === 'model_displayed' || uiPhase === 'missing' || uiPhase === 'source_error'
+      || uiPhase === 'build_failed' || uiPhase === 'viewer_failed' || uiPhase === 'timed_out') {
+      return undefined;
+    }
+    const timer = window.setTimeout(() => setTimedOut(true), EMBED_NO_PROGRESS_TIMEOUT_MS);
+    return () => window.clearTimeout(timer);
+  }, [uiPhase, retryKey]);
 
   const retryViewer = () => {
     setViewerPhase(null);
     setViewerDetail(null);
+    setTimedOut(false);
     setRetryKey((k) => k + 1);
   };
   const retrySource = () => {
     resetSource();
+    setTimedOut(false);
     setRetryKey((k) => k + 1);
   };
 
@@ -204,7 +295,7 @@ function deriveEmbedUiPhase(args: {
   if (viewerPhase === 'viewer_failed') return 'viewer_failed';
   if (viewerPhase === 'building_geometry') return 'building_geometry';
   if (viewerPhase === 'loading_mesh') return 'loading_mesh';
-  if (hasMesh && sourceState !== 'ready') return 'loading_mesh';
+  if (hasMesh && (sourceState !== 'ready' || !viewerPhase)) return 'loading_mesh';
   if (!sourceSettled || sourceState === 'loading') return 'loading_source';
   if (sourceState === 'missing') return 'missing';
   if (sourceState === 'error') return 'source_error';
@@ -228,13 +319,17 @@ function embedStatusMessage(
     case 'source_error': return `Failed to load: ${err}`;
     case 'build_failed': return `Build failed: ${viewerDetail ?? 'unknown error'}`;
     case 'viewer_failed': return `Viewer failed: ${viewerDetail ?? 'unknown error'}`;
+    case 'timed_out': return `Timed out after ${EMBED_NO_PROGRESS_TIMEOUT_MS / 1000}s${viewerDetail ? `: ${viewerDetail}` : ''}.`;
     default: return 'Loading…';
   }
 }
 
 /** Whether the current phase offers a Retry affordance. */
 function canRetryEmbed(uiPhase: EmbedUiPhase): boolean {
-  return uiPhase === 'build_failed' || uiPhase === 'viewer_failed' || uiPhase === 'source_error';
+  return uiPhase === 'build_failed'
+    || uiPhase === 'viewer_failed'
+    || uiPhase === 'source_error'
+    || uiPhase === 'timed_out';
 }
 
 /** Ready-model viewer branch: the chrome-free FunnelViewer plus its status
