@@ -167,6 +167,68 @@ function useEmbedSource(slug: string, revision: number | null | undefined, retry
   return { code, sourceSettled: loadedSourceKey === sourceKey, sourceState, err, resetSource };
 }
 
+function useEmbedUiPhase(args: {
+  revision: number | null | undefined;
+  sourceSettled: boolean;
+  sourceState: 'loading' | 'ready' | 'missing' | 'error';
+  viewerPhase: FunnelViewerPhase | null;
+  hasMesh: boolean;
+  timedOut: boolean;
+  err: string | null;
+  viewerDetail: string | null;
+}): { uiPhase: EmbedUiPhase; statusMessage: string | null; canRetry: boolean } {
+  let uiPhase = deriveEmbedUiPhase(args);
+  if (args.timedOut && uiPhase !== 'model_displayed') uiPhase = 'timed_out';
+  return {
+    uiPhase,
+    statusMessage: embedStatusMessage(uiPhase, args.err, args.viewerDetail),
+    canRetry: canRetryEmbed(uiPhase),
+  };
+}
+
+/** Post every embed phase to the ChatGPT parent — including EmbedPending. */
+function useEmbedParentStatus(
+  uiPhase: EmbedUiPhase,
+  statusMessage: string | null,
+  revision: number | null | undefined,
+  instanceId: string | undefined,
+) {
+  useEffect(() => {
+    const failed =
+      uiPhase === 'missing'
+      || uiPhase === 'source_error'
+      || uiPhase === 'build_failed'
+      || uiPhase === 'viewer_failed'
+      || uiPhase === 'timed_out';
+    const displayed = uiPhase === 'model_displayed';
+    postEmbedStatus({
+      status: displayed ? 'model_displayed' : failed ? 'error' : 'loading',
+      revision: typeof revision === 'number' ? revision : null,
+      instanceId,
+      detail: statusMessage,
+      geometryNonempty: displayed,
+      cameraFitted: displayed,
+      framePresented: displayed,
+    });
+  }, [uiPhase, statusMessage, revision, instanceId]);
+}
+
+/** No-progress timeout — NEVER converts to displayed. */
+function useEmbedNoProgressTimeout(
+  uiPhase: EmbedUiPhase,
+  retryKey: number,
+  setTimedOut: (v: boolean) => void,
+) {
+  useEffect(() => {
+    if (uiPhase === 'model_displayed' || uiPhase === 'missing' || uiPhase === 'source_error'
+      || uiPhase === 'build_failed' || uiPhase === 'viewer_failed' || uiPhase === 'timed_out') {
+      return undefined;
+    }
+    const timer = window.setTimeout(() => setTimedOut(true), EMBED_NO_PROGRESS_TIMEOUT_MS);
+    return () => window.clearTimeout(timer);
+  }, [uiPhase, retryKey, setTimedOut]);
+}
+
 function EmbedPage() {
   const { slug } = Route.useParams();
   const { mode, revision, meshUrl, instance } = Route.useSearch();
@@ -181,46 +243,18 @@ function EmbedPage() {
     setViewerDetail(detail ?? null);
   }, []);
 
-  let uiPhase = deriveEmbedUiPhase({
+  const { uiPhase, statusMessage, canRetry } = useEmbedUiPhase({
     revision,
     sourceSettled,
     sourceState,
     viewerPhase,
     hasMesh: Boolean(meshUrl),
+    timedOut,
+    err,
+    viewerDetail,
   });
-  if (timedOut && uiPhase !== 'model_displayed') uiPhase = 'timed_out';
-  const statusMessage = embedStatusMessage(uiPhase, err, viewerDetail);
-  const canRetry = canRetryEmbed(uiPhase);
-
-  // Top-level status → parent widget. Covers EmbedPending + viewer branches.
-  useEffect(() => {
-    const failed =
-      uiPhase === 'missing'
-      || uiPhase === 'source_error'
-      || uiPhase === 'build_failed'
-      || uiPhase === 'viewer_failed'
-      || uiPhase === 'timed_out';
-    const displayed = uiPhase === 'model_displayed';
-    postEmbedStatus({
-      status: displayed ? 'model_displayed' : failed ? 'error' : 'loading',
-      revision: typeof revision === 'number' ? revision : null,
-      instanceId: instance,
-      detail: statusMessage,
-      geometryNonempty: displayed,
-      cameraFitted: displayed,
-      framePresented: displayed,
-    });
-  }, [uiPhase, statusMessage, revision, instance]);
-
-  // No-progress timeout — NEVER converts to displayed.
-  useEffect(() => {
-    if (uiPhase === 'model_displayed' || uiPhase === 'missing' || uiPhase === 'source_error'
-      || uiPhase === 'build_failed' || uiPhase === 'viewer_failed' || uiPhase === 'timed_out') {
-      return undefined;
-    }
-    const timer = window.setTimeout(() => setTimedOut(true), EMBED_NO_PROGRESS_TIMEOUT_MS);
-    return () => window.clearTimeout(timer);
-  }, [uiPhase, retryKey]);
+  useEmbedParentStatus(uiPhase, statusMessage, revision, instance);
+  useEmbedNoProgressTimeout(uiPhase, retryKey, setTimedOut);
 
   const retryViewer = () => {
     setViewerPhase(null);
