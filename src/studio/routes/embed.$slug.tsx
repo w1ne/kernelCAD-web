@@ -28,14 +28,22 @@ import StudioApp from '../App';
 import { StudioConfigProvider } from '../config/StudioConfigContext';
 import { embedPresentationMode, embedRevision, loadEmbedCode } from './-embedConfig';
 
+function embedMeshUrl(value: unknown): string | undefined {
+  if (typeof value !== 'string' || value.length === 0) return undefined;
+  if (value.startsWith('https://')) return value;
+  // Loopback is for the local browser test. Production artifacts are https.
+  if (value.startsWith('http://127.0.0.1') || value.startsWith('http://localhost')) return value;
+  return undefined;
+}
+
 export const Route = createFileRoute('/embed/$slug')({
   validateSearch: (search: Record<string, unknown>) => ({
     mode: embedPresentationMode(search.mode),
     revision: embedRevision(search.revision),
-    /** Phase 3 hook: optional versioned mesh artifact URL when present. */
-    meshUrl: typeof search.meshUrl === 'string' && search.meshUrl.startsWith('https://')
-      ? search.meshUrl
-      : undefined,
+    /** Widget instance echoed on the asynchronous display acknowledgement. */
+    instance: typeof search.instance === 'string' && search.instance.length > 0 ? search.instance : undefined,
+    /** Revision-matched mesh artifact. When set, the viewer loads it instead of re-executing CAD. */
+    meshUrl: embedMeshUrl(search.meshUrl),
   }),
   component: EmbedPage,
 });
@@ -51,17 +59,12 @@ type EmbedUiPhase =
   | 'viewer_failed'
   | 'source_error';
 
-function EmbedPage() {
-  const { slug } = Route.useParams();
-  const { mode, revision, meshUrl } = Route.useSearch();
+function useEmbedSource(slug: string, revision: number | null | undefined, retryKey: number) {
   const sourceKey = `${slug}\u0000${revision === undefined ? 'current' : revision === null ? 'invalid' : revision}`;
   const [code, setCode] = useState<string | null>(null);
   const [loadedSourceKey, setLoadedSourceKey] = useState<string | null>(null);
   const [sourceState, setSourceState] = useState<'loading' | 'ready' | 'missing' | 'error'>('loading');
   const [err, setErr] = useState<string | null>(null);
-  const [viewerPhase, setViewerPhase] = useState<FunnelViewerPhase | null>(null);
-  const [viewerDetail, setViewerDetail] = useState<string | null>(null);
-  const [retryKey, setRetryKey] = useState(0);
 
   useEffect(() => {
     // `sourceState` starts at 'loading'; the fetch resolves it. No sync setState in body.
@@ -98,14 +101,35 @@ function EmbedPage() {
     return () => { disposed = true; };
   }, [slug, revision, sourceKey, retryKey]);
 
+  const resetSource = () => {
+    setErr(null);
+    setSourceState('loading');
+    setLoadedSourceKey(null);
+  };
+
+  return { code, sourceSettled: loadedSourceKey === sourceKey, sourceState, err, resetSource };
+}
+
+function EmbedPage() {
+  const { slug } = Route.useParams();
+  const { mode, revision, meshUrl, instance } = Route.useSearch();
+  const [viewerPhase, setViewerPhase] = useState<FunnelViewerPhase | null>(null);
+  const [viewerDetail, setViewerDetail] = useState<string | null>(null);
+  const [retryKey, setRetryKey] = useState(0);
+  const { code, sourceSettled, sourceState, err, resetSource } = useEmbedSource(slug, revision, retryKey);
+
   const onPhaseChange = useCallback((phase: FunnelViewerPhase, detail?: string | null) => {
     setViewerPhase(phase);
     setViewerDetail(detail ?? null);
   }, []);
 
-  const sourceSettled = loadedSourceKey === sourceKey;
-
-  const uiPhase = deriveEmbedUiPhase({ revision, sourceSettled, sourceState, viewerPhase });
+  const uiPhase = deriveEmbedUiPhase({
+    revision,
+    sourceSettled,
+    sourceState,
+    viewerPhase,
+    hasMesh: Boolean(meshUrl),
+  });
   const statusMessage = embedStatusMessage(uiPhase, err, viewerDetail);
   const canRetry = canRetryEmbed(uiPhase);
 
@@ -115,14 +139,23 @@ function EmbedPage() {
     setRetryKey((k) => k + 1);
   };
   const retrySource = () => {
-    setErr(null);
-    setSourceState('loading');
-    setLoadedSourceKey(null);
+    resetSource();
     setRetryKey((k) => k + 1);
   };
 
-  if (revision !== null && sourceSettled && sourceState === 'ready' && code) {
+  const meshReady = Boolean(meshUrl) && revision !== null;
+  if (revision !== null && ((sourceSettled && sourceState === 'ready' && code) || meshReady)) {
     if (mode === 'studio') {
+      if (!(sourceSettled && code)) {
+        return (
+          <EmbedPending
+            uiPhase={uiPhase}
+            statusMessage={statusMessage}
+            canRetry={canRetry}
+            onRetry={retrySource}
+          />
+        );
+      }
       return (
         <StudioConfigProvider value={{ showHeader: false, enableAgentRail: false, enableConnect: false }}>
           <StudioApp initialCode={code} viewerMode />
@@ -131,8 +164,10 @@ function EmbedPage() {
     }
     return (
       <EmbedViewerSurface
-        code={code}
+        code={code ?? ''}
         meshUrl={meshUrl}
+        revision={typeof revision === 'number' ? revision : null}
+        instanceId={instance}
         retryKey={retryKey}
         uiPhase={uiPhase}
         statusMessage={statusMessage}
@@ -159,19 +194,21 @@ function deriveEmbedUiPhase(args: {
   sourceSettled: boolean;
   sourceState: 'loading' | 'ready' | 'missing' | 'error';
   viewerPhase: FunnelViewerPhase | null;
+  hasMesh: boolean;
 }): EmbedUiPhase {
-  const { revision, sourceSettled, sourceState, viewerPhase } = args;
+  const { revision, sourceSettled, sourceState, viewerPhase, hasMesh } = args;
   if (revision === null) return 'missing';
-  if (!sourceSettled || sourceState === 'loading') return 'loading_source';
-  if (sourceState === 'missing') return 'missing';
-  if (sourceState === 'error') return 'source_error';
-  // Source ready — project is fetched/persisted; viewer owns display readiness.
-  if (!viewerPhase) return 'project_saved';
-  if (viewerPhase === 'building_geometry') return 'building_geometry';
-  if (viewerPhase === 'loading_mesh') return 'loading_mesh';
+  // A loaded mesh is the model. A missing source row must not hide it.
   if (viewerPhase === 'model_displayed') return 'model_displayed';
   if (viewerPhase === 'build_failed') return 'build_failed';
   if (viewerPhase === 'viewer_failed') return 'viewer_failed';
+  if (viewerPhase === 'building_geometry') return 'building_geometry';
+  if (viewerPhase === 'loading_mesh') return 'loading_mesh';
+  if (hasMesh && sourceState !== 'ready') return 'loading_mesh';
+  if (!sourceSettled || sourceState === 'loading') return 'loading_source';
+  if (sourceState === 'missing') return 'missing';
+  if (sourceState === 'error') return 'source_error';
+  if (!viewerPhase) return 'project_saved';
   return 'project_saved';
 }
 
@@ -205,6 +242,8 @@ function canRetryEmbed(uiPhase: EmbedUiPhase): boolean {
 function EmbedViewerSurface(props: {
   code: string;
   meshUrl: string | undefined;
+  revision: number | null;
+  instanceId?: string;
   retryKey: number;
   uiPhase: EmbedUiPhase;
   statusMessage: string | null;
@@ -217,6 +256,8 @@ function EmbedViewerSurface(props: {
       <FunnelViewer
         code={props.code}
         meshUrl={props.meshUrl}
+        revision={props.revision}
+        instanceId={props.instanceId}
         resetKey={props.retryKey}
         onPhaseChange={props.onPhaseChange}
       />

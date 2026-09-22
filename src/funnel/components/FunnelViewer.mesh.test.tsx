@@ -1,0 +1,106 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+// @vitest-environment happy-dom
+import { cleanup, render, waitFor } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import type { ReactNode } from 'react';
+
+const harness = vi.hoisted(() => ({
+  props: null as null | {
+    initialCode?: string;
+    suspendSourceExecution?: boolean;
+    externalGeometries?: unknown[] | null;
+  },
+}));
+
+vi.mock('../../studio/context/WorkbenchContext', () => ({
+  WorkbenchProvider: (props: {
+    children: ReactNode;
+    initialCode?: string;
+    suspendSourceExecution?: boolean;
+    externalGeometries?: unknown[] | null;
+  }) => {
+    harness.props = props;
+    return <div data-testid="workbench">{props.children}</div>;
+  },
+  useWorkbench: () => ({
+    geometries: [],
+    previewGeometries: [],
+    sketchesGeometries: [],
+    showSketches: false,
+    viewMode3D: 'solid',
+    isReady: true,
+    isComputing: false,
+    error: null,
+  }),
+}));
+
+vi.mock('../../studio/components/Viewer', () => ({
+  default: () => <div data-testid="viewer-canvas" />,
+}));
+
+import { FunnelViewer } from './FunnelViewer';
+
+const artifact = {
+  revision: 7,
+  bounds: { min: [-1, -1, -1], max: [1, 1, 1] },
+  features: [{
+    featureId: 'ball',
+    featureKind: 'solid',
+    predecessors: [],
+    faces: [{
+      vertices: [0, 0, 0, 1, 0, 0, 0, 1, 0],
+      indices: [0, 1, 2],
+      normals: [0, 0, 1, 0, 0, 1, 0, 0, 1],
+      faceId: 1,
+    }],
+    material: { baseColor: '#f4f1e8', roughness: 0.35 },
+  }],
+};
+
+afterEach(() => {
+  cleanup();
+  harness.props = null;
+  vi.unstubAllGlobals();
+});
+
+describe('FunnelViewer mesh artifact', () => {
+  it('loads the revision-matched mesh and does not evaluate the CAD source', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      json: async () => artifact,
+    })));
+    render(
+      <FunnelViewer
+        code={'return sphere(20);'}
+        meshUrl="https://cdn.example/ball.json"
+        revision={7}
+        instanceId="widget-1"
+      />,
+    );
+    await waitFor(() => expect(harness.props?.suspendSourceExecution).toBe(true));
+    expect(harness.props?.initialCode).toBe('');
+    expect(harness.props?.externalGeometries?.length).toBe(1);
+    expect(document.querySelector('[data-source-suspended="true"]')).toBeTruthy();
+    expect(document.querySelector('[data-camera-bounds]')?.getAttribute('data-camera-bounds')).toBe('-1,-1,-1,1,1,1');
+  });
+
+  it('falls back to source evaluation when the mesh cannot be loaded', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: false,
+      status: 404,
+      json: async () => ({ error: 'missing' }),
+    })));
+    render(
+      <FunnelViewer
+        code={'return sphere(20);'}
+        meshUrl="https://cdn.example/missing.json"
+        revision={7}
+      />,
+    );
+    await waitFor(() => expect(document.querySelector('[data-source-fallback="true"]')).toBeTruthy());
+    expect(harness.props?.suspendSourceExecution).toBeFalsy();
+    expect(harness.props?.initialCode).toBe('return sphere(20);');
+  });
+});

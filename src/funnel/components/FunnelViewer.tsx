@@ -16,6 +16,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import Viewer from '../../studio/components/Viewer';
 import { hasNonemptyGeometry } from '../../studio/components/viewer/hasNonemptyGeometry';
 import { WorkbenchProvider, useWorkbench } from '../../studio/context/WorkbenchContext';
+import type { GeometryResult } from '../../shared/worker/geometryEngine';
+import {
+  geometriesFromArtifact,
+  parseMeshArtifact,
+  type MeshArtifactBounds,
+} from '../meshArtifact';
 
 export type FunnelViewerPhase =
   | 'building_geometry'
@@ -26,19 +32,26 @@ export type FunnelViewerPhase =
 
 export interface FunnelViewerProps {
   code: string;
-  /** Optional precomputed mesh artifact URL (Phase 3 hook). When set, hosts may
-   *  skip re-executing source once the artifact pipeline lands. */
+  /** Revision-matched mesh artifact. When it loads, source is not evaluated. */
   meshUrl?: string | null;
+  /** Project revision this viewer is showing. Display acks carry it. */
+  revision?: number | null;
+  /** Widget instance id from the host, echoed on the display ack. */
+  instanceId?: string;
   onPhaseChange?: (phase: FunnelViewerPhase, detail?: string | null) => void;
-  /** Bump to remount the provider stack (Retry). */
+  /** Bump to reload the viewer or refetch the mesh. Does not change CAD source. */
   resetKey?: number | string;
 }
 
 /** Inner component — must be mounted inside WorkbenchProvider. */
 function FunnelViewerInner({
   onPhaseChange,
+  revision = null,
+  instanceId,
 }: {
   onPhaseChange?: (phase: FunnelViewerPhase, detail?: string | null) => void;
+  revision?: number | null;
+  instanceId?: string;
 }) {
   const {
     geometries,
@@ -71,7 +84,21 @@ function FunnelViewerInner({
 
   useEffect(() => {
     onPhaseChange?.(phase, detail);
-  }, [phase, detail, onPhaseChange]);
+    if (typeof window === 'undefined' || window.parent === window) return;
+    const displayed = phase === 'model_displayed';
+    const failed = phase === 'build_failed' || phase === 'viewer_failed';
+    window.parent.postMessage({
+      source: 'kernelcad-embed',
+      type: 'kernelcad.viewer-status',
+      status: displayed ? 'model_displayed' : failed ? 'error' : 'loading',
+      revision: revision ?? undefined,
+      instanceId,
+      geometryNonempty: displayed,
+      cameraFitted: displayed,
+      framePresented: displayed,
+      detail,
+    }, '*');
+  }, [phase, detail, onPhaseChange, revision, instanceId]);
 
   // Empty successful build (no solid) is a build failure, not a blank "ready" canvas.
   useEffect(() => {
@@ -128,16 +155,145 @@ function FunnelViewerInner({
  * Mount this component with a `code` string — it spins up the provider stack,
  * executes the geometry, and renders the 3D canvas. No Studio chrome is pulled in.
  */
-export function FunnelViewer({ code, meshUrl, onPhaseChange, resetKey = 0 }: FunnelViewerProps) {
-  // meshUrl is a Phase 3 hook: when artifact pipeline exists, FunnelViewer (or a
-  // sibling mesh loader) can short-circuit CAD re-exec. Today we still execute code.
-  void meshUrl;
-
+function SourceViewer({
+  code,
+  onPhaseChange,
+  resetKey,
+  revision,
+  instanceId,
+}: {
+  code: string;
+  onPhaseChange?: FunnelViewerProps['onPhaseChange'];
+  resetKey: number | string;
+  revision?: number | null;
+  instanceId?: string;
+}) {
   return (
-    <div className="relative w-full h-full bg-code-bg" data-mesh-url={meshUrl ?? undefined}>
-      <WorkbenchProvider key={`${resetKey}:${code.length}`} initialCode={code}>
-        <FunnelViewerInner onPhaseChange={onPhaseChange} />
+    <WorkbenchProvider key={`${resetKey}:${code.length}`} initialCode={code}>
+      <FunnelViewerInner onPhaseChange={onPhaseChange} revision={revision} instanceId={instanceId} />
+    </WorkbenchProvider>
+  );
+}
+
+function boundsAttribute(bounds: MeshArtifactBounds): string {
+  return `${bounds.min.join(',')},${bounds.max.join(',')}`;
+}
+
+interface MeshLoadResult {
+  key: string;
+  geometries: GeometryResult[] | null;
+  bounds: MeshArtifactBounds | null;
+  fallback: boolean;
+  error: string | null;
+}
+
+function meshRequestKey(meshUrl: string, revision: number | null, resetKey: number | string, code: string): string {
+  return `${meshUrl}\n${revision ?? ''}\n${String(resetKey)}\n${code}`;
+}
+
+function meshHttpError(body: unknown, status: number): string {
+  if (body && typeof body === 'object' && 'error' in body) {
+    return String((body as { error: unknown }).error);
+  }
+  return `Mesh request failed (${status}).`;
+}
+
+async function fetchRevisionMesh(meshUrl: string, revision: number | null) {
+  const response = await fetch(meshUrl);
+  const body: unknown = await response.json().catch(() => null);
+  if (!response.ok) throw new Error(meshHttpError(body, response.status));
+  return parseMeshArtifact(body, revision);
+}
+
+function meshFailure(key: string, err: unknown, code: string): MeshLoadResult {
+  const message = err instanceof Error ? err.message : String(err);
+  const fallback = code.trim().length > 0;
+  return {
+    key,
+    geometries: null,
+    bounds: null,
+    fallback,
+    error: fallback ? null : message,
+  };
+}
+
+function useRevisionMesh(props: FunnelViewerProps): MeshLoadResult | null {
+  const { code, meshUrl, revision = null, resetKey = 0 } = props;
+  const meshKey = meshUrl ? meshRequestKey(meshUrl, revision, resetKey, code) : '';
+  const [meshResult, setMeshResult] = useState<MeshLoadResult | null>(null);
+
+  useEffect(() => {
+    if (!meshUrl) return undefined;
+    const key = meshKey;
+    let cancelled = false;
+    fetchRevisionMesh(meshUrl, revision)
+      .then((artifact) => {
+        if (cancelled) return;
+        setMeshResult({
+          key,
+          geometries: geometriesFromArtifact(artifact),
+          bounds: artifact.bounds,
+          fallback: false,
+          error: null,
+        });
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return;
+        setMeshResult(meshFailure(key, err, code));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [meshUrl, meshKey, revision, code]);
+
+  if (!meshResult || meshResult.key !== meshKey) return null;
+  return meshResult;
+}
+
+function MeshStatus(props: { message: string }) {
+  return (
+    <div className="relative w-full h-full bg-code-bg grid place-items-center" data-testid="funnel-viewer-status" role="status">
+      <p className="text-ink-faint font-mono text-sm px-6 text-center">{props.message}</p>
+    </div>
+  );
+}
+
+function LoadedMeshViewer(props: FunnelViewerProps & { geometries: GeometryResult[]; bounds: MeshArtifactBounds }) {
+  return (
+    <div
+      className="relative w-full h-full bg-code-bg"
+      data-mesh-url={props.meshUrl ?? undefined}
+      data-camera-bounds={boundsAttribute(props.bounds)}
+      data-source-suspended="true"
+    >
+      <WorkbenchProvider
+        key={`${props.resetKey ?? 0}:mesh`}
+        initialCode=""
+        suspendSourceExecution
+        externalGeometries={props.geometries}
+      >
+        <FunnelViewerInner onPhaseChange={props.onPhaseChange} revision={props.revision} instanceId={props.instanceId} />
       </WorkbenchProvider>
     </div>
   );
+}
+
+export function FunnelViewer(props: FunnelViewerProps) {
+  const mesh = useRevisionMesh(props);
+  if (!props.meshUrl || mesh?.fallback) {
+    return (
+      <div className="relative w-full h-full bg-code-bg" data-mesh-url={props.meshUrl ?? undefined} data-source-fallback={mesh?.fallback ? 'true' : 'false'}>
+        <SourceViewer
+          code={props.code}
+          onPhaseChange={props.onPhaseChange}
+          resetKey={props.resetKey ?? 0}
+          revision={props.revision}
+          instanceId={props.instanceId}
+        />
+      </div>
+    );
+  }
+  if (mesh?.error) return <MeshStatus message={`Viewer failed: ${mesh.error}`} />;
+  if (!mesh?.geometries || !mesh.bounds) return <MeshStatus message="Loading mesh…" />;
+  return <LoadedMeshViewer {...props} geometries={mesh.geometries} bounds={mesh.bounds} />;
 }
