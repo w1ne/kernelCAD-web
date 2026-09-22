@@ -86,22 +86,27 @@ describe('FunnelViewer mesh artifact', () => {
     expect(document.querySelector('[data-camera-bounds]')?.getAttribute('data-camera-bounds')).toBe('-1,-1,-1,1,1,1');
   });
 
-  it('falls back to source evaluation when the mesh cannot be loaded', async () => {
+  it('does not fall back to browser OCCT when meshUrl fails — surfaces viewer_failed', async () => {
+    const onPhaseChange = vi.fn();
     vi.stubGlobal('fetch', vi.fn(async () => ({
       ok: false,
       status: 404,
-      json: async () => ({ error: 'missing' }),
+      json: async () => ({ error: 'mesh_artifact_missing' }),
     })));
     render(
       <FunnelViewer
         code={'return sphere(20);'}
         meshUrl="https://cdn.example/missing.json"
         revision={7}
+        onPhaseChange={onPhaseChange}
       />,
     );
-    await waitFor(() => expect(document.querySelector('[data-source-fallback="true"]')).toBeTruthy());
+    await waitFor(() => expect(onPhaseChange).toHaveBeenCalledWith(
+      'viewer_failed',
+      expect.stringContaining('mesh_artifact_missing'),
+    ));
+    expect(document.querySelector('[data-source-fallback="true"]')).toBeFalsy();
     expect(harness.props?.suspendSourceExecution).toBeFalsy();
-    expect(harness.props?.initialCode).toBe('return sphere(20);');
   });
 
   it('reports viewer_failed to onPhaseChange when mesh fails with no source fallback', async () => {

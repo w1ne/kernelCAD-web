@@ -32,7 +32,8 @@ import { embedPresentationMode, embedRevision, loadEmbedCode } from './-embedCon
 const SOURCE_FETCH_TIMEOUT_MS = 30_000;
 
 /** No-progress watchdog for the embed page itself (source + viewer). */
-const EMBED_NO_PROGRESS_TIMEOUT_MS = 45_000;
+/** Must outlive FunnelViewer MESH_FETCH_TIMEOUT (60s) for large stored artifacts. */
+const EMBED_NO_PROGRESS_TIMEOUT_MS = 75_000;
 
 function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
   return new Promise<T>((resolve, reject) => {

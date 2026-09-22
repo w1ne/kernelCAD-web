@@ -198,7 +198,8 @@ function meshHttpError(body: unknown, status: number): string {
   return `Mesh request failed (${status}).`;
 }
 
-const MESH_FETCH_TIMEOUT_MS = 30_000;
+/** Stored artifacts can be multi-MB; keep headroom without inviting OCCT hangs. */
+const MESH_FETCH_TIMEOUT_MS = 60_000;
 
 async function fetchRevisionMesh(meshUrl: string, revision: number | null) {
   const controller = new AbortController();
@@ -218,15 +219,16 @@ async function fetchRevisionMesh(meshUrl: string, revision: number | null) {
   }
 }
 
-function meshFailure(key: string, err: unknown, code: string): MeshLoadResult {
+function meshFailure(key: string, err: unknown): MeshLoadResult {
   const message = err instanceof Error ? err.message : String(err);
-  const fallback = code.trim().length > 0;
+  // Published revisions advertise meshUrl only when an artifact was persisted.
+  // Never silently fall back to browser OCCT (huge models hang / blank ChatGPT).
   return {
     key,
     geometries: null,
     bounds: null,
-    fallback,
-    error: fallback ? null : message,
+    fallback: false,
+    error: message,
   };
 }
 
@@ -252,7 +254,7 @@ function useRevisionMesh(props: FunnelViewerProps): MeshLoadResult | null {
       })
       .catch((err: unknown) => {
         if (cancelled) return;
-        setMeshResult(meshFailure(key, err, code));
+        setMeshResult(meshFailure(key, err));
       });
     return () => {
       cancelled = true;
@@ -315,9 +317,11 @@ function LoadedMeshViewer(props: FunnelViewerProps & { geometries: GeometryResul
 
 export function FunnelViewer(props: FunnelViewerProps) {
   const mesh = useRevisionMesh(props);
-  if (!props.meshUrl || mesh?.fallback) {
+  // No meshUrl → evaluate source (funnel / unpublished). meshUrl present → stored
+  // artifact only; never browser-OCCT fallback for published ChatGPT revisions.
+  if (!props.meshUrl) {
     return (
-      <div className="relative w-full h-full bg-code-bg" data-mesh-url={props.meshUrl ?? undefined} data-source-fallback={mesh?.fallback ? 'true' : 'false'}>
+      <div className="relative w-full h-full bg-code-bg">
         <SourceViewer
           code={props.code}
           onPhaseChange={props.onPhaseChange}
