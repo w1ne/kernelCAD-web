@@ -200,14 +200,40 @@ function meshHttpError(body: unknown, status: number): string {
 
 /** Stored artifacts can be multi-MB; keep headroom without inviting OCCT hangs. */
 const MESH_FETCH_TIMEOUT_MS = 60_000;
+/** Publish returns before OCCT finishes. Keep asking the CDN until the object lands. */
+const MESH_PENDING_BUDGET_MS = 90_000;
 
-async function fetchRevisionMesh(meshUrl: string, revision: number | null) {
+class MeshHttpError extends Error {
+  constructor(message: string, readonly status: number) {
+    super(message);
+  }
+}
+
+function meshPending(err: unknown): boolean {
+  return err instanceof MeshHttpError && err.status === 404;
+}
+
+function sleep(ms: number, signal: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(resolve, ms);
+    const onAbort = () => {
+      clearTimeout(timer);
+      reject(new DOMException('aborted', 'AbortError'));
+    };
+    if (signal.aborted) onAbort();
+    else signal.addEventListener('abort', onAbort, { once: true });
+  });
+}
+
+async function fetchRevisionMesh(meshUrl: string, revision: number | null, signal: AbortSignal) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), MESH_FETCH_TIMEOUT_MS);
+  const onAbort = () => controller.abort();
+  signal.addEventListener('abort', onAbort, { once: true });
   try {
     const response = await fetch(meshUrl, { signal: controller.signal });
     const body: unknown = await response.json().catch(() => null);
-    if (!response.ok) throw new Error(meshHttpError(body, response.status));
+    if (!response.ok) throw new MeshHttpError(meshHttpError(body, response.status), response.status);
     return parseMeshArtifact(body, revision);
   } catch (err) {
     if (err instanceof DOMException && err.name === 'AbortError') {
@@ -216,6 +242,21 @@ async function fetchRevisionMesh(meshUrl: string, revision: number | null) {
     throw err;
   } finally {
     clearTimeout(timer);
+    signal.removeEventListener('abort', onAbort);
+  }
+}
+
+async function fetchRevisionMeshWhenReady(meshUrl: string, revision: number | null, signal: AbortSignal) {
+  const started = Date.now();
+  let delay = 400;
+  for (;;) {
+    try {
+      return await fetchRevisionMesh(meshUrl, revision, signal);
+    } catch (err) {
+      if (!meshPending(err) || Date.now() - started >= MESH_PENDING_BUDGET_MS) throw err;
+      await sleep(delay, signal);
+      delay = Math.min(delay * 2, 4_000);
+    }
   }
 }
 
@@ -240,8 +281,9 @@ function useRevisionMesh(props: FunnelViewerProps): MeshLoadResult | null {
   useEffect(() => {
     if (!meshUrl) return undefined;
     const key = meshKey;
+    const ac = new AbortController();
     let cancelled = false;
-    fetchRevisionMesh(meshUrl, revision)
+    void fetchRevisionMeshWhenReady(meshUrl, revision, ac.signal)
       .then((artifact) => {
         if (cancelled) return;
         setMeshResult({
@@ -253,11 +295,12 @@ function useRevisionMesh(props: FunnelViewerProps): MeshLoadResult | null {
         });
       })
       .catch((err: unknown) => {
-        if (cancelled) return;
+        if (cancelled || (err instanceof DOMException && err.name === 'AbortError')) return;
         setMeshResult(meshFailure(key, err));
       });
     return () => {
       cancelled = true;
+      ac.abort();
     };
   }, [meshUrl, meshKey, revision, code]);
 

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // @vitest-environment happy-dom
-import { cleanup, render, waitFor } from '@testing-library/react';
+import { act, cleanup, render, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ReactNode } from 'react';
 
@@ -86,7 +86,8 @@ describe('FunnelViewer mesh artifact', () => {
     expect(document.querySelector('[data-camera-bounds]')?.getAttribute('data-camera-bounds')).toBe('-1,-1,-1,1,1,1');
   });
 
-  it('does not fall back to browser OCCT when meshUrl fails — surfaces viewer_failed', async () => {
+  it('waits out a not-yet-stored artifact, then still does not fall back to browser OCCT', async () => {
+    vi.useFakeTimers();
     const onPhaseChange = vi.fn();
     vi.stubGlobal('fetch', vi.fn(async () => ({
       ok: false,
@@ -101,12 +102,39 @@ describe('FunnelViewer mesh artifact', () => {
         onPhaseChange={onPhaseChange}
       />,
     );
-    await waitFor(() => expect(onPhaseChange).toHaveBeenCalledWith(
+    await act(async () => { await vi.advanceTimersByTimeAsync(0); });
+    expect(onPhaseChange).toHaveBeenCalledWith('loading_mesh', 'Loading mesh…');
+    await act(async () => { await vi.advanceTimersByTimeAsync(95_000); });
+    expect(onPhaseChange).toHaveBeenCalledWith(
       'viewer_failed',
       expect.stringContaining('mesh_artifact_missing'),
-    ));
+    );
     expect(document.querySelector('[data-source-fallback="true"]')).toBeFalsy();
     expect(harness.props?.suspendSourceExecution).toBeFalsy();
+    vi.useRealTimers();
+  });
+
+  it('loads the mesh once a pending artifact appears', async () => {
+    vi.useFakeTimers();
+    let calls = 0;
+    vi.stubGlobal('fetch', vi.fn(async () => {
+      calls += 1;
+      if (calls === 1) {
+        return { ok: false, status: 404, json: async () => ({ error: 'mesh_artifact_missing' }) };
+      }
+      return { ok: true, status: 200, json: async () => artifact };
+    }));
+    render(
+      <FunnelViewer
+        code={'return sphere(20);'}
+        meshUrl="https://cdn.example/ball.json"
+        revision={7}
+      />,
+    );
+    await act(async () => { await vi.advanceTimersByTimeAsync(500); });
+    expect(harness.props?.externalGeometries?.length).toBe(1);
+    expect(harness.props?.suspendSourceExecution).toBe(true);
+    vi.useRealTimers();
   });
 
   it('reports viewer_failed to onPhaseChange when mesh fails with no source fallback', async () => {
