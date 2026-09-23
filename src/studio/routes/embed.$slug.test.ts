@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it, vi } from 'vitest';
-import { embedPresentationMode, embedRevision, loadEmbedCode } from './-embedConfig';
+import { embedPresentationMode, embedRevision, loadEmbedCode, revisionPinnedMeshUrl } from './-embedConfig';
 
 describe('embedPresentationMode', () => {
   it('keeps the default embed model-only', () => {
@@ -51,5 +51,30 @@ describe('embedPresentationMode', () => {
     await expect(loadEmbedCode(7, { loadCurrent, loadRevision })).resolves.toBeNull();
     expect(loadCurrent).not.toHaveBeenCalled();
     expect(loadRevision).toHaveBeenCalledWith(7);
+  });
+});
+
+describe('revisionPinnedMeshUrl', () => {
+  const hashUrl =
+    'https://mesh.kernelcad.com/mesh-artifacts/g/252958f1aa9b81cf90759df592f203a4904738ba1a827da9196fa94c7f321fea.json';
+
+  it('rewrites geometry-hash CDN URLs to the revision-pinned object', () => {
+    expect(revisionPinnedMeshUrl(hashUrl, 'kUtA7oVx', 2)).toBe(
+      'https://mesh.kernelcad.com/mesh-artifacts/kUtA7oVx/v2.json',
+    );
+  });
+
+  it('leaves revision-pinned and non-CDN URLs alone', () => {
+    const pinned = 'https://mesh.kernelcad.com/mesh-artifacts/kUtA7oVx/v2.json';
+    expect(revisionPinnedMeshUrl(pinned, 'kUtA7oVx', 2)).toBe(pinned);
+    const api = 'https://api.kernelcad.com/api/v1/projects/kUtA7oVx/revisions/2/mesh-artifact';
+    expect(revisionPinnedMeshUrl(api, 'kUtA7oVx', 2)).toBe(api);
+  });
+
+  it('needs a positive revision and slug before rewriting', () => {
+    expect(revisionPinnedMeshUrl(hashUrl, 'kUtA7oVx', undefined)).toBe(hashUrl);
+    expect(revisionPinnedMeshUrl(hashUrl, 'kUtA7oVx', null)).toBe(hashUrl);
+    expect(revisionPinnedMeshUrl(hashUrl, '', 2)).toBe(hashUrl);
+    expect(revisionPinnedMeshUrl(undefined, 'kUtA7oVx', 2)).toBeUndefined();
   });
 });

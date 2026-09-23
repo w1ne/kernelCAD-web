@@ -26,14 +26,14 @@ import { FunnelViewer, type FunnelViewerPhase } from '../../funnel/components/Fu
 import { fetchProjectBySlug, fetchProjectRevisionBySlug } from '../../funnel/lib/apiClient';
 import StudioApp from '../App';
 import { StudioConfigProvider } from '../config/StudioConfigContext';
-import { embedPresentationMode, embedRevision, loadEmbedCode } from './-embedConfig';
+import { embedPresentationMode, embedRevision, loadEmbedCode, revisionPinnedMeshUrl } from './-embedConfig';
 
 /** Bound source fetches so a hung API cannot pin the outer ChatGPT overlay forever. */
 const SOURCE_FETCH_TIMEOUT_MS = 30_000;
 
 /** No-progress watchdog for the embed page itself (source + viewer). */
-/** Must outlive FunnelViewer MESH_FETCH_TIMEOUT (60s) for large stored artifacts. */
-const EMBED_NO_PROGRESS_TIMEOUT_MS = 75_000;
+/** Must outlive FunnelViewer MESH_PENDING_BUDGET (90s) so building meshes can land. */
+const EMBED_NO_PROGRESS_TIMEOUT_MS = 100_000;
 
 function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
   return new Promise<T>((resolve, reject) => {
@@ -232,7 +232,8 @@ function useEmbedNoProgressTimeout(
 
 function EmbedPage() {
   const { slug } = Route.useParams();
-  const { mode, revision, meshUrl, instance } = Route.useSearch();
+  const { mode, revision, meshUrl: rawMeshUrl, instance } = Route.useSearch();
+  const meshUrl = revisionPinnedMeshUrl(rawMeshUrl, slug, revision);
   const [viewerPhase, setViewerPhase] = useState<FunnelViewerPhase | null>(null);
   const [viewerDetail, setViewerDetail] = useState<string | null>(null);
   const [retryKey, setRetryKey] = useState(0);
