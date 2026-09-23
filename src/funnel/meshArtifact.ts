@@ -69,6 +69,25 @@ function readDrawableFeature(feature: unknown): FeatureMeshSerialized | null {
   return record;
 }
 
+/**
+ * Draw only terminal (non-consumed) features — same rule as Studio's
+ * `selectTerminalFeatures` / server `meshWithColor`. CDN artifacts currently
+ * persist the full intent DAG (box → fillet → boolean_1 → boolean_2); drawing
+ * every node stacks construction geometry under the finished body (ChatGPT
+ * NEMA17 "extra square").
+ */
+export function selectTerminalSerializedFeatures(
+  features: readonly FeatureMeshSerialized[],
+): FeatureMeshSerialized[] {
+  const consumed = new Set<string>();
+  for (const feature of features) {
+    for (const predecessor of feature.predecessors ?? []) consumed.add(predecessor);
+  }
+  const terminals = features.filter((feature) => !consumed.has(feature.featureId));
+  // Malformed artifact with no predecessor links: keep drawable set unchanged.
+  return terminals.length > 0 ? terminals : [...features];
+}
+
 function parseDrawableFeatures(raw: unknown): FeatureMeshSerialized[] {
   if (!Array.isArray(raw) || raw.length === 0) {
     throw new Error('Mesh artifact has no features.');
@@ -81,7 +100,7 @@ function parseDrawableFeatures(raw: unknown): FeatureMeshSerialized[] {
   if (features.length === 0) {
     throw new Error('Mesh artifact has no drawable features with faces.');
   }
-  return features;
+  return selectTerminalSerializedFeatures(features);
 }
 
 export function parseMeshArtifact(value: unknown, expectedRevision?: number | null): MeshArtifact {
