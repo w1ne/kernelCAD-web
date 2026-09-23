@@ -158,4 +158,67 @@ describe('FunnelViewer mesh artifact', () => {
       expect.stringContaining('mesh explode'),
     ));
   });
+
+  it('falls back to latest.json on pinned vN 404 when latest is newer (no long poll)', async () => {
+    const latestArtifact = { ...artifact, revision: 5 };
+    const fetchMock = vi.fn(async (url: string) => {
+      if (String(url).endsWith('/v1.json')) {
+        return { ok: false, status: 404, json: async () => ({ error: 'missing' }) };
+      }
+      if (String(url).endsWith('/latest.json')) {
+        return { ok: true, status: 200, json: async () => latestArtifact };
+      }
+      return { ok: false, status: 500, json: async () => ({ error: 'unexpected' }) };
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    render(
+      <FunnelViewer
+        code={'return sphere(20);'}
+        meshUrl="https://mesh.kernelcad.com/mesh-artifacts/PDxuTFiQ/v1.json"
+        revision={1}
+      />,
+    );
+    await waitFor(() => expect(harness.props?.externalGeometries?.length).toBe(1));
+    expect(harness.props?.suspendSourceExecution).toBe(true);
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://mesh.kernelcad.com/mesh-artifacts/PDxuTFiQ/v1.json',
+      expect.anything(),
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://mesh.kernelcad.com/mesh-artifacts/PDxuTFiQ/latest.json',
+      expect.anything(),
+    );
+    // Must not keep polling v1 after a successful latest fallback.
+    const v1Calls = fetchMock.mock.calls.filter((c) => String(c[0]).endsWith('/v1.json'));
+    expect(v1Calls.length).toBe(1);
+  });
+
+  it('keeps polling pinned vN when latest is older (building newer revision)', async () => {
+    vi.useFakeTimers();
+    let v6Calls = 0;
+    vi.stubGlobal('fetch', vi.fn(async (url: string) => {
+      if (String(url).endsWith('/latest.json')) {
+        return { ok: true, status: 200, json: async () => ({ ...artifact, revision: 5 }) };
+      }
+      if (String(url).endsWith('/v6.json')) {
+        v6Calls += 1;
+        if (v6Calls < 3) {
+          return { ok: false, status: 404, json: async () => ({ error: 'building' }) };
+        }
+        return { ok: true, status: 200, json: async () => ({ ...artifact, revision: 6 }) };
+      }
+      return { ok: false, status: 500, json: async () => ({ error: 'unexpected' }) };
+    }));
+    render(
+      <FunnelViewer
+        code={'return sphere(20);'}
+        meshUrl="https://mesh.kernelcad.com/mesh-artifacts/PDxuTFiQ/v6.json"
+        revision={6}
+      />,
+    );
+    await act(async () => { await vi.advanceTimersByTimeAsync(5_000); });
+    expect(harness.props?.externalGeometries?.length).toBe(1);
+    expect(v6Calls).toBeGreaterThanOrEqual(3);
+    vi.useRealTimers();
+  });
 });
