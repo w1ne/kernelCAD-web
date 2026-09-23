@@ -29,38 +29,71 @@ function isMaterial(value: unknown): value is PBRMaterial {
   return typeof (value as { baseColor?: unknown }).baseColor === 'string';
 }
 
-export function parseMeshArtifact(value: unknown, expectedRevision?: number | null): MeshArtifact {
-  if (typeof value !== 'object' || value === null) {
-    throw new Error('Mesh artifact is not an object.');
-  }
-  const body = value as { revision?: unknown; bounds?: unknown; features?: unknown };
+function parseRevision(body: { revision?: unknown }, expectedRevision?: number | null): number {
   if (typeof body.revision !== 'number' || !Number.isInteger(body.revision) || body.revision < 1) {
     throw new Error('Mesh artifact is missing a positive revision.');
   }
   if (expectedRevision != null && body.revision !== expectedRevision) {
     throw new Error(`Mesh revision ${body.revision} does not match requested revision ${expectedRevision}.`);
   }
+  return body.revision;
+}
+
+function parseBounds(body: { bounds?: unknown }): MeshArtifactBounds {
   const bounds = body.bounds as { min?: unknown; max?: unknown } | undefined;
   if (!bounds || !isVec3(bounds.min) || !isVec3(bounds.max)) {
     throw new Error('Mesh artifact is missing camera bounds.');
   }
-  if (!Array.isArray(body.features) || body.features.length === 0) {
+  return { min: bounds.min, max: bounds.max };
+}
+
+/**
+ * Validate one feature. Returns null when faces are missing/empty so virtual
+ * records (cameraTarget, referenceImage, …) can be omitted without inventing
+ * geometry. Throws on malformed objects or materials.
+ */
+function readDrawableFeature(feature: unknown): FeatureMeshSerialized | null {
+  if (typeof feature !== 'object' || feature === null) {
+    throw new Error('Mesh artifact feature is malformed.');
+  }
+  const record = feature as FeatureMeshSerialized;
+  if (!Array.isArray(record.faces) || record.faces.length === 0) {
+    const label = typeof record.featureId === 'string' ? record.featureId : 'unknown';
+    const kind = typeof record.featureKind === 'string' ? record.featureKind : 'unknown';
+    console.warn(`Mesh artifact: omitting feature "${label}" (${kind}) with no faces.`);
+    return null;
+  }
+  if (record.material !== undefined && !isMaterial(record.material)) {
+    throw new Error('Mesh artifact material is malformed.');
+  }
+  return record;
+}
+
+function parseDrawableFeatures(raw: unknown): FeatureMeshSerialized[] {
+  if (!Array.isArray(raw) || raw.length === 0) {
     throw new Error('Mesh artifact has no features.');
   }
-  const features = body.features.map((feature) => {
-    if (typeof feature !== 'object' || feature === null) {
-      throw new Error('Mesh artifact feature is malformed.');
-    }
-    const record = feature as FeatureMeshSerialized;
-    if (!Array.isArray(record.faces) || record.faces.length === 0) {
-      throw new Error('Mesh artifact feature has no faces.');
-    }
-    if (record.material !== undefined && !isMaterial(record.material)) {
-      throw new Error('Mesh artifact material is malformed.');
-    }
-    return record;
-  });
-  return { revision: body.revision, bounds: { min: bounds.min, max: bounds.max }, features };
+  const features: FeatureMeshSerialized[] = [];
+  for (const feature of raw) {
+    const drawable = readDrawableFeature(feature);
+    if (drawable) features.push(drawable);
+  }
+  if (features.length === 0) {
+    throw new Error('Mesh artifact has no drawable features with faces.');
+  }
+  return features;
+}
+
+export function parseMeshArtifact(value: unknown, expectedRevision?: number | null): MeshArtifact {
+  if (typeof value !== 'object' || value === null) {
+    throw new Error('Mesh artifact is not an object.');
+  }
+  const body = value as { revision?: unknown; bounds?: unknown; features?: unknown };
+  return {
+    revision: parseRevision(body, expectedRevision),
+    bounds: parseBounds(body),
+    features: parseDrawableFeatures(body.features),
+  };
 }
 
 export function geometriesFromArtifact(artifact: MeshArtifact): GeometryResult[] {
