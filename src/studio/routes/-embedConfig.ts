@@ -41,3 +41,30 @@ export async function loadEmbedCode(
     return null;
   }
 }
+
+const GEOMETRY_HASH_MESH_PATH = /\/mesh-artifacts\/g\/[a-f0-9]+\.json$/i;
+
+/**
+ * Pre-#147 tool results advertised geometry-hash CDN URLs. Those JSON bodies
+ * stamp `revision` from the *first* persist, so a later open_in_studio revision
+ * fails FunnelViewer with "Mesh revision N does not match requested revision M".
+ * Rewrite to the revision-pinned object the server now always writes.
+ */
+export function revisionPinnedMeshUrl(
+  meshUrl: string | undefined,
+  slug: string,
+  revision: number | null | undefined,
+): string | undefined {
+  if (!meshUrl || typeof revision !== 'number' || revision < 1 || !slug) return meshUrl;
+  let parsed: URL;
+  try {
+    parsed = new URL(meshUrl);
+  } catch {
+    return meshUrl;
+  }
+  if (!GEOMETRY_HASH_MESH_PATH.test(parsed.pathname)) return meshUrl;
+  parsed.pathname = `/mesh-artifacts/${encodeURIComponent(slug)}/v${revision}.json`;
+  parsed.search = '';
+  parsed.hash = '';
+  return parsed.toString();
+}
