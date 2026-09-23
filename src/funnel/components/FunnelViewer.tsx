@@ -22,6 +22,10 @@ import {
   parseMeshArtifact,
   type MeshArtifactBounds,
 } from '../meshArtifact';
+import {
+  meshArtifactLatestUrl,
+  shouldAcceptLatestMeshFallback,
+} from '../meshArtifactFallback';
 
 export type FunnelViewerPhase =
   | 'building_geometry'
@@ -248,14 +252,41 @@ async function fetchRevisionMesh(meshUrl: string, revision: number | null, signa
   }
 }
 
+async function tryLatestMeshFallback(
+  meshUrl: string,
+  revision: number | null,
+  signal: AbortSignal,
+) {
+  const latestUrl = meshArtifactLatestUrl(meshUrl);
+  if (!latestUrl) return null;
+  try {
+    // Ignore revision stamp on latest — historical pins may never match.
+    const artifact = await fetchRevisionMesh(latestUrl, null, signal);
+    if (!shouldAcceptLatestMeshFallback(revision, artifact.revision)) return null;
+    return artifact;
+  } catch (err) {
+    if (meshPending(err)) return null;
+    throw err;
+  }
+}
+
 async function fetchRevisionMeshWhenReady(meshUrl: string, revision: number | null, signal: AbortSignal) {
   const started = Date.now();
   let delay = 400;
+  let triedLatest = false;
   for (;;) {
     try {
       return await fetchRevisionMesh(meshUrl, revision, signal);
     } catch (err) {
-      if (!meshPending(err) || Date.now() - started >= MESH_PENDING_BUDGET_MS) throw err;
+      if (!meshPending(err)) throw err;
+      // One extra CDN GET: if latest is at least as new as the request, the
+      // pinned vN was never uploaded (legacy ChatGPT embed). Avoid a 90s poll.
+      if (!triedLatest) {
+        triedLatest = true;
+        const fallback = await tryLatestMeshFallback(meshUrl, revision, signal);
+        if (fallback) return fallback;
+      }
+      if (Date.now() - started >= MESH_PENDING_BUDGET_MS) throw err;
       await sleep(delay, signal);
       delay = Math.min(delay * 2, 4_000);
     }
