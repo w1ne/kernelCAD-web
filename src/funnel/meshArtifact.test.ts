@@ -96,3 +96,56 @@ describe('parseMeshArtifact', () => {
     warn.mockRestore();
   });
 });
+
+describe('selectTerminalSerializedFeatures via parseMeshArtifact', () => {
+  it('drops intermediate DAG nodes, keeping only the finished boolean', () => {
+    const tri = {
+      vertices: [0, 0, 0, 10, 0, 0, 0, 10, 0],
+      indices: [0, 1, 2],
+      normals: [0, 0, 1, 0, 0, 1, 0, 0, 1],
+      faceId: 1,
+    };
+    const withHistory = {
+      revision: 2,
+      bounds: { min: [0, 0, 0], max: [60, 60, 14] },
+      features: [
+        { featureId: 'box_1', featureKind: 'box', predecessors: [], faces: [tri] },
+        {
+          featureId: 'boolean_1',
+          featureKind: 'boolean',
+          predecessors: ['box_1'],
+          faces: [tri],
+          material: { baseColor: '#2244aa', roughness: 0.4 },
+        },
+        {
+          featureId: 'boolean_2',
+          featureKind: 'boolean',
+          predecessors: ['boolean_1'],
+          faces: [tri],
+          material: { baseColor: '#bfc4c8', roughness: 0.4 },
+        },
+      ],
+    };
+    const parsed = parseMeshArtifact(withHistory, 2);
+    expect(parsed.features.map((f) => f.featureId)).toEqual(['boolean_2']);
+    expect(geometriesFromArtifact(parsed)).toHaveLength(1);
+  });
+
+  it('keeps multiple unconsumed tails (e.g. array of shapes)', () => {
+    const tri = {
+      vertices: [0, 0, 0, 1, 0, 0, 0, 1, 0],
+      indices: [0, 1, 2],
+      normals: [0, 0, 1, 0, 0, 1, 0, 0, 1],
+      faceId: 1,
+    };
+    const parsed = parseMeshArtifact({
+      revision: 2,
+      bounds: { min: [0, 0, 0], max: [2, 1, 0] },
+      features: [
+        { featureId: 'box_1', featureKind: 'box', predecessors: [], faces: [tri] },
+        { featureId: 'box_2', featureKind: 'box', predecessors: [], faces: [tri] },
+      ],
+    }, 2);
+    expect(parsed.features.map((f) => f.featureId)).toEqual(['box_1', 'box_2']);
+  });
+});
