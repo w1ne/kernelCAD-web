@@ -47,19 +47,28 @@ export function parseMeshArtifact(value: unknown, expectedRevision?: number | nu
   if (!Array.isArray(body.features) || body.features.length === 0) {
     throw new Error('Mesh artifact has no features.');
   }
-  const features = body.features.map((feature) => {
+  const features: FeatureMeshSerialized[] = [];
+  for (const feature of body.features) {
     if (typeof feature !== 'object' || feature === null) {
       throw new Error('Mesh artifact feature is malformed.');
     }
     const record = feature as FeatureMeshSerialized;
+    // Virtual records (cameraTarget, referenceImage, …) ship with empty faces.
+    // Skip them for embed drawing — do not invent geometry.
     if (!Array.isArray(record.faces) || record.faces.length === 0) {
-      throw new Error('Mesh artifact feature has no faces.');
+      const label = typeof record.featureId === 'string' ? record.featureId : 'unknown';
+      const kind = typeof record.featureKind === 'string' ? record.featureKind : 'unknown';
+      console.warn(`Mesh artifact: omitting feature "${label}" (${kind}) with no faces.`);
+      continue;
     }
     if (record.material !== undefined && !isMaterial(record.material)) {
       throw new Error('Mesh artifact material is malformed.');
     }
-    return record;
-  });
+    features.push(record);
+  }
+  if (features.length === 0) {
+    throw new Error('Mesh artifact has no drawable features with faces.');
+  }
   return { revision: body.revision, bounds: { min: bounds.min, max: bounds.max }, features };
 }
 
