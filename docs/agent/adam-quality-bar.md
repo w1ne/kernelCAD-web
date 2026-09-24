@@ -60,4 +60,4 @@ For complex / production / enclosure / gearbox / robot-arm prompts:
 5. Final `open_in_studio` — pass `likeness_profile: 'automotive'` when organic
    (gate auto-runs / checks session attest)
 
-WIP previews may omit `likeness_profile`; never claim likeness success without it.
+WIP previews may omit likeness_profile; never claim likeness success without it.
