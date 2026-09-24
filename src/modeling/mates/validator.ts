@@ -625,11 +625,15 @@ export async function validateAssemblyWithMates(
   emitMissingLimitWarnings(diagnostics, arm.__mates());
 
   // Topology / support / rooted-graph checks are independent of mate FK
-  // convergence. Keep them on the evaluate_script path even when the
-  // v0.6.0 solver returns did-not-converge for an articulated closed loop,
-  // so agents still see missing limits / unsupported-axis / floating roots
-  // instead of inventing gear-contact workarounds.
-  foldJointTopologyDiagnostics(diagnostics, arm);
+  // convergence, but jointTopology emits error-severity codes that would
+  // escalate `validate:'error'` on open chains that already pass through
+  // softer grounding gates (Gate 2 info). Only fold them when the v0.6.0
+  // solver has already refused an articulated closed loop — that is the
+  // evaluate_script path where ChatGPT otherwise thrases without seeing
+  // limits / unsupported-axis / floating-root DX alongside did-not-converge.
+  if (solveStatus === 'did-not-converge') {
+    foldJointTopologyDiagnostics(diagnostics, arm);
+  }
 
 
   // 7. v0.7.4 — kinematic grounding gates. Run order: cheap pure gates first
