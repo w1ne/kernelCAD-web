@@ -13,6 +13,8 @@ Use `assembly()` when the model needs named mechanical parts, connector frames, 
 
 - **`assembly.part.floating`** / **`mechanism.orphan-part`** — disconnected body/component (no mate/joint into the graph). Fix: connectors + mates — shafts/hinges/gears use `type: 'axis'` + `arm.mate(..., 'revolute')`; rigid mounts use `type: 'frame'` + `mate(..., 'fastened')`; or `arm.fixed/.revolute/.prismatic/.ball`. Connector types are only `frame|axis|planar|ball`.
 - **`assembly.part.orphan`** — a part is in a sub-assembly disconnected from the main mechanism (same connector/mate fix as floating).
+- **`assembly.mate.connector-not-found`** / **`assembly.pose-envelope.connector-unresolved`** — mate ref did not resolve. Declare `partRef.connector(...)` on **each** part **before** `arm.mate(...)`, use `'partName.connectorName'` refs, and prefer numeric `{ kind: 'vec3', value: [x,y,z] }` origins (topology origins often stay unresolved).
+- **`assembly.interference.overlap`** / **`mechanism.interpenetration`** after an edit — often stale duplicate/orphaned overlapping bodies from an in-place workaround. Keep only the intended connected mechanism graph; delete leftover copies before tweaking geometry.
 - **`assembly.interference.overlap`** — two parts share volume (promoted from `kernelcad interference`).
 - **`assembly.structure.unstructured-bodies`** (info) — a multi-body model returns loose top-level bodies with no `assembly().part(...)` structure, so the parts carry no identity for `inspect --focus`, `inspect({ of: 'part-stats' })`, or per-part review. The fix: wrap each distinct body in a named `assembly().part(name, shape)`.
 
