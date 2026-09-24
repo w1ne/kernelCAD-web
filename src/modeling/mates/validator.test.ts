@@ -324,7 +324,11 @@ describe('validateAssembly — v0.6 mate-aware codes', () => {
     arm.mate('m2', 'b.r', 'c.s', 'fastened');
     arm.mate('m3', 'c.axis', 'a.axis', 'revolute'); // non-fastened loop edge
     const result = await validateAssemblyWithMates(arm);
-    expect(result.diagnostics.find((d) => d.code === 'assembly.solver.did-not-converge')).toBeDefined();
+    const didNot = result.diagnostics.find((d) => d.code === 'assembly.solver.did-not-converge');
+    expect(didNot).toBeDefined();
+    expect(didNot?.message).toContain('UNSUPPORTED on v0.6.0');
+    expect(didNot?.message).toContain('Articulated mates');
+    expect(didNot?.hint).toContain('open kinematic chain');
     expect(result.status).toBe('did-not-converge');
   });
 
