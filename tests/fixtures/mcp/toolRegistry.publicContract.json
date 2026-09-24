@@ -565,45 +565,45 @@
         "range_samples": {
           "type": "number",
           "description": "check:'static-hold' — grid density per evaluated joint when `pose` is omitted (default 9)."
+        },
+        "body_bbox": {
+          "type": "object",
+          "description": "check:'body-likeness' — body AABB { min:[x,y,z], max:[x,y,z] } in mm."
+        },
+        "body_feature_id": {
+          "type": "string",
+          "description": "check:'body-likeness' — FeatureId to read body AABB from when body_bbox omitted."
+        },
+        "cabin_bbox": {
+          "type": "object",
+          "description": "check:'body-likeness' — optional cabin/greenhouse AABB for automated cabin-aft."
+        },
+        "wheels": {
+          "type": "array",
+          "description": "check:'body-likeness' — wheel centres + tire radii [{ center:[x,y,z], radius }].",
+          "items": {
+            "type": "object"
+          }
+        },
+        "length_axis": {
+          "type": "string",
+          "enum": [
+            "x",
+            "y"
+          ],
+          "description": "check:'body-likeness' — wheelbase axis (default 'x')."
+        },
+        "still_verdicts": {
+          "type": "array",
+          "description": "check:'body-likeness' — agent ortho still checklist [{ code, passed, finding, view? }]. Required codes: side-body-over-wheels, side-cabin-aft, rear-haunch, ortho-proportions-vs-reference.",
+          "items": {
+            "type": "object"
+          }
+        },
+        "require_stills": {
+          "type": "boolean",
+          "description": "check:'body-likeness' — require still_verdicts (default true)."
         }
-      },
-      "body_bbox": {
-        "type": "object",
-        "description": "check:'body-likeness' — body AABB { min:[x,y,z], max:[x,y,z] } in mm."
-      },
-      "body_feature_id": {
-        "type": "string",
-        "description": "check:'body-likeness' — FeatureId to read body AABB from when body_bbox omitted."
-      },
-      "cabin_bbox": {
-        "type": "object",
-        "description": "check:'body-likeness' — optional cabin/greenhouse AABB for automated cabin-aft."
-      },
-      "wheels": {
-        "type": "array",
-        "description": "check:'body-likeness' — wheel centres + tire radii [{ center:[x,y,z], radius }].",
-        "items": {
-          "type": "object"
-        }
-      },
-      "length_axis": {
-        "type": "string",
-        "enum": [
-          "x",
-          "y"
-        ],
-        "description": "check:'body-likeness' — wheelbase axis (default 'x')."
-      },
-      "still_verdicts": {
-        "type": "array",
-        "description": "check:'body-likeness' — agent ortho still checklist [{ code, passed, finding, view? }]. Required codes: side-body-over-wheels, side-cabin-aft, rear-haunch, ortho-proportions-vs-reference.",
-        "items": {
-          "type": "object"
-        }
-      },
-      "require_stills": {
-        "type": "boolean",
-        "description": "check:'body-likeness' — require still_verdicts (default true)."
       },
       "required": [
         "check"

@@ -49,9 +49,9 @@ export type CheckBodyLikenessOutput = BodyLikenessResult & {
   requiredStillCodes: readonly string[];
   /** What is automated vs agent-required — for honest PR / agent DX. */
   honesty: {
-    automated: string[];
-    agentRequired: string[];
-    notImplemented: string[];
+    automated: readonly string[];
+    agentRequired: readonly string[];
+    notImplemented: readonly string[];
   };
 };
 
@@ -72,7 +72,7 @@ const HONESTY = {
     'Automatic ortho PNG scoring without agent findings',
     'Hard block inside open_in_studio publish (agents must call this verify check first)',
   ],
-} as const;
+};
 
 /**
  * `verify({ check: 'body-likeness' })` handler.
