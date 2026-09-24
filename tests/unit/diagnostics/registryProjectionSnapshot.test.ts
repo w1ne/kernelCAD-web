@@ -59,14 +59,5 @@ describe('diagnostic registry projections (legacy-prefix order + content lock)',
     }
   });
 
-  it('today (before any post-split addition) the projections are byte-identical to the fixture', () => {
-    // This is the zero-behaviour-change proof for the split itself: as of
-    // this branch, no code has been added after the legacy 309, so the
-    // prefix lock above is also a total lock. This test is expected to
-    // start failing the day a real new diagnostic code is added — that is
-    // fine and does not indicate a regression; delete it then, the prefix
-    // lock above stays.
-    const current = { DIAGNOSTIC_CODES, HINT_TEMPLATES, NEXT_ACTIONS };
-    expect(JSON.parse(JSON.stringify(current))).toEqual(fixture);
-  });
+  // Deleted: byte-identical total lock — new post-split codes (reference.likeness.*) landed after the legacy 309.
 });

@@ -13,6 +13,8 @@ keywords:
   - fairing body envelope
   - G2 fillet body panels
   - car body with glass separate
+  - body likeness gate
+  - network body panels via sew
 when_to_use: You need a recognizable organic vehicle / berlinetta / fairing body — NOT a stylized polyline loft demo. Prefer spline or hermiteG2 station profiles with ≤2 loft rails (or surfaceFromCurves + sew + thicken + G2 fillet). Keep glass and aero as separate fastened parts; never union wide boxes into the loft solid or cut through-Y arches through a loft.
 ---
 
@@ -70,3 +72,23 @@ const body = start.loft(end, {
 const glass = box(28, 1.5, 18).translate(-14, 6, 35);
 return body.fillet(1.5, { parallel: [0, 0, 1] }).union(glass);
 ```
+
+**When you need >2 guides (network surfaces)**
+
+OCCT MakePipeShell will not take a third rail. Split the body into panels
+(`surfaceFromCurves` / `surfaceFromBoundary`), `sew([...], { requireClosed: true })`,
+`.thicken`, then G2 fillet — see `lookup_cookbook("network body panels via sew")`.
+
+**Before publish / open_in_studio (likeness gate)**
+
+Silhouette-weak evidence is not success. After `evaluate_script` +
+`render_preview` (or Studio stills), call:
+
+`verify({ check: 'body-likeness', body_bbox, wheels, still_verdicts })`
+
+Required still codes: `side-body-over-wheels`, `side-cabin-aft`, `rear-haunch`,
+`ortho-proportions-vs-reference` (concrete findings, not empty strings).
+
+Automated: wheel footprint, rocker vs tire top, wheelbase span, optional cabin-aft
+(when `cabin_bbox` given). Agent-required: the four still codes. Full CV
+silhouette IoU is **not** implemented — do not claim it.

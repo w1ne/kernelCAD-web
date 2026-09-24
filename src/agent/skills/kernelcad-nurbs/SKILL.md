@@ -375,6 +375,17 @@ For an organic body (car body, helmet, fairing, ergonomic shell) do NOT type
 cross-section coordinates by eye and iterate in a chat loop — eyeballed
 waypoints never converge. Prefer `lookup_cookbook("automotive body envelope")`
 for the rail-loft / surfaceFromCurves stack (not the stylized polyline loft).
+
+**>2 loft rails / network bodies.** OCCT MakePipeShell hard-caps at 2 rails
+(`feature.loft.rail-miss`). Do not raise rail count. Panel with
+`surfaceFromCurves` / `surfaceFromBoundary`, `sew([...], { requireClosed: true })`,
+`.thicken`, G2 fillet — `lookup_cookbook("network body panels via sew")`.
+
+**Likeness before publish.** For cars / organic envelopes, after ortho stills:
+`verify({ check: 'body-likeness', body_bbox, wheels, still_verdicts })`. Automated
+AABB↔wheel checks + required agent stills (`side-body-over-wheels`,
+`side-cabin-aft`, `rear-haunch`, `ortho-proportions-vs-reference`). Full CV
+silhouette matching is not implemented.
 Derive the curves from a reference photo:
 
 1. **Trace the silhouette.** Run `trace_from_image` (pure-JS contour tracer) on

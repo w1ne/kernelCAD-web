@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { DIAGNOSTIC_CODES, HINT_TEMPLATES } from '../../../src/shared/diagnostics/registry';
 
 describe('diagnostic catalogue invariants', () => {
-  it('emits exactly 315 codes', () => {
+  it('emits exactly 318 codes', () => {
     // 204 from develop (NURBS analytics, Query DSL, K1-K9 kinematic, assembly/mechanism gates)
     // + 6 parts catalog codes (parts.* — Slice C bundled parts catalog)
     // + 1 feature.emboss-text.boolean-noop (#393 silent no-op guard)
@@ -106,9 +106,12 @@ describe('diagnostic catalogue invariants', () => {
     // + 3 direct-edit drag: feature.direct-edit.clamped,
     //   feature.direct-edit.delta-wrapper, feature.direct-edit.unresolved = 308.
     // + 1 feature.direct-edit.shared-param-conflict (one param drives multiple
-    //   translated axes with different drag deltas; drag cannot encode it) = 309.
-    expect(DIAGNOSTIC_CODES).toHaveLength(315);
-    expect(new Set(DIAGNOSTIC_CODES).size).toBe(315);
+    //   translated axes with different drag deltas; drag cannot encode it) = 309 + 3 likeness = 318.
+    // + 3 body likeness (verify check body-likeness):
+    //   reference.likeness.auto-failed, reference.likeness.stills-incomplete,
+    //   reference.likeness.still-failed = 318.
+    expect(DIAGNOSTIC_CODES).toHaveLength(318);
+    expect(new Set(DIAGNOSTIC_CODES).size).toBe(318);
   });
 
   it('every code has a non-empty hint template', () => {

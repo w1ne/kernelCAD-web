@@ -226,7 +226,16 @@ Renaming offenders is the recovery path; the gate does not loosen.
 
 The structured forms remain valid escape hatches. The `@kc[...]` string form is the preferred handoff because it survives the resolver's two-path lookup (lineage first, then geometry snapshot) and round-trips cleanly through MCP tool envelopes.
 
-### Tools that emit refs
+### Body likeness (cars / organic envelopes)
+
+Before `open_in_studio` / claiming success on a car or organic body:
+
+- `verify({ check: 'body-likeness', body_bbox | code+body_feature_id, wheels, still_verdicts })`
+- Required stills: `side-body-over-wheels`, `side-cabin-aft`, `rear-haunch`, `ortho-proportions-vs-reference`
+- `design_loop({ likenessProfile: 'automotive', ... })` adds those still codes to visualReview
+- Automated: AABB↔wheels only — **not** full CV silhouette IoU
+
+## Tools that emit refs
 
 | MCP tool | Field |
 |---|---|

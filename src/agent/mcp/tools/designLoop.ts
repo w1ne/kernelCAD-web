@@ -51,6 +51,12 @@ export interface DesignLoopInput {
   allowReviewWarnings?: string[];
   requireVisualReview?: boolean;
   requirePhysicalAcceptance?: boolean;
+  /**
+   * When 'automotive', accepted visualReview.checks must also cover organic-body
+   * likeness stills (side-body-over-wheels, side-cabin-aft, rear-haunch,
+   * ortho-proportions-vs-reference). Pair with verify({ check: 'body-likeness' }).
+   */
+  likenessProfile?: 'automotive';
   outputRecordPath?: string;
   recordTitle?: string;
 }
@@ -204,6 +210,7 @@ async function runDesignLoopAttempt(
     review,
     allowReviewWarnings: input.allowReviewWarnings ?? [],
     requireVisualReview: input.requireVisualReview ?? true,
+    likenessProfile: input.likenessProfile,
     visualReview: attempt.visualReview,
     source,
   });
@@ -279,6 +286,7 @@ function toAttemptResult(input: {
   review: ReviewCadOutput;
   allowReviewWarnings: readonly string[];
   requireVisualReview: boolean;
+  likenessProfile?: DesignLoopInput['likenessProfile'];
   visualReview?: DesignLoopVisualReview;
   source: string;
 }): DesignLoopAttemptResult {
@@ -304,7 +312,12 @@ function toAttemptResult(input: {
     })),
     ...scriptQualityFacts(input.source, input.allowReviewWarnings),
     ...geometryReviewFacts(input.review.geometry, input.allowReviewWarnings),
-    ...visualReviewFacts(input.requireVisualReview, input.visualReview, input.allowReviewWarnings),
+    ...visualReviewFacts(
+      input.requireVisualReview,
+      input.visualReview,
+      input.allowReviewWarnings,
+      input.likenessProfile,
+    ),
   ];
   const functional = input.review.ok;
   const qualityOk = reviewFacts.length === 0;
@@ -535,6 +548,7 @@ function visualReviewFacts(
   requireVisualReview: boolean,
   visualReview: DesignLoopVisualReview | undefined,
   allowReviewWarnings: readonly string[],
+  likenessProfile?: DesignLoopInput['likenessProfile'],
 ): Array<{ code: string; severity: string; message: string; hint?: string }> {
   const missingCode = 'assembly.visual.review-required';
   const rejectedCode = 'assembly.visual.review-rejected';
@@ -555,7 +569,7 @@ function visualReviewFacts(
     );
   }
   if (visualReview.accepted) {
-    const { missing, checkResults } = visualReviewMissingFields(visualReview);
+    const { missing, checkResults } = visualReviewMissingFields(visualReview, likenessProfile);
     if (missing.length === 0) {
       const failedChecks = checkResults.filter((check) => !check.passed);
       const weakEvidence = checkResults.flatMap((check) => weakVisualCheckEvidence(check));
@@ -596,6 +610,7 @@ function visualReviewFacts(
 
 function visualReviewMissingFields(
   visualReview: DesignLoopVisualReview,
+  likenessProfile?: DesignLoopInput['likenessProfile'],
 ): { missing: string[]; checkResults: DesignLoopVisualReviewCheck[] } {
   const missing: string[] = [];
   if (visualReview.screenshotPath === undefined || visualReview.screenshotPath.trim() === '') {
@@ -608,7 +623,7 @@ function visualReviewMissingFields(
     missing.push('visualReview.checks');
   }
   const checkResults = visualReview.checks ?? [];
-  const missingCheckCodes = requiredVisualReviewCheckCodes().filter((code) =>
+  const missingCheckCodes = requiredVisualReviewCheckCodes(likenessProfile).filter((code) =>
     !checkResults.some((check) => check.code === code),
   );
   if (missingCheckCodes.length > 0) {
@@ -623,8 +638,17 @@ function visualReviewMissingFields(
   return { missing, checkResults };
 }
 
-function requiredVisualReviewCheckCodes(): readonly string[] {
-  return [
+const AUTOMOTIVE_LIKENESS_STILL_CODES = [
+  'side-body-over-wheels',
+  'side-cabin-aft',
+  'rear-haunch',
+  'ortho-proportions-vs-reference',
+] as const;
+
+function requiredVisualReviewCheckCodes(
+  likenessProfile?: DesignLoopInput['likenessProfile'],
+): readonly string[] {
+  const base = [
     'main-object-count',
     'proportions-match-reference',
     'required-visible-features',
@@ -634,6 +658,10 @@ function requiredVisualReviewCheckCodes(): readonly string[] {
     'device-depth-and-construction',
     'canonical-views-physically-coherent',
   ];
+  if (likenessProfile === 'automotive') {
+    return [...base, ...AUTOMOTIVE_LIKENESS_STILL_CODES];
+  }
+  return base;
 }
 
 interface WeakVisualEvidenceRule {
