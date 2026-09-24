@@ -99,15 +99,18 @@ export function GeometryProvider({
         suspendSourceExecution,
     );
 
-    const sourceGeometries = useMemo(
-        () => script.geometries.map((geometry) => {
+    // Apply viewport transform overrides to BOTH script-evaluated meshes and
+    // CDN mesh-artifact geometries. Embed / FunnelViewer ChatGPT widgets load
+    // via `externalGeometries`; skipping overrides there left Play/scrub
+    // advancing the timeline while part groups stayed at rest pose.
+    const displayGeometries = useMemo(() => {
+        const base = externalGeometries ?? script.geometries;
+        return base.map((geometry) => {
             if (!geometry.assemblyPartName) return geometry;
             const transform = transforms.geometryTransformOverrides[geometry.assemblyPartName];
             return transform ? { ...geometry, transform } : geometry;
-        }),
-        [script.geometries, transforms.geometryTransformOverrides],
-    );
-    const displayGeometries = externalGeometries ?? sourceGeometries;
+        });
+    }, [externalGeometries, script.geometries, transforms.geometryTransformOverrides]);
 
     const value: GeometryContextType = useMemo(() => ({
         geometries: displayGeometries,
