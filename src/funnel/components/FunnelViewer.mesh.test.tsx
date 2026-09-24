@@ -188,8 +188,12 @@ describe('FunnelViewer mesh artifact', () => {
       'https://mesh.kernelcad.com/mesh-artifacts/PDxuTFiQ/latest.json',
       expect.anything(),
     );
-    // Must not keep polling v1 after a successful latest fallback.
-    const v1Calls = fetchMock.mock.calls.filter((c) => String(c[0]).endsWith('/v1.json'));
+    // Must not keep polling mesh v1 after a successful latest fallback.
+    // Sibling anim-artifacts/.../v1.json may also be probed for Play UI — exclude it.
+    const v1Calls = fetchMock.mock.calls.filter((c) => {
+      const u = String(c[0]);
+      return u.includes('/mesh-artifacts/') && u.endsWith('/v1.json');
+    });
     expect(v1Calls.length).toBe(1);
   });
 

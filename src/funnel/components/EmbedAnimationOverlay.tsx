@@ -31,10 +31,10 @@ export function EmbedAnimationOverlay({ animUrl }: EmbedAnimationOverlayProps): 
   const [metadata, setMetadata] = useState<AnimationViewMetadata | null>(null);
   const [unavailable, setUnavailable] = useState(false);
 
+  // Parent remounts with key={animUrl}; do not reset state synchronously here
+  // (react-hooks/set-state-in-effect). Only setState from the fetch callbacks.
   useEffect(() => {
     let cancelled = false;
-    setUnavailable(false);
-    setMetadata(null);
     void fetchCdnAnimArtifact(animUrl)
       .then((artifact) => {
         if (cancelled) return;

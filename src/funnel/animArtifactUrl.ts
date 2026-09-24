@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 /**
  * Derive the sibling CDN animation-bake URL from a revision mesh URL.
  * mesh-artifacts/<slug>/vN.json → anim-artifacts/<slug>/vN.json

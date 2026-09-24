@@ -395,7 +395,7 @@ function LoadedMeshViewer(props: FunnelViewerProps & { geometries: GeometryResul
         externalGeometries={props.geometries}
       >
         <FunnelViewerInner onPhaseChange={props.onPhaseChange} revision={props.revision} instanceId={props.instanceId} />
-        {resolvedAnimUrl ? <EmbedAnimationOverlay animUrl={resolvedAnimUrl} /> : null}
+        {resolvedAnimUrl ? <EmbedAnimationOverlay key={resolvedAnimUrl} animUrl={resolvedAnimUrl} /> : null}
       </WorkbenchProvider>
     </div>
   );
