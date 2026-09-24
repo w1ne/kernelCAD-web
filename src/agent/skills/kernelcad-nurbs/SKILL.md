@@ -373,7 +373,9 @@ These are not real-time-graphics methods; for per-frame queries on large counts 
 
 For an organic body (car body, helmet, fairing, ergonomic shell) do NOT type
 cross-section coordinates by eye and iterate in a chat loop — eyeballed
-waypoints never converge. Derive the curves from a reference photo:
+waypoints never converge. Prefer `lookup_cookbook("automotive body envelope")`
+for the rail-loft / surfaceFromCurves stack (not the stylized polyline loft).
+Derive the curves from a reference photo:
 
 1. **Trace the silhouette.** Run `trace_from_image` (pure-JS contour tracer) on
    the reference and lift the normalized `[0,1]` waypoints to mm via a scale
