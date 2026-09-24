@@ -147,7 +147,7 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
                     },
                     checks: {
                       type: 'array',
-                      description: 'Required checklist entries: main-object-count, proportions-match-reference, required-visible-features, no-stray-or-floating-geometry, attachment-plausibility, semantic-orientation-alignment, device-depth-and-construction, canonical-views-physically-coherent.',
+                      description: 'Required checklist entries: main-object-count, proportions-match-reference, required-visible-features, no-stray-or-floating-geometry, attachment-plausibility, semantic-orientation-alignment, device-depth-and-construction, canonical-views-physically-coherent. When likenessProfile=automotive also: side-body-over-wheels, side-cabin-aft, rear-haunch, ortho-proportions-vs-reference.',
                       items: {
                         type: 'object',
                         properties: {
@@ -191,6 +191,11 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
           gripperAperture: { type: 'object', description: 'Optional gripper aperture request forwarded to review_cad.' },
           stopOnPass: { type: 'boolean', description: 'Stop after the first attempt that is functional and passes the quality gate. Default true.' },
           requireVisualReview: { type: 'boolean', description: 'Require screenshot-backed visualReview with structured checks before accepting an attempt. Default true; set false only for explicit non-visual batch checks.' },
+          likenessProfile: {
+            type: 'string',
+            enum: ['automotive'],
+            description: 'When \'automotive\', also require organic-body still checks: side-body-over-wheels, side-cabin-aft, rear-haunch, ortho-proportions-vs-reference. Pair with verify({ check: \'body-likeness\' }) before open_in_studio.',
+          },
           requirePhysicalAcceptance: {
             type: 'boolean',
             description: 'Require declared physicalUseCase common-pose reachability and pose-bound quasi-static certification before accepting an attempt. Design-loop also enables this automatically when an attempt script calls physicalUseCase(...).',

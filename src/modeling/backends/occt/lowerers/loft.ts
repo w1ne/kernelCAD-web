@@ -143,7 +143,7 @@ function enforceLoftRailLimit(ctx: LowerContext, r: FeatureRecord, railIds: stri
       code: 'feature.loft.rail-miss',
       featureId: r.id,
       severity: 'error',
-      message: `loft rails: OCCT MakePipeShell accepts at most 2 rails (spine + auxiliary); got ${Math.max(railCount, railIds.length)}.`,
+      message: `loft rails: OCCT MakePipeShell accepts at most 2 rails (spine + auxiliary); got ${Math.max(railCount, railIds.length)}. For >2 guides use surfaceFromCurves/surfaceFromBoundary panels → sew → thicken (not more loft rails).`,
       hint: HINT_TEMPLATES['feature.loft.rail-miss'].template,
     });
     return false;

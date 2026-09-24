@@ -1,7 +1,7 @@
 [
   {
     "name": "evaluate_script",
-    "description": "Use this when you need to run a script and check it compiles. Run a kernelCAD .kcad.ts script and report pass/fail + feature count + diagnostics. When the scene is assembly-built (assembly().part(...) \u2192 .model()/.solvedModel()), also returns a parts summary { count, names } AND runs the mechanism-truth gate by default: the `mechanism` field reports real/broken/unverified and a broken mechanism (disconnected components / mechanism.orphan-part, self-collision, fastened drift, dof-mismatch) makes ok:false with the failures in diagnostics \u2014 multi-body assemblies need connectors + mates/joints (axis+revolute for shafts/hinges/gears; frame+fastened for rigid; or arm.revolute/.prismatic/.ball/.fixed). Pass { skipMechanismCheck: true } to opt out. Pass either { file: \"<path>\" } or { code: \"<inline source>\" }. Set { dryRun: true } for fast validation while iterating: transpile + capture + capture-light checks WITHOUT OCCT lowering, DFM gates, or meshing \u2014 milliseconds instead of seconds (100x+ on boolean/fillet-heavy scripts). A dry run catches script throws, capture-time API misuse, and assembly validity-gate failures, but NOT lowering failures or dfmSpec diagnostics; it leaves the active session untouched, so finish with a full (non-dry) evaluate_script before using session-dependent tools.",
+    "description": "Use this when you need to run a script and check it compiles. Run a kernelCAD .kcad.ts script and report pass/fail + feature count + diagnostics. When the scene is assembly-built (assembly().part(...) → .model()/.solvedModel()), also returns a parts summary { count, names } AND runs the mechanism-truth gate by default: the `mechanism` field reports real/broken/unverified and a broken mechanism (disconnected components / mechanism.orphan-part, self-collision, fastened drift, dof-mismatch) makes ok:false with the failures in diagnostics — multi-body assemblies need connectors + mates/joints (axis+revolute for shafts/hinges/gears; frame+fastened for rigid; or arm.revolute/.prismatic/.ball/.fixed). Pass { skipMechanismCheck: true } to opt out. Pass either { file: \"<path>\" } or { code: \"<inline source>\" }. Set { dryRun: true } for fast validation while iterating: transpile + capture + capture-light checks WITHOUT OCCT lowering, DFM gates, or meshing — milliseconds instead of seconds (100x+ on boolean/fillet-heavy scripts). A dry run catches script throws, capture-time API misuse, and assembly validity-gate failures, but NOT lowering failures or dfmSpec diagnostics; it leaves the active session untouched, so finish with a full (non-dry) evaluate_script before using session-dependent tools.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -77,7 +77,7 @@
             ],
             "additionalProperties": false
           },
-          "description": "Per-feature health degradations \u2014 ONLY features that fell back to a passthrough (warning) or failed to lower (error). Empty when every feature is healthy. Surfaces which feature degraded even when ok is true."
+          "description": "Per-feature health degradations — ONLY features that fell back to a passthrough (warning) or failed to lower (error). Empty when every feature is healthy. Surfaces which feature degraded even when ok is true."
         },
         "mechanism": {
           "type": "string",
@@ -99,25 +99,25 @@
   },
   {
     "name": "diff_scripts",
-    "description": "Use this when you need to see exactly what changed between two script versions. Structured geometric delta between two versions of a kernelCAD script \u2014 a baseline ({ baseFile } or { baseCode }) and a revision ({ file } or { code }). Returns agent-readable JSON: per-part added/removed/renamed/changed (volume mm\u00b3 + exact bbox deltas, numbers matching inspect({ of: 'part-stats' })), total interference-volume delta with per-pair detail, mate-graph changes (added/removed/changed mates incl. type, connectors, pose, limits), and param changes (value/min/max). Single-shape scripts diff as one \"(root)\" pseudo-part. Use after editing a script to verify exactly what changed physically before re-rendering. Read-only \u2014 never touches the active session.",
+    "description": "Use this when you need to see exactly what changed between two script versions. Structured geometric delta between two versions of a kernelCAD script — a baseline ({ baseFile } or { baseCode }) and a revision ({ file } or { code }). Returns agent-readable JSON: per-part added/removed/renamed/changed (volume mm³ + exact bbox deltas, numbers matching inspect({ of: 'part-stats' })), total interference-volume delta with per-pair detail, mate-graph changes (added/removed/changed mates incl. type, connectors, pose, limits), and param changes (value/min/max). Single-shape scripts diff as one \"(root)\" pseudo-part. Use after editing a script to verify exactly what changed physically before re-rendering. Read-only — never touches the active session.",
     "inputSchema": {
       "type": "object",
       "properties": {
         "baseFile": {
           "type": "string",
-          "description": "Baseline script \u2014 path to a .kcad.ts file."
+          "description": "Baseline script — path to a .kcad.ts file."
         },
         "baseCode": {
           "type": "string",
-          "description": "Baseline script \u2014 inline source."
+          "description": "Baseline script — inline source."
         },
         "file": {
           "type": "string",
-          "description": "Revised script \u2014 path to a .kcad.ts file."
+          "description": "Revised script — path to a .kcad.ts file."
         },
         "code": {
           "type": "string",
-          "description": "Revised script \u2014 inline source."
+          "description": "Revised script — inline source."
         }
       }
     },
@@ -165,7 +165,7 @@
         "deeperDiffAvailable": {
           "type": "object",
           "additionalProperties": true,
-          "description": "Present when the diff touched geometry-affecting ops: { tool: 'diff_geometry', reason, bodies } \u2014 the same two scripts can be compared at material level (added/removed/common volume + per-body verdict)."
+          "description": "Present when the diff touched geometry-affecting ops: { tool: 'diff_geometry', reason, bodies } — the same two scripts can be compared at material level (added/removed/common volume + per-body verdict)."
         },
         "side": {
           "type": "string",
@@ -194,7 +194,7 @@
   },
   {
     "name": "inspect",
-    "description": "Use this when you need to read facts about a model. One reader, selected by `of`:\n- 'assembly' \u2014 physical assembly inventory (parts, bboxes, connectors, mates, disconnected solids).\n- 'robot' \u2014 URDF/SDFormat export preview (links, joints, planning groups, end-effectors, issues).\n- 'step' \u2014 inspect an imported STEP file.\n- 'shape' \u2014 volume / surfaceArea / bbox for one feature ({ feature_id? }).\n- 'mass' \u2014 mass, centre of mass, centroidal inertia tensor (inertia6 + 3x3 inertiaMatrix), principalMoments/principalAxes, symmetry flags, and optionally the radius of gyration about an arbitrary axis ({ feature_id?, density?, gyration_axis? }); density in kg/m^3, defaults to 1000 (water).\n- 'features' \u2014 features captured by the script (kind, id, params, transforms, suppression).\n- 'assemblies' \u2014 assembly intent (assemblies, parts, connectors, joints).\n- 'topology' \u2014 canonical face names + edge count for a feature ({ feature_id? }).\n- 'edges' \u2014 edges of a shape with optional EdgeQuery ({ feature_id?, query? }); returns @kc[...] refs.\n- 'face-edges' \u2014 boundary edges of a named canonical face ({ feature_id?, face_name }).\n- 'faces' \u2014 faces of a shape with optional FaceQuery ({ feature_id?, query? }); returns @kc[...] refs.\n- 'face-labels' \u2014 user-applied labels visible in the script.\n- 'mates' \u2014 mates captured by the script.\n- 'constraints' \u2014 sketch constraints captured by the script.\n- 'part-stats' \u2014 bundled parts-catalog statistics.\n- 'bend-table' \u2014 sheet-metal bend table for a flattened pattern.\n- 'params' \u2014 declared model parameters.\n- 'part-categories' \u2014 top-level part-catalog categories available in the bundled (and configured remote) catalog.\n- 'part-families' \u2014 part families within a category ({ category? }); count + exemplar ids per family.\n- 'bom' \u2014 bill of materials ({ assembly? }): one row per distinct part (grouped by geometry/catalog identity, not name) with real instance quantity, kind ('fabricated'|'purchased'), material, density, per-unit and total mass, bbox, a fabrication process hint, catalog provenance for purchased parts, and totals; `bom.*` diagnostics flag rows with no density source or missing catalog vendor info instead of guessing.\n- 'section' \u2014 numeric cross-section probe of a shape: area, perimeter, loop/hole counts, 2D bbox at a plane ({ feature_id?, plane | at+axis, stack?: { from, to, count, axis? } }). `stack` scans evenly spaced slices and returns `minAreaIndex`/`minAreaPosition` \u2014 use it to find the neck/thinnest cross-section along an axis.\n- 'continuity' \u2014 G0/G1/G2 classification of shared edges ({ feature_id?, edges? }); position gap, normal jump, curvature difference, worst-sample XYZ.\n- 'curvature' \u2014 per-face Gaussian and mean curvature min/max/mean, inflections, spikes ({ feature_id?, faces?, spike_factor? }).\nAll params except `of` are subject-specific and forwarded verbatim. Most subjects accept { file | code }.",
+    "description": "Use this when you need to read facts about a model. One reader, selected by `of`:\n- 'assembly' — physical assembly inventory (parts, bboxes, connectors, mates, disconnected solids).\n- 'robot' — URDF/SDFormat export preview (links, joints, planning groups, end-effectors, issues).\n- 'step' — inspect an imported STEP file.\n- 'shape' — volume / surfaceArea / bbox for one feature ({ feature_id? }).\n- 'mass' — mass, centre of mass, centroidal inertia tensor (inertia6 + 3x3 inertiaMatrix), principalMoments/principalAxes, symmetry flags, and optionally the radius of gyration about an arbitrary axis ({ feature_id?, density?, gyration_axis? }); density in kg/m^3, defaults to 1000 (water).\n- 'features' — features captured by the script (kind, id, params, transforms, suppression).\n- 'assemblies' — assembly intent (assemblies, parts, connectors, joints).\n- 'topology' — canonical face names + edge count for a feature ({ feature_id? }).\n- 'edges' — edges of a shape with optional EdgeQuery ({ feature_id?, query? }); returns @kc[...] refs.\n- 'face-edges' — boundary edges of a named canonical face ({ feature_id?, face_name }).\n- 'faces' — faces of a shape with optional FaceQuery ({ feature_id?, query? }); returns @kc[...] refs.\n- 'face-labels' — user-applied labels visible in the script.\n- 'mates' — mates captured by the script.\n- 'constraints' — sketch constraints captured by the script.\n- 'part-stats' — bundled parts-catalog statistics.\n- 'bend-table' — sheet-metal bend table for a flattened pattern.\n- 'params' — declared model parameters.\n- 'part-categories' — top-level part-catalog categories available in the bundled (and configured remote) catalog.\n- 'part-families' — part families within a category ({ category? }); count + exemplar ids per family.\n- 'bom' — bill of materials ({ assembly? }): one row per distinct part (grouped by geometry/catalog identity, not name) with real instance quantity, kind ('fabricated'|'purchased'), material, density, per-unit and total mass, bbox, a fabrication process hint, catalog provenance for purchased parts, and totals; `bom.*` diagnostics flag rows with no density source or missing catalog vendor info instead of guessing.\n- 'section' — numeric cross-section probe of a shape: area, perimeter, loop/hole counts, 2D bbox at a plane ({ feature_id?, plane | at+axis, stack?: { from, to, count, axis? } }). `stack` scans evenly spaced slices and returns `minAreaIndex`/`minAreaPosition` — use it to find the neck/thinnest cross-section along an axis.\n- 'continuity' — G0/G1/G2 classification of shared edges ({ feature_id?, edges? }); position gap, normal jump, curvature difference, worst-sample XYZ.\n- 'curvature' — per-face Gaussian and mean curvature min/max/mean, inflections, spikes ({ feature_id?, faces?, spike_factor? }).\nAll params except `of` are subject-specific and forwarded verbatim. Most subjects accept { file | code }.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -237,19 +237,19 @@
         },
         "assembly": {
           "type": "string",
-          "description": "of:'assembly'|'robot'|'bom' \u2014 assembly name; defaults to the first captured assembly."
+          "description": "of:'assembly'|'robot'|'bom' — assembly name; defaults to the first captured assembly."
         },
         "feature_id": {
           "type": "string",
-          "description": "of:'shape'|'mass'|'topology'|'edges'|'faces'|'face-edges'|'face-labels' \u2014 FeatureId; defaults to the last returned shape."
+          "description": "of:'shape'|'mass'|'topology'|'edges'|'faces'|'face-edges'|'face-labels' — FeatureId; defaults to the last returned shape."
         },
         "density": {
           "type": "number",
-          "description": "of:'mass' \u2014 material density in kg/m^3 (steel 7850, aluminium 2700, ABS 1050). Defaults to 1000 (water); the response echoes the value used and flags when it was defaulted."
+          "description": "of:'mass' — material density in kg/m^3 (steel 7850, aluminium 2700, ABS 1050). Defaults to 1000 (water); the response echoes the value used and flags when it was defaulted."
         },
         "gyration_axis": {
           "type": "object",
-          "description": "of:'mass' \u2014 optional axis in shape-local mm to report the radius of gyration about. Omit for centroidal quantities only; the result is density-independent and returned in mm.",
+          "description": "of:'mass' — optional axis in shape-local mm to report the radius of gyration about. Omit for centroidal quantities only; the result is density-independent and returned in mm.",
           "properties": {
             "origin": {
               "type": "array",
@@ -285,26 +285,26 @@
             "front",
             "back"
           ],
-          "description": "of:'face-edges' \u2014 canonical face name (required for that subject)."
+          "description": "of:'face-edges' — canonical face name (required for that subject)."
         },
         "query": {
           "type": "object",
-          "description": "of:'edges'|'faces' \u2014 optional EdgeQuery/FaceQuery filter."
+          "description": "of:'edges'|'faces' — optional EdgeQuery/FaceQuery filter."
         },
         "category": {
           "type": "string",
-          "description": "of:'part-families' \u2014 optional top-level category to filter families by."
+          "description": "of:'part-families' — optional top-level category to filter families by."
         },
         "plane": {
           "type": [
             "string",
             "object"
           ],
-          "description": "of:'section' \u2014 section plane. Either a cardinal name string 'xy'|'xz'|'yz', { plane: 'xy'|'xz'|'yz', offset? }, or { origin: [x,y,z], normal: [nx,ny,nz] }. Omit to use `at`+`axis`."
+          "description": "of:'section' — section plane. Either a cardinal name string 'xy'|'xz'|'yz', { plane: 'xy'|'xz'|'yz', offset? }, or { origin: [x,y,z], normal: [nx,ny,nz] }. Omit to use `at`+`axis`."
         },
         "at": {
           "type": "number",
-          "description": "of:'section' \u2014 single slice position along `axis` (mm)."
+          "description": "of:'section' — single slice position along `axis` (mm)."
         },
         "axis": {
           "type": "string",
@@ -313,11 +313,11 @@
             "y",
             "z"
           ],
-          "description": "of:'section' \u2014 normal axis for `at` / `stack` (default 'z')."
+          "description": "of:'section' — normal axis for `at` / `stack` (default 'z')."
         },
         "stack": {
           "type": "object",
-          "description": "of:'section' \u2014 dense scan: `count` slices evenly spaced from `from` to `to` along `axis`; response reports minAreaIndex/minAreaPosition.",
+          "description": "of:'section' — dense scan: `count` slices evenly spaced from `from` to `to` along `axis`; response reports minAreaIndex/minAreaPosition.",
           "properties": {
             "from": {
               "type": "number",
@@ -348,14 +348,14 @@
           ]
         },
         "edges": {
-          "description": "of:'continuity' \u2014 optional EdgeQuery or @kc[...] ref(s) limiting which shared edges are sampled."
+          "description": "of:'continuity' — optional EdgeQuery or @kc[...] ref(s) limiting which shared edges are sampled."
         },
         "faces": {
-          "description": "of:'curvature' \u2014 optional FaceQuery or @kc[...] ref(s) limiting which faces are sampled."
+          "description": "of:'curvature' — optional FaceQuery or @kc[...] ref(s) limiting which faces are sampled."
         },
         "spike_factor": {
           "type": "number",
-          "description": "of:'curvature' \u2014 spike sensitivity as a multiple of the face's Gaussian stddev (default 6)."
+          "description": "of:'curvature' — spike sensitivity as a multiple of the face's Gaussian stddev (default 6)."
         }
       },
       "required": [
@@ -388,7 +388,7 @@
   },
   {
     "name": "verify",
-    "description": "Use this when you need to check a design against a rule set. One verifier, selected by `check`:\n- 'assembly' \u2014 mate-aware assembly validator on the active session (run evaluate_script first).\n- 'urdf' \u2014 structural validity of a .urdf file ({ urdf_path }).\n- 'dfm' \u2014 print-readiness gates declared by dfmSpec() ({ file | code }).\n- 'dfm-preflight' \u2014 sheet-metal flat pattern vs a job-shop's ordering rules ({ vendor, material, thicknessIn|thicknessMm, ... }).\n- 'swept-collision' \u2014 sweep declared joint range(s) and report colliding poses.\n- 'reachable' \u2014 inverse-kinematics reachability for an end-effector ({ tip_link, target_position, ... }).\n- 'mounting-holes' \u2014 fastened mates expose matching hole diameters on both sides.\n- 'load-capacity' \u2014 closed-form Euler-Bernoulli beam stress / safety-factor check ({ loads, materials, ... }).\n- 'static-hold' \u2014 gravitational holding torque/force at a sampled pose grid vs each actuated joint's declared actuator capacity ({ joint?, pose?, gravity?, min_torque_margin_pct?, range_samples? }).\nAll params except `check` are check-specific and forwarded verbatim; each check fails closed on its own missing required params.",
+    "description": "Use this when you need to check a design against a rule set. One verifier, selected by `check`:\n- 'assembly' — mate-aware assembly validator on the active session (run evaluate_script first).\n- 'urdf' — structural validity of a .urdf file ({ urdf_path }).\n- 'dfm' — print-readiness gates declared by dfmSpec() ({ file | code }).\n- 'dfm-preflight' — sheet-metal flat pattern vs a job-shop's ordering rules ({ vendor, material, thicknessIn|thicknessMm, ... }).\n- 'swept-collision' — sweep declared joint range(s) and report colliding poses.\n- 'reachable' — inverse-kinematics reachability for an end-effector ({ tip_link, target_position, ... }).\n- 'mounting-holes' — fastened mates expose matching hole diameters on both sides.\n- 'load-capacity' — closed-form Euler-Bernoulli beam stress / safety-factor check ({ loads, materials, ... }).\n- 'static-hold' — gravitational holding torque/force at a sampled pose grid vs each actuated joint's declared actuator capacity ({ joint?, pose?, gravity?, min_torque_margin_pct?, range_samples? }).\n- 'body-likeness' — publish gate for organic/car bodies: cheap AABB↔wheel checks plus required agent still verdicts (side-body-over-wheels, side-cabin-aft, rear-haunch, ortho-proportions-vs-reference). Pass { body_bbox | code/file+body_feature_id, wheels?, cabin_bbox?, still_verdicts?, require_stills? }. Full CV silhouette matching is NOT implemented — agents must inspect ortho PNGs/Studio and supply still_verdicts before claiming success.\nAll params except `check` are check-specific and forwarded verbatim; each check fails closed on its own missing required params.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -403,7 +403,8 @@
             "reachable",
             "mounting-holes",
             "load-capacity",
-            "static-hold"
+            "static-hold",
+            "body-likeness"
           ],
           "description": "Which verification to run."
         },
@@ -421,31 +422,31 @@
         },
         "urdf_path": {
           "type": "string",
-          "description": "check:'urdf' \u2014 path to the .urdf file."
+          "description": "check:'urdf' — path to the .urdf file."
         },
         "dxf": {
           "type": "string",
-          "description": "check:'dfm-preflight' \u2014 path to a DXF file."
+          "description": "check:'dfm-preflight' — path to a DXF file."
         },
         "featureId": {
           "type": "string",
-          "description": "check:'dfm-preflight' \u2014 FeatureId to scope to."
+          "description": "check:'dfm-preflight' — FeatureId to scope to."
         },
         "vendor": {
           "type": "string",
-          "description": "check:'dfm-preflight' \u2014 vendor SKU (required for that check)."
+          "description": "check:'dfm-preflight' — vendor SKU (required for that check)."
         },
         "material": {
           "type": "string",
-          "description": "check:'dfm-preflight' \u2014 material SKU (required for that check)."
+          "description": "check:'dfm-preflight' — material SKU (required for that check)."
         },
         "thicknessIn": {
           "type": "number",
-          "description": "check:'dfm-preflight' \u2014 material thickness in inches."
+          "description": "check:'dfm-preflight' — material thickness in inches."
         },
         "thicknessMm": {
           "type": "number",
-          "description": "check:'dfm-preflight' \u2014 material thickness in millimeters."
+          "description": "check:'dfm-preflight' — material thickness in millimeters."
         },
         "service": {
           "type": "string",
@@ -455,15 +456,15 @@
             "waterjet",
             "bending"
           ],
-          "description": "check:'dfm-preflight' \u2014 service."
+          "description": "check:'dfm-preflight' — service."
         },
         "refreshCatalog": {
           "type": "boolean",
-          "description": "check:'dfm-preflight' \u2014 force vendor catalog refresh."
+          "description": "check:'dfm-preflight' — force vendor catalog refresh."
         },
         "joint": {
           "type": "string",
-          "description": "check:'swept-collision' \u2014 joint to sweep; omit to sweep every declared joint. check:'static-hold' \u2014 joint to evaluate; omit to evaluate every joint with a declared actuator."
+          "description": "check:'swept-collision' — joint to sweep; omit to sweep every declared joint. check:'static-hold' — joint to evaluate; omit to evaluate every joint with a declared actuator."
         },
         "range": {
           "type": "array",
@@ -472,15 +473,15 @@
           },
           "minItems": 3,
           "maxItems": 3,
-          "description": "check:'swept-collision' \u2014 [lower, upper, step] in joint-native units."
+          "description": "check:'swept-collision' — [lower, upper, step] in joint-native units."
         },
         "collision_tolerance_mm3": {
           "type": "number",
-          "description": "check:'swept-collision' \u2014 BREP intersection volume tolerance (mm^3)."
+          "description": "check:'swept-collision' — BREP intersection volume tolerance (mm^3)."
         },
         "tip_link": {
           "type": "string",
-          "description": "check:'reachable' \u2014 end-effector part name (required for that check)."
+          "description": "check:'reachable' — end-effector part name (required for that check)."
         },
         "target_position": {
           "type": "array",
@@ -489,7 +490,7 @@
           },
           "minItems": 3,
           "maxItems": 3,
-          "description": "check:'reachable' \u2014 target [x, y, z] mm (world frame)."
+          "description": "check:'reachable' — target [x, y, z] mm (world frame)."
         },
         "target_orientation": {
           "type": "array",
@@ -498,15 +499,15 @@
           },
           "minItems": 3,
           "maxItems": 3,
-          "description": "check:'reachable' \u2014 target XYZ Euler angles in radians."
+          "description": "check:'reachable' — target XYZ Euler angles in radians."
         },
         "position_tolerance_mm": {
           "type": "number",
-          "description": "check:'reachable' \u2014 position tolerance in mm."
+          "description": "check:'reachable' — position tolerance in mm."
         },
         "orientation_tolerance_rad": {
           "type": "number",
-          "description": "check:'reachable' \u2014 orientation tolerance in radians."
+          "description": "check:'reachable' — orientation tolerance in radians."
         },
         "prefer_solver": {
           "type": "string",
@@ -515,23 +516,23 @@
             "numeric",
             "auto"
           ],
-          "description": "check:'reachable' \u2014 force the IK path ('auto' default)."
+          "description": "check:'reachable' — force the IK path ('auto' default)."
         },
         "max_iterations": {
           "type": "number",
-          "description": "check:'reachable' \u2014 numeric-path iteration cap."
+          "description": "check:'reachable' — numeric-path iteration cap."
         },
         "seed": {
           "type": "object",
-          "description": "check:'reachable' \u2014 numeric IK seed pose (joint name -> deg/mm)."
+          "description": "check:'reachable' — numeric IK seed pose (joint name -> deg/mm)."
         },
         "loads": {
           "type": "object",
-          "description": "check:'load-capacity' \u2014 partName -> { force?: [Fx,Fy,Fz] N, torque?: [Tx,Ty,Tz] N*m }."
+          "description": "check:'load-capacity' — partName -> { force?: [Fx,Fy,Fz] N, torque?: [Tx,Ty,Tz] N*m }."
         },
         "materials": {
           "type": "object",
-          "description": "check:'load-capacity' \u2014 partName -> material declaration."
+          "description": "check:'load-capacity' — partName -> material declaration."
         },
         "mode": {
           "type": "string",
@@ -539,14 +540,14 @@
             "stub",
             "beam"
           ],
-          "description": "check:'load-capacity' \u2014 'beam' (default) or 'stub'."
+          "description": "check:'load-capacity' — 'beam' (default) or 'stub'."
         },
         "safety_factor_threshold": {
           "type": "number",
-          "description": "check:'load-capacity' \u2014 pass/fail safety-factor floor (default 1.5)."
+          "description": "check:'load-capacity' — pass/fail safety-factor floor (default 1.5)."
         },
         "pose": {
-          "description": "check:'static-hold' \u2014 explicit pose (joint name -> deg/mm) or array of poses; omit to sample a grid across the evaluated joint's range."
+          "description": "check:'static-hold' — explicit pose (joint name -> deg/mm) or array of poses; omit to sample a grid across the evaluated joint's range."
         },
         "gravity": {
           "type": "array",
@@ -555,15 +556,53 @@
           },
           "minItems": 3,
           "maxItems": 3,
-          "description": "check:'static-hold' \u2014 gravity vector, m/s^2, world frame (default [0, 0, -9.81])."
+          "description": "check:'static-hold' — gravity vector, m/s^2, world frame (default [0, 0, -9.81])."
         },
         "min_torque_margin_pct": {
           "type": "number",
-          "description": "check:'static-hold' \u2014 safety-margin floor as a percent of actuator capacity (default 20)."
+          "description": "check:'static-hold' — safety-margin floor as a percent of actuator capacity (default 20)."
         },
         "range_samples": {
           "type": "number",
-          "description": "check:'static-hold' \u2014 grid density per evaluated joint when `pose` is omitted (default 9)."
+          "description": "check:'static-hold' — grid density per evaluated joint when `pose` is omitted (default 9)."
+        },
+        "body_bbox": {
+          "type": "object",
+          "description": "check:'body-likeness' — body AABB { min:[x,y,z], max:[x,y,z] } in mm."
+        },
+        "body_feature_id": {
+          "type": "string",
+          "description": "check:'body-likeness' — FeatureId to read body AABB from when body_bbox omitted."
+        },
+        "cabin_bbox": {
+          "type": "object",
+          "description": "check:'body-likeness' — optional cabin/greenhouse AABB for automated cabin-aft."
+        },
+        "wheels": {
+          "type": "array",
+          "description": "check:'body-likeness' — wheel centres + tire radii [{ center:[x,y,z], radius }].",
+          "items": {
+            "type": "object"
+          }
+        },
+        "length_axis": {
+          "type": "string",
+          "enum": [
+            "x",
+            "y"
+          ],
+          "description": "check:'body-likeness' — wheelbase axis (default 'x')."
+        },
+        "still_verdicts": {
+          "type": "array",
+          "description": "check:'body-likeness' — agent ortho still checklist [{ code, passed, finding, view? }]. Required codes: side-body-over-wheels, side-cabin-aft, rear-haunch, ortho-proportions-vs-reference.",
+          "items": {
+            "type": "object"
+          }
+        },
+        "require_stills": {
+          "type": "boolean",
+          "description": "check:'body-likeness' — require still_verdicts (default true)."
         }
       },
       "required": [
@@ -606,7 +645,7 @@
   },
   {
     "name": "why_did_this_fail",
-    "description": "Use this when you need to trace why a feature failed. Walk the upstream chain of a failing feature. Returns the diagnostics of the requested feature plus the diagnostics of every upstream feature in topological order (the requested feature is the last entry). Per-code hints are inline on every diagnostic \u2014 call lookup_diagnostics for the full catalogue. Pass { file?, code?, feature_id? }.",
+    "description": "Use this when you need to trace why a feature failed. Walk the upstream chain of a failing feature. Returns the diagnostics of the requested feature plus the diagnostics of every upstream feature in topological order (the requested feature is the last entry). Per-code hints are inline on every diagnostic — call lookup_diagnostics for the full catalogue. Pass { file?, code?, feature_id? }.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -670,7 +709,7 @@
             "candidates",
             "no-automatic-candidate"
           ],
-          "description": "'no-automatic-candidate' means the region is the whole answer \u2014 no mechanical fix exists for that diagnostic kind."
+          "description": "'no-automatic-candidate' means the region is the whole answer — no mechanical fix exists for that diagnostic kind."
         },
         "candidateReason": {
           "type": "string",
@@ -758,7 +797,7 @@
   },
   {
     "name": "add_feature",
-    "description": "Use this when you need to insert a new feature line into a script. Insert a new feature line into a kernelCAD script before the last top-level return statement. Returns the modified code as text plus diagnostics from re-evaluating the result. Side-effect-free. Primitives that accept faceLabels (box, cylinder, extrudeRect, extrudeCircle, extrudePolygon, extrudeRoundedRect) can receive `opts.faceLabels` in the inserted code \u2014 use `lookup_api` to see `featureKindFaceLabels` for the full value schema.",
+    "description": "Use this when you need to insert a new feature line into a script. Insert a new feature line into a kernelCAD script before the last top-level return statement. Returns the modified code as text plus diagnostics from re-evaluating the result. Side-effect-free. Primitives that accept faceLabels (box, cylinder, extrudeRect, extrudeCircle, extrudePolygon, extrudeRoundedRect) can receive `opts.faceLabels` in the inserted code — use `lookup_api` to see `featureKindFaceLabels` for the full value schema.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -817,7 +856,7 @@
   },
   {
     "name": "add_surface",
-    "description": "Use this when you need an organic, freeform, or swept shape \u2014 a body shell, panel, fairing, ergonomic curve, lens, or sculpted form \u2014 authored as a NURBS Surface into the user's .kcad.ts, OR when you need to finish surfaces into a watertight solid or taper faces for moldability. One authoring/finishing path, selected by `kind`:\n- 'nurbs' \u2014 insert a nurbsSurface(...) / surfaceFromCurves(...) call. Pass either { controls, degree, weights?, knots?, periodic? } for direct construction, OR { section_sketch_ids } for skinning. Weights are honored: supply rational weights to build exact circles/cylinders/spheres/conics (the surface becomes rational); omit weights for a non-rational surface.\n- 'boundary' \u2014 insert a surfaceFromBoundary([c1,c2,c3,c4], opts?) call: one NURBS face through 4 boundary Curve3D refs (bottom, right, top, left in loop order; adjacent endpoints must coincide within 1e-6 mm) via OCCT BRepOffsetAPI_MakeFilling.\n- 'trim' \u2014 insert a `<surface>.trimTo(<by>)` or `<surface>.split(<by>)` call. Pass `surface_binding` (the Surface variable name), `by_binding` (the cutter Surface variable name; Shape/Curve3D cutters are deferred to a later slice), and `op: 'trim'` (keep the largest imprinted piece) or `op: 'split'` (return both halves as a `[Surface, Surface]` tuple).\n- 'sew' \u2014 insert a `sew([s0, s1, ...], opts?)` call to stitch N surfaces into a closed watertight solid via OCCT BRepBuilderAPI_Sewing. Pass `surface_bindings` (array of Surface variable names). Use after trim/boundary to close patches into a solid: trim \u2192 sew \u2192 solid pipeline. Optional `tolerance` (mm, default 1e-6) and `require_closed` (emits feature.surface-sew.open-shell if result is not watertight).\n- 'draft' \u2014 insert a `<shape>.draft(angleDeg, { face, neutralPlane?, pullDir? })` call to taper the selected face(s) for mold release. Pass `shape_binding`, `angle_deg` (0\u201390), and `face` (canonical name, label, or FaceQuery descriptor). Lowering emits feature.draft.failed on invalid geometry.\nThe returned Surface produces no Shape until you chain .thicken(t) or .toShape() (do that via add_feature on the binding name). Returns the modified code + diagnostics. Each kind fails closed on its own missing required params.",
+    "description": "Use this when you need an organic, freeform, or swept shape — a body shell, panel, fairing, ergonomic curve, lens, or sculpted form — authored as a NURBS Surface into the user's .kcad.ts, OR when you need to finish surfaces into a watertight solid or taper faces for moldability. One authoring/finishing path, selected by `kind`:\n- 'nurbs' — insert a nurbsSurface(...) / surfaceFromCurves(...) call. Pass either { controls, degree, weights?, knots?, periodic? } for direct construction, OR { section_sketch_ids } for skinning. Weights are honored: supply rational weights to build exact circles/cylinders/spheres/conics (the surface becomes rational); omit weights for a non-rational surface.\n- 'boundary' — insert a surfaceFromBoundary([c1,c2,c3,c4], opts?) call: one NURBS face through 4 boundary Curve3D refs (bottom, right, top, left in loop order; adjacent endpoints must coincide within 1e-6 mm) via OCCT BRepOffsetAPI_MakeFilling.\n- 'trim' — insert a `<surface>.trimTo(<by>)` or `<surface>.split(<by>)` call. Pass `surface_binding` (the Surface variable name), `by_binding` (the cutter Surface variable name; Shape/Curve3D cutters are deferred to a later slice), and `op: 'trim'` (keep the largest imprinted piece) or `op: 'split'` (return both halves as a `[Surface, Surface]` tuple).\n- 'sew' — insert a `sew([s0, s1, ...], opts?)` call to stitch N surfaces into a closed watertight solid via OCCT BRepBuilderAPI_Sewing. Pass `surface_bindings` (array of Surface variable names). Use after trim/boundary to close patches into a solid: trim → sew → solid pipeline. Optional `tolerance` (mm, default 1e-6) and `require_closed` (emits feature.surface-sew.open-shell if result is not watertight).\n- 'draft' — insert a `<shape>.draft(angleDeg, { face, neutralPlane?, pullDir? })` call to taper the selected face(s) for mold release. Pass `shape_binding`, `angle_deg` (0–90), and `face` (canonical name, label, or FaceQuery descriptor). Lowering emits feature.draft.failed on invalid geometry.\nThe returned Surface produces no Shape until you chain .thicken(t) or .toShape() (do that via add_feature on the binding name). Returns the modified code + diagnostics. Each kind fails closed on its own missing required params.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -838,7 +877,7 @@
         },
         "controls": {
           "type": "array",
-          "description": "kind:'nurbs' \u2014 control-point grid for direct construction (controls[u][v] = [x, y, z], mm).",
+          "description": "kind:'nurbs' — control-point grid for direct construction (controls[u][v] = [x, y, z], mm).",
           "items": {
             "type": "array",
             "items": {
@@ -851,7 +890,7 @@
         },
         "weights": {
           "type": "array",
-          "description": "kind:'nurbs' \u2014 optional rational weights, same grid shape as controls. Ignored in slice-1.",
+          "description": "kind:'nurbs' — optional rational weights, same grid shape as controls. Ignored in slice-1.",
           "items": {
             "type": "array",
             "items": {
@@ -861,7 +900,7 @@
         },
         "degree": {
           "type": "object",
-          "description": "kind:'nurbs' \u2014 degrees in U and V; each in [1, nU-1] / [1, nV-1].",
+          "description": "kind:'nurbs' — degrees in U and V; each in [1, nU-1] / [1, nV-1].",
           "properties": {
             "u": {
               "type": "integer",
@@ -879,7 +918,7 @@
         },
         "knots": {
           "type": "object",
-          "description": "kind:'nurbs' \u2014 optional explicit knot vectors; missing => clamped uniform inferred.",
+          "description": "kind:'nurbs' — optional explicit knot vectors; missing => clamped uniform inferred.",
           "properties": {
             "u": {
               "type": "array",
@@ -897,7 +936,7 @@
         },
         "periodic": {
           "type": "object",
-          "description": "kind:'nurbs' \u2014 optional periodic flags per parametric direction.",
+          "description": "kind:'nurbs' — optional periodic flags per parametric direction.",
           "properties": {
             "u": {
               "type": "boolean"
@@ -909,14 +948,14 @@
         },
         "section_sketch_ids": {
           "type": "array",
-          "description": "kind:'nurbs' \u2014 existing sketch FeatureIds (2 or more) to skin a surface through, in order.",
+          "description": "kind:'nurbs' — existing sketch FeatureIds (2 or more) to skin a surface through, in order.",
           "items": {
             "type": "string"
           }
         },
         "curve_bindings": {
           "type": "array",
-          "description": "kind:'boundary' \u2014 tuple of 4 existing Curve3D variable names (bottom, right, top, left) declared earlier in the source.",
+          "description": "kind:'boundary' — tuple of 4 existing Curve3D variable names (bottom, right, top, left) declared earlier in the source.",
           "items": {
             "type": "string"
           },
@@ -924,7 +963,7 @@
           "maxItems": 4
         },
         "continuity": {
-          "description": "kind:'boundary' \u2014 continuity grade applied to every edge ('C0' | 'C1' | 'C2'), or an array of 4 grades (one per edge, bottom/right/top/left order). Default 'C0'.",
+          "description": "kind:'boundary' — continuity grade applied to every edge ('C0' | 'C1' | 'C2'), or an array of 4 grades (one per edge, bottom/right/top/left order). Default 'C0'.",
           "oneOf": [
             {
               "type": "string",
@@ -952,7 +991,7 @@
         "sampling": {
           "type": "integer",
           "minimum": 1,
-          "description": "kind:'boundary' \u2014 OCCT NbPtsOnCur sampling parameter (default 15)."
+          "description": "kind:'boundary' — OCCT NbPtsOnCur sampling parameter (default 15)."
         },
         "binding_name": {
           "type": "string",
@@ -960,11 +999,11 @@
         },
         "surface_binding": {
           "type": "string",
-          "description": "kind:'trim' \u2014 JS variable name of the Surface to trim/split (must be declared in source)."
+          "description": "kind:'trim' — JS variable name of the Surface to trim/split (must be declared in source)."
         },
         "by_binding": {
           "type": "string",
-          "description": "kind:'trim' \u2014 JS variable name of the cutter Surface (must be declared in source). Shape/Curve3D cutters are deferred."
+          "description": "kind:'trim' — JS variable name of the cutter Surface (must be declared in source). Shape/Curve3D cutters are deferred."
         },
         "op": {
           "type": "string",
@@ -972,11 +1011,11 @@
             "trim",
             "split"
           ],
-          "description": "kind:'trim' \u2014 'trim' discards the smaller half (calls .trimTo()); 'split' retains both halves (calls .split())."
+          "description": "kind:'trim' — 'trim' discards the smaller half (calls .trimTo()); 'split' retains both halves (calls .split())."
         },
         "surface_bindings": {
           "type": "array",
-          "description": "kind:'sew' \u2014 JS variable names of the surfaces to stitch into a solid (each must be declared in source).",
+          "description": "kind:'sew' — JS variable names of the surfaces to stitch into a solid (each must be declared in source).",
           "items": {
             "type": "string"
           },
@@ -984,29 +1023,29 @@
         },
         "tolerance": {
           "type": "number",
-          "description": "kind:'sew' \u2014 edge-merging tolerance in mm (default 1e-6). Edges within this distance are merged."
+          "description": "kind:'sew' — edge-merging tolerance in mm (default 1e-6). Edges within this distance are merged."
         },
         "require_closed": {
           "type": "boolean",
-          "description": "kind:'sew' \u2014 when true the lowerer emits feature.surface-sew.open-shell if the stitched result is not a watertight solid."
+          "description": "kind:'sew' — when true the lowerer emits feature.surface-sew.open-shell if the stitched result is not a watertight solid."
         },
         "shape_binding": {
           "type": "string",
-          "description": "kind:'draft' \u2014 JS variable name of the Shape to taper (must be declared in source)."
+          "description": "kind:'draft' — JS variable name of the Shape to taper (must be declared in source)."
         },
         "angle_deg": {
           "type": "number",
           "minimum": 0,
           "maximum": 90,
-          "description": "kind:'draft' \u2014 draft angle in degrees [0, 90]. The face is tapered outward by this angle relative to the pull direction."
+          "description": "kind:'draft' — draft angle in degrees [0, 90]. The face is tapered outward by this angle relative to the pull direction."
         },
         "face": {
           "type": "string",
-          "description": "kind:'draft' \u2014 face selector for the face(s) to taper. Accepts a canonical name (top/bottom/front/back/left/right), a user label declared via faceLabels, or a FaceQuery descriptor string."
+          "description": "kind:'draft' — face selector for the face(s) to taper. Accepts a canonical name (top/bottom/front/back/left/right), a user label declared via faceLabels, or a FaceQuery descriptor string."
         },
         "neutral_plane": {
           "type": "string",
-          "description": "kind:'draft' \u2014 parting-line face (the plane where drafted faces remain fixed). Defaults to `face` if omitted."
+          "description": "kind:'draft' — parting-line face (the plane where drafted faces remain fixed). Defaults to `face` if omitted."
         },
         "pull_dir": {
           "type": "array",
@@ -1015,7 +1054,7 @@
           },
           "minItems": 3,
           "maxItems": 3,
-          "description": "kind:'draft' \u2014 demoulding direction as [x, y, z]. Defaults to the face normal at lower time."
+          "description": "kind:'draft' — demoulding direction as [x, y, z]. Defaults to the face normal at lower time."
         }
       },
       "required": [
@@ -1064,7 +1103,7 @@
   },
   {
     "name": "add_curve",
-    "description": "Use this when you need a freeform/organic 3D curve \u2014 a body feature line, brow, spine rail, or G2 blend between panels \u2014 authored as a Curve3D into the user's .kcad.ts immediately before the last top-level return. One authoring path, selected by `kind`:\n- 'nurbs' \u2014 insert a `nurbsCurve(controlPoints, opts?)` declaration. Pass `controlPoints` as a Vec3[] (mm, at least 2 points). Optional NURBS knobs: `degree` (default 3), rational `weights`, explicit `knots`, `closed`.\n- 'hermite' \u2014 insert a `hermiteG2(a, b)` declaration: a quintic Hermite curve interpolating two endpoints with matching positions, tangents, and (optional) curvatures \u2014 bridges two curves with G2 continuity. Each endpoint is `{ point: Vec3, tangent: Vec3, curvature?: Vec3 }` in mm; tangent magnitude ~ chord length; curvature defaults to [0,0,0] (G1-only).\nThe returned binding has type Curve3D (peer to Shape / Surface) \u2014 consume it via `add_variable_sweep` (spine input), `add_surface({ kind: 'boundary' })` (boundary curve), or downstream Curve3D-accepting features. Returns the modified code + diagnostics from re-evaluating. Side-effect-free. Each kind fails closed on its own missing required params.",
+    "description": "Use this when you need a freeform/organic 3D curve — a body feature line, brow, spine rail, or G2 blend between panels — authored as a Curve3D into the user's .kcad.ts immediately before the last top-level return. One authoring path, selected by `kind`:\n- 'nurbs' — insert a `nurbsCurve(controlPoints, opts?)` declaration. Pass `controlPoints` as a Vec3[] (mm, at least 2 points). Optional NURBS knobs: `degree` (default 3), rational `weights`, explicit `knots`, `closed`.\n- 'hermite' — insert a `hermiteG2(a, b)` declaration: a quintic Hermite curve interpolating two endpoints with matching positions, tangents, and (optional) curvatures — bridges two curves with G2 continuity. Each endpoint is `{ point: Vec3, tangent: Vec3, curvature?: Vec3 }` in mm; tangent magnitude ~ chord length; curvature defaults to [0,0,0] (G1-only).\nThe returned binding has type Curve3D (peer to Shape / Surface) — consume it via `add_variable_sweep` (spine input), `add_surface({ kind: 'boundary' })` (boundary curve), or downstream Curve3D-accepting features. Returns the modified code + diagnostics from re-evaluating. Side-effect-free. Each kind fails closed on its own missing required params.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -1082,7 +1121,7 @@
         },
         "controlPoints": {
           "type": "array",
-          "description": "kind:'nurbs' \u2014 control points as Vec3 triples in mm; at least 2 entries.",
+          "description": "kind:'nurbs' — control points as Vec3 triples in mm; at least 2 entries.",
           "items": {
             "type": "array",
             "items": {
@@ -1095,29 +1134,29 @@
         "degree": {
           "type": "integer",
           "minimum": 1,
-          "description": "kind:'nurbs' \u2014 curve degree; default 3 (cubic)."
+          "description": "kind:'nurbs' — curve degree; default 3 (cubic)."
         },
         "weights": {
           "type": "array",
-          "description": "kind:'nurbs' \u2014 optional rational weights, one per control point (same length as controlPoints).",
+          "description": "kind:'nurbs' — optional rational weights, one per control point (same length as controlPoints).",
           "items": {
             "type": "number"
           }
         },
         "knots": {
           "type": "array",
-          "description": "kind:'nurbs' \u2014 optional explicit knot vector; missing => clamped-uniform inferred.",
+          "description": "kind:'nurbs' — optional explicit knot vector; missing => clamped-uniform inferred.",
           "items": {
             "type": "number"
           }
         },
         "closed": {
           "type": "boolean",
-          "description": "kind:'nurbs' \u2014 optional periodic/closed-curve flag."
+          "description": "kind:'nurbs' — optional periodic/closed-curve flag."
         },
         "a": {
           "type": "object",
-          "description": "kind:'hermite' \u2014 start endpoint.",
+          "description": "kind:'hermite' — start endpoint.",
           "properties": {
             "point": {
               "type": "array",
@@ -1154,7 +1193,7 @@
         },
         "b": {
           "type": "object",
-          "description": "kind:'hermite' \u2014 end endpoint.",
+          "description": "kind:'hermite' — end endpoint.",
           "properties": {
             "point": {
               "type": "array",
@@ -1268,7 +1307,7 @@
   },
   {
     "name": "add_path_segment",
-    "description": "Use this when you need a freeform/organic 2D outline \u2014 an eyewear brow, ergonomic grip, sneaker midsole, or body silhouette \u2014 by appending a curved segment to an existing PathBuilder chain on the named `chain_anchor` variable. The call is injected at the END of the chain, immediately before any `.close()`. One segment kind, selected by `kind`:\n- 'spline' \u2014 `.spline(points, opts?)`: interpolates through every `points` waypoint (Vec2[] mm, >= 2 entries; points[0] must match current pen position). Optional `tension`, and `startTangent`/`endTangent` 2D direction vectors that constrain the first-derivative direction at the endpoints (magnitude normalised internally). Use for organic 2D outlines (eyewear brow, ergonomic handle, sneaker midsole).\n- 'nurbs' \u2014 `.nurbsSegment(controlPoints, opts?)`: explicit B-spline net (Vec2[] mm, >= degree+1 entries; controlPoints[0] must match pen; pen ends at controlPoints[N-1]). Optional `degree` (default 3), rational `weights` (strictly positive), explicit `knots` (length = controlPoints.length + degree + 1).\n- 'hermite' \u2014 `.hermiteG2(a, b)`: each endpoint `{ point: Vec2, tangent: Vec2, curvature?: Vec2 }` in mm (a.point must match pen; pen ends at b.point). `curvature` defaults to [0,0] (G1); pass matching curvatures for G2 blends. Tangent magnitude is the first derivative (~ chord length), NOT unit length.\nReturns the modified code + diagnostics from re-evaluating. Side-effect-free. Each kind fails closed on its own missing required params.",
+    "description": "Use this when you need a freeform/organic 2D outline — an eyewear brow, ergonomic grip, sneaker midsole, or body silhouette — by appending a curved segment to an existing PathBuilder chain on the named `chain_anchor` variable. The call is injected at the END of the chain, immediately before any `.close()`. One segment kind, selected by `kind`:\n- 'spline' — `.spline(points, opts?)`: interpolates through every `points` waypoint (Vec2[] mm, >= 2 entries; points[0] must match current pen position). Optional `tension`, and `startTangent`/`endTangent` 2D direction vectors that constrain the first-derivative direction at the endpoints (magnitude normalised internally). Use for organic 2D outlines (eyewear brow, ergonomic handle, sneaker midsole).\n- 'nurbs' — `.nurbsSegment(controlPoints, opts?)`: explicit B-spline net (Vec2[] mm, >= degree+1 entries; controlPoints[0] must match pen; pen ends at controlPoints[N-1]). Optional `degree` (default 3), rational `weights` (strictly positive), explicit `knots` (length = controlPoints.length + degree + 1).\n- 'hermite' — `.hermiteG2(a, b)`: each endpoint `{ point: Vec2, tangent: Vec2, curvature?: Vec2 }` in mm (a.point must match pen; pen ends at b.point). `curvature` defaults to [0,0] (G1); pass matching curvatures for G2 blends. Tangent magnitude is the first derivative (~ chord length), NOT unit length.\nReturns the modified code + diagnostics from re-evaluating. Side-effect-free. Each kind fails closed on its own missing required params.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -1291,7 +1330,7 @@
         },
         "points": {
           "type": "array",
-          "description": "kind:'spline' \u2014 waypoints as Vec2 pairs in mm; at least 2 entries; first must match current pen position.",
+          "description": "kind:'spline' — waypoints as Vec2 pairs in mm; at least 2 entries; first must match current pen position.",
           "items": {
             "type": "array",
             "items": {
@@ -1304,11 +1343,11 @@
         },
         "tension": {
           "type": "number",
-          "description": "kind:'spline' \u2014 optional Catmull-Rom-style stiffness; forwarded to the underlying B-spline approximation."
+          "description": "kind:'spline' — optional Catmull-Rom-style stiffness; forwarded to the underlying B-spline approximation."
         },
         "startTangent": {
           "type": "array",
-          "description": "kind:'spline' \u2014 optional [x, y] direction vector at points[0]. Magnitude is normalised internally; direction matters.",
+          "description": "kind:'spline' — optional [x, y] direction vector at points[0]. Magnitude is normalised internally; direction matters.",
           "items": {
             "type": "number"
           },
@@ -1317,7 +1356,7 @@
         },
         "endTangent": {
           "type": "array",
-          "description": "kind:'spline' \u2014 optional [x, y] direction vector at points[N-1]. Magnitude is normalised internally; direction matters.",
+          "description": "kind:'spline' — optional [x, y] direction vector at points[N-1]. Magnitude is normalised internally; direction matters.",
           "items": {
             "type": "number"
           },
@@ -1326,7 +1365,7 @@
         },
         "controlPoints": {
           "type": "array",
-          "description": "kind:'nurbs' \u2014 control-net vertices as Vec2 pairs in mm; at least degree+1 entries.",
+          "description": "kind:'nurbs' — control-net vertices as Vec2 pairs in mm; at least degree+1 entries.",
           "items": {
             "type": "array",
             "items": {
@@ -1339,25 +1378,25 @@
         "degree": {
           "type": "integer",
           "minimum": 1,
-          "description": "kind:'nurbs' \u2014 B-spline degree (default 3)."
+          "description": "kind:'nurbs' — B-spline degree (default 3)."
         },
         "weights": {
           "type": "array",
-          "description": "kind:'nurbs' \u2014 optional rational weights (one per control point; strictly positive).",
+          "description": "kind:'nurbs' — optional rational weights (one per control point; strictly positive).",
           "items": {
             "type": "number"
           }
         },
         "knots": {
           "type": "array",
-          "description": "kind:'nurbs' \u2014 optional explicit knot vector; length must equal controlPoints.length + degree + 1.",
+          "description": "kind:'nurbs' — optional explicit knot vector; length must equal controlPoints.length + degree + 1.",
           "items": {
             "type": "number"
           }
         },
         "a": {
           "type": "object",
-          "description": "kind:'hermite' \u2014 start endpoint; point must match current pen position within 1e-6 mm.",
+          "description": "kind:'hermite' — start endpoint; point must match current pen position within 1e-6 mm.",
           "properties": {
             "point": {
               "type": "array",
@@ -1391,7 +1430,7 @@
         },
         "b": {
           "type": "object",
-          "description": "kind:'hermite' \u2014 end endpoint.",
+          "description": "kind:'hermite' — end endpoint.",
           "properties": {
             "point": {
               "type": "array",
@@ -1520,7 +1559,7 @@
   },
   {
     "name": "trace_from_image",
-    "description": "Use this when you need to trace features from a reference photo into waypoints. Trace pixel-space features from a reference photo into normalized [0..1] waypoints the agent can map to mm via a known scale anchor and feed to path().spline / path().nurbsSegment. Three backends are dispatched behind the scenes: `opencv` (deterministic; uniform-bg silhouette only), `vision-llm` (Claude vision; named points/cluttered backgrounds; caller-supplied ANTHROPIC_API_KEY), and `hybrid` (opencv silhouette + LLM-labeled named points). Default backend is `auto` \u2014 the tool picks based on the image's corner-color stddev. Accuracy honesty: opencv contour is geometrically exact; vision-LLM is typically 5\u201310% off on dense landmarks. Per-feature `confidence` is reported. Caller pays for any vision-LLM API spend via their own ANTHROPIC_API_KEY. Pair with the `kernelcad-trace-from-image` skill for the conversion-to-mm pipeline.",
+    "description": "Use this when you need to trace features from a reference photo into waypoints. Trace pixel-space features from a reference photo into normalized [0..1] waypoints the agent can map to mm via a known scale anchor and feed to path().spline / path().nurbsSegment. Three backends are dispatched behind the scenes: `opencv` (deterministic; uniform-bg silhouette only), `vision-llm` (Claude vision; named points/cluttered backgrounds; caller-supplied ANTHROPIC_API_KEY), and `hybrid` (opencv silhouette + LLM-labeled named points). Default backend is `auto` — the tool picks based on the image's corner-color stddev. Accuracy honesty: opencv contour is geometrically exact; vision-LLM is typically 5–10% off on dense landmarks. Per-feature `confidence` is reported. Caller pays for any vision-LLM API spend via their own ANTHROPIC_API_KEY. Pair with the `kernelcad-trace-from-image` skill for the conversion-to-mm pipeline.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -1696,7 +1735,7 @@
   },
   {
     "name": "add_variable_sweep",
-    "description": "Use this when you need an organic swept solid whose cross-section changes along its length \u2014 a tapering body, horn, bottle, fairing, or duct \u2014 authored as a variable-section sweep along a spine. Insert a `variableSweep(spine, sections, opts?)` declaration into the user's .kcad.ts immediately before the last top-level return. The result is a Shape \u2014 chain `.translate(...)`, `.union(...)`, etc. via `add_feature`. `spine_binding` references an existing variable (Curve3D / Sketch / Vec3[]) in the source; each `sections[i].profile_binding` references an existing Sketch. Sections must be strictly increasing in `t` and span [0, 1]; first t=0, last t=1. Orientation is not exposed by this MCP tool until runtime orientation support is wired. Validates every binding exists in the source via regex before inserting (fast structured error vs capture-time stack). Returns the modified code + diagnostics. Side-effect-free.",
+    "description": "Use this when you need an organic swept solid whose cross-section changes along its length — a tapering body, horn, bottle, fairing, or duct — authored as a variable-section sweep along a spine. Insert a `variableSweep(spine, sections, opts?)` declaration into the user's .kcad.ts immediately before the last top-level return. The result is a Shape — chain `.translate(...)`, `.union(...)`, etc. via `add_feature`. `spine_binding` references an existing variable (Curve3D / Sketch / Vec3[]) in the source; each `sections[i].profile_binding` references an existing Sketch. Sections must be strictly increasing in `t` and span [0, 1]; first t=0, last t=1. Orientation is not exposed by this MCP tool until runtime orientation support is wired. Validates every binding exists in the source via regex before inserting (fast structured error vs capture-time stack). Returns the modified code + diagnostics. Side-effect-free.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -1794,7 +1833,7 @@
   },
   {
     "name": "add_text",
-    "description": "Use this when you need to author text into a kernelCAD script before the last top-level return. One authoring path, selected by `mode`:\n- 'sketch' \u2014 insert a sketch.text(...) call. The emitted sketch is chainable: pair with subsequent .extrude(...) / cut(...) edits to land an engraved or raised text feature.\n- 'emboss' \u2014 insert a `<shape>.embossText({...})` chained call onto an existing Shape `target`. Use for engraved brand text on faces (Ray-Ban temple, CE mark, model number). `depth > 0` raises text out of the face; `depth < 0` engraves text into the face. Lowers via replicad drawText \u2192 sketchOnFace \u2192 extrude \u2192 fuse|cut.\nDefault font is the runtime-bundled Liberation Sans. Side-effect-free; returns the modified code plus diagnostics from re-evaluating. Each mode fails closed on its own missing required params.",
+    "description": "Use this when you need to author text into a kernelCAD script before the last top-level return. One authoring path, selected by `mode`:\n- 'sketch' — insert a sketch.text(...) call. The emitted sketch is chainable: pair with subsequent .extrude(...) / cut(...) edits to land an engraved or raised text feature.\n- 'emboss' — insert a `<shape>.embossText({...})` chained call onto an existing Shape `target`. Use for engraved brand text on faces (Ray-Ban temple, CE mark, model number). `depth > 0` raises text out of the face; `depth < 0` engraves text into the face. Lowers via replicad drawText → sketchOnFace → extrude → fuse|cut.\nDefault font is the runtime-bundled Liberation Sans. Side-effect-free; returns the modified code plus diagnostics from re-evaluating. Each mode fails closed on its own missing required params.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -1812,15 +1851,15 @@
         },
         "content": {
           "type": "string",
-          "description": "mode:'sketch' \u2014 text content (UTF-8, non-empty, non-whitespace)."
+          "description": "mode:'sketch' — text content (UTF-8, non-empty, non-whitespace)."
         },
         "size": {
           "type": "number",
-          "description": "mode:'sketch'|'emboss' \u2014 glyph cap height in mm (positive finite)."
+          "description": "mode:'sketch'|'emboss' — glyph cap height in mm (positive finite)."
         },
         "font": {
           "type": "string",
-          "description": "mode:'sketch' \u2014 optional logical font name or .ttf file path; defaults to bundled Liberation Sans."
+          "description": "mode:'sketch' — optional logical font name or .ttf file path; defaults to bundled Liberation Sans."
         },
         "align": {
           "type": "string",
@@ -1829,7 +1868,7 @@
             "center",
             "right"
           ],
-          "description": "mode:'sketch' \u2014 horizontal alignment relative to position (default left); mode:'emboss' \u2014 relative to the UV anchor (default center)."
+          "description": "mode:'sketch' — horizontal alignment relative to position (default left); mode:'emboss' — relative to the UV anchor (default center)."
         },
         "position": {
           "type": "array",
@@ -1838,43 +1877,43 @@
           },
           "minItems": 2,
           "maxItems": 2,
-          "description": "mode:'sketch' \u2014 [x, y] anchor in mm. Default [0, 0]."
+          "description": "mode:'sketch' — [x, y] anchor in mm. Default [0, 0]."
         },
         "rotation": {
           "type": "number",
-          "description": "mode:'sketch' \u2014 CCW rotation in degrees around position (default 0); mode:'emboss' \u2014 CCW rotation in the face tangent plane (default 0)."
+          "description": "mode:'sketch' — CCW rotation in degrees around position (default 0); mode:'emboss' — CCW rotation in the face tangent plane (default 0)."
         },
         "bindAs": {
           "type": "string",
-          "description": "mode:'sketch' \u2014 emits `const <bindAs> = sketch.text(...)`; mode:'emboss' \u2014 emits `const <bindAs> = <target>.embossText(...);`."
+          "description": "mode:'sketch' — emits `const <bindAs> = sketch.text(...)`; mode:'emboss' — emits `const <bindAs> = <target>.embossText(...);`."
         },
         "target": {
           "type": "string",
-          "description": "mode:'emboss' \u2014 variable name of the Shape to chain onto (inserted verbatim)."
+          "description": "mode:'emboss' — variable name of the Shape to chain onto (inserted verbatim)."
         },
         "textContent": {
           "type": "string",
-          "description": "mode:'emboss' \u2014 text content (UTF-8, non-empty, non-whitespace)."
+          "description": "mode:'emboss' — text content (UTF-8, non-empty, non-whitespace)."
         },
         "depth": {
           "type": "number",
-          "description": "mode:'emboss' \u2014 signed extrusion depth in mm: positive emboss out, negative engrave in. Must be non-zero."
+          "description": "mode:'emboss' — signed extrusion depth in mm: positive emboss out, negative engrave in. Must be non-zero."
         },
         "face": {
           "type": "string",
-          "description": "mode:'emboss' \u2014 target face \u2014 canonical name ('top'/'bottom'/'left'/'right'/'front'/'back') or label."
+          "description": "mode:'emboss' — target face — canonical name ('top'/'bottom'/'left'/'right'/'front'/'back') or label."
         },
         "fontFamily": {
           "type": "string",
-          "description": "mode:'emboss' \u2014 optional logical font name or .ttf file path; defaults to bundled Liberation Sans."
+          "description": "mode:'emboss' — optional logical font name or .ttf file path; defaults to bundled Liberation Sans."
         },
         "anchorU": {
           "type": "number",
-          "description": "mode:'emboss' \u2014 U anchor in [0, 1] face-local (0=umin, 0.5=centre, 1=umax). Default 0.5."
+          "description": "mode:'emboss' — U anchor in [0, 1] face-local (0=umin, 0.5=centre, 1=umax). Default 0.5."
         },
         "anchorV": {
           "type": "number",
-          "description": "mode:'emboss' \u2014 V anchor in [0, 1] face-local. Default 0.5."
+          "description": "mode:'emboss' — V anchor in [0, 1] face-local. Default 0.5."
         },
         "scaleMode": {
           "type": "string",
@@ -1883,7 +1922,7 @@
             "native",
             "bounds"
           ],
-          "description": "mode:'emboss' \u2014 Drawing.sketchOnFace scaling mode. Default original."
+          "description": "mode:'emboss' — Drawing.sketchOnFace scaling mode. Default original."
         }
       },
       "required": [
@@ -1972,7 +2011,7 @@
         },
         "face": {
           "type": "string",
-          "description": "Target face \u2014 canonical name or label."
+          "description": "Target face — canonical name or label."
         },
         "scaleMode": {
           "type": "string",
@@ -1985,7 +2024,7 @@
         },
         "asEdge": {
           "type": "boolean",
-          "description": "Open-wire (edge) projection. NOT IMPLEMENTED \u2014 rejected at edit time. Use a closed-curve projection (omit asEdge)."
+          "description": "Open-wire (edge) projection. NOT IMPLEMENTED — rejected at edit time. Use a closed-curve projection (omit asEdge)."
         },
         "bindAs": {
           "type": "string",
@@ -2040,7 +2079,7 @@
   },
   {
     "name": "add_pattern_feature",
-    "description": "Use this when you need to repeat a feature in a pattern. Insert a Shape.patternLinear / .patternCircular / .patternGrid call into a kernelCAD script before the last top-level return. Pass structured args (kind + the matching spec object). Returns the modified code plus diagnostics from re-evaluating. Side-effect-free. The pattern feature is a single editable unit; pattern-instance face refs resolve via `<sourceId>_pattern_<i>` on the pattern feature's lineage. Geometric note: pattern is implemented as cumulative boolean union of transformed source copies \u2014 additive features (boxes, ribs, fins, spokes) pattern cleanly; patterning a subtractive feature (hole, cutout) only preserves the per-instance void when adjacent bodies are disjoint.",
+    "description": "Use this when you need to repeat a feature in a pattern. Insert a Shape.patternLinear / .patternCircular / .patternGrid call into a kernelCAD script before the last top-level return. Pass structured args (kind + the matching spec object). Returns the modified code plus diagnostics from re-evaluating. Side-effect-free. The pattern feature is a single editable unit; pattern-instance face refs resolve via `<sourceId>_pattern_<i>` on the pattern feature's lineage. Geometric note: pattern is implemented as cumulative boolean union of transformed source copies — additive features (boxes, ribs, fins, spokes) pattern cleanly; patterning a subtractive feature (hole, cutout) only preserves the per-instance void when adjacent bodies are disjoint.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -2329,7 +2368,7 @@
   },
   {
     "name": "query",
-    "description": "Use this when you need to resolve or inspect topology against a script's lowered geometry. Selected by `mode` (default 'evaluate'):\n- 'evaluate' \u2014 inspect a Query (@kc[...] ref, @kcq[...] DSL, or { ast }); returns matched entities. Pass expect:'unique' to assert exactly-one.\n- 'resolve' \u2014 resolve a single @kc[...] / @kcq[...] ref to one entity ({ ref }).\n- 'lineage' \u2014 walk the HistoryMap for a named face ref ({ feature_id, ref }).\nAll params except `mode` are forwarded verbatim.",
+    "description": "Use this when you need to resolve or inspect topology against a script's lowered geometry. Selected by `mode` (default 'evaluate'):\n- 'evaluate' — inspect a Query (@kc[...] ref, @kcq[...] DSL, or { ast }); returns matched entities. Pass expect:'unique' to assert exactly-one.\n- 'resolve' — resolve a single @kc[...] / @kcq[...] ref to one entity ({ ref }).\n- 'lineage' — walk the HistoryMap for a named face ref ({ feature_id, ref }).\nAll params except `mode` are forwarded verbatim.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -2351,11 +2390,11 @@
           "description": "Inline kernelCAD script source."
         },
         "query": {
-          "description": "mode:'evaluate' \u2014 Query input: @kc[...] / @kcq[...] string or { ast } object."
+          "description": "mode:'evaluate' — Query input: @kc[...] / @kcq[...] string or { ast } object."
         },
         "ref": {
           "type": "string",
-          "description": "mode:'resolve'|'lineage' \u2014 topology ref string."
+          "description": "mode:'resolve'|'lineage' — topology ref string."
         },
         "expect": {
           "type": "string",
@@ -2363,7 +2402,7 @@
             "any",
             "unique"
           ],
-          "description": "mode:'evaluate' \u2014 'unique' asserts exactly-one."
+          "description": "mode:'evaluate' — 'unique' asserts exactly-one."
         },
         "feature_id": {
           "type": "string",
@@ -2388,21 +2427,21 @@
             "type": "object",
             "additionalProperties": true
           },
-          "description": "mode:'evaluate' \u2014 matched entities."
+          "description": "mode:'evaluate' — matched entities."
         },
         "query": {
           "type": "object",
           "additionalProperties": true,
-          "description": "mode:'evaluate' \u2014 the resolved Query ({ ast })."
+          "description": "mode:'evaluate' — the resolved Query ({ ast })."
         },
         "ref": {
           "type": "string",
-          "description": "mode:'resolve' \u2014 the resolved ref string."
+          "description": "mode:'resolve' — the resolved ref string."
         },
         "entity": {
           "type": "object",
           "additionalProperties": true,
-          "description": "mode:'resolve' \u2014 the single matched entity."
+          "description": "mode:'resolve' — the single matched entity."
         },
         "candidates": {
           "type": "array",
@@ -2410,7 +2449,7 @@
             "type": "object",
             "additionalProperties": true
           },
-          "description": "mode:'resolve' \u2014 near-miss candidates (failure)."
+          "description": "mode:'resolve' — near-miss candidates (failure)."
         },
         "chain": {
           "type": "array",
@@ -2418,7 +2457,7 @@
             "type": "object",
             "additionalProperties": true
           },
-          "description": "mode:'lineage' \u2014 HistoryMap walk."
+          "description": "mode:'lineage' — HistoryMap walk."
         },
         "warnings": {
           "type": "array",
@@ -2442,7 +2481,7 @@
   },
   {
     "name": "lookup_api",
-    "description": "Use this when you need to list the kernelCAD script-runtime surface: global functions (box, path, selectEdges, helix, etc), Shape methods (fillet, sweep, lower, etc), Sketch methods (extrude, revolve, sweep), PathBuilder methods, EdgeQuery/FaceQuery key sets, and featureKindFaceLabels (which globals accept opts.faceLabels and valid value shapes). Use this to discover what is callable from a .kcad.ts script. Call this BEFORE concluding kernelCAD lacks a capability \u2014 its NURBS freeform surfacing (loft, sweep, boundary-fill, G2 blend) is easy to miss from tool names alone.",
+    "description": "Use this when you need to list the kernelCAD script-runtime surface: global functions (box, path, selectEdges, helix, etc), Shape methods (fillet, sweep, lower, etc), Sketch methods (extrude, revolve, sweep), PathBuilder methods, EdgeQuery/FaceQuery key sets, and featureKindFaceLabels (which globals accept opts.faceLabels and valid value shapes). Use this to discover what is callable from a .kcad.ts script. Call this BEFORE concluding kernelCAD lacks a capability — its NURBS freeform surfacing (loft, sweep, boundary-fill, G2 blend) is easy to miss from tool names alone.",
     "inputSchema": {
       "type": "object",
       "properties": {}
@@ -2567,7 +2606,7 @@
   },
   {
     "name": "lookup_diagnostics",
-    "description": "Use this when you need the kernelCAD 26-code diagnostic catalogue with hint templates. Tiny one-shot call; useful for an agent that wants to pre-populate retry strategies. Hints are also inline on every emitted diagnostic \u2014 this tool just gives you the canonical list up front.",
+    "description": "Use this when you need the kernelCAD 26-code diagnostic catalogue with hint templates. Tiny one-shot call; useful for an agent that wants to pre-populate retry strategies. Hints are also inline on every emitted diagnostic — this tool just gives you the canonical list up front.",
     "inputSchema": {
       "type": "object",
       "properties": {}
@@ -2601,7 +2640,7 @@
   },
   {
     "name": "export",
-    "description": "Use this when you need to export geometry to a file. One exporter, selected by `target`:\n- target:'model' \u2014 export the script geometry to one file. Pass { file | code }, a required { output_path }, and { format }. Supported formats: stl (binary STL mesh), step (BREP CAD interchange), dxf (planar laser/waterjet profile from a Region or planar face), 3mf (slicer-friendly mesh with per-part colors), glb (web-viewer / AR with PBR materials), svg-drawing (third-angle engineering-drawing sheet: front/top/left + isometric views, hidden edges dashed, tangent edges thin, overall bounding-box dimensions, title block; assemblies are drawn with inter-part occlusion; pass options.annotations to dimension specific features instead of the bounding box; pass options.exploded { factor, mode } to explode the isometric cell, options.balloons to number parts from the BOM, and options.partsList for an item/name/qty/material table above the title block). overall bounding-box dimensions, title block; assemblies are drawn with inter-part occlusion; pass options.annotations to dimension specific features instead of the bounding box, options.autoAnnotate to derive datums A/B/C, grouped hole callouts with position tolerances, hole positions, overall size, radius and chamfer callouts, flatness and an ISO 2768 note from the geometry (the result carries drawing_report with placed / overlapped counts), and options.sections for real section views on any cutting plane). Robot descriptions: urdf (tree-topology robot description), srdf (motion-planning semantics layered over the URDF), sdf-gazebo (SDFormat 1.10 with native ball joints, closed loops, and solved per-link poses), usd-isaac (ASCII USD physics stage: PhysicsArticulationRootAPI root, one rigid body per link at its solved pose with mass / centre of mass / principal inertia, PhysicsFixedJoint/PhysicsRevoluteJoint/PhysicsPrismaticJoint per mate with token axis, two-sided joint frames and limits, UsdPreviewSurface materials from the part appearance, and joint drives only when declared in options.drives { <mate>: { stiffness, damping, maxForce?, targetPosition? } }; options.collisionApproximation is convexHull | convexDecomposition; planar/cylindrical/pin_slot/ball mates fail closed with export.usd.joint-unsupported). bom-csv / bom-json (bill of materials over assembly.model()/solvedModel(): one row per distinct part \u2014 grouped by geometry/catalog identity, not name \u2014 with real instance quantity, kind, material, density, mass, bbox, process hint, and catalog provenance for purchased parts; same numbers as inspect({ of: 'bom' })). urdf and sdf-gazebo also write one meshes/<part>.stl per link, and usd-isaac one meshes/<part>.usda mesh layer per link, next to output_path (reported in mesh_files) \u2014 ship the whole directory to the consumer. STL exports run a watertight verify by default; failures return ok: false with export.mesh.not-watertight (open-edge count + up to 5 crack-cluster locations) but the file is still written so the broken mesh can be inspected. Optional { feature_id } selects which feature to export (default: last). Optional { options } carries per-format options bag (see the kernelcad-mcp skill for the per-format keys: dxf layers/tolerance/unit, 3mf printUnit/embedSource, glb axis/draco).\n- target:'part' \u2014 export solved-assembly parts as individual binary STL files in their modeled (world-frame) positions. Pass { file | code }, plus { part, output_path } for one part or { output_dir } for all parts (files land at <output_dir>/<part>.stl). A watertight verify runs on every exported mesh by default and fails the call with export.mesh.not-watertight; unknown part names fail with export.part.not-found listing the valid names.\nPass { no_verify: true } to skip the watertight gate. All params except `target` are forwarded verbatim; each target fails closed on its own missing required params.",
+    "description": "Use this when you need to export geometry to a file. One exporter, selected by `target`:\n- target:'model' — export the script geometry to one file. Pass { file | code }, a required { output_path }, and { format }. Supported formats: stl (binary STL mesh), step (BREP CAD interchange), dxf (planar laser/waterjet profile from a Region or planar face), 3mf (slicer-friendly mesh with per-part colors), glb (web-viewer / AR with PBR materials), svg-drawing (third-angle engineering-drawing sheet: front/top/left + isometric views, hidden edges dashed, tangent edges thin, overall bounding-box dimensions, title block; assemblies are drawn with inter-part occlusion; pass options.annotations to dimension specific features instead of the bounding box; pass options.exploded { factor, mode } to explode the isometric cell, options.balloons to number parts from the BOM, and options.partsList for an item/name/qty/material table above the title block). overall bounding-box dimensions, title block; assemblies are drawn with inter-part occlusion; pass options.annotations to dimension specific features instead of the bounding box, options.autoAnnotate to derive datums A/B/C, grouped hole callouts with position tolerances, hole positions, overall size, radius and chamfer callouts, flatness and an ISO 2768 note from the geometry (the result carries drawing_report with placed / overlapped counts), and options.sections for real section views on any cutting plane). Robot descriptions: urdf (tree-topology robot description), srdf (motion-planning semantics layered over the URDF), sdf-gazebo (SDFormat 1.10 with native ball joints, closed loops, and solved per-link poses), usd-isaac (ASCII USD physics stage: PhysicsArticulationRootAPI root, one rigid body per link at its solved pose with mass / centre of mass / principal inertia, PhysicsFixedJoint/PhysicsRevoluteJoint/PhysicsPrismaticJoint per mate with token axis, two-sided joint frames and limits, UsdPreviewSurface materials from the part appearance, and joint drives only when declared in options.drives { <mate>: { stiffness, damping, maxForce?, targetPosition? } }; options.collisionApproximation is convexHull | convexDecomposition; planar/cylindrical/pin_slot/ball mates fail closed with export.usd.joint-unsupported). bom-csv / bom-json (bill of materials over assembly.model()/solvedModel(): one row per distinct part — grouped by geometry/catalog identity, not name — with real instance quantity, kind, material, density, mass, bbox, process hint, and catalog provenance for purchased parts; same numbers as inspect({ of: 'bom' })). urdf and sdf-gazebo also write one meshes/<part>.stl per link, and usd-isaac one meshes/<part>.usda mesh layer per link, next to output_path (reported in mesh_files) — ship the whole directory to the consumer. STL exports run a watertight verify by default; failures return ok: false with export.mesh.not-watertight (open-edge count + up to 5 crack-cluster locations) but the file is still written so the broken mesh can be inspected. Optional { feature_id } selects which feature to export (default: last). Optional { options } carries per-format options bag (see the kernelcad-mcp skill for the per-format keys: dxf layers/tolerance/unit, 3mf printUnit/embedSource, glb axis/draco).\n- target:'part' — export solved-assembly parts as individual binary STL files in their modeled (world-frame) positions. Pass { file | code }, plus { part, output_path } for one part or { output_dir } for all parts (files land at <output_dir>/<part>.stl). A watertight verify runs on every exported mesh by default and fails the call with export.mesh.not-watertight; unknown part names fail with export.part.not-found listing the valid names.\nPass { no_verify: true } to skip the watertight gate. All params except `target` are forwarded verbatim; each target fails closed on its own missing required params.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -2623,7 +2662,7 @@
         },
         "output_path": {
           "type": "string",
-          "description": "Destination path. target:'model' \u2014 the export file (required). target:'part' \u2014 single-part .stl path."
+          "description": "Destination path. target:'model' — the export file (required). target:'part' — single-part .stl path."
         },
         "format": {
           "type": "string",
@@ -2641,23 +2680,23 @@
             "bom-csv",
             "bom-json"
           ],
-          "description": "target:'model' \u2014 output file format (required for that target)."
+          "description": "target:'model' — output file format (required for that target)."
         },
         "feature_id": {
           "type": "string",
-          "description": "target:'model' \u2014 optional FeatureId to export; defaults to last."
+          "description": "target:'model' — optional FeatureId to export; defaults to last."
         },
         "options": {
           "type": "object",
-          "description": "target:'model' \u2014 optional per-format options bag. Discriminator options.format must equal top-level format. dxf: { layers?, unit?: \"mm\"|\"cm\"|\"in\", tolerance? }. 3mf: { printUnit?: \"mm\"|\"cm\"|\"in\", embedSource? }. glb: { axis?: \"y-up\"|\"z-up\", draco?: false }. svg-drawing: { sheet?: \"a4\"|\"a3\", modelName?, date?, annotations?, exploded?: { factor, mode? }, balloons?, partsList?, sections?, autoAnnotate? }. svg-drawing annotations is an array of authored dimensions/notes, each { kind: \"linear\"|\"radius\"|\"diameter\"|\"angular\"|\"note\", view?: \"front\"|\"top\"|\"left\"|\"iso\", text?, offset? } plus kind-specific geometry: linear { from, to }, radius/diameter { edge: EdgeQuery }, angular { from: EdgeQuery, to: EdgeQuery }, note { at, text }. from/to/at anchors are an [x,y,z] model point, { edge: EdgeQuery } or { face: FaceQuery }. Supplying any annotation REPLACES the automatic bounding-box dimensions; an annotation whose query resolves to zero or multiple matches fails the export rather than being dropped. svg-drawing sections is an array of { plane: \"xy\"|\"xz\"|\"yz\"|{ origin, normal }, label } (any non-zero normal). svg-drawing autoAnnotate is true or { tolerance?: \"ISO2768-f\"|\"ISO2768-m\"|\"ISO2768-c\", datums?: \"auto\"|[{ label, face: FaceQuery }], include?: [\"datums\"|\"flatness\"|\"holes\"|\"hole-positions\"|\"overall\"|\"fillets\"|\"chamfers\"|\"general-tolerance\"] }; datums and tolerances declared in the script with shape.datum() / shape.tolerance() override the automatic ones."
+          "description": "target:'model' — optional per-format options bag. Discriminator options.format must equal top-level format. dxf: { layers?, unit?: \"mm\"|\"cm\"|\"in\", tolerance? }. 3mf: { printUnit?: \"mm\"|\"cm\"|\"in\", embedSource? }. glb: { axis?: \"y-up\"|\"z-up\", draco?: false }. svg-drawing: { sheet?: \"a4\"|\"a3\", modelName?, date?, annotations?, exploded?: { factor, mode? }, balloons?, partsList?, sections?, autoAnnotate? }. svg-drawing annotations is an array of authored dimensions/notes, each { kind: \"linear\"|\"radius\"|\"diameter\"|\"angular\"|\"note\", view?: \"front\"|\"top\"|\"left\"|\"iso\", text?, offset? } plus kind-specific geometry: linear { from, to }, radius/diameter { edge: EdgeQuery }, angular { from: EdgeQuery, to: EdgeQuery }, note { at, text }. from/to/at anchors are an [x,y,z] model point, { edge: EdgeQuery } or { face: FaceQuery }. Supplying any annotation REPLACES the automatic bounding-box dimensions; an annotation whose query resolves to zero or multiple matches fails the export rather than being dropped. svg-drawing sections is an array of { plane: \"xy\"|\"xz\"|\"yz\"|{ origin, normal }, label } (any non-zero normal). svg-drawing autoAnnotate is true or { tolerance?: \"ISO2768-f\"|\"ISO2768-m\"|\"ISO2768-c\", datums?: \"auto\"|[{ label, face: FaceQuery }], include?: [\"datums\"|\"flatness\"|\"holes\"|\"hole-positions\"|\"overall\"|\"fillets\"|\"chamfers\"|\"general-tolerance\"] }; datums and tolerances declared in the script with shape.datum() / shape.tolerance() override the automatic ones."
         },
         "part": {
           "type": "string",
-          "description": "target:'part' \u2014 part name for single-part export, or 'all'."
+          "description": "target:'part' — part name for single-part export, or 'all'."
         },
         "output_dir": {
           "type": "string",
-          "description": "target:'part' \u2014 destination directory (all-parts mode); files are <dir>/<part>.stl."
+          "description": "target:'part' — destination directory (all-parts mode); files are <dir>/<part>.stl."
         },
         "no_verify": {
           "type": "boolean",
@@ -2682,11 +2721,11 @@
         },
         "output_path": {
           "type": "string",
-          "description": "target:'model' \u2014 written file path."
+          "description": "target:'model' — written file path."
         },
         "byte_count": {
           "type": "number",
-          "description": "target:'model' \u2014 file size in bytes."
+          "description": "target:'model' — file size in bytes."
         },
         "feature_count": {
           "type": "number"
@@ -2707,7 +2746,7 @@
             "type": "object",
             "additionalProperties": true
           },
-          "description": "target:'part' \u2014 per-part export records."
+          "description": "target:'part' — per-part export records."
         },
         "diagnostics": {
           "type": "array",
@@ -2728,7 +2767,7 @@
   },
   {
     "name": "lookup_cookbook",
-    "description": "Use this when you need a canonical pattern snippet for a CAD task. Search the kernelCAD cookbook for canonical pattern snippets. Returns top-k snippets matching the natural-language query, ranked by BM25 over title/tags/keywords/trigger. Use when you need a canonical pattern for fillet-after-subtract, non-overlapping booleans, sketch-to-extrude flows, etc. Returns empty if no snippet scores above the relevance floor \u2014 proceed without cookbook help in that case.",
+    "description": "Use this when you need a canonical pattern snippet for a CAD task. Search the kernelCAD cookbook for canonical pattern snippets. Returns top-k snippets matching the natural-language query, ranked by BM25 over title/tags/keywords/trigger. Use when you need a canonical pattern for fillet-after-subtract, non-overlapping booleans, sketch-to-extrude flows, etc. Returns empty if no snippet scores above the relevance floor — proceed without cookbook help in that case.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -2944,7 +2983,7 @@
             "oneOf": [
               {
                 "type": "object",
-                "description": "POINT \u2014 a 2D point.",
+                "description": "POINT — a 2D point.",
                 "properties": {
                   "id": {
                     "type": "string"
@@ -2975,7 +3014,7 @@
               },
               {
                 "type": "object",
-                "description": "LINE \u2014 references two point ids.",
+                "description": "LINE — references two point ids.",
                 "properties": {
                   "id": {
                     "type": "string"
@@ -3002,7 +3041,7 @@
               },
               {
                 "type": "object",
-                "description": "CIRCLE \u2014 references a center point id.",
+                "description": "CIRCLE — references a center point id.",
                 "properties": {
                   "id": {
                     "type": "string"
@@ -3510,7 +3549,7 @@
   },
   {
     "name": "add_mate",
-    "description": "Use this when you need to author a mate-graph relationship into the source, selected by `relation` (default 'mate'):\n- 'mate' \u2014 a typed mate between two connectors ({ name, a, b, type, pose?, limitsDeg?, limitsMm? }).\n- 'coupling' \u2014 couple a driven mate to a source mate by ratio ({ driven, source, ratio, offset? }).\n- 'transmission' \u2014 a physical drive path across mates ({ name, kind, sourceMate, drivenMates, path, ... }).\nAll durably edit source and need { code, assembly_binding }. Params other than `relation` are forwarded verbatim; each relation fails closed on its own missing required params.",
+    "description": "Use this when you need to author a mate-graph relationship into the source, selected by `relation` (default 'mate'):\n- 'mate' — a typed mate between two connectors ({ name, a, b, type, pose?, limitsDeg?, limitsMm? }).\n- 'coupling' — couple a driven mate to a source mate by ratio ({ driven, source, ratio, offset? }).\n- 'transmission' — a physical drive path across mates ({ name, kind, sourceMate, drivenMates, path, ... }).\nAll durably edit source and need { code, assembly_binding }. Params other than `relation` are forwarded verbatim; each relation fails closed on its own missing required params.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -3533,15 +3572,15 @@
         },
         "name": {
           "type": "string",
-          "description": "relation:'mate'|'transmission' \u2014 name unique within the assembly."
+          "description": "relation:'mate'|'transmission' — name unique within the assembly."
         },
         "a": {
           "type": "string",
-          "description": "relation:'mate' \u2014 connector ref \"<partName>.<connectorName>\"."
+          "description": "relation:'mate' — connector ref \"<partName>.<connectorName>\"."
         },
         "b": {
           "type": "string",
-          "description": "relation:'mate' \u2014 connector ref \"<partName>.<connectorName>\"."
+          "description": "relation:'mate' — connector ref \"<partName>.<connectorName>\"."
         },
         "type": {
           "type": "string",
@@ -3554,40 +3593,40 @@
             "ball",
             "pin_slot"
           ],
-          "description": "relation:'mate' \u2014 mate type."
+          "description": "relation:'mate' — mate type."
         },
         "pose": {
-          "description": "relation:'mate' \u2014 optional mate pose."
+          "description": "relation:'mate' — optional mate pose."
         },
         "limitsDeg": {
           "type": "array",
           "items": {
             "type": "number"
           },
-          "description": "relation:'mate' \u2014 optional [minDeg, maxDeg]."
+          "description": "relation:'mate' — optional [minDeg, maxDeg]."
         },
         "limitsMm": {
           "type": "array",
           "items": {
             "type": "number"
           },
-          "description": "relation:'mate' \u2014 optional [minMm, maxMm]."
+          "description": "relation:'mate' — optional [minMm, maxMm]."
         },
         "driven": {
           "type": "string",
-          "description": "relation:'coupling' \u2014 driven mate name."
+          "description": "relation:'coupling' — driven mate name."
         },
         "source": {
           "type": "string",
-          "description": "relation:'coupling' \u2014 source mate name."
+          "description": "relation:'coupling' — source mate name."
         },
         "ratio": {
           "type": "number",
-          "description": "relation:'coupling' \u2014 driven pose = source pose * ratio + offset."
+          "description": "relation:'coupling' — driven pose = source pose * ratio + offset."
         },
         "offset": {
           "type": "number",
-          "description": "relation:'coupling' \u2014 optional pose offset."
+          "description": "relation:'coupling' — optional pose offset."
         },
         "kind": {
           "type": "string",
@@ -3599,41 +3638,41 @@
             "belt",
             "tendon"
           ],
-          "description": "relation:'transmission' \u2014 transmission kind."
+          "description": "relation:'transmission' — transmission kind."
         },
         "sourceMate": {
           "type": "string",
-          "description": "relation:'transmission' \u2014 source mate name."
+          "description": "relation:'transmission' — source mate name."
         },
         "drivenMates": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "description": "relation:'transmission' \u2014 driven mate names."
+          "description": "relation:'transmission' — driven mate names."
         },
         "actuator": {
           "type": "string",
-          "description": "relation:'transmission' \u2014 optional actuator."
+          "description": "relation:'transmission' — optional actuator."
         },
         "input": {
           "type": "string",
-          "description": "relation:'transmission' \u2014 optional input."
+          "description": "relation:'transmission' — optional input."
         },
         "output": {
           "type": "string",
-          "description": "relation:'transmission' \u2014 optional output."
+          "description": "relation:'transmission' — optional output."
         },
         "path": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "description": "relation:'transmission' \u2014 drive path."
+          "description": "relation:'transmission' — drive path."
         },
         "notes": {
           "type": "string",
-          "description": "relation:'transmission' \u2014 optional notes."
+          "description": "relation:'transmission' — optional notes."
         }
       },
       "required": [
@@ -4298,7 +4337,7 @@
   },
   {
     "name": "review_paint_peek_latest",
-    "description": "Use this when you need to see the latest region the user painted in Studio. Return the newest inpainting-style review packet the user painted in Studio. Studio writes packets to <scriptPath>.review-paint/latest/ as the user marks regions over the 3D viewport; this tool scans the known kernelCAD-web checkouts and returns the freshest one within a configurable freshness window (default 30 minutes). Returns base64 PNGs of the screenshot + mask in-band so any MCP client can see the marked regions without local-disk Read access. The packet also carries the user's intent \u2014 an optional one-line note and preset tags (e.g. \"too thick\", \"missing\", \"wrong angle\") describing WHAT is wrong, not just where. Call this whenever the user says \"look at my mark\", \"check what I painted\", or any equivalent.",
+    "description": "Use this when you need to see the latest region the user painted in Studio. Return the newest inpainting-style review packet the user painted in Studio. Studio writes packets to <scriptPath>.review-paint/latest/ as the user marks regions over the 3D viewport; this tool scans the known kernelCAD-web checkouts and returns the freshest one within a configurable freshness window (default 30 minutes). Returns base64 PNGs of the screenshot + mask in-band so any MCP client can see the marked regions without local-disk Read access. The packet also carries the user's intent — an optional one-line note and preset tags (e.g. \"too thick\", \"missing\", \"wrong angle\") describing WHAT is wrong, not just where. Call this whenever the user says \"look at my mark\", \"check what I painted\", or any equivalent.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -4404,7 +4443,7 @@
                   },
                   "checks": {
                     "type": "array",
-                    "description": "Required checklist entries: main-object-count, proportions-match-reference, required-visible-features, no-stray-or-floating-geometry, attachment-plausibility, semantic-orientation-alignment, device-depth-and-construction, canonical-views-physically-coherent.",
+                    "description": "Required checklist entries: main-object-count, proportions-match-reference, required-visible-features, no-stray-or-floating-geometry, attachment-plausibility, semantic-orientation-alignment, device-depth-and-construction, canonical-views-physically-coherent. When likenessProfile=automotive also: side-body-over-wheels, side-cabin-aft, rear-haunch, ortho-proportions-vs-reference.",
                     "items": {
                       "type": "object",
                       "properties": {
@@ -4486,6 +4525,13 @@
         "requireVisualReview": {
           "type": "boolean",
           "description": "Require screenshot-backed visualReview with structured checks before accepting an attempt. Default true; set false only for explicit non-visual batch checks."
+        },
+        "likenessProfile": {
+          "type": "string",
+          "enum": [
+            "automotive"
+          ],
+          "description": "When 'automotive', also require organic-body still checks: side-body-over-wheels, side-cabin-aft, rear-haunch, ortho-proportions-vs-reference. Pair with verify({ check: 'body-likeness' }) before open_in_studio."
         },
         "requirePhysicalAcceptance": {
           "type": "boolean",
@@ -4688,7 +4734,7 @@
   },
   {
     "name": "capture_animation",
-    "description": "Use this when you need to render a script's animation timeline to a video. Capture a kernelCAD script's animationView({...}) timeline to an MP4 (ffmpeg) or a PNG frame sequence, verifying the sampled poses for part interference. FILE ONLY: pass { file } (a .kcad.ts path) \u2014 there is no { code } mode, because the capture engine renders from a file on disk (its relative lib.fromSTEP imports resolve against the script directory). MP4 by default; pass { frames_dir } to write frame-0000.png... and skip ffmpeg entirely (mutually exclusive with output_path). Animation-pose interference verification runs by default (keyframe times + segment midpoints) BEFORE any browser/ffmpeg cost; { no_verify: true } skips it and { verify_every: n } additionally samples every n-th frame time. Pass { focus } or { hide } (arrays of feature ids or assembly part names, mutually exclusive) to isolate parts in the rendered frames \u2014 same semantics as `kernelcad render --focus/--hide`; visibility is render-only and does NOT affect the pose verification. Collisions DO NOT fail the call \u2014 the artifact is still written as evidence with ok: true; read verified: false + the collisions[] array. ENVIRONMENT REQUIREMENT (identical to `kernelcad render`): capture drives a headless browser against a running studio dev server reachable at http://localhost:5173 (or the VITE_PORT override); there is no bundled-static serving mode yet, so the same dev-server precondition applies in a production MCP install. Returns { ok, output_path, frame_count, duration_ms, fps, verified, verify_skipped?, collisions: [{ t_ms, a, b, volume_mm3 }], diagnostics }.",
+    "description": "Use this when you need to render a script's animation timeline to a video. Capture a kernelCAD script's animationView({...}) timeline to an MP4 (ffmpeg) or a PNG frame sequence, verifying the sampled poses for part interference. FILE ONLY: pass { file } (a .kcad.ts path) — there is no { code } mode, because the capture engine renders from a file on disk (its relative lib.fromSTEP imports resolve against the script directory). MP4 by default; pass { frames_dir } to write frame-0000.png... and skip ffmpeg entirely (mutually exclusive with output_path). Animation-pose interference verification runs by default (keyframe times + segment midpoints) BEFORE any browser/ffmpeg cost; { no_verify: true } skips it and { verify_every: n } additionally samples every n-th frame time. Pass { focus } or { hide } (arrays of feature ids or assembly part names, mutually exclusive) to isolate parts in the rendered frames — same semantics as `kernelcad render --focus/--hide`; visibility is render-only and does NOT affect the pose verification. Collisions DO NOT fail the call — the artifact is still written as evidence with ok: true; read verified: false + the collisions[] array. ENVIRONMENT REQUIREMENT (identical to `kernelcad render`): capture drives a headless browser against a running studio dev server reachable at http://localhost:5173 (or the VITE_PORT override); there is no bundled-static serving mode yet, so the same dev-server precondition applies in a production MCP install. Returns { ok, output_path, frame_count, duration_ms, fps, verified, verify_skipped?, collisions: [{ t_ms, a, b, volume_mm3 }], diagnostics }.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -4805,13 +4851,13 @@
   },
   {
     "name": "render_preview",
-    "description": "Use this when you need to LOOK at a kernelCAD model \u2014 render its script to deterministic PNG views for visual self-check (the visual half of the evaluate \u2192 render \u2192 inspect \u2192 fix loop), with NO studio or dev server required. Pass { code } (inline source) or { file } (a .kcad.ts path), exactly one. Renders the canonical engineering views (front, right, top, iso \u2014 pass { views } for a subset, e.g. [\"iso\"] for fastest iteration) plus an optional { pose: \"<az>,<el>\" } arbitrary camera angle (degrees; az=0,el=0 is front, +az rotates CCW around +Z, +el lifts the camera). NO STUDIO / DEV-SERVER REQUIRED: a prebuilt static player (dist/headless-player) is served from an ephemeral local port automatically; a running studio dev server is used as fallback, and { base_url } forces one. The only environment dependency is playwright chromium (npx playwright install chromium). Pass { focus } or { hide } (arrays of feature ids or assembly part names, mutually exclusive) to isolate parts \u2014 same semantics as `kernelcad render --focus/--hide`. Pass { section: { axis, position, flip? } } to cut a cross-section and inspect INTERIOR geometry (wall thickness, internal pockets, whether a bore runs through) rather than only the outer shell. Pass { explode: { factor, mode? } } to pull a multi-part assembly apart (mode: \"mate-axis\" default, or \"radial\") using the same mesher as `kernelcad render --explode` \u2014 requires assembly.model()/solvedModel(). PNGs are written to { out_dir } (default: a fresh temp session directory) and returned as absolute paths with per-view camera descriptions (kernelCAD is Z-up). Mechanism truth runs first, same protocol as `kernelcad render`: a broken mechanism still renders but every tile is watermarked MECHANISM BROKEN (KERNELCAD_RENDER_STRICT=1 refuses instead); read { mechanism, mechanism_failure_codes }. The probe runs full BREP interference sweeps and can dominate latency on large assemblies \u2014 pass { no_mechanism_check: true } for fast iteration (the preview then reports mechanism: \"unverified\"; ignored under strict mode). Pass { overlay: 'zebra' | 'curvature' | 'continuity' } for a surface-quality visualisation (zebra stripes from vertex normals, curvature as vertex colours, continuity edges coloured by G0/G1/G2/broken) \u2014 numbers come from inspect({ of: 'continuity' | 'curvature' }); the overlay is the picture. Returns { ok, images: [{ name, path, description }], out_dir, bounds, mechanism, render_source, render_ms, diagnostics }. PATHS ARE LOCAL to the machine running the MCP server \u2014 local stdio clients read them directly; hosted/remote clients should use open_in_studio instead.",
+    "description": "Use this when you need to LOOK at a kernelCAD model — render its script to deterministic PNG views for visual self-check (the visual half of the evaluate → render → inspect → fix loop), with NO studio or dev server required. Pass { code } (inline source) or { file } (a .kcad.ts path), exactly one. Renders the canonical engineering views (front, right, top, iso — pass { views } for a subset, e.g. [\"iso\"] for fastest iteration) plus an optional { pose: \"<az>,<el>\" } arbitrary camera angle (degrees; az=0,el=0 is front, +az rotates CCW around +Z, +el lifts the camera). NO STUDIO / DEV-SERVER REQUIRED: a prebuilt static player (dist/headless-player) is served from an ephemeral local port automatically; a running studio dev server is used as fallback, and { base_url } forces one. The only environment dependency is playwright chromium (npx playwright install chromium). Pass { focus } or { hide } (arrays of feature ids or assembly part names, mutually exclusive) to isolate parts — same semantics as `kernelcad render --focus/--hide`. Pass { section: { axis, position, flip? } } to cut a cross-section and inspect INTERIOR geometry (wall thickness, internal pockets, whether a bore runs through) rather than only the outer shell. Pass { explode: { factor, mode? } } to pull a multi-part assembly apart (mode: \"mate-axis\" default, or \"radial\") using the same mesher as `kernelcad render --explode` — requires assembly.model()/solvedModel(). PNGs are written to { out_dir } (default: a fresh temp session directory) and returned as absolute paths with per-view camera descriptions (kernelCAD is Z-up). Mechanism truth runs first, same protocol as `kernelcad render`: a broken mechanism still renders but every tile is watermarked MECHANISM BROKEN (KERNELCAD_RENDER_STRICT=1 refuses instead); read { mechanism, mechanism_failure_codes }. The probe runs full BREP interference sweeps and can dominate latency on large assemblies — pass { no_mechanism_check: true } for fast iteration (the preview then reports mechanism: \"unverified\"; ignored under strict mode). Pass { overlay: 'zebra' | 'curvature' | 'continuity' } for a surface-quality visualisation (zebra stripes from vertex normals, curvature as vertex colours, continuity edges coloured by G0/G1/G2/broken) — numbers come from inspect({ of: 'continuity' | 'curvature' }); the overlay is the picture. Returns { ok, images: [{ name, path, description }], out_dir, bounds, mechanism, render_source, render_ms, diagnostics }. PATHS ARE LOCAL to the machine running the MCP server — local stdio clients read them directly; hosted/remote clients should use open_in_studio instead.",
     "inputSchema": {
       "type": "object",
       "properties": {
         "code": {
           "type": "string",
-          "description": "Inline kernelCAD script source. Mutually exclusive with file. Relative imports resolve against a temp dir \u2014 use file for scripts with relative lib.fromSTEP(...) imports."
+          "description": "Inline kernelCAD script source. Mutually exclusive with file. Relative imports resolve against a temp dir — use file for scripts with relative lib.fromSTEP(...) imports."
         },
         "file": {
           "type": "string",
@@ -4910,7 +4956,7 @@
         },
         "explode": {
           "type": "object",
-          "description": "Pull a multi-part assembly apart for the preview. factor \u2265 0 scales spacing by part size; mode is 'mate-axis' (default, along parent mate/joint axes) or 'radial' (away from the assembly centroid). Requires the script to return assembly.model() / solvedModel().",
+          "description": "Pull a multi-part assembly apart for the preview. factor ≥ 0 scales spacing by part size; mode is 'mate-axis' (default, along parent mate/joint axes) or 'radial' (away from the assembly centroid). Requires the script to return assembly.model() / solvedModel().",
           "properties": {
             "factor": {
               "type": "number",
@@ -4958,7 +5004,7 @@
             "type": "object",
             "additionalProperties": true
           },
-          "description": "Rendered tiles { name, path, description } \u2014 absolute local PNG paths with per-view camera orientation (kernelCAD is Z-up)."
+          "description": "Rendered tiles { name, path, description } — absolute local PNG paths with per-view camera orientation (kernelCAD is Z-up)."
         },
         "out_dir": {
           "type": "string",
@@ -5015,7 +5061,7 @@
   },
   {
     "name": "resolve_assumptions",
-    "description": "Use this when you need to confirm or override the open facts in an assumption ledger from trace_from_image (missing scale, inferred/assumed values) before committing geometry built from a reference photo. Reads the persisted `<model>.ledger.json` at `ledgerPath`, applies each resolution \u2014 `{ id, confirm: true }` to accept a fact as-is, or `{ id, value }` to override it \u2014 rewrites the ledger file, and returns the updated ledger plus `paramOverrides` (factId -> value) to feed straight into `set_param`. Pair with the `kernelcad-from-reference` skill.",
+    "description": "Use this when you need to confirm or override the open facts in an assumption ledger from trace_from_image (missing scale, inferred/assumed values) before committing geometry built from a reference photo. Reads the persisted `<model>.ledger.json` at `ledgerPath`, applies each resolution — `{ id, confirm: true }` to accept a fact as-is, or `{ id, value }` to override it — rewrites the ledger file, and returns the updated ledger plus `paramOverrides` (factId -> value) to feed straight into `set_param`. Pair with the `kernelcad-from-reference` skill.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -5091,7 +5137,7 @@
   },
   {
     "name": "run_fea",
-    "description": "Use this when you need to know whether a part will hold a load. Runs the linear-static structural study a script declares with `shape.feaStudy({ material, fixed, loads, meshSize?, minSafetyFactor? })`: meshes the solid with quadratic tetrahedra, solves it with CalculiX, and returns evidence \u2014 peak von Mises stress (MPa), peak displacement (mm), the minimum safety factor against the material yield, per-region hot spots named by @kc[...] face ref, mesh-quality trust flags, an equilibrium residual, and stress-heatmap PNG paths.\nRequires the external solver toolchain (CalculiX `ccx` plus the gmsh Python module). When it is absent the call fails with `fea.solver.unavailable` and the exact install command \u2014 never a silent pass.\nPass { file | code }, optional `study` (defaults to the last declared study), `output_dir` (keeps the .inp/.frd deck for reproduction), `mesh_size` (mm, overrides the study for this run), and `heatmaps: false` for a fast numbers-only run.",
+    "description": "Use this when you need to know whether a part will hold a load. Runs the linear-static structural study a script declares with `shape.feaStudy({ material, fixed, loads, meshSize?, minSafetyFactor? })`: meshes the solid with quadratic tetrahedra, solves it with CalculiX, and returns evidence — peak von Mises stress (MPa), peak displacement (mm), the minimum safety factor against the material yield, per-region hot spots named by @kc[...] face ref, mesh-quality trust flags, an equilibrium residual, and stress-heatmap PNG paths.\nRequires the external solver toolchain (CalculiX `ccx` plus the gmsh Python module). When it is absent the call fails with `fea.solver.unavailable` and the exact install command — never a silent pass.\nPass { file | code }, optional `study` (defaults to the last declared study), `output_dir` (keeps the .inp/.frd deck for reproduction), `mesh_size` (mm, overrides the study for this run), and `heatmaps: false` for a fast numbers-only run.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -5159,7 +5205,7 @@
             "type": "object",
             "additionalProperties": true
           },
-          "description": "Heatmap colour bands { color, fromMPa, toMPa } \u2014 the scale the PNGs are drawn on."
+          "description": "Heatmap colour bands { color, fromMPa, toMPa } — the scale the PNGs are drawn on."
         },
         "out_dir": {
           "type": "string",
@@ -5222,7 +5268,7 @@
         "toolchain": {
           "type": "object",
           "additionalProperties": true,
-          "description": "{ available, ccx?, gmshVersion?, missing[], hint? } \u2014 whether a study can run here and how to fix it if not."
+          "description": "{ available, ccx?, gmshVersion?, missing[], hint? } — whether a study can run here and how to fix it if not."
         },
         "materials": {
           "type": "object",
@@ -5254,7 +5300,7 @@
   },
   {
     "name": "send_to_printer",
-    "description": "Use this when you need to upload a .gcode file (e.g. written by export with target: \"model\", format: \"gcode\") to a real network printer and, by default, start the print. protocol: 'octoprint' (POST /api/files/local with an X-Api-Key), 'moonraker' (Klipper's POST /server/files/upload), or 'bambu-lan' (Bambu Lab LAN-mode: FTPS implicit-TLS upload on port 990 as user 'bblp' with the printer's LAN access code, then an MQTT print-start command on port 8883 \u2014 requires access_code and, unless start_print is false, serial). Pass { dry_run: true } to validate connectivity/authentication only, without uploading or starting a print. Never logs or echoes api_key/access_code.",
+    "description": "Use this when you need to upload a .gcode file (e.g. written by export with target: \"model\", format: \"gcode\") to a real network printer and, by default, start the print. protocol: 'octoprint' (POST /api/files/local with an X-Api-Key), 'moonraker' (Klipper's POST /server/files/upload), or 'bambu-lan' (Bambu Lab LAN-mode: FTPS implicit-TLS upload on port 990 as user 'bblp' with the printer's LAN access code, then an MQTT print-start command on port 8883 — requires access_code and, unless start_print is false, serial). Pass { dry_run: true } to validate connectivity/authentication only, without uploading or starting a print. Never logs or echoes api_key/access_code.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -5347,7 +5393,7 @@
   },
   {
     "name": "repair_script",
-    "description": "Use this when evaluate_script reported an error and you want the fix applied rather than described. Takes the candidates why_did_this_fail derives for a diagnostic, applies them one at a time, re-evaluates after each, and keeps the first that clears the diagnostic without introducing new errors. Never edits outside the repair region (failing feature statement + its input statements + the param() lines it reads) \u2014 an out-of-region patch is refused with tool.repair.out-of-region. Returns the repaired source in `new_code` (the caller persists it), a unified `diff`, and before/after health maps. Pass { file? | code?, diagnostic?: '<id>'|'first-error', strategy?: 'apply-first'|'try-all'|'dry-run', max_attempts?: number }.",
+    "description": "Use this when evaluate_script reported an error and you want the fix applied rather than described. Takes the candidates why_did_this_fail derives for a diagnostic, applies them one at a time, re-evaluates after each, and keeps the first that clears the diagnostic without introducing new errors. Never edits outside the repair region (failing feature statement + its input statements + the param() lines it reads) — an out-of-region patch is refused with tool.repair.out-of-region. Returns the repaired source in `new_code` (the caller persists it), a unified `diff`, and before/after health maps. Pass { file? | code?, diagnostic?: '<id>'|'first-error', strategy?: 'apply-first'|'try-all'|'dry-run', max_attempts?: number }.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -5483,7 +5529,7 @@
   },
   {
     "name": "sweep_tolerance",
-    "description": "Use this when you need to check whether a mechanism stays buildable across a tolerance/dimension range, not just at one nominal value. Declares one or more param() names with a { values: [...] } list or a { min, max, steps } range, re-evaluates the script once per cartesian-product combination (capped at 64 combos \u2014 exceeding it truncates to the first 64 and emits kinematic.sweep-tolerance.combo-cap-exceeded), and runs the standard gates on each combo: interference, mounting-hole diameter agreement, and joint-axis binding (all three, default on); reachability only when gates.reachable names a tip_link + target. Returns the pass/fail envelope table (one row per combo) plus firstFailure per gate \u2014 the fastest way to find the first param value at which a design breaks.",
+    "description": "Use this when you need to check whether a mechanism stays buildable across a tolerance/dimension range, not just at one nominal value. Declares one or more param() names with a { values: [...] } list or a { min, max, steps } range, re-evaluates the script once per cartesian-product combination (capped at 64 combos — exceeding it truncates to the first 64 and emits kinematic.sweep-tolerance.combo-cap-exceeded), and runs the standard gates on each combo: interference, mounting-hole diameter agreement, and joint-axis binding (all three, default on); reachability only when gates.reachable names a tip_link + target. Returns the pass/fail envelope table (one row per combo) plus firstFailure per gate — the fastest way to find the first param value at which a design breaks.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -5611,25 +5657,25 @@
   },
   {
     "name": "diff_geometry",
-    "description": "Use this when you need to know WHAT MATERIAL changed between two versions of a model, not just how much. The deeper sibling of diff_scripts: a volume delta alone is ambiguous (a boss that grew and a pocket that deepened report the same magnitude, and a part that only moved reports zero), so this tool answers it with geometry instead of pixels. Baseline is { baseFile } or { baseCode }; the revised side is either another script ({ file } or { code }) or the SAME script re-lowered with { params } overrides \u2014 a bag of declared param() name -> new value, which is the one-script form a parameter sweep actually asks for. Bodies pair by name and fall back to declaration-order positional pairing; anything left over is listed in `unmatched` and raises diff.body.unmatched. Per matched body it returns addedMm3 = volume(revised - base), removedMm3 = volume(base - revised), commonMm3 = volume(base \u2229 revised) from OCCT booleans, exact bbox with min/max/extent deltas, face / edge / hole count deltas (hole counts reuse the cylindrical-hole detector), maxDeviationMm (two-sided discrete Hausdorff distance between the two surfaces), and a `verdict` \u2014 identical | moved | resized | topology-changed, precedence topology-changed > resized > moved > identical. Branch on the verdict; cite the numbers. Optional { render: true } also writes an overlay PNG (added green, removed red, unchanged material as a translucent ghost; the scene is a re-runnable .kcad.ts over lossless BREP sidecars) through the render_preview pipeline and fails open (the numeric diff is still returned) when that pipeline is unavailable. Read-only \u2014 never touches the active session.",
+    "description": "Use this when you need to know WHAT MATERIAL changed between two versions of a model, not just how much. The deeper sibling of diff_scripts: a volume delta alone is ambiguous (a boss that grew and a pocket that deepened report the same magnitude, and a part that only moved reports zero), so this tool answers it with geometry instead of pixels. Baseline is { baseFile } or { baseCode }; the revised side is either another script ({ file } or { code }) or the SAME script re-lowered with { params } overrides — a bag of declared param() name -> new value, which is the one-script form a parameter sweep actually asks for. Bodies pair by name and fall back to declaration-order positional pairing; anything left over is listed in `unmatched` and raises diff.body.unmatched. Per matched body it returns addedMm3 = volume(revised - base), removedMm3 = volume(base - revised), commonMm3 = volume(base ∩ revised) from OCCT booleans, exact bbox with min/max/extent deltas, face / edge / hole count deltas (hole counts reuse the cylindrical-hole detector), maxDeviationMm (two-sided discrete Hausdorff distance between the two surfaces), and a `verdict` — identical | moved | resized | topology-changed, precedence topology-changed > resized > moved > identical. Branch on the verdict; cite the numbers. Optional { render: true } also writes an overlay PNG (added green, removed red, unchanged material as a translucent ghost; the scene is a re-runnable .kcad.ts over lossless BREP sidecars) through the render_preview pipeline and fails open (the numeric diff is still returned) when that pipeline is unavailable. Read-only — never touches the active session.",
     "inputSchema": {
       "type": "object",
       "properties": {
         "baseFile": {
           "type": "string",
-          "description": "Baseline script \u2014 path to a .kcad.ts file."
+          "description": "Baseline script — path to a .kcad.ts file."
         },
         "baseCode": {
           "type": "string",
-          "description": "Baseline script \u2014 inline source."
+          "description": "Baseline script — inline source."
         },
         "file": {
           "type": "string",
-          "description": "Revised script \u2014 path to a .kcad.ts file. Mutually exclusive with params."
+          "description": "Revised script — path to a .kcad.ts file. Mutually exclusive with params."
         },
         "code": {
           "type": "string",
-          "description": "Revised script \u2014 inline source. Mutually exclusive with params."
+          "description": "Revised script — inline source. Mutually exclusive with params."
         },
         "params": {
           "type": "object",
@@ -5638,7 +5684,7 @@
         },
         "render": {
           "type": "boolean",
-          "description": "Also render an overlay PNG \u2014 added material green, removed material red \u2014 via the render_preview pipeline. Off by default; the numeric table is the agent-facing evidence."
+          "description": "Also render an overlay PNG — added material green, removed material red — via the render_preview pipeline. Off by default; the numeric table is the agent-facing evidence."
         },
         "out_dir": {
           "type": "string",
@@ -5702,19 +5748,19 @@
               "volumeMm3": {
                 "type": "object",
                 "additionalProperties": true,
-                "description": "{ base, revised, delta } in mm\u00b3."
+                "description": "{ base, revised, delta } in mm³."
               },
               "addedMm3": {
                 "type": "number",
-                "description": "volume(revised \u2212 base) \u2014 material that appeared."
+                "description": "volume(revised − base) — material that appeared."
               },
               "removedMm3": {
                 "type": "number",
-                "description": "volume(base \u2212 revised) \u2014 material that vanished."
+                "description": "volume(base − revised) — material that vanished."
               },
               "commonMm3": {
                 "type": "number",
-                "description": "volume(base \u2229 revised) \u2014 material that stayed put."
+                "description": "volume(base ∩ revised) — material that stayed put."
               },
               "bbox": {
                 "type": "object",
@@ -5768,7 +5814,7 @@
         "render": {
           "type": "object",
           "additionalProperties": true,
-          "description": "Overlay result when render: true \u2014 { ok, images, out_dir, script_path, error? }."
+          "description": "Overlay result when render: true — { ok, images, out_dir, script_path, error? }."
         },
         "side": {
           "type": "string",
@@ -5797,7 +5843,7 @@
   },
   {
     "name": "drawing_to_cad",
-    "description": "Use this when the reference for a part is a 2D engineering drawing PDF (orthographic views with dimensions), not a photo. Deterministic, no vision model: reads the vector linework (stroke width, dash) and positioned text; classifies visible / hidden / center / dimension / extension lines; reads the title block scale, units and projection symbol; identifies front / top / side views by projection alignment (third- or first-angle); ties dimension text to its lines (\u2300, R, 4\u00d7, \u00b1, THRU, depth). Dimension values win over measured lengths. Rebuilds the part as the view silhouette extruded by the depth an orthogonal view shows, or a turned part revolved from its half-silhouette, plus holes from \u2300 circles with THRU or hidden-line depth. Returns `script` \u2014 a `.kcad.ts` with role-named params (width, thickness, holeDia, hole1X, dia1, step1Length \u2026) \u2014 and `ledger`, an assumption ledger where stated dimensions are `visible`, symmetry-derived positions `inferred`, defaults `assumed` and an unstated depth `missing`; a dimension that disagrees with the linework keeps its value and records the disagreement as an open fact. With verify (default) the script is evaluated, re-projected through the svg-drawing view stage and compared: `fidelity.verdict` is match | partial | mismatch | failed with per-axis extents, hole diameters and per-view silhouette IoU. Pass `out` to write the script and its `<stem>.ledger.json` (resolve open facts with resolve_assumptions, then set_param). A scanned (raster-only) page fails with reference.drawing.raster-only \u2014 use trace_from_image for those.",
+    "description": "Use this when the reference for a part is a 2D engineering drawing PDF (orthographic views with dimensions), not a photo. Deterministic, no vision model: reads the vector linework (stroke width, dash) and positioned text; classifies visible / hidden / center / dimension / extension lines; reads the title block scale, units and projection symbol; identifies front / top / side views by projection alignment (third- or first-angle); ties dimension text to its lines (⌀, R, 4×, ±, THRU, depth). Dimension values win over measured lengths. Rebuilds the part as the view silhouette extruded by the depth an orthogonal view shows, or a turned part revolved from its half-silhouette, plus holes from ⌀ circles with THRU or hidden-line depth. Returns `script` — a `.kcad.ts` with role-named params (width, thickness, holeDia, hole1X, dia1, step1Length …) — and `ledger`, an assumption ledger where stated dimensions are `visible`, symmetry-derived positions `inferred`, defaults `assumed` and an unstated depth `missing`; a dimension that disagrees with the linework keeps its value and records the disagreement as an open fact. With verify (default) the script is evaluated, re-projected through the svg-drawing view stage and compared: `fidelity.verdict` is match | partial | mismatch | failed with per-axis extents, hole diameters and per-view silhouette IoU. Pass `out` to write the script and its `<stem>.ledger.json` (resolve open facts with resolve_assumptions, then set_param). A scanned (raster-only) page fails with reference.drawing.raster-only — use trace_from_image for those.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -5917,7 +5963,7 @@
   },
   {
     "name": "mesh_to_features",
-    "description": "Use this when you are handed an STL, OBJ or 3MF of a mostly prismatic mechanical part (plate, bracket, spacer, flange, housing block) and need an EDITABLE kernelCAD model of it rather than a faceted lib.fromSTL import. Deterministic, measured, self-verifying: it welds and checks the mesh, segments planes and cylinders, picks the extrusion axis, slices each band and fits exact lines / arcs / circles, snaps near-round values (each snap recorded), then emits a readable .kcad.ts with named param()s \u2014 a revolve for concentric round stacks, extruded profiles otherwise, .hole()/.holes() for through, blind and counterbored bores (axial and side-drilled), .cutout() for pockets, .fillet() for constant-radius edge blends (radius measured on the sharp edge, edges grouped by radius and picked with the shortest exact edge query), boolean subtractions for what no drilling feature can reach. It then EVALUATES that script and compares it with the mesh: volume IoU (column ray casting) and symmetric surface deviation (max + RMS), over up to 4 refinement passes. Returns { script, ledger, fidelity: { maxDeviationMm, rmsMm, volumeIoU, verdict: faithful | approximate | failed, thresholds }, unmatchedRegions, features, passes }. A fillet or sharp reading is kept by which measures better; variable-radius blends and chamfers are reported, not forced. The verdict is computed from the numbers \u2014 faithful needs IoU >= minIoU AND max deviation <= maxDeviationMm AND a watertight mesh AND no unmatched region. Freeform surfaces, tilted planes and side bosses are listed in unmatchedRegions (reference.mesh.freeform-region-unmatched), never silently dropped. The ledger uses fact ids equal to param names, so resolve_assumptions on the written <out>.ledger.json yields paramOverrides for set_param. Pass { out } to write the script and ledger; the mesh itself is never modified.",
+    "description": "Use this when you are handed an STL, OBJ or 3MF of a mostly prismatic mechanical part (plate, bracket, spacer, flange, housing block) and need an EDITABLE kernelCAD model of it rather than a faceted lib.fromSTL import. Deterministic, measured, self-verifying: it welds and checks the mesh, segments planes and cylinders, picks the extrusion axis, slices each band and fits exact lines / arcs / circles, snaps near-round values (each snap recorded), then emits a readable .kcad.ts with named param()s — a revolve for concentric round stacks, extruded profiles otherwise, .hole()/.holes() for through, blind and counterbored bores (axial and side-drilled), .cutout() for pockets, .fillet() for constant-radius edge blends (radius measured on the sharp edge, edges grouped by radius and picked with the shortest exact edge query), boolean subtractions for what no drilling feature can reach. It then EVALUATES that script and compares it with the mesh: volume IoU (column ray casting) and symmetric surface deviation (max + RMS), over up to 4 refinement passes. Returns { script, ledger, fidelity: { maxDeviationMm, rmsMm, volumeIoU, verdict: faithful | approximate | failed, thresholds }, unmatchedRegions, features, passes }. A fillet or sharp reading is kept by which measures better; variable-radius blends and chamfers are reported, not forced. The verdict is computed from the numbers — faithful needs IoU >= minIoU AND max deviation <= maxDeviationMm AND a watertight mesh AND no unmatched region. Freeform surfaces, tilted planes and side bosses are listed in unmatchedRegions (reference.mesh.freeform-region-unmatched), never silently dropped. The ledger uses fact ids equal to param names, so resolve_assumptions on the written <out>.ledger.json yields paramOverrides for set_param. Pass { out } to write the script and ledger; the mesh itself is never modified.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -5927,7 +5973,7 @@
         },
         "data": {
           "type": "string",
-          "description": "Mesh bytes as base64 \u2014 use when the server cannot see your filesystem."
+          "description": "Mesh bytes as base64 — use when the server cannot see your filesystem."
         },
         "format": {
           "type": "string",
@@ -5952,11 +5998,11 @@
         },
         "maxPasses": {
           "type": "number",
-          "description": "Refinement passes, 1\u20134. Default 4; stops early at the first faithful pass."
+          "description": "Refinement passes, 1–4. Default 4; stops early at the first faithful pass."
         },
         "weldToleranceMm": {
           "type": "number",
-          "description": "Vertex weld distance in mm. Default max(1e-4, 1e-6 \u00d7 bbox diagonal)."
+          "description": "Vertex weld distance in mm. Default max(1e-4, 1e-6 × bbox diagonal)."
         },
         "maxTriangles": {
           "type": "number",

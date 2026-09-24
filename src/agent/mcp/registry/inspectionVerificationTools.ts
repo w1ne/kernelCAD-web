@@ -99,13 +99,14 @@ const verifyToolEntry: ToolRegistryEntry = {
       "- 'mounting-holes' — fastened mates expose matching hole diameters on both sides.\n" +
       "- 'load-capacity' — closed-form Euler-Bernoulli beam stress / safety-factor check ({ loads, materials, ... }).\n" +
       "- 'static-hold' — gravitational holding torque/force at a sampled pose grid vs each actuated joint's declared actuator capacity ({ joint?, pose?, gravity?, min_torque_margin_pct?, range_samples? }).\n" +
+      "- 'body-likeness' — publish gate for organic/car bodies: cheap AABB↔wheel checks plus required agent still verdicts (side-body-over-wheels, side-cabin-aft, rear-haunch, ortho-proportions-vs-reference). Pass { body_bbox | code/file+body_feature_id, wheels?, cabin_bbox?, still_verdicts?, require_stills? }. Full CV silhouette matching is NOT implemented — agents must inspect ortho PNGs/Studio and supply still_verdicts before claiming success.\n" +
       'All params except `check` are check-specific and forwarded verbatim; each check fails closed on its own missing required params.',
     inputSchema: {
       type: 'object',
       properties: {
         check: {
           type: 'string',
-          enum: ['assembly', 'urdf', 'dfm', 'dfm-preflight', 'swept-collision', 'reachable', 'mounting-holes', 'load-capacity', 'static-hold'],
+          enum: ['assembly', 'urdf', 'dfm', 'dfm-preflight', 'swept-collision', 'reachable', 'mounting-holes', 'load-capacity', 'static-hold', 'body-likeness'],
           description: 'Which verification to run.',
         },
         file: { type: 'string', description: 'Path to a .kcad.ts script (assembly/dfm/dfm-preflight/swept-collision/reachable/mounting-holes/load-capacity/static-hold).' },
@@ -139,6 +140,21 @@ const verifyToolEntry: ToolRegistryEntry = {
         gravity: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3, description: "check:'static-hold' — gravity vector, m/s^2, world frame (default [0, 0, -9.81])." },
         min_torque_margin_pct: { type: 'number', description: "check:'static-hold' — safety-margin floor as a percent of actuator capacity (default 20)." },
         range_samples: { type: 'number', description: "check:'static-hold' — grid density per evaluated joint when `pose` is omitted (default 9)." },
+        body_bbox: { type: 'object', description: "check:'body-likeness' — body AABB { min:[x,y,z], max:[x,y,z] } in mm." },
+        body_feature_id: { type: 'string', description: "check:'body-likeness' — FeatureId to read body AABB from when body_bbox omitted." },
+        cabin_bbox: { type: 'object', description: "check:'body-likeness' — optional cabin/greenhouse AABB for automated cabin-aft." },
+        wheels: {
+          type: 'array',
+          description: "check:'body-likeness' — wheel centres + tire radii [{ center:[x,y,z], radius }].",
+          items: { type: 'object' },
+        },
+        length_axis: { type: 'string', enum: ['x', 'y'], description: "check:'body-likeness' — wheelbase axis (default 'x')." },
+        still_verdicts: {
+          type: 'array',
+          description: "check:'body-likeness' — agent ortho still checklist [{ code, passed, finding, view? }]. Required codes: side-body-over-wheels, side-cabin-aft, rear-haunch, ortho-proportions-vs-reference.",
+          items: { type: 'object' },
+        },
+        require_stills: { type: 'boolean', description: "check:'body-likeness' — require still_verdicts (default true)." },
       },
       required: ['check'],
     },

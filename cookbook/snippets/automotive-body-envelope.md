@@ -13,6 +13,8 @@ keywords:
   - fairing body envelope
   - G2 fillet body panels
   - car body with glass separate
+  - body likeness gate
+  - network body panels via sew
 when_to_use: You need a recognizable organic vehicle / berlinetta / fairing body — NOT a stylized polyline loft demo. Prefer spline or hermiteG2 station profiles with ≤2 loft rails (or surfaceFromCurves + sew + thicken + G2 fillet). Keep glass and aero as separate fastened parts; never union wide boxes into the loft solid or cut through-Y arches through a loft.
 ---
 
@@ -26,8 +28,7 @@ shell only — do not use it for likeness-driven automotive bodies.
    `lineTo` polylines pretending to be ovals.
 2. `profile.loft(other, { planes, rails })` with **≤2 rails** that pass within
    1 mm of every section (see `examples/curves-surfacing/handle-and-tee.kcad.ts`),
-   **or** `surfaceFromCurves(sections)` → `sew([...], { requireClosed: true })`
-   → `.thicken(t)` → small G2 / `.fillet` on long edges.
+   **or** `surfaceFromCurves(sections).thicken(t)` per panel (then boolean) / `sew([...surfaces], { requireClosed: true })` for a closed shell → small G2 / `.fillet` on long edges. Note: `sew` returns a Shape (no `.thicken`); thicken Surfaces first when you need solids from open patches.
 3. Glass canopy as its own solid (union or assembly mate) — do not subtract a
    through-Y arch from the loft (topology collapses; booleans explode).
 4. Spoilers / aero / mirrors as separate parts fastened later — never
@@ -70,3 +71,22 @@ const body = start.loft(end, {
 const glass = box(28, 1.5, 18).translate(-14, 6, 35);
 return body.fillet(1.5, { parallel: [0, 0, 1] }).union(glass);
 ```
+
+**When you need >2 guides (network surfaces)**
+
+OCCT MakePipeShell will not take a third rail. Split the body into panels
+(`surfaceFromCurves` / `surfaceFromBoundary`), thicken each Surface (or `sew` a closed shell of Surfaces), then G2 fillet — see `lookup_cookbook("network body panels via sew")`.
+
+**Before publish / open_in_studio (likeness gate)**
+
+Silhouette-weak evidence is not success. After `evaluate_script` +
+`render_preview` (or Studio stills), call:
+
+`verify({ check: 'body-likeness', body_bbox, wheels, still_verdicts })`
+
+Required still codes: `side-body-over-wheels`, `side-cabin-aft`, `rear-haunch`,
+`ortho-proportions-vs-reference` (concrete findings, not empty strings).
+
+Automated: wheel footprint, rocker vs tire top, wheelbase span, optional cabin-aft
+(when `cabin_bbox` given). Agent-required: the four still codes. Full CV
+silhouette IoU is **not** implemented — do not claim it.
