@@ -4,6 +4,7 @@
 // Adam-level mechanical parts are often single-body solids. review_cad still
 // requires an assembly; design_loop promotes a clean solid-only evaluate to
 // functional so quality / revision assist gates can still run.
+import { summarizeInterferencePairs } from '../../modeling/runtime/interferenceClassification';
 import type { ReviewCadOutput } from '../review/reviewPipeline';
 
 export function isSolidOnlyReviewMiss(review: ReviewCadOutput): boolean {
@@ -19,7 +20,8 @@ export function solidOnlyFunctionalReview(review: ReviewCadOutput, goal: string)
     ok: true,
     featureCount: review.featureCount,
     diagnostics: [],
-    validator: { status: 'ok', diagnostics: [], partCount: 1, jointCount: 0 },
+    assembly: 'solid-only',
+    validator: { status: 'solved', diagnostics: [], partCount: 1, jointCount: 0 },
     fitness: {
       functional: true,
       repairMode: 'none',
@@ -35,7 +37,9 @@ export function solidOnlyFunctionalReview(review: ReviewCadOutput, goal: string)
       preserveInterfaces: [],
       designGoal: goal,
     },
-    suggestedRepairPrompt:
-      'Solid-only evaluate passed. No assembly to review — quality gates still apply.',
+    rawInterferencePairs: [],
+    interferenceSummary: summarizeInterferencePairs([]),
+    mechanism: 'unverified',
+    mechanismFailures: [],
   };
 }

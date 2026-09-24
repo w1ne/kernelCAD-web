@@ -5,7 +5,6 @@ import { dirname, relative, resolve } from 'node:path';
 import { fileReadErrorMessage } from '../../../shared/diagnostics/fileReadError';
 import type { GripperApertureRequest } from '../../../modeling/mates/gripperAperture';
 import type { MechanismFitnessResult } from '../../../modeling/mates/mechanismFitness';
-import type { ContactGraphResult } from '../../../modeling/runtime/contactGraph';
 import {
   runReviewPipeline,
   type RepairContext,
