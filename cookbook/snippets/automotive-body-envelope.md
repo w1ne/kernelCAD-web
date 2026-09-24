@@ -28,8 +28,7 @@ shell only — do not use it for likeness-driven automotive bodies.
    `lineTo` polylines pretending to be ovals.
 2. `profile.loft(other, { planes, rails })` with **≤2 rails** that pass within
    1 mm of every section (see `examples/curves-surfacing/handle-and-tee.kcad.ts`),
-   **or** `surfaceFromCurves(sections)` → `sew([...], { requireClosed: true })`
-   → `.thicken(t)` → small G2 / `.fillet` on long edges.
+   **or** `surfaceFromCurves(sections).thicken(t)` per panel (then boolean) / `sew([...surfaces], { requireClosed: true })` for a closed shell → small G2 / `.fillet` on long edges. Note: `sew` returns a Shape (no `.thicken`); thicken Surfaces first when you need solids from open patches.
 3. Glass canopy as its own solid (union or assembly mate) — do not subtract a
    through-Y arch from the loft (topology collapses; booleans explode).
 4. Spoilers / aero / mirrors as separate parts fastened later — never
@@ -76,8 +75,7 @@ return body.fillet(1.5, { parallel: [0, 0, 1] }).union(glass);
 **When you need >2 guides (network surfaces)**
 
 OCCT MakePipeShell will not take a third rail. Split the body into panels
-(`surfaceFromCurves` / `surfaceFromBoundary`), `sew([...], { requireClosed: true })`,
-`.thicken`, then G2 fillet — see `lookup_cookbook("network body panels via sew")`.
+(`surfaceFromCurves` / `surfaceFromBoundary`), thicken each Surface (or `sew` a closed shell of Surfaces), then G2 fillet — see `lookup_cookbook("network body panels via sew")`.
 
 **Before publish / open_in_studio (likeness gate)**
 

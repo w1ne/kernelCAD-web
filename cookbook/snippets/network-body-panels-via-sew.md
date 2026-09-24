@@ -26,8 +26,8 @@ rails work.
 **Stack**
 
 1. Author panel patches (`nurbsSurface` / `surfaceFromCurves` / `surfaceFromBoundary`).
-2. `sew([...panels], { requireClosed: true })` → watertight shell (or open then thicken).
-3. `.thicken(t)` when the sew is a shell; G2 fillet long NURBS-adjacent seams.
+2. Prefer `.thicken(t)` on each `Surface`, then boolean the solids — **or** `sew([...surfaces], { requireClosed: true })` when the patches already close a shell (`sew` returns a Shape; it has no `.thicken`).
+3. G2 fillet long NURBS-adjacent seams on the resulting solid.
 4. Before `open_in_studio`: `verify({ check: 'body-likeness', ... })`.
 
 Minimal evaluable pattern (two NURBS patches sewn — scale up to body panels):
@@ -49,5 +49,7 @@ const b = nurbsSurface({
   ],
   degree: { u: 2, v: 2 },
 });
-return sew([a, b], { requireClosed: false }).thicken(2);
+// sew() returns a Shape. For solids, thicken each Surface first, then boolean/union,
+// or sew a closed shell of Surfaces with requireClosed: true.
+return sew([a, b]);
 ```

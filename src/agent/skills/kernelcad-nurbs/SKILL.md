@@ -378,8 +378,7 @@ for the rail-loft / surfaceFromCurves stack (not the stylized polyline loft).
 
 **>2 loft rails / network bodies.** OCCT MakePipeShell hard-caps at 2 rails
 (`feature.loft.rail-miss`). Do not raise rail count. Panel with
-`surfaceFromCurves` / `surfaceFromBoundary`, `sew([...], { requireClosed: true })`,
-`.thicken`, G2 fillet — `lookup_cookbook("network body panels via sew")`.
+`surfaceFromCurves` / `surfaceFromBoundary`, `.thicken` each panel (or `sew` a closed Surface shell — sew returns a Shape, no `.thicken`), G2 fillet — `lookup_cookbook("network body panels via sew")`.
 
 **Likeness before publish.** For cars / organic envelopes, after ortho stills:
 `verify({ check: 'body-likeness', body_bbox, wheels, still_verdicts })`. Automated
