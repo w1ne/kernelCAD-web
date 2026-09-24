@@ -27,10 +27,11 @@ export const ASSEMBLY_CODES = {
   // Assembly validator — v0.5 graph wiring (3)
   'assembly.part.floating': {
     hintTemplate:
-      "Declare a joint or mate connecting this part to another part so the assembly graph is connected (arm.fixed/.revolute/.prismatic/.ball or arm.mate(...)).",
+      "Disconnected body: declare connectors + a mate/joint linking this part into the assembly graph. Shafts/hinges/gears: type: 'axis' connector + arm.mate(..., 'revolute'); rigid mounts: type: 'frame' + mate(..., 'fastened'); or arm.fixed/.revolute/.prismatic/.ball. Connector types are only frame|axis|planar|ball.",
     nextAction: {
       kind: 'rewrite-feature',
-      guidance: 'declare an arm.fixed/.revolute/.prismatic/.ball joint or arm.mate(...) linking this part to another',
+      guidance:
+        "add axis+revolute (shafts/hinges/gears) or frame+fastened (rigid) connectors+mates, or an arm.fixed/.revolute/.prismatic/.ball joint",
     },
     defaultSeverity: 'warn',
     group: 'assembly',
@@ -38,14 +39,15 @@ export const ASSEMBLY_CODES = {
   },
   'assembly.part.orphan': {
     hintTemplate:
-      "Add a joint or mate that links this sub-assembly to a part in the main mechanism so every component shares a single connected graph.",
+      "Disconnected component: add a joint or mate linking this sub-assembly to the main mechanism (axis+revolute for shafts/hinges/gears, frame+fastened for rigid mounts, or arm.revolute/.prismatic/.ball/.fixed) so every body shares one connected graph.",
     nextAction: {
       kind: 'rewrite-feature',
-      guidance: 'add a joint linking this sub-assembly to a part in the main mechanism',
+      guidance:
+        "link this orphan cluster to the main mechanism with axis+revolute or frame+fastened connectors+mates (or joint primitives)",
     },
     defaultSeverity: 'warn',
     group: 'assembly',
-    description: 'A part is part of a sub-assembly that is not transitively reachable from the main connected component.',
+    description: 'A part is part of a sub-assembly that is not transitively reachable from the main connected component (disconnected components in the assembly graph).',
   },
   'assembly.interference.overlap': {
     hintTemplate:

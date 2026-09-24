@@ -506,15 +506,27 @@ function checkOrphanParts(arm: Assembly): CompilerDiagnostic[] {
 
   const root = parts[0].name;
   const visited = collectReachablePartNames(adj, root);
+  const disconnected = parts.map((p) => p.name).filter((name) => !visited.has(name));
+  if (disconnected.length === 0) return [];
 
+  // One diagnostic per disconnected body, but every message names the full
+  // disconnected-component roster + the required connector/mate patterns so
+  // agents (ChatGPT) can fix gear/hinge assemblies without hunting docs.
+  const disconnectedList = disconnected.map((n) => `'${n}'`).join(', ');
+  const reachableList = [...visited].map((n) => `'${n}'`).join(', ');
   const out: CompilerDiagnostic[] = [];
-  for (const p of parts) {
-    if (!visited.has(p.name)) {
-      out.push(makeFailure(
-        'mechanism.orphan-part',
-        `Part '${p.name}' is not reachable from the assembly graph (no mate, joint, or connect edge links it to '${root}' or anything '${root}' reaches).`,
-      ));
-    }
+  for (const name of disconnected) {
+    out.push(makeFailure(
+      'mechanism.orphan-part',
+      `Disconnected component: part '${name}' is not linked to the assembly graph. ` +
+        `Root '${root}' reaches only [${reachableList}]; disconnected bodies: [${disconnectedList}]. ` +
+        `No mate, joint, or connect edge links '${name}' into that graph. ` +
+        `Fix: add connectors + mates/joints — shafts/hinges/gears use ` +
+        `partRef.connector(name, { type: 'axis', origin: { kind: 'vec3', value: [x,y,z] }, axis: [ux,uy,uz] }) ` +
+        `then arm.mate(..., 'revolute'); rigid mounts use type: 'frame' + mate(..., 'fastened'); ` +
+        `or joint primitives arm.revolute/.prismatic/.ball/.fixed. ` +
+        `Connector types are only frame|axis|planar|ball (no gear-contact type).`,
+    ));
   }
   return out;
 }
