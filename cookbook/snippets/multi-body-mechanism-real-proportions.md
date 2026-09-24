@@ -49,13 +49,14 @@ const upperLen = 110;
 const pin = cylinder(100, 4).rotate([1, 0, 0], 90).translate(0, 50, 0);
 const upper = arm.part(
   'upper-link',
+  // Beam spans X; cheeks overlap beam in X and Y so the part is one solid.
   box(upperLen - 24, 14, 12, true)
     .translate(upperLen / 2, 0, 0)
-    .union(box(22, 8, 28, true).translate(0, 14, 0))
-    .union(box(22, 8, 28, true).translate(0, -14, 0))
+    .union(box(36, 8, 28, true).translate(8, 10, 0))
+    .union(box(36, 8, 28, true).translate(8, -10, 0))
     .union(pin)
-    .union(box(14, 8, 22, true).translate(upperLen, 14, 0))
-    .union(box(14, 8, 22, true).translate(upperLen, -14, 0)),
+    .union(box(28, 8, 22, true).translate(upperLen - 8, 10, 0))
+    .union(box(28, 8, 22, true).translate(upperLen - 8, -10, 0)),
 );
 upper.connector('shoulder', {
   type: 'axis',

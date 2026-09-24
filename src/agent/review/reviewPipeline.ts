@@ -426,6 +426,10 @@ async function runPoseEnvelopeStage(
   const dfm = findDfmSpec(model.records);
   const candidateScene = model.rootShape ?? model.tailShape;
   const loweredScene = isSceneBackend(candidateScene) ? candidateScene : undefined;
+  const ignoredPairs = new Set<string>([
+    ...arm.__ignoreInterference().map(([a, b]) => pairKey(a, b)),
+    ...(dfm?.ignore ?? []).map(([a, b]) => pairKey(a, b)),
+  ]);
   return includePoseEnvelope
     ? reviewPoseEnvelope(arm, {
         includeInterference: input.includeInterference ?? true,
@@ -435,11 +439,11 @@ async function runPoseEnvelopeStage(
         samplesPerMate: input.samplesPerMate,
         combinatorial: input.combinatorial,
         loweredScene,
+        ...(ignoredPairs.size > 0 ? { ignoredPairs } : {}),
         ...(dfm?.minClearance !== undefined
           ? {
               minClearanceMm: dfm.minClearance,
               includeArticulatedMateClearance: dfm.includeArticulatedMates,
-              ignoredPairs: new Set(dfm.ignore.map(([a, b]) => pairKey(a, b))),
             }
           : {}),
       })

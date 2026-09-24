@@ -1,0 +1,57 @@
+{
+  "at": "2026-09-24T23:21:13.690Z",
+  "timezone": "Europe/Budapest (UTC+2)",
+  "housingEvaluate": {
+    "ok": true,
+    "featureCount": 17,
+    "featureHealth": []
+  },
+  "mechanismEvaluate": {
+    "ok": true,
+    "featureCount": 19,
+    "mechanism": "real",
+    "parts": {
+      "count": 2,
+      "names": [
+        "base-frame",
+        "upper-link"
+      ]
+    }
+  },
+  "housingDesignLoop": {
+    "ok": true,
+    "functional": true,
+    "passedChecks": [
+      "solid-only-evaluate"
+    ]
+  },
+  "mechanismDesignLoop": {
+    "ok": false,
+    "functional": false,
+    "reviewFacts": [
+      "assembly.joint-topology.unsupported-axis",
+      "assembly.connectivity.floating-moving-part",
+      "assembly.connectivity.floating-moving-part",
+      "assembly.quality.box-fragment-clutter"
+    ],
+    "blockingReasons": [
+      "Revolute mate 'shoulder-pitch' has no joint support intent declaring support.",
+      "Moving part 'base-frame' has no mate-graph path to a stable root.",
+      "Moving part 'upper-link' has no mate-graph path to a stable root.",
+      "Mate 'shoulder-pitch' drifted 70.0° from rest in 0.5 s under gravity (threshold 5°). The mechanism does not hold its declared rest pose without a brake or actuator — add a spring/tendon across this joint (closed-loop tendon API tracked in #361) or declare the joint as actively driven."
+    ],
+    "note": "evaluate+mechanism:real OK; design_loop still agent-dependent on joint-support / grounded-root / gravity-hold (not vanity polish)"
+  },
+  "toyFailClosed": {
+    "ok": false,
+    "reviewFacts": [
+      "assembly.quality.stacked-primitive-toy"
+    ],
+    "revisionAssistMode": "hints-only"
+  },
+  "filletAutoRevise": {
+    "mode": "auto-applied-candidate",
+    "suggestedCode": "const b = box(10, 10, 10);\nreturn b.fillet(4);\n"
+  },
+  "openInStudioMeshCdn": "not exercised this slice (local evaluate/design_loop only; CDN/widget already live from prior PRs)"
+}
