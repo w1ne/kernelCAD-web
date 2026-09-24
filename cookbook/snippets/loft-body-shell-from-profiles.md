@@ -1,23 +1,27 @@
 ---
 id: loft-body-shell-from-profiles
-title: Loft a closed body shell from cross-section profiles at stations
+title: Loft a stylized body shell from polyline cross-section profiles
 tags: [shell, sketch, symmetry, mirror]
 keywords:
-  - loft a body shell
-  - car body shell
-  - vehicle body
-  - organic shell from profiles
+  - loft a stylized body shell
+  - mechanism demo shell
+  - polyline loft shell
   - hull from cross sections
   - fuselage loft
   - cross-section stations
-  - freeform solid body
-when_to_use: You need a recognizable, printable stylized solid body (car body, boat hull, fuselage, casing) that primitives can't express. Define cross-section profiles at stations along an axis, loft a solid through them, then shell + fillet. This is NURBS surfacing for organic bodies — not a polygon sculpt and not a photoreal render.
+  - stylized printable shell
+when_to_use: Stylized / mechanism-demo shell ONLY — recognizable printable boxy loft from polyline stations (toy car, boat hull demo, fuselage blockout). NOT for berlinetta / sports-car / organic automotive likeness. For organic car bodies use automotive-body-envelope instead (lookup_cookbook("automotive body envelope")).
 ---
 
-Reach for a loft when the form is a body that changes cross-section along an
-axis — a car body, a hull, a fuselage, an instrument casing. Sketch a closed
-profile for each station, loft a solid through the stack, soften the long edges
-with a fillet, then hollow it into a shell by opening one end-cap face.
+**Scope:** stylized / mechanism-demo shell only. For berlinetta / Ferrari-class /
+organic car bodies, use `automotive-body-envelope` (`lookup_cookbook("automotive
+body envelope")`) — spline/rail loft or surfaceFromCurves + sew + thicken, not
+this polyline loft.
+
+Reach for this loft when you want a **boxy demo body** that changes cross-section
+along an axis. Sketch a closed polyline profile for each station, loft a solid
+through the stack, soften the long edges with a fillet, then hollow it into a
+shell by opening one end-cap face.
 
 The four long edges run parallel to the loft axis (`+Z` here), so select them
 with `{ parallel: [0, 0, 1] }`. The end-cap you open for the shell is the
