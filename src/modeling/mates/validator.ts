@@ -246,8 +246,8 @@ function collectFloatingDiagnostics(
       diagnostics.push({
         code: 'assembly.part.floating',
         severity: 'warning',
-        message: `Part '${p.partName}' has no joint connecting it to any other part.`,
-        hint: `invalid-args.assembly.floating-part — declare a connection via arm.mate('${p.partName}-mount', '${p.partName}.<connector>', '<other>.<connector>', 'fastened') (or 'revolute' / 'prismatic' / 'ball' as appropriate) so the assembly graph reflects how parts actually mate.`,
+        message: `Disconnected body: part '${p.partName}' has no joint or mate connecting it to any other part.`,
+        hint: `invalid-args.assembly.floating-part — disconnected body '${p.partName}'. Add connectors + mate/joint: shafts/hinges/gears → type: 'axis' + arm.mate(..., 'revolute'); rigid → type: 'frame' + mate(..., 'fastened'); or arm.fixed/.revolute/.prismatic/.ball. Connector types: frame|axis|planar|ball.`,
         partName: p.partName,
       });
     }
@@ -279,8 +279,8 @@ function collectOrphanDiagnostics(
           diagnostics.push({
             code: 'assembly.part.orphan',
             severity: 'warning',
-            message: `Part '${name}' is in a sub-assembly disconnected from the main mechanism.`,
-            hint: `invalid-args.assembly.orphan-cluster — add a joint linking this sub-assembly to a part in the main mechanism (which contains '${firstPartName}').`,
+            message: `Disconnected component: part '${name}' is in a sub-assembly disconnected from the main mechanism.`,
+            hint: `invalid-args.assembly.orphan-cluster — disconnected component '${name}'. Link it to the main mechanism (contains '${firstPartName}') with axis+revolute (shafts/hinges/gears) or frame+fastened (rigid), or arm.revolute/.prismatic/.ball/.fixed.`,
             partName: name,
           });
         }

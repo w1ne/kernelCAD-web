@@ -299,6 +299,10 @@ describe('mechanism truth — pose-sweep grounded loop (P0)', () => {
     const orphanNames = orphans.map((o) => o.message);
     expect(orphanNames.some((m) => m.includes('floating-pin-cap-a'))).toBe(true);
     expect(orphanNames.some((m) => m.includes('floating-tongue'))).toBe(true);
+    // DX: every orphan message names the disconnected-component roster + connector patterns.
+    expect(orphanNames.every((m) => m.startsWith('Disconnected component:'))).toBe(true);
+    expect(orphanNames.every((m) => m.includes('disconnected bodies:'))).toBe(true);
+    expect(orphanNames.every((m) => m.includes("type: 'axis'"))).toBe(true);
   }, 60000);
 
   it('5. two parts overlapping without a mate → broken with mechanism.interpenetration', async () => {

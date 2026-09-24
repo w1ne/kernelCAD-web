@@ -87,11 +87,11 @@ describe('renderHuman — human-readable validate output', () => {
       [
         "Assembly status: WARNING (2 parts, 0 joints; 0 errors, 2 warnings)",
         "  [WARN] assembly.part.floating",
-        "         Part 'a' has no joint connecting it to any other part.",
-        "         hint: invalid-args.assembly.floating-part — declare a connection via arm.mate('a-mount', 'a.<connector>', '<other>.<connector>', 'fastened') (or 'revolute' / 'prismatic' / 'ball' as appropriate) so the assembly graph reflects how parts actually mate.",
+        "         Disconnected body: part 'a' has no joint or mate connecting it to any other part.",
+        "         hint: invalid-args.assembly.floating-part — disconnected body 'a'. Add connectors + mate/joint: shafts/hinges/gears → type: 'axis' + arm.mate(..., 'revolute'); rigid → type: 'frame' + mate(..., 'fastened'); or arm.fixed/.revolute/.prismatic/.ball. Connector types: frame|axis|planar|ball.",
         "  [WARN] assembly.part.floating",
-        "         Part 'b' has no joint connecting it to any other part.",
-        "         hint: invalid-args.assembly.floating-part — declare a connection via arm.mate('b-mount', 'b.<connector>', '<other>.<connector>', 'fastened') (or 'revolute' / 'prismatic' / 'ball' as appropriate) so the assembly graph reflects how parts actually mate.",
+        "         Disconnected body: part 'b' has no joint or mate connecting it to any other part.",
+        "         hint: invalid-args.assembly.floating-part — disconnected body 'b'. Add connectors + mate/joint: shafts/hinges/gears → type: 'axis' + arm.mate(..., 'revolute'); rigid → type: 'frame' + mate(..., 'fastened'); or arm.fixed/.revolute/.prismatic/.ball. Connector types: frame|axis|planar|ball.",
       ]
     `);
     expect(exitCode).toBe(1);
@@ -125,11 +125,11 @@ describe('renderHuman — human-readable validate output', () => {
         "",
         "Assembly status: ERROR (2 parts, 0 joints; 0 errors, 2 warnings)",
         "  [WARN] assembly.part.floating",
-        "         Part 'a' has no joint connecting it to any other part.",
-        "         hint: invalid-args.assembly.floating-part — declare a connection via arm.mate('a-mount', 'a.<connector>', '<other>.<connector>', 'fastened') (or 'revolute' / 'prismatic' / 'ball' as appropriate) so the assembly graph reflects how parts actually mate.",
+        "         Disconnected body: part 'a' has no joint or mate connecting it to any other part.",
+        "         hint: invalid-args.assembly.floating-part — disconnected body 'a'. Add connectors + mate/joint: shafts/hinges/gears → type: 'axis' + arm.mate(..., 'revolute'); rigid → type: 'frame' + mate(..., 'fastened'); or arm.fixed/.revolute/.prismatic/.ball. Connector types: frame|axis|planar|ball.",
         "  [WARN] assembly.part.floating",
-        "         Part 'b' has no joint connecting it to any other part.",
-        "         hint: invalid-args.assembly.floating-part — declare a connection via arm.mate('b-mount', 'b.<connector>', '<other>.<connector>', 'fastened') (or 'revolute' / 'prismatic' / 'ball' as appropriate) so the assembly graph reflects how parts actually mate.",
+        "         Disconnected body: part 'b' has no joint or mate connecting it to any other part.",
+        "         hint: invalid-args.assembly.floating-part — disconnected body 'b'. Add connectors + mate/joint: shafts/hinges/gears → type: 'axis' + arm.mate(..., 'revolute'); rigid → type: 'frame' + mate(..., 'fastened'); or arm.fixed/.revolute/.prismatic/.ball. Connector types: frame|axis|planar|ball.",
       ]
     `);
     expect(exitCode).toBe(2);
@@ -163,11 +163,11 @@ describe('renderHuman — human-readable validate output', () => {
       [
         "Assembly status: WARNING (2 parts, 0 joints; 0 errors, 3 warnings)",
         "  [WARN] assembly.part.floating",
-        "         Part 'a' has no joint connecting it to any other part.",
-        "         hint: invalid-args.assembly.floating-part — declare a connection via arm.mate('a-mount', 'a.<connector>', '<other>.<connector>', 'fastened') (or 'revolute' / 'prismatic' / 'ball' as appropriate) so the assembly graph reflects how parts actually mate.",
+        "         Disconnected body: part 'a' has no joint or mate connecting it to any other part.",
+        "         hint: invalid-args.assembly.floating-part — disconnected body 'a'. Add connectors + mate/joint: shafts/hinges/gears → type: 'axis' + arm.mate(..., 'revolute'); rigid → type: 'frame' + mate(..., 'fastened'); or arm.fixed/.revolute/.prismatic/.ball. Connector types: frame|axis|planar|ball.",
         "  [WARN] assembly.part.floating",
-        "         Part 'b' has no joint connecting it to any other part.",
-        "         hint: invalid-args.assembly.floating-part — declare a connection via arm.mate('b-mount', 'b.<connector>', '<other>.<connector>', 'fastened') (or 'revolute' / 'prismatic' / 'ball' as appropriate) so the assembly graph reflects how parts actually mate.",
+        "         Disconnected body: part 'b' has no joint or mate connecting it to any other part.",
+        "         hint: invalid-args.assembly.floating-part — disconnected body 'b'. Add connectors + mate/joint: shafts/hinges/gears → type: 'axis' + arm.mate(..., 'revolute'); rigid → type: 'frame' + mate(..., 'fastened'); or arm.fixed/.revolute/.prismatic/.ball. Connector types: frame|axis|planar|ball.",
         "  [WARN] assembly.mechanical.part-disconnected",
         "         Part 'a' is a disconnected solid.",
         "         hint: Join it to the main component.",

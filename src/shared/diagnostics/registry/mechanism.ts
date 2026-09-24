@@ -39,11 +39,15 @@ export const MECHANISM_CODES = {
   },
   'mechanism.orphan-part': {
     hintTemplate:
-      "A part declared via arm.part(...) is unreachable from the assembly graph. Connect it to another part — either a mate (arm.mate(...)) or a joint primitive (arm.revolute/.prismatic/.ball) counts — or remove the part if it isn't structurally needed.",
-    nextAction: { kind: 'rewrite-feature', guidance: 'add a mate or joint primitive that connects the orphan part to the rest of the assembly graph' },
+      "Disconnected components in the assembly graph. Connect every orphan body with connectors + mates/joints: shafts/hinges/gears → partRef.connector(name, { type: 'axis', origin: { kind: 'vec3', value: [x,y,z] }, axis: [...] }) then arm.mate(name, 'a.conn', 'b.conn', 'revolute'); rigid mounts → type: 'frame' + mate(..., 'fastened'); or use arm.revolute/.prismatic/.ball/.fixed. Connector types are only frame|axis|planar|ball.",
+    nextAction: {
+      kind: 'rewrite-feature',
+      guidance:
+        "connect disconnected bodies with axis+revolute (shafts/hinges/gears) or frame+fastened (rigid), or arm.revolute/.prismatic/.ball/.fixed joint primitives",
+    },
     defaultSeverity: 'error',
     group: 'mechanism',
-    description: 'A part declared on the assembly is not reachable from any other part via mate, joint-primitive, or connect edges — the assembly graph is disconnected.',
+    description: 'A part declared on the assembly is not reachable from any other part via mate, joint-primitive, or connect edges — the assembly graph has disconnected components. Diagnostics list every disconnected body id and suggest connector types.',
   },
   // Physics-grounded loop — T3 slice (post-condition trust gate). Emitted by
   // `mechanismTruth.ts` when the BREP pose-sweep work estimate exceeds the
