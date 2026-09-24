@@ -579,6 +579,38 @@ const AUTOMOTIVE_LIKENESS_STILL_CODES = [
   'ortho-proportions-vs-reference',
 ] as const;
 
+function automotiveStillsFromVisual(
+  visualReview: DesignLoopVisualReview | undefined,
+): StillVerdict[] {
+  return (visualReview?.checks ?? [])
+    .filter((c) => AUTOMOTIVE_LIKENESS_STILL_CODES.includes(c.code as (typeof AUTOMOTIVE_LIKENESS_STILL_CODES)[number]))
+    .map((c) => ({
+      code: c.code,
+      passed: c.passed,
+      finding: c.finding,
+    }));
+}
+
+function resolveAutomotiveStillVerdicts(
+  bodyLikeness: DesignLoopBodyLikenessInput | undefined,
+  visualReview: DesignLoopVisualReview | undefined,
+): StillVerdict[] {
+  const explicit = bodyLikeness?.still_verdicts;
+  if (explicit && explicit.length > 0) return explicit;
+  return automotiveStillsFromVisual(visualReview);
+}
+
+function likenessGateDiagnosticsAsReviewFacts(
+  diagnostics: ReturnType<typeof assertLikenessPublishReady>['diagnostics'],
+): Array<{ code: string; severity: string; message: string; hint?: string }> {
+  return diagnostics.map((d) => ({
+    code: d.code,
+    severity: d.severity === 'error' ? 'warning' : d.severity,
+    message: d.message,
+    hint: d.hint,
+  }));
+}
+
 function bodyLikenessReviewFacts(
   likenessProfile: DesignLoopInput['likenessProfile'],
   bodyLikeness: DesignLoopBodyLikenessInput | undefined,
@@ -586,26 +618,13 @@ function bodyLikenessReviewFacts(
 ): Array<{ code: string; severity: string; message: string; hint?: string }> {
   if (likenessProfile !== 'automotive') return [];
 
-  const stillsFromVisual = (visualReview?.checks ?? [])
-    .filter((c) => AUTOMOTIVE_LIKENESS_STILL_CODES.includes(c.code as (typeof AUTOMOTIVE_LIKENESS_STILL_CODES)[number]))
-    .map((c) => ({
-      code: c.code,
-      passed: c.passed,
-      finding: c.finding,
-    }));
-
-  const stillVerdicts =
-    bodyLikeness?.still_verdicts && bodyLikeness.still_verdicts.length > 0
-      ? bodyLikeness.still_verdicts
-      : stillsFromVisual;
-
   const gate = assertLikenessPublishReady({
     likenessProfile: 'automotive',
     body: bodyLikeness?.body_bbox,
     cabin: bodyLikeness?.cabin_bbox,
     wheels: bodyLikeness?.wheels,
     lengthAxis: bodyLikeness?.length_axis,
-    stillVerdicts,
+    stillVerdicts: resolveAutomotiveStillVerdicts(bodyLikeness, visualReview),
     requireStills: bodyLikeness?.require_stills,
     footprintMarginMm: bodyLikeness?.footprint_margin_mm,
     maxBodyAboveWheelTopMm: bodyLikeness?.max_body_above_wheel_top_mm,
@@ -613,13 +632,7 @@ function bodyLikenessReviewFacts(
   });
 
   if (gate.successClaimable) return [];
-
-  return gate.diagnostics.map((d) => ({
-    code: d.code,
-    severity: d.severity === 'error' ? 'warning' : d.severity,
-    message: d.message,
-    hint: d.hint,
-  }));
+  return likenessGateDiagnosticsAsReviewFacts(gate.diagnostics);
 }
 
 function visualReviewFacts(
