@@ -12,6 +12,12 @@ import {
   type ReviewCadInput,
   type ReviewCadOutput,
 } from '../../review/reviewPipeline';
+import {
+  assertLikenessPublishReady,
+  type BBox,
+  type StillVerdict,
+  type WheelSpec,
+} from '../../likeness/publishGate';
 
 export interface DesignLoopAttemptInput {
   id?: string;
@@ -57,8 +63,27 @@ export interface DesignLoopInput {
    * ortho-proportions-vs-reference). Pair with verify({ check: 'body-likeness' }).
    */
   likenessProfile?: 'automotive';
+  /**
+   * Body-likeness inputs for the hard publish gate when likenessProfile is
+   * 'automotive'. Still verdicts may also be derived from visualReview.checks
+   * that use the automotive still codes. Missing inputs fail the attempt with
+   * reference.likeness.gate-required — do not claim success.
+   */
+  bodyLikeness?: DesignLoopBodyLikenessInput;
   outputRecordPath?: string;
   recordTitle?: string;
+}
+
+export interface DesignLoopBodyLikenessInput {
+  body_bbox?: BBox;
+  cabin_bbox?: BBox;
+  wheels?: WheelSpec[];
+  length_axis?: 'x' | 'y';
+  still_verdicts?: StillVerdict[];
+  require_stills?: boolean;
+  footprint_margin_mm?: number;
+  max_body_above_wheel_top_mm?: number;
+  min_overhang_mm?: number;
 }
 
 export interface DesignLoopAttemptResult {
@@ -211,6 +236,7 @@ async function runDesignLoopAttempt(
     allowReviewWarnings: input.allowReviewWarnings ?? [],
     requireVisualReview: input.requireVisualReview ?? true,
     likenessProfile: input.likenessProfile,
+    bodyLikeness: input.bodyLikeness,
     visualReview: attempt.visualReview,
     source,
   });
@@ -287,6 +313,7 @@ function toAttemptResult(input: {
   allowReviewWarnings: readonly string[];
   requireVisualReview: boolean;
   likenessProfile?: DesignLoopInput['likenessProfile'];
+  bodyLikeness?: DesignLoopBodyLikenessInput;
   visualReview?: DesignLoopVisualReview;
   source: string;
 }): DesignLoopAttemptResult {
@@ -318,6 +345,7 @@ function toAttemptResult(input: {
       input.allowReviewWarnings,
       input.likenessProfile,
     ),
+    ...bodyLikenessReviewFacts(input.likenessProfile, input.bodyLikeness, input.visualReview),
   ];
   const functional = input.review.ok;
   const qualityOk = reviewFacts.length === 0;
@@ -544,6 +572,56 @@ export function geometryReviewFacts(
   }];
 }
 
+const AUTOMOTIVE_LIKENESS_STILL_CODES = [
+  'side-body-over-wheels',
+  'side-cabin-aft',
+  'rear-haunch',
+  'ortho-proportions-vs-reference',
+] as const;
+
+function bodyLikenessReviewFacts(
+  likenessProfile: DesignLoopInput['likenessProfile'],
+  bodyLikeness: DesignLoopBodyLikenessInput | undefined,
+  visualReview: DesignLoopVisualReview | undefined,
+): Array<{ code: string; severity: string; message: string; hint?: string }> {
+  if (likenessProfile !== 'automotive') return [];
+
+  const stillsFromVisual = (visualReview?.checks ?? [])
+    .filter((c) => AUTOMOTIVE_LIKENESS_STILL_CODES.includes(c.code as (typeof AUTOMOTIVE_LIKENESS_STILL_CODES)[number]))
+    .map((c) => ({
+      code: c.code,
+      passed: c.passed,
+      finding: c.finding,
+    }));
+
+  const stillVerdicts =
+    bodyLikeness?.still_verdicts && bodyLikeness.still_verdicts.length > 0
+      ? bodyLikeness.still_verdicts
+      : stillsFromVisual;
+
+  const gate = assertLikenessPublishReady({
+    likenessProfile: 'automotive',
+    body: bodyLikeness?.body_bbox,
+    cabin: bodyLikeness?.cabin_bbox,
+    wheels: bodyLikeness?.wheels,
+    lengthAxis: bodyLikeness?.length_axis,
+    stillVerdicts,
+    requireStills: bodyLikeness?.require_stills,
+    footprintMarginMm: bodyLikeness?.footprint_margin_mm,
+    maxBodyAboveWheelTopMm: bodyLikeness?.max_body_above_wheel_top_mm,
+    minOverhangMm: bodyLikeness?.min_overhang_mm,
+  });
+
+  if (gate.successClaimable) return [];
+
+  return gate.diagnostics.map((d) => ({
+    code: d.code,
+    severity: d.severity === 'error' ? 'warning' : d.severity,
+    message: d.message,
+    hint: d.hint,
+  }));
+}
+
 function visualReviewFacts(
   requireVisualReview: boolean,
   visualReview: DesignLoopVisualReview | undefined,
@@ -637,13 +715,6 @@ function visualReviewMissingFields(
   }
   return { missing, checkResults };
 }
-
-const AUTOMOTIVE_LIKENESS_STILL_CODES = [
-  'side-body-over-wheels',
-  'side-cabin-aft',
-  'rear-haunch',
-  'ortho-proportions-vs-reference',
-] as const;
 
 function requiredVisualReviewCheckCodes(
   likenessProfile?: DesignLoopInput['likenessProfile'],
