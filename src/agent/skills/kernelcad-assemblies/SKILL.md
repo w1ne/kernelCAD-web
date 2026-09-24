@@ -276,7 +276,7 @@ const snapScene = solved.toScene();               // snapshot Scene; call .toUni
 **Limitations (v1):**
 - **Numeric joint origins.** Joint origins are plain `Vec3`, not `EditableVec3`. Editing geometry params (e.g. `baseX`) reshapes parts but not joint frames; future slice will lift joint origins to `EditableVec3` once `setParamValue` reactivity is wired through.
 - **One frame per part.** Joint origins are `Vec3` numeric, can't bind to faces/edges/vertices yet.
-- **Body-tree only.** Each part has at most one parent joint; no closed-chain (4-bar linkage) kinematics.
+- **Body-tree / open-chain FK only (v0.6.0).** Each part has at most one parent joint; articulated closed chains (4-bar linkages) return `assembly.solver.did-not-converge` — use an open chain or fastened-only loop until T7.x.
 - **Motion-limit review is validator/tooling-level.** `limitsDeg`/`limitsMm` are checked by pose-envelope review (`review_cad`, `validateMatePoseLimits`, or `solvedModel(poses, { posesGate: 'envelope' })`); raw `solve()` still computes the requested pose.
 - Calling `solve()` twice on the same Assembly compounds transforms; build a fresh `assembly()` per pose query.
 
@@ -400,7 +400,7 @@ The mate-aware validator walks the assembly's parts + joints + mate graph and re
 | `under-constrained`   | One or more parts have residual DOF — declare more mates. |
 | `over-constrained`    | Mates mutually contradict — remove or relax one. |
 | `redundant-ok`        | Mates over-determine the pose but agree — info-severity diagnostic, prune for hygiene. |
-| `did-not-converge`    | Newton-Raphson iter-cap hit (closed articulated loops). |
+| `did-not-converge`    | **UNSUPPORTED on v0.6.0** for articulated closed loops (4-bar etc.; often 0 iterations = refused up-front). Rewrite as an open chain or fastened-only loop — do not invent gear-contact types. |
 
 Six diagnostic codes on `ValidatorDiagnostic`:
 
@@ -409,7 +409,7 @@ Six diagnostic codes on `ValidatorDiagnostic`:
 - `assembly.mate.type-mismatch` — connector-pair / mate-type mismatch at capture.
 - `assembly.mate.connector-not-found` — malformed ref / unknown part / unknown connector.
 - `assembly.loop.unclosed` — reserved (type-only today).
-- `assembly.solver.did-not-converge` — Newton-Raphson hit the iter-cap.
+- `assembly.solver.did-not-converge` — **v0.6.0 does not solve articulated closed loops** (4-bar / parallelogram). Message lists body + articulated-mate ids. Fix: open chain (drop one loop-closing mate; keep ground root) or fastened-only loop. `limitsDeg` / `jointSupport` / `mechanicalJoint` still apply on open chains and are reported even when the loop cannot converge.
 
 ### Validation gate on `solvedModel`
 

@@ -122,6 +122,12 @@
     "assembly.pose-envelope.connector-unresolved",
     "assembly.gripper-aperture.connector-missing",
     "assembly.mate.limit-missing",
+    "assembly.connectivity.floating-moving-part",
+    "assembly.connectivity.no-load-path",
+    "assembly.joint-topology.missing-limit",
+    "assembly.joint-topology.unsupported-axis",
+    "assembly.joint-topology.connector-missing",
+    "assembly.joint-topology.axis-invalid",
     "assembly.mounting-hole.mismatch",
     "assembly.joint-axis.unbound",
     "assembly.joint.child-modeled-in-place",
@@ -384,7 +390,7 @@
       }
     },
     "feature.async-result.missing-await": {
-      "template": "This method returns a Promise \u2014 chain it directly on the awaited value, e.g. `(await shape.sectionSketch(...)).extrude(...)`.",
+      "template": "This method returns a Promise — chain it directly on the awaited value, e.g. `(await shape.sectionSketch(...)).extrude(...)`.",
       "nextAction": {
         "kind": "rewrite-feature",
         "guidance": "await the async Shape method (sectionSketch/faceSketch/silhouette) before chaining a Sketch method on its result"
@@ -434,21 +440,21 @@
       }
     },
     "feature.emboss-text.boolean-noop": {
-      "template": "The emboss/engrave boolean left the body unchanged \u2014 the glyph tool never intersected it. Check the anchor places the text over solid material (not over a hole or off the face) and that the depth sign matches the intent (positive = emboss out, negative = engrave in).",
+      "template": "The emboss/engrave boolean left the body unchanged — the glyph tool never intersected it. Check the anchor places the text over solid material (not over a hole or off the face) and that the depth sign matches the intent (positive = emboss out, negative = engrave in).",
       "nextAction": {
         "kind": "fix-arg",
         "field": "anchorU"
       }
     },
     "feature.subtractive-noop": {
-      "template": "A subtractive op (boolean difference, hole, or cutout) removed no material \u2014 the tool never intersected the body. Check the cutter/hole position overlaps the target solid, the depth reaches the material, and the operands are in the same coordinate frame.",
+      "template": "A subtractive op (boolean difference, hole, or cutout) removed no material — the tool never intersected the body. Check the cutter/hole position overlaps the target solid, the depth reaches the material, and the operands are in the same coordinate frame.",
       "nextAction": {
         "kind": "rewrite-feature",
         "guidance": "reposition or resize the cutting tool so it overlaps the target solid"
       }
     },
     "feature.intersection-empty": {
-      "template": "A boolean intersection produced an empty result \u2014 the two bodies do not overlap, so the requested common volume is empty. Check the operands share a region of space (same coordinate frame, overlapping positions) and that they intersect as a solid, not merely touch on a face or edge.",
+      "template": "A boolean intersection produced an empty result — the two bodies do not overlap, so the requested common volume is empty. Check the operands share a region of space (same coordinate frame, overlapping positions) and that they intersect as a solid, not merely touch on a face or edge.",
       "nextAction": {
         "kind": "rewrite-feature",
         "guidance": "reposition or resize the operands so their solids overlap before intersecting"
@@ -462,7 +468,7 @@
       }
     },
     "feature.project-curve.no-intersection": {
-      "template": "projectCurve could not intersect the source curve with the target face. For closed-curve mode, ensure the curve overlaps the face bounds. asEdge:true is not implemented \u2014 use closed-curve projection or pre-tessellate the open wire into a closed sketch.",
+      "template": "projectCurve could not intersect the source curve with the target face. For closed-curve mode, ensure the curve overlaps the face bounds. asEdge:true is not implemented — use closed-curve projection or pre-tessellate the open wire into a closed sketch.",
       "nextAction": {
         "kind": "rewrite-feature",
         "guidance": "use closed-curve projection or shift the curve into the face bounds"
@@ -518,7 +524,7 @@
       }
     },
     "feature.face-ref.snapshot-fallback-used": {
-      "template": "Lineage returned no hits; the entity was recovered by geometry snapshot. The resolution is provisional \u2014 re-emit list_faces or list_edges and update the ref to the lineage-stable form before further edits move the entity beyond tolerance.",
+      "template": "Lineage returned no hits; the entity was recovered by geometry snapshot. The resolution is provisional — re-emit list_faces or list_edges and update the ref to the lineage-stable form before further edits move the entity beyond tolerance.",
       "nextAction": {
         "kind": "rename",
         "guidance": "update the ref to the lineage-stable form via list_faces / list_edges"
@@ -619,7 +625,7 @@
       }
     },
     "cli.file-read": {
-      "template": "kernelCAD could not read the script file. Either the path does not exist locally, or this server is hosted/remote and cannot see your filesystem \u2014 pass the script inline via `code` instead of `file`.",
+      "template": "kernelCAD could not read the script file. Either the path does not exist locally, or this server is hosted/remote and cannot see your filesystem — pass the script inline via `code` instead of `file`.",
       "nextAction": {
         "kind": "check-file-path"
       }
@@ -754,7 +760,7 @@
       }
     },
     "export.sdf-gazebo.invalid-version": {
-      "template": "SDFormat version attribute must be a recognised SDF spec version. The emitter writes <sdf version=\"1.10\"> by default \u2014 the newest spec current simulator LTS releases parse; do not override.",
+      "template": "SDFormat version attribute must be a recognised SDF spec version. The emitter writes <sdf version=\"1.10\"> by default — the newest spec current simulator LTS releases parse; do not override.",
       "nextAction": {
         "kind": "fix-arg",
         "field": "version"
@@ -803,7 +809,7 @@
       }
     },
     "feature.nurbs.bridge-conversion-failed": {
-      "template": "nurbs.bridge: JS\u2192kernel conversion failed (the kernel rejected the curve knot vector). Re-author with explicit knots the kernel accepts (non-decreasing; interior multiplicity <= degree+1; clamped ends multiplicity = degree+1). The default clamped-uniform knot vector always works.",
+      "template": "nurbs.bridge: JS→kernel conversion failed (the kernel rejected the curve knot vector). Re-author with explicit knots the kernel accepts (non-decreasing; interior multiplicity <= degree+1; clamped ends multiplicity = degree+1). The default clamped-uniform knot vector always works.",
       "nextAction": {
         "kind": "rewrite-feature",
         "guidance": "rebuild the curve with the default clamped-uniform knot vector or hand-author a monotonic knot sequence"
@@ -824,7 +830,7 @@
       }
     },
     "feature.sheetMetal.kfactor-invalid": {
-      "template": "K-factor must be a finite number in [0, 1]; typical mild-steel/aluminum values are 0.33\u20130.45. Adjust the kFactor argument to sheetMetal().",
+      "template": "K-factor must be a finite number in [0, 1]; typical mild-steel/aluminum values are 0.33–0.45. Adjust the kFactor argument to sheetMetal().",
       "nextAction": {
         "kind": "fix-arg",
         "field": "kFactor"
@@ -845,7 +851,7 @@
       }
     },
     "feature.draft.failed": {
-      "template": "Draft failed on the selected face(s). Drafts need a planar neutral plane and a consistent pull direction; check that the face is planar and the angle is < 90\u00b0.",
+      "template": "Draft failed on the selected face(s). Drafts need a planar neutral plane and a consistent pull direction; check that the face is planar and the angle is < 90°.",
       "nextAction": {
         "kind": "fix-arg",
         "field": "face"
@@ -859,7 +865,7 @@
       }
     },
     "feature.sdf.field-undefined": {
-      "template": "The SDF returned NaN/Infinity at a sample point. Check the field composition \u2014 smoothBlend with k <= 0 is undefined, and divide-by-zero inside a custom field produces NaN. Use evaluate_sdf to probe a point near the failure before retrying.",
+      "template": "The SDF returned NaN/Infinity at a sample point. Check the field composition — smoothBlend with k <= 0 is undefined, and divide-by-zero inside a custom field produces NaN. Use evaluate_sdf to probe a point near the failure before retrying.",
       "nextAction": {
         "kind": "call-introspection-tool",
         "tool": "evaluate_sdf"
@@ -886,7 +892,7 @@
       }
     },
     "feature.reference-image.scale-out-of-range": {
-      "template": "Pass a scale > 0 and \u2264 10000 mm, or use 'fit-bbox'.",
+      "template": "Pass a scale > 0 and ≤ 10000 mm, or use 'fit-bbox'.",
       "nextAction": {
         "kind": "fix-arg",
         "field": "scale"
@@ -1012,21 +1018,21 @@
       }
     },
     "feature.finish.unknown-token": {
-      "template": "Shape.finish() was called with a name that is not in the finish table. Pass one of the named finishes (metals: aluminium, anodized-black, brass, copper, \u2026; plastics: abs, pla, delrin, \u2026; glass: glass, glass-tinted, acrylic; paints: paint-matte, paint-gloss), or drop to .material({...}) for raw PBR.",
+      "template": "Shape.finish() was called with a name that is not in the finish table. Pass one of the named finishes (metals: aluminium, anodized-black, brass, copper, …; plastics: abs, pla, delrin, …; glass: glass, glass-tinted, acrylic; paints: paint-matte, paint-gloss), or drop to .material({...}) for raw PBR.",
       "nextAction": {
         "kind": "fix-arg",
         "field": "name"
       }
     },
     "feature.edge-feature.short-edges-skipped": {
-      "template": "OCCT blend solver rejects fillet/chamfer radii larger than half the target edge length. Some edges were below 2 \u00d7 radius and got skipped so the rest could chamfer. Either reduce the radius, refactor upstream booleans so target edges are longer, or scope your fillet/chamfer to a face/edge query that only matches the long edges.",
+      "template": "OCCT blend solver rejects fillet/chamfer radii larger than half the target edge length. Some edges were below 2 × radius and got skipped so the rest could chamfer. Either reduce the radius, refactor upstream booleans so target edges are longer, or scope your fillet/chamfer to a face/edge query that only matches the long edges.",
       "nextAction": {
         "kind": "fix-arg",
         "field": "radius-or-distance"
       }
     },
     "assembly.placement-ignored-by-mate-fk": {
-      "template": "The part's `at:` placement was dropped because it is positioned by mate FK from its mate parent. Either remove the `at:` and let the mate decide the pose, or place the part's local frame so it sits at the intended pose with its mate connector at the origin (mate FK composes parent_world \u2218 trans(parent_conn) \u2218 joint \u2218 trans(-child_conn)).",
+      "template": "The part's `at:` placement was dropped because it is positioned by mate FK from its mate parent. Either remove the `at:` and let the mate decide the pose, or place the part's local frame so it sits at the intended pose with its mate connector at the origin (mate FK composes parent_world ∘ trans(parent_conn) ∘ joint ∘ trans(-child_conn)).",
       "nextAction": {
         "kind": "fix-arg",
         "field": "at"
@@ -1096,10 +1102,10 @@
       }
     },
     "assembly.solver.did-not-converge": {
-      "template": "Articulated closed loops are not yet supported by the v0.6 solver. Restrict closed loops to fastened-only mates, or split the mechanism into two open kinematic chains.",
+      "template": "UNSUPPORTED on v0.6: articulated closed-loop FK (4-bar etc.). Do not invent gear-contact types. Rewrite as an open chain (drop one loop-closing mate; keep a ground/base root) or use fastened-only mates in the loop. limitsDeg/jointSupport help open chains only.",
       "nextAction": {
         "kind": "rewrite-feature",
-        "guidance": "restrict closed loops to fastened-only mates or split into open chains"
+        "guidance": "rewrite as an open chain or fastened-only loop; do not invent gear-contact types"
       }
     },
     "assembly.pose.out-of-limits": {
@@ -1138,7 +1144,7 @@
       }
     },
     "assembly.pose-envelope.connector-unresolved": {
-      "template": "A tracked connector ref could not be resolved at a sampled pose \u2014 usually a topology-bound origin the envelope sampler does not yet support. Use { kind: 'vec3', value: [x, y, z] } for the connector origin.",
+      "template": "A tracked connector ref could not be resolved at a sampled pose — usually a topology-bound origin the envelope sampler does not yet support. Use { kind: 'vec3', value: [x, y, z] } for the connector origin.",
       "nextAction": {
         "kind": "fix-arg",
         "field": "connectorRef"
@@ -1158,8 +1164,50 @@
         "field": "limitsDeg"
       }
     },
+    "assembly.connectivity.floating-moving-part": {
+      "template": "Connect the moving part through mates to a stable root (ground/base/root or physicalUseCase(...).stableParts). This is independent of closed-loop FK — open chains need a rooted graph too.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "connect the moving part to a stable ground/base root through mates"
+      }
+    },
+    "assembly.connectivity.no-load-path": {
+      "template": "Ensure every physicalUseCase load part has a mate-graph path to the use-case stable parts (or the assembly stable root).",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "connect the loaded part to stableParts through the mate graph"
+      }
+    },
+    "assembly.joint-topology.missing-limit": {
+      "template": "Add limitsDeg:[min,max] (or limitsMm for prismatic) on this articulated mate so travel is finite and envelope/topology review can run.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "limitsDeg"
+      }
+    },
+    "assembly.joint-topology.unsupported-axis": {
+      "template": "Declare arm.jointSupport(..., { mate, shaft, supports, output }) for passive hinges, or arm.mechanicalJoint(..., { mate, actuator, shaft, supports, output }) for driven hinges, so the revolute axis has physical support intent.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "add jointSupport or mechanicalJoint intent for the revolute axis"
+      }
+    },
+    "assembly.joint-topology.connector-missing": {
+      "template": "Register the missing connector on the named part before the mate, using partRef.connector(name, { type, origin: { kind: 'vec3', value: [x,y,z] }, ... }).",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "connector"
+      }
+    },
+    "assembly.joint-topology.axis-invalid": {
+      "template": "Align the two mate endpoint axes (same direction within tolerance) or fix connector axis vectors so the joint has one coherent physical axis.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "axis"
+      }
+    },
     "assembly.mounting-hole.mismatch": {
-      "template": "Make the hole features on the two bound faces compatible: same kind (clearance \u2194 threaded), same nominal diameter, same depth. Use list_face_labels to inspect available holes. This is an authoring-time signal; the merge gate is mechanism.disconnect which fires under motion at validate-time.",
+      "template": "Make the hole features on the two bound faces compatible: same kind (clearance ↔ threaded), same nominal diameter, same depth. Use list_face_labels to inspect available holes. This is an authoring-time signal; the merge gate is mechanism.disconnect which fires under motion at validate-time.",
       "nextAction": {
         "kind": "fix-arg",
         "field": "holeFeatures"
@@ -1180,7 +1228,7 @@
       }
     },
     "assembly.structure.unstructured-bodies": {
-      "template": "Wrap the loose bodies in assembly().part(name, shape) so each part carries identity, per-part stats, and review handles; name every returned shape. This is an authoring-time signal \u2014 a multi-body model with no part names loses inspect --focus, list_part_stats, and Studio per-part validity.",
+      "template": "Wrap the loose bodies in assembly().part(name, shape) so each part carries identity, per-part stats, and review handles; name every returned shape. This is an authoring-time signal — a multi-body model with no part names loses inspect --focus, list_part_stats, and Studio per-part validity.",
       "nextAction": {
         "kind": "rewrite-feature",
         "guidance": "wrap each loose top-level body in a named assembly().part(name, shape)"
@@ -1215,7 +1263,7 @@
       }
     },
     "assembly.joint.static-hold.exceeded": {
-      "template": "checkStaticHold's worst-pose required torque/force exceeds the declared actuator capacity \u2014 the mechanism cannot hold its own weight at that pose. Increase the actuator torque/force to the value named in error.message, or shorten/lighten the downstream link.",
+      "template": "checkStaticHold's worst-pose required torque/force exceeds the declared actuator capacity — the mechanism cannot hold its own weight at that pose. Increase the actuator torque/force to the value named in error.message, or shorten/lighten the downstream link.",
       "nextAction": {
         "kind": "rewrite-feature",
         "guidance": "increase the actuator torque/force, or shorten/lighten the downstream link"
@@ -1292,7 +1340,7 @@
       }
     },
     "mechanism.disconnect": {
-      "template": "A fastened mate isn't physically realized: the part declared as fastened drifts when another joint moves. Bind the fastened-mate connector to a topology feature (face center, edge, mounting hole) on the anchor part, or use joint.clevis(...) / a physical pin so the geometry actually rigidifies. See docs/specs/2026-06-01-physics-grounded-loop-design.md \u00a7criterion 1.",
+      "template": "A fastened mate isn't physically realized: the part declared as fastened drifts when another joint moves. Bind the fastened-mate connector to a topology feature (face center, edge, mounting hole) on the anchor part, or use joint.clevis(...) / a physical pin so the geometry actually rigidifies. See docs/specs/2026-06-01-physics-grounded-loop-design.md §criterion 1.",
       "nextAction": {
         "kind": "fix-arg",
         "field": "mateConnectorOrigin"
@@ -1306,14 +1354,14 @@
       }
     },
     "mechanism.dof-mismatch": {
-      "template": "A mate's declared kind doesn't match its geometric degrees of freedom under motion. Re-check the mate axis, the connector frames on both parts, and the mate type \u2014 micro-poses around the declared axis are changing the component count, which means the geometric constraint is not what was declared.",
+      "template": "A mate's declared kind doesn't match its geometric degrees of freedom under motion. Re-check the mate axis, the connector frames on both parts, and the mate type — micro-poses around the declared axis are changing the component count, which means the geometric constraint is not what was declared.",
       "nextAction": {
         "kind": "fix-arg",
         "field": "mateType"
       }
     },
     "mechanism.orphan-part": {
-      "template": "Disconnected components in the assembly graph. Connect every orphan body with connectors + mates/joints: shafts/hinges/gears \u2192 partRef.connector(name, { type: 'axis', origin: { kind: 'vec3', value: [x,y,z] }, axis: [...] }) then arm.mate(name, 'a.conn', 'b.conn', 'revolute'); rigid mounts \u2192 type: 'frame' + mate(..., 'fastened'); or use arm.revolute/.prismatic/.ball/.fixed. Connector types are only frame|axis|planar|ball.",
+      "template": "Disconnected components in the assembly graph. Connect every orphan body with connectors + mates/joints: shafts/hinges/gears → partRef.connector(name, { type: 'axis', origin: { kind: 'vec3', value: [x,y,z] }, axis: [...] }) then arm.mate(name, 'a.conn', 'b.conn', 'revolute'); rigid mounts → type: 'frame' + mate(..., 'fastened'); or use arm.revolute/.prismatic/.ball/.fixed. Connector types are only frame|axis|planar|ball.",
       "nextAction": {
         "kind": "rewrite-feature",
         "guidance": "connect disconnected bodies with axis+revolute (shafts/hinges/gears) or frame+fastened (rigid), or arm.revolute/.prismatic/.ball/.fixed joint primitives"
@@ -1333,14 +1381,14 @@
       }
     },
     "mechanism.unstable-under-gravity": {
-      "template": "At a sampled pose, MuJoCo's inverse dynamics couldn't compute a finite holding torque \u2014 the mechanism has a singular configuration there. Verify that every part has a declared (or default) density, that joint axes pass through the parts' material, and that the chain doesn't have a redundant constraint. If a real joint actuator is intended (servo, motor), declare it via the planned `arm.mate(..., 'revolute', { capacityNm: <torque> })` API (TODO: capacity API).",
+      "template": "At a sampled pose, MuJoCo's inverse dynamics couldn't compute a finite holding torque — the mechanism has a singular configuration there. Verify that every part has a declared (or default) density, that joint axes pass through the parts' material, and that the chain doesn't have a redundant constraint. If a real joint actuator is intended (servo, motor), declare it via the planned `arm.mate(..., 'revolute', { capacityNm: <torque> })` API (TODO: capacity API).",
       "nextAction": {
         "kind": "rewrite-feature",
         "guidance": "verify part density / joint axes / chain topology so the mechanism has a finite holding torque at every sampled pose"
       }
     },
     "mechanism.drops-on-release": {
-      "template": "Starting from rest, the mechanism drifted by more than 5\u00b0 at a joint or 50 mm at a body during a 0.5 s gravity simulation. Add a closed-loop spring / tendon crossing the drifting joint (issue #361 tracks this API), declare the joint as actively driven via the planned capacity API, or restructure the chain so gravity doesn't open it. Single-body 'spring' parts fastened to one arm contribute zero restoring moment and cannot pass this gate.",
+      "template": "Starting from rest, the mechanism drifted by more than 5° at a joint or 50 mm at a body during a 0.5 s gravity simulation. Add a closed-loop spring / tendon crossing the drifting joint (issue #361 tracks this API), declare the joint as actively driven via the planned capacity API, or restructure the chain so gravity doesn't open it. Single-body 'spring' parts fastened to one arm contribute zero restoring moment and cannot pass this gate.",
       "nextAction": {
         "kind": "rewrite-feature",
         "guidance": "add a closed-loop spring or declare the joint as actively driven; single-body springs contribute no joint moment and cannot pass the drop-test"
@@ -1361,7 +1409,7 @@
       }
     },
     "assembly.visual.review-evidence-weak": {
-      "template": "Record concrete screenshot evidence \u2014 name interfaces, load paths, seated hardware, dial legibility, casing layers \u2014 before accepting the attempt.",
+      "template": "Record concrete screenshot evidence — name interfaces, load paths, seated hardware, dial legibility, casing layers — before accepting the attempt.",
       "nextAction": {
         "kind": "rewrite-feature",
         "guidance": "record concrete screenshot evidence (interfaces, load paths, legibility) before accepting"
@@ -1431,7 +1479,7 @@
       }
     },
     "feature.curve3d.analytics.tessellation-tolerance-invalid": {
-      "template": "Curve3D.analytics.tessellate: tolerance must be a positive finite number in mm. Default 0.05 mm; viewport-grade typically 0.01\u20130.5 mm. Export tessellation uses the kernel mesher independently.",
+      "template": "Curve3D.analytics.tessellate: tolerance must be a positive finite number in mm. Default 0.05 mm; viewport-grade typically 0.01–0.5 mm. Export tessellation uses the kernel mesher independently.",
       "nextAction": {
         "kind": "fix-arg",
         "field": "opts.tolerance"
@@ -1444,7 +1492,7 @@
       }
     },
     "feature.curve3d.analytics.intersect-kernel-failed": {
-      "template": "Curve3D.analytics.intersect: solver threw on the operand pair. Loosen tolerance (default 1e-3; try 1e-2 for visibly-crossing curves with rough endpoints); or inspect both operands via .sample(20) to verify they are well-formed. For the curve-surface overload, the surface must be authored via nurbsSurface() \u2014 Coons-patch and lofted surfaces do not yet expose JS-side NURBS data.",
+      "template": "Curve3D.analytics.intersect: solver threw on the operand pair. Loosen tolerance (default 1e-3; try 1e-2 for visibly-crossing curves with rough endpoints); or inspect both operands via .sample(20) to verify they are well-formed. For the curve-surface overload, the surface must be authored via nurbsSurface() — Coons-patch and lofted surfaces do not yet expose JS-side NURBS data.",
       "nextAction": {
         "kind": "fix-arg",
         "field": "opts.tolerance"
@@ -1514,7 +1562,7 @@
       }
     },
     "feature.surface-from-boundary.too-many-curves": {
-      "template": "surfaceFromBoundary requires exactly 4 boundary curves. Pass an array of 4 Curve3D refs in walk order \u2014 if the loop has more than 4 sides, split the patch into adjacent quads.",
+      "template": "surfaceFromBoundary requires exactly 4 boundary curves. Pass an array of 4 Curve3D refs in walk order — if the loop has more than 4 sides, split the patch into adjacent quads.",
       "nextAction": {
         "kind": "fix-arg",
         "field": "curveRefs"
@@ -1577,7 +1625,7 @@
       }
     },
     "feature.hermite-g2.non-finite-input": {
-      "template": "hermiteG2 received NaN / Infinity in one of point, tangent, or curvature. Validate the endpoints upstream \u2014 typically caused by a divide-by-zero in a normal/curvature derivation. Recompute the endpoint with finite inputs before retrying.",
+      "template": "hermiteG2 received NaN / Infinity in one of point, tangent, or curvature. Validate the endpoints upstream — typically caused by a divide-by-zero in a normal/curvature derivation. Recompute the endpoint with finite inputs before retrying.",
       "nextAction": {
         "kind": "fix-arg",
         "field": "see-message"
@@ -1626,7 +1674,7 @@
       }
     },
     "tool.trace-from-image.invalid-image-url": {
-      "template": "Pass a non-empty `imageUrl` \u2014 a file:// path, http(s):// URL, data:image/...;base64,... URI, or a bare filesystem path.",
+      "template": "Pass a non-empty `imageUrl` — a file:// path, http(s):// URL, data:image/...;base64,... URI, or a bare filesystem path.",
       "nextAction": {
         "kind": "fix-arg",
         "field": "imageUrl"
@@ -1640,7 +1688,7 @@
       }
     },
     "tool.trace-from-image.image-fetch-failed": {
-      "template": "Verify the imageUrl resolves to a readable PNG/JPEG/WebP/GIF \u2014 check the path/URL, the file's existence, and network access for http(s) URLs.",
+      "template": "Verify the imageUrl resolves to a readable PNG/JPEG/WebP/GIF — check the path/URL, the file's existence, and network access for http(s) URLs.",
       "nextAction": {
         "kind": "check-file-path"
       }
@@ -1652,7 +1700,7 @@
       }
     },
     "tool.trace-from-image.opencv-cannot-label": {
-      "template": "opencv only extracts a single silhouette \u2014 it cannot label point/bbox features. Either drop the point/bbox features, or switch backend to `hybrid` so the LLM labels them on top of the opencv silhouette.",
+      "template": "opencv only extracts a single silhouette — it cannot label point/bbox features. Either drop the point/bbox features, or switch backend to `hybrid` so the LLM labels them on top of the opencv silhouette.",
       "nextAction": {
         "kind": "fix-arg",
         "field": "backend"
@@ -1677,7 +1725,7 @@
       }
     },
     "mesher.cone-self-intersection": {
-      "template": "Open3d's is_watertight() rejected the STL because OCCT's BRepMesh emits self-intersecting triangles on revolved cone faces (the K1 mesher gap). Geometry is likely correct \u2014 only the export tessellation is degenerate. Workarounds: (a) remesh the exported STL via Manifold before scoring, (b) raise mesh deflection on export to merge offending triangles, (c) re-author the cone surface via nurbsSurfaceLowerer instead of .revolve(). Track gap-closure progress under K1.",
+      "template": "Open3d's is_watertight() rejected the STL because OCCT's BRepMesh emits self-intersecting triangles on revolved cone faces (the K1 mesher gap). Geometry is likely correct — only the export tessellation is degenerate. Workarounds: (a) remesh the exported STL via Manifold before scoring, (b) raise mesh deflection on export to merge offending triangles, (c) re-author the cone surface via nurbsSurfaceLowerer instead of .revolve(). Track gap-closure progress under K1.",
       "nextAction": {
         "kind": "rewrite-feature",
         "guidance": "remesh STL via Manifold, raise mesh deflection, or re-author the cone via nurbsSurfaceLowerer"
@@ -1883,7 +1931,7 @@
       }
     },
     "dfm.size.exceeds-instant-quote": {
-      "template": "Part bounding box exceeds the vendor instant-quote envelope (typically 44 x 30 in). Part may need a custom quote \u2014 split it, or accept the warning.",
+      "template": "Part bounding box exceeds the vendor instant-quote envelope (typically 44 x 30 in). Part may need a custom quote — split it, or accept the warning.",
       "nextAction": {
         "kind": "rewrite-feature",
         "guidance": "split the part to fit within the vendor instant-quote envelope"
@@ -1931,7 +1979,7 @@
       }
     },
     "dfm.channel.openings-mismatch": {
-      "template": "A declared channel has a different number of mouth openings than declared \u2014 a breach adds openings, a blocked mouth removes them, and found=0 can mean the channel is wider than the ~16mm detection limit. Inspect the channel walls near the part surface.",
+      "template": "A declared channel has a different number of mouth openings than declared — a breach adds openings, a blocked mouth removes them, and found=0 can mean the channel is wider than the ~16mm detection limit. Inspect the channel walls near the part surface.",
       "nextAction": {
         "kind": "inspect-message"
       }
@@ -1944,10 +1992,10 @@
       }
     },
     "dfm.fdm.overhang-unsupported": {
-      "template": "Downward-facing surfaces steeper than maxOverhangDeg have nothing below them to print onto. Reorient the part, add a 45\u00b0 chamfer or gusset under the overhang, or slice with supports.",
+      "template": "Downward-facing surfaces steeper than maxOverhangDeg have nothing below them to print onto. Reorient the part, add a 45° chamfer or gusset under the overhang, or slice with supports.",
       "nextAction": {
         "kind": "rewrite-feature",
-        "guidance": "apply the recommended rotation or buildDirection, or chamfer the overhang to 45\u00b0"
+        "guidance": "apply the recommended rotation or buildDirection, or chamfer the overhang to 45°"
       }
     },
     "dfm.fdm.bridge-too-long": {
@@ -1958,14 +2006,14 @@
       }
     },
     "dfm.fdm.wall-below-nozzle": {
-      "template": "A wall thinner than two nozzle widths cannot hold two perimeters; the slicer drops or thins it. Thicken it to at least 2 \u00d7 nozzleMm.",
+      "template": "A wall thinner than two nozzle widths cannot hold two perimeters; the slicer drops or thins it. Thicken it to at least 2 × nozzleMm.",
       "nextAction": {
         "kind": "rewrite-feature",
-        "guidance": "thicken the wall at the reported xyz to >= 2 \u00d7 nozzleMm"
+        "guidance": "thicken the wall at the reported xyz to >= 2 × nozzleMm"
       }
     },
     "dfm.fdm.feature-too-small": {
-      "template": "Holes under 5 \u00d7 nozzleMm print undersized or close up; pins under 7.5 \u00d7 nozzleMm are fragile. Enlarge the feature, drill the hole after printing, or use a finer nozzle.",
+      "template": "Holes under 5 × nozzleMm print undersized or close up; pins under 7.5 × nozzleMm are fragile. Enlarge the feature, drill the hole after printing, or use a finer nozzle.",
       "nextAction": {
         "kind": "inspect-message"
       }
@@ -2082,7 +2130,7 @@
       }
     },
     "query.empty": {
-      "template": "The query resolved to zero entities on the current scene. Narrow the query if over-specified \u2014 remove a filter, or rebuild against the current scene. If empty is expected, annotate with .asLenient() to suppress this error and continue with no entities.",
+      "template": "The query resolved to zero entities on the current scene. Narrow the query if over-specified — remove a filter, or rebuild against the current scene. If empty is expected, annotate with .asLenient() to suppress this error and continue with no entities.",
       "nextAction": {
         "kind": "rewrite-feature",
         "guidance": "narrow the query or mark it .asLenient()"
@@ -2131,7 +2179,7 @@
       }
     },
     "query.composition-strict-failure": {
-      "template": "A composed query (union / intersection / subtraction) short-circuited on the first sub-query error in strict mode. Either fix the failing sub-query, or annotate the composed query with .asLenient() to allow partial success \u2014 failed sub-queries then contribute zero entities and the surviving sub-queries are composed as if the failing branch had returned the empty set.",
+      "template": "A composed query (union / intersection / subtraction) short-circuited on the first sub-query error in strict mode. Either fix the failing sub-query, or annotate the composed query with .asLenient() to allow partial success — failed sub-queries then contribute zero entities and the surviving sub-queries are composed as if the failing branch had returned the empty set.",
       "nextAction": {
         "kind": "rewrite-feature",
         "guidance": "fix the failing sub-query or annotate the composition with .asLenient()"
@@ -2152,7 +2200,7 @@
       }
     },
     "animation.param.unknown": {
-      "template": "An animationView track (or the legacy sweep 'param') names a param that no prior param() call declared, or one declared with a non-numeric type. Declare a numeric param first \u2014 e.g. const angle = param('angleDeg', 0, { min: 0, max: 360 }) \u2014 or fix the spelling in tracks[].param; boolean params cannot be animated.",
+      "template": "An animationView track (or the legacy sweep 'param') names a param that no prior param() call declared, or one declared with a non-numeric type. Declare a numeric param first — e.g. const angle = param('angleDeg', 0, { min: 0, max: 360 }) — or fix the spelling in tracks[].param; boolean params cannot be animated.",
       "nextAction": {
         "kind": "fix-arg",
         "field": "tracks[].param"
@@ -2194,7 +2242,7 @@
       }
     },
     "animation.bake.geometry-param": {
-      "template": "A track param drives part GEOMETRY (a dimension, extrude depth, hole radius, \u2026) rather than a mate pose, so Studio baked playback \u2014 which only re-applies rigid per-part world transforms \u2014 would show the wrong shape. Studio playback supports POSE-ONLY (mate-driven) timelines; render geometry-animating timelines with `kernelcad animate` (offline MP4 re-meshes every frame).",
+      "template": "A track param drives part GEOMETRY (a dimension, extrude depth, hole radius, …) rather than a mate pose, so Studio baked playback — which only re-applies rigid per-part world transforms — would show the wrong shape. Studio playback supports POSE-ONLY (mate-driven) timelines; render geometry-animating timelines with `kernelcad animate` (offline MP4 re-meshes every frame).",
       "nextAction": {
         "kind": "call-tool",
         "tool": "kernelcad animate",
@@ -2260,7 +2308,7 @@
       }
     },
     "reference.assumptions.unknown-resolution-id": {
-      "template": "One or more resolution `id`s did not match any fact in the ledger. Re-read the ledger's `facts[].id` values and re-call resolve_assumptions with matching ids \u2014 a typo or a stale ledger snapshot are the usual causes.",
+      "template": "One or more resolution `id`s did not match any fact in the ledger. Re-read the ledger's `facts[].id` values and re-call resolve_assumptions with matching ids — a typo or a stale ledger snapshot are the usual causes.",
       "nextAction": {
         "kind": "fix-arg",
         "field": "resolutions[].id"
@@ -2333,7 +2381,7 @@
       }
     },
     "fea.solver.unavailable": {
-      "template": "The FEA toolchain is not installed on this machine, so no structural evidence could be produced (the result is NOT a pass). Install CalculiX and gmsh \u2014 `sudo apt-get install -y calculix-ccx` plus `python3 -m venv .fea-venv && .fea-venv/bin/pip install gmsh==4.15.2` \u2014 or point KERNELCAD_CCX / KERNELCAD_FEA_PYTHON at existing installs.",
+      "template": "The FEA toolchain is not installed on this machine, so no structural evidence could be produced (the result is NOT a pass). Install CalculiX and gmsh — `sudo apt-get install -y calculix-ccx` plus `python3 -m venv .fea-venv && .fea-venv/bin/pip install gmsh==4.15.2` — or point KERNELCAD_CCX / KERNELCAD_FEA_PYTHON at existing installs.",
       "nextAction": {
         "kind": "check-cli-args"
       }
@@ -2353,7 +2401,7 @@
       }
     },
     "tool.repair.no-candidate": {
-      "template": "No mechanical fix is derivable for this diagnostic kind. Edit the returned repairRegion by hand \u2014 the lines are already narrowed to the failing feature, its inputs, and the params it reads.",
+      "template": "No mechanical fix is derivable for this diagnostic kind. Edit the returned repairRegion by hand — the lines are already narrowed to the failing feature, its inputs, and the params it reads.",
       "nextAction": {
         "kind": "inspect-message"
       }
@@ -2443,7 +2491,7 @@
       }
     },
     "feature.surface-intersection.none": {
-      "template": "surfaceIntersection found no curve: the two faces/solids do not meet. Translate one operand so they cut, or pick different faces. A miss is not a tangent-grazing \"almost\" \u2014 the solids must actually cross.",
+      "template": "surfaceIntersection found no curve: the two faces/solids do not meet. Translate one operand so they cut, or pick different faces. A miss is not a tangent-grazing \"almost\" — the solids must actually cross.",
       "nextAction": {
         "kind": "rewrite-feature",
         "guidance": "move the operands so their faces cut, then retry surfaceIntersection"
@@ -2926,7 +2974,7 @@
     },
     "assembly.solver.did-not-converge": {
       "kind": "rewrite-feature",
-      "guidance": "restrict closed loops to fastened-only mates or split into open chains"
+      "guidance": "rewrite as an open chain or fastened-only loop; do not invent gear-contact types"
     },
     "assembly.pose.out-of-limits": {
       "kind": "fix-arg",
@@ -2959,6 +3007,30 @@
     "assembly.mate.limit-missing": {
       "kind": "fix-arg",
       "field": "limitsDeg"
+    },
+    "assembly.connectivity.floating-moving-part": {
+      "kind": "rewrite-feature",
+      "guidance": "connect the moving part to a stable ground/base root through mates"
+    },
+    "assembly.connectivity.no-load-path": {
+      "kind": "rewrite-feature",
+      "guidance": "connect the loaded part to stableParts through the mate graph"
+    },
+    "assembly.joint-topology.missing-limit": {
+      "kind": "fix-arg",
+      "field": "limitsDeg"
+    },
+    "assembly.joint-topology.unsupported-axis": {
+      "kind": "rewrite-feature",
+      "guidance": "add jointSupport or mechanicalJoint intent for the revolute axis"
+    },
+    "assembly.joint-topology.connector-missing": {
+      "kind": "fix-arg",
+      "field": "connector"
+    },
+    "assembly.joint-topology.axis-invalid": {
+      "kind": "fix-arg",
+      "field": "axis"
     },
     "assembly.mounting-hole.mismatch": {
       "kind": "fix-arg",
@@ -3414,7 +3486,7 @@
     },
     "dfm.fdm.overhang-unsupported": {
       "kind": "rewrite-feature",
-      "guidance": "apply the recommended rotation or buildDirection, or chamfer the overhang to 45\u00b0"
+      "guidance": "apply the recommended rotation or buildDirection, or chamfer the overhang to 45°"
     },
     "dfm.fdm.bridge-too-long": {
       "kind": "rewrite-feature",
@@ -3422,7 +3494,7 @@
     },
     "dfm.fdm.wall-below-nozzle": {
       "kind": "rewrite-feature",
-      "guidance": "thicken the wall at the reported xyz to >= 2 \u00d7 nozzleMm"
+      "guidance": "thicken the wall at the reported xyz to >= 2 × nozzleMm"
     },
     "dfm.fdm.feature-too-small": {
       "kind": "inspect-message"

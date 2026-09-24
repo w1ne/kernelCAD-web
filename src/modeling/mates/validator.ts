@@ -39,6 +39,7 @@ import { jointContactCapMm3 } from '../runtime/jointContactCap';
 import { validateMatePhysicalRealization } from './matePhysicalRealization';
 import { validateMountingHoleConsistency } from './mountingHoleConsistency';
 import type { ConnectorWorkspace, PoseEnvelopeReviewResult } from './poseEnvelope';
+import { reviewJointTopology } from './jointTopology';
 import { solveMates, type SolveResult, type SolveStatus } from './solver';
 import { validateWorkspaceReachability } from './workspaceReachability';
 
@@ -87,6 +88,12 @@ export type ValidatorDiagnosticCode = Extract<
   | 'assembly.pose-envelope.clearance-unresolved'
   | 'assembly.pose-envelope.connector-unresolved'
   | 'assembly.mate.limit-missing'
+  | 'assembly.connectivity.floating-moving-part'
+  | 'assembly.connectivity.no-load-path'
+  | 'assembly.joint-topology.missing-limit'
+  | 'assembly.joint-topology.unsupported-axis'
+  | 'assembly.joint-topology.connector-missing'
+  | 'assembly.joint-topology.axis-invalid'
   | 'assembly.mounting-hole.mismatch'
   | 'assembly.joint-axis.unbound'
   | 'assembly.joint.child-modeled-in-place'
@@ -617,6 +624,18 @@ export async function validateAssemblyWithMates(
   //    the field's shape.
   emitMissingLimitWarnings(diagnostics, arm.__mates());
 
+  // Topology / support / rooted-graph checks are independent of mate FK
+  // convergence, but jointTopology emits error-severity codes that would
+  // escalate `validate:'error'` on open chains that already pass through
+  // softer grounding gates (Gate 2 info). Only fold them when the v0.6.0
+  // solver has already refused an articulated closed loop — that is the
+  // evaluate_script path where ChatGPT otherwise thrases without seeing
+  // limits / unsupported-axis / floating-root DX alongside did-not-converge.
+  if (solveStatus === 'did-not-converge') {
+    foldJointTopologyDiagnostics(diagnostics, arm);
+  }
+
+
   // 7. v0.7.4 — kinematic grounding gates. Run order: cheap pure gates first
   //    (Gate 3, Gate 1), expensive BREP gate last (Gate 2) so an earlier
   //    error can short-circuit when desired. For now we run all three so the
@@ -753,14 +772,38 @@ function pushSolveStatusDiagnostics(
         hint: `invalid-args.assembly.redundant-mate — drop one mate from the closed loop if you want a minimal mate graph; otherwise no action needed.`,
       });
       break;
-    case 'did-not-converge':
+    case 'did-not-converge': {
+      // v0.6.0 articulated closed-loop FK is intentionally unsupported
+      // (Newton free-DOF path is T7.x). Surface body + articulated-mate
+      // rosters so agents stop inventing gear-contact / loop-constraint
+      // types and instead pick an open-chain or fastened-only rewrite.
+      const partNames = arm.__parts().map((part) => part.name);
+      const articulatedMates = arm.__mates().filter((mate) => mate.type !== 'fastened');
+      const mateRoster = articulatedMates.map((mate) => `${mate.name}:${mate.type}`);
+      const partList = partNames.map((name) => `'${name}'`).join(', ');
+      const mateList = mateRoster.length > 0
+        ? mateRoster.map((name) => `'${name}'`).join(', ')
+        : '(none)';
+      const iterations = solveResult?.iterations ?? 0;
       diagnostics.push({
         code: 'assembly.solver.did-not-converge',
         severity: 'error',
-        message: `Assembly '${arm.name}' did not converge within the solver iteration cap (${solveResult?.iterations ?? 0} iterations).`,
-        hint: `invalid-args.assembly.did-not-converge — articulated closed loops are not yet supported by the v0.6.0 solver (lands in T7.x); for v0.6.0, restrict closed loops to fastened-only mates.`,
+        message:
+          `Assembly '${arm.name}' did not converge within the solver iteration cap (${iterations} iterations). ` +
+          `UNSUPPORTED on v0.6.0: articulated closed-loop FK (4-bar / parallelogram / any loop containing revolute|prismatic|cylindrical|pin_slot). ` +
+          `Bodies: [${partList}]. Articulated mates: [${mateList}]. ` +
+          (iterations === 0
+            ? 'Zero iterations means the solver refused the articulated loop up-front (no Newton attempt). '
+            : '') +
+          `Rewrite as an open chain (drop one loop-closing mate; keep a stable ground/base root) or a fastened-only loop. ` +
+          `Do not invent gear-contact / loop-constraint connector types.`,
+        hint:
+          `invalid-args.assembly.did-not-converge — articulated closed loops are not supported by the v0.6.0 solver (T7.x epic). ` +
+          `Use an open kinematic chain or fastened-only closed loop. ` +
+          `limitsDeg/jointSupport/mechanicalJoint still matter for open chains but will not make a 4-bar converge here.`,
       });
       break;
+    }
     default: {
       const _exhaustive: never = solveStatus;
       throw new Error(`validateAssemblyWithMates: unhandled SolveStatus '${String(_exhaustive)}'.`);
@@ -787,6 +830,29 @@ function pushSolveStatusDiagnostics(
  * a future schema change merges the triple into scalar `limitsDeg`, this
  * check will need to inspect the field's shape.
  */
+
+/**
+ * Fold {@link reviewJointTopology} into the validator stream so MCP
+ * `evaluate_script` surfaces limits/support/root diagnostics even when
+ * articulated closed-loop FK cannot converge.
+ */
+function foldJointTopologyDiagnostics(
+  diagnostics: ValidatorDiagnostic[],
+  arm: Assembly,
+): void {
+  const review = reviewJointTopology(arm);
+  for (const d of review.diagnostics) {
+    diagnostics.push({
+      code: d.code as ValidatorDiagnosticCode,
+      severity: 'error',
+      message: d.message,
+      hint: d.hint,
+      ...(d.partName !== undefined ? { partName: d.partName } : {}),
+      ...(d.mateName !== undefined ? { mateName: d.mateName } : {}),
+    });
+  }
+}
+
 function emitMissingLimitWarnings(
   diagnostics: ValidatorDiagnostic[],
   mates: ReturnType<Assembly['__mates']>,
