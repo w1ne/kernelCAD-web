@@ -64,6 +64,14 @@ const NON_TOOL_ALLOWLIST = new Set<string>([
   // Common parameter names used in MCP tool signatures (documented
   // alongside tool names, not tool calls themselves).
   'feature_id',
+  // open_in_studio / body-likeness gate params (hosted server + verify check).
+  'likeness_profile',
+  'body_bbox',
+  'cabin_bbox',
+  'still_verdicts',
+  'require_stills',
+  'body_feature_id',
+  'publish_ready',
   'feature_count',
   'output_path',
   'byte_count',

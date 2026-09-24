@@ -52,6 +52,7 @@ export type CheckBodyLikenessOutput = BodyLikenessResult & {
     automated: readonly string[];
     agentRequired: readonly string[];
     notImplemented: readonly string[];
+    hardGate: readonly string[];
   };
 };
 
@@ -70,7 +71,10 @@ const HONESTY = {
   notImplemented: [
     'Full CV silhouette IoU / SSIM vs referenceImage',
     'Automatic ortho PNG scoring without agent findings',
-    'Hard block inside open_in_studio publish (agents must call this verify check first)',
+  ],
+  hardGate: [
+    'open_in_studio with likeness_profile:"automotive" fails success when publishReady is false (DX reference.likeness.publish-blocked)',
+    'design_loop likenessProfile:"automotive" keeps attempts non-ok until publishReady (DX reference.likeness.gate-required | publish-blocked)',
   ],
 };
 

@@ -6,7 +6,11 @@ keywords:
   - stack two boxes
   - join multiple parts with union
   - compose primitives without overlap
-when_to_use: You want to compose multiple primitives into one part by translating each into place and unioning them, without volume overlap.
+when_to_use: >-
+  Simple blockouts only — compose primitives by translate+union without overlap.
+  NOT for real / production / complex / enclosure / gearbox / bearing housing /
+  robot-arm prompts (use multi-feature-machined-housing or
+  multi-body-mechanism-real-proportions instead).
 ---
 
 ```typescript
@@ -18,3 +22,6 @@ return lower.union(upper);
 Do not use this pattern to attach wide boxes onto a freeform loft / rail-loft
 body — that boolean often self-intersects. Keep aero appendages as separate
 parts (see `automotive-body-envelope`).
+
+For Adam-level mechanical parts, prefer `lookup_cookbook("multi-feature machined housing")`
+or `lookup_cookbook("multi-body mechanism real proportions")` — stacked boxes are toys.
