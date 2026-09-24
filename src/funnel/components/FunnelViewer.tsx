@@ -26,6 +26,8 @@ import {
   meshArtifactLatestUrl,
   shouldAcceptLatestMeshFallback,
 } from '../meshArtifactFallback';
+import { animArtifactUrlFromMeshUrl } from '../animArtifactUrl';
+import { EmbedAnimationOverlay } from './EmbedAnimationOverlay';
 
 export type FunnelViewerPhase =
   | 'building_geometry'
@@ -45,6 +47,9 @@ export interface FunnelViewerProps {
   onPhaseChange?: (phase: FunnelViewerPhase, detail?: string | null) => void;
   /** Bump to reload the viewer or refetch the mesh. Does not change CAD source. */
   resetKey?: number | string;
+  /** CDN animation-bake URL (transforms-only). When set (or derivable from meshUrl),
+   *  shows Play/scrub chrome that drives part transforms client-side. */
+  animUrl?: string | null;
 }
 
 /** Inner component — must be mounted inside WorkbenchProvider. */
@@ -372,10 +377,14 @@ function MeshStatus(props: {
 }
 
 function LoadedMeshViewer(props: FunnelViewerProps & { geometries: GeometryResult[]; bounds: MeshArtifactBounds }) {
+  const resolvedAnimUrl = props.animUrl
+    ?? (props.meshUrl ? animArtifactUrlFromMeshUrl(props.meshUrl) : null);
+
   return (
     <div
       className="relative w-full h-full bg-code-bg"
       data-mesh-url={props.meshUrl ?? undefined}
+      data-anim-url={resolvedAnimUrl ?? undefined}
       data-camera-bounds={boundsAttribute(props.bounds)}
       data-source-suspended="true"
     >
@@ -386,6 +395,7 @@ function LoadedMeshViewer(props: FunnelViewerProps & { geometries: GeometryResul
         externalGeometries={props.geometries}
       >
         <FunnelViewerInner onPhaseChange={props.onPhaseChange} revision={props.revision} instanceId={props.instanceId} />
+        {resolvedAnimUrl ? <EmbedAnimationOverlay animUrl={resolvedAnimUrl} /> : null}
       </WorkbenchProvider>
     </div>
   );

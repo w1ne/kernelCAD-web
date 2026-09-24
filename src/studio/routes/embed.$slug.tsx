@@ -93,6 +93,8 @@ export const Route = createFileRoute('/embed/$slug')({
     instance: typeof search.instance === 'string' && search.instance.length > 0 ? search.instance : undefined,
     /** Revision-matched mesh artifact. When set, the viewer loads it instead of re-executing CAD. */
     meshUrl: embedMeshUrl(search.meshUrl),
+    /** CDN transforms-only animation bake for in-widget Play/scrub. */
+    animUrl: embedMeshUrl(search.animUrl),
   }),
   component: EmbedPage,
 });
@@ -232,8 +234,9 @@ function useEmbedNoProgressTimeout(
 
 function EmbedPage() {
   const { slug } = Route.useParams();
-  const { mode, revision, meshUrl: rawMeshUrl, instance } = Route.useSearch();
+  const { mode, revision, meshUrl: rawMeshUrl, instance, animUrl: rawAnimUrl} = Route.useSearch();
   const meshUrl = revisionPinnedMeshUrl(rawMeshUrl, slug, revision);
+  const animUrl = rawAnimUrl;
   const [viewerPhase, setViewerPhase] = useState<FunnelViewerPhase | null>(null);
   const [viewerDetail, setViewerDetail] = useState<string | null>(null);
   const [retryKey, setRetryKey] = useState(0);
@@ -293,6 +296,7 @@ function EmbedPage() {
       <EmbedViewerSurface
         code={code ?? ''}
         meshUrl={meshUrl}
+        animUrl={animUrl}
         revision={typeof revision === 'number' ? revision : null}
         instanceId={instance}
         retryKey={retryKey}
@@ -373,6 +377,7 @@ function canRetryEmbed(uiPhase: EmbedUiPhase): boolean {
 function EmbedViewerSurface(props: {
   code: string;
   meshUrl: string | undefined;
+  animUrl: string | undefined;
   revision: number | null;
   instanceId?: string;
   retryKey: number;
@@ -387,6 +392,7 @@ function EmbedViewerSurface(props: {
       <FunnelViewer
         code={props.code}
         meshUrl={props.meshUrl}
+        animUrl={props.animUrl}
         revision={props.revision}
         instanceId={props.instanceId}
         resetKey={props.retryKey}
