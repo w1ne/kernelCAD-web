@@ -5,7 +5,6 @@ import { dirname, relative, resolve } from 'node:path';
 import { fileReadErrorMessage } from '../../../shared/diagnostics/fileReadError';
 import type { GripperApertureRequest } from '../../../modeling/mates/gripperAperture';
 import type { MechanismFitnessResult } from '../../../modeling/mates/mechanismFitness';
-import type { ContactGraphResult } from '../../../modeling/runtime/contactGraph';
 import {
   runReviewPipeline,
   type RepairContext,
@@ -18,6 +17,20 @@ import {
   type StillVerdict,
   type WheelSpec,
 } from '../../likeness/publishGate';
+import {
+  appendRevisionAssistPrompt,
+  buildRevisionAssist,
+  type RevisionAssist,
+} from '../../loop/revisionAssist';
+import {
+  isSolidOnlyReviewMiss,
+  solidOnlyFunctionalReview,
+} from '../../loop/designLoopSolidOnly';
+import {
+  geometryReviewFacts,
+  scriptQualityFacts,
+} from '../../loop/designLoopQualityFacts';
+export { geometryReviewFacts } from '../../loop/designLoopQualityFacts';
 
 export interface DesignLoopAttemptInput {
   id?: string;
@@ -70,6 +83,13 @@ export interface DesignLoopInput {
    * reference.likeness.gate-required — do not claim success.
    */
   bodyLikeness?: DesignLoopBodyLikenessInput;
+  /**
+   * When true (default), failing attempts with repairable feature diagnostics
+   * (boolean miss, oversized fillet, …) run bounded repair_script and attach
+   * revisionAssist suggested patches / autoApplied.suggestedCode. Does not
+   * autonomously rewrite full CAD models.
+   */
+  autoRevise?: boolean;
   outputRecordPath?: string;
   recordTitle?: string;
 }
@@ -102,6 +122,8 @@ export interface DesignLoopAttemptResult {
   blockingReasons: string[];
   mechanismSummary?: MechanismFitnessResult['mechanismSummary'];
   nextActionPrompt: string;
+  /** Structured revision hints / patches for ChatGPT (agent still applies). */
+  revisionAssist?: RevisionAssist;
 }
 
 export interface DesignLoopOutput {
@@ -114,6 +136,8 @@ export interface DesignLoopOutput {
   recordUrl?: string;
   nextActionPrompt?: string;
   convergence?: ConvergenceStall;
+  /** Revision assist from the last failing attempt (when present). */
+  revisionAssist?: RevisionAssist;
 }
 
 export interface ConvergenceStall {
@@ -227,8 +251,11 @@ async function runDesignLoopAttempt(
     throw new Error(`design_loop attempt ${index + 1}: ${fileReadErrorMessage(e)}`);
   }
   const reviewInput: ReviewCadInput = buildReviewInput(input, attempt, source);
-  const review = await runReviewPipeline(reviewInput);
-  return toAttemptResult({
+  const rawReview = await runReviewPipeline(reviewInput);
+  const review = isSolidOnlyReviewMiss(rawReview)
+    ? solidOnlyFunctionalReview(rawReview, input.goal)
+    : rawReview;
+  const attemptResult = toAttemptResult({
     id,
     title,
     script: attempt.file,
@@ -239,7 +266,24 @@ async function runDesignLoopAttempt(
     bodyLikeness: input.bodyLikeness,
     visualReview: attempt.visualReview,
     source,
+    goal: input.goal,
   });
+  if (attemptResult.ok) return attemptResult;
+
+  const revisionAssist = await buildRevisionAssist({
+    source,
+    goal: input.goal,
+    reviewFacts: attemptResult.reviewFacts,
+    diagnostics: review.diagnostics,
+    autoRevise: input.autoRevise,
+  });
+  if (revisionAssist === undefined) return attemptResult;
+
+  return {
+    ...attemptResult,
+    revisionAssist,
+    nextActionPrompt: appendRevisionAssistPrompt(attemptResult.nextActionPrompt, revisionAssist),
+  };
 }
 
 function buildReviewInput(
@@ -290,6 +334,7 @@ async function finaliseDesignLoop(
     await writeFile(outputRecordPath, `${JSON.stringify(record, null, 2)}\n`, 'utf-8');
   }
 
+  const lastFail = [...attempts].reverse().find((a) => !a.ok);
   return {
     ok: finalPass !== undefined,
     goal: input.goal,
@@ -299,6 +344,7 @@ async function finaliseDesignLoop(
     outputRecordPath,
     ...(outputRecordPath !== undefined ? { recordUrl: publicRecordUrl(outputRecordPath) } : {}),
     ...(convergence !== undefined ? { convergence } : {}),
+    ...(lastFail?.revisionAssist !== undefined ? { revisionAssist: lastFail.revisionAssist } : {}),
     nextActionPrompt: finalPass === undefined
       ? [convergence?.reason, attempts.at(-1)?.nextActionPrompt].filter(Boolean).join('\n\n')
       : undefined,
@@ -316,6 +362,7 @@ function toAttemptResult(input: {
   bodyLikeness?: DesignLoopBodyLikenessInput;
   visualReview?: DesignLoopVisualReview;
   source: string;
+  goal: string;
 }): DesignLoopAttemptResult {
   const fitness = input.review.fitness;
   const blockingReasons = fitness?.blockingReasons.map((reason) => reason.message) ?? [];
@@ -337,7 +384,7 @@ function toAttemptResult(input: {
       message: diagnostic.message,
       hint: diagnostic.hint,
     })),
-    ...scriptQualityFacts(input.source, input.allowReviewWarnings),
+    ...scriptQualityFacts(input.source, input.goal, input.allowReviewWarnings),
     ...geometryReviewFacts(input.review.geometry, input.allowReviewWarnings),
     ...visualReviewFacts(
       input.requireVisualReview,
@@ -522,54 +569,6 @@ function diagnosticKey(code: string, sampleName: string | undefined): string {
 function normalizeSeverity(severity: string): string {
   if (severity === 'warn') return 'warning';
   return severity;
-}
-
-function scriptQualityFacts(
-  source: string,
-  allowReviewWarnings: readonly string[],
-): Array<{ code: string; severity: string; message: string; hint?: string }> {
-  const code = 'assembly.quality.box-fragment-clutter';
-  if (allowReviewWarnings.includes(code)) return [];
-
-  const boxCount = countPattern(source, /\bbox\s*\(/g);
-  const boxUnionCount = countPattern(source, /\.union\s*\(\s*box\s*\(/g);
-  const cylinderCount = countPattern(source, /\bcylinder\s*\(/g);
-  if (boxUnionCount < 6) return [];
-  if (boxCount < cylinderCount * 2) return [];
-
-  return [{
-    code,
-    severity: 'warning',
-    message: `Script uses ${boxCount} box primitives and ${boxUnionCount} box unions; this often produces visually arbitrary cuboid fragments instead of an explainable mechanical load path.`,
-    hint: 'quality.box-fragment-clutter — replace decorative cuboids with continuous brackets, cylinders/shafts/bearing washers, or fewer purpose-named bodies. Each visible sub-shape should have an obvious role in the mechanism.',
-  }];
-}
-
-/**
- * Deterministic floating-geometry gate.
- *
- * The visual `no-stray-or-floating-geometry` / `main-object-count` checks are
- * graded on the agent's own prose. This grades them on the geometry: the
- * contact-graph analysis (dfm surface-distance sweep → connected components)
- * reports how many disconnected bodies the scene actually contains and which
- * parts are the stray islands. Any floating body is a warning the loop cannot
- * be talked out of. It is allow-listable only by its explicit named code,
- * because a genuinely multi-body deliverable is occasionally intended.
- */
-export function geometryReviewFacts(
-  geometry: ContactGraphResult | undefined,
-  allowReviewWarnings: readonly string[],
-): Array<{ code: string; severity: string; message: string; hint?: string }> {
-  const code = 'assembly.geometry.floating-body';
-  if (geometry === undefined || geometry.floatingParts.length === 0) return [];
-  if (allowReviewWarnings.includes(code)) return [];
-  const parts = geometry.floatingParts.join(', ');
-  return [{
-    code,
-    severity: 'warning',
-    message: `Deterministic contact graph found ${geometry.objectCount} disconnected bodies; parts float free of the main body (gap > ${geometry.gapMm} mm): ${parts}.`,
-    hint: 'geometry.floating-body — the named parts have no surface contact or near-contact with the main body. Move or extend them so they seat against the structure they belong to (mate-graph connectivity is not geometric contact), then rerun review_cad. Allow-list assembly.geometry.floating-body only when the design is genuinely meant to ship as separate bodies.',
-  }];
 }
 
 const AUTOMOTIVE_LIKENESS_STILL_CODES = [
@@ -816,10 +815,6 @@ function visualReviewEvidenceRequirements(): string[] {
     'For no-stray-or-floating-geometry, prove every visible secondary component is supported by contact or near-contact, fasteners, brackets, or a continuous path into the parent body, and explicitly rule out visible air gaps.',
     'For device-depth-and-construction, name casing/body layers such as bezel, case back, wall, housing, cavity, crystal, gasket, or movement pocket, and explicitly rule out a flat two-face facade.',
   ];
-}
-
-function countPattern(source: string, pattern: RegExp): number {
-  return source.match(pattern)?.length ?? 0;
 }
 
 function buildQualityRepairPrompt(reviewFacts: readonly DesignLoopAttemptResult['reviewFacts'][number][]): string {

@@ -61,3 +61,25 @@ For complex / production / enclosure / gearbox / robot-arm prompts:
    (gate auto-runs / checks session attest)
 
 WIP previews may omit likeness_profile; never claim likeness success without it.
+
+## Solid-only mechanical scripts
+
+`review_cad` is assembly-oriented. For single-body housings/enclosures that
+evaluate cleanly with no assembly, `design_loop` promotes the attempt to
+**functional** (`solid-only-evaluate`) and still applies quality + revision
+assist gates. Wrap in `assembly(...).part(...)` when joints are required.
+
+## Revision assist (`design_loop.revisionAssist`)
+
+Failing attempts attach structured assist — **not** a claim of full autonomous CAD rewrite:
+
+| `mode` | Meaning |
+|--------|---------|
+| `hints-only` | Cookbook / quality steers (stacked-primitive toy, missing fillet, mechanism proportions) |
+| `suggested-patches` | AST-anchored `repair_script` candidates (boolean miss, oversized fillet, …) with diffs |
+| `auto-applied-candidate` | Bounded candidate cleared the diagnostic on re-eval — use `autoApplied.suggestedCode` as the next attempt |
+
+Production/complex goals fail closed on `assembly.quality.stacked-primitive-toy` and (for housing prompts) `assembly.quality.missing-fillet`. Prefer `lookup_cookbook("multi-feature machined housing")` / `multi-body mechanism real proportions` over `union-of-stacked-primitives`.
+
+Set `autoRevise: false` to skip the extra `repair_script` pass (hints still attach).
+

@@ -266,12 +266,12 @@ export async function reviewPoseEnvelope(
   const diagnostics: PoseEnvelopeDiagnostic[] = [];
   const interferencePairs: Array<InterferencePair & { sampleName: string }> = [];
   const clearancePairs: Array<ClearancePairReport & { sampleName: string }> = [];
-  const reportInterference = createInterferenceReporter(interferencePairs, diagnostics);
+  const ignoredPairs = opts.ignoredPairs ?? new Set<string>();
+  const reportInterference = createInterferenceReporter(interferencePairs, diagnostics, ignoredPairs);
   const connectorPoses: TrackedConnectorPose[] = [];
   const trackConnectors = resolveTrackedConnectors(opts);
   const unresolvedConnectorRefs = new Set<string>();
   const clearanceMatePairs = resolveClearanceMatePairs(arm, opts);
-  const ignoredPairs = opts.ignoredPairs ?? new Set<string>();
 
   for (const sample of samples) {
     diagnostics.push(...validateMatePoseLimits(arm, sample.poses, sample.name));
@@ -328,10 +328,13 @@ export async function reviewPoseEnvelope(
 function createInterferenceReporter(
   interferencePairs: Array<InterferencePair & { sampleName: string }>,
   diagnostics: PoseEnvelopeDiagnostic[],
+  ignoredPairs: ReadonlySet<string> = new Set(),
 ): (sampleName: string, pair: InterferencePair) => void {
   const reportedInterferences = new Set<string>();
   return (sampleName: string, pair: InterferencePair): void => {
-    const key = `${sampleName}\u0000${pairKey(pair.a, pair.b)}`;
+    const pairId = pairKey(pair.a, pair.b);
+    if (ignoredPairs.has(pairId)) return;
+    const key = `${sampleName}\u0000${pairId}`;
     if (reportedInterferences.has(key)) return;
     reportedInterferences.add(key);
     interferencePairs.push({ ...pair, sampleName });

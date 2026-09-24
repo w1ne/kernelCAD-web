@@ -120,7 +120,7 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
   {
     definition: {
       name: 'design_loop',
-      description: 'Use this when the goal is complex / production / enclosure / gearbox / robot-arm / multi-body, or when you need evaluate→review/verify→revise until green. PREFERRED over one-shot evaluate_script+open_in_studio for Adam-level parts. Runs a CAD design loop over attempt scripts: review_cad each attempt, continue past functional attempts with unresolved warnings, return repair prompts (nextActionPrompt), stop on ok or convergence.escalate. For organic/car bodies set likenessProfile:"automotive" and pass bodyLikeness (or automotive stills on visualReview.checks) — attempts fail closed until body-likeness is publishReady. Optionally write a Studio build record JSON.',
+      description: 'Use this when the goal is complex / production / enclosure / gearbox / robot-arm / multi-body, or when you need evaluate→review/verify→revise until green. PREFERRED over one-shot evaluate_script+open_in_studio for Adam-level parts. Runs a CAD design loop over attempt scripts: review_cad each attempt, continue past functional attempts with unresolved warnings, return repair prompts (nextActionPrompt) plus structured revisionAssist (suggestedPatches / autoApplied.suggestedCode for repairable feature failures; cookbook steers for stacked-primitive toys). Stop on ok or convergence.escalate. For organic/car bodies set likenessProfile:"automotive" and pass bodyLikeness (or automotive stills on visualReview.checks) — attempts fail closed until body-likeness is publishReady. Optionally write a Studio build record JSON.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -190,6 +190,11 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
           },
           gripperAperture: { type: 'object', description: 'Optional gripper aperture request forwarded to review_cad.' },
           stopOnPass: { type: 'boolean', description: 'Stop after the first attempt that is functional and passes the quality gate. Default true.' },
+          autoRevise: {
+            type: 'boolean',
+            description:
+              'When true (default), failing attempts with repairable feature diagnostics (boolean miss, oversized fillet, …) run bounded repair_script and attach revisionAssist.suggestedPatches / autoApplied.suggestedCode. Set false to skip the extra repair pass (hints-only). Does not autonomously rewrite full CAD models.',
+          },
           requireVisualReview: { type: 'boolean', description: 'Require screenshot-backed visualReview with structured checks before accepting an attempt. Default true; set false only for explicit non-visual batch checks.' },
           likenessProfile: {
             type: 'string',
