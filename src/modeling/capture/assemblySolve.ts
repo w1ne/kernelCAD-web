@@ -666,6 +666,36 @@ async function validateSolvedModelGate(
  *  (`mode === 'warn'`). Split out of `recordSolvedModel` for the same
  *  complexity-budget reason as `applySolvedModelEntryChecks`; no behavior
  *  change. */
+/**
+ * Prefer mate-solver structural failures over secondary pose/BREP clashes
+ * when `validate:'error'` throws a single KernelError.
+ *
+ * `validateAssemblyWithMates` collects interference diagnostics BEFORE
+ * solver status, so a naive `diagnostics.find(severity==='error')` surfaces
+ * overlap and drops `assembly.solver.did-not-converge`. ChatGPT then never
+ * sees the v0.6.0 unsupported closed-loop banner (closed-loop DX miss).
+ */
+const PRIMARY_SOLVER_ERROR_CODES = new Set([
+  'assembly.solver.did-not-converge',
+  'assembly.mate.over-constrained',
+]);
+
+function pickPrimaryValidateError(
+  result: import('../mates/validator').ValidatorResult,
+): ValidatorDiagnostic | undefined {
+  const errors = result.diagnostics.filter((d) => d.severity === 'error');
+  if (errors.length === 0) return undefined;
+  const preferred = errors.find((d) => PRIMARY_SOLVER_ERROR_CODES.has(d.code));
+  if (preferred) return preferred;
+  if (result.status === 'did-not-converge') {
+    return errors.find((d) => d.code === 'assembly.solver.did-not-converge') ?? errors[0];
+  }
+  if (result.status === 'over-constrained') {
+    return errors.find((d) => d.code === 'assembly.mate.over-constrained') ?? errors[0];
+  }
+  return errors[0];
+}
+
 function finalizeSolvedModelScene(
   state: AssemblyState,
   sceneShape: Shape,
@@ -676,15 +706,21 @@ function finalizeSolvedModelScene(
   limitWarnings: readonly SceneDiagnostic[],
 ): Scene {
   if (mode === 'error') {
-    const errDiag = result.diagnostics.find((d) => d.severity === 'error');
+    const errDiag = pickPrimaryValidateError(result);
     // Status-driven fallback: `over-constrained` / `did-not-converge`
     // always carry an error-severity diagnostic per validator.ts, so the
     // `errDiag` lookup catches them; the explicit status check below is
     // a belt-and-suspenders guarantee for the spec wording.
     if (errDiag) {
+      const siblingErrors = result.diagnostics.filter(
+        (d) => d.severity === 'error' && d !== errDiag,
+      );
+      const siblingSuffix = siblingErrors.length > 0
+        ? ` Also: ${siblingErrors.map((d) => d.message).join(' | ')}`
+        : '';
       throw new KernelError(
         'feature.invalid-args',
-        errDiag.message,
+        errDiag.message + siblingSuffix,
         undefined,
         errDiag.hint,
       );
