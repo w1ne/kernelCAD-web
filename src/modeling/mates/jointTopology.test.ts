@@ -367,4 +367,26 @@ describe('reviewJointTopology', () => {
       checkedMovingPartCount: 2,
     });
   });
+
+  it('recognises base-frame as a stable root fallback for open-chain mechanisms', () => {
+    const { arm, kcad } = makeApi();
+    arm
+      .part('base-frame', kcad.box(40, 40, 8))
+      .connector('hinge', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 8] }, axis: [0, 1, 0] });
+    arm
+      .part('upper-link', kcad.box(60, 10, 10))
+      .connector('hinge', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 1, 0] });
+    arm.mate('shoulder', 'base-frame.hinge', 'upper-link.hinge', 'revolute', { limitsDeg: [-20, 70] });
+    arm.jointSupport('shoulder-support', {
+      mate: 'shoulder',
+      shaft: 'base-frame',
+      supports: ['base-frame'],
+      output: 'upper-link',
+    });
+
+    const codes = codesOf(arm);
+    expect(codes).not.toContain('assembly.connectivity.floating-moving-part');
+    expect(codes).not.toContain('assembly.joint-topology.unsupported-axis');
+  });
+
 });

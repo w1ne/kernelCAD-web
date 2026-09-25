@@ -49,7 +49,15 @@ interface JointSupportLikeIntent {
   readonly output: string;
 }
 
-const ROOT_FALLBACK_NAMES = ['palm-root', 'palm', 'base', 'root'] as const;
+const ROOT_FALLBACK_NAMES = [
+  'palm-root',
+  'palm',
+  'base-frame',
+  'base',
+  'ground-frame',
+  'ground',
+  'root',
+] as const;
 const AXIS_ALIGNMENT_TOLERANCE = 0.999;
 const AXIS_REQUIRED_MATES = new Set(['revolute', 'prismatic', 'cylindrical', 'pin_slot']);
 const ROTATIONAL_LIMIT_MATES = new Set(['revolute', 'cylindrical', 'pin_slot']);

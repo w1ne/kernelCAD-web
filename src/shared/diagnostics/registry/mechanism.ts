@@ -91,8 +91,8 @@ export const MECHANISM_CODES = {
   },
   'mechanism.drops-on-release': {
     hintTemplate:
-      "Starting from rest, the mechanism drifted by more than 5° at a joint or 50 mm at a body during a 0.5 s gravity simulation. Add a closed-loop spring / tendon crossing the drifting joint (issue #361 tracks this API), declare the joint as actively driven via the planned capacity API, or restructure the chain so gravity doesn't open it. Single-body 'spring' parts fastened to one arm contribute zero restoring moment and cannot pass this gate.",
-    nextAction: { kind: 'rewrite-feature', guidance: 'add a closed-loop spring or declare the joint as actively driven; single-body springs contribute no joint moment and cannot pass the drop-test' },
+      "Starting from rest, the mechanism drifted by more than 5° at a joint or 50 mm at a body during a 0.5 s gravity simulation. Add arm.tendon(...) crossing the drifting joint, declare the joint as actively driven via arm.mechanicalJoint(...), or restructure the chain so gravity doesn't open it. Single-body 'spring' parts fastened to one arm contribute zero restoring moment and cannot pass this gate.",
+    nextAction: { kind: 'rewrite-feature', guidance: 'add arm.tendon(...) across the joint or arm.mechanicalJoint(...) to declare it actively driven; single-body springs contribute no joint moment' },
     defaultSeverity: 'error',
     group: 'mechanism',
     description: 'Starting from REST, the mechanism does not hold its declared pose under gravity: at least one joint drifts > 5° or one body translates > 50 mm in a 0.5 s passive simulation. Means the mechanism would visibly collapse on a desk without an actuator or closed-loop spring.',

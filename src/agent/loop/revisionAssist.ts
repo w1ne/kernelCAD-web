@@ -147,14 +147,41 @@ function cookbookHintsForGoal(goal: string, facts: readonly DesignLoopReviewFact
       suggestedChange: 'lookup_cookbook("multi-feature machined housing")',
     });
   }
-  if (
-    isProductionIntentGoal(goal) &&
-    /\b(robot|arm|mechanism|cobot|multi-?body)\b/i.test(goal)
-  ) {
+  const mechanismFact = facts.some((f) =>
+    f.code === 'assembly.joint-topology.unsupported-axis' ||
+    f.code === 'assembly.connectivity.floating-moving-part' ||
+    f.code === 'mechanism.drops-on-release' ||
+    (/\b(robot|arm|mechanism|cobot|multi-?body)\b/i.test(goal) && isProductionIntentGoal(goal)),
+  );
+  if (mechanismFact) {
     hints.push({
       code: 'cookbook.mechanism-proportions',
-      summary: 'Use real machine-element proportions (plates, towers, yokes — not sticks).',
+      summary: 'Use real machine-element proportions with grounded root + jointSupport/mechanicalJoint (+ tendon or driven joint for gravity-hold).',
       suggestedChange: 'lookup_cookbook("multi-body mechanism real proportions")',
+    });
+  }
+  if (facts.some((f) => f.code === 'assembly.joint-topology.unsupported-axis')) {
+    hints.push({
+      code: 'repair.joint-support',
+      summary: 'Revolute mate needs arm.jointSupport(...) or arm.mechanicalJoint(...).',
+      suggestedChange:
+        "Add arm.mechanicalJoint(name, { mate, actuator, shaft, supports, output }) for driven hinges, or arm.jointSupport(...) for passive hinges.",
+    });
+  }
+  if (facts.some((f) => f.code === 'assembly.connectivity.floating-moving-part')) {
+    hints.push({
+      code: 'repair.grounded-root',
+      summary: 'Moving parts need a mate-graph path to a stable root.',
+      suggestedChange:
+        "Name the ground part base-frame / base / ground / root, or declare physicalUseCase(...).stableParts: ['base-frame'].",
+    });
+  }
+  if (facts.some((f) => f.code === 'mechanism.drops-on-release')) {
+    hints.push({
+      code: 'repair.gravity-hold',
+      summary: 'Open-chain hinge drifts under gravity without a brake or actuator.',
+      suggestedChange:
+        'Add arm.tendon(...) across the joint, or declare arm.mechanicalJoint(...) so the hinge is actively driven.',
     });
   }
   for (const fact of facts) {

@@ -1388,10 +1388,10 @@
       }
     },
     "mechanism.drops-on-release": {
-      "template": "Starting from rest, the mechanism drifted by more than 5° at a joint or 50 mm at a body during a 0.5 s gravity simulation. Add a closed-loop spring / tendon crossing the drifting joint (issue #361 tracks this API), declare the joint as actively driven via the planned capacity API, or restructure the chain so gravity doesn't open it. Single-body 'spring' parts fastened to one arm contribute zero restoring moment and cannot pass this gate.",
+      "template": "Starting from rest, the mechanism drifted by more than 5° at a joint or 50 mm at a body during a 0.5 s gravity simulation. Add arm.tendon(...) crossing the drifting joint, declare the joint as actively driven via arm.mechanicalJoint(...), or restructure the chain so gravity doesn't open it. Single-body 'spring' parts fastened to one arm contribute zero restoring moment and cannot pass this gate.",
       "nextAction": {
         "kind": "rewrite-feature",
-        "guidance": "add a closed-loop spring or declare the joint as actively driven; single-body springs contribute no joint moment and cannot pass the drop-test"
+        "guidance": "add arm.tendon(...) across the joint or arm.mechanicalJoint(...) to declare it actively driven; single-body springs contribute no joint moment"
       }
     },
     "mechanism.tendon-body-intersect": {
@@ -3137,7 +3137,7 @@
     },
     "mechanism.drops-on-release": {
       "kind": "rewrite-feature",
-      "guidance": "add a closed-loop spring or declare the joint as actively driven; single-body springs contribute no joint moment and cannot pass the drop-test"
+      "guidance": "add arm.tendon(...) across the joint or arm.mechanicalJoint(...) to declare it actively driven; single-body springs contribute no joint moment"
     },
     "mechanism.tendon-body-intersect": {
       "kind": "rewrite-feature",

@@ -1205,7 +1205,7 @@ async function runPhysicsCriteria(
     out.push(...await runStaticEquilibrium(session, solved, mjcfResult.jointOrder));
 
     // ── Criterion 6: drop-on-release from rest ─────────────────────────
-    out.push(...await runDropOnRelease(session, mjcfResult.jointOrder));
+    out.push(...await runDropOnRelease(session, mjcfResult.jointOrder, arm));
   } finally {
     session.dispose();
   }
@@ -1289,22 +1289,97 @@ async function runStaticEquilibrium(
  * agent surfaces a single diagnostic group; the per-failure message
  * carries the specific joint / body and the magnitude.
  */
+
+/** Mates covered by a complete mechanicalJoint intent — "actively driven". */
+function collectActivelyDrivenMates(arm: Assembly): Set<string> {
+  const driven = new Set<string>();
+  const partsByName = new Map(arm.__parts().map((part) => [part.name, part]));
+  const matesByName = new Map(arm.__mates().map((mate) => [mate.name, mate]));
+  for (const intent of arm.__mechanicalJointIntents()) {
+    if (!partsByName.has(intent.actuator)) continue;
+    if (!partsByName.has(intent.shaft) || !partsByName.has(intent.output)) continue;
+    if (intent.supports.length === 0 || intent.supports.some((s) => !partsByName.has(s))) continue;
+    const mate = matesByName.get(intent.mate);
+    if (mate === undefined || mate.type !== 'revolute') continue;
+    driven.add(intent.mate);
+  }
+  return driven;
+}
+
+function allArticulatedMatesDriven(
+  jointOrder: readonly { mateName: string }[],
+  drivenMates: ReadonlySet<string>,
+): boolean {
+  return jointOrder.length > 0 && jointOrder.every((j) => drivenMates.has(j.mateName));
+}
+
+function dropTestJointDriftFailure(
+  finalQpos: readonly number[],
+  restQpos: readonly number[],
+  jointOrder: readonly { mjcfName: string; mateName: string }[],
+  drivenMates: ReadonlySet<string>,
+): CompilerDiagnostic | undefined {
+  let worstJointIdx = -1;
+  let worstJointDriftRad = 0;
+  for (let i = 0; i < finalQpos.length && i < restQpos.length; i++) {
+    const drift = Math.abs(finalQpos[i] - restQpos[i]);
+    if (drift > worstJointDriftRad) {
+      worstJointDriftRad = drift;
+      worstJointIdx = i;
+    }
+  }
+  if (worstJointDriftRad <= DROP_TEST_JOINT_DRIFT_RAD) return undefined;
+  const mate = jointOrder[worstJointIdx]?.mateName ?? `joint#${worstJointIdx}`;
+  if (drivenMates.has(mate)) return undefined;
+  const driftDeg = (worstJointDriftRad * 180) / Math.PI;
+  return makeFailure(
+    'mechanism.drops-on-release',
+    `Mate '${mate}' drifted ${driftDeg.toFixed(1)}° from rest in ${DROP_TEST_DURATION_S.toFixed(1)} s under gravity ` +
+    `(threshold ${(DROP_TEST_JOINT_DRIFT_RAD * 180 / Math.PI).toFixed(0)}°). The mechanism does not hold its declared rest pose without a brake or actuator — add arm.tendon(...) across this joint, or declare it actively driven via arm.mechanicalJoint(...).`,
+  );
+}
+
+function dropTestBodyDriftFailure(
+  finalXpos: ReadonlyMap<string, readonly [number, number, number]>,
+  restXpos: ReadonlyMap<string, readonly [number, number, number]>,
+): CompilerDiagnostic | undefined {
+  let worstBody: string | undefined;
+  let worstBodyDriftM = 0;
+  for (const [name, pos] of finalXpos) {
+    const rest = restXpos.get(name);
+    if (rest === undefined) continue;
+    const d = Math.hypot(pos[0] - rest[0], pos[1] - rest[1], pos[2] - rest[2]);
+    if (d > worstBodyDriftM) {
+      worstBodyDriftM = d;
+      worstBody = name;
+    }
+  }
+  if (worstBodyDriftM <= DROP_TEST_BODY_DRIFT_M || worstBody === undefined) return undefined;
+  const driftMm = worstBodyDriftM * 1000;
+  return makeFailure(
+    'mechanism.drops-on-release',
+    `Body '${worstBody}' translated ${driftMm.toFixed(0)} mm in ${DROP_TEST_DURATION_S.toFixed(1)} s under gravity ` +
+    `(threshold ${(DROP_TEST_BODY_DRIFT_M * 1000).toFixed(0)} mm). The mechanism does not hold this body in place — likely an ejected child of a 0-DOF mate or a free body the mate graph thinks is grounded but isn't.`,
+  );
+}
+
 async function runDropOnRelease(
   session: Awaited<ReturnType<typeof loadMujocoSession>>,
   jointOrder: readonly { mjcfName: string; mateName: string }[],
+  arm: Assembly,
 ): Promise<CompilerDiagnostic[]> {
-  const out: CompilerDiagnostic[] = [];
+  // Actively-driven hinges (complete mechanicalJoint intent) are treated as
+  // held by an actuator. MuJoCo emission still has no position motors, so we
+  // honour the authoring contract here rather than demanding a tendon on every
+  // servo joint. Passive jointSupport hinges still need arm.tendon(...).
+  const drivenMates = collectActivelyDrivenMates(arm);
+  if (allArticulatedMatesDriven(jointOrder, drivenMates)) return [];
 
   // Reset to the model's qpos0 — criterion 5 left the session at its
-  // last-sampled pose. The drop-test's premise is "from REST", and rest
-  // is the MuJoCo model's qpos0 (0 for an unlimited hinge, midpoint of
-  // the limit range otherwise). setPose with a zeroed vector matches
-  // the most common case (limits including 0); for joints whose limits
-  // exclude 0 the model's compiled qpos0 is the safe default, so we
-  // honour it by zeroing qvel/qacc only.
+  // last-sampled pose. The drop-test's premise is "from REST".
   const restPose = new Array(session.nq).fill(0);
   session.setPose(restPose);
-  session.forward(); // populate xpos at the chosen rest
+  session.forward();
   const restQpos = session.getQpos().slice();
   const restXpos = new Map<string, [number, number, number]>();
   for (const [name, pos] of session.xposNow()) {
@@ -1316,59 +1391,19 @@ async function runDropOnRelease(
       DROP_TEST_DURATION_S,
       DROP_TEST_DT_S,
     );
-
-    // Joint drift check.
-    let worstJointIdx = -1;
-    let worstJointDriftRad = 0;
-    for (let i = 0; i < finalQpos.length && i < restQpos.length; i++) {
-      const drift = Math.abs(finalQpos[i] - restQpos[i]);
-      if (drift > worstJointDriftRad) {
-        worstJointDriftRad = drift;
-        worstJointIdx = i;
-      }
-    }
-    if (worstJointDriftRad > DROP_TEST_JOINT_DRIFT_RAD) {
-      const mate = jointOrder[worstJointIdx]?.mateName ?? `joint#${worstJointIdx}`;
-      const driftDeg = (worstJointDriftRad * 180) / Math.PI;
-      out.push(makeFailure(
-        'mechanism.drops-on-release',
-        `Mate '${mate}' drifted ${driftDeg.toFixed(1)}° from rest in ${DROP_TEST_DURATION_S.toFixed(1)} s under gravity ` +
-        `(threshold ${(DROP_TEST_JOINT_DRIFT_RAD * 180 / Math.PI).toFixed(0)}°). The mechanism does not hold its declared rest pose without a brake or actuator — add a spring/tendon across this joint (closed-loop tendon API tracked in #361) or declare the joint as actively driven.`,
-      ));
-    }
-
-    // Body translation check.
-    let worstBody: string | undefined;
-    let worstBodyDriftM = 0;
-    for (const [name, pos] of finalXpos) {
-      const rest = restXpos.get(name);
-      if (rest === undefined) continue;
-      const d = Math.hypot(pos[0] - rest[0], pos[1] - rest[1], pos[2] - rest[2]);
-      if (d > worstBodyDriftM) {
-        worstBodyDriftM = d;
-        worstBody = name;
-      }
-    }
-    if (worstBodyDriftM > DROP_TEST_BODY_DRIFT_M && worstBody !== undefined) {
-      const driftMm = worstBodyDriftM * 1000;
-      out.push(makeFailure(
-        'mechanism.drops-on-release',
-        `Body '${worstBody}' translated ${driftMm.toFixed(0)} mm in ${DROP_TEST_DURATION_S.toFixed(1)} s under gravity ` +
-        `(threshold ${(DROP_TEST_BODY_DRIFT_M * 1000).toFixed(0)} mm). The mechanism does not hold this body in place — likely an ejected child of a 0-DOF mate or a free body the mate graph thinks is grounded but isn't.`,
-      ));
-    }
+    const out: CompilerDiagnostic[] = [];
+    const jointFail = dropTestJointDriftFailure(finalQpos, restQpos, jointOrder, drivenMates);
+    if (jointFail !== undefined) out.push(jointFail);
+    const bodyFail = dropTestBodyDriftFailure(finalXpos, restXpos);
+    if (bodyFail !== undefined) out.push(bodyFail);
+    return out;
   } catch (e) {
-    // Integrator instability or other MuJoCo runtime error. Surface
-    // the same failure code (the gate is still "this mechanism doesn't
-    // survive contact with gravity").
     const msg = e instanceof Error ? e.message : String(e);
-    out.push(makeFailure(
+    return [makeFailure(
       'mechanism.drops-on-release',
       `The drop-test simulation failed: ${msg}. The mechanism diverged numerically under gravity — likely an unstable mass / inertia / linkage combination. Verify density declarations and joint axes.`,
-    ));
+    )];
   }
-
-  return out;
 }
 
 /**

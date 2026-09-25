@@ -27,6 +27,11 @@ complex / enclosure / gearbox / housing.
 
 - Bodies look like real machine elements (plates, towers, yokes — not sticks)
 - Joints/connectors correct (`mechanism.orphan-part` must not ship)
+- Grounded root (`base-frame` / `base` / `ground` / `root`, or
+  `physicalUseCase(...).stableParts`) so floating-moving-part stays clear
+- Every revolute has `arm.jointSupport(...)` or `arm.mechanicalJoint(...)`
+- Gravity-hold: `arm.tendon(...)` (passive) or `arm.mechanicalJoint(...)`
+  (actively driven) so `mechanism.drops-on-release` stays clear
 - Mesh (+ optional anim) on CDN; paints in ChatGPT widget
 - Prefer `design_loop` + `review_cad` until green; cookbook
   `multi-body-mechanism-real-proportions`
