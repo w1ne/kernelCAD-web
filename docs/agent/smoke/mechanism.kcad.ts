@@ -73,5 +73,22 @@ arm.mechanicalJoint('shoulder-drive', {
   },
 });
 
+
+animationView({
+  name: 'shoulder-sweep',
+  tracks: [
+    {
+      param: 'shoulderDeg',
+      keys: [
+        { atMs: 0, value: 25 },
+        { atMs: 1200, value: 65, ease: 'easeInOut' },
+        { atMs: 2400, value: -10, ease: 'easeInOut' },
+        { atMs: 3600, value: 25, ease: 'easeInOut' },
+      ],
+    },
+  ],
+  fps: 30,
+});
+
 // Pin/tower contact is intentional hinge bearing — declare it.
 return arm.solvedModel({}, { ignore: [['base-frame', 'upper-link']] });
