@@ -84,7 +84,25 @@ async function main(): Promise<void> {
       reviewFacts: toyFailClosed.attempts[0]?.reviewFacts?.map((f) => f.code),
       revisionAssistMode: toyFailClosed.revisionAssist?.mode,
     },
-    openInStudioMeshCdn: 'not exercised this slice (local evaluate/design_loop only)',
+    // Local evaluate/design_loop smoke does not call MCP open_in_studio.
+    // Preserve the last committed ChatGPT/CDN paint proof when present so a
+    // local re-run does not wipe slug/meshReady evidence (see PR #777 / MLl-f0Uq).
+    openInStudioMeshCdn: (() => {
+      try {
+        const prev = JSON.parse(
+          readFileSync(resolve('docs/agent/smoke/adam-chatgpt-gaps-smoke.json'), 'utf8'),
+        );
+        if (prev?.openInStudioMeshCdn && prev.openInStudioMeshCdn.exercised === true) {
+          return prev.openInStudioMeshCdn;
+        }
+      } catch {
+        /* first run / missing file */
+      }
+      return {
+        exercised: false,
+        note: 'local evaluate/design_loop only — publish via MCP open_in_studio on docs/agent/smoke/mechanism.kcad.ts to fill slug/meshReady',
+      };
+    })(),
   };
 
   mkdirSync('docs/agent/smoke', { recursive: true });
