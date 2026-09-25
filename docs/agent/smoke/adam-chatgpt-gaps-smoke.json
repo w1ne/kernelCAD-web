@@ -1,14 +1,21 @@
 {
-  "at": "2026-09-24T23:52:29.271Z",
+  "at": "2026-09-25T02:34:47.404630+02:00",
   "timezone": "Europe/Budapest (UTC+2)",
+  "pin": {
+    "kernelcadWeb": "d7f97879",
+    "kernelcadServerLocal": "7799454 (#178 vendor bump to d7f97879)",
+    "prodServerBuild": "0.1.0+1182e325ce87@2026-09-24T23:55:42.329Z (#177 \u2014 prod not yet on #178; evaluate+open_in_studio still green)",
+    "embedViewerBanner": "kernelCAD v0.17.0 (d7f9787)"
+  },
   "housingEvaluate": {
     "ok": true,
     "featureCount": 17,
-    "featureHealth": []
+    "featureHealth": [],
+    "note": "unchanged from prior green slice; not re-run this open_in_studio proof"
   },
   "mechanismEvaluate": {
     "ok": true,
-    "featureCount": 21,
+    "featureCount": 22,
     "mechanism": "real",
     "parts": {
       "count": 3,
@@ -19,7 +26,9 @@
       ]
     },
     "diagnostics": [],
-    "featureHealth": []
+    "featureHealth": [],
+    "animationView": "shoulder-sweep",
+    "note": "cookbook multi-body-mechanism-real-proportions + animationView; MCP evaluate_script green"
   },
   "housingDesignLoop": {
     "ok": true,
@@ -28,7 +37,8 @@
       "solid-only-evaluate"
     ],
     "blockingReasons": [],
-    "reviewFacts": []
+    "reviewFacts": [],
+    "note": "unchanged from prior green slice"
   },
   "mechanismDesignLoop": {
     "ok": true,
@@ -45,14 +55,94 @@
       "interferenceCount": 0,
       "trackedConnectorCount": 0
     },
-    "note": "evaluate+mechanism:real OK; design_loop green (joint-support / grounded-root / gravity-hold)"
+    "note": "evaluate+mechanism:real OK; design_loop green (joint-support / grounded-root / gravity-hold) from prior #776 slice; this slice proves open_in_studio paint"
   },
   "toyFailClosed": {
     "ok": false,
     "reviewFacts": [
       "assembly.quality.stacked-primitive-toy"
     ],
-    "revisionAssistMode": "hints-only"
+    "revisionAssistMode": "hints-only",
+    "note": "unchanged from prior green slice"
   },
-  "openInStudioMeshCdn": "not exercised this slice (local evaluate/design_loop only)"
+  "openInStudioMeshCdn": {
+    "exercised": true,
+    "ok": true,
+    "slug": "MLl-f0Uq",
+    "version": 1,
+    "studioUrl": "https://app.kernelcad.com/p/MLl-f0Uq?version=1",
+    "embedUrl": "https://app.kernelcad.com/embed/MLl-f0Uq?revision=1&meshUrl=https%3A%2F%2Fmesh.kernelcad.com%2Fmesh-artifacts%2FMLl-f0Uq%2Fv1.json&animUrl=https%3A%2F%2Fmesh.kernelcad.com%2Fanim-artifacts%2FMLl-f0Uq%2Fv1.json",
+    "meshUrl": "https://mesh.kernelcad.com/mesh-artifacts/MLl-f0Uq/v1.json",
+    "animUrl": "https://mesh.kernelcad.com/anim-artifacts/MLl-f0Uq/v1.json",
+    "meshStatus": "ready",
+    "meshReady": true,
+    "hasAnimation": true,
+    "animationView": "shoulder-sweep",
+    "previewDelivered": true,
+    "meshCdnBodies": [
+      {
+        "displayName": "base-frame",
+        "featureKind": "solvedAssembly",
+        "faces": 14
+      },
+      {
+        "displayName": "shoulder-servo",
+        "featureKind": "solvedAssembly",
+        "faces": 6,
+        "color": "actuator"
+      },
+      {
+        "displayName": "upper-link",
+        "featureKind": "solvedAssembly",
+        "faces": 35
+      }
+    ],
+    "meshCdnFeatures": 4,
+    "animCdn": {
+      "durationMs": 3600,
+      "fps": 30,
+      "frames": 108,
+      "parts": [
+        "base-frame",
+        "shoulder-servo",
+        "upper-link"
+      ],
+      "upperLinkMatricesDifferAcrossFrames": true
+    },
+    "embedVerify": {
+      "pixelsDifferAcrossScrub": true,
+      "pixelHashT0": "9560aec783c70d80",
+      "pixelHashT1800": "79bb5b2c8926a245",
+      "blankViewer": false,
+      "multiBodyPainted": true,
+      "animationOverlay": "shoulder-sweep visible with Play + scrubber 0\u20133.6s",
+      "viewerBanner": "kernelCAD v0.17.0 (d7f9787) | Shaded + Edges",
+      "stills": [
+        "/workspace/chatgpt-debug/MLl-f0Uq-preview.png",
+        "/workspace/chatgpt-debug/MLl-f0Uq-embed-iso.png",
+        "/workspace/chatgpt-debug/MLl-f0Uq-embed-t0.png",
+        "/workspace/chatgpt-debug/MLl-f0Uq-embed-t1800.png",
+        "/workspace/chatgpt-debug/MLl-f0Uq-embed-orbit.png"
+      ],
+      "meshJson": "/workspace/chatgpt-debug/MLl-f0Uq-mesh.json",
+      "animJson": "/workspace/chatgpt-debug/MLl-f0Uq-anim.json",
+      "verifyJson": "/workspace/chatgpt-debug/MLl-f0Uq-verify.json"
+    },
+    "chatgptBrowserPaint": {
+      "attempted": false,
+      "reason": "Prior box Playwright chatgpt.com auth unreliable; embed+CDN+stills accepted as evidence per goal fallback. Historical login shylenkoa@gmail.com / Andrii Shylenko Pro seen 2026-09-23.",
+      "priorCobotSuccess": "iRzbKK1V@2 with CDN anim; embed Play applies transforms (#771)"
+    },
+    "toolingBugsBlockingPaint": [],
+    "prsNeeded": "docs-only smoke update (no paint blockers)"
+  },
+  "remainingGaps": [
+    "Ferrari redesign \u2014 OUT of this slice",
+    "Godela \u2014 OUT",
+    "N-rails \u2014 OUT",
+    "full CV IoU \u2014 OUT",
+    "MuJoCo position actuators \u2014 gap only (not exercised); kinematic mechanicalJoint path used instead",
+    "Prod api.kernelcad.com still on serverBuild 1182e32 (#177); local main has #178 vendor pin d7f97879 \u2014 evaluate/open_in_studio already green on prod; deploy #178 when ready",
+    "ChatGPT in-thread widget paint not re-verified this slice (embed path proven)"
+  ]
 }
