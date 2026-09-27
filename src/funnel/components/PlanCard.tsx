@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { PlanTier, PaidTier } from '../lib/apiClient';
+import { planLabel, paidTierOf, tierMonthlyPrice } from '../lib/planLabels';
 
 export interface PlanCardProps {
   plan: PlanTier;
@@ -16,9 +17,13 @@ export interface PlanCardProps {
   /** Fires when the free-tier user clicks "Upgrade". The parent should call
    * createCheckoutSession() and window.location.href = url. */
   onUpgrade: () => void;
-  /** Fires when the pro user clicks "Manage subscription". The parent should
-   * call openBillingPortal() and window.location.href = url. */
+  /** Fires when the user clicks "Manage subscription" (paid) or "Billing
+   * history & invoices" (free with a Stripe customer). The parent should call
+   * openBillingPortal() and window.location.href = url. */
   onManage: () => void;
+  /** Free plan: the user has a Stripe customer (e.g. cancelled earlier), so
+   * the portal can still show past invoices. */
+  hasBillingAccount?: boolean;
   /** Disables both buttons while a redirect URL is being fetched. */
   busy?: boolean;
 }
@@ -29,7 +34,8 @@ const fmtTokens = (n: number): string =>
 /**
  * Plan + usage card shown above the project grid on /me and on /billing.
  *
- * Free tier: "Free plan · {N} generations remaining" + Upgrade CTA.
+ * Free tier: "Free plan · {N} generations remaining" + Upgrade CTA, plus a
+ * "Billing history & invoices" button when the user has a Stripe customer.
  * Paid tier: "{Basic|Pro} plan · $X/mo" + a monthly token-usage meter + Manage CTA.
  */
 export function PlanCard({
@@ -41,11 +47,13 @@ export function PlanCard({
   currentPeriodEnd,
   onUpgrade,
   onManage,
+  hasBillingAccount = false,
   busy = false,
 }: PlanCardProps) {
-  if (plan === 'pro') {
-    const planName = tier === 'basic' ? 'Basic plan' : 'Pro plan';
-    const planPrice = tier === 'basic' ? '$19/mo' : '$39/mo';
+  const paidTier = paidTierOf({ plan, tier });
+  if (paidTier) {
+    const planName = planLabel({ plan, tier });
+    const planPrice = tierMonthlyPrice(paidTier);
     const renewsCopy = currentPeriodEnd
       ? `renews ${new Date(currentPeriodEnd).toLocaleDateString()}`
       : 'active subscription';
@@ -91,19 +99,31 @@ export function PlanCard({
       className="rounded-xl border border-rule bg-white p-5 flex items-center justify-between gap-4"
     >
       <div>
-        <p className="font-serif font-medium text-ink text-base">Free plan</p>
+        <p className="font-serif font-medium text-ink text-base">{planLabel({ plan, tier })}</p>
         <p className="font-mono text-[11px] text-ink-faint mt-1.5 tracking-wide">
           {generationsRemaining ?? 0} generation{(generationsRemaining ?? 0) === 1 ? '' : 's'} remaining
         </p>
       </div>
-      <button
-        type="button"
-        onClick={onUpgrade}
-        disabled={busy}
-        className="rounded-md bg-blueprint px-4 py-2 font-mono text-xs tracking-wide text-white hover:bg-ink transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {busy ? 'Loading…' : 'Upgrade — $19/mo'}
-      </button>
+      <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2 shrink-0">
+        {hasBillingAccount && (
+          <button
+            type="button"
+            onClick={onManage}
+            disabled={busy}
+            className="rounded-md border border-rule px-4 py-2 font-mono text-xs tracking-wide text-ink-soft hover:border-ink hover:text-ink transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Billing history &amp; invoices
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={onUpgrade}
+          disabled={busy}
+          className="rounded-md bg-blueprint px-4 py-2 font-mono text-xs tracking-wide text-white hover:bg-ink transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {busy ? 'Loading…' : `Upgrade — ${tierMonthlyPrice('basic')}`}
+        </button>
+      </div>
     </section>
   );
 }
