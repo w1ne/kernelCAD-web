@@ -4,7 +4,8 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import type { Session } from '@supabase/supabase-js';
-import { FeedbackModal, postFeedback, FEEDBACK_ENDPOINT, type FeedbackPayload } from './FeedbackModal';
+import { FeedbackModal } from './FeedbackModal';
+import { postFeedback, FEEDBACK_ENDPOINT, type FeedbackPayload } from './feedbackApi';
 import { FeedbackButton } from './FeedbackButton';
 import { useOptionalSession } from '../../../funnel/hooks/useSession';
 
