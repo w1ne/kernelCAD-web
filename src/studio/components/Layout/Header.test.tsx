@@ -66,6 +66,16 @@ describe('Header', () => {
     expect(screen.getByText('Untitled Project')).toBeDefined();
   });
 
+  it('shows the Feedback button in the pinned account slot, even without auth', () => {
+    render(
+      <WorkbenchProvider>
+        <Header />
+      </WorkbenchProvider>,
+    );
+    const slot = screen.getByTestId('account-slot');
+    expect(slot.querySelector('[data-testid="feedback-button"]')).not.toBeNull();
+  });
+
   it('should export STEP via the server kernel path (not the legacy worker)', async () => {
     render(
       <WorkbenchProvider>
