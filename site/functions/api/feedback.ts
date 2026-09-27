@@ -5,8 +5,11 @@
 //
 // Every accepted submission is stored in the D1 table `feedback` (binding
 // `DB`, schema in site/migrations/0002_feedback.sql). D1 is the source of
-// truth; there is no email notification yet (kernelCAD has no outbound mail
-// path).
+// truth. After the insert, the founder gets an email: best-effort, in
+// `waitUntil`, so a mail failure never changes the response or the D1 row.
+// Pages Functions cannot hold a `send_email` binding, so the email goes out
+// through the private Worker in workers/feedback-mailer (service binding
+// `FEEDBACK_MAILER`), which uses Cloudflare Email Service.
 //
 // The Studio runs on app.kernelcad.com and this function on kernelcad.com, so
 // the request is cross-origin: CORS allows only the kernelCAD origins below.
@@ -19,6 +22,8 @@
 
 interface Env {
   DB: D1Database;
+  /** Service binding to workers/feedback-mailer. Absent → no email. */
+  FEEDBACK_MAILER?: Fetcher;
 }
 
 export const MESSAGE_MIN = 10;
@@ -158,6 +163,50 @@ export function parseFeedbackBody(raw: unknown): ParseResult {
   };
 }
 
+export function buildFeedbackEmail(
+  fb: ParsedFeedback,
+  meta: { userAgent: string | null; country: string | null; now: Date },
+): { subject: string; text: string; replyTo: string | null } {
+  const pathBit = fb.path ? ` ${fb.path}` : '';
+  const subject = `[kernelCAD feedback] ${fb.category}${pathBit}`.slice(0, SHORT_FIELD_MAX);
+  const text = [
+    `Category: ${fb.category}`,
+    `Reply email: ${fb.email ?? 'none'}`,
+    `User id: ${fb.userId ?? 'anonymous'}`,
+    `User email: ${fb.userEmail ?? 'none'}`,
+    `Path: ${fb.path ?? 'none'}`,
+    `App version: ${fb.appVersion ?? 'none'}`,
+    `Country: ${meta.country ?? 'unknown'}`,
+    `User-Agent: ${meta.userAgent ?? 'none'}`,
+    `Time: ${meta.now.toISOString()}`,
+    '',
+    '---',
+    '',
+    fb.message,
+  ].join('\n');
+  return { subject, text, replyTo: fb.email ?? fb.userEmail };
+}
+
+/** Best-effort founder email. Never throws: the D1 row is already stored. */
+export async function notifyFounder(env: Env, email: ReturnType<typeof buildFeedbackEmail>): Promise<void> {
+  if (!env.FEEDBACK_MAILER) {
+    console.warn('feedback.email skipped: FEEDBACK_MAILER binding missing');
+    return;
+  }
+  try {
+    const res = await env.FEEDBACK_MAILER.fetch('https://feedback-mailer/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(email),
+    });
+    const body = await res.text();
+    if (res.ok) console.log('feedback.email sent', body);
+    else console.error('feedback.email failed', res.status, body);
+  } catch (err) {
+    console.error('feedback.email error', err);
+  }
+}
+
 async function countSince(env: Env, column: 'ip_hash' | 'user_id', value: string, since: number): Promise<number> {
   const row = await env.DB.prepare(
     `SELECT COUNT(*) AS n FROM feedback WHERE ${column} = ? AND created_at > ?`,
@@ -167,7 +216,7 @@ async function countSince(env: Env, column: 'ip_hash' | 'user_id', value: string
   return Number(row?.n ?? 0);
 }
 
-export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
+export const onRequestPost: PagesFunction<Env> = async ({ request, env, waitUntil }) => {
   const declaredLength = Number(request.headers.get('Content-Length') ?? 0);
   if (declaredLength > BODY_MAX_BYTES) {
     return json(request, { error: 'payload_too_large' }, 413);
@@ -224,6 +273,17 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     console.error('feedback.d1', err);
     return json(request, { error: 'temporary' }, 503);
   }
+
+  waitUntil(
+    notifyFounder(
+      env,
+      buildFeedbackEmail(fb, {
+        userAgent: request.headers.get('User-Agent')?.slice(0, 500) ?? null,
+        country: request.headers.get('cf-ipcountry'),
+        now: new Date(now * 1000),
+      }),
+    ),
+  );
 
   return json(request, { ok: true }, 200);
 };

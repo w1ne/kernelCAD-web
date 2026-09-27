@@ -18,3 +18,10 @@ pages_build_output_dir = "."
 binding = "DB"
 database_name = "kernelcad-subscribers"
 database_id = "8c284024-f44d-4a80-ac87-9212029725ac"
+
+# Private Worker that emails each feedback submission to the founder
+# (workers/feedback-mailer). Pages Functions cannot hold a `send_email`
+# binding themselves. Deploy the Worker before a Pages deploy that needs it.
+[[services]]
+binding = "FEEDBACK_MAILER"
+service = "kernelcad-feedback-mailer"

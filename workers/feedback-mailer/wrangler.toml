@@ -1,0 +1,35 @@
+# workers/feedback-mailer/wrangler.toml
+#
+# Private Worker that emails each accepted Studio feedback submission to the
+# founder. Pages Functions cannot hold a `send_email` binding, so the
+# kernelcad.com feedback function (site/functions/api/feedback.ts) calls this
+# Worker through the `FEEDBACK_MAILER` service binding in site/wrangler.toml.
+#
+# No public route: workers_dev is off and there are no routes, so only the
+# service binding can reach it. Sender and recipient are fixed here, so the
+# binding cannot mail anyone else.
+#
+# Deploy (manual, only when this directory changes):
+#   npx -y wrangler@4.94.0 deploy -c workers/feedback-mailer/wrangler.toml
+#
+# Email: Cloudflare Email Service. kernelcad.com is onboarded for Email
+# Sending (cf-bounce DKIM/SPF/MX). The recipient must be a verified Email
+# Routing destination address in the account, or the account must have Email
+# Sending enabled for arbitrary recipients.
+
+name = "kernelcad-feedback-mailer"
+main = "src/index.ts"
+compatibility_date = "2026-04-01"
+workers_dev = false
+preview_urls = false
+
+[vars]
+FEEDBACK_TO = "andrii@kernelcad.com"
+FEEDBACK_FROM = "feedback@kernelcad.com"
+
+[[send_email]]
+name = "EMAIL"
+allowed_sender_addresses = ["feedback@kernelcad.com"]
+
+[observability]
+enabled = true
