@@ -8,7 +8,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { renderDocsSite, escapeHtml } from './build-docs';
+import { renderDocsSite, escapeHtml, canonicalUrl } from './build-docs';
 import { buildDocsPages } from '../../src/docs/liveDocs';
 import { CHEAT_SHEET_TAXONOMY } from '../../src/agent/mcp/tools/cheatSheetTaxonomy';
 
@@ -29,6 +29,15 @@ describe('build-docs', () => {
       expect(byFile.has(`docs/${page.slug}.html`), `missing page for ${group.task}`).toBe(true);
     }
     expect(rendered.length).toBe(CHEAT_SHEET_TAXONOMY.length + 1);
+  });
+
+  it('gives every page a canonical link to the URL Pages serves', () => {
+    expect(canonicalUrl('docs/index.html')).toBe('https://kernelcad.com/docs/');
+    expect(canonicalUrl('docs/assemble.html')).toBe('https://kernelcad.com/docs/assemble');
+    for (const page of rendered) {
+      const tags = page.html.match(/<link rel="canonical" href="[^"]+" \/>/g) ?? [];
+      expect(tags, page.file).toEqual([`<link rel="canonical" href="${canonicalUrl(page.file)}" />`]);
+    }
   });
 
   it('renders every listApi row into its page', () => {

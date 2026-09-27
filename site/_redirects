@@ -1,3 +1,5 @@
+# /app/connect is not a page on this site. The connect page lives in the app.
+/app/connect   https://app.kernelcad.com/connect 301
 /demo.mp4      /public/demo.mp4       200
 /demo-poster.png /public/demo-poster.png 200
 /demo.json     /public/demo.json      200

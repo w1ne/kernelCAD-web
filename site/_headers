@@ -25,3 +25,5 @@
 # invalidate it short of renaming the file.
 /replicad_single.wasm
   Cache-Control: public, max-age=86400
+/*
+  Strict-Transport-Security: max-age=31536000
