@@ -4,7 +4,7 @@
 // in-memory `feedback` table behind a fake prepare/bind/first/run chain. No
 // Cloudflare runtime needed.
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import {
   onRequest,
   onRequestPost,
@@ -80,13 +80,45 @@ function makeRequest(
   });
 }
 
-function makeContext(request: Request, db: ReturnType<typeof makeMockDB>) {
+interface SentMail {
+  subject: string;
+  text: string;
+  replyTo: string | null;
+}
+
+/** Fake FEEDBACK_MAILER service binding. Records every email it is asked to send. */
+function makeMockMailer(mode: 'ok' | 'error' | 'throw' = 'ok') {
+  const sent: SentMail[] = [];
+  const fetch = async (_url: string, init: RequestInit) => {
+    if (mode === 'throw') throw new Error('mock mailer unreachable');
+    sent.push(JSON.parse(init.body as string) as SentMail);
+    if (mode === 'error') return new Response('{"ok":false,"error":"send_failed"}', { status: 502 });
+    return new Response('{"ok":true,"messageId":"<m1@kernelcad.com>"}', { status: 200 });
+  };
+  return { FEEDBACK_MAILER: { fetch } as unknown as Fetcher, sent };
+}
+
+/** Promises handed to waitUntil, so a test can await the background email. */
+let pending: Promise<unknown>[] = [];
+async function settleWaitUntil(): Promise<void> {
+  const all = pending;
+  pending = [];
+  await Promise.all(all);
+}
+
+function makeContext(
+  request: Request,
+  db: ReturnType<typeof makeMockDB>,
+  mailer?: ReturnType<typeof makeMockMailer>,
+) {
   return {
     request,
-    env: { DB: db.DB },
+    env: { DB: db.DB, FEEDBACK_MAILER: mailer?.FEEDBACK_MAILER },
     params: {},
     next: () => Promise.resolve(new Response()),
-    waitUntil: () => undefined,
+    waitUntil: (p: Promise<unknown>) => {
+      pending.push(p);
+    },
     data: {},
     functionPath: '/api/feedback',
   } as unknown as Parameters<typeof onRequestPost>[0];
@@ -218,6 +250,93 @@ describe('POST /api/feedback', () => {
     const res = await onRequestPost(makeContext(makeRequest(VALID), db));
     expect(res.status).toBe(503);
     expect(await res.json()).toEqual({ error: 'temporary' });
+  });
+});
+
+describe('founder email', () => {
+  beforeEach(() => {
+    pending = [];
+  });
+
+  it('emails an accepted submission through FEEDBACK_MAILER', async () => {
+    const db = makeMockDB();
+    const mailer = makeMockMailer();
+    const req = makeRequest(
+      { ...VALID, email: 'me@example.com', userId: 'u-1', userEmail: 'acct@example.com' },
+      { 'cf-ipcountry': 'HU', 'User-Agent': 'vitest' },
+    );
+    const res = await onRequestPost(makeContext(req, db, mailer));
+    expect(res.status).toBe(200);
+    // The send must be handed to waitUntil, or the runtime may cancel it.
+    expect(pending).toHaveLength(1);
+    await settleWaitUntil();
+    expect(mailer.sent).toHaveLength(1);
+    const mail = mailer.sent[0];
+    expect(mail.subject).toBe('[kernelCAD feedback] bug /p/abc');
+    expect(mail.replyTo).toBe('me@example.com');
+    expect(mail.text).toContain(VALID.message);
+    expect(mail.text).toContain('User id: u-1');
+    expect(mail.text).toContain('App version: 0.42.0+deadbee');
+    expect(mail.text).toContain('Country: HU');
+    expect(mail.text).not.toContain('203.0.113.7');
+  });
+
+  it('falls back to the account email for reply-to', async () => {
+    const mailer = makeMockMailer();
+    await onRequestPost(makeContext(makeRequest({ ...VALID, userEmail: 'acct@example.com' }), makeMockDB(), mailer));
+    await settleWaitUntil();
+    expect(mailer.sent[0].replyTo).toBe('acct@example.com');
+  });
+
+  it('sends nothing for a honeypot submission', async () => {
+    const mailer = makeMockMailer();
+    const res = await onRequestPost(
+      makeContext(makeRequest({ ...VALID, honeypot: 'http://spam' }), makeMockDB(), mailer),
+    );
+    expect(res.status).toBe(204);
+    await settleWaitUntil();
+    expect(mailer.sent).toHaveLength(0);
+  });
+
+  it('sends nothing when rate limited', async () => {
+    const db = makeMockDB();
+    const mailer = makeMockMailer();
+    for (let i = 0; i < RATE_LIMIT_MAX; i++) {
+      await onRequestPost(makeContext(makeRequest(VALID), db, mailer));
+    }
+    await settleWaitUntil();
+    expect(mailer.sent).toHaveLength(RATE_LIMIT_MAX);
+    const blocked = await onRequestPost(makeContext(makeRequest(VALID), db, mailer));
+    expect(blocked.status).toBe(429);
+    await settleWaitUntil();
+    expect(mailer.sent).toHaveLength(RATE_LIMIT_MAX);
+  });
+
+  it('sends nothing when D1 fails', async () => {
+    const mailer = makeMockMailer();
+    const res = await onRequestPost(makeContext(makeRequest(VALID), makeMockDB({ throwOnRun: true }), mailer));
+    expect(res.status).toBe(503);
+    await settleWaitUntil();
+    expect(mailer.sent).toHaveLength(0);
+  });
+
+  it.each(['error', 'throw'] as const)('mailer %s: still 200 and the D1 row is kept', async (mode) => {
+    const db = makeMockDB();
+    const mailer = makeMockMailer(mode);
+    const res = await onRequestPost(makeContext(makeRequest(VALID), db, mailer));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ ok: true });
+    expect(pending).toHaveLength(1);
+    await expect(settleWaitUntil()).resolves.toBeUndefined();
+    expect(db.rows).toHaveLength(1);
+  });
+
+  it('missing FEEDBACK_MAILER binding: still 200 and the D1 row is kept', async () => {
+    const db = makeMockDB();
+    const res = await onRequestPost(makeContext(makeRequest(VALID), db));
+    expect(res.status).toBe(200);
+    await expect(settleWaitUntil()).resolves.toBeUndefined();
+    expect(db.rows).toHaveLength(1);
   });
 });
 
