@@ -236,6 +236,16 @@ export interface MyPlan {
   tokensBudget?: number | null;
   tokensRemaining?: number | null;
   currentPeriodEnd: string | null;
+  /** True when the user has a Stripe customer, so the Customer Portal
+   *  (invoices, receipts, card) can open, also after a cancellation when the
+   *  plan is back to free. Absent on older API builds. */
+  hasBillingAccount?: boolean;
+  /** Raw Stripe subscription status ('active', 'past_due', ...). Absent on
+   *  older API builds. */
+  subscriptionStatus?: string | null;
+  /** True when a renewal charge failed (`past_due` / `unpaid`). Absent on older
+   *  API builds, which is read as false. */
+  paymentFailed?: boolean;
 }
 
 export interface CheckoutSession {
@@ -262,8 +272,9 @@ export async function createCheckoutSession(
   return authedFetch<CheckoutSession>('POST', '/api/v1/billing/create-checkout', { tier, period });
 }
 
-/** POST /api/v1/billing/portal — returns a Stripe Customer Portal URL
- * for the signed-in pro user to manage / cancel their subscription. */
+/** POST /api/v1/billing/portal — returns a Stripe Customer Portal URL for a
+ * signed-in user with a Stripe customer: manage / cancel the subscription,
+ * update the card, or download past invoices. */
 export async function openBillingPortal(): Promise<BillingPortalSession> {
   return authedFetch<BillingPortalSession>('POST', '/api/v1/billing/portal');
 }

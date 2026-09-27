@@ -10,24 +10,18 @@ import {
   type MyPlan,
 } from '../../funnel/lib/apiClient';
 import { PlanCard } from '../../funnel/components/PlanCard';
+import { CheckoutBanner, PaymentFailedBanner } from '../../funnel/components/BillingBanners';
+import { parseCheckoutStatus, type CheckoutStatus } from '../../funnel/lib/checkoutStatus';
+import { planLabel } from '../../funnel/lib/planLabels';
 
-type CheckoutStatus = 'success' | 'cancel' | undefined;
-
+// Stripe Checkout (success/cancel) and the Customer Portal return here:
+// kernelCAD-server builds them as STUDIO_APP_BASE_URL/billing[?checkout=...].
 export const Route = createFileRoute('/billing')({
   component: BillingPage,
   validateSearch: (s: Record<string, unknown>): { checkout?: CheckoutStatus } => ({
-    checkout:
-      s.checkout === 'success' || s.checkout === 'cancel'
-        ? (s.checkout as CheckoutStatus)
-        : undefined,
+    checkout: parseCheckoutStatus(s.checkout),
   }),
 });
-
-/** Human-readable plan name for the usage summary. */
-function planLabel(plan: MyPlan): string {
-  if (plan.plan !== 'pro') return 'Free plan';
-  return plan.tier === 'pro' ? 'Pro plan' : 'Standard plan';
-}
 
 /** Top navigation for the billing page. */
 function BillingNav({ email }: { email: string | undefined }) {
@@ -57,28 +51,6 @@ function BillingNav({ email }: { email: string | undefined }) {
         </button>
       </div>
     </header>
-  );
-}
-
-/** Checkout result banners shown after returning from Stripe. */
-function CheckoutBanners({ checkout, onDismiss }: { checkout: CheckoutStatus; onDismiss: () => void }) {
-  return (
-    <>
-      {checkout === 'success' && (
-        <div role="status" className="mb-6 rounded-lg border border-blueprint bg-vellum-soft p-4 text-ink relative">
-          <button type="button" onClick={onDismiss} aria-label="Dismiss" className="absolute top-3 right-3 text-ink-faint hover:text-ink font-mono text-sm leading-none">×</button>
-          <p className="font-serif font-medium">You're on Pro</p>
-          <p className="text-sm text-ink-soft mt-1">Subscription active — generate as much as you like.</p>
-        </div>
-      )}
-      {checkout === 'cancel' && (
-        <div role="status" className="mb-6 rounded-lg border border-rule bg-vellum-soft p-4 text-ink relative">
-          <button type="button" onClick={onDismiss} aria-label="Dismiss" className="absolute top-3 right-3 text-ink-faint hover:text-ink font-mono text-sm leading-none">×</button>
-          <p className="font-serif font-medium">Checkout cancelled</p>
-          <p className="text-sm text-ink-soft mt-1">No charge was made. You can upgrade any time from this page.</p>
-        </div>
-      )}
-    </>
   );
 }
 
@@ -181,7 +153,11 @@ function BillingPage() {
           Your plan, generation usage, and payment settings.
         </p>
 
-        <CheckoutBanners checkout={checkout} onDismiss={dismissCheckoutBanner} />
+        <CheckoutBanner checkout={checkout} plan={plan} onDismiss={dismissCheckoutBanner} />
+
+        {plan?.paymentFailed && (
+          <PaymentFailedBanner onUpdateCard={handleManage} busy={billingBusy} />
+        )}
 
         {plan && (
           <PlanCard
@@ -193,6 +169,7 @@ function BillingPage() {
             currentPeriodEnd={plan.currentPeriodEnd}
             onUpgrade={handleUpgrade}
             onManage={handleManage}
+            hasBillingAccount={plan.hasBillingAccount === true}
             busy={billingBusy}
           />
         )}

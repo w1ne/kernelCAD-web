@@ -7,7 +7,7 @@
 // test while `useSearch`/`useNavigate` stay router-free.
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, render, screen } from '@testing-library/react';
 import type { ComponentType } from 'react';
 
 const routerMock = vi.hoisted(() => ({
@@ -112,28 +112,14 @@ describe('MePage', () => {
         expect(screen.getByText('Start one')).toBeDefined();
     });
 
-    it('renders the success checkout banner and dismisses it', () => {
+    it('does not render checkout banners: Stripe returns to /billing, which owns them', () => {
         routerMock.search.checkout = 'success';
         mocks.useMePageData.mockReturnValue({
             session, loading: false, projects, plan: null, planErr: null, err: null,
         });
         renderMePage();
 
-        expect(screen.getByText("You're on Pro")).toBeDefined();
-        expect(screen.getByText('Subscription active — generate as much as you like.')).toBeDefined();
-
-        fireEvent.click(screen.getByLabelText('Dismiss'));
-        expect(routerMock.navigate).toHaveBeenCalledWith({ to: '/me', search: {}, replace: true });
-    });
-
-    it('renders the cancel checkout banner', () => {
-        routerMock.search.checkout = 'cancel';
-        mocks.useMePageData.mockReturnValue({
-            session, loading: false, projects, plan: null, planErr: null, err: null,
-        });
-        renderMePage();
-
-        expect(screen.getByText('Checkout cancelled')).toBeDefined();
-        expect(screen.getByText('No charge was made. You can upgrade any time from this page.')).toBeDefined();
+        expect(screen.queryByText("You're on Pro")).toBeNull();
+        expect(screen.queryByText('Checkout cancelled')).toBeNull();
     });
 });

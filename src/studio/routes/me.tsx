@@ -1,13 +1,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
 import { getSupabase } from '../../funnel/lib/supabaseClient';
 import type { ProjectRow } from '../../funnel/lib/apiClient';
 import { PlanSummaryCard } from './-PlanSummaryCard';
 import { useMePageData } from './-useMePageData';
-
-type CheckoutStatus = 'success' | 'cancel' | undefined;
 
 /** Copies the public /p/<slug> link for a project card to the clipboard with
  *  transient "Copied" feedback. Stops propagation so it doesn't trigger the
@@ -37,14 +35,9 @@ function CopyLinkButton({ slug }: { slug: string }) {
   );
 }
 
+// Stripe returns to /billing (which shows the checkout banners), not /me.
 export const Route = createFileRoute('/me')({
   component: MePage,
-  validateSearch: (s: Record<string, unknown>): { checkout?: CheckoutStatus } => ({
-    checkout:
-      s.checkout === 'success' || s.checkout === 'cancel'
-        ? (s.checkout as CheckoutStatus)
-        : undefined,
-  }),
 });
 
 function MePageHeader({ email }: { email: string | undefined }) {
@@ -71,57 +64,6 @@ function MePageHeader({ email }: { email: string | undefined }) {
         </button>
       </div>
     </header>
-  );
-}
-
-function CheckoutBanners({
-  checkout,
-  onDismiss,
-}: {
-  checkout: CheckoutStatus;
-  onDismiss: () => void;
-}) {
-  return (
-    <>
-      {checkout === 'success' && (
-        <div
-          role="status"
-          className="mb-6 rounded-lg border border-blueprint bg-vellum-soft p-4 text-ink relative"
-        >
-          <button
-            type="button"
-            onClick={onDismiss}
-            aria-label="Dismiss"
-            className="absolute top-3 right-3 text-ink-faint hover:text-ink font-mono text-sm leading-none"
-          >
-            ×
-          </button>
-          <p className="font-serif font-medium">You're on Pro</p>
-          <p className="text-sm text-ink-soft mt-1">
-            Subscription active — generate as much as you like.
-          </p>
-        </div>
-      )}
-      {checkout === 'cancel' && (
-        <div
-          role="status"
-          className="mb-6 rounded-lg border border-rule bg-vellum-soft p-4 text-ink relative"
-        >
-          <button
-            type="button"
-            onClick={onDismiss}
-            aria-label="Dismiss"
-            className="absolute top-3 right-3 text-ink-faint hover:text-ink font-mono text-sm leading-none"
-          >
-            ×
-          </button>
-          <p className="font-serif font-medium">Checkout cancelled</p>
-          <p className="text-sm text-ink-soft mt-1">
-            No charge was made. You can upgrade any time from this page.
-          </p>
-        </div>
-      )}
-    </>
   );
 }
 
@@ -159,13 +101,7 @@ function ProjectsSection({ projects }: { projects: ProjectRow[] | null }) {
 }
 
 function MePage() {
-  const navigate = useNavigate();
-  const { checkout } = Route.useSearch();
   const { session, loading, projects, plan, planErr, err } = useMePageData();
-
-  const dismissCheckoutBanner = () => {
-    navigate({ to: '/me', search: {}, replace: true });
-  };
 
   if (loading || !session) {
     return (
@@ -188,8 +124,6 @@ function MePage() {
       <MePageHeader email={session.user.email} />
 
       <section className="px-6 py-10 max-w-4xl mx-auto">
-        <CheckoutBanners checkout={checkout} onDismiss={dismissCheckoutBanner} />
-
         <PlanSummaryCard plan={plan} planErr={planErr} />
 
         <h1 className="font-serif text-3xl font-medium text-ink mt-10">Your projects</h1>
