@@ -9,6 +9,7 @@ import { COMPACT_HEADER_QUERY, useIsNarrow } from '../../hooks/useIsNarrow';
 import { downloadBlob, exportViaServer } from '../../exportViaServer';
 import { OverflowMenu } from './OverflowMenu';
 import UserMenu from './UserMenu';
+import { FeedbackButton } from './FeedbackButton';
 import { useHeaderHistory } from './useHeaderHistory';
 import {
     ViewModeCluster, BackgroundCluster, GridButton, ExportButtons, UndoRedoButtons, HistoryControl,
@@ -187,6 +188,7 @@ export function Header() {
                 data-testid="account-slot"
             >
                 <div className="h-6 w-px bg-[#333]" />
+                <FeedbackButton />
                 <UserMenu />
             </div>
             <div className="absolute bottom-0 right-0 p-1 text-[9px] text-gray-700 pointer-events-none opacity-50 font-mono">
