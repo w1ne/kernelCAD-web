@@ -33,6 +33,7 @@ export type LinkSurface =
   | 'part'
   | 'studio'
   | 'embed'
+  | 'embed-remix'
   | 'share'
   | 'drawing'
   | 'export';

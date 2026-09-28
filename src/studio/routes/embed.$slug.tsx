@@ -291,12 +291,13 @@ function EmbedPage() {
         <StudioConfigProvider value={{ showHeader: false, enableAgentRail: false, enableConnect: false }}>
           <StudioApp initialCode={code} viewerMode />
           {/* Bottom-right: the Studio viewport's bottom-left holds the parameter chips. */}
-          <MadeWithKernelcad surface="embed" className="fixed bottom-2 right-2" />
+          <MadeWithKernelcad surface="embed" className="fixed bottom-2 right-2" remixSlug={slug} />
         </StudioConfigProvider>
       );
     }
     return (
       <EmbedViewerSurface
+        slug={slug}
         code={code ?? ''}
         meshUrl={meshUrl}
         animUrl={animUrl}
@@ -378,6 +379,7 @@ function canRetryEmbed(uiPhase: EmbedUiPhase): boolean {
 /** Ready-model viewer branch: the chrome-free FunnelViewer plus its status
  *  overlay and retry affordance. */
 function EmbedViewerSurface(props: {
+  slug: string;
   code: string;
   meshUrl: string | undefined;
   animUrl: string | undefined;
@@ -401,7 +403,7 @@ function EmbedViewerSurface(props: {
         resetKey={props.retryKey}
         onPhaseChange={props.onPhaseChange}
       />
-      <MadeWithKernelcad surface="embed" className="absolute bottom-2 left-2" />
+      <MadeWithKernelcad surface="embed" className="absolute bottom-2 left-2" remixSlug={props.slug} />
       {props.statusMessage ? (
         <div
           className="absolute inset-x-0 bottom-0 p-4 flex flex-col items-center gap-2 pointer-events-none"
