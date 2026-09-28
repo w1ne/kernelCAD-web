@@ -174,7 +174,7 @@ export function scaleLabel(s: number): string {
 
 // ---------------------------------------------------------------------------
 // Sheet layout (third-angle: top view above front, left view left of front,
-// isometric pictorial in the upper-right cell)
+// isometric pictorial in the upper-right cell; or the first-angle mirror)
 // ---------------------------------------------------------------------------
 
 export interface SheetSpec {
@@ -330,13 +330,17 @@ export function computeSheetLayout(
 }
 
 /**
- * First-angle arrangement of the same four views: the view from the left sits
- * RIGHT of the front view, the view from above sits BELOW it, and the
- * isometric takes the remaining lower-right cell. The front/top views share
- * the sheet-x mapping and the front/left views the sheet-y mapping, exactly
- * as in third angle. A leading gap left of the grid keeps the room the
- * top view's depth dimension needs, and the front view's width-dimension band
- * sits between the two rows.
+ * First-angle arrangement of the same four views — the third-angle grid
+ * turned half a turn about the front view: the view from the left sits RIGHT
+ * of the front view, the view from above sits BELOW it, and the isometric
+ * takes the lower-left cell, so the lower-right corner stays free for the
+ * title block and parts list exactly as in third angle. The front/top views
+ * share the sheet-x mapping and the front/left views the sheet-y mapping.
+ * The dimension band sits ABOVE the front row (the front view's width
+ * dimension goes on its free top side).
+ *
+ *   row 1:  [   -   ] [ front ] [ left ]
+ *   row 2:  [  iso  ] [  top  ] [   -  ]
  */
 function computeFirstAngleLayout(
   views: Record<DrawingViewName, ViewBox2>,
@@ -346,31 +350,34 @@ function computeFirstAngleLayout(
   const availW = sheet.w - 2 * margin;
   const availH = sheet.h - 2 * margin - sheet.titleBlock.h;
 
-  const col2W = Math.max(views.left.w, views.iso.w);
   const row1H = Math.max(views.front.h, views.left.h);
   const row2H = Math.max(views.top.h, views.iso.h);
-  const needW = views.front.w + col2W;
+  const needW = views.iso.w + views.front.w + views.left.w;
   const needH = row1H + row2H;
 
+  // The band above the front row takes the front view's stacked horizontal
+  // dimensions, which in third angle run into the free space below it.
+  const topBand = 2 * DIM_BAND;
   const raw = Math.min(
     (availW - 2 * gap) / needW,
-    (availH - gap - DIM_BAND) / needH,
+    (availH - gap - topBand) / needH,
   );
   const s = pickDrawingScale(raw);
 
   const contentW = needW * s + 2 * gap;
-  const contentH = needH * s + gap + DIM_BAND;
+  const contentH = needH * s + gap + topBand;
   const x0 = margin + Math.max(0, (availW - contentW) / 2);
   const y0 = margin + Math.max(0, (availH - contentH) / 2);
 
-  const frontX = x0 + gap;
-  const col2X = frontX + views.front.w * s + gap;
-  const row2Top = y0 + row1H * s + gap + DIM_BAND;
+  const frontX = x0 + views.iso.w * s + gap;
+  const leftX = frontX + views.front.w * s + gap;
+  const row1Top = y0 + topBand;
+  const row2Top = row1Top + row1H * s + gap;
 
   const front: ViewPlacement = {
     tx: frontX - views.front.x * s,
-    ty: y0 + (views.front.y + views.front.h) * s,
-    box: { x: frontX, y: y0, w: views.front.w * s, h: views.front.h * s },
+    ty: row1Top + (views.front.y + views.front.h) * s,
+    box: { x: frontX, y: row1Top, w: views.front.w * s, h: views.front.h * s },
   };
   // Shared model x axis with the front view; top edge on the second row.
   const top: ViewPlacement = {
@@ -385,22 +392,20 @@ function computeFirstAngleLayout(
   };
   // Shared model y axis with the front view.
   const left: ViewPlacement = {
-    tx: col2X - views.left.x * s,
+    tx: leftX - views.left.x * s,
     ty: front.ty,
     box: {
-      x: col2X,
+      x: leftX,
       y: front.ty - (views.left.y + views.left.h) * s,
       w: views.left.w * s,
       h: views.left.h * s,
     },
   };
-  const isoW = views.iso.w * s;
-  const isoX = Math.min(col2X + Math.max(0, (col2W * s - isoW) / 2), sheet.w - margin - isoW);
   const isoY = row2Top + Math.max(0, (row2H - views.iso.h) * s) / 2;
   const iso: ViewPlacement = {
-    tx: isoX - views.iso.x * s,
+    tx: x0 - views.iso.x * s,
     ty: isoY + (views.iso.y + views.iso.h) * s,
-    box: { x: isoX, y: isoY, w: isoW, h: views.iso.h * s },
+    box: { x: x0, y: isoY, w: views.iso.w * s, h: views.iso.h * s },
   };
 
   return { scale: s, scaleText: scaleLabel(s), views: { front, top, left, iso } };

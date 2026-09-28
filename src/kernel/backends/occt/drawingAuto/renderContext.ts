@@ -6,7 +6,7 @@ import type { CompilerDiagnostic } from '../../../../shared/diagnostics/diagnost
 import type { DrawingDeclarations, DrawingToleranceDecl } from '../../../../shared/intent/drawingGdtRecord';
 import { modelToSheet } from '../drawingAnnotations';
 import { formatDimValue } from '../drawingLayout';
-import type { DrawingViewName, Pt2, SheetSpec } from '../drawingLayout';
+import type { DrawingViewName, ProjectionAngle, Pt2, SheetSpec } from '../drawingLayout';
 import { canonicalAxis } from '../drawingFeatures';
 import type { DrawingFeatureModel, HoleComposite, PlanarFaceInfo, V3 } from '../drawingFeatures';
 import type { Box, Obstacles, Seg } from '../drawingObstacles';
@@ -37,12 +37,29 @@ export interface PlacedItem {
   owner: number;
 }
 
-export const HOLE_SIDES: Record<DrawingViewName, { horizontal: 'top' | 'bottom'; vertical: 'left' | 'right' }> = {
+type DimSides = Record<DrawingViewName, { horizontal: 'top' | 'bottom'; vertical: 'left' | 'right' }>;
+
+/** Free side of each view that linear dimensions stack on (third angle). */
+export const HOLE_SIDES: DimSides = {
   top: { horizontal: 'top', vertical: 'left' },
   front: { horizontal: 'bottom', vertical: 'right' },
   left: { horizontal: 'bottom', vertical: 'left' },
   iso: { horizontal: 'bottom', vertical: 'right' },
 };
+
+/** The same, for the first-angle grid (see `computeSheetLayout`): the front
+ *  view's free sides are above and left, the top view's below and right,
+ *  the left view's above and right. */
+export const HOLE_SIDES_FIRST_ANGLE: DimSides = {
+  top: { horizontal: 'bottom', vertical: 'right' },
+  front: { horizontal: 'top', vertical: 'left' },
+  left: { horizontal: 'top', vertical: 'right' },
+  iso: { horizontal: 'bottom', vertical: 'right' },
+};
+
+export function dimensionSides(projection: ProjectionAngle | undefined): DimSides {
+  return projection === 'first' ? HOLE_SIDES_FIRST_ANGLE : HOLE_SIDES;
+}
 
 export function holeLabel(h: HoleComposite, count: number): string {
   let s = `⌀${formatDimValue(h.diameter)}`;

@@ -448,7 +448,11 @@ export function renderSvgDrawing(
     iso: styled.iso.box,
   };
   const projection = options.projection ?? 'third';
-  const { sheet, size: sheetSize } = resolveSheet(options, viewBoxes, projection);
+  const sectionSpecs = options.sections ?? [];
+  const hasSections = sectionSpecs.length > 0;
+  // `sheet` is the region the standard view grid is laid out in; `page` is
+  // the drawn sheet (frame, title block, parts list).
+  const { sheet, page, size: sheetSize } = resolveSheet(options, viewBoxes, projection, hasSections);
 
   const layout = computeSheetLayout(viewBoxes, sheet, projection);
   const s = layout.scale;
@@ -460,12 +464,9 @@ export function renderSvgDrawing(
   // `sheet` spec, so a drawing with no sections is byte-identical to one
   // from before this feature existed. Sections add a reserved band BELOW
   // that grid (where the title block used to sit) and push the title block
-  // + frame down into a taller sheet — nothing above the band moves.
-  const sectionSpecs = options.sections ?? [];
-  const hasSections = sectionSpecs.length > 0;
-  const effSheet: SheetSpec = hasSections
-    ? { ...sheet, h: sheet.h + SECTION_BAND_H }
-    : sheet;
+  // + frame down — into a taller page for the compact title block, or into
+  // the named sheet itself for the full one (see resolveSheet).
+  const effSheet: SheetSpec = page;
   const sectionStage = renderSheetSections(shape, sectionSpecs, sheet, layout, s);
   const sectionsSvg = sectionStage.svg;
   const usesHatchPattern = sectionStage.usesHatchPattern;
@@ -523,18 +524,30 @@ export function renderSvgDrawing(
 }
 
 /**
- * Resolve the sheet spec: a named size as-is, or for `'auto'` / `'auto-ansi'`
- * the smallest sheet of the series whose layout reaches 1:1, else the
- * largest. A full title block (`options.titleBlock`) is taller and wider than
- * the compact one, so it is swapped into the spec before the layout runs.
+ * Resolve the sheet: a named size as-is, or for `'auto'` / `'auto-ansi'` the
+ * smallest sheet of the series whose view grid reaches 1:1, else the largest.
+ *
+ * Returns the grid region (`sheet`) and the drawn page. With the compact
+ * title block they are the same size and section views grow the page
+ * downward (the historical svg-drawing behaviour). The full title block
+ * (`options.titleBlock`) means a standard sheet: it is swapped into the
+ * spec, and section views take their band out of the grid region so the
+ * page keeps the named size.
  */
 function resolveSheet(
   options: SvgDrawingOptions,
   boxes: Record<DrawingViewName, ViewBox2>,
   projection: ProjectionAngle,
-): { sheet: SheetSpec; size: DrawingSheetSize } {
-  const spec = (size: DrawingSheetSize): SheetSpec =>
-    options.titleBlock === undefined ? SHEETS[size] : { ...SHEETS[size], titleBlock: { ...FULL_TITLE_BLOCK } };
+  hasSections: boolean,
+): { sheet: SheetSpec; page: SheetSpec; size: DrawingSheetSize } {
+  const standard = options.titleBlock !== undefined;
+  const resolve = (size: DrawingSheetSize): { sheet: SheetSpec; page: SheetSpec; size: DrawingSheetSize } => {
+    const base = standard ? { ...SHEETS[size], titleBlock: { ...FULL_TITLE_BLOCK } } : SHEETS[size];
+    if (!hasSections) return { sheet: base, page: base, size };
+    return standard
+      ? { sheet: { ...base, h: base.h - SECTION_BAND_H }, page: base, size }
+      : { sheet: base, page: { ...base, h: base.h + SECTION_BAND_H }, size };
+  };
   const requested = options.sheet ?? 'a4';
   if (requested !== 'auto' && requested !== 'auto-ansi') {
     if (!(requested in SHEETS)) {
@@ -542,14 +555,14 @@ function resolveSheet(
         `drawing sheet '${String(requested)}' is not a sheet size; use one of ${Object.keys(SHEETS).join(', ')}, auto, auto-ansi.`,
       );
     }
-    return { sheet: spec(requested), size: requested };
+    return resolve(requested);
   }
   const series = SHEET_SERIES[requested === 'auto' ? 'iso' : 'ansi'];
   for (const size of series) {
-    if (computeSheetLayout(boxes, spec(size), projection).scale >= 1) return { sheet: spec(size), size };
+    const r = resolve(size);
+    if (computeSheetLayout(boxes, r.sheet, projection).scale >= 1) return r;
   }
-  const largest = series[series.length - 1]!;
-  return { sheet: spec(largest), size: largest };
+  return resolve(series[series.length - 1]!);
 }
 
 /**
@@ -698,6 +711,16 @@ function renderDimensionStage(
   } else if (autoOn) {
     dimBodies = [];
     bottomReserve = { front: 0, top: 0, left: 0, iso: 0 };
+  } else if (options.projection === 'first') {
+    // First-angle grid: the front view's free sides are above and left, the
+    // top view's free vertical side is its right (see computeSheetLayout).
+    const firstAngleDims: LinearDimension[] = [
+      { kind: 'horizontal', from: [f.x, f.y], to: [f.x + f.w, f.y], linePos: f.y - DIM_BASE, label: formatDimValue(dims.w) },
+      { kind: 'vertical', from: [f.x, f.y], to: [f.x, f.y + f.h], linePos: f.x - DIM_BASE, label: formatDimValue(dims.h) },
+      { kind: 'vertical', from: [t.x + t.w, t.y], to: [t.x + t.w, t.y + t.h], linePos: t.x + t.w + DIM_BASE, label: formatDimValue(dims.d) },
+    ];
+    dimBodies = firstAngleDims.map(d => dimensionToSvg(d));
+    bottomReserve = { front: 0, top: 0, left: 0, iso: 0 };
   } else {
     const dimSpecs: LinearDimension[] = [
       {
@@ -816,6 +839,7 @@ function renderAutoStage(input: {
       }])) as Record<DrawingViewName, { placement: ViewPlacement; polylines: Polyline2[] }>,
       scale: s,
       sheet,
+      projection: options.projection ?? 'third',
       bottomReserve,
       rightReserve,
       // Cutting-plane indicators sit on the standard views; keep labels off them.
