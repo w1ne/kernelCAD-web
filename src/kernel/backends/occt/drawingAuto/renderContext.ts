@@ -158,23 +158,48 @@ function isEnclosed(ctx: RenderCtx, b: Box): boolean {
   return false;
 }
 
-export function choose(
-  ctx: RenderCtx,
-  owner: number,
-  candidates: ReadonlyArray<{ render: () => Rendered; penalty: number }>,
-): { r: Rendered; cost: number; index: number } | null {
-  let best: { r: Rendered; cost: number; score: number; index: number } | null = null;
-  for (const [index, c] of candidates.entries()) {
+export interface Candidate {
+  render: () => Rendered;
+  penalty: number;
+}
+
+interface Scored<C extends Candidate> {
+  r: Rendered;
+  cost: number;
+  score: number;
+  candidate: C;
+}
+
+function pick<C extends Candidate>(ctx: RenderCtx, owner: number, candidates: readonly C[]): Scored<C> | null {
+  let best: Scored<C> | null = null;
+  for (const c of candidates) {
     const r = c.render();
     const cost = ctx.obstacles.cost(r.boxes, owner) +
       r.segments.reduce((n, seg) => n + ctx.obstacles.labelHits(seg, owner) * 5, 0);
     const crossings = r.segments.reduce((n, seg) => n + ctx.obstacles.crossings(seg), 0);
     const inside = r.boxes.length > 0 && isEnclosed(ctx, r.boxes[0]) ? 25 : 0;
     const score = cost * 1000 + c.penalty + crossings * 6 + inside;
-    if (best === null || score < best.score) best = { r, cost, score, index };
+    if (best === null || score < best.score) best = { r, cost, score, candidate: c };
     if (cost === 0 && c.penalty === 0 && crossings === 0 && inside === 0) break;
   }
   return best;
+}
+
+/** The best-scoring candidate. When none of `candidates` is clear of
+ *  geometry, labels and the frame, the wider `fallback` set (more angles,
+ *  longer leaders onto the free sheet around the view) is tried as well and
+ *  the lower score wins. A clear first-tier slot never looks at the
+ *  fallback, so sheets that were already clear keep their placement. */
+export function choose<C extends Candidate>(
+  ctx: RenderCtx,
+  owner: number,
+  candidates: readonly C[],
+  fallback?: () => readonly C[],
+): { r: Rendered; cost: number; candidate: C } | null {
+  const best = pick(ctx, owner, candidates);
+  if (best === null || best.cost === 0 || fallback === undefined) return best;
+  const wide = pick(ctx, owner, fallback());
+  return wide !== null && wide.score < best.score ? wide : best;
 }
 
 export function outwardAngle(ctx: RenderCtx, p: Pt2, view: DrawingViewName): number {

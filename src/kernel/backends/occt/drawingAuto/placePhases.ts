@@ -8,12 +8,12 @@ import type { ChamferFeature, RadiusFeature } from '../drawingFeatures';
 import { formatDimValue } from '../drawingLayout';
 import type { DrawingViewName, Pt2 } from '../drawingLayout';
 import { viewBasis } from '../drawingProjection';
-import { datumRendered, fcfLineCandidates, fcfRendered, noteCandidates } from './candidates';
+import { datumRendered, FALLBACK_FRACTIONS, fcfLineCandidates, fcfRendered, noteCandidates } from './candidates';
 import { flatnessFor } from './iso2768';
-import { leaderCallout, orderedAngles, STEMS } from './placement';
+import { FAR_STEMS, fallbackAngles, leaderCallout, orderedAngles, STEMS } from './placement';
 import type { Rendered } from './placement';
 import { choose, commit, outwardAngle, toSheet } from './renderContext';
-import type { RenderCtx } from './renderContext';
+import type { Candidate, RenderCtx } from './renderContext';
 import { edgeOnLines, viewAlong } from './views';
 import { dot } from './vectors';
 
@@ -32,27 +32,34 @@ export function placeHoleCallouts(ctx: RenderCtx): void {
           return d(q.p) - d(p.p);
         });
       const radius = (g.holes[0].counterbore?.diameter ?? g.holes[0].countersink?.diameter ?? g.holes[0].diameter) / 2 * scale;
-      const candidates: Array<{ render: () => Rendered; penalty: number }> = [];
-      reps.forEach((rep, ri) => {
-        orderedAngles(outwardAngle(ctx, rep.p, view)).forEach((angle, ai) => {
-          STEMS.forEach(stem => {
-            candidates.push({
-              penalty: stem + ai * 4 + ri * 2,
-              render: () => leaderCallout(
-                [rep.p[0] + Math.cos(angle) * radius, rep.p[1] + Math.sin(angle) * radius],
-                angle, stem, g.label, g.rows,
-                `<g class="dim hole-callout" data-kc-auto="hole" data-kc-count="${g.holes.length}" fill="none" stroke="#000" stroke-width="0.18">`,
-                true,
-              ),
+      const build = (wide: boolean): Candidate[] => {
+        const out: Candidate[] = [];
+        reps.forEach((rep, ri) => {
+          const preferred = outwardAngle(ctx, rep.p, view);
+          (wide ? fallbackAngles(preferred) : orderedAngles(preferred)).forEach((angle, ai) => {
+            (wide ? FAR_STEMS : STEMS).forEach(stem => {
+              out.push({
+                penalty: stem + ai * 4 + ri * 2,
+                render: () => leaderCallout(
+                  [rep.p[0] + Math.cos(angle) * radius, rep.p[1] + Math.sin(angle) * radius],
+                  angle, stem, g.label, g.rows,
+                  `<g class="dim hole-callout" data-kc-auto="hole" data-kc-count="${g.holes.length}" fill="none" stroke="#000" stroke-width="0.18">`,
+                  true,
+                ),
+              });
             });
           });
         });
-      });
-      const best = choose(ctx, owner, candidates);
+        return out;
+      };
+      const best = choose(ctx, owner, build(false), () => build(true));
       if (best) commit(ctx, 'hole', view, [g.label, ...g.rows.map(r => r.join(' '))].join(' | '), best.r);
     }
   }
 }
+
+const DATUM_STEMS = [5, 9, 13, 18, 24, 30];
+const DATUM_FAR_STEMS = [...DATUM_STEMS, 36, 45, 56];
 
 export function placeDatumSymbols(ctx: RenderCtx): void {
   const { datums } = ctx;
@@ -61,36 +68,39 @@ export function placeDatumSymbols(ctx: RenderCtx): void {
     if (!d.draw) continue;
     const lines = d.plane ? edgeOnLines(d.plane) : [];
     const owner = ctx.ownerSeq;
-    const candidates: Array<{ render: () => Rendered; penalty: number; view: DrawingViewName }> = [];
     const attrs = ` data-kc-auto="datum" data-kc-datum="${escAttr(label)}"`;
-    if (lines.length > 0) {
-      lines.forEach((line, li) => {
-        const a = toSheet(ctx, line.a, line.view);
-        const b = toSheet(ctx, line.b, line.view);
-        const basis = viewBasis(line.view);
-        const angle = Math.atan2(-dot(line.normal, basis.y), dot(line.normal, basis.x));
-        [0.5, 0.35, 0.65, 0.2, 0.8].forEach((f, fi) => {
-          const tip: Pt2 = [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f];
-          [5, 9, 13, 18, 24, 30].forEach(stem => {
-            candidates.push({
-              view: line.view,
-              penalty: stem + fi * 3 + li * 12,
-              render: () => datumRendered(tip, angle, label, stem, attrs),
+    const build = (wide: boolean): Array<Candidate & { view: DrawingViewName }> => {
+      const out: Array<Candidate & { view: DrawingViewName }> = [];
+      if (lines.length > 0) {
+        lines.forEach((line, li) => {
+          const a = toSheet(ctx, line.a, line.view);
+          const b = toSheet(ctx, line.b, line.view);
+          const basis = viewBasis(line.view);
+          const angle = Math.atan2(-dot(line.normal, basis.y), dot(line.normal, basis.x));
+          (wide ? FALLBACK_FRACTIONS : [0.5, 0.35, 0.65, 0.2, 0.8]).forEach((f, fi) => {
+            const tip: Pt2 = [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f];
+            (wide ? DATUM_FAR_STEMS : DATUM_STEMS).forEach(stem => {
+              out.push({
+                view: line.view,
+                penalty: stem + fi * 3 + li * 12,
+                render: () => datumRendered(tip, angle, label, stem, attrs),
+              });
             });
           });
         });
-      });
-    } else {
-      const tip = toSheet(ctx, d.point, 'front');
-      orderedAngles(-Math.PI / 4).forEach((angle, ai) => {
-        [5, 9, 13, 18, 24].forEach(stem => {
-          candidates.push({ view: 'front', penalty: stem + ai * 3, render: () => datumRendered(tip, angle, label, stem, attrs) });
+      } else {
+        const tip = toSheet(ctx, d.point, 'front');
+        (wide ? fallbackAngles(-Math.PI / 4) : orderedAngles(-Math.PI / 4)).forEach((angle, ai) => {
+          (wide ? DATUM_FAR_STEMS : [5, 9, 13, 18, 24]).forEach(stem => {
+            out.push({ view: 'front', penalty: stem + ai * 3, render: () => datumRendered(tip, angle, label, stem, attrs) });
+          });
         });
-      });
-    }
-    const best = choose(ctx, owner, candidates);
+      }
+      return out;
+    };
+    const best = choose(ctx, owner, build(false), () => build(true));
     if (best) {
-      const chosen = candidates[best.index];
+      const chosen = best.candidate;
       const line = lines.find(l => l.view === chosen.view);
       if (line) ctx.datumLines.set(label, line);
       commit(ctx, 'datum', chosen.view, `datum ${label}`, best.r);
@@ -116,10 +126,11 @@ export function placeFlatnessOnA(ctx: RenderCtx): void {
         : fcfCells({ type: 'flatness', value: flatnessFor(opts.tolerance, longest) });
       if (declaredFlat) ctx.consumedTols.add(declaredFlat.index);
       const owner = ctx.ownerSeq;
-      const candidates = lines.flatMap((line, li) =>
-        fcfLineCandidates(line, cells, 'flatness', (p2, v) => toSheet(ctx, p2, v)).map(c => ({ ...c, penalty: c.penalty + li * 12, view: line.view })));
-      const best = choose(ctx, owner, candidates);
-      if (best) commit(ctx, 'flatness', candidates[best.index].view, cells.join(' '), best.r);
+      const build = (wide: boolean) => lines.flatMap((line, li) =>
+        fcfLineCandidates(line, cells, 'flatness', (p2, v) => toSheet(ctx, p2, v), wide)
+          .map(c => ({ ...c, penalty: c.penalty + li * 12, view: line.view })));
+      const best = choose(ctx, owner, build(false), () => build(true));
+      if (best) commit(ctx, 'flatness', best.candidate.view, cells.join(' '), best.r);
     }
   }
 }
@@ -141,8 +152,8 @@ function placeFilletRadiusNotes(ctx: RenderCtx): void {
     const view = k.split('|')[0] as DrawingViewName;
     const label = `${feats.length > 1 ? `${feats.length}× ` : ''}R${formatDimValue(feats[0].radius)}`;
     const targets = feats.flatMap(f => [f.arcPoint, ...f.samples]).map(p => toSheet(ctx, p, view));
-    const candidates = noteCandidates(targets, label, 'fillet', view, (p, v) => outwardAngle(ctx, p, v));
-    const best = choose(ctx, ctx.ownerSeq, candidates);
+    const build = (wide: boolean) => noteCandidates(targets, label, 'fillet', view, (p, v) => outwardAngle(ctx, p, v), wide);
+    const best = choose(ctx, ctx.ownerSeq, build(false), () => build(true));
     if (best) commit(ctx, 'fillet', view, label, best.r);
   }
 }
@@ -162,8 +173,8 @@ function placeChamferNotes(ctx: RenderCtx): void {
       : `${formatDimValue(l0)} × ${formatDimValue(l1)}`;
     const label = `${feats.length > 1 ? `${feats.length}× ` : ''}${size}`;
     const targets = feats.map(f => toSheet(ctx, f.midPoint, view));
-    const candidates = noteCandidates(targets, label, 'chamfer', view, (p, v) => outwardAngle(ctx, p, v));
-    const best = choose(ctx, ctx.ownerSeq, candidates);
+    const build = (wide: boolean) => noteCandidates(targets, label, 'chamfer', view, (p, v) => outwardAngle(ctx, p, v), wide);
+    const best = choose(ctx, ctx.ownerSeq, build(false), () => build(true));
     if (best) commit(ctx, 'chamfer', view, label, best.r);
   }
 }
@@ -173,22 +184,22 @@ export function placeLeftoverTolerances(ctx: RenderCtx): void {
   for (const t of resolvedTols) {
     if (consumedTols.has(t.index)) continue;
     const cells = fcfCells(t.decl);
-    let candidates: Array<{ render: () => Rendered; penalty: number }>;
-    if (t.edgeLine) {
-      candidates = fcfLineCandidates(t.edgeLine, cells, 'tolerance', (p, v) => toSheet(ctx, p, v));
-    } else {
+    const build = (wide: boolean): Candidate[] => {
+      if (t.edgeLine) return fcfLineCandidates(t.edgeLine, cells, 'tolerance', (p, v) => toSheet(ctx, p, v), wide);
       const tip = toSheet(ctx, t.target, t.view);
-      candidates = [];
-      orderedAngles(outwardAngle(ctx, tip, t.view)).forEach((angle, ai) => {
-        STEMS.forEach(stem => {
-          candidates.push({
+      const out: Candidate[] = [];
+      const preferred = outwardAngle(ctx, tip, t.view);
+      (wide ? fallbackAngles(preferred) : orderedAngles(preferred)).forEach((angle, ai) => {
+        (wide ? FAR_STEMS : STEMS).forEach(stem => {
+          out.push({
             penalty: stem + ai * 4,
             render: () => fcfRendered(tip, angle, cells, stem, 'tolerance'),
           });
         });
       });
-    }
-    const best = choose(ctx, ctx.ownerSeq, candidates);
+      return out;
+    };
+    const best = choose(ctx, ctx.ownerSeq, build(false), () => build(true));
     if (best) commit(ctx, 'tolerance', t.edgeLine?.view ?? t.view, cells.join(' '), best.r);
   }
 }

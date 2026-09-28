@@ -62,12 +62,15 @@ export class Obstacles {
     return n;
   }
 
-  /** Labels (not geometry) a leader segment runs through, other than its own. */
+  /** Labels (not geometry) a leader segment runs through, other than its own.
+   *  Labels are padded as in `cost`, so a leader that `cost` would later
+   *  charge against the label it grazes is refused here too. */
   labelHits(seg: Seg, owner: number): number {
     let n = 0;
     for (const o of this.boxes) {
       if (o.owner === owner || o.owner === GEOMETRY_OWNER) continue;
-      if (segmentHitsBox(seg, o.box)) n++;
+      const b = o.box;
+      if (segmentHitsBox(seg, { x0: b.x0 - PAD, y0: b.y0 - PAD, x1: b.x1 + PAD, y1: b.y1 + PAD })) n++;
     }
     return n;
   }
