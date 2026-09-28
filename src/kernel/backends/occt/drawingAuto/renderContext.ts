@@ -34,6 +34,7 @@ export interface PlacedItem {
   text: string;
   svg: string;
   boxes: Box[];
+  segments: Seg[];
   owner: number;
 }
 
@@ -137,7 +138,7 @@ export function commit(ctx: RenderCtx, kind: string, view: DrawingViewName, text
   const owner = ctx.ownerSeq++;
   for (const s of r.segments) ctx.obstacles.addSegment(s, owner);
   for (const b of r.boxes) ctx.obstacles.addBox(b, owner);
-  ctx.placed.push({ kind, view, text, svg: r.svg, boxes: r.boxes, owner });
+  ctx.placed.push({ kind, view, text, svg: r.svg, boxes: r.boxes, segments: r.segments, owner });
   ctx.byKind[kind] = (ctx.byKind[kind] ?? 0) + 1;
 }
 
@@ -170,13 +171,18 @@ interface Scored<C extends Candidate> {
   candidate: C;
 }
 
-function pick<C extends Candidate>(ctx: RenderCtx, owner: number, candidates: readonly C[]): Scored<C> | null {
+function pick<C extends Candidate>(
+  ctx: RenderCtx,
+  owner: number,
+  candidates: readonly C[],
+  crossAnnotations: boolean,
+): Scored<C> | null {
   let best: Scored<C> | null = null;
   for (const c of candidates) {
     const r = c.render();
     const cost = ctx.obstacles.cost(r.boxes, owner) +
-      r.segments.reduce((n, seg) => n + ctx.obstacles.labelHits(seg, owner) * 5, 0);
-    const crossings = r.segments.reduce((n, seg) => n + ctx.obstacles.crossings(seg), 0);
+      r.segments.reduce((n, seg) => n + (ctx.obstacles.labelHits(seg, owner) + ctx.obstacles.runsAlong(seg, owner)) * 5, 0);
+    const crossings = r.segments.reduce((n, seg) => n + ctx.obstacles.crossings(seg, crossAnnotations), 0);
     const inside = r.boxes.length > 0 && isEnclosed(ctx, r.boxes[0]) ? 25 : 0;
     const score = cost * 1000 + c.penalty + crossings * 6 + inside;
     if (best === null || score < best.score) best = { r, cost, score, candidate: c };
@@ -188,17 +194,20 @@ function pick<C extends Candidate>(ctx: RenderCtx, owner: number, candidates: re
 /** The best-scoring candidate. When none of `candidates` is clear of
  *  geometry, labels and the frame, the wider `fallback` set (more angles,
  *  longer leaders onto the free sheet around the view) is tried as well and
- *  the lower score wins. A clear first-tier slot never looks at the
- *  fallback, so sheets that were already clear keep their placement. */
+ *  the lower score wins; there a leader that crosses a dimension, extension
+ *  or other leader line is charged like one crossing the part outline, since
+ *  the long fallback leaders otherwise cut through the dimension stacks. A
+ *  clear first-tier slot never looks at the fallback, so sheets that were
+ *  already clear keep their placement. */
 export function choose<C extends Candidate>(
   ctx: RenderCtx,
   owner: number,
   candidates: readonly C[],
   fallback?: () => readonly C[],
 ): { r: Rendered; cost: number; candidate: C } | null {
-  const best = pick(ctx, owner, candidates);
+  const best = pick(ctx, owner, candidates, false);
   if (best === null || best.cost === 0 || fallback === undefined) return best;
-  const wide = pick(ctx, owner, fallback());
+  const wide = pick(ctx, owner, fallback(), true);
   return wide !== null && wide.score < best.score ? wide : best;
 }
 

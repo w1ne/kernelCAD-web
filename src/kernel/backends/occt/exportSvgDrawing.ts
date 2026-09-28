@@ -39,6 +39,7 @@ import {
   SHEET_SERIES,
   computeSheetLayout,
   dedupPolylineClasses,
+  shiftOrthographicViews,
   dimensionToSvg,
   formatDimValue,
   viewBoxOfPolylines,
@@ -58,6 +59,7 @@ import {
   type DrawingAnnotation,
 } from './drawingAnnotations';
 import { renderSections, type DrawingSectionSpec } from './drawingSections';
+import type { Box } from './drawingObstacles';
 import {
   balloonAndTraceSvg,
   partsListSvg,
@@ -322,43 +324,63 @@ export function renderSvgDrawing(
   // the drawn sheet (frame, title block, parts list).
   const { sheet, page, size: sheetSize } = resolveSheet(options, viewBoxes, projection, hasSections);
 
-  const layout = computeSheetLayout(viewBoxes, sheet, projection);
-  const s = layout.scale;
+  const gridLayout = computeSheetLayout(viewBoxes, sheet, projection);
+  const s = gridLayout.scale;
 
-  const dimensionStage = renderDimensionStage(parts, options, layout, s, dims, diagnosticsOut);
+  // Dimensions, sections and automatic annotation all hang off the view
+  // placements, so they run as one pass over a layout.
+  const annotate = (layout: SheetLayout) => {
+    const diagnostics: CompilerDiagnostic[] = [];
+    const dimensionStage = renderDimensionStage(parts, options, layout, s, dims, diagnostics);
 
-  // --- section views ---------------------------------------------------
-  // The standard 4-view grid above is computed against the UNMODIFIED
-  // `sheet` spec, so a drawing with no sections is byte-identical to one
-  // from before this feature existed. Sections add a reserved band BELOW
-  // that grid (where the title block used to sit) and push the title block
-  // + frame down — into a taller page for the compact title block, or into
-  // the named sheet itself for the full one (see resolveSheet).
+    // --- section views -------------------------------------------------
+    // The standard 4-view grid above is computed against the UNMODIFIED
+    // `sheet` spec, so a drawing with no sections is byte-identical to one
+    // from before this feature existed. Sections add a reserved band BELOW
+    // that grid (where the title block used to sit) and push the title block
+    // + frame down — into a taller page for the compact title block, or into
+    // the named sheet itself for the full one (see resolveSheet).
+    const sectionStage = renderSheetSections(shape, sectionSpecs, sheet, layout, s);
+
+    // --- automatic annotation + declared GD&T ----------------------------
+    const autoStage = renderAutoStage({
+      parts,
+      options,
+      shape,
+      layout,
+      styled,
+      s,
+      sheet,
+      sectionsSvg: sectionStage.svg,
+      dimBodies: dimensionStage.dimBodies,
+      bottomReserve: dimensionStage.bottomReserve,
+      rightReserve: dimensionStage.rightReserve,
+      report: dimensionStage.report,
+      diagnosticsOut: diagnostics,
+    });
+    return { layout, sectionStage, autoStage, diagnostics };
+  };
+  let pass = annotate(gridLayout);
+  // The grid is centred with fixed dimension bands; automatic dimension
+  // stacks can outgrow them and run into the frame or the title block. When
+  // that crowds a label and the opposite side has room, move the
+  // orthographic views over and annotate again — kept only if it crowds
+  // fewer labels.
+  const crowded = pass.autoStage.report?.overlapped ?? 0;
+  const dy = crowded > 0 ? gridShift(sheet, gridLayout, pass.autoStage.labelBoxes) : 0;
+  if (dy !== 0) {
+    const moved = annotate(shiftOrthographicViews(gridLayout, dy));
+    if ((moved.autoStage.report?.overlapped ?? 0) < crowded) pass = moved;
+  }
+  diagnosticsOut.push(...pass.diagnostics);
+  const { layout } = pass;
   const effSheet: SheetSpec = page;
-  const sectionStage = renderSheetSections(shape, sectionSpecs, sheet, layout, s);
-  const sectionsSvg = sectionStage.svg;
-  const usesHatchPattern = sectionStage.usesHatchPattern;
-
-  // --- automatic annotation + declared GD&T ------------------------------
-  const autoStage = renderAutoStage({
-    parts,
-    options,
-    shape,
-    layout,
-    styled,
-    s,
-    sheet,
-    sectionsSvg,
-    dimBodies: dimensionStage.dimBodies,
-    bottomReserve: dimensionStage.bottomReserve,
-    rightReserve: dimensionStage.rightReserve,
-    report: dimensionStage.report,
-    diagnosticsOut,
-  });
-  const dimBodies = autoStage.dimBodies;
-  const bottomReserve = autoStage.bottomReserve;
-  const report = autoStage.report;
-  const generalTolerance = autoStage.generalTolerance;
+  const sectionsSvg = pass.sectionStage.svg;
+  const usesHatchPattern = pass.sectionStage.usesHatchPattern;
+  const dimBodies = pass.autoStage.dimBodies;
+  const bottomReserve = pass.autoStage.bottomReserve;
+  const report = pass.autoStage.report;
+  const generalTolerance = pass.autoStage.generalTolerance;
 
   const viewGroups = renderViewGroups(styled, layout, bottomReserve, s, explodedShape);
 
@@ -677,6 +699,7 @@ function renderAutoStage(input: {
   bottomReserve: Record<DrawingViewName, number>;
   report: DrawingReport | undefined;
   generalTolerance: string | undefined;
+  labelBoxes: Box[];
 } {
   const {
     parts, options, shape, layout, styled, s, sheet, sectionsSvg, rightReserve, diagnosticsOut,
@@ -689,6 +712,7 @@ function renderAutoStage(input: {
   let bottomReserve = input.bottomReserve;
   let report = input.report;
   let generalTolerance: string | undefined;
+  let labelBoxes: Box[] = [];
 
   if (autoOn || hasDeclarations) {
     const compoundBackend = parts.length === 1
@@ -716,6 +740,7 @@ function renderAutoStage(input: {
     dimBodies = [...dimBodies, ...auto.svg];
     bottomReserve = auto.bottomReserve;
     generalTolerance = auto.generalTolerance;
+    labelBoxes = auto.labelBoxes;
     diagnosticsOut.push(...auto.diagnostics);
     report = report === undefined
       ? auto.report
@@ -729,8 +754,46 @@ function renderAutoStage(input: {
         };
   }
 
-  return { dimBodies, bottomReserve, report, generalTolerance };
+  return { dimBodies, bottomReserve, report, generalTolerance, labelBoxes };
 }
+
+/**
+ * Vertical move (sheet mm, down positive) of the orthographic views that
+ * brings them and their labels inside the frame and clear of the
+ * title-block band — the region the automatic placer counts as free — when
+ * they spill over one side and the other side has the room. Labels of the
+ * isometric cell (it does not move) are left out. 0 when nothing spills or
+ * the move cannot fit.
+ */
+function gridShift(sheet: SheetSpec, layout: SheetLayout, labels: readonly Box[]): number {
+  // The placer's free region, less its label padding.
+  const top = sheet.margin + 2;
+  const bottom = sheet.h - sheet.margin - sheet.titleBlock.h - 2;
+  const iso = layout.views.iso.box;
+  const inIsoCell = (b: Box) => {
+    const cx = (b.x0 + b.x1) / 2;
+    const cy = (b.y0 + b.y1) / 2;
+    return cx >= iso.x && cx <= iso.x + iso.w && cy >= iso.y && cy <= iso.y + iso.h + ISO_CAPTION_BAND;
+  };
+  let y0 = Infinity;
+  let y1 = -Infinity;
+  for (const b of labels) {
+    if (inIsoCell(b)) continue;
+    y0 = Math.min(y0, b.y0);
+    y1 = Math.max(y1, b.y1);
+  }
+  for (const name of ['front', 'top', 'left'] as const) {
+    const b = layout.views[name].box;
+    y0 = Math.min(y0, b.y);
+    y1 = Math.max(y1, b.y + b.h);
+  }
+  if (y1 > bottom && y0 - (y1 - bottom) >= top) return -(y1 - bottom);
+  if (y0 < top && y1 + (top - y0) <= bottom) return top - y0;
+  return 0;
+}
+
+/** Depth under the isometric view that holds its caption. */
+const ISO_CAPTION_BAND = 8;
 
 /** View-groups phase: one styled `<g>` per standard view, with the caption
  *  pushed below any dimension band the view carries. */

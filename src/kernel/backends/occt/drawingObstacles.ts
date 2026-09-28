@@ -40,9 +40,15 @@ export class Obstacles {
     this.boxes.push({ box, owner });
   }
 
+  /** Every label box on the sheet: captions, dimension text, callouts. */
+  labelBoxes(): Box[] {
+    return this.boxes.map(o => o.box);
+  }
+
   /** Geometry lines a leader segment crosses (ignoring its first 1.5 mm,
-   *  where it touches the feature it points at). */
-  crossings(seg: Seg): number {
+   *  where it touches the feature it points at). `annotations` counts the
+   *  dimension, extension and leader lines already placed as well. */
+  crossings(seg: Seg, annotations = false): number {
     const [x0, y0, x1, y1] = seg;
     const l = Math.hypot(x1 - x0, y1 - y0);
     if (l < 1.6) return 0;
@@ -53,9 +59,34 @@ export class Obstacles {
     for (let i = Math.floor(Math.min(s[0], s[2]) / CELL); i <= Math.floor(Math.max(s[0], s[2]) / CELL); i++) {
       for (let j = Math.floor(Math.min(s[1], s[3]) / CELL); j <= Math.floor(Math.max(s[1], s[3]) / CELL); j++) {
         for (const o of this.grid.get(`${i},${j}`) ?? []) {
-          if (o.owner !== GEOMETRY_OWNER || seen.has(o.seg)) continue;
+          if ((!annotations && o.owner !== GEOMETRY_OWNER) || seen.has(o.seg)) continue;
           seen.add(o.seg);
           if (segmentsCross(s, o.seg)) n++;
+        }
+      }
+    }
+    return n;
+  }
+
+  /** Dimension, extension and leader lines (not geometry, not `owner`'s)
+   *  that a leader segment runs alongside — near parallel and closer than
+   *  `NEAR` — so the two read as one line. */
+  runsAlong(seg: Seg, owner: number): number {
+    const [x0, y0, x1, y1] = seg;
+    const l = Math.hypot(x1 - x0, y1 - y0);
+    if (l < 1e-9) return 0;
+    const seen = new Set<Seg>();
+    let n = 0;
+    for (let i = Math.floor((Math.min(x0, x1) - NEAR) / CELL); i <= Math.floor((Math.max(x0, x1) + NEAR) / CELL); i++) {
+      for (let j = Math.floor((Math.min(y0, y1) - NEAR) / CELL); j <= Math.floor((Math.max(y0, y1) + NEAR) / CELL); j++) {
+        for (const o of this.grid.get(`${i},${j}`) ?? []) {
+          if (o.owner === owner || o.owner === GEOMETRY_OWNER || seen.has(o.seg)) continue;
+          seen.add(o.seg);
+          const [a0, b0, a1, b1] = o.seg;
+          const m = Math.hypot(a1 - a0, b1 - b0);
+          if (m < 1e-9) continue;
+          const sin = Math.abs((x1 - x0) * (b1 - b0) - (y1 - y0) * (a1 - a0)) / (l * m);
+          if (sin < PARALLEL_SIN && parallelOverlap(seg, o.seg) > NEAR && segmentDistance(seg, o.seg) < NEAR) n++;
         }
       }
     }
@@ -107,7 +138,13 @@ export class Obstacles {
 }
 
 const PAD = 0.6;
+/** A leader closer than this to a dimension or leader line, and within
+ *  about 10° of parallel, reads as running along it. */
+const NEAR = 1.5;
+const PARALLEL_SIN = 0.17;
 export const GEOMETRY_OWNER = -1;
+/** View captions: labels a leader must not run through either. */
+export const CAPTION_OWNER = -3;
 
 function segmentsCross(a: Seg, b: Seg): boolean {
   const d = (p: readonly number[], q: readonly number[], r: readonly number[]) =>
@@ -115,6 +152,32 @@ function segmentsCross(a: Seg, b: Seg): boolean {
   const p1 = [a[0], a[1]], p2 = [a[2], a[3]], q1 = [b[0], b[1]], q2 = [b[2], b[3]];
   const d1 = d(q1, q2, p1), d2 = d(q1, q2, p2), d3 = d(p1, p2, q1), d4 = d(p1, p2, q2);
   return ((d1 > 0) !== (d2 > 0)) && ((d3 > 0) !== (d4 > 0));
+}
+
+function pointSegmentDistance(px: number, py: number, q: Seg): number {
+  const dx = q[2] - q[0];
+  const dy = q[3] - q[1];
+  const l2 = dx * dx + dy * dy;
+  const t = l2 === 0 ? 0 : Math.max(0, Math.min(1, ((px - q[0]) * dx + (py - q[1]) * dy) / l2));
+  return Math.hypot(px - (q[0] + dx * t), py - (q[1] + dy * t));
+}
+
+/** Length of `b` projected onto `a` that falls within `a`'s extent. */
+function parallelOverlap(a: Seg, b: Seg): number {
+  const dx = a[2] - a[0];
+  const dy = a[3] - a[1];
+  const l = Math.hypot(dx, dy);
+  const t0 = ((b[0] - a[0]) * dx + (b[1] - a[1]) * dy) / l;
+  const t1 = ((b[2] - a[0]) * dx + (b[3] - a[1]) * dy) / l;
+  return Math.min(l, Math.max(t0, t1)) - Math.max(0, Math.min(t0, t1));
+}
+
+function segmentDistance(a: Seg, b: Seg): number {
+  if (segmentsCross(a, b)) return 0;
+  return Math.min(
+    pointSegmentDistance(a[0], a[1], b), pointSegmentDistance(a[2], a[3], b),
+    pointSegmentDistance(b[0], b[1], a), pointSegmentDistance(b[2], b[3], a),
+  );
 }
 
 function segmentHitsBox(seg: Seg, b: Box): boolean {

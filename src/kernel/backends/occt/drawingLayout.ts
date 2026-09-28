@@ -411,6 +411,15 @@ function computeFirstAngleLayout(
   return { scale: s, scaleText: scaleLabel(s), views: { front, top, left, iso } };
 }
 
+/** The same layout with the orthographic views (front, top, left) moved
+ *  `dy` mm down the sheet (up when negative). They keep their projection
+ *  alignment; the isometric has its own column and stays put. */
+export function shiftOrthographicViews(layout: SheetLayout, dy: number): SheetLayout {
+  const move = (p: ViewPlacement): ViewPlacement => ({ tx: p.tx, ty: p.ty + dy, box: { ...p.box, y: p.box.y + dy } });
+  const { front, top, left, iso } = layout.views;
+  return { ...layout, views: { front: move(front), top: move(top), left: move(left), iso } };
+}
+
 // ---------------------------------------------------------------------------
 // Linear dimensions
 // ---------------------------------------------------------------------------

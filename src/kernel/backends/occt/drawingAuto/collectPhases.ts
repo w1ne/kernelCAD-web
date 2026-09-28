@@ -8,7 +8,7 @@ import type { HoleComposite, V3 } from '../drawingFeatures';
 import { dimensionToSvg, formatDimValue } from '../drawingLayout';
 import type { DrawingViewName, Pt2, SheetSpec } from '../drawingLayout';
 import { viewBasis } from '../drawingProjection';
-import { GEOMETRY_OWNER, Obstacles } from '../drawingObstacles';
+import { CAPTION_OWNER, GEOMETRY_OWNER, Obstacles } from '../drawingObstacles';
 import type { Box, Seg } from '../drawingObstacles';
 import type { AutoDrawingInput } from './contracts';
 import { POSITION_ZONE } from './iso2768';
@@ -235,7 +235,7 @@ export function addViewCaptions(ctx: RenderCtx): void {
     const box = ctx.views[name].placement.box;
     ctx.obstacles.addBox(
       textBox(box.x + box.w / 2, box.y + box.h + 5 + ctx.bottomReserve[name], 2.6, 'middle', CAPTIONS[name]),
-      GEOMETRY_OWNER,
+      CAPTION_OWNER,
     );
   }
 }
