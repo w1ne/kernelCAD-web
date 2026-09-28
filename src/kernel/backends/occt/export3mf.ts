@@ -35,6 +35,11 @@ import type { PBRMaterial } from '../../../shared/intent/material';
 import type { WorldFramePart } from './sceneToWorldFrame';
 import { assertWatertight } from './assertWatertight';
 import { resolveColor } from '../../../shared/render/palette';
+import {
+  attributionGenerator,
+  KERNELCAD_HOMEPAGE,
+  KERNELCAD_NAME,
+} from '../../../shared/links/attribution';
 import { resolvePrinterProfile } from '../../export/gcode/printerProfiles';
 import {
   dropToPlateOrigin,
@@ -209,7 +214,8 @@ export async function export3mfAsync(
   const modelXml = `<?xml version="1.0" encoding="UTF-8"?>
 <model unit="${PRINT_UNIT_TAG[printUnit]}" xml:lang="en-US"
        xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02">
-  <metadata name="Application">kernelcad ${KERNELCAD_VERSION}</metadata>
+  <metadata name="Application">${escapeXml(attributionGenerator(KERNELCAD_VERSION))}</metadata>
+  <metadata name="Description">${escapeXml(`Made with ${KERNELCAD_NAME} (${KERNELCAD_HOMEPAGE})`)}</metadata>
   <metadata name="CreationDate">${isoDate}</metadata>
   <resources>
     <basematerials id="${BASEMATERIALS_ID}">

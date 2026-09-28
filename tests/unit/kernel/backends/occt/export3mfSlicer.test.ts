@@ -127,6 +127,15 @@ describe('export3mfAsync — slicer-ready output', () => {
     expect(strFromU8(p.entries['3D/3dmodel.model'])).not.toMatch(/<triangle[^>]*\bp1=/);
   });
 
+  it('names kernelCAD in the core Application and Description metadata', async () => {
+    const p = await exportScene(trio());
+    const meta = Object.fromEntries(
+      [...p.doc.getElementsByTagNameNS(CORE_NS, 'metadata')].map((m) => [m.getAttribute('name'), m.textContent]),
+    );
+    expect(meta.Application).toMatch(/^kernelCAD \S+ \(https:\/\/kernelcad\.com\)$/);
+    expect(meta.Description).toBe('Made with kernelCAD (https://kernelcad.com)');
+  });
+
   it('round-trips each part colour through its object pindex (hex and role token)', async () => {
     const p = await exportScene(trio());
     const colourOf = (name: string) => {
