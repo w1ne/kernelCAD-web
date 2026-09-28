@@ -25,6 +25,9 @@ export interface SendToPrinterInput {
   access_code?: string;
   /** Bambu LAN mode only: printer serial number. */
   serial?: string;
+  /** Bambu LAN mode only: model 3MF (export format '3mf') that carries the
+   *  G-code as `Metadata/plate_1.gcode` in the uploaded `.gcode.3mf`. */
+  model_3mf_path?: string;
   filename?: string;
   /** Start the print immediately after upload (default: true). */
   start_print?: boolean;
@@ -58,6 +61,18 @@ export async function sendToPrinterTool(input: SendToPrinterInput): Promise<Send
     return { ok: false, error: `Cannot read gcode_path '${input.gcode_path}': ${e instanceof Error ? e.message : String(e)}` };
   }
 
+  let model3mf: Uint8Array | undefined;
+  if (input.model_3mf_path !== undefined) {
+    if (input.protocol !== 'bambu-lan') {
+      return { ok: false, error: "model_3mf_path applies to protocol 'bambu-lan' only (OctoPrint and Moonraker print the .gcode file itself)." };
+    }
+    try {
+      model3mf = await readFile(input.model_3mf_path);
+    } catch (e) {
+      return { ok: false, error: `Cannot read model_3mf_path '${input.model_3mf_path}': ${e instanceof Error ? e.message : String(e)}` };
+    }
+  }
+
   const outcome = await sendToPrinterCore({
     protocol: input.protocol,
     host: input.host,
@@ -66,6 +81,7 @@ export async function sendToPrinterTool(input: SendToPrinterInput): Promise<Send
     accessCode: input.access_code,
     serial: input.serial,
     gcode,
+    ...(model3mf !== undefined ? { model3mf } : {}),
     filename: input.filename,
     startPrint: input.start_print,
     dryRun: input.dry_run,

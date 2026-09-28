@@ -18,6 +18,8 @@ export interface PrintSendCliInput {
   apiKey?: string;
   accessCode?: string;
   serial?: string;
+  /** bambu-lan only: model 3MF to package the G-code into. */
+  model3mfFile?: string;
   filename?: string;
   startPrint?: boolean;
   dryRun?: boolean;
@@ -38,6 +40,17 @@ export async function printSendScript(input: PrintSendCliInput): Promise<PrintSe
   } catch (e) {
     return { exitCode: 2, ok: false, message: `Cannot read ${input.gcodeFile}: ${e instanceof Error ? e.message : String(e)}` };
   }
+  let model3mf: Uint8Array | undefined;
+  if (input.model3mfFile !== undefined) {
+    if (input.protocol !== 'bambu-lan') {
+      return { exitCode: 2, ok: false, message: "--model-3mf applies to --protocol bambu-lan only." };
+    }
+    try {
+      model3mf = await readFile(input.model3mfFile);
+    } catch (e) {
+      return { exitCode: 2, ok: false, message: `Cannot read ${input.model3mfFile}: ${e instanceof Error ? e.message : String(e)}` };
+    }
+  }
 
   const outcome = await sendToPrinter({
     protocol: input.protocol,
@@ -47,6 +60,7 @@ export async function printSendScript(input: PrintSendCliInput): Promise<PrintSe
     accessCode: input.accessCode,
     serial: input.serial,
     gcode,
+    ...(model3mf !== undefined ? { model3mf } : {}),
     filename: input.filename,
     startPrint: input.startPrint,
     dryRun: input.dryRun,
@@ -74,13 +88,14 @@ export function printCommand(): Command {
     .option('--api-key <key>', 'OctoPrint API key')
     .option('--access-code <code>', 'Bambu LAN-mode access code')
     .option('--serial <serial>', 'Bambu printer serial number')
+    .option('--model-3mf <path>', "bambu-lan: model .3mf (export 3mf) to package the G-code into as a .gcode.3mf")
     .option('--filename <name>', "uploaded file name (default: 'kernelcad.gcode')")
     .option('--no-start-print', 'upload without starting the print')
     .option('--dry-run', 'validate connectivity/auth only; never uploads or starts a print')
     .option('--json', 'emit result as JSON')
     .action(async (gcodeFile: string, opts: {
       protocol: string; host: string; port?: number; apiKey?: string; accessCode?: string;
-      serial?: string; filename?: string; startPrint?: boolean; dryRun?: boolean; json?: boolean;
+      serial?: string; model3mf?: string; filename?: string; startPrint?: boolean; dryRun?: boolean; json?: boolean;
     }) => {
       if (opts.protocol !== 'octoprint' && opts.protocol !== 'moonraker' && opts.protocol !== 'bambu-lan') {
         console.error(`Unsupported protocol: ${opts.protocol}. Use one of octoprint, moonraker, bambu-lan.`);
@@ -94,6 +109,7 @@ export function printCommand(): Command {
         apiKey: opts.apiKey,
         accessCode: opts.accessCode,
         serial: opts.serial,
+        ...(opts.model3mf !== undefined ? { model3mfFile: opts.model3mf } : {}),
         filename: opts.filename,
         startPrint: opts.startPrint,
         dryRun: opts.dryRun,

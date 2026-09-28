@@ -4,20 +4,23 @@
 //
 // Real Bambu Lab LAN-mode upload: implicit-TLS FTPS on port 990 (user
 // `bblp`, password = the printer's LAN access code — Bambu's own
-// documented LAN Mode protocol) uploads the G-code into the printer's
+// documented LAN Mode protocol) uploads the print file into the printer's
 // SD card storage, then an MQTT `print.project_file` command on port
 // 8883 (same TLS client cert model as Bambu Studio/OrcaSlicer's own LAN
-// send-to-printer flow) starts the print.
+// send-to-printer flow) starts the print. The print file is a `.gcode.3mf`
+// (the model 3MF when given, plus `Metadata/plate_1.gcode`; see
+// `bambuPrintFile.ts`), because `project_file` prints a 3MF project.
 
 import { Client as FtpClient } from 'basic-ftp';
 import mqtt from 'mqtt';
 import { Readable } from 'node:stream';
 import type { UploadOutcome, UploadRequest } from './types';
+import { bambuPrintFileName, buildBambuPrintFile } from './bambuPrintFile';
 
 const FTPS_PORT = 990;
 const MQTT_PORT = 8883;
 
-async function ftpsUpload(req: UploadRequest, filename: string): Promise<UploadOutcome> {
+async function ftpsUpload(req: UploadRequest, filename: string, bytes: Uint8Array): Promise<UploadOutcome> {
   const client = new FtpClient(15_000);
   client.ftp.verbose = false;
   try {
@@ -32,7 +35,7 @@ async function ftpsUpload(req: UploadRequest, filename: string): Promise<UploadO
     if (req.dryRun) {
       return { ok: true, dryRun: true };
     }
-    await client.uploadFrom(Readable.from(Buffer.from(req.gcode)), filename);
+    await client.uploadFrom(Readable.from(Buffer.from(bytes)), filename);
     return { ok: true, uploadedPath: filename };
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
@@ -111,9 +114,15 @@ export async function uploadToBambu(req: UploadRequest): Promise<UploadOutcome> 
   if (!req.accessCode) {
     return { ok: false, kind: 'unreachable', message: 'Bambu LAN mode requires accessCode (printer settings -> LAN Only Mode -> Access Code).' };
   }
-  const filename = req.filename ?? 'kernelcad.gcode';
+  const filename = bambuPrintFileName(req.filename);
+  let printFile: Uint8Array;
+  try {
+    printFile = buildBambuPrintFile(req.gcode, req.model3mf);
+  } catch (e) {
+    return { ok: false, kind: 'upload-failed', message: `Bambu print file: ${e instanceof Error ? e.message : String(e)}` };
+  }
 
-  const ftpsResult = await ftpsUpload(req, filename);
+  const ftpsResult = await ftpsUpload(req, filename, printFile);
   if (!ftpsResult.ok) return ftpsResult;
 
   if (req.startPrint === false) return ftpsResult;

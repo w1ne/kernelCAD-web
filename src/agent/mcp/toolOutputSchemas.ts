@@ -663,7 +663,7 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
     type: 'object',
     properties: {
       ok: { type: 'boolean' },
-      uploaded_path: { type: 'string', description: 'Path/name the G-code was stored under on the printer.' },
+      uploaded_path: { type: 'string', description: 'Path/name the G-code (bambu-lan: the .gcode.3mf print file) was stored under on the printer.' },
       dry_run: { type: 'boolean', description: 'True when only connectivity/auth was validated (no upload, no print start).' },
       diagnostics: { type: 'array', items: { type: 'object', additionalProperties: true } },
       error: { type: 'string' },
