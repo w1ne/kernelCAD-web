@@ -93,6 +93,7 @@ function shell(title: string, description: string, body: string, accent: string,
       </a>
       <div class="nav-links">
         <a href="/docs/">docs</a>
+        <a href="/gallery">gallery</a>
         <a class="app-link" href="https://app.kernelcad.com">app ↗</a>
         <a href="https://github.com/w1ne/kernelCAD-web">github</a>
         <a href="https://www.npmjs.com/package/kernelcad">npm</a>
