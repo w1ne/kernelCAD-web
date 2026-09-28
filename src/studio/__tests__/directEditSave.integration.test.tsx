@@ -16,7 +16,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render } from '@testing-library/react';
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 
 const { saveSourceToScriptMock } = vi.hoisted(() => ({ saveSourceToScriptMock: vi.fn() }));
 
@@ -36,13 +36,20 @@ import { useUndoRedoShortcuts } from '../hooks/useUndoRedoShortcuts';
 // fetches of the provider stack) and fail it fast.
 const fetchMock = vi.fn((input: RequestInfo | URL) => Promise.reject(new Error(`offline: ${String(input)}`)));
 
-let workbench: WorkbenchContextType | null = null;
-let activeProjectId: string | null = null;
+// Latest workbench/project values, published after each commit.
+const probe: { workbench: WorkbenchContextType | null; activeProjectId: string | null } = {
+    workbench: null,
+    activeProjectId: null,
+};
 
 function Probe() {
-    workbench = useWorkbench();
-    activeProjectId = useProject().activeProjectId;
-    useUndoRedoShortcuts(workbench.commandManager);
+    const wb = useWorkbench();
+    const { activeProjectId: id } = useProject();
+    useUndoRedoShortcuts(wb.commandManager);
+    useEffect(() => {
+        probe.workbench = wb;
+        probe.activeProjectId = id;
+    });
     return null;
 }
 
@@ -59,11 +66,11 @@ function Studio({ viewerMode = false, children }: { viewerMode?: boolean; childr
 }
 
 function currentCode(): string {
-    return workbench!.code;
+    return probe.workbench!.code;
 }
 
 function savedProjectCode(): string | undefined {
-    return projectService.getProject(activeProjectId!)?.code;
+    return projectService.getProject(probe.activeProjectId!)?.code;
 }
 
 function stage(toCode: string, extra: Partial<StagedEdit> = {}): StagedEdit {
@@ -94,8 +101,8 @@ beforeEach(() => {
     saveSourceToScriptMock.mockReset();
     saveSourceToScriptMock.mockResolvedValue(undefined);
     window.history.replaceState(null, '', '/');
-    workbench = null;
-    activeProjectId = null;
+    probe.workbench = null;
+    probe.activeProjectId = null;
 });
 
 afterEach(() => {
@@ -108,7 +115,7 @@ afterEach(() => {
 describe('approved direct edit — save path', () => {
     it('project route: saves the rewritten source through the project store, not the dev endpoint', async () => {
         const { getByTestId } = render(<Studio />);
-        expect(activeProjectId).not.toBeNull();
+        expect(probe.activeProjectId).not.toBeNull();
         const fromCode = currentCode();
         const toCode = `${fromCode}\n// moved base +5 mm`;
         stage(toCode);
@@ -116,7 +123,7 @@ describe('approved direct edit — save path', () => {
 
         expect(currentCode()).toBe(toCode);
         expect(savedProjectCode()).toBe(toCode);
-        expect(projectService.listRevisions(activeProjectId!).at(-1)?.code).toBe(toCode);
+        expect(projectService.listRevisions(probe.activeProjectId!).at(-1)?.code).toBe(toCode);
         expect(saveSourceToScriptMock).not.toHaveBeenCalled();
         expect(fetchMock.mock.calls.some(([url]) => String(url).includes('/__kernelcad/source'))).toBe(false);
         expect(shellStore.getSnapshot().stagedEdit).toBeNull();
@@ -160,13 +167,13 @@ describe('approved direct edit — save path', () => {
         stage(`${fromCode}\n// moved`);
         await approve(getByTestId);
 
-        act(() => workbench!.commandManager.undo());
+        act(() => probe.workbench!.commandManager.undo());
 
         expect(currentCode()).toBe(fromCode);
         expect(savedProjectCode()).toBe(fromCode);
-        expect(workbench!.commandManager.canUndo).toBe(false);
+        expect(probe.workbench!.commandManager.canUndo).toBe(false);
 
-        act(() => workbench!.commandManager.redo());
+        act(() => probe.workbench!.commandManager.redo());
         expect(currentCode()).toBe(`${fromCode}\n// moved`);
         expect(savedProjectCode()).toBe(`${fromCode}\n// moved`);
     });
@@ -192,9 +199,9 @@ describe('approved direct edit — save path', () => {
         const { getByTestId } = render(<Studio />);
         const base = currentCode();
         // Settle the project's creation revision outside the burst window.
-        const revs = projectService.listRevisions(activeProjectId!);
+        const revs = projectService.listRevisions(probe.activeProjectId!);
         revs.forEach((rev) => { rev.ts = new Date(Date.now() - 60_000).toISOString(); });
-        localStorage.setItem(`kernelcad_project_revisions_${activeProjectId}`, JSON.stringify(revs));
+        localStorage.setItem(`kernelcad_project_revisions_${probe.activeProjectId}`, JSON.stringify(revs));
         const revisionsBefore = revs.length;
 
         for (let i = 1; i <= 3; i++) {
@@ -202,7 +209,7 @@ describe('approved direct edit — save path', () => {
             await approve(getByTestId);
         }
 
-        const after = projectService.listRevisions(activeProjectId!);
+        const after = projectService.listRevisions(probe.activeProjectId!);
         expect(after).toHaveLength(revisionsBefore + 1);
         expect(after.at(-1)?.code).toBe(`${base}\n// drag 3`);
         expect(savedProjectCode()).toBe(`${base}\n// drag 3`);

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
+import type { StagedEdit } from '../store/shellStore';
 import { useShellStore, shellStore } from '../store/useShellStore';
 import { useWorkbench } from '../context/WorkbenchContext';
 import { useSourceEditCommit } from '../directEdit/useSourceEditCommit';
@@ -14,6 +15,29 @@ function clearSaveFailureNotice(): void {
     if (shellStore.getSnapshot().directEditNotice === SAVE_FAILED_NOTICE) {
         shellStore.setDirectEditNotice(null);
     }
+}
+
+/**
+ * Re-checked after the async file save (script target) and before the apply:
+ * the slot may hold a newer proposal, or the editor may have moved. The
+ * watcher bridge may echo the bytes we just PUT back into the editor; that
+ * exact value is our save succeeding, not an intervening edit — treat it as
+ * fresh.
+ */
+function freshnessCheck(
+    edit: StagedEdit,
+    codeRef: RefObject<string>,
+    onStale: () => void,
+): () => boolean {
+    return () => {
+        const currentEdit = shellStore.getSnapshot().stagedEdit;
+        if (currentEdit == null || currentEdit.id !== edit.id) return false;
+        if (codeRef.current !== edit.fromCode && codeRef.current !== edit.toCode) {
+            onStale();
+            return false;
+        }
+        return true;
+    };
 }
 
 export function useStagedEditActions() {
@@ -48,23 +72,10 @@ export function useStagedEditActions() {
         approvingRef.current = true;
         setApproving(true);
         try {
-            // Re-checked after the async file save (script target only): the
-            // slot may hold a newer proposal, or the editor may have moved.
-            // The watcher bridge may echo the bytes we just PUT back into the
-            // editor; that exact value is our save succeeding, not an
-            // intervening edit — treat it as fresh.
-            const canApply = () => {
-                const currentEdit = shellStore.getSnapshot().stagedEdit;
-                if (currentEdit == null || currentEdit.id !== edit.id) return false;
-                if (codeRef.current !== edit.fromCode && codeRef.current !== edit.toCode) {
-                    setStaleWarning({
-                        editId: edit.id,
-                        message: STALE_EDIT_MESSAGE,
-                    });
-                    return false;
-                }
-                return true;
-            };
+            const canApply = freshnessCheck(edit, codeRef, () => setStaleWarning({
+                editId: edit.id,
+                message: STALE_EDIT_MESSAGE,
+            }));
             const result = await commit(edit, { canApply });
             if (!result.ok) {
                 if (result.reason === 'save-failed') shellStore.setDirectEditNotice(SAVE_FAILED_NOTICE);

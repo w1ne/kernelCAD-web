@@ -230,6 +230,29 @@ function formatRecheckStatus(status: AppliedEditHistoryEntry['recheckStatus']): 
     }
 }
 
+/** Why the edit waits here: auto-apply refusal, read-only view, failed run. */
+function StagedEditNotes({ edit, readOnlyHint }: { edit: StagedEdit; readOnlyHint: string | null }) {
+    return (
+        <>
+            {edit.reviewReason && (
+                <div data-testid="staged-edit-review-reason" className="rounded border border-amber-800/70 bg-amber-950/40 px-2 py-1 text-[10px] text-amber-200">
+                    {edit.reviewReason}
+                </div>
+            )}
+            {readOnlyHint && (
+                <div data-testid="staged-edit-read-only" className="text-[10px] text-gray-400">
+                    {readOnlyHint}
+                </div>
+            )}
+            {edit.evaluation && !edit.evaluation.ok && (
+                <div className="rounded border border-red-900 bg-red-950/30 px-2 py-1 text-[10px] text-red-300">
+                    Candidate failed: {edit.evaluation.error ?? 'unknown error'}
+                </div>
+            )}
+        </>
+    );
+}
+
 export function StagedEditSlot() {
     const { appliedEditHistory } = useShellStore();
     const {
@@ -270,21 +293,7 @@ export function StagedEditSlot() {
                             {' · '}Σ volume {stagedEdit.validityDelta.fromVolumeMm3.toFixed(1)} → {stagedEdit.validityDelta.toVolumeMm3.toFixed(1)} mm³
                         </div>
                     )}
-                    {stagedEdit.reviewReason && (
-                        <div data-testid="staged-edit-review-reason" className="rounded border border-amber-800/70 bg-amber-950/40 px-2 py-1 text-[10px] text-amber-200">
-                            {stagedEdit.reviewReason}
-                        </div>
-                    )}
-                    {readOnlyHint && (
-                        <div data-testid="staged-edit-read-only" className="text-[10px] text-gray-400">
-                            {readOnlyHint}
-                        </div>
-                    )}
-                    {stagedEdit.evaluation && !stagedEdit.evaluation.ok && (
-                        <div className="rounded border border-red-900 bg-red-950/30 px-2 py-1 text-[10px] text-red-300">
-                            Candidate failed: {stagedEdit.evaluation.error ?? 'unknown error'}
-                        </div>
-                    )}
+                    <StagedEditNotes edit={stagedEdit} readOnlyHint={readOnlyHint} />
                     <StagedEditContextDetails edit={stagedEdit} />
                     <DiffCard edit={stagedEdit} />
                     {visibleStaleWarning != null && (
