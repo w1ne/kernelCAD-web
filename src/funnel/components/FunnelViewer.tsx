@@ -57,6 +57,16 @@ export interface FunnelViewerProps {
   overlay?: ReactNode;
 }
 
+function funnelStatusLabel(phase: FunnelViewerPhase, detail: string | null): string | null {
+  switch (phase) {
+    case 'building_geometry': return 'Building geometry…';
+    case 'loading_mesh': return 'Loading mesh…';
+    case 'build_failed': return `Build failed: ${detail ?? 'unknown error'}`;
+    case 'viewer_failed': return `Viewer failed: ${detail ?? 'unknown error'}`;
+    default: return null;
+  }
+}
+
 /** Inner component — must be mounted inside WorkbenchProvider. */
 function FunnelViewerInner({
   onPhaseChange,
@@ -136,14 +146,10 @@ function FunnelViewerInner({
     setEmptyBuildError(null);
   }, []);
 
+  // A customizer overlay reports its own build errors; over a displayed
+  // model it keeps the last good geometry in view.
   const overlayOwnsError = Boolean(overlay) && phase === 'build_failed' && displayReady && nonempty;
-  const statusLabel =
-    overlayOwnsError ? null
-    : phase === 'building_geometry' ? 'Building geometry…'
-    : phase === 'loading_mesh' ? 'Loading mesh…'
-    : phase === 'build_failed' ? `Build failed: ${detail ?? 'unknown error'}`
-    : phase === 'viewer_failed' ? `Viewer failed: ${detail ?? 'unknown error'}`
-    : null;
+  const statusLabel = overlayOwnsError ? null : funnelStatusLabel(phase, detail);
 
   return (
     <div className="absolute inset-0">

@@ -259,6 +259,19 @@ function isBridgePayload(value: unknown): value is BackendMeshPayload {
   return !!value && typeof value === 'object' && Array.isArray((value as { features?: unknown }).features);
 }
 
+/** `/__kernelcad/mesh` body: the stored `/p/<slug>` project, or the source.
+ *  `preferSource`: the caller rewrote the source (param values baked into
+ *  it), so the stored project body would drop the edit. */
+function hostedMeshBody(source: string, paramOverrides: ParamOverrides | undefined, preferSource?: boolean) {
+  const project = preferSource ? null : currentHostedProject();
+  return {
+    ...(project
+      ? { projectSlug: project.slug, ...(project.version ? { projectVersion: project.version } : {}) }
+      : { source }),
+    ...(hasOverrides(paramOverrides) ? { params: paramOverrides } : {}),
+  };
+}
+
 /**
  * Compute the mesh bridge payload for a source string on the hosted deploy.
  * Tries the build-time precompute first (a static `_mesh/<sha>.json` on the
@@ -291,18 +304,10 @@ export async function meshSourceHosted(
   // 2. Server mesh endpoint for edited / non-gallery code (and param edits).
   const base = import.meta.env.VITE_API_BASE_URL;
   if (typeof base === 'string' && base.length > 0) {
-    // `preferSource`: the caller rewrote the source (a choice/text param
-    // value), so the stored project body would drop the edit.
-    const project = options?.preferSource ? null : currentHostedProject();
     const response = await fetch(`${base}/__kernelcad/mesh`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ...(project
-          ? { projectSlug: project.slug, ...(project.version ? { projectVersion: project.version } : {}) }
-          : { source }),
-        ...(hasOverrides(paramOverrides) ? { params: paramOverrides } : {}),
-      }),
+      body: JSON.stringify(hostedMeshBody(source, paramOverrides, options?.preferSource)),
     });
     const payload = await response.json().catch(() => null);
     if (!response.ok) {

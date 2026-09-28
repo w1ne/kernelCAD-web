@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useCallback, useEffect, useRef } from 'react';
 import {
-    shouldUseHostedMesh, meshSourceHosted, devMeshAvailable, meshSourceDev,
+    shouldUseHostedMesh, devMeshAvailable,
     type BackendMeshPayload,
 } from '../../scriptSource';
 import { apiCall, rewritePath } from '../../api/apiBase';
@@ -10,7 +10,7 @@ import { detectEmptyBuild, featureMeshesToGeometries } from './types';
 import type { FeatureMeshSerialized } from '../../../modeling/capture/featureMeshSerialize';
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { ExecutionApplyDeps } from './executionApplyDeps';
-import { paramEditsForMesh, type ParamEditValues } from './paramEditsForMesh';
+import { meshParamEdits, type ParamEditValues } from './paramEditsForMesh';
 
 export interface ParamUpdateOptions {
     /** Stateless path only: write every value into the source and re-run the
@@ -105,8 +105,7 @@ export function useParamUpdate(
         // whole script through the stateless mesh endpoint with the param
         // overrides applied. This is what makes a declared parameter actually
         // move the model when there is no pooled kernel session behind the tab.
-        const hosted = shouldUseHostedMesh();
-        if (!hosted && !devMeshAvailable()) {
+        if (!shouldUseHostedMesh() && !devMeshAvailable()) {
             throw new Error(
                 'Editing parameters needs a live kernel session or a compute backend.',
             );
@@ -119,13 +118,7 @@ export function useParamUpdate(
         deps.setCurrentCodeRevision(revision);
         deps.setIsComputing(true);
         try {
-            // Choice/text values ride in the source; numbers and booleans in
-            // the override map. A rewritten source can't use the stored
-            // project body, so it is sent as source.
-            const { source, params } = paramEditsForMesh(code, overrides, options?.bakeIntoSource);
-            const payload = hosted
-                ? await meshSourceHosted(source, params, { preferSource: source !== code })
-                : await meshSourceDev(source, params);
+            const payload = await meshParamEdits(code, overrides, options?.bakeIntoSource);
             // Superseded by a newer edit (code change or another param drag).
             if (revision !== deps.mainRevisionRef.current) return;
             applyBridgePayload(payload, revision);

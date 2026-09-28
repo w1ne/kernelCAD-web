@@ -1,7 +1,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { setParamValue } from '../../../modeling/edits/setParamValue';
-import type { ParamOverrides } from '../../scriptSource';
+import {
+  meshSourceDev,
+  meshSourceHosted,
+  shouldUseHostedMesh,
+  type BackendMeshPayload,
+  type ParamOverrides,
+} from '../../scriptSource';
 
 export type ParamEditValues = Record<string, number | boolean | string>;
 
@@ -35,4 +41,18 @@ export function paramEditsForMesh(
     source = edit.new_code;
   }
   return { source, params };
+}
+
+/** Mesh the code with the accumulated edits through the stateless endpoint:
+ *  the server on the hosted app, the dev middleware on localhost. A rewritten
+ *  source can't use the stored project body, so it is sent as source. */
+export function meshParamEdits(
+  code: string,
+  edits: ParamEditValues,
+  bakeAll = false,
+): Promise<BackendMeshPayload> {
+  const { source, params } = paramEditsForMesh(code, edits, bakeAll);
+  return shouldUseHostedMesh()
+    ? meshSourceHosted(source, params, { preferSource: source !== code })
+    : meshSourceDev(source, params);
 }
