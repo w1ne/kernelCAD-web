@@ -388,7 +388,7 @@
   },
   {
     "name": "verify",
-    "description": "Use this when you need to check a design against a rule set. One verifier, selected by `check`:\n- 'assembly' — mate-aware assembly validator on the active session (run evaluate_script first).\n- 'urdf' — structural validity of a .urdf file ({ urdf_path }).\n- 'dfm' — print-readiness gates declared by dfmSpec() ({ file | code }).\n- 'dfm-preflight' — sheet-metal flat pattern vs a job-shop's ordering rules ({ vendor, material, thicknessIn|thicknessMm, ... }).\n- 'swept-collision' — sweep declared joint range(s) and report colliding poses.\n- 'reachable' — inverse-kinematics reachability for an end-effector ({ tip_link, target_position, ... }).\n- 'mounting-holes' — fastened mates expose matching hole diameters on both sides.\n- 'load-capacity' — closed-form Euler-Bernoulli beam stress / safety-factor check ({ loads, materials, ... }).\n- 'static-hold' — gravitational holding torque/force at a sampled pose grid vs each actuated joint's declared actuator capacity ({ joint?, pose?, gravity?, min_torque_margin_pct?, range_samples? }).\n- 'body-likeness' — publish gate for organic/car bodies: cheap AABB↔wheel checks plus required agent still verdicts (side-body-over-wheels, side-cabin-aft, rear-haunch, ortho-proportions-vs-reference). Pass { body_bbox | code/file+body_feature_id, wheels?, cabin_bbox?, still_verdicts?, require_stills? }. Full CV silhouette matching is NOT implemented — agents must inspect ortho PNGs/Studio and supply still_verdicts before claiming success.\nAll params except `check` are check-specific and forwarded verbatim; each check fails closed on its own missing required params.",
+    "description": "Use this when you need to check a design against a rule set. One verifier, selected by `check`:\n- 'assembly' — mate-aware assembly validator on the active session (run evaluate_script first).\n- 'urdf' — structural validity of a .urdf file ({ urdf_path }).\n- 'dfm' — print-readiness gates declared by dfmSpec() ({ file | code }).\n- 'dfm-preflight' — sheet-metal flat pattern vs a job-shop's ordering rules ({ vendor, material, thicknessIn|thicknessMm, ... }). Returns the vendor's catalog source pages as `sources`; when `disclosure` is present, show it with those links.\n- 'swept-collision' — sweep declared joint range(s) and report colliding poses.\n- 'reachable' — inverse-kinematics reachability for an end-effector ({ tip_link, target_position, ... }).\n- 'mounting-holes' — fastened mates expose matching hole diameters on both sides.\n- 'load-capacity' — closed-form Euler-Bernoulli beam stress / safety-factor check ({ loads, materials, ... }).\n- 'static-hold' — gravitational holding torque/force at a sampled pose grid vs each actuated joint's declared actuator capacity ({ joint?, pose?, gravity?, min_torque_margin_pct?, range_samples? }).\n- 'body-likeness' — publish gate for organic/car bodies: cheap AABB↔wheel checks plus required agent still verdicts (side-body-over-wheels, side-cabin-aft, rear-haunch, ortho-proportions-vs-reference). Pass { body_bbox | code/file+body_feature_id, wheels?, cabin_bbox?, still_verdicts?, require_stills? }. Full CV silhouette matching is NOT implemented — agents must inspect ortho PNGs/Studio and supply still_verdicts before claiming success.\nAll params except `check` are check-specific and forwarded verbatim; each check fails closed on its own missing required params.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -2955,6 +2955,22 @@
           "type": "string",
           "description": "Where the part came from ('local' | 'remote') (success)."
         },
+        "kind": {
+          "type": "string",
+          "description": "'link_out' when the URL is a vendor configurator the agent must drive by hand."
+        },
+        "url": {
+          "type": "string",
+          "description": "Outbound vendor URL (link_out). May carry a referral tag; see disclosure."
+        },
+        "instruction": {
+          "type": "string",
+          "description": "What to do with the link_out URL."
+        },
+        "disclosure": {
+          "type": "string",
+          "description": "Referral disclosure. Present only when url carries a referral tag; show it with the link."
+        },
         "error": {
           "type": "string"
         },
@@ -4400,7 +4416,7 @@
   },
   {
     "name": "design_loop",
-    "description": "Use this when the goal is complex / production / enclosure / gearbox / robot-arm / multi-body, or when you need evaluate→review/verify→revise until green. PREFERRED over one-shot evaluate_script+open_in_studio for Adam-level parts. Runs a CAD design loop over attempt scripts: review_cad each attempt, continue past functional attempts with unresolved warnings, return repair prompts (nextActionPrompt) plus structured revisionAssist (suggestedPatches / autoApplied.suggestedCode for repairable feature failures; cookbook steers for stacked-primitive toys). Stop on ok or convergence.escalate. For organic/car bodies set likenessProfile:\"automotive\" and pass bodyLikeness (or automotive stills on visualReview.checks) — attempts fail closed until body-likeness is publishReady. Optionally write a Studio build record JSON.",
+    "description": "Use this when the goal is complex / production / enclosure / gearbox / robot-arm / multi-body, or when you need evaluate→review/verify→revise until green. PREFERRED over one-shot evaluate_script+open_in_studio for Adam-level parts. Runs a CAD design loop over attempt scripts: review_cad each attempt, continue past functional attempts with unresolved warnings, return repair prompts (nextActionPrompt) plus structured revisionAssist (suggestedPatches / autoApplied.suggestedCode for repairable feature failures; cookbook steers for stacked-primitive toys). Stop on ok or convergence.escalate. To pick among N alternative candidates for one goal without a judge, pass them all as attempts with consensus:true (geometric medoid selection). For organic/car bodies set likenessProfile:\"automotive\" and pass bodyLikeness (or automotive stills on visualReview.checks) — attempts fail closed until body-likeness is publishReady. Optionally write a Studio build record JSON.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -4522,6 +4538,10 @@
         "stopOnPass": {
           "type": "boolean",
           "description": "Stop after the first attempt that is functional and passes the quality gate. Default true."
+        },
+        "consensus": {
+          "type": "boolean",
+          "description": "Best-of-N by geometric consensus. When true, attempts are N independent candidates for the SAME goal (not a repair sequence): all are reviewed (stopOnPass ignored), all scripts are executed, candidates without a valid solid are dropped, and the candidate whose geometry agrees most with the others (medoid by symmetric Chamfer distance, same model frame) is selected. Ties go to more gates passed, then the shorter script. Returns consensus { chosenIndex, chosenAttemptId, scores, distances, reason }; ok / finalAttemptId / nextActionPrompt describe the selected candidate. Default false."
         },
         "autoRevise": {
           "type": "boolean",

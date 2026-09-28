@@ -6,7 +6,7 @@
 // modeling API's import graph, so a `node:module` import here reached the
 // browser bundle). Read it lazily at call time: node entries install it on
 // import, which may happen after this module is evaluated.
-import { kernelcadVersion } from '../../../shared/runtime/kernelcadVersion';
+import { attributionGenerator } from '../../../shared/links/attribution';
 
 const HEADER_SIZE = 80;
 const TRIANGLE_COUNT_SIZE = 4;
@@ -42,13 +42,14 @@ export interface MeshData {
  *
  * @param mesh    Vertex/index mesh data
  * @param header  Up to 80 ASCII characters written to the header field.
- *                Defaults to "kernelcad <version> <YYYY-MM-DD>". The header
+ *                Defaults to "kernelCAD <version> (https://kernelcad.com)
+ *                <YYYY-MM-DD>" (shared/links/attribution.ts). The header
  *                MUST NOT start with "solid" — some lenient parsers use the
  *                prefix to detect ASCII vs binary format.
  */
 function buildDefaultHeader(): string {
   const isoDate = new Date().toISOString().slice(0, 10);
-  return `kernelcad ${kernelcadVersion()} ${isoDate}`;
+  return `${attributionGenerator()} ${isoDate}`;
 }
 
 export function encodeBinaryStl(

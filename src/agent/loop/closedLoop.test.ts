@@ -237,3 +237,81 @@ describe('runClosedLoop best-of-N invariants', () => {
     for (const p of repairPrompts) expect(p).not.toContain(String(SENTINEL));
   });
 });
+
+describe('runClosedLoop best-of-N with consensus selection', () => {
+  type BestOfN = Extract<import('./types.js').ClosedLoopEvent, { type: 'best_of_n' }>;
+  const bestOfNEvent = (events: import('./types.js').ClosedLoopEvent[]): BestOfN => {
+    const e = events.find((ev): ev is BestOfN => ev.type === 'best_of_n');
+    if (e === undefined) throw new Error('no best_of_n event');
+    return e;
+  };
+  /** Unit-cube mesh translated along x: the candidate's "geometry". */
+  const cubeAt = (x: number): import('../../kernel/backends/runtimeMesh').RuntimeMesh => {
+    const p: number[] = [];
+    for (const z of [0, 1]) for (const y of [0, 1]) for (const dx of [0, 1]) p.push(x + dx, y, z);
+    const idx: number[] = [];
+    for (const [a, b, c, d] of [[0, 1, 3, 2], [4, 6, 7, 5], [0, 4, 5, 1], [2, 3, 7, 6], [0, 2, 6, 4], [1, 5, 7, 3]]) {
+      idx.push(a, b, c, a, c, d);
+    }
+    return { positions: new Float32Array(p), normals: new Float32Array(p.length), indices: new Uint32Array(idx) };
+  };
+  // Script text → x position; 'BROKEN' produces no solid.
+  const geometryFor = (code: string) =>
+    code === 'BROKEN' ? { mesh: null, invalidReason: 'no solid' } : { mesh: cubeAt(Number(code.replace(/\D/g, ''))) };
+
+  it('picks the geometric medoid over the gate/oracle favourite', async () => {
+    const store: Record<string, string> = {};
+    const sharedWrite = async (code: string) => {
+      store['/c.kcad.ts'] = code;
+      return '/c.kcad.ts';
+    };
+    // x = 0..3 agree; x = 50 is the outlier — and the oracle loves it.
+    const { generate } = bestOfNGenerate([fence('x0'), fence('x50'), fence('x1'), fence('x2'), fence('x3')]);
+    const oracle = [0.1, 1.0, 0.1, 0.1, 0.1];
+    let k = 0;
+    const events: import('./types.js').ClosedLoopEvent[] = [];
+    const result = await runClosedLoop({
+      prompt: 'x',
+      generate,
+      gateRunner: scriptedGate([PASS_REPORT]),
+      extractScript,
+      writeScript: sharedWrite,
+      candidates: 5,
+      scoreCandidate: async () => oracle[k++],
+      candidateGeometry: async (path) => geometryFor(store[path]),
+      onEvent: (e) => events.push(e),
+    });
+    expect(result.status).toBe('passed');
+    if (result.status === 'passed') expect(store[result.scriptPath]).toBe('x2');
+    const bon = bestOfNEvent(events);
+    expect(bon.selector).toBe('consensus');
+    expect(bon.winnerIndex).toBe(3); // x2: the middle of the agreeing cluster
+    expect(bon.candidates[1].meanDistanceMm).toBeGreaterThan(10);
+    expect(bon.reason).toMatch(/geometric medoid/);
+  });
+
+  it('drops invalid candidates and falls back to gates when none is valid', async () => {
+    const store: Record<string, string> = {};
+    const sharedWrite = async (code: string) => {
+      store['/c.kcad.ts'] = code;
+      return '/c.kcad.ts';
+    };
+    const events: import('./types.js').ClosedLoopEvent[] = [];
+    const { generate } = bestOfNGenerate([fence('BROKEN'), fence('BROKEN')]);
+    const result = await runClosedLoop({
+      prompt: 'x',
+      generate,
+      gateRunner: scriptedGate([FAIL_REPORT, PASS_REPORT]),
+      extractScript,
+      writeScript: sharedWrite,
+      candidates: 2,
+      candidateGeometry: async (path) => geometryFor(store[path]),
+      onEvent: (e) => events.push(e),
+    });
+    const bon = bestOfNEvent(events);
+    expect(bon.selector).toBe('gates-oracle');
+    expect(bon.winnerIndex).toBe(1); // the gate-passing one
+    expect(bon.candidates.map((c) => c.meanDistanceMm)).toEqual([null, null]);
+    expect(result.status).toBe('passed');
+  });
+});

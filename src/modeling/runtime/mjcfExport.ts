@@ -65,6 +65,7 @@ import type { TendonRecord } from '../mates/tendon';
 import type { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import type { Vec3 } from '../../shared/intent/types';
 import { stlToMjcfMesh } from './stlToMjcfMesh';
+import { xmlAttributionComment } from '../../shared/links/attribution';
 
 const MM_TO_M = 1e-3;
 const DEG_TO_RAD = Math.PI / 180;
@@ -147,6 +148,7 @@ export async function assemblyToMjcf(arm: Assembly): Promise<MjcfExportResult> {
     const nconmax = Math.max(500, parts.length * 120);
     const mjcf = [
         '<?xml version="1.0" ?>',
+        xmlAttributionComment(),
         `<mujoco model="${escapeXml(arm.name)}">`,
         '  <option gravity="0 0 -9.81"/>',
         '  <compiler angle="radian"/>',

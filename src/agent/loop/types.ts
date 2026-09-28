@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import type { RuntimeMesh } from '../../kernel/backends/runtimeMesh';
+
 export interface LoopMessage {
   role: 'user' | 'assistant';
   content: string;
@@ -45,6 +47,19 @@ export interface ClosedLoopInput {
    * MUST NOT influence repair prompts (anti-hack invariant).
    */
   scoreCandidate?(scriptPath: string, report: GateReport): Promise<number | null>;
+  /**
+   * Consensus-as-selector (verifier-free, arXiv 2608.09706). When set and
+   * candidates > 1, the first-attempt winner is the geometric medoid of the
+   * candidates (see consensus.ts) instead of the gate/oracle ranking; gate
+   * stages passed only break ties. Returns the candidate's world-frame mesh,
+   * or mesh: null with a reason when it produced no valid solid. Called right
+   * after writeScript, like scoreCandidate. When no candidate is valid, the
+   * gate/oracle ranking picks the winner.
+   */
+  candidateGeometry?(
+    scriptPath: string,
+    report: GateReport,
+  ): Promise<{ mesh: RuntimeMesh | null; invalidReason?: string }>;
   onEvent?(e: ClosedLoopEvent): void;
 }
 
@@ -55,7 +70,11 @@ export type ClosedLoopEvent =
   | {
       type: 'best_of_n';
       winnerIndex: number;
-      candidates: { stagesPassed: number; oracleScore: number | null }[];
+      candidates: { stagesPassed: number; oracleScore: number | null; meanDistanceMm?: number | null }[];
+      /** Which ranking chose the winner. Absent on hosts that predate consensus. */
+      selector?: 'gates-oracle' | 'consensus';
+      /** Consensus explanation (selector === 'consensus'). */
+      reason?: string;
     };
 
 export type ClosedLoopResult =

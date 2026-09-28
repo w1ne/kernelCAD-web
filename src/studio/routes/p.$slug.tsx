@@ -3,6 +3,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useCallback, useState, type ReactNode } from 'react';
 import App from '../App';
+import { MadeWithKernelcad } from '../components/MadeWithKernelcad';
 import { ProjectClaimControl } from './-ProjectClaimControl';
 import { ProjectViewerActions } from './-ProjectViewerActions';
 import { ServerRevisionHistory } from './-ServerRevisionHistory';
@@ -96,6 +97,9 @@ function ProjectPage() {
       >
         ●<span className="hidden md:inline"> live</span>
       </span>
+      {/* In the header, not over the viewport: the viewport's bottom-left
+          corner holds the parameter chips. */}
+      <MadeWithKernelcad surface="share" className="relative shrink-0 whitespace-nowrap" />
     </div>
   );
 

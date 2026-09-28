@@ -20,7 +20,21 @@ import { stitchCracks, dropDegenerateTriangles } from './meshHeal';
  * Cost: ~3-4x slower mesh on cone-heavy parts, negligible on box / plate.
  * Used only for STL export; the preview path keeps the coarse defaults.
  */
-export function meshShapeForExport(shape: replicad.Shape3D): { vertices: number[]; triangles: number[] } {
+/**
+ * Tessellation tolerances for {@link meshShapeForExport}. Omitted = the
+ * export defaults (relative 0.01, 0.05 rad). A validity check that only needs
+ * a closed-manifold verdict can pass a coarser absolute deflection.
+ */
+export interface ExportMeshDeflection {
+  linear: number;
+  relative: boolean;
+  angularRad: number;
+}
+
+export function meshShapeForExport(
+  shape: replicad.Shape3D,
+  deflection?: ExportMeshDeflection,
+): { vertices: number[]; triangles: number[] } {
   const oc = getOC();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const wrapped = (shape as any).wrapped;
@@ -30,7 +44,7 @@ export function meshShapeForExport(shape: replicad.Shape3D): { vertices: number[
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (oc as any).BRepTools.Clean(wrapped, true);
 
-  const mesher = meshWholeShapeIfSmall(oc, shape, wrapped);
+  const mesher = meshWholeShapeIfSmall(oc, shape, wrapped, deflection);
   if (mesher === null) {
     meshFacesIndividually(oc, shape);
   }
@@ -46,6 +60,7 @@ function meshWholeShapeIfSmall(
   oc: ReturnType<typeof getOC>,
   shape: replicad.Shape3D,
   wrapped: unknown,
+  deflection?: ExportMeshDeflection,
 ): { delete(): void } | null {
   // Whole-shape mesher escape hatch for pathologically dense imported packages.
   //
@@ -75,13 +90,13 @@ function meshWholeShapeIfSmall(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return new (oc as any).BRepMesh_IncrementalMesh_2(
       wrapped,
-      0.01, // linear deflection — scaled per-edge because isRelative=true,
+      deflection?.linear ?? 0.01, // linear deflection — scaled per-edge because isRelative=true,
             //   so absolute deflection is ~0.01 * edgeLength (e.g. 0.3 mm on a
             //   30 mm slant; 0.6 mm on a 60 mm radius) — finer than the
             //   absolute-mode 0.05 default, with uniform refinement across
             //   face boundaries.
-      true, // isRelative — tolerance is fraction of edge length
-      0.05, // angular deflection (rad). Replicad's default is 0.1; halving to
+      deflection?.relative ?? true, // isRelative — tolerance is fraction of edge length
+      deflection?.angularRad ?? 0.05, // angular deflection (rad). Replicad's default is 0.1; halving to
             //   0.05 reduces chord error on curved surfaces. Note: tightening
             //   further does not eliminate OCCT-mesher self-intersection on
             //   adjacent cone rings (a known mesher limitation, not tolerance

@@ -99,3 +99,8 @@ site/docs/
 # External-tools CI venv (gmsh + usd-core), created locally / in the
 # external-tools job for FEA + USD validation; never committed.
 .tools-venv
+
+# CADGenBench harness: downloaded task inputs (ODC-BY, fetched on demand)
+# and run outputs / submission zips. Never committed.
+eval/benchmarks/cadgenbench/.cache/
+eval/benchmarks/cadgenbench/runs/

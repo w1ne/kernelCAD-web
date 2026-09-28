@@ -56,7 +56,19 @@ export class AnthropicAgentClient implements AgentClient {
       max_tokens: args.max_tokens,
       ...(args.temperature !== undefined ? { temperature: args.temperature } : {}),
       system: systemBlocks,
-      messages: args.messages.map((m) => ({ role: m.role, content: m.content })),
+      messages: args.messages.map((m) => ({
+        role: m.role,
+        content:
+          m.images && m.images.length > 0
+            ? [
+                ...m.images.map((img) => ({
+                  type: 'image' as const,
+                  source: { type: 'base64' as const, media_type: img.mediaType, data: img.data },
+                })),
+                { type: 'text' as const, text: m.content },
+              ]
+            : m.content,
+      })),
     });
 
     // Concatenate text content blocks. Tool-use isn't expected in CLI single-shot mode.
