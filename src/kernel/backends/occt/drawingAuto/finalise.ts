@@ -34,7 +34,7 @@ export function finalise(ctx: RenderCtx): AutoDrawingResult {
   for (const item of placed) {
     // Its labels on anything, or its leader through another label.
     const hit = ctx.obstacles.cost(item.boxes, item.owner) > 0 ||
-      item.segments.some(seg => ctx.obstacles.labelHits(seg, item.owner) > 0);
+      item.leaders.some(seg => ctx.obstacles.labelHits(seg, item.owner) > 0);
     if (hit) {
       overlapped++;
       crowded.push(`${item.kind} '${item.text}' (${item.view})`);

@@ -222,7 +222,7 @@ export function collectLinearDimensions(ctx: RenderCtx): LinearItem[] {
       const segments: Seg[] = horizontal
         ? [[item.from[0], linePos, item.to[0], linePos], [item.from[0], item.from[1], item.from[0], linePos], [item.to[0], item.to[1], item.to[0], linePos]]
         : [[linePos, item.from[1], linePos, item.to[1]], [item.from[0], item.from[1], linePos, item.from[1]], [item.to[0], item.to[1], linePos, item.to[1]]];
-      commit(ctx, item.kind, item.view, item.label, { svg: dimSvg, boxes, segments });
+      commit(ctx, item.kind, item.view, item.label, { svg: dimSvg, boxes, segments }, true);
     });
   }
   return linear;

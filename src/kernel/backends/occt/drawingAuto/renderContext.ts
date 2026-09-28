@@ -34,7 +34,9 @@ export interface PlacedItem {
   text: string;
   svg: string;
   boxes: Box[];
-  segments: Seg[];
+  /** Leader lines the placer chose (not the extension lines of a linear
+   *  dimension, which the measured feature fixes). */
+  leaders: Seg[];
   owner: number;
 }
 
@@ -134,11 +136,18 @@ export function toSheet(ctx: RenderCtx, p: V3, view: DrawingViewName): Pt2 {
   return modelToSheet(p, view, ctx.views[view].placement, ctx.scale);
 }
 
-export function commit(ctx: RenderCtx, kind: string, view: DrawingViewName, text: string, r: Rendered): void {
+export function commit(
+  ctx: RenderCtx,
+  kind: string,
+  view: DrawingViewName,
+  text: string,
+  r: Rendered,
+  linear = false,
+): void {
   const owner = ctx.ownerSeq++;
   for (const s of r.segments) ctx.obstacles.addSegment(s, owner);
   for (const b of r.boxes) ctx.obstacles.addBox(b, owner);
-  ctx.placed.push({ kind, view, text, svg: r.svg, boxes: r.boxes, segments: r.segments, owner });
+  ctx.placed.push({ kind, view, text, svg: r.svg, boxes: r.boxes, leaders: linear ? [] : r.segments, owner });
   ctx.byKind[kind] = (ctx.byKind[kind] ?? 0) + 1;
 }
 
