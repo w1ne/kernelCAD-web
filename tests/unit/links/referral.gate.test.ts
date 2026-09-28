@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-// src/shared/links/referral.gate.test.ts
+// tests/unit/links/referral.gate.test.ts
 //
 // Gate: `buildVendorUrl` (referral.ts) is the only producer of outbound vendor
 // URLs, and vendor data stays clean.
@@ -14,7 +14,7 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
-import { VENDOR_REFERRALS, buildVendorUrl, REFERRAL_DISCLOSURE } from './referral';
+import { VENDOR_REFERRALS, buildVendorUrl, REFERRAL_DISCLOSURE } from '../../../src/shared/links/referral';
 
 const REPO = join(__dirname, '..', '..', '..');
 const SCAN_ROOTS = ['src', 'workers', 'site/src'];
@@ -92,8 +92,8 @@ describe('referral gate: data-driven emit points go through the builder', () => 
   });
 
   it("fetch_part link_out (surface 'part')", async () => {
-    const { fetchPartFromUrlHost } = await import('../../modeling/parts/fetchPart');
-    const { CaptureSession } = await import('../../modeling/capture/captureSession');
+    const { fetchPartFromUrlHost } = await import('../../../src/modeling/parts/fetchPart');
+    const { CaptureSession } = await import('../../../src/modeling/capture/captureSession');
     const clean = 'https://igus.partcommunity.com/portal/x';
     const fetchImpl = vi.fn();
     const outcome = await fetchPartFromUrlHost(
@@ -110,8 +110,8 @@ describe('referral gate: data-driven emit points go through the builder', () => 
 
   it("fetch_part link_out stays clean and undisclosed with no tag", async () => {
     vi.stubEnv('KERNELCAD_REFERRAL_IGUS', '');
-    const { fetchPartFromUrlHost } = await import('../../modeling/parts/fetchPart');
-    const { CaptureSession } = await import('../../modeling/capture/captureSession');
+    const { fetchPartFromUrlHost } = await import('../../../src/modeling/parts/fetchPart');
+    const { CaptureSession } = await import('../../../src/modeling/capture/captureSession');
     const clean = 'https://igus.partcommunity.com/portal/x';
     const outcome = await fetchPartFromUrlHost({ session: new CaptureSession() }, clean);
     if (!outcome.ok || outcome.kind !== 'link_out') throw new Error('expected link_out');
@@ -120,9 +120,9 @@ describe('referral gate: data-driven emit points go through the builder', () => 
   });
 
   it("dfm-preflight catalog sources (surface 'shopcheck')", async () => {
-    const { initOcct } = await import('../../kernel/backends/occt/occtBackend');
+    const { initOcct } = await import('../../../src/kernel/backends/occt/occtBackend');
     await initOcct();
-    const { dfmPreflightTool } = await import('../../agent/mcp/tools/dfmPreflight');
+    const { dfmPreflightTool } = await import('../../../src/agent/mcp/tools/dfmPreflight');
     const r = await dfmPreflightTool({
       file: 'tests/fixtures/shopcheck/passing-bracket.kcad.ts',
       vendor: 'sendcutsend', material: 'aluminum-6061-t6', thicknessIn: 0.125,

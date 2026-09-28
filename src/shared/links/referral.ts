@@ -8,8 +8,8 @@
 //     clean canonical vendor URLs. No tags or tracking parameters in data.
 //   - `buildVendorUrl()` / `buildVendorLink()` is the ONLY function allowed to
 //     produce an outbound vendor URL that reaches the UI or an agent. A unit
-//     gate (referral.gate.test.ts) fails if source code emits a raw vendor URL
-//     anywhere else.
+//     gate (tests/unit/links/referral.gate.test.ts) fails if source code
+//     emits a raw vendor URL anywhere else.
 //   - A vendor with an empty tag (the default) gets the clean URL back,
 //     unchanged. A missing tag never breaks a link.
 //   - Every surface that shows a tagged link also shows REFERRAL_DISCLOSURE.
