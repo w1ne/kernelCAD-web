@@ -105,7 +105,7 @@ send_to_printer({
   print-start command on port 8883. Requires `access_code` and (unless
   `start_print: false`) `serial`. The printer prints 3MF projects, so the
   upload is a `.gcode.3mf`: the G-code as `Metadata/plate_1.gcode` inside
-  the model 3MF passed as `model_3mf_path` (export format `'3mf'` with
+  the model 3MF passed as `model_3mf_path: 'part.3mf'` (export format `'3mf'` with
   `{ arrange: 'plate', slicer: 'bambu' }`), or inside a minimal 3MF shell.
 
 Always try `{ dry_run: true }` first when talking to unfamiliar hardware —
