@@ -21,6 +21,7 @@ import { meshShape } from '../../kernel/backends/occt/meshing';
 import { resolveFaceLabelToFace } from '../../kernel/backends/occt/edgeSelection';
 import { faceHashOf } from '../../kernel/backends/occt/createdRefs';
 import { transformFeatureMesh } from './transformMesh';
+import { computeFeatureOwnership, type FeatureOwnership } from './featureOwnership';
 import { Transform } from '../../shared/runtime/se3';
 import type {
   AttributeShadowingWarning,
@@ -157,6 +158,10 @@ export interface SceneFanoutCtx {
     sceneFeatureId: FeatureId,
     assemblies: ReadonlyMap<string, unknown> | undefined,
   ) => FeatureMesh[];
+  /** Record id whose lowered shape is `shape` (a part's `assemblyPart`
+   *  record), for per-face ownership of part meshes. */
+  ownerIdOfShape?: (shape: ShapeBackend) => FeatureId | undefined;
+  recordOrder?: ReadonlyMap<FeatureId, number>;
 }
 
 // SceneBackend (assembly multi-body) → fan out one FeatureMesh per
@@ -217,15 +222,43 @@ export function emitSceneBackendFanout(
   }
 }
 
-type CachedScenePartMesh = { faces: FaceGeometry[]; volume?: number; edges?: Float32Array };
+/** Selection ↔ code link data of one part mesh (see `featureOwnership.ts`). */
+type PartLinkData = FeatureOwnership & { edgeRanges?: number[] };
+type CachedScenePartMesh = { faces: FaceGeometry[]; volume?: number; edges?: Float32Array; link?: PartLinkData };
 type ScenePartMeshCache = Map<string, CachedScenePartMesh>;
 
 interface ResolvedScenePartMesh {
   faces: FaceGeometry[];
   volume: number | undefined;
   edges: Float32Array | undefined;
+  link: PartLinkData;
   fromCache: boolean;
   partCache: ScenePartMeshCache | undefined;
+}
+
+/** Per-face / per-edge owners of one part mesh. The part's shape is the
+ *  lowered shape of its `assemblyPart` record, whose owner map was recorded
+ *  when that record compiled, so the faces inherit their creating calls. */
+function partLinkData(
+  part: SceneBackendPart,
+  rawShape: unknown,
+  meshed: { edgeRanges?: number[]; edgeHashes?: number[] },
+  ctx: SceneFanoutCtx,
+): PartLinkData {
+  const edgeRanges = meshed.edgeRanges !== undefined ? { edgeRanges: meshed.edgeRanges } : {};
+  const ownerId = ctx.ownerIdOfShape?.(part.shape);
+  if (ownerId === undefined || ctx.recordOrder === undefined) return edgeRanges;
+  return {
+    ...edgeRanges,
+    ...computeFeatureOwnership({
+      featureId: ownerId,
+      shape: part.shape,
+      rawShape,
+      predecessorShapes: [part.shape],
+      edgeHashes: meshed.edgeHashes,
+      recordOrder: ctx.recordOrder,
+    }),
+  };
 }
 
 /** Resolve one assembly part's mesh, reusing (and populating) the pose cache. */
@@ -242,9 +275,17 @@ function resolveScenePartMesh(
   // data so we skip the expensive `meshShape()` call per part.
   const cachedPart = partCache?.get(part.name);
   if (cachedPart) {
-    return { faces: cachedPart.faces, volume: cachedPart.volume, edges: cachedPart.edges, fromCache: true, partCache };
+    return {
+      faces: cachedPart.faces,
+      volume: cachedPart.volume,
+      edges: cachedPart.edges,
+      link: cachedPart.link ?? {},
+      fromCache: true,
+      partCache,
+    };
   }
-  const meshed = meshShape(ctx.extractRawShape(part.shape));
+  const rawShape = ctx.extractRawShape(part.shape);
+  const meshed = meshShape(rawShape);
   if (!meshed) {
     // Per-part shape failed to mesh. Skip THIS part — the lowerer
     // already populated the part shape, and a single bad part must
@@ -259,15 +300,16 @@ function resolveScenePartMesh(
   const faces = meshed.faces;
   const volume = meshed.volume;
   const edges = meshed.edges;
+  const link = partLinkData(part, rawShape, meshed, ctx);
   let nextCache = partCache;
   if (ctx.cachedAssemblyPartMeshes !== undefined) {
     if (!nextCache) {
       nextCache = new Map();
       ctx.cachedAssemblyPartMeshes.set(featureId, nextCache);
     }
-    nextCache.set(part.name, { faces, ...(volume !== undefined ? { volume } : {}), ...(edges ? { edges } : {}) });
+    nextCache.set(part.name, { faces, ...(volume !== undefined ? { volume } : {}), ...(edges ? { edges } : {}), link });
   }
-  return { faces, volume, edges, fromCache: false, partCache: nextCache };
+  return { faces, volume, edges, link, fromCache: false, partCache: nextCache };
 }
 
 /** Build + emit one assembly part's FeatureMesh; returns the local mesh and
@@ -287,6 +329,7 @@ function emitScenePartMesh(
     faces: resolved.faces,
     ...(resolved.volume !== undefined ? { volume: resolved.volume } : {}),
     ...(resolved.edges ? { edges: resolved.edges } : {}),
+    ...resolved.link,
   };
   if (!resolved.fromCache) ctx.attachPlanarUVs(local.faces);
   const extra = ctx.explodeOffsets?.get(part.name);
