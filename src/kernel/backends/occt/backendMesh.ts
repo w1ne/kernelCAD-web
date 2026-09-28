@@ -3,7 +3,7 @@
 // src/kernel/backends/occt/backendMesh.ts
 import * as replicad from 'replicad';
 import { getOC } from 'replicad';
-import { stitchCracks, dropDegenerateTriangles } from './meshHeal';
+import { healExportMesh } from './meshHeal';
 
 /**
  * Tessellation tolerances for {@link meshShapeForExport}, honoured by both
@@ -217,13 +217,7 @@ function weldVertices(
   }
   const triangles: number[] = new Array(rawTriangles.length);
   for (let i = 0; i < rawTriangles.length; i++) triangles[i] = remap[rawTriangles[i]];
-  const welded: { vertices: number[]; triangles: number[] } = {
-    vertices,
-    triangles: dropDegenerateTriangles(triangles),
-  };
   // Heal T-junction cracks born at tangent junctions and along
   // fallback-face seams. No-op (0 splits) on conformal meshes.
-  stitchCracks(welded, 0.05);
-  welded.triangles = dropDegenerateTriangles(welded.triangles);
-  return welded;
+  return healExportMesh({ vertices, triangles }, 0.05);
 }
