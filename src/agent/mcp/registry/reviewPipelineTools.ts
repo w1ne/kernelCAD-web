@@ -363,7 +363,7 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
         'social post, README image, product page): key/fill/rim lights + room reflections, soft contact shadow, clean ' +
         'backdrop ({ background: \'white\' (default) | \'light\' | \'dark\' | \'black\' | \'#rrggbb\' | \'transparent\' } — ' +
         'transparent gives a PNG with alpha), { shadow: false } to drop the shadow, 2× supersampled anti-aliasing, 30° lens, ' +
-        'auto-framed on the model bounds with margin (a script\'s setCameraTarget is ignored), per-part colours/materials ' +
+        'the model silhouette centred and auto-framed with ~11% air (a script\'s setCameraTarget is ignored), per-part colours/materials ' +
         'as authored, no watermark. With no views/pose it renders ONE image named \'hero\' (3/4 front-right, az=30°, el=22°) ' +
         'at 1600×1200; width/height go up to 2048; views/pose still work under the preset. Output is deterministic for the ' +
         'same input. For a 360° loop use capture_animation({ turntable: true }). Returns { ok, images: [{ name, path, description }], ' +

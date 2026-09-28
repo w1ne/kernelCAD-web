@@ -4782,17 +4782,17 @@
   },
   {
     "name": "capture_animation",
-    "description": "Use this when you need to render a script's animation timeline to a video. Capture a kernelCAD script's animationView({...}) timeline to an MP4 (ffmpeg) or a PNG frame sequence, verifying the sampled poses for part interference. FILE ONLY: pass { file } (a .kcad.ts path) — there is no { code } mode, because the capture engine renders from a file on disk (its relative lib.fromSTEP imports resolve against the script directory). MP4 by default; pass { frames_dir } to write frame-0000.png... and skip ffmpeg entirely (mutually exclusive with output_path). Animation-pose interference verification runs by default (keyframe times + segment midpoints) BEFORE any browser/ffmpeg cost; { no_verify: true } skips it and { verify_every: n } additionally samples every n-th frame time. Pass { focus } or { hide } (arrays of feature ids or assembly part names, mutually exclusive) to isolate parts in the rendered frames — same semantics as `kernelcad render --focus/--hide`; visibility is render-only and does NOT affect the pose verification. Collisions DO NOT fail the call — the artifact is still written as evidence with ok: true; read verified: false + the collisions[] array. ENVIRONMENT REQUIREMENT (identical to `kernelcad render`): capture drives a headless browser against a running studio dev server reachable at http://localhost:5173 (or the VITE_PORT override); there is no bundled-static serving mode yet, so the same dev-server precondition applies in a production MCP install. Returns { ok, output_path, frame_count, duration_ms, fps, verified, verify_skipped?, collisions: [{ t_ms, a, b, volume_mm3 }], diagnostics }.",
+    "description": "Use this when you need to render a script's animation timeline to a video, or a 360° turntable of a model for sharing. Capture a kernelCAD script's animationView({...}) timeline to an MP4 (ffmpeg) or a PNG frame sequence, verifying the sampled poses for part interference. FILE ONLY: pass { file } (a .kcad.ts path) — there is no { code } mode, because the capture engine renders from a file on disk (its relative lib.fromSTEP imports resolve against the script directory). MP4 by default; pass { frames_dir } to write frame-0000.png... and skip ffmpeg entirely (mutually exclusive with output_path). Animation-pose interference verification runs by default (keyframe times + segment midpoints) BEFORE any browser/ffmpeg cost; { no_verify: true } skips it and { verify_every: n } additionally samples every n-th frame time. Pass { focus } or { hide } (arrays of feature ids or assembly part names, mutually exclusive) to isolate parts in the rendered frames — same semantics as `kernelcad render --focus/--hide`; visibility is render-only and does NOT affect the pose verification. Collisions DO NOT fail the call — the artifact is still written as evidence with ok: true; read verified: false + the collisions[] array. TURNTABLE MODE: pass { turntable: true } for a seamless 360° orbit of the model (no animationView record needed) — a share-ready loop for a README, social post or product page. It uses the 'publish' studio look by default (same as render_preview preset: 'publish': key/fill/rim lights, soft contact shadow, clean backdrop, 30° lens, constant auto-framing over the whole orbit, light rig turns with the camera); { preset: 'default' } keeps the engineering look. Knobs: width/height (default 1080×1080, max 2048, even for MP4), duration_ms (one revolution, default 6000), fps (default 30), elevation_deg (default 22), background ('white' default, 'light', 'dark', 'black', '#rrggbb', or 'transparent' with frames_dir only), shadow (default true), environment. output_path ending in .gif writes a looping GIF; otherwise MP4. Frame i sits at az 30° + 360°·i/N (the 360° endpoint is excluded, so the loop is seamless). A turntable has no poses to verify: it reports verify_skipped: true. ENVIRONMENT: needs playwright chromium (npx playwright install chromium) and ffmpeg for MP4/GIF (frames_dir needs neither); the bundled static player is served automatically, no dev server required. Returns { ok, output_path, frame_count, duration_ms, fps, verified, verify_skipped?, collisions: [{ t_ms, a, b, volume_mm3 }], diagnostics }.",
     "inputSchema": {
       "type": "object",
       "properties": {
         "file": {
           "type": "string",
-          "description": "Path to a .kcad.ts script with an animationView({...}) record. Required (no inline { code } mode)."
+          "description": "Path to a .kcad.ts script with an animationView({...}) record (any script in turntable mode). Required (no inline { code } mode)."
         },
         "output_path": {
           "type": "string",
-          "description": "MP4 output path; default <scriptDir>/<basename>-animation.mp4. Mutually exclusive with frames_dir."
+          "description": "MP4 output path (.gif → looping GIF); default <scriptDir>/<basename>-animation.mp4 (-turntable.mp4 in turntable mode). Mutually exclusive with frames_dir."
         },
         "frames_dir": {
           "type": "string",
@@ -4825,6 +4825,55 @@
             "type": "string"
           },
           "description": "Hide matching feature ids / assembly part names in the rendered frames. Mutually exclusive with focus. Render-only; does not affect pose verification."
+        },
+        "turntable": {
+          "type": "boolean",
+          "description": "Seamless 360° orbit of the model instead of the animationView timeline.",
+          "default": false
+        },
+        "preset": {
+          "type": "string",
+          "enum": [
+            "default",
+            "publish"
+          ],
+          "description": "Turntable look: 'publish' (default; studio product shot) or 'default' (engineering look)."
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 64,
+          "maximum": 2048,
+          "description": "Turntable frame width in px (default 1080; even for MP4)."
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 64,
+          "maximum": 2048,
+          "description": "Turntable frame height in px (default 1080; even for MP4)."
+        },
+        "duration_ms": {
+          "type": "number",
+          "minimum": 500,
+          "maximum": 60000,
+          "description": "Turntable: one full revolution in ms (default 6000)."
+        },
+        "elevation_deg": {
+          "type": "number",
+          "minimum": -89,
+          "maximum": 89,
+          "description": "Turntable: camera elevation above the horizon in degrees (default 22)."
+        },
+        "background": {
+          "type": "string",
+          "description": "Turntable + publish: 'white' (default), 'light', 'dark', 'black', '#rrggbb', or 'transparent' (frames_dir only — MP4/GIF have no usable alpha)."
+        },
+        "shadow": {
+          "type": "boolean",
+          "description": "Turntable + publish: soft contact shadow under the model (default true)."
+        },
+        "environment": {
+          "type": "string",
+          "description": "Turntable: HDRI environment override ('studio', 'softbox', 'neutral', 'outdoor', 'warehouse', a URL, or 'none')."
         }
       },
       "required": [
@@ -4899,7 +4948,7 @@
   },
   {
     "name": "render_preview",
-    "description": "Use this when you need to LOOK at a kernelCAD model — render its script to deterministic PNG views for visual self-check (the visual half of the evaluate → render → inspect → fix loop), with NO studio or dev server required. Pass { code } (inline source) or { file } (a .kcad.ts path), exactly one. Renders the canonical engineering views (front, right, top, iso — pass { views } for a subset, e.g. [\"iso\"] for fastest iteration) plus an optional { pose: \"<az>,<el>\" } arbitrary camera angle (degrees; az=0,el=0 is front, +az rotates CCW around +Z, +el lifts the camera). NO STUDIO / DEV-SERVER REQUIRED: a prebuilt static player (dist/headless-player) is served from an ephemeral local port automatically; a running studio dev server is used as fallback, and { base_url } forces one. The only environment dependency is playwright chromium (npx playwright install chromium). Pass { focus } or { hide } (arrays of feature ids or assembly part names, mutually exclusive) to isolate parts — same semantics as `kernelcad render --focus/--hide`. Pass { section: { axis, position, flip? } } to cut a cross-section and inspect INTERIOR geometry (wall thickness, internal pockets, whether a bore runs through) rather than only the outer shell. Pass { explode: { factor, mode? } } to pull a multi-part assembly apart (mode: \"mate-axis\" default, or \"radial\") using the same mesher as `kernelcad render --explode` — requires assembly.model()/solvedModel(). PNGs are written to { out_dir } (default: a fresh temp session directory) and returned as absolute paths with per-view camera descriptions (kernelCAD is Z-up). Mechanism truth runs first, same protocol as `kernelcad render`: a broken mechanism still renders but every tile is watermarked MECHANISM BROKEN (KERNELCAD_RENDER_STRICT=1 refuses instead); read { mechanism, mechanism_failure_codes }. The probe runs full BREP interference sweeps and can dominate latency on large assemblies — pass { no_mechanism_check: true } for fast iteration (the preview then reports mechanism: \"unverified\"; ignored under strict mode). Pass { overlay: 'zebra' | 'curvature' | 'continuity' } for a surface-quality visualisation (zebra stripes from vertex normals, curvature as vertex colours, continuity edges coloured by G0/G1/G2/broken) — numbers come from inspect({ of: 'continuity' | 'curvature' }); the overlay is the picture. Returns { ok, images: [{ name, path, description }], out_dir, bounds, mechanism, render_source, render_ms, diagnostics }. PATHS ARE LOCAL to the machine running the MCP server — local stdio clients read them directly; hosted/remote clients should use open_in_studio instead.",
+    "description": "Use this when you need to LOOK at a kernelCAD model — render its script to deterministic PNG views for visual self-check (the visual half of the evaluate → render → inspect → fix loop), with NO studio or dev server required. Pass { code } (inline source) or { file } (a .kcad.ts path), exactly one. Renders the canonical engineering views (front, right, top, iso — pass { views } for a subset, e.g. [\"iso\"] for fastest iteration) plus an optional { pose: \"<az>,<el>\" } arbitrary camera angle (degrees; az=0,el=0 is front, +az rotates CCW around +Z, +el lifts the camera). NO STUDIO / DEV-SERVER REQUIRED: a prebuilt static player (dist/headless-player) is served from an ephemeral local port automatically; a running studio dev server is used as fallback, and { base_url } forces one. The only environment dependency is playwright chromium (npx playwright install chromium). Pass { focus } or { hide } (arrays of feature ids or assembly part names, mutually exclusive) to isolate parts — same semantics as `kernelcad render --focus/--hide`. Pass { section: { axis, position, flip? } } to cut a cross-section and inspect INTERIOR geometry (wall thickness, internal pockets, whether a bore runs through) rather than only the outer shell. Pass { explode: { factor, mode? } } to pull a multi-part assembly apart (mode: \"mate-axis\" default, or \"radial\") using the same mesher as `kernelcad render --explode` — requires assembly.model()/solvedModel(). PNGs are written to { out_dir } (default: a fresh temp session directory) and returned as absolute paths with per-view camera descriptions (kernelCAD is Z-up). Mechanism truth runs first, same protocol as `kernelcad render`: a broken mechanism still renders but every tile is watermarked MECHANISM BROKEN (KERNELCAD_RENDER_STRICT=1 refuses instead); read { mechanism, mechanism_failure_codes }. The probe runs full BREP interference sweeps and can dominate latency on large assemblies — pass { no_mechanism_check: true } for fast iteration (the preview then reports mechanism: \"unverified\"; ignored under strict mode). Pass { overlay: 'zebra' | 'curvature' | 'continuity' } for a surface-quality visualisation (zebra stripes from vertex normals, curvature as vertex colours, continuity edges coloured by G0/G1/G2/broken) — numbers come from inspect({ of: 'continuity' | 'curvature' }); the overlay is the picture. PUBLISH PRESET: pass { preset: 'publish' } for a share-ready studio product shot (gallery tile, social post, README image, product page): key/fill/rim lights + room reflections, soft contact shadow, clean backdrop ({ background: 'white' (default) | 'light' | 'dark' | 'black' | '#rrggbb' | 'transparent' } — transparent gives a PNG with alpha), { shadow: false } to drop the shadow, 2× supersampled anti-aliasing, 30° lens, the model silhouette centred and auto-framed with ~11% air (a script's setCameraTarget is ignored), per-part colours/materials as authored, no watermark. With no views/pose it renders ONE image named 'hero' (3/4 front-right, az=30°, el=22°) at 1600×1200; width/height go up to 2048; views/pose still work under the preset. Output is deterministic for the same input. For a 360° loop use capture_animation({ turntable: true }). Returns { ok, images: [{ name, path, description }], out_dir, bounds, mechanism, render_source, render_ms, diagnostics }. PATHS ARE LOCAL to the machine running the MCP server — local stdio clients read them directly; hosted/remote clients should use open_in_studio instead.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -4950,13 +4999,13 @@
           "type": "integer",
           "minimum": 64,
           "maximum": 2048,
-          "description": "Per-view tile width in px (default 768)."
+          "description": "Per-view tile width in px (default 768; 1600 under preset: 'publish')."
         },
         "height": {
           "type": "integer",
           "minimum": 64,
           "maximum": 2048,
-          "description": "Per-view tile height in px (default 768)."
+          "description": "Per-view tile height in px (default 768; 1200 under preset: 'publish')."
         },
         "environment": {
           "type": "string",
@@ -5031,6 +5080,22 @@
             "continuity"
           ],
           "description": "Surface-quality overlay: 'zebra' (reflection stripes), 'curvature' (Gaussian vertex colours), 'continuity' (edges coloured G2 green / G1 yellow / G0 orange / broken red). Built as coloured STL bands through this same pipeline."
+        },
+        "preset": {
+          "type": "string",
+          "enum": [
+            "default",
+            "publish"
+          ],
+          "description": "Render look: 'default' (engineering review) or 'publish' (studio product shot for sharing; one 'hero' image unless views/pose are given)."
+        },
+        "background": {
+          "type": "string",
+          "description": "preset 'publish' only: 'white' (default), 'light', 'dark', 'black', 'transparent' (PNG alpha), or '#rrggbb'."
+        },
+        "shadow": {
+          "type": "boolean",
+          "description": "preset 'publish' only: soft contact shadow under the model (default true)."
         }
       }
     },

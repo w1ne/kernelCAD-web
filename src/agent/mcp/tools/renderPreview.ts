@@ -184,7 +184,7 @@ export const PUBLISH_HERO_NAME = 'hero';
 const PUBLISH_HERO_POSE = `${PUBLISH_PRESET.heroAzDeg},${PUBLISH_PRESET.heroElDeg}`;
 const PUBLISH_HERO_DESCRIPTION =
   `Publish hero — 3/4 front-right product shot (az=${PUBLISH_PRESET.heroAzDeg}°, el=${PUBLISH_PRESET.heroElDeg}°), ` +
-  'auto-framed on the model bounds with margin; kernelCAD is Z-up.';
+  'silhouette centred and auto-framed with margin; kernelCAD is Z-up.';
 
 function poseDescription(az: number, el: number): string {
   return (
