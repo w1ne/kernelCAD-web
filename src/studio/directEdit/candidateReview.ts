@@ -17,10 +17,14 @@
 //                `reviewed: false`, `delta: null` — never a fabricated
 //                "zero interferences, valid" delta.
 //
+// Evaluator: the dev review endpoint on localhost; on the hosted app (which
+// has no review route) the server mesh endpoint, whose success/failure is the
+// run verdict and which carries no interference channel (`reviewed: false`).
+//
 // This module deliberately defines its own delta shape (rather than
 // importing the shell store's) so the Studio store is not a dependency here.
 
-import { reviewSourceDev } from '../scriptSource';
+import { meshSourceHosted, reviewSourceDev, shouldUseHostedMesh } from '../scriptSource';
 import type { ScriptReviewSummary } from '../context/GeometryContext';
 
 export interface CandidateValidityDelta {
@@ -58,13 +62,26 @@ function volumeSum(pairs: ReadonlyArray<InterferencePairLike> | null | undefined
     return total;
 }
 
+/** Run the candidate on the hosted server kernel; a thrown error is a failed
+ *  run. The mesh payload's review (if any) is the verdict. */
+async function reviewSourceHosted(source: string): Promise<ScriptReviewSummary | null> {
+    const payload = await meshSourceHosted(source);
+    return payload.review ?? null;
+}
+
+export function defaultCandidateEvaluator(script: string): (source: string) => Promise<ScriptReviewSummary | null> {
+    return shouldUseHostedMesh()
+        ? reviewSourceHosted
+        : (source: string) => reviewSourceDev(source, script);
+}
+
 export async function reviewCandidate(input: {
     readonly source: string;
     readonly script: string;
     readonly baseline: ScriptReviewSummary | null;
-    readonly evaluate?: (source: string) => Promise<ScriptReviewSummary>;
+    readonly evaluate?: (source: string) => Promise<ScriptReviewSummary | null>;
 }): Promise<CandidateReview> {
-    const evaluate = input.evaluate ?? ((source: string) => reviewSourceDev(source, input.script));
+    const evaluate = input.evaluate ?? defaultCandidateEvaluator(input.script);
     const baselinePairs = input.baseline?.rawInterferencePairs;
     const fromInterferences = pairCount(baselinePairs);
     const fromVolumeMm3 = volumeSum(baselinePairs);

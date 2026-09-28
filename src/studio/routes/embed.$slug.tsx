@@ -21,13 +21,14 @@
  * not enough.
  */
 import { createFileRoute } from '@tanstack/react-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { FunnelViewer, type FunnelViewerPhase } from '../../funnel/components/FunnelViewer';
 import { fetchProjectBySlug, fetchProjectRevisionBySlug } from '../../funnel/lib/apiClient';
 import StudioApp from '../App';
 import { StudioConfigProvider } from '../config/StudioConfigContext';
 import { MadeWithKernelcad } from '../components/MadeWithKernelcad';
-import { embedPresentationMode, embedRevision, loadEmbedCode, revisionPinnedMeshUrl } from './-embedConfig';
+import { StudioModelCustomizer } from '../customizer/StudioModelCustomizer';
+import { embedCustomize, embedPresentationMode, embedRevision, loadEmbedCode, revisionPinnedMeshUrl } from './-embedConfig';
 
 /** Bound source fetches so a hung API cannot pin the outer ChatGPT overlay forever. */
 const SOURCE_FETCH_TIMEOUT_MS = 30_000;
@@ -96,6 +97,8 @@ export const Route = createFileRoute('/embed/$slug')({
     meshUrl: embedMeshUrl(search.meshUrl),
     /** CDN transforms-only animation bake for in-widget Play/scrub. */
     animUrl: embedMeshUrl(search.animUrl),
+    /** Opt-in model customizer (`?customize=1`). */
+    customize: embedCustomize(search.customize),
   }),
   component: EmbedPage,
 });
@@ -235,8 +238,10 @@ function useEmbedNoProgressTimeout(
 
 function EmbedPage() {
   const { slug } = Route.useParams();
-  const { mode, revision, meshUrl: rawMeshUrl, instance, animUrl: rawAnimUrl} = Route.useSearch();
-  const meshUrl = revisionPinnedMeshUrl(rawMeshUrl, slug, revision);
+  const { mode, revision, meshUrl: rawMeshUrl, instance, animUrl: rawAnimUrl, customize } = Route.useSearch();
+  // A customizable embed builds from source: a stored mesh has no parameters.
+  const meshUrl = customize ? undefined : revisionPinnedMeshUrl(rawMeshUrl, slug, revision);
+  const customizer = customize ? <StudioModelCustomizer slug={slug} /> : undefined;
   const animUrl = rawAnimUrl;
   const [viewerPhase, setViewerPhase] = useState<FunnelViewerPhase | null>(null);
   const [viewerDetail, setViewerDetail] = useState<string | null>(null);
@@ -289,7 +294,7 @@ function EmbedPage() {
       }
       return (
         <StudioConfigProvider value={{ showHeader: false, enableAgentRail: false, enableConnect: false }}>
-          <StudioApp initialCode={code} viewerMode />
+          <StudioApp initialCode={code} viewerMode viewportOverlay={customizer} />
           {/* Bottom-right: the Studio viewport's bottom-left holds the parameter chips. */}
           <MadeWithKernelcad surface="embed" className="fixed bottom-2 right-2" />
         </StudioConfigProvider>
@@ -308,6 +313,7 @@ function EmbedPage() {
         canRetry={canRetry}
         onPhaseChange={onPhaseChange}
         onRetry={retryViewer}
+        customizer={customizer}
       />
     );
   }
@@ -389,6 +395,7 @@ function EmbedViewerSurface(props: {
   canRetry: boolean;
   onPhaseChange: (phase: FunnelViewerPhase, detail?: string | null) => void;
   onRetry: () => void;
+  customizer?: ReactNode;
 }) {
   return (
     <div className="fixed inset-0" data-embed-phase={props.uiPhase}>
@@ -400,6 +407,11 @@ function EmbedViewerSurface(props: {
         instanceId={props.instanceId}
         resetKey={props.retryKey}
         onPhaseChange={props.onPhaseChange}
+        overlay={props.customizer ? (
+          <div className="absolute top-2 right-2 bottom-12 flex flex-col items-end pointer-events-none">
+            {props.customizer}
+          </div>
+        ) : undefined}
       />
       <MadeWithKernelcad surface="embed" className="absolute bottom-2 left-2" />
       {props.statusMessage ? (
