@@ -50,6 +50,7 @@ import type { MeshData } from './exportStlBinary';
 import type { WorldFramePart } from './sceneToWorldFrame';
 import { computeProjectedUVs } from '../../../shared/intent/textureProjection';
 import { resolveAndLoadTextureBytes } from '../../../shared/textures';
+import { attributionGenerator } from '../../../shared/links/attribution';
 
 const requireFromHere = createRequire(import.meta.url);
 // At source: src/kernel/backends/occt/exportGlb.ts → ../../../../package.json (4 up).
@@ -189,19 +190,22 @@ export async function exportGlbAsync(
   // post-process the GLB JSON chunk to add the provenance block. The
   // alternative would be a custom writer plugin, but the post-process is
   // simpler and keeps the writer's exporter usage stock.
-  let out = injectAssetExtras(new Uint8Array(buffer), {
+  //
+  // `asset.generator` names kernelCAD (see shared/links/attribution.ts). It is
+  // written last, after the texture post-process, because glTF-Transform
+  // stamps its own generator when it rewrites the file.
+  let out: Uint8Array = new Uint8Array(buffer);
+  if (wrappedParts.length > 0) {
+    out = await embedWrappedTextures(out, meshed, wrappedParts, options.scriptDir);
+  }
+
+  return injectAssetExtras(out, {
     kernelcad: {
       version: KERNELCAD_VERSION,
       isoDate,
       axisConvention: axis,
     },
-  });
-
-  if (wrappedParts.length > 0) {
-    out = await embedWrappedTextures(out, meshed, wrappedParts, options.scriptDir);
-  }
-
-  return out;
+  }, attributionGenerator(KERNELCAD_VERSION));
 }
 
 /**
@@ -261,7 +265,7 @@ async function embedWrappedTextures(
 
 /**
  * Replace the JSON chunk of a GLB so that `asset.extras` carries the
- * supplied object. GLB layout: [12-byte header][JSON chunk][BIN chunk].
+ * supplied object and, when given, `asset.generator` is `generator`. GLB layout: [12-byte header][JSON chunk][BIN chunk].
  * Each chunk has an 8-byte header (length + type). The JSON chunk is
  * padded with 0x20 (space) to a 4-byte boundary; the BIN chunk is padded
  * with 0x00. We re-pad both as needed and rewrite the file-length field
@@ -270,6 +274,7 @@ async function embedWrappedTextures(
 function injectAssetExtras(
   bytes: Uint8Array,
   extras: Record<string, unknown>,
+  generator?: string,
 ): Uint8Array {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   // GLB header: magic(4) + version(4) + length(4)
@@ -288,6 +293,7 @@ function injectAssetExtras(
   };
   json.asset = json.asset ?? {};
   json.asset.extras = { ...(json.asset.extras ?? {}), ...extras };
+  if (generator !== undefined) json.asset.generator = generator;
 
   let newJsonBytes = new TextEncoder().encode(JSON.stringify(json));
   // Pad to 4-byte boundary with 0x20 (space).

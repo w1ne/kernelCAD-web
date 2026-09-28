@@ -17,6 +17,7 @@ import type { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
 import { mateToUrdfJoint, type ConnectorResolver, type DummyLinkSpec } from './mateToJoint';
 import { linkInertialBlock } from './linkInertial';
 import { NEXT_ACTIONS } from '../../../shared/diagnostics/registry';
+import { xmlAttributionComment } from '../../../shared/links/attribution';
 
 export interface UrdfSerializeOptions {
   /** Default density applied to parts without `arm.part(..., { density })`. */
@@ -85,6 +86,7 @@ export async function urdfSerialize(arm: Assembly, opts: UrdfSerializeOptions): 
 
   const urdf = [
     `<?xml version="1.0"?>`,
+    xmlAttributionComment(),
     `<robot name="${escapeXml(arm.name)}">`,
     ...linkBlocks,
     ...jointBlocks,

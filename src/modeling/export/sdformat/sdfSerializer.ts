@@ -38,6 +38,7 @@ import { linkInertialBlock } from '../urdf/linkInertial';
 import { solveMates } from '../../mates/solver';
 import { mateToSdfJoint, type ConnectorResolver } from './mateToSdfJoint';
 import { NEXT_ACTIONS } from '../../../shared/diagnostics/registry';
+import { xmlAttributionComment } from '../../../shared/links/attribution';
 
 export interface SdfSerializeOptions {
   density?: number;
@@ -88,6 +89,7 @@ export async function sdfSerialize(arm: Assembly, opts: SdfSerializeOptions): Pr
 
   const sdf = [
     `<?xml version="1.0"?>`,
+    xmlAttributionComment(),
     `<sdf version="${SDF_VERSION}">`,
     `  <model name="${escapeXml(arm.name)}">`,
     ...linkBlocks,

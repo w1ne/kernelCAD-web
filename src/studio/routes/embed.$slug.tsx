@@ -26,6 +26,7 @@ import { FunnelViewer, type FunnelViewerPhase } from '../../funnel/components/Fu
 import { fetchProjectBySlug, fetchProjectRevisionBySlug } from '../../funnel/lib/apiClient';
 import StudioApp from '../App';
 import { StudioConfigProvider } from '../config/StudioConfigContext';
+import { MadeWithKernelcad } from '../components/MadeWithKernelcad';
 import { embedPresentationMode, embedRevision, loadEmbedCode, revisionPinnedMeshUrl } from './-embedConfig';
 
 /** Bound source fetches so a hung API cannot pin the outer ChatGPT overlay forever. */
@@ -289,6 +290,7 @@ function EmbedPage() {
       return (
         <StudioConfigProvider value={{ showHeader: false, enableAgentRail: false, enableConnect: false }}>
           <StudioApp initialCode={code} viewerMode />
+          <MadeWithKernelcad surface="embed" />
         </StudioConfigProvider>
       );
     }
@@ -398,6 +400,7 @@ function EmbedViewerSurface(props: {
         resetKey={props.retryKey}
         onPhaseChange={props.onPhaseChange}
       />
+      <MadeWithKernelcad surface="embed" className="absolute bottom-2 left-2" />
       {props.statusMessage ? (
         <div
           className="absolute inset-x-0 bottom-0 p-4 flex flex-col items-center gap-2 pointer-events-none"

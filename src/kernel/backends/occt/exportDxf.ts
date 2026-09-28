@@ -20,7 +20,8 @@
 //   - `BEND`  — bend lines (always declared, even when empty). Downstream
 //     CAM tooling indexes by layer name, so both layers must exist.
 //
-// Header `999` comments carry: (a) `kernelcad <version> <iso-date>` matching
+// Header `999` comments carry: (a) `kernelCAD <version> (https://kernelcad.com)
+// <iso-date>` (shared/links/attribution.ts) matching
 // the STL header convention, and (b) the OCCT tessellation tolerance recorded
 // in mm. `$INSUNITS = 4` (mm) by default; `5` (cm) and `1` (in) when the
 // caller picks them via `options.unit`.
@@ -31,6 +32,7 @@ import type {
   Vec2,
   BendLineRecord,
 } from '../../../shared/intent/region';
+import { attributionGenerator } from '../../../shared/links/attribution';
 
 const requireFromHere = createRequire(import.meta.url);
 // At source: src/kernel/backends/occt/exportDxf.ts → ../../../../package.json (4 up)
@@ -90,7 +92,7 @@ export function exportDxf(input: DxfInput, options: DxfWriterOptions): Uint8Arra
   const lines: string[] = [];
 
   // Header comments (group code 999) — top-of-file provenance.
-  lines.push('999', `kernelcad ${KERNELCAD_VERSION} ${isoDate}`);
+  lines.push('999', `${attributionGenerator(KERNELCAD_VERSION)} ${isoDate}`);
   lines.push('999', `tolerance: ${tolerance} mm (OCCT tessellation)`);
 
   // HEADER section

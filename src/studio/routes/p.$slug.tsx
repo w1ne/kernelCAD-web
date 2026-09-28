@@ -3,6 +3,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useCallback, useState, type ReactNode } from 'react';
 import App from '../App';
+import { MadeWithKernelcad } from '../components/MadeWithKernelcad';
 import { ProjectClaimControl } from './-ProjectClaimControl';
 import { ProjectViewerActions } from './-ProjectViewerActions';
 import { ServerRevisionHistory } from './-ServerRevisionHistory';
@@ -121,12 +122,15 @@ function ProjectPage() {
   );
 
   return (
-    <App
-      initialCode={project.current_code}
-      liveCode={liveCode}
-      viewerMode
-      headerLeft={headerLeft}
-      headerRight={headerRight ?? undefined}
-    />
+    <>
+      <App
+        initialCode={project.current_code}
+        liveCode={liveCode}
+        viewerMode
+        headerLeft={headerLeft}
+        headerRight={headerRight ?? undefined}
+      />
+      <MadeWithKernelcad surface="share" />
+    </>
   );
 }
