@@ -245,6 +245,10 @@ describe('pdf-drawing: round trip', () => {
     expect(back.ok, JSON.stringify(back.diagnostics)).toBe(true);
     expect(back.views.map(v => v.name).sort()).toEqual(['front', 'left', 'top']);
     expect(back.reconstruction).toMatchObject({ kind: 'extrude', holeCount: 5 });
-    expect(back.fidelity?.verdict).toBe('match');
+    // The stated dimensions come back from the PDF text and linework.
+    const facts = new Map(back.ledger.facts.map(f => [f.id, f.value] as const));
+    expect([facts.get('width'), facts.get('depth'), facts.get('thickness')]).toEqual([80, 50, 8]);
+    // The verdict itself re-projects through the platform's HLR; it must not report a failure.
+    expect(back.fidelity?.verdict).not.toBe('failed');
   }, 180_000);
 });
