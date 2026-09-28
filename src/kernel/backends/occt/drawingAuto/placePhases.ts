@@ -11,7 +11,6 @@ import { viewBasis } from '../drawingProjection';
 import { datumRendered, FALLBACK_FRACTIONS, fcfLineCandidates, fcfRendered, noteCandidates } from './candidates';
 import { flatnessFor } from './iso2768';
 import { FAR_STEMS, fallbackAngles, leaderCallout, orderedAngles, STEMS } from './placement';
-import type { Rendered } from './placement';
 import { choose, commit, outwardAngle, toSheet } from './renderContext';
 import type { Candidate, RenderCtx } from './renderContext';
 import { edgeOnLines, viewAlong } from './views';
