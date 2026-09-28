@@ -23,7 +23,7 @@ the leaderboard is a separate, manual decision.
 | Task | Steps |
 |---|---|
 | generation | drawing PNG(s) + prompt → LLM writes `.kcad.ts` → STEP export → validity pre-check |
-| editing | `input.step` + `inspect_step` summary + renders + change request → LLM writes `.kcad.ts` that calls `lib.fromSTEP('./input.step')` → STEP export → validity pre-check |
+| editing | `input.step` + `inspect({ of: 'step' })` summary + renders + change request → LLM writes `.kcad.ts` that calls `lib.fromSTEP('./input.step')` → STEP export → validity pre-check |
 
 - The closed loop (`src/agent/loop/closedLoop.ts`) repairs failures. An
   export error or a failed validity check (open shell, non-manifold mesh,

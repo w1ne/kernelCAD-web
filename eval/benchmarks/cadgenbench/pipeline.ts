@@ -5,7 +5,7 @@
 // One CADGenBench task → one `output.step` candidate.
 //
 //   generation: drawing image(s) → LLM writes a .kcad.ts → gate → STEP
-//   editing:    input.step (+ inspect_step summary + renders) → LLM writes a
+//   editing:    input.step (+ inspect({ of: 'step' }) summary + renders) → LLM writes a
 //               .kcad.ts that imports it via lib.fromSTEP and applies the
 //               change → gate → STEP
 //
