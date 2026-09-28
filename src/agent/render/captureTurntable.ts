@@ -167,59 +167,80 @@ async function frameLoop(args: {
   return { written };
 }
 
+/** Render surface + demo-player page with the model (and publish stage). */
+async function openTurntablePage(
+  opts: CaptureTurntableOpts,
+  deps: CaptureTurntableDeps,
+  meshed: Awaited<ReturnType<typeof meshForHeadlessRender>>,
+  track: { surface?: ResolvedRenderBase; handle?: DemoPlayerPageHandle },
+): Promise<DemoPlayerPageHandle> {
+  track.surface = await (deps.resolveBaseUrl ?? resolveRenderBaseUrl)(opts.baseUrl);
+  const openPage = deps.openPage ?? openRenderPage;
+  const opened = await openPage(
+    {
+      scriptPath: opts.scriptPath, viewportWidth: opts.width, viewportHeight: opts.height, noWatermark: true,
+      ...(opts.publish !== undefined ? { publish: opts.publish } : {}),
+      ...(opts.objectFilter !== undefined ? { objectFilter: opts.objectFilter } : {}),
+      ...(opts.environment !== undefined ? { environment: opts.environment } : {}),
+    },
+    track.surface.baseUrl, meshed.serialized, meshed.meshing,
+  );
+  track.handle = opened.pageHandle;
+  return opened.pageHandle;
+}
+
+/** Abort-path ffmpeg cleanup (same contract as the animation engine): end
+ *  stdin, kill, wait bounded, delete the partial video. */
+function ffmpegAborter(state: { ffmpeg?: FfmpegProcessLike }, outPath: string): () => Promise<void> {
+  return async () => {
+    const proc = state.ffmpeg;
+    if (!proc) return;
+    state.ffmpeg = undefined;
+    try { proc.stdin.end(); } catch { /* already closed */ }
+    try { proc.kill('SIGKILL'); } catch { /* already exited */ }
+    await waitFfmpegCloseBounded(proc, 1500);
+    await rm(outPath, { force: true }).catch(() => undefined);
+  };
+}
+
+function resolveTurntablePaths(opts: CaptureTurntableOpts): { scriptPath: string; framesDir: string | undefined; outPath: string } {
+  const scriptPath = resolve(opts.scriptPath);
+  const framesDir = opts.framesDir !== undefined ? resolve(opts.framesDir) : undefined;
+  const outPath = framesDir ?? resolve(opts.outPath ?? defaultTurntableOutPath(scriptPath));
+  return { scriptPath, framesDir, outPath };
+}
+
 /** Capture a seamless 360° turntable of the script's model. */
 export async function captureTurntable(
   opts: CaptureTurntableOpts,
   deps: CaptureTurntableDeps = {},
 ): Promise<CaptureAnimationResult> {
-  const scriptPath = resolve(opts.scriptPath);
-  const framesDir = opts.framesDir !== undefined ? resolve(opts.framesDir) : undefined;
-  const outPath = framesDir ?? resolve(opts.outPath ?? defaultTurntableOutPath(scriptPath));
+  const { scriptPath, framesDir, outPath } = resolveTurntablePaths(opts);
   const run = { ...opts, scriptPath };
   const stashedWarns: CompilerDiagnostic[] = [];
 
   const meshResult = await meshPhase(run, deps.mesh ?? meshForHeadlessRender);
   if ('failure' in meshResult) return meshResult.failure;
 
-  let ffmpeg: FfmpegProcessLike | undefined;
-  let handle: DemoPlayerPageHandle | undefined;
-  let surface: ResolvedRenderBase | undefined;
-  const abortFfmpeg = async (): Promise<void> => {
-    if (!ffmpeg) return;
-    const proc = ffmpeg;
-    ffmpeg = undefined;
-    try { proc.stdin.end(); } catch { /* already closed */ }
-    try { proc.kill('SIGKILL'); } catch { /* already exited */ }
-    await waitFfmpegCloseBounded(proc, 1500);
-    await rm(outPath, { force: true }).catch(() => undefined);
-  };
+  const enc: { ffmpeg?: FfmpegProcessLike } = {};
+  const track: { surface?: ResolvedRenderBase; handle?: DemoPlayerPageHandle } = {};
+  const abortFfmpeg = ffmpegAborter(enc, outPath);
   try {
     if (framesDir === undefined) await mkdir(dirname(outPath), { recursive: true });
     const encoder = await startEncoderPhase(
       framesDir, outPath, opts.fps, deps.spawnFfmpeg ?? defaultSpawnFfmpeg, opts.durationMs, stashedWarns, noVerify,
     );
     if ('failure' in encoder) return encoder.failure;
-    ffmpeg = encoder.ffmpeg;
+    enc.ffmpeg = encoder.ffmpeg;
 
-    surface = await (deps.resolveBaseUrl ?? resolveRenderBaseUrl)(opts.baseUrl);
-    const opened = await (deps.openPage ?? openRenderPage)(
-      {
-        scriptPath, viewportWidth: opts.width, viewportHeight: opts.height, noWatermark: true,
-        ...(opts.publish !== undefined ? { publish: opts.publish } : {}),
-        ...(opts.objectFilter !== undefined ? { objectFilter: opts.objectFilter } : {}),
-        ...(opts.environment !== undefined ? { environment: opts.environment } : {}),
-      },
-      surface.baseUrl, meshResult.meshed.serialized, meshResult.meshed.meshing,
-    );
-    handle = opened.pageHandle;
-
+    const handle = await openTurntablePage(run, deps, meshResult.meshed, track);
     const loop = await frameLoop({
-      opts: run, handle, ffmpeg, framesDir, captureTile: deps.captureTile ?? capturePublishTile, abortFfmpeg, stashedWarns,
+      opts: run, handle, ffmpeg: enc.ffmpeg, framesDir, captureTile: deps.captureTile ?? capturePublishTile, abortFfmpeg, stashedWarns,
     });
     if ('failure' in loop) return loop.failure;
 
     const finalFailure = await finalizeCapturePhase({
-      framesDir, ffmpeg, clearFfmpeg: () => { ffmpeg = undefined; }, outPath, written: loop.written,
+      framesDir, ffmpeg: enc.ffmpeg, clearFfmpeg: () => { enc.ffmpeg = undefined; }, outPath, written: loop.written,
       durationMs: opts.durationMs, fps: opts.fps, stashedWarns, verifyFields: noVerify, onProgress: opts.onProgress ?? (() => undefined),
     });
     if (finalFailure) return finalFailure;
@@ -232,7 +253,7 @@ export async function captureTurntable(
       0, opts,
     );
   } finally {
-    if (handle) await handle.close();
-    if (surface) await surface.close();
+    if (track.handle) await track.handle.close();
+    if (track.surface) await track.surface.close();
   }
 }
