@@ -6,6 +6,7 @@ import type { GeometryResult } from "../../../../shared/worker/geometryEngine";
 import { CAD_COLORS_HEX } from "../../../../shared/constants/colors";
 import { FaceSelectionOverlay } from "../entities/ShapeGeometry";
 import { matrixFromGeometryTransform } from "../entities/geometryTransform";
+import { EdgeRangeLines } from "./EdgeRangeLines";
 
 interface HighlightOverlayProps {
     hovered: HoverResult | null;
@@ -34,6 +35,17 @@ export function HighlightOverlay({ hovered, geometries }: HighlightOverlayProps)
             }
         }
     } else if (type === 'EDGE') {
+        if (object.userData.edgeRanges && object instanceof THREE.LineSegments) {
+            return (
+                <EdgeRangeLines
+                    positions={object.geometry.getAttribute('position').array as Float32Array}
+                    edgeRanges={object.userData.edgeRanges as number[]}
+                    edgeIndex={id as number}
+                    matrix={object.matrixWorld}
+                    color={CAD_COLORS_HEX.highlight}
+                />
+            );
+        }
         if (object instanceof THREE.Line || object instanceof THREE.LineSegments) {
             return (
                 <lineSegments

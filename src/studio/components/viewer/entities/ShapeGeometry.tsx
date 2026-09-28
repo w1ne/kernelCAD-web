@@ -7,13 +7,35 @@ import type { GeometryResult, FaceGeometry } from "../../../../shared/worker/geo
 import type { ViewMode3D } from "../../../../shared/types/viewMode";
 import { useWorkbench } from "../../../context/WorkbenchContext";
 import { useUI } from "../../../context/UIContext";
-import { CAD_COLORS, CAD_COLORS_HEX } from "../../../../shared/constants/colors";
+import { CAD_COLORS, CAD_COLORS_HEX, faceOverlayColor } from "../../../../shared/constants/colors";
 import { useConsolidatedGeometry } from "../../../hooks/viewer/useConsolidatedGeometry";
 import { DEFAULT_COLOR, resolveColor } from "../../../../shared/render/palette";
 import { buildShapeMaterial } from "./buildShapeMaterial";
 import { matrixFromGeometryTransform } from "./geometryTransform";
+import { selectionCodeStore } from "../../../selectionCode/selectionCodeStore";
+import { pickOwner, type GeometryPick } from "../../../selectionCode/geometryLineage";
 
 const EMPTY_PLANES: THREE.Plane[] = [];
+
+/** Geometry → code: publish the clicked face — or the hovered edge of this
+ *  shape, which wins when the pointer is on an edge — with the feature that
+ *  created it. */
+function linkClickToCode(
+    geometry: GeometryResult,
+    shapeIndex: number,
+    faceId: number,
+    nativeEvent: MouseEvent,
+): void {
+    const hovered = selectionCodeStore.getPreselect();
+    const pick: GeometryPick = hovered && hovered.kind === 'edge' && hovered.shapeIndex === shapeIndex
+        ? hovered
+        : { shapeIndex, kind: 'face', id: faceId };
+    selectionCodeStore.linkFromGeometry(
+        pick,
+        pickOwner(geometry, pick),
+        { x: nativeEvent.offsetX, y: nativeEvent.offsetY },
+    );
+}
 
 interface ShapeProps {
     geometry: GeometryResult;
@@ -81,7 +103,7 @@ export function FaceSelectionOverlay({ face, isSelected }: { face?: FaceGeometry
     return (
         <mesh geometry={geometry} renderOrder={1001}>
             <meshBasicMaterial
-                color={CAD_COLORS.selection}
+                color={faceOverlayColor(isSelected)}
                 transparent={!isSelected}
                 opacity={isSelected ? 1.0 : 0.3}
                 depthTest={true}
@@ -147,6 +169,7 @@ export function ConsolidatedShape({
 
         setSelectedFace({ shapeIndex, faceId });
         if (name) setSelectedItemId(name);
+        linkClickToCode(geometry, shapeIndex, faceId, e.nativeEvent);
 
         const x = e.nativeEvent.clientX;
         const y = e.nativeEvent.clientY;
@@ -155,7 +178,7 @@ export function ConsolidatedShape({
             position: { x, y },
             type: 'FACE'
         });
-    }, [name, shapeIndex, setSelectedFace, setSelectedSketchName, setSelectedItemId, toggleSelection, setContextMenu]);
+    }, [geometry, name, shapeIndex, setSelectedFace, setSelectedSketchName, setSelectedItemId, toggleSelection, setContextMenu]);
 
     const resolvedColor = resolveColor(geometry.color) ?? DEFAULT_COLOR;
     const color = isSelected ? CAD_COLORS.selection : resolvedColor;
@@ -182,7 +205,13 @@ export function ConsolidatedShape({
                 // faces in black; in wireframe mode they ARE the shape (faces
                 // are ghosted by buildShapeMaterial), drawn in the body colour
                 // so they read against the viewport background.
-                <lineSegments geometry={edgesGeo} renderOrder={500}>
+                <lineSegments
+                    geometry={edgesGeo}
+                    renderOrder={500}
+                    // Pickable BREP edges: `edgeRanges` maps a raycast hit
+                    // to one edge (HoverManager / HighlightOverlay).
+                    userData={geometry.edgeRanges ? { type: 'EDGE', id: 'edges', shapeIndex, edgeRanges: geometry.edgeRanges, ownerId: name } : {}}
+                >
                     <lineBasicMaterial
                         color={viewMode3D === 'wireframe' ? color : 0x000000}
                         clippingPlanes={clippingPlanes ?? EMPTY_PLANES}
