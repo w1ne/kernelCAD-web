@@ -9,15 +9,10 @@
 // in a `finally` (direct write + sha256) so a failed assertion never leaves
 // the repo dirty.
 //
-// AgentRail limitation: the staged-edit card (and its `staged-edit-approve`
-// button) lives inside AgentRail, which StudioShell mounts only when Supabase
-// auth is configured AND a session exists (`agentEnabled`). This suite runs
-// against the plain local dev server (no auth), and there is no e2e
-// precedent for seeding a signed-in session without real test-user
-// credentials — `connectClaudeDesktop.spec.ts` skips exactly that branch.
-// So acceptance is driven through the DEV hook's returned `StagedEdit` plus
-// the same `/__kernelcad/source` PUT that the Accept handler issues; the
-// button wiring itself is unit-covered in `StagedEditSlot.test.tsx`.
+// Acceptance is driven through the DEV hook's returned `StagedEdit` plus the
+// same `/__kernelcad/source` PUT that the Approve handler issues; the button
+// wiring (card in the viewport's DirectEditPanel) is unit-covered in
+// `StagedEditSlot.test.tsx` and `directEditSave.integration.test.tsx`.
 
 import { test, expect } from '@playwright/test';
 import { createHash } from 'node:crypto';
@@ -83,8 +78,7 @@ test('drag slider +30mm: stages PX rewrite, accept clears interference, file res
             { timeout: 60_000 },
         );
 
-        // The staged-edit card is not mounted in the unauthenticated dev
-        // shell (see the header note); the hook is the observable surface.
+        // Nothing is staged yet, so the review card is not shown.
         await expect(page.getByTestId('staged-edit-slot')).toHaveCount(0);
 
         // ---- Drive the drag through the DEV hook (same commit path). ------
