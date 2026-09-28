@@ -41,7 +41,10 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
         'Use this when you need to export geometry to a file. One exporter, selected by `target`:\n' +
         "- target:'model' — export the script geometry to one file. Pass { file | code }, a required { output_path }, and { format }. " +
         'Supported formats: stl (binary STL mesh), step (BREP CAD interchange), dxf (planar laser/waterjet profile from a Region or planar face), ' +
-        '3mf (slicer-friendly mesh with per-part colors), glb (web-viewer / AR with PBR materials), ' +
+        "3mf (slicer-friendly mesh: one named object per part, colours as core-spec basematerials named by the part's engineering material; " +
+        "options.arrange 'plate' packs parts on the bed at Z=0 without overlap (options.orient puts each part's largest flat face down), 'assembled' keeps them together as one multi-part object for multi-colour prints; " +
+        "options.slicer 'bambu' | 'orca' | 'prusa' adds that slicer's per-object name + filament-slot sidecar — slot N is the Nth distinct colour/material), " +
+        'glb (web-viewer / AR with PBR materials), ' +
         'svg-drawing (third-angle engineering-drawing sheet: front/top/left + isometric views, hidden edges dashed, tangent edges thin, ' +
         'overall bounding-box dimensions, title block; assemblies are drawn with inter-part occlusion; pass options.annotations to dimension specific features instead of the bounding box; ' +
         'pass options.exploded { factor, mode } to explode the isometric cell, options.balloons to number parts from the BOM, and options.partsList for an item/name/qty/material table above the title block). ' +
@@ -62,7 +65,7 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
         'STL exports run a watertight verify by default; failures return ok: false with export.mesh.not-watertight ' +
         '(open-edge count + up to 5 crack-cluster locations) but the file is still written so the broken mesh can be inspected. ' +
         'Optional { feature_id } selects which feature to export (default: last). ' +
-        'Optional { options } carries per-format options bag (see the kernelcad-mcp skill for the per-format keys: dxf layers/tolerance/unit, 3mf printUnit/embedSource, glb axis/draco).\n' +
+        'Optional { options } carries per-format options bag (see the kernelcad-mcp skill for the per-format keys: dxf layers/tolerance/unit, 3mf printUnit/embedSource/arrange/orient/slicer/printer, glb axis/draco).\n' +
         "- target:'part' — export solved-assembly parts as individual binary STL files in their modeled (world-frame) positions. " +
         'Pass { file | code }, plus { part, output_path } for one part or { output_dir } for all parts ' +
         '(files land at <output_dir>/<part>.stl). A watertight verify runs on every exported mesh by default ' +
@@ -90,7 +93,7 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
             description:
               "target:'model' — optional per-format options bag. Discriminator options.format must equal top-level format. " +
               'dxf: { layers?, unit?: "mm"|"cm"|"in", tolerance? }. ' +
-              '3mf: { printUnit?: "mm"|"cm"|"in", embedSource? }. ' +
+              '3mf: { printUnit?: "mm"|"cm"|"in", embedSource?, arrange?: "none"|"plate"|"assembled", orient?: boolean, slicer?: "generic"|"bambu"|"orca"|"prusa", printer?: bed profile (default "generic-fdm") }. ' +
               'glb: { axis?: "y-up"|"z-up", draco?: false }. ' +
               'svg-drawing: { sheet?: "a4"|"a3" (or any pdf-drawing sheet), projection?, titleBlock?: { title?, partName?, material?, revision? }, modelName?, date?, annotations?, exploded?: { factor, mode? }, balloons?, partsList?, sections?, autoAnnotate? }. ' +
               'svg-drawing annotations is an array of authored dimensions/notes, each '

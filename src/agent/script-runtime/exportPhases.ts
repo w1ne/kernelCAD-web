@@ -415,7 +415,7 @@ export async function exportScene3mf(
   const opts3mf = (input.options as Export3mfOptions | undefined) ?? { format: '3mf' };
   try {
     const worldParts = sceneToWorldFrameParts(scene);
-    const bytes = await export3mfAsync(worldParts, opts3mf);
+    const bytes = await export3mfAsync(worldParts, { assemblyName: scene.assemblyName, ...opts3mf });
     return { bytes, featureCount, diagnostics };
   } catch (e) {
     const notWatertight = notWatertightDiagnostic(e, diagnostics, featureCount, targetId);

@@ -616,7 +616,10 @@ export function recordPartInternal(
     : [];
   mergeCatalogConnectors(connectors, transformedCatalogConnectors, shape.id);
   const at = resolvePartPlacement(state.name, name, shape.id, opts.at, connectors, opts.connect);
-  const record = state.session.assemblyPart(state.name, name, shape, { at, connectors, placedBy: opts.connect });
+  const record = state.session.assemblyPart(state.name, name, shape, {
+    at, connectors, placedBy: opts.connect,
+    ...(resolvedMaterial !== undefined ? { materialName: resolvedMaterial.name } : {}),
+  });
   // Q1.5: write the part-lineage entry now that the capture-session has
   // minted the `assemblyPart` FeatureRecord. The lineage's `featureId`
   // is the same id the FeatureRecord carries — anchors part-level Query

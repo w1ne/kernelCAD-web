@@ -716,6 +716,7 @@ export class CaptureSession {
       at?: Vec3Param;
       connectors?: Record<string, AssemblyConnectorFrameStored>;
       placedBy?: AssemblyPartOpts['connect'];
+      materialName?: string;
     } = {},
   ): FeatureRecord {
     return this.register(createAssemblyPartCaptureSpec(this.records, assemblyName, partName, shape.id, opts));

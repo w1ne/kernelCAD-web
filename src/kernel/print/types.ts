@@ -27,6 +27,9 @@ export interface UploadRequest {
   accessCode?: string;
   /** Printer serial number, required to address the MQTT print command. */
   serial?: string;
+  /** Model 3MF (from `export` format '3mf') to carry the sliced G-code:
+   *  the upload becomes this 3MF plus `Metadata/plate_1.gcode`. */
+  model3mf?: Uint8Array;
 }
 
 export type UploadOutcome =

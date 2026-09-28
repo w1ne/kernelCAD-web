@@ -103,7 +103,10 @@ send_to_printer({
 - `bambu-lan` — Bambu Lab LAN mode: FTPS implicit-TLS upload on port 990
   (user `bblp`, password = the printer's LAN access code), then an MQTT
   print-start command on port 8883. Requires `access_code` and (unless
-  `start_print: false`) `serial`.
+  `start_print: false`) `serial`. The printer prints 3MF projects, so the
+  upload is a `.gcode.3mf`: the G-code as `Metadata/plate_1.gcode` inside
+  the model 3MF passed as `model_3mf_path: 'part.3mf'` (export format `'3mf'` with
+  `{ arrange: 'plate', slicer: 'bambu' }`), or inside a minimal 3MF shell.
 
 Always try `{ dry_run: true }` first when talking to unfamiliar hardware —
 it validates connectivity/auth without uploading or starting a print.
@@ -112,6 +115,23 @@ auth) or `tool.send-to-printer.upload-failed` (connected, but the upload
 or print-start command was rejected).
 
 CLI equivalent: `kernelcad print send <gcode-file> --protocol <p> --host <h> ...`
+
+## Opening it in a slicer yourself: slicer-ready 3MF
+
+For multi-colour / multi-material parts, or when a human slices, export a
+3MF instead of G-code:
+
+```
+export({ target: 'model', file: 'keycap.kcad.ts', format: '3mf', output_path: 'keycap.3mf',
+  options: { format: '3mf', arrange: 'assembled', slicer: 'bambu' } })
+```
+
+`arrange: 'plate'` lays separate parts out on the bed (Z=0, no overlap;
+`orient: true` puts each part's largest flat face down); `arrange:
+'assembled'` keeps an inlay in place as one multi-part object. `slicer`
+writes the per-object filament slot (slot N = Nth distinct colour); pick
+the filament colours in the slicer. See the `slicer-ready-3mf` cookbook
+snippet.
 
 ## Full loop example
 

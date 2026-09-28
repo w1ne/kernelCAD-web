@@ -55,7 +55,20 @@ export type ExportOptions =
   | { format: 'stl'; verify?: boolean }
   | { format: 'step'; unit?: 'mm' | 'cm' | 'in' }
   | { format: 'dxf'; layers?: DxfLayerSpec[]; unit?: 'mm' | 'cm' | 'in'; tolerance?: number }
-  | { format: '3mf'; printUnit?: 'mm' | 'cm' | 'in'; embedSource?: boolean }
+  | {
+      format: '3mf';
+      printUnit?: 'mm' | 'cm' | 'in';
+      embedSource?: boolean;
+      /** Bed layout: 'none' (default, modelled positions), 'plate' (packed,
+       *  each part on Z=0), 'assembled' (one multi-part object on Z=0). */
+      arrange?: 'none' | 'plate' | 'assembled';
+      /** arrange 'plate': largest flat face down per part. */
+      orient?: boolean;
+      /** Slicer project sidecar: per-object name + filament slot. */
+      slicer?: 'generic' | 'bambu' | 'orca' | 'prusa';
+      /** Bed profile for arrange; default 'generic-fdm'. */
+      printer?: string;
+    }
   | { format: 'glb'; axis?: 'y-up' | 'z-up'; draco?: false }
   | {
       format: 'svg-drawing';

@@ -41,6 +41,24 @@ describe('send_to_printer MCP tool', () => {
     expect(r.error).toMatch(/gcode_path/);
   });
 
+  it('rejects model_3mf_path for a protocol other than bambu-lan', async () => {
+    const r = await sendToPrinterTool({
+      gcode_path: gcodePath, protocol: 'octoprint', host: '127.0.0.1', port, api_key: 'k', dry_run: true,
+      model_3mf_path: gcodePath,
+    });
+    expect(r.ok).toBe(false);
+    expect(r.error).toMatch(/model_3mf_path applies to protocol 'bambu-lan' only/);
+  });
+
+  it('rejects an unreadable model_3mf_path', async () => {
+    const r = await sendToPrinterTool({
+      gcode_path: gcodePath, protocol: 'bambu-lan', host: '127.0.0.1', access_code: 'x', dry_run: true,
+      model_3mf_path: '/nonexistent/model.3mf',
+    });
+    expect(r.ok).toBe(false);
+    expect(r.error).toMatch(/Cannot read model_3mf_path/);
+  });
+
   it('rejects a nonexistent gcode_path', async () => {
     const r = await sendToPrinterTool({ gcode_path: '/nonexistent/file.gcode', protocol: 'octoprint', host: '127.0.0.1' });
     expect(r.ok).toBe(false);

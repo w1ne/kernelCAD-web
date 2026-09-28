@@ -12,6 +12,9 @@ export const printToolEntries: ToolRegistryEntry[] = [
         "protocol: 'octoprint' (POST /api/files/local with an X-Api-Key), 'moonraker' (Klipper's POST /server/files/upload), " +
         "or 'bambu-lan' (Bambu Lab LAN-mode: FTPS implicit-TLS upload on port 990 as user 'bblp' with the printer's LAN access code, " +
         'then an MQTT print-start command on port 8883 — requires access_code and, unless start_print is false, serial). ' +
+        "bambu-lan uploads a .gcode.3mf print project (the printer prints 3MF projects, not bare G-code): the G-code goes in as Metadata/plate_1.gcode, " +
+        "inside the model 3MF from export format '3mf' when model_3mf_path is given (use options { arrange: 'plate', slicer: 'bambu' } so the printer shows the same named, coloured parts), else inside a minimal 3MF shell; " +
+        "the file name always ends in .3mf ('part.gcode' -> 'part.gcode.3mf'). " +
         'Pass { dry_run: true } to validate connectivity/authentication only, without uploading or starting a print. ' +
         'Never logs or echoes api_key/access_code.',
       inputSchema: {
@@ -24,7 +27,8 @@ export const printToolEntries: ToolRegistryEntry[] = [
           api_key: { type: 'string', description: "OctoPrint API key (Settings -> API)." },
           access_code: { type: 'string', description: 'Bambu LAN-mode access code (printer settings -> LAN Only Mode).' },
           serial: { type: 'string', description: 'Bambu printer serial number (required to start a print unless start_print is false).' },
-          filename: { type: 'string', description: "Uploaded file name (default: 'kernelcad.gcode')." },
+          model_3mf_path: { type: 'string', description: "bambu-lan only: model .3mf from export format '3mf' to package the G-code into (the uploaded .gcode.3mf)." },
+          filename: { type: 'string', description: "Uploaded file name (default: 'kernelcad.gcode'; bambu-lan appends '.3mf')." },
           start_print: { type: 'boolean', description: 'Start the print immediately after upload (default: true).' },
           dry_run: { type: 'boolean', description: 'Validate connectivity/auth only; never uploads or starts a print.' },
         },
