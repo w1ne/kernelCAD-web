@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { sendToPrinterTool } from '../tools/sendToPrinter';
+import { PRINTER_PROFILE_IDS } from '../../../kernel/export/gcode/printerProfiles';
 import type { ToolRegistryEntry } from './types';
 
 export const printToolEntries: ToolRegistryEntry[] = [
@@ -15,6 +16,8 @@ export const printToolEntries: ToolRegistryEntry[] = [
         "bambu-lan uploads a .gcode.3mf print project (the printer prints 3MF projects, not bare G-code): the G-code goes in as Metadata/plate_1.gcode, " +
         "inside the model 3MF from export format '3mf' when model_3mf_path is given (use options { arrange: 'plate', slicer: 'bambu' } so the printer shows the same named, coloured parts), else inside a minimal 3MF shell; " +
         "the file name always ends in .3mf ('part.gcode' -> 'part.gcode.3mf'). " +
+        'Optional printer (a bundled profile id, the same ids as the export 3mf/gcode options.printer) is checked against protocol before anything is read or sent: ' +
+        "an unknown id is refused with the list of valid ids, 'bambu-lan' needs a Bambu Lab profile and a Bambu Lab profile needs 'bambu-lan'. " +
         'Pass { dry_run: true } to validate connectivity/authentication only, without uploading or starting a print. ' +
         'Never logs or echoes api_key/access_code.',
       inputSchema: {
@@ -28,6 +31,11 @@ export const printToolEntries: ToolRegistryEntry[] = [
           access_code: { type: 'string', description: 'Bambu LAN-mode access code (printer settings -> LAN Only Mode).' },
           serial: { type: 'string', description: 'Bambu printer serial number (required to start a print unless start_print is false).' },
           model_3mf_path: { type: 'string', description: "bambu-lan only: model .3mf from export format '3mf' to package the G-code into (the uploaded .gcode.3mf)." },
+          printer: {
+            type: 'string',
+            enum: [...PRINTER_PROFILE_IDS],
+            description: "Printer profile id; checked against protocol before upload. List them with 'kernelcad print printers'.",
+          },
           filename: { type: 'string', description: "Uploaded file name (default: 'kernelcad.gcode'; bambu-lan appends '.3mf')." },
           start_print: { type: 'boolean', description: 'Start the print immediately after upload (default: true).' },
           dry_run: { type: 'boolean', description: 'Validate connectivity/auth only; never uploads or starts a print.' },

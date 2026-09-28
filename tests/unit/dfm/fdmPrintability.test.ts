@@ -285,6 +285,10 @@ describe('FDM printability check', () => {
     `);
     const d = report.diagnostics.find(x => x.code === 'dfm.fdm.exceeds-bed')!;
     expect(d.hint).toMatch(/No axis-aligned orientation fits this bed/);
+    // ...and names the smallest bundled profiles it fits on as printed.
+    expect(d.hint).toContain(
+      "Fits on: Voron 2.4 (300 mm) ('voron-2.4-300'), Creality K1 Max ('creality-k1-max'), Bambu Lab H2D ('bambu-h2d').",
+    );
   }, 60000);
 
   it('analyzes the declared build direction', async () => {
