@@ -96,12 +96,6 @@ export const OUT_OF_SCOPE_CLAIMS: readonly OutOfScopeClaim[] = [
     ],
   },
   {
-    id: 'multi-view-pdf',
-    claim:
-      "Multi-view PDF sheets — deferred; `export({ format: 'svg-drawing' })` ships an SVG sheet instead",
-    probes: [{ kind: 'enum-absent', tool: 'export', property: 'format', value: 'pdf' }],
-  },
-  {
     id: 'feature-level-dimensioning',
     claim:
       'Param-bound (auto-updating) dimensions on `svg-drawing` — deferred; dimensions DO ship ' +

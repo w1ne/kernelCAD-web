@@ -13,7 +13,7 @@ import type { Box, Seg } from '../drawingObstacles';
 import type { AutoDrawingInput } from './contracts';
 import { POSITION_ZONE } from './iso2768';
 import { CHAR_W, TEXT_H, textBox } from './placement';
-import { HOLE_SIDES, commit, holeKey, holeLabel, toSheet } from './renderContext';
+import { commit, dimensionSides, holeKey, holeLabel, toSheet } from './renderContext';
 import type { HoleGroup, LinearItem, RenderCtx } from './renderContext';
 import { STANDARD_VIEWS, viewAlong } from './views';
 import { cross, dot, len, sub } from './vectors';
@@ -117,7 +117,8 @@ function holePositionItemsForView(
     const axisIdx = holeAxisIndex(b, screen);
     const ref = holeReferenceCoord(ctx.datums, bb, axisIdx);
     const coords = uniqueHoleCoords(holes, axisIdx, ref);
-    const side = screen === 'x' ? HOLE_SIDES[view].horizontal : HOLE_SIDES[view].vertical;
+    const sides = dimensionSides(ctx.input.projection)[view];
+    const side = screen === 'x' ? sides.horizontal : sides.vertical;
     const box = ctx.views[view].placement.box;
     for (const c of coords) {
       const hole = holes.find(h => Math.abs(h.entry[axisIdx] - c) < 0.01)!;
@@ -175,10 +176,15 @@ export function collectLinearDimensions(ctx: RenderCtx): LinearItem[] {
   if (opts.enabled && include.has('overall')) {
     const f = views.front.placement.box;
     const t = views.top.placement.box;
+    const sides = dimensionSides(ctx.input.projection);
+    const fw = sides.front.horizontal, fh = sides.front.vertical, td = sides.top.vertical;
+    const fy = fw === 'top' ? f.y : f.y + f.h;
+    const fx = fh === 'left' ? f.x : f.x + f.w;
+    const tx = td === 'left' ? t.x : t.x + t.w;
     linear.push(
-      { kind: 'overall', view: 'front', side: 'bottom', from: [f.x, f.y + f.h], to: [f.x + f.w, f.y + f.h], label: formatDimValue(bb.max[0] - bb.min[0]), order: Infinity },
-      { kind: 'overall', view: 'front', side: 'right', from: [f.x + f.w, f.y], to: [f.x + f.w, f.y + f.h], label: formatDimValue(bb.max[2] - bb.min[2]), order: Infinity },
-      { kind: 'overall', view: 'top', side: 'left', from: [t.x, t.y], to: [t.x, t.y + t.h], label: formatDimValue(bb.max[1] - bb.min[1]), order: Infinity },
+      { kind: 'overall', view: 'front', side: fw, from: [f.x, fy], to: [f.x + f.w, fy], label: formatDimValue(bb.max[0] - bb.min[0]), order: Infinity },
+      { kind: 'overall', view: 'front', side: fh, from: [fx, f.y], to: [fx, f.y + f.h], label: formatDimValue(bb.max[2] - bb.min[2]), order: Infinity },
+      { kind: 'overall', view: 'top', side: td, from: [tx, t.y], to: [tx, t.y + t.h], label: formatDimValue(bb.max[1] - bb.min[1]), order: Infinity },
     );
   }
   const buckets = new Map<string, LinearItem[]>();

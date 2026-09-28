@@ -57,6 +57,12 @@ export interface ExportInput {
   explodeMode?: string;
   balloons?: boolean;
   partsList?: boolean;
+  /** pdf-drawing sheet and title-block flags (`--sheet`, `--projection`, …). */
+  sheet?: string;
+  projection?: string;
+  title?: string;
+  revision?: string;
+  material?: string;
   /** Per-format options bag (the MCP export tool's `options`); `format` is
    *  filled in from the positional format when omitted. */
   options?: Record<string, unknown>;
@@ -68,7 +74,7 @@ export interface ExportCliResult {
   diagnostics: CompilerDiagnostic[];
   /** Companion mesh files written next to the output (URDF / SDF exports). */
   meshFiles?: string[];
-  /** svg-drawing placement report. */
+  /** svg-drawing / pdf-drawing placement report. */
   drawingReport?: DrawingReport;
 }
 
@@ -411,12 +417,26 @@ async function prepareExportTargets(input: ExportInput): Promise<ExportTargetRes
   return { ok: true, outPath, trustedManifestOutput };
 }
 
+/** pdf-drawing sheet / title-block flags, when any was passed. */
+function pdfSheetFlags(input: ExportInput): Record<string, string> {
+  if (input.format !== 'pdf-drawing') return {};
+  const flags: Record<string, string | undefined> = {
+    sheet: input.sheet, projection: input.projection, title: input.title,
+    revision: input.revision, material: input.material,
+  };
+  return Object.fromEntries(Object.entries(flags).filter((e): e is [string, string] => e[1] !== undefined));
+}
+
 function drawingOptionsFor(input: ExportInput) {
-  return input.format === 'svg-drawing' && (
-    input.explode !== undefined || input.explodeMode !== undefined || input.balloons === true || input.partsList === true
+  const drawing = input.format === 'svg-drawing' || input.format === 'pdf-drawing';
+  const sheetFlags = pdfSheetFlags(input);
+  return drawing && (
+    input.explode !== undefined || input.explodeMode !== undefined || input.balloons === true || input.partsList === true ||
+    Object.keys(sheetFlags).length > 0
   )
     ? {
-        format: 'svg-drawing' as const,
+        format: input.format as 'svg-drawing' | 'pdf-drawing',
+        ...sheetFlags,
         ...(input.explode !== undefined || input.explodeMode !== undefined
           ? { exploded: { factor: input.explode ?? 1, mode: (input.explodeMode as 'radial' | 'mate-axis' | undefined) } }
           : {}),
@@ -677,7 +697,7 @@ function collectParts(value: string, prev: string[]): string[] {
 }
 
 const SUPPORTED_FORMATS = new Set<ExportFormat>([
-  'stl', 'step', 'dxf', '3mf', 'glb', 'svg-drawing', 'urdf', 'srdf', 'sdf-gazebo', 'gcode', 'usd-isaac',
+  'stl', 'step', 'dxf', '3mf', 'glb', 'svg-drawing', 'pdf-drawing', 'urdf', 'srdf', 'sdf-gazebo', 'gcode', 'usd-isaac',
   'bom-csv', 'bom-json',
 ]);
 
@@ -685,6 +705,7 @@ interface ExportCommandOpts {
   out: string; json?: boolean; part?: string[]; parts?: string; verify?: boolean;
   connectorManifest?: string; manifestPartId?: string; manifestFamily?: string;
   explode?: number; explodeMode?: string; balloons?: boolean; partsList?: boolean;
+  sheet?: string; projection?: string; title?: string; revision?: string; material?: string;
   options?: string;
 }
 
@@ -746,6 +767,11 @@ async function runExportMode(
     explodeMode: opts.explodeMode,
     balloons: opts.balloons,
     partsList: opts.partsList,
+    sheet: opts.sheet,
+    projection: opts.projection,
+    title: opts.title,
+    revision: opts.revision,
+    material: opts.material,
   });
   if (opts.json) {
     console.log(JSON.stringify({
@@ -770,8 +796,8 @@ async function runExportMode(
 
 export function exportCommand(): Command {
   const cmd = new Command('export')
-    .description('Export a .kcad.ts script to STL, STEP, DXF, 3MF, GLB, an SVG engineering-drawing sheet, or a bill of materials')
-    .argument('<format>', 'stl | step | dxf | 3mf | glb | svg-drawing | urdf | srdf | sdf-gazebo | usd-isaac | bom-csv | bom-json')
+    .description('Export a .kcad.ts script to STL, STEP, DXF, 3MF, GLB, an SVG or PDF engineering-drawing sheet, or a bill of materials')
+    .argument('<format>', 'stl | step | dxf | 3mf | glb | svg-drawing | pdf-drawing | urdf | srdf | sdf-gazebo | usd-isaac | bom-csv | bom-json')
     .argument('<file>', 'path to .kcad.ts script')
     .requiredOption('-o, --out <path>', 'output file path (output directory for --parts all and repeated --part)')
     .option('--part <name>', 'export a single named assembly part (STL only); repeat for a subset (-o is then a directory)', collectParts, [] as string[])
@@ -780,6 +806,11 @@ export function exportCommand(): Command {
     .option('--manifest-part-id <id>', 'catalog part id for --connector-manifest')
     .option('--manifest-family <family>', 'catalog family for --connector-manifest')
     .option('--no-verify', 'skip the watertight verify gate after STL export')
+    .option('--sheet <size>', 'pdf-drawing: a4 | a3 (default) | a2 | a1 | a0 | ansi-a … ansi-e | auto | auto-ansi')
+    .option('--projection <angle>', "pdf-drawing: 'third' (default) or 'first' angle projection")
+    .option('--title <text>', 'pdf-drawing: title-block title (default: the script name)')
+    .option('--revision <rev>', 'pdf-drawing: title-block revision')
+    .option('--material <name>', 'pdf-drawing: title-block material')
     .option('--explode <factor>', 'svg-drawing: explode the isometric cell by this factor', (v) => Number(v))
     .option('--explode-mode <mode>', "svg-drawing: 'mate-axis' (default) or 'radial'")
     .option('--balloons', 'svg-drawing: item balloons numbered from the BOM', false)

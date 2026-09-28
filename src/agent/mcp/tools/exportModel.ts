@@ -6,7 +6,7 @@
 // discoverable via list_api as the single entry "export the model to a file".
 // Replaces the legacy `export_stl` shim (removed in the C2 cull).
 //
-// Format enum: stl | step | dxf | 3mf | glb | svg-drawing | urdf | srdf | sdf-gazebo.
+// Format enum: stl | step | dxf | 3mf | glb | svg-drawing | pdf-drawing | urdf | srdf | sdf-gazebo.
 // URDF / SDF-Gazebo exports also write companion meshes/<part>.stl files
 // next to output_path (the emitted XML references them by relative path);
 // the written paths are reported in `mesh_files`.
@@ -49,7 +49,7 @@ export interface ExportModelOutput {
   /** Companion mesh files written next to output_path (URDF / SDF exports
    *  reference per-link meshes by relative path). */
   mesh_files?: string[];
-  /** svg-drawing placement report: `placed` / `overlapped` counts, `byKind`,
+  /** svg-drawing / pdf-drawing placement report: `placed` / `overlapped` counts, `byKind`,
    *  the datum reference frame, and every annotation drawn. */
   drawing_report?: DrawingReport;
   diagnostics?: CompilerDiagnostic[];
