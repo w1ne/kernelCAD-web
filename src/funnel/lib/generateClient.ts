@@ -17,12 +17,28 @@ export interface Artifact {
   suggestions: string[];
 }
 
+/**
+ * Present on a `done` event when the server returned its best-so-far script
+ * after the run was cut short (time or token limit, provider error). The
+ * script builds, but the listed checks did not pass or never ran.
+ */
+export interface GenerationPartial {
+  reason: string;
+  stage: string;
+  unverified: string[];
+  note: string;
+}
+
 export type GenerateEvent =
   | { kind: 'generation'; generationId: string; anonId: string }
   | { kind: 'status'; phase: 'running' | 'tool_calling' }
+  /** Server-side stage of the run (planning, writing_code, evaluating, fixing, verifying). */
+  | { kind: 'progress'; stage: string; message: string; attempt?: number; elapsedMs: number }
+  /** This request joined an identical run that was already in progress. */
+  | { kind: 'attached'; message: string }
   | { kind: 'tool_call'; name: string; args: unknown }
   | { kind: 'tool_result'; name: string; ok: boolean }
-  | { kind: 'done'; artifact: Artifact; generationId: string; anonId: string; durationMs: number }
+  | { kind: 'done'; artifact: Artifact; generationId: string; anonId: string; durationMs: number; partial?: GenerationPartial }
   | { kind: 'error'; code: 'llm_failed' | 'gate_failed' | 'eval_failed' | 'timeout'; message: string; generationId: string };
 
 /** Source-image limits for the Studio photo-reference request. A 4 MiB source
@@ -108,24 +124,48 @@ function asString(v: unknown): string {
   return typeof v === 'string' ? v : '';
 }
 
+function parsePartial(v: unknown): GenerationPartial | undefined {
+  if (!v || typeof v !== 'object') return undefined;
+  const p = v as Record<string, unknown>;
+  return {
+    reason: asString(p.reason),
+    stage: asString(p.stage),
+    unverified: Array.isArray(p.unverified) ? p.unverified.filter((u): u is string => typeof u === 'string') : [],
+    note: asString(p.note),
+  };
+}
+
 function mapToEvent(name: string, p: Record<string, unknown>): GenerateEvent | null {
   switch (name) {
     case 'generation':
       return { kind: 'generation', generationId: asString(p.generationId), anonId: asString(p.anonId) };
     case 'status':
       return { kind: 'status', phase: p.phase as 'running' | 'tool_calling' };
+    case 'progress':
+      return {
+        kind: 'progress',
+        stage: asString(p.stage),
+        message: asString(p.message),
+        ...(typeof p.attempt === 'number' ? { attempt: p.attempt } : {}),
+        elapsedMs: Number(p.elapsedMs ?? 0),
+      };
+    case 'attached':
+      return { kind: 'attached', message: asString(p.message) };
     case 'tool_call':
       return { kind: 'tool_call', name: asString(p.name), args: p.args };
     case 'tool_result':
       return { kind: 'tool_result', name: asString(p.name), ok: Boolean(p.ok) };
-    case 'done':
+    case 'done': {
+      const partial = parsePartial(p.partial);
       return {
         kind: 'done',
         artifact: p.artifact as Artifact,
         generationId: asString(p.generationId),
         anonId: asString(p.anonId),
         durationMs: Number(p.durationMs ?? 0),
+        ...(partial ? { partial } : {}),
       };
+    }
     case 'error':
       return {
         kind: 'error',
