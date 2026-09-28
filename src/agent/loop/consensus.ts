@@ -38,7 +38,8 @@ export interface ConsensusCandidate {
   gatesPassed?: number;
 }
 
-/** Pairwise distance in mm. Must be symmetric and >= 0. */
+/** Pairwise distance in mm. Must be symmetric and >= 0. A throw or a
+ *  non-finite result counts as the worst distance measured in the set. */
 export type ConsensusDistance = (a: RuntimeMesh, b: RuntimeMesh) => number;
 
 export interface ConsensusOptions {
@@ -87,13 +88,23 @@ function meshInvalidReason(mesh: RuntimeMesh): string | undefined {
   return undefined;
 }
 
+/** One pairwise distance; undefined when it throws or is not a finite number >= 0. */
+function measure(distance: ConsensusDistance, a: RuntimeMesh, b: RuntimeMesh): number | undefined {
+  try {
+    const d = distance(a, b);
+    return Number.isFinite(d) && d >= 0 ? d : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 type TieBreak = 'distance' | 'gates' | 'script-length' | 'index';
 
 /** Order two valid candidates: distance (with tolerance), then more gates,
  *  then shorter script, then lower index. Returns the deciding key too. */
 function compare(a: ConsensusScore, b: ConsensusScore, tol: number): { order: number; by: TieBreak } {
-  const da = a.meanDistanceMm ?? Infinity;
-  const db = b.meanDistanceMm ?? Infinity;
+  const da = a.meanDistanceMm ?? 0;
+  const db = b.meanDistanceMm ?? 0;
   if (Math.abs(da - db) > tol) return { order: da - db, by: 'distance' };
   if (a.gatesPassed !== b.gatesPassed) return { order: b.gatesPassed - a.gatesPassed, by: 'gates' };
   if (a.scriptLength !== b.scriptLength) return { order: a.scriptLength - b.scriptLength, by: 'script-length' };
@@ -142,15 +153,27 @@ export function selectByConsensus(
   const valid = scores.filter((s) => s.status !== 'dropped').map((s) => s.index);
   const distances: (number | null)[][] = Array.from({ length: n }, () => new Array<number | null>(n).fill(null));
   for (const i of valid) distances[i][i] = 0;
+  const unmeasured: Array<[number, number]> = [];
+  let worst = 0;
   for (let p = 0; p < valid.length; p++) {
     for (let q = p + 1; q < valid.length; q++) {
       const i = valid[p];
       const j = valid[q];
-      const raw = distance(candidates[i].mesh as RuntimeMesh, candidates[j].mesh as RuntimeMesh);
-      const d = Number.isFinite(raw) && raw >= 0 ? raw : Infinity;
+      const d = measure(distance, candidates[i].mesh as RuntimeMesh, candidates[j].mesh as RuntimeMesh);
+      if (d === undefined) {
+        unmeasured.push([i, j]);
+        continue;
+      }
+      worst = Math.max(worst, d);
       distances[i][j] = d;
       distances[j][i] = d;
     }
+  }
+  // A pair the distance could not measure counts as the worst disagreement
+  // seen in this set — penalised, but it cannot poison every mean to Infinity.
+  for (const [i, j] of unmeasured) {
+    distances[i][j] = worst;
+    distances[j][i] = worst;
   }
 
   if (valid.length === 0) {

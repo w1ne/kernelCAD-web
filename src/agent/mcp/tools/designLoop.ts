@@ -31,6 +31,8 @@ import {
   scriptQualityFacts,
 } from '../../loop/designLoopQualityFacts';
 export { geometryReviewFacts } from '../../loop/designLoopQualityFacts';
+import type { ConsensusResult } from '../../loop/consensus';
+import { selectScriptsByConsensus } from './consensusCandidates';
 
 export interface DesignLoopAttemptInput {
   id?: string;
@@ -90,6 +92,17 @@ export interface DesignLoopInput {
    * autonomously rewrite full CAD models.
    */
   autoRevise?: boolean;
+  /**
+   * Best-of-N by geometric consensus (arXiv 2608.09706). When true, `attempts`
+   * are N independent candidates for the SAME goal, not a repair sequence:
+   * every attempt is reviewed (stopOnPass is ignored), every script is
+   * executed, candidates without a valid solid are dropped, and the one whose
+   * geometry agrees most with the others (medoid by symmetric Chamfer
+   * distance) is selected. Ties go to more gates passed, then the shorter
+   * script. `ok` / `finalAttemptId` / `nextActionPrompt` then describe the
+   * selected candidate. Default false (unchanged sequential behaviour).
+   */
+  consensus?: boolean;
   outputRecordPath?: string;
   recordTitle?: string;
 }
@@ -138,6 +151,13 @@ export interface DesignLoopOutput {
   convergence?: ConvergenceStall;
   /** Revision assist from the last failing attempt (when present). */
   revisionAssist?: RevisionAssist;
+  /** Present when input.consensus was true: the selection and its evidence. */
+  consensus?: DesignLoopConsensus;
+}
+
+export interface DesignLoopConsensus extends ConsensusResult {
+  /** Attempt id of the selected candidate (absent when none was valid). */
+  chosenAttemptId?: string;
 }
 
 export interface ConvergenceStall {
@@ -218,7 +238,9 @@ export async function designLoopTool(input: DesignLoopInput): Promise<DesignLoop
     throw new Error('design_loop requires at least one attempt.');
   }
 
-  const stopOnPass = input.stopOnPass ?? true;
+  const consensus = input.consensus === true;
+  // Consensus compares every candidate, so it never stops early.
+  const stopOnPass = !consensus && (input.stopOnPass ?? true);
   const attempts: DesignLoopAttemptResult[] = [];
 
   for (const [index, attempt] of input.attempts.entries()) {
@@ -228,7 +250,26 @@ export async function designLoopTool(input: DesignLoopInput): Promise<DesignLoop
     if (attemptResult.ok && stopOnPass) break;
   }
 
-  return finaliseDesignLoop(input, attempts);
+  if (!consensus) return finaliseDesignLoop(input, attempts);
+
+  const selection = await selectScriptsByConsensus(
+    input.attempts.map((attempt, index) => ({
+      id: attempts[index].id,
+      file: attempt.file,
+      code: attempt.code,
+      gatesPassed: attemptGatesPassed(attempts[index]),
+    })),
+  );
+  return finaliseDesignLoop(input, attempts, {
+    ...selection,
+    ...(selection.chosenIndex !== null ? { chosenAttemptId: attempts[selection.chosenIndex].id } : {}),
+  });
+}
+
+/** Gates an attempt passed — the consensus tie-break. Review ok, quality ok,
+ *  plus each fitness check that passed. */
+export function attemptGatesPassed(attempt: DesignLoopAttemptResult): number {
+  return (attempt.functional ? 1 : 0) + (attempt.qualityOk ? 1 : 0) + attempt.passedChecks.length;
 }
 
 async function runDesignLoopAttempt(
@@ -322,7 +363,9 @@ function buildReviewInput(
 async function finaliseDesignLoop(
   input: DesignLoopInput,
   attempts: DesignLoopAttemptResult[],
+  consensus?: DesignLoopConsensus,
 ): Promise<DesignLoopOutput> {
+  if (consensus !== undefined) return finaliseConsensusDesignLoop(input, attempts, consensus);
   const finalPass = attempts.find((attempt) => attempt.ok);
   const convergence = detectConvergenceStall(attempts);
   const record = buildRecord(input, attempts);
@@ -348,6 +391,43 @@ async function finaliseDesignLoop(
     nextActionPrompt: finalPass === undefined
       ? [convergence?.reason, attempts.at(-1)?.nextActionPrompt].filter(Boolean).join('\n\n')
       : undefined,
+  };
+}
+
+/** Consensus mode: the selected candidate decides ok / finalAttemptId /
+ *  nextActionPrompt. Candidates are parallel, not a repair sequence, so the
+ *  convergence-stall check does not apply. */
+async function finaliseConsensusDesignLoop(
+  input: DesignLoopInput,
+  attempts: DesignLoopAttemptResult[],
+  consensus: DesignLoopConsensus,
+): Promise<DesignLoopOutput> {
+  const record = buildRecord(input, attempts);
+  const outputRecordPath = input.outputRecordPath !== undefined
+    ? resolve(input.outputRecordPath)
+    : undefined;
+  if (outputRecordPath !== undefined) {
+    await mkdir(dirname(outputRecordPath), { recursive: true });
+    await writeFile(outputRecordPath, `${JSON.stringify(record, null, 2)}\n`, 'utf-8');
+  }
+
+  const chosen = consensus.chosenIndex !== null ? attempts[consensus.chosenIndex] : undefined;
+  const nextActionPrompt = chosen === undefined
+    ? `${consensus.reason} Fix the candidates so at least one produces a valid solid, then rerun design_loop with consensus: true.`
+    : chosen.ok
+    ? undefined
+    : `Consensus selected attempt '${chosen.id}'. ${consensus.reason}\n\n${chosen.nextActionPrompt}`;
+  return {
+    ok: chosen?.ok === true,
+    goal: input.goal,
+    ...(chosen?.ok === true ? { finalAttemptId: chosen.id } : {}),
+    attempts,
+    record,
+    outputRecordPath,
+    ...(outputRecordPath !== undefined ? { recordUrl: publicRecordUrl(outputRecordPath) } : {}),
+    ...(chosen?.revisionAssist !== undefined ? { revisionAssist: chosen.revisionAssist } : {}),
+    nextActionPrompt,
+    consensus,
   };
 }
 
