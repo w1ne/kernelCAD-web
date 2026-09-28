@@ -10,6 +10,7 @@ keywords:
   - one filament slot per colour
   - auto orient largest flat face down
   - send 3mf project to a bambu lab printer
+  - printer profile bed size for my printer
 when_to_use: You want a model to open in a desktop slicer ready to print — every assembly member a named object with its colour and material, either packed on the bed at Z=0 without overlap or kept together as one multi-colour object (an inlay), each colour on its own filament slot — instead of a bare STL or already-sliced G-code.
 ---
 
@@ -31,7 +32,10 @@ return cap.model();
 
 // Then, outside the script:
 //   export target:'model' format:'3mf' output_path:'keycap.3mf'
-//     options:{ format:'3mf', arrange:'assembled', slicer:'bambu' }
+//     options:{ format:'3mf', arrange:'assembled', printer:'bambu-a1' }
+//   printer picks the bed (A1: 256x256x256 mm) and the slicer family
+//   (bambu here; pass slicer to override). List the ids and volumes with
+//   `kernelcad print printers` (default 'generic-fdm', 220x220x250 mm).
 //   -> one 'keycap' object with parts 'shell' (filament 1, #202020) and
 //      'legend' (filament 2, #FFFFFF), dropped to Z=0, centred on the bed.
 //   Separate parts instead? arrange:'plate' packs each part on the bed
@@ -43,11 +47,13 @@ return cap.model();
 //   carries warn diagnostics: export.3mf.plate-overflow names the parts
 //   packed past the bed edge and the footprint the layout needs;
 //   export.3mf.exceeds-bed names a part larger than the bed or taller
-//   than its build height. Pick a larger printer profile, or export fewer
-//   parts per plate.
+//   than its build height. Both hints end with the smallest bundled
+//   profiles the same layout fits on, e.g.
+//   "Fits on: Bambu Lab H2D ('bambu-h2d'), ..." — pass that printer, or
+//   export fewer parts per plate.
 //
 //   Bambu Lab printer over LAN: slice to G-code (format:'gcode'), then
 //   send_to_printer gcode_path:'keycap.gcode' model_3mf_path:'keycap.3mf'
-//     protocol:'bambu-lan' host:'...' access_code:'...' serial:'...'
+//     protocol:'bambu-lan' printer:'bambu-a1' host:'...' access_code:'...' serial:'...'
 //   -> uploads keycap.gcode.3mf (this 3MF + Metadata/plate_1.gcode).
 ```
