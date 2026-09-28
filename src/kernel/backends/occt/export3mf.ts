@@ -121,6 +121,9 @@ const PRINT_UNIT_TAG: Record<ThreeMfUnit, string> = {
   in: 'inch',
 };
 
+const ARRANGE_VALUES: readonly ThreeMfArrange[] = ['none', 'plate', 'assembled'];
+const SLICER_VALUES: readonly SlicerFlavor[] = ['generic', 'bambu', 'orca', 'prusa'];
+
 /** Gap between packed parts on the plate (mm). */
 const PLATE_SPACING_MM = 5;
 
@@ -169,6 +172,12 @@ export async function export3mfAsync(
   const printUnit: ThreeMfUnit = options.printUnit ?? 'mm';
   const arrange: ThreeMfArrange = options.arrange ?? 'none';
   const slicer: SlicerFlavor = options.slicer ?? 'generic';
+  if (!ARRANGE_VALUES.includes(arrange)) {
+    throw new Error(`export3mfAsync: options.arrange must be one of ${ARRANGE_VALUES.join(', ')}; got '${String(arrange)}'.`);
+  }
+  if (!SLICER_VALUES.includes(slicer)) {
+    throw new Error(`export3mfAsync: options.slicer must be one of ${SLICER_VALUES.join(', ')}; got '${String(slicer)}'.`);
+  }
   const isoDate = new Date().toISOString().slice(0, 10);
 
   const { bases, partPindex, partSlot } = resolvePartMaterials(meshed);
