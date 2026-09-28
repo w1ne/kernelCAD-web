@@ -283,7 +283,7 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
     definition: {
       name: 'capture_animation',
       description:
-        "Use this when you need to render a script's animation timeline to a video. " +
+        "Use this when you need to render a script's animation timeline to a video, or a 360° turntable of a model for sharing. " +
         "Capture a kernelCAD script's animationView({...}) timeline to an MP4 (ffmpeg) or a PNG frame sequence, " +
         'verifying the sampled poses for part interference. FILE ONLY: pass { file } (a .kcad.ts path) — there is no ' +
         '{ code } mode, because the capture engine renders from a file on disk (its relative lib.fromSTEP imports resolve ' +
@@ -295,21 +295,38 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
         '`kernelcad render --focus/--hide`; visibility is render-only and does NOT affect the pose verification. ' +
         'Collisions DO NOT fail the call — the artifact ' +
         'is still written as evidence with ok: true; read verified: false + the collisions[] array. ' +
-        'ENVIRONMENT REQUIREMENT (identical to `kernelcad render`): capture drives a headless browser against a running ' +
-        'studio dev server reachable at http://localhost:5173 (or the VITE_PORT override); there is no bundled-static ' +
-        'serving mode yet, so the same dev-server precondition applies in a production MCP install. ' +
+        'TURNTABLE MODE: pass { turntable: true } for a seamless 360° orbit of the model (no animationView record needed) — ' +
+        'a share-ready loop for a README, social post or product page. It uses the \'publish\' studio look by default ' +
+        '(same as render_preview preset: \'publish\': key/fill/rim lights, soft contact shadow, clean backdrop, 30° lens, ' +
+        'constant auto-framing over the whole orbit, light rig turns with the camera); { preset: \'default\' } keeps the ' +
+        'engineering look. Knobs: width/height (default 1080×1080, max 2048, even for MP4), duration_ms (one revolution, ' +
+        'default 6000), fps (default 30), elevation_deg (default 22), background (\'white\' default, \'light\', \'dark\', ' +
+        '\'black\', \'#rrggbb\', or \'transparent\' with frames_dir only), shadow (default true), environment. ' +
+        'output_path ending in .gif writes a looping GIF; otherwise MP4. Frame i sits at az 30° + 360°·i/N (the 360° ' +
+        'endpoint is excluded, so the loop is seamless). A turntable has no poses to verify: it reports verify_skipped: true. ' +
+        'ENVIRONMENT: needs playwright chromium (npx playwright install chromium) and ffmpeg for MP4/GIF (frames_dir needs ' +
+        'neither); the bundled static player is served automatically, no dev server required. ' +
         'Returns { ok, output_path, frame_count, duration_ms, fps, verified, verify_skipped?, collisions: [{ t_ms, a, b, volume_mm3 }], diagnostics }.',
       inputSchema: {
         type: 'object',
         properties: {
-          file: { type: 'string', description: 'Path to a .kcad.ts script with an animationView({...}) record. Required (no inline { code } mode).' },
-          output_path: { type: 'string', description: 'MP4 output path; default <scriptDir>/<basename>-animation.mp4. Mutually exclusive with frames_dir.' },
+          file: { type: 'string', description: 'Path to a .kcad.ts script with an animationView({...}) record (any script in turntable mode). Required (no inline { code } mode).' },
+          output_path: { type: 'string', description: 'MP4 output path (.gif → looping GIF); default <scriptDir>/<basename>-animation.mp4 (-turntable.mp4 in turntable mode). Mutually exclusive with frames_dir.' },
           frames_dir: { type: 'string', description: 'PNG-sequence mode directory: write frame-0000.png... and skip ffmpeg. Mutually exclusive with output_path.' },
           fps: { type: 'number', description: "Override the animationView record's fps." },
           no_verify: { type: 'boolean', description: 'Skip the animation-pose interference verification (default: verify on).', default: false },
           verify_every: { type: 'integer', minimum: 1, description: 'Additionally verify at every n-th frame time of the fps schedule (unioned with the keyframe sample set).' },
           focus: { type: 'array', items: { type: 'string' }, description: 'Show only matching feature ids / assembly part names in the rendered frames. Mutually exclusive with hide. Render-only; does not affect pose verification.' },
           hide: { type: 'array', items: { type: 'string' }, description: 'Hide matching feature ids / assembly part names in the rendered frames. Mutually exclusive with focus. Render-only; does not affect pose verification.' },
+          turntable: { type: 'boolean', description: 'Seamless 360° orbit of the model instead of the animationView timeline.', default: false },
+          preset: { type: 'string', enum: ['default', 'publish'], description: "Turntable look: 'publish' (default; studio product shot) or 'default' (engineering look)." },
+          width: { type: 'integer', minimum: 64, maximum: 2048, description: 'Turntable frame width in px (default 1080; even for MP4).' },
+          height: { type: 'integer', minimum: 64, maximum: 2048, description: 'Turntable frame height in px (default 1080; even for MP4).' },
+          duration_ms: { type: 'number', minimum: 500, maximum: 60000, description: 'Turntable: one full revolution in ms (default 6000).' },
+          elevation_deg: { type: 'number', minimum: -89, maximum: 89, description: 'Turntable: camera elevation above the horizon in degrees (default 22).' },
+          background: { type: 'string', description: "Turntable + publish: 'white' (default), 'light', 'dark', 'black', '#rrggbb', or 'transparent' (frames_dir only — MP4/GIF have no usable alpha)." },
+          shadow: { type: 'boolean', description: 'Turntable + publish: soft contact shadow under the model (default true).' },
+          environment: { type: 'string', description: "Turntable: HDRI environment override ('studio', 'softbox', 'neutral', 'outdoor', 'warehouse', a URL, or 'none')." },
         },
         required: ['file'],
       },
@@ -342,7 +359,14 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
         'reports mechanism: "unverified"; ignored under strict mode). Pass { overlay: \'zebra\' | \'curvature\' | \'continuity\' } ' +
         'for a surface-quality visualisation (zebra stripes from vertex normals, curvature as vertex colours, continuity ' +
         'edges coloured by G0/G1/G2/broken) — numbers come from inspect({ of: \'continuity\' | \'curvature\' }); the overlay ' +
-        'is the picture. Returns { ok, images: [{ name, path, description }], ' +
+        'is the picture. PUBLISH PRESET: pass { preset: \'publish\' } for a share-ready studio product shot (gallery tile, ' +
+        'social post, README image, product page): key/fill/rim lights + room reflections, soft contact shadow, clean ' +
+        'backdrop ({ background: \'white\' (default) | \'light\' | \'dark\' | \'black\' | \'#rrggbb\' | \'transparent\' } — ' +
+        'transparent gives a PNG with alpha), { shadow: false } to drop the shadow, 2× supersampled anti-aliasing, 30° lens, ' +
+        'auto-framed on the model bounds with margin (a script\'s setCameraTarget is ignored), per-part colours/materials ' +
+        'as authored, no watermark. With no views/pose it renders ONE image named \'hero\' (3/4 front-right, az=30°, el=22°) ' +
+        'at 1600×1200; width/height go up to 2048; views/pose still work under the preset. Output is deterministic for the ' +
+        'same input. For a 360° loop use capture_animation({ turntable: true }). Returns { ok, images: [{ name, path, description }], ' +
         'out_dir, bounds, mechanism, render_source, render_ms, diagnostics }. PATHS ARE LOCAL to the machine running the ' +
         'MCP server — local stdio clients read them directly; hosted/remote clients should use open_in_studio instead.',
       inputSchema: {
@@ -355,8 +379,8 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
           focus: { type: 'array', items: { type: 'string' }, description: 'Show only matching feature ids / assembly part names. Mutually exclusive with hide.' },
           hide: { type: 'array', items: { type: 'string' }, description: 'Hide matching feature ids / assembly part names. Mutually exclusive with focus.' },
           out_dir: { type: 'string', description: 'Directory for the PNGs (created if missing). Default: a fresh temp session dir.' },
-          width: { type: 'integer', minimum: 64, maximum: 2048, description: 'Per-view tile width in px (default 768).' },
-          height: { type: 'integer', minimum: 64, maximum: 2048, description: 'Per-view tile height in px (default 768).' },
+          width: { type: 'integer', minimum: 64, maximum: 2048, description: "Per-view tile width in px (default 768; 1600 under preset: 'publish')." },
+          height: { type: 'integer', minimum: 64, maximum: 2048, description: "Per-view tile height in px (default 768; 1200 under preset: 'publish')." },
           environment: { type: 'string', description: "HDRI environment override: preset ('studio', 'softbox', 'neutral', 'outdoor', 'warehouse'), a URL, or 'none' for the default three-light rig." },
           no_watermark: { type: 'boolean', description: 'Suppress the kernelCAD version watermark.', default: false },
           no_mechanism_check: { type: 'boolean', description: "Skip the mechanism-truth probe for fast iteration on large assemblies; the preview reports mechanism: 'unverified'. Ignored under KERNELCAD_RENDER_STRICT=1.", default: false },
@@ -387,6 +411,9 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
             enum: ['zebra', 'curvature', 'continuity'],
             description: "Surface-quality overlay: 'zebra' (reflection stripes), 'curvature' (Gaussian vertex colours), 'continuity' (edges coloured G2 green / G1 yellow / G0 orange / broken red). Built as coloured STL bands through this same pipeline.",
           },
+          preset: { type: 'string', enum: ['default', 'publish'], description: "Render look: 'default' (engineering review) or 'publish' (studio product shot for sharing; one 'hero' image unless views/pose are given)." },
+          background: { type: 'string', description: "preset 'publish' only: 'white' (default), 'light', 'dark', 'black', 'transparent' (PNG alpha), or '#rrggbb'." },
+          shadow: { type: 'boolean', description: "preset 'publish' only: soft contact shadow under the model (default true)." },
         },
       },
     },

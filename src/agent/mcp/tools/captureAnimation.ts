@@ -34,13 +34,15 @@
 // underlying capture (browser, ffmpeg child) may still be finishing in the
 // background; there is no kill seam to interrupt it.
 //
-// PRODUCTION CONSTRAINT (stated in the registry description): like
-// `kernelcad render`, capture drives a headless browser against a running
-// studio dev server reachable at DEFAULT_RENDER_BASE_URL (http://localhost:5173)
-// or the VITE_PORT override — there is NO bundled-static-dist serving mode yet
-// (render.ts: "a bundled-static-dist mode is on the v2 list"). The production
-// MCP install (npx kernelcad mcp) shares the same openDemoPlayerPage bootstrap,
-// so the same dev-server precondition applies there.
+// RENDER SURFACE: the engine provisions the bundled static player
+// (resolveRenderBaseUrl, same as render_preview); a running studio dev
+// server is only a fallback.
+//
+// TURNTABLE MODE ({ turntable: true }): a seamless 360° orbit of the static
+// model through captureTurntable (src/agent/render/captureTurntable.ts),
+// 'publish' studio look by default. Field validation lives in
+// captureTurntableInput.ts; the timeline-only / turntable-only fields are
+// refused in the other mode rather than silently ignored.
 
 import {
   captureAnimation,

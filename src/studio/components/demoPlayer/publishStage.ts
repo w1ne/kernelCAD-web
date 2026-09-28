@@ -24,8 +24,8 @@ import * as THREE from 'three';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import type { PublishFrameCapture, PublishFrameRequest, PublishStageSpec } from '../../../shared/render/publishPreset';
 import { poseCameraDir } from '../../../shared/render/publishPreset';
-import { fitDistanceForBounds } from './cameraFit';
 import { CONTACT_SHADOW_LAYERS, buildContactShadow, type ContactShadow } from './contactShadow';
+import { frameForRequest, type Vec3 } from './publishFraming';
 import { fitCameraToBounds, isInsideFeatureGroup, isVisibleInScene } from './demoPlayerGeometry';
 
 /** userData flag on every object the stage adds; scene-bounds and mask
@@ -38,8 +38,6 @@ export const PUBLISH_FOV_DEG = 30;
 
 /** Room IBL strength under the publish rig. */
 const PUBLISH_ENV_INTENSITY = 0.55;
-/** Orbit fit: azimuth samples when fitting the worst case over 360°. */
-const ORBIT_FIT_STEPS = 72;
 
 interface LightSpec {
   kind: 'directional' | 'hemisphere';
@@ -238,52 +236,49 @@ function azimuthOfDir(dir: readonly [number, number, number]): number {
   return (Math.atan2(dir[0], -dir[1]) * 180) / Math.PI;
 }
 
-interface Framing {
-  camDir: [number, number, number];
-  distance: number;
-}
+/** Cap on the vertices the framing fit visits (uniform stride). */
+const FRAMING_POINT_BUDGET = 60_000;
 
-function frameForRequest(
-  camera: THREE.PerspectiveCamera,
-  bounds: { min: [number, number, number]; max: [number, number, number] },
-  req: PublishFrameRequest,
-): Framing {
-  const target: [number, number, number] = [
-    (bounds.min[0] + bounds.max[0]) / 2,
-    (bounds.min[1] + bounds.max[1]) / 2,
-    (bounds.min[2] + bounds.max[2]) / 2,
-  ];
-  const elDeg = req.elDeg ?? 0;
-  const camDir = poseCameraDir(req.azDeg ?? 0, elDeg);
-  const fitAt = (dir: [number, number, number]): number => fitDistanceForBounds({
-    bounds, target, camDir: dir, fovYDeg: camera.fov, canvasAspect: camera.aspect, margin: req.margin,
-  });
-  if (req.fit !== 'orbit') return { camDir, distance: fitAt(camDir) };
-  let distance = 0;
-  for (let i = 0; i < ORBIT_FIT_STEPS; i++) {
-    distance = Math.max(distance, fitAt(poseCameraDir((360 * i) / ORBIT_FIT_STEPS, elDeg)));
+/** World-space vertices of the visible model (strided to the budget). */
+export function modelPoints(meshes: readonly THREE.Mesh[]): Vec3[] {
+  let total = 0;
+  for (const mesh of meshes) total += mesh.geometry.getAttribute('position')?.count ?? 0;
+  const stride = Math.max(1, Math.ceil(total / FRAMING_POINT_BUDGET));
+  const v = new THREE.Vector3();
+  const out: Vec3[] = [];
+  for (const mesh of meshes) {
+    const pos = mesh.geometry.getAttribute('position');
+    if (!pos) continue;
+    mesh.updateWorldMatrix(true, false);
+    for (let i = 0; i < pos.count; i += stride) {
+      v.fromBufferAttribute(pos, i).applyMatrix4(mesh.matrixWorld);
+      out.push([v.x, v.y, v.z]);
+    }
   }
-  return { camDir, distance };
+  return out;
 }
 
 /** Aim the camera for the request; returns the camera azimuth (deg). */
 function aimCamera(camera: THREE.PerspectiveCamera, scene: THREE.Scene, req: PublishFrameRequest): { azDeg: number; distance: number } {
-  const box = boundsOf(visibleModelMeshes(scene));
+  const meshes = visibleModelMeshes(scene);
+  const box = boundsOf(meshes);
   if (box.isEmpty()) throw new Error('demo-player: publish capture has no visible model geometry');
-  const bounds = {
-    min: [box.min.x, box.min.y, box.min.z] as [number, number, number],
-    max: [box.max.x, box.max.y, box.max.z] as [number, number, number],
-  };
   if (req.view !== undefined) {
+    const bounds = {
+      min: [box.min.x, box.min.y, box.min.z] as Vec3,
+      max: [box.max.x, box.max.y, box.max.z] as Vec3,
+    };
     fitCameraToBounds(camera, bounds, req.view, camera.aspect, req.margin);
-    const dir = camera.position.clone().sub(box.getCenter(new THREE.Vector3())).normalize();
-    return { azDeg: azimuthOfDir([dir.x, dir.y, dir.z]), distance: camera.position.distanceTo(box.getCenter(new THREE.Vector3())) };
+    const centre = box.getCenter(new THREE.Vector3());
+    const dir = camera.position.clone().sub(centre).normalize();
+    return { azDeg: azimuthOfDir([dir.x, dir.y, dir.z]), distance: camera.position.distanceTo(centre) };
   }
-  const { camDir, distance } = frameForRequest(camera, bounds, req);
-  const c = box.getCenter(new THREE.Vector3());
+  const { target, camDir, distance } = frameForRequest(modelPoints(meshes), req, {
+    fovYDeg: camera.fov, aspect: camera.aspect, margin: req.margin,
+  });
   camera.up.set(0, 0, 1);
-  camera.position.set(c.x + camDir[0] * distance, c.y + camDir[1] * distance, c.z + camDir[2] * distance);
-  camera.lookAt(c);
+  camera.position.set(target[0] + camDir[0] * distance, target[1] + camDir[1] * distance, target[2] + camDir[2] * distance);
+  camera.lookAt(target[0], target[1], target[2]);
   camera.near = Math.max(0.1, distance / 100);
   camera.far = distance * 20;
   camera.updateProjectionMatrix();

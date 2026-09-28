@@ -32,7 +32,22 @@ export interface FitDistanceInput {
 }
 
 export function fitDistanceForBounds(input: FitDistanceInput): number {
-  const { bounds, target, camDir } = input;
+  const { bounds } = input;
+  const corners: [number, number, number][] = [];
+  for (const x of [bounds.min[0], bounds.max[0]]) {
+    for (const y of [bounds.min[1], bounds.max[1]]) {
+      for (const z of [bounds.min[2], bounds.max[2]]) corners.push([x, y, z]);
+    }
+  }
+  return fitDistanceForPoints({ ...input, points: corners });
+}
+
+/** fitDistanceForBounds over an arbitrary point set (e.g. the polygonal
+ *  cylinder a turntable orbit sweeps) instead of the eight bbox corners. */
+export function fitDistanceForPoints(
+  input: Omit<FitDistanceInput, 'bounds'> & { points: readonly (readonly [number, number, number])[] },
+): number {
+  const { target, camDir } = input;
   const worldUp = input.worldUp ?? ([0, 0, 1] as [number, number, number]);
   const margin = input.margin ?? 1.05;
   const outputAspect = input.outputAspect ?? input.canvasAspect;
@@ -46,15 +61,13 @@ export function fitDistanceForBounds(input: FitDistanceInput): number {
   const tanYEff = tanHalfY * Math.min(1, input.canvasAspect / outputAspect);
   const tanXEff = tanHalfY * Math.min(input.canvasAspect, outputAspect);
 
-  const xs = [bounds.min[0] - target[0], bounds.max[0] - target[0]];
-  const ys = [bounds.min[1] - target[1], bounds.max[1] - target[1]];
-  const zs = [bounds.min[2] - target[2], bounds.max[2] - target[2]];
   let dist = 0;
-  for (const cx of xs) for (const cy of ys) for (const cz of zs) {
+  for (const p of input.points) {
+    const cx = p[0] - target[0], cy = p[1] - target[1], cz = p[2] - target[2];
     const h = Math.abs(cx * right[0] + cy * right[1] + cz * right[2]);
     const u = Math.abs(cx * up[0] + cy * up[1] + cz * up[2]);
-    // Corner depth along the view axis, positive toward the camera — each
-    // corner must fit the frustum at its OWN depth, not the target's.
+    // Point depth along the view axis, positive toward the camera — each
+    // point must fit the frustum at its OWN depth, not the target's.
     const dAlong = cx * camDir[0] + cy * camDir[1] + cz * camDir[2];
     const required = Math.max(h / tanXEff, u / tanYEff) * margin + dAlong;
     if (required > dist) dist = required;

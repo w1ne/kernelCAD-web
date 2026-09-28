@@ -29,9 +29,9 @@ export interface PublishFrameRequest {
   width: number;
   height: number;
   supersample: number;
-  /** Fill margin passed to the perspective fit (1.15 → the model's bounds
-   *  box spans 1/1.15 ≈ 87% of the binding frame axis, ~6.5% air on each
-   *  side; the visible silhouette sits inside its box, so real air is more). */
+  /** Fill margin of the silhouette fit (1.3 → the model's projected
+   *  silhouette spans 1/1.3 ≈ 77% of the binding frame axis, ~11.5% air on
+   *  each side of it). */
   margin: number;
   /** Camera direction. `view` snaps to a canonical engineering view;
    *  otherwise az/el in degrees (same convention as setRenderPose). */
@@ -55,7 +55,7 @@ export const PUBLISH_PRESET = {
    *  the horizon (setRenderPose convention; kernelCAD is Z-up). */
   heroAzDeg: 30,
   heroElDeg: 22,
-  margin: 1.15,
+  margin: 1.3,
   background: '#ffffff',
   shadow: true,
   stillWidth: 1600,

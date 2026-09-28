@@ -19,8 +19,6 @@ import { FullScreenQuad } from 'three/examples/jsm/postprocessing/Pass.js';
 import { HorizontalBlurShader } from 'three/examples/jsm/shaders/HorizontalBlurShader.js';
 import { VerticalBlurShader } from 'three/examples/jsm/shaders/VerticalBlurShader.js';
 
-/** Offscreen shadow texture resolution (px per edge). */
-const SHADOW_TEXTURE_SIZE = 1024;
 /** Ground plane edge as a multiple of the model's larger footprint edge —
  *  room for the blur to fade to zero before the plane's border. */
 const PLANE_FOOTPRINT_SCALE = 2.2;
@@ -28,6 +26,8 @@ const PLANE_FOOTPRINT_SCALE = 2.2;
  *  extent) is the height over which a caster's contribution fades to zero;
  *  `blurPasses` are blur radii in shadow-texture texels. */
 export interface ContactShadowLayer {
+  /** Offscreen texture resolution (px per edge); lower = wider blur per pass. */
+  textureSize: number;
   heightFraction: number;
   darkness: number;
   opacity: number;
@@ -37,8 +37,8 @@ export interface ContactShadowLayer {
 /** Two layers: a wide, faint penumbra from everything near the ground, and
  *  a tight, dark core where parts actually touch it (feet, bases). */
 export const CONTACT_SHADOW_LAYERS: readonly ContactShadowLayer[] = [
-  { heightFraction: 0.45, darkness: 1.6, opacity: 0.5, blurPasses: [3.2, 1.2] },
-  { heightFraction: 0.04, darkness: 1.2, opacity: 0.55, blurPasses: [1.0] },
+  { textureSize: 512, heightFraction: 0.45, darkness: 2.6, opacity: 0.75, blurPasses: [3, 2, 1] },
+  { textureSize: 1024, heightFraction: 0.04, darkness: 1.2, opacity: 0.5, blurPasses: [1.5, 1] },
 ];
 
 export interface ContactShadowBounds {
@@ -78,8 +78,8 @@ function makeHeightFadeMaterial(darkness: number): THREE.ShaderMaterial {
   return material;
 }
 
-function makeTarget(): THREE.WebGLRenderTarget {
-  return new THREE.WebGLRenderTarget(SHADOW_TEXTURE_SIZE, SHADOW_TEXTURE_SIZE, {
+function makeTarget(size: number): THREE.WebGLRenderTarget {
+  return new THREE.WebGLRenderTarget(size, size, {
     format: THREE.RGBAFormat,
     type: THREE.UnsignedByteType,
     depthBuffer: false,
@@ -94,6 +94,7 @@ function blurTarget(
   scratch: THREE.WebGLRenderTarget,
   blurPasses: readonly number[],
 ): void {
+  const texel = 1 / target.width;
   const horizontal = new THREE.ShaderMaterial(HorizontalBlurShader);
   const vertical = new THREE.ShaderMaterial(VerticalBlurShader);
   horizontal.depthTest = false;
@@ -103,14 +104,14 @@ function blurTarget(
     for (const amount of blurPasses) {
       quad.material = horizontal;
       horizontal.uniforms.tDiffuse.value = target.texture;
-      horizontal.uniforms.h.value = amount / SHADOW_TEXTURE_SIZE;
+      horizontal.uniforms.h.value = amount * texel;
       renderer.setRenderTarget(scratch);
       renderer.clear();
       quad.render(renderer);
 
       quad.material = vertical;
       vertical.uniforms.tDiffuse.value = scratch.texture;
-      vertical.uniforms.v.value = amount / SHADOW_TEXTURE_SIZE;
+      vertical.uniforms.v.value = amount * texel;
       renderer.setRenderTarget(target);
       renderer.clear();
       quad.render(renderer);
@@ -189,8 +190,8 @@ export function buildContactShadow(
   camera.updateProjectionMatrix();
   camera.updateMatrixWorld(true);
 
-  const target = makeTarget();
-  const scratch = makeTarget();
+  const target = makeTarget(layer.textureSize);
+  const scratch = makeTarget(layer.textureSize);
   const originalTarget = renderer.getRenderTarget();
   const originalClear = new THREE.Color();
   renderer.getClearColor(originalClear);
