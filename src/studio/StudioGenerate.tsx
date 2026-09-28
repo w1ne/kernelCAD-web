@@ -28,6 +28,10 @@ function stepLabel(e: GenerateEvent): string | null {
     switch (e.kind) {
         case 'status':
             return e.phase === 'tool_calling' ? 'using tools…' : 'thinking…';
+        case 'progress':
+            return `${e.message} · ${Math.round(e.elapsedMs / 1000)}s`;
+        case 'attached':
+            return 'already running — showing its progress';
         case 'tool_call':
             return `→ ${e.name}`;
         case 'tool_result':
@@ -128,6 +132,7 @@ const StudioGenerateInner: React.FC = () => {
             {reviewing && phase.state === 'done' && (
                 <GenerationReviewPanel
                     artifact={phase.artifact}
+                    partial={phase.partial}
                     baseline={baseline}
                     stagedEdit={stagedEdit}
                     onStage={stageGeneratedEdit}

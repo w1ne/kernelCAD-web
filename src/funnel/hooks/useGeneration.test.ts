@@ -79,3 +79,26 @@ describe('useGeneration edit mode', () => {
     }));
   });
 });
+
+describe('useGeneration partial results', () => {
+  it('keeps the partial flag on the done phase', async () => {
+    const partial = { reason: 'timeout', stage: 'writing_code', unverified: ['interference'], note: 'n' };
+    async function* yieldPartial() {
+      yield { kind: 'generation', generationId: 'g1', anonId: 'a1' };
+      yield {
+        kind: 'done', generationId: 'g1', anonId: 'a1', durationMs: 1, partial,
+        artifact: { title: 'T', code: 'return box(1,1,1);', parameters: [], suggestions: [] },
+      };
+    }
+    startGeneration.mockReset();
+    parseSseStream.mockReset();
+    startGeneration.mockResolvedValue({ ok: true, body: {} } as Response);
+    parseSseStream.mockReturnValue(yieldPartial());
+    const { result } = renderHook(() => useGeneration());
+    await act(async () => {
+      await result.current.submit('a vase');
+    });
+    await waitFor(() => expect(result.current.phase.state).toBe('done'));
+    expect(result.current.phase).toMatchObject({ state: 'done', partial });
+  });
+});

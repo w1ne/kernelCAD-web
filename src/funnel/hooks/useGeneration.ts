@@ -1,7 +1,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useCallback, useState, type Dispatch, type SetStateAction } from 'react';
-import { parseSseStream, startGeneration, type Artifact, type GenerateEvent, type GenerateRequest } from '../lib/generateClient';
+import {
+  parseSseStream,
+  startGeneration,
+  type Artifact,
+  type GenerateEvent,
+  type GenerateRequest,
+  type GenerationPartial,
+} from '../lib/generateClient';
 
 /** Codes emitted by the client when generation fails outside the server's
  *  own error stream. Server-relayed `error` events carry their own codes
@@ -18,7 +25,7 @@ export type FunnelErrorCode = FunnelClientErrorCode | `http_${number}` | (string
 export type GenerationPhase =
   | { state: 'idle' }
   | { state: 'running'; generationId?: string; anonId?: string; lastEvent: GenerateEvent }
-  | { state: 'done'; generationId: string; anonId: string; artifact: Artifact }
+  | { state: 'done'; generationId: string; anonId: string; artifact: Artifact; partial?: GenerationPartial }
   | { state: 'error'; code: FunnelErrorCode; message: string; generationId?: string };
 
 async function consumeGenerationStream(
@@ -41,7 +48,13 @@ async function consumeGenerationStream(
         setPhase({ state: 'error', code: 'missing_generation_id', message: 'Generation completed but no ID was returned.' });
         return false;
       }
-      setPhase({ state: 'done', generationId: finalId, anonId: finalAnon, artifact: e.artifact });
+      setPhase({
+        state: 'done',
+        generationId: finalId,
+        anonId: finalAnon,
+        artifact: e.artifact,
+        ...(e.partial ? { partial: e.partial } : {}),
+      });
       return false;
     } else if (e.kind === 'error') {
       setPhase({ state: 'error', code: e.code, message: e.message, generationId: e.generationId || generationId });
