@@ -166,9 +166,22 @@ export function setParamValue(
   const literal =
     typeof newValue === 'number' || typeof newValue === 'boolean'
       ? String(newValue)
-      : `'${String(newValue).replace(/'/g, "\\'")}'`;
+      : quoteSingle(String(newValue));
   const new_code = code.slice(0, m.valueStart) + literal + code.slice(m.valueEnd);
   return { ok: true, new_code };
+}
+
+/** Single-quoted JS string literal. Backslashes and line breaks are escaped
+ *  too, so a value can never end the literal early and become code. */
+function quoteSingle(text: string): string {
+  const escaped = text
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'")
+    .replace(/\n/g, '\\n')
+    .replace(/\r/g, '\\r')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
+  return `'${escaped}'`;
 }
 
 export type DeclaredParamKind = 'number' | 'boolean' | 'choice' | 'string' | 'unknown';
