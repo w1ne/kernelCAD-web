@@ -237,6 +237,26 @@ describe('param overrides (stateless re-run path)', () => {
       }),
     );
   });
+
+  it('sends a rewritten source instead of the stored project body when asked', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.example.com');
+    vi.stubGlobal('window', {
+      location: { hostname: 'app.kernelcad.com', pathname: '/p/keycap-123' },
+    });
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({ features: [], featureRecords: [], bounds: { min: [0, 0, 0], max: [1, 1, 1] } }),
+    } as Response);
+
+    await meshSourceHosted("param('Cap', 'round')", { dishDepth: 1 }, { preferSource: true });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.example.com/__kernelcad/mesh',
+      expect.objectContaining({
+        body: JSON.stringify({ source: "param('Cap', 'round')", params: { dishDepth: 1 } }),
+      }),
+    );
+  });
 });
 
 describe('rootVisibleFeatures', () => {

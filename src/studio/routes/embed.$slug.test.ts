@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it, vi } from 'vitest';
-import { embedPresentationMode, embedRevision, loadEmbedCode, revisionPinnedMeshUrl } from './-embedConfig';
+import { embedCustomize, embedPresentationMode, embedRevision, loadEmbedCode, revisionPinnedMeshUrl } from './-embedConfig';
 
 describe('embedPresentationMode', () => {
   it('keeps the default embed model-only', () => {
@@ -76,5 +76,16 @@ describe('revisionPinnedMeshUrl', () => {
     expect(revisionPinnedMeshUrl(hashUrl, 'kUtA7oVx', null)).toBe(hashUrl);
     expect(revisionPinnedMeshUrl(hashUrl, '', 2)).toBe(hashUrl);
     expect(revisionPinnedMeshUrl(undefined, 'kUtA7oVx', 2)).toBeUndefined();
+  });
+});
+
+describe('embedCustomize', () => {
+  it('is off unless the host opts in', () => {
+    expect(embedCustomize(undefined)).toBe(false);
+    expect(embedCustomize('0')).toBe(false);
+    expect(embedCustomize('yes')).toBe(false);
+    expect(embedCustomize('1')).toBe(true);
+    expect(embedCustomize(1)).toBe(true);
+    expect(embedCustomize('true')).toBe(true);
   });
 });

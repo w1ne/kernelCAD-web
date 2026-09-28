@@ -6,10 +6,11 @@
  * /embed/<slug> FunnelViewer).
  *
  * Re-run: the geometry context's own `updateParam` — the same stateless
- * param-override mesh path the viewer already uses when no kernel session is
- * open (server `/__kernelcad/mesh` on the hosted app, the dev middleware on
- * localhost). It is the GeometryContext updater on purpose, not the
- * Workbench one: that wrapper saves param edits into the local project.
+ * mesh path the viewer already uses when no kernel session is open (server
+ * `/__kernelcad/mesh` on the hosted app, the dev middleware on localhost),
+ * with the values baked into the source. It is the GeometryContext updater
+ * on purpose, not the Workbench one: that wrapper saves param edits into the
+ * local project.
  *
  * Export: the configured source (values baked into the `param()` defaults)
  * through `exportViaServer` — the same `/__kernelcad/export` path as the
@@ -58,27 +59,25 @@ function useDeclaredParams(code: string, scriptParams: SerializedParamEntry[]) {
 }
 
 /**
- * Numbers and booleans are always sent (the override map accumulates, so a
- * value back at its default must be sent to undo an earlier edit). A text or
- * choice value is written into the source, so it is sent only once it has
- * left its default — an untouched model keeps the stored project body.
+ * Every value is baked into the source (`bakeIntoSource`), so the view is the
+ * same script run as the export. A value is sent once it leaves its default,
+ * and from then on (the edit map accumulates, so a value back at its default
+ * must be sent to undo the earlier edit). An untouched param is never written.
  */
 function useParamExecutor(
   params: readonly CustomizerParam[],
   updateParam: ReturnType<typeof useGeometry>['updateParam'],
 ) {
-  const sentText = useRef(new Set<string>());
+  const touched = useRef(new Set<string>());
   return useCallback((values: CustomizerValues) => {
     const edits = params.flatMap((param) => {
       const value = values[param.name];
       if (value === undefined) return [];
-      if (typeof value === 'string') {
-        if (value !== param.defaultValue) sentText.current.add(param.name);
-        else if (!sentText.current.has(param.name)) return [];
-      }
+      if (value !== param.defaultValue) touched.current.add(param.name);
+      else if (!touched.current.has(param.name)) return [];
       return [{ name: param.name, value }];
     });
-    return updateParam(edits);
+    return updateParam(edits, { bakeIntoSource: true });
   }, [params, updateParam]);
 }
 

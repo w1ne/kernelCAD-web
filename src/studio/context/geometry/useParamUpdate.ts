@@ -12,6 +12,13 @@ import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { ExecutionApplyDeps } from './executionApplyDeps';
 import { paramEditsForMesh, type ParamEditValues } from './paramEditsForMesh';
 
+export interface ParamUpdateOptions {
+    /** Stateless path only: write every value into the source and re-run the
+     *  whole script (see `paramEditsForMesh`). The public-page customizer uses
+     *  it so the view matches its export. */
+    bakeIntoSource?: boolean;
+}
+
 /**
  * Owns the param-edit bridge: the accumulated param-override map for the
  * no-live-session recompute path, `updateParam` itself (incremental SSE
@@ -66,6 +73,7 @@ export function useParamUpdate(
 
     const updateParam = useCallback(async (
         edits: { name: string; value: number | boolean | string }[],
+        options?: ParamUpdateOptions,
     ) => {
         // Live session (pooled `?script=`): incremental params.update — only the
         // edited feature + downstream re-lower, pushed back over SSE.
@@ -114,7 +122,7 @@ export function useParamUpdate(
             // Choice/text values ride in the source; numbers and booleans in
             // the override map. A rewritten source can't use the stored
             // project body, so it is sent as source.
-            const { source, params } = paramEditsForMesh(code, overrides);
+            const { source, params } = paramEditsForMesh(code, overrides, options?.bakeIntoSource);
             const payload = hosted
                 ? await meshSourceHosted(source, params, { preferSource: source !== code })
                 : await meshSourceDev(source, params);

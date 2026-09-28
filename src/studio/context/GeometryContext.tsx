@@ -10,6 +10,7 @@ import { useShowSketches } from './geometry/useShowSketches';
 import { useGeometryTransforms } from './geometry/useGeometryTransforms';
 import { usePreviewExecution } from './geometry/usePreviewExecution';
 import { useScriptExecution } from './geometry/useScriptExecution';
+import type { ParamUpdateOptions } from './geometry/useParamUpdate';
 import { readStudioScriptParam, type ExecutionRecord, type ExecutionStatus, type ScriptReviewSummary } from './geometry/types';
 
 export type { ExecutionStatus, ExecutionRecord, ScriptReviewSummary };
@@ -50,7 +51,10 @@ export interface GeometryContextType {
     /** Slice 2E.bridge: POST edits to the pooled CaptureSession's
      *  `params.update`. Returns once the server has acked; the SSE
      *  `relower` push that follows refreshes `scriptParams` + `scriptReview`. */
-    updateParam: (edits: { name: string; value: number | boolean | string }[]) => Promise<void>;
+    updateParam: (
+        edits: { name: string; value: number | boolean | string }[],
+        options?: ParamUpdateOptions,
+    ) => Promise<void>;
     setGeometryTransformOverride: (partName: string, transform: number[]) => void;
     clearGeometryTransformOverrides: () => void;
     /** Animation playback claims sole ownership of the part-transform override

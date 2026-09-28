@@ -9,16 +9,22 @@ export type ParamEditValues = Record<string, number | boolean | string>;
  * Split accumulated param edits into what the stateless mesh endpoints take.
  * Their `params` override channel carries numbers and booleans only, so a
  * choice or text value is written into its `param()` default in the source
- * instead. `source === code` when no text value changed the source.
+ * instead. `source === code` when no value changed the source.
+ *
+ * `bakeAll` writes every value into the source. An override only re-lowers
+ * the recorded features; script code that branches on `param.value` (an
+ * `if (hasLid.value)`) runs once with the declared default. A baked source
+ * re-runs the whole script, so the result matches an export of that source.
  */
 export function paramEditsForMesh(
   code: string,
   edits: ParamEditValues,
+  bakeAll = false,
 ): { source: string; params: ParamOverrides } {
   let source = code;
   const params: ParamOverrides = {};
   for (const [name, value] of Object.entries(edits)) {
-    if (typeof value !== 'string') {
+    if (typeof value !== 'string' && !bakeAll) {
       params[name] = value;
       continue;
     }
