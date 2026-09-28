@@ -23,6 +23,7 @@ import type { FaceHash, HistoryMap } from './evolutionRecord';
 import { findByGeometrySnapshot } from './geometrySnapshotFallback';
 import { DEFAULT_SNAPSHOT_TOLERANCE } from '../backends/occt/createdRefs';
 import { HINT_TEMPLATES } from '../../shared/diagnostics/registry';
+import { describeFaceCandidates, formatFaceCandidates } from './faceCandidates';
 
 export type ResolveResult =
   | { ok: true; faceHash: FaceHash; warnings?: CompilerDiagnostic[] }
@@ -114,7 +115,27 @@ function resolveCanonical(ref: Extract<FaceRef, { kind: 'canonical' }>, ctx: Res
       },
     };
   }
-  // matches.length > 1
+  // matches.length > 1. A canonical name means "that face of the originating
+  // primitive", not a geometric extreme, so there is no documented rule to
+  // pick one: keep the error, but name every candidate and its selector.
+  return ambiguousDiagnostic(
+    ctx,
+    `Face '${ref.face}' was split into ${matches.length} children by an upstream operation (a union/cut split it, or merged in another primitive's '${ref.face}').`,
+    `'${ref.face}'`,
+    matches,
+  );
+}
+
+function ambiguousDiagnostic(
+  ctx: ResolveContext,
+  lead: string,
+  refText: string,
+  hashes: readonly FaceHash[],
+): ResolveResult {
+  const candidates = describeFaceCandidates(ctx.currentShape, hashes);
+  const detail = candidates.length > 0
+    ? formatFaceCandidates(refText, candidates)
+    : 'Apply this feature before the splitting boolean, or use a FaceQuery selector.';
   return {
     ok: false,
     diagnostic: {
@@ -122,8 +143,10 @@ function resolveCanonical(ref: Extract<FaceRef, { kind: 'canonical' }>, ctx: Res
       code: 'feature.face-ref.ambiguous-after-split',
       featureId: ctx.featureId,
       severity: 'error',
-      message: `Face '${ref.face}' was split into ${matches.length} children by an upstream operation. Geometry-fallback disambiguation ships in v0.3.0; for now, apply this feature before the splitting operation, or use a query-based selector.`,
-      hint: 'Apply this feature before the splitting boolean, or use a query-based selector.',
+      message: `${lead}\n${detail}`,
+      hint: candidates.length > 0
+        ? `${HINT_TEMPLATES['feature.face-ref.ambiguous-after-split'].template} Candidates: ${candidates.map((c, i) => `#${i + 1} ${c.selector}`).join('; ')}.`
+        : HINT_TEMPLATES['feature.face-ref.ambiguous-after-split'].template,
     },
   };
 }
@@ -222,7 +245,12 @@ function resolveCreated(ref: Extract<FaceRef, { kind: 'created' }>, ctx: Resolve
   if (!fingerprint || !fingerprint.snapshotAtCreate || !fingerprint.surfaceType) {
     if (scan.topology.length === 0) return removed(ref, ctx);
     // topology.length > 1 with no fingerprint → genuine ambiguity.
-    return ambiguous(ref, ctx, scan.topology.length);
+    return ambiguousDiagnostic(
+      ctx,
+      `Created face '${ref.rewriteId}.${ref.slot}' was split into ${scan.topology.length} children.`,
+      `'${ref.rewriteId}.${ref.slot}'`,
+      scan.topology,
+    );
   }
 
   const { matches } = findByGeometrySnapshot(
@@ -238,7 +266,12 @@ function resolveCreated(ref: Extract<FaceRef, { kind: 'created' }>, ctx: Resolve
     return fallbackResolved(ref, ctx, restricted[0]);
   }
   if (restricted.length === 0) return removed(ref, ctx);
-  return ambiguous(ref, ctx, restricted.length);
+  return ambiguousDiagnostic(
+    ctx,
+    `Created face '${ref.rewriteId}.${ref.slot}' was split into ${restricted.length} children.`,
+    `'${ref.rewriteId}.${ref.slot}'`,
+    restricted,
+  );
 }
 
 function removed(ref: Extract<FaceRef, { kind: 'created' }>, ctx: ResolveContext): ResolveResult {
@@ -251,19 +284,6 @@ function removed(ref: Extract<FaceRef, { kind: 'created' }>, ctx: ResolveContext
       severity: 'error',
       message: `Created face '${ref.rewriteId}.${ref.slot}' was removed by an upstream operation.`,
       hint: HINT_TEMPLATES['feature.face-ref.removed'].template,
-    },
-  };
-}
-function ambiguous(ref: Extract<FaceRef, { kind: 'created' }>, ctx: ResolveContext, count: number): ResolveResult {
-  return {
-    ok: false,
-    diagnostic: {
-      target: 'export-occt',
-      code: 'feature.face-ref.ambiguous-after-split',
-      featureId: ctx.featureId,
-      severity: 'error',
-      message: `Created face '${ref.rewriteId}.${ref.slot}' was split into ${count} children.`,
-      hint: HINT_TEMPLATES['feature.face-ref.ambiguous-after-split'].template,
     },
   };
 }
