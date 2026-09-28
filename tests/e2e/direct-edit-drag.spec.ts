@@ -66,6 +66,12 @@ test('drag slider +30mm: stages PX rewrite, accept clears interference, file res
     });
 
     try {
+        // This suite covers the review path: turn auto-apply (default on for
+        // UI drags) off so the drag stages instead of writing the file.
+        await page.addInitScript(() => {
+            window.localStorage.setItem('kernelcad.directEdit.autoApply', 'false');
+        });
+
         // ---- Load the start pose: exactly one interference pair. ----------
         await page.goto(`/?script=${encodeURIComponent(SCRIPT)}`);
         await expect(page.getByTestId('part-row-slider')).toBeVisible({ timeout: 180_000 });

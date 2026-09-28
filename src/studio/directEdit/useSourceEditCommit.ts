@@ -23,7 +23,7 @@ import { useStudioChrome } from '../context/StudioChromeContext';
 import { ReplaceSourceCommand } from '../../authoring/commands/implementations/ReplaceSourceCommand';
 import { currentStudioScript, shouldUseHostedMesh } from '../scriptSource';
 import { saveSourceToScript } from './saveSource';
-import { resolveSourceEditTarget, type SourceEditTarget } from './sourceEditTarget';
+import { resolveSourceEditTarget, targetForEdit, type SourceEditTarget } from './sourceEditTarget';
 import type { StagedEdit } from '../store/shellStore';
 
 export type SourceEditCommitResult =
@@ -48,6 +48,27 @@ function isDevLabRoute(): boolean {
 /** The dev file endpoint is served by the vite middleware only. */
 function devSourceSaveAvailable(): boolean {
     return Boolean(import.meta.env?.DEV) && !shouldUseHostedMesh();
+}
+
+/** What runs after each apply/undo/redo of an edit on this target. */
+function persistenceFor(
+    target: Exclude<SourceEditTarget, { kind: 'readOnly' }>,
+    appliedCode: string,
+    saveProject: (code: string) => void,
+): ((code: string) => void) | undefined {
+    if (target.kind === 'project') return saveProject;
+    if (target.kind !== 'script') return undefined;
+    // Undo/redo write the file back too, so disk follows the editor. The
+    // apply itself was saved before it ran; skip that repeat.
+    const script = target.script;
+    let lastSaved = appliedCode;
+    return (code) => {
+        if (code === lastSaved) return;
+        lastSaved = code;
+        saveSourceToScript(script, code).catch((error: unknown) => {
+            console.error('Direct-edit undo save failed:', error);
+        });
+    };
 }
 
 export function useSourceEditTarget(): SourceEditTarget {
@@ -86,12 +107,13 @@ export function useSourceEditCommit(): {
         edit: StagedEdit,
         options?: SourceEditCommitOptions,
     ): Promise<SourceEditCommitResult> => {
-        if (target.kind === 'readOnly') {
-            return { ok: false, reason: 'read-only', message: target.hint };
+        const editTarget = targetForEdit(target, edit.targetScript, devSourceSaveAvailable());
+        if (editTarget.kind === 'readOnly') {
+            return { ok: false, reason: 'read-only', message: editTarget.hint };
         }
-        if (target.kind === 'script') {
+        if (editTarget.kind === 'script') {
             try {
-                await saveSourceToScript(target.script, edit.toCode);
+                await saveSourceToScript(editTarget.script, edit.toCode);
             } catch (error) {
                 console.error('Direct-edit save failed:', error);
                 return {
@@ -104,22 +126,7 @@ export function useSourceEditCommit(): {
         if (options?.canApply && !options.canApply()) {
             return { ok: false, reason: 'aborted', message: 'The edit went stale before it applied.' };
         }
-        let persist: ((code: string) => void) | undefined;
-        if (target.kind === 'project') {
-            persist = (code) => saveRef.current?.({ code });
-        } else if (target.kind === 'script') {
-            // Undo/redo write the file back too, so disk follows the editor.
-            // The apply itself was saved above; skip that repeat.
-            const script = target.script;
-            let lastSaved = edit.toCode;
-            persist = (code) => {
-                if (code === lastSaved) return;
-                lastSaved = code;
-                saveSourceToScript(script, code).catch((error: unknown) => {
-                    console.error('Direct-edit undo save failed:', error);
-                });
-            };
-        }
+        const persist = persistenceFor(editTarget, edit.toCode, (code) => saveRef.current?.({ code }));
         commandManager.execute(new ReplaceSourceCommand(edit.fromCode, edit.toCode, edit.intent, persist));
         return { ok: true };
     }, [commandManager, target]);

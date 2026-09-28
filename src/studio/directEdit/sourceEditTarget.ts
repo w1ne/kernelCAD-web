@@ -46,3 +46,15 @@ export function resolveSourceEditTarget(input: SourceEditTargetInput): SourceEdi
     }
     return input.hasActiveProject ? { kind: 'project' } : { kind: 'memory' };
 }
+
+/** The target for one edit. An edit staged on a `?script=` route carries that
+ *  script (`StagedEdit.targetScript`); on the dev server it is saved back to
+ *  that file even if the route changed since. Read-only always wins. */
+export function targetForEdit(
+    target: SourceEditTarget,
+    editTargetScript: string | undefined,
+    devSourceSave: boolean,
+): SourceEditTarget {
+    if (target.kind === 'readOnly' || !editTargetScript || !devSourceSave) return target;
+    return { kind: 'script', script: editTargetScript };
+}
