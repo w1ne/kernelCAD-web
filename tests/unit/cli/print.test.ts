@@ -5,7 +5,8 @@ import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { createServer, type Server } from 'node:http';
-import { printSendScript } from '../../../src/agent/cli/commands/print';
+import { printSendScript, listPrinterProfiles, formatPrinterProfiles } from '../../../src/agent/cli/commands/print';
+import { PRINTER_PROFILE_IDS } from '../../../src/kernel/export/gcode/printerProfiles';
 
 let server: Server;
 let port: number;
@@ -56,5 +57,32 @@ describe('kernelcad print send', () => {
     expect(r.exitCode).toBe(1);
     expect(r.ok).toBe(false);
     expect(r.message).toMatch(/\[unreachable\]/);
+  });
+});
+
+describe('kernelcad print printers / --printer', () => {
+  it('lists every profile id with its build volume, nozzle and slicer family', () => {
+    const profiles = listPrinterProfiles();
+    expect(profiles.map(p => p.name)).toEqual([...PRINTER_PROFILE_IDS]);
+    const text = formatPrinterProfiles(profiles);
+    const lines = text.split('\n');
+    expect(lines[0]).toMatch(/^id\s+build volume\s+nozzle\s+slicer\s+printer$/);
+    expect(lines).toHaveLength(PRINTER_PROFILE_IDS.length + 1);
+    expect(lines[1]).toMatch(/^generic-fdm \(default\)\s+220x220x250 mm\s+0\.4 mm\s+generic\s+/);
+    expect(text).toMatch(/bambu-a1-mini\s+180x180x180 mm\s+0\.4 mm\s+bambu\s+Bambu Lab A1 mini/);
+  });
+
+  it('refuses an unknown --printer with the valid ids before reading the gcode', async () => {
+    const r = await printSendScript({ gcodeFile: '/nonexistent.gcode', protocol: 'octoprint', host: '127.0.0.1', printer: 'nope' });
+    expect(r.exitCode).toBe(2);
+    expect(r.message).toContain(`Unknown printer profile 'nope'. Known profiles: ${PRINTER_PROFILE_IDS.join(', ')}.`);
+  });
+
+  it('refuses a Bambu Lab profile over octoprint, and accepts generic-fdm', async () => {
+    const bad = await printSendScript({ gcodeFile: gcodePath, protocol: 'octoprint', host: '127.0.0.1', port, apiKey: 'k', dryRun: true, printer: 'bambu-p1s' });
+    expect(bad.exitCode).toBe(2);
+    expect(bad.message).toMatch(/takes protocol 'bambu-lan', not 'octoprint'/);
+    const ok = await printSendScript({ gcodeFile: gcodePath, protocol: 'octoprint', host: '127.0.0.1', port, apiKey: 'k', dryRun: true, printer: 'generic-fdm' });
+    expect(ok.ok).toBe(true);
   });
 });

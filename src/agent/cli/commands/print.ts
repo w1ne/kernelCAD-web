@@ -5,10 +5,15 @@
 // `kernelcad print send <gcode-file> --protocol <p> --host <h> ...` — CLI
 // front-end for the `send_to_printer` MCP tool's core logic. Real upload
 // only: OctoPrint / Moonraker HTTP, or Bambu Lab LAN-mode FTPS+MQTT.
+// `kernelcad print printers` lists the bundled printer profiles (the ids
+// accepted by `--printer` here and by export 3mf/gcode `options.printer`).
 
 import { Command } from 'commander';
 import { readFile } from 'node:fs/promises';
-import { sendToPrinter, type PrinterProtocol } from '../../../kernel/print/sendToPrinter';
+import { sendToPrinter, printerProtocolError, type PrinterProtocol } from '../../../kernel/print/sendToPrinter';
+import {
+  PRINTER_PROFILE_IDS, PRINTER_PROFILES, DEFAULT_PRINTER_PROFILE, type PrinterProfile,
+} from '../../../kernel/export/gcode/printerProfiles';
 
 export interface PrintSendCliInput {
   gcodeFile: string;
@@ -20,6 +25,8 @@ export interface PrintSendCliInput {
   serial?: string;
   /** bambu-lan only: model 3MF to package the G-code into. */
   model3mfFile?: string;
+  /** Printer profile id, checked against `protocol` before upload. */
+  printer?: string;
   filename?: string;
   startPrint?: boolean;
   dryRun?: boolean;
@@ -34,6 +41,8 @@ export interface PrintSendCliResult {
 }
 
 export async function printSendScript(input: PrintSendCliInput): Promise<PrintSendCliResult> {
+  const printerError = printerProtocolError(input.printer, input.protocol);
+  if (printerError !== undefined) return { exitCode: 2, ok: false, message: printerError };
   let gcode: Uint8Array;
   try {
     gcode = await readFile(input.gcodeFile);
@@ -76,8 +85,36 @@ export async function printSendScript(input: PrintSendCliInput): Promise<PrintSe
   return { exitCode: 1, ok: false, message: `[${outcome.kind}] ${outcome.message}` };
 }
 
+/** The bundled printer profiles, in registry order. */
+export function listPrinterProfiles(): PrinterProfile[] {
+  return PRINTER_PROFILE_IDS.map(id => PRINTER_PROFILES[id]);
+}
+
+/** One aligned text row per profile: id, build volume, nozzle, slicer, label. */
+export function formatPrinterProfiles(profiles: readonly PrinterProfile[]): string {
+  const rows = profiles.map(p => [
+    p.name + (p.name === DEFAULT_PRINTER_PROFILE ? ' (default)' : ''),
+    `${p.bedSizeMm.x}x${p.bedSizeMm.y}x${p.bedSizeMm.z} mm`,
+    `${p.nozzleMm} mm`,
+    p.slicer,
+    p.label + (p.note !== undefined ? ` — ${p.note}` : ''),
+  ]);
+  const header = ['id', 'build volume', 'nozzle', 'slicer', 'printer'];
+  const widths = header.map((h, i) => Math.max(h.length, ...rows.map(r => r[i].length)));
+  const line = (r: string[]) => r.map((c, i) => (i === r.length - 1 ? c : c.padEnd(widths[i]))).join('  ');
+  return [line(header), ...rows.map(line)].join('\n');
+}
+
 export function printCommand(): Command {
-  const cmd = new Command('print').description('Send a G-code file to a real network printer');
+  const cmd = new Command('print').description('Send a G-code file to a real network printer, or list printer profiles');
+  cmd
+    .command('printers')
+    .description('List the bundled printer profiles: id, build volume, nozzle, slicer family, maker/model and spec source')
+    .option('--json', 'emit the profiles as JSON')
+    .action((opts: { json?: boolean }) => {
+      const profiles = listPrinterProfiles();
+      console.log(opts.json ? JSON.stringify(profiles, null, 2) : formatPrinterProfiles(profiles));
+    });
   cmd
     .command('send')
     .description('Upload a .gcode file to OctoPrint, Moonraker, or a Bambu Lab printer (LAN mode) and start the print')
@@ -89,13 +126,14 @@ export function printCommand(): Command {
     .option('--access-code <code>', 'Bambu LAN-mode access code')
     .option('--serial <serial>', 'Bambu printer serial number')
     .option('--model-3mf <path>', "bambu-lan: model .3mf (export 3mf) to package the G-code into as a .gcode.3mf")
+    .option('--printer <id>', "printer profile id (see 'kernelcad print printers'); checked against --protocol")
     .option('--filename <name>', "uploaded file name (default: 'kernelcad.gcode')")
     .option('--no-start-print', 'upload without starting the print')
     .option('--dry-run', 'validate connectivity/auth only; never uploads or starts a print')
     .option('--json', 'emit result as JSON')
     .action(async (gcodeFile: string, opts: {
       protocol: string; host: string; port?: number; apiKey?: string; accessCode?: string;
-      serial?: string; model3mf?: string; filename?: string; startPrint?: boolean; dryRun?: boolean; json?: boolean;
+      serial?: string; model3mf?: string; printer?: string; filename?: string; startPrint?: boolean; dryRun?: boolean; json?: boolean;
     }) => {
       if (opts.protocol !== 'octoprint' && opts.protocol !== 'moonraker' && opts.protocol !== 'bambu-lan') {
         console.error(`Unsupported protocol: ${opts.protocol}. Use one of octoprint, moonraker, bambu-lan.`);
@@ -110,6 +148,7 @@ export function printCommand(): Command {
         accessCode: opts.accessCode,
         serial: opts.serial,
         ...(opts.model3mf !== undefined ? { model3mfFile: opts.model3mf } : {}),
+        ...(opts.printer !== undefined ? { printer: opts.printer } : {}),
         filename: opts.filename,
         startPrint: opts.startPrint,
         dryRun: opts.dryRun,

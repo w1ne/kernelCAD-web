@@ -3,6 +3,7 @@
 import { exportTool } from '../tools/export';
 import { listApiTool } from '../tools/listApi';
 import { listDiagnosticCodesTool } from '../tools/listDiagnosticCodes';
+import { PRINTER_PROFILE_IDS } from '../../../kernel/export/gcode/printerProfiles';
 import type { ToolRegistryEntry } from './types';
 
 export const referenceExportToolEntries: ToolRegistryEntry[] = [
@@ -93,7 +94,7 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
             description:
               "target:'model' — optional per-format options bag. Discriminator options.format must equal top-level format. " +
               'dxf: { layers?, unit?: "mm"|"cm"|"in", tolerance? }. ' +
-              '3mf: { printUnit?: "mm"|"cm"|"in", embedSource?, arrange?: "none"|"plate"|"assembled", orient?: boolean, slicer?: "generic"|"bambu"|"orca"|"prusa", printer?: bed profile (default "generic-fdm") }; parts that do not fit the bed are still written and reported as warn diagnostics export.3mf.plate-overflow / export.3mf.exceeds-bed. ' +
+              '3mf: { printUnit?: "mm"|"cm"|"in", embedSource?, arrange?: "none"|"plate"|"assembled", orient?: boolean, slicer?: "generic"|"bambu"|"orca"|"prusa", printer?: printer profile id, one of ' + PRINTER_PROFILE_IDS.map(id => `"${id}"`).join('|') + ' (default "generic-fdm"; sets the bed for arrange and the slicer default; an unknown id is refused with the valid list; CLI: kernelcad print printers) }; parts that do not fit the bed are still written and reported as warn diagnostics export.3mf.plate-overflow / export.3mf.exceeds-bed, whose hint names the smallest profiles the layout fits on. ' +
               'glb: { axis?: "y-up"|"z-up", draco?: false }. ' +
               'svg-drawing: { sheet?: "a4"|"a3" (or any pdf-drawing sheet), projection?, titleBlock?: { title?, partName?, material?, revision? }, modelName?, date?, annotations?, exploded?: { factor, mode? }, balloons?, partsList?, sections?, autoAnnotate? }. ' +
               'svg-drawing annotations is an array of authored dimensions/notes, each '
