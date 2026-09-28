@@ -8,8 +8,8 @@
 // script. Use `--separate` to emit four individual files.
 //
 // `--preset publish` switches to the studio product shot of render_preview's
-// preset: 'publish' — same option rules (resolvePublishLook), same renderer
-// path (headlessRender's `publish` stage). A bare publish render writes one
+// preset: 'publish' — same option rules (resolvePublishLook, via
+// renderLook.ts), same renderer path (headlessRender's `publish` stage). A bare publish render writes one
 // 3/4 hero PNG (`<stem>.hero.png`); `--separate` / `--pose` render those
 // views in the publish look instead. `--background` / `--no-shadow` apply
 // only under `--preset publish`.
@@ -39,15 +39,7 @@ import type { Assembly } from '../../../modeling/capture/assembly';
 import { probeAssemblies } from '../../../modeling/runtime/mechanismProbe';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { parseExplodeInput, type ParsedExplode } from '../../../modeling/runtime/explodedPoses';
-import {
-  PUBLISH_BACKGROUND_HINT,
-  PUBLISH_MAX_SIZE,
-  PUBLISH_MIN_SIZE,
-  PUBLISH_PRESET,
-  RENDER_PRESETS,
-  resolvePublishLook,
-  type PublishStageSpec,
-} from '../../../shared/render/publishPreset';
+import { resolveRenderLook, type RenderLook } from './renderLook';
 
 export interface RenderInput {
   file: string;
@@ -364,93 +356,6 @@ function resolveRenderFlags(input: RenderInput): RenderFlagsResolution {
     return { ok: false, result: { exitCode: 1, outputPaths: [] } };
   }
   return { ok: true, objectFilter, section, explode };
-}
-
-/** Default per-tile size of the engineering look. */
-const DEFAULT_TILE_SIZE = 1024;
-
-interface RenderLook {
-  publish: PublishStageSpec | undefined;
-  /** Bare publish render: one hero shot instead of the four views. */
-  hero: boolean;
-  width: number;
-  height: number;
-  views: readonly RenderView[];
-  poses: string[] | undefined;
-}
-
-type RenderLookResolution = { ok: true; look: RenderLook } | { ok: false; result: RenderCliResult };
-
-function refuseRenderLook(message: string, hint: string): RenderLookResolution {
-  console.error(`${message}\n  hint: ${hint}`);
-  return { ok: false, result: { exitCode: 1, outputPaths: [] } };
-}
-
-/**
- * Resolve `--preset` / `--background` / `--no-shadow` / `--width` /
- * `--height` into what the renderer captures. The option rules are
- * render_preview's (resolvePublishLook); a bad combination exits 1 before
- * the render surface is provisioned.
- */
-export function resolveRenderLook(input: RenderInput): RenderLookResolution {
-  const resolved = resolvePublishLook(input, 'default');
-  if (!resolved.ok) {
-    switch (resolved.reason) {
-      case 'unknown-preset':
-        return refuseRenderLook(
-          `render: unknown --preset '${String(input.preset)}'. Valid: ${RENDER_PRESETS.join(', ')}.`,
-          'Pass --preset publish for a studio product shot, or omit --preset for the engineering look.',
-        );
-      case 'look-without-publish':
-        return refuseRenderLook(
-          'render: --background and --no-shadow apply only to --preset publish.',
-          'Add --preset publish, or drop --background/--no-shadow for the engineering look.',
-        );
-      case 'invalid-background':
-        return refuseRenderLook(
-          `render: invalid --background '${String(input.background)}'.`,
-          PUBLISH_BACKGROUND_HINT.replace(/^Pass background/, 'Pass --background'),
-        );
-    }
-  }
-  const publish = resolved.publish;
-  if (publish === undefined) {
-    return {
-      ok: true,
-      look: {
-        publish,
-        hero: false,
-        width: input.width ?? DEFAULT_TILE_SIZE,
-        height: input.height ?? DEFAULT_TILE_SIZE,
-        views: ALL_VIEWS,
-        poses: input.poses,
-      },
-    };
-  }
-  const width = input.width ?? PUBLISH_PRESET.stillWidth;
-  const height = input.height ?? PUBLISH_PRESET.stillHeight;
-  const inRange = (n: number) => Number.isInteger(n) && n >= PUBLISH_MIN_SIZE && n <= PUBLISH_MAX_SIZE;
-  if (!inRange(width) || !inRange(height)) {
-    return refuseRenderLook(
-      `render: --preset publish needs --width/--height integers in [${PUBLISH_MIN_SIZE}, ${PUBLISH_MAX_SIZE}] (got ${width}×${height}).`,
-      `Pass sizes in that range, or omit them for ${PUBLISH_PRESET.stillWidth}×${PUBLISH_PRESET.stillHeight}.`,
-    );
-  }
-  // Same rule as render_preview: a bare publish render is one hero shot;
-  // --separate (the four views) or --pose still work under the preset.
-  const poses = input.poses ?? [];
-  const hero = !input.separate && poses.length === 0;
-  return {
-    ok: true,
-    look: {
-      publish,
-      hero,
-      width,
-      height,
-      views: input.separate ? ALL_VIEWS : [],
-      poses: hero ? [`${PUBLISH_PRESET.heroAzDeg},${PUBLISH_PRESET.heroElDeg}`] : input.poses,
-    },
-  };
 }
 
 type RenderProbeResolution =

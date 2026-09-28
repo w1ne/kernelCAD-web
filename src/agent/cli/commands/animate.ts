@@ -29,8 +29,8 @@
 //
 // TURNTABLE MODE (`--turntable`): a seamless 360° orbit of the static model
 // instead of the animationView timeline — the CLI face of capture_animation
-// ({ turntable: true }). Flags resolve through the MCP tool's own validator
-// (captureTurntableInput.ts) and drive the same engine (captureTurntable.ts):
+// ({ turntable: true }), in animateTurntable.ts. Flags resolve through the MCP
+// tool's own validator and drive the same engine (captureTurntable.ts):
 // `.gif` out → GIF, other out → MP4, `--frames` → PNG sequence (the only
 // mode that keeps a transparent backdrop). Look defaults to --preset publish;
 // --preset/--width/--height/--duration-ms/--elevation/--background/
@@ -57,17 +57,18 @@ import {
 } from '../../render/captureAnimation';
 import type { HeadlessObjectFilter } from '../../render/headlessRender';
 import { buildObjectFilter } from './render';
-import { captureTurntable } from '../../render/captureTurntable';
 import {
-  resolveTurntableSettings,
-  turntableCaptureOpts,
-} from '../../mcp/tools/captureTurntableInput';
+  captureTurntableFromCli,
+  configureTurntableOptions,
+  turntableCliInput,
+  turntableOnlyFlagsRefusal,
+  type TurntableCliFields,
+} from './animateTurntable';
 import { formatHuman } from '../../../shared/diagnostics/formatter';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
-import type { RenderPreset } from '../../../shared/render/publishPreset';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
 
-export interface AnimateCliInput {
+export interface AnimateCliInput extends TurntableCliFields {
   file: string;
   /** MP4 output path (positional). Mutually exclusive with `frames`. */
   out?: string;
@@ -92,47 +93,6 @@ export interface AnimateCliInput {
   /** Progress sink forwarded to the capture engine. The command wires a
    *  timestamped stderr writer here unless --quiet. */
   onProgress?: (msg: string) => void;
-  /** Turntable mode (`--turntable`): 360° orbit of the static model. */
-  turntable?: boolean;
-  /** Turntable look (`--preset`); default 'publish'. */
-  preset?: string;
-  /** Turntable frame size in px (`--width` / `--height`; default 1080). */
-  width?: number;
-  height?: number;
-  /** Turntable: one revolution in ms (`--duration-ms`; default 6000). */
-  durationMs?: number;
-  /** Turntable: camera elevation in degrees (`--elevation`; default 22). */
-  elevation?: number;
-  /** Turntable + publish: backdrop (`--background`). */
-  background?: string;
-  /** Turntable + publish: contact shadow (`--no-shadow` → false). */
-  shadow?: boolean;
-  /** Turntable: HDRI environment override (`--environment`). */
-  environment?: string;
-}
-
-/** Turntable-only CLI fields and their flag spellings (for the timeline-mode
- *  refusal). */
-const TURNTABLE_ONLY_FLAGS: ReadonlyArray<readonly [keyof AnimateCliInput, string]> = [
-  ['preset', '--preset'],
-  ['width', '--width'],
-  ['height', '--height'],
-  ['durationMs', '--duration-ms'],
-  ['elevation', '--elevation'],
-  ['background', '--background'],
-  ['shadow', '--no-shadow'],
-  ['environment', '--environment'],
-];
-
-/** The shared validator words its refusals for the MCP tool; name the CLI
- *  command and flags instead. */
-function toCliWording(text: string): string {
-  return text
-    .replace(/^capture_animation: /, 'animate --turntable: ')
-    .replace(/\bframes_dir\b/g, '--frames')
-    .replace(/\bduration_ms\b/g, '--duration-ms')
-    .replace(/\belevation_deg\b/g, '--elevation')
-    .replace(/\bverify_every\b/g, '--verify-every');
 }
 
 export interface AnimateCliResult {
@@ -228,16 +188,8 @@ function refuseAnimateUsage(input: AnimateCliInput): AnimateCliResult | null {
       safeFps(input.fps),
     );
   }
-  if (input.turntable !== true) {
-    const present = TURNTABLE_ONLY_FLAGS.filter(([field]) => input[field] !== undefined).map(([, flag]) => flag);
-    if (present.length > 0) {
-      return usageRefusal(
-        `animate: ${present.join(', ')} apply only to --turntable.`,
-        'Add --turntable for a 360° orbit of the model, or drop those flags to capture the animationView timeline.',
-        safeFps(input.fps),
-      );
-    }
-  }
+  const timelineRefusal = input.turntable === true ? undefined : turntableOnlyFlagsRefusal(input);
+  if (timelineRefusal !== undefined) return usageRefusal(timelineRefusal.message, timelineRefusal.hint, safeFps(input.fps));
   if (input.skipVerify === true && input.verifyEvery !== undefined) {
     return usageRefusal(
       'animate: --no-verify and --verify-every are mutually exclusive — there is no schedule to densify when verification is skipped.',
@@ -291,33 +243,9 @@ export async function runAnimate(input: AnimateCliInput): Promise<AnimateCliResu
 
   let result: CaptureAnimationResult;
   if (input.turntable === true) {
-    const settings = resolveTurntableSettings({
-      ...(input.preset !== undefined ? { preset: input.preset as RenderPreset } : {}),
-      ...(input.width !== undefined ? { width: input.width } : {}),
-      ...(input.height !== undefined ? { height: input.height } : {}),
-      ...(input.durationMs !== undefined ? { duration_ms: input.durationMs } : {}),
-      ...(input.elevation !== undefined ? { elevation_deg: input.elevation } : {}),
-      ...(input.background !== undefined ? { background: input.background } : {}),
-      ...(input.shadow !== undefined ? { shadow: input.shadow } : {}),
-      ...(input.fps !== undefined ? { fps: input.fps } : {}),
-      ...(input.out !== undefined ? { output_path: input.out } : {}),
-      ...(input.frames !== undefined ? { frames_dir: input.frames } : {}),
-      ...(input.verifyEvery !== undefined ? { verify_every: input.verifyEvery } : {}),
-    });
-    if ('message' in settings) {
-      return usageRefusal(toCliWording(settings.message), toCliWording(settings.hint), safeFps(input.fps));
-    }
-    result = await captureTurntable(
-      turntableCaptureOpts(settings, {
-        scriptPath: input.file,
-        ...(input.out !== undefined ? { outPath: input.out } : {}),
-        ...(input.frames !== undefined ? { framesDir: input.frames } : {}),
-        ...(objectFilter !== undefined ? { objectFilter } : {}),
-        ...(input.environment !== undefined ? { environment: input.environment } : {}),
-        ...(input.baseUrl !== undefined ? { baseUrl: input.baseUrl } : {}),
-        ...(input.onProgress !== undefined ? { onProgress: input.onProgress } : {}),
-      }),
-    );
+    const started = captureTurntableFromCli(input, objectFilter);
+    if (!(started instanceof Promise)) return usageRefusal(started.message, started.hint, safeFps(input.fps));
+    result = await started;
   } else {
     result = await captureAnimation(captureAnimationOptsFor(input, objectFilter));
   }
@@ -346,7 +274,7 @@ export async function runAnimate(input: AnimateCliInput): Promise<AnimateCliResu
 }
 
 export function animateCommand(): Command {
-  const cmd = new Command('animate')
+  const cmd = configureTurntableOptions(new Command('animate'))
     .description("Capture the script's animationView({...}) timeline to MP4 (ffmpeg) or a PNG frame sequence, verifying the sampled poses for part interference; --turntable captures a 360° orbit of the model instead")
     .argument('<file>', 'path to a .kcad.ts script with an animationView({...}) record (any script with --turntable)')
     .argument(
@@ -370,18 +298,6 @@ export function animateCommand(): Command {
       '--base-url <url>',
       'optional render-surface override (e.g. a running studio dev server); default is the bundled static player',
     )
-    .option('--turntable', 'capture a seamless 360° orbit of the (static) model instead of the animationView timeline')
-    .option('--preset <name>', "--turntable only: look, 'publish' (default; studio product shot) or 'default' (engineering look)")
-    .option('--width <n>', '--turntable only: frame width in px (default 1080; even for MP4)', (v) => Number(v))
-    .option('--height <n>', '--turntable only: frame height in px (default 1080; even for MP4)', (v) => Number(v))
-    .option('--duration-ms <ms>', '--turntable only: one revolution in ms (default 6000)', (v) => Number(v))
-    .option('--elevation <deg>', '--turntable only: camera elevation above the horizon in degrees (default 22)', (v) => Number(v))
-    .option(
-      '--background <color>',
-      "--turntable + publish only: 'white' (default), 'light', 'dark', 'black', a hex colour, or 'transparent' (needs --frames)",
-    )
-    .option('--no-shadow', '--turntable + publish only: drop the soft contact shadow')
-    .option('--environment <preset|url|none>', '--turntable only: HDRI environment override (same values as `kernelcad render --environment`)')
     .option('--json', 'structured report to stdout (progress still goes to stderr)')
     .option('--quiet', 'suppress the stderr progress lines')
     .addHelpText(
@@ -416,16 +332,9 @@ Turntable examples:
       baseUrl?: string;
       json?: boolean;
       quiet?: boolean;
-      turntable?: boolean;
-      preset?: string;
-      width?: number;
-      height?: number;
-      durationMs?: number;
-      elevation?: number;
-      background?: string;
+    } & TurntableCliFields & {
       /** Commander negation: `--no-shadow` sets this false; default true. */
       shadow: boolean;
-      environment?: string;
     }, command: Command) => {
       const r = await runAnimate({
         file,
@@ -443,16 +352,7 @@ Turntable examples:
         // Progress always goes to stderr (even under --json — stdout must
         // stay pure JSON) unless --quiet.
         ...(opts.quiet ? {} : { onProgress: stderrProgressSink }),
-        ...(opts.turntable === true ? { turntable: true } : {}),
-        ...(opts.preset !== undefined ? { preset: opts.preset } : {}),
-        ...(opts.width !== undefined ? { width: opts.width } : {}),
-        ...(opts.height !== undefined ? { height: opts.height } : {}),
-        ...(opts.durationMs !== undefined ? { durationMs: opts.durationMs } : {}),
-        ...(opts.elevation !== undefined ? { elevation: opts.elevation } : {}),
-        ...(opts.background !== undefined ? { background: opts.background } : {}),
-        // Only when --no-shadow was passed: commander always materializes true.
-        ...(command.getOptionValueSource('shadow') === 'cli' ? { shadow: opts.shadow } : {}),
-        ...(opts.environment !== undefined ? { environment: opts.environment } : {}),
+        ...turntableCliInput(opts, command),
       });
       if (opts.json) {
         console.log(JSON.stringify(r.result, null, 2));
