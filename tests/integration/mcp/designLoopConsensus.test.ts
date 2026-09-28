@@ -90,6 +90,20 @@ describe('design_loop consensus option', () => {
     expect(result.nextActionPrompt).toBeUndefined();
   }, 240_000);
 
+  it('reports no pick and a fix-the-candidates prompt when every candidate is invalid', async () => {
+    const result = await designLoopTool({
+      goal: 'A plate.',
+      attempts: [{ id: 'a', code: BROKEN }, { id: 'b', code: BROKEN }],
+      requireVisualReview: false,
+      consensus: true,
+    });
+    expect(result.ok).toBe(false);
+    expect(result.finalAttemptId).toBeUndefined();
+    expect(result.consensus?.chosenIndex).toBeNull();
+    expect(result.consensus?.chosenAttemptId).toBeUndefined();
+    expect(result.nextActionPrompt).toMatch(/All 2 candidates were dropped/);
+  }, 120_000);
+
   it('is unchanged without the option: first passing attempt, no consensus block', async () => {
     const result = await designLoopTool({
       goal: 'A 41 x 20 x 6 mm flat mounting plate.',
