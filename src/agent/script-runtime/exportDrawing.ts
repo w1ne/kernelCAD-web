@@ -14,6 +14,7 @@ import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { NEXT_ACTIONS } from '../../shared/diagnostics/registry';
 
 import { svgSheetsToPdf } from '../../kernel/export/pdf/svgSheetToPdf';
+import { KERNELCAD_NAME, attributionGenerator } from '../../shared/links/attribution';
 
 import type { ExportInput, ExportResult, PdfDrawingOptions } from './export';
 
@@ -61,8 +62,8 @@ export async function exportPdfDrawing(
   const bytes = svgSheetsToPdf([svg], {
     title: pdf.title ?? modelName,
     subject: `Engineering drawing: ${pdf.partName ?? modelName}`,
-    creator: 'kernelCAD pdf-drawing export',
-    producer: 'kernelCAD',
+    creator: `${KERNELCAD_NAME} pdf-drawing export`,
+    producer: attributionGenerator(),
   });
   return { ...sheet, bytes };
 }

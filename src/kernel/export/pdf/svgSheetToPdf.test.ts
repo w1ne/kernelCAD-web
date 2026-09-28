@@ -133,6 +133,20 @@ describe('svgSheetToPdfPage', () => {
     expect(() => svgSheetToPdfPage('<g/>')).toThrow(/no <svg> root/);
   });
 
+  it('turns <a href> around text into a URI link annotation over the text', () => {
+    const svg = SHEET('<a href="https://example.org/?a=1&amp;b=(2)"><text x="10" y="20" font-size="2">link</text></a>');
+    const page = svgSheetToPdfPage(svg);
+    expect(page.links).toHaveLength(1);
+    expect(page.links[0].uri).toBe('https://example.org/?a=1&b=(2)');
+    const [x0, y0, x1, y1] = page.links[0].rect;
+    expect([x0, y0, y1]).toEqual([10, 20 - 1.6, 20 + 0.5]);
+    expect(x1).toBeCloseTo(10 + textWidth('link', 2), 9);
+    const s = latin1(svgSheetsToPdf([svg], {}, false));
+    expect(s).toContain('/Annots [8 0 R]');
+    expect(s).toContain('/Subtype /Link');
+    expect(s).toContain('/A << /S /URI /URI (https://example.org/?a=1&b=\\(2\\)) >>');
+  });
+
   it('writes one page per sheet', () => {
     const s = latin1(svgSheetsToPdf([SHEET(''), SHEET('')], {}, false));
     expect(s).toContain('/Count 2');

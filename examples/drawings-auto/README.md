@@ -98,7 +98,7 @@ npx tsx src/agent/cli/index.ts export pdf-drawing examples/drawings-auto/bracket
 Output:
 
 ```
-Wrote 14458 bytes to examples/drawings-auto/bracket.pdf
+Wrote 14882 bytes to examples/drawings-auto/bracket.pdf
 drawing: 20 annotation(s) placed, 1 overlapped (hole-position 9, overall 3, hole 3, datum 3, flatness 1, fillet 1, chamfer 1, general-tolerance 1)
 ```
 

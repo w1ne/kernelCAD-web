@@ -398,6 +398,10 @@ interface Hatch {
 interface RenderContext {
   out: string[];
   hatches: Map<string, Hatch>;
+  /** href of the enclosing <a>, if any. */
+  href?: string;
+  /** Link areas in sheet mm (y down): [x0, y0, x1, y1]. */
+  links: Array<{ rect: [number, number, number, number]; uri: string }>;
 }
 
 function num(v: string | undefined, fallback = 0): number {
@@ -506,6 +510,16 @@ function paintGeometry(ctx: RenderContext, g: Geometry, style: Attrs, canFill: b
 const hexCodes = (codes: readonly number[]): string =>
   `<${codes.map(c => c.toString(16).padStart(2, '0')).join('')}>`;
 
+function isBold(weight: string | undefined): boolean {
+  return weight === 'bold' || weight === 'bolder' || num(weight, 400) >= 600;
+}
+
+/** How far text-anchor moves the start of a run of `width`. */
+function anchorShift(anchor: string | undefined, width: number): number {
+  if (anchor === 'middle') return width / 2;
+  return anchor === 'end' ? width : 0;
+}
+
 function paintText(ctx: RenderContext, node: XmlNode, style: Attrs): void {
   const content = node.text.replace(/\s+/g, ' ').trim();
   if (content === '') return;
@@ -513,14 +527,16 @@ function paintText(ctx: RenderContext, node: XmlNode, style: Attrs): void {
   const color = fill === 'none' ? undefined : parseColor(fill);
   if (color === undefined) return;
   const size = num(style['font-size'], 16);
-  const weight = style['font-weight'] ?? 'normal';
-  const bold = weight === 'bold' || weight === 'bolder' || num(weight, 400) >= 600;
+  const bold = isBold(style['font-weight']);
   const font = bold ? PDF_FONTS.bold : PDF_FONTS.regular;
   const runs = textRuns(content);
   const width = runs.reduce((w, r) => w + runAdvanceEm(r, bold), 0) * size;
-  const anchor = style['text-anchor'] ?? 'start';
-  let x = num(node.attrs.x) + num(node.attrs.dx) - (anchor === 'middle' ? width / 2 : anchor === 'end' ? width : 0);
+  let x = num(node.attrs.x) + num(node.attrs.dx) - anchorShift(style['text-anchor'], width);
   const y = num(node.attrs.y) + num(node.attrs.dy);
+  if (ctx.href !== undefined && node.attrs.transform === undefined) {
+    // Link area: the text's advance box, ascender to descender.
+    ctx.links.push({ rect: [x, y - 0.8 * size, x + width, y + 0.25 * size], uri: ctx.href });
+  }
   const ops: string[] = [colorOp(color, false), colorOp(color, true)];
   for (const run of runs) {
     if (run.kind === 'text') {
@@ -607,6 +623,11 @@ function renderNode(ctx: RenderContext, node: XmlNode, inherited: Attrs): void {
   const shape = SHAPES[node.tag];
   if (node.tag === 'svg' || node.tag === 'g') {
     for (const c of node.children) renderNode(ctx, c, style);
+  } else if (node.tag === 'a') {
+    const outer = ctx.href;
+    ctx.href = node.attrs.href ?? node.attrs['xlink:href'] ?? outer;
+    for (const c of node.children) renderNode(ctx, c, style);
+    ctx.href = outer;
   } else if (node.tag === 'text') {
     paintText(ctx, node, style);
   } else if (shape !== undefined) {
@@ -623,6 +644,8 @@ export interface SvgSheetPage {
   heightMm: number;
   /** PDF content stream drawing the sheet. */
   content: string;
+  /** <a href> link areas in sheet mm (y down): [x0, y0, x1, y1]. */
+  links: Array<{ rect: [number, number, number, number]; uri: string }>;
 }
 
 /** Transcribe one SVG sheet into a PDF page content stream. */
@@ -641,9 +664,10 @@ export function svgSheetToPdfPage(svg: string): SvgSheetPage {
     // Sheet mm, y down -> PDF points, y up.
     out: [`${n(PT_PER_MM)} 0 0 ${n(-PT_PER_MM)} ${n(-vx * PT_PER_MM)} ${n((vh + vy) * PT_PER_MM)} cm`],
     hatches,
+    links: [],
   };
   renderNode(ctx, root, { fill: '#000' });
-  return { widthMm: vw, heightMm: vh, content: ctx.out.join('\n') };
+  return { widthMm: vw, heightMm: vh, content: ctx.out.join('\n'), links: ctx.links };
 }
 
 /** Transcribe SVG sheets into a PDF file, one page per sheet. */
@@ -652,6 +676,11 @@ export function svgSheetsToPdf(svgs: readonly string[], info: PdfInfo = {}, comp
     widthPt: p.widthMm * PT_PER_MM,
     heightPt: p.heightMm * PT_PER_MM,
     content: p.content,
+    // Sheet mm, y down -> points, y up (a viewBox origin other than 0 0 is not used by sheets).
+    links: p.links.map(l => ({
+      rect: [l.rect[0] * PT_PER_MM, (p.heightMm - l.rect[3]) * PT_PER_MM, l.rect[2] * PT_PER_MM, (p.heightMm - l.rect[1]) * PT_PER_MM] as const,
+      uri: l.uri,
+    })),
   }));
   return writePdf(pages, info, compress);
 }

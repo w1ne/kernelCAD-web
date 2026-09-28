@@ -16,7 +16,17 @@ export interface PdfPageSpec {
   heightPt: number;
   /** Page content stream (PDF operators). */
   content: string;
+  /** Clickable URI links: rect is [x0, y0, x1, y1] in points, y up. */
+  links?: readonly PdfLink[];
 }
+
+export interface PdfLink {
+  rect: readonly [number, number, number, number];
+  uri: string;
+}
+
+/** PDF literal string: ASCII with `\`, `(` and `)` escaped. */
+const pdfLiteral = (s: string): string => `(${s.replace(/[\\()]/g, c => `\\${c}`)})`;
 
 export interface PdfInfo {
   title?: string;
@@ -55,7 +65,8 @@ export function pdfNum(v: number): string {
 /** Serialise `pages` into a complete PDF file. */
 export function writePdf(pages: readonly PdfPageSpec[], info: PdfInfo = {}, compress = true): Uint8Array {
   if (pages.length === 0) throw new Error('writePdf: at least one page is required');
-  // Object numbers: 1 catalog, 2 page tree, 3 info, 4 F1, 5 F2, then page/content pairs.
+  // Object numbers: 1 catalog, 2 page tree, 3 info, 4 F1, 5 F2, then
+  // page/content pairs, then link annotations.
   const objects: Uint8Array[] = [];
   const pageIds = pages.map((_, i) => 6 + 2 * i);
   objects.push(latin1('<< /Type /Catalog /Pages 2 0 R >>'));
@@ -67,11 +78,21 @@ export function writePdf(pages: readonly PdfPageSpec[], info: PdfInfo = {}, comp
   objects.push(latin1(`<< ${infoEntries.map(([k, v]) => `/${k} ${pdfTextString(v)}`).join(' ')} >>`));
   objects.push(latin1('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>'));
   objects.push(latin1('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>'));
+  let nextAnnotId = 6 + 2 * pages.length;
+  const annotations: Uint8Array[] = [];
   pages.forEach((page, i) => {
     const contentId = pageIds[i] + 1;
+    const annotIds = (page.links ?? []).map(link => {
+      annotations.push(latin1(
+        `<< /Type /Annot /Subtype /Link /Rect [${link.rect.map(pdfNum).join(' ')}] /Border [0 0 0] ` +
+        `/A << /S /URI /URI ${pdfLiteral(link.uri)} >> >>`,
+      ));
+      return nextAnnotId++;
+    });
     objects.push(latin1(
       `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pdfNum(page.widthPt)} ${pdfNum(page.heightPt)}] ` +
       `/Resources << /ProcSet [/PDF /Text] /Font << /${PDF_FONTS.regular} 4 0 R /${PDF_FONTS.bold} 5 0 R >> >> ` +
+      `${annotIds.length > 0 ? `/Annots [${annotIds.map(id => `${id} 0 R`).join(' ')}] ` : ''}` +
       `/Contents ${contentId} 0 R >>`,
     ));
     const raw = latin1(page.content);
@@ -84,6 +105,7 @@ export function writePdf(pages: readonly PdfPageSpec[], info: PdfInfo = {}, comp
     body.set(tail, head.length + data.length);
     objects.push(body);
   });
+  objects.push(...annotations);
 
   const chunks: Uint8Array[] = [latin1('%PDF-1.4\n%\xe2\xe3\xcf\xd3\n')];
   let offset = chunks[0].length;

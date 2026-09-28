@@ -21,6 +21,7 @@ import { callMcpTool } from '../../../src/agent/mcp/toolRegistry';
 import { exportScript } from '../../../src/agent/cli/commands/export';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { PLATE_WITH_HOLES } from '../../helpers/drawingPdf/fixtureModels';
+import { attributionGenerator, attributionUrl } from '../../../src/shared/links/attribution';
 
 const BRACKET_FILE = join(__dirname, '../../../examples/drawings-auto/bracket.kcad.ts');
 const BRACKET = readFileSync(BRACKET_FILE, 'utf8');
@@ -69,13 +70,14 @@ describe('pdf-drawing: file structure', () => {
     expect(offsets).toHaveLength(count - 1);
     offsets.forEach((off, i) => expect(s.slice(off, off + 12)).toMatch(new RegExp(`^${i + 1} 0 obj\\n`)));
     expect(bracket.page.pageCount).toBe(1);
-    // Golden-ish skeleton: catalog, one page, info, two standard fonts, one compressed content stream.
+    // Golden-ish skeleton: catalog, one page, info, two standard fonts, one compressed content stream, one link.
     expect(s.match(/\/Type \/Catalog/g)).toHaveLength(1);
     expect(s.match(/\/Type \/Page /g)).toHaveLength(1);
     expect(s.match(/\/Type \/Font /g)).toHaveLength(2);
     expect(s.match(/\/Filter \/FlateDecode/g)).toHaveLength(1);
     expect(s).toContain('/Resources << /ProcSet [/PDF /Text] /Font << /F1 4 0 R /F2 5 0 R >> >>');
-    expect(count).toBe(8); // free entry + 7 objects
+    expect(s.match(/\/Subtype \/Link/g)).toHaveLength(1); // the "Made with kernelCAD" link
+    expect(count).toBe(9); // free entry + 7 objects + 1 link annotation
   });
 
   it('is an A3 landscape page by default', () => {
@@ -106,6 +108,48 @@ describe('pdf-drawing: title block', () => {
     expect(texts.filter(t => t === 'plate')).toHaveLength(2);
     expect(texts.filter(t => t === '—').length).toBeGreaterThanOrEqual(2); // material, revision
   }, 120_000);
+});
+
+describe('pdf-drawing: attribution', () => {
+  it('prints a linked "Made with kernelCAD" line and stamps the producer metadata', async () => {
+    expect(textsOf(bracket.page)).toContain('Made with kernelCAD \u00b7 kernelcad.com');
+    const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
+    const doc = await pdfjs.getDocument({ data: new Uint8Array(bracket.bytes), isEvalSupported: false, verbosity: 0 }).promise;
+    try {
+      const { info } = await doc.getMetadata() as { info: Record<string, unknown> };
+      expect(info.Producer).toBe(attributionGenerator());
+      expect(info.Creator).toBe('kernelCAD pdf-drawing export');
+      const annots = await (await doc.getPage(1)).getAnnotations();
+      const link = annots.find(a => a.subtype === 'Link');
+      expect(link?.url).toBe(attributionUrl('drawing'));
+      expect(link?.url).toContain('https://kernelcad.com/?ref=drawing');
+      // The link sits on the line: inside the title block's DATE cell, bottom-right of the sheet.
+      const [x0, y0, x1, y1] = link!.rect as number[];
+      const made = textAt(bracket.page, 'Made with kernelCAD \u00b7 kernelcad.com');
+      const mmPerPt = 25.4 / 72;
+      expect(x0 * mmPerPt).toBeLessThanOrEqual(made.x + 0.01);
+      expect(x1 * mmPerPt).toBeGreaterThanOrEqual(made.x + made.widthMm - 0.01);
+      expect(297 - y1 * mmPerPt).toBeLessThan(made.y);
+      expect(297 - y0 * mmPerPt).toBeGreaterThan(made.y);
+    } finally {
+      await doc.destroy();
+    }
+  });
+});
+
+describe('svg-drawing: attribution with the full title block', () => {
+  it('names the generator on the root and links the "Made with" line', async () => {
+    const r = await runAndExport({
+      code: 'return box(40, 30, 10);',
+      fileName: 'block.kcad.ts',
+      format: 'svg-drawing',
+      options: { format: 'svg-drawing', titleBlock: { title: 'Block' } },
+    });
+    const svg = new TextDecoder().decode(r.bytes);
+    expect(svg).toContain(`data-kc-generator="${attributionGenerator()}"`);
+    expect(svg).toContain(`<a href="${attributionUrl('drawing').replace(/&/g, '&amp;')}">`);
+    expect(svg).toContain('>Made with kernelCAD \u00b7 kernelcad.com</text></a>');
+  }, 60_000);
 });
 
 describe('pdf-drawing: views and annotations', () => {
