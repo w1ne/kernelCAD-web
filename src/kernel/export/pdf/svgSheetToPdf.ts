@@ -266,7 +266,7 @@ export function pathDataToGeometry(d: string): Geometry {
       continue;
     }
     const rel = cmd === cmd.toLowerCase();
-    const C = cmd.toUpperCase();
+    let C = cmd.toUpperCase();
     if (C === 'Z') {
       g.ops.push('h');
       cx = sx; cy = sy;
@@ -283,6 +283,7 @@ export function pathDataToGeometry(d: string): Geometry {
           sx = cx; sy = cy;
           move(cx, cy);
           cmd = rel ? 'l' : 'L'; // subsequent pairs are implicit lineto
+          C = 'L';
           lastCubic = lastQuad = undefined;
           break;
         }
