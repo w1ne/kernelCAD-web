@@ -1,0 +1,74 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+// src/shared/links/attribution.ts
+//
+// kernelCAD attribution — the ONE place that names the project and links back
+// to it. Exported files (STEP / GLB / STL / DXF / URDF / SRDF / SDF / MJCF)
+// stamp `attributionGenerator()` into the format's own metadata field (never
+// into geometry), and the public viewer surfaces link back through
+// `attributionUrl()`.
+//
+// Self-hosters and forks: this file and `referral.ts` next to it are the only
+// places to change. Edit the constants below to rename or re-point the
+// attribution. See docs/attribution.md.
+
+import { kernelcadVersion } from '../runtime/kernelcadVersion';
+
+/** Product name as it appears in file metadata and the viewer badge. */
+export const KERNELCAD_NAME = 'kernelCAD';
+
+/** Project homepage. Attribution links and file metadata point here. */
+export const KERNELCAD_HOMEPAGE = 'https://kernelcad.com';
+
+/** Hosted app. */
+export const KERNELCAD_APP_URL = 'https://app.kernelcad.com';
+
+/**
+ * Where a link or an exported file is shown to a person or an agent. Used as
+ * `utm_medium` / `ref` on our own links and per-surface on vendor links.
+ */
+export type LinkSurface =
+  | 'bom'
+  | 'shopcheck'
+  | 'part'
+  | 'studio'
+  | 'embed'
+  | 'share'
+  | 'drawing'
+  | 'export';
+
+/**
+ * The generator string stamped into exported-file metadata:
+ * `kernelCAD <version> (https://kernelcad.com)`.
+ *
+ * `version` defaults to the runtime registry (`'unknown'` in a browser that
+ * never installs it). Writers that already resolve the package version pass
+ * it in.
+ */
+export function attributionGenerator(version: string = kernelcadVersion()): string {
+  return `${KERNELCAD_NAME} ${version} (${KERNELCAD_HOMEPAGE})`;
+}
+
+/**
+ * A link to one of OUR OWN pages, tagged with the surface it was shown on:
+ * `?ref=<surface>&utm_source=kernelcad&utm_medium=<surface>`.
+ *
+ * Only for kernelCAD-owned URLs. Vendor links go through `buildVendorUrl()`
+ * in `referral.ts`. Existing query parameters and the fragment are kept;
+ * calling it twice gives the same URL.
+ */
+export function attributionUrl(
+  surface: LinkSurface,
+  base: string = KERNELCAD_HOMEPAGE,
+): string {
+  let url: URL;
+  try {
+    url = new URL(base);
+  } catch {
+    return base;
+  }
+  url.searchParams.set('ref', surface);
+  url.searchParams.set('utm_source', 'kernelcad');
+  url.searchParams.set('utm_medium', surface);
+  return url.toString();
+}
