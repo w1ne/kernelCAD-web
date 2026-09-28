@@ -4399,7 +4399,7 @@
   },
   {
     "name": "design_loop",
-    "description": "Use this when the goal is complex / production / enclosure / gearbox / robot-arm / multi-body, or when you need evaluate→review/verify→revise until green. PREFERRED over one-shot evaluate_script+open_in_studio for Adam-level parts. Runs a CAD design loop over attempt scripts: review_cad each attempt, continue past functional attempts with unresolved warnings, return repair prompts (nextActionPrompt) plus structured revisionAssist (suggestedPatches / autoApplied.suggestedCode for repairable feature failures; cookbook steers for stacked-primitive toys). Stop on ok or convergence.escalate. For organic/car bodies set likenessProfile:\"automotive\" and pass bodyLikeness (or automotive stills on visualReview.checks) — attempts fail closed until body-likeness is publishReady. Optionally write a Studio build record JSON.",
+    "description": "Use this when the goal is complex / production / enclosure / gearbox / robot-arm / multi-body, or when you need evaluate→review/verify→revise until green. PREFERRED over one-shot evaluate_script+open_in_studio for Adam-level parts. Runs a CAD design loop over attempt scripts: review_cad each attempt, continue past functional attempts with unresolved warnings, return repair prompts (nextActionPrompt) plus structured revisionAssist (suggestedPatches / autoApplied.suggestedCode for repairable feature failures; cookbook steers for stacked-primitive toys). Stop on ok or convergence.escalate. To pick among N alternative candidates for one goal without a judge, pass them all as attempts with consensus:true (geometric medoid selection). For organic/car bodies set likenessProfile:\"automotive\" and pass bodyLikeness (or automotive stills on visualReview.checks) — attempts fail closed until body-likeness is publishReady. Optionally write a Studio build record JSON.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -4521,6 +4521,10 @@
         "stopOnPass": {
           "type": "boolean",
           "description": "Stop after the first attempt that is functional and passes the quality gate. Default true."
+        },
+        "consensus": {
+          "type": "boolean",
+          "description": "Best-of-N by geometric consensus. When true, attempts are N independent candidates for the SAME goal (not a repair sequence): all are reviewed (stopOnPass ignored), all scripts are executed, candidates without a valid solid are dropped, and the candidate whose geometry agrees most with the others (medoid by symmetric Chamfer distance, same model frame) is selected. Ties go to more gates passed, then the shorter script. Returns consensus { chosenIndex, chosenAttemptId, scores, distances, reason }; ok / finalAttemptId / nextActionPrompt describe the selected candidate. Default false."
         },
         "autoRevise": {
           "type": "boolean",
