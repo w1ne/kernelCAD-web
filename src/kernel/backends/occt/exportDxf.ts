@@ -24,7 +24,8 @@
 // <iso-date>` (shared/links/attribution.ts) matching
 // the STL header convention, and (b) the OCCT tessellation tolerance recorded
 // in mm. `$INSUNITS = 4` (mm) by default; `5` (cm) and `1` (in) when the
-// caller picks them via `options.unit`.
+// caller picks them via `options.unit`. Input geometry is in mm; the
+// coordinates are rescaled to the chosen unit so they match `$INSUNITS`.
 
 import { createRequire } from 'node:module';
 import type {
@@ -78,10 +79,15 @@ export type DxfInput =
  *  units appear; the writer rejects any others at the type system. */
 const INSUNITS: Record<DxfUnit, number> = { mm: 4, cm: 5, in: 1 };
 
+/** Millimetres per drawing unit: written coordinates are `mm / MM_PER_UNIT`. */
+const MM_PER_UNIT: Record<DxfUnit, number> = { mm: 1, cm: 10, in: 25.4 };
+
 export function exportDxf(input: DxfInput, options: DxfWriterOptions): Uint8Array {
   const unit: DxfUnit = options.unit ?? 'mm';
   const tolerance = options.tolerance ?? 0.05;
   const cutLayer = options.layers?.[0]?.name ?? 'cut';
+  const k = MM_PER_UNIT[unit];
+  const toUnit = (pts: Vec2[]): Vec2[] => pts.map(([x, y]) => [x / k, y / k]);
 
   const outer = input.kind === 'region' ? input.region.outer : input.outer;
   const holes = input.kind === 'region' ? input.region.holes : (input.holes ?? []);
@@ -119,12 +125,12 @@ export function exportDxf(input: DxfInput, options: DxfWriterOptions): Uint8Arra
 
   // ENTITIES section
   lines.push('0', 'SECTION', '2', 'ENTITIES');
-  writeClosedPolyline(lines, outer, cutLayer);
+  writeClosedPolyline(lines, toUnit(outer), cutLayer);
   for (const hole of holes) {
-    writeClosedPolyline(lines, hole, cutLayer);
+    writeClosedPolyline(lines, toUnit(hole), cutLayer);
   }
   for (const bl of bendLines) {
-    writeOpenPolyline(lines, [bl.start, bl.end], 'BEND');
+    writeOpenPolyline(lines, toUnit([bl.start, bl.end]), 'BEND');
   }
   lines.push('0', 'ENDSEC');
 

@@ -8,13 +8,20 @@
 // through the materials, `arrange: 'plate'` packs parts on Z=0 without XY
 // overlap, `orient` puts the largest flat face down, `arrange: 'assembled'`
 // keeps relative positions, and the `slicer` sidecars match the model.
+// Bed fit: parts that do not fit the printer bed come back as bed warnings
+// naming exactly the parts that sit outside it. Units: the numbers in the
+// file times the declared `<model unit>` equal the model's millimetres.
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { unzipSync, strFromU8 } from 'fflate';
 import { JSDOM } from 'jsdom';
 import { initOcct, OcctBackend } from '../../../../../src/kernel/backends/occt/occtBackend';
 import { sceneToWorldFrameParts } from '../../../../../src/kernel/backends/occt/sceneToWorldFrame';
-import { export3mfAsync, type Export3mfOptions } from '../../../../../src/kernel/backends/occt/export3mf';
+import {
+  export3mfAsync,
+  export3mfWithReportAsync,
+  type Export3mfOptions,
+} from '../../../../../src/kernel/backends/occt/export3mf';
 import { runAndExport } from '../../../../../src/agent/script-runtime/export';
 import { Transform } from '../../../../../src/shared/runtime/se3';
 import type { SceneBackend, SceneBackendPart } from '../../../../../src/kernel/backends/sceneBackend';
@@ -295,4 +302,166 @@ describe('export3mfAsync — slicer-ready output', () => {
     expect(cfg).toMatch(/<part id="1"[\s\S]*?key="extruder" value="1"/);
     expect(cfg).toMatch(/<part id="2"[\s\S]*?key="extruder" value="2"/);
   });
+});
+
+const UNIT_MM: Record<string, number> = { millimeter: 1, centimeter: 10, inch: 25.4 };
+const BED = 220;
+
+/** Real-world (mm) bbox of every build item: file numbers x declared unit. */
+function itemBoxesMm(p: Parsed3mf) {
+  const k = UNIT_MM[p.doc.documentElement.getAttribute('unit')!];
+  return p.items.map((it) => {
+    const b = bbox(itemVertices(p, it));
+    return { min: b.min.map((v) => v * k), max: b.max.map((v) => v * k) };
+  });
+}
+
+const onBed = (b: { min: number[]; max: number[] }) =>
+  b.min[0] >= -1e-6 && b.min[1] >= -1e-6 && b.max[0] <= BED + 1e-6 && b.max[1] <= BED + 1e-6;
+
+async function exportWithReport(s: SceneBackend, opts: Partial<Export3mfOptions>) {
+  const r = await export3mfWithReportAsync(sceneToWorldFrameParts(s), { format: '3mf', assemblyName: s.assemblyName, ...opts });
+  return { p: parse(r.bytes), warnings: r.bedWarnings };
+}
+
+describe('export3mfAsync — bed fit warnings', () => {
+  beforeAll(async () => {
+    await initOcct();
+  });
+
+  it("arrange: 'plate' that fits the bed has no warnings", async () => {
+    const { warnings } = await exportWithReport(trio(), { arrange: 'plate' });
+    expect(warnings).toEqual([]);
+  });
+
+  it("arrange: 'none' never warns, even for a part larger than the bed", async () => {
+    const big = scene([{ name: 'big', shape: OcctBackend.box(400, 20, 5), worldTransform: Transform.identity() }]);
+    const { warnings } = await exportWithReport(big, {});
+    expect(warnings).toEqual([]);
+  });
+
+  it("an overflowing plate warns and names exactly the parts placed past the bed edge", async () => {
+    const parts: SceneBackendPart[] = Array.from({ length: 9 }, (_, i) => ({
+      name: `tile${i}`, shape: OcctBackend.box(100, 100, 10), worldTransform: Transform.identity(),
+    }));
+    const { p, warnings } = await exportWithReport(scene(parts), { arrange: 'plate' });
+    // The file is still written: every part has a build item.
+    expect(p.items).toHaveLength(9);
+    const boxes = itemBoxesMm(p);
+    const offBed = p.items
+      .map((it, i) => ({ name: p.objects.get(it.objectId)!.name, on: onBed(boxes[i]) }))
+      .filter((x) => !x.on)
+      .map((x) => x.name);
+    expect(offBed.length).toBeGreaterThan(0);
+    expect(offBed.length).toBeLessThan(9);
+    expect(warnings).toHaveLength(1);
+    const w = warnings[0];
+    expect(w.kind).toBe('plate-overflow');
+    expect(w.printer).toBe('generic-fdm');
+    expect(w.bedMm).toEqual({ x: 220, y: 220, z: 250 });
+    expect(w.parts.map((x) => x.name).sort()).toEqual(offBed.sort());
+    for (const x of w.parts) expect(x.sizeMm.map((n) => Math.round(n))).toEqual([100, 100, 10]);
+    // Needed footprint = the extent of the whole packed layout.
+    const all = { min: [0, 1].map((a) => Math.min(...boxes.map((b) => b.min[a]))), max: [0, 1].map((a) => Math.max(...boxes.map((b) => b.max[a]))) };
+    expect(w.neededMm[0]).toBeCloseTo(all.max[0] - all.min[0], 4);
+    expect(w.neededMm[1]).toBeCloseTo(all.max[1] - all.min[1], 4);
+    expect(w.neededMm[1]).toBeGreaterThan(220);
+  });
+
+  it('a part larger than the bed in XY, or taller than the build height, warns with its name and size', async () => {
+    const s = scene([
+      { name: 'long', shape: OcctBackend.box(300, 20, 10), worldTransform: Transform.identity() },
+      { name: 'tall', shape: OcctBackend.box(10, 10, 300), worldTransform: Transform.identity() },
+      { name: 'ok', shape: OcctBackend.box(20, 20, 20), worldTransform: Transform.identity() },
+    ]);
+    const { p, warnings } = await exportWithReport(s, { arrange: 'plate' });
+    expect(p.items).toHaveLength(3);
+    const exceeds = warnings.find((w) => w.kind === 'exceeds-bed')!;
+    expect(exceeds).toBeDefined();
+    expect(exceeds.parts.map((x) => x.name)).toEqual(['long', 'tall']);
+    expect(exceeds.parts[0].sizeMm[0]).toBeCloseTo(300, 4);
+    expect(exceeds.parts[1].sizeMm[2]).toBeCloseTo(300, 4);
+    expect(exceeds.neededMm[0]).toBeCloseTo(300, 4);
+    expect(exceeds.neededMm[2]).toBeCloseTo(300, 4);
+    // An oversized part is never also listed as a plate overflow.
+    const overflow = warnings.find((w) => w.kind === 'plate-overflow');
+    expect(overflow?.parts.map((x) => x.name) ?? []).not.toContain('long');
+  });
+
+  it("orient: true clears the height warning when the part fits lying down", async () => {
+    const s = scene([{ name: 'post', shape: OcctBackend.box(40, 40, 300), worldTransform: Transform.identity() }]);
+    expect((await exportWithReport(s, { arrange: 'plate' })).warnings.map((w) => w.kind)).toEqual(['exceeds-bed']);
+    // Lying down it is 300 wide: still too big, but now in X, not Z.
+    const lying = (await exportWithReport(s, { arrange: 'plate', orient: true })).warnings;
+    expect(lying[0].parts[0].sizeMm[2]).toBeCloseTo(40, 4);
+  });
+
+  it("arrange: 'assembled' larger than the bed warns with the object and the parts outside it", async () => {
+    const s = scene([
+      { name: 'left', shape: OcctBackend.box(20, 20, 5), worldTransform: Transform.identity() },
+      { name: 'mid', shape: OcctBackend.box(20, 20, 5), worldTransform: Transform.translation(140, 0, 0) },
+      { name: 'right', shape: OcctBackend.box(20, 20, 5), worldTransform: Transform.translation(280, 0, 0) },
+    ]);
+    const { warnings } = await exportWithReport(s, { arrange: 'assembled' });
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0].kind).toBe('exceeds-bed');
+    expect(warnings[0].object).toBe('demo');
+    expect(warnings[0].parts.map((x) => x.name)).toEqual(['left', 'right']);
+    expect(warnings[0].neededMm[0]).toBeCloseTo(300, 4);
+  });
+});
+
+describe('export3mfAsync — printUnit round trip', () => {
+  beforeAll(async () => {
+    await initOcct();
+  });
+
+  const cases: Array<{ unit: 'mm' | 'cm' | 'in'; tag: string }> = [
+    { unit: 'mm', tag: 'millimeter' },
+    { unit: 'cm', tag: 'centimeter' },
+    { unit: 'in', tag: 'inch' },
+  ];
+  for (const { unit, tag } of cases) {
+    for (const arrange of ['none', 'plate', 'assembled'] as const) {
+      it(`printUnit '${unit}', arrange '${arrange}': numbers x unit = model mm`, async () => {
+        const s = scene([
+          { name: 'a', shape: OcctBackend.box(60, 40, 4), worldTransform: Transform.translation(10, 20, 30) },
+          { name: 'b', shape: OcctBackend.box(20, 25, 12), worldTransform: Transform.translation(100, 0, 0) },
+        ]);
+        const p = await exportScene(s, { printUnit: unit, arrange });
+        expect(p.doc.documentElement.getAttribute('unit')).toBe(tag);
+        const k = UNIT_MM[tag];
+        const sizeOf = (vs: Array<[number, number, number]>) => {
+          const b = bbox(vs);
+          return [0, 1, 2].map((a) => (b.max[a] - b.min[a]) * k);
+        };
+        if (arrange === 'assembled') {
+          // One object: the assembly extents and each part's offset hold.
+          const all = bbox(itemVertices(p, p.items[0]));
+          expect(sizeOf(itemVertices(p, p.items[0]))).toEqual([110, 60, 34].map((n) => expect.closeTo(n, 4)));
+          // Centred on the 220 mm bed.
+          expect(((all.min[0] + all.max[0]) / 2) * k).toBeCloseTo(110, 3);
+          expect(all.min[2] * k).toBeCloseTo(0, 6);
+          return;
+        }
+        const byName = new Map(p.items.map((it) => [p.objects.get(it.objectId)!.name, itemVertices(p, it)]));
+        expect(sizeOf(byName.get('a')!)).toEqual([60, 40, 4].map((n) => expect.closeTo(n, 4)));
+        expect(sizeOf(byName.get('b')!)).toEqual([20, 25, 12].map((n) => expect.closeTo(n, 4)));
+        const aMin = bbox(byName.get('a')!).min.map((v) => v * k);
+        if (arrange === 'none') {
+          // Modelled world position survives the unit change.
+          expect(aMin).toEqual([10, 20, 30].map((n) => expect.closeTo(n, 4)));
+        } else {
+          // Packed on the 220 mm bed, in real-world millimetres.
+          for (const b of itemBoxesMm(p)) {
+            expect(onBed(b)).toBe(true);
+            expect(b.min[2]).toBeCloseTo(0, 6);
+          }
+          const [A, B] = itemBoxesMm(p);
+          const overlap = A.min[0] < B.max[0] && B.min[0] < A.max[0] && A.min[1] < B.max[1] && B.min[1] < A.max[1];
+          expect(overlap).toBe(false);
+        }
+      });
+    }
+  }
 });
