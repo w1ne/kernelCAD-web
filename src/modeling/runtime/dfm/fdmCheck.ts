@@ -21,7 +21,9 @@ import { meshShapeForExport, type OcctBackend } from '../../../kernel/backends/o
 import { faceHashOf } from '../../../kernel/backends/occt/createdRefs';
 import { collectFullCylinders } from '../../../kernel/backends/occt/holeDetection';
 import { formatTopoRef } from '../../../kernel/naming/topoRef';
-import { resolvePrinterProfile } from '../../../kernel/export/gcode/printerProfiles';
+import {
+  resolvePrinterProfile, exceedsBed, smallestFittingProfiles, fitsOnAdvice,
+} from '../../../kernel/export/gcode/printerProfiles';
 import { TriangleBvh, type DfmMesh } from './meshBvh';
 import { checkMinWall, MAX_REPORTED_CLUSTERS, type MinWallResult } from './minWall';
 import {
@@ -240,7 +242,8 @@ function fdmDiagnostics(
     const fitting = report.ranking.find(s => s.fitsBed);
     const advice = fitting !== undefined
       ? ` ${orientationPhrase(fitting)} fits as ${size(fitting.sizeMm)} mm.`
-      : ' No axis-aligned orientation fits this bed.';
+      : ' No axis-aligned orientation fits this bed.'
+        + fitsOnAdvice(smallestFittingProfiles(p => !exceedsBed(o.sizeMm, p)));
     out.push(emit(
       'dfm.fdm.exceeds-bed',
       `dfm.fdm: part '${part}' is ${size(o.sizeMm)} mm ${up}, larger than the '${printer}' bed ` +

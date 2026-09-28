@@ -5,7 +5,9 @@ import { type WatertightReport } from '../../kernel/backends/occt/meshHeal';
 import type { ThreeMfBedWarning } from '../../kernel/backends/occt/export3mf';
 import { sliceStlToGcode, withTempStl } from '../../kernel/export/gcode/slicerCli';
 import { parseGcodeHeader } from '../../kernel/export/gcode/gcodeHeaderParser';
-import { resolvePrinterProfile, exceedsBed } from '../../kernel/export/gcode/profiles';
+import {
+  resolvePrinterProfile, exceedsBed, smallestFittingProfiles, fitsOnAdvice,
+} from '../../kernel/export/gcode/profiles';
 import { buildFrameFor, type Vec3 as FdmVec3 } from '../../modeling/runtime/dfm/fdmOrientation';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { NEXT_ACTIONS, HINT_TEMPLATES } from '../../shared/diagnostics/registry';
@@ -81,7 +83,8 @@ export async function sliceShapeToGcode(
         featureId: targetId,
         severity: 'error',
         message: `Model bounding box ${size.x.toFixed(1)}x${size.y.toFixed(1)}x${size.z.toFixed(1)}mm${placed} exceeds the '${printerProfile.name}' bed (${printerProfile.bedSizeMm.x}x${printerProfile.bedSizeMm.y}x${printerProfile.bedSizeMm.z}mm).`,
-        hint: HINT_TEMPLATES['export.gcode.exceeds-bed'].template,
+        hint: HINT_TEMPLATES['export.gcode.exceeds-bed'].template
+          + fitsOnAdvice(smallestFittingProfiles(p => !exceedsBed(size, p))),
         nextAction: NEXT_ACTIONS['export.gcode.exceeds-bed'],
       }],
     };
@@ -156,7 +159,8 @@ export function notWatertightDiagnostic(
  * Translate the 3MF writer's bed warnings (`arrange: 'plate' | 'assembled'`)
  * into `export.3mf.plate-overflow` / `export.3mf.exceeds-bed` warnings. The
  * file is still written; the message names the parts, the bed and the size
- * the layout needs.
+ * the layout needs, and the hint names the smallest bundled profiles the
+ * same layout fits on.
  */
 export function threeMfBedDiagnostics(
   warnings: readonly ThreeMfBedWarning[],
@@ -178,7 +182,7 @@ export function threeMfBedDiagnostics(
       featureId: targetId,
       severity: 'warn',
       message,
-      hint: HINT_TEMPLATES[code].template,
+      hint: HINT_TEMPLATES[code].template + fitsOnAdvice(w.fitsOn.map(resolvePrinterProfile)),
       nextAction: NEXT_ACTIONS[code],
     };
   });
