@@ -499,6 +499,23 @@ function collectReachablePartNames(
   return visited;
 }
 
+/**
+ * True when the assembly declares motion or linkage: any mate, joint
+ * primitive, transmission, mechanical-joint intent or tendon, or a
+ * script-level `solvedModel(...)` call. A plain multi-part assembly
+ * (enclosure base + lid, a keychain body + its text, parts laid out for
+ * printing) declares none of these — it is a set of independent bodies,
+ * not a mechanism, so "every part must be linked" does not apply to it.
+ */
+export function assemblyDeclaresMechanism(arm: Assembly): boolean {
+  return arm.__mates().length > 0
+    || arm.__joints().length > 0
+    || arm.__transmissionIntents().length > 0
+    || arm.__mechanicalJointIntents().length > 0
+    || arm.__tendons().length > 0
+    || arm.__solvedModelRequested();
+}
+
 function checkOrphanParts(arm: Assembly): CompilerDiagnostic[] {
   const parts = arm.__parts();
   if (parts.length <= 1) return [];
@@ -508,6 +525,24 @@ function checkOrphanParts(arm: Assembly): CompilerDiagnostic[] {
   const visited = collectReachablePartNames(adj, root);
   const disconnected = parts.map((p) => p.name).filter((name) => !visited.has(name));
   if (disconnected.length === 0) return [];
+
+  if (!assemblyDeclaresMechanism(arm)) {
+    // Not a mechanism: independent bodies are valid. One info note, so an
+    // author who DID mean to link them still sees why nothing was checked.
+    return [{
+      target: 'export-occt',
+      code: 'mechanism.orphan-part',
+      severity: 'info',
+      message:
+        `Assembly '${arm.name}' has ${parts.length} parts and no mates, joints or transmissions, ` +
+        `so it is treated as independent bodies (not a mechanism); the part-linkage check was skipped. ` +
+        `Add mates/joints only if the parts must move or stay attached to each other.`,
+      hint:
+        'No action needed for independent bodies (enclosure base + lid, print layouts, body + text). ' +
+        'Link parts with mates/joints only when they form a mechanism.',
+      nextAction: { kind: 'inspect-message' },
+    }];
+  }
 
   // One diagnostic per disconnected body, but every message names the full
   // disconnected-component roster + the required connector/mate patterns so
@@ -525,7 +560,9 @@ function checkOrphanParts(arm: Assembly): CompilerDiagnostic[] {
         `partRef.connector(name, { type: 'axis', origin: { kind: 'vec3', value: [x,y,z] }, axis: [ux,uy,uz] }) ` +
         `then arm.mate(..., 'revolute'); rigid mounts use type: 'frame' + mate(..., 'fastened'); ` +
         `or joint primitives arm.revolute/.prismatic/.ball/.fixed. ` +
-        `Connector types are only frame|axis|planar|ball (no gear-contact type).`,
+        `Connector types are only frame|axis|planar|ball (no gear-contact type). ` +
+        `If '${name}' is deliberately a free body next to the mechanism (a loose accessory, a display ` +
+        `or print-layout part), do not invent a mate: pass { skipMechanismCheck: true } to evaluate_script.`,
     ));
   }
   return out;
