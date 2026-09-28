@@ -12,7 +12,7 @@ import { defineConfig, globalIgnores } from 'eslint/config'
 const layerImportRegex = (layer) => `^(\\.\\./)+${layer}(/|$)|(^|/)src/${layer}(/|$)`;
 
 export default defineConfig([
-  globalIgnores(['**/dist/**', 'eval/runs/**', '.claude/worktrees/**', '.worktrees/**']),
+  globalIgnores(['**/dist/**', 'eval/runs/**', 'eval/benchmarks/cadgenbench/runs/**', 'eval/benchmarks/cadgenbench/.cache/**', '.claude/worktrees/**', '.worktrees/**']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [

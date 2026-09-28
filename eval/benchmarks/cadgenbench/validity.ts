@@ -205,7 +205,10 @@ export function checkStepValidity(path: string): Promise<StepValidity> {
         result.errors.push(`BREP not watertight: ${shells.open} of ${shells.shells} shell(s) open (naked or badly oriented edges)`);
       }
 
-      if (typeof (shape as { meshShape?: unknown }).meshShape === 'function') {
+      if (!result.brepValid || !result.watertight) {
+        // Already rejected; the tessellation is the expensive stage (minutes
+        // on a 2000-face part) and cannot change the verdict.
+      } else if (typeof (shape as { meshShape?: unknown }).meshShape === 'function') {
         const mesh = meshShapeForExport(shape as replicad.Shape3D, gateDeflection(shape as replicad.Shape3D));
         result.triangleCount = mesh.triangles.length / 3;
         const meshErrors = result.triangleCount === 0 ? ['tessellation produced no triangles'] : meshManifoldErrors(mesh);

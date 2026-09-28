@@ -18,15 +18,14 @@ import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { AnthropicAgentClient } from '../../agent';
 import { OpenAICompatAgentClient } from '../../agentOpenAICompat';
-import { mapPool } from '../../lib/pool';
 import { buildSystemPrompt, SWEEP_SKILLS } from '../../lib/systemPrompt';
 import { isKernelcadAvailable } from '../../oracle/kernelcad-client';
 import { MODEL as DEFAULT_MODEL } from '../../run';
 import type { AgentClient } from '../../types';
 import { defaultCacheDir, fetchDataset, loadTasks, selectTasks, type TaskSelection } from './dataset';
-import { runTask, type PipelineConfig, type Prices } from './pipeline';
+import { runAll, type PipelineConfig, type Prices } from './pipeline';
 import { renderSummaryMarkdown, summarize } from './report';
-import { isFinished, readTaskState, writeTaskState, type TaskState } from './state';
+import { writeTaskState, type TaskState } from './state';
 import { buildSubmissionZip, candidatePath, hasCandidate } from './submission';
 
 export interface CliOptions {
@@ -237,21 +236,13 @@ async function main(): Promise<void> {
   };
 
   // 3. Tasks, with resume.
-  const states = await mapPool(tasks, opts.workers, async (task, i) => {
-    const prev = readTaskState(opts.runDir, task.id);
-    const taskMode = !agent && !opts.scriptsFrom && task.type === 'generation' ? 'none' : mode;
-    if (isFinished(prev, { retryFailed: opts.retryFailed, mode: taskMode })) {
-      log(`[${i + 1}/${tasks.length}] ${task.id} ${prev!.status} (resumed, skipped)`);
-      return prev!;
-    }
-    const state = await runTask(task, cfg);
-    writeTaskState(opts.runDir, state);
-    log(
-      `[${i + 1}/${tasks.length}] ${task.id} ${task.type} ${state.status}${state.fallback ? ' (passthrough fallback)' : ''} ` +
-        `${(state.wallMs / 1000).toFixed(1)}s${state.error ? ` — ${state.error}` : ''}`,
-    );
-    return state;
-  });
+  const states: TaskState[] = (await runAll(tasks, cfg, { workers: opts.workers, retryFailed: opts.retryFailed })).map(
+    (s) => {
+      const { resumed, ...state } = s;
+      void resumed;
+      return state;
+    },
+  );
 
   // 4. The benchmark's own gate over every candidate in the submission.
   if (opts.officialCheck) {

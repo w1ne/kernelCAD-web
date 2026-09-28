@@ -9,12 +9,12 @@
 //               .kcad.ts that imports it via lib.fromSTEP and applies the
 //               change → gate → STEP
 //
-// The gate for every candidate script is the eval's closed loop
-// (src/agent/loop/closedLoop.ts) with a gate runner that adds two stages to the
-// standard evaluate + interference suite: STEP export, and the validity
-// pre-check (validity.ts). A failure in any stage becomes a typed verdict that
-// the loop's repair prompt feeds back to the model, so an open shell or a
-// non-manifold mesh is repaired like any other diagnostic.
+// Every candidate script runs through the eval's closed loop
+// (src/agent/loop/closedLoop.ts) with a two-stage gate: STEP export (which
+// runs the script, so its diagnostics are the evaluate diagnostics) and the
+// validity pre-check (validity.ts). A failure in either stage becomes a typed
+// verdict that the loop's repair prompt feeds back to the model, so an open
+// shell or a non-manifold mesh is repaired like any other diagnostic.
 //
 // When the loop ends without a passing candidate and the script has an
 // evaluate error, one deterministic repair iteration runs through the
@@ -23,21 +23,21 @@
 // The accepted STEP is written to `<runDir>/submission/<id>/output.step` only
 // when it passes the pre-check (or `keepInvalid` is set).
 
-import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { runClosedLoop } from '../../../src/agent/loop/closedLoop.js';
 import type { GateReport, GateRunner, GateVerdict, LoopMessage } from '../../../src/agent/loop/types.js';
 import { buildRepairPrompt } from '../../../src/agent/loop/repairPrompt';
 import { repairScriptTool } from '../../../src/agent/mcp/tools/repairScript';
 import { inspectStepTool } from '../../../src/agent/mcp/tools/inspectStep';
-import { createWebGateRunner } from '../../loop/webGateRunner.js';
 import { exportStep } from '../../oracle/kernelcad-client';
 import { extractScript } from '../../lib';
 import type { AgentClient, AgentImage, EvaluateResult } from '../../types';
 import type { CadGenBenchTask } from './dataset';
 import { EDIT_INPUT_NAME, editingPrompt, generationPrompt, loadImages } from './prompts';
 import { candidatePath, taskSubmissionDir } from './submission';
-import { taskWorkDir, type TaskState } from './state';
+import { isFinished, readTaskState, taskWorkDir, writeTaskState, type TaskState } from './state';
+import { mapPool } from '../../lib/pool';
 import { checkStepValidity, withOcctLock, type StepValidity } from './validity';
 
 export const VALIDITY_GATE = 'cadgenbench-validity';
@@ -69,6 +69,7 @@ export interface PipelineConfig {
   gate?: GateRunner;
   exportStep?: (scriptPath: string, outPath: string) => Promise<EvaluateResult>;
   precheck?: (stepPath: string) => Promise<StepValidity>;
+  repair?: (scriptPath: string) => Promise<boolean>;
   log?: (line: string) => void;
 }
 
@@ -82,15 +83,13 @@ export function passthroughScript(): string {
   return `// CADGenBench editing passthrough: the starting solid, unchanged.\nconst base = await lib.fromSTEP('./${EDIT_INPUT_NAME}');\nreturn base;\n`;
 }
 
-function verdictFromExport(r: EvaluateResult): GateVerdict {
-  const d = r.diagnostics[0];
-  return {
-    gate: 'export',
-    ok: false,
-    code: d?.code ?? 'export.failed',
-    message: d?.message ?? 'STEP export failed',
-    hint: d?.hint,
-  };
+/** Export diagnostics as evaluate-style verdicts (the export runs the script). */
+export function verdictsFromExport(r: EvaluateResult): GateVerdict[] {
+  const blocking = r.diagnostics.filter((d) => (d as { severity?: string }).severity !== 'info');
+  if (blocking.length === 0) {
+    return [{ gate: 'export', ok: false, code: 'export.failed', message: 'STEP export failed without a diagnostic.' }];
+  }
+  return blocking.map((d) => ({ gate: 'evaluate', ok: false, code: d.code, message: d.message, hint: d.hint, locus: d.featureId }));
 }
 
 export function verdictFromValidity(v: StepValidity): GateVerdict {
@@ -110,34 +109,51 @@ export function verdictFromValidity(v: StepValidity): GateVerdict {
 interface CandidateGate extends GateRunner {
   /** Pre-check verdict of the last STEP exported for a script path. */
   lastValidity(scriptPath: string): StepValidity | undefined;
+  /** First failing verdict of the last gate run for a script path. */
+  lastFailure(scriptPath: string): GateVerdict | undefined;
   stepPathFor(scriptPath: string): string;
 }
 
-/** evaluate + interference → STEP export → validity pre-check, as one gate suite. */
+/**
+ * STEP export (which runs the script) → validity pre-check, as one gate suite.
+ * The export is the evaluate stage: its error diagnostics are the script's.
+ * `cfg.gate` optionally runs first (e.g. the full evaluate + interference suite).
+ */
 export function createCandidateGate(cfg: PipelineConfig): CandidateGate {
-  const base = cfg.gate ?? createWebGateRunner();
+  const base = cfg.gate;
   const exporter = cfg.exportStep ?? exportStep;
   const precheck = cfg.precheck ?? checkStepValidity;
   const validity = new Map<string, StepValidity>();
+  const failures = new Map<string, GateVerdict>();
   const stepPathFor = (scriptPath: string) => scriptPath.replace(/(\.kcad)?\.ts$/, '.step');
   return {
     stepPathFor,
     lastValidity: (p) => validity.get(p),
+    lastFailure: (p) => failures.get(p),
     async run(scriptPath: string): Promise<GateReport> {
-      validity.delete(scriptPath);
-      const report = await base.run(scriptPath);
-      if (!report.ok) return report;
-      const stepPath = stepPathFor(scriptPath);
-      const exported = await exporter(scriptPath, stepPath);
-      if (!exported.ok || !existsSync(stepPath)) {
-        return { ok: false, verdicts: [...report.verdicts, verdictFromExport(exported)] };
-      }
-      const v = await precheck(stepPath);
-      validity.set(scriptPath, v);
-      const verdicts = [...report.verdicts, verdictFromValidity(v)];
-      return { ok: v.valid, verdicts };
+      const report = await runStages(scriptPath);
+      const failed = report.verdicts.find((v) => !v.ok);
+      if (failed) failures.set(scriptPath, failed);
+      else failures.delete(scriptPath);
+      return report;
     },
   };
+
+  async function runStages(scriptPath: string): Promise<GateReport> {
+    validity.delete(scriptPath);
+    const report: GateReport = base ? await base.run(scriptPath) : { ok: true, verdicts: [] };
+    if (!report.ok) return report;
+    const stepPath = stepPathFor(scriptPath);
+    if (existsSync(stepPath)) rmSync(stepPath);
+    const exported = await exporter(scriptPath, stepPath);
+    if (!exported.ok || !existsSync(stepPath)) {
+      return { ok: false, verdicts: [...report.verdicts, ...verdictsFromExport(exported)] };
+    }
+    const v = await precheck(stepPath);
+    validity.set(scriptPath, v);
+    const verdicts = [...report.verdicts, verdictFromValidity(v)];
+    return { ok: v.valid, verdicts };
+  }
 }
 
 interface LoopOutcome {
@@ -299,7 +315,7 @@ export async function runTask(task: CadGenBenchTask, cfg: PipelineConfig): Promi
     // 2. One deterministic repair iteration when the script does not evaluate.
     if (produced && !passed && gate.lastValidity(scriptPath) === undefined) {
       state.repaired = true;
-      if (await deterministicRepair(scriptPath)) {
+      if (await (cfg.repair ?? deterministicRepair)(scriptPath)) {
         log(`[${task.id}] repair_script applied a patch`);
         passed = (await gate.run(scriptPath)).ok;
       }
@@ -322,13 +338,56 @@ export async function runTask(task: CadGenBenchTask, cfg: PipelineConfig): Promi
       // scripts-from attempt it is recorded as a fallback of that mode, so a
       // resumed run of the same mode does not pay for the task again.
       return finish(
-        { mode: state.mode === 'none' ? 'passthrough' : state.mode, fallback: 'passthrough', status: fbStatus },
+        state.mode === 'none'
+          ? { mode: 'passthrough', status: fbStatus }
+          : { mode: state.mode, fallback: 'passthrough', status: fbStatus },
         fallbackPath,
       );
     }
     if (status !== undefined) return finish({ status });
-    return finish({ status: 'failed', error: produced ? 'no candidate passed evaluate + export' : 'no script extracted' });
+    const why = gate.lastFailure(scriptPath);
+    return finish({
+      status: 'failed',
+      error: produced
+        ? `no candidate passed export${why ? ` — ${why.code ?? why.gate}: ${why.message.slice(0, 200)}` : ''}`
+        : 'no script extracted',
+    });
   } catch (e) {
     return finish({ status: 'infra_error', error: e instanceof Error ? e.message : String(e) });
   }
+}
+
+export interface RunAllOptions {
+  workers: number;
+  /** Rerun tasks that ended `invalid` or `failed`. */
+  retryFailed: boolean;
+}
+
+/**
+ * Run tasks with bounded concurrency and resume: a task whose state.json is
+ * already terminal for this run's producer is skipped, every other task runs
+ * and its state is written as soon as it ends (a killed run loses at most the
+ * tasks in flight).
+ */
+export async function runAll(
+  tasks: CadGenBenchTask[],
+  cfg: PipelineConfig,
+  opts: RunAllOptions,
+): Promise<Array<TaskState & { resumed: boolean }>> {
+  const log = cfg.log ?? (() => {});
+  const producer: TaskState['mode'] = cfg.scriptsFrom ? 'scripts-from' : cfg.agent ? 'llm' : 'passthrough';
+  return mapPool(tasks, opts.workers, async (task, i) => {
+    const prev = readTaskState(cfg.runDir, task.id);
+    if (isFinished(prev, { retryFailed: opts.retryFailed, mode: producer })) {
+      log(`[${i + 1}/${tasks.length}] ${task.id} ${prev!.status} (resumed, skipped)`);
+      return { ...prev!, resumed: true };
+    }
+    const state = await runTask(task, cfg);
+    writeTaskState(cfg.runDir, state);
+    log(
+      `[${i + 1}/${tasks.length}] ${task.id} ${task.type} ${state.status}${state.fallback ? ' (passthrough fallback)' : ''} ` +
+        `${(state.wallMs / 1000).toFixed(1)}s${state.error ? ` — ${state.error}` : ''}`,
+    );
+    return { ...state, resumed: false };
+  });
 }
