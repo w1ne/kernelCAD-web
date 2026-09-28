@@ -43,6 +43,10 @@ function expectBedWarnings(diagnostics: readonly CompilerDiagnostic[]): void {
   expect(overflow.message).toMatch(/'tile\d' 100\.0x100\.0x10\.0mm/);
   expect(overflow.message).not.toContain("'bar'");
   expect(overflow.hint).toMatch(/larger bed.*fewer parts per plate.*split/);
+  // Both hints name the smallest bundled profiles the layout fits on.
+  expect(overflow.hint).toMatch(/ Fits on: [^']+\('[a-z0-9.-]+'\)/);
+  expect(exceeds.hint).toMatch(/ Fits on: [^']+\('[a-z0-9.-]+'\)/);
+  expect(exceeds.hint).not.toContain("'generic-fdm'");
 }
 
 describe("3MF arrange: 'plate' bed-fit warning", () => {

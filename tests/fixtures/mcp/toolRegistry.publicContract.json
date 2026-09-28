@@ -2689,7 +2689,7 @@
         },
         "options": {
           "type": "object",
-          "description": "target:'model' — optional per-format options bag. Discriminator options.format must equal top-level format. dxf: { layers?, unit?: \"mm\"|\"cm\"|\"in\", tolerance? }. 3mf: { printUnit?: \"mm\"|\"cm\"|\"in\", embedSource?, arrange?: \"none\"|\"plate\"|\"assembled\", orient?: boolean, slicer?: \"generic\"|\"bambu\"|\"orca\"|\"prusa\", printer?: bed profile (default \"generic-fdm\") }; parts that do not fit the bed are still written and reported as warn diagnostics export.3mf.plate-overflow / export.3mf.exceeds-bed. glb: { axis?: \"y-up\"|\"z-up\", draco?: false }. svg-drawing: { sheet?: \"a4\"|\"a3\" (or any pdf-drawing sheet), projection?, titleBlock?: { title?, partName?, material?, revision? }, modelName?, date?, annotations?, exploded?: { factor, mode? }, balloons?, partsList?, sections?, autoAnnotate? }. svg-drawing annotations is an array of authored dimensions/notes, each { kind: \"linear\"|\"radius\"|\"diameter\"|\"angular\"|\"note\", view?: \"front\"|\"top\"|\"left\"|\"iso\", text?, offset? } plus kind-specific geometry: linear { from, to }, radius/diameter { edge: EdgeQuery }, angular { from: EdgeQuery, to: EdgeQuery }, note { at, text }. from/to/at anchors are an [x,y,z] model point, { edge: EdgeQuery } or { face: FaceQuery }. Supplying any annotation REPLACES the automatic bounding-box dimensions; an annotation whose query resolves to zero or multiple matches fails the export rather than being dropped. svg-drawing sections is an array of { plane: \"xy\"|\"xz\"|\"yz\"|{ origin, normal }, label } (any non-zero normal). svg-drawing autoAnnotate is true or { tolerance?: \"ISO2768-f\"|\"ISO2768-m\"|\"ISO2768-c\", datums?: \"auto\"|[{ label, face: FaceQuery }], include?: [\"datums\"|\"flatness\"|\"holes\"|\"hole-positions\"|\"overall\"|\"fillets\"|\"chamfers\"|\"general-tolerance\"] }; datums and tolerances declared in the script with shape.datum() / shape.tolerance() override the automatic ones. pdf-drawing: { sheet?: \"a4\"|\"a3\"|\"a2\"|\"a1\"|\"a0\"|\"ansi-a\"|\"ansi-b\"|\"ansi-c\"|\"ansi-d\"|\"ansi-e\"|\"auto\"|\"auto-ansi\" (default \"a3\"), projection?: \"third\"|\"first\", title?, partName?, material?, revision?, date? (default today), modelName?, annotations?, sections?, exploded?, balloons?, partsList?, autoAnnotate? (default true unless annotations are given) } — the svg-drawing keys mean the same."
+          "description": "target:'model' — optional per-format options bag. Discriminator options.format must equal top-level format. dxf: { layers?, unit?: \"mm\"|\"cm\"|\"in\", tolerance? }. 3mf: { printUnit?: \"mm\"|\"cm\"|\"in\", embedSource?, arrange?: \"none\"|\"plate\"|\"assembled\", orient?: boolean, slicer?: \"generic\"|\"bambu\"|\"orca\"|\"prusa\", printer?: printer profile id, one of \"generic-fdm\"|\"bambu-a1-mini\"|\"bambu-a1\"|\"bambu-p1s\"|\"bambu-p1p\"|\"bambu-x1c\"|\"bambu-x1e\"|\"bambu-h2d\"|\"bambu-h2s\"|\"prusa-mini-plus\"|\"prusa-mk4s\"|\"prusa-core-one\"|\"prusa-xl\"|\"creality-ender-3-v3\"|\"creality-k1\"|\"creality-k1-max\"|\"creality-k2-plus\"|\"elegoo-neptune-4-pro\"|\"anycubic-kobra-3\"|\"voron-2.4-250\"|\"voron-2.4-300\"|\"voron-2.4-350\"|\"ultimaker-s5\" (default \"generic-fdm\"; sets the bed for arrange and the slicer default; an unknown id is refused with the valid list; CLI: kernelcad print printers) }; parts that do not fit the bed are still written and reported as warn diagnostics export.3mf.plate-overflow / export.3mf.exceeds-bed, whose hint names the smallest profiles the layout fits on. glb: { axis?: \"y-up\"|\"z-up\", draco?: false }. svg-drawing: { sheet?: \"a4\"|\"a3\" (or any pdf-drawing sheet), projection?, titleBlock?: { title?, partName?, material?, revision? }, modelName?, date?, annotations?, exploded?: { factor, mode? }, balloons?, partsList?, sections?, autoAnnotate? }. svg-drawing annotations is an array of authored dimensions/notes, each { kind: \"linear\"|\"radius\"|\"diameter\"|\"angular\"|\"note\", view?: \"front\"|\"top\"|\"left\"|\"iso\", text?, offset? } plus kind-specific geometry: linear { from, to }, radius/diameter { edge: EdgeQuery }, angular { from: EdgeQuery, to: EdgeQuery }, note { at, text }. from/to/at anchors are an [x,y,z] model point, { edge: EdgeQuery } or { face: FaceQuery }. Supplying any annotation REPLACES the automatic bounding-box dimensions; an annotation whose query resolves to zero or multiple matches fails the export rather than being dropped. svg-drawing sections is an array of { plane: \"xy\"|\"xz\"|\"yz\"|{ origin, normal }, label } (any non-zero normal). svg-drawing autoAnnotate is true or { tolerance?: \"ISO2768-f\"|\"ISO2768-m\"|\"ISO2768-c\", datums?: \"auto\"|[{ label, face: FaceQuery }], include?: [\"datums\"|\"flatness\"|\"holes\"|\"hole-positions\"|\"overall\"|\"fillets\"|\"chamfers\"|\"general-tolerance\"] }; datums and tolerances declared in the script with shape.datum() / shape.tolerance() override the automatic ones. pdf-drawing: { sheet?: \"a4\"|\"a3\"|\"a2\"|\"a1\"|\"a0\"|\"ansi-a\"|\"ansi-b\"|\"ansi-c\"|\"ansi-d\"|\"ansi-e\"|\"auto\"|\"auto-ansi\" (default \"a3\"), projection?: \"third\"|\"first\", title?, partName?, material?, revision?, date? (default today), modelName?, annotations?, sections?, exploded?, balloons?, partsList?, autoAnnotate? (default true unless annotations are given) } — the svg-drawing keys mean the same."
         },
         "part": {
           "type": "string",
@@ -5434,7 +5434,7 @@
   },
   {
     "name": "send_to_printer",
-    "description": "Use this when you need to upload a .gcode file (e.g. written by export with target: \"model\", format: \"gcode\") to a real network printer and, by default, start the print. protocol: 'octoprint' (POST /api/files/local with an X-Api-Key), 'moonraker' (Klipper's POST /server/files/upload), or 'bambu-lan' (Bambu Lab LAN-mode: FTPS implicit-TLS upload on port 990 as user 'bblp' with the printer's LAN access code, then an MQTT print-start command on port 8883 — requires access_code and, unless start_print is false, serial). bambu-lan uploads a .gcode.3mf print project (the printer prints 3MF projects, not bare G-code): the G-code goes in as Metadata/plate_1.gcode, inside the model 3MF from export format '3mf' when model_3mf_path is given (use options { arrange: 'plate', slicer: 'bambu' } so the printer shows the same named, coloured parts), else inside a minimal 3MF shell; the file name always ends in .3mf ('part.gcode' -> 'part.gcode.3mf'). Pass { dry_run: true } to validate connectivity/authentication only, without uploading or starting a print. Never logs or echoes api_key/access_code.",
+    "description": "Use this when you need to upload a .gcode file (e.g. written by export with target: \"model\", format: \"gcode\") to a real network printer and, by default, start the print. protocol: 'octoprint' (POST /api/files/local with an X-Api-Key), 'moonraker' (Klipper's POST /server/files/upload), or 'bambu-lan' (Bambu Lab LAN-mode: FTPS implicit-TLS upload on port 990 as user 'bblp' with the printer's LAN access code, then an MQTT print-start command on port 8883 — requires access_code and, unless start_print is false, serial). bambu-lan uploads a .gcode.3mf print project (the printer prints 3MF projects, not bare G-code): the G-code goes in as Metadata/plate_1.gcode, inside the model 3MF from export format '3mf' when model_3mf_path is given (use options { arrange: 'plate', slicer: 'bambu' } so the printer shows the same named, coloured parts), else inside a minimal 3MF shell; the file name always ends in .3mf ('part.gcode' -> 'part.gcode.3mf'). Optional printer (a bundled profile id, the same ids as the export 3mf/gcode options.printer) is checked against protocol before anything is read or sent: an unknown id is refused with the list of valid ids, 'bambu-lan' needs a Bambu Lab profile and a Bambu Lab profile needs 'bambu-lan'. Pass { dry_run: true } to validate connectivity/authentication only, without uploading or starting a print. Never logs or echoes api_key/access_code.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -5473,6 +5473,35 @@
         "model_3mf_path": {
           "type": "string",
           "description": "bambu-lan only: model .3mf from export format '3mf' to package the G-code into (the uploaded .gcode.3mf)."
+        },
+        "printer": {
+          "type": "string",
+          "enum": [
+            "generic-fdm",
+            "bambu-a1-mini",
+            "bambu-a1",
+            "bambu-p1s",
+            "bambu-p1p",
+            "bambu-x1c",
+            "bambu-x1e",
+            "bambu-h2d",
+            "bambu-h2s",
+            "prusa-mini-plus",
+            "prusa-mk4s",
+            "prusa-core-one",
+            "prusa-xl",
+            "creality-ender-3-v3",
+            "creality-k1",
+            "creality-k1-max",
+            "creality-k2-plus",
+            "elegoo-neptune-4-pro",
+            "anycubic-kobra-3",
+            "voron-2.4-250",
+            "voron-2.4-300",
+            "voron-2.4-350",
+            "ultimaker-s5"
+          ],
+          "description": "Printer profile id; checked against protocol before upload. List them with 'kernelcad print printers'."
         },
         "filename": {
           "type": "string",

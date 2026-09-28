@@ -7,6 +7,7 @@
 // are refused with the full id list; `generic-fdm` keeps its bed; the
 // "fits on" suggestion is the smallest fitting profiles, smallest first.
 import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'node:fs';
 import {
   PRINTER_PROFILES, PRINTER_PROFILE_IDS, DEFAULT_PRINTER_PROFILE, FITS_ON_LIMIT,
   resolvePrinterProfile, printableAreaArg, profilesBySize, smallestFittingProfiles,
@@ -76,5 +77,18 @@ describe('printer profile registry', () => {
     );
     expect(fitsOnAdvice(smallestFittingProfiles(p => !exceedsBed({ x: 5000, y: 1, z: 1 }, p))))
       .toBe(' No bundled printer profile fits it.');
+  });
+});
+
+describe('kernelcad-print skill printer table', () => {
+  it('lists every profile with its registry build volume and slicer family', () => {
+    const skill = readFileSync(new URL('../../../../../src/agent/skills/kernelcad-print/SKILL.md', import.meta.url), 'utf8');
+    const rows = [...skill.matchAll(/^\| `([^`]+)` \| (\d+)×(\d+)×(\d+)[^|]* \| (\w+) \|$/gm)];
+    expect(rows.map(r => r[1])).toEqual([...PRINTER_PROFILE_IDS]);
+    for (const [, id, x, y, z, slicer] of rows) {
+      const p = PRINTER_PROFILES[id];
+      expect([Number(x), Number(y), Number(z)]).toEqual([p.bedSizeMm.x, p.bedSizeMm.y, p.bedSizeMm.z]);
+      expect(slicer).toBe(p.slicer);
+    }
   });
 });
