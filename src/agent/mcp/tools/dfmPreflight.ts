@@ -14,6 +14,7 @@ import { evaluateRules } from '../../shopcheck/ruleEngine';
 import { measure } from '../../shopcheck/measure';
 import { parseDxfInput } from '../../shopcheck/parseDxfInput';
 import { DIAGNOSTIC_REGISTRY } from '../../../shared/diagnostics/registry';
+import { buildVendorLink, referralDisclosure } from '../../../shared/links/referral';
 import type { DiagnosticCode } from '../../../shared/diagnostics/registry';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import type { Region } from '../../../shared/intent/region';
@@ -42,6 +43,11 @@ export interface DfmPreflightOutput {
   material?: { sku: string; displayName: string; thicknessIn: number; thicknessMm: number };
   service?: DfmService;
   catalogVersion?: string;
+  /** Vendor pages the catalog was captured from, built by `buildVendorUrl`
+   *  (surface 'shopcheck'). The manifest stores the clean URLs. */
+  sources?: string[];
+  /** Referral disclosure, present only when a `sources` URL carries a tag. */
+  disclosure?: string;
   findings: Finding[];
   diagnostics: CompilerDiagnostic[];
   markdownReport?: string;
@@ -77,6 +83,10 @@ type Bend = {
   axisOrigin: [number, number, number];
   axisDirection: [number, number, number];
 };
+
+interface SourcesManifestJson {
+  vendors: Record<string, { sources: Array<{ url: string }> }>;
+}
 
 interface VendorData {
   catalog: CatalogJson;
@@ -119,6 +129,22 @@ function loadVendorData(vendor: string, materialSku: string): VendorData | null 
   const matEntry = catalog.skus[materialSku];
   if (!matEntry) return null;
   return { catalog, specs, rules, matEntry };
+}
+
+/** The vendor's catalog source pages as outbound links. Clean URLs from
+ *  sources-manifest.json go through the referral builder; nothing else
+ *  may emit them. */
+function vendorSourceLinks(vendor: string): { sources: string[]; disclosure?: string } {
+  const manifestPath = join(CATALOG_ROOT, 'sources-manifest.json');
+  if (!existsSync(manifestPath)) return { sources: [] };
+  const manifest: SourcesManifestJson = JSON.parse(readFileSync(manifestPath, 'utf-8'));
+  const links = (manifest.vendors[vendor]?.sources ?? [])
+    .map((src) => buildVendorLink(src.url, { surface: 'shopcheck' }));
+  const disclosure = referralDisclosure(links);
+  return {
+    sources: links.map((l) => l.url),
+    ...(disclosure !== undefined ? { disclosure } : {}),
+  };
 }
 
 async function resolveGeometrySource(
@@ -228,6 +254,7 @@ export async function dfmPreflightTool(input: DfmPreflightInput): Promise<DfmPre
     material: { sku: materialSku, displayName: matEntry.displayName, thicknessIn, thicknessMm },
     service,
     catalogVersion: catalog.lastFetched,
+    ...vendorSourceLinks(input.vendor as string),
     findings,
     diagnostics: [
       ...pipelineDiagnostics,

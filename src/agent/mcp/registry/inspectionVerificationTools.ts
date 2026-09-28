@@ -93,7 +93,7 @@ const verifyToolEntry: ToolRegistryEntry = {
       "- 'assembly' — mate-aware assembly validator on the active session (run evaluate_script first).\n" +
       "- 'urdf' — structural validity of a .urdf file ({ urdf_path }).\n" +
       "- 'dfm' — print-readiness gates declared by dfmSpec() ({ file | code }).\n" +
-      "- 'dfm-preflight' — sheet-metal flat pattern vs a job-shop's ordering rules ({ vendor, material, thicknessIn|thicknessMm, ... }).\n" +
+      "- 'dfm-preflight' — sheet-metal flat pattern vs a job-shop's ordering rules ({ vendor, material, thicknessIn|thicknessMm, ... }). Returns the vendor's catalog source pages as `sources`; when `disclosure` is present, show it with those links.\n" +
       "- 'swept-collision' — sweep declared joint range(s) and report colliding poses.\n" +
       "- 'reachable' — inverse-kinematics reachability for an end-effector ({ tip_link, target_position, ... }).\n" +
       "- 'mounting-holes' — fastened mates expose matching hole diameters on both sides.\n" +
