@@ -13,7 +13,11 @@ import type { ShapeBackend } from '../../kernel/backends/backend';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { NEXT_ACTIONS } from '../../shared/diagnostics/registry';
 
-import type { ExportInput, ExportResult } from './export';
+import { svgSheetsToPdf } from '../../kernel/export/pdf/svgSheetToPdf';
+
+import type { ExportInput, ExportResult, PdfDrawingOptions } from './export';
+
+type ScriptRun = Awaited<ReturnType<typeof runScript>>;
 
 /** svg-drawing entry path: engineering-drawing sheet rendering, including
  *  exploded views, BOM balloons / parts-list and GD&T declarations. */
@@ -22,16 +26,91 @@ export async function exportSvgDrawing(
   fileName: string,
   lowered: ShapeBackend,
   targetId: string,
-  run: Awaited<ReturnType<typeof runScript>>,
+  run: ScriptRun,
   diagnostics: CompilerDiagnostic[],
   featureCount: number,
 ): Promise<ExportResult> {
   const opts =
     (input.options as SvgDrawingOptions | undefined) ??
     { format: 'svg-drawing' as const };
+  return renderDrawingSheet(opts, fileName, lowered, targetId, run, diagnostics, featureCount);
+}
+
+/**
+ * pdf-drawing entry path: the same sheet the svg-drawing path renders — one
+ * source of truth for views, dimensions and GD&T — on a standard sheet with
+ * the full title block, transcribed into a vector PDF.
+ */
+export async function exportPdfDrawing(
+  input: ExportInput,
+  fileName: string,
+  lowered: ShapeBackend,
+  targetId: string,
+  run: ScriptRun,
+  diagnostics: CompilerDiagnostic[],
+  featureCount: number,
+): Promise<ExportResult> {
+  const pdf = (input.options as PdfDrawingOptions | undefined) ?? { format: 'pdf-drawing' as const };
+  const assemblies = run.session.assemblies as Map<string, Assembly>;
+  const material = pdf.material ?? sharedAssemblyMaterial(firstAssemblyOrUndefined(assemblies));
+  const authored = (pdf.annotations ?? []).length > 0;
+  const svgOpts: SvgDrawingOptions = {
+    format: 'svg-drawing',
+    sheet: pdf.sheet ?? 'a3',
+    projection: pdf.projection ?? 'third',
+    date: pdf.date ?? new Date().toISOString().slice(0, 10),
+    titleBlock: {
+      ...(pdf.title !== undefined ? { title: pdf.title } : {}),
+      ...(pdf.partName !== undefined ? { partName: pdf.partName } : {}),
+      ...(material !== undefined ? { material } : {}),
+      ...(pdf.revision !== undefined ? { revision: pdf.revision } : {}),
+    },
+    ...(pdf.modelName !== undefined ? { modelName: pdf.modelName } : {}),
+    ...(pdf.annotations !== undefined ? { annotations: pdf.annotations } : {}),
+    ...(pdf.sections !== undefined ? { sections: pdf.sections } : {}),
+    ...(pdf.exploded !== undefined ? { exploded: pdf.exploded as SvgDrawingOptions['exploded'] } : {}),
+    ...(pdf.balloons !== undefined ? { balloons: pdf.balloons } : {}),
+    ...(pdf.partsList !== undefined ? { partsList: pdf.partsList } : {}),
+    autoAnnotate: pdf.autoAnnotate ?? !authored,
+  };
+  const sheet = await renderDrawingSheet(svgOpts, fileName, lowered, targetId, run, diagnostics, featureCount);
+  if (sheet.bytes.length === 0) return sheet;
+  const svg = new TextDecoder().decode(sheet.bytes);
+  const modelName = svgOpts.modelName ?? drawingModelName(fileName);
+  const bytes = svgSheetsToPdf([svg], {
+    title: pdf.title ?? modelName,
+    subject: `Engineering drawing: ${pdf.partName ?? modelName}`,
+    creator: 'kernelCAD pdf-drawing export',
+    producer: 'kernelCAD',
+  });
+  return { ...sheet, bytes };
+}
+
+/** Model name for the title block: the script file name without `.kcad.ts`. */
+function drawingModelName(fileName: string): string {
   const baseName = fileName.split(/[\\/]/).pop() ?? fileName;
-  const modelName =
-    opts.modelName ?? baseName.replace(/(\.kcad)?\.ts$/, '');
+  return baseName.replace(/(\.kcad)?\.ts$/, '');
+}
+
+/** The material every assembly part declares, when they all declare the same one. */
+function sharedAssemblyMaterial(arm: Assembly | undefined): string | undefined {
+  if (arm === undefined) return undefined;
+  const names = new Set(arm.__parts().map(p => p.material));
+  if (names.size !== 1) return undefined;
+  const [only] = names;
+  return only;
+}
+
+async function renderDrawingSheet(
+  opts: SvgDrawingOptions,
+  fileName: string,
+  lowered: ShapeBackend,
+  targetId: string,
+  run: ScriptRun,
+  diagnostics: CompilerDiagnostic[],
+  featureCount: number,
+): Promise<ExportResult> {
+  const modelName = opts.modelName ?? drawingModelName(fileName);
   const drawingParts = drawingPartsForBackend(lowered);
   const assemblies = run.session.assemblies as Map<string, Assembly>;
   const arm = firstAssemblyOrUndefined(assemblies);

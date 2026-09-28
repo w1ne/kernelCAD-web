@@ -189,10 +189,37 @@ export interface SheetSpec {
   titleBlock: { w: number; h: number };
 }
 
-export const SHEETS: Record<'a4' | 'a3', SheetSpec> = {
+/** Landscape sheet sizes: ISO 216 A-series and ANSI Y14.1 A–E. */
+export type DrawingSheetSize =
+  | 'a4' | 'a3' | 'a2' | 'a1' | 'a0'
+  | 'ansi-a' | 'ansi-b' | 'ansi-c' | 'ansi-d' | 'ansi-e';
+
+export const SHEETS: Record<DrawingSheetSize, SheetSpec> = {
   a4: { w: 297, h: 210, margin: 10, gap: 18, titleBlock: { w: 96, h: 24 } },
   a3: { w: 420, h: 297, margin: 12, gap: 24, titleBlock: { w: 110, h: 28 } },
+  a2: { w: 594, h: 420, margin: 15, gap: 28, titleBlock: { w: 130, h: 32 } },
+  a1: { w: 841, h: 594, margin: 20, gap: 32, titleBlock: { w: 150, h: 36 } },
+  a0: { w: 1189, h: 841, margin: 20, gap: 36, titleBlock: { w: 180, h: 40 } },
+  'ansi-a': { w: 279.4, h: 215.9, margin: 10, gap: 18, titleBlock: { w: 96, h: 24 } },
+  'ansi-b': { w: 431.8, h: 279.4, margin: 12, gap: 24, titleBlock: { w: 110, h: 28 } },
+  'ansi-c': { w: 558.8, h: 431.8, margin: 15, gap: 28, titleBlock: { w: 130, h: 32 } },
+  'ansi-d': { w: 863.6, h: 558.8, margin: 20, gap: 32, titleBlock: { w: 150, h: 36 } },
+  'ansi-e': { w: 1117.6, h: 863.6, margin: 20, gap: 36, titleBlock: { w: 180, h: 40 } },
 };
+
+/** Sheet sizes in ascending order per series — the candidates `'auto'` walks. */
+export const SHEET_SERIES: Record<'iso' | 'ansi', readonly DrawingSheetSize[]> = {
+  iso: ['a4', 'a3', 'a2', 'a1', 'a0'],
+  ansi: ['ansi-a', 'ansi-b', 'ansi-c', 'ansi-d', 'ansi-e'],
+};
+
+/** Title-block label for a sheet size: `A3`, `ANSI B`. */
+export function sheetSizeLabel(size: DrawingSheetSize): string {
+  return size.replace('ansi-', 'ANSI ').toUpperCase();
+}
+
+/** Orthographic projection method: where each view sits relative to the front view. */
+export type ProjectionAngle = 'first' | 'third';
 
 export type DrawingViewName = 'front' | 'top' | 'left' | 'iso';
 
@@ -224,7 +251,9 @@ const DIM_BAND = 12;
 export function computeSheetLayout(
   views: Record<DrawingViewName, ViewBox2>,
   sheet: SheetSpec,
+  projection: ProjectionAngle = 'third',
 ): SheetLayout {
+  if (projection === 'first') return computeFirstAngleLayout(views, sheet);
   const { margin, gap } = sheet;
   const availW = sheet.w - 2 * margin;
   const availH = sheet.h - 2 * margin - sheet.titleBlock.h;
@@ -296,6 +325,83 @@ export function computeSheetLayout(
     Math.min(isoX, sheet.w - margin - isoCellW),
     y0 + Math.max(0, (rowTopH - views.iso.h) * s) / 2,
   );
+
+  return { scale: s, scaleText: scaleLabel(s), views: { front, top, left, iso } };
+}
+
+/**
+ * First-angle arrangement of the same four views: the view from the left sits
+ * RIGHT of the front view, the view from above sits BELOW it, and the
+ * isometric takes the remaining lower-right cell. The front/top views share
+ * the sheet-x mapping and the front/left views the sheet-y mapping, exactly
+ * as in third angle. A leading gap left of the grid keeps the room the
+ * top view's depth dimension needs, and the front view's width-dimension band
+ * sits between the two rows.
+ */
+function computeFirstAngleLayout(
+  views: Record<DrawingViewName, ViewBox2>,
+  sheet: SheetSpec,
+): SheetLayout {
+  const { margin, gap } = sheet;
+  const availW = sheet.w - 2 * margin;
+  const availH = sheet.h - 2 * margin - sheet.titleBlock.h;
+
+  const col2W = Math.max(views.left.w, views.iso.w);
+  const row1H = Math.max(views.front.h, views.left.h);
+  const row2H = Math.max(views.top.h, views.iso.h);
+  const needW = views.front.w + col2W;
+  const needH = row1H + row2H;
+
+  const raw = Math.min(
+    (availW - 2 * gap) / needW,
+    (availH - gap - DIM_BAND) / needH,
+  );
+  const s = pickDrawingScale(raw);
+
+  const contentW = needW * s + 2 * gap;
+  const contentH = needH * s + gap + DIM_BAND;
+  const x0 = margin + Math.max(0, (availW - contentW) / 2);
+  const y0 = margin + Math.max(0, (availH - contentH) / 2);
+
+  const frontX = x0 + gap;
+  const col2X = frontX + views.front.w * s + gap;
+  const row2Top = y0 + row1H * s + gap + DIM_BAND;
+
+  const front: ViewPlacement = {
+    tx: frontX - views.front.x * s,
+    ty: y0 + (views.front.y + views.front.h) * s,
+    box: { x: frontX, y: y0, w: views.front.w * s, h: views.front.h * s },
+  };
+  // Shared model x axis with the front view; top edge on the second row.
+  const top: ViewPlacement = {
+    tx: front.tx,
+    ty: row2Top + (views.top.y + views.top.h) * s,
+    box: {
+      x: front.tx + views.top.x * s,
+      y: row2Top,
+      w: views.top.w * s,
+      h: views.top.h * s,
+    },
+  };
+  // Shared model y axis with the front view.
+  const left: ViewPlacement = {
+    tx: col2X - views.left.x * s,
+    ty: front.ty,
+    box: {
+      x: col2X,
+      y: front.ty - (views.left.y + views.left.h) * s,
+      w: views.left.w * s,
+      h: views.left.h * s,
+    },
+  };
+  const isoW = views.iso.w * s;
+  const isoX = Math.min(col2X + Math.max(0, (col2W * s - isoW) / 2), sheet.w - margin - isoW);
+  const isoY = row2Top + Math.max(0, (row2H - views.iso.h) * s) / 2;
+  const iso: ViewPlacement = {
+    tx: isoX - views.iso.x * s,
+    ty: isoY + (views.iso.y + views.iso.h) * s,
+    box: { x: isoX, y: isoY, w: isoW, h: views.iso.h * s },
+  };
 
   return { scale: s, scaleText: scaleLabel(s), views: { front, top, left, iso } };
 }

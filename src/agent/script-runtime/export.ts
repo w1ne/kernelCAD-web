@@ -13,6 +13,8 @@ import type {
   DrawingReport,
 } from '../../kernel/backends/occt/exportSvgDrawing';
 import type { GcodeStats } from '../../kernel/export/gcode/gcodeHeaderParser';
+import type { DrawingSheetSize, ProjectionAngle } from '../../kernel/backends/occt/drawingLayout';
+export type { DrawingSheetSize, ProjectionAngle } from '../../kernel/backends/occt/drawingLayout';
 export type { DrawingAnnotation, DrawingAnchor } from '../../kernel/backends/occt/drawingAnnotations';
 export type { DrawingSectionSpec, SectionPlane } from '../../kernel/backends/occt/drawingSections';
 export type {
@@ -37,14 +39,14 @@ import {
   resolveConnectorManifestScene,
   resolveExportTarget,
 } from './exportPhases';
-import { exportSvgDrawing } from './exportDrawing';
+import { exportPdfDrawing, exportSvgDrawing } from './exportDrawing';
 import { withOcctPoisonRecovery } from '../../kernel/backends/occt/occtBackend';
 export { stlNotWatertightDiagnostic } from './exportDiagnostics';
 
 export type { GcodeStats } from '../../kernel/export/gcode/gcodeHeaderParser';
 
 export type ExportFormat =
-  | 'stl' | 'step' | 'dxf' | '3mf' | 'glb' | 'svg-drawing'
+  | 'stl' | 'step' | 'dxf' | '3mf' | 'glb' | 'svg-drawing' | 'pdf-drawing'
   | 'urdf' | 'srdf' | 'sdf-gazebo' | 'gcode' | 'usd-isaac'
   | 'bom-csv' | 'bom-json';
 
@@ -74,6 +76,7 @@ export type ExportOptions =
        *  dims, radii, chamfers, flatness and an ISO 2768 note from the B-rep. */
       autoAnnotate?: boolean | AutoAnnotateOptions;
     }
+  | PdfDrawingOptions
   | { format: 'urdf' }
   | { format: 'srdf' }
   | { format: 'sdf-gazebo' }
@@ -97,6 +100,40 @@ export type ExportOptions =
     }
   | { format: 'bom-csv' }
   | { format: 'bom-json' };
+
+/**
+ * `pdf-drawing`: the svg-drawing sheet (same views, hidden lines, dimensions,
+ * GD&T, sections, parts list) on a standard sheet with a full title block,
+ * written as a vector PDF. Title-block text fields print `—` when unset.
+ */
+export interface PdfDrawingOptions {
+  format: 'pdf-drawing';
+  /** Landscape sheet size; default `a3`. `'auto'` / `'auto-ansi'` pick the
+   *  smallest ISO / ANSI sheet that holds the views at 1:1 or larger. */
+  sheet?: DrawingSheetSize | 'auto' | 'auto-ansi';
+  /** View arrangement and title-block symbol; default `'third'`. */
+  projection?: ProjectionAngle;
+  /** Drawing title; defaults to the model name (the script file name). */
+  title?: string;
+  /** Part name / number; defaults to the model name. */
+  partName?: string;
+  /** Material; defaults to the assembly parts' material when they all share one. */
+  material?: string;
+  revision?: string;
+  /** Title-block date text; defaults to today's date (YYYY-MM-DD, UTC). */
+  date?: string;
+  modelName?: string;
+  /** Authored dimensions / notes; replaces the automatic dimensions. */
+  annotations?: readonly DrawingAnnotation[];
+  sections?: readonly DrawingSectionSpec[];
+  exploded?: { factor: number; mode?: 'radial' | 'mate-axis' };
+  balloons?: boolean;
+  partsList?: boolean;
+  /** Automatic datums, hole callouts, positions, overall dims and ISO 2768
+   *  note; default ON unless `annotations` are given. `false` falls back to
+   *  the overall bounding-box dimensions. */
+  autoAnnotate?: boolean | AutoAnnotateOptions;
+}
 
 export interface DxfLayerSpec {
   name: string;
@@ -141,7 +178,7 @@ export interface ExportResult {
   connectorManifest?: ConnectorManifest;
   /** Parsed slicer G-code stats, present only for `format: 'gcode'` exports that reached the slicer. */
   gcodeStats?: GcodeStats;
-  /** `svg-drawing` placement report (placed / overlapped counts, datums,
+  /** `svg-drawing` / `pdf-drawing` placement report (placed / overlapped counts, datums,
    *  every annotation drawn), present whenever the sheet carries annotations. */
   drawingReport?: DrawingReport;
 }
@@ -211,6 +248,9 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
   // handling (no union / per-part split needed).
   if (format === 'svg-drawing') {
     return await exportSvgDrawing(input, fileName, lowered, targetId, run, r.diagnostics, featureCount);
+  }
+  if (format === 'pdf-drawing') {
+    return await exportPdfDrawing(input, fileName, lowered, targetId, run, r.diagnostics, featureCount);
   }
 
   // Scene-aware path: STEP/3MF/GLB keep per-part identity. STL is a single
