@@ -48,7 +48,7 @@ import {
   KERNELCAD_HOMEPAGE,
   KERNELCAD_NAME,
 } from '../../../shared/links/attribution';
-import { resolvePrinterProfile } from '../../export/gcode/printerProfiles';
+import { resolvePrinterProfile, type PrinterProfile } from '../../export/gcode/printerProfiles';
 import {
   dropToPlateOrigin,
   meshBounds,
@@ -375,10 +375,6 @@ function layoutParts(
 ): Layout {
   const profile = arrange === 'none' ? undefined : resolvePrinterProfile(options.printer);
   const bed = profile?.bedSizeMm;
-  const warning = (
-    kind: ThreeMfBedWarning['kind'],
-    fields: Pick<ThreeMfBedWarning, 'parts' | 'neededMm' | 'object'>,
-  ): ThreeMfBedWarning => ({ kind, printer: profile!.name, bedMm: { ...bed! }, ...fields });
   const triCount = (m: MeshData) => m.triangles.length / 3;
   const volume = (i: number, objectId: number, first = 0): SlicerVolume => ({
     name: parts[i].name,
@@ -398,14 +394,7 @@ function layoutParts(
     ];
     const moved = parts.map((p) => translateMesh(p.mesh, ...shift));
     const center: [number, number, number] = [bed.x / 2, bed.y / 2, 0];
-    // The assembly prints as one object: it fits only as a whole.
-    const outside = moved
-      .map((m, i) => ({ i, b: meshBounds(m) }))
-      .filter(({ b }) => !withinBed(b, center, bed))
-      .map(({ i, b }) => ({ name: parts[i].name, sizeMm: extents(b) }));
-    const bedWarnings = outside.length === 0
-      ? []
-      : [warning('exceeds-bed', { parts: outside, neededMm: extents(group), object: name })];
+    const bedWarnings = assembledBedWarnings(profile!, parts, moved, center, extents(group), name);
 
     if (slicer === 'prusa') {
       // PrusaSlicer's multi-part object is one mesh split into volumes by
@@ -449,24 +438,9 @@ function layoutParts(
     const bounds = meshes.map(meshBounds);
     const footprints = bounds.map((b) => ({ w: b.max[0] - b.min[0], d: b.max[1] - b.min[1] }));
     const packed = packFootprints(footprints, bed.x, bed.y, PLATE_SPACING_MM);
-    translations = packed.centers.map(([x, y]) => [x, y, 0]);
-
-    const sizes = bounds.map(extents);
-    const tooBig = (s: Vec3) =>
-      s[0] > bed.x + BED_FIT_EPS_MM || s[1] > bed.y + BED_FIT_EPS_MM || s[2] > bed.z + BED_FIT_EPS_MM;
-    const oversized = parts.map((_, i) => i).filter((i) => tooBig(sizes[i]));
-    const offBed = parts.map((_, i) => i).filter(
-      (i) => !oversized.includes(i) && !withinBed(bounds[i], translations[i]!, bed),
-    );
-    const named = (idx: number[]) => idx.map((i) => ({ name: parts[i].name, sizeMm: sizes[i] }));
-    if (oversized.length > 0) {
-      const neededMm: Vec3 = [0, 1, 2].map((a) => Math.max(...oversized.map((i) => sizes[i][a]))) as Vec3;
-      bedWarnings.push(warning('exceeds-bed', { parts: named(oversized), neededMm }));
-    }
-    if (offBed.length > 0) {
-      const neededMm: Vec3 = [packed.layout.w, packed.layout.d, Math.max(...sizes.map((s) => s[2]))];
-      bedWarnings.push(warning('plate-overflow', { parts: named(offBed), neededMm }));
-    }
+    const placed = packed.centers.map(([x, y]): Vec3 => [x, y, 0]);
+    translations = placed;
+    bedWarnings.push(...plateBedWarnings(profile!, parts, bounds, placed, packed.layout));
   }
   return {
     meshObjects: meshes.map((mesh, i) => ({ id: i + 1, name: parts[i].name, mesh, pindex: partPindex[i] })),
@@ -478,6 +452,62 @@ function layoutParts(
     slicerObjects: parts.map((p, i) => ({ id: i + 1, name: p.name, volumes: [volume(i, i + 1)] })),
     bedWarnings,
   };
+}
+
+function bedWarning(
+  kind: ThreeMfBedWarning['kind'],
+  profile: PrinterProfile,
+  fields: Pick<ThreeMfBedWarning, 'parts' | 'neededMm' | 'object'>,
+): ThreeMfBedWarning {
+  return { kind, printer: profile.name, bedMm: { ...profile.bedSizeMm }, ...fields };
+}
+
+/** `assembled`: the object prints as one, so it fits only as a whole. Names
+ *  the parts (moved into bed coordinates by `center`) outside the volume. */
+function assembledBedWarnings(
+  profile: PrinterProfile,
+  parts: ReadonlyArray<MeshedPart>,
+  moved: readonly MeshData[],
+  center: Vec3,
+  objectSize: Vec3,
+  object: string,
+): ThreeMfBedWarning[] {
+  const outside = moved
+    .map((m, i) => ({ name: parts[i].name, b: meshBounds(m) }))
+    .filter(({ b }) => !withinBed(b, center, profile.bedSizeMm))
+    .map(({ name, b }) => ({ name, sizeMm: extents(b) }));
+  return outside.length === 0
+    ? []
+    : [bedWarning('exceeds-bed', profile, { parts: outside, neededMm: objectSize, object })];
+}
+
+/** `plate`: parts larger than the bed alone, then parts that fit alone but
+ *  the packer placed (at `placed`) past the bed edge. */
+function plateBedWarnings(
+  profile: PrinterProfile,
+  parts: ReadonlyArray<MeshedPart>,
+  bounds: readonly Bounds3[],
+  placed: readonly Vec3[],
+  layout: { w: number; d: number },
+): ThreeMfBedWarning[] {
+  const bed = profile.bedSizeMm;
+  const sizes = bounds.map(extents);
+  const tooBig = (s: Vec3) =>
+    s[0] > bed.x + BED_FIT_EPS_MM || s[1] > bed.y + BED_FIT_EPS_MM || s[2] > bed.z + BED_FIT_EPS_MM;
+  const all = parts.map((_, i) => i);
+  const oversized = all.filter((i) => tooBig(sizes[i]));
+  const offBed = all.filter((i) => !oversized.includes(i) && !withinBed(bounds[i], placed[i], bed));
+  const named = (idx: number[]) => idx.map((i) => ({ name: parts[i].name, sizeMm: sizes[i] }));
+  const out: ThreeMfBedWarning[] = [];
+  if (oversized.length > 0) {
+    const neededMm = [0, 1, 2].map((a) => Math.max(...oversized.map((i) => sizes[i][a]))) as Vec3;
+    out.push(bedWarning('exceeds-bed', profile, { parts: named(oversized), neededMm }));
+  }
+  if (offBed.length > 0) {
+    const neededMm: Vec3 = [layout.w, layout.d, Math.max(...sizes.map((s) => s[2]))];
+    out.push(bedWarning('plate-overflow', profile, { parts: named(offBed), neededMm }));
+  }
+  return out;
 }
 
 function extents(b: Bounds3): Vec3 {
