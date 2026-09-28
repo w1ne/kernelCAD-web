@@ -71,6 +71,17 @@ export interface FeatureMeshSerialized {
   cameraTarget?: CameraTargetMetadata;
 }
 
+type LinkFields = Pick<FeatureMeshSerialized, 'faceOwners' | 'edgeRanges' | 'edgeOwners'>;
+
+/** Selection ↔ code link fields: plain arrays on both sides of the bridge. */
+function copyLinkFields(m: LinkFields): LinkFields {
+  return {
+    ...(m.faceOwners !== undefined ? { faceOwners: [...m.faceOwners] } : {}),
+    ...(m.edgeRanges !== undefined ? { edgeRanges: [...m.edgeRanges] } : {}),
+    ...(m.edgeOwners !== undefined ? { edgeOwners: [...m.edgeOwners] } : {}),
+  };
+}
+
 export function serializeForBridge(m: FeatureMesh): FeatureMeshSerialized {
   return {
     featureId: m.featureId,
@@ -91,9 +102,7 @@ export function serializeForBridge(m: FeatureMesh): FeatureMeshSerialized {
     ...(m.color !== undefined ? { color: m.color } : {}),
     ...(m.material !== undefined ? { material: m.material } : {}),
     ...(m.materialByFaceId !== undefined ? { materialByFaceId: m.materialByFaceId } : {}),
-    ...(m.faceOwners !== undefined ? { faceOwners: [...m.faceOwners] } : {}),
-    ...(m.edgeRanges !== undefined ? { edgeRanges: [...m.edgeRanges] } : {}),
-    ...(m.edgeOwners !== undefined ? { edgeOwners: [...m.edgeOwners] } : {}),
+    ...copyLinkFields(m),
     ...(m.displayName !== undefined ? { displayName: m.displayName } : {}),
     ...(m.filterNames !== undefined ? { filterNames: [...m.filterNames] } : {}),
     ...(m.sourceMetadataName !== undefined ? { sourceMetadataName: m.sourceMetadataName } : {}),
@@ -127,9 +136,7 @@ export function rehydrateFromBridge(s: FeatureMeshSerialized): FeatureMesh {
     ...(s.color !== undefined ? { color: s.color } : {}),
     ...(s.material !== undefined ? { material: s.material } : {}),
     ...(s.materialByFaceId !== undefined ? { materialByFaceId: s.materialByFaceId } : {}),
-    ...(s.faceOwners !== undefined ? { faceOwners: [...s.faceOwners] } : {}),
-    ...(s.edgeRanges !== undefined ? { edgeRanges: [...s.edgeRanges] } : {}),
-    ...(s.edgeOwners !== undefined ? { edgeOwners: [...s.edgeOwners] } : {}),
+    ...copyLinkFields(s),
     ...(s.displayName !== undefined ? { displayName: s.displayName } : {}),
     ...(s.filterNames !== undefined ? { filterNames: [...s.filterNames] } : {}),
     ...(s.sourceMetadataName !== undefined ? { sourceMetadataName: s.sourceMetadataName } : {}),

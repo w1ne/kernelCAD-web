@@ -745,7 +745,6 @@ export async function meshFeaturesPerFeature(
   };
   const failedFeatureIds: FeatureId[] = [];
   const recordById = new Map<FeatureId, FeatureRecord>(records.map((r) => [r.id, r]));
-  const recordOrder = new Map<FeatureId, number>(records.map((r, i) => [r.id, i]));
   const meshBounds: MeshBoundsAccumulator = {
     minX: Infinity, minY: Infinity, minZ: Infinity,
     maxX: -Infinity, maxY: -Infinity, maxZ: -Infinity,
@@ -804,8 +803,7 @@ export async function meshFeaturesPerFeature(
     cachedFeatureMeshes,
   );
 
-  // Lowered shape per feature, so ownership can inherit from predecessors.
-  const shapeById = new Map<FeatureId, ShapeBackend>(seedShapes ?? []);
+  const linkState = newLinkState(records, seedShapes);
 
   await engine.run(records, {
     paramTable,
@@ -825,8 +823,7 @@ export async function meshFeaturesPerFeature(
       warnings,
       records,
       cachedFeatureMeshes,
-      shapeById,
-      recordOrder,
+      ...linkState,
     }),
   });
 
@@ -917,6 +914,7 @@ interface MeshFeatureEventContext {
   readonly warnings: PerFaceMaterialWarning[];
   readonly records: readonly FeatureRecord[];
   readonly cachedFeatureMeshes?: Map<FeatureId, FeatureMesh>;
+  /** Lowered shape per feature, so ownership can inherit from predecessors. */
   readonly shapeById: Map<FeatureId, ShapeBackend>;
   readonly recordOrder: ReadonlyMap<FeatureId, number>;
 }
@@ -932,6 +930,55 @@ function predecessorShapesOf(
   return ids
     .map((id) => shapeById.get(id))
     .filter((shape): shape is ShapeBackend => shape !== undefined);
+}
+
+type CompiledEvent = Extract<FeatureEvent, { kind: 'feature.compiled' }>;
+
+/** Per-run state of the selection ↔ code link ownership pass. */
+function newLinkState(
+  records: readonly FeatureRecord[],
+  seedShapes: ReadonlyMap<FeatureId, ShapeBackend> | undefined,
+): Pick<MeshFeatureEventContext, 'shapeById' | 'recordOrder'> {
+  return {
+    shapeById: new Map<FeatureId, ShapeBackend>(seedShapes ?? []),
+    recordOrder: new Map<FeatureId, number>(records.map((r, i) => [r.id, i])),
+  };
+}
+
+/** A construction-closure record is not meshed, but its face owners feed the
+ *  assembly part meshes built from it (selection ↔ code link). */
+function recordClosureOwnership(event: CompiledEvent, ctx: MeshFeatureEventContext): void {
+  if (!isReplicadShapeProvider(event.shape)) return;
+  computeFeatureOwnership({
+    featureId: event.featureId,
+    shape: event.shape,
+    rawShape: event.shape.getReplicadShape(),
+    predecessorShapes: predecessorShapesOf(event.predecessors, ctx.shapeById),
+    recordOrder: ctx.recordOrder,
+    topologyCopy: TOPOLOGY_COPY_KINDS.has(event.featureKind),
+  });
+}
+
+/** Per-edge ranges and face / edge owners of one meshed feature. */
+function linkFieldsOf(
+  event: CompiledEvent,
+  rawShape: unknown,
+  meshed: { edgeRanges?: number[]; edgeHashes?: number[] },
+  ctx: MeshFeatureEventContext,
+): Pick<FeatureMesh, 'faceOwners' | 'edgeRanges' | 'edgeOwners'> {
+  const ownership = computeFeatureOwnership({
+    featureId: event.featureId,
+    shape: event.shape,
+    rawShape,
+    predecessorShapes: predecessorShapesOf(event.predecessors, ctx.shapeById),
+    edgeHashes: meshed.edgeHashes,
+    recordOrder: ctx.recordOrder,
+    topologyCopy: TOPOLOGY_COPY_KINDS.has(event.featureKind),
+  });
+  return {
+    ...(meshed.edgeRanges !== undefined ? { edgeRanges: meshed.edgeRanges } : {}),
+    ...ownership,
+  };
 }
 
 function handleMeshFeatureEvent(event: FeatureEvent, ctx: MeshFeatureEventContext): void {
@@ -950,18 +997,7 @@ function handleMeshFeatureEvent(event: FeatureEvent, ctx: MeshFeatureEventContex
   // (solvedAssembly / assemblyModel / assemblyExport) is the consumer,
   // not a construction input — it's not in the closure.
   if (ctx.constructionClosure.has(event.featureId)) {
-    // Not meshed, but its face owners feed the assembly part meshes built
-    // from it (selection ↔ code link).
-    if (isReplicadShapeProvider(event.shape)) {
-      computeFeatureOwnership({
-        featureId: event.featureId,
-        shape: event.shape,
-        rawShape: event.shape.getReplicadShape(),
-        predecessorShapes: predecessorShapesOf(event.predecessors, ctx.shapeById),
-        recordOrder: ctx.recordOrder,
-        topologyCopy: TOPOLOGY_COPY_KINDS.has(event.featureKind),
-      });
-    }
+    recordClosureOwnership(event, ctx);
     return;
   }
 
@@ -1029,15 +1065,6 @@ function handleMeshFeatureEvent(event: FeatureEvent, ctx: MeshFeatureEventContex
   }
 
   attachPlanarUVs(meshed.faces);
-  const ownership = computeFeatureOwnership({
-    featureId: event.featureId,
-    shape: event.shape,
-    rawShape,
-    predecessorShapes: predecessorShapesOf(event.predecessors, ctx.shapeById),
-    edgeHashes: meshed.edgeHashes,
-    recordOrder: ctx.recordOrder,
-    topologyCopy: TOPOLOGY_COPY_KINDS.has(event.featureKind),
-  });
   const emitted: FeatureMesh = {
     featureId: event.featureId,
     featureKind: event.featureKind,
@@ -1046,9 +1073,7 @@ function handleMeshFeatureEvent(event: FeatureEvent, ctx: MeshFeatureEventContex
     faces: meshed.faces,
     volume: meshed.volume,
     edges: meshed.edges,
-    ...(meshed.edgeRanges !== undefined ? { edgeRanges: meshed.edgeRanges } : {}),
-    ...(ownership.faceOwners !== undefined ? { faceOwners: ownership.faceOwners } : {}),
-    ...(ownership.edgeOwners !== undefined ? { edgeOwners: ownership.edgeOwners } : {}),
+    ...linkFieldsOf(event, rawShape, meshed, ctx),
     ...meshIdentityFields({
       featureId: event.featureId,
       featureKind: event.featureKind,
