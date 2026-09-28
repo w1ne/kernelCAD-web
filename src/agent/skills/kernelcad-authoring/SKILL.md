@@ -14,7 +14,7 @@ Author or modify kernelCAD models in TypeScript. Scripts live in `.kcad.ts` file
 Use this loop for every non-trivial model edit:
 
 1. **Classify the job**: blockout, production-ish part, reference replication, assembly/mechanism, sheet metal, or standard-part integration. Load the matching specialty skill before editing. Words like *real*, *production*, *complex*, *enclosure*, *gearbox*, *bearing housing*, *robot arm* → production-ish / mechanism — `lookup_cookbook("multi-feature machined housing")` or `lookup_cookbook("multi-body mechanism real proportions")`, and prefer MCP `design_loop` until green (see `docs/agent/adam-quality-bar.md`). Do not ship stacked-primitive toys for those prompts.
-2. **Write the design brief in plain engineering terms**: purpose, external dimensions, interfaces, materials/finish if relevant, moving parts, manufacturability assumptions, and what must be proven. If the request is ambiguous on load-bearing parameters — overall dimensions, units, symmetry, part count, fit/clearance targets — ask 1–3 targeted clarifying questions BEFORE generating geometry; if you proceed anyway, list each assumption in the brief and encode it as a named `param()` so the user can correct it without a rewrite.
+2. **Write the design brief in plain engineering terms**: purpose, external dimensions, interfaces, materials/finish if relevant, moving parts, manufacturability assumptions, and what must be proven. If the request is ambiguous on load-bearing parameters — overall dimensions, units, symmetry, part count, fit/clearance targets — ask 1–3 targeted clarifying questions BEFORE generating geometry; if you proceed anyway, list each assumption in the brief and encode it as a named `param()` so the user can correct it without a rewrite. Do ParamRef arithmetic with methods, not operators: `w.add(5)`, `w.subtract(t)`, `w.multiply(2)`, `w.divide(4)`, `w.negate()`.
 3. **Map words to geometry**: turn important prompt phrases into named source sections, parameters, parts, connectors, materials, or tests so the generated model stays traceable to the user's words.
 4. **Plan parameters and artifacts**: identify the `.kcad.ts` source file, named parameters, imported STEP files, expected exports, and the smallest verification command set before writing geometry.
 5. **Edit source only**: treat `.kcad.ts`, prompt/brief markdown, and provenance metadata as source. Do not hand-edit generated PNG, MP4, STEP, STL, score JSON, or capture metadata.
@@ -39,6 +39,13 @@ the design. Before finishing, re-read the request and confirm every must-have
 feature is actually modeled — openings, cavities, wall thickness, separate
 components, clearances, legroom, load paths, and the specified manufacturing
 method. Fix the source until those are visibly satisfied.
+
+**Check your work: render top, front and iso before calling a layout done.**
+DFM checks walls, overhangs and clearance; it does NOT check whether text,
+logos, slots or other decorations overlap holes, sit off the part, or collide
+with each other. Only the pictures show that. Render
+(`render_preview` / `kernelcad render`) the top, front and iso views and look
+at each one before you report a layout as finished.
 
 ## Inner loop: render after every visible change
 
@@ -191,6 +198,9 @@ param<T extends number | boolean>(name: string, defaultValue: T, opts?: {
   max?: number;
   description?: string;
 }): ParamRef<T>;
+// ParamRef arithmetic uses methods, never JS operators (`+ - * /` throw):
+//   const w = param('w', 60), t = param('t', 2);
+//   box(w.add(5), w.subtract(t).multiply(2), w.divide(4)); // also .negate()
 
 params({ width: 60, addCablePort: true }): {
   width: ParamRef<number>;
@@ -198,9 +208,14 @@ params({ width: 60, addCablePort: true }): {
 };
 
 // Primitives. Each returns a Shape.
+// box: default corner-origin, spans [0,x]×[0,y]×[0,z]. centered=true centres ALL
+// THREE axes (Z spans -z/2..+z/2) — unlike cylinder, whose bottom stays on z = 0.
+// Cavity from z = floor in a corner-origin base:
+//   base.subtract(box(x - 2*wall, y - 2*wall, z, true).translate(x/2, y/2, floor + z/2))
 box(x: number, y: number, z: number, centered?: boolean, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery> }): Shape;
+// cylinder: centred on the Z axis in X/Y, bottom on z = 0 (spans 0..h). No centered flag.
 cylinder(h: number, r: number, segments?: number, opts?: { faceLabels?: Record<string, CanonicalFace | FaceQuery> }): Shape;
-sphere(r: number): Shape;  // faceLabels NOT accepted — sphere has no canonical faces
+sphere(r: number): Shape;  // centred on the origin; faceLabels NOT accepted — sphere has no canonical faces
 
 // Extrusion helpers — profile defined inline, extruded along Z. All four
 // accept opts.twistAngle (deg; number or ParamRef): the profile rotates about
