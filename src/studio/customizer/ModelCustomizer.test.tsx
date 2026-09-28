@@ -6,6 +6,7 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import type { SerializedParamEntry } from '../../shared/runtime/paramTable';
 import { customizerParamsFrom, type CustomizerParam } from './customizerParams';
 import { ModelCustomizer, type ModelCustomizerProps } from './ModelCustomizer';
+import { ServerExportError } from '../exportViaServer';
 
 const params: CustomizerParam[] = customizerParamsFrom([
   { name: 'Width', type: 'number', value: 40, defaultValue: 40, meta: { min: 10, max: 80 } },
@@ -165,5 +166,50 @@ describe('ModelCustomizer downloads', () => {
     await act(async () => { fireEvent.click(screen.getByTestId('customizer-download-step')); });
     expect(saveFile).not.toHaveBeenCalled();
     expect(screen.getByTestId('customizer-error').textContent).toBe('Export failed: server down');
+  });
+
+  it('shows the server hint under a failed export', async () => {
+    const exportModel = vi.fn<ModelCustomizerProps['exportModel']>().mockRejectedValue(
+      new ServerExportError('The STL mesh has too many open edges to print reliably.', {
+        status: 422, code: 'export.mesh.not-watertight', hint: 'Export STEP.',
+      }),
+    );
+    setup({ exportModel });
+    fireEvent.click(screen.getByTestId('customizer-download'));
+    await act(async () => { fireEvent.click(screen.getByTestId('customizer-download-stl')); });
+    expect(screen.getByTestId('customizer-error').textContent)
+      .toBe('Export failed: The STL mesh has too many open edges to print reliably.');
+    expect(screen.getByTestId('customizer-error-hint').textContent).toBe('Export STEP.');
+  });
+
+  it('saves a file that shipped with a warning and shows the warning as a notice', async () => {
+    const exportModel = vi.fn<ModelCustomizerProps['exportModel']>().mockResolvedValue({
+      blob: new Blob(['solid']),
+      warning: { code: 'export.3mf.not-watertight', message: 'The 3MF has a small mesh gap.' },
+    });
+    const { saveFile } = setup({ exportModel });
+    fireEvent.click(screen.getByTestId('customizer-download'));
+    await act(async () => { fireEvent.click(screen.getByTestId('customizer-download-3mf')); });
+    expect(saveFile).toHaveBeenCalledTimes(1);
+    expect(screen.getByTestId('customizer-notice').textContent).toBe('The 3MF has a small mesh gap.');
+  });
+
+  it('shows export progress and cancels it', async () => {
+    let signal: AbortSignal | undefined;
+    const exportModel = vi.fn<ModelCustomizerProps['exportModel']>((_f, _v, options) => {
+      signal = options?.signal;
+      return new Promise((_resolve, reject) => {
+        options?.signal?.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError')));
+      });
+    });
+    const { saveFile } = setup({ exportModel });
+    fireEvent.click(screen.getByTestId('customizer-download'));
+    await act(async () => { fireEvent.click(screen.getByTestId('customizer-download-step')); });
+    expect(screen.getByTestId('customizer-download-progress').textContent).toBe('Exporting STEP… 0 s');
+    await act(async () => { fireEvent.click(screen.getByTestId('customizer-download-cancel')); });
+    expect(signal?.aborted).toBe(true);
+    expect(saveFile).not.toHaveBeenCalled();
+    expect(screen.getByTestId('customizer-download')).toBeDefined();
+    expect(screen.queryByTestId('customizer-error')).toBeNull();
   });
 });

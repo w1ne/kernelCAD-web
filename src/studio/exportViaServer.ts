@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 //
-// Shared Studio → OCCT export path. Header toolbar buttons and the Export
-// inspector tab both use this so modern scripts (top-level await,
+// Shared Studio → OCCT export path. Header toolbar buttons, the Export
+// inspector tab and the public customizer download menu all use this so modern scripts (top-level await,
 // lib.fromSTEP, assemblies) run on the node kernel instead of the legacy
 // in-browser worker (`new Function` without an async wrapper).
 
