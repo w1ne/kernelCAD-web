@@ -21,7 +21,7 @@ import * as replicad from 'replicad';
 import { getOC } from 'replicad';
 import { OcctBackend, initOcct } from '../backends/occt/occtBackend';
 import {
-  detectCylindricalHoles,
+  inspectCylindricalHoles,
   type CylindricalHole,
 } from '../backends/occt/holeDetection';
 import { KernelError } from '../../shared/intent/kernelError';
@@ -40,6 +40,10 @@ export interface StepSolidReport {
   volumeMm3: number;
   faceCount: number;
   holes: CylindricalHole[];
+  /** 'exact' when every concave cylinder was a full bore or clearly not a
+   *  hole; 'heuristic' when a breached bore was reported as `partial: true`
+   *  or an ambiguous concave cylinder was left out (see holeDetection.ts). */
+  holeDetection: 'exact' | 'heuristic';
 }
 
 export interface StepInspectReport {
@@ -47,6 +51,8 @@ export interface StepInspectReport {
   file: string;
   solidCount: number;
   solids: StepSolidReport[];
+  /** 'heuristic' when any solid's hole detection was heuristic. */
+  holeDetection: 'exact' | 'heuristic';
 }
 
 /**
@@ -160,6 +166,7 @@ export async function inspectStepBuffer(
   const solids: StepSolidReport[] = solidBackends.map((backend, index) => {
     const bb = backend.boundingBox({ exact: true });
     const name = namesUsable && entityNames[index] !== '' ? entityNames[index] : null;
+    const detected = inspectCylindricalHoles(backend);
     return {
       index,
       name,
@@ -169,11 +176,17 @@ export async function inspectStepBuffer(
       },
       volumeMm3: backend.volume(),
       faceCount: countFaces(oc, backend),
-      holes: detectCylindricalHoles(backend),
+      holes: detected.holes,
+      holeDetection: detected.holeDetection,
     };
   });
 
-  return { file: label, solidCount: solids.length, solids };
+  return {
+    file: label,
+    solidCount: solids.length,
+    solids,
+    holeDetection: solids.some((s) => s.holeDetection === 'heuristic') ? 'heuristic' : 'exact',
+  };
 }
 
 /** Count TopAbs_FACE children of a solid via TopExp_Explorer. */
