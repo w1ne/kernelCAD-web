@@ -48,7 +48,9 @@ import {
   KERNELCAD_HOMEPAGE,
   KERNELCAD_NAME,
 } from '../../../shared/links/attribution';
-import { resolvePrinterProfile, type PrinterProfile } from '../../export/gcode/printerProfiles';
+import {
+  resolvePrinterProfile, exceedsBed, smallestFittingProfiles, type PrinterProfile,
+} from '../../export/gcode/printerProfiles';
 import {
   dropToPlateOrigin,
   meshBounds,
@@ -113,8 +115,9 @@ export interface Export3mfOptions {
    *  slot, plate 1). `generic` (default) writes none; `bambu` and `orca`
    *  share one format; `prusa` writes its own. The model stays core 3MF. */
   slicer?: SlicerFlavor;
-  /** Bed profile for `arrange` (see `options.printer` on gcode export).
-   *  Default `generic-fdm`. */
+  /** Printer profile id (see `PRINTER_PROFILE_IDS`): the bed for `arrange`,
+   *  and the `slicer` default when `slicer` is omitted. Default
+   *  `generic-fdm`. An unknown id throws with the list of valid ids. */
   printer?: string;
   /** Name of the multi-part object for `arrange: 'assembled'`. */
   assemblyName?: string;
@@ -157,6 +160,8 @@ export interface ThreeMfBedPart {
  *    taller than the build height. With `assembled`, `object` names the
  *    multi-part object, `neededMm` is its extents, and `parts` are the parts
  *    that stick out of the build volume.
+ *  `fitsOn` names the smallest bundled profiles (ids, smallest bed first)
+ *  on which the same layout would print with no bed warning.
  */
 export interface ThreeMfBedWarning {
   kind: 'plate-overflow' | 'exceeds-bed';
@@ -165,6 +170,7 @@ export interface ThreeMfBedWarning {
   parts: ThreeMfBedPart[];
   neededMm: Vec3;
   object?: string;
+  fitsOn: string[];
 }
 
 export interface Export3mfResult {
@@ -231,7 +237,7 @@ export async function export3mfWithReportAsync(
 
   const printUnit: ThreeMfUnit = options.printUnit ?? 'mm';
   const arrange: ThreeMfArrange = options.arrange ?? 'none';
-  const slicer: SlicerFlavor = options.slicer ?? 'generic';
+  const slicer = resolveSlicer(options);
   if (!ARRANGE_VALUES.includes(arrange)) {
     throw new Error(`export3mfAsync: options.arrange must be one of ${ARRANGE_VALUES.join(', ')}; got '${String(arrange)}'.`);
   }
@@ -357,6 +363,17 @@ function resolvePartMaterials(parts: ReadonlyArray<MeshedPart>): {
   return { bases, partPindex, partSlot };
 }
 
+/** `options.slicer`, else the named printer's slicer family, else
+ *  `generic`. Resolves (so validates) a named printer even without
+ *  `arrange`. */
+function resolveSlicer(options: Export3mfOptions): SlicerFlavor {
+  if (options.slicer !== undefined) {
+    if (options.printer !== undefined) resolvePrinterProfile(options.printer);
+    return options.slicer;
+  }
+  return options.printer !== undefined ? resolvePrinterProfile(options.printer).slicer : 'generic';
+}
+
 interface Layout {
   meshObjects: MeshObject[];
   componentObjects: Array<{ id: number; name: string; componentIds: number[] }>;
@@ -394,7 +411,11 @@ function layoutParts(
     ];
     const moved = parts.map((p) => translateMesh(p.mesh, ...shift));
     const center: [number, number, number] = [bed.x / 2, bed.y / 2, 0];
-    const bedWarnings = assembledBedWarnings(profile!, parts, moved, center, extents(group), name);
+    const objectSize = extents(group);
+    const bedWarnings = withFitsOn(
+      assembledBedWarnings(profile!, parts, moved, center, objectSize, name),
+      (p) => !exceedsBed({ x: objectSize[0], y: objectSize[1], z: objectSize[2] }, p),
+    );
 
     if (slicer === 'prusa') {
       // PrusaSlicer's multi-part object is one mesh split into volumes by
@@ -440,7 +461,10 @@ function layoutParts(
     const packed = packFootprints(footprints, bed.x, bed.y, PLATE_SPACING_MM);
     const placed = packed.centers.map(([x, y]): Vec3 => [x, y, 0]);
     translations = placed;
-    bedWarnings.push(...plateBedWarnings(profile!, parts, bounds, placed, packed.layout));
+    bedWarnings.push(...withFitsOn(
+      plateBedWarnings(profile!, parts, bounds, placed, packed.layout),
+      (p) => plateFits(bounds, footprints, p),
+    ));
   }
   return {
     meshObjects: meshes.map((mesh, i) => ({ id: i + 1, name: parts[i].name, mesh, pindex: partPindex[i] })),
@@ -459,7 +483,30 @@ function bedWarning(
   profile: PrinterProfile,
   fields: Pick<ThreeMfBedWarning, 'parts' | 'neededMm' | 'object'>,
 ): ThreeMfBedWarning {
-  return { kind, printer: profile.name, bedMm: { ...profile.bedSizeMm }, ...fields };
+  return { kind, printer: profile.name, bedMm: { ...profile.bedSizeMm }, ...fields, fitsOn: [] };
+}
+
+/** Fill `fitsOn` with the smallest profiles that `fits` (only when warned). */
+function withFitsOn(
+  warnings: ThreeMfBedWarning[],
+  fits: (p: PrinterProfile) => boolean,
+): ThreeMfBedWarning[] {
+  if (warnings.length === 0) return warnings;
+  const fitsOn = smallestFittingProfiles(fits).map((p) => p.name);
+  return warnings.map((w) => ({ ...w, fitsOn: [...fitsOn] }));
+}
+
+/** `plate`: whether every part fits `profile` alone and the packer, run on
+ *  that bed, keeps the whole layout on it — the same test that raises the
+ *  plate warnings, so a listed profile never warns. */
+function plateFits(
+  bounds: readonly Bounds3[],
+  footprints: ReadonlyArray<{ w: number; d: number }>,
+  profile: PrinterProfile,
+): boolean {
+  const bed = profile.bedSizeMm;
+  const packed = packFootprints(footprints, bed.x, bed.y, PLATE_SPACING_MM);
+  return bounds.every((b, i) => withinBed(b, [packed.centers[i][0], packed.centers[i][1], 0], bed));
 }
 
 /** `assembled`: the object prints as one, so it fits only as a whole. Names

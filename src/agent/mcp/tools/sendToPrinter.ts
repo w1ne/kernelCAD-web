@@ -8,7 +8,9 @@
 // a kernelCAD script to a physical part on a printer with no manual hop.
 
 import { readFile } from 'node:fs/promises';
-import { sendToPrinter as sendToPrinterCore, type PrinterProtocol } from '../../../kernel/print/sendToPrinter';
+import {
+  sendToPrinter as sendToPrinterCore, printerProtocolError, type PrinterProtocol,
+} from '../../../kernel/print/sendToPrinter';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
 import { NEXT_ACTIONS, HINT_TEMPLATES } from '../../../shared/diagnostics/registry';
@@ -28,6 +30,9 @@ export interface SendToPrinterInput {
   /** Bambu LAN mode only: model 3MF (export format '3mf') that carries the
    *  G-code as `Metadata/plate_1.gcode` in the uploaded `.gcode.3mf`. */
   model_3mf_path?: string;
+  /** Printer profile id (see `kernelcad print printers`); checked against
+   *  `protocol` before upload. */
+  printer?: string;
   filename?: string;
   /** Start the print immediately after upload (default: true). */
   start_print?: boolean;
@@ -74,6 +79,9 @@ export async function sendToPrinterTool(input: SendToPrinterInput): Promise<Send
   if (!input.host || typeof input.host !== 'string') {
     return { ok: false, error: 'Required: host' };
   }
+
+  const printerError = printerProtocolError(input.printer, input.protocol);
+  if (printerError !== undefined) return { ok: false, error: printerError };
 
   const files = await readUploadFiles(input);
   if ('error' in files) return { ok: false, error: files.error };

@@ -18,8 +18,9 @@ import { fileURLToPath } from 'node:url';
 const PROFILES_DIR = join(dirname(fileURLToPath(import.meta.url)), 'profiles');
 
 export {
-  PRINTER_PROFILES, DEFAULT_PRINTER_PROFILE, resolvePrinterProfile, exceedsBed,
-  type PrinterProfile, type BuildVolumeSize,
+  PRINTER_PROFILES, PRINTER_PROFILE_IDS, DEFAULT_PRINTER_PROFILE, resolvePrinterProfile, exceedsBed,
+  printableAreaArg, profilesBySize, smallestFittingProfiles, fitsOnAdvice,
+  type PrinterProfile, type PrinterSlicerFamily, type BuildVolumeSize,
 } from './printerProfiles';
 
 export type MaterialName = 'pla' | 'petg';

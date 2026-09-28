@@ -66,7 +66,8 @@ export type ExportOptions =
       orient?: boolean;
       /** Slicer project sidecar: per-object name + filament slot. */
       slicer?: 'generic' | 'bambu' | 'orca' | 'prusa';
-      /** Bed profile for arrange; default 'generic-fdm'. */
+      /** Printer profile id (PRINTER_PROFILE_IDS): bed for arrange and the
+       *  slicer default; default 'generic-fdm'. */
       printer?: string;
     }
   | { format: 'glb'; axis?: 'y-up' | 'z-up'; draco?: false }
@@ -95,7 +96,7 @@ export type ExportOptions =
   | { format: 'sdf-gazebo' }
   | {
       format: 'gcode';
-      /** Bundled printer bed-size/profile name; default 'generic-fdm'. */
+      /** Printer profile id (PRINTER_PROFILE_IDS); default 'generic-fdm'. */
       printer?: string;
       layerHeight?: number;
       /** Infill density, 0-100 (percent); default 15. */
