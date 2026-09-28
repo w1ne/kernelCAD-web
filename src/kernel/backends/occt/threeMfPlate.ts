@@ -192,6 +192,8 @@ export interface PackResult {
   centers: Array<[number, number]>;
   /** Whether every footprint lies within the bed rectangle. */
   fitsBed: boolean;
+  /** Extent of the whole packed layout (mm), spacing included. */
+  layout: Footprint;
 }
 
 /**
@@ -231,5 +233,9 @@ export function packFootprints(
     ox + corner[i][0] + it.w / 2,
     oy + corner[i][1] + it.d / 2,
   ]);
-  return { centers, fitsBed: layoutW <= bedX && layoutD <= bedY };
+  return {
+    centers,
+    fitsBed: layoutW <= bedX && layoutD <= bedY,
+    layout: { w: layoutW, d: layoutD },
+  };
 }

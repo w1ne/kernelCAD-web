@@ -19,6 +19,14 @@
 // `arrange` lays parts out on the bed (`threeMfPlate.ts`), `orient` puts each
 // part's largest flat face down, and `slicer` adds a per-object name +
 // filament-slot sidecar under `Metadata/` (`threeMfSlicerConfig.ts`).
+// With `arrange`, the layout is checked against the printer bed; parts that
+// do not fit are still written, and `export3mfWithReportAsync` returns them
+// as bed warnings for the runtime to surface as diagnostics.
+//
+// Units: all layout and bed math runs in millimetres (the model and printer
+// profile unit). `printUnit` only rescales the numbers at write time, so
+// vertex coordinates and build-item offsets always agree with the declared
+// `<model unit>`: a 10 mm cube is `1` with `unit="centimeter"`.
 //
 // Validity gate: every part mesh is fed through `assertWatertight` before
 // the zip is built. The half-edge check throws when any undirected edge is
@@ -126,6 +134,44 @@ const PRINT_UNIT_TAG: Record<ThreeMfUnit, string> = {
   in: 'inch',
 };
 
+/** Millimetres per document unit: written numbers are `mm / MM_PER_UNIT`. */
+const MM_PER_UNIT: Record<ThreeMfUnit, number> = { mm: 1, cm: 10, in: 25.4 };
+
+/** Slack for bed-fit comparisons (mm), so float noise never warns. */
+const BED_FIT_EPS_MM = 1e-6;
+
+type Vec3 = [number, number, number];
+
+/** One part named in a bed warning, with its extents on the bed (mm). */
+export interface ThreeMfBedPart {
+  name: string;
+  sizeMm: Vec3;
+}
+
+/**
+ * A bed-fit problem found by `arrange`. The file is still written.
+ *  - `plate-overflow` (`plate`): these parts each fit the bed, but the
+ *    packed layout is larger than the bed and put them past its edge.
+ *    `neededMm` is the whole layout's footprint and height.
+ *  - `exceeds-bed`: these parts alone are larger than the bed in X/Y or
+ *    taller than the build height. With `assembled`, `object` names the
+ *    multi-part object, `neededMm` is its extents, and `parts` are the parts
+ *    that stick out of the build volume.
+ */
+export interface ThreeMfBedWarning {
+  kind: 'plate-overflow' | 'exceeds-bed';
+  printer: string;
+  bedMm: { x: number; y: number; z: number };
+  parts: ThreeMfBedPart[];
+  neededMm: Vec3;
+  object?: string;
+}
+
+export interface Export3mfResult {
+  bytes: Uint8Array;
+  bedWarnings: ThreeMfBedWarning[];
+}
+
 const ARRANGE_VALUES: readonly ThreeMfArrange[] = ['none', 'plate', 'assembled'];
 const SLICER_VALUES: readonly SlicerFlavor[] = ['generic', 'bambu', 'orca', 'prusa'];
 
@@ -150,18 +196,27 @@ interface BuildItem {
   translate?: [number, number, number];
 }
 
+/** Build the 3MF bytes; see `export3mfWithReportAsync`. */
+export async function export3mfAsync(
+  parts: ReadonlyArray<WorldFramePart | MeshedPart>,
+  options: Export3mfOptions,
+): Promise<Uint8Array> {
+  return (await export3mfWithReportAsync(parts, options)).bytes;
+}
+
 /**
- * Build the 3MF bytes for an array of scene parts.
+ * Build the 3MF bytes for an array of scene parts, plus the bed warnings of
+ * the `arrange` layout (always empty for `arrange: 'none'`).
  *
  * Accepts either bare `WorldFramePart`s (the writer meshes each shape via
  * `meshShapeForExport`) or `MeshedPart`s (caller has already meshed the
  * shape). The runtime wiring in `runAndExport` passes bare `WorldFramePart`s;
  * tests can inject custom meshes via the `MeshedPart` overload.
  */
-export async function export3mfAsync(
+export async function export3mfWithReportAsync(
   parts: ReadonlyArray<WorldFramePart | MeshedPart>,
   options: Export3mfOptions,
-): Promise<Uint8Array> {
+): Promise<Export3mfResult> {
   if (parts.length === 0) {
     throw new Error('export3mfAsync: no parts to write.');
   }
@@ -183,6 +238,10 @@ export async function export3mfAsync(
   if (!SLICER_VALUES.includes(slicer)) {
     throw new Error(`export3mfAsync: options.slicer must be one of ${SLICER_VALUES.join(', ')}; got '${String(slicer)}'.`);
   }
+  if (!Object.hasOwn(MM_PER_UNIT, printUnit)) {
+    throw new Error(`export3mfAsync: options.printUnit must be one of ${Object.keys(MM_PER_UNIT).join(', ')}; got '${String(printUnit)}'.`);
+  }
+  const mmPerUnit = MM_PER_UNIT[printUnit];
   const isoDate = new Date().toISOString().slice(0, 10);
 
   const { bases, partPindex, partSlot } = resolvePartMaterials(meshed);
@@ -193,7 +252,7 @@ export async function export3mfAsync(
   const layout = layoutParts(meshed, partPindex, partSlot, arrange, slicer, options);
 
   const objectEntries = [
-    ...layout.meshObjects.map(meshObjectXml),
+    ...layout.meshObjects.map((o) => meshObjectXml(o, mmPerUnit)),
     ...layout.componentObjects.map((c) => [
       `  <object id="${c.id}" type="model" name="${escapeXml(c.name)}">`,
       `    <components>`,
@@ -207,7 +266,7 @@ export async function export3mfAsync(
     .map((b) =>
       b.translate === undefined
         ? `    <item objectid="${b.objectId}" />`
-        : `    <item objectid="${b.objectId}" transform="1 0 0 0 1 0 0 0 1 ${b.translate.map(fmt).join(' ')}" />`,
+        : `    <item objectid="${b.objectId}" transform="1 0 0 0 1 0 0 0 1 ${b.translate.map((c) => fmt(c / mmPerUnit)).join(' ')}" />`,
     )
     .join('\n');
 
@@ -256,7 +315,7 @@ ${embedSource ? '  <Default Extension="ts" ContentType="text/plain" />\n' : ''}$
   if (embedSource) {
     files['Metadata/source.kcad.ts'] = strToU8(options.scriptSource!);
   }
-  return zipSync(files);
+  return { bytes: zipSync(files), bedWarnings: layout.bedWarnings };
 }
 
 const BASEMATERIALS_ID = 1;
@@ -303,6 +362,7 @@ interface Layout {
   componentObjects: Array<{ id: number; name: string; componentIds: number[] }>;
   buildItems: BuildItem[];
   slicerObjects: SlicerObject[];
+  bedWarnings: ThreeMfBedWarning[];
 }
 
 function layoutParts(
@@ -313,7 +373,12 @@ function layoutParts(
   slicer: SlicerFlavor,
   options: Export3mfOptions,
 ): Layout {
-  const bed = arrange === 'none' ? undefined : resolvePrinterProfile(options.printer).bedSizeMm;
+  const profile = arrange === 'none' ? undefined : resolvePrinterProfile(options.printer);
+  const bed = profile?.bedSizeMm;
+  const warning = (
+    kind: ThreeMfBedWarning['kind'],
+    fields: Pick<ThreeMfBedWarning, 'parts' | 'neededMm' | 'object'>,
+  ): ThreeMfBedWarning => ({ kind, printer: profile!.name, bedMm: { ...bed! }, ...fields });
   const triCount = (m: MeshData) => m.triangles.length / 3;
   const volume = (i: number, objectId: number, first = 0): SlicerVolume => ({
     name: parts[i].name,
@@ -333,6 +398,14 @@ function layoutParts(
     ];
     const moved = parts.map((p) => translateMesh(p.mesh, ...shift));
     const center: [number, number, number] = [bed.x / 2, bed.y / 2, 0];
+    // The assembly prints as one object: it fits only as a whole.
+    const outside = moved
+      .map((m, i) => ({ i, b: meshBounds(m) }))
+      .filter(({ b }) => !withinBed(b, center, bed))
+      .map(({ i, b }) => ({ name: parts[i].name, sizeMm: extents(b) }));
+    const bedWarnings = outside.length === 0
+      ? []
+      : [warning('exceeds-bed', { parts: outside, neededMm: extents(group), object: name })];
 
     if (slicer === 'prusa') {
       // PrusaSlicer's multi-part object is one mesh split into volumes by
@@ -354,6 +427,7 @@ function layoutParts(
         componentObjects: [],
         buildItems: [{ objectId: 1, translate: center }],
         slicerObjects: [{ id: 1, name, volumes }],
+        bedWarnings,
       };
     }
 
@@ -363,19 +437,36 @@ function layoutParts(
       componentObjects: [{ id: parentId, name, componentIds: parts.map((_, i) => i + 1) }],
       buildItems: [{ objectId: parentId, translate: center }],
       slicerObjects: [{ id: parentId, name, volumes: parts.map((_, i) => volume(i, i + 1)) }],
+      bedWarnings,
     };
   }
 
   let meshes = parts.map((p) => p.mesh);
   let translations: Array<[number, number, number] | undefined> = parts.map(() => undefined);
+  const bedWarnings: ThreeMfBedWarning[] = [];
   if (arrange === 'plate' && bed) {
     meshes = meshes.map((m) => dropToPlateOrigin(options.orient ? orientLargestFlatFaceDown(m) : m));
-    const footprints = meshes.map((m) => {
-      const b = meshBounds(m);
-      return { w: b.max[0] - b.min[0], d: b.max[1] - b.min[1] };
-    });
+    const bounds = meshes.map(meshBounds);
+    const footprints = bounds.map((b) => ({ w: b.max[0] - b.min[0], d: b.max[1] - b.min[1] }));
     const packed = packFootprints(footprints, bed.x, bed.y, PLATE_SPACING_MM);
     translations = packed.centers.map(([x, y]) => [x, y, 0]);
+
+    const sizes = bounds.map(extents);
+    const tooBig = (s: Vec3) =>
+      s[0] > bed.x + BED_FIT_EPS_MM || s[1] > bed.y + BED_FIT_EPS_MM || s[2] > bed.z + BED_FIT_EPS_MM;
+    const oversized = parts.map((_, i) => i).filter((i) => tooBig(sizes[i]));
+    const offBed = parts.map((_, i) => i).filter(
+      (i) => !oversized.includes(i) && !withinBed(bounds[i], translations[i]!, bed),
+    );
+    const named = (idx: number[]) => idx.map((i) => ({ name: parts[i].name, sizeMm: sizes[i] }));
+    if (oversized.length > 0) {
+      const neededMm: Vec3 = [0, 1, 2].map((a) => Math.max(...oversized.map((i) => sizes[i][a]))) as Vec3;
+      bedWarnings.push(warning('exceeds-bed', { parts: named(oversized), neededMm }));
+    }
+    if (offBed.length > 0) {
+      const neededMm: Vec3 = [packed.layout.w, packed.layout.d, Math.max(...sizes.map((s) => s[2]))];
+      bedWarnings.push(warning('plate-overflow', { parts: named(offBed), neededMm }));
+    }
   }
   return {
     meshObjects: meshes.map((mesh, i) => ({ id: i + 1, name: parts[i].name, mesh, pindex: partPindex[i] })),
@@ -385,7 +476,26 @@ function layoutParts(
       ...(translations[i] !== undefined ? { translate: translations[i] } : {}),
     })),
     slicerObjects: parts.map((p, i) => ({ id: i + 1, name: p.name, volumes: [volume(i, i + 1)] })),
+    bedWarnings,
   };
+}
+
+function extents(b: Bounds3): Vec3 {
+  return [b.max[0] - b.min[0], b.max[1] - b.min[1], b.max[2] - b.min[2]];
+}
+
+/** Whether mesh bounds `b`, moved by `offset`, lie inside the build volume. */
+function withinBed(
+  b: Bounds3,
+  offset: readonly number[],
+  bed: { x: number; y: number; z: number },
+): boolean {
+  const size = [bed.x, bed.y, bed.z];
+  for (let a = 0; a < 3; a++) {
+    if (b.min[a] + offset[a] < -BED_FIT_EPS_MM) return false;
+    if (b.max[a] + offset[a] > size[a] + BED_FIT_EPS_MM) return false;
+  }
+  return true;
 }
 
 function mergedBounds(all: readonly Bounds3[]): Bounds3 {
@@ -400,12 +510,13 @@ function mergedBounds(all: readonly Bounds3[]): Bounds3 {
   return { min, max };
 }
 
-function meshObjectXml(o: MeshObject): string {
+/** `<object>` XML; vertex coordinates are mm divided by `mmPerUnit`. */
+function meshObjectXml(o: MeshObject, mmPerUnit: number): string {
   const verts = o.mesh.vertices;
   const vertexNodes: string[] = [];
   for (let v = 0; v < verts.length; v += 3) {
     vertexNodes.push(
-      `        <vertex x="${verts[v]}" y="${verts[v + 1]}" z="${verts[v + 2]}" />`,
+      `        <vertex x="${verts[v] / mmPerUnit}" y="${verts[v + 1] / mmPerUnit}" z="${verts[v + 2] / mmPerUnit}" />`,
     );
   }
   const tris = o.mesh.triangles;

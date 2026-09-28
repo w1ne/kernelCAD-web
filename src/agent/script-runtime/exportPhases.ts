@@ -3,7 +3,7 @@
 import { runScript } from '../../composition/runScript';
 import { exportSceneToSTEPAsync, type OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { exportDxf, type DxfWriterOptions } from '../../kernel/backends/occt/exportDxf';
-import { export3mfAsync, type Export3mfOptions } from '../../kernel/backends/occt/export3mf';
+import { export3mfWithReportAsync, type Export3mfOptions } from '../../kernel/backends/occt/export3mf';
 import { exportGlbAsync, type ExportGlbOptions } from '../../kernel/backends/occt/exportGlb';
 import type { Assembly } from '../../modeling/capture/assembly';
 import { lookupColorFromLineage, lookupMaterialFromLineage } from '../../kernel/backends/occt/lookupSourceColor';
@@ -24,6 +24,7 @@ import {
   dracoConflictDiagnostic,
   notWatertightDiagnostic,
   sliceShapeToGcode,
+  threeMfBedDiagnostics,
   stlNotWatertightDiagnostic,
   type GcodeOptions,
 } from './exportDiagnostics';
@@ -415,8 +416,10 @@ export async function exportScene3mf(
   const opts3mf = (input.options as Export3mfOptions | undefined) ?? { format: '3mf' };
   try {
     const worldParts = sceneToWorldFrameParts(scene);
-    const bytes = await export3mfAsync(worldParts, { assemblyName: scene.assemblyName, ...opts3mf });
-    return { bytes, featureCount, diagnostics };
+    const { bytes, bedWarnings } = await export3mfWithReportAsync(
+      worldParts, { assemblyName: scene.assemblyName, ...opts3mf },
+    );
+    return { bytes, featureCount, diagnostics: [...diagnostics, ...threeMfBedDiagnostics(bedWarnings, targetId)] };
   } catch (e) {
     const notWatertight = notWatertightDiagnostic(e, diagnostics, featureCount, targetId);
     if (notWatertight) return notWatertight;
@@ -692,8 +695,8 @@ async function exportSingle3mf(
   const opts3mf = (input.options as Export3mfOptions | undefined) ?? { format: '3mf' };
   const part: WorldFramePart = { name: 'part', shape };
   try {
-    const bytes = await export3mfAsync([part], opts3mf);
-    return { bytes, featureCount, diagnostics };
+    const { bytes, bedWarnings } = await export3mfWithReportAsync([part], opts3mf);
+    return { bytes, featureCount, diagnostics: [...diagnostics, ...threeMfBedDiagnostics(bedWarnings, targetId)] };
   } catch (e) {
     const notWatertight = notWatertightDiagnostic(e, diagnostics, featureCount, targetId);
     if (notWatertight) return notWatertight;
