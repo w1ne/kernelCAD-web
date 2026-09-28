@@ -8,7 +8,8 @@
  *     view. The cursor is never moved.
  *   code → geometry: a user cursor move (click / arrow keys) or a mouse hover
  *     over a statement publishes the feature ids under it; the viewer tints
- *     their faces. Blur and mouse-leave clear it.
+ *     their faces. Hover wins while it is over a feature statement. Blur
+ *     clears the cursor part, mouse-leave the hover part.
  *
  * Loop guard: only cursor changes with `reason === Explicit` from the mouse
  * or keyboard count. Programmatic moves (`source: 'api'`), typing, paste and
@@ -93,10 +94,13 @@ export function attachCodeGeometrySync(
         timer = null;
         if (disposed) return;
         const focused = editor.hasTextFocus?.() ?? true;
-        const pos = hoverPos ?? (focused ? cursorPos : null);
-        const index = pos ? getIndex() : null;
-        const ids = pos && index ? featuresAtPosition(index, pos.lineNumber, pos.column) : null;
-        store.highlightFromCode(ids);
+        const index = hoverPos || cursorPos ? getIndex() : null;
+        const at = (pos: Position | null): string[] =>
+            pos && index ? featuresAtPosition(index, pos.lineNumber, pos.column) : [];
+        // Hovering a feature statement wins; hovering anything else (blank
+        // lines, comments) keeps the cursor's highlight.
+        const hovered = at(hoverPos);
+        store.highlightFromCode(hovered.length > 0 ? hovered : at(focused ? cursorPos : null));
     };
 
     const schedule = (): void => {

@@ -97,6 +97,12 @@ describe('attachCodeGeometrySync', () => {
         editor.fireMove(2, 25);
         vi.advanceTimersByTime(10);
         expect(store.getSnapshot().codeHighlight).toEqual(['fillet_1']);
+        // Hovering a line with no feature keeps the cursor's highlight.
+        editor.fireMove(3, 3);
+        vi.advanceTimersByTime(10);
+        expect(store.getSnapshot().codeHighlight).toEqual(['box_1']);
+        editor.fireMove(2, 25);
+        vi.advanceTimersByTime(10);
         editor.fireLeave();
         vi.advanceTimersByTime(10);
         expect(store.getSnapshot().codeHighlight).toEqual(['box_1']);
