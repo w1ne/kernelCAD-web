@@ -28,7 +28,6 @@ function denseCompound(): replicad.Shape3D {
 
 function faceCount(shape: replicad.Shape3D): number {
   let n = 0;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   for (const _f of shape.faces) n++;
   return n;
 }
