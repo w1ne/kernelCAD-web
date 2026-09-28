@@ -156,6 +156,60 @@ function flatFrame(n: Vec3, capFaces: Face[]): PlaneFrame {
   return makePlaneFrame(o, nn, best);
 }
 
+/** Centre, radius and signed included angle of a bulge arc segment. */
+function arcOf(s: ProjectedSegment): { cx: number; cy: number; r: number; theta: number } {
+  const chord = segLength(s);
+  const theta = 4 * Math.atan(s.bulge ?? 0);
+  const r = chord / (2 * Math.sin(Math.abs(theta) / 2));
+  // Signed distance from the chord midpoint to the centre, along the chord's
+  // left normal: positive for a CCW minor arc, negative past a half circle.
+  const h = (chord / 2) / Math.tan(theta / 2);
+  const nx = -(s.y1 - s.y0) / chord;
+  const ny = (s.x1 - s.x0) / chord;
+  return { cx: (s.x0 + s.x1) / 2 + nx * h, cy: (s.y0 + s.y1) / 2 + ny * h, r, theta };
+}
+
+const isArc = (s: ProjectedSegment): boolean => Math.abs(s.bulge ?? 0) > 1e-12;
+
+/** Join `a` then `b` into one segment when they continue the same line or the
+ *  same circle; `null` when they do not. A full circle stays two halves. */
+function joinSegments(a: ProjectedSegment, b: ProjectedSegment): ProjectedSegment | null {
+  if (!isArc(a) && !isArc(b)) {
+    const ax = a.x1 - a.x0, ay = a.y1 - a.y0, bx = b.x1 - b.x0, by = b.y1 - b.y0;
+    const la = Math.hypot(ax, ay), lb = Math.hypot(bx, by);
+    if (la < 1e-12 || lb < 1e-12) return null;
+    const cross = (ax * by - ay * bx) / (la * lb);
+    const dot = (ax * bx + ay * by) / (la * lb);
+    return Math.abs(cross) < 1e-9 && dot > 0 ? { x0: a.x0, y0: a.y0, x1: b.x1, y1: b.y1 } : null;
+  }
+  if (!isArc(a) || !isArc(b) || Math.sign(a.bulge!) !== Math.sign(b.bulge!)) return null;
+  const p = arcOf(a), q = arcOf(b);
+  if (Math.hypot(p.cx - q.cx, p.cy - q.cy) > 1e-6 || Math.abs(p.r - q.r) > 1e-6) return null;
+  const theta = p.theta + q.theta;
+  // Cap a merged arc at a half circle: a circle split into quarters comes out
+  // as two half circles, the same form as an unsplit circle edge.
+  if (Math.abs(theta) > Math.PI + 1e-9) return null;
+  return { x0: a.x0, y0: a.y0, x1: b.x1, y1: b.y1, bulge: Math.tan(theta / 4) };
+}
+
+/** Merge edges that OCCT split along one line or one circle (seams, split
+ *  faces) so a CAM tool sees one line or one arc, as drawn. */
+export function mergeLoop(loop: readonly ProjectedSegment[]): ProjectedSegment[] {
+  const out: ProjectedSegment[] = [];
+  for (const s of loop) {
+    const j = out.length > 0 ? joinSegments(out[out.length - 1], s) : null;
+    if (j) out[out.length - 1] = j;
+    else out.push(s);
+  }
+  while (out.length > 2) {
+    const j = joinSegments(out[out.length - 1], out[0]);
+    if (!j) break;
+    out.pop();
+    out[0] = j;
+  }
+  return out;
+}
+
 /** Exact 2D bounding box of closed loops, including arc bulges. */
 export function loopsBoundingBox(loops: readonly (readonly ProjectedSegment[])[]): { min: Pt2; max: Pt2 } {
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
@@ -169,21 +223,8 @@ export function loopsBoundingBox(loops: readonly (readonly ProjectedSegment[])[]
     for (const s of loop) {
       add(s.x0, s.y0);
       add(s.x1, s.y1);
-      const b = s.bulge ?? 0;
-      if (Math.abs(b) < 1e-12) continue;
-      // Arc from p0 to p1 with included angle θ = 4·atan(b) (CCW positive).
-      const chord = segLength(s);
-      const theta = 4 * Math.atan(b);
-      const r = chord / (2 * Math.sin(Math.abs(theta) / 2));
-      const mx = (s.x0 + s.x1) / 2;
-      const my = (s.y0 + s.y1) / 2;
-      // Signed distance from the chord midpoint to the centre, along the
-      // chord's left normal: positive for a CCW minor arc.
-      const h = (chord / 2) / Math.tan(theta / 2);
-      const nx = -(s.y1 - s.y0) / chord;
-      const ny = (s.x1 - s.x0) / chord;
-      const cx = mx + nx * h;
-      const cy = my + ny * h;
+      if (!isArc(s)) continue;
+      const { cx, cy, r, theta } = arcOf(s);
       const a0 = Math.atan2(s.y0 - cy, s.x0 - cx);
       for (const q of [0, Math.PI / 2, Math.PI, (3 * Math.PI) / 2]) {
         // Angle travelled from the start to the quadrant point along the arc.
@@ -308,7 +349,7 @@ export function extractFlatProfile(
       if (b.outer.length > 0) outers.push(b.outer);
       holes.push(...b.holes);
     }
-    const loops = [...outers, ...holes];
+    const loops = [...outers, ...holes].map(mergeLoop);
     const bb = loopsBoundingBox(loops);
     return {
       ok: true,
@@ -349,7 +390,7 @@ export function extractSectionProfile(
   return {
     ok: true,
     profile: {
-      loops: translateLoops(extracted.segmentLoops, 0, 0),
+      loops: translateLoops(extracted.segmentLoops.map(mergeLoop), 0, 0),
       thickness: 0,
       normal: frame.normal,
     },

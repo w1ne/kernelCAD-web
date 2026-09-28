@@ -26,7 +26,7 @@ import type { ProjectedSegment } from '../../kernel/backends/occt/sketchFromShap
 import { sceneToWorldFrameParts } from '../../kernel/backends/occt/sceneToWorldFrame';
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
-import { NEXT_ACTIONS } from '../../shared/diagnostics/registry';
+import { HINT_TEMPLATES, NEXT_ACTIONS } from '../../shared/diagnostics/registry';
 import type { CompanionMeshFile, ExportInput, ExportResult } from './export';
 import { fileSafePartName } from './safeOutputPath';
 
@@ -42,9 +42,7 @@ export interface DxfProfileOptions extends DxfWriterOptions {
 /** Gap between parts laid out side by side on a combined sheet (mm). */
 const SHEET_GAP_MM = 10;
 
-export const DXF_NON_PLANAR_HINT =
-  'DXF needs a flat part (plate, panel, extruded profile). For any other part use `options.section: { axis, at }` '
-  + 'for a cross-section, `flatten_pattern` for sheet metal, or STEP/STL for 3D.';
+const DXF_NON_PLANAR_HINT = HINT_TEMPLATES['export.dxf.non-planar'].template;
 
 function nonPlanar(
   targetId: string,

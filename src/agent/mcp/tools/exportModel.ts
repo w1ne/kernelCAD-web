@@ -9,7 +9,8 @@
 // Format enum: stl | step | dxf | 3mf | glb | svg-drawing | pdf-drawing | urdf | srdf | sdf-gazebo.
 // URDF / SDF-Gazebo exports also write companion meshes/<part>.stl files
 // next to output_path (the emitted XML references them by relative path);
-// the written paths are reported in `mesh_files`.
+// the written paths are reported in `mesh_files`. A multi-part DXF export
+// writes parts/<part>.dxf the same way, reported in `part_files`.
 
 import { writeFile, mkdir } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
@@ -49,6 +50,9 @@ export interface ExportModelOutput {
   /** Companion mesh files written next to output_path (URDF / SDF exports
    *  reference per-link meshes by relative path). */
   mesh_files?: string[];
+  /** Per-part DXF files written next to output_path (`parts/<part>.dxf`) for a
+   *  multi-part dxf export with the default `layout: 'per-part'`. */
+  part_files?: string[];
   /** svg-drawing / pdf-drawing placement report: `placed` / `overlapped` counts, `byKind`,
    *  the datum reference frame, and every annotation drawn. */
   drawing_report?: DrawingReport;
@@ -176,7 +180,7 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
     byte_count: result.bytes.byteLength,
     feature_count: result.featureCount,
     format,
-    ...(meshFiles.length > 0 ? { mesh_files: meshFiles } : {}),
+    ...(meshFiles.length > 0 ? (format === 'dxf' ? { part_files: meshFiles } : { mesh_files: meshFiles }) : {}),
     ...(result.drawingReport === undefined ? {} : { drawing_report: result.drawingReport }),
     diagnostics: withNextActions(result.diagnostics),
   };
