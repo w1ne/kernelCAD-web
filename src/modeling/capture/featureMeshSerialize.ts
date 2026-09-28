@@ -43,6 +43,12 @@ export interface FeatureMeshSerialized {
    *  against the meshed shape. The renderer prefers this entry over `material`
    *  on a face-by-face basis. */
   materialByFaceId?: Record<number, PBRMaterial>;
+  /** Owning feature id per face index. See `FeatureMesh.faceOwners`. */
+  faceOwners?: string[];
+  /** Per-edge `[start, count]` vertex ranges into `edges`. */
+  edgeRanges?: number[];
+  /** Owning feature id per `edgeRanges` pair. */
+  edgeOwners?: string[];
   /** Stable human-readable mesh label for manifests and object filters. */
   displayName?: string;
   /** Deterministic names/ids that can match this mesh in inspection filters. */
@@ -85,6 +91,9 @@ export function serializeForBridge(m: FeatureMesh): FeatureMeshSerialized {
     ...(m.color !== undefined ? { color: m.color } : {}),
     ...(m.material !== undefined ? { material: m.material } : {}),
     ...(m.materialByFaceId !== undefined ? { materialByFaceId: m.materialByFaceId } : {}),
+    ...(m.faceOwners !== undefined ? { faceOwners: [...m.faceOwners] } : {}),
+    ...(m.edgeRanges !== undefined ? { edgeRanges: [...m.edgeRanges] } : {}),
+    ...(m.edgeOwners !== undefined ? { edgeOwners: [...m.edgeOwners] } : {}),
     ...(m.displayName !== undefined ? { displayName: m.displayName } : {}),
     ...(m.filterNames !== undefined ? { filterNames: [...m.filterNames] } : {}),
     ...(m.sourceMetadataName !== undefined ? { sourceMetadataName: m.sourceMetadataName } : {}),
@@ -118,6 +127,9 @@ export function rehydrateFromBridge(s: FeatureMeshSerialized): FeatureMesh {
     ...(s.color !== undefined ? { color: s.color } : {}),
     ...(s.material !== undefined ? { material: s.material } : {}),
     ...(s.materialByFaceId !== undefined ? { materialByFaceId: s.materialByFaceId } : {}),
+    ...(s.faceOwners !== undefined ? { faceOwners: [...s.faceOwners] } : {}),
+    ...(s.edgeRanges !== undefined ? { edgeRanges: [...s.edgeRanges] } : {}),
+    ...(s.edgeOwners !== undefined ? { edgeOwners: [...s.edgeOwners] } : {}),
     ...(s.displayName !== undefined ? { displayName: s.displayName } : {}),
     ...(s.filterNames !== undefined ? { filterNames: [...s.filterNames] } : {}),
     ...(s.sourceMetadataName !== undefined ? { sourceMetadataName: s.sourceMetadataName } : {}),

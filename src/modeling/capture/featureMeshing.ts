@@ -17,6 +17,7 @@ import { RecomputeEngine } from '../compute/recomputeEngine';
 import { meshShape } from '../../kernel/backends/occt/meshing';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import { generatePlanarUVs } from './planarUv';
+import { computeFeatureOwnership } from './featureOwnership';
 import { helixPolylineRouted } from '../mates/helixPolyline';
 import {
   accumulateMeshBounds,
@@ -92,6 +93,14 @@ export interface FeatureMesh {
    *  per-face API). The renderer prefers this entry over `material` on a
    *  face-by-face basis; unmatched faces fall back to `material`. */
   materialByFaceId?: Record<number, PBRMaterial>;
+  /** Owning feature id per face index (see `featureOwnership.ts`). Absent
+   *  when every face belongs to `featureId`. */
+  faceOwners?: string[];
+  /** Per-edge `[start, count]` vertex ranges into `edges`. */
+  edgeRanges?: number[];
+  /** Owning feature id per `edgeRanges` pair. Absent when every edge belongs
+   *  to `featureId`. */
+  edgeOwners?: string[];
   /** Stable human-readable mesh label for manifests and object filters. */
   displayName?: string;
   /** Deterministic names/ids that can match this mesh in inspection filters. */
@@ -736,6 +745,7 @@ export async function meshFeaturesPerFeature(
   };
   const failedFeatureIds: FeatureId[] = [];
   const recordById = new Map<FeatureId, FeatureRecord>(records.map((r) => [r.id, r]));
+  const recordOrder = new Map<FeatureId, number>(records.map((r, i) => [r.id, i]));
   const meshBounds: MeshBoundsAccumulator = {
     minX: Infinity, minY: Infinity, minZ: Infinity,
     maxX: -Infinity, maxY: -Infinity, maxZ: -Infinity,
@@ -794,6 +804,9 @@ export async function meshFeaturesPerFeature(
     cachedFeatureMeshes,
   );
 
+  // Lowered shape per feature, so ownership can inherit from predecessors.
+  const shapeById = new Map<FeatureId, ShapeBackend>(seedShapes ?? []);
+
   await engine.run(records, {
     paramTable,
     ...(seedShapes !== undefined && seedShapes.size > 0 ? { seedShapes } : {}),
@@ -812,6 +825,8 @@ export async function meshFeaturesPerFeature(
       warnings,
       records,
       cachedFeatureMeshes,
+      shapeById,
+      recordOrder,
     }),
   });
 
@@ -902,6 +917,8 @@ interface MeshFeatureEventContext {
   readonly warnings: PerFaceMaterialWarning[];
   readonly records: readonly FeatureRecord[];
   readonly cachedFeatureMeshes?: Map<FeatureId, FeatureMesh>;
+  readonly shapeById: Map<FeatureId, ShapeBackend>;
+  readonly recordOrder: ReadonlyMap<FeatureId, number>;
 }
 
 function handleMeshFeatureEvent(event: FeatureEvent, ctx: MeshFeatureEventContext): void {
@@ -910,6 +927,7 @@ function handleMeshFeatureEvent(event: FeatureEvent, ctx: MeshFeatureEventContex
     return;
   }
   if (event.kind !== 'feature.compiled') return;
+  ctx.shapeById.set(event.featureId, event.shape);
 
   // Construction-input closure: this record was an intermediate input
   // to an assemblyPart's source shape. Its geometry is already presented
@@ -944,7 +962,8 @@ function handleMeshFeatureEvent(event: FeatureEvent, ctx: MeshFeatureEventContex
     });
     return;
   }
-  const meshed = meshShape(extractRawShape(event.shape));
+  const rawShape = extractRawShape(event.shape);
+  const meshed = meshShape(rawShape);
   if (!meshed) {
     if (event.featureKind === 'sketch') {
       return;
@@ -980,6 +999,16 @@ function handleMeshFeatureEvent(event: FeatureEvent, ctx: MeshFeatureEventContex
   }
 
   attachPlanarUVs(meshed.faces);
+  const ownership = computeFeatureOwnership({
+    featureId: event.featureId,
+    shape: event.shape,
+    rawShape,
+    predecessorShapes: event.predecessors
+      .map((id) => ctx.shapeById.get(id))
+      .filter((shape): shape is ShapeBackend => shape !== undefined),
+    edgeHashes: meshed.edgeHashes,
+    recordOrder: ctx.recordOrder,
+  });
   const emitted: FeatureMesh = {
     featureId: event.featureId,
     featureKind: event.featureKind,
@@ -988,6 +1017,9 @@ function handleMeshFeatureEvent(event: FeatureEvent, ctx: MeshFeatureEventContex
     faces: meshed.faces,
     volume: meshed.volume,
     edges: meshed.edges,
+    ...(meshed.edgeRanges !== undefined ? { edgeRanges: meshed.edgeRanges } : {}),
+    ...(ownership.faceOwners !== undefined ? { faceOwners: ownership.faceOwners } : {}),
+    ...(ownership.edgeOwners !== undefined ? { edgeOwners: ownership.edgeOwners } : {}),
     ...meshIdentityFields({
       featureId: event.featureId,
       featureKind: event.featureKind,
