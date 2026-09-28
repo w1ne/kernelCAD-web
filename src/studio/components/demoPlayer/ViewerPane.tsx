@@ -33,7 +33,13 @@ export function ViewerPane({ version, onSceneReady, width, height, noWatermark =
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 5000);
     camera.position.set(120, 80, 120);
     camera.lookAt(0, 0, 0);
-    const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+    // ?alpha=1 gives the drawing buffer an alpha channel so the 'publish'
+    // preset can capture a transparent backdrop (publishStage.ts). Opt-in:
+    // with an opaque scene.background the pixels are identical either way,
+    // but every other capture keeps the exact context it always had.
+    const alpha = typeof window !== 'undefined'
+      && new URLSearchParams(window.location.search).get('alpha') === '1';
+    const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true, alpha });
     renderer.setSize(width, height);
     renderer.setPixelRatio(1); // capture deterministic
     // PBR-friendly output: linear-light pipeline mapping HDR linear → display

@@ -19,6 +19,7 @@ import { buildMaterialFromPBR, disposeMaterialDeep, DEFAULT_MESH_COLOR } from '.
 import { buildReferenceImagePlane } from './buildReferenceImagePlane';
 import { fitDistanceForBounds } from './cameraFit';
 import { disposeMeshResources } from './demoPlayerGeometry';
+import { applyPublishStage, capturePublishFrame, isStageHelper } from './publishStage';
 import {
   KCAD_FEATURE_GROUP_KEY,
   buildMeshFromFace,
@@ -88,7 +89,7 @@ function advance(deps: DemoPlayerApiDeps, dtMs: number): void {
 function currentSceneBounds(ctx: DemoPlayerSceneContext): THREE.Box3 {
   const bbox = new THREE.Box3();
   ctx.scene.traverse((obj) => {
-    if (obj instanceof THREE.Mesh && isVisibleInScene(obj)) bbox.expandByObject(obj);
+    if (obj instanceof THREE.Mesh && isVisibleInScene(obj) && !isStageHelper(obj)) bbox.expandByObject(obj);
   });
   return bbox;
 }
@@ -951,6 +952,8 @@ export function createDemoPlayerWindowApi(deps: DemoPlayerApiDeps): DemoPlayerWi
     loadFeatureMeshes: (perFeature, bounds) => loadFeatureMeshes(deps, perFeature, bounds),
     setReferenceImagesVisible: (visible) => setReferenceImagesVisible(deps, visible),
     setRenderEnvironment: (spec) => setRenderEnvironment(deps, spec),
+    setPublishStage: (spec) => applyPublishStage(requireScene(deps), spec),
+    capturePublishFrame: (req) => capturePublishFrame(requireScene(deps), req),
     dumpScene: () => dumpScene(deps),
   };
 }
