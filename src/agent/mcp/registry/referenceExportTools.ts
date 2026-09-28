@@ -93,7 +93,7 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
             description:
               "target:'model' — optional per-format options bag. Discriminator options.format must equal top-level format. " +
               'dxf: { layers?, unit?: "mm"|"cm"|"in", tolerance? }. ' +
-              '3mf: { printUnit?: "mm"|"cm"|"in", embedSource?, arrange?: "none"|"plate"|"assembled", orient?: boolean, slicer?: "generic"|"bambu"|"orca"|"prusa", printer?: bed profile (default "generic-fdm") }. ' +
+              '3mf: { printUnit?: "mm"|"cm"|"in", embedSource?, arrange?: "none"|"plate"|"assembled", orient?: boolean, slicer?: "generic"|"bambu"|"orca"|"prusa", printer?: bed profile (default "generic-fdm") }; parts that do not fit the bed are still written and reported as warn diagnostics export.3mf.plate-overflow / export.3mf.exceeds-bed. ' +
               'glb: { axis?: "y-up"|"z-up", draco?: false }. ' +
               'svg-drawing: { sheet?: "a4"|"a3" (or any pdf-drawing sheet), projection?, titleBlock?: { title?, partName?, material?, revision? }, modelName?, date?, annotations?, exploded?: { factor, mode? }, balloons?, partsList?, sections?, autoAnnotate? }. ' +
               'svg-drawing annotations is an array of authored dimensions/notes, each '

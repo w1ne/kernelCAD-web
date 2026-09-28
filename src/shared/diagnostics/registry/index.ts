@@ -147,8 +147,6 @@ const LEGACY_CODE_ORDER = [
   'export.options-format-mismatch',
   'export.dxf.non-planar',
   'export.3mf.not-watertight',
-  'export.3mf.plate-overflow',
-  'export.3mf.exceeds-bed',
   'export.mesh.not-watertight',
   'export.part.not-found',
   'export.glb.draco-glass-conflict',
