@@ -53,6 +53,12 @@ describe('wrapTexture → GLB export', () => {
       const io = new NodeIO();
       const doc: Document = await io.readBinary(result.bytes);
       const root = doc.getRoot();
+      // The texture post-process rewrites the file; attribution must survive
+      // it. glTF-Transform's reader drops asset.generator, so read it raw.
+      const view = new DataView(result.bytes.buffer, result.bytes.byteOffset, result.bytes.byteLength);
+      const rawJson = JSON.parse(new TextDecoder().decode(result.bytes.subarray(20, 20 + view.getUint32(12, true))));
+      expect(rawJson.asset.generator).toMatch(/^kernelCAD \S+ \(https:\/\/kernelcad\.com\)$/);
+      expect(root.getAsset().extras?.kernelcad).toBeDefined();
 
       const meshes = root.listMeshes();
       expect(meshes.length).toBeGreaterThan(0);
