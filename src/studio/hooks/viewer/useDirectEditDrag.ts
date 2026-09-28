@@ -11,7 +11,10 @@ import { shellStore } from "../../store/useShellStore";
 import { reviewCandidate } from "../../directEdit/candidateReview";
 import { currentStudioScript } from "../../scriptSource";
 import { snapDelta } from "../../features-ui/interaction/dragMath";
+import { autoApplyBlockReason, isAutoApplyEnabled, isUiOriginatedEdit } from "../../directEdit/autoApply";
+import type { SourceEditCommitOptions, SourceEditCommitResult } from "../../directEdit/useSourceEditCommit";
 import {
+    AUTO_APPLIED_NOTICE,
     FALLBACK_PLAN_NOTICE,
     REVIEWING_NOTICE,
     REVIEW_BUSY_NOTICE,
@@ -42,6 +45,9 @@ export interface DirectEditDrag {
         mated: boolean,
     ) => Promise<StagedEdit | null>;
 }
+
+/** Apply path shared with the staged-edit Approve button. */
+export type ApplySourceEdit = (edit: StagedEdit, options?: SourceEditCommitOptions) => Promise<SourceEditCommitResult>;
 
 interface PlannedDrag extends DragPlan {
     readonly toCode: string;
@@ -80,11 +86,52 @@ async function planDragWithNotice(
 }
 
 /**
+ * Auto-apply a clean UI edit (setting on) as one undo step; otherwise stage it
+ * for review, with the reason when auto-apply was on but refused (failed run,
+ * validity drop, save failure). Returns the edit, or null when the source
+ * moved before the apply.
+ */
+async function applyOrStage(
+    edit: StagedEdit,
+    applyEdit: ApplySourceEdit | undefined,
+    isFresh: () => boolean,
+): Promise<StagedEdit | null> {
+    const autoApply = applyEdit !== undefined && isAutoApplyEnabled() && isUiOriginatedEdit(edit);
+    if (!autoApply) {
+        shellStore.proposeStagedEdit(edit);
+        shellStore.setDirectEditNotice(null);
+        return edit;
+    }
+    let reviewReason = autoApplyBlockReason(edit);
+    if (reviewReason === null) {
+        const result = await applyEdit(edit, { canApply: isFresh });
+        if (result.ok) {
+            shellStore.recordStagedEditOutcome(edit, 'approved');
+            shellStore.setDirectEditNotice(AUTO_APPLIED_NOTICE);
+            return edit;
+        }
+        if (result.reason === 'aborted') {
+            shellStore.setDirectEditNotice(SOURCE_CHANGED_NOTICE);
+            return null;
+        }
+        reviewReason = `Not auto-applied: ${result.message}`;
+    }
+    const staged: StagedEdit = { ...edit, reviewReason };
+    shellStore.proposeStagedEdit(staged);
+    shellStore.setDirectEditNotice(reviewReason);
+    return staged;
+}
+
+/**
  * Drag bookkeeping for the direct-edit gizmo plus the plan → review → propose
  * commit path. The commit is deliberately kept next to the refs it guards so
  * busy/staleness checks share one closure.
  */
-export function useDirectEditDrag(code: string, scriptReview: ScriptReviewSummary | null): DirectEditDrag {
+export function useDirectEditDrag(
+    code: string,
+    scriptReview: ScriptReviewSummary | null,
+    applyEdit?: ApplySourceEdit,
+): DirectEditDrag {
     // Live code mirror so the post-review staleness check sees the CURRENT
     // source, not the render closure the drag started in.
     const codeRef = useRef(code);
@@ -158,9 +205,7 @@ export function useDirectEditDrag(code: string, scriptReview: ScriptReviewSummar
                     targetScript: targetScript ?? undefined,
                     source: { kind: 'human', label: 'drag' },
                 };
-                shellStore.proposeStagedEdit(edit);
-                shellStore.setDirectEditNotice(null);
-                return edit;
+                return await applyOrStage(edit, applyEdit, () => codeRef.current === baselineCode);
             } catch (error) {
                 shellStore.setDirectEditNotice(
                     error instanceof Error ? error.message : String(error),
@@ -171,7 +216,7 @@ export function useDirectEditDrag(code: string, scriptReview: ScriptReviewSummar
                 setReviewing(false);
             }
         },
-        [scriptReview],
+        [scriptReview, applyEdit],
     );
 
     return {

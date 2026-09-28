@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useShellStore, shellStore } from '../store/useShellStore';
 import { useWorkbench } from '../context/WorkbenchContext';
-import { saveSourceToScript } from '../directEdit/saveSource';
+import { useSourceEditCommit } from '../directEdit/useSourceEditCommit';
 
 const STALE_EDIT_MESSAGE =
     'The editor changed since this edit was staged. Review the current code before applying this proposal.';
@@ -18,7 +18,8 @@ function clearSaveFailureNotice(): void {
 
 export function useStagedEditActions() {
     const { stagedEdit } = useShellStore();
-    const { code, setCode } = useWorkbench();
+    const { code } = useWorkbench();
+    const { target, commit } = useSourceEditCommit();
     const [staleWarning, setStaleWarning] = useState<{ editId: string; message: string } | null>(null);
     const [approving, setApproving] = useState(false);
     const approvingRef = useRef(false);
@@ -31,7 +32,8 @@ export function useStagedEditActions() {
         stagedEdit != null && staleWarning?.editId === stagedEdit.id
             ? staleWarning.message
             : null;
-    const approveDisabled = stagedEdit?.evaluation?.ok === false;
+    const readOnlyHint = target.kind === 'readOnly' ? target.hint : null;
+    const approveDisabled = stagedEdit?.evaluation?.ok === false || readOnlyHint !== null;
     const handleApprove = useCallback(async () => {
         if (stagedEdit == null) return;
         if (approvingRef.current) return;
@@ -46,36 +48,37 @@ export function useStagedEditActions() {
         approvingRef.current = true;
         setApproving(true);
         try {
-            if (edit.targetScript) {
-                try {
-                    await saveSourceToScript(edit.targetScript, edit.toCode);
-                } catch (error) {
-                    console.error('Direct-edit save failed:', error);
-                    shellStore.setDirectEditNotice(SAVE_FAILED_NOTICE);
-                    return;
-                }
+            // Re-checked after the async file save (script target only): the
+            // slot may hold a newer proposal, or the editor may have moved.
+            // The watcher bridge may echo the bytes we just PUT back into the
+            // editor; that exact value is our save succeeding, not an
+            // intervening edit — treat it as fresh.
+            const canApply = () => {
                 const currentEdit = shellStore.getSnapshot().stagedEdit;
-                if (currentEdit == null || currentEdit.id !== edit.id) return;
-                // The watcher bridge may echo the bytes we just PUT back into
-                // the editor. That exact value is our save succeeding, not an
-                // intervening edit — treat it as fresh.
+                if (currentEdit == null || currentEdit.id !== edit.id) return false;
                 if (codeRef.current !== edit.fromCode && codeRef.current !== edit.toCode) {
                     setStaleWarning({
                         editId: edit.id,
                         message: STALE_EDIT_MESSAGE,
                     });
-                    return;
+                    return false;
                 }
+                return true;
+            };
+            const result = await commit(edit, { canApply });
+            if (!result.ok) {
+                if (result.reason === 'save-failed') shellStore.setDirectEditNotice(SAVE_FAILED_NOTICE);
+                if (result.reason === 'read-only') shellStore.setDirectEditNotice(result.message);
+                return;
             }
             clearSaveFailureNotice();
-            setCode(edit.toCode);
             shellStore.recordStagedEditOutcome(edit, 'approved');
             shellStore.clearStagedEdit();
         } finally {
             approvingRef.current = false;
             setApproving(false);
         }
-    }, [code, stagedEdit, setCode]);
+    }, [code, stagedEdit, commit]);
 
     const handleReject = useCallback(() => {
         if (stagedEdit != null) {
@@ -117,6 +120,7 @@ export function useStagedEditActions() {
         stagedEdit,
         approving,
         approveDisabled,
+        readOnlyHint,
         visibleStaleWarning,
         handleApprove,
         handleReject,

@@ -4,14 +4,17 @@ import { Check, RotateCcw, X } from 'lucide-react';
 import { useShellStore } from './store/useShellStore';
 import type { AppliedEditHistoryEntry, StagedEdit } from './store/shellStore';
 import { useStagedEditActions } from './hooks/useStagedEditActions';
+import { useAutoApplySetting } from './directEdit/autoApply';
 
-// Slice 1.5: real body. Reads stagedEdit from the shell store. When
-// populated, renders the intent, a minimal line-by-line diff, and
-// approve/reject buttons. When empty, renders the auto-apply placeholder.
+// Reads stagedEdit from the shell store. When populated, renders the intent,
+// a minimal line-by-line diff, and approve/reject buttons. Always renders the
+// auto-apply toggle: on, UI drags apply at once as one undo step; agent
+// edits and failed/worse candidates still wait here.
 //
-// Approve writes stagedEdit.toCode through workbench.setCode only if the
-// editor still matches the staged baseline. That keeps generated edits from
-// overwriting intervening human changes.
+// Approve applies stagedEdit.toCode through the shared source-edit commit
+// (one undo step, saved to the project or dev file) only if the editor still
+// matches the staged baseline. That keeps generated edits from overwriting
+// intervening human changes.
 
 function computeLineDiff(from: string, to: string): Array<{ kind: 'context' | 'add' | 'del'; text: string }> {
     // Trivial line diff: walk both, mark non-matching lines as add/del.
@@ -65,21 +68,28 @@ function DiffCard({ edit }: { edit: StagedEdit }) {
     );
 }
 
-function PlaceholderBody() {
+export function AutoApplyToggle() {
+    const [enabled, setEnabled] = useAutoApplySetting();
     return (
-        <>
-            <p className="text-xs text-gray-300 leading-snug">
-                Auto-apply mode · toggle off to enable review
-            </p>
-            <button
-                type="button"
-                disabled
-                aria-disabled="true"
-                className="self-start px-2 py-1 text-[11px] rounded border border-[#3a3a3a] bg-[#222] text-gray-500 cursor-not-allowed"
-            >
-                Review edits
-            </button>
-        </>
+        <label
+            className="flex items-start gap-2 text-[11px] text-gray-300 leading-snug cursor-pointer"
+            data-testid="staged-edit-auto-apply"
+        >
+            <input
+                type="checkbox"
+                checked={enabled}
+                onChange={(event) => setEnabled(event.target.checked)}
+                className="mt-0.5 accent-emerald-600"
+            />
+            <span>
+                Auto-apply UI edits
+                <span className="block text-[10px] text-gray-500">
+                    {enabled
+                        ? 'Drags apply at once. Ctrl/Cmd+Z undoes. Agent edits wait for review.'
+                        : 'Every edit waits here for review.'}
+                </span>
+            </span>
+        </label>
     );
 }
 
@@ -226,6 +236,7 @@ export function StagedEditSlot() {
         stagedEdit,
         approving,
         approveDisabled,
+        readOnlyHint,
         visibleStaleWarning,
         handleApprove,
         handleReject,
@@ -238,9 +249,9 @@ export function StagedEditSlot() {
                 Staged edits
             </div>
 
-            {stagedEdit == null ? (
-                <PlaceholderBody />
-            ) : (
+            <AutoApplyToggle />
+
+            {stagedEdit != null && (
                 <>
                     <div
                         className="text-[11px] text-gray-200 leading-snug italic"
@@ -257,6 +268,16 @@ export function StagedEditSlot() {
                         <div data-testid="staged-edit-validity" className="text-[10px] text-gray-400">
                             interferences {stagedEdit.validityDelta.fromInterferences} → {stagedEdit.validityDelta.toInterferences}
                             {' · '}Σ volume {stagedEdit.validityDelta.fromVolumeMm3.toFixed(1)} → {stagedEdit.validityDelta.toVolumeMm3.toFixed(1)} mm³
+                        </div>
+                    )}
+                    {stagedEdit.reviewReason && (
+                        <div data-testid="staged-edit-review-reason" className="rounded border border-amber-800/70 bg-amber-950/40 px-2 py-1 text-[10px] text-amber-200">
+                            {stagedEdit.reviewReason}
+                        </div>
+                    )}
+                    {readOnlyHint && (
+                        <div data-testid="staged-edit-read-only" className="text-[10px] text-gray-400">
+                            {readOnlyHint}
                         </div>
                     )}
                     {stagedEdit.evaluation && !stagedEdit.evaluation.ok && (

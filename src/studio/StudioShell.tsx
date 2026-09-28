@@ -12,6 +12,7 @@ import { AgentRail } from './AgentRail';
 import { BottomDrawer } from './BottomDrawer';
 import { MarkingOverlay } from './components/viewer/overlays/MarkingOverlay';
 import { SectionPanel } from './components/viewer/overlays/SectionPanel';
+import { DirectEditPanel } from './components/viewer/overlays/DirectEditPanel';
 import { SceneTab } from './tabs/SceneTab';
 import { CodeTab } from './tabs/CodeTab';
 import { ParamsTab } from './tabs/ParamsTab';
@@ -31,6 +32,7 @@ import { useOptionalSession } from '../funnel/hooks/useSession';
 import { isAuthConfigured } from '../funnel/lib/supabaseClient';
 import { jointContactCapMm3 } from '../modeling/runtime/jointContactCap';
 import { useViewportToggles } from './hooks/useViewportToggles';
+import { useUndoRedoShortcuts } from './hooks/useUndoRedoShortcuts';
 
 
 interface EmbedFlags {
@@ -135,6 +137,7 @@ export function StudioShell() {
     const isModified = resolveIsModified(activeProject?.code, workbench.code);
 
     useProposeEditBridge();
+    useUndoRedoShortcuts(workbench.commandManager);
 
     // Bridge shell selection → Viewer's existing selectedItemIds. Identity
     // reconciliation: shell selectedFeatureId is a FeatureRecord.id (e.g.
@@ -203,6 +206,7 @@ export function StudioShell() {
                     <Viewport />
                     <MarkingOverlay visible={markingMode} />
                     <SectionPanel visible={sectionMode} />
+                    <DirectEditPanel />
                 </div>
                 <Inspector tabSlots={tabSlots} />
 
