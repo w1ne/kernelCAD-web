@@ -311,6 +311,26 @@ export async function coldMeshPhase(
   return { initial };
 }
 
+/** ffmpeg arguments for a PNG stdin stream → `outPath`. `.gif` gets a
+ *  two-pass palette (palettegen + paletteuse) and loops forever; anything
+ *  else is H.264 MP4. */
+export function ffmpegEncodeArgs(outPath: string, fps: number): string[] {
+  const input = ['-y', '-f', 'image2pipe', '-framerate', String(fps), '-i', '-'];
+  if (/\.gif$/i.test(outPath)) {
+    return [
+      ...input,
+      '-filter_complex', '[0:v]split[a][b];[a]palettegen=stats_mode=diff[p];[b][p]paletteuse=dither=sierra2_4a',
+      '-loop', '0',
+      outPath,
+    ];
+  }
+  return [
+    ...input,
+    '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-preset', 'fast', '-crf', '22',
+    outPath,
+  ];
+}
+
 export async function startEncoderPhase(
   framesDir: string | undefined,
   outPath: string,
@@ -323,11 +343,7 @@ export async function startEncoderPhase(
   if (framesDir === undefined) {
     // MP4 mode: detect ffmpeg availability FIRST — before any browser
     // spins up — by waiting for the child's spawn/error event.
-    const ffmpeg = spawnFfmpeg([
-      '-y', '-f', 'image2pipe', '-framerate', String(fps), '-i', '-',
-      '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-preset', 'fast', '-crf', '22',
-      outPath,
-    ]);
+    const ffmpeg = spawnFfmpeg(ffmpegEncodeArgs(outPath, fps));
     try {
       await new Promise<void>((res, rej) => {
         ffmpeg.once('spawn', () => res());
@@ -496,7 +512,7 @@ async function renderFramePhase(params: {
   return { png };
 }
 
-async function writeFrameOutputPhase(params: {
+export async function writeFrameOutputPhase(params: {
   frame: FrameList[number];
   i: number;
   framesDir: string | undefined;
