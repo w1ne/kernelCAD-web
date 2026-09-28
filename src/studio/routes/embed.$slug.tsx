@@ -290,7 +290,8 @@ function EmbedPage() {
       return (
         <StudioConfigProvider value={{ showHeader: false, enableAgentRail: false, enableConnect: false }}>
           <StudioApp initialCode={code} viewerMode />
-          <MadeWithKernelcad surface="embed" />
+          {/* Bottom-right: the Studio viewport's bottom-left holds the parameter chips. */}
+          <MadeWithKernelcad surface="embed" className="fixed bottom-2 right-2" />
         </StudioConfigProvider>
       );
     }

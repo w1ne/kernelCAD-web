@@ -11,7 +11,7 @@ import { attributionUrl, KERNELCAD_NAME, type LinkSurface } from '../../shared/l
 
 export interface MadeWithKernelcadProps {
   surface: Extract<LinkSurface, 'embed' | 'share'>;
-  /** Placement classes. Defaults to the bottom-left corner of the viewport. */
+  /** Placement classes. Defaults to the bottom-left corner of the window. */
   className?: string;
 }
 

@@ -97,6 +97,9 @@ function ProjectPage() {
       >
         ●<span className="hidden md:inline"> live</span>
       </span>
+      {/* In the header, not over the viewport: the viewport's bottom-left
+          corner holds the parameter chips. */}
+      <MadeWithKernelcad surface="share" className="relative shrink-0 whitespace-nowrap" />
     </div>
   );
 
@@ -122,15 +125,12 @@ function ProjectPage() {
   );
 
   return (
-    <>
-      <App
-        initialCode={project.current_code}
-        liveCode={liveCode}
-        viewerMode
-        headerLeft={headerLeft}
-        headerRight={headerRight ?? undefined}
-      />
-      <MadeWithKernelcad surface="share" />
-    </>
+    <App
+      initialCode={project.current_code}
+      liveCode={liveCode}
+      viewerMode
+      headerLeft={headerLeft}
+      headerRight={headerRight ?? undefined}
+    />
   );
 }
