@@ -237,10 +237,7 @@ export async function export3mfWithReportAsync(
 
   const printUnit: ThreeMfUnit = options.printUnit ?? 'mm';
   const arrange: ThreeMfArrange = options.arrange ?? 'none';
-  // Resolve (and so validate) the printer whenever it is named, even without
-  // `arrange`: it also picks the slicer family when `slicer` is omitted.
-  const printer = options.printer !== undefined ? resolvePrinterProfile(options.printer) : undefined;
-  const slicer: SlicerFlavor = options.slicer ?? printer?.slicer ?? 'generic';
+  const slicer = resolveSlicer(options);
   if (!ARRANGE_VALUES.includes(arrange)) {
     throw new Error(`export3mfAsync: options.arrange must be one of ${ARRANGE_VALUES.join(', ')}; got '${String(arrange)}'.`);
   }
@@ -364,6 +361,17 @@ function resolvePartMaterials(parts: ReadonlyArray<MeshedPart>): {
     partSlot.push(slot);
   }
   return { bases, partPindex, partSlot };
+}
+
+/** `options.slicer`, else the named printer's slicer family, else
+ *  `generic`. Resolves (so validates) a named printer even without
+ *  `arrange`. */
+function resolveSlicer(options: Export3mfOptions): SlicerFlavor {
+  if (options.slicer !== undefined) {
+    if (options.printer !== undefined) resolvePrinterProfile(options.printer);
+    return options.slicer;
+  }
+  return options.printer !== undefined ? resolvePrinterProfile(options.printer).slicer : 'generic';
 }
 
 interface Layout {
