@@ -17,7 +17,7 @@
 // Self-hosters and forks: fill in or clear the tags below, or override them
 // at runtime with `KERNELCAD_REFERRAL_<VENDOR>=<tag>` (e.g.
 // `KERNELCAD_REFERRAL_SENDCUTSEND=abc`). `KERNELCAD_REFERRALS=off` turns every
-// tag off. See docs/attribution.md.
+// tag off. See ATTRIBUTION.md.
 
 import type { LinkSurface } from './attribution';
 

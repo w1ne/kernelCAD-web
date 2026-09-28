@@ -10,7 +10,7 @@
 //
 // Self-hosters and forks: this file and `referral.ts` next to it are the only
 // places to change. Edit the constants below to rename or re-point the
-// attribution. See docs/attribution.md.
+// attribution. See ATTRIBUTION.md.
 
 import { kernelcadVersion } from '../runtime/kernelcadVersion';
 
