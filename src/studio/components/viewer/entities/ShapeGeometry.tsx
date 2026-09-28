@@ -13,7 +13,8 @@ import { DEFAULT_COLOR, resolveColor } from "../../../../shared/render/palette";
 import { buildShapeMaterial } from "./buildShapeMaterial";
 import { matrixFromGeometryTransform } from "./geometryTransform";
 import { selectionCodeStore } from "../../../selectionCode/selectionCodeStore";
-import { pickOwner, type GeometryPick } from "../../../selectionCode/geometryLineage";
+import { resolvePickFeature, type GeometryPick } from "../../../selectionCode/geometryLineage";
+import type { FeatureRecord } from "../../../../shared/intent/featureRecord";
 
 const EMPTY_PLANES: THREE.Plane[] = [];
 
@@ -25,6 +26,7 @@ function linkClickToCode(
     shapeIndex: number,
     faceId: number,
     nativeEvent: MouseEvent,
+    features: readonly FeatureRecord[],
 ): void {
     const hovered = selectionCodeStore.getPreselect();
     const pick: GeometryPick = hovered && hovered.kind === 'edge' && hovered.shapeIndex === shapeIndex
@@ -32,7 +34,7 @@ function linkClickToCode(
         : { shapeIndex, kind: 'face', id: faceId };
     selectionCodeStore.linkFromGeometry(
         pick,
-        pickOwner(geometry, pick),
+        resolvePickFeature(geometry, pick, features),
         { x: nativeEvent.offsetX, y: nativeEvent.offsetY },
     );
 }
@@ -128,7 +130,8 @@ export function ConsolidatedShape({
         setSelectedFace,
         setSelectedSketchName,
         setSelectedItemId,
-        toggleSelection
+        toggleSelection,
+        featureRecords,
     } = useWorkbench();
 
     const { setContextMenu } = useUI();
@@ -169,7 +172,7 @@ export function ConsolidatedShape({
 
         setSelectedFace({ shapeIndex, faceId });
         if (name) setSelectedItemId(name);
-        linkClickToCode(geometry, shapeIndex, faceId, e.nativeEvent);
+        linkClickToCode(geometry, shapeIndex, faceId, e.nativeEvent, featureRecords ?? []);
 
         const x = e.nativeEvent.clientX;
         const y = e.nativeEvent.clientY;
@@ -178,7 +181,7 @@ export function ConsolidatedShape({
             position: { x, y },
             type: 'FACE'
         });
-    }, [geometry, name, shapeIndex, setSelectedFace, setSelectedSketchName, setSelectedItemId, toggleSelection, setContextMenu]);
+    }, [geometry, featureRecords, name, shapeIndex, setSelectedFace, setSelectedSketchName, setSelectedItemId, toggleSelection, setContextMenu]);
 
     const resolvedColor = resolveColor(geometry.color) ?? DEFAULT_COLOR;
     const color = isSelected ? CAD_COLORS.selection : resolvedColor;

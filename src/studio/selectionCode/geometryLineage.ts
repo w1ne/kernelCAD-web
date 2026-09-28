@@ -27,6 +27,27 @@ export function pickOwner(geometry: GeometryResult | undefined, pick: GeometryPi
     return owners?.[pick.id] || geometry.featureId || null;
 }
 
+/**
+ * The FeatureRecord a pick links to. Falls back from the per-face owner to
+ * the mesh's own record, and for an assembly part mesh (whose `featureId` is
+ * a synthetic `<assembly>__<part>` id) to its `assemblyPart` record.
+ */
+export function resolvePickFeature(
+    geometry: GeometryResult | undefined,
+    pick: GeometryPick,
+    features: readonly FeatureRecord[],
+): string | null {
+    const owner = pickOwner(geometry, pick);
+    if (owner !== null && features.some((f) => f.id === owner)) return owner;
+    const partName = geometry?.assemblyPartName;
+    if (partName !== undefined) {
+        const part = features.find((f) => f.kind === 'assemblyPart'
+            && (f.metadata as { partName?: unknown } | undefined)?.partName === partName);
+        if (part) return part.id;
+    }
+    return owner;
+}
+
 /** Index of the BREP edge whose vertex range holds `vertexIndex` (a
  *  LineSegments raycast `index`), or -1. `edgeRanges` is sorted by start. */
 export function edgeIndexAtVertex(edgeRanges: readonly number[] | undefined, vertexIndex: number): number {

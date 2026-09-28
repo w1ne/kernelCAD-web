@@ -14,6 +14,10 @@
 //   3. The face is a modified copy of a face with lineage (for example a box
 //      side trimmed by a fillet) → the lineage root feature.
 //   4. Otherwise the face is new → this feature.
+// A topology-preserving copy (an assembly part clones its source shape, so
+// every hash changes) inherits its single predecessor's owners by face order
+// instead: OCCT keeps explorer order across copy and rigid transforms, the
+// same invariant `propagateTransformHistory` relies on.
 // An edge belongs to the newest owner (in record order) of the faces that
 // bound it: a hole's rim belongs to the hole, a fillet's tangent edges to
 // the fillet.
@@ -30,7 +34,13 @@ import { faceHashOf } from '../../kernel/backends/occt/createdRefs';
 /** Face hash → owning feature id, for every face of one lowered shape. */
 type FaceOwnerMap = Map<string, FeatureId>;
 
-const ownerMapByShape = new WeakMap<object, FaceOwnerMap>();
+interface ShapeOwners {
+  byHash: FaceOwnerMap;
+  /** Owner per face index. */
+  byIndex: readonly FeatureId[];
+}
+
+const ownersByShape = new WeakMap<object, ShapeOwners>();
 
 export interface FeatureOwnership {
   /** Owner per face index (= `FaceGeometry.faceId`). Omitted when every face
@@ -53,6 +63,9 @@ export interface FeatureOwnershipInput {
   edgeHashes?: readonly number[];
   /** Record id → capture index, used to pick the newest owner of an edge. */
   recordOrder: ReadonlyMap<FeatureId, number>;
+  /** The feature copies its single predecessor with topology preserved
+   *  (e.g. `assemblyPart`): inherit owners by face order. */
+  topologyCopy?: boolean;
 }
 
 interface ReplicadEdgeLike { hashCode: number }
@@ -130,24 +143,27 @@ function edgeOwnersOf(
 export function computeFeatureOwnership(input: FeatureOwnershipInput): FeatureOwnership {
   const { featureId, shape, rawShape, predecessorShapes, edgeHashes, recordOrder } = input;
   const historyMap = (shape as { historyMap?: HistoryMap }).historyMap;
-  const inherited: FaceOwnerMap[] = [];
-  for (const p of predecessorShapes) {
-    const map = ownerMapByShape.get(p);
-    if (map !== undefined) inherited.push(map);
-  }
+  const predecessorOwners = predecessorShapes
+    .map((p) => ownersByShape.get(p))
+    .filter((o): o is ShapeOwners => o !== undefined);
+  const inherited = predecessorOwners.map((o) => o.byHash);
 
   const faces = facesOf(rawShape);
-  const ownMap: FaceOwnerMap = new Map();
+  const copiedFrom = input.topologyCopy && predecessorOwners.length === 1
+    && predecessorOwners[0]!.byIndex.length === faces.length
+    ? predecessorOwners[0]!.byIndex
+    : undefined;
+  const byHash: FaceOwnerMap = new Map();
   const faceOwners: string[] = [];
   let uniform = true;
   faces.forEach((face, i) => {
     const hash = safeFaceHash(face);
-    const owner = ownerOfFace(hash, featureId, historyMap, inherited);
-    if (hash !== undefined) ownMap.set(hash, owner);
+    const owner = copiedFrom?.[i] ?? ownerOfFace(hash, featureId, historyMap, inherited);
+    if (hash !== undefined) byHash.set(hash, owner);
     faceOwners[i] = owner;
     if (owner !== featureId) uniform = false;
   });
-  ownerMapByShape.set(shape, ownMap);
+  ownersByShape.set(shape, { byHash, byIndex: faceOwners });
 
   if (uniform) return {};
   const out: FeatureOwnership = { faceOwners };

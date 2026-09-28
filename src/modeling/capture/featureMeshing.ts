@@ -921,6 +921,19 @@ interface MeshFeatureEventContext {
   readonly recordOrder: ReadonlyMap<FeatureId, number>;
 }
 
+/** Kinds whose lowered shape is a topology-preserving copy of their single
+ *  input (face ownership is inherited by face order). */
+const TOPOLOGY_COPY_KINDS: ReadonlySet<FeatureKind> = new Set<FeatureKind>(['assemblyPart']);
+
+function predecessorShapesOf(
+  ids: readonly FeatureId[],
+  shapeById: ReadonlyMap<FeatureId, ShapeBackend>,
+): ShapeBackend[] {
+  return ids
+    .map((id) => shapeById.get(id))
+    .filter((shape): shape is ShapeBackend => shape !== undefined);
+}
+
 function handleMeshFeatureEvent(event: FeatureEvent, ctx: MeshFeatureEventContext): void {
   if (event.kind === 'feature.failed') {
     ctx.failedFeatureIds.push(event.featureId);
@@ -937,6 +950,18 @@ function handleMeshFeatureEvent(event: FeatureEvent, ctx: MeshFeatureEventContex
   // (solvedAssembly / assemblyModel / assemblyExport) is the consumer,
   // not a construction input — it's not in the closure.
   if (ctx.constructionClosure.has(event.featureId)) {
+    // Not meshed, but its face owners feed the assembly part meshes built
+    // from it (selection ↔ code link).
+    if (isReplicadShapeProvider(event.shape)) {
+      computeFeatureOwnership({
+        featureId: event.featureId,
+        shape: event.shape,
+        rawShape: event.shape.getReplicadShape(),
+        predecessorShapes: predecessorShapesOf(event.predecessors, ctx.shapeById),
+        recordOrder: ctx.recordOrder,
+        topologyCopy: TOPOLOGY_COPY_KINDS.has(event.featureKind),
+      });
+    }
     return;
   }
 
@@ -959,6 +984,11 @@ function handleMeshFeatureEvent(event: FeatureEvent, ctx: MeshFeatureEventContex
       meshIdentityFields,
       metadataNameOf,
       collectTendonMeshes,
+      ownerIdOfShape: (shape) => {
+        for (const [id, s] of ctx.shapeById) if (s === shape) return id;
+        return undefined;
+      },
+      recordOrder: ctx.recordOrder,
     });
     return;
   }
@@ -1003,11 +1033,10 @@ function handleMeshFeatureEvent(event: FeatureEvent, ctx: MeshFeatureEventContex
     featureId: event.featureId,
     shape: event.shape,
     rawShape,
-    predecessorShapes: event.predecessors
-      .map((id) => ctx.shapeById.get(id))
-      .filter((shape): shape is ShapeBackend => shape !== undefined),
+    predecessorShapes: predecessorShapesOf(event.predecessors, ctx.shapeById),
     edgeHashes: meshed.edgeHashes,
     recordOrder: ctx.recordOrder,
+    topologyCopy: TOPOLOGY_COPY_KINDS.has(event.featureKind),
   });
   const emitted: FeatureMesh = {
     featureId: event.featureId,
