@@ -7,6 +7,7 @@ import type { CompilerDiagnostic } from '../../../../shared/diagnostics/diagnost
 import type { DrawingDatumDecl, DrawingDeclarations } from '../../../../shared/intent/drawingGdtRecord';
 import type { DrawingViewName, Polyline2, ProjectionAngle, SheetSpec, ViewPlacement } from '../drawingLayout';
 import type { WorldFramePart } from '../sceneToWorldFrame';
+import type { Box } from '../drawingObstacles';
 import type { V3 } from '../drawingFeatures';
 import type { AutoAnnotateOptions } from './options';
 
@@ -55,6 +56,9 @@ export interface AutoDrawingInput {
 export interface AutoDrawingResult {
   svg: string[];
   bottomReserve: Record<DrawingViewName, number>;
+  /** Every label box on the sheet (sheet mm): captions, dimension text and
+   *  callouts, authored and automatic. */
+  labelBoxes: Box[];
   generalTolerance?: string;
   report: DrawingReport;
   diagnostics: CompilerDiagnostic[];

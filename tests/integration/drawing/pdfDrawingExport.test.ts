@@ -192,6 +192,16 @@ describe('pdf-drawing: views and annotations', () => {
     expect(bracket.drawingReport?.byKind).toMatchObject({ hole: 3, datum: 3, overall: 3 });
   });
 
+  it('places every automatic annotation clear of the others on the A3 sheet', () => {
+    // The counterbored hole's callout in the top view used to meet the fillet
+    // note's leader there.
+    const report = bracket.drawingReport!;
+    expect(report.annotations.filter(a => a.overlapped)).toEqual([]);
+    expect(report.overlapped).toBe(0);
+    expect(report.placed).toBe(report.annotations.length);
+    expect(bracket.diagnostics.filter(d => d.code === 'drawing.annotation.overlap')).toEqual([]);
+  });
+
   it('prints the scale the views were drawn at: the 90 mm base is 90 mm long on a 1:1 sheet', () => {
     const label = textAt(bracket.page, '90');
     const dimLine = bracket.page.paths
@@ -209,6 +219,19 @@ describe('pdf-drawing: sheets and projection', () => {
     expect(texts).toContain('FIRST ANGLE PROJECTION');
     expect(textAt(r.page, 'TOP').y).toBeGreaterThan(textAt(r.page, 'FRONT').y);
     expect(textAt(r.page, 'LEFT').x).toBeGreaterThan(textAt(r.page, 'FRONT').x);
+    expect(r.drawingReport?.annotations.filter(a => a.overlapped)).toEqual([]);
+  }, 120_000);
+
+  it.each(['third', 'first'] as const)('keeps every annotation clear on ANSI B, %s angle, dimension stacks off the title block', async projection => {
+    const r = await exportPdf(BRACKET, { sheet: 'ansi-b', projection });
+    expect(r.drawingReport?.annotations.filter(a => a.overlapped)).toEqual([]);
+    expect(r.drawingReport?.overlapped).toBe(0);
+    // The front view's width dimension clears the title block (third angle)
+    // and the frame (first angle).
+    const width = textAt(r.page, '90');
+    const titleTop = textAt(r.page, 'TITLE').y;
+    expect(width.y).toBeLessThan(titleTop - 5);
+    expect(width.y - 3).toBeGreaterThan(12); // text top below the 12 mm frame
   }, 120_000);
 
   it('uses the named ANSI size and keeps it when section views are added', async () => {

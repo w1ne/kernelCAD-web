@@ -98,8 +98,8 @@ npx tsx src/agent/cli/index.ts export pdf-drawing examples/drawings-auto/bracket
 Output:
 
 ```
-Wrote 14882 bytes to examples/drawings-auto/bracket.pdf
-drawing: 20 annotation(s) placed, 1 overlapped (hole-position 9, overall 3, hole 3, datum 3, flatness 1, fillet 1, chamfer 1, general-tolerance 1)
+Wrote 14869 bytes to examples/drawings-auto/bracket.pdf
+drawing: 21 annotation(s) placed, 0 overlapped (hole-position 9, overall 3, hole 3, datum 3, flatness 1, fillet 1, chamfer 1, general-tolerance 1)
 ```
 
 The page is A3 (1190.55 × 841.89 pt), one page, drawn at 1:1. The text layer

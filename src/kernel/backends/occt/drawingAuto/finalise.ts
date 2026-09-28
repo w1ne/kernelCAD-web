@@ -32,7 +32,9 @@ export function finalise(ctx: RenderCtx): AutoDrawingResult {
   let overlapped = 0;
   const crowded: string[] = [];
   for (const item of placed) {
-    const hit = ctx.obstacles.cost(item.boxes, item.owner) > 0;
+    // Its labels on anything, or its leader through another label.
+    const hit = ctx.obstacles.cost(item.boxes, item.owner) > 0 ||
+      item.leaders.some(seg => ctx.obstacles.labelHits(seg, item.owner) > 0);
     if (hit) {
       overlapped++;
       crowded.push(`${item.kind} '${item.text}' (${item.view})`);
@@ -61,6 +63,7 @@ export function finalise(ctx: RenderCtx): AutoDrawingResult {
   return {
     svg,
     bottomReserve,
+    labelBoxes: ctx.obstacles.labelBoxes(),
     ...(generalTolerance ? { generalTolerance } : {}),
     report: {
       placed: placed.length - overlapped,
