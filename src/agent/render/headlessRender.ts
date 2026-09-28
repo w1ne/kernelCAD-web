@@ -15,6 +15,8 @@ import { loadScriptFeatures } from '../../modeling/runtime/scriptLoader';
 import { meshFeaturesPerFeature } from '../../modeling/capture/featureMeshing';
 import { serializeForBridge, type FeatureMeshSerialized } from '../../modeling/capture/featureMeshSerialize';
 import type { RenderView } from '../../shared/render/views';
+import type { PublishStageSpec } from '../../shared/render/publishPreset';
+import { PUBLISH_QUERY_PARTS, applyPublishStageOnPage, capturePublishTile } from './publishCapture';
 
 export type { RenderView };
 
@@ -138,6 +140,12 @@ export interface HeadlessRenderOpts {
   /** Explode a multi-part assembly. Offsets are composed onto each part's
    *  worldTransform in the existing mesher — no new renderer. */
   explode?: { factor: number; mode: 'radial' | 'mate-axis' };
+  /** 'publish' preset stage (studio lights, backdrop, contact shadow). When
+   *  set, RGB tiles are captured from the canvas at the exact tile size
+   *  (supersampled, see publishCapture.ts) instead of a viewport screenshot,
+   *  and the camera is auto-framed with the preset margin. RGB only — the
+   *  inspection channels are engineering evidence and keep the default look. */
+  publish?: PublishStageSpec;
 }
 
 export interface HeadlessRenderResult {
@@ -439,7 +447,7 @@ export async function applyRenderEnvironmentWithFallback(
 
 /** Node-side meshing: load the script, resolve explode offsets when asked,
  *  mesh per feature and serialize for the browser bridge. */
-async function meshForHeadlessRender(opts: HeadlessRenderOpts): Promise<{
+export async function meshForHeadlessRender(opts: HeadlessRenderOpts): Promise<{
   meshing: Awaited<ReturnType<typeof meshFeaturesPerFeature>>;
   serialized: FeatureMeshSerialized[];
 }> {
@@ -481,7 +489,7 @@ async function meshForHeadlessRender(opts: HeadlessRenderOpts): Promise<{
 
 /** Launch the demo-player page, load meshes into it and apply the capture
  *  options (watermark, section, visibility, reference images, environment). */
-async function openRenderPage(
+export async function openRenderPage(
   opts: HeadlessRenderOpts,
   baseUrl: string,
   serialized: readonly FeatureMeshSerialized[],
@@ -491,7 +499,8 @@ async function openRenderPage(
   //    Build query string: headless=1 always (added by the helper),
   //    nowatermark=1 when requested.
   const extraQueryParts: string[] = [];
-  if (opts.noWatermark) extraQueryParts.push('nowatermark=1');
+  if (opts.publish) extraQueryParts.push(...PUBLISH_QUERY_PARTS);
+  else if (opts.noWatermark) extraQueryParts.push('nowatermark=1');
   if (opts.section) {
     extraQueryParts.push(`section=${opts.section.axis}:${opts.section.positionRaw}`);
     if (opts.section.flip) extraQueryParts.push('sectionflip=1');
@@ -533,6 +542,10 @@ async function openRenderPage(
     if (opts.environment !== undefined) {
       await applyRenderEnvironmentWithFallback(page, opts.environment);
     }
+
+    // 3d. 'publish' preset: studio stage, applied after visibility + env so
+    // the contact shadow is baked from exactly the visible model.
+    if (opts.publish) await applyPublishStageOnPage(page, opts.publish);
 
     // Belt-and-suspenders: nuke ANY dev chrome AFTER mesh load and BEFORE the
     // first screenshot. The headless URL param + __root.tsx suppression doesn't
@@ -597,8 +610,9 @@ async function captureViews(
       { v: view, a: outputAspect },
     );
     if (captureRgb) {
-      const buf = await normalizeTile(await page.screenshot({ type: 'png' }), opts);
-      pngsByView[view] = buf;
+      pngsByView[view] = opts.publish
+        ? await capturePublishTile(page, { width: opts.viewportWidth, height: opts.viewportHeight, view })
+        : await normalizeTile(await page.screenshot({ type: 'png' }), opts);
     }
     if (captureMask) {
       const mask = await page.evaluate(
@@ -648,6 +662,12 @@ async function capturePoses(
       if (!Number.isFinite(az) || !Number.isFinite(el)) {
         throw new Error(`headlessRender: invalid --pose value '${poseKey}' (expected '<az>,<el>')`);
       }
+      if (opts.publish) {
+        pngsByPose[poseKey] = await capturePublishTile(page, {
+          width: opts.viewportWidth, height: opts.viewportHeight, azDeg: az, elDeg: el,
+        });
+        continue;
+      }
       await page.evaluate(
         ({ a, e, asp }) => window.__demoPlayer!.setRenderPose(a, e, asp),
         { a: az, e: el, asp: outputAspect },
@@ -668,6 +688,9 @@ export async function headlessRender(opts: HeadlessRenderOpts): Promise<Headless
   const auxInspectionChannels = inspectionChannels.filter(
     (channel): channel is HeadlessAuxInspectionChannel => channel === 'depth' || channel === 'normals',
   );
+  if (opts.publish && (captureMask || auxInspectionChannels.length > 0)) {
+    throw new Error('headlessRender: the publish preset renders RGB only; request mask/depth/normals channels without it.');
+  }
 
   const { meshing, serialized } = await meshForHeadlessRender(opts);
 

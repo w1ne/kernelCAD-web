@@ -93,5 +93,7 @@
   "continuity",
   "tangency",
   "draft",
-  "emboss"
+  "emboss",
+  "render",
+  "turntable"
 ]
