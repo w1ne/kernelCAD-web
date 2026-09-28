@@ -495,7 +495,9 @@ export function exportShapeDxf(
     }
     return false;
   })();
-  if (tracesToSheetMetal) {
+  // An explicit `options.section` asks for a cross-section, not the blank.
+  const wantsSection = (opts as { section?: unknown }).section !== undefined;
+  if (tracesToSheetMetal && !wantsSection) {
     try {
       const region = flattenPattern(run.records, targetId);
       const bytes = exportDxf({ kind: 'region', region }, opts);

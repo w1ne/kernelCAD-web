@@ -98,18 +98,8 @@ export function exportDxf(input: DxfInput, options: DxfWriterOptions): Uint8Arra
   const cutLayer = options.layers?.[0]?.name ?? 'cut';
   const k = MM_PER_UNIT[unit];
   const toUnit = (pts: Vec2[]): Vec2[] => pts.map(([x, y]) => [x / k, y / k]);
-
-  const outer = input.kind === 'region' ? input.region.outer : input.kind === 'planarWires' ? input.outer : [];
-  const holes = input.kind === 'region' ? input.region.holes : input.kind === 'planarWires' ? (input.holes ?? []) : [];
-  const bendLines =
-    input.kind === 'region' ? input.region.bendLines : input.kind === 'planarWires' ? (input.bendLines ?? []) : [];
-  const profileLayers = input.kind === 'profiles'
-    ? input.layers.map((l) => ({ name: l.name ?? cutLayer, loops: l.loops }))
-    : [];
-  const layerNames = [...new Set([
-    ...(input.kind === 'profiles' && profileLayers.length > 0 ? profileLayers.map((l) => l.name) : [cutLayer]),
-    'BEND',
-  ])];
+  const content = contentOf(input, cutLayer);
+  const layerNames = [...new Set([...content.layers.map((l) => l.name), 'BEND'])];
 
   const isoDate = new Date().toISOString().slice(0, 10);
   const lines: string[] = [];
@@ -142,17 +132,10 @@ export function exportDxf(input: DxfInput, options: DxfWriterOptions): Uint8Arra
 
   // ENTITIES section
   lines.push('0', 'SECTION', '2', 'ENTITIES');
-  if (input.kind === 'profiles') {
-    for (const layer of profileLayers) {
-      for (const loop of layer.loops) writeBulgePolyline(lines, loop, k, layer.name);
-    }
-  } else {
-    writeClosedPolyline(lines, toUnit(outer), cutLayer);
-    for (const hole of holes) {
-      writeClosedPolyline(lines, toUnit(hole), cutLayer);
-    }
+  for (const layer of content.layers) {
+    for (const loop of layer.loops) writeBulgePolyline(lines, loop, k, layer.name);
   }
-  for (const bl of bendLines) {
+  for (const bl of content.bendLines) {
     writeOpenPolyline(lines, toUnit([bl.start, bl.end]), 'BEND');
   }
   lines.push('0', 'ENDSEC');
@@ -161,17 +144,31 @@ export function exportDxf(input: DxfInput, options: DxfWriterOptions): Uint8Arra
   return new TextEncoder().encode(lines.join('\n'));
 }
 
-/** Emit a closed `LWPOLYLINE` (flag = 1) at the given layer. */
-function writeClosedPolyline(out: string[], pts: Vec2[], layer: string): void {
-  out.push(
-    '0', 'LWPOLYLINE',
-    '8', layer,
-    '90', String(pts.length),
-    '70', '1',
-  );
-  for (const [x, y] of pts) {
-    out.push('10', x.toFixed(6), '20', y.toFixed(6));
+interface DxfContent {
+  layers: ReadonlyArray<{ name: string; loops: ReadonlyArray<ReadonlyArray<ProjectedSegment>> }>;
+  bendLines: ReadonlyArray<BendLineRecord>;
+}
+
+/** A vertex polygon as a closed loop of straight segments. */
+function polygonLoop(pts: Vec2[]): ProjectedSegment[] {
+  return pts.map(([x0, y0], i) => {
+    const [x1, y1] = pts[(i + 1) % pts.length];
+    return { x0, y0, x1, y1 };
+  });
+}
+
+/** Normalise every input kind to layered loops + bend lines. Region and
+ *  planar-wire vertices keep their exact order: outer first, then holes,
+ *  all on the cut layer. */
+function contentOf(input: DxfInput, cutLayer: string): DxfContent {
+  if (input.kind === 'profiles') {
+    const layers = input.layers.map((l) => ({ name: l.name ?? cutLayer, loops: l.loops }));
+    return { layers: layers.length > 0 ? layers : [{ name: cutLayer, loops: [] }], bendLines: [] };
   }
+  const outer = input.kind === 'region' ? input.region.outer : input.outer;
+  const holes = input.kind === 'region' ? input.region.holes : (input.holes ?? []);
+  const bendLines = input.kind === 'region' ? input.region.bendLines : (input.bendLines ?? []);
+  return { layers: [{ name: cutLayer, loops: [outer, ...holes].map(polygonLoop) }], bendLines };
 }
 
 /** Emit a closed segment loop as one closed `LWPOLYLINE` (flag = 1). Each

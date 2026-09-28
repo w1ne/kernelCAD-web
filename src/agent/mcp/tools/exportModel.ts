@@ -95,6 +95,16 @@ async function writeExportPayload(
   return undefined;
 }
 
+/** Companion files go in `part_files` for a multi-part DXF, `mesh_files`
+ *  for robot-description meshes; nothing when none were written. */
+function companionFilesField(
+  format: ExportFormat,
+  files: string[],
+): Pick<ExportModelOutput, 'mesh_files' | 'part_files'> {
+  if (files.length === 0) return {};
+  return format === 'dxf' ? { part_files: files } : { mesh_files: files };
+}
+
 /**
  * MCP `export_model` tool — runs a kernelCAD script and writes the geometry
  * to `output_path` in the requested `format`. The single, unified write-side
@@ -180,7 +190,7 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
     byte_count: result.bytes.byteLength,
     feature_count: result.featureCount,
     format,
-    ...(meshFiles.length > 0 ? (format === 'dxf' ? { part_files: meshFiles } : { mesh_files: meshFiles }) : {}),
+    ...companionFilesField(format, meshFiles),
     ...(result.drawingReport === undefined ? {} : { drawing_report: result.drawingReport }),
     diagnostics: withNextActions(result.diagnostics),
   };

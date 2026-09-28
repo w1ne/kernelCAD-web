@@ -19,7 +19,7 @@
 // emit true arcs and circles. Only curves with no exact arc form (B-splines,
 // ellipses) are flattened under the caller's chord tolerance.
 
-import { measureArea, type Face } from 'replicad';
+import { getOC, measureArea, type Face } from 'replicad';
 import type { OcctBackend } from './occtBackend';
 import {
   makePlaneFrame,
@@ -80,20 +80,31 @@ function faceNormal(face: Face): Vec3 | null {
 }
 
 /** True when every sampled normal of a curved face is perpendicular to `n`:
- *  the face is a wall swept along `n` (hole, slot end, rounded corner). */
+ *  the face is a wall swept along `n` (hole, slot end, rounded corner).
+ *  Normals are read straight at (u, v) — no point-to-surface projection. */
 function isCurvedSideFace(face: Face, n: Vec3): boolean {
-  for (const u of [0.1, 0.5, 0.9]) {
-    for (const v of [0.1, 0.5, 0.9]) {
-      let nv: Vec3 | null;
-      try {
-        nv = unit(face.normalAt(face.pointOnSurface(u, v)));
-      } catch {
-        return false;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const oc = getOC() as any;
+  const { uMin, uMax, vMin, vMax } = face.UVBounds;
+  const props = new oc.BRepGProp_Face_2(face.wrapped, false);
+  const p = new oc.gp_Pnt_1();
+  const vn = new oc.gp_Vec_1();
+  try {
+    for (const fu of [0.1, 0.5, 0.9]) {
+      for (const fv of [0.1, 0.5, 0.9]) {
+        props.Normal(uMin + fu * (uMax - uMin), vMin + fv * (vMax - vMin), p, vn);
+        const nv = unit({ x: vn.X(), y: vn.Y(), z: vn.Z() });
+        if (!nv || Math.abs(dot3(nv, n)) > PERPENDICULAR_COS) return false;
       }
-      if (!nv || Math.abs(dot3(nv, n)) > PERPENDICULAR_COS) return false;
     }
+    return true;
+  } catch {
+    return false;
+  } finally {
+    vn.delete();
+    p.delete();
+    props.delete();
   }
-  return true;
 }
 
 interface PlanarFaceInfo {
@@ -254,6 +265,98 @@ function describeNormal(n: Vec3): string {
   return `[${n.map((c) => (Math.abs(c) < 1e-9 ? 0 : Number(c.toFixed(4)))).join(', ')}]`;
 }
 
+/** Split faces into planar (with normal, centre, area) and curved ones. */
+function classifyFaces(faces: Face[]): { planar: PlanarFaceInfo[]; curved: Face[] } | { reason: string } {
+  const planar: PlanarFaceInfo[] = [];
+  const curved: Face[] = [];
+  for (const face of faces) {
+    if (face.geomType !== 'PLANE') {
+      curved.push(face);
+      continue;
+    }
+    const normal = faceNormal(face);
+    if (!normal) return { reason: 'a planar face has no defined normal' };
+    const c = face.center;
+    planar.push({ face, normal, center: [c.x, c.y, c.z], area: measureArea(face) });
+  }
+  return { planar, curved };
+}
+
+interface CapLevels {
+  /** Distinct cap positions along the normal. */
+  levels: number[];
+  caps: Array<{ info: PlanarFaceInfo; level: number }>;
+}
+
+/** Sort the planar faces into caps (parallel to `n`) by level; a planar face
+ *  that is neither parallel nor perpendicular fails. */
+function capLevels(planar: PlanarFaceInfo[], n: Vec3): CapLevels | { reason: string } {
+  const levels: number[] = [];
+  const caps: CapLevels['caps'] = [];
+  for (const f of planar) {
+    const c = Math.abs(dot3(f.normal, n));
+    if (c > PARALLEL_COS) {
+      const level = dot3(f.center, n);
+      caps.push({ info: f, level });
+      if (!levels.some((l) => Math.abs(l - level) <= LEVEL_TOL)) levels.push(level);
+    } else if (c > PERPENDICULAR_COS) {
+      return { reason: `a planar face (normal ${describeNormal(f.normal)}) is neither parallel nor perpendicular to the plate` };
+    }
+  }
+  return { levels, caps };
+}
+
+/** Why the part is not a constant-thickness plate seen along `n`, or the
+ *  cap faces on its top level plus the thickness when it is. */
+function plateAlong(
+  backend: OcctBackend,
+  planar: PlanarFaceInfo[],
+  curved: Face[],
+  n: Vec3,
+): { topFaces: PlanarFaceInfo[]; thickness: number } | { reason: string } {
+  const cl = capLevels(planar, n);
+  if ('reason' in cl) return cl;
+  const bad = curved.find((f) => !isCurvedSideFace(f, n));
+  if (bad) return { reason: `a ${bad.geomType.toLowerCase().replace('cylindre', 'cylinder')} face is not a straight wall across the plate` };
+  const { levels, caps } = cl;
+  if (levels.length > 2) {
+    return { reason: `the faces parallel to the plate lie on ${levels.length} levels (a pocket, step or boss), not a constant thickness` };
+  }
+  if (levels.length === 1 && (curved.length > 0 || caps.length < planar.length)) {
+    return { reason: 'the part has walls but only one cap level' };
+  }
+  const top = Math.max(...levels);
+  const thickness = top - Math.min(...levels);
+  const topFaces = caps.filter((c) => Math.abs(c.level - top) <= LEVEL_TOL).map((c) => c.info);
+  if (thickness > 0) {
+    // A prism's volume is its cap area times its thickness; anything else
+    // (an undercut, an internal void) is not one flat cut part.
+    const capArea = topFaces.reduce((a, f) => a + f.area, 0);
+    const vol = backend.volume();
+    if (Math.abs(vol - capArea * thickness) > 1e-3 * Math.max(vol, 1e-9)) {
+      return { reason: `volume ${vol.toFixed(3)} mm³ differs from cap area × thickness` };
+    }
+  }
+  return { topFaces, thickness };
+}
+
+/** Boundary loops of the top cap faces in `frame`: outers first, then holes. */
+function capLoops(topFaces: PlanarFaceInfo[], frame: PlaneFrame, curveTolerance?: number): ProjectedSegment[][] | { reason: string } {
+  const outers: ProjectedSegment[][] = [];
+  const holes: ProjectedSegment[][] = [];
+  for (const f of topFaces) {
+    const b = faceLoops(f.face as never, frame, { curveTolerance, chainTolerance: CHAIN_TOL });
+    if (b.openChains.length > 0) {
+      const o = b.openChains[0];
+      const pt = (p: Pt2): string => `[${p.map((x) => x.toFixed(4)).join(', ')}]`;
+      return { reason: `the cap boundary does not close (gap between ${pt(o.start)} and ${pt(o.end)})` };
+    }
+    if (b.outer.length > 0) outers.push(b.outer);
+    holes.push(...b.holes);
+  }
+  return [...outers, ...holes].map(mergeLoop);
+}
+
 /**
  * Cut profile of a flat part: a prismatic solid (or a bare planar face)
  * whose faces are caps parallel to one plane or walls perpendicular to it,
@@ -270,92 +373,27 @@ export function extractFlatProfile(
 ): PlanarProfileResult {
   const faces = backend.getReplicadShape().faces as Face[];
   if (faces.length === 0) return { ok: false, reason: 'the shape has no faces' };
-
-  const planar: PlanarFaceInfo[] = [];
-  const curved: Face[] = [];
-  for (const face of faces) {
-    if (face.geomType === 'PLANE') {
-      const normal = faceNormal(face);
-      if (!normal) return { ok: false, reason: 'a planar face has no defined normal' };
-      const c = face.center;
-      planar.push({ face, normal, center: [c.x, c.y, c.z], area: measureArea(face) });
-    } else {
-      curved.push(face);
-    }
-  }
+  const classified = classifyFaces(faces);
+  if ('reason' in classified) return { ok: false, reason: classified.reason };
+  const { planar, curved } = classified;
   if (planar.length === 0) return { ok: false, reason: 'the part has no planar face' };
 
   let firstReason = '';
   for (const n of candidateNormals(planar)) {
-    const levels: number[] = [];
-    const caps: Array<{ info: PlanarFaceInfo; level: number }> = [];
-    let offender: string | undefined;
-    for (const f of planar) {
-      const c = Math.abs(dot3(f.normal, n));
-      if (c > PARALLEL_COS) {
-        const level = dot3(f.center, n);
-        caps.push({ info: f, level });
-        if (!levels.some((l) => Math.abs(l - level) <= LEVEL_TOL)) levels.push(level);
-      } else if (c > PERPENDICULAR_COS) {
-        offender = `a planar face (normal ${describeNormal(f.normal)}) is neither parallel nor perpendicular to the plate`;
-        break;
-      }
-    }
-    if (offender === undefined) {
-      const bad = curved.find((f) => !isCurvedSideFace(f, n));
-      if (bad) offender = `a ${bad.geomType.toLowerCase().replace('cylindre', 'cylinder')} face is not a straight wall across the plate`;
-    }
-    if (offender === undefined && levels.length > 2) {
-      offender = `the faces parallel to the plate lie on ${levels.length} levels (a pocket, step or boss), not a constant thickness`;
-    }
-    if (offender === undefined && levels.length === 1 && (curved.length > 0 || caps.length < planar.length)) {
-      offender = 'the part has walls but only one cap level';
-    }
-    if (offender !== undefined) {
-      if (!firstReason) firstReason = `seen along ${describeNormal(n)}: ${offender}`;
+    const plate = plateAlong(backend, planar, curved, n);
+    if ('reason' in plate) {
+      if (!firstReason) firstReason = `seen along ${describeNormal(n)}: ${plate.reason}`;
       continue;
     }
-
-    const top = Math.max(...levels);
-    const bottom = Math.min(...levels);
-    const topFaces = caps.filter((c) => Math.abs(c.level - top) <= LEVEL_TOL).map((c) => c.info);
-    const thickness = top - bottom;
-    if (thickness > 0) {
-      const capArea = topFaces.reduce((a, f) => a + f.area, 0);
-      const vol = backend.volume();
-      if (Math.abs(vol - capArea * thickness) > 1e-3 * Math.max(vol, 1e-9)) {
-        if (!firstReason) {
-          firstReason = `seen along ${describeNormal(n)}: volume ${vol.toFixed(3)} mm³ differs from cap area × thickness`;
-        }
-        continue;
-      }
-    }
-
-    const frame = flatFrame(n, topFaces.map((f) => f.face));
-    const outers: ProjectedSegment[][] = [];
-    const holes: ProjectedSegment[][] = [];
-    for (const f of topFaces) {
-      const b = faceLoops(f.face as never, frame, {
-        curveTolerance: opts.curveTolerance,
-        chainTolerance: CHAIN_TOL,
-      });
-      if (b.openChains.length > 0) {
-        const o = b.openChains[0];
-        return {
-          ok: false,
-          reason: `the cap boundary does not close (gap between [${o.start.map((x) => x.toFixed(4)).join(', ')}] and [${o.end.map((x) => x.toFixed(4)).join(', ')}])`,
-        };
-      }
-      if (b.outer.length > 0) outers.push(b.outer);
-      holes.push(...b.holes);
-    }
-    const loops = [...outers, ...holes].map(mergeLoop);
+    const frame = flatFrame(n, plate.topFaces.map((f) => f.face));
+    const loops = capLoops(plate.topFaces, frame, opts.curveTolerance);
+    if (!Array.isArray(loops)) return { ok: false, reason: loops.reason };
     const bb = loopsBoundingBox(loops);
     return {
       ok: true,
       profile: {
         loops: translateLoops(loops, -bb.min[0], -bb.min[1]),
-        thickness,
+        thickness: plate.thickness,
         normal: frame.normal,
       },
     };
