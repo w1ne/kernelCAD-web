@@ -957,6 +957,31 @@ function renderExplodeOverlays(input: {
   return explodeSvg;
 }
 
+/** The compact or the full title block, filled from the options. */
+function sheetTitleBlock(
+  sheet: SheetSpec,
+  options: SvgDrawingOptions,
+  scaleText: string,
+  sheetSize: DrawingSheetSize,
+  projection: ProjectionAngle,
+): string {
+  const name = options.modelName ?? 'model';
+  const date = options.date ?? '—';
+  const tb = options.titleBlock;
+  if (tb === undefined) return titleBlock(sheet, { name, scaleText, units: 'mm', date, projection });
+  return fullTitleBlock(sheet, {
+    title: tb.title ?? name,
+    partName: tb.partName ?? name,
+    material: tb.material ?? '—',
+    revision: tb.revision ?? '—',
+    scaleText,
+    units: 'mm',
+    sheetText: sheetSizeLabel(sheetSize),
+    date,
+    projection,
+  });
+}
+
 /** Sheet-assembly phase: frame, view groups, dimensions, overlays and title
  *  block joined into the final SVG document. */
 function buildSheetSvg(input: {
@@ -980,8 +1005,6 @@ function buildSheetSvg(input: {
     generalTolerance, layout, options, explodedShape, diagnosticsOut, report,
     sheetSize, projection,
   } = input;
-  const modelName = options.modelName ?? 'model';
-  const date = options.date ?? '—';
   const tb = options.titleBlock;
   const dimensions = `<g id="dimensions">` + dimBodies.join('') + `</g>`;
 
@@ -1010,19 +1033,7 @@ function buildSheetSvg(input: {
     ...(sectionsSvg === '' ? [] : [sectionsSvg]),
     ...(explodeSvg === '' ? [] : [explodeSvg]),
     ...(generalTolerance === undefined ? [] : [generalToleranceCell(effSheet, generalTolerance)]),
-    tb === undefined
-      ? titleBlock(effSheet, { name: modelName, scaleText: layout.scaleText, units: 'mm', date, projection })
-      : fullTitleBlock(effSheet, {
-          title: tb.title ?? modelName,
-          partName: tb.partName ?? modelName,
-          material: tb.material ?? '—',
-          revision: tb.revision ?? '—',
-          scaleText: layout.scaleText,
-          units: 'mm',
-          sheetText: sheetSizeLabel(sheetSize),
-          date,
-          projection,
-        }),
+    sheetTitleBlock(effSheet, options, layout.scaleText, sheetSize, projection),
     `</svg>`,
   ].join('\n');
 

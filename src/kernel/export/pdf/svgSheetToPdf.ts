@@ -102,38 +102,32 @@ function mul(a: Mat, b: Mat): Mat {
   ];
 }
 
-/** Parse an SVG transform list; undefined when absent or identity-free. */
+const deg = (v: number | undefined): number => ((v ?? 0) * Math.PI) / 180;
+
+function rotation(v: readonly number[]): Mat {
+  const a = deg(v[0]);
+  const [cx, cy] = [v[1] ?? 0, v[2] ?? 0];
+  const c = Math.cos(a), s = Math.sin(a);
+  return [c, s, -s, c, cx - c * cx + s * cy, cy - s * cx - c * cy];
+}
+
+/** One SVG transform function -> its matrix. */
+const TRANSFORM_STEPS: Readonly<Record<string, (v: readonly number[]) => Mat>> = {
+  matrix: v => [v[0] ?? 1, v[1] ?? 0, v[2] ?? 0, v[3] ?? 1, v[4] ?? 0, v[5] ?? 0],
+  translate: v => [1, 0, 0, 1, v[0] ?? 0, v[1] ?? 0],
+  scale: v => [v[0] ?? 1, 0, 0, v[1] ?? v[0] ?? 1, 0, 0],
+  rotate: rotation,
+  skewX: v => [1, 0, Math.tan(deg(v[0])), 1, 0, 0],
+  skewY: v => [1, Math.tan(deg(v[0])), 0, 1, 0, 0],
+};
+
+/** Parse an SVG transform list; undefined when the attribute is absent or empty. */
 export function parseTransform(src: string | undefined): Mat | undefined {
   if (src === undefined || src.trim() === '') return undefined;
   let m: Mat = [1, 0, 0, 1, 0, 0];
   for (const t of src.matchAll(/(matrix|translate|scale|rotate|skewX|skewY)\s*\(([^)]*)\)/g)) {
     const v = t[2].trim().split(/[\s,]+/).filter(Boolean).map(Number);
-    let step: Mat;
-    switch (t[1]) {
-      case 'matrix':
-        step = [v[0] ?? 1, v[1] ?? 0, v[2] ?? 0, v[3] ?? 1, v[4] ?? 0, v[5] ?? 0];
-        break;
-      case 'translate':
-        step = [1, 0, 0, 1, v[0] ?? 0, v[1] ?? 0];
-        break;
-      case 'scale':
-        step = [v[0] ?? 1, 0, 0, v[1] ?? v[0] ?? 1, 0, 0];
-        break;
-      case 'rotate': {
-        const a = ((v[0] ?? 0) * Math.PI) / 180;
-        const [cx, cy] = [v[1] ?? 0, v[2] ?? 0];
-        const c = Math.cos(a), s = Math.sin(a);
-        step = [c, s, -s, c, cx - c * cx + s * cy, cy - s * cx - c * cy];
-        break;
-      }
-      case 'skewX':
-        step = [1, 0, Math.tan(((v[0] ?? 0) * Math.PI) / 180), 1, 0, 0];
-        break;
-      default:
-        step = [1, Math.tan(((v[0] ?? 0) * Math.PI) / 180), 0, 1, 0, 0];
-        break;
-    }
-    m = mul(m, step);
+    m = mul(m, TRANSFORM_STEPS[t[1]](v));
   }
   return m;
 }
@@ -238,113 +232,122 @@ function arcToCubics(
   return out;
 }
 
+/** Cursor over path data plus the current point and the reflection sources. */
+class PathState {
+  readonly g = newGeometry();
+  private i = 0;
+  cx = 0; cy = 0; sx = 0; sy = 0;
+  /** Second control point of the previous C/S (for S), or undefined. */
+  lastCubic: [number, number] | undefined;
+  /** Control point of the previous Q/T (for T), or undefined. */
+  lastQuad: [number, number] | undefined;
+  private readonly tokens: RegExpMatchArray[];
+  constructor(tokens: RegExpMatchArray[]) { this.tokens = tokens; }
+
+  done(): boolean { return this.i >= this.tokens.length; }
+  /** The command letter at the cursor (consumed), or undefined for a number. */
+  command(): string | undefined {
+    const c = this.tokens[this.i][1];
+    if (c !== undefined) this.i++;
+    return c;
+  }
+  skip(): void { this.i++; }
+  hasNum(): boolean { return this.i < this.tokens.length && this.tokens[this.i][2] !== undefined; }
+  num(): number { return Number(this.tokens[this.i++][2]); }
+
+  moveTo(x: number, y: number): void {
+    this.g.ops.push(`${n(x)} ${n(y)} m`);
+    grow(this.g, x, y);
+    this.cx = this.sx = x;
+    this.cy = this.sy = y;
+    this.lastCubic = this.lastQuad = undefined;
+  }
+  lineTo(x: number, y: number): void {
+    this.g.ops.push(`${n(x)} ${n(y)} l`);
+    grow(this.g, x, y);
+    this.cx = x; this.cy = y;
+    this.lastCubic = this.lastQuad = undefined;
+  }
+  curveTo(x1: number, y1: number, x2: number, y2: number, x: number, y: number): void {
+    this.g.ops.push(`${n(x1)} ${n(y1)} ${n(x2)} ${n(y2)} ${n(x)} ${n(y)} c`);
+    grow(this.g, x1, y1); grow(this.g, x2, y2); grow(this.g, x, y);
+    this.cx = x; this.cy = y;
+    this.lastCubic = [x2, y2];
+    this.lastQuad = undefined;
+  }
+  close(): void {
+    this.g.ops.push('h');
+    this.cx = this.sx; this.cy = this.sy;
+    this.lastCubic = this.lastQuad = undefined;
+  }
+}
+
+/** Consume one argument group of an (upper-cased) path command; `o` is the
+ *  relative origin ([0, 0] for absolute commands). */
+const PATH_COMMANDS: Readonly<Record<string, (st: PathState, o: [number, number]) => void>> = {
+  M: (st, [ox, oy]) => st.moveTo(ox + st.num(), oy + st.num()),
+  L: (st, [ox, oy]) => st.lineTo(ox + st.num(), oy + st.num()),
+  H: (st, [ox]) => st.lineTo(ox + st.num(), st.cy),
+  V: (st, [, oy]) => st.lineTo(st.cx, oy + st.num()),
+  C: (st, [ox, oy]) => st.curveTo(ox + st.num(), oy + st.num(), ox + st.num(), oy + st.num(), ox + st.num(), oy + st.num()),
+  S: (st, [ox, oy]) => {
+    const r = st.lastCubic;
+    const [x1, y1] = r ? [2 * st.cx - r[0], 2 * st.cy - r[1]] : [st.cx, st.cy];
+    st.curveTo(x1, y1, ox + st.num(), oy + st.num(), ox + st.num(), oy + st.num());
+  },
+  Q: (st, [ox, oy]) => quadTo(st, ox + st.num(), oy + st.num(), ox + st.num(), oy + st.num()),
+  T: (st, [ox, oy]) => {
+    const r = st.lastQuad;
+    const [qx, qy] = r ? [2 * st.cx - r[0], 2 * st.cy - r[1]] : [st.cx, st.cy];
+    quadTo(st, qx, qy, ox + st.num(), oy + st.num());
+  },
+  A: (st, [ox, oy]) => {
+    const rx = st.num(), ry = st.num(), rot = st.num();
+    const large = st.num() !== 0, sweep = st.num() !== 0;
+    const x = ox + st.num(), y = oy + st.num();
+    for (const c of arcToCubics(st.cx, st.cy, rx, ry, rot, large, sweep, x, y)) {
+      st.curveTo(c[0], c[1], c[2], c[3], c[4], c[5]);
+    }
+    st.lastCubic = undefined;
+  },
+};
+
+/** Quadratic Bézier as the equivalent cubic. */
+function quadTo(st: PathState, qx: number, qy: number, x: number, y: number): void {
+  const { cx, cy } = st;
+  st.curveTo(cx + (2 / 3) * (qx - cx), cy + (2 / 3) * (qy - cy), x + (2 / 3) * (qx - x), y + (2 / 3) * (qy - y), x, y);
+  st.lastQuad = [qx, qy];
+  st.lastCubic = undefined;
+}
+
 /** Parse SVG path data into PDF path construction operators. */
 export function pathDataToGeometry(d: string): Geometry {
-  const g = newGeometry();
-  const tokens = [...d.matchAll(/([MmLlHhVvCcSsQqTtAaZz])|([-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?)/g)];
-  let i = 0;
+  const st = new PathState([...d.matchAll(/([MmLlHhVvCcSsQqTtAaZz])|([-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?)/g)]);
   let cmd = '';
-  let cx = 0, cy = 0, sx = 0, sy = 0;
-  let lastCubic: [number, number] | undefined; // reflected control point source
-  let lastQuad: [number, number] | undefined;
-  const num = (): number => Number(tokens[i++][2]);
-  const hasNum = (): boolean => i < tokens.length && tokens[i][2] !== undefined;
-  const flag = (): boolean => num() !== 0;
-  const move = (x: number, y: number) => { g.ops.push(`${n(x)} ${n(y)} m`); grow(g, x, y); };
-  const line = (x: number, y: number) => { g.ops.push(`${n(x)} ${n(y)} l`); grow(g, x, y); };
-  const cubic = (x1: number, y1: number, x2: number, y2: number, x: number, y: number) => {
-    g.ops.push(`${n(x1)} ${n(y1)} ${n(x2)} ${n(y2)} ${n(x)} ${n(y)} c`);
-    grow(g, x1, y1); grow(g, x2, y2); grow(g, x, y);
-  };
-
-  while (i < tokens.length) {
-    if (tokens[i][1] !== undefined) {
-      cmd = tokens[i][1]!;
-      i++;
-    } else if (cmd === '') {
-      i++;
+  while (!st.done()) {
+    const next = st.command();
+    if (next !== undefined) cmd = next;
+    const upper = cmd.toUpperCase();
+    if (upper === 'Z') {
+      st.close();
       continue;
     }
-    const rel = cmd === cmd.toLowerCase();
-    let C = cmd.toUpperCase();
-    if (C === 'Z') {
-      g.ops.push('h');
-      cx = sx; cy = sy;
-      lastCubic = lastQuad = undefined;
+    const handler = PATH_COMMANDS[upper];
+    if (handler === undefined || !st.hasNum()) {
+      if (next === undefined) st.skip(); // a stray number with no command
       continue;
     }
-    // Every other command repeats while numbers follow.
-    do {
-      if (!hasNum()) break;
-      const ox = rel ? cx : 0, oy = rel ? cy : 0;
-      switch (C) {
-        case 'M': {
-          cx = ox + num(); cy = oy + num();
-          sx = cx; sy = cy;
-          move(cx, cy);
-          cmd = rel ? 'l' : 'L'; // subsequent pairs are implicit lineto
-          C = 'L';
-          lastCubic = lastQuad = undefined;
-          break;
-        }
-        case 'L':
-          cx = ox + num(); cy = oy + num();
-          line(cx, cy);
-          lastCubic = lastQuad = undefined;
-          break;
-        case 'H':
-          cx = (rel ? cx : 0) + num();
-          line(cx, cy);
-          lastCubic = lastQuad = undefined;
-          break;
-        case 'V':
-          cy = (rel ? cy : 0) + num();
-          line(cx, cy);
-          lastCubic = lastQuad = undefined;
-          break;
-        case 'C': {
-          const x1 = ox + num(), y1 = oy + num(), x2 = ox + num(), y2 = oy + num();
-          cx = ox + num(); cy = oy + num();
-          cubic(x1, y1, x2, y2, cx, cy);
-          lastCubic = [x2, y2]; lastQuad = undefined;
-          break;
-        }
-        case 'S': {
-          const [rx1, ry1] = lastCubic ? [2 * cx - lastCubic[0], 2 * cy - lastCubic[1]] : [cx, cy];
-          const x2 = ox + num(), y2 = oy + num();
-          cx = ox + num(); cy = oy + num();
-          cubic(rx1, ry1, x2, y2, cx, cy);
-          lastCubic = [x2, y2]; lastQuad = undefined;
-          break;
-        }
-        case 'Q':
-        case 'T': {
-          const [qx, qy] = C === 'Q'
-            ? [ox + num(), oy + num()]
-            : lastQuad ? [2 * cx - lastQuad[0], 2 * cy - lastQuad[1]] : [cx, cy];
-          const x = ox + num(), y = oy + num();
-          cubic(cx + (2 / 3) * (qx - cx), cy + (2 / 3) * (qy - cy), x + (2 / 3) * (qx - x), y + (2 / 3) * (qy - y), x, y);
-          cx = x; cy = y;
-          lastQuad = [qx, qy]; lastCubic = undefined;
-          break;
-        }
-        case 'A': {
-          const rx = num(), ry = num(), rot = num();
-          const large = flag(), sweep = flag();
-          const x = ox + num(), y = oy + num();
-          for (const c of arcToCubics(cx, cy, rx, ry, rot, large, sweep, x, y)) {
-            cubic(c[0], c[1], c[2], c[3], c[4], c[5]);
-          }
-          cx = x; cy = y;
-          lastCubic = lastQuad = undefined;
-          break;
-        }
-        default:
-          i++;
+    const rel = cmd !== upper;
+    // A command repeats while numbers follow; pairs after a moveto are linetos.
+    while (st.hasNum()) {
+      handler(st, rel ? [st.cx, st.cy] : [0, 0]);
+      if (upper === 'M') {
+        cmd = rel ? 'l' : 'L';
+        break;
       }
-    } while (hasNum());
+    }
   }
-  return g;
+  return st.g;
 }
 
 function ellipseGeometry(cx: number, cy: number, rx: number, ry: number): Geometry {
@@ -455,29 +458,49 @@ function hatchLines(g: Geometry, h: Hatch): string {
   return ops.join(' ');
 }
 
-function paintGeometry(ctx: RenderContext, g: Geometry, style: Attrs, canFill: boolean): void {
-  if (g.ops.length === 0) return;
+/** Resolved paint of one shape: hatch pattern, solid fill colour, stroke. */
+interface Paint {
+  hatch: Hatch | undefined;
+  fill: [number, number, number] | undefined;
+  stroke: boolean;
+  evenOdd: boolean;
+}
+
+function resolvePaint(ctx: RenderContext, style: Attrs, canFill: boolean): Paint {
   const fillValue = canFill ? (style.fill ?? '#000').trim() : 'none';
   const strokeValue = (style.stroke ?? 'none').trim();
-  const evenOdd = style['fill-rule'] === 'evenodd';
-  const path = g.ops.join(' ');
   const urlRef = /^url\(\s*#([^)\s]+)\s*\)$/.exec(fillValue);
-  const hatch = urlRef ? ctx.hatches.get(urlRef[1]) : undefined;
-  const fillColor = urlRef ? undefined : fillValue === 'none' ? undefined : parseColor(fillValue);
-  const doStroke = strokeValue !== 'none' && parseColor(strokeValue) !== undefined;
+  return {
+    hatch: urlRef ? ctx.hatches.get(urlRef[1]) : undefined,
+    fill: urlRef || fillValue === 'none' ? undefined : parseColor(fillValue),
+    stroke: strokeValue !== 'none' && parseColor(strokeValue) !== undefined,
+    evenOdd: style['fill-rule'] === 'evenodd',
+  };
+}
 
-  if (hatch !== undefined && Number.isFinite(g.x0)) {
+/** PDF painting operator for a fill and/or stroke. */
+function paintOperator(fill: boolean, stroke: boolean, evenOdd: boolean): string {
+  const star = evenOdd ? '*' : '';
+  if (fill && stroke) return `B${star}`;
+  return fill ? `f${star}` : 'S';
+}
+
+function paintGeometry(ctx: RenderContext, g: Geometry, style: Attrs, canFill: boolean): void {
+  if (g.ops.length === 0) return;
+  const paint = resolvePaint(ctx, style, canFill);
+  const path = g.ops.join(' ');
+  if (paint.hatch !== undefined && Number.isFinite(g.x0)) {
+    const h = paint.hatch;
     ctx.out.push(
-      `q ${path} ${evenOdd ? 'W*' : 'W'} n ${colorOp(hatch.color, true)} ${n(hatch.lineWidth)} w [] 0 d 0 J ` +
-      `${hatchLines(g, hatch)} S Q`,
+      `q ${path} ${paint.evenOdd ? 'W*' : 'W'} n ${colorOp(h.color, true)} ${n(h.lineWidth)} w [] 0 d 0 J ` +
+      `${hatchLines(g, h)} S Q`,
     );
   }
-  if (fillColor === undefined && !doStroke) return;
+  if (paint.fill === undefined && !paint.stroke) return;
   const state: string[] = [];
-  if (fillColor !== undefined) state.push(colorOp(fillColor, false));
-  if (doStroke) state.push(strokeState(style));
-  const op = fillColor !== undefined && doStroke ? (evenOdd ? 'B*' : 'B') : fillColor !== undefined ? (evenOdd ? 'f*' : 'f') : 'S';
-  ctx.out.push(`q ${state.join(' ')} ${path} ${op} Q`);
+  if (paint.fill !== undefined) state.push(colorOp(paint.fill, false));
+  if (paint.stroke) state.push(strokeState(style));
+  ctx.out.push(`q ${state.join(' ')} ${path} ${paintOperator(paint.fill !== undefined, paint.stroke, paint.evenOdd)} Q`);
 }
 
 const hexCodes = (codes: readonly number[]): string =>
@@ -547,57 +570,51 @@ function collectHatches(node: XmlNode, into: Map<string, Hatch>): void {
   for (const c of node.children) collectHatches(c, into);
 }
 
+function lineGeometry(a: Attrs): Geometry {
+  const g = newGeometry();
+  const [x1, y1, x2, y2] = [num(a.x1), num(a.y1), num(a.x2), num(a.y2)];
+  g.ops.push(`${n(x1)} ${n(y1)} m ${n(x2)} ${n(y2)} l`);
+  grow(g, x1, y1);
+  grow(g, x2, y2);
+  return g;
+}
+
+function rectGeometry(a: Attrs): Geometry | undefined {
+  const [x, y, w, h] = [num(a.x), num(a.y), num(a.width), num(a.height)];
+  if (!(w > 0 && h > 0)) return undefined;
+  const g = newGeometry();
+  g.ops.push(`${n(x)} ${n(y)} ${n(w)} ${n(h)} re`);
+  grow(g, x, y);
+  grow(g, x + w, y + h);
+  return g;
+}
+
+/** Geometry builders for the basic shapes; undefined means nothing to draw. */
+const SHAPES: Readonly<Record<string, (a: Attrs) => Geometry | undefined>> = {
+  path: a => pathDataToGeometry(a.d ?? ''),
+  line: lineGeometry,
+  rect: rectGeometry,
+  circle: a => (num(a.r) > 0 ? ellipseGeometry(num(a.cx), num(a.cy), num(a.r), num(a.r)) : undefined),
+  ellipse: a => (num(a.rx) > 0 && num(a.ry) > 0 ? ellipseGeometry(num(a.cx), num(a.cy), num(a.rx), num(a.ry)) : undefined),
+  polygon: a => polyGeometry(a.points ?? '', true),
+  polyline: a => polyGeometry(a.points ?? '', false),
+};
+
 function renderNode(ctx: RenderContext, node: XmlNode, inherited: Attrs): void {
   const style = effectiveStyle(inherited, node.attrs);
   const m = node.tag === 'svg' ? undefined : parseTransform(node.attrs.transform);
   if (m !== undefined) ctx.out.push(`q ${m.map(n).join(' ')} cm`);
-  const a = node.attrs;
-  switch (node.tag) {
-    case 'svg':
-    case 'g':
-      for (const c of node.children) renderNode(ctx, c, style);
-      break;
-    case 'path':
-      paintGeometry(ctx, pathDataToGeometry(a.d ?? ''), style, true);
-      break;
-    case 'line': {
-      const g = newGeometry();
-      g.ops.push(`${n(num(a.x1))} ${n(num(a.y1))} m ${n(num(a.x2))} ${n(num(a.y2))} l`);
-      grow(g, num(a.x1), num(a.y1));
-      grow(g, num(a.x2), num(a.y2));
-      paintGeometry(ctx, g, style, false);
-      break;
-    }
-    case 'rect': {
-      const w = num(a.width), h = num(a.height);
-      if (w > 0 && h > 0) {
-        const g = newGeometry();
-        g.ops.push(`${n(num(a.x))} ${n(num(a.y))} ${n(w)} ${n(h)} re`);
-        grow(g, num(a.x), num(a.y));
-        grow(g, num(a.x) + w, num(a.y) + h);
-        paintGeometry(ctx, g, style, true);
-      }
-      break;
-    }
-    case 'circle':
-      if (num(a.r) > 0) paintGeometry(ctx, ellipseGeometry(num(a.cx), num(a.cy), num(a.r), num(a.r)), style, true);
-      break;
-    case 'ellipse':
-      if (num(a.rx) > 0 && num(a.ry) > 0) {
-        paintGeometry(ctx, ellipseGeometry(num(a.cx), num(a.cy), num(a.rx), num(a.ry)), style, true);
-      }
-      break;
-    case 'polygon':
-    case 'polyline':
-      paintGeometry(ctx, polyGeometry(a.points ?? '', node.tag === 'polygon'), style, true);
-      break;
-    case 'text':
-      paintText(ctx, node, style);
-      break;
-    default:
-      // defs, pattern, title, metadata, unknown elements: not painted.
-      break;
+  const shape = SHAPES[node.tag];
+  if (node.tag === 'svg' || node.tag === 'g') {
+    for (const c of node.children) renderNode(ctx, c, style);
+  } else if (node.tag === 'text') {
+    paintText(ctx, node, style);
+  } else if (shape !== undefined) {
+    const g = shape(node.attrs);
+    // A <line> has no interior: SVG never fills it.
+    if (g !== undefined) paintGeometry(ctx, g, style, node.tag !== 'line');
   }
+  // defs, pattern, title, metadata and unknown elements are not painted.
   if (m !== undefined) ctx.out.push('Q');
 }
 

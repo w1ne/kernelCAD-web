@@ -53,26 +53,7 @@ export async function exportPdfDrawing(
   const pdf = (input.options as PdfDrawingOptions | undefined) ?? { format: 'pdf-drawing' as const };
   const assemblies = run.session.assemblies as Map<string, Assembly>;
   const material = pdf.material ?? sharedAssemblyMaterial(firstAssemblyOrUndefined(assemblies));
-  const authored = (pdf.annotations ?? []).length > 0;
-  const svgOpts: SvgDrawingOptions = {
-    format: 'svg-drawing',
-    sheet: pdf.sheet ?? 'a3',
-    projection: pdf.projection ?? 'third',
-    date: pdf.date ?? new Date().toISOString().slice(0, 10),
-    titleBlock: {
-      ...(pdf.title !== undefined ? { title: pdf.title } : {}),
-      ...(pdf.partName !== undefined ? { partName: pdf.partName } : {}),
-      ...(material !== undefined ? { material } : {}),
-      ...(pdf.revision !== undefined ? { revision: pdf.revision } : {}),
-    },
-    ...(pdf.modelName !== undefined ? { modelName: pdf.modelName } : {}),
-    ...(pdf.annotations !== undefined ? { annotations: pdf.annotations } : {}),
-    ...(pdf.sections !== undefined ? { sections: pdf.sections } : {}),
-    ...(pdf.exploded !== undefined ? { exploded: pdf.exploded as SvgDrawingOptions['exploded'] } : {}),
-    ...(pdf.balloons !== undefined ? { balloons: pdf.balloons } : {}),
-    ...(pdf.partsList !== undefined ? { partsList: pdf.partsList } : {}),
-    autoAnnotate: pdf.autoAnnotate ?? !authored,
-  };
+  const svgOpts = pdfSheetOptions(pdf, material);
   const sheet = await renderDrawingSheet(svgOpts, fileName, lowered, targetId, run, diagnostics, featureCount);
   if (sheet.bytes.length === 0) return sheet;
   const svg = new TextDecoder().decode(sheet.bytes);
@@ -84,6 +65,34 @@ export async function exportPdfDrawing(
     producer: 'kernelCAD',
   });
   return { ...sheet, bytes };
+}
+
+/** Drop the keys whose value is undefined (exact optional properties). */
+function definedOnly<T extends object>(o: T): Partial<T> {
+  return Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined)) as Partial<T>;
+}
+
+/** The svg-drawing options that render a pdf-drawing sheet: standard sheet
+ *  (default A3), full title block, today's date, autoAnnotate unless the
+ *  author dimensions the sheet. */
+function pdfSheetOptions(pdf: PdfDrawingOptions, material: string | undefined): SvgDrawingOptions {
+  const authored = (pdf.annotations ?? []).length > 0;
+  return {
+    format: 'svg-drawing',
+    sheet: pdf.sheet ?? 'a3',
+    projection: pdf.projection ?? 'third',
+    date: pdf.date ?? new Date().toISOString().slice(0, 10),
+    titleBlock: definedOnly({ title: pdf.title, partName: pdf.partName, material, revision: pdf.revision }),
+    ...definedOnly({
+      modelName: pdf.modelName,
+      annotations: pdf.annotations,
+      sections: pdf.sections,
+      exploded: pdf.exploded as SvgDrawingOptions['exploded'],
+      balloons: pdf.balloons,
+      partsList: pdf.partsList,
+    }),
+    autoAnnotate: pdf.autoAnnotate ?? !authored,
+  };
 }
 
 /** Model name for the title block: the script file name without `.kcad.ts`. */
