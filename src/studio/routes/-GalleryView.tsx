@@ -8,13 +8,13 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { GitFork } from 'lucide-react';
 import { fetchGallery, type GalleryItem, type GallerySort } from '../../funnel/lib/apiClient';
 
-export const GALLERY_TABS: ReadonlyArray<{ sort: GallerySort; label: string }> = [
+const GALLERY_TABS: ReadonlyArray<{ sort: GallerySort; label: string }> = [
   { sort: 'new', label: 'New' },
   { sort: 'remixed', label: 'Most remixed' },
   { sort: 'featured', label: 'Featured' },
 ];
 
-export const GALLERY_PAGE_SIZE = 24;
+const GALLERY_PAGE_SIZE = 24;
 
 function isGallerySort(v: string | null): v is GallerySort {
   return GALLERY_TABS.some(t => t.sort === v);
@@ -89,41 +89,56 @@ interface GalleryListState {
   status: 'loading' | 'ready' | 'error' | 'loading-more' | 'more-error';
 }
 
-function useGalleryList(sort: GallerySort) {
-  const [list, setList] = useState<GalleryListState>({ items: [], nextCursor: null, status: 'loading' });
-  // Drops responses for a tab the viewer has already left.
-  const requestId = useRef(0);
+const LOADING: GalleryListState = { items: [], nextCursor: null, status: 'loading' };
 
-  const loadFirst = useCallback(async () => {
-    const id = ++requestId.current;
-    setList({ items: [], nextCursor: null, status: 'loading' });
-    try {
-      const page = await fetchGallery(sort, null, GALLERY_PAGE_SIZE);
-      if (id === requestId.current) setList({ items: page.items, nextCursor: page.nextCursor, status: 'ready' });
-    } catch {
-      if (id === requestId.current) setList({ items: [], nextCursor: null, status: 'error' });
-    }
-  }, [sort]);
-
-  const loadMore = useCallback(async () => {
-    const cursor = list.nextCursor;
-    if (!cursor) return;
-    const id = ++requestId.current;
-    setList(l => ({ ...l, status: 'loading-more' }));
-    try {
-      const page = await fetchGallery(sort, cursor, GALLERY_PAGE_SIZE);
-      if (id !== requestId.current) return;
-      setList(l => ({ items: [...l.items, ...page.items], nextCursor: page.nextCursor, status: 'ready' }));
-    } catch {
-      if (id === requestId.current) setList(l => ({ ...l, status: 'more-error' }));
-    }
-  }, [sort, list.nextCursor]);
+/** Sort tab + paged list. State is set from event handlers and fetch
+ *  callbacks only (react-hooks/set-state-in-effect). */
+function useGalleryList() {
+  const [sort, setSort] = useState<GallerySort>(initialSort);
+  const [reloadKey, setReloadKey] = useState(0);
+  const [list, setList] = useState<GalleryListState>(LOADING);
+  // Bumped whenever the list restarts, so a late "Load more" response for a
+  // tab the viewer already left is dropped.
+  const generation = useRef(0);
 
   useEffect(() => {
-    void loadFirst();
-  }, [loadFirst]);
+    const gen = ++generation.current;
+    fetchGallery(sort, null, GALLERY_PAGE_SIZE)
+      .then(page => {
+        if (gen === generation.current) setList({ items: page.items, nextCursor: page.nextCursor, status: 'ready' });
+      })
+      .catch(() => {
+        if (gen === generation.current) setList({ items: [], nextCursor: null, status: 'error' });
+      });
+  }, [sort, reloadKey]);
 
-  return { list, loadFirst, loadMore };
+  const selectSort = useCallback((next: GallerySort) => {
+    setSort(next);
+    setList(LOADING);
+    syncSortToUrl(next);
+  }, []);
+
+  const retry = useCallback(() => {
+    setList(LOADING);
+    setReloadKey(k => k + 1);
+  }, []);
+
+  const loadMore = useCallback(() => {
+    const cursor = list.nextCursor;
+    if (!cursor) return;
+    const gen = generation.current;
+    setList(l => ({ ...l, status: 'loading-more' }));
+    fetchGallery(sort, cursor, GALLERY_PAGE_SIZE)
+      .then(page => {
+        if (gen !== generation.current) return;
+        setList(l => ({ items: [...l.items, ...page.items], nextCursor: page.nextCursor, status: 'ready' }));
+      })
+      .catch(() => {
+        if (gen === generation.current) setList(l => ({ ...l, status: 'more-error' }));
+      });
+  }, [sort, list.nextCursor]);
+
+  return { sort, list, selectSort, retry, loadMore };
 }
 
 function GalleryBody({ sort, list, onRetry, onLoadMore }: {
@@ -179,13 +194,7 @@ function GalleryBody({ sort, list, onRetry, onLoadMore }: {
 }
 
 export function GalleryView(): ReactNode {
-  const [sort, setSort] = useState<GallerySort>(initialSort);
-  const { list, loadFirst, loadMore } = useGalleryList(sort);
-
-  const selectSort = useCallback((next: GallerySort) => {
-    setSort(next);
-    syncSortToUrl(next);
-  }, []);
+  const { sort, list, selectSort, retry, loadMore } = useGalleryList();
 
   return (
     <main className="min-h-screen bg-vellum text-ink font-sans">
@@ -226,8 +235,8 @@ export function GalleryView(): ReactNode {
         <GalleryBody
           sort={sort}
           list={list}
-          onRetry={() => void loadFirst()}
-          onLoadMore={() => void loadMore()}
+          onRetry={retry}
+          onLoadMore={loadMore}
         />
       </section>
     </main>

@@ -8,7 +8,9 @@ import type { GalleryItem, GalleryPage } from '../../funnel/lib/apiClient';
 const { fetchGalleryMock } = vi.hoisted(() => ({ fetchGalleryMock: vi.fn() }));
 vi.mock('../../funnel/lib/apiClient', () => ({ fetchGallery: fetchGalleryMock }));
 
-import { GalleryView, GALLERY_PAGE_SIZE } from './-GalleryView';
+import { GalleryView } from './-GalleryView';
+
+const GALLERY_PAGE_SIZE = 24;
 
 function item(n: number, overrides: Partial<GalleryItem> = {}): GalleryItem {
   return {

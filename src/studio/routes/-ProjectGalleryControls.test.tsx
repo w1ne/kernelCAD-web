@@ -23,7 +23,10 @@ vi.mock('../../funnel/components/SignInButton', () => ({
   ),
 }));
 
-import { ProjectGalleryControls, RENDER_RECHECK_MS } from './-ProjectGalleryControls';
+import { ProjectGalleryControls } from './-ProjectGalleryControls';
+
+/** Mirrors the component's one-time render re-check delay. */
+const RENDER_RECHECK_MS = 15_000;
 
 function makeProject(overrides: Partial<ProjectRow> = {}): ProjectRow {
   return {

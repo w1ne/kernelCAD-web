@@ -11,8 +11,8 @@
 import React from 'react';
 import {
   attributionUrl,
-  KERNELCAD_APP_URL,
   KERNELCAD_NAME,
+  remixUrl,
   type LinkSurface,
 } from '../../shared/links/attribution';
 
@@ -26,12 +26,6 @@ export interface MadeWithKernelcadProps {
 
 const LINK_CLASS =
   'rounded bg-black/45 px-1.5 py-0.5 font-mono text-[10px] leading-4 text-white/75 no-underline hover:text-white focus:outline-none focus:ring-1 focus:ring-white/60';
-
-/** App link that lands on /p/<slug> and starts the remix flow there
- *  (sign-in first when needed). Tagged `ref=embed-remix`. */
-export function remixUrl(slug: string): string {
-  return attributionUrl('embed-remix', `${KERNELCAD_APP_URL}/p/${encodeURIComponent(slug)}?remix=1`);
-}
 
 export function MadeWithKernelcad({
   surface,

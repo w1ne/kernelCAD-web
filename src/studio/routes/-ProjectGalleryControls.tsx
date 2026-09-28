@@ -29,11 +29,11 @@ const QUIET_BTN_CLASS =
   'inline-flex shrink-0 items-center gap-1 whitespace-nowrap px-1.5 py-0.5 rounded text-xs text-gray-400 hover:text-gray-200 disabled:opacity-50 transition-colors';
 
 /** Query flag that resumes a remix after the sign-in round trip. */
-export const REMIX_QUERY_PARAM = 'remix';
+const REMIX_QUERY_PARAM = 'remix';
 
 /** The page captures a render a few seconds after load; re-check once after
  *  this delay so an owner's Publish button enables without a reload. */
-export const RENDER_RECHECK_MS = 15_000;
+const RENDER_RECHECK_MS = 15_000;
 
 function remixContinueUrl(slug: string): string {
   if (typeof window === 'undefined') return `/p/${slug}?${REMIX_QUERY_PARAM}=1`;
@@ -69,30 +69,37 @@ function useGalleryState(slug: string, session: Session | null) {
   const [state, setState] = useState<ProjectGalleryState | null>(null);
   const userId = session?.user.id ?? null;
 
-  const reload = useCallback(async () => {
-    try {
-      setState(await fetchProjectGalleryState(slug));
-    } catch {
+  // Re-read when the viewer signs in or out: owner fields depend on it. State
+  // is set only from the fetch callbacks (react-hooks/set-state-in-effect).
+  useEffect(() => {
+    let cancelled = false;
+    fetchProjectGalleryState(slug)
+      .then(next => { if (!cancelled) setState(next); })
       // Gallery state is decoration on this page: without it, Remix and
       // Report still work and the owner controls stay hidden.
-      setState(null);
-    }
-  }, [slug]);
-
-  // Re-read when the viewer signs in or out: owner fields depend on it.
-  useEffect(() => {
-    void reload();
-  }, [reload, userId]);
+      .catch(() => { if (!cancelled) setState(null); });
+    return () => { cancelled = true; };
+  }, [slug, userId]);
 
   // Owner waiting on the first render capture: check once more.
   const waitingForRender = !!state && state.isOwner && !state.listed && !state.hasRender;
   useEffect(() => {
     if (!waitingForRender || typeof window === 'undefined') return;
-    const t = window.setTimeout(() => void reload(), RENDER_RECHECK_MS);
+    const t = window.setTimeout(() => {
+      fetchProjectGalleryState(slug).then(setState).catch(() => {});
+    }, RENDER_RECHECK_MS);
     return () => window.clearTimeout(t);
-  }, [waitingForRender, reload]);
+  }, [waitingForRender, slug]);
 
-  return { state, setState, reload };
+  return { state, setState };
+}
+
+/** Open the new project. After the sign-in round trip, replace the ?remix=1
+ *  entry so Back does not start a second remix. */
+function openRemix(newSlug: string, replace: boolean): void {
+  const target = `/p/${encodeURIComponent(newSlug)}`;
+  if (replace) window.location.replace(target);
+  else window.location.assign(target);
 }
 
 function RemixControl({ slug, session, sessionLoading }: {
@@ -100,31 +107,28 @@ function RemixControl({ slug, session, sessionLoading }: {
   session: Session | null;
   sessionLoading: boolean;
 }): ReactNode {
-  const [busy, setBusy] = useState(false);
+  // Starts busy when resuming a remix after sign-in, so the button can't be
+  // clicked into a second remix meanwhile.
+  const [busy, setBusy] = useState(hasRemixParam);
   const [failed, setFailed] = useState(false);
   const resumed = useRef(false);
 
-  const remix = useCallback(async (replace: boolean) => {
+  const onFailed = useCallback(() => {
+    setFailed(true);
+    setBusy(false);
+  }, []);
+
+  const handleClick = useCallback(() => {
     setBusy(true);
     setFailed(false);
-    try {
-      const { slug: newSlug } = await remixProject(slug);
-      const target = `/p/${encodeURIComponent(newSlug)}`;
-      // After the sign-in round trip, replace the ?remix=1 entry so Back does
-      // not start a second remix.
-      if (replace) window.location.replace(target);
-      else window.location.assign(target);
-    } catch {
-      setFailed(true);
-      setBusy(false);
-    }
-  }, [slug]);
+    remixProject(slug).then(r => openRemix(r.slug, false)).catch(onFailed);
+  }, [slug, onFailed]);
 
   useEffect(() => {
     if (resumed.current || sessionLoading || !session || !hasRemixParam()) return;
     resumed.current = true;
-    void remix(true);
-  }, [session, sessionLoading, remix]);
+    remixProject(slug).then(r => openRemix(r.slug, true)).catch(onFailed);
+  }, [slug, session, sessionLoading, onFailed]);
 
   const label = (
     <>
@@ -147,7 +151,7 @@ function RemixControl({ slug, session, sessionLoading }: {
   return (
     <button
       type="button"
-      onClick={() => void remix(false)}
+      onClick={handleClick}
       disabled={busy}
       className={BTN_CLASS}
       aria-label="Remix"
