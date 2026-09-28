@@ -52,8 +52,8 @@ import {
 } from '../../render/captureAnimation';
 import { captureTurntable } from '../../render/captureTurntable';
 import { buildObjectFilter } from '../../cli/commands/render';
-import { PUBLISH_PRESET, type RenderPreset } from '../../../shared/render/publishPreset';
-import { checkTimelineModeFields, resolveTurntableSettings } from './captureTurntableInput';
+import { type RenderPreset } from '../../../shared/render/publishPreset';
+import { checkTimelineModeFields, resolveTurntableSettings, turntableCaptureOpts } from './captureTurntableInput';
 import type { HeadlessObjectFilter } from '../../render/headlessRender';
 import type { AnimationCollision } from '../../../modeling/animation/verifyAnimation';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
@@ -324,20 +324,15 @@ function turntableCapture(
 ): Promise<CaptureAnimationResult> | CaptureAnimationOutput {
   const settings = resolveTurntableSettings(input);
   if ('message' in settings) return toolRefusal('cli.invalid-args', settings.message, settings.hint, 'environment');
-  return captureTurntable({
-    scriptPath: file,
-    ...(input.output_path !== undefined ? { outPath: input.output_path } : {}),
-    ...(input.frames_dir !== undefined ? { framesDir: input.frames_dir } : {}),
-    width: settings.width,
-    height: settings.height,
-    fps: settings.fps,
-    durationMs: settings.durationMs,
-    elevationDeg: settings.elevationDeg,
-    startAzDeg: PUBLISH_PRESET.heroAzDeg,
-    ...(settings.publish !== undefined ? { publish: settings.publish } : {}),
-    ...(objectFilter !== undefined ? { objectFilter } : {}),
-    ...(input.environment !== undefined ? { environment: input.environment } : {}),
-  });
+  return captureTurntable(
+    turntableCaptureOpts(settings, {
+      scriptPath: file,
+      ...(input.output_path !== undefined ? { outPath: input.output_path } : {}),
+      ...(input.frames_dir !== undefined ? { framesDir: input.frames_dir } : {}),
+      ...(objectFilter !== undefined ? { objectFilter } : {}),
+      ...(input.environment !== undefined ? { environment: input.environment } : {}),
+    }),
+  );
 }
 
 export async function captureAnimationTool(

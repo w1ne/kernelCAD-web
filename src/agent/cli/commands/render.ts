@@ -7,6 +7,13 @@
 // Default: 2×2 composite PNG (front, right, top, iso) saved next to the
 // script. Use `--separate` to emit four individual files.
 //
+// `--preset publish` switches to the studio product shot of render_preview's
+// preset: 'publish' — same option rules (resolvePublishLook), same renderer
+// path (headlessRender's `publish` stage). A bare publish render writes one
+// 3/4 hero PNG (`<stem>.hero.png`); `--separate` / `--pose` render those
+// views in the publish look instead. `--background` / `--no-shadow` apply
+// only under `--preset publish`.
+//
 // The render surface is provisioned automatically by resolveRenderBaseUrl()
 // (src/agent/render/playerServer.ts): the bundled static player
 // (dist/headless-player) is served from an ephemeral 127.0.0.1 port, so no
@@ -32,13 +39,24 @@ import type { Assembly } from '../../../modeling/capture/assembly';
 import { probeAssemblies } from '../../../modeling/runtime/mechanismProbe';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { parseExplodeInput, type ParsedExplode } from '../../../modeling/runtime/explodedPoses';
+import {
+  PUBLISH_BACKGROUND_HINT,
+  PUBLISH_MAX_SIZE,
+  PUBLISH_MIN_SIZE,
+  PUBLISH_PRESET,
+  RENDER_PRESETS,
+  resolvePublishLook,
+  type PublishStageSpec,
+} from '../../../shared/render/publishPreset';
 
 export interface RenderInput {
   file: string;
   out?: string;
   separate: boolean;
-  width: number;
-  height: number;
+  /** Per-tile size in px. Default 1024×1024, or 1600×1200 under
+   *  `--preset publish`. */
+  width?: number;
+  height?: number;
   /** Optional render-surface override. When omitted, resolveRenderBaseUrl()
    *  provisions the bundled static player (or falls back to a dev server). */
   baseUrl?: string;
@@ -67,6 +85,14 @@ export interface RenderInput {
   explodeMode?: string;
   /** Skip the mechanism-truth probe (same as render_preview no_mechanism_check). */
   noMechanismCheck?: boolean;
+  /** Render look: 'default' (engineering review) or 'publish' (studio
+   *  product shot; same preset as render_preview). */
+  preset?: string;
+  /** 'publish' only: 'white' (default), 'light', 'dark', 'black',
+   *  'transparent', or '#rrggbb'. */
+  background?: string;
+  /** 'publish' only: soft contact shadow (default true; `--no-shadow`). */
+  shadow?: boolean;
 }
 
 export interface RenderCliResult {
@@ -340,6 +366,93 @@ function resolveRenderFlags(input: RenderInput): RenderFlagsResolution {
   return { ok: true, objectFilter, section, explode };
 }
 
+/** Default per-tile size of the engineering look. */
+const DEFAULT_TILE_SIZE = 1024;
+
+interface RenderLook {
+  publish: PublishStageSpec | undefined;
+  /** Bare publish render: one hero shot instead of the four views. */
+  hero: boolean;
+  width: number;
+  height: number;
+  views: readonly RenderView[];
+  poses: string[] | undefined;
+}
+
+type RenderLookResolution = { ok: true; look: RenderLook } | { ok: false; result: RenderCliResult };
+
+function refuseRenderLook(message: string, hint: string): RenderLookResolution {
+  console.error(`${message}\n  hint: ${hint}`);
+  return { ok: false, result: { exitCode: 1, outputPaths: [] } };
+}
+
+/**
+ * Resolve `--preset` / `--background` / `--no-shadow` / `--width` /
+ * `--height` into what the renderer captures. The option rules are
+ * render_preview's (resolvePublishLook); a bad combination exits 1 before
+ * the render surface is provisioned.
+ */
+export function resolveRenderLook(input: RenderInput): RenderLookResolution {
+  const resolved = resolvePublishLook(input, 'default');
+  if (!resolved.ok) {
+    switch (resolved.reason) {
+      case 'unknown-preset':
+        return refuseRenderLook(
+          `render: unknown --preset '${String(input.preset)}'. Valid: ${RENDER_PRESETS.join(', ')}.`,
+          'Pass --preset publish for a studio product shot, or omit --preset for the engineering look.',
+        );
+      case 'look-without-publish':
+        return refuseRenderLook(
+          'render: --background and --no-shadow apply only to --preset publish.',
+          'Add --preset publish, or drop --background/--no-shadow for the engineering look.',
+        );
+      case 'invalid-background':
+        return refuseRenderLook(
+          `render: invalid --background '${String(input.background)}'.`,
+          PUBLISH_BACKGROUND_HINT.replace(/^Pass background/, 'Pass --background'),
+        );
+    }
+  }
+  const publish = resolved.publish;
+  if (publish === undefined) {
+    return {
+      ok: true,
+      look: {
+        publish,
+        hero: false,
+        width: input.width ?? DEFAULT_TILE_SIZE,
+        height: input.height ?? DEFAULT_TILE_SIZE,
+        views: ALL_VIEWS,
+        poses: input.poses,
+      },
+    };
+  }
+  const width = input.width ?? PUBLISH_PRESET.stillWidth;
+  const height = input.height ?? PUBLISH_PRESET.stillHeight;
+  const inRange = (n: number) => Number.isInteger(n) && n >= PUBLISH_MIN_SIZE && n <= PUBLISH_MAX_SIZE;
+  if (!inRange(width) || !inRange(height)) {
+    return refuseRenderLook(
+      `render: --preset publish needs --width/--height integers in [${PUBLISH_MIN_SIZE}, ${PUBLISH_MAX_SIZE}] (got ${width}×${height}).`,
+      `Pass sizes in that range, or omit them for ${PUBLISH_PRESET.stillWidth}×${PUBLISH_PRESET.stillHeight}.`,
+    );
+  }
+  // Same rule as render_preview: a bare publish render is one hero shot;
+  // --separate (the four views) or --pose still work under the preset.
+  const poses = input.poses ?? [];
+  const hero = !input.separate && poses.length === 0;
+  return {
+    ok: true,
+    look: {
+      publish,
+      hero,
+      width,
+      height,
+      views: input.separate ? ALL_VIEWS : [],
+      poses: hero ? [`${PUBLISH_PRESET.heroAzDeg},${PUBLISH_PRESET.heroElDeg}`] : input.poses,
+    },
+  };
+}
+
 type RenderProbeResolution =
   | { proceed: true; mechanismProbe: MechanismProbe }
   | { proceed: false; result: RenderCliResult };
@@ -373,16 +486,17 @@ async function runRenderCapture(
   objectFilter: HeadlessObjectFilter | undefined,
   section: RenderSection | undefined,
   explode: ParsedExplode | undefined,
+  look: RenderLook,
 ): Promise<RenderCaptureResolution> {
   let result;
   try {
     result = await withRenderBase(input.baseUrl, (baseUrl) =>
       headlessRender({
         scriptPath: filePath,
-        viewportWidth: input.width,
-        viewportHeight: input.height,
-        views: ALL_VIEWS,
-        poses: input.poses,
+        viewportWidth: look.width,
+        viewportHeight: look.height,
+        views: look.views,
+        poses: look.poses,
         baseUrl,
         hideReferenceImages: input.hideReferenceImages,
         environment: input.environment,
@@ -390,6 +504,7 @@ async function runRenderCapture(
         objectFilter,
         section,
         explode,
+        ...(look.publish !== undefined ? { publish: look.publish } : {}),
       }),
     );
   } catch (e) {
@@ -431,6 +546,8 @@ async function writeSeparateRenderViews(
 
 async function writeCompositeRenderViews(
   input: RenderInput,
+  width: number,
+  height: number,
   result: HeadlessRenderResult,
   dir: string,
   stem: string,
@@ -438,7 +555,7 @@ async function writeCompositeRenderViews(
 ): Promise<string[]> {
   const written: string[] = [];
   const outPath = input.out ?? join(dir, `${stem}.png`);
-  const grid = await composite2x2(result.pngsByView, input.width, input.height);
+  const grid = await composite2x2(result.pngsByView, width, height);
   await writeFile(outPath, await stamp(grid));
   written.push(outPath);
   // In composite mode, pose captures still emit as separate files next to
@@ -454,8 +571,26 @@ async function writeCompositeRenderViews(
   return written;
 }
 
+/** The single hero PNG of a bare `--preset publish` render. */
+async function writeHeroRender(
+  input: RenderInput,
+  result: HeadlessRenderResult,
+  dir: string,
+  stem: string,
+  stamp: (buf: Buffer) => Promise<Buffer>,
+): Promise<string[]> {
+  const buf = Object.values(result.pngsByPose ?? {})[0];
+  if (!buf) throw new Error('render: the publish hero capture returned no image.');
+  const outPath = input.out ?? join(dir, `${stem}.hero.png`);
+  await writeFile(outPath, await stamp(buf));
+  return [outPath];
+}
+
 export async function renderScript(input: RenderInput): Promise<RenderCliResult> {
   const filePath = resolve(input.file);
+  const lookPhase = resolveRenderLook(input);
+  if (!lookPhase.ok) return lookPhase.result;
+  const { look } = lookPhase;
   const flags = resolveRenderFlags(input);
   if (!flags.ok) return flags.result;
   const { objectFilter, section, explode } = flags;
@@ -464,7 +599,7 @@ export async function renderScript(input: RenderInput): Promise<RenderCliResult>
   if (!probe.proceed) return probe.result;
   const mechanismProbe = probe.mechanismProbe;
 
-  const capture = await runRenderCapture(input, filePath, objectFilter, section, explode);
+  const capture = await runRenderCapture(input, filePath, objectFilter, section, explode, look);
   if (!capture.ok) return capture.result;
   const result = capture.result;
 
@@ -475,9 +610,12 @@ export async function renderScript(input: RenderInput): Promise<RenderCliResult>
       ? watermarkBrokenMechanism(buf, mechanismProbe.failures)
       : buf;
 
-  const written = input.separate
-    ? await writeSeparateRenderViews(input, result, dir, stem, stamp)
-    : await writeCompositeRenderViews(input, result, dir, stem, stamp);
+  // Publish renders never composite: one hero, or one file per view/pose.
+  const written = look.hero
+    ? await writeHeroRender(input, result, dir, stem, stamp)
+    : input.separate || look.publish !== undefined
+      ? await writeSeparateRenderViews(input, result, dir, stem, stamp)
+      : await writeCompositeRenderViews(input, look.width, look.height, result, dir, stem, stamp);
 
   return { exitCode: 0, outputPaths: written };
 }
@@ -816,10 +954,19 @@ function configureRenderInspectSubcommand(cmd: Command): void {
 function configureRenderCommandOptions(cmd: Command): void {
   cmd
     .argument('<file>', 'path to .kcad.ts script')
-    .option('-o, --out <path>', 'output PNG path (composite mode) or stem with .png suffix (separate mode)')
+    .option('-o, --out <path>', 'output PNG path (composite / publish hero) or stem with .png suffix (separate mode)')
     .option('--separate', 'emit four individual PNG files instead of a 2×2 composite', false)
-    .option('--width <n>', 'per-tile width in pixels', (v) => parseInt(v, 10), 1024)
-    .option('--height <n>', 'per-tile height in pixels', (v) => parseInt(v, 10), 1024)
+    .option('--width <n>', 'per-tile width in pixels (default 1024; 1600 with --preset publish)', (v) => parseInt(v, 10))
+    .option('--height <n>', 'per-tile height in pixels (default 1024; 1200 with --preset publish)', (v) => parseInt(v, 10))
+    .option(
+      '--preset <name>',
+      "render look: 'default' (engineering review) or 'publish' (studio product shot: one 3/4 hero PNG, auto-framed, supersampled; with --separate/--pose, those views in the publish look)",
+    )
+    .option(
+      '--background <color>',
+      "--preset publish only: 'white' (default), 'light', 'dark', 'black', 'transparent' (alpha PNG), or a hex colour like '#f5f5f0'",
+    )
+    .option('--no-shadow', '--preset publish only: drop the soft contact shadow under the model')
     .option(
       '--base-url <url>',
       'optional render-surface override (e.g. a running studio dev server); default is the bundled static player',
@@ -853,8 +1000,8 @@ function configureRenderCommandOptions(cmd: Command): void {
     .action(async (file: string, opts: {
       out?: string;
       separate: boolean;
-      width: number;
-      height: number;
+      width?: number;
+      height?: number;
       baseUrl?: string;
       hideReferenceImages: boolean;
       pose: string[];
@@ -867,7 +1014,10 @@ function configureRenderCommandOptions(cmd: Command): void {
       explode?: number;
       explodeMode?: string;
       mechanismCheck?: boolean;
-    }) => {
+      preset?: string;
+      background?: string;
+      shadow: boolean;  // commander inverts --no-shadow; default true
+    }, command: Command) => {
       const r = await renderScript({
         file,
         out: opts.out,
@@ -886,6 +1036,11 @@ function configureRenderCommandOptions(cmd: Command): void {
         explode: opts.explode,
         explodeMode: opts.explodeMode,
         noMechanismCheck: opts.mechanismCheck === false,
+        preset: opts.preset,
+        background: opts.background,
+        // Forward shadow only when --no-shadow was actually passed, so the
+        // engineering look can refuse it (commander always materializes true).
+        ...(command.getOptionValueSource('shadow') === 'cli' ? { shadow: opts.shadow } : {}),
       });
       for (const p of r.outputPaths) console.log(`Wrote ${p}`);
       process.exitCode = r.exitCode;
