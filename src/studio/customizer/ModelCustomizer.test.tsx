@@ -151,7 +151,9 @@ describe('ModelCustomizer downloads', () => {
     for (const format of ['stl', '3mf', 'step'] as const) {
       fireEvent.click(screen.getByTestId('customizer-download'));
       await act(async () => { fireEvent.click(screen.getByTestId(`customizer-download-${format}`)); });
-      expect(exportModel).toHaveBeenLastCalledWith(format, { ...DEFAULTS, Width: 60, HasLid: false });
+      expect(exportModel).toHaveBeenLastCalledWith(
+        format, { ...DEFAULTS, Width: 60, HasLid: false }, expect.objectContaining({ signal: expect.any(AbortSignal) }),
+      );
       expect(saveFile).toHaveBeenLastCalledWith(expect.any(Blob), `enclosure-Width60_HasLidfalse.${format}`);
     }
   });

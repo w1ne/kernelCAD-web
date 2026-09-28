@@ -200,7 +200,7 @@ describe('ExportTab', () => {
             expect(fetchMock).toHaveBeenCalledTimes(1);
         });
         expect(fetchMock).toHaveBeenCalledWith(
-            '/__kernelcad/export?format=stl',
+            '/__kernelcad/export?format=stl&async=1',
             expect.objectContaining({
                 method: 'POST',
                 headers: expect.objectContaining({ 'Content-Type': 'application/json' }),
@@ -208,7 +208,7 @@ describe('ExportTab', () => {
             }),
         );
         expect(clickSpy).toHaveBeenCalled();
-        expect(screen.queryByTestId('export-tab-error')).toBeNull();
+        expect(screen.queryByTestId('export-tab-status-error')).toBeNull();
 
         HTMLAnchorElement.prototype.click = originalClick;
     });
@@ -247,7 +247,7 @@ describe('ExportTab', () => {
             expect(fetchMock).toHaveBeenCalledTimes(1);
         });
         expect(fetchMock).toHaveBeenCalledWith(
-            '/__kernelcad/export?format=stl',
+            '/__kernelcad/export?format=stl&async=1',
             expect.objectContaining({
                 method: 'POST',
                 body: JSON.stringify({ source: 'return box(1, 2, 3); // edited' }),
@@ -291,7 +291,7 @@ describe('ExportTab', () => {
             expect(fetchMock).toHaveBeenCalledTimes(1);
         });
         const call = fetchMock.mock.calls[0]!;
-        expect(call[0] as string).toContain('/__kernelcad/export?format=stl');
+        expect(call[0] as string).toContain('/__kernelcad/export?format=stl&async=1');
         expect(JSON.parse((call[1] as { body: string }).body)).toEqual({
             projectSlug: 'N2yYiZxy',
             projectVersion: 6,
@@ -314,8 +314,8 @@ describe('ExportTab', () => {
         render(<ExportTab />);
         fireEvent.click(screen.getByTestId('export-stl'));
         await waitFor(() => {
-            expect(screen.getByTestId('export-tab-error')).toBeDefined();
+            expect(screen.getByTestId('export-tab-status-error')).toBeDefined();
         });
-        expect(screen.getByTestId('export-tab-error').textContent).toMatch(/script source/i);
+        expect(screen.getByTestId('export-tab-status-error').textContent).toMatch(/script source/i);
     });
 });

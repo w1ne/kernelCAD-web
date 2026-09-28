@@ -37,7 +37,7 @@ describe('exportViaServer', () => {
     const result = await exportViaServer('stl', 'return box(1,1,1);');
 
     expect(fetchMock).toHaveBeenCalledWith(
-      '/__kernelcad/export?format=stl',
+      '/__kernelcad/export?format=stl&async=1',
       expect.objectContaining({
         method: 'POST',
         body: JSON.stringify({ source: 'return box(1,1,1);' }),
