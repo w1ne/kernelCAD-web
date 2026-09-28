@@ -133,6 +133,17 @@ writes the per-object filament slot (slot N = Nth distinct colour); pick
 the filament colours in the slicer. See the `slicer-ready-3mf` cookbook
 snippet.
 
+The layout is checked against the `printer` bed (default `generic-fdm`,
+220×220×250 mm). Parts that do not fit are still written, and the result
+carries `warn` diagnostics naming them:
+
+- `export.3mf.plate-overflow` — `plate` packed more parts than the bed
+  holds; the message names the parts past the edge and the footprint the
+  layout needs. Use a larger-bed profile, or export fewer parts per plate.
+- `export.3mf.exceeds-bed` — a part (or the `assembled` object) is larger
+  than the bed in X/Y or taller than the build height. Use a larger-bed
+  profile, try `orient: true`, or split the part.
+
 ## Full loop example
 
 See `examples/print-loop-bracket.kcad.ts` and the `gcode-export-and-print`

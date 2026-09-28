@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { type OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { type WatertightReport } from '../../kernel/backends/occt/meshHeal';
+import type { ThreeMfBedWarning } from '../../kernel/backends/occt/export3mf';
 import { sliceStlToGcode, withTempStl } from '../../kernel/export/gcode/slicerCli';
 import { parseGcodeHeader } from '../../kernel/export/gcode/gcodeHeaderParser';
 import { resolvePrinterProfile, exceedsBed } from '../../kernel/export/gcode/profiles';
@@ -149,6 +150,38 @@ export function notWatertightDiagnostic(
       nextAction: NEXT_ACTIONS['export.3mf.not-watertight'],
     }],
   };
+}
+
+/**
+ * Translate the 3MF writer's bed warnings (`arrange: 'plate' | 'assembled'`)
+ * into `export.3mf.plate-overflow` / `export.3mf.exceeds-bed` warnings. The
+ * file is still written; the message names the parts, the bed and the size
+ * the layout needs.
+ */
+export function threeMfBedDiagnostics(
+  warnings: readonly ThreeMfBedWarning[],
+  targetId: string | undefined,
+): CompilerDiagnostic[] {
+  const mm = (v: readonly number[]) => `${v.map(n => n.toFixed(1)).join('x')}mm`;
+  return warnings.map((w) => {
+    const bed = `'${w.printer}' bed (${mm([w.bedMm.x, w.bedMm.y, w.bedMm.z])})`;
+    const list = w.parts.map(p => `'${p.name}' ${mm(p.sizeMm)}`).join(', ');
+    const code = w.kind === 'plate-overflow' ? 'export.3mf.plate-overflow' : 'export.3mf.exceeds-bed';
+    const message = w.kind === 'plate-overflow'
+      ? `3MF plate layout needs ${mm(w.neededMm.slice(0, 2))} of bed but the ${bed} is smaller; ${w.parts.length} part(s) were placed past the bed edge: ${list}.`
+      : w.object !== undefined
+        ? `3MF assembled object '${w.object}' (${mm(w.neededMm)}) does not fit the ${bed}; part(s) outside the build volume: ${list}.`
+        : `3MF part(s) larger than the ${bed} in X/Y or taller than its build height: ${list}.`;
+    return {
+      target: 'export-occt',
+      code,
+      featureId: targetId,
+      severity: 'warn',
+      message,
+      hint: HINT_TEMPLATES[code].template,
+      nextAction: NEXT_ACTIONS[code],
+    };
+  });
 }
 
 /**

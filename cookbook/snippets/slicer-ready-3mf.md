@@ -39,6 +39,13 @@ return cap.model();
 //   flat face. slicer:'prusa' writes that slicer's own volume config;
 //   slicer:'generic' (default) writes plain core 3MF only.
 //
+//   Too much for one bed? The file is still written, and the result
+//   carries warn diagnostics: export.3mf.plate-overflow names the parts
+//   packed past the bed edge and the footprint the layout needs;
+//   export.3mf.exceeds-bed names a part larger than the bed or taller
+//   than its build height. Pick a larger printer profile, or export fewer
+//   parts per plate.
+//
 //   Bambu Lab printer over LAN: slice to G-code (format:'gcode'), then
 //   send_to_printer gcode_path:'keycap.gcode' model_3mf_path:'keycap.3mf'
 //     protocol:'bambu-lan' host:'...' access_code:'...' serial:'...'

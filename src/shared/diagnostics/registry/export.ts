@@ -44,6 +44,22 @@ export const EXPORT_CODES = {
     group: 'export',
     description: 'A 3MF export was attempted on a mesh that failed the half-edge watertight check.',
   },
+  'export.3mf.plate-overflow': {
+    hintTemplate:
+      'The file was written, but some parts sit past the bed edge. Pass options.printer with a larger bed, export fewer parts per plate (one export per plate), or split the parts across several 3MF files.',
+    nextAction: { kind: 'fix-arg', field: 'options.printer' },
+    defaultSeverity: 'warn',
+    group: 'export',
+    description: 'A 3MF export with arrange \'plate\' packed more parts than fit the printer bed; the overflowing parts were placed past the bed edge.',
+  },
+  'export.3mf.exceeds-bed': {
+    hintTemplate:
+      'The file was written, but the named parts cannot print on this bed. Pass options.printer with a larger bed or build height, reorient the part (options.orient), or split it into printable sub-parts.',
+    nextAction: { kind: 'fix-arg', field: 'options.printer' },
+    defaultSeverity: 'warn',
+    group: 'export',
+    description: 'A 3MF export with arrange \'plate\' or \'assembled\' holds a part (or assembled object) larger than the printer bed in X/Y or taller than its build height.',
+  },
   'export.mesh.not-watertight': {
     hintTemplate:
       'The exported STL has open edges after the heal pass. Re-author the junctions at the reported crack-cluster locations with >=0.1 mm of overlap or offset instead of exact tangency/coincidence, then re-export. Use --no-verify only to inspect the broken mesh, never to ship it.',
