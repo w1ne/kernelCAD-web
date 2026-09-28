@@ -160,18 +160,18 @@ const ABS_TOL = 1e-6;
  *  many orders of magnitude below the operand volume. */
 const REL_VOL_TOL = 1e-9;
 
-interface SideBody {
+export interface SideBody {
   name: string;
   shape: OcctBackend;
 }
 
-interface SideSummary {
+export interface SideSummary {
   featureCount: number;
   isAssembly: boolean;
   bodies: SideBody[];
 }
 
-type SideResult =
+export type SideResult =
   | { ok: true; side: SideSummary }
   | { ok: false; error: string; errorCode?: string; diagnostics?: CompilerDiagnostic[] };
 
@@ -314,7 +314,10 @@ function unmatchedDiagnostic(name: string, side: 'base' | 'revised'): CompilerDi
 
 // ----- Per-side evaluation ---------------------------------------------------
 
-async function evaluateSide(
+/** Run one script and return its world-frame bodies (a Shape → one root
+ *  body; an assembly Scene → one body per part). Shared with the consensus
+ *  selector, which needs the same geometry per candidate. */
+export async function evaluateSide(
   input: { file?: string; code?: string },
   paramOverrides?: Record<string, number | boolean>,
 ): Promise<SideResult> {

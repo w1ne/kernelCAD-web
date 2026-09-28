@@ -31,6 +31,8 @@ import {
   scriptQualityFacts,
 } from '../../loop/designLoopQualityFacts';
 export { geometryReviewFacts } from '../../loop/designLoopQualityFacts';
+import { consensusDecision, selectDesignLoopConsensus, type DesignLoopConsensus } from './designLoopConsensus';
+export type { DesignLoopConsensus } from './designLoopConsensus';
 
 export interface DesignLoopAttemptInput {
   id?: string;
@@ -90,6 +92,9 @@ export interface DesignLoopInput {
    * autonomously rewrite full CAD models.
    */
   autoRevise?: boolean;
+  /** Treat attempts as N candidates and pick the geometric-consensus medoid
+   *  (see designLoopConsensus.ts). Default false: sequential attempts. */
+  consensus?: boolean;
   outputRecordPath?: string;
   recordTitle?: string;
 }
@@ -138,6 +143,8 @@ export interface DesignLoopOutput {
   convergence?: ConvergenceStall;
   /** Revision assist from the last failing attempt (when present). */
   revisionAssist?: RevisionAssist;
+  /** Present when input.consensus was true: the selection and its evidence. */
+  consensus?: DesignLoopConsensus;
 }
 
 export interface ConvergenceStall {
@@ -218,7 +225,9 @@ export async function designLoopTool(input: DesignLoopInput): Promise<DesignLoop
     throw new Error('design_loop requires at least one attempt.');
   }
 
-  const stopOnPass = input.stopOnPass ?? true;
+  const consensus = input.consensus === true;
+  // Consensus compares every candidate, so it never stops early.
+  const stopOnPass = !consensus && (input.stopOnPass ?? true);
   const attempts: DesignLoopAttemptResult[] = [];
 
   for (const [index, attempt] of input.attempts.entries()) {
@@ -228,7 +237,14 @@ export async function designLoopTool(input: DesignLoopInput): Promise<DesignLoop
     if (attemptResult.ok && stopOnPass) break;
   }
 
-  return finaliseDesignLoop(input, attempts);
+  if (!consensus) return finaliseDesignLoop(input, attempts);
+  const selection = await selectDesignLoopConsensus(input.attempts, attempts);
+  return {
+    goal: input.goal,
+    attempts,
+    ...(await writeBuildRecord(input, attempts)),
+    ...consensusDecision(selection, attempts),
+  };
 }
 
 async function runDesignLoopAttempt(
@@ -319,12 +335,11 @@ function buildReviewInput(
   };
 }
 
-async function finaliseDesignLoop(
+/** Build the replay record and write it when outputRecordPath is set. */
+async function writeBuildRecord(
   input: DesignLoopInput,
-  attempts: DesignLoopAttemptResult[],
-): Promise<DesignLoopOutput> {
-  const finalPass = attempts.find((attempt) => attempt.ok);
-  const convergence = detectConvergenceStall(attempts);
+  attempts: readonly DesignLoopAttemptResult[],
+): Promise<Pick<DesignLoopOutput, 'record' | 'outputRecordPath' | 'recordUrl'>> {
   const record = buildRecord(input, attempts);
   const outputRecordPath = input.outputRecordPath !== undefined
     ? resolve(input.outputRecordPath)
@@ -333,6 +348,20 @@ async function finaliseDesignLoop(
     await mkdir(dirname(outputRecordPath), { recursive: true });
     await writeFile(outputRecordPath, `${JSON.stringify(record, null, 2)}\n`, 'utf-8');
   }
+  return {
+    record,
+    outputRecordPath,
+    ...(outputRecordPath !== undefined ? { recordUrl: publicRecordUrl(outputRecordPath) } : {}),
+  };
+}
+
+async function finaliseDesignLoop(
+  input: DesignLoopInput,
+  attempts: DesignLoopAttemptResult[],
+): Promise<DesignLoopOutput> {
+  const finalPass = attempts.find((attempt) => attempt.ok);
+  const convergence = detectConvergenceStall(attempts);
+  const recordFields = await writeBuildRecord(input, attempts);
 
   const lastFail = [...attempts].reverse().find((a) => !a.ok);
   return {
@@ -340,9 +369,7 @@ async function finaliseDesignLoop(
     goal: input.goal,
     finalAttemptId: finalPass?.id,
     attempts,
-    record,
-    outputRecordPath,
-    ...(outputRecordPath !== undefined ? { recordUrl: publicRecordUrl(outputRecordPath) } : {}),
+    ...recordFields,
     ...(convergence !== undefined ? { convergence } : {}),
     ...(lastFail?.revisionAssist !== undefined ? { revisionAssist: lastFail.revisionAssist } : {}),
     nextActionPrompt: finalPass === undefined
