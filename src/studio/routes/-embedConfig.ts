@@ -9,6 +9,15 @@ export function embedPresentationMode(value: unknown): EmbedPresentation {
 }
 
 /**
+ * `?customize=1` opts an embed into the model customizer panel. Off by
+ * default: an embed that customizes re-builds the model from source instead
+ * of showing a stored mesh.
+ */
+export function embedCustomize(value: unknown): boolean {
+  return value === 1 || value === true || value === '1' || value === 'true';
+}
+
+/**
  * `undefined` means no requested revision (the compatible live model). `null`
  * means a malformed requested revision, which the embed must fail closed.
  */

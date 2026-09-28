@@ -221,6 +221,9 @@ interface AppProps {
    * editor read-only, built-in agent rail hidden — the model is driven by
    * an external agent, not authored here. */
   viewerMode?: boolean;
+  /** Overlay drawn over the 3D viewport, inside the workbench providers
+   * (the public page's model customizer). */
+  viewportOverlay?: ReactNode;
   /** Externally-driven code updates; each new value replaces the workbench
    * code through the normal setCode path. */
   liveCode?: string;
@@ -233,6 +236,7 @@ function AppProviders({
   headerLeft,
   headerRight,
   viewerMode,
+  viewportOverlay,
   liveCode,
 }: AppProps & { isDevLab: boolean }) {
   // Embed mode: pull controlled props from StudioConfig context. Standalone
@@ -254,7 +258,7 @@ function AppProviders({
       controlledCode={controlledCode}
       onCodeChange={onCodeChange}
     >
-      <StudioChromeProvider value={{ headerLeft: effectiveHeaderLeft, headerRight: effectiveHeaderRight, viewerMode }}>
+      <StudioChromeProvider value={{ headerLeft: effectiveHeaderLeft, headerRight: effectiveHeaderRight, viewerMode, viewportOverlay }}>
 
         <ErrorBoundary>
           <AppContent isDevLab={isDevLab} />
@@ -304,6 +308,7 @@ export function StudioApp({
   headerLeft,
   headerRight,
   viewerMode,
+  viewportOverlay,
   liveCode,
 }: AppProps = {}) {
   const isDevLab = typeof window !== 'undefined' && window.location.pathname.startsWith('/dev-lab');
@@ -320,6 +325,7 @@ export function StudioApp({
       headerLeft={headerLeft}
       headerRight={headerRight}
       viewerMode={viewerMode}
+      viewportOverlay={viewportOverlay}
       liveCode={liveCode}
     />
   );

@@ -1,0 +1,32 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import { setParamValue } from '../../../modeling/edits/setParamValue';
+import type { ParamOverrides } from '../../scriptSource';
+
+export type ParamEditValues = Record<string, number | boolean | string>;
+
+/**
+ * Split accumulated param edits into what the stateless mesh endpoints take.
+ * Their `params` override channel carries numbers and booleans only, so a
+ * choice or text value is written into its `param()` default in the source
+ * instead. `source === code` when no text value changed the source.
+ */
+export function paramEditsForMesh(
+  code: string,
+  edits: ParamEditValues,
+): { source: string; params: ParamOverrides } {
+  let source = code;
+  const params: ParamOverrides = {};
+  for (const [name, value] of Object.entries(edits)) {
+    if (typeof value !== 'string') {
+      params[name] = value;
+      continue;
+    }
+    const edit = setParamValue(source, name, value);
+    if (!edit.ok || edit.new_code === undefined) {
+      throw new Error(edit.error ?? `param '${name}' could not be set`);
+    }
+    source = edit.new_code;
+  }
+  return { source, params };
+}

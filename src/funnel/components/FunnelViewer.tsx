@@ -12,7 +12,7 @@
  * Embed hosts get explicit build/display status so an empty canvas is never
  * presented as "ready" (iframe load alone is not enough).
  */
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import Viewer from '../../studio/components/Viewer';
 import { hasNonemptyGeometry } from '../../studio/components/viewer/hasNonemptyGeometry';
 import { WorkbenchProvider, useWorkbench } from '../../studio/context/WorkbenchContext';
@@ -50,6 +50,11 @@ export interface FunnelViewerProps {
   /** CDN animation-bake URL (transforms-only). When set (or derivable from meshUrl),
    *  shows Play/scrub chrome that drives part transforms client-side. */
   animUrl?: string | null;
+  /** Drawn over the canvas inside the source viewer's workbench providers
+   *  (the embed's model customizer). Source execution only. It reports its
+   *  own build errors, so a failed re-build over a displayed model keeps the
+   *  last good geometry visible instead of the full-canvas failure notice. */
+  overlay?: ReactNode;
 }
 
 /** Inner component — must be mounted inside WorkbenchProvider. */
@@ -57,10 +62,12 @@ function FunnelViewerInner({
   onPhaseChange,
   revision = null,
   instanceId,
+  overlay,
 }: {
   onPhaseChange?: (phase: FunnelViewerPhase, detail?: string | null) => void;
   revision?: number | null;
   instanceId?: string;
+  overlay?: ReactNode;
 }) {
   const {
     geometries,
@@ -129,8 +136,10 @@ function FunnelViewerInner({
     setEmptyBuildError(null);
   }, []);
 
+  const overlayOwnsError = Boolean(overlay) && phase === 'build_failed' && displayReady && nonempty;
   const statusLabel =
-    phase === 'building_geometry' ? 'Building geometry…'
+    overlayOwnsError ? null
+    : phase === 'building_geometry' ? 'Building geometry…'
     : phase === 'loading_mesh' ? 'Loading mesh…'
     : phase === 'build_failed' ? `Build failed: ${detail ?? 'unknown error'}`
     : phase === 'viewer_failed' ? `Viewer failed: ${detail ?? 'unknown error'}`
@@ -156,6 +165,7 @@ function FunnelViewerInner({
           <p className="text-ink-faint font-mono text-sm px-6 text-center">{statusLabel}</p>
         </div>
       ) : null}
+      {overlay}
     </div>
   );
 }
@@ -170,16 +180,18 @@ function SourceViewer({
   resetKey,
   revision,
   instanceId,
+  overlay,
 }: {
   code: string;
   onPhaseChange?: FunnelViewerProps['onPhaseChange'];
   resetKey: number | string;
   revision?: number | null;
   instanceId?: string;
+  overlay?: ReactNode;
 }) {
   return (
     <WorkbenchProvider key={`${resetKey}:${code.length}`} initialCode={code}>
-      <FunnelViewerInner onPhaseChange={onPhaseChange} revision={revision} instanceId={instanceId} />
+      <FunnelViewerInner onPhaseChange={onPhaseChange} revision={revision} instanceId={instanceId} overlay={overlay} />
     </WorkbenchProvider>
   );
 }
@@ -414,6 +426,7 @@ export function FunnelViewer(props: FunnelViewerProps) {
           resetKey={props.resetKey ?? 0}
           revision={props.revision}
           instanceId={props.instanceId}
+          overlay={props.overlay}
         />
       </div>
     );

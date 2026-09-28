@@ -50,7 +50,7 @@ export interface GeometryContextType {
     /** Slice 2E.bridge: POST edits to the pooled CaptureSession's
      *  `params.update`. Returns once the server has acked; the SSE
      *  `relower` push that follows refreshes `scriptParams` + `scriptReview`. */
-    updateParam: (edits: { name: string; value: number | boolean }[]) => Promise<void>;
+    updateParam: (edits: { name: string; value: number | boolean | string }[]) => Promise<void>;
     setGeometryTransformOverride: (partName: string, transform: number[]) => void;
     clearGeometryTransformOverrides: () => void;
     /** Animation playback claims sole ownership of the part-transform override

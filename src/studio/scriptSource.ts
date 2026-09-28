@@ -270,6 +270,7 @@ function isBridgePayload(value: unknown): value is BackendMeshPayload {
 export async function meshSourceHosted(
   source: string,
   paramOverrides?: ParamOverrides,
+  options?: { preferSource?: boolean },
 ): Promise<BackendMeshPayload> {
   // 1. Static precompute by source hash — ONLY when there are no param
   //    overrides. The precompute is keyed on the unmodified source, so it
@@ -290,7 +291,9 @@ export async function meshSourceHosted(
   // 2. Server mesh endpoint for edited / non-gallery code (and param edits).
   const base = import.meta.env.VITE_API_BASE_URL;
   if (typeof base === 'string' && base.length > 0) {
-    const project = currentHostedProject();
+    // `preferSource`: the caller rewrote the source (a choice/text param
+    // value), so the stored project body would drop the edit.
+    const project = options?.preferSource ? null : currentHostedProject();
     const response = await fetch(`${base}/__kernelcad/mesh`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

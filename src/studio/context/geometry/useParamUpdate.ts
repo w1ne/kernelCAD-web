@@ -3,13 +3,14 @@
 import { useCallback, useEffect, useRef } from 'react';
 import {
     shouldUseHostedMesh, meshSourceHosted, devMeshAvailable, meshSourceDev,
-    type BackendMeshPayload, type ParamOverrides,
+    type BackendMeshPayload,
 } from '../../scriptSource';
 import { apiCall, rewritePath } from '../../api/apiBase';
 import { detectEmptyBuild, featureMeshesToGeometries } from './types';
 import type { FeatureMeshSerialized } from '../../../modeling/capture/featureMeshSerialize';
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { ExecutionApplyDeps } from './executionApplyDeps';
+import { paramEditsForMesh, type ParamEditValues } from './paramEditsForMesh';
 
 /**
  * Owns the param-edit bridge: the accumulated param-override map for the
@@ -27,7 +28,7 @@ export function useParamUpdate(
     // (hosted viewer / arbitrary edited code). A param edit re-runs the whole
     // script through the stateless mesh endpoint with these applied. Cleared
     // when `code` changes (a fresh build starts from the script's defaults).
-    const paramOverridesRef = useRef<ParamOverrides>({});
+    const paramOverridesRef = useRef<ParamEditValues>({});
 
     // Slice 2E.bridge: callback exposed to consumers (forwarded by
     // `useRecomputeResult`). Awaits the server ack; the SSE push that
@@ -64,7 +65,7 @@ export function useParamUpdate(
     }, [code]);
 
     const updateParam = useCallback(async (
-        edits: { name: string; value: number | boolean }[],
+        edits: { name: string; value: number | boolean | string }[],
     ) => {
         // Live session (pooled `?script=`): incremental params.update — only the
         // edited feature + downstream re-lower, pushed back over SSE.
@@ -102,7 +103,7 @@ export function useParamUpdate(
                 'Editing parameters needs a live kernel session or a compute backend.',
             );
         }
-        const overrides: ParamOverrides = { ...paramOverridesRef.current };
+        const overrides: ParamEditValues = { ...paramOverridesRef.current };
         for (const edit of edits) overrides[edit.name] = edit.value;
         paramOverridesRef.current = overrides;
 
@@ -110,9 +111,13 @@ export function useParamUpdate(
         deps.setCurrentCodeRevision(revision);
         deps.setIsComputing(true);
         try {
+            // Choice/text values ride in the source; numbers and booleans in
+            // the override map. A rewritten source can't use the stored
+            // project body, so it is sent as source.
+            const { source, params } = paramEditsForMesh(code, overrides);
             const payload = hosted
-                ? await meshSourceHosted(code, overrides)
-                : await meshSourceDev(code, overrides);
+                ? await meshSourceHosted(source, params, { preferSource: source !== code })
+                : await meshSourceDev(source, params);
             // Superseded by a newer edit (code change or another param drag).
             if (revision !== deps.mainRevisionRef.current) return;
             applyBridgePayload(payload, revision);
