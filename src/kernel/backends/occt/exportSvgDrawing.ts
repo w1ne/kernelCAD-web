@@ -36,14 +36,17 @@ import {
 } from './drawingProjection';
 import {
   SHEETS,
+  SHEET_SERIES,
   computeSheetLayout,
   dedupPolylineClasses,
   dimensionToSvg,
   formatDimValue,
   viewBoxOfPolylines,
+  type DrawingSheetSize,
   type DrawingViewName,
   type LinearDimension,
   type Polyline2,
+  type ProjectionAngle,
   type SheetLayout,
   type SheetSpec,
   type ViewBox2,
@@ -67,6 +70,8 @@ import {
   type AutoAnnotateOptions,
   type DrawingReport,
 } from './drawingAuto';
+import { attributionGenerator } from '../../../shared/links/attribution';
+import { generalToleranceCell, sheetTitleBlock, FULL_TITLE_BLOCK } from './drawingTitleBlock';
 import type { DrawingDeclarations } from '../../../shared/intent/drawingGdtRecord';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { NEXT_ACTIONS } from '../../../shared/diagnostics/registry';
@@ -82,10 +87,33 @@ export type {
   Iso2768Class,
 } from './drawingAuto';
 
+export type { DrawingSheetSize, ProjectionAngle } from './drawingLayout';
+
+/**
+ * Full title-block fields. Supplying this object (even empty) switches the
+ * sheet from the compact NAME / SCALE / UNITS / DATE block to the full
+ * 180 mm block: TITLE, projection symbol, PART NAME, MATERIAL, REV, SCALE,
+ * UNITS, SHEET size and DATE. Unset text fields print `—`.
+ */
+export interface DrawingTitleBlock {
+  /** Drawing title; defaults to the model name. */
+  title?: string;
+  /** Part name / number; defaults to the model name. */
+  partName?: string;
+  material?: string;
+  revision?: string;
+}
+
 export interface SvgDrawingOptions {
   format: 'svg-drawing';
-  /** Sheet size; default `a4` (landscape 297×210 mm). */
-  sheet?: 'a4' | 'a3';
+  /** Sheet size, always landscape; default `a4` (297×210 mm). `'auto'` /
+   *  `'auto-ansi'` pick the smallest ISO / ANSI sheet that holds the views at
+   *  1:1 or larger, else the largest sheet of the series. */
+  sheet?: DrawingSheetSize | 'auto' | 'auto-ansi';
+  /** View arrangement and title-block symbol; default `'third'`. */
+  projection?: ProjectionAngle;
+  /** Full title block; see `DrawingTitleBlock`. */
+  titleBlock?: DrawingTitleBlock;
   /** Model name shown in the title block. */
   modelName?: string;
   /** Title-block date text. Defaults to a blank placeholder so the output
@@ -195,74 +223,6 @@ function pathGroup(
 const esc = (s: string): string =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-/** Third-angle projection symbol: truncated-cone side view (small end
- *  toward the end view) with the end view's concentric circles beside it. */
-function thirdAngleSymbol(cx: number, cy: number): string {
-  // Trapezoid (frustum side view), small end facing right.
-  const trap =
-    `<path d="M ${round3(cx - 11)} ${round3(cy - 3.4)} L ${round3(cx - 4)} ${round3(cy - 1.9)} ` +
-    `L ${round3(cx - 4)} ${round3(cy + 1.9)} L ${round3(cx - 11)} ${round3(cy + 3.4)} Z"/>`;
-  // End view: two concentric circles on the small-end side.
-  const circles =
-    `<circle cx="${round3(cx + 6.5)}" cy="${round3(cy)}" r="3.4"/>` +
-    `<circle cx="${round3(cx + 6.5)}" cy="${round3(cy)}" r="1.9"/>`;
-  return `<g class="third-angle-symbol" fill="none" stroke="#000" stroke-width="0.25">${trap}${circles}</g>`;
-}
-
-/** General-tolerance cell attached to the left of the title block. */
-function generalToleranceCell(sheet: SheetSpec, note: string): string {
-  const { w: tbW, h } = sheet.titleBlock;
-  const w = 46;
-  const x = sheet.w - sheet.margin - tbW - w;
-  const y = sheet.h - sheet.margin - h;
-  return (
-    `<g id="general-tolerance" fill="none" stroke="#000" stroke-width="0.35">` +
-    `<rect x="${round3(x)}" y="${round3(y)}" width="${w}" height="${h}" fill="#fff"/>` +
-    `<text x="${round3(x + 1.5)}" y="${round3(y + 3)}" font-size="1.8" fill="#555" stroke="none">GENERAL TOLERANCES</text>` +
-    `<text x="${round3(x + 1.5)}" y="${round3(y + h / 2 + 2)}" font-size="3.4" fill="#000" stroke="none">${esc(note)}</text>` +
-    `</g>`
-  );
-}
-
-function titleBlock(
-  sheet: SheetSpec,
-  fields: { name: string; scaleText: string; units: string; date: string },
-): string {
-  const { w, h } = sheet.titleBlock;
-  const x = sheet.w - sheet.margin - w;
-  const y = sheet.h - sheet.margin - h;
-  const rowH = h / 2;
-  const nameW = w - 30;
-  const cellW2 = (w - 26) / 2;
-  const caption = (cx: number, cy: number, t: string) =>
-    `<text x="${round3(cx)}" y="${round3(cy)}" font-size="1.8" fill="#555" stroke="none">${esc(t)}</text>`;
-  const value = (cx: number, cy: number, t: string, size = 3) =>
-    `<text x="${round3(cx)}" y="${round3(cy)}" font-size="${size}" fill="#000" stroke="none">${esc(t)}</text>`;
-  const lines = [
-    `<rect x="${round3(x)}" y="${round3(y)}" width="${w}" height="${h}" fill="#fff"/>`,
-    `<line x1="${round3(x)}" y1="${round3(y + rowH)}" x2="${round3(x + w)}" y2="${round3(y + rowH)}"/>`,
-    // Row 1: NAME | third-angle symbol cell.
-    `<line x1="${round3(x + nameW)}" y1="${round3(y)}" x2="${round3(x + nameW)}" y2="${round3(y + rowH)}"/>`,
-    // Row 2: SCALE | UNITS | DATE.
-    `<line x1="${round3(x + cellW2)}" y1="${round3(y + rowH)}" x2="${round3(x + cellW2)}" y2="${round3(y + h)}"/>`,
-    `<line x1="${round3(x + 2 * cellW2)}" y1="${round3(y + rowH)}" x2="${round3(x + 2 * cellW2)}" y2="${round3(y + h)}"/>`,
-  ];
-  return (
-    `<g id="title-block" fill="none" stroke="#000" stroke-width="0.35">` +
-    lines.join('') +
-    caption(x + 1.5, y + 3, 'NAME') +
-    value(x + 1.5, y + rowH - 3, fields.name, 3.4) +
-    thirdAngleSymbol(x + nameW + 16, y + rowH / 2) +
-    caption(x + 1.5, y + rowH + 3, 'SCALE') +
-    value(x + 1.5, y + h - 3, fields.scaleText) +
-    caption(x + cellW2 + 1.5, y + rowH + 3, 'UNITS') +
-    value(x + cellW2 + 1.5, y + h - 3, fields.units) +
-    caption(x + 2 * cellW2 + 1.5, y + rowH + 3, 'DATE') +
-    value(x + 2 * cellW2 + 1.5, y + h - 3, fields.date) +
-    `</g>`
-  );
-}
-
 const VIEW_LABELS: Record<DrawingViewName, string> = {
   front: 'FRONT',
   top: 'TOP',
@@ -341,7 +301,6 @@ export function renderSvgDrawing(
   const { explodedParts, assembledCentroids, explodedCentroids, shape, explodedShape } =
     resolveDrawingBodies(parts, options);
 
-  const sheet = SHEETS[options.sheet ?? 'a4'];
   const [bbMin, bbMax] = shape.boundingBox.bounds;
   const dims = {
     w: bbMax[0] - bbMin[0],
@@ -350,16 +309,20 @@ export function renderSvgDrawing(
   };
 
   const styled = projectSheetViews(shape, explodedShape);
+  const viewBoxes = {
+    front: styled.front.box,
+    top: styled.top.box,
+    left: styled.left.box,
+    iso: styled.iso.box,
+  };
+  const projection = options.projection ?? 'third';
+  const sectionSpecs = options.sections ?? [];
+  const hasSections = sectionSpecs.length > 0;
+  // `sheet` is the region the standard view grid is laid out in; `page` is
+  // the drawn sheet (frame, title block, parts list).
+  const { sheet, page, size: sheetSize } = resolveSheet(options, viewBoxes, projection, hasSections);
 
-  const layout = computeSheetLayout(
-    {
-      front: styled.front.box,
-      top: styled.top.box,
-      left: styled.left.box,
-      iso: styled.iso.box,
-    },
-    sheet,
-  );
+  const layout = computeSheetLayout(viewBoxes, sheet, projection);
   const s = layout.scale;
 
   const dimensionStage = renderDimensionStage(parts, options, layout, s, dims, diagnosticsOut);
@@ -369,12 +332,9 @@ export function renderSvgDrawing(
   // `sheet` spec, so a drawing with no sections is byte-identical to one
   // from before this feature existed. Sections add a reserved band BELOW
   // that grid (where the title block used to sit) and push the title block
-  // + frame down into a taller sheet — nothing above the band moves.
-  const sectionSpecs = options.sections ?? [];
-  const hasSections = sectionSpecs.length > 0;
-  const effSheet: SheetSpec = hasSections
-    ? { ...sheet, h: sheet.h + SECTION_BAND_H }
-    : sheet;
+  // + frame down — into a taller page for the compact title block, or into
+  // the named sheet itself for the full one (see resolveSheet).
+  const effSheet: SheetSpec = page;
   const sectionStage = renderSheetSections(shape, sectionSpecs, sheet, layout, s);
   const sectionsSvg = sectionStage.svg;
   const usesHatchPattern = sectionStage.usesHatchPattern;
@@ -426,7 +386,51 @@ export function renderSvgDrawing(
     explodedShape,
     diagnosticsOut,
     report,
+    sheetSize,
+    projection,
   });
+}
+
+/**
+ * Resolve the sheet: a named size as-is, or for `'auto'` / `'auto-ansi'` the
+ * smallest sheet of the series whose view grid reaches 1:1, else the largest.
+ *
+ * Returns the grid region (`sheet`) and the drawn page. With the compact
+ * title block they are the same size and section views grow the page
+ * downward (the historical svg-drawing behaviour). The full title block
+ * (`options.titleBlock`) means a standard sheet: it is swapped into the
+ * spec, and section views take their band out of the grid region so the
+ * page keeps the named size.
+ */
+function resolveSheet(
+  options: SvgDrawingOptions,
+  boxes: Record<DrawingViewName, ViewBox2>,
+  projection: ProjectionAngle,
+  hasSections: boolean,
+): { sheet: SheetSpec; page: SheetSpec; size: DrawingSheetSize } {
+  const standard = options.titleBlock !== undefined;
+  const resolve = (size: DrawingSheetSize): { sheet: SheetSpec; page: SheetSpec; size: DrawingSheetSize } => {
+    const base = standard ? { ...SHEETS[size], titleBlock: { ...FULL_TITLE_BLOCK } } : SHEETS[size];
+    if (!hasSections) return { sheet: base, page: base, size };
+    return standard
+      ? { sheet: { ...base, h: base.h - SECTION_BAND_H }, page: base, size }
+      : { sheet: base, page: { ...base, h: base.h + SECTION_BAND_H }, size };
+  };
+  const requested = options.sheet ?? 'a4';
+  if (requested !== 'auto' && requested !== 'auto-ansi') {
+    if (!(requested in SHEETS)) {
+      throw new Error(
+        `drawing sheet '${String(requested)}' is not a sheet size; use one of ${Object.keys(SHEETS).join(', ')}, auto, auto-ansi.`,
+      );
+    }
+    return resolve(requested);
+  }
+  const series = SHEET_SERIES[requested === 'auto' ? 'iso' : 'ansi'];
+  for (const size of series) {
+    const r = resolve(size);
+    if (computeSheetLayout(boxes, r.sheet, projection).scale >= 1) return r;
+  }
+  return resolve(series[series.length - 1]!);
 }
 
 /**
@@ -575,6 +579,16 @@ function renderDimensionStage(
   } else if (autoOn) {
     dimBodies = [];
     bottomReserve = { front: 0, top: 0, left: 0, iso: 0 };
+  } else if (options.projection === 'first') {
+    // First-angle grid: the front view's free sides are above and left, the
+    // top view's free vertical side is its right (see computeSheetLayout).
+    const firstAngleDims: LinearDimension[] = [
+      { kind: 'horizontal', from: [f.x, f.y], to: [f.x + f.w, f.y], linePos: f.y - DIM_BASE, label: formatDimValue(dims.w) },
+      { kind: 'vertical', from: [f.x, f.y], to: [f.x, f.y + f.h], linePos: f.x - DIM_BASE, label: formatDimValue(dims.h) },
+      { kind: 'vertical', from: [t.x + t.w, t.y], to: [t.x + t.w, t.y + t.h], linePos: t.x + t.w + DIM_BASE, label: formatDimValue(dims.d) },
+    ];
+    dimBodies = firstAngleDims.map(d => dimensionToSvg(d));
+    bottomReserve = { front: 0, top: 0, left: 0, iso: 0 };
   } else {
     const dimSpecs: LinearDimension[] = [
       {
@@ -693,6 +707,7 @@ function renderAutoStage(input: {
       }])) as Record<DrawingViewName, { placement: ViewPlacement; polylines: Polyline2[] }>,
       scale: s,
       sheet,
+      projection: options.projection ?? 'third',
       bottomReserve,
       rightReserve,
       // Cutting-plane indicators sit on the standard views; keep labels off them.
@@ -825,11 +840,15 @@ function buildSheetSvg(input: {
   explodedShape: AnyShape | undefined;
   diagnosticsOut: CompilerDiagnostic[];
   report: DrawingReport | undefined;
+  sheetSize: DrawingSheetSize;
+  projection: ProjectionAngle;
 }): SvgDrawingResult {
   const {
     effSheet, usesHatchPattern, viewGroups, dimBodies, sectionsSvg, explodeSvg,
     generalTolerance, layout, options, explodedShape, diagnosticsOut, report,
+    sheetSize, projection,
   } = input;
+  const tb = options.titleBlock;
   const dimensions = `<g id="dimensions">` + dimBodies.join('') + `</g>`;
 
   const hatchDefs = usesHatchPattern
@@ -847,7 +866,10 @@ function buildSheetSvg(input: {
   const svg = [
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${effSheet.w} ${effSheet.h}" ` +
       `width="${effSheet.w}mm" height="${effSheet.h}mm" font-family="sans-serif" ` +
-      `data-kc-format="svg-drawing" data-kc-scale="${layout.scaleText}" data-kc-units="mm"${explodedShape !== undefined ? ' data-kc-exploded="true"' : ''}>`,
+      `data-kc-format="svg-drawing" data-kc-scale="${layout.scaleText}" data-kc-units="mm"${explodedShape !== undefined ? ' data-kc-exploded="true"' : ''}` +
+      // The compact sheet stays byte-identical to earlier releases; the full
+      // title-block sheet also names its generator.
+      `${tb === undefined ? '' : ` data-kc-sheet="${sheetSize}" data-kc-projection="${projection}" data-kc-generator="${esc(attributionGenerator())}"`}>`,
     ...(hatchDefs === '' ? [] : [hatchDefs]),
     `<rect x="0" y="0" width="${effSheet.w}" height="${effSheet.h}" fill="#fff"/>`,
     frame,
@@ -856,12 +878,7 @@ function buildSheetSvg(input: {
     ...(sectionsSvg === '' ? [] : [sectionsSvg]),
     ...(explodeSvg === '' ? [] : [explodeSvg]),
     ...(generalTolerance === undefined ? [] : [generalToleranceCell(effSheet, generalTolerance)]),
-    titleBlock(effSheet, {
-      name: options.modelName ?? 'model',
-      scaleText: layout.scaleText,
-      units: 'mm',
-      date: options.date ?? '—',
-    }),
+    sheetTitleBlock(effSheet, options, layout.scaleText, sheetSize, projection),
     `</svg>`,
   ].join('\n');
 

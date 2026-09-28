@@ -51,6 +51,10 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
         'overall bounding-box dimensions, title block; assemblies are drawn with inter-part occlusion; pass options.annotations to dimension specific features instead of the bounding box, ' +
         'options.autoAnnotate to derive datums A/B/C, grouped hole callouts with position tolerances, hole positions, overall size, radius and chamfer callouts, flatness and an ISO 2768 note from the geometry ' +
         '(the result carries drawing_report with placed / overlapped counts), and options.sections for real section views on any cutting plane). ' +
+        'pdf-drawing (the same sheet — views, dashed hidden lines, dimensions, hole callouts, GD&T, sections, parts list — as a printable vector PDF on a standard sheet, one call: ' +
+        'ISO a4|a3|a2|a1|a0 or ANSI ansi-a…ansi-e landscape, default a3, or sheet "auto" / "auto-ansi" for the smallest sheet that holds the views at 1:1; the drawing scale is picked to fit; ' +
+        'projection "third" (default) or "first" arranges the views and draws the matching symbol; a full title block carries title, part name, material, scale, units, sheet size, date and revision, ' +
+        'settable through options.title / partName / material / revision / date; autoAnnotate is on unless options.annotations is given). ' +
         'Robot descriptions: urdf (tree-topology robot description), srdf (motion-planning semantics layered over the URDF), sdf-gazebo (SDFormat 1.10 with native ball joints, closed loops, and solved per-link poses), ' +
         "usd-isaac (ASCII USD physics stage: PhysicsArticulationRootAPI root, one rigid body per link at its solved pose with mass / centre of mass / principal inertia, " +
         'PhysicsFixedJoint/PhysicsRevoluteJoint/PhysicsPrismaticJoint per mate with token axis, two-sided joint frames and limits, UsdPreviewSurface materials from the part appearance, ' +
@@ -80,7 +84,7 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
           output_path: { type: 'string', description: "Destination path. target:'model' — the export file (required). target:'part' — single-part .stl path." },
           format: {
             type: 'string',
-            enum: ['stl', 'step', 'dxf', '3mf', 'glb', 'svg-drawing', 'urdf', 'srdf', 'sdf-gazebo', 'usd-isaac', 'bom-csv', 'bom-json'],
+            enum: ['stl', 'step', 'dxf', '3mf', 'glb', 'svg-drawing', 'pdf-drawing', 'urdf', 'srdf', 'sdf-gazebo', 'usd-isaac', 'bom-csv', 'bom-json'],
             description: "target:'model' — output file format (required for that target).",
           },
           feature_id: { type: 'string', description: "target:'model' — optional FeatureId to export; defaults to last." },
@@ -91,7 +95,7 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
               'dxf: { layers?, unit?: "mm"|"cm"|"in", tolerance? }. ' +
               '3mf: { printUnit?: "mm"|"cm"|"in", embedSource?, arrange?: "none"|"plate"|"assembled", orient?: boolean, slicer?: "generic"|"bambu"|"orca"|"prusa", printer?: bed profile (default "generic-fdm") }. ' +
               'glb: { axis?: "y-up"|"z-up", draco?: false }. ' +
-              'svg-drawing: { sheet?: "a4"|"a3", modelName?, date?, annotations?, exploded?: { factor, mode? }, balloons?, partsList?, sections?, autoAnnotate? }. ' +
+              'svg-drawing: { sheet?: "a4"|"a3" (or any pdf-drawing sheet), projection?, titleBlock?: { title?, partName?, material?, revision? }, modelName?, date?, annotations?, exploded?: { factor, mode? }, balloons?, partsList?, sections?, autoAnnotate? }. ' +
               'svg-drawing annotations is an array of authored dimensions/notes, each '
               + '{ kind: "linear"|"radius"|"diameter"|"angular"|"note", view?: "front"|"top"|"left"|"iso", text?, offset? } plus '
               + 'kind-specific geometry: linear { from, to }, radius/diameter { edge: EdgeQuery }, angular { from: EdgeQuery, to: EdgeQuery }, note { at, text }. '
@@ -100,7 +104,10 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
               + 'svg-drawing sections is an array of { plane: "xy"|"xz"|"yz"|{ origin, normal }, label } (any non-zero normal). '
               + 'svg-drawing autoAnnotate is true or { tolerance?: "ISO2768-f"|"ISO2768-m"|"ISO2768-c", datums?: "auto"|[{ label, face: FaceQuery }], '
               + 'include?: ["datums"|"flatness"|"holes"|"hole-positions"|"overall"|"fillets"|"chamfers"|"general-tolerance"] }; '
-              + 'datums and tolerances declared in the script with shape.datum() / shape.tolerance() override the automatic ones.',
+              + 'datums and tolerances declared in the script with shape.datum() / shape.tolerance() override the automatic ones. '
+              + 'pdf-drawing: { sheet?: "a4"|"a3"|"a2"|"a1"|"a0"|"ansi-a"|"ansi-b"|"ansi-c"|"ansi-d"|"ansi-e"|"auto"|"auto-ansi" (default "a3"), '
+              + 'projection?: "third"|"first", title?, partName?, material?, revision?, date? (default today), modelName?, '
+              + 'annotations?, sections?, exploded?, balloons?, partsList?, autoAnnotate? (default true unless annotations are given) } — the svg-drawing keys mean the same.',
           },
           part: { type: 'string', description: "target:'part' — part name for single-part export, or 'all'." },
           output_dir: { type: 'string', description: "target:'part' — destination directory (all-parts mode); files are <dir>/<part>.stl." },

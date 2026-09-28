@@ -5,7 +5,7 @@
 import type { OcctBackend } from '../occtBackend';
 import type { CompilerDiagnostic } from '../../../../shared/diagnostics/diagnostic';
 import type { DrawingDatumDecl, DrawingDeclarations } from '../../../../shared/intent/drawingGdtRecord';
-import type { DrawingViewName, Polyline2, SheetSpec, ViewPlacement } from '../drawingLayout';
+import type { DrawingViewName, Polyline2, ProjectionAngle, SheetSpec, ViewPlacement } from '../drawingLayout';
 import type { WorldFramePart } from '../sceneToWorldFrame';
 import type { V3 } from '../drawingFeatures';
 import type { AutoAnnotateOptions } from './options';
@@ -42,6 +42,9 @@ export interface AutoDrawingInput {
   views: Record<DrawingViewName, { placement: ViewPlacement; polylines: readonly Polyline2[] }>;
   scale: number;
   sheet: SheetSpec;
+  /** View arrangement; decides which side of each view is free for
+   *  dimensions. Default third angle. */
+  projection?: ProjectionAngle;
   bottomReserve: Record<DrawingViewName, number>;
   rightReserve: Record<DrawingViewName, number>;
   /** Other sheet markup (section indicators) whose lines and labels are

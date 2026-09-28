@@ -13,7 +13,12 @@ import type { ShapeBackend } from '../../kernel/backends/backend';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { NEXT_ACTIONS } from '../../shared/diagnostics/registry';
 
-import type { ExportInput, ExportResult } from './export';
+import { svgSheetsToPdf } from '../../kernel/export/pdf/svgSheetToPdf';
+import { KERNELCAD_NAME, attributionGenerator } from '../../shared/links/attribution';
+
+import type { ExportInput, ExportResult, PdfDrawingOptions } from './export';
+
+type ScriptRun = Awaited<ReturnType<typeof runScript>>;
 
 /** svg-drawing entry path: engineering-drawing sheet rendering, including
  *  exploded views, BOM balloons / parts-list and GD&T declarations. */
@@ -22,16 +27,100 @@ export async function exportSvgDrawing(
   fileName: string,
   lowered: ShapeBackend,
   targetId: string,
-  run: Awaited<ReturnType<typeof runScript>>,
+  run: ScriptRun,
   diagnostics: CompilerDiagnostic[],
   featureCount: number,
 ): Promise<ExportResult> {
   const opts =
     (input.options as SvgDrawingOptions | undefined) ??
     { format: 'svg-drawing' as const };
+  return renderDrawingSheet(opts, fileName, lowered, targetId, run, diagnostics, featureCount);
+}
+
+/**
+ * pdf-drawing entry path: the same sheet the svg-drawing path renders — one
+ * source of truth for views, dimensions and GD&T — on a standard sheet with
+ * the full title block, transcribed into a vector PDF.
+ */
+export async function exportPdfDrawing(
+  input: ExportInput,
+  fileName: string,
+  lowered: ShapeBackend,
+  targetId: string,
+  run: ScriptRun,
+  diagnostics: CompilerDiagnostic[],
+  featureCount: number,
+): Promise<ExportResult> {
+  const pdf = (input.options as PdfDrawingOptions | undefined) ?? { format: 'pdf-drawing' as const };
+  const assemblies = run.session.assemblies as Map<string, Assembly>;
+  const material = pdf.material ?? sharedAssemblyMaterial(firstAssemblyOrUndefined(assemblies));
+  const svgOpts = pdfSheetOptions(pdf, material);
+  const sheet = await renderDrawingSheet(svgOpts, fileName, lowered, targetId, run, diagnostics, featureCount);
+  if (sheet.bytes.length === 0) return sheet;
+  const svg = new TextDecoder().decode(sheet.bytes);
+  const modelName = svgOpts.modelName ?? drawingModelName(fileName);
+  const bytes = svgSheetsToPdf([svg], {
+    title: pdf.title ?? modelName,
+    subject: `Engineering drawing: ${pdf.partName ?? modelName}`,
+    creator: `${KERNELCAD_NAME} pdf-drawing export`,
+    producer: attributionGenerator(),
+  });
+  return { ...sheet, bytes };
+}
+
+/** Drop the keys whose value is undefined (exact optional properties). */
+function definedOnly<T extends object>(o: T): Partial<T> {
+  return Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined)) as Partial<T>;
+}
+
+/** The svg-drawing options that render a pdf-drawing sheet: standard sheet
+ *  (default A3), full title block, today's date, autoAnnotate unless the
+ *  author dimensions the sheet. */
+function pdfSheetOptions(pdf: PdfDrawingOptions, material: string | undefined): SvgDrawingOptions {
+  const authored = (pdf.annotations ?? []).length > 0;
+  return {
+    format: 'svg-drawing',
+    sheet: pdf.sheet ?? 'a3',
+    projection: pdf.projection ?? 'third',
+    date: pdf.date ?? new Date().toISOString().slice(0, 10),
+    titleBlock: definedOnly({ title: pdf.title, partName: pdf.partName, material, revision: pdf.revision }),
+    ...definedOnly({
+      modelName: pdf.modelName,
+      annotations: pdf.annotations,
+      sections: pdf.sections,
+      exploded: pdf.exploded as SvgDrawingOptions['exploded'],
+      balloons: pdf.balloons,
+      partsList: pdf.partsList,
+    }),
+    autoAnnotate: pdf.autoAnnotate ?? !authored,
+  };
+}
+
+/** Model name for the title block: the script file name without `.kcad.ts`. */
+function drawingModelName(fileName: string): string {
   const baseName = fileName.split(/[\\/]/).pop() ?? fileName;
-  const modelName =
-    opts.modelName ?? baseName.replace(/(\.kcad)?\.ts$/, '');
+  return baseName.replace(/(\.kcad)?\.ts$/, '');
+}
+
+/** The material every assembly part declares, when they all declare the same one. */
+function sharedAssemblyMaterial(arm: Assembly | undefined): string | undefined {
+  if (arm === undefined) return undefined;
+  const names = new Set(arm.__parts().map(p => p.material));
+  if (names.size !== 1) return undefined;
+  const [only] = names;
+  return only;
+}
+
+async function renderDrawingSheet(
+  opts: SvgDrawingOptions,
+  fileName: string,
+  lowered: ShapeBackend,
+  targetId: string,
+  run: ScriptRun,
+  diagnostics: CompilerDiagnostic[],
+  featureCount: number,
+): Promise<ExportResult> {
+  const modelName = opts.modelName ?? drawingModelName(fileName);
   const drawingParts = drawingPartsForBackend(lowered);
   const assemblies = run.session.assemblies as Map<string, Assembly>;
   const arm = firstAssemblyOrUndefined(assemblies);

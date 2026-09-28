@@ -81,3 +81,30 @@ Things to check on the rendered sheet:
 
 Render the SVG to PNG to look at it, for example
 `google-chrome --headless --screenshot=/tmp/bracket-drawing.png file:///tmp/bracket-drawing.svg`.
+
+## The same drawing as a PDF for the shop
+
+`pdf-drawing` puts the same sheet on a standard A3 page with a full title block
+(title, part name, material, scale, units, projection, sheet size, date,
+revision) and writes a vector PDF. `bracket.pdf` in this folder was made with:
+
+```bash
+npx tsx src/agent/cli/index.ts export pdf-drawing examples/drawings-auto/bracket.kcad.ts \
+  -o examples/drawings-auto/bracket.pdf \
+  --title "L mounting bracket" --revision A --material "EN AW-6082" \
+  --options '{"partName":"BRK-001","date":"2026-09-28"}'
+```
+
+Output:
+
+```
+Wrote 14882 bytes to examples/drawings-auto/bracket.pdf
+drawing: 20 annotation(s) placed, 1 overlapped (hole-position 9, overall 3, hole 3, datum 3, flatness 1, fillet 1, chamfer 1, general-tolerance 1)
+```
+
+The page is A3 (1190.55 × 841.89 pt), one page, drawn at 1:1. The text layer
+is real text (`pdftotext bracket.pdf -` lists every dimension, `4× Ø6.6 THRU`,
+`Ø0.05 A B C`, `ISO 2768-mK` and the title-block fields); the drawing is
+vector linework — visible edges solid 0.5 mm, hidden edges dashed 0.25 mm.
+Add `--projection first` for first-angle projection, or `--sheet auto` to let
+the exporter pick the smallest sheet that holds the views at 1:1.
