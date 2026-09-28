@@ -43,7 +43,8 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
         'Supported formats: stl (binary STL mesh), step (BREP CAD interchange), dxf (planar laser/waterjet profile from a Region or planar face), ' +
         "3mf (slicer-friendly mesh: one named object per part, colours as core-spec basematerials named by the part's engineering material; " +
         "options.arrange 'plate' packs parts on the bed at Z=0 without overlap (options.orient puts each part's largest flat face down), 'assembled' keeps them together as one multi-part object for multi-colour prints; " +
-        "options.slicer 'bambu' | 'orca' | 'prusa' adds that slicer's per-object name + filament-slot sidecar — slot N is the Nth distinct colour/material), glb (web-viewer / AR with PBR materials), ' +
+        "options.slicer 'bambu' | 'orca' | 'prusa' adds that slicer's per-object name + filament-slot sidecar — slot N is the Nth distinct colour/material), " +
+        'glb (web-viewer / AR with PBR materials), ' +
         'svg-drawing (third-angle engineering-drawing sheet: front/top/left + isometric views, hidden edges dashed, tangent edges thin, ' +
         'overall bounding-box dimensions, title block; assemblies are drawn with inter-part occlusion; pass options.annotations to dimension specific features instead of the bounding box; ' +
         'pass options.exploded { factor, mode } to explode the isometric cell, options.balloons to number parts from the BOM, and options.partsList for an item/name/qty/material table above the title block). ' +
