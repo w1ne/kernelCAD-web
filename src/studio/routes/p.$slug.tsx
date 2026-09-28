@@ -14,6 +14,7 @@ import {
   type ProjectRow,
 } from '../../funnel/lib/apiClient';
 import { useProjectLiveUpdates } from './-useProjectLiveUpdates';
+import { StudioModelCustomizer } from '../customizer/StudioModelCustomizer';
 
 export const Route = createFileRoute('/p/$slug')({
   component: ProjectPage,
@@ -129,6 +130,7 @@ function ProjectPage() {
       initialCode={project.current_code}
       liveCode={liveCode}
       viewerMode
+      viewportOverlay={<StudioModelCustomizer slug={slug} hints={project.parameters} />}
       headerLeft={headerLeft}
       headerRight={headerRight ?? undefined}
     />
