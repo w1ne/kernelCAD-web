@@ -24,14 +24,22 @@ const SHADOW_TEXTURE_SIZE = 1024;
 /** Ground plane edge as a multiple of the model's larger footprint edge —
  *  room for the blur to fade to zero before the plane's border. */
 const PLANE_FOOTPRINT_SCALE = 2.2;
-/** Height (as a fraction of the model's largest extent) over which the
- *  shadow contribution fades from full to zero. */
-const SHADOW_HEIGHT_FRACTION = 0.45;
-const SHADOW_DARKNESS = 1.6;
-const SHADOW_OPACITY = 0.62;
-/** Blur passes: a wide pass for the soft penumbra, then a tight pass to
- *  smooth the contact core. */
-const BLUR_PASSES: readonly number[] = [3.2, 1.2];
+/** One baked shadow layer. `heightFraction` (of the model's largest
+ *  extent) is the height over which a caster's contribution fades to zero;
+ *  `blurPasses` are blur radii in shadow-texture texels. */
+export interface ContactShadowLayer {
+  heightFraction: number;
+  darkness: number;
+  opacity: number;
+  blurPasses: readonly number[];
+}
+
+/** Two layers: a wide, faint penumbra from everything near the ground, and
+ *  a tight, dark core where parts actually touch it (feet, bases). */
+export const CONTACT_SHADOW_LAYERS: readonly ContactShadowLayer[] = [
+  { heightFraction: 0.45, darkness: 1.6, opacity: 0.5, blurPasses: [3.2, 1.2] },
+  { heightFraction: 0.04, darkness: 1.2, opacity: 0.55, blurPasses: [1.0] },
+];
 
 export interface ContactShadowBounds {
   min: THREE.Vector3;
@@ -44,11 +52,11 @@ export interface ContactShadow {
   dispose: () => void;
 }
 
-function makeHeightFadeMaterial(): THREE.ShaderMaterial {
+function makeHeightFadeMaterial(darkness: number): THREE.ShaderMaterial {
   // Orthographic camera → gl_FragCoord.z is linear in height above the
   // ground plane (near = ground, far = fade height).
   const material = new THREE.ShaderMaterial({
-    uniforms: { darkness: { value: SHADOW_DARKNESS } },
+    uniforms: { darkness: { value: darkness } },
     vertexShader: `
       void main() {
         gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
@@ -84,6 +92,7 @@ function blurTarget(
   renderer: THREE.WebGLRenderer,
   target: THREE.WebGLRenderTarget,
   scratch: THREE.WebGLRenderTarget,
+  blurPasses: readonly number[],
 ): void {
   const horizontal = new THREE.ShaderMaterial(HorizontalBlurShader);
   const vertical = new THREE.ShaderMaterial(VerticalBlurShader);
@@ -91,7 +100,7 @@ function blurTarget(
   vertical.depthTest = false;
   const quad = new FullScreenQuad();
   try {
-    for (const amount of BLUR_PASSES) {
+    for (const amount of blurPasses) {
       quad.material = horizontal;
       horizontal.uniforms.tDiffuse.value = target.texture;
       horizontal.uniforms.h.value = amount / SHADOW_TEXTURE_SIZE;
@@ -121,6 +130,7 @@ function bakeFromBelow(
   casters: readonly THREE.Mesh[],
   camera: THREE.OrthographicCamera,
   target: THREE.WebGLRenderTarget,
+  darkness: number,
 ): void {
   const casterSet = new Set<THREE.Object3D>(casters);
   const hidden: THREE.Object3D[] = [];
@@ -133,7 +143,7 @@ function bakeFromBelow(
   });
   const background = scene.background;
   const override = scene.overrideMaterial;
-  const fade = makeHeightFadeMaterial();
+  const fade = makeHeightFadeMaterial(darkness);
   try {
     scene.background = null;
     scene.overrideMaterial = fade;
@@ -158,11 +168,12 @@ export function buildContactShadow(
   scene: THREE.Scene,
   casters: readonly THREE.Mesh[],
   bounds: ContactShadowBounds,
+  layer: ContactShadowLayer,
 ): ContactShadow {
   const size = bounds.max.clone().sub(bounds.min);
   const footprint = Math.max(size.x, size.y, 1e-3);
   const planeSize = footprint * PLANE_FOOTPRINT_SCALE;
-  const fadeHeight = Math.max(size.x, size.y, size.z, 1e-3) * SHADOW_HEIGHT_FRACTION;
+  const fadeHeight = Math.max(size.x, size.y, size.z, 1e-3) * layer.heightFraction;
   const cx = (bounds.min.x + bounds.max.x) / 2;
   const cy = (bounds.min.y + bounds.max.y) / 2;
   const groundZ = bounds.min.z;
@@ -185,8 +196,8 @@ export function buildContactShadow(
   renderer.getClearColor(originalClear);
   const originalAlpha = renderer.getClearAlpha();
   try {
-    bakeFromBelow(renderer, scene, casters, camera, target);
-    blurTarget(renderer, target, scratch);
+    bakeFromBelow(renderer, scene, casters, camera, target, layer.darkness);
+    blurTarget(renderer, target, scratch, layer.blurPasses);
   } finally {
     scratch.dispose();
     renderer.setRenderTarget(originalTarget);
@@ -197,7 +208,7 @@ export function buildContactShadow(
     map: target.texture,
     color: 0x000000,
     transparent: true,
-    opacity: SHADOW_OPACITY,
+    opacity: layer.opacity,
     depthWrite: false,
     side: THREE.DoubleSide,
   });

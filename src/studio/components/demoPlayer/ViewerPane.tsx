@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { Watermark } from './Watermark';
+import { isRenderLoopPaused } from './publishStage';
 
 export interface ViewerPaneProps {
   version: string;
@@ -124,7 +125,7 @@ export function ViewerPane({ version, onSceneReady, width, height, noWatermark =
 
     let raf = 0;
     const tick = () => {
-      renderer.render(scene, camera);
+      if (!isRenderLoopPaused(renderer)) renderer.render(scene, camera);
       raf = requestAnimationFrame(tick);
     };
     tick();

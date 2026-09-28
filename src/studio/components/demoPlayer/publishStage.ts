@@ -25,7 +25,7 @@ import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment
 import type { PublishFrameCapture, PublishFrameRequest, PublishStageSpec } from '../../../shared/render/publishPreset';
 import { poseCameraDir } from '../../../shared/render/publishPreset';
 import { fitDistanceForBounds } from './cameraFit';
-import { buildContactShadow, type ContactShadow } from './contactShadow';
+import { CONTACT_SHADOW_LAYERS, buildContactShadow, type ContactShadow } from './contactShadow';
 import { fitCameraToBounds, isInsideFeatureGroup, isVisibleInScene } from './demoPlayerGeometry';
 
 /** userData flag on every object the stage adds; scene-bounds and mask
@@ -61,7 +61,7 @@ const PUBLISH_LIGHTS: readonly LightSpec[] = [
 
 interface StageState {
   rig: THREE.Group;
-  shadow: ContactShadow | undefined;
+  shadows: ContactShadow[];
   hiddenLights: THREE.Light[];
   background: THREE.Scene['background'];
   environment: THREE.Texture | null;
@@ -70,6 +70,31 @@ interface StageState {
 }
 
 const stages = new WeakMap<THREE.Scene, StageState>();
+/** Canvas size before the first publish capture resized it. The canvas
+ *  stays at the publish size across frames (a turntable resizes once, not
+ *  twice per frame); clearing the stage restores it. */
+const engineeringCanvasSize = new WeakMap<THREE.WebGLRenderer, THREE.Vector2>();
+
+/** The viewer's continuous rAF redraw is paused while the canvas holds a
+ *  publish capture: frames are rendered on demand, and a free-running loop
+ *  at the (supersampled) publish size would steal the capture's time. */
+export function isRenderLoopPaused(renderer: THREE.WebGLRenderer): boolean {
+  return engineeringCanvasSize.has(renderer);
+}
+
+function restoreCanvasSize(renderer: THREE.WebGLRenderer): void {
+  const size = engineeringCanvasSize.get(renderer);
+  if (!size) return;
+  engineeringCanvasSize.delete(renderer);
+  renderer.setSize(size.x, size.y, false);
+}
+
+function ensureCanvasSize(renderer: THREE.WebGLRenderer, width: number, height: number): void {
+  if (!engineeringCanvasSize.has(renderer)) engineeringCanvasSize.set(renderer, renderer.getSize(new THREE.Vector2()));
+  const current = renderer.getSize(new THREE.Vector2());
+  // setSize reallocates the drawing buffer even for an unchanged size.
+  if (current.x !== width || current.y !== height) renderer.setSize(width, height, false);
+}
 
 export function isStageHelper(obj: THREE.Object3D): boolean {
   let cur: THREE.Object3D | null = obj;
@@ -137,9 +162,9 @@ export function clearPublishStage(scene: THREE.Scene): void {
   if (!state) return;
   stages.delete(scene);
   scene.remove(state.rig);
-  if (state.shadow) {
-    state.shadow.plane.parent?.remove(state.shadow.plane);
-    state.shadow.dispose();
+  for (const shadow of state.shadows) {
+    shadow.plane.parent?.remove(shadow.plane);
+    shadow.dispose();
   }
   for (const light of state.hiddenLights) light.visible = true;
   scene.background = state.background;
@@ -159,7 +184,10 @@ export function applyPublishStage(
 ): void {
   const { scene, renderer } = ctx;
   clearPublishStage(scene);
-  if (spec === null) return;
+  if (spec === null) {
+    restoreCanvasSize(renderer);
+    return;
+  }
 
   const hiddenLights: THREE.Light[] = [];
   for (const child of scene.children) {
@@ -170,7 +198,7 @@ export function applyPublishStage(
   }
   const state: StageState = {
     rig: buildRig(),
-    shadow: undefined,
+    shadows: [],
     hiddenLights,
     background: scene.background,
     environment: scene.environment,
@@ -193,9 +221,13 @@ export function applyPublishStage(
     const casters = visibleModelMeshes(scene);
     const bounds = boundsOf(casters);
     if (!bounds.isEmpty()) {
-      state.shadow = buildContactShadow(renderer, scene, casters, bounds);
-      state.shadow.plane.userData[STAGE_HELPER_KEY] = true;
-      scene.add(state.shadow.plane);
+      for (const layer of CONTACT_SHADOW_LAYERS) {
+        const shadow = buildContactShadow(renderer, scene, casters, bounds, layer);
+        shadow.plane.userData[STAGE_HELPER_KEY] = true;
+        state.shadows.push(shadow);
+      }
+      // Add after every bake so no layer bakes the previous one.
+      for (const shadow of state.shadows) scene.add(shadow.plane);
     }
   }
 }
@@ -260,15 +292,15 @@ function aimCamera(camera: THREE.PerspectiveCamera, scene: THREE.Scene, req: Pub
 
 /**
  * Render one publish frame at `width*supersample × height*supersample` and
- * return it as a PNG data URL. Restores the canvas size, camera lens and
- * aspect afterwards so later engineering captures are unaffected.
+ * return it as a PNG data URL. Restores the camera lens and aspect
+ * afterwards; the canvas keeps the publish size until the stage is cleared
+ * (setPublishStage(null)).
  */
 export function capturePublishFrame(
   ctx: { scene: THREE.Scene; camera: THREE.PerspectiveCamera; renderer: THREE.WebGLRenderer },
   req: PublishFrameRequest,
 ): PublishFrameCapture {
   const { scene, camera, renderer } = ctx;
-  const originalSize = renderer.getSize(new THREE.Vector2());
   const originalFov = camera.fov;
   const originalAspect = camera.aspect;
   try {
@@ -279,15 +311,13 @@ export function capturePublishFrame(
     const rig = stages.get(scene)?.rig;
     if (rig) rig.rotation.z = (azDeg * Math.PI) / 180;
     scene.updateMatrixWorld(true);
-    renderer.setSize(req.width * req.supersample, req.height * req.supersample, false);
+    ensureCanvasSize(renderer, req.width * req.supersample, req.height * req.supersample);
     renderer.setRenderTarget(null);
     renderer.render(scene, camera);
     return { pngDataUrl: renderer.domElement.toDataURL('image/png'), distance };
   } finally {
-    renderer.setSize(originalSize.x, originalSize.y, false);
     camera.fov = originalFov;
     camera.aspect = originalAspect;
     camera.updateProjectionMatrix();
-    renderer.render(scene, camera);
   }
 }

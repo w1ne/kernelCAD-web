@@ -447,7 +447,7 @@ export async function applyRenderEnvironmentWithFallback(
 
 /** Node-side meshing: load the script, resolve explode offsets when asked,
  *  mesh per feature and serialize for the browser bridge. */
-async function meshForHeadlessRender(opts: HeadlessRenderOpts): Promise<{
+export async function meshForHeadlessRender(opts: HeadlessRenderOpts): Promise<{
   meshing: Awaited<ReturnType<typeof meshFeaturesPerFeature>>;
   serialized: FeatureMeshSerialized[];
 }> {
@@ -489,7 +489,7 @@ async function meshForHeadlessRender(opts: HeadlessRenderOpts): Promise<{
 
 /** Launch the demo-player page, load meshes into it and apply the capture
  *  options (watermark, section, visibility, reference images, environment). */
-async function openRenderPage(
+export async function openRenderPage(
   opts: HeadlessRenderOpts,
   baseUrl: string,
   serialized: readonly FeatureMeshSerialized[],

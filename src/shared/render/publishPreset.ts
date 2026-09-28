@@ -29,8 +29,9 @@ export interface PublishFrameRequest {
   width: number;
   height: number;
   supersample: number;
-  /** Fill margin passed to the perspective fit (1.25 → the model spans
-   *  1/1.25 = 80% of the binding frame axis, 10% air on each side). */
+  /** Fill margin passed to the perspective fit (1.15 → the model's bounds
+   *  box spans 1/1.15 ≈ 87% of the binding frame axis, ~6.5% air on each
+   *  side; the visible silhouette sits inside its box, so real air is more). */
   margin: number;
   /** Camera direction. `view` snaps to a canonical engineering view;
    *  otherwise az/el in degrees (same convention as setRenderPose). */
@@ -54,7 +55,7 @@ export const PUBLISH_PRESET = {
    *  the horizon (setRenderPose convention; kernelCAD is Z-up). */
   heroAzDeg: 30,
   heroElDeg: 22,
-  margin: 1.25,
+  margin: 1.15,
   background: '#ffffff',
   shadow: true,
   stillWidth: 1600,
@@ -67,6 +68,10 @@ export const PUBLISH_PRESET = {
    *  renders on a 4096 px canvas. */
   maxSupersample: 2,
   maxCanvasEdge: 4096,
+  /** Turntable frames render at 1× (MSAA only): a 1080² loop is 180
+   *  frames, 4× the pixels per frame would not fit the capture deadline,
+   *  and the video encode smooths edges anyway. */
+  turntableSupersample: 1,
 } as const;
 
 /** Output sizes the publish path accepts (px, per edge). */

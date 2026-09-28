@@ -47,6 +47,9 @@ export interface PublishTileRequest {
   azDeg?: number;
   elDeg?: number;
   fit?: PublishFrameRequest['fit'];
+  /** Override the size-derived supersample factor (turntables pass
+   *  PUBLISH_PRESET.turntableSupersample). */
+  supersample?: number;
 }
 
 /** The full bridge request for a tile: preset margin + supersample factor. */
@@ -54,7 +57,7 @@ export function publishFrameRequest(tile: PublishTileRequest): PublishFrameReque
   return {
     width: tile.width,
     height: tile.height,
-    supersample: publishSupersample(tile.width, tile.height),
+    supersample: Math.min(tile.supersample ?? Infinity, publishSupersample(tile.width, tile.height)),
     margin: PUBLISH_PRESET.margin,
     ...(tile.view !== undefined ? { view: tile.view } : {}),
     ...(tile.azDeg !== undefined ? { azDeg: tile.azDeg } : {}),

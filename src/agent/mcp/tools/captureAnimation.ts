@@ -48,7 +48,10 @@ import {
   type CaptureAnimationResult,
   type CaptureFailureKind,
 } from '../../render/captureAnimation';
+import { captureTurntable } from '../../render/captureTurntable';
 import { buildObjectFilter } from '../../cli/commands/render';
+import { PUBLISH_PRESET, type RenderPreset } from '../../../shared/render/publishPreset';
+import { checkTimelineModeFields, resolveTurntableSettings } from './captureTurntableInput';
 import type { HeadlessObjectFilter } from '../../render/headlessRender';
 import type { AnimationCollision } from '../../../modeling/animation/verifyAnimation';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
@@ -83,6 +86,26 @@ export interface CaptureAnimationInput {
   /** Hide matching objects by feature id / assembly part name. Maps to a
    *  'hide' object-visibility filter. Mutually exclusive with focus. */
   hide?: string[];
+  /** Turntable mode: a seamless 360° orbit of the (static) model instead of
+   *  the animationView timeline — no animationView record needed. */
+  turntable?: boolean;
+  /** Turntable look; default 'publish' (studio product shot — see
+   *  render_preview's preset). 'default' keeps the engineering look. */
+  preset?: RenderPreset;
+  /** Turntable frame size in px (default 1080×1080, max 2048; even for MP4). */
+  width?: number;
+  height?: number;
+  /** Turntable: one revolution in ms (default 6000). */
+  duration_ms?: number;
+  /** Turntable: camera elevation above the horizon in degrees (default 22). */
+  elevation_deg?: number;
+  /** Turntable + 'publish': 'white' (default), 'light', 'dark', 'black',
+   *  '#rrggbb', or 'transparent' (frames_dir only). */
+  background?: string;
+  /** Turntable + 'publish': soft contact shadow (default true). */
+  shadow?: boolean;
+  /** Turntable: HDRI environment override (same values as render_preview). */
+  environment?: string;
 }
 
 export interface CaptureAnimationCollisionRow {
@@ -291,11 +314,42 @@ function captureDeadline(): { promise: Promise<CaptureAnimationOutput>; cancel: 
   };
 }
 
+/** Turntable mode → validated engine call (or a typed refusal). */
+function turntableCapture(
+  input: CaptureAnimationInput,
+  file: string,
+  objectFilter: HeadlessObjectFilter | undefined,
+): Promise<CaptureAnimationResult> | CaptureAnimationOutput {
+  const settings = resolveTurntableSettings(input);
+  if ('message' in settings) return toolRefusal('cli.invalid-args', settings.message, settings.hint, 'environment');
+  return captureTurntable({
+    scriptPath: file,
+    ...(input.output_path !== undefined ? { outPath: input.output_path } : {}),
+    ...(input.frames_dir !== undefined ? { framesDir: input.frames_dir } : {}),
+    width: settings.width,
+    height: settings.height,
+    fps: settings.fps,
+    durationMs: settings.durationMs,
+    elevationDeg: settings.elevationDeg,
+    startAzDeg: PUBLISH_PRESET.heroAzDeg,
+    ...(settings.publish !== undefined ? { publish: settings.publish } : {}),
+    ...(objectFilter !== undefined ? { objectFilter } : {}),
+    ...(input.environment !== undefined ? { environment: input.environment } : {}),
+  });
+}
+
 export async function captureAnimationTool(
   input: CaptureAnimationInput,
 ): Promise<CaptureAnimationOutput> {
   const inputCheck = checkCaptureInput(input);
   if (!inputCheck.ok) return inputCheck.refusal;
+  if (input.turntable !== true) {
+    const timelineRefusal = checkTimelineModeFields(input);
+    if (timelineRefusal) return toolRefusal('cli.invalid-args', timelineRefusal.message, timelineRefusal.hint, 'environment');
+    if (input.environment !== undefined) {
+      return toolRefusal('cli.invalid-args', 'capture_animation: environment applies only to turntable mode.', 'Add turntable: true, or drop environment.', 'environment');
+    }
+  }
 
   let objectFilter: HeadlessObjectFilter | undefined;
   try {
@@ -309,7 +363,14 @@ export async function captureAnimationTool(
     );
   }
 
-  const capturePromise = captureAnimation(captureRequest(input, inputCheck.file, objectFilter));
+  let capturePromise: Promise<CaptureAnimationResult>;
+  if (input.turntable === true) {
+    const started = turntableCapture(input, inputCheck.file, objectFilter);
+    if (!(started instanceof Promise)) return started;
+    capturePromise = started;
+  } else {
+    capturePromise = captureAnimation(captureRequest(input, inputCheck.file, objectFilter));
+  }
 
   const deadline = captureDeadline();
 
