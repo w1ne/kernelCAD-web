@@ -48,7 +48,7 @@ export function finalise(ctx: RenderCtx): AutoDrawingResult {
       message:
         `svg-drawing: ${crowded.length} automatic annotation(s) could not be placed clear of geometry, ` +
         `other labels or the sheet frame: ${crowded.join(', ')}.`,
-      hint: 'Use a larger sheet (a3), narrow options.autoAnnotate.include, or dimension the crowded features with options.annotations.',
+      hint: 'Use a larger sheet (options.sheet, e.g. a3 or a2), narrow options.autoAnnotate.include, or dimension the crowded features with options.annotations.',
       nextAction: NEXT_ACTIONS['drawing.annotation.overlap'],
     });
   }

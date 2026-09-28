@@ -1,6 +1,6 @@
 ---
 name: kernelcad-drawings
-description: Export 2D engineering-drawing sheets (SVG) from any model or assembly — third-angle front/top/left + isometric views with hidden-line removal, overall dimensions, and a title block. Use when the deliverable is a human-readable fabrication or review drawing.
+description: Export 2D engineering-drawing sheets (SVG, or a printable PDF on a standard sheet) from any model or assembly — third-angle front/top/left + isometric views with hidden-line removal, overall dimensions, and a title block. Use when the deliverable is a human-readable fabrication or review drawing.
 ---
 
 # kernelCAD — engineering drawings
@@ -14,6 +14,26 @@ description: Export 2D engineering-drawing sheets (SVG) from any model or assemb
 - **Dimensions**: by default the overall bounding box — width (under the front view), height (right of the front view), depth (left of the top view), with extension lines and arrowheads. Values are model millimetres. Author your own with `annotations` (below) to dimension actual features instead.
 - **Title block**: model name, scale, units (mm), date, and the third-angle projection symbol.
 - Coincident projected segments (e.g. a bore's front and back rim landing on the same arc) are deduplicated visible-first — nothing renders twice or dashed underneath a solid line.
+
+## PDF sheet for the shop
+
+`format: 'pdf-drawing'` writes the same sheet as a vector PDF ready to print or send: the views, hidden lines, dimensions, hole callouts and GD&T are the SVG sheet's, transcribed page for page. It adds a standard sheet and a full title block:
+
+- **Sheet**: `sheet` is `'a4'` `'a3'` (default) `'a2'` `'a1'` `'a0'` or `'ansi-a'` … `'ansi-e'`, always landscape; `'auto'` / `'auto-ansi'` pick the smallest sheet that holds the views at 1:1, else the largest one with a reduced scale. The scale is snapped to the standard series and printed in the title block. Section views take room inside the sheet instead of growing the page.
+- **Projection**: `projection: 'third'` (default) or `'first'`. First angle puts the top view below the front view, the left view right of it, the isometric lower-left, and draws the first-angle symbol; automatic dimensions move to each view's free side.
+- **Title block**: TITLE (`title`, default the model name), PART NAME (`partName`), MATERIAL (`material`, default the shared material of the assembly parts), REV (`revision`), SCALE, UNITS, SHEET size, DATE (`date`, default today). Unset fields print `—`.
+- **Annotations**: `autoAnnotate` is on unless you pass `annotations`; pass `autoAnnotate: false` for the overall bounding-box dimensions only.
+
+```json
+{ "tool": "export", "input": { "target": "model", "file": "bracket.kcad.ts", "format": "pdf-drawing", "output_path": "out/bracket.pdf",
+  "options": { "format": "pdf-drawing", "title": "L mounting bracket", "partName": "BRK-001", "material": "AlMg3", "revision": "B" } } }
+```
+
+```bash
+kernelcad export pdf-drawing bracket.kcad.ts -o out/bracket.pdf --title "L mounting bracket" --revision B --material AlMg3 --sheet a3
+```
+
+Text is set in the standard Helvetica face, so the PDF needs no embedded font; `⌀` prints as `Ø`, and the GD&T and hole symbols (⌖ ⏥ ⟂ ∥ ⌴ ⌵ ↧ …) are drawn as vector strokes.
 
 ## Quickstart
 
@@ -33,7 +53,9 @@ kernelcad export svg-drawing bracket.kcad.ts -o out/bracket-drawing.svg
 
 Pass via `options` (MCP) — all optional:
 
-- `sheet`: `'a4'` (default, 297×210 landscape) or `'a3'` (420×297).
+- `sheet`: `'a4'` (default, 297×210 landscape), `'a3'` (420×297), or any `pdf-drawing` size (`'a2'` … `'ansi-e'`, `'auto'`).
+- `projection`: `'third'` (default) or `'first'` — see "PDF sheet for the shop".
+- `titleBlock`: `{ title?, partName?, material?, revision? }` — switches to the full title block the PDF sheet uses.
 - `modelName`: title-block name; defaults to the script's file name.
 - `date`: title-block date string; defaults to a placeholder so output stays byte-deterministic (stamp an ISO date when the drawing is released).
 - `annotations`: authored dimensions and notes — see below.
