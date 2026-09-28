@@ -9,6 +9,8 @@ import type { Assembly } from '../../modeling/capture/assembly';
 import { lookupColorFromLineage, lookupMaterialFromLineage } from '../../kernel/backends/occt/lookupSourceColor';
 import { sceneToWorldFrameParts, type WorldFramePart } from '../../kernel/backends/occt/sceneToWorldFrame';
 import { flattenPattern } from '../../kernel/backends/occt/flattenPattern';
+import { stampStepOriginatingSystem } from '../../kernel/export/stepHeader';
+import { attributionGenerator } from '../../shared/links/attribution';
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { NEXT_ACTIONS } from '../../shared/diagnostics/registry';
@@ -367,7 +369,7 @@ export async function exportSceneStep(
         resolveParams(run.records, run.paramTable),
         manifestRequest,
       );
-  const bytes = await exportSceneToSTEPAsync(scene);
+  const bytes = stampStepOriginatingSystem(await exportSceneToSTEPAsync(scene), attributionGenerator());
   return {
     bytes,
     featureCount,
@@ -674,7 +676,7 @@ async function exportSingleStep(
   diagnostics: CompilerDiagnostic[],
   featureCount: number,
 ): Promise<ExportResult> {
-  const bytes = await shape.exportSTEPAsync();
+  const bytes = stampStepOriginatingSystem(await shape.exportSTEPAsync(), attributionGenerator());
   return { bytes, featureCount, diagnostics };
 }
 

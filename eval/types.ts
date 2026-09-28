@@ -102,9 +102,17 @@ export type TranscriptEvent =
   | { kind: 'score'; gates: Record<string, boolean>; scored: Record<string, boolean> };
 
 // Agent client abstraction — lets us swap in a MockAgentClient for tests.
+/** An image attached to a user message (base64, no data: prefix). */
+export interface AgentImage {
+  mediaType: 'image/png' | 'image/jpeg' | 'image/webp' | 'image/gif';
+  data: string;
+}
+
 export interface AgentMessage {
   role: 'user' | 'assistant';
   content: string;
+  /** Images sent before the text of a user message (vision tasks). */
+  images?: AgentImage[];
 }
 
 export interface AgentResponse {

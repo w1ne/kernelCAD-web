@@ -10,6 +10,7 @@ import type { Assembly } from '../../capture/assembly';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { deriveAcm } from './acmDerive';
 import { NEXT_ACTIONS } from '../../../shared/diagnostics/registry';
+import { xmlAttributionComment } from '../../../shared/links/attribution';
 
 export interface SrdfSerializeOptions {
   urdfPath?: string;
@@ -69,6 +70,7 @@ export async function srdfSerialize(
 
   const srdf = [
     `<?xml version="1.0"?>`,
+    xmlAttributionComment(),
     `<robot name="${escapeXml(arm.name)}">`,
     ...groupBlocks,
     ...eeBlocks,

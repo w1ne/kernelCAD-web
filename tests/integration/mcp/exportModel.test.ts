@@ -177,6 +177,7 @@ describe('export_model MCP tool', () => {
     // Header must NOT start with "solid" (binary STL convention).
     expect(buf.subarray(0, 5).toString('ascii')).not.toBe('solid');
     // kernelCAD forensic stamp in the 80-byte header.
-    expect(buf.subarray(0, 10).toString('ascii')).toBe('kernelcad ');
+    expect(buf.subarray(0, 10).toString('ascii')).toBe('kernelCAD ');
+    expect(buf.subarray(0, 80).toString('ascii')).toContain('(https://kernelcad.com)');
   }, 60000);
 });
