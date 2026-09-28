@@ -92,11 +92,14 @@ export function findEntryMisses(face: Face, requests: readonly HoleCutRequest[])
   return misses;
 }
 
-/** Probe sphere at mid-depth on the bore axis, or null when the bore is too
- *  thin for the probe to sit clear of its wall. */
-function probeFor(request: HoleCutRequest): replicad.Shape3D | null {
+/** Probe centre at mid-depth on the bore axis, or null when the bore is too
+ *  thin for the probe sphere to sit clear of its wall. */
+function probeCenter(request: HoleCutRequest): Vec3 | null {
   if (request.diameter / 2 <= 2 * PROBE_SPHERE_RADIUS_MM) return null;
-  const c = pointAlong(request.entryPoint, request.axisIntoBody, request.depth / 2);
+  return pointAlong(request.entryPoint, request.axisIntoBody, request.depth / 2);
+}
+
+function probeSphere(c: Vec3): replicad.Shape3D {
   return replicad.makeSphere(PROBE_SPHERE_RADIUS_MM).translate(c) as replicad.Shape3D;
 }
 
@@ -107,20 +110,21 @@ function probeFor(request: HoleCutRequest): replicad.Shape3D | null {
  * when that finds material, to name the failing positions.
  */
 export function findUncutBores(result: OcctBackend, requests: readonly HoleCutRequest[]): HoleMiss[] {
-  const probes: Array<{ request: HoleCutRequest; probe: replicad.Shape3D }> = [];
+  const probes: Array<{ request: HoleCutRequest; center: Vec3 }> = [];
   for (const request of requests) {
-    const probe = probeFor(request);
-    if (probe) probes.push({ request, probe });
+    const center = probeCenter(request);
+    if (center) probes.push({ request, center });
   }
   if (probes.length === 0) return [];
   const probeVolume = (4 / 3) * Math.PI * PROBE_SPHERE_RADIUS_MM ** 3;
   const tol = probeVolume * 1e-3;
+  // makeCompound consumes its inputs, so the per-bore pass builds fresh spheres.
   const all = new OcctBackend(
-    replicad.makeCompound(probes.map((p) => p.probe)) as unknown as replicad.Shape3D,
+    replicad.makeCompound(probes.map((p) => probeSphere(p.center))) as unknown as replicad.Shape3D,
   );
   if (result.intersectionVolume(all) <= tol) return [];
   return probes
-    .filter((p) => result.intersectionVolume(new OcctBackend(p.probe)) > tol)
+    .filter((p) => result.intersectionVolume(new OcctBackend(probeSphere(p.center))) > tol)
     .map((p) => ({ request: p.request, reason: 'not-cut' as const }));
 }
 
