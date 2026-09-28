@@ -758,6 +758,13 @@ kernelcad render path/to/script.kcad.ts -o /tmp/out.png
 # Keeps the negative-axis side by default; --section-flip keeps the positive side.
 kernelcad render path/to/script.kcad.ts -o /tmp/cut.png --section z=10
 
+# Share-ready studio hero shot (same preset as render_preview preset: 'publish'):
+# one 3/4 PNG, 1600×1200 by default (--width/--height up to 2048). --background
+# white|light|dark|black|transparent|#rrggbb and --no-shadow apply only with
+# --preset publish; --separate / --pose render those views in the publish look.
+kernelcad render path/to/script.kcad.ts --preset publish -o /tmp/hero.png
+kernelcad render path/to/script.kcad.ts --preset publish --background transparent --no-shadow -o /tmp/hero.png
+
 # Interrogate an external STEP file before placement: solid tree, per-solid
 # exact bbox + volume, cylindrical holes (axis, diameter, depth, blind/through)
 kernelcad inspect step path/to/part.step
@@ -783,6 +790,12 @@ kernelcad animate path/to/script.kcad.ts -o /tmp/out.mp4
 kernelcad animate path/to/script.kcad.ts --frames /tmp/frames   # PNG sequence; no ffmpeg
 kernelcad animate path/to/script.kcad.ts --no-verify            # skip the pose-interference gate
 kernelcad animate path/to/script.kcad.ts --hide wall,cap        # hide parts in the frames (cutaway); --focus shows only the named parts (mutually exclusive; verification still runs on the full model)
+
+# Seamless 360° turntable of the model (same engine as capture_animation turntable: true);
+# .gif out → GIF, otherwise MP4; --frames keeps a transparent backdrop. Publish look by
+# default; --width/--height (1080), --fps (30), --duration-ms (6000), --elevation (22),
+# --background, --no-shadow, --preset default, --environment are turntable-only flags.
+kernelcad animate path/to/script.kcad.ts /tmp/spin.gif --turntable --width 640 --height 640 --fps 15
 
 # Run the MCP server (stdio transport)
 kernelcad mcp

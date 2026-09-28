@@ -43,4 +43,9 @@ return arm.model();
 //     → images: [{ name: 'hero', path: '.../hero.png' }]
 //   render_preview({ file: 'lamp.kcad.ts', preset: 'publish', background: 'transparent', width: 2048, height: 2048 })
 //   capture_animation({ file: 'lamp.kcad.ts', turntable: true, output_path: 'lamp.gif', width: 640, height: 640, fps: 20 })
+
+// Or from the CLI (same preset, same renderer):
+//   kernelcad render lamp.kcad.ts --preset publish -o lamp.png
+//   kernelcad render lamp.kcad.ts --preset publish --background transparent -o lamp-alpha.png
+//   kernelcad animate lamp.kcad.ts lamp.gif --turntable --width 640 --height 640 --fps 20
 ```
