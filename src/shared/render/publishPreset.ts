@@ -107,6 +107,33 @@ export function parsePublishBackground(raw: string | undefined): string | undefi
   return undefined;
 }
 
+/** Why a look request was refused. Each surface (render_preview,
+ *  capture_animation, the CLI) words its own message for these. */
+export type PublishLookRefusal = 'unknown-preset' | 'look-without-publish' | 'invalid-background';
+
+export type PublishLookResolution =
+  | { ok: true; publish: PublishStageSpec | undefined }
+  | { ok: false; reason: PublishLookRefusal };
+
+/** Resolve preset + background + shadow into the publish stage spec (or
+ *  undefined for the engineering look). background and shadow are refused,
+ *  not ignored, outside the 'publish' preset. One rule set for every
+ *  surface that takes these options. */
+export function resolvePublishLook(
+  input: { preset?: string; background?: string; shadow?: boolean },
+  defaultPreset: RenderPreset,
+): PublishLookResolution {
+  const preset = input.preset ?? defaultPreset;
+  if (!(RENDER_PRESETS as readonly string[]).includes(preset)) return { ok: false, reason: 'unknown-preset' };
+  if (preset !== 'publish') {
+    if (input.background !== undefined || input.shadow !== undefined) return { ok: false, reason: 'look-without-publish' };
+    return { ok: true, publish: undefined };
+  }
+  const background = parsePublishBackground(input.background);
+  if (background === undefined) return { ok: false, reason: 'invalid-background' };
+  return { ok: true, publish: { background, shadow: input.shadow ?? PUBLISH_PRESET.shadow } };
+}
+
 export const PUBLISH_BACKGROUND_HINT =
   "Pass background as 'white' (default), 'light', 'dark', 'black', 'transparent', or a hex colour like '#f5f5f0'.";
 

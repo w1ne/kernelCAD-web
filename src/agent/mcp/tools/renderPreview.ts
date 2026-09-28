@@ -50,7 +50,7 @@ import {
   PUBLISH_BACKGROUND_HINT,
   PUBLISH_PRESET,
   RENDER_PRESETS,
-  parsePublishBackground,
+  resolvePublishLook,
   type PublishStageSpec,
   type RenderPreset,
 } from '../../../shared/render/publishPreset';
@@ -274,19 +274,19 @@ function resolvePreviewSource(input: RenderPreviewInput, defaultViews: readonly 
 function resolvePreviewPreset(input: RenderPreviewInput):
   | { ok: true; publish: PublishStageSpec | undefined }
   | { ok: false; result: RenderPreviewOutput } {
-  const preset = input.preset ?? 'default';
-  if (!(RENDER_PRESETS as readonly string[]).includes(preset)) {
-    return {
-      ok: false,
-      result: refusal(
-        'cli.invalid-args',
-        `render_preview: unknown preset '${String(preset)}'. Valid: ${RENDER_PRESETS.join(', ')}.`,
-        "Pass preset: 'publish' for a studio product shot, or omit it for the engineering look.",
-      ),
-    };
-  }
-  if (preset !== 'publish') {
-    if (input.background !== undefined || input.shadow !== undefined) {
+  const look = resolvePublishLook(input, 'default');
+  if (look.ok) return look;
+  switch (look.reason) {
+    case 'unknown-preset':
+      return {
+        ok: false,
+        result: refusal(
+          'cli.invalid-args',
+          `render_preview: unknown preset '${String(input.preset)}'. Valid: ${RENDER_PRESETS.join(', ')}.`,
+          "Pass preset: 'publish' for a studio product shot, or omit it for the engineering look.",
+        ),
+      };
+    case 'look-without-publish':
       return {
         ok: false,
         result: refusal(
@@ -295,17 +295,12 @@ function resolvePreviewPreset(input: RenderPreviewInput):
           "Add preset: 'publish', or drop background/shadow for the engineering look.",
         ),
       };
-    }
-    return { ok: true, publish: undefined };
+    case 'invalid-background':
+      return {
+        ok: false,
+        result: refusal('cli.invalid-args', `render_preview: invalid background '${String(input.background)}'.`, PUBLISH_BACKGROUND_HINT),
+      };
   }
-  const background = parsePublishBackground(input.background);
-  if (background === undefined) {
-    return {
-      ok: false,
-      result: refusal('cli.invalid-args', `render_preview: invalid background '${String(input.background)}'.`, PUBLISH_BACKGROUND_HINT),
-    };
-  }
-  return { ok: true, publish: { background, shadow: input.shadow ?? PUBLISH_PRESET.shadow } };
 }
 
 function resolvePreviewCamera(input: RenderPreviewInput):

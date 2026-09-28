@@ -27,6 +27,16 @@
 // envelope (still useful to attribute the fault), but BOTH kinds exit 2 —
 // only verification collisions distinguish 1 from 0.
 //
+// TURNTABLE MODE (`--turntable`): a seamless 360° orbit of the static model
+// instead of the animationView timeline — the CLI face of capture_animation
+// ({ turntable: true }), in animateTurntable.ts. Flags resolve through the MCP
+// tool's own validator and drive the same engine (captureTurntable.ts):
+// `.gif` out → GIF, other out → MP4, `--frames` → PNG sequence (the only
+// mode that keeps a transparent backdrop). Look defaults to --preset publish;
+// --preset/--width/--height/--duration-ms/--elevation/--background/
+// --no-shadow/--environment are refused without --turntable. A turntable
+// shows a static model, so there is no pose verification (exit 0 on capture).
+//
 // Progress lines go to stderr (timestamped, like the deprecated
 // scripts/captureAnimationView.mjs wrapper) in BOTH human and --json modes —
 // under --json stdout carries exactly the envelope, so stderr is the only
@@ -47,11 +57,18 @@ import {
 } from '../../render/captureAnimation';
 import type { HeadlessObjectFilter } from '../../render/headlessRender';
 import { buildObjectFilter } from './render';
+import {
+  captureTurntableFromCli,
+  configureTurntableOptions,
+  turntableCliInput,
+  turntableOnlyFlagsRefusal,
+  type TurntableCliFields,
+} from './animateTurntable';
 import { formatHuman } from '../../../shared/diagnostics/formatter';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
 
-export interface AnimateCliInput {
+export interface AnimateCliInput extends TurntableCliFields {
   file: string;
   /** MP4 output path (positional). Mutually exclusive with `frames`. */
   out?: string;
@@ -171,6 +188,8 @@ function refuseAnimateUsage(input: AnimateCliInput): AnimateCliResult | null {
       safeFps(input.fps),
     );
   }
+  const timelineRefusal = input.turntable === true ? undefined : turntableOnlyFlagsRefusal(input);
+  if (timelineRefusal !== undefined) return usageRefusal(timelineRefusal.message, timelineRefusal.hint, safeFps(input.fps));
   if (input.skipVerify === true && input.verifyEvery !== undefined) {
     return usageRefusal(
       'animate: --no-verify and --verify-every are mutually exclusive — there is no schedule to densify when verification is skipped.',
@@ -222,7 +241,14 @@ export async function runAnimate(input: AnimateCliInput): Promise<AnimateCliResu
     );
   }
 
-  const result = await captureAnimation(captureAnimationOptsFor(input, objectFilter));
+  let result: CaptureAnimationResult;
+  if (input.turntable === true) {
+    const started = captureTurntableFromCli(input, objectFilter);
+    if (!(started instanceof Promise)) return usageRefusal(started.message, started.hint, safeFps(input.fps));
+    result = await started;
+  } else {
+    result = await captureAnimation(captureAnimationOptsFor(input, objectFilter));
+  }
 
   if (result.ok && result.outPath !== undefined) {
     return {
@@ -248,12 +274,12 @@ export async function runAnimate(input: AnimateCliInput): Promise<AnimateCliResu
 }
 
 export function animateCommand(): Command {
-  const cmd = new Command('animate')
-    .description("Capture the script's animationView({...}) timeline to MP4 (ffmpeg) or a PNG frame sequence, verifying the sampled poses for part interference")
-    .argument('<file>', 'path to a .kcad.ts script with an animationView({...}) record')
+  const cmd = configureTurntableOptions(new Command('animate'))
+    .description("Capture the script's animationView({...}) timeline to MP4 (ffmpeg) or a PNG frame sequence, verifying the sampled poses for part interference; --turntable captures a 360° orbit of the model instead")
+    .argument('<file>', 'path to a .kcad.ts script with an animationView({...}) record (any script with --turntable)')
     .argument(
       '[out]',
-      'output MP4 path (default <scriptDir>/<basename>-animation.mp4); mutually exclusive with --frames',
+      'output MP4 path (default <scriptDir>/<basename>-animation.mp4, or <basename>-turntable.mp4 with --turntable; a .gif path writes a GIF in turntable mode); mutually exclusive with --frames',
     )
     .option(
       '--frames <dir>',
@@ -288,7 +314,12 @@ Exit codes:
 No studio dev server is required: the bundled static player
 (dist/headless-player) is served on an ephemeral port. Pass --base-url to
 render against a server you control instead. Honors VITE_PORT (dev-server
-fallback) and PW_CDP_URL (attach to an existing Chrome over CDP).`,
+fallback) and PW_CDP_URL (attach to an existing Chrome over CDP).
+
+Turntable examples:
+  kernelcad animate part.kcad.ts part.mp4 --turntable
+  kernelcad animate part.kcad.ts part.gif --turntable --width 640 --height 640 --fps 15
+  kernelcad animate part.kcad.ts --turntable --frames out/ --background transparent`,
     )
     .action(async (file: string, out: string | undefined, opts: {
       frames?: string;
@@ -301,7 +332,10 @@ fallback) and PW_CDP_URL (attach to an existing Chrome over CDP).`,
       baseUrl?: string;
       json?: boolean;
       quiet?: boolean;
-    }) => {
+    } & TurntableCliFields & {
+      /** Commander negation: `--no-shadow` sets this false; default true. */
+      shadow: boolean;
+    }, command: Command) => {
       const r = await runAnimate({
         file,
         ...(out !== undefined ? { out } : {}),
@@ -318,6 +352,7 @@ fallback) and PW_CDP_URL (attach to an existing Chrome over CDP).`,
         // Progress always goes to stderr (even under --json — stdout must
         // stay pure JSON) unless --quiet.
         ...(opts.quiet ? {} : { onProgress: stderrProgressSink }),
+        ...turntableCliInput(opts, command),
       });
       if (opts.json) {
         console.log(JSON.stringify(r.result, null, 2));

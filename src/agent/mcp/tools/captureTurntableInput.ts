@@ -5,7 +5,9 @@
 // Input validation for capture_animation's turntable mode
 // ({ turntable: true }) — kept out of captureAnimation.ts so the timeline
 // path stays readable. Every refusal is a typed cli.invalid-args with a
-// hint; the tool turns it into its envelope.
+// hint; the tool turns it into its envelope. `kernelcad animate --turntable`
+// resolves its flags through the same functions, so the MCP tool and the
+// CLI share one rule set and one engine call.
 
 import {
   PUBLISH_BACKGROUND_HINT,
@@ -13,10 +15,12 @@ import {
   PUBLISH_MIN_SIZE,
   PUBLISH_PRESET,
   RENDER_PRESETS,
-  parsePublishBackground,
+  resolvePublishLook,
   type PublishStageSpec,
   type RenderPreset,
 } from '../../../shared/render/publishPreset';
+import type { CaptureTurntableOpts } from '../../render/captureTurntable';
+import type { HeadlessObjectFilter } from '../../render/headlessRender';
 
 export interface TurntableInputFields {
   turntable?: boolean;
@@ -96,27 +100,24 @@ function checkTiming(durationMs: number, fps: number, elevationDeg: number): Tur
 }
 
 function resolvePublish(input: TurntableInputFields, video: boolean): { publish: PublishStageSpec | undefined } | TurntableRefusal {
-  const preset = input.preset ?? 'publish';
-  if (!(RENDER_PRESETS as readonly string[]).includes(preset)) {
-    return { message: `capture_animation: unknown preset '${String(preset)}'. Valid: ${RENDER_PRESETS.join(', ')}.`, hint: "Omit preset for the 'publish' studio look." };
-  }
-  if (preset !== 'publish') {
-    if (input.background !== undefined || input.shadow !== undefined) {
-      return { message: "capture_animation: background and shadow apply only to preset: 'publish'.", hint: 'Drop background/shadow, or omit preset.' };
+  const look = resolvePublishLook(input, 'publish');
+  if (!look.ok) {
+    switch (look.reason) {
+      case 'unknown-preset':
+        return { message: `capture_animation: unknown preset '${String(input.preset)}'. Valid: ${RENDER_PRESETS.join(', ')}.`, hint: "Omit preset for the 'publish' studio look." };
+      case 'look-without-publish':
+        return { message: "capture_animation: background and shadow apply only to preset: 'publish'.", hint: 'Drop background/shadow, or omit preset.' };
+      case 'invalid-background':
+        return { message: `capture_animation: invalid background '${String(input.background)}'.`, hint: PUBLISH_BACKGROUND_HINT };
     }
-    return { publish: undefined };
   }
-  const background = parsePublishBackground(input.background);
-  if (background === undefined) {
-    return { message: `capture_animation: invalid background '${String(input.background)}'.`, hint: PUBLISH_BACKGROUND_HINT };
-  }
-  if (background === 'transparent' && video) {
+  if (look.publish?.background === 'transparent' && video) {
     return {
       message: 'capture_animation: a transparent background needs frames_dir (PNG sequence) — MP4 and GIF have no usable alpha.',
       hint: 'Pass frames_dir to keep alpha, or choose an opaque background.',
     };
   }
-  return { publish: { background, shadow: input.shadow ?? PUBLISH_PRESET.shadow } };
+  return { publish: look.publish };
 }
 
 /** Validate + default the turntable fields. */
@@ -138,4 +139,36 @@ export function resolveTurntableSettings(input: TurntableInputFields): Turntable
   const look = resolvePublish(input, video);
   if ('message' in look) return look;
   return { width, height, fps, durationMs, elevationDeg, publish: look.publish };
+}
+
+/** Validated settings + call-site fields → the turntable engine's options.
+ *  Frame 0 sits at the publish hero azimuth. */
+export function turntableCaptureOpts(
+  settings: TurntableSettings,
+  site: {
+    scriptPath: string;
+    outPath?: string;
+    framesDir?: string;
+    objectFilter?: HeadlessObjectFilter;
+    environment?: string;
+    baseUrl?: string;
+    onProgress?: (msg: string) => void;
+  },
+): CaptureTurntableOpts {
+  return {
+    scriptPath: site.scriptPath,
+    ...(site.outPath !== undefined ? { outPath: site.outPath } : {}),
+    ...(site.framesDir !== undefined ? { framesDir: site.framesDir } : {}),
+    width: settings.width,
+    height: settings.height,
+    fps: settings.fps,
+    durationMs: settings.durationMs,
+    elevationDeg: settings.elevationDeg,
+    startAzDeg: PUBLISH_PRESET.heroAzDeg,
+    ...(settings.publish !== undefined ? { publish: settings.publish } : {}),
+    ...(site.objectFilter !== undefined ? { objectFilter: site.objectFilter } : {}),
+    ...(site.environment !== undefined ? { environment: site.environment } : {}),
+    ...(site.baseUrl !== undefined ? { baseUrl: site.baseUrl } : {}),
+    ...(site.onProgress !== undefined ? { onProgress: site.onProgress } : {}),
+  };
 }
