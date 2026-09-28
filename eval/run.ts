@@ -3,7 +3,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { runTask, BEST_OF_N } from './runner';
+import { runTask, BEST_OF_N, type BestOfNSelector } from './runner';
 import { AnthropicAgentClient, MockAgentClient } from './agent';
 import { isKernelcadAvailable } from './oracle/kernelcad-client';
 import { loadCombinedSkillMd } from './skillContext';
@@ -106,11 +106,56 @@ export function makeAgent(_model: string): AgentClient {
   return new AnthropicAgentClient(process.env.ANTHROPIC_API_KEY);
 }
 
+/** Flags that take a value — their value is never the task argument. */
+const VALUE_FLAGS = ['--fixture', '--best-of', '--selector'];
+
+export interface BestOfFlags {
+  /** First-attempt fan-out width; undefined = the default for the mode. */
+  bestOf?: number;
+  selector: BestOfNSelector;
+}
+
+/**
+ * Parse `--best-of <N>` and `--selector <oracle|consensus>`. Throws on a bad
+ * value so a typo cannot silently fall back to the default.
+ */
+export function parseBestOfFlags(args: readonly string[]): BestOfFlags {
+  const value = (flag: string): string | undefined => {
+    const i = args.indexOf(flag);
+    if (i < 0) return undefined;
+    const v = args[i + 1];
+    if (v === undefined || v.startsWith('--')) throw new Error(`${flag} needs a value`);
+    return v;
+  };
+  const rawN = value('--best-of');
+  let bestOf: number | undefined;
+  if (rawN !== undefined) {
+    bestOf = Number(rawN);
+    if (!Number.isInteger(bestOf) || bestOf < 1) throw new Error(`--best-of must be an integer >= 1, got '${rawN}'`);
+  }
+  const rawSel = value('--selector') ?? 'oracle';
+  if (rawSel !== 'oracle' && rawSel !== 'consensus') {
+    throw new Error(`--selector must be 'oracle' or 'consensus', got '${rawSel}'`);
+  }
+  return { ...(bestOf !== undefined ? { bestOf } : {}), selector: rawSel };
+}
+
+/** The positional task argument, skipping flags and flag values. */
+export function parseTaskArg(args: readonly string[]): string | undefined {
+  return args.find((a, i) => !a.startsWith('--') && !VALUE_FLAGS.includes(args[i - 1]));
+}
+
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
   const isMock = args.includes('--mock');
   const useCookbook = args.includes('--cookbook');
-  const taskArg = args.find((a, i) => !a.startsWith('--') && args[i - 1] !== '--fixture');
+  const taskArg = parseTaskArg(args);
+  let bestOfFlags: BestOfFlags;
+  try {
+    bestOfFlags = parseBestOfFlags(args);
+  } catch (err) {
+    fail(err instanceof Error ? err.message : String(err));
+  }
 
   // --mock fixture path (optional; defaults to runs/golden-2026-05-02-bracket-holes)
   const fixtureFlagIdx = args.indexOf('--fixture');
@@ -190,7 +235,11 @@ async function main(): Promise<void> {
         cookbook: cookbookInjection,
         // Real runs fan out best-of-N on the first attempt; --mock replay stays
         // single-sample so the fixed fixture queue remains deterministic.
-        candidates: isMock ? 1 : BEST_OF_N,
+        // `--best-of <N>` overrides the width (1 = single sample, the baseline
+        // to compare against); `--selector consensus` picks the winner by
+        // geometric agreement instead of the task harness.
+        candidates: bestOfFlags.bestOf ?? (isMock ? 1 : BEST_OF_N),
+        selector: bestOfFlags.selector,
       });
       results.push(r);
     } catch (err) {

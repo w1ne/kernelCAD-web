@@ -92,6 +92,13 @@ export type TranscriptEvent =
     }
   | { kind: 'evaluate'; attempt: number; ok: boolean; diagnostics: Diagnostic[] }
   | { kind: 'cookbook_inject'; query: string; hits: Array<{ id: string; score: number }> }
+  | {
+      kind: 'best_of_n';
+      selector: 'gates-oracle' | 'consensus';
+      winnerIndex: number;
+      candidates: Array<{ stagesPassed: number; oracleScore: number | null; meanDistanceMm?: number | null }>;
+      reason?: string;
+    }
   | { kind: 'score'; gates: Record<string, boolean>; scored: Record<string, boolean> };
 
 // Agent client abstraction — lets us swap in a MockAgentClient for tests.
