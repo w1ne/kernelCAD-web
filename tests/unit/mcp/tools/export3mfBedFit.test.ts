@@ -12,6 +12,7 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { callMcpTool } from '../../../../src/agent/mcp/toolRegistry';
 import { exportScript, parseExportOptionsFlag } from '../../../../src/agent/cli/commands/export';
+import { PRINTER_PROFILE_IDS } from '../../../../src/kernel/export/gcode/printerProfiles';
 import type { CompilerDiagnostic } from '../../../../src/shared/diagnostics/diagnostic';
 
 // Six 100 x 100 mm tiles cannot share a 220 x 220 mm bed; one 300 mm bar
@@ -63,6 +64,16 @@ describe("3MF arrange: 'plate' bed-fit warning", () => {
     expect(r.byte_count).toBeGreaterThan(0);
     expect(existsSync(out)).toBe(true);
     expectBedWarnings(r.diagnostics);
+  });
+
+  it('MCP export refuses an unknown printer id with the valid ids', async () => {
+    const r = await callMcpTool('export', {
+      target: 'model', code: 'return box(10, 10, 10);', format: '3mf',
+      output_path: join(dir, 'unknown-printer.3mf'),
+      options: { format: '3mf', arrange: 'plate', printer: 'mystery-printer' },
+    }) as { ok: boolean; error: string };
+    expect(r.ok).toBe(false);
+    expect(r.error).toContain(`Unknown printer profile 'mystery-printer'. Known profiles: ${PRINTER_PROFILE_IDS.join(', ')}.`);
   });
 
   it('CLI export --options writes the file, exits 0, and returns the warnings', async () => {
