@@ -196,6 +196,14 @@ export const FEATURE_CODES = {
     group: 'feature',
     description: 'A hole feature found its entry face but no solid body lies along the bore axis.',
   },
+  'feature.hole.cut-missing': {
+    hintTemplate:
+      "One or more requested bores would not be cut where requested, so the hole feature failed instead of shipping a part with missing holes. (u, v) are mm offsets from the entry face's centre along world-aligned axes (top/bottom: u=+X, v=+Y; front/back: u=+X, v=+Z; left/right: u=+Y, v=+Z) — NOT world coordinates. Convert a world point: u = worldU - centreU, v = worldV - centreV, using the face centre and span printed in the message, and keep every bore centre inside that span.",
+    nextAction: { kind: 'fix-arg', field: 'positions' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A hole / holes feature had a bore whose centre was off the entry face, whose depth was zero, or that left material on its axis after the cut.',
+  },
   // Created-ref fallback (1, warning)
   'feature.created-ref.fallback-used': {
     hintTemplate:

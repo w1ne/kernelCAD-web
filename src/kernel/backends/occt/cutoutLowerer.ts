@@ -33,6 +33,7 @@ import type { FaceHash, HistoryMap } from '../../naming/evolutionRecord';
 import type { SketchCommand } from '../../../shared/capture/sketchCommand';
 import { classifyCutoutFace, type CutoutFrame, type CutoutRefName } from './cutoutClassifier';
 import { drawingFromCommands } from './sketchToDrawing';
+import { faceFrameOrigin } from './faceFrame';
 import {
   applyCreatedRefs,
   captureAllFaceSnapshots,
@@ -46,10 +47,6 @@ import type { FeatureKind } from '../../../shared/intent/types';
 export interface CutoutLowerResult {
   backend: OcctBackend;
   diagnostics: CompilerDiagnostic[];
-}
-
-function vecOf(p: { x: number; y: number; z: number }): Vec3 {
-  return [p.x, p.y, p.z];
 }
 
 function normalize(v: Vec3): Vec3 {
@@ -106,7 +103,8 @@ function resolveEntry(
   const faceResult = pickFace(feature, target, records);
   if ('error' in faceResult) return faceResult;
   const face = faceResult;
-  const centroid = vecOf(face.center);
+  // Same (u, v) origin as hole(): earlier interior cuts do not move it.
+  const centroid = faceFrameOrigin(face);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const nRaw = (face as any).normalAt
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
