@@ -173,9 +173,7 @@ export function Menu({ items, trigger, align = 'start', label }: MenuProps): JSX
     };
 
     const triggerProps: MenuTriggerProps = {
-        ref: (el: HTMLButtonElement | null) => {
-            triggerRef.current = el;
-        },
+        ref: triggerRef,
         id: triggerId,
         'aria-haspopup': 'menu',
         'aria-expanded': open,
