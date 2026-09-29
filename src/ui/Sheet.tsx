@@ -124,7 +124,7 @@ function SheetBody({
  * The bottom sheet's grab handle: a vertical slider. Drag it, or use the
  * arrow keys, Home and End; it settles on the nearest snap point.
  */
-function SheetHandle({
+export function SheetHandle({
     snapPoints,
     snap,
     onSnap,
