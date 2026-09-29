@@ -268,19 +268,9 @@ export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCa
     defaultPoseGeometry.rawInterferencePairs,
     defaultPoseGeometry.wantInterference,
   ));
-  // Heavy stages below run only while budget remains; a skipped stage is
-  // reported, never silently read as a pass.
-  const poseEnvelope = mechanicalReview.includePoseEnvelope && clock.admit('pose-envelope')
-    ? await clock.time('pose-envelope', () => runPoseEnvelopeStage(arm, model, input, true))
-    : undefined;
-  const physicalUseCases = clock.admit('physical-use-case')
-    ? await clock.time('physical-use-case', () => runPhysicalUseCaseStage(arm, input, poseEnvelope))
-    : await runPhysicalUseCaseStage(arm, { requirePhysicalUseCase: input.requirePhysicalUseCase }, undefined);
-
+  const { poseEnvelope, physicalUseCases, mechanism, mechanismFailures } =
+    await runBudgetedStages(clock, arm, model, input, mechanicalReview.includePoseEnvelope);
   const diagnostics = collectReviewDiagnostics(evaluation, mechanicalReview, physicalUseCases, poseEnvelope);
-  const { mechanism, mechanismFailures } = clock.admit('mechanism-truth')
-    ? await clock.time('mechanism-truth', () => runMechanismTruthStage(arm, input))
-    : { mechanism: 'unverified' as MechanismVerdict, mechanismFailures: [] as readonly CompilerDiagnostic[] };
 
   const { fitness, ok, repairContext } = await runFitnessAndRepairStage({
     arm,
@@ -293,38 +283,8 @@ export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCa
     poseEnvelope,
   });
 
-  if (ok) {
-    return {
-      ...clock.report(),
-      ok: true,
-      featureCount: evaluation.featureCount,
-      diagnostics,
-      assembly: arm.name,
-      validator: {
-        status: mechanicalReview.validator.status,
-        diagnostics: [...mechanicalReview.validator.diagnostics],
-        partCount: mechanicalReview.validator.partCount,
-        jointCount: mechanicalReview.validator.jointCount,
-      },
-      ...(poseEnvelope !== undefined ? { poseEnvelope } : {}),
-      ...(poseEnvelope !== undefined ? { connectorWorkspace: poseEnvelope.connectorWorkspace } : {}),
-      ...(poseEnvelope?.gripperAperture !== undefined ? { gripperAperture: poseEnvelope.gripperAperture } : {}),
-      physicalUseCaseStaticCertificates: physicalUseCases.staticCertificates,
-      physicalUseCaseJointReactionCertificates: physicalUseCases.jointReactionCertificates,
-      physicalUseCaseJointStructuralCertificates: physicalUseCases.jointStructuralCertificates,
-      fitness,
-      repairContext,
-      rawInterferencePairs: defaultPoseGeometry.rawInterferencePairs,
-      interferenceSummary: defaultPoseGeometry.interferenceSummary,
-      mechanism,
-      mechanismFailures,
-      ...(defaultPoseGeometry.geometry !== undefined ? { geometry: defaultPoseGeometry.geometry } : {}),
-    };
-  }
-
-  return {
+  const common = {
     ...clock.report(),
-    ok: false,
     featureCount: evaluation.featureCount,
     diagnostics,
     assembly: arm.name,
@@ -342,13 +302,39 @@ export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCa
     physicalUseCaseJointStructuralCertificates: physicalUseCases.jointStructuralCertificates,
     fitness,
     repairContext,
-    suggestedRepairPrompt: buildSuggestedRepairPrompt(diagnostics, fitness, input),
     rawInterferencePairs: defaultPoseGeometry.rawInterferencePairs,
     interferenceSummary: defaultPoseGeometry.interferenceSummary,
     mechanism,
     mechanismFailures,
     ...(defaultPoseGeometry.geometry !== undefined ? { geometry: defaultPoseGeometry.geometry } : {}),
   };
+  return ok
+    ? { ...common, ok: true }
+    : { ...common, ok: false, suggestedRepairPrompt: buildSuggestedRepairPrompt(diagnostics, fitness, input) };
+}
+
+/**
+ * The heavy stages (pose envelope, physical use case, mechanism sweep) run
+ * only while the review's time budget remains; a skipped stage is recorded on
+ * the clock and never silently read as a pass (mechanism → 'unverified').
+ */
+async function runBudgetedStages(
+  clock: StageClock,
+  arm: Assembly,
+  model: BuiltModel,
+  input: ReviewCadInput,
+  includePoseEnvelope: boolean,
+) {
+  const poseEnvelope = includePoseEnvelope && clock.admit('pose-envelope')
+    ? await clock.time('pose-envelope', () => runPoseEnvelopeStage(arm, model, input, true))
+    : undefined;
+  const physicalUseCases = clock.admit('physical-use-case')
+    ? await clock.time('physical-use-case', () => runPhysicalUseCaseStage(arm, input, poseEnvelope))
+    : await runPhysicalUseCaseStage(arm, { requirePhysicalUseCase: input.requirePhysicalUseCase }, undefined);
+  const { mechanism, mechanismFailures } = clock.admit('mechanism-truth')
+    ? await clock.time('mechanism-truth', () => runMechanismTruthStage(arm, input))
+    : { mechanism: 'unverified' as MechanismVerdict, mechanismFailures: [] as readonly CompilerDiagnostic[] };
+  return { poseEnvelope, physicalUseCases, mechanism, mechanismFailures };
 }
 
 /** Per-stage wall clock against the review's time budget. */

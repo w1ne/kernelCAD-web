@@ -221,16 +221,7 @@ export function makeSpringMethod(
 
 const SPUR_GEAR_KEYS = new Set(['module', 'teeth', 'pressureAngle', 'faceWidth', 'bore', 'backlash']);
 
-/** Validate `spurGear()` options and apply defaults (20° pressure angle,
- *  backlash 0.05·module, no bore). */
-function resolveSpurGearOpts(opts: SpurGearOptions): {
-  module: number;
-  teeth: number;
-  pressureAngle: number;
-  faceWidth: number;
-  bore: number | undefined;
-  backlash: number;
-} {
+function assertSpurGearOptsObject(opts: SpurGearOptions): void {
   if (!opts || typeof opts !== 'object') {
     throw new KernelError(
       'feature.invalid-args',
@@ -249,10 +240,10 @@ function resolveSpurGearOpts(opts: SpurGearOptions): {
       );
     }
   }
-  const module = assertPositiveFinite('spurGear', 'module', opts.module);
-  const faceWidth = assertPositiveFinite('spurGear', 'faceWidth', opts.faceWidth);
-  const teeth = opts.teeth;
-  if (!Number.isInteger(teeth) || teeth < 6 || teeth > 400) {
+}
+
+function resolveSpurGearTeeth(teeth: unknown): number {
+  if (typeof teeth !== 'number' || !Number.isInteger(teeth) || teeth < 6 || teeth > 400) {
     throw new KernelError(
       'feature.invalid-args',
       `spurGear: teeth must be an integer in [6, 400]; got ${formatScalarForError(teeth)}.`,
@@ -260,7 +251,11 @@ function resolveSpurGearOpts(opts: SpurGearOptions): {
       'Pass a whole tooth count. Below ~17 teeth at 20° the root is undercut (generated correctly, but weaker).',
     );
   }
-  const pressureAngle = opts.pressureAngle ?? 20;
+  return teeth;
+}
+
+function resolveSpurGearPressureAngle(value: unknown): number {
+  const pressureAngle = value ?? 20;
   if (typeof pressureAngle !== 'number' || !(pressureAngle >= 10 && pressureAngle <= 35)) {
     throw new KernelError(
       'feature.invalid-args',
@@ -269,7 +264,11 @@ function resolveSpurGearOpts(opts: SpurGearOptions): {
       'Use 20 (standard), 14.5 (legacy) or 25 (high-load). Both gears of a pair need the same value.',
     );
   }
-  const backlash = opts.backlash ?? 0.05 * module;
+  return pressureAngle;
+}
+
+function resolveSpurGearBacklash(value: unknown, module: number): number {
+  const backlash = value ?? 0.05 * module;
   if (typeof backlash !== 'number' || !Number.isFinite(backlash) || backlash < 0 || backlash >= module) {
     throw new KernelError(
       'feature.invalid-args',
@@ -278,19 +277,40 @@ function resolveSpurGearOpts(opts: SpurGearOptions): {
       'backlash is the circular play (mm) at the pitch circle of a pair built with the same value. Use 0.1-0.2 mm for FDM prints.',
     );
   }
-  const root = spurGearRadii(module, teeth, pressureAngle).root;
-  let bore: number | undefined;
-  if (opts.bore !== undefined) {
-    bore = assertPositiveFinite('spurGear', 'bore', opts.bore);
-    if (bore / 2 >= root - 0.5 * module) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `spurGear: bore diameter ${bore} mm leaves no rim under the root circle (root diameter ${(2 * root).toFixed(3)} mm).`,
-        'spurGear',
-        `Keep bore below ${(2 * (root - 0.5 * module)).toFixed(2)} mm, or use more teeth / a larger module.`,
-      );
-    }
+  return backlash;
+}
+
+function resolveSpurGearBore(value: unknown, module: number, root: number): number | undefined {
+  if (value === undefined) return undefined;
+  const bore = assertPositiveFinite('spurGear', 'bore', value);
+  if (bore / 2 >= root - 0.5 * module) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `spurGear: bore diameter ${bore} mm leaves no rim under the root circle (root diameter ${(2 * root).toFixed(3)} mm).`,
+      'spurGear',
+      `Keep bore below ${(2 * (root - 0.5 * module)).toFixed(2)} mm, or use more teeth / a larger module.`,
+    );
   }
+  return bore;
+}
+
+/** Validate `spurGear()` options and apply defaults (20° pressure angle,
+ *  backlash 0.05·module, no bore). */
+function resolveSpurGearOpts(opts: SpurGearOptions): {
+  module: number;
+  teeth: number;
+  pressureAngle: number;
+  faceWidth: number;
+  bore: number | undefined;
+  backlash: number;
+} {
+  assertSpurGearOptsObject(opts);
+  const module = assertPositiveFinite('spurGear', 'module', opts.module);
+  const faceWidth = assertPositiveFinite('spurGear', 'faceWidth', opts.faceWidth);
+  const teeth = resolveSpurGearTeeth(opts.teeth);
+  const pressureAngle = resolveSpurGearPressureAngle(opts.pressureAngle);
+  const backlash = resolveSpurGearBacklash(opts.backlash, module);
+  const bore = resolveSpurGearBore(opts.bore, module, spurGearRadii(module, teeth, pressureAngle).root);
   return { module, teeth, pressureAngle, faceWidth, bore, backlash };
 }
 
