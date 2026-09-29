@@ -292,10 +292,13 @@ export function ProjectSidePanel(props: ProjectSidePanelProps): JSX.Element {
       <div className="border-t border-border px-5 py-5 empty:hidden [&_[data-testid=model-customizer]]:w-full [&_[data-testid=model-customizer]]:max-w-none [&_[data-testid=customizer-download]]:hidden">
         <StudioModelCustomizer slug={slug} hints={project.parameters} />
       </div>
-      <Section className="hidden md:flex" testId="panel-download">
-        <DownloadButton download={props.download} />
-        <DownloadStatus download={props.download} />
-      </Section>
+      {/* On a phone the fixed action bar holds the Download. */}
+      <div className="hidden md:block">
+        <Section testId="panel-download">
+          <DownloadButton download={props.download} />
+          <DownloadStatus download={props.download} />
+        </Section>
+      </div>
       <KeepSection {...props} />
       <Section title="Continue in chat">
         <p className="text-ui text-fg-2">
