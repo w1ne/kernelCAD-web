@@ -21,6 +21,7 @@ import { useCode } from '../context/CodeContext';
 import { useGeometry } from '../context/GeometryContext';
 import { exportViaServer, type ExportViaServerOptions } from '../exportViaServer';
 import type { SerializedParamEntry } from '../../shared/runtime/paramTable';
+import type { GeometryResult } from '../../shared/worker/workerTypes';
 import {
   bakeParamValues,
   changedValues,
@@ -44,9 +45,10 @@ export interface StudioModelCustomizerProps {
   className?: string;
 }
 
-/** STL for a single printable body, STEP for an assembly of several. */
-export function defaultDownloadFormat(bodyCount: number): CustomizerFormat {
-  return bodyCount > 1 ? 'step' : 'stl';
+/** STEP for an assembly of several parts, STL for a printable part. */
+export function defaultDownloadFormat(geometries: readonly Pick<GeometryResult, 'assemblyPartName'>[]): CustomizerFormat {
+  const parts = new Set(geometries.map((g) => g.assemblyPartName).filter((name) => name !== undefined));
+  return parts.size > 1 ? 'step' : 'stl';
 }
 
 /**
@@ -118,7 +120,7 @@ export function StudioModelCustomizer(props: StudioModelCustomizerProps): JSX.El
       error={error}
       execute={execute}
       exportModel={exportModel}
-      defaultFormat={defaultDownloadFormat(geometries?.length ?? 0)}
+      defaultFormat={defaultDownloadFormat(geometries ?? [])}
       layout={props.layout}
       defaultCollapsed={props.defaultCollapsed}
       className={props.className}

@@ -23,7 +23,7 @@ export interface DownloadBarProps {
 export function DownloadBar({ defaultFormat, onDownload, progress, onCancel }: DownloadBarProps): JSX.Element {
   if (progress !== null) {
     return (
-      <div className="flex min-h-control-lg items-center gap-3">
+      <div className="flex min-h-control-md items-center gap-3">
         <Loader2 className="size-4 shrink-0 animate-spin text-accent motion-reduce:animate-none" strokeWidth={1.75} aria-hidden="true" />
         <span className="min-w-0 flex-1 truncate text-ui text-fg" data-testid="customizer-download-progress">{progress}</span>
         <Button variant="ghost" size="sm" onClick={onCancel} data-testid="customizer-download-cancel">
@@ -37,11 +37,11 @@ export function DownloadBar({ defaultFormat, onDownload, progress, onCancel }: D
     <div className="flex items-center gap-2" data-testid="customizer-download" role="group" aria-label="Download">
       <Button
         variant="primary"
-        size="lg"
+        size="md"
         leadingIcon={<Download className="size-4" strokeWidth={1.75} aria-hidden="true" />}
         onClick={() => onDownload(defaultFormat)}
         data-testid={`customizer-download-${defaultFormat}`}
-        className="min-w-0 flex-1"
+        className="min-w-0 flex-1 max-sm:h-touch"
       >
         Download {FORMAT_LABELS[defaultFormat]}
       </Button>
@@ -49,11 +49,11 @@ export function DownloadBar({ defaultFormat, onDownload, progress, onCancel }: D
         <Button
           key={format}
           variant="secondary"
-          size="lg"
+          size="md"
           onClick={() => onDownload(format)}
           aria-label={`Download ${FORMAT_LABELS[format]}`}
           data-testid={`customizer-download-${format}`}
-          className="px-3"
+          className="px-3 max-sm:h-touch"
         >
           {FORMAT_LABELS[format]}
         </Button>

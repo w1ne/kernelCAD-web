@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 /** @vitest-environment happy-dom */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import type { SerializedParamEntry } from '../../shared/runtime/paramTable';
 
 const state = vi.hoisted(() => ({
@@ -26,7 +26,7 @@ vi.mock('../exportViaServer', () => ({
   downloadBlob: vi.fn(),
 }));
 
-import { StudioModelCustomizer } from './StudioModelCustomizer';
+import { StudioModelCustomizer, defaultDownloadFormat } from './StudioModelCustomizer';
 
 const CODE = [
   "const w = param('Width', 40, { min: 10, max: 80 });",
@@ -58,7 +58,7 @@ describe('StudioModelCustomizer', () => {
 
   it('re-runs through the geometry updater with the values baked into the source', () => {
     render(<StudioModelCustomizer slug="box" />);
-    const input = screen.getByTestId('scrub-input-Width');
+    const input = within(screen.getByTestId('customizer-number-Width')).getByRole('spinbutton');
     fireEvent.change(input, { target: { value: '70' } });
     fireEvent.keyDown(input, { key: 'Enter' });
     // Only params that left their default are sent; the untouched boolean is not.
@@ -74,7 +74,7 @@ describe('StudioModelCustomizer', () => {
     state.scriptParams = [{ ...DECLARED[0], value: 70, defaultValue: 70 }, DECLARED[1]];
     rerender(<StudioModelCustomizer slug="box" />);
     fireEvent.click(screen.getByTestId('customizer-reset'));
-    expect((screen.getByTestId('scrub-input-Width') as HTMLInputElement).value).toBe('40');
+    expect((within(screen.getByTestId('customizer-number-Width')).getByRole('spinbutton') as HTMLInputElement).value).toBe('40');
   });
 
   it('exports the configured source and never the untouched params', async () => {
@@ -86,5 +86,14 @@ describe('StudioModelCustomizer', () => {
     const [format, source] = state.exportViaServer.mock.calls[0];
     expect(format).toBe('step');
     expect(source).toBe(CODE.replace("param('Width', 40,", "param('Width', 25,"));
+  });
+});
+
+describe('defaultDownloadFormat', () => {
+  it('is STEP for an assembly of several parts and STL otherwise', () => {
+    expect(defaultDownloadFormat([])).toBe('stl');
+    expect(defaultDownloadFormat([{}, {}, {}])).toBe('stl');
+    expect(defaultDownloadFormat([{ assemblyPartName: 'base' }, { assemblyPartName: 'base' }])).toBe('stl');
+    expect(defaultDownloadFormat([{ assemblyPartName: 'base' }, { assemblyPartName: 'arm' }])).toBe('step');
   });
 });

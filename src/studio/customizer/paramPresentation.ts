@@ -102,7 +102,8 @@ export function sliderRange(
   if (min !== undefined && max !== undefined) return { min, max };
   if (min !== undefined) return { min, max: Math.max(min + 1, niceCeil(Math.max(Math.abs(defaultValue), Math.abs(min), 1) * 2)) };
   if (unit === '°' && defaultValue >= 0 && defaultValue <= 360) return { min: 0, max: max ?? 360 };
-  const reach = niceCeil(Math.max(Math.abs(defaultValue) * 2, 1));
+  // A zero default gives no scale; 10 mm is a useful first reach.
+  const reach = niceCeil(defaultValue === 0 ? 10 : Math.abs(defaultValue) * 2);
   const low = defaultValue < 0 ? -reach : 0;
   const high = max ?? reach;
   return { min: Math.min(low, high - 1), max: high };

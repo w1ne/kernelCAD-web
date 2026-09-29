@@ -144,9 +144,10 @@ function SectionRows({ section, state, params }: {
   return (
     <div role="group" aria-label={section.group}>
       {section.group !== undefined && (
-        <h3 className="flex items-baseline gap-1.5 px-4 pt-3 pb-1 text-2xs font-semibold tracking-wide text-fg-3 uppercase">
+        <h3 className="flex items-center gap-2 px-4 pt-3 pb-1 text-2xs font-semibold text-fg-2">
           {section.group}
-          <span className="font-normal normal-case">{total}</span>
+          <span className="font-normal text-fg-3" aria-label={`${total} parameters`}>{total}</span>
+          <span aria-hidden="true" className="h-px flex-1 bg-border" />
         </h3>
       )}
       {section.params.map((param) => (
@@ -206,13 +207,13 @@ function PanelHeader({ layout, collapsed, onToggle, changedCount, busy, onResetA
       onClick={onToggle}
       aria-expanded={!collapsed}
       data-testid="customizer-toggle-panel"
-      className="focus-ring -ml-1 flex min-h-control-sm items-center gap-1 rounded-control px-1 text-title text-fg max-sm:min-h-touch"
+      className="focus-ring -ml-1 flex min-h-control-sm items-center gap-1 rounded-control px-1 text-ui font-semibold text-fg max-sm:min-h-touch"
     >
       <Chevron className="size-4 text-fg-2" strokeWidth={1.75} aria-hidden="true" />
       Customize
     </button>
   ) : (
-    <h2 className="text-title text-fg">Customize</h2>
+    <h2 className="text-ui font-semibold text-fg">Customize</h2>
   );
   return (
     <header className="flex items-center justify-between gap-2 px-4 pt-3 pb-2">
@@ -241,8 +242,8 @@ function PanelHeader({ layout, collapsed, onToggle, changedCount, busy, onResetA
 }
 
 const SHELL: Record<CustomizerLayoutMode, string> = {
-  // The bottom 9.5rem stays clear for the view cube and home button.
-  overlay: 'pointer-events-auto max-h-[calc(100%-9.5rem)] w-80 max-w-[calc(100vw-2rem)] rounded-panel border border-border bg-surface-1/95 shadow-e2 backdrop-blur-sm',
+  // The bottom 13rem stays clear for the view cube and home button.
+  overlay: 'pointer-events-auto max-h-[calc(100%-13rem)] w-80 max-w-[calc(100vw-2rem)] rounded-panel border border-border bg-surface-1/95 shadow-e2 backdrop-blur-sm',
   panel: 'h-full w-full bg-surface-1',
 };
 

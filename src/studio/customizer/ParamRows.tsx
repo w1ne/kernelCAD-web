@@ -59,7 +59,7 @@ function RowFrame(props: {
 }): JSX.Element {
   const { param, labelId, changed } = props;
   return (
-    <div data-testid={`customizer-row-${param.name}`} data-changed={changed || undefined} className="px-4 py-2">
+    <div data-testid={`customizer-row-${param.name}`} data-changed={changed || undefined} className="px-4 py-1.5">
       <div className="flex min-h-control-sm items-center gap-2">
         <div className="min-w-0 flex-1">
           <span id={labelId} className="block truncate text-ui text-fg" title={param.label === param.name ? undefined : param.name}>
@@ -88,7 +88,7 @@ function NumberRow({ param, value, onChange, onCommit, onReset }: ParamRowProps 
       changed={value !== param.defaultValue}
       onReset={onReset}
       control={(
-        <div data-testid={`customizer-number-${param.name}`} className="w-28 shrink-0">
+        <div data-testid={`customizer-number-${param.name}`} className="w-24 shrink-0">
           <NumberInput
             value={value}
             onChange={(next) => { onChange(next); onCommit(); }}
