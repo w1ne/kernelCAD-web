@@ -1,7 +1,19 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it, vi } from 'vitest';
-import { embedCustomize, embedPresentationMode, embedRevision, loadEmbedCode, revisionPinnedMeshUrl } from './-embedConfig';
+import {
+  EMBED_CANVAS_BG,
+  embedCustomize,
+  embedPosterUrl,
+  embedPresentationMode,
+  embedRevision,
+  embedTheme,
+  ensureUsableStorage,
+  loadEmbedCode,
+  resolveEmbedTheme,
+  revisionPinnedMeshUrl,
+} from './-embedConfig';
+import { BACKGROUND_DARK_HEX, BACKGROUND_LIGHT_HEX } from '../components/viewer/sceneBackgroundTexture';
 
 describe('embedPresentationMode', () => {
   it('keeps the default embed model-only', () => {
@@ -87,5 +99,90 @@ describe('embedCustomize', () => {
     expect(embedCustomize('1')).toBe(true);
     expect(embedCustomize(1)).toBe(true);
     expect(embedCustomize('true')).toBe(true);
+  });
+});
+
+describe('embedTheme', () => {
+  it('pins light or dark and ignores anything else', () => {
+    expect(embedTheme('light')).toBe('light');
+    expect(embedTheme('dark')).toBe('dark');
+    expect(embedTheme('auto')).toBeUndefined();
+    expect(embedTheme('Light')).toBeUndefined();
+    expect(embedTheme(undefined)).toBeUndefined();
+  });
+
+  it('follows the host preference unless pinned', () => {
+    expect(resolveEmbedTheme(undefined, true)).toBe('dark');
+    expect(resolveEmbedTheme(undefined, false)).toBe('light');
+    expect(resolveEmbedTheme('light', true)).toBe('light');
+    expect(resolveEmbedTheme('dark', false)).toBe('dark');
+  });
+
+  it('backs the embed with the viewer canvas colour of the same theme', () => {
+    expect(EMBED_CANVAS_BG.dark).toBe(`#${BACKGROUND_DARK_HEX.toString(16).padStart(6, '0')}`);
+    expect(EMBED_CANVAS_BG.light).toBe(`#${BACKGROUND_LIGHT_HEX.toString(16).padStart(6, '0')}`);
+    expect(EMBED_CANVAS_BG.light).toBe('#f0f0f0');
+  });
+});
+
+describe('embedPosterUrl', () => {
+  const render = 'https://api.kernelcad.com/api/v1/projects/abc_1/og.png?v=2026-09-25T01%3A37%3A17.859Z';
+
+  it("uses the page's og:image when it is this project's stored render", () => {
+    expect(embedPosterUrl('abc_1', undefined, render)).toBe(render);
+  });
+
+  it('ignores the generic site image, another project and non-https images', () => {
+    expect(embedPosterUrl('abc_1', undefined, 'https://kernelcad.com/og-image.png')).toBeUndefined();
+    expect(embedPosterUrl('xyz', undefined, render)).toBeUndefined();
+    expect(embedPosterUrl('abc_1', undefined, render.replace('https:', 'http:'))).toBeUndefined();
+    expect(embedPosterUrl('abc_1', undefined, 'javascript:alert(1)')).toBeUndefined();
+    expect(embedPosterUrl('abc_1', undefined, 'not a url')).toBeUndefined();
+    expect(embedPosterUrl('abc_1', undefined, null)).toBeUndefined();
+  });
+
+  it('shows no poster for a pinned or invalid revision (the render is of the latest one)', () => {
+    expect(embedPosterUrl('abc_1', 3, render)).toBeUndefined();
+    expect(embedPosterUrl('abc_1', null, render)).toBeUndefined();
+  });
+
+  it('accepts a loopback render for the local browser test', () => {
+    const local = 'http://127.0.0.1:5173/api/v1/projects/abc_1/og.png';
+    expect(embedPosterUrl('abc_1', undefined, local)).toBe(local);
+  });
+});
+
+describe('ensureUsableStorage', () => {
+  function windowWith(blocked: boolean): Window {
+    const win = {} as Window;
+    const working = { getItem: () => null };
+    for (const name of ['localStorage', 'sessionStorage']) {
+      Object.defineProperty(win, name, {
+        configurable: true,
+        get() {
+          if (blocked) throw new DOMException('Access is denied for this document.', 'SecurityError');
+          return working;
+        },
+      });
+    }
+    return win;
+  }
+
+  it('swaps blocked storage for page-lifetime storage', () => {
+    const win = windowWith(true);
+    expect(ensureUsableStorage(win)).toEqual(['localStorage', 'sessionStorage']);
+    win.localStorage.setItem('kernelcad:viewMode3D', 'wireframe');
+    expect(win.localStorage.getItem('kernelcad:viewMode3D')).toBe('wireframe');
+    expect(win.localStorage.length).toBe(1);
+    expect(win.localStorage.key(0)).toBe('kernelcad:viewMode3D');
+    win.localStorage.removeItem('kernelcad:viewMode3D');
+    expect(win.localStorage.getItem('kernelcad:viewMode3D')).toBeNull();
+  });
+
+  it('leaves working storage alone', () => {
+    const win = windowWith(false);
+    const before = win.localStorage;
+    expect(ensureUsableStorage(win)).toEqual([]);
+    expect(win.localStorage).toBe(before);
   });
 });

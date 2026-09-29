@@ -61,6 +61,7 @@ export function Tabs({ id, label, items, value, onChange, maxVisible, className 
                             id={tabId(id, t.id)}
                             aria-selected={selected}
                             aria-controls={panelId(id, t.id)}
+                            data-testid={t.testId}
                             tabIndex={selected || (!selectedShown && i === 0) ? 0 : -1}
                             onClick={() => onChange(t.id)}
                             className={cx(

@@ -271,10 +271,10 @@ function exportCommands(s: S, a: A): Command[] {
 function fileCommands(s: S, a: A): Command[] {
     const commands: Command[] = [{
         id: 'file.open-project',
-        label: 'Open project…',
-        description: 'Browse, rename and delete your local projects',
+        label: 'Switch project…',
+        description: 'Your recent saved and local projects',
         section: 'File',
-        keywords: ['project manager', 'switch', 'files'],
+        keywords: ['open project', 'project manager', 'recent', 'files'],
         icon: icon(FolderOpen),
         action: a.openProjectManager,
     }];

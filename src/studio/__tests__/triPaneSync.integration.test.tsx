@@ -60,7 +60,8 @@ vi.mock('../hooks/useRecomputeResult', () => ({
     useRecomputeResult: () => recompute,
 }));
 
-vi.mock('../context/WorkbenchContext', () => ({
+vi.mock('../context/WorkbenchContext', async () => ({
+    WorkbenchContext: (await import('react')).createContext(undefined),
     useWorkbench: () => ({
         code: '',
         setCode: vi.fn(),

@@ -8,6 +8,8 @@ export interface TabItem {
     readonly available?: boolean;
     /** Optional count after the label ("Checks 2"). */
     readonly count?: number;
+    /** Optional `data-testid` for the tab button. */
+    readonly testId?: string;
 }
 
 export function tabId(tabsId: string, id: string): string {

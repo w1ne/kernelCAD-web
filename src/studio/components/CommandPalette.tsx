@@ -6,7 +6,7 @@
 // `StudioCommandPalette` wiring registers the Studio's commands, binds the
 // shortcuts and puts a "Search commands" trigger in the header.
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type JSX, type KeyboardEvent } from 'react';
-import { createPortal } from 'react-dom';
+import { createPortal, flushSync } from 'react-dom';
 import { Command as Cmdk } from 'cmdk';
 import { ChevronLeft, History, RotateCw, Search } from 'lucide-react';
 import { Kbd } from '../../ui/Kbd';
@@ -41,7 +41,8 @@ import { captureViewerPngBase64 } from './viewer/captureViewerPng';
 import { ExportStatus } from './Shared/ExportStatus';
 import { useOptionalSession } from '../../funnel/hooks/useSession';
 import { listMyProjects } from '../../funnel/lib/apiClient';
-import { rankCommands, uniqueValues, updatedAgo } from './commandPaletteModel';
+import { rankCommands, uniqueValues } from './commandPaletteModel';
+import { projectHref, relativeTime } from './projectCardModel';
 
 export type PalettePage = 'commands' | 'shortcuts';
 
@@ -185,10 +186,12 @@ function CommandsPage({ commands, recent, onClose }: {
             command.action();
             return;
         }
-        onClose();
-        // After the close commits, so a dialog the command opens keeps the
-        // focus the palette would otherwise hand back.
-        window.setTimeout(command.action, 0);
+        // Close first and commit now: the palette hands focus back as it
+        // unmounts, so a dialog the command opens must mount after that
+        // (cmdk selects from its own event, which React would otherwise
+        // commit later than a timer).
+        flushSync(onClose);
+        command.action();
     };
 
     return (
@@ -365,6 +368,12 @@ function ShortcutsPage({ onBack }: { readonly onBack: () => void }): JSX.Element
 
 const RECENT_LIMIT = 6;
 
+/** The /p/<slug> page the user is on, if any; it is not a "recent" target. */
+function currentProjectSlug(): string | null {
+    const m = /^\/p\/([^/]+)/.exec(window.location.pathname);
+    return m ? decodeURIComponent(m[1]) : null;
+}
+
 /** The signed-in user's saved projects, fetched each time the palette opens. */
 function useRecentProjects(open: boolean, signedIn: boolean): RecentProjects {
     const [state, setState] = useState<RecentProjects>({ status: 'hidden' });
@@ -377,17 +386,19 @@ function useRecentProjects(open: boolean, signedIn: boolean): RecentProjects {
         void Promise.resolve()
             .then(() => {
                 if (!cancelled) setState({ status: 'loading' });
-                return listMyProjects();
+                // Owner-filtered: only the user's own projects, newest first.
+                return listMyProjects({ limit: RECENT_LIMIT });
             })
             .then((rows) => {
                 if (cancelled) return;
+                const here = currentProjectSlug();
                 setState({
                     status: 'ready',
-                    items: rows.slice(0, RECENT_LIMIT).map((row) => ({
+                    items: rows.filter((row) => row.slug !== here).map((row) => ({
                         id: row.slug,
                         title: row.title || 'Untitled project',
-                        detail: updatedAgo(row.updated_at),
-                        onOpen: () => window.location.assign(`/p/${encodeURIComponent(row.slug)}`),
+                        detail: `Updated ${relativeTime(row.updated_at)}`,
+                        onOpen: () => window.location.assign(projectHref(row.slug)),
                     })),
                 });
             })

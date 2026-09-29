@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it } from 'vitest';
-import { rankCommands, scoreCommand, uniqueValues, updatedAgo } from './commandPaletteModel';
+import { rankCommands, scoreCommand, uniqueValues } from './commandPaletteModel';
 
 describe('scoreCommand', () => {
     it('ranks a label prefix above a keyword or description hit', () => {
@@ -41,19 +41,6 @@ describe('uniqueValues', () => {
         ]);
         expect(values.get('a')).toBe('Switch to Bracket');
         expect(values.get('b')).toBe('Switch to Bracket b');
-    });
-});
-
-describe('updatedAgo', () => {
-    const now = Date.parse('2026-09-29T12:00:00Z');
-    it('prints minutes, hours and days', () => {
-        expect(updatedAgo('2026-09-29T11:59:50Z', now)).toBe('Updated just now');
-        expect(updatedAgo('2026-09-29T11:55:00Z', now)).toBe('Updated 5 min ago');
-        expect(updatedAgo('2026-09-29T09:00:00Z', now)).toBe('Updated 3 h ago');
-        expect(updatedAgo('2026-09-27T12:00:00Z', now)).toBe('Updated 2 d ago');
-    });
-    it('is empty for a bad date', () => {
-        expect(updatedAgo('not a date', now)).toBe('');
     });
 });
 

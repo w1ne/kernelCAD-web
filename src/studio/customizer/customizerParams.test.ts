@@ -39,10 +39,53 @@ describe('customizerParamsFrom', () => {
     expect(params[3].step).toBeUndefined();
   });
 
-  it('takes the step 1 for an integer hint and leaves it to the slider otherwise', () => {
+  it('takes the step 1 for an integer hint and derives one from the range otherwise', () => {
     const [integer] = customizerParamsFrom([entries[0]], [{ name: 'Width', kind: 'integer' }]);
     expect(integer.step).toBe(1);
-    expect(customizerParamsFrom([entries[0]])[0].step).toBeUndefined();
+    // 10–80 declared: a step of 0.1 would be finer than any user needs; 40 is whole.
+    expect(customizerParamsFrom([entries[0]])[0].step).toBe(1);
+  });
+});
+
+describe('customizerParamsFrom presentation', () => {
+  const num = (name: string, value: number, meta?: SerializedParamEntry['meta']): SerializedParamEntry =>
+    ({ name, type: 'number', value, defaultValue: value, ...(meta ? { meta } : {}) });
+
+  it('humanises raw names into labels, and a declared label wins', () => {
+    const [plateW, m4, declared] = customizerParamsFrom([
+      num('plateW', 50),
+      num('m4HeadDia', 7.2),
+      num('earOverlap', 6, { label: '  Ear overlap (each side) ' }),
+    ]);
+    expect(plateW.label).toBe('Plate width');
+    expect(m4.label).toBe('M4 head diameter');
+    expect(declared.label).toBe('Ear overlap (each side)');
+  });
+
+  it('takes unit, step and group from param() metadata before project hints and guesses', () => {
+    const [p] = customizerParamsFrom(
+      [num('plateT', 4, { min: 2, max: 12, unit: 'in', step: 0.5, group: 'Plate' })],
+      [{ name: 'plateT', unit: 'mm', step: 1 }],
+    );
+    expect(p).toMatchObject({ unit: 'in', step: 0.5, group: 'Plate', range: { min: 2, max: 12 } });
+  });
+
+  it('guesses a unit and derives a slider range and step when none is declared', () => {
+    const [bore, angle, count, ratio] = customizerParamsFrom([
+      num('boreDia', 30.2), num('slotAngle', 0), num('holeCount', 4), num('gearRatio', 2.5),
+    ]);
+    expect(bore).toMatchObject({ unit: 'mm', range: { min: 0, max: 100 }, step: 0.1 });
+    expect(bore.min).toBeUndefined();
+    expect(bore.max).toBeUndefined();
+    expect(angle).toMatchObject({ unit: '°', range: { min: 0, max: 360 }, step: 1 });
+    expect(count).toMatchObject({ range: { min: 0, max: 10 }, step: 1 });
+    expect(count.unit).toBeUndefined();
+    expect(ratio.unit).toBeUndefined();
+  });
+
+  it('adds no slider data to non-number params', () => {
+    const [lid] = customizerParamsFrom([entries[1]]);
+    expect(lid).toEqual({ name: 'HasLid', label: 'Has lid', type: 'boolean', defaultValue: true });
   });
 });
 

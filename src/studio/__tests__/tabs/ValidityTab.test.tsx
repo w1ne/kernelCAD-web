@@ -73,7 +73,7 @@ describe('ValidityTab', () => {
         render(<ValidityTab />);
 
         expect(screen.getByTestId('validity-empty-state').textContent).toContain(
-            'No assembly to validate',
+            'No checks yet',
         );
         expect(screen.queryByTestId('validity-tab')).toBeNull();
     });
@@ -88,7 +88,7 @@ describe('ValidityTab', () => {
         const chip = screen.getByTestId('validity-chip');
         expect(chip.getAttribute('data-color')).toBe('green');
         expect(chip.getAttribute('data-status')).toBe('solved');
-        expect(chip.textContent).toBe('solved');
+        expect(chip.textContent).toBe('Solved');
 
         expect(screen.getByTestId('validity-counts').textContent).toBe(
             '3 parts · 2 joints · 0 diagnostics',
@@ -233,7 +233,7 @@ describe('ValidityTab', () => {
         expect(screen.getAllByTestId('diagnostic-row')).toHaveLength(2);
     });
 
-    it('clicking a suggestion card Jump button calls selectFeature with the target id', () => {
+    it('clicking a suggestion card Show in model button calls selectFeature with the target id', () => {
         const diag: ValidatorDiagnostic = {
             code: 'assembly.part.floating',
             severity: 'error',
@@ -248,13 +248,13 @@ describe('ValidityTab', () => {
 
         render(<ValidityTab />);
 
-        fireEvent.click(screen.getByRole('button', { name: 'Jump' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Show in model' }));
 
         expect(mockSelectFeature).toHaveBeenCalledTimes(1);
         expect(mockSelectFeature).toHaveBeenCalledWith('output-horn');
     });
 
-    it('clicking a pair suggestion card Jump button focuses both pair parts', () => {
+    it('clicking a pair suggestion card Show in model button focuses both pair parts', () => {
         const diag: ValidatorDiagnostic = {
             code: 'assembly.interference.overlap',
             severity: 'error',
@@ -270,7 +270,7 @@ describe('ValidityTab', () => {
 
         render(<ValidityTab />);
 
-        fireEvent.click(screen.getByRole('button', { name: 'Jump' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Show in model' }));
 
         expect(mockSelectFeature).toHaveBeenCalledTimes(1);
         expect(mockSelectFeature).toHaveBeenCalledWith('bracket');
@@ -280,7 +280,7 @@ describe('ValidityTab', () => {
         });
     });
 
-    it('clicking Use prompt drafts a repair prompt, selects the target, and opens the agent rail', () => {
+    it('clicking Fix with agent drafts a repair prompt, selects the target, and opens the agent rail', () => {
         const diag: ValidatorDiagnostic = {
             code: 'assembly.part.floating',
             severity: 'error',
@@ -295,7 +295,7 @@ describe('ValidityTab', () => {
 
         render(<ValidityTab />);
 
-        fireEvent.click(screen.getByRole('button', { name: 'Use prompt' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Fix with agent' }));
 
         expect(shellStore.getSnapshot().agentDraftPrompt).toBe(
             'Fix assembly.part.floating: output-horn floats Action: add a mate to output-horn',
@@ -312,7 +312,7 @@ describe('ValidityTab', () => {
         expect(mockSelectFeature).toHaveBeenCalledWith('output-horn');
     });
 
-    it('clicking Use prompt on a pair diagnostic preserves primary workflow target and focuses both parts', () => {
+    it('clicking Fix with agent on a pair diagnostic preserves primary workflow target and focuses both parts', () => {
         const diag: ValidatorDiagnostic = {
             code: 'assembly.interference.overlap',
             severity: 'error',
@@ -328,7 +328,7 @@ describe('ValidityTab', () => {
 
         render(<ValidityTab />);
 
-        fireEvent.click(screen.getByRole('button', { name: 'Use prompt' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Fix with agent' }));
 
         expect(shellStore.getSnapshot().agentRepairWorkflow).toMatchObject({
             cardId: 'diagnostic:assembly.interference.overlap:bracket:0',
@@ -343,7 +343,7 @@ describe('ValidityTab', () => {
         });
     });
 
-    it('labels the active suggestion card as drafted after Use prompt', () => {
+    it('labels the active suggestion card as drafted after Fix with agent', () => {
         const diag: ValidatorDiagnostic = {
             code: 'assembly.part.floating',
             severity: 'error',
@@ -358,7 +358,7 @@ describe('ValidityTab', () => {
 
         render(<ValidityTab />);
 
-        fireEvent.click(screen.getByRole('button', { name: 'Use prompt' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Fix with agent' }));
 
         const card = screen.getByTestId('validity-suggestion-card');
         expect(card.getAttribute('data-workflow-state')).toBe('drafted');
@@ -380,7 +380,7 @@ describe('ValidityTab', () => {
 
         const { rerender } = render(<ValidityTab />);
 
-        fireEvent.click(screen.getByRole('button', { name: 'Use prompt' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Fix with agent' }));
         const workflow = shellStore.getSnapshot().agentRepairWorkflow;
         shellStore.setAgentRepairWorkflow(workflow == null ? null : { ...workflow, state: 'running' });
         rerender(<ValidityTab />);
@@ -405,7 +405,7 @@ describe('ValidityTab', () => {
         mockUseRecomputeResult.mockReturnValue(firstResult);
         const { rerender } = render(<ValidityTab />);
 
-        fireEvent.click(screen.getByRole('button', { name: 'Use prompt' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Fix with agent' }));
         const workflow = shellStore.getSnapshot().agentRepairWorkflow;
         shellStore.setAgentRepairWorkflow(workflow == null ? null : { ...workflow, state: 'running' });
         mockUseRecomputeResult.mockReturnValue(secondResult);
@@ -437,7 +437,7 @@ describe('ValidityTab', () => {
         );
         const { rerender } = render(<ValidityTab />);
 
-        fireEvent.click(screen.getByRole('button', { name: 'Use prompt' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Fix with agent' }));
         const workflow = shellStore.getSnapshot().agentRepairWorkflow;
         shellStore.setAgentRepairWorkflow(workflow == null ? null : { ...workflow, state: 'running' });
         mockUseRecomputeResult.mockReturnValue(
@@ -464,7 +464,7 @@ describe('ValidityTab', () => {
         );
         const { rerender } = render(<ValidityTab />);
 
-        fireEvent.click(screen.getByRole('button', { name: 'Use prompt' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Fix with agent' }));
         mockUseRecomputeResult.mockReturnValue(
             withValidity(makeValidity('error', [
                 { ...diag, message: 'output-horn wording changed' },
@@ -493,7 +493,7 @@ describe('ValidityTab', () => {
         );
         const { rerender } = render(<ValidityTab />);
 
-        fireEvent.click(screen.getByRole('button', { name: 'Use prompt' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Fix with agent' }));
         const workflow = shellStore.getSnapshot().agentRepairWorkflow;
         shellStore.setAgentRepairWorkflow(workflow == null ? null : { ...workflow, state: 'running' });
         mockUseRecomputeResult.mockReturnValue(
@@ -521,7 +521,7 @@ describe('ValidityTab', () => {
         );
         const { rerender } = render(<ValidityTab />);
 
-        fireEvent.click(screen.getByRole('button', { name: 'Use prompt' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Fix with agent' }));
         const workflow = shellStore.getSnapshot().agentRepairWorkflow;
         shellStore.setAgentRepairWorkflow(workflow == null ? null : { ...workflow, state: 'running' });
         mockUseRecomputeResult.mockReturnValue({
@@ -569,7 +569,7 @@ describe('ValidityTab', () => {
         );
     });
 
-    it('clicking Use prompt drafts the backend suggested prompt and still selects the target', () => {
+    it('clicking Fix with agent drafts the backend suggested prompt and still selects the target', () => {
         const diag: ValidatorDiagnostic = {
             code: 'assembly.part.floating',
             severity: 'error',
@@ -585,7 +585,7 @@ describe('ValidityTab', () => {
 
         render(<ValidityTab />);
 
-        fireEvent.click(screen.getByRole('button', { name: 'Use prompt' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Fix with agent' }));
 
         expect(shellStore.getSnapshot().agentDraftPrompt).toBe(
             'Rebuild the horn support from deterministic review evidence.',
@@ -720,9 +720,10 @@ describe('ValidityTab', () => {
 
         const preview = screen.getByTestId('validity-suggestion-prompt-preview');
         expect(preview.textContent).toContain(prompt);
-        expect(preview.className).toContain('whitespace-pre-wrap');
-        expect(preview.className).toContain('max-h-24');
-        expect(preview.className).toContain('overflow-y-auto');
+        const body = preview.querySelector('p')!;
+        expect(body.className).toContain('whitespace-pre-wrap');
+        expect(body.className).toContain('max-h-28');
+        expect(body.className).toContain('overflow-y-auto');
     });
 
     it('renders mechanism suggestion cards before diagnostic cards', () => {
@@ -826,7 +827,7 @@ describe('ValidityTab', () => {
         render(<ValidityTab />);
 
         const banner = screen.getByTestId('mechanism-banner');
-        expect(banner.textContent).toContain('MECHANISM BROKEN');
+        expect(banner.textContent).toContain('Mechanism broken');
         const entries = screen.getAllByTestId('mechanism-banner-entry');
         expect(entries).toHaveLength(2);
         expect(entries[0].getAttribute('data-code')).toBe('mechanism.disconnect');

@@ -78,23 +78,19 @@ describe('CommandPaletteDialog', () => {
         expect(inspector?.querySelectorAll('kbd')).toHaveLength(2);
     });
 
-    it('filters as you type and runs the top match on Enter', async () => {
-        vi.useFakeTimers({ shouldAdvanceTime: true });
-        const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
-        const commands = commandSet();
-        const onClose = vi.fn();
-        render(<Harness commands={commands} onClose={onClose} />);
+    it('filters as you type, closes, then runs the top match on Enter', async () => {
+        const user = userEvent.setup();
+        const order: string[] = [];
+        const commands = commandSet({ 'export.stl': { action: vi.fn(() => order.push('action')) } });
+        render(<Harness commands={commands} onClose={() => order.push('close')} />);
         await user.type(screen.getByRole('combobox'), 'stl');
         const options = screen.getAllByRole('option');
         expect(options).toHaveLength(1);
         // Search results say where each command lives.
         expect(options[0]).toHaveTextContent('Export STLExport');
         await user.keyboard('{Enter}');
-        expect(onClose).toHaveBeenCalled();
-        act(() => {
-            vi.runAllTimers();
-        });
-        expect(commands[1].action).toHaveBeenCalledTimes(1);
+        // The palette is gone (and has returned focus) before the command runs.
+        expect(order).toEqual(['close', 'action']);
         expect(screen.queryByRole('dialog')).toBeNull();
     });
 

@@ -16,21 +16,6 @@ export function uniqueValues(commands: readonly Command[]): Map<string, string> 
     return values;
 }
 
-/** "Updated 5 min ago" for a project row. */
-export function updatedAgo(iso: string, now: number = Date.now()): string {
-    const then = Date.parse(iso);
-    if (Number.isNaN(then)) return '';
-    const min = Math.max(0, Math.round((now - then) / 60_000));
-    if (min < 1) return 'Updated just now';
-    if (min < 60) return `Updated ${min} min ago`;
-    const h = Math.round(min / 60);
-    if (h < 24) return `Updated ${h} h ago`;
-    const d = Math.round(h / 24);
-    if (d < 30) return `Updated ${d} d ago`;
-    return `Updated ${new Date(then).toLocaleDateString()}`;
-}
-
-
 function wordStarts(text: string, token: string): boolean {
     return text.split(/[^a-z0-9]+/).some((word) => word.startsWith(token));
 }

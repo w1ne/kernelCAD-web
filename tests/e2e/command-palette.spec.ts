@@ -38,6 +38,14 @@ test('Ctrl+K opens the palette; commands drive the inspector, camera and panes',
     await page.keyboard.press('Control+\\');
     await expect(page.getByTestId('inspector')).toHaveAttribute('data-open', 'true');
 
+    // "Switch project…" opens the project switcher.
+    await page.keyboard.press('Control+k');
+    await page.keyboard.type('switch project');
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('dialog', { name: 'Projects' })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog', { name: 'Projects' })).toBeHidden();
+
     // The shortcuts list opens inside the palette; Escape goes back, then closes.
     await page.getByTestId('command-palette-trigger').click();
     await page.keyboard.type('keyboard shortcuts');
