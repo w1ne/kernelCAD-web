@@ -1,9 +1,10 @@
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import { fileURLToPath } from 'node:url';
+import { kernelCadEditorTypingsPlugin } from './scripts/editorTypings';
 
 export default defineConfig({
-    plugins: [react()],
+    plugins: [react(), kernelCadEditorTypingsPlugin()],
     resolve: {
         alias: {
             'verb-nurbs': fileURLToPath(
