@@ -80,7 +80,7 @@
     "site:build-pricing": "npx tsx --tsconfig tsconfig.app.json site/scripts/build-pricing.ts",
     "site:build-island": "vite build --config vite.pricing-island.config.ts",
     "site:render-brand": "node site/scripts/render-brand.mjs",
-    "site:test": "vitest run scripts/lib/selectHeroDemo.test.ts",
+    "site:test": "vitest run scripts/lib/selectHeroDemo.test.ts site/scripts/build-demo.test.ts scripts/lib/productionSiteProbe.test.ts",
     "site:verify-production": "npx tsx scripts/verifyProductionSite.ts",
     "test:watch": "vitest",
     "pretypecheck": "tsr generate",
