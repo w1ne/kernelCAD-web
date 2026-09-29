@@ -279,7 +279,7 @@ export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCa
 
   const diagnostics = collectReviewDiagnostics(evaluation, mechanicalReview, physicalUseCases, poseEnvelope);
   const { mechanism, mechanismFailures } = clock.admit('mechanism-truth')
-    ? await clock.time('mechanism-truth', () => runMechanismTruthStage(arm, input, model))
+    ? await clock.time('mechanism-truth', () => runMechanismTruthStage(arm, input))
     : { mechanism: 'unverified' as MechanismVerdict, mechanismFailures: [] as readonly CompilerDiagnostic[] };
 
   const { fitness, ok, repairContext } = await runFitnessAndRepairStage({
@@ -570,7 +570,6 @@ function collectReviewDiagnostics(
 async function runMechanismTruthStage(
   arm: Assembly,
   input: Pick<ReviewCadInput, 'includeInterference' | 'includePoseEnvelope' | 'includePhysics'>,
-  model: BuiltModel,
 ): Promise<{ mechanism: MechanismVerdict; mechanismFailures: readonly CompilerDiagnostic[] }> {
   // Physics-loop probe (P1 surface convergence). Same gating shape as
   // wantInterference above — opt-out only when the caller explicitly
@@ -597,11 +596,7 @@ async function runMechanismTruthStage(
     ? wantMechanism
     : input.includePhysics;
   try {
-    // Reuse the evaluation's lowered scene: the sweep re-poses its part BREPs
-    // (and the interference memo then hits) instead of re-lowering.
-    const tail = model.rootShape ?? model.tailShape;
-    const loweredScene = tail !== undefined && isSceneBackend(tail) ? tail : undefined;
-    const verdict = await checkMechanismTruth(arm, { physicsCheck, ...(loweredScene ? { loweredScene } : {}) });
+    const verdict = await checkMechanismTruth(arm, { physicsCheck });
     // Preserve 'unverified' (e.g. a skipped BREP sweep, issue #348) —
     // don't collapse it to 'real'.
     return {

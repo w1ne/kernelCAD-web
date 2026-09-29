@@ -27,14 +27,22 @@ afterEach(() => {
 });
 
 describe('review_cad cost on a small assembly', () => {
-  it('lowers the record chain at most twice and measures the pair at most twice (was 7 and 4)', async () => {
+  it('lowers the part records once and does not re-measure the same pair pose', async () => {
     const runs = vi.spyOn(RecomputeEngine.prototype, 'run');
     const volumes = vi.spyOn(OcctBackend.prototype, 'intersectionVolume');
     const r = await runReviewPipeline({ code: CODE, includeInterference: true, includePhysics: true });
     expect(r.rawInterferencePairs?.map((p) => [p.a, p.b])).toEqual([['left', 'right']]);
-    // evaluate + the pose-envelope scene; every per-part `.lower()` and the
-    // mechanism sweep reuse them.
-    expect(runs.mock.calls.length).toBeLessThanOrEqual(2);
+    // One full lower (evaluate). Every later run only lowers the appended pose
+    // scene: it is seeded with the unchanged part records, and per-part
+    // `.lower()` calls reuse the full lower outright (old code: 7 full runs).
+    const [, ...later] = runs.mock.calls;
+    expect(runs.mock.calls.length).toBeLessThanOrEqual(4);
+    for (const call of later) {
+      const seeded = (call[1] as { seedShapes?: Map<string, unknown> } | undefined)?.seedShapes;
+      expect(seeded?.size ?? 0).toBeGreaterThan(0);
+    }
+    // The same pair at the same pose is measured once per distinct pose
+    // (old code: 4 boolean probes).
     expect(volumes.mock.calls.length).toBeLessThanOrEqual(2);
     expect(r.stageTimingsMs?.['evaluate-source']).toBeGreaterThanOrEqual(0);
     expect(r.stageTimingsMs?.['mechanism-truth']).toBeGreaterThanOrEqual(0);
