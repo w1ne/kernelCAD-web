@@ -23,3 +23,10 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+/** Kernel API declarations for the Studio code editor, generated at build
+ *  time by `scripts/editorTypings.ts` (`kernelCadEditorTypingsPlugin`). */
+declare module 'virtual:kcad-editor-typings' {
+  const typings: string;
+  export default typings;
+}

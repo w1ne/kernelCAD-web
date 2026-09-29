@@ -54,10 +54,11 @@ vi.mock('@monaco-editor/react', () => ({
                 focus: vi.fn(),
                 onMouseDown: vi.fn(),
             };
+            // Real Monaco puts MarkerSeverity on the namespace, not on `editor`.
             const monaco = {
+                MarkerSeverity: { Hint: 1, Info: 2, Warning: 4, Error: 8 },
                 editor: {
                     setModelMarkers,
-                    MarkerSeverity: { Hint: 1, Info: 2, Warning: 4, Error: 8 },
                 },
             };
             onMount(editor, monaco);
@@ -140,6 +141,25 @@ describe('CodeTab', () => {
 
         render(<CodeTab />);
         expect(screen.getByTestId('monaco-mock')).toBeTruthy();
+    });
+
+    it('projects a located evaluation diagnostic as an error marker', () => {
+        mockUseRecomputeResult.mockReturnValue(baseResult({
+            diagnostics: [{
+                code: 'recompute.test',
+                severity: 'error',
+                message: 'boom',
+                scriptLocation: { file: 'x.kcad.ts', line: 3, column: 5 },
+            } as unknown as StudioRecomputeResult['diagnostics'][number]],
+        }));
+
+        render(<CodeTab />);
+
+        const [, owner, markers] = setModelMarkers.mock.calls.at(-1)!;
+        expect(owner).toBe('kernelcad-studio');
+        expect(markers).toEqual([expect.objectContaining({
+            startLineNumber: 3, startColumn: 5, severity: 8, message: 'boom',
+        })]);
     });
 
     it('reveals the feature line when selectedFeatureId resolves to a feature with scriptLocation', () => {

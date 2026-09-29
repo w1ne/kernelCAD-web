@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import dts from 'vite-plugin-dts';
+import { kernelCadEditorTypingsPlugin } from './scripts/editorTypings';
 
 // Library build for `kernelcad/studio` — emits a self-contained ESM
 // bundle that proto.cat (and any future host) imports as
@@ -92,6 +93,7 @@ function getGitCommitHashShort(): string {
 export default defineConfig({
     plugins: [
         stripGeometryWorkerForEmbed(),
+        kernelCadEditorTypingsPlugin(),
         react(),
         dts({
             // Use the app-level tsconfig — the root tsconfig.json is
@@ -163,6 +165,8 @@ export default defineConfig({
                 if (id.startsWith('.')) return false;
                 if (id.startsWith('/')) return false;
                 if (id.startsWith(repoRoot)) return false;
+                // Build-time virtual modules (editor typings) are ours.
+                if (id.startsWith('virtual:')) return false;
                 // Vite injects `node:`-prefixed Node builtins in worker
                 // bootstraps occasionally; mark those external so the
                 // browser-side host can decide (Next polyfills via

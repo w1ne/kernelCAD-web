@@ -12,6 +12,7 @@ import { useWorkbench } from '../context/WorkbenchContext';
 import { getFeatureSourceIndex } from '../selectionCode/featureSourceIndex';
 import { attachCodeGeometrySync, type CodeGeometrySync, type SyncEditorLike } from '../selectionCode/codeGeometrySync';
 import { selectionCodeStore } from '../selectionCode/selectionCodeStore';
+import { markerSeverity, useKcadTypeCheck, type MonacoTypescriptHostLike } from './codeTabTypescript';
 
 /**
  * Monaco-backed Code tab for the Studio shell.
@@ -29,6 +30,9 @@ import { selectionCodeStore } from '../selectionCode/selectionCodeStore';
  *   4. Selection ↔ code link (`selectionCode/codeGeometrySync`): a face or
  *      edge clicked in the viewer decorates the call that made it; a user
  *      cursor move or hover here tints the geometry that call made.
+ *   5. TypeScript checking (`codeTabTypescript`): the script is checked as
+ *      the function body the evaluator runs, with the kernel DSL as typed
+ *      globals, so valid scripts show no false squiggles.
  *
  * Reveal is a soft binding: if the selection doesn't map to a feature with
  * a `scriptLocation`, no-op.
@@ -47,12 +51,6 @@ interface MonacoMarkerLike {
 interface MonacoNamespaceLike {
     editor: {
         setModelMarkers: (model: unknown, owner: string, markers: readonly MonacoMarkerLike[]) => void;
-        readonly MarkerSeverity: {
-            readonly Hint: number;
-            readonly Info: number;
-            readonly Warning: number;
-            readonly Error: number;
-        };
     };
 }
 
@@ -66,12 +64,14 @@ function diagnosticToMarker(
     if (!loc) return null;
     const line = Math.max(1, loc.line);
     const column = Math.max(1, loc.column);
+    // Monaco exposes the severities as `monaco.MarkerSeverity`.
+    const severity = markerSeverity(monaco as MonacoTypescriptHostLike);
     const sev =
         d.severity === 'error'
-            ? monaco.editor.MarkerSeverity.Error
+            ? severity.Error
             : d.severity === 'warn'
-                ? monaco.editor.MarkerSeverity.Warning
-                : monaco.editor.MarkerSeverity.Info;
+                ? severity.Warning
+                : severity.Info;
     return {
         startLineNumber: line,
         startColumn: column,
@@ -117,6 +117,8 @@ export function CodeTab(): JSX.Element {
         indexInputRef.current = { code: workbench.code ?? '', features };
     }, [workbench.code, features]);
 
+    const { beforeMount: handleBeforeMount, attach: attachTypeCheck } = useKcadTypeCheck();
+
     const handleMount = useCallback((editor: unknown, monaco: unknown) => {
         editorRef.current = editor as EditorLike;
         monacoRef.current = monaco as MonacoNamespaceLike;
@@ -125,6 +127,7 @@ export function CodeTab(): JSX.Element {
             store: selectionCodeStore,
             getIndex: () => getFeatureSourceIndex(indexInputRef.current.code, indexInputRef.current.features),
         });
+        attachTypeCheck(editor, monaco);
 
         // Treat any click / keypress inside the editor as user-driven so a
         // selection update originating here does not loop back into a
@@ -136,7 +139,7 @@ export function CodeTab(): JSX.Element {
         e.onMouseDown?.(() => {
             userDrivenRef.current = true;
         });
-    }, []);
+    }, [attachTypeCheck]);
 
     useEffect(() => () => {
         syncRef.current?.dispose();
@@ -191,6 +194,7 @@ export function CodeTab(): JSX.Element {
                 theme="vs-dark"
                 value={workbench.code ?? ''}
                 onChange={handleChange}
+                beforeMount={handleBeforeMount}
                 onMount={handleMount}
                 options={{
                     minimap: { enabled: false },

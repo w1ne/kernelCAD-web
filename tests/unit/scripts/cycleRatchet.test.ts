@@ -48,7 +48,7 @@ describe('cycleRatchet', () => {
       ...r.stale.map((c) => `STALE       ${c} — run: npx tsx scripts/qualityBaselineRegen.ts`),
     ].join('\n');
     expect(r.ok, msg).toBe(true);
-    const knownSkipped = ['replicad', '@mujoco/mujoco', 'tailwindcss', './routeTree.gen'];
+    const knownSkipped = ['replicad', '@mujoco/mujoco', 'tailwindcss', './routeTree.gen', 'virtual:kcad-editor-typings'];
     for (const s of skipped) {
       expect(knownSkipped.some((k) => s.includes(k)), `unexpected skipped module: ${s}`).toBe(true);
     }
