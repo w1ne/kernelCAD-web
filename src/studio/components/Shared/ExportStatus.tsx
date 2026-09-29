@@ -10,6 +10,29 @@ import type { JSX } from 'react';
 import { Loader2, X } from 'lucide-react';
 import { exportProgressText, type ExportTask } from '../../hooks/useExportTask';
 
+function toneOf(state: ExportTask['state']): string {
+    if (state.error !== null) return 'border-red-900 bg-red-950/90 text-red-200';
+    if (state.notice !== null) return 'border-amber-900 bg-amber-950/90 text-amber-200';
+    return 'border-[#2b313c] bg-[#1a1a1a] text-gray-300';
+}
+
+function StatusLines({ state, progress, testId }: {
+    state: ExportTask['state'];
+    progress: string | null;
+    testId: string;
+}): JSX.Element {
+    return (
+        <div className="flex-1 min-w-0 flex flex-col gap-1">
+            {progress !== null && <span data-testid={`${testId}-progress`}>{progress}</span>}
+            {state.error !== null && <span data-testid={`${testId}-error`}>{state.error.message}</span>}
+            {state.error?.hint && (
+                <span className="text-red-300/80" data-testid={`${testId}-hint`}>{state.error.hint}</span>
+            )}
+            {state.notice !== null && <span data-testid={`${testId}-notice`}>{state.notice}</span>}
+        </div>
+    );
+}
+
 export function ExportStatus({ task, floating = false, testId = 'export-status' }: {
     task: ExportTask;
     floating?: boolean;
@@ -22,32 +45,16 @@ export function ExportStatus({ task, floating = false, testId = 'export-status' 
     const frame = floating
         ? 'fixed top-12 right-4 z-50 w-80 max-w-[calc(100vw-2rem)] shadow-lg'
         : 'mt-2';
-    const tone = state.error !== null
-        ? 'border-red-900 bg-red-950/90 text-red-200'
-        : state.notice !== null
-            ? 'border-amber-900 bg-amber-950/90 text-amber-200'
-            : 'border-[#2b313c] bg-[#1a1a1a] text-gray-300';
 
     return (
         <div
             role={state.error !== null ? 'alert' : 'status'}
             aria-live="polite"
             data-testid={testId}
-            className={`${frame} flex items-start gap-2 px-3 py-2 rounded border text-[11px] ${tone}`}
+            className={`${frame} flex items-start gap-2 px-3 py-2 rounded border text-[11px] ${toneOf(state)}`}
         >
             {progress !== null && <Loader2 className="h-3.5 w-3.5 mt-px animate-spin shrink-0" aria-hidden="true" />}
-            <div className="flex-1 min-w-0 flex flex-col gap-1">
-                {progress !== null && <span data-testid={`${testId}-progress`}>{progress}</span>}
-                {state.error !== null && (
-                    <>
-                        <span data-testid={`${testId}-error`}>{state.error.message}</span>
-                        {state.error.hint && (
-                            <span className="text-red-300/80" data-testid={`${testId}-hint`}>{state.error.hint}</span>
-                        )}
-                    </>
-                )}
-                {state.notice !== null && <span data-testid={`${testId}-notice`}>{state.notice}</span>}
-            </div>
+            <StatusLines state={state} progress={progress} testId={testId} />
             {progress !== null ? (
                 <button
                     type="button"

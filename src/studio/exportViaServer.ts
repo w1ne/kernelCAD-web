@@ -89,6 +89,31 @@ export async function exportViaServer(
   options: ExportViaServerOptions = {},
 ): Promise<ServerExportResult> {
   const { signal, onProgress } = options;
+  const request = await exportRequest(format, code);
+  const post = () => fetch(request.url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...request.headers },
+    body: JSON.stringify(request.body),
+    signal,
+  });
+
+  onProgress?.({ phase: 'running' });
+  let response = await postWithBusyRetry(post, options);
+  if (response.status === 202) {
+    const job = await response.json() as { statusUrl?: string; jobId?: string };
+    response = await awaitExportJob(job, request.base, request.headers, options);
+  }
+  if (!response.ok) throw await errorFromResponse(response);
+  return fileFromResponse(response, format);
+}
+
+/** URL, auth headers and JSON body of the export POST. */
+async function exportRequest(format: StudioExportFormat, code: string): Promise<{
+  url: string;
+  base: string;
+  headers: Record<string, string>;
+  body: Record<string, unknown>;
+}> {
   const source = code.trim();
   const project = currentHostedProject();
   if (!project && !source) {
@@ -117,31 +142,27 @@ export async function exportViaServer(
         ...(source ? { source } : {}),
       }
     : { source };
+  return { url, base: effectiveBase, headers, body };
+}
 
-  const post = () => fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...headers },
-    body: JSON.stringify(body),
-    signal,
-  });
-
+/** POST once; on 429 / 503 with a short Retry-After, wait it out and POST
+ *  once more. A long wait throws the busy error for the UI. */
+async function postWithBusyRetry(
+  post: () => Promise<Response>,
+  { signal, onProgress }: ExportViaServerOptions,
+): Promise<Response> {
+  const response = await post();
+  if (response.status !== 429 && response.status !== 503) return response;
+  const busy = await errorFromResponse(response);
+  const wait = busy.retryAfterSec ?? 0;
+  if (wait > MAX_AUTO_RETRY_WAIT_SEC) throw busy;
+  onProgress?.({ phase: 'waiting', retryInSec: wait });
+  await sleep(wait * 1000, signal);
   onProgress?.({ phase: 'running' });
-  let response = await post();
-  if (response.status === 429 || response.status === 503) {
-    const busy = await errorFromResponse(response);
-    const wait = busy.retryAfterSec ?? 0;
-    if (wait > MAX_AUTO_RETRY_WAIT_SEC) throw busy;
-    onProgress?.({ phase: 'waiting', retryInSec: wait });
-    await sleep(wait * 1000, signal);
-    onProgress?.({ phase: 'running' });
-    response = await post();
-  }
-  if (response.status === 202) {
-    const job = await response.json() as { statusUrl?: string; jobId?: string };
-    response = await awaitExportJob(job, effectiveBase, headers, options);
-  }
-  if (!response.ok) throw await errorFromResponse(response);
+  return post();
+}
 
+async function fileFromResponse(response: Response, format: StudioExportFormat): Promise<ServerExportResult> {
   const blob = await response.blob();
   const downloadName =
     response.headers

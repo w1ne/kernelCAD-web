@@ -224,6 +224,7 @@ function useDownload(props: ModelCustomizerProps, values: CustomizerValues) {
     progress: exportProgressText(task.state),
     cancel: task.cancel,
     downloadError: error ? `Export failed: ${error.message}` : null,
+    // Only the download error carries a hint; it is also the one shown first.
     downloadHint: error?.hint ?? null,
     downloadNotice: notice,
     download,
@@ -252,6 +253,12 @@ function StatusLine({ busy, message, hint, notice }: {
   );
 }
 
+/** The shipped-with-warning notice, then any ignored link values. */
+function noticeText(downloadNotice: string | null, ignoredUrlValues: readonly string[]): string | null {
+  const ignored = ignoredUrlValues.length > 0 ? `Ignored link values: ${ignoredUrlValues.join('; ')}` : null;
+  return [downloadNotice, ignored].filter(Boolean).join(' ') || null;
+}
+
 export function ModelCustomizer(props: ModelCustomizerProps): JSX.Element | null {
   const { params, busy, error, execute, debounceMs = 400 } = props;
   const [collapsed, setCollapsed] = useState(props.defaultCollapsed ?? false);
@@ -259,10 +266,7 @@ export function ModelCustomizer(props: ModelCustomizerProps): JSX.Element | null
   const { progress, cancel, downloadError, downloadHint, downloadNotice, download } = useDownload(props, state.values);
   if (params.length === 0) return null;
 
-  const notice = [
-    downloadNotice,
-    state.ignoredUrlValues.length > 0 ? `Ignored link values: ${state.ignoredUrlValues.join('; ')}` : null,
-  ].filter(Boolean).join(' ') || null;
+  const notice = noticeText(downloadNotice, state.ignoredUrlValues);
   const message = downloadError ?? state.runError ?? error ?? null;
 
   return (
@@ -299,7 +303,7 @@ export function ModelCustomizer(props: ModelCustomizerProps): JSX.Element | null
               />
             ))}
           </div>
-          <StatusLine busy={busy || state.pending} message={message} hint={downloadError ? downloadHint : null} notice={notice} />
+          <StatusLine busy={busy || state.pending} message={message} hint={downloadHint} notice={notice} />
           <footer className="flex items-center justify-between gap-2 border-t border-[#2a2a2a] px-3 py-2">
             <button
               type="button"
