@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 //
-// Runs the landing page's own inline script in jsdom: the hero embed swap and
+// Runs the landing page's own inline script in jsdom: the hero demo video and
 // the gallery rendering (community cards, curated fallback, empty state).
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
@@ -9,7 +9,15 @@ import path from 'node:path';
 import { JSDOM } from 'jsdom';
 
 const HTML = readFileSync(path.resolve(__dirname, '../../../site/index.html'), 'utf8');
+const CSS = readFileSync(path.resolve(__dirname, '../../../site/style.css'), 'utf8');
 const APP = 'https://app.kernelcad.com';
+
+const DEMO = {
+  version: 'v0.17.0',
+  heroArtifact: 'single-spool-turbojet-cutaway',
+  poster: 'demo-poster.png',
+  captured_at: '2026-09-29T12:33:03.547Z',
+};
 
 type GalleryJson = { generatedAt: string; entries: unknown[]; community?: unknown[] } | null;
 
@@ -39,6 +47,9 @@ async function loadLanding(gallery: GalleryJson) {
     beforeParse(window) {
       const w = window as unknown as Record<string, unknown>;
       w.fetch = async (url: string) => {
+        if (url === '/demo.json') {
+          return { ok: true, json: async () => DEMO };
+        }
         if (url === '/gallery.json') {
           if (gallery === null) return { ok: false, json: async () => null };
           return { ok: true, json: async () => gallery };
@@ -53,48 +64,33 @@ async function loadLanding(gallery: GalleryJson) {
   return dom.window;
 }
 
-describe('landing hero model', () => {
-  it('loads the pinned embed after the page and shows it only when the embed reports the model displayed', async () => {
+describe('landing hero', () => {
+  it('is the release demo video, not a featured model', async () => {
     const window = await loadLanding({ generatedAt: 'g', entries: [] });
     const doc = window.document;
-    const figure = doc.getElementById('hero-model')!;
-    const iframe = figure.querySelector('iframe')!;
-    const poster = figure.querySelector<HTMLImageElement>('.hero-model-poster')!;
+    const proof = doc.querySelector('.hero .hero-proof')!;
+    expect(proof).not.toBeNull();
 
-    // The poster paints first and is a same-origin asset.
-    expect(poster.getAttribute('src')).toBe('/hero-stool-light.jpg');
-    expect(poster.getAttribute('alt')).toMatch(/stool/i);
+    const key = encodeURIComponent(DEMO.captured_at);
+    const video = proof.querySelector<HTMLVideoElement>('video#demo-video')!;
+    expect(video.getAttribute('src')).toBe(`/demo.mp4?v=${key}`);
+    expect(video.getAttribute('poster')).toBe(`/demo-poster.png?v=${key}`);
+    expect(proof.querySelector('.demo-poster-art')!.getAttribute('src')).toBe(`/demo-poster.png?v=${key}`);
+    expect(doc.getElementById('demo-version')!.textContent).toBe('v0.17.0');
+    expect(doc.getElementById('demo-artifact')!.textContent).toBe('single-spool-turbojet-cutaway.kcad.ts');
 
-    window.dispatchEvent(new window.Event('load'));
-    await new Promise((r) => setTimeout(r, 350));
-    expect(iframe.src).toBe(`${APP}/embed/vEuEM4C5?revision=1`);
-    expect(figure.classList.contains('is-live')).toBe(false);
+    // No live model embed in the hero.
+    expect(doc.querySelector('.hero iframe, #hero-model')).toBeNull();
+    expect(HTML).not.toContain('hero-stool');
+  });
+});
 
-    // A message from another origin never reveals the frame.
-    window.dispatchEvent(new window.MessageEvent('message', {
-      origin: 'https://evil.example',
-      source: iframe.contentWindow,
-      data: { type: 'kernelcad.viewer-status', status: 'model_displayed' },
-    }));
-    expect(figure.classList.contains('is-live')).toBe(false);
-
-    // An embed error keeps the poster.
-    window.dispatchEvent(new window.MessageEvent('message', {
-      origin: APP,
-      source: iframe.contentWindow,
-      data: { type: 'kernelcad.viewer-status', status: 'error' },
-    }));
-    expect(figure.classList.contains('is-live')).toBe(false);
-    expect(iframe.getAttribute('aria-hidden')).toBe('true');
-
-    window.dispatchEvent(new window.MessageEvent('message', {
-      origin: APP,
-      source: iframe.contentWindow,
-      data: { type: 'kernelcad.viewer-status', status: 'model_displayed' },
-    }));
-    expect(figure.classList.contains('is-live')).toBe(true);
-    expect(iframe.hasAttribute('aria-hidden')).toBe(false);
-    expect(doc.querySelector('.hero-model-open')?.getAttribute('href')).toBe(`${APP}/p/vEuEM4C5`);
+describe('landing palette', () => {
+  it('is always the light vellum palette, whatever the system colour scheme', () => {
+    const doc = new JSDOM(HTML).window.document;
+    expect(doc.querySelector('meta[name="color-scheme"]')!.getAttribute('content')).toBe('light');
+    expect(CSS).not.toMatch(/prefers-color-scheme:\s*dark/);
+    expect(CSS).toMatch(/\.landing \{[^}]*--kc-bg: #F4ECD7;[^}]*color-scheme: light;/);
   });
 });
 
@@ -147,8 +143,11 @@ describe('landing gallery', () => {
     expect(tiles[0].getAttribute('aria-haspopup')).toBe('dialog');
     expect(tiles[0].querySelector('.card-title')!.textContent).toBe('Rocket Keychain');
     expect(tiles[0].querySelector('.card-meta')!.textContent).toBe('by @kernelcad · v0.11.0');
-    // A loading stage, not a mixed-background video frame, until the model renders.
-    expect(tiles[0].querySelector('.card-media')!.classList.contains('is-loading')).toBe(true);
+    // Every card paints its release poster first, so no card is ever blank.
+    const poster = tiles[0].querySelector<HTMLImageElement>('.card-media img.tile-poster')!;
+    expect(poster.getAttribute('src')).toBe('/gallery/rocket-keychain/poster.jpg?v=g');
+    expect(poster.getAttribute('alt')).toBe('Rocket Keychain');
+    expect(tiles[1].querySelector('.card-media img.tile-poster')).not.toBeNull();
     expect(doc.getElementById('gallery-sub')!.textContent).toMatch(/Every release ships with a build/);
     expect(doc.querySelector('.tile-studio-link')).toBeNull();
   });

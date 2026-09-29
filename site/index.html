@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="color-scheme" content="light dark" />
+  <meta name="color-scheme" content="light" />
   <meta name="description" content="Describe what you need and kernelCAD designs the part, checks it holds together, and hands you a file your shop can manufacture." />
   <meta property="og:title" content="kernelCAD — from words to manufacturable geometry" />
   <meta property="og:description" content="Describe what you need. kernelCAD designs the part, checks it holds together, and hands you a file your shop can manufacture." />
@@ -14,9 +14,8 @@
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="preconnect" href="https://app.kernelcad.com" />
   <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,500;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/style.css?v=2026-09-29-landing-s14" />
+  <link rel="stylesheet" href="/style.css?v=2026-09-29-landing-vellum" />
   <title>kernelCAD — from words to manufacturable geometry</title>
   <!--
     Cloudflare Web Analytics — anonymous beacon (no cookies, no IP storage).
@@ -85,33 +84,16 @@
         <p class="install-note" id="claude-desktop-note">Bring your own Claude — modeling, introspection &amp; review run free and unlimited. The built-in hosted agent (paid) handles generation.</p>
         <p class="install-note">Use editable .kcad.ts source and deterministic review with review_cad.</p>
       </div>
-
-      <!--
-        Live hero model: the app's /embed/<slug> viewer. The poster (a capture
-        of the same embed at the same aspect ratio) paints first; the iframe
-        loads after the page and fades in only when the embed reports
-        `model_displayed`. If the embed fails or never reports, the poster
-        stays, so the hero is never blank. Swap the model by changing
-        data-embed-slug + data-embed-revision and re-capturing both posters.
-      -->
-      <figure class="hero-model" id="hero-model"
-              data-embed-origin="https://app.kernelcad.com"
-              data-embed-slug="vEuEM4C5"
-              data-embed-revision="1">
-        <div class="hero-model-frame">
-          <picture>
-            <source srcset="/hero-stool-dark.jpg" media="(prefers-color-scheme: dark)" />
-            <img class="hero-model-poster" src="/hero-stool-light.jpg" width="1120" height="840"
-                 alt="Ratchet height-adjust stool: round seat, telescoping post with an exposed ratchet rack and pawl lever, foot ring and four splayed legs" />
-          </picture>
-          <iframe class="hero-model-live" title="Live 3D model: ratchet height-adjust stool" tabindex="-1" aria-hidden="true"
-                  allow="fullscreen" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+      <div class="hero-proof" aria-label="kernelCAD generated artifact preview">
+        <div class="demo-meta">
+          <span><span class="dot"></span><span id="demo-version">v0.8.0</span> · live build</span>
+          <span class="artifact-label" id="demo-artifact">artifact.kcad.ts</span>
         </div>
-        <figcaption class="hero-model-caption">
-          <span class="hero-model-label"><span class="dot" aria-hidden="true"></span><span id="hero-model-status">Live model · drag to rotate</span></span>
-          <a class="hero-model-open" href="https://app.kernelcad.com/p/vEuEM4C5">Open and change it →</a>
-        </figcaption>
-      </figure>
+        <div class="demo-frame">
+          <img class="demo-poster-art" src="/demo-poster.png" alt="Generated kernelCAD artifact" />
+          <video id="demo-video" autoplay muted loop playsinline preload="metadata" poster="/demo-poster.png"></video>
+        </div>
+      </div>
     </header>
 
     <section class="capabilities" aria-label="kernelCAD capabilities">
@@ -277,38 +259,24 @@
       return `${url}${separator}v=${encodeURIComponent(cacheKey)}`;
     }
 
-    // ---- Hero: live model embed over its poster ----------------------------
-    (function mountHeroModel() {
-      const figure = document.getElementById('hero-model');
-      if (!figure) return;
-      const iframe = figure.querySelector('.hero-model-live');
-      const status = document.getElementById('hero-model-status');
-      const origin = figure.dataset.embedOrigin;
-      const embedUrl = `${origin}/embed/${encodeURIComponent(figure.dataset.embedSlug)}`
-        + `?revision=${encodeURIComponent(figure.dataset.embedRevision)}`;
-
-      window.addEventListener('message', (event) => {
-        if (event.origin !== origin || event.source !== iframe.contentWindow) return;
-        const data = event.data;
-        if (!data || data.type !== 'kernelcad.viewer-status') return;
-        if (data.status === 'model_displayed' && !figure.classList.contains('is-live')) {
-          figure.classList.add('is-live');
-          iframe.removeAttribute('aria-hidden');
-          iframe.removeAttribute('tabindex');
-        } else if (data.status === 'error' && !figure.classList.contains('is-live')) {
-          // Keep the poster; point to the model page instead of a broken canvas.
-          status.textContent = 'Model preview';
-        }
+    // ---- Hero: demo video + version from build-time generated demo.json --
+    fetch('/demo.json')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        if (!d) return;
+        const demoCacheKey = encodeURIComponent(d.captured_at || d.source || d.version);
+        const demoVideo = document.getElementById('demo-video');
+        demoVideo.src = `/demo.mp4?v=${demoCacheKey}`;
+        if (d.poster) demoVideo.poster = `/${d.poster}?v=${demoCacheKey}`;
+        const posterArt = document.querySelector('.demo-poster-art');
+        if (posterArt && d.poster) posterArt.src = `/${d.poster}?v=${demoCacheKey}`;
+        demoVideo.addEventListener('timeupdate', () => {
+          if (demoVideo.currentTime > 2.5) posterArt?.classList.add('is-hidden');
+        });
+        document.getElementById('demo-version').textContent = d.version;
+        const artifact = d.heroArtifact || d.task || 'artifact';
+        document.getElementById('demo-artifact').textContent = `${artifact}.kcad.ts`;
       });
-
-      // Load the live viewer after the page itself, so it never delays first paint.
-      const start = () => { iframe.src = embedUrl; };
-      const whenIdle = () => ('requestIdleCallback' in window)
-        ? requestIdleCallback(start, { timeout: 2000 })
-        : setTimeout(start, 300);
-      if (document.readyState === 'complete') whenIdle();
-      else window.addEventListener('load', whenIdle, { once: true });
-    })();
 
     // ---- Gallery -----------------------------------------------------------
     let modelViewerLoading = null;
@@ -378,26 +346,21 @@
       return viewer;
     }
 
-    // Curated tiles show a loading stage, then a slowly turning model on the
-    // uniform card background once they come near the viewport. If the viewer
-    // cannot load, the tile falls back to its poster image.
-    function showTilePoster(media, entry, galleryCacheKey) {
-      media.classList.remove('is-loading');
-      media.textContent = '';
-      media.appendChild(posterImg(cacheKeyedUrl(entry.posterUrl, galleryCacheKey), entry.title));
-    }
-
+    // Curated tiles paint their release poster first, so a card is never
+    // blank. Near the viewport the tile mounts a slowly turning model over the
+    // poster; the poster goes only once the model has loaded. If the viewer
+    // cannot load, the poster stays.
     function upgradeGalleryTile(tile, entry, galleryCacheKey) {
       if (tile.dataset.modelViewerUpgraded === 'true') return;
 
       tile.dataset.modelViewerUpgraded = 'true';
       const media = tile.querySelector('.card-media');
       const viewer = createGalleryViewer(entry, galleryCacheKey, 'tile-viewer');
-      viewer.addEventListener('load', () => media.classList.remove('is-loading'), { once: true });
-      viewer.addEventListener('error', () => showTilePoster(media, entry, galleryCacheKey), { once: true });
-      media.prepend(viewer);
+      viewer.addEventListener('load', () => media.querySelector('.tile-poster')?.remove(), { once: true });
+      viewer.addEventListener('error', () => viewer.remove(), { once: true });
+      media.appendChild(viewer);
       loadModelViewer().then((ok) => {
-        if (!ok) showTilePoster(media, entry, galleryCacheKey);
+        if (!ok) viewer.remove();
       });
     }
 
@@ -503,7 +466,7 @@
         tile.classList.add('gallery-tile');
         tile.dataset.slug = entry.slug;
         tile.setAttribute('aria-haspopup', 'dialog');
-        media.classList.add('is-loading');
+        media.appendChild(posterImg(cacheKeyedUrl(entry.posterUrl, galleryCacheKey), entry.title));
         tile.__entry = entry;
         armGalleryTileUpgrade(tile, entry, galleryCacheKey);
         tile.addEventListener('click', () => {
