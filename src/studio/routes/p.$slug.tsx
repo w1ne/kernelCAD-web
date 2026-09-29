@@ -16,7 +16,6 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useCallback, useEffect, useState, type JSX, type ReactNode } from 'react';
 import { ArrowLeft, ArrowUpRight, PanelsTopLeft } from 'lucide-react';
 import App, { LiveCodeApplier } from '../App';
-import { MadeWithKernelcad } from '../components/MadeWithKernelcad';
 import { AnonProjectBanner, ProjectClaimControl } from './-ProjectClaimControl';
 import { useProjectClaim, type ProjectClaimState } from './-useProjectClaim';
 import { ProjectViewerActions } from './-ProjectViewerActions';
@@ -389,9 +388,6 @@ function StudioProjectView({ slug, project, session, live, claim, onUpgrade }: P
       >
         ●<span className="hidden md:inline"> live</span>
       </span>
-      {/* In the header, not over the viewport: the viewport's bottom-left
-          corner holds the parameter chips. */}
-      <MadeWithKernelcad surface="share" className="relative shrink-0 whitespace-nowrap" />
     </div>
   );
 
