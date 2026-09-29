@@ -155,8 +155,8 @@ function AgentUnavailableCard({ enableConnect }: { enableConnect: boolean }): JS
 
 function AgentPane({ access, enableConnect }: { access: AgentAccess; enableConnect: boolean }): JSX.Element | null {
     if (access === 'ready') {
-        // AgentRail keeps its own width; the pane decides it here.
-        return <div className="min-h-0 flex-1 overflow-y-auto [&>aside]:!w-full [&>aside]:border-r-0"><AgentRail /></div>;
+        // AgentRail sizes itself: 360 px and resizable, full width on a phone.
+        return <div className="flex min-h-0 flex-1 flex-col"><AgentRail /></div>;
     }
     if (access === 'loading') {
         return <div role="status" aria-live="polite" className="p-3 text-ui text-fg-3">Checking your session…</div>;
@@ -393,7 +393,8 @@ export function ActivityBar({ enableAgent, enableConnect, viewerMode }: Activity
                     aria-label={PANE_TITLE[shown]}
                     data-testid={`left-pane-${shown}`}
                     className={cx(
-                        'flex w-panel shrink-0 flex-col border-r border-border bg-surface-1 text-fg',
+                        'flex shrink-0 flex-col border-r border-border bg-surface-1 text-fg',
+                        !narrow && (shown === 'agent' ? 'w-auto' : 'w-panel'),
                         // Phone: over the model, not beside it.
                         narrow && 'absolute inset-y-0 left-rail z-[1002] w-[min(320px,calc(100vw-44px))] shadow-e3',
                     )}
