@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 /** @vitest-environment jsdom */
 import React from 'react';
-import { cleanup, render, screen } from '@testing-library/react';
+import { act, cleanup, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { StudioRecomputeResult } from '../../types';
@@ -13,6 +13,8 @@ const mockSelectFeature = vi.fn();
 const mockSetCode = vi.fn();
 const revealLineInCenter = vi.fn();
 const setModelMarkers = vi.fn();
+const deltaDecorations = vi.fn((_old: string[], next: unknown[]) => next.map((_, i) => `d${i}`));
+const mockCode = { value: '// hello' };
 
 vi.mock('../../hooks/useRecomputeResult', () => ({
     useRecomputeResult: () => mockUseRecomputeResult(),
@@ -27,7 +29,7 @@ vi.mock('../../hooks/useFeatureSelection', () => ({
 
 vi.mock('../../context/WorkbenchContext', () => ({
     useWorkbench: () => ({
-        code: '// hello',
+        code: mockCode.value,
         setCode: mockSetCode,
     }),
 }));
@@ -48,6 +50,7 @@ vi.mock('@monaco-editor/react', () => ({
                 executeEdits: vi.fn(),
                 setPosition: vi.fn(),
                 revealLineInCenter,
+                deltaDecorations,
                 focus: vi.fn(),
                 onMouseDown: vi.fn(),
             };
@@ -70,6 +73,7 @@ vi.mock('@monaco-editor/react', () => ({
 }));
 
 import { CodeTab } from '../../tabs/CodeTab';
+import { selectionCodeStore } from '../../selectionCode/selectionCodeStore';
 
 function partFeature(id: string, line: number, column = 1): FeatureRecord {
     return {
@@ -110,6 +114,9 @@ function baseResult(overrides: Partial<StudioRecomputeResult>): StudioRecomputeR
 
 afterEach(() => {
     cleanup();
+    selectionCodeStore.reset();
+    deltaDecorations.mockClear();
+    mockCode.value = '// hello';
     revealLineInCenter.mockReset();
     setModelMarkers.mockReset();
     mockSelectFeature.mockReset();
@@ -175,5 +182,23 @@ describe('CodeTab', () => {
         rerender(<CodeTab />);
 
         expect(revealLineInCenter).not.toHaveBeenCalled();
+    });
+
+    it('decorates the call that made a face clicked in the viewer', () => {
+        mockCode.value = 'const b = box(1, 2, 3);\nreturn b;';
+        const box: FeatureRecord = { ...partFeature('box_1', 1, 11), kind: 'box', metadata: {} };
+        mockUseRecomputeResult.mockReturnValue(baseResult({ features: [box] }));
+
+        render(<CodeTab />);
+        act(() => {
+            selectionCodeStore.linkFromGeometry({ shapeIndex: 0, kind: 'face', id: 2 }, 'box_1', null);
+        });
+
+        const [, next] = deltaDecorations.mock.calls.at(-1)!;
+        expect(next).toEqual([expect.objectContaining({
+            range: { startLineNumber: 1, startColumn: 11, endLineNumber: 1, endColumn: 23 },
+        })]);
+        cleanup();
+        expect(deltaDecorations.mock.calls.at(-1)![1]).toEqual([]);
     });
 });

@@ -33,6 +33,7 @@ export type LinkSurface =
   | 'part'
   | 'studio'
   | 'embed'
+  | 'embed-remix'
   | 'share'
   | 'drawing'
   | 'export';
@@ -71,6 +72,14 @@ export function attributionUrl(
   url.searchParams.set('utm_source', 'kernelcad');
   url.searchParams.set('utm_medium', surface);
   return url.toString();
+}
+
+/**
+ * App link that opens a project and starts its remix flow (sign-in first when
+ * needed): `<app>/p/<slug>?remix=1`, tagged `ref=embed-remix`.
+ */
+export function remixUrl(slug: string): string {
+  return attributionUrl('embed-remix', `${KERNELCAD_APP_URL}/p/${encodeURIComponent(slug)}?remix=1`);
 }
 
 /**

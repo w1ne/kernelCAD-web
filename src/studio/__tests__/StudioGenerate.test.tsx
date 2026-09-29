@@ -330,6 +330,51 @@ describe('StudioGenerate', () => {
         );
     });
 
+    it('marks a best-so-far (partial) result unverified and shows the server note', () => {
+        mockGeneration.phase = {
+            state: 'done',
+            generationId: 'gen-partial',
+            anonId: 'anon-partial',
+            artifact: { title: 'Twisted vase', code: 'return box(1, 1, 1);', parameters: [], suggestions: [] },
+            partial: {
+                reason: 'timeout',
+                stage: 'writing_code',
+                unverified: ['interference'],
+                note: 'The time limit was reached while writing the script. Not verified: interference.',
+            },
+        };
+
+        render(<StudioGenerate />);
+
+        expect(screen.getByText(/unverified/)).toBeTruthy();
+        expect(screen.queryByText(/✓ verified/)).toBeNull();
+        expect(screen.getByRole('status').textContent).toMatch(/time limit/);
+        // The user can still stage it and continue from it.
+        expect(screen.getByRole('button', { name: /stage edit/i })).toBeTruthy();
+    });
+
+    it('keeps the verified badge for a normal result', () => {
+        mockGeneration.phase = {
+            state: 'done',
+            generationId: 'gen-ok',
+            anonId: 'anon-ok',
+            artifact: { title: 'Plate', code: 'return box(1, 1, 1);', parameters: [], suggestions: [] },
+        };
+        render(<StudioGenerate />);
+        expect(screen.getByText(/✓ verified/)).toBeTruthy();
+    });
+
+    it('shows server progress stages while the agent runs', () => {
+        mockGeneration.phase = { state: 'running', lastEvent: { kind: 'status', phase: 'running' } };
+        mockGeneration.events = [
+            { kind: 'attached', message: 'already running' },
+            { kind: 'progress', stage: 'evaluating', message: 'Evaluating the script', elapsedMs: 42_400 },
+        ];
+        render(<StudioGenerate />);
+        expect(screen.getByText('Evaluating the script · 42s')).toBeTruthy();
+        expect(screen.getByText(/already running/)).toBeTruthy();
+    });
+
     it('stages a generated artifact instead of applying it directly', () => {
         mockCode.code = 'const oldPart = box(10, 10, 10);\nreturn oldPart;';
         mockGeneration.phase = {

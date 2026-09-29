@@ -9,6 +9,9 @@ import type { EditorLike } from '../../shared/types/editor';
 import { useRecomputeResult } from '../hooks/useRecomputeResult';
 import { useFeatureSelection } from '../hooks/useFeatureSelection';
 import { useWorkbench } from '../context/WorkbenchContext';
+import { getFeatureSourceIndex } from '../selectionCode/featureSourceIndex';
+import { attachCodeGeometrySync, type CodeGeometrySync, type SyncEditorLike } from '../selectionCode/codeGeometrySync';
+import { selectionCodeStore } from '../selectionCode/selectionCodeStore';
 
 /**
  * Monaco-backed Code tab for the Studio shell.
@@ -23,6 +26,9 @@ import { useWorkbench } from '../context/WorkbenchContext';
  *      so the editor scrolls to follow tri-pane sync. A "user-driven" ref
  *      gates the reveal so a click inside the Code tab doesn't fight a
  *      reveal back to itself.
+ *   4. Selection ↔ code link (`selectionCode/codeGeometrySync`): a face or
+ *      edge clicked in the viewer decorates the call that made it; a user
+ *      cursor move or hover here tints the geometry that call made.
  *
  * Reveal is a soft binding: if the selection doesn't map to a feature with
  * a `scriptLocation`, no-op.
@@ -103,10 +109,22 @@ export function CodeTab(): JSX.Element {
     const editorRef = useRef<EditorLike | null>(null);
     const monacoRef = useRef<MonacoNamespaceLike | null>(null);
     const userDrivenRef = useRef<boolean>(false);
+    const syncRef = useRef<CodeGeometrySync | null>(null);
+    // Latest evaluation + source for the link index getter (read lazily, so
+    // typing never rebuilds the index).
+    const indexInputRef = useRef({ code: workbench.code ?? '', features });
+    useEffect(() => {
+        indexInputRef.current = { code: workbench.code ?? '', features };
+    }, [workbench.code, features]);
 
     const handleMount = useCallback((editor: unknown, monaco: unknown) => {
         editorRef.current = editor as EditorLike;
         monacoRef.current = monaco as MonacoNamespaceLike;
+        syncRef.current?.dispose();
+        syncRef.current = attachCodeGeometrySync(editor as SyncEditorLike, {
+            store: selectionCodeStore,
+            getIndex: () => getFeatureSourceIndex(indexInputRef.current.code, indexInputRef.current.features),
+        });
 
         // Treat any click / keypress inside the editor as user-driven so a
         // selection update originating here does not loop back into a
@@ -119,6 +137,16 @@ export function CodeTab(): JSX.Element {
             userDrivenRef.current = true;
         });
     }, []);
+
+    useEffect(() => () => {
+        syncRef.current?.dispose();
+        syncRef.current = null;
+    }, []);
+
+    // A re-evaluation can move feature call sites; re-apply the link.
+    useEffect(() => {
+        syncRef.current?.refresh();
+    }, [features]);
 
     useEffect(() => {
         const editor = editorRef.current;

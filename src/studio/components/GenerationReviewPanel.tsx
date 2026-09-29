@@ -1,20 +1,24 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { DiffEditor } from '@monaco-editor/react';
-import type { Artifact } from '../../funnel/lib/generateClient';
+import type { Artifact, GenerationPartial } from '../../funnel/lib/generateClient';
 import type { StagedEdit } from '../store/shellStore';
 
 /**
  * Review gate: diff + verified badge + accept/reject. Never auto-applies.
+ * A partial result (best-so-far script after a time/token limit) shows an
+ * "unverified" badge and the server's note instead of "verified".
  */
 export function GenerationReviewPanel({
     artifact,
+    partial,
     baseline,
     stagedEdit,
     onStage,
     onReject,
 }: {
     artifact: Artifact;
+    partial?: GenerationPartial;
     baseline: string;
     stagedEdit: StagedEdit | null;
     onStage: () => void;
@@ -33,10 +37,21 @@ export function GenerationReviewPanel({
                 <div className="text-[10px] text-gray-300 truncate" title={artifact.title}>
                     {artifact.title}
                 </div>
-                <div className="text-[10px] text-green-500 whitespace-nowrap" title="Built and passed the kernel gates">
-                    ✓ verified
-                </div>
+                {partial ? (
+                    <div className="text-[10px] text-amber-400 whitespace-nowrap" title={partial.note}>
+                        ⚠ unverified
+                    </div>
+                ) : (
+                    <div className="text-[10px] text-green-500 whitespace-nowrap" title="Built and passed the kernel gates">
+                        ✓ verified
+                    </div>
+                )}
             </div>
+            {partial && (
+                <div className="rounded border border-amber-900/60 bg-amber-950/30 px-2 py-1 text-[10px] text-amber-200" role="status">
+                    {partial.note}
+                </div>
+            )}
             <div className="rounded overflow-hidden border border-[#2a2e38]" style={{ height: 180 }}>
                 <DiffEditor
                     original={baseline}

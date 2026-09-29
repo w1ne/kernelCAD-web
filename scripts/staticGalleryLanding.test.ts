@@ -180,4 +180,27 @@ describe('static gallery landing page', () => {
     expect(stack).toContain('href="https://koamtachi.com"');
     expect(stack).toContain('href="https://shylenko.com"');
   });
+
+  it('sends /gallery to the app community gallery and links it from the nav and footer', () => {
+    const redirects = readFileSync(path.resolve(__dirname, '../site/_redirects'), 'utf8');
+    const rules = redirects
+      .split('\n')
+      .map(l => l.trim())
+      .filter(l => l && !l.startsWith('#'))
+      .map(l => l.split(/\s+/));
+    const exact = rules.findIndex(r => r[0] === '/gallery');
+    const slash = rules.findIndex(r => r[0] === '/gallery/');
+    const assets = rules.findIndex(r => r[0] === '/gallery/*');
+    expect(rules[exact]).toEqual(['/gallery', 'https://app.kernelcad.com/gallery', '301']);
+    expect(rules[slash]).toEqual(['/gallery/', 'https://app.kernelcad.com/gallery', '301']);
+    // First match wins: both must come before the curated-asset splat.
+    expect(exact).toBeLessThan(assets);
+    expect(slash).toBeLessThan(assets);
+
+    const html = readFileSync(path.resolve(__dirname, '../site/index.html'), 'utf8');
+    const nav = html.slice(html.indexOf('<div class="nav-links">'), html.indexOf('</nav>'));
+    expect(nav).toContain('<a href="/gallery">gallery</a>');
+    const footer = html.slice(html.indexOf('<footer class="footer">'), html.indexOf('</footer>'));
+    expect(footer).toContain('<a href="/gallery">gallery</a>');
+  });
 });

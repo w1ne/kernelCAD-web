@@ -61,3 +61,12 @@ body {
  * body no longer needs the global viewport lock. Removing it lets the
  * landing route (/) scroll past the fold so users can reach the "Built with
  * kernelCAD" gallery and the "Get notified" email signup below the prompt. */
+
+/* Selection ↔ code link: the source range of the feature that made the face
+ * or edge clicked in the viewer (Monaco decoration, CodeTab). Selection teal,
+ * matching the clicked face. */
+.kc-code-link {
+    background-color: rgba(46, 196, 182, 0.22);
+    box-shadow: inset 0 -2px 0 var(--selection-blue);
+    border-radius: 2px;
+}

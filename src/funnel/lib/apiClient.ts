@@ -147,6 +147,99 @@ export async function fetchProjectBySlug(slug: string): Promise<ProjectRow | nul
 }
 
 // ---------------------------------------------------------------------------
+// Community gallery + remix (kernelCAD-server galleryRouter / cloneRouter).
+//   GET   /api/v1/gallery?sort=&cursor=&limit=   -> GalleryPage (public)
+//   GET   /api/v1/projects/:slug/gallery         -> ProjectGalleryState
+//   PATCH /api/v1/projects/:slug/gallery         -> { listed, listedAt } (owner)
+//   POST  /api/v1/projects/:slug/report          -> { ok }
+//   POST  /api/v1/projects/:slug/clone           -> { slug, projectId }
+// ---------------------------------------------------------------------------
+
+export type GallerySort = 'new' | 'remixed' | 'featured';
+
+export interface ProjectRef {
+  slug: string;
+  title: string;
+}
+
+export interface GalleryItem {
+  slug: string;
+  title: string;
+  /** Owner display name; null when they have none (show "anonymous"). */
+  ownerName: string | null;
+  /** Short-lived signed URL of the card render; null if unavailable. */
+  renderUrl: string | null;
+  remixCount: number;
+  featured: boolean;
+  /** Source this project was remixed from, while that source is public. */
+  forkedFrom: ProjectRef | null;
+  listedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GalleryPage {
+  items: GalleryItem[];
+  /** Pass back as `cursor` for the next page; null on the last page. */
+  nextCursor: string | null;
+}
+
+export async function fetchGallery(
+  sort: GallerySort,
+  cursor?: string | null,
+  limit?: number,
+): Promise<GalleryPage> {
+  const qs = new URLSearchParams({ sort });
+  if (cursor) qs.set('cursor', cursor);
+  if (limit !== undefined) qs.set('limit', String(limit));
+  return authedFetch<GalleryPage>('GET', `/api/v1/gallery?${qs.toString()}`);
+}
+
+export interface ProjectGalleryState {
+  /** The project currently appears in the gallery. */
+  listed: boolean;
+  listedAt: string | null;
+  /** The signed-in caller owns the project. */
+  isOwner: boolean;
+  /** Owner-only: hidden from the gallery by moderation. */
+  hidden: boolean;
+  /** Owner-only: a render image exists, so the project can be published. */
+  hasRender: boolean;
+  remixCount: number;
+  forkedFrom: ProjectRef | null;
+}
+
+export async function fetchProjectGalleryState(slug: string): Promise<ProjectGalleryState> {
+  return authedFetch<ProjectGalleryState>('GET', `/api/v1/projects/${encodeURIComponent(slug)}/gallery`);
+}
+
+/** Error codes the publish call can fail with (in the thrown message body). */
+export const GALLERY_RENDER_REQUIRED = 'render_required';
+export const GALLERY_NOT_PUBLIC = 'not_public';
+export const GALLERY_HIDDEN = 'hidden_by_moderation';
+
+/** Owner-only publish/unpublish. Publishing needs a public project with a
+ *  captured render; it fails with GALLERY_RENDER_REQUIRED / GALLERY_NOT_PUBLIC
+ *  / GALLERY_HIDDEN otherwise. */
+export async function setProjectGalleryListed(
+  slug: string,
+  listed: boolean,
+): Promise<{ listed: boolean; listedAt: string | null }> {
+  return authedFetch('PATCH', `/api/v1/projects/${encodeURIComponent(slug)}/gallery`, { listed });
+}
+
+/** Report a project for moderation. Works signed out; rate limited per IP. */
+export async function reportProject(slug: string, reason: string): Promise<{ ok: true }> {
+  return authedFetch('POST', `/api/v1/projects/${encodeURIComponent(slug)}/report`, { reason });
+}
+
+/** Remix: copy a readable project into a new project owned by the caller
+ *  (signed in). The copy records its source, which credits it on /p/<slug>. */
+export async function remixProject(slug: string): Promise<{ slug: string; projectId: string }> {
+  return authedFetch('POST', `/api/v1/projects/${encodeURIComponent(slug)}/clone`, {});
+}
+
+// ---------------------------------------------------------------------------
 // Server-side revision history (Supabase-backed, owner-or-slug auth).
 //   GET  /api/v1/projects/:slug/revisions            -> { revisions: [...] }
 //   POST /api/v1/projects/:slug/revisions/:v/restore -> { version }
