@@ -15,7 +15,7 @@ export interface ClientPickerProps {
 }
 
 /**
- * The agent picker: a grid of tabs (2 columns on a phone, 6 on a desktop).
+ * The agent picker: a grid of tabs (2 columns on a phone, 3 on wider screens).
  * Arrow keys, Home and End move between agents.
  */
 export function ClientPicker({ value, onChange }: ClientPickerProps): JSX.Element {
@@ -36,7 +36,7 @@ export function ClientPicker({ value, onChange }: ClientPickerProps): JSX.Elemen
   };
 
   return (
-    <div role="tablist" aria-label="Your agent" onKeyDown={move} className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+    <div role="tablist" aria-label="Your agent" onKeyDown={move} className="grid grid-cols-2 gap-2 sm:grid-cols-3">
       {CONNECT_CLIENTS.map((c) => {
         const selected = c.id === value;
         return (

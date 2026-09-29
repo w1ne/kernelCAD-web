@@ -22,11 +22,21 @@ export function BrandMark({ className }: { readonly className?: string }): JSX.E
 
 export type FunnelPage = 'generate' | 'connect' | 'pricing' | 'signin' | 'other';
 
-const LINKS: ReadonlyArray<{ id: FunnelPage | 'gallery' | 'me'; label: string; href: string; wide?: boolean }> = [
-  { id: 'gallery', label: 'Gallery', href: '/gallery', wide: true },
+interface HeaderLink {
+  readonly id: FunnelPage | 'gallery' | 'me';
+  readonly label: string;
+  /** Shorter label below the sm breakpoint. */
+  readonly short?: string;
+  readonly href: string;
+  /** Hidden on a phone. */
+  readonly wideOnly?: boolean;
+}
+
+const LINKS: readonly HeaderLink[] = [
+  { id: 'gallery', label: 'Gallery', href: '/gallery', wideOnly: true },
   { id: 'connect', label: 'Connect', href: '/connect' },
   { id: 'pricing', label: 'Pricing', href: '/pricing' },
-  { id: 'me', label: 'Your projects', href: '/me' },
+  { id: 'me', label: 'Your projects', short: 'Projects', href: '/me' },
 ];
 
 export interface FunnelHeaderProps {
@@ -50,12 +60,19 @@ export function FunnelHeader({ current, end }: FunnelHeaderProps): JSX.Element {
             href={l.href}
             aria-current={l.id === current ? 'page' : undefined}
             className={cx(
-              'focus-ring inline-flex min-h-touch items-center rounded-control px-2 text-ui font-medium no-underline transition-colors duration-80 sm:min-h-control-md sm:px-2.5',
+              'focus-ring min-h-touch items-center whitespace-nowrap rounded-control px-2 text-ui font-medium no-underline transition-colors duration-80 sm:min-h-control-md sm:px-2.5',
+              l.wideOnly ? 'hidden sm:inline-flex' : 'inline-flex',
               l.id === current ? 'text-fg' : 'text-fg-2 hover:text-fg',
-              l.wide && 'hidden sm:inline-flex',
             )}
           >
-            {l.label}
+            {l.short ? (
+              <>
+                <span className="sm:hidden">{l.short}</span>
+                <span className="hidden sm:inline">{l.label}</span>
+              </>
+            ) : (
+              l.label
+            )}
           </a>
         ))}
         {end}

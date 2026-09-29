@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { EmailSignup } from '../../funnel/components/EmailSignup';
+import { FunnelHeader } from '../../funnel/components/FunnelHeader';
 import { GallerySection } from '../../funnel/components/GallerySection';
 import { SignInModal } from '../../funnel/components/SignInModal';
 import { useGeneration } from '../../funnel/hooks/useGeneration';
@@ -32,6 +33,16 @@ function GeneratePage() {
   const [signInOpen, setSignInOpen] = useState(false);
   const [upgradeBusy, setUpgradeBusy] = useState(false);
   const [initialPrompt] = useState(readInitialPrompt);
+  // The last prompt sent, for "Try again" after a failure.
+  const lastPrompt = useRef('');
+
+  const run = useCallback(
+    (prompt: string) => {
+      lastPrompt.current = prompt;
+      void submit(prompt);
+    },
+    [submit],
+  );
 
   const handleUpgrade = useCallback(async () => {
     // Unauthenticated rate-limit (e.g. anon path) -> push into sign-in first.
@@ -63,9 +74,9 @@ function GeneratePage() {
         setSignInOpen(true);
         return;
       }
-      void submit(prompt);
+      run(prompt);
     },
-    [agentEnabled, session, submit],
+    [agentEnabled, session, run],
   );
 
   // After OAuth returns with a session, auto-resume the stashed prompt.
@@ -81,21 +92,27 @@ function GeneratePage() {
     }
     if (pending) {
       window.localStorage.removeItem(PENDING_PROMPT_KEY);
+      lastPrompt.current = pending;
       void submit(pending);
     }
   }, [agentEnabled, sessionLoading, session, phase.state, submit]);
 
-  useEffect(() => {
-    if (phase.state === 'done') {
-      navigate({ to: '/g/$genId', params: { genId: phase.generationId } });
-    }
+  const openResult = useCallback(() => {
+    if (phase.state === 'done') navigate({ to: '/g/$genId', params: { genId: phase.generationId } });
   }, [phase, navigate]);
+
+  // A complete result opens right away. A partial one waits on the page, so
+  // the user reads what was not checked before opening it.
+  useEffect(() => {
+    if (phase.state === 'done' && !phase.partial) openResult();
+  }, [phase, openResult]);
 
   const isBusy = phase.state === 'running';
 
   return (
-    <main className="min-h-screen bg-vellum text-ink font-sans">
-      <div className="max-w-[1040px] mx-auto px-5 sm:px-10 py-7">
+    <div className="min-h-screen bg-bg font-sans text-fg">
+      <FunnelHeader current="generate" />
+      <main className="mx-auto max-w-5xl px-4 sm:px-6">
         <GenerateHero
           agentEnabled={agentEnabled}
           isBusy={isBusy}
@@ -108,11 +125,16 @@ function GeneratePage() {
           events={events}
           upgradeBusy={upgradeBusy}
           onUpgrade={handleUpgrade}
+          onSignIn={() => setSignInOpen(true)}
+          onOpenResult={openResult}
+          onRetry={() => handleSubmit(lastPrompt.current)}
         />
 
         <GallerySection />
+      </main>
+      <footer className="mx-auto max-w-5xl border-t border-border px-4 py-8 sm:px-6">
         <EmailSignup />
-      </div>
+      </footer>
 
       <SignInModal
         open={signInOpen}
@@ -120,6 +142,6 @@ function GeneratePage() {
         title="Sign in to generate"
         description="Your description will be kept."
       />
-    </main>
+    </div>
   );
 }

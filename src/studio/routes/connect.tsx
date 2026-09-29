@@ -8,7 +8,8 @@ import { CopyField } from '../../funnel/components/CopyField';
 import { FunnelHeader } from '../../funnel/components/FunnelHeader';
 import { useOptionalSession } from '../../funnel/hooks/useSession';
 import { ClientPanel, ClientPicker } from '../connect/ConnectClientPanel';
-import { ConnectCheck, useFirstModelWatch } from '../connect/ConnectCheck';
+import { ConnectCheck } from '../connect/ConnectCheck';
+import { useFirstModelWatch } from '../connect/useFirstModelWatch';
 import { connectClient, STARTER_PROMPT, type ConnectClientId } from '../connect/connectClients';
 import { claudeNewChatLink, MCP_URL, NPX_LOCAL_CMD } from '../connect/connectLinks';
 
@@ -69,7 +70,6 @@ function ConnectPage(): JSX.Element {
           Add one URL to ChatGPT, Claude, Claude Code or Codex. Your agent then designs real CAD models, checks that they
           build, and saves them to your projects. It takes about two minutes.
         </p>
-        <CopyField className="mt-6" caption="MCP server URL" value={MCP_URL} copyLabel="Copy the MCP URL" />
 
         <Section n={1} title="Pick your agent">
           <ClientPicker value={clientId} onChange={setClientId} />
@@ -117,6 +117,10 @@ function ConnectPage(): JSX.Element {
               see pricing
             </a>
             .
+          </p>
+          <p className="mt-2">
+            Another MCP client? Add <code className="font-mono text-code-lg text-fg">{MCP_URL}</code> as a streamable HTTP
+            server; it signs in with OAuth.
           </p>
           <p className="mt-2">
             Run it on your machine, no account: <code className="font-mono text-code-lg text-fg">{NPX_LOCAL_CMD}</code>
