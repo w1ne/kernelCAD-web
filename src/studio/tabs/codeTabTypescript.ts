@@ -22,6 +22,7 @@
  *     its diagnostics and maps them back onto the editor as markers.
  * Real mistakes (`boxx(...)`, a wrong argument type) are still flagged.
  */
+import { useCallback, useEffect, useRef } from 'react';
 
 /** Compiler options for the Code tab. Numeric values are the TypeScript enum
  *  members named in the comments (Monaco takes the numbers). Every model is a
@@ -276,4 +277,38 @@ export function attachKcadDiagnostics(
             checkModel.dispose();
         },
     };
+}
+
+/**
+ * React wiring for the Code tab: pass `beforeMount` to the Monaco editor's
+ * `beforeMount` and call `attach(editor, monaco)` from its `onMount`. The type
+ * check is disposed on unmount.
+ */
+export function useKcadTypeCheck(): {
+    beforeMount: (monaco: unknown) => void;
+    attach: (editor: unknown, monaco: unknown) => void;
+} {
+    const readyRef = useRef<Promise<boolean> | null>(null);
+    const handleRef = useRef<{ dispose: () => void } | null>(null);
+
+    const beforeMount = useCallback((monaco: unknown) => {
+        readyRef.current = configureKcadTypescript(monaco as MonacoTypescriptHostLike);
+    }, []);
+
+    const attach = useCallback((editor: unknown, monaco: unknown) => {
+        const host = monaco as MonacoTypescriptHostLike;
+        handleRef.current?.dispose();
+        handleRef.current = attachKcadDiagnostics(
+            host,
+            editor as KcadEditorLike,
+            readyRef.current ?? configureKcadTypescript(host),
+        );
+    }, []);
+
+    useEffect(() => () => {
+        handleRef.current?.dispose();
+        handleRef.current = null;
+    }, []);
+
+    return { beforeMount, attach };
 }

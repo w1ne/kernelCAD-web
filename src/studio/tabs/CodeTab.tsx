@@ -12,12 +12,7 @@ import { useWorkbench } from '../context/WorkbenchContext';
 import { getFeatureSourceIndex } from '../selectionCode/featureSourceIndex';
 import { attachCodeGeometrySync, type CodeGeometrySync, type SyncEditorLike } from '../selectionCode/codeGeometrySync';
 import { selectionCodeStore } from '../selectionCode/selectionCodeStore';
-import {
-    attachKcadDiagnostics,
-    configureKcadTypescript,
-    type KcadEditorLike,
-    type MonacoTypescriptHostLike,
-} from './codeTabTypescript';
+import { useKcadTypeCheck } from './codeTabTypescript';
 
 /**
  * Monaco-backed Code tab for the Studio shell.
@@ -126,12 +121,7 @@ export function CodeTab(): JSX.Element {
         indexInputRef.current = { code: workbench.code ?? '', features };
     }, [workbench.code, features]);
 
-    const typingsReadyRef = useRef<Promise<boolean> | null>(null);
-    const typeCheckRef = useRef<{ dispose: () => void } | null>(null);
-
-    const handleBeforeMount = useCallback((monaco: unknown) => {
-        typingsReadyRef.current = configureKcadTypescript(monaco as MonacoTypescriptHostLike);
-    }, []);
+    const { beforeMount: handleBeforeMount, attach: attachTypeCheck } = useKcadTypeCheck();
 
     const handleMount = useCallback((editor: unknown, monaco: unknown) => {
         editorRef.current = editor as EditorLike;
@@ -141,12 +131,7 @@ export function CodeTab(): JSX.Element {
             store: selectionCodeStore,
             getIndex: () => getFeatureSourceIndex(indexInputRef.current.code, indexInputRef.current.features),
         });
-        typeCheckRef.current?.dispose();
-        typeCheckRef.current = attachKcadDiagnostics(
-            monaco as MonacoTypescriptHostLike,
-            editor as KcadEditorLike,
-            typingsReadyRef.current ?? configureKcadTypescript(monaco as MonacoTypescriptHostLike),
-        );
+        attachTypeCheck(editor, monaco);
 
         // Treat any click / keypress inside the editor as user-driven so a
         // selection update originating here does not loop back into a
@@ -158,13 +143,11 @@ export function CodeTab(): JSX.Element {
         e.onMouseDown?.(() => {
             userDrivenRef.current = true;
         });
-    }, []);
+    }, [attachTypeCheck]);
 
     useEffect(() => () => {
         syncRef.current?.dispose();
         syncRef.current = null;
-        typeCheckRef.current?.dispose();
-        typeCheckRef.current = null;
     }, []);
 
     // A re-evaluation can move feature call sites; re-apply the link.
