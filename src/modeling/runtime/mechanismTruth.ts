@@ -970,7 +970,11 @@ async function checkJointMeshContinuityCriterion(
       `${allowedGap.toFixed(1)}mm = clearance bore ${r.clearanceRadiusMm.toFixed(1)}mm + ` +
       `${JOINT_MESH_GAP_TOLERANCE_MM.toFixed(1)}mm margin). The link mesh does not ` +
       `reach the joint it pivots on — extend the body geometry so its OCCT ` +
-      `knuckle solid surrounds the joint origin at rest pose.` + bearingNote,
+      `knuckle solid surrounds the joint origin at rest pose.` + bearingNote +
+      ` Do not fix this by moving the connector alone: the mate re-aligns the ` +
+      `mated part '${r.otherPartName}' onto the moved connector, which can ` +
+      `silently reopen a collision elsewhere — re-run the collision check ` +
+      `after any connector move.`,
     ));
   }
   return out;

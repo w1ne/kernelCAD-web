@@ -103,6 +103,9 @@ export interface JointMeshGapResult {
   readonly mateName: string;
   readonly side: 'parent' | 'child';
   readonly partName: string;
+  /** The part on the other side of the mate — the one the mate re-aligns
+   *  when this side's connector moves. */
+  readonly otherPartName: string;
   readonly pivotWorld: readonly [number, number, number];
   /**
    * Signed surface distance in mm. Negative when the pivot is inside
@@ -246,6 +249,7 @@ function buildSideRow(
   mateName: string,
   side: 'parent' | 'child',
   partName: string,
+  otherPartName: string,
   pivotWorld: Vec3,
   scenePart: SceneBackend['parts'][number],
   connector: MateConnector,
@@ -256,6 +260,7 @@ function buildSideRow(
     mateName,
     side,
     partName,
+    otherPartName,
     pivotWorld,
     signedDistanceMm: gap,
     clearanceRadiusMm: connector.jointClearanceRadius ?? 0,
@@ -300,7 +305,7 @@ function collectMateRows(
   const rows: JointMeshGapResult[] = [];
 
   if (aScenePart !== undefined) {
-    const row = buildSideRow(mate.name, 'parent', ctx.parsedA.partName, ctx.pivotWorld, aScenePart, ctx.aConn);
+    const row = buildSideRow(mate.name, 'parent', ctx.parsedA.partName, ctx.parsedB.partName, ctx.pivotWorld, aScenePart, ctx.aConn);
     if (row !== undefined) rows.push(row);
   }
 
@@ -311,7 +316,7 @@ function collectMateRows(
     // `T_B.point(bLocal)`, because the gate's premise is that BOTH
     // bodies must contain the single physical pivot.)
     const probePointForChild = ctx.T_B.point(ctx.bLocal);
-    const row = buildSideRow(mate.name, 'child', ctx.parsedB.partName, probePointForChild, bScenePart, ctx.bConn);
+    const row = buildSideRow(mate.name, 'child', ctx.parsedB.partName, ctx.parsedA.partName, probePointForChild, bScenePart, ctx.bConn);
     if (row !== undefined) rows.push(row);
   }
 

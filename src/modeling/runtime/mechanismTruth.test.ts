@@ -548,6 +548,13 @@ describe('mechanism truth — pose-sweep grounded loop (P0)', () => {
       // gaps and only requires every OTHER criterion to pass.
       const nonGapFailures = result.failures.filter((f) => f.code !== 'mechanism.joint-mesh-gap');
       expect(nonGapFailures).toEqual([]);
+      // The gap diagnostic warns that moving a connector drags the mated
+      // part along (and can reopen a collision), naming that part.
+      const gap = result.failures.find(
+        (f) => f.code === 'mechanism.joint-mesh-gap' && f.message.includes("'arm'") && f.message.includes('root'),
+      );
+      expect(gap?.message).toMatch(/moving the connector alone.*mated part 'root'|mated part 'arm'/);
+      expect(gap?.hint).toMatch(/Moving a connector also moves the part mated to it/);
     },
     90000,
   );
