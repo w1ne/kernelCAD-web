@@ -209,10 +209,6 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                     id: (prev?.id ?? 0) + 1,
                 }))}
             />
-            <div className="absolute top-4 left-4 text-white/50 text-xs pointer-events-none font-mono">
-                kernelCAD v{typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'DEV'} ({typeof __COMMIT_HASH__ !== 'undefined' ? __COMMIT_HASH__ : 'DEV'}) | {viewMode3D === 'shadedWithEdges' ? 'Shaded + Edges' :
-                    viewMode3D === 'wireframe' ? 'Wireframe' : 'Shaded'}
-            </div>
         </div>
     );
 }
