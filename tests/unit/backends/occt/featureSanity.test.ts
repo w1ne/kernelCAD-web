@@ -44,7 +44,6 @@ describe('post-feature sanity gate', () => {
   it('rejects an open (±1e100) bounding box on any solid feature', () => {
     // A face on an unbounded plane: OCCT's Bnd_Box for it is OPEN, i.e. the
     // ±1e100 box the dogfood inspect() reported.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const oc = getOC() as any;
     const plane = new oc.gp_Pln_3(new oc.gp_Pnt_3(0, 0, 0), new oc.gp_Dir_4(0, 0, 1));
     const face = new oc.BRepBuilderAPI_MakeFace_3(plane).Face();
