@@ -202,21 +202,12 @@ export function modelSizeLabel(
 // Download
 // ---------------------------------------------------------------------------
 
-export const FORMAT_LABELS: Record<CustomizerFormat, string> = { stl: 'STL', '3mf': '3MF', step: 'STEP' };
-
 /** What each format is for, shown under the menu entry. */
 export const FORMAT_HINTS: Record<CustomizerFormat, string> = {
   stl: 'Mesh for 3D printing',
   '3mf': 'Mesh with units, for slicers',
   step: 'Exact solid for CAD tools',
 };
-
-/** STL for a single printable body; STEP for assemblies. */
-export function defaultDownloadFormat(review: ScriptReviewSummary | null): CustomizerFormat {
-  const validator = review?.validator;
-  const assembly = (validator?.partCount ?? 0) > 1 || (validator?.jointCount ?? 0) > 0;
-  return assembly ? 'step' : 'stl';
-}
 
 export interface ConfiguredSource {
   code: string;

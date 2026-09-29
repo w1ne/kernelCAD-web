@@ -9,7 +9,6 @@ import {
   LIVE_WINDOW_MS,
   chatLinks,
   configuredSource,
-  defaultDownloadFormat,
   isLive,
   modelCheck,
   modelSizeLabel,
@@ -134,14 +133,6 @@ describe('modelSizeLabel', () => {
     ];
     expect(modelSizeLabel(meshes)).toBe('60 × 40 × 7 mm');
     expect(modelSizeLabel(meshes, records)).toBe('60 × 40 × 5 mm');
-  });
-});
-
-describe('defaultDownloadFormat', () => {
-  it('is STL for one body and STEP for an assembly', () => {
-    expect(defaultDownloadFormat(null)).toBe('stl');
-    expect(defaultDownloadFormat({ ok: true, validator: { partCount: 1, jointCount: 0 } })).toBe('stl');
-    expect(defaultDownloadFormat({ ok: true, validator: { partCount: 4, jointCount: 3 } })).toBe('step');
   });
 });
 

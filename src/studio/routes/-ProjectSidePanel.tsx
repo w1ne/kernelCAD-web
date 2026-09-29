@@ -19,16 +19,20 @@ import { downloadBlob, exportViaServer } from '../exportViaServer';
 import { exportProgressText, useExportTask, type ExportTaskState } from '../hooks/useExportTask';
 import { jointContactCapMm3 } from '../../modeling/runtime/jointContactCap';
 import { StudioModelCustomizer } from '../customizer/StudioModelCustomizer';
-import { CUSTOMIZER_FORMATS, type CustomizerFormat, type CustomizerParamHint } from '../customizer/customizerParams';
+import {
+  CUSTOMIZER_FORMATS,
+  FORMAT_LABELS,
+  defaultDownloadFormat,
+  type CustomizerFormat,
+  type CustomizerParamHint,
+} from '../customizer/customizerParams';
 import { KeepThisModel } from './-ProjectClaimControl';
 import { ProjectViewerActions } from './-ProjectViewerActions';
 import { ServerRevisionList } from './-ServerRevisionHistory';
 import { ResumePrompt } from './-ResumePrompt';
 import {
   FORMAT_HINTS,
-  FORMAT_LABELS,
   configuredSource,
-  defaultDownloadFormat,
   modelCheck,
   modelSizeLabel,
   relativeTime,
@@ -60,7 +64,7 @@ export interface ProjectDownload {
  */
 // eslint-disable-next-line react-refresh/only-export-components
 export function useProjectDownload(slug: string, hints: readonly CustomizerParamHint[] | undefined): ProjectDownload {
-  const { code, scriptParams, scriptReview, geometries, error } = useWorkbench();
+  const { code, scriptParams, geometries, error } = useWorkbench();
   const task = useExportTask();
   const { start: startTask } = task;
   const ready = !error && hasNonemptyGeometry(geometries);
@@ -79,7 +83,7 @@ export function useProjectDownload(slug: string, hints: readonly CustomizerParam
   }, [startTask, slug, code, scriptParams, hints]);
 
   return {
-    defaultFormat: defaultDownloadFormat(scriptReview ?? null),
+    defaultFormat: defaultDownloadFormat(geometries ?? []),
     ready,
     state: task.state,
     progress: exportProgressText(task.state),
@@ -282,18 +286,19 @@ function Section({ title, children, className, testId }: {
 export function ProjectSidePanel(props: ProjectSidePanelProps): JSX.Element {
   const { slug, project } = props;
   return (
-    <div className="flex flex-col pb-4" data-testid="project-side-panel">
+    <div className="group/panel flex flex-col pb-4" data-testid="project-side-panel">
       <div className="px-5 pb-5 pt-2 md:pt-5">
         <Summary project={project} ownership={props.ownership} now={props.now} />
       </div>
-      {/* The customizer renders nothing for a model without parameters. Its
-          own download menu is hidden: the panel has one Download, which
-          exports the same configuration (it lives in the page URL). */}
-      <div className="border-t border-border px-5 py-5 empty:hidden [&_[data-testid=model-customizer]]:w-full [&_[data-testid=model-customizer]]:max-w-none [&_[data-testid=customizer-download]]:hidden">
-        <StudioModelCustomizer slug={slug} hints={project.parameters} />
+      {/* The customizer renders nothing for a model without parameters. With
+          parameters, its own Download (the configured model) is the page's
+          Download on desktop; the panel's Download below stands in for a
+          model without parameters. On a phone the action bar holds the one
+          Download, so the customizer's is hidden there. */}
+      <div className="border-t border-border empty:hidden max-md:[&_[data-testid=customizer-download]]:hidden">
+        <StudioModelCustomizer slug={slug} hints={project.parameters} layout="panel" />
       </div>
-      {/* On a phone the fixed action bar holds the Download. */}
-      <div className="hidden md:block">
+      <div className="hidden md:block md:group-has-[[data-testid=model-customizer]]/panel:hidden">
         <Section testId="panel-download">
           <DownloadButton download={props.download} />
           <DownloadStatus download={props.download} />
