@@ -1,16 +1,15 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { createFileRoute } from '@tanstack/react-router';
+import { useCallback, type ReactNode } from 'react';
 import App from '../App';
 import { MadeWithKernelcad } from '../components/MadeWithKernelcad';
 import { AnonProjectBanner, ProjectClaimControl } from './-ProjectClaimControl';
-import { CLAIM_AFTER_SIGN_IN_PARAM } from './-anonClaim';
+import { useProjectClaim } from './-useProjectClaim';
 import { ProjectViewerActions } from './-ProjectViewerActions';
 import { ServerRevisionHistory } from './-ServerRevisionHistory';
 import { useOptionalSession } from '../../funnel/hooks/useSession';
 import {
-  claimProject,
   createCheckoutSession,
   type ProjectRow,
 } from '../../funnel/lib/apiClient';
@@ -40,41 +39,7 @@ function ProjectPage() {
     upgradeNeeded,
     handleTogglePrivacy,
   } = useProjectLiveUpdates(slug);
-  const [claimed, setClaimed] = useState(false);
-  const [claiming, setClaiming] = useState(false);
-
-  const handleClaim = useCallback(async (): Promise<boolean> => {
-    setClaiming(true);
-    try {
-      const { claimed: ok } = await claimProject(slug);
-      setClaimed(true);
-      return ok;
-    } catch {
-      // Leave the button available to retry.
-      return false;
-    } finally {
-      setClaiming(false);
-    }
-  }, [slug]);
-
-  // Banner claim: move the project, then land on the projects list with a
-  // notice. Runs on click when signed in, or once on return from the
-  // banner's sign-in (?claim=1).
-  const navigate = useNavigate();
-  const handleBannerClaim = useCallback(async () => {
-    if (await handleClaim()) void navigate({ to: '/me', search: { moved: 1 } });
-  }, [handleClaim, navigate]);
-  const autoClaimStarted = useRef(false);
-  useEffect(() => {
-    if (autoClaimStarted.current || !session || !project || project.owner_id != null) return;
-    if (typeof window === 'undefined') return;
-    const url = new URL(window.location.href);
-    if (url.searchParams.get(CLAIM_AFTER_SIGN_IN_PARAM) !== '1') return;
-    autoClaimStarted.current = true;
-    url.searchParams.delete(CLAIM_AFTER_SIGN_IN_PARAM);
-    window.history.replaceState(window.history.state, '', url.toString());
-    void handleBannerClaim();
-  }, [session, project, handleBannerClaim]);
+  const { claimed, claiming, onClaim, onBannerClaim } = useProjectClaim(slug, session, project);
 
   const handleUpgrade = useCallback(async () => {
     try {
@@ -135,7 +100,7 @@ function ProjectPage() {
         claiming={claiming}
         privacyBusy={privacyBusy}
         upgradeNeeded={upgradeNeeded}
-        onClaim={() => { void handleClaim(); }}
+        onClaim={onClaim}
         onTogglePrivacy={handleTogglePrivacy}
         onUpgrade={handleUpgrade}
       />
@@ -162,7 +127,7 @@ function ProjectPage() {
         session={session}
         claimed={claimed}
         claiming={claiming}
-        onClaim={() => { void handleBannerClaim(); }}
+        onClaim={onBannerClaim}
       />
     </>
   );
