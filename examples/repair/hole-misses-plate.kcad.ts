@@ -2,9 +2,9 @@
 //
 // A 60 x 40 x 6 mm plate with one mounting hole. `u` / `v` are measured from
 // the centre of the top face, so on a 60 mm plate any |u| beyond 30 mm is off
-// the part. The offset was entered as 70 mm, the bore lands in empty space,
+// the part. The offset was entered as 70 mm, the bore centre is off the face,
 // and the kernel refuses to report that as a success: it emits
-// `feature.subtractive-noop` (error) because the hole removed no material.
+// `feature.hole.cut-missing` (error) before it cuts.
 //
 // The repair loop reads the plate's extent and clamps the anchor back onto the
 // face, one bore radius clear of the edge so the result is a hole, not a notch.

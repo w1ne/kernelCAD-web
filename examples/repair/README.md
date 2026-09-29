@@ -17,7 +17,7 @@ The broken files are never rewritten, so you can run it as many times as you lik
 | fixture | what is wrong | diagnostic | fix derived from |
 |---|---|---|---|
 | `oversized-fillet.kcad.ts` | 16 mm fillet on an 8 mm-thick block | `feature.edge-feature.short-edges-skipped` | shortest adjacent edge (8 mm → ceiling 4 mm) |
-| `hole-misses-plate.kcad.ts` | hole anchored 70 mm from the centre of a 60 mm plate | `feature.subtractive-noop` | plate extent, less the bore radius, less one radius of wall |
+| `hole-misses-plate.kcad.ts` | hole anchored 70 mm from the centre of a 60 mm plate | `feature.hole.cut-missing` | plate extent, less the bore radius, less one radius of wall |
 | `cutter-misses-body.kcad.ts` | cutter translated 200 mm away from the body | `feature.subtractive-noop` | both bounding boxes; the fix lands on the cutter's line, which is an input to the failing boolean |
 | `revolve-crosses-axis.kcad.ts` | washer profile with x = −1 mm | `feature.revolve.crosses-axis` | clamp every numeric path x-coordinate to 0 |
 | `tangency-radius-too-small.kcad.ts` | tangent circle r=1 between circles r=10 and r=4, 30 mm apart | `sketch.tangency.no-solution` | (centre-distance − r1 − r2) / 2 = 8 mm |
@@ -102,11 +102,11 @@ examples/repair/hole-misses-plate.kcad.ts
 --- 1. evaluate_script — before
   ok: false
   featureHealth: [{"featureId":"hole_1","status":"error"}]
-  ERROR feature.subtractive-noop [hole_1]
-    hole removed no material: result volume equals the input volume (14400.000 mm³). The tool did not intersect the body.
+  ERROR feature.hole.cut-missing [hole_1]
+    hole: 1 of 1 requested bore(s) would not be cut where requested: #0 (u=70, v=0) -> world (100, 20, 6): centre is not on the face [outside-face]. On 'top', (u, v) are mm offsets from the face centre (30, 20, 6), u = +X, v = +Y; the face spans u in [-30, 30], v in [-20, 20].
 
 --- 2. why_did_this_fail — repair region and candidates
-  targetDiagnosticId: feature.subtractive-noop@hole_1#0
+  targetDiagnosticId: feature.hole.cut-missing@hole_1#0
   repairRegion:
     lines 14-14  input-feature  box_1
     lines 16-16  failing-feature  hole_1
