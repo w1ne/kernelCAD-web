@@ -348,6 +348,8 @@ export interface StandardExportOpts {
   solids: number;
   /** Also export 3MF (print cases); options passed through. */
   threeMf?: true | ExportOptions;
+  /** Skip the whole-model STL export (assemblies only; per-part STL still runs). */
+  skipWholeStl?: boolean;
 }
 
 /**
@@ -365,15 +367,18 @@ export async function standardExports(b: UsecaseBuild, opts: StandardExportOpts)
   out[`STEP re-imports as ${opts.solids} solid(s)`] = re?.solidCount === opts.solids;
   out['STEP volume matches the model (0.5%)'] = re !== undefined && Math.abs(stepVolume - modelVolume) <= modelVolume * 0.005;
 
-  const stl = await exportAs(b, 'stl');
   if (isAssembly(b)) {
     // Touching parts share faces in one combined mesh, so each part's own
     // STL (export --part) is what must be closed.
+    if (!opts.skipWholeStl) {
+      const stl = await exportAs(b, 'stl');
+      out['STL exports (whole model)'] = stl.ok && stl.bytes.length > 84;
+    }
     const each = await runAndExportParts({ code: b.code, fileName: b.scriptPath, scriptDir: dirname(b.scriptPath) });
-    out['STL exports (whole model)'] = stl.ok && stl.bytes.length > 84;
     out['each part STL is watertight'] = each.parts.length === b.parts.length
       && meshesClosed(each.parts.map((p) => stlStats(p.bytes)));
   } else {
+    const stl = await exportAs(b, 'stl');
     out['STL is watertight'] = stl.ok && meshesClosed([stlStats(stl.bytes)]);
   }
 

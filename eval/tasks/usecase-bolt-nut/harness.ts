@@ -53,7 +53,10 @@ export default async function harness(scriptPath: string): Promise<HarnessResult
         && near(nb.min[0] + nb.max[0], 0) && near(nb.min[1] + nb.max[1], 0),
       'nut internal thread pitch 1.25': pitchIs(crestHeights(nut, nb.min[2] + 0.5, nb.max[2] - 0.5), 4),
       'nut and bolt do not overlap': bolt.intersectionVolume(nut) < 1e-3,
-      ...(await standardExports(b, { solids: 2, threeMf: true })),
+      // The whole-model STL fuses the threaded parts first and does not
+      // finish (https://github.com/w1ne/kernelCAD-web/issues/807); per-part
+      // STL still runs.
+      ...(await standardExports(b, { solids: 2, threeMf: true, skipWholeStl: true })),
     },
   };
 }
