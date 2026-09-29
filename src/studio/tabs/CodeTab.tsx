@@ -234,8 +234,32 @@ export function CodeTab(): JSX.Element {
     );
 
     return (
+        <CodeEditorPane
+            readOnly={readOnlyScript}
+            defaultValue={workbench.code ?? ''}
+            onChange={handleChange}
+            beforeMount={handleBeforeMount}
+            onMount={handleMount}
+        />
+    );
+}
+
+function CodeEditorPane({
+    readOnly,
+    defaultValue,
+    onChange,
+    beforeMount,
+    onMount,
+}: {
+    readOnly: boolean;
+    defaultValue: string;
+    onChange: (next: string | undefined) => void;
+    beforeMount: (monaco: unknown) => void;
+    onMount: (editor: unknown, monaco: unknown) => void;
+}): JSX.Element {
+    return (
         <div className="flex h-full w-full flex-col bg-[#111] text-gray-300" data-testid="code-tab">
-            {readOnlyScript && (
+            {readOnly && (
                 <p className="px-4 pt-3 text-xs text-fg-2" data-testid="code-tab-readonly">
                     This page follows the script file. Edits are not saved here.
                 </p>
@@ -245,10 +269,10 @@ export function CodeTab(): JSX.Element {
                     height="100%"
                     defaultLanguage="typescript"
                     theme="vs-dark"
-                    defaultValue={workbench.code ?? ''}
-                    onChange={handleChange}
-                    beforeMount={handleBeforeMount}
-                    onMount={handleMount}
+                    defaultValue={defaultValue}
+                    onChange={onChange}
+                    beforeMount={beforeMount}
+                    onMount={onMount}
                     options={{
                         minimap: { enabled: false },
                         fontSize: 14,
@@ -256,7 +280,7 @@ export function CodeTab(): JSX.Element {
                         scrollBeyondLastLine: false,
                         automaticLayout: true,
                         padding: { top: 16 },
-                        readOnly: readOnlyScript,
+                        readOnly,
                     }}
                 />
             </div>
