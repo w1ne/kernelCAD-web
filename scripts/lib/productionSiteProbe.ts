@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import { LANDING_HERO } from './landingHero';
+
 export interface ProbeResponse {
   status: number;
   headers: Headers;
@@ -48,12 +50,6 @@ function result(ok: boolean, name: string, detail: string): ProbeResult {
 
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-function expectedIterationForVersion(version: string): string {
-  const match = /^v?(\d+)\.(\d+)\.\d+/.exec(version);
-  if (!match) return version;
-  return `v${match[1]}.${match[2]}`;
 }
 
 async function responseBytes(res: ProbeResponse): Promise<number> {
@@ -133,7 +129,7 @@ export function buildProductionSiteChecks(opts: {
 }): ProductionSiteCheck[] {
   const baseUrl = normalizeSiteBaseUrl(opts.baseUrl);
   const expectedDemoIteration =
-    opts.expectedDemoIteration ?? expectedIterationForVersion(opts.expectedVersion);
+    opts.expectedDemoIteration ?? LANDING_HERO.demoIteration;
 
   if (opts.mode === 'app') {
     return [

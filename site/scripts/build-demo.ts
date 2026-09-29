@@ -1,88 +1,39 @@
 #!/usr/bin/env node
-// Picks the hero demo for the current package.json release, copies its mp4
-// into site/public/demo.mp4, and writes site/public/demo.json.
+// Publishes the pinned landing hero (scripts/lib/landingHero.ts): copies its
+// mp4 to site/public/demo.mp4, its poster to site/public/demo-poster.png, and
+// writes site/public/demo.json. The hero does not follow the package version.
 
-import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { selectHeroDemo } from '../../scripts/lib/selectHeroDemo';
+import { resolveLandingHero } from '../../scripts/lib/landingHero';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '../..');
-const DEMOS_ROOT = path.join(REPO_ROOT, 'docs/demos');
 const PUBLIC_DIR = path.resolve(__dirname, '../public');
 
-function demoKeyToPackageVersion(key: string): string | null {
-  const match = /^v(\d+)\.(\d+)(?:\.(\d+))?$/.exec(key);
-  if (!match) return null;
-  return `${match[1]}.${match[2]}.${match[3] ?? '0'}`;
-}
+export function buildDemo(opts: { repoRoot: string; publicDir: string; now?: Date }): Record<string, unknown> {
+  const pkg = JSON.parse(readFileSync(path.join(opts.repoRoot, 'package.json'), 'utf8'));
+  const hero = resolveLandingHero(opts.repoRoot);
 
-function availableDemoVersions(): string[] {
-  if (!existsSync(DEMOS_ROOT)) return [];
-  return readdirSync(DEMOS_ROOT, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => demoKeyToPackageVersion(entry.name))
-    .filter((version): version is string => version !== null)
-    .sort((a, b) => b.localeCompare(a, undefined, { numeric: true }));
-}
-
-function selectSiteHeroDemo(packageVersion: string) {
-  try {
-    return selectHeroDemo({ packageVersion, demosRoot: DEMOS_ROOT });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    if (!/no demo dir/.test(message)) throw err;
-  }
-
-  const fallbacks = availableDemoVersions();
-  for (const fallbackVersion of fallbacks) {
-    try {
-      const result = selectHeroDemo({ packageVersion: fallbackVersion, demosRoot: DEMOS_ROOT });
-      console.warn(
-        `build-demo: no demo directory for package ${packageVersion}; using latest available ${result.iterationKey}/${result.task}`,
-      );
-      return result;
-    } catch {
-      // Keep scanning: older demo dirs may be incomplete or pre-policy.
-    }
-  }
-  throw new Error(`build-demo: no usable demo under ${DEMOS_ROOT}`);
-}
-
-function main() {
-  const pkg = JSON.parse(readFileSync(path.join(REPO_ROOT, 'package.json'), 'utf8'));
-  const result = selectSiteHeroDemo(pkg.version);
-
-  mkdirSync(PUBLIC_DIR, { recursive: true });
-  copyFileSync(result.mp4Path, path.join(PUBLIC_DIR, 'demo.mp4'));
-  // Poster: prefer hero-frame.png, fall back to panel.png. lint-demos requires
-  // packets to ship panel.png; older packets ship hero-frame.png. Accept either
-  // so any catalog-conformant packet yields a landing poster.
-  const demoDir = path.dirname(result.mp4Path);
-  const posterPath = [
-    path.join(demoDir, 'hero-frame.png'),
-    path.join(demoDir, 'panel.png'),
-  ].find((p) => existsSync(p));
-  const publicPosterPath = path.join(PUBLIC_DIR, 'demo-poster.png');
-  if (posterPath) {
-    copyFileSync(posterPath, publicPosterPath);
-  }
+  mkdirSync(opts.publicDir, { recursive: true });
+  copyFileSync(hero.mp4Path, path.join(opts.publicDir, 'demo.mp4'));
+  copyFileSync(hero.posterPath, path.join(opts.publicDir, 'demo-poster.png'));
 
   const meta = {
     version: `v${pkg.version}`,
-    demoIteration: result.iterationKey,
-    task: result.task,
-    heroArtifact: result.heroArtifact,
-    source: path.relative(REPO_ROOT, result.mp4Path),
-    poster: existsSync(publicPosterPath) ? 'demo-poster.png' : null,
-    captured_at: new Date().toISOString(),
+    demoIteration: hero.demoIteration,
+    task: hero.task,
+    heroArtifact: hero.heroArtifact,
+    source: path.relative(opts.repoRoot, hero.mp4Path),
+    poster: 'demo-poster.png',
+    captured_at: (opts.now ?? new Date()).toISOString(),
   };
-  writeFileSync(path.join(PUBLIC_DIR, 'demo.json'), JSON.stringify(meta, null, 2));
-
-  console.log(
-    `✓ ${result.iterationKey}/${result.task}: copied demo.mp4 → site/public/demo.mp4`,
-  );
+  writeFileSync(path.join(opts.publicDir, 'demo.json'), JSON.stringify(meta, null, 2));
+  return meta;
 }
 
-main();
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const meta = buildDemo({ repoRoot: REPO_ROOT, publicDir: PUBLIC_DIR });
+  console.log(`✓ ${meta.demoIteration}/${meta.task}: copied demo.mp4 → site/public/demo.mp4`);
+}
