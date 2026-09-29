@@ -310,8 +310,8 @@ function EmbedPage() {
     setRetryKey((k) => k + 1);
   };
 
-  const meshReady = Boolean(meshUrl) && revision !== null;
-  const viewerReady = revision !== null && ((sourceSettled && sourceState === 'ready' && Boolean(code)) || meshReady);
+  const viewerReady = embedViewerReady({ revision, sourceSettled, sourceState, code, meshUrl });
+  const showViewer = viewerReady && mode !== 'studio';
 
   if (viewerReady && mode === 'studio' && sourceSettled && code) {
     return (
@@ -331,11 +331,11 @@ function EmbedPage() {
       uiPhase={uiPhase}
       statusMessage={statusMessage}
       canRetry={canRetry}
-      onRetry={viewerReady && mode !== 'studio' ? retryViewer : retrySource}
+      onRetry={showViewer ? retryViewer : retrySource}
       modelShown={displayedFor === retryKey}
       retryKey={retryKey}
     >
-      {viewerReady && mode !== 'studio' ? (
+      {showViewer ? (
         <FunnelViewer
           code={code ?? ''}
           meshUrl={meshUrl}
@@ -346,14 +346,33 @@ function EmbedPage() {
           onPhaseChange={onPhaseChange}
           statusOverlay={false}
           background={theme}
-          overlay={customizer ? (
-            <div className="absolute top-2 right-2 bottom-2 flex flex-col items-end pointer-events-none">
-              {customizer}
-            </div>
-          ) : undefined}
+          overlay={customizerOverlay(customizer)}
         />
       ) : null}
     </EmbedFrame>
+  );
+}
+
+/** Source or a stored mesh is in hand, so a viewer can mount. */
+function embedViewerReady(args: {
+  revision: number | null | undefined;
+  sourceSettled: boolean;
+  sourceState: 'loading' | 'ready' | 'missing' | 'error';
+  code: string | null;
+  meshUrl: string | undefined;
+}): boolean {
+  if (args.revision === null) return false;
+  if (args.meshUrl) return true;
+  return args.sourceSettled && args.sourceState === 'ready' && Boolean(args.code);
+}
+
+/** The customizer panel, placed top-right over the canvas. */
+function customizerOverlay(customizer: ReactNode | undefined): ReactNode | undefined {
+  if (!customizer) return undefined;
+  return (
+    <div className="absolute top-2 right-2 bottom-2 flex flex-col items-end pointer-events-none">
+      {customizer}
+    </div>
   );
 }
 
@@ -484,19 +503,11 @@ function EmbedFrame(props: {
   children?: ReactNode;
 }) {
   const { uiPhase, modelShown } = props;
-  const posterUrl = useMemo(
-    () => embedPosterUrl(props.slug, props.revision, metaContent('og:image')),
-    [props.slug, props.revision],
-  );
-  const [posterState, setPosterState] = useState<{ url: string; state: 'loaded' | 'failed' } | null>(null);
-  const posterLoaded = posterState?.url === posterUrl && posterState?.state === 'loaded';
-  const posterFailed = posterState?.url === posterUrl && posterState?.state === 'failed';
   const loading = isLoadingPhase(uiPhase);
-  const coverVisible = !modelShown;
-  const showPoster = Boolean(posterUrl) && !posterFailed && (loading || modelShown);
-  const centred = coverVisible && !(showPoster && posterLoaded && loading);
+  const poster = useEmbedPoster(props.slug, props.revision);
+  const showPoster = poster.usable && (loading || modelShown);
+  const centred = !modelShown && !(showPoster && poster.loaded && loading);
   const elapsed = useElapsedSeconds(loading && !modelShown, props.retryKey);
-  const remixSlug = uiPhase === 'missing' ? undefined : props.slug;
 
   return (
     <main
@@ -510,27 +521,7 @@ function EmbedFrame(props: {
       {/* The view cube is 144 px: in a small frame it covers the model. */}
       <div className="relative min-h-0 flex-1 max-[479px]:[&_[data-testid=view-gizmo]]:hidden [@media(max-height:359px)]:[&_[data-testid=view-gizmo]]:hidden">
         {props.children}
-        {/* Above the viewer's own overlays (view cube z-20). */}
-        <div
-          data-testid="embed-cover"
-          data-visible={coverVisible ? 'true' : 'false'}
-          aria-hidden="true"
-          className={`absolute inset-0 z-30 bg-[var(--embed-canvas)] motion-safe:transition-opacity motion-safe:duration-[250ms] ${coverVisible ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
-        >
-          {showPoster && posterUrl ? (
-            <img
-              data-testid="embed-poster"
-              src={posterUrl}
-              alt=""
-              decoding="async"
-              fetchPriority="high"
-              draggable={false}
-              className={`h-full w-full object-contain ${posterLoaded ? 'opacity-100' : 'opacity-0'}`}
-              onLoad={() => setPosterState({ url: posterUrl, state: 'loaded' })}
-              onError={() => setPosterState({ url: posterUrl, state: 'failed' })}
-            />
-          ) : null}
-        </div>
+        <EmbedCover visible={!modelShown} poster={showPoster ? poster : null} />
         {props.statusMessage ? (
           <EmbedStatus
             message={props.statusMessage}
@@ -542,8 +533,58 @@ function EmbedFrame(props: {
           />
         ) : null}
       </div>
-      <EmbedAttributionBar remixSlug={remixSlug} />
+      <EmbedAttributionBar remixSlug={uiPhase === 'missing' ? undefined : props.slug} />
     </main>
+  );
+}
+
+interface EmbedPoster {
+  url: string;
+  loaded: boolean;
+  onLoad: () => void;
+  onError: () => void;
+}
+
+/** This project's stored render and its load state. `usable` is false when
+ *  there is none or it failed to load. */
+function useEmbedPoster(slug: string, revision: number | null | undefined): EmbedPoster & { usable: boolean } {
+  const url = useMemo(() => embedPosterUrl(slug, revision, metaContent('og:image')), [slug, revision]);
+  const [state, setState] = useState<{ url: string; state: 'loaded' | 'failed' } | null>(null);
+  const current = url !== undefined && state?.url === url ? state.state : null;
+  return {
+    url: url ?? '',
+    usable: url !== undefined && current !== 'failed',
+    loaded: current === 'loaded',
+    onLoad: () => { if (url) setState({ url, state: 'loaded' }); },
+    onError: () => { if (url) setState({ url, state: 'failed' }); },
+  };
+}
+
+/** Backdrop over the canvas until the model shows, with the poster on it. */
+function EmbedCover(props: { visible: boolean; poster: EmbedPoster | null }) {
+  const { poster } = props;
+  return (
+    // Above the viewer's own overlays (view cube z-20).
+    <div
+      data-testid="embed-cover"
+      data-visible={props.visible ? 'true' : 'false'}
+      aria-hidden="true"
+      className={`absolute inset-0 z-30 bg-[var(--embed-canvas)] motion-safe:transition-opacity motion-safe:duration-[250ms] ${props.visible ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
+    >
+      {poster ? (
+        <img
+          data-testid="embed-poster"
+          src={poster.url}
+          alt=""
+          decoding="async"
+          fetchPriority="high"
+          draggable={false}
+          className={`h-full w-full object-contain ${poster.loaded ? 'opacity-100' : 'opacity-0'}`}
+          onLoad={poster.onLoad}
+          onError={poster.onError}
+        />
+      ) : null}
+    </div>
   );
 }
 
