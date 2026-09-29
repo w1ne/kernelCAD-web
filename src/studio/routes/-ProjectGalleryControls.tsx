@@ -23,10 +23,56 @@ import {
   type ProjectRow,
 } from '../../funnel/lib/apiClient';
 
-const BTN_CLASS =
-  'inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap px-2.5 py-0.5 rounded text-xs font-medium bg-blue-600 hover:bg-blue-500 text-white disabled:opacity-50 transition-colors';
-const QUIET_BTN_CLASS =
-  'inline-flex shrink-0 items-center gap-1 whitespace-nowrap px-1.5 py-0.5 rounded text-xs text-gray-400 hover:text-gray-200 disabled:opacity-50 transition-colors';
+/** Where the controls sit: the dark Studio header, or the /p/<slug> side
+ *  panel (semantic tokens, full labels, 44 px targets on a phone). */
+export type GalleryControlsLook = 'header' | 'panel';
+
+interface LookClasses {
+  button: string;
+  quiet: string;
+  /** Label text that the header hides on narrow screens. */
+  label: string;
+  reportLabel: string;
+  form: string;
+  formLabel: string;
+  textarea: string;
+  note: string;
+  error: string;
+  credit: string;
+  row: string;
+}
+
+const PANEL_BUTTON =
+  'focus-ring inline-flex h-control-md shrink-0 items-center gap-1.5 whitespace-nowrap rounded-control border border-border-strong bg-surface-1 px-3 text-ui font-medium text-fg enabled:hover:bg-surface-2 disabled:opacity-50 transition-colors max-md:h-touch';
+
+const LOOKS: Record<GalleryControlsLook, LookClasses> = {
+  header: {
+    button: 'inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap px-2.5 py-0.5 rounded text-xs font-medium bg-blue-600 hover:bg-blue-500 text-white disabled:opacity-50 transition-colors',
+    quiet: 'inline-flex shrink-0 items-center gap-1 whitespace-nowrap px-1.5 py-0.5 rounded text-xs text-gray-400 hover:text-gray-200 disabled:opacity-50 transition-colors',
+    label: 'hidden md:inline',
+    reportLabel: 'hidden lg:inline',
+    form: 'absolute right-0 top-full mt-1 z-50 w-64 rounded border border-[#333] bg-[#1a1a1a] p-2 shadow-lg flex flex-col gap-2',
+    formLabel: 'text-[11px] text-gray-300',
+    textarea: 'w-full rounded bg-black/40 border border-[#333] p-1.5 text-xs text-gray-100',
+    note: 'text-[11px] text-gray-500 font-mono whitespace-nowrap',
+    error: 'text-[11px] text-red-400',
+    credit: 'hidden md:inline truncate max-w-[180px] text-[11px] text-gray-400 hover:text-gray-200 underline decoration-dotted',
+    row: 'flex items-center gap-2 min-w-0',
+  },
+  panel: {
+    button: PANEL_BUTTON,
+    quiet: 'focus-ring inline-flex h-control-md shrink-0 items-center gap-1.5 whitespace-nowrap rounded-control px-2 text-ui text-fg-2 enabled:hover:bg-surface-2 enabled:hover:text-fg disabled:opacity-50 transition-colors max-md:h-touch',
+    label: 'inline',
+    reportLabel: 'inline',
+    form: 'mt-2 flex w-full flex-col gap-2 rounded-panel border border-border bg-surface-2 p-3',
+    formLabel: 'text-ui text-fg',
+    textarea: 'focus-ring w-full rounded-control border border-border-strong bg-surface-1 p-2 text-ui text-fg',
+    note: 'text-ui text-fg-3',
+    error: 'text-2xs text-danger',
+    credit: 'block w-full truncate text-ui text-fg-2 underline decoration-dotted hover:text-fg',
+    row: 'flex flex-wrap items-center gap-2 min-w-0',
+  },
+};
 
 /** Query flag that resumes a remix after the sign-in round trip. */
 const REMIX_QUERY_PARAM = 'remix';
@@ -102,10 +148,11 @@ function openRemix(newSlug: string, replace: boolean): void {
   else window.location.assign(target);
 }
 
-function RemixControl({ slug, session, sessionLoading }: {
+function RemixControl({ slug, session, sessionLoading, look }: {
   slug: string;
   session: Session | null;
   sessionLoading: boolean;
+  look: LookClasses;
 }): ReactNode {
   // Starts busy when resuming a remix after sign-in, so the button can't be
   // clicked into a second remix meanwhile.
@@ -133,7 +180,7 @@ function RemixControl({ slug, session, sessionLoading }: {
   const label = (
     <>
       <GitFork size={12} aria-hidden="true" />
-      <span className="hidden md:inline">{busy ? 'Remixing…' : failed ? 'Remix failed, retry' : 'Remix'}</span>
+      <span className={look.label}>{busy ? 'Remixing…' : failed ? 'Remix failed, retry' : 'Remix'}</span>
     </>
   );
   const title = 'Copy this model into your own projects';
@@ -142,7 +189,7 @@ function RemixControl({ slug, session, sessionLoading }: {
     // Same sign-in button as "Sign in to save"; it comes back to ?remix=1.
     return (
       <span title={`Sign in to remix. ${title}`} className="inline-flex">
-        <SignInButton redirectTo={remixContinueUrl(slug)} className={BTN_CLASS}>
+        <SignInButton redirectTo={remixContinueUrl(slug)} className={look.button}>
           Remix
         </SignInButton>
       </span>
@@ -153,7 +200,7 @@ function RemixControl({ slug, session, sessionLoading }: {
       type="button"
       onClick={handleClick}
       disabled={busy}
-      className={BTN_CLASS}
+      className={look.button}
       aria-label="Remix"
       title={failed ? 'Remix failed. Try again.' : title}
     >
@@ -162,11 +209,12 @@ function RemixControl({ slug, session, sessionLoading }: {
   );
 }
 
-function PublishToggle({ slug, project, state, onChange }: {
+function PublishToggle({ slug, project, state, onChange, look }: {
   slug: string;
   project: ProjectRow;
   state: ProjectGalleryState;
   onChange: (next: ProjectGalleryState) => void;
+  look: LookClasses;
 }): ReactNode {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -193,18 +241,18 @@ function PublishToggle({ slug, project, state, onChange }: {
       type="button"
       onClick={() => void toggle()}
       disabled={busy || blocker != null}
-      className={BTN_CLASS}
+      className={look.button}
       aria-label={label}
       title={blocker ?? error ?? (state.listed ? 'Remove from the public gallery' : 'List this model in the public gallery')}
       data-testid="gallery-publish-toggle"
     >
       <LayoutGrid size={12} aria-hidden="true" />
-      <span className="hidden md:inline">{busy ? '…' : error ?? label}</span>
+      <span className={look.label}>{busy ? '…' : error ?? label}</span>
     </button>
   );
 }
 
-function ReportControl({ slug }: { slug: string }): ReactNode {
+function ReportControl({ slug, look }: { slug: string; look: LookClasses }): ReactNode {
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState('');
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'failed'>('idle');
@@ -224,27 +272,27 @@ function ReportControl({ slug }: { slug: string }): ReactNode {
   }, [slug, reason]);
 
   if (status === 'sent') {
-    return <span className="text-[11px] text-gray-500 font-mono whitespace-nowrap">Reported</span>;
+    return <span className={look.note}>Reported</span>;
   }
   return (
-    <span className="relative inline-flex">
+    <span className={open ? 'relative inline-flex flex-col w-full' : 'relative inline-flex'}>
       <button
         type="button"
         onClick={() => setOpen(o => !o)}
-        className={QUIET_BTN_CLASS}
+        className={look.quiet}
         aria-label="Report"
         aria-expanded={open}
         title="Report this model"
       >
         <Flag size={12} aria-hidden="true" />
-        <span className="hidden lg:inline">Report</span>
+        <span className={look.reportLabel}>Report</span>
       </button>
       {open && (
         <form
           onSubmit={e => void submit(e)}
-          className="absolute right-0 top-full mt-1 z-50 w-64 rounded border border-[#333] bg-[#1a1a1a] p-2 shadow-lg flex flex-col gap-2"
+          className={look.form}
         >
-          <label className="text-[11px] text-gray-300" htmlFor={`report-${slug}`}>
+          <label className={look.formLabel} htmlFor={`report-${slug}`}>
             What is wrong with this model?
           </label>
           <textarea
@@ -253,16 +301,16 @@ function ReportControl({ slug }: { slug: string }): ReactNode {
             onChange={e => setReason(e.target.value)}
             maxLength={500}
             rows={3}
-            className="w-full rounded bg-black/40 border border-[#333] p-1.5 text-xs text-gray-100"
+            className={look.textarea}
           />
           {status === 'failed' && (
-            <p className="text-[11px] text-red-400">Could not send the report. Try again later.</p>
+            <p className={look.error}>Could not send the report. Try again later.</p>
           )}
           <div className="flex justify-end gap-2">
-            <button type="button" onClick={() => setOpen(false)} className={QUIET_BTN_CLASS}>
+            <button type="button" onClick={() => setOpen(false)} className={look.quiet}>
               Cancel
             </button>
-            <button type="submit" disabled={!reason.trim() || status === 'sending'} className={BTN_CLASS}>
+            <button type="submit" disabled={!reason.trim() || status === 'sending'} className={look.button}>
               {status === 'sending' ? 'Sending…' : 'Send report'}
             </button>
           </div>
@@ -277,6 +325,7 @@ export interface ProjectGalleryControlsProps {
   project: ProjectRow;
   session: Session | null;
   sessionLoading: boolean;
+  look?: GalleryControlsLook;
 }
 
 export function ProjectGalleryControls({
@@ -284,26 +333,28 @@ export function ProjectGalleryControls({
   project,
   session,
   sessionLoading,
+  look: lookName = 'header',
 }: ProjectGalleryControlsProps): ReactNode {
   const { state, setState } = useGalleryState(slug, session);
+  const look = LOOKS[lookName];
 
   return (
-    <div className="flex items-center gap-2 min-w-0">
+    <div className={look.row}>
       {state?.forkedFrom && (
         <a
           href={`/p/${encodeURIComponent(state.forkedFrom.slug)}`}
-          className="hidden md:inline truncate max-w-[180px] text-[11px] text-gray-400 hover:text-gray-200 underline decoration-dotted"
+          className={look.credit}
           title={`Remixed from ${state.forkedFrom.title}`}
           data-testid="remixed-from"
         >
           Remixed from {state.forkedFrom.title}
         </a>
       )}
-      <RemixControl slug={slug} session={session} sessionLoading={sessionLoading} />
+      <RemixControl slug={slug} session={session} sessionLoading={sessionLoading} look={look} />
       {state?.isOwner && (
-        <PublishToggle slug={slug} project={project} state={state} onChange={setState} />
+        <PublishToggle slug={slug} project={project} state={state} onChange={setState} look={look} />
       )}
-      {!state?.isOwner && <ReportControl slug={slug} />}
+      {!state?.isOwner && <ReportControl slug={slug} look={look} />}
     </div>
   );
 }

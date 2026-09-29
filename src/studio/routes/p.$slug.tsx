@@ -1,11 +1,24 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+/**
+ * /p/<slug> — the page a shared model link opens (most visitors arrive here
+ * from a chat with their agent).
+ *
+ * Default: the model-first page (`ViewerPageShell`). The stored render shows
+ * at once, then the live model; a side panel (a bottom sheet on a phone)
+ * holds the title and checks, the customizer, one Download, "Keep this
+ * model", "Continue in chat", and share / remix / report / revisions.
+ *
+ * `?view=studio`: the full Studio workbench on the same project, for owners
+ * who want the code, the inspector and the tools.
+ */
 import { createFileRoute } from '@tanstack/react-router';
-import { useCallback, type ReactNode } from 'react';
-import App from '../App';
+import { useCallback, useEffect, useState, type JSX, type ReactNode } from 'react';
+import { ArrowLeft, ArrowUpRight, PanelsTopLeft } from 'lucide-react';
+import App, { LiveCodeApplier } from '../App';
 import { MadeWithKernelcad } from '../components/MadeWithKernelcad';
 import { AnonProjectBanner, ProjectClaimControl } from './-ProjectClaimControl';
-import { useProjectClaim } from './-useProjectClaim';
+import { useProjectClaim, type ProjectClaimState } from './-useProjectClaim';
 import { ProjectViewerActions } from './-ProjectViewerActions';
 import { ServerRevisionHistory } from './-ServerRevisionHistory';
 import { useOptionalSession } from '../../funnel/hooks/useSession';
@@ -13,9 +26,36 @@ import {
   createCheckoutSession,
   type ProjectRow,
 } from '../../funnel/lib/apiClient';
-import { useProjectLiveUpdates, type LoadState } from './-useProjectLiveUpdates';
+import { useProjectLiveUpdates, type LoadState, type ProjectLiveUpdates } from './-useProjectLiveUpdates';
 import { StudioModelCustomizer } from '../customizer/StudioModelCustomizer';
 import { PageState, type PageStateAction } from '../components/Shared/PageState';
+import { WorkbenchProvider } from '../context/WorkbenchContext';
+import {
+  LiveModelViewport,
+  ModelStage,
+  ViewerPageShell,
+  useLiveViewportState,
+  usePreferredTheme,
+} from '../ViewerPageShell';
+import {
+  DownloadButton,
+  DownloadStatus,
+  ProjectSidePanel,
+  ProjectSidePanelSkeleton,
+  useModelCheck,
+  useProjectDownload,
+} from './-ProjectSidePanel';
+import { Badge, Button, buttonClass, cx } from '../../ui';
+import {
+  STUDIO_VIEW,
+  isLive,
+  modelPageHref,
+  posterUrl,
+  projectOwnership,
+  signInHref,
+  studioHref,
+} from './-projectPageModel';
+import type { Session } from '@supabase/supabase-js';
 
 export const Route = createFileRoute('/p/$slug')({
   component: ProjectPage,
@@ -32,8 +72,8 @@ const BROWSE_ACTIONS: readonly PageStateAction[] = [
   { label: 'Your projects', href: '/me' },
 ];
 
-/** The not-yet-ready page: loading, slow, not found, timed out or failed.
- *  Each state says what happened and offers a next step. */
+/** The page failed for good: not found, timed out or errored. Each state
+ *  says what happened and offers a next step. */
 function ProjectLoadPage({ state, err, onRetry }: {
   state: Exclude<LoadState, 'ready'>;
   err: string | null;
@@ -83,24 +123,17 @@ function ProjectLoadPage({ state, err, onRetry }: {
   }
 }
 
-function ProjectPage() {
-  const { slug } = Route.useParams();
-  const { session } = useOptionalSession();
-  const {
-    project,
-    err,
-    loadState,
-    retry,
-    liveCode,
-    lastLiveUpdate,
-    handleRestored,
-    privacyBusy,
-    upgradeNeeded,
-    handleTogglePrivacy,
-  } = useProjectLiveUpdates(slug);
-  const { claimed, claiming, onClaim, onBannerClaim } = useProjectClaim(slug, session, project);
+function isTerminal(state: LoadState): state is 'not_found' | 'timeout' | 'error' {
+  return state === 'not_found' || state === 'timeout' || state === 'error';
+}
 
-  const handleUpgrade = useCallback(async () => {
+function readView(): string | null {
+  if (typeof window === 'undefined') return null;
+  return new URLSearchParams(window.location.search).get('view');
+}
+
+function useUpgrade(): () => void {
+  return useCallback(async () => {
     try {
       const { url } = await createCheckoutSession();
       if (typeof window !== 'undefined') window.location.href = url;
@@ -108,13 +141,234 @@ function ProjectPage() {
       // Leave the button available to retry.
     }
   }, []);
+}
 
-  if (loadState !== 'ready' || !project) {
-    return <ProjectLoadPage state={loadState === 'ready' ? 'loading' : loadState} err={err} onRetry={retry} />;
+function ProjectPage() {
+  const { slug } = Route.useParams();
+  const { session } = useOptionalSession();
+  const live = useProjectLiveUpdates(slug);
+  const claim = useProjectClaim(slug, session, live.project);
+  const onUpgrade = useUpgrade();
+  const { project, loadState } = live;
+
+  if (isTerminal(loadState)) {
+    return <ProjectLoadPage state={loadState} err={live.err} onRetry={live.retry} />;
   }
+  if (readView() === STUDIO_VIEW) {
+    if (loadState !== 'ready' || !project) {
+      return <ProjectLoadPage state={loadState === 'ready' ? 'loading' : loadState} err={live.err} onRetry={live.retry} />;
+    }
+    return <StudioProjectView slug={slug} project={project} session={session} live={live} claim={claim} onUpgrade={onUpgrade} />;
+  }
+  return <ModelFirstPage slug={slug} session={session} live={live} claim={claim} onUpgrade={onUpgrade} />;
+}
 
+// ---------------------------------------------------------------------------
+// Model-first page
+// ---------------------------------------------------------------------------
+
+interface PageProps {
+  slug: string;
+  session: Session | null;
+  live: ProjectLiveUpdates;
+  claim: ProjectClaimState;
+  onUpgrade: () => void;
+}
+
+/** Re-render every 30 s, so "2 min ago" and the Live badge stay true. */
+function useNow(): number {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 30_000);
+    return () => window.clearInterval(timer);
+  }, []);
+  return now;
+}
+
+function apiBase(): string {
+  return (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? '';
+}
+
+function HeaderActions({ slug, session }: { slug: string; session: Session | null }): JSX.Element {
+  return (
+    <>
+      {/* On a phone the action bar carries "Studio". */}
+      <span className="hidden md:contents">
+        <a href={studioHref(slug)} className={buttonClass('secondary', 'md')} data-testid="open-in-studio">
+          <PanelsTopLeft className="size-4" strokeWidth={1.75} aria-hidden="true" />
+          Open in Studio
+        </a>
+      </span>
+      {session ? (
+        <a href="/me" className={buttonClass('ghost', 'md')} data-testid="your-projects">
+          Your projects
+        </a>
+      ) : (
+        <a href={signInHref(slug)} className={buttonClass('ghost', 'md')} data-testid="header-sign-in">
+          Sign in
+        </a>
+      )}
+    </>
+  );
+}
+
+function LiveBadge({ project, lastLiveUpdate, now }: {
+  project: ProjectRow | null;
+  lastLiveUpdate: Date | null;
+  now: number;
+}): JSX.Element | null {
+  if (!project || !isLive(project.updated_at, lastLiveUpdate, now)) return null;
+  const title = lastLiveUpdate ? `Last update ${lastLiveUpdate.toLocaleTimeString()}` : 'Updated in the last 10 minutes';
+  return (
+    <span title={title} className="shrink-0" data-testid="live-badge">
+      <Badge tone="ok" dot>Live</Badge>
+    </span>
+  );
+}
+
+function ModelFirstPage(props: PageProps): JSX.Element {
+  const { slug, live } = props;
+  const theme = usePreferredTheme();
+  const now = useNow();
+  const poster = posterUrl(apiBase(), slug);
+  const project = live.project;
+  const shared = {
+    theme,
+    title: project?.title ?? <span className="text-fg-3">Loading…</span>,
+    titleAside: <LiveBadge project={project} lastLiveUpdate={live.lastLiveUpdate} now={now} />,
+    headerActions: <HeaderActions slug={slug} session={props.session} />,
+    panelLabel: 'Model details',
+  };
+
+  if (!project) {
+    return (
+      <ViewerPageShell
+        {...shared}
+        stage={<ModelStage posterSrc={poster} posterAlt="Stored render of the model" phase="loading" />}
+        panel={<ProjectSidePanelSkeleton slow={live.loadState === 'slow'} onRetry={live.retry} />}
+      />
+    );
+  }
+  return (
+    <WorkbenchProvider initialCode={project.current_code} projectName={project.title}>
+      <LiveCodeApplier liveCode={live.liveCode} />
+      <LiveProjectShell {...props} project={project} shared={shared} poster={poster} now={now} />
+    </WorkbenchProvider>
+  );
+}
+
+function LiveProjectShell(props: PageProps & {
+  project: ProjectRow;
+  poster: string;
+  now: number;
+  shared: Omit<Parameters<typeof ViewerPageShell>[0], 'stage' | 'panel' | 'actionBar'>;
+}): JSX.Element {
+  const { slug, project, live, claim, session } = props;
+  const [displayReady, setDisplayReady] = useState(false);
+  const onDisplayReady = useCallback(() => setDisplayReady(true), []);
+  const stage = useLiveViewportState(displayReady);
+  const download = useProjectDownload(slug, project.parameters);
+  const { check, size } = useModelCheck();
+  const ownership = projectOwnership(project, session, claim.claimed);
+  const canvasLabel = [`3D model: ${project.title}`, size, check?.label].filter(Boolean).join('. ');
+
+  return (
+    <ViewerPageShell
+      {...props.shared}
+      stage={
+        <ModelStage
+          posterSrc={props.poster}
+          posterAlt={`Render of ${project.title}`}
+          phase={stage.phase}
+          busy={stage.busy}
+          failure={<BuildFailure slug={slug} error={stage.error} />}
+          overlay={
+            <AnonProjectBanner
+              project={project}
+              session={session}
+              claimed={claim.claimed}
+              claiming={claim.claiming}
+              onClaim={claim.onBannerClaim}
+              look="page"
+            />
+          }
+        >
+          <LiveModelViewport onDisplayReady={onDisplayReady} label={canvasLabel} />
+        </ModelStage>
+      }
+      panel={
+        <ProjectSidePanel
+          slug={slug}
+          project={project}
+          session={session}
+          ownership={ownership}
+          now={props.now}
+          download={download}
+          claiming={claim.claiming}
+          onClaim={claim.onClaim}
+          privacyBusy={live.privacyBusy}
+          upgradeNeeded={live.upgradeNeeded}
+          onTogglePrivacy={live.handleTogglePrivacy}
+          onUpgrade={props.onUpgrade}
+          onRestored={live.handleRestored}
+        />
+      }
+      actionBar={
+        <div className="flex w-full min-w-0 flex-col gap-2">
+          <DownloadStatus download={download} />
+          <div className="flex w-full min-w-0 items-center gap-2">
+            <DownloadButton download={download} className="flex-1" />
+            <a href={studioHref(slug)} className={cx(buttonClass('secondary', 'lg'), 'max-md:h-touch')} aria-label="Open in Studio">
+              Studio
+              <ArrowUpRight className="size-4" strokeWidth={1.75} aria-hidden="true" />
+            </a>
+          </div>
+        </div>
+      }
+    />
+  );
+}
+
+/** Over the stage when the model does not build: what happened and where to
+ *  go next. */
+function BuildFailure({ slug, error }: { slug: string; error: string | null }): ReactNode {
+  return (
+    <div className="absolute inset-0 grid place-items-center bg-black/40 p-4">
+      <div role="alert" className="w-full max-w-sm rounded-panel border border-border bg-surface-1 p-5 text-fg shadow-e2" data-testid="build-failure">
+        <h2 className="text-title text-fg">The model did not build</h2>
+        <p className="mt-1 text-ui text-fg-2">
+          The saved source has an error, so there is nothing to show yet. Open it in Studio to see the code and the error.
+        </p>
+        {error && (
+          <p className="mt-3 max-h-24 overflow-auto break-words rounded-control bg-surface-2 px-2 py-1.5 font-mono text-code text-danger">
+            {error}
+          </p>
+        )}
+        <div className="mt-4 flex flex-wrap gap-2">
+          <a href={studioHref(slug)} className={buttonClass('primary', 'md')}>Open in Studio</a>
+          <Button variant="secondary" size="md" onClick={() => window.location.reload()}>Reload</Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Full Studio (?view=studio)
+// ---------------------------------------------------------------------------
+
+function StudioProjectView({ slug, project, session, live, claim, onUpgrade }: PageProps & { project: ProjectRow }): JSX.Element {
   const headerLeft = (
     <div className="flex items-center gap-2 min-w-0">
+      <a
+        href={modelPageHref(slug)}
+        className="inline-flex shrink-0 items-center gap-1 rounded px-1.5 py-0.5 text-xs text-gray-300 hover:bg-[#333] hover:text-white"
+        title="Back to the model page"
+        data-testid="back-to-model-page"
+      >
+        <ArrowLeft size={12} aria-hidden="true" />
+        <span className="hidden md:inline">Model page</span>
+      </a>
       {/* The Studio header's own project label shows the title on wide
           screens; below `lg` the Header drops that label for this one.
           The header row is shared with the privacy/share buttons, the overflow
@@ -131,7 +385,7 @@ function ProjectPage() {
       <span
         className="shrink-0 whitespace-nowrap text-[10px] uppercase tracking-widest font-mono px-1.5 py-0.5 rounded border border-emerald-700 text-emerald-500"
         aria-label="live"
-        title={lastLiveUpdate ? `last update ${lastLiveUpdate.toLocaleTimeString()}` : 'waiting for agent updates'}
+        title={live.lastLiveUpdate ? `last update ${live.lastLiveUpdate.toLocaleTimeString()}` : 'waiting for agent updates'}
       >
         ●<span className="hidden md:inline"> live</span>
       </span>
@@ -146,19 +400,16 @@ function ProjectPage() {
       <ProjectClaimControl
         project={project}
         session={session}
-        claimed={claimed}
-        claiming={claiming}
-        privacyBusy={privacyBusy}
-        upgradeNeeded={upgradeNeeded}
-        onClaim={onClaim}
-        onTogglePrivacy={handleTogglePrivacy}
-        onUpgrade={handleUpgrade}
+        claimed={claim.claimed}
+        claiming={claim.claiming}
+        privacyBusy={live.privacyBusy}
+        upgradeNeeded={live.upgradeNeeded}
+        onClaim={claim.onClaim}
+        onTogglePrivacy={live.handleTogglePrivacy}
+        onUpgrade={onUpgrade}
       />
-      <ServerRevisionHistory slug={slug} onRestored={handleRestored} />
-      <ProjectViewerActions
-        slug={slug}
-        project={project}
-      />
+      <ServerRevisionHistory slug={slug} onRestored={live.handleRestored} />
+      <ProjectViewerActions slug={slug} project={project} />
     </div>
   );
 
@@ -167,18 +418,18 @@ function ProjectPage() {
       <App
         initialCode={project.current_code}
         projectName={project.title}
-        liveCode={liveCode}
+        liveCode={live.liveCode}
         viewerMode
         viewportOverlay={<StudioModelCustomizer slug={slug} hints={project.parameters} />}
         headerLeft={headerLeft}
-        headerRight={headerRight ?? undefined}
+        headerRight={headerRight}
       />
       <AnonProjectBanner
         project={project}
         session={session}
-        claimed={claimed}
-        claiming={claiming}
-        onClaim={onBannerClaim}
+        claimed={claim.claimed}
+        claiming={claim.claiming}
+        onClaim={claim.onBannerClaim}
       />
     </>
   );
