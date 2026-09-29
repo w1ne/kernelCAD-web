@@ -77,7 +77,20 @@ export interface EvaluateScriptOutput {
    * Mechanism failure diagnostics are merged into `diagnostics`.
    */
   mechanism?: 'real' | 'broken' | 'unverified';
+  /**
+   * Present ONLY when a captured assembly declares articulated mates (any
+   * mate other than `fastened`). The default mechanism gate above is a
+   * shallow probe; this names what it does not check and points at
+   * `review_cad`, which does.
+   */
+  reviewHint?: string;
 }
+
+/** Text of `reviewHint`. One source for the tool result and its schema docs. */
+export const MATES_REVIEW_HINT =
+  "This model has articulated mates, and evaluate_script's mechanism check is shallow: it does not check " +
+  'joint-support intents, pose-envelope overlap at declared mate limits, or gravity drop / static hold. ' +
+  'Run review_cad for pose-envelope + gravity checks before calling the mechanism done.';
 
 /**
  * MCP `evaluate_script` tool — runs a kernelCAD script and reports
@@ -139,6 +152,7 @@ export async function evaluateScriptTool(
       ? [...baseDiagnostics, ...withNextActions(mechanismFailures)]
       : baseDiagnostics;
   const ok = r.exitCode === 0 && mechanism !== 'broken';
+  const reviewHint = hasArticulatedMates(model) ? MATES_REVIEW_HINT : undefined;
 
   return {
     ok,
@@ -151,6 +165,7 @@ export async function evaluateScriptTool(
     featureHealth: r.featureHealth,
     ...(parts !== undefined ? { parts } : {}),
     ...(mechanism !== undefined ? { mechanism } : {}),
+    ...(reviewHint !== undefined ? { reviewHint } : {}),
   };
 }
 
@@ -195,6 +210,12 @@ function refreshActiveSession(model: BuildOutcome['model'], buildSucceeded: bool
   } else {
     clearActiveMcpSession();
   }
+}
+
+function hasArticulatedMates(model: BuildOutcome['model']): boolean {
+  if (model === undefined) return false;
+  const assemblies = Array.from(model.session.assemblies.values()) as Assembly[];
+  return assemblies.some((a) => a.__mates().some((m) => m.type !== 'fastened'));
 }
 
 async function probeSceneMechanism(

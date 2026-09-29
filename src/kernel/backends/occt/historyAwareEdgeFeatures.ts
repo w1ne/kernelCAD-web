@@ -307,9 +307,86 @@ export function shellWithHistory(
     faceExplorer.delete();
   }
 
-  const builder = new oc.BRepOffsetAPI_MakeThickSolid();
+  // Join strategies, tried in order until one builds. The first is the
+  // historical call (arc join, no self-intersection pass) so every shell that
+  // built before builds identically. The retries rescue bodies whose curved
+  // faces meet at sharp, non-tangent edges — a multi-station variableSweep,
+  // a ruled loft, a union of stacked lofts — where the arc join cannot close
+  // the offset: arc join with the intersection pass, then intersection join.
+  const strategies: ReadonlyArray<{ intersection: boolean; join: unknown }> = [
+    { intersection: false, join: oc.GeomAbs_JoinType.GeomAbs_Arc },
+    { intersection: true, join: oc.GeomAbs_JoinType.GeomAbs_Arc },
+    { intersection: true, join: oc.GeomAbs_JoinType.GeomAbs_Intersection },
+  ];
+  // A strategy can also "finish" with a broken solid (runaway offset
+  // surfaces, a hollow larger than the body). Reject those and try the next.
+  const bodyVolume = shapeVolume(oc, bodyShape);
+  try {
+    for (const strategy of strategies) {
+      const built = buildThickSolid(oc, bodyShape, facesToRemoveList, thickness, strategy);
+      if (built === undefined) continue;
+      const { builder, progress } = built;
+      try {
+        const resultShape = builder.Shape();
+        if (!plausibleShellVolume(shapeVolume(oc, resultShape), bodyVolume, thickness)) continue;
+
+        const faceHistory = new Map<FaceHash, FaceHash[]>();
+        const edgeHistory = new Map<EdgeHash, EdgeHash[]>();
+        const deletedFaces = new Set<FaceHash>();
+        const deletedEdges = new Set<EdgeHash>();
+
+        enumerateAndRecord(oc, bodyShape, oc.TopAbs_ShapeEnum.TopAbs_FACE, builder, faceHistory, deletedFaces);
+        enumerateAndRecord(oc, bodyShape, oc.TopAbs_ShapeEnum.TopAbs_EDGE, builder, edgeHistory, deletedEdges);
+
+        return { shape: resultShape, faceHistory, edgeHistory, deletedFaces, deletedEdges };
+      } finally {
+        builder.delete();
+        progress.delete();
+      }
+    }
+    throw new Error(
+      `shellWithHistory: BRepOffsetAPI_MakeThickSolid failed (thickness ${thickness}); ` +
+        'arc join, arc join with intersection, and intersection join all failed to close the offset',
+    );
+  } finally {
+    facesToRemoveList.delete();
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function shapeVolume(oc: any, shape: unknown): number {
+  const props = new oc.GProp_GProps_1();
+  try {
+    oc.BRepGProp.VolumeProperties_1(shape, props, false, false, false);
+    return Math.abs(props.Mass());
+  } catch {
+    return Number.NaN;
+  } finally {
+    props.delete();
+  }
+}
+
+/** A shell result must be a finite, positive-volume solid; an inward shell
+ *  (thickness > 0) can only remove material. */
+function plausibleShellVolume(volume: number, bodyVolume: number, thickness: number): boolean {
+  if (!Number.isFinite(volume) || volume <= 0) return false;
+  if (thickness > 0 && Number.isFinite(bodyVolume) && volume > bodyVolume * (1 + 1e-6)) return false;
+  return true;
+}
+
+/** One `MakeThickSolidByJoin` attempt. Returns the built builder (caller
+ *  deletes it), or `undefined` when OCCT did not finish the offset. */
+function buildThickSolid(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const progress = new (oc as any).Message_ProgressRange_1();
+  oc: any,
+  bodyShape: unknown,
+  facesToRemoveList: unknown,
+  thickness: number,
+  strategy: { intersection: boolean; join: unknown },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): { builder: any; progress: any } | undefined {
+  const builder = new oc.BRepOffsetAPI_MakeThickSolid();
+  const progress = new oc.Message_ProgressRange_1();
   try {
     builder.MakeThickSolidByJoin(
       bodyShape,
@@ -317,32 +394,20 @@ export function shellWithHistory(
       -thickness,  // OCCT convention: negative offset = inward (hollow); mirrors Replicad's own shell() impl
       1e-3,
       oc.BRepOffset_Mode.BRepOffset_Skin,
+      strategy.intersection,
       false,
-      false,
-      oc.GeomAbs_JoinType.GeomAbs_Arc,
+      strategy.join,
       false,
       progress,  // theRange — required 10th argument for BRepOffsetAPI_MakeThickSolid::MakeThickSolidByJoin
     );
     builder.Build(progress);
-    if (!builder.IsDone()) {
-      throw new Error(`shellWithHistory: BRepOffsetAPI_MakeThickSolid failed (thickness ${thickness})`);
-    }
-    const resultShape = builder.Shape();
-
-    const faceHistory = new Map<FaceHash, FaceHash[]>();
-    const edgeHistory = new Map<EdgeHash, EdgeHash[]>();
-    const deletedFaces = new Set<FaceHash>();
-    const deletedEdges = new Set<EdgeHash>();
-
-    enumerateAndRecord(oc, bodyShape, oc.TopAbs_ShapeEnum.TopAbs_FACE, builder, faceHistory, deletedFaces);
-    enumerateAndRecord(oc, bodyShape, oc.TopAbs_ShapeEnum.TopAbs_EDGE, builder, edgeHistory, deletedEdges);
-
-    return { shape: resultShape, faceHistory, edgeHistory, deletedFaces, deletedEdges };
-  } finally {
-    facesToRemoveList.delete();
-    builder.delete();
-    progress.delete();
+    if (builder.IsDone()) return { builder, progress };
+  } catch {
+    // A raw OCCT exception from one join strategy: try the next one.
   }
+  builder.delete();
+  progress.delete();
+  return undefined;
 }
 
 /**

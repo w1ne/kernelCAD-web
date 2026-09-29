@@ -228,7 +228,10 @@ function positionJacobianColumns(
   return cols;
 }
 
-function solveDlsStep(
+/** One damped-least-squares step on the position channel:
+ *  `y = (J Jᵀ + λ² I₃)⁻¹ e`; the caller forms `Δq = Jᵀ y`. Shared with the
+ *  mate-graph solver (`inverseKinematicsMates.ts`). */
+export function solveDlsStep(
   cols: readonly { readonly name: string; readonly jp: Vec3 }[],
   errPos: Vec3,
 ): Vec3 | undefined {

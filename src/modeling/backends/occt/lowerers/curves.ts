@@ -98,15 +98,12 @@ export function lowerVariableSweep(ctx: LowerContext, r: FeatureRecord): LowerOu
       ...(m.closed !== undefined ? { closed: m.closed } : {}),
       ...(m.orientation !== undefined ? { orientation: m.orientation } : {}),
       // Sketch-derived profiles are always lifted onto the XY plane at
-      // z=0 — let OCCT translate them to the spine station via the
-      // `WithContact=true` arm of `BRepOffsetAPI_MakePipeShell::Add_2`.
-      // `withCorrection=true` rotates each profile perpendicular to
-      // the spine tangent at its vertex — required when the spine
-      // tangent is non-vertical (e.g. a sketch spine in the XY plane,
-      // where without correction profile and spine are coplanar and
-      // the swept volume collapses).
-      withContact: true,
-      withCorrection: true,
+      // z=0, drawn around the origin. `placeProfiles` maps that origin onto
+      // the spine point at each station and turns the profile normal onto
+      // the spine tangent. (OCCT's own `WithContact=true` only translates a
+      // profile until its boundary touches the spine, which shifted every
+      // centred profile sideways by its half-width.)
+      placeProfiles: true,
     });
     return built(shape);
   } catch (e) {

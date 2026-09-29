@@ -82,6 +82,13 @@ two-feature placement math, subtract-chain reliability, JSON-`ok`-is-not-visual-
 
 ## Assembly and mechanism loop
 
+`evaluate_script` on a model with mates runs only a shallow mechanism check.
+It does NOT check joint-support intents (`jointSupport` / `mechanicalJoint`),
+pose-envelope overlap at a declared mate limit, or a gravity drop / static hold,
+so `ok: true` from it is not a mechanism verdict. When the result carries
+`reviewHint`, run `review_cad` for the pose-envelope + gravity checks before you
+call the mechanism done.
+
 ### Articulated-digit workflow (non-bypassable)
 
 For an articulated digit, use the structural joint helper and complete every gate below:
@@ -981,6 +988,7 @@ When you need a canonical pattern, call MCP tool `lookup_cookbook(query, k?)` to
 | sweep-tolerance-hole-diameter | A fastened pair of parts has a param()-driven bore diameter and you need to know at which value the mounting-hole gate flips from pass to fail, rather than only checking the nominal. |
 | tab-slot-flush-joint | You are joining flat stock (laser/CNC plywood, acrylic, sheet) with an interlocking tab-and-slot. The through-tab must span the full mating wall thickness — flush or slightly proud, never recessed — and the fit clearance belongs on the slot, not on the tab. |
 | tslot-extrusion-and-bracket | You need a 20×20 B-type T-slot extrusion (slot 6, 6 mm slot opening) trimmed to a length param, plus a matching 90-degree corner connector that fastens on the T-slots. |
+| twisted-tapered-thin-wall-vase | You need a hollow, open-top vessel whose cross-section twists and tapers with height (a twisted hex vase, a faceted planter, a lamp shade) with an even wall. Build the outer body with variableSweep through per-station profiles, then hollow it by subtracting the same sweep built from profiles inset by the wall thickness — a boolean hollow that works where shell() cannot close the offset (curved faces that meet at sharp edges: multi-station sweeps, ruled lofts, unions of stacked lofts). |
 | typed-params-boolean-choice-string | A `.kcad.ts` script needs an editable value that isn't a plain number: a feature on/off switch (`param('HasLid', true)`), a closed set of named options like a fastener size (`param('Screw', 'M4', { choices: [...] })`), or free text such as a nameplate/label (`param('Label', 'KCAD', { maxLength })`). All three resolve eagerly — read `.value` in script logic (`if`, object-key lookup, `sketch.text`) instead of the numeric ParamRef's symbolic `.add()`/`.multiply()` chain. |
 | union-of-stacked-primitives | Simple blockouts only — compose primitives by translate+union without overlap. NOT for real / production / complex / enclosure / gearbox / bearing housing / robot-arm prompts (use multi-feature-machined-housing or multi-body-mechanism-real-proportions instead). |
 | wood-joinery-dado-rabbet-mortise | You are cutting a dado groove, a rabbet rebate, and a mortise-and-tenon in lumber, with a named fit-clearance param widening the receiving cuts (groove, rebate, mortise) while the male tenon stays nominal. |
