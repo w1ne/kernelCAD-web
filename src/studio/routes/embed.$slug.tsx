@@ -19,16 +19,33 @@
  * Ready means the model is *displayed* (nonempty geometry + camera fitted +
  * first frame), not merely that source finished downloading. iframe `load` is
  * not enough.
+ *
+ * What a visitor sees (EmbedFrame): the project's stored render as a poster
+ * from first paint, one progress line, then a fade to the live canvas. The
+ * attribution and Remix links sit in a footer under the canvas, never over
+ * the model. `?theme=light|dark` pins the colours; without it the embed
+ * follows the host's `prefers-color-scheme`.
  */
 import { createFileRoute } from '@tanstack/react-router';
-import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from 'react';
 import { FunnelViewer, type FunnelViewerPhase } from '../../funnel/components/FunnelViewer';
 import { fetchProjectBySlug, fetchProjectRevisionBySlug } from '../../funnel/lib/apiClient';
 import StudioApp from '../App';
 import { StudioConfigProvider } from '../config/StudioConfigContext';
-import { MadeWithKernelcad } from '../components/MadeWithKernelcad';
+import { EmbedAttributionBar, MadeWithKernelcad } from '../components/MadeWithKernelcad';
 import { StudioModelCustomizer } from '../customizer/StudioModelCustomizer';
-import { embedCustomize, embedPresentationMode, embedRevision, loadEmbedCode, revisionPinnedMeshUrl } from './-embedConfig';
+import {
+  EMBED_THEME_VARS,
+  embedCustomize,
+  embedPosterUrl,
+  embedPresentationMode,
+  embedRevision,
+  embedTheme,
+  loadEmbedCode,
+  resolveEmbedTheme,
+  revisionPinnedMeshUrl,
+  type EmbedTheme,
+} from './-embedConfig';
 
 /** Bound source fetches so a hung API cannot pin the outer ChatGPT overlay forever. */
 const SOURCE_FETCH_TIMEOUT_MS = 30_000;
@@ -99,6 +116,8 @@ export const Route = createFileRoute('/embed/$slug')({
     animUrl: embedMeshUrl(search.animUrl),
     /** Opt-in model customizer (`?customize=1`). */
     customize: embedCustomize(search.customize),
+    /** `?theme=light|dark`; absent follows the host's colour-scheme preference. */
+    theme: embedTheme(search.theme),
   }),
   component: EmbedPage,
 });
@@ -238,21 +257,25 @@ function useEmbedNoProgressTimeout(
 
 function EmbedPage() {
   const { slug } = Route.useParams();
-  const { mode, revision, meshUrl: rawMeshUrl, instance, animUrl: rawAnimUrl, customize } = Route.useSearch();
+  const { mode, revision, meshUrl: rawMeshUrl, instance, animUrl: rawAnimUrl, customize, theme: pinnedTheme } = Route.useSearch();
   // A customizable embed builds from source: a stored mesh has no parameters.
   const meshUrl = customize ? undefined : revisionPinnedMeshUrl(rawMeshUrl, slug, revision);
   const customizer = customize ? <StudioModelCustomizer slug={slug} /> : undefined;
   const animUrl = rawAnimUrl;
+  const theme = resolveEmbedTheme(pinnedTheme, usePrefersDark());
   const [viewerPhase, setViewerPhase] = useState<FunnelViewerPhase | null>(null);
   const [viewerDetail, setViewerDetail] = useState<string | null>(null);
   const [retryKey, setRetryKey] = useState(0);
+  /** The retry generation that has shown a model. The poster never covers it again. */
+  const [displayedFor, setDisplayedFor] = useState<number | null>(null);
   const [timedOut, setTimedOut] = useState(false);
   const { code, sourceSettled, sourceState, err, resetSource } = useEmbedSource(slug, revision, retryKey);
 
   const onPhaseChange = useCallback((phase: FunnelViewerPhase, detail?: string | null) => {
     setViewerPhase(phase);
     setViewerDetail(detail ?? null);
-  }, []);
+    if (phase === 'model_displayed') setDisplayedFor(retryKey);
+  }, [retryKey]);
 
   const { uiPhase, statusMessage, canRetry } = useEmbedUiPhase({
     revision,
@@ -280,52 +303,49 @@ function EmbedPage() {
   };
 
   const meshReady = Boolean(meshUrl) && revision !== null;
-  if (revision !== null && ((sourceSettled && sourceState === 'ready' && code) || meshReady)) {
-    if (mode === 'studio') {
-      if (!(sourceSettled && code)) {
-        return (
-          <EmbedPending
-            uiPhase={uiPhase}
-            statusMessage={statusMessage}
-            canRetry={canRetry}
-            onRetry={retrySource}
-          />
-        );
-      }
-      return (
-        <StudioConfigProvider value={{ showHeader: false, enableAgentRail: false, enableConnect: false }}>
-          <StudioApp initialCode={code} viewerMode viewportOverlay={customizer} />
-          {/* Bottom-right: the Studio viewport's bottom-left holds the parameter chips. */}
-          <MadeWithKernelcad surface="embed" className="fixed bottom-2 right-2" remixSlug={slug} />
-        </StudioConfigProvider>
-      );
-    }
+  const viewerReady = revision !== null && ((sourceSettled && sourceState === 'ready' && Boolean(code)) || meshReady);
+
+  if (viewerReady && mode === 'studio' && sourceSettled && code) {
     return (
-      <EmbedViewerSurface
-        slug={slug}
-        code={code ?? ''}
-        meshUrl={meshUrl}
-        animUrl={animUrl}
-        revision={typeof revision === 'number' ? revision : null}
-        instanceId={instance}
-        retryKey={retryKey}
-        uiPhase={uiPhase}
-        statusMessage={statusMessage}
-        canRetry={canRetry}
-        onPhaseChange={onPhaseChange}
-        onRetry={retryViewer}
-        customizer={customizer}
-      />
+      <StudioConfigProvider value={{ showHeader: false, enableAgentRail: false, enableConnect: false }}>
+        <StudioApp initialCode={code} viewerMode viewportOverlay={customizer} />
+        {/* Bottom-right: the Studio viewport's bottom-left holds the parameter chips. */}
+        <MadeWithKernelcad surface="embed" className="fixed bottom-2 right-2" remixSlug={slug} />
+      </StudioConfigProvider>
     );
   }
 
   return (
-    <EmbedPending
+    <EmbedFrame
+      slug={slug}
+      revision={revision}
+      theme={theme}
       uiPhase={uiPhase}
       statusMessage={statusMessage}
       canRetry={canRetry}
-      onRetry={retrySource}
-    />
+      onRetry={viewerReady && mode !== 'studio' ? retryViewer : retrySource}
+      modelShown={displayedFor === retryKey}
+      retryKey={retryKey}
+    >
+      {viewerReady && mode !== 'studio' ? (
+        <FunnelViewer
+          code={code ?? ''}
+          meshUrl={meshUrl}
+          animUrl={animUrl}
+          revision={typeof revision === 'number' ? revision : null}
+          instanceId={instance}
+          resetKey={retryKey}
+          onPhaseChange={onPhaseChange}
+          statusOverlay={false}
+          background={theme}
+          overlay={customizer ? (
+            <div className="absolute top-2 right-2 bottom-2 flex flex-col items-end pointer-events-none">
+              {customizer}
+            </div>
+          ) : undefined}
+        />
+      ) : null}
+    </EmbedFrame>
   );
 }
 
@@ -361,7 +381,7 @@ function embedStatusMessage(
 ): string | null {
   switch (uiPhase) {
     case 'loading_source': return 'Loading…';
-    case 'project_saved': return 'Project saved. Building geometry…';
+    case 'project_saved': return 'Building geometry…';
     case 'building_geometry': return 'Building geometry…';
     case 'loading_mesh': return 'Loading mesh…';
     case 'model_displayed': return null;
@@ -382,86 +402,188 @@ function canRetryEmbed(uiPhase: EmbedUiPhase): boolean {
     || uiPhase === 'timed_out';
 }
 
-/** Ready-model viewer branch: the chrome-free FunnelViewer plus its status
- *  overlay and retry affordance. */
-function EmbedViewerSurface(props: {
-  slug: string;
-  code: string;
-  meshUrl: string | undefined;
-  animUrl: string | undefined;
-  revision: number | null;
-  instanceId?: string;
-  retryKey: number;
-  uiPhase: EmbedUiPhase;
-  statusMessage: string | null;
-  canRetry: boolean;
-  onPhaseChange: (phase: FunnelViewerPhase, detail?: string | null) => void;
-  onRetry: () => void;
-  customizer?: ReactNode;
-}) {
-  return (
-    <div className="fixed inset-0" data-embed-phase={props.uiPhase}>
-      <FunnelViewer
-        code={props.code}
-        meshUrl={props.meshUrl}
-        animUrl={props.animUrl}
-        revision={props.revision}
-        instanceId={props.instanceId}
-        resetKey={props.retryKey}
-        onPhaseChange={props.onPhaseChange}
-        overlay={props.customizer ? (
-          <div className="absolute top-2 right-2 bottom-12 flex flex-col items-end pointer-events-none">
-            {props.customizer}
-          </div>
-        ) : undefined}
-      />
-      <MadeWithKernelcad surface="embed" className="absolute bottom-2 left-2" remixSlug={props.slug} />
-      {props.statusMessage ? (
-        <div
-          className="absolute inset-x-0 bottom-0 p-4 flex flex-col items-center gap-2 pointer-events-none"
-          data-testid="embed-status"
-          role="status"
-          aria-live="polite"
-        >
-          <p className="text-ink-faint font-mono text-xs bg-vellum/90 px-3 py-1.5 rounded">
-            {props.statusMessage}
-          </p>
-          {props.canRetry ? (
-            <button
-              type="button"
-              className="pointer-events-auto font-mono text-xs underline text-ink-faint"
-              onClick={props.onRetry}
-            >
-              Retry
-            </button>
-          ) : null}
-        </div>
-      ) : null}
-    </div>
+
+const PREFERS_DARK = '(prefers-color-scheme: dark)';
+
+function subscribePrefersDark(onChange: () => void): () => void {
+  const query = typeof window.matchMedia === 'function' ? window.matchMedia(PREFERS_DARK) : null;
+  if (!query) return () => {};
+  query.addEventListener('change', onChange);
+  return () => query.removeEventListener('change', onChange);
+}
+
+/** The host page's colour-scheme preference. No `matchMedia`: dark, the embed's historical look. */
+function usePrefersDark(): boolean {
+  return useSyncExternalStore(
+    subscribePrefersDark,
+    () => (typeof window.matchMedia === 'function' ? window.matchMedia(PREFERS_DARK).matches : true),
+    () => true,
   );
 }
 
-/** Not-yet-ready branch: centered status line and retry affordance. */
-function EmbedPending(props: {
+function metaContent(property: string): string | null {
+  if (typeof document === 'undefined') return null;
+  return document.querySelector(`meta[property="${property}"]`)?.getAttribute('content') ?? null;
+}
+
+/** Whole seconds since `active` became true for this `resetKey`; 0 while inactive. */
+function useElapsedSeconds(active: boolean, resetKey: number): number {
+  const [tick, setTick] = useState({ key: resetKey, seconds: 0 });
+  useEffect(() => {
+    if (!active) return undefined;
+    const started = Date.now();
+    const timer = window.setInterval(() => {
+      setTick({ key: resetKey, seconds: Math.floor((Date.now() - started) / 1000) });
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [active, resetKey]);
+  return active && tick.key === resetKey ? tick.seconds : 0;
+}
+
+/** Show the elapsed time only once a wait is long enough to wonder about. */
+const ELAPSED_VISIBLE_AFTER_S = 3;
+
+function isLoadingPhase(uiPhase: EmbedUiPhase): boolean {
+  return uiPhase === 'loading_source'
+    || uiPhase === 'project_saved'
+    || uiPhase === 'building_geometry'
+    || uiPhase === 'loading_mesh';
+}
+
+/**
+ * Every viewer-mode embed state draws in this frame: the canvas area with the
+ * poster and one status line over it, and the attribution bar under it.
+ *
+ * - Loading: the stored render (poster) fills the canvas area from first
+ *   paint, with one small progress line at the bottom. Without a poster, the
+ *   line sits in the centre of a plain backdrop.
+ * - Displayed: the poster fades out over the live canvas. It does not come
+ *   back for a later rebuild (the customizer): the model stays in view.
+ * - Failed: no poster (it would contradict the error); the message and a
+ *   Retry button sit in the centre.
+ */
+function EmbedFrame(props: {
+  slug: string;
+  revision: number | null | undefined;
+  theme: EmbedTheme;
   uiPhase: EmbedUiPhase;
   statusMessage: string | null;
   canRetry: boolean;
   onRetry: () => void;
+  /** The live canvas has shown the model for the current retry. */
+  modelShown: boolean;
+  retryKey: number;
+  children?: ReactNode;
 }) {
+  const { uiPhase, modelShown } = props;
+  const posterUrl = useMemo(
+    () => embedPosterUrl(props.slug, props.revision, metaContent('og:image')),
+    [props.slug, props.revision],
+  );
+  const [posterState, setPosterState] = useState<{ url: string; state: 'loaded' | 'failed' } | null>(null);
+  const posterLoaded = posterState?.url === posterUrl && posterState?.state === 'loaded';
+  const posterFailed = posterState?.url === posterUrl && posterState?.state === 'failed';
+  const loading = isLoadingPhase(uiPhase);
+  const coverVisible = !modelShown;
+  const showPoster = Boolean(posterUrl) && !posterFailed && (loading || modelShown);
+  const centred = coverVisible && !(showPoster && posterLoaded && loading);
+  const elapsed = useElapsedSeconds(loading && !modelShown, props.retryKey);
+  const remixSlug = uiPhase === 'missing' ? undefined : props.slug;
+
   return (
-    <main className="fixed inset-0 bg-vellum font-sans grid place-items-center p-8" data-embed-phase={props.uiPhase}>
-      <div className="flex flex-col items-center gap-3">
-        <p className="text-ink-faint font-mono text-sm" data-testid="embed-status">{props.statusMessage ?? 'Loading…'}</p>
+    <main
+      className="fixed inset-0 flex flex-col overflow-hidden bg-[var(--embed-bg)] font-sans text-[var(--embed-fg)]"
+      style={EMBED_THEME_VARS[props.theme] as CSSProperties}
+      data-embed-phase={uiPhase}
+      data-embed-theme={props.theme}
+      aria-busy={loading && !modelShown}
+    >
+      {/* The view cube is 144 px: in a small frame it covers the model. */}
+      <div className="relative min-h-0 flex-1 max-[479px]:[&_[data-testid=view-gizmo]]:hidden [@media(max-height:359px)]:[&_[data-testid=view-gizmo]]:hidden">
+        {props.children}
+        <div
+          data-testid="embed-cover"
+          data-visible={coverVisible ? 'true' : 'false'}
+          aria-hidden="true"
+          className={`absolute inset-0 bg-[var(--embed-bg)] motion-safe:transition-opacity motion-safe:duration-[250ms] ${coverVisible ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
+        >
+          {showPoster && posterUrl ? (
+            <img
+              data-testid="embed-poster"
+              src={posterUrl}
+              alt=""
+              decoding="async"
+              fetchPriority="high"
+              draggable={false}
+              className={`h-full w-full object-contain ${posterLoaded ? 'opacity-100' : 'opacity-0'}`}
+              onLoad={() => setPosterState({ url: posterUrl, state: 'loaded' })}
+              onError={() => setPosterState({ url: posterUrl, state: 'failed' })}
+            />
+          ) : null}
+        </div>
+        {props.statusMessage ? (
+          <EmbedStatus
+            message={props.statusMessage}
+            loading={loading}
+            centred={centred}
+            elapsed={elapsed}
+            canRetry={props.canRetry}
+            onRetry={props.onRetry}
+          />
+        ) : null}
+      </div>
+      <EmbedAttributionBar remixSlug={remixSlug} />
+    </main>
+  );
+}
+
+/** The embed's one status line: progress while loading, the error and Retry after a failure. */
+function EmbedStatus(props: {
+  message: string;
+  loading: boolean;
+  centred: boolean;
+  elapsed: number;
+  canRetry: boolean;
+  onRetry: () => void;
+}) {
+  const place = props.centred
+    ? 'inset-0 grid place-items-center p-4'
+    : 'inset-x-0 bottom-2 flex justify-center px-2';
+  return (
+    <div
+      className={`pointer-events-none absolute ${place}`}
+      data-testid="embed-status"
+      data-placement={props.centred ? 'centre' : 'bottom'}
+      role="status"
+      aria-live="polite"
+    >
+      <div className="pointer-events-auto flex max-w-full flex-col items-center gap-2">
+        <div className="flex max-w-full items-center gap-2 rounded-full bg-[var(--embed-pill)] px-3 py-1.5 text-xs leading-4 shadow-sm">
+          {props.loading ? (
+            <span
+              aria-hidden="true"
+              className="h-3 w-3 shrink-0 rounded-full border-2 border-[var(--embed-fg-2)] border-t-transparent motion-safe:animate-spin"
+            />
+          ) : null}
+          <p className={`min-w-0 ${props.loading ? 'truncate' : 'line-clamp-3 break-words'} ${props.canRetry ? 'text-[var(--embed-danger)]' : 'text-[var(--embed-fg)]'}`}>
+            {props.message}
+          </p>
+          {props.loading && props.elapsed >= ELAPSED_VISIBLE_AFTER_S ? (
+            <span data-testid="embed-elapsed" className="shrink-0 font-mono tabular-nums text-[var(--embed-fg-2)]">
+              {props.elapsed} s
+            </span>
+          ) : null}
+        </div>
         {props.canRetry ? (
           <button
             type="button"
-            className="font-mono text-xs underline text-ink-faint"
+            className="h-7 rounded-md border border-[var(--embed-border)] bg-[var(--embed-surface)] px-3 text-xs font-semibold text-[var(--embed-fg)] hover:border-[var(--embed-fg-2)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--embed-accent)]"
             onClick={props.onRetry}
           >
             Retry
           </button>
         ) : null}
       </div>
-    </main>
+    </div>
   );
 }

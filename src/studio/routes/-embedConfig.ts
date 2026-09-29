@@ -77,3 +77,82 @@ export function revisionPinnedMeshUrl(
   parsed.hash = '';
   return parsed.toString();
 }
+
+export type EmbedTheme = 'light' | 'dark';
+
+/**
+ * `?theme=light|dark` pins the embed theme. Anything else (or no param) is
+ * `undefined`: the embed follows the host's `prefers-color-scheme`.
+ */
+export function embedTheme(value: unknown): EmbedTheme | undefined {
+  return value === 'light' || value === 'dark' ? value : undefined;
+}
+
+/** The theme the embed draws: the pinned one, else the host preference. */
+export function resolveEmbedTheme(pinned: EmbedTheme | undefined, prefersDark: boolean): EmbedTheme {
+  return pinned ?? (prefersDark ? 'dark' : 'light');
+}
+
+/**
+ * Embed colours as CSS custom properties, set on the embed root. `bg` matches
+ * the viewer canvas background of the same theme, so the cross-fade from the
+ * poster to the live canvas has no colour jump. Text/background pairs meet
+ * WCAG AA. Move these to the shared semantic tokens when they land.
+ */
+export const EMBED_THEME_VARS: Record<EmbedTheme, Record<`--embed-${string}`, string>> = {
+  dark: {
+    '--embed-bg': '#202126',
+    '--embed-surface': '#16171b',
+    '--embed-border': '#2e3038',
+    '--embed-fg': '#e8ecf3',
+    '--embed-fg-2': '#aab3c2',
+    '--embed-accent': '#5b9be6',
+    '--embed-accent-hover': '#79b0ee',
+    '--embed-on-accent': '#06101e',
+    '--embed-pill': 'rgb(12 13 16 / 0.78)',
+    '--embed-danger': '#ff6b6b',
+  },
+  light: {
+    '--embed-bg': '#f0f0f0',
+    '--embed-surface': '#ffffff',
+    '--embed-border': '#d9d9d9',
+    '--embed-fg': '#0a1628',
+    '--embed-fg-2': '#3f4c5e',
+    '--embed-accent': '#1e5fa8',
+    '--embed-accent-hover': '#174e8b',
+    '--embed-on-accent': '#ffffff',
+    '--embed-pill': 'rgb(255 255 255 / 0.9)',
+    '--embed-danger': '#b42318',
+  },
+};
+
+/** Path of a project's stored render (kernelCAD-server `GET /api/v1/projects/:slug/og.png`). */
+function storedRenderPath(slug: string): string {
+  return `/api/v1/projects/${encodeURIComponent(slug)}/og.png`;
+}
+
+/**
+ * The stored render to show as a poster while the geometry builds, or
+ * `undefined`. The source is the page's own `og:image` tag, which the
+ * /embed/:slug Pages Function (functions/_lib/og.ts) fills from the API, so
+ * the poster costs no extra request before first paint. Only this project's
+ * render counts: the generic site image that index.html ships is not a poster.
+ *
+ * A pinned revision gets no poster: the stored render is of the latest
+ * revision and can show a different model.
+ */
+export function embedPosterUrl(
+  slug: string,
+  revision: number | null | undefined,
+  ogImage: string | null | undefined,
+): string | undefined {
+  if (revision !== undefined || !slug || !ogImage) return undefined;
+  let url: URL;
+  try {
+    url = new URL(ogImage);
+  } catch {
+    return undefined;
+  }
+  if (url.protocol !== 'https:' && url.hostname !== '127.0.0.1' && url.hostname !== 'localhost') return undefined;
+  return url.pathname === storedRenderPath(slug) ? url.toString() : undefined;
+}
