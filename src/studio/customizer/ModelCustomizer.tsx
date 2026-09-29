@@ -9,7 +9,8 @@
  */
 import { useState, type JSX } from 'react';
 import { NumericScrubInput } from '../components/inputs/NumericScrubInput';
-import { downloadBlob } from '../exportViaServer';
+import { downloadBlob, type ExportViaServerOptions } from '../exportViaServer';
+import { exportProgressText, useExportTask, type ExportedFile } from '../hooks/useExportTask';
 import type { ParamValue } from '../../shared/runtime/paramTable';
 import {
   CUSTOMIZER_FORMATS,
@@ -29,7 +30,14 @@ export interface ModelCustomizerProps {
   /** Last build error from the viewer, if any. */
   error?: string | null;
   execute: (values: CustomizerValues) => Promise<void>;
-  exportModel: (format: CustomizerFormat, values: CustomizerValues) => Promise<Blob>;
+  /** Exports the configuration. `options` carries the cancel signal and
+   *  progress callback of `exportViaServer`. A result with a `warning` shows
+   *  it as a notice after the download. */
+  exportModel: (
+    format: CustomizerFormat,
+    values: CustomizerValues,
+    options?: ExportViaServerOptions,
+  ) => Promise<Blob | Pick<ExportedFile, 'blob' | 'warning'>>;
   /** Hands the exported file to the browser. Defaults to a download link. */
   saveFile?: (blob: Blob, fileName: string) => void;
   defaultCollapsed?: boolean;
@@ -143,9 +151,26 @@ function ParamControl(props: {
 
 function DownloadMenu(props: {
   onDownload: (format: CustomizerFormat) => void;
-  busyFormat: CustomizerFormat | null;
+  /** Progress text of the running export, or null when idle. */
+  progress: string | null;
+  onCancel: () => void;
 }): JSX.Element {
   const [open, setOpen] = useState(false);
+  if (props.progress !== null) {
+    return (
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-gray-300" data-testid="customizer-download-progress">{props.progress}</span>
+        <button
+          type="button"
+          onClick={props.onCancel}
+          data-testid="customizer-download-cancel"
+          className="text-xs text-gray-400 underline hover:text-gray-200"
+        >
+          Cancel
+        </button>
+      </div>
+    );
+  }
   return (
     <div className="relative">
       <button
@@ -153,11 +178,10 @@ function DownloadMenu(props: {
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-haspopup="menu"
-        disabled={props.busyFormat !== null}
         data-testid="customizer-download"
         className="rounded border border-[#444] bg-[#2a2a2a] px-2 py-1 text-xs text-gray-100 hover:bg-[#333] disabled:opacity-60"
       >
-        {props.busyFormat ? `Exporting ${FORMAT_LABELS[props.busyFormat]}…` : 'Download ▾'}
+        Download ▾
       </button>
       {open && (
         <ul role="menu" className="absolute bottom-full right-0 z-10 mb-1 min-w-24 rounded border border-[#333] bg-[#1b1b1b] py-1 shadow-lg">
@@ -181,21 +205,38 @@ function DownloadMenu(props: {
 }
 
 function useDownload(props: ModelCustomizerProps, values: CustomizerValues) {
-  const [busyFormat, setBusyFormat] = useState<CustomizerFormat | null>(null);
-  const [downloadError, setDownloadError] = useState<string | null>(null);
+  const task = useExportTask();
   const download = (format: CustomizerFormat) => {
-    setBusyFormat(format);
-    setDownloadError(null);
     const fileName = downloadFileName(props.slug, props.params, values, format);
-    props.exportModel(format, values)
-      .then((blob) => (props.saveFile ?? downloadBlob)(blob, fileName))
-      .catch((err: unknown) => setDownloadError(`Export failed: ${err instanceof Error ? err.message : String(err)}`))
-      .finally(() => setBusyFormat(null));
+    void task.start(
+      FORMAT_LABELS[format],
+      async (options) => {
+        const out = await props.exportModel(format, values, options);
+        return out instanceof Blob
+          ? { blob: out, downloadName: fileName }
+          : { blob: out.blob, downloadName: fileName, ...(out.warning ? { warning: out.warning } : {}) };
+      },
+      props.saveFile ?? downloadBlob,
+    );
   };
-  return { busyFormat, downloadError, download };
+  const { error, notice } = task.state;
+  return {
+    progress: exportProgressText(task.state),
+    cancel: task.cancel,
+    downloadError: error ? `Export failed: ${error.message}` : null,
+    // Only the download error carries a hint; it is also the one shown first.
+    downloadHint: error?.hint ?? null,
+    downloadNotice: notice,
+    download,
+  };
 }
 
-function StatusLine({ busy, message, notice }: { busy: boolean; message: string | null; notice: string | null }) {
+function StatusLine({ busy, message, hint, notice }: {
+  busy: boolean;
+  message: string | null;
+  hint: string | null;
+  notice: string | null;
+}) {
   if (!busy && !message && !notice) return null;
   return (
     <div className="flex flex-col gap-1 px-3 py-1.5 text-[11px]" role="status" aria-live="polite">
@@ -206,21 +247,26 @@ function StatusLine({ busy, message, notice }: { busy: boolean; message: string 
         </span>
       )}
       {message && <span className="text-red-300" data-testid="customizer-error">{shortError(message)}</span>}
+      {message && hint && <span className="text-red-300/80" data-testid="customizer-error-hint">{hint}</span>}
       {notice && <span className="text-amber-300" data-testid="customizer-notice">{notice}</span>}
     </div>
   );
+}
+
+/** The shipped-with-warning notice, then any ignored link values. */
+function noticeText(downloadNotice: string | null, ignoredUrlValues: readonly string[]): string | null {
+  const ignored = ignoredUrlValues.length > 0 ? `Ignored link values: ${ignoredUrlValues.join('; ')}` : null;
+  return [downloadNotice, ignored].filter(Boolean).join(' ') || null;
 }
 
 export function ModelCustomizer(props: ModelCustomizerProps): JSX.Element | null {
   const { params, busy, error, execute, debounceMs = 400 } = props;
   const [collapsed, setCollapsed] = useState(props.defaultCollapsed ?? false);
   const state = useCustomizerValues({ params, execute, debounceMs });
-  const { busyFormat, downloadError, download } = useDownload(props, state.values);
+  const { progress, cancel, downloadError, downloadHint, downloadNotice, download } = useDownload(props, state.values);
   if (params.length === 0) return null;
 
-  const notice = state.ignoredUrlValues.length > 0
-    ? `Ignored link values: ${state.ignoredUrlValues.join('; ')}`
-    : null;
+  const notice = noticeText(downloadNotice, state.ignoredUrlValues);
   const message = downloadError ?? state.runError ?? error ?? null;
 
   return (
@@ -257,7 +303,7 @@ export function ModelCustomizer(props: ModelCustomizerProps): JSX.Element | null
               />
             ))}
           </div>
-          <StatusLine busy={busy || state.pending} message={message} notice={notice} />
+          <StatusLine busy={busy || state.pending} message={message} hint={downloadHint} notice={notice} />
           <footer className="flex items-center justify-between gap-2 border-t border-[#2a2a2a] px-3 py-2">
             <button
               type="button"
@@ -267,7 +313,7 @@ export function ModelCustomizer(props: ModelCustomizerProps): JSX.Element | null
             >
               Reset
             </button>
-            <DownloadMenu onDownload={download} busyFormat={busyFormat} />
+            <DownloadMenu onDownload={download} progress={progress} onCancel={cancel} />
           </footer>
         </>
       )}
