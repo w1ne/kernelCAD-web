@@ -25,11 +25,25 @@ function readInitialPrompt(): string {
   return new URLSearchParams(window.location.search).get('prompt') ?? '';
 }
 
+/**
+ * Opens a finished run. A complete result opens right away. A partial one
+ * waits on the page, so the user reads what was not checked before opening it.
+ */
+function useOpenResult(phase: ReturnType<typeof useGeneration>['phase']): () => void {
+  const navigate = useNavigate();
+  const openResult = useCallback(() => {
+    if (phase.state === 'done') navigate({ to: '/g/$genId', params: { genId: phase.generationId } });
+  }, [phase, navigate]);
+  useEffect(() => {
+    if (phase.state === 'done' && !phase.partial) openResult();
+  }, [phase, openResult]);
+  return openResult;
+}
+
 function GeneratePage() {
   const agentEnabled = inAppAgentEnabled();
   const { phase, events, submit } = useGeneration();
   const { session, loading: sessionLoading } = useSession();
-  const navigate = useNavigate();
   const [signInOpen, setSignInOpen] = useState(false);
   const [upgradeBusy, setUpgradeBusy] = useState(false);
   const [initialPrompt] = useState(readInitialPrompt);
@@ -97,15 +111,7 @@ function GeneratePage() {
     }
   }, [agentEnabled, sessionLoading, session, phase.state, submit]);
 
-  const openResult = useCallback(() => {
-    if (phase.state === 'done') navigate({ to: '/g/$genId', params: { genId: phase.generationId } });
-  }, [phase, navigate]);
-
-  // A complete result opens right away. A partial one waits on the page, so
-  // the user reads what was not checked before opening it.
-  useEffect(() => {
-    if (phase.state === 'done' && !phase.partial) openResult();
-  }, [phase, openResult]);
+  const openResult = useOpenResult(phase);
 
   const isBusy = phase.state === 'running';
 
