@@ -11,6 +11,17 @@ export function clampInspectorWidth(width: number): number {
     return Math.round(Math.min(INSPECTOR_WIDTH.max, Math.max(INSPECTOR_WIDTH.min, width)));
 }
 
+/** Viewport px the inspector always leaves for the model on a narrow screen. */
+const MIN_VIEWPORT_LEFT = 110;
+
+/**
+ * The width to render: the chosen width, capped on a narrow window so the
+ * model keeps some room. Never below the minimum.
+ */
+export function fitInspectorWidth(width: number, windowWidth: number): number {
+    return Math.min(width, Math.max(INSPECTOR_WIDTH.min, windowWidth - MIN_VIEWPORT_LEFT));
+}
+
 /**
  * The next width for a key press on the resize handle, or `null` when the
  * key does nothing. The inspector sits on the right, so ArrowLeft widens it.

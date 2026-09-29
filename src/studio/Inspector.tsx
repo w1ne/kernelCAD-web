@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { useRef, useState } from 'react';
+import { useRef, useState, useSyncExternalStore } from 'react';
 import type { JSX, KeyboardEvent, PointerEvent, ReactNode } from 'react';
 import { TabPanel } from '../ui';
 import type { TabId } from './types';
@@ -11,6 +11,7 @@ import { checksBadgeCount } from './logic/checksModel';
 import {
     INSPECTOR_WIDTH,
     clampInspectorWidth,
+    fitInspectorWidth,
     inspectorWidthForKey,
     readStoredInspectorWidth,
     writeStoredInspectorWidth,
@@ -74,9 +75,10 @@ export function Inspector({ tabSlots }: InspectorProps): JSX.Element {
  * The width persists per browser.
  */
 function useInspectorResize() {
-    const [width, setWidth] = useState(readStoredInspectorWidth);
+    const [chosen, setWidth] = useState(readStoredInspectorWidth);
     const [dragging, setDragging] = useState(false);
     const drag = useRef<{ x: number; width: number } | null>(null);
+    const width = fitInspectorWidth(chosen, useWindowWidth());
 
     const commit = (next: number) => {
         setWidth(next);
@@ -128,4 +130,17 @@ function useInspectorResize() {
     };
 
     return { width, dragging, handleProps };
+}
+
+function subscribeResize(onChange: () => void): () => void {
+    window.addEventListener('resize', onChange);
+    return () => window.removeEventListener('resize', onChange);
+}
+
+function useWindowWidth(): number {
+    return useSyncExternalStore(
+        subscribeResize,
+        () => window.innerWidth,
+        () => Number.POSITIVE_INFINITY,
+    );
 }

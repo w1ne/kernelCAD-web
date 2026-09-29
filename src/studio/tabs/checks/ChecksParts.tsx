@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { JSX, ReactNode } from 'react';
 import { Crosshair, RefreshCw, Sparkles } from 'lucide-react';
-import { Badge, Button, type BadgeTone } from '../../../ui';
+import { Badge, Button, IconButton, cx, type BadgeTone } from '../../../ui';
 import type { ValidatorDiagnostic } from '../../../modeling/mates/validator';
 import {
     CHECK_CATEGORY_LABEL,
@@ -172,11 +172,14 @@ function FindingRow({ diagnostic, actions }: { diagnostic: ValidatorDiagnostic; 
     const target = diagnosticTargetLabel(diagnostic);
     const fix = diagnostic.hint ? actions.fixFor(diagnostic) : null;
     return (
-        <li className="border-t border-border first:border-t-0" data-severity={diagnostic.severity}>
+        <li className="relative border-t border-border first:border-t-0" data-severity={diagnostic.severity}>
             <button
                 type="button"
                 onClick={() => actions.onSelect(diagnostic)}
-                className="focus-ring flex w-full items-start gap-2 px-3 pb-1 pt-2 text-left transition-colors duration-80 hover:bg-surface-2"
+                className={cx(
+                    'focus-ring flex w-full items-start gap-2 px-3 py-2 text-left transition-colors duration-80 hover:bg-surface-2',
+                    fix != null && 'pr-[4.75rem]',
+                )}
                 data-testid="diagnostic-row"
                 data-code={diagnostic.code}
                 title={target != null ? `Show ${target} in the model` : undefined}
@@ -188,31 +191,26 @@ function FindingRow({ diagnostic, actions }: { diagnostic: ValidatorDiagnostic; 
                         {diagnostic.code}
                         {target != null && <span className="font-sans text-fg-2"> · {target}</span>}
                     </span>
+                    {diagnostic.hint && (
+                        <span className="mt-1 block text-ui text-fg-2" data-testid="diagnostic-hint">
+                            <span className="font-medium">Fix: </span>
+                            {diagnostic.hint}
+                        </span>
+                    )}
                 </span>
             </button>
-            <div className="flex flex-col gap-1.5 pb-2 pl-9 pr-3">
-                {diagnostic.hint && (
-                    <p className="text-ui text-fg-2" data-testid="diagnostic-hint">
-                        <span className="font-medium">Fix: </span>
-                        {diagnostic.hint}
-                    </p>
-                )}
-                {fix != null && (
-                    <div className="flex items-center gap-1">
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-agent-fg"
-                            aria-label={`Fix ${diagnostic.code} with agent`}
-                            leadingIcon={<Sparkles className="size-3.5" aria-hidden="true" />}
-                            onClick={fix.fix}
-                        >
-                            Fix with agent
-                        </Button>
-                        <CopyPromptButton text={fix.prompt} />
-                    </div>
-                )}
-            </div>
+            {fix != null && (
+                <div className="absolute right-2 top-1.5 flex items-center">
+                    <IconButton
+                        size="sm"
+                        className="text-agent-fg"
+                        label={`Fix ${diagnostic.code} with agent`}
+                        icon={<Sparkles className="size-3.5" />}
+                        onClick={fix.fix}
+                    />
+                    <CopyPromptButton text={fix.prompt} label={`Copy repair prompt for ${diagnostic.code}`} />
+                </div>
+            )}
         </li>
     );
 }

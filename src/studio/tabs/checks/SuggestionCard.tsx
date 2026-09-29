@@ -66,29 +66,32 @@ export function SuggestionCard({
                     {card.promptText}
                 </p>
             </details>
-            <div className="mt-3 flex flex-wrap items-center gap-2">
+            <div className="mt-3 flex items-center gap-1">
                 <Button variant="agent" size="sm" leadingIcon={<Sparkles className="size-3.5" aria-hidden="true" />} onClick={fix}>
                     Fix with agent
                 </Button>
+                <CopyPromptButton text={card.promptText} />
                 {onSelect != null && (
-                    <Button variant="ghost" size="sm" leadingIcon={<Crosshair className="size-3.5" aria-hidden="true" />} onClick={onSelect}>
-                        Show in model
-                    </Button>
+                    <IconButton
+                        size="sm"
+                        label="Show in model"
+                        icon={<Crosshair className="size-3.5" />}
+                        onClick={onSelect}
+                    />
                 )}
-                <CopyPromptButton text={card.promptText} className="ml-auto" />
             </div>
         </div>
     );
 }
 
 /** Copies a repair prompt, for an agent outside the Studio. */
-export function CopyPromptButton({ text, className }: { text: string; className?: string }): JSX.Element {
+export function CopyPromptButton({ text, className, label = 'Copy repair prompt' }: { text: string; className?: string; label?: string }): JSX.Element {
     const [copied, setCopied] = useState(false);
     return (
         <IconButton
             size="sm"
             className={className}
-            label={copied ? 'Copied' : 'Copy repair prompt'}
+            label={copied ? 'Copied' : label}
             icon={copied ? <Check className="size-3.5 text-ok" /> : <Copy className="size-3.5" />}
             onClick={(event) => {
                 event.stopPropagation();
