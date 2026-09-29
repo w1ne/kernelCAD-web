@@ -73,7 +73,7 @@ export interface ArchitecturalPlanOptions {
   units?: PlanUnits;
   /** Cut height above the finished floor (the top of the largest upward
    *  horizontal face in the model's bottom quarter, else its lowest point),
-   *  mm. Default 1000. */
+   *  mm. Default 1000 (metric) or 3'-6" (imperial). */
   cutHeight?: number;
   /** Room names: the room containing `at` ([x, y] world mm) gets `name`. */
   rooms?: ReadonlyArray<{ name: string; at: readonly [number, number] }>;
@@ -108,6 +108,7 @@ export interface ArchitecturalPlanResult {
 }
 
 const DEFAULT_CUT_MM = 1000;
+const DEFAULT_CUT_IN = 42;
 /** Room-reading sections above the base, tried after the plan cut. */
 const ROOM_LEVELS_MM = [2300, 2200, 2500, 2000];
 /** Sheet mm reserved around the plan for the dimension rows. */
@@ -118,7 +119,8 @@ const r3 = (n: number): string => {
   const r = Math.round(n * 1000) / 1000;
   return Object.is(r, -0) ? '0' : String(r);
 };
-const esc = (s: string): string => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const esc = (s: string): string =>
+  s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 /**
  * True when a model is building-sized: a footprint of at least 2.5 m on both
@@ -143,11 +145,17 @@ export function renderArchitecturalPlan(
   const bb = body.boundingBox();
   const topZ = bb.max[2];
   const baseZ = floorLevel(body, bb.min[2], topZ);
-  const cutZ = baseZ + (options.plan?.cutHeight ?? DEFAULT_CUT_MM);
+  // Unit system from the overall size and wall height (whole feet / inches →
+  // imperial); it also picks the default cut: 1 m, or 3'-6" imperial.
+  const units = options.plan?.units ?? detectPlanUnits([
+    bb.max[0] - bb.min[0], bb.max[1] - bb.min[1], bb.max[2] - bb.min[2], topZ - baseZ,
+  ]);
+  const cutHeight = options.plan?.cutHeight ?? (units === 'imperial' ? DEFAULT_CUT_IN * 25.4 : DEFAULT_CUT_MM);
+  const cutZ = baseZ + cutHeight;
   if (!(cutZ > bb.min[2] && cutZ < topZ)) {
     throw new KernelError(
       'drawing.section.plane-misses-body',
-      `architectural plan: the cut at ${r3(cutZ)} mm (cutHeight ${options.plan?.cutHeight ?? DEFAULT_CUT_MM} above the floor at ${r3(baseZ)}) ` +
+      `architectural plan: the cut at ${r3(cutZ)} mm (cutHeight ${r3(cutHeight)} above the floor at ${r3(baseZ)}) ` +
         `does not pass through the model (Z range [${r3(bb.min[2])}, ${r3(topZ)}]).`,
       undefined,
       'Pass options.plan.cutHeight between 0 and the wall height (mm above the floor).',
@@ -159,10 +167,6 @@ export function renderArchitecturalPlan(
   const { rooms, roomZ } = readRooms(body, cutZ, baseZ, topZ, cutPolys);
 
   const sides = exteriorChains(cutPolys, cutBox);
-  const units = options.plan?.units ?? detectPlanUnits([
-    bb.max[0] - bb.min[0], bb.max[1] - bb.min[1], bb.max[2] - bb.min[2],
-    ...Object.values(sides).flatMap(pts => pts.slice(1).map((p, i) => p - pts[i])),
-  ]);
 
   // Plan extent: the whole footprint seen from above (cut walls + floor).
   const planMin: P2 = [Math.min(bb.min[0], cutBox.min[0]), Math.min(bb.min[1], cutBox.min[1])];
