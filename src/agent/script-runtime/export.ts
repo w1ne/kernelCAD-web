@@ -8,6 +8,7 @@ import { encodeBinaryStl } from '../../kernel/backends/occt/exportStlBinary';
 import { verifyWatertight, type WatertightReport } from '../../kernel/backends/occt/meshHeal';
 import type { DrawingAnnotation } from '../../kernel/backends/occt/drawingAnnotations';
 import type { DrawingSectionSpec } from '../../kernel/backends/occt/drawingSections';
+import type { ArchitecturalPlanOptions } from '../../kernel/backends/occt/drawingArchitectural';
 import type {
   AutoAnnotateOptions,
   DrawingReport,
@@ -89,6 +90,9 @@ export type ExportOptions =
       /** Derive datums, hole callouts with position frames, positions, overall
        *  dims, radii, chamfers, flatness and an ISO 2768 note from the B-rep. */
       autoAnnotate?: boolean | AutoAnnotateOptions;
+      /** 'architectural' draws a floor plan instead of the part sheet. */
+      style?: DrawingStyle;
+      plan?: ArchitecturalPlanOptions;
     }
   | PdfDrawingOptions
   | { format: 'urdf' }
@@ -147,7 +151,16 @@ export interface PdfDrawingOptions {
    *  note; default ON unless `annotations` are given. `false` falls back to
    *  the overall bounding-box dimensions. */
   autoAnnotate?: boolean | AutoAnnotateOptions;
+  /** `'architectural'`: a floor plan (section ~1 m above the base, poché
+   *  walls, wall / opening dimensions, room labels with area, scale bar,
+   *  north arrow; feet-inches for an imperial model) instead of the
+   *  mechanical part sheet. Default `'mechanical'`. */
+  style?: DrawingStyle;
+  /** Floor-plan options for `style: 'architectural'`. */
+  plan?: ArchitecturalPlanOptions;
 }
+
+export type DrawingStyle = 'mechanical' | 'architectural';
 
 export interface DxfLayerSpec {
   name: string;

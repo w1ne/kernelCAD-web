@@ -34,6 +34,14 @@ export const DRAWING_CODES = {
     group: 'drawing',
     description: 'A drawing section-view cutting plane does not intersect the body being drawn.',
   },
+  'drawing.style.architectural-suggested': {
+    hintTemplate:
+      "This looks like a building or room, so datums, flatness and ISO 2768 do not apply. Re-export with options.style: 'architectural' for a floor plan (section ~1 m above the base, wall / opening dimensions, room labels with area, scale bar, north arrow), or pass options.style: 'mechanical' to keep the part sheet.",
+    nextAction: { kind: 'fix-arg', field: 'options.style' },
+    defaultSeverity: 'warn',
+    group: 'drawing',
+    description: 'A building-sized model (footprint at least 2.5 m × 2.5 m, at least 2 m tall) was drawn with the default mechanical drawing style.',
+  },
   'drawing.annotation.overlap': {
     hintTemplate:
       'Two drawing annotations overlap on the sheet. Reorder the annotations array, pass a different `view`, or add `offset` to push one of them further out.',

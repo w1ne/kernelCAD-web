@@ -29,6 +29,7 @@
 
 import { makeCompound, type AnyShape } from 'replicad';
 import type { WorldFramePart } from './sceneToWorldFrame';
+import type { ArchitecturalPlanOptions } from './drawingArchitectural';
 import { OcctBackend } from './occtBackend';
 import {
   makeDrawingCamera,
@@ -171,6 +172,13 @@ export interface SvgDrawingOptions {
   partsList?: boolean;
   /** BOM rows feeding balloons and the parts-list table. */
   bomRows?: readonly DrawingBomRow[];
+  /** `'mechanical'` (default): the 4-view part sheet. `'architectural'`: a
+   *  floor plan — see `drawingArchitectural.ts`; the mechanical-only keys
+   *  (annotations, sections, autoAnnotate, exploded, balloons, partsList)
+   *  do not apply to it. */
+  style?: 'mechanical' | 'architectural';
+  /** Floor-plan options for `style: 'architectural'`. */
+  plan?: ArchitecturalPlanOptions;
 }
 
 export interface SvgDrawingResult {
