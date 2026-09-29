@@ -12,7 +12,7 @@ import { useWorkbench } from '../context/WorkbenchContext';
 import { getFeatureSourceIndex } from '../selectionCode/featureSourceIndex';
 import { attachCodeGeometrySync, type CodeGeometrySync, type SyncEditorLike } from '../selectionCode/codeGeometrySync';
 import { selectionCodeStore } from '../selectionCode/selectionCodeStore';
-import { useKcadTypeCheck } from './codeTabTypescript';
+import { markerSeverity, useKcadTypeCheck, type MonacoTypescriptHostLike } from './codeTabTypescript';
 
 /**
  * Monaco-backed Code tab for the Studio shell.
@@ -51,12 +51,6 @@ interface MonacoMarkerLike {
 interface MonacoNamespaceLike {
     editor: {
         setModelMarkers: (model: unknown, owner: string, markers: readonly MonacoMarkerLike[]) => void;
-        readonly MarkerSeverity: {
-            readonly Hint: number;
-            readonly Info: number;
-            readonly Warning: number;
-            readonly Error: number;
-        };
     };
 }
 
@@ -70,12 +64,14 @@ function diagnosticToMarker(
     if (!loc) return null;
     const line = Math.max(1, loc.line);
     const column = Math.max(1, loc.column);
+    // Monaco exposes the severities as `monaco.MarkerSeverity`.
+    const severity = markerSeverity(monaco as MonacoTypescriptHostLike);
     const sev =
         d.severity === 'error'
-            ? monaco.editor.MarkerSeverity.Error
+            ? severity.Error
             : d.severity === 'warn'
-                ? monaco.editor.MarkerSeverity.Warning
-                : monaco.editor.MarkerSeverity.Info;
+                ? severity.Warning
+                : severity.Info;
     return {
         startLineNumber: line,
         startColumn: column,

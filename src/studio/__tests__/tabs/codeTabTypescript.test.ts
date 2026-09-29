@@ -194,11 +194,11 @@ function fakeMonaco(worker: { syntactic: TsDiagnosticLike[]; semantic: TsDiagnos
             },
         },
         Uri: { parse: (v: string) => v },
+        MarkerSeverity: { Hint: 1, Info: 2, Warning: 4, Error: 8 },
         editor: {
             createModel: vi.fn(() => checkModel),
             getModel: () => null,
             setModelMarkers,
-            MarkerSeverity: { Hint: 1, Info: 2, Warning: 4, Error: 8 },
         },
     };
     return { monaco, defaults, setModelMarkers, checkModel, editor: { getModel: () => editorModel }, listeners };
@@ -212,7 +212,11 @@ describe('configureKcadTypescript + attachKcadDiagnostics', () => {
         await configureKcadTypescript(monaco, load);
         expect(load).toHaveBeenCalledTimes(1);
         expect(defaults.setCompilerOptions).toHaveBeenCalledWith({ ...KCAD_EDITOR_COMPILER_OPTIONS });
-        expect(defaults.setDiagnosticsOptions).toHaveBeenCalledWith({ noSemanticValidation: true, noSyntaxValidation: true });
+        expect(defaults.setDiagnosticsOptions).toHaveBeenCalledWith({
+            noSemanticValidation: true,
+            noSyntaxValidation: true,
+            noSuggestionDiagnostics: true,
+        });
         expect(defaults.addExtraLib).toHaveBeenCalledWith('declare const box: any;', KCAD_EDITOR_TYPINGS_PATH);
     });
 

@@ -129,17 +129,31 @@ interface TextModelLike {
     uri: unknown;
 }
 
+interface MarkerSeverityLike {
+    Hint: number;
+    Info: number;
+    Warning: number;
+    Error: number;
+}
+
+/** Monaco's marker severities (`monaco.MarkerSeverity`; older builds and test
+ *  doubles also put them on `monaco.editor`). */
+export function markerSeverity(monaco: MonacoTypescriptHostLike): MarkerSeverityLike {
+    return monaco.MarkerSeverity ?? monaco.editor?.MarkerSeverity ?? { Hint: 1, Info: 2, Warning: 4, Error: 8 };
+}
+
 /** Monaco namespace shape this module reads. Newer Monaco exposes the
  *  TypeScript API as `monaco.typescript`; older as `monaco.languages.typescript`. */
 export interface MonacoTypescriptHostLike {
     typescript?: TypescriptApiLike;
     languages?: { typescript?: TypescriptApiLike };
     Uri?: { parse: (value: string) => unknown };
+    MarkerSeverity?: MarkerSeverityLike;
     editor?: {
         createModel: (value: string, language: string, uri: unknown) => TextModelLike;
         getModel: (uri: unknown) => TextModelLike | null;
         setModelMarkers: (model: unknown, owner: string, markers: readonly unknown[]) => void;
-        MarkerSeverity: { Hint: number; Info: number; Warning: number; Error: number };
+        MarkerSeverity?: MarkerSeverityLike;
     };
 }
 
@@ -177,7 +191,11 @@ export function configureKcadTypescript(
     defaults.setCompilerOptions({ ...KCAD_EDITOR_COMPILER_OPTIONS });
     // The raw editor text is not how the script runs; `attachKcadDiagnostics`
     // reports on the wrapped copy instead.
-    defaults.setDiagnosticsOptions({ noSemanticValidation: true, noSyntaxValidation: true });
+    defaults.setDiagnosticsOptions({
+        noSemanticValidation: true,
+        noSyntaxValidation: true,
+        noSuggestionDiagnostics: true,
+    });
     const ready = loadTypings().then(
         (typings) => {
             defaults.addExtraLib(typings, KCAD_EDITOR_TYPINGS_PATH);
@@ -228,6 +246,7 @@ export function attachKcadDiagnostics(
             worker.getSemanticDiagnostics(fileName),
         ]);
         if (disposed || current !== generation || model.isDisposed?.()) return;
+        const severity = markerSeverity(monaco);
         const markers = [];
         for (const d of [...syntactic, ...semantic]) {
             const range = unwrapDiagnosticRange(d, code.length);
@@ -241,10 +260,8 @@ export function attachKcadDiagnostics(
                 endColumn: end.column,
                 message: flattenMessageText(d.messageText),
                 severity: d.category === 1
-                    ? monacoEditor.MarkerSeverity.Error
-                    : d.category === 0
-                        ? monacoEditor.MarkerSeverity.Warning
-                        : monacoEditor.MarkerSeverity.Info,
+                    ? severity.Error
+                    : d.category === 0 ? severity.Warning : severity.Info,
                 code: String(d.code),
                 source: 'ts',
             });
