@@ -65,6 +65,78 @@ function PreviewToggle({ side, onShow, hasBefore }: {
     );
 }
 
+/** Title, verified or not, and the size of the change. */
+function ProposalHeader({ artifact, partial, baseline }: {
+    artifact: Artifact;
+    partial?: GenerationPartial;
+    baseline: string;
+}): JSX.Element {
+    const size = changeSize(baseline, artifact.code);
+    return (
+        <>
+            <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                    <p className="text-2xs font-medium uppercase tracking-wider text-agent-fg">Proposed change</p>
+                    <p className="mt-0.5 break-words text-ui font-medium text-fg" title={artifact.title}>{artifact.title}</p>
+                </div>
+                {partial ? (
+                    <Badge tone="warn" icon={<AlertTriangle />}><span title={partial.note}>Not verified</span></Badge>
+                ) : (
+                    <Badge tone="ok" icon={<ShieldCheck />}><span title="Built and passed the kernel checks">Verified</span></Badge>
+                )}
+            </div>
+            <p className="font-mono text-code text-fg-2" data-testid="agent-proposal-size">
+                <span className="text-ok">+{size.added}</span>{' '}
+                <span className="text-danger">−{size.removed}</span>{' '}
+                <span className="font-sans text-fg-3">lines{baseline.trim() ? '' : ' · new model'}</span>
+            </p>
+            {partial && (
+                <p className="rounded-control border border-warn/40 bg-warn-soft px-2 py-1.5 text-ui text-fg" role="status">
+                    {partial.note}
+                </p>
+            )}
+        </>
+    );
+}
+
+/** "View diff": the Monaco diff of the editor source and the proposal. */
+function DiffDisclosure({ original, modified }: { original: string; modified: string }): JSX.Element {
+    const [open, setOpen] = useState(false);
+    return (
+        <div>
+            <button
+                type="button"
+                aria-expanded={open}
+                onClick={() => setOpen((v) => !v)}
+                className="focus-ring flex items-center gap-1 rounded-control text-ui font-medium text-accent hover:text-accent-hover max-md:min-h-touch"
+                data-testid="agent-proposal-diff-toggle"
+            >
+                <ChevronDown className={cx('size-4 transition-transform duration-80', !open && '-rotate-90')} strokeWidth={1.75} aria-hidden="true" />
+                {open ? 'Hide diff' : 'View diff'}
+            </button>
+            {open && (
+                <div className="mt-2 overflow-hidden rounded-control border border-border" style={{ height: 240 }}>
+                    <DiffEditor
+                        original={original}
+                        modified={modified}
+                        language="typescript"
+                        theme="vs-dark"
+                        options={{
+                            readOnly: true,
+                            renderSideBySide: false,
+                            minimap: { enabled: false },
+                            fontSize: 12,
+                            lineNumbers: 'off',
+                            scrollBeyondLastLine: false,
+                            renderOverviewRuler: false,
+                        }}
+                    />
+                </div>
+            )}
+        </div>
+    );
+}
+
 /**
  * The proposed change from an agent run: size, verified or not, before/after
  * in the viewer, the code diff, and Accept / Discard. Never auto-applies.
@@ -92,7 +164,6 @@ export function GenerationReviewPanel({
     /** Renders a script in the viewer without changing the editor. */
     renderInViewer?: (code: string) => unknown;
 }) {
-    const [diffOpen, setDiffOpen] = useState(false);
     const { side, show } = useProposalPreview(artifact.code, currentCode, renderInViewer);
 
     if (stagedEdit != null) {
@@ -102,34 +173,13 @@ export function GenerationReviewPanel({
             </div>
         );
     }
-    const size = changeSize(baseline, artifact.code);
     return (
         <section
             aria-label="Proposed change"
             className="flex flex-col gap-3 rounded-panel border border-agent/50 bg-surface-1 p-3"
             data-testid="agent-proposal"
         >
-            <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                    <p className="text-2xs font-medium uppercase tracking-wider text-agent-fg">Proposed change</p>
-                    <p className="mt-0.5 break-words text-ui font-medium text-fg" title={artifact.title}>{artifact.title}</p>
-                </div>
-                {partial ? (
-                    <Badge tone="warn" icon={<AlertTriangle />}><span title={partial.note}>Not verified</span></Badge>
-                ) : (
-                    <Badge tone="ok" icon={<ShieldCheck />}><span title="Built and passed the kernel checks">Verified</span></Badge>
-                )}
-            </div>
-            <p className="font-mono text-code text-fg-2" data-testid="agent-proposal-size">
-                <span className="text-ok">+{size.added}</span>{' '}
-                <span className="text-danger">−{size.removed}</span>{' '}
-                <span className="font-sans text-fg-3">lines{baseline.trim() ? '' : ' · new model'}</span>
-            </p>
-            {partial && (
-                <p className="rounded-control border border-warn/40 bg-warn-soft px-2 py-1.5 text-ui text-fg" role="status">
-                    {partial.note}
-                </p>
-            )}
+            <ProposalHeader artifact={artifact} partial={partial} baseline={baseline} />
             {renderInViewer && (
                 <div className="flex flex-col gap-1">
                     <PreviewToggle side={side} onShow={show} hasBefore={baseline.trim().length > 0} />
@@ -138,37 +188,7 @@ export function GenerationReviewPanel({
                     )}
                 </div>
             )}
-            <div>
-                <button
-                    type="button"
-                    aria-expanded={diffOpen}
-                    onClick={() => setDiffOpen((v) => !v)}
-                    className="focus-ring flex items-center gap-1 rounded-control text-ui font-medium text-accent hover:text-accent-hover max-md:min-h-touch"
-                    data-testid="agent-proposal-diff-toggle"
-                >
-                    <ChevronDown className={cx('size-4 transition-transform duration-80', !diffOpen && '-rotate-90')} strokeWidth={1.75} aria-hidden="true" />
-                    {diffOpen ? 'Hide diff' : 'View diff'}
-                </button>
-                {diffOpen && (
-                    <div className="mt-2 overflow-hidden rounded-control border border-border" style={{ height: 240 }}>
-                        <DiffEditor
-                            original={baseline}
-                            modified={artifact.code}
-                            language="typescript"
-                            theme="vs-dark"
-                            options={{
-                                readOnly: true,
-                                renderSideBySide: false,
-                                minimap: { enabled: false },
-                                fontSize: 12,
-                                lineNumbers: 'off',
-                                scrollBeyondLastLine: false,
-                                renderOverviewRuler: false,
-                            }}
-                        />
-                    </div>
-                )}
-            </div>
+            <DiffDisclosure original={baseline} modified={artifact.code} />
             <div className="flex gap-2">
                 <Button
                     variant="primary"

@@ -75,19 +75,38 @@ export function runSteps(events: readonly GenerateEvent[], phase: GenerationPhas
 
     return RUN_STEPS.map((step, index) => {
         const status = statusAt(index);
-        // Only the live or failed step carries a detail line; done steps stay quiet.
-        let detail = status === 'current' || status === 'failed' ? progressDetail(byStep.get(index), step.label) : undefined;
-        if (status === 'current' && !detail) {
-            detail = tools > 0 ? `${tools} tool call${tools === 1 ? '' : 's'}` : index === 0 ? 'Starting…' : undefined;
-        }
-        if (phase.state === 'done' && phase.partial && status === 'failed') {
-            detail = phase.partial.unverified.length > 0
-                ? `Not checked: ${phase.partial.unverified.join(', ')}`
-                : 'Stopped before this step finished';
-        }
-        if (phase.state === 'error' && phase.code === 'cancelled' && status === 'skipped') detail = 'Stopped';
+        const detail = stepDetail(status, index, byStep.get(index), step.label, tools, phase);
         return { id: step.id, label: step.label, status, ...(detail ? { detail } : {}) };
     });
+}
+
+/** The detail of a step in a partial or stopped run, or null when neither applies. */
+function endedStepDetail(status: StepStatus, phase: GenerationPhase): string | null {
+    if (phase.state === 'done' && phase.partial && status === 'failed') {
+        return phase.partial.unverified.length > 0
+            ? `Not checked: ${phase.partial.unverified.join(', ')}`
+            : 'Stopped before this step finished';
+    }
+    if (status === 'skipped' && phase.state === 'error' && phase.code === 'cancelled') return 'Stopped';
+    return null;
+}
+
+/** The one-line detail under a step; only the live, failed or stopped step has one. */
+function stepDetail(
+    status: StepStatus,
+    index: number,
+    latest: ProgressEvent | undefined,
+    label: string,
+    tools: number,
+    phase: GenerationPhase,
+): string | undefined {
+    const ended = endedStepDetail(status, phase);
+    if (ended !== null) return ended;
+    if (status !== 'current' && status !== 'failed') return undefined;
+    const detail = progressDetail(latest, label);
+    if (detail || status !== 'current') return detail;
+    if (tools > 0) return `${tools} tool call${tools === 1 ? '' : 's'}`;
+    return index === 0 ? 'Starting…' : undefined;
 }
 
 /** The card title for a run. */
@@ -135,39 +154,30 @@ export interface LogLine {
     readonly tone: LogTone;
 }
 
+type EventOf<K extends GenerateEvent['kind']> = Extract<GenerateEvent, { kind: K }>;
+
+/** One log line per event kind; `generation` carries nothing to show. */
+const LOG_LINE: { [K in GenerateEvent['kind']]: (e: EventOf<K>) => LogLine | null } = {
+    generation: () => null,
+    status: (e) => ({ text: e.phase === 'tool_calling' ? 'Using tools' : 'Thinking', tone: 'info' }),
+    progress: (e) => ({
+        time: formatElapsed(e.elapsedMs),
+        text: e.attempt !== undefined && e.attempt > 1 ? `${e.message} (attempt ${e.attempt})` : e.message,
+        tone: e.stage === 'fixing' ? 'retry' : 'info',
+    }),
+    attached: (e) => ({ text: e.message || 'Joined a run already in progress', tone: 'info' }),
+    tool_call: (e) => ({ text: `→ ${e.name}`, tone: 'info' }),
+    tool_result: (e) => ({ text: `${e.ok ? '✓' : '✗'} ${e.name}`, tone: e.ok ? 'ok' : 'retry' }),
+    done: (e) => ({ time: formatElapsed(e.durationMs), text: e.partial ? 'Done, not verified' : 'Done', tone: 'ok' }),
+    error: (e) => ({ text: `Error (${e.code}): ${e.message}`, tone: 'error' }),
+};
+
 /** The raw run log: every streamed event as one line. */
 export function logLines(events: readonly GenerateEvent[]): LogLine[] {
     const lines: LogLine[] = [];
     for (const e of events) {
-        switch (e.kind) {
-            case 'status':
-                lines.push({ text: e.phase === 'tool_calling' ? 'Using tools' : 'Thinking', tone: 'info' });
-                break;
-            case 'progress':
-                lines.push({
-                    time: formatElapsed(e.elapsedMs),
-                    text: e.attempt !== undefined && e.attempt > 1 ? `${e.message} (attempt ${e.attempt})` : e.message,
-                    tone: e.stage === 'fixing' ? 'retry' : 'info',
-                });
-                break;
-            case 'attached':
-                lines.push({ text: e.message || 'Joined a run already in progress', tone: 'info' });
-                break;
-            case 'tool_call':
-                lines.push({ text: `→ ${e.name}`, tone: 'info' });
-                break;
-            case 'tool_result':
-                lines.push({ text: `${e.ok ? '✓' : '✗'} ${e.name}`, tone: e.ok ? 'ok' : 'retry' });
-                break;
-            case 'done':
-                lines.push({ time: formatElapsed(e.durationMs), text: e.partial ? 'Done, not verified' : 'Done', tone: 'ok' });
-                break;
-            case 'error':
-                lines.push({ text: `Error (${e.code}): ${e.message}`, tone: 'error' });
-                break;
-            default:
-                break;
-        }
+        const line = (LOG_LINE[e.kind] as (event: GenerateEvent) => LogLine | null)(e);
+        if (line) lines.push(line);
     }
     return lines;
 }

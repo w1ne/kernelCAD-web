@@ -26,12 +26,40 @@ export interface QueuedPrompt {
 
 interface UseAgentGenerationArgs {
     readonly phase: GenerationPhase;
-    readonly submit: ReturnType<typeof useGeneration>['submit'];
+    readonly submit: Submit;
     readonly currentCode: string;
     readonly prompt: string;
     readonly selectedFeatureId: SelectedFeatureId;
     readonly agentRepairWorkflow: AgentRepairWorkflow | null;
     readonly conceptBusy: boolean;
+}
+
+type Submit = ReturnType<typeof useGeneration>['submit'];
+
+/** Start a run: edit mode with the current model, or a fresh generation for an empty editor. */
+function dispatchRun(submit: Submit, text: string, fromCode: string, photoReference?: ReferenceImage): void {
+    const code = fromCode.trim() ? fromCode : undefined;
+    if (photoReference) {
+        void submit(text, code, undefined, photoReference);
+    } else if (code !== undefined) {
+        void submit(text, code);
+    } else {
+        void submit(text);
+    }
+}
+
+/** Follow-ups typed while a run is busy, oldest first. */
+function useFollowUpQueue() {
+    const [queue, setQueue] = useState<readonly QueuedPrompt[]>([]);
+    const nextId = useRef(1);
+    const enqueue = useCallback((text: string, referenceImage?: ReferenceImage) => {
+        const id = nextId.current++;
+        setQueue((current) => [...current, { id, text, ...(referenceImage ? { referenceImage } : {}) }]);
+    }, []);
+    const removeQueued = useCallback((id: number) => {
+        setQueue((current) => current.filter((item) => item.id !== id));
+    }, []);
+    return { queue, enqueue, removeQueued };
 }
 
 /** The request text the agent gets: the prompt, scoped to a selected target. */
@@ -60,8 +88,7 @@ export function useAgentGeneration({
     const [baseline, setBaseline] = useState('');
     const [reviewSnapshot, setReviewSnapshot] = useState<GenerationReviewSnapshot | null>(null);
     const [lastReferenceImage, setLastReferenceImage] = useState<ReferenceImage>(undefined);
-    const [queue, setQueue] = useState<readonly QueuedPrompt[]>([]);
-    const nextQueueId = useRef(1);
+    const { queue, enqueue, removeQueued } = useFollowUpQueue();
 
     const agentBusy = phase.state === 'running';
     // One operation at a time: the pane narrates one run.
@@ -77,19 +104,7 @@ export function useAgentGeneration({
         setBaseline(snapshot.fromCode);
         setReviewSnapshot(snapshot);
         setLastReferenceImage(photoReference);
-        if (snapshot.fromCode.trim()) {
-            if (photoReference) {
-                void submit(text, snapshot.fromCode, undefined, photoReference);
-            } else {
-                void submit(text, snapshot.fromCode);
-            }
-            return;
-        }
-        if (photoReference) {
-            void submit(text, undefined, undefined, photoReference);
-        } else {
-            void submit(text);
-        }
+        dispatchRun(submit, text, snapshot.fromCode, photoReference);
     };
 
     const onSubmit = (message?: string, referenceImage?: ReferenceImage) => {
@@ -97,8 +112,7 @@ export function useAgentGeneration({
         if (!trimmed || conceptBusy) return;
         if (agentBusy) {
             // A follow-up: it runs after this run's change is reviewed.
-            const id = nextQueueId.current++;
-            setQueue((current) => [...current, { id, text: trimmed, ...(referenceImage ? { referenceImage } : {}) }]);
+            enqueue(trimmed, referenceImage);
             return;
         }
         const matchesDraftedRepair =
@@ -145,15 +159,11 @@ export function useAgentGeneration({
         }, lastReferenceImage);
     };
 
-    const removeQueued = useCallback((id: number) => {
-        setQueue((current) => current.filter((item) => item.id !== id));
-    }, []);
-
     /** Start the oldest queued follow-up now. */
     const sendNextQueued = () => {
         const next = queue[0];
         if (!next || busy) return;
-        setQueue((current) => current.slice(1));
+        removeQueued(next.id);
         onSubmit(next.text, next.referenceImage);
     };
 

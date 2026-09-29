@@ -68,6 +68,44 @@ async function consumeGenerationStream(
   return true;
 }
 
+/** POST the request and return its event stream, or set the error phase
+ *  and return null. Returns null without a phase change once aborted. */
+async function openGenerationStream(
+  req: GenerateRequest,
+  signal: AbortSignal,
+  setPhase: Dispatch<SetStateAction<GenerationPhase>>,
+): Promise<ReadableStream<Uint8Array> | null> {
+  let res: Response;
+  try {
+    res = await startGeneration(req, signal);
+  } catch (err) {
+    if (signal.aborted) return null;
+    const message = err instanceof Error ? err.message : String(err);
+    setPhase({ state: 'error', code: 'network', message });
+    return null;
+  }
+  if (signal.aborted) return null;
+
+  if (!res.ok) {
+    setPhase({
+      state: 'error',
+      // Agent mode requires a connected account. 401 = anonymous (must sign
+      // in); 402 = signed-in but monthly quota exhausted (must upgrade); 429 =
+      // legacy rate limit. All route to the same panel, which shows "sign in"
+      // vs "upgrade" based on whether there's a session.
+      code: res.status === 401 || res.status === 402 || res.status === 429 ? 'rate_limited' : `http_${res.status}`,
+      message: await res.text().catch(() => `HTTP ${res.status}`),
+    });
+    return null;
+  }
+
+  if (!res.body) {
+    setPhase({ state: 'error', code: 'no_body', message: 'Server returned empty response' });
+    return null;
+  }
+  return res.body;
+}
+
 export function useGeneration() {
   const [phase, setPhase] = useState<GenerationPhase>({ state: 'idle' });
   const [events, setEvents] = useState<GenerateEvent[]>([]);
@@ -89,38 +127,12 @@ export function useGeneration() {
       lastEvent: { kind: 'status', phase: 'running' },
     });
 
-    let res: Response;
-    try {
-      res = await startGeneration({ prompt, currentCode, mesh, referenceImage }, controller.signal);
-    } catch (err) {
-      if (controller.signal.aborted) return;
-      const message = err instanceof Error ? err.message : String(err);
-      setPhase({ state: 'error', code: 'network', message });
-      return;
-    }
-    if (controller.signal.aborted) return;
-
-    if (!res.ok) {
-      setPhase({
-        state: 'error',
-        // Agent mode requires a connected account. 401 = anonymous (must sign
-        // in); 402 = signed-in but monthly quota exhausted (must upgrade); 429 =
-        // legacy rate limit. All route to the same panel, which shows "sign in"
-        // vs "upgrade" based on whether there's a session.
-        code: res.status === 401 || res.status === 402 || res.status === 429 ? 'rate_limited' : `http_${res.status}`,
-        message: await res.text().catch(() => `HTTP ${res.status}`),
-      });
-      return;
-    }
-
-    if (!res.body) {
-      setPhase({ state: 'error', code: 'no_body', message: 'Server returned empty response' });
-      return;
-    }
+    const body = await openGenerationStream({ prompt, currentCode, mesh, referenceImage }, controller.signal, setPhase);
+    if (!body) return;
 
     let exhausted: boolean;
     try {
-      exhausted = await consumeGenerationStream(res.body, setEvents, setPhase);
+      exhausted = await consumeGenerationStream(body, setEvents, setPhase);
     } catch (err) {
       if (controller.signal.aborted) return;
       const message = err instanceof Error ? err.message : String(err);

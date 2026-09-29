@@ -15,6 +15,7 @@ import {
     runTitle,
     serverElapsedMs,
     slowRunNote,
+    type FailureView,
     type LogLine,
 } from '../agentRunModel';
 import { copyPrompt } from '../tabs/checks/draftRepair';
@@ -135,6 +136,62 @@ export function RunProgress({
 
 type CopyState = 'idle' | 'copied' | 'failed';
 
+/** The full server message and the run id, behind a Details disclosure. */
+function FailureDetails({ detail, generationId }: { detail: string; generationId?: string }): JSX.Element {
+    return (
+        <details className="group text-2xs text-fg-2">
+            <summary className="focus-ring cursor-pointer select-none font-medium text-fg-3 hover:text-fg max-md:py-3">Details</summary>
+            <p className="mt-1 whitespace-pre-wrap break-words font-mono text-code text-fg-2" data-testid="agent-failure-detail">{detail}</p>
+            {generationId && (
+                <p className="mt-1 font-mono text-code text-fg-3">Run id: <span className="select-all">{generationId}</span></p>
+            )}
+        </details>
+    );
+}
+
+/** Copy a prompt for the user's own agent, with the result shown under the actions. */
+function useCopyForAgent(prompt: string | null) {
+    const [state, setState] = useState<CopyState>('idle');
+    const copy = async () => {
+        if (prompt === null) return;
+        setState((await copyPrompt(prompt)) ? 'copied' : 'failed');
+    };
+    return { state, copy };
+}
+
+const ACTION_ICON = { className: 'size-3.5', strokeWidth: 1.75, 'aria-hidden': true } as const;
+
+/** Repair (when it can help), Try again, and Copy to your agent. */
+function FailureActions({ view, onRetry, onRepair, copy, copyState }: {
+    view: FailureView;
+    onRetry?: () => void;
+    onRepair?: (message: string) => void;
+    copy: (() => void) | null;
+    copyState: CopyState;
+}): JSX.Element {
+    const showRepair = view.repair && !!onRepair;
+    return (
+        <div className="flex flex-wrap gap-2 pt-1">
+            {showRepair && (
+                <Button variant="agent" size="sm" className="max-md:h-touch" onClick={() => onRepair(view.detail)} leadingIcon={<Wrench {...ACTION_ICON} />}>
+                    Repair automatically
+                </Button>
+            )}
+            {view.retry && onRetry && (
+                <Button variant={showRepair ? 'secondary' : 'agent'} size="sm" className="max-md:h-touch" onClick={onRetry} leadingIcon={<RotateCcw {...ACTION_ICON} />}>
+                    Try again
+                </Button>
+            )}
+            {copy && (
+                <Button variant="ghost" size="sm" className="max-md:h-touch" onClick={copy}
+                    leadingIcon={copyState === 'copied' ? <Check {...ACTION_ICON} className="size-3.5 text-ok" /> : <Copy {...ACTION_ICON} />}>
+                    {copyState === 'copied' ? 'Copied' : 'Copy to your agent'}
+                </Button>
+            )}
+        </div>
+    );
+}
+
 /** A failed run: what happened, the full error on request, and the next actions. */
 function GenerationFailure({
     phase,
@@ -148,51 +205,24 @@ function GenerationFailure({
     ownAgentPrompt?: (failure: { title: string; detail: string }) => string;
 }): JSX.Element {
     const view = failureView(phase);
-    const [copy, setCopy] = useState<CopyState>('idle');
-    const copyForAgent = async () => {
-        if (!ownAgentPrompt) return;
-        setCopy((await copyPrompt(ownAgentPrompt(view))) ? 'copied' : 'failed');
-    };
-    const tone = phase.code === 'cancelled' ? 'border-border bg-surface-2' : 'border-danger/40 bg-danger-soft';
+    const stopped = phase.code === 'cancelled';
+    const agentPrompt = ownAgentPrompt ? ownAgentPrompt(view) : null;
+    const { state: copyState, copy } = useCopyForAgent(agentPrompt);
     return (
-        <div role="alert" className={cx('flex flex-col gap-2 rounded-panel border p-3', tone)} data-testid="agent-failure">
-            <p className={cx('text-ui font-medium', phase.code === 'cancelled' ? 'text-fg' : 'text-danger')}>{view.title}</p>
+        <div role="alert" className={cx('flex flex-col gap-2 rounded-panel border p-3', stopped ? 'border-border bg-surface-2' : 'border-danger/40 bg-danger-soft')} data-testid="agent-failure">
+            <p className={cx('text-ui font-medium', stopped ? 'text-fg' : 'text-danger')}>{view.title}</p>
             <p className="text-ui text-fg-2">{view.body}</p>
-            {view.detail && phase.code !== 'cancelled' && (
-                <details className="group text-2xs text-fg-2">
-                    <summary className="focus-ring cursor-pointer select-none font-medium text-fg-3 hover:text-fg">Details</summary>
-                    <p className="mt-1 whitespace-pre-wrap break-words font-mono text-code text-fg-2" data-testid="agent-failure-detail">{view.detail}</p>
-                    {phase.generationId && (
-                        <p className="mt-1 font-mono text-code text-fg-3">Run id: <span className="select-all">{phase.generationId}</span></p>
-                    )}
-                </details>
-            )}
-            <div className="flex flex-wrap gap-2 pt-1">
-                {view.repair && onRepair && (
-                    <Button variant="agent" size="sm" onClick={() => onRepair(view.detail)}
-                        leadingIcon={<Wrench className="size-3.5" strokeWidth={1.75} aria-hidden="true" />}>
-                        Repair automatically
-                    </Button>
-                )}
-                {view.retry && onRetry && (
-                    <Button variant={view.repair ? 'secondary' : 'agent'} size="sm" onClick={onRetry}
-                        leadingIcon={<RotateCcw className="size-3.5" strokeWidth={1.75} aria-hidden="true" />}>
-                        Try again
-                    </Button>
-                )}
-                {ownAgentPrompt && (
-                    <Button variant="ghost" size="sm" onClick={() => void copyForAgent()}
-                        leadingIcon={copy === 'copied'
-                            ? <Check className="size-3.5 text-ok" strokeWidth={1.75} aria-hidden="true" />
-                            : <Copy className="size-3.5" strokeWidth={1.75} aria-hidden="true" />}>
-                        {copy === 'copied' ? 'Copied' : 'Copy to your agent'}
-                    </Button>
-                )}
-            </div>
+            {view.detail && !stopped && <FailureDetails detail={view.detail} generationId={phase.generationId} />}
+            <FailureActions view={view} onRetry={onRetry} onRepair={onRepair} copy={agentPrompt === null ? null : () => void copy()} copyState={copyState} />
             <p className="text-2xs text-fg-3" aria-live="polite">
-                {copy === 'copied' && <>Paste it into your own agent with the kernelCAD MCP server. <a className="text-accent underline-offset-2 hover:underline" href="/connect">How to connect</a></>}
-                {copy === 'failed' && 'Could not copy. Select the prompt text and copy it by hand.'}
+                {copyState === 'copied' && <>Paste it into your own agent with the kernelCAD MCP server. <a className="text-accent underline-offset-2 hover:underline" href="/connect">How to connect</a></>}
+                {copyState === 'failed' && 'Could not copy. Select the prompt below and copy it by hand.'}
             </p>
+            {copyState === 'failed' && agentPrompt !== null && (
+                <textarea readOnly value={agentPrompt} rows={6} aria-label="Prompt for your agent"
+                    onFocus={(e) => e.currentTarget.select()}
+                    className="focus-ring w-full resize-y rounded-control border border-border bg-surface-1 p-2 font-mono text-code text-fg-2" />
+            )}
         </div>
     );
 }
