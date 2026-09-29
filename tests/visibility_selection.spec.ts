@@ -54,8 +54,8 @@ return box1;
         // Trigger hover via global state
         await page.evaluate(() => (window as any).__TEST_SET_HOVERED('box1'));
 
-        // Check if SceneBrowser item is highlighted (it has bg-[#333] class)
-        await expect(item).toHaveClass(/bg-\[#333\]/);
+        // Check if SceneBrowser item is highlighted (it has bg-surface-3 class)
+        await expect(item).toHaveClass(/(^|\s)bg-surface-3(\s|$)/);
 
         // Clear hover
         await page.evaluate(() => (window as any).__TEST_SET_HOVERED(null));
@@ -63,10 +63,10 @@ return box1;
         // Wait for UI to update
         const handle = await item.elementHandle();
         if (handle) {
-            await page.waitForFunction((el) => !el.classList.contains('bg-[#333]'), handle);
+            await page.waitForFunction((el) => !el.classList.contains('bg-surface-3'), handle);
         }
 
-        await expect(item).not.toHaveClass(/bg-\[#333\]/);
+        await expect(item).not.toHaveClass(/(^|\s)bg-surface-3(\s|$)/);
     });
 
     test('should show context menu on right click in SceneBrowser', async ({ page }) => {
@@ -102,7 +102,7 @@ return box1;
         await eyeButton.click();
 
         // Check if it's now hidden (icon changes to EyeOff)
-        await expect(item.locator('svg.text-gray-600')).toBeVisible(); // EyeOff has text-gray-600 class in the implementation
+        await expect(item.locator('svg.text-fg-3')).toBeVisible(); // EyeOff has text-fg-3 class in the implementation
 
         // Reload
         await page.reload();
@@ -124,7 +124,7 @@ return box1;
         // Verify it is still hidden
         const newItem = page.getByTestId('scene-item-box1').first();
         await newItem.waitFor({ state: 'visible' });
-        await expect(newItem.locator('svg.text-gray-600')).toBeVisible();
+        await expect(newItem.locator('svg.text-fg-3')).toBeVisible();
     });
 
     test('should select plane by clicking in Scene Browser', async ({ page }) => {

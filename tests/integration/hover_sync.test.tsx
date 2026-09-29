@@ -66,18 +66,18 @@ describe('Hover Synchronization Integration', () => {
 
         // Initially no hover highlight
         let item = screen.getByText('box1').closest('div');
-        expect(item?.className).not.toContain('bg-[#333]');
+        expect(item?.className).not.toContain('bg-surface-3');
 
         // Trigger hover via button (simulating Viewer hover calling setHoveredItemId)
         fireEvent.click(screen.getByTestId('trigger-hover'));
 
         // Now it should be highlighted
         item = screen.getByText('box1').closest('div');
-        expect(item?.className).toContain('bg-[#333]');
+        expect(item?.className).toContain('bg-surface-3');
 
         // Clear hover
         fireEvent.click(screen.getByTestId('clear-hover'));
         item = screen.getByText('box1').closest('div');
-        expect(item?.className).not.toContain('bg-[#333]');
+        expect(item?.className).not.toContain('bg-surface-3');
     });
 });
