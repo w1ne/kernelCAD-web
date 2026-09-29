@@ -14,7 +14,7 @@ vi.mock('../../funnel/lib/apiClient', () => ({
   fetchProjectBySlug: (...args: unknown[]) => fetchProjectBySlug(...args),
 }));
 
-import { ServerRevisionHistory } from '../../studio/routes/-ServerRevisionHistory';
+import { ServerRevisionHistory, ServerRevisionList } from '../../studio/routes/-ServerRevisionHistory';
 
 const TWO_REVS = [
   { version: 3, created_at: '2026-06-15T12:00:00Z' },
@@ -71,5 +71,45 @@ describe('ServerRevisionHistory', () => {
     await waitFor(() => expect(restoreProjectRevision).toHaveBeenCalledWith('demo', 2));
     await waitFor(() => expect(fetchProjectBySlug).toHaveBeenCalledWith('demo'));
     await waitFor(() => expect(onRestored).toHaveBeenCalledWith('cube(2)'));
+  });
+});
+
+describe('ServerRevisionList (model page panel)', () => {
+  it('lists revisions under "Revisions (n)" and restores an older one', async () => {
+    listProjectRevisions.mockResolvedValue(TWO_REVS);
+    restoreProjectRevision.mockResolvedValue({ version: 2 });
+    fetchProjectBySlug.mockResolvedValue({ current_code: 'cube(2)' });
+    const onRestored = vi.fn();
+
+    render(<ServerRevisionList slug="demo" onRestored={onRestored} />);
+
+    const toggle = await screen.findByRole('button', { name: 'Revisions (2)' });
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    fireEvent.click(toggle);
+    expect(screen.getByText('current')).toBeTruthy();
+    // The current revision has nothing to restore.
+    expect(screen.queryByRole('button', { name: 'Restore revision r3' })).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Restore revision r2' }));
+    await waitFor(() => expect(onRestored).toHaveBeenCalledWith('cube(2)'));
+    expect(restoreProjectRevision).toHaveBeenCalledWith('demo', 2);
+  });
+
+  it('says so when a restore fails', async () => {
+    listProjectRevisions.mockResolvedValue(TWO_REVS);
+    restoreProjectRevision.mockRejectedValue(new Error('403'));
+
+    render(<ServerRevisionList slug="demo" onRestored={vi.fn()} />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Revisions (2)' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Restore revision r2' }));
+
+    expect(await screen.findByRole('alert')).toBeTruthy();
+  });
+
+  it('is hidden with fewer than two revisions', async () => {
+    listProjectRevisions.mockResolvedValue([{ version: 1, created_at: '2026-06-14T12:00:00Z' }]);
+    const { container } = render(<ServerRevisionList slug="demo" onRestored={vi.fn()} />);
+    await waitFor(() => expect(listProjectRevisions).toHaveBeenCalled());
+    expect(container.textContent).toBe('');
   });
 });

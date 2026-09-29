@@ -8,7 +8,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import type { ComponentType } from 'react';
+import type { ComponentType, ReactNode } from 'react';
 
 const routerMock = vi.hoisted(() => ({
     params: {} as Record<string, string>,
@@ -33,6 +33,7 @@ vi.mock('../App', () => ({
     default: ({ projectName, initialCode }: { projectName?: string; initialCode?: string }) => (
         <div data-testid="studio-app" data-project-name={projectName ?? ''} data-code={initialCode ?? ''} />
     ),
+    LiveCodeApplier: () => null,
 }));
 
 vi.mock('../../funnel/lib/apiClient', () => ({
@@ -51,9 +52,23 @@ vi.mock('../../funnel/hooks/useSession', () => ({
 }));
 vi.mock('../../funnel/components/SignInButton', () => ({ SignInButton: () => null }));
 vi.mock('../components/MadeWithKernelcad', () => ({ MadeWithKernelcad: () => null }));
-vi.mock('../routes/-ProjectClaimControl', () => ({ ProjectClaimControl: () => null, AnonProjectBanner: () => null }));
+vi.mock('../routes/-ProjectClaimControl', () => ({
+    ProjectClaimControl: () => null,
+    AnonProjectBanner: () => null,
+    KeepThisModel: () => null,
+}));
 vi.mock('../routes/-ProjectViewerActions', () => ({ ProjectViewerActions: () => null }));
-vi.mock('../routes/-ServerRevisionHistory', () => ({ ServerRevisionHistory: () => null }));
+vi.mock('../routes/-ServerRevisionHistory', () => ({ ServerRevisionHistory: () => null, ServerRevisionList: () => null }));
+// The model page's live canvas: a stub workbench and no WebGL.
+vi.mock('../context/WorkbenchContext', () => ({
+    WorkbenchProvider: ({ children }: { children: ReactNode }) => <>{children}</>,
+    useWorkbench: () => ({
+        code: '', geometries: [], previewGeometries: [], sketchesGeometries: [], showSketches: false,
+        viewMode3D: 'shadedWithEdges', isReady: false, isComputing: true, error: null,
+        scriptParams: [], scriptReview: null, featureRecords: [], setCode: () => {},
+    }),
+}));
+vi.mock('../components/Viewer', () => ({ default: () => null }));
 vi.mock('../customizer/StudioModelCustomizer', () => ({ StudioModelCustomizer: () => null }));
 vi.mock('../components/viewer/captureViewerPng', () => ({ captureViewerPngBase64: () => null }));
 
@@ -131,7 +146,7 @@ describe('/p/<slug> page states', () => {
             fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
         });
         expect(api.fetchProjectBySlug).toHaveBeenCalledTimes(2);
-        expect(screen.getByTestId('studio-app')).toBeTruthy();
+        expect(screen.getByTestId('project-side-panel')).toBeTruthy();
     });
 
     it('shows a failed request with its cause and a retry', async () => {
@@ -143,12 +158,26 @@ describe('/p/<slug> page states', () => {
         expect(screen.getByRole('button', { name: 'Try again' })).toBeTruthy();
     });
 
-    it('opens the Studio named after the project title', async () => {
+    it('opens the model page named after the project title, not the workbench', async () => {
         api.fetchProjectBySlug.mockResolvedValue(ROW);
         renderPage('/p/$slug', { slug: 'pipe-clamp' });
 
-        const app = await screen.findByTestId('studio-app');
-        expect(app.getAttribute('data-project-name')).toBe('Pipe clamp bracket');
+        expect(await screen.findByTestId('project-side-panel')).toBeTruthy();
+        expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Pipe clamp bracket');
+        expect(screen.queryByTestId('studio-app')).toBeNull();
+    });
+
+    it('opens the full Studio named after the project title with ?view=studio', async () => {
+        window.history.replaceState(null, '', '/p/pipe-clamp?view=studio');
+        try {
+            api.fetchProjectBySlug.mockResolvedValue(ROW);
+            renderPage('/p/$slug', { slug: 'pipe-clamp' });
+
+            const app = await screen.findByTestId('studio-app');
+            expect(app.getAttribute('data-project-name')).toBe('Pipe clamp bracket');
+        } finally {
+            window.history.replaceState(null, '', '/');
+        }
     });
 });
 

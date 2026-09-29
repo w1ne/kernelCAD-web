@@ -48,7 +48,7 @@ export function ResumePrompt({ slug, title }: ResumePromptProps): JSX.Element {
       >
         {prompt}
       </p>
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         <Button
           variant="secondary"
           size="md"
@@ -61,20 +61,24 @@ export function ResumePrompt({ slug, title }: ResumePromptProps): JSX.Element {
         >
           {state === 'copied' ? 'Copied' : 'Copy prompt'}
         </Button>
-        {chatLinks(prompt).map((link) => (
-          <a
-            key={link.label}
-            href={link.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={cx(
-              'focus-ring inline-flex h-control-md items-center gap-1 rounded-control px-2 text-ui font-medium text-accent hover:bg-surface-2 hover:text-accent-hover max-md:h-touch',
-            )}
-          >
-            Open {link.label}
-            <ExternalLink className="size-3.5" strokeWidth={1.75} aria-hidden="true" />
-          </a>
-        ))}
+        <span className="flex items-center gap-1 text-ui text-fg-3">
+          or open
+          {chatLinks(prompt).map((link) => (
+            <a
+              key={link.label}
+              href={link.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Open ${link.label} with this prompt`}
+              className={cx(
+                'focus-ring inline-flex h-control-md items-center gap-0.5 rounded-control px-1.5 text-ui font-medium text-accent hover:bg-surface-2 hover:text-accent-hover max-md:h-touch',
+              )}
+            >
+              {link.label}
+              <ExternalLink className="size-3.5" strokeWidth={1.75} aria-hidden="true" />
+            </a>
+          ))}
+        </span>
       </div>
       <p className="sr-only" role="status" aria-live="polite">
         {state === 'copied' ? 'Prompt copied' : state === 'failed' ? 'Could not copy. Select the prompt and copy it.' : ''}
