@@ -80,9 +80,11 @@ for (const size of SIZES) {
         await expect(page.getByRole('button', { name: 'Run' })).toHaveCount(0);
         await expect(page.getByText('Brush')).toHaveCount(0);
 
-        // One Download: the primary button exports the default format.
+        // One Download on screen: the primary button exports the default format.
+        const downloadButtons = page.getByRole('button', { name: 'Download STL' }).filter({ visible: true });
+        await expect(downloadButtons).toHaveCount(1);
         const download = page.waitForEvent('download');
-        await page.getByTestId('download-primary').filter({ visible: true }).click();
+        await downloadButtons.click();
         expect((await download).suggestedFilename()).toBe(`${SLUG}-default.stl`);
 
         // Keep this model (anonymous project) and Continue in chat.

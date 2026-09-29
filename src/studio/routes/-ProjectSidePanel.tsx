@@ -276,7 +276,7 @@ function Section({ title, children, className, testId }: {
   testId?: string;
 }): JSX.Element {
   return (
-    <section className={cx('flex flex-col gap-3 border-t border-border px-5 py-5', className)} data-testid={testId}>
+    <section className={cx('flex flex-col gap-3 border-t border-border px-4 py-5', className)} data-testid={testId}>
       {title && <h3 className="text-ui font-semibold text-fg">{title}</h3>}
       {children}
     </section>
@@ -287,7 +287,7 @@ export function ProjectSidePanel(props: ProjectSidePanelProps): JSX.Element {
   const { slug, project } = props;
   return (
     <div className="group/panel flex flex-col pb-4" data-testid="project-side-panel">
-      <div className="px-5 pb-5 pt-2 md:pt-5">
+      <div className="px-4 pb-5 pt-2 md:pt-5">
         <Summary project={project} ownership={props.ownership} now={props.now} />
       </div>
       {/* The customizer renders nothing for a model without parameters. With
@@ -342,7 +342,7 @@ function KeepSection(props: ProjectSidePanelProps): JSX.Element | null {
 /** Placeholder panel while the project row loads. */
 export function ProjectSidePanelSkeleton({ slow, onRetry }: { slow: boolean; onRetry: () => void }): JSX.Element {
   return (
-    <div className="flex flex-col gap-4 px-5 pb-5 pt-2 md:pt-5" data-testid="project-side-panel-skeleton">
+    <div className="flex flex-col gap-4 px-4 pb-5 pt-2 md:pt-5" data-testid="project-side-panel-skeleton">
       <div role="status" aria-label="Loading the project" className="flex flex-col gap-3">
         <Skeleton className="h-7 w-3/4" />
         <Skeleton className="h-3 w-1/2" />
