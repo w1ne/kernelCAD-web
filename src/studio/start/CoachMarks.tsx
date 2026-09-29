@@ -4,8 +4,9 @@
 // First-run coach marks: four short tips that point at the Studio chrome
 // (the Agent, the command search, Export and Mark for agent). They show once
 // per browser, next to their control, with no backdrop: the model stays
-// usable. A tip whose control is not on screen (a narrow header folds
-// Export away) is skipped. Esc, Skip or the close button end the tour.
+// usable. On a phone the Agent tip points at the bottom tab bar. A tip
+// whose control is not on screen (a phone header folds Export away) is
+// skipped. Esc, Skip or the close button end the tour.
 import { useCallback, useEffect, useId, useRef, useState, type JSX, type ReactNode } from 'react';
 import { X } from 'lucide-react';
 import { Kbd, buttonClass, cx } from '../../ui';
@@ -16,8 +17,9 @@ import {
 
 export interface CoachStep {
     readonly id: string;
-    /** `data-testid` of the control the tip points at. */
-    readonly target: string;
+    /** `data-testid`s of the control the tip points at, in order: the first
+     *  one on screen wins (the desktop rail, else the phone tab bar). */
+    readonly targets: readonly string[];
     readonly title: string;
     readonly body: ReactNode;
 }
@@ -25,25 +27,25 @@ export interface CoachStep {
 const COACH_STEPS: readonly CoachStep[] = [
     {
         id: 'agent',
-        target: 'activity-agent',
+        targets: ['activity-agent', 'mobile-tab-agent'],
         title: 'Describe a part',
         body: 'Open the agent here. It writes the model code and shows you the change before it is applied.',
     },
     {
         id: 'palette',
-        target: 'command-palette-trigger',
+        targets: ['command-palette-trigger'],
         title: 'Every command in one search',
         body: <>Search to run, export, open a starter or change the view. Shortcut: <Kbd keys={KEYMAP.commandPalette} className="align-middle" /></>,
     },
     {
         id: 'export',
-        target: 'header-export',
+        targets: ['header-export'],
         title: 'Download the part',
         body: 'Export STL in one click. The arrow opens STEP, 3MF and the other formats.',
     },
     {
         id: 'mark',
-        target: 'toolbar-mark',
+        targets: ['toolbar-mark'],
         title: 'Mark for agent',
         body: 'Paint over the model to show the agent exactly what to change.',
     },
@@ -54,13 +56,22 @@ const SHOW_DELAY_MS = 1200;
 /** Re-measure while a tip is open: panes open, the header folds. */
 const MEASURE_MS = 400;
 
-function targetBox(testId: string): Box | null {
+function controlBox(testId: string): Box | null {
     const el = document.querySelector<HTMLElement>(`[data-testid="${testId}"]`);
     if (!el || el.getClientRects().length === 0) return null;
     const r = el.getBoundingClientRect();
     if (r.width === 0 || r.height === 0) return null;
     if (r.right <= 0 || r.bottom <= 0 || r.left >= window.innerWidth || r.top >= window.innerHeight) return null;
     return { top: r.top, left: r.left, width: r.width, height: r.height };
+}
+
+/** Where the step's control is now, or null when none is on screen. */
+function targetBox(step: CoachStep): Box | null {
+    for (const id of step.targets) {
+        const box = controlBox(id);
+        if (box) return box;
+    }
+    return null;
 }
 
 /** A modal (the palette, a dialog) is open: the tour waits behind it. */
@@ -70,7 +81,7 @@ function modalOpen(): boolean {
 
 /** The steps whose control is on screen now. */
 function visibleSteps(steps: readonly CoachStep[]): CoachStep[] {
-    return steps.filter((s) => targetBox(s.target) !== null);
+    return steps.filter((s) => targetBox(s) !== null);
 }
 
 export interface CoachMarksProps {
@@ -107,7 +118,7 @@ function useCoachTour(ready: boolean, steps: readonly CoachStep[]) {
     useEffect(() => {
         if (!step) return;
         const measure = () => {
-            setBox(targetBox(step.target));
+            setBox(targetBox(step));
             setHidden(modalOpen());
             if (cardRef.current) setCardHeight(cardRef.current.offsetHeight);
         };

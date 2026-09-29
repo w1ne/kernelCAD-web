@@ -24,7 +24,11 @@ function openAgent(): void {
     if (!globalCommandRegistry.run('panels.left.agent')) shellStore.setAgentRailOpen(true);
     requestAnimationFrame(() => {
         document
-            .querySelector<HTMLElement>('#studio-left-pane textarea, #studio-left-pane [data-testid="agent-sign-in"]')
+            .querySelector<HTMLElement>([
+                // The desktop left pane, or the phone's agent sheet.
+                '#studio-left-pane textarea', '#studio-left-pane [data-testid="agent-sign-in"]',
+                '[data-testid="mobile-sheet-agent"] textarea', '[data-testid="mobile-sheet-agent"] [data-testid="agent-sign-in"]',
+            ].join(', '))
             ?.focus();
     });
 }

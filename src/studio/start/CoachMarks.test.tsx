@@ -56,6 +56,16 @@ describe('CoachMarks', () => {
         expect(screen.queryByTestId('coach-mark')).toBeNull();
     });
 
+    it('points the Agent tip at the phone tab bar when there is no rail', () => {
+        addTarget('mobile-tab-agent', { top: 700, left: 120, width: 60, height: 56 });
+        startTour();
+        expect(screen.getByRole('dialog', { name: 'Describe a part' })).toBeTruthy();
+        const ring = screen.getByTestId('coach-mark-ring');
+        expect(ring.style.top).toBe('700px');
+        // No room below the tab bar: the card sits above it.
+        expect(parseFloat(screen.getByTestId('coach-mark').style.top)).toBeLessThan(700);
+    });
+
     it('skips a tip whose control is not on screen', () => {
         addTarget('activity-agent');
         addTarget('toolbar-mark', { top: 12, left: 400, width: 32, height: 32 });
