@@ -901,8 +901,18 @@ export class Shape {
   }
 
   /**
-   * Drill a single hole through this Shape. Position is face-local 2D
-   * (`u`, `v` in mm). Use `depth: 'through'` to clip at the back face.
+   * Drill a single hole through this Shape. `u`, `v` are mm offsets from
+   * the centre of the entry face's outer boundary, NOT world coordinates.
+   * Earlier holes in the face do not move this origin. Axes:
+   *   top / bottom: u = +X, v = +Y
+   *   front / back: u = +X, v = +Z
+   *   left / right: u = +Y, v = +Z
+   * Face names and axes follow the part through `.rotate()`.
+   * Example: a plate spans Z 5..60, so the `front` centre is Z 32.5; a hole
+   * at world Z 45.5 is `v: 45.5 - 32.5`.
+   * A bore centre off the face, a zero depth, or a bore that leaves material
+   * on its axis fails the feature with `feature.hole.cut-missing`.
+   * Use `depth: 'through'` to clip at the back face.
    * Optional `counterbore` (wider shoulder) or `countersink` (cone) — the
    * two are mutually exclusive on a single hole.
    *
@@ -952,7 +962,9 @@ export class Shape {
   }
 
   /**
-   * Drill N holes in a single feature record. All holes share diameter,
+   * Drill N holes in a single feature record. Positions use the same
+   * (u, v) frame as `.hole()`, and every bore is checked the same way.
+   * All holes share diameter,
    * depth, and optional counterbore/countersink. Use `.hole()` chained
    * calls if you need mixed specs.
    *
@@ -1002,8 +1014,11 @@ export class Shape {
 
   /**
    * Sketch-driven subtractive extrude. Useful for irregular shapes hole()
-   * can't express (slots, D-shapes, keyhole pockets). Profile coords are
-   * in face-local 2D; direction is always *into* the body.
+   * can't express (slots, D-shapes, keyhole pockets). Profile (x, y) are
+   * mm from the centre of the face's outer boundary (same origin as
+   * `.hole()`; x runs along hole u). On top, front and right, y runs along
+   * hole v; on bottom, back and left it runs the opposite way. Direction
+   * is always *into* the body.
    *
    * Pass a closed `Sketch` or a bare `PathBuilder` (auto-closed). Created
    * face refs: `wall` (always), `floor` (blind), `wall-back` (through).
