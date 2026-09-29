@@ -189,7 +189,7 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
 /** Applies externally-driven code updates into the workbench. Rendered inside
  * WorkbenchProvider so it has access to setCode. Skips duplicate values to
  * avoid re-triggering the geometry pipeline on unchanged code. */
-function LiveCodeApplier({ liveCode }: { liveCode?: string }) {
+export function LiveCodeApplier({ liveCode }: { liveCode?: string }) {
   const { setCode } = useWorkbench();
   const lastApplied = useRef<string | undefined>(undefined);
   useEffect(() => {

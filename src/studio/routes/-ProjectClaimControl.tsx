@@ -2,10 +2,12 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { ReactNode } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import { Globe, Lock } from 'lucide-react';
+import { CheckCircle2, Globe, Lock } from 'lucide-react';
 import { SignInButton } from '../../funnel/components/SignInButton';
 import type { ProjectRow } from '../../funnel/lib/apiClient';
+import { Badge, Button, buttonClass, cx } from '../../ui';
 import { claimReturnUrl } from './-anonClaim';
+import { signInHref, type ProjectOwnership } from './-projectPageModel';
 
 const BTN_CLASS = 'inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap px-2.5 py-0.5 rounded text-xs font-medium bg-blue-600 hover:bg-blue-500 text-white disabled:opacity-50 transition-colors';
 
@@ -126,7 +128,20 @@ export interface AnonProjectBannerProps {
   claimed: boolean;
   claiming: boolean;
   onClaim: () => void;
+  /** `studio`: fixed over the dark workbench (default). `page`: a notice at
+   *  the top of the /p/<slug> model stage, in the semantic tokens. */
+  look?: 'studio' | 'page';
 }
+
+const BANNER_CLASS = {
+  studio: 'fixed bottom-4 left-4 right-4 z-50 mx-auto flex max-w-xl flex-wrap items-center justify-center gap-x-3 gap-y-2 rounded-lg border border-amber-600/60 bg-[#1f1a10]/95 px-4 py-2.5 text-sm text-amber-100 shadow-lg',
+  page: 'absolute left-3 right-3 top-3 z-10 mx-auto flex max-w-lg items-center justify-between gap-3 rounded-panel border border-border bg-surface-1/95 py-1.5 pl-3 pr-1.5 text-ui text-fg shadow-e2 backdrop-blur-sm md:justify-center md:pl-4',
+} as const;
+
+const BANNER_BUTTON = {
+  studio: BTN_CLASS,
+  page: cx(buttonClass('secondary', 'sm'), 'shrink-0'),
+} as const;
 
 /** Banner on /p/:slug for a project that no account owns yet (made by an
  *  anonymous agent session). Signed out: sign in, come back, claim runs.
@@ -137,27 +152,148 @@ export function AnonProjectBanner({
   claimed,
   claiming,
   onClaim,
+  look = 'studio',
 }: AnonProjectBannerProps): ReactNode {
   if (project.owner_id != null || claimed) return null;
   const action = session ? (
-    <button type="button" onClick={onClaim} disabled={claiming} className={BTN_CLASS}>
+    <button type="button" onClick={onClaim} disabled={claiming} className={BANNER_BUTTON[look]}>
       {claiming ? 'Saving…' : 'Save it to my account'}
     </button>
   ) : (
     <SignInButton
       redirectTo={typeof window !== 'undefined' ? claimReturnUrl(window.location.href) : undefined}
-      className={BTN_CLASS}
+      className={BANNER_BUTTON[look]}
     >
       Sign in to keep it
     </SignInButton>
   );
   return (
-    <div
-      role="status"
-      className="fixed bottom-4 left-4 right-4 z-50 mx-auto flex max-w-xl flex-wrap items-center justify-center gap-x-3 gap-y-2 rounded-lg border border-amber-600/60 bg-[#1f1a10]/95 px-4 py-2.5 text-sm text-amber-100 shadow-lg"
-    >
-      <span>This project isn&apos;t saved to an account yet —</span>
+    <div role="status" className={BANNER_CLASS[look]} data-testid="anon-project-banner">
+      {look === 'page' ? (
+        <span className="min-w-0">
+          <span className="md:hidden">Not saved to an account yet</span>
+          <span className="hidden md:inline">This project isn&apos;t saved to an account yet</span>
+        </span>
+      ) : (
+        <span>This project isn&apos;t saved to an account yet —</span>
+      )}
       {action}
+    </div>
+  );
+}
+
+export interface KeepThisModelProps {
+  slug: string;
+  project: ProjectRow;
+  session: Session | null;
+  ownership: ProjectOwnership;
+  claiming: boolean;
+  privacyBusy: boolean;
+  upgradeNeeded: boolean;
+  onClaim: () => void;
+  onTogglePrivacy: () => void;
+  onUpgrade: () => void;
+}
+
+const SECTION_TITLE = 'text-ui font-semibold text-fg';
+const SECTION_TEXT = 'text-ui text-fg-2';
+const TOUCH = 'max-md:h-touch';
+
+function SavedLine(): ReactNode {
+  return (
+    <p className="flex items-center gap-2 text-ui font-medium text-ok" data-testid="keep-saved">
+      <CheckCircle2 className="size-4" strokeWidth={1.75} aria-hidden="true" />
+      Saved to your projects
+    </p>
+  );
+}
+
+function PrivacyRow({ isPrivate, privacyBusy, upgradeNeeded, onTogglePrivacy, onUpgrade }: {
+  isPrivate: boolean;
+  privacyBusy: boolean;
+  upgradeNeeded: boolean;
+  onTogglePrivacy: () => void;
+  onUpgrade: () => void;
+}): ReactNode {
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <Badge tone="neutral" icon={isPrivate ? <Lock /> : <Globe />}>
+        {isPrivate ? 'Private' : 'Public by link'}
+      </Badge>
+      {upgradeNeeded ? (
+        <Button variant="ghost" size="sm" onClick={onUpgrade} className={TOUCH} title="Private projects require Pro">
+          Upgrade to keep private
+        </Button>
+      ) : (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onTogglePrivacy}
+          loading={privacyBusy}
+          className={TOUCH}
+        >
+          {isPrivate ? 'Make public' : 'Make private'}
+        </Button>
+      )}
+    </div>
+  );
+}
+
+/** "Keep this model" in the /p/<slug> side panel. A visitor who does not own
+ *  the project yet can save it to an account; the owner sees that it is
+ *  saved and who can see it. Nothing for a project someone else owns. */
+export function KeepThisModel(props: KeepThisModelProps): ReactNode {
+  const { ownership, session } = props;
+  if (ownership === 'other') return null;
+  if (ownership === 'claimed') {
+    return (
+      <div className="flex flex-col gap-2">
+        <SavedLine />
+        <a href="/me" className="text-ui text-accent underline-offset-2 hover:underline">Open your projects</a>
+      </div>
+    );
+  }
+  if (ownership === 'owner') {
+    return (
+      <div className="flex flex-col gap-3">
+        <SavedLine />
+        <PrivacyRow
+          isPrivate={props.project.privacy === 'private'}
+          privacyBusy={props.privacyBusy}
+          upgradeNeeded={props.upgradeNeeded}
+          onTogglePrivacy={props.onTogglePrivacy}
+          onUpgrade={props.onUpgrade}
+        />
+      </div>
+    );
+  }
+  return (
+    <div className="flex flex-col gap-3" data-testid="keep-this-model">
+      <div className="flex flex-col gap-1">
+        <h3 className={SECTION_TITLE}>Keep this model</h3>
+        <p className={SECTION_TEXT}>
+          {session
+            ? 'It is not in an account yet. Save it to find it again in your projects.'
+            : 'It is not in an account yet. Sign in to save it to your projects.'}
+        </p>
+      </div>
+      {session ? (
+        <Button variant="secondary" size="lg" onClick={props.onClaim} loading={props.claiming} className="w-full">
+          Save to my projects
+        </Button>
+      ) : (
+        <div className="flex flex-col gap-2">
+          <SignInButton
+            redirectTo={typeof window !== 'undefined' ? claimReturnUrl(window.location.href) : undefined}
+            className={cx(buttonClass('secondary', 'lg'), 'w-full')}
+          >
+            Sign in to keep
+          </SignInButton>
+          <a href={signInHref(props.slug)} className="self-center text-2xs text-fg-2 underline-offset-2 hover:text-fg hover:underline">
+            Other ways to sign in
+          </a>
+        </div>
+      )}
     </div>
   );
 }
