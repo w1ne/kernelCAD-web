@@ -35,7 +35,7 @@ vi.mock('./context/WorkbenchContext', async () => {
     const CodeState = React.createContext<{ code: string; setCode: (code: string) => void } | null>(null);
     function CodeStateProvider({ children }: { children: ReactNode }) {
         const [code, setCode] = React.useState('// DEFAULT');
-        const value = React.useMemo(() => ({ code, setCode }), [code]);
+        const value = React.useMemo(() => ({ code, setCode }), [code, setCode]);
         return <CodeState.Provider value={value}>{children}</CodeState.Provider>;
     }
     return {
