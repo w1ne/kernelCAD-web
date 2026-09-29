@@ -1,12 +1,18 @@
-// U11 - M8x30 hex bolt with a real ISO metric (60deg V, ISO 68-1) helical
-// thread + a matching M8 hex nut with a modeled internal thread groove.
-// Adapted from the kernelCAD cookbook recipe "iso-metric-bolt-and-nut".
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+// eval/tasks/usecase-bolt-nut/solution-expert.kcad.ts
+//
+// Typical use case U11: M8 x 30 hex bolt with a real ISO metric thread
+// (60° V, ISO 68-1, 1.25 mm coarse pitch) and a matching M8 nut that screws
+// onto it, with a print clearance. After the cookbook recipe
+// "iso-metric-bolt-and-nut".
+
 const ISO_M8 = { d: 8, pitch: 1.25, af: 13.0, head: 5.3, nut: 6.8 };
 const spec = ISO_M8;
 const P = spec.pitch; // 1.25mm coarse pitch, per ISO 262
-const boltLength = 30; // M8x30 -- shank length under the head
-const turns = boltLength / P; // 24
-const threadClearance = 0.15; // print tolerance; max allowed is pitch/8 = 0.15625mm
+const boltLength = 30; // M8 x 30: shank length under the head
+const turns = boltLength / P - 1; // 23: the thread ends inside the shank
+const threadClearance = 0.15; // print clearance; the thread option allows up to pitch / 8
 
 function hexPrism(af, height) {
   const r = af / Math.sqrt(3);
@@ -36,7 +42,7 @@ const vProfile = path()
   .close();
 
 const thread = vProfile.sweep(helix({ radius: rMinor, pitch: P, turns }), { spine: 'helix' });
-const shank = cylinder((turns + 1) * P, rMinor).union(thread);
+const shank = cylinder(boltLength, rMinor).union(thread);
 const bolt = hexPrism(spec.af, spec.head).union(shank.translate(0, 0, spec.head));
 
 const nut = hexPrism(spec.af, spec.nut).hole({ atZ: spec.nut, byNormal: 'Z' }, {

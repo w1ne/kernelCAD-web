@@ -6,6 +6,9 @@
 
 import { defineUsecaseSuite } from './usecaseSuite';
 
+// usecase-bolt-nut (U11) is not listed: its modeled 24-turn threads take
+// minutes per build, too slow for a per-PR shard. See eval/tasks/USECASES.md.
 defineUsecaseSuite([
+  { id: 'usecase-rpi4-enclosure' },
   { id: 'usecase-twisted-vase' },
 ]);
