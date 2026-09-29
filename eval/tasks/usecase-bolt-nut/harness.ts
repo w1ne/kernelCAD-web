@@ -4,8 +4,7 @@
 //
 // U11 bolt and nut: hex sizes, bolt length, the thread pitch measured on the
 // geometry, the nut's internal thread, fit, and exports. See
-// eval/tasks/USECASES.md. Not in the CI suite: modeled threads take minutes
-// per build (see USECASES.md).
+// eval/tasks/USECASES.md.
 import { makeBox, type Shape3D } from 'replicad';
 import type { HarnessResult } from '../../types';
 import { OcctBackend } from '../../../src/kernel/backends/occt/occtBackend';
@@ -23,15 +22,16 @@ function crestHeights(s: OcctBackend, z0: number, z1: number): number[] {
   const bar = new OcctBackend(makeBox([3.6, -0.05, z0], [3.9, 0.05, z1]) as Shape3D);
   const hit = s.intersect(bar) as OcctBackend;
   return hit.solidComponents().map((c) => {
-    const b = c.boundingBox();
+    const b = c.boundingBox({ exact: true });
     return (b.min[2] + b.max[2]) / 2;
   }).sort((a, b) => a - b);
 }
 
-/** At least `n` crests, evenly spaced by the pitch. */
+/** At least `n` whole crests (the bar's end pieces are cut), evenly spaced by the pitch. */
 function pitchIs(z: number[], n: number): boolean {
-  if (z.length < n) return false;
-  for (let i = 1; i < z.length; i++) if (!near(z[i] - z[i - 1], PITCH, 0.05)) return false;
+  const whole = z.slice(1, -1);
+  if (whole.length < n) return false;
+  for (let i = 1; i < whole.length; i++) if (!near(whole[i] - whole[i - 1], PITCH, 0.05)) return false;
   return true;
 }
 
@@ -51,7 +51,7 @@ export default async function harness(scriptPath: string): Promise<HarnessResult
       'bolt thread pitch 1.25 (ISO 262 coarse)': pitchIs(crestHeights(bolt, 6, 34), 20),
       'nut 13 across flats, 6.8 tall, on the bolt axis': near(nb.size[0], 13) && near(nb.max[2] - nb.min[2], 6.8)
         && near(nb.min[0] + nb.max[0], 0) && near(nb.min[1] + nb.max[1], 0),
-      'nut internal thread pitch 1.25': pitchIs(crestHeights(nut, nb.min[2] + 0.5, nb.max[2] - 0.5), 4),
+      'nut internal thread pitch 1.25': pitchIs(crestHeights(nut, nb.min[2], nb.max[2]), 3),
       'nut and bolt do not overlap': bolt.intersectionVolume(nut) < 1e-3,
       // The whole-model STL fuses the threaded parts first and does not
       // finish (https://github.com/w1ne/kernelCAD-web/issues/807); per-part

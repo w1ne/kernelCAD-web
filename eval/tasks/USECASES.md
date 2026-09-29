@@ -27,7 +27,7 @@ solution through it in `npm test`.
 | `usecase-floor-plan` | U8 floor plan | room, walls, door and window openings, furniture, PDF plan with feet-and-inches labels, DXF plan section |
 | `usecase-plywood-shelf` | U9 plywood shelf for a CNC | board sizes, dados, joint fit, equal compartments, BOM cut list, DXF of every flat part |
 | `usecase-twisted-vase` | U10 twisted vase | height, base and top hexagons, real twist, 2 mm wall by section, closed bottom, exports |
-| `usecase-bolt-nut` | U11 M8 bolt and nut | hex sizes, 30 mm shank, 1.25 mm pitch measured on the bolt and in the nut, fit, exports (not in CI, see below) |
+| `usecase-bolt-nut` | U11 M8 bolt and nut | hex sizes, 30 mm shank, 1.25 mm pitch measured on the bolt and in the nut, fit, exports |
 | `usecase-drill-jig` | U12 drill jig | Ø8 guide centred on the 18 mm board, 20 mm from the end, cheeks and end fence, min wall, exports |
 | `usecase-keychain` | U13 name keychain | plate, rounded corners, ring hole, raised text as a second-colour part, 3MF colours |
 | `usecase-edit-bracket` | U14 edit an existing design | the asked changes to U1 landed and nothing else moved |
@@ -44,12 +44,6 @@ Common rules for every harness (see `eval/usecaseChecks.ts`):
 - Exports are read back, not trusted: STEP re-imports with the right solid
   count and the model's volume, STL is watertight (per part for assemblies),
   3MF has one closed mesh per part; DXF, PDF, BOM and URDF where the case asks.
-
-`usecase-bolt-nut` is an agent-eval task only. Its modeled 24-turn threads
-take minutes per build, and the harness builds and exports several times, so it
-is too slow for a per-PR shard. After a change to threads, sweeps or exports,
-run it by hand: call its harness on its `solution-expert.kcad.ts` from a
-scratch vitest file (about ten minutes).
 
 ## Open findings
 
@@ -70,5 +64,6 @@ entry, and the check becomes a normal gate.
    numbers copied from the solution.
 3. Add `{ id: 'usecase-<slug>' }` to the lightest `eval/usecases-*.test.ts`
    (each file is one CI shard's share; keep each under about five minutes).
+   A heavy case gets its own file and a `budgetMs`.
 4. Run `npx vitest run eval/usecases-<x>.test.ts`. Then break the solution
    once (move a hole, drop a part, open a wall) and see the harness fail.

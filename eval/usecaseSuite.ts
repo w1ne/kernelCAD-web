@@ -21,6 +21,8 @@ export interface UsecaseTask {
   id: string;
   /** Check name → link to the open finding that makes it fail today. */
   open?: Record<string, string>;
+  /** Build + checks budget when a case is heavier than the default. */
+  budgetMs?: number;
 }
 
 /** Per-task budget: build + checks + every export, on a CI runner. */
@@ -37,7 +39,7 @@ export function defineUsecaseSuite(tasks: readonly UsecaseTask[]): void {
           default: (scriptPath: string) => Promise<HarnessResult>;
         };
         result = await mod.default(join(dir, 'solution-expert.kcad.ts'));
-      }, TASK_BUDGET_MS);
+      }, t.budgetMs ?? TASK_BUDGET_MS);
 
       it('expert solution passes every check', () => {
         const open = new Set(Object.keys(t.open ?? {}));
