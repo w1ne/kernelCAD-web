@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { useFocusTrap } from '../../ui';
 import { BrandMark } from './FunnelHeader';
@@ -42,9 +42,19 @@ export function SignInModal({
 }: SignInModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
 
-  // Focus moves into the dialog, Tab stays inside, Esc closes (when allowed),
-  // and focus returns to the opener when it closes.
-  useFocusTrap(dialogRef, open, dismissable ? onClose : undefined);
+  // Focus moves into the dialog, Tab stays inside, and focus returns to the
+  // opener when it closes.
+  useFocusTrap(dialogRef, open);
+
+  // Esc closes from anywhere on the page (when allowed).
+  useEffect(() => {
+    if (!open || !dismissable) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose();
+    }
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open, dismissable, onClose]);
 
   if (!open) return null;
 
