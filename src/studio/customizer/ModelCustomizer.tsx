@@ -192,9 +192,10 @@ function ParamList({ params, state }: { params: readonly CustomizerParam[]; stat
   );
 }
 
-function PanelHeader({ layout, collapsed, onToggle, changedCount, busy, onResetAll }: {
+function PanelHeader({ layout, collapsed, onToggle, paramCount, changedCount, busy, onResetAll }: {
   layout: CustomizerLayoutMode;
   collapsed: boolean;
+  paramCount: number;
   onToggle: () => void;
   changedCount: number;
   busy: boolean;
@@ -211,12 +212,13 @@ function PanelHeader({ layout, collapsed, onToggle, changedCount, busy, onResetA
     >
       <Chevron className="size-4 text-fg-2" strokeWidth={1.75} aria-hidden="true" />
       Customize
+      {collapsed && <span className="font-normal text-fg-3">· {paramCount}</span>}
     </button>
   ) : (
     <h2 className="text-ui font-semibold text-fg">Customize</h2>
   );
   return (
-    <header className="flex items-center justify-between gap-2 px-4 pt-3 pb-2">
+    <header className={cx('flex items-center justify-between gap-2 px-4', collapsed ? 'py-2' : 'pt-3 pb-2')}>
       <div className="flex min-w-0 items-center gap-2">
         {title}
         {busy && collapsed && (
@@ -243,7 +245,7 @@ function PanelHeader({ layout, collapsed, onToggle, changedCount, busy, onResetA
 
 const SHELL: Record<CustomizerLayoutMode, string> = {
   // The bottom 13rem stays clear for the view cube and home button.
-  overlay: 'pointer-events-auto max-h-[calc(100%-13rem)] w-80 max-w-[calc(100vw-2rem)] rounded-panel border border-border bg-surface-1/95 shadow-e2 backdrop-blur-sm',
+  overlay: 'pointer-events-auto max-h-[calc(100%-13rem)] max-w-[calc(100vw-2rem)] rounded-panel border border-border bg-surface-1/95 shadow-e2 backdrop-blur-sm',
   panel: 'h-full w-full bg-surface-1',
 };
 
@@ -265,13 +267,19 @@ export function ModelCustomizer(props: ModelCustomizerProps): JSX.Element | null
       data-testid="model-customizer"
       data-layout={layout}
       data-theme={layout === 'overlay' ? 'dark' : undefined}
-      className={cx('relative flex min-h-0 flex-col overflow-hidden text-ui text-fg', SHELL[layout], props.className)}
+      className={cx(
+        'relative flex min-h-0 flex-col overflow-hidden text-ui text-fg',
+        SHELL[layout],
+        layout === 'overlay' && (collapsed ? 'w-auto' : 'w-80'),
+        props.className,
+      )}
     >
       <RebuildBar active={rebuilding} />
       <PanelHeader
         layout={layout}
         collapsed={collapsed}
         onToggle={() => setCollapsed((v) => !v)}
+        paramCount={params.length}
         changedCount={Object.keys(changedValues(params, state.values)).length}
         busy={rebuilding}
         onResetAll={state.reset}
