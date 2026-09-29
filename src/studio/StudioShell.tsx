@@ -30,7 +30,8 @@ import { useUI } from './context/UIContext';
 import { jointContactCapMm3 } from '../modeling/runtime/jointContactCap';
 import { useViewportToggles } from './hooks/useViewportToggles';
 import { useUndoRedoShortcuts } from './hooks/useUndoRedoShortcuts';
-import { NARROW_QUERY } from './hooks/useIsNarrow';
+import { NARROW_QUERY, useIsNarrow } from './hooks/useIsNarrow';
+import { MobileShell } from './MobileShell';
 
 
 interface EmbedFlags {
@@ -167,6 +168,36 @@ export function StudioShell() {
     // absolute cap used by validator/mechanism-truth so clearance-fit clevis
     // contacts do not make a plausible mechanism look broken.
     const interferenceCount = resolveInterferenceCount(recompute);
+    // Phones get the tab-bar shell; hosts without the header keep this one.
+    const phone = useIsNarrow() && showHeader;
+
+    const stage = renderStage({
+        workbench, ui, markingMode, sectionMode, handleRun, handleValidate, handleToggleMarkingMode,
+        handleToggleSectionMode, referenceImagesPresent, referenceImagesVisible, handleToggleReferenceImages,
+        renderEnvironmentPresent, renderEnvironmentVisible, renderEnvironmentPresetLabel, handleToggleRenderEnvironment,
+    });
+
+    if (phone) {
+        return (
+            <MobileShell
+                stage={stage}
+                tabSlots={tabSlots}
+                enableAgent={enableAgentRail}
+                enableConnect={enableConnect}
+                viewerMode={!!viewerMode}
+                status={{
+                    isComputing: workbench.isComputing,
+                    error: workbench.error ?? null,
+                    geometryCount: workbench.geometries?.length ?? 0,
+                    selectedCount: workbench.selectedItemIds?.length ?? 0,
+                    interferences: interferenceCount,
+                    recomputeMs: workbench.recomputeMs,
+                    viewMode3D: workbench.viewMode3D,
+                }}
+                dialogs={renderProjectManager(workbench)}
+            />
+        );
+    }
 
     return (
         <div
@@ -181,37 +212,7 @@ export function StudioShell() {
                     <ActivityBar enableAgent={enableAgentRail} enableConnect={enableConnect} viewerMode={!!viewerMode} />
                 )}
                 <div className="flex-1 relative min-w-0">
-                    <Viewport />
-                    <ViewportToolbar
-                        onRun={handleRun}
-                        onValidate={handleValidate}
-                        runNeeded={!!workbench.error}
-                        markingMode={markingMode}
-                        onToggleMarkingMode={handleToggleMarkingMode}
-                        sectionMode={sectionMode}
-                        onToggleSectionMode={handleToggleSectionMode}
-                        referenceImagesPresent={referenceImagesPresent}
-                        referenceImagesVisible={referenceImagesVisible}
-                        onToggleReferenceImages={handleToggleReferenceImages}
-                        renderEnvironmentPresent={renderEnvironmentPresent}
-                        renderEnvironmentVisible={renderEnvironmentVisible}
-                        renderEnvironmentPresetLabel={renderEnvironmentPresetLabel}
-                        onToggleRenderEnvironment={handleToggleRenderEnvironment}
-                        display={{
-                            viewMode3D: workbench.viewMode3D,
-                            setViewMode3D: workbench.setViewMode3D,
-                            background: ui.viewportBackground,
-                            setBackground: ui.setViewportBackground,
-                            gridVisible: ui.gridVisible,
-                            setGridVisible: ui.setGridVisible,
-                        }}
-                    />
-                    <MarkingOverlay visible={markingMode} />
-                    <SectionPanel visible={sectionMode} />
-                    <DirectEditPanel />
-                    {shouldShowKernelBanner(workbench.isReady, workbench.geometries?.length ?? 0) && (
-                        <KernelInitBanner error={workbench.error} />
-                    )}
+                    {stage}
                 </div>
                 <Inspector tabSlots={tabSlots} />
             </div>
@@ -223,6 +224,55 @@ export function StudioShell() {
                 interferenceCount,
             })}
         </div>
+    );
+}
+
+/** The viewport with its floating toolbar and overlays; the same on phone and desktop. */
+function renderStage(p: {
+    workbench: ReturnType<typeof useWorkbench>;
+    ui: ReturnType<typeof useUI>;
+    markingMode: boolean;
+    sectionMode: boolean;
+    handleRun: () => void;
+    handleValidate: () => void;
+    handleToggleMarkingMode: () => void;
+    handleToggleSectionMode: () => void;
+} & ReturnType<typeof useViewportToggles>) {
+    const { workbench, ui, markingMode, sectionMode } = p;
+    return (
+        <>
+            <Viewport />
+            <ViewportToolbar
+                onRun={p.handleRun}
+                onValidate={p.handleValidate}
+                runNeeded={!!workbench.error}
+                markingMode={markingMode}
+                onToggleMarkingMode={p.handleToggleMarkingMode}
+                sectionMode={sectionMode}
+                onToggleSectionMode={p.handleToggleSectionMode}
+                referenceImagesPresent={p.referenceImagesPresent}
+                referenceImagesVisible={p.referenceImagesVisible}
+                onToggleReferenceImages={p.handleToggleReferenceImages}
+                renderEnvironmentPresent={p.renderEnvironmentPresent}
+                renderEnvironmentVisible={p.renderEnvironmentVisible}
+                renderEnvironmentPresetLabel={p.renderEnvironmentPresetLabel}
+                onToggleRenderEnvironment={p.handleToggleRenderEnvironment}
+                display={{
+                    viewMode3D: workbench.viewMode3D,
+                    setViewMode3D: workbench.setViewMode3D,
+                    background: ui.viewportBackground,
+                    setBackground: ui.setViewportBackground,
+                    gridVisible: ui.gridVisible,
+                    setGridVisible: ui.setGridVisible,
+                }}
+            />
+            <MarkingOverlay visible={markingMode} />
+            <SectionPanel visible={sectionMode} />
+            <DirectEditPanel />
+            {shouldShowKernelBanner(workbench.isReady, workbench.geometries?.length ?? 0) && (
+                <KernelInitBanner error={workbench.error} />
+            )}
+        </>
     );
 }
 
@@ -251,11 +301,17 @@ function renderStudioFooter(props: {
                 recomputeMs={workbench.recomputeMs}
             />
 
-            <ProjectManagerDialog
-                isOpen={workbench.activeDialog === 'projectManager'}
-                onClose={() => workbench.setActiveDialog(null)}
-            />
+            {renderProjectManager(workbench)}
         </>
+    );
+}
+
+function renderProjectManager(workbench: ReturnType<typeof useWorkbench>) {
+    return (
+        <ProjectManagerDialog
+            isOpen={workbench.activeDialog === 'projectManager'}
+            onClose={() => workbench.setActiveDialog(null)}
+        />
     );
 }
 

@@ -10,9 +10,16 @@ const src = readFileSync(
   'utf8',
 );
 
+// The agent access hook both shells (activity bar, phone tab bar) share.
+const accessSrc = readFileSync(
+  fileURLToPath(new URL('../hooks/useActivityPanes.tsx', import.meta.url)),
+  'utf8',
+);
+
 describe('agent rail requires a session', () => {
   it('reads the session in the activity bar', () => {
-    expect(src).toMatch(/useOptionalSession/);
+    expect(accessSrc).toMatch(/useOptionalSession/);
+    expect(src).toMatch(/useAgentAccess\(\)/);
   });
 
   it('mounts the rail only when the agent can run', () => {
