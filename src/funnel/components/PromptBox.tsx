@@ -1,12 +1,19 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { useState } from 'react';
+import { useState, type FormEvent, type JSX, type KeyboardEvent, type ReactNode } from 'react';
+import { ArrowUp } from 'lucide-react';
+import { Button } from '../../ui';
 
 export interface PromptBoxProps {
   onSubmit: (prompt: string) => void;
+  /** Blocks typing and sending (agent unavailable, or a run in progress). */
   disabled?: boolean;
+  /** A run is in progress: the send button shows a spinner. */
+  busy?: boolean;
   examples?: string[];
   initialValue?: string;
+  /** An action next to the send button, e.g. "Sign in" for signed-out visitors. */
+  secondaryAction?: ReactNode;
 }
 
 const DEFAULT_EXAMPLES = [
@@ -15,50 +22,80 @@ const DEFAULT_EXAMPLES = [
   'L-bracket 100x60x2 mm, 90° fold along x=50',
 ];
 
-export function PromptBox({ onSubmit, disabled, examples = DEFAULT_EXAMPLES, initialValue = '' }: PromptBoxProps) {
+export function PromptBox({
+  onSubmit,
+  disabled,
+  busy = false,
+  examples = DEFAULT_EXAMPLES,
+  initialValue = '',
+  secondaryAction,
+}: PromptBoxProps): JSX.Element {
   const [value, setValue] = useState(initialValue);
+  const blocked = disabled || busy;
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  function send(): void {
     const trimmed = value.trim();
-    if (!trimmed || disabled) return;
+    if (!trimmed || blocked) return;
     onSubmit(trimmed);
   }
 
+  function handleSubmit(e: FormEvent): void {
+    e.preventDefault();
+    send();
+  }
+
+  // ⌘/Ctrl+Enter sends; plain Enter makes a new line.
+  function handleKeyDown(e: KeyboardEvent<HTMLTextAreaElement>): void {
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+      send();
+    }
+  }
+
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-2xl mx-auto" autoComplete="off">
-      <label htmlFor="prompt" className="sr-only">CAD prompt</label>
-      <textarea
-        id="prompt"
-        value={value}
-        onChange={e => setValue(e.target.value)}
-        rows={3}
-        disabled={disabled}
-        placeholder="Describe the part you want…"
-        autoComplete="off"
-        className="w-full rounded-lg bg-white border border-rule text-ink p-4 text-base placeholder:text-ink-faint focus:border-blueprint focus:outline-none disabled:opacity-50 font-sans"
-      />
-      <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-        <div className="flex flex-wrap gap-2">
-          {examples.map(ex => (
-            <button
-              key={ex}
-              type="button"
-              onClick={() => setValue(ex)}
-              disabled={disabled}
-              className="font-mono text-[11px] text-ink-soft hover:text-ink hover:border-ink px-2.5 py-1 rounded border border-rule disabled:opacity-50 tracking-wide transition-colors"
-            >
-              {ex}
-            </button>
-          ))}
+    <form onSubmit={handleSubmit} className="mx-auto w-full max-w-2xl text-left" autoComplete="off">
+      <div className="rounded-sheet border border-border-strong bg-surface-1 shadow-e1 focus-within:border-accent focus-within:shadow-[0_0_0_1px_var(--kc-accent)]">
+        <label htmlFor="prompt" className="sr-only">
+          Describe the part
+        </label>
+        <textarea
+          id="prompt"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onKeyDown={handleKeyDown}
+          rows={3}
+          disabled={blocked}
+          placeholder="Describe the part you want, with sizes if you know them…"
+          autoComplete="off"
+          className="block w-full resize-none rounded-t-sheet bg-transparent px-4 pb-2 pt-4 font-sans text-body text-fg placeholder:text-fg-3 focus:outline-none disabled:cursor-not-allowed disabled:text-fg-2"
+        />
+        <div className="flex flex-wrap items-center justify-end gap-2 px-3 pb-3">
+          {secondaryAction}
+          <Button
+            type="submit"
+            variant="primary"
+            size="lg"
+            loading={busy}
+            disabled={disabled || !value.trim()}
+            className="min-h-touch sm:min-h-0"
+            trailingIcon={<ArrowUp className="size-4" strokeWidth={2} aria-hidden="true" />}
+          >
+            Create
+          </Button>
         </div>
-        <button
-          type="submit"
-          disabled={disabled || !value.trim()}
-          className="rounded-lg bg-blueprint hover:bg-blueprint-hover text-white px-6 py-3 text-base font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          {disabled ? 'Generating…' : 'Create'}
-        </button>
+      </div>
+      <div className="mt-3 flex flex-wrap gap-2" aria-label="Examples">
+        {examples.map((ex) => (
+          <button
+            key={ex}
+            type="button"
+            onClick={() => setValue(ex)}
+            disabled={blocked}
+            className="focus-ring inline-flex min-h-touch items-center rounded-full border border-border bg-surface-1 px-3 text-ui text-fg-2 transition-colors duration-80 hover:border-border-strong hover:text-fg disabled:opacity-50 sm:min-h-control-md"
+          >
+            {ex}
+          </button>
+        ))}
       </div>
     </form>
   );

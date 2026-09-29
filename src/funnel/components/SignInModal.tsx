@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useEffect, useRef } from 'react';
+import { X } from 'lucide-react';
+import { useFocusTrap } from '../../ui';
+import { BrandMark } from './FunnelHeader';
 import { SignInButton } from './SignInButton';
 import { EmailPasswordForm } from './EmailPasswordForm';
 
@@ -39,6 +42,11 @@ export function SignInModal({
 }: SignInModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
 
+  // Focus moves into the dialog, Tab stays inside, and focus returns to the
+  // opener when it closes.
+  useFocusTrap(dialogRef, open);
+
+  // Esc closes from anywhere on the page (when allowed).
   useEffect(() => {
     if (!open || !dismissable) return;
     function onKey(e: KeyboardEvent) {
@@ -48,12 +56,6 @@ export function SignInModal({
     return () => document.removeEventListener('keydown', onKey);
   }, [open, dismissable, onClose]);
 
-  // Move focus into the dialog when it opens.
-  useEffect(() => {
-    if (!open) return;
-    dialogRef.current?.focus();
-  }, [open]);
-
   if (!open) return null;
 
   return (
@@ -61,51 +63,34 @@ export function SignInModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="signin-modal-title"
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-ink/40 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-scrim p-4 backdrop-blur-sm"
       onClick={dismissable ? onClose : undefined}
     >
       <div
         ref={dialogRef}
         tabIndex={-1}
         onClick={e => e.stopPropagation()}
-        className="relative max-w-sm w-full rounded-xl border border-rule bg-vellum p-8 text-center shadow-xl focus:outline-none"
+        className="relative w-full max-w-sm animate-pop-in rounded-sheet border border-border bg-surface-1 p-6 text-center text-fg shadow-e3 focus:outline-none sm:p-8"
       >
         {dismissable && (
           <button
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="absolute top-3 right-3 text-ink-faint hover:text-ink transition-colors text-xl leading-none"
+            className="focus-ring absolute right-2 top-2 flex size-touch items-center justify-center rounded-control text-fg-3 transition-colors hover:bg-surface-2 hover:text-fg"
           >
-            ×
+            <X className="size-5" strokeWidth={1.75} aria-hidden="true" />
           </button>
         )}
 
-        <div className="flex items-center justify-center gap-2 mb-5">
-          <svg className="w-5 h-5 text-ink" viewBox="0 0 84 84" fill="none" aria-label="kernelCAD">
-            <path d="M 14,12 L 26,12 L 26,34 Q 26,36 27.5,34.5 L 46,12 L 60,12 L 36,40 Q 35,42 36,44 L 60,72 L 46,72 L 27.5,49.5 Q 26,48 26,50 L 26,72 L 14,72 Z" fill="currentColor"/>
-          </svg>
-          <span className="font-serif text-lg font-medium">
-            kernel<span className="text-blueprint">CAD</span>
-          </span>
-        </div>
+        <BrandMark className="mb-5 justify-center" />
 
-        <h2 id="signin-modal-title" className="font-serif text-2xl font-medium text-ink">
+        <h2 id="signin-modal-title" className="font-serif text-heading text-fg">
           {title}
         </h2>
-        <p className="text-ink-soft text-sm mt-2 leading-relaxed">{description}</p>
+        <p className="mt-2 text-ui text-fg-2">{description}</p>
 
-        <div className="mt-6">
-          <EmailPasswordForm redirectTo={redirectTo ?? window.location.href} />
-        </div>
-
-        <div className="my-5 flex items-center gap-3">
-          <span className="h-px flex-1 bg-rule" />
-          <span className="text-xs text-ink-faint">or</span>
-          <span className="h-px flex-1 bg-rule" />
-        </div>
-
-        <div className="flex flex-col gap-2">
+        <div className="mt-6 flex flex-col gap-2">
           <SignInButton provider="google" redirectTo={redirectTo ?? window.location.href}>
             Continue with Google
           </SignInButton>
@@ -114,12 +99,27 @@ export function SignInModal({
           </SignInButton>
         </div>
 
+        <OrDivider />
+
+        <EmailPasswordForm redirectTo={redirectTo ?? window.location.href} />
+
         {footer ?? (
-          <p className="mt-5 text-xs text-ink-faint font-mono tracking-wide">
+          <p className="mt-5 text-ui text-fg-3">
             5 free generations · upgrade after to keep generating
           </p>
         )}
       </div>
+    </div>
+  );
+}
+
+/** "—— or ——" between the OAuth buttons and the email form. */
+export function OrDivider() {
+  return (
+    <div className="my-5 flex items-center gap-3" aria-hidden="true">
+      <span className="h-px flex-1 bg-border" />
+      <span className="text-ui text-fg-3">or</span>
+      <span className="h-px flex-1 bg-border" />
     </div>
   );
 }
