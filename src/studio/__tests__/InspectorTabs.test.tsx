@@ -10,81 +10,89 @@ afterEach(() => {
     cleanup();
 });
 
-const RESERVED: readonly TabId[] = ['joints', 'export', 'sections', 'cut', 'animation', 'render'];
+const RESERVED: readonly TabId[] = ['sections', 'cut', 'render'];
 
 describe('InspectorTabs', () => {
-    it('renders visible tabs as enabled and reserved tabs as aria-disabled', () => {
-        const onSelectTab = vi.fn();
+    it('renders only the tabs it is given; reserved and unavailable tabs are not in the DOM', () => {
         render(
-            <InspectorTabs
-                tabs={['scene', 'code']}
-                activeTab="scene"
-                onSelectTab={onSelectTab}
-            />,
+            <InspectorTabs tabs={['code', 'validity']} activeTab="code" onSelectTab={vi.fn()} width={560} />,
         );
 
-        const sceneBtn = screen.getByTestId('inspector-tab-scene') as HTMLButtonElement;
-        const codeBtn = screen.getByTestId('inspector-tab-code') as HTMLButtonElement;
-        expect(sceneBtn.getAttribute('aria-disabled')).toBeNull();
-        expect(codeBtn.getAttribute('aria-disabled')).toBeNull();
-        expect(sceneBtn.disabled).toBe(false);
-        expect(codeBtn.disabled).toBe(false);
-
-        for (const id of RESERVED) {
-            const btn = screen.getByTestId(`inspector-tab-${id}`) as HTMLButtonElement;
-            expect(btn.getAttribute('aria-disabled')).toBe('true');
-            expect(btn.disabled).toBe(true);
+        expect(screen.getAllByRole('tab')).toHaveLength(2);
+        for (const id of [...RESERVED, 'joints', 'animation', 'export', 'params'] as TabId[]) {
+            expect(screen.queryByTestId(`inspector-tab-${id}`)).toBeNull();
+        }
+        // No tab is ever rendered disabled.
+        for (const tab of screen.getAllByRole('tab')) {
+            expect(tab.hasAttribute('disabled')).toBe(false);
+            expect(tab.getAttribute('aria-disabled')).toBeNull();
         }
     });
 
-    it('clicking a visible tab calls onSelectTab(id); reserved tab clicks do not', () => {
-        const onSelectTab = vi.fn();
+    it('labels the validity tab "Checks" and shows its count', () => {
         render(
             <InspectorTabs
-                tabs={['scene', 'code']}
-                activeTab="scene"
-                onSelectTab={onSelectTab}
-            />,
-        );
-
-        fireEvent.click(screen.getByTestId('inspector-tab-code'));
-        expect(onSelectTab).toHaveBeenCalledTimes(1);
-        expect(onSelectTab).toHaveBeenLastCalledWith('code');
-
-        for (const id of RESERVED) {
-            fireEvent.click(screen.getByTestId(`inspector-tab-${id}`));
-        }
-        expect(onSelectTab).toHaveBeenCalledTimes(1);
-    });
-
-    it('active tab is visually distinct via data-active and aria-selected', () => {
-        const onSelectTab = vi.fn();
-        render(
-            <InspectorTabs
-                tabs={['scene', 'code']}
+                tabs={['code', 'validity']}
                 activeTab="code"
-                onSelectTab={onSelectTab}
+                onSelectTab={vi.fn()}
+                counts={{ validity: 3 }}
+                width={560}
             />,
         );
 
-        const codeBtn = screen.getByTestId('inspector-tab-code');
-        const sceneBtn = screen.getByTestId('inspector-tab-scene');
-
-        expect(codeBtn.getAttribute('data-active')).toBe('true');
-        expect(codeBtn.getAttribute('aria-selected')).toBe('true');
-        expect(sceneBtn.getAttribute('data-active')).toBe('false');
-        expect(sceneBtn.getAttribute('aria-selected')).toBe('false');
+        expect(screen.getByTestId('inspector-tab-validity').textContent).toBe('Checks3');
+        expect(screen.getByRole('tablist', { name: 'Inspector' })).toBeTruthy();
     });
 
-    it('reserved tab title surfaces the enabling hint', () => {
+    it('clicking a tab calls onSelectTab(id)', () => {
+        const onSelectTab = vi.fn();
+        render(
+            <InspectorTabs tabs={['code', 'params', 'validity']} activeTab="code" onSelectTab={onSelectTab} width={560} />,
+        );
+
+        fireEvent.click(screen.getByTestId('inspector-tab-validity'));
+        expect(onSelectTab).toHaveBeenCalledWith('validity');
+    });
+
+    it('the active tab is aria-selected and the only one in the tab order', () => {
+        render(
+            <InspectorTabs tabs={['code', 'params', 'validity']} activeTab="params" onSelectTab={vi.fn()} width={560} />,
+        );
+
+        const params = screen.getByTestId('inspector-tab-params');
+        const code = screen.getByTestId('inspector-tab-code');
+        expect(params.getAttribute('aria-selected')).toBe('true');
+        expect(params.tabIndex).toBe(0);
+        expect(code.getAttribute('aria-selected')).toBe('false');
+        expect(code.tabIndex).toBe(-1);
+    });
+
+    it('arrow keys move the selection along the tab list', () => {
+        const onSelectTab = vi.fn();
+        render(
+            <InspectorTabs tabs={['code', 'params', 'validity']} activeTab="code" onSelectTab={onSelectTab} width={560} />,
+        );
+
+        fireEvent.keyDown(screen.getByTestId('inspector-tab-code'), { key: 'ArrowRight' });
+        expect(onSelectTab).toHaveBeenLastCalledWith('params');
+        fireEvent.keyDown(screen.getByTestId('inspector-tab-code'), { key: 'ArrowLeft' });
+        expect(onSelectTab).toHaveBeenLastCalledWith('validity');
+    });
+
+    it('tabs that do not fit the width go to a "More" menu', () => {
         render(
             <InspectorTabs
-                tabs={['scene', 'code']}
-                activeTab="scene"
+                tabs={['code', 'params', 'validity', 'joints', 'animation', 'export', 'scene']}
+                activeTab="code"
                 onSelectTab={vi.fn()}
+                width={340}
             />,
         );
-        const jointsBtn = screen.getByTestId('inspector-tab-joints');
-        expect(jointsBtn.getAttribute('title')).toMatch(/joints/i);
+
+        expect(screen.getByTestId('inspector-tab-code')).toBeTruthy();
+        expect(screen.getByTestId('inspector-tab-params')).toBeTruthy();
+        expect(screen.getByTestId('inspector-tab-validity')).toBeTruthy();
+        expect(screen.queryByTestId('inspector-tab-scene')).toBeNull();
+        expect(screen.getByRole('button', { name: /more/i })).toBeTruthy();
     });
 });
