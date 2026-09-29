@@ -30,7 +30,55 @@ import type { CaptureSession } from '../../src/modeling/capture/captureSession';
 export interface BuildGalleryOptions {
   entriesPath: string;
   publicDir: string;
+  /**
+   * The public community gallery API (kernelCAD-server). When set, the build
+   * reads its newest published models into `gallery.json` as `community`.
+   * Omitted (tests, offline builds) means no community cards.
+   */
+  communityApi?: CommunityApiOptions;
 }
+
+export interface CommunityApiOptions {
+  /** API origin, e.g. `https://api.kernelcad.com`. */
+  baseUrl: string;
+  /** Injected for tests; defaults to the global fetch. */
+  fetchImpl?: typeof fetch;
+  /** Max cards on the landing. */
+  limit?: number;
+}
+
+/** One community card on the landing: a published `/p/<slug>` model. */
+export interface CommunityCard {
+  slug: string;
+  title: string;
+  ownerName: string | null;
+  remixCount: number;
+  featured: boolean;
+  /** Same-origin copy of the render (the API's render URL is short-lived). */
+  posterUrl: string;
+  /** The model's public page in the app. */
+  url: string;
+}
+
+/** The subset of `GET /api/v1/gallery` items the landing uses. */
+interface CommunityApiItem {
+  slug?: unknown;
+  title?: unknown;
+  ownerName?: unknown;
+  renderUrl?: unknown;
+  remixCount?: unknown;
+  featured?: unknown;
+}
+
+const COMMUNITY_LIMIT = 8;
+const COMMUNITY_FETCH_TIMEOUT_MS = 15_000;
+const COMMUNITY_IMAGE_MAX_BYTES = 2_000_000;
+const SAFE_SLUG = /^[A-Za-z0-9_-]{1,64}$/;
+const IMAGE_EXT: Record<string, string> = {
+  'image/png': 'png',
+  'image/jpeg': 'jpg',
+  'image/webp': 'webp',
+};
 
 interface PublishedEntry extends Omit<GalleryEntry, 'video' | 'modelLocal' | 'codeLocal'> {
   videoUrl: string;
@@ -111,6 +159,78 @@ async function reviewFromLoadedSession(session: CaptureSession): Promise<Record<
     );
     return { ok: true, diagnostics: [] };
   }
+}
+
+async function fetchWithTimeout(fetchImpl: typeof fetch, url: string): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), COMMUNITY_FETCH_TIMEOUT_MS);
+  try {
+    return await fetchImpl(url, { signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/**
+ * Reads the newest published community models and copies each render next to
+ * the landing (`/gallery/_community/<slug>.<ext>`), because the API hands out
+ * short-lived signed render URLs. Models without a render are left out, so
+ * every card has an image. Never throws: an unreachable API, a bad payload or
+ * an empty gallery yields `[]`, and the landing falls back to the curated
+ * builds.
+ */
+export async function fetchCommunityGallery(
+  api: CommunityApiOptions,
+  publicDir: string,
+): Promise<CommunityCard[]> {
+  const fetchImpl = api.fetchImpl ?? fetch;
+  const limit = api.limit ?? COMMUNITY_LIMIT;
+  const base = api.baseUrl.replace(/\/+$/, '');
+  let items: CommunityApiItem[];
+  try {
+    const res = await fetchWithTimeout(fetchImpl, `${base}/api/v1/gallery?sort=new&limit=${limit}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const body = (await res.json()) as { items?: unknown };
+    if (!Array.isArray(body.items)) throw new Error('response has no items array');
+    items = body.items as CommunityApiItem[];
+  } catch (err) {
+    console.warn(`build-gallery: community gallery skipped — ${err instanceof Error ? err.message : String(err)}`);
+    return [];
+  }
+
+  const outDir = path.join(publicDir, 'gallery', '_community');
+  const cards: CommunityCard[] = [];
+  for (const item of items) {
+    if (cards.length >= limit) break;
+    const slug = typeof item.slug === 'string' ? item.slug : '';
+    const title = typeof item.title === 'string' ? item.title.trim() : '';
+    if (!SAFE_SLUG.test(slug) || !title || typeof item.renderUrl !== 'string') continue;
+    try {
+      const img = await fetchWithTimeout(fetchImpl, item.renderUrl);
+      const type = (img.headers.get('content-type') ?? '').split(';')[0].trim().toLowerCase();
+      const ext = IMAGE_EXT[type];
+      if (!img.ok || !ext) throw new Error(`render HTTP ${img.status} ${type || 'no content-type'}`);
+      const bytes = Buffer.from(await img.arrayBuffer());
+      if (bytes.length === 0 || bytes.length > COMMUNITY_IMAGE_MAX_BYTES) {
+        throw new Error(`render is ${bytes.length} bytes`);
+      }
+      mkdirSync(outDir, { recursive: true });
+      writeFileSync(path.join(outDir, `${slug}.${ext}`), bytes);
+      cards.push({
+        slug,
+        title,
+        ownerName: typeof item.ownerName === 'string' && item.ownerName.trim() ? item.ownerName.trim() : null,
+        remixCount: typeof item.remixCount === 'number' && item.remixCount > 0 ? Math.floor(item.remixCount) : 0,
+        featured: item.featured === true,
+        posterUrl: `/gallery/_community/${slug}.${ext}`,
+        url: `${STUDIO_ORIGIN}/p/${slug}`,
+      });
+    } catch (err) {
+      console.warn(`build-gallery: community ${slug} skipped — ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+  // Featured first; otherwise keep the API's newest-first order.
+  return cards.sort((a, b) => Number(b.featured) - Number(a.featured));
 }
 
 export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
@@ -295,8 +415,22 @@ export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
     });
   }
 
-  const out = { generatedAt: new Date().toISOString(), entries: published };
+  const community = opts.communityApi
+    ? await fetchCommunityGallery(opts.communityApi, opts.publicDir)
+    : [];
+
+  const out = { generatedAt: new Date().toISOString(), entries: published, community };
   writeFileSync(path.join(opts.publicDir, 'gallery.json'), JSON.stringify(out, null, 2));
+}
+
+/**
+ * `KERNELCAD_GALLERY_API` overrides the API origin; `off` builds without the
+ * community cards (offline builds).
+ */
+export function communityApiFromEnv(env: NodeJS.ProcessEnv): CommunityApiOptions | undefined {
+  const raw = env.KERNELCAD_GALLERY_API?.trim();
+  if (raw === 'off') return undefined;
+  return { baseUrl: raw || 'https://api.kernelcad.com' };
 }
 
 // CLI entrypoint
@@ -304,6 +438,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   buildGallery({
     entriesPath: path.join(REPO_ROOT, 'site/gallery/entries.json'),
     publicDir: path.join(REPO_ROOT, 'site/public'),
+    communityApi: communityApiFromEnv(process.env),
   }).then(
     () => console.log('✓ gallery.json + per-slug assets written'),
     (err) => { console.error('build-gallery failed:', err); process.exit(1); },
