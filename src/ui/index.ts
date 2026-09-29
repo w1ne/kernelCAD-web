@@ -11,6 +11,7 @@ export { Button, type ButtonProps, type ButtonSize, type ButtonVariant } from '.
 export { buttonClass, buttonLook } from './buttonStyles';
 export { contrastRatio, relativeLuminance, AA_TEXT, AA_LARGE_OR_UI } from './contrast';
 export { cx } from './cx';
+export { Dialog, type DialogProps } from './Dialog';
 export { EmptyState, type EmptyStateProps } from './EmptyState';
 export { ErrorState, type ErrorStateProps } from './ErrorState';
 export { IconButton, type IconButtonProps, type IconButtonSize } from './IconButton';
