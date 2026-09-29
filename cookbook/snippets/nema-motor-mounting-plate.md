@@ -1,6 +1,6 @@
 ---
 id: nema-motor-mounting-plate
-title: NEMA stepper mounting plate with catalog motor and fastened bolt pattern
+title: NEMA-17 style mounting plate with four-bolt pattern and fastened motor
 tags: [plate, hole, assembly, mate, connector, catalog, fasteners, motor, nema, parameter]
 keywords:
   - NEMA 17 mounting plate
@@ -11,10 +11,11 @@ keywords:
   - production motor plate not hand-drawn bolt circle
 when_to_use: >-
   Prompt asks for a NEMA mounting plate, stepper motor mount, or motor flange
-  plate with the standard four-bolt pattern. Prefer catalog `lib.standard.nema17()`
-  plus plate holes + explicit `bolt-holes-N` frames mated fastened. Note: `.holes()`
-  auto-connectors attach to the holes feature id — declare matching frames on the
-  part before `arm.mate(name, a, b, 'fastened')` (4-arg form).
+  plate with the standard four-bolt pattern (±15.5 mm, Ø3.2 clearance). Prefer
+  catalog `lib.standard.nema17()` when the parts catalog is available; this
+  snippet uses a BREP stand-in motor so evaluate stays offline/CI-green. Declare
+  matching `bolt-holes-N` frames on the plate (`.holes()` auto-connectors stay
+  on the holes feature id) and mate with the 4-arg form.
 ---
 
 ```typescript
@@ -28,7 +29,6 @@ const plateShape = box(80, 80, 5, true).holes('top', {
   depth: 'through',
 });
 const plate = arm.part('plate', plateShape, { material: 'aluminum' });
-// .holes() auto bolt-holes stay on the holes feature id — declare part frames.
 const offs = [[-15.5, -15.5], [15.5, -15.5], [-15.5, 15.5], [15.5, 15.5]] as const;
 offs.forEach(([u, v], i) => {
   plate.connector(`bolt-holes-${i + 1}`, {
@@ -36,8 +36,18 @@ offs.forEach(([u, v], i) => {
     origin: { kind: 'vec3', value: [u, v, 2.5] },
   });
 });
-const motor = await lib.standard.nema17();
-arm.part('motor', motor);
+
+// Offline stand-in for lib.standard.nema17() — swap to catalog motor when
+// assets/parts (or remote catalog) is available in the agent runtime.
+const motorBody = box(42, 42, 40, true)
+  .union(cylinder(22, 2.5).translate(0, 0, 20));
+const motor = arm.part('motor', motorBody.translate(0, 0, 25).color('actuator'));
+offs.forEach(([u, v], i) => {
+  motor.connector(`bolt-holes-${i + 1}`, {
+    type: 'frame',
+    origin: { kind: 'vec3', value: [u, v, 5] },
+  });
+});
 arm.mate('b1', 'motor.bolt-holes-1', 'plate.bolt-holes-1', 'fastened');
 arm.mate('b2', 'motor.bolt-holes-2', 'plate.bolt-holes-2', 'fastened');
 arm.mate('b3', 'motor.bolt-holes-3', 'plate.bolt-holes-3', 'fastened');
