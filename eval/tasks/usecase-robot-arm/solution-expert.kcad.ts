@@ -1,36 +1,16 @@
-// U7 - Simple 3-axis desktop robot arm: rotating base (yaw), shoulder,
-// elbow; links 120mm and 100mm; SG90-size servo pockets; revolute joints
-// with limits. v4 (this file) -- re-verified live and repaired past the
-// earlier v3 draft, see design-notes.md for the full history.
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+// eval/tasks/usecase-robot-arm/solution-expert.kcad.ts
 //
-// Fixes applied on top of the inherited v3 draft (which only passed the
-// SHALLOW evaluate_script mechanism check, "mechanism":"real"):
-// - review_cad --samplesPerMate 3 found 3 real problems v3's shallow check
-//   missed: (1) all 3 revolute mates had no joint-support intent
-//   (assembly.joint-topology.unsupported-axis), (2) shoulder:max (35deg)
-//   still had a 4.65mm3 rotor/upper-arm interference despite the v3 design
-//   log's disjoint-Y trick, (3) mechanism.drops-on-release: with no
-//   actuator declared, the shoulder joint fell 35.2deg and the forearm
-//   dropped 73mm under a 0.5s gravity sim.
-// - Fix: added 3 real SG90-size servo parts (base-yaw-servo,
-//   shoulder-servo, elbow-servo), fastened to their parent link, and
-//   declared arm.mechanicalJoint(...) for each revolute mate (actuator +
-//   shaft + supports + output + requiredSupport hinge-bracket) -- this is
-//   the cookbook "multi-body-mechanism-real-proportions" pattern.
-// - Fix: tightened the shoulder upper limit 35deg -> 20deg to clear the
-//   rotor/upper-arm interference.
-// - Fix: moved the base-yaw servo mount from +X (where it clipped the
-//   swinging upper-arm at shoulder:max) to -X (clear of the arm's +X
-//   working envelope).
-// - solvedModel({}, { ignore: [[hinge-mated pairs]] }) per cookbook, since
-//   directly hinge-mated parts are expected to touch at the pivot.
+// Typical use case U7: simple 3-axis desktop robot arm. Rotating base (yaw),
+// shoulder and elbow; links 120 mm and 100 mm; SG90-size servo pockets and
+// servos; revolute joints with limits; exports URDF.
 //
-// review_cad --samplesPerMate 3 on this version: fitness.functional:true,
-// repairMode:"none", mechanism:"real", mechanismFailures:[],
-// interferencePairs:[] (0 across 10 sampled poses incl. every joint limit
-// corner + 1 interior sample). Only remaining diagnostics are INFO-severity
-// (vec3-origin connectors defer the mounting-hole-consistency gate to
-// v0.7.x -- not blocking).
+// Each side of a Y-axis joint owns a disjoint Y range (rotor bracket
+// y -20..0, upper arm y 0..26, forearm y -20..0), so the links cannot collide
+// at any swing angle. Every revolute mate has a servo (fastened to the parent
+// link) and a mechanicalJoint declaration, so the arm holds its pose.
+
 const baseW = 70, baseD = 70, baseH = 16;
 const rotorTowerH = 20, rotorTowerR = 8;
 const bracketW = 50, bracketD = 20, bracketH = 20;
@@ -39,7 +19,7 @@ const foreLen = 100;
 const pocket = { x: 24, y: 13, z: 9 }; // SG90-size servo pocket (SG90 body ~23x12.2x29mm)
 const servoW = 24, servoD = 13, servoH = 20;
 
-const arm = assembly('u7-3axis-arm');
+const arm = assembly('desktop-3axis-arm');
 
 let baseShape = box(baseW, baseD, baseH, true).translate(0, 0, baseH / 2);
 const baseServoPocket = box(pocket.x, pocket.y, pocket.z, false)

@@ -16,7 +16,9 @@ import { unzipSync, strFromU8 } from 'fflate';
 import { getOC, makeBox, type Shape3D } from 'replicad';
 import { evaluateAndBuildScript } from '../src/agent/cli/commands/evaluate';
 import { evaluateScriptTool } from '../src/agent/mcp/tools/evaluateScript';
-import { runAndExport, type ExportFormat, type ExportOptions } from '../src/agent/script-runtime/export';
+import {
+  runAndExport, runAndExportParts, type ExportFormat, type ExportOptions,
+} from '../src/agent/script-runtime/export';
 import { initOcct, meshShapeForExport, OcctBackend } from '../src/kernel/backends/occt/occtBackend';
 import { verifyWatertight } from '../src/kernel/backends/occt/meshHeal';
 import { detectCylindricalHoles, type CylindricalHole } from '../src/kernel/backends/occt/holeDetection';
@@ -336,6 +338,11 @@ export function meshesClosed(meshes: readonly MeshStats[], minTriangles = 12): b
 
 // ------------------------------------------------------- standard checks --
 
+/** The script returned an assembly (parts), not a plain Shape (`body`). */
+function isAssembly(b: UsecaseBuild): boolean {
+  return !(b.parts.length === 1 && b.parts[0].name === 'body');
+}
+
 export interface StandardExportOpts {
   /** Solids the STEP must re-import as. */
   solids: number;
@@ -359,15 +366,22 @@ export async function standardExports(b: UsecaseBuild, opts: StandardExportOpts)
   out['STEP volume matches the model (0.5%)'] = re !== undefined && Math.abs(stepVolume - modelVolume) <= modelVolume * 0.005;
 
   const stl = await exportAs(b, 'stl');
-  out['STL is watertight'] = stl.ok && meshesClosed([stlStats(stl.bytes)]);
+  if (isAssembly(b)) {
+    // Touching parts share faces in one combined mesh, so each part's own
+    // STL (export --part) is what must be closed.
+    const each = await runAndExportParts({ code: b.code, fileName: b.scriptPath, scriptDir: dirname(b.scriptPath) });
+    out['STL exports; each part STL is watertight'] = stl.ok && each.parts.length === b.parts.length
+      && meshesClosed(each.parts.map((p) => stlStats(p.bytes)));
+  } else {
+    out['STL is watertight'] = stl.ok && meshesClosed([stlStats(stl.bytes)]);
+  }
 
   if (opts.threeMf) {
     const t = await exportAs(b, '3mf', opts.threeMf === true ? undefined : opts.threeMf);
     const objs = t.ok ? threeMfObjects(t.bytes) : [];
     const names = b.parts.map((p) => p.name);
-    const single = names.length === 1 && names[0] === 'body'; // plain Shape: the writer names it
     out[`3MF has one object per part (${names.join(', ')})`] =
-      objs.length === names.length && (single || names.every((n) => objs.some((o) => o.name === n)));
+      objs.length === names.length && (!isAssembly(b) || names.every((n) => objs.some((o) => o.name === n)));
     out['3MF meshes are closed'] = meshesClosed(objs);
   }
   return out;

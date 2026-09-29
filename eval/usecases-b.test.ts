@@ -27,4 +27,5 @@ defineUsecaseSuite([
       'evaluate_script accepts the parts (mechanism gate on)': ORPHAN_GATE,
     },
   },
+  { id: 'usecase-robot-arm' },
 ]);
