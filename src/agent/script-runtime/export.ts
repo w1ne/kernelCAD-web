@@ -42,6 +42,7 @@ import {
 } from './exportPhases';
 import { exportPdfDrawing, exportSvgDrawing } from './exportDrawing';
 import { withOcctPoisonRecovery } from '../../kernel/backends/occt/occtBackend';
+import { fileSafePartName } from './safeOutputPath';
 export { stlNotWatertightDiagnostic } from './exportDiagnostics';
 
 export type { GcodeStats } from '../../kernel/export/gcode/gcodeHeaderParser';
@@ -55,7 +56,18 @@ export type ExportFormat =
 export type ExportOptions =
   | { format: 'stl'; verify?: boolean }
   | { format: 'step'; unit?: 'mm' | 'cm' | 'in' }
-  | { format: 'dxf'; layers?: DxfLayerSpec[]; unit?: 'mm' | 'cm' | 'in'; tolerance?: number }
+  | {
+      format: 'dxf';
+      layers?: DxfLayerSpec[];
+      unit?: 'mm' | 'cm' | 'in';
+      tolerance?: number;
+      /** Cross-section of any part at this plane (world coordinates), instead
+       *  of a flat part's outline. */
+      section?: { axis: 'x' | 'y' | 'z'; at: number };
+      /** Multi-part models: 'per-part' (default) also writes parts/<part>.dxf
+       *  next to the combined sheet; 'sheet' writes the combined sheet only. */
+      layout?: 'per-part' | 'sheet';
+    }
   | {
       format: '3mf';
       printUnit?: 'mm' | 'cm' | 'in';
@@ -199,7 +211,8 @@ export interface ExportResult {
   bytes: Uint8Array;
   featureCount: number;
   diagnostics: CompilerDiagnostic[];
-  /** Per-link mesh files referenced by the primary output (URDF / SDF). */
+  /** Companion files written next to the primary output: per-link meshes
+   *  (URDF / SDF) or per-part DXF files (multi-part DXF). */
   meshes?: CompanionMeshFile[];
   /** Numeric authored connector sidecar, present only when requested for a STEP Scene export. */
   connectorManifest?: ConnectorManifest;
@@ -326,9 +339,7 @@ export interface ExportPartsResult {
   diagnostics: CompilerDiagnostic[];
 }
 
-export function fileSafePartName(name: string): string {
-  return name.replace(/[^A-Za-z0-9._-]/g, '-');
-}
+export { fileSafePartName };
 
 /** Resolved world-frame scene + run bookkeeping, shared by the per-part
  *  exporter and the part-stats lister. `parts` is undefined when resolution

@@ -663,10 +663,10 @@
       }
     },
     "export.dxf.non-planar": {
-      "template": "DXF export requires planar input. Call list_faces to pick a planar face, or return a Region via Shape.flattenPattern().",
+      "template": "DXF needs a flat part (plate, panel, extruded profile). For any other part use `options.section: { axis, at }` for a cross-section, `flatten_pattern` for sheet metal, or STEP/STL for 3D.",
       "nextAction": {
-        "kind": "call-introspection-tool",
-        "tool": "list_faces"
+        "kind": "fix-arg",
+        "field": "options.section"
       }
     },
     "export.3mf.not-watertight": {
@@ -2723,8 +2723,8 @@
       "field": "options.format"
     },
     "export.dxf.non-planar": {
-      "kind": "call-introspection-tool",
-      "tool": "list_faces"
+      "kind": "fix-arg",
+      "field": "options.section"
     },
     "export.3mf.not-watertight": {
       "kind": "rewrite-feature",
