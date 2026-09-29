@@ -46,6 +46,7 @@ type CandidateGenerator = (ctx: CandidateContext) => RepairCandidate[];
 const GENERATORS: Partial<Record<DiagnosticCode, CandidateGenerator>> = {
   'feature.edge-feature.short-edges-skipped': shrinkEdgeFeatureValue,
   'feature.subtractive-noop': restoreSubtractiveContact,
+  'feature.hole.cut-missing': recentreCutMissingHole,
   'feature.intersection-empty': restoreIntersectionOverlap,
   'feature.selection.no-match': retargetEdgeSelector,
   'feature.label.unknown-name': substituteKnownLabel,
@@ -139,6 +140,13 @@ function restoreSubtractiveContact(ctx: CandidateContext): RepairCandidate[] {
   }
   if (ctx.record.kind === 'hole') return recentreHoleOnFace(ctx);
   return [];
+}
+
+/** feature.hole.cut-missing: a single `hole()` whose centre is off the entry
+ *  face gets the same clamp / centre candidates as a hole that removed
+ *  nothing. `holes()` batches have one (u, v) per position and no candidate. */
+function recentreCutMissingHole(ctx: CandidateContext): RepairCandidate[] {
+  return ctx.record.kind === 'hole' ? recentreHoleOnFace(ctx) : [];
 }
 
 /** A hole authored outside its entry face's extent drills through air. Pull the

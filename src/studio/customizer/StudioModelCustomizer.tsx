@@ -19,7 +19,7 @@
 import { useCallback, useMemo, useRef, useState, type JSX } from 'react';
 import { useCode } from '../context/CodeContext';
 import { useGeometry } from '../context/GeometryContext';
-import { exportViaServer } from '../exportViaServer';
+import { exportViaServer, type ExportViaServerOptions } from '../exportViaServer';
 import type { SerializedParamEntry } from '../../shared/runtime/paramTable';
 import {
   bakeParamValues,
@@ -92,10 +92,11 @@ export function StudioModelCustomizer(props: StudioModelCustomizerProps): JSX.El
 
   const execute = useParamExecutor(params, updateParam);
   // Only changed values are baked: an all-default export is the saved source.
-  const exportModel = useCallback(async (format: CustomizerFormat, values: CustomizerValues) => {
-    const { blob } = await exportViaServer(format, bakeParamValues(code, changedValues(params, values)));
-    return blob;
-  }, [code, params]);
+  const exportModel = useCallback((
+    format: CustomizerFormat,
+    values: CustomizerValues,
+    options?: ExportViaServerOptions,
+  ) => exportViaServer(format, bakeParamValues(code, changedValues(params, values)), options), [code, params]);
 
   if (params.length === 0) return null;
   return (

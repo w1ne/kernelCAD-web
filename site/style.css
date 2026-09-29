@@ -415,7 +415,7 @@ body {
 @media (max-width: 768px) {
   .page-wrap { padding: 20px 20px; }
   .nav { padding-bottom: 60px; flex-wrap: wrap; gap: 12px; }
-  .nav-links { font-size: 11px; gap: 14px; }
+  .nav-links { font-size: 11px; gap: 8px 14px; flex-wrap: wrap; }
   .hero { grid-template-columns: 1fr; gap: 32px; padding-bottom: 40px; }
   .headline { font-size: clamp(44px, 15vw, 56px); line-height: 0.98; max-width: 100%; overflow-wrap: anywhere; }
   .subhead { font-size: 17px; }

@@ -94,6 +94,7 @@ can tell a fix that respects the design from one that merely silences a gate.
 | `feature.edge-feature.short-edges-skipped` | radius ladder under half the shortest adjacent edge |
 | `feature.subtractive-noop` (boolean) | translate the cutter onto the base bbox centre |
 | `feature.subtractive-noop` (hole) | clamp `u` / `v` onto the entry face, one bore radius clear of its edge |
+| `feature.hole.cut-missing` (single `hole`) | same clamp: `u` / `v` onto the entry face, one bore radius clear of its edge. `holes` batches get no candidate. |
 | `feature.intersection-empty` | translate one operand into overlap |
 | `feature.selection.no-match` | retarget `atX` / `atY` / `atZ` to the nearest real edge coordinate |
 | `feature.label.unknown-name` | substitute the closest declared label (`faceLabels` or `path().label(...)`) |

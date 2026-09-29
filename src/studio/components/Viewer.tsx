@@ -13,6 +13,8 @@ import { useShellStore } from "../store/useShellStore";
 import { ViewerScene } from "./viewer/ViewerScene";
 import { DisplayReadySensor } from "./viewer/DisplayReadySensor";
 import { ViewGizmo } from "./viewer/overlays/ViewGizmo";
+import { CodeLinkLabel } from "./viewer/overlays/CodeLinkLabel";
+import { selectionCodeStore } from "../selectionCode/selectionCodeStore";
 
 // Extracted hooks
 import { useViewerGridPlacement } from "../hooks/viewer/useViewerGridPlacement";
@@ -164,6 +166,7 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                     setSelectedSketchName(null);
                     setSelectedItemId(null);
                     setContextMenu({ visible: false, position: null, type: 'FACE' });
+                    selectionCodeStore.clearLink();
                 }}
             >
                 <ViewerScene
@@ -199,6 +202,7 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                     <DisplayReadySensor geometries={geometries} onDisplayReady={onDisplayReady} />
                 ) : null}
             </Canvas>
+            <CodeLinkLabel />
             <ViewGizmo
                 onNavigate={(target) => setNavigationRequest((prev) => ({
                     target,

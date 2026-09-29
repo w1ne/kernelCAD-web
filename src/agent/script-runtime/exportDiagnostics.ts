@@ -2,7 +2,11 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { type OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { type WatertightReport } from '../../kernel/backends/occt/meshHeal';
-import type { ThreeMfBedWarning } from '../../kernel/backends/occt/export3mf';
+import {
+  ThreeMfMeshDefectError,
+  type ThreeMfBedWarning,
+  type ThreeMfMeshWarning,
+} from '../../kernel/backends/occt/export3mf';
 import { sliceStlToGcode, withTempStl } from '../../kernel/export/gcode/slicerCli';
 import { parseGcodeHeader } from '../../kernel/export/gcode/gcodeHeaderParser';
 import {
@@ -140,6 +144,9 @@ export function notWatertightDiagnostic(
 ): ExportResult | undefined {
   const msg = e instanceof Error ? e.message : String(e);
   if (!/watertight/i.test(msg)) return undefined;
+  const message = e instanceof ThreeMfMeshDefectError
+    ? `3MF mesh of part '${e.part}' is torn: ${e.openEdges} open and ${e.nonManifoldEdges} non-manifold edge(s) remain after repair (${e.triangles} triangles); a 3MF can ship at most ${e.budget}.`
+    : '3MF export requires a watertight mesh; the exported triangulation has non-manifold edges.';
   return {
     bytes: new Uint8Array(),
     featureCount,
@@ -148,11 +155,35 @@ export function notWatertightDiagnostic(
       code: 'export.3mf.not-watertight',
       featureId: targetId,
       severity: 'error',
-      message: '3MF export requires a watertight mesh; the exported triangulation has non-manifold edges.',
-      hint: 'The mesh has open or non-manifold edges. Inspect the source geometry (typically a self-intersecting cone or non-closed shell) and re-author the offending surface via nurbsSurfaceLowerer, raise OCCT mesh deflection, or re-mesh via Manifold; see the K1 mesher gap.',
+      message,
+      hint: THREE_MF_TORN_HINT,
       nextAction: NEXT_ACTIONS['export.3mf.not-watertight'],
     }],
   };
+}
+
+const THREE_MF_TORN_HINT =
+  'Export STEP for the exact geometry. To keep 3MF, fix the feature that leaves the gap (often a fillet or boolean at a tangent face), '
+  + 'or mesh finer (a lower mesh deflection closes seam cracks between curved faces).';
+
+/**
+ * Translate the 3MF writer's mesh warnings (a few open edges left after the
+ * heal pass, within the defect budget) into `export.3mf.not-watertight`
+ * warnings. The file is written; slicers close gaps this small.
+ */
+export function threeMfMeshDiagnostics(
+  warnings: readonly ThreeMfMeshWarning[],
+  targetId: string | undefined,
+): CompilerDiagnostic[] {
+  return warnings.map((w) => ({
+    target: 'export-occt',
+    code: 'export.3mf.not-watertight',
+    featureId: targetId,
+    severity: 'warn',
+    message: `3MF written with a small mesh gap: part '${w.part}' has ${w.openEdges} open and ${w.nonManifoldEdges} non-manifold edge(s) after repair (limit ${w.budget}). Slicers close gaps this small.`,
+    hint: THREE_MF_TORN_HINT,
+    nextAction: NEXT_ACTIONS['export.3mf.not-watertight'],
+  }));
 }
 
 /**

@@ -315,6 +315,83 @@ function anyDegenerateFlapOnCrackEdges(mesh: EditableMesh, tol: number): boolean
   return anyFlap;
 }
 
+/**
+ * Full export heal on an editable mesh: drop welding-artifact triangles,
+ * stitch T-junction cracks, drop what the stitch left degenerate. Mutates and
+ * returns `mesh`. No-op on a conformal mesh.
+ */
+export function healExportMesh(mesh: EditableMesh, tol = 0.05): EditableMesh {
+  mesh.triangles = dropDegenerateTriangles(mesh.triangles);
+  stitchCracks(mesh, tol);
+  mesh.triangles = dropDegenerateTriangles(mesh.triangles);
+  return mesh;
+}
+
+/**
+ * Defect budget for shipping a not-watertight export mesh with a warning:
+ * at most this many bad edges, or this fraction of all edges, whichever is
+ * larger. Slicers close a handful of cracks silently; a mesh past this budget
+ * has missing surface, not a stitching seam. The kernelCAD server's STL check
+ * uses the same budget; this is its source of truth.
+ */
+export const MESH_DEFECT_MIN_EDGES = 24;
+export const MESH_DEFECT_EDGE_FRACTION = 0.001;
+
+/** Bad-edge budget for a mesh with `edgeCount` undirected edges. */
+export function meshDefectBudget(edgeCount: number): number {
+  return Math.max(MESH_DEFECT_MIN_EDGES, Math.floor(edgeCount * MESH_DEFECT_EDGE_FRACTION));
+}
+
+export interface MeshDefectReport {
+  triangles: number;
+  /** Undirected edges in the mesh. */
+  edges: number;
+  /** Edges used by exactly one triangle (cracks / holes). */
+  openEdges: number;
+  /** Edges used by three or more triangles. */
+  nonManifoldEdges: number;
+  /** `meshDefectBudget(edges)`. */
+  budget: number;
+  /** No open or non-manifold edge. */
+  watertight: boolean;
+  /** Bad edges within the budget: ship with a warning. */
+  acceptable: boolean;
+}
+
+/** Count open / non-manifold edges and judge them against the defect budget. */
+export function measureMeshDefects(mesh: MeshData): MeshDefectReport {
+  const use = new Map<string, number>();
+  const tris = mesh.triangles;
+  const triangles = Math.floor(tris.length / 3);
+  for (let t = 0; t < triangles; t++) {
+    const a = tris[t * 3];
+    const b = tris[t * 3 + 1];
+    const c = tris[t * 3 + 2];
+    for (const [u, v] of [[a, b], [b, c], [c, a]] as [number, number][]) {
+      if (u === v) continue;
+      const key = u < v ? `${u}|${v}` : `${v}|${u}`;
+      use.set(key, (use.get(key) ?? 0) + 1);
+    }
+  }
+  let openEdges = 0;
+  let nonManifoldEdges = 0;
+  for (const n of use.values()) {
+    if (n === 1) openEdges++;
+    else if (n > 2) nonManifoldEdges++;
+  }
+  const bad = openEdges + nonManifoldEdges;
+  const budget = meshDefectBudget(use.size);
+  return {
+    triangles,
+    edges: use.size,
+    openEdges,
+    nonManifoldEdges,
+    budget,
+    watertight: bad === 0,
+    acceptable: triangles > 0 && bad <= budget,
+  };
+}
+
 /** Remove triangles with a repeated vertex index (welding artifacts). */
 export function dropDegenerateTriangles(triangles: number[]): number[] {
   const clean: number[] = [];

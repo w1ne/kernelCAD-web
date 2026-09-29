@@ -656,6 +656,34 @@ function tryGetVolume(shape: unknown): number | undefined {
 }
 
 /**
+ * `meshShape` output. `edgeHashes` is node-side only: the OCCT hash of each
+ * edge in `edgeRanges` order, used by feature meshing to attribute edges to
+ * features. It is never serialized to the viewer.
+ */
+export type MeshedShape = GeometryResult & { edgeHashes?: number[] };
+
+/** Split replicad's `meshEdges` groups into the wire `edgeRanges` pairs and
+ *  the matching per-edge hashes. Returns undefined when any group is
+ *  malformed, so a caller never gets ranges that disagree with `lines`. */
+function edgeGroupsToRanges(
+  groups: unknown,
+  vertexCount: number,
+): { edgeRanges: number[]; edgeHashes: number[] } | undefined {
+  if (!Array.isArray(groups) || groups.length === 0) return undefined;
+  const edgeRanges: number[] = [];
+  const edgeHashes: number[] = [];
+  for (const g of groups) {
+    if (!isRecord(g)) return undefined;
+    const { start, count, edgeId } = g as { start?: unknown; count?: unknown; edgeId?: unknown };
+    if (typeof start !== 'number' || typeof count !== 'number' || typeof edgeId !== 'number') return undefined;
+    if (start < 0 || count < 0 || start + count > vertexCount) return undefined;
+    edgeRanges.push(start, count);
+    edgeHashes.push(edgeId);
+  }
+  return { edgeRanges, edgeHashes };
+}
+
+/**
  * Mesh a single replicad/OCCT shape into a GeometryResult.
  *
  * Returns null if the shape has no valid face geometries (e.g. deleted,
@@ -668,7 +696,7 @@ function tryGetVolume(shape: unknown): number | undefined {
 export function meshShape(
   shape: unknown,
   options: MeshOptions = FINE_MESH_OPTIONS,
-): GeometryResult | null {
+): MeshedShape | null {
   if (!isRecord(shape)) return null;
   if (shape.isDeleted) return null;
 
@@ -697,6 +725,7 @@ export function meshShape(
   const volume = tryGetVolume(shape);
 
   let edges: Float32Array | undefined;
+  let edgeGroups: ReturnType<typeof edgeGroupsToRanges>;
   try {
     const meshEdgesFn = getFn(shape, 'meshEdges');
     if (meshEdgesFn) {
@@ -706,12 +735,22 @@ export function meshShape(
       }) as Record<string, unknown>;
       if (isRecord(edgeRes) && Array.isArray(edgeRes.lines)) {
         const lines = edgeRes.lines as number[];
-        if (lines.length > 0) edges = new Float32Array(lines);
+        if (lines.length > 0) {
+          edges = new Float32Array(lines);
+          // Per-edge vertex ranges let the viewer pick and highlight ONE
+          // edge instead of the whole edge set.
+          edgeGroups = edgeGroupsToRanges(edgeRes.edgeGroups, lines.length / 3);
+        }
       }
     }
   } catch {
     // ignore edge-mesh failures
   }
 
-  return { faces: faceGeometries, volume, edges };
+  return {
+    faces: faceGeometries,
+    volume,
+    edges,
+    ...(edgeGroups !== undefined ? { edgeRanges: edgeGroups.edgeRanges, edgeHashes: edgeGroups.edgeHashes } : {}),
+  };
 }

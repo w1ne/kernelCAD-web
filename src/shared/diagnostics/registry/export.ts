@@ -42,7 +42,7 @@ export const EXPORT_CODES = {
     nextAction: { kind: 'rewrite-feature', guidance: 'remesh via Manifold, raise mesh deflection, or re-author the offending surface via nurbsSurfaceLowerer' },
     defaultSeverity: 'error',
     group: 'export',
-    description: 'A 3MF export was attempted on a mesh that failed the half-edge watertight check.',
+    description: 'A 3MF part mesh has open or non-manifold edges after the heal pass. Within the shared defect budget the file is written with a warning; past it the export fails and names the counts.',
   },
   'export.3mf.plate-overflow': {
     hintTemplate:

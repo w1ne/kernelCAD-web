@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { DIAGNOSTIC_CODES, HINT_TEMPLATES } from '../../../src/shared/diagnostics/registry';
 
 describe('diagnostic catalogue invariants', () => {
-  it('emits exactly 320 codes', () => {
+  it('emits exactly 321 codes', () => {
     // 204 from develop (NURBS analytics, Query DSL, K1-K9 kinematic, assembly/mechanism gates)
     // + 6 parts catalog codes (parts.* — Slice C bundled parts catalog)
     // + 1 feature.emboss-text.boolean-noop (#393 silent no-op guard)
@@ -112,8 +112,9 @@ describe('diagnostic catalogue invariants', () => {
     //   reference.likeness.still-failed = 318.
     // + 2 3MF bed fit (arrange 'plate' / 'assembled'): export.3mf.plate-overflow,
     //   export.3mf.exceeds-bed = 320.
-    expect(DIAGNOSTIC_CODES).toHaveLength(320);
-    expect(new Set(DIAGNOSTIC_CODES).size).toBe(320);
+    // + 1 feature.hole.cut-missing (fail-closed per-bore hole check) = 321.
+    expect(DIAGNOSTIC_CODES).toHaveLength(321);
+    expect(new Set(DIAGNOSTIC_CODES).size).toBe(321);
   });
 
   it('every code has a non-empty hint template', () => {

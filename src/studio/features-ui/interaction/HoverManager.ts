@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import * as THREE from 'three';
+import { edgeIndexAtVertex } from '../../selectionCode/geometryLineage';
 
 export type InteractionType = 'VERTEX' | 'EDGE' | 'FACE';
 
@@ -53,6 +54,10 @@ export class HoverManager {
             if (mappedId !== undefined) {
                 id = mappedId;
             }
+        }
+        // BREP edge set of a shape: map the hit segment to its edge index.
+        if (userData.edgeRanges && winner.index != null) {
+            id = edgeIndexAtVertex(userData.edgeRanges, winner.index);
         }
 
         return {
