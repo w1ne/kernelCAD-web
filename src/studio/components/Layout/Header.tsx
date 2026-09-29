@@ -1,30 +1,33 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { type ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
+import { ChevronDown, Loader2 } from 'lucide-react';
 import { useWorkbench } from '../../context/WorkbenchContext';
-import { Loader2, FolderOpen } from 'lucide-react';
 import { useStudioChrome } from '../../context/StudioChromeContext';
-import { useUI } from '../../context/UIContext';
 import { COMPACT_HEADER_QUERY, useIsNarrow } from '../../hooks/useIsNarrow';
-import { downloadBlob, exportViaServer } from '../../exportViaServer';
+import { useRegisterCommands, type Command } from '../../hooks/useCommandRegistry';
+import { downloadBlob, exportViaServer, type StudioExportFormat } from '../../exportViaServer';
+import { hasPlanarSource } from '../../exportFormats';
 import { useExportTask, type ExportTask } from '../../hooks/useExportTask';
+import { useShellStore, shellStore } from '../../store/useShellStore';
+import { usePublishAction } from '../../usePublishAction';
 import { ExportStatus } from '../Shared/ExportStatus';
 import { OverflowMenu } from './OverflowMenu';
 import UserMenu from './UserMenu';
-import { FeedbackButton } from './FeedbackButton';
+import { FeedbackHost } from './FeedbackButton';
+import { openFeedback } from './feedbackRequests';
 import { useHeaderHistory } from './useHeaderHistory';
 import {
-    ViewModeCluster, BackgroundCluster, GridButton, ExportButtons, UndoRedoButtons, HistoryControl,
+    ExportList, ExportSplitButton, HistoryControl, InspectorToggle, SaveState, ShareButton, UndoRedoButtons,
+    useLastExportFormat, type ExportHandler,
 } from './HeaderClusters';
 
-/** Labelled row inside the narrow-viewport overflow menu. Keeps the bar's
- *  segmented controls intact but gives each cluster a name, since the icons
- *  alone carry no context once they leave the bar. */
+/** Labelled row inside the narrow-viewport overflow menu. */
 function MenuRow({ label, children }: { label: string; children: ReactNode }) {
     return (
-        <div className="flex items-center justify-between gap-4 px-1 py-1.5">
-            <span className="text-[11px] uppercase tracking-wide text-gray-500 whitespace-nowrap">{label}</span>
-            <div className="flex items-center gap-1 shrink-0">{children}</div>
+        <div className="flex flex-col gap-1.5 px-1 py-1.5">
+            <span className="text-2xs font-medium uppercase tracking-wider text-fg-3">{label}</span>
+            <div className="flex flex-wrap items-center gap-1">{children}</div>
         </div>
     );
 }
@@ -36,165 +39,199 @@ function MenuRow({ label, children }: { label: string; children: ReactNode }) {
 // server's hint) and warnings show in a floating ExportStatus, not alert().
 function exportModelViaServer(
     task: ExportTask,
-    type: 'step' | 'stl',
+    format: StudioExportFormat,
+    label: string,
     code: string,
     projectName: string | undefined,
 ): void {
-    const fallback = `${(projectName || 'model').replace(/[^a-z0-9]/gi, '_')}.${type}`;
+    const fallback = `${(projectName || 'model').replace(/[^a-z0-9]/gi, '_')}.${format}`;
     void task.start(
-        type.toUpperCase(),
-        (options) => exportViaServer(type, code, options),
+        label,
+        (options) => exportViaServer(format, code, options),
         (blob, downloadName) => downloadBlob(blob, downloadName || fallback),
     );
 }
 
-interface HeaderInstruments {
-    viewModeCluster: ReactNode;
-    backgroundCluster: ReactNode;
-    gridButton: ReactNode;
-    undoRedoButtons: ReactNode;
-    historyControl: ReactNode;
-}
-
-function NarrowInstrumentMenu({ instruments, isComputing, onExport }: {
-    instruments: HeaderInstruments;
-    isComputing: boolean;
-    onExport: (type: 'step' | 'stl') => void;
-}) {
+/** The kernelCAD "K", the same mark as the public pages. */
+function KernelcadMark() {
     return (
-        <OverflowMenu label="View and file controls" testId="header-overflow">
-            <MenuRow label="Display">{instruments.viewModeCluster}</MenuRow>
-            <MenuRow label="Background">{instruments.backgroundCluster}</MenuRow>
-            <MenuRow label="Ground grid">{instruments.gridButton}</MenuRow>
-            <MenuRow label="Edit">
-                {instruments.undoRedoButtons}
-                {instruments.historyControl}
-            </MenuRow>
-            <MenuRow label="Export">
-                <ExportButtons withLabels isComputing={isComputing} onExport={onExport} />
-            </MenuRow>
-        </OverflowMenu>
+        <svg className="size-4 shrink-0" viewBox="0 0 84 84" fill="none" aria-hidden="true">
+            <path
+                d="M 14,12 L 26,12 L 26,34 Q 26,36 27.5,34.5 L 46,12 L 60,12 L 36,40 Q 35,42 36,44 L 60,72 L 46,72 L 27.5,49.5 Q 26,48 26,50 L 26,72 L 14,72 Z"
+                fill="currentColor"
+            />
+        </svg>
     );
 }
 
-function WideInstrumentCluster({ instruments, isComputing, onExport }: {
-    instruments: HeaderInstruments;
-    isComputing: boolean;
-    onExport: (type: 'step' | 'stl') => void;
-}) {
-    return (
-        <>
-            {instruments.viewModeCluster}
-            {instruments.backgroundCluster}
-            {instruments.gridButton}
-            <div className="h-6 w-px bg-[#333] mx-2" />
-            {instruments.undoRedoButtons}
-            {instruments.historyControl}
-            <div className="h-6 w-px bg-[#333] mx-2" />
-            <ExportButtons withLabels={false} isComputing={isComputing} onExport={onExport} />
-        </>
-    );
+/** Header entries for the palette: Share and Feedback live here. */
+function useHeaderCommands(onPublish: () => void): void {
+    const commands = useMemo<Command[]>(() => [
+        {
+            id: 'file.share',
+            label: 'Publish and share a link',
+            description: 'Copies a public link to this model',
+            section: 'File',
+            keywords: ['publish', 'link', 'url', 'share'],
+            action: onPublish,
+        },
+        {
+            id: 'help.feedback',
+            label: 'Send feedback',
+            section: 'Help',
+            keywords: ['bug', 'idea', 'report', 'contact'],
+            action: openFeedback,
+        },
+    ], [onPublish]);
+    useRegisterCommands(commands);
 }
 
+/**
+ * The Studio's one header row: project, save state, undo/redo and history
+ * on the left; the route's chrome (the ⌘K search on Studio routes); Share,
+ * Export, the inspector toggle and the account on the right. Feedback lives
+ * in the account menu (and the palette). Below `lg` the file controls fold
+ * into one overflow menu.
+ */
 export function Header() {
-    const { headerLeft, headerRight } = useStudioChrome();
-    const {
-        viewMode3D, setViewMode3D,
-        isComputing, code, commandManager, setActiveDialog
-    } = useWorkbench();
-    const { viewportBackground, setViewportBackground, gridVisible, setGridVisible } = useUI();
+    const { headerLeft, headerRight, viewerMode } = useStudioChrome();
+    const { isComputing, code, commandManager, setActiveDialog, geometries } = useWorkbench();
+    const { inspectorOpen } = useShellStore();
 
     const {
         activeProject, revisions, historyOpen, setHistoryOpen, historyRef,
         historyAvailable, formatRevisionTime, handleRestore,
     } = useHeaderHistory();
 
-    // Below `lg` the bar cannot hold the instrument cluster next to the route's
-    // own chrome; the instruments move into a single overflow menu instead.
     const narrow = useIsNarrow(COMPACT_HEADER_QUERY);
+    const publish = usePublishAction(code, activeProject?.name);
+    const onPublish = publish.handlePublish;
+    const stablePublish = useMemo(() => () => void onPublish(), [onPublish]);
+    useHeaderCommands(stablePublish);
 
     const exportTask = useExportTask();
-    const handleExport = (type: 'step' | 'stl') => exportModelViaServer(exportTask, type, code, activeProject?.name);
-
-    const instruments: HeaderInstruments = {
-        viewModeCluster: <ViewModeCluster viewMode3D={viewMode3D} setViewMode3D={setViewMode3D} />,
-        backgroundCluster: (
-            <BackgroundCluster viewportBackground={viewportBackground} setViewportBackground={setViewportBackground} />
-        ),
-        gridButton: <GridButton gridVisible={gridVisible} setGridVisible={setGridVisible} />,
-        undoRedoButtons: <UndoRedoButtons commandManager={commandManager} />,
-        historyControl: (
-            <HistoryControl
-                historyAvailable={historyAvailable}
-                historyRef={historyRef}
-                historyOpen={historyOpen}
-                setHistoryOpen={setHistoryOpen}
-                revisions={revisions}
-                formatRevisionTime={formatRevisionTime}
-                handleRestore={handleRestore}
-            />
-        ),
+    const [lastFormat, rememberFormat] = useLastExportFormat();
+    const handleExport: ExportHandler = (format, label) => {
+        rememberFormat(format);
+        exportModelViaServer(exportTask, format, label, code, activeProject?.name);
     };
+    const hasPlanarGeometry = hasPlanarSource(geometries ?? []);
+    const modified = !viewerMode && activeProject != null && code !== activeProject.code;
 
     // A route that injects its own header chrome (e.g. /p/:slug shows the
     // project title) already names the document, so on a phone the Studio's
     // own project-name label is dropped rather than fighting for the same row.
     const hideProjectName = narrow && !!headerLeft;
 
+    const undoRedo = <UndoRedoButtons commandManager={commandManager} />;
+    const history = (
+        <HistoryControl
+            historyAvailable={historyAvailable}
+            historyRef={historyRef}
+            historyOpen={historyOpen}
+            setHistoryOpen={setHistoryOpen}
+            revisions={revisions}
+            formatRevisionTime={formatRevisionTime}
+            handleRestore={handleRestore}
+        />
+    );
+    const inspectorToggle = (
+        <InspectorToggle inspectorOpen={inspectorOpen} onToggle={() => shellStore.toggleInspectorOpen()} />
+    );
+
     return (
-        <div className="h-10 bg-[#111] border-b border-[#333] flex items-center px-2 md:px-4 gap-2 select-none shrink-0 bar-scroll-x" data-testid="header">
-            {/* `overflow-hidden` is load-bearing: without it this group can be
-                squeezed below its content width and its `shrink-0` children
-                (title chip, live badge) spill out over the right-hand cluster,
-                which is what made the phone header look like two rows of
-                controls stacked on top of each other. */}
-            <div className="flex items-center gap-3 min-w-0 overflow-hidden">
+        <header
+            data-theme="dark"
+            className="relative z-30 flex h-11 shrink-0 select-none items-center gap-1.5 border-b border-border bg-surface-1 px-2 text-fg md:gap-2 md:px-3"
+            data-testid="header"
+        >
+            <div className="flex min-w-0 items-center gap-1.5 md:gap-2">
                 <button
+                    type="button"
                     onClick={() => setActiveDialog('projectManager')}
                     aria-label="Open project manager"
-                    className="flex items-center gap-2 group hover:bg-[#222] px-2 py-1 rounded transition-colors min-w-0 shrink-0"
+                    title="Switch or manage projects"
+                    className="focus-ring flex h-control-sm min-w-0 shrink items-center gap-2 rounded-control px-1.5 text-fg transition-colors duration-80 hover:bg-surface-2"
                 >
-                    <div className="w-2 h-2 rounded-full bg-blue-500 group-hover:animate-pulse" />
-                    <span className="text-sm font-medium text-gray-300 flex items-center gap-2 min-w-0">
-                        {!hideProjectName && (
-                            <span className="truncate max-w-[180px]">{activeProject?.name || 'Untitled Project'}</span>
-                        )}
-                        <FolderOpen size={12} className="text-gray-500 group-hover:text-blue-400" />
-                    </span>
+                    <KernelcadMark />
+                    {!hideProjectName && (
+                        <span className="max-w-[140px] truncate text-ui font-medium sm:max-w-[220px]">
+                            {activeProject?.name || 'Untitled Project'}
+                        </span>
+                    )}
+                    <ChevronDown className="size-3.5 shrink-0 text-fg-3" strokeWidth={1.75} aria-hidden="true" />
                 </button>
+                {activeProject && !viewerMode && !narrow && <SaveState modified={modified} />}
                 {headerLeft && (
                     <>
-                        <div className="h-6 w-px bg-[#333] shrink-0" />
-                        <div className="flex items-center gap-2 min-w-0">{headerLeft}</div>
+                        <div className="h-5 w-px shrink-0 bg-border" />
+                        <div className="flex min-w-0 items-center gap-2 overflow-hidden">{headerLeft}</div>
                     </>
+                )}
+                {!narrow && (
+                    <div className="ml-1 flex shrink-0 items-center gap-0.5">
+                        {undoRedo}
+                        {history}
+                    </div>
                 )}
             </div>
 
-            <div className="flex gap-2 items-center ml-auto shrink-0">
-                {headerRight && (
+            <div className="ml-auto flex min-w-0 items-center gap-1.5 md:gap-2">
+                {headerRight && <div className="flex min-w-0 items-center gap-2">{headerRight}</div>}
+                {publish.publishedLink && !narrow && (
+                    <a
+                        href={publish.publishedLink}
+                        data-testid="toolbar-publish-link"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="max-w-[260px] truncate rounded-control px-2 text-2xs text-ok no-underline hover:underline"
+                    >
+                        Link copied — {publish.publishedLink}
+                    </a>
+                )}
+                {narrow ? (
+                    <OverflowMenu label="File and panel controls" testId="header-overflow">
+                        <div data-theme="dark" className="flex w-64 flex-col">
+                            <MenuRow label="Edit">
+                                {undoRedo}
+                                {history}
+                            </MenuRow>
+                            <MenuRow label="Share">
+                                <ShareButton publishState={publish.publishState} onPublish={stablePublish} compact />
+                            </MenuRow>
+                            <MenuRow label="Export">
+                                <ExportList
+                                    isComputing={isComputing}
+                                    hasPlanarGeometry={hasPlanarGeometry}
+                                    onExport={handleExport}
+                                />
+                            </MenuRow>
+                            <MenuRow label="Panels">{inspectorToggle}</MenuRow>
+                        </div>
+                    </OverflowMenu>
+                ) : (
                     <>
-                        <div className="flex items-center gap-2">{headerRight}</div>
-                        {!narrow && <div className="h-6 w-px bg-[#333] mx-2" />}
+                        <ShareButton publishState={publish.publishState} onPublish={stablePublish} />
+                        <ExportSplitButton
+                            defaultFormat={lastFormat}
+                            isComputing={isComputing}
+                            hasPlanarGeometry={hasPlanarGeometry}
+                            onExport={handleExport}
+                        />
+                        {inspectorToggle}
                     </>
                 )}
-                {narrow && <NarrowInstrumentMenu instruments={instruments} isComputing={isComputing} onExport={handleExport} />}
-                {!narrow && <WideInstrumentCluster instruments={instruments} isComputing={isComputing} onExport={handleExport} />}
-                {isComputing && <Loader2 className="w-3 h-3 animate-spin text-gray-500" />}
+                {isComputing && (
+                    <Loader2 className="size-3.5 shrink-0 animate-spin text-fg-3" aria-label="Computing" />
+                )}
             </div>
             <ExportStatus task={exportTask} floating testId="header-export-status" />
-            {/* Account menu — pinned to the right edge so it never scrolls out of
-                the horizontally-scrollable toolbar. It used to be the last item
-                inside the scrolling instrument cluster, so on narrow viewports it
-                slid off-screen (the scrollbar is hidden) and users couldn't find
-                sign-out / billing. */}
-            <div
-                className="sticky right-0 z-20 shrink-0 self-stretch flex items-center gap-2 pl-3 bg-[#111] shadow-[-8px_0_8px_-4px_rgba(0,0,0,0.55)]"
-                data-testid="account-slot"
-            >
-                <div className="h-6 w-px bg-[#333]" />
-                <FeedbackButton />
+            {/* The account slot never scrolls or folds away: sign-in, sign-out,
+                billing and feedback must stay one tap away on every width. */}
+            <div className="flex shrink-0 items-center gap-1.5 border-l border-border pl-2" data-testid="account-slot">
                 <UserMenu />
             </div>
-        </div>
+            <FeedbackHost />
+        </header>
     );
 }

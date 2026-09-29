@@ -40,6 +40,7 @@ export function formatTooltip(label: string, shortcutHint?: string, description?
 export const KEYMAP = {
     commandPalette: ['Mod', 'K'],
     toggleInspector: ['Mod', '\\'],
+    run: ['Mod', 'Enter'],
     undo: ['Mod', 'Z'],
     redo: ['Mod', 'Shift', 'Z'],
     redoAlt: ['Mod', 'Y'],
@@ -58,6 +59,7 @@ export interface ShortcutHelpEntry {
 export const SHORTCUT_HELP: readonly ShortcutHelpEntry[] = [
     { label: 'Open the command palette', keys: [KEYMAP.commandPalette] },
     { label: 'Show or hide the inspector', keys: [KEYMAP.toggleInspector] },
+    { label: 'Run the model', keys: [KEYMAP.run] },
     { label: 'Undo', keys: [KEYMAP.undo] },
     { label: 'Redo', keys: [KEYMAP.redo, KEYMAP.redoAlt] },
     { label: 'Close a dialog, the palette or marking mode', keys: [KEYMAP.close] },
