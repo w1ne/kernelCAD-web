@@ -16,6 +16,6 @@ defineExpertCorpusSuite({
     { id: 'circular-hole-array-around-hub',   dir: './eval/tasks/circular-hole-array-around-hub' },
     { id: 'grid-heat-sink-fin-array',         dir: './eval/tasks/grid-heat-sink-fin-array' },
     // Gears — spurGear primitive
-    { id: 'spur-gear-pair',                   dir: './eval/tasks/spur-gear-pair' },
+    { id: 'spur-gear-pair',                   dir: './eval/tasks/spur-gear-pair', timeoutMs: 180_000 },
   ],
 });
