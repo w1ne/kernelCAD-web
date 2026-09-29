@@ -22,10 +22,13 @@
 // agents can `lib.fromSTEP('parts/SO100_Assembly.step')` for the full
 // 5-DOF follower arm in a single line when they want it.
 
-const servo1 = (await lib.fromSTEP('parts/STS3215.step')).color('servo');
-const servo2 = (await lib.fromSTEP('parts/STS3215.step')).color('servo');
-const horn   = (await lib.fromSTEP('parts/Passive_Horn.step')).color('gear');
-const jaw    = (await lib.fromSTEP('parts/Moving_Jaw.step')).color('frame');
+// Finishes read as the real build: black ABS servo housings, a machined
+// aluminium output horn, and the jaw and bracket in white printed PLA.
+const PRINTED = '#ddd7cb';
+const servo1 = (await lib.fromSTEP('parts/STS3215.step')).finish('abs', { color: '#222529' });
+const servo2 = (await lib.fromSTEP('parts/STS3215.step')).finish('abs', { color: '#222529' });
+const horn   = (await lib.fromSTEP('parts/Passive_Horn.step')).finish('aluminium');
+const jaw    = (await lib.fromSTEP('parts/Moving_Jaw.step')).finish('pla', { color: PRINTED });
 
 // STS3215 local bbox: 45×25×40 mm, body roughly centered on its origin.
 // Z constants below are stacked offsets up the assembly axis.
@@ -44,7 +47,7 @@ const basePlate = basePlateRaw
   .fillet(1.5)
   .union(foot(-1, -1), foot(1, -1), foot(-1, 1), foot(1, 1))
   .translate(0, 0, -PLATE_H / 2)
-  .color('frame');
+  .finish('anodized', { color: '#2c313a' });
 
 // STS3215 mounting flange sits 4 mm above the plate (typical M3 washer
 // + bolt-head clearance). Z offset = 19.4 (half body) + 4 (clearance).
@@ -58,7 +61,7 @@ const hornPlaced = horn.translate(0, 0, SERVO1_Z + 19.4 + 1);
 const bracket = extrudeRoundedRect(50, 60, 8, 4)
   .fillet(0.8)
   .translate(0, 0, SERVO1_Z + 19.4 + 3.1 + 3.5 - 2)
-  .color('plate');
+  .finish('pla', { color: PRINTED });
 
 // Servo 2: gripper-actuator, mounted on the bracket. Rotated 90° so its
 // output shaft faces +X (toward the jaw). Y-offset so the body clears
