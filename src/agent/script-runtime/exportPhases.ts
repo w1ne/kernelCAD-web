@@ -3,6 +3,7 @@
 import { runScript } from '../../composition/runScript';
 import { exportSceneToSTEPAsync, type OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { exportDxf, type DxfWriterOptions } from '../../kernel/backends/occt/exportDxf';
+import { exportSceneDxf, exportShapeDxfProfile } from './exportDxfProfiles';
 import { export3mfWithReportAsync, type Export3mfOptions } from '../../kernel/backends/occt/export3mf';
 import { exportGlbAsync, type ExportGlbOptions } from '../../kernel/backends/occt/exportGlb';
 import type { Assembly } from '../../modeling/capture/assembly';
@@ -341,7 +342,7 @@ export async function exportSceneBackend(
     return exportSceneStep(scene, manifestRequest, manifestScene, run, diagnostics, featureCount);
   }
   if (format === 'dxf') {
-    return exportSceneDxfRejected(targetId, diagnostics, featureCount);
+    return exportSceneDxf(scene, targetId, input.options, diagnostics, featureCount);
   }
   if (format === '3mf') {
     return exportScene3mf(input, scene, targetId, diagnostics, featureCount);
@@ -377,30 +378,6 @@ export async function exportSceneStep(
     featureCount,
     diagnostics,
     ...(connectorManifest === undefined ? {} : { connectorManifest }),
-  };
-}
-
-/** DXF needs a single planar wire source; a multi-body Scene cannot satisfy
- *  that contract without a caller-side choice of which face / part to export.
- *  Surface the non-planar diagnostic so the agent's next move is to either
- *  pick a planar face or return a Region. */
-export function exportSceneDxfRejected(
-  targetId: string,
-  diagnostics: CompilerDiagnostic[],
-  featureCount: number,
-): ExportResult {
-  return {
-    bytes: new Uint8Array(),
-    featureCount,
-    diagnostics: [...diagnostics, {
-      target: 'export-occt',
-      code: 'export.dxf.non-planar',
-      featureId: targetId,
-      severity: 'error',
-      message: 'DXF export requires a planar input; received a multi-body Scene.',
-      hint: 'Return a Region via Shape.flattenPattern() or a single planar face.',
-      nextAction: NEXT_ACTIONS['export.dxf.non-planar'],
-    }],
   };
 }
 
@@ -486,9 +463,9 @@ export async function exportSceneFusedMesh(
   return { bytes, featureCount, diagnostics };
 }
 
-/** Single-shape DXF path: sheet-metal lineage flattens to a Region; a plain
- *  planar Shape exports its outer/hole wires; anything else emits the
- *  non-planar diagnostic. */
+/** Single-shape DXF path: sheet-metal lineage flattens to a Region; a flat
+ *  part exports its outline, `options.section` its cross-section; anything
+ *  else emits the non-planar diagnostic. */
 export function exportShapeDxf(
   shape: OcctBackend,
   targetId: string,
@@ -519,7 +496,9 @@ export function exportShapeDxf(
     }
     return false;
   })();
-  if (tracesToSheetMetal) {
+  // An explicit `options.section` asks for a cross-section, not the blank.
+  const wantsSection = (opts as { section?: unknown }).section !== undefined;
+  if (tracesToSheetMetal && !wantsSection) {
     try {
       const region = flattenPattern(run.records, targetId);
       const bytes = exportDxf({ kind: 'region', region }, opts);
@@ -562,36 +541,9 @@ export function exportShapeDxf(
       };
     }
   }
-  // Planar `Shape` entry path: extract the outer (and any hole) wires
-  // from a single planar face and ship them through the polyline writer.
-  // A `null` return from `tryExtractPlanarWires` means the shape carries
-  // no planar face we can flatten — emit the non-planar diagnostic so
-  // the agent can pick a face explicitly or switch to `flattenPattern()`.
-  const planarWires = shape.tryExtractPlanarWires();
-  if (!planarWires) {
-    return {
-      bytes: new Uint8Array(),
-      featureCount,
-      diagnostics: [...diagnostics, {
-        target: 'export-occt',
-        code: 'export.dxf.non-planar',
-        featureId: targetId,
-        severity: 'error',
-        message: 'DXF export requires a planar input (Region, planar face, or planar wire).',
-        hint: 'Call list_faces to pick a planar face, or return a Region via Shape.flattenPattern().',
-        nextAction: NEXT_ACTIONS['export.dxf.non-planar'],
-      }],
-    };
-  }
-  const bytes = exportDxf(
-    {
-      kind: 'planarWires',
-      outer: planarWires.outer,
-      holes: planarWires.holes,
-    },
-    opts,
-  );
-  return { bytes, featureCount, diagnostics };
+  // Flat part (plate, panel, extruded profile) or `options.section`: the
+  // cut profile with exact arcs; anything else is refused with a hint.
+  return exportShapeDxfProfile(shape, targetId, exportOptions, diagnostics, featureCount);
 }
 
 /** Mesh the per-link shapes referenced by a robot-description export into

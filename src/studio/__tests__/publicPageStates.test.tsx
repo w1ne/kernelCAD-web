@@ -51,7 +51,7 @@ vi.mock('../../funnel/hooks/useSession', () => ({
 }));
 vi.mock('../../funnel/components/SignInButton', () => ({ SignInButton: () => null }));
 vi.mock('../components/MadeWithKernelcad', () => ({ MadeWithKernelcad: () => null }));
-vi.mock('../routes/-ProjectClaimControl', () => ({ ProjectClaimControl: () => null }));
+vi.mock('../routes/-ProjectClaimControl', () => ({ ProjectClaimControl: () => null, AnonProjectBanner: () => null }));
 vi.mock('../routes/-ProjectViewerActions', () => ({ ProjectViewerActions: () => null }));
 vi.mock('../routes/-ServerRevisionHistory', () => ({ ServerRevisionHistory: () => null }));
 vi.mock('../customizer/StudioModelCustomizer', () => ({ StudioModelCustomizer: () => null }));

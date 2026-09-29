@@ -30,11 +30,11 @@ export const EXPORT_CODES = {
   },
   'export.dxf.non-planar': {
     hintTemplate:
-      'DXF export requires planar input. Call list_faces to pick a planar face, or return a Region via Shape.flattenPattern().',
-    nextAction: { kind: 'call-introspection-tool', tool: 'list_faces' },
+      'DXF needs a flat part (plate, panel, extruded profile). For any other part use `options.section: { axis, at }` for a cross-section, `flatten_pattern` for sheet metal, or STEP/STL for 3D.',
+    nextAction: { kind: 'fix-arg', field: 'options.section' },
     defaultSeverity: 'error',
     group: 'export',
-    description: 'A DXF export was attempted on non-planar geometry (3D solid without a single planar face source, or a multi-body Scene).',
+    description: 'A DXF export was attempted on a part that is not flat (not a constant-thickness plate or extruded profile) without options.section, or the section plane missed the part.',
   },
   'export.3mf.not-watertight': {
     hintTemplate:

@@ -5,6 +5,7 @@ import type { Session } from '@supabase/supabase-js';
 import { Globe, Lock } from 'lucide-react';
 import { SignInButton } from '../../funnel/components/SignInButton';
 import type { ProjectRow } from '../../funnel/lib/apiClient';
+import { claimReturnUrl } from './-anonClaim';
 
 const BTN_CLASS = 'inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap px-2.5 py-0.5 rounded text-xs font-medium bg-blue-600 hover:bg-blue-500 text-white disabled:opacity-50 transition-colors';
 
@@ -27,7 +28,7 @@ function SavedBadge(): ReactNode {
 function SignInToSaveButton(): ReactNode {
   return (
     <SignInButton
-      redirectTo={typeof window !== 'undefined' ? window.location.href : undefined}
+      redirectTo={typeof window !== 'undefined' ? claimReturnUrl(window.location.href) : undefined}
       className={BTN_CLASS}
     >
       Sign in to save
@@ -117,4 +118,46 @@ export function ProjectClaimControl({
   }
 
   return <>{claimControl}</>;
+}
+
+export interface AnonProjectBannerProps {
+  project: ProjectRow;
+  session: Session | null;
+  claimed: boolean;
+  claiming: boolean;
+  onClaim: () => void;
+}
+
+/** Banner on /p/:slug for a project that no account owns yet (made by an
+ *  anonymous agent session). Signed out: sign in, come back, claim runs.
+ *  Signed in: claim now. */
+export function AnonProjectBanner({
+  project,
+  session,
+  claimed,
+  claiming,
+  onClaim,
+}: AnonProjectBannerProps): ReactNode {
+  if (project.owner_id != null || claimed) return null;
+  const action = session ? (
+    <button type="button" onClick={onClaim} disabled={claiming} className={BTN_CLASS}>
+      {claiming ? 'Saving…' : 'Save it to my account'}
+    </button>
+  ) : (
+    <SignInButton
+      redirectTo={typeof window !== 'undefined' ? claimReturnUrl(window.location.href) : undefined}
+      className={BTN_CLASS}
+    >
+      Sign in to keep it
+    </SignInButton>
+  );
+  return (
+    <div
+      role="status"
+      className="fixed bottom-4 left-4 right-4 z-50 mx-auto flex max-w-xl flex-wrap items-center justify-center gap-x-3 gap-y-2 rounded-lg border border-amber-600/60 bg-[#1f1a10]/95 px-4 py-2.5 text-sm text-amber-100 shadow-lg"
+    >
+      <span>This project isn&apos;t saved to an account yet —</span>
+      {action}
+    </div>
+  );
 }
