@@ -38,6 +38,27 @@ When you have `kernelcad mcp` available, use the MCP tools for dynamic introspec
 - `lookup_api({})` — full curated API surface (globals, Shape methods, Sketch methods, constrained-sketch capability)
 - `lookup_cookbook({ query, k? })` — retrieve up to k canonical pattern snippets ranked by BM25; returns `{ ok, hits[] }`. Empty hits is a valid success ("no canonical pattern; proceed without cookbook help").
 
+#### Industry problem → cookbook id (call `lookup_cookbook` with these queries / ids)
+
+Use before freehand authoring on production / industry prompts. Prefer `design_loop` until green for housings and mechanisms.
+
+| Industry problem | Cookbook id | Notes |
+|------------------|-------------|-------|
+| Machined housing (walls, pockets, bosses, fillets, bearing bore) | `multi-feature-machined-housing` | Params + manufacturing intent; not stacked boxes |
+| NEMA motor mounting plate | `nema-motor-mounting-plate` | Prefer `lib.standard.nema17()`; snippet uses BREP stand-in for CI |
+| Multi-body mechanism + joints + animation | `multi-body-mechanism-real-proportions` | Proven pin **MLl-f0Uq@1**; CDN mesh+anim |
+| Bracket with fasteners / BOM | `non-overlapping-l-bracket`, `iso-metric-bolt-and-nut`, `bom-ready-assembly` | |
+| Gear / pulley drive | `involute-spur-gear-pair`, `gt2-timing-belt-drive` | |
+| Enclosure lid (screw-on cover) | `enclosure-lid-with-screw-bosses` | Hinge alt: `clamshell-hinge-two-part-assembly` |
+| Shaft + bearing seat | `shaft-and-bearing-cylindrical-mate` | 4-arg `cylindrical`; catalog shaft-d8-l50 + bearing608 |
+| Sheet-metal bend (≤2 bends, sharp fuse) | `sheet-metal-l-bracket-bend` | Slice-1 limits; see `kernelcad-sheet-metal` |
+| T-slot extrusion + bracket | `tslot-extrusion-and-bracket` | |
+| Pipe / tube route | `pipe-route-swept-tube` | |
+| Drawings + GD&T callouts | `drawing-auto-dimension-gdt`, `drawing-hole-and-gdt-callouts` | |
+| Static-hold / actuator torque | `static-hold-actuator-torque-check` | Also kinematic skill cookbooks |
+
+Mate authoring reminder: **`arm.mate(name, a, b, type)`** (4-arg). Retired 3-arg `{ kind }` form is wrong — see `kernelcad-parts` / `kernelcad-assemblies`.
+
 ### Source edit operations
 
 All edit tools return the modified source plus diagnostics. Re-run `kernelcad evaluate` on the returned source before committing.

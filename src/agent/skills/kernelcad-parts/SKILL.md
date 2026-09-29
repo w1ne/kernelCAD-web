@@ -98,6 +98,16 @@ bracket's hole top face places the bolt with the shank sticking into the
 hole — the canonical "bolt through bracket" configuration with no manual
 flip.
 
+## Mate API (v0.6) — 4-arg only
+
+Canonical form is **`arm.mate(name, aRef, bRef, type, opts?)`** where
+`aRef` / `bRef` are `'partName.connectorName'` strings and `type` is one of
+`fastened` | `revolute` | `prismatic` | `cylindrical` | `planar` | `ball` |
+`pin_slot`.
+
+**Do not** use the retired 3-arg form `arm.mate(a, b, { kind })` — capture
+rejects it. Catalog cookbooks and `kernelcad-assemblies` all use 4-arg.
+
 ## The universal `bolt-holes-N` auto-rule
 
 Any `.hole(...)` or `.holes(...)` feature on an authored or imported Shape
@@ -106,19 +116,32 @@ bottom face plus through-axis. Names are numbered first by feature order,
 then by `(u, v)` to break ties, so the same script always emits the same
 connector names across re-runs.
 
+**Caveat (agent-facing):** those auto frames attach to the **holes feature
+id**, not the assembly part name. A mate ref like `'bracket.bolt-holes-1'`
+will not resolve after `arm.part('bracket', shapeWithHoles)`. Prefer
+**manual** `partRef.connector('bolt-holes-N', { type: 'frame', origin:
+{ kind: 'vec3', value: [...] } })` on the part (same pattern as cookbook
+`nema-motor-mounting-plate`). Bundled / catalog parts already expose
+`bolt-holes-N` on the **part** itself — those refs work without a manual
+frame.
+
 ```typescript
 const arm = assembly('arm');
-const bracket = box(40, 20, 3).holes('top', {
+const bracketShape = box(40, 20, 3).holes('top', {
   positions: [{ u: -10, v: 0 }, { u: 10, v: 0 }],
   diameter: 3.2,
   depth: 'through',
 });
-arm.part('bracket', bracket);
+const bracket = arm.part('bracket', bracketShape);
+// Manual frame on the PART — .holes() auto-connectors stay on the feature id.
+bracket.connector('bolt-holes-1', {
+  type: 'frame',
+  origin: { kind: 'vec3', value: [-10, 0, 1.5] },
+});
 const bolt = await lib.standard.boltSHCS({ thread: 'M3', lengthMm: 10 });
 arm.part('bolt', bolt);
-// The bracket's bolt-holes-1 mates against the bolt's head-bearing —
-// neither connector was hand-authored.
-arm.mate('bolt.head-bearing', 'bracket.bolt-holes-1', { kind: 'fastened' });
+// Catalog bolt already has head-bearing on the part; plate side is manual.
+arm.mate('bolt-1', 'bolt.head-bearing', 'bracket.bolt-holes-1', 'fastened');
 return arm.model();
 ```
 
@@ -212,15 +235,19 @@ review (CHANGELOG, license audit) has a single source of truth.
 
 ```typescript
 const arm = assembly('arm');
-const bracket = box(40, 20, 3).holes('top', {
+const bracketShape = box(40, 20, 3).holes('top', {
   positions: [{ u: -10, v: 0 }, { u: 10, v: 0 }],
   diameter: 3.2,
   depth: 'through',
 });
-arm.part('bracket', bracket);
+const bracket = arm.part('bracket', bracketShape);
+bracket.connector('bolt-holes-1', {
+  type: 'frame',
+  origin: { kind: 'vec3', value: [-10, 0, 1.5] },
+});
 const bolt = await lib.standard.boltSHCS({ thread: 'M3', lengthMm: 10 });
 arm.part('bolt', bolt);
-arm.mate('bolt.head-bearing', 'bracket.bolt-holes-1', { kind: 'fastened' });
+arm.mate('bolt-1', 'bolt.head-bearing', 'bracket.bolt-holes-1', 'fastened');
 return arm.model();
 ```
 
@@ -228,7 +255,10 @@ return arm.model();
 
 There is no `lib.standard.*` shortcut for linear shafts — fetch the catalog
 record by id (`shaft-d<diameter>-l<length>`, Ø3..Ø12 × 20..200 mm). The
-shaft's `axis` connector mates into the bearing's `inner-bore`.
+shaft's `axis` connector mates into the bearing's `inner-bore`. Catalog
+parts already carry those connectors on the **part** — no manual frames.
+Use the 4-arg mate (see cookbook `shaft-and-bearing-cylindrical-mate` for
+the offline BREP stand-in when the catalog is absent).
 
 ```typescript
 const arm = assembly('arm');
@@ -236,15 +266,20 @@ const shaft = await lib.fetchPart('shaft-d8-l50'); // Ø8 × 50 mm linear shaft
 const bearing = await lib.standard.bearing608();   // Ø8 bore deep-groove bearing
 arm.part('shaft', shaft);
 arm.part('bearing', bearing);
-arm.mate('shaft.axis', 'bearing.inner-bore', { kind: 'cylindrical' });
+arm.mate('seat', 'shaft.axis', 'bearing.inner-bore', 'cylindrical');
 return arm.model();
 ```
 
 ### NEMA 17 mounted to a plate
 
+Catalog `nema17` already exposes `bolt-holes-1..4` on the **motor part**.
+Plate-side `.holes()` auto-connectors stay on the holes **feature id**, so
+declare matching frames on the plate part (cookbook
+`nema-motor-mounting-plate`).
+
 ```typescript
 const arm = assembly('arm');
-const plate = box(80, 80, 5).holes('top', {
+const plateShape = box(80, 80, 5).holes('top', {
   positions: [
     { u: -15.5, v: -15.5 }, { u: 15.5, v: -15.5 },
     { u: -15.5, v: 15.5 },  { u: 15.5, v: 15.5 },
@@ -252,15 +287,20 @@ const plate = box(80, 80, 5).holes('top', {
   diameter: 3.2,
   depth: 'through',
 });
-arm.part('plate', plate);
+const plate = arm.part('plate', plateShape);
+const offs = [[-15.5, -15.5], [15.5, -15.5], [-15.5, 15.5], [15.5, 15.5]] as const;
+offs.forEach(([u, v], i) => {
+  plate.connector(`bolt-holes-${i + 1}`, {
+    type: 'frame',
+    origin: { kind: 'vec3', value: [u, v, 2.5] },
+  });
+});
 const motor = await lib.standard.nema17();
 arm.part('motor', motor);
-// 4-bolt pattern: the motor's bolt-holes-N frames already sit at the
-// standard bolt circle, so mate them to the plate's auto-emitted holes.
-arm.mate('motor.bolt-holes-1', 'plate.bolt-holes-1', { kind: 'fastened' });
-arm.mate('motor.bolt-holes-2', 'plate.bolt-holes-2', { kind: 'fastened' });
-arm.mate('motor.bolt-holes-3', 'plate.bolt-holes-3', { kind: 'fastened' });
-arm.mate('motor.bolt-holes-4', 'plate.bolt-holes-4', { kind: 'fastened' });
+arm.mate('b1', 'motor.bolt-holes-1', 'plate.bolt-holes-1', 'fastened');
+arm.mate('b2', 'motor.bolt-holes-2', 'plate.bolt-holes-2', 'fastened');
+arm.mate('b3', 'motor.bolt-holes-3', 'plate.bolt-holes-3', 'fastened');
+arm.mate('b4', 'motor.bolt-holes-4', 'plate.bolt-holes-4', 'fastened');
 return arm.model();
 ```
 
