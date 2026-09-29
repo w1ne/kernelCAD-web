@@ -1,41 +1,16 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { createFileRoute } from '@tanstack/react-router';
-import { useState } from 'react';
+import type { ReactNode } from 'react';
+import { Plus } from 'lucide-react';
 import { getSupabase } from '../../funnel/lib/supabaseClient';
-import type { ProjectRow } from '../../funnel/lib/apiClient';
+import { buttonClass, cx, ErrorState, SkeletonCard, ToastProvider } from '../../ui';
 import { PlanSummaryCard } from './-PlanSummaryCard';
 import { useMePageData } from './-useMePageData';
 import { MovedProjectsNotice } from './-MovedProjectsNotice';
 import { parseMovedParam } from './-anonClaim';
-
-/** Copies the public /p/<slug> link for a project card to the clipboard with
- *  transient "Copied" feedback. Stops propagation so it doesn't trigger the
- *  surrounding card link. */
-function CopyLinkButton({ slug }: { slug: string }) {
-  const [copied, setCopied] = useState(false);
-  const handleCopy = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (typeof window === 'undefined') return;
-    try {
-      await navigator.clipboard.writeText(`${window.location.origin}/p/${slug}`);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // Clipboard unavailable — no-op.
-    }
-  };
-  return (
-    <button
-      type="button"
-      onClick={handleCopy}
-      className="font-mono text-[11px] text-ink-soft hover:text-ink underline decoration-dotted"
-    >
-      {copied ? 'Copied' : 'Copy link'}
-    </button>
-  );
-}
+import { MeEmptyState } from './-MeEmptyState';
+import { MeProjectList } from './-MeProjectList';
 
 // Stripe returns to /billing (which shows the checkout banners), not /me.
 // `moved` is set by the anonymous-project claim flows (/claim, /p/:slug banner).
@@ -47,99 +22,102 @@ export const Route = createFileRoute('/me')({
   },
 });
 
-function MePageHeader({ email }: { email: string | undefined }) {
+function MePageHeader({ email }: { email: string | undefined }): ReactNode {
   return (
-    <header className="border-b border-rule px-6 py-3 flex items-center justify-between bg-vellum">
-      <a href="/" className="flex items-center gap-2 font-serif text-base font-medium no-underline text-ink">
-        <svg className="w-4 h-4 text-ink" viewBox="0 0 84 84" fill="none" aria-label="kernelCAD">
-          <path d="M 14,12 L 26,12 L 26,34 Q 26,36 27.5,34.5 L 46,12 L 60,12 L 36,40 Q 35,42 36,44 L 60,72 L 46,72 L 27.5,49.5 Q 26,48 26,50 L 26,72 L 14,72 Z" fill="currentColor"/>
-        </svg>
-        <span>kernel<span className="text-blueprint">CAD</span></span>
-      </a>
-      <div className="flex items-center gap-4">
-        <span className="font-mono text-xs text-ink-soft tracking-wide">{email}</span>
-        <button
-          type="button"
-          onClick={() => {
-            // onAuthStateChange clears the session; the !session effect above
-            // then redirects to /signin.
-            void getSupabase().auth.signOut();
-          }}
-          className="rounded-md border border-rule px-3 py-1.5 font-mono text-xs tracking-wide text-ink-soft hover:border-ink hover:text-ink transition-colors"
-        >
-          Sign out
-        </button>
+    <header className="border-b border-border bg-bg">
+      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4 md:px-8">
+        <a href="/" className="focus-ring flex items-center gap-2 rounded-control font-serif text-base font-medium text-fg no-underline">
+          <svg className="size-4 text-fg" viewBox="0 0 84 84" fill="none" aria-hidden="true">
+            <path d="M 14,12 L 26,12 L 26,34 Q 26,36 27.5,34.5 L 46,12 L 60,12 L 36,40 Q 35,42 36,44 L 60,72 L 46,72 L 27.5,49.5 Q 26,48 26,50 L 26,72 L 14,72 Z" fill="currentColor"/>
+          </svg>
+          <span>kernel<span className="text-accent">CAD</span></span>
+        </a>
+        <nav aria-label="Account" className="flex min-w-0 items-center gap-2 md:gap-4">
+          <a href="/studio" className="focus-ring hidden rounded-control text-ui text-fg-2 no-underline hover:text-fg sm:inline">Studio</a>
+          <a href="/gallery" className="focus-ring hidden rounded-control text-ui text-fg-2 no-underline hover:text-fg sm:inline">Gallery</a>
+          <span className="hidden truncate font-mono text-2xs text-fg-3 md:inline" title={email}>{email}</span>
+          <button
+            type="button"
+            onClick={() => {
+              // onAuthStateChange clears the session; useMePageData then
+              // redirects to /signin.
+              void getSupabase().auth.signOut();
+            }}
+            className={cx(buttonClass('secondary', 'sm'), 'max-md:h-touch')}
+          >
+            Sign out
+          </button>
+        </nav>
       </div>
     </header>
   );
 }
 
-function ProjectsSection({ projects }: { projects: ProjectRow[] | null }) {
+function ProjectsLoading(): ReactNode {
   return (
-    <>
-      {!projects && (
-        <p className="text-ink-faint font-mono text-sm mt-4">Loading projects…</p>
-      )}
-      {projects?.length === 0 && (
-        <p className="text-ink-soft mt-4">
-          No projects yet.{' '}
-          <a href="/" className="text-blueprint underline">Start one</a>.
-        </p>
-      )}
-      {projects && projects.length > 0 && (
-        <ul className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
-          {projects.map(p => (
-            <li key={p.id} className="rounded-xl border border-rule bg-white p-5 hover:border-ink transition-colors">
-              <a href={`/p/${p.slug}`} className="block no-underline">
-                <p className="font-serif font-medium text-ink text-base">{p.title}</p>
-                <p className="font-mono text-[11px] text-ink-faint mt-1.5 tracking-wide">
-                  {p.privacy} · {new Date(p.updated_at).toLocaleDateString()}
-                </p>
-              </a>
-              <div className="mt-3">
-                <CopyLinkButton slug={p.slug} />
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
-    </>
+    <div role="status" aria-label="Loading your projects" className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {Array.from({ length: 6 }, (_, i) => <SkeletonCard key={i} label="Loading project" />)}
+    </div>
   );
 }
 
-function MePage() {
-  const { session, loading, projects, plan, planErr, err } = useMePageData();
+function ProjectsSection({ data }: { data: ReturnType<typeof useMePageData> }): ReactNode {
+  const { projects, err, reload, actions } = data;
+  if (err) {
+    return (
+      <ErrorState
+        className="mt-8"
+        title="Could not load your projects"
+        description="Your projects are safe. Check your connection and try again."
+        onRetry={reload}
+        errorId={err.slice(0, 200)}
+      />
+    );
+  }
+  if (!projects) return <ProjectsLoading />;
+  if (projects.length === 0) return <MeEmptyState />;
+  return <MeProjectList projects={projects} actions={actions} />;
+}
+
+function MePage(): ReactNode {
+  const data = useMePageData();
+  const { session, loading, plan, planErr, projects } = data;
   const { moved } = Route.useSearch();
 
   if (loading || !session) {
     return (
-      <main className="min-h-screen bg-vellum font-sans p-8">
-        <p className="text-ink-faint font-mono text-sm">Loading…</p>
-      </main>
-    );
-  }
-  if (err) {
-    return (
-      <main className="min-h-screen bg-vellum font-sans p-8">
-        <p className="text-danger font-mono text-sm">Failed to load: {err}</p>
+      <main data-theme="light" className="min-h-screen bg-bg font-sans text-fg">
+        <p role="status" className="mx-auto max-w-6xl px-4 py-10 text-ui text-fg-3 md:px-8">Loading…</p>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-vellum text-ink font-sans">
-      {/* Nav */}
-      <MePageHeader email={session.user.email} />
+    <ToastProvider>
+      <main data-theme="light" className="min-h-screen bg-bg font-sans text-fg">
+        <MePageHeader email={session.user.email} />
 
-      <section className="px-6 py-10 max-w-4xl mx-auto">
-        <MovedProjectsNotice moved={moved} />
+        <div className="mx-auto max-w-6xl px-4 pb-16 pt-8 md:px-8 md:pt-12">
+          <MovedProjectsNotice moved={moved} />
 
-        <PlanSummaryCard plan={plan} planErr={planErr} />
+          <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
+            <h1 className="font-serif text-section text-fg">Your projects</h1>
+            {!!projects?.length && (
+              <a href="/generate" className={cx(buttonClass('primary', 'lg'), 'no-underline max-md:h-touch')}>
+                <Plus className="size-4" strokeWidth={2} aria-hidden="true" />
+                New project
+              </a>
+            )}
+          </div>
 
-        <h1 className="font-serif text-3xl font-medium text-ink mt-10">Your projects</h1>
+          <ProjectsSection data={data} />
 
-        <ProjectsSection projects={projects} />
-      </section>
-    </main>
+          <section aria-labelledby="me-plan" className="mt-14 border-t border-border pt-8">
+            <h2 id="me-plan" className="mb-3 text-2xs font-medium uppercase tracking-wide text-fg-3">Plan</h2>
+            <PlanSummaryCard plan={plan} planErr={planErr} />
+          </section>
+        </div>
+      </main>
+    </ToastProvider>
   );
 }
