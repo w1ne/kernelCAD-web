@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-import { useEffect, useRef, useState, type RefObject } from 'react';
+import { useEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { ArrowUp, Mic, Paperclip, Square, X } from 'lucide-react';
 import {
     isReferenceImageMimeType,
@@ -34,7 +34,7 @@ type Attachment = TextAttachment | PhotoAttachment;
 const MAX_PROMPT = 63_000;
 const MAX_TEXT_FILES = 5;
 const ACCEPT = '.txt,.md,.csv,.json,.svg,.ts,.js,.py,.scad,.step,.stp';
-const buttonClass = 'inline-flex items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-xs hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed';
+const buttonClass = 'focus-ring inline-flex h-control-md items-center justify-center gap-1.5 rounded-control px-2 text-ui text-fg-2 transition-colors duration-80 hover:bg-surface-3 hover:text-fg disabled:opacity-40 disabled:cursor-not-allowed max-md:h-touch max-md:min-w-touch';
 
 function readDataUrl(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -91,7 +91,7 @@ function AttachmentList({ files, disabled, reading, onRemove }: {
     if (files.length === 0) return null;
     return (
         <ul className="flex flex-wrap gap-1 px-2 pb-2" aria-label="Included files">
-            {files.map((file, index) => <li key={`${index}-${file.name}`} className="flex max-w-full items-center rounded bg-white/10 pl-2 text-xs">
+            {files.map((file, index) => <li key={`${index}-${file.name}`} className="flex max-w-full items-center rounded-control bg-surface-3 pl-2 text-ui text-fg-2">
                 <span className="truncate">{file.name}</span>
                 <button type="button" aria-label={`Remove ${file.name}`} disabled={disabled || reading} className={buttonClass}
                     onClick={() => onRemove(index)}><X size={12} /></button>
@@ -112,7 +112,7 @@ function ComposerControls({ picker, value, disabled, reading, listening, speech,
     onToggleVoice: () => void;
 }) {
     return (
-        <div className="flex items-center gap-1 px-2 pb-2 text-gray-300">
+        <div className="flex items-center gap-1 px-2 pb-2">
             <input ref={picker} aria-label="Choose files" type="file" multiple accept={ACCEPT} className="hidden" disabled={disabled || reading}
                 onChange={event => void onFilesPicked(Array.from(event.target.files ?? []))} />
             <button type="button" className={buttonClass} disabled={disabled || reading} onClick={() => picker.current?.click()}>
@@ -120,9 +120,9 @@ function ComposerControls({ picker, value, disabled, reading, listening, speech,
             </button>
             <button type="button" className={buttonClass} aria-label={listening ? 'Stop voice input' : 'Voice input'} aria-pressed={listening}
                 title={speech ? 'Dictate with Chrome' : 'Voice input requires a browser with speech recognition, such as Chrome'} disabled={disabled || !speech} onClick={onToggleVoice}>
-                {listening ? <Square size={16} className="text-red-400" /> : <Mic size={16} />}
+                {listening ? <Square size={16} className="text-danger" /> : <Mic size={16} />}
             </button>
-            <button type="submit" aria-label={submitLabel} className={`${buttonClass} ml-auto bg-blue-600 text-white hover:bg-blue-500`}
+            <button type="submit" aria-label={submitLabel} title={submitLabel} className="focus-ring ml-auto inline-flex size-control-md items-center justify-center rounded-control bg-agent text-on-agent transition-colors duration-80 hover:bg-agent-hover disabled:cursor-not-allowed disabled:opacity-40 max-md:size-touch"
                 disabled={disabled || reading || listening || !value.trim()}><ArrowUp size={16} /></button>
         </div>
     );
@@ -138,8 +138,8 @@ function submitComposer({ disabled, reading, listening, value, files, setError, 
     files: Attachment[];
     setError: (error: string) => void;
     onSubmit: (prompt: string, referenceImage?: GenerateRequest['referenceImage']) => void;
-}) {
-    if (disabled || reading || listening || !value.trim()) return;
+}): boolean {
+    if (disabled || reading || listening || !value.trim()) return false;
     const photo = files.find((file): file is PhotoAttachment => file.kind === 'image');
     const prompt = [
         value.trim(),
@@ -147,13 +147,14 @@ function submitComposer({ disabled, reading, listening, value, files, setError, 
             .filter((file): file is TextAttachment => file.kind === 'text')
             .map(file => `Included file: ${file.name}\n${file.content}\nEnd of file: ${file.name}`),
     ].join('\n\n');
-    if (prompt.length > MAX_PROMPT) { setError('Your message and files are too long. Shorten the message or remove a file.'); return; }
+    if (prompt.length > MAX_PROMPT) { setError('Your message and files are too long. Shorten the message or remove a file.'); return false; }
     setError('');
     if (photo) {
         onSubmit(prompt, { dataUrl: photo.dataUrl, fileName: photo.name, mimeType: photo.mimeType });
     } else {
         onSubmit(prompt);
     }
+    return true;
 }
 
 /** Stop the active recognition or start a new one with the composer's result
@@ -193,13 +194,22 @@ function toggleVoiceInput({ recognition, Speech, latest, setError, setListening 
     catch { recognition.current = null; setListening(false); setError('Could not start the microphone. Try again.'); }
 }
 
-export function AgentComposer({ value, onChange, onSubmit, disabled = false, submitLabel = 'Send', onPhotoChange }: {
+export function AgentComposer({
+    value, onChange, onSubmit, disabled = false, submitLabel = 'Send', onPhotoChange,
+    clearOnSubmit = false, placeholder = 'What would you like to make?', context, rows = 5,
+}: {
     value: string;
     onChange: (value: string) => void;
     onSubmit: (prompt: string, referenceImage?: GenerateRequest['referenceImage']) => void;
     disabled?: boolean;
     submitLabel?: string;
     onPhotoChange?: (hasPhoto: boolean) => void;
+    /** Empty the box and drop the attachments after a send (chat style). */
+    clearOnSubmit?: boolean;
+    placeholder?: string;
+    /** A row inside the box above the controls: what the agent will see. */
+    context?: ReactNode;
+    rows?: number;
 }) {
     const [files, setFiles] = useState<Attachment[]>([]);
     const [reading, setReading] = useState(false);
@@ -251,28 +261,33 @@ export function AgentComposer({ value, onChange, onSubmit, disabled = false, sub
     }
 
     function send() {
-        submitComposer({ disabled, reading, listening, value, files, setError, onSubmit });
+        const sent = submitComposer({ disabled, reading, listening, value, files, setError, onSubmit });
+        if (sent && clearOnSubmit) {
+            onChange('');
+            if (files.length > 0) replaceFiles([]);
+        }
     }
 
     return (
         <form onSubmit={event => { event.preventDefault(); send(); }} className="flex flex-col gap-2">
-            <div className="rounded-xl border border-[#3a3a3a] bg-[#171717] focus-within:border-blue-500">
+            <div className="rounded-panel border border-border-strong bg-surface-2 transition-colors duration-80 focus-within:border-agent">
                 <textarea
                     aria-label="Generate prompt" value={value} onChange={event => onChange(event.target.value)}
-                    disabled={disabled} rows={5} placeholder="What would you like to make?"
+                    disabled={disabled} rows={rows} placeholder={placeholder}
                     onKeyDown={event => {
                         if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
                             event.preventDefault(); send();
                         }
                     }}
-                    className="w-full resize-y min-h-28 bg-transparent p-3 text-sm text-gray-100 placeholder:text-gray-500 focus:outline-none disabled:opacity-50"
+                    className="block w-full resize-y min-h-11 md:min-h-16 max-h-72 bg-transparent px-3 pt-2.5 pb-1 text-body text-fg placeholder:text-fg-3 focus:outline-none disabled:opacity-50"
                 />
                 <AttachmentList files={files} disabled={disabled} reading={reading} onRemove={removeFile} />
+                {context && <div className="flex flex-wrap items-center gap-1 px-2 pb-1">{context}</div>}
                 <ComposerControls picker={picker} value={value} disabled={disabled} reading={reading} listening={listening} speech={Speech}
                     submitLabel={submitLabel} onFilesPicked={includeFiles} onToggleVoice={toggleVoice} />
             </div>
-            {listening && <p role="status" className="text-xs text-gray-400">Listening… stop the microphone to send.</p>}
-            {error && <p role="alert" className="text-xs text-red-400">{error}</p>}
+            {listening && <p role="status" className="text-ui text-fg-2">Listening… stop the microphone to send.</p>}
+            {error && <p role="alert" className="text-ui text-danger">{error}</p>}
         </form>
     );
 }

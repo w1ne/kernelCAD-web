@@ -20,6 +20,8 @@ export { keyLabel } from './keys';
 export { Menu, type MenuAction, type MenuEntry, type MenuProps, type MenuSeparator, type MenuTriggerProps } from './Menu';
 export { NumberInput, type NumberInputProps } from './NumberInput';
 export { Panel, type Elevation, type PanelProps } from './Panel';
+export { formatElapsed } from './progressModel';
+export { ProgressSteps, type ProgressStep, type ProgressStepsProps, type StepStatus } from './ProgressSteps';
 export { Sheet, type SheetProps } from './Sheet';
 export { Skeleton, SkeletonCard, SkeletonList, SkeletonText } from './Skeleton';
 export { Slider, type SliderProps } from './Slider';

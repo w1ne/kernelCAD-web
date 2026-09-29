@@ -192,7 +192,7 @@ export interface GenerateRequest {
   referenceImage?: ReferenceImage;
 }
 
-export async function startGeneration(req: GenerateRequest): Promise<Response> {
+export async function startGeneration(req: GenerateRequest, signal?: AbortSignal): Promise<Response> {
   const base = import.meta.env.VITE_API_BASE_URL;
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   // Agent mode requires a connected account (every run lands against a plan), so
@@ -211,5 +211,6 @@ export async function startGeneration(req: GenerateRequest): Promise<Response> {
     method: 'POST',
     headers,
     body: JSON.stringify(req),
+    ...(signal ? { signal } : {}),
   });
 }
