@@ -15,7 +15,7 @@ export function AnimationNotes({ canDrive, bakeState, bakeError }: AnimationNote
         <>
             {!canDrive && (
                 <div
-                    className="mx-3 mb-2 px-2 py-1.5 text-[10px] leading-tight text-amber-200/90 bg-amber-950/30 border border-amber-900/60 rounded"
+                    className="mx-3 mb-2 px-2 py-1.5 text-2xs leading-tight text-amber-200/90 bg-amber-950/30 border border-amber-900/60 rounded"
                     data-testid="animation-editor-mode-note"
                 >
                     Live playback drives the viewport only when the model is
@@ -26,7 +26,7 @@ export function AnimationNotes({ canDrive, bakeState, bakeError }: AnimationNote
 
             {canDrive && bakeState === 'baking' && (
                 <div
-                    className="mx-3 mb-2 px-2 py-1.5 text-[10px] leading-tight text-sky-200/90 bg-sky-950/30 border border-sky-900/60 rounded"
+                    className="mx-3 mb-2 px-2 py-1.5 text-2xs leading-tight text-sky-200/90 bg-sky-950/30 border border-sky-900/60 rounded"
                     data-testid="animation-bake-status"
                 >
                     Preparing animation…
@@ -35,7 +35,7 @@ export function AnimationNotes({ canDrive, bakeState, bakeError }: AnimationNote
             {/* 'ready' shows no status — the mechanism just plays. */}
             {canDrive && bakeState === 'error' && (
                 <div
-                    className="mx-3 mb-2 px-2 py-1.5 text-[10px] leading-tight text-red-300/90 bg-red-950/30 border border-red-900/60 rounded"
+                    className="mx-3 mb-2 px-2 py-1.5 text-2xs leading-tight text-red-300/90 bg-red-950/30 border border-red-900/60 rounded"
                     data-testid="animation-bake-status"
                 >
                     Animation unavailable: {bakeError ?? 'unknown error'}.
@@ -116,7 +116,7 @@ export function AnimationScrubber({ durationMs, tMs, onPause, onScrubTo }: Anima
                 data-testid="animation-scrubber"
                 className="w-full accent-[#4a9eff]"
             />
-            <div className="flex justify-between text-[10px] text-gray-500 tabular-nums">
+            <div className="flex justify-between text-2xs text-gray-500 tabular-nums">
                 <span>{(tMs / 1000).toFixed(2)}s</span>
                 <span>{(durationMs / 1000).toFixed(2)}s</span>
             </div>

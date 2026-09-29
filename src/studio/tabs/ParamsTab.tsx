@@ -65,7 +65,7 @@ export function ParamsTab(): JSX.Element {
                         .join('\n')}
                 >
                     <span
-                        className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-red-600 text-white text-[10px] font-bold leading-none flex-shrink-0"
+                        className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-red-600 text-white text-2xs font-bold leading-none flex-shrink-0"
                         aria-hidden="true"
                     >
                         !

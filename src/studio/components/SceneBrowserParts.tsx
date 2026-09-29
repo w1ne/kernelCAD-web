@@ -140,12 +140,12 @@ export function SceneFeatureRow(props: SceneFeatureRowProps): JSX.Element {
                                         {getIconForType(item.type)}
                                         <span className={`font-mono ${isHidden ? 'text-gray-600 italic' : ''} ${isHovered ? 'underline decoration-blue-500/50' : ''}`}>{item.name}</span>
                                         {item.detail && (
-                                            <span className="ml-2 text-[10px] px-1 bg-[#444] rounded text-gray-400 font-mono">
+                                            <span className="ml-2 text-2xs px-1 bg-[#444] rounded text-gray-400 font-mono">
                                                 {item.detail}
                                             </span>
                                         )}
                                         <div className="ml-auto flex items-center gap-1">
-                                            <span className="opacity-0 group-hover:opacity-100 text-gray-500 text-[10px]">
+                                            <span className="opacity-0 group-hover:opacity-100 text-gray-500 text-2xs">
                                                 L{item.line}
                                             </span>
                                             <button

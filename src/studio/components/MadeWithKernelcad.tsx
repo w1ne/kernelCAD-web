@@ -32,7 +32,7 @@ export interface MadeWithKernelcadProps {
 }
 
 const LINK_CLASS =
-  'rounded bg-black/45 px-1.5 py-0.5 font-mono text-[10px] leading-4 text-white/75 no-underline hover:text-white focus:outline-none focus:ring-1 focus:ring-white/60';
+  'rounded bg-black/45 px-1.5 py-0.5 font-mono text-2xs leading-4 text-white/75 no-underline hover:text-white focus:outline-none focus:ring-1 focus:ring-white/60';
 
 export function MadeWithKernelcad({
   surface,

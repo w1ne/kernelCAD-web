@@ -39,7 +39,7 @@ function RevisionMenu({ revisions, restoring, onRestore }: RevisionMenuProps): R
       className="absolute right-0 top-full mt-1 w-64 max-h-80 overflow-y-auto bg-[#1a1a1a] border border-[#333] rounded shadow-lg z-50 py-1"
       data-testid="server-history-dropdown"
     >
-      <div className="px-3 py-1.5 text-[10px] uppercase tracking-wide text-gray-500 font-medium">
+      <div className="px-3 py-1.5 text-2xs uppercase tracking-wide text-gray-500 font-medium">
         Revision history
       </div>
       {revisions.map((rev) => (
@@ -49,13 +49,13 @@ function RevisionMenu({ revisions, restoring, onRestore }: RevisionMenuProps): R
         >
           <div className="min-w-0">
             <div className="text-xs text-gray-300">v{rev.version}</div>
-            <div className="text-[10px] text-gray-500 truncate">{formatRevisionTime(rev.created_at)}</div>
+            <div className="text-2xs text-gray-500 truncate">{formatRevisionTime(rev.created_at)}</div>
           </div>
           <button
             type="button"
             onClick={() => onRestore(rev.version)}
             disabled={restoring !== null}
-            className="flex items-center gap-1 text-[10px] text-gray-400 hover:text-white px-1.5 py-1 rounded hover:bg-[#333] transition-colors shrink-0 disabled:opacity-50"
+            className="flex items-center gap-1 text-2xs text-gray-400 hover:text-white px-1.5 py-1 rounded hover:bg-[#333] transition-colors shrink-0 disabled:opacity-50"
             aria-label={`Restore revision v${rev.version}`}
             title={`Restore v${rev.version}`}
           >

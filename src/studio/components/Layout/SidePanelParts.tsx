@@ -100,7 +100,7 @@ export function BuildLoopPanel({
                         {suggestedRepairPrompt && (
                             <div>
                                 <div className="mb-2 font-bold text-gray-400">NEXT REPAIR PROMPT</div>
-                                <pre className="whitespace-pre-wrap border border-[#2d3340] bg-[#111827] p-2 font-mono text-[11px] leading-5 text-blue-100">
+                                <pre className="whitespace-pre-wrap border border-[#2d3340] bg-surface-1 p-2 font-mono text-[11px] leading-5 text-blue-100">
                                     {suggestedRepairPrompt}
                                 </pre>
                             </div>

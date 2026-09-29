@@ -378,11 +378,11 @@ function StudioProjectView({ slug, project, session, live, claim, onUpgrade }: P
       <span className="hidden min-[400px]:inline lg:hidden text-xs text-gray-200 font-medium truncate min-w-0 max-w-[160px] md:max-w-[280px]" title={project.title}>
         {project.title}
       </span>
-      <span className="hidden lg:inline-flex shrink-0 whitespace-nowrap text-[10px] uppercase tracking-widest text-gray-500 font-mono px-1.5 py-0.5 rounded border border-[#333]">
+      <span className="hidden lg:inline-flex shrink-0 whitespace-nowrap text-2xs uppercase tracking-widest text-gray-500 font-mono px-1.5 py-0.5 rounded border border-[#333]">
         {formatPrivacyLabel(project.privacy)}
       </span>
       <span
-        className="shrink-0 whitespace-nowrap text-[10px] uppercase tracking-widest font-mono px-1.5 py-0.5 rounded border border-emerald-700 text-emerald-500"
+        className="shrink-0 whitespace-nowrap text-2xs uppercase tracking-widest font-mono px-1.5 py-0.5 rounded border border-emerald-700 text-emerald-500"
         aria-label="live"
         title={live.lastLiveUpdate ? `last update ${live.lastLiveUpdate.toLocaleTimeString()}` : 'waiting for agent updates'}
       >

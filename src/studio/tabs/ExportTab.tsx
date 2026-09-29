@@ -82,7 +82,7 @@ export function ExportTab(): JSX.Element {
                             >
                                 <span className="flex flex-col items-start gap-0.5">
                                     <span className="font-semibold">{f.label}</span>
-                                    <span className="text-[10px] text-gray-500">{help}</span>
+                                    <span className="text-2xs text-gray-500">{help}</span>
                                 </span>
                                 {isPending ? (
                                     <Loader2 className="h-4 w-4 animate-spin shrink-0" />

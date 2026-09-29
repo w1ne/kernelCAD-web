@@ -48,7 +48,7 @@ export const ValidityDeltaHeader: React.FC<ValidityDeltaHeaderProps> = ({ prev, 
                 {statusNow}
             </span>
             <span className="text-xs text-gray-300">{deltaText}</span>
-            <span className="ml-auto text-[10px] text-gray-500 italic">
+            <span className="ml-auto text-2xs text-gray-500 italic">
                 since last recompute
             </span>
             {onToggleCollapse && (
