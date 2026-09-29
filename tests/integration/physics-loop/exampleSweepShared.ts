@@ -64,6 +64,7 @@ export const EXEMPT_UNVERIFIED: ReadonlySet<string> = new Set([
   'examples/cookbook-parity/countersunk-flat-head-screw.kcad.ts',
   'examples/cookbook-parity/engineering-material-presets-mass.kcad.ts',
   'examples/cookbook-parity/gt2-timing-belt-drive.kcad.ts',
+  'examples/cookbook-parity/gridfinity-bin.kcad.ts',
   'examples/cookbook-parity/involute-spur-gear-pair.kcad.ts',
   'examples/cookbook-parity/iso-metric-bolt-and-nut.kcad.ts',
   'examples/cookbook-parity/tslot-extrusion-and-bracket.kcad.ts',

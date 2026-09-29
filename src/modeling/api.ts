@@ -152,8 +152,20 @@ export interface SdfNamespace {
 }
 
 export interface KernelCadApi {
+  /**
+   * Axis-aligned box. Default (`centered` omitted/false): corner at the
+   * origin, spans [0,x]×[0,y]×[0,z]. `centered: true` centres ALL THREE axes
+   * on the origin, so Z spans -z/2..+z/2 (unlike `cylinder`, whose bottom
+   * stays on z = 0).
+   *
+   * @example Cavity from z = floor in a corner-origin base:
+   *   base.subtract(box(x - 2*wall, y - 2*wall, z, true).translate(x/2, y/2, floor + z/2))
+   */
   box(x: Editable<number>, y: Editable<number>, z: Editable<number>, centered?: boolean, opts?: FaceLabelOpts): Shape;
+  /** Z-axis cylinder, centred on the Z axis in X/Y, bottom on the XY plane
+   *  (spans z = 0..h). No `centered` flag: `.translate(0, 0, -h/2)` to centre. */
   cylinder(h: Editable<number>, r: Editable<number>, segments?: number, opts?: FaceLabelOpts): Shape;
+  /** Sphere centred on the origin (all three axes). */
   sphere(r: Editable<number>, opts?: FaceLabelOpts): Shape;
   /**
    * Solid torus centered on world origin, axis along world +Z.

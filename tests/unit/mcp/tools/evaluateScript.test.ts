@@ -202,6 +202,23 @@ describe('evaluateScriptTool', () => {
     expect(result.diagnostics.some(d => d.code?.startsWith('mechanism.'))).toBe(false);
   }, 120_000);
 
+  it('a plain multi-part assembly with no mates (base + lid) passes the default gate', async () => {
+    // Dogfood friction: a two-part enclosure laid out for printing failed
+    // with mechanism.orphan-part and pushed agents into inventing mates.
+    // No mate/joint/transmission/solvedModel => not a mechanism => valid.
+    const result = await evaluateScriptTool({
+      code: `
+        const arm = assembly('enclosure');
+        arm.part('base', box(60, 40, 20));
+        arm.part('lid', box(60, 40, 3).translate(80, 0, 0));
+        return arm.model();
+      `,
+    });
+    expect(result.ok).toBe(true);
+    expect(result.mechanism).toBe('real');
+    expect(result.diagnostics.some(d => d.code === 'mechanism.orphan-part' && d.severity === 'error')).toBe(false);
+  }, 120_000);
+
   it('non-assembly scripts are unaffected (no mechanism field, no cost)', async () => {
     const result = await evaluateScriptTool({ code: `return box(10, 10, 10);` });
     expect(result.ok).toBe(true);

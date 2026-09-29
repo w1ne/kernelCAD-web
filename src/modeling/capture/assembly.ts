@@ -337,6 +337,11 @@ export class Assembly {
     return this.state.ignoreInterferenceList;
   }
 
+  /** True once the script called a validating `solvedModel(...)`. */
+  __solvedModelRequested(): boolean {
+    return this.state.solvedModelRequested;
+  }
+
   __mechanicalJointIntents(): readonly MechanicalJointIntentRecord[] {
     return this.state.mechanicalJointIntents;
   }

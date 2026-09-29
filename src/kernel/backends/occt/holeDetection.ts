@@ -18,6 +18,18 @@
 //   - The deep-probe heuristic (0.45·d past the end, catching conical
 //     drill-tip bottoms) can mark a through hole `blind` when its exit
 //     opens into a pocket with another wall < 0.45·d beyond.
+//   - A bore whose wall is breached (a clamp slot, a crossing pocket, a
+//     fillet or chamfer of a nearby edge running into it) no longer covers
+//     the full circle. `detectCylindricalHoles` drops it (strict, full bores
+//     only). `inspectCylindricalHoles` keeps bores that still cover more
+//     than MIN_PARTIAL_COVERAGE_RAD (≈229°, clearly more than a half-round
+//     slot end or a fillet channel) as `partial: true`, and marks the result
+//     `holeDetection: 'heuristic'` whenever it had to guess: a partial bore
+//     was reported, or a concave cylinder between a half and a partial bore
+//     was left out. `'exact'` means every concave cylinder was either a full
+//     bore or clearly a fillet / slot end.
+//   - `depthMm` is the length of the cylindrical wall. A chamfer or fillet
+//     on the mouth shortens it by that feature's height.
 
 import { getOC } from 'replicad';
 import { OcctBackend } from './occtBackend';
@@ -34,6 +46,23 @@ export interface CylindricalHole {
   faceCount: number;
   /** Set when both axial ends probe closed (internal duct). */
   bothEndsClosed?: boolean;
+  /** Set (by `inspectCylindricalHoles` only) when the bore wall is breached
+   *  and covers less than the full circle; see `angularCoverageDeg`. */
+  partial?: boolean;
+  /** Length-weighted angular coverage of the bore wall (deg), on partial bores. */
+  angularCoverageDeg?: number;
+}
+
+/** Result of {@link inspectCylindricalHoles}. */
+export interface HoleDetectionResult {
+  holes: CylindricalHole[];
+  /** 'exact' when every concave cylinder was a full bore or clearly not a
+   *  hole; 'heuristic' when a breached (partial) bore was reported or an
+   *  ambiguous concave cylinder was left out. */
+  holeDetection: 'exact' | 'heuristic';
+  /** Concave cylinders left out because their coverage was ambiguous
+   *  (more than a half circle, less than MIN_PARTIAL_COVERAGE_RAD). */
+  ambiguousCylinderCount: number;
 }
 
 /** Radius (mm) of the probe sphere used for the point-in-solid test.
@@ -56,6 +85,13 @@ const INTERVAL_GAP_MM = 0.05;
  *  A seam-split full bore sums to 2π; a quarter-round fillet channel to
  *  ~π/2. 5.8 rad ≈ 332° leaves slack for boolean sliver faces. */
 export const MIN_ANGULAR_COVERAGE_RAD = 5.8;
+/** Lower coverage bound (rad, ≈229°) for reporting a BREACHED bore as a
+ *  partial hole in `inspectCylindricalHoles`. Well above π, so a half-round
+ *  slot end (π) or a fillet channel (π/2) never qualifies. */
+export const MIN_PARTIAL_COVERAGE_RAD = 4.0;
+/** Coverage (rad) above which a rejected concave cylinder is "ambiguous"
+ *  rather than clearly a fillet / slot end. */
+const AMBIGUOUS_COVERAGE_RAD = Math.PI + 0.2;
 /** Near end-probe offset (mm) — catches flat caps just past the bore end. */
 const NEAR_PROBE_OFFSET_MM = 0.2;
 /** Deep end-probe offset as a fraction of hole diameter — catches conical
@@ -160,6 +196,36 @@ export interface BoreExtent {
   tMax: number;
   /** Number of BREP faces merged into this bore (seam splits). */
   faceCount: number;
+  /** Length-weighted angular coverage of the merged wall (rad; 2π = full). */
+  coverageRad: number;
+}
+
+/**
+ * Every merged co-axial concave-cylinder cluster with its angular coverage,
+ * before any coverage filter. Pure — no OCCT involvement.
+ */
+function resolveBoreCandidates(faces: ConcaveCylFace[]): BoreExtent[] {
+  const out: BoreExtent[] = [];
+  for (const group of groupCoaxialFaces(faces)) {
+    for (const cluster of mergeIntervals(group.faces)) {
+      const depth = cluster.t1 - cluster.t0;
+      if (depth < MIN_BORE_LENGTH_MM) continue;
+      // Length-weighted angular coverage over the merged extent. A full
+      // bore (even seam-split) sums to 2π; a fillet channel to ~π/2.
+      let weighted = 0;
+      for (const f of cluster.faces) weighted += f.du * (f.t1 - f.t0);
+      out.push({
+        loc0: group.loc0,
+        dir0: group.dir0,
+        radiusMm: group.radiusMm,
+        tMin: cluster.t0,
+        tMax: cluster.t1,
+        faceCount: cluster.faces.length,
+        coverageRad: weighted / depth,
+      });
+    }
+  }
+  return out;
 }
 
 /**
@@ -171,29 +237,7 @@ export interface BoreExtent {
  * plain descriptor data.
  */
 export function resolveBoreExtents(faces: ConcaveCylFace[]): BoreExtent[] {
-  const bores: BoreExtent[] = [];
-  for (const group of groupCoaxialFaces(faces)) {
-    for (const cluster of mergeIntervals(group.faces)) {
-      const depth = cluster.t1 - cluster.t0;
-      if (depth < MIN_BORE_LENGTH_MM) continue;
-
-      // Length-weighted angular coverage over the merged extent. A full
-      // bore (even seam-split) sums to 2π; a fillet channel to ~π/2.
-      let weighted = 0;
-      for (const f of cluster.faces) weighted += f.du * (f.t1 - f.t0);
-      if (weighted / depth < MIN_ANGULAR_COVERAGE_RAD) continue;
-
-      bores.push({
-        loc0: group.loc0,
-        dir0: group.dir0,
-        radiusMm: group.radiusMm,
-        tMin: cluster.t0,
-        tMax: cluster.t1,
-        faceCount: cluster.faces.length,
-      });
-    }
-  }
-  return bores;
+  return resolveBoreCandidates(faces).filter((b) => b.coverageRad >= MIN_ANGULAR_COVERAGE_RAD);
 }
 
 /**
@@ -215,57 +259,88 @@ export function collectFullCylinders(backend: OcctBackend, kind: 'hole' | 'pin')
  * and partial concave cylinders (fillet-like channels) are excluded.
  */
 export function detectCylindricalHoles(backend: OcctBackend): CylindricalHole[] {
-  const faces = collectConcaveCylindricalFaces(backend);
+  return resolveBoreExtents(collectConcaveCylindricalFaces(backend)).map((b) => classifyBore(backend, b));
+}
+
+/**
+ * Hole detection for inspection reports (`inspect({ of: 'step' })`): the
+ * full bores of {@link detectCylindricalHoles} PLUS breached bores that
+ * still cover more than {@link MIN_PARTIAL_COVERAGE_RAD} (flagged
+ * `partial: true`), and an honesty flag — `holeDetection: 'heuristic'`
+ * whenever a partial bore was reported or an ambiguous concave cylinder
+ * was left out.
+ */
+export function inspectCylindricalHoles(backend: OcctBackend): HoleDetectionResult {
   const holes: CylindricalHole[] = [];
-
-  for (const bore of resolveBoreExtents(faces)) {
-    const { loc0, dir0, radiusMm, tMin, tMax, faceCount } = bore;
-    const depth = tMax - tMin;
-    const diameter = 2 * radiusMm;
-    const endLow = add(loc0, scale(dir0, tMin));
-    const endHigh = add(loc0, scale(dir0, tMax));
-    const lowClosed = isEndClosed(backend, endLow, scale(dir0, -1), diameter);
-    const highClosed = isEndClosed(backend, endHigh, dir0, diameter);
-
-    let kind: 'blind' | 'through';
-    let origin: Vec3;
-    let direction: Vec3;
-    let bothEndsClosed = false;
-    if (!lowClosed && !highClosed) {
-      kind = 'through';
-      origin = endLow;
-      direction = dir0;
-    } else if (lowClosed && !highClosed) {
-      // Mouth at the high end; bottom at the low end.
-      kind = 'blind';
-      origin = endHigh;
-      direction = scale(dir0, -1);
-    } else if (highClosed && !lowClosed) {
-      kind = 'blind';
-      origin = endLow;
-      direction = dir0;
-    } else {
-      // Both ends closed — internal duct. Report as blind but flag it
-      // rather than silently misreporting; mouth choice is arbitrary.
-      kind = 'blind';
-      origin = endLow;
-      direction = dir0;
-      bothEndsClosed = true;
+  let partialCount = 0;
+  let ambiguousCylinderCount = 0;
+  for (const bore of resolveBoreCandidates(collectConcaveCylindricalFaces(backend))) {
+    if (bore.coverageRad >= MIN_ANGULAR_COVERAGE_RAD) {
+      holes.push(classifyBore(backend, bore));
+    } else if (bore.coverageRad >= MIN_PARTIAL_COVERAGE_RAD) {
+      partialCount++;
+      holes.push({
+        ...classifyBore(backend, bore),
+        partial: true,
+        angularCoverageDeg: Math.round((bore.coverageRad * 180) / Math.PI),
+      });
+    } else if (bore.coverageRad > AMBIGUOUS_COVERAGE_RAD) {
+      ambiguousCylinderCount++;
     }
+  }
+  return {
+    holes,
+    holeDetection: partialCount > 0 || ambiguousCylinderCount > 0 ? 'heuristic' : 'exact',
+    ambiguousCylinderCount,
+  };
+}
 
-    const hole: CylindricalHole = {
-      axisOrigin: origin,
-      axisDirection: direction,
-      diameterMm: diameter,
-      depthMm: depth,
-      kind,
-      faceCount,
-    };
-    if (bothEndsClosed) hole.bothEndsClosed = true;
-    holes.push(hole);
+/** End-probe one merged bore into a blind / through hole record. */
+function classifyBore(backend: OcctBackend, bore: BoreExtent): CylindricalHole {
+  const { loc0, dir0, radiusMm, tMin, tMax, faceCount } = bore;
+  const depth = tMax - tMin;
+  const diameter = 2 * radiusMm;
+  const endLow = add(loc0, scale(dir0, tMin));
+  const endHigh = add(loc0, scale(dir0, tMax));
+  const lowClosed = isEndClosed(backend, endLow, scale(dir0, -1), diameter);
+  const highClosed = isEndClosed(backend, endHigh, dir0, diameter);
+
+  let kind: 'blind' | 'through';
+  let origin: Vec3;
+  let direction: Vec3;
+  let bothEndsClosed = false;
+  if (!lowClosed && !highClosed) {
+    kind = 'through';
+    origin = endLow;
+    direction = dir0;
+  } else if (lowClosed && !highClosed) {
+    // Mouth at the high end; bottom at the low end.
+    kind = 'blind';
+    origin = endHigh;
+    direction = scale(dir0, -1);
+  } else if (highClosed && !lowClosed) {
+    kind = 'blind';
+    origin = endLow;
+    direction = dir0;
+  } else {
+    // Both ends closed — internal duct. Report as blind but flag it
+    // rather than silently misreporting; mouth choice is arbitrary.
+    kind = 'blind';
+    origin = endLow;
+    direction = dir0;
+    bothEndsClosed = true;
   }
 
-  return holes;
+  const hole: CylindricalHole = {
+    axisOrigin: origin,
+    axisDirection: direction,
+    diameterMm: diameter,
+    depthMm: depth,
+    kind,
+    faceCount,
+  };
+  if (bothEndsClosed) hole.bothEndsClosed = true;
+  return hole;
 }
 
 /**
