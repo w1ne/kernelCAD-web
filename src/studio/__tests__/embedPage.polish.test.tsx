@@ -222,7 +222,8 @@ describe('embed: theme', () => {
     await waitFor(() => expect(harness.viewerProps).not.toBeNull());
     expect(frame().getAttribute('data-embed-theme')).toBe('light');
     expect(harness.viewerProps?.background).toBe('light');
-    expect(frame().style.getPropertyValue('--embed-bg')).toBe('#f0f0f0');
+    expect(frame().style.getPropertyValue('--embed-canvas')).toBe('#f0f0f0');
+    expect(frame().getAttribute('data-theme')).toBe('light');
   });
 
   it('?theme=dark wins over a light host', async () => {

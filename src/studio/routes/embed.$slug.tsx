@@ -31,11 +31,12 @@ import { useCallback, useEffect, useMemo, useState, useSyncExternalStore, type C
 import { FunnelViewer, type FunnelViewerPhase } from '../../funnel/components/FunnelViewer';
 import { fetchProjectBySlug, fetchProjectRevisionBySlug } from '../../funnel/lib/apiClient';
 import StudioApp from '../App';
+import { Button } from '../../ui';
 import { StudioConfigProvider } from '../config/StudioConfigContext';
 import { EmbedAttributionBar, MadeWithKernelcad } from '../components/MadeWithKernelcad';
 import { StudioModelCustomizer } from '../customizer/StudioModelCustomizer';
 import {
-  EMBED_THEME_VARS,
+  EMBED_CANVAS_BG,
   embedCustomize,
   embedPosterUrl,
   embedPresentationMode,
@@ -499,8 +500,9 @@ function EmbedFrame(props: {
 
   return (
     <main
-      className="fixed inset-0 flex flex-col overflow-hidden bg-[var(--embed-bg)] font-sans text-[var(--embed-fg)]"
-      style={EMBED_THEME_VARS[props.theme] as CSSProperties}
+      className="fixed inset-0 flex flex-col overflow-hidden bg-[var(--embed-canvas)] font-sans text-fg"
+      style={{ '--embed-canvas': EMBED_CANVAS_BG[props.theme] } as CSSProperties}
+      data-theme={props.theme}
       data-embed-phase={uiPhase}
       data-embed-theme={props.theme}
       aria-busy={loading && !modelShown}
@@ -513,7 +515,7 @@ function EmbedFrame(props: {
           data-testid="embed-cover"
           data-visible={coverVisible ? 'true' : 'false'}
           aria-hidden="true"
-          className={`absolute inset-0 z-30 bg-[var(--embed-bg)] motion-safe:transition-opacity motion-safe:duration-[250ms] ${coverVisible ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
+          className={`absolute inset-0 z-30 bg-[var(--embed-canvas)] motion-safe:transition-opacity motion-safe:duration-[250ms] ${coverVisible ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
         >
           {showPoster && posterUrl ? (
             <img
@@ -566,30 +568,26 @@ function EmbedStatus(props: {
       aria-live="polite"
     >
       <div className="pointer-events-auto flex max-w-full flex-col items-center gap-2">
-        <div className="flex max-w-full items-center gap-2 rounded-full bg-[var(--embed-pill)] px-3 py-1.5 text-xs leading-4 shadow-sm">
+        <div className="flex max-w-full items-center gap-2 rounded-full bg-surface-1/90 px-3 py-1.5 text-xs leading-4 shadow-sm">
           {props.loading ? (
             <span
               aria-hidden="true"
-              className="h-3 w-3 shrink-0 rounded-full border-2 border-[var(--embed-fg-2)] border-t-transparent motion-safe:animate-spin"
+              className="h-3 w-3 shrink-0 rounded-full border-2 border-fg-2 border-t-transparent motion-safe:animate-spin"
             />
           ) : null}
-          <p className={`min-w-0 ${props.loading ? 'truncate' : 'line-clamp-3 break-words'} ${props.canRetry ? 'text-[var(--embed-danger)]' : 'text-[var(--embed-fg)]'}`}>
+          <p className={`min-w-0 ${props.loading ? 'truncate' : 'line-clamp-3 break-words'} ${props.canRetry ? 'text-danger' : 'text-fg'}`}>
             {props.message}
           </p>
           {props.loading && props.elapsed >= ELAPSED_VISIBLE_AFTER_S ? (
-            <span data-testid="embed-elapsed" className="shrink-0 font-mono tabular-nums text-[var(--embed-fg-2)]">
+            <span data-testid="embed-elapsed" className="shrink-0 font-mono tabular-nums text-fg-2">
               {props.elapsed} s
             </span>
           ) : null}
         </div>
         {props.canRetry ? (
-          <button
-            type="button"
-            className="h-7 rounded-md border border-[var(--embed-border)] bg-[var(--embed-surface)] px-3 text-xs font-semibold text-[var(--embed-fg)] hover:border-[var(--embed-fg-2)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--embed-accent)]"
-            onClick={props.onRetry}
-          >
+          <Button variant="secondary" size="sm" onClick={props.onRetry}>
             Retry
-          </button>
+          </Button>
         ) : null}
       </div>
     </div>

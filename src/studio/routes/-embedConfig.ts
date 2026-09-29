@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import { BACKGROUND_DARK_HEX, BACKGROUND_LIGHT_HEX } from '../components/viewer/sceneBackgroundTexture';
 
 export type EmbedPresentation = 'viewer' | 'studio';
 
@@ -94,37 +95,19 @@ export function resolveEmbedTheme(pinned: EmbedTheme | undefined, prefersDark: b
 }
 
 /**
- * Embed colours as CSS custom properties, set on the embed root. `bg` matches
- * the viewer canvas background of the same theme, so the cross-fade from the
- * poster to the live canvas has no colour jump. Text/background pairs meet
- * WCAG AA. Move these to the shared semantic tokens when they land.
+ * The embed's backdrop per theme: the viewer canvas background of the same
+ * theme, so the cross-fade from the poster to the live canvas has no colour
+ * jump. Every other embed colour comes from the shared semantic tokens
+ * (`data-theme` on the embed root).
  */
-export const EMBED_THEME_VARS: Record<EmbedTheme, Record<`--embed-${string}`, string>> = {
-  dark: {
-    '--embed-bg': '#202126',
-    '--embed-surface': '#16171b',
-    '--embed-border': '#2e3038',
-    '--embed-fg': '#e8ecf3',
-    '--embed-fg-2': '#aab3c2',
-    '--embed-accent': '#5b9be6',
-    '--embed-accent-hover': '#79b0ee',
-    '--embed-on-accent': '#06101e',
-    '--embed-pill': 'rgb(12 13 16 / 0.78)',
-    '--embed-danger': '#ff6b6b',
-  },
-  light: {
-    '--embed-bg': '#f0f0f0',
-    '--embed-surface': '#ffffff',
-    '--embed-border': '#d9d9d9',
-    '--embed-fg': '#0a1628',
-    '--embed-fg-2': '#3f4c5e',
-    '--embed-accent': '#1e5fa8',
-    '--embed-accent-hover': '#174e8b',
-    '--embed-on-accent': '#ffffff',
-    '--embed-pill': 'rgb(255 255 255 / 0.9)',
-    '--embed-danger': '#b42318',
-  },
+export const EMBED_CANVAS_BG: Record<EmbedTheme, string> = {
+  dark: hexColor(BACKGROUND_DARK_HEX),
+  light: hexColor(BACKGROUND_LIGHT_HEX),
 };
+
+function hexColor(value: number): string {
+  return `#${value.toString(16).padStart(6, '0')}`;
+}
 
 /** Path of a project's stored render (kernelCAD-server `GET /api/v1/projects/:slug/og.png`). */
 function storedRenderPath(slug: string): string {

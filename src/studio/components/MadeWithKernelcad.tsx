@@ -10,11 +10,12 @@
 //
 // `EmbedAttributionBar` is the /embed/<slug> variant: a slim footer under the
 // canvas (never over the model) with the attribution on the left and a Remix
-// button on the right. It reads its colours from the embed's `--embed-*`
-// custom properties, so it follows the embed theme.
+// button on the right. It uses the semantic colour tokens, so it follows the
+// nearest `data-theme` (the embed root).
 
 import React from 'react';
 import { GitFork } from 'lucide-react';
+import { buttonClass, cx } from '../../ui';
 import {
   attributionUrl,
   KERNELCAD_NAME,
@@ -79,7 +80,7 @@ export function EmbedAttributionBar({ remixSlug }: EmbedAttributionBarProps): Re
   return (
     <footer
       data-testid="embed-attribution-bar"
-      className="flex shrink-0 items-center justify-between gap-2 border-t border-[var(--embed-border)] bg-[var(--embed-surface)] px-2 font-sans"
+      className="flex shrink-0 items-center justify-between gap-2 border-t border-border bg-surface-1 px-2 font-sans"
       style={{ height: EMBED_ATTRIBUTION_BAR_PX }}
     >
       <a
@@ -87,7 +88,7 @@ export function EmbedAttributionBar({ remixSlug }: EmbedAttributionBarProps): Re
         target="_blank"
         rel="noopener"
         data-testid="made-with-kernelcad"
-        className="min-w-0 truncate rounded px-1 text-xs leading-7 text-[var(--embed-fg-2)] no-underline hover:text-[var(--embed-fg)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--embed-accent)]"
+        className="min-w-0 truncate rounded px-1 text-xs leading-7 text-fg-2 no-underline hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
       >
         Made with <span className="font-semibold">{KERNELCAD_NAME}</span>
       </a>
@@ -98,7 +99,7 @@ export function EmbedAttributionBar({ remixSlug }: EmbedAttributionBarProps): Re
           rel="noopener"
           data-testid="remix-in-kernelcad"
           aria-label={`Remix in ${KERNELCAD_NAME}`}
-          className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-md bg-[var(--embed-accent)] px-2.5 text-xs font-semibold text-[var(--embed-on-accent)] no-underline hover:bg-[var(--embed-accent-hover)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--embed-fg)] focus-visible:ring-offset-1"
+          className={cx(buttonClass('primary', 'sm'), 'shrink-0 no-underline hover:bg-accent-hover')}
         >
           <GitFork size={14} strokeWidth={2} aria-hidden="true" />
           <span>

@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it, vi } from 'vitest';
 import {
-  EMBED_THEME_VARS,
+  EMBED_CANVAS_BG,
   embedCustomize,
   embedPosterUrl,
   embedPresentationMode,
@@ -13,6 +13,7 @@ import {
   resolveEmbedTheme,
   revisionPinnedMeshUrl,
 } from './-embedConfig';
+import { BACKGROUND_DARK_HEX, BACKGROUND_LIGHT_HEX } from '../components/viewer/sceneBackgroundTexture';
 
 describe('embedPresentationMode', () => {
   it('keeps the default embed model-only', () => {
@@ -117,30 +118,10 @@ describe('embedTheme', () => {
     expect(resolveEmbedTheme('dark', false)).toBe('dark');
   });
 
-  function luminance(hex: string): number {
-    const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
-      .map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
-    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  }
-  function contrast(a: string, b: string): number {
-    const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
-    return (hi + 0.05) / (lo + 0.05);
-  }
-
-  it.each(['light', 'dark'] as const)('meets WCAG AA for every text pair (%s)', (theme) => {
-    const v = EMBED_THEME_VARS[theme];
-    const pairs: Array<[string, string]> = [
-      ['--embed-fg', '--embed-bg'],
-      ['--embed-fg', '--embed-surface'],
-      ['--embed-fg-2', '--embed-surface'],
-      ['--embed-fg-2', '--embed-bg'],
-      ['--embed-on-accent', '--embed-accent'],
-      ['--embed-on-accent', '--embed-accent-hover'],
-      ['--embed-danger', '--embed-bg'],
-    ];
-    for (const [fg, bg] of pairs) {
-      expect(contrast(v[fg as `--embed-${string}`], v[bg as `--embed-${string}`]), `${fg} on ${bg}`).toBeGreaterThanOrEqual(4.5);
-    }
+  it('backs the embed with the viewer canvas colour of the same theme', () => {
+    expect(EMBED_CANVAS_BG.dark).toBe(`#${BACKGROUND_DARK_HEX.toString(16).padStart(6, '0')}`);
+    expect(EMBED_CANVAS_BG.light).toBe(`#${BACKGROUND_LIGHT_HEX.toString(16).padStart(6, '0')}`);
+    expect(EMBED_CANVAS_BG.light).toBe('#f0f0f0');
   });
 });
 
