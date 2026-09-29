@@ -4026,7 +4026,7 @@
   },
   {
     "name": "review_cad",
-    "description": "Use this when you need to review a mechanism for fitness and repair mode. Run the deterministic CAD review loop: evaluate the script, validate the assembly/mate graph, check mate connectors touch modeled material, sample declared mate limits, optionally check interferences at sampled poses, report connector workspace bounds, and return a mechanism fitness verdict for agent self-review. Fitness includes repairMode: none, local-fix, parameter-tune, or topology-redesign.",
+    "description": "Use this when you need to review a mechanism for fitness and repair mode. Run the deterministic CAD review loop: evaluate the script, validate the assembly/mate graph, check mate connectors touch modeled material, sample declared mate limits, optionally check interferences at sampled poses, report connector workspace bounds, and return a mechanism fitness verdict for agent self-review. Fitness includes repairMode: none, local-fix, parameter-tune, or topology-redesign. Runs within timeBudgetMs (default 90 s): stages that did not fit are listed in skippedStages (their checks did not run; mechanism is then unverified) and stageTimingsMs shows per-stage cost.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -4099,6 +4099,10 @@
           "type": "number",
           "description": "Interference volume threshold in mm^3. Default 0.01."
         },
+        "timeBudgetMs": {
+          "type": "number",
+          "description": "Wall-clock budget for the review in ms (default 90000). Once spent, the remaining heavy stages (pose envelope, physical use case, mechanism sweep) are skipped and listed in skippedStages — a partial result instead of a timeout. stageTimingsMs reports where the time went."
+        },
         "trackConnectors": {
           "type": "array",
           "description": "Optional connector refs such as [\"gripper-plate.tool-tip\"] to limit connector workspace reporting.",
@@ -4132,6 +4136,29 @@
       "properties": {
         "ok": {
           "type": "boolean"
+        },
+        "stageTimingsMs": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          },
+          "description": "Wall-clock ms per review stage that ran."
+        },
+        "skippedStages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "stage": {
+                "type": "string"
+              },
+              "reason": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": true
+          },
+          "description": "Stages skipped because timeBudgetMs was spent; their checks did not run."
         },
         "featureCount": {
           "type": "number"

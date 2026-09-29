@@ -4,6 +4,8 @@ import { evaluateScriptTool } from '../../../src/agent/mcp/tools/evaluateScript'
 import { getShapeInfoTool } from '../../../src/agent/mcp/tools/getShapeInfo';
 import { getMassPropertiesTool } from '../../../src/agent/mcp/tools/getMassProperties';
 import { listPartStatsTool } from '../../../src/agent/mcp/tools/listPartStats';
+import { runAndExportParts } from '../../../src/agent/script-runtime/export';
+import { stlStats } from '../../helpers/stlStats';
 import { lookupCookbookTool } from '../../../src/agent/mcp/tools/lookupCookbook';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { resolveFeaMaterial } from '../../../src/kernel/fea/feaMaterials';
@@ -33,28 +35,34 @@ beforeAll(async () => {
 }, 60_000);
 
 describe('cookbook parity examples', () => {
-  it('involute spur gear pair: center distance is m(z1+z2)/2', async () => {
+  it('involute spur gear pair: one solid per gear, m(z1+z2)/2 apart, no interference', async () => {
     const file = `${ROOT}/involute-spur-gear-pair.kcad.ts`;
-    const ev = await evaluateScript({ file });
-    expect(ev.exitCode, JSON.stringify(ev.diagnostics)).toBe(0);
+    const code = readFileSync(file, 'utf8');
+    // Per-part STL: the script evaluates, and every gear is ONE watertight,
+    // connected body. The old hand-sampled recipe extruded a self-crossing
+    // loop into a hollow ring with every tooth floating.
+    const perPart = await runAndExportParts({ code, fileName: file });
+    expect(perPart.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+    expect(perPart.parts.map((p) => p.name).sort()).toEqual(['gear', 'pinion']);
+    const stats = new Map(perPart.parts.map((p) => [p.name, stlStats(p.bytes)]));
+    for (const part of perPart.parts) {
+      expect(part.report.ok, `${part.name} STL open edges: ${part.report.openEdgeCount}`).toBe(true);
+      expect(stats.get(part.name)!.components, `${part.name} STL components`).toBe(1);
+    }
 
-    const stats = await listPartStatsTool({ file });
-    expect(stats.ok, stats.error).toBe(true);
-    const pinion = stats.parts!.find((p) => p.name === 'pinion');
-    const gear = stats.parts!.find((p) => p.name === 'gear');
-    expect(pinion).toBeDefined();
-    expect(gear).toBeDefined();
+    const moduleMm = 1;
+    const z1 = 20;
+    const z2 = 40;
+    const centerDistance = (moduleMm * (z1 + z2)) / 2; // 30
+    const pinion = stats.get('pinion')!;
+    const gear = stats.get('gear')!;
+    expect(center(gear.bbox)[0] - center(pinion.bbox)[0]).toBeCloseTo(centerDistance, 1);
+    expect(extent(pinion.bbox)[0]).toBeCloseTo(2 * moduleMm * (z1 / 2 + 1), 1);
 
-    const moduleMm = 2;
-    const z1 = 16;
-    const z2 = 24;
-    const centerDistance = (moduleMm * (z1 + z2)) / 2; // 40
-    const dx = center(gear!.bbox)[0] - center(pinion!.bbox)[0];
-    expect(dx).toBeCloseTo(centerDistance, 1);
-
-    const pinionOuter = moduleMm * (z1 / 2 + 1);
-    expect(extent(pinion!.bbox)[0]).toBeCloseTo(2 * pinionOuter, 1.5);
-  }, 120_000);
+    // The meshed pair at the nominal centre distance does not interpenetrate.
+    const interference = await checkInterference({ code, fileName: file, epsilonMm3: 1e-6 });
+    expect(interference.pairs).toEqual([]);
+  }, 180_000);
 
   // The M6 bolt-and-nut example (modeled V-thread + threaded nut) costs minutes
   // to evaluate and interference-check, so its proof lives in the non-required

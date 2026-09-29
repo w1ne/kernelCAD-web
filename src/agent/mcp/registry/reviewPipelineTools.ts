@@ -13,7 +13,7 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
   {
     definition: {
       name: 'review_cad',
-      description: 'Use this when you need to review a mechanism for fitness and repair mode. Run the deterministic CAD review loop: evaluate the script, validate the assembly/mate graph, check mate connectors touch modeled material, sample declared mate limits, optionally check interferences at sampled poses, report connector workspace bounds, and return a mechanism fitness verdict for agent self-review. Fitness includes repairMode: none, local-fix, parameter-tune, or topology-redesign.',
+      description: 'Use this when you need to review a mechanism for fitness and repair mode. Run the deterministic CAD review loop: evaluate the script, validate the assembly/mate graph, check mate connectors touch modeled material, sample declared mate limits, optionally check interferences at sampled poses, report connector workspace bounds, and return a mechanism fitness verdict for agent self-review. Fitness includes repairMode: none, local-fix, parameter-tune, or topology-redesign. Runs within timeBudgetMs (default 90 s): stages that did not fit are listed in skippedStages (their checks did not run; mechanism is then unverified) and stageTimingsMs shows per-stage cost.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -63,6 +63,10 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
             description: 'Sample all 2^N limit-corner combinations across mates with declared limits. Capped at 8 mates with limits; combine with samplesPerMate for both interior coverage and worst-pose detection. Default false.',
           },
           epsilonMm3: { type: 'number', description: 'Interference volume threshold in mm^3. Default 0.01.' },
+          timeBudgetMs: {
+            type: 'number',
+            description: 'Wall-clock budget for the review in ms (default 90000). Once spent, the remaining heavy stages (pose envelope, physical use case, mechanism sweep) are skipped and listed in skippedStages — a partial result instead of a timeout. stageTimingsMs reports where the time went.',
+          },
           trackConnectors: {
             type: 'array',
             description: 'Optional connector refs such as ["gripper-plate.tool-tip"] to limit connector workspace reporting.',

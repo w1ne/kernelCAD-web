@@ -153,7 +153,7 @@ function GalleryBody({ sort, list, onRetry, onLoadMore }: {
   if (list.status === 'error') {
     return (
       <div className="mt-8" role="alert">
-        <p className="text-copper font-mono text-sm">Could not load the gallery.</p>
+        <p className="text-danger font-mono text-sm">Could not load the gallery.</p>
         <button type="button" onClick={onRetry} className="mt-2 font-mono text-xs underline text-ink-soft hover:text-ink">
           Retry
         </button>
@@ -177,7 +177,7 @@ function GalleryBody({ sort, list, onRetry, onLoadMore }: {
       {(list.nextCursor || list.status === 'more-error') && (
         <div className="mt-8 flex flex-col items-center gap-2">
           {list.status === 'more-error' && (
-            <p className="text-copper font-mono text-xs" role="alert">Could not load more.</p>
+            <p className="text-danger font-mono text-xs" role="alert">Could not load more.</p>
           )}
           <button
             type="button"
