@@ -2,13 +2,12 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useCallback, useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
-import { StudioQuickStart } from './start/StudioQuickStart';
 import { Header } from './components/Layout/Header';
-import { Toolbar } from './Toolbar';
+import { ViewportToolbar } from './ViewportToolbar';
+import { ActivityBar } from './ActivityBar';
 import { useStudioConfig } from './config/StudioConfigContext';
 import { Viewport } from './Viewport';
 import { Inspector } from './Inspector';
-import { AgentRail } from './AgentRail';
 import { BottomDrawer } from './BottomDrawer';
 import { MarkingOverlay } from './components/viewer/overlays/MarkingOverlay';
 import { SectionPanel } from './components/viewer/overlays/SectionPanel';
@@ -26,13 +25,12 @@ import { useWorkbench } from './context/WorkbenchContext';
 import { useShellStore, shellStore } from './store/useShellStore';
 import type { StagedEdit } from './store/shellStore';
 import { useRecomputeResult } from './hooks/useRecomputeResult';
-import { useProject } from './context/ProjectContext';
 import { useStudioChrome } from './context/StudioChromeContext';
-import { useOptionalSession } from '../funnel/hooks/useSession';
-import { isAuthConfigured } from '../funnel/lib/supabaseClient';
+import { useUI } from './context/UIContext';
 import { jointContactCapMm3 } from '../modeling/runtime/jointContactCap';
 import { useViewportToggles } from './hooks/useViewportToggles';
 import { useUndoRedoShortcuts } from './hooks/useUndoRedoShortcuts';
+import { NARROW_QUERY } from './hooks/useIsNarrow';
 
 
 interface EmbedFlags {
@@ -47,14 +45,6 @@ function resolveEmbedFlags(embed: EmbedFlags): { showHeader: boolean; enableAgen
         enableAgentRail: embed.enableAgentRail ?? true,
         enableConnect: embed.enableConnect ?? true,
     };
-}
-
-function resolveAgentEnabled(enableAgentRail: boolean, authConfigured: boolean, hasSession: boolean): boolean {
-    return enableAgentRail && authConfigured && hasSession;
-}
-
-function resolveIsModified(activeProjectCode: string | undefined, code: string): boolean {
-    return activeProjectCode != null && code !== activeProjectCode;
 }
 
 function resolveInterferenceCount(recompute: ReturnType<typeof useRecomputeResult>): number {
@@ -94,7 +84,7 @@ function KernelInitBanner({ error }: { error: string | null }) {
             data-testid="kernel-init-banner"
             role={error ? 'alert' : 'status'}
             aria-live="polite"
-            className="pointer-events-none absolute left-1/2 top-4 z-30 flex max-w-[calc(100%-2rem)] -translate-x-1/2 items-center gap-2 rounded border border-white/10 bg-black/80 px-3 py-2 text-xs text-white/80 shadow-lg"
+            className="pointer-events-none absolute left-1/2 top-16 z-30 flex max-w-[calc(100%-2rem)] -translate-x-1/2 items-center gap-2 rounded border border-white/10 bg-black/80 px-3 py-2 text-xs text-white/80 shadow-lg"
         >
             {!needsReload && <Loader2 className="h-4 w-4 shrink-0 animate-spin" />}
             <span>
@@ -118,16 +108,14 @@ function KernelInitBanner({ error }: { error: string | null }) {
 }
 
 /**
- * Top-level Studio shell. Composes the six slots — Toolbar / Viewport /
- * Inspector / AgentRail / BottomDrawer / StatusBar — over the existing
- * Header chrome. Mounted by App.tsx and DevLab; the Phase 1 WorkbenchLayout
- * stub has been retired (Slice 1.3).
+ * Top-level Studio shell: one header row, the left activity bar and its
+ * pane (Agent / Model tree / Projects), the viewport with its floating
+ * toolbar, the Inspector, the drawer and the status bar. Mounted by App.tsx
+ * and DevLab.
  */
 export function StudioShell() {
     const workbench = useWorkbench();
     const {
-        agentRailOpen,
-        inspectorOpen,
         selectedFeatureId,
         markingMode,
         sectionMode,
@@ -135,36 +123,22 @@ export function StudioShell() {
     } = useShellStore();
     const embed = useStudioConfig();
     // Defaults preserve standalone behavior: show the kernelCAD header and
-    // mount the AgentRail. Embed hosts (e.g. proto.cat) pass `false` for
-    // both to drive a stripped viewport+inspector+toolbar shell.
+    // offer the agent. Embed hosts (e.g. proto.cat) pass `false` for both to
+    // drive a stripped viewport + inspector + toolbar shell.
     const { showHeader, enableAgentRail, enableConnect } = resolveEmbedFlags(embed);
-    const authConfigured = isAuthConfigured();
-    const { session } = useOptionalSession();
-    // The in-Studio agent talks to the hosted, auth'd, metered backend
-    // (api.kernelcad.com /api/v1/generate), so it only belongs in the real
-    // hosted app for a signed-in user. It is therefore hidden when:
-    //   - auth is not configured (local dev / env-less embed) — no backend to
-    //     drive it and nothing to meter against; and
-    //   - the host disables it (embed / MCP-driven shells pass enableAgentRail
-    //     = false, e.g. proto.cat) or there is no live session.
-    // (`open_in_studio` / `/p/<slug>` review pages additionally hide it via
-    // viewerMode below.)
-    const agentEnabled = resolveAgentEnabled(enableAgentRail, authConfigured, !!session);
     const { viewerMode } = useStudioChrome();
+    const ui = useUI();
     const {
         handleToggleMarkingMode,
         handleToggleSectionMode,
         handleValidate,
         handleRun,
-        handleToggleAgentRail,
-        handleToggleInspector,
-    } = useStudioShellHandlers(workbench, agentRailOpen);
+    } = useStudioShellHandlers(workbench);
     const recompute = useRecomputeResult();
-    const { activeProject } = useProject();
-    const isModified = resolveIsModified(activeProject?.code, workbench.code);
 
     useProposeEditBridge();
     useUndoRedoShortcuts(workbench.commandManager);
+    useModelFirstOnPhone();
 
     // Bridge shell selection → Viewer's existing selectedItemIds. Identity
     // reconciliation: shell selectedFeatureId is a FeatureRecord.id (e.g.
@@ -196,51 +170,50 @@ export function StudioShell() {
 
     return (
         <div
-            className="flex w-screen h-screen bg-black text-white font-sans overflow-hidden flex-col"
+            data-theme="dark"
+            className="flex w-screen h-screen bg-bg text-fg font-sans overflow-hidden flex-col"
             data-testid="workbench-ready"
         >
             {showHeader && <Header />}
-            {showHeader && <StudioQuickStart />}
-            <Toolbar
-                isModified={isModified}
-                onValidate={handleValidate}
-                onRun={handleRun}
-                agentRailOpen={agentRailOpen}
-                onToggleAgentRail={handleToggleAgentRail}
-                enableAgentRail={agentEnabled}
-                enableConnect={enableConnect}
-                agentRailHidden={viewerMode}
-                referenceImagesPresent={referenceImagesPresent}
-                referenceImagesVisible={referenceImagesVisible}
-                onToggleReferenceImages={handleToggleReferenceImages}
-                renderEnvironmentPresent={renderEnvironmentPresent}
-                renderEnvironmentVisible={renderEnvironmentVisible}
-                renderEnvironmentPresetLabel={renderEnvironmentPresetLabel}
-                onToggleRenderEnvironment={handleToggleRenderEnvironment}
-                markingMode={markingMode}
-                onToggleMarkingMode={handleToggleMarkingMode}
-                sectionMode={sectionMode}
-                onToggleSectionMode={handleToggleSectionMode}
-                inspectorOpen={inspectorOpen}
-                onToggleInspector={handleToggleInspector}
-                code={workbench.code}
-                projectName={activeProject?.name}
-            />
 
             <div className="flex-1 flex overflow-hidden relative">
-                {agentEnabled && agentRailOpen && !viewerMode && <AgentRail />}
-                <div className="flex-1 relative">
+                {showHeader && (
+                    <ActivityBar enableAgent={enableAgentRail} enableConnect={enableConnect} viewerMode={!!viewerMode} />
+                )}
+                <div className="flex-1 relative min-w-0">
                     <Viewport />
+                    <ViewportToolbar
+                        onRun={handleRun}
+                        onValidate={handleValidate}
+                        runNeeded={!!workbench.error}
+                        markingMode={markingMode}
+                        onToggleMarkingMode={handleToggleMarkingMode}
+                        sectionMode={sectionMode}
+                        onToggleSectionMode={handleToggleSectionMode}
+                        referenceImagesPresent={referenceImagesPresent}
+                        referenceImagesVisible={referenceImagesVisible}
+                        onToggleReferenceImages={handleToggleReferenceImages}
+                        renderEnvironmentPresent={renderEnvironmentPresent}
+                        renderEnvironmentVisible={renderEnvironmentVisible}
+                        renderEnvironmentPresetLabel={renderEnvironmentPresetLabel}
+                        onToggleRenderEnvironment={handleToggleRenderEnvironment}
+                        display={{
+                            viewMode3D: workbench.viewMode3D,
+                            setViewMode3D: workbench.setViewMode3D,
+                            background: ui.viewportBackground,
+                            setBackground: ui.setViewportBackground,
+                            gridVisible: ui.gridVisible,
+                            setGridVisible: ui.setGridVisible,
+                        }}
+                    />
                     <MarkingOverlay visible={markingMode} />
                     <SectionPanel visible={sectionMode} />
                     <DirectEditPanel />
+                    {shouldShowKernelBanner(workbench.isReady, workbench.geometries?.length ?? 0) && (
+                        <KernelInitBanner error={workbench.error} />
+                    )}
                 </div>
                 <Inspector tabSlots={tabSlots} />
-
-                {shouldShowKernelBanner(workbench.isReady, workbench.geometries?.length ?? 0) && (
-                    <KernelInitBanner error={workbench.error} />
-                )}
-
             </div>
 
             {renderStudioFooter({
@@ -286,10 +259,7 @@ function renderStudioFooter(props: {
     );
 }
 
-function useStudioShellHandlers(
-    workbench: ReturnType<typeof useWorkbench>,
-    agentRailOpen: boolean,
-) {
+function useStudioShellHandlers(workbench: ReturnType<typeof useWorkbench>) {
     const handleToggleMarkingMode = useCallback(() => {
         shellStore.toggleMarkingMode();
     }, []);
@@ -313,22 +283,21 @@ function useStudioShellHandlers(
         workbench.mutateCode?.((current: string) => current, 'studio.toolbar.run');
     }, [workbench]);
 
-    const handleToggleAgentRail = useCallback(() => {
-        shellStore.setAgentRailOpen(!agentRailOpen);
-    }, [agentRailOpen]);
-
-    const handleToggleInspector = useCallback(() => {
-        shellStore.toggleInspectorOpen();
-    }, []);
-
     return {
         handleToggleMarkingMode,
         handleToggleSectionMode,
         handleValidate,
         handleRun,
-        handleToggleAgentRail,
-        handleToggleInspector,
     };
+}
+
+/** A phone has no room for the model beside the inspector: open on the
+ *  model. The inspector stays one tap away (header ⋯ → Panels, ⌘\). */
+function useModelFirstOnPhone(): void {
+    useEffect(() => {
+        if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
+        if (window.matchMedia(NARROW_QUERY).matches) shellStore.setInspectorOpen(false);
+    }, []);
 }
 
 function useProposeEditBridge(): void {

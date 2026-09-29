@@ -135,6 +135,7 @@ function modelingCommands(s: S, a: A): Command[] {
             label: 'Run model',
             description: 'Re-run the script',
             section: 'Modeling',
+            shortcut: KEYMAP.run,
             keywords: ['rebuild', 'recompute', 'execute'],
             icon: icon(Play),
             action: a.run,

@@ -28,7 +28,9 @@ test.describe('Export Functionality E2E', () => {
             };
         });
 
-        const exportBtn = page.getByTitle('Export STEP');
+        // STEP is in the Export split button's menu.
+        await page.getByRole('button', { name: 'More export formats' }).click();
+        const exportBtn = page.getByRole('menuitem', { name: /^STEP/ });
         await expect(exportBtn).toBeVisible();
         await expect(exportBtn).toBeEnabled();
         await exportBtn.click();
