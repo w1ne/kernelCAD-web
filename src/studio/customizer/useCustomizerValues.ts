@@ -22,7 +22,10 @@ export interface CustomizerValuesState {
   setValue: (name: string, value: ParamValue) => void;
   /** Run a pending debounced edit now (slider release, Enter). */
   flush: () => void;
+  /** Back to the saved defaults; rebuilds at once. */
   reset: () => void;
+  /** One value back to its saved default; rebuilds at once. */
+  resetValue: (name: string) => void;
   /** An edit is waiting for its debounce. */
   pending: boolean;
   runError: string | null;
@@ -103,6 +106,13 @@ export function useCustomizerValues({ params, execute, debounceMs }: CustomizerV
     timer.current = setTimeout(flush, debounceMs);
   }, [values, params, cancelTimer, flush, debounceMs]);
 
+  const resetValue = useCallback((name: string) => {
+    const param = params.find((p) => p.name === name);
+    if (!param) return;
+    setValue(name, param.defaultValue);
+    flush();
+  }, [params, setValue, flush]);
+
   const reset = useCallback(() => {
     const next = defaultValues(params);
     cancelTimer();
@@ -113,5 +123,5 @@ export function useCustomizerValues({ params, execute, debounceMs }: CustomizerV
     run(next);
   }, [params, cancelTimer, run]);
 
-  return { values, setValue, flush, reset, pending, runError, ignoredUrlValues: initial.ignored };
+  return { values, setValue, flush, reset, resetValue, pending, runError, ignoredUrlValues: initial.ignored };
 }

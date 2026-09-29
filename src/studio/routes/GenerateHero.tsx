@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { JSX } from 'react';
+import { LogIn } from 'lucide-react';
+import { Button, buttonClass, ErrorState } from '../../ui';
+import { GenerationProgress, PartialResult } from '../../funnel/components/GenerationProgress';
 import { PromptBox } from '../../funnel/components/PromptBox';
 import { RateLimitedPanel } from '../../funnel/components/RateLimitedPanel';
 import { useGeneration } from '../../funnel/hooks/useGeneration';
@@ -20,107 +23,133 @@ interface GenerateHeroProps {
     readonly events: GenerationEvents;
     readonly upgradeBusy: boolean;
     readonly onUpgrade: () => void;
+    /** Opens the sign-in dialog; the typed prompt is kept. */
+    readonly onSignIn: () => void;
+    /** Opens a finished model (used when the result is partial and not auto-opened). */
+    readonly onOpenResult: () => void;
+    /** Re-sends the last prompt after a failure. */
+    readonly onRetry: () => void;
 }
 
-function GenerateHeroStatus({ phase, hasSession, onUpgrade, upgradeBusy }: {
-    readonly phase: GenerationPhase;
-    readonly hasSession: boolean;
-    readonly onUpgrade: () => void;
-    readonly upgradeBusy: boolean;
-}): JSX.Element | null {
-    if (phase.state === 'running') {
-        return (
-            <div className="mt-6 text-sm text-ink-soft font-mono">
-              <p role="status">Creating your model…</p>
-            </div>
-        );
-    }
-    if (phase.state === 'error') {
-        return (
-            <>
-                {phase.code === 'rate_limited' && (
-                    <RateLimitedPanel
-                      authenticated={hasSession}
-                      onUpgrade={onUpgrade}
-                      busy={upgradeBusy}
-                    />
-                )}
-                {phase.code !== 'rate_limited' && (
-                    <div className="mt-6 mx-auto max-w-2xl rounded-lg border border-danger bg-vellum-soft p-4 text-ink text-left">
-                      <p className="font-serif font-medium text-lg">Generation didn't finish</p>
-                      <p className="font-mono text-xs text-danger mt-1 tracking-widest uppercase">{phase.code}</p>
-                      <p className="text-sm text-ink-soft mt-2">{phase.message}</p>
-                    </div>
-                )}
-            </>
-        );
-    }
-    return null;
+/** What happened, in plain words, for a failed run. */
+function errorTitle(code: string): string {
+    if (code === 'network' || code === 'stream_closed') return 'The connection dropped before the model was ready';
+    if (code === 'timeout') return 'The build took too long and stopped';
+    return 'The model did not build';
 }
 
-function GenerateHero({ agentEnabled, isBusy, initialPrompt, onSubmit, hasSession, sessionEmail, sessionLoading, phase, upgradeBusy, onUpgrade }: GenerateHeroProps): JSX.Element {
+function GenerateHeroStatus({ phase, events, hasSession, onUpgrade, upgradeBusy, onOpenResult, onRetry }: Pick<
+    GenerateHeroProps,
+    'phase' | 'events' | 'hasSession' | 'onUpgrade' | 'upgradeBusy' | 'onOpenResult' | 'onRetry'
+>): JSX.Element | null {
+    if (phase.state === 'running') return <GenerationProgress events={events} />;
+    if (phase.state === 'done' && phase.partial) return <PartialResult partial={phase.partial} onOpen={onOpenResult} />;
+    if (phase.state !== 'error') return null;
+    if (phase.code === 'rate_limited') {
+        return <RateLimitedPanel authenticated={hasSession} onUpgrade={onUpgrade} busy={upgradeBusy} />;
+    }
     return (
-        <>
-        <nav className="flex justify-between items-center pb-10">
-          <a href="/" className="flex items-center gap-2.5 font-serif text-lg font-medium no-underline text-ink">
-            <svg className="w-5 h-5 text-ink" viewBox="0 0 84 84" fill="none" aria-label="kernelCAD">
-              <path d="M 14,12 L 26,12 L 26,34 Q 26,36 27.5,34.5 L 46,12 L 60,12 L 36,40 Q 35,42 36,44 L 60,72 L 46,72 L 27.5,49.5 Q 26,48 26,50 L 26,72 L 14,72 Z" fill="currentColor"/>
-            </svg>
-            <span>kernel<span className="text-blueprint">CAD</span></span>
-          </a>
-          <div className="flex gap-6 font-mono text-xs text-ink-soft tracking-wider">
-            <a href="/" className="text-ink-soft hover:text-blueprint no-underline transition-colors">examples</a>
-            <a href="/me" className="text-ink-soft hover:text-blueprint no-underline transition-colors">your projects</a>
-            <a href="https://github.com/w1ne/kernelCAD-web" className="text-ink-soft hover:text-blueprint no-underline transition-colors">github</a>
-          </div>
-        </nav>
+        <div className="mt-6 rounded-panel border border-border bg-surface-1">
+            <ErrorState
+                title={errorTitle(phase.code)}
+                description={
+                    <>
+                        {phase.message}
+                        <span className="mt-2 block">
+                            Try again, or give the same description to your own agent.
+                        </span>
+                    </>
+                }
+                onRetry={onRetry}
+                secondaryAction={
+                    <a href="/connect" className={`${buttonClass('secondary', 'md')} no-underline`}>
+                        Use your own agent
+                    </a>
+                }
+                errorId={phase.generationId ? `${phase.code} · ${phase.generationId}` : phase.code}
+            />
+        </div>
+    );
+}
 
-        <header className="text-center pb-18 pt-0">
-          <h1 className="font-serif text-4xl sm:text-6xl font-medium leading-[0.95] tracking-tight mb-7">
-            Describe your part.
-          </h1>
-          <p className="text-xl text-ink-soft max-w-xl mx-auto mb-4 leading-relaxed">
-            Tell us what you need. Include sizes if you know them.
-          </p>
+function SessionLine({ agentEnabled, hasSession, sessionEmail, sessionLoading }: Pick<
+    GenerateHeroProps,
+    'agentEnabled' | 'hasSession' | 'sessionEmail' | 'sessionLoading'
+>): JSX.Element | null {
+    if (sessionLoading) return null;
+    if (hasSession) {
+        return <p className="mt-3 text-ui text-fg-3">Signed in as {sessionEmail ?? 'kernelCAD user'}.</p>;
+    }
+    // With the built-in agent off, the panel above already offers both ways on.
+    if (!agentEnabled) return null;
+    return (
+        <p className="mt-3 text-ui text-fg-2">
+            Sign in to create. What you type is kept.{' '}
+            <a href="/connect" className="text-accent underline-offset-2 hover:underline">
+                Or connect ChatGPT, Claude or Codex
+            </a>
+            .
+        </p>
+    );
+}
 
-          <div className="mt-2 max-w-2xl mx-auto">
-            <PromptBox onSubmit={onSubmit} disabled={isBusy || !agentEnabled} initialValue={initialPrompt} />
-            {!agentEnabled && (
-              <div className="mt-4 rounded-lg border border-rule bg-vellum-soft p-4 text-left">
-                <p className="font-serif font-medium text-lg">AI designs are unavailable right now.</p>
-                <p className="mt-2 text-sm text-ink-soft leading-relaxed">
-                  You can still edit and download a free example.
-                </p>
-                <a
-                  href="/"
-                  className="mt-3 inline-flex rounded-lg bg-blueprint hover:bg-blueprint-hover text-white px-4 py-2 text-sm font-medium no-underline transition-colors"
-                >
-                  Try an example
+function AgentUnavailable(): JSX.Element {
+    return (
+        <div className="mt-4 rounded-panel border border-border bg-surface-1 p-4 text-left sm:p-5">
+            <p className="text-body font-semibold text-fg">The built-in agent is off right now</p>
+            <p className="mt-1 text-ui text-fg-2">
+                Connect your own agent to design models, or open a free example and change it.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+                <a href="/connect" className={`${buttonClass('primary', 'lg')} no-underline`}>
+                    Connect your agent
                 </a>
-              </div>
-            )}
-            {!hasSession && !sessionLoading && (
-              <p className="mt-3 text-xs text-ink-faint font-mono tracking-wide">
-                {agentEnabled
-                  ? 'Sign in to create.'
-                  : 'Examples need no account.'}
-              </p>
-            )}
-            {hasSession && (
-              <p className="mt-3 text-xs text-ink-faint font-mono tracking-wide">
-                Signed in as {sessionEmail ?? 'kernelCAD user'}.
-              </p>
-            )}
-          </div>
+                <a href="/" className={`${buttonClass('secondary', 'lg')} no-underline`}>
+                    Try an example
+                </a>
+            </div>
+        </div>
+    );
+}
 
-          <GenerateHeroStatus
-            phase={phase}
-            hasSession={hasSession}
-            onUpgrade={onUpgrade}
-            upgradeBusy={upgradeBusy}
-          />
+function GenerateHero(props: GenerateHeroProps): JSX.Element {
+    const { agentEnabled, isBusy, initialPrompt, onSubmit, hasSession, sessionLoading, onSignIn } = props;
+    const showSignIn = agentEnabled && !hasSession && !sessionLoading;
+    return (
+        <header className="mx-auto max-w-2xl pb-16 pt-6 text-center sm:pt-12">
+            <h1 lang="en" className="font-serif text-[40px] leading-[1.05] font-medium tracking-tight text-fg [hyphens:auto] sm:text-[64px]">
+                Describe your part.
+            </h1>
+            <p className="mx-auto mt-4 max-w-xl text-body text-fg-2 sm:text-title sm:font-normal">
+                The agent writes a parametric model, checks that it builds, and opens it for you to change and download.
+            </p>
+
+            <div className="mt-8">
+                <PromptBox
+                    onSubmit={onSubmit}
+                    disabled={!agentEnabled}
+                    busy={isBusy}
+                    initialValue={initialPrompt}
+                    secondaryAction={
+                        showSignIn ? (
+                            <Button
+                                variant="secondary"
+                                size="lg"
+                                onClick={onSignIn}
+                                className="min-h-touch sm:min-h-0"
+                                leadingIcon={<LogIn className="size-4" strokeWidth={1.75} aria-hidden="true" />}
+                            >
+                                Sign in
+                            </Button>
+                        ) : undefined
+                    }
+                />
+                {!agentEnabled && <AgentUnavailable />}
+                <SessionLine {...props} />
+            </div>
+
+            <GenerateHeroStatus {...props} />
         </header>
-        </>
     );
 }
 

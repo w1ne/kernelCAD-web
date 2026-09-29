@@ -28,6 +28,15 @@ export interface ParamMetadata {
   choices?: string[];
   /** Optional for `type: 'string'`. Max character length. */
   maxLength?: number;
+  /** Presentation only (the customizer panel); the kernel ignores these. */
+  /** Readable name, e.g. "Plate width". Default: humanised from the name. */
+  label?: string;
+  /** Display unit, e.g. "mm" or "°". */
+  unit?: string;
+  /** Slider and arrow-key step for `type: 'number'`. */
+  step?: number;
+  /** Section the param is listed under, e.g. "Fasteners". */
+  group?: string;
 }
 
 export interface ParamEntry {

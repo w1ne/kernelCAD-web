@@ -3,7 +3,7 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
-import { MadeWithKernelcad } from './MadeWithKernelcad';
+import { EmbedAttributionBar, MadeWithKernelcad } from './MadeWithKernelcad';
 
 afterEach(cleanup);
 
@@ -41,6 +41,31 @@ describe('MadeWithKernelcad', () => {
 
   it('renders no Remix link without a slug', () => {
     render(<MadeWithKernelcad surface="share" />);
+    expect(screen.queryByTestId('remix-in-kernelcad')).toBeNull();
+  });
+});
+
+describe('EmbedAttributionBar', () => {
+  it('is a footer with the attribution and a Remix button to the app project', () => {
+    render(<EmbedAttributionBar remixSlug="abc" />);
+    const bar = screen.getByTestId('embed-attribution-bar');
+    expect(bar.tagName).toBe('FOOTER');
+    const made = screen.getByTestId('made-with-kernelcad');
+    expect(made.textContent).toBe('Made with kernelCAD');
+    expect(made.getAttribute('href')).toBe('https://kernelcad.com/?ref=embed&utm_source=kernelcad&utm_medium=embed');
+    const remix = screen.getByTestId('remix-in-kernelcad');
+    expect(remix.getAttribute('aria-label')).toBe('Remix in kernelCAD');
+    expect(remix.textContent).toBe('Remix in kernelCAD');
+    const url = new URL(remix.getAttribute('href')!);
+    expect(url.origin + url.pathname).toBe('https://app.kernelcad.com/p/abc');
+    expect(url.searchParams.get('ref')).toBe('embed-remix');
+    expect(remix.getAttribute('target')).toBe('_blank');
+    expect(bar.contains(made) && bar.contains(remix)).toBe(true);
+  });
+
+  it('offers no Remix without a slug', () => {
+    render(<EmbedAttributionBar />);
+    expect(screen.getByTestId('made-with-kernelcad')).toBeTruthy();
     expect(screen.queryByTestId('remix-in-kernelcad')).toBeNull();
   });
 });
