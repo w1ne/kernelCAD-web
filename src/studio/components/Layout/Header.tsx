@@ -123,8 +123,10 @@ function useHeaderFileActions(code: string, projectName: string | undefined) {
 
 /** Share, Export and the inspector toggle: inline on a wide header, one
  *  overflow menu (with undo/redo and history) below `lg`. */
-function FileControls({ narrow, editControls, actions }: {
+function FileControls({ narrow, showShare, editControls, actions }: {
     narrow: boolean;
+    /** Off on review pages: the route has its own Share for that project. */
+    showShare: boolean;
     editControls: ReactNode;
     actions: ReturnType<typeof useHeaderFileActions>;
 }) {
@@ -135,14 +137,28 @@ function FileControls({ narrow, editControls, actions }: {
     const inspectorToggle = (
         <InspectorToggle inspectorOpen={inspectorOpen} onToggle={() => shellStore.toggleInspectorOpen()} />
     );
+    const publishedLink = publish.publishedLink && (
+        <a
+            href={publish.publishedLink}
+            data-testid="toolbar-publish-link"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="max-w-[260px] truncate rounded-control px-2 text-2xs text-ok no-underline hover:underline"
+        >
+            Link copied — {publish.publishedLink}
+        </a>
+    );
     if (narrow) {
         return (
             <OverflowMenu label="File and panel controls" testId="header-overflow">
                 <div data-theme="dark" className="flex w-64 flex-col">
                     <MenuRow label="Edit">{editControls}</MenuRow>
-                    <MenuRow label="Share">
-                        <ShareButton publishState={publish.publishState} onPublish={share} compact />
-                    </MenuRow>
+                    {showShare && (
+                        <MenuRow label="Share">
+                            <ShareButton publishState={publish.publishState} onPublish={share} compact />
+                            {publishedLink}
+                        </MenuRow>
+                    )}
                     <MenuRow label="Export">
                         <ExportList isComputing={isComputing} hasPlanarGeometry={hasPlanarGeometry} onExport={onExport} />
                     </MenuRow>
@@ -153,18 +169,8 @@ function FileControls({ narrow, editControls, actions }: {
     }
     return (
         <>
-            {publish.publishedLink && (
-                <a
-                    href={publish.publishedLink}
-                    data-testid="toolbar-publish-link"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="max-w-[260px] truncate rounded-control px-2 text-2xs text-ok no-underline hover:underline"
-                >
-                    Link copied — {publish.publishedLink}
-                </a>
-            )}
-            <ShareButton publishState={publish.publishState} onPublish={share} />
+            {publishedLink}
+            {showShare && <ShareButton publishState={publish.publishState} onPublish={share} />}
             <ExportSplitButton
                 defaultFormat={lastFormat}
                 isComputing={isComputing}
@@ -224,8 +230,9 @@ export function Header() {
             </div>
 
             <div className="ml-auto flex min-w-0 items-center gap-1.5 md:gap-2">
-                {headerRight && <div className="flex min-w-0 items-center gap-2">{headerRight}</div>}
-                <FileControls narrow={narrow} editControls={editControls} actions={actions} />
+                {/* Route chrome scrolls sideways rather than overlap when a phone is too narrow. */}
+                {headerRight && <div className="bar-scroll-x flex min-w-0 items-center gap-2">{headerRight}</div>}
+                <FileControls narrow={narrow} showShare={!viewerMode} editControls={editControls} actions={actions} />
                 {isComputing && (
                     <Loader2 className="size-3.5 shrink-0 animate-spin text-fg-3" aria-label="Computing" />
                 )}
