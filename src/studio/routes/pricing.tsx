@@ -4,7 +4,9 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { useOptionalSession } from '../../funnel/hooks/useSession';
 import { createCheckoutSession, fetchMyPlan, type BillingPeriod, type MyPlan, type PaidTier } from '../../funnel/lib/apiClient';
+import { FunnelHeader } from '../../funnel/components/FunnelHeader';
 import { PricingSection } from '../../funnel/components/PricingSection';
+import { buttonClass } from '../../ui';
 
 const PAID_TIERS: readonly PaidTier[] = ['basic', 'pro'];
 
@@ -64,34 +66,50 @@ function PricingPage() {
   }, [buy, buyPeriod, autoBuyFired, session, loading]);
 
   const handleFree = () => {
-    navigate({ to: session ? '/' : '/signin', ...(session ? {} : { search: { next: '/' } }) });
+    navigate({ to: session ? '/' : '/signin', ...(session ? {} : { search: { next: '/connect' } }) });
   };
 
   return (
-    <main className="min-h-screen bg-[#F4ECD7] text-[#0A1628] font-sans">
-      {/* Nav */}
-      <header className="flex items-center justify-between px-6 py-4">
-        <a href="/" className="flex items-center gap-2 font-serif text-base font-medium no-underline text-[#0A1628]">
-          <svg className="w-4 h-4 text-[#0A1628]" viewBox="0 0 84 84" fill="none" aria-label="kernelCAD">
-            <path d="M 14,12 L 26,12 L 26,34 Q 26,36 27.5,34.5 L 46,12 L 60,12 L 36,40 Q 35,42 36,44 L 60,72 L 46,72 L 27.5,49.5 Q 26,48 26,50 L 26,72 L 14,72 Z" fill="currentColor"/>
-          </svg>
-          <span>kernel<span className="text-[#1E5FA8]">CAD</span></span>
-        </a>
-        <a
-          href={session ? '/billing' : '/signin'}
-          className="rounded-lg px-3 py-1.5 text-xs font-medium text-[#3F4C5E] hover:text-[#0A1628] no-underline transition-colors"
-        >
-          {session ? 'Billing' : 'Log in'}
-        </a>
-      </header>
+    <div className="min-h-screen bg-bg font-sans text-fg">
+      <FunnelHeader
+        current="pricing"
+        end={
+          <span className="ml-1 hidden sm:inline">
+            <a href={session ? '/billing' : '/signin'} className={`${buttonClass('secondary', 'md')} no-underline`}>
+              {session ? 'Billing' : 'Log in'}
+            </a>
+          </span>
+        }
+      />
 
-      <section className="mx-auto max-w-5xl px-6 pb-20 pt-10">
-        <h1 className="text-center font-serif text-5xl font-bold tracking-tight text-[#0A1628]">Pricing</h1>
-        <p className="mx-auto mt-4 max-w-xl text-center text-[#3F4C5E]">
-          A monthly token allowance for the parametric build agent — a tiny cube costs a sliver, a big assembly costs more. Cancel anytime.
+      <main className="mx-auto max-w-5xl px-4 pb-20 pt-8 sm:px-6 sm:pt-12">
+        <h1 className="text-center font-serif text-[40px] leading-[1.05] font-medium tracking-tight text-fg sm:text-[56px]">
+          Pricing
+        </h1>
+        <p className="mx-auto mt-4 max-w-xl text-center text-body text-fg-2">
+          Plans are a monthly token allowance for the built-in build agent. A small part uses a little; a big assembly
+          uses more. Cancel anytime.
         </p>
 
-        <div className="mt-8">
+        <section
+          aria-labelledby="free-path"
+          className="mx-auto mt-8 flex max-w-3xl flex-col gap-3 rounded-panel border border-border bg-surface-1 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5"
+        >
+          <div>
+            <h2 id="free-path" className="text-body font-semibold text-fg">
+              Free: bring your own agent
+            </h2>
+            <p className="mt-1 text-ui text-fg-2">
+              Connect ChatGPT, Claude, Claude Code or Codex. Modeling, checks and review through your own agent cost
+              nothing here; you only use your agent&apos;s own plan.
+            </p>
+          </div>
+          <a href="/connect" className={`${buttonClass('secondary', 'lg')} shrink-0 no-underline`}>
+            Connect your agent
+          </a>
+        </section>
+
+        <div className="mt-4">
           <PricingSection
             hideHeading
             initialPeriod={buyPeriod ?? 'monthly'}
@@ -104,10 +122,10 @@ function PricingPage() {
           />
         </div>
 
-        <p className="mt-10 text-center text-xs text-[#97A0AC]">
-          Prices in USD. Cancel anytime. Failed generations don't count against your quota.
+        <p className="mt-10 text-center text-ui text-fg-3">
+          Prices in USD. Cancel anytime. Failed generations don&apos;t count against your quota.
         </p>
-      </section>
-    </main>
+      </main>
+    </div>
   );
 }

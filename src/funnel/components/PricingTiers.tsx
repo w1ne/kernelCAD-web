@@ -1,16 +1,15 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { CheckCircle2 } from 'lucide-react';
+import { Check } from 'lucide-react';
 import type { BillingPeriod, PaidTier, PlanTier } from '../lib/apiClient';
-import { CONTACT_HREF, TIERS, type BadgeColor, type Feature, type Tier } from '../lib/pricingTiers';
+import { CONTACT_HREF, TIERS, type Feature, type Tier } from '../lib/pricingTiers';
 
 /**
- * PhotoAI-style pricing tiers (dark cards, huge prices, green check-circles,
- * colored emoji feature badges, an orange gradient CTA, and a highlighted
- * "Most popular" tier). Tier data comes from the shared `pricingTiers` module
+ * Pricing tier cards. Tier data comes from the shared `pricingTiers` module
  * (the single source of truth also used to codegen the landing page) so numbers
  * can never drift. Supports a monthly/yearly billing toggle (yearly = 2 months
- * free).
+ * free). One list style: a check icon and plain text; the data's emoji and
+ * badge colours are not shown.
  *
  * Tiers come in three shapes:
  *  - free      (`tier: null`)            → CTA calls onFree
@@ -20,15 +19,26 @@ import { CONTACT_HREF, TIERS, type BadgeColor, type Feature, type Tier } from '.
  *    through a conversation, not charged self-serve.
  */
 
-const BADGE_CLASS: Record<BadgeColor, string> = {
-  // On-brand tints (kernelCAD light palette): blueprint blue + copper + slate,
-  // so the pricing surface matches the vellum marketing site.
-  emerald: 'bg-[#1E5FA8]/12 text-[#174E8B]',
-  sky: 'bg-[#1E5FA8]/12 text-[#174E8B]',
-  violet: 'bg-[#B87333]/15 text-[#8A551F]',
-  amber: 'bg-[#B87333]/15 text-[#8A551F]',
-  slate: 'bg-[#3F4C5E]/12 text-[#3F4C5E]',
-};
+/**
+ * Colours. This component also renders in the landing's pricing island, which
+ * does not load the app's token stylesheet, and whose Tailwind build scans only
+ * this file and PricingSection.tsx. So every colour is a literal class here that
+ * reads the semantic token with its light value as the fallback: in the app it
+ * follows the theme, on the landing it is the same vellum palette.
+ */
+const C = {
+  surface: 'bg-[var(--kc-surface-1,#FFFDF7)]',
+  hoverSurface2: 'hover:bg-[var(--kc-surface-2,#EFE5C9)]',
+  fg: 'text-[var(--kc-fg,#0A1628)]',
+  fg2: 'text-[var(--kc-fg-2,#3F4C5E)]',
+  fg3: 'text-[var(--kc-fg-3,#566072)]',
+  accentText: 'text-[var(--kc-accent,#1E5FA8)]',
+  accentBg: 'bg-[var(--kc-accent,#1E5FA8)] text-[var(--kc-on-accent,#FFFFFF)] hover:bg-[var(--kc-accent-hover,#174E8B)]',
+  ring: 'ring-1 ring-inset ring-[var(--kc-border,#D6CDB4)]',
+  ringStrong: 'ring-1 ring-inset ring-[var(--kc-border-strong,#8A7F62)]',
+  ringAccent: 'ring-2 ring-[var(--kc-accent,#1E5FA8)]',
+  focus: 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kc-accent,#1E5FA8)]',
+} as const;
 
 export interface PricingTiersProps {
   /** Selected billing cadence. */
@@ -45,23 +55,14 @@ export interface PricingTiersProps {
   busy?: boolean;
 }
 
-function FeatureRow({ f }: { f: Feature }) {
+/** One feature: check icon and text. The first feature (the allowance) is bold. */
+function FeatureRow({ f, lead }: { f: Feature; lead: boolean }) {
   return (
     <li className="flex items-start gap-2.5">
-      <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-[#1E5FA8]" />
-      <span className="text-sm text-[#3F4C5E] leading-snug">
-        {f.badge ? (
-          <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${BADGE_CLASS[f.badge]}`}>
-            {f.emoji && <span>{f.emoji}</span>}
-            {f.text}
-          </span>
-        ) : (
-          <>
-            {f.emoji && <span className="mr-1">{f.emoji}</span>}
-            {f.text}
-          </>
-        )}
-        {f.note && <span className="ml-1.5 text-[11px] uppercase tracking-wide text-[#97A0AC]">{f.note}</span>}
+      <Check size={16} strokeWidth={2.25} aria-hidden="true" className={`mt-0.5 shrink-0 ${C.accentText}`} />
+      <span className={`text-sm leading-snug ${lead ? `font-semibold ${C.fg}` : C.fg2}`}>
+        {f.text}
+        {f.note && <span className={`ml-1.5 text-[11px] uppercase tracking-wide ${C.fg3}`}>{f.note}</span>}
       </span>
     </li>
   );
@@ -77,38 +78,39 @@ interface TierCtaProps {
   onFree: () => void;
 }
 
+const CTA_BASE = `mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-md px-4 text-sm font-semibold no-underline transition-colors ${C.focus} disabled:cursor-default disabled:opacity-60`;
+const CTA_SECONDARY = `${C.surface} ${C.fg} ${C.ringStrong} ${C.hoverSurface2}`;
+
 function TierCta({ t, current, highlight, busy, period, onSelect, onFree }: TierCtaProps) {
-  return t.contact ? (
-    <a
-      href={CONTACT_HREF}
-      aria-label="Contact sales about Enterprise"
-      className="mt-5 w-full rounded-lg bg-[#EFE5C9] py-3 text-center text-sm font-semibold text-[#0A1628] no-underline transition-colors hover:bg-[#E3D6B4]"
-    >
-      Contact sales
-    </a>
-  ) : t.tier === null ? (
-    <button
-      type="button"
-      onClick={onFree}
-      disabled={current}
-      aria-label={current ? 'Current plan (Free)' : 'Get started with Free'}
-      className="mt-5 w-full rounded-lg bg-[#EFE5C9] py-3 text-sm font-semibold text-[#0A1628] transition-colors hover:bg-[#E3D6B4] disabled:cursor-default disabled:opacity-60"
-    >
-      {current ? 'Current plan' : 'Get started'}
-    </button>
-  ) : (
+  if (t.contact) {
+    return (
+      <a href={CONTACT_HREF} aria-label="Contact sales about Enterprise" className={`${CTA_BASE} ${CTA_SECONDARY}`}>
+        Contact sales
+      </a>
+    );
+  }
+  if (t.tier === null) {
+    return (
+      <button
+        type="button"
+        onClick={onFree}
+        disabled={current}
+        aria-label={current ? 'Current plan (Free)' : 'Get started with Free'}
+        className={`${CTA_BASE} ${CTA_SECONDARY}`}
+      >
+        {current ? 'Current plan' : 'Get started'}
+      </button>
+    );
+  }
+  return (
     <button
       type="button"
       onClick={() => onSelect(t.tier as PaidTier, period)}
       disabled={current || busy}
       aria-label={current ? `Current plan (${t.name})` : `Subscribe to ${t.name}`}
-      className={`mt-5 w-full rounded-lg py-3 text-sm font-semibold transition-colors disabled:cursor-default disabled:opacity-70 ${
-        highlight
-          ? 'bg-[#1E5FA8] text-white hover:bg-[#174E8B]'
-          : 'bg-[#EFE5C9] text-[#0A1628] hover:bg-[#E3D6B4]'
-      }`}
+      className={`${CTA_BASE} ${highlight ? C.accentBg : CTA_SECONDARY}`}
     >
-      {current ? 'Current plan' : busy ? 'Loading…' : 'Subscribe →'}
+      {current ? 'Current plan' : busy ? 'Loading…' : 'Subscribe'}
     </button>
   );
 }
@@ -137,31 +139,24 @@ export function PricingTiers({ period, currentPlan, currentTier, onSelect, onFre
           <section
             key={t.name}
             aria-label={`${t.name} plan`}
-            className={`relative flex flex-col rounded-2xl p-6 bg-[#FFFDF7] ${
-              highlight ? 'ring-2 ring-[#1E5FA8]' : 'ring-1 ring-[#D6CDB4]'
-            }`}
+            className={`relative flex flex-col rounded-lg p-6 ${C.surface} ${highlight ? C.ringAccent : C.ring}`}
           >
             {highlight && (
-              <span className="absolute -top-3 left-6 rounded-full bg-[#1E5FA8] px-3 py-0.5 text-xs font-semibold text-white shadow">
+              <span className={`absolute -top-3 left-6 rounded-full px-3 py-0.5 text-xs font-semibold ${C.accentBg}`}>
                 Most popular
               </span>
             )}
 
-            <h3 className="text-2xl font-bold text-[#0A1628]">{t.name}</h3>
-            <div className="mt-2 flex items-end gap-2">
-              <span className="text-5xl font-extrabold tracking-tight text-[#0A1628]">
+            <h3 className={`text-xl font-semibold ${C.fg}`}>{t.name}</h3>
+            <div className="mt-3 flex items-baseline gap-2">
+              <span className={`text-5xl font-semibold tracking-tight ${C.fg}`}>
                 {showYearly ? t.yearlyPerMonth : t.monthly}
               </span>
-              <span className="mb-1.5 text-sm text-[#97A0AC]">
-                {billingLabel(t, paid, showYearly)}
-              </span>
+              <span className={`text-sm ${C.fg3}`}>{billingLabel(t, paid, showYearly)}</span>
             </div>
-            {showYearly ? (
-              <p className="mt-1 text-xs text-[#B87333]">{t.yearly}/year — 2 months free</p>
-            ) : (
-              <p className="mt-1 text-xs text-transparent select-none" aria-hidden="true">.</p>
-            )}
-            <p className="mt-3 min-h-[40px] text-sm text-[#3F4C5E]">{t.blurb}</p>
+            {/* Always one line tall, so the three cards stay aligned. */}
+            <p className={`mt-1 min-h-4 text-xs ${C.fg2}`}>{showYearly ? `${t.yearly}/year — 2 months free` : ' '}</p>
+            <p className={`mt-3 min-h-[40px] text-sm ${C.fg2}`}>{t.blurb}</p>
 
             <TierCta
               t={t}
@@ -174,13 +169,9 @@ export function PricingTiers({ period, currentPlan, currentTier, onSelect, onFre
             />
 
             <ul className="mt-6 space-y-3">
-              {t.inherits && (
-                <li className="text-sm font-medium text-[#3F4C5E] underline decoration-dotted underline-offset-4">
-                  ← Everything in {t.inherits}, plus:
-                </li>
-              )}
+              {t.inherits && <li className={`text-sm font-medium ${C.fg}`}>Everything in {t.inherits}, plus:</li>}
               {t.features.map((f, i) => (
-                <FeatureRow key={i} f={f} />
+                <FeatureRow key={i} f={f} lead={i === 0} />
               ))}
             </ul>
           </section>

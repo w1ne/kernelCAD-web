@@ -4,12 +4,16 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useEffect } from 'react';
 import { SignInButton } from '../../funnel/components/SignInButton';
 import { EmailPasswordForm } from '../../funnel/components/EmailPasswordForm';
+import { FunnelHeader } from '../../funnel/components/FunnelHeader';
+import { OrDivider } from '../../funnel/components/SignInModal';
 import { useSession } from '../../funnel/hooks/useSession';
 
 export const Route = createFileRoute('/signin')({
   component: SignInPage,
+  // Without `next`, a new sign-in goes to /connect: people who do not connect
+  // an agent in their first minutes rarely come back.
   validateSearch: (s: Record<string, unknown>) => ({
-    next: typeof s.next === 'string' ? s.next : '/',
+    next: typeof s.next === 'string' && s.next.startsWith('/') && !s.next.startsWith('//') ? s.next : '/connect',
   }),
 });
 
@@ -24,50 +28,31 @@ function SignInPage() {
     }
   }, [loading, session, next, navigate]);
 
-  return (
-    <main className="min-h-screen bg-vellum text-ink font-sans flex items-center justify-center p-8">
-      <div className="max-w-sm w-full">
-        {/* Logo */}
-        <div className="flex items-center justify-center gap-2.5 mb-8">
-          <svg className="w-5 h-5 text-ink" viewBox="0 0 84 84" fill="none" aria-label="kernelCAD">
-            <path d="M 14,12 L 26,12 L 26,34 Q 26,36 27.5,34.5 L 46,12 L 60,12 L 36,40 Q 35,42 36,44 L 60,72 L 46,72 L 27.5,49.5 Q 26,48 26,50 L 26,72 L 14,72 Z" fill="currentColor"/>
-          </svg>
-          <span className="font-serif text-lg font-medium">kernel<span className="text-blueprint">CAD</span></span>
-        </div>
+  const redirectTo = `${window.location.origin}${next}`;
+  const toConnect = next === '/connect';
 
-        <div className="rounded-xl border border-rule bg-white p-8 text-center">
-          <h1 className="font-serif text-2xl font-medium text-ink">Sign in to kernelCAD</h1>
-          <p className="text-ink-soft text-sm mt-2">
-            Save the model you generated.
+  return (
+    <div className="flex min-h-screen flex-col bg-bg font-sans text-fg">
+      <FunnelHeader current="signin" />
+      <main className="flex flex-1 items-start justify-center px-4 pb-16 pt-6 sm:items-center sm:pt-0">
+        <div className="w-full max-w-sm rounded-sheet border border-border bg-surface-1 p-6 shadow-e1 sm:p-8">
+          <h1 className="text-center font-serif text-heading text-fg">Sign in to kernelCAD</h1>
+          <p className="mt-2 text-center text-ui text-fg-2">
+            {toConnect
+              ? 'Next, connect ChatGPT, Claude, Claude Code or Codex. It takes about two minutes.'
+              : 'Your models are saved to your projects, and you can open them from any device.'}
           </p>
 
-          <div className="mt-6">
-            <EmailPasswordForm
-              redirectTo={`${window.location.origin}${next}`}
-              onAuthenticated={() => navigate({ to: next as '/' })}
-            />
+          <div className="mt-6 flex flex-col gap-2">
+            <SignInButton provider="google" redirectTo={redirectTo} />
+            <SignInButton provider="github" redirectTo={redirectTo} />
           </div>
 
-          <div className="my-5 flex items-center gap-3">
-            <span className="h-px flex-1 bg-rule" />
-            <span className="text-xs text-ink-faint">or</span>
-            <span className="h-px flex-1 bg-rule" />
-          </div>
+          <OrDivider />
 
-          <div className="flex flex-col gap-2">
-            <SignInButton
-              provider="google"
-              redirectTo={`${window.location.origin}${next}`}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-rule bg-white hover:bg-paper text-ink px-4 py-2 text-sm font-medium disabled:opacity-50 transition-colors font-sans"
-            />
-            <SignInButton
-              provider="github"
-              redirectTo={`${window.location.origin}${next}`}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-rule bg-white hover:bg-paper text-ink px-4 py-2 text-sm font-medium disabled:opacity-50 transition-colors font-sans"
-            />
-          </div>
+          <EmailPasswordForm redirectTo={redirectTo} onAuthenticated={() => navigate({ to: next as '/' })} />
         </div>
-      </div>
-    </main>
+      </main>
+    </div>
   );
 }
