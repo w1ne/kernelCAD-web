@@ -4,7 +4,7 @@
 // "Your projects" list on /me: the Continue row, search and sort, the card
 // grid, and each card's actions.
 import { useId, useMemo, useState, type ReactNode } from 'react';
-import { EyeOff, Link2, LayoutGrid, Lock, Pencil, Search, Star, Trash2, X } from 'lucide-react';
+import { Box, EyeOff, Link2, LayoutGrid, Lock, Pencil, Search, Star, Trash2, X } from 'lucide-react';
 import { Badge, Button, EmptyState, useToast, type MenuEntry } from '../../ui';
 import { PRIVATE_REQUIRES_PAID, type MyProjectRow } from '../../funnel/lib/apiClient';
 import {
@@ -65,8 +65,9 @@ function ContinueRow({ projects }: { projects: MyProjectRow[] }): ReactNode {
           const url = renderFor(p);
           return (
             <li key={p.id} className="flex min-w-0 items-center gap-3 rounded-panel border border-border bg-surface-1 p-2.5 pr-3">
-              <div aria-hidden="true" className="size-16 shrink-0 overflow-hidden rounded-control bg-surface-2">
-                {url && <img src={url} alt="" loading="lazy" className="size-full object-cover" onError={e => { e.currentTarget.style.visibility = 'hidden'; }} />}
+              <div aria-hidden="true" className="relative flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-control bg-surface-2 text-fg-3">
+                {privacyKind(p.privacy) === 'private' ? <Lock className="size-5" strokeWidth={1.5} /> : <Box className="size-5" strokeWidth={1.5} />}
+                {url && <img src={url} alt="" loading="lazy" className="absolute inset-0 size-full object-cover" onError={e => { e.currentTarget.style.display = 'none'; }} />}
               </div>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-ui font-medium text-fg" title={p.title}>{p.title || 'Untitled'}</p>

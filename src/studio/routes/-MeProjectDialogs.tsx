@@ -57,8 +57,8 @@ export function RenameProjectDialog({ project, onClose, onRename }: DialogBasePr
       testId="rename-project-dialog"
       footer={(
         <>
-          <Button onClick={onClose}>Cancel</Button>
-          <Button variant="primary" type="submit" form="rename-project-form" loading={busy} disabled={!clean || unchanged}>
+          <Button onClick={onClose} className="max-md:h-touch">Cancel</Button>
+          <Button variant="primary" type="submit" form="rename-project-form" className="max-md:h-touch" loading={busy} disabled={!clean || unchanged}>
             Save name
           </Button>
         </>
@@ -68,6 +68,7 @@ export function RenameProjectDialog({ project, onClose, onRename }: DialogBasePr
         <label htmlFor="rename-project-input" className="text-ui font-medium text-fg">Name</label>
         <input
           id="rename-project-input"
+          data-autofocus
           value={title}
           maxLength={PROJECT_TITLE_MAX}
           onChange={e => setTitle(e.target.value)}
@@ -108,8 +109,8 @@ export function DeleteProjectDialog({ project, onClose, onDelete }: DialogBasePr
       testId="delete-project-dialog"
       footer={(
         <>
-          <Button onClick={onClose}>Cancel</Button>
-          <Button variant="danger" onClick={() => void confirm()} loading={busy}>Delete project</Button>
+          <Button onClick={onClose} className="max-md:h-touch">Cancel</Button>
+          <Button variant="danger" onClick={() => void confirm()} loading={busy} className="max-md:h-touch">Delete project</Button>
         </>
       )}
     >
@@ -162,9 +163,9 @@ export function GalleryProjectDialog({ project, onClose }: DialogBaseProps): Rea
       testId="gallery-project-dialog"
       footer={(
         <>
-          <Button onClick={onClose}>{blocker ? 'Close' : 'Cancel'}</Button>
+          <Button onClick={onClose} className="max-md:h-touch">{blocker ? 'Close' : 'Cancel'}</Button>
           {state && !blocker && (
-            <Button variant={listed ? 'secondary' : 'primary'} onClick={() => void toggle()} loading={busy}>
+            <Button variant={listed ? 'secondary' : 'primary'} onClick={() => void toggle()} loading={busy} className="max-md:h-touch">
               {listed ? 'Remove from gallery' : 'Publish'}
             </Button>
           )}

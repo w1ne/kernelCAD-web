@@ -54,7 +54,7 @@ export function ProjectCard({
             )}
         >
             {/* The image repeats the title link; keep it out of the tab order. */}
-            <a href={href} tabIndex={-1} aria-hidden="true" className="relative block aspect-[4/3] overflow-hidden bg-surface-2">
+            <a href={href} tabIndex={-1} aria-hidden="true" className="relative block aspect-[16/10] overflow-hidden bg-surface-2 sm:aspect-[4/3]">
                 <ProjectRender url={renderUrl} placeholder={placeholder} />
             </a>
             <div className="flex flex-1 flex-col gap-1.5 p-4">

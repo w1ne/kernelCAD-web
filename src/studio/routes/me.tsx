@@ -98,9 +98,12 @@ function MePage(): ReactNode {
         <MePageHeader email={session.user.email} />
 
         <div className="mx-auto max-w-6xl px-4 pb-16 pt-8 md:px-8 md:pt-12">
-          <MovedProjectsNotice moved={moved} />
+          {moved !== undefined && (
+            // The notice brings its own top margin for other pages; here it opens the page.
+            <div className="[&>p]:mt-0"><MovedProjectsNotice moved={moved} /></div>
+          )}
 
-          <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
+          <div className="mt-6 flex flex-wrap items-end justify-between gap-4 first:mt-0">
             <h1 className="font-serif text-section text-fg">Your projects</h1>
             {!!projects?.length && (
               <a href="/generate" className={cx(buttonClass('primary', 'lg'), 'no-underline max-md:h-touch')}>

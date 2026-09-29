@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { useId, useRef, useState, type JSX, type ReactNode } from 'react';
+import { useEffect, useId, useRef, useState, type JSX, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { cx } from './cx';
@@ -49,6 +49,11 @@ function DialogBody({
     const panelRef = useRef<HTMLDivElement>(null);
     const [theme] = useState<Theme>(() => themeProp ?? themeOf(document.activeElement));
     useFocusTrap(panelRef, true, onClose);
+    // The trap focuses the first control (Close); a field marked
+    // data-autofocus (a search box, a name input) takes focus instead.
+    useEffect(() => {
+        panelRef.current?.querySelector<HTMLElement>('[data-autofocus]')?.focus();
+    }, []);
 
     return (
         <div data-theme={theme} className="fixed inset-0 z-[900] flex items-start justify-center overflow-y-auto px-4 py-[12vh]">
