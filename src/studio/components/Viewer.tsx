@@ -4,7 +4,7 @@ import { Canvas } from "@react-three/fiber";
 import * as THREE from "three";
 import { useMemo } from "react";
 import type { GeometryResult, SketchGeometry } from "../../shared/worker/geometryEngine";
-import type { ViewMode3D } from "../../shared/types/viewMode";
+import type { ViewMode3D, ViewportBackground } from "../../shared/types/viewMode";
 import { useWorkbench } from "../context/WorkbenchContext";
 import { useUI } from "../context/UIContext";
 import { useShellStore } from "../store/useShellStore";
@@ -33,6 +33,8 @@ interface ViewerProps {
     viewMode3D: ViewMode3D;
     /** Embed/status hosts: fired once after nonempty geometry + camera fit + first frame. */
     onDisplayReady?: () => void;
+    /** Overrides the stored viewport background (the embed's `?theme=`). */
+    background?: ViewportBackground;
 }
 
 /** Scene state phase: workbench/ui/shell context plus the grid, section-clipping
@@ -120,7 +122,7 @@ function useViewerSetup(geometries: GeometryResult[]) {
     };
 }
 
-export default function Viewer({ geometries, previewGeometries, sketchesGeometries, showSketches, viewMode3D, onDisplayReady }: ViewerProps) {
+export default function Viewer({ geometries, previewGeometries, sketchesGeometries, showSketches, viewMode3D, onDisplayReady, background }: ViewerProps) {
     const {
         setSelectedFace, selectedSketchName, setSelectedSketchName, sketchMode, planes, hiddenIds,
         selectedItemIds, setSelectedItemId, toggleSelection, setContextMenu, viewportBackground,
@@ -195,7 +197,7 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                     setContextMenu={setContextMenu}
                     navigationRequest={navigationRequest}
                     focusRequest={focusRequest}
-                    viewportBackground={viewportBackground}
+                    viewportBackground={background ?? viewportBackground}
                     planes={planes}
                 />
                 {onDisplayReady ? (
