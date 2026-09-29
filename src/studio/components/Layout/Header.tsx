@@ -195,11 +195,6 @@ export function Header() {
                 <FeedbackButton />
                 <UserMenu />
             </div>
-            <div className="absolute bottom-0 right-0 p-1 text-[9px] text-gray-700 pointer-events-none opacity-50 font-mono">
-                {typeof (window as unknown as { __COMMIT_HASH__: string }).__COMMIT_HASH__ !== 'undefined'
-                    ? (window as unknown as { __COMMIT_HASH__: string }).__COMMIT_HASH__
-                    : 'DEV'}
-            </div>
         </div>
     );
 }

@@ -206,6 +206,9 @@ interface AppProps {
    * routes (/g/$genId, /p/$slug) to open generated/saved artifacts inside
    * the full Studio shell rather than a stripped viewer. */
   initialCode?: string;
+  /** Name for the in-memory project the funnel routes open (the saved
+   * project's title), shown in the Header and used for export file names. */
+  projectName?: string;
   /** Embed-mode controlled source: when set, the host owns the canonical
    * `.kcad.ts` string. Studio mirrors it, emits user edits via
    * `StudioConfig.onCodeChange`, and suppresses `?script=`/`?gallery=`
@@ -231,6 +234,7 @@ interface AppProps {
 
 function AppProviders({
   initialCode,
+  projectName,
   code,
   isDevLab,
   headerLeft,
@@ -255,6 +259,7 @@ function AppProviders({
   return (
     <WorkbenchProvider
       initialCode={initialCode}
+      projectName={projectName}
       controlledCode={controlledCode}
       onCodeChange={onCodeChange}
     >
@@ -304,6 +309,7 @@ function DevLabApp({ headerLeft, headerRight }: Pick<AppProps, 'headerLeft' | 'h
 
 export function StudioApp({
   initialCode: initialCodeProp,
+  projectName,
   code,
   headerLeft,
   headerRight,
@@ -320,6 +326,7 @@ export function StudioApp({
   return (
     <AppProviders
       initialCode={initialCodeProp}
+      projectName={projectName}
       code={code}
       isDevLab={isDevLab}
       headerLeft={headerLeft}

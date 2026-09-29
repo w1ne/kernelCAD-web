@@ -129,6 +129,7 @@ import { ProjectProvider } from './ProjectContext';
 export function WorkbenchProvider({
     children,
     initialCode,
+    projectName,
     controlledCode,
     onCodeChange,
     suspendSourceExecution = false,
@@ -136,6 +137,8 @@ export function WorkbenchProvider({
 }: {
     children: ReactNode;
     initialCode?: string;
+    /** Name of the in-memory project seeded from `initialCode`. */
+    projectName?: string;
     /** Embed-mode controlled source: when set, the host owns the canonical
      *  `.kcad.ts` string. See `CodeProvider` for the controlled-mode rules. */
     controlledCode?: string;
@@ -146,7 +149,7 @@ export function WorkbenchProvider({
     externalGeometries?: import('../../shared/worker/geometryEngine').GeometryResult[] | null;
 }) {
     return (
-        <ProjectProvider initialCode={initialCode}>
+        <ProjectProvider initialCode={initialCode} projectName={projectName}>
             <CodeProvider
                 initialCode={initialCode}
                 controlledCode={controlledCode}

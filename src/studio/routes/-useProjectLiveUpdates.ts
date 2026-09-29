@@ -11,9 +11,29 @@ import {
 import { shouldApplyProjectUpdate } from '../../funnel/lib/liveProject';
 import { captureViewerPngBase64 } from '../components/viewer/captureViewerPng';
 
+/** Where the initial row load stands:
+ *  - `loading`: the row request is in flight.
+ *  - `slow`: still in flight after {@link LOAD_SLOW_MS}; keep waiting, but
+ *    tell the visitor and offer a retry.
+ *  - `ready`: the row loaded.
+ *  - `not_found`: the server answered with no row (missing slug, or a private
+ *    row the visitor cannot read — row-level security hides both alike).
+ *  - `timeout`: no answer after {@link LOAD_TIMEOUT_MS}. A late answer still
+ *    moves the state to `ready` / `not_found`.
+ *  - `error`: the request failed; `err` holds the message. */
+export type LoadState = 'loading' | 'slow' | 'ready' | 'not_found' | 'timeout' | 'error';
+
+/** After this long without an answer the page says the load is slow. */
+export const LOAD_SLOW_MS = 4_000;
+/** After this long without an answer the page gives up and offers a retry. */
+export const LOAD_TIMEOUT_MS = 20_000;
+
 export interface ProjectLiveUpdates {
   project: ProjectRow | null;
   err: string | null;
+  loadState: LoadState;
+  /** Re-run the initial project load (after an error or a timeout). */
+  retry: () => void;
   liveCode: string | undefined;
   lastLiveUpdate: Date | null;
   handleRestored: (code: string) => void;
@@ -118,20 +138,83 @@ function useSettledRenderCapture(
   }, [slug, project, lastLiveUpdate]);
 }
 
+/** Load one row by key with a bounded wait: a missing row resolves to
+ *  `not_found` at once, a hung request to `slow` and then `timeout`, so a page
+ *  never shows "Loading…" forever. `enabled: false` skips the request (the
+ *  caller already knows the key is invalid). Shared by /p/:slug and /g/:genId. */
+export function useBoundedLoad<T>(
+  key: string,
+  load: (key: string) => Promise<T | null>,
+  enabled = true,
+) {
+  // Each request has a token; a result for an older token (a previous key or
+  // attempt) reads as `loading`, so no state reset is needed in the effect.
+  const [attempt, setAttempt] = useState(0);
+  const token = `${attempt}:${key}`;
+  const [result, setResult] = useState<BoundedLoadResult<T>>(() => pendingResult<T>(''));
+
+  useEffect(() => {
+    if (!enabled) return undefined;
+    let disposed = false;
+    let settled = false;
+    const mark = (loadState: LoadState) => () => {
+      if (!disposed && !settled) setResult({ ...pendingResult<T>(token), loadState });
+    };
+    const slowTimer = window.setTimeout(mark('slow'), LOAD_SLOW_MS);
+    const timeoutTimer = window.setTimeout(mark('timeout'), LOAD_TIMEOUT_MS);
+    const settle = (next: BoundedLoadResult<T>) => {
+      if (disposed) return;
+      settled = true;
+      window.clearTimeout(slowTimer);
+      window.clearTimeout(timeoutTimer);
+      setResult(next);
+    };
+    load(key).then(
+      (row) => settle({ token, row, err: null, loadState: row ? 'ready' : 'not_found' }),
+      (e) => settle({ token, row: null, err: String(e), loadState: 'error' }),
+    );
+    return () => {
+      disposed = true;
+      window.clearTimeout(slowTimer);
+      window.clearTimeout(timeoutTimer);
+    };
+  }, [token, key, load, enabled]);
+
+  const retry = useCallback(() => setAttempt((n) => n + 1), []);
+  const setRow = useCallback((update: (row: T | null) => T | null) => {
+    setResult((r) => ({ ...r, row: update(r.row) }));
+  }, []);
+
+  const current = result.token === token ? result : pendingResult<T>(token);
+  return { row: current.row, setRow, err: current.err, loadState: current.loadState, retry };
+}
+
+interface BoundedLoadResult<T> {
+  token: string;
+  row: T | null;
+  err: string | null;
+  loadState: LoadState;
+}
+
+function pendingResult<T>(token: string): BoundedLoadResult<T> {
+  return { token, row: null, err: null, loadState: 'loading' };
+}
+
 /** Project row loading, live SSE updates, and the owner privacy toggle for the
  *  /p/:slug viewer. */
 export function useProjectLiveUpdates(slug: string): ProjectLiveUpdates {
-  const [project, setProject] = useState<ProjectRow | null>(null);
-  const [err, setErr] = useState<string | null>(null);
+  const {
+    row: project,
+    setRow: setProject,
+    err,
+    loadState,
+    retry,
+  } = useBoundedLoad(slug, fetchProjectBySlug);
   const [privacyBusy, setPrivacyBusy] = useState(false);
   const [upgradeNeeded, setUpgradeNeeded] = useState(false);
   const [liveCode, setLiveCode] = useState<string | undefined>();
   const [lastLiveUpdate, setLastLiveUpdate] = useState<Date | null>(null);
   const versionRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    fetchProjectBySlug(slug).then(setProject).catch(e => setErr(String(e)));
-  }, [slug]);
 
   // Seed the version guard from the initial fetch.
   useEffect(() => {
@@ -157,7 +240,7 @@ export function useProjectLiveUpdates(slug: string): ProjectLiveUpdates {
     } finally {
       setPrivacyBusy(false);
     }
-  }, [slug, project?.privacy]);
+  }, [slug, project?.privacy, setProject]);
 
   // A server-side revision restore changes the project's current_code. Push it
   // through the same liveCode/lastLiveUpdate path the SSE updates use so the 3D
@@ -172,6 +255,8 @@ export function useProjectLiveUpdates(slug: string): ProjectLiveUpdates {
   return {
     project,
     err,
+    loadState,
+    retry,
     liveCode,
     lastLiveUpdate,
     handleRestored,
