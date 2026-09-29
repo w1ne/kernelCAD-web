@@ -80,9 +80,11 @@ function SessionLine({ agentEnabled, hasSession, sessionEmail, sessionLoading }:
     if (hasSession) {
         return <p className="mt-3 text-ui text-fg-3">Signed in as {sessionEmail ?? 'kernelCAD user'}.</p>;
     }
+    // With the built-in agent off, the panel above already offers both ways on.
+    if (!agentEnabled) return null;
     return (
         <p className="mt-3 text-ui text-fg-2">
-            {agentEnabled ? 'Sign in to create. What you type is kept.' : 'Examples need no account.'}{' '}
+            Sign in to create. What you type is kept.{' '}
             <a href="/connect" className="text-accent underline-offset-2 hover:underline">
                 Or connect ChatGPT, Claude or Codex
             </a>
