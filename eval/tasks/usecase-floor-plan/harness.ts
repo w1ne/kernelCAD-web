@@ -7,7 +7,6 @@
 // exports. See eval/tasks/USECASES.md.
 import { strFromU8 } from 'fflate';
 import type { HarnessResult } from '../../types';
-import type { ExportOptions } from '../../../src/agent/script-runtime/export';
 import {
   buildUsecase, bboxIs, emptyIn, exportAs, fullIn, part, standardExports, standardGates,
 } from '../../usecaseChecks';
@@ -40,9 +39,8 @@ export default async function harness(scriptPath: string): Promise<HarnessResult
   const report = pdf.result.drawingReport;
   const drawn = new Set((report?.annotations ?? []).map((a) => a.text));
 
-  // The DXF section option is the plan-view path (issue #806); on the old
-  // API the unknown option is ignored and the export refuses the 3D body.
-  const dxf = await exportAs(b, 'dxf', { format: 'dxf', section: { axis: 'z', at: 1000 } } as unknown as ExportOptions);
+  // The plan view as a DXF: the section through the walls at 1 m.
+  const dxf = await exportAs(b, 'dxf', { format: 'dxf', section: { axis: 'z', at: 1000 } });
   const dxfText = dxf.ok ? strFromU8(dxf.bytes) : '';
 
   return {
