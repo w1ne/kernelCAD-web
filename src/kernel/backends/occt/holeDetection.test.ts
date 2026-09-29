@@ -10,6 +10,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { OcctBackend, initOcct } from './occtBackend';
 import {
   detectCylindricalHoles,
+  inspectCylindricalHoles,
   resolveBoreExtents,
   MIN_ANGULAR_COVERAGE_RAD,
   type ConcaveCylFace,
@@ -217,5 +218,63 @@ describe('resolveBoreExtents (pure grouping + interval union)', () => {
     expect(bores).toHaveLength(2);
     expect(bores[0].faceCount).toBe(1);
     expect(bores[1].faceCount).toBe(1);
+  });
+});
+
+// Dogfood friction: `inspect({ of: 'step' })` found 6 of 8 real bores. A bore
+// whose wall is breached (clamp slot, a nearby edge fillet/chamfer or pocket
+// running into it) no longer covers the full circle, so the strict detector
+// drops it silently. `inspectCylindricalHoles` reports it as `partial` and
+// says the result is heuristic.
+describe('inspectCylindricalHoles (breached bores + honesty flag)', () => {
+  /** 40×40×10 plate with a Ø6 through bore at (20,20); `notch` cuts a slot
+   *  into the bore wall along its full depth (a clamp-slot breach). */
+  function plate(notch: boolean): OcctBackend {
+    let p = OcctBackend.box(40, 40, 10).subtract(OcctBackend.cylinder(20, 3).translate(20, 20, -5));
+    if (notch) p = p.subtract(OcctBackend.box(10, 2, 20).translate(20, 17.5, -5));
+    return p;
+  }
+
+  it('full bores only: exact, same holes as detectCylindricalHoles', () => {
+    const r = inspectCylindricalHoles(plate(false));
+    expect(r.holeDetection).toBe('exact');
+    expect(r.holes).toHaveLength(1);
+    expect(r.holes[0].partial).toBeUndefined();
+    expect(r.holes).toEqual(detectCylindricalHoles(plate(false)));
+  });
+
+  it('a slot-breached bore is reported as partial and the result is heuristic', () => {
+    const part = plate(true);
+    // The strict detector still drops it (unchanged contract for its callers).
+    expect(detectCylindricalHoles(part)).toHaveLength(0);
+    const r = inspectCylindricalHoles(part);
+    expect(r.holeDetection).toBe('heuristic');
+    expect(r.holes).toHaveLength(1);
+    const h = r.holes[0];
+    expect(h.partial).toBe(true);
+    expect(h.diameterMm).toBeCloseTo(6, 3);
+    expect(h.kind).toBe('through');
+    expect(h.angularCoverageDeg!).toBeGreaterThan(229);
+    expect(h.angularCoverageDeg!).toBeLessThan(360);
+  });
+
+  it('a quarter-round fillet channel is never a hole and keeps the result exact', () => {
+    const channel = OcctBackend.cylinder(40, 3)
+      .translate(0, 0, -20)
+      .rotate([1, 0, 0], 90)
+      .translate(10, 0, 5);
+    const r = inspectCylindricalHoles(OcctBackend.box(20, 20, 10, true).subtract(channel));
+    expect(r.holes).toHaveLength(0);
+    expect(r.holeDetection).toBe('exact');
+  });
+
+  it('eight bores in one plate are all found (no silent drop)', () => {
+    let p = OcctBackend.box(80, 60, 6);
+    for (const [x, y] of [[8, 8], [40, 8], [72, 8], [8, 52], [40, 52], [72, 52], [20, 30], [60, 30]]) {
+      p = p.subtract(OcctBackend.cylinder(10, 2.5).translate(x, y, -2));
+    }
+    const r = inspectCylindricalHoles(p);
+    expect(r.holes).toHaveLength(8);
+    expect(r.holeDetection).toBe('exact');
   });
 });

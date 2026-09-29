@@ -28,10 +28,14 @@
 // vertex coordinates and build-item offsets always agree with the declared
 // `<model unit>`: a 10 mm cube is `1` with `unit="centimeter"`.
 //
-// Validity gate: every part mesh is fed through `assertWatertight` before
-// the zip is built. The half-edge check throws when any undirected edge is
-// shared by anything other than two triangles; the runtime layer translates
-// that error into the `export.3mf.not-watertight` diagnostic.
+// Validity gate: every part mesh that is not watertight is healed first
+// (`healExportMesh`: crack stitch + degenerate-triangle drop), then judged
+// against the shared mesh defect budget (`measureMeshDefects`, the same
+// budget as the server's STL check). A few open edges remain on curved or
+// organic models and every slicer closes them: the file is written and
+// `export3mfWithReportAsync` returns them as `meshWarnings`. Past the budget
+// the writer throws `ThreeMfMeshDefectError` with the counts; the runtime
+// layer translates it into the `export.3mf.not-watertight` diagnostic.
 
 import { zipSync, strToU8 } from 'fflate';
 import { createRequire } from 'node:module';
@@ -41,7 +45,7 @@ import {
 import type { MeshData } from './exportStlBinary';
 import type { PBRMaterial } from '../../../shared/intent/material';
 import type { WorldFramePart } from './sceneToWorldFrame';
-import { assertWatertight } from './assertWatertight';
+import { healExportMesh, measureMeshDefects, type MeshDefectReport } from './meshHeal';
 import { resolveColor } from '../../../shared/render/palette';
 import {
   attributionGenerator,
@@ -173,9 +177,73 @@ export interface ThreeMfBedWarning {
   fitsOn: string[];
 }
 
+/** A part shipped with open or non-manifold edges within the defect
+ *  budget (after the heal pass). The file is still written. */
+export interface ThreeMfMeshWarning {
+  part: string;
+  openEdges: number;
+  nonManifoldEdges: number;
+  triangles: number;
+  budget: number;
+}
+
 export interface Export3mfResult {
   bytes: Uint8Array;
   bedWarnings: ThreeMfBedWarning[];
+  meshWarnings: ThreeMfMeshWarning[];
+}
+
+/** A part mesh with more bad edges than the defect budget after the heal
+ *  pass. The message contains `not watertight` (the runtime keys on it). */
+export class ThreeMfMeshDefectError extends Error {
+  readonly part: string;
+  readonly openEdges: number;
+  readonly nonManifoldEdges: number;
+  readonly triangles: number;
+  readonly budget: number;
+
+  constructor(part: string, report: MeshDefectReport) {
+    super(
+      `Mesh is not watertight: part '${part}' has ${report.openEdges} open and `
+      + `${report.nonManifoldEdges} non-manifold edge(s) after repair `
+      + `(${report.triangles} triangles; the limit is ${report.budget} bad edges).`,
+    );
+    this.name = 'ThreeMfMeshDefectError';
+    this.part = part;
+    this.openEdges = report.openEdges;
+    this.nonManifoldEdges = report.nonManifoldEdges;
+    this.triangles = report.triangles;
+    this.budget = report.budget;
+  }
+}
+
+/** Heal each part mesh that is not watertight and judge what remains
+ *  against the defect budget. Throws past the budget. */
+function healPartMeshes(parts: ReadonlyArray<MeshedPart>): {
+  parts: MeshedPart[];
+  meshWarnings: ThreeMfMeshWarning[];
+} {
+  const meshWarnings: ThreeMfMeshWarning[] = [];
+  const healed = parts.map((p) => {
+    if (measureMeshDefects(p.mesh).watertight) return p;
+    const mesh = healExportMesh({
+      vertices: Array.from(p.mesh.vertices),
+      triangles: Array.from(p.mesh.triangles),
+    });
+    const report = measureMeshDefects(mesh);
+    if (!report.acceptable) throw new ThreeMfMeshDefectError(p.name, report);
+    if (!report.watertight) {
+      meshWarnings.push({
+        part: p.name,
+        openEdges: report.openEdges,
+        nonManifoldEdges: report.nonManifoldEdges,
+        triangles: report.triangles,
+        budget: report.budget,
+      });
+    }
+    return { ...p, mesh };
+  });
+  return { parts: healed, meshWarnings };
 }
 
 const ARRANGE_VALUES: readonly ThreeMfArrange[] = ['none', 'plate', 'assembled'];
@@ -227,13 +295,11 @@ export async function export3mfWithReportAsync(
     throw new Error('export3mfAsync: no parts to write.');
   }
 
-  const meshed: ReadonlyArray<MeshedPart> = parts.map((p) =>
+  const { parts: meshed, meshWarnings } = healPartMeshes(parts.map((p) =>
     hasMesh(p)
       ? p
       : { ...p, mesh: meshShapeForExport(p.shape.getReplicadShape()) },
-  );
-
-  for (const p of meshed) assertWatertight(p.mesh);
+  ));
 
   const printUnit: ThreeMfUnit = options.printUnit ?? 'mm';
   const arrange: ThreeMfArrange = options.arrange ?? 'none';
@@ -321,7 +387,7 @@ ${embedSource ? '  <Default Extension="ts" ContentType="text/plain" />\n' : ''}$
   if (embedSource) {
     files['Metadata/source.kcad.ts'] = strToU8(options.scriptSource!);
   }
-  return { bytes: zipSync(files), bedWarnings: layout.bedWarnings };
+  return { bytes: zipSync(files), bedWarnings: layout.bedWarnings, meshWarnings };
 }
 
 const BASEMATERIALS_ID = 1;

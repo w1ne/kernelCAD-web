@@ -812,6 +812,9 @@ export function recordSolvedModel(
   opts?: SolvedModelOptions,
 ): Promise<Scene> {
   applySolvedModelEntryChecks(state, opts);
+  // Internal re-posing callers (mechanism truth, pose envelope) pass
+  // `validate: 'off'`; only an author-facing call marks a mechanism.
+  if (opts?.validate !== 'off') state.solvedModelRequested = true;
 
   // Synchronous phase — must throw (not reject) so existing
   // `expect(() => arm.solvedModel(badPoses)).toThrow(...)` capture-time
