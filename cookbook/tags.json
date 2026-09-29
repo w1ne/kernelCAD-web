@@ -95,5 +95,11 @@
   "draft",
   "emboss",
   "render",
-  "turntable"
+  "turntable",
+  "sheet-metal",
+  "bend",
+  "motor",
+  "shaft",
+  "bearing",
+  "nema"
 ]
