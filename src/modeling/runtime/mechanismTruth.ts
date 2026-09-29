@@ -195,6 +195,13 @@ export interface MechanismTruthOptions {
    * (pass `Infinity` to always sweep). Defaults to `BREP_SWEEP_BUDGET`.
    */
   readonly sweepBudget?: number;
+  /**
+   * An already-lowered scene of THIS assembly (any pose), e.g. the one the
+   * caller's evaluation produced. Seeds the shared lowered base so the sweep
+   * re-poses those part BREPs instead of re-lowering the whole record chain.
+   * Ignored when its part set does not match the assembly.
+   */
+  readonly loweredScene?: SceneBackend;
 }
 
 /**
@@ -305,7 +312,7 @@ export async function checkMechanismTruth(
   // lowers — the dominant cost of `validate --include-interference` on the
   // 42-part turbojet. Skipped when no criterion needs a scene (no fastened
   // mates AND an over-budget sweep).
-  const loweredBase: LoweredSceneBase = {};
+  const loweredBase: LoweredSceneBase = seedLoweredBase(arm, opts.loweredScene);
   const hasFastenedMates = arm.__mates().some((m) => m.type === 'fastened');
   if (hasFastenedMates || !sweepSkipped) {
     const restSample = solved.find((s) => s.sample.name === 'rest');
@@ -1075,6 +1082,15 @@ function formatPoseValue(v: number): string {
  * old per-sample lower. Results are cached on `sample.scene` to avoid
  * re-paying for repeat criterion calls on the same sample.
  */
+/** Seed the shared lowered base with a caller-supplied scene when its parts
+ *  are exactly the assembly's parts (same names), else start empty. */
+function seedLoweredBase(arm: Assembly, scene: SceneBackend | undefined): LoweredSceneBase {
+  if (scene === undefined) return {};
+  const want = arm.__parts().map((p) => p.name).sort().join('\n');
+  const have = scene.parts.map((p) => p.name).sort().join('\n');
+  return want === have ? { scene } : {};
+}
+
 async function lowerSceneForSample(
   arm: Assembly,
   sample: SolvedSample,
@@ -1107,6 +1123,9 @@ async function lowerAssemblySceneForPose(
   const result = await engine.run(arm.__session().getRecords(), {
     paramTable: arm.__session().paramTable,
     gatedFeatureNames: arm.__session().gatedFeatureNames,
+    // Only the appended pose scene needs lowering; the part records are
+    // unchanged since the last full lower.
+    seedShapes: arm.__session().reusableLoweredPrefix(),
   });
   const sourceId: FeatureId | undefined = scene.__sourceFeatureId();
   if (sourceId === undefined) return undefined;

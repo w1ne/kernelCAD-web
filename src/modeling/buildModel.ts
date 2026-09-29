@@ -96,12 +96,15 @@ export async function buildModel(
   const engine = new RecomputeEngine(createOcctLowerer(session));
   session.setEngine(engine);
   const warningsBefore = session.warnings.length;
+  const pending = session.snapshotFullLower(new Map());
   const result = await engine.run(run.records, {
     paramTable: session.paramTable,
     warningSink: warning => session.warnings.push(warning),
     warningPhase: 'build',
     gatedFeatureNames: session.gatedFeatureNames,
   });
+  // Later `Shape.lower()` calls (review passes lower each part) reuse this.
+  session.lastFullLower = { ...pending, shapes: result.shapes };
 
   return assembleBuiltModel(session, run, result, warningsBefore, input.code);
 }

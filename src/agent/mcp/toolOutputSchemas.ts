@@ -483,6 +483,12 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
     type: 'object',
     properties: {
       ok: { type: 'boolean' },
+      stageTimingsMs: { type: 'object', additionalProperties: { type: 'number' }, description: 'Wall-clock ms per review stage that ran.' },
+      skippedStages: {
+        type: 'array',
+        items: { type: 'object', properties: { stage: { type: 'string' }, reason: { type: 'string' } }, additionalProperties: true },
+        description: 'Stages skipped because timeBudgetMs was spent; their checks did not run.',
+      },
       featureCount: { type: 'number' },
       diagnostics: { type: 'array', items: { type: 'object', additionalProperties: true } },
       assembly: { type: 'string' },
