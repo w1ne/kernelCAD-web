@@ -46,9 +46,9 @@ function GenerateHeroStatus({ phase, hasSession, onUpgrade, upgradeBusy }: {
                     />
                 )}
                 {phase.code !== 'rate_limited' && (
-                    <div className="mt-6 mx-auto max-w-2xl rounded-lg border border-copper bg-vellum-soft p-4 text-ink text-left">
+                    <div className="mt-6 mx-auto max-w-2xl rounded-lg border border-danger bg-vellum-soft p-4 text-ink text-left">
                       <p className="font-serif font-medium text-lg">Generation didn't finish</p>
-                      <p className="font-mono text-xs text-copper mt-1 tracking-widest uppercase">{phase.code}</p>
+                      <p className="font-mono text-xs text-danger mt-1 tracking-widest uppercase">{phase.code}</p>
                       <p className="text-sm text-ink-soft mt-2">{phase.message}</p>
                     </div>
                 )}
