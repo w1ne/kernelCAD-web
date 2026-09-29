@@ -39,7 +39,7 @@ export const MECHANISM_CODES = {
   },
   'mechanism.orphan-part': {
     hintTemplate:
-      "Disconnected components in the assembly graph. Connect every orphan body with connectors + mates/joints: shafts/hinges/gears → partRef.connector(name, { type: 'axis', origin: { kind: 'vec3', value: [x,y,z] }, axis: [...] }) then arm.mate(name, 'a.conn', 'b.conn', 'revolute'); rigid mounts → type: 'frame' + mate(..., 'fastened'); or use arm.revolute/.prismatic/.ball/.fixed. Connector types are only frame|axis|planar|ball.",
+      "Disconnected components in the assembly graph. Connect every orphan body with connectors + mates/joints: shafts/hinges/gears → partRef.connector(name, { type: 'axis', origin: { kind: 'vec3', value: [x,y,z] }, axis: [...] }) then arm.mate(name, 'a.conn', 'b.conn', 'revolute'); rigid mounts → type: 'frame' + mate(..., 'fastened'); or use arm.revolute/.prismatic/.ball/.fixed. Connector types are only frame|axis|planar|ball. Only a mechanism (an assembly with mates, joints, transmissions or a solvedModel call) needs every part linked; if a part is deliberately free (a loose accessory, a display or print-layout part), do not invent a mate — pass { skipMechanismCheck: true } to evaluate_script.",
     nextAction: {
       kind: 'rewrite-feature',
       guidance:
@@ -47,7 +47,7 @@ export const MECHANISM_CODES = {
     },
     defaultSeverity: 'error',
     group: 'mechanism',
-    description: 'A part declared on the assembly is not reachable from any other part via mate, joint-primitive, or connect edges — the assembly graph has disconnected components. Diagnostics list every disconnected body id and suggest connector types.',
+    description: 'A part declared on a mechanism (an assembly with mates, joints, transmissions or a solvedModel call) is not reachable from any other part via mate, joint-primitive, or connect edges — the assembly graph has disconnected components. Diagnostics list every disconnected body id and suggest connector types. A plain multi-part assembly with no mates is independent bodies, not a mechanism: it gets one info note, not an error.',
   },
   // Physics-grounded loop — T3 slice (post-condition trust gate). Emitted by
   // `mechanismTruth.ts` when the BREP pose-sweep work estimate exceeds the

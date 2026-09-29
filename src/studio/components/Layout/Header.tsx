@@ -7,6 +7,8 @@ import { useStudioChrome } from '../../context/StudioChromeContext';
 import { useUI } from '../../context/UIContext';
 import { COMPACT_HEADER_QUERY, useIsNarrow } from '../../hooks/useIsNarrow';
 import { downloadBlob, exportViaServer } from '../../exportViaServer';
+import { useExportTask, type ExportTask } from '../../hooks/useExportTask';
+import { ExportStatus } from '../Shared/ExportStatus';
 import { OverflowMenu } from './OverflowMenu';
 import UserMenu from './UserMenu';
 import { FeedbackButton } from './FeedbackButton';
@@ -30,20 +32,20 @@ function MenuRow({ label, children }: { label: string; children: ReactNode }) {
 // Route through the node OCCT export endpoint (same as ExportTab). The
 // legacy in-browser worker uses bare `new Function(code)` without an
 // async wrapper, so top-level await / lib.fromSTEP fail with
-// "await is only valid in async functions".
-async function exportModelViaServer(
+// "await is only valid in async functions". Progress, errors (with the
+// server's hint) and warnings show in a floating ExportStatus, not alert().
+function exportModelViaServer(
+    task: ExportTask,
     type: 'step' | 'stl',
     code: string,
     projectName: string | undefined,
-): Promise<void> {
-    try {
-        const { blob, downloadName } = await exportViaServer(type, code);
-        const fallback = `${(projectName || 'model').replace(/[^a-z0-9]/gi, '_')}.${type}`;
-        downloadBlob(blob, downloadName || fallback);
-    } catch (err) {
-        console.error(err);
-        alert('Export failed: ' + (err instanceof Error ? err.message : String(err)));
-    }
+): void {
+    const fallback = `${(projectName || 'model').replace(/[^a-z0-9]/gi, '_')}.${type}`;
+    void task.start(
+        type.toUpperCase(),
+        (options) => exportViaServer(type, code, options),
+        (blob, downloadName) => downloadBlob(blob, downloadName || fallback),
+    );
 }
 
 interface HeaderInstruments {
@@ -111,7 +113,8 @@ export function Header() {
     // own chrome; the instruments move into a single overflow menu instead.
     const narrow = useIsNarrow(COMPACT_HEADER_QUERY);
 
-    const handleExport = (type: 'step' | 'stl') => exportModelViaServer(type, code, activeProject?.name);
+    const exportTask = useExportTask();
+    const handleExport = (type: 'step' | 'stl') => exportModelViaServer(exportTask, type, code, activeProject?.name);
 
     const instruments: HeaderInstruments = {
         viewModeCluster: <ViewModeCluster viewMode3D={viewMode3D} setViewMode3D={setViewMode3D} />,
@@ -178,6 +181,7 @@ export function Header() {
                 {!narrow && <WideInstrumentCluster instruments={instruments} isComputing={isComputing} onExport={handleExport} />}
                 {isComputing && <Loader2 className="w-3 h-3 animate-spin text-gray-500" />}
             </div>
+            <ExportStatus task={exportTask} floating testId="header-export-status" />
             {/* Account menu — pinned to the right edge so it never scrolls out of
                 the horizontally-scrollable toolbar. It used to be the last item
                 inside the scrolling instrument cluster, so on narrow viewports it

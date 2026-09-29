@@ -6,10 +6,26 @@ import type { GeometryResult } from "../../../../shared/worker/geometryEngine";
 import { CAD_COLORS_HEX } from "../../../../shared/constants/colors";
 import { FaceSelectionOverlay } from "../entities/ShapeGeometry";
 import { matrixFromGeometryTransform } from "../entities/geometryTransform";
+import { EdgeRangeLines } from "./EdgeRangeLines";
 
 interface HighlightOverlayProps {
     hovered: HoverResult | null;
     geometries: GeometryResult[];
+}
+
+/** One hovered BREP edge of a shape's merged edge set, or null when `object`
+ *  is not such an edge set. */
+function brepEdgeHighlight(object: THREE.Object3D, id: string | number) {
+    if (!object.userData.edgeRanges || !(object instanceof THREE.LineSegments)) return null;
+    return (
+        <EdgeRangeLines
+            positions={object.geometry.getAttribute('position').array as Float32Array}
+            edgeRanges={object.userData.edgeRanges as number[]}
+            edgeIndex={id as number}
+            matrix={object.matrixWorld}
+            color={CAD_COLORS_HEX.highlight}
+        />
+    );
 }
 
 export function HighlightOverlay({ hovered, geometries }: HighlightOverlayProps) {
@@ -34,6 +50,8 @@ export function HighlightOverlay({ hovered, geometries }: HighlightOverlayProps)
             }
         }
     } else if (type === 'EDGE') {
+        const brepEdge = brepEdgeHighlight(object, id);
+        if (brepEdge) return brepEdge;
         if (object instanceof THREE.Line || object instanceof THREE.LineSegments) {
             return (
                 <lineSegments

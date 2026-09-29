@@ -14,6 +14,7 @@ Two cases produce explicit diagnostics:
 - `feature.face-ref.ambiguous-after-split` — an upstream boolean split the named face into multiple children (e.g., a divider cut splits `top` into two halves). Geometry-fallback disambiguation is planned for a future release; current workaround: apply the edge/face feature before the splitting operation, or use a query-based selector.
 - `feature.face-ref.removed` — an upstream boolean removed the named face entirely. Reference a different face that still exists in the current shape.
 - `feature.hole.no-target-face` — the hole entry face matched, but no body sits along the bore axis to drill into. Pick an entry face on a different body, or verify the target body extends along the bore axis.
+- `feature.hole.cut-missing` — a bore centre is off the entry face, the depth is zero, or material is still on the bore axis after the cut. The feature fails; it never ships a part with a missing hole. The message gives the face centre, the u/v axes and the u/v span. See "Hole position frame" below.
 - `feature.created-ref.fallback-used` — *warning* (not error). The created-ref resolver fell back to a geometry-snapshot match after the topology lookup lost the face. The downstream feature still resolves. Lock the ref against future edits by naming the upstream feature with `.name()` and addressing it by `<name>.<slot>`.
 
 (The same `feature.face-ref.*` codes apply to both edge features (`fillet`, `chamfer`) and face features (`shell`).)
@@ -166,6 +167,34 @@ plate.cutout(
   { face: 'top', depth: 6 },
 );
 ```
+
+### Hole position frame
+
+`u`, `v` are mm offsets from the centre of the entry face's outer boundary.
+They are NOT world coordinates. Holes already in the face do not move the
+origin. Face names and axes follow the part through `.rotate()`.
+
+| Face | u | v |
+|---|---|---|
+| `top` / `bottom` | +X | +Y |
+| `front` / `back` | +X | +Z |
+| `left` / `right` | +Y | +Z |
+
+Convert a world point: `u = worldU - centreU`, `v = worldV - centreV`.
+
+```typescript
+// Plate spans Z 5..60, so the 'front' centre is at Z 32.5.
+// Hole wanted at world X 0, Z 45.5:
+plate.hole('front', { u: 0, v: 45.5 - 32.5, diameter: 3.4, depth: 'through' });
+```
+
+Every bore of `hole` / `holes` is checked. A centre off the face, a zero depth,
+or material left on the bore axis fails the feature with
+`feature.hole.cut-missing`.
+
+`cutout` profile (x, y) uses the same origin, and x runs along hole `u`. On
+`top`, `front` and `right`, profile y runs along hole `v`. On `bottom`, `back`
+and `left`, profile y runs the opposite way (-Y or -Z).
 
 Created refs emitted per feature kind (resolvable via `{ face: '<name>' }`):
 

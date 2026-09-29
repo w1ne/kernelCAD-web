@@ -7,7 +7,8 @@ import { Header } from './Header';
 import { WorkbenchProvider } from '../../context/WorkbenchContext';
 import * as exportViaServerMod from '../../exportViaServer';
 
-vi.mock('../../exportViaServer', () => ({
+vi.mock('../../exportViaServer', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../exportViaServer')>(),
   exportViaServer: vi.fn().mockResolvedValue({
     blob: new Blob(['mock data']),
     downloadName: 'model.step',
@@ -91,6 +92,7 @@ describe('Header', () => {
     expect(exportViaServerMod.exportViaServer).toHaveBeenCalledWith(
       'step',
       expect.any(String),
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
     );
     await waitFor(() => {
       expect(exportViaServerMod.downloadBlob).toHaveBeenCalled();
@@ -110,8 +112,33 @@ describe('Header', () => {
       expect(exportViaServerMod.exportViaServer).toHaveBeenCalledWith(
         'stl',
         expect.any(String),
+        expect.objectContaining({ signal: expect.any(AbortSignal) }),
       );
     });
+  });
+
+  it('shows a failed export as the server message and hint, not an alert', async () => {
+    const alertSpy = vi.fn();
+    vi.stubGlobal('alert', alertSpy);
+    vi.mocked(exportViaServerMod.exportViaServer).mockRejectedValueOnce(
+      new exportViaServerMod.ServerExportError('The export did not finish within 150 s.', {
+        status: 504, code: 'export.timeout', hint: 'Large assemblies export faster as STEP.',
+      }),
+    );
+    render(
+      <WorkbenchProvider>
+        <Header />
+      </WorkbenchProvider>,
+    );
+
+    fireEvent.click(screen.getByTitle('Export STL'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('header-export-status-error').textContent)
+        .toBe('The export did not finish within 150 s.');
+    });
+    expect(screen.getByTestId('header-export-status-hint').textContent).toBe('Large assemblies export faster as STEP.');
+    expect(alertSpy).not.toHaveBeenCalled();
   });
 
   it('should switch between shading modes', () => {

@@ -27,7 +27,7 @@ const FIXTURES: Array<{ file: string; code: string; repairedLine: string }> = [
   },
   {
     file: 'hole-misses-plate.kcad.ts',
-    code: 'feature.subtractive-noop',
+    code: 'feature.hole.cut-missing',
     repairedLine: "return plate.hole('top', { u: 25, v: 0, diameter: 5, depth: 10 });",
   },
   {

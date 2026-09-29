@@ -710,6 +710,58 @@ describe('mechanism truth — pose-sweep grounded loop (P0)', () => {
     expect(orphans[0].message).toContain("'floater'");
   }, 90000);
 
+  // ───────────────────────────────────────────────────────────────────
+  // Dogfood friction: the orphan check applies to MECHANISMS only. A plain
+  // multi-part assembly (enclosure base + lid, print layout) with no mates,
+  // joints, transmissions or solvedModel call is independent bodies.
+  // ───────────────────────────────────────────────────────────────────
+
+  it('a plain base + lid assembly with no mates is NOT broken (info note only)', async () => {
+    const { arm, kcad } = makeArm('enclosure');
+    arm.part('base', kcad.box(60, 40, 20));
+    arm.part('lid', kcad.box(60, 40, 3).translate(80, 0, 0));
+    arm.model();
+
+    const result = await checkMechanismTruth(arm);
+    const orphans = result.failures.filter((f) => f.code === 'mechanism.orphan-part');
+    expect(orphans.filter((f) => f.severity === 'error')).toEqual([]);
+    expect(orphans).toHaveLength(1);
+    expect(orphans[0].severity).toBe('info');
+    expect(orphans[0].message).toContain('independent bodies');
+    expect(result.mechanism).toBe('real');
+  }, 90000);
+
+  it('a mated mechanism with one unlinked part still errors, and the hint names skipMechanismCheck', async () => {
+    const { arm, kcad } = makeArm('mated-plus-floater');
+    const base = arm.part('base', kcad.box(60, 40, 10));
+    const plate = arm.part('plate', kcad.box(60, 40, 5).translate(0, 0, 10));
+    base.connector('top', { type: 'frame', origin: { kind: 'vec3', value: [30, 20, 10] } });
+    plate.connector('bottom', { type: 'frame', origin: { kind: 'vec3', value: [30, 20, 10] } });
+    arm.mate('stack', 'base.top', 'plate.bottom', 'fastened');
+    arm.part('floater', kcad.box(5, 5, 5).translate(0, 200, 0));
+
+    const result = await checkMechanismTruth(arm);
+    const orphans = result.failures.filter((f) => f.code === 'mechanism.orphan-part');
+    expect(orphans).toHaveLength(1);
+    expect(orphans[0].severity).toBe('error');
+    expect(orphans[0].message).toContain("'floater'");
+    expect(orphans[0].message).toContain('skipMechanismCheck');
+    expect(orphans[0].hint).toContain('skipMechanismCheck');
+    expect(result.mechanism).toBe('broken');
+  }, 90000);
+
+  it('a solvedModel call marks a mate-less multi-part assembly as a mechanism (orphans error)', async () => {
+    const { arm, kcad } = makeArm('declared-mechanism');
+    arm.part('base', kcad.box(60, 40, 10));
+    arm.part('arm', kcad.box(50, 10, 8).translate(0, 100, 0));
+    await arm.solvedModel({});
+
+    const orphans = (await checkMechanismTruth(arm)).failures
+      .filter((f) => f.code === 'mechanism.orphan-part');
+    expect(orphans).toHaveLength(1);
+    expect(orphans[0].severity).toBe('error');
+  }, 90000);
+
   it('integration: RecomputeEngine.run plumbs the mechanism field via the mechanismCheck callback', async () => {
     // Sanity-check the engine wiring: pass a stub probe and confirm the
     // verdict + failures show up on RecomputeResult.

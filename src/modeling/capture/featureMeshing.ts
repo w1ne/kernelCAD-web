@@ -17,6 +17,7 @@ import { RecomputeEngine } from '../compute/recomputeEngine';
 import { meshShape } from '../../kernel/backends/occt/meshing';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import { generatePlanarUVs } from './planarUv';
+import { computeFeatureOwnership } from './featureOwnership';
 import { helixPolylineRouted } from '../mates/helixPolyline';
 import {
   accumulateMeshBounds,
@@ -92,6 +93,14 @@ export interface FeatureMesh {
    *  per-face API). The renderer prefers this entry over `material` on a
    *  face-by-face basis; unmatched faces fall back to `material`. */
   materialByFaceId?: Record<number, PBRMaterial>;
+  /** Owning feature id per face index (see `featureOwnership.ts`). Absent
+   *  when every face belongs to `featureId`. */
+  faceOwners?: string[];
+  /** Per-edge `[start, count]` vertex ranges into `edges`. */
+  edgeRanges?: number[];
+  /** Owning feature id per `edgeRanges` pair. Absent when every edge belongs
+   *  to `featureId`. */
+  edgeOwners?: string[];
   /** Stable human-readable mesh label for manifests and object filters. */
   displayName?: string;
   /** Deterministic names/ids that can match this mesh in inspection filters. */
@@ -794,6 +803,8 @@ export async function meshFeaturesPerFeature(
     cachedFeatureMeshes,
   );
 
+  const linkState = newLinkState(records, seedShapes);
+
   await engine.run(records, {
     paramTable,
     ...(seedShapes !== undefined && seedShapes.size > 0 ? { seedShapes } : {}),
@@ -812,6 +823,7 @@ export async function meshFeaturesPerFeature(
       warnings,
       records,
       cachedFeatureMeshes,
+      ...linkState,
     }),
   });
 
@@ -902,6 +914,71 @@ interface MeshFeatureEventContext {
   readonly warnings: PerFaceMaterialWarning[];
   readonly records: readonly FeatureRecord[];
   readonly cachedFeatureMeshes?: Map<FeatureId, FeatureMesh>;
+  /** Lowered shape per feature, so ownership can inherit from predecessors. */
+  readonly shapeById: Map<FeatureId, ShapeBackend>;
+  readonly recordOrder: ReadonlyMap<FeatureId, number>;
+}
+
+/** Kinds whose lowered shape is a topology-preserving copy of their single
+ *  input (face ownership is inherited by face order). */
+const TOPOLOGY_COPY_KINDS: ReadonlySet<FeatureKind> = new Set<FeatureKind>(['assemblyPart']);
+
+function predecessorShapesOf(
+  ids: readonly FeatureId[],
+  shapeById: ReadonlyMap<FeatureId, ShapeBackend>,
+): ShapeBackend[] {
+  return ids
+    .map((id) => shapeById.get(id))
+    .filter((shape): shape is ShapeBackend => shape !== undefined);
+}
+
+type CompiledEvent = Extract<FeatureEvent, { kind: 'feature.compiled' }>;
+
+/** Per-run state of the selection ↔ code link ownership pass. */
+function newLinkState(
+  records: readonly FeatureRecord[],
+  seedShapes: ReadonlyMap<FeatureId, ShapeBackend> | undefined,
+): Pick<MeshFeatureEventContext, 'shapeById' | 'recordOrder'> {
+  return {
+    shapeById: new Map<FeatureId, ShapeBackend>(seedShapes ?? []),
+    recordOrder: new Map<FeatureId, number>(records.map((r, i) => [r.id, i])),
+  };
+}
+
+/** A construction-closure record is not meshed, but its face owners feed the
+ *  assembly part meshes built from it (selection ↔ code link). */
+function recordClosureOwnership(event: CompiledEvent, ctx: MeshFeatureEventContext): void {
+  if (!isReplicadShapeProvider(event.shape)) return;
+  computeFeatureOwnership({
+    featureId: event.featureId,
+    shape: event.shape,
+    rawShape: event.shape.getReplicadShape(),
+    predecessorShapes: predecessorShapesOf(event.predecessors, ctx.shapeById),
+    recordOrder: ctx.recordOrder,
+    topologyCopy: TOPOLOGY_COPY_KINDS.has(event.featureKind),
+  });
+}
+
+/** Per-edge ranges and face / edge owners of one meshed feature. */
+function linkFieldsOf(
+  event: CompiledEvent,
+  rawShape: unknown,
+  meshed: { edgeRanges?: number[]; edgeHashes?: number[] },
+  ctx: MeshFeatureEventContext,
+): Pick<FeatureMesh, 'faceOwners' | 'edgeRanges' | 'edgeOwners'> {
+  const ownership = computeFeatureOwnership({
+    featureId: event.featureId,
+    shape: event.shape,
+    rawShape,
+    predecessorShapes: predecessorShapesOf(event.predecessors, ctx.shapeById),
+    edgeHashes: meshed.edgeHashes,
+    recordOrder: ctx.recordOrder,
+    topologyCopy: TOPOLOGY_COPY_KINDS.has(event.featureKind),
+  });
+  return {
+    ...(meshed.edgeRanges !== undefined ? { edgeRanges: meshed.edgeRanges } : {}),
+    ...ownership,
+  };
 }
 
 function handleMeshFeatureEvent(event: FeatureEvent, ctx: MeshFeatureEventContext): void {
@@ -910,6 +987,7 @@ function handleMeshFeatureEvent(event: FeatureEvent, ctx: MeshFeatureEventContex
     return;
   }
   if (event.kind !== 'feature.compiled') return;
+  ctx.shapeById.set(event.featureId, event.shape);
 
   // Construction-input closure: this record was an intermediate input
   // to an assemblyPart's source shape. Its geometry is already presented
@@ -919,6 +997,7 @@ function handleMeshFeatureEvent(event: FeatureEvent, ctx: MeshFeatureEventContex
   // (solvedAssembly / assemblyModel / assemblyExport) is the consumer,
   // not a construction input — it's not in the closure.
   if (ctx.constructionClosure.has(event.featureId)) {
+    recordClosureOwnership(event, ctx);
     return;
   }
 
@@ -941,10 +1020,16 @@ function handleMeshFeatureEvent(event: FeatureEvent, ctx: MeshFeatureEventContex
       meshIdentityFields,
       metadataNameOf,
       collectTendonMeshes,
+      ownerIdOfShape: (shape) => {
+        for (const [id, s] of ctx.shapeById) if (s === shape) return id;
+        return undefined;
+      },
+      recordOrder: ctx.recordOrder,
     });
     return;
   }
-  const meshed = meshShape(extractRawShape(event.shape));
+  const rawShape = extractRawShape(event.shape);
+  const meshed = meshShape(rawShape);
   if (!meshed) {
     if (event.featureKind === 'sketch') {
       return;
@@ -988,6 +1073,7 @@ function handleMeshFeatureEvent(event: FeatureEvent, ctx: MeshFeatureEventContex
     faces: meshed.faces,
     volume: meshed.volume,
     edges: meshed.edges,
+    ...linkFieldsOf(event, rawShape, meshed, ctx),
     ...meshIdentityFields({
       featureId: event.featureId,
       featureKind: event.featureKind,

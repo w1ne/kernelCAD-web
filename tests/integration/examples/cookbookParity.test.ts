@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { evaluateScript } from '../../../src/agent/cli/commands/evaluate';
+import { evaluateScriptTool } from '../../../src/agent/mcp/tools/evaluateScript';
 import { getShapeInfoTool } from '../../../src/agent/mcp/tools/getShapeInfo';
 import { getMassPropertiesTool } from '../../../src/agent/mcp/tools/getMassProperties';
 import { listPartStatsTool } from '../../../src/agent/mcp/tools/listPartStats';
@@ -229,6 +230,39 @@ describe('cookbook parity examples', () => {
       expect(fea.ok && fea.name).toBe(grade);
     }
   }, 120_000);
+
+  it('gridfinity bin: 42 mm grid, 4.75 mm base, magnet holes, lip, fit checks', async () => {
+    const file = `${ROOT}/gridfinity-bin.kcad.ts`;
+    const ev = await evaluateScript({ file });
+    expect(ev.exitCode, JSON.stringify(ev.diagnostics)).toBe(0);
+
+    const src = readFileSync(file, 'utf8');
+    const measure = async (code: string) => {
+      const info = await getShapeInfoTool({ code });
+      expect(info.ok, JSON.stringify(info)).toBe(true);
+      return info.shape!;
+    };
+    const bin = await measure(src);
+    // 2 × 1 units: 42·n − 0.5 clearance; 3 height units (21 mm) + 4.4 mm lip.
+    expect(extent(bin.bbox)).toEqual([
+      expect.closeTo(83.5, 3), expect.closeTo(41.5, 3), expect.closeTo(25.4, 3),
+    ]);
+    // Eight Ø6.5 × 2.4 magnet pockets (6 × 2 mm magnets + fit clearance).
+    const noMagnets = await measure(src.replace('const magnets = true;', 'const magnets = false;'));
+    expect(noMagnets.volume - bin.volume).toBeCloseTo(8 * Math.PI * 3.25 * 3.25 * 2.4, 0);
+    // The foot footprint at z = 0 is 41.5 − 2·(2.15 + 0.8) = 35.6 mm per cell.
+    const foot = await measure(`${src.replace(/return bin;\s*$/, '')}
+      return bin.intersect(box(200, 200, 0.02, true).translate(0, 0, 0.01));`);
+    expect(extent(foot.bbox)[1]).toBeCloseTo(35.6, 1);
+
+    // Fit checks throw a readable error instead of building a bad bin.
+    const tooBig = await evaluateScriptTool({ code: src.replace('const magnetD = 6;', 'const magnetD = 10;') });
+    expect(tooBig.ok).toBe(false);
+    expect(JSON.stringify(tooBig.diagnostics)).toContain('does not fit the foot');
+    const shallow = await evaluateScriptTool({ code: src.replace('const heightUnits = 3;', 'const heightUnits = 1;') });
+    expect(shallow.ok).toBe(false);
+    expect(JSON.stringify(shallow.diagnostics)).toContain('too shallow');
+  }, 300_000);
 });
 
 describe('cookbook parity lookup_cookbook ranking', () => {
@@ -241,6 +275,8 @@ describe('cookbook parity lookup_cookbook ranking', () => {
     { query: 'wood dado rabbet mortise and tenon fit clearance', id: 'wood-joinery-dado-rabbet-mortise' },
     { query: 'pipe route through 3D waypoints with bend radius', id: 'pipe-route-swept-tube' },
     { query: 'mild-steel aluminum-6061 nylon material mass', id: 'engineering-material-presets-mass' },
+    { query: 'gridfinity bin', id: 'gridfinity-bin' },
+    { query: 'storage bin with magnets and dividers on a 42 mm grid', id: 'gridfinity-bin' },
   ];
 
   for (const c of cases) {

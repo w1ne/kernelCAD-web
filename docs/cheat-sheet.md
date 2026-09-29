@@ -29,13 +29,13 @@ The first call in any model: a solid primitive, or a 2D profile to extrude.
 | Call | What it does |
 |---|---|
 | `box(x, y, z, centered?, opts?) => Shape` | Axis-aligned box. |
-| `cylinder(h, r, segments?, opts?) => Shape` | Z-axis cylinder; bottom on the XY plane, height h, radius r. |
+| `cylinder(h, r, segments?, opts?) => Shape` | Z-axis cylinder centred on the Z axis in X/Y; bottom on the XY plane (spans z = 0..h), radius r. |
 | `sphere(r) => Shape` | Sphere centered at the origin, radius r. |
 | `torus(majorR: number, minorR: number, segments?: number) => Shape` | Solid torus centered on world origin, axis along world +Z. |
 | `spring({ length, coilRadius, wireRadius, turns, axis?, pointsPerTurn?, endStyle?, segments? }) => Shape` | Build a helical spring as a circular wire profile swept along a smooth B-spline helix spine, producing one continuous watertight solid. |
 | `spurGear({ module, teeth, faceWidth, pressureAngle?, bore?, backlash? }) => Shape` | Build an involute spur gear as ONE manifold solid. |
-| `extrudeRect(w, h, height, opts?) => Shape` | Extrude a w-by-h rectangle (XY) by `height` along Z. |
-| `extrudeCircle(r, height, opts?) => Shape` | Extrude a radius-r circle (XY) by `height` along Z. |
+| `extrudeRect(w, h, height, opts?) => Shape` | Extrude a w-by-h rectangle (XY, centred on the origin) by `height` along Z (spans z = 0..height). |
+| `extrudeCircle(r, height, opts?) => Shape` | Extrude a radius-r circle (XY, centred on the origin) by `height` along Z (spans z = 0..height). |
 | `extrudePolygon(points, depth, opts?) => Shape` | Extrude a 2D polygon (array of [x, y] points; coordinates and `depth` accept ParamRefs) by `depth` along Z. |
 | `extrudeRoundedRect(width, height, radius, depth, opts?) => Shape` | Extrude a rounded rectangle (corner radius) by `depth` along Z. |
 | `sheetMetal(profile: Sketch, { thickness, kFactor, faceLabels? }) => Shape` | Build a sheet-metal body from a closed planar Sketch. |
