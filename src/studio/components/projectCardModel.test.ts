@@ -1,7 +1,15 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { privacyKind, projectRenderUrl, relativeTime, resumePrompt, revisionsText } from './projectCardModel';
+import {
+    clipKind,
+    privacyKind,
+    projectRemixHref,
+    projectRenderUrl,
+    relativeTime,
+    resumePrompt,
+    revisionsText,
+} from './projectCardModel';
 
 afterEach(() => vi.unstubAllEnvs());
 
@@ -49,5 +57,22 @@ describe('labels', () => {
         expect(privacyKind('public_unlisted')).toBe('link');
         expect(privacyKind('public')).toBe('link');
         expect(privacyKind('public_featured')).toBe('featured');
+    });
+});
+
+describe('projectRemixHref', () => {
+    it('opens the project page with the remix flag', () => {
+        expect(projectRemixHref('a b')).toBe('/p/a%20b?remix=1');
+    });
+});
+
+describe('clipKind', () => {
+    it.each([
+        ['https://cdn.test/turn.webp?sig=1', 'image'],
+        ['https://cdn.test/turn.GIF', 'image'],
+        ['https://cdn.test/turn.mp4?sig=x.webp', 'video'],
+        ['https://cdn.test/turn.webm', 'video'],
+    ])('%s plays as %s', (url, kind) => {
+        expect(clipKind(url)).toBe(kind);
     });
 });
