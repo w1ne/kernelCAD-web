@@ -1,21 +1,21 @@
-// U15 — Modify an imported STEP: "add two 5 mm holes 20 mm apart through the
-// top face." Input STEP is the U2 NEMA17-motor-mount export
-// (out/U2/motormount.step), used as the "here is a STEP file of a part" input.
-// Holes placed on the exposed area of the base-plate top face (Y=35, clear of
-// the existing M5 T-slots at Y=17..27 and of the base plate edges).
-// VERIFIED against live kernelCAD MCP 2026-09-28. Published:
-// https://app.kernelcad.com/p/ZVCbKHPj
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+// eval/tasks/usecase-step-modify/solution-expert.kcad.ts
+//
+// Typical use case U15: modify an imported STEP. "Here is a STEP file of a
+// part; add two 5 mm holes 20 mm apart through the top face." The part is
+// the U2 NEMA 17 mount; its top face is the base plate's upper face (z = 5).
+// The holes go on the free area behind the extrusion slots, at y = 35.
 
 const holeDia = param('holeDia', 5);
 const holeSpacing = param('holeSpacing', 20);
 const holeY = param('holeY', 35);
 
-const imported = await lib.fromSTEP('/private/tmp/claude-501/-Users-andrii/122b263c-73af-4938-b0f4-a973bc33a96a/scratchpad/usecases/out/U2/motormount.step');
+const imported = await lib.fromSTEP('input.step');
 
-const cutLen = 20; // longer than the 5mm base thickness to guarantee a clean through-cut
-const h1 = cylinder(cutLen, holeDia.divide(2)).translate(holeSpacing.divide(-2), holeY, -5);
-const h2 = cylinder(cutLen, holeDia.divide(2)).translate(holeSpacing.divide(2), holeY, -5);
+// Longer than the 5 mm plate so each cut clears both faces.
+const drill = (x) => cylinder(20, holeDia.divide(2)).translate(x, holeY, -5);
 
 dfmSpec({ minWall: 1.2 });
 
-return imported.subtract(h1).subtract(h2);
+return imported.subtract(drill(holeSpacing.divide(-2))).subtract(drill(holeSpacing.divide(2)));

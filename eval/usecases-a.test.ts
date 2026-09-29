@@ -13,4 +13,5 @@ defineUsecaseSuite([
   { id: 'usecase-gridfinity-bin' },
   { id: 'usecase-stove-knob' },
   { id: 'usecase-drill-jig' },
+  { id: 'usecase-step-modify' },
 ]);
