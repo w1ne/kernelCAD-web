@@ -793,6 +793,11 @@ async function checkDofMismatch(
  * Reuses the rest-pose `SolvedSample.scene` lazily lowered by criteria
  * 2 + 3 — no new pose solve, no new BREP lower.
  */
+/** Appended to the joint-mesh-gap hint: the tempting fix (move the
+ *  connector onto the body) drags the mated part along with it. */
+const JOINT_MESH_GAP_CONNECTOR_MOVE_WARNING =
+  'Moving a connector also moves the part mated to it (the mate re-aligns the partner), which can silently reopen a collision — prefer growing the geometry, and re-run the collision check after any connector move.';
+
 async function checkJointMeshContinuityCriterion(
   arm: Assembly,
   solved: SolvedSample[],
@@ -829,7 +834,7 @@ async function checkJointMeshContinuityCriterion(
         `${r.bearingGapMm.toFixed(1)}mm — no bearing surface constrains ` +
         `the joint within tolerance either.`
       : '';
-    out.push(makeFailure(
+    const failure = makeFailure(
       'mechanism.joint-mesh-gap',
       `Joint '${r.mateName}' ${r.side} body '${r.partName}': nearest solid is ` +
       `${r.signedDistanceMm.toFixed(1)}mm from the pivot origin (allowed ` +
@@ -841,7 +846,11 @@ async function checkJointMeshContinuityCriterion(
       `mated part '${r.otherPartName}' onto the moved connector, which can ` +
       `silently reopen a collision elsewhere — re-run the collision check ` +
       `after any connector move.`,
-    ));
+    );
+    out.push({
+      ...failure,
+      hint: `${failure.hint} ${JOINT_MESH_GAP_CONNECTOR_MOVE_WARNING}`,
+    });
   }
   return out;
 }

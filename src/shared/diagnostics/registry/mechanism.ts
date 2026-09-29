@@ -67,7 +67,7 @@ export const MECHANISM_CODES = {
   },
   'mechanism.joint-mesh-gap': {
     hintTemplate:
-      'Extend the parent body geometry so its OCCT solid reaches the joint origin at rest pose. Most commonly: increase the height of the column / boss that hosts the joint, or move the part-local connector origin onto an actual face/edge of the body. A pivot deliberately in open space (annular rim seat, spindle riding in the bore of a fastened block) passes when the mated rigid groups maintain bearing contact within tolerance somewhere away from the axis. Moving a connector also moves the part mated to it (the mate re-aligns the partner), which can silently reopen a collision — prefer growing the geometry, and re-run the collision check after any connector move.',
+      'Extend the parent body geometry so its OCCT solid reaches the joint origin at rest pose. Most commonly: increase the height of the column / boss that hosts the joint, or move the part-local connector origin onto an actual face/edge of the body. A pivot deliberately in open space (annular rim seat, spindle riding in the bore of a fastened block) passes when the mated rigid groups maintain bearing contact within tolerance somewhere away from the axis.',
     nextAction: { kind: 'fix-arg', field: 'partGeometry' },
     defaultSeverity: 'error',
     group: 'mechanism',
