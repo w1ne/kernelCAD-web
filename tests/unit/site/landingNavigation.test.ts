@@ -23,13 +23,11 @@ describe('landing page app navigation', () => {
     expect(source).not.toContain('action="/app/generate"');
   });
 
-  it('clears prompt draft state before gallery app navigation', () => {
+  it('opens Studio from the lightbox, never from a button over a gallery image', () => {
     const source = html();
 
-    expect(source).toContain('function clearPromptDraftBeforeNavigation()');
-    expect(source).toContain("tile.querySelector('.tile-studio-link')?.addEventListener('pointerdown', clearPromptDraftBeforeNavigation)");
-    expect(source).toContain("tile.querySelector('.tile-studio-link')?.addEventListener('click'");
-    expect(source).toContain("studioLink.addEventListener('pointerdown', clearPromptDraftBeforeNavigation)");
-    expect(source).toContain("appLink.addEventListener('pointerdown', clearPromptDraftBeforeNavigation)");
+    expect(source).toContain('class="btn btn-primary lightbox-studio-link"');
+    expect(source).toContain('studioLink.href = entry.studioUrl');
+    expect(source).not.toContain('tile-studio-link');
   });
 });
