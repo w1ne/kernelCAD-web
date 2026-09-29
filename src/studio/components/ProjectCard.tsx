@@ -32,6 +32,37 @@ export interface ProjectCardProps {
     readonly testId?: string;
 }
 
+const REGULAR = { body: 'p-4', title: 'text-body' } as const;
+const COMPACT = { body: 'p-3 sm:p-4', title: 'text-ui sm:text-body' } as const;
+
+interface HoverClipHandlers {
+    readonly onPointerEnter?: () => void;
+    readonly onPointerLeave?: () => void;
+    readonly onFocus?: () => void;
+    readonly onBlur?: (e: FocusEvent<HTMLElement>) => void;
+}
+
+/** Plays the clip while the pointer or keyboard focus is on the card. */
+function useHoverClip(clipUrl: string | null | undefined): { playing: boolean; handlers: HoverClipHandlers } {
+    const [playing, setPlaying] = useState(false);
+    if (!clipUrl) return { playing: false, handlers: {} };
+    const start = (): void => {
+        if (!prefersReducedMotion()) setPlaying(true);
+    };
+    const stop = (): void => setPlaying(false);
+    return {
+        playing,
+        handlers: {
+            onPointerEnter: start,
+            onPointerLeave: stop,
+            onFocus: start,
+            onBlur: (e) => {
+                if (!e.currentTarget.contains(e.relatedTarget as Node | null)) stop();
+            },
+        },
+    };
+}
+
 export function ProjectCard({
     slug,
     title,
@@ -48,21 +79,12 @@ export function ProjectCard({
     const titleId = useId();
     const href = projectHref(slug);
     const name = title.trim() || 'Untitled';
-    const [playing, setPlaying] = useState(false);
-    const start = (): void => {
-        if (clipUrl && !prefersReducedMotion()) setPlaying(true);
-    };
-    const stop = (): void => setPlaying(false);
-    const onBlur = (e: FocusEvent<HTMLElement>): void => {
-        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) stop();
-    };
+    const clip = useHoverClip(clipUrl);
+    const density = compact ? COMPACT : REGULAR;
     return (
         <article
             aria-labelledby={titleId}
-            onPointerEnter={clipUrl ? start : undefined}
-            onPointerLeave={clipUrl ? stop : undefined}
-            onFocus={clipUrl ? start : undefined}
-            onBlur={clipUrl ? onBlur : undefined}
+            {...clip.handlers}
             aria-busy={busy || undefined}
             data-testid={testId}
             data-slug={slug}
@@ -75,11 +97,11 @@ export function ProjectCard({
             {/* The image repeats the title link; keep it out of the tab order. */}
             <a href={href} tabIndex={-1} aria-hidden="true" className="relative block aspect-[16/10] overflow-hidden bg-surface-2 sm:aspect-[4/3]">
                 <ProjectRender url={renderUrl} placeholder={placeholder} />
-                {clipUrl && <ProjectClip url={clipUrl} playing={playing} />}
+                {clipUrl && <ProjectClip url={clipUrl} playing={clip.playing} />}
             </a>
-            <div className={cx('flex flex-1 flex-col gap-1.5', compact ? 'p-3 sm:p-4' : 'p-4')}>
+            <div className={cx('flex flex-1 flex-col gap-1.5', density.body)}>
                 <div className="flex items-start justify-between gap-2">
-                    <h3 id={titleId} className={cx('min-w-0 font-medium text-fg', compact ? 'text-ui sm:text-body' : 'text-body')}>
+                    <h3 id={titleId} className={cx('min-w-0 font-medium text-fg', density.title)}>
                         <a href={href} className="focus-ring line-clamp-2 break-words rounded-control no-underline hover:underline">
                             {name}
                         </a>
