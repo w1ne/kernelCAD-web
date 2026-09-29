@@ -17,12 +17,13 @@ import { exportProgressText, useExportTask, type ExportedFile } from '../hooks/u
 import {
   changedValues,
   downloadFileName,
+  FORMAT_LABELS,
   type CustomizerFormat,
   type CustomizerParam,
   type CustomizerValues,
 } from './customizerParams';
 import { customizerLayout, type CustomizerSection } from './customizerSections';
-import { DownloadBar, FORMAT_LABELS } from './DownloadBar';
+import { DownloadBar } from './DownloadBar';
 import { ParamRow } from './ParamRows';
 import { useCustomizerValues, type CustomizerValuesState } from './useCustomizerValues';
 

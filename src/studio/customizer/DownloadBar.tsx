@@ -8,9 +8,7 @@
 import type { JSX } from 'react';
 import { Download, Loader2 } from 'lucide-react';
 import { Button } from '../../ui';
-import { CUSTOMIZER_FORMATS, type CustomizerFormat } from './customizerParams';
-
-export const FORMAT_LABELS: Record<CustomizerFormat, string> = { stl: 'STL', '3mf': '3MF', step: 'STEP' };
+import { CUSTOMIZER_FORMATS, FORMAT_LABELS, type CustomizerFormat } from './customizerParams';
 
 export interface DownloadBarProps {
   defaultFormat: CustomizerFormat;

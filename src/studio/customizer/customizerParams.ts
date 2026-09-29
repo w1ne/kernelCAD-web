@@ -8,6 +8,7 @@
 
 import { setParamValue } from '../../modeling/edits/setParamValue';
 import type { ParamType, ParamValue, SerializedParamEntry } from '../../shared/runtime/paramTable';
+import type { GeometryResult } from '../../shared/worker/workerTypes';
 import {
   guessUnit,
   humanizeParamName,
@@ -58,6 +59,14 @@ export type CustomizerFormat = 'stl' | '3mf' | 'step';
 
 export const CUSTOMIZER_FORMATS: readonly CustomizerFormat[] = ['stl', '3mf', 'step'];
 
+export const FORMAT_LABELS: Record<CustomizerFormat, string> = { stl: 'STL', '3mf': '3MF', step: 'STEP' };
+
+/** STEP for an assembly of several parts, STL for a printable part. */
+export function defaultDownloadFormat(geometries: readonly Pick<GeometryResult, 'assemblyPartName'>[]): CustomizerFormat {
+  const parts = new Set(geometries.map((g) => g.assemblyPartName).filter((name) => name !== undefined));
+  return parts.size > 1 ? 'step' : 'stl';
+}
+
 function nonEmpty(text: string | undefined): string | undefined {
   const trimmed = text?.trim();
   return trimmed ? trimmed : undefined;
@@ -87,6 +96,17 @@ function addNumberPresentation(
   param.step = numberStep(entry, hint, range);
 }
 
+/** The declared checks and help text, copied only when present. */
+function declaredChecks(meta: SerializedParamEntry['meta']): Partial<CustomizerParam> {
+  const out: Partial<CustomizerParam> = {};
+  if (typeof meta?.min === 'number') out.min = meta.min;
+  if (typeof meta?.max === 'number') out.max = meta.max;
+  if (meta?.choices) out.choices = [...meta.choices];
+  if (typeof meta?.maxLength === 'number') out.maxLength = meta.maxLength;
+  if (meta?.description) out.description = meta.description;
+  return out;
+}
+
 function customizerParamFrom(entry: SerializedParamEntry, hint: CustomizerParamHint | undefined): CustomizerParam {
   const meta = entry.meta;
   const param: CustomizerParam = {
@@ -94,12 +114,8 @@ function customizerParamFrom(entry: SerializedParamEntry, hint: CustomizerParamH
     label: nonEmpty(meta?.label) ?? humanizeParamName(entry.name),
     type: entry.type,
     defaultValue: entry.defaultValue,
+    ...declaredChecks(meta),
   };
-  if (typeof meta?.min === 'number') param.min = meta.min;
-  if (typeof meta?.max === 'number') param.max = meta.max;
-  if (meta?.choices) param.choices = [...meta.choices];
-  if (typeof meta?.maxLength === 'number') param.maxLength = meta.maxLength;
-  if (meta?.description) param.description = meta.description;
   const unit = nonEmpty(meta?.unit) ?? nonEmpty(hint?.unit);
   if (unit) param.unit = unit;
   const group = nonEmpty(meta?.group);

@@ -26,7 +26,8 @@ vi.mock('../exportViaServer', () => ({
   downloadBlob: vi.fn(),
 }));
 
-import { StudioModelCustomizer, defaultDownloadFormat } from './StudioModelCustomizer';
+import { StudioModelCustomizer } from './StudioModelCustomizer';
+import { defaultDownloadFormat } from './customizerParams';
 
 const CODE = [
   "const w = param('Width', 40, { min: 10, max: 80 });",

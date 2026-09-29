@@ -21,11 +21,11 @@ import { useCode } from '../context/CodeContext';
 import { useGeometry } from '../context/GeometryContext';
 import { exportViaServer, type ExportViaServerOptions } from '../exportViaServer';
 import type { SerializedParamEntry } from '../../shared/runtime/paramTable';
-import type { GeometryResult } from '../../shared/worker/workerTypes';
 import {
   bakeParamValues,
   changedValues,
   customizerParamsFrom,
+  defaultDownloadFormat,
   type CustomizerFormat,
   type CustomizerParam,
   type CustomizerParamHint,
@@ -45,11 +45,6 @@ export interface StudioModelCustomizerProps {
   className?: string;
 }
 
-/** STEP for an assembly of several parts, STL for a printable part. */
-export function defaultDownloadFormat(geometries: readonly Pick<GeometryResult, 'assemblyPartName'>[]): CustomizerFormat {
-  const parts = new Set(geometries.map((g) => g.assemblyPartName).filter((name) => name !== undefined));
-  return parts.size > 1 ? 'step' : 'stl';
-}
 
 /**
  * The declarations of the CURRENT source, taken from its first build. Later
