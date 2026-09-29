@@ -63,20 +63,25 @@ export function getVisibleTabs(result: StudioRecomputeResult | null): readonly T
     return INSPECTOR_TAB_ORDER.filter((id) => has[id] === true);
 }
 
+/** Tabs that stay in the row at every width; the rest can go to "More". */
+export const PRIMARY_INSPECTOR_TABS: readonly TabId[] = ['code', 'params', 'validity'];
+
 /** Approximate rendered widths of the tab strip, in px (12 px Inter, px-3 tabs). */
 const TAB_CHAR_PX = 6.8;
 const TAB_PAD_PX = 28; // 24 px padding + 4 px gap
 const TAB_COUNT_PX = 26; // the count pill after the label
 const MORE_PX = 64;
-const STRIP_PAD_PX = 16;
+const STRIP_PAD_PX = 8;
 
 /**
  * How many tabs fit in a strip `width` px wide, keeping one slot for "More"
- * when they do not all fit. Returns `undefined` when every tab fits (no menu).
+ * when they do not all fit. The first `minShown` tabs always stay in the row.
+ * Returns `undefined` when every tab fits (no menu).
  */
 export function fitTabCount(
     tabs: ReadonlyArray<{ readonly label: string; readonly count?: number }>,
     width: number,
+    minShown = 1,
 ): number | undefined {
     const widths = tabs.map((t) => t.label.length * TAB_CHAR_PX + TAB_PAD_PX + (t.count != null ? TAB_COUNT_PX : 0));
     const room = width - STRIP_PAD_PX;
@@ -89,5 +94,5 @@ export function fitTabCount(
         fits += 1;
     }
     // `Tabs.maxVisible` counts the "More" slot too.
-    return Math.max(1, fits) + 1;
+    return Math.max(1, minShown, fits) + 1;
 }

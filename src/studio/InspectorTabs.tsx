@@ -3,7 +3,7 @@
 import type { JSX } from 'react';
 import { Tabs, type TabItem } from '../ui';
 import type { TabId } from './types';
-import { INSPECTOR_TABS_ID, INSPECTOR_TAB_LABEL, fitTabCount } from './logic/adaptiveTabs';
+import { INSPECTOR_TABS_ID, INSPECTOR_TAB_LABEL, PRIMARY_INSPECTOR_TABS, fitTabCount } from './logic/adaptiveTabs';
 
 interface InspectorTabsProps {
     /** Available tabs in display order. Unavailable tabs are not passed. */
@@ -30,14 +30,14 @@ export function InspectorTabs({ tabs, activeTab, onSelectTab, counts, width }: I
     }));
 
     return (
-        <div className="shrink-0 px-2 pt-1" data-testid="inspector-tabs">
+        <div className="shrink-0 px-1 pt-1" data-testid="inspector-tabs">
             <Tabs
                 id={INSPECTOR_TABS_ID}
                 label="Inspector"
                 items={items}
                 value={activeTab}
                 onChange={(id) => onSelectTab(id as TabId)}
-                maxVisible={fitTabCount(items, width)}
+                maxVisible={fitTabCount(items, width, tabs.filter((id) => PRIMARY_INSPECTOR_TABS.includes(id)).length)}
             />
         </div>
     );

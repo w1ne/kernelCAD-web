@@ -184,4 +184,9 @@ describe('fitTabCount', () => {
     it('always keeps at least one tab next to More', () => {
         expect(fitTabCount(tabs, 40)).toBe(2);
     });
+
+    it('never moves the primary tabs into More, even at the minimum width', () => {
+        expect(fitTabCount(tabs, 280, 3)).toBe(4);
+        expect(fitTabCount(tabs, 40, 3)).toBe(4);
+    });
 });

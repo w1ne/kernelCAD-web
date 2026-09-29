@@ -37,24 +37,7 @@ export function ValidityTab(): JSX.Element {
     const { agentRepairWorkflow } = useShellStore();
     const run = useRunChecks();
 
-    if (validity === null) {
-        return (
-            <div data-testid="validity-empty-state">
-                <EmptyState
-                    icon={<ShieldCheck strokeWidth={1.75} />}
-                    title="No checks yet"
-                    description="Checks run when the model builds. Assembly, mechanism and manufacturing findings show here."
-                    action={
-                        run.onRun != null ? (
-                            <Button variant="secondary" size="sm" loading={run.running} onClick={run.onRun}>
-                                Run checks
-                            </Button>
-                        ) : undefined
-                    }
-                />
-            </div>
-        );
-    }
+    if (validity === null) return <ChecksEmpty run={run} />;
 
     const { status, diagnostics, partCount, jointCount, validated } = validity;
     // A review payload with no validator evidence behind it derives to
@@ -85,17 +68,7 @@ export function ValidityTab(): JSX.Element {
     const groups = groupChecks(diagnostics);
     const interferences = actionableInterferences(result);
 
-    const findingActions: FindingActions = {
-        onSelect: (d) => selectDiagnostic(d, selectFeature),
-        fixFor: (d) => {
-            const card = cardForDiagnostic(allCards, d);
-            if (card == null) return null;
-            return {
-                fix: () => draftRepair(card, validityFingerprint, () => selectDiagnostic(d, selectFeature)),
-                prompt: card.promptText,
-            };
-        },
-    };
+    const findingActions = makeFindingActions(allCards, validityFingerprint, selectFeature);
 
     return (
         <div className="flex flex-col gap-4 pb-6" data-testid="validity-tab">
@@ -147,6 +120,25 @@ export function ValidityTab(): JSX.Element {
     );
 }
 
+function ChecksEmpty({ run }: { run: { onRun?: () => void; running: boolean } }): JSX.Element {
+    return (
+        <div data-testid="validity-empty-state">
+            <EmptyState
+                icon={<ShieldCheck strokeWidth={1.75} />}
+                title="No checks yet"
+                description="Checks run when the model builds. Assembly, mechanism and manufacturing findings show here."
+                action={
+                    run.onRun != null ? (
+                        <Button variant="secondary" size="sm" loading={run.running} onClick={run.onRun}>
+                            Run checks
+                        </Button>
+                    ) : undefined
+                }
+            />
+        </div>
+    );
+}
+
 /** Re-runs the geometry pipeline, which re-fetches the review. Absent outside a workbench. */
 function useRunChecks(): { onRun?: () => void; running: boolean } {
     const workbench = useContext(WorkbenchContext);
@@ -154,6 +146,24 @@ function useRunChecks(): { onRun?: () => void; running: boolean } {
     return {
         onRun: () => void workbench.executeGeometry(workbench.code),
         running: workbench.isComputing === true,
+    };
+}
+
+function makeFindingActions(
+    allCards: readonly ValiditySuggestionCard[],
+    validityFingerprint: string,
+    selectFeature: (id: string | null) => void,
+): FindingActions {
+    return {
+        onSelect: (d) => selectDiagnostic(d, selectFeature),
+        fixFor: (d) => {
+            const card = cardForDiagnostic(allCards, d);
+            if (card == null) return null;
+            return {
+                fix: () => draftRepair(card, validityFingerprint, () => selectDiagnostic(d, selectFeature)),
+                prompt: card.promptText,
+            };
+        },
     };
 }
 
