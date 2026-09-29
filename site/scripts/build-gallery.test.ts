@@ -2,7 +2,7 @@ import { describe, it, expect, afterEach } from 'vitest';
 import { mkdtempSync, rmSync, readFileSync, existsSync, copyFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { buildGallery } from './build-gallery';
+import { buildGallery, communityApiFromEnv, fetchCommunityGallery } from './build-gallery';
 
 describe('buildGallery', () => {
   let tmp: string;
@@ -29,6 +29,7 @@ describe('buildGallery', () => {
     expect(existsSync(path.join(publicDir, 'gallery.json'))).toBe(true);
     const out = JSON.parse(readFileSync(path.join(publicDir, 'gallery.json'), 'utf8'));
     expect(out.entries).toHaveLength(1);
+    expect(out.community).toEqual([]);
     expect(out.entries[0].slug).toBe('fixture-build');
     expect(out.entries[0].videoUrl).toBe('/gallery/fixture-build/video.mp4');
     expect(out.entries[0].posterUrl).toBe('/gallery/fixture-build/poster.jpg');
@@ -214,5 +215,88 @@ describe('buildGallery', () => {
       entriesPath: path.join(entriesDir, 'entries.json'),
       publicDir: path.join(tmp, 'public'),
     })).rejects.toThrow(/failing-review.*review_cad.*ok.*true/i);
+  });
+});
+
+describe('fetchCommunityGallery', () => {
+  let tmp: string;
+  afterEach(() => {
+    if (tmp) rmSync(tmp, { recursive: true, force: true });
+  });
+
+  const PNG = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 1, 2, 3]);
+
+  function fakeFetch(routes: Record<string, () => Response>): typeof fetch {
+    return (async (input: RequestInfo | URL) => {
+      const url = String(input);
+      const route = routes[url];
+      if (!route) throw new Error(`unexpected fetch ${url}`);
+      return route();
+    }) as typeof fetch;
+  }
+
+  const listUrl = 'https://api.test/api/v1/gallery?sort=new&limit=8';
+
+  it('copies each render next to the landing and emits uniform cards, featured first', async () => {
+    tmp = mkdtempSync(path.join(tmpdir(), 'community-'));
+    const fetchImpl = fakeFetch({
+      [listUrl]: () => Response.json({
+        items: [
+          { slug: 'abc123', title: ' Gear stage ', ownerName: 'Ada', renderUrl: 'https://cdn.test/a.png?sig=1', remixCount: 3, featured: false },
+          { slug: 'noRender', title: 'No render', ownerName: null, renderUrl: null, remixCount: 0, featured: false },
+          { slug: '../evil', title: 'Bad slug', ownerName: null, renderUrl: 'https://cdn.test/e.png', remixCount: 0, featured: false },
+          { slug: 'feat01', title: 'Featured stool', ownerName: '', renderUrl: 'https://cdn.test/f.webp', remixCount: 0, featured: true },
+        ],
+        nextCursor: null,
+      }),
+      'https://cdn.test/a.png?sig=1': () => new Response(PNG, { headers: { 'content-type': 'image/png' } }),
+      'https://cdn.test/f.webp': () => new Response(PNG, { headers: { 'content-type': 'image/webp' } }),
+    });
+
+    const cards = await fetchCommunityGallery({ baseUrl: 'https://api.test/', fetchImpl }, tmp);
+
+    expect(cards.map((c) => c.slug)).toEqual(['feat01', 'abc123']);
+    expect(cards[1]).toEqual({
+      slug: 'abc123',
+      title: 'Gear stage',
+      ownerName: 'Ada',
+      remixCount: 3,
+      featured: false,
+      posterUrl: '/gallery/_community/abc123.png',
+      url: 'https://app.kernelcad.com/p/abc123',
+    });
+    expect(cards[0].ownerName).toBeNull();
+    expect(existsSync(path.join(tmp, 'gallery/_community/abc123.png'))).toBe(true);
+    expect(existsSync(path.join(tmp, 'gallery/_community/feat01.webp'))).toBe(true);
+  });
+
+  it('returns [] for an empty gallery, an API error or a malformed body', async () => {
+    tmp = mkdtempSync(path.join(tmpdir(), 'community-'));
+    const empty = fakeFetch({ [listUrl]: () => Response.json({ items: [], nextCursor: null }) });
+    const down = fakeFetch({ [listUrl]: () => new Response('nope', { status: 404 }) });
+    const malformed = fakeFetch({ [listUrl]: () => Response.json({ rows: [] }) });
+    const offline = (async () => { throw new TypeError('fetch failed'); }) as typeof fetch;
+
+    for (const fetchImpl of [empty, down, malformed, offline]) {
+      expect(await fetchCommunityGallery({ baseUrl: 'https://api.test', fetchImpl }, tmp)).toEqual([]);
+    }
+  });
+
+  it('skips a card whose render is not an image', async () => {
+    tmp = mkdtempSync(path.join(tmpdir(), 'community-'));
+    const fetchImpl = fakeFetch({
+      [listUrl]: () => Response.json({
+        items: [{ slug: 'html01', title: 'Html', renderUrl: 'https://cdn.test/x', remixCount: 0, featured: false }],
+        nextCursor: null,
+      }),
+      'https://cdn.test/x': () => new Response('<html>', { headers: { 'content-type': 'text/html' } }),
+    });
+    expect(await fetchCommunityGallery({ baseUrl: 'https://api.test', fetchImpl }, tmp)).toEqual([]);
+  });
+
+  it('reads the API origin from the environment, with an off switch', () => {
+    expect(communityApiFromEnv({})).toEqual({ baseUrl: 'https://api.kernelcad.com' });
+    expect(communityApiFromEnv({ KERNELCAD_GALLERY_API: 'http://localhost:8787' })).toEqual({ baseUrl: 'http://localhost:8787' });
+    expect(communityApiFromEnv({ KERNELCAD_GALLERY_API: 'off' })).toBeUndefined();
   });
 });
