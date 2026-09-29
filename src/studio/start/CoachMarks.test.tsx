@@ -3,8 +3,10 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { CoachMarks, COACH_STEPS, placeCard } from './CoachMarks';
-import { COACH_MARKS_KEY } from './firstRun';
+import { CoachMarks } from './CoachMarks';
+import { COACH_MARKS_KEY, placeCard } from './firstRun';
+
+const COACH_STEPS = ['activity-agent', 'command-palette-trigger', 'header-export', 'toolbar-mark'].map((target) => ({ target }));
 
 /** A control of the chrome, laid out at `rect` (jsdom has no layout). */
 function addTarget(testId: string, rect = { top: 50, left: 0, width: 44, height: 44 }): HTMLElement {

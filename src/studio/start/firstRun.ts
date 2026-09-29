@@ -89,3 +89,24 @@ export function isAutomatedBrowser(nav: Pick<Navigator, 'webdriver'> | undefined
     typeof navigator === 'undefined' ? undefined : navigator): boolean {
     return nav?.webdriver === true;
 }
+
+export const COACH_CARD_WIDTH = 288;
+export const COACH_CARD_GAP = 10;
+export const COACH_CARD_EDGE = 12;
+
+export interface Box { readonly top: number; readonly left: number; readonly width: number; readonly height: number }
+
+/** Where the card goes: right of a control on the left rail, else below
+ *  it (above when there is no room), kept inside the window. */
+export function placeCard(target: Box, view: { width: number; height: number }, cardHeight: number): { top: number; left: number } {
+    const width = Math.min(COACH_CARD_WIDTH, view.width - 2 * COACH_CARD_EDGE);
+    const clampLeft = (x: number) => Math.max(COACH_CARD_EDGE, Math.min(x, view.width - width - COACH_CARD_EDGE));
+    const clampTop = (y: number) => Math.max(COACH_CARD_EDGE, Math.min(y, view.height - cardHeight - COACH_CARD_EDGE));
+    const onLeftRail = target.left + target.width < 96 && target.left + target.width + COACH_CARD_GAP + width + COACH_CARD_EDGE <= view.width;
+    if (onLeftRail) {
+        return { top: clampTop(target.top), left: target.left + target.width + COACH_CARD_GAP };
+    }
+    const below = target.top + target.height + COACH_CARD_GAP;
+    const top = below + cardHeight + COACH_CARD_EDGE <= view.height ? below : target.top - COACH_CARD_GAP - cardHeight;
+    return { top: clampTop(top), left: clampLeft(target.left + target.width / 2 - width / 2) };
+}
