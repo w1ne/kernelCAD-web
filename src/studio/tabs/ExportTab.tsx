@@ -4,7 +4,8 @@ import { useCallback } from 'react';
 import { Download, Loader2 } from 'lucide-react';
 import { useRecomputeResult } from '../hooks/useRecomputeResult';
 import { useCode } from '../context/CodeContext';
-import { downloadBlob, exportViaServer } from '../exportViaServer';
+import { downloadBlob, exportViaServer, type StudioExportFormat } from '../exportViaServer';
+import { EXPORT_FORMATS as FORMATS, hasPlanarSource } from '../exportFormats';
 import { useExportTask } from '../hooks/useExportTask';
 import { ExportStatus } from '../components/Shared/ExportStatus';
 import type { JSX } from 'react';
@@ -26,22 +27,7 @@ import type { JSX } from 'react';
 // Progress, cancel, the server's error hint and the shipped-with-warning
 // notice come from useExportTask / ExportStatus (shared with the header).
 
-type ExportFormat = 'stl' | 'step' | 'dxf' | '3mf' | 'glb';
-
-interface FormatDescriptor {
-    id: ExportFormat;
-    label: string;
-    help: string;
-    requiresPlanar?: boolean;
-}
-
-const FORMATS: ReadonlyArray<FormatDescriptor> = [
-    { id: 'stl', label: 'STL', help: 'Mesh; printable / preview' },
-    { id: 'step', label: 'STEP', help: 'BREP; CAD interchange' },
-    { id: 'dxf', label: 'DXF', help: 'Planar profile; laser / waterjet', requiresPlanar: true },
-    { id: '3mf', label: '3MF', help: 'Slicer mesh with per-part colors' },
-    { id: 'glb', label: 'GLB', help: 'Web / AR viewer; PBR materials' },
-];
+type ExportFormat = StudioExportFormat;
 
 export function ExportTab(): JSX.Element {
     const { geometries } = useRecomputeResult();
@@ -50,15 +36,7 @@ export function ExportTab(): JSX.Element {
     const { start } = task;
     const pending = FORMATS.find((f) => f.label === task.state.running)?.id ?? null;
 
-    // DXF is planar-only. The runtime side already fails non-planar input with
-    // export.dxf.non-planar; this UI gate surfaces the constraint adaptively
-    // so the button is visibly inert when no planar source exists. GeometryResult
-    // does not carry a top-level `kind` field today (see src/shared/worker/
-    // workerTypes.ts:139), but faces[*].plane is populated by the lowerer for
-    // planar faces — that's the field we key on.
-    const hasPlanar = geometries.some((g) =>
-        Array.isArray(g.faces) && g.faces.some((f) => f.plane !== undefined),
-    );
+    const hasPlanar = hasPlanarSource(geometries);
 
     const handleExport = useCallback((format: ExportFormat) => {
         const label = FORMATS.find((f) => f.id === format)?.label ?? format.toUpperCase();

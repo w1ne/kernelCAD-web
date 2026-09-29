@@ -7,6 +7,7 @@ import type { ViewportFocusTarget } from "../../store/shellStore";
 import type { ViewTarget } from "../../components/viewer/controllers/cameraPose";
 import { selectionCodeStore } from "../../selectionCode/selectionCodeStore";
 import type { GeometryPick } from "../../selectionCode/geometryLineage";
+import { useViewTargetRequests } from "../studioNavigation";
 
 /** The hovered shape face or BREP edge as a selection ↔ code pick. */
 export function hoverToPick(hovered: HoverResult | null): GeometryPick | null {
@@ -41,6 +42,8 @@ export function useViewerInteraction({
     const [hoveredItem, setHoveredItem] = useState<HoverResult | null>(null);
     const [snapPoint, setSnapPoint] = useState<SnapResult | null>(null);
     const [navigationRequest, setNavigationRequest] = useState<{ target: ViewTarget; id: number } | null>(null);
+    // Camera presets from commands (the palette) take the same path as the view gizmo.
+    useViewTargetRequests((target) => setNavigationRequest((prev) => ({ target, id: (prev?.id ?? 0) + 1 })));
     const focusRequest = useMemo(
         () => (
             viewportFocusTarget == null

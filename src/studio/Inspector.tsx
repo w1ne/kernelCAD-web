@@ -17,6 +17,7 @@ import {
     writeStoredInspectorWidth,
 } from './logic/inspectorWidth';
 import { InspectorTabs } from './InspectorTabs';
+import { useInspectorTabRequests } from './hooks/studioNavigation';
 
 interface InspectorProps {
     readonly tabSlots: Partial<Record<TabId, ReactNode>>;
@@ -28,6 +29,7 @@ export function Inspector({ tabSlots }: InspectorProps): JSX.Element {
     const visibleTabs = getVisibleTabs(result);
 
     const [activeTab, setActiveTab] = useState<TabId>(DEFAULT_INSPECTOR_TAB);
+    useInspectorTabRequests(setActiveTab);
     const { width, dragging, handleProps } = useInspectorResize();
 
     // Derive the effective tab in render rather than syncing via useEffect —
