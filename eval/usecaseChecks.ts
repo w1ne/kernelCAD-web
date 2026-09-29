@@ -191,6 +191,11 @@ function holeMatches(h: CylindricalHole, spec: HoleSpec, tol: number): boolean {
     && (spec.depth === undefined || near(h.depthMm, spec.depth, tol));
 }
 
+/** The detected hole matching the spec, if any. */
+export function findHole(shape: OcctBackend, spec: HoleSpec, tol = TOL_MM): CylindricalHole | undefined {
+  return holesOf(shape).find((h) => holeMatches(h, spec, tol));
+}
+
 /** Every spec matches a distinct detected hole (kernel hole detection). */
 export function hasHoles(shape: OcctBackend, specs: readonly HoleSpec[], tol = TOL_MM): boolean {
   const free = [...holesOf(shape)];

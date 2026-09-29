@@ -12,4 +12,5 @@ defineUsecaseSuite([
   { id: 'usecase-nema17-mount' },
   { id: 'usecase-gridfinity-bin' },
   { id: 'usecase-stove-knob' },
+  { id: 'usecase-drill-jig' },
 ]);

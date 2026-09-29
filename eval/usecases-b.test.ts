@@ -17,4 +17,5 @@ defineUsecaseSuite([
       'cookbook involute-spur-gear-pair recipe builds closed solid gears': GEAR_RECIPE,
     },
   },
+  { id: 'usecase-keychain', open: { 'evaluate_script accepts the parts (mechanism gate on)': ORPHAN_GATE } },
 ]);
