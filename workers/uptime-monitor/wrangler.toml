@@ -1,0 +1,57 @@
+# workers/uptime-monitor/wrangler.toml
+#
+# Prod uptime monitor for kernelCAD (see src/index.ts). A cron Worker on
+# Cloudflare, so it keeps reporting when the Hetzner box is down. Every 5
+# minutes it checks api/mcp/app/kernelcad.com anonymously and read-only,
+# emails ALERT_TO on 2 failed runs in a row (reminder every 2 h, one recovery
+# email), and at 07:00 UTC sends a daily summary. GET /status on the
+# workers.dev URL returns the latest results as public JSON.
+#
+# Deploy (manual, only when this directory changes; run from the repo root):
+#   1. Tables (once, idempotent):
+#      npx -y wrangler@4.94.0 d1 execute kernelcad-subscribers --remote \
+#        --file=workers/uptime-monitor/migrations/0001_uptime.sql
+#   2. Worker:
+#      npx -y wrangler@4.94.0 deploy -c workers/uptime-monitor/wrangler.toml
+#   3. Check:
+#      curl -s https://kernelcad-uptime.<account-subdomain>.workers.dev/status
+#      npx -y wrangler@4.94.0 tail kernelcad-uptime   # see the next */5 run
+#
+# Cloudflare API token scopes (account level) for the commands above:
+#   Workers Scripts: Edit, D1: Edit, Email Sending: Edit (send_email binding),
+#   Account Settings: Read, User Details: Read, Memberships: Read (wrangler login).
+#   A custom domain instead of workers.dev would also need Zone: Workers Routes
+#   Edit and DNS Edit on kernelcad.com.
+#
+# Email: Cloudflare Email Service, as workers/feedback-mailer. kernelcad.com is
+# onboarded for Email Sending; ALERT_TO must be a verified destination address
+# (it is the same address the feedback mailer sends to).
+
+name = "kernelcad-uptime"
+main = "src/index.ts"
+compatibility_date = "2026-04-01"
+# workers.dev serves the public /status JSON. No other routes.
+workers_dev = true
+preview_urls = false
+
+[triggers]
+# Every 5 minutes. The 07:00 UTC run also sends the daily summary.
+crons = ["*/5 * * * *"]
+
+[vars]
+ALERT_TO = "andrii@kernelcad.com"
+ALERT_FROM = "uptime@kernelcad.com"
+
+[[send_email]]
+name = "EMAIL"
+allowed_sender_addresses = ["uptime@kernelcad.com"]
+
+# Same database as the site (site/wrangler.toml); the monitor uses only the
+# uptime_results and uptime_state tables.
+[[d1_databases]]
+binding = "DB"
+database_name = "kernelcad-subscribers"
+database_id = "8c284024-f44d-4a80-ac87-9212029725ac"
+
+[observability]
+enabled = true
