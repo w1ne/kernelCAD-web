@@ -20,9 +20,9 @@ function AIVariationsMessage({ msg, applyCodeSafe, handleRunCode }: AIChatMessag
                     try {
                         const variations = JSON.parse(msg.content) as Variation[];
                         return variations.map((v: Variation, vIdx: number) => (
-                            <div key={vIdx} className="min-w-[200px] bg-black/50 p-2 rounded border border-border-strong flex flex-col gap-2">
-                                <div className="font-bold text-sm text-fg">{v.name}</div>
-                                <div className="text-2xs text-fg-2 leading-tight h-10 overflow-hidden">{v.description}</div>
+                            <div key={vIdx} className="min-w-[200px] bg-black/50 p-2 rounded border border-[#444] flex flex-col gap-2">
+                                <div className="font-bold text-sm text-gray-200">{v.name}</div>
+                                <div className="text-2xs text-gray-400 leading-tight h-10 overflow-hidden">{v.description}</div>
                                 <div className="flex gap-1 mt-auto">
                                     <button
                                         onClick={() => applyCodeSafe(v.code)}
@@ -111,7 +111,7 @@ export function AIChatMessage(props: AIChatMessageProps) {
         && msg.content.trim().endsWith(']');
     return (
         <div className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[90%] rounded p-3 ${msg.role === 'user' ? 'bg-blue-900/30 border border-blue-800' : 'bg-surface-2 border border-border'
+            <div className={`max-w-[90%] rounded p-3 ${msg.role === 'user' ? 'bg-blue-900/30 border border-blue-800' : 'bg-[#252526] border border-[#333]'
                 }`}>
                 {isVariations ? <AIVariationsMessage {...props} /> : <AIMarkdownMessage {...props} />}
             </div>

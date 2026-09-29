@@ -20,7 +20,7 @@ export function ViewerPanel({
     viewMode3D,
 }: ViewerPanelProps) {
     return (
-        <div className="flex-1 h-full relative bg-bg">
+        <div className="flex-1 h-full relative bg-[#0a0a0a]">
             <Viewer
                 geometries={geometries}
                 previewGeometries={previewGeometries}

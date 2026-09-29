@@ -43,7 +43,7 @@ export const BottomDrawer: React.FC = () => {
             aria-label="Validity drawer"
             data-open="true"
             data-collapsed={collapsed ? 'true' : 'false'}
-            className="flex-shrink-0 bg-surface-2 border-t border-border text-fg flex flex-col"
+            className="flex-shrink-0 bg-[#181818] border-t border-[#2d2d2d] text-gray-200 flex flex-col"
             style={collapsed ? undefined : { height: '25vh' }}
         >
             <ValidityDeltaHeader

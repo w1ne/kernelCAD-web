@@ -119,8 +119,8 @@ function SceneTabPartsPanel({
 }: SceneTabPartsPanelProps): JSX.Element {
     const anyHidden = partNames.some((p) => hiddenIds.includes(p));
     return (
-        <div className="flex flex-col bg-surface-1 text-xs" data-testid="scene-tab-parts">
-            <div className="flex items-center justify-between px-3 py-2 text-fg-2 uppercase tracking-wider font-semibold border-b border-border">
+        <div className="flex flex-col bg-[#111] text-xs" data-testid="scene-tab-parts">
+            <div className="flex items-center justify-between px-3 py-2 text-gray-400 uppercase tracking-wider font-semibold border-b border-[#333]">
                 <span>Parts</span>
                 {anyHidden && (
                     <button
@@ -135,7 +135,7 @@ function SceneTabPartsPanel({
                     </button>
                 )}
             </div>
-            <ul className="flex flex-col divide-y divide-border" data-testid="scene-tab-parts-rows">
+            <ul className="flex flex-col divide-y divide-[#1f1f1f]" data-testid="scene-tab-parts-rows">
                 {partNames.map((partName) => {
                     const isHidden = hiddenIds.includes(partName);
                     const isSelected = selectedFeatureId === partName;
@@ -145,13 +145,13 @@ function SceneTabPartsPanel({
                             <div
                                 data-testid={`part-row-${partName}`}
                                 onClick={() => selectFeature(partName)}
-                                className={`group w-full flex items-center gap-2 px-3 py-1.5 text-fg hover:bg-surface-2 transition-colors cursor-pointer ${isSelected ? 'bg-selection-blue/20 text-white border-l-2 border-selection-blue' : ''}`}
+                                className={`group w-full flex items-center gap-2 px-3 py-1.5 text-gray-300 hover:bg-[#1a1a1a] transition-colors cursor-pointer ${isSelected ? 'bg-selection-blue/20 text-white border-l-2 border-selection-blue' : ''}`}
                             >
                                 <span
                                     className={`inline-block h-2 w-2 rounded-full shrink-0 ${severityDotClasses(severity)}`}
                                     aria-label={severityAriaLabel(severity)}
                                 />
-                                <span className={`truncate flex-1 ${isHidden ? 'text-fg-3 italic' : ''}`} title={partName}>
+                                <span className={`truncate flex-1 ${isHidden ? 'text-gray-600 italic' : ''}`} title={partName}>
                                     {partName}
                                 </span>
                                 <button
@@ -159,9 +159,9 @@ function SceneTabPartsPanel({
                                     data-testid={`part-visibility-${partName}`}
                                     title={isHidden ? 'Show part' : 'Hide part'}
                                     onClick={(e) => { e.stopPropagation(); toggleVisibility?.(partName); }}
-                                    className={`p-1 rounded hover:bg-surface-3 transition-all ${isHidden ? 'opacity-100' : 'opacity-40 group-hover:opacity-100'}`}
+                                    className={`p-1 rounded hover:bg-[#333] transition-all ${isHidden ? 'opacity-100' : 'opacity-40 group-hover:opacity-100'}`}
                                 >
-                                    {isHidden ? <EyeOff size={12} className="text-fg-3" /> : <Eye size={12} className="text-blue-400" />}
+                                    {isHidden ? <EyeOff size={12} className="text-gray-600" /> : <Eye size={12} className="text-blue-400" />}
                                 </button>
                             </div>
                         </li>
@@ -187,9 +187,9 @@ function SceneTabFeatureRows({
     selectFeature,
 }: SceneTabFeatureRowsProps): JSX.Element {
     return (
-        <div className="flex flex-col bg-surface-1 text-xs" data-testid="scene-tab">
+        <div className="flex flex-col bg-[#111] text-xs" data-testid="scene-tab">
             <ul
-                className="flex flex-col divide-y divide-border"
+                className="flex flex-col divide-y divide-[#1f1f1f]"
                 data-testid="scene-tab-rows"
             >
                 {rows.map((row) => {
@@ -203,7 +203,7 @@ function SceneTabFeatureRows({
                                 data-testid={`scene-row-${row.rowId}`}
                                 data-selected={isSelected ? 'true' : 'false'}
                                 data-severity={severity ?? 'ok'}
-                                className={`w-full flex items-center gap-2 px-3 py-1.5 text-left text-fg hover:bg-surface-2 transition-colors ${isSelected
+                                className={`w-full flex items-center gap-2 px-3 py-1.5 text-left text-gray-300 hover:bg-[#1a1a1a] transition-colors ${isSelected
                                         ? 'bg-selection-blue/20 text-white border-l-2 border-selection-blue scene-row-selected'
                                         : ''
                                     }`}
@@ -216,7 +216,7 @@ function SceneTabFeatureRows({
                                 <span className="truncate flex-1" title={row.label}>
                                     {row.label}
                                 </span>
-                                <span className="text-2xs text-fg-3 shrink-0 font-mono">
+                                <span className="text-2xs text-gray-500 shrink-0 font-mono">
                                     {row.kind}
                                 </span>
                             </button>

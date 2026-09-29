@@ -22,8 +22,8 @@ export function ErrorFallback({ error, resetErrorBoundary }: { error: Error; res
     };
 
     return (
-        <div data-theme="dark" className="w-screen h-screen flex items-center justify-center bg-bg text-white p-8 overflow-hidden font-sans">
-            <div className="max-w-3xl w-full bg-surface-2 border border-red-900/50 rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="w-screen h-screen flex items-center justify-center bg-[#111] text-white p-8 overflow-hidden font-sans">
+            <div className="max-w-3xl w-full bg-[#1e1e1e] border border-red-900/50 rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
                 {/* Header */}
                 <div className="bg-red-900/20 border-b border-red-900/50 p-6 flex items-start gap-4">
                     <div className="p-3 bg-red-500/10 rounded-full shrink-0">
@@ -31,7 +31,7 @@ export function ErrorFallback({ error, resetErrorBoundary }: { error: Error; res
                     </div>
                     <div>
                         <h1 className="text-2xl font-bold text-red-400">Application Crashed</h1>
-                        <p className="text-fg-2 mt-1">
+                        <p className="text-gray-400 mt-1">
                             An unexpected error occurred in the workbench. Don't worry, your code is safe.
                         </p>
                     </div>
@@ -40,22 +40,22 @@ export function ErrorFallback({ error, resetErrorBoundary }: { error: Error; res
                 {/* Content */}
                 <div className="p-6 overflow-y-auto flex-1">
                     {/* Code Rescue Section */}
-                    <div className="bg-surface-1 rounded-lg border border-border p-4 mb-6">
+                    <div className="bg-[#111] rounded-lg border border-[#333] p-4 mb-6">
                         <div className="flex items-center justify-between mb-3">
-                            <h3 className="text-sm font-semibold text-fg uppercase tracking-wider">
+                            <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider">
                                 Code Rescue
                             </h3>
                             <div className="flex gap-2">
                                 <button
                                     onClick={handleCopyCode}
-                                    className="flex items-center gap-2 px-3 py-1.5 bg-surface-3 hover:bg-border rounded text-sm transition-colors text-fg"
+                                    className="flex items-center gap-2 px-3 py-1.5 bg-[#333] hover:bg-[#444] rounded text-sm transition-colors text-gray-200"
                                 >
                                     <Copy size={14} />
                                     Copy Code
                                 </button>
                                 <button
                                     onClick={handleDownloadCode}
-                                    className="flex items-center gap-2 px-3 py-1.5 bg-surface-3 hover:bg-border rounded text-sm transition-colors text-fg"
+                                    className="flex items-center gap-2 px-3 py-1.5 bg-[#333] hover:bg-[#444] rounded text-sm transition-colors text-gray-200"
                                 >
                                     <Download size={14} />
                                     Download Backup
@@ -63,7 +63,7 @@ export function ErrorFallback({ error, resetErrorBoundary }: { error: Error; res
                             </div>
                         </div>
                         <div className="relative">
-                            <pre className="text-xs font-mono text-fg-3 bg-black/50 p-3 rounded h-32 overflow-hidden opacity-75 select-none pointer-events-none">
+                            <pre className="text-xs font-mono text-gray-500 bg-black/50 p-3 rounded h-32 overflow-hidden opacity-75 select-none pointer-events-none">
                                 {code.slice(0, 500)}
                                 {code.length > 500 && '\n... (remaining code preserved)'}
                             </pre>
@@ -73,7 +73,7 @@ export function ErrorFallback({ error, resetErrorBoundary }: { error: Error; res
 
                     {/* Error Details */}
                     <div>
-                        <h3 className="text-sm font-semibold text-fg-2 mb-2">Error Details</h3>
+                        <h3 className="text-sm font-semibold text-gray-400 mb-2">Error Details</h3>
                         <div className="bg-black/50 rounded-lg border border-red-900/30 p-4 font-mono text-xs overflow-auto max-h-48 text-red-300">
                             <div className="font-bold mb-2">{error.toString()}</div>
                             <div className="opacity-75 whitespace-pre-wrap">{error.stack}</div>
@@ -82,7 +82,7 @@ export function ErrorFallback({ error, resetErrorBoundary }: { error: Error; res
                 </div>
 
                 {/* Footer */}
-                <div className="bg-surface-2 border-t border-border p-4 flex justify-end gap-3">
+                <div className="bg-[#252525] border-t border-[#333] p-4 flex justify-end gap-3">
                     <button
                         onClick={resetErrorBoundary}
                         className="flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded font-medium transition-colors"

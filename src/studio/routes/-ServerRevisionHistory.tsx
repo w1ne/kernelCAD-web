@@ -36,26 +36,26 @@ function RevisionMenu({ revisions, restoring, onRestore }: RevisionMenuProps): R
   return (
     <div
       role="menu"
-      className="absolute right-0 top-full mt-1 w-64 max-h-80 overflow-y-auto bg-surface-2 border border-border rounded shadow-lg z-50 py-1"
+      className="absolute right-0 top-full mt-1 w-64 max-h-80 overflow-y-auto bg-[#1a1a1a] border border-[#333] rounded shadow-lg z-50 py-1"
       data-testid="server-history-dropdown"
     >
-      <div className="px-3 py-1.5 text-2xs uppercase tracking-wide text-fg-3 font-medium">
+      <div className="px-3 py-1.5 text-2xs uppercase tracking-wide text-gray-500 font-medium">
         Revision history
       </div>
       {revisions.map((rev) => (
         <div
           key={rev.version}
-          className="group flex items-center justify-between gap-2 px-3 py-1.5 hover:bg-surface-2"
+          className="group flex items-center justify-between gap-2 px-3 py-1.5 hover:bg-[#222]"
         >
           <div className="min-w-0">
-            <div className="text-xs text-fg">v{rev.version}</div>
-            <div className="text-2xs text-fg-3 truncate">{formatRevisionTime(rev.created_at)}</div>
+            <div className="text-xs text-gray-300">v{rev.version}</div>
+            <div className="text-2xs text-gray-500 truncate">{formatRevisionTime(rev.created_at)}</div>
           </div>
           <button
             type="button"
             onClick={() => onRestore(rev.version)}
             disabled={restoring !== null}
-            className="flex items-center gap-1 text-2xs text-fg-2 hover:text-white px-1.5 py-1 rounded hover:bg-surface-3 transition-colors shrink-0 disabled:opacity-50"
+            className="flex items-center gap-1 text-2xs text-gray-400 hover:text-white px-1.5 py-1 rounded hover:bg-[#333] transition-colors shrink-0 disabled:opacity-50"
             aria-label={`Restore revision v${rev.version}`}
             title={`Restore v${rev.version}`}
           >
@@ -172,7 +172,7 @@ export function ServerRevisionHistory({
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className={`p-1 rounded transition-colors ${open ? 'bg-surface-3 text-white' : 'text-fg-2 hover:text-white hover:bg-surface-3'}`}
+        className={`p-1 rounded transition-colors ${open ? 'bg-[#333] text-white' : 'text-gray-400 hover:text-white hover:bg-[#333]'}`}
         aria-label="Revision history"
         aria-haspopup="menu"
         aria-expanded={open}

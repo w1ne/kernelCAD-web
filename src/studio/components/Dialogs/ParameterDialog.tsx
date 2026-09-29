@@ -37,10 +37,10 @@ export default function ParameterDialog({ isOpen, onClose, onSubmit, title, fiel
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-            <div className="bg-surface-2 border border-border rounded-lg shadow-2xl w-80 overflow-hidden">
-                <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-surface-3">
-                    <h3 className="text-sm font-bold text-fg uppercase">{title}</h3>
-                    <button onClick={onClose} className="text-fg-2 hover:text-white transition-colors">
+            <div className="bg-[#1a1a1a] border border-[#333] rounded-lg shadow-2xl w-80 overflow-hidden">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-[#333] bg-[#222]">
+                    <h3 className="text-sm font-bold text-gray-200 uppercase">{title}</h3>
+                    <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
                         <X size={16} />
                     </button>
                 </div>
@@ -48,13 +48,13 @@ export default function ParameterDialog({ isOpen, onClose, onSubmit, title, fiel
                 <form onSubmit={handleSubmit} className="p-4 space-y-4">
                     {fields.map((field) => (
                         <div key={field.key} className="space-y-1">
-                            <label className="text-xs text-fg-2 block">{field.label}</label>
+                            <label className="text-xs text-gray-400 block">{field.label}</label>
                             <input
                                 type="number"
                                 step={field.step || 1}
                                 value={values[field.key] || ''}
                                 onChange={(e) => setValues(prev => ({ ...prev, [field.key]: parseFloat(e.target.value) }))}
-                                className="w-full bg-surface-1 border border-border-strong rounded px-2 py-1 text-sm text-fg focus:outline-none focus:border-blue-500 transition-colors"
+                                className="w-full bg-[#111] border border-[#333] rounded px-2 py-1 text-sm text-gray-200 focus:outline-none focus:border-blue-500 transition-colors"
                             />
                         </div>
                     ))}
@@ -63,7 +63,7 @@ export default function ParameterDialog({ isOpen, onClose, onSubmit, title, fiel
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-3 py-1.5 text-xs font-medium text-fg-2 hover:text-white transition-colors"
+                            className="px-3 py-1.5 text-xs font-medium text-gray-400 hover:text-white transition-colors"
                         >
                             Cancel
                         </button>

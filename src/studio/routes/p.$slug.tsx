@@ -361,7 +361,7 @@ function StudioProjectView({ slug, project, session, live, claim, onUpgrade }: P
     <div className="flex items-center gap-2 min-w-0">
       <a
         href={modelPageHref(slug)}
-        className="inline-flex shrink-0 items-center gap-1 rounded px-1.5 py-0.5 text-xs text-fg hover:bg-surface-3 hover:text-white"
+        className="inline-flex shrink-0 items-center gap-1 rounded px-1.5 py-0.5 text-xs text-gray-300 hover:bg-[#333] hover:text-white"
         title="Back to the model page"
         data-testid="back-to-model-page"
       >
@@ -375,10 +375,10 @@ function StudioProjectView({ slug, project, session, live, claim, onUpgrade }: P
           nothing (`min-w-0`, not a pixel floor) and drops out entirely under
           400px — otherwise it pushes the live badge past the header's clip and
           the badge renders as a sliver of green border. */}
-      <span className="hidden min-[400px]:inline lg:hidden text-xs text-fg font-medium truncate min-w-0 max-w-[160px] md:max-w-[280px]" title={project.title}>
+      <span className="hidden min-[400px]:inline lg:hidden text-xs text-gray-200 font-medium truncate min-w-0 max-w-[160px] md:max-w-[280px]" title={project.title}>
         {project.title}
       </span>
-      <span className="hidden lg:inline-flex shrink-0 whitespace-nowrap text-2xs uppercase tracking-widest text-fg-3 font-mono px-1.5 py-0.5 rounded border border-border">
+      <span className="hidden lg:inline-flex shrink-0 whitespace-nowrap text-2xs uppercase tracking-widest text-gray-500 font-mono px-1.5 py-0.5 rounded border border-[#333]">
         {formatPrivacyLabel(project.privacy)}
       </span>
       <span

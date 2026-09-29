@@ -25,7 +25,7 @@ function statusChipClass(status: ValidatorStatus | null): string {
         case 'did-not-converge':
             return 'bg-red-900 text-red-200 border-red-700';
         default:
-            return 'bg-surface-2 text-fg-2 border-border-strong';
+            return 'bg-[#222] text-gray-400 border-[#3a3a3a]';
     }
 }
 
@@ -40,15 +40,15 @@ export const ValidityDeltaHeader: React.FC<ValidityDeltaHeaderProps> = ({ prev, 
             : `was: ${delta.statusWas} → now: ${statusNow} · +${delta.newCount} new · ${delta.clearedCount} cleared`;
 
     return (
-        <div className="flex items-center gap-3 px-3 py-2 border-b border-border bg-surface-2">
+        <div className="flex items-center gap-3 px-3 py-2 border-b border-[#2d2d2d] bg-[#1d1d1d]">
             <span
                 data-testid="validity-status-chip"
                 className={`px-2 py-0.5 text-[11px] rounded border ${statusChipClass(delta.statusNow)}`}
             >
                 {statusNow}
             </span>
-            <span className="text-xs text-fg">{deltaText}</span>
-            <span className="ml-auto text-2xs text-fg-3 italic">
+            <span className="text-xs text-gray-300">{deltaText}</span>
+            <span className="ml-auto text-2xs text-gray-500 italic">
                 since last recompute
             </span>
             {onToggleCollapse && (
@@ -58,7 +58,7 @@ export const ValidityDeltaHeader: React.FC<ValidityDeltaHeaderProps> = ({ prev, 
                     aria-label={collapsed ? 'Expand validity drawer' : 'Collapse validity drawer'}
                     title={collapsed ? 'Expand validity drawer' : 'Collapse validity drawer'}
                     onClick={onToggleCollapse}
-                    className="px-1.5 py-0.5 text-xs text-fg-2 hover:text-fg rounded border border-border-strong hover:border-fg-3 bg-transparent"
+                    className="px-1.5 py-0.5 text-xs text-gray-400 hover:text-gray-200 rounded border border-[#3a3a3a] hover:border-[#555] bg-transparent"
                 >
                     {collapsed ? '▲' : '▼'}
                 </button>

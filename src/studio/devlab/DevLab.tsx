@@ -13,18 +13,18 @@ function DevLabOverlay() {
   const selectedScenario = scenarios.find((s) => s.id === scenarioId) ?? scenarios[0];
 
   return (
-    <div className="absolute top-3 left-3 z-[1000] rounded-lg border border-border bg-surface-1/90 backdrop-blur px-3 py-2 text-xs text-fg shadow-xl">
+    <div className="absolute top-3 left-3 z-[1000] rounded-lg border border-[#333] bg-[#111]/90 backdrop-blur px-3 py-2 text-xs text-gray-200 shadow-xl">
       <div className="flex items-center gap-2">
-        <div className="font-semibold text-fg">Dev Lab</div>
+        <div className="font-semibold text-gray-100">Dev Lab</div>
         <a className="text-blue-400 hover:text-blue-300 underline" href="/">Workbench</a>
       </div>
       <div className="mt-2 flex items-center gap-2">
-        <label className="text-fg-2" htmlFor="devlab-scenario">Scenario</label>
+        <label className="text-gray-400" htmlFor="devlab-scenario">Scenario</label>
         <select
           id="devlab-scenario"
           value={scenarioId}
           onChange={(e) => setScenarioId(e.target.value)}
-          className="bg-surface-2 border border-border-strong rounded px-2 py-1 text-fg"
+          className="bg-[#1e1e1e] border border-[#333] rounded px-2 py-1 text-gray-100"
         >
           {scenarios.map((s) => (
             <option key={s.id} value={s.id}>{s.name}</option>
@@ -42,8 +42,8 @@ function DevLabOverlay() {
           Load
         </button>
       </div>
-      <div className="mt-2 text-[11px] text-fg-2 max-w-[320px]">
-        Tip: click a sketch wire to select it, then press <span className="text-fg">E</span> to extrude.
+      <div className="mt-2 text-[11px] text-gray-400 max-w-[320px]">
+        Tip: click a sketch wire to select it, then press <span className="text-gray-200">E</span> to extrude.
       </div>
     </div>
   );

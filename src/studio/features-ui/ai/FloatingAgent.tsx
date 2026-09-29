@@ -72,12 +72,12 @@ export function FloatingAgent() {
     if (!isVisible) return null;
 
     return (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 w-[600px] bg-surface-2/90 backdrop-blur-md border border-border-strong rounded-lg shadow-2xl z-50 text-white overflow-hidden">
-            <div className="p-4 flex gap-2 items-center border-b border-border">
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 w-[600px] bg-[#1e1e1e]/90 backdrop-blur-md border border-[#444] rounded-lg shadow-2xl z-50 text-white overflow-hidden">
+            <div className="p-4 flex gap-2 items-center border-b border-[#333]">
                 <span className="text-blue-400 font-bold">✨ AI</span>
                 <input
                     ref={inputRef}
-                    className="flex-1 bg-transparent border-none outline-none text-white placeholder-fg-3"
+                    className="flex-1 bg-transparent border-none outline-none text-white placeholder-gray-500"
                     placeholder="Ask AI to modify code or create geometry..."
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
@@ -90,7 +90,7 @@ export function FloatingAgent() {
             {previewCode && (
                 <div className="p-4 bg-black/50 max-h-[300px] overflow-auto">
                     <div className="flex justify-between items-center mb-2">
-                        <span className="text-xs text-fg-2">PREVIEW</span>
+                        <span className="text-xs text-gray-400">PREVIEW</span>
                         <div className="flex gap-2">
                             <button
                                 onClick={() => { setCode(previewCode); setIsVisible(false); }}
@@ -112,7 +112,7 @@ export function FloatingAgent() {
                 </div>
             )}
 
-            <div className="bg-surface-2 p-2 text-2xs text-fg-3 flex justify-between px-4">
+            <div className="bg-[#252526] p-2 text-2xs text-gray-500 flex justify-between px-4">
                 <span>Cmd+K to Close</span>
                 <span>Enter to Submit</span>
             </div>

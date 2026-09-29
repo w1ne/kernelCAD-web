@@ -31,7 +31,7 @@ function sliderStep(r: Range): number {
 }
 
 const segBtn = (active: boolean) =>
-  `px-2 py-0.5 rounded ${active ? 'bg-sky-600 text-white' : 'bg-surface-2 text-white/70 hover:bg-surface-3'}`;
+  `px-2 py-0.5 rounded ${active ? 'bg-sky-600 text-white' : 'bg-[#222] text-white/70 hover:bg-[#333]'}`;
 
 function PresetButtons({
   presetMatches,
@@ -95,7 +95,7 @@ function AxisRow({
         aria-pressed={side}
         disabled={!on}
         onClick={onToggleSide}
-        className="w-6 rounded bg-surface-2 py-0.5 text-center text-white/80 hover:bg-surface-3 disabled:opacity-40 disabled:hover:bg-surface-2"
+        className="w-6 rounded bg-[#222] py-0.5 text-center text-white/80 hover:bg-[#333] disabled:opacity-40 disabled:hover:bg-[#222]"
       >
         {side ? '+' : '−'}
       </button>

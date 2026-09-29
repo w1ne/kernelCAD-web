@@ -58,14 +58,14 @@ export function ScrubRange(props: ScrubRangeProps): JSX.Element {
                     className={
                         isColliding
                             ? 'h-1.5 w-full bg-red-950 rounded relative ring-1 ring-red-500'
-                            : 'h-1.5 w-full bg-surface-2 rounded relative'
+                            : 'h-1.5 w-full bg-[#1f1f1f] rounded relative'
                     }
                     title={interferenceTitle}
                     data-testid={`scrub-track-${name}`}
                 >
                     <div
                         className={
-                            isColliding ? 'h-full bg-red-500 rounded' : 'h-full bg-accent rounded'
+                            isColliding ? 'h-full bg-red-500 rounded' : 'h-full bg-[#4a9eff] rounded'
                         }
                         style={{ width: `${pct * 100}%` }}
                     />
@@ -74,7 +74,7 @@ export function ScrubRange(props: ScrubRangeProps): JSX.Element {
                         return (
                             <div
                                 key={i}
-                                className="absolute top-[-2px] w-[1px] h-[10px] bg-fg-3"
+                                className="absolute top-[-2px] w-[1px] h-[10px] bg-gray-500"
                                 style={{ left: `${lpct}%` }}
                                 title={m.label ?? String(m.at)}
                             />
@@ -82,7 +82,7 @@ export function ScrubRange(props: ScrubRangeProps): JSX.Element {
                     })}
                 </div>
             </div>
-            <div className="flex justify-between text-2xs text-fg-3 mt-0.5">
+            <div className="flex justify-between text-2xs text-gray-600 mt-0.5">
                 <span>
                     {min}
                     {unit ?? ''}

@@ -91,7 +91,7 @@ function ScrubValueInput({
                 aria-invalid={isOutOfRange || undefined}
                 title={outOfRangeTitle}
             />
-            {unit && <span className="text-2xs text-fg-3 w-4">{unit}</span>}
+            {unit && <span className="text-2xs text-gray-500 w-4">{unit}</span>}
         </div>
     );
 }
@@ -144,10 +144,10 @@ export function NumericScrubInput(props: NumericScrubInputProps): JSX.Element {
     const rangeMax = typeof max === 'number' ? max : 0;
 
     const inputClassBase =
-        'bg-surface-2 text-white border rounded px-1.5 py-0.5 w-16 font-mono text-xs text-right';
+        'bg-[#1f1f1f] text-white border rounded px-1.5 py-0.5 w-16 font-mono text-xs text-right';
     const inputClass = isOutOfRange
         ? `${inputClassBase} border-red-500 ring-1 ring-red-500`
-        : `${inputClassBase} border-border-strong`;
+        : `${inputClassBase} border-[#333]`;
     const outOfRangeTitle = isOutOfRange
         ? `value (${displayValue}) is outside declared range [${min}, ${max}] — clamped from script override`
         : undefined;
@@ -160,7 +160,7 @@ export function NumericScrubInput(props: NumericScrubInputProps): JSX.Element {
         >
             <div className="flex items-center justify-between gap-2">
                 <span
-                    className="text-xs text-fg truncate cursor-ew-resize select-none border-b border-dashed border-border-strong flex items-center gap-1"
+                    className="text-xs text-gray-300 truncate cursor-ew-resize select-none border-b border-dashed border-gray-700 flex items-center gap-1"
                     title={`${name} (drag to scrub, ⌥ fine, ⇧ coarse)`}
                     onPointerDown={handlePointerDown}
                     onPointerMove={handlePointerMove}

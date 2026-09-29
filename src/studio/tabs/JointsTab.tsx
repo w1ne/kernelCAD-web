@@ -37,7 +37,7 @@ export function JointsTab(): JSX.Element {
     if (posed.length === 0) {
         return (
             <div
-                className="px-4 py-3 text-sm text-fg-3"
+                className="px-4 py-3 text-sm text-gray-500"
                 data-testid="joints-empty-state"
             >
                 No joints with pose declared
@@ -62,7 +62,7 @@ export function JointsTab(): JSX.Element {
 
     return (
         <div className="flex flex-col" data-testid="joints-tab">
-            <ul className="flex flex-col divide-y divide-border">
+            <ul className="flex flex-col divide-y divide-[#1f1f1f]">
                 {posed.map((snap) => (
                     <JointRow
                         key={snap.mate.name}
@@ -78,7 +78,7 @@ export function JointsTab(): JSX.Element {
                     />
                 ))}
             </ul>
-            <div className="flex justify-between items-center px-3 py-2 text-[11px] text-fg-3 border-t border-border">
+            <div className="flex justify-between items-center px-3 py-2 text-[11px] text-gray-500 border-t border-[#1f1f1f]">
                 <span>
                     {partCount} parts · {posed.length} mates
                     {ballCount > 0
@@ -88,7 +88,7 @@ export function JointsTab(): JSX.Element {
                 {updateParam ? (
                     <button
                         type="button"
-                        className="text-accent hover:underline"
+                        className="text-[#4a9eff] hover:underline"
                         onClick={handleReset}
                     >
                         ↻ reset all to rest
@@ -122,12 +122,12 @@ function JointRow({ snap, onChange, onCommit }: JointRowProps): JSX.Element {
         const [xName, yName, zName] = poseParamNames;
         return (
             <li
-                className="text-xs text-fg px-3 py-2 border-l-2 border-border ml-3"
+                className="text-xs text-gray-300 px-3 py-2 border-l-2 border-[#333] ml-3"
                 data-testid={`joint-row-${mate.name}`}
             >
                 <div className="pb-1">
-                    <span className="text-fg">{mate.name}</span>
-                    <span className="text-2xs text-fg-3 ml-1.5 italic">
+                    <span className="text-gray-300">{mate.name}</span>
+                    <span className="text-2xs text-gray-500 ml-1.5 italic">
                         ball (XYZ Euler)
                     </span>
                 </div>
@@ -166,12 +166,12 @@ function JointRow({ snap, onChange, onCommit }: JointRowProps): JSX.Element {
     const paramName = poseParamNames[0];
     return (
         <li
-            className="text-xs text-fg"
+            className="text-xs text-gray-300"
             data-testid={`joint-row-${mate.name}`}
         >
             <div className="px-3 pt-2 pb-0.5 flex justify-between">
-                <span className="text-fg">{mate.name}</span>
-                <span className="text-2xs text-fg-3 italic">{mate.type}</span>
+                <span className="text-gray-300">{mate.name}</span>
+                <span className="text-2xs text-gray-500 italic">{mate.type}</span>
             </div>
             <NumericScrubInput
                 name={mate.name}
@@ -209,7 +209,7 @@ function BallAxis({
     const inputName = name ?? label;
     return (
         <div className="flex items-center gap-2">
-            <span className="text-2xs text-fg-3 w-3">{label}</span>
+            <span className="text-2xs text-gray-500 w-3">{label}</span>
             <div className="flex-1">
                 <NumericScrubInput
                     name={inputName}

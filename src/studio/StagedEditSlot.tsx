@@ -43,7 +43,7 @@ function DiffCard({ edit }: { edit: StagedEdit }) {
     return (
         <div
             data-testid="staged-edit-diff"
-            className="rounded border border-border bg-bg overflow-auto max-h-48"
+            className="rounded border border-[#2a2e38] bg-[#0d0d0d] overflow-auto max-h-48"
         >
             <pre className="text-2xs leading-snug font-mono p-2 m-0">
                 {lines.map((l, i) => (
@@ -54,7 +54,7 @@ function DiffCard({ edit }: { edit: StagedEdit }) {
                                 ? 'text-emerald-400'
                                 : l.kind === 'del'
                                     ? 'text-red-400'
-                                    : 'text-fg-3'
+                                    : 'text-gray-500'
                         }
                     >
                         <span className="select-none mr-1">
@@ -72,7 +72,7 @@ export function AutoApplyToggle() {
     const [enabled, setEnabled] = useAutoApplySetting();
     return (
         <label
-            className="flex items-start gap-2 text-[11px] text-fg leading-snug cursor-pointer"
+            className="flex items-start gap-2 text-[11px] text-gray-300 leading-snug cursor-pointer"
             data-testid="staged-edit-auto-apply"
         >
             <input
@@ -83,7 +83,7 @@ export function AutoApplyToggle() {
             />
             <span>
                 Auto-apply UI edits
-                <span className="block text-2xs text-fg-3">
+                <span className="block text-2xs text-gray-500">
                     {enabled
                         ? 'Drags apply at once. Ctrl/Cmd+Z undoes. Agent edits wait for review.'
                         : 'Every edit waits here for review.'}
@@ -99,7 +99,7 @@ function StagedEditSourceLabel({ edit }: { edit: StagedEdit }) {
 
     return (
         <div className="min-w-0">
-            <span className="text-fg-3">Source:</span> {source.kind} · {source.label}
+            <span className="text-gray-500">Source:</span> {source.kind} · {source.label}
         </div>
     );
 }
@@ -111,16 +111,16 @@ function StagedEditContextMeta({ context }: { context: NonNullable<StagedEdit['c
     return (
         <div className="flex min-w-0 flex-wrap gap-x-2 gap-y-1">
             <span className="min-w-0">
-                <span className="text-fg-3">Target:</span> {target ?? 'whole model'}
+                <span className="text-gray-500">Target:</span> {target ?? 'whole model'}
             </span>
             {workflow != null && (
                 <span className="min-w-0">
-                    <span className="text-fg-3">Workflow:</span> {workflow.promptSource} repair
+                    <span className="text-gray-500">Workflow:</span> {workflow.promptSource} repair
                 </span>
             )}
             {context.generationId && (
                 <span className="min-w-0">
-                    <span className="text-fg-3">Generation:</span> {context.generationId}
+                    <span className="text-gray-500">Generation:</span> {context.generationId}
                 </span>
             )}
         </div>
@@ -135,13 +135,13 @@ function StagedEditContextDetails({ edit }: { edit: StagedEdit }) {
 
     return (
         <div
-            className="min-w-0 rounded border border-border bg-bg px-2 py-1.5 text-2xs text-fg-2 space-y-1 break-words"
+            className="min-w-0 rounded border border-[#252a33] bg-[#111318] px-2 py-1.5 text-2xs text-gray-400 space-y-1 break-words"
             data-testid="staged-edit-context"
         >
             <StagedEditSourceLabel edit={edit} />
             {prompt && (
                 <div className="line-clamp-2 min-w-0" title={prompt}>
-                    <span className="text-fg-3">Prompt:</span> {prompt}
+                    <span className="text-gray-500">Prompt:</span> {prompt}
                 </div>
             )}
             {context != null && <StagedEditContextMeta context={context} />}
@@ -154,11 +154,11 @@ function AppliedEditHistory({ entries }: { entries: readonly AppliedEditHistoryE
 
     return (
         <div
-            className="mt-1 border-t border-border pt-2 space-y-1"
+            className="mt-1 border-t border-[#252a33] pt-2 space-y-1"
             data-testid="applied-edit-history"
             aria-label="Recent staged edit outcomes"
         >
-            <div className="uppercase tracking-wide text-2xs text-fg-3">
+            <div className="uppercase tracking-wide text-2xs text-gray-500">
                 Recent edits
             </div>
             {entries.map((entry) => {
@@ -166,25 +166,25 @@ function AppliedEditHistory({ entries }: { entries: readonly AppliedEditHistoryE
                 return (
                     <div
                         key={entry.id}
-                        className="min-w-0 rounded border border-border bg-bg px-2 py-1.5 text-2xs text-fg-2 space-y-1"
+                        className="min-w-0 rounded border border-[#252a33] bg-[#111318] px-2 py-1.5 text-2xs text-gray-400 space-y-1"
                     >
                         <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-                            <span className="font-medium text-fg">{formatOutcome(entry.outcome)}</span>
+                            <span className="font-medium text-gray-200">{formatOutcome(entry.outcome)}</span>
                             <span className="font-mono text-emerald-300">
                                 +{entry.addedLines} / -{entry.removedLines}
                             </span>
                             {entry.recheckStatus !== 'not-applicable' && (
-                                <span className="text-fg-3">{formatRecheckStatus(entry.recheckStatus)}</span>
+                                <span className="text-gray-500">{formatRecheckStatus(entry.recheckStatus)}</span>
                             )}
                         </div>
-                        <div className="line-clamp-1 text-fg" title={entry.intent}>
+                        <div className="line-clamp-1 text-gray-300" title={entry.intent}>
                             {entry.intent}
                         </div>
                         {entry.promptText && (
-                            <div className="line-clamp-2 break-words text-fg-3">{entry.promptText}</div>
+                            <div className="line-clamp-2 break-words text-gray-500">{entry.promptText}</div>
                         )}
                         {metadata.length > 0 && (
-                            <div className="line-clamp-1 break-words text-fg-3">
+                            <div className="line-clamp-1 break-words text-gray-500">
                                 {metadata.join(' · ')}
                             </div>
                         )}
@@ -240,7 +240,7 @@ function StagedEditNotes({ edit, readOnlyHint }: { edit: StagedEdit; readOnlyHin
                 </div>
             )}
             {readOnlyHint && (
-                <div data-testid="staged-edit-read-only" className="text-2xs text-fg-2">
+                <div data-testid="staged-edit-read-only" className="text-2xs text-gray-400">
                     {readOnlyHint}
                 </div>
             )}
@@ -268,7 +268,7 @@ export function StagedEditSlot() {
 
     return (
         <div className="p-3 flex flex-col gap-2" data-testid="staged-edit-slot">
-            <div className="uppercase tracking-wide text-2xs text-fg-3">
+            <div className="uppercase tracking-wide text-2xs text-gray-500">
                 Staged edits
             </div>
 
@@ -277,7 +277,7 @@ export function StagedEditSlot() {
             {stagedEdit != null && (
                 <>
                     <div
-                        className="text-[11px] text-fg leading-snug italic"
+                        className="text-[11px] text-gray-200 leading-snug italic"
                         data-testid="staged-edit-intent"
                     >
                         "{stagedEdit.intent}"
@@ -288,7 +288,7 @@ export function StagedEditSlot() {
                         </div>
                     )}
                     {stagedEdit.validityDelta && (
-                        <div data-testid="staged-edit-validity" className="text-2xs text-fg-2">
+                        <div data-testid="staged-edit-validity" className="text-2xs text-gray-400">
                             interferences {stagedEdit.validityDelta.fromInterferences} → {stagedEdit.validityDelta.toInterferences}
                             {' · '}Σ volume {stagedEdit.validityDelta.fromVolumeMm3.toFixed(1)} → {stagedEdit.validityDelta.toVolumeMm3.toFixed(1)} mm³
                         </div>

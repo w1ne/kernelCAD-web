@@ -27,51 +27,51 @@ export function BuildLoopPanel({
     suggestedRepairPrompt,
 }: BuildLoopPanelProps): JSX.Element {
     return (
-                    <div className="h-full overflow-auto p-3 text-xs text-fg" data-testid="build-loop-panel">
-                        <div className="mb-3 flex items-center justify-between gap-2 border-b border-border pb-2">
-                            <span className="font-bold text-fg">{verdict}</span>
-                            <span className="rounded border border-border px-2 py-1 font-mono text-[11px] text-fg">
+                    <div className="h-full overflow-auto p-3 text-xs text-gray-300" data-testid="build-loop-panel">
+                        <div className="mb-3 flex items-center justify-between gap-2 border-b border-[#333] pb-2">
+                            <span className="font-bold text-gray-100">{verdict}</span>
+                            <span className="rounded border border-[#333] px-2 py-1 font-mono text-[11px] text-gray-300">
                                 {repairMode}
                             </span>
                         </div>
 
                         <div className="mb-4">
-                            <div className="mb-2 font-bold text-fg-2">PARAMETERS</div>
+                            <div className="mb-2 font-bold text-gray-400">PARAMETERS</div>
                             {scriptParams.length > 0 ? (
                                 <div className="space-y-1">
                                     {scriptParams.map((param) => (
                                         <div
                                             key={param.name}
-                                            className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 border border-border bg-surface-2 px-2 py-1.5"
+                                            className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 border border-[#262626] bg-[#171717] px-2 py-1.5"
                                         >
                                             <div className="min-w-0">
-                                                <div className="truncate font-mono text-fg">{param.name}</div>
+                                                <div className="truncate font-mono text-gray-100">{param.name}</div>
                                                 {param.meta?.description && (
-                                                    <div className="truncate text-[11px] text-fg-3">{param.meta.description}</div>
+                                                    <div className="truncate text-[11px] text-gray-500">{param.meta.description}</div>
                                                 )}
                                             </div>
-                                            <div className="font-mono text-fg">{String(param.value)}</div>
+                                            <div className="font-mono text-gray-100">{String(param.value)}</div>
                                         </div>
                                     ))}
                                 </div>
                             ) : (
-                                <div className="text-fg-3">No runtime parameters</div>
+                                <div className="text-gray-500">No runtime parameters</div>
                             )}
                         </div>
 
                         <div className="mb-4">
-                            <div className="mb-2 font-bold text-fg-2">BLOCKERS</div>
+                            <div className="mb-2 font-bold text-gray-400">BLOCKERS</div>
                             {blockingReasons.length > 0 ? (
                                 <div className="space-y-2">
                                     {blockingReasons.map((reason, index) => (
-                                        <div key={`${reason.code ?? 'blocker'}-${index}`} className="border border-danger/40 bg-danger-soft px-2 py-1.5">
+                                        <div key={`${reason.code ?? 'blocker'}-${index}`} className="border border-[#332626] bg-[#1d1515] px-2 py-1.5">
                                             <div className="font-mono text-[11px] text-red-200">{reason.code}</div>
-                                            <div className="mt-1 text-fg">{reason.message}</div>
+                                            <div className="mt-1 text-gray-200">{reason.message}</div>
                                         </div>
                                     ))}
                                 </div>
                             ) : (
-                                <div className="text-fg-3">No blocking mechanical review facts</div>
+                                <div className="text-gray-500">No blocking mechanical review facts</div>
                             )}
                         </div>
 
@@ -79,7 +79,7 @@ export function BuildLoopPanel({
                             <div className="mb-4">
                                 <button
                                     type="button"
-                                    className="mb-2 text-left text-[11px] font-bold text-fg-2 hover:text-fg"
+                                    className="mb-2 text-left text-[11px] font-bold text-gray-400 hover:text-gray-200"
                                     onClick={() => onToggleReviewDetails()}
                                 >
                                     {showReviewDetails ? 'HIDE' : 'SHOW'} {nonBlockingDiagnostics.length} REVIEW DETAIL{nonBlockingDiagnostics.length === 1 ? '' : 'S'}
@@ -87,9 +87,9 @@ export function BuildLoopPanel({
                                 {showReviewDetails && (
                                     <div className="space-y-2">
                                         {nonBlockingDiagnostics.map((diagnostic, index) => (
-                                            <div key={`${diagnostic.code ?? 'fact'}-${index}`} className="border border-warn/40 bg-warn-soft px-2 py-1.5">
+                                            <div key={`${diagnostic.code ?? 'fact'}-${index}`} className="border border-[#333327] bg-[#1c1c14] px-2 py-1.5">
                                                 <div className="font-mono text-[11px] text-yellow-200">{diagnostic.code}</div>
-                                                <div className="mt-1 text-fg">{diagnostic.message}</div>
+                                                <div className="mt-1 text-gray-200">{diagnostic.message}</div>
                                             </div>
                                         ))}
                                     </div>
@@ -99,8 +99,8 @@ export function BuildLoopPanel({
 
                         {suggestedRepairPrompt && (
                             <div>
-                                <div className="mb-2 font-bold text-fg-2">NEXT REPAIR PROMPT</div>
-                                <pre className="whitespace-pre-wrap border border-border bg-surface-1 p-2 font-mono text-[11px] leading-5 text-blue-100">
+                                <div className="mb-2 font-bold text-gray-400">NEXT REPAIR PROMPT</div>
+                                <pre className="whitespace-pre-wrap border border-[#2d3340] bg-surface-1 p-2 font-mono text-[11px] leading-5 text-blue-100">
                                     {suggestedRepairPrompt}
                                 </pre>
                             </div>

@@ -71,7 +71,7 @@ export function AnimationTab(): JSX.Element {
     if (!metadata) {
         return (
             <div
-                className="px-4 py-3 text-sm text-fg-3"
+                className="px-4 py-3 text-sm text-gray-500"
                 data-testid="animation-empty-state"
             >
                 No animationView() declared
@@ -87,8 +87,8 @@ export function AnimationTab(): JSX.Element {
     return (
         <div className="flex flex-col" data-testid="animation-tab">
             <div className="flex items-baseline justify-between px-3 pt-2 pb-1">
-                <span className="text-xs text-fg truncate" title={name}>{name}</span>
-                <span className="text-2xs text-fg-3">
+                <span className="text-xs text-gray-200 truncate" title={name}>{name}</span>
+                <span className="text-2xs text-gray-500">
                     {(durationMs / 1000).toFixed(2)}s · {fps} fps
                 </span>
             </div>

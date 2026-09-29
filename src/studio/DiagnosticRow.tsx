@@ -49,17 +49,17 @@ export const DiagnosticRow: React.FC<DiagnosticRowProps> = ({ diagnostic }) => {
                     onJump();
                 }
             }}
-            className="flex items-center gap-2 px-3 py-2 text-xs hover:bg-surface-2 border-b border-border cursor-pointer"
+            className="flex items-center gap-2 px-3 py-2 text-xs hover:bg-[#222] border-b border-[#222] cursor-pointer"
         >
             <span
                 aria-hidden="true"
                 className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${severityDotClass(diagnostic.severity)}`}
             />
-            <code className="font-mono text-[11px] text-fg-2 flex-shrink-0">
+            <code className="font-mono text-[11px] text-gray-400 flex-shrink-0">
                 {diagnostic.code}
             </code>
-            <span className="font-semibold text-fg flex-shrink-0">{target}</span>
-            <span className="italic text-fg-2 truncate flex-1">{diagnostic.hint}</span>
+            <span className="font-semibold text-gray-100 flex-shrink-0">{target}</span>
+            <span className="italic text-gray-400 truncate flex-1">{diagnostic.hint}</span>
             <button
                 type="button"
                 aria-label={`Jump to ${target}`}
@@ -67,7 +67,7 @@ export const DiagnosticRow: React.FC<DiagnosticRowProps> = ({ diagnostic }) => {
                     e.stopPropagation();
                     onJump();
                 }}
-                className="flex-shrink-0 px-1.5 py-0.5 text-[11px] rounded border border-border-strong bg-surface-2 text-fg hover:bg-surface-3"
+                className="flex-shrink-0 px-1.5 py-0.5 text-[11px] rounded border border-[#3a3a3a] bg-[#222] text-gray-300 hover:bg-[#2a2a2a]"
             >
                 →
             </button>

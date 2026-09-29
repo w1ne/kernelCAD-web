@@ -120,7 +120,7 @@ function AxisHotspots({ onNavigate }: ViewGizmoProps) {
             <Hotspot
                 label="Fit model to view"
                 onClick={() => onNavigate('fit')}
-                className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-md border border-white/20 bg-bg/85 text-white shadow-lg backdrop-blur transition hover:bg-surface-3 focus:outline-none focus:ring-2 focus:ring-cyan-300"
+                className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-md border border-white/20 bg-neutral-950/85 text-white shadow-lg backdrop-blur transition hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-cyan-300"
             >
                 <Home size={15} aria-hidden="true" />
             </Hotspot>
