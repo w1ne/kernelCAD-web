@@ -503,15 +503,22 @@ function polygonD(pts: readonly P2[]): string {
 
 function validatePlanOptions(plan: ArchitecturalPlanOptions | undefined): void {
   if (plan === undefined) return;
-  const bad = (field: string, msg: string): never => {
-    throw new KernelError('cli.invalid-args', `architectural plan: options.plan.${field} ${msg}`, undefined,
-      "options.plan is { units?: 'metric'|'imperial', cutHeight?: mm > 0, rooms?: [{ name, at: [x, y] }], northDeg?: number }.");
-  };
-  if (plan.units !== undefined && plan.units !== 'metric' && plan.units !== 'imperial') bad('units', `must be 'metric' or 'imperial'; got ${JSON.stringify(plan.units)}.`);
-  if (plan.cutHeight !== undefined && !(Number.isFinite(plan.cutHeight) && plan.cutHeight > 0)) bad('cutHeight', `must be a positive number of mm; got ${JSON.stringify(plan.cutHeight)}.`);
-  if (plan.northDeg !== undefined && !Number.isFinite(plan.northDeg)) bad('northDeg', `must be a finite number; got ${JSON.stringify(plan.northDeg)}.`);
-  for (const [i, r] of (plan.rooms ?? []).entries()) {
-    const ok = typeof r?.name === 'string' && r.name.length > 0 && Array.isArray(r.at) && r.at.length === 2 && r.at.every(Number.isFinite);
-    if (!ok) bad(`rooms[${i}]`, `must be { name: string, at: [x, y] }; got ${JSON.stringify(r)}.`);
-  }
+  const problems: Array<[string, unknown, boolean, string]> = [
+    ['units', plan.units, plan.units === undefined || plan.units === 'metric' || plan.units === 'imperial', "must be 'metric' or 'imperial'"],
+    ['cutHeight', plan.cutHeight, plan.cutHeight === undefined || (Number.isFinite(plan.cutHeight) && plan.cutHeight > 0), 'must be a positive number of mm'],
+    ['northDeg', plan.northDeg, plan.northDeg === undefined || Number.isFinite(plan.northDeg), 'must be a finite number'],
+    ...(plan.rooms ?? []).map((r, i): [string, unknown, boolean, string] =>
+      [`rooms[${i}]`, r, isRoomName(r), 'must be { name: string, at: [x, y] }']),
+  ];
+  const bad = problems.find(([, , ok]) => !ok);
+  if (bad === undefined) return;
+  const [field, value, , rule] = bad;
+  throw new KernelError('cli.invalid-args', `architectural plan: options.plan.${field} ${rule}; got ${JSON.stringify(value)}.`, undefined,
+    "options.plan is { units?: 'metric'|'imperial', cutHeight?: mm > 0, rooms?: [{ name, at: [x, y] }], northDeg?: number }.");
+}
+
+function isRoomName(r: unknown): boolean {
+  const room = r as { name?: unknown; at?: unknown } | null;
+  return typeof room?.name === 'string' && room.name.length > 0 &&
+    Array.isArray(room.at) && room.at.length === 2 && room.at.every(Number.isFinite);
 }

@@ -61,58 +61,49 @@ export function absurdGeometryDiagnostic(
   const box = readBox(shape);
   if (box === undefined) return null;
 
-  const coords = [...box.min, ...box.max];
-  if (coords.some((c) => !Number.isFinite(c) || Math.abs(c) > ABSOLUTE_LIMIT_MM)) {
-    return diag(r, `its bounding box is ${fmtBox(box)}, which is non-finite or wider than ${ABSOLUTE_LIMIT_MM / 1e6} km`);
-  }
+  const solidInputs = inputs.filter((i): i is OcctBackend => i instanceof OcctBackend && i.kind !== 'sketch');
+  const why = absoluteBoxProblem(box) ?? boundedBoxProblem(r, box, solidInputs) ?? volumeProblem(r, shape, solidInputs);
+  return why === undefined ? null : diag(r, why);
+}
 
+/** Check 1: a finite box no wider than ABSOLUTE_LIMIT_MM. */
+function absoluteBoxProblem(box: Box): string | undefined {
+  const coords = [...box.min, ...box.max];
+  if (coords.every((c) => Number.isFinite(c) && Math.abs(c) <= ABSOLUTE_LIMIT_MM)) return undefined;
+  return `its bounding box is ${fmtBox(box)}, which is non-finite or wider than ${ABSOLUTE_LIMIT_MM / 1e6} km`;
+}
+
+/** Check 2: a bounded kind stays inside its inputs' box plus the margin. */
+function boundedBoxProblem(r: FeatureRecord, box: Box, inputs: readonly OcctBackend[]): string | undefined {
+  if (!BOUNDED_KINDS.has(r.kind)) return undefined;
   const inputBoxes = inputs
-    .filter((i): i is OcctBackend => i instanceof OcctBackend && i.kind !== 'sketch')
     .map(readBox)
     .filter((b): b is Box => b !== undefined && [...b.min, ...b.max].every(Number.isFinite));
+  if (inputBoxes.length === 0) return undefined;
+  const union = unionBox(inputBoxes);
+  const diagLen = Math.hypot(union.max[0] - union.min[0], union.max[1] - union.min[1], union.max[2] - union.min[2]);
+  const margin = Math.max(1, diagLen * BOUNDED_MARGIN_FACTOR);
+  const inside = [0, 1, 2].every((a) => box.min[a] >= union.min[a] - margin && box.max[a] <= union.max[a] + margin);
+  if (inside) return undefined;
+  return (
+    `its bounding box ${fmtBox(box)} reaches far outside its inputs' box ${fmtBox(union)} ` +
+    `(allowed margin ${margin.toFixed(1)} mm); a ${r.kind} cannot grow the part that much`
+  );
+}
 
-  if (BOUNDED_KINDS.has(r.kind) && inputBoxes.length > 0) {
-    const union = unionBox(inputBoxes);
-    const diagLen = Math.hypot(
-      union.max[0] - union.min[0], union.max[1] - union.min[1], union.max[2] - union.min[2],
-    );
-    const margin = Math.max(1, diagLen * BOUNDED_MARGIN_FACTOR);
-    for (let a = 0; a < 3; a++) {
-      if (box.min[a] < union.min[a] - margin || box.max[a] > union.max[a] + margin) {
-        return diag(
-          r,
-          `its bounding box ${fmtBox(box)} reaches far outside its inputs' box ${fmtBox(union)} ` +
-            `(allowed margin ${margin.toFixed(1)} mm); a ${r.kind} cannot grow the part that much`,
-        );
-      }
-    }
-  }
-
-  if (VOLUME_PROBED_KINDS.has(r.kind)) {
-    let volume: number;
-    try {
-      volume = shape.volume();
-    } catch {
-      volume = Number.NaN;
-    }
-    if (!Number.isFinite(volume) || volume <= 0) {
-      return diag(r, `its volume is ${volume}, so it is not a valid closed solid`);
-    }
-    if (r.kind === 'shell' && inputs.length > 0) {
-      const input = inputs.find((i): i is OcctBackend => i instanceof OcctBackend && i.kind !== 'sketch');
-      if (input !== undefined && isInwardShell(r)) {
-        const before = safeVolume(input);
-        if (before !== undefined && volume > before * (1 + 1e-6) + 1e-6) {
-          return diag(
-            r,
-            `its volume ${volume.toFixed(1)} mm³ exceeds the solid it hollowed (${before.toFixed(1)} mm³); ` +
-              'an inward shell can only remove material',
-          );
-        }
-      }
-    }
-  }
-  return null;
+/** Check 3: fragile kinds return a positive, finite volume, and an inward
+ *  shell never adds material. */
+function volumeProblem(r: FeatureRecord, shape: OcctBackend, inputs: readonly OcctBackend[]): string | undefined {
+  if (!VOLUME_PROBED_KINDS.has(r.kind)) return undefined;
+  const volume = safeVolume(shape) ?? Number.NaN;
+  if (!(volume > 0)) return `its volume is ${volume}, so it is not a valid closed solid`;
+  if (r.kind !== 'shell' || !isInwardShell(r) || inputs.length === 0) return undefined;
+  const before = safeVolume(inputs[0]!);
+  if (before === undefined || volume <= before * (1 + 1e-6) + 1e-6) return undefined;
+  return (
+    `its volume ${volume.toFixed(1)} mm³ exceeds the solid it hollowed (${before.toFixed(1)} mm³); ` +
+    'an inward shell can only remove material'
+  );
 }
 
 /** OCCT `Bnd_Box` of the shape, `undefined` when it is void (an empty
