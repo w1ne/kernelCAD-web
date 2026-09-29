@@ -30,14 +30,23 @@ import {
   type CustomizerParamHint,
   type CustomizerValues,
 } from './customizerParams';
-import { ModelCustomizer } from './ModelCustomizer';
+import { ModelCustomizer, type CustomizerLayoutMode } from './ModelCustomizer';
 
 export interface StudioModelCustomizerProps {
   slug: string;
   /** Unit/step hints saved with the project (`projects.parameters`). */
   hints?: readonly CustomizerParamHint[];
+  /** `overlay` (default): a floating card over the 3D view. `panel`: fills
+   *  its container in the host's theme, for a side panel or a sheet. */
+  layout?: CustomizerLayoutMode;
+  /** Overlay only. Default: collapsed on a phone-width screen. */
   defaultCollapsed?: boolean;
   className?: string;
+}
+
+/** STL for a single printable body, STEP for an assembly of several. */
+export function defaultDownloadFormat(bodyCount: number): CustomizerFormat {
+  return bodyCount > 1 ? 'step' : 'stl';
 }
 
 /**
@@ -83,7 +92,7 @@ function useParamExecutor(
 
 export function StudioModelCustomizer(props: StudioModelCustomizerProps): JSX.Element | null {
   const { code } = useCode();
-  const { scriptParams, isComputing, error, updateParam } = useGeometry();
+  const { scriptParams, isComputing, error, updateParam, geometries } = useGeometry();
   const entries = useDeclaredParams(code, scriptParams);
   const params = useMemo(
     () => (entries ? customizerParamsFrom(entries, props.hints) : []),
@@ -109,6 +118,8 @@ export function StudioModelCustomizer(props: StudioModelCustomizerProps): JSX.El
       error={error}
       execute={execute}
       exportModel={exportModel}
+      defaultFormat={defaultDownloadFormat(geometries?.length ?? 0)}
+      layout={props.layout}
       defaultCollapsed={props.defaultCollapsed}
       className={props.className}
     />

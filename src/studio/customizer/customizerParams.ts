@@ -8,6 +8,14 @@
 
 import { setParamValue } from '../../modeling/edits/setParamValue';
 import type { ParamType, ParamValue, SerializedParamEntry } from '../../shared/runtime/paramTable';
+import {
+  guessUnit,
+  humanizeParamName,
+  looksLikeCount,
+  sliderRange,
+  sliderStep,
+  type SliderRange,
+} from './paramPresentation';
 
 /** Presentation hints a saved project may carry next to its code
  *  (`projects.parameters`). The script's own declarations stay the source of
@@ -21,13 +29,21 @@ export interface CustomizerParamHint {
 
 export interface CustomizerParam {
   name: string;
+  /** Readable name: the declared `label`, else humanised from `name`. */
+  label: string;
   type: ParamType;
   /** The value declared in the saved source. Reset returns here. */
   defaultValue: ParamValue;
+  /** Declared bounds. Values outside them are refused. */
   min?: number;
   max?: number;
+  /** Numbers: the slider's travel. The declared bounds, or a range derived
+   *  from the default where none is declared. Typing may go past a derived end. */
+  range?: SliderRange;
+  /** Numbers: slider and arrow-key step. */
   step?: number;
   unit?: string;
+  group?: string;
   choices?: string[];
   maxLength?: number;
   description?: string;
@@ -42,38 +58,63 @@ export type CustomizerFormat = 'stl' | '3mf' | 'step';
 
 export const CUSTOMIZER_FORMATS: readonly CustomizerFormat[] = ['stl', '3mf', 'step'];
 
+function nonEmpty(text: string | undefined): string | undefined {
+  const trimmed = text?.trim();
+  return trimmed ? trimmed : undefined;
+}
+
+/** Declared step, then the project hint, then a step derived from the range. */
+function numberStep(
+  entry: SerializedParamEntry,
+  hint: CustomizerParamHint | undefined,
+  range: SliderRange,
+): number {
+  const declared = entry.meta?.step;
+  if (typeof declared === 'number' && declared > 0) return declared;
+  if (typeof hint?.step === 'number' && hint.step > 0) return hint.step;
+  const isCount = hint?.kind === 'integer' || looksLikeCount(entry.name);
+  return sliderStep(entry.defaultValue as number, range, isCount);
+}
+
+function addNumberPresentation(
+  param: CustomizerParam,
+  entry: SerializedParamEntry,
+  hint: CustomizerParamHint | undefined,
+): void {
+  param.unit ??= guessUnit(entry.name);
+  const range = sliderRange(entry.defaultValue as number, { min: param.min, max: param.max }, param.unit);
+  param.range = range;
+  param.step = numberStep(entry, hint, range);
+}
+
+function customizerParamFrom(entry: SerializedParamEntry, hint: CustomizerParamHint | undefined): CustomizerParam {
+  const meta = entry.meta;
+  const param: CustomizerParam = {
+    name: entry.name,
+    label: nonEmpty(meta?.label) ?? humanizeParamName(entry.name),
+    type: entry.type,
+    defaultValue: entry.defaultValue,
+  };
+  if (typeof meta?.min === 'number') param.min = meta.min;
+  if (typeof meta?.max === 'number') param.max = meta.max;
+  if (meta?.choices) param.choices = [...meta.choices];
+  if (typeof meta?.maxLength === 'number') param.maxLength = meta.maxLength;
+  if (meta?.description) param.description = meta.description;
+  const unit = nonEmpty(meta?.unit) ?? nonEmpty(hint?.unit);
+  if (unit) param.unit = unit;
+  const group = nonEmpty(meta?.group);
+  if (group) param.group = group;
+  if (entry.type === 'number') addNumberPresentation(param, entry, hint);
+  return param;
+}
+
 /** Build one control description per declared parameter, in declaration order. */
 export function customizerParamsFrom(
   entries: readonly SerializedParamEntry[],
   hints: readonly CustomizerParamHint[] = [],
 ): CustomizerParam[] {
   const hintByName = new Map(hints.map((hint) => [hint.name, hint]));
-  return entries.map((entry) => {
-    const hint = hintByName.get(entry.name);
-    const param: CustomizerParam = {
-      name: entry.name,
-      type: entry.type,
-      defaultValue: entry.defaultValue,
-    };
-    const meta = entry.meta;
-    if (typeof meta?.min === 'number') param.min = meta.min;
-    if (typeof meta?.max === 'number') param.max = meta.max;
-    if (meta?.choices) param.choices = [...meta.choices];
-    if (typeof meta?.maxLength === 'number') param.maxLength = meta.maxLength;
-    if (meta?.description) param.description = meta.description;
-    if (hint?.unit) param.unit = hint.unit;
-    const step = entry.type === 'number' ? numberStep(hint) : undefined;
-    if (step !== undefined) param.step = step;
-    return param;
-  });
-}
-
-/** A declared step wins; an integer hint means 1. Otherwise the slider
- *  (`NumericScrubInput`) derives its step from the range. */
-function numberStep(hint: CustomizerParamHint | undefined): number | undefined {
-  if (typeof hint?.step === 'number' && hint.step > 0) return hint.step;
-  if (hint?.kind === 'integer') return 1;
-  return undefined;
+  return entries.map((entry) => customizerParamFrom(entry, hintByName.get(entry.name)));
 }
 
 export function defaultValues(params: readonly CustomizerParam[]): CustomizerValues {
