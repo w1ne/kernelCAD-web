@@ -21,6 +21,7 @@ export function fmtPct(r: number | null, digits = 0): string {
 
 export function fmtInt(n: number | null | undefined): string {
   if (n === null || n === undefined) return '—';
+  if (Math.abs(n) >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
   if (Math.abs(n) >= 10_000) return `${(n / 1000).toFixed(1)}K`;
   return n.toLocaleString('en-US');
 }
@@ -138,4 +139,12 @@ export function kpis(s: AdminStats): Kpi[] {
       ? { key: 'uptime', label: 'Uptime', value: up === null ? '—' : `${up.toFixed(2)}%`, note: 'uptime monitor', unknown: false }
       : unknown('uptime', 'Uptime'));
   return out;
+}
+
+/** A clean axis maximum (1, 2, 2.5, 5 × 10^n) at or above `v`. */
+export function niceMax(v: number): number {
+  if (v <= 0) return 1;
+  const p = 10 ** Math.floor(Math.log10(v));
+  for (const m of [1, 2, 2.5, 5, 10]) if (m * p >= v) return m * p;
+  return 10 * p;
 }

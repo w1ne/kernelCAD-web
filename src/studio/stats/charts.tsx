@@ -7,7 +7,8 @@
 // and on arrow keys, a legend for two or more series, and a table view under
 // every chart so no value depends on colour or hover.
 
-import { useId, useMemo, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { niceMax } from './derive';
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 
 export interface Series {
   key: string;
@@ -17,16 +18,28 @@ export interface Series {
   values: number[];
 }
 
-const W = 640;
-const PAD = { t: 12, r: 44, b: 24, l: 40 };
+const DEFAULT_W = 640;
 
-/** A clean axis maximum (1, 2, 2.5, 5 × 10^n) at or above `v`. */
-export function niceMax(v: number): number {
-  if (v <= 0) return 1;
-  const p = 10 ** Math.floor(Math.log10(v));
-  for (const m of [1, 2, 2.5, 5, 10]) if (m * p >= v) return m * p;
-  return 10 * p;
+/** The chart's rendered width in CSS px, so axis text stays 10px on a phone
+ *  instead of shrinking with a fixed viewBox. */
+function useWidth() {
+  const [w, setW] = useState(DEFAULT_W);
+  const ro = useRef<ResizeObserver | null>(null);
+  // Callback ref: re-attaches when the plot mounts after an empty state.
+  const ref = useCallback((el: HTMLDivElement | null) => {
+    ro.current?.disconnect();
+    ro.current = null;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    ro.current = new ResizeObserver(entries => {
+      const cw = Math.round(entries[0]?.contentRect.width ?? 0);
+      if (cw > 0) setW(cw);
+    });
+    ro.current.observe(el);
+  }, []);
+  useEffect(() => () => ro.current?.disconnect(), []);
+  return { ref, w };
 }
+const PAD = { t: 12, r: 44, b: 24, l: 40 };
 
 function shortDay(d: string): string {
   return d.slice(5); // YYYY-MM-DD → MM-DD
@@ -109,7 +122,7 @@ function useHover(n: number) {
   return { hover, setHover, onKeyDown };
 }
 
-function Axes({ maxY, h, days, xAt }: { maxY: number; h: number; days: string[]; xAt: (i: number) => number }): ReactNode {
+function Axes({ W, maxY, h, days, xAt }: { W: number; maxY: number; h: number; days: string[]; xAt: (i: number) => number }): ReactNode {
   const innerH = h - PAD.t - PAD.b;
   const ticks = [0, 0.5, 1].map(f => f * maxY);
   const labelIdx = days.length <= 1 ? [0] : [0, Math.floor((days.length - 1) / 2), days.length - 1];
@@ -156,6 +169,7 @@ export function ColumnChart({ days, series, label, height = 170, empty = 'Nothin
   days: string[]; series: Series[]; label: string; height?: number; empty?: string;
 }): ReactNode {
   const { hover, setHover, onKeyDown } = useHover(days.length);
+  const { ref, w: W } = useWidth();
   const totals = useMemo(() => days.map((_, i) => series.reduce((a, s) => a + (s.values[i] ?? 0), 0)), [days, series]);
   const maxY = niceMax(Math.max(0, ...totals));
   if (totals.every(t => t === 0)) return <><Empty text={empty} /><DataTable days={days} series={series} caption={label} /></>;
@@ -170,10 +184,10 @@ export function ColumnChart({ days, series, label, height = 170, empty = 'Nothin
   return (
     <div>
       <Legend series={series} mark="rect" />
-      <div className="relative" onMouseLeave={() => setHover(null)}>
+      <div ref={ref} className="relative" onMouseLeave={() => setHover(null)}>
         <svg viewBox={`0 0 ${W} ${height}`} width="100%" height={height} role="img" aria-label={label}
           tabIndex={0} onKeyDown={onKeyDown} onBlur={() => setHover(null)} style={{ display: 'block', outline: 'none' }}>
-          <Axes maxY={maxY} h={height} days={days} xAt={xAt} />
+          <Axes W={W} maxY={maxY} h={height} days={days} xAt={xAt} />
           {days.map((d, i) => {
             let y = PAD.t + innerH;
             const segs = series.map(s => ({ s, v: s.values[i] ?? 0 })).filter(x => x.v > 0);
@@ -211,6 +225,7 @@ export function LineChart({ days, series, label, height = 170, empty = 'Nothing 
   days: string[]; series: Series[]; label: string; height?: number; empty?: string;
 }): ReactNode {
   const { hover, setHover, onKeyDown } = useHover(days.length);
+  const { ref, w: W } = useWidth();
   const clipId = useId();
   const maxRaw = Math.max(0, ...series.flatMap(s => s.values));
   if (maxRaw === 0) return <><Empty text={empty} /><DataTable days={days} series={series} caption={label} /></>;
@@ -230,12 +245,12 @@ export function LineChart({ days, series, label, height = 170, empty = 'Nothing 
   return (
     <div>
       <Legend series={series} mark="line" />
-      <div className="relative" onMouseLeave={() => setHover(null)}>
+      <div ref={ref} className="relative" onMouseLeave={() => setHover(null)}>
         <svg viewBox={`0 0 ${W} ${height}`} width="100%" height={height} role="img" aria-label={label}
           tabIndex={0} onKeyDown={onKeyDown} onBlur={() => setHover(null)} style={{ display: 'block', outline: 'none' }}
           onMouseMove={e => setHover(pointerToIndex(e.clientX, e.currentTarget.getBoundingClientRect()))}>
           <clipPath id={clipId}><rect x={0} y={0} width={W} height={height} /></clipPath>
-          <Axes maxY={maxY} h={height} days={days} xAt={xAt} />
+          <Axes W={W} maxY={maxY} h={height} days={days} xAt={xAt} />
           {hover !== null && (
             <line x1={xAt(hover)} x2={xAt(hover)} y1={PAD.t} y2={PAD.t + innerH} strokeWidth={1} style={{ stroke: 'var(--kcs-axis)' }} />
           )}

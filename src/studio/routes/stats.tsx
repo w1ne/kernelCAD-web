@@ -5,7 +5,7 @@
 // who is an admin (GET /api/v1/admin/stats answers 403 to everyone else, and
 // the page then shows "Not authorised"). One request per window.
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useSession } from '../../funnel/hooks/useSession';
 import { ApiError, fetchAdminStats } from '../../funnel/lib/apiClient';
 import { StatsDashboard } from '../stats/StatsDashboard';
@@ -43,6 +43,10 @@ type LoadState =
   | { kind: 'error'; message: string }
   | { kind: 'ready'; stats: AdminStats };
 
+/** A result tagged with the request it answers (window + retry count), so a
+ *  late answer for an old window is ignored and "still loading" is derived. */
+interface Tagged { key: string; state: LoadState }
+
 function Shell({ children, controls }: { children: ReactNode; controls?: ReactNode }): ReactNode {
   return (
     <div className="kc-stats">
@@ -62,31 +66,32 @@ function StatsPage(): ReactNode {
   const { session, loading } = useSession();
   const navigate = useNavigate();
   const [win, setWin] = useState<StatsWindow>(initialWindow);
-  const [state, setState] = useState<LoadState>({ kind: 'loading' });
-  const [refreshing, setRefreshing] = useState(false);
-  const seq = useRef(0);
+  const [attempt, setAttempt] = useState(0);
+  const [result, setResult] = useState<Tagged>({ key: '', state: { kind: 'loading' } });
+  const key = `${win}#${attempt}`;
 
   useEffect(() => {
     if (!loading && !session) navigate({ to: '/signin', search: { next: '/stats' } });
   }, [loading, session, navigate]);
 
-  const load = useCallback((w: StatsWindow) => {
-    const id = ++seq.current;
-    setRefreshing(true);
-    fetchAdminStats(w)
-      .then(stats => { if (id === seq.current) setState({ kind: 'ready', stats }); })
-      .catch((e: unknown) => {
-        if (id !== seq.current) return;
-        if (e instanceof ApiError && e.status === 403) setState({ kind: 'forbidden' });
-        else setState({ kind: 'error', message: e instanceof ApiError ? `HTTP ${e.status}` : String(e) });
-      })
-      .finally(() => { if (id === seq.current) setRefreshing(false); });
-  }, []);
-
   const hasSession = Boolean(session);
   useEffect(() => {
-    if (hasSession) load(win);
-  }, [hasSession, win, load]);
+    if (!hasSession) return;
+    let live = true;
+    fetchAdminStats(win)
+      .then(stats => { if (live) setResult({ key, state: { kind: 'ready', stats } }); })
+      .catch((e: unknown) => {
+        if (!live) return;
+        const state: LoadState = e instanceof ApiError && e.status === 403
+          ? { kind: 'forbidden' }
+          : { kind: 'error', message: e instanceof ApiError ? `HTTP ${e.status}` : String(e) };
+        setResult({ key, state });
+      });
+    return () => { live = false; };
+  }, [hasSession, win, key]);
+
+  const state = result.state;
+  const refreshing = result.key !== key;
 
   if (loading || !session) {
     return <Shell><p style={{ color: 'var(--kcs-muted)' }}>Loading…</p></Shell>;
@@ -121,7 +126,7 @@ function StatsPage(): ReactNode {
       {state.kind === 'error' && (
         <div className="kcs-card" role="alert" data-testid="stats-error">
           <p className="text-sm" style={{ color: 'var(--kcs-critical-text)' }}>Could not load stats ({state.message}).</p>
-          <button type="button" className="kcs-tab mt-2" onClick={() => load(win)}>Retry</button>
+          <button type="button" className="kcs-tab mt-2" onClick={() => setAttempt(a => a + 1)}>Retry</button>
         </div>
       )}
       {state.kind === 'ready' && (
