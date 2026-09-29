@@ -157,10 +157,12 @@ beforeEach(() => {
 afterEach(() => cleanup());
 
 describe('Viewer', () => {
-    it('renders the viewer container and the version banner', () => {
+    it('renders the viewer container without debug text over the model', () => {
         renderViewer();
-        expect(screen.getByTestId('viewer-container')).toBeDefined();
-        expect(screen.getByText(/kernelCAD v/)).toBeDefined();
+        const container = screen.getByTestId('viewer-container');
+        // The build version lives in the Studio status bar; the canvas shows
+        // no version, commit hash or view-mode line.
+        expect(container.textContent ?? '').not.toMatch(/kernelCAD v|Shaded \+ Edges|DEV/);
     });
 
     it('wires the Canvas camera, gl options and raycaster thresholds', () => {

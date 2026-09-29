@@ -11,7 +11,7 @@ import { initOcct, OcctBackend } from '../../../src/kernel/backends/occt/occtBac
 import { runAndExport } from '../../../src/agent/script-runtime/export';
 import { verifyWatertight } from '../../../src/kernel/backends/occt/meshHeal';
 import { encodeBinaryStl } from '../../../src/kernel/backends/occt/exportStlBinary';
-import { crackSeams, describeCrackSeams, concatMeshes } from '../../../src/agent/script-runtime/sceneStlSeams';
+import { crackSeams, describeCrackSeams } from '../../../src/agent/script-runtime/sceneStlSeams';
 import { stlStats } from '../../helpers/stlStats';
 
 const SCENE = `
@@ -110,12 +110,5 @@ describe('sceneStlSeams helpers', () => {
     expect(describeCrackSeams(seams)).toBe(
       "seam between 'plate' and 'boss' at (20.00, 20.00, 5.00)×10; inside part 'plate' at (1.00, 1.00, 1.00)×2",
     );
-  });
-
-  it('concatMeshes offsets indices so each shell stays closed', () => {
-    const tet = { vertices: [0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1], triangles: [0, 2, 1, 0, 1, 3, 1, 2, 3, 0, 3, 2] };
-    const both = concatMeshes([tet, tet]);
-    expect(both.triangles.slice(12)).toEqual(tet.triangles.map((i) => i + 4));
-    expect(verifyWatertight(both).ok).toBe(true);
   });
 });

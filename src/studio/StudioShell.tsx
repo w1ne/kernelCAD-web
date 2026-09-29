@@ -64,28 +64,55 @@ function resolveInterferenceCount(recompute: ReturnType<typeof useRecomputeResul
             .length;
 }
 
+/** After this long the banner stops saying "warming up" and offers a reload. */
+const KERNEL_SLOW_MS = 15_000;
+
+/** The in-browser kernel banner belongs only to a viewport with nothing to
+ *  show yet. A model can render without the worker (hosted mesh, the dev
+ *  node kernel), and a "warming up" or "timed out" banner over that model
+ *  contradicts both the model and the status bar's "Ready". */
+function shouldShowKernelBanner(isReady: boolean, geometryCount: number): boolean {
+    return !isReady && geometryCount === 0;
+}
+
+function reloadPage() {
+    window.location.reload();
+}
+
 function KernelInitBanner({ error }: { error: string | null }) {
-    const [timedOut, setTimedOut] = useState(false);
+    const [slow, setSlow] = useState(false);
 
     useEffect(() => {
         if (error) return;
-        const timeout = window.setTimeout(() => setTimedOut(true), 15_000);
+        const timeout = window.setTimeout(() => setSlow(true), KERNEL_SLOW_MS);
         return () => window.clearTimeout(timeout);
     }, [error]);
 
+    const needsReload = !!error || slow;
     return (
         <div
             data-testid="kernel-init-banner"
-            className="pointer-events-none absolute left-1/2 top-4 z-30 flex -translate-x-1/2 items-center gap-2 rounded border border-white/10 bg-black/80 px-3 py-2 text-xs text-white/80 shadow-lg"
+            role={error ? 'alert' : 'status'}
+            aria-live="polite"
+            className="pointer-events-none absolute left-1/2 top-4 z-30 flex max-w-[calc(100%-2rem)] -translate-x-1/2 items-center gap-2 rounded border border-white/10 bg-black/80 px-3 py-2 text-xs text-white/80 shadow-lg"
         >
-            {!error && !timedOut && <Loader2 className="h-4 w-4 animate-spin" />}
+            {!needsReload && <Loader2 className="h-4 w-4 shrink-0 animate-spin" />}
             <span>
                 {error
                     ? `Geometry kernel failed: ${error}`
-                    : timedOut
-                        ? 'Geometry kernel initialization timed out. Reload to retry.'
+                    : slow
+                        ? 'The geometry kernel is taking longer than usual.'
                         : 'Geometry kernel warming up...'}
             </span>
+            {needsReload && (
+                <button
+                    type="button"
+                    onClick={reloadPage}
+                    className="pointer-events-auto shrink-0 rounded border border-white/20 px-2 py-0.5 text-white hover:bg-white/10"
+                >
+                    Reload
+                </button>
+            )}
         </div>
     );
 }
@@ -210,7 +237,9 @@ export function StudioShell() {
                 </div>
                 <Inspector tabSlots={tabSlots} />
 
-                {!workbench.isReady && <KernelInitBanner error={workbench.error} />}
+                {shouldShowKernelBanner(workbench.isReady, workbench.geometries?.length ?? 0) && (
+                    <KernelInitBanner error={workbench.error} />
+                )}
 
             </div>
 

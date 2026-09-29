@@ -132,8 +132,9 @@ function resolvePlane(
 }
 
 /** Boolean-intersect `compound` with a half-space box covering the
- *  far-from-viewer side of the cutting plane. */
-function buildKeptHalf(compound: OcctBackend, axis: Axis, position: number): OcctBackend {
+ *  far-from-viewer side of the cutting plane. Shared with the architectural
+ *  plan sheet (`drawingArchitectural.ts`), whose z-cut keeps the lower half. */
+export function buildKeptHalf(compound: OcctBackend, axis: Axis, position: number): OcctBackend {
   const bb = compound.boundingBox();
   const diag = Math.hypot(
     bb.max[0] - bb.min[0], bb.max[1] - bb.min[1], bb.max[2] - bb.min[2],

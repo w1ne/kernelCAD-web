@@ -21,6 +21,12 @@ import {
 import { cycleDetector } from './cycleDetector';
 import { solveAnalytical } from './inverseKinematicsAnalytical';
 import { solveNumeric, type NumericIKResult } from './inverseKinematicsNumeric';
+import {
+  hasArticulatedMates,
+  mateTipWorld,
+  resolveMateTipPoint,
+  solveNumericMates,
+} from './inverseKinematicsMates';
 import type {
   KinematicDiagnostic,
   NumericPoses,
@@ -66,7 +72,16 @@ export async function checkReachable(
     return { ok: false, diagnostics, source: 'local' };
   }
 
-  // 2. Tip-existence guard.
+  // 2. Mate-graph arms (`arm.mate(..., 'revolute' | 'prismatic')`) carry no
+  //    joint-graph DOF, so the joint solvers below would see a zero-DOF chain
+  //    and report the un-posed tip origin's distance as "unreachable". Solve
+  //    them through the mate solver instead — the same FK `review_cad` uses
+  //    for `connectorWorkspace`.
+  if (usesMateGraph(arm, opts.tipLink)) {
+    return checkReachableOnMates(arm, opts, diagnostics);
+  }
+
+  // 3. Tip-existence guard.
   const tipPart = arm.__parts().find((p) => p.name === opts.tipLink);
   if (!tipPart) {
     diagnostics.push(
@@ -85,7 +100,7 @@ export async function checkReachable(
   const preferSolver = opts.preferSolver ?? 'auto';
   const maxIterations = opts.maxIterations ?? DEFAULT_MAX_ITERATIONS;
 
-  // 3. Closed-form analytical attempt (unless the caller forced numeric).
+  // 4. Closed-form analytical attempt (unless the caller forced numeric).
   if (preferSolver !== 'numeric') {
     const analytical = solveAnalytical(arm, opts.tipLink, target);
     if (analytical) {
@@ -113,7 +128,7 @@ export async function checkReachable(
     }
   }
 
-  // 4. DLS numeric fallback.
+  // 5. DLS numeric fallback.
   const num: NumericIKResult = solveNumeric(
     arm,
     opts.tipLink,
@@ -130,7 +145,7 @@ export async function checkReachable(
     };
   }
 
-  // 5. Did not converge — fire K3 (the target is unreachable within the
+  // 6. Did not converge — fire K3 (the target is unreachable within the
   //    requested tolerances) and K4 (numeric loop hit the iteration cap).
   diagnostics.push(
     buildUnreachableDiag(num.positionErrorMm, num.orientationErrorDeg, target.positionToleranceMm ?? 0.5),
@@ -144,6 +159,67 @@ export async function checkReachable(
     source: 'local',
     closestApproach: num.poses,
   };
+}
+
+/** True when the tip is articulated through mates, not the joint graph: the
+ *  arm declares scalar articulated mates and no joint-graph joint moves the
+ *  tip (or the tip is a `part.connector` ref, which only the mate path reads). */
+function usesMateGraph(arm: Assembly, tipLink: string): boolean {
+  if (!hasArticulatedMates(arm)) return false;
+  const tipPart = arm.__parts().find((p) => p.name === tipLink);
+  if (!tipPart) return true;
+  return !arm.__joints().some((j) => j.kind !== 'fixed' && j.childPartId === tipPart.id);
+}
+
+async function checkReachableOnMates(
+  arm: Assembly,
+  opts: ReachableOpts,
+  diagnostics: KinematicDiagnostic[],
+): Promise<ReachableResult> {
+  const tip = resolveMateTipPoint(arm, opts.tipLink);
+  if (typeof tip === 'string') {
+    diagnostics.push(
+      buildDiag(
+        'kinematic.unreachable',
+        'error',
+        `${tip} Pass a part name (its frame origin is tracked) or 'part.connector' ` +
+          `(that connector's origin is tracked — the point review_cad reports in connectorWorkspace).`,
+      ),
+    );
+    return { ok: false, diagnostics, source: 'local' };
+  }
+  if (opts.preferSolver === 'analytical') {
+    diagnostics.push(
+      buildDiag(
+        'kinematic.solver.unsupported-config',
+        'error',
+        `Analytical IK was requested via preferSolver='analytical', but this arm is articulated ` +
+          `through mates; the closed-form solver reads the joint graph only. Set preferSolver='auto' ` +
+          `or 'numeric' to use the mate-graph DLS solver.`,
+      ),
+    );
+    return { ok: false, diagnostics, source: 'local' };
+  }
+  const maxIterations = opts.maxIterations ?? DEFAULT_MAX_ITERATIONS;
+  const num = await solveNumericMates(arm, tip, opts.target, opts.seed ?? {}, maxIterations);
+  if (num.converged) {
+    return { ok: true, diagnostics, source: 'local', pose: num.poses };
+  }
+  const reached = await mateTipWorld(arm, tip, num.poses);
+  const diag = buildUnreachableDiag(
+    num.positionErrorMm, num.orientationErrorDeg, opts.target.positionToleranceMm ?? 0.5,
+  );
+  diagnostics.push({
+    ...diag,
+    message:
+      `${diag.message} Tracked tip point: '${tip.label}' ` +
+      `(${tip.local.every((v) => v === 0) ? 'part frame origin' : `local [${tip.local.join(', ')}]`}), ` +
+      `world [${(reached ?? [NaN, NaN, NaN]).map((v) => v.toFixed(1)).join(', ')}] at the closest-approach pose.`,
+  });
+  if (num.iterations >= maxIterations) {
+    diagnostics.push(buildIterationCapDiag(num.iterations, maxIterations));
+  }
+  return { ok: false, diagnostics, source: 'local', closestApproach: num.poses };
 }
 
 function buildDiag(

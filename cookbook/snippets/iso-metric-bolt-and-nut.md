@@ -8,6 +8,7 @@ keywords:
   - hex across-flats and head height
   - 60-degree ISO V-thread swept along an exact helix
   - hex nut with a modeled internal thread
+  - thread clearance cap pitch/8 and FDM print tolerance
 when_to_use: >-
   You need an ISO metric hex bolt threaded into its hex nut (M3–M12) whose
   pitch, hex across-flats, and head height come from a params table. The bolt
@@ -31,7 +32,14 @@ const ISO = {
 const spec = ISO.M6;
 const P = spec.pitch;
 const turns = 12; // threaded length = turns * pitch
-const threadClearance = param('threadClearance', 0.05); // nut thread play, mm (≤ pitch/8)
+// Nut thread play, mm. Capped at pitch/8 (M6 × 1: 0.125, M8 × 1.25: 0.156) so
+// the groove turns never merge; a larger value fails with the numbers to use.
+const threadClearance = param('threadClearance', 0.05);
+// Extra flank play for a printed (FDM) nut, mm — typically 0.1–0.3 on top of the
+// cap. It grows the nut's whole internal thread: a nominal diameter 4 × larger
+// shifts bore, crest and flanks outward, and a radial shift δ opens each 60°
+// flank by δ/2. 0 keeps the ISO nut.
+const printPlay = param('printPlay', 0);
 
 function hexPrism(af, height) {
   // Flat-to-flat = af. Vertex radius R = af / √3 for a flat-top hex.
@@ -78,7 +86,7 @@ const bolt = hexPrism(spec.af, spec.head).union(shank.translate(0, 0, spec.head)
 const nut = hexPrism(spec.af, spec.nut).hole({ atZ: spec.nut, byNormal: 'Z' }, {
   u: 0,
   v: 0,
-  diameter: spec.d,
+  diameter: printPlay.multiply(4).add(spec.d),
   depth: 'through',
   thread: { pitch: P, modeled: true, clearance: threadClearance },
 });

@@ -4,13 +4,11 @@
 // Multi-part STL export fuses the world-frame parts into one solid before
 // meshing. A fuse of parts that touch or overlap by a few hundredths of a
 // millimetre can give a valid B-rep (STEP is fine) whose tessellation still
-// cracks along the union seams. These helpers (1) name the seam each crack
-// cluster sits on — the parts whose extents contain it — and (2) build the
-// fallback mesh: every part meshed on its own is a closed shell, and an STL
-// of closed, overlapping shells is watertight and slices as their union.
+// cracks along the union seams. These helpers name the seam each crack
+// cluster sits on — the parts whose extents contain it — for the fallback
+// that ships per-part closed shells instead (sceneStlFuse.meshPartsAsShells).
 
 import type { CrackCluster, WatertightReport } from '../../kernel/backends/occt/meshHeal';
-import type { MeshData } from '../../kernel/backends/occt/exportStlBinary';
 
 export interface SeamPart {
   name: string;
@@ -43,17 +41,4 @@ export function describeCrackSeams(seams: readonly CrackSeam[]): string {
       return `at ${at}`;
     })
     .join('; ');
-}
-
-/** Concatenate meshes into one vertex/triangle buffer (no welding: each
- *  input stays its own closed shell). */
-export function concatMeshes(meshes: readonly MeshData[]): MeshData {
-  const vertices: number[] = [];
-  const triangles: number[] = [];
-  for (const m of meshes) {
-    const base = vertices.length / 3;
-    for (const v of m.vertices) vertices.push(v);
-    for (const t of m.triangles) triangles.push(t + base);
-  }
-  return { vertices, triangles };
 }

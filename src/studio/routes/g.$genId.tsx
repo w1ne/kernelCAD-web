@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import App from '../App';
 import { SignInButton } from '../../funnel/components/SignInButton';
 import { useOptionalSession } from '../../funnel/hooks/useSession';
 import { fetchGeneration, saveProject, type GenerationRow } from '../../funnel/lib/apiClient';
+import { PageState, type PageStateAction } from '../components/Shared/PageState';
+import { useBoundedLoad, type LoadState } from './-useProjectLiveUpdates';
 
 export const Route = createFileRoute('/g/$genId')({
   component: AnonGenPage,
@@ -16,36 +18,93 @@ function isUuid(s: string | undefined): boolean {
   return typeof s === 'string' && UUID_RE.test(s);
 }
 
-function AnonGenPage() {
-  const { genId } = Route.useParams();
-  const navigate = useNavigate();
-  const { session } = useOptionalSession();
-  const [gen, setGen] = useState<GenerationRow | null>(null);
-  const [loadErr, setLoadErr] = useState<string | null>(() =>
-    isUuid(genId)
-      ? null
-      : 'Invalid generation link. The previous run may not have completed — try generating again from the home page.',
-  );
-  const [savingState, setSavingState] = useState<'idle' | 'saving' | 'error'>('idle');
+const NEW_PROMPT: PageStateAction = { label: 'Start a new prompt', href: '/generate', primary: true };
+const OPEN_GALLERY: PageStateAction = { label: 'Open gallery', href: '/gallery' };
 
-  useEffect(() => {
-    if (!isUuid(genId)) return;
-    fetchGeneration(genId).then(setGen).catch(e => setLoadErr(String(e)));
-  }, [genId]);
-
-  if (loadErr) {
+/** Every state before the model shows: invalid link, loading, slow, not
+ *  found, timed out, failed, still running, or a generation that failed. */
+function GenerationPageState({ valid, gen, loadState, err, onRetry }: {
+  valid: boolean;
+  gen: GenerationRow | null;
+  loadState: LoadState;
+  err: string | null;
+  onRetry: () => void;
+}) {
+  const retry: PageStateAction = { label: 'Try again', onClick: onRetry, primary: true };
+  if (!valid) {
     return (
-      <main className="min-h-screen bg-vellum font-sans p-8">
-        <p className="text-copper font-mono text-sm">Failed to load: {loadErr}</p>
-      </main>
+      <PageState
+        tone="error"
+        title="This generation link is not valid"
+        message="The previous run may not have completed. Start again from a new prompt."
+        actions={[NEW_PROMPT, OPEN_GALLERY]}
+      />
+    );
+  }
+  if (loadState === 'not_found') {
+    return (
+      <PageState
+        tone="error"
+        title="This generation does not exist"
+        message="Check the link, or start again from a new prompt."
+        actions={[NEW_PROMPT, OPEN_GALLERY]}
+      />
+    );
+  }
+  if (loadState === 'timeout' || loadState === 'error') {
+    return (
+      <PageState
+        tone="error"
+        title="The generation did not load"
+        message={loadState === 'timeout'
+          ? 'The server did not answer in time. Check your connection and try again.'
+          : 'Something went wrong while loading the generation. Try again in a moment.'}
+        detail={loadState === 'error' ? err : null}
+        actions={[retry, OPEN_GALLERY]}
+      />
     );
   }
   if (!gen) {
     return (
-      <main className="min-h-screen bg-vellum font-sans p-8">
-        <p className="text-ink-faint font-mono text-sm">Loading…</p>
-      </main>
+      <PageState
+        tone="loading"
+        title="Loading the generation…"
+        message={loadState === 'slow' ? 'This takes longer than usual. You can keep waiting or try again.' : undefined}
+        actions={loadState === 'slow' ? [{ label: 'Try again', onClick: onRetry }] : []}
+      />
     );
+  }
+  if (gen.status === 'running') {
+    return (
+      <PageState
+        tone="loading"
+        title="The model is still generating"
+        message="This usually takes under a minute. Refresh to check again."
+        actions={[{ label: 'Refresh', onClick: onRetry, primary: true }]}
+      />
+    );
+  }
+  return (
+    <PageState
+      tone="error"
+      title="This generation did not produce a model"
+      message={gen.diagnostics?.message ?? 'Try again with a new or more specific prompt.'}
+      detail={`status: ${gen.status}`}
+      actions={[NEW_PROMPT, OPEN_GALLERY]}
+    />
+  );
+}
+
+function AnonGenPage() {
+  const { genId } = Route.useParams();
+  const navigate = useNavigate();
+  const { session } = useOptionalSession();
+  const valid = isUuid(genId);
+  const { row: gen, err, loadState, retry } = useBoundedLoad(genId, fetchGeneration, valid);
+  const [savingState, setSavingState] = useState<'idle' | 'saving' | 'error'>('idle');
+
+  if (!valid || !gen || gen.status !== 'done' || !gen.code) {
+    return <GenerationPageState valid={valid} gen={gen} loadState={loadState} err={err} onRetry={retry} />;
   }
 
   async function handleSave() {
@@ -53,14 +112,14 @@ function AnonGenPage() {
       void navigate({ to: '/signin', search: { next: window.location.pathname } });
       return;
     }
-    if (!gen!.code) return;
+    if (!gen?.code) return;
     setSavingState('saving');
     try {
       const result = await saveProject({
-        generationId: gen!.id,
-        anonId: gen!.anon_id ?? undefined,
-        title: gen!.prompt.slice(0, 60),
-        code: gen!.code,
+        generationId: gen.id,
+        anonId: gen.anon_id ?? undefined,
+        title: gen.prompt.slice(0, 60),
+        code: gen.code,
         parameters: [],
         privacy: 'public_unlisted',
       });
@@ -69,17 +128,6 @@ function AnonGenPage() {
       setSavingState('error');
       console.error('save failed', err);
     }
-  }
-
-  if (gen.status !== 'done' || !gen.code) {
-    return (
-      <main className="min-h-screen bg-vellum font-sans p-8">
-        <p className="text-ink font-mono text-sm">
-          {gen.status === 'running' && 'Generation still running — refresh in a few seconds.'}
-          {gen.status !== 'running' && `Generation failed (${gen.status}). Try a new prompt.`}
-        </p>
-      </main>
-    );
   }
 
   const headerLeft = (

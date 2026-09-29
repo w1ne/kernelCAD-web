@@ -60,6 +60,10 @@ function StateDiagnostics({ error }: { error: string | null }) {
     );
 }
 
+// The build version lives here, in the Studio status bar, not over the model.
+const VERSION_LABEL = typeof __APP_VERSION__ !== 'undefined' ? `v${__APP_VERSION__}` : 'dev';
+const COMMIT_TITLE = typeof __COMMIT_HASH__ !== 'undefined' ? `build ${__COMMIT_HASH__}` : undefined;
+
 export function StatusBar({
     isComputing,
     error,
@@ -119,6 +123,7 @@ export function StatusBar({
                 )}
                 <span>{formatViewMode(viewMode3D)}</span>
                 <span>{formatLayoutMode(layoutMode)}</span>
+                <span data-testid="status-version" title={COMMIT_TITLE}>{VERSION_LABEL}</span>
             </div>
         </footer>
     );

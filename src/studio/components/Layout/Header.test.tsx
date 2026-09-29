@@ -67,6 +67,27 @@ describe('Header', () => {
     expect(screen.getByText('Untitled Project')).toBeDefined();
   });
 
+  it('names a funnel project by its title, not "Generated"', () => {
+    render(
+      <WorkbenchProvider initialCode="return box(10, 10, 10);" projectName="Pipe clamp bracket">
+        <Header />
+      </WorkbenchProvider>,
+    );
+    expect(screen.getByText('Pipe clamp bracket')).toBeDefined();
+    expect(screen.queryByText('Generated')).toBeNull();
+  });
+
+  it('shows no build hash in the header', () => {
+    render(
+      <WorkbenchProvider>
+        <Header />
+      </WorkbenchProvider>,
+    );
+    const text = screen.getByTestId('header').textContent ?? '';
+    expect(text).not.toContain('DEV');
+    if (typeof __COMMIT_HASH__ !== 'undefined') expect(text).not.toContain(__COMMIT_HASH__);
+  });
+
   it('shows the Feedback button in the pinned account slot, even without auth', () => {
     render(
       <WorkbenchProvider>

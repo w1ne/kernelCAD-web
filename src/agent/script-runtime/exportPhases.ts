@@ -15,16 +15,16 @@ import { attributionGenerator } from '../../shared/links/attribution';
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { NEXT_ACTIONS, HINT_TEMPLATES } from '../../shared/diagnostics/registry';
-import { meshShapeForExport } from '../../kernel/backends/occt/backendMesh';
 import { verifyWatertight, type WatertightReport } from '../../kernel/backends/occt/meshHeal';
 import { encodeBinaryStl } from '../../kernel/backends/occt/exportStlBinary';
-import { crackSeams, describeCrackSeams, concatMeshes } from './sceneStlSeams';
+import { crackSeams, describeCrackSeams } from './sceneStlSeams';
 import { Shape } from '../../modeling/capture/proxy';
 import { Scene } from '../../modeling/validation/scene';
 import { isRegion } from '../../shared/intent/region';
 import { resolveParams } from '../../shared/runtime/resolveParams';
 import { sceneToConnectorManifest } from './connectorManifestExport';
 import { findDfmSpec } from '../../modeling/runtime/dfm/runDfmChecks';
+import { exportSceneStlAsShells, freeformFuseOverBudget, meshPartsAsShells } from './sceneStlFuse';
 import {
   dracoConflictDiagnostic,
   notWatertightDiagnostic,
@@ -445,6 +445,11 @@ export async function exportSceneFusedMesh(
   featureCount: number,
 ): Promise<ExportResult> {
   const worldParts = sceneToWorldFrameParts(scene);
+  const fuseOverBudget = format === 'stl' ? freeformFuseOverBudget(worldParts) : undefined;
+  if (fuseOverBudget !== undefined) {
+    const verifyShells = (input.options as { verify?: boolean } | undefined)?.verify !== false;
+    return exportSceneStlAsShells(worldParts, fuseOverBudget, targetId, diagnostics, featureCount, verifyShells);
+  }
   let fused: OcctBackend = worldParts[0]!.shape;
   for (let i = 1; i < worldParts.length; i++) {
     fused = fused.union(worldParts[i]!.shape);
@@ -481,12 +486,12 @@ function fusedSeamFallback(
 ): ExportResult {
   const seamParts = worldParts.map((p) => ({ name: p.name, bbox: p.shape.boundingBox() }));
   const seams = describeCrackSeams(crackSeams(fusedReport, seamParts));
-  const perPart = worldParts.length > 1
-    ? worldParts.map((p) => meshShapeForExport(p.shape.getReplicadShape()))
-    : [];
-  if (perPart.length > 0 && perPart.every((m) => verifyWatertight(m).ok)) {
+  // Same per-part shell writer as the fuse-skip path above: separate closed
+  // shells are watertight together exactly when each part is.
+  const shells = worldParts.length > 1 ? meshPartsAsShells(worldParts) : undefined;
+  if (shells !== undefined && verifyWatertight(shells).ok) {
     return {
-      bytes: Uint8Array.from(encodeBinaryStl(concatMeshes(perPart))),
+      bytes: Uint8Array.from(encodeBinaryStl(shells)),
       featureCount,
       diagnostics: [...diagnostics, {
         target: 'export-occt',
