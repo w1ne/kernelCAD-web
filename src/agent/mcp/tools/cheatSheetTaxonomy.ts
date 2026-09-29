@@ -85,7 +85,7 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
     task: 'Start a shape',
     blurb: 'The first call in any model: a solid primitive, or a 2D profile to extrude.',
     names: [
-      'box', 'cylinder', 'sphere', 'torus', 'spring',
+      'box', 'cylinder', 'sphere', 'torus', 'spring', 'spurGear',
       'extrudeRect', 'extrudeCircle', 'extrudePolygon', 'extrudeRoundedRect',
       'sheetMetal', 'sdf',
       'path', 'moveTo', 'lineTo', 'close', 'label', 'circle',

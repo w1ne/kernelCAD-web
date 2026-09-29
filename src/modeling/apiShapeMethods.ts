@@ -5,12 +5,13 @@ import type { Shape } from './capture/proxy';
 import { makePath } from './capture/sketch';
 import { validateFaceLabels } from './capture/faceLabels';
 import { helix } from './helix';
+import { spurGearOutline, spurGearRadii, SpurGearProfileError, type SpurGearOutline } from './spurGear';
 import { formatScalarForError, isValidEditableNumber, type Param } from '../shared/intent/types';
 import type { FaceLabelsMap } from '../shared/intent/featureRecord';
 import { KernelError } from '../shared/intent/kernelError';
 import { toParam } from '../shared/runtime/editableHelpers';
 import { mm, ul, assertEditableNumber, assertPositiveFinite } from './apiSupport';
-import type { KernelCadApi, SpringOptions, ExtrudeOpts } from './api';
+import type { KernelCadApi, SpringOptions, SpurGearOptions, ExtrudeOpts } from './api';
 
 export function makePrimitiveMethods(
   session: CaptureSession,
@@ -215,6 +216,111 @@ export function makeSpringMethod(
         .union(cylinderBetween(orient(length, -barHalf, 0), orient(length, barHalf, 0), wireRadius));
     }
     return shape;
+  };
+}
+
+const SPUR_GEAR_KEYS = new Set(['module', 'teeth', 'pressureAngle', 'faceWidth', 'bore', 'backlash']);
+
+/** Validate `spurGear()` options and apply defaults (20° pressure angle,
+ *  backlash 0.05·module, no bore). */
+function resolveSpurGearOpts(opts: SpurGearOptions): {
+  module: number;
+  teeth: number;
+  pressureAngle: number;
+  faceWidth: number;
+  bore: number | undefined;
+  backlash: number;
+} {
+  if (!opts || typeof opts !== 'object') {
+    throw new KernelError(
+      'feature.invalid-args',
+      'spurGear: pass an options object { module, teeth, faceWidth, pressureAngle?, bore?, backlash? }.',
+      'spurGear',
+      'Example: spurGear({ module: 1, teeth: 20, faceWidth: 6, bore: 5 }).',
+    );
+  }
+  for (const key of Object.keys(opts)) {
+    if (!SPUR_GEAR_KEYS.has(key)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `spurGear: unknown option '${key}'.`,
+        'spurGear',
+        `spurGear accepts ${[...SPUR_GEAR_KEYS].join(', ')}.`,
+      );
+    }
+  }
+  const module = assertPositiveFinite('spurGear', 'module', opts.module);
+  const faceWidth = assertPositiveFinite('spurGear', 'faceWidth', opts.faceWidth);
+  const teeth = opts.teeth;
+  if (!Number.isInteger(teeth) || teeth < 6 || teeth > 400) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `spurGear: teeth must be an integer in [6, 400]; got ${formatScalarForError(teeth)}.`,
+      'spurGear',
+      'Pass a whole tooth count. Below ~17 teeth at 20° the root is undercut (generated correctly, but weaker).',
+    );
+  }
+  const pressureAngle = opts.pressureAngle ?? 20;
+  if (typeof pressureAngle !== 'number' || !(pressureAngle >= 10 && pressureAngle <= 35)) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `spurGear: pressureAngle must be a number of degrees in [10, 35]; got ${formatScalarForError(pressureAngle)}.`,
+      'spurGear',
+      'Use 20 (standard), 14.5 (legacy) or 25 (high-load). Both gears of a pair need the same value.',
+    );
+  }
+  const backlash = opts.backlash ?? 0.05 * module;
+  if (typeof backlash !== 'number' || !Number.isFinite(backlash) || backlash < 0 || backlash >= module) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `spurGear: backlash must be a finite number in [0, module); got ${formatScalarForError(backlash)}.`,
+      'spurGear',
+      'backlash is the circular play (mm) at the pitch circle of a pair built with the same value. Use 0.1-0.2 mm for FDM prints.',
+    );
+  }
+  const root = spurGearRadii(module, teeth, pressureAngle).root;
+  let bore: number | undefined;
+  if (opts.bore !== undefined) {
+    bore = assertPositiveFinite('spurGear', 'bore', opts.bore);
+    if (bore / 2 >= root - 0.5 * module) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `spurGear: bore diameter ${bore} mm leaves no rim under the root circle (root diameter ${(2 * root).toFixed(3)} mm).`,
+        'spurGear',
+        `Keep bore below ${(2 * (root - 0.5 * module)).toFixed(2)} mm, or use more teeth / a larger module.`,
+      );
+    }
+  }
+  return { module, teeth, pressureAngle, faceWidth, bore, backlash };
+}
+
+export function makeSpurGearMethod(
+  session: CaptureSession,
+  self: () => KernelCadApi,
+): KernelCadApi['spurGear'] {
+  return (opts) => {
+    const { module, teeth, pressureAngle, faceWidth, bore, backlash } = resolveSpurGearOpts(opts);
+    let outline: SpurGearOutline;
+    try {
+      outline = spurGearOutline({ module, teeth, pressureAngleDeg: pressureAngle, backlash });
+    } catch (err) {
+      if (err instanceof SpurGearProfileError) {
+        throw new KernelError('feature.invalid-args', err.message, 'spurGear', err.hint);
+      }
+      throw err;
+    }
+    // Flanks are B-splines through the generated samples (1e-4 mm fit), tip
+    // land and root are true arcs: ~6 faces per tooth instead of hundreds of
+    // facets, which keeps booleans, meshing and STEP small.
+    let path = makePath(session).moveTo(outline.start[0], outline.start[1]);
+    for (const seg of outline.segments) {
+      path = seg.kind === 'spline'
+        ? path.spline(seg.points)
+        : path.threePointsArc(seg.to[0], seg.to[1], seg.mid[0], seg.mid[1]);
+    }
+    const body = path.close().extrude(faceWidth);
+    if (bore === undefined) return body;
+    return body.subtract(self().cylinder(faceWidth + 2, bore / 2).translate(0, 0, -1));
   };
 }
 
