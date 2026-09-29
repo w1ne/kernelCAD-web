@@ -53,6 +53,12 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
   // it lives in a ref: the sync effect can flip it without a re-render, and
   // the auto-save effect reads it after that effect ran in the same commit.
   const hasInitializedRef = useRef(false);
+  // The project snapshot the workbench last agreed with: the one it was
+  // seeded from, or the code the auto-save below wrote. The sync effect
+  // compares the project against THIS, never against the live `code` — the
+  // live code runs ahead of the project while the user types, and syncing on
+  // that difference reverted every keystroke before auto-save could store it.
+  const syncedProjectRef = useRef<{ id: string | null; code: string } | null>(null);
   // setLoadedSourceRouteKey is still called for its side effects (gating the
   // source-load effect in deps), but the value isn't read since we removed
   // the loading-gate in commit 95dc75a3. Keeping the setter, ignoring the value.
@@ -123,17 +129,21 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
     // frozen mount-time initialCode snapshot stored in the ephemeral project.
     if (hasInitializedRef.current && isEphemeralProjectId(activeProjectId)) return;
 
-    // Only sync on initial load or project switch
-    if (!hasInitializedRef.current || activeProject.code !== code) {
-      setCode(activeProject.code);
-      if (activeProject.viewState) {
-        setViewMode(activeProject.viewState.viewMode);
-        setViewMode3D(activeProject.viewState.viewMode3D as typeof viewMode3D);
-        shellStore.setAgentRailOpen(activeProject.viewState.agentRailOpen ?? false);
-      }
-      hasInitializedRef.current = true;
+    // Seed on initial load or project switch. Afterwards, take the project's
+    // code only when it changed outside this editor (e.g. a restored
+    // revision); our own auto-save echo matches the synced snapshot.
+    const synced = syncedProjectRef.current;
+    const isSwitch = !hasInitializedRef.current || synced?.id !== activeProjectId;
+    if (!isSwitch && synced?.code === activeProject.code) return;
+    syncedProjectRef.current = { id: activeProjectId, code: activeProject.code };
+    setCode(activeProject.code);
+    if (isSwitch && activeProject.viewState) {
+      setViewMode(activeProject.viewState.viewMode);
+      setViewMode3D(activeProject.viewState.viewMode3D as typeof viewMode3D);
+      shellStore.setAgentRailOpen(activeProject.viewState.agentRailOpen ?? false);
     }
-  }, [activeProject, activeProjectId, isDevLab, setCode, setViewMode, setViewMode3D, code, viewMode3D, scriptParam, galleryParam, viewerMode]);
+    hasInitializedRef.current = true;
+  }, [activeProject, activeProjectId, isDevLab, setCode, setViewMode, setViewMode3D, viewMode3D, scriptParam, galleryParam, viewerMode]);
 
   // Auto-save: workbench state -> active project
   useEffect(() => {
@@ -143,6 +153,7 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
     if (!isCodeParsable(code)) return;
 
     const timeoutId = setTimeout(() => {
+      syncedProjectRef.current = { id: activeProjectId, code };
       saveActiveProject({
         code,
         viewState: {
@@ -156,7 +167,7 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
     }, 1500); // 1.5s debounce for project save
 
     return () => clearTimeout(timeoutId);
-  }, [code, viewMode, viewMode3D, sidePanelVisible, showSketches, agentRailOpen, isDevLab, activeProject, saveActiveProject, scriptParam, galleryParam, viewerMode]);
+  }, [code, viewMode, viewMode3D, sidePanelVisible, showSketches, agentRailOpen, isDevLab, activeProject, activeProjectId, saveActiveProject, scriptParam, galleryParam, viewerMode]);
 
   const activeSourceLoadError = sourceRouteKey && sourceLoadError?.routeKey === sourceRouteKey
     ? sourceLoadError.message
