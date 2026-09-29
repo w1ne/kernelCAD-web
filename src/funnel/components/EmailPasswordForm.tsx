@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useState } from 'react';
+import { buttonClass } from '../../ui';
 import { getSupabase } from '../lib/supabaseClient';
 
 export interface EmailPasswordFormProps {
@@ -58,7 +59,7 @@ export function EmailPasswordForm({ redirectTo, onAuthenticated }: EmailPassword
   return (
     <form onSubmit={handleSubmit} className="text-left space-y-3" noValidate>
       <div>
-        <label htmlFor="kc-auth-email" className="block text-xs font-medium text-ink-soft mb-1">
+        <label htmlFor="kc-auth-email" className="mb-1 block text-ui font-medium text-fg-2">
           Email
         </label>
         <input
@@ -68,11 +69,11 @@ export function EmailPasswordForm({ redirectTo, onAuthenticated }: EmailPassword
           required
           value={email}
           onChange={e => setEmail(e.target.value)}
-          className="w-full rounded-lg border border-rule bg-white px-3 py-2 text-sm text-ink focus:border-blueprint focus:outline-none"
+          className="focus-ring h-control-lg w-full rounded-control border border-border-strong bg-surface-1 px-3 text-body text-fg"
         />
       </div>
       <div>
-        <label htmlFor="kc-auth-password" className="block text-xs font-medium text-ink-soft mb-1">
+        <label htmlFor="kc-auth-password" className="mb-1 block text-ui font-medium text-fg-2">
           Password
         </label>
         <input
@@ -82,33 +83,29 @@ export function EmailPasswordForm({ redirectTo, onAuthenticated }: EmailPassword
           required
           value={password}
           onChange={e => setPassword(e.target.value)}
-          className="w-full rounded-lg border border-rule bg-white px-3 py-2 text-sm text-ink focus:border-blueprint focus:outline-none"
+          className="focus-ring h-control-lg w-full rounded-control border border-border-strong bg-surface-1 px-3 text-body text-fg"
         />
       </div>
 
       {error && (
-        <p role="alert" className="text-xs text-red-600">{error}</p>
+        <p role="alert" className="text-ui text-danger">{error}</p>
       )}
       {notice && (
-        <p role="status" className="text-xs text-green-700">{notice}</p>
+        <p role="status" className="text-ui text-ok">{notice}</p>
       )}
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="inline-flex w-full items-center justify-center rounded-lg bg-blueprint hover:bg-blueprint-hover text-white px-4 py-2 text-sm font-medium disabled:opacity-50 transition-colors font-sans"
-      >
+      <button type="submit" disabled={loading} className={`${buttonClass('primary', 'lg')} w-full`}>
         {loading ? 'Please wait…' : mode === 'signin' ? 'Sign in' : 'Create account'}
       </button>
 
-      <p className="text-xs text-ink-faint text-center">
+      <p className="text-center text-ui text-fg-2">
         {mode === 'signin' ? (
           <>
             No account?{' '}
             <button
               type="button"
               onClick={() => { setMode('signup'); setError(null); setNotice(null); }}
-              className="text-blueprint hover:underline font-medium"
+              className="focus-ring rounded-control font-medium text-accent hover:underline"
             >
               Create an account
             </button>
@@ -119,7 +116,7 @@ export function EmailPasswordForm({ redirectTo, onAuthenticated }: EmailPassword
             <button
               type="button"
               onClick={() => { setMode('signin'); setError(null); setNotice(null); }}
-              className="text-blueprint hover:underline font-medium"
+              className="focus-ring rounded-control font-medium text-accent hover:underline"
             >
               Sign in
             </button>

@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import { buttonClass } from '../../ui';
+
 export interface RateLimitedPanelProps {
   /** Whether the visitor is currently signed in. When false, the panel
    * routes the click to the existing SignInModal flow rather than Stripe. */
@@ -28,29 +30,24 @@ export function RateLimitedPanel({
       : 'Upgrade — $19/mo'
     : 'Sign in to upgrade';
   return (
-    <div
-      role="alert"
-      className="mt-6 mx-auto max-w-2xl rounded-lg border border-blueprint bg-vellum-soft p-5 text-ink text-left"
-    >
-      <p className="font-serif font-medium text-lg">
+    <div role="alert" className="mt-6 rounded-panel border border-accent bg-accent-soft p-4 text-left text-fg sm:p-5">
+      <p className="text-body font-semibold">
         {authenticated
           ? "You've used your free generations this month"
           : 'Sign in to build with the agent'}
       </p>
-      <p className="text-sm text-ink-soft mt-2">
+      <p className="mt-1 text-ui text-fg-2">
         {authenticated
           ? 'Upgrade to keep generating — $19/mo, cancel anytime.'
           : 'The build agent is free to start once you sign in — 5 builds a month, no card needed.'}
       </p>
-      <div className="mt-4">
-        <button
-          type="button"
-          onClick={onUpgrade}
-          disabled={busy}
-          className="rounded-md bg-blueprint px-4 py-2 font-mono text-xs tracking-wide text-white hover:bg-ink transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
+      <div className="mt-4 flex flex-wrap gap-2">
+        <button type="button" onClick={onUpgrade} disabled={busy} className={buttonClass('primary', 'lg')}>
           {buttonCopy}
         </button>
+        <a href="/connect" className={`${buttonClass('secondary', 'lg')} no-underline`}>
+          Use your own agent
+        </a>
       </div>
     </div>
   );
