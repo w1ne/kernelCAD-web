@@ -28,6 +28,7 @@ function isCodeParsable(code: string): boolean {
 import { useProject, isEphemeralProjectId } from './context/ProjectContext';
 import { loadGalleryScriptSource, loadStudioScriptSource } from './scriptSource';
 import { registerLiveScriptTarget, unregisterLiveScriptTarget } from './liveScriptBridge';
+import type { KernelCADProject, ViewState } from '../authoring/projectService';
 
 function readScriptParam(): string | null {
   if (typeof window === 'undefined') return null;
@@ -37,6 +38,17 @@ function readScriptParam(): string | null {
 function readGalleryParam(): string | null {
   if (typeof window === 'undefined') return null;
   return new URLSearchParams(window.location.search).get('gallery');
+}
+
+/** True when the project already stores this code and view state. */
+function projectHolds(project: KernelCADProject, code: string, viewState: ViewState): boolean {
+  const stored = project.viewState;
+  return project.code === code
+    && stored.viewMode === viewState.viewMode
+    && stored.viewMode3D === viewState.viewMode3D
+    && stored.sidePanelVisible === viewState.sidePanelVisible
+    && stored.showSketches === viewState.showSketches
+    && (stored.agentRailOpen ?? false) === (viewState.agentRailOpen ?? false);
 }
 
 /**
@@ -99,20 +111,16 @@ function useProjectWorkbenchSync(
     if (linkedSource) return;
     if (isDevLab || !hasInitializedRef.current || !activeProject) return;
     if (viewerMode) return; // read-only review page — never persist
+    // Each save hands back a new activeProject, which re-runs this effect.
+    // Save only what differs from the project, else an idle Studio rewrites
+    // the project every debounce period.
+    const viewState: ViewState = { viewMode, viewMode3D, sidePanelVisible, showSketches, agentRailOpen };
+    if (projectHolds(activeProject, code, viewState)) return;
     if (!isCodeParsable(code)) return;
 
     const timeoutId = setTimeout(() => {
       syncedProjectRef.current = { id: activeProjectId, code };
-      saveActiveProject({
-        code,
-        viewState: {
-          viewMode,
-          viewMode3D,
-          sidePanelVisible,
-          showSketches,
-          agentRailOpen,
-        }
-      });
+      saveActiveProject({ code, viewState });
     }, 1500); // 1.5s debounce for project save
 
     return () => clearTimeout(timeoutId);

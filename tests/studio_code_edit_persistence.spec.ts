@@ -9,6 +9,23 @@ import { test, expect, type Page } from '@playwright/test';
 
 const editorText = (page: Page) => page.locator('.monaco-editor .view-lines');
 
+// Count writes of project documents to localStorage (not the index or the
+// revision list) from page load on.
+async function countProjectWrites(page: Page) {
+    await page.addInitScript(() => {
+        const w = window as unknown as { __projectWrites: number };
+        w.__projectWrites = 0;
+        const setItem = Storage.prototype.setItem;
+        Storage.prototype.setItem = function (key: string, value: string) {
+            if (/^kernelcad_project_(?!index$|revisions_)/.test(key)) w.__projectWrites += 1;
+            return setItem.call(this, key, value);
+        };
+    });
+}
+
+const projectWrites = (page: Page) =>
+    page.evaluate(() => (window as unknown as { __projectWrites: number }).__projectWrites);
+
 async function openCleanStudio(page: Page) {
     await page.goto('/studio');
     await page.evaluate(() => localStorage.clear());
@@ -59,5 +76,31 @@ test.describe('Studio code edits', () => {
         await expect(editorText(page)).toContainText(typed);
         await page.waitForTimeout(2_000);
         await expect(editorText(page)).toContainText(typed);
+    });
+
+    test('an idle Studio does not save; one edit saves once', async ({ page }) => {
+        test.setTimeout(120_000);
+        await countProjectWrites(page);
+        const writes: string[] = [];
+        page.on('request', (req) => {
+            if (req.method() !== 'GET' && req.method() !== 'HEAD') writes.push(`${req.method()} ${req.url()}`);
+        });
+        await openCleanStudio(page);
+
+        // Let load-time work settle, then watch an idle Studio. Auto-save
+        // used to loop: every save re-armed its own 1.5 s timer.
+        await page.waitForTimeout(3_000);
+        const before = await projectWrites(page);
+        writes.length = 0;
+        await page.waitForTimeout(8_000);
+        expect(await projectWrites(page)).toBe(before);
+        expect(writes).toEqual([]);
+
+        await page.locator('.monaco-editor .view-line').last().click();
+        await page.keyboard.press('End');
+        await page.keyboard.type(' // one edit');
+        await expect.poll(() => projectWrites(page), { timeout: 10_000 }).toBe(before + 1);
+        await page.waitForTimeout(8_000);
+        expect(await projectWrites(page)).toBe(before + 1);
     });
 });

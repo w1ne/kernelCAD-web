@@ -166,4 +166,39 @@ describe('App project sync on /studio', () => {
         await flush();
         expect(harness.code).toBe(TYPED);
     });
+
+    it('makes no saves while idle, and one save per edit', async () => {
+        render(<App />);
+        await flush();
+        const save = vi.spyOn(projectService, 'saveProject');
+
+        // Idle: each save used to hand back a new activeProject, which
+        // re-armed the auto-save timer — one write every 1.5 s forever.
+        for (let i = 0; i < 10; i++) await flush(1000);
+        expect(save).not.toHaveBeenCalled();
+
+        act(() => harness.setCode(TYPED));
+        await flush(1499);
+        expect(save).not.toHaveBeenCalled();
+        await flush(1);
+        expect(save).toHaveBeenCalledTimes(1);
+        expect(storedCode()).toBe(TYPED);
+
+        for (let i = 0; i < 10; i++) await flush(1000);
+        expect(save).toHaveBeenCalledTimes(1);
+        save.mockRestore();
+    });
+
+    it('makes no save after taking project code changed outside the editor', async () => {
+        render(<App />);
+        await flush();
+        act(() => harness.project!.saveActiveProject({ code: TYPED }));
+        await flush();
+        const save = vi.spyOn(projectService, 'saveProject');
+
+        for (let i = 0; i < 10; i++) await flush(1000);
+        expect(save).not.toHaveBeenCalled();
+        expect(harness.code).toBe(TYPED);
+        save.mockRestore();
+    });
 });
