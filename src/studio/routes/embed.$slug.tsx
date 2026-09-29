@@ -508,11 +508,12 @@ function EmbedFrame(props: {
       {/* The view cube is 144 px: in a small frame it covers the model. */}
       <div className="relative min-h-0 flex-1 max-[479px]:[&_[data-testid=view-gizmo]]:hidden [@media(max-height:359px)]:[&_[data-testid=view-gizmo]]:hidden">
         {props.children}
+        {/* Above the viewer's own overlays (view cube z-20). */}
         <div
           data-testid="embed-cover"
           data-visible={coverVisible ? 'true' : 'false'}
           aria-hidden="true"
-          className={`absolute inset-0 bg-[var(--embed-bg)] motion-safe:transition-opacity motion-safe:duration-[250ms] ${coverVisible ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
+          className={`absolute inset-0 z-30 bg-[var(--embed-bg)] motion-safe:transition-opacity motion-safe:duration-[250ms] ${coverVisible ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
         >
           {showPoster && posterUrl ? (
             <img
@@ -558,7 +559,7 @@ function EmbedStatus(props: {
     : 'inset-x-0 bottom-2 flex justify-center px-2';
   return (
     <div
-      className={`pointer-events-none absolute ${place}`}
+      className={`pointer-events-none absolute z-40 ${place}`}
       data-testid="embed-status"
       data-placement={props.centred ? 'centre' : 'bottom'}
       role="status"
