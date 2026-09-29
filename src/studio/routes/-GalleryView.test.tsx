@@ -132,6 +132,8 @@ describe('GalleryView', () => {
     fetchGalleryMock.mockResolvedValueOnce(page([item(1, { clipUrl: 'https://cdn.test/1.webp' })]));
     render(<GalleryView />);
     const [card] = await screen.findAllByTestId('gallery-card');
+    // The card still says the model moves; it just does not play.
+    expect(within(card!).getByTestId('project-card-clip-mark')).toBeTruthy();
     fireEvent.pointerEnter(card!);
     expect(within(card!).queryByTestId('project-card-clip')).toBeNull();
   });
