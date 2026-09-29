@@ -6,6 +6,7 @@ import type { PreviewPhase } from '../../funnel/hooks/useTextTo3dPreview';
 import type { GenerateRequest } from '../../funnel/lib/generateClient';
 import type { SelectedFeatureId } from '../types';
 import { AgentComposer } from '../AgentComposer';
+import { useIsNarrow } from '../hooks/useIsNarrow';
 import { buttonClass } from '../../ui/buttonStyles';
 import { cx } from '../../ui/cx';
 
@@ -68,11 +69,12 @@ export function GenerateForm({
     onClearTarget?: () => void;
 }) {
     const [photoAttached, setPhotoAttached] = useState(false);
+    const narrow = useIsNarrow();
     return (
         <div className="flex flex-col gap-2">
             <AgentComposer value={prompt} onChange={onPromptChange} onSubmit={onSubmit}
                 disabled={conceptBusy} submitLabel={agentBusy ? 'Queue follow-up' : 'Build'} onPhotoChange={setPhotoAttached}
-                clearOnSubmit rows={3}
+                clearOnSubmit rows={narrow ? 2 : 3}
                 placeholder={agentBusy ? 'Add a follow-up; it runs after this change…' : 'Describe a part or a change…'}
                 context={<SelectionChip selectedFeatureId={selectedFeatureId} onClear={onClearTarget} />} />
             {previewPhase.state !== 'unavailable' && (

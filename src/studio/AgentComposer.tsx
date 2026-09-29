@@ -279,7 +279,7 @@ export function AgentComposer({
                             event.preventDefault(); send();
                         }
                     }}
-                    className="block w-full resize-y min-h-16 max-h-72 bg-transparent px-3 pt-2.5 pb-1 text-body text-fg placeholder:text-fg-3 focus:outline-none disabled:opacity-50"
+                    className="block w-full resize-y min-h-11 md:min-h-16 max-h-72 bg-transparent px-3 pt-2.5 pb-1 text-body text-fg placeholder:text-fg-3 focus:outline-none disabled:opacity-50"
                 />
                 <AttachmentList files={files} disabled={disabled} reading={reading} onRemove={removeFile} />
                 {context && <div className="flex flex-wrap items-center gap-1 px-2 pb-1">{context}</div>}

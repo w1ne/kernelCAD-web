@@ -221,10 +221,13 @@ function AgentTranscript({ pane }: { pane: AgentPaneState }) {
     const suggestions = phase.state === 'done' ? phase.artifact.suggestions.filter((s) => s.trim()).slice(0, 3) : [];
     const showIntro = !started && (preview.phase.state === 'idle' || preview.phase.state === 'unavailable');
 
-    // Keep the newest card in view when the run changes state.
+    // Keep the newest card in view when the run changes state: the top of a
+    // proposal (so Accept is reachable in a short phone sheet), else the end.
     const endRef = useRef<HTMLDivElement>(null);
+    const proposalRef = useRef<HTMLDivElement>(null);
     useEffect(() => {
-        endRef.current?.scrollIntoView?.({ block: 'nearest' });
+        const target = proposalRef.current ?? endRef.current;
+        target?.scrollIntoView?.({ block: proposalRef.current ? 'start' : 'nearest' });
     }, [phase.state]);
 
     return (
@@ -235,7 +238,7 @@ function AgentTranscript({ pane }: { pane: AgentPaneState }) {
 
             {/* Review gate: size, verified badge, before/after, diff, accept/discard. Never auto-applies. */}
             {review.reviewing && phase.state === 'done' && (
-                <GenerationReviewPanel
+                <div ref={proposalRef} className="scroll-mt-3"><GenerationReviewPanel
                     key={phase.generationId}
                     artifact={phase.artifact}
                     partial={phase.partial}
@@ -245,7 +248,7 @@ function AgentTranscript({ pane }: { pane: AgentPaneState }) {
                     onAccept={pane.accept}
                     onReject={review.reject}
                     renderInViewer={pane.executeGeometry}
-                />
+                /></div>
             )}
 
             <GenerationStatus

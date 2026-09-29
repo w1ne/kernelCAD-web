@@ -53,8 +53,13 @@ async function openAgent(page: Page) {
     await page.addInitScript((s) => localStorage.setItem('sb-127-auth-token', JSON.stringify(s)), session);
     await page.route('**/auth/v1/**', (route) => route.fulfill({ status: 200, contentType: 'application/json', body: '{}' }));
     await page.goto(`${BASE}/studio`);
-    await expect(page.getByTestId('activity-agent')).toBeVisible({ timeout: 60_000 });
-    if (!(await page.getByTestId('left-pane-agent').isVisible())) await page.getByTestId('activity-agent').click();
+    await expect(page.getByTestId('workbench-ready')).toBeVisible({ timeout: 60_000 });
+    // Phone: the agent opens in a sheet from the bottom tab bar.
+    if (page.viewportSize()!.width < 768) {
+        await page.getByTestId('mobile-tab-agent').click();
+    } else if (!(await page.getByTestId('left-pane-agent').isVisible())) {
+        await page.getByTestId('activity-agent').click();
+    }
     await expect(page.getByLabel('Agent rail')).toBeVisible();
 }
 
