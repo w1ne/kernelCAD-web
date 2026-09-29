@@ -30,6 +30,7 @@ import { useUI } from './context/UIContext';
 import { jointContactCapMm3 } from '../modeling/runtime/jointContactCap';
 import { useViewportToggles } from './hooks/useViewportToggles';
 import { useUndoRedoShortcuts } from './hooks/useUndoRedoShortcuts';
+import { NARROW_QUERY } from './hooks/useIsNarrow';
 
 
 interface EmbedFlags {
@@ -137,6 +138,7 @@ export function StudioShell() {
 
     useProposeEditBridge();
     useUndoRedoShortcuts(workbench.commandManager);
+    useModelFirstOnPhone();
 
     // Bridge shell selection → Viewer's existing selectedItemIds. Identity
     // reconciliation: shell selectedFeatureId is a FeatureRecord.id (e.g.
@@ -287,6 +289,15 @@ function useStudioShellHandlers(workbench: ReturnType<typeof useWorkbench>) {
         handleValidate,
         handleRun,
     };
+}
+
+/** A phone has no room for the model beside the inspector: open on the
+ *  model. The inspector stays one tap away (header ⋯ → Panels, ⌘\). */
+function useModelFirstOnPhone(): void {
+    useEffect(() => {
+        if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
+        if (window.matchMedia(NARROW_QUERY).matches) shellStore.setInspectorOpen(false);
+    }, []);
 }
 
 function useProposeEditBridge(): void {

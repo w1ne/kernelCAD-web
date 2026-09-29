@@ -73,7 +73,16 @@ vi.mock('../../funnel/lib/supabaseClient', () => ({
 }));
 
 vi.mock('../components/Layout/Header', () => ({ Header: () => <div data-testid="header" /> }));
-vi.mock('../Toolbar', () => ({ Toolbar: () => <div data-testid="toolbar" /> }));
+vi.mock('../ViewportToolbar', () => ({ ViewportToolbar: () => <div data-testid="toolbar" /> }));
+vi.mock('../ActivityBar', () => ({ ActivityBar: () => <nav data-testid="activity-bar" /> }));
+vi.mock('../context/UIContext', () => ({
+    useUI: () => ({
+        viewportBackground: 'dark',
+        setViewportBackground: vi.fn(),
+        gridVisible: true,
+        setGridVisible: vi.fn(),
+    }),
+}));
 vi.mock('../Viewport', () => ({ Viewport: () => <div data-testid="viewport" /> }));
 vi.mock('../Inspector', () => ({ Inspector: () => <div data-testid="inspector" /> }));
 vi.mock('../AgentRail', () => ({ AgentRail: () => <div data-testid="agent-rail" /> }));
@@ -162,12 +171,12 @@ describe('StudioShell status plumbing', () => {
         expect(screen.getByTestId('status-is-computing').textContent).toBe('true');
     });
 
-    it('places the open agent rail before the viewport', () => {
+    it('places the activity bar (and its agent pane) before the viewport', () => {
         agentRailOpen = true;
 
         render(<StudioShell />);
 
-        const rail = screen.getByTestId('agent-rail');
+        const rail = screen.getByTestId('activity-bar');
         const viewport = screen.getByTestId('viewport');
         expect(rail.compareDocumentPosition(viewport) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     });

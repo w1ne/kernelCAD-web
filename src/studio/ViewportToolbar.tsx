@@ -82,7 +82,7 @@ function choiceIcon(active: boolean, icon: JSX.Element): JSX.Element {
 }
 
 /** The "View options" menu: camera presets, display mode, background, grid. */
-export function viewOptionEntries(display: ViewportDisplay): MenuEntry[] {
+function viewOptionEntries(display: ViewportDisplay): MenuEntry[] {
     const entries: MenuEntry[] = CAMERA_VIEWS.map((v) => ({
         id: `camera-${v.target}`,
         label: v.label,

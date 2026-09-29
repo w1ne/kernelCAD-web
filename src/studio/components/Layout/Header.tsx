@@ -19,8 +19,9 @@ import { openFeedback } from './feedbackRequests';
 import { useHeaderHistory } from './useHeaderHistory';
 import {
     ExportList, ExportSplitButton, HistoryControl, InspectorToggle, SaveState, ShareButton, UndoRedoButtons,
-    useLastExportFormat, type ExportHandler,
+    type ExportHandler,
 } from './HeaderClusters';
+import { useLastExportFormat } from './useLastExportFormat';
 
 /** Labelled row inside the narrow-viewport overflow menu. */
 function MenuRow({ label, children }: { label: string; children: ReactNode }) {
@@ -86,6 +87,95 @@ function useHeaderCommands(onPublish: () => void): void {
     useRegisterCommands(commands);
 }
 
+/** The project switcher: the mark, the project name and a chevron. */
+function ProjectSwitcher({ name, hideName, onOpen }: { name: string; hideName: boolean; onOpen: () => void }) {
+    return (
+        <button
+            type="button"
+            onClick={onOpen}
+            aria-label="Open project manager"
+            title="Switch or manage projects"
+            className="focus-ring flex h-control-sm min-w-0 shrink items-center gap-2 rounded-control px-1.5 text-fg transition-colors duration-80 hover:bg-surface-2"
+        >
+            <KernelcadMark />
+            {!hideName && <span className="max-w-[140px] truncate text-ui font-medium sm:max-w-[220px]">{name}</span>}
+            <ChevronDown className="size-3.5 shrink-0 text-fg-3" strokeWidth={1.75} aria-hidden="true" />
+        </button>
+    );
+}
+
+/** Share and export state for the header: publish, the last export format,
+ *  the running export task. */
+function useHeaderFileActions(code: string, projectName: string | undefined) {
+    const publish = usePublishAction(code, projectName);
+    const onPublish = publish.handlePublish;
+    const share = useMemo(() => () => void onPublish(), [onPublish]);
+    useHeaderCommands(share);
+
+    const exportTask = useExportTask();
+    const [lastFormat, rememberFormat] = useLastExportFormat();
+    const onExport: ExportHandler = (format, label) => {
+        rememberFormat(format);
+        exportModelViaServer(exportTask, format, label, code, projectName);
+    };
+    return { publish, share, exportTask, lastFormat, onExport };
+}
+
+/** Share, Export and the inspector toggle: inline on a wide header, one
+ *  overflow menu (with undo/redo and history) below `lg`. */
+function FileControls({ narrow, editControls, actions }: {
+    narrow: boolean;
+    editControls: ReactNode;
+    actions: ReturnType<typeof useHeaderFileActions>;
+}) {
+    const { isComputing, geometries } = useWorkbench();
+    const { inspectorOpen } = useShellStore();
+    const hasPlanarGeometry = hasPlanarSource(geometries ?? []);
+    const { publish, share, lastFormat, onExport } = actions;
+    const inspectorToggle = (
+        <InspectorToggle inspectorOpen={inspectorOpen} onToggle={() => shellStore.toggleInspectorOpen()} />
+    );
+    if (narrow) {
+        return (
+            <OverflowMenu label="File and panel controls" testId="header-overflow">
+                <div data-theme="dark" className="flex w-64 flex-col">
+                    <MenuRow label="Edit">{editControls}</MenuRow>
+                    <MenuRow label="Share">
+                        <ShareButton publishState={publish.publishState} onPublish={share} compact />
+                    </MenuRow>
+                    <MenuRow label="Export">
+                        <ExportList isComputing={isComputing} hasPlanarGeometry={hasPlanarGeometry} onExport={onExport} />
+                    </MenuRow>
+                    <MenuRow label="Panels">{inspectorToggle}</MenuRow>
+                </div>
+            </OverflowMenu>
+        );
+    }
+    return (
+        <>
+            {publish.publishedLink && (
+                <a
+                    href={publish.publishedLink}
+                    data-testid="toolbar-publish-link"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="max-w-[260px] truncate rounded-control px-2 text-2xs text-ok no-underline hover:underline"
+                >
+                    Link copied — {publish.publishedLink}
+                </a>
+            )}
+            <ShareButton publishState={publish.publishState} onPublish={share} />
+            <ExportSplitButton
+                defaultFormat={lastFormat}
+                isComputing={isComputing}
+                hasPlanarGeometry={hasPlanarGeometry}
+                onExport={onExport}
+            />
+            {inspectorToggle}
+        </>
+    );
+}
+
 /**
  * The Studio's one header row: project, save state, undo/redo and history
  * on the left; the route's chrome (the ⌘K search on Studio routes); Share,
@@ -95,48 +185,18 @@ function useHeaderCommands(onPublish: () => void): void {
  */
 export function Header() {
     const { headerLeft, headerRight, viewerMode } = useStudioChrome();
-    const { isComputing, code, commandManager, setActiveDialog, geometries } = useWorkbench();
-    const { inspectorOpen } = useShellStore();
-
-    const {
-        activeProject, revisions, historyOpen, setHistoryOpen, historyRef,
-        historyAvailable, formatRevisionTime, handleRestore,
-    } = useHeaderHistory();
-
+    const { isComputing, code, commandManager, setActiveDialog } = useWorkbench();
+    const history = useHeaderHistory();
+    const { activeProject } = history;
     const narrow = useIsNarrow(COMPACT_HEADER_QUERY);
-    const publish = usePublishAction(code, activeProject?.name);
-    const onPublish = publish.handlePublish;
-    const stablePublish = useMemo(() => () => void onPublish(), [onPublish]);
-    useHeaderCommands(stablePublish);
-
-    const exportTask = useExportTask();
-    const [lastFormat, rememberFormat] = useLastExportFormat();
-    const handleExport: ExportHandler = (format, label) => {
-        rememberFormat(format);
-        exportModelViaServer(exportTask, format, label, code, activeProject?.name);
-    };
-    const hasPlanarGeometry = hasPlanarSource(geometries ?? []);
+    const actions = useHeaderFileActions(code, activeProject?.name);
     const modified = !viewerMode && activeProject != null && code !== activeProject.code;
 
-    // A route that injects its own header chrome (e.g. /p/:slug shows the
-    // project title) already names the document, so on a phone the Studio's
-    // own project-name label is dropped rather than fighting for the same row.
-    const hideProjectName = narrow && !!headerLeft;
-
-    const undoRedo = <UndoRedoButtons commandManager={commandManager} />;
-    const history = (
-        <HistoryControl
-            historyAvailable={historyAvailable}
-            historyRef={historyRef}
-            historyOpen={historyOpen}
-            setHistoryOpen={setHistoryOpen}
-            revisions={revisions}
-            formatRevisionTime={formatRevisionTime}
-            handleRestore={handleRestore}
-        />
-    );
-    const inspectorToggle = (
-        <InspectorToggle inspectorOpen={inspectorOpen} onToggle={() => shellStore.toggleInspectorOpen()} />
+    const editControls = (
+        <>
+            <UndoRedoButtons commandManager={commandManager} />
+            <HistoryControl {...history} />
+        </>
     );
 
     return (
@@ -146,21 +206,13 @@ export function Header() {
             data-testid="header"
         >
             <div className="flex min-w-0 items-center gap-1.5 md:gap-2">
-                <button
-                    type="button"
-                    onClick={() => setActiveDialog('projectManager')}
-                    aria-label="Open project manager"
-                    title="Switch or manage projects"
-                    className="focus-ring flex h-control-sm min-w-0 shrink items-center gap-2 rounded-control px-1.5 text-fg transition-colors duration-80 hover:bg-surface-2"
-                >
-                    <KernelcadMark />
-                    {!hideProjectName && (
-                        <span className="max-w-[140px] truncate text-ui font-medium sm:max-w-[220px]">
-                            {activeProject?.name || 'Untitled Project'}
-                        </span>
-                    )}
-                    <ChevronDown className="size-3.5 shrink-0 text-fg-3" strokeWidth={1.75} aria-hidden="true" />
-                </button>
+                {/* A route that names the document itself (e.g. /p/:slug) keeps the
+                    phone header for its own title. */}
+                <ProjectSwitcher
+                    name={activeProject?.name || 'Untitled Project'}
+                    hideName={narrow && !!headerLeft}
+                    onOpen={() => setActiveDialog('projectManager')}
+                />
                 {activeProject && !viewerMode && !narrow && <SaveState modified={modified} />}
                 {headerLeft && (
                     <>
@@ -168,64 +220,17 @@ export function Header() {
                         <div className="flex min-w-0 items-center gap-2 overflow-hidden">{headerLeft}</div>
                     </>
                 )}
-                {!narrow && (
-                    <div className="ml-1 flex shrink-0 items-center gap-0.5">
-                        {undoRedo}
-                        {history}
-                    </div>
-                )}
+                {!narrow && <div className="ml-1 flex shrink-0 items-center gap-0.5">{editControls}</div>}
             </div>
 
             <div className="ml-auto flex min-w-0 items-center gap-1.5 md:gap-2">
                 {headerRight && <div className="flex min-w-0 items-center gap-2">{headerRight}</div>}
-                {publish.publishedLink && !narrow && (
-                    <a
-                        href={publish.publishedLink}
-                        data-testid="toolbar-publish-link"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="max-w-[260px] truncate rounded-control px-2 text-2xs text-ok no-underline hover:underline"
-                    >
-                        Link copied — {publish.publishedLink}
-                    </a>
-                )}
-                {narrow ? (
-                    <OverflowMenu label="File and panel controls" testId="header-overflow">
-                        <div data-theme="dark" className="flex w-64 flex-col">
-                            <MenuRow label="Edit">
-                                {undoRedo}
-                                {history}
-                            </MenuRow>
-                            <MenuRow label="Share">
-                                <ShareButton publishState={publish.publishState} onPublish={stablePublish} compact />
-                            </MenuRow>
-                            <MenuRow label="Export">
-                                <ExportList
-                                    isComputing={isComputing}
-                                    hasPlanarGeometry={hasPlanarGeometry}
-                                    onExport={handleExport}
-                                />
-                            </MenuRow>
-                            <MenuRow label="Panels">{inspectorToggle}</MenuRow>
-                        </div>
-                    </OverflowMenu>
-                ) : (
-                    <>
-                        <ShareButton publishState={publish.publishState} onPublish={stablePublish} />
-                        <ExportSplitButton
-                            defaultFormat={lastFormat}
-                            isComputing={isComputing}
-                            hasPlanarGeometry={hasPlanarGeometry}
-                            onExport={handleExport}
-                        />
-                        {inspectorToggle}
-                    </>
-                )}
+                <FileControls narrow={narrow} editControls={editControls} actions={actions} />
                 {isComputing && (
                     <Loader2 className="size-3.5 shrink-0 animate-spin text-fg-3" aria-label="Computing" />
                 )}
             </div>
-            <ExportStatus task={exportTask} floating testId="header-export-status" />
+            <ExportStatus task={actions.exportTask} floating testId="header-export-status" />
             {/* The account slot never scrolls or folds away: sign-in, sign-out,
                 billing and feedback must stay one tap away on every width. */}
             <div className="flex shrink-0 items-center gap-1.5 border-l border-border pl-2" data-testid="account-slot">
