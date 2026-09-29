@@ -46,7 +46,7 @@ export function ParamsTab(): JSX.Element {
     if (entries.length === 0) {
         return (
             <div
-                className="px-4 py-3 text-sm text-gray-500"
+                className="px-4 py-3 text-sm text-fg-3"
                 data-testid="params-empty-state"
             >
                 No script-declared params
@@ -65,7 +65,7 @@ export function ParamsTab(): JSX.Element {
                         .join('\n')}
                 >
                     <span
-                        className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-red-600 text-white text-[10px] font-bold leading-none flex-shrink-0"
+                        className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-red-600 text-white text-2xs font-bold leading-none flex-shrink-0"
                         aria-hidden="true"
                     >
                         !
@@ -77,7 +77,7 @@ export function ParamsTab(): JSX.Element {
                     </span>
                 </div>
             )}
-            <ul className="flex flex-col divide-y divide-[#1f1f1f]">
+            <ul className="flex flex-col divide-y divide-border">
                 {entries.map((entry) => (
                     <ParamRow
                         key={entry.name}
@@ -101,7 +101,7 @@ function ParamRow({ entry, updater, interference }: ParamRowProps): JSX.Element 
     if (entry.type === 'boolean') {
         return (
             <li
-                className="flex items-center gap-3 h-6 px-3 text-xs text-gray-300"
+                className="flex items-center gap-3 h-6 px-3 text-xs text-fg"
                 data-testid={`param-row-${entry.name}`}
             >
                 <span className="flex-1 truncate" title={entry.name}>
@@ -124,7 +124,7 @@ function ParamRow({ entry, updater, interference }: ParamRowProps): JSX.Element 
         const choices = entry.meta?.choices ?? [];
         return (
             <li
-                className="flex items-center gap-3 h-6 px-3 text-xs text-gray-300"
+                className="flex items-center gap-3 h-6 px-3 text-xs text-fg"
                 data-testid={`param-row-${entry.name}`}
             >
                 <span className="flex-1 truncate" title={entry.name}>
@@ -137,7 +137,7 @@ function ParamRow({ entry, updater, interference }: ParamRowProps): JSX.Element 
                     }}
                     aria-label={`${entry.name} value`}
                     data-testid={`param-select-${entry.name}`}
-                    className="bg-[#1f1f1f] border border-[#333] rounded px-1 text-xs text-gray-200"
+                    className="bg-surface-2 border border-border-strong rounded px-1 text-xs text-fg"
                 >
                     {choices.map((choice) => (
                         <option key={choice} value={choice}>
@@ -152,7 +152,7 @@ function ParamRow({ entry, updater, interference }: ParamRowProps): JSX.Element 
     if (entry.type === 'string') {
         return (
             <li
-                className="flex items-center gap-3 h-6 px-3 text-xs text-gray-300"
+                className="flex items-center gap-3 h-6 px-3 text-xs text-fg"
                 data-testid={`param-row-${entry.name}`}
             >
                 <span className="flex-1 truncate" title={entry.name}>
@@ -172,7 +172,7 @@ function ParamRow({ entry, updater, interference }: ParamRowProps): JSX.Element 
                     }}
                     aria-label={`${entry.name} value`}
                     data-testid={`param-text-${entry.name}`}
-                    className="bg-[#1f1f1f] border border-[#333] rounded px-1 text-xs text-gray-200 w-24"
+                    className="bg-surface-2 border border-border-strong rounded px-1 text-xs text-fg w-24"
                 />
             </li>
         );
@@ -184,7 +184,7 @@ function ParamRow({ entry, updater, interference }: ParamRowProps): JSX.Element 
 
     return (
         <li
-            className="text-xs text-gray-300"
+            className="text-xs text-fg"
             data-testid={`param-row-${entry.name}`}
         >
             <NumericScrubInput

@@ -39,24 +39,24 @@ export function SidePanel({ onJumpToLine }: SidePanelProps) {
     const nonBlockingDiagnostics = collectNonBlockingDiagnostics(scriptReview, blockingReasons);
 
     return (
-        <div className="flex flex-col h-full bg-[#111] border-b border-[#333]">
+        <div className="flex flex-col h-full bg-surface-1 border-b border-border">
             {/* Tab Header */}
-            <div className="flex border-b border-[#333] text-xs font-bold text-gray-400">
+            <div className="flex border-b border-border text-xs font-bold text-fg-2">
                 <button
                     onClick={() => setActiveTab('scene')}
-                    className={`flex-1 py-2 text-center hover:bg-[#222] ${activeTab === 'scene' ? 'text-blue-400 border-b-2 border-blue-400 bg-[#1e1e1e]' : ''}`}
+                    className={`flex-1 py-2 text-center hover:bg-surface-2 ${activeTab === 'scene' ? 'text-blue-400 border-b-2 border-blue-400 bg-surface-2' : ''}`}
                 >
                     SCENE
                 </button>
                 <button
                     onClick={() => setActiveTab('loop')}
-                    className={`flex-1 py-2 text-center hover:bg-[#222] ${activeTab === 'loop' ? 'text-blue-400 border-b-2 border-blue-400 bg-[#1e1e1e]' : ''}`}
+                    className={`flex-1 py-2 text-center hover:bg-surface-2 ${activeTab === 'loop' ? 'text-blue-400 border-b-2 border-blue-400 bg-surface-2' : ''}`}
                 >
                     BUILD LOOP
                 </button>
                 <button
                     onClick={() => setActiveTab('generate')}
-                    className={`flex-1 py-2 text-center hover:bg-[#222] ${activeTab === 'generate' ? 'text-blue-400 border-b-2 border-blue-400 bg-[#1e1e1e]' : ''}`}
+                    className={`flex-1 py-2 text-center hover:bg-surface-2 ${activeTab === 'generate' ? 'text-blue-400 border-b-2 border-blue-400 bg-surface-2' : ''}`}
                 >
                     GENERATE
                 </button>

@@ -45,10 +45,10 @@ export function FeedbackModal({ open, ...rest }: FeedbackModalProps) {
 type Phase = 'form' | 'submitting' | 'success' | 'error';
 
 const fieldClass =
-    'w-full rounded bg-[#111] border border-[#333] px-2.5 py-1.5 text-sm text-gray-200 placeholder:text-gray-600 outline-none focus:border-blue-500';
-const labelClass = 'block text-xs font-medium text-gray-400 mb-1';
+    'w-full rounded bg-surface-1 border border-border-strong px-2.5 py-1.5 text-sm text-fg placeholder:text-fg-3 outline-none focus:border-blue-500';
+const labelClass = 'block text-xs font-medium text-fg-2 mb-1';
 const secondaryButton =
-    'rounded px-3 py-1.5 text-xs text-gray-300 hover:text-white hover:bg-[#222] border border-[#333] disabled:opacity-40';
+    'rounded px-3 py-1.5 text-xs text-fg hover:text-white hover:bg-surface-2 border border-border disabled:opacity-40';
 const primaryButton =
     'rounded px-3 py-1.5 text-xs font-medium bg-blue-600 hover:bg-blue-500 text-white disabled:opacity-50';
 
@@ -84,15 +84,15 @@ function ReplyField({ signedInEmail, email, onChange, disabled }: {
 }) {
     if (signedInEmail !== null) {
         return (
-            <p className="m-0 text-xs text-gray-500" data-testid="feedback-signed-in-as">
-                Sending as <span className="text-gray-300">{signedInEmail}</span>
+            <p className="m-0 text-xs text-fg-3" data-testid="feedback-signed-in-as">
+                Sending as <span className="text-fg">{signedInEmail}</span>
             </p>
         );
     }
     return (
         <div>
             <label htmlFor="kc-feedback-email" className={labelClass}>
-                Reply email <span className="font-normal text-gray-600">(optional)</span>
+                Reply email <span className="font-normal text-fg-3">(optional)</span>
             </label>
             <input
                 id="kc-feedback-email"
@@ -147,6 +147,7 @@ function DialogFrame({ onDismiss, busy, children }: {
 
     const frame = (
         <div
+            data-theme="dark"
             className="fixed inset-0 z-[1000] flex items-end sm:items-center justify-center bg-black/60 sm:p-4"
             role="presentation"
             onClick={onDismiss}
@@ -156,17 +157,17 @@ function DialogFrame({ onDismiss, busy, children }: {
                 aria-modal="true"
                 aria-labelledby={titleId}
                 data-testid="feedback-dialog"
-                className="w-full sm:w-[min(440px,94vw)] max-h-full overflow-y-auto bg-[#1a1a1a] border border-[#333] rounded-t-lg sm:rounded-lg shadow-2xl text-gray-200"
+                className="w-full sm:w-[min(440px,94vw)] max-h-full overflow-y-auto bg-surface-2 border border-border rounded-t-lg sm:rounded-lg shadow-2xl text-fg"
                 onClick={(ev) => ev.stopPropagation()}
             >
-                <div className="flex items-center justify-between px-4 py-3 border-b border-[#333]">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-border">
                     <h2 id={titleId} className="m-0 text-sm font-semibold">Send feedback</h2>
                     <button
                         type="button"
                         onClick={onDismiss}
                         disabled={busy}
                         aria-label="Close"
-                        className="text-gray-500 hover:text-white text-lg leading-none px-1 disabled:opacity-40"
+                        className="text-fg-3 hover:text-white text-lg leading-none px-1 disabled:opacity-40"
                     >
                         ×
                     </button>
@@ -239,7 +240,7 @@ function FeedbackDialog({ onClose, submitFeedback = postFeedback }: Omit<Feedbac
     return (
         <DialogFrame onDismiss={close} busy={busy}>
             <form onSubmit={handleSubmit} className="flex flex-col gap-3 px-4 py-4">
-                <p className="m-0 text-xs text-gray-500">
+                <p className="m-0 text-xs text-fg-3">
                     What worked, what broke, what you want next. Anything helps.
                 </p>
 

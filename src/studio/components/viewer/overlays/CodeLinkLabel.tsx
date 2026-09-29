@@ -18,7 +18,7 @@ export function CodeLinkLabel() {
     return (
         <div
             data-testid="code-link-label"
-            className="absolute pointer-events-none rounded border border-white/15 bg-black/80 px-2 py-0.5 font-mono text-[11px] text-[#2EC4B6] shadow"
+            className="absolute pointer-events-none rounded border border-white/15 bg-black/80 px-2 py-0.5 font-mono text-[11px] text-selection-blue shadow"
             style={{ left: link.anchor.x + 12, top: link.anchor.y - 28 }}
         >
             {featureLabel(entry)}

@@ -13,7 +13,7 @@ import { exportProgressText, type ExportTask } from '../../hooks/useExportTask';
 function toneOf(state: ExportTask['state']): string {
     if (state.error !== null) return 'border-red-900 bg-red-950/90 text-red-200';
     if (state.notice !== null) return 'border-amber-900 bg-amber-950/90 text-amber-200';
-    return 'border-[#2b313c] bg-[#1a1a1a] text-gray-300';
+    return 'border-border bg-surface-2 text-fg';
 }
 
 function StatusLines({ state, progress, testId }: {

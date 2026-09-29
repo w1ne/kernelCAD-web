@@ -46,7 +46,7 @@ export function ExportTab(): JSX.Element {
     if (geometries.length === 0) {
         return (
             <div
-                className="flex flex-col items-center justify-center h-full p-6 text-center text-gray-500 text-xs"
+                className="flex flex-col items-center justify-center h-full p-6 text-center text-fg-3 text-xs"
                 data-testid="export-tab-empty"
             >
                 <p>Nothing to export — the script has not yet produced geometry.</p>
@@ -56,7 +56,7 @@ export function ExportTab(): JSX.Element {
 
     return (
         <div className="flex flex-col gap-2 p-3" data-testid="export-tab">
-            <p className="text-[11px] text-gray-500">
+            <p className="text-[11px] text-fg-3">
                 Exports run server-side via the OCCT backend and stream a download.
             </p>
 
@@ -78,11 +78,11 @@ export function ExportTab(): JSX.Element {
                                 title={planarBlocked
                                     ? 'DXF export needs a planar face or sheet-metal flat pattern.'
                                     : undefined}
-                                className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded border border-[#2b313c] bg-[#1a1a1a] hover:bg-[#222] disabled:opacity-50 disabled:cursor-not-allowed text-gray-200 text-xs transition-colors"
+                                className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded border border-border bg-surface-2 hover:bg-surface-3 disabled:opacity-50 disabled:cursor-not-allowed text-fg text-xs transition-colors"
                             >
                                 <span className="flex flex-col items-start gap-0.5">
                                     <span className="font-semibold">{f.label}</span>
-                                    <span className="text-[10px] text-gray-500">{help}</span>
+                                    <span className="text-2xs text-fg-3">{help}</span>
                                 </span>
                                 {isPending ? (
                                     <Loader2 className="h-4 w-4 animate-spin shrink-0" />

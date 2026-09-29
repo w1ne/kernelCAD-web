@@ -15,7 +15,7 @@ export function AnimationNotes({ canDrive, bakeState, bakeError }: AnimationNote
         <>
             {!canDrive && (
                 <div
-                    className="mx-3 mb-2 px-2 py-1.5 text-[10px] leading-tight text-amber-200/90 bg-amber-950/30 border border-amber-900/60 rounded"
+                    className="mx-3 mb-2 px-2 py-1.5 text-2xs leading-tight text-amber-200/90 bg-amber-950/30 border border-amber-900/60 rounded"
                     data-testid="animation-editor-mode-note"
                 >
                     Live playback drives the viewport only when the model is
@@ -26,7 +26,7 @@ export function AnimationNotes({ canDrive, bakeState, bakeError }: AnimationNote
 
             {canDrive && bakeState === 'baking' && (
                 <div
-                    className="mx-3 mb-2 px-2 py-1.5 text-[10px] leading-tight text-sky-200/90 bg-sky-950/30 border border-sky-900/60 rounded"
+                    className="mx-3 mb-2 px-2 py-1.5 text-2xs leading-tight text-sky-200/90 bg-sky-950/30 border border-sky-900/60 rounded"
                     data-testid="animation-bake-status"
                 >
                     Preparing animation…
@@ -35,7 +35,7 @@ export function AnimationNotes({ canDrive, bakeState, bakeError }: AnimationNote
             {/* 'ready' shows no status — the mechanism just plays. */}
             {canDrive && bakeState === 'error' && (
                 <div
-                    className="mx-3 mb-2 px-2 py-1.5 text-[10px] leading-tight text-red-300/90 bg-red-950/30 border border-red-900/60 rounded"
+                    className="mx-3 mb-2 px-2 py-1.5 text-2xs leading-tight text-red-300/90 bg-red-950/30 border border-red-900/60 rounded"
                     data-testid="animation-bake-status"
                 >
                     Animation unavailable: {bakeError ?? 'unknown error'}.
@@ -60,7 +60,7 @@ export function AnimationTransport({ isPlaying, mode, speed, onToggle, onMode, o
             <button
                 type="button"
                 onClick={onToggle}
-                className="flex items-center justify-center w-7 h-7 rounded bg-[#222] hover:bg-[#2c2c2c] text-gray-200 border border-[#333]"
+                className="flex items-center justify-center w-7 h-7 rounded bg-surface-2 hover:bg-surface-3 text-fg border border-border"
                 aria-label={isPlaying ? 'Pause' : 'Play'}
                 data-testid="animation-play-pause"
             >
@@ -72,7 +72,7 @@ export function AnimationTransport({ isPlaying, mode, speed, onToggle, onMode, o
                 onChange={(e) => onMode(e.target.value as PlaybackMode)}
                 aria-label="Playback mode"
                 data-testid="animation-mode"
-                className="text-[11px] bg-[#1a1a1a] text-gray-300 border border-[#333] rounded px-1 py-0.5"
+                className="text-[11px] bg-surface-2 text-fg border border-border-strong rounded px-1 py-0.5"
             >
                 {PLAYBACK_MODES.map((m) => (
                     <option key={m} value={m}>{m}</option>
@@ -84,7 +84,7 @@ export function AnimationTransport({ isPlaying, mode, speed, onToggle, onMode, o
                 onChange={(e) => onSpeed(Number(e.target.value) as PlaybackSpeed)}
                 aria-label="Playback speed"
                 data-testid="animation-speed"
-                className="text-[11px] bg-[#1a1a1a] text-gray-300 border border-[#333] rounded px-1 py-0.5"
+                className="text-[11px] bg-surface-2 text-fg border border-border-strong rounded px-1 py-0.5"
             >
                 {PLAYBACK_SPEEDS.map((s) => (
                     <option key={s} value={s}>{s}×</option>
@@ -114,9 +114,9 @@ export function AnimationScrubber({ durationMs, tMs, onPause, onScrubTo }: Anima
                 onChange={(e) => onScrubTo(Number(e.target.value))}
                 aria-label="Timeline position"
                 data-testid="animation-scrubber"
-                className="w-full accent-[#4a9eff]"
+                className="w-full accent-accent"
             />
-            <div className="flex justify-between text-[10px] text-gray-500 tabular-nums">
+            <div className="flex justify-between text-2xs text-fg-3 tabular-nums">
                 <span>{(tMs / 1000).toFixed(2)}s</span>
                 <span>{(durationMs / 1000).toFixed(2)}s</span>
             </div>
@@ -130,15 +130,15 @@ interface AnimationTrackListProps {
 
 export function AnimationTrackList({ trackValues }: AnimationTrackListProps): JSX.Element {
     return (
-        <ul className="flex flex-col divide-y divide-[#1f1f1f] border-t border-[#1f1f1f] mt-1">
+        <ul className="flex flex-col divide-y divide-border border-t border-border mt-1">
             {trackValues.map((t) => (
                 <li
                     key={t.param}
-                    className="flex items-center justify-between gap-3 h-6 px-3 text-xs text-gray-300"
+                    className="flex items-center justify-between gap-3 h-6 px-3 text-xs text-fg"
                     data-testid={`animation-track-${t.param}`}
                 >
                     <span className="flex-1 truncate" title={t.param}>{t.param}</span>
-                    <span className="tabular-nums text-gray-400" data-testid={`animation-track-value-${t.param}`}>
+                    <span className="tabular-nums text-fg-2" data-testid={`animation-track-value-${t.param}`}>
                         {t.value.toFixed(2)}
                     </span>
                 </li>

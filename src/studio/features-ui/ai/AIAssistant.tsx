@@ -24,7 +24,7 @@ function AIAssistantComposer({
     fileInputRef,
 }: AIAssistantComposerProps) {
     return (
-        <div className="p-3 bg-[#252526] border-t border-[#333]">
+        <div className="p-3 bg-surface-2 border-t border-border">
             <div className="flex gap-2">
                 <textarea
                     value={input}
@@ -36,13 +36,13 @@ function AIAssistantComposer({
                         }
                     }}
                     placeholder="Describe geometry..."
-                    className="flex-1 bg-[#111] border border-[#333] rounded p-2 text-sm text-white resize-none h-20 focus:outline-none focus:border-blue-500"
+                    className="flex-1 bg-surface-1 border border-border-strong rounded p-2 text-sm text-white resize-none h-20 focus:outline-none focus:border-blue-500"
                 />
                 <div className="flex flex-col gap-1">
                     <button
                         onClick={handleSend}
                         disabled={isLoading || !input.trim()}
-                        className="bg-blue-600 disabled:bg-gray-700 text-white px-3 py-2 rounded hover:bg-blue-500 transition-colors flex-1"
+                        className="bg-blue-600 disabled:bg-surface-3 text-white px-3 py-2 rounded hover:bg-blue-500 transition-colors flex-1"
                         title="Send Message"
                     >
                         ➤
@@ -50,7 +50,7 @@ function AIAssistantComposer({
                     <button
                         onClick={() => fileInputRef.current?.click()}
                         disabled={isLoading}
-                        className="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded transition-colors text-xs font-bold"
+                        className="bg-surface-3 hover:bg-border-strong text-fg px-3 py-2 rounded transition-colors text-xs font-bold"
                         title="Upload Image (Vision)"
                     >
                         📷
@@ -58,7 +58,7 @@ function AIAssistantComposer({
                     <button
                         onClick={handleGenerateVariations}
                         disabled={isLoading || !input.trim()}
-                        className="bg-purple-600 disabled:bg-gray-700 text-white px-3 py-2 rounded hover:bg-purple-500 transition-colors text-xs font-bold"
+                        className="bg-purple-600 disabled:bg-surface-3 text-white px-3 py-2 rounded hover:bg-purple-500 transition-colors text-xs font-bold"
                         title="Generate 3 Variations"
                     >
                         ✨
@@ -77,7 +77,7 @@ export function AIAssistant() {
     } = useAIAssistantChat();
 
     return (
-        <div className="flex flex-col h-full bg-[#1e1e1e] text-gray-200">
+        <div className="flex flex-col h-full bg-surface-2 text-fg">
             {/* Hidden File Input */}
             <input
                 type="file"
@@ -88,8 +88,8 @@ export function AIAssistant() {
             />
 
             {/* Header / Settings Toggle */}
-            <div className="p-2 border-b border-[#333] flex justify-between items-center text-xs">
-                <span className="font-bold text-gray-400">AI CONSULTANT</span>
+            <div className="p-2 border-b border-border flex justify-between items-center text-xs">
+                <span className="font-bold text-fg-2">AI CONSULTANT</span>
                 <button
                     onClick={() => setShowSettings(!showSettings)}
                     className="text-blue-400 hover:text-blue-300"
@@ -111,7 +111,7 @@ export function AIAssistant() {
             {/* Chat Area */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4 font-sans text-sm">
                 {messages.length === 0 && !showSettings && (
-                    <div className="text-center text-gray-500 mt-10">
+                    <div className="text-center text-fg-3 mt-10">
                         <p>Ask me to create geometry.</p>
                         <p className="text-xs mt-2">Example: "Create a cylinder with radius 5"</p>
                     </div>
@@ -126,7 +126,7 @@ export function AIAssistant() {
                         handleRunCode={handleRunCode}
                     />
                 ))}
-                {isLoading && <div className="text-xs text-gray-500 animate-pulse">Thinking...</div>}
+                {isLoading && <div className="text-xs text-fg-3 animate-pulse">Thinking...</div>}
                 <div ref={messagesEndRef} />
             </div>
 

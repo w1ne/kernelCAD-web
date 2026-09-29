@@ -48,15 +48,15 @@ const PANEL_BUTTON =
 const LOOKS: Record<GalleryControlsLook, LookClasses> = {
   header: {
     button: 'inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap px-2.5 py-0.5 rounded text-xs font-medium bg-blue-600 hover:bg-blue-500 text-white disabled:opacity-50 transition-colors',
-    quiet: 'inline-flex shrink-0 items-center gap-1 whitespace-nowrap px-1.5 py-0.5 rounded text-xs text-gray-400 hover:text-gray-200 disabled:opacity-50 transition-colors',
+    quiet: 'inline-flex shrink-0 items-center gap-1 whitespace-nowrap px-1.5 py-0.5 rounded text-xs text-fg-2 hover:text-fg disabled:opacity-50 transition-colors',
     label: 'hidden md:inline',
     reportLabel: 'hidden lg:inline',
-    form: 'absolute right-0 top-full mt-1 z-50 w-64 rounded border border-[#333] bg-[#1a1a1a] p-2 shadow-lg flex flex-col gap-2',
-    formLabel: 'text-[11px] text-gray-300',
-    textarea: 'w-full rounded bg-black/40 border border-[#333] p-1.5 text-xs text-gray-100',
-    note: 'text-[11px] text-gray-500 font-mono whitespace-nowrap',
+    form: 'absolute right-0 top-full mt-1 z-50 w-64 rounded border border-border bg-surface-2 p-2 shadow-lg flex flex-col gap-2',
+    formLabel: 'text-[11px] text-fg',
+    textarea: 'w-full rounded bg-black/40 border border-border-strong p-1.5 text-xs text-fg',
+    note: 'text-[11px] text-fg-3 font-mono whitespace-nowrap',
     error: 'text-[11px] text-red-400',
-    credit: 'hidden md:inline truncate max-w-[180px] text-[11px] text-gray-400 hover:text-gray-200 underline decoration-dotted',
+    credit: 'hidden md:inline truncate max-w-[180px] text-[11px] text-fg-2 hover:text-fg underline decoration-dotted',
     row: 'flex items-center gap-2 min-w-0',
   },
   panel: {

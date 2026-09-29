@@ -132,10 +132,10 @@ function AnonGenPage() {
 
   const headerLeft = (
     <div className="flex items-center gap-2 min-w-0">
-      <span className="text-[10px] uppercase tracking-widest text-gray-500 font-mono shrink-0">
+      <span className="text-2xs uppercase tracking-widest text-fg-3 font-mono shrink-0">
         Prompt
       </span>
-      <span className="text-xs text-gray-300 truncate max-w-[420px]" title={gen.prompt}>
+      <span className="text-xs text-fg truncate max-w-[420px]" title={gen.prompt}>
         {gen.prompt}
       </span>
     </div>
@@ -143,7 +143,7 @@ function AnonGenPage() {
 
   const headerRight = (
     <div className="flex items-center gap-2 min-w-0">
-      <span className="hidden md:inline text-[10px] text-gray-500 font-mono truncate max-w-[190px]">
+      <span className="hidden md:inline text-2xs text-fg-3 font-mono truncate max-w-[190px]">
         Free saves are public by link.
       </span>
       {session ? (

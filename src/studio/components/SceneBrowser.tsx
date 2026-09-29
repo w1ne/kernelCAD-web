@@ -43,10 +43,10 @@ function SceneConstructionFolder({
     const [constructionOpen, setConstructionOpen] = React.useState(true);
 
     return (
-        <div className="bg-[#1a1a1a]">
+        <div className="bg-surface-2">
             <button
                 onClick={() => setConstructionOpen(!constructionOpen)}
-                className="w-full px-3 py-2 flex items-center gap-2 text-gray-400 hover:text-white uppercase tracking-wider font-semibold border-b border-[#333]"
+                className="w-full px-3 py-2 flex items-center gap-2 text-fg-2 hover:text-white uppercase tracking-wider font-semibold border-b border-border"
             >
                 {constructionOpen ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
                 <Plane size={12} />
@@ -67,20 +67,20 @@ function SceneConstructionFolder({
                                         onSelectPlane(plane.id);
                                     }
                                 }}
-                                className={`w-full flex items-center gap-2 px-6 py-2 text-gray-300 hover:bg-[#222] group transition-colors cursor-pointer ${selectedItemId === plane.id ? 'bg-selection-blue/20 text-white border-l-2 border-selection-blue' : ''}`}
+                                className={`w-full flex items-center gap-2 px-6 py-2 text-fg hover:bg-surface-2 group transition-colors cursor-pointer ${selectedItemId === plane.id ? 'bg-selection-blue/20 text-white border-l-2 border-selection-blue' : ''}`}
                             >
-                                <Plane size={14} className="text-gray-500" />
-                                <span className={`font-sans truncate ${isHidden ? 'text-gray-600 italic' : ''}`}>{plane.name}</span>
+                                <Plane size={14} className="text-fg-3" />
+                                <span className={`font-sans truncate ${isHidden ? 'text-fg-3 italic' : ''}`}>{plane.name}</span>
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         onTogglePlane(plane.id);
                                     }}
                                     data-testid={`visibility-toggle-${plane.id}`}
-                                    className={`ml-auto ${isHidden ? 'opacity-100' : 'opacity-40 group-hover:opacity-100'} p-1 hover:bg-[#333] rounded transition-all`}
+                                    className={`ml-auto ${isHidden ? 'opacity-100' : 'opacity-40 group-hover:opacity-100'} p-1 hover:bg-surface-3 rounded transition-all`}
                                     title={isHidden ? "Show Plane" : "Hide Plane"}
                                 >
-                                    {isHidden ? <EyeOff size={12} className="text-gray-600" /> : <Eye size={12} className="text-blue-400" />}
+                                    {isHidden ? <EyeOff size={12} className="text-fg-3" /> : <Eye size={12} className="text-blue-400" />}
                                 </button>
                             </div>
                         );
@@ -119,10 +119,10 @@ function SceneFeaturesFolder({
     const [featuresOpen, setFeaturesOpen] = React.useState(true);
 
     return (
-        <div className="bg-[#1a1a1a] border-t border-[#333]">
+        <div className="bg-surface-2 border-t border-border">
             <button
                 onClick={() => setFeaturesOpen(!featuresOpen)}
-                className="w-full px-3 py-2 flex items-center gap-2 text-gray-400 hover:text-white uppercase tracking-wider font-semibold border-b border-[#333]"
+                className="w-full px-3 py-2 flex items-center gap-2 text-fg-2 hover:text-white uppercase tracking-wider font-semibold border-b border-border"
             >
                 {featuresOpen ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
                 <Layers size={12} />
@@ -131,7 +131,7 @@ function SceneFeaturesFolder({
             {featuresOpen && (
                 <div className="py-1">
                     {items.length === 0 ? (
-                        <div className="px-6 py-4 text-gray-500 italic">No operations yet.</div>
+                        <div className="px-6 py-4 text-fg-3 italic">No operations yet.</div>
                     ) : (
                         items.map((item, idx) => {
                             const isSelected = selectedItemIds

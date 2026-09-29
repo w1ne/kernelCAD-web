@@ -30,16 +30,16 @@ export function ParamChips() {
                 <span
                     key={entry.name}
                     data-testid={`param-chip-${entry.name}`}
-                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#222]/90 border border-[#333] text-[11px] text-gray-200"
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-2/90 border border-border text-[11px] text-fg"
                 >
-                    <span className="text-gray-400">{entry.name}</span>
+                    <span className="text-fg-2">{entry.name}</span>
                     <span className="font-mono">{formatValue(entry.value)}</span>
                 </span>
             ))}
             {overflow > 0 && (
                 <span
                     data-testid="param-chip-overflow"
-                    className="inline-flex items-center px-2 py-0.5 rounded-full bg-[#222]/90 border border-[#333] text-[11px] text-gray-400"
+                    className="inline-flex items-center px-2 py-0.5 rounded-full bg-surface-2/90 border border-border text-[11px] text-fg-2"
                 >
                     +{overflow} more
                 </span>

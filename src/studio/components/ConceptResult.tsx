@@ -31,7 +31,7 @@ export function ConceptResult({
   if (phase.state === 'idle' || phase.state === 'running') return null;
 
   if (phase.state === 'unavailable') {
-    return <p className="text-[11px] text-gray-500">Concept preview not available yet — coming soon.</p>;
+    return <p className="text-[11px] text-fg-3">Concept preview not available yet — coming soon.</p>;
   }
 
   if (phase.state === 'upgrade') {
@@ -59,7 +59,7 @@ export function ConceptResult({
         src={phase.glbUrl}
         camera-controls
         auto-rotate
-        style={{ width: '100%', height: '360px', background: '#111' }}
+        style={{ width: '100%', height: '360px', background: 'var(--color-surface-1)' }}
       />
       <button
         type="button"

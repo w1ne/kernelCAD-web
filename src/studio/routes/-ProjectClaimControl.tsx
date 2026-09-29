@@ -134,7 +134,7 @@ export interface AnonProjectBannerProps {
 }
 
 const BANNER_CLASS = {
-  studio: 'fixed bottom-4 left-4 right-4 z-50 mx-auto flex max-w-xl flex-wrap items-center justify-center gap-x-3 gap-y-2 rounded-lg border border-amber-600/60 bg-[#1f1a10]/95 px-4 py-2.5 text-sm text-amber-100 shadow-lg',
+  studio: 'fixed bottom-4 left-4 right-4 z-50 mx-auto flex max-w-xl flex-wrap items-center justify-center gap-x-3 gap-y-2 rounded-lg border border-amber-600/60 bg-warn-soft/95 px-4 py-2.5 text-sm text-amber-100 shadow-lg',
   page: 'absolute left-3 right-3 top-3 z-10 mx-auto flex max-w-lg items-center justify-between gap-3 rounded-panel border border-border bg-surface-1/95 py-1.5 pl-3 pr-1.5 text-ui text-fg shadow-e2 backdrop-blur-sm md:justify-center md:pl-4',
 } as const;
 

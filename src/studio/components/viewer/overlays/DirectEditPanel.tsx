@@ -12,7 +12,7 @@ import { useWorkbench } from '../../../context/WorkbenchContext';
 import { useStudioChrome } from '../../../context/StudioChromeContext';
 import { AutoApplyToggle, StagedEditSlot } from '../../../StagedEditSlot';
 
-const PANEL_CLASS = 'absolute right-3 top-12 z-20 rounded border border-[#2a2e38] bg-[#15171c]/95 shadow-lg';
+const PANEL_CLASS = 'absolute right-3 top-12 z-20 rounded border border-border bg-surface-1/95 shadow-lg';
 
 export function DirectEditPanel() {
     const { stagedEdit } = useShellStore();

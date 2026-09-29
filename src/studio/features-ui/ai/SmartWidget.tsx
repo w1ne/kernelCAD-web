@@ -75,8 +75,8 @@ export function SmartWidget() {
             )}
 
             {isOpen && (
-                <div className="bg-[#1e1e1e] border border-[#444] p-3 rounded-lg shadow-xl w-64 backdrop-blur-md">
-                    <div className="text-[10px] text-gray-400 mb-1 uppercase tracking-wide">
+                <div className="bg-surface-2 border border-border-strong p-3 rounded-lg shadow-xl w-64 backdrop-blur-md">
+                    <div className="text-2xs text-fg-2 mb-1 uppercase tracking-wide">
                         Editing: <span className="text-white font-mono">{selectedItemId}</span>
                     </div>
                     <input
@@ -85,7 +85,7 @@ export function SmartWidget() {
                         onChange={(e) => setInput(e.target.value)}
                         onKeyDown={handleKeydown}
                         placeholder="e.g. Round edges, Make hole..."
-                        className="w-full bg-[#111] border border-[#333] rounded p-2 text-sm text-white focus:border-blue-500 outline-none"
+                        className="w-full bg-surface-1 border border-border-strong rounded p-2 text-sm text-white focus:border-blue-500 outline-none"
                     />
                     {isLoading && <div className="text-xs text-blue-400 mt-1">Generating...</div>}
                 </div>

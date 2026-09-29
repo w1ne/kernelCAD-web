@@ -86,7 +86,7 @@ export function StatusBar({
     return (
         <footer
             data-testid="status-bar"
-            className="h-6 shrink-0 border-t border-[#2b313c] bg-[#101318] text-[11px] text-gray-400 flex items-center gap-3 px-3 select-none bar-scroll-x"
+            className="h-6 shrink-0 border-t border-border bg-bg text-[11px] text-fg-2 flex items-center gap-3 px-3 select-none bar-scroll-x"
         >
             <div
                 role="status"

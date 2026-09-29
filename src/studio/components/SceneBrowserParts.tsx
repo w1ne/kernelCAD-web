@@ -33,11 +33,11 @@ export function SceneContextMenu({
     if (!contextMenu) return null;
     return contextMenu && (
                 <div
-                    className="fixed z-50 bg-[#222] border border-[#444] rounded shadow-xl py-1 min-w-[120px]"
+                    className="fixed z-50 bg-surface-2 border border-border-strong rounded shadow-xl py-1 min-w-[120px]"
                     style={{ top: contextMenu.y, left: contextMenu.x }}
                 >
                     <button
-                        className="w-full text-left px-3 py-1.5 hover:bg-blue-600 text-gray-200"
+                        className="w-full text-left px-3 py-1.5 hover:bg-blue-600 text-fg"
                         onClick={() => {
                             onDelete?.(contextMenu.item);
                             onClose();
@@ -46,7 +46,7 @@ export function SceneContextMenu({
                         Delete
                     </button>
                     <button
-                        className="w-full text-left px-3 py-1.5 hover:bg-blue-600 text-gray-200"
+                        className="w-full text-left px-3 py-1.5 hover:bg-blue-600 text-fg"
                         onClick={() => {
                             onToggleVisibility(contextMenu.item.name);
                             // Plus hide others... (Isolate logic)
@@ -61,7 +61,7 @@ export function SceneContextMenu({
                         Isolate
                     </button>
                     <button
-                        className="w-full text-left px-3 py-1.5 hover:bg-blue-600 text-gray-200"
+                        className="w-full text-left px-3 py-1.5 hover:bg-blue-600 text-fg"
                         onClick={() => {
                             // Show all hidden items
                             hiddenIds.forEach(id => {
@@ -72,9 +72,9 @@ export function SceneContextMenu({
                     >
                         Show All
                     </button>
-                    <div className="border-t border-[#444] my-1"></div>
+                    <div className="border-t border-border-strong my-1"></div>
                     <button
-                        className="w-full text-left px-3 py-1.5 hover:bg-blue-600 text-gray-200"
+                        className="w-full text-left px-3 py-1.5 hover:bg-blue-600 text-fg"
                         onClick={() => {
                             const newName = window.prompt("Rename variable:", contextMenu.item.name);
                             if (newName && newName !== contextMenu.item.name && onRename) {
@@ -101,8 +101,8 @@ const getIconForType = (type: string) => {
         case 'Intersect': return <SquaresIntersect size={14} className="text-red-400" />;
         case 'Extrude': return <SquareArrowUp size={14} className="text-cyan-400" />;
         case 'Revolve': return <Rotate3D size={14} className="text-cyan-400" />;
-        case 'Sketch': return <Square size={14} className="text-gray-400" />;
-        default: return <Layers size={14} className="text-gray-500" />;
+        case 'Sketch': return <Square size={14} className="text-fg-2" />;
+        default: return <Layers size={14} className="text-fg-3" />;
     }
 };
 
@@ -135,17 +135,17 @@ export function SceneFeatureRow(props: SceneFeatureRowProps): JSX.Element {
                                         onMouseEnter={() => onHover(item.id)}
                                         onMouseLeave={() => onHover(null)}
                                         onContextMenu={(e) => onContextMenu(e, item)}
-                                        className={`w-full flex items-center gap-2 px-6 py-2 text-gray-300 hover:bg-[#222] hover:text-white transition-colors text-left group cursor-pointer ${isSelected ? 'bg-selection-blue/20 text-white border-l-2 border-selection-blue' : isHovered ? 'bg-[#333] text-white' : ''}`}
+                                        className={`w-full flex items-center gap-2 px-6 py-2 text-fg hover:bg-surface-2 hover:text-white transition-colors text-left group cursor-pointer ${isSelected ? 'bg-selection-blue/20 text-white border-l-2 border-selection-blue' : isHovered ? 'bg-surface-3 text-white' : ''}`}
                                     >
                                         {getIconForType(item.type)}
-                                        <span className={`font-mono ${isHidden ? 'text-gray-600 italic' : ''} ${isHovered ? 'underline decoration-blue-500/50' : ''}`}>{item.name}</span>
+                                        <span className={`font-mono ${isHidden ? 'text-fg-3 italic' : ''} ${isHovered ? 'underline decoration-blue-500/50' : ''}`}>{item.name}</span>
                                         {item.detail && (
-                                            <span className="ml-2 text-[10px] px-1 bg-[#444] rounded text-gray-400 font-mono">
+                                            <span className="ml-2 text-2xs px-1 bg-surface-3 rounded text-fg-2 font-mono">
                                                 {item.detail}
                                             </span>
                                         )}
                                         <div className="ml-auto flex items-center gap-1">
-                                            <span className="opacity-0 group-hover:opacity-100 text-gray-500 text-[10px]">
+                                            <span className="opacity-0 group-hover:opacity-100 text-fg-3 text-2xs">
                                                 L{item.line}
                                             </span>
                                             <button
@@ -153,10 +153,10 @@ export function SceneFeatureRow(props: SceneFeatureRowProps): JSX.Element {
                                                     e.stopPropagation();
                                                     onToggleVisibility(item.name);
                                                 }}
-                                                className={`p-1 hover:bg-[#444] rounded transition-all ${isHidden ? 'opacity-100' : 'opacity-40 group-hover:opacity-100'}`}
+                                                className={`p-1 hover:bg-surface-3 rounded transition-all ${isHidden ? 'opacity-100' : 'opacity-40 group-hover:opacity-100'}`}
                                                 title={isHidden ? "Show Operation" : "Hide Operation"}
                                             >
-                                                {isHidden ? <EyeOff size={12} className="text-gray-600" /> : <Eye size={12} className="text-blue-400" />}
+                                                {isHidden ? <EyeOff size={12} className="text-fg-3" /> : <Eye size={12} className="text-blue-400" />}
                                             </button>
                                         </div>
                                     </div>
