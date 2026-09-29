@@ -6,6 +6,8 @@ import { getSupabase } from '../../funnel/lib/supabaseClient';
 import type { ProjectRow } from '../../funnel/lib/apiClient';
 import { PlanSummaryCard } from './-PlanSummaryCard';
 import { useMePageData } from './-useMePageData';
+import { MovedProjectsNotice } from './-MovedProjectsNotice';
+import { parseMovedParam } from './-anonClaim';
 
 /** Copies the public /p/<slug> link for a project card to the clipboard with
  *  transient "Copied" feedback. Stops propagation so it doesn't trigger the
@@ -36,8 +38,13 @@ function CopyLinkButton({ slug }: { slug: string }) {
 }
 
 // Stripe returns to /billing (which shows the checkout banners), not /me.
+// `moved` is set by the anonymous-project claim flows (/claim, /p/:slug banner).
 export const Route = createFileRoute('/me')({
   component: MePage,
+  validateSearch: (s: Record<string, unknown>): { moved?: number } => {
+    const moved = parseMovedParam(s.moved);
+    return moved === undefined ? {} : { moved };
+  },
 });
 
 function MePageHeader({ email }: { email: string | undefined }) {
@@ -102,6 +109,7 @@ function ProjectsSection({ projects }: { projects: ProjectRow[] | null }) {
 
 function MePage() {
   const { session, loading, projects, plan, planErr, err } = useMePageData();
+  const { moved } = Route.useSearch();
 
   if (loading || !session) {
     return (
@@ -124,6 +132,8 @@ function MePage() {
       <MePageHeader email={session.user.email} />
 
       <section className="px-6 py-10 max-w-4xl mx-auto">
+        <MovedProjectsNotice moved={moved} />
+
         <PlanSummaryCard plan={plan} planErr={planErr} />
 
         <h1 className="font-serif text-3xl font-medium text-ink mt-10">Your projects</h1>

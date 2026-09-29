@@ -21,6 +21,8 @@ import {
   remixProject,
   GALLERY_RENDER_REQUIRED,
   type GalleryPage,
+  fetchAdminStats,
+  ApiError,
 } from './apiClient';
 
 describe('setProjectPrivacy', () => {
@@ -319,5 +321,40 @@ describe('gallery + remix client', () => {
     await expect(remixProject('s1')).resolves.toEqual({ slug: 'new-1', projectId: 'id-1' });
     expect(fetchMock.mock.calls[1]![0]).toBe('https://api.kernelcad.com/api/v1/projects/s1/clone');
     expect(fetchMock.mock.calls[1]![1].method).toBe('POST');
+  });
+});
+
+describe('fetchAdminStats', () => {
+  const fetchMock = vi.fn();
+
+  beforeEach(() => {
+    getSessionMock.mockReset();
+    getSupabaseMock.mockReturnValue({ auth: { getSession: getSessionMock } });
+    getSessionMock.mockResolvedValue({ data: { session: { access_token: 'tok-1' } } });
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.kernelcad.com');
+    vi.stubGlobal('fetch', fetchMock);
+    fetchMock.mockReset();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+  });
+
+  it('GETs the admin stats for a window with the bearer token', async () => {
+    fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ window: '7d' }) });
+    await expect(fetchAdminStats('7d')).resolves.toEqual({ window: '7d' });
+    const [url, init] = fetchMock.mock.calls[0]!;
+    expect(url).toBe('https://api.kernelcad.com/api/v1/admin/stats?window=7d');
+    expect(init.method).toBe('GET');
+    expect(init.headers.Authorization).toBe('Bearer tok-1');
+  });
+
+  it('rejects with an ApiError that carries the status (403 = not an admin)', async () => {
+    fetchMock.mockResolvedValueOnce({ ok: false, status: 403, text: async () => '{"error":"forbidden"}' });
+    const err = await fetchAdminStats('28d').catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(ApiError);
+    expect((err as ApiError).status).toBe(403);
+    expect((err as ApiError).message).toBe('{"error":"forbidden"}');
   });
 });

@@ -9,7 +9,8 @@
 // Format enum: stl | step | dxf | 3mf | glb | svg-drawing | pdf-drawing | urdf | srdf | sdf-gazebo.
 // URDF / SDF-Gazebo exports also write companion meshes/<part>.stl files
 // next to output_path (the emitted XML references them by relative path);
-// the written paths are reported in `mesh_files`.
+// the written paths are reported in `mesh_files`. A multi-part DXF export
+// writes parts/<part>.dxf the same way, reported in `part_files`.
 
 import { writeFile, mkdir } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
@@ -49,6 +50,9 @@ export interface ExportModelOutput {
   /** Companion mesh files written next to output_path (URDF / SDF exports
    *  reference per-link meshes by relative path). */
   mesh_files?: string[];
+  /** Per-part DXF files written next to output_path (`parts/<part>.dxf`) for a
+   *  multi-part dxf export with the default `layout: 'per-part'`. */
+  part_files?: string[];
   /** svg-drawing / pdf-drawing placement report: `placed` / `overlapped` counts, `byKind`,
    *  the datum reference frame, and every annotation drawn. */
   drawing_report?: DrawingReport;
@@ -89,6 +93,16 @@ async function writeExportPayload(
     return `Cannot write to ${finalPath}: ${e instanceof Error ? e.message : String(e)}`;
   }
   return undefined;
+}
+
+/** Companion files go in `part_files` for a multi-part DXF, `mesh_files`
+ *  for robot-description meshes; nothing when none were written. */
+function companionFilesField(
+  format: ExportFormat,
+  files: string[],
+): Pick<ExportModelOutput, 'mesh_files' | 'part_files'> {
+  if (files.length === 0) return {};
+  return format === 'dxf' ? { part_files: files } : { mesh_files: files };
 }
 
 /**
@@ -176,7 +190,7 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
     byte_count: result.bytes.byteLength,
     feature_count: result.featureCount,
     format,
-    ...(meshFiles.length > 0 ? { mesh_files: meshFiles } : {}),
+    ...companionFilesField(format, meshFiles),
     ...(result.drawingReport === undefined ? {} : { drawing_report: result.drawingReport }),
     diagnostics: withNextActions(result.diagnostics),
   };

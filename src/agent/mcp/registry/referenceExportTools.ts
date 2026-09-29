@@ -41,7 +41,11 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
       description:
         'Use this when you need to export geometry to a file. One exporter, selected by `target`:\n' +
         "- target:'model' — export the script geometry to one file. Pass { file | code }, a required { output_path }, and { format }. " +
-        'Supported formats: stl (binary STL mesh), step (BREP CAD interchange), dxf (planar laser/waterjet profile from a Region or planar face), ' +
+        'Supported formats: stl (binary STL mesh), step (BREP CAD interchange), ' +
+        'dxf (2D cut file for laser / waterjet / CNC: a flat part — plate, panel, extruded profile, in any orientation — exports its outline and holes in its own plane with exact arcs and circles; '
+        + 'a sheet-metal part or a returned Region exports its flat pattern; options.section { axis: "x"|"y"|"z", at } exports the cross-section of any part in world coordinates (plans, profiles); '
+        + "a multi-part model (cut list) writes all parts side by side on output_path, one layer per part, plus parts/<part>.dxf per part (reported in part_files; options.layout 'sheet' writes the combined sheet only); "
+        + 'any other part fails with export.dxf.non-planar), ' +
         "3mf (slicer-friendly mesh: one named object per part, colours as core-spec basematerials named by the part's engineering material; " +
         "options.arrange 'plate' packs parts on the bed at Z=0 without overlap (options.orient puts each part's largest flat face down), 'assembled' keeps them together as one multi-part object for multi-colour prints; " +
         "options.slicer 'bambu' | 'orca' | 'prusa' adds that slicer's per-object name + filament-slot sidecar — slot N is the Nth distinct colour/material), " +
@@ -66,7 +70,7 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
         'STL exports run a watertight verify by default; failures return ok: false with export.mesh.not-watertight ' +
         '(open-edge count + up to 5 crack-cluster locations) but the file is still written so the broken mesh can be inspected. ' +
         'Optional { feature_id } selects which feature to export (default: last). ' +
-        'Optional { options } carries per-format options bag (see the kernelcad-mcp skill for the per-format keys: dxf layers/tolerance/unit, 3mf printUnit/embedSource/arrange/orient/slicer/printer, glb axis/draco).\n' +
+        'Optional { options } carries per-format options bag (see the kernelcad-mcp skill for the per-format keys: dxf layers/tolerance/unit/section/layout, 3mf printUnit/embedSource/arrange/orient/slicer/printer, glb axis/draco).\n' +
         "- target:'part' — export solved-assembly parts as individual binary STL files in their modeled (world-frame) positions. " +
         'Pass { file | code }, plus { part, output_path } for one part or { output_dir } for all parts ' +
         '(files land at <output_dir>/<part>.stl). A watertight verify runs on every exported mesh by default ' +
@@ -93,7 +97,7 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
             type: 'object',
             description:
               "target:'model' — optional per-format options bag. Discriminator options.format must equal top-level format. " +
-              'dxf: { layers?, unit?: "mm"|"cm"|"in", tolerance? }. ' +
+              'dxf: { layers?, unit?: "mm"|"cm"|"in", tolerance?, section?: { axis: "x"|"y"|"z", at: mm }, layout?: "per-part"|"sheet" }. ' +
               '3mf: { printUnit?: "mm"|"cm"|"in", embedSource?, arrange?: "none"|"plate"|"assembled", orient?: boolean, slicer?: "generic"|"bambu"|"orca"|"prusa", printer?: printer profile id, one of ' + PRINTER_PROFILE_IDS.map(id => `"${id}"`).join('|') + ' (default "generic-fdm"; sets the bed for arrange and the slicer default; an unknown id is refused with the valid list; CLI: kernelcad print printers) }; parts that do not fit the bed are still written and reported as warn diagnostics export.3mf.plate-overflow / export.3mf.exceeds-bed, whose hint names the smallest profiles the layout fits on. ' +
               'glb: { axis?: "y-up"|"z-up", draco?: false }. ' +
               'svg-drawing: { sheet?: "a4"|"a3" (or any pdf-drawing sheet), projection?, titleBlock?: { title?, partName?, material?, revision? }, modelName?, date?, annotations?, exploded?: { factor, mode? }, balloons?, partsList?, sections?, autoAnnotate? }. ' +

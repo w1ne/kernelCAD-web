@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { createFileRoute } from '@tanstack/react-router';
-import { useCallback, useState, type ReactNode } from 'react';
+import { useCallback, type ReactNode } from 'react';
 import App from '../App';
 import { MadeWithKernelcad } from '../components/MadeWithKernelcad';
-import { ProjectClaimControl } from './-ProjectClaimControl';
+import { AnonProjectBanner, ProjectClaimControl } from './-ProjectClaimControl';
+import { useProjectClaim } from './-useProjectClaim';
 import { ProjectViewerActions } from './-ProjectViewerActions';
 import { ServerRevisionHistory } from './-ServerRevisionHistory';
 import { useOptionalSession } from '../../funnel/hooks/useSession';
 import {
-  claimProject,
   createCheckoutSession,
   type ProjectRow,
 } from '../../funnel/lib/apiClient';
@@ -39,20 +39,7 @@ function ProjectPage() {
     upgradeNeeded,
     handleTogglePrivacy,
   } = useProjectLiveUpdates(slug);
-  const [claimed, setClaimed] = useState(false);
-  const [claiming, setClaiming] = useState(false);
-
-  const handleClaim = useCallback(async () => {
-    setClaiming(true);
-    try {
-      await claimProject(slug);
-      setClaimed(true);
-    } catch {
-      // Leave the button available to retry.
-    } finally {
-      setClaiming(false);
-    }
-  }, [slug]);
+  const { claimed, claiming, onClaim, onBannerClaim } = useProjectClaim(slug, session, project);
 
   const handleUpgrade = useCallback(async () => {
     try {
@@ -113,7 +100,7 @@ function ProjectPage() {
         claiming={claiming}
         privacyBusy={privacyBusy}
         upgradeNeeded={upgradeNeeded}
-        onClaim={handleClaim}
+        onClaim={onClaim}
         onTogglePrivacy={handleTogglePrivacy}
         onUpgrade={handleUpgrade}
       />
@@ -126,13 +113,22 @@ function ProjectPage() {
   );
 
   return (
-    <App
-      initialCode={project.current_code}
-      liveCode={liveCode}
-      viewerMode
-      viewportOverlay={<StudioModelCustomizer slug={slug} hints={project.parameters} />}
-      headerLeft={headerLeft}
-      headerRight={headerRight ?? undefined}
-    />
+    <>
+      <App
+        initialCode={project.current_code}
+        liveCode={liveCode}
+        viewerMode
+        viewportOverlay={<StudioModelCustomizer slug={slug} hints={project.parameters} />}
+        headerLeft={headerLeft}
+        headerRight={headerRight ?? undefined}
+      />
+      <AnonProjectBanner
+        project={project}
+        session={session}
+        claimed={claimed}
+        claiming={claiming}
+        onClaim={onBannerClaim}
+      />
+    </>
   );
 }
