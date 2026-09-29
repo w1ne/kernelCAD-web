@@ -82,6 +82,13 @@ two-feature placement math, subtract-chain reliability, JSON-`ok`-is-not-visual-
 
 ## Assembly and mechanism loop
 
+`evaluate_script` on a model with mates runs only a shallow mechanism check.
+It does NOT check joint-support intents (`jointSupport` / `mechanicalJoint`),
+pose-envelope overlap at a declared mate limit, or a gravity drop / static hold,
+so `ok: true` from it is not a mechanism verdict. When the result carries
+`reviewHint`, run `review_cad` for the pose-envelope + gravity checks before you
+call the mechanism done.
+
 ### Articulated-digit workflow (non-bypassable)
 
 For an articulated digit, use the structural joint helper and complete every gate below:
