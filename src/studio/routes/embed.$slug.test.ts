@@ -1,7 +1,17 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it, vi } from 'vitest';
-import { embedCustomize, embedPresentationMode, embedRevision, loadEmbedCode, revisionPinnedMeshUrl } from './-embedConfig';
+import {
+  EMBED_THEME_VARS,
+  embedCustomize,
+  embedPosterUrl,
+  embedPresentationMode,
+  embedRevision,
+  embedTheme,
+  loadEmbedCode,
+  resolveEmbedTheme,
+  revisionPinnedMeshUrl,
+} from './-embedConfig';
 
 describe('embedPresentationMode', () => {
   it('keeps the default embed model-only', () => {
@@ -87,5 +97,75 @@ describe('embedCustomize', () => {
     expect(embedCustomize('1')).toBe(true);
     expect(embedCustomize(1)).toBe(true);
     expect(embedCustomize('true')).toBe(true);
+  });
+});
+
+describe('embedTheme', () => {
+  it('pins light or dark and ignores anything else', () => {
+    expect(embedTheme('light')).toBe('light');
+    expect(embedTheme('dark')).toBe('dark');
+    expect(embedTheme('auto')).toBeUndefined();
+    expect(embedTheme('Light')).toBeUndefined();
+    expect(embedTheme(undefined)).toBeUndefined();
+  });
+
+  it('follows the host preference unless pinned', () => {
+    expect(resolveEmbedTheme(undefined, true)).toBe('dark');
+    expect(resolveEmbedTheme(undefined, false)).toBe('light');
+    expect(resolveEmbedTheme('light', true)).toBe('light');
+    expect(resolveEmbedTheme('dark', false)).toBe('dark');
+  });
+
+  function luminance(hex: string): number {
+    const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
+      .map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  }
+  function contrast(a: string, b: string): number {
+    const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+    return (hi + 0.05) / (lo + 0.05);
+  }
+
+  it.each(['light', 'dark'] as const)('meets WCAG AA for every text pair (%s)', (theme) => {
+    const v = EMBED_THEME_VARS[theme];
+    const pairs: Array<[string, string]> = [
+      ['--embed-fg', '--embed-bg'],
+      ['--embed-fg', '--embed-surface'],
+      ['--embed-fg-2', '--embed-surface'],
+      ['--embed-fg-2', '--embed-bg'],
+      ['--embed-on-accent', '--embed-accent'],
+      ['--embed-on-accent', '--embed-accent-hover'],
+      ['--embed-danger', '--embed-bg'],
+    ];
+    for (const [fg, bg] of pairs) {
+      expect(contrast(v[fg as `--embed-${string}`], v[bg as `--embed-${string}`]), `${fg} on ${bg}`).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+});
+
+describe('embedPosterUrl', () => {
+  const render = 'https://api.kernelcad.com/api/v1/projects/abc_1/og.png?v=2026-09-25T01%3A37%3A17.859Z';
+
+  it("uses the page's og:image when it is this project's stored render", () => {
+    expect(embedPosterUrl('abc_1', undefined, render)).toBe(render);
+  });
+
+  it('ignores the generic site image, another project and non-https images', () => {
+    expect(embedPosterUrl('abc_1', undefined, 'https://kernelcad.com/og-image.png')).toBeUndefined();
+    expect(embedPosterUrl('xyz', undefined, render)).toBeUndefined();
+    expect(embedPosterUrl('abc_1', undefined, render.replace('https:', 'http:'))).toBeUndefined();
+    expect(embedPosterUrl('abc_1', undefined, 'javascript:alert(1)')).toBeUndefined();
+    expect(embedPosterUrl('abc_1', undefined, 'not a url')).toBeUndefined();
+    expect(embedPosterUrl('abc_1', undefined, null)).toBeUndefined();
+  });
+
+  it('shows no poster for a pinned or invalid revision (the render is of the latest one)', () => {
+    expect(embedPosterUrl('abc_1', 3, render)).toBeUndefined();
+    expect(embedPosterUrl('abc_1', null, render)).toBeUndefined();
+  });
+
+  it('accepts a loopback render for the local browser test', () => {
+    const local = 'http://127.0.0.1:5173/api/v1/projects/abc_1/og.png';
+    expect(embedPosterUrl('abc_1', undefined, local)).toBe(local);
   });
 });

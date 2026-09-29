@@ -101,7 +101,9 @@ export function EmbedAttributionBar({ remixSlug }: EmbedAttributionBarProps): Re
           className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-md bg-[var(--embed-accent)] px-2.5 text-xs font-semibold text-[var(--embed-on-accent)] no-underline hover:bg-[var(--embed-accent-hover)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--embed-fg)] focus-visible:ring-offset-1"
         >
           <GitFork size={14} strokeWidth={2} aria-hidden="true" />
-          Remix<span className="hidden min-[420px]:inline">&nbsp;in {KERNELCAD_NAME}</span>
+          <span>
+            Remix<span className="hidden min-[420px]:inline">{` in ${KERNELCAD_NAME}`}</span>
+          </span>
         </a>
       ) : null}
     </footer>
