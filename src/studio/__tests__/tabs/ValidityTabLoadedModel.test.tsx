@@ -123,7 +123,7 @@ describe('ValidityTab reflects the model actually loaded (KC-06)', () => {
         render(<ValidityTab />);
 
         const chip = screen.getByTestId('validity-chip');
-        expect(chip.textContent).toBe('not run');
+        expect(chip.textContent).toBe('Not run');
         expect(chip.getAttribute('data-color')).not.toBe('green');
         expect(chip.getAttribute('data-status')).not.toBe('solved');
         expect(chip.getAttribute('data-validated')).toBe('false');
@@ -138,7 +138,7 @@ describe('ValidityTab reflects the model actually loaded (KC-06)', () => {
         render(<ValidityTab />);
 
         const chip = screen.getByTestId('validity-chip');
-        expect(chip.textContent).toBe('solved');
+        expect(chip.textContent).toBe('Solved');
         expect(chip.getAttribute('data-color')).toBe('green');
         expect(chip.getAttribute('data-validated')).toBe('true');
         expect(screen.queryByTestId('validity-not-run-notice')).toBeNull();
@@ -163,7 +163,7 @@ describe('ValidityTab reflects the model actually loaded (KC-06)', () => {
         render(<ValidityTab />);
 
         const chip = screen.getByTestId('validity-chip');
-        expect(chip.textContent).toBe('error');
+        expect(chip.textContent).toBe('Failed');
         expect(chip.getAttribute('data-color')).toBe('red');
     });
 });

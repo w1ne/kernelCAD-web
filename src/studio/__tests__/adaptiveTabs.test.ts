@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it } from 'vitest';
-import { getVisibleTabs } from '../logic/adaptiveTabs';
+import { fitTabCount, getVisibleTabs } from '../logic/adaptiveTabs';
 import type { StudioRecomputeResult, TabId } from '../types';
 import { ParamTable } from '../../shared/runtime/paramTable';
 
@@ -60,46 +60,42 @@ function jointFixture(name: string) {
 describe('getVisibleTabs', () => {
     const cases: Array<{ name: string; result: StudioRecomputeResult | null; expected: TabId[] }> = [
         {
-            name: 'null result → scene + code only',
+            name: 'null result → code, checks and scene only',
             result: null,
-            expected: ['scene', 'code'],
+            expected: ['code', 'validity', 'scene'],
         },
         {
-            name: 'empty result → scene + code only',
+            name: 'empty result → code, checks and scene only',
             result: fixture(),
-            expected: ['scene', 'code'],
+            expected: ['code', 'validity', 'scene'],
         },
         {
-            name: 'paramTable with 1 entry → adds params',
+            name: 'paramTable with 1 entry → adds params after code',
             result: fixture({ paramTable: paramTableWith(1) }),
-            expected: ['scene', 'code', 'params'],
+            expected: ['code', 'params', 'validity', 'scene'],
         },
         {
             name: 'paramTable empty (size 0) → no params tab',
             result: fixture({ paramTable: paramTableWith(0) }),
-            expected: ['scene', 'code'],
+            expected: ['code', 'validity', 'scene'],
         },
         {
-            name: 'validity present (solved) → adds validity',
-            result: fixture({
-                validity: { status: 'solved', diagnostics: [], partCount: 1, jointCount: 0 },
-            }),
-            expected: ['scene', 'code', 'validity'],
-        },
-        {
-            name: 'validity present (error) → still adds validity',
+            name: 'checks show with or without a validity result',
             result: fixture({
                 validity: { status: 'error', diagnostics: [], partCount: 1, jointCount: 0 },
             }),
-            expected: ['scene', 'code', 'validity'],
+            expected: ['code', 'validity', 'scene'],
         },
         {
-            name: 'paramTable + validity → adds both, ordered',
+            name: 'every conditional tab → primary tabs first, scene last',
             result: fixture({
                 paramTable: paramTableWith(3),
+                joints: [jointFixture('elbow')],
+                features: [animationViewRecord()] as never,
+                geometries: [{ faces: [] }] as never,
                 validity: { status: 'solved', diagnostics: [], partCount: 2, jointCount: 1 },
             }),
-            expected: ['scene', 'code', 'params', 'validity'],
+            expected: ['code', 'params', 'validity', 'joints', 'animation', 'export', 'scene'],
         },
     ];
 
@@ -145,21 +141,6 @@ describe('getVisibleTabs', () => {
         expect(getVisibleTabs(fixture({ joints: [] }))).not.toContain('joints');
     });
 
-    it('joints tab orders after params, before validity', () => {
-        const result = fixture({
-            paramTable: paramTableWith(1),
-            joints: [jointFixture('elbow')],
-            validity: { status: 'solved', diagnostics: [], partCount: 2, jointCount: 1 },
-        });
-        expect(getVisibleTabs(result)).toEqual([
-            'scene',
-            'code',
-            'params',
-            'joints',
-            'validity',
-        ]);
-    });
-
     it('export tab surfaces when geometries.length > 0 (Slice 1.4)', () => {
         const result = fixture({
             geometries: [{ faces: [] }],
@@ -169,5 +150,43 @@ describe('getVisibleTabs', () => {
 
     it('export tab is hidden when geometries are empty', () => {
         expect(getVisibleTabs(fixture({ geometries: [] }))).not.toContain('export');
+    });
+});
+
+describe('fitTabCount', () => {
+    const tabs = [
+        { label: 'Code' },
+        { label: 'Params' },
+        { label: 'Checks', count: 2 },
+        { label: 'Joints' },
+        { label: 'Animation' },
+        { label: 'Export' },
+        { label: 'Scene' },
+    ];
+
+    it('returns undefined (no More menu) when every tab fits', () => {
+        expect(fitTabCount(tabs.slice(0, 3), 340)).toBeUndefined();
+        expect(fitTabCount(tabs, 800)).toBeUndefined();
+    });
+
+    it('keeps the three primary tabs in the row at the default 340 px width', () => {
+        const max = fitTabCount(tabs, 340);
+        expect(max).toBeDefined();
+        // maxVisible counts the "More" slot.
+        expect(max! - 1).toBeGreaterThanOrEqual(3);
+        expect(max!).toBeLessThan(tabs.length);
+    });
+
+    it('fits more tabs as the inspector widens', () => {
+        expect(fitTabCount(tabs, 560) ?? tabs.length).toBeGreaterThan(fitTabCount(tabs, 340)!);
+    });
+
+    it('always keeps at least one tab next to More', () => {
+        expect(fitTabCount(tabs, 40)).toBe(2);
+    });
+
+    it('never moves the primary tabs into More, even at the minimum width', () => {
+        expect(fitTabCount(tabs, 280, 3)).toBe(4);
+        expect(fitTabCount(tabs, 40, 3)).toBe(4);
     });
 });

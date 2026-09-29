@@ -1,92 +1,44 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import type { JSX } from 'react';
+import { Tabs, type TabItem } from '../ui';
 import type { TabId } from './types';
+import { INSPECTOR_TABS_ID, INSPECTOR_TAB_LABEL, PRIMARY_INSPECTOR_TABS, fitTabCount } from './logic/adaptiveTabs';
 
 interface InspectorTabsProps {
+    /** Available tabs in display order. Unavailable tabs are not passed. */
     readonly tabs: readonly TabId[];
     readonly activeTab: TabId;
     readonly onSelectTab: (id: TabId) => void;
+    /** Count pills after a label ("Checks 2"). */
+    readonly counts?: Partial<Record<TabId, number>>;
+    /** Inspector width in px; tabs that do not fit go to a "More" menu. */
+    readonly width: number;
 }
 
-const ALL_TABS: readonly TabId[] = [
-    'scene',
-    'code',
-    'params',
-    'validity',
-    'joints',
-    'export',
-    'sections',
-    'cut',
-    'animation',
-    'render',
-];
-
-const TAB_LABEL: Record<TabId, string> = {
-    scene: 'Scene',
-    code: 'Code',
-    params: 'Params',
-    validity: 'Validity',
-    joints: 'Joints',
-    export: 'Export',
-    sections: 'Sections',
-    cut: 'Cut',
-    animation: 'Animation',
-    render: 'Render',
-};
-
-const RESERVED_HINT: Record<TabId, string> = {
-    scene: '',
-    code: '',
-    params: 'Declare a param(...) in the script to enable Params',
-    validity: 'Call validateAssembly() in the script to enable Validity',
-    joints: 'Add jointsView() to enable Joints',
-    export: 'Add exportSpec() to enable Export',
-    sections: 'Add sectionView() to enable Sections',
-    cut: 'Add cutView() to enable Cut',
-    animation: 'Add animationView() to enable Animation',
-    render: 'Add renderView() to enable Render',
-};
-
-export function InspectorTabs({ tabs, activeTab, onSelectTab }: InspectorTabsProps) {
-    const visibleSet = new Set<TabId>(tabs);
+/**
+ * The inspector tab strip: underline tabs with arrow-key navigation, only
+ * the tabs the model has content for, and a "More" menu when they do not
+ * fit the width.
+ */
+export function InspectorTabs({ tabs, activeTab, onSelectTab, counts, width }: InspectorTabsProps): JSX.Element {
+    const items: TabItem[] = tabs.map((id) => ({
+        id,
+        label: INSPECTOR_TAB_LABEL[id] ?? id,
+        count: counts?.[id],
+        testId: `inspector-tab-${id}`,
+    }));
 
     return (
-        <div
-            className="flex flex-wrap gap-1 px-2 py-1 bg-[#111] border-b border-[#333]"
-            role="tablist"
-            data-testid="inspector-tabs"
-        >
-            {ALL_TABS.map((id) => {
-                const isVisible = visibleSet.has(id);
-                const isActive = isVisible && id === activeTab;
-                const baseClasses =
-                    'px-2 py-1 text-xs rounded transition-colors border';
-                const stateClasses = isActive
-                    ? 'bg-[#222] text-white border-blue-500'
-                    : isVisible
-                        ? 'bg-transparent text-gray-300 border-transparent hover:bg-[#222] hover:text-white'
-                        : 'bg-transparent text-gray-600 border-transparent cursor-not-allowed';
-
-                return (
-                    <button
-                        key={id}
-                        type="button"
-                        role="tab"
-                        data-testid={`inspector-tab-${id}`}
-                        data-active={isActive ? 'true' : 'false'}
-                        aria-selected={isActive}
-                        aria-disabled={isVisible ? undefined : true}
-                        disabled={!isVisible}
-                        title={isVisible ? TAB_LABEL[id] : RESERVED_HINT[id]}
-                        onClick={() => {
-                            if (isVisible) onSelectTab(id);
-                        }}
-                        className={`${baseClasses} ${stateClasses}`}
-                    >
-                        {TAB_LABEL[id]}
-                    </button>
-                );
-            })}
+        <div className="shrink-0 px-1 pt-1" data-testid="inspector-tabs">
+            <Tabs
+                id={INSPECTOR_TABS_ID}
+                label="Inspector"
+                items={items}
+                value={activeTab}
+                onChange={(id) => onSelectTab(id as TabId)}
+                maxVisible={fitTabCount(items, width, tabs.filter((id) => PRIMARY_INSPECTOR_TABS.includes(id)).length)}
+            />
         </div>
     );
 }
