@@ -119,6 +119,21 @@ not a string.
 The batched `params({...})` shorthand still only accepts `number | boolean`
 defaults — declare choice/string params individually via `param()`.
 
+### Customizer metadata: label / unit / step / group
+
+A shared project page (`/p/<slug>`) turns every `param()` into a slider row.
+Optional `meta` keys shape that row; the kernel ignores them:
+
+```typescript
+const plateW = param('plateW', 50, { min: 20, max: 120, label: 'Plate width', unit: 'mm', step: 1 });
+const m4Clear = param('m4Clear', 4.5, { label: 'M4 clearance hole', unit: 'mm', group: 'Fasteners' });
+```
+
+Without them the page humanises the name (`plateW` → "Plate width"), guesses
+`mm` or `°` from the name, and derives a slider range from the default. The
+page shows the first 6 params and hides the rest behind "Show all", so
+declare the params a user is most likely to change first.
+
 ### MCP: `inspect({ of: 'params' })` / `set_param`
 
 Use MCP `inspect({ of: 'params' })` to list a model's params, then `set_param({ code, param_name: 'boltDia', new_value: 6 })` to rewrite the `param()` default in the source. The edit is source-only — it returns the modified code plus diagnostics from re-evaluating; the caller persists the returned code.

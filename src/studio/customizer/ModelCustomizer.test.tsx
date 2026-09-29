@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 /** @vitest-environment happy-dom */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import type { SerializedParamEntry } from '../../shared/runtime/paramTable';
 import { customizerParamsFrom, type CustomizerParam } from './customizerParams';
 import { ModelCustomizer, type ModelCustomizerProps } from './ModelCustomizer';
@@ -36,6 +36,18 @@ function setup(overrides: Partial<ModelCustomizerProps> = {}) {
   return { execute, exportModel, saveFile };
 }
 
+function numberInput(name: string): HTMLInputElement {
+  return within(screen.getByTestId(`customizer-number-${name}`)).getByRole('spinbutton') as HTMLInputElement;
+}
+
+function slider(name: string): HTMLInputElement {
+  return within(screen.getByTestId(`customizer-slider-${name}`)).getByRole('slider') as HTMLInputElement;
+}
+
+function radio(testId: string): HTMLInputElement {
+  return screen.getByTestId(testId) as HTMLInputElement;
+}
+
 beforeEach(() => {
   window.history.replaceState(null, '', '/p/enclosure');
 });
@@ -48,13 +60,13 @@ afterEach(() => {
 describe('ModelCustomizer controls', () => {
   it('renders one control per declared type with the saved defaults', () => {
     setup();
-    expect(screen.getByTestId('scrub-slider-Width')).toBeTruthy();
-    expect((screen.getByTestId('scrub-input-Width') as HTMLInputElement).value).toBe('40');
+    expect(slider('Width').value).toBe('40');
+    expect(numberInput('Width').value).toBe('40');
     expect(screen.getByText('mm')).toBeTruthy();
     expect((screen.getByTestId('customizer-toggle-HasLid') as HTMLInputElement).checked).toBe(true);
-    const select = screen.getByTestId('customizer-select-Screw') as HTMLSelectElement;
-    expect(select.value).toBe('M4');
-    expect([...select.options].map((o) => o.value)).toEqual(['M3', 'M4', 'M5']);
+    const group = screen.getByTestId('customizer-select-Screw');
+    expect(within(group).getAllByRole('radio').map((o) => (o as HTMLInputElement).value)).toEqual(['M3', 'M4', 'M5']);
+    expect(radio('customizer-option-Screw-M4').checked).toBe(true);
     expect((screen.getByTestId('customizer-text-Label') as HTMLInputElement).value).toBe('KCAD');
   });
 
@@ -72,24 +84,93 @@ describe('ModelCustomizer controls', () => {
   });
 });
 
+describe('ModelCustomizer v2 layout', () => {
+  const many = customizerParamsFrom([
+    { name: 'plateW', type: 'number', value: 50, defaultValue: 50 },
+    { name: 'plateD', type: 'number', value: 50, defaultValue: 50 },
+    { name: 'boreDia', type: 'number', value: 30.2, defaultValue: 30.2 },
+    { name: 'ringH', type: 'number', value: 20, defaultValue: 20 },
+    { name: 'wallT', type: 'number', value: 3, defaultValue: 3 },
+    { name: 'm4HeadDia', type: 'number', value: 7.2, defaultValue: 7.2, meta: { group: 'Fasteners' } },
+    { name: 'm4Clear', type: 'number', value: 4.5, defaultValue: 4.5, meta: { group: 'Fasteners', label: 'M4 clearance hole' } },
+    { name: 'slotAngle', type: 'number', value: 0, defaultValue: 0 },
+    { name: 'finish', type: 'choice', value: 'print', defaultValue: 'print', meta: { choices: ['print', 'cnc', 'cast', 'sheet', 'mold'] } },
+  ] satisfies SerializedParamEntry[]);
+
+  it('labels rows in words with units, and shows the key params first', () => {
+    setup({ params: many });
+    expect(screen.getByText('Plate width')).toBeTruthy();
+    expect(screen.getByText('M4 head diameter')).toBeTruthy();
+    expect(screen.queryByText('plateW')).toBeNull();
+    expect(screen.getByRole('slider', { name: 'Bore diameter' }).getAttribute('aria-valuetext')).toBe('30.2 mm');
+    expect(screen.getByRole('group', { name: 'Fasteners' })).toBeTruthy();
+    // Six of nine rows; the rest behind "Show all".
+    expect(screen.queryByTestId('customizer-row-m4Clear')).toBeNull();
+    expect(screen.queryByTestId('customizer-row-finish')).toBeNull();
+    fireEvent.click(screen.getByTestId('customizer-show-all'));
+    expect(screen.getByText('M4 clearance hole')).toBeTruthy();
+    expect(screen.getByRole('slider', { name: 'Slot angle' }).getAttribute('aria-valuetext')).toBe('0 °');
+    // A long choice list is a menu, not a segmented control.
+    expect((screen.getByTestId('customizer-select-finish') as HTMLSelectElement).tagName).toBe('SELECT');
+    expect(screen.getByTestId('customizer-show-all').textContent).toBe('Show fewer');
+  });
+
+  it('keeps a shared value visible in the short view', () => {
+    window.history.replaceState(null, '', '/p/enclosure?p.slotAngle=30');
+    setup({ params: many });
+    expect(screen.getByRole('slider', { name: 'Slot angle' })).toBeTruthy();
+    expect(screen.getByTestId('customizer-show-all').textContent).toBe('Show all 9');
+  });
+
+  it('offers the default format as the primary download', () => {
+    setup({ defaultFormat: 'step' });
+    expect(screen.getByTestId('customizer-download-step').textContent).toBe('Download STEP');
+    expect(screen.getByTestId('customizer-download-stl').textContent).toBe('STL');
+  });
+
+  it('floats dark over the 3D view, or fills a side panel in the host theme', () => {
+    setup();
+    const overlay = screen.getByTestId('model-customizer');
+    expect(overlay.getAttribute('data-theme')).toBe('dark');
+    expect(screen.getByTestId('customizer-toggle-panel')).toBeTruthy();
+    cleanup();
+    setup({ layout: 'panel', defaultCollapsed: true });
+    const panel = screen.getByTestId('model-customizer');
+    expect(panel.getAttribute('data-theme')).toBeNull();
+    // A panel never collapses: it has no toggle and always shows its rows.
+    expect(screen.queryByTestId('customizer-toggle-panel')).toBeNull();
+    expect(screen.getByTestId('customizer-row-Width')).toBeTruthy();
+  });
+});
+
 describe('ModelCustomizer re-execution', () => {
   it('re-runs once, after the debounce, with all current values', () => {
     vi.useFakeTimers();
     const { execute } = setup();
     expect(execute).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByTestId('customizer-toggle-HasLid'));
-    fireEvent.change(screen.getByTestId('customizer-select-Screw'), { target: { value: 'M5' } });
+    fireEvent.change(slider('Width'), { target: { value: '50' } });
+    fireEvent.change(slider('Width'), { target: { value: '55' } });
     expect(screen.getByTestId('customizer-busy')).toBeTruthy();
+    expect(screen.getByTestId('customizer-progress')).toBeTruthy();
     expect(execute).not.toHaveBeenCalled();
     act(() => { vi.advanceTimersByTime(300); });
     expect(execute).toHaveBeenCalledTimes(1);
+    expect(execute).toHaveBeenLastCalledWith({ ...DEFAULTS, Width: 55 });
+    expect(window.location.search).toBe('?p.Width=55');
+  });
+
+  it('runs a switch or an option at once', () => {
+    const { execute } = setup();
+    fireEvent.click(screen.getByTestId('customizer-toggle-HasLid'));
+    expect(execute).toHaveBeenLastCalledWith({ ...DEFAULTS, HasLid: false });
+    fireEvent.click(screen.getByTestId('customizer-option-Screw-M5'));
     expect(execute).toHaveBeenLastCalledWith({ ...DEFAULTS, HasLid: false, Screw: 'M5' });
     expect(window.location.search).toBe('?p.HasLid=false&p.Screw=M5');
   });
 
   it('runs a typed number at once on Enter', () => {
     const { execute } = setup();
-    const input = screen.getByTestId('scrub-input-Width');
+    const input = numberInput('Width');
     fireEvent.change(input, { target: { value: '55' } });
     fireEvent.keyDown(input, { key: 'Enter' });
     expect(execute).toHaveBeenLastCalledWith({ ...DEFAULTS, Width: 55 });
@@ -108,14 +189,26 @@ describe('ModelCustomizer re-execution', () => {
     const { execute } = setup();
     fireEvent.click(screen.getByTestId('customizer-reset'));
     expect(execute).toHaveBeenLastCalledWith(DEFAULTS);
-    expect((screen.getByTestId('scrub-input-Width') as HTMLInputElement).value).toBe('40');
+    expect(numberInput('Width').value).toBe('40');
     expect(window.location.search).toBe('');
+    expect((screen.getByTestId('customizer-reset') as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it('resets one value and leaves the others', () => {
+    window.history.replaceState(null, '', '/p/enclosure?p.Width=60&p.HasLid=false');
+    const { execute } = setup();
+    expect(screen.queryByTestId('customizer-reset-Screw')).toBeNull();
+    fireEvent.click(screen.getByTestId('customizer-reset-Width'));
+    expect(execute).toHaveBeenLastCalledWith({ ...DEFAULTS, HasLid: false });
+    expect(numberInput('Width').value).toBe('40');
+    expect(screen.queryByTestId('customizer-reset-Width')).toBeNull();
+    expect(window.location.search).toBe('?p.HasLid=false');
   });
 
   it('keeps showing a short error from a failed build', async () => {
     const execute = vi.fn<ModelCustomizerProps['execute']>().mockRejectedValue(new Error('boom\nstack line'));
     setup({ execute });
-    await act(async () => { fireEvent.click(screen.getByTestId('customizer-reset')); });
+    await act(async () => { fireEvent.click(screen.getByTestId('customizer-toggle-HasLid')); });
     expect(screen.getByTestId('customizer-error').textContent).toBe('boom');
   });
 
@@ -129,8 +222,8 @@ describe('ModelCustomizer shared links', () => {
   it('applies valid link values on load, runs them, and reports ignored ones', () => {
     window.history.replaceState(null, '', '/p/enclosure?version=2&p.Width=60&p.Screw=M9&p.Ghost=1');
     const { execute } = setup();
-    expect((screen.getByTestId('scrub-input-Width') as HTMLInputElement).value).toBe('60');
-    expect((screen.getByTestId('customizer-select-Screw') as HTMLSelectElement).value).toBe('M4');
+    expect(numberInput('Width').value).toBe('60');
+    expect(radio('customizer-option-Screw-M4').checked).toBe(true);
     expect(execute).toHaveBeenCalledTimes(1);
     expect(execute).toHaveBeenCalledWith({ ...DEFAULTS, Width: 60 });
     expect(screen.getByTestId('customizer-notice').textContent)
