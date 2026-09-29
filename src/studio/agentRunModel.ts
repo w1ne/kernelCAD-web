@@ -75,7 +75,8 @@ export function runSteps(events: readonly GenerateEvent[], phase: GenerationPhas
 
     return RUN_STEPS.map((step, index) => {
         const status = statusAt(index);
-        let detail = progressDetail(byStep.get(index), step.label);
+        // Only the live or failed step carries a detail line; done steps stay quiet.
+        let detail = status === 'current' || status === 'failed' ? progressDetail(byStep.get(index), step.label) : undefined;
         if (status === 'current' && !detail) {
             detail = tools > 0 ? `${tools} tool call${tools === 1 ? '' : 's'}` : index === 0 ? 'Starting…' : undefined;
         }

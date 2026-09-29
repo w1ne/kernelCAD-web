@@ -103,7 +103,7 @@ export function ProgressSteps({
                         icon={<X className="size-4" strokeWidth={1.75} />}
                         size="sm"
                         onClick={onCancel}
-                        className="hover:text-danger"
+                        className="hover:text-danger max-md:size-touch"
                     />
                 )}
             </header>

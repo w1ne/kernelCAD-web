@@ -63,7 +63,7 @@ function RunLog({ events }: { events: readonly GenerateEvent[] }): JSX.Element |
                 type="button"
                 aria-expanded={open}
                 onClick={() => setOpen((v) => !v)}
-                className="focus-ring flex w-full items-center gap-1 px-3 py-1.5 text-left text-2xs font-medium text-fg-3 hover:text-fg"
+                className="focus-ring flex w-full items-center gap-1 px-3 py-1.5 text-left text-2xs font-medium text-fg-3 hover:text-fg max-md:min-h-touch"
                 data-testid="agent-run-log-toggle"
             >
                 <ChevronDown className={cx('size-3.5 transition-transform duration-80', !open && '-rotate-90')} strokeWidth={1.75} aria-hidden="true" />

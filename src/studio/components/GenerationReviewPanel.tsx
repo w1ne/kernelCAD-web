@@ -143,7 +143,7 @@ export function GenerationReviewPanel({
                     type="button"
                     aria-expanded={diffOpen}
                     onClick={() => setDiffOpen((v) => !v)}
-                    className="focus-ring flex items-center gap-1 rounded-control text-ui font-medium text-accent hover:text-accent-hover"
+                    className="focus-ring flex items-center gap-1 rounded-control text-ui font-medium text-accent hover:text-accent-hover max-md:min-h-touch"
                     data-testid="agent-proposal-diff-toggle"
                 >
                     <ChevronDown className={cx('size-4 transition-transform duration-80', !diffOpen && '-rotate-90')} strokeWidth={1.75} aria-hidden="true" />
