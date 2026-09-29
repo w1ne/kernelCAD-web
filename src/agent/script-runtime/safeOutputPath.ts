@@ -176,3 +176,8 @@ function canonicalize(absolutePath: string): string {
   // No existing ancestor found; fallback to the input (should not happen on a real FS).
   return absolutePath;
 }
+
+/** A part name made safe for a file name: `[^A-Za-z0-9._-]` → `-`. */
+export function fileSafePartName(name: string): string {
+  return name.replace(/[^A-Za-z0-9._-]/g, '-');
+}
