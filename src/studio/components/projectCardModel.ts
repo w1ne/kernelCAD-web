@@ -16,6 +16,23 @@ export function projectHref(slug: string): string {
 }
 
 /**
+ * Link that opens a project and starts its remix: /p/<slug> copies it into
+ * the viewer's projects, after sign-in when needed.
+ */
+export function projectRemixHref(slug: string): string {
+    return `${projectHref(slug)}?remix=1`;
+}
+
+/**
+ * How a card plays its hover clip: animated images (webp, gif, apng) swap in
+ * as an <img>; anything else is a muted looping <video>.
+ */
+export function clipKind(url: string): 'image' | 'video' {
+    const path = url.split(/[?#]/, 1)[0] ?? '';
+    return /\.(webp|gif|apng|avif)$/i.test(path) ? 'image' : 'video';
+}
+
+/**
  * The project's latest captured render. The server serves it for public
  * projects only (private ones answer 404, so the card shows its placeholder).
  * `version` changes the URL per revision, so a browser cache never shows an

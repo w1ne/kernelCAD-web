@@ -208,6 +208,9 @@ export interface GalleryItem {
   ownerName: string | null;
   /** Short-lived signed URL of the card render; null if unavailable. */
   renderUrl: string | null;
+  /** Optional short turntable clip (mp4/webm, or animated webp/gif); the
+   *  card plays it on hover. Absent when the server has none. */
+  clipUrl?: string | null;
   remixCount: number;
   featured: boolean;
   /** Source this project was remixed from, while that source is public. */

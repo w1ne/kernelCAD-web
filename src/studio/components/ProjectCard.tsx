@@ -2,11 +2,12 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 //
 // One project as a card: render, title, a meta line and actions. Used by
-// "Your projects" (/me); the gallery uses the same card.
-import { useId, useState, type JSX, type ReactNode } from 'react';
-import { Box, Check, Lock, MessageSquareText, MoreHorizontal } from 'lucide-react';
+// "Your projects" (/me) and the gallery (/gallery). A card with a clip plays
+// it on hover or keyboard focus (a slow turntable), not with reduced motion.
+import { useId, useState, type FocusEvent, type JSX, type ReactNode } from 'react';
+import { Box, Check, Lock, MessageSquareText, MoreHorizontal, Play } from 'lucide-react';
 import { Button, IconButton, Menu, cx, type MenuEntry } from '../../ui';
-import { projectHref, resumePrompt, type ProjectRef } from './projectCardModel';
+import { clipKind, projectHref, resumePrompt, type ProjectRef } from './projectCardModel';
 import { useCopyText } from './useCopyText';
 
 export interface ProjectCardProps {
@@ -14,6 +15,8 @@ export interface ProjectCardProps {
     readonly title: string;
     /** Render image; null (or a failed load) shows the placeholder. */
     readonly renderUrl: string | null;
+    /** Short looping clip (video, or an animated webp/gif) played on hover. */
+    readonly clipUrl?: string | null;
     /** Placeholder text when there is no render. */
     readonly placeholder?: 'none' | 'private';
     /** Small line under the title: badges, time, revision count. */
@@ -24,6 +27,8 @@ export interface ProjectCardProps {
     readonly menu?: readonly MenuEntry[];
     /** Dims the card while a rename, delete or privacy change runs. */
     readonly busy?: boolean;
+    /** Tighter padding and title on phones, for a two-column grid. */
+    readonly compact?: boolean;
     readonly testId?: string;
 }
 
@@ -31,19 +36,33 @@ export function ProjectCard({
     slug,
     title,
     renderUrl,
+    clipUrl,
     placeholder = 'none',
     meta,
     actions,
     menu,
     busy,
+    compact,
     testId,
 }: ProjectCardProps): JSX.Element {
     const titleId = useId();
     const href = projectHref(slug);
     const name = title.trim() || 'Untitled';
+    const [playing, setPlaying] = useState(false);
+    const start = (): void => {
+        if (clipUrl && !prefersReducedMotion()) setPlaying(true);
+    };
+    const stop = (): void => setPlaying(false);
+    const onBlur = (e: FocusEvent<HTMLElement>): void => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) stop();
+    };
     return (
         <article
             aria-labelledby={titleId}
+            onPointerEnter={clipUrl ? start : undefined}
+            onPointerLeave={clipUrl ? stop : undefined}
+            onFocus={clipUrl ? start : undefined}
+            onBlur={clipUrl ? onBlur : undefined}
             aria-busy={busy || undefined}
             data-testid={testId}
             data-slug={slug}
@@ -56,10 +75,11 @@ export function ProjectCard({
             {/* The image repeats the title link; keep it out of the tab order. */}
             <a href={href} tabIndex={-1} aria-hidden="true" className="relative block aspect-[16/10] overflow-hidden bg-surface-2 sm:aspect-[4/3]">
                 <ProjectRender url={renderUrl} placeholder={placeholder} />
+                {clipUrl && <ProjectClip url={clipUrl} playing={playing} />}
             </a>
-            <div className="flex flex-1 flex-col gap-1.5 p-4">
+            <div className={cx('flex flex-1 flex-col gap-1.5', compact ? 'p-3 sm:p-4' : 'p-4')}>
                 <div className="flex items-start justify-between gap-2">
-                    <h3 id={titleId} className="min-w-0 text-body font-medium text-fg">
+                    <h3 id={titleId} className={cx('min-w-0 font-medium text-fg', compact ? 'text-ui sm:text-body' : 'text-body')}>
                         <a href={href} className="focus-ring line-clamp-2 break-words rounded-control no-underline hover:underline">
                             {name}
                         </a>
@@ -107,6 +127,49 @@ function ProjectRender({ url, placeholder }: { readonly url: string | null; read
             {isPrivate ? <Lock className="size-6" strokeWidth={1.5} /> : <Box className="size-6" strokeWidth={1.5} />}
             <span className="text-2xs">{isPrivate ? 'Private: no preview' : 'No preview yet'}</span>
         </div>
+    );
+}
+
+function prefersReducedMotion(): boolean {
+    return typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+        && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+/**
+ * The hover clip over the render, plus a small play mark that says the model
+ * moves. The clip loads only on the first hover; a failed clip stays hidden.
+ */
+function ProjectClip({ url, playing }: { readonly url: string; readonly playing: boolean }): JSX.Element {
+    const [failed, setFailed] = useState<string | null>(null);
+    const show = playing && failed !== url;
+    const layer = 'absolute inset-0 size-full object-cover';
+    return (
+        <>
+            {show && (clipKind(url) === 'image'
+                ? <img src={url} alt="" data-testid="project-card-clip" onError={() => setFailed(url)} className={layer} />
+                : (
+                    <video
+                        src={url}
+                        data-testid="project-card-clip"
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                        preload="auto"
+                        onError={() => setFailed(url)}
+                        className={layer}
+                    />
+                ))}
+            <span
+                data-testid="project-card-clip-mark"
+                className={cx(
+                    'pointer-events-none absolute bottom-2 left-2 inline-flex size-6 items-center justify-center rounded-full bg-surface-1/90 text-fg shadow-e1 transition-opacity duration-80',
+                    show && 'opacity-0',
+                )}
+            >
+                <Play className="size-3 translate-x-px fill-current" strokeWidth={2} />
+            </span>
+        </>
     );
 }
 
