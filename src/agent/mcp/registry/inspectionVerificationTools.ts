@@ -14,7 +14,7 @@ const inspectToolEntry: ToolRegistryEntry = {
       'Use this when you need to read facts about a model. One reader, selected by `of`:\n' +
       "- 'assembly' — physical assembly inventory (parts, bboxes, connectors, mates, disconnected solids).\n" +
       "- 'robot' — URDF/SDFormat export preview (links, joints, planning groups, end-effectors, issues).\n" +
-      "- 'step' — inspect an imported STEP file.\n" +
+      "- 'step' — inspect an imported STEP file: solid tree, exact bbox/volume, cylindrical holes (breached bores flagged partial; holeDetection: 'exact' | 'heuristic').\n" +
       "- 'shape' — volume / surfaceArea / bbox for one feature ({ feature_id? }).\n" +
       "- 'mass' — mass, centre of mass, centroidal inertia tensor (inertia6 + 3x3 inertiaMatrix), principalMoments/principalAxes, symmetry flags, and optionally the radius of gyration about an arbitrary axis ({ feature_id?, density?, gyration_axis? }); density in kg/m^3, defaults to 1000 (water).\n" +
       "- 'features' — features captured by the script (kind, id, params, transforms, suppression).\n" +

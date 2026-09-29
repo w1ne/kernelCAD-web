@@ -15,9 +15,12 @@ const evaluateScriptToolEntry: ToolRegistryEntry = {
       'also returns a parts summary { count, names } AND runs the mechanism-truth gate by ' +
       'default: the `mechanism` field reports real/broken/unverified and a broken mechanism ' +
       '(disconnected components / mechanism.orphan-part, self-collision, fastened drift, ' +
-      'dof-mismatch) makes ok:false with the failures in diagnostics — multi-body assemblies ' +
-      'need connectors + mates/joints (axis+revolute for shafts/hinges/gears; frame+fastened ' +
-      'for rigid; or arm.revolute/.prismatic/.ball/.fixed). Pass { skipMechanismCheck: true } to opt out. ' +
+      'dof-mismatch) makes ok:false with the failures in diagnostics — a mechanism (any mate, ' +
+      'joint, transmission or .solvedModel()) needs every part linked by connectors + mates/joints ' +
+      '(axis+revolute for shafts/hinges/gears; frame+fastened for rigid; or ' +
+      'arm.revolute/.prismatic/.ball/.fixed). A plain multi-part assembly with no mates (base + lid, ' +
+      'print layout) is independent bodies and passes. Pass { skipMechanismCheck: true } to opt out ' +
+      '(e.g. a deliberately free part next to a mechanism). ' +
       'Pass either { file: "<path>" } or { code: "<inline source>" }. ' +
       'Set { dryRun: true } for fast validation while iterating: transpile + capture + ' +
       'capture-light checks WITHOUT OCCT lowering, DFM gates, or meshing — milliseconds ' +
