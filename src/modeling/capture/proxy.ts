@@ -1315,11 +1315,20 @@ export class Shape {
     ) {
       return this._loweredBackend;
     }
+    const { OcctBackend, initOcct } = await import('../../kernel/backends/occt/occtBackend');
+    // Reuse the session's last full lower when nothing it depends on changed.
+    const reused = this.session.reusableLoweredShape(this.id);
+    if (reused instanceof OcctBackend) {
+      this._loweredBackend = reused;
+      this._loweredAtRecordCount = records.length;
+      this._loweredAtTransformCount = transformCount;
+      return reused;
+    }
     const { RecomputeEngine } = await import('../compute/recomputeEngine');
     const { createOcctLowerer } = await import('../backends/occt/occtLowerer');
-    const { OcctBackend, initOcct } = await import('../../kernel/backends/occt/occtBackend');
     await initOcct();
     const engine = new RecomputeEngine(createOcctLowerer(this.session));
+    const pending = this.session.snapshotFullLower(new Map());
     const r = await engine.run(
       records as readonly import('../../shared/intent/featureRecord').FeatureRecord[],
       {
@@ -1335,6 +1344,7 @@ export class Shape {
     for (const [id, sh] of r.shapes) {
       this.session.cachedShapes.set(id, sh);
     }
+    this.session.lastFullLower = { ...pending, shapes: r.shapes };
     const shape = r.shapes.get(this.id);
     if (!shape) {
       throw new Error(`Shape.lower(): shape '${this.id}' not lowered (check upstream diagnostics).`);

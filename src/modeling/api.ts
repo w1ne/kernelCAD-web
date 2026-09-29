@@ -49,7 +49,7 @@ import type {
   SupportedServoRevoluteOptions,
   SupportedServoRevoluteResult,
 } from './joints';
-import { makePrimitiveMethods, makeSpringMethod, makeExtrudeMethods } from './apiShapeMethods';
+import { makePrimitiveMethods, makeSpringMethod, makeSpurGearMethod, makeExtrudeMethods } from './apiShapeMethods';
 import { makeParamMethods } from './apiParamMethods';
 import { makePartsLib } from './apiPartsLib';
 import { makeNurbsSurfaceMethods, makeCurveMethods, makeSweepMethods } from './apiSurfaceMethods';
@@ -187,6 +187,17 @@ export interface KernelCadApi {
    * along lamp arms.
    */
   spring(opts: SpringOptions): Shape;
+  /**
+   * Build an involute spur gear as ONE manifold solid: the tooth is generated
+   * by the standard basic rack (true involute above the base circle, trochoid
+   * root fillet, correct undercut below ~17 teeth at 20°). Axis +Z, face from
+   * z = 0 to z = faceWidth, tooth 0 centred on +X.
+   *
+   * Two gears of equal module and pressure angle mesh at centre distance
+   * m(z1 + z2)/2. Place the second gear at +X and rotate it by 180/z2 degrees
+   * when z2 is even (0 when odd) so a tooth space faces the first gear.
+   */
+  spurGear(opts: SpurGearOptions): Shape;
   extrudeRect(w: Editable<number>, h: Editable<number>, height: Editable<number>, opts?: ExtrudeOpts): Shape;
   extrudeCircle(r: Editable<number>, height: Editable<number>, opts?: ExtrudeOpts): Shape;
   extrudePolygon(points: Array<[Editable<number>, Editable<number>]>, depth: Editable<number>, opts?: ExtrudeOpts): Shape;
@@ -605,6 +616,22 @@ export interface SpringOptions {
   segments?: number;
 }
 
+export interface SpurGearOptions {
+  /** Module m in mm (pitch diameter = m · teeth). */
+  module: number;
+  /** Tooth count, integer in [6, 400]. */
+  teeth: number;
+  /** Face width (extrude depth) in mm. */
+  faceWidth: number;
+  /** Pressure angle in degrees, default 20. */
+  pressureAngle?: number;
+  /** Optional through-bore diameter in mm. */
+  bore?: number;
+  /** Circular backlash in mm at the pitch circle of a pair built with the
+   *  same value (each gear thins its tooth by half). Default 0.05 · module. */
+  backlash?: number;
+}
+
 /** `helix()` options as scripts pass them: dimensions may be ParamRefs. */
 export interface EditableHelixOptions {
   radius: Editable<number>;
@@ -620,6 +647,7 @@ export function createModelingApi(ctx: ApiContext): KernelCadApi {
   const api: KernelCadApi = {
     ...makePrimitiveMethods(session),
     spring: makeSpringMethod(session, () => api),
+    spurGear: makeSpurGearMethod(session, () => api),
     ...makeExtrudeMethods(session),
     assembly(name) {
       return makeAssembly(name, session);

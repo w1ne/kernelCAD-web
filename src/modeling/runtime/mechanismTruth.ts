@@ -793,6 +793,11 @@ async function checkDofMismatch(
  * Reuses the rest-pose `SolvedSample.scene` lazily lowered by criteria
  * 2 + 3 — no new pose solve, no new BREP lower.
  */
+/** Appended to the joint-mesh-gap hint: the tempting fix (move the
+ *  connector onto the body) drags the mated part along with it. */
+const JOINT_MESH_GAP_CONNECTOR_MOVE_WARNING =
+  'Moving a connector also moves the part mated to it (the mate re-aligns the partner), which can silently reopen a collision — prefer growing the geometry, and re-run the collision check after any connector move.';
+
 async function checkJointMeshContinuityCriterion(
   arm: Assembly,
   solved: SolvedSample[],
@@ -829,15 +834,23 @@ async function checkJointMeshContinuityCriterion(
         `${r.bearingGapMm.toFixed(1)}mm — no bearing surface constrains ` +
         `the joint within tolerance either.`
       : '';
-    out.push(makeFailure(
+    const failure = makeFailure(
       'mechanism.joint-mesh-gap',
       `Joint '${r.mateName}' ${r.side} body '${r.partName}': nearest solid is ` +
       `${r.signedDistanceMm.toFixed(1)}mm from the pivot origin (allowed ` +
       `${allowedGap.toFixed(1)}mm = clearance bore ${r.clearanceRadiusMm.toFixed(1)}mm + ` +
       `${JOINT_MESH_GAP_TOLERANCE_MM.toFixed(1)}mm margin). The link mesh does not ` +
       `reach the joint it pivots on — extend the body geometry so its OCCT ` +
-      `knuckle solid surrounds the joint origin at rest pose.` + bearingNote,
-    ));
+      `knuckle solid surrounds the joint origin at rest pose.` + bearingNote +
+      ` Do not fix this by moving the connector alone: the mate re-aligns the ` +
+      `mated part '${r.otherPartName}' onto the moved connector, which can ` +
+      `silently reopen a collision elsewhere — re-run the collision check ` +
+      `after any connector move.`,
+    );
+    out.push({
+      ...failure,
+      hint: `${failure.hint} ${JOINT_MESH_GAP_CONNECTOR_MOVE_WARNING}`,
+    });
   }
   return out;
 }
@@ -969,6 +982,9 @@ async function lowerAssemblySceneForPose(
   const result = await engine.run(arm.__session().getRecords(), {
     paramTable: arm.__session().paramTable,
     gatedFeatureNames: arm.__session().gatedFeatureNames,
+    // Only the appended pose scene needs lowering; the part records are
+    // unchanged since the last full lower.
+    seedShapes: arm.__session().reusableLoweredPrefix(),
   });
   const sourceId: FeatureId | undefined = scene.__sourceFeatureId();
   if (sourceId === undefined) return undefined;

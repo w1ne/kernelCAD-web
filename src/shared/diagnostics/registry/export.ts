@@ -76,6 +76,14 @@ export const EXPORT_CODES = {
     group: 'export',
     description: 'A finished STL export failed the post-export edge-adjacency watertight verify (open or over-shared mesh edges remain).',
   },
+  'export.mesh.fused-seam-fallback': {
+    hintTemplate:
+      'The fused union of the assembly parts cracked when meshed at the named seams, so the STL carries each part as its own closed shell (watertight; slicers merge overlapping shells). To get one fused shell, give the parts >=0.1 mm of overlap or a clear gap at those seams instead of a few hundredths of a mm, or export per part.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'use >=0.1 mm overlap or a clear gap at the named part seams' },
+    defaultSeverity: 'warn',
+    group: 'export',
+    description: 'A multi-part STL export fell back from the fused union mesh (not watertight at the part seams) to per-part closed shells.',
+  },
   'export.part.not-found': {
     hintTemplate:
       'The requested part name is not in the solved assembly. Pick one of the valid names listed in the message, or call list_part_stats to enumerate parts.',
