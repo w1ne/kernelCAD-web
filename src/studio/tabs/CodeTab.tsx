@@ -9,6 +9,8 @@ import type { EditorEdit, EditorLike } from '../../shared/types/editor';
 import { useRecomputeResult } from '../hooks/useRecomputeResult';
 import { useFeatureSelection } from '../hooks/useFeatureSelection';
 import { useWorkbench } from '../context/WorkbenchContext';
+import { currentStudioScript, devMeshAvailable } from '../scriptSource';
+import { scriptCodeEditorIsReadOnly } from '../linkedScriptAutosave';
 import { getFeatureSourceIndex } from '../selectionCode/featureSourceIndex';
 import { attachCodeGeometrySync, type CodeGeometrySync, type SyncEditorLike } from '../selectionCode/codeGeometrySync';
 import { selectionCodeStore } from '../selectionCode/selectionCodeStore';
@@ -131,6 +133,7 @@ function findFeatureById(
 
 export function CodeTab(): JSX.Element {
     const workbench = useWorkbench();
+    const readOnlyScript = scriptCodeEditorIsReadOnly(currentStudioScript(), devMeshAvailable());
     const { features, diagnostics } = useRecomputeResult();
     const { selectedFeatureId } = useFeatureSelection();
 
@@ -231,24 +234,56 @@ export function CodeTab(): JSX.Element {
     );
 
     return (
-        <div className="w-full h-full bg-[#111] text-gray-300" data-testid="code-tab">
-            <MonacoEditor
-                height="100%"
-                defaultLanguage="typescript"
-                theme="vs-dark"
-                defaultValue={workbench.code ?? ''}
-                onChange={handleChange}
-                beforeMount={handleBeforeMount}
-                onMount={handleMount}
-                options={{
-                    minimap: { enabled: false },
-                    fontSize: 14,
-                    fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
-                    scrollBeyondLastLine: false,
-                    automaticLayout: true,
-                    padding: { top: 16 },
-                }}
-            />
+        <CodeEditorPane
+            readOnly={readOnlyScript}
+            defaultValue={workbench.code ?? ''}
+            onChange={handleChange}
+            beforeMount={handleBeforeMount}
+            onMount={handleMount}
+        />
+    );
+}
+
+function CodeEditorPane({
+    readOnly,
+    defaultValue,
+    onChange,
+    beforeMount,
+    onMount,
+}: {
+    readOnly: boolean;
+    defaultValue: string;
+    onChange: (next: string | undefined) => void;
+    beforeMount: (monaco: unknown) => void;
+    onMount: (editor: unknown, monaco: unknown) => void;
+}): JSX.Element {
+    return (
+        <div className="flex h-full w-full flex-col bg-[#111] text-gray-300" data-testid="code-tab">
+            {readOnly && (
+                <p className="px-4 pt-3 text-xs text-fg-2" data-testid="code-tab-readonly">
+                    This page follows the script file. Edits are not saved here.
+                </p>
+            )}
+            <div className="min-h-0 flex-1">
+                <MonacoEditor
+                    height="100%"
+                    defaultLanguage="typescript"
+                    theme="vs-dark"
+                    defaultValue={defaultValue}
+                    onChange={onChange}
+                    beforeMount={beforeMount}
+                    onMount={onMount}
+                    options={{
+                        minimap: { enabled: false },
+                        fontSize: 14,
+                        fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+                        scrollBeyondLastLine: false,
+                        automaticLayout: true,
+                        padding: { top: 16 },
+                        readOnly,
+                    }}
+                />
+            </div>
         </div>
     );
 }

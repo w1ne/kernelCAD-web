@@ -28,6 +28,7 @@ function isCodeParsable(code: string): boolean {
 import { useProject, isEphemeralProjectId } from './context/ProjectContext';
 import { loadGalleryScriptSource, loadStudioScriptSource } from './scriptSource';
 import { registerLiveScriptTarget, unregisterLiveScriptTarget } from './liveScriptBridge';
+import { noteDiskScriptSource, useLinkedScriptAutosave } from './linkedScriptAutosave';
 import type { KernelCADProject, ViewState } from '../authoring/projectService';
 
 function readScriptParam(): string | null {
@@ -128,7 +129,11 @@ function useProjectWorkbenchSync(
 }
 
 function AppContent({ isDevLab }: { isDevLab: boolean }) {
-  const { setCode, setViewMode } = useWorkbench();
+  const { code, setCode, setViewMode } = useWorkbench();
+  const codeRef = useRef(code);
+  useEffect(() => {
+    codeRef.current = code;
+  }, [code]);
   // "We have seeded the workbench from a source route or project at least
   // once." No render output reads this flag (only the effects below and in
   // useProjectWorkbenchSync), so it lives in a ref: the sync effect can flip
@@ -163,6 +168,7 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
     sourcePromise
       .then((source) => {
         if (cancelled) return;
+        if (scriptParam && !galleryParam) noteDiskScriptSource(scriptParam, source);
         setCode(source);
         setViewMode('code');
         setSourceLoadError(null);
@@ -187,9 +193,11 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
   // in this component.
   useEffect(() => {
     if (!scriptParam || galleryParam) return;
-    registerLiveScriptTarget(scriptParam, setCode);
+    registerLiveScriptTarget(scriptParam, setCode, () => codeRef.current);
     return () => unregisterLiveScriptTarget(setCode);
   }, [galleryParam, scriptParam, setCode]);
+
+  useLinkedScriptAutosave(scriptParam && !galleryParam ? scriptParam : null, code);
 
   useProjectWorkbenchSync(isDevLab, Boolean(scriptParam || galleryParam), hasInitializedRef);
 
