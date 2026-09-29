@@ -3,31 +3,10 @@
 //
 // "Your projects" with no projects yet: the two ways to start.
 import type { ReactNode } from 'react';
-import { ArrowRight, Check, Copy, PlugZap, Sparkles } from 'lucide-react';
+import { ArrowRight, PlugZap, Sparkles } from 'lucide-react';
 import { buttonClass, cx } from '../../ui';
 import { MCP_URL } from '../connect/connectLinks';
-import { useCopyText } from '../components/useCopyText';
-
-/** A mono value with a copy button (the MCP URL). */
-function CopyField({ value, label }: { value: string; label: string }): ReactNode {
-  const { state, copy } = useCopyText();
-  return (
-    <div className="flex min-w-0 items-stretch overflow-hidden rounded-control border border-border-strong bg-surface-1">
-      <code className="min-w-0 flex-1 truncate px-3 py-2 font-mono text-code-lg text-fg" title={value}>{value}</code>
-      <button
-        type="button"
-        onClick={() => void copy(value)}
-        aria-label={state === 'copied' ? `${label} copied` : `Copy ${label}`}
-        className="focus-ring inline-flex shrink-0 items-center gap-1.5 border-l border-border bg-surface-2 px-3 text-ui font-medium text-fg transition-colors duration-80 hover:bg-surface-3 max-md:min-h-touch"
-      >
-        {state === 'copied'
-          ? <Check className="size-4 text-ok" strokeWidth={1.75} aria-hidden="true" />
-          : <Copy className="size-4" strokeWidth={1.75} aria-hidden="true" />}
-        <span aria-live="polite">{state === 'copied' ? 'Copied' : state === 'failed' ? 'Copy failed' : 'Copy'}</span>
-      </button>
-    </div>
-  );
-}
+import { CopyField } from '../../funnel/components/CopyField';
 
 function StartPath({ icon, tone, step, title, children }: {
   icon: ReactNode;
@@ -73,7 +52,7 @@ export function MeEmptyState(): ReactNode {
           <p className="text-ui text-fg-2">
             Add kernelCAD to the chat agent you already use. Ask it for a part; the project shows up here.
           </p>
-          <CopyField value={MCP_URL} label="MCP server URL" />
+          <CopyField value={MCP_URL} copyLabel="Copy MCP server URL" />
           <a href="/connect" className="focus-ring mt-auto inline-flex items-center gap-1 self-start rounded-control text-ui font-medium text-accent no-underline hover:underline max-md:min-h-touch">
             Setup steps for your agent <ArrowRight className="size-4" strokeWidth={1.75} aria-hidden="true" />
           </a>
