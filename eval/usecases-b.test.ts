@@ -6,26 +6,21 @@
 
 import { defineUsecaseSuite } from './usecaseSuite';
 
-const ORPHAN_GATE = 'https://github.com/w1ne/kernelCAD-web/issues/804';
 const GEAR_RECIPE = 'https://github.com/w1ne/kernelCAD-web/issues/805';
 const DXF_3D = 'https://github.com/w1ne/kernelCAD-web/issues/806';
+const STL_SEAMS = 'https://github.com/w1ne/kernelCAD-web/issues/807';
 
 defineUsecaseSuite([
   {
     id: 'usecase-spur-gear-pair',
-    open: {
-      'evaluate_script accepts the parts (mechanism gate on)': ORPHAN_GATE,
-      'cookbook involute-spur-gear-pair recipe builds closed solid gears': GEAR_RECIPE,
-    },
+    open: { 'cookbook involute-spur-gear-pair recipe builds closed solid gears': GEAR_RECIPE },
   },
-  { id: 'usecase-keychain', open: { 'evaluate_script accepts the parts (mechanism gate on)': ORPHAN_GATE } },
+  { id: 'usecase-keychain' },
+  { id: 'usecase-rpi4-enclosure' },
   { id: 'usecase-floor-plan', open: { 'DXF plan section exports': DXF_3D } },
   {
     id: 'usecase-plywood-shelf',
-    open: {
-      'DXF has the flat outline of every part': DXF_3D,
-      'evaluate_script accepts the parts (mechanism gate on)': ORPHAN_GATE,
-    },
+    open: { 'DXF has the flat outline of every part': DXF_3D },
   },
-  { id: 'usecase-robot-arm' },
+  { id: 'usecase-robot-arm', open: { 'STL exports (whole model)': STL_SEAMS } },
 ]);

@@ -370,7 +370,8 @@ export async function standardExports(b: UsecaseBuild, opts: StandardExportOpts)
     // Touching parts share faces in one combined mesh, so each part's own
     // STL (export --part) is what must be closed.
     const each = await runAndExportParts({ code: b.code, fileName: b.scriptPath, scriptDir: dirname(b.scriptPath) });
-    out['STL exports; each part STL is watertight'] = stl.ok && each.parts.length === b.parts.length
+    out['STL exports (whole model)'] = stl.ok && stl.bytes.length > 84;
+    out['each part STL is watertight'] = each.parts.length === b.parts.length
       && meshesClosed(each.parts.map((p) => stlStats(p.bytes)));
   } else {
     out['STL is watertight'] = stl.ok && meshesClosed([stlStats(stl.bytes)]);
