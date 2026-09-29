@@ -335,14 +335,63 @@ export async function restoreProjectRevision(
   );
 }
 
-export async function listMyProjects(): Promise<ProjectRow[]> {
+/** A project in the owner's list: the row without its code and parameters,
+ *  which the list never shows (and which can be large). */
+export type MyProjectRow = Omit<ProjectRow, 'current_code' | 'parameters'>;
+
+/** The signed-in user's own projects, most recently updated first. Empty when
+ *  signed out. The owner filter is required: the read policy also returns
+ *  every public-by-link project of other users. */
+export async function listMyProjects(opts: { limit?: number } = {}): Promise<MyProjectRow[]> {
   const supabase = getSupabase();
-  const { data, error } = await supabase
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const ownerId = session?.user?.id;
+  if (!ownerId) return [];
+  let query = supabase
     .from('projects')
-    .select('id, slug, title, privacy, featured_at, current_code, parameters, version, updated_at, owner_id')
+    .select('id, slug, title, privacy, featured_at, version, updated_at, owner_id')
+    .eq('owner_id', ownerId)
     .order('updated_at', { ascending: false });
+  if (opts.limit !== undefined) query = query.limit(opts.limit);
+  const { data, error } = await query;
   if (error) throw new Error(error.message);
-  return (data as ProjectRow[] | null) ?? [];
+  return (data as MyProjectRow[] | null) ?? [];
+}
+
+/** Longest project title; the server save path trims titles to the same length. */
+export const PROJECT_TITLE_MAX = 80;
+
+/** Owner-only rename (the projects owner-update policy). Returns the saved
+ *  title and the new updated_at. */
+export async function renameProject(
+  id: string,
+  title: string,
+): Promise<Pick<ProjectRow, 'title' | 'updated_at'>> {
+  const clean = title.trim().slice(0, PROJECT_TITLE_MAX);
+  if (!clean) throw new Error('A project needs a name.');
+  const { data, error } = await getSupabase()
+    .from('projects')
+    .update({ title: clean })
+    .eq('id', id)
+    .select('title, updated_at')
+    .single();
+  if (error) throw new Error(error.message);
+  return data as Pick<ProjectRow, 'title' | 'updated_at'>;
+}
+
+/** Owner-only delete (the projects owner-delete policy). Revisions, gallery
+ *  rows and generations of the project go with it. Throws when no row was
+ *  deleted, so a missing permission does not look like success. */
+export async function deleteProject(id: string): Promise<void> {
+  const { data, error } = await getSupabase()
+    .from('projects')
+    .delete()
+    .eq('id', id)
+    .select('id');
+  if (error) throw new Error(error.message);
+  if (!data || (data as unknown[]).length === 0) throw new Error('Project not found or not yours.');
 }
 
 // ---------------------------------------------------------------------------
