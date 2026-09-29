@@ -12,8 +12,8 @@ const COMMUNITY = {
   generatedAt: 'e2e',
   entries: [],
   community: [
-    { slug: 'abc123', title: 'Gear stage', ownerName: 'Ada', remixCount: 2, featured: true, posterUrl: '/hero-stool-light.jpg', url: 'https://app.kernelcad.com/p/abc123' },
-    { slug: 'def456', title: 'Stool', ownerName: null, remixCount: 0, featured: false, posterUrl: '/hero-stool-dark.jpg', url: 'https://app.kernelcad.com/p/def456' },
+    { slug: 'abc123', title: 'Gear stage', ownerName: 'Ada', remixCount: 2, featured: true, posterUrl: '/favicon.svg', url: 'https://app.kernelcad.com/p/abc123' },
+    { slug: 'def456', title: 'Bracket', ownerName: null, remixCount: 0, featured: false, posterUrl: '/favicon.svg', url: 'https://app.kernelcad.com/p/def456' },
   ],
 };
 
@@ -25,12 +25,12 @@ for (const width of [1440, 390]) {
   test.describe(`landing at ${width}px`, () => {
     test.use({ viewport: { width, height: width === 390 ? 844 : 900 } });
 
-    test('hero shows the live-model poster, the steps band and community cards without horizontal scroll', async ({ page }) => {
+    test('hero shows the demo video, the steps band and community cards without horizontal scroll', async ({ page }) => {
       await mockGallery(page, COMMUNITY);
       await page.goto(`${SITE_BASE}/`);
 
-      await expect(page.locator('#hero-model .hero-model-poster')).toBeVisible();
-      await expect(page.locator('#hero-model iframe')).toHaveAttribute('src', /\/embed\/vEuEM4C5\?revision=1$/);
+      await expect(page.locator('.hero-proof #demo-video')).toBeAttached();
+      await expect(page.locator('.hero iframe')).toHaveCount(0);
       await expect(page.locator('.steps-list .step')).toHaveCount(3);
 
       const cards = page.locator('#gallery-grid .gallery-card a.card-action');
@@ -55,3 +55,13 @@ test('hides the gallery when the API and the curated list are both empty', async
   await page.goto(`${SITE_BASE}/`);
   await expect(page.locator('#gallery')).toBeHidden();
 });
+
+for (const colorScheme of ['light', 'dark'] as const) {
+  test(`keeps the vellum palette with a ${colorScheme} system colour scheme`, async ({ page }) => {
+    await page.emulateMedia({ colorScheme });
+    await mockGallery(page, COMMUNITY);
+    await page.goto(`${SITE_BASE}/`);
+    const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+    expect(bg).toBe('rgb(244, 236, 215)');
+  });
+}

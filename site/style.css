@@ -1,8 +1,8 @@
 /* Shared by every kernelcad.com page (landing, docs, legal, thanks, 404).
- * The brand palette lives here. The landing (body.landing) maps it onto the
- * semantic light/dark token set used by the app (src/index.css), so the
- * landing and the pricing island follow the visitor's colour scheme while the
- * other pages keep the vellum look. */
+ * The brand palette lives here. Every page, the landing included, is always
+ * the light vellum palette, whatever the visitor's colour scheme. The landing
+ * (body.landing) also sets the app's --kc-* names, which the pricing island
+ * reads, to the same vellum values. */
 :root {
   --vellum: #F4ECD7;
   --vellum-soft: #EFE5C9;
@@ -24,8 +24,8 @@
   --danger: #B42318;
 }
 
-/* Landing tokens — the same values as the app's --kc-* set (src/index.css).
- * The pricing island reads --kc-* directly. */
+/* Landing tokens — the vellum values under the app's --kc-* names. The
+ * pricing island reads --kc-* directly. Light only: no dark variant. */
 .landing {
   --kc-bg: #F4ECD7;
   --kc-surface-1: #FFFDF7;
@@ -40,8 +40,8 @@
   --kc-accent-hover: #174E8B;
   --kc-on-accent: #FFFFFF;
   --kc-danger: #B42318;
-  /* Uniform "studio" background behind every gallery render. */
-  --card-stage: #ECEEF1;
+  /* Uniform background behind every gallery render. */
+  --card-stage: #EFE5C9;
   --card-shadow: 0 1px 2px rgb(10 22 40 / 0.06);
 
   --vellum: var(--kc-bg);
@@ -49,7 +49,6 @@
   --paper: var(--kc-surface-1);
   --ink: var(--kc-fg);
   --ink-soft: var(--kc-fg-2);
-  --ink-faint: var(--kc-fg-3);
   --blueprint: var(--kc-accent);
   --blueprint-hover: var(--kc-accent-hover);
   --on-blueprint: var(--kc-on-accent);
@@ -57,31 +56,6 @@
   --border: var(--kc-border);
   --danger: var(--kc-danger);
   color-scheme: light;
-}
-
-@media (prefers-color-scheme: dark) {
-  .landing {
-    --kc-bg: #0B111C;
-    --kc-surface-1: #111827;
-    --kc-surface-2: #172033;
-    --kc-surface-3: #1F2A40;
-    --kc-border: #27324A;
-    --kc-border-strong: #5E6E8E;
-    --kc-fg: #E8ECF3;
-    --kc-fg-2: #AAB3C2;
-    --kc-fg-3: #8B96A8;
-    --kc-accent: #5B9BE6;
-    --kc-accent-hover: #79B0EE;
-    --kc-on-accent: #06101E;
-    --kc-danger: #FF6B6B;
-    --card-stage: #1B1D22;
-    --card-shadow: none;
-    --code-bg: #060B14;
-    --code-bg-2: #0E1829;
-    --code-bg-hover: #13213A;
-    --code-rule: #22304A;
-    color-scheme: dark;
-  }
 }
 
 * { box-sizing: border-box; }
@@ -155,7 +129,6 @@ body {
   align-items: center;
   padding: 0 0 44px;
 }
-.landing .hero { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px; padding-bottom: 56px; }
 .hero-copy { min-width: 0; }
 .proof-line {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
@@ -205,7 +178,6 @@ body {
 .btn-primary:hover { background: var(--blueprint-hover); border-color: var(--blueprint-hover); }
 .btn-secondary { background: transparent; color: var(--ink); border-color: var(--rule); }
 .btn-secondary:hover { border-color: var(--ink); }
-.landing .btn-secondary { border-color: var(--kc-border-strong); }
 .btn-sm { min-height: 40px; padding: 8px 16px; font-size: 14px; }
 
 .install-stack { display: grid; gap: 8px; max-width: 620px; }
@@ -219,7 +191,7 @@ body {
   text-align: left;
   min-height: 44px;
 }
-.install:hover { background: var(--code-bg-hover); }
+.install:hover { background: #0F1E33; }
 .install-secondary { background: var(--code-bg-2); }
 .install-secondary:hover { background: var(--code-bg-hover); }
 .install-link { text-decoration: none; color: var(--code-text); }
@@ -230,49 +202,43 @@ body {
 .install .copy { color: #97A0AC; font-size: 11px; padding-left: 8px; border-left: 1px solid var(--code-rule); flex-shrink: 0; }
 .install-note { max-width: 620px; margin: 8px 0 0; color: var(--ink-faint); font-size: 12px; line-height: 1.5; }
 
-/* HERO MODEL — the live /embed viewer over its poster */
-.hero-model { min-width: 0; margin: 0; }
-.hero-model-frame {
-  position: relative;
-  aspect-ratio: 4 / 3;
-  border-radius: 12px;
-  overflow: hidden;
-  background: var(--card-stage);
-  border: 1px solid var(--rule);
-  box-shadow: 0 24px 64px -32px rgb(10 22 40 / 0.35);
+/* DEMO */
+.hero-proof { min-width: 0; }
+.demo-frame {
+  aspect-ratio: 16/9;
+  background: linear-gradient(180deg, #06101F 0%, #0A1628 100%);
+  border-radius: 10px; position: relative; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 30px 80px -30px rgba(10,22,40,0.30);
+  margin-top: 10px;
+  border: 1px solid rgba(10, 22, 40, 0.12);
 }
-.hero-model-poster,
-.hero-model-live {
+.demo-frame video,
+.demo-poster-art {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  border: 0;
-  display: block;
+  object-fit: cover;
 }
-.hero-model-poster { object-fit: cover; }
-.hero-model-live {
+.demo-frame video { object-fit: contain; }
+.demo-poster-art {
+  z-index: 1;
+  background: var(--code-bg);
+  transition: opacity 0.25s ease;
+}
+.demo-poster-art.is-hidden {
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.25s ease-out;
 }
-.hero-model.is-live .hero-model-live { opacity: 1; pointer-events: auto; }
-.hero-model-caption {
-  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;
-  gap: 8px 16px;
-  margin-top: 12px;
-  font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px;
+.demo-meta {
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11px;
   color: var(--ink-soft); letter-spacing: 0.04em;
+  gap: 16px;
 }
-.hero-model-label { display: inline-flex; align-items: center; gap: 8px; }
-.hero-model-label .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-faint); }
-.hero-model.is-live .hero-model-label .dot { background: var(--blueprint); }
-.hero-model-open { color: var(--blueprint); text-decoration: none; font-weight: 500; padding: 8px 0; }
-.hero-model-open:hover { text-decoration: underline; }
-
-/* Legacy demo frame (kept for pages that still reference it) */
-.hero-proof { min-width: 0; }
 .demo-meta .dot { display: inline-block; width: 6px; height: 6px; background: var(--blueprint); border-radius: 50%; margin-right: 8px; vertical-align: middle; }
+.artifact-label { color: var(--blueprint); text-transform: uppercase; }
 
 /* CAPABILITIES */
 .capabilities {
@@ -449,7 +415,6 @@ body {
   padding: 1px 6px;
 }
 .gallery-card.is-skeleton .card-media,
-.card-media.is-loading,
 .skeleton-line {
   background: linear-gradient(90deg, var(--vellum-soft) 0%, var(--paper) 50%, var(--vellum-soft) 100%);
   background-size: 200% 100%;
@@ -681,15 +646,12 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .gallery-card.is-skeleton .card-media,
-  .card-media.is-loading,
   .skeleton-line { animation: none; }
-  .hero-model-live { transition: opacity 0.12s linear; }
 }
 
 /* TABLET */
 @media (max-width: 1023px) {
   .landing .hero { grid-template-columns: 1fr; gap: 36px; }
-  .landing .hero-model { max-width: 640px; }
   .gallery-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .steps-list { grid-template-columns: 1fr; max-width: 640px; margin: 0 auto; }
 }
@@ -712,6 +674,7 @@ body {
   .install-stack { max-width: none; }
   .install { font-size: 12px; padding: 10px 12px; overflow: hidden; }
   .install span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .demo-meta { align-items: flex-start; flex-direction: column; gap: 6px; }
   .capabilities { grid-template-columns: 1fr; margin-bottom: 60px; }
   .landing .capabilities { margin-bottom: 72px; }
   .capability { border-right: 0; border-bottom: 1px solid var(--rule); }
