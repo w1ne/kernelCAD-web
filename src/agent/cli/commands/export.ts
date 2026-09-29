@@ -789,7 +789,7 @@ async function runExportMode(
       const kinds = Object.entries(r.drawingReport.byKind).map(([k, n]) => `${k} ${n}`).join(', ');
       console.log(`drawing: ${r.drawingReport.placed} annotation(s) placed, ${r.drawingReport.overlapped} overlapped (${kinds})`);
     }
-    for (const m of r.meshFiles ?? []) console.log(`wrote mesh ${m}`);
+    for (const m of r.meshFiles ?? []) console.log(`wrote ${format === 'dxf' ? 'part' : 'mesh'} ${m}`);
   }
   process.exitCode = r.exitCode;
 }
