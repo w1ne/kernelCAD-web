@@ -59,26 +59,11 @@ function SheetBody({
     const reduce = useReducedMotion();
     const [theme] = useState<Theme>(() => themeProp ?? themeOf(document.activeElement));
     const [snap, setSnap] = useState(() => initialSnap ?? Math.floor(snapPoints.length / 2));
-    const [dragFraction, setDragFraction] = useState<number | null>(null);
     useFocusTrap(panelRef, true, onClose);
 
     const bottom = side === 'bottom';
+    const [dragFraction, setDragFraction] = useState<number | null>(null);
     const fraction = dragFraction ?? snapPoints[snap];
-
-    const onHandleDown = (e: PointerEvent<HTMLDivElement>): void => {
-        e.currentTarget.setPointerCapture(e.pointerId);
-        setDragFraction(snapPoints[snap]);
-    };
-    const onHandleMove = (e: PointerEvent<HTMLDivElement>): void => {
-        if (dragFraction === null) return;
-        const f = (window.innerHeight - e.clientY) / window.innerHeight;
-        setDragFraction(Math.max(0.1, Math.min(0.95, f)));
-    };
-    const onHandleUp = (): void => {
-        if (dragFraction === null) return;
-        setSnap(nearestSnap(dragFraction, snapPoints));
-        setDragFraction(null);
-    };
 
     const transition = reduce ? FADE : SPRING;
     const offscreen = reduce ? { opacity: 0 } : bottom ? { y: '100%' } : { x: '100%' };
@@ -114,29 +99,7 @@ function SheetBody({
                 )}
             >
                 {bottom && (
-                    <div
-                        role="slider"
-                        tabIndex={0}
-                        aria-label="Sheet height"
-                        aria-orientation="vertical"
-                        aria-valuemin={Math.round(snapPoints[0] * 100)}
-                        aria-valuemax={Math.round(snapPoints[snapPoints.length - 1] * 100)}
-                        aria-valuenow={Math.round(snapPoints[snap] * 100)}
-                        aria-valuetext={`${Math.round(snapPoints[snap] * 100)} % of the screen`}
-                        onKeyDown={(e) => {
-                            const next = snapForKey(e.key, snap, snapPoints.length);
-                            if (next === null) return;
-                            e.preventDefault();
-                            setSnap(next);
-                        }}
-                        onPointerDown={onHandleDown}
-                        onPointerMove={onHandleMove}
-                        onPointerUp={onHandleUp}
-                        onPointerCancel={onHandleUp}
-                        className="focus-ring mx-auto mt-1.5 flex h-6 w-16 shrink-0 cursor-grab touch-none items-center justify-center rounded-full"
-                    >
-                        <span aria-hidden="true" className="h-1 w-10 rounded-full bg-border-strong" />
-                    </div>
+                    <SheetHandle snapPoints={snapPoints} snap={snap} onSnap={setSnap} onDrag={setDragFraction} />
                 )}
                 <header className="flex shrink-0 items-center justify-between gap-2 border-b border-border px-4 py-2">
                     <h2 id={titleId} className="text-title text-fg">
@@ -153,6 +116,68 @@ function SheetBody({
                 <div className="min-h-0 flex-1 overflow-auto p-4">{children}</div>
                 {footer && <footer className="shrink-0 border-t border-border px-4 py-3">{footer}</footer>}
             </motion.div>
+        </div>
+    );
+}
+
+/**
+ * The bottom sheet's grab handle: a vertical slider. Drag it, or use the
+ * arrow keys, Home and End; it settles on the nearest snap point.
+ */
+function SheetHandle({
+    snapPoints,
+    snap,
+    onSnap,
+    onDrag,
+}: {
+    readonly snapPoints: readonly number[];
+    readonly snap: number;
+    readonly onSnap: (index: number) => void;
+    readonly onDrag: (fraction: number | null) => void;
+}): JSX.Element {
+    const [drag, setDrag] = useState<number | null>(null);
+    const update = (f: number | null): void => {
+        setDrag(f);
+        onDrag(f);
+    };
+    const onDown = (e: PointerEvent<HTMLDivElement>): void => {
+        e.currentTarget.setPointerCapture(e.pointerId);
+        update(snapPoints[snap]);
+    };
+    const onMove = (e: PointerEvent<HTMLDivElement>): void => {
+        if (drag === null) return;
+        const f = (window.innerHeight - e.clientY) / window.innerHeight;
+        update(Math.max(0.1, Math.min(0.95, f)));
+    };
+    const onUp = (): void => {
+        if (drag === null) return;
+        onSnap(nearestSnap(drag, snapPoints));
+        update(null);
+    };
+    const pct = (f: number): number => Math.round(f * 100);
+    return (
+        <div
+            role="slider"
+            tabIndex={0}
+            aria-label="Sheet height"
+            aria-orientation="vertical"
+            aria-valuemin={pct(snapPoints[0])}
+            aria-valuemax={pct(snapPoints[snapPoints.length - 1])}
+            aria-valuenow={pct(snapPoints[snap])}
+            aria-valuetext={`${pct(snapPoints[snap])} % of the screen`}
+            onKeyDown={(e) => {
+                const next = snapForKey(e.key, snap, snapPoints.length);
+                if (next === null) return;
+                e.preventDefault();
+                onSnap(next);
+            }}
+            onPointerDown={onDown}
+            onPointerMove={onMove}
+            onPointerUp={onUp}
+            onPointerCancel={onUp}
+            className="focus-ring mx-auto mt-1.5 flex h-6 w-16 shrink-0 cursor-grab touch-none items-center justify-center rounded-full"
+        >
+            <span aria-hidden="true" className="h-1 w-10 rounded-full bg-border-strong" />
         </div>
     );
 }

@@ -11,10 +11,12 @@ import {
     type ReactElement,
     type ReactNode,
     type Ref,
+    type RefObject,
 } from 'react';
 import { createPortal } from 'react-dom';
 import { cx } from './cx';
 import { Kbd } from './Kbd';
+import { menuKey, placeMenu } from './menuModel';
 import { themeOf, type Theme } from './theme';
 
 export interface MenuAction {
@@ -59,8 +61,6 @@ function isAction(e: MenuEntry): e is MenuAction {
     return !('separator' in e);
 }
 
-const EDGE = 8;
-
 /**
  * A dropdown menu: arrow keys, Home/End, Enter/Space, Esc returns focus to
  * the trigger, a click outside closes it.
@@ -94,13 +94,8 @@ export function Menu({ items, trigger, align = 'start', label }: MenuProps): JSX
     // Position under (or above) the trigger once the menu has a size.
     useLayoutEffect(() => {
         if (!open || !triggerRef.current || !menuRef.current) return;
-        const a = triggerRef.current.getBoundingClientRect();
-        const m = menuRef.current.getBoundingClientRect();
-        let top = a.bottom + 4;
-        if (top + m.height > window.innerHeight - EDGE && a.top - 4 - m.height > EDGE) top = a.top - 4 - m.height;
-        let left = align === 'end' ? a.right - m.width : a.left;
-        left = Math.max(EDGE, Math.min(left, window.innerWidth - m.width - EDGE));
-        setPos({ top, left });
+        const viewport = { width: window.innerWidth, height: window.innerHeight };
+        setPos(placeMenu(triggerRef.current.getBoundingClientRect(), menuRef.current.getBoundingClientRect(), align, viewport));
     }, [open, align]);
 
     // Move DOM focus with the active item.
@@ -109,23 +104,7 @@ export function Menu({ items, trigger, align = 'start', label }: MenuProps): JSX
         menuRef.current?.querySelector<HTMLElement>(`[data-index="${focusIndex}"]`)?.focus();
     }, [open, focusIndex, pos]);
 
-    // Close on a press outside the trigger and the menu.
-    useEffect(() => {
-        if (!open) return;
-        const onDown = (e: PointerEvent): void => {
-            const t = e.target as Node;
-            if (menuRef.current?.contains(t) || triggerRef.current?.contains(t)) return;
-            close(false);
-        };
-        document.addEventListener('pointerdown', onDown);
-        return () => document.removeEventListener('pointerdown', onDown);
-    }, [open]);
-
-    const move = (delta: 1 | -1): void => {
-        const at = enabled.indexOf(focusIndex);
-        const next = enabled[(at + delta + enabled.length) % enabled.length];
-        setFocusIndex(next);
-    };
+    useCloseOnOutsidePress(open, menuRef, triggerRef, () => close(false));
 
     const select = (a: MenuAction): void => {
         if (a.disabled) return;
@@ -134,42 +113,13 @@ export function Menu({ items, trigger, align = 'start', label }: MenuProps): JSX
     };
 
     const onMenuKeyDown = (e: KeyboardEvent<HTMLDivElement>): void => {
-        switch (e.key) {
-            case 'ArrowDown':
-                e.preventDefault();
-                move(1);
-                break;
-            case 'ArrowUp':
-                e.preventDefault();
-                move(-1);
-                break;
-            case 'Home':
-                e.preventDefault();
-                setFocusIndex(enabled[0]);
-                break;
-            case 'End':
-                e.preventDefault();
-                setFocusIndex(enabled[enabled.length - 1]);
-                break;
-            case 'Escape':
-                e.preventDefault();
-                e.stopPropagation();
-                close(true);
-                break;
-            case 'Tab':
-                e.preventDefault();
-                close(true);
-                break;
-            case 'Enter':
-            case ' ': {
-                e.preventDefault();
-                const a = actions[focusIndex];
-                if (a) select(a);
-                break;
-            }
-            default:
-                break;
-        }
+        const r = menuKey(e.key, enabled, focusIndex);
+        if (!r) return;
+        e.preventDefault();
+        e.stopPropagation();
+        if (r.kind === 'focus') setFocusIndex(r.index);
+        else if (r.kind === 'close') close(true);
+        else if (actions[focusIndex]) select(actions[focusIndex]);
     };
 
     const triggerProps: MenuTriggerProps = {
@@ -180,17 +130,12 @@ export function Menu({ items, trigger, align = 'start', label }: MenuProps): JSX
         'aria-controls': open ? menuId : undefined,
         onClick: () => (open ? close(false) : openAt('first')),
         onKeyDown: (e) => {
-            if (e.key === 'ArrowDown') {
-                e.preventDefault();
-                openAt('first');
-            } else if (e.key === 'ArrowUp') {
-                e.preventDefault();
-                openAt('last');
-            }
+            if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+            e.preventDefault();
+            openAt(e.key === 'ArrowDown' ? 'first' : 'last');
         },
     };
 
-    const indexOf = new Map(actions.map((a, i) => [a.id, i]));
     return (
         <>
             {trigger(triggerProps)}
@@ -207,40 +152,82 @@ export function Menu({ items, trigger, align = 'start', label }: MenuProps): JSX
                         style={{ position: 'fixed', top: pos?.top ?? -9999, left: pos?.left ?? -9999 }}
                         className="z-[1000] min-w-[180px] max-w-[320px] animate-pop-in rounded-panel border border-border bg-surface-1 p-1 text-ui text-fg shadow-e2"
                     >
-                        {items.map((entry) => {
-                            if (!isAction(entry)) {
-                                return <div key={entry.id} role="separator" className="my-1 h-px bg-border" />;
-                            }
-                            const index = indexOf.get(entry.id) ?? -1;
-                            return (
-                                <div
-                                    key={entry.id}
-                                    role="menuitem"
-                                    tabIndex={-1}
-                                    data-index={index}
-                                    aria-disabled={entry.disabled || undefined}
-                                    onClick={() => select(entry)}
-                                    onPointerMove={() => !entry.disabled && index !== focusIndex && setFocusIndex(index)}
-                                    className={cx(
-                                        'flex h-control-md cursor-default select-none items-center gap-2 rounded-control px-2 outline-none',
-                                        'focus:bg-surface-2',
-                                        entry.danger ? 'text-danger' : 'text-fg',
-                                        entry.disabled && 'cursor-not-allowed opacity-50',
-                                    )}
-                                >
-                                    {entry.icon && (
-                                        <span aria-hidden="true" className="inline-flex text-fg-2 [&>svg]:size-4">
-                                            {entry.icon}
-                                        </span>
-                                    )}
-                                    <span className="flex-1 truncate">{entry.label}</span>
-                                    {entry.shortcut && <Kbd keys={entry.shortcut} />}
-                                </div>
-                            );
-                        })}
+                        <MenuItems items={items} focusIndex={focusIndex} onFocusIndex={setFocusIndex} onSelect={select} />
                     </div>,
                     document.body,
                 )}
+        </>
+    );
+}
+
+/** Close when a press lands outside both the menu and its trigger. */
+function useCloseOnOutsidePress(
+    open: boolean,
+    menuRef: RefObject<HTMLElement | null>,
+    triggerRef: RefObject<HTMLElement | null>,
+    onClose: () => void,
+): void {
+    const onCloseRef = useRef(onClose);
+    useEffect(() => {
+        onCloseRef.current = onClose;
+    });
+    useEffect(() => {
+        if (!open) return;
+        const onDown = (e: PointerEvent): void => {
+            const t = e.target as Node;
+            if (menuRef.current?.contains(t) || triggerRef.current?.contains(t)) return;
+            onCloseRef.current();
+        };
+        document.addEventListener('pointerdown', onDown);
+        return () => document.removeEventListener('pointerdown', onDown);
+    }, [open, menuRef, triggerRef]);
+}
+
+function MenuItems({
+    items,
+    focusIndex,
+    onFocusIndex,
+    onSelect,
+}: {
+    readonly items: readonly MenuEntry[];
+    readonly focusIndex: number;
+    readonly onFocusIndex: (index: number) => void;
+    readonly onSelect: (a: MenuAction) => void;
+}): JSX.Element {
+    const indexOf = new Map(items.filter(isAction).map((a, i) => [a.id, i]));
+    return (
+        <>
+            {items.map((entry) => {
+                if (!isAction(entry)) {
+                    return <div key={entry.id} role="separator" className="my-1 h-px bg-border" />;
+                }
+                const index = indexOf.get(entry.id) ?? -1;
+                return (
+                    <div
+                        key={entry.id}
+                        role="menuitem"
+                        tabIndex={-1}
+                        data-index={index}
+                        aria-disabled={entry.disabled || undefined}
+                        onClick={() => onSelect(entry)}
+                        onPointerMove={() => !entry.disabled && index !== focusIndex && onFocusIndex(index)}
+                        className={cx(
+                            'flex h-control-md cursor-default select-none items-center gap-2 rounded-control px-2 outline-none',
+                            'focus:bg-surface-2',
+                            entry.danger ? 'text-danger' : 'text-fg',
+                            entry.disabled && 'cursor-not-allowed opacity-50',
+                        )}
+                    >
+                        {entry.icon && (
+                            <span aria-hidden="true" className="inline-flex text-fg-2 [&>svg]:size-4">
+                                {entry.icon}
+                            </span>
+                        )}
+                        <span className="flex-1 truncate">{entry.label}</span>
+                        {entry.shortcut && <Kbd keys={entry.shortcut} />}
+                    </div>
+                );
+            })}
         </>
     );
 }

@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it } from 'vitest';
 import { contrastRatio, parseHex } from './contrast';
+import { menuKey, placeMenu } from './menuModel';
 import { formatNumber, keyStep, normalize, parseNumber, stepDecimals } from './numberModel';
 import { nearestSnap, snapForKey } from './sheetModel';
 import { splitTabs } from './tabsModel';
@@ -89,5 +90,25 @@ describe('toastModel', () => {
         for (let i = 1; i <= MAX_TOASTS + 2; i++) list = pushToast(list, { id: i, tone: 'info', title: String(i) });
         expect(list.map((t) => t.id)).toEqual([3, 4, 5]);
         expect(dropToast(list, 4).map((t) => t.id)).toEqual([3, 5]);
+    });
+});
+
+describe('menuModel', () => {
+    it('moves over enabled items only and wraps', () => {
+        const enabled = [0, 2, 3]; // item 1 is disabled
+        expect(menuKey('ArrowDown', enabled, 0)).toEqual({ kind: 'focus', index: 2 });
+        expect(menuKey('ArrowDown', enabled, 3)).toEqual({ kind: 'focus', index: 0 });
+        expect(menuKey('ArrowUp', enabled, 0)).toEqual({ kind: 'focus', index: 3 });
+        expect(menuKey('End', enabled, 0)).toEqual({ kind: 'focus', index: 3 });
+        expect(menuKey('Enter', enabled, 0)).toEqual({ kind: 'select' });
+        expect(menuKey('Escape', enabled, 0)).toEqual({ kind: 'close' });
+        expect(menuKey('x', enabled, 0)).toBeNull();
+    });
+    it('opens above the trigger when there is no room below, and stays on screen', () => {
+        const vp = { width: 400, height: 300 };
+        const anchor = { top: 260, bottom: 290, left: 380, right: 400 };
+        const p = placeMenu(anchor, { width: 180, height: 120 }, 'start', vp);
+        expect(p.top).toBe(260 - 4 - 120);
+        expect(p.left).toBe(400 - 180 - 8);
     });
 });
