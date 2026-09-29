@@ -168,7 +168,7 @@ export function PricingTiers({ period, currentPlan, currentTier, onSelect, onFre
               onFree={onFree}
             />
 
-            <ul className="mt-6 space-y-3">
+            <ul className="mt-6 list-none space-y-3 pl-0">
               {t.inherits && <li className={`text-sm font-medium ${C.fg}`}>Everything in {t.inherits}, plus:</li>}
               {t.features.map((f, i) => (
                 <FeatureRow key={i} f={f} lead={i === 0} />
