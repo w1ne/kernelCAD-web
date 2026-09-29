@@ -13,7 +13,11 @@ import { stampStepOriginatingSystem } from '../../kernel/export/stepHeader';
 import { attributionGenerator } from '../../shared/links/attribution';
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
-import { NEXT_ACTIONS } from '../../shared/diagnostics/registry';
+import { NEXT_ACTIONS, HINT_TEMPLATES } from '../../shared/diagnostics/registry';
+import { meshShapeForExport } from '../../kernel/backends/occt/backendMesh';
+import { verifyWatertight, type WatertightReport } from '../../kernel/backends/occt/meshHeal';
+import { encodeBinaryStl } from '../../kernel/backends/occt/exportStlBinary';
+import { crackSeams, describeCrackSeams, concatMeshes } from './sceneStlSeams';
 import { Shape } from '../../modeling/capture/proxy';
 import { Scene } from '../../modeling/validation/scene';
 import { isRegion } from '../../shared/intent/region';
@@ -476,13 +480,53 @@ export async function exportSceneFusedMesh(
   const verify = (input.options as { verify?: boolean } | undefined)?.verify !== false;
   const { bytes, report } = await fused.exportSTLWithReportAsync();
   if (verify && !report.ok) {
-    return {
-      bytes,
-      featureCount,
-      diagnostics: [...diagnostics, stlNotWatertightDiagnostic(report, targetId)],
-    };
+    return fusedSeamFallback(worldParts, bytes, report, targetId, diagnostics, featureCount);
   }
   return { bytes, featureCount, diagnostics };
+}
+
+/**
+ * The fused mesh of a multi-part Scene cracked (typically along union seams
+ * of parts that touch or overlap by a few hundredths of a mm: the B-rep is
+ * valid, its tessellation is not closed). Mesh each part on its own; when
+ * every part is watertight, ship them as separate closed shells — a valid
+ * STL that slices as their union — with a warning naming the seams.
+ * Otherwise keep the fused bytes and fail, naming the seams.
+ */
+function fusedSeamFallback(
+  worldParts: WorldFramePart[],
+  fusedBytes: Uint8Array,
+  fusedReport: WatertightReport,
+  targetId: string,
+  diagnostics: CompilerDiagnostic[],
+  featureCount: number,
+): ExportResult {
+  const seamParts = worldParts.map((p) => ({ name: p.name, bbox: p.shape.boundingBox() }));
+  const seams = describeCrackSeams(crackSeams(fusedReport, seamParts));
+  const perPart = worldParts.length > 1
+    ? worldParts.map((p) => meshShapeForExport(p.shape.getReplicadShape()))
+    : [];
+  if (perPart.length > 0 && perPart.every((m) => verifyWatertight(m).ok)) {
+    return {
+      bytes: Uint8Array.from(encodeBinaryStl(concatMeshes(perPart))),
+      featureCount,
+      diagnostics: [...diagnostics, {
+        target: 'export-occt',
+        code: 'export.mesh.fused-seam-fallback',
+        featureId: targetId,
+        severity: 'warn',
+        message: `The fused union of the ${worldParts.length} parts meshed with ${fusedReport.openEdgeCount} open edge(s) (${seams}). Shipped each part as its own closed shell instead: the STL is watertight and slices as the union.`,
+        hint: HINT_TEMPLATES['export.mesh.fused-seam-fallback'].template,
+        nextAction: NEXT_ACTIONS['export.mesh.fused-seam-fallback'],
+      }],
+    };
+  }
+  const base = stlNotWatertightDiagnostic(fusedReport, targetId);
+  return {
+    bytes: fusedBytes,
+    featureCount,
+    diagnostics: [...diagnostics, { ...base, message: `${base.message} Seams: ${seams}.` }],
+  };
 }
 
 /** Single-shape DXF path: sheet-metal lineage flattens to a Region; a plain
