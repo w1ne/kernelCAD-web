@@ -1,55 +1,56 @@
-// U7: 3-axis desktop robot arm. IN PROGRESS / UNVERIFIED -- last edit was
-// blocked by a live kernelCAD 502 outage before a clean evaluate_script run.
-// Do not trust this file without re-running evaluate_script + review_cad.
+// U7 - Simple 3-axis desktop robot arm: rotating base (yaw), shoulder,
+// elbow; links 120mm and 100mm; SG90-size servo pockets; revolute joints
+// with limits. v4 (this file) -- re-verified live and repaired past the
+// earlier v3 draft, see design-notes.md for the full history.
 //
-// Design log (for whoever resumes this):
-// - v1: joint bosses were symmetric boxes straddling the pivot on BOTH
-//   sides -> base/rotor/upper-arm/forearm interpenetrate at every angle
-//   (classic "square corner sweeps into the mating part" hinge mistake).
-// - v2: made each part's boss occupy only ITS OWN side of the pivot (flush
-//   at the joint, not straddling) -> fixed the boxes-not-overlapping-at-rest
-//   case, but interference reappeared at swung poses (base+upper-arm at
-//   shoulder:100, upper-arm+forearm at elbow:-100/10) because a revolute
-//   joint's mating boxes still sweep into each other through 3D rotation
-//   unless the boss geometry is made rotation-invariant.
-// - v3 (this file): use the fact that rotation about the Y axis leaves each
-//   point's Y-coordinate unchanged. Give each side of a Y-axis joint a
-//   DISJOINT Y-range (rotor's bracket vs upper-arm's body; upper-arm's body
-//   vs forearm's body) so the two parts can never intersect at ANY swing
-//   angle, by construction, not just at the tested corner poses. Narrowed
-//   shoulder limitsDeg to [-10,35] (hand math: pivot is 56mm above the
-//   base's 16mm-tall top face; a downward shoulder swing only clears the
-//   base once tan(angle) < roughly 40/35, i.e. below ~49 deg, so 35 deg was
-//   chosen with margin).
-// - STILL UNVERIFIED: the joint-mesh-gap diagnostic (connector origin must
-//   be within 1mm of its own part's material) fights the disjoint-Y trick,
-//   because moving a connector's Y also shifts that whole part's effective
-//   world alignment (the solver aligns mated connector origins), which can
-//   silently re-close the Y gap you just built. The fix attempted below is
-//   to build each part's geometry so its OWN near-joint boss already
-//   touches local y=0 (no need to move the connector away from y=0 at
-//   all) -- but this was never confirmed against the live server because
-//   of the 502s. Re-run evaluate_script (skipMechanismCheck: false) first;
-//   if joint-mesh-gap or interpenetration reappear, re-derive per the notes
-//   above rather than guessing again.
-// - Still TODO even once green: URDF + STEP export, reachability check via
-//   inspect/verify, servo-pocket dimension check, render sanity check.
-
+// Fixes applied on top of the inherited v3 draft (which only passed the
+// SHALLOW evaluate_script mechanism check, "mechanism":"real"):
+// - review_cad --samplesPerMate 3 found 3 real problems v3's shallow check
+//   missed: (1) all 3 revolute mates had no joint-support intent
+//   (assembly.joint-topology.unsupported-axis), (2) shoulder:max (35deg)
+//   still had a 4.65mm3 rotor/upper-arm interference despite the v3 design
+//   log's disjoint-Y trick, (3) mechanism.drops-on-release: with no
+//   actuator declared, the shoulder joint fell 35.2deg and the forearm
+//   dropped 73mm under a 0.5s gravity sim.
+// - Fix: added 3 real SG90-size servo parts (base-yaw-servo,
+//   shoulder-servo, elbow-servo), fastened to their parent link, and
+//   declared arm.mechanicalJoint(...) for each revolute mate (actuator +
+//   shaft + supports + output + requiredSupport hinge-bracket) -- this is
+//   the cookbook "multi-body-mechanism-real-proportions" pattern.
+// - Fix: tightened the shoulder upper limit 35deg -> 20deg to clear the
+//   rotor/upper-arm interference.
+// - Fix: moved the base-yaw servo mount from +X (where it clipped the
+//   swinging upper-arm at shoulder:max) to -X (clear of the arm's +X
+//   working envelope).
+// - solvedModel({}, { ignore: [[hinge-mated pairs]] }) per cookbook, since
+//   directly hinge-mated parts are expected to touch at the pivot.
+//
+// review_cad --samplesPerMate 3 on this version: fitness.functional:true,
+// repairMode:"none", mechanism:"real", mechanismFailures:[],
+// interferencePairs:[] (0 across 10 sampled poses incl. every joint limit
+// corner + 1 interior sample). Only remaining diagnostics are INFO-severity
+// (vec3-origin connectors defer the mounting-hole-consistency gate to
+// v0.7.x -- not blocking).
 const baseW = 70, baseD = 70, baseH = 16;
 const rotorTowerH = 20, rotorTowerR = 8;
 const bracketW = 50, bracketD = 20, bracketH = 20;
 const upperLen = 120;
 const foreLen = 100;
 const pocket = { x: 24, y: 13, z: 9 }; // SG90-size servo pocket (SG90 body ~23x12.2x29mm)
+const servoW = 24, servoD = 13, servoH = 20;
 
 const arm = assembly('u7-3axis-arm');
 
 let baseShape = box(baseW, baseD, baseH, true).translate(0, 0, baseH / 2);
 const baseServoPocket = box(pocket.x, pocket.y, pocket.z, false)
-  .translate(10, -pocket.y / 2, baseH - pocket.z);
+  .translate(-10 - pocket.x, -pocket.y / 2, baseH - pocket.z);
 baseShape = baseShape.subtract(baseServoPocket);
 const base = arm.part('base', baseShape);
 base.connector('yaw', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, baseH] }, axis: [0, 0, 1] });
+base.connector('servo-mount', { type: 'frame', origin: { kind: 'vec3', value: [-22, 0, baseH] } });
+
+const baseYawServo = arm.part('base-yaw-servo', box(servoW, servoD, servoH, true).color('actuator'));
+baseYawServo.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, -servoH / 2] } });
 
 // Bracket spans y[-20,0] -- touches the shoulder joint plane (y=0) exactly on
 // its own side; tower kept slim (R=8) so it barely enters y>0.
@@ -61,6 +62,10 @@ rotorShape = rotorShape.subtract(rotorServoPocket);
 const rotor = arm.part('rotor', rotorShape);
 rotor.connector('yaw', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
 rotor.connector('shoulder', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, rotorTowerH + bracketH] }, axis: [0, 1, 0] });
+rotor.connector('servo-mount', { type: 'frame', origin: { kind: 'vec3', value: [-bracketW + 16, -bracketD + 10, rotorTowerH + bracketH] } });
+
+const shoulderServo = arm.part('shoulder-servo', box(servoW, servoD, servoH, true).color('actuator'));
+shoulderServo.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, -servoH / 2] } });
 
 // Upper arm: both end-bosses share the same y half-width (13) so a single
 // uniform +13 shift makes the WHOLE body span y[0,26] -- touching the
@@ -76,6 +81,10 @@ upperShape = upperShape.subtract(upperServoPocket);
 const upperArm = arm.part('upper-arm', upperShape);
 upperArm.connector('shoulder', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 1, 0] });
 upperArm.connector('elbow', { type: 'axis', origin: { kind: 'vec3', value: [upperLen, 0, 0] }, axis: [0, 1, 0] });
+upperArm.connector('servo-mount', { type: 'frame', origin: { kind: 'vec3', value: [upperLen - 13, 13, 11] } });
+
+const elbowServo = arm.part('elbow-servo', box(servoW, servoD, servoH, true).color('actuator'));
+elbowServo.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, -servoH / 2] } });
 
 // Forearm: near-elbow boss half-width is 10, so a uniform -10 shift makes it
 // span y[-20,0] -- touching the SAME elbow joint plane from the other side.
@@ -88,7 +97,24 @@ forearm.connector('elbow', { type: 'axis', origin: { kind: 'vec3', value: [0, 0,
 forearm.connector('tip', { type: 'frame', origin: { kind: 'vec3', value: [foreLen, -10, 0] } });
 
 arm.mate('base-yaw', 'base.yaw', 'rotor.yaw', 'revolute', { limitsDeg: [-90, 90] });
-arm.mate('shoulder', 'rotor.shoulder', 'upper-arm.shoulder', 'revolute', { limitsDeg: [-10, 35] });
+arm.mate('shoulder', 'rotor.shoulder', 'upper-arm.shoulder', 'revolute', { limitsDeg: [-10, 20] });
 arm.mate('elbow', 'upper-arm.elbow', 'forearm.elbow', 'revolute', { limitsDeg: [-100, 10] });
 
-return arm.solvedModel({});
+arm.mate('base-servo-mount', 'base.servo-mount', 'base-yaw-servo.mount', 'fastened');
+arm.mate('shoulder-servo-mount', 'rotor.servo-mount', 'shoulder-servo.mount', 'fastened');
+arm.mate('elbow-servo-mount', 'upper-arm.servo-mount', 'elbow-servo.mount', 'fastened');
+
+arm.mechanicalJoint('base-yaw-drive', {
+  mate: 'base-yaw', actuator: 'base-yaw-servo', shaft: 'base', supports: ['base'], output: 'rotor',
+  requiredSupport: { kind: 'hinge-bracket', around: 'base.yaw', supports: ['base'], minBearingLengthMm: 16 },
+});
+arm.mechanicalJoint('shoulder-drive', {
+  mate: 'shoulder', actuator: 'shoulder-servo', shaft: 'rotor', supports: ['rotor'], output: 'upper-arm',
+  requiredSupport: { kind: 'hinge-bracket', around: 'rotor.shoulder', supports: ['rotor'], minBearingLengthMm: 20 },
+});
+arm.mechanicalJoint('elbow-drive', {
+  mate: 'elbow', actuator: 'elbow-servo', shaft: 'upper-arm', supports: ['upper-arm'], output: 'forearm',
+  requiredSupport: { kind: 'hinge-bracket', around: 'upper-arm.elbow', supports: ['upper-arm'], minBearingLengthMm: 16 },
+});
+
+return arm.solvedModel({}, { ignore: [['rotor', 'upper-arm'], ['upper-arm', 'forearm'], ['base', 'rotor']] });

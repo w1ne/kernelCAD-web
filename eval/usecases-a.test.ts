@@ -9,4 +9,5 @@ import { defineUsecaseSuite } from './usecaseSuite';
 defineUsecaseSuite([
   { id: 'usecase-sensor-bracket' },
   { id: 'usecase-edit-bracket' },
+  { id: 'usecase-nema17-mount' },
 ]);
