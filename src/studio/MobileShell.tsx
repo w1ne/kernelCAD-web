@@ -88,7 +88,8 @@ function useMobileSheet(showAgent: boolean) {
             prev = state;
             if (syncing.current) return;
             if (state.inspectorOpen !== was.inspectorOpen) {
-                if (state.inspectorOpen && !isInspectorSheet(current.current)) open('code');
+                // A starter picked in Projects opens on its sizes, as the pane says.
+                if (state.inspectorOpen && !isInspectorSheet(current.current)) open(current.current === 'projects' ? 'params' : 'code');
                 if (!state.inspectorOpen && isInspectorSheet(current.current)) open(null);
             }
             if (showAgent && state.agentRailOpen !== was.agentRailOpen) {

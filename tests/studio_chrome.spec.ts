@@ -33,18 +33,31 @@ for (const size of SIZES) {
         await expect(toolbar.getByRole('button', { name: 'Mark for agent' })).toBeVisible();
         await expect(page.getByText('Brush', { exact: true })).toHaveCount(0);
 
-        // Agent is always on the activity bar; signed out or without a hosted
-        // agent its pane explains what to do.
-        await page.getByTestId('activity-agent').click();
-        await expect(page.getByTestId('left-pane-agent')).toBeVisible();
+        // Agent is always on the activity bar (the tab bar on a phone); signed
+        // out or without a hosted agent its pane explains what to do.
+        const phone = size.name === 'phone';
+        await page.getByTestId(phone ? 'mobile-tab-agent' : 'activity-agent').click();
+        await expect(page.getByTestId(phone ? 'mobile-sheet-agent' : 'left-pane-agent')).toBeVisible();
         await expect(
             page.getByTestId('agent-sign-in-card').or(page.getByTestId('agent-unavailable-card')).or(page.getByLabel('Agent rail')),
         ).toBeVisible();
 
         // Starters moved from the Quick start row into the Projects pane.
-        await page.getByTestId('activity-projects').click();
+        if (phone) {
+            // The dev-only router devtools badge sits over the bottom-right tab.
+            await page.addStyleTag({ content: 'button[aria-label="Open TanStack Router Devtools"] { display: none !important; }' });
+            await page.getByTestId('mobile-tab-more').click();
+            await page.getByTestId('mobile-more-projects').click();
+        } else {
+            await page.getByTestId('activity-projects').click();
+        }
         await page.getByTestId('projects-pane').getByRole('button', { name: 'Bracket', exact: true }).click();
-        await expect(page.getByRole('status').filter({ hasText: 'Bracket is open' })).toBeVisible();
+        if (phone) {
+            // A phone goes straight to the new model's sizes.
+            await expect(page.getByTestId('mobile-tab-params')).toHaveAttribute('aria-selected', 'true');
+        } else {
+            await expect(page.getByRole('status').filter({ hasText: 'Bracket is open' })).toBeVisible();
+        }
 
         // Feedback is in the account slot (no account menu locally) and opens the form.
         await page.getByTestId('feedback-button').click();
