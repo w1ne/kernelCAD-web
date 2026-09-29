@@ -177,7 +177,7 @@ function BillingPage() {
           <p className="text-ink-faint font-mono text-xs">Couldn't load plan info: {planErr}</p>
         )}
         {billingErr && (
-          <p className="text-copper font-mono text-xs mt-2">Billing error: {billingErr}</p>
+          <p className="text-danger font-mono text-xs mt-2">Billing error: {billingErr}</p>
         )}
 
         {/* Usage detail */}

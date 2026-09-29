@@ -66,7 +66,7 @@ function ProjectPage() {
   if (err) {
     return (
       <main className="min-h-screen bg-vellum font-sans p-8">
-        <p className="text-copper font-mono text-sm">Failed to load: {err}</p>
+        <p className="text-danger font-mono text-sm">Failed to load: {err}</p>
       </main>
     );
   }

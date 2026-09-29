@@ -77,7 +77,7 @@ export function EmailSignup({ sourceParam }: EmailSignupProps) {
       <p
         role="status"
         aria-live="polite"
-        className={`mt-3 min-h-[1.2em] text-sm ${error ? 'text-copper' : 'text-ink-soft'}`}
+        className={`mt-3 min-h-[1.2em] text-sm ${error ? 'text-danger' : 'text-ink-soft'}`}
       >
         {error}
       </p>

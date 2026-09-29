@@ -31,7 +31,7 @@ export function Tabs({ id, label, items, value, onChange, maxVisible, className 
 
     const focusTab = (tid: string): void => {
         onChange(tid);
-        listRef.current?.querySelector<HTMLElement>(`#${CSS.escape(tabId(id, tid))}`)?.focus();
+        document.getElementById(tabId(id, tid))?.focus();
     };
 
     const onKeyDown = (e: KeyboardEvent<HTMLDivElement>): void => {
