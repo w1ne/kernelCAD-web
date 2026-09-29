@@ -156,3 +156,47 @@ export function embedPosterUrl(
   if (url.protocol !== 'https:' && url.hostname !== '127.0.0.1' && url.hostname !== 'localhost') return undefined;
   return url.pathname === storedRenderPath(slug) ? url.toString() : undefined;
 }
+
+/** An in-memory `Storage`: values last for this page only. */
+export function createMemoryStorage(): Storage {
+  const values = new Map<string, string>();
+  return {
+    get length() {
+      return values.size;
+    },
+    clear: () => values.clear(),
+    getItem: (key) => values.get(String(key)) ?? null,
+    key: (index) => [...values.keys()][index] ?? null,
+    removeItem: (key) => {
+      values.delete(String(key));
+    },
+    setItem: (key, value) => {
+      values.set(String(key), String(value));
+    },
+  };
+}
+
+/**
+ * A third-party iframe with storage blocked (third-party cookies off, as in
+ * private windows) throws on every `localStorage` read. The viewer stack
+ * reads stored preferences in many places, so an embed would crash with
+ * "Something went wrong!". Swap in page-lifetime storage instead: the embed
+ * renders with default preferences. Returns the names it replaced.
+ */
+export function ensureUsableStorage(win: Window = window): string[] {
+  const replaced: string[] = [];
+  for (const name of ['localStorage', 'sessionStorage'] as const) {
+    try {
+      const storage = win[name];
+      storage.getItem('kernelcad:probe');
+    } catch {
+      try {
+        Object.defineProperty(win, name, { value: createMemoryStorage(), configurable: true });
+        replaced.push(name);
+      } catch {
+        // Not replaceable here: leave the browser's behaviour.
+      }
+    }
+  }
+  return replaced;
+}

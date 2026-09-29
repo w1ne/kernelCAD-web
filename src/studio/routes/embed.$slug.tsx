@@ -41,11 +41,18 @@ import {
   embedPresentationMode,
   embedRevision,
   embedTheme,
+  ensureUsableStorage,
   loadEmbedCode,
   resolveEmbedTheme,
   revisionPinnedMeshUrl,
   type EmbedTheme,
 } from './-embedConfig';
+
+// Runs before the first render (the route tree imports every route module).
+// Only on the embed itself: other pages keep the browser's storage behaviour.
+if (typeof window !== 'undefined' && window.location.pathname.startsWith('/embed/')) {
+  ensureUsableStorage();
+}
 
 /** Bound source fetches so a hung API cannot pin the outer ChatGPT overlay forever. */
 const SOURCE_FETCH_TIMEOUT_MS = 30_000;

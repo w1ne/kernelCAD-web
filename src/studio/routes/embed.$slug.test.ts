@@ -8,6 +8,7 @@ import {
   embedPresentationMode,
   embedRevision,
   embedTheme,
+  ensureUsableStorage,
   loadEmbedCode,
   resolveEmbedTheme,
   revisionPinnedMeshUrl,
@@ -167,5 +168,40 @@ describe('embedPosterUrl', () => {
   it('accepts a loopback render for the local browser test', () => {
     const local = 'http://127.0.0.1:5173/api/v1/projects/abc_1/og.png';
     expect(embedPosterUrl('abc_1', undefined, local)).toBe(local);
+  });
+});
+
+describe('ensureUsableStorage', () => {
+  function windowWith(blocked: boolean): Window {
+    const win = {} as Window;
+    const working = { getItem: () => null };
+    for (const name of ['localStorage', 'sessionStorage']) {
+      Object.defineProperty(win, name, {
+        configurable: true,
+        get() {
+          if (blocked) throw new DOMException('Access is denied for this document.', 'SecurityError');
+          return working;
+        },
+      });
+    }
+    return win;
+  }
+
+  it('swaps blocked storage for page-lifetime storage', () => {
+    const win = windowWith(true);
+    expect(ensureUsableStorage(win)).toEqual(['localStorage', 'sessionStorage']);
+    win.localStorage.setItem('kernelcad:viewMode3D', 'wireframe');
+    expect(win.localStorage.getItem('kernelcad:viewMode3D')).toBe('wireframe');
+    expect(win.localStorage.length).toBe(1);
+    expect(win.localStorage.key(0)).toBe('kernelcad:viewMode3D');
+    win.localStorage.removeItem('kernelcad:viewMode3D');
+    expect(win.localStorage.getItem('kernelcad:viewMode3D')).toBeNull();
+  });
+
+  it('leaves working storage alone', () => {
+    const win = windowWith(false);
+    const before = win.localStorage;
+    expect(ensureUsableStorage(win)).toEqual([]);
+    expect(win.localStorage).toBe(before);
   });
 });
