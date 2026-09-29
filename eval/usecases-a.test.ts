@@ -10,4 +10,6 @@ defineUsecaseSuite([
   { id: 'usecase-sensor-bracket' },
   { id: 'usecase-edit-bracket' },
   { id: 'usecase-nema17-mount' },
+  { id: 'usecase-gridfinity-bin' },
+  { id: 'usecase-stove-knob' },
 ]);

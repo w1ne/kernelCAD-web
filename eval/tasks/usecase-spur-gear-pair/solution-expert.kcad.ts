@@ -62,18 +62,18 @@ function gearProfile(teeth: number) {
   return p.close();
 }
 
-/** Gear body with a D-flat keyed bore through its axis. */
-function gear(teeth: number) {
+/** Gear turned by `phaseDeg`, with a D-flat keyed bore (flat on +X). */
+function gear(teeth: number, phaseDeg = 0) {
   const r = boreDia / 2;
   const x = r - flatDepth; // the flat
   const y = Math.sqrt(r * r - x * x);
   const bore = path().moveTo(x, -y).lineTo(x, y).threePointsArc(x, -y, -r, 0).close();
-  return gearProfile(teeth).extrude(faceWidth).subtract(bore.extrude(faceWidth + 2).translate(0, 0, -1));
+  return gearProfile(teeth).extrude(faceWidth).rotateZ(phaseDeg).subtract(bore.extrude(faceWidth + 2).translate(0, 0, -1));
 }
 
 const pinion = gear(z1);
 // Turn the wheel half a tooth so a gap faces the pinion tooth on +X.
-const wheel = gear(z2).rotateZ(180 / z2).translate(centreDistance, 0, 0);
+const wheel = gear(z2, 180 / z2).translate(centreDistance, 0, 0);
 
 const pair = assembly('spur-gear-pair');
 pair.part('pinion', pinion, { material: 'nylon' });

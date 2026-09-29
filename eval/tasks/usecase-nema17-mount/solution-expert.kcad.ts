@@ -19,8 +19,8 @@ const nemaHoleDia = param('nemaHoleDia', 3.4); // M3 clearance
 const pilotDia = param('pilotDia', 22); // NEMA 17 pilot boss
 const motorCenterZ = param('motorCenterZ', 30); // motor axis height (world Z)
 
-// M5 extrusion slots. Plain numbers: a ParamRef inside a path arc builds the
-// wrong profile today (ISSUE_PATH_ARC_PARAMREF).
+// M5 extrusion slots. Plain numbers: a cutout profile reads a ParamRef
+// coordinate as 0 today (https://github.com/w1ne/kernelCAD-web/issues/803).
 const slotWidth = 5.5; // M5 clearance
 const slotLen = 10; // centre-to-centre travel
 const slotSpacingX = 20; // 2020 extrusion slot spacing
