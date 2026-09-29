@@ -38,8 +38,8 @@ export const EXPORT_CODES = {
   },
   'export.3mf.not-watertight': {
     hintTemplate:
-      'Export STEP for the exact geometry. To keep 3MF, fix the feature that leaves the gap (often a fillet or boolean at a tangent face), or mesh finer (a lower mesh deflection closes seam cracks between curved faces).',
-    nextAction: { kind: 'rewrite-feature', guidance: 'fix the fillet or boolean that leaves the gap, mesh finer, or export STEP' },
+      'The exported mesh has non-manifold edges (likely a self-intersecting cone tessellation or an open shell). Re-mesh via Manifold, raise OCCT mesh deflection, or re-author the offending surface via nurbsSurfaceLowerer; see the K1 mesher gap.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'remesh via Manifold, raise mesh deflection, or re-author the offending surface via nurbsSurfaceLowerer' },
     defaultSeverity: 'error',
     group: 'export',
     description: 'A 3MF part mesh has open or non-manifold edges after the heal pass. Within the shared defect budget the file is written with a warning; past it the export fails and names the counts.',
