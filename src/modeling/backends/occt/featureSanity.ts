@@ -21,6 +21,7 @@
 // runs only for the two fragile kinds, which already pay far more for the
 // offset / pipe-shell build itself. Every other kind pays one box read.
 
+import { getOC } from 'replicad';
 import type { ShapeBackend } from '../../../kernel/backends/backend';
 import { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
@@ -114,12 +115,31 @@ export function absurdGeometryDiagnostic(
   return null;
 }
 
+/** OCCT `Bnd_Box` of the shape, `undefined` when it is void (an empty
+ *  result — other gates own that). An OPEN box reads as ±1e100 here, which
+ *  is exactly what check 1 rejects. */
 function readBox(shape: OcctBackend): Box | undefined {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const oc = getOC() as any;
+  const box = new oc.Bnd_Box_1();
   try {
-    if (shape.isEmpty()) return undefined;
-    return shape.boundingBox();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    oc.BRepBndLib.Add((shape.getReplicadShape() as any).wrapped, box, true);
+    if (box.IsVoid()) return undefined;
+    const gap = box.GetGap();
+    const lo = box.CornerMin();
+    const hi = box.CornerMax();
+    const out: Box = {
+      min: [lo.X() + gap, lo.Y() + gap, lo.Z() + gap],
+      max: [hi.X() - gap, hi.Y() - gap, hi.Z() - gap],
+    };
+    lo.delete();
+    hi.delete();
+    return out;
   } catch {
     return undefined;
+  } finally {
+    box.delete();
   }
 }
 

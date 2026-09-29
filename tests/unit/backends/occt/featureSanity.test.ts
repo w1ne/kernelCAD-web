@@ -10,6 +10,7 @@
 // inspect() reported a ±1e100 box and a 2.3e102 volume.
 
 import { describe, it, expect, beforeAll } from 'vitest';
+import { cast, getOC } from 'replicad';
 import { initOcct, OcctBackend } from '../../../../src/kernel/backends/occt/occtBackend';
 import { absurdGeometryDiagnostic } from '../../../../src/modeling/backends/occt/featureSanity';
 import { finishLowering } from '../../../../src/modeling/backends/occt/lowerers/transforms';
@@ -41,8 +42,13 @@ describe('post-feature sanity gate', () => {
   });
 
   it('rejects an open (±1e100) bounding box on any solid feature', () => {
-    const shape = OcctBackend.box(10, 10, 10);
-    shape.boundingBox = () => ({ min: [-1e100, -1e100, -1e100], max: [1e100, 1e100, 1e100] });
+    // A face on an unbounded plane: OCCT's Bnd_Box for it is OPEN, i.e. the
+    // ±1e100 box the dogfood inspect() reported.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const oc = getOC() as any;
+    const plane = new oc.gp_Pln_3(new oc.gp_Pnt_3(0, 0, 0), new oc.gp_Dir_4(0, 0, 1));
+    const face = new oc.BRepBuilderAPI_MakeFace_3(plane).Face();
+    const shape = new OcctBackend(cast(face) as never);
     const d = absurdGeometryDiagnostic(rec('variableSweep'), shape, []);
     expect(d?.code).toBe('feature.result.absurd-geometry');
     expect(d?.severity).toBe('error');
