@@ -7,6 +7,7 @@ import type { FeatureRecord } from '../../../../shared/intent/featureRecord';
 import { isValidPlaneSpec } from '../../../../shared/intent/types';
 import type { Vec3 } from '../../../../shared/intent/types';
 import type { LowerContext, LowerOutcome } from './context';
+import { absurdGeometryDiagnostic } from '../featureSanity';
 
 /**
  * Apply the record's post-hoc `transforms` in declared order, propagating the
@@ -83,5 +84,13 @@ export function finishLowering(
   out: LowerOutcome,
 ): LowerResult {
   if (out.done === true) return { shape: out.shape, diagnostics: ctx.diagnostics };
+  // Post-feature sanity gate, before the record's own transforms (a translate
+  // legitimately moves the result away from its inputs). Fail closed: an
+  // absurd result never flows downstream as a valid solid.
+  const absurd = absurdGeometryDiagnostic(r, out.shape, Object.values(ctx.inputs.byKey));
+  if (absurd !== null) {
+    ctx.diagnostics.push(absurd);
+    return { shape: undefined as unknown as ShapeBackend, diagnostics: ctx.diagnostics };
+  }
   return { shape: applyTransforms(ctx, out.shape, r), diagnostics: ctx.diagnostics };
 }
