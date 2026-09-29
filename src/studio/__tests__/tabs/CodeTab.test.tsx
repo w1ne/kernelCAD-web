@@ -45,7 +45,12 @@ vi.mock('@monaco-editor/react', () => ({
         React.useEffect(() => {
             if (!onMount) return;
             const editor = {
-                getModel: () => ({ getLineContent: () => '' }),
+                getModel: () => ({
+                    getLineContent: () => '',
+                    getFullModelRange: () => ({ startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 1 }),
+                }),
+                getValue: () => '',
+                pushUndoStop: vi.fn(),
                 getPosition: () => ({ lineNumber: 1, column: 1 }),
                 executeEdits: vi.fn(),
                 setPosition: vi.fn(),

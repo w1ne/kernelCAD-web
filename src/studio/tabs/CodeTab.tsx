@@ -5,7 +5,7 @@ import type { JSX } from 'react';
 import MonacoEditor from '@monaco-editor/react';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
-import type { EditorLike } from '../../shared/types/editor';
+import type { EditorEdit, EditorLike } from '../../shared/types/editor';
 import { useRecomputeResult } from '../hooks/useRecomputeResult';
 import { useFeatureSelection } from '../hooks/useFeatureSelection';
 import { useWorkbench } from '../context/WorkbenchContext';
@@ -55,6 +55,34 @@ interface MonacoNamespaceLike {
 }
 
 const MARKER_OWNER = 'kernelcad-studio';
+
+/** The Monaco surface the source sync below needs. */
+interface SourceEditorLike {
+    getValue(): string;
+    getModel(): { getFullModelRange(): EditorEdit['range'] } | null;
+    executeEdits(source: string, edits: EditorEdit[]): void;
+    pushUndoStop(): void;
+}
+
+/**
+ * Put `code` into the editor unless it is the echo of the editor's own
+ * typing. `pending` holds the values the editor emitted that the workbench
+ * has not echoed back yet. The echo can arrive after further keystrokes,
+ * so it may be older than the editor text; writing it back would drop
+ * those keystrokes.
+ */
+function applyWorkbenchCode(editor: SourceEditorLike, code: string, pending: string[]): void {
+    const echoAt = pending.indexOf(code);
+    if (echoAt !== -1) {
+        pending.splice(0, echoAt + 1);
+        return;
+    }
+    pending.length = 0;
+    const model = editor.getModel();
+    if (!model || editor.getValue() === code) return;
+    editor.executeEdits('', [{ range: model.getFullModelRange(), text: code, forceMoveMarkers: true }]);
+    editor.pushUndoStop();
+}
 
 function diagnosticToMarker(
     d: CompilerDiagnostic,
@@ -110,6 +138,9 @@ export function CodeTab(): JSX.Element {
     const monacoRef = useRef<MonacoNamespaceLike | null>(null);
     const userDrivenRef = useRef<boolean>(false);
     const syncRef = useRef<CodeGeometrySync | null>(null);
+    // Values typed in the editor that the workbench has not echoed back yet
+    // (see `applyWorkbenchCode`).
+    const pendingEchoesRef = useRef<string[]>([]);
     // Latest evaluation + source for the link index getter (read lazily, so
     // typing never rebuilds the index).
     const indexInputRef = useRef({ code: workbench.code ?? '', features });
@@ -122,6 +153,8 @@ export function CodeTab(): JSX.Element {
     const handleMount = useCallback((editor: unknown, monaco: unknown) => {
         editorRef.current = editor as EditorLike;
         monacoRef.current = monaco as MonacoNamespaceLike;
+        // The workbench code can change between the first render and mount.
+        applyWorkbenchCode(editor as SourceEditorLike, indexInputRef.current.code, pendingEchoesRef.current);
         syncRef.current?.dispose();
         syncRef.current = attachCodeGeometrySync(editor as SyncEditorLike, {
             store: selectionCodeStore,
@@ -145,6 +178,15 @@ export function CodeTab(): JSX.Element {
         syncRef.current?.dispose();
         syncRef.current = null;
     }, []);
+
+    // Workbench code -> editor. The editor is uncontrolled (`defaultValue`):
+    // a controlled `value` is written back after every render, and a render
+    // that lags behind fast typing wrote an older text over newer keystrokes.
+    useEffect(() => {
+        const editor = editorRef.current as unknown as SourceEditorLike | null;
+        if (!editor) return;
+        applyWorkbenchCode(editor, workbench.code ?? '', pendingEchoesRef.current);
+    }, [workbench.code]);
 
     // A re-evaluation can move feature call sites; re-apply the link.
     useEffect(() => {
@@ -181,7 +223,9 @@ export function CodeTab(): JSX.Element {
 
     const handleChange = useCallback(
         (next: string | undefined) => {
-            if (typeof next === 'string') workbench.setCode?.(next);
+            if (typeof next !== 'string') return;
+            pendingEchoesRef.current.push(next);
+            workbench.setCode?.(next);
         },
         [workbench],
     );
@@ -192,7 +236,7 @@ export function CodeTab(): JSX.Element {
                 height="100%"
                 defaultLanguage="typescript"
                 theme="vs-dark"
-                value={workbench.code ?? ''}
+                defaultValue={workbench.code ?? ''}
                 onChange={handleChange}
                 beforeMount={handleBeforeMount}
                 onMount={handleMount}
