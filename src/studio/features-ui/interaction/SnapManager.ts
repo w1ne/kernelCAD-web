@@ -28,8 +28,10 @@ export class SnapManager {
             };
         }
 
-        // 2. If hovering an Edge, check for Endpoints and Midpoint
-        if (type === 'EDGE') {
+        // 2. If hovering an Edge, check for Endpoints and Midpoint. A shape's
+        // BREP edge set (`edgeRanges`) is pickable for selection only; it
+        // carries no snap semantics.
+        if (type === 'EDGE' && !object.userData?.edgeRanges) {
             return this.getLineSnap(object, point);
         }
 

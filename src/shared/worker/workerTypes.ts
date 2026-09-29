@@ -148,6 +148,19 @@ export interface GeometryResult {
     transform?: number[];
     assemblyFeatureId?: string;
     assemblyPartName?: string;
+    /** FeatureRecord id of the feature this mesh shows. Absent on the legacy
+     *  in-browser worker path. */
+    featureId?: string;
+    /** Per-face owning feature id, indexed by `FaceGeometry.faceId`: the
+     *  feature whose script call created the face (face lineage). Absent
+     *  when every face belongs to `featureId`. */
+    faceOwners?: string[];
+    /** Per-edge vertex ranges into `edges`, as flat `[start, count]` pairs in
+     *  vertex units (one pair per BREP edge). */
+    edgeRanges?: number[];
+    /** Owning feature id per `edgeRanges` pair. Absent when every edge
+     *  belongs to `featureId`. */
+    edgeOwners?: string[];
 }
 
 export interface SketchGeometry {

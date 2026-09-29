@@ -36,6 +36,7 @@ accidentally removed:
 | `feature.invalid-args` | Fillet radius exceeds the local edge geometry (too large for a thin frame arm). | Reduce the fillet radius. Use the variable-radius form to apply a smaller radius on narrow edges. |
 | `feature.invalid-args` (scale) | `.scale([sx, sy, sz])` received a zero or negative factor (e.g., a param reached 0). | Add a `min: 0.001` guard on the controlling param. |
 | `feature.hole.no-target-face` | The hole's entry face is correct but the bore axis does not intersect a solid body. | Check that the target body extends along the bore axis past the hole entry depth. |
+| `feature.hole.cut-missing` | A bore centre is off the entry face, the depth is zero, or material is still on the bore axis after the cut. | (u, v) are mm from the face centre, not world coordinates. Use the face centre and span in the message: `u = worldU - centreU`, `v = worldV - centreV`. |
 
 ### 3. Geometry illegal — the kernel rejected the result
 
