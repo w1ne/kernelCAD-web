@@ -7,6 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 let workbenchComputing = false;
 let workbenchReady = true;
 let workbenchError: string | null = null;
+let workbenchGeometries: unknown[] = [];
 let agentRailOpen = false;
 let recomputeRawPairs: Array<{ a: string; b: string; volumeMm3: number }> = [];
 let recomputeInterferenceSummary: {
@@ -23,7 +24,7 @@ vi.mock('../context/WorkbenchContext', () => ({
         isReady: workbenchReady,
         isComputing: workbenchComputing,
         error: workbenchError,
-        geometries: [],
+        geometries: workbenchGeometries,
         selectedItemIds: [],
         viewMode3D: 'shadedWithEdges',
         layoutMode: 'split',
@@ -95,6 +96,7 @@ beforeEach(() => {
     workbenchComputing = false;
     workbenchReady = true;
     workbenchError = null;
+    workbenchGeometries = [];
     agentRailOpen = false;
     recomputeRawPairs = [];
     recomputeInterferenceSummary = null;
@@ -122,7 +124,33 @@ describe('StudioShell status plumbing', () => {
         act(() => vi.advanceTimersByTime(15_000));
 
         expect(screen.queryByText('Geometry kernel warming up...')).toBeNull();
-        expect(screen.getByText('Geometry kernel initialization timed out. Reload to retry.')).toBeTruthy();
+        expect(screen.getByText('The geometry kernel is taking longer than usual.')).toBeTruthy();
+        expect(screen.getByRole('button', { name: 'Reload' })).toBeTruthy();
+        vi.useRealTimers();
+    });
+
+    it('offers a reload next to a kernel failure', () => {
+        workbenchReady = false;
+        workbenchError = 'WASM failed to initialize';
+
+        render(<StudioShell />);
+
+        expect(screen.getByRole('button', { name: 'Reload' })).toBeTruthy();
+    });
+
+    it('shows no kernel banner over a model that already rendered', () => {
+        // The hosted mesh and the dev node kernel render without the in-browser
+        // worker, so the worker can still be booting (or stuck) while the model
+        // is on screen and the status bar says Ready.
+        vi.useFakeTimers();
+        workbenchReady = false;
+        workbenchGeometries = [{ id: 'body_1' }];
+
+        render(<StudioShell />);
+        act(() => vi.advanceTimersByTime(20_000));
+
+        expect(screen.queryByTestId('kernel-init-banner')).toBeNull();
+        expect(screen.queryByText(/timed out|taking longer|warming up/)).toBeNull();
         vi.useRealTimers();
     });
 

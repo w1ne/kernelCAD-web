@@ -11,7 +11,7 @@ import {
     type ProjectRow,
 } from '../../funnel/lib/apiClient';
 import { captureViewerPngBase64 } from '../components/viewer/captureViewerPng';
-import { useProjectLiveUpdates } from './-useProjectLiveUpdates';
+import { useProjectLiveUpdates, LOAD_SLOW_MS, LOAD_TIMEOUT_MS } from './-useProjectLiveUpdates';
 
 vi.mock('../../funnel/lib/apiClient', () => ({
     fetchProjectBySlug: vi.fn(),
@@ -299,5 +299,68 @@ describe('useProjectLiveUpdates', () => {
 
         expect(captureViewerPngBase64Mock).toHaveBeenCalled();
         expect(postProjectRenderMock).toHaveBeenCalledWith('demo', png);
+    });
+
+    describe('initial load state', () => {
+        it('reports a missing or private slug as not_found instead of loading forever', async () => {
+            fetchProjectBySlugMock.mockResolvedValue(null);
+            const { result } = renderHook(() => useProjectLiveUpdates('nope'));
+
+            expect(result.current.loadState).toBe('loading');
+            await waitFor(() => expect(result.current.loadState).toBe('not_found'));
+            expect(result.current.project).toBeNull();
+            expect(result.current.err).toBeNull();
+        });
+
+        it('marks a request with no answer as slow, then as timed out', async () => {
+            vi.useFakeTimers();
+            try {
+                fetchProjectBySlugMock.mockReturnValue(new Promise(() => {}));
+                const { result } = renderHook(() => useProjectLiveUpdates('demo'));
+
+                expect(result.current.loadState).toBe('loading');
+                act(() => vi.advanceTimersByTime(LOAD_SLOW_MS));
+                expect(result.current.loadState).toBe('slow');
+                act(() => vi.advanceTimersByTime(LOAD_TIMEOUT_MS - LOAD_SLOW_MS));
+                expect(result.current.loadState).toBe('timeout');
+            } finally {
+                vi.useRealTimers();
+            }
+        });
+
+        it('still shows a project whose answer arrives after the timeout', async () => {
+            vi.useFakeTimers();
+            try {
+                let resolve: (row: ProjectRow | null) => void = () => {};
+                fetchProjectBySlugMock.mockReturnValue(new Promise((r) => { resolve = r; }));
+                const { result } = renderHook(() => useProjectLiveUpdates('demo'));
+                act(() => vi.advanceTimersByTime(LOAD_TIMEOUT_MS));
+                expect(result.current.loadState).toBe('timeout');
+
+                await act(async () => { resolve(project({ title: 'Late' })); });
+
+                expect(result.current.loadState).toBe('ready');
+                expect(result.current.project?.title).toBe('Late');
+            } finally {
+                vi.useRealTimers();
+            }
+        });
+
+        it('reports a failed request as error and loads again on retry', async () => {
+            fetchProjectBySlugMock
+                .mockRejectedValueOnce(new Error('network down'))
+                .mockResolvedValueOnce(project({ title: 'Second try' }));
+            const { result } = renderHook(() => useProjectLiveUpdates('demo'));
+            await waitFor(() => expect(result.current.loadState).toBe('error'));
+            expect(result.current.err).toBe('Error: network down');
+
+            act(() => result.current.retry());
+
+            expect(result.current.loadState).toBe('loading');
+            await waitFor(() => expect(result.current.loadState).toBe('ready'));
+            expect(result.current.project?.title).toBe('Second try');
+            expect(result.current.err).toBeNull();
+            expect(fetchProjectBySlugMock).toHaveBeenCalledTimes(2);
+        });
     });
 });

@@ -44,6 +44,14 @@ export const EXPORT_CODES = {
     group: 'export',
     description: 'A 3MF part mesh has open or non-manifold edges after the heal pass. Within the shared defect budget the file is written with a warning; past it the export fails and names the counts.',
   },
+  'export.stl.fuse-skipped': {
+    hintTemplate:
+      'The STL holds one closed shell per part instead of a fused solid, because fusing parts with many overlapping free-form faces (threads, dense lofts) takes minutes. Slicers union overlapping shells, so print as-is; for one fused solid, export the parts you need with `export({ format: "stl", feature_id })` or build a `Scene.toUnion()` yourself and accept the wait.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'print the multi-shell STL as-is, or fuse the parts explicitly with Scene.toUnion() when one solid is required' },
+    defaultSeverity: 'warn',
+    group: 'export',
+    description: 'A multi-part Scene STL skipped the world-frame fuse because two overlapping parts carry more free-form face pairs than the fuse budget; each part is written as its own closed shell.',
+  },
   'export.3mf.plate-overflow': {
     hintTemplate:
       'The file was written, but some parts sit past the bed edge. Pass options.printer with a larger bed, export fewer parts per plate (one export per plate), or split the parts across several 3MF files.',

@@ -238,7 +238,7 @@ nutBlank.hole('top', {
 |---|---|
 | `pitch` | ISO pitch in mm, `0 < pitch ≤ diameter / 4` (M6 coarse → 1). `Editable<number>`. |
 | `modeled` | `true` cuts the 60° helical groove. `false` (default) is a cosmetic thread: only the minor-diameter bore plus the recorded `threadPitch` / `threadClearance` / `threadModeled` params. Pick it for speed; a modeled thread costs seconds per hole. |
-| `clearance` | mm of play, `0 ≤ clearance ≤ pitch / 8` (default 0). Grows the bore radius, the crest radius and each flank (normal to the flank) by that amount. `Editable<number>`. |
+| `clearance` | mm of play, `0 ≤ clearance ≤ pitch / 8` (default 0; the cap is 0.125 mm on M6 × 1, 0.156 mm on M8 × 1.25). Grows the bore radius, the crest radius and each flank (normal to the flank) by that amount. Past the cap neighbouring groove turns would merge. `Editable<number>`. |
 
 The thread is right-handed. Its groove centre crosses the face's `u` direction
 at the entry face, so a bolt threaded with `sweep(helix(...), { spine: 'helix' })`
@@ -247,6 +247,14 @@ helix start. A blind modeled thread stops short of the floor and needs
 `depth ≥ 2 × pitch`. Check the fit with `verify({ check: 'dfm' })` and a
 `dfmSpec({ minClearance })`: the exact distance between bolt and nut equals the
 clearance.
+
+**Print tolerance (FDM).** A printed nut usually needs 0.2–0.4 mm of play, more
+than the pitch/8 cap. Keep `clearance` at the cap and grow the whole internal
+thread instead: a larger nominal `diameter` shifts the bore, crest and both
+flanks outward together, and a radial shift δ opens each 60° flank by δ/2. So
+add `4 × (play − pitch/8)` to `diameter`: an M6 × 1 nut with 0.3 mm of flank
+play is `diameter: 6.7, thread: { pitch: 1, modeled: true, clearance: 0.125 }`.
+The error for an over-cap clearance prints these numbers for your pitch.
 
 ## Naming features (slice 2)
 

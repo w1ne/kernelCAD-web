@@ -112,7 +112,12 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
               + 'datums and tolerances declared in the script with shape.datum() / shape.tolerance() override the automatic ones. '
               + 'pdf-drawing: { sheet?: "a4"|"a3"|"a2"|"a1"|"a0"|"ansi-a"|"ansi-b"|"ansi-c"|"ansi-d"|"ansi-e"|"auto"|"auto-ansi" (default "a3"), '
               + 'projection?: "third"|"first", title?, partName?, material?, revision?, date? (default today), modelName?, '
-              + 'annotations?, sections?, exploded?, balloons?, partsList?, autoAnnotate? (default true unless annotations are given) } — the svg-drawing keys mean the same.',
+              + 'annotations?, sections?, exploded?, balloons?, partsList?, autoAnnotate? (default true unless annotations are given) } — the svg-drawing keys mean the same. '
+              + 'svg-drawing and pdf-drawing also take style?: "mechanical" (default, the part sheet) | "architectural" (a floor plan for a building or room model: '
+              + 'section about 1 m above the floor with filled cut walls, wall / opening chain dimensions and overall sizes, room labels with net area, scale bar, north arrow; '
+              + 'millimetres, or feet-inches when the model is in whole feet / inches) and plan?: { units?: "metric"|"imperial", cutHeight?: mm above the floor, '
+              + 'rooms?: [{ name, at: [x, y] }], northDeg?: degrees clockwise from sheet up }. A building-sized model drawn in the default style gets a '
+              + 'drawing.style.architectural-suggested warning.',
           },
           part: { type: 'string', description: "target:'part' — part name for single-part export, or 'all'." },
           output_dir: { type: 'string', description: "target:'part' — destination directory (all-parts mode); files are <dir>/<part>.stl." },

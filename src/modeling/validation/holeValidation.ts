@@ -321,6 +321,29 @@ function validateCommonHoleFields(
   if (opts.thread !== undefined) validateThread(opts, featureId);
 }
 
+/** Hint for a thread clearance above the pitch/8 cap: say why the cap exists
+ *  and, for a print-tolerance request, how to get the extra play by growing
+ *  the whole thread (a larger nominal `diameter`) instead. */
+function threadClearanceHint(clearance: number, pitch: number, diameter: unknown): string {
+  const cap = pitch / 8;
+  const why =
+    `thread.clearance grows each flank of the internal thread by that many mm; past pitch/8 = ${cap} mm ` +
+    'neighbouring groove turns would merge.';
+  if (!isFiniteNumber(clearance) || clearance <= cap) return why;
+  // A radial shift δ of the whole 60° profile opens each flank by δ·sin 30° =
+  // δ/2, so the missing flank play `extra` needs δ = 2·extra, i.e. a nominal
+  // diameter 4·extra larger.
+  const extra = clearance - cap;
+  const grow = +(4 * extra).toFixed(3);
+  const target = isFiniteNumber(diameter) ? ` (diameter: ${+(diameter + grow).toFixed(3)})` : '';
+  return (
+    `${why} For a print tolerance (FDM usually needs 0.2–0.4 mm), keep clearance: ${cap} and grow the ` +
+    `whole thread instead: add ${grow} mm to the nominal diameter${target}. That shifts the bore, crest ` +
+    `and both flanks outward together; each flank then opens by ${cap} + ${+extra.toFixed(3)} = ${clearance} mm ` +
+    'and the groove turns never merge.'
+  );
+}
+
 function validateThread(opts: HoleOpts | HolesOpts, featureId: FeatureId | undefined): void {
   const t = opts.thread;
   if (typeof t !== 'object' || t === null) {
@@ -353,9 +376,9 @@ function validateThread(opts: HoleOpts | HolesOpts, featureId: FeatureId | undef
   if (!isFiniteNumber(clearance) || clearance < 0 || clearance > t.pitch / 8) {
     throw new KernelError(
       'feature.invalid-args',
-      `hole: thread.clearance (${clearance}) must be in [0, pitch/8] = [0, ${t.pitch / 8}] mm.`,
+      `hole: thread.clearance (${clearance}) must be in [0, pitch/8] = [0, ${t.pitch / 8}] mm for pitch ${t.pitch}.`,
       featureId,
-      'thread.clearance grows the internal thread outward by that many mm; beyond pitch/8 adjacent groove turns would merge.',
+      threadClearanceHint(clearance, t.pitch, opts.diameter),
     );
   }
   if (t.modeled === true && typeof opts.depth === 'number' && opts.depth < 2 * t.pitch) {

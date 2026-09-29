@@ -73,7 +73,7 @@ export function PaymentFailedBanner({
   busy?: boolean;
 }) {
   return (
-    <div role="alert" className="mb-6 rounded-lg border border-copper bg-vellum-soft p-4 text-ink flex items-center justify-between gap-4">
+    <div role="alert" className="mb-6 rounded-lg border border-danger bg-vellum-soft p-4 text-ink flex items-center justify-between gap-4">
       <div>
         <p className="font-serif font-medium">Payment failed: update your card</p>
         <p className="text-sm text-ink-soft mt-1">

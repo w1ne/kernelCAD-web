@@ -21,6 +21,7 @@ import { isRegion } from '../../shared/intent/region';
 import { resolveParams } from '../../shared/runtime/resolveParams';
 import { sceneToConnectorManifest } from './connectorManifestExport';
 import { findDfmSpec } from '../../modeling/runtime/dfm/runDfmChecks';
+import { exportSceneStlAsShells, freeformFuseOverBudget } from './sceneStlFuse';
 import {
   dracoConflictDiagnostic,
   notWatertightDiagnostic,
@@ -441,6 +442,11 @@ export async function exportSceneFusedMesh(
   featureCount: number,
 ): Promise<ExportResult> {
   const worldParts = sceneToWorldFrameParts(scene);
+  const fuseOverBudget = format === 'stl' ? freeformFuseOverBudget(worldParts) : undefined;
+  if (fuseOverBudget !== undefined) {
+    const verifyShells = (input.options as { verify?: boolean } | undefined)?.verify !== false;
+    return exportSceneStlAsShells(worldParts, fuseOverBudget, targetId, diagnostics, featureCount, verifyShells);
+  }
   let fused: OcctBackend = worldParts[0]!.shape;
   for (let i = 1; i < worldParts.length; i++) {
     fused = fused.union(worldParts[i]!.shape);

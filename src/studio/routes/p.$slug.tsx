@@ -13,8 +13,9 @@ import {
   createCheckoutSession,
   type ProjectRow,
 } from '../../funnel/lib/apiClient';
-import { useProjectLiveUpdates } from './-useProjectLiveUpdates';
+import { useProjectLiveUpdates, type LoadState } from './-useProjectLiveUpdates';
 import { StudioModelCustomizer } from '../customizer/StudioModelCustomizer';
+import { PageState, type PageStateAction } from '../components/Shared/PageState';
 
 export const Route = createFileRoute('/p/$slug')({
   component: ProjectPage,
@@ -26,12 +27,70 @@ function formatPrivacyLabel(privacy: ProjectRow['privacy']): string {
   return 'public by link';
 }
 
+const BROWSE_ACTIONS: readonly PageStateAction[] = [
+  { label: 'Open gallery', href: '/gallery' },
+  { label: 'Your projects', href: '/me' },
+];
+
+/** The not-yet-ready page: loading, slow, not found, timed out or failed.
+ *  Each state says what happened and offers a next step. */
+function ProjectLoadPage({ state, err, onRetry }: {
+  state: Exclude<LoadState, 'ready'>;
+  err: string | null;
+  onRetry: () => void;
+}) {
+  const retry: PageStateAction = { label: 'Try again', onClick: onRetry, primary: true };
+  switch (state) {
+    case 'not_found':
+      return (
+        <PageState
+          tone="error"
+          title="This project does not exist or is private"
+          message="Check the link. If the project is yours and private, sign in with the account that owns it."
+          actions={[{ ...BROWSE_ACTIONS[0], primary: true }, BROWSE_ACTIONS[1]]}
+        />
+      );
+    case 'timeout':
+      return (
+        <PageState
+          tone="error"
+          title="The project did not load"
+          message="The server did not answer in time. Check your connection and try again."
+          actions={[retry, ...BROWSE_ACTIONS]}
+        />
+      );
+    case 'error':
+      return (
+        <PageState
+          tone="error"
+          title="Could not load this project"
+          message="Something went wrong while loading the project. Try again in a moment."
+          detail={err}
+          actions={[retry, ...BROWSE_ACTIONS]}
+        />
+      );
+    case 'slow':
+      return (
+        <PageState
+          tone="loading"
+          title="Loading the project…"
+          message="This takes longer than usual. You can keep waiting or try again."
+          actions={[{ label: 'Try again', onClick: onRetry }]}
+        />
+      );
+    default:
+      return <PageState tone="loading" title="Loading the project…" />;
+  }
+}
+
 function ProjectPage() {
   const { slug } = Route.useParams();
   const { session } = useOptionalSession();
   const {
     project,
     err,
+    loadState,
+    retry,
     liveCode,
     lastLiveUpdate,
     handleRestored,
@@ -50,29 +109,20 @@ function ProjectPage() {
     }
   }, []);
 
-  if (err) {
-    return (
-      <main className="min-h-screen bg-vellum font-sans p-8">
-        <p className="text-danger font-mono text-sm">Failed to load: {err}</p>
-      </main>
-    );
-  }
-  if (!project) {
-    return (
-      <main className="min-h-screen bg-vellum font-sans p-8">
-        <p className="text-ink-faint font-mono text-sm">Loading…</p>
-      </main>
-    );
+  if (loadState !== 'ready' || !project) {
+    return <ProjectLoadPage state={loadState === 'ready' ? 'loading' : loadState} err={err} onRetry={retry} />;
   }
 
   const headerLeft = (
     <div className="flex items-center gap-2 min-w-0">
-      {/* The header row is shared with the privacy/share buttons, the overflow
+      {/* The Studio header's own project label shows the title on wide
+          screens; below `lg` the Header drops that label for this one.
+          The header row is shared with the privacy/share buttons, the overflow
           menu and the account slot, so on a phone the title truncates down to
           nothing (`min-w-0`, not a pixel floor) and drops out entirely under
           400px — otherwise it pushes the live badge past the header's clip and
           the badge renders as a sliver of green border. */}
-      <span className="hidden min-[400px]:inline text-xs text-gray-200 font-medium truncate min-w-0 max-w-[160px] md:max-w-[280px]" title={project.title}>
+      <span className="hidden min-[400px]:inline lg:hidden text-xs text-gray-200 font-medium truncate min-w-0 max-w-[160px] md:max-w-[280px]" title={project.title}>
         {project.title}
       </span>
       <span className="hidden lg:inline-flex shrink-0 whitespace-nowrap text-[10px] uppercase tracking-widest text-gray-500 font-mono px-1.5 py-0.5 rounded border border-[#333]">
@@ -116,6 +166,7 @@ function ProjectPage() {
     <>
       <App
         initialCode={project.current_code}
+        projectName={project.title}
         liveCode={liveCode}
         viewerMode
         viewportOverlay={<StudioModelCustomizer slug={slug} hints={project.parameters} />}

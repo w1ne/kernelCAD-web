@@ -11,7 +11,8 @@ import { sceneToWorldFrameParts, type WorldFramePart } from '../../kernel/backen
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import type { ShapeBackend } from '../../kernel/backends/backend';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
-import { NEXT_ACTIONS } from '../../shared/diagnostics/registry';
+import { HINT_TEMPLATES, NEXT_ACTIONS } from '../../shared/diagnostics/registry';
+import { looksLikeBuilding, renderArchitecturalPlan } from '../../kernel/backends/occt/drawingArchitectural';
 
 import { svgSheetsToPdf } from '../../kernel/export/pdf/svgSheetToPdf';
 import { KERNELCAD_NAME, attributionGenerator } from '../../shared/links/attribution';
@@ -52,6 +53,7 @@ export async function exportPdfDrawing(
   featureCount: number,
 ): Promise<ExportResult> {
   const pdf = (input.options as PdfDrawingOptions | undefined) ?? { format: 'pdf-drawing' as const };
+  const architectural = pdf.style === 'architectural';
   const assemblies = run.session.assemblies as Map<string, Assembly>;
   const material = pdf.material ?? sharedAssemblyMaterial(firstAssemblyOrUndefined(assemblies));
   const svgOpts = pdfSheetOptions(pdf, material);
@@ -61,7 +63,7 @@ export async function exportPdfDrawing(
   const modelName = svgOpts.modelName ?? drawingModelName(fileName);
   const bytes = svgSheetsToPdf([svg], {
     title: pdf.title ?? modelName,
-    subject: `Engineering drawing: ${pdf.partName ?? modelName}`,
+    subject: `${architectural ? 'Architectural floor plan' : 'Engineering drawing'}: ${pdf.partName ?? modelName}`,
     creator: `${KERNELCAD_NAME} pdf-drawing export`,
     producer: attributionGenerator(),
   });
@@ -91,6 +93,8 @@ function pdfSheetOptions(pdf: PdfDrawingOptions, material: string | undefined): 
       exploded: pdf.exploded as SvgDrawingOptions['exploded'],
       balloons: pdf.balloons,
       partsList: pdf.partsList,
+      style: pdf.style,
+      plan: pdf.plan,
     }),
     autoAnnotate: pdf.autoAnnotate ?? !authored,
   };
@@ -122,6 +126,22 @@ async function renderDrawingSheet(
 ): Promise<ExportResult> {
   const modelName = opts.modelName ?? drawingModelName(fileName);
   const drawingParts = drawingPartsForBackend(lowered);
+  const styleError = drawingStyleError(opts.style);
+  if (styleError !== undefined) return { bytes: new Uint8Array(), featureCount, diagnostics: [...diagnostics, styleError] };
+  if (opts.style === 'architectural') {
+    const plan = renderArchitecturalPlan(drawingParts, {
+      ...definedOnly({
+        sheet: opts.sheet,
+        title: opts.titleBlock?.title,
+        revision: opts.titleBlock?.revision,
+        date: opts.date,
+        plan: opts.plan,
+      }),
+      modelName,
+    });
+    return { bytes: plan.bytes, featureCount, diagnostics };
+  }
+  const styleHint = architecturalStyleHint(opts.style, drawingParts);
   const assemblies = run.session.assemblies as Map<string, Assembly>;
   const arm = firstAssemblyOrUndefined(assemblies);
 
@@ -147,8 +167,45 @@ async function renderDrawingSheet(
   return {
     bytes: rendered.bytes,
     featureCount,
-    diagnostics: [...diagnostics, ...exploded.diagnostics, ...bom.diagnostics, ...rendered.diagnostics],
+    diagnostics: [
+      ...diagnostics, ...exploded.diagnostics, ...bom.diagnostics, ...rendered.diagnostics,
+      ...(styleHint === undefined ? [] : [styleHint]),
+    ],
     ...(rendered.report === undefined ? {} : { drawingReport: rendered.report }),
+  };
+}
+
+function drawingStyleError(style: unknown): CompilerDiagnostic | undefined {
+  if (style === undefined || style === 'mechanical' || style === 'architectural') return undefined;
+  return {
+    target: 'export-occt',
+    code: 'cli.invalid-args',
+    severity: 'error',
+    message: `drawing options.style must be 'mechanical' or 'architectural'; got ${JSON.stringify(style)}.`,
+    hint: "Pass options.style: 'architectural' for a floor plan, or omit it for the mechanical part sheet.",
+    nextAction: NEXT_ACTIONS['cli.invalid-args'],
+  };
+}
+
+/** A building-sized model drawn with the default mechanical sheet gets part
+ *  annotations (datums, flatness, ISO 2768) that mean nothing on a floor
+ *  plan: suggest the architectural style. Explicit `'mechanical'` is quiet. */
+function architecturalStyleHint(style: SvgDrawingOptions['style'], parts: readonly WorldFramePart[]): CompilerDiagnostic | undefined {
+  if (style !== undefined) return undefined;
+  const boxes = parts.map(p => p.shape.boundingBox());
+  const bbox = {
+    min: [0, 1, 2].map(k => Math.min(...boxes.map(b => b.min[k]))),
+    max: [0, 1, 2].map(k => Math.max(...boxes.map(b => b.max[k]))),
+  };
+  if (!looksLikeBuilding(bbox)) return undefined;
+  const size = [0, 1, 2].map(k => Math.round(bbox.max[k] - bbox.min[k])).join(' × ');
+  return {
+    target: 'export-occt',
+    code: 'drawing.style.architectural-suggested',
+    severity: 'warn',
+    message: `The model is building-sized (${size} mm), but the sheet uses the mechanical part style (datums, flatness, ISO 2768).`,
+    hint: HINT_TEMPLATES['drawing.style.architectural-suggested'].template,
+    nextAction: NEXT_ACTIONS['drawing.style.architectural-suggested'],
   };
 }
 

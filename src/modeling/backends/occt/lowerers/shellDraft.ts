@@ -64,8 +64,15 @@ export function lowerShell(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
       code: 'feature.kernel-failed',
       featureId: r.id,
       severity: 'error',
-      message: `OCCT shell failed: ${msg}`,
-      hint: 'OCCT could not shell that solid — try a thinner wall or a different open face. Thickness must be smaller than the shape\'s minimum thickness.',
+      message:
+        `OCCT shell failed: ${msg}. The wall offset could not be closed. Two usual causes: the wall is ` +
+        `thicker than the thinnest part of the body, or curved faces meet at sharp (non-tangent) edges — ` +
+        `a multi-station variableSweep, a ruled loft, or a union of stacked lofts.`,
+      hint:
+        'Try a thinner wall or a different open face. If the body is built from stations or stacked lofts, ' +
+        'hollow it with a boolean instead of shell(): build the same body again from profiles inset by the ' +
+        'wall thickness, starting one wall above the base and running past the open top, then ' +
+        '`outer.subtract(inner)`. Cookbook: twisted-tapered-thin-wall-vase.',
     });
     return finished(base);
   }

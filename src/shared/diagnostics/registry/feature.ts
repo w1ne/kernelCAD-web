@@ -111,6 +111,14 @@ export const FEATURE_CODES = {
     group: 'feature',
     description: 'A solid primitive or sweep-family create lowered to an empty or zero-volume shape; the result has no material.',
   },
+  'feature.result.absurd-geometry': {
+    hintTemplate:
+      'The kernel returned a result with a non-finite or runaway bounding box, a non-positive volume, or a shell larger than the solid it hollowed. Treat the feature as failed: change the operation (e.g. hollow with a boolean subtract of an inner body instead of shell()), simplify the input faces, or reduce the thickness/offset, then re-run.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'replace or simplify the feature so the kernel returns a bounded, positive-volume solid; for a failing shell(), subtract an inner offset body instead' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'Post-feature sanity gate: the kernel returned geometry that cannot be right (non-finite / runaway bounding box, non-positive volume, or an inward shell that grew) without raising an error.',
+  },
   'feature.project-curve.no-intersection': {
     hintTemplate:
       'projectCurve could not intersect the source curve with the target face. For closed-curve mode, ensure the curve overlaps the face bounds. asEdge:true is not implemented — use closed-curve projection or pre-tessellate the open wire into a closed sketch.',
