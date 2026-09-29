@@ -37,7 +37,8 @@ function FirstRun({ geometryCount }: { geometryCount: number }) {
     return (
         <>
             {empty && (
-                <div className="absolute inset-0 z-10 flex items-center justify-center p-4 pointer-events-none">
+                // Above the view gizmo (z-20); clear of the floating toolbar at the top.
+                <div className="absolute inset-0 z-[25] flex items-center justify-center px-4 pb-4 pt-[76px] pointer-events-none">
                     <StudioEmptyState
                         enableAgent={config.enableAgentRail ?? true}
                         enableConnect={config.enableConnect ?? true}

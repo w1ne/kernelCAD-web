@@ -185,7 +185,7 @@ export function CoachMarks({ ready, steps = COACH_STEPS }: CoachMarksProps): JSX
                         type="button"
                         onClick={done}
                         aria-label="Close tips"
-                        className={cx(buttonClass('ghost', 'sm'), '-mr-1 -mt-1 size-control-sm shrink-0 px-0')}
+                        className={cx(buttonClass('ghost', 'sm'), '-mr-1 -mt-1 size-control-sm shrink-0 px-0 max-md:size-touch')}
                     >
                         <X className="size-4" strokeWidth={1.75} aria-hidden="true" />
                     </button>
@@ -194,14 +194,14 @@ export function CoachMarks({ ready, steps = COACH_STEPS }: CoachMarksProps): JSX
                 <div className="mt-1 flex items-center gap-2">
                     <span className="flex-1 text-2xs text-fg-3" aria-live="polite">Tip {index + 1} of {tour.length}</span>
                     {!last && (
-                        <button type="button" onClick={done} className={buttonClass('ghost', 'sm')}>Skip</button>
+                        <button type="button" onClick={done} className={cx(buttonClass('ghost', 'sm'), 'max-md:h-touch')}>Skip</button>
                     )}
                     <button
                         type="button"
                         onClick={next}
                         // Keep the keyboard in the tour once the user moves through it.
                         autoFocus={index > 0}
-                        className={buttonClass('primary', 'sm')}
+                        className={cx(buttonClass('primary', 'sm'), 'max-md:h-touch max-md:px-4')}
                     >
                         {last ? 'Done' : 'Next'}
                     </button>

@@ -41,13 +41,13 @@ function StarterTile({ model, onPick }: { model: StarterModel; onPick: (model: S
             data-testid={`empty-starter-${model.id}`}
             className={cx(
                 'focus-ring group flex h-full w-full flex-col items-start gap-1 rounded-panel border border-border bg-surface-2 p-3 text-left',
-                'transition-colors duration-80 hover:border-accent hover:bg-surface-3 max-sm:flex-row max-sm:items-center max-sm:gap-3',
+                'transition-colors duration-80 hover:border-accent hover:bg-surface-3 max-sm:min-h-touch max-sm:flex-row max-sm:items-center max-sm:gap-3 max-sm:py-2',
             )}
         >
             <Box className="size-5 shrink-0 text-fg-3 group-hover:text-accent" strokeWidth={1.75} aria-hidden="true" />
             <span className="flex min-w-0 flex-col gap-0.5">
                 <span className="text-ui font-medium text-fg">{model.name}</span>
-                <span className="text-2xs text-fg-2">{model.summary}</span>
+                <span className="text-2xs text-fg-2 max-sm:hidden">{model.summary}</span>
                 <span className="font-mono text-2xs text-fg-3">{starterSizeLabel(model)}</span>
             </span>
         </button>
