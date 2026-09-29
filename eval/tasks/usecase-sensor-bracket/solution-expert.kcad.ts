@@ -1,7 +1,10 @@
-// U1 — Wall-mount bracket for a 30 mm diameter cylindrical sensor.
-// Clamp ring w/ slot + M3 clamp screw; back plate 50x40x4 with two M4
-// countersunk holes 30 mm apart. PLA print. Clamp bore 30.2 mm (0.2 clearance).
-// VERIFIED against live kernelCAD MCP 2026-09-28. Published: https://app.kernelcad.com/p/q81ZVP1J
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+// eval/tasks/usecase-sensor-bracket/solution-expert.kcad.ts
+//
+// Typical use case U1: wall-mount bracket for a 30 mm cylindrical sensor.
+// Slotted clamp ring with an M3 clamp screw; back plate 50 x 40 x 4 mm with
+// two M4 countersunk holes 30 mm apart. PLA print; clamp bore 30.2 mm.
 
 const plateW = param('plateW', 50);
 const plateH = param('plateH', 40);
@@ -17,7 +20,6 @@ const ringCenterY = param('ringCenterY', 6);
 const slotWidth = param('slotWidth', 3);
 const earWidth = param('earWidth', 6);
 const earDepth = param('earDepth', 10);
-const earOverlap = param('earOverlap', 3);
 const m3ClearDia = param('m3ClearDia', 3.4);
 
 const m4HoleDia = param('m4HoleDia', 4.5); // ISO 10642 M4 clearance
@@ -37,8 +39,8 @@ plate = plate.holes('top', {
   countersink: { diameter: m4HeadDia, angleDeg: 90 },
 });
 
-// Clamp ring, axis along Z, sitting on the plate front face; overlaps 0.2mm
-// into the plate (avoid exact-tangency union per authoring conventions).
+// Clamp ring, axis along Z, on the plate front face; it sinks 0.2 mm into
+// the plate so the union has real overlap, not a tangent face.
 const ringOuter = cylinder(ringHeight, ringOR).translate(0, ringCenterY, -0.2);
 const ringInner = cylinder(ringHeight.add(2), boreR).translate(0, ringCenterY, -1.2);
 const ring = ringOuter.subtract(ringInner);
@@ -48,8 +50,9 @@ const slotCut = box(slotWidth, ringOR.add(15), ringHeight.add(2))
   .translate(slotWidth.divide(-2), ringCenterY, -1);
 const ringSlotted = ring.subtract(slotCut);
 
-// Ear pads flanking the slot, holding the M3 clamp screw.
-const earY = ringCenterY.add(ringOR).subtract(earOverlap);
+// Ear pads flanking the slot, holding the M3 clamp screw. They start 1 mm
+// outside the bore, inside the ring wall, so they never intrude on the bore.
+const earY = ringCenterY.add(boreR).add(1);
 const earPadL = box(earWidth, earDepth, ringHeight)
   .translate(slotWidth.divide(-2).subtract(earWidth), earY, 0);
 const earPadR = box(earWidth, earDepth, ringHeight)

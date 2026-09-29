@@ -1,17 +1,15 @@
-// U14 — edit of the U1 sensor-wall-bracket project (slug q81ZVP1J, v2):
-// "make the back plate 10 mm taller, move the holes accordingly and add a
-// 45 deg chamfer on the front edges."
-// Changes vs U1 baseline (confirmed via diff_scripts / diff_geometry):
-//   plateH: 40 -> 50 (centered box, grows symmetrically top+bottom)
-//   mountHoleY: -14 -> -19 (shifted -5mm to preserve the original 6mm gap
-//     to the new bottom edge, i.e. "moved accordingly" with the plate)
-//   + frontChamfer param (1mm) and plate.chamfer(1, {face:'top'}) applied
-//     to the back plate's front-face perimeter BEFORE any other feature
-//     unions it, to avoid the face-split-after-boolean bug (see report).
-// Everything else (ring, slot, ears, screw hole, boreDia=30.2 clearance,
-// M4 countersinks, holeSpacing=30) is untouched.
-// VERIFIED against live kernelCAD MCP 2026-09-28. Published:
-// https://app.kernelcad.com/p/q81ZVP1J?version=2
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+// eval/tasks/usecase-edit-bracket/solution-expert.kcad.ts
+//
+// Typical use case U14: a follow-up edit of the U1 sensor bracket
+// (eval/tasks/usecase-sensor-bracket): "make the back plate 10 mm taller,
+// move the holes accordingly and add a 45° chamfer on the front edges".
+// Changes against U1, nothing else:
+//   plateH      40 -> 50  (the centred plate grows 5 mm at each end)
+//   mountHoleY -14 -> -19 (the holes keep their 6 mm to the bottom edge)
+//   + frontChamfer: 1 mm 45° on the plate's front-face edges, applied to the
+//     plate before the ring is unioned on, so only the plate outline is cut.
 
 const plateW = param('plateW', 50);
 const plateH = param('plateH', 50);
@@ -27,16 +25,16 @@ const ringCenterY = param('ringCenterY', 6);
 const slotWidth = param('slotWidth', 3);
 const earWidth = param('earWidth', 6);
 const earDepth = param('earDepth', 10);
-const earOverlap = param('earOverlap', 3);
 const m3ClearDia = param('m3ClearDia', 3.4);
 
-const m4HoleDia = param('m4HoleDia', 4.5);
-const m4HeadDia = param('m4HeadDia', 8.96);
+const m4HoleDia = param('m4HoleDia', 4.5); // ISO 10642 M4 clearance
+const m4HeadDia = param('m4HeadDia', 8.96); // ISO 10642 M4 countersink head dia
 const holeSpacing = param('holeSpacing', 30);
 const mountHoleY = param('mountHoleY', -19);
 
 const frontChamfer = param('frontChamfer', 1);
 
+// Back plate, centered in X/Y, z from -plateT to 0 (0 = front/visible face).
 let plate = box(plateW, plateH, plateT, true).translate(0, 0, plateT.divide(-2));
 plate = plate.chamfer(frontChamfer, { face: 'top' });
 plate = plate.holes('top', {
@@ -49,15 +47,20 @@ plate = plate.holes('top', {
   countersink: { diameter: m4HeadDia, angleDeg: 90 },
 });
 
+// Clamp ring, axis along Z, on the plate front face; it sinks 0.2 mm into
+// the plate so the union has real overlap, not a tangent face.
 const ringOuter = cylinder(ringHeight, ringOR).translate(0, ringCenterY, -0.2);
 const ringInner = cylinder(ringHeight.add(2), boreR).translate(0, ringCenterY, -1.2);
 const ring = ringOuter.subtract(ringInner);
 
+// Radial slot opening the ring toward +Y so it can be clamped shut.
 const slotCut = box(slotWidth, ringOR.add(15), ringHeight.add(2))
   .translate(slotWidth.divide(-2), ringCenterY, -1);
 const ringSlotted = ring.subtract(slotCut);
 
-const earY = ringCenterY.add(ringOR).subtract(earOverlap);
+// Ear pads flanking the slot, holding the M3 clamp screw. They start 1 mm
+// outside the bore, inside the ring wall, so they never intrude on the bore.
+const earY = ringCenterY.add(boreR).add(1);
 const earPadL = box(earWidth, earDepth, ringHeight)
   .translate(slotWidth.divide(-2).subtract(earWidth), earY, 0);
 const earPadR = box(earWidth, earDepth, ringHeight)
