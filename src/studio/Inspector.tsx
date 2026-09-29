@@ -7,6 +7,7 @@ import { useRecomputeResult } from './hooks/useRecomputeResult';
 import { useShellStore } from './store/useShellStore';
 import { getVisibleTabs } from './logic/adaptiveTabs';
 import { InspectorTabs } from './InspectorTabs';
+import { useInspectorTabRequests } from './hooks/studioNavigation';
 
 interface InspectorProps {
     readonly tabSlots: Partial<Record<TabId, ReactNode>>;
@@ -18,6 +19,7 @@ export function Inspector({ tabSlots }: InspectorProps) {
     const visibleTabs = getVisibleTabs(result);
 
     const [activeTab, setActiveTab] = useState<TabId>('scene');
+    useInspectorTabRequests(setActiveTab);
 
     // Derive the effective tab in render rather than syncing via useEffect —
     // setState-in-effect causes cascading renders and is lint-blocked
