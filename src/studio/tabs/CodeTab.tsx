@@ -236,7 +236,7 @@ export function CodeTab(): JSX.Element {
     return (
         <div className="flex h-full w-full flex-col bg-[#111] text-gray-300" data-testid="code-tab">
             {readOnlyScript && (
-                <p className="px-4 pt-3 text-xs text-gray-400" data-testid="code-tab-readonly">
+                <p className="px-4 pt-3 text-xs text-fg-2" data-testid="code-tab-readonly">
                     This page follows the script file. Edits are not saved here.
                 </p>
             )}
