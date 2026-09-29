@@ -1,45 +1,46 @@
-// U9 - Plywood bookshelf, CNC cut parts, dado joints.
-// Overall: 800mm wide x 1200mm tall x 300mm deep, 18mm plywood.
-// 2 side panels (dado grooves cut on inner face) + 6 horizontal boards
-// (bottom, top, and 4 shelves) that sit in the dado grooves.
-// Verified live on kernelCAD: evaluate_script ok, bbox [0,0,0]-[800,300,1200],
-// volume 37,713,600 mm3 (matches sum of 8 boards exactly -> no double-counted
-// overlap at the dado joints). Rendered front/iso views match a 5-compartment
-// open bookshelf with 4 shelves.
-const W = 800, H = 1200, D = 300, T = 18, dadoDepth = 9, shelfCount = 4;
-const interiorW = W - 2 * T; // 764 clear width between side panels
-const boardLen = interiorW + 2 * dadoDepth; // 782 -- horizontal board length (reaches to bottom of each dado)
-const clearH = H - 2 * T; // 1164 clear height between bottom and top boards
-const compartments = shelfCount + 1; // 5 equal compartments
-const compartmentH = (clearH - shelfCount * T) / compartments; // 218.4
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+// eval/tasks/usecase-plywood-shelf/solution-expert.kcad.ts
+//
+// Typical use case U9: bookshelf from 18 mm plywood, 800 wide, 1200 tall,
+// 300 deep, 4 shelves, dado joints, for a CNC. Every board is its own part so
+// the cut list (BOM) and the per-part DXFs come straight from the assembly.
+//
+// Two side panels carry 9 mm deep, 18 mm wide dados on their inner faces;
+// the bottom, the four shelves and the top run into the dados. The shelves
+// split the height into five equal compartments.
 
-const boardZs = [];
-boardZs.push(T / 2); // bottom board center = 9
-let z = T;
-for (let i = 0; i < shelfCount; i++) {
-  z += compartmentH;
-  boardZs.push(z + T / 2);
-  z += T;
-}
-boardZs.push(H - T / 2); // top board center = 1191
+const W = 800;
+const H = 1200;
+const D = 300;
+const T = 18; // plywood thickness
+const dado = 9; // dado depth
+const shelfCount = 4;
+const PLY = '#c8a26b'; // plywood colour
 
-let leftPanel = box(T, D, H, false).translate(0, 0, 0);
-for (const bz of boardZs) {
-  const pocket = box(dadoDepth, D, T, false).translate(T - dadoDepth, 0, bz - T / 2);
-  leftPanel = leftPanel.subtract(pocket);
-}
+const boardLen = W - 2 * T + 2 * dado; // 782: reaches the bottom of both dados
+const compartment = (H - 2 * T - shelfCount * T) / (shelfCount + 1); // 218.4
 
-let rightPanel = box(T, D, H, false).translate(W - T, 0, 0);
-for (const bz of boardZs) {
-  const pocket = box(dadoDepth, D, T, false).translate(W - T, 0, bz - T / 2);
-  rightPanel = rightPanel.subtract(pocket);
-}
+// Board centre heights: bottom, four shelves, top.
+const boardZs = [T / 2];
+for (let i = 1; i <= shelfCount; i++) boardZs.push(T + i * compartment + (i - 1) * T + T / 2);
+boardZs.push(H - T / 2);
 
-let boards = [];
-for (const bz of boardZs) {
-  const board = box(boardLen, D, T, false).translate(T - dadoDepth, 0, bz - T / 2);
-  boards.push(board);
+/** A side panel with a dado for every board, cut into the face at x = inner. */
+function side(x0: number, inner: number) {
+  let panel = box(T, D, H).translate(x0, 0, 0);
+  for (const z of boardZs) {
+    panel = panel.subtract(box(dado, D + 2, T).translate(inner, -1, z - T / 2));
+  }
+  return panel;
 }
 
-let shelfUnit = union(leftPanel, rightPanel, ...boards);
-return shelfUnit;
+const shelf = assembly('plywood-bookshelf');
+shelf.part('side-left', side(0, T - dado).color(PLY));
+shelf.part('side-right', side(W - T, W - T).color(PLY));
+const names = ['bottom', 'shelf-1', 'shelf-2', 'shelf-3', 'shelf-4', 'top'];
+boardZs.forEach((z, i) => {
+  shelf.part(names[i], box(boardLen, D, T).translate(T - dado, 0, z - T / 2).color(PLY));
+});
+
+return shelf.model();

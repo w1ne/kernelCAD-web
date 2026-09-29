@@ -8,6 +8,7 @@ import { defineUsecaseSuite } from './usecaseSuite';
 
 const ORPHAN_GATE = 'https://github.com/w1ne/kernelCAD-web/issues/804';
 const GEAR_RECIPE = 'https://github.com/w1ne/kernelCAD-web/issues/805';
+const DXF_3D = 'https://github.com/w1ne/kernelCAD-web/issues/806';
 
 defineUsecaseSuite([
   {
@@ -18,4 +19,12 @@ defineUsecaseSuite([
     },
   },
   { id: 'usecase-keychain', open: { 'evaluate_script accepts the parts (mechanism gate on)': ORPHAN_GATE } },
+  { id: 'usecase-floor-plan', open: { 'DXF plan section exports': DXF_3D } },
+  {
+    id: 'usecase-plywood-shelf',
+    open: {
+      'DXF has the flat outline of every part': DXF_3D,
+      'evaluate_script accepts the parts (mechanism gate on)': ORPHAN_GATE,
+    },
+  },
 ]);
