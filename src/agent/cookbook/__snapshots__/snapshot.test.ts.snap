@@ -3,8 +3,8 @@
 exports[`cookbook snapshot — top-3 IDs per query > ranks: "build an L-bracket from two perpendicular plates" 1`] = `
 [
   "non-overlapping-l-bracket",
+  "sheet-metal-l-bracket-bend",
   "mirror-half-part",
-  "parametric-bolt-pattern-skeleton",
 ]
 `;
 
@@ -36,6 +36,6 @@ exports[`cookbook snapshot — top-3 IDs per query > ranks: "through-hole for a 
 [
   "clearance-hole-through-plate",
   "parametric-bolt-pattern-skeleton",
-  "subtract-then-fillet-rim",
+  "nema-motor-mounting-plate",
 ]
 `;
