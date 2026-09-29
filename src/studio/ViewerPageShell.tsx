@@ -131,9 +131,10 @@ export function ViewerPageShell(props: ViewerPageShellProps): JSX.Element {
           data-testid="project-panel"
           className={cx(
             'relative flex shrink-0 flex-col border-border bg-surface-1',
-            'h-[var(--kc-sheet-h)] rounded-t-sheet border-t shadow-e3',
-            'md:h-auto md:w-side-panel md:rounded-none md:border-l md:border-t-0 md:shadow-none',
-            drag === null && 'transition-[height] duration-200 ease-out motion-reduce:transition-none',
+            // No height transition: every frame of one would resize the
+            // WebGL canvas above. Keep a strip of the model in view.
+            'h-[var(--kc-sheet-h)] max-h-[calc(100%-4rem)] rounded-t-sheet border-t shadow-e3',
+            'md:h-auto md:max-h-none md:w-side-panel md:rounded-none md:border-l md:border-t-0 md:shadow-none',
           )}
         >
           <SheetHandle snap={snap} onSnap={setSnap} onDrag={setDrag} />
@@ -160,21 +161,24 @@ function SheetHandle({ snap, onSnap, onDrag }: {
   onDrag: (fraction: number | null) => void;
 }): JSX.Element {
   const [dragging, setDragging] = useState<{ startY: number; startF: number; f: number } | null>(null);
+  // A drag ends with a click event; only a tap (no drag) cycles the height.
+  const [dragged, setDragged] = useState(false);
   const onDown = (e: PointerEvent<HTMLDivElement>): void => {
     e.currentTarget.setPointerCapture(e.pointerId);
     const f = SHEET_SNAPS[snap];
     setDragging({ startY: e.clientY, startF: f, f });
-    onDrag(f);
+    setDragged(false);
   };
   const onMove = (e: PointerEvent<HTMLDivElement>): void => {
-    if (!dragging) return;
+    if (!dragging || (!dragged && Math.abs(e.clientY - dragging.startY) < 6)) return;
     const f = Math.max(0.12, Math.min(0.92, dragging.startF + (dragging.startY - e.clientY) / window.innerHeight));
     setDragging({ ...dragging, f });
+    setDragged(true);
     onDrag(f);
   };
   const onUp = (): void => {
     if (!dragging) return;
-    onSnap(nearestSnap(dragging.f, SHEET_SNAPS));
+    if (dragged) onSnap(nearestSnap(dragging.f, SHEET_SNAPS));
     setDragging(null);
     onDrag(null);
   };
@@ -195,7 +199,7 @@ function SheetHandle({ snap, onSnap, onDrag }: {
         e.preventDefault();
         onSnap(next);
       }}
-      onClick={() => { if (!dragging) onSnap((snap + 1) % SHEET_SNAPS.length); }}
+      onClick={() => { if (!dragged) onSnap((snap + 1) % SHEET_SNAPS.length); }}
       onPointerDown={onDown}
       onPointerMove={onMove}
       onPointerUp={onUp}
