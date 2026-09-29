@@ -93,6 +93,33 @@ export async function claimProject(slug: string): Promise<{ claimed: boolean }> 
   return authedFetch<{ claimed: boolean }>('POST', `/api/v1/projects/${encodeURIComponent(slug)}/claim`, {});
 }
 
+/** Result of following an anonymous claim link (kernelCAD-server
+ *  POST /api/v1/anon-claims). `moved` projects changed owner now;
+ *  `alreadyOwned` were already in this account (the claim is idempotent). */
+export interface AnonClaimResult {
+  moved: number;
+  alreadyOwned: number;
+}
+
+/** Move every project of the anonymous owner named in a claim link (the
+ *  `t` token an MCP tool result links to) into the signed-in user's account. */
+export async function claimAnonProjects(token: string): Promise<AnonClaimResult> {
+  return authedFetch<AnonClaimResult>('POST', '/api/v1/anon-claims', { token });
+}
+
+export type AnonClaimErrorKind = 'expired' | 'invalid' | 'foreign' | 'unavailable' | 'failed';
+
+/** Map a claimAnonProjects rejection (authedFetch puts the response body in
+ *  the message) to what the user should be told. */
+export function anonClaimErrorKind(err: unknown): AnonClaimErrorKind {
+  const text = err instanceof Error ? err.message : String(err);
+  if (text.includes('claim_token_expired')) return 'expired';
+  if (text.includes('invalid_claim_token')) return 'invalid';
+  if (text.includes('claimed_by_another_account')) return 'foreign';
+  if (text.includes('claim_unavailable')) return 'unavailable';
+  return 'failed';
+}
+
 /** POST a viewer-captured PNG (base64, no `data:` prefix) to the backend render
  *  endpoint. The hosted backend has no browser, so the user's open Studio tab
  *  captures its own WebGL canvas and uploads it here; an agent then fetches the
