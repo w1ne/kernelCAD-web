@@ -9,6 +9,8 @@ import type { EditorEdit, EditorLike } from '../../shared/types/editor';
 import { useRecomputeResult } from '../hooks/useRecomputeResult';
 import { useFeatureSelection } from '../hooks/useFeatureSelection';
 import { useWorkbench } from '../context/WorkbenchContext';
+import { currentStudioScript, devMeshAvailable } from '../scriptSource';
+import { scriptCodeEditorIsReadOnly } from '../linkedScriptAutosave';
 import { getFeatureSourceIndex } from '../selectionCode/featureSourceIndex';
 import { attachCodeGeometrySync, type CodeGeometrySync, type SyncEditorLike } from '../selectionCode/codeGeometrySync';
 import { selectionCodeStore } from '../selectionCode/selectionCodeStore';
@@ -131,6 +133,7 @@ function findFeatureById(
 
 export function CodeTab(): JSX.Element {
     const workbench = useWorkbench();
+    const readOnlyScript = scriptCodeEditorIsReadOnly(currentStudioScript(), devMeshAvailable());
     const { features, diagnostics } = useRecomputeResult();
     const { selectedFeatureId } = useFeatureSelection();
 
@@ -231,24 +234,32 @@ export function CodeTab(): JSX.Element {
     );
 
     return (
-        <div className="w-full h-full bg-[#111] text-gray-300" data-testid="code-tab">
-            <MonacoEditor
-                height="100%"
-                defaultLanguage="typescript"
-                theme="vs-dark"
-                defaultValue={workbench.code ?? ''}
-                onChange={handleChange}
-                beforeMount={handleBeforeMount}
-                onMount={handleMount}
-                options={{
-                    minimap: { enabled: false },
-                    fontSize: 14,
-                    fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
-                    scrollBeyondLastLine: false,
-                    automaticLayout: true,
-                    padding: { top: 16 },
-                }}
-            />
+        <div className="flex h-full w-full flex-col bg-[#111] text-gray-300" data-testid="code-tab">
+            {readOnlyScript && (
+                <p className="px-4 pt-3 text-xs text-gray-400" data-testid="code-tab-readonly">
+                    This page follows the script file. Edits are not saved here.
+                </p>
+            )}
+            <div className="min-h-0 flex-1">
+                <MonacoEditor
+                    height="100%"
+                    defaultLanguage="typescript"
+                    theme="vs-dark"
+                    defaultValue={workbench.code ?? ''}
+                    onChange={handleChange}
+                    beforeMount={handleBeforeMount}
+                    onMount={handleMount}
+                    options={{
+                        minimap: { enabled: false },
+                        fontSize: 14,
+                        fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+                        scrollBeyondLastLine: false,
+                        automaticLayout: true,
+                        padding: { top: 16 },
+                        readOnly: readOnlyScript,
+                    }}
+                />
+            </div>
         </div>
     );
 }
