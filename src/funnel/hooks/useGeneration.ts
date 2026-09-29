@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { useCallback, useState, type Dispatch, type SetStateAction } from 'react';
+import { useCallback, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 import {
   parseSseStream,
   startGeneration,
@@ -18,7 +18,9 @@ export type FunnelClientErrorCode =
   | 'rate_limited'
   | 'no_body'
   | 'missing_generation_id'
-  | 'stream_closed';
+  | 'stream_closed'
+  /** The user stopped waiting for the run (`cancel()`). */
+  | 'cancelled';
 
 export type FunnelErrorCode = FunnelClientErrorCode | `http_${number}` | (string & {});
 
@@ -69,6 +71,8 @@ async function consumeGenerationStream(
 export function useGeneration() {
   const [phase, setPhase] = useState<GenerationPhase>({ state: 'idle' });
   const [events, setEvents] = useState<GenerateEvent[]>([]);
+  // The in-flight request. `cancel()` aborts it; a new `submit()` replaces it.
+  const controllerRef = useRef<AbortController | null>(null);
 
   const submit = useCallback(async (
     prompt: string,
@@ -76,6 +80,9 @@ export function useGeneration() {
     mesh?: GenerateRequest['mesh'],
     referenceImage?: GenerateRequest['referenceImage'],
   ) => {
+    controllerRef.current?.abort();
+    const controller = new AbortController();
+    controllerRef.current = controller;
     setEvents([]);
     setPhase({
       state: 'running',
@@ -84,12 +91,14 @@ export function useGeneration() {
 
     let res: Response;
     try {
-      res = await startGeneration({ prompt, currentCode, mesh, referenceImage });
+      res = await startGeneration({ prompt, currentCode, mesh, referenceImage }, controller.signal);
     } catch (err) {
+      if (controller.signal.aborted) return;
       const message = err instanceof Error ? err.message : String(err);
       setPhase({ state: 'error', code: 'network', message });
       return;
     }
+    if (controller.signal.aborted) return;
 
     if (!res.ok) {
       setPhase({
@@ -109,8 +118,16 @@ export function useGeneration() {
       return;
     }
 
-    const exhausted = await consumeGenerationStream(res.body, setEvents, setPhase);
-    if (!exhausted) return;
+    let exhausted: boolean;
+    try {
+      exhausted = await consumeGenerationStream(res.body, setEvents, setPhase);
+    } catch (err) {
+      if (controller.signal.aborted) return;
+      const message = err instanceof Error ? err.message : String(err);
+      setPhase({ state: 'error', code: 'network', message });
+      return;
+    }
+    if (!exhausted || controller.signal.aborted) return;
 
     // Stream ended without a `done` or `error` event (e.g., upstream timeout
     // or proxy buffering). Surface this instead of silently leaving phase in
@@ -119,5 +136,22 @@ export function useGeneration() {
     setPhase({ state: 'error', code: 'stream_closed', message: 'Connection closed before generation finished.' });
   }, []);
 
-  return { phase, events, submit };
+  /** Stop waiting for the running generation. The phase becomes a
+   *  `cancelled` error; the events seen so far stay for the log. */
+  const cancel = useCallback(() => {
+    const controller = controllerRef.current;
+    if (!controller) return;
+    controllerRef.current = null;
+    controller.abort();
+    setPhase(prev => prev.state === 'running'
+      ? {
+          state: 'error',
+          code: 'cancelled',
+          message: 'Stopped.',
+          ...(prev.generationId ? { generationId: prev.generationId } : {}),
+        }
+      : prev);
+  }, []);
+
+  return { phase, events, submit, cancel };
 }
