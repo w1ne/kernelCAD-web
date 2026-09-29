@@ -114,6 +114,11 @@ export function modelCheck({ error, hasGeometry, review, interferences }: ModelC
   if (!validity || !validity.validated) {
     return { tone: 'neutral', label: 'Built', detail: 'The model builds. No checks ran on it yet.' };
   }
+  return validatedCheck(validity);
+}
+
+/** The verdict of a review that a validator really ran. */
+function validatedCheck(validity: NonNullable<ReturnType<typeof reviewToValidity>>): ModelCheck {
   const errors = validity.diagnostics.filter((d) => d.severity === 'error');
   if (validity.status === 'error' || errors.length > 0) {
     const first = errors[0]?.message;

@@ -251,13 +251,47 @@ function stageStatus(phase: StagePhase, slow: boolean): string | null {
   return null;
 }
 
+/** Longest the live canvas waits for the poster before it mounts anyway. */
+const POSTER_HEAD_START_MS = 1_200;
+
+/**
+ * Mount the live canvas only after the poster had its chance to paint.
+ * Creating the WebGL canvas and the scene blocks the main thread for a
+ * moment; started first, it holds back the poster that should show at once.
+ */
+function useCanvasGate(posterState: 'loading' | 'loaded' | 'missing'): boolean {
+  const [timedOut, setTimedOut] = useState(false);
+  const [painted, setPainted] = useState(false);
+  const settled = posterState !== 'loading' || timedOut;
+  useEffect(() => {
+    if (posterState !== 'loading') return undefined;
+    const t = window.setTimeout(() => setTimedOut(true), POSTER_HEAD_START_MS);
+    return () => window.clearTimeout(t);
+  }, [posterState]);
+  useEffect(() => {
+    if (!settled) return undefined;
+    // Two frames: the poster is on screen before the canvas is created.
+    let second = 0;
+    const first = window.requestAnimationFrame(() => {
+      second = window.requestAnimationFrame(() => setPainted(true));
+    });
+    return () => {
+      window.cancelAnimationFrame(first);
+      window.cancelAnimationFrame(second);
+    };
+  }, [settled]);
+  return painted;
+}
+
+type PosterState = 'loading' | 'loaded' | 'missing';
+
 export function ModelStage(props: ModelStageProps): JSX.Element {
-  const [posterState, setPosterState] = useState<'loading' | 'loaded' | 'missing'>(props.posterSrc ? 'loading' : 'missing');
+  const [posterState, setPosterState] = useState<PosterState>(props.posterSrc ? 'loading' : 'missing');
+  const canvasReady = useCanvasGate(posterState);
   const displayed = props.phase === 'displayed';
   const waiting = props.phase === 'loading' || props.phase === 'building';
   const slow = useSlow(waiting ? props.phase : null, STAGE_SLOW_MS);
   const status = stageStatus(props.phase, slow);
-  const showPoster = !!props.posterSrc && posterState !== 'missing' && !displayed;
 
   return (
     <div
@@ -272,36 +306,55 @@ export function ModelStage(props: ModelStageProps): JSX.Element {
           displayed ? 'opacity-100' : 'opacity-0',
         )}
       >
-        {props.children}
+        {canvasReady && props.children}
       </div>
       {props.posterSrc && (
-        <img
-          src={props.posterSrc}
-          alt={props.posterAlt}
-          data-testid="model-poster"
-          decoding="async"
-          onLoad={() => setPosterState('loaded')}
-          onError={() => setPosterState('missing')}
-          className={cx(
-            'pointer-events-none absolute inset-0 size-full object-contain transition-opacity duration-[250ms] motion-reduce:transition-none',
-            showPoster && posterState === 'loaded' ? 'opacity-100' : 'opacity-0',
-          )}
-        />
+        <StagePoster src={props.posterSrc} alt={props.posterAlt} state={posterState} onState={setPosterState} hidden={displayed} />
       )}
       {waiting && posterState !== 'loaded' && <StagePlaceholder />}
       {(waiting || props.busy) && <ProgressLine />}
-      {status && (
-        <div className="pointer-events-none absolute inset-x-0 bottom-4 flex justify-center px-4" role="status" aria-live="polite">
-          <p
-            data-testid="model-stage-status"
-            className="rounded-full bg-black/60 px-3 py-1 text-2xs font-medium text-white backdrop-blur-sm"
-          >
-            {status}
-          </p>
-        </div>
-      )}
+      {status && <StageStatus text={status} />}
       {props.phase === 'failed' && props.failure}
       {props.overlay}
+    </div>
+  );
+}
+
+/** The stored render. Shown at once (no fade-in: the first painted frame
+ *  has it); it fades out as the live model fades in. */
+function StagePoster({ src, alt, state, onState, hidden }: {
+  src: string;
+  alt: string;
+  state: PosterState;
+  onState: (state: PosterState) => void;
+  hidden: boolean;
+}): JSX.Element {
+  return (
+    <img
+      src={src}
+      alt={alt}
+      data-testid="model-poster"
+      decoding="async"
+      onLoad={() => onState('loaded')}
+      onError={() => onState('missing')}
+      className={cx(
+        'pointer-events-none absolute inset-0 size-full object-contain',
+        hidden && 'transition-opacity duration-[250ms] motion-reduce:transition-none',
+        state === 'loaded' && !hidden ? 'opacity-100' : 'opacity-0',
+      )}
+    />
+  );
+}
+
+function StageStatus({ text }: { text: string }): JSX.Element {
+  return (
+    <div className="pointer-events-none absolute inset-x-0 bottom-4 flex justify-center px-4" role="status" aria-live="polite">
+      <p
+        data-testid="model-stage-status"
+        className="rounded-full bg-black/60 px-3 py-1 text-2xs font-medium text-white backdrop-blur-sm"
+      >
+        {text}
+      </p>
     </div>
   );
 }
