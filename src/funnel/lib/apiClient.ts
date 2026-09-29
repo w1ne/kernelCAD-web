@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { getSupabase } from './supabaseClient';
 import type { Artifact } from './generateClient';
+import type { AdminStats, StatsWindow } from '../../studio/stats/types';
 
 export interface GenerationRow {
   id: string;
@@ -39,6 +40,17 @@ export async function fetchGeneration(genId: string): Promise<GenerationRow | nu
 //   4. on success, parse + return JSON as T.
 // ---------------------------------------------------------------------------
 
+/** A non-2xx answer from kernelCAD-server. `message` is the response body
+ *  (unchanged from before); `status` lets a caller tell 403 from 5xx. */
+export class ApiError extends Error {
+  readonly status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+  }
+}
+
 export async function authedFetch<T>(
   method: 'GET' | 'POST' | 'PATCH',
   path: string,
@@ -58,7 +70,7 @@ export async function authedFetch<T>(
     ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
   });
   if (!res.ok) {
-    throw new Error(await res.text().catch(() => `HTTP ${res.status}`));
+    throw new ApiError(await res.text().catch(() => `HTTP ${res.status}`), res.status);
   }
   return res.json() as Promise<T>;
 }
@@ -411,4 +423,13 @@ export interface McpTokenResult {
 /** POST /api/v1/mcp/tokens — creates a one-time-visible token for cloud MCP. */
 export async function createMcpToken(): Promise<McpTokenResult> {
   return authedFetch<McpTokenResult>('POST', '/api/v1/mcp/tokens');
+}
+
+// ---------------------------------------------------------------------------
+// Admin stats (/stats)
+// ---------------------------------------------------------------------------
+
+/** GET /api/v1/admin/stats — admin-only (403 for everyone else). */
+export async function fetchAdminStats(window: StatsWindow): Promise<AdminStats> {
+  return authedFetch<AdminStats>('GET', `/api/v1/admin/stats?window=${window}`);
 }
