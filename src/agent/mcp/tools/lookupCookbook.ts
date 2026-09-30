@@ -58,6 +58,11 @@ function snippets() {
   return cached;
 }
 
+/** Shared inventory for lookup_cookbook + execute_cookbook (same resolve path). */
+export function getCookbookSnippets(): ReturnType<typeof loadSnippets> {
+  return snippets();
+}
+
 export async function lookupCookbookTool(input: LookupCookbookInput): Promise<LookupCookbookOutput> {
   if (typeof input.query !== 'string' || input.query.trim().length === 0) {
     return { ok: false, error: 'query must be a non-empty string' };

@@ -37,10 +37,11 @@ When you have `kernelcad mcp` available, use the MCP tools for dynamic introspec
 - `lookup_diagnostics({})` — return the full diagnostic catalogue with hint templates, structured next-actions, and per-code metadata (one-shot; useful at session start to pre-populate retry strategies).
 - `lookup_api({})` — full curated API surface (globals, Shape methods, Sketch methods, constrained-sketch capability)
 - `lookup_cookbook({ query, k? })` — retrieve up to k canonical pattern snippets ranked by BM25; returns `{ ok, hits[] }`. Empty hits is a valid success ("no canonical pattern; proceed without cookbook help").
+- `execute_cookbook({ id?, query?, openInStudio?, dryRun? })` — **prefer this after `lookup_cookbook` for industry demos when you need evaluate + optional Studio in one step**; empty lookup is not a stop (freehand-author instead). Resolves by `id` or BM25 top hit (same as lookup), runs `evaluate_script` on the snippet body (bounded vendor timeouts), returns `{ ok, cookbookId, title, evaluate, openInStudio?, executionId, code?, stage?, error? }` with concrete `stage`: `resolve` | `evaluate` | `open_in_studio`. `openInStudio:true` (default false) publishes via `open_in_studio` after a green full evaluate on hosted MCP. **`dryRun:true` is NOT evidence** the cookbook builds under OCCT — finish with `dryRun:false` (default) before claiming success or opening Studio.
 
 #### Industry problem → cookbook id (call `lookup_cookbook` with these queries / ids)
 
-Use before freehand authoring on production / industry prompts. Prefer `design_loop` until green for housings and mechanisms.
+Use before freehand authoring on production / industry prompts. Prefer `design_loop` until green for housings and mechanisms. After a cookbook hit, prefer `execute_cookbook({ id })` (or `{ query }`) when you need evaluate + optional Studio in one step — do not stop at lookup alone.
 
 | Industry problem | Cookbook id | Notes |
 |------------------|-------------|-------|
