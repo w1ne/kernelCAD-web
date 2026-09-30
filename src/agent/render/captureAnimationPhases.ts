@@ -37,6 +37,8 @@ import type {
   CaptureAnimationResult,
   FfmpegProcessLike,
 } from './captureAnimation';
+import { FRAME_LOCK_PAD, padBounds, unionBounds } from './animationFraming';
+import type { Bounds } from '../../modeling/capture/featureMeshing';
 
 // `page.evaluate(...)` callbacks execute inside the browser. The CLI
 // tsconfig (lib: ES2022, no DOM) doesn't know that, so declare the narrow
@@ -52,6 +54,7 @@ declare const window: {
     showOnlyTailFeatures: () => void;
     setRenderView: (view: string) => void;
     applyObjectVisibilityFilter: (filter: HeadlessObjectFilter) => unknown;
+    setPublishStage: (spec: { background: string; shadow: boolean } | null) => void;
   };
 };
 
@@ -466,6 +469,7 @@ async function renderFramePhase(params: {
   page: Page;
   meshing: MeshResult;
   opts: CaptureAnimationOpts;
+  bounds?: Bounds;
   written: number;
   durationMs: number;
   fps: number;
@@ -474,11 +478,17 @@ async function renderFramePhase(params: {
   partialNote: string;
   abortFfmpeg: () => Promise<void>;
 }): Promise<{ png: Buffer } | { failure: CaptureAnimationResult }> {
-  const { frame, i, page, meshing, opts, written, durationMs, fps, stashedWarns, verifyFields, partialNote, abortFfmpeg } = params;
+  const { frame, i, page, meshing, opts, bounds, written, durationMs, fps, stashedWarns, verifyFields, partialNote, abortFfmpeg } = params;
   // (b) browser render ops — ENVIRONMENT fault.
   let png: Buffer;
   try {
-    await loadFeatureMeshesIntoPage(page, meshing.features.map(serializeForBridge), meshing.bounds);
+    await loadFeatureMeshesIntoPage(page, meshing.features.map(serializeForBridge), bounds ?? meshing.bounds);
+    if (opts.backdrop !== undefined) {
+      await page.evaluate(
+        (background) => window.__demoPlayer!.setPublishStage({ background, shadow: false }),
+        opts.backdrop,
+      );
+    }
     // Re-apply the object-visibility filter AFTER each reload:
     // loadFeatureMeshes rebuilds every feature group with visible:true
     // (DemoPlayerPage.loadFeatureMeshes), so a once-after-first-load
@@ -554,6 +564,46 @@ export async function writeFrameOutputPhase(params: {
   return { done: true };
 }
 
+async function lockedFramingBounds(params: {
+  frames: FrameList;
+  model: BuiltModel;
+  written: number;
+  durationMs: number;
+  fps: number;
+  stashedWarns: CompilerDiagnostic[];
+  verifyFields: VerifyFieldsFn;
+  onProgress: (msg: string) => void;
+  opts: CaptureAnimationOpts;
+  t0: number;
+  abortFfmpeg: () => Promise<void>;
+}): Promise<Bounds | undefined | { failure: CaptureAnimationResult }> {
+  if (params.opts.lockFrame !== true) return undefined;
+  const boxes: Bounds[] = [];
+  for (let i = 0; i < params.frames.length; i += 1) {
+    const meshResult = await updateFrameModelPhase({
+      frame: params.frames[i],
+      i,
+      model: params.model,
+      written: params.written,
+      durationMs: params.durationMs,
+      fps: params.fps,
+      stashedWarns: params.stashedWarns,
+      verifyFields: params.verifyFields,
+      partialNote: 'The camera-lock measure stopped before any frame was written.',
+      abortFfmpeg: params.abortFfmpeg,
+    });
+    if ('failure' in meshResult) return meshResult;
+    boxes.push(meshResult.meshing.bounds);
+    if ((i + 1) % 10 === 0 || i + 1 === params.frames.length) {
+      params.onProgress(`measured ${i + 1}/${params.frames.length} poses +${Date.now() - params.t0}ms`);
+    }
+  }
+  const union = unionBounds(boxes);
+  if (union === undefined) return undefined;
+  params.onProgress('camera locked to the full reach');
+  return padBounds(union, FRAME_LOCK_PAD);
+}
+
 export async function runFrameLoopPhase(params: {
   frames: FrameList;
   model: BuiltModel;
@@ -571,6 +621,11 @@ export async function runFrameLoopPhase(params: {
 }): Promise<{ written: number } | { failure: CaptureAnimationResult }> {
   const { frames, model, page, ffmpeg, framesDir, durationMs, fps, stashedWarns, verifyFields, onProgress, opts, t0, abortFfmpeg } = params;
   let written = 0;
+  const framing = await lockedFramingBounds({
+    frames, model, written, durationMs, fps, stashedWarns, verifyFields, onProgress, opts, t0, abortFfmpeg,
+  });
+  if (framing !== undefined && 'failure' in framing) return framing;
+  const lockedBounds = framing !== undefined && !('failure' in framing) ? framing : undefined;
   // 7. Frame loop with per-frame failure containment. THREE failure
   //    classes, each naming the right subsystem and fault side:
   //      a) param-update/solve/mesh (kernel, MODEL fault) →
@@ -591,7 +646,7 @@ export async function runFrameLoopPhase(params: {
     });
     if ('failure' in meshResult) return meshResult;
     const renderResult = await renderFramePhase({
-      frame, i, page, meshing: meshResult.meshing, opts, written, durationMs, fps, stashedWarns, verifyFields, partialNote, abortFfmpeg,
+      frame, i, page, meshing: meshResult.meshing, opts, bounds: lockedBounds, written, durationMs, fps, stashedWarns, verifyFields, partialNote, abortFfmpeg,
     });
     if ('failure' in renderResult) return renderResult;
     const writeResult = await writeFrameOutputPhase({
