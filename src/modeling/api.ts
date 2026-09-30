@@ -49,7 +49,16 @@ import type {
   SupportedServoRevoluteOptions,
   SupportedServoRevoluteResult,
 } from './joints';
-import { makePrimitiveMethods, makeSpringMethod, makeSpurGearMethod, makeExtrudeMethods } from './apiShapeMethods';
+import {
+  makePrimitiveMethods,
+  makeSpringMethod,
+  makeSpurGearMethod,
+  makeInternalSpurGearMethod,
+  makeRingGearAlias,
+  makeInternalGearAlias,
+  makePlanetaryToothCompatibilityMethod,
+  makeExtrudeMethods,
+} from './apiShapeMethods';
 import { makeParamMethods } from './apiParamMethods';
 import { makePartsLib } from './apiPartsLib';
 import { makeNurbsSurfaceMethods, makeCurveMethods, makeSweepMethods } from './apiSurfaceMethods';
@@ -198,6 +207,26 @@ export interface KernelCadApi {
    * when z2 is even (0 when odd) so a tooth space faces the first gear.
    */
   spurGear(opts: SpurGearOptions): Shape;
+  /**
+   * Build an involute INTERNAL / ring gear as ONE manifold solid: outer rim
+   * disk minus a bore whose flanks are the external spur profile mirrored
+   * through the pitch circle. Axis +Z, face from z = 0 to z = faceWidth.
+   * `rimThickness` (default 2.5·module) is radial stock outside the root.
+   * Aliases: `ringGear`, `internalGear`. Pair with external planets at centre
+   * distance m(Zring − Zplanet)/2. For a planetary stage enforce
+   * `planetaryToothCompatibility({ sunTeeth, planetTeeth, ringTeeth })`
+   * so Zring = Zsun + 2·Zplanet.
+   */
+  internalSpurGear(opts: InternalSpurGearOptions): Shape;
+  /** Alias of {@link KernelCadApi.internalSpurGear}. */
+  ringGear(opts: InternalSpurGearOptions): Shape;
+  /** Alias of {@link KernelCadApi.internalSpurGear}. */
+  internalGear(opts: InternalSpurGearOptions): Shape;
+  /**
+   * Validate coaxial planetary tooth counts: Zring must equal Zsun + 2·Zplanet.
+   * Throws `feature.invalid-args` when the pitch circles cannot meet.
+   */
+  planetaryToothCompatibility(opts: PlanetaryToothCompatibilityOpts): void;
   extrudeRect(w: Editable<number>, h: Editable<number>, height: Editable<number>, opts?: ExtrudeOpts): Shape;
   extrudeCircle(r: Editable<number>, height: Editable<number>, opts?: ExtrudeOpts): Shape;
   extrudePolygon(points: Array<[Editable<number>, Editable<number>]>, depth: Editable<number>, opts?: ExtrudeOpts): Shape;
@@ -632,6 +661,29 @@ export interface SpurGearOptions {
   backlash?: number;
 }
 
+export interface InternalSpurGearOptions {
+  /** Module m in mm (pitch diameter = m · teeth). */
+  module: number;
+  /** Tooth count, integer in [6, 400]. */
+  teeth: number;
+  /** Face width (extrude depth) in mm. */
+  faceWidth: number;
+  /** Pressure angle in degrees, default 20. */
+  pressureAngle?: number;
+  /** Circular backlash in mm at the pitch circle. Default 0.05 · module. */
+  backlash?: number;
+  /** Radial rim stock outside the internal root circle. Default 2.5 · module. */
+  rimThickness?: number;
+  /** Profile shift coefficient x. v1 only accepts 0 / omitted. */
+  profileShift?: number;
+}
+
+export interface PlanetaryToothCompatibilityOpts {
+  sunTeeth: number;
+  planetTeeth: number;
+  ringTeeth: number;
+}
+
 /** `helix()` options as scripts pass them: dimensions may be ParamRefs. */
 export interface EditableHelixOptions {
   radius: Editable<number>;
@@ -648,6 +700,10 @@ export function createModelingApi(ctx: ApiContext): KernelCadApi {
     ...makePrimitiveMethods(session),
     spring: makeSpringMethod(session, () => api),
     spurGear: makeSpurGearMethod(session, () => api),
+    internalSpurGear: makeInternalSpurGearMethod(session, () => api),
+    ringGear: makeRingGearAlias(() => api),
+    internalGear: makeInternalGearAlias(() => api),
+    planetaryToothCompatibility: makePlanetaryToothCompatibilityMethod(),
     ...makeExtrudeMethods(session),
     assembly(name) {
       return makeAssembly(name, session);

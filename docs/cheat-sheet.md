@@ -34,6 +34,10 @@ The first call in any model: a solid primitive, or a 2D profile to extrude.
 | `torus(majorR: number, minorR: number, segments?: number) => Shape` | Solid torus centered on world origin, axis along world +Z. |
 | `spring({ length, coilRadius, wireRadius, turns, axis?, pointsPerTurn?, endStyle?, segments? }) => Shape` | Build a helical spring as a circular wire profile swept along a smooth B-spline helix spine, producing one continuous watertight solid. |
 | `spurGear({ module, teeth, faceWidth, pressureAngle?, bore?, backlash? }) => Shape` | Build an involute spur gear as ONE manifold solid. |
+| `internalSpurGear({ module, teeth, faceWidth, pressureAngle?, backlash?, rimThickness?, profileShift? }) => Shape` | Build an involute INTERNAL / ring gear as ONE manifold solid: outer rim minus a bore whose flanks are the external spur profile mirrored through the pitch circle. |
+| `ringGear({ module, teeth, faceWidth, pressureAngle?, backlash?, rimThickness?, profileShift? }) => Shape` | Alias of internalSpurGear — involute internal / ring gear. |
+| `internalGear({ module, teeth, faceWidth, pressureAngle?, backlash?, rimThickness?, profileShift? }) => Shape` | Alias of internalSpurGear — involute internal gear. |
+| `planetaryToothCompatibility({ sunTeeth, planetTeeth, ringTeeth }) => void` | Validate coaxial planetary tooth counts: throws feature.invalid-args unless ringTeeth === sunTeeth + 2·planetTeeth (same module and pressure angle assumed). |
 | `extrudeRect(w, h, height, opts?) => Shape` | Extrude a w-by-h rectangle (XY, centred on the origin) by `height` along Z (spans z = 0..height). |
 | `extrudeCircle(r, height, opts?) => Shape` | Extrude a radius-r circle (XY, centred on the origin) by `height` along Z (spans z = 0..height). |
 | `extrudePolygon(points, depth, opts?) => Shape` | Extrude a 2D polygon (array of [x, y] points; coordinates and `depth` accept ParamRefs) by `depth` along Z. |

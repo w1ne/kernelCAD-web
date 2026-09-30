@@ -101,5 +101,8 @@
   "motor",
   "shaft",
   "bearing",
-  "nema"
+  "nema",
+  "planetary",
+  "ring",
+  "internal"
 ]

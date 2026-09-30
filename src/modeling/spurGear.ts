@@ -288,3 +288,80 @@ export function spurGearOutline(opts: SpurGearProfileOptions): SpurGearOutline {
   }
   return { start: polar(radii.root, -rootHalf), segments, radii };
 }
+
+/** Invert a point through the pitch circle: r' = 2·pitch − r (same polar angle).
+ *  Maps an external spur outline onto the internal-tooth bore cutter. */
+export function invertAroundPitch(
+  point: readonly [number, number],
+  pitch: number,
+): [number, number] {
+  const r = Math.hypot(point[0], point[1]);
+  if (r < 1e-12) return [0, 0];
+  const scale = (2 * pitch - r) / r;
+  return [point[0] * scale, point[1] * scale];
+}
+
+/**
+ * Mirror an external spur outline around its pitch circle to get the bore
+ * cutter for an internal / ring gear. Tip ↔ root swap radially; winding is
+ * preserved in sample order (gallery / OCCT path builders tolerate it when
+ * the path is closed before extrude).
+ */
+export function internalSpurGearBoreOutline(opts: SpurGearProfileOptions): SpurGearOutline {
+  const external = spurGearOutline(opts);
+  const pitch = external.radii.pitch;
+  const invertSeg = (seg: SpurGearSegment): SpurGearSegment => {
+    if (seg.kind === 'spline') {
+      return { kind: 'spline', points: seg.points.map((p) => invertAroundPitch(p, pitch)) };
+    }
+    return {
+      kind: 'arc',
+      mid: invertAroundPitch(seg.mid, pitch),
+      to: invertAroundPitch(seg.to, pitch),
+    };
+  };
+  return {
+    start: invertAroundPitch(external.start, pitch),
+    segments: external.segments.map(invertSeg),
+    radii: {
+      pitch,
+      // After inversion tip is inward, root is the deepest bore radius.
+      tip: 2 * pitch - external.radii.tip,
+      root: 2 * pitch - external.radii.root,
+      base: 2 * pitch - external.radii.base,
+    },
+  };
+}
+
+export interface PlanetaryToothCompatibility {
+  readonly sunTeeth: number;
+  readonly planetTeeth: number;
+  readonly ringTeeth: number;
+}
+
+/**
+ * Standard coaxial planetary pitch constraint: Zring = Zsun + 2·Zplanet.
+ * Same module and pressure angle are assumed for all three members.
+ */
+export function assertPlanetaryToothCompatibility(opts: PlanetaryToothCompatibility): void {
+  const { sunTeeth, planetTeeth, ringTeeth } = opts;
+  for (const [label, value] of [
+    ['sunTeeth', sunTeeth],
+    ['planetTeeth', planetTeeth],
+    ['ringTeeth', ringTeeth],
+  ] as const) {
+    if (typeof value !== 'number' || !Number.isInteger(value) || value < 6) {
+      throw new SpurGearProfileError(
+        `planetaryToothCompatibility: ${label} must be an integer ≥ 6; got ${String(value)}.`,
+        'Pass whole tooth counts for the sun, planet, and internal ring.',
+      );
+    }
+  }
+  const expected = sunTeeth + 2 * planetTeeth;
+  if (ringTeeth !== expected) {
+    throw new SpurGearProfileError(
+      `planetaryToothCompatibility: ringTeeth ${ringTeeth} must equal sunTeeth + 2·planetTeeth = ${expected} (got sun=${sunTeeth}, planet=${planetTeeth}).`,
+      'Pick Zring = Zsun + 2·Zplanet so pitch circles meet: planet centre distance is m(Zsun+Zplanet)/2 and the ring pitch radius is m·Zring/2.',
+    );
+  }
+}
