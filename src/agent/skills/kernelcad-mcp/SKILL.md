@@ -53,6 +53,10 @@ Use before freehand authoring on production / industry prompts. Prefer `design_l
 | 4-DOF release/evidence pack (static hold, BOM, drawing, USD, FEA stop) | `4dof-release-evidence-pack` | Runnable arm + honest FEA-unavailable / USD-mate stops |
 | 2-DOF pan/tilt inspection head + rigid routed tube + animation | `mated-inspection-head-routed-tube-animation` | `param()` beside `animationView`; tube is rigid, not a hose |
 | Shop-release GT2 belt rotary actuator (housing, 608, cover, materials) | `gt2-shop-release-actuator` | Cord/nubs ≠ tooth mesh; no USD (cylindrical mate) |
+| Shop-release planetary gearbox (housing, carrier, cover, materials) | `planetary-gearbox-shop-release` | Fastened pitch pose; no tooth-contact dynamics, no spin animation |
+| Clamshell enclosure release pack (clevis shells, lid swing, BOM) | `clamshell-enclosure-release-pack` | `param()` beside `animationView`; gasket close not modeled |
+| NEMA plate + shaft/bearing + spur pair drive stack | `nema-shaft-spur-drive-stack` | Geometric mesh; no USD (cylindrical mate) |
+| T-slot frame corner + gusset + cap screws BOM | `tslot-frame-fastener-bom` | Clearance shanks, not a swept V-thread; T-nuts not modeled |
 | Bracket with fasteners / BOM | `non-overlapping-l-bracket`, `iso-metric-bolt-and-nut`, `bom-ready-assembly` | |
 | Gear / pulley drive | `involute-spur-gear-pair`, `gt2-timing-belt-drive` | |
 | Enclosure lid (screw-on cover) | `enclosure-lid-with-screw-bosses` | Hinge alt: `clamshell-hinge-two-part-assembly` |
