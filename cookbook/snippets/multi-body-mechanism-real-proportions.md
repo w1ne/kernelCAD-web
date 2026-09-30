@@ -19,8 +19,10 @@ when_to_use: >-
   multi-body machine with joints. Bodies must read as plates, towers, yokes —
   not stick figures. Reuse supported-arm lessons: connectors + revolute mates
   with limits, jointSupport / mechanicalJoint intent, grounded base-frame, and
-  a tendon or mechanicalJoint so gravity-hold passes. Prefer design_loop until
-  review is green.
+  a tendon or mechanicalJoint so gravity-hold passes. If you add
+  animationView, its tracks must name live param() declarations in the same
+  script — do not drop those param() calls when rewriting
+  (animation.param.unknown). Prefer design_loop until review is green.
 ---
 
 Adam-level multi-body bar: recognizable machine elements, correct joints,
@@ -120,6 +122,9 @@ return arm.solvedModel({}, { ignore: [['base-frame', 'upper-link']] });
 3. Stop when `ok: true`, or when `convergence.escalate` (same failure signature
    twice — change strategy, do not nudge).
 4. `open_in_studio` for mesh (+ `animationView` when you want ChatGPT Play).
+   Tracks must name numeric params declared with `param()` in the same script.
+   Do not drop those `param()` calls when rewriting — evaluate throws
+   `animation.param.unknown` and returns `featureCount: 0`.
 
 Passive (unpowered) hinges: use `arm.jointSupport(...)` **and** `arm.tendon(...)`
 across the joint so `mechanism.drops-on-release` passes — see
