@@ -19,8 +19,8 @@ when_to_use: >-
   chain, mechanism=real, optional gravity/actuator check, and animationView
   reach cycle. CRITICAL: fuse every yoke / servo-shelf / cheek into its parent
   link with .union() so each part is ONE solid load path — floating yoke
-  fragments fail review (assembly.geometry.floating-body / attachment-
-  plausibility). Keep the yaw turntable disk ABOVE the pedestal for bearing
+  fragments fail design_loop / review_cad (floating-body geometry gate +
+  attachment-plausibility). Keep the yaw turntable disk ABOVE the pedestal for bearing
   clearance (no pedestal overlap). Prefer design_loop until green. See also
   multi-body-mechanism-real-proportions and examples/robot-arm/compact-
   supported-arm.kcad.ts.
