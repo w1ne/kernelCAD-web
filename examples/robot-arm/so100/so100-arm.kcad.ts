@@ -79,12 +79,24 @@ function hinge(part: { connector: (name: string, spec: unknown) => unknown }, na
   });
 }
 
-function servo(name: string, center: Vec3, size: Vec3, incoming: Joint | null) {
+function servo(
+  link: { connector: (name: string, spec: unknown) => unknown },
+  linkName: string,
+  name: string,
+  center: Vec3,
+  size: Vec3,
+  incoming: Joint | null,
+) {
   const body = box(size[0], size[1], size[2], true).translate(center[0], center[1], center[2]).color('servo');
   const shaped = incoming ? bake(body, incoming) : body;
   const part = arm.part(name, shaped);
-  part.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
-  return part;
+  // Mount at the motor center, in the baked frame. The link uses the same
+  // point, so the fastened mate does not slide the box off the motor.
+  const at = spun(incoming, center);
+  const origin = { kind: 'vec3' as const, value: [at[0], at[1], at[2]] as Vec3 };
+  part.connector('mount', { type: 'frame', origin });
+  link.connector('servo', { type: 'frame', origin: { kind: 'vec3', value: [at[0], at[1], at[2]] } });
+  arm.mate(`${name}-fix`, `${linkName}.servo`, `${name}.mount`, 'fastened');
 }
 
 const base = await printed('base', 'Base.stl', null, null);
@@ -102,32 +114,19 @@ hinge(lower, 'wrist', elbowFlex, wristFlex);
 hinge(wristLink, 'roll', wristFlex, wristRoll);
 hinge(hand, 'jaw', wristRoll, gripper);
 
-servo('base-servo', [0, -32.7, 46.5], [25, 46, 40], null);
-servo('shoulder-servo', [0, 90, 30.6], [40, 46, 25], shoulderPan);
-servo('upper-servo', [0, 112.6, 15.5], [40, 25, 46], shoulderLift);
-servo('lower-servo', [0, 5.2, 122.4], [40, 25, 46], elbowFlex);
-servo('wrist-servo', [-12.5, -42.8, 0], [46, 40, 25], wristFlex);
-servo('hand-servo', [-7.7, -24.4, 0.5], [46, 25, 40], wristRoll);
-
-base.connector('servo', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
-shoulder.connector('servo', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
-upper.connector('servo', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
-lower.connector('servo', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
-wristLink.connector('servo', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
-hand.connector('servo', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
-
 arm.mate('pan', 'base.pan', 'shoulder.in', 'revolute', { pose: pan, limitsDeg: [-110, 110] });
 arm.mate('lift', 'shoulder.lift', 'upper-arm.in', 'revolute', { pose: lift, limitsDeg: [0, 200] });
 arm.mate('elbow', 'upper-arm.elbow', 'lower-arm.in', 'revolute', { pose: elbow, limitsDeg: [-180, 0] });
 arm.mate('wrist', 'lower-arm.wrist', 'wrist.in', 'revolute', { pose: wrist, limitsDeg: [-140, 65] });
 arm.mate('roll', 'wrist.roll', 'hand.in', 'revolute', { pose: roll, limitsDeg: [-180, 180] });
 arm.mate('jaw', 'hand.jaw', 'jaw.in', 'revolute', { pose: jaw, limitsDeg: [-11, 110] });
-arm.mate('base-servo-fix', 'base.servo', 'base-servo.mount', 'fastened');
-arm.mate('shoulder-servo-fix', 'shoulder.servo', 'shoulder-servo.mount', 'fastened');
-arm.mate('upper-servo-fix', 'upper-arm.servo', 'upper-servo.mount', 'fastened');
-arm.mate('lower-servo-fix', 'lower-arm.servo', 'lower-servo.mount', 'fastened');
-arm.mate('wrist-servo-fix', 'wrist.servo', 'wrist-servo.mount', 'fastened');
-arm.mate('hand-servo-fix', 'hand.servo', 'hand-servo.mount', 'fastened');
+
+servo(base, 'base', 'base-servo', [0, -32.7, 46.5], [25, 46, 40], null);
+servo(shoulder, 'shoulder', 'shoulder-servo', [0, 90, 30.6], [40, 46, 25], shoulderPan);
+servo(upper, 'upper-arm', 'upper-servo', [0, 112.6, 15.5], [40, 25, 46], shoulderLift);
+servo(lower, 'lower-arm', 'lower-servo', [0, 5.2, 122.4], [40, 25, 46], elbowFlex);
+servo(wristLink, 'wrist', 'wrist-servo', [-12.5, -42.8, 0], [46, 40, 25], wristFlex);
+servo(hand, 'hand', 'hand-servo', [-7.7, -24.4, 0.5], [46, 25, 40], wristRoll);
 
 animationView({
   name: 'reach',
