@@ -5,13 +5,27 @@ import type { Shape } from './capture/proxy';
 import { makePath } from './capture/sketch';
 import { validateFaceLabels } from './capture/faceLabels';
 import { helix } from './helix';
-import { spurGearOutline, spurGearRadii, SpurGearProfileError, type SpurGearOutline } from './spurGear';
+import {
+  assertPlanetaryToothCompatibility,
+  internalSpurGearBoreOutline,
+  spurGearOutline,
+  spurGearRadii,
+  SpurGearProfileError,
+  type SpurGearOutline,
+} from './spurGear';
 import { formatScalarForError, isValidEditableNumber, type Param } from '../shared/intent/types';
 import type { FaceLabelsMap } from '../shared/intent/featureRecord';
 import { KernelError } from '../shared/intent/kernelError';
 import { toParam } from '../shared/runtime/editableHelpers';
 import { mm, ul, assertEditableNumber, assertPositiveFinite } from './apiSupport';
-import type { KernelCadApi, SpringOptions, SpurGearOptions, ExtrudeOpts } from './api';
+import type {
+  KernelCadApi,
+  SpringOptions,
+  SpurGearOptions,
+  InternalSpurGearOptions,
+  PlanetaryToothCompatibilityOpts,
+  ExtrudeOpts,
+} from './api';
 
 export function makePrimitiveMethods(
   session: CaptureSession,
@@ -341,6 +355,127 @@ export function makeSpurGearMethod(
     const body = path.close().extrude(faceWidth);
     if (bore === undefined) return body;
     return body.subtract(self().cylinder(faceWidth + 2, bore / 2).translate(0, 0, -1));
+  };
+}
+
+const INTERNAL_SPUR_GEAR_KEYS = new Set([
+  'module', 'teeth', 'pressureAngle', 'faceWidth', 'backlash', 'rimThickness', 'profileShift',
+]);
+
+function assertInternalSpurGearOptsObject(opts: InternalSpurGearOptions): void {
+  if (!opts || typeof opts !== 'object') {
+    throw new KernelError(
+      'feature.invalid-args',
+      'internalSpurGear: pass an options object { module, teeth, faceWidth, pressureAngle?, backlash?, rimThickness?, profileShift? }.',
+      'internalSpurGear',
+      'Example: internalSpurGear({ module: 1, teeth: 54, faceWidth: 8, rimThickness: 4 }). Aliases: ringGear, internalGear.',
+    );
+  }
+  for (const key of Object.keys(opts)) {
+    if (!INTERNAL_SPUR_GEAR_KEYS.has(key)) {
+      throw new KernelError(
+        'feature.invalid-args',
+        `internalSpurGear: unknown option '${key}'.`,
+        'internalSpurGear',
+        `internalSpurGear accepts ${[...INTERNAL_SPUR_GEAR_KEYS].join(', ')}.`,
+      );
+    }
+  }
+}
+
+function resolveInternalSpurGearOpts(opts: InternalSpurGearOptions): {
+  module: number;
+  teeth: number;
+  pressureAngle: number;
+  faceWidth: number;
+  backlash: number;
+  rimThickness: number;
+} {
+  assertInternalSpurGearOptsObject(opts);
+  const module = assertPositiveFinite('internalSpurGear', 'module', opts.module);
+  const faceWidth = assertPositiveFinite('internalSpurGear', 'faceWidth', opts.faceWidth);
+  const teeth = resolveSpurGearTeeth(opts.teeth);
+  // Reuse spurGear tooth-count message but retarget the feature name.
+  const pressureAngle = resolveSpurGearPressureAngle(opts.pressureAngle);
+  const backlash = resolveSpurGearBacklash(opts.backlash, module);
+  if (opts.profileShift !== undefined && opts.profileShift !== 0) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `internalSpurGear: profileShift must be 0 for now; got ${formatScalarForError(opts.profileShift)}.`,
+      'internalSpurGear',
+      'v1 internalSpurGear uses an unshifted basic rack. Omit profileShift or pass 0.',
+    );
+  }
+  const rimThickness = opts.rimThickness === undefined
+    ? 2.5 * module
+    : assertPositiveFinite('internalSpurGear', 'rimThickness', opts.rimThickness);
+  return { module, teeth, pressureAngle, faceWidth, backlash, rimThickness };
+}
+
+function outlineToExtrudedSolid(session: CaptureSession, outline: SpurGearOutline, faceWidth: number): Shape {
+  let path = makePath(session).moveTo(outline.start[0], outline.start[1]);
+  for (const seg of outline.segments) {
+    path = seg.kind === 'spline'
+      ? path.spline(seg.points)
+      : path.threePointsArc(seg.to[0], seg.to[1], seg.mid[0], seg.mid[1]);
+  }
+  return path.close().extrude(faceWidth);
+}
+
+/** Build an internal / ring gear: outer rim disk minus an inverted involute bore. */
+export function makeInternalSpurGearMethod(
+  session: CaptureSession,
+  self: () => KernelCadApi,
+): KernelCadApi['internalSpurGear'] {
+  return (opts) => {
+    const { module, teeth, pressureAngle, faceWidth, backlash, rimThickness } =
+      resolveInternalSpurGearOpts(opts);
+    let boreOutline: SpurGearOutline;
+    try {
+      boreOutline = internalSpurGearBoreOutline({
+        module,
+        teeth,
+        pressureAngleDeg: pressureAngle,
+        backlash,
+      });
+    } catch (err) {
+      if (err instanceof SpurGearProfileError) {
+        throw new KernelError('feature.invalid-args', err.message, 'internalSpurGear', err.hint);
+      }
+      throw err;
+    }
+    // Outer radius clears the inverted root (deepest bore) by rimThickness.
+    const outerR = boreOutline.radii.root + rimThickness;
+    const outer = self().cylinder(faceWidth, outerR);
+    // Bore cutter slightly taller so the subtract clears both ends cleanly.
+    const bore = outlineToExtrudedSolid(session, boreOutline, faceWidth + 2).translate(0, 0, -1);
+    return outer.subtract(bore);
+  };
+}
+
+export function makeRingGearAlias(self: () => KernelCadApi): KernelCadApi['ringGear'] {
+  return (opts) => self().internalSpurGear(opts);
+}
+
+export function makeInternalGearAlias(self: () => KernelCadApi): KernelCadApi['internalGear'] {
+  return (opts) => self().internalSpurGear(opts);
+}
+
+export function makePlanetaryToothCompatibilityMethod(): KernelCadApi['planetaryToothCompatibility'] {
+  return (opts: PlanetaryToothCompatibilityOpts) => {
+    try {
+      assertPlanetaryToothCompatibility(opts);
+    } catch (err) {
+      if (err instanceof SpurGearProfileError) {
+        throw new KernelError(
+          'feature.invalid-args',
+          err.message,
+          'planetaryToothCompatibility',
+          err.hint,
+        );
+      }
+      throw err;
+    }
   };
 }
 
