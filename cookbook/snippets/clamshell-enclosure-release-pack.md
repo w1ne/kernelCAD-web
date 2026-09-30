@@ -54,33 +54,52 @@ animationView({
   fps: 24,
 });
 
-const R = 8;
+const R = 9;
 const pinR = 2.4;
 const boreR = 2.75;
 const yCyl = (r, y0, y1, x = 0, z = 0) =>
   cylinder(y1 - y0, r).rotateX(-90).translate(x, y0, z);
 
+// Fork knuckles. The tongue sits in the open center so the pin stays a
+// clearance fit instead of a volume overlap.
 const cheeks = union(
-  yCyl(R, 6, 12),
-  yCyl(R, -12, -6),
-).subtract(yCyl(boreR, -13, 13));
-// Turned web into the shell wall — a rectangular bridge reads as a toy block.
-const web = (y: number) => cylinder(16, 3.2).alongAxis([1, 0, 0]).translate(-22, y, 0);
-const bridge = web(9).union(web(-9));
+  yCyl(R, 6.4, 13.2),
+  yCyl(R, -13.2, -6.4),
+).subtract(yCyl(boreR, -14, 14));
+const web = (y: number) => cylinder(15.2, 3.4).alongAxis([1, 0, 0]).translate(-22, y, 0);
+const bridge = web(9.6).union(web(-9.6));
 
 let baseShell = extrudeRoundedRect(78, 72, 12, 28).translate(-59, 0, -18);
 baseShell = baseShell.subtract(extrudeRoundedRect(62, 56, 8, 24).translate(-57, 0, -14));
-baseShell = baseShell.subtract(extrudeRoundedRect(44, 36, 6, 1.6).translate(-59, 0, -18.15));
+baseShell = baseShell.subtract(extrudeRoundedRect(40, 32, 5, 1.3).translate(-59, 0, -18.1));
 baseShell = baseShell.subtract(cylinder(12, 2.1).translate(-60, 0, -20));
-// Standing lip on the opening, plus feet so the tub is a molded shell.
-const baseLip = extrudeRoundedRect(78, 72, 12, 2.4).translate(-59, 0, 9.75)
-  .subtract(extrudeRoundedRect(66, 60, 8, 3.2).translate(-59, 0, 9.4));
-let feet = cylinder(2.6, 3.5).translate(-86, -24, -20.4);
-for (const [x, y] of [[-32, -24], [-86, 24], [-32, 24]] as const) {
-  feet = feet.union(cylinder(2.6, 3.5).translate(x, y, -20.4));
+// Outer lip plus a lower land: mating face and wall thickness both read from above.
+const baseLip = extrudeRoundedRect(78, 72, 12, 3.4).translate(-59, 0, 9.7)
+  .subtract(extrudeRoundedRect(68, 62, 9, 4.2).translate(-59, 0, 9.3));
+const baseLand = extrudeRoundedRect(68, 62, 9, 1.8).translate(-59, 0, 8.15)
+  .subtract(extrudeRoundedRect(58, 52, 6, 2.6).translate(-59, 0, 7.8));
+// Standoffs break the planform toward the camera. Pads under the floor
+// stay hidden at the hero elevation.
+function footPad(x: number, y: number) {
+  return cylinder(5.2, 7.2).translate(x, y, -22.4)
+    .union(cylinder(8, 3.6).translate(x, y, -17.6));
 }
+let feet = footPad(-88, -42);
+for (const [x, y] of [[-30, -42], [-88, 42], [-30, 42]] as const) {
+  feet = feet.union(footPad(x, y));
+}
+function screwBoss(x: number, y: number) {
+  return cylinder(9, 4).translate(x, y, -14)
+    .subtract(cylinder(6, 1.45).translate(x, y, -8));
+}
+let bosses = screwBoss(-78, -18);
+for (const [x, y] of [[-42, -18], [-78, 18], [-42, 18]] as const) {
+  bosses = bosses.union(screwBoss(x, y));
+}
+const latch = extrudeRoundedRect(14, 16, 3, 14).translate(-100, 0, -8)
+  .subtract(cylinder(16, 1.7).alongAxis([1, 0, 0]).translate(-110, 0, -1));
 
-const baseBody = union(cheeks, bridge, baseShell, baseLip, feet)
+const baseBody = union(cheeks, bridge, baseShell, baseLip, baseLand, feet, bosses, latch)
   .datum('A', { atZ: -18 })
   .datum('B', { atX: -98 })
   .datum('C', { atY: -36 })
@@ -88,18 +107,40 @@ const baseBody = union(cheeks, bridge, baseShell, baseLip, feet)
     type: 'position', value: 0.3, modifier: '⌀', datums: ['A', 'B', 'C'],
     edge: { ofCurveType: 'CIRCLE', near: [-60, 0, -18] },
   })
-  .finish('abs', { color: '#5c6e7c' });
+  .finish('abs', { color: '#5a6e7c' });
 
-const tongue = yCyl(R - 0.4, -4.6, 4.6);
-const pin = yCyl(pinR, -12.4, 12.4);
-const neck = cylinder(22, 4.4).alongAxis([1, 0, 0]);
-let lidShell = extrudeRoundedRect(64, 68, 11, 22).translate(50, 0, -10);
-lidShell = lidShell.subtract(extrudeRoundedRect(50, 54, 7, 18).translate(52, 0, -8));
-// Pocket opens through the top face (a buried subtract leaves a blank slab).
-lidShell = lidShell.subtract(extrudeRoundedRect(34, 26, 4, 1.5).translate(50, 0, 10.7));
-const lidLip = extrudeRoundedRect(64, 68, 11, 2.2).translate(50, 0, 11.8)
-  .subtract(extrudeRoundedRect(52, 56, 7, 3).translate(50, 0, 11.4));
-const lidBody = union(tongue, pin, neck, lidShell, lidLip).finish('abs', { color: '#e7ecef' });
+const tongue = yCyl(R - 0.4, -4.8, 4.8);
+// Pin runs out through both caps so the ends read as socket heads past the fork.
+const pin = yCyl(pinR, -17.6, 17.6);
+function hingeCap(yOuter: number, inward: number) {
+  const len = 3.5;
+  const y0 = inward > 0 ? yOuter - len : yOuter;
+  const y1 = y0 + len;
+  const head = yCyl(4.5, y0, y1);
+  const sock0 = inward > 0 ? yOuter - 2.2 : yOuter - 0.2;
+  return head.subtract(yCyl(1.7, sock0, sock0 + 2.4));
+}
+const washer = yCyl(5.7, 13.55, 14.15).union(yCyl(5.7, -14.15, -13.55));
+const caps = hingeCap(17.6, 1).union(hingeCap(-17.6, -1));
+const neck = cylinder(20, 4.6).alongAxis([1, 0, 0]).translate(2, 0, 0);
+let lidShell = extrudeRoundedRect(64, 68, 11, 20).translate(50, 0, -8);
+lidShell = lidShell.subtract(extrudeRoundedRect(50, 54, 7, 16).translate(52, 0, -6));
+lidShell = lidShell.subtract(extrudeRoundedRect(36, 28, 4, 2.2).translate(50, 0, 9.0));
+const lidLip = extrudeRoundedRect(64, 68, 11, 2.8).translate(50, 0, 11.5)
+  .subtract(extrudeRoundedRect(54, 58, 8, 3.6).translate(50, 0, 11.1));
+function lidScrew(x: number, y: number) {
+  return cylinder(2.8, 3.3).translate(x, y, 11.7)
+    .union(cylinder(5, 1.55).translate(x, y, 8))
+    .subtract(cylinder(1.7, 1.4).translate(x, y, 13.2));
+}
+let lidScrews = lidScrew(30, 20);
+for (const [x, y] of [[70, 20], [30, -20], [70, -20]] as const) {
+  lidScrews = lidScrews.union(lidScrew(x, y));
+}
+const strike = extrudeRoundedRect(12, 14, 3, 10).translate(84, 0, -2)
+  .subtract(cylinder(10, 1.5).alongAxis([1, 0, 0]).translate(80, 0, 2));
+const lidBody = union(tongue, pin, washer, caps, neck, lidShell, lidLip, lidScrews, strike)
+  .finish('abs', { color: '#f3f6f8' });
 
 const arm = assembly('clamshell-enclosure-release');
 const base = arm.part('base-shell', baseBody, { material: 'abs' });
