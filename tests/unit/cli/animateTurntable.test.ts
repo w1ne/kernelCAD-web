@@ -124,6 +124,31 @@ describe('animate --turntable', () => {
     expect(mockTimeline).not.toHaveBeenCalled();
   });
 
+  it('threads --lock-frame and --backdrop into the timeline capture', async () => {
+    mockTimeline.mockResolvedValue({ ...okTurntable('/m/a.mp4'), verified: true, verifySkipped: undefined });
+    const r = await runAnimate({ file: '/m/demo.kcad.ts', lockFrame: true, backdrop: 'dark' });
+    expect(r.exitCode).toBe(0);
+    expect(mockTimeline.mock.calls[0][0]).toEqual({
+      scriptPath: '/m/demo.kcad.ts',
+      lockFrame: true,
+      backdrop: '#1f2328',
+    });
+  });
+
+  it('refuses a transparent or unknown timeline backdrop', async () => {
+    const r = await runAnimate({ file: '/m/demo.kcad.ts', backdrop: 'transparent' });
+    expect(r.exitCode).toBe(2);
+    expect(r.result.diagnostics[0].message).toContain('--backdrop');
+    expect(mockTimeline).not.toHaveBeenCalled();
+  });
+
+  it('refuses --lock-frame on a turntable', async () => {
+    const r = await runAnimate({ file: '/m/demo.kcad.ts', turntable: true, lockFrame: true });
+    expect(r.exitCode).toBe(2);
+    expect(r.result.diagnostics[0].message).toContain('--lock-frame');
+    expect(mockTurntable).not.toHaveBeenCalled();
+  });
+
   it('a plain animate call still captures the timeline with no turntable keys', async () => {
     mockTimeline.mockResolvedValue({ ...okTurntable('/m/a.mp4'), verified: true, verifySkipped: undefined });
     const r = await runAnimate({ file: '/m/demo.kcad.ts' });

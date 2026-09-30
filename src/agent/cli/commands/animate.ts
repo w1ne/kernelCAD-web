@@ -67,6 +67,7 @@ import {
 import { formatHuman } from '../../../shared/diagnostics/formatter';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
+import { parsePublishBackground } from '../../../shared/render/publishPreset';
 
 export interface AnimateCliInput extends TurntableCliFields {
   file: string;
@@ -90,6 +91,10 @@ export interface AnimateCliInput extends TurntableCliFields {
   /** Optional render-surface override (`--base-url <url>`). When omitted,
    *  the capture engine provisions the bundled static player. */
   baseUrl?: string;
+  /** Fit the timeline camera once, to every pose (`--lock-frame`). */
+  lockFrame?: boolean;
+  /** Opaque publish backdrop for the timeline (`--backdrop`). */
+  backdrop?: string;
   /** Progress sink forwarded to the capture engine. The command wires a
    *  timestamped stderr writer here unless --quiet. */
   onProgress?: (msg: string) => void;
@@ -190,6 +195,8 @@ function refuseAnimateUsage(input: AnimateCliInput): AnimateCliResult | null {
   }
   const timelineRefusal = input.turntable === true ? undefined : turntableOnlyFlagsRefusal(input);
   if (timelineRefusal !== undefined) return usageRefusal(timelineRefusal.message, timelineRefusal.hint, safeFps(input.fps));
+  const lookRefusal = timelineLookRefusal(input);
+  if (lookRefusal !== null) return lookRefusal;
   if (input.skipVerify === true && input.verifyEvery !== undefined) {
     return usageRefusal(
       'animate: --no-verify and --verify-every are mutually exclusive — there is no schedule to densify when verification is skipped.',
@@ -218,8 +225,39 @@ function captureAnimationOptsFor(
     // take resolveRenderBaseUrl's 'explicit' lane and silently bypass
     // static-player provisioning (exactly the defect #625 fixed for render).
     ...(input.baseUrl !== undefined ? { baseUrl: input.baseUrl } : {}),
+    ...(input.lockFrame === true ? { lockFrame: true } : {}),
+    ...(timelineBackdropOpt(input) ?? {}),
     ...(input.onProgress !== undefined ? { onProgress: input.onProgress } : {}),
   };
+}
+
+function timelineBackdropOpt(input: AnimateCliInput): { backdrop: string } | undefined {
+  if (input.backdrop === undefined) return undefined;
+  const color = opaqueBackdrop(input.backdrop);
+  return color === undefined ? undefined : { backdrop: color };
+}
+
+function opaqueBackdrop(raw: string): string | undefined {
+  const color = parsePublishBackground(raw);
+  return color === undefined || color === 'transparent' ? undefined : color;
+}
+
+function timelineLookRefusal(input: AnimateCliInput): AnimateCliResult | null {
+  if (input.turntable === true && (input.lockFrame === true || input.backdrop !== undefined)) {
+    return usageRefusal(
+      'animate: --lock-frame and --backdrop apply only to the animationView timeline.',
+      'Drop --turntable to film the joint motion, or drop those flags for a camera orbit.',
+      safeFps(input.fps),
+    );
+  }
+  if (input.backdrop !== undefined && opaqueBackdrop(input.backdrop) === undefined) {
+    return usageRefusal(
+      `animate: --backdrop '${input.backdrop}' is not an opaque colour.`,
+      'Pass a #rrggbb hex, or one of white, light, dark, black.',
+      safeFps(input.fps),
+    );
+  }
+  return null;
 }
 
 export async function runAnimate(input: AnimateCliInput): Promise<AnimateCliResult> {
@@ -294,6 +332,8 @@ export function animateCommand(): Command {
     )
     .option('--focus <names>', 'show only comma-separated feature ids or assembly part names (mutually exclusive with --hide)')
     .option('--hide <names>', 'hide comma-separated feature ids or assembly part names (mutually exclusive with --focus)')
+    .option('--lock-frame', 'timeline only: fit the camera once to the whole reach so the base stays planted')
+    .option('--backdrop <color>', "timeline only: opaque publish backdrop ('white', 'light', 'dark', 'black', or #rrggbb)")
     .option(
       '--base-url <url>',
       'optional render-surface override (e.g. a running studio dev server); default is the bundled static player',
@@ -330,6 +370,8 @@ Turntable examples:
       focus?: string;
       hide?: string;
       baseUrl?: string;
+      lockFrame?: boolean;
+      backdrop?: string;
       json?: boolean;
       quiet?: boolean;
     } & TurntableCliFields & {
@@ -349,6 +391,8 @@ Turntable examples:
         // materialized default would always take the 'explicit' lane and
         // defeat static-player provisioning (#625).
         ...(opts.baseUrl !== undefined ? { baseUrl: opts.baseUrl } : {}),
+        ...(opts.lockFrame === true ? { lockFrame: true } : {}),
+        ...(opts.backdrop !== undefined ? { backdrop: opts.backdrop } : {}),
         // Progress always goes to stderr (even under --json — stdout must
         // stay pure JSON) unless --quiet.
         ...(opts.quiet ? {} : { onProgress: stderrProgressSink }),
