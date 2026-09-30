@@ -72,7 +72,7 @@ animationView({
 const tiltZ = 78;
 const headLen = 78;
 const bendR = 10;
-const tubeR = 2.5;
+const tubeR = 3.1;
 const arm = assembly('inspection-head-2dof');
 
 const sub = (a: number[], b: number[]) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
@@ -117,29 +117,45 @@ for (let i = 1; i < sampled.length; i += 1) {
 const tubeSolid = path()
   .circle(0, 0, tubeR, 24)
   .sweep(rail, { spine: 'polyline', transitionMode: 'round' })
-  .rotateY(-90)
-  .color('tube');
+  .rotateY(-90);
+
+function roundPlate(w: number, d: number, r: number, t: number, x: number, y: number, z: number) {
+  return extrudeRoundedRect(w, d, r, t).translate(x, y, z);
+}
+
+// Hobby-servo stand-in: rounded body, mounting ears, short output boss.
+// Built with its origin at the body center.
+function servoBody(w: number, d: number, h: number) {
+  const earT = Math.min(5, d * 0.4);
+  return extrudeRoundedRect(w, d, Math.min(3, d * 0.2), h).translate(0, 0, -h / 2)
+    .union(extrudeRoundedRect(w + 10, earT, 1.4, 2.6).translate(0, 0, h / 2 - 2.6))
+    .union(cylinder(3.4, Math.min(5.5, d * 0.32)).translate(0, -d / 2 + 1, 0));
+}
 
 const base = arm.part(
   'base-frame',
-  box(120, 100, 8, true).translate(0, 0, 4).color('plate')
-    .union(box(38, 38, 34, true).translate(0, 0, 25).color('frame'))
-    .union(cylinder(6, 20).translate(0, 0, 42).color('shaft'))
-    .union(box(34, 28, 22, true).translate(-46, 0, 19).color('actuator')),
+  roundPlate(124, 104, 14, 8, 0, 0, 0)
+    .union(cylinder(34, 17).translate(0, 0, 6.5))
+    .union(cylinder(3.4, 24).translate(0, 0, 39.5))
+    .union(cylinder(5.2, 15).translate(0, 0, 42.2))
+    .union(cylinder(1.4, 8).translate(0, 0, 47))
+    .union(servoBody(34, 26, 22).translate(-48, 0, 18))
+    .finish('aluminium-brushed'),
   { material: 'aluminum-6061' },
 );
 base.connector('yaw', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 48] }, axis: [0, 0, 1] });
 
 const yawStage = arm.part(
   'yaw-stage',
-  box(28, 26, 36, true).translate(0, 0, 18).color('frame')
-    .union(box(16, 50, 10, true).translate(0, 0, 34))
-    .union(box(18, 8, 30, true).translate(0, 21, tiltZ - 48))
-    .union(box(18, 8, 30, true).translate(0, -21, tiltZ - 48))
-    .union(box(12, 8, 44, true).translate(0, 21, 22))
-    .union(box(12, 8, 44, true).translate(0, -21, 22))
-    .union(box(30, 22, 12, true).translate(-14, 32, tiltZ - 48))
-    .union(box(12, 18, 28, true).translate(-8, 28, tiltZ - 48)),
+  cylinder(32, 14).translate(0, 0, -1)
+    .union(roundPlate(18, 54, 3, 8, 0, 0, 30))
+    .union(roundPlate(20, 7, 2, 32, 0, 21, 14))
+    .union(roundPlate(20, 7, 2, 32, 0, -21, 14))
+    .union(roundPlate(12, 8, 2, 40, 0, 21, 6))
+    .union(roundPlate(12, 8, 2, 40, 0, -21, 6))
+    .union(roundPlate(32, 22, 3, 8, -16, 34, 24))
+    .union(cylinder(16, 5).rotate([1, 0, 0], 90).translate(0, 8, tiltZ - 48))
+    .finish('anodized', { color: '#8aa0ad' }),
   { material: 'aluminum-6061' },
 );
 yawStage.connector('yaw', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
@@ -148,18 +164,22 @@ yawStage.connector('tilt-servo-mount', { type: 'frame', origin: { kind: 'vec3', 
 
 const tiltServo = arm.part(
   'tilt-servo',
-  box(26, 18, 28, true).translate(-14, 32, tiltZ - 48).color('actuator'),
+  servoBody(26, 18, 28).translate(-14, 32, tiltZ - 48).finish('abs', { color: '#243140' }),
   { material: 'nylon' },
 );
 tiltServo.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [-14, 32, tiltZ - 48] } });
 
 const tiltHead = arm.part(
   'tilt-head',
-  box(headLen - 22, 14, 12, true).translate(headLen / 2, 0, 0).color('beam')
-    .union(cylinder(88, 4).rotate([1, 0, 0], 90).translate(0, 44, 0).color('shaft'))
-    .union(box(26, 10, 16, true).translate(6, 0, 0))
-    .union(cylinder(18, 12).rotate([0, 1, 0], 90).translate(headLen - 4, 0, -6).color('tool'))
-    .union(box(14, 18, 10, true).translate(headLen - 8, 0, 0)),
+  cylinder(headLen - 18, 6.2).rotate([0, 1, 0], 90).translate(10, 0, 0)
+    .union(cylinder(92, 4.2).rotate([1, 0, 0], 90).translate(0, 46, 0))
+    .union(cylinder(8, 8).rotate([1, 0, 0], 90).translate(0, 16, 0))
+    .union(cylinder(8, 8).rotate([1, 0, 0], 90).translate(0, -10, 0))
+    .union(cylinder(20, 11).rotate([0, 1, 0], 90).translate(headLen - 8, 0, -5))
+    .union(cylinder(3, 13).rotate([0, 1, 0], 90).translate(headLen + 6, 0, -5))
+    .subtract(cylinder(6, 6).rotate([0, 1, 0], 90).translate(headLen + 8, 0, -5))
+    .union(cylinder(14, 5.2).translate(46, 0, 0))
+    .finish('anodized', { color: '#d5dde3' }),
   { material: 'aluminum-6061' },
 );
 tiltHead.connector('tilt', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 1, 0] });
@@ -167,7 +187,7 @@ tiltHead.connector('tube-mount', { type: 'frame', origin: { kind: 'vec3', value:
 
 const serviceTube = arm.part(
   'service-tube',
-  tubeSolid.translate(48, 0, 10),
+  tubeSolid.translate(48, 0, 10).finish('abs', { color: '#e07a3d' }),
   { material: 'nylon' },
 );
 serviceTube.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [48, 0, 10] } });

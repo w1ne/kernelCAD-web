@@ -64,27 +64,42 @@ const cheeks = union(
   yCyl(R, 6, 12),
   yCyl(R, -12, -6),
 ).subtract(yCyl(boreR, -13, 13));
-const bridge = box(12, 16, 10).translate(-22, -8, -5);
+// Turned web into the shell wall — a rectangular bridge reads as a toy block.
+const web = (y: number) => cylinder(16, 3.2).alongAxis([1, 0, 0]).translate(-22, y, 0);
+const bridge = web(9).union(web(-9));
 
-let baseShell = box(78, 72, 28).translate(-98, -36, -18);
-baseShell = baseShell.subtract(box(70, 64, 26).translate(-94, -32, -14));
+let baseShell = extrudeRoundedRect(78, 72, 12, 28).translate(-59, 0, -18);
+baseShell = baseShell.subtract(extrudeRoundedRect(62, 56, 8, 24).translate(-57, 0, -14));
+baseShell = baseShell.subtract(extrudeRoundedRect(44, 36, 6, 1.6).translate(-59, 0, -18.15));
 baseShell = baseShell.subtract(cylinder(12, 2.1).translate(-60, 0, -20));
+// Standing lip on the opening, plus feet so the tub is a molded shell.
+const baseLip = extrudeRoundedRect(78, 72, 12, 2.4).translate(-59, 0, 9.75)
+  .subtract(extrudeRoundedRect(66, 60, 8, 3.2).translate(-59, 0, 9.4));
+let feet = cylinder(2.6, 3.5).translate(-86, -24, -20.4);
+for (const [x, y] of [[-32, -24], [-86, 24], [-32, 24]] as const) {
+  feet = feet.union(cylinder(2.6, 3.5).translate(x, y, -20.4));
+}
 
-const baseBody = union(cheeks, bridge, baseShell)
+const baseBody = union(cheeks, bridge, baseShell, baseLip, feet)
   .datum('A', { atZ: -18 })
   .datum('B', { atX: -98 })
   .datum('C', { atY: -36 })
   .tolerance({
     type: 'position', value: 0.3, modifier: '⌀', datums: ['A', 'B', 'C'],
     edge: { ofCurveType: 'CIRCLE', near: [-60, 0, -18] },
-  });
+  })
+  .finish('abs', { color: '#5c6e7c' });
 
 const tongue = yCyl(R - 0.4, -4.6, 4.6);
 const pin = yCyl(pinR, -12.4, 12.4);
-const neck = box(22, 8, 8).translate(0, -4, -4);
-let lidShell = box(64, 68, 22).translate(18, -34, -10);
-lidShell = lidShell.subtract(box(56, 60, 20).translate(22, -30, -8));
-const lidBody = union(tongue, pin, neck, lidShell);
+const neck = cylinder(22, 4.4).alongAxis([1, 0, 0]);
+let lidShell = extrudeRoundedRect(64, 68, 11, 22).translate(50, 0, -10);
+lidShell = lidShell.subtract(extrudeRoundedRect(50, 54, 7, 18).translate(52, 0, -8));
+// Pocket opens through the top face (a buried subtract leaves a blank slab).
+lidShell = lidShell.subtract(extrudeRoundedRect(34, 26, 4, 1.5).translate(50, 0, 10.7));
+const lidLip = extrudeRoundedRect(64, 68, 11, 2.2).translate(50, 0, 11.8)
+  .subtract(extrudeRoundedRect(52, 56, 7, 3).translate(50, 0, 11.4));
+const lidBody = union(tongue, pin, neck, lidShell, lidLip).finish('abs', { color: '#e7ecef' });
 
 const arm = assembly('clamshell-enclosure-release');
 const base = arm.part('base-shell', baseBody, { material: 'abs' });
