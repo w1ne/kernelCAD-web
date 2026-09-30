@@ -104,5 +104,8 @@
   "nema",
   "planetary",
   "ring",
-  "internal"
+  "internal",
+  "prismatic",
+  "scissor",
+  "lift"
 ]

@@ -138,6 +138,92 @@ export function missingFilletFacts(
   }];
 }
 
+function hasFactCode(facts: readonly DesignLoopReviewFact[], code: string): boolean {
+  return facts.some((f) => f.code === code);
+}
+
+function isScissorOrClosedLoopGoal(goal: string, facts: readonly DesignLoopReviewFact[]): boolean {
+  return /\b(scissor|pin[_\s-]?slot|4-?bar|parallelogram|closed[_\s-]?loop)\b/i.test(goal)
+    || hasFactCode(facts, 'assembly.solver.did-not-converge')
+    || hasFactCode(facts, 'kinematic.solver.unsupported-config');
+}
+
+function isFourDofArmGoal(goal: string): boolean {
+  return /\b(4[-\s]?dof|four[-\s]?axis|multi[-\s]?dof)\b/i.test(goal)
+    || (/\b(yaw|shoulder|elbow|wrist)\b/i.test(goal) && /\b(robot\s*arm|cobot)\b/i.test(goal));
+}
+
+function isMechanismGoal(goal: string, facts: readonly DesignLoopReviewFact[]): boolean {
+  return hasFactCode(facts, 'assembly.joint-topology.unsupported-axis')
+    || hasFactCode(facts, 'assembly.connectivity.floating-moving-part')
+    || hasFactCode(facts, 'mechanism.drops-on-release')
+    || (/\b(robot|arm|mechanism|cobot|multi-?body)\b/i.test(goal) && isProductionIntentGoal(goal));
+}
+
+function industryCookbookHints(goal: string, facts: readonly DesignLoopReviewFact[]): RevisionHint[] {
+  const hints: RevisionHint[] = [];
+  if (isScissorOrClosedLoopGoal(goal, facts)) {
+    hints.push({
+      code: 'cookbook.scissor-lift',
+      summary:
+        'Articulated closed-loop FK (scissor / 4-bar / pin_slot loop) is unsupported — use open-chain prismatic platform + mid-pose X-links.',
+      suggestedChange: 'lookup_cookbook("scissor lift closed loop")',
+    });
+  }
+  if (isFourDofArmGoal(goal)) {
+    hints.push({
+      code: 'cookbook.multi-dof-arm',
+      summary:
+        'Production 4-DOF arm: fuse yokes/servo shelves into parent links, clear yaw disk above pedestal, mechanicalJoint chain + reach animationView.',
+      suggestedChange: 'lookup_cookbook("multi dof robot arm 4axis")',
+    });
+  } else if (isMechanismGoal(goal, facts)) {
+    hints.push({
+      code: 'cookbook.mechanism-proportions',
+      summary: 'Use real machine-element proportions with grounded root + jointSupport/mechanicalJoint (+ tendon or driven joint for gravity-hold).',
+      suggestedChange: 'lookup_cookbook("multi-body mechanism real proportions")',
+    });
+  }
+  return hints;
+}
+
+function mechanismRepairHints(facts: readonly DesignLoopReviewFact[]): RevisionHint[] {
+  const hints: RevisionHint[] = [];
+  if (hasFactCode(facts, 'assembly.joint-topology.unsupported-axis')) {
+    hints.push({
+      code: 'repair.joint-support',
+      summary: 'Revolute mate needs arm.jointSupport(...) or arm.mechanicalJoint(...).',
+      suggestedChange:
+        "Add arm.mechanicalJoint(name, { mate, actuator, shaft, supports, output }) for driven hinges, or arm.jointSupport(...) for passive hinges.",
+    });
+  }
+  if (hasFactCode(facts, 'assembly.connectivity.floating-moving-part')) {
+    hints.push({
+      code: 'repair.grounded-root',
+      summary: 'Moving parts need a mate-graph path to a stable root.',
+      suggestedChange:
+        "Name the ground part base-frame / base / ground / root, or declare physicalUseCase(...).stableParts: ['base-frame'].",
+    });
+  }
+  if (hasFactCode(facts, 'mechanism.drops-on-release')) {
+    hints.push({
+      code: 'repair.gravity-hold',
+      summary: 'Open-chain hinge drifts under gravity without a brake or actuator.',
+      suggestedChange:
+        'Add arm.tendon(...) across the joint, or declare arm.mechanicalJoint(...) so the hinge is actively driven.',
+    });
+  }
+  if (hasFactCode(facts, 'assembly.geometry.floating-body')) {
+    hints.push({
+      code: 'repair.bridge-yoke-load-path',
+      summary: 'Yoke / servo-shelf / cheek solids must be fused into the parent link — mate-graph alone is not geometric contact.',
+      suggestedChange:
+        'Bridge each yoke or servo shelf into its parent link with .union() (shared overlap so solidComponents()===1). Raise yaw disks above the pedestal for clearance. See lookup_cookbook("multi dof robot arm 4axis").',
+    });
+  }
+  return hints;
+}
+
 function cookbookHintsForGoal(goal: string, facts: readonly DesignLoopReviewFact[]): RevisionHint[] {
   const hints: RevisionHint[] = [];
   if (facts.some((f) => f.code === STACKED_PRIMITIVE_TOY_CODE || f.code === MISSING_FILLET_CODE)) {
@@ -147,43 +233,8 @@ function cookbookHintsForGoal(goal: string, facts: readonly DesignLoopReviewFact
       suggestedChange: 'lookup_cookbook("multi-feature machined housing")',
     });
   }
-  const mechanismFact = facts.some((f) =>
-    f.code === 'assembly.joint-topology.unsupported-axis' ||
-    f.code === 'assembly.connectivity.floating-moving-part' ||
-    f.code === 'mechanism.drops-on-release' ||
-    (/\b(robot|arm|mechanism|cobot|multi-?body)\b/i.test(goal) && isProductionIntentGoal(goal)),
-  );
-  if (mechanismFact) {
-    hints.push({
-      code: 'cookbook.mechanism-proportions',
-      summary: 'Use real machine-element proportions with grounded root + jointSupport/mechanicalJoint (+ tendon or driven joint for gravity-hold).',
-      suggestedChange: 'lookup_cookbook("multi-body mechanism real proportions")',
-    });
-  }
-  if (facts.some((f) => f.code === 'assembly.joint-topology.unsupported-axis')) {
-    hints.push({
-      code: 'repair.joint-support',
-      summary: 'Revolute mate needs arm.jointSupport(...) or arm.mechanicalJoint(...).',
-      suggestedChange:
-        "Add arm.mechanicalJoint(name, { mate, actuator, shaft, supports, output }) for driven hinges, or arm.jointSupport(...) for passive hinges.",
-    });
-  }
-  if (facts.some((f) => f.code === 'assembly.connectivity.floating-moving-part')) {
-    hints.push({
-      code: 'repair.grounded-root',
-      summary: 'Moving parts need a mate-graph path to a stable root.',
-      suggestedChange:
-        "Name the ground part base-frame / base / ground / root, or declare physicalUseCase(...).stableParts: ['base-frame'].",
-    });
-  }
-  if (facts.some((f) => f.code === 'mechanism.drops-on-release')) {
-    hints.push({
-      code: 'repair.gravity-hold',
-      summary: 'Open-chain hinge drifts under gravity without a brake or actuator.',
-      suggestedChange:
-        'Add arm.tendon(...) across the joint, or declare arm.mechanicalJoint(...) so the hinge is actively driven.',
-    });
-  }
+  hints.push(...industryCookbookHints(goal, facts));
+  hints.push(...mechanismRepairHints(facts));
   for (const fact of facts) {
     if (fact.code.startsWith('feature.') || fact.hint) {
       hints.push({
@@ -213,6 +264,12 @@ function cookbookNextTool(
 ): RevisionAssist['nextTool'] | undefined {
   if (hints.some((h) => h.code === 'cookbook.machined-housing')) {
     return { name: 'lookup_cookbook', args: { query: 'multi-feature machined housing' } };
+  }
+  if (hints.some((h) => h.code === 'cookbook.scissor-lift')) {
+    return { name: 'lookup_cookbook', args: { query: 'scissor lift closed loop' } };
+  }
+  if (hints.some((h) => h.code === 'cookbook.multi-dof-arm')) {
+    return { name: 'lookup_cookbook', args: { query: 'multi dof robot arm 4axis' } };
   }
   if (hints.some((h) => h.code === 'cookbook.mechanism-proportions')) {
     return { name: 'lookup_cookbook', args: { query: 'multi-body mechanism real proportions' } };

@@ -10,7 +10,7 @@ A two-tier skill system. **Load `kernelcad-authoring` to write or modify any `.k
 ## Decision tree
 
 - Authoring or editing `.kcad.ts` geometry → load `kernelcad-authoring`.
-- Real / production / complex enclosure, gearbox, bearing housing, robot arm, NEMA plate, shaft/bearing → load `kernelcad-authoring` (+ `kernelcad-assemblies` / `kernelcad-features` / `kernelcad-parts` as needed); `lookup_cookbook` via the industry→cookbook table in `kernelcad-mcp` (housing / mechanism / NEMA / shaft-bearing / sheet-metal / enclosure lid); prefer `design_loop` until green (`docs/agent/adam-quality-bar.md`).
+- Real / production / complex enclosure, gearbox, bearing housing, robot arm, NEMA plate, shaft/bearing → load `kernelcad-authoring` (+ `kernelcad-assemblies` / `kernelcad-features` / `kernelcad-parts` as needed); `lookup_cookbook` via the industry→cookbook table in `kernelcad-mcp` (housing / mechanism / scissor-lift / 4-DOF arm / NEMA / shaft-bearing / sheet-metal / enclosure lid); prefer `design_loop` until green (`docs/agent/adam-quality-bar.md`).
 - Building from a reference photo or visual brief → also load `kernelcad-from-reference`.
 - Building from an engineering drawing PDF → call `drawing_to_cad`, then load `kernelcad-from-reference` for its ledger and fidelity rules.
 - Adding fillets, chamfers, shells, holes, cutouts → also load `kernelcad-features`.

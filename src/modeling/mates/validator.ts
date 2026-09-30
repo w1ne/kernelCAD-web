@@ -800,6 +800,7 @@ function pushSolveStatusDiagnostics(
         hint:
           `invalid-args.assembly.did-not-converge — articulated closed loops are not supported by the v0.6.0 solver (T7.x epic). ` +
           `Use an open kinematic chain or fastened-only closed loop. ` +
+          `For industrial scissor tables: lookup_cookbook('scissor lift closed loop') — do not invent joint.scissorLift. ` +
           `limitsDeg/jointSupport/mechanicalJoint still matter for open chains but will not make a 4-bar converge here.`,
       });
       break;

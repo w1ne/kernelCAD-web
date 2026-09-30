@@ -47,6 +47,8 @@ Use before freehand authoring on production / industry prompts. Prefer `design_l
 | Machined housing (walls, pockets, bosses, fillets, bearing bore) | `multi-feature-machined-housing` | Params + manufacturing intent; not stacked boxes |
 | NEMA motor mounting plate | `nema-motor-mounting-plate` | Prefer `lib.standard.nema17()`; snippet uses BREP stand-in for CI |
 | Multi-body mechanism + joints + animation | `multi-body-mechanism-real-proportions` | Proven pin **MLl-f0Uq@1**; CDN mesh+anim |
+| Scissor-lift / scissor-jack table | `scissor-lift-closed-loop` | Closed-loop FK unsupported — open-chain prismatic + mid-pose X-links |
+| 4-DOF / multi-axis production robot arm | `multi-dof-robot-arm-4axis` | Bridged yokes, yaw clearance, mechanicalJoint chain, reach anim |
 | Bracket with fasteners / BOM | `non-overlapping-l-bracket`, `iso-metric-bolt-and-nut`, `bom-ready-assembly` | |
 | Gear / pulley drive | `involute-spur-gear-pair`, `gt2-timing-belt-drive` | |
 | Enclosure lid (screw-on cover) | `enclosure-lid-with-screw-bosses` | Hinge alt: `clamshell-hinge-two-part-assembly` |
