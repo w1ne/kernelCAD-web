@@ -23,6 +23,7 @@ import { reviewPipelineToolEntries } from './registry/reviewPipelineTools';
 import { sketchAssemblyToolEntries } from './registry/sketchAssemblyTools';
 import { mechanismSimToolEntries } from './registry/mechanismSimTools';
 import { meshReconstructToolEntries } from './registry/meshReconstructTools';
+import { cookbookExecutionToolEntries } from './registry/cookbookExecutionTools';
 import type { McpToolDefinition, ToolRegistryEntry } from './registry/types';
 export { runClosedLoop } from '../loop/closedLoop.js';
 export { buildRepairPrompt } from '../loop/repairPrompt.js';
@@ -82,6 +83,8 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...drawingImportToolEntries,
   // Appended at the tail like every family before it (public index order).
   ...meshReconstructToolEntries,
+  // Appended at the tail: cookbook one-shot execute for ChatGPT industry demos.
+  ...cookbookExecutionToolEntries,
 ];
 
 /** Merge the central MCP metadata maps onto a definition: behavioral hints

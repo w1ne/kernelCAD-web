@@ -428,6 +428,24 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
     additionalProperties: true,
   },
 
+  execute_cookbook: {
+    type: 'object',
+    properties: {
+      ok: { type: 'boolean' },
+      cookbookId: { type: 'string', description: 'Resolved cookbook snippet id.' },
+      title: { type: 'string', description: 'Resolved cookbook title.' },
+      evaluate: { type: 'object', additionalProperties: true, description: 'Full evaluate_script result (same shape).' },
+      openInStudio: { type: 'object', additionalProperties: true, description: 'open_in_studio result when openInStudio was requested.' },
+      executionId: { type: 'string', description: 'Short id for logs / correlation.' },
+      code: { type: 'string', description: 'Snippet body used for evaluate / Studio.' },
+      dryRunNotEvidence: { type: 'boolean', description: 'Present when dryRun:true — dryRun success is NOT evidence of a real OCCT build.' },
+      error: { type: 'string' },
+      stage: { type: 'string', description: "'resolve' | 'evaluate' | 'open_in_studio' on failure." },
+    },
+    required: ['ok', 'executionId'],
+    additionalProperties: true,
+  },
+
   // Read-remote: bundled offline, optional remote parts-catalog tier.
   find_part: {
     type: 'object',
