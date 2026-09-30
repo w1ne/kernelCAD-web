@@ -21,9 +21,12 @@ when_to_use: >-
   NOT invent joint.scissorLift(...) or close the loop with pin_slot. Use this
   open-chain production pattern: one prismatic platform DOF (+ mechanicalJoint)
   driven by platformZ, industrial X-links fused into base-frame at a
-  representative mid pose, animationView raising the platform. Prefer
-  design_loop until green. Gallery examples/gallery/scissor-lift.kcad.ts is
-  fastened pose-only (not mechanism-driven).
+  representative mid pose, animationView raising the platform. Keep the
+  actuator-mount fastener on solid (center pad under the actuator) so
+  evaluate_script mechanism=real — dry-run / cookbook:evaluate alone miss
+  joint-mesh-gap. Prefer design_loop until green. Gallery
+  examples/gallery/scissor-lift.kcad.ts is fastened pose-only (not
+  mechanism-driven).
 ---
 
 ```typescript
@@ -64,6 +67,10 @@ const scissorX = linkBar(-halfSpan, baseZ, halfSpan, deckZ, -sideY, '#f6b23b')
   .union(linkBar(halfSpan, baseZ, -halfSpan, deckZ, -sideY, '#f0782f'))
   .union(linkBar(halfSpan, baseZ, -halfSpan, deckZ, sideY, '#f0782f'));
 
+// Center actuator pad tops at z=12 so actuator-fix sits on solid (not mid-air
+// between the side rails). Pad spans rail-to-rail so it fuses into the frame.
+const actuatorPad = box(40, railY * 2, 12, true).translate(0, 0, 6).color('#3b434c');
+
 const base = arm.part(
   'base-frame',
   box(halfSpan * 2 + 50, 10, 10, true)
@@ -72,6 +79,7 @@ const base = arm.part(
     .union(box(halfSpan * 2 + 50, 10, 10, true).translate(0, railY, 5).color('#2b3036'))
     .union(box(20, railY * 2 + 20, 8, true).translate(-halfSpan - 16, 0, 4).color('#3b434c'))
     .union(box(20, railY * 2 + 20, 8, true).translate(halfSpan + 16, 0, 4).color('#3b434c'))
+    .union(actuatorPad)
     .union(scissorX),
 );
 base.connector('lift-axis', {
