@@ -6,6 +6,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { runValidateCli } from '../../../src/agent/cli/commands/validate';
+import { PER_EXAMPLE_TIMEOUT_MS } from '../physics-loop/exampleSweepShared';
 
 const EXAMPLE_PATH = 'examples/robot-arm/so100/so100-arm.kcad.ts';
 
@@ -27,5 +28,5 @@ describe('SO-100 arm servo mounts sit on the servo body', () => {
     // Each one sits in its servo, past the printed shell. Moving the frame
     // would shift the arm.
     expect(offSolid).toEqual(['lower-arm.wrist', 'shoulder.lift']);
-  }, 240_000);
+  }, PER_EXAMPLE_TIMEOUT_MS);
 });
