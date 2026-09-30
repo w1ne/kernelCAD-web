@@ -138,3 +138,37 @@ describe('list_api MCP tool', () => {
     expect(evaluated.evaluation.exitCode, JSON.stringify(evaluated.evaluation.diagnostics, null, 2)).toBe(0);
   });
 });
+
+  // ChatGPT industry case L (2026-09-30): kitchen-sink BOM provenance discovery
+  // returned ok=true with empty globals/scenePartProperties and the agent stalled
+  // before evaluate_script. The typed assembly.part options + purchased/fabricated
+  // contract must surface for this exact query.
+  it('surfaces BOM provenance contract for ChatGPT case L lookup_api query', async () => {
+    const query = 'assembly part options metadata provenance purchased fabricated bom';
+    const r = await listApiTool({ query });
+    expect(r.ok).toBe(true);
+
+    const assembly = r.globals?.find((g) => g.name === 'assembly');
+    expect(assembly, 'globals must include assembly for BOM provenance discovery').toBeDefined();
+    expect(assembly!.description).toMatch(/BOM provenance/i);
+    expect(assembly!.description).toMatch(/fabricated/i);
+    expect(assembly!.description).toMatch(/purchased/i);
+    expect(assembly!.description).toMatch(/AssemblyPartOpts/);
+    expect(assembly!.description).toMatch(/inspect\(\{\s*of:\s*"bom"\s*\}\)/);
+    expect(assembly!.description).toMatch(/quantity/);
+
+    const metadata = r.scenePartProperties?.find((p) => p.name === 'metadata');
+    expect(metadata, 'scenePartProperties.metadata must describe BOM provenance').toBeDefined();
+    expect(metadata!.description).toMatch(/purchased/i);
+    expect(metadata!.description).toMatch(/fabricated/i);
+    expect(metadata!.description).toMatch(/catalogPart|catalog identity/i);
+    expect(metadata!.description).toMatch(/quantity/);
+
+    // lib.fetchPart is the purchased-part path; it must stay discoverable alongside assembly.
+    const lib = (await listApiTool({ query: 'fetchPart purchased catalog bom' })).globals?.find(
+      (g) => g.name === 'lib',
+    );
+    expect(lib?.signature).toContain('fetchPart');
+    expect(lib?.description).toMatch(/purchased/i);
+    expect(lib?.description).toMatch(/catalogPart/i);
+  });
