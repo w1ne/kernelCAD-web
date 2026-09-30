@@ -112,10 +112,10 @@ export const ASSEMBLY_CODES = {
   },
   'assembly.solver.did-not-converge': {
     hintTemplate:
-      "UNSUPPORTED on v0.6: articulated closed-loop FK (4-bar etc.). Do not invent gear-contact types. Rewrite as an open chain (drop one loop-closing mate; keep a ground/base root) or use fastened-only mates in the loop. limitsDeg/jointSupport help open chains only.",
+      "UNSUPPORTED on v0.6: articulated closed-loop FK (4-bar / scissor / pin_slot loop). Do not invent joint.scissorLift or gear-contact types. Rewrite as an open chain (drop one loop-closing mate; keep a ground/base root) or use fastened-only mates in the loop. For industrial scissor tables: lookup_cookbook('scissor lift closed loop'). limitsDeg/jointSupport help open chains only.",
     nextAction: {
       kind: 'rewrite-feature',
-      guidance: 'rewrite as an open chain or fastened-only loop; do not invent gear-contact types',
+      guidance: 'rewrite as an open chain or fastened-only loop; for scissor tables lookup_cookbook(scissor lift closed loop); do not invent joint.scissorLift',
     },
     defaultSeverity: 'error',
     group: 'assembly',

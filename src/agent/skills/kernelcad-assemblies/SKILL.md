@@ -409,7 +409,7 @@ Six diagnostic codes on `ValidatorDiagnostic`:
 - `assembly.mate.type-mismatch` — connector-pair / mate-type mismatch at capture.
 - `assembly.mate.connector-not-found` — malformed ref / unknown part / unknown connector.
 - `assembly.loop.unclosed` — reserved (type-only today).
-- `assembly.solver.did-not-converge` — **v0.6.0 does not solve articulated closed loops** (4-bar / parallelogram). Message lists body + articulated-mate ids. Fix: open chain (drop one loop-closing mate; keep ground root) or fastened-only loop. `limitsDeg` / `jointSupport` / `mechanicalJoint` still apply on open chains and are reported even when the loop cannot converge.
+- `assembly.solver.did-not-converge` — **v0.6.0 does not solve articulated closed loops** (4-bar / parallelogram / scissor + pin_slot). Message lists body + articulated-mate ids. Fix: open chain (drop one loop-closing mate; keep ground root) or fastened-only loop. Industrial scissor tables: `lookup_cookbook("scissor lift closed loop")` (open-chain prismatic platform + mid-pose X-links — do not invent `joint.scissorLift`). `limitsDeg` / `jointSupport` / `mechanicalJoint` still apply on open chains and are reported even when the loop cannot converge.
 
 ### Validation gate on `solvedModel`
 
