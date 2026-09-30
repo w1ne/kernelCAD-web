@@ -263,6 +263,7 @@ arm.mechanicalJoint('wrist-drive', {
   },
 });
 
+// Tracks must name the live param()s above. Do not drop those param() calls when rewriting.
 animationView({
   name: 'reach cycle',
   tracks: [

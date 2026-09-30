@@ -50,6 +50,9 @@ Use before freehand authoring on production / industry prompts. Prefer `design_l
 | Multi-body mechanism + joints + animation | `multi-body-mechanism-real-proportions` | Proven pin **MLl-f0Uq@1**; CDN mesh+anim |
 | Scissor-lift / scissor-jack table | `scissor-lift-closed-loop` | Closed-loop FK unsupported — open-chain prismatic + mid-pose X-links |
 | 4-DOF / multi-axis production robot arm | `multi-dof-robot-arm-4axis` | Bridged yokes, yaw clearance, mechanicalJoint chain, reach anim |
+| 4-DOF release/evidence pack (static hold, BOM, drawing, USD, FEA stop) | `4dof-release-evidence-pack` | Runnable arm + honest FEA-unavailable / USD-mate stops |
+| 2-DOF pan/tilt inspection head + rigid routed tube + animation | `mated-inspection-head-routed-tube-animation` | `param()` beside `animationView`; tube is rigid, not a hose |
+| Shop-release GT2 belt rotary actuator (housing, 608, cover, materials) | `gt2-shop-release-actuator` | Cord/nubs ≠ tooth mesh; no USD (cylindrical mate) |
 | Bracket with fasteners / BOM | `non-overlapping-l-bracket`, `iso-metric-bolt-and-nut`, `bom-ready-assembly` | |
 | Gear / pulley drive | `involute-spur-gear-pair`, `gt2-timing-belt-drive` | |
 | Enclosure lid (screw-on cover) | `enclosure-lid-with-screw-bosses` | Hinge alt: `clamshell-hinge-two-part-assembly` |
