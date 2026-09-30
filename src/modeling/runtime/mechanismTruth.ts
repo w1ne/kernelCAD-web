@@ -57,6 +57,7 @@ import { initOcct } from '../../kernel/backends/occt/occtBackend';
 import { createOcctLowerer } from '../backends/occt/occtLowerer';
 import { RecomputeEngine } from '../compute/recomputeEngine';
 import { solveMates } from '../mates/solver';
+import { collectRegistryDrivenMates } from '../mates/mechanicalJointRegistry';
 import { detectInterferences, pairKey } from './detectInterferences';
 import { jointContactCapMm3, INTERPENETRATION_EPSILON_MM3 } from './jointContactCap';
 import { reposedLoweredAssemblyScene } from '../mates/loweredAssemblyScene';
@@ -1172,21 +1173,6 @@ async function runStaticEquilibrium(
  * carries the specific joint / body and the magnitude.
  */
 
-/** Mates covered by a complete mechanicalJoint intent — "actively driven". */
-function collectActivelyDrivenMates(arm: Assembly): Set<string> {
-  const driven = new Set<string>();
-  const partsByName = new Map(arm.__parts().map((part) => [part.name, part]));
-  const matesByName = new Map(arm.__mates().map((mate) => [mate.name, mate]));
-  for (const intent of arm.__mechanicalJointIntents()) {
-    if (!partsByName.has(intent.actuator)) continue;
-    if (!partsByName.has(intent.shaft) || !partsByName.has(intent.output)) continue;
-    if (intent.supports.length === 0 || intent.supports.some((s) => !partsByName.has(s))) continue;
-    const mate = matesByName.get(intent.mate);
-    if (mate === undefined || mate.type !== 'revolute') continue;
-    driven.add(intent.mate);
-  }
-  return driven;
-}
 
 function allArticulatedMatesDriven(
   jointOrder: readonly { mateName: string }[],
@@ -1254,7 +1240,7 @@ async function runDropOnRelease(
   // held by an actuator. MuJoCo emission still has no position motors, so we
   // honour the authoring contract here rather than demanding a tendon on every
   // servo joint. Passive jointSupport hinges still need arm.tendon(...).
-  const drivenMates = collectActivelyDrivenMates(arm);
+  const drivenMates = collectRegistryDrivenMates(arm);
   if (allArticulatedMatesDriven(jointOrder, drivenMates)) return [];
 
   // Reset to the model's qpos0 — criterion 5 left the session at its
