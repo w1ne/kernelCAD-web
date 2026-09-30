@@ -52,12 +52,13 @@ const basePlate = basePlateRaw
 // STS3215 mounting flange sits 4 mm above the plate (typical M3 washer
 // + bolt-head clearance). Z offset = 19.4 (half body) + 4 (clearance).
 const SERVO1_Z = 19.4 + 4;
-// Measured STEP extents (mm). The servo output face is local +Z at 20.2
-// (body ±22.7 in X). The horn disc starts at local Z = 0 and is 3.1 thick.
-// The jaw's M3 bolt circle is centered at local (0, 0, -24); the finger
-// runs along local -Y. A rotate about X points the shaft at -Y, which left
-// the jaw beside the body.
+// Measured STEP extents (mm). The STS3215 output is not on the body centre:
+// the horn boss and its M3 bolt circle are at local (12.5, 0), and the boss
+// face is local Z = 20.2. The jaw's matching bolt circle is local (0, 0, -24)
+// and the finger runs along local -Y. Putting the jaw on (0, 0) leaves the
+// fork beside the horn.
 const SERVO_SHAFT_Z = 20.2;
+const SERVO_HORN_X = 12.5;
 const SERVO_HALF_X = 22.7;
 const HORN_THICK = 3.1;
 const BRACKET_THICK = 4;
@@ -76,11 +77,12 @@ const servo2Placed = servo2
   .rotate([0, 1, 0], 90)
   .translate(0, 0, servoZ2);
 
-// Bore along the shaft, finger up, mount face on the output face.
+// Y+90 turns servo local +X into world -Z, so the horn (local x = 12.5)
+// sits 12.5 mm below the body centre. The jaw bolt circle lands on that horn.
 const jawPlaced = jaw
   .rotate([0, 1, 0], 90)
   .rotate([1, 0, 0], -90)
-  .translate(SERVO_SHAFT_Z - JAW_MOUNT_Z, 0, servoZ2);
+  .translate(SERVO_SHAFT_Z - JAW_MOUNT_Z, 0, servoZ2 - SERVO_HORN_X);
 
 const arm = assembly('so100-gripper');
 const basePart    = arm.part('base-plate',     basePlate);

@@ -40,8 +40,11 @@ describe('SO-100 gripper seats on its output shaft', () => {
     expect(jaw.min[0]).toBeLessThan(servo.max[0] + 1);
     expect(jaw.max[1]).toBeGreaterThan(servo.min[1]);
     expect(jaw.min[1]).toBeLessThan(servo.max[1]);
-    expect(jaw.max[2]).toBeGreaterThan(servo.min[2]);
-    expect(jaw.min[2]).toBeLessThan(servo.max[2]);
+    // The output horn is 12.5 mm below the body centre (servo local +X).
+    // A jaw seated on the body centre misses that horn.
+    const hornZ = (servo.min[2] + servo.max[2]) / 2 - 12.5;
+    expect(jaw.min[2]).toBeLessThan(hornZ);
+    expect(jaw.max[2]).toBeGreaterThan(hornZ);
 
     expect(Math.abs(horn.min[2] - shoulder.max[2])).toBeLessThan(0.5);
   }, 180_000);
