@@ -52,35 +52,37 @@ const basePlate = basePlateRaw
 // STS3215 mounting flange sits 4 mm above the plate (typical M3 washer
 // + bolt-head clearance). Z offset = 19.4 (half body) + 4 (clearance).
 const SERVO1_Z = 19.4 + 4;
+// Measured STEP extents (mm). The STS3215 output is not on the body centre:
+// the horn boss and its M3 bolt circle are at local (12.5, 0), and the boss
+// face is local Z = 20.2. The jaw's matching bolt circle is local (0, 0, -24)
+// and the finger runs along local -Y. Putting the jaw on (0, 0) leaves the
+// fork beside the horn.
+const SERVO_SHAFT_Z = 20.2;
+const SERVO_HORN_X = 12.5;
+const SERVO_HALF_X = 22.7;
+const HORN_THICK = 3.1;
+const BRACKET_THICK = 4;
+const JAW_MOUNT_Z = -24;
 const servo1Placed = servo1.translate(0, 0, SERVO1_Z);
-const hornPlaced = horn.translate(0, 0, SERVO1_Z + 19.4 + 1);
+const hornPlaced = horn.translate(0, 0, SERVO1_Z + SERVO_SHAFT_Z);
 
-// Bracket on top of horn links to servo 2. Rounded-corner aluminium plate
-// matching the base's visual language; sits just above the horn (1.5 mm
-// air gap clears the BREP interference check).
 const bracket = extrudeRoundedRect(50, 60, 8, 4)
   .fillet(0.8)
-  .translate(0, 0, SERVO1_Z + 19.4 + 3.1 + 3.5 - 2)
+  .translate(0, 0, SERVO1_Z + SERVO_SHAFT_Z + HORN_THICK)
   .finish('pla', { color: PRINTED });
 
-// Servo 2: gripper-actuator, mounted on the bracket. Rotated 90° so its
-// output shaft faces +X (toward the jaw). Y-offset so the body clears
-// the jaw on swing.
-const servoZ2 = SERVO1_Z + 19.4 + 3.1 + 5.5 + 12.4 + 1;
+// Shaft (local +Z) points +X. The body stands on the bracket.
+const servoZ2 = SERVO1_Z + SERVO_SHAFT_Z + HORN_THICK + BRACKET_THICK + SERVO_HALF_X;
 const servo2Placed = servo2
-  .rotate([1, 0, 0], 90)
-  .translate(0, -10, servoZ2);
+  .rotate([0, 1, 0], 90)
+  .translate(0, 0, servoZ2);
 
-// Jaw mounted on servo 2's output, in front of the servo so the gripper
-// reads as "open" in the hero pose. The X-offset seats the jaw against
-// the servo output side within bearing tolerance (~0.5 mm) so the
-// fastened mate is a real coupling, not a floating part — the
-// mechanism-truth joint-mesh gate requires the mated bodies to keep
-// bearing contact within 1 mm.
+// Y+90 turns servo local +X into world -Z, so the horn (local x = 12.5)
+// sits 12.5 mm below the body centre. The jaw bolt circle lands on that horn.
 const jawPlaced = jaw
+  .rotate([0, 1, 0], 90)
   .rotate([1, 0, 0], -90)
-  .rotate([0, 0, 1], 20)
-  .translate(40.1, -10, servoZ2);
+  .translate(SERVO_SHAFT_Z - JAW_MOUNT_Z, 0, servoZ2 - SERVO_HORN_X);
 
 const arm = assembly('so100-gripper');
 const basePart    = arm.part('base-plate',     basePlate);
