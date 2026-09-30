@@ -93,7 +93,7 @@ const upper = await printed('upper-arm', 'Upper_Arm.stl', shoulderLift, shoulder
 const lower = await printed('lower-arm', 'Lower_Arm.stl', elbowFlex, shoulderLift);
 const wristLink = await printed('wrist', 'Wrist_Pitch_Roll.stl', wristFlex, elbowFlex);
 const hand = await printed('hand', 'Fixed_Jaw.stl', wristRoll, wristFlex);
-const jawLink = await printed('jaw', 'Moving_Jaw.stl', gripper, wristRoll);
+await printed('jaw', 'Moving_Jaw.stl', gripper, wristRoll);
 
 hinge(base, 'pan', null, shoulderPan);
 hinge(shoulder, 'lift', shoulderPan, shoulderLift);
@@ -102,12 +102,12 @@ hinge(lower, 'wrist', elbowFlex, wristFlex);
 hinge(wristLink, 'roll', wristFlex, wristRoll);
 hinge(hand, 'jaw', wristRoll, gripper);
 
-const baseServo = servo('base-servo', [0, -32.7, 46.5], [25, 46, 40], null);
-const shoulderServo = servo('shoulder-servo', [0, 90, 30.6], [40, 46, 25], shoulderPan);
-const upperServo = servo('upper-servo', [0, 112.6, 15.5], [40, 25, 46], shoulderLift);
-const lowerServo = servo('lower-servo', [0, 5.2, 122.4], [40, 25, 46], elbowFlex);
-const wristServo = servo('wrist-servo', [-12.5, -42.8, 0], [46, 40, 25], wristFlex);
-const handServo = servo('hand-servo', [-7.7, -24.4, 0.5], [46, 25, 40], wristRoll);
+servo('base-servo', [0, -32.7, 46.5], [25, 46, 40], null);
+servo('shoulder-servo', [0, 90, 30.6], [40, 46, 25], shoulderPan);
+servo('upper-servo', [0, 112.6, 15.5], [40, 25, 46], shoulderLift);
+servo('lower-servo', [0, 5.2, 122.4], [40, 25, 46], elbowFlex);
+servo('wrist-servo', [-12.5, -42.8, 0], [46, 40, 25], wristFlex);
+servo('hand-servo', [-7.7, -24.4, 0.5], [46, 25, 40], wristRoll);
 
 base.connector('servo', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
 shoulder.connector('servo', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
