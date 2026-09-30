@@ -128,6 +128,104 @@ function resolveSnippet(input: ExecuteCookbookInput):
   return { ok: true, snippet: hits[0].snippet };
 }
 
+function buildEvaluateBase(args: {
+  executionId: string;
+  snippet: Snippet;
+  code: string;
+  evaluate: EvaluateScriptOutput;
+  dryRun: boolean;
+}): ExecuteCookbookOutput {
+  const { executionId, snippet, code, evaluate, dryRun } = args;
+  return {
+    ok: evaluate.ok,
+    cookbookId: snippet.id,
+    title: snippet.title,
+    evaluate,
+    executionId,
+    code,
+    ...(dryRun ? { dryRunNotEvidence: true as const } : {}),
+    ...(!evaluate.ok
+      ? {
+          stage: 'evaluate' as const,
+          error: dryRun
+            ? 'cookbook dryRun evaluate failed (dryRun:true is NOT evidence of a real OCCT build)'
+            : 'cookbook evaluate failed',
+        }
+      : {}),
+  };
+}
+
+function studioFail(
+  base: ExecuteCookbookOutput,
+  error: string,
+): ExecuteCookbookOutput {
+  return {
+    ...base,
+    ok: false,
+    stage: 'open_in_studio',
+    error,
+    openInStudio: { ok: false, stage: 'open_in_studio', error },
+  };
+}
+
+async function attachOpenInStudio(
+  base: ExecuteCookbookOutput,
+  snippet: Snippet,
+  code: string,
+  dryRun: boolean,
+  evaluateOk: boolean,
+): Promise<ExecuteCookbookOutput> {
+  // dryRun success is NOT evidence — refuse Studio on dry runs.
+  if (dryRun) {
+    return studioFail(
+      base,
+      'openInStudio requires a full (non-dryRun) green evaluate; dryRun:true is NOT evidence the cookbook builds under OCCT',
+    );
+  }
+
+  if (!evaluateOk) {
+    return {
+      ...base,
+      openInStudio: {
+        ok: false,
+        stage: 'open_in_studio',
+        error: 'skipped open_in_studio because evaluate was not green',
+      },
+    };
+  }
+
+  if (openInStudioHook) {
+    try {
+      const openInStudio = await openInStudioHook({
+        code,
+        title: snippet.title,
+        cookbookId: snippet.id,
+      });
+      if (!openInStudio.ok) {
+        return studioFail(base, openInStudio.error ?? 'open_in_studio failed');
+      }
+      return { ...base, openInStudio };
+    } catch (err) {
+      return studioFail(base, err instanceof Error ? err.message : String(err));
+    }
+  }
+
+  // Local stdio / vendor child: no Studio persistence here. Keep overall ok
+  // from evaluate so a vendor-only pin still closes the ChatGPT "never
+  // evaluate" stall; hosted MCP intercepts openInStudio:true and replaces
+  // this deferred marker via openInStudioTool.
+  return {
+    ...base,
+    openInStudio: {
+      ok: false,
+      stage: 'open_in_studio',
+      deferred: true,
+      error:
+        'open_in_studio not wired in this process (hosted MCP gateway fulfills openInStudio:true after evaluate)',
+    },
+  };
+}
+
 /**
  * Resolve a cookbook snippet, evaluate its body, optionally open in Studio.
  * Reuses lookupCookbook inventory + evaluateScriptTool; does not invent geometry APIs.
@@ -158,93 +256,7 @@ export async function executeCookbookTool(
     });
   }
 
-  const base: ExecuteCookbookOutput = {
-    ok: evaluate.ok,
-    cookbookId: snippet.id,
-    title: snippet.title,
-    evaluate,
-    executionId,
-    code,
-    ...(dryRun ? { dryRunNotEvidence: true as const } : {}),
-    ...(!evaluate.ok
-      ? {
-          stage: 'evaluate' as const,
-          error: dryRun
-            ? 'cookbook dryRun evaluate failed (dryRun:true is NOT evidence of a real OCCT build)'
-            : 'cookbook evaluate failed',
-        }
-      : {}),
-  };
-
-  if (!wantStudio) {
-    return base;
-  }
-
-  // dryRun success is NOT evidence — refuse Studio on dry runs.
-  if (dryRun) {
-    const openInStudio: ExecuteCookbookOpenInStudioResult = {
-      ok: false,
-      stage: 'open_in_studio',
-      error:
-        'openInStudio requires a full (non-dryRun) green evaluate; dryRun:true is NOT evidence the cookbook builds under OCCT',
-    };
-    return {
-      ...base,
-      ok: false,
-      stage: 'open_in_studio',
-      error: openInStudio.error,
-      openInStudio,
-    };
-  }
-
-  if (!evaluate.ok) {
-    const openInStudio: ExecuteCookbookOpenInStudioResult = {
-      ok: false,
-      stage: 'open_in_studio',
-      error: 'skipped open_in_studio because evaluate was not green',
-    };
-    return { ...base, openInStudio };
-  }
-
-  if (openInStudioHook) {
-    try {
-      const openInStudio = await openInStudioHook({
-        code,
-        title: snippet.title,
-        cookbookId: snippet.id,
-      });
-      if (!openInStudio.ok) {
-        return {
-          ...base,
-          ok: false,
-          stage: 'open_in_studio',
-          error: openInStudio.error ?? 'open_in_studio failed',
-          openInStudio: { ...openInStudio, stage: 'open_in_studio' },
-        };
-      }
-      return { ...base, openInStudio };
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      return {
-        ...base,
-        ok: false,
-        stage: 'open_in_studio',
-        error: message,
-        openInStudio: { ok: false, stage: 'open_in_studio', error: message },
-      };
-    }
-  }
-
-  // Local stdio / vendor child: no Studio persistence here. Keep overall ok
-  // from evaluate so a vendor-only pin still closes the ChatGPT "never
-  // evaluate" stall; hosted MCP intercepts openInStudio:true and replaces
-  // this deferred marker via openInStudioTool.
-  const openInStudio: ExecuteCookbookOpenInStudioResult = {
-    ok: false,
-    stage: 'open_in_studio',
-    deferred: true,
-    error:
-      'open_in_studio not wired in this process (hosted MCP gateway fulfills openInStudio:true after evaluate)',
-  };
-  return { ...base, openInStudio };
+  const base = buildEvaluateBase({ executionId, snippet, code, evaluate, dryRun });
+  if (!wantStudio) return base;
+  return attachOpenInStudio(base, snippet, code, dryRun, evaluate.ok);
 }
