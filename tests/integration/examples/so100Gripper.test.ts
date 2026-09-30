@@ -1,4 +1,4 @@
-// The kernelcad.com hero is examples/robot-arm/so100/so100.kcad.ts.
+// examples/robot-arm/so100/so100.kcad.ts is the 2-servo gripper.
 // The gripper servo used to be rotated about X, so its output shaft
 // pointed at -Y while the jaw was placed on +X. Default `kernelcad validate`
 // only checks the mate graph, so that pose stayed green. This test checks

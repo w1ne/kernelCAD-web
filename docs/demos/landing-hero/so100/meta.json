@@ -1,12 +1,12 @@
 {
   "taskId": "so100",
   "heroArtifact": "so100",
-  "script": "examples/robot-arm/so100/so100.kcad.ts",
-  "capturedAt": "2026-09-30T03:57:36.492Z",
+  "script": "examples/robot-arm/so100/so100-arm.kcad.ts",
+  "capturedAt": "2026-09-30T09:20:58.104Z",
   "durationMs": 16000,
   "capture": [
-    "node dist/cli/index.js animate examples/robot-arm/so100/so100.kcad.ts docs/demos/landing-hero/so100/demo.mp4 --turntable --width 1920 --height 1080 --duration-ms 16000 --fps 30 --background '#0a1628' --environment none",
-    "node dist/cli/index.js animate examples/robot-arm/so100/so100.kcad.ts --frames <tmp> --turntable --width 1920 --height 1080 --duration-ms 1000 --fps 1 --background '#0a1628' --environment none  # <tmp>/frame-0000.png -> hero-frame.png"
+    "node dist/cli/index.js animate examples/robot-arm/so100/so100-arm.kcad.ts docs/demos/landing-hero/so100/demo.mp4 --turntable --width 1920 --height 1080 --duration-ms 16000 --fps 30 --elevation 16 --background '#0a1628' --environment none",
+    "node dist/cli/index.js animate examples/robot-arm/so100/so100-arm.kcad.ts --frames <tmp> --turntable --width 1920 --height 1080 --duration-ms 1000 --fps 1 --elevation 16 --background '#0a1628' --environment none  # <tmp>/frame-0000.png -> hero-frame.png"
   ],
   "catalogSource": "memorable-builds-policy/v0.5",
   "overrideApprovedBy": "owner: pinned the SO-100 gripper as the kernelcad.com landing hero"
