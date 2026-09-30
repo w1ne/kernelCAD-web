@@ -55,37 +55,59 @@ const cd = (moduleMm * (z1 + z2)) / 2;
 const shaftR = 3.7;
 const boreD = 8.2;
 
-let plate = box(90, 64, 8).translate(-30, -32, 0);
+let plate = extrudeRoundedRect(96, 72, 6, 8).translate(18, 0, 0);
 for (const x of [0, cd]) {
-  plate = plate.subtract(cylinder(7.6, 7.25).translate(x, 0, 0.6));
-  plate = plate.subtract(cylinder(12, 5.1).translate(x, 0, -2));
+  // Seat opens downward so the race can stand proud of the plate, above the gears.
+  plate = plate.subtract(cylinder(8, 7.35).translate(x, 0, -1.6));
+  plate = plate.subtract(cylinder(14, 4.7).translate(x, 0, -2));
 }
 const offs = [[-15.5, -15.5], [15.5, -15.5], [-15.5, 15.5], [15.5, 15.5]] as const;
 for (const [u, v] of offs) {
-  plate = plate.subtract(cylinder(12, 1.7).translate(u, v, -2));
+  plate = plate
+    .subtract(cylinder(12, 1.7).translate(u, v, -2))
+    .subtract(cylinder(2.4, 3.1).translate(u, v, 5.6));
 }
 plate = plate
   .datum('A', { atZ: 0 })
   .datum('B', { atX: -30 })
-  .datum('C', { atY: -32 });
+  .datum('C', { atY: -32 })
+  .finish('aluminium-brushed');
 
-function bearingAt(x) {
+function bearingAt(x: number) {
   // OD 14 mm so the two races clear a 16 mm center distance (r=11 would intersect).
-  return cylinder(7, 7).subtract(cylinder(9, 4.15).translate(0, 0, -1)).translate(x, 0, 0.8);
+  const outer = path()
+    .moveTo(5.55, 0).lineTo(7, 0).lineTo(7, 7).lineTo(5.55, 7)
+    .lineTo(5.55, 4.7).lineTo(6.15, 3.5).lineTo(5.55, 2.3).lineTo(5.55, 0)
+    .close().revolve();
+  const inner = path()
+    .moveTo(4.2, 0).lineTo(5.15, 0).lineTo(5.15, 2.3).lineTo(4.6, 3.5)
+    .lineTo(5.15, 4.7).lineTo(5.15, 7).lineTo(4.2, 7).lineTo(4.2, 0)
+    .close().revolve();
+  let balls = sphere(0.85).translate(5.35, 0, 3.5);
+  for (let i = 1; i < 6; i += 1) {
+    const a = (2 * Math.PI * i) / 6;
+    balls = balls.union(sphere(0.85).translate(5.35 * Math.cos(a), 5.35 * Math.sin(a), 3.5));
+  }
+  return outer.union(inner, balls).translate(x, 0, -1.15).finish('steel');
 }
-function shaftAt(x) {
-  return cylinder(18, shaftR).translate(x, 0, -11);
+function shaftAt(x: number) {
+  return path()
+    .moveTo(0, -14).lineTo(shaftR, -14).lineTo(shaftR, -4.75)
+    .lineTo(4.5, -4.75).lineTo(4.5, -1.45)
+    .lineTo(3.5, -1.45).lineTo(3.5, 8).lineTo(0, 8)
+    .close().revolve().translate(x, 0, 0).finish('stainless');
 }
-function gearAt(x, phase) {
+function gearAt(x: number, phase: number) {
   return spurGear({ module: moduleMm, teeth: z1, faceWidth: face, bore: boreD, backlash })
     .rotateZ(phase)
-    .translate(x, 0, -10);
+    .translate(x, 0, -10)
+    .finish('abs', { color: '#f3efe4' });
 }
 
-const motorBody = box(42, 42, 34, true)
-  .translate(0, 0, 25)
-  .union(cylinder(2, 11).translate(0, 0, 42))
-  .color('actuator');
+const motorBody = extrudeRoundedRect(42.3, 42.3, 3, 33).translate(0, 0, 8.2)
+  .union(cylinder(2.4, 16.5).translate(0, 0, 39.4))
+  .union(cylinder(2.2, 11).translate(0, 0, 41.6))
+  .finish('anodized-black');
 
 const arm = assembly('nema-spur-stack');
 const pl = arm.part('plate', plate, { material: 'aluminum-6061' });

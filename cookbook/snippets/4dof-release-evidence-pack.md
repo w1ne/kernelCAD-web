@@ -78,24 +78,47 @@ const wristLen = 48;
 
 const arm = assembly('multi-dof-4axis-release');
 
+function roundPlate(w: number, d: number, r: number, t: number, x: number, y: number, z: number) {
+  return extrudeRoundedRect(w, d, r, t).translate(x, y, z);
+}
+function servoBody(w: number, d: number, h: number) {
+  const earT = Math.min(5, d * 0.4);
+  return extrudeRoundedRect(w, d, Math.min(3, d * 0.2), h).translate(0, 0, -h / 2)
+    .union(extrudeRoundedRect(w + 10, earT, 1.4, 2.6).translate(0, 0, h / 2 - 2.6))
+    .union(cylinder(3.2, Math.min(5, d * 0.3)).translate(0, -d / 2 + 1, 0));
+}
+function linkTube(len: number, r: number, x0: number) {
+  return cylinder(len, r).rotate([0, 1, 0], 90).translate(x0, 0, 0);
+}
+function clevis(x: number) {
+  return roundPlate(24, 7, 2, 28, x, 15, -14)
+    .union(roundPlate(24, 7, 2, 28, x, -15, -14))
+    .union(roundPlate(14, 32, 2, 7, x, 0, -3.5));
+}
+
 const base = arm.part(
   'base-frame',
-  box(130, 100, 8, true).translate(0, 0, 4).color('plate')
-    .union(box(40, 40, 36, true).translate(0, 0, 26).color('frame'))
-    .union(cylinder(6, 22).translate(0, 0, 44).color('shaft'))
-    .union(box(34, 28, 22, true).translate(-48, 0, 19).color('actuator')),
+  roundPlate(136, 108, 14, 8, 0, 0, 0)
+    .union(cylinder(36, 18).translate(0, 0, 6))
+    .union(cylinder(4, 26).translate(0, 0, 41))
+    .union(cylinder(5.5, 16).translate(0, 0, 44.2))
+    .union(cylinder(1.6, 9).translate(0, 0, 49))
+    .union(servoBody(36, 28, 24).translate(-50, 0, 20))
+    .finish('steel'),
   { material: 'mild-steel' },
 );
 base.connector('yaw', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 50] }, axis: [0, 0, 1] });
 
 const turret = arm.part(
   'yaw-turret',
-  box(30, 26, 40, true).translate(0, 0, 20).color('frame')
-    .union(box(18, 52, 10, true).translate(0, 0, 36))
-    .union(box(20, 8, 32, true).translate(0, 22, shoulderZ - 50))
-    .union(box(20, 8, 32, true).translate(0, -22, shoulderZ - 50))
-    .union(box(12, 8, 48, true).translate(0, 22, 24))
-    .union(box(12, 8, 48, true).translate(0, -22, 24)),
+  cylinder(36, 15).translate(0, 0, -1)
+    .union(roundPlate(18, 56, 3, 8, 0, 0, 24))
+    .union(roundPlate(22, 7, 2, 34, 0, 22, 11))
+    .union(roundPlate(22, 7, 2, 34, 0, -22, 11))
+    .union(roundPlate(12, 8, 2, 42, 0, 22, 4))
+    .union(roundPlate(12, 8, 2, 42, 0, -22, 4))
+    .union(roundPlate(30, 20, 3, 8, -28, 40, 22))
+    .finish('anodized', { color: '#8aa0ad' }),
   { material: 'aluminum-6061' },
 );
 turret.connector('yaw', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
@@ -104,19 +127,20 @@ turret.connector('shoulder-servo-mount', { type: 'frame', origin: { kind: 'vec3'
 
 const shoulderServo = arm.part(
   'shoulder-servo',
-  box(28, 18, 30, true).translate(-32, 40, shoulderZ - 50).color('actuator'),
+  servoBody(28, 18, 30).translate(-32, 40, shoulderZ - 50).finish('abs', { color: '#243140' }),
   { material: 'nylon' },
 );
 shoulderServo.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [-32, 40, shoulderZ - 50] } });
 
 const upper = arm.part(
   'upper-link',
-  box(upperLen - 20, 14, 12, true).translate(upperLen / 2, 0, 0).color('beam')
-    .union(cylinder(90, 4).rotate([1, 0, 0], 90).translate(0, 45, 0))
-    .union(box(28, 10, 18, true).translate(6, 0, 0))
-    .union(box(24, 8, 26, true).translate(upperLen - 6, 14, 0))
-    .union(box(24, 8, 26, true).translate(upperLen - 6, -14, 0))
-    .union(box(16, 28, 10, true).translate(upperLen - 10, 0, 0)),
+  linkTube(upperLen - 18, 6.2, 8)
+    .union(cylinder(96, 4.4).rotate([1, 0, 0], 90).translate(0, 48, 0))
+    .union(cylinder(8, 8).rotate([1, 0, 0], 90).translate(0, 16, 0))
+    .union(cylinder(8, 8).rotate([1, 0, 0], 90).translate(0, -8, 0))
+    .union(clevis(upperLen - 6))
+    .union(roundPlate(26, 16, 2, 8, upperLen - 22, 32, -4))
+    .finish('anodized', { color: '#d5dde3' }),
   { material: 'aluminum-6061' },
 );
 upper.connector('shoulder', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 1, 0] });
@@ -125,18 +149,18 @@ upper.connector('elbow-servo-mount', { type: 'frame', origin: { kind: 'vec3', va
 
 const elbowServo = arm.part(
   'elbow-servo',
-  box(26, 16, 26, true).translate(upperLen - 20, 34, 0).color('actuator'),
+  servoBody(26, 16, 26).translate(upperLen - 20, 34, 0).finish('abs', { color: '#243140' }),
   { material: 'nylon' },
 );
 elbowServo.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [upperLen - 20, 34, 0] } });
 
 const forearm = arm.part(
   'forearm-link',
-  box(foreLen - 16, 14, 10, true).translate(foreLen / 2, 0, 0).color('beam')
-    .union(box(22, 12, 18, true).translate(4, 0, 0))
-    .union(box(20, 8, 22, true).translate(foreLen - 4, 12, 0))
-    .union(box(20, 8, 22, true).translate(foreLen - 4, -12, 0))
-    .union(box(14, 24, 8, true).translate(foreLen - 8, 0, 0)),
+  linkTube(foreLen - 16, 5.4, 6)
+    .union(cylinder(36, 5).rotate([1, 0, 0], 90).translate(0, 18, 0))
+    .union(clevis(foreLen - 4))
+    .union(roundPlate(22, 14, 2, 7, foreLen - 18, 28, -3.5))
+    .finish('anodized', { color: '#c5d0d8' }),
   { material: 'aluminum-6061' },
 );
 forearm.connector('elbow', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 1, 0] });
@@ -145,16 +169,18 @@ forearm.connector('wrist-servo-mount', { type: 'frame', origin: { kind: 'vec3', 
 
 const wristServo = arm.part(
   'wrist-servo',
-  box(22, 14, 22, true).translate(foreLen - 16, 30, 0).color('actuator'),
+  servoBody(22, 14, 22).translate(foreLen - 16, 30, 0).finish('abs', { color: '#243140' }),
   { material: 'nylon' },
 );
 wristServo.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [foreLen - 16, 30, 0] } });
 
 const wrist = arm.part(
   'wrist-link',
-  box(wristLen, 12, 10, true).translate(wristLen / 2, 0, 0).color('tool')
-    .union(box(16, 10, 16, true).translate(4, 0, 0))
-    .union(cylinder(8, 10).rotate([0, 1, 0], 90).translate(wristLen, 0, -4)),
+  linkTube(wristLen - 6, 5, 4)
+    .union(cylinder(28, 5).rotate([1, 0, 0], 90).translate(0, 14, 0))
+    .union(cylinder(16, 8).rotate([0, 1, 0], 90).translate(wristLen - 4, 0, -3))
+    .union(cylinder(3, 10.5).rotate([0, 1, 0], 90).translate(wristLen + 4, 0, -3))
+    .finish('anodized', { color: '#b7c3cc' }),
   { material: 'aluminum-6061' },
 );
 wrist.connector('proximal', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 1, 0] });
