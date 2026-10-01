@@ -78,16 +78,11 @@ const baseLip = extrudeRoundedRect(78, 72, 12, 3.4).translate(-59, 0, 9.7)
   .subtract(extrudeRoundedRect(68, 62, 9, 4.2).translate(-59, 0, 9.3));
 const baseLand = extrudeRoundedRect(68, 62, 9, 1.8).translate(-59, 0, 8.15)
   .subtract(extrudeRoundedRect(58, 52, 6, 2.6).translate(-59, 0, 7.8));
-// Standoffs break the planform toward the camera. Pads under the floor
-// stay hidden at the hero elevation.
-function footPad(x: number, y: number) {
-  return cylinder(5.2, 7.2).translate(x, y, -22.4)
-    .union(cylinder(8, 3.6).translate(x, y, -17.6));
-}
-let feet = footPad(-88, -42);
-for (const [x, y] of [[-30, -42], [-88, 42], [-30, 42]] as const) {
-  feet = feet.union(footPad(x, y));
-}
+// Floor rib so the cavity is not an empty tub. Metal hardware is
+// separate parts below — a finish on this union would paint screws the
+// same ABS as the shell.
+const ribs = extrudeRoundedRect(32, 2.6, 1, 5).translate(-62, 8, -14)
+  .union(extrudeRoundedRect(2.6, 20, 1, 5).translate(-70, 0, -14));
 function screwBoss(x: number, y: number) {
   return cylinder(9, 4).translate(x, y, -14)
     .subtract(cylinder(6, 1.45).translate(x, y, -8));
@@ -96,10 +91,8 @@ let bosses = screwBoss(-78, -18);
 for (const [x, y] of [[-42, -18], [-78, 18], [-42, 18]] as const) {
   bosses = bosses.union(screwBoss(x, y));
 }
-const latch = extrudeRoundedRect(14, 16, 3, 14).translate(-100, 0, -8)
-  .subtract(cylinder(16, 1.7).alongAxis([1, 0, 0]).translate(-110, 0, -1));
 
-const baseBody = union(cheeks, bridge, baseShell, baseLip, baseLand, feet, bosses, latch)
+const baseBody = union(cheeks, bridge, baseShell, baseLip, baseLand, ribs, bosses)
   .datum('A', { atZ: -18 })
   .datum('B', { atX: -98 })
   .datum('C', { atY: -36 })
@@ -109,53 +102,122 @@ const baseBody = union(cheeks, bridge, baseShell, baseLip, baseLand, feet, bosse
   })
   .finish('abs', { color: '#5a6e7c' });
 
-const tongue = yCyl(R - 0.4, -4.8, 4.8);
-// Pin runs out through both caps so the ends read as socket heads past the fork.
-const pin = yCyl(pinR, -17.6, 17.6);
-function hingeCap(yOuter: number, inward: number) {
-  const len = 3.5;
-  const y0 = inward > 0 ? yOuter - len : yOuter;
-  const y1 = y0 + len;
-  const head = yCyl(4.5, y0, y1);
-  const sock0 = inward > 0 ? yOuter - 2.2 : yOuter - 0.2;
-  return head.subtract(yCyl(1.7, sock0, sock0 + 2.4));
-}
-const washer = yCyl(5.7, 13.55, 14.15).union(yCyl(5.7, -14.15, -13.55));
-const caps = hingeCap(17.6, 1).union(hingeCap(-17.6, -1));
-const neck = cylinder(20, 4.6).alongAxis([1, 0, 0]).translate(2, 0, 0);
+// Tongue is bored. The steel pin is its own part and must not share volume.
+const tongue = yCyl(R - 0.4, -4.8, 4.8).subtract(yCyl(2.95, -6.2, 6.2));
+const neck = cylinder(18, 4.6).alongAxis([1, 0, 0]).translate(3.2, 0, 0);
 let lidShell = extrudeRoundedRect(64, 68, 11, 20).translate(50, 0, -8);
 lidShell = lidShell.subtract(extrudeRoundedRect(50, 54, 7, 16).translate(52, 0, -6));
 lidShell = lidShell.subtract(extrudeRoundedRect(36, 28, 4, 2.2).translate(50, 0, 9.0));
+const screwXY = [[26, 24], [74, 24], [26, -24], [74, -24]] as const;
+for (const [x, y] of screwXY) {
+  lidShell = lidShell.subtract(cylinder(3.2, 3.9).translate(x, y, 10.2));
+  lidShell = lidShell.subtract(cylinder(10, 1.95).translate(x, y, 4));
+}
 const lidLip = extrudeRoundedRect(64, 68, 11, 2.8).translate(50, 0, 11.5)
   .subtract(extrudeRoundedRect(54, 58, 8, 3.6).translate(50, 0, 11.1));
+const lidBody = union(tongue, neck, lidShell, lidLip).finish('abs', { color: '#f3f6f8' });
+
+// Steel pin with socket heads past the fork. Washers are separate rings.
+let pinShape = yCyl(2.3, -18.4, 18.4)
+  .union(yCyl(4.5, 14.55, 18.4))
+  .union(yCyl(4.5, -18.4, -14.55))
+  .subtract(yCyl(1.65, 16.3, 18.8))
+  .subtract(yCyl(1.65, -18.8, -16.3))
+  .finish('stainless');
+function washerRing(y0: number) {
+  return yCyl(5.8, y0, y0 + 0.7).subtract(yCyl(2.55, y0 - 0.3, y0 + 1.0)).finish('steel');
+}
 function lidScrew(x: number, y: number) {
-  return cylinder(2.8, 3.3).translate(x, y, 11.7)
-    .union(cylinder(5, 1.55).translate(x, y, 8))
-    .subtract(cylinder(1.7, 1.4).translate(x, y, 13.2));
+  return cylinder(2.7, 3.45).translate(x, y, 10.55)
+    .union(cylinder(5.2, 1.5).translate(x, y, 6.2))
+    .subtract(cylinder(1.6, 1.4).translate(x, y, 12.2))
+    .finish('steel');
 }
-let lidScrews = lidScrew(30, 20);
-for (const [x, y] of [[70, 20], [30, -20], [70, -20]] as const) {
-  lidScrews = lidScrews.union(lidScrew(x, y));
+// Pads sit under the floor and break the front edge so the hero elevation
+// still sees the standoffs.
+function footPad(x: number, y: number) {
+  return cylinder(7.6, 6.2).translate(x, y, -25.7);
 }
-const strike = extrudeRoundedRect(12, 14, 3, 10).translate(84, 0, -2)
-  .subtract(cylinder(10, 1.5).alongAxis([1, 0, 0]).translate(80, 0, 2));
-const lidBody = union(tongue, pin, washer, caps, neck, lidShell, lidLip, lidScrews, strike)
-  .finish('abs', { color: '#f3f6f8' });
+let feetShape = footPad(-90, -32).finish('rubber');
+for (const [x, y] of [[-32, -32], [-90, 32], [-32, 32]] as const) {
+  feetShape = feetShape.union(footPad(x, y));
+}
+feetShape = feetShape.finish('rubber');
+// Seal land on the mating rim. Not a compressed close — the shells still
+// stop before they meet.
+const gasketShape = extrudeRoundedRect(64, 58, 8, 1.45).translate(-59, 0, 10.1)
+  .subtract(extrudeRoundedRect(54, 48, 5, 2.2).translate(-59, 0, 9.7))
+  .finish('abs', { color: '#c6a15a' });
+// Static latch hardware. Not a latch mate and not animated: the hook rides
+// the lid, the strike stays on the base, and the open swing never catches.
+const latchShape = cylinder(11, 4.2).alongAxis([1, 0, 0]).translate(82.2, 0, 1)
+  .union(cylinder(7, 2.6).translate(91.5, 0, -6))
+  .union(cylinder(5, 2.6).alongAxis([1, 0, 0]).translate(88.5, 0, -6))
+  .finish('steel');
+const strikeShape = cylinder(20, 3.4).translate(-101.8, -26, -4)
+  .union(cylinder(6, 2.2).alongAxis([1, 0, 0]).translate(-107.2, -26, 12))
+  .finish('steel');
 
 const arm = assembly('clamshell-enclosure-release');
 const base = arm.part('base-shell', baseBody, { material: 'abs' });
 const lid = arm.part('lid-shell', lidBody, { material: 'abs' });
+const pin = arm.part('hinge-pin', pinShape, { material: 'mild-steel' });
+const washerA = arm.part('washer-1', washerRing(13.45), { material: 'mild-steel' });
+const washerB = arm.part('washer-2', washerRing(-14.15), { material: 'mild-steel' });
+const screws = screwXY.map(([x, y], i) => arm.part(`lid-screw-${i + 1}`, lidScrew(x, y), { material: 'mild-steel' }));
+const feet = arm.part('feet', feetShape, { material: 'abs' });
+const gasket = arm.part('gasket', gasketShape, { material: 'abs' });
+const latch = arm.part('latch-hook', latchShape, { material: 'mild-steel' });
+const strike = arm.part('strike', strikeShape, { material: 'mild-steel' });
 
+// The revolute child is the steel pin, not the plastic lid. The exposure
+// gate measures stick-out on the two revolute bodies; a pin fused into the
+// lid was the only way the old script passed, and that painted the pin white.
 base.connector('hinge', {
   type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 1, 0],
 });
-lid.connector('hinge', {
+pin.connector('hinge', {
   type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 1, 0],
 });
-arm.mate('hinge', 'base-shell.hinge', 'lid-shell.hinge', 'revolute', {
+arm.mate('hinge', 'base-shell.hinge', 'hinge-pin.hinge', 'revolute', {
   pose: lidDeg,
   limitsDeg: [-65, 65],
 });
+
+function frameAt(part, name, at, clearance) {
+  part.connector(name, {
+    type: 'frame',
+    origin: { kind: 'vec3', value: at },
+    ...(clearance ? { jointClearanceRadius: clearance } : {}),
+  });
+}
+frameAt(pin, 'lid', [0, 0, 0], 0);
+frameAt(lid, 'pin', [0, 0, 0], 3.1);
+arm.mate('lid-spine', 'hinge-pin.lid', 'lid-shell.pin', 'fastened');
+frameAt(pin, 'washer-a', [0, 13.8, 0], 2.6);
+frameAt(washerA, 'bore', [0, 13.8, 0], 2.6);
+arm.mate('washer-1', 'hinge-pin.washer-a', 'washer-1.bore', 'fastened');
+frameAt(pin, 'washer-b', [0, -13.8, 0], 2.6);
+frameAt(washerB, 'bore', [0, -13.8, 0], 2.6);
+arm.mate('washer-2', 'hinge-pin.washer-b', 'washer-2.bore', 'fastened');
+screwXY.forEach(([x, y], i) => {
+  const at = [x, y, 11.2] as [number, number, number];
+  frameAt(lid, `screw-${i + 1}`, at, 2.1);
+  frameAt(screws[i], 'head', at, 0);
+  arm.mate(`lid-screw-${i + 1}`, `lid-shell.screw-${i + 1}`, `lid-screw-${i + 1}.head`, 'fastened');
+});
+frameAt(base, 'feet', [-90, -32, -19], 2);
+frameAt(feet, 'pad', [-90, -32, -19], 2);
+arm.mate('feet', 'base-shell.feet', 'feet.pad', 'fastened');
+frameAt(base, 'gasket', [-59, -26.5, 10.2], 1.2);
+frameAt(gasket, 'land', [-59, -26.5, 10.2], 1.2);
+arm.mate('gasket', 'base-shell.gasket', 'gasket.land', 'fastened');
+frameAt(lid, 'latch', [86, 0, 1], 2);
+frameAt(latch, 'root', [86, 0, 1], 2);
+arm.mate('latch', 'lid-shell.latch', 'latch-hook.root', 'fastened');
+frameAt(base, 'strike', [-101.8, -26, 6], 2);
+frameAt(strike, 'root', [-101.8, -26, 6], 2);
+arm.mate('strike', 'base-shell.strike', 'strike.root', 'fastened');
 
 return arm.solvedModel({});
 ```

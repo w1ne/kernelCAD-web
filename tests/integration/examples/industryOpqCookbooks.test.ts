@@ -47,7 +47,21 @@ describe('industry O/P/Q chain cookbooks evaluate green', () => {
     const r = await evaluateScriptTool({ code });
     expect(r.mechanism, JSON.stringify(r.diagnostics?.slice(0, 8))).toBe('real');
     expect(r.ok, JSON.stringify(r.diagnostics?.slice(0, 8))).toBe(true);
-    expect(r.parts?.names.sort()).toEqual(['base-shell', 'lid-shell']);
+    expect(r.parts?.names.sort()).toEqual([
+      'base-shell',
+      'feet',
+      'gasket',
+      'hinge-pin',
+      'latch-hook',
+      'lid-screw-1',
+      'lid-screw-2',
+      'lid-screw-3',
+      'lid-screw-4',
+      'lid-shell',
+      'strike',
+      'washer-1',
+      'washer-2',
+    ]);
   }, 180_000);
 
   it('nema shaft spur drive stack evaluates with the stack parts', async () => {
