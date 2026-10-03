@@ -108,6 +108,9 @@ export interface StressInfillResult {
   cellMm: number;
   yieldMPa: number;
   saving: InfillSaving;
+  /** Band the slicer applies to each FEA element (at its centroid),
+   *  parallel to `mesh.elements`. */
+  elementPrintedBand: Int8Array;
 }
 
 /** Validate a band table; returns a message when it is unusable. */
@@ -479,6 +482,7 @@ export function buildStressInfill(
   const stressVol = new Array(bands.length).fill(0);
   const printedVol = new Array(bands.length).fill(0);
   let total = 0;
+  const elementPrintedBand = new Int8Array(mesh.elements.length);
   mesh.elements.forEach((el, e) => {
     const p = el.nodes.slice(0, 4).map((id) => mesh.nodes.get(id) ?? [0, 0, 0]);
     const v = tetVolume(p[0], p[1], p[2], p[3]);
@@ -494,6 +498,7 @@ export function buildStressInfill(
       if (occ[k]![c] === 1) { applied = k; break; }
     }
     printedVol[applied] += v;
+    elementPrintedBand[e] = applied;
   });
 
   const out: InfillBandResult[] = bands.map((b, k) => {
@@ -518,5 +523,5 @@ export function buildStressInfill(
     options.filamentDensityGCm3,
   );
 
-  return { bands: out, pattern: options.pattern ?? DEFAULT_INFILL_PATTERN, cellMm, yieldMPa, saving };
+  return { bands: out, pattern: options.pattern ?? DEFAULT_INFILL_PATTERN, cellMm, yieldMPa, saving, elementPrintedBand };
 }
