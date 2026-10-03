@@ -9,6 +9,8 @@ keywords:
   - corner bosses with taps
   - clamshell without hinge fasteners
   - production enclosure cover plate
+  - M3 tapped screw bosses and lid clearance holes with holes()
+  - Arduino Raspberry Pi ESP32 project box case with screws
 when_to_use: >-
   Prompt asks for an electronics enclosure with a removable screw-on lid/cover
   (not a hinged clamshell). Build a walled base with corner bosses + lid with
@@ -31,31 +33,41 @@ base = base.subtract(
     .translate(wall, wall, wall),
 );
 
-// Corner bosses inside the cavity (M3 taps through floor).
+// Corner bosses inside the cavity, tapped M3 through the floor; matching M3
+// clearance holes (ISO 273 normal, 3.4 mm) in the lid.
 const bossR = 5;
-const tapR = 1.25;
 const inset = wall.add(8);
-for (const [x, y] of [
+const corners = [
   [inset, inset],
   [L.subtract(inset), inset],
   [inset, W.subtract(inset)],
   [L.subtract(inset), W.subtract(inset)],
-] as const) {
+] as const;
+for (const [x, y] of corners) {
   base = base.union(cylinder(H.subtract(wall), bossR).translate(x, y, wall));
-  base = base.subtract(cylinder(H.add(2), tapR).translate(x, y, -1));
 }
+// Entry face: the outside of the floor. After the cavity cut 'bottom' is
+// ambiguous (the inner floor also came from it), so pick it by normal + z.
+// hole u/v are offsets from the centre of that face (u = +X, v = +Y).
+// thread: diameter is the nominal M3; the kernel drills the ISO minor diameter
+// (2.46 mm tap drill) up through floor and boss. Not a subtracted cylinder.
+const fromCentre = corners.map(([x, y]) => ({ u: x.subtract(L.divide(2)), v: y.subtract(W.divide(2)) }));
+base = base.holes({ byNormal: '-Z', atZ: 0 }, {
+  positions: fromCentre,
+  diameter: 3,
+  depth: H, // full height: 'through' would stop where the floor opens into the cavity
+  thread: { pitch: 0.5 },
+  name: 'bossTap',
+});
 base = base.fillet(1, { parallel: [0, 0, 1] });
 arm.part('base', base, { material: 'abs' });
 
-let lid = box(L, W, lidT);
-for (const [x, y] of [
-  [inset, inset],
-  [L.subtract(inset), inset],
-  [inset, W.subtract(inset)],
-  [L.subtract(inset), W.subtract(inset)],
-] as const) {
-  lid = lid.subtract(cylinder(lidT.add(2), 1.7).translate(x, y, -1));
-}
+const lid = box(L, W, lidT).holes('top', {
+  positions: fromCentre,
+  diameter: 3.4,
+  depth: 'through',
+  name: 'lidClear',
+});
 arm.part('lid', lid.translate(0, 0, H), { material: 'abs' });
 
 return arm.model();

@@ -9,6 +9,9 @@ keywords:
   - 100x60x2 mm 90 degree fold
   - sheetMetal bend not solid union plates
   - service panel flange bend approx
+  - bent sheet metal bracket with flat pattern DXF for laser cutting
+  - folded 5052 aluminium or steel sheet, inner bend radius, bend allowance
+  - do not fake bends by unioning plates
 when_to_use: >-
   Prompt asks for a folded sheet-metal L-bracket, U-channel, flange, or service
   panel from a flat blank. Use `sheetMetal(profile, { thickness, kFactor })` then

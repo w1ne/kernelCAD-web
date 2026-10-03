@@ -20,7 +20,7 @@ exports[`cookbook snapshot — top-3 IDs per query > ranks: "pocket cut into the
 [
   "blind-pocket-from-top",
   "fillet-face-after-subtract",
-  "fillet-translated-shape",
+  "hex-nut-trap-bolt-clearance",
 ]
 `;
 
@@ -35,7 +35,7 @@ exports[`cookbook snapshot — top-3 IDs per query > ranks: "symmetric part usin
 exports[`cookbook snapshot — top-3 IDs per query > ranks: "through-hole for a bolt with clearance" 1`] = `
 [
   "clearance-hole-through-plate",
+  "hex-nut-trap-bolt-clearance",
   "parametric-bolt-pattern-skeleton",
-  "nema-motor-mounting-plate",
 ]
 `;

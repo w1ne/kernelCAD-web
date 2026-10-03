@@ -7,6 +7,9 @@ keywords:
   - spur gear pair at 20 degree pressure angle
   - module and tooth counts set the pitch-circle center distance
   - meshing pinion and gear with backlash, not trapezoid teeth
+  - two meshing spur gears, gear pair, gear train, reduction ratio z2/z1
+  - do not hand-build involute tooth points; spurGear and ringGear generate them
+  - 3D printed gears module 1 1.5 2 with FDM backlash
 when_to_use: >-
   You need a meshing involute spur gear pair (module, tooth counts, 20°
   pressure angle, face width, bore, backlash). Use the `spurGear(...)`
