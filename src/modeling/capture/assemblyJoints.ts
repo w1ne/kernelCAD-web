@@ -305,6 +305,7 @@ function assertMateConnectorPair(
       got: type,
       requires:
         `a mate type compatible with the two connectors — '${aRef}' is a '${a.connector.type}' connector and '${bRef}' is a '${b.connector.type}' one; 'revolute' and 'cylindrical' need two 'axis' connectors, 'fastened' two 'frame', 'planar' two 'planar', 'ball' two 'ball' (full table in mateTypes.ts)`,
+      hintSlug: 'invalid-args.assembly.mate-type-mismatch',
       example: "arm.mate('elbow', 'upper.pivot', 'lower.pivot', 'revolute')  // both connectors declared with type: 'axis'",
     });
   }
@@ -318,6 +319,7 @@ function validateMatePoseAllowed(name: string, type: MateType, opts: MateOptions
       got: opts?.pose,
       requires:
         `no pose at all — a '${type}' mate fixes every articulation DOF, so there is nothing to pose; drop opts.pose, or use 'revolute' / 'prismatic' / 'cylindrical' / 'pin_slot' if the joint should move`,
+      hintSlug: 'invalid-args.assembly.mate-pose-on-zero-dof-mate',
       example: "arm.mate('elbow', 'upper.pivot', 'lower.pivot', 'revolute', { pose: 45 })",
     });
   }
@@ -366,6 +368,7 @@ export function coupleMateRecords(
       got: !source ? opts.source : driven,
       requires:
         `the name of a mate already declared on this assembly — declared mates: ${known}; call arm.mate(...) for both names before arm.coupleMates(...)`,
+      hintSlug: 'invalid-args.assembly.coupled-mate-not-found',
       example: "arm.coupleMates('output', { source: 'input', ratio: 3 })",
     });
   }
@@ -376,6 +379,7 @@ export function coupleMateRecords(
       gotText: `source '${source.name}' of type '${source.type}' and driven '${drivenMate.name}' of type '${drivenMate.type}'`,
       requires:
         "both mates to be single-scalar articulated mates — 'revolute', 'prismatic', 'cylindrical' or 'pin_slot'; a coupling drives one scalar DOF from another, so zero-DOF and multi-DOF mates cannot take part",
+      hintSlug: 'invalid-args.assembly.coupled-mate-type',
       example: "arm.coupleMates('output', { source: 'input', ratio: 3 })",
     });
   }
@@ -387,6 +391,7 @@ export function coupleMateRecords(
       showType: typeof (Number.isFinite(opts.ratio) ? opts.offset : opts.ratio) !== 'number',
       requires:
         "a finite number — driven = ratio × source + offset, so ratio is unitless and offset is in the driven mate's own unit (mm or deg)",
+      hintSlug: 'invalid-args.assembly.coupled-mate-invalid-scale',
       example: "arm.coupleMates('output', { source: 'input', ratio: 3, offset: 0 })",
     });
   }

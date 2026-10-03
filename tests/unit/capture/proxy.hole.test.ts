@@ -73,7 +73,7 @@ describe('Shape.hole capture', () => {
     const caught = await runAndCatch(`return box(20, 20, 20).hole('top', { u: 0, v: 0, diameter: 4 });`);
     const diag = kernelErrorToDiagnostic(caught);
     expect(diag.code).toBe('feature.invalid-args');
-    expect(diag.hint).toContain('depth (number');
+    expect(diag.hint).toContain("exactly one of depth (a number in mm or 'through') or upToFace");
   });
 
   it('feature.invalid-args when both depth and upToFace are set', async () => {
@@ -82,7 +82,7 @@ describe('Shape.hole capture', () => {
     );
     const diag = kernelErrorToDiagnostic(caught);
     expect(diag.code).toBe('feature.invalid-args');
-    expect(diag.hint).toContain('not both');
+    expect(diag.hint).toContain('mutually exclusive ways to end the bore');
   });
 
   it('feature.invalid-args when both counterbore and countersink are set', async () => {
@@ -91,7 +91,7 @@ describe('Shape.hole capture', () => {
     );
     const diag = kernelErrorToDiagnostic(caught);
     expect(diag.code).toBe('feature.invalid-args');
-    expect(diag.hint).toContain('mutually exclusive');
+    expect(diag.hint).toContain('at most one of them');
   });
 
   it('feature.invalid-args when diameter is non-positive', async () => {
@@ -114,7 +114,7 @@ describe('Shape.hole capture', () => {
     );
     const diag = kernelErrorToDiagnostic(caught);
     expect(diag.code).toBe('feature.invalid-args');
-    expect(diag.hint).toContain('Counterbore is the wider shoulder');
+    expect(diag.hint).toContain('the counterbore is the flat screw-head pocket');
   });
 
   it('feature.invalid-args when countersink.diameter is not greater than diameter', async () => {
@@ -132,14 +132,14 @@ describe('Shape.hole capture', () => {
     );
     const diag = kernelErrorToDiagnostic(caught);
     expect(diag.code).toBe('feature.invalid-args');
-    expect(diag.hint).toContain('(0, 180)');
+    expect(diag.hint).toContain('the full included cone angle, > 0 and < 180');
   });
 
   it('feature.invalid-args when u or v is non-finite', async () => {
     const caught = await runAndCatch(`return box(20, 20, 20).hole('top', { u: NaN, v: 0, diameter: 4, depth: 5 });`);
     const diag = kernelErrorToDiagnostic(caught);
     expect(diag.code).toBe('feature.invalid-args');
-    expect(diag.hint).toContain('finite numbers');
+    expect(diag.hint).toContain('a finite number');
   });
 });
 
@@ -165,7 +165,7 @@ describe('Shape.holes capture', () => {
     );
     const diag = kernelErrorToDiagnostic(caught);
     expect(diag.code).toBe('feature.invalid-args');
-    expect(diag.hint).toContain('use .hole() instead');
+    expect(diag.hint).toContain('for a single hole call .hole() instead');
   });
 
   it('feature.invalid-args when a position has non-finite u or v', async () => {
@@ -174,6 +174,6 @@ describe('Shape.holes capture', () => {
     );
     const diag = kernelErrorToDiagnostic(caught);
     expect(diag.code).toBe('feature.invalid-args');
-    expect(diag.hint).toContain('finite numbers');
+    expect(diag.hint).toContain('a finite number');
   });
 });

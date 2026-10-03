@@ -78,6 +78,14 @@ export interface InvalidArgsSpec {
    */
   code?: DiagnosticCode;
   /**
+   * Keep a documented hint slug (`invalid-args.param.value-out-of-range`,
+   * `invalid-args.assembly.mate-type-mismatch`, …) at the front of the
+   * generated hint. Those slugs are a published contract — the authoring
+   * skills and the MCP/server tests match on them — so converting a site must
+   * not drop one.
+   */
+  hintSlug?: string;
+  /**
    * Replace the generated hint. Only for the handful of cases that can explain
    * *how to get what the author wanted* a different way (e.g. the thread
    * clearance cap, where the fix is to grow the nominal diameter instead).
@@ -122,7 +130,8 @@ export function invalidArgsText(spec: InvalidArgsSpec): { message: string; hint:
     message:
       `${spec.api}: ${target} — got ${receivedText(spec)}; requires ${requires}. ` +
       `Example: ${spec.example}`,
-    hint: spec.hint ?? `Set ${target} to ${requires}. Example: ${spec.example}`,
+    hint: spec.hint
+      ?? `${spec.hintSlug === undefined ? '' : `${spec.hintSlug} — `}Set ${target} to ${requires}. Example: ${spec.example}`,
   };
 }
 

@@ -80,6 +80,7 @@ export class ParamTable {
         showType: typeof name !== 'string',
         requires:
           `a string matching ${FEATURE_NAME_REGEX.source} — start with a letter, then letters, digits, underscores or hyphens, max 32 chars (no spaces, dots or units in the name)`,
+        hintSlug: 'invalid-args.param.invalid-name',
         example: PARAM_EXAMPLE,
       });
     }
@@ -90,6 +91,7 @@ export class ParamTable {
         got: name,
         requires:
           `a name not already declared — '${name}' exists in this script; declare each param once and reuse the returned ParamRef, or read it back with the existing ref`,
+        hintSlug: 'invalid-args.param.duplicate-name',
         example: PARAM_EXAMPLE,
       });
     }
@@ -127,6 +129,7 @@ export class ParamTable {
         got: name,
         requires:
           `the name of a param declared earlier in this script${this.entries.size === 0 ? ' (none are declared yet)' : ` — declared: ${[...this.entries.keys()].join(', ')}`}`,
+        hintSlug: 'invalid-args.param.unknown-name',
         example: PARAM_EXAMPLE,
       });
     }
@@ -220,6 +223,7 @@ function assertTypeMatches(name: string, type: ParamType, value: ParamValue): vo
       got: value,
       showType: true,
       requires: `a ${expected} — param '${name}' is declared as type '${type}'`,
+      hintSlug: 'invalid-args.param.type-mismatch',
       example: PARAM_EXAMPLE,
     });
   }
@@ -235,6 +239,7 @@ function assertValidChoice(name: string, value: string, meta: ParamMetadata | un
       showType: true,
       requires:
         `a non-empty array of the allowed strings — param '${name}' is a choice param, so the list of options is required`,
+      hintSlug: 'invalid-args.param.choice-invalid',
       example: "param('finish', 'matte', { choices: ['matte', 'gloss'] })",
     });
   }
@@ -244,6 +249,7 @@ function assertValidChoice(name: string, value: string, meta: ParamMetadata | un
       path: `param('${name}') value`,
       got: value,
       requires: `one of the declared choices [${choices.join(', ')}]`,
+      hintSlug: 'invalid-args.param.choice-invalid',
       example: `param('${name}', '${choices[0]}', { choices: [${choices.map((c) => `'${c}'`).join(', ')}] })`,
     });
   }
@@ -256,6 +262,7 @@ function assertWithinMaxLength(name: string, value: string, meta: ParamMetadata 
       path: `param('${name}') value`,
       got: value,
       requires: `a string of at most meta.maxLength = ${meta.maxLength} characters; this one is ${value.length}`,
+      hintSlug: 'invalid-args.param.value-out-of-range',
       example: `param('${name}', 'abc', { maxLength: ${Math.max(meta.maxLength, value.length)} })`,
     });
   }
@@ -273,6 +280,7 @@ function assertWithinBounds(name: string, value: number, meta: ParamMetadata | u
       requires:
         `meta.min ≤ meta.max — meta.max is ${meta.max}, so no value can satisfy this declaration; swap the two bounds`,
       unit: meta.unit,
+      hintSlug: 'invalid-args.param.value-out-of-range',
       example: `param('${name}', ${meta.min}, { min: ${Math.min(meta.min, meta.max)}, max: ${Math.max(meta.min, meta.max)} })`,
     });
   }
@@ -283,6 +291,7 @@ function assertWithinBounds(name: string, value: number, meta: ParamMetadata | u
       got: value,
       requires: `a number ≥ meta.min = ${meta.min}${meta.max !== undefined ? ` and ≤ meta.max = ${meta.max}` : ''}`,
       unit: meta.unit,
+      hintSlug: 'invalid-args.param.value-out-of-range',
       example: `param('${name}', ${meta.min}, { min: ${meta.min}${meta.max !== undefined ? `, max: ${meta.max}` : ''} })`,
     });
   }
@@ -293,6 +302,7 @@ function assertWithinBounds(name: string, value: number, meta: ParamMetadata | u
       got: value,
       requires: `a number ≤ meta.max = ${meta.max}${meta.min !== undefined ? ` and ≥ meta.min = ${meta.min}` : ''}`,
       unit: meta.unit,
+      hintSlug: 'invalid-args.param.value-out-of-range',
       example: `param('${name}', ${meta.max}, { ${meta.min !== undefined ? `min: ${meta.min}, ` : ''}max: ${meta.max} })`,
     });
   }

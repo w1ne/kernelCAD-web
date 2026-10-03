@@ -81,9 +81,9 @@ describe('spring({ length, coilRadius, wireRadius, turns })', () => {
   it('rejects invalid spring dimensions at capture time', () => {
     const api = makeApi();
     expect(() => api.spring({ length: 0, coilRadius: 5, wireRadius: 1, turns: 4 }))
-      .toThrow(/spring: length/);
+      .toThrow(/spring\(length\): length/);
     expect(() => api.spring({ length: 40, coilRadius: 1, wireRadius: 1, turns: 4 }))
-      .toThrow(/coilRadius.*greater than wireRadius/);
+      .toThrow(/opts\.coilRadius — got .* requires coilRadius > wireRadius/);
     expect(() => api.spring({ length: 40, coilRadius: 5, wireRadius: 1, turns: 0 }))
       .toThrow(/turns/);
   });

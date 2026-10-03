@@ -111,7 +111,7 @@ describe('Assembly.revolute(...) capture', () => {
         axis: [Number.NaN, 0, 0],
         origin: [0, 0, 0],
       }),
-    ).toThrow(/revolute joint axis must be a finite Vec3/);
+    ).toThrow(/opts\.axis — got .* requires a 3-element array/);
   });
 
   it('rejects a non-finite origin', () => {
@@ -126,7 +126,7 @@ describe('Assembly.revolute(...) capture', () => {
         axis: [0, 1, 0],
         origin: [0, Number.POSITIVE_INFINITY, 0],
       }),
-    ).toThrow(/revolute joint origin must be a finite Vec3/);
+    ).toThrow(/opts\.origin — got .* PARENT part local frame/);
   });
 
   it('rejects limitsDeg with min >= max', () => {
@@ -142,7 +142,7 @@ describe('Assembly.revolute(...) capture', () => {
         origin: [0, 0, 0],
         limitsDeg: [90, -90],
       }),
-    ).toThrow(/revolute joint limitsDeg/);
+    ).toThrow(/opts\.limitsDeg — got .* minDeg < maxDeg/);
   });
 });
 
