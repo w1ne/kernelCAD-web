@@ -7,7 +7,14 @@
 // this file.
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { INTENT_LINT_RULES, lintAuthoringIntent, cylinderSubtractCount, typedPointCount } from './intentLint';
+import {
+  INTENT_LINT_RULES,
+  lintAuthoringIntent,
+  cylinderSubtractCount,
+  typedPointCount,
+  readSource,
+  resolveNumber,
+} from './intentLint';
 import { loadSnippets, search } from './index';
 import { TOOL_REGISTRY } from '../mcp/toolRegistry';
 import { DIAGNOSTIC_REGISTRY } from '../../shared/diagnostics/registry';
@@ -175,6 +182,153 @@ describe('intent lint — silent when the right API is used', () => {
     expect(lintAuthoringIntent('')).toEqual([]);
     expect(lintAuthoringIntent(undefined)).toEqual([]);
   });
+});
+
+describe('intent lint — needs an actionable target', () => {
+  // The words alone are not enough: something in the code must be what the
+  // named API replaces. A hint with nothing to convert sends the agent to
+  // "fix" the wrong thing and retry.
+  it('thread words with nothing fastener-like cut → silent', () => {
+    const src = `// Decorative knob, thread it onto the M6 stud by hand later
+return cylinder(12, 15).union(box(4, 30, 12).translate(-2, -15, 0));`;
+    expect(codes(src)).toEqual([]);
+  });
+
+  it('thread words + a fastener-sized subtracted cylinder → thread', () => {
+    const src = `// tapped M3 boss
+return cylinder(10, 5).subtract(cylinder(12, 1.25).translate(0, 0, -1));`;
+    expect(codes(src)).toEqual(['authoring.prefer-api.thread']);
+  });
+
+  it('M-size + only a large subtracted bore (not a fastener) → silent', () => {
+    const src = `// M4 screws hold the lid elsewhere; this is the 40 mm cable port
+const r = 20;
+return box(80, 80, 5).subtract(cylinder(7, r).translate(40, 40, -1));`;
+    expect(codes(src)).toEqual([]);
+  });
+
+  it('gear words with no loop or pattern building teeth → silent', () => {
+    const src = `// Gear housing cover, module 1 gears live inside
+return box(60, 40, 3);`;
+    expect(codes(src)).toEqual([]);
+  });
+
+  it('sheet metal words with no plate-like stock → silent', () => {
+    const src = `// Sheet metal enclosure goes around this cast block (k-factor n/a)
+return box(40, 40, 40);`;
+    expect(codes(src)).toEqual([]);
+  });
+
+  it('a print clearance that the geometry never uses → silent', () => {
+    const src = `// PLA print
+const printClearance = 0.2;
+return box(20, 20, 10);`;
+    expect(codes(src)).toEqual([]);
+  });
+
+  it('a clearance for a non-FDM process, or on all-metal parts → silent', () => {
+    const laser = `// Laser-cut plywood; 3D-printed parts want 0.2
+const fit = 0.1;
+return box(20, 20 + 2 * fit, 6);`;
+    const steel = `// printed (FDM) variant optional
+const gap = 0.1;
+const a = assembly('x');
+a.part('nut', box(10, 10 + gap, 5), { material: 'mild-steel' });
+return a.model();`;
+    expect(codes(laser)).toEqual([]);
+    expect(codes(steel)).toEqual([]);
+  });
+
+  it('non-intent senses of the words → silent', () => {
+    const chain = `// a chain is threaded through the lug
+return box(10, 10, 4).hole('top', { u: 0, v: 0, diameter: 3, depth: 'through' });`;
+    const palette = `let b = box(10, 10, 2);
+for (let i = 0; i < 4; i++) b = b.union(box(1, 1, 1).translate(i * 2, 0, 2));
+return b.color('gear');`;
+    const knurl = `// 18 knurl teeth on the shaft
+let s = cylinder(10, 3);
+for (let i = 0; i < 18; i++) s = s.union(box(0.4, 0.4, 10).rotateZ(i * 20).translate(3, 0, 0));
+return s;`;
+    expect(codes(chain)).toEqual([]);
+    expect(codes(palette)).toEqual([]);
+    expect(codes(knurl)).toEqual([]);
+  });
+});
+
+describe('intent lint — a comment that negates its own mention is skipped', () => {
+  const PLAIN_SCREW_HOLE = `return box(30, 20, 5).hole('top', { u: 0, v: 0, diameter: 3.4, depth: 'through' });`;
+  const NEGATIONS = [
+    '// Screws are cylinder stand-ins, NOT a swept 60° V-thread.',
+    '// Clearance hole only, no thread.',
+    '// The thread is not modelled.',
+    '// This script does not model the thread.',
+    "// Thread callout is schematic only.",
+    '// Thread shown for reference only.',
+    '// Not a real tapped hole;\n// the insert is pressed in.',
+  ];
+  for (const comment of NEGATIONS) {
+    it(`silent on: ${comment.replace(/\n/g, ' ')}`, () => {
+      expect(codes(`${comment}\n${PLAIN_SCREW_HOLE}`)).toEqual([]);
+    });
+  }
+
+  it('a negated sentence does not hide a positive one in the same comment', () => {
+    const src = `// The nut is not modelled. The bore is tapped M3.\n${PLAIN_SCREW_HOLE}`;
+    expect(codes(src)).toEqual(['authoring.prefer-api.thread']);
+  });
+
+  it('a negation runs across // lines of one comment', () => {
+    const src = `// Screws are heads + clearance shanks — NOT a swept\n// 60° V-thread (see the bolt snippet).\n${PLAIN_SCREW_HOLE}`;
+    expect(readSource(src).prose).not.toMatch(/thread/i);
+    expect(codes(src)).toEqual([]);
+  });
+
+  it('tslot-frame-fastener-bom: the "NOT a V-thread" disclaimer gets no thread hint', () => {
+    const body = loadSnippets().find((s) => s.id === 'tslot-frame-fastener-bom')!.body;
+    expect(body).toMatch(/V-thread/);
+    expect(codes(body)).not.toContain('authoring.prefer-api.thread');
+  });
+
+  it('a "//" inside a string is not a comment', () => {
+    const src = `const url = 'https://example.com/thread';\nreturn box(1, 1, 1);`;
+    expect(readSource(src).code).toContain('https://example.com/thread');
+  });
+});
+
+describe('intent lint — number resolving', () => {
+  it('resolves literals, arithmetic, Math.PI, known names and param defaults', () => {
+    const nums = new Map([['t', 5]]);
+    expect(resolveNumber('2.25', nums)).toBe(2.25);
+    expect(resolveNumber('(t + 2) / 2', nums)).toBe(3.5);
+    expect(resolveNumber('-t * 2', nums)).toBe(-10);
+    expect(resolveNumber("param('d', 3.4, { min: 1 })", nums)).toBe(3.4);
+    expect(resolveNumber('Math.PI', nums)).toBeCloseTo(Math.PI);
+    expect(resolveNumber('spec.d / 2', nums)).toBeUndefined();
+    expect(resolveNumber('holeD.divide(2)', nums)).toBeUndefined();
+  });
+});
+
+describe('intent lint — zero hints on the cookbook', () => {
+  // The cookbook is our own reference code: a hint on it is either a snippet
+  // to fix or a rule to narrow. One known exception, and it must keep firing
+  // so the entry is removed the day its cause is fixed:
+  // rebuild-model-from-drawing-pdf reproduces drawing_to_cad output, and
+  // src/agent/drawing/emit.ts still cuts each hole as a subtracted cylinder.
+  // The hint is a true positive whose fix belongs in the emitter.
+  const KNOWN: Record<string, string[]> = {
+    'rebuild-model-from-drawing-pdf': ['authoring.prefer-api.hole-by-cylinder'],
+  };
+  const snippets = loadSnippets();
+
+  it('lints every snippet', () => {
+    expect(snippets.length).toBeGreaterThanOrEqual(85);
+  });
+
+  for (const s of snippets) {
+    it(`${s.id}: no authoring.prefer-api.* hints`, () => {
+      expect(codes(s.body).filter((c) => c.startsWith('authoring.prefer-api.'))).toEqual(KNOWN[s.id] ?? []);
+    });
+  }
 });
 
 describe('intent lint — every referenced recipe, API and tool exists', () => {

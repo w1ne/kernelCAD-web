@@ -27,10 +27,14 @@ when_to_use: You need a drawing to send to a shop or publish — a vector PDF on
 // Unset title-block fields print "—". drawing_report (MCP) / drawingReport (CLI --json)
 // gives placed / overlapped counts.
 const w = 100, h = 70, t = 12;
-let plate = box(w, h, t).fillet(6, { parallel: [0, 0, 1] });
-plate = plate.subtract(cylinder(t + 4, 15).translate(w / 2, h / 2, -2));
-for (const [x, y] of [[12, 12], [88, 12], [12, 58], [88, 58]] as const) {
-  plate = plate.subtract(cylinder(t + 4, 4.5).translate(x, y, -2));
-}
+// Bore and bolt holes as real hole features: u/v are mm from the top face centre.
+const plate = box(w, h, t)
+  .fillet(6, { parallel: [0, 0, 1] })
+  .hole('top', { u: 0, v: 0, diameter: 30, depth: 'through', name: 'bore' })
+  .holes('top', {
+    positions: [{ u: -38, v: -23 }, { u: 38, v: -23 }, { u: -38, v: 23 }, { u: 38, v: 23 }],
+    diameter: 9,
+    depth: 'through',
+  });
 return plate.datum('A', { atZ: 0 });
 ```

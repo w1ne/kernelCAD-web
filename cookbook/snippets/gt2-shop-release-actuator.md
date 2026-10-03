@@ -74,10 +74,14 @@ let housing = box(120, 80, 50).subtract(box(112, 72, 46).translate(4, 4, 4));
 for (const [x, y] of [[16, 16], [104, 16], [16, 64], [104, 64]] as const) {
   housing = housing.union(cylinder(8, 6).translate(x, y, 4));
 }
-housing = housing.subtract(cylinder(60, 2.55).translate(16, 16, -1).patternGrid({
-  x: { count: 2, direction: [1, 0, 0], spacing: 88 },
-  y: { count: 2, direction: [0, 1, 0], spacing: 48 },
-}));
+// Bolt holes through the floor and bosses as real hole features: u/v are mm
+// from the bottom face centre (60, 40). The bosses add a second 'bottom', so
+// name the outer one by its normal and centre.
+housing = housing.holes({ byNormal: '-Z', atX: 60, atY: 40, atZ: 0 }, {
+  positions: [{ u: -44, v: -24 }, { u: 44, v: -24 }, { u: -44, v: 24 }, { u: 44, v: 24 }],
+  diameter: 5.1,
+  depth: 12, // 4 mm floor + 8 mm boss
+});
 housing = housing
   .union(cylinder(12, 12.2).translate(ax, ay, 4))
   .subtract(cylinder(7.4, 11.08).translate(ax, ay, 4))

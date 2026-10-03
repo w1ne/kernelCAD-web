@@ -22,11 +22,14 @@ when_to_use: You need a quotable engineering drawing without writing every callo
 // 10 / 70 and 10 / 40 from the datums, overall 80 / 50 / 10, "4× R5",
 // flatness "⏥ 0.2" on A, and "ISO 2768-mK" beside the title block.
 // drawing_report (MCP) / drawingReport (CLI --json) gives placed / overlapped counts.
-let mount = box(80, 50, 10).fillet(5, { parallel: [0, 0, 1] });
-for (const [x, y] of [[10, 10], [70, 10], [10, 40], [70, 40]] as const) {
-  mount = mount.subtract(cylinder(14, 3.25).translate(x, y, -2));
-}
-mount = mount
+// Bolt holes as real hole features: u/v are mm from the top face centre (40, 25).
+const mount = box(80, 50, 10)
+  .fillet(5, { parallel: [0, 0, 1] })
+  .holes('top', {
+    positions: [{ u: -30, v: -15 }, { u: 30, v: -15 }, { u: -30, v: 15 }, { u: 30, v: 15 }],
+    diameter: 6.5,
+    depth: 'through',
+  })
   .datum('A', { atZ: 0 })
   .tolerance({
     type: 'position', value: 0.05, modifier: '⌀', datums: ['A', 'B', 'C'],
