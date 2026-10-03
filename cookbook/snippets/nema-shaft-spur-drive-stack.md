@@ -61,9 +61,13 @@ for (const x of [0, cd]) {
   plate = plate.subtract(cylinder(12, 5.1).translate(x, 0, -2));
 }
 const offs = [[-15.5, -15.5], [15.5, -15.5], [-15.5, 15.5], [15.5, 15.5]] as const;
-for (const [u, v] of offs) {
-  plate = plate.subtract(cylinder(12, 1.7).translate(u, v, -2));
-}
+// NEMA 17 bolt holes as real hole features. The plate's top face centre is at
+// (15, 0), so u = x - 15 and v = y.
+plate = plate.holes('top', {
+  positions: offs.map(([x, y]) => ({ u: x - 15, v: y })),
+  diameter: 3.4,
+  depth: 'through',
+});
 plate = plate
   .datum('A', { atZ: 0 })
   .datum('B', { atX: -30 })
