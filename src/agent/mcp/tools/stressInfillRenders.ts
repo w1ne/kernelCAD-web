@@ -26,14 +26,10 @@ export async function renderStressInfill(
   report: StressInfillReport,
   diagnostics: CompilerDiagnostic[],
 ): Promise<StressInfillImages> {
-  const { min, max } = report.boundsMm;
-  // Cut along Y (the part's width in the recipe) through the middle so the
-  // dense core around the load path shows.
-  const midY = (min[1] + max[1]) / 2;
-  const jobs: Array<{ key: keyof StressInfillImages; file: string; section?: { axis: 'y'; position: number } }> = [
+  const jobs: Array<{ key: keyof StressInfillImages; file: string }> = [
     { key: 'heatmap', file: report.renderScripts.heatmap },
     { key: 'bands', file: report.renderScripts.bands },
-    { key: 'cutaway', file: report.renderScripts.bands, section: { axis: 'y', position: midY } },
+    { key: 'cutaway', file: report.renderScripts.cutaway },
   ];
   const images: StressInfillImages = {};
   for (const job of jobs) {
@@ -44,7 +40,6 @@ export async function renderStressInfill(
         preset: 'publish',
         background: 'white',
         no_mechanism_check: true,
-        ...(job.section !== undefined ? { section: job.section } : {}),
       });
       if (out.ok && out.images.length > 0) {
         images[job.key] = out.images[0].path;

@@ -81,7 +81,7 @@ export interface StressInfillReport {
   boundsMm: { min: [number, number, number]; max: [number, number, number] };
   outDir: string;
   /** `.kcad.ts` scripts the MCP layer renders (heatmap, printed bands). */
-  renderScripts: { heatmap: string; bands: string };
+  renderScripts: { heatmap: string; bands: string; cutaway: string };
   note: string;
 }
 
@@ -282,57 +282,134 @@ async function writeRenderScripts(
   fields: FeaFieldResult,
   result: StressInfillResult,
   outDir: string,
-): Promise<{ heatmap: string; bands: string }> {
+): Promise<StressInfillReport['renderScripts']> {
   const heatDir = join(outDir, 'heatmap');
   await mkdir(heatDir, { recursive: true });
   const heat = await buildHeatmap(mesh, fields, heatDir);
 
   const bandDir = join(outDir, 'bands');
   await mkdir(bandDir, { recursive: true });
+  const bands = await writeBandScript(mesh, result, bandDir, 'infill-bands');
+
+  // Cutaway: the far (+Y) half of the part, cut at mid-width, so the cut
+  // face looks at the default hero camera (which sits at -Y) and shows the
+  // bands inside the part. Built as capped geometry, not a clip plane.
+  const { min, max } = meshBounds(mesh);
+  const midY = (min[1] + max[1]) / 2;
+  const cutDir = join(outDir, 'cutaway');
+  await mkdir(cutDir, { recursive: true });
+  const cutaway = await writeBandScript(mesh, result, cutDir, 'infill-cutaway', midY);
+  return { heatmap: heat.scriptPath, bands, cutaway };
+}
+
+/** Group the tets by printed band and write each group's boundary as a
+ *  closed STL, plus the `.kcad.ts` that colours and assembles them. With a
+ *  `cutY`, every tet is clipped EXACTLY to y >= cutY (no saw-tooth of whole
+ *  tets) and the cut is capped, so the section reads as a clean face. */
+async function writeBandScript(
+  mesh: FeaMesh,
+  result: StressInfillResult,
+  dir: string,
+  name: string,
+  cutY?: number,
+): Promise<string> {
   const bands = result.bands;
-  // Faces of each band's tets; a face seen once in its band is boundary.
-  const faceMaps = bands.map(() => new Map<string, [number, number, number] | null>());
+  // Vertex keys: `n<id>` for a mesh node, `e<a>_<b>` for the point where the
+  // edge a-b crosses the cut plane. Shared keys make the faces two clipped
+  // neighbours have in common cancel exactly.
+  const pos = new Map<string, readonly number[]>();
+  const nodeKey = (id: number): string => {
+    const k = `n${id}`;
+    if (!pos.has(k)) pos.set(k, mesh.nodes.get(id)!);
+    return k;
+  };
+  const edgeKey = (u: number, v: number): string => {
+    const [a, b] = u < v ? [u, v] : [v, u];
+    const k = `e${a}_${b}`;
+    if (!pos.has(k)) {
+      const pa = mesh.nodes.get(a)!, pb = mesh.nodes.get(b)!;
+      const t = (cutY! - pa[1]) / (pb[1] - pa[1]);
+      pos.set(k, [pa[0] + t * (pb[0] - pa[0]), cutY!, pa[2] + t * (pb[2] - pa[2])]);
+    }
+    return k;
+  };
+  const kept = (id: number) => cutY === undefined || mesh.nodes.get(id)![1] >= cutY;
+  // A face seen twice in one band is interior to the band.
+  const faceMaps = bands.map(() => new Map<string, string[] | null>());
+  const addFace = (m: Map<string, string[] | null>, poly: string[]) => {
+    if (poly.length < 3) return;
+    const key = [...poly].sort().join(',');
+    m.set(key, m.has(key) ? null : poly);
+  };
   for (const [e, el] of mesh.elements.entries()) {
-    const k = result.elementPrintedBand[e];
     const c = el.nodes.slice(0, 4);
+    const keptCount = c.filter(kept).length;
+    if (keptCount === 0) continue;
+    const m = faceMaps[result.elementPrintedBand[e]];
     for (const [a, b, d, opp] of [[c[0], c[1], c[2], c[3]], [c[0], c[1], c[3], c[2]], [c[0], c[2], c[3], c[1]], [c[1], c[2], c[3], c[0]]]) {
-      const key = [a, b, d].sort((x, y) => x - y).join(',');
-      const m = faceMaps[k];
-      if (m.has(key)) { m.set(key, null); continue; }
       // Orient outward: away from the tet's opposite corner.
       const pa = mesh.nodes.get(a)!, pb = mesh.nodes.get(b)!, pd = mesh.nodes.get(d)!, po = mesh.nodes.get(opp)!;
       const ux = pb[0] - pa[0], uy = pb[1] - pa[1], uz = pb[2] - pa[2];
       const vx = pd[0] - pa[0], vy = pd[1] - pa[1], vz = pd[2] - pa[2];
       const nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
       const dot = nx * (po[0] - pa[0]) + ny * (po[1] - pa[1]) + nz * (po[2] - pa[2]);
-      m.set(key, dot > 0 ? [a, d, b] : [a, b, d]);
+      const ring = dot > 0 ? [a, d, b] : [a, b, d];
+      if (keptCount === 4) { addFace(m, ring.map(nodeKey)); continue; }
+      // Sutherland-Hodgman against y >= cutY; order (and so winding) kept.
+      const poly: string[] = [];
+      for (let i = 0; i < 3; i++) {
+        const p = ring[i], q = ring[(i + 1) % 3];
+        if (kept(p)) poly.push(nodeKey(p));
+        if (kept(p) !== kept(q)) poly.push(edgeKey(p, q));
+      }
+      addFace(m, poly);
+    }
+    if (keptCount < 4) {
+      // Cap: the tet's cross-section, wound so its normal points to -Y
+      // (out of the kept half).
+      const cap: string[] = [];
+      for (let i = 0; i < 4; i++) {
+        for (let j = i + 1; j < 4; j++) {
+          if (kept(c[i]) !== kept(c[j])) cap.push(edgeKey(c[i], c[j]));
+        }
+      }
+      const pts = cap.map((k) => pos.get(k)!);
+      const cx = pts.reduce((acc, p) => acc + p[0], 0) / pts.length;
+      const cz = pts.reduce((acc, p) => acc + p[2], 0) / pts.length;
+      // Counter-clockwise in (z, x) seen from -Y gives a -Y normal.
+      const order = cap.map((k, i) => ({ k, ang: Math.atan2(pts[i][0] - cx, pts[i][2] - cz) }))
+        .sort((p, q) => p.ang - q.ang).map((o) => o.k);
+      addFace(m, order);
     }
   }
-  const lines: string[] = [];
+  const tri = (poly: string[]) => {
+    const out: Array<[readonly number[], readonly number[], readonly number[]]> = [];
+    for (let i = 1; i + 1 < poly.length; i++) out.push([pos.get(poly[0])!, pos.get(poly[i])!, pos.get(poly[i + 1])!]);
+    return out;
+  };
+  const legend: string[] = [];
+  const parts: string[] = [];
   for (let k = 0; k < bands.length; k++) {
-    const tris = [...faceMaps[k].values()].filter((t): t is [number, number, number] => t !== null)
-      .map((t) => t.map((n) => mesh.nodes.get(n)!) as unknown as [number[], number[], number[]]);
+    const tris = [...faceMaps[k].values()].filter((t): t is string[] => t !== null).flatMap(tri);
     if (tris.length === 0) continue;
     const file = `band-${k}-${bands[k].name}.stl`;
-    await writeFile(join(bandDir, file), binaryStl(tris));
+    await writeFile(join(dir, file), binaryStl(tris));
     const color = BAND_COLORS[Math.min(k, BAND_COLORS.length - 1)];
-    lines.push(`//   ${color}  ${bands[k].name}: ${bands[k].densityPercent}% infill`);
-    lines.push(`arm.part('${bands[k].name}-${bands[k].densityPercent}pct', (await lib.fromSTL('./${file}', { allowOpen: true })).color('${color}'));`);
+    legend.push(`//   ${color}  ${bands[k].name}: ${bands[k].densityPercent}% infill`);
+    parts.push(`arm.part('${bands[k].name}-${bands[k].densityPercent}pct', (await lib.fromSTL('./${file}', { allowOpen: true })).color('${color}'));`);
   }
-  const legend = lines.filter((l) => l.startsWith('//'));
-  const parts = lines.filter((l) => !l.startsWith('//'));
   const script = [
     '// GENERATED by kernelCAD stress-graded infill export.',
     '// Each body is the part volume printed at one infill density.',
     '// Legend:',
     ...legend,
     '',
-    "const arm = assembly('stress-graded-infill');",
+    `const arm = assembly('${name}');`,
     ...parts,
     'return arm.model();',
     '',
   ].join('\n');
-  const bandsScript = join(bandDir, 'infill-bands.kcad.ts');
-  await writeFile(bandsScript, script, 'utf8');
-  return { heatmap: heat.scriptPath, bands: bandsScript };
+  const path = join(dir, `${name}.kcad.ts`);
+  await writeFile(path, script, 'utf8');
+  return path;
 }
