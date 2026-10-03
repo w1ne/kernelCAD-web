@@ -76,7 +76,7 @@ export interface StressInfillReport {
   yieldMPa: number;
   bands: InfillBandRow[];
   saving: InfillSaving;
-  fea: Pick<FeaSummary, 'maxVonMisesMPa' | 'minSafetyFactor' | 'maxDisplacementMm' | 'trust'>;
+  fea: Pick<FeaSummary, 'maxVonMisesMPa' | 'maxVonMisesAt' | 'minSafetyFactor' | 'maxDisplacementMm' | 'trust'>;
   /** Part bounds from the FEA mesh, mm (model frame). */
   boundsMm: { min: [number, number, number]; max: [number, number, number] };
   outDir: string;
@@ -238,6 +238,7 @@ export async function buildStressInfillExport(
     saving: result.saving,
     fea: {
       maxVonMisesMPa: fea.summary.maxVonMisesMPa,
+      maxVonMisesAt: fea.summary.maxVonMisesAt,
       minSafetyFactor: fea.summary.minSafetyFactor,
       maxDisplacementMm: fea.summary.maxDisplacementMm,
       trust: fea.summary.trust,
