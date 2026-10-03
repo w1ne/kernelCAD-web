@@ -5,9 +5,9 @@ description: kernelCAD model authoring API — primitives, transforms, booleans,
 
 # kernelCAD — authoring
 
-Author or modify kernelCAD models in TypeScript. Scripts live in `.kcad.ts` files; the kernelCAD CLI (`kernelcad evaluate <file>` and `kernelcad export stl|step|dxf|3mf|glb <file> -o <out>`) executes them via an OpenCASCADE WASM kernel.
+Author or modify kernelCAD models in TypeScript. Scripts live in `.kcad.ts` files; the kernelCAD CLI (`kernelcad evaluate <file>` and `kernelcad export stl|step|dxf|3mf|glb <file> -o <out>`) runs them on an OpenCASCADE WASM kernel.
 
-`.kcad.ts` scripts are single files: top-level `import`/`require` statements are not supported and are refused before execution with `feature.invalid-args` — define helpers in the same file.
+`.kcad.ts` scripts are single files: top-level `import`/`require` is refused with `feature.invalid-args` — define helpers in the same file.
 
 ## Agent authoring loop
 
@@ -178,9 +178,8 @@ Verify the install with `kernelcad --version` (should print `0.1.0` or higher).
 ## Coordinate System
 
 - **Z-up**, right-handed.
-- All linear dimensions are millimetres.
-- All angles are degrees.
-- Box: corner-anchored at the origin (spans `[0, x] × [0, y] × [0, z]`). Pass `centered: true` as the fourth argument to anchor at the centroid.
+- Lengths in millimetres, angles in degrees.
+- Box: corner-anchored at the origin (spans `[0, x] × [0, y] × [0, z]`). `centered: true` (4th argument) anchors at the centroid.
 - Cylinder: axis along Z, base at `z=0`, top at `z=h`.
 - Sphere: centred at the origin.
 
@@ -1024,7 +1023,7 @@ When you need a canonical pattern, call MCP tool `lookup_cookbook(query, k?)` to
 - Apply transforms AFTER edge/face features when face refs matter.
 - Always `return` a single shape from the top of the script. Only the returned shape is exported, probed and measured; "the last thing I created" is NOT a fallback. If a probe reports the same bbox no matter what you edit, check what the script returns.
 - Symmetric parts: `.mirror(plane)` (source + reflection); `.reflect(plane)` gives the reflection only.
-- In booleans, prefer ≥0.1 mm of overlap (unions) or offset (cuts) over exact tangency or coincident faces; offsets keep export meshes clean.
+- In booleans, prefer ≥0.1 mm of overlap (unions) or offset (cuts) over exact tangency or coincident faces.
 - Helical features: rail from `helix(...)`. Threads, worms, helical grooves: sweep with `spine: 'helix'`. Round-wire coils and springs: `spine: 'smooth'` (the default polyline spine is not watertight). Internal threads: `hole({ thread })`, not a sweep.
 
 ## Manufacturing intent → API
@@ -1042,6 +1041,7 @@ Intent words → call this API; do not hand-build it (subtracted cylinders, type
 | sheet metal, bend, flat pattern | `sheetMetal(profile, { thickness, kFactor }).bend(...)`, MCP `flatten_pattern` | sheet-metal-l-bracket-bend |
 | fit, clearance, tolerance, printer | clearance param + `dfmSpec({ process: 'fdm', printer, minClearance })` | fdm-fit-clearance-by-fit-type |
 | photo, trace, reference image | MCP `trace_from_image` (`referenceImage` only overlays) | resolve-photo-trace-assumptions |
+| infill, weak spots, stronger, will it hold, stress, lightweight print | `feaStudy` + `export` 3mf `infill: { fromFea }` (local ccx + gmsh) | stress-graded-infill-fdm |
 | screw, nut, bearing, motor | `lib.standard.*`, `lib.findPart`, MCP `find_part` | kernelcad-parts skill |
 
 ## Interlocking joinery (flat-pack / laser / CNC)
