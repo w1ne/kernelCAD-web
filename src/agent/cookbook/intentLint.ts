@@ -227,38 +227,67 @@ export function lintAuthoringIntent(src: string | undefined): CompilerDiagnostic
 
 /** Split comments from code; keep the comment sentences that do not negate themselves. */
 export function readSource(src: string): IntentLintSource {
+  const { code, comments } = scanComments(src);
+  const kept = commentBlocks(src, comments)
+    .flatMap((b) => b.split(/(?<=[.!?;])\s+/))
+    .filter((sentence) => !NEGATED.test(sentence));
+  return { src, code, prose: `${code}\n${kept.join('\n')}` };
+}
+
+interface Comment {
+  start: number;
+  end: number;
+  text: string;
+}
+
+/** Code with comments blanked (strings kept), plus the comments. */
+function scanComments(src: string): { code: string; comments: Comment[] } {
   const code: string[] = [];
-  const comments: Array<{ start: number; end: number; text: string }> = [];
+  const comments: Comment[] = [];
   let i = 0;
   while (i < src.length) {
     const c = src[i];
-    const next = src[i + 1];
-    if (c === '/' && next === '/') {
-      const end = src.indexOf('\n', i);
-      const stop = end < 0 ? src.length : end;
-      comments.push({ start: i, end: stop, text: src.slice(i + 2, stop) });
+    if (c === '/' && (src[i + 1] === '/' || src[i + 1] === '*')) {
+      const cm = readComment(src, i);
+      comments.push(cm);
       code.push(' ');
-      i = stop;
-    } else if (c === '/' && next === '*') {
-      const end = src.indexOf('*/', i + 2);
-      const stop = end < 0 ? src.length : end + 2;
-      comments.push({ start: i, end: stop, text: src.slice(i + 2, end < 0 ? src.length : end).replace(/^\s*\*/gm, ' ') });
-      code.push(' ');
-      i = stop;
+      i = cm.end;
     } else if (c === '"' || c === "'" || c === '`') {
-      let j = i + 1;
-      while (j < src.length && src[j] !== c && !(c !== '`' && src[j] === '\n')) j += src[j] === '\\' ? 2 : 1;
+      const end = stringEnd(src, i);
       // A palette token (`.color('gear')`) names a colour, not intent.
       const palette = /\.\s*color\s*\(\s*$/.test(code.slice(-16).join(''));
-      code.push(palette ? `${c}${c}` : src.slice(i, j + 1));
-      i = j + 1;
+      code.push(palette ? `${c}${c}` : src.slice(i, end));
+      i = end;
     } else {
       code.push(c);
       i++;
     }
   }
-  // Consecutive comments (only whitespace between) form one comment: a
-  // sentence often runs across `//` lines.
+  return { code: code.join(''), comments };
+}
+
+function readComment(src: string, at: number): Comment {
+  if (src[at + 1] === '/') {
+    const nl = src.indexOf('\n', at);
+    const end = nl < 0 ? src.length : nl;
+    return { start: at, end, text: src.slice(at + 2, end) };
+  }
+  const close = src.indexOf('*/', at + 2);
+  const end = close < 0 ? src.length : close + 2;
+  const body = src.slice(at + 2, close < 0 ? src.length : close);
+  return { start: at, end, text: body.replace(/^\s*\*/gm, ' ') };
+}
+
+/** Index just past the string literal that opens at `at`. */
+function stringEnd(src: string, at: number): number {
+  const q = src[at];
+  let j = at + 1;
+  while (j < src.length && src[j] !== q && !(q !== '`' && src[j] === '\n')) j += src[j] === '\\' ? 2 : 1;
+  return j + 1;
+}
+
+/** Consecutive comments (only whitespace between) form one: a sentence often runs across `//` lines. */
+function commentBlocks(src: string, comments: readonly Comment[]): string[] {
   const blocks: string[] = [];
   let prevEnd = -1;
   for (const cm of comments) {
@@ -266,11 +295,7 @@ export function readSource(src: string): IntentLintSource {
     else blocks.push(cm.text);
     prevEnd = cm.end;
   }
-  const kept = blocks
-    .flatMap((b) => b.split(/(?<=[.!?;])\s+/))
-    .filter((sentence) => !NEGATED.test(sentence));
-  const codeText = code.join('');
-  return { src, code: codeText, prose: `${codeText}\n${kept.join('\n')}` };
+  return blocks;
 }
 
 // ------------------------------------------------- actionable targets --
@@ -278,7 +303,7 @@ export function readSource(src: string): IntentLintSource {
 /** True when some subtract cuts a cylinder whose radius is fastener-sized or unknown. */
 export function cutsFastenerCylinder(code: string): boolean {
   const bindings = collectBindings(code);
-  const nums = numericBindings(code, bindings);
+  const nums = numericBindings(bindings);
   for (const site of findCalls(code, 'subtract')) {
     for (const r of cylinderRadii(site.args, bindings, nums, 0, new Set())) {
       if (r === undefined || (r >= FASTENER_R_MIN && r <= FASTENER_R_MAX)) return true;
@@ -339,7 +364,7 @@ function loopBodies(code: string): string[] {
 
 /** Two plate-like boxes joined by a union, or a thin extrude. */
 export function buildsSheetStock(code: string): boolean {
-  const nums = numericBindings(code, collectBindings(code));
+  const nums = numericBindings(collectBindings(code));
   const isSheet = (dims: Array<number | undefined>): boolean => {
     if (dims.some((d) => d === undefined)) return false;
     const [a, b] = (dims as number[]).map(Math.abs).sort((x, y) => x - y);
@@ -380,7 +405,7 @@ function namesOnlyNonPrintableMaterials(code: string): boolean {
 // ------------------------------------------------------ number resolving --
 
 /** `const x = <number expr>` and `const x = param('x', N ...)` → value. */
-function numericBindings(code: string, bindings: ReadonlyMap<string, string>): Map<string, number> {
+function numericBindings(bindings: ReadonlyMap<string, string>): Map<string, number> {
   const out = new Map<string, number>();
   for (const [name, init] of bindings) {
     if (init.includes('\n')) continue; // re-bound: no single value
