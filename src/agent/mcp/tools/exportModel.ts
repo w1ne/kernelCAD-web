@@ -26,6 +26,8 @@ import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic'
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
 import { validateOutputPath } from '../../script-runtime/safeOutputPath';
 import { loadMcpScriptSource } from '../runMcpScript';
+import type { StressInfillReport } from '../../script-runtime/stressInfillExport';
+import { renderStressInfill, type StressInfillImages } from './stressInfillRenders';
 
 export interface ExportModelInput {
   file?: string;
@@ -56,6 +58,8 @@ export interface ExportModelOutput {
   /** svg-drawing / pdf-drawing placement report: `placed` / `overlapped` counts, `byKind`,
    *  the datum reference frame, and every annotation drawn. */
   drawing_report?: DrawingReport;
+  /** 3mf with options.infill: band table, saving estimate, FEA peaks, PNGs. */
+  infill?: StressInfillReport & { images: StressInfillImages };
   diagnostics?: CompilerDiagnostic[];
   error?: string;
 }
@@ -137,9 +141,21 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
 
   // `no_verify` mirrors export_part: plumb `verify: false` into the STL
   // options bag (the runtime gate is default-on).
-  const effectiveOptions = format === 'stl' && input.no_verify
+  let effectiveOptions = format === 'stl' && input.no_verify
     ? { ...(options ?? {}), format: 'stl' as const, verify: false }
     : options;
+  // Stress-graded infill: the FEA job, band STLs and renders land next to
+  // the 3MF (<name>-infill/) unless the caller named a directory.
+  const infillOpt = format === '3mf' ? (options as { infill?: { outDir?: string; renders?: boolean } } | undefined)?.infill : undefined;
+  if (infillOpt !== undefined && infillOpt.outDir === undefined && typeof output_path === 'string') {
+    const outCheck = validateOutputPath(output_path);
+    if (outCheck.ok) {
+      effectiveOptions = {
+        ...(options as object),
+        infill: { ...infillOpt, outDir: outCheck.resolved!.replace(/\.3mf$/i, '') + '-infill' },
+      } as ExportOptions;
+    }
+  }
 
   let result;
   try {
@@ -184,6 +200,13 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
     return { ok: false, error: writeError };
   }
 
+  const diagnostics = [...result.diagnostics];
+  let infill: ExportModelOutput['infill'];
+  if (result.infillReport !== undefined) {
+    const images = infillOpt?.renders === false ? {} : await renderStressInfill(result.infillReport, diagnostics);
+    infill = { ...result.infillReport, images };
+  }
+
   return {
     ok: errorDiagnostics.length === 0,
     output_path: finalPath,
@@ -192,6 +215,7 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
     format,
     ...companionFilesField(format, meshFiles),
     ...(result.drawingReport === undefined ? {} : { drawing_report: result.drawingReport }),
-    diagnostics: withNextActions(result.diagnostics),
+    ...(infill === undefined ? {} : { infill }),
+    diagnostics: withNextActions(diagnostics),
   };
 }

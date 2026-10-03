@@ -23,6 +23,7 @@ import type { ParamTable } from '../../shared/runtime/paramTable';
 import { findFeaStudies, selectFeaStudy } from '../../modeling/runtime/fea/findFeaStudies';
 import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { runFeaStudy } from '../../kernel/fea/runFea';
+import type { FeaToolchain } from '../../kernel/fea/toolchain';
 import { binaryStl, buildHeatmap } from '../../kernel/fea/heatmap';
 import {
   buildStressInfill,
@@ -48,8 +49,11 @@ export interface StressInfillExportOptions {
   cellMm?: number;
   /** Override the study's meshSize for this run, mm. */
   meshSize?: number;
-  /** Where the FEA job, band STLs and render scripts go. Default: temp dir. */
+  /** Where the FEA job, band STLs and render scripts go. Default: temp dir
+   *  (the MCP export puts them in `<output>-infill/`). */
   outDir?: string;
+  /** MCP export only: render the heatmap / band PNGs (default true). */
+  renders?: boolean;
 }
 
 /** JSON-safe band row returned to the caller (no meshes). */
@@ -73,6 +77,8 @@ export interface StressInfillReport {
   bands: InfillBandRow[];
   saving: InfillSaving;
   fea: Pick<FeaSummary, 'maxVonMisesMPa' | 'minSafetyFactor' | 'maxDisplacementMm' | 'trust'>;
+  /** Part bounds from the FEA mesh, mm (model frame). */
+  boundsMm: { min: [number, number, number]; max: [number, number, number] };
   outDir: string;
   /** `.kcad.ts` scripts the MCP layer renders (heatmap, printed bands). */
   renderScripts: { heatmap: string; bands: string };
@@ -137,6 +143,8 @@ export async function buildStressInfillExport(
   shapes: ReadonlyMap<string, unknown>,
   paramTable: ParamTable | undefined,
   cwd: string | undefined,
+  /** Pre-probed toolchain (tests); omitted: probed per run. */
+  toolchain?: FeaToolchain,
 ): Promise<{ ok: true; build: StressInfillBuild; diagnostics: CompilerDiagnostic[] } | { ok: false; diagnostics: CompilerDiagnostic[] }> {
   const bad = invalidInfillOption(infill);
   if (bad !== undefined) return { ok: false, diagnostics: [errorDiag('feature.invalid-args', `3mf export: ${bad}`)] };
@@ -180,6 +188,7 @@ export async function buildStressInfillExport(
     outDir,
     ...(paramTable !== undefined ? { paramTable } : {}),
     ...(cwd !== undefined ? { cwd } : {}),
+    ...(toolchain !== undefined ? { toolchain } : {}),
   });
   const diagnostics = [...fea.diagnostics];
   if (fea.raw === undefined || fea.summary === undefined) {
@@ -233,6 +242,7 @@ export async function buildStressInfillExport(
       maxDisplacementMm: fea.summary.maxDisplacementMm,
       trust: fea.summary.trust,
     },
+    boundsMm: meshBounds(fea.raw.mesh),
     outDir,
     renderScripts,
     note: SOLID_PART_NOTE,
@@ -247,6 +257,15 @@ export async function buildStressInfillExport(
     },
     diagnostics,
   };
+}
+
+function meshBounds(mesh: FeaMesh): StressInfillReport['boundsMm'] {
+  const min: [number, number, number] = [Infinity, Infinity, Infinity];
+  const max: [number, number, number] = [-Infinity, -Infinity, -Infinity];
+  for (const p of mesh.nodes.values()) {
+    for (let a = 0; a < 3; a++) { min[a] = Math.min(min[a], p[a]); max[a] = Math.max(max[a], p[a]); }
+  }
+  return { min, max };
 }
 
 /** Band colours for the printed-infill view: cool (sparse) to hot (dense). */
