@@ -50,7 +50,8 @@ export interface IntentLintRule {
 /** Shape method call `.hole(` / `.holes(` — a user helper named `hole(` is not the API. */
 const HOLE_CALL = /\.\s*holes?\s*\(/;
 const THREAD_OPTION = /\bthread\s*:/;
-const THREAD_WORDS = /\bthread(?:s|ed)?\b|\btapped\b|\btap[- ]?drill\b|\btapping\b/i;
+/** "threaded through" is a chain or cord, not a fastener. */
+const THREAD_WORDS = /\bthread(?:s|ed)?\b(?!\s+through\b)|\btapped\b|\btap[- ]?drill\b|\btapping\b/i;
 const METRIC_SIZE = /\bM(?:2|2\.5|3|4|5|6|8|10|12)\b/;
 const INSERT_WORDS = /\bheat[- ]?set\b|\b(?:threaded|brass|knurled|M\d(?:\.\d)?)\s+inserts?\b/i;
 /** Purchased fasteners from the parts library carry their own thread. */
@@ -63,8 +64,8 @@ const FASTENER_R_MAX = 7.5;
 const GEAR_API = /\b(?:spurGear|ringGear|internalSpurGear|internalGear)\s*\(/;
 const GEAR_WORDS = /\bgears?\b|\binvolute\b|\bgear[- ]?module\b|\bmodule(?:Mm)?\s*[:=]\s*\d/i;
 const TEETH = /\bteeth\b/i;
-/** Pulleys, combs and saws have teeth too; spurGear is not their API. */
-const NON_GEAR_TEETH = /\bpulleys?\b|\bbelts?\b|\bgt2\b|\bhtd\b|\btiming\b|\bcombs?\b|\bsaws?\b|\bzip/i;
+/** Pulleys, combs, saws and knurls have teeth too; spurGear is not their API. */
+const NON_GEAR_TEETH = /\bpulleys?\b|\bbelts?\b|\bgt2\b|\bhtd\b|\btiming\b|\bcombs?\b|\bsaws?\b|\bzip|\bknurl/i;
 /** Ops that add one more copy of geometry per loop pass. */
 const GEOMETRY_OP = /\.\s*(?:union|subtract|lineTo|arcTo|splineTo|bezierTo|threePointArcTo)\s*\(|\.\s*push\s*\(/;
 const PATTERN_CALL = /\.\s*pattern(?:Circular|Linear|Grid)\s*\(/;
@@ -72,8 +73,8 @@ const PATTERN_CALL = /\.\s*pattern(?:Circular|Linear|Grid)\s*\(/;
 const SHEET_METAL_API = /\bsheetMetal\s*\(/;
 const SHEET_METAL_WORDS = /\bsheet[- ]?metal\b|\bflat[- ]?pattern\b|\bk[- ]?factor\b/i;
 const BEND_WORDS = /\bbend(?:s|ing)?\b|\bbent\b/i;
-/** Pipes, tubes, wires and swept paths bend too; sheetMetal is not their API. */
-const NON_SHEET_BEND = /\bpipes?\b|\btubes?\b|\btubing\b|\bwires?\b|\bcables?\b|\bsweep|\bhoses?\b|\brods?\b/i;
+/** Pipes, tubes, wires, swept paths and combs bend too; sheetMetal is not their API. */
+const NON_SHEET_BEND = /\bpipes?\b|\btubes?\b|\btubing\b|\bwires?\b|\bcables?\b|\bsweep|\bhoses?\b|\brods?\b|\bcombs?\b/i;
 /** Sheet stock: at most 6 mm, and at most a quarter of the next dimension. */
 const SHEET_MAX_T = 6;
 const SHEET_ASPECT = 0.25;
@@ -247,7 +248,9 @@ export function readSource(src: string): IntentLintSource {
     } else if (c === '"' || c === "'" || c === '`') {
       let j = i + 1;
       while (j < src.length && src[j] !== c && !(c !== '`' && src[j] === '\n')) j += src[j] === '\\' ? 2 : 1;
-      code.push(src.slice(i, j + 1));
+      // A palette token (`.color('gear')`) names a colour, not intent.
+      const palette = /\.\s*color\s*\(\s*$/.test(code.slice(-16).join(''));
+      code.push(palette ? `${c}${c}` : src.slice(i, j + 1));
       i = j + 1;
     } else {
       code.push(c);

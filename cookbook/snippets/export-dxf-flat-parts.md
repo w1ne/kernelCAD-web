@@ -16,9 +16,12 @@ when_to_use: You need a 2D cut file — a flat blank with holes and slots, a pan
 // drawn in the blank's own plane with its true sizes.
 const t = param('thickness', 3, { min: 1, max: 20 });
 
-let blank = box(100, 60, t);
-blank = blank.subtract(cylinder(t, 4).translate(20, 30, 0));
-blank = blank.subtract(cylinder(t, 4).translate(80, 30, 0));
+// Holes as real hole features: u/v are mm from the top face centre (50, 30).
+const blank = box(100, 60, t).holes('top', {
+  positions: [{ u: -30, v: 0 }, { u: 30, v: 0 }],
+  diameter: 8,
+  depth: 'through',
+});
 const slot = box(20, 6, t).translate(40, 12, 0)
   .union(cylinder(t, 3).translate(40, 15, 0))
   .union(cylinder(t, 3).translate(60, 15, 0));

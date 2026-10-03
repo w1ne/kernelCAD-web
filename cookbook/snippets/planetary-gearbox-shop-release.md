@@ -60,9 +60,14 @@ const seatR = ringOuterR + 0.4;
 
 let housing = box(68, 68, 20).translate(-34, -34, -12);
 housing = housing.subtract(cylinder(18, seatR).translate(0, 0, -7));
-for (const [x, y] of [[-26, -26], [26, -26], [-26, 26], [26, 26]] as const) {
-  housing = housing.subtract(cylinder(10, 1.7).translate(x, y, -14));
-}
+// Blind bolt holes, 8 mm up from the bottom face, as real hole features:
+// u/v are mm from the bottom face centre (0, 0). The seat pocket adds a second
+// 'bottom', so name the outer one by its normal and centre.
+housing = housing.holes({ byNormal: '-Z', atX: 0, atY: 0, atZ: -12 }, {
+  positions: [{ u: -26, v: -26 }, { u: 26, v: -26 }, { u: -26, v: 26 }, { u: 26, v: 26 }],
+  diameter: 3.4,
+  depth: 8,
+});
 housing = housing
   .fillet(1, { parallel: [0, 0, 1] })
   .datum('A', { atZ: -12 })
