@@ -40,7 +40,7 @@ export const AUTHORING_CODES = {
     nextAction: { kind: 'call-tool', tool: 'lookup_cookbook', args: { query: 'bent sheet metal bracket with flat pattern' } },
     defaultSeverity: 'info',
     group: 'authoring',
-    description: 'The source names sheet metal, bends, flanges, a flat pattern or a k-factor but never calls sheetMetal().',
+    description: 'The source names sheet metal, bends, a flat pattern or a k-factor but never calls sheetMetal().',
   },
   'authoring.prefer-api.fdm-clearance': {
     hintTemplate:

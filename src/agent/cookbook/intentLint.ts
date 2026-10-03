@@ -35,13 +35,21 @@ const HOLE_CALL = /\.\s*holes?\s*\(/;
 const THREAD_OPTION = /\bthread\s*:/;
 const THREAD_WORDS = /\bthread(?:s|ed)?\b|\btapped\b|\btap[- ]?drill\b|\btapping\b/i;
 const METRIC_SIZE = /\bM(?:2|2\.5|3|4|5|6|8|10|12)\b/;
-const INSERT_WORDS = /\bheat[- ]?set\b|\binserts?\b/i;
+const INSERT_WORDS = /\bheat[- ]?set\b|\b(?:threaded|brass|knurled|M\d(?:\.\d)?)\s+inserts?\b/i;
+/** Purchased fasteners from the parts library carry their own thread. */
+const LIB_PART = /\blib\.\w+/;
 
 const GEAR_API = /\b(?:spurGear|ringGear|internalSpurGear|internalGear)\s*\(/;
-const GEAR_WORDS = /\bgears?\b|\binvolute\b|\bteeth\b|\bgear[- ]?module\b|\bmodule(?:Mm)?\s*[:=]\s*\d/i;
+const GEAR_WORDS = /\bgears?\b|\binvolute\b|\bgear[- ]?module\b|\bmodule(?:Mm)?\s*[:=]\s*\d/i;
+const TEETH = /\bteeth\b/i;
+/** Pulleys, combs and saws have teeth too; spurGear is not their API. */
+const NON_GEAR_TEETH = /\bpulleys?\b|\bbelts?\b|\bgt2\b|\bhtd\b|\btiming\b|\bcombs?\b|\bsaws?\b|\bzip/i;
 
 const SHEET_METAL_API = /\bsheetMetal\s*\(/;
-const SHEET_METAL_WORDS = /\bsheet[- ]?metal\b|\bbend(?:s|ing)?\b|\bbent\b|\bflanges?\b|\bflat[- ]?pattern\b|\bk[- ]?factor\b/i;
+const SHEET_METAL_WORDS = /\bsheet[- ]?metal\b|\bflat[- ]?pattern\b|\bk[- ]?factor\b/i;
+const BEND_WORDS = /\bbend(?:s|ing)?\b|\bbent\b/i;
+/** Pipes, tubes, wires and swept paths bend too; sheetMetal is not their API. */
+const NON_SHEET_BEND = /\bpipes?\b|\btubes?\b|\btubing\b|\bwires?\b|\bcables?\b|\bsweep|\bhoses?\b|\brods?\b/i;
 
 const DFM_SPEC_API = /\bdfmSpec\s*\(/;
 const CLEARANCE_NAME =
@@ -66,10 +74,10 @@ export const INTENT_LINT_RULES: readonly IntentLintRule[] = [
   {
     code: 'authoring.prefer-api.thread',
     cookbookIds: ['threaded-hole-tap-drill', 'heat-set-insert-pilot'],
-    apis: ['hole', 'holes'],
-    tools: ['lookup_cookbook'],
+    apis: ['hole'],
+    tools: [],
     fires: (src) =>
-      (THREAD_WORDS.test(src) && !(HOLE_CALL.test(src) && THREAD_OPTION.test(src))) ||
+      (THREAD_WORDS.test(src) && !(HOLE_CALL.test(src) && THREAD_OPTION.test(src)) && !LIB_PART.test(src)) ||
       ((METRIC_SIZE.test(src) || INSERT_WORDS.test(src)) && !HOLE_CALL.test(src)),
     message:
       'Script names a thread / M-size / insert but no hole() carries it: use hole(face, { diameter, thread: { pitch } }) (cookbook threaded-hole-tap-drill; inserts: heat-set-insert-pilot).',
@@ -78,7 +86,7 @@ export const INTENT_LINT_RULES: readonly IntentLintRule[] = [
     code: 'authoring.prefer-api.hole-by-cylinder',
     cookbookIds: ['clearance-hole-through-plate'],
     apis: ['holes'],
-    tools: ['lookup_cookbook'],
+    tools: [],
     fires: (src) => !HOLE_CALL.test(src) && cylinderSubtractCount(src) >= HOLE_BY_CYLINDER_MIN,
     message:
       'Holes are cut by subtracting cylinders: use holes(face, { positions, diameter, depth }) so export, drawings and DFM see real hole features (cookbook clearance-hole-through-plate).',
@@ -87,17 +95,18 @@ export const INTENT_LINT_RULES: readonly IntentLintRule[] = [
     code: 'authoring.prefer-api.gear',
     cookbookIds: ['involute-spur-gear-pair'],
     apis: ['spurGear', 'ringGear'],
-    tools: ['lookup_cookbook'],
-    fires: (src) => GEAR_WORDS.test(src) && !GEAR_API.test(src),
+    tools: [],
+    fires: (src) => (GEAR_WORDS.test(src) || (TEETH.test(src) && !NON_GEAR_TEETH.test(src))) && !GEAR_API.test(src),
     message:
-      'Script names gears but builds the teeth by hand: use spurGear({ module, teeth, faceWidth, backlash }) or ringGear (cookbook involute-spur-gear-pair).',
+      'Script names gears but builds the teeth by hand: use spurGear({ module, teeth, faceWidth, backlash }), ringGear() for internal teeth (cookbook involute-spur-gear-pair).',
   },
   {
     code: 'authoring.prefer-api.sheet-metal',
     cookbookIds: ['sheet-metal-l-bracket-bend'],
     apis: ['sheetMetal', 'bend'],
     tools: ['flatten_pattern'],
-    fires: (src) => SHEET_METAL_WORDS.test(src) && !SHEET_METAL_API.test(src),
+    fires: (src) =>
+      (SHEET_METAL_WORDS.test(src) || (BEND_WORDS.test(src) && !NON_SHEET_BEND.test(src))) && !SHEET_METAL_API.test(src),
     message:
       'Script names sheet metal / bends but fakes them with solids: use sheetMetal(profile, { thickness, kFactor }).bend(...) and MCP flatten_pattern (cookbook sheet-metal-l-bracket-bend).',
   },
