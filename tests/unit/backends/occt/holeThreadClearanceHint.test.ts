@@ -34,7 +34,7 @@ describe('thread clearance cap hint', () => {
     const e = await captureError(
       `return box(20, 20, 10).hole('top', { u: 0, v: 0, diameter: 6, depth: 'through', thread: { pitch: 1, clearance: 0.3 } });`,
     );
-    expect(e.message).toMatch(/thread\.clearance \(0\.3\) must be in \[0, pitch\/8\] = \[0, 0\.125\] mm for pitch 1/);
+    expect(e.message).toMatch(/opts\.thread\.clearance — got 0\.3; requires a number in \[0, thread\.pitch \/ 8\] — thread\.pitch is 1 mm, so the cap is 0\.125 \(mm\)/);
     const hint = e.hint ?? '';
     expect(hint).toMatch(/past pitch\/8 = 0\.125 mm neighbouring groove turns would merge/);
     expect(hint).toMatch(/keep clearance: 0\.125/);
