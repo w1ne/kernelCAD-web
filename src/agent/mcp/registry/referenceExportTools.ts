@@ -49,6 +49,8 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
         "3mf (slicer-friendly mesh: one named object per part, colours as core-spec basematerials named by the part's engineering material; " +
         "options.arrange 'plate' packs parts on the bed at Z=0 without overlap (options.orient puts each part's largest flat face down), 'assembled' keeps them together as one multi-part object for multi-colour prints; " +
         "options.slicer 'bambu' | 'orca' | 'prusa' adds that slicer's per-object name + filament-slot sidecar — slot N is the Nth distinct colour/material), " +
+        "options.infill { fromFea: '<study>' | true, bands?, pattern? } = stress-graded FDM infill (requires the local CalculiX + gmsh toolchain; without it the export fails with fea.solver.unavailable): " +
+        'solves the feaStudy and writes Orca/Bambu modifier volumes, each with its own sparse_infill_density; the result carries infill { bands, saving, images }), ' +
         'glb (web-viewer / AR with PBR materials), ' +
         'svg-drawing (third-angle engineering-drawing sheet: front/top/left + isometric views, hidden edges dashed, tangent edges thin, ' +
         'overall bounding-box dimensions, title block; assemblies are drawn with inter-part occlusion; pass options.annotations to dimension specific features instead of the bounding box; ' +
@@ -70,7 +72,7 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
         'STL exports run a watertight verify by default; failures return ok: false with export.mesh.not-watertight ' +
         '(open-edge count + up to 5 crack-cluster locations) but the file is still written so the broken mesh can be inspected. ' +
         'Optional { feature_id } selects which feature to export (default: last). ' +
-        'Optional { options } carries per-format options bag (see the kernelcad-mcp skill for the per-format keys: dxf layers/tolerance/unit/section/layout, 3mf printUnit/embedSource/arrange/orient/slicer/printer, glb axis/draco).\n' +
+        'Optional { options } carries per-format options bag (see the kernelcad-mcp skill for the per-format keys: dxf layers/tolerance/unit/section/layout, 3mf printUnit/embedSource/arrange/orient/slicer/printer/infill, glb axis/draco).\n' +
         "- target:'part' — export solved-assembly parts as individual binary STL files in their modeled (world-frame) positions. " +
         'Pass { file | code }, plus { part, output_path } for one part or { output_dir } for all parts ' +
         '(files land at <output_dir>/<part>.stl). A watertight verify runs on every exported mesh by default ' +

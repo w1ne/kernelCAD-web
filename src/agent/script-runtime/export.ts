@@ -43,6 +43,15 @@ import {
 import { exportPdfDrawing, exportSvgDrawing } from './exportDrawing';
 import { withOcctPoisonRecovery } from '../../kernel/backends/occt/occtBackend';
 import { fileSafePartName } from './safeOutputPath';
+import { invalidArgsText } from '../../shared/intent/invalidArgs';
+import {
+  buildStressInfillExport,
+  type StressInfillExportOptions,
+  type StressInfillReport,
+} from './stressInfillExport';
+import type { Export3mfOptions } from '../../kernel/backends/occt/export3mf';
+import { resolvePrinterProfile } from '../../kernel/export/gcode/printerProfiles';
+export type { StressInfillExportOptions, StressInfillReport } from './stressInfillExport';
 export { stlNotWatertightDiagnostic } from './exportDiagnostics';
 
 export type { GcodeStats } from '../../kernel/export/gcode/gcodeHeaderParser';
@@ -82,6 +91,10 @@ export type ExportOptions =
       /** Printer profile id (PRINTER_PROFILE_IDS): bed for arrange and the
        *  slicer default; default 'generic-fdm'. */
       printer?: string;
+      /** Stress-graded infill: solve the named feaStudy (needs the LOCAL
+       *  CalculiX + gmsh toolchain) and write one Orca/Bambu modifier
+       *  volume per stress band with its own sparse_infill_density. */
+      infill?: StressInfillExportOptions;
     }
   | { format: 'glb'; axis?: 'y-up' | 'z-up'; draco?: false }
   | {
@@ -221,6 +234,111 @@ export interface ExportResult {
   /** `svg-drawing` / `pdf-drawing` placement report (placed / overlapped counts, datums,
    *  every annotation drawn), present whenever the sheet carries annotations. */
   drawingReport?: DrawingReport;
+  /** `3mf` with `infill`: band table, saving estimate and render scripts. */
+  infillReport?: StressInfillReport;
+}
+
+/** 3MF options with stress-graded infill resolved into writer modifiers.
+ *  The slicer defaults to 'orca' (the format Orca and Bambu share) unless
+ *  the caller or a bambu/orca printer names one. */
+async function resolveInfill3mf(
+  input: ExportInput,
+  run: Awaited<ReturnType<typeof runScript>>,
+  shapes: ReadonlyMap<string, unknown>,
+  diagnostics: CompilerDiagnostic[],
+  featureCount: number,
+): Promise<{ input: ExportInput; report: StressInfillReport; diagnostics: CompilerDiagnostic[] } | { result: ExportResult }> {
+  const opts = input.options as Extract<ExportOptions, { format: '3mf' }>;
+  const built = await buildStressInfillExport(
+    opts.infill!, run.records, shapes, run.paramTable, input.scriptDir,
+  );
+  if (!built.ok) {
+    return { result: { bytes: new Uint8Array(), featureCount, diagnostics: [...diagnostics, ...built.diagnostics] } };
+  }
+  const printerSlicer = opts.printer !== undefined ? resolvePrinterProfile(opts.printer).slicer : 'generic';
+  const slicer = opts.slicer ?? (printerSlicer === 'generic' ? 'orca' : printerSlicer);
+  const writerOpts: Export3mfOptions = {
+    ...(opts as Export3mfOptions),
+    slicer,
+    modifiers: built.build.modifiers,
+    objectSettings: built.build.objectSettings,
+  };
+  return {
+    input: { ...input, options: writerOpts as unknown as ExportOptions },
+    report: built.build.report,
+    diagnostics: [...diagnostics, ...built.diagnostics],
+  };
+}
+
+function infillRequested(input: ExportInput): boolean {
+  return input.format === '3mf' && (input.options as { infill?: unknown } | undefined)?.infill !== undefined;
+}
+
+/** Stress-graded infill grades one solid; an assembly return is refused. */
+function infillSceneRefusal(
+  targetId: string,
+  diagnostics: CompilerDiagnostic[],
+  featureCount: number,
+): ExportResult {
+  return {
+    bytes: new Uint8Array(),
+    featureCount,
+    diagnostics: [...diagnostics, {
+      target: 'export-occt',
+      code: 'feature.invalid-args',
+      featureId: targetId,
+      severity: 'error',
+      ...invalidArgsText({
+        api: "export({ format: '3mf', options: { infill } })",
+        path: 'the script return value',
+        gotText: 'an assembly (Scene)',
+        requires: 'ONE solid part: stress-graded infill grades the shape that declares the feaStudy',
+        example: 'return bracket;',
+      }),
+      nextAction: NEXT_ACTIONS['feature.invalid-args'],
+    }],
+  };
+}
+
+/** Scene export, unless stress-graded infill was asked for (refused). */
+async function exportSceneOrRefuseInfill(
+  input: ExportInput,
+  format: ExportFormat,
+  scene: Parameters<typeof exportSceneBackend>[2],
+  targetId: string,
+  manifestRequest: ExportInput['connectorManifest'],
+  manifestScene: Scene | undefined,
+  run: Awaited<ReturnType<typeof runScript>>,
+  diagnostics: CompilerDiagnostic[],
+  featureCount: number,
+): Promise<ExportResult | undefined> {
+  if (infillRequested(input)) return infillSceneRefusal(targetId, diagnostics, featureCount);
+  return exportSceneBackend(
+    input, format, scene, targetId, manifestRequest, manifestScene, run, diagnostics, featureCount,
+  );
+}
+
+/** Single-shape export; a 3MF with `infill` gets stress-graded modifiers. */
+async function exportShapeOrInfill(
+  input: ExportInput,
+  format: ExportFormat,
+  shape: OcctBackend,
+  targetId: string,
+  scriptDir: string | undefined,
+  run: Awaited<ReturnType<typeof runScript>>,
+  shapes: ReadonlyMap<string, unknown>,
+  diagnostics: CompilerDiagnostic[],
+  featureCount: number,
+): Promise<ExportResult> {
+  if (!infillRequested(input)) {
+    return exportSingleShape(input, format, shape, targetId, scriptDir, run, diagnostics, featureCount);
+  }
+  const infill = await resolveInfill3mf(input, run, shapes, diagnostics, featureCount);
+  if ('result' in infill) return infill.result;
+  const out = await exportSingleShape(
+    infill.input, '3mf', shape, targetId, scriptDir, run, infill.diagnostics, featureCount,
+  );
+  return out.bytes.length > 0 ? { ...out, infillReport: infill.report } : out;
 }
 
 export async function runAndExport(input: ExportInput): Promise<ExportResult> {
@@ -299,7 +417,7 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
   // header STL/3MF on assembly returns (e.g. multi-material keycaps) must
   // not fail with "return toUnion()" after the model already viewed fine.
   if (isSceneBackend(lowered)) {
-    const sceneResult = await exportSceneBackend(
+    const sceneResult = await exportSceneOrRefuseInfill(
       input, format, lowered, targetId, manifestRequest, manifestScene, run, r.diagnostics, featureCount,
     );
     if (sceneResult !== undefined) return sceneResult;
@@ -308,9 +426,7 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
   }
 
   const shape = lowered as OcctBackend;
-  return exportSingleShape(
-    input, format, shape, targetId, scriptDir, run, r.diagnostics, featureCount,
-  );
+  return exportShapeOrInfill(input, format, shape, targetId, scriptDir, run, r.shapes, r.diagnostics, featureCount);
 
   });
 }

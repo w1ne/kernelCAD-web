@@ -5,9 +5,9 @@ description: kernelCAD model authoring API — primitives, transforms, booleans,
 
 # kernelCAD — authoring
 
-Author or modify kernelCAD models in TypeScript. Scripts live in `.kcad.ts` files; the kernelCAD CLI (`kernelcad evaluate <file>` and `kernelcad export stl|step|dxf|3mf|glb <file> -o <out>`) executes them via an OpenCASCADE WASM kernel.
+Author or modify kernelCAD models in TypeScript. Scripts live in `.kcad.ts` files; the kernelCAD CLI (`kernelcad evaluate <file>` and `kernelcad export stl|step|dxf|3mf|glb <file> -o <out>`) runs them on an OpenCASCADE WASM kernel.
 
-`.kcad.ts` scripts are single files: top-level `import`/`require` statements are not supported and are refused before execution with `feature.invalid-args` — define helpers in the same file.
+`.kcad.ts` scripts are single files: top-level `import`/`require` is refused with `feature.invalid-args` — define helpers in the same file.
 
 ## Agent authoring loop
 
@@ -178,9 +178,8 @@ Verify the install with `kernelcad --version` (should print `0.1.0` or higher).
 ## Coordinate System
 
 - **Z-up**, right-handed.
-- All linear dimensions are millimetres.
-- All angles are degrees.
-- Box: corner-anchored at the origin (spans `[0, x] × [0, y] × [0, z]`). Pass `centered: true` as the fourth argument to anchor at the centroid.
+- Lengths in millimetres, angles in degrees.
+- Box: corner-anchored at the origin (spans `[0, x] × [0, y] × [0, z]`). `centered: true` (4th argument) anchors at the centroid.
 - Cylinder: axis along Z, base at `z=0`, top at `z=h`.
 - Sphere: centred at the origin.
 
@@ -1000,6 +999,7 @@ When you need a canonical pattern, call MCP tool `lookup_cookbook(query, k?)` to
 | sheet-metal-l-bracket-bend | Prompt asks for a folded sheet-metal L-bracket, U-channel, flange, or service panel from a flat blank. Use `sheetMetal(profile, { thickness, kFactor })` then `.bend(...)` — not a solid union of two plates — when fabrication intent is sheet + folds. After evaluate/lower, recover the blank with `flattenPattern()` (MCP `flatten_pattern` / inspect bend-table) for laser/CNC. |
 | slicer-ready-3mf | You want a model to open in a desktop slicer ready to print — every assembly member a named object with its colour and material, either packed on the bed at Z=0 without overlap or kept together as one multi-colour object (an inlay), each colour on its own filament slot — instead of a bare STL or already-sliced G-code. |
 | static-hold-actuator-torque-check | A revolute or prismatic joint drives a downstream mass against gravity (a robot arm shoulder, a lift stage) and you need to know whether the declared actuator torque/force is sufficient — not just whether the mechanism is collision-free. Declare actuator: { torqueNm } (revolute) or actuator: { forceN } (prismatic) on the joint, then call kinematic.checkStaticHold(arm, opts). Real mass properties come from the part's geometry + declared density/material; the worst pose across the joint's declared range is reported alongside the margin. Fires assembly.joint.static-hold.exceeded when the actuator is undersized, assembly.joint.static-hold.margin-low when it clears but under the requested safety margin. |
+| stress-graded-infill-fdm | A 3D print carries a load and the user wants it strong where it matters and light everywhere else. Declare the load case with shape.feaStudy({ material, fixed, loads }) — fix the mounting holes, load the face the force acts on, force in TOTAL newtons — then export a 3MF with options.infill { fromFea: '<study name>' \| true }. The export solves the study, splits the volume into stress bands relative to yield (default < 15 % -> 10 %, 15-40 % -> 25 %, > 40 % -> 60 % gyroid; override with infill.bands [{ name, fromYield, densityPercent }]) and writes one Orca/Bambu modifier volume per dense band with its own sparse_infill_density. The result carries infill { bands (volume % per band), saving (filament + time vs uniform infill at the high density), fea (peak stress, safety factor), images { heatmap, bands, cutaway } }. Requires the LOCAL CalculiX + gmsh toolchain (check with fea_summary({})); without it the export fails with fea.solver.unavailable and writes nothing. Orca/Bambu only — PrusaSlicer's modifier format is not written yet. The FEA treats the print as solid, so the safety factor is an upper bound. |
 | subtract-then-fillet-rim | You want a parametric plate, drill a through-hole, and round the rim where the hole meets the top face. |
 | surface-quality-fillet-vs-g2 | You filleted or blended a freeform panel and need numbers, not a guess: is the join G0, G1, or G2? inspect({ of: 'continuity' }) samples each shared edge for position gap, normal jump and curvature difference. inspect({ of: 'curvature' }) reports per-face Gaussian and mean curvature (sphere 1/r², cylinder Gaussian 0 and \|H\|=1/(2r)). render_preview overlay zebra / curvature / continuity is the picture of those numbers. |
 | sweep-tolerance-envelope-check | A design has a param() whose real-world value varies (a printed hole that comes out oversized, a clearance gap that shrinks under tolerance) and you need to know whether the mechanism stays buildable across that range, not just at the nominal value. Call kinematic.sweepTolerance({ code\|file, params, gates }) with one or more param names as { values: [...] } or { min, max, steps }; it re-evaluates the script per cartesian-product combo (capped at 64) and runs the interference / mounting-hole / joint-axis gates (default on) plus reachability when declared, returning a pass/fail table and the first failing combo per gate. |
@@ -1024,7 +1024,7 @@ When you need a canonical pattern, call MCP tool `lookup_cookbook(query, k?)` to
 - Apply transforms AFTER edge/face features when face refs matter.
 - Always `return` a single shape from the top of the script. Only the returned shape is exported, probed and measured; "the last thing I created" is NOT a fallback. If a probe reports the same bbox no matter what you edit, check what the script returns.
 - Symmetric parts: `.mirror(plane)` (source + reflection); `.reflect(plane)` gives the reflection only.
-- In booleans, prefer ≥0.1 mm of overlap (unions) or offset (cuts) over exact tangency or coincident faces; offsets keep export meshes clean.
+- In booleans, prefer ≥0.1 mm of overlap (unions) or offset (cuts) over exact tangency or coincident faces.
 - Helical features: rail from `helix(...)`. Threads, worms, helical grooves: sweep with `spine: 'helix'`. Round-wire coils and springs: `spine: 'smooth'` (the default polyline spine is not watertight). Internal threads: `hole({ thread })`, not a sweep.
 
 ## Manufacturing intent → API
@@ -1042,6 +1042,7 @@ Intent words → call this API; do not hand-build it (subtracted cylinders, type
 | sheet metal, bend, flat pattern | `sheetMetal(profile, { thickness, kFactor }).bend(...)`, MCP `flatten_pattern` | sheet-metal-l-bracket-bend |
 | fit, clearance, tolerance, printer | clearance param + `dfmSpec({ process: 'fdm', printer, minClearance })` | fdm-fit-clearance-by-fit-type |
 | photo, trace, reference image | MCP `trace_from_image` (`referenceImage` only overlays) | resolve-photo-trace-assumptions |
+| infill, weak spots, stronger, will it hold, stress, lightweight print | `feaStudy` + `export` 3mf `infill: { fromFea }` (local ccx + gmsh) | stress-graded-infill-fdm |
 | screw, nut, bearing, motor | `lib.standard.*`, `lib.findPart`, MCP `find_part` | kernelcad-parts skill |
 
 ## Interlocking joinery (flat-pack / laser / CNC)

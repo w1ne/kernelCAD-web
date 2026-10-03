@@ -26,6 +26,8 @@ import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic'
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
 import { validateOutputPath } from '../../script-runtime/safeOutputPath';
 import { loadMcpScriptSource } from '../runMcpScript';
+import type { StressInfillReport } from '../../script-runtime/stressInfillExport';
+import { infillOutput, withInfillOutDir, type StressInfillImages } from './stressInfillRenders';
 
 export interface ExportModelInput {
   file?: string;
@@ -56,6 +58,8 @@ export interface ExportModelOutput {
   /** svg-drawing / pdf-drawing placement report: `placed` / `overlapped` counts, `byKind`,
    *  the datum reference frame, and every annotation drawn. */
   drawing_report?: DrawingReport;
+  /** 3mf with options.infill: band table, saving estimate, FEA peaks, PNGs. */
+  infill?: StressInfillReport & { images: StressInfillImages };
   diagnostics?: CompilerDiagnostic[];
   error?: string;
 }
@@ -137,9 +141,10 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
 
   // `no_verify` mirrors export_part: plumb `verify: false` into the STL
   // options bag (the runtime gate is default-on).
-  const effectiveOptions = format === 'stl' && input.no_verify
+  let effectiveOptions: ExportOptions | undefined = format === 'stl' && input.no_verify
     ? { ...(options ?? {}), format: 'stl' as const, verify: false }
     : options;
+  effectiveOptions = withInfillOutDir(format, effectiveOptions, output_path);
 
   let result;
   try {
@@ -184,6 +189,9 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
     return { ok: false, error: writeError };
   }
 
+  const diagnostics = [...result.diagnostics];
+  const infill = await infillOutput(result.infillReport, options, diagnostics);
+
   return {
     ok: errorDiagnostics.length === 0,
     output_path: finalPath,
@@ -192,6 +200,7 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
     format,
     ...companionFilesField(format, meshFiles),
     ...(result.drawingReport === undefined ? {} : { drawing_report: result.drawingReport }),
-    diagnostics: withNextActions(result.diagnostics),
+    ...infill,
+    diagnostics: withNextActions(diagnostics),
   };
 }
