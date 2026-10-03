@@ -20,6 +20,8 @@
 // The result is ONE closed CCW polygon — tooth 0 is centred on +X — so the
 // extruded body is a single manifold solid for every tooth count.
 
+import { invalidArgsText } from '../shared/intent/invalidArgs';
+
 export interface SpurGearProfileOptions {
   /** Module m in mm (pitch diameter / tooth count). */
   module: number;
@@ -145,6 +147,17 @@ function flankRadii(radii: SpurGearRadii, samples: number): number[] {
   return out.filter((r, i) => i === 0 || r - out[i - 1] > 1e-6 * span);
 }
 
+/**
+ * `spurGear` / `internalSpurGear` / `planetaryToothCompatibility` re-raise
+ * these as `feature.invalid-args` (see `apiShapeMethods`), so build the
+ * message and hint with the shared raiser's renderer: API + argument path,
+ * received value, requirement, inline example.
+ */
+function profileError(spec: Parameters<typeof invalidArgsText>[0]): SpurGearProfileError {
+  const { message, hint } = invalidArgsText(spec);
+  return new SpurGearProfileError(message, hint);
+}
+
 export class SpurGearProfileError extends Error {
   readonly hint: string;
   constructor(message: string, hint: string) {
@@ -209,24 +222,36 @@ export function spurGearFlankSamples(
   for (let i = 0; i < rs.length; i += 1) {
     const t = ts[i];
     if (!Number.isFinite(t) || t <= 0) {
-      throw new SpurGearProfileError(
-        `spurGear: the tooth vanishes at radius ${rs[i].toFixed(3)} mm (${z} teeth, ${opts.pressureAngleDeg}° pressure angle, backlash ${opts.backlash} mm).`,
-        'Use more teeth, a larger pressure angle, or less backlash.',
-      );
+      throw profileError({
+        api: 'spurGear({ teeth, pressureAngle, backlash })',
+        path: 'opts.teeth + opts.pressureAngle + opts.backlash',
+        gotText: `teeth ${z}, pressureAngle ${opts.pressureAngleDeg} deg, backlash ${opts.backlash} mm — the tooth flank vanishes at radius ${rs[i].toFixed(3)} mm`,
+        requires:
+          'a combination whose tooth survives to the root: raise teeth, raise pressureAngle, or lower backlash (backlash must stay well under the module)',
+        example: 'spurGear({ module: 1, teeth: 20, faceWidth: 6, bore: 5 })',
+      });
     }
     if (t >= pitchAngle / 2) {
-      throw new SpurGearProfileError(
-        `spurGear: neighbouring teeth touch at radius ${rs[i].toFixed(3)} mm.`,
-        'Check module, teeth and pressure angle; the tooth space closed up.',
-      );
+      throw profileError({
+        api: 'spurGear({ module, teeth, pressureAngle })',
+        path: 'opts.module + opts.teeth + opts.pressureAngle',
+        gotText: `a tooth space that closes up — neighbouring teeth touch at radius ${rs[i].toFixed(3)} mm`,
+        requires:
+          'a combination that leaves a tooth space: raise teeth for the same module, or lower pressureAngle',
+        example: 'spurGear({ module: 1, teeth: 20, faceWidth: 6, bore: 5 })',
+      });
     }
   }
   const tipHalf = ts[ts.length - 1];
   if (tipHalf * radii.tip < 0.05 * opts.module) {
-    throw new SpurGearProfileError(
-      `spurGear: the tooth is pointed at the tip circle (tip land ${(2 * tipHalf * radii.tip).toFixed(3)} mm).`,
-      'Use more teeth or a smaller pressure angle, or reduce backlash.',
-    );
+    throw profileError({
+      api: 'spurGear({ module, teeth, pressureAngle })',
+      path: 'opts.teeth + opts.pressureAngle',
+      gotText: `a pointed tooth — the tip land is ${(2 * tipHalf * radii.tip).toFixed(3)} mm, under the 0.05 × module floor of ${(0.05 * opts.module).toFixed(3)} mm`,
+      requires: 'a combination with a flat tip land: raise teeth, lower pressureAngle, or lower backlash',
+      unit: 'mm',
+      example: 'spurGear({ module: 1, teeth: 20, faceWidth: 6, bore: 5 })',
+    });
   }
 
   // First sample that lies on the analytic involute (1e-5 rad absorbs the
@@ -351,17 +376,27 @@ export function assertPlanetaryToothCompatibility(opts: PlanetaryToothCompatibil
     ['ringTeeth', ringTeeth],
   ] as const) {
     if (typeof value !== 'number' || !Number.isInteger(value) || value < 6) {
-      throw new SpurGearProfileError(
-        `planetaryToothCompatibility: ${label} must be an integer ≥ 6; got ${String(value)}.`,
-        'Pass whole tooth counts for the sun, planet, and internal ring.',
-      );
+      throw profileError({
+        api: `planetaryToothCompatibility({ ${label} })`,
+        path: `opts.${label}`,
+        got: value,
+        showType: typeof value !== 'number',
+        requires: 'a whole tooth count ≥ 6',
+        unit: 'count',
+        example: 'planetaryToothCompatibility({ sunTeeth: 18, planetTeeth: 18, ringTeeth: 54 })',
+      });
     }
   }
   const expected = sunTeeth + 2 * planetTeeth;
   if (ringTeeth !== expected) {
-    throw new SpurGearProfileError(
-      `planetaryToothCompatibility: ringTeeth ${ringTeeth} must equal sunTeeth + 2·planetTeeth = ${expected} (got sun=${sunTeeth}, planet=${planetTeeth}).`,
-      'Pick Zring = Zsun + 2·Zplanet so pitch circles meet: planet centre distance is m(Zsun+Zplanet)/2 and the ring pitch radius is m·Zring/2.',
-    );
+    throw profileError({
+      api: 'planetaryToothCompatibility({ ringTeeth })',
+      path: 'opts.ringTeeth',
+      got: ringTeeth,
+      requires:
+        `ringTeeth = sunTeeth + 2 × planetTeeth — sunTeeth is ${sunTeeth} and planetTeeth is ${planetTeeth}, so ringTeeth must be ${expected}; only then do the pitch circles meet (planet centre distance m(Zsun+Zplanet)/2, ring pitch radius m·Zring/2)`,
+      unit: 'count',
+      example: `planetaryToothCompatibility({ sunTeeth: ${sunTeeth}, planetTeeth: ${planetTeeth}, ringTeeth: ${expected} })`,
+    });
   }
 }

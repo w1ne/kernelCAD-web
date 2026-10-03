@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { Param, Vec3 } from '../shared/intent/types';
-import { isValidEditableNumber, formatScalarForError } from '../shared/intent/types';
+import { isValidEditableNumber } from '../shared/intent/types';
 import { KernelError } from '../shared/intent/kernelError';
+import { invalidArgs } from '../shared/intent/invalidArgs';
+import type { ArgUnit } from '../shared/intent/invalidArgs';
 import { isParamRef, type Editable } from '../shared/runtime/paramRef';
 import { toParam } from '../shared/runtime/editableHelpers';
 
@@ -32,26 +34,89 @@ function paramArithmeticHint(value: unknown): string | undefined {
   return undefined;
 }
 
+/**
+ * One minimal correct call per API that `assertEditableNumber` /
+ * `assertPositiveFinite` guard, so those two shared guards can put a
+ * copy-pasteable example in every message instead of a bare "pass a positive
+ * finite number". Unknown kinds fall back to a generic positional call.
+ */
+const API_EXAMPLES: Record<string, string> = {
+  box: 'box(40, 30, 10)',
+  cylinder: 'cylinder(20, 5)',
+  sphere: 'sphere(10)',
+  torus: 'torus(20, 5)',
+  spurGear: 'spurGear({ module: 1, teeth: 20, faceWidth: 6, bore: 5 })',
+  internalSpurGear: 'internalSpurGear({ module: 1, teeth: 54, faceWidth: 8, rimThickness: 4 })',
+  spring: 'spring({ length: 30, coilRadius: 5, wireRadius: 1, turns: 8 })',
+  extrudeRect: 'extrudeRect(40, 30, 10)',
+  extrudeCircle: 'extrudeCircle(10, 5)',
+  extrudePolygon: 'extrudePolygon([[0, 0], [20, 0], [20, 10], [0, 10]], 5)',
+  extrudeRoundedRect: 'extrudeRoundedRect(40, 30, 10, 3)',
+};
+
+/** What a named argument means, so the requirement says more than "positive".
+ *  Keyed `<api>.<arg>` first, then the bare arg name. */
+const ARG_MEANING: Record<string, { why: string; unit?: ArgUnit }> = {
+  'spurGear.module': {
+    why: "the ISO module (pitch diameter / teeth), NOT diametral pitch and not the pitch diameter; both gears of a mesh need the same module",
+    unit: 'mm',
+  },
+  'internalSpurGear.module': {
+    why: 'the ISO module (pitch diameter / teeth); it must match the mating pinion',
+    unit: 'mm',
+  },
+  'spurGear.faceWidth': { why: 'the axial thickness of the gear blank', unit: 'mm' },
+  'internalSpurGear.faceWidth': { why: 'the axial thickness of the ring blank', unit: 'mm' },
+  'spurGear.bore': { why: 'the centre bore diameter, not the radius', unit: 'mm' },
+  'internalSpurGear.rimThickness': {
+    why: 'the material left outside the root circle of the internal teeth',
+    unit: 'mm',
+  },
+  'spring.length': { why: 'the free length along the coil axis', unit: 'mm' },
+  'spring.coilRadius': { why: 'the radius of the coil centreline, not the outer diameter', unit: 'mm' },
+  'spring.wireRadius': { why: 'the radius of the wire cross-section, not its diameter', unit: 'mm' },
+  'spring.turns': { why: 'the number of complete coils', unit: 'count' },
+  radius: { why: 'a radius, not a diameter', unit: 'mm' },
+  diameter: { why: 'a diameter, not a radius', unit: 'mm' },
+};
+
+function argMeaning(featureKind: string, paramName: string): { why: string; unit?: ArgUnit } {
+  return ARG_MEANING[`${featureKind}.${paramName}`] ?? ARG_MEANING[paramName] ?? { why: '', unit: 'mm' };
+}
+
+function apiExample(featureKind: string, paramName: string): string {
+  return API_EXAMPLES[featureKind] ?? `${featureKind}(...) with a numeric ${paramName}`;
+}
+
 export function assertEditableNumber(featureKind: string, paramName: string, value: unknown): void {
   if (isValidEditableNumber(value)) return;
   const targetedHint = paramArithmeticHint(value);
-  throw new KernelError(
-    'feature.invalid-args',
-    `${featureKind}: ${paramName} must be a finite number or a numeric ParamRef; got ${formatScalarForError(value)}.`,
-    featureKind,
-    targetedHint ??
-      `Pass a number (or a ParamRef returned by param()) for ${paramName}; primitives do NOT accept an options object such as { radius, height }. Use the positional signature: ${featureKind}(...).`,
-  );
+  invalidArgs({
+    api: `${featureKind}(${paramName})`,
+    path: paramName,
+    got: value,
+    showType: true,
+    requires:
+      'a finite number, or a numeric ParamRef from param(); the primitives take POSITIONAL arguments, they do not accept an options object such as { radius, height }',
+    example: apiExample(featureKind, paramName),
+    featureId: featureKind,
+    hint: targetedHint,
+  });
 }
 
 export function assertPositiveFinite(featureKind: string, paramName: string, value: unknown): number {
   if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `${featureKind}: ${paramName} must be a positive finite number; got ${formatScalarForError(value)}.`,
-      featureKind,
-      `Pass a positive finite number for ${paramName}.`,
-    );
+    const { why, unit } = argMeaning(featureKind, paramName);
+    invalidArgs({
+      api: `${featureKind}(${paramName})`,
+      path: paramName,
+      got: value,
+      showType: typeof value !== 'number',
+      requires: why === '' ? 'a finite number > 0' : `a finite number > 0 — ${why}`,
+      unit,
+      example: apiExample(featureKind, paramName),
+      featureId: featureKind,
+    });
   }
   return value;
 }

@@ -66,8 +66,13 @@ export interface InvalidArgsSpec {
   /** Unit of the argument, named explicitly. Omit for non-dimensional args. */
   unit?: ArgUnit;
   featureId?: string;
-  /** Defaults to `feature.invalid-args`; pass `cli.invalid-args` for CLI/tool args. */
-  code?: Extract<DiagnosticCode, 'feature.invalid-args' | 'cli.invalid-args'>;
+  /**
+   * Defaults to `feature.invalid-args`. Pass `cli.invalid-args` for CLI/tool
+   * args, or a narrower registered code when one already exists for the field
+   * (e.g. `feature.sheetMetal.kfactor-invalid`) — the code raised must not
+   * change, only the text.
+   */
+  code?: DiagnosticCode;
   /**
    * Replace the generated hint. Only for the handful of cases that can explain
    * *how to get what the author wanted* a different way (e.g. the thread
@@ -140,7 +145,7 @@ export function invalidArgs(spec: InvalidArgsSpec): never {
 export function argChecker(
   api: string,
   featureId?: string,
-  code?: InvalidArgsSpec['code'],
+  code?: DiagnosticCode,
 ): (spec: Omit<InvalidArgsSpec, 'api' | 'featureId' | 'code'>) => never {
   return (spec) => invalidArgs({ ...spec, api, featureId, code });
 }
