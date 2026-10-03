@@ -20,7 +20,7 @@ import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { HINT_TEMPLATES, NEXT_ACTIONS } from '../../shared/diagnostics/registry';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { ParamTable } from '../../shared/runtime/paramTable';
-import { findFeaStudies, selectFeaStudy } from '../../modeling/runtime/fea/findFeaStudies';
+import { findFeaStudies, selectFeaStudy, type FoundFeaStudy } from '../../modeling/runtime/fea/findFeaStudies';
 import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { runFeaStudy } from '../../kernel/fea/runFea';
 import type { FeaToolchain } from '../../kernel/fea/toolchain';
@@ -107,23 +107,32 @@ function errorDiag(code: 'feature.invalid-args' | 'fea.solver.unavailable', mess
   };
 }
 
-/** Parse the user-facing `infill` option; undefined when valid. */
+const isPositive = (v: unknown): boolean => typeof v === 'number' && v > 0;
+
+/** One check per field; each returns a message when the field is bad. */
+const INFILL_FIELD_CHECKS: ReadonlyArray<(o: Partial<StressInfillExportOptions>) => string | undefined> = [
+  (o) => (o.fromFea === true || (typeof o.fromFea === 'string' && o.fromFea.length > 0)
+    ? undefined
+    : 'infill.fromFea must be a feaStudy name or true (the last declared study).'),
+  (o) => {
+    if (o.bands === undefined) return undefined;
+    if (!Array.isArray(o.bands)) return 'infill.bands must be an array of { name, fromYield, densityPercent }.';
+    return validateInfillBands(o.bands);
+  },
+  (o) => (o.pattern === undefined || (typeof o.pattern === 'string' && o.pattern.length > 0)
+    ? undefined
+    : 'infill.pattern must be an Orca/Bambu sparse_infill_pattern name, e.g. "gyroid".'),
+  (o) => (o.cellMm === undefined || isPositive(o.cellMm) ? undefined : 'infill.cellMm must be a positive number of mm.'),
+  (o) => (o.meshSize === undefined || isPositive(o.meshSize) ? undefined : 'infill.meshSize must be a positive number of mm.'),
+];
+
+/** Validate the user-facing `infill` option; undefined when valid. */
 export function invalidInfillOption(infill: unknown): string | undefined {
   if (typeof infill !== 'object' || infill === null) return 'infill must be an object: { fromFea: "<study name>" | true, bands?, pattern? }.';
-  const o = infill as Partial<StressInfillExportOptions>;
-  if (!(o.fromFea === true || (typeof o.fromFea === 'string' && o.fromFea.length > 0))) {
-    return 'infill.fromFea must be a feaStudy name or true (the last declared study).';
-  }
-  if (o.bands !== undefined) {
-    if (!Array.isArray(o.bands)) return 'infill.bands must be an array of { name, fromYield, densityPercent }.';
-    const bad = validateInfillBands(o.bands);
+  for (const check of INFILL_FIELD_CHECKS) {
+    const bad = check(infill as Partial<StressInfillExportOptions>);
     if (bad !== undefined) return bad;
   }
-  if (o.pattern !== undefined && (typeof o.pattern !== 'string' || o.pattern.length === 0)) {
-    return 'infill.pattern must be an Orca/Bambu sparse_infill_pattern name, e.g. "gyroid".';
-  }
-  if (o.cellMm !== undefined && !(typeof o.cellMm === 'number' && o.cellMm > 0)) return 'infill.cellMm must be a positive number of mm.';
-  if (o.meshSize !== undefined && !(typeof o.meshSize === 'number' && o.meshSize > 0)) return 'infill.meshSize must be a positive number of mm.';
   return undefined;
 }
 
@@ -131,6 +140,63 @@ function filamentDensity(material: unknown): number | undefined {
   if (typeof material !== 'string') return undefined;
   const grade = canonicalMaterialName(material);
   return grade === undefined ? undefined : engineeringMaterialProps(grade).densityKgPerM3 / 1000;
+}
+
+type Fail = { ok: false; diagnostics: CompilerDiagnostic[] };
+const fail = (message: string, featureId?: string): Fail =>
+  ({ ok: false, diagnostics: [errorDiag('feature.invalid-args', `3mf export: ${message}`, featureId)] });
+
+/** The study `fromFea` names and the lowered shape it is bound to. */
+function resolveInfillStudy(
+  infill: StressInfillExportOptions,
+  records: readonly FeatureRecord[],
+  shapes: ReadonlyMap<string, unknown>,
+): { ok: true; study: FoundFeaStudy; shape: OcctBackend } | Fail {
+  const bad = invalidInfillOption(infill);
+  if (bad !== undefined) return fail(bad);
+  const studies = findFeaStudies(records);
+  if (studies.length === 0) {
+    return fail('infill.fromFea needs a declared study. Add shape.feaStudy({ material, fixed, loads }) to the part '
+      + '(fix the mounting holes, load the face the force acts on).');
+  }
+  const study = selectFeaStudy(studies, infill.fromFea === true ? undefined : infill.fromFea);
+  if (study === undefined) {
+    return fail(`no feaStudy named '${String(infill.fromFea)}'. Declared studies: ${studies.map((s) => s.metadata.name).join(', ')}.`);
+  }
+  const shape = shapes.get(study.shapeId);
+  if (!(shape instanceof OcctBackend)) {
+    return fail(`the shape feaStudy '${study.metadata.name}' is bound to did not lower.`, study.shapeId);
+  }
+  return { ok: true, study, shape };
+}
+
+async function resolveOutDir(outDir: string | undefined): Promise<string> {
+  const dir = outDir !== undefined
+    ? (isAbsolute(outDir) ? outDir : resolve(outDir))
+    : await mkdtemp(join(tmpdir(), 'kernelcad-infill-'));
+  await mkdir(dir, { recursive: true });
+  return dir;
+}
+
+/** One Orca/Bambu modifier per band above the base band. */
+function bandModifiers(result: StressInfillResult): ThreeMfModifier[] {
+  return result.bands.flatMap((b, k) => (k === 0 || b.modifier === undefined ? [] : [{
+    name: `infill-${b.name}-${b.densityPercent}pct`,
+    mesh: b.modifier,
+    settings: { sparse_infill_density: `${b.densityPercent}%`, sparse_infill_pattern: result.pattern },
+  }]));
+}
+
+function bandRows(result: StressInfillResult): InfillBandRow[] {
+  return result.bands.map((b, k) => ({
+    name: b.name,
+    densityPercent: b.densityPercent,
+    fromMPa: b.fromMPa,
+    toMPa: Number.isFinite(b.toMPa) ? b.toMPa : null,
+    stressVolumePercent: b.stressVolumePercent,
+    printedVolumePercent: b.printedVolumePercent,
+    modifier: k > 0 && b.modifier !== undefined,
+  }));
 }
 
 /**
@@ -145,43 +211,11 @@ export async function buildStressInfillExport(
   cwd: string | undefined,
   /** Pre-probed toolchain (tests); omitted: probed per run. */
   toolchain?: FeaToolchain,
-): Promise<{ ok: true; build: StressInfillBuild; diagnostics: CompilerDiagnostic[] } | { ok: false; diagnostics: CompilerDiagnostic[] }> {
-  const bad = invalidInfillOption(infill);
-  if (bad !== undefined) return { ok: false, diagnostics: [errorDiag('feature.invalid-args', `3mf export: ${bad}`)] };
-
-  const studies = findFeaStudies(records);
-  if (studies.length === 0) {
-    return {
-      ok: false,
-      diagnostics: [errorDiag(
-        'feature.invalid-args',
-        '3mf export: infill.fromFea needs a declared study. Add shape.feaStudy({ material, fixed, loads }) to the part '
-          + '(fix the mounting holes, load the face the force acts on).',
-      )],
-    };
-  }
-  const study = selectFeaStudy(studies, infill.fromFea === true ? undefined : infill.fromFea);
-  if (study === undefined) {
-    return {
-      ok: false,
-      diagnostics: [errorDiag(
-        'feature.invalid-args',
-        `3mf export: no feaStudy named '${String(infill.fromFea)}'. Declared studies: ${studies.map((s) => s.metadata.name).join(', ')}.`,
-      )],
-    };
-  }
-  const shape = shapes.get(study.shapeId);
-  if (!(shape instanceof OcctBackend)) {
-    return {
-      ok: false,
-      diagnostics: [errorDiag('feature.invalid-args', `3mf export: the shape feaStudy '${study.metadata.name}' is bound to did not lower.`, study.shapeId)],
-    };
-  }
-
-  const outDir = infill.outDir !== undefined
-    ? (isAbsolute(infill.outDir) ? infill.outDir : resolve(infill.outDir))
-    : await mkdtemp(join(tmpdir(), 'kernelcad-infill-'));
-  await mkdir(outDir, { recursive: true });
+): Promise<{ ok: true; build: StressInfillBuild; diagnostics: CompilerDiagnostic[] } | Fail> {
+  const target = resolveInfillStudy(infill, records, shapes);
+  if (!target.ok) return target;
+  const { study, shape } = target;
+  const outDir = await resolveOutDir(infill.outDir);
 
   const metadata = infill.meshSize !== undefined ? { ...study.metadata, meshSize: infill.meshSize } : study.metadata;
   const fea = await runFeaStudy(shape, metadata, study.shapeId, records, {
@@ -201,58 +235,33 @@ export async function buildStressInfillExport(
   }
 
   const yieldMPa = fea.summary.material.yield;
+  const density = filamentDensity(study.metadata.material);
   const result = buildStressInfill(fea.raw.mesh, fea.raw.fields, yieldMPa, {
     ...(infill.bands !== undefined ? { bands: infill.bands } : {}),
     ...(infill.pattern !== undefined ? { pattern: infill.pattern } : {}),
     ...(infill.cellMm !== undefined ? { cellMm: infill.cellMm } : {}),
-    ...(filamentDensity(study.metadata.material) !== undefined
-      ? { filamentDensityGCm3: filamentDensity(study.metadata.material) }
-      : {}),
+    ...(density !== undefined ? { filamentDensityGCm3: density } : {}),
   });
-  const renderScripts = await writeRenderScripts(fea.raw.mesh, fea.raw.fields, result, outDir);
-
-  const modifiers: ThreeMfModifier[] = [];
-  result.bands.forEach((b, k) => {
-    if (k === 0 || b.modifier === undefined) return;
-    modifiers.push({
-      name: `infill-${b.name}-${b.densityPercent}pct`,
-      mesh: b.modifier,
-      settings: { sparse_infill_density: `${b.densityPercent}%`, sparse_infill_pattern: result.pattern },
-    });
-  });
-  const base = result.bands[0];
+  const { maxVonMisesMPa, maxVonMisesAt, minSafetyFactor, maxDisplacementMm, trust } = fea.summary;
   const report: StressInfillReport = {
     study: study.metadata.name,
     pattern: result.pattern,
     cellMm: result.cellMm,
     yieldMPa,
-    bands: result.bands.map((b, k) => ({
-      name: b.name,
-      densityPercent: b.densityPercent,
-      fromMPa: b.fromMPa,
-      toMPa: Number.isFinite(b.toMPa) ? b.toMPa : null,
-      stressVolumePercent: b.stressVolumePercent,
-      printedVolumePercent: b.printedVolumePercent,
-      modifier: k > 0 && b.modifier !== undefined,
-    })),
+    bands: bandRows(result),
     saving: result.saving,
-    fea: {
-      maxVonMisesMPa: fea.summary.maxVonMisesMPa,
-      maxVonMisesAt: fea.summary.maxVonMisesAt,
-      minSafetyFactor: fea.summary.minSafetyFactor,
-      maxDisplacementMm: fea.summary.maxDisplacementMm,
-      trust: fea.summary.trust,
-    },
+    fea: { maxVonMisesMPa, maxVonMisesAt, minSafetyFactor, maxDisplacementMm, trust },
     boundsMm: meshBounds(fea.raw.mesh),
     outDir,
-    renderScripts,
+    renderScripts: await writeRenderScripts(fea.raw.mesh, fea.raw.fields, result, outDir),
     note: SOLID_PART_NOTE,
   };
   await writeFile(join(outDir, 'infill-report.json'), JSON.stringify(report, null, 2), 'utf8');
+  const base = result.bands[0];
   return {
     ok: true,
     build: {
-      modifiers,
+      modifiers: bandModifiers(result),
       objectSettings: { sparse_infill_density: `${base.densityPercent}%`, sparse_infill_pattern: result.pattern },
       report,
     },

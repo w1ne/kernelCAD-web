@@ -27,7 +27,7 @@ import { withNextActions } from '../../../shared/diagnostics/diagnostic';
 import { validateOutputPath } from '../../script-runtime/safeOutputPath';
 import { loadMcpScriptSource } from '../runMcpScript';
 import type { StressInfillReport } from '../../script-runtime/stressInfillExport';
-import { renderStressInfill, type StressInfillImages } from './stressInfillRenders';
+import { infillOutput, withInfillOutDir, type StressInfillImages } from './stressInfillRenders';
 
 export interface ExportModelInput {
   file?: string;
@@ -141,21 +141,10 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
 
   // `no_verify` mirrors export_part: plumb `verify: false` into the STL
   // options bag (the runtime gate is default-on).
-  let effectiveOptions = format === 'stl' && input.no_verify
+  let effectiveOptions: ExportOptions | undefined = format === 'stl' && input.no_verify
     ? { ...(options ?? {}), format: 'stl' as const, verify: false }
     : options;
-  // Stress-graded infill: the FEA job, band STLs and renders land next to
-  // the 3MF (<name>-infill/) unless the caller named a directory.
-  const infillOpt = format === '3mf' ? (options as { infill?: { outDir?: string; renders?: boolean } } | undefined)?.infill : undefined;
-  if (infillOpt !== undefined && infillOpt.outDir === undefined && typeof output_path === 'string') {
-    const outCheck = validateOutputPath(output_path);
-    if (outCheck.ok) {
-      effectiveOptions = {
-        ...(options as object),
-        infill: { ...infillOpt, outDir: outCheck.resolved!.replace(/\.3mf$/i, '') + '-infill' },
-      } as ExportOptions;
-    }
-  }
+  effectiveOptions = withInfillOutDir(format, effectiveOptions, output_path);
 
   let result;
   try {
@@ -201,11 +190,7 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
   }
 
   const diagnostics = [...result.diagnostics];
-  let infill: ExportModelOutput['infill'];
-  if (result.infillReport !== undefined) {
-    const images = infillOpt?.renders === false ? {} : await renderStressInfill(result.infillReport, diagnostics);
-    infill = { ...result.infillReport, images };
-  }
+  const infill = await infillOutput(result.infillReport, options, diagnostics);
 
   return {
     ok: errorDiagnostics.length === 0,
@@ -215,7 +200,7 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
     format,
     ...companionFilesField(format, meshFiles),
     ...(result.drawingReport === undefined ? {} : { drawing_report: result.drawingReport }),
-    ...(infill === undefined ? {} : { infill }),
+    ...infill,
     diagnostics: withNextActions(diagnostics),
   };
 }

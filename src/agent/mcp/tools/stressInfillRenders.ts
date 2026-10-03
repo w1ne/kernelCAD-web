@@ -13,7 +13,9 @@
 
 import { join } from 'node:path';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
+import type { ExportOptions } from '../../script-runtime/export';
 import type { StressInfillReport } from '../../script-runtime/stressInfillExport';
+import { validateOutputPath } from '../../script-runtime/safeOutputPath';
 import { renderPreviewTool } from './renderPreview';
 
 export interface StressInfillImages {
@@ -61,4 +63,36 @@ export async function renderStressInfill(
     }
   }
   return images;
+}
+
+type InfillOpt = { outDir?: string; renders?: boolean };
+
+function infillOptOf(options: unknown): InfillOpt | undefined {
+  return (options as { format?: string; infill?: InfillOpt } | undefined)?.infill;
+}
+
+/** Put the FEA job, band STLs and renders next to the 3MF
+ *  (`<name>-infill/`) unless the caller named a directory. */
+export function withInfillOutDir(
+  format: string,
+  options: ExportOptions | undefined,
+  outputPath: unknown,
+): ExportOptions | undefined {
+  const infill = infillOptOf(options);
+  if (format !== '3mf' || infill === undefined || infill.outDir !== undefined || typeof outputPath !== 'string') return options;
+  const out = validateOutputPath(outputPath);
+  if (!out.ok) return options;
+  return { ...(options as object), infill: { ...infill, outDir: `${out.resolved!.replace(/\.3mf$/i, '')}-infill` } } as ExportOptions;
+}
+
+/** The `infill` output field: the report plus its renders (skipped with
+ *  `infill.renders: false`). Empty when the export had no infill. */
+export async function infillOutput(
+  report: StressInfillReport | undefined,
+  options: unknown,
+  diagnostics: CompilerDiagnostic[],
+): Promise<{ infill?: StressInfillReport & { images: StressInfillImages } }> {
+  if (report === undefined) return {};
+  const images = infillOptOf(options)?.renders === false ? {} : await renderStressInfill(report, diagnostics);
+  return { infill: { ...report, images } };
 }

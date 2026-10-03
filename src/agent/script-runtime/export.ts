@@ -269,6 +269,72 @@ async function resolveInfill3mf(
   };
 }
 
+function infillRequested(input: ExportInput): boolean {
+  return input.format === '3mf' && (input.options as { infill?: unknown } | undefined)?.infill !== undefined;
+}
+
+/** Stress-graded infill grades one solid; an assembly return is refused. */
+function infillSceneRefusal(
+  targetId: string,
+  diagnostics: CompilerDiagnostic[],
+  featureCount: number,
+): ExportResult {
+  return {
+    bytes: new Uint8Array(),
+    featureCount,
+    diagnostics: [...diagnostics, {
+      target: 'export-occt',
+      code: 'feature.invalid-args',
+      featureId: targetId,
+      severity: 'error',
+      message: '3mf export: infill.fromFea grades ONE solid part. Return the part itself (the shape that declares the feaStudy), not an assembly.',
+      hint: HINT_TEMPLATES['feature.invalid-args'].template,
+      nextAction: NEXT_ACTIONS['feature.invalid-args'],
+    }],
+  };
+}
+
+/** Scene export, unless stress-graded infill was asked for (refused). */
+async function exportSceneOrRefuseInfill(
+  input: ExportInput,
+  format: ExportFormat,
+  scene: Parameters<typeof exportSceneBackend>[2],
+  targetId: string,
+  manifestRequest: ExportInput['connectorManifest'],
+  manifestScene: Scene | undefined,
+  run: Awaited<ReturnType<typeof runScript>>,
+  diagnostics: CompilerDiagnostic[],
+  featureCount: number,
+): Promise<ExportResult | undefined> {
+  if (infillRequested(input)) return infillSceneRefusal(targetId, diagnostics, featureCount);
+  return exportSceneBackend(
+    input, format, scene, targetId, manifestRequest, manifestScene, run, diagnostics, featureCount,
+  );
+}
+
+/** Single-shape export; a 3MF with `infill` gets stress-graded modifiers. */
+async function exportShapeOrInfill(
+  input: ExportInput,
+  format: ExportFormat,
+  shape: OcctBackend,
+  targetId: string,
+  scriptDir: string | undefined,
+  run: Awaited<ReturnType<typeof runScript>>,
+  shapes: ReadonlyMap<string, unknown>,
+  diagnostics: CompilerDiagnostic[],
+  featureCount: number,
+): Promise<ExportResult> {
+  if (!infillRequested(input)) {
+    return exportSingleShape(input, format, shape, targetId, scriptDir, run, diagnostics, featureCount);
+  }
+  const infill = await resolveInfill3mf(input, run, shapes, diagnostics, featureCount);
+  if ('result' in infill) return infill.result;
+  const out = await exportSingleShape(
+    infill.input, '3mf', shape, targetId, scriptDir, run, infill.diagnostics, featureCount,
+  );
+  return out.bytes.length > 0 ? { ...out, infillReport: infill.report } : out;
+}
+
 export async function runAndExport(input: ExportInput): Promise<ExportResult> {
   return withOcctPoisonRecovery(async () => {
 
@@ -345,22 +411,7 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
   // header STL/3MF on assembly returns (e.g. multi-material keycaps) must
   // not fail with "return toUnion()" after the model already viewed fine.
   if (isSceneBackend(lowered)) {
-    if (format === '3mf' && (input.options as { infill?: unknown } | undefined)?.infill !== undefined) {
-      return {
-        bytes: new Uint8Array(),
-        featureCount,
-        diagnostics: [...r.diagnostics, {
-          target: 'export-occt',
-          code: 'feature.invalid-args',
-          featureId: targetId,
-          severity: 'error',
-          message: '3mf export: infill.fromFea grades ONE solid part. Return the part itself (the shape that declares the feaStudy), not an assembly.',
-          hint: HINT_TEMPLATES['feature.invalid-args'].template,
-          nextAction: NEXT_ACTIONS['feature.invalid-args'],
-        }],
-      };
-    }
-    const sceneResult = await exportSceneBackend(
+    const sceneResult = await exportSceneOrRefuseInfill(
       input, format, lowered, targetId, manifestRequest, manifestScene, run, r.diagnostics, featureCount,
     );
     if (sceneResult !== undefined) return sceneResult;
@@ -369,17 +420,7 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
   }
 
   const shape = lowered as OcctBackend;
-  if (format === '3mf' && (input.options as { infill?: unknown } | undefined)?.infill !== undefined) {
-    const infill = await resolveInfill3mf(input, run, r.shapes, r.diagnostics, featureCount);
-    if ('result' in infill) return infill.result;
-    const out = await exportSingleShape(
-      infill.input, format, shape, targetId, scriptDir, run, infill.diagnostics, featureCount,
-    );
-    return out.bytes.length > 0 ? { ...out, infillReport: infill.report } : out;
-  }
-  return exportSingleShape(
-    input, format, shape, targetId, scriptDir, run, r.diagnostics, featureCount,
-  );
+  return exportShapeOrInfill(input, format, shape, targetId, scriptDir, run, r.shapes, r.diagnostics, featureCount);
 
   });
 }

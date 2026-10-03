@@ -436,6 +436,56 @@ export function estimateInfillSaving(
 // ---------------------------------------------------------------------------
 // Entry point
 
+/** Nested occupancy, top band first: occ[k] = well-composed(occ[k+1] |
+ *  band >= k). occ[0] is unused (the base band is the object itself). */
+function nestedOccupancy(grid: VoxelGrid, bandCount: number): Array<Uint8Array | undefined> {
+  const cells = grid.band.length;
+  const occ: Array<Uint8Array | undefined> = new Array(bandCount).fill(undefined);
+  let above: Uint8Array | undefined;
+  for (let k = bandCount - 1; k >= 1; k--) {
+    const o = new Uint8Array(cells);
+    for (let c = 0; c < cells; c++) o[c] = grid.band[c] >= k || (above !== undefined && above[c] === 1) ? 1 : 0;
+    makeWellComposed(o, grid.n);
+    occ[k] = o;
+    above = o;
+  }
+  return occ;
+}
+
+/** Highest band whose occupancy holds cell `c`; 0 when none does. */
+function appliedBand(occ: ReadonlyArray<Uint8Array | undefined>, c: number): number {
+  for (let k = occ.length - 1; k >= 1; k--) if (occ[k]![c] === 1) return k;
+  return 0;
+}
+
+/** Volumes over the FEA elements: by raw stress class, and by the band the
+ *  slicer will actually apply at each element's centroid. */
+function bandVolumes(
+  mesh: FeaMesh,
+  elemBand: Int8Array,
+  occ: ReadonlyArray<Uint8Array | undefined>,
+  grid: VoxelGrid,
+): { stressVol: number[]; printedVol: number[]; total: number; elementPrintedBand: Int8Array } {
+  const stressVol = new Array(occ.length).fill(0);
+  const printedVol = new Array(occ.length).fill(0);
+  let total = 0;
+  const elementPrintedBand = new Int8Array(mesh.elements.length);
+  mesh.elements.forEach((el, e) => {
+    const p = el.nodes.slice(0, 4).map((id) => mesh.nodes.get(id) ?? [0, 0, 0]);
+    const v = tetVolume(p[0], p[1], p[2], p[3]);
+    total += v;
+    stressVol[elemBand[e]] += v;
+    const ci = [0, 1, 2].map((a) => {
+      const centroid = (p[0][a] + p[1][a] + p[2][a] + p[3][a]) / 4;
+      return Math.min(grid.n[a] - 1, Math.max(0, Math.floor((centroid - grid.origin[a]) / grid.cellMm)));
+    });
+    const applied = appliedBand(occ, cellIndex(grid, ci[0], ci[1], ci[2]));
+    printedVol[applied] += v;
+    elementPrintedBand[e] = applied;
+  });
+  return { stressVol, printedVol, total, elementPrintedBand };
+}
+
 /**
  * Build stress-graded infill bands from a solved study.
  *
@@ -464,42 +514,8 @@ export function buildStressInfill(
   const cellMm = options.cellMm ?? defaultCellMm(min, max);
   if (!(cellMm > 0)) throw new Error(`infill.cellMm must be > 0; got ${cellMm}.`);
   const grid = voxelizeBands(mesh, elemBand, cellMm);
-  const cells = grid.band.length;
-
-  // Nested occupancy, top band first: occ[k] = well-composed(occ[k+1] | band >= k).
-  const occ: Array<Uint8Array | undefined> = new Array(bands.length).fill(undefined);
-  let above: Uint8Array | undefined;
-  for (let k = bands.length - 1; k >= 1; k--) {
-    const o = new Uint8Array(cells);
-    for (let c = 0; c < cells; c++) o[c] = grid.band[c] >= k || (above !== undefined && above[c] === 1) ? 1 : 0;
-    makeWellComposed(o, grid.n);
-    occ[k] = o;
-    above = o;
-  }
-
-  // Volumes over the FEA elements: by raw stress class, and by the band the
-  // slicer will actually apply at the element centroid.
-  const stressVol = new Array(bands.length).fill(0);
-  const printedVol = new Array(bands.length).fill(0);
-  let total = 0;
-  const elementPrintedBand = new Int8Array(mesh.elements.length);
-  mesh.elements.forEach((el, e) => {
-    const p = el.nodes.slice(0, 4).map((id) => mesh.nodes.get(id) ?? [0, 0, 0]);
-    const v = tetVolume(p[0], p[1], p[2], p[3]);
-    total += v;
-    stressVol[elemBand[e]] += v;
-    const cxyz = [0, 1, 2].map((a) => (p[0][a] + p[1][a] + p[2][a] + p[3][a]) / 4);
-    const ci = [0, 1, 2].map((a) =>
-      Math.min(grid.n[a] - 1, Math.max(0, Math.floor((cxyz[a] - grid.origin[a]) / cellMm))),
-    );
-    const c = cellIndex(grid, ci[0], ci[1], ci[2]);
-    let applied = 0;
-    for (let k = bands.length - 1; k >= 1; k--) {
-      if (occ[k]![c] === 1) { applied = k; break; }
-    }
-    printedVol[applied] += v;
-    elementPrintedBand[e] = applied;
-  });
+  const occ = nestedOccupancy(grid, bands.length);
+  const { stressVol, printedVol, total, elementPrintedBand } = bandVolumes(mesh, elemBand, occ, grid);
 
   const out: InfillBandResult[] = bands.map((b, k) => {
     const modifier = k === 0 ? undefined : voxelSurface(occ[k]!, grid.n, grid.origin, cellMm);
