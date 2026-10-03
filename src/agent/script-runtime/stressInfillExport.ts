@@ -18,6 +18,7 @@ import { tmpdir } from 'node:os';
 import { isAbsolute, join, resolve } from 'node:path';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { HINT_TEMPLATES, NEXT_ACTIONS } from '../../shared/diagnostics/registry';
+import { invalidArgsText, type InvalidArgsSpec } from '../../shared/intent/invalidArgs';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { ParamTable } from '../../shared/runtime/paramTable';
 import { findFeaStudies, selectFeaStudy, type FoundFeaStudy } from '../../modeling/runtime/fea/findFeaStudies';
@@ -95,17 +96,21 @@ const SOLID_PART_NOTE =
   'The FEA models the part as solid material. A printed part with sparse infill and layer lines is weaker '
   + '(especially across layers), so read the safety factor as an upper bound and keep a margin.';
 
-function errorDiag(code: 'feature.invalid-args' | 'fea.solver.unavailable', message: string, featureId?: string): CompilerDiagnostic {
+function solverUnavailable(message: string): CompilerDiagnostic {
   return {
     target: 'export-occt',
-    code,
+    code: 'fea.solver.unavailable',
     severity: 'error',
     message,
-    hint: HINT_TEMPLATES[code].template,
-    nextAction: NEXT_ACTIONS[code],
-    ...(featureId !== undefined ? { featureId } : {}),
+    hint: HINT_TEMPLATES['fea.solver.unavailable'].template,
+    nextAction: NEXT_ACTIONS['fea.solver.unavailable'],
   };
 }
+
+const INFILL_API = "export({ format: '3mf', options: { infill } })";
+const INFILL_EXAMPLE = "options: { format: '3mf', printer: 'bambu-a1', infill: { fromFea: 'shelf-load' } }";
+const STUDY_EXAMPLE =
+  "part.feaStudy({ name: 'shelf-load', material: 'petg', fixed: { atX: 0 }, loads: [{ faces: { atZ: 6 }, force: [0, 0, -120] }] })";
 
 const isPositive = (v: unknown): boolean => typeof v === 'number' && v > 0;
 
@@ -143,8 +148,17 @@ function filamentDensity(material: unknown): number | undefined {
 }
 
 type Fail = { ok: false; diagnostics: CompilerDiagnostic[] };
-const fail = (message: string, featureId?: string): Fail =>
-  ({ ok: false, diagnostics: [errorDiag('feature.invalid-args', `3mf export: ${message}`, featureId)] });
+const fail = (spec: Omit<InvalidArgsSpec, 'api'>, featureId?: string): Fail => ({
+  ok: false,
+  diagnostics: [{
+    target: 'export-occt',
+    code: 'feature.invalid-args',
+    severity: 'error',
+    ...invalidArgsText({ api: INFILL_API, ...spec }),
+    nextAction: NEXT_ACTIONS['feature.invalid-args'],
+    ...(featureId !== undefined ? { featureId } : {}),
+  }],
+});
 
 /** The study `fromFea` names and the lowered shape it is bound to. */
 function resolveInfillStudy(
@@ -153,19 +167,33 @@ function resolveInfillStudy(
   shapes: ReadonlyMap<string, unknown>,
 ): { ok: true; study: FoundFeaStudy; shape: OcctBackend } | Fail {
   const bad = invalidInfillOption(infill);
-  if (bad !== undefined) return fail(bad);
+  if (bad !== undefined) return fail({ path: 'options.infill', got: infill, requires: bad, example: INFILL_EXAMPLE });
   const studies = findFeaStudies(records);
   if (studies.length === 0) {
-    return fail('infill.fromFea needs a declared study. Add shape.feaStudy({ material, fixed, loads }) to the part '
-      + '(fix the mounting holes, load the face the force acts on).');
+    return fail({
+      path: 'options.infill.fromFea',
+      got: infill.fromFea,
+      requires: 'a declared study — the script has no shape.feaStudy({ material, fixed, loads }); fix the mounting holes and load the face the force acts on',
+      example: STUDY_EXAMPLE,
+    });
   }
   const study = selectFeaStudy(studies, infill.fromFea === true ? undefined : infill.fromFea);
   if (study === undefined) {
-    return fail(`no feaStudy named '${String(infill.fromFea)}'. Declared studies: ${studies.map((s) => s.metadata.name).join(', ')}.`);
+    return fail({
+      path: 'options.infill.fromFea',
+      got: infill.fromFea,
+      requires: `one of the declared study names: ${studies.map((s) => s.metadata.name).join(', ')} (or true for the last one)`,
+      example: `infill: { fromFea: '${studies[studies.length - 1].metadata.name}' }`,
+    });
   }
   const shape = shapes.get(study.shapeId);
   if (!(shape instanceof OcctBackend)) {
-    return fail(`the shape feaStudy '${study.metadata.name}' is bound to did not lower.`, study.shapeId);
+    return fail({
+      path: 'options.infill.fromFea',
+      got: study.metadata.name,
+      requires: 'a study bound to a shape that builds; fix the errors on that shape first',
+      example: STUDY_EXAMPLE,
+    }, study.shapeId);
   }
   return { ok: true, study, shape };
 }
@@ -229,7 +257,7 @@ export async function buildStressInfillExport(
     // Toolchain missing, selector unresolved, mesh/solve failed: the FEA
     // diagnostics already say which. Never fall back to uniform infill.
     if (!diagnostics.some((d) => d.severity === 'error')) {
-      diagnostics.push(errorDiag('fea.solver.unavailable', `3mf export: feaStudy '${study.metadata.name}' produced no stress field; no stress-graded infill was written.`));
+      diagnostics.push(solverUnavailable(`3mf export: feaStudy '${study.metadata.name}' produced no stress field; no stress-graded infill was written.`));
     }
     return { ok: false, diagnostics };
   }

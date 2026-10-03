@@ -65,7 +65,7 @@ describe('stress-graded infill without a solver', () => {
       options: { format: '3mf', infill: { fromFea: true } },
     });
     expect(res.bytes.length).toBe(0);
-    expect(res.diagnostics.find((d) => d.severity === 'error')?.message).toMatch(/needs a declared study/);
+    expect(res.diagnostics.find((d) => d.severity === 'error')?.message).toMatch(/requires a declared study/);
   });
 
   it('rejects an invalid band table', async () => {

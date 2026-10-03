@@ -43,6 +43,7 @@ import {
 import { exportPdfDrawing, exportSvgDrawing } from './exportDrawing';
 import { withOcctPoisonRecovery } from '../../kernel/backends/occt/occtBackend';
 import { fileSafePartName } from './safeOutputPath';
+import { invalidArgsText } from '../../shared/intent/invalidArgs';
 import {
   buildStressInfillExport,
   type StressInfillExportOptions,
@@ -287,8 +288,13 @@ function infillSceneRefusal(
       code: 'feature.invalid-args',
       featureId: targetId,
       severity: 'error',
-      message: '3mf export: infill.fromFea grades ONE solid part. Return the part itself (the shape that declares the feaStudy), not an assembly.',
-      hint: HINT_TEMPLATES['feature.invalid-args'].template,
+      ...invalidArgsText({
+        api: "export({ format: '3mf', options: { infill } })",
+        path: 'the script return value',
+        gotText: 'an assembly (Scene)',
+        requires: 'ONE solid part: stress-graded infill grades the shape that declares the feaStudy',
+        example: 'return bracket;',
+      }),
       nextAction: NEXT_ACTIONS['feature.invalid-args'],
     }],
   };
