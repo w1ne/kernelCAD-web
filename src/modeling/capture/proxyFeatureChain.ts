@@ -1,39 +1,57 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { FeatureId } from '../../shared/intent/types';
-import { isValidVec3, formatScalarForError } from '../../shared/intent/types';
-import { KernelError } from '../../shared/intent/kernelError';
+import { isValidVec3 } from '../../shared/intent/types';
+import { invalidArgs } from '../../shared/intent/invalidArgs';
 import { normalizeTopoRefOrString } from './topoRefNormalize';
 import type { FaceSelector } from './proxy';
+
+const GRID_EXAMPLE =
+  'hole.patternGrid({ x: { count: 4, direction: [1, 0, 0], spacing: 20 }, y: { count: 3, direction: [0, 1, 0], spacing: 15 } })';
 
 export function validateGridPatternAxis(
   label: 'patternGrid.x' | 'patternGrid.y',
   axis: { count: number; direction: [number, number, number]; spacing: number },
   featureId: FeatureId,
 ): void {
+  const api = `patternGrid({ ${label.endsWith('.x') ? 'x' : 'y'} })`;
   if (!Number.isInteger(axis.count) || axis.count < 2) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `${label} count must be an integer >= 2.`,
+    invalidArgs({
+      api,
+      path: `${label}.count`,
+      got: axis.count,
+      showType: typeof axis.count !== 'number',
+      requires:
+        'an integer ≥ 2 — count is the TOTAL number of instances along this axis including the original, not the number of copies added',
+      unit: 'count',
+      example: GRID_EXAMPLE,
       featureId,
-      'Pass count: 2 or greater for both grid axes.',
-    );
+    });
   }
   if (!isValidVec3(axis.direction)) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `${label} direction must be a finite Vec3; got ${formatScalarForError(axis.direction)}.`,
+    invalidArgs({
+      api,
+      path: `${label}.direction`,
+      got: axis.direction,
+      showType: !Array.isArray(axis.direction),
+      requires:
+        'a 3-element array of finite numbers [x, y, z]; it only sets the direction, the step comes from spacing',
+      example: GRID_EXAMPLE,
       featureId,
-      'Pass direction: [x, y, z] for both grid axes.',
-    );
+    });
   }
   if (typeof axis.spacing !== 'number' || !Number.isFinite(axis.spacing) || axis.spacing === 0) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `${label} spacing must be a non-zero finite number; got ${formatScalarForError(axis.spacing)}.`,
+    invalidArgs({
+      api,
+      path: `${label}.spacing`,
+      got: axis.spacing,
+      showType: typeof axis.spacing !== 'number',
+      requires:
+        'a finite non-zero number — the centre-to-centre pitch between neighbours, not the total span (total span is spacing × (count − 1))',
+      unit: 'mm',
+      example: GRID_EXAMPLE,
       featureId,
-      'Pass a non-zero finite spacing for both grid axes.',
-    );
+    });
   }
 }
 
@@ -80,12 +98,14 @@ export function assertFeatureNameUniqueOnChain(
   for (const r of chain) {
     const prev = (r.metadata as { name?: unknown } | undefined)?.name;
     if (typeof prev === 'string' && prev === name) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `feature name '${name}' is already used in this chain.`,
-        undefined,
-        `Feature name '${name}' already used in this chain. Names must be unique per chain; for variations use suffixes ('${name}-front', '${name}-back').`,
-      );
+      invalidArgs({
+        api: 'hole(face, { name })',
+        path: 'opts.name',
+        got: name,
+        requires:
+          `a name not yet used on this chain — '${name}' is already taken by the '${r.kind}' feature; add a suffix for variants`,
+        example: `plate.hole(top, { u: 10, v: 10, diameter: 3.4, depth: 'through', name: '${name}-front' })`,
+      });
     }
   }
 }

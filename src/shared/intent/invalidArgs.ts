@@ -68,6 +68,13 @@ export interface InvalidArgsSpec {
   featureId?: string;
   /** Defaults to `feature.invalid-args`; pass `cli.invalid-args` for CLI/tool args. */
   code?: Extract<DiagnosticCode, 'feature.invalid-args' | 'cli.invalid-args'>;
+  /**
+   * Replace the generated hint. Only for the handful of cases that can explain
+   * *how to get what the author wanted* a different way (e.g. the thread
+   * clearance cap, where the fix is to grow the nominal diameter instead).
+   * The message still carries path/value/requirement/example.
+   */
+  hint?: string;
 }
 
 function truncate(text: string): string {
@@ -93,15 +100,27 @@ function unitSuffix(unit: ArgUnit | undefined): string {
   return unit === undefined || unit === 'unitless' ? '' : ` (${unit})`;
 }
 
+/**
+ * Render the message + hint without building an error — for the lowerer paths
+ * that `diagnostics.push({ code: 'feature.invalid-args', ... })` instead of
+ * throwing. Same four-part shape, so a lowered arg error reads like a
+ * capture-time one.
+ */
+export function invalidArgsText(spec: InvalidArgsSpec): { message: string; hint: string } {
+  const target = spec.path === undefined || spec.path === '' ? 'argument' : spec.path;
+  const requires = `${spec.requires}${unitSuffix(spec.unit)}`;
+  return {
+    message:
+      `${spec.api}: ${target} — got ${receivedText(spec)}; requires ${requires}. ` +
+      `Example: ${spec.example}`,
+    hint: spec.hint ?? `Set ${target} to ${requires}. Example: ${spec.example}`,
+  };
+}
+
 /** Build the error without throwing — for call sites that need to attach it to
  *  a report rather than raise. Prefer `invalidArgs`. */
 export function invalidArgsError(spec: InvalidArgsSpec): KernelError {
-  const target = spec.path === undefined || spec.path === '' ? 'argument' : spec.path;
-  const requires = `${spec.requires}${unitSuffix(spec.unit)}`;
-  const message =
-    `${spec.api}: ${target} — got ${receivedText(spec)}; requires ${requires}. ` +
-    `Example: ${spec.example}`;
-  const hint = `Set ${target} to ${requires}. Example: ${spec.example}`;
+  const { message, hint } = invalidArgsText(spec);
   return new KernelError(spec.code ?? 'feature.invalid-args', message, spec.featureId, hint);
 }
 

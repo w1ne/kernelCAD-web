@@ -3,6 +3,7 @@
 import type { FeatureId, PatternSpec, PlaneSpec, FeatureRef, EditableVec3 } from '../../shared/intent/types';
 import { isValidVec3, isValidScaleSpec, isValidPlaneSpec, isValidEditableVec3, formatScalarForError } from '../../shared/intent/types';
 import { KernelError } from '../../shared/intent/kernelError';
+import { invalidArgs } from '../../shared/intent/invalidArgs';
 import type { ShapeTransform } from '../../shared/intent/featureRecord';
 import type { CaptureSession } from './captureSession';
 import { buildFaceInputRef } from './shapeOperationFeatureRecords';
@@ -93,6 +94,53 @@ import {
   assertFeatureNameUniqueOnChain,
   nextOrdinalForKindOnChain,
 } from './proxyFeatureChain';
+
+const PATTERN_LINEAR_EXAMPLE = 'plate.patternLinear({ count: 4, direction: [1, 0, 0], spacing: 20 })';
+const PATTERN_CIRCULAR_EXAMPLE = 'plate.patternCircular({ count: 6, axis: [0, 0, 1], angleDeg: 360 })';
+
+/**
+ * Capture-time sign/finiteness guard for the scalar edge features
+ * (`fillet` radius, `chamfer` distance, `shell` thickness).
+ *
+ * Before this, a zero / negative / NaN value was captured and only failed
+ * inside OCCT as `feature.kernel-failed` ("BRepFilletAPI failed"), which says
+ * nothing about which argument to change — that pattern is visible in the
+ * triage data as repeated identical retries. A `ParamRef` is left to the
+ * lowerer, which has the resolved value.
+ */
+function assertScalarEdgeValue(
+  kind: 'fillet' | 'chamfer' | 'shell',
+  arg: 'radius' | 'distance' | 'thickness',
+  value: unknown,
+  featureId: FeatureId,
+): void {
+  if (isParamRef(value)) return;
+  if (typeof value === 'number' && Number.isFinite(value) && value > 0) return;
+  const examples = {
+    fillet: 'box(40, 30, 10).fillet(2)',
+    chamfer: 'box(40, 30, 10).chamfer(1)',
+    shell: "box(40, 30, 10).shell(2, { face: 'top' })",
+  } as const;
+  const requires = {
+    radius:
+      'a finite number > 0 — the blend radius, and it must stay below half the shortest adjacent face width or OCCT cannot build the blend',
+    distance:
+      'a finite number > 0 — the leg length of the bevel measured along each adjacent face',
+    thickness:
+      'a finite number > 0 — the wall thickness left behind; the face named in opts.face is the one removed, so the sign is never negative',
+  } as const;
+  invalidArgs({
+    api: `${kind}(${arg})`,
+    path: arg,
+    got: value,
+    showType: typeof value !== 'number',
+    requires: requires[arg],
+    unit: 'mm',
+    example: examples[kind],
+    featureId,
+  });
+}
+
 export class Shape {
   readonly id: FeatureId;
   private session: CaptureSession;
@@ -670,28 +718,42 @@ export class Shape {
 
   patternLinear(opts: { count: number; direction: [number, number, number]; spacing: number }): Shape {
     if (!Number.isInteger(opts.count) || opts.count < 2) {
-      throw new KernelError(
-        'feature.invalid-args',
-        'patternLinear count must be an integer >= 2.',
-        this.id,
-        'Pass count: 2 or greater.',
-      );
+      invalidArgs({
+        api: 'patternLinear({ count })',
+        path: 'opts.count',
+        got: opts.count,
+        showType: typeof opts.count !== 'number',
+        requires:
+          'an integer ≥ 2 — count is the TOTAL number of instances including the original, not the number of copies added',
+        unit: 'count',
+        example: PATTERN_LINEAR_EXAMPLE,
+        featureId: this.id,
+      });
     }
     if (!isValidVec3(opts.direction)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `patternLinear direction must be a finite Vec3; got ${formatScalarForError(opts.direction)}.`,
-        this.id,
-        'Pass direction: [x, y, z].',
-      );
+      invalidArgs({
+        api: 'patternLinear({ direction })',
+        path: 'opts.direction',
+        got: opts.direction,
+        showType: !Array.isArray(opts.direction),
+        requires:
+          'a 3-element array of finite numbers [x, y, z]; direction only sets the axis, the step comes from spacing',
+        example: PATTERN_LINEAR_EXAMPLE,
+        featureId: this.id,
+      });
     }
     if (typeof opts.spacing !== 'number' || !Number.isFinite(opts.spacing) || opts.spacing === 0) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `patternLinear spacing must be a non-zero finite number; got ${formatScalarForError(opts.spacing)}.`,
-        this.id,
-        'Pass a non-zero finite spacing.',
-      );
+      invalidArgs({
+        api: 'patternLinear({ spacing })',
+        path: 'opts.spacing',
+        got: opts.spacing,
+        showType: typeof opts.spacing !== 'number',
+        requires:
+          'a finite non-zero number — the centre-to-centre pitch between neighbours, not the total span (total span is spacing × (count − 1))',
+        unit: 'mm',
+        example: PATTERN_LINEAR_EXAMPLE,
+        featureId: this.id,
+      });
     }
     const pattern: PatternSpec = {
       kind: 'linear',
@@ -718,29 +780,43 @@ export class Shape {
 
   patternCircular(opts: { count: number; axis: [number, number, number]; angleDeg?: number }): Shape {
     if (!Number.isInteger(opts.count) || opts.count < 2) {
-      throw new KernelError(
-        'feature.invalid-args',
-        'patternCircular count must be an integer >= 2.',
-        this.id,
-        'Pass count: 2 or greater.',
-      );
+      invalidArgs({
+        api: 'patternCircular({ count })',
+        path: 'opts.count',
+        got: opts.count,
+        showType: typeof opts.count !== 'number',
+        requires:
+          'an integer ≥ 2 — count is the TOTAL number of instances including the original; with the default angleDeg: 360 they are spaced 360 / count apart',
+        unit: 'count',
+        example: PATTERN_CIRCULAR_EXAMPLE,
+        featureId: this.id,
+      });
     }
     if (!isValidVec3(opts.axis)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `patternCircular axis must be a finite Vec3; got ${formatScalarForError(opts.axis)}.`,
-        this.id,
-        'Pass axis: [x, y, z].',
-      );
+      invalidArgs({
+        api: 'patternCircular({ axis })',
+        path: 'opts.axis',
+        got: opts.axis,
+        showType: !Array.isArray(opts.axis),
+        requires:
+          'a 3-element array of finite numbers [x, y, z] — the rotation axis through the world origin ([0, 0, 1] for a bolt circle on an XY plate)',
+        example: PATTERN_CIRCULAR_EXAMPLE,
+        featureId: this.id,
+      });
     }
     const angleDeg = opts.angleDeg ?? 360;
     if (typeof angleDeg !== 'number' || !Number.isFinite(angleDeg) || angleDeg === 0) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `patternCircular angleDeg must be a non-zero finite number; got ${formatScalarForError(angleDeg)}.`,
-        this.id,
-        'Pass a non-zero finite angleDeg.',
-      );
+      invalidArgs({
+        api: 'patternCircular({ angleDeg })',
+        path: 'opts.angleDeg',
+        got: angleDeg,
+        showType: typeof angleDeg !== 'number',
+        requires:
+          'a finite non-zero number — the TOTAL sweep covered by all instances (360 for a full circle, the default); instances land angleDeg / count apart',
+        unit: 'deg',
+        example: PATTERN_CIRCULAR_EXAMPLE,
+        featureId: this.id,
+      });
     }
     const pattern: PatternSpec = {
       kind: 'circular',
@@ -777,15 +853,20 @@ export class Shape {
     opts?: { continuity?: FilletContinuity },
   ): Shape {
     if (typeof radiusOrGroups === 'number' || isParamRef(radiusOrGroups)) {
+      assertScalarEdgeValue('fillet', 'radius', radiusOrGroups, this.id);
       let continuity: FilletContinuity | undefined;
       if (opts !== undefined && opts.continuity !== undefined) {
         if (!isFilletContinuity(opts.continuity)) {
-          throw new KernelError(
-            'feature.invalid-args',
-            `fillet: continuity must be 'G1' or 'G2'.`,
-            this.id,
-            `invalid-args.fillet.continuity — got ${String(opts.continuity)}`,
-          );
+          invalidArgs({
+            api: 'fillet(radius, edges, { continuity })',
+            path: 'opts.continuity',
+            got: opts.continuity,
+            showType: typeof opts.continuity !== 'string',
+            requires:
+              "'G1' (tangent-continuous, the default) or 'G2' (curvature-continuous, a slower but smoother blend)",
+            example: "box(40, 30, 10).fillet(2, 'top', { continuity: 'G2' })",
+            featureId: this.id,
+          });
         }
         continuity = opts.continuity;
       }
@@ -803,12 +884,25 @@ export class Shape {
     edges?: EdgeSelector,
   ): Shape {
     if (typeof distanceOrGroups === 'number' || isParamRef(distanceOrGroups)) {
+      assertScalarEdgeValue('chamfer', 'distance', distanceOrGroups, this.id);
       return this.session.edgeFeature('chamfer', this, 'distance', distanceOrGroups, edges);
     }
     return this.session.variableEdgeFeature('chamfer', this, 'distance', distanceOrGroups);
   }
 
   shell(thickness: Editable<number>, opts: { face: FaceSelector | CanonicalFace | string }): Shape {
+    assertScalarEdgeValue('shell', 'thickness', thickness, this.id);
+    if (opts === undefined || opts === null || (opts as { face?: unknown }).face === undefined) {
+      invalidArgs({
+        api: 'shell(thickness, { face })',
+        path: 'opts.face',
+        got: (opts as { face?: unknown } | undefined)?.face,
+        requires:
+          "the face to open, as a canonical name ('top'), a face label, or a FaceSelector query; shell() always needs one — it removes that face and leaves a wall of `thickness` behind",
+        example: "box(40, 30, 10).shell(2, { face: 'top' })",
+        featureId: this.id,
+      });
+    }
     return this.session.edgeFeature('shell', this, 'thickness', thickness, { face: opts.face });
   }
 
