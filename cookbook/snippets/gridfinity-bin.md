@@ -109,15 +109,24 @@ if (stackingLip) {
   bin = bin.union(lip);
 }
 
-// Magnet holes: 4 per foot at ±13 mm, from the bottom face up.
+// Magnet holes: 4 per foot at ±13 mm, from the bottom face up. One holes()
+// call per foot — each foot has its own bottom face at z = 0, and
+// `containsPoint` picks that foot's face. holes() rather than subtracted
+// cylinders so the bores carry diameter/depth for `inspect`, drawings and the
+// DFM gates; u/v are measured from the centre of the selected face, which is
+// the foot centre, so the four corners are just ±13.
 if (magnets) {
   for (let i = 0; i < unitsX; i++) {
     for (let j = 0; j < unitsY; j++) {
       const cx = (i - (unitsX - 1) / 2) * PITCH;
       const cy = (j - (unitsY - 1) / 2) * PITCH;
-      for (const [sx, sy] of [[1, 1], [1, -1], [-1, 1], [-1, -1]]) {
-        bin = bin.subtract(cylinder(holeH, holeD / 2).translate(cx + 13 * sx, cy + 13 * sy, 0));
-      }
+      bin = bin.holes({ byNormal: '-Z', atZ: 0, near: [cx, cy, 0], containsPoint: [cx, cy, 0] }, {
+        positions: [
+          { u: 13, v: 13 }, { u: 13, v: -13 }, { u: -13, v: 13 }, { u: -13, v: -13 },
+        ],
+        diameter: holeD,
+        depth: holeH,
+      });
     }
   }
 }

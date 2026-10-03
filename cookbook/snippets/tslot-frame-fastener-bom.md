@@ -58,7 +58,17 @@ function extrusion() {
   for (const deg of [0, 90, 180, 270]) {
     bar = bar.subtract(slotCutter().rotateZ(deg));
   }
-  return bar.subtract(cylinder(200, coreR).translate(0, 0, -1));
+  // Core bore as a real hole feature (not a subtracted cylinder) so BOM,
+  // drawings and DFM read its diameter back. The four slot cuts split the
+  // top face, so name the central island by its normal and centre rather
+  // than the bare canonical 'top'. u/v are mm from that face's centre, and
+  // the bore is on the rail axis, so both are 0.
+  return bar.hole({ byNormal: 'Z', atX: 0, atY: 0, atZ: length }, {
+    u: 0,
+    v: 0,
+    diameter: 2 * coreR,
+    depth: 'through',
+  });
 }
 
 const upright = extrusion();
@@ -68,9 +78,17 @@ function yCyl(r, y0, len, x, z) {
   return cylinder(len, r).rotateX(-90).translate(x, y0, z);
 }
 
-let gusset = box(40, 3, 18).translate(-8, 10, 62);
-gusset = gusset.subtract(yCyl(2.8, 8, 8, 0, 72));
-gusset = gusset.subtract(yCyl(2.8, 8, 8, 22, 72));
+// Gusset screw clearances as real holes. The entry face is the gusset's -Y
+// face; on front/back faces u = +X and v = +Z, measured from the face centre
+// (12, 71), so world x = 0 and 22 become u = -12 and 10, and world z = 72
+// becomes v = 1.
+const gusset = box(40, 3, 18)
+  .translate(-8, 10, 62)
+  .holes('front', {
+    positions: [{ u: -12, v: 1 }, { u: 10, v: 1 }],
+    diameter: 5.6,
+    depth: 'through',
+  });
 
 function capScrew(x, z) {
   const head = yCyl(4, 13, 3.2, x, z);
