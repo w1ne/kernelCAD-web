@@ -31,14 +31,15 @@ const wall = param('wall', 6, { min: 4, max: 12 });
 const width = 40;
 const leg = 70;
 
-// M5 clearance bore through the wall leg, along X.
-const hole = (z: number) => cylinder(wall.add(2), 2.75).rotateY(90).translate(-1, width / 2, z);
+// Wall leg with two M5 clearance bores (5.5 mm, through) at 25 and 55 mm
+// height (u/v are offsets from the face centre); shelf leg; root fillet.
+const wallLeg = box(wall, width, leg)
+  .hole('left', { u: 0, v: -10, diameter: 5.5, depth: 'through', name: 'screwLow' })
+  .hole('left', { u: 0, v: 20, diameter: 5.5, depth: 'through', name: 'screwHigh' });
 
-const bracket = box(wall, width, leg)
+const bracket = wallLeg
   .union(box(leg, width, wall))
-  .fillet(5, { parallel: [0, 1, 0], concave: true })
-  .subtract(hole(25))
-  .subtract(hole(55));
+  .fillet(5, { parallel: [0, 1, 0], concave: true });
 
 bracket.feaStudy({
   name: 'shelf-load',
