@@ -14,19 +14,19 @@ describe('Primitive input validation — finite-number check', () => {
     const session = new CaptureSession();
     const api = createModelingApi({ session });
     expect(() => api.cylinder({ radius: 35, height: 60 } as unknown as number, 10))
-      .toThrowError(/cylinder: h must be a finite number/);
+      .toThrowError(/cylinder\(h\): h — got .* requires a finite number/);
   });
 
   it('cylinder() rejects NaN as `r`', () => {
     const session = new CaptureSession();
     const api = createModelingApi({ session });
-    expect(() => api.cylinder(20, NaN)).toThrowError(/cylinder: r must be a finite number/);
+    expect(() => api.cylinder(20, NaN)).toThrowError(/cylinder\(r\): r — got .* requires a finite number/);
   });
 
   it('cylinder() rejects Infinity as `h`', () => {
     const session = new CaptureSession();
     const api = createModelingApi({ session });
-    expect(() => api.cylinder(Infinity, 10)).toThrowError(/cylinder: h must be a finite number/);
+    expect(() => api.cylinder(Infinity, 10)).toThrowError(/cylinder\(h\): h — got .* requires a finite number/);
   });
 
   it('cylinder() accepts positional numbers (no regression)', () => {
@@ -48,13 +48,13 @@ describe('Primitive input validation — finite-number check', () => {
     const session = new CaptureSession();
     const api = createModelingApi({ session });
     expect(() => api.box({ w: 10 } as unknown as number, 20, 30))
-      .toThrowError(/box: x must be a finite number/);
+      .toThrowError(/box\(x\): x — got .* requires a finite number/);
   });
 
   it('box() rejects NaN', () => {
     const session = new CaptureSession();
     const api = createModelingApi({ session });
-    expect(() => api.box(10, NaN, 30)).toThrowError(/box: y must be a finite number/);
+    expect(() => api.box(10, NaN, 30)).toThrowError(/box\(y\): y — got .* requires a finite number/);
   });
 
   it('box() accepts positional numbers and ParamRefs (no regression)', () => {
@@ -68,13 +68,13 @@ describe('Primitive input validation — finite-number check', () => {
     const session = new CaptureSession();
     const api = createModelingApi({ session });
     expect(() => api.sphere({ radius: 10 } as unknown as number))
-      .toThrowError(/sphere: r must be a finite number/);
+      .toThrowError(/sphere\(r\): r — got .* requires a finite number/);
   });
 
   it('sphere() rejects NaN', () => {
     const session = new CaptureSession();
     const api = createModelingApi({ session });
-    expect(() => api.sphere(NaN)).toThrowError(/sphere: r must be a finite number/);
+    expect(() => api.sphere(NaN)).toThrowError(/sphere\(r\): r — got .* requires a finite number/);
   });
 
   it('sphere() accepts a positive finite number (no regression)', () => {

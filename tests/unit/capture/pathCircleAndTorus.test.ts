@@ -87,14 +87,14 @@ describe('torus(majorR, minorR)', () => {
 
   it('rejects minorR >= majorR (self-intersecting)', () => {
     const { api } = makeApi();
-    expect(() => api.torus(5, 5)).toThrow(/minorR.*must be < majorR/);
-    expect(() => api.torus(5, 6)).toThrow(/minorR.*must be < majorR/);
+    expect(() => api.torus(5, 5)).toThrow(/minorR — got 5; requires minorR < majorR/);
+    expect(() => api.torus(5, 6)).toThrow(/minorR — got 6; requires minorR < majorR/);
   });
 
   it('rejects non-finite or non-positive radii', () => {
     const { api } = makeApi();
-    expect(() => api.torus(-1, 5)).toThrow(/must be > 0/);
-    expect(() => api.torus(0, 5)).toThrow(/must be > 0/);
-    expect(() => api.torus(NaN, 5)).toThrow(/must be finite/);
+    expect(() => api.torus(-1, 5)).toThrow(/majorR — got -1; requires a finite number > 0/);
+    expect(() => api.torus(0, 5)).toThrow(/majorR — got 0; requires a finite number > 0/);
+    expect(() => api.torus(NaN, 5)).toThrow(/majorR — got NaN; requires a finite number > 0/);
   });
 });

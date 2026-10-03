@@ -10,8 +10,10 @@
 //   - `flattenPattern(...)` (backends/occt/flattenPattern.ts)
 //   - `get_bend_table` MCP tool (mcp/tools/getBendTable.ts)
 
-import { KernelError } from '../shared/intent/kernelError';
+import { invalidArgs } from '../shared/intent/invalidArgs';
 import type { FeatureRecord } from '../shared/intent/featureRecord';
+
+const BEND_EXAMPLE = "blank.bend({ face: 'right' }, 90, 1.5)";
 
 export interface BendAllowanceInputs {
   /** Bend angle in degrees. Sign-agnostic for BA itself (sign drives fold direction in lowering). */
@@ -48,12 +50,18 @@ export function computeBendAllowance(inputs: BendAllowanceInputs): number {
  *  [0, 1] or non-finite. */
 export function validateKFactor(k: number, featureId?: string): void {
   if (!Number.isFinite(k) || k < 0 || k > 1) {
-    throw new KernelError(
-      'feature.sheetMetal.kfactor-invalid',
-      `sheetMetal: kFactor must be a finite number in [0, 1]; got ${k}.`,
+    invalidArgs({
+      code: 'feature.sheetMetal.kfactor-invalid',
+      api: 'sheetMetal(profile, { kFactor })',
+      path: 'opts.kFactor',
+      got: k,
+      showType: typeof k !== 'number',
+      requires:
+        'a finite number in [0, 1] — it is the neutral-axis position as a FRACTION of thickness (0 = inner surface, 0.5 = mid-plane, 1 = outer), not a length in mm; mild steel and aluminium are 0.33–0.45',
+      unit: 'ratio',
+      example: 'sheetMetal(profile, { thickness: 1.5, kFactor: 0.42 })',
       featureId,
-      `sheetMetal.kfactor-invalid — kFactor=${k} is outside [0, 1]; typical mild-steel/aluminum values are 0.33–0.45.`,
-    );
+    });
   }
 }
 
@@ -61,20 +69,30 @@ export function validateKFactor(k: number, featureId?: string): void {
  *  radius is <= 0 / non-finite. Used by Shape.bend at capture time. */
 export function validateBendArgs(angleDeg: number, radius: number, featureId?: string): void {
   if (!Number.isFinite(angleDeg)) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `.bend(): angle must be a finite number; got ${angleDeg}.`,
+    invalidArgs({
+      api: 'bend(edgeRef, angle, radius)',
+      path: 'angle',
+      got: angleDeg,
+      showType: typeof angleDeg !== 'number',
+      requires:
+        'a finite number of degrees — the fold angle away from flat (90 for a right-angle flange, not 180); positive folds toward the sheet +normal, negative the other way',
+      unit: 'deg',
+      example: BEND_EXAMPLE,
       featureId,
-      'invalid-args.bend.angle — pass a finite degrees value.',
-    );
+    });
   }
   if (!Number.isFinite(radius) || radius <= 0) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `.bend(): radius must be a positive finite number; got ${radius}.`,
+    invalidArgs({
+      api: 'bend(edgeRef, angle, radius)',
+      path: 'radius',
+      got: radius,
+      showType: typeof radius !== 'number',
+      requires:
+        'a finite number > 0 — the INNER bend radius; keep it ≥ 0.5 × sheet thickness or the sew step fails (feature.kernel-failed)',
+      unit: 'mm',
+      example: BEND_EXAMPLE,
       featureId,
-      'invalid-args.bend.radius — pass a positive finite mm value.',
-    );
+    });
   }
 }
 
@@ -82,12 +100,17 @@ export function validateBendArgs(angleDeg: number, radius: number, featureId?: s
  *  non-finite. Used by sheetMetal at capture time. */
 export function validateThickness(t: number, featureId?: string): void {
   if (!Number.isFinite(t) || t <= 0) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `sheetMetal: thickness must be a positive finite number; got ${t}.`,
+    invalidArgs({
+      api: 'sheetMetal(profile, { thickness })',
+      path: 'opts.thickness',
+      got: t,
+      showType: typeof t !== 'number',
+      requires:
+        'a finite number > 0 — the sheet gauge (1.2 for SS304 1.2 mm, 2.0 for 5052-H32 2 mm); gauge numbers like 18 are not thicknesses',
+      unit: 'mm',
+      example: 'sheetMetal(profile, { thickness: 1.5, kFactor: 0.42 })',
       featureId,
-      'invalid-args.sheetMetal.thickness — pass a positive finite mm value.',
-    );
+    });
   }
 }
 

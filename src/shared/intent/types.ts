@@ -296,32 +296,50 @@ export type PatternSpec = LinearPatternSpec | CircularPatternSpec | GridPatternS
  * BigInt, Symbol, circular references, and other unrepresentable values
  * without throwing.
  */
-export function formatScalarForError(v: unknown, _seen?: WeakSet<object>): string {
-  if (typeof v === 'number') {
-    if (Number.isNaN(v)) return 'NaN';
-    if (v === Infinity) return 'Infinity';
-    if (v === -Infinity) return '-Infinity';
-    return String(v);
+function formatNumberForError(v: number): string {
+  if (Number.isNaN(v)) return 'NaN';
+  if (v === Infinity) return 'Infinity';
+  if (v === -Infinity) return '-Infinity';
+  return String(v);
+}
+
+function formatCompositeForError(v: object, _seen?: WeakSet<object>): string {
+  const seen = _seen ?? new WeakSet<object>();
+  if (seen.has(v)) return '<circular>';
+  seen.add(v);
+  if (Array.isArray(v)) {
+    return `[${v.map((x) => formatScalarForError(x, seen)).join(', ')}]`;
   }
+  const entries = Object.entries(v).map(
+    ([k, val]) => `${JSON.stringify(k)}: ${formatScalarForError(val, seen)}`,
+  );
+  return `{ ${entries.join(', ')} }`;
+}
+
+/**
+ * Last resort for values JSON cannot encode. `JSON.stringify` returns
+ * `undefined` (not a string) for `undefined` and for functions; rendering that
+ * as a bare '<unrepresentable>' hid the most useful fact about the value — that
+ * nothing arrived — so name the kind instead.
+ */
+function formatOpaqueForError(v: unknown): string {
+  if (v === undefined) return 'undefined';
+  if (typeof v === 'function') return `<function ${v.name || 'anonymous'}>`;
+  try {
+    return JSON.stringify(v) ?? `<${typeof v}>`;
+  } catch {
+    return `<unserializable ${typeof v}>`;
+  }
+}
+
+export function formatScalarForError(v: unknown, _seen?: WeakSet<object>): string {
+  if (typeof v === 'number') return formatNumberForError(v);
   if (typeof v === 'bigint') return `${v}n`;
   if (typeof v === 'symbol') return String(v);
   if (Array.isArray(v) || (typeof v === 'object' && v !== null)) {
-    const seen = _seen ?? new WeakSet<object>();
-    if (seen.has(v)) return '<circular>';
-    seen.add(v);
-    if (Array.isArray(v)) {
-      return `[${v.map((x) => formatScalarForError(x, seen)).join(', ')}]`;
-    }
-    const entries = Object.entries(v).map(
-      ([k, val]) => `${JSON.stringify(k)}: ${formatScalarForError(val, seen)}`,
-    );
-    return `{ ${entries.join(', ')} }`;
+    return formatCompositeForError(v as object, _seen);
   }
-  try {
-    return JSON.stringify(v) ?? '<unrepresentable>';
-  } catch {
-    return '<unrepresentable>';
-  }
+  return formatOpaqueForError(v);
 }
 
 export function isValidPlaneSpec(value: unknown): value is PlaneSpec {

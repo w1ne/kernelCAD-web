@@ -40,7 +40,7 @@ describe('ParamRef JS-arithmetic trap diagnostics (capture-time)', () => {
       `const h = '[object Object]4'; return cylinder(h, 5);`,
     );
     expect(caught).toBeDefined();
-    expect(String(caught)).toMatch(/must be a finite number/);
+    expect(String(caught)).toMatch(/requires a finite number/);
     const hint = (caught as { hint?: string }).hint ?? '';
     expect(hint).toMatch(/js-arithmetic/);
     expect(hint).toMatch(/\.add\(n\), \.subtract\(n\), \.multiply\(n\), \.divide\(n\)/);
@@ -76,7 +76,7 @@ describe('ParamRef JS-arithmetic trap diagnostics (capture-time)', () => {
     const caught = await runAndCatch(`return cylinder({ radius: 5, height: 10 });`);
     expect(caught).toBeDefined();
     const hint = (caught as { hint?: string }).hint ?? '';
-    expect(hint).toMatch(/positional signature/);
+    expect(hint).toMatch(/POSITIONAL arguments/);
   });
 
   it('the documented fix — .add(4) — builds cleanly and stays symbolic', async () => {

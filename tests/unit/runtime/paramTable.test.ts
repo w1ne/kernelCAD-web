@@ -66,7 +66,7 @@ describe('ParamTable.declare', () => {
     expect(isKernelError(err)).toBe(true);
     if (isKernelError(err)) {
       expect(err.hint).toContain('invalid-args.param.value-out-of-range');
-      expect(err.hint).toContain('below min');
+      expect(err.hint).toContain('a number ≥ meta.min = 1 and ≤ meta.max = 20');
     }
   });
 
@@ -76,7 +76,7 @@ describe('ParamTable.declare', () => {
     try { t.declare('boltDia', 'number', 30, { min: 1, max: 20 }); } catch (e) { err = e; }
     expect(isKernelError(err)).toBe(true);
     if (isKernelError(err)) {
-      expect(err.hint).toContain('above max');
+      expect(err.hint).toContain('a number ≤ meta.max =');
     }
   });
 
@@ -151,7 +151,7 @@ describe('ParamTable.get / set / list', () => {
     try { t.set('boltDia', 25); } catch (e) { err = e; }
     expect(isKernelError(err)).toBe(true);
     if (isKernelError(err)) {
-      expect(err.hint).toContain('above max');
+      expect(err.hint).toContain('a number ≤ meta.max =');
     }
   });
 

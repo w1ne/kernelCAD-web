@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { FeatureId, PatternSpec, PlaneSpec, FeatureRef, EditableVec3 } from '../../shared/intent/types';
-import { isValidVec3, isValidScaleSpec, isValidPlaneSpec, isValidEditableVec3, formatScalarForError } from '../../shared/intent/types';
+import { isValidScaleSpec, isValidPlaneSpec, isValidEditableVec3, formatScalarForError } from '../../shared/intent/types';
 import { KernelError } from '../../shared/intent/kernelError';
+import { invalidArgs } from '../../shared/intent/invalidArgs';
 import type { ShapeTransform } from '../../shared/intent/featureRecord';
 import type { CaptureSession } from './captureSession';
 import { buildFaceInputRef } from './shapeOperationFeatureRecords';
@@ -89,10 +90,15 @@ import {
 import { sectionSketchOf, faceSketchOf, silhouetteOf } from './proxyDerivedSketch';
 import {
   validateGridPatternAxis,
+  validateLinearPatternOpts,
+  validateCircularPatternOpts,
   normalizeFaceSelector,
   assertFeatureNameUniqueOnChain,
   nextOrdinalForKindOnChain,
+  assertScalarEdgeValue,
 } from './proxyFeatureChain';
+
+
 export class Shape {
   readonly id: FeatureId;
   private session: CaptureSession;
@@ -669,30 +675,7 @@ export class Shape {
   }
 
   patternLinear(opts: { count: number; direction: [number, number, number]; spacing: number }): Shape {
-    if (!Number.isInteger(opts.count) || opts.count < 2) {
-      throw new KernelError(
-        'feature.invalid-args',
-        'patternLinear count must be an integer >= 2.',
-        this.id,
-        'Pass count: 2 or greater.',
-      );
-    }
-    if (!isValidVec3(opts.direction)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `patternLinear direction must be a finite Vec3; got ${formatScalarForError(opts.direction)}.`,
-        this.id,
-        'Pass direction: [x, y, z].',
-      );
-    }
-    if (typeof opts.spacing !== 'number' || !Number.isFinite(opts.spacing) || opts.spacing === 0) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `patternLinear spacing must be a non-zero finite number; got ${formatScalarForError(opts.spacing)}.`,
-        this.id,
-        'Pass a non-zero finite spacing.',
-      );
-    }
+    validateLinearPatternOpts(opts, this.id);
     const pattern: PatternSpec = {
       kind: 'linear',
       count: opts.count,
@@ -717,36 +700,11 @@ export class Shape {
   }
 
   patternCircular(opts: { count: number; axis: [number, number, number]; angleDeg?: number }): Shape {
-    if (!Number.isInteger(opts.count) || opts.count < 2) {
-      throw new KernelError(
-        'feature.invalid-args',
-        'patternCircular count must be an integer >= 2.',
-        this.id,
-        'Pass count: 2 or greater.',
-      );
-    }
-    if (!isValidVec3(opts.axis)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `patternCircular axis must be a finite Vec3; got ${formatScalarForError(opts.axis)}.`,
-        this.id,
-        'Pass axis: [x, y, z].',
-      );
-    }
-    const angleDeg = opts.angleDeg ?? 360;
-    if (typeof angleDeg !== 'number' || !Number.isFinite(angleDeg) || angleDeg === 0) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `patternCircular angleDeg must be a non-zero finite number; got ${formatScalarForError(angleDeg)}.`,
-        this.id,
-        'Pass a non-zero finite angleDeg.',
-      );
-    }
     const pattern: PatternSpec = {
       kind: 'circular',
       count: opts.count,
       axis: opts.axis,
-      angleDeg,
+      angleDeg: validateCircularPatternOpts(opts, this.id),
     };
     return this.session.patternFeature(this, pattern);
   }
@@ -777,15 +735,20 @@ export class Shape {
     opts?: { continuity?: FilletContinuity },
   ): Shape {
     if (typeof radiusOrGroups === 'number' || isParamRef(radiusOrGroups)) {
+      assertScalarEdgeValue('fillet', 'radius', radiusOrGroups, this.id);
       let continuity: FilletContinuity | undefined;
       if (opts !== undefined && opts.continuity !== undefined) {
         if (!isFilletContinuity(opts.continuity)) {
-          throw new KernelError(
-            'feature.invalid-args',
-            `fillet: continuity must be 'G1' or 'G2'.`,
-            this.id,
-            `invalid-args.fillet.continuity — got ${String(opts.continuity)}`,
-          );
+          invalidArgs({
+            api: 'fillet(radius, edges, { continuity })',
+            path: 'opts.continuity',
+            got: opts.continuity,
+            showType: typeof opts.continuity !== 'string',
+            requires:
+              "'G1' (tangent-continuous, the default) or 'G2' (curvature-continuous, a slower but smoother blend)",
+            example: "box(40, 30, 10).fillet(2, 'top', { continuity: 'G2' })",
+            featureId: this.id,
+          });
         }
         continuity = opts.continuity;
       }
@@ -803,12 +766,25 @@ export class Shape {
     edges?: EdgeSelector,
   ): Shape {
     if (typeof distanceOrGroups === 'number' || isParamRef(distanceOrGroups)) {
+      assertScalarEdgeValue('chamfer', 'distance', distanceOrGroups, this.id);
       return this.session.edgeFeature('chamfer', this, 'distance', distanceOrGroups, edges);
     }
     return this.session.variableEdgeFeature('chamfer', this, 'distance', distanceOrGroups);
   }
 
   shell(thickness: Editable<number>, opts: { face: FaceSelector | CanonicalFace | string }): Shape {
+    assertScalarEdgeValue('shell', 'thickness', thickness, this.id);
+    if (opts === undefined || opts === null || (opts as { face?: unknown }).face === undefined) {
+      invalidArgs({
+        api: 'shell(thickness, { face })',
+        path: 'opts.face',
+        got: (opts as { face?: unknown } | undefined)?.face,
+        requires:
+          "the face to open, as a canonical name ('top'), a face label, or a FaceSelector query; shell() always needs one — it removes that face and leaves a wall of `thickness` behind",
+        example: "box(40, 30, 10).shell(2, { face: 'top' })",
+        featureId: this.id,
+      });
+    }
     return this.session.edgeFeature('shell', this, 'thickness', thickness, { face: opts.face });
   }
 

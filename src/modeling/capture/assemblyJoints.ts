@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { KernelError } from '../../shared/intent/kernelError';
+import { invalidArgs } from '../../shared/intent/invalidArgs';
 import { formatScalarForError, isValidVec3 } from '../../shared/intent/types';
 import { parseConnectorRef, type MateCapacity, type MateLimitRange, type MateLoadLimit, type MatePose, type MateRecord } from '../mates/mate';
 import type { Connector } from '../mates/connector';
@@ -45,12 +46,15 @@ function isScalarCouplingMate(type: MateType): boolean {
 
 function validateConnectorAssembly(assemblyName: string, connector: AssemblyConnectorRef): void {
   if (connector.assemblyName !== assemblyName) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `assembly connector '${connector.partName}.${connector.connector}' belongs to assembly '${connector.assemblyName}', not '${assemblyName}'.`,
-      connector.partId,
-      'Only connect parts within the same assembly.',
-    );
+    invalidArgs({
+      api: 'mate(name, aRef, bRef, type)',
+      path: `connector ref '${connector.partName}.${connector.connector}'`,
+      gotText: `a connector on assembly '${connector.assemblyName}'`,
+      requires:
+        `a connector on assembly '${assemblyName}' — the one this mate belongs to; mates cannot cross assemblies, so add the part to this assembly first`,
+      example: "arm.mate('elbow', 'upper.pivot', 'lower.pivot', 'revolute')",
+      featureId: connector.partId,
+    });
   }
 }
 
@@ -62,28 +66,39 @@ function validateConnectorAssembly(assemblyName: string, connector: AssemblyConn
 // 'revolute', { ... })`; both surfaces coexist.
 export function revoluteJoint(state: AssemblyState, name: string, a: AssemblyPartRef, b: AssemblyPartRef, opts: RevoluteJointOpts): AssemblyJointRef {
   if (!isValidVec3(opts.axis)) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `revolute joint axis must be a finite Vec3; got ${formatScalarForError(opts.axis)}.`,
-      undefined,
-      'Pass axis: [x, y, z].',
-    );
+    invalidArgs({
+      api: 'revoluteJoint(name, parent, child, { axis })',
+      path: 'opts.axis',
+      got: opts.axis,
+      showType: !Array.isArray(opts.axis),
+      requires:
+        'a 3-element array of finite numbers [x, y, z] in the PARENT part local frame — the rotation axis; it need not be normalised',
+      example: "arm.revoluteJoint('elbow', 'upper', 'lower', { axis: [0, 0, 1], origin: [0, 0, 20], limitsDeg: [-90, 90] })",
+    });
   }
   if (!isValidVec3(opts.origin)) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `revolute joint origin must be a finite Vec3; got ${formatScalarForError(opts.origin)}.`,
-      undefined,
-      'Pass origin: [x, y, z] in the parent part local frame.',
-    );
+    invalidArgs({
+      api: 'revoluteJoint(name, parent, child, { origin })',
+      path: 'opts.origin',
+      got: opts.origin,
+      showType: !Array.isArray(opts.origin),
+      requires:
+        'a 3-element array of finite numbers [x, y, z] in the PARENT part local frame, not world coordinates',
+      unit: 'mm',
+      example: "arm.revoluteJoint('elbow', 'upper', 'lower', { axis: [0, 0, 1], origin: [0, 0, 20], limitsDeg: [-90, 90] })",
+    });
   }
   if (opts.limitsDeg !== undefined && !isValidJointLimits(opts.limitsDeg)) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `revolute joint limitsDeg must be [minDeg, maxDeg] finite numbers with min < max; got ${formatScalarForError(opts.limitsDeg)}.`,
-      undefined,
-      'Pass limitsDeg: [minDeg, maxDeg], or omit it.',
-    );
+    invalidArgs({
+      api: 'revoluteJoint(name, parent, child, { limitsDeg })',
+      path: 'opts.limitsDeg',
+      got: opts.limitsDeg,
+      showType: !Array.isArray(opts.limitsDeg),
+      requires:
+        'exactly [minDeg, maxDeg], both finite, with minDeg < maxDeg — omit it for a free joint',
+      unit: 'deg',
+      example: "arm.revoluteJoint('elbow', 'upper', 'lower', { axis: [0, 0, 1], origin: [0, 0, 20], limitsDeg: [-90, 90] })",
+    });
   }
   const record = state.session.assemblyJoint(state.name, name, 'revolute', a, b, {
     axis: opts.axis,
@@ -106,28 +121,39 @@ export function revoluteJoint(state: AssemblyState, name: string, a: AssemblyPar
 
 export function prismaticJoint(state: AssemblyState, name: string, a: AssemblyPartRef, b: AssemblyPartRef, opts: PrismaticJointOpts): AssemblyJointRef {
   if (!isValidVec3(opts.axis)) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `prismatic joint axis must be a finite Vec3; got ${formatScalarForError(opts.axis)}.`,
-      undefined,
-      'Pass axis: [x, y, z].',
-    );
+    invalidArgs({
+      api: 'prismaticJoint(name, parent, child, { axis })',
+      path: 'opts.axis',
+      got: opts.axis,
+      showType: !Array.isArray(opts.axis),
+      requires:
+        'a 3-element array of finite numbers [x, y, z] in the PARENT part local frame — the slide axis; it need not be normalised',
+      example: "arm.prismaticJoint('slide', 'base', 'carriage', { axis: [1, 0, 0], origin: [0, 0, 0], limitsMm: [0, 120] })",
+    });
   }
   if (!isValidVec3(opts.origin)) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `prismatic joint origin must be a finite Vec3; got ${formatScalarForError(opts.origin)}.`,
-      undefined,
-      'Pass origin: [x, y, z] in the parent part local frame.',
-    );
+    invalidArgs({
+      api: 'prismaticJoint(name, parent, child, { origin })',
+      path: 'opts.origin',
+      got: opts.origin,
+      showType: !Array.isArray(opts.origin),
+      requires:
+        'a 3-element array of finite numbers [x, y, z] in the PARENT part local frame, not world coordinates',
+      unit: 'mm',
+      example: "arm.prismaticJoint('slide', 'base', 'carriage', { axis: [1, 0, 0], origin: [0, 0, 0], limitsMm: [0, 120] })",
+    });
   }
   if (opts.limitsMm !== undefined && !isValidJointLimits(opts.limitsMm)) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `prismatic joint limitsMm must be [minMm, maxMm] finite numbers with min < max; got ${formatScalarForError(opts.limitsMm)}.`,
-      undefined,
-      'Pass limitsMm: [minMm, maxMm], or omit it.',
-    );
+    invalidArgs({
+      api: 'prismaticJoint(name, parent, child, { limitsMm })',
+      path: 'opts.limitsMm',
+      got: opts.limitsMm,
+      showType: !Array.isArray(opts.limitsMm),
+      requires:
+        'exactly [minMm, maxMm], both finite, with minMm < maxMm — the travel range along opts.axis; omit it for a free slide',
+      unit: 'mm',
+      example: "arm.prismaticJoint('slide', 'base', 'carriage', { axis: [1, 0, 0], origin: [0, 0, 0], limitsMm: [0, 120] })",
+    });
   }
   const record = state.session.assemblyJoint(state.name, name, 'prismatic', a, b, {
     axis: opts.axis,
@@ -156,23 +182,31 @@ export function prismaticJoint(state: AssemblyState, name: string, a: AssemblyPa
 
 export function ballJoint(state: AssemblyState, name: string, a: AssemblyPartRef, b: AssemblyPartRef, opts: BallJointOpts): AssemblyJointRef {
   if (!isValidVec3(opts.origin)) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `ball joint origin must be a finite Vec3; got ${formatScalarForError(opts.origin)}.`,
-      undefined,
-      'Pass origin: [x, y, z] in the parent part local frame.',
-    );
+    invalidArgs({
+      api: 'ballJoint(name, parent, child, { origin })',
+      path: 'opts.origin',
+      got: opts.origin,
+      showType: !Array.isArray(opts.origin),
+      requires:
+        'a 3-element array of finite numbers [x, y, z] in the PARENT part local frame, not world coordinates',
+      unit: 'mm',
+      example: "arm.ballJoint('wrist', 'forearm', 'hand', { origin: [0, 0, 40] })",
+    });
   }
   if (opts.limitsDeg !== undefined) {
     for (let i = 0; i < 3; i++) {
       const pair = opts.limitsDeg[i];
       if (!isValidJointLimits(pair)) {
-        throw new KernelError(
-          'feature.invalid-args',
-          `ball joint limitsDeg[${i}] must be [minDeg, maxDeg] finite numbers with min < max; got ${formatScalarForError(pair)}.`,
-          undefined,
-          'Pass limitsDeg: [[xMin,xMax], [yMin,yMax], [zMin,zMax]] in XYZ Euler order, or omit it.',
-        );
+        invalidArgs({
+          api: 'ballJoint(name, parent, child, { limitsDeg })',
+          path: `opts.limitsDeg[${i}]`,
+          got: pair,
+          showType: !Array.isArray(pair),
+          requires:
+            'exactly [minDeg, maxDeg], both finite, with minDeg < maxDeg; limitsDeg is three such pairs in XYZ Euler order — [[xMin, xMax], [yMin, yMax], [zMin, zMax]] — or omit it entirely',
+          unit: 'deg',
+          example: "arm.ballJoint('wrist', 'forearm', 'hand', { origin: [0, 0, 40], limitsDeg: [[-30, 30], [-30, 30], [-180, 180]] })",
+        });
       }
     }
   }
@@ -265,23 +299,29 @@ function assertMateConnectorPair(
   b: { connector: Connector },
 ): void {
   if (!isCompatiblePair(type, a.connector.type, b.connector.type)) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `assembly.mate.type-mismatch: mate '${name}' type '${type}' is not compatible with the connector pair (${aRef}:${a.connector.type}, ${bRef}:${b.connector.type}).`,
-      undefined,
-      `invalid-args.assembly.mate-type-mismatch — '${type}' mates require a specific connector-type pair; see the mate-type compatibility table in mateTypes.ts.`,
-    );
+    invalidArgs({
+      api: `mate('${name}', aRef, bRef, type)`,
+      path: 'type',
+      got: type,
+      requires:
+        `a mate type compatible with the two connectors — '${aRef}' is a '${a.connector.type}' connector and '${bRef}' is a '${b.connector.type}' one; 'revolute' and 'cylindrical' need two 'axis' connectors, 'fastened' two 'frame', 'planar' two 'planar', 'ball' two 'ball' (full table in mateTypes.ts)`,
+      hintSlug: 'invalid-args.assembly.mate-type-mismatch',
+      example: "arm.mate('elbow', 'upper.pivot', 'lower.pivot', 'revolute')  // both connectors declared with type: 'axis'",
+    });
   }
 }
 
 function validateMatePoseAllowed(name: string, type: MateType, opts: MateOptions | undefined): void {
   if (opts?.pose !== undefined && (type === 'fastened' || type === 'planar')) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `assembly.mate.pose-on-zero-dof-mate: mate '${name}' is type '${type}' and accepts no pose; remove opts.pose.`,
-      undefined,
-      `invalid-args.assembly.mate-pose-on-zero-dof-mate — '${type}' mates have no articulation DOF; drop opts.pose or change the mate type.`,
-    );
+    invalidArgs({
+      api: `mate('${name}', aRef, bRef, type, { pose })`,
+      path: 'opts.pose',
+      got: opts?.pose,
+      requires:
+        `no pose at all — a '${type}' mate fixes every articulation DOF, so there is nothing to pose; drop opts.pose, or use 'revolute' / 'prismatic' / 'cylindrical' / 'pin_slot' if the joint should move`,
+      hintSlug: 'invalid-args.assembly.mate-pose-on-zero-dof-mate',
+      example: "arm.mate('elbow', 'upper.pivot', 'lower.pivot', 'revolute', { pose: 45 })",
+    });
   }
 }
 
@@ -322,28 +362,38 @@ export function coupleMateRecords(
   const drivenMate = state.mates.find((mate) => mate.name === driven);
   if (!source || !drivenMate) {
     const known = state.mates.map((mate) => mate.name).join(', ') || '(none)';
-    throw new KernelError(
-      'feature.invalid-args',
-      `assembly.coupleMates: source '${opts.source}' or driven mate '${driven}' is not declared. Defined mates: ${known}.`,
-      undefined,
-      `invalid-args.assembly.coupled-mate-not-found — call arm.mate(...) for both source and driven mates before arm.coupleMates(...).`,
-    );
+    invalidArgs({
+      api: 'coupleMates(driven, { source })',
+      path: !source ? 'opts.source' : 'driven',
+      got: !source ? opts.source : driven,
+      requires:
+        `the name of a mate already declared on this assembly — declared mates: ${known}; call arm.mate(...) for both names before arm.coupleMates(...)`,
+      hintSlug: 'invalid-args.assembly.coupled-mate-not-found',
+      example: "arm.coupleMates('output', { source: 'input', ratio: 3 })",
+    });
   }
   if (!isScalarCouplingMate(source.type) || !isScalarCouplingMate(drivenMate.type)) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `assembly.coupleMates: source '${source.name}' (${source.type}) and driven '${drivenMate.name}' (${drivenMate.type}) must both be scalar articulated mates.`,
-      undefined,
-      `invalid-args.assembly.coupled-mate-type — couple only revolute, prismatic, cylindrical, or pin_slot mates.`,
-    );
+    invalidArgs({
+      api: 'coupleMates(driven, { source })',
+      path: 'driven + opts.source',
+      gotText: `source '${source.name}' of type '${source.type}' and driven '${drivenMate.name}' of type '${drivenMate.type}'`,
+      requires:
+        "both mates to be single-scalar articulated mates — 'revolute', 'prismatic', 'cylindrical' or 'pin_slot'; a coupling drives one scalar DOF from another, so zero-DOF and multi-DOF mates cannot take part",
+      hintSlug: 'invalid-args.assembly.coupled-mate-type',
+      example: "arm.coupleMates('output', { source: 'input', ratio: 3 })",
+    });
   }
   if (!Number.isFinite(opts.ratio) || (opts.offset !== undefined && !Number.isFinite(opts.offset))) {
-    throw new KernelError(
-      'feature.invalid-args',
-      'assembly.coupleMates: ratio and offset must be finite numbers.',
-      undefined,
-      `invalid-args.assembly.coupled-mate-invalid-scale — pass finite numeric ratio and offset values.`,
-    );
+    invalidArgs({
+      api: 'coupleMates(driven, { ratio, offset })',
+      path: Number.isFinite(opts.ratio) ? 'opts.offset' : 'opts.ratio',
+      got: Number.isFinite(opts.ratio) ? opts.offset : opts.ratio,
+      showType: typeof (Number.isFinite(opts.ratio) ? opts.offset : opts.ratio) !== 'number',
+      requires:
+        "a finite number — driven = ratio × source + offset, so ratio is unitless and offset is in the driven mate's own unit (mm or deg)",
+      hintSlug: 'invalid-args.assembly.coupled-mate-invalid-scale',
+      example: "arm.coupleMates('output', { source: 'input', ratio: 3, offset: 0 })",
+    });
   }
   state.mateCouplings.push({
     driven,

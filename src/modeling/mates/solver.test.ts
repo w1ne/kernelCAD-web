@@ -315,7 +315,7 @@ describe('solveMates — pose-driven articulation', () => {
       .part('b', kcad.box(1, 1, 1))
       .connector('q', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
     expect(() => arm.mate('m', 'a.p', 'b.q', 'fastened', { pose: 30 })).toThrow(
-      /pose-on-zero-dof-mate/,
+      /opts\.pose — got .* fixes every articulation DOF/,
     );
   });
 });

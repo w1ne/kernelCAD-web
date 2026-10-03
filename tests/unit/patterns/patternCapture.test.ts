@@ -32,7 +32,7 @@ describe('pattern capture contract', () => {
     const base = kcad.box(10, 5, 2);
 
     expect(() => base.patternLinear({ count: 1, direction: [1, 0, 0], spacing: 12 }))
-      .toThrow(/count must be an integer >= 2/);
+      .toThrow(/opts\.count — got 1; requires an integer/);
   });
 
   it('captures a circular pattern as one feature with axis metadata', () => {
@@ -91,7 +91,7 @@ describe('pattern capture contract', () => {
     expect(() => base.patternGrid({
       x: { count: 1, direction: [1, 0, 0], spacing: 10 },
       y: { count: 2, direction: [0, 1, 0], spacing: 8 },
-    })).toThrow(/patternGrid.x count must be an integer >= 2/);
+    })).toThrow(/patternGrid\.x\.count — got 1; requires an integer/);
   });
 
   it('rejects invalid grid directions and spacing before capture', () => {
@@ -102,11 +102,11 @@ describe('pattern capture contract', () => {
     expect(() => base.patternGrid({
       x: { count: 2, direction: [1, 0, Number.NaN], spacing: 10 },
       y: { count: 2, direction: [0, 1, 0], spacing: 8 },
-    })).toThrow(/patternGrid.x direction must be a finite Vec3/);
+    })).toThrow(/patternGrid\.x\.direction — got .* requires a 3-element array/);
 
     expect(() => base.patternGrid({
       x: { count: 2, direction: [1, 0, 0], spacing: 10 },
       y: { count: 2, direction: [0, 1, 0], spacing: 0 },
-    })).toThrow(/patternGrid.y spacing must be a non-zero finite number/);
+    })).toThrow(/patternGrid\.y\.spacing — got 0; requires a finite non-zero number/);
   });
 });
