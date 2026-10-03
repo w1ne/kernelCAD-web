@@ -21,7 +21,7 @@
 //   infill.bands  low 10 % ~70 % of the volume, mid 25 % ~29 %, high 60 % ~1 %
 //                 (the high band sits at the root fillet and the screw bores)
 //   infill.saving ~39 % less filament than uniform 60 % (estimate); OrcaSlicer
-//                 2.4.2 slicing the same file: 17.3 g / 1h26m vs 27.8 g /
+//                 2.4.2 slicing the same file: 17.4 g / 1h27m vs 27.8 g /
 //                 3h42m for uniform 60 %
 //   infill.fea    peak ~45 MPa vs 55 MPa PETG yield -> safety factor ~1.2,
 //                 ~5 mm tip deflection: it holds, with little margin
