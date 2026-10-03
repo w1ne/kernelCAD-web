@@ -7,7 +7,15 @@ keywords:
   - scale anchor missing after tracing a photo
   - resolve_assumptions before building from a reference photo
   - which waypoints are measured vs guessed
-when_to_use: You called trace_from_image on a reference photo and want to know which returned waypoints are directly measured vs guessed before you feed them into path().spline() — and how to lock down a real-world scale before committing geometry.
+  - trace a shape from a photo or reference image instead of typing polygon points
+  - outline from a picture, logo or sketch image to a profile
+when_to_use: >-
+  You want geometry from a photo or picture. Call MCP `trace_from_image` (do
+  not type polygon points by eye), then use this when you want to know which
+  returned waypoints are directly measured vs guessed before you feed them
+  into path().spline() — and how to lock down a real-world scale before
+  committing geometry. `referenceImage(path, { plane, scale })` only overlays
+  the photo in Studio for visual checks; it does not trace.
 ---
 
 ```typescript

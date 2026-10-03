@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { lookupAuthoringSkill, parseAuthoringSkill } from './authoringSkillLookup';
 import * as vendoredBundle from '../mcp/toolRegistry';
@@ -23,6 +23,19 @@ describe('lookupAuthoringSkill', () => {
       expect(r.text).toContain(`\`${s.id}\``);
     }
     expect(r.text).toContain('`top-level-functions`');
+  });
+
+  it('no args: inlines the manufacturing intent → API table, and every cookbook id in it exists', () => {
+    const r = lookupAuthoringSkill(SKILL);
+    expect(r.text).toContain('## Manufacturing intent → API');
+    for (const api of ['thread: { pitch }', 'spurGear(', 'sheetMetal(', "process: 'fdm'", 'lib.standard', 'trace_from_image']) {
+      expect(r.text).toContain(api);
+    }
+    const table = r.text.slice(r.text.indexOf('## Manufacturing intent → API'), r.text.indexOf('## Sections'));
+    const ids = [...table.matchAll(/\| ([a-z0-9]+(?:-[a-z0-9]+)+) \|$/gm)].map((m) => m[1]).filter((id) => id !== 'kernelcad-parts');
+    expect(ids.length).toBeGreaterThanOrEqual(8);
+    const snippetIds = new Set(readdirSync('cookbook/snippets').map((f) => f.replace(/\.md$/, '')));
+    for (const id of ids) expect(snippetIds, id).toContain(id);
   });
 
   it('section returns that section in full, including its subsections', () => {

@@ -46,13 +46,14 @@ export interface LookupAuthoringSkillResult {
 }
 
 /** Sections inlined in the default answer: what an agent needs before its
- *  first script (units and axes, the return rule, params, overlap rule). */
-const QUICK_START_SECTIONS = ['coordinate-system', 'conventions'];
+ *  first script (units and axes, the return rule, params, overlap rule, and
+ *  which API serves a manufacturing intent such as a tapped hole or a gear). */
+const QUICK_START_SECTIONS = ['coordinate-system', 'conventions', 'manufacturing-intent-api'];
 /** `##` sections large enough that the index lists their `###` parts too. */
 const INDEX_EXPANDED_SECTIONS = new Set(['api-surface', 'materials']);
 /** Cap on one search answer so a broad query cannot blow the limit again. */
 const SEARCH_BODY_CAP = 24_000;
-const SUMMARY_MAX = 72;
+const SUMMARY_MAX = 56;
 
 export function slugifyHeading(title: string): string {
   return title
