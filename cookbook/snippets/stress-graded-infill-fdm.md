@@ -69,7 +69,7 @@ bracket.feaStudy({
 //                       infill: { fromFea: 'shelf-load' } } })
 //   -> bands: low 10 % ~70 % of volume, mid 25 % ~29 %, high 60 % ~1 % (root of the lower bore)
 //   -> saving: ~39 % less filament than uniform 60 % (estimate); OrcaSlicer 2.4.2 on the
-//      same file: 17.4 g / 1h27m vs 27.8 g / 3h42m uniform 60 %
+//      same file: 17.3 g / 1h27m vs 27.8 g / 3h42m uniform 60 %
 //   -> fea: peak ~45 MPa vs 55 MPa yield, safety factor ~1.2, ~5 mm deflection
 // Open bracket.3mf in Bambu Studio / OrcaSlicer: the modifiers show under the
 // object with their own infill density.
