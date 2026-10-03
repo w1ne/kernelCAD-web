@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import { invalidArgsText } from '../../../../shared/intent/invalidArgs';
 import type { ShapeBackend } from '../../../../kernel/backends/backend';
 import { OcctBackend } from '../../../../kernel/backends/occt/occtBackend';
 import type { FeatureRecord } from '../../../../shared/intent/featureRecord';
@@ -25,8 +26,15 @@ export function lowerSheetMetal(ctx: LowerContext, r: FeatureRecord): LowerOutco
       code: 'feature.invalid-args',
       featureId: r.id,
       severity: 'error',
-      message: `sheetMetal requires an input sketch.`,
-      hint: 'Pass a closed path()...close() sketch as the first argument: sheetMetal(sketch, opts).',
+      ...invalidArgsText({
+        api: 'sheetMetal(profile, opts)',
+        path: 'profile',
+        gotText: 'no sketch input',
+        requires:
+          'a closed sketch as the FIRST argument — build it with path()...close(); the flat blank outline is what gets thickened',
+        example:
+          "sheetMetal(path().moveTo(0, 0).lineTo(80, 0).lineTo(80, 40).lineTo(0, 40).close(), { thickness: 1.5, kFactor: 0.42 })",
+      }),
     });
     return noShape();
   }
@@ -56,8 +64,13 @@ export function lowerSheetMetalBend(ctx: LowerContext, r: FeatureRecord): LowerO
       code: 'feature.invalid-args',
       featureId: r.id,
       severity: 'error',
-      message: `sheetMetalBend requires an input named 'base'.`,
-      hint: 'Chain .bend() on a sheetMetal(...) Shape.',
+      ...invalidArgsText({
+        api: 'bend(edgeRef, angle, radius)',
+        path: 'inputs.base',
+        gotText: 'no base shape',
+        requires: 'a Shape returned by sheetMetal(...) to chain onto',
+        example: "blank.bend({ face: 'right' }, 90, 1.5)",
+      }),
     });
     return noShape();
   }
@@ -70,8 +83,15 @@ export function lowerSheetMetalBend(ctx: LowerContext, r: FeatureRecord): LowerO
       code: 'feature.invalid-args',
       featureId: r.id,
       severity: 'error',
-      message: `.bend() only works on Shapes whose lineage roots at sheetMetal(...).`,
-      hint: 'Build the body via sheetMetal(sketch, opts), then chain .bend().',
+      ...invalidArgsText({
+        api: 'bend(edgeRef, angle, radius)',
+        path: 'the receiving Shape',
+        gotText: 'a Shape whose lineage does not root at sheetMetal(...)',
+        requires:
+          'a sheet-metal body — .bend() reads thickness and kFactor from the root sheetMetal(...) record, so build the blank with sheetMetal(profile, { thickness, kFactor }) first; a box or extrude cannot be bent',
+        example:
+          "sheetMetal(profile, { thickness: 1.5, kFactor: 0.42 }).bend({ face: 'right' }, 90, 1.5)",
+      }),
     });
     return noShape();
   }
