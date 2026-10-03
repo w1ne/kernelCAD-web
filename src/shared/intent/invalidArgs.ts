@@ -63,8 +63,12 @@ export interface InvalidArgsSpec {
   requires: string;
   /** One minimal correct call, inline and copy-pasteable. */
   example: string;
-  /** Unit of the argument, named explicitly. Omit for non-dimensional args. */
-  unit?: ArgUnit;
+  /**
+   * Unit of the argument, named explicitly. Omit for non-dimensional args.
+   * `ArgUnit` covers the kernel's own units; any other string (a user-declared
+   * `param()` unit, for instance) is passed through verbatim.
+   */
+  unit?: ArgUnit | (string & {});
   featureId?: string;
   /**
    * Defaults to `feature.invalid-args`. Pass `cli.invalid-args` for CLI/tool
@@ -101,7 +105,7 @@ function receivedText(spec: InvalidArgsSpec): string {
   return describeArgValue(spec.got, spec.showType);
 }
 
-function unitSuffix(unit: ArgUnit | undefined): string {
+function unitSuffix(unit: string | undefined): string {
   return unit === undefined || unit === 'unitless' ? '' : ` (${unit})`;
 }
 
