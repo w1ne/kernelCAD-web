@@ -2,13 +2,17 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Pure BM25 over a corpus of {id, text} docs. Standard Robertson/Sparck-Jones
 // parameters (k1=1.5, b=0.75). No external deps. Tokenizer drops tokens <= 2
-// chars and a small English stopword set.
+// chars and a small English stopword set, but keeps ISO metric sizes (m2..m9):
+// "M3"/"M4" carry the intent of a fastener query.
 
 const STOPWORDS = new Set([
   'a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for', 'from', 'has', 'he',
   'in', 'is', 'it', 'its', 'of', 'on', 'that', 'the', 'to', 'was', 'were',
   'will', 'with',
 ]);
+
+// Two-char tokens worth keeping: metric thread sizes m2..m9 (m10+ pass the length rule).
+const KEEP_SHORT = /^m[2-9]$/;
 
 const K1 = 1.5;
 const B = 0.75;
@@ -18,7 +22,7 @@ export function tokenize(text: string): string[] {
   return text
     .toLowerCase()
     .split(/[^a-z0-9]+/)
-    .filter((t) => t.length > 2 && !STOPWORDS.has(t));
+    .filter((t) => (t.length > 2 || KEEP_SHORT.test(t)) && !STOPWORDS.has(t));
 }
 
 export interface ScoredDoc {
