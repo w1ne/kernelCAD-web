@@ -19,6 +19,20 @@ export const ul = (n: Editable<number>): Param => toParam(n, 'unitless');
 function paramArithmeticHint(value: unknown): string | undefined {
   const methodsHint =
     `use the ParamRef arithmetic methods — .add(n), .subtract(n), .multiply(n), .divide(n), .negate() — not JS operators (+ - * /) or template strings. Example: param('w', 18).add(4) instead of param('w', 18) + 4.`;
+  if (value === undefined) {
+    // A dimension slot receives `undefined` in exactly two ways, and the
+    // runtime cannot tell them apart here: `ParamRef<number>.value` is a plain
+    // frozen `undefined` by design (numeric params stay symbolic), so by the
+    // time the value arrives there is no trace of the `.value` read. Name both
+    // causes — the `.value` one first, because it is the common agent error —
+    // rather than guessing one. Guessing sends the agent to fix the wrong
+    // thing and retry the same shape.
+    return (
+      'invalid-args.param.undefined-dimension — nothing arrived in this slot. Two causes: ' +
+      "(1) reading `.value` on a NUMERIC param() — it is always undefined, because numeric params stay symbolic; pass the ParamRef itself (box(60, 40, plate)) or combine it (box(60, 40, plate.add(2))), and keep `.value` for boolean/choice/string params; " +
+      '(2) the argument was simply omitted or came from an undefined variable — pass a number.'
+    );
+  }
   if (typeof value === 'string') {
     if (/\[object Object\]/.test(value)) {
       return `invalid-args.param.js-arithmetic — this value looks like JS arithmetic or string concatenation on a ParamRef; ${methodsHint}`;
@@ -52,6 +66,23 @@ const API_EXAMPLES: Record<string, string> = {
   extrudeCircle: 'extrudeCircle(10, 5)',
   extrudePolygon: 'extrudePolygon([[0, 0], [20, 0], [20, 10], [0, 10]], 5)',
   extrudeRoundedRect: 'extrudeRoundedRect(40, 30, 10, 3)',
+};
+
+/**
+ * The same call with a `param()` ParamRef in the slot, for the `undefined`
+ * case: the commonest way a dimension slot ends up undefined is reading
+ * `.value` on a numeric param, and the fix is to pass the ref itself.
+ */
+const API_PARAM_EXAMPLES: Record<string, string> = {
+  box: "const t = param('t', 10, { unit: 'mm' }); box(40, 30, t)",
+  cylinder: "const h = param('h', 20, { unit: 'mm' }); cylinder(h, 5)",
+  sphere: "const r = param('r', 10, { unit: 'mm' }); sphere(r)",
+  torus: "const R = param('R', 20, { unit: 'mm' }); torus(R, 5)",
+  extrudeRect: "const d = param('d', 10, { unit: 'mm' }); extrudeRect(40, 30, d)",
+  extrudeCircle: "const d = param('d', 5, { unit: 'mm' }); extrudeCircle(10, d)",
+  extrudePolygon:
+    "const d = param('d', 5, { unit: 'mm' }); extrudePolygon([[0, 0], [20, 0], [20, 10], [0, 10]], d)",
+  extrudeRoundedRect: "const d = param('d', 10, { unit: 'mm' }); extrudeRoundedRect(40, 30, d, 3)",
 };
 
 /** What a named argument means, so the requirement says more than "positive".
@@ -91,14 +122,23 @@ function apiExample(featureKind: string, paramName: string): string {
 export function assertEditableNumber(featureKind: string, paramName: string, value: unknown): void {
   if (isValidEditableNumber(value)) return;
   const targetedHint = paramArithmeticHint(value);
+  const { unit } = argMeaning(featureKind, paramName);
   invalidArgs({
     api: `${featureKind}(${paramName})`,
     path: paramName,
     got: value,
     showType: true,
-    requires:
-      'a finite number, or a numeric ParamRef from param(); the primitives take POSITIONAL arguments, they do not accept an options object such as { radius, height }',
-    example: apiExample(featureKind, paramName),
+    requires: value === undefined
+      // The `.value`-on-a-numeric-param mistake is indistinguishable from an
+      // omitted argument at this point (see paramArithmeticHint), so the
+      // requirement names both ways to supply the value instead of asserting
+      // a cause.
+      ? "a finite number, or the numeric ParamRef itself from param() — a numeric param's `.value` is always undefined, so pass the ref (box(60, 40, plate)) or combine it (plate.add(2)); `.value` is only for boolean/choice/string params"
+      : 'a finite number, or a numeric ParamRef from param(); the primitives take POSITIONAL arguments, they do not accept an options object such as { radius, height }',
+    unit,
+    example: value === undefined
+      ? `${API_PARAM_EXAMPLES[featureKind] ?? apiExample(featureKind, paramName)}  // the ref itself, or t.add(2) — never t.value`
+      : apiExample(featureKind, paramName),
     featureId: featureKind,
     hint: targetedHint,
   });

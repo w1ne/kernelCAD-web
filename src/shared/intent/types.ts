@@ -317,10 +317,15 @@ export function formatScalarForError(v: unknown, _seen?: WeakSet<object>): strin
     );
     return `{ ${entries.join(', ')} }`;
   }
+  // JSON.stringify returns `undefined` (not a string) for undefined and for
+  // functions. Rendering that as '<unrepresentable>' hid the single most
+  // useful fact about the value — that nothing arrived — so name the kind.
+  if (v === undefined) return 'undefined';
+  if (typeof v === 'function') return `<function ${v.name || 'anonymous'}>`;
   try {
-    return JSON.stringify(v) ?? '<unrepresentable>';
+    return JSON.stringify(v) ?? `<${typeof v}>`;
   } catch {
-    return '<unrepresentable>';
+    return `<unserializable ${typeof v}>`;
   }
 }
 
