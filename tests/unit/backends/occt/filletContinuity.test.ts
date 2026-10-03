@@ -78,7 +78,7 @@ describe('OcctLowerer fillet — Slice C Task 6 continuity', () => {
     expect(() => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       box.fillet(2, undefined, { continuity: 'G3' as any });
-    }).toThrow(/continuity must be 'G1' or 'G2'/);
+    }).toThrow(/opts\.continuity — got .* requires 'G1' .* or 'G2'/);
   });
 
   it("captures continuity: 'G2' on the FeatureRecord metadata", async () => {
