@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { DIAGNOSTIC_CODES, HINT_TEMPLATES } from '../../../src/shared/diagnostics/registry';
 
 describe('diagnostic catalogue invariants', () => {
-  it('emits exactly 325 codes', () => {
+  it('emits exactly 331 codes', () => {
     // 204 from develop (NURBS analytics, Query DSL, K1-K9 kinematic, assembly/mechanism gates)
     // + 6 parts catalog codes (parts.* — Slice C bundled parts catalog)
     // + 1 feature.emboss-text.boolean-noop (#393 silent no-op guard)
@@ -116,8 +116,9 @@ describe('diagnostic catalogue invariants', () => {
     // + 3 dogfood friction round 3: feature.result.absurd-geometry (post-feature
     //   sanity gate), export.stl.fuse-skipped, drawing.style.architectural-suggested = 324.
     // + 1 export.mesh.fused-seam-fallback (multi-part STL per-part shells) = 325.
-    expect(DIAGNOSTIC_CODES).toHaveLength(325);
-    expect(new Set(DIAGNOSTIC_CODES).size).toBe(325);
+    // + 6 authoring.prefer-api.* (evaluate_script intent lint) = 331.
+    expect(DIAGNOSTIC_CODES).toHaveLength(331);
+    expect(new Set(DIAGNOSTIC_CODES).size).toBe(331);
   });
 
   it('every code has a non-empty hint template', () => {

@@ -14,6 +14,7 @@ import {
   type PoseEnvelopeDiagnostic,
 } from '../../../modeling/mates/poseEnvelope';
 import { detectUnstructuredBodies } from '../../../modeling/validation/unstructuredBodies';
+import { lintAuthoringIntent } from '../../cookbook/intentLint';
 import { kernelErrorToDiagnostic } from '../../../shared/diagnostics/kernelErrorToDiagnostic';
 import { buildFeatureTrace } from '../../repair/trace';
 import type { FeatureTraceEntry } from '../../repair/types';
@@ -113,7 +114,11 @@ export async function dryRunScript(input: EvaluateInput): Promise<DryRunScriptRe
 
   // Capture-light static check — same producer the full evaluation runs.
   // Needs only the return value + source text, no lowered geometry.
-  const diagnostics = detectUnstructuredBodies({ returnValue: run.returnValue, code });
+  // Plus the authoring intent lint (source text only, info-only).
+  const diagnostics = [
+    ...detectUnstructuredBodies({ returnValue: run.returnValue, code }),
+    ...lintAuthoringIntent(code),
+  ];
 
   return {
     evaluation: {
@@ -189,7 +194,10 @@ export async function evaluateWithEnvelope(
   if (misuse !== undefined) return misuse;
 
   const built = await evaluateAndBuildScript({ file: input.file, code: input.code });
-  const { evaluation, model } = built;
+  const { model } = built;
+  // Authoring intent lint: info-only hints that name the API for the intent
+  // the source states (M4, gear, sheet metal...). Never changes exitCode.
+  const evaluation = withIntentLint(built.evaluation, model?.code ?? input.code);
   const trace = input.trace === true ? traceOfBuiltModel(model, input.file) : undefined;
 
   if (!input.envelope) return evaluationResult(evaluation, trace);
@@ -212,6 +220,13 @@ export async function evaluateWithEnvelope(
     envelopeSampleCount,
     ...(trace !== undefined ? { trace } : {}),
   };
+}
+
+/** Append the authoring intent lint to an evaluation. Info-only: exitCode
+ *  and every existing diagnostic are unchanged. */
+export function withIntentLint(evaluation: EvaluateResult, code: string | undefined): EvaluateResult {
+  const hints = lintAuthoringIntent(code);
+  return hints.length === 0 ? evaluation : { ...evaluation, diagnostics: [...evaluation.diagnostics, ...hints] };
 }
 
 /** Misuse check first — agent supplies sampling flags without enabling the
