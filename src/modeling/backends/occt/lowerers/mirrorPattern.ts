@@ -3,7 +3,7 @@
 import * as replicad from 'replicad';
 import type { ShapeBackend } from '../../../../kernel/backends/backend';
 import { OcctBackend } from '../../../../kernel/backends/occt/occtBackend';
-import { fuseWithHistory, mergeBooleanHistory } from '../../../../kernel/backends/occt/historyAwareBooleans';
+import { fuseManyWithHistory, mergeBooleanHistoryMany } from '../../../../kernel/backends/occt/historyAwareBooleans';
 import { retagInstance } from '../../../../kernel/backends/occt/patternHistory';
 import { propagateTransformHistory } from '../../../../kernel/naming/evolutionRecord';
 import type { HistoryMap } from '../../../../kernel/naming/evolutionRecord';
@@ -129,15 +129,14 @@ function fusePatternInstances(
   sourceId: string,
   instances: readonly PatternInstance[],
 ): OcctBackend {
-  // --- Cumulative fuse with retagged-per-instance history --------------
+  // --- One fuse of all instances, with retagged-per-instance history ----
 
   // Instance 0 — base, no transform. Retag its lineage entries.
   // We reuse `base`'s TopoDS directly (no clone), so its face hashes
-  // match `tagged0`'s keys. Subsequent fuses build new OcctBackends so
-  // base remains untouched.
+  // match `tagged0`'s keys.
   const base0Map = (base.historyMap ?? new Map()) as HistoryMap;
   const tagged0 = retagInstance(base0Map, sourceId, 0);
-  let cumulative = new OcctBackend(
+  const instance0 = new OcctBackend(
     base.getReplicadShape() as replicad.Shape3D,
     base.kind,
     tagged0,
@@ -148,7 +147,7 @@ function fusePatternInstances(
   // keeps them aligned with `base.historyMap`. The transform is applied
   // to a clone so it doesn't mutate `base`.
   const baseInputHashes = base.faceHashes();
-  for (const inst of instances) {
+  const instanceBackends = instances.map((inst) => {
     // Clone base, apply transform; propagate history through transform.
     const cloneOfBase = base.clone();
     const transformed = inst.applyTo(cloneOfBase);
@@ -159,20 +158,24 @@ function fusePatternInstances(
     } else {
       transformedMap = new Map();   // defensive — no history to propagate
     }
-    const taggedInstanceMap = retagInstance(transformedMap, sourceId, inst.i);
-    const instanceBackend = new OcctBackend(
+    return new OcctBackend(
       transformed.getReplicadShape() as replicad.Shape3D,
       base.kind,
-      taggedInstanceMap,
+      retagInstance(transformedMap, sourceId, inst.i),
     );
-    // History-aware fuse — same pattern as `case 'boolean':`.
-    const fused = fuseWithHistory(cumulative, instanceBackend);
-    const newMap = mergeBooleanHistory(cumulative.historyMap, instanceBackend.historyMap, fused);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const wrapped = replicad.cast(fused.shape as any) as replicad.Shape3D;
-    cumulative = new OcctBackend(wrapped, base.kind, newMap);
-  }
-  return cumulative;
+  });
+
+  // ONE general fuse of every instance. Folding them pairwise re-intersected
+  // the growing accumulator N-1 times (quadratic): a 36-tooth ring cost 35
+  // booleans and dominated the evaluation of the whole part.
+  const fused = fuseManyWithHistory(instance0, instanceBackends);
+  const newMap = mergeBooleanHistoryMany(
+    [instance0.historyMap, ...instanceBackends.map((b) => b.historyMap)],
+    fused,
+  );
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const wrapped = replicad.cast(fused.shape as any) as replicad.Shape3D;
+  return new OcctBackend(wrapped, base.kind, newMap);
 }
 
 /** `pattern` — linear / circular / grid instancing, fused cumulatively with
