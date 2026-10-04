@@ -36,3 +36,6 @@ export class AgentAPI {
 }
 
 export const agentAPI = new AgentAPI();
+
+debugger;
+var __lintbad = 1;
