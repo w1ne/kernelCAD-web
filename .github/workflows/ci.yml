@@ -1,6 +1,6 @@
 name: CI
 
-# Path-filters skip CI on truly content-only changes (top-level README/LICENSE/
+# Push path-filters and the PR `changes` job (below) skip CI on truly content-only changes (top-level README/LICENSE/
 # CHANGELOG, plus docs/ which is human-written prose). Anything that COULD
 # affect runtime — src/, tests/, scripts/, eval/, site/, package*.json,
 # tsconfig*.json, .github/workflows/ — still triggers CI.
@@ -21,15 +21,6 @@ on:
     branches:
       - master
       - develop
-    paths-ignore:
-      - 'README.md'
-      - 'CONTRIBUTING.md'
-      - 'CHANGELOG.md'
-      - 'LICENSE'
-      - 'RELEASE_NOTES.md'
-      - 'docs/**'
-      - 'doc/**'
-      - 'archive/**'
   workflow_dispatch:
   # Required so the branch-protection merge queue gets its checks: the queue
   # tests a speculative merge on a temporary `merge_group` ref and waits for the
@@ -48,8 +39,45 @@ concurrency:
 # Three independent QC jobs run in parallel; e2e (master-only) gates on all
 # three being green. See ci-acceleration-design (in kernelCAD-private).
 jobs:
+  # Docs-only PRs (every file matches the globs below) skip the heavy jobs.
+  # This lives INSIDE ci.yml (not a path filter) so the required check names
+  # always report: a skipped job reports success, and there is only ever one
+  # run per name, so a code-touching PR can never be green-lit by a stand-in.
+  # Keep the case-list in sync with the push `paths-ignore` above.
+  changes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      docs_only: ${{ steps.detect.outputs.docs_only }}
+    steps:
+      - id: detect
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          docs_only=false
+          if [ "$EVENT" = "pull_request" ]; then
+            files=$(gh api --paginate "repos/${{ github.repository }}/pulls/${PR}/files" --jq '.[] | .filename, (.previous_filename // empty)')
+            if [ -n "$files" ]; then
+              docs_only=true
+              while IFS= read -r f; do
+                case "$f" in
+                  README.md|CONTRIBUTING.md|CHANGELOG.md|LICENSE|RELEASE_NOTES.md|docs/*|doc/*|archive/*) ;;
+                  *) echo "non-docs file: $f"; docs_only=false ;;
+                esac
+              done <<< "$files"
+            fi
+          fi
+          echo "docs_only=$docs_only" >> "$GITHUB_OUTPUT"
   lint:
     runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.docs_only != 'true'
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
@@ -59,6 +87,8 @@ jobs:
 
   build-and-checks:
     runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.docs_only != 'true'
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
@@ -74,6 +104,8 @@ jobs:
   # KERNELCAD_SLOW_GEOMETRY_TESTS=1, which only this job sets.
   geometry-proofs:
     runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.docs_only != 'true'
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -89,6 +121,8 @@ jobs:
   # checkout/setup/build work compared with the previous 12-runner fanout.
   test-shard:
     runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.docs_only != 'true'
     # 20 gives headroom for the shard that draws the heavy physics
     # example-sweep tests (a single example can run ~6 min) so a legitimately
     # slow run is never cancelled mid-test. Setup itself is now near-instant
@@ -116,11 +150,13 @@ jobs:
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 2
-    needs: test-shard
+    needs: [changes, test-shard]
     if: always()
     steps:
       - name: All test shards green
         run: |
+          [ "${{ needs.changes.result }}" = "success" ] || { echo "changes job: ${{ needs.changes.result }}"; exit 1; }
+          [ "${{ needs.changes.outputs.docs_only }}" = "true" ] && exit 0
           [ "${{ needs.test-shard.result }}" = "success" ] || { echo "shard result: ${{ needs.test-shard.result }}"; exit 1; }
 
   # Exercises the FEA solve and USD-Isaac export against the REAL external
@@ -134,6 +170,8 @@ jobs:
   # than a quietly-green skip.
   external-tools:
     runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.docs_only != 'true'
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
