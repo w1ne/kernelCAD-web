@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Expert solution: spurGear generates involute teeth from the basic rack.
 const m = 1.5;
 const z1 = 18;

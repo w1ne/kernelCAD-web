@@ -272,6 +272,38 @@ function hostedMeshBody(source: string, paramOverrides: ParamOverrides | undefin
   };
 }
 
+/** `POST {base}/__kernelcad/mesh`; throws the server's error message. */
+async function meshOnServer(base: string, body: ReturnType<typeof hostedMeshBody>): Promise<BackendMeshPayload> {
+  const response = await fetch(`${base}/__kernelcad/mesh`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const payload = await response.json().catch(() => null);
+  if (!response.ok) {
+    const message = payload && typeof payload.error === 'string' ? payload.error : `HTTP ${response.status}`;
+    throw new Error(message);
+  }
+  if (!isBridgePayload(payload)) throw new Error('Mesh endpoint did not return features.');
+  return payload;
+}
+
+/** The mesh stored when the current `/p/<slug>?version=N` revision was
+ *  published, or null when the page is not pinned or the artifact is missing. */
+async function storedRevisionMesh(base: string): Promise<BackendMeshPayload | null> {
+  const project = currentHostedProject();
+  if (!project?.version) return null;
+  try {
+    const url = `${base}/api/v1/projects/${encodeURIComponent(project.slug)}/revisions/${project.version}/mesh-artifact`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const payload = await res.json().catch(() => null);
+    return isBridgePayload(payload) ? payload : null;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Compute the mesh bridge payload for a source string on the hosted deploy.
  * Tries the build-time precompute first (a static `_mesh/<sha>.json` on the
@@ -304,18 +336,18 @@ export async function meshSourceHosted(
   // 2. Server mesh endpoint for edited / non-gallery code (and param edits).
   const base = import.meta.env.VITE_API_BASE_URL;
   if (typeof base === 'string' && base.length > 0) {
-    const response = await fetch(`${base}/__kernelcad/mesh`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(hostedMeshBody(source, paramOverrides, options?.preferSource)),
-    });
-    const payload = await response.json().catch(() => null);
-    if (!response.ok) {
-      const message = payload && typeof payload.error === 'string' ? payload.error : `HTTP ${response.status}`;
-      throw new Error(message);
+    try {
+      return await meshOnServer(base, hostedMeshBody(source, paramOverrides, options?.preferSource));
+    } catch (error) {
+      // 3. A heavy model can exceed the live mesh budget (30 s). A pinned
+      //    revision was already meshed at publish time with a longer budget,
+      //    so show that stored mesh instead of a build failure.
+      const stored = hasOverrides(paramOverrides) || options?.preferSource
+        ? null
+        : await storedRevisionMesh(base);
+      if (stored) return stored;
+      throw error;
     }
-    if (!isBridgePayload(payload)) throw new Error('Mesh endpoint did not return features.');
-    return payload;
   }
 
   throw new Error(

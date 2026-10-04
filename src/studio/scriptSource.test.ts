@@ -238,6 +238,54 @@ describe('param overrides (stateless re-run path)', () => {
     );
   });
 
+  it('shows the stored revision mesh when the live mesh times out', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.example.com');
+    vi.stubGlobal('window', {
+      location: { hostname: 'app.kernelcad.com', pathname: '/p/BHEaiMyr', search: '?version=2' },
+    });
+    const stored = { revision: 2, features: [{ featureId: 'ball' }], bounds: { min: [0, 0, 0], max: [1, 1, 1] } };
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      const url = String(input);
+      if (url.endsWith('/__kernelcad/mesh')) {
+        return { ok: false, status: 500, json: async () => ({ error: 'mesh timed out after 30000 ms' }) } as Response;
+      }
+      if (url === 'https://api.example.com/api/v1/projects/BHEaiMyr/revisions/2/mesh-artifact') {
+        return { ok: true, json: async () => stored } as Response;
+      }
+      return { ok: false, status: 404, json: async () => null } as Response;
+    });
+
+    await expect(meshSourceHosted('ignored')).resolves.toEqual(stored);
+    expect(fetchMock).toHaveBeenCalledWith('https://api.example.com/api/v1/projects/BHEaiMyr/revisions/2/mesh-artifact');
+  });
+
+  it('keeps the live mesh error when the page is not pinned to a revision', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.example.com');
+    vi.stubGlobal('window', {
+      location: { hostname: 'app.kernelcad.com', pathname: '/p/BHEaiMyr', search: '' },
+    });
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => (
+      String(input).endsWith('/__kernelcad/mesh')
+        ? Promise.reject(new TypeError('Failed to fetch'))
+        : ({ ok: false, status: 404, json: async () => null } as Response)
+    ));
+
+    await expect(meshSourceHosted('ignored')).rejects.toThrow('Failed to fetch');
+  });
+
+  it('does not use the stored mesh for a parameter edit', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.example.com');
+    vi.stubGlobal('window', {
+      location: { hostname: 'app.kernelcad.com', pathname: '/p/BHEaiMyr', search: '?version=2' },
+    });
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      { ok: false, status: 500, json: async () => ({ error: 'mesh timed out after 30000 ms' }) } as Response,
+    );
+
+    await expect(meshSourceHosted('ignored', { diameter_mm: 200 })).rejects.toThrow('mesh timed out');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it('sends a rewritten source instead of the stored project body when asked', async () => {
     vi.stubEnv('VITE_API_BASE_URL', 'https://api.example.com');
     vi.stubGlobal('window', {
