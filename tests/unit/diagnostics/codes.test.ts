@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { DIAGNOSTIC_CODES, HINT_TEMPLATES } from '../../../src/shared/diagnostics/registry';
 
 describe('diagnostic catalogue invariants', () => {
-  it('emits exactly 309 codes', () => {
+  it('emits exactly 331 codes', () => {
     // 204 from develop (NURBS analytics, Query DSL, K1-K9 kinematic, assembly/mechanism gates)
     // + 6 parts catalog codes (parts.* — Slice C bundled parts catalog)
     // + 1 feature.emboss-text.boolean-noop (#393 silent no-op guard)
@@ -106,9 +106,19 @@ describe('diagnostic catalogue invariants', () => {
     // + 3 direct-edit drag: feature.direct-edit.clamped,
     //   feature.direct-edit.delta-wrapper, feature.direct-edit.unresolved = 308.
     // + 1 feature.direct-edit.shared-param-conflict (one param drives multiple
-    //   translated axes with different drag deltas; drag cannot encode it) = 309.
-    expect(DIAGNOSTIC_CODES).toHaveLength(309);
-    expect(new Set(DIAGNOSTIC_CODES).size).toBe(309);
+    //   translated axes with different drag deltas; drag cannot encode it) = 309 + 3 likeness = 318.
+    // + 3 body likeness (verify check body-likeness):
+    //   reference.likeness.auto-failed, reference.likeness.stills-incomplete,
+    //   reference.likeness.still-failed = 318.
+    // + 2 3MF bed fit (arrange 'plate' / 'assembled'): export.3mf.plate-overflow,
+    //   export.3mf.exceeds-bed = 320.
+    // + 1 feature.hole.cut-missing (fail-closed per-bore hole check) = 321.
+    // + 3 dogfood friction round 3: feature.result.absurd-geometry (post-feature
+    //   sanity gate), export.stl.fuse-skipped, drawing.style.architectural-suggested = 324.
+    // + 1 export.mesh.fused-seam-fallback (multi-part STL per-part shells) = 325.
+    // + 6 authoring.prefer-api.* (evaluate_script intent lint) = 331.
+    expect(DIAGNOSTIC_CODES).toHaveLength(331);
+    expect(new Set(DIAGNOSTIC_CODES).size).toBe(331);
   });
 
   it('every code has a non-empty hint template', () => {

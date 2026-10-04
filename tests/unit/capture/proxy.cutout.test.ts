@@ -72,7 +72,7 @@ describe('Shape.cutout capture', () => {
     `);
     const diag = kernelErrorToDiagnostic(caught);
     expect(diag.code).toBe('feature.invalid-args');
-    expect(diag.hint).toContain('depth (number');
+    expect(diag.hint).toContain("exactly one of depth (a number in mm or 'through') or upToFace");
   });
 
   it('feature.invalid-args when both depth and upToFace are set', async () => {
@@ -82,7 +82,7 @@ describe('Shape.cutout capture', () => {
     `);
     const diag = kernelErrorToDiagnostic(caught);
     expect(diag.code).toBe('feature.invalid-args');
-    expect(diag.hint).toContain('not both');
+    expect(diag.hint).toContain('mutually exclusive');
   });
 
   it('feature.invalid-args when blind depth is non-positive', async () => {
@@ -92,7 +92,7 @@ describe('Shape.cutout capture', () => {
     `);
     const diag = kernelErrorToDiagnostic(caught);
     expect(diag.code).toBe('feature.invalid-args');
-    expect(diag.hint).toContain('positive when blind');
+    expect(diag.hint).toContain('a finite number > 0 for a blind pocket');
   });
 
   it("feature.invalid-args when depthMode is not 'blind' or 'symmetric'", async () => {
@@ -102,7 +102,7 @@ describe('Shape.cutout capture', () => {
     `);
     const diag = kernelErrorToDiagnostic(caught);
     expect(diag.code).toBe('feature.invalid-args');
-    expect(diag.hint).toContain("'blind' or 'symmetric'");
+    expect(diag.hint).toContain("'blind' (default, cuts depth mm inward from the face) or 'symmetric'");
   });
 
   it('feature.invalid-args when straight-segment polyline self-intersects', async () => {
@@ -113,6 +113,6 @@ describe('Shape.cutout capture', () => {
     `);
     const diag = kernelErrorToDiagnostic(caught);
     expect(diag.code).toBe('feature.invalid-args');
-    expect(diag.hint).toContain('self-intersects');
+    expect(diag.hint).toContain('non-self-intersecting');
   });
 });

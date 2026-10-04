@@ -36,7 +36,9 @@ describe('subtractive no-op gate (boolean difference) — end to end', () => {
   it('errors when a hole is drilled off the face (removes nothing)', async () => {
     const code = `return box(20, 20, 20).hole('top', { u: 80, v: 0, diameter: 4, depth: 10 });`;
     const r = await evaluateScriptTool({ code });
-    expect(r.diagnostics.some(d => d.code === 'feature.subtractive-noop' && d.severity === 'error')).toBe(true);
+    // The per-bore entry check rejects an off-face centre before the cut,
+    // so the hole fails with feature.hole.cut-missing, not the volume gate.
+    expect(r.diagnostics.some(d => d.code === 'feature.hole.cut-missing' && d.severity === 'error')).toBe(true);
     expect(r.ok).toBe(false);
   });
 

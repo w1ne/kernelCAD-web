@@ -57,7 +57,7 @@ describe('arm.mate(name, aRef, bRef, type)', () => {
     arm.part('a', a).connector('top', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 10] } });
     arm.part('b', b).connector('shaft', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
     expect(() => arm.mate('bad', 'a.top', 'b.shaft', 'revolute'))
-      .toThrow(/assembly\.mate\.type-mismatch/);
+      .toThrow(/type — got .* requires a mate type compatible with the two connectors/);
   });
 
   it('throws on unknown connector reference', () => {

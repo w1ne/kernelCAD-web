@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import { invalidArgsText } from '../../../../shared/intent/invalidArgs';
 import type { Edge } from 'replicad';
 import * as replicad from 'replicad';
 import type { ShapeBackend } from '../../../../kernel/backends/backend';
@@ -93,12 +94,25 @@ function validateVariableEdgeInputs(
       code: 'feature.invalid-args',
       featureId: feature.id,
       severity: 'error',
-      message: kind === 'fillet'
-        ? `variable-radius fillet has no groups.`
-        : `variable-distance chamfer has no groups.`,
-      hint: kind === 'fillet'
-        ? 'Pass [{ edges: ..., radius: ... }, ...] with one entry per intended blend region.'
-        : 'Pass [{ edges: ..., distance: ... }, ...] with one entry per intended bevel region.',
+      ...invalidArgsText(kind === 'fillet'
+        ? {
+            api: 'fillet(groups)',
+            path: 'groups',
+            gotText: 'an empty array',
+            requires:
+              'at least one { edges, radius } entry — one per blend region; for a single radius on every edge use the scalar form .fillet(radius)',
+            unit: 'mm',
+            example: "box(40, 30, 10).fillet([{ edges: 'top', radius: 2 }, { edges: 'bottom', radius: 1 }])",
+          }
+        : {
+            api: 'chamfer(groups)',
+            path: 'groups',
+            gotText: 'an empty array',
+            requires:
+              'at least one { edges, distance } entry — one per bevel region; for a single distance on every edge use the scalar form .chamfer(distance)',
+            unit: 'mm',
+            example: "box(40, 30, 10).chamfer([{ edges: 'top', distance: 1 }, { edges: 'bottom', distance: 0.5 }])",
+          }),
     });
     return undefined;
   }
@@ -111,8 +125,15 @@ function validateVariableEdgeInputs(
       code: 'feature.invalid-args',
       featureId: feature.id,
       severity: 'error',
-      message: `${kind} input 'base' must be a feature ref; got ${JSON.stringify(baseRef)}.`,
-      hint: 'Chain the variable-radius/distance feature onto a solid shape.',
+      ...invalidArgsText({
+        api: `${kind}(groups)`,
+        path: "inputs.base",
+        got: baseRef,
+        showType: true,
+        requires:
+          'a solid Shape to chain onto — call the variable-radius/distance form as a method on a solid, not on a Sketch, Region or Surface',
+        example: `box(40, 30, 10).${kind}([{ edges: 'top', ${kind === 'fillet' ? 'radius: 2' : 'distance: 1'} }])`,
+      }),
     });
     return undefined;
   }
@@ -203,8 +224,17 @@ function resolveVariableEdgeGroup(
       code: 'feature.invalid-args',
       featureId: feature.id,
       severity: 'error',
-      message: `${kind} group ${i} has invalid ${valueKey} ${value}; must be a positive finite number.`,
-      hint: `Each group needs a positive finite ${valueKey}.`,
+      ...invalidArgsText({
+        api: `${kind}(groups)`,
+        path: `groups[${i}].${valueKey}`,
+        got: value,
+        showType: typeof value !== 'number',
+        requires: valueKey === 'radius'
+          ? 'a finite number > 0 — the blend radius for this group; keep it below half the shortest adjacent face width'
+          : 'a finite number > 0 — the bevel leg length for this group',
+        unit: 'mm',
+        example: `box(40, 30, 10).${kind}([{ edges: 'top', ${valueKey}: ${valueKey === 'radius' ? '2' : '1'} }])`,
+      }),
     });
     return undefined;
   }
@@ -265,8 +295,14 @@ function buildGroupInputs(
         code: 'feature.invalid-args',
         featureId: feature.id,
         severity: 'error',
-        message: `${kind} group ${i} edge_group_${i} ref kind '${ref.kind}' is not supported (expected 'edge' or 'face').`,
-        hint: 'Use an EdgeSelector or canonical face name in the edge_group slot.',
+        ...invalidArgsText({
+          api: `${kind}(groups)`,
+          path: `groups[${i}].edges`,
+          gotText: `a '${ref.kind}' ref`,
+          requires:
+            "an EdgeSelector (an EdgeQuery, an EdgeSegment[], { face: <canonical|label> }) or a canonical face name string — 'edge' and 'face' are the only ref kinds this slot resolves",
+          example: `box(40, 30, 10).${kind}([{ edges: 'top', ${kind === 'fillet' ? 'radius: 2' : 'distance: 1'} }])`,
+        }),
       });
       return undefined;
     }
@@ -278,8 +314,14 @@ function buildGroupInputs(
         code: 'feature.invalid-args',
         featureId: feature.id,
         severity: 'error',
-        message: `${kind} group ${i} edge_group_${i} ref kind '${(_exhaustive as { kind?: string }).kind ?? '<unknown>'}' is not supported (expected 'edge' or 'face').`,
-        hint: 'Use an EdgeSelector or canonical face name in the edge_group slot.',
+        ...invalidArgsText({
+          api: `${kind}(groups)`,
+          path: `groups[${i}].edges`,
+          gotText: `a '${(_exhaustive as { kind?: string }).kind ?? '<unknown>'}' ref`,
+          requires:
+            "an EdgeSelector (an EdgeQuery, an EdgeSegment[], { face: <canonical|label> }) or a canonical face name string — 'edge' and 'face' are the only ref kinds this slot resolves",
+          example: `box(40, 30, 10).${kind}([{ edges: 'top', ${kind === 'fillet' ? 'radius: 2' : 'distance: 1'} }])`,
+        }),
       });
       return undefined;
     }
@@ -296,8 +338,14 @@ function requireFilletBase(ctx: LowerContext, r: FeatureRecord): OcctBackend {
       code: 'feature.invalid-args',
       featureId: r.id,
       severity: 'error',
-      message: `fillet requires an input named 'base'.`,
-      hint: 'Chain fillet onto a solid shape, e.g. box(10, 10, 10).fillet(1).',
+      ...invalidArgsText({
+        api: 'fillet(radius, edges)',
+        path: "inputs.base",
+        gotText: 'no base shape',
+        requires:
+          'a solid Shape to chain onto — .fillet() is a method on a solid, not a standalone call, and it cannot run on a Sketch, Region or Surface',
+        example: 'box(40, 30, 10).fillet(2)',
+      }),
     });
     throw new Error('fillet: no base shape');
   }
@@ -314,8 +362,15 @@ function requireFilletRadius(ctx: LowerContext, r: FeatureRecord): number {
       code: 'feature.invalid-args',
       featureId: r.id,
       severity: 'error',
-      message: `fillet requires a 'radius' parameter.`,
-      hint: 'Pass a positive finite number as the first argument, e.g. .fillet(2).',
+      ...invalidArgsText({
+        api: 'fillet(radius, edges)',
+        path: 'radius',
+        gotText: 'nothing',
+        requires:
+          'a finite number > 0 as the FIRST argument — .fillet(radius, edges), not .fillet(edges, radius) and not an options object',
+        unit: 'mm',
+        example: "box(40, 30, 10).fillet(2, 'top')",
+      }),
     });
     throw new Error('fillet: no radius');
   }
@@ -488,8 +543,14 @@ export function lowerChamfer(ctx: LowerContext, r: FeatureRecord): LowerOutcome 
       code: 'feature.invalid-args',
       featureId: r.id,
       severity: 'error',
-      message: `chamfer requires an input named 'base'.`,
-      hint: 'Chain chamfer onto a solid shape, e.g. box(10, 10, 10).chamfer(1).',
+      ...invalidArgsText({
+        api: 'chamfer(distance, edges)',
+        path: "inputs.base",
+        gotText: 'no base shape',
+        requires:
+          'a solid Shape to chain onto — .chamfer() is a method on a solid, not a standalone call',
+        example: 'box(40, 30, 10).chamfer(1)',
+      }),
     });
     throw new Error('chamfer: no base shape');
   }
@@ -511,8 +572,15 @@ export function lowerChamfer(ctx: LowerContext, r: FeatureRecord): LowerOutcome 
       code: 'feature.invalid-args',
       featureId: r.id,
       severity: 'error',
-      message: `chamfer requires a 'distance' parameter.`,
-      hint: 'Pass a positive finite number as the first argument, e.g. .chamfer(2).',
+      ...invalidArgsText({
+        api: 'chamfer(distance, edges)',
+        path: 'distance',
+        gotText: 'nothing',
+        requires:
+          'a finite number > 0 as the FIRST argument — .chamfer(distance, edges), not .chamfer(edges, distance)',
+        unit: 'mm',
+        example: "box(40, 30, 10).chamfer(1, 'top')",
+      }),
     });
     throw new Error('chamfer: no distance');
   }

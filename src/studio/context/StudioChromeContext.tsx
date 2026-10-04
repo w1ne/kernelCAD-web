@@ -14,6 +14,9 @@ export interface StudioChromeValue {
    * editor read-only, built-in agent rail hidden — the model is driven by
    * an external agent, not authored here. */
   viewerMode?: boolean;
+  /** Extra overlay drawn over the 3D viewport (top-right). Used by the public
+   * project page for the model customizer. */
+  viewportOverlay?: ReactNode;
 }
 
 const StudioChromeContext = createContext<StudioChromeValue>({});

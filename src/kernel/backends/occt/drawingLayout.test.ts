@@ -16,6 +16,7 @@ import {
   pickDrawingScale,
   scaleLabel,
   SHEETS,
+  sheetSizeLabel,
   viewBoxOfPolylines,
   type Polyline2,
   type ViewBox2,
@@ -165,6 +166,48 @@ describe('computeSheetLayout', () => {
     const { front, top, left } = layout.views;
     expect(top.box.y + top.box.h).toBeLessThanOrEqual(front.box.y);
     expect(left.box.x + left.box.w).toBeLessThanOrEqual(front.box.x);
+  });
+});
+
+describe('computeSheetLayout — first angle', () => {
+  const views: Record<'front' | 'top' | 'left' | 'iso', ViewBox2> = {
+    front: { x: 0, y: 0, w: 40, h: 20 },
+    top: { x: 0, y: 0, w: 40, h: 30 },
+    left: { x: -30, y: 0, w: 30, h: 20 },
+    iso: { x: -10, y: -5, w: 50, h: 45 },
+  };
+
+  it('puts the top view below the front view and the left view right of it, axes still shared', () => {
+    const layout = computeSheetLayout(views, SHEETS.a3, 'first');
+    const { front, top, left, iso } = layout.views;
+    expect(top.box.y).toBeGreaterThanOrEqual(front.box.y + front.box.h);
+    expect(left.box.x).toBeGreaterThanOrEqual(front.box.x + front.box.w);
+    // The isometric takes the lower-left cell, leaving the lower right free for the title block.
+    expect(iso.box.x + iso.box.w).toBeLessThanOrEqual(front.box.x);
+    expect(iso.box.y).toBeGreaterThanOrEqual(front.box.y + front.box.h);
+    expect(top.tx).toBeCloseTo(front.tx, 9);
+    expect(left.ty).toBeCloseTo(front.ty, 9);
+    for (const name of ['front', 'top', 'left', 'iso'] as const) {
+      const b = layout.views[name].box;
+      expect(b.x).toBeGreaterThanOrEqual(SHEETS.a3.margin - 1e-9);
+      expect(b.x + b.w).toBeLessThanOrEqual(SHEETS.a3.w - SHEETS.a3.margin + 1e-9);
+      expect(b.y + b.h).toBeLessThanOrEqual(SHEETS.a3.h - SHEETS.a3.margin - SHEETS.a3.titleBlock.h + 1e-9);
+    }
+  });
+
+  it('leaves the third-angle layout unchanged by default', () => {
+    expect(computeSheetLayout(views, SHEETS.a4)).toEqual(computeSheetLayout(views, SHEETS.a4, 'third'));
+  });
+});
+
+describe('SHEETS', () => {
+  it('carries the ISO A-series and ANSI landscape sizes', () => {
+    expect([SHEETS.a0.w, SHEETS.a0.h]).toEqual([1189, 841]);
+    expect([SHEETS.a2.w, SHEETS.a2.h]).toEqual([594, 420]);
+    expect([SHEETS['ansi-a'].w, SHEETS['ansi-a'].h]).toEqual([279.4, 215.9]);
+    expect([SHEETS['ansi-d'].w, SHEETS['ansi-d'].h]).toEqual([863.6, 558.8]);
+    expect(sheetSizeLabel('ansi-b')).toBe('ANSI B');
+    expect(sheetSizeLabel('a3')).toBe('A3');
   });
 });
 

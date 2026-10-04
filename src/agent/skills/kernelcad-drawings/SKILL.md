@@ -1,6 +1,6 @@
 ---
 name: kernelcad-drawings
-description: Export 2D engineering-drawing sheets (SVG) from any model or assembly — third-angle front/top/left + isometric views with hidden-line removal, overall dimensions, and a title block. Use when the deliverable is a human-readable fabrication or review drawing.
+description: Export 2D engineering-drawing sheets (SVG, or a printable PDF on a standard sheet) from any model or assembly — third-angle front/top/left + isometric views with hidden-line removal, overall dimensions, and a title block. Use when the deliverable is a human-readable fabrication or review drawing.
 ---
 
 # kernelCAD — engineering drawings
@@ -14,6 +14,26 @@ description: Export 2D engineering-drawing sheets (SVG) from any model or assemb
 - **Dimensions**: by default the overall bounding box — width (under the front view), height (right of the front view), depth (left of the top view), with extension lines and arrowheads. Values are model millimetres. Author your own with `annotations` (below) to dimension actual features instead.
 - **Title block**: model name, scale, units (mm), date, and the third-angle projection symbol.
 - Coincident projected segments (e.g. a bore's front and back rim landing on the same arc) are deduplicated visible-first — nothing renders twice or dashed underneath a solid line.
+
+## PDF sheet for the shop
+
+`format: 'pdf-drawing'` writes the same sheet as a vector PDF ready to print or send: the views, hidden lines, dimensions, hole callouts and GD&T are the SVG sheet's, transcribed page for page. It adds a standard sheet and a full title block:
+
+- **Sheet**: `sheet` is `'a4'` `'a3'` (default) `'a2'` `'a1'` `'a0'` or `'ansi-a'` … `'ansi-e'`, always landscape; `'auto'` / `'auto-ansi'` pick the smallest sheet that holds the views at 1:1, else the largest one with a reduced scale. The scale is snapped to the standard series and printed in the title block. Section views take room inside the sheet instead of growing the page.
+- **Projection**: `projection: 'third'` (default) or `'first'`. First angle puts the top view below the front view, the left view right of it, the isometric lower-left, and draws the first-angle symbol; automatic dimensions move to each view's free side.
+- **Title block**: TITLE (`title`, default the model name), PART NAME (`partName`), MATERIAL (`material`, default the shared material of the assembly parts), REV (`revision`), SCALE, UNITS, SHEET size, DATE (`date`, default today). Unset fields print `—`. The DATE cell also carries a small "Made with kernelCAD · kernelcad.com" line, a clickable link in the PDF; the PDF Producer is the kernelCAD version.
+- **Annotations**: `autoAnnotate` is on unless you pass `annotations`; pass `autoAnnotate: false` for the overall bounding-box dimensions only.
+
+```json
+{ "tool": "export", "input": { "target": "model", "file": "bracket.kcad.ts", "format": "pdf-drawing", "output_path": "out/bracket.pdf",
+  "options": { "format": "pdf-drawing", "title": "L mounting bracket", "partName": "BRK-001", "material": "AlMg3", "revision": "B" } } }
+```
+
+```bash
+kernelcad export pdf-drawing bracket.kcad.ts -o out/bracket.pdf --title "L mounting bracket" --revision B --material AlMg3 --sheet a3
+```
+
+Text is set in the standard Helvetica face, so the PDF needs no embedded font; `⌀` prints as `Ø`, and the GD&T and hole symbols (⌖ ⏥ ⟂ ∥ ⌴ ⌵ ↧ …) are drawn as vector strokes.
 
 ## Quickstart
 
@@ -33,7 +53,9 @@ kernelcad export svg-drawing bracket.kcad.ts -o out/bracket-drawing.svg
 
 Pass via `options` (MCP) — all optional:
 
-- `sheet`: `'a4'` (default, 297×210 landscape) or `'a3'` (420×297).
+- `sheet`: `'a4'` (default, 297×210 landscape), `'a3'` (420×297), or any `pdf-drawing` size (`'a2'` … `'ansi-e'`, `'auto'`).
+- `projection`: `'third'` (default) or `'first'` — see "PDF sheet for the shop".
+- `titleBlock`: `{ title?, partName?, material?, revision? }` — switches to the full title block the PDF sheet uses.
 - `modelName`: title-block name; defaults to the script's file name.
 - `date`: title-block date string; defaults to a placeholder so output stays byte-deterministic (stamp an ISO date when the drawing is released).
 - `annotations`: authored dimensions and notes — see below.
@@ -127,6 +149,25 @@ An annotation whose query matches **zero** edges/faces, matches **more than one*
 - A cutting-plane indicator (dashed line, arrows, the section letter at both ends) is drawn on the "parent" view where the plane appears edge-on (`'front'` for an `'xy'`/`'yz'` cut, `'top'` for an `'xz'` cut).
 - A plane that doesn't pass through the body's bounding box fails with `drawing.section.plane-misses-body`.
 - The section cell is captioned `SECTION A-A` (from `label`).
+
+## Architectural floor plans
+
+A building or room model drawn with the default (mechanical) style gets part
+annotations — datums, flatness, ISO 2768 — that mean nothing on a floor plan,
+and the export warns `drawing.style.architectural-suggested`. Pass
+`style: 'architectural'` (svg-drawing or pdf-drawing) for a plan instead:
+
+```json
+{ "options": { "format": "pdf-drawing", "style": "architectural", "title": "Cabin",
+  "plan": { "rooms": [{ "name": "Living", "at": [1000, 1000] }], "northDeg": 30 } } }
+```
+
+- The whole model is fused and cut 1 m (3'-6" imperial) above the finished floor — the top of the largest upward face in the bottom quarter of the model, else its lowest point. `plan.cutHeight` (mm above the floor) moves the cut.
+- Cut walls are filled; everything below the cut (sills, floor edges) is drawn thin from above. Openings at the cut height (doors, windows with a sill below the cut) are gaps.
+- Dimensions: a chain of wall and opening widths along each exterior side (read just inside the outermost wall face), plus the overall length and width.
+- Rooms are the enclosed floor regions of a section. Door openings join rooms at the cut height, so rooms are read from whichever section (the cut, or 2.0–2.5 m above the floor, above the door heads) encloses the most. Each gets its name (the room containing `plan.rooms[i].at`, else `ROOM n`) and net area (m², or ft²).
+- Units: millimetres, or feet-inches (to 1/4") when the model's overall size and wall height are whole feet / inches. Force with `plan.units: 'metric' | 'imperial'`. The scale is the largest architectural scale that fits (1:20 … 1:2000, or 1/2" … 1/32" = 1'-0"); `sheet: 'auto'` picks the smallest sheet that holds 1:100 (1/8" = 1'-0").
+- A scale bar, a north arrow (`plan.northDeg`, clockwise from sheet up) and a title block (title, scale, units, sheet, date, revision) complete the sheet. The mechanical-only keys (`annotations`, `sections`, `autoAnnotate`, `exploded`, `balloons`, `partsList`) do not apply.
 
 ## Current limits
 

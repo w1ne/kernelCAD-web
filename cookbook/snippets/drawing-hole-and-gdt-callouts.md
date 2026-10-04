@@ -12,12 +12,25 @@ when_to_use: You exported a svg-drawing sheet and need standard fabrication call
 
 ```typescript
 // Model: a plate with a counterbored hole and three plain through-holes.
+// hole()/holes() rather than subtracted cylinders: only a real hole feature
+// carries the diameter, depth and counterbore that the drawing callouts,
+// `inspect` and the DFM gates read back.
 const w = 80, h = 50, t = 10;
-let plate = box(w, h, t);
-for (const [x, y] of [[10, 10], [70, 10], [10, 40], [70, 40]] as const) {
-  plate = plate.subtract(cylinder(t + 4, 3.25).translate(x, y, -2));
-}
-plate = plate.subtract(cylinder(4, 6).translate(10, 10, 6)); // counterbore
+// u/v are measured from the CENTRE of the face, so world (10, 10) is
+// (10 - w/2, 10 - h/2) = (-30, -15) on the top face.
+const plate = box(w, h, t)
+  .holes('top', {
+    positions: [{ u: 30, v: -15 }, { u: -30, v: 15 }, { u: 30, v: 15 }],
+    diameter: 6.5,
+    depth: 'through',
+  })
+  .hole('top', {
+    u: -30,
+    v: -15,
+    diameter: 6.5,
+    depth: 'through',
+    counterbore: { diameter: 12, depth: 4 },
+  });
 
 // export({ target: 'model', format: 'svg-drawing', options: { annotations } })
 // annotations:

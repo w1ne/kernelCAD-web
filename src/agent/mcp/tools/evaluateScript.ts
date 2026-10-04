@@ -4,6 +4,7 @@
 import {
   dryRunScript,
   evaluateAndBuildScript,
+  withIntentLint,
   type EvaluateInput,
   type FeatureHealthEntry,
 } from '../../cli/commands/evaluate';
@@ -77,7 +78,20 @@ export interface EvaluateScriptOutput {
    * Mechanism failure diagnostics are merged into `diagnostics`.
    */
   mechanism?: 'real' | 'broken' | 'unverified';
+  /**
+   * Present ONLY when a captured assembly declares articulated mates (any
+   * mate other than `fastened`). The default mechanism gate above is a
+   * shallow probe; this names what it does not check and points at
+   * `review_cad`, which does.
+   */
+  reviewHint?: string;
 }
+
+/** Text of `reviewHint`. One source for the tool result and its schema docs. */
+export const MATES_REVIEW_HINT =
+  "This model has articulated mates, and evaluate_script's mechanism check is shallow: it does not check " +
+  'joint-support intents, pose-envelope overlap at declared mate limits, or gravity drop / static hold. ' +
+  'Run review_cad for pose-envelope + gravity checks before calling the mechanism done.';
 
 /**
  * MCP `evaluate_script` tool — runs a kernelCAD script and reports
@@ -99,7 +113,11 @@ export async function evaluateScriptTool(
 ): Promise<EvaluateScriptOutput> {
   if (input.dryRun) return evaluateDryRun(input);
 
-  const { evaluation: r, model, dfmReport } = await evaluateAndBuildScript(input as EvaluateInput);
+  const { evaluation, model, dfmReport } = await evaluateAndBuildScript(input as EvaluateInput);
+  // Authoring intent lint (usage triage 2026-10-03): info-only hints naming
+  // the API for intent the source states but builds by hand. Agents skip
+  // lookup_cookbook, but every agent reads this result.
+  const r = withIntentLint(evaluation, model?.code ?? input.code);
   // Session policy: keep/refresh the active session whenever the model
   // BUILD succeeded — even when dfm gate diagnostics made the evaluation
   // fatal (exitCode 1). The dfm hook only runs after a clean build and
@@ -139,6 +157,7 @@ export async function evaluateScriptTool(
       ? [...baseDiagnostics, ...withNextActions(mechanismFailures)]
       : baseDiagnostics;
   const ok = r.exitCode === 0 && mechanism !== 'broken';
+  const reviewHint = hasArticulatedMates(model) ? MATES_REVIEW_HINT : undefined;
 
   return {
     ok,
@@ -151,6 +170,7 @@ export async function evaluateScriptTool(
     featureHealth: r.featureHealth,
     ...(parts !== undefined ? { parts } : {}),
     ...(mechanism !== undefined ? { mechanism } : {}),
+    ...(reviewHint !== undefined ? { reviewHint } : {}),
   };
 }
 
@@ -195,6 +215,12 @@ function refreshActiveSession(model: BuildOutcome['model'], buildSucceeded: bool
   } else {
     clearActiveMcpSession();
   }
+}
+
+function hasArticulatedMates(model: BuildOutcome['model']): boolean {
+  if (model === undefined) return false;
+  const assemblies = Array.from(model.session.assemblies.values()) as Assembly[];
+  return assemblies.some((a) => a.__mates().some((m) => m.type !== 'fastened'));
 }
 
 async function probeSceneMechanism(

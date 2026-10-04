@@ -245,6 +245,10 @@ export function featureMeshesToGeometries(features: FeatureMeshSerialized[]): Ge
             transform: mesh.transform ? [...mesh.transform] : undefined,
             assemblyFeatureId: mesh.assemblyFeatureId,
             assemblyPartName: mesh.assemblyPartName,
+            featureId: mesh.featureId,
+            ...(mesh.faceOwners !== undefined ? { faceOwners: mesh.faceOwners } : {}),
+            ...(mesh.edgeRanges !== undefined ? { edgeRanges: mesh.edgeRanges } : {}),
+            ...(mesh.edgeOwners !== undefined ? { edgeOwners: mesh.edgeOwners } : {}),
         };
     });
 }

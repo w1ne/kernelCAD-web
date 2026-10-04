@@ -27,10 +27,11 @@ export const ASSEMBLY_CODES = {
   // Assembly validator — v0.5 graph wiring (3)
   'assembly.part.floating': {
     hintTemplate:
-      "Declare a joint or mate connecting this part to another part so the assembly graph is connected (arm.fixed/.revolute/.prismatic/.ball or arm.mate(...)).",
+      "Disconnected body: declare connectors + a mate/joint linking this part into the assembly graph. Shafts/hinges/gears: type: 'axis' connector + arm.mate(..., 'revolute'); rigid mounts: type: 'frame' + mate(..., 'fastened'); or arm.fixed/.revolute/.prismatic/.ball. Connector types are only frame|axis|planar|ball.",
     nextAction: {
       kind: 'rewrite-feature',
-      guidance: 'declare an arm.fixed/.revolute/.prismatic/.ball joint or arm.mate(...) linking this part to another',
+      guidance:
+        "add axis+revolute (shafts/hinges/gears) or frame+fastened (rigid) connectors+mates, or an arm.fixed/.revolute/.prismatic/.ball joint",
     },
     defaultSeverity: 'warn',
     group: 'assembly',
@@ -38,14 +39,15 @@ export const ASSEMBLY_CODES = {
   },
   'assembly.part.orphan': {
     hintTemplate:
-      "Add a joint or mate that links this sub-assembly to a part in the main mechanism so every component shares a single connected graph.",
+      "Disconnected component: add a joint or mate linking this sub-assembly to the main mechanism (axis+revolute for shafts/hinges/gears, frame+fastened for rigid mounts, or arm.revolute/.prismatic/.ball/.fixed) so every body shares one connected graph.",
     nextAction: {
       kind: 'rewrite-feature',
-      guidance: 'add a joint linking this sub-assembly to a part in the main mechanism',
+      guidance:
+        "link this orphan cluster to the main mechanism with axis+revolute or frame+fastened connectors+mates (or joint primitives)",
     },
     defaultSeverity: 'warn',
     group: 'assembly',
-    description: 'A part is part of a sub-assembly that is not transitively reachable from the main connected component.',
+    description: 'A part is part of a sub-assembly that is not transitively reachable from the main connected component (disconnected components in the assembly graph).',
   },
   'assembly.interference.overlap': {
     hintTemplate:
@@ -110,10 +112,10 @@ export const ASSEMBLY_CODES = {
   },
   'assembly.solver.did-not-converge': {
     hintTemplate:
-      "Articulated closed loops are not yet supported by the v0.6 solver. Restrict closed loops to fastened-only mates, or split the mechanism into two open kinematic chains.",
+      "UNSUPPORTED on v0.6: articulated closed-loop FK (4-bar / scissor / pin_slot loop). Do not invent joint.scissorLift or gear-contact types. Rewrite as an open chain (drop one loop-closing mate; keep a ground/base root) or use fastened-only mates in the loop. For industrial scissor tables: lookup_cookbook('scissor lift closed loop'). limitsDeg/jointSupport help open chains only.",
     nextAction: {
       kind: 'rewrite-feature',
-      guidance: 'restrict closed loops to fastened-only mates or split into open chains',
+      guidance: 'rewrite as an open chain or fastened-only loop; for scissor tables lookup_cookbook(scissor lift closed loop); do not invent joint.scissorLift',
     },
     defaultSeverity: 'error',
     group: 'assembly',
@@ -191,6 +193,68 @@ export const ASSEMBLY_CODES = {
     group: 'assembly',
     description: 'An articulated mate (revolute/prismatic/cylindrical/pin_slot) has no declared limits; envelope review cannot verify its travel range.',
   },
+  // Assembly validator — joint-topology / connectivity (4)
+  // Surfaced through validateAssemblyWithMates so evaluate_script still
+  // reports limits/support/root issues when articulated closed-loop FK
+  // returns did-not-converge (topology is independent of Newton).
+  'assembly.connectivity.floating-moving-part': {
+    hintTemplate:
+      "Connect the moving part through mates to a stable root (ground/base/root or physicalUseCase(...).stableParts). This is independent of closed-loop FK — open chains need a rooted graph too.",
+    nextAction: {
+      kind: 'rewrite-feature',
+      guidance: 'connect the moving part to a stable ground/base root through mates',
+    },
+    defaultSeverity: 'error',
+    group: 'assembly',
+    description: 'A moving part has no mate-graph path to a stable root.',
+  },
+  'assembly.joint-topology.missing-limit': {
+    hintTemplate:
+      "Add limitsDeg:[min,max] (or limitsMm for prismatic) on this articulated mate so travel is finite and envelope/topology review can run.",
+    nextAction: { kind: 'fix-arg', field: 'limitsDeg' },
+    defaultSeverity: 'error',
+    group: 'assembly',
+    description: 'An articulated mate is missing finite travel limits required by joint-topology review.',
+  },
+  'assembly.joint-topology.unsupported-axis': {
+    hintTemplate:
+      "Declare arm.jointSupport(..., { mate, shaft, supports, output }) for passive hinges, or arm.mechanicalJoint(..., { mate, actuator, shaft, supports, output }) for driven hinges, so the revolute axis has physical support intent.",
+    nextAction: {
+      kind: 'rewrite-feature',
+      guidance: 'add jointSupport or mechanicalJoint intent for the revolute axis',
+    },
+    defaultSeverity: 'error',
+    group: 'assembly',
+    description: 'A revolute mate has no joint-support / mechanical-joint intent declaring physical support.',
+  },
+  'assembly.joint-topology.connector-missing': {
+    hintTemplate:
+      "Register the missing connector on the named part before the mate, using partRef.connector(name, { type, origin: { kind: 'vec3', value: [x,y,z] }, ... }).",
+    nextAction: { kind: 'fix-arg', field: 'connector' },
+    defaultSeverity: 'error',
+    group: 'assembly',
+    description: 'A mate endpoint references a connector that is missing on its part.',
+  },
+  'assembly.joint-topology.axis-invalid': {
+    hintTemplate:
+      "Align the two mate endpoint axes (same direction within tolerance) or fix connector axis vectors so the joint has one coherent physical axis.",
+    nextAction: { kind: 'fix-arg', field: 'axis' },
+    defaultSeverity: 'error',
+    group: 'assembly',
+    description: 'Mate endpoint axes are misaligned for an axis-required mate type.',
+  },
+  'assembly.connectivity.no-load-path': {
+    hintTemplate:
+      "Ensure every physicalUseCase load part has a mate-graph path to the use-case stable parts (or the assembly stable root).",
+    nextAction: {
+      kind: 'rewrite-feature',
+      guidance: 'connect the loaded part to stableParts through the mate graph',
+    },
+    defaultSeverity: 'error',
+    group: 'assembly',
+    description: 'A physical-use-case load part has no mate-graph path to the use-case stable roots.',
+  },
+
   // Assembly validator — v0.7 kinematic-grounding gates (3)
   'assembly.mounting-hole.mismatch': {
     hintTemplate:

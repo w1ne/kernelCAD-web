@@ -251,3 +251,40 @@ describe('autoAnnotate edge cases', () => {
     }
   });
 });
+
+/** 50×30×6 plate crowded with seven different hole groups — clearance,
+ *  counterbored, blind and tapped-size holes a few millimetres apart — so the
+ *  callouts compete with each other, the position-dimension stacks, the
+ *  datum symbols and the view captions for the free sheet around one view. */
+function crowdedPlate(): WorldFramePart[] {
+  let body = OcctBackend.box(50, 30, 6);
+  const cut = (r: number, h: number, x: number, y: number, z: number) => {
+    body = body.subtract(OcctBackend.cylinder(h, r).translate(x, y, z));
+  };
+  for (const [x, y] of [[5, 5], [45, 5], [5, 25], [45, 25]]) cut(1.6, 10, x, y, -2);
+  cut(2.2, 10, 25, 15, -2);
+  cut(4, 3, 25, 15, 4);
+  for (const [x, y] of [[15, 10], [35, 20]]) cut(1.1, 10, x, y, -2);
+  for (const [x, y] of [[15, 20], [35, 10]]) cut(1.5, 4, x, y, 3);
+  for (const [x, y] of [[25, 6], [25, 24]]) cut(0.9, 10, x, y, -2);
+  cut(1.3, 10, 10, 15, -2);
+  cut(2.2, 3, 10, 15, 4);
+  cut(1.9, 2, 40, 15, 5);
+  return [{ name: 'crowded', shape: body }];
+}
+
+describe('autoAnnotate on a crowded sheet', () => {
+  beforeAll(async () => {
+    await initOcct();
+  });
+
+  it.each(['third', 'first'] as const)('places every callout clear of the others, the dimensions and the captions (%s angle)', projection => {
+    const r = renderSvgDrawing(crowdedPlate(), { format: 'svg-drawing', autoAnnotate: true, sheet: 'a3', projection });
+    const report = r.report!;
+    expect(report.byKind.hole).toBe(7);
+    expect(autoGroups(decode(r.bytes), 'hole')).toHaveLength(7);
+    expect(report.annotations.filter(a => a.overlapped)).toEqual([]);
+    expect(report.overlapped).toBe(0);
+    expect(r.diagnostics.filter(d => d.code === 'drawing.annotation.overlap')).toEqual([]);
+  });
+});

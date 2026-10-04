@@ -44,7 +44,7 @@ export const USER_GLOBALS_SOURCE_PATH = join(REPO_ROOT, 'src/shared/worker/userG
  * script can only be typechecked if these names resolve. `KernelCadApi` is
  * imported separately (the globals are declared from its members).
  */
-const TYPE_IMPORTS: ReadonlyArray<{ module: string; names: readonly string[] }> = [
+export const TYPE_IMPORTS: ReadonlyArray<{ module: string; names: readonly string[] }> = [
   { module: 'src/shared/runtime/paramRef', names: ['Editable', 'ParamRef', 'TypedParamRef'] },
   { module: 'src/modeling/capture/proxy', names: ['Shape'] },
   { module: 'src/modeling/capture/sketch', names: ['PathBuilder', 'Sketch'] },

@@ -120,6 +120,19 @@ margin is not met — the same seam the `dfmSpec` gates use. A study *without*
 `KERNELCAD_FEA_GATE=off` skips the solve, and says so with a warning that the
 declared margin is UNVERIFIED — a skipped gate never reads as green.
 
+## Stress-graded FDM infill
+
+The same study drives per-region infill for a 3D print: export a 3MF with
+`options.infill { fromFea: '<study>' | true }` and the export solves the study,
+bins the part by von Mises / yield (default < 15 % -> 10 %, 15-40 % -> 25 %,
+> 40 % -> 60 % gyroid) and writes one Orca/Bambu modifier volume per dense
+band. The bands are voxel unions (2-5 mm cells) grown until watertight, so
+they err toward more infill. The result reports the band table, a filament
+and time saving against uniform infill at the high density, and heatmap /
+band / cutaway PNGs. Recipe: `lookup_cookbook('stress-graded-infill-fdm')`.
+The study models solid material: treat the safety factor as an upper bound
+for a printed part.
+
 ## Diagnostics
 
 | Code | What happened | What to do |

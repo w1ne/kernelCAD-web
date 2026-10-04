@@ -244,3 +244,14 @@ examine the photo again — the rule probably DOES apply and you are defaulting
 to easy primitives. The most common failure mode is authoring with
 path+extrude+booleans alone when the reference is an organic product. Check all
 7 rules before starting geometry.
+
+## Rule — Car / organic body publish gate
+
+Before claiming likeness success or calling `open_in_studio` on a vehicle /
+fairing envelope:
+
+1. Prefer `lookup_cookbook("automotive body envelope")` (≤2 rails) or
+   `lookup_cookbook("network body panels via sew")` when >2 guides are needed.
+2. `verify({ check: 'body-likeness', body_bbox, wheels, still_verdicts })` — fail
+   closed on floating rocker / wheels outside footprint / missing stills.
+3. Do not treat a single silhouette-weak still as publish-ready evidence.

@@ -98,9 +98,25 @@ function WorkbenchInnerProvider({ children }: { children: ReactNode }) {
 /**
  * CodeConsumer - Helper to access code in GeometryProvider
  */
-function GeometryWithCode({ children }: { children: ReactNode }) {
+function GeometryWithCode({
+    children,
+    suspendSourceExecution = false,
+    externalGeometries = null,
+}: {
+    children: ReactNode;
+    suspendSourceExecution?: boolean;
+    externalGeometries?: import('../../shared/worker/geometryEngine').GeometryResult[] | null;
+}) {
     const { code } = useCode();
-    return <GeometryProvider code={code}>{children}</GeometryProvider>;
+    return (
+        <GeometryProvider
+            code={code}
+            suspendSourceExecution={suspendSourceExecution}
+            externalGeometries={externalGeometries}
+        >
+            {children}
+        </GeometryProvider>
+    );
 }
 
 import { WorkbenchStateProvider } from './WorkbenchStateContext';
@@ -113,19 +129,27 @@ import { ProjectProvider } from './ProjectContext';
 export function WorkbenchProvider({
     children,
     initialCode,
+    projectName,
     controlledCode,
     onCodeChange,
+    suspendSourceExecution = false,
+    externalGeometries = null,
 }: {
     children: ReactNode;
     initialCode?: string;
+    /** Name of the in-memory project seeded from `initialCode`. */
+    projectName?: string;
     /** Embed-mode controlled source: when set, the host owns the canonical
      *  `.kcad.ts` string. See `CodeProvider` for the controlled-mode rules. */
     controlledCode?: string;
     /** Embed-mode change callback, debounced inside `CodeProvider`. */
     onCodeChange?: (next: string) => void;
+    /** When true, the provider stack does not evaluate source. */
+    suspendSourceExecution?: boolean;
+    externalGeometries?: import('../../shared/worker/geometryEngine').GeometryResult[] | null;
 }) {
     return (
-        <ProjectProvider initialCode={initialCode}>
+        <ProjectProvider initialCode={initialCode} projectName={projectName}>
             <CodeProvider
                 initialCode={initialCode}
                 controlledCode={controlledCode}
@@ -134,7 +158,10 @@ export function WorkbenchProvider({
                 <WorkbenchStateProvider>
                     <UIProvider>
                         <SelectionProvider>
-                            <GeometryWithCode>
+                            <GeometryWithCode
+                                suspendSourceExecution={suspendSourceExecution}
+                                externalGeometries={externalGeometries}
+                            >
                                 <SketchingProvider>
                                     <WorkbenchInnerProvider>
                                         {children}

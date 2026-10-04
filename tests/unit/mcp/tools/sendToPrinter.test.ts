@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { createServer, type Server, type IncomingMessage, type ServerResponse } from 'node:http';
 import { sendToPrinterTool } from '../../../../src/agent/mcp/tools/sendToPrinter';
+import { PRINTER_PROFILE_IDS } from '../../../../src/kernel/export/gcode/printerProfiles';
 
 let server: Server;
 let port: number;
@@ -41,6 +42,24 @@ describe('send_to_printer MCP tool', () => {
     expect(r.error).toMatch(/gcode_path/);
   });
 
+  it('rejects model_3mf_path for a protocol other than bambu-lan', async () => {
+    const r = await sendToPrinterTool({
+      gcode_path: gcodePath, protocol: 'octoprint', host: '127.0.0.1', port, api_key: 'k', dry_run: true,
+      model_3mf_path: gcodePath,
+    });
+    expect(r.ok).toBe(false);
+    expect(r.error).toMatch(/model_3mf_path applies to protocol 'bambu-lan' only/);
+  });
+
+  it('rejects an unreadable model_3mf_path', async () => {
+    const r = await sendToPrinterTool({
+      gcode_path: gcodePath, protocol: 'bambu-lan', host: '127.0.0.1', access_code: 'x', dry_run: true,
+      model_3mf_path: '/nonexistent/model.3mf',
+    });
+    expect(r.ok).toBe(false);
+    expect(r.error).toMatch(/Cannot read model_3mf_path/);
+  });
+
   it('rejects a nonexistent gcode_path', async () => {
     const r = await sendToPrinterTool({ gcode_path: '/nonexistent/file.gcode', protocol: 'octoprint', host: '127.0.0.1' });
     expect(r.ok).toBe(false);
@@ -62,5 +81,24 @@ describe('send_to_printer MCP tool', () => {
     const diag = r.diagnostics?.[0];
     expect(diag?.code).toBe('tool.send-to-printer.unreachable');
     expect(diag?.hint.length).toBeGreaterThan(10);
+  });
+});
+
+describe('send_to_printer printer profile', () => {
+  it('refuses an unknown printer id with the list of valid ids', async () => {
+    const r = await sendToPrinterTool({ gcode_path: gcodePath, protocol: 'octoprint', host: '127.0.0.1', port, api_key: 'k', dry_run: true, printer: 'mystery-printer' });
+    expect(r.ok).toBe(false);
+    expect(r.error).toBe(`Unknown printer profile 'mystery-printer'. Known profiles: ${PRINTER_PROFILE_IDS.join(', ')}.`);
+  });
+
+  it("refuses bambu-lan for a non-Bambu profile", async () => {
+    const r = await sendToPrinterTool({ gcode_path: gcodePath, protocol: 'bambu-lan', host: '127.0.0.1', access_code: 'x', dry_run: true, printer: 'prusa-mk4s' });
+    expect(r.ok).toBe(false);
+    expect(r.error).toMatch(/'prusa-mk4s' \(Prusa MK4S\) is not a Bambu Lab printer/);
+  });
+
+  it('accepts a matching printer and protocol', async () => {
+    const r = await sendToPrinterTool({ gcode_path: gcodePath, protocol: 'octoprint', host: '127.0.0.1', port, api_key: 'k', dry_run: true, printer: 'prusa-mk4s' });
+    expect(r.ok).toBe(true);
   });
 });

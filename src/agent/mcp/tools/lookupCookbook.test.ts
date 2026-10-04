@@ -49,8 +49,16 @@ describe('lookupCookbookTool', () => {
     expect(r.hits!.length).toBeLessThanOrEqual(3);
   });
 
-  it('finds the loft-a-body-shell recipe by organic-body intent', async () => {
-    for (const q of ['loft a car body shell', 'organic body shell from profiles', 'hull from cross sections']) {
+  it('routes organic car bodies to automotive-body-envelope', async () => {
+    for (const q of ['automotive body envelope', 'organic car body', 'berlinetta body']) {
+      const r = await lookupCookbookTool({ query: q });
+      expect(r.ok).toBe(true);
+      expect(r.hits!.map(h => h.id)).toContain('automotive-body-envelope');
+    }
+  });
+
+  it('keeps stylized loft shell for polyline / hull demo intent', async () => {
+    for (const q of ['loft a stylized body shell', 'hull from cross sections', 'mechanism demo shell']) {
       const r = await lookupCookbookTool({ query: q });
       expect(r.ok).toBe(true);
       expect(r.hits!.map(h => h.id)).toContain('loft-body-shell-from-profiles');

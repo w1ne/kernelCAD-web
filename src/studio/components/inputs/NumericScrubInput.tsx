@@ -91,7 +91,7 @@ function ScrubValueInput({
                 aria-invalid={isOutOfRange || undefined}
                 title={outOfRangeTitle}
             />
-            {unit && <span className="text-[10px] text-gray-500 w-4">{unit}</span>}
+            {unit && <span className="text-2xs text-gray-500 w-4">{unit}</span>}
         </div>
     );
 }
@@ -105,7 +105,7 @@ function ScrubInterferenceBadge({
 }): JSX.Element {
     return (
         <span
-            className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-red-600 text-white text-[10px] font-bold leading-none cursor-help"
+            className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-red-600 text-white text-2xs font-bold leading-none cursor-help"
             title={title}
             aria-label={`${name} is implicated in an interference at the current pose`}
             data-testid={`scrub-interference-badge-${name}`}

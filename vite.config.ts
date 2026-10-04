@@ -8,6 +8,7 @@ import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { summarizeInterferencePairs } from './src/modeling/runtime/interferenceClassification';
 import { resolveExampleScript as resolveExampleScriptAtRoot } from './src/server/middleware/resolveExampleScript';
+import { kernelCadEditorTypingsPlugin } from './scripts/editorTypings';
 
 const repoRoot = fileURLToPath(new URL('.', import.meta.url));
 const require = createRequire(import.meta.url);
@@ -797,6 +798,7 @@ export default defineConfig(({ command }) => ({
     }),
     kernelCadMeshEndpoint(),
     reviewPaintSaveServer(),
+    kernelCadEditorTypingsPlugin(),
     react(),
     tailwindcss(),
   ],

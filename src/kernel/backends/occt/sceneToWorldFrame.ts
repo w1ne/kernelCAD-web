@@ -28,6 +28,8 @@ export interface WorldFramePart {
   readonly color?: string;
   /** Full PBR material attribution (from `.material({...})`). */
   readonly material?: PBRMaterial;
+  /** Engineering-material name (e.g. `pla`) from `arm.part(..., { material })`. */
+  readonly materialName?: string;
 }
 
 /**
@@ -54,6 +56,9 @@ export function sceneToWorldFrameParts(scene: SceneBackend): WorldFramePart[] {
     }
     if (p.material !== undefined) {
       (entry as { material?: PBRMaterial }).material = p.material;
+    }
+    if (p.materialName !== undefined) {
+      (entry as { materialName?: string }).materialName = p.materialName;
     }
     return entry;
   });

@@ -5,7 +5,7 @@ import { StudioShell } from './StudioShell';
 import { shellStore } from './store/shellStore';
 import { useShellStore } from './store/useShellStore';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState, type MutableRefObject, type ReactNode } from 'react';
 import { parseCode } from '../shared/codeGeneration/ast';
 import { StudioChromeProvider, useStudioChrome } from './context/StudioChromeContext';
 import { useStudioConfig } from './config/StudioConfigContext';
@@ -28,6 +28,8 @@ function isCodeParsable(code: string): boolean {
 import { useProject, isEphemeralProjectId } from './context/ProjectContext';
 import { loadGalleryScriptSource, loadStudioScriptSource } from './scriptSource';
 import { registerLiveScriptTarget, unregisterLiveScriptTarget } from './liveScriptBridge';
+import { noteDiskScriptSource, useLinkedScriptAutosave } from './linkedScriptAutosave';
+import type { KernelCADProject, ViewState } from '../authoring/projectService';
 
 function readScriptParam(): string | null {
   if (typeof window === 'undefined') return null;
@@ -39,19 +41,104 @@ function readGalleryParam(): string | null {
   return new URLSearchParams(window.location.search).get('gallery');
 }
 
-function AppContent({ isDevLab }: { isDevLab: boolean }) {
+/** True when the project already stores this code and view state. */
+function projectHolds(project: KernelCADProject, code: string, viewState: ViewState): boolean {
+  const stored = project.viewState;
+  return project.code === code
+    && stored.viewMode === viewState.viewMode
+    && stored.viewMode3D === viewState.viewMode3D
+    && stored.sidePanelVisible === viewState.sidePanelVisible
+    && stored.showSketches === viewState.showSketches
+    && (stored.agentRailOpen ?? false) === (viewState.agentRailOpen ?? false);
+}
+
+/**
+ * Active project <-> workbench: seed the workbench from the project (first
+ * load, project switch, or project code changed outside the editor) and
+ * auto-save workbench edits back. Off on `?script=` / `?gallery=` routes,
+ * where the linked source owns the code.
+ */
+function useProjectWorkbenchSync(
+  isDevLab: boolean,
+  linkedSource: boolean,
+  hasInitializedRef: MutableRefObject<boolean>,
+): void {
   const {
     code, viewMode, viewMode3D, sidePanelVisible, showSketches,
     setCode, setViewMode, setViewMode3D
   } = useWorkbench();
-
   const { activeProject, activeProjectId, saveActiveProject } = useProject();
   const { viewerMode } = useStudioChrome();
   const { agentRailOpen } = useShellStore();
+  // The project snapshot the workbench last agreed with: the one it was
+  // seeded from, or the code the auto-save below wrote. The sync effect
+  // compares the project against THIS, never against the live `code` — the
+  // live code runs ahead of the project while the user types, and syncing on
+  // that difference reverted every keystroke before auto-save could store it.
+  const syncedProjectRef = useRef<{ id: string | null; code: string } | null>(null);
+
+  // Sync active project -> workbench state
+  useEffect(() => {
+    if (linkedSource) return;
+    if (isDevLab || !activeProject) return;
+    // Viewer mode: code is driven externally (live agent updates via the
+    // `liveCode` prop); the ephemeral project's mount-time snapshot must not
+    // win the diff below and clobber updates back to the initial code.
+    if (viewerMode) return;
+    // Ephemeral funnel project (/g/$genId): seed the workbench once on the
+    // first run, then step aside. After initialization, external/programmatic
+    // setCode calls (e.g. live agent updates) must not be overwritten by the
+    // frozen mount-time initialCode snapshot stored in the ephemeral project.
+    if (hasInitializedRef.current && isEphemeralProjectId(activeProjectId)) return;
+
+    // Seed on initial load or project switch. Afterwards, take the project's
+    // code only when it changed outside this editor (e.g. a restored
+    // revision); our own auto-save echo matches the synced snapshot.
+    const synced = syncedProjectRef.current;
+    const isSwitch = !hasInitializedRef.current || synced?.id !== activeProjectId;
+    if (!isSwitch && synced?.code === activeProject.code) return;
+    syncedProjectRef.current = { id: activeProjectId, code: activeProject.code };
+    setCode(activeProject.code);
+    if (isSwitch && activeProject.viewState) {
+      setViewMode(activeProject.viewState.viewMode);
+      setViewMode3D(activeProject.viewState.viewMode3D as typeof viewMode3D);
+      shellStore.setAgentRailOpen(activeProject.viewState.agentRailOpen ?? false);
+    }
+    hasInitializedRef.current = true;
+  }, [activeProject, activeProjectId, isDevLab, setCode, setViewMode, setViewMode3D, viewMode3D, linkedSource, viewerMode, hasInitializedRef]);
+
+  // Auto-save: workbench state -> active project
+  useEffect(() => {
+    if (linkedSource) return;
+    if (isDevLab || !hasInitializedRef.current || !activeProject) return;
+    if (viewerMode) return; // read-only review page — never persist
+    // Each save hands back a new activeProject, which re-runs this effect.
+    // Save only what differs from the project, else an idle Studio rewrites
+    // the project every debounce period.
+    const viewState: ViewState = { viewMode, viewMode3D, sidePanelVisible, showSketches, agentRailOpen };
+    if (projectHolds(activeProject, code, viewState)) return;
+    if (!isCodeParsable(code)) return;
+
+    const timeoutId = setTimeout(() => {
+      syncedProjectRef.current = { id: activeProjectId, code };
+      saveActiveProject({ code, viewState });
+    }, 1500); // 1.5s debounce for project save
+
+    return () => clearTimeout(timeoutId);
+  }, [code, viewMode, viewMode3D, sidePanelVisible, showSketches, agentRailOpen, isDevLab, activeProject, activeProjectId, saveActiveProject, linkedSource, viewerMode, hasInitializedRef]);
+}
+
+function AppContent({ isDevLab }: { isDevLab: boolean }) {
+  const { code, setCode, setViewMode } = useWorkbench();
+  const codeRef = useRef(code);
+  useEffect(() => {
+    codeRef.current = code;
+  }, [code]);
   // "We have seeded the workbench from a source route or project at least
-  // once." No render output reads this flag (only the two effects below), so
-  // it lives in a ref: the sync effect can flip it without a re-render, and
-  // the auto-save effect reads it after that effect ran in the same commit.
+  // once." No render output reads this flag (only the effects below and in
+  // useProjectWorkbenchSync), so it lives in a ref: the sync effect can flip
+  // it without a re-render, and the auto-save effect reads it after that
+  // effect ran in the same commit.
   const hasInitializedRef = useRef(false);
   // setLoadedSourceRouteKey is still called for its side effects (gating the
   // source-load effect in deps), but the value isn't read since we removed
@@ -81,6 +168,7 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
     sourcePromise
       .then((source) => {
         if (cancelled) return;
+        if (scriptParam && !galleryParam) noteDiskScriptSource(scriptParam, source);
         setCode(source);
         setViewMode('code');
         setSourceLoadError(null);
@@ -105,58 +193,13 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
   // in this component.
   useEffect(() => {
     if (!scriptParam || galleryParam) return;
-    registerLiveScriptTarget(scriptParam, setCode);
+    registerLiveScriptTarget(scriptParam, setCode, () => codeRef.current);
     return () => unregisterLiveScriptTarget(setCode);
   }, [galleryParam, scriptParam, setCode]);
 
-  // Sync active project -> workbench state
-  useEffect(() => {
-    if (scriptParam || galleryParam) return;
-    if (isDevLab || !activeProject) return;
-    // Viewer mode: code is driven externally (live agent updates via the
-    // `liveCode` prop); the ephemeral project's mount-time snapshot must not
-    // win the diff below and clobber updates back to the initial code.
-    if (viewerMode) return;
-    // Ephemeral funnel project (/g/$genId): seed the workbench once on the
-    // first run, then step aside. After initialization, external/programmatic
-    // setCode calls (e.g. live agent updates) must not be overwritten by the
-    // frozen mount-time initialCode snapshot stored in the ephemeral project.
-    if (hasInitializedRef.current && isEphemeralProjectId(activeProjectId)) return;
+  useLinkedScriptAutosave(scriptParam && !galleryParam ? scriptParam : null, code);
 
-    // Only sync on initial load or project switch
-    if (!hasInitializedRef.current || activeProject.code !== code) {
-      setCode(activeProject.code);
-      if (activeProject.viewState) {
-        setViewMode(activeProject.viewState.viewMode);
-        setViewMode3D(activeProject.viewState.viewMode3D as typeof viewMode3D);
-        shellStore.setAgentRailOpen(activeProject.viewState.agentRailOpen ?? false);
-      }
-      hasInitializedRef.current = true;
-    }
-  }, [activeProject, activeProjectId, isDevLab, setCode, setViewMode, setViewMode3D, code, viewMode3D, scriptParam, galleryParam, viewerMode]);
-
-  // Auto-save: workbench state -> active project
-  useEffect(() => {
-    if (scriptParam || galleryParam) return;
-    if (isDevLab || !hasInitializedRef.current || !activeProject) return;
-    if (viewerMode) return; // read-only review page — never persist
-    if (!isCodeParsable(code)) return;
-
-    const timeoutId = setTimeout(() => {
-      saveActiveProject({
-        code,
-        viewState: {
-          viewMode,
-          viewMode3D,
-          sidePanelVisible,
-          showSketches,
-          agentRailOpen,
-        }
-      });
-    }, 1500); // 1.5s debounce for project save
-
-    return () => clearTimeout(timeoutId);
-  }, [code, viewMode, viewMode3D, sidePanelVisible, showSketches, agentRailOpen, isDevLab, activeProject, saveActiveProject, scriptParam, galleryParam, viewerMode]);
+  useProjectWorkbenchSync(isDevLab, Boolean(scriptParam || galleryParam), hasInitializedRef);
 
   const activeSourceLoadError = sourceRouteKey && sourceLoadError?.routeKey === sourceRouteKey
     ? sourceLoadError.message
@@ -189,7 +232,7 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
 /** Applies externally-driven code updates into the workbench. Rendered inside
  * WorkbenchProvider so it has access to setCode. Skips duplicate values to
  * avoid re-triggering the geometry pipeline on unchanged code. */
-function LiveCodeApplier({ liveCode }: { liveCode?: string }) {
+export function LiveCodeApplier({ liveCode }: { liveCode?: string }) {
   const { setCode } = useWorkbench();
   const lastApplied = useRef<string | undefined>(undefined);
   useEffect(() => {
@@ -206,6 +249,9 @@ interface AppProps {
    * routes (/g/$genId, /p/$slug) to open generated/saved artifacts inside
    * the full Studio shell rather than a stripped viewer. */
   initialCode?: string;
+  /** Name for the in-memory project the funnel routes open (the saved
+   * project's title), shown in the Header and used for export file names. */
+  projectName?: string;
   /** Embed-mode controlled source: when set, the host owns the canonical
    * `.kcad.ts` string. Studio mirrors it, emits user edits via
    * `StudioConfig.onCodeChange`, and suppresses `?script=`/`?gallery=`
@@ -221,6 +267,9 @@ interface AppProps {
    * editor read-only, built-in agent rail hidden — the model is driven by
    * an external agent, not authored here. */
   viewerMode?: boolean;
+  /** Overlay drawn over the 3D viewport, inside the workbench providers
+   * (the public page's model customizer). */
+  viewportOverlay?: ReactNode;
   /** Externally-driven code updates; each new value replaces the workbench
    * code through the normal setCode path. */
   liveCode?: string;
@@ -228,11 +277,13 @@ interface AppProps {
 
 function AppProviders({
   initialCode,
+  projectName,
   code,
   isDevLab,
   headerLeft,
   headerRight,
   viewerMode,
+  viewportOverlay,
   liveCode,
 }: AppProps & { isDevLab: boolean }) {
   // Embed mode: pull controlled props from StudioConfig context. Standalone
@@ -251,10 +302,11 @@ function AppProviders({
   return (
     <WorkbenchProvider
       initialCode={initialCode}
+      projectName={projectName}
       controlledCode={controlledCode}
       onCodeChange={onCodeChange}
     >
-      <StudioChromeProvider value={{ headerLeft: effectiveHeaderLeft, headerRight: effectiveHeaderRight, viewerMode }}>
+      <StudioChromeProvider value={{ headerLeft: effectiveHeaderLeft, headerRight: effectiveHeaderRight, viewerMode, viewportOverlay }}>
 
         <ErrorBoundary>
           <AppContent isDevLab={isDevLab} />
@@ -300,10 +352,12 @@ function DevLabApp({ headerLeft, headerRight }: Pick<AppProps, 'headerLeft' | 'h
 
 export function StudioApp({
   initialCode: initialCodeProp,
+  projectName,
   code,
   headerLeft,
   headerRight,
   viewerMode,
+  viewportOverlay,
   liveCode,
 }: AppProps = {}) {
   const isDevLab = typeof window !== 'undefined' && window.location.pathname.startsWith('/dev-lab');
@@ -315,11 +369,13 @@ export function StudioApp({
   return (
     <AppProviders
       initialCode={initialCodeProp}
+      projectName={projectName}
       code={code}
       isDevLab={isDevLab}
       headerLeft={headerLeft}
       headerRight={headerRight}
       viewerMode={viewerMode}
+      viewportOverlay={viewportOverlay}
       liveCode={liveCode}
     />
   );

@@ -11,6 +11,7 @@ import {
   reviewPoseEnvelope,
   validateMatePoseLimits,
 } from './poseEnvelope';
+import { pairKey } from '../runtime/detectInterferences';
 
 const clearanceKernel = vi.hoisted(() => ({ failDistance: false }));
 vi.mock('../runtime/brepDistance', async (importOriginal) => {
@@ -506,5 +507,31 @@ describe('pose-envelope review helpers', () => {
     const standalone = validateMatePoseLimits(arm);
     expect(standalone).toHaveLength(1);
     expect(standalone[0].sampleStrategy).toBe('corner');
+  });
+});
+
+describe('pose-envelope ignoredPairs for interference', () => {
+  it('honours ignoredPairs for interference samples', async () => {
+    const built = await evaluateAndBuildScript({
+      code: `
+        const rig = assembly('ignored-overlap');
+        rig.part('left', box(10, 10, 10, true), { at: [0, 0, 0] });
+        rig.part('right', box(10, 10, 10, true), { at: [9, 0, 0] });
+        return rig.model();
+      `,
+    });
+    const arm = built.model?.session.assemblies.get('ignored-overlap');
+    if (arm === undefined) throw new Error('expected ignored-overlap assembly');
+
+    const open = await reviewPoseEnvelope(arm, { includeInterference: true });
+    expect(open.diagnostics.some((d) => d.code === 'assembly.pose-envelope.interference')).toBe(true);
+
+    const ignored = await reviewPoseEnvelope(arm, {
+      includeInterference: true,
+      ignoredPairs: new Set([pairKey('left', 'right')]),
+    });
+    // pairKey format — use whatever pairKey produces. If still failing, check key format.
+    expect(ignored.diagnostics.filter((d) => d.code === 'assembly.pose-envelope.interference')).toHaveLength(0);
+    expect(ignored.interferencePairs).toHaveLength(0);
   });
 });

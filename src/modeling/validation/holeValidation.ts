@@ -3,14 +3,16 @@
 // src/intent/holeValidation.ts
 //
 // Script-time validators for `Shape.hole(face, opts)` and
-// `Shape.holes(face, opts)`. Every trigger throws
-// `KernelError('feature.invalid-args', msg, featureId, hint)` per the
-// post-milestone-C closed vocabulary policy. Hints are imperative and
-// identify the offending field by name + value.
+// `Shape.holes(face, opts)`. Every trigger raises `feature.invalid-args`
+// through the shared `invalidArgs` helper, so the message always names the
+// API + argument path, the received value, the requirement (with units, and
+// with BOTH values when the cause is a relationship such as
+// `counterbore.diameter > diameter`), and one inline example.
 //
 // Source: spec 2026-05-05-v0.3-slice1-hole-cutout-design §D.1.
 
-import { KernelError } from '../../shared/intent/kernelError';
+import { invalidArgs } from '../../shared/intent/invalidArgs';
+import { formatScalarForError } from '../../shared/intent/types';
 import type { FeatureId, FaceRef, Param } from '../../shared/intent/types';
 import type { FaceSelector } from '../capture/proxy';
 import type { Editable } from '../../shared/runtime/paramRef';
@@ -182,6 +184,22 @@ export function resolveHolesOpts(opts: EditableHolesOpts, table: ParamTable): Ho
 const MAX_DIAMETER_MM = 1000;
 const DEFAULT_CSK_ANGLE_DEG = 90;
 
+/** One minimal correct call, reused as the inline example on every hole
+ *  message so the agent always sees a complete, copy-pasteable shape. */
+const HOLE_EXAMPLE = "plate.hole(top, { u: 10, v: 10, diameter: 3.4, depth: 'through' })";
+const HOLES_EXAMPLE =
+  "plate.holes(top, { positions: [{ u: 10, v: 10 }, { u: 30, v: 10 }], diameter: 3.4, depth: 'through' })";
+
+/** `hole(...)` and `holes(...)` share every validator except positions, so the
+ *  API label and the example follow the opts shape. */
+function holeApi(opts: HoleOpts | HolesOpts, arg: string): string {
+  return 'positions' in opts ? `holes(face, { ${arg} })` : `hole(face, { ${arg} })`;
+}
+
+function holeExample(opts: HoleOpts | HolesOpts): string {
+  return 'positions' in opts ? HOLES_EXAMPLE : HOLE_EXAMPLE;
+}
+
 /** Slice-2 feature-name regex: starts with a letter, then letters/digits/
  *  underscores/hyphens, max 32 chars total. Defined in shared/intent/featureName
  *  so paramTable (shared/runtime) can use it without an upward dep into authoring. */
@@ -193,12 +211,15 @@ export function validateFeatureName(
   featureId: FeatureId | undefined,
 ): void {
   if (!FEATURE_NAME_REGEX.test(name)) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `feature name '${name}' is invalid.`,
+    invalidArgs({
+      api: 'hole(face, { name })',
+      path: 'opts.name',
+      got: name,
+      requires:
+        'a string starting with a letter, then only letters, digits, underscores or hyphens, max 32 chars',
+      example: "plate.hole(top, { u: 10, v: 10, diameter: 3.4, depth: 'through', name: 'm3-left' })",
       featureId,
-      `Feature name must start with a letter and contain only letters, digits, underscores, or hyphens (max 32 chars).`,
-    );
+    });
   }
 }
 
@@ -209,30 +230,38 @@ function isFiniteNumber(n: unknown): n is number {
 // Depth-required / depth-conflict
 function validateHoleDepth(opts: HoleOpts | HolesOpts, featureId: FeatureId | undefined): void {
   if (opts.depth === undefined && opts.upToFace === undefined) {
-    throw new KernelError(
-      'feature.invalid-args',
-      'hole: neither depth nor upToFace was set; one of them is required.',
+    invalidArgs({
+      api: holeApi(opts, 'depth'),
+      path: 'opts.depth',
+      gotText: 'neither depth nor upToFace',
+      requires:
+        "exactly one of depth (a number in mm or 'through') or upToFace (a FaceRef); a blind hole needs a depth",
+      example: holeExample(opts),
       featureId,
-      "Set either depth (number or 'through') or upToFace; one is required.",
-    );
+    });
   }
   if (opts.depth !== undefined && opts.upToFace !== undefined) {
-    throw new KernelError(
-      'feature.invalid-args',
-      'hole: both depth and upToFace were set; they are mutually exclusive.',
+    invalidArgs({
+      api: holeApi(opts, 'depth, upToFace'),
+      path: 'opts.depth + opts.upToFace',
+      gotText: `depth ${formatScalarForError(opts.depth)} and upToFace ${formatScalarForError(opts.upToFace)} together`,
+      requires: 'exactly one of the two — they are mutually exclusive ways to end the bore',
+      example: holeExample(opts),
       featureId,
-      'Set depth or upToFace, not both.',
-    );
+    });
   }
   // Numeric depth (when not 'through') must be positive
   if (typeof opts.depth === 'number') {
     if (!isFiniteNumber(opts.depth) || opts.depth <= 0) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `hole: depth (${opts.depth}) must be positive.`,
+      invalidArgs({
+        api: holeApi(opts, 'depth'),
+        path: 'opts.depth',
+        got: opts.depth,
+        requires: "a finite number > 0, or the string 'through' to clip at the back face",
+        unit: 'mm',
+        example: holeExample(opts),
         featureId,
-        "hole depth must be positive. Use 'through' if you want to clip at the back face.",
-      );
+      });
     }
   }
 }
@@ -240,24 +269,31 @@ function validateHoleDepth(opts: HoleOpts | HolesOpts, featureId: FeatureId | un
 // cb / cs mutual exclusion
 function validateHoleEndTreatments(opts: HoleOpts | HolesOpts, featureId: FeatureId | undefined): void {
   if (opts.counterbore !== undefined && opts.countersink !== undefined) {
-    throw new KernelError(
-      'feature.invalid-args',
-      'hole: counterbore and countersink were both set.',
+    invalidArgs({
+      api: holeApi(opts, 'counterbore, countersink'),
+      path: 'opts.counterbore + opts.countersink',
+      gotText: 'both counterbore and countersink on one hole',
+      requires:
+        'at most one of them — chain a second .hole() at the same u/v if you need both end treatments',
+      example: `plate.hole(top, { u: 10, v: 10, diameter: 3.4, depth: 'through', counterbore: { diameter: 6.5, depth: 3.5 } })`,
       featureId,
-      'counterbore and countersink are mutually exclusive on a single hole. Chain two .hole() calls if you need both effects.',
-    );
+    });
   }
 }
 
 // Diameter
 function validateHoleDiameter(opts: HoleOpts | HolesOpts, featureId: FeatureId | undefined): void {
   if (!isFiniteNumber(opts.diameter) || opts.diameter <= 0 || opts.diameter > MAX_DIAMETER_MM) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `hole: diameter (${opts.diameter}) must be a finite number > 0 and ≤ ${MAX_DIAMETER_MM} mm.`,
+    invalidArgs({
+      api: holeApi(opts, 'diameter'),
+      path: 'opts.diameter',
+      got: opts.diameter,
+      showType: typeof opts.diameter !== 'number',
+      requires: `a finite number > 0 and ≤ ${MAX_DIAMETER_MM}; this is the bore diameter, not the radius (M3 clearance is 3.4)`,
+      unit: 'mm',
+      example: holeExample(opts),
       featureId,
-      `diameter (${opts.diameter}) must be > 0 and ≤ ${MAX_DIAMETER_MM} mm.`,
-    );
+    });
   }
 }
 
@@ -266,20 +302,30 @@ function validateHoleCounterbore(opts: HoleOpts | HolesOpts, featureId: FeatureI
   if (opts.counterbore !== undefined) {
     const cb = opts.counterbore;
     if (!isFiniteNumber(cb.diameter) || cb.diameter <= opts.diameter) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `hole: counterbore.diameter (${cb.diameter}) must be greater than diameter (${opts.diameter}).`,
+      invalidArgs({
+        api: holeApi(opts, 'counterbore'),
+        path: 'opts.counterbore.diameter',
+        got: cb.diameter,
+        requires:
+          `counterbore.diameter > opts.diameter — opts.diameter is ${formatScalarForError(opts.diameter)} mm, so the shoulder must be wider than that; ` +
+          'the counterbore is the flat screw-head pocket, use countersink for a tapered one',
+        unit: 'mm',
+        example:
+          "plate.hole(top, { u: 10, v: 10, diameter: 3.4, depth: 'through', counterbore: { diameter: 6.5, depth: 3.5 } })",
         featureId,
-        `counterbore.diameter (${cb.diameter}) must be greater than diameter (${opts.diameter}). Counterbore is the wider shoulder; if you want a narrower top, use countersink instead.`,
-      );
+      });
     }
     if (!isFiniteNumber(cb.depth) || cb.depth <= 0) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `hole: counterbore.depth (${cb.depth}) must be positive.`,
+      invalidArgs({
+        api: holeApi(opts, 'counterbore'),
+        path: 'opts.counterbore.depth',
+        got: cb.depth,
+        requires: 'a finite number > 0; this is how deep the head pocket sinks below the face',
+        unit: 'mm',
+        example:
+          "plate.hole(top, { u: 10, v: 10, diameter: 3.4, depth: 'through', counterbore: { diameter: 6.5, depth: 3.5 } })",
         featureId,
-        'counterbore.depth must be a positive finite number.',
-      );
+      });
     }
   }
 }
@@ -289,21 +335,31 @@ function validateHoleCountersink(opts: HoleOpts | HolesOpts, featureId: FeatureI
   if (opts.countersink !== undefined) {
     const cs = opts.countersink;
     if (!isFiniteNumber(cs.diameter) || cs.diameter <= opts.diameter) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `hole: countersink.diameter (${cs.diameter}) must be greater than diameter (${opts.diameter}).`,
+      invalidArgs({
+        api: holeApi(opts, 'countersink'),
+        path: 'opts.countersink.diameter',
+        got: cs.diameter,
+        requires:
+          `countersink.diameter > opts.diameter — opts.diameter is ${formatScalarForError(opts.diameter)} mm, so the cone mouth must be wider than that`,
+        unit: 'mm',
+        example:
+          "plate.hole(top, { u: 10, v: 10, diameter: 3.4, depth: 'through', countersink: { diameter: 6.5, angleDeg: 90 } })",
         featureId,
-        `countersink.diameter (${cs.diameter}) must be greater than diameter (${opts.diameter}).`,
-      );
+      });
     }
     const angle = cs.angleDeg ?? DEFAULT_CSK_ANGLE_DEG;
     if (!isFiniteNumber(angle) || angle <= 0 || angle >= 180) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `hole: countersink.angleDeg (${angle}) must be in (0, 180).`,
+      invalidArgs({
+        api: holeApi(opts, 'countersink'),
+        path: 'opts.countersink.angleDeg',
+        got: angle,
+        requires:
+          'the full included cone angle, > 0 and < 180; 90 for ISO 7046 / DIN 965 and 82 for imperial flat heads',
+        unit: 'deg',
+        example:
+          "plate.hole(top, { u: 10, v: 10, diameter: 3.4, depth: 'through', countersink: { diameter: 6.5, angleDeg: 90 } })",
         featureId,
-        `countersink.angleDeg (${angle}) must be in (0, 180); the typical value is 82 or 90.`,
-      );
+      });
     }
   }
 }
@@ -321,61 +377,115 @@ function validateCommonHoleFields(
   if (opts.thread !== undefined) validateThread(opts, featureId);
 }
 
+/** Hint for a thread clearance above the pitch/8 cap: say why the cap exists
+ *  and, for a print-tolerance request, how to get the extra play by growing
+ *  the whole thread (a larger nominal `diameter`) instead. */
+function threadClearanceHint(clearance: number, pitch: number, diameter: unknown): string {
+  const cap = pitch / 8;
+  const why =
+    `thread.clearance grows each flank of the internal thread by that many mm; past pitch/8 = ${cap} mm ` +
+    'neighbouring groove turns would merge.';
+  if (!isFiniteNumber(clearance) || clearance <= cap) return why;
+  // A radial shift δ of the whole 60° profile opens each flank by δ·sin 30° =
+  // δ/2, so the missing flank play `extra` needs δ = 2·extra, i.e. a nominal
+  // diameter 4·extra larger.
+  const extra = clearance - cap;
+  const grow = +(4 * extra).toFixed(3);
+  const target = isFiniteNumber(diameter) ? ` (diameter: ${+(diameter + grow).toFixed(3)})` : '';
+  return (
+    `${why} For a print tolerance (FDM usually needs 0.2–0.4 mm), keep clearance: ${cap} and grow the ` +
+    `whole thread instead: add ${grow} mm to the nominal diameter${target}. That shifts the bore, crest ` +
+    `and both flanks outward together; each flank then opens by ${cap} + ${+extra.toFixed(3)} = ${clearance} mm ` +
+    'and the groove turns never merge.'
+  );
+}
+
 function validateThread(opts: HoleOpts | HolesOpts, featureId: FeatureId | undefined): void {
   const t = opts.thread;
+  const threadExample =
+    "plate.hole(top, { u: 10, v: 10, diameter: 6, depth: 12, thread: { pitch: 1 } })  // M6 × 1 tapped";
   if (typeof t !== 'object' || t === null) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `hole: thread must be { pitch, modeled?, clearance? }; got ${JSON.stringify(t)}.`,
+    invalidArgs({
+      api: holeApi(opts, 'thread'),
+      path: 'opts.thread',
+      got: t,
+      showType: true,
+      requires:
+        'an object { pitch, modeled?, clearance? }; with thread set, opts.diameter is the NOMINAL size (M6 → diameter: 6, pitch: 1)',
+      example: threadExample,
       featureId,
-      "Pass thread: { pitch: 1 } for an M6 coarse tapped hole (diameter is the nominal size).",
-    );
+    });
   }
   // Coarsest ISO 261 pitch is D/4 (M1 × 0.25); anything coarser leaves no
   // meaningful minor diameter.
   if (!isFiniteNumber(t.pitch) || t.pitch <= 0 || t.pitch > opts.diameter / 4) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `hole: thread.pitch (${t.pitch}) must be > 0 and ≤ diameter / 4 (${opts.diameter / 4}).`,
+    invalidArgs({
+      api: holeApi(opts, 'thread'),
+      path: 'opts.thread.pitch',
+      got: t.pitch,
+      requires:
+        `the ISO 261 pitch, > 0 and ≤ opts.diameter / 4 — opts.diameter is ${formatScalarForError(opts.diameter)} mm, so pitch must be ≤ ${opts.diameter / 4}; ` +
+        'coarse pitches are M3 → 0.5, M4 → 0.7, M5 → 0.8, M6 → 1, M8 → 1.25',
+      unit: 'mm',
+      example: threadExample,
       featureId,
-      `thread.pitch is the ISO pitch in mm (M6 → 1, M8 → 1.25) and diameter is the nominal thread size; a pitch above diameter/4 is not a metric thread.`,
-    );
+    });
   }
   if (t.modeled !== undefined && typeof t.modeled !== 'boolean') {
-    throw new KernelError(
-      'feature.invalid-args',
-      `hole: thread.modeled must be a boolean; got ${JSON.stringify(t.modeled)}.`,
+    invalidArgs({
+      api: holeApi(opts, 'thread'),
+      path: 'opts.thread.modeled',
+      got: t.modeled,
+      showType: true,
+      requires:
+        'a boolean — true cuts the 60° helical groove, false (default) is a cosmetic thread (minor-diameter bore plus recorded thread params)',
+      example:
+        "plate.hole(top, { u: 10, v: 10, diameter: 6, depth: 12, thread: { pitch: 1, modeled: true } })",
       featureId,
-      'thread.modeled: true cuts the helical groove; false (default) is a cosmetic thread.',
-    );
+    });
   }
   const clearance = t.clearance ?? 0;
   if (!isFiniteNumber(clearance) || clearance < 0 || clearance > t.pitch / 8) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `hole: thread.clearance (${clearance}) must be in [0, pitch/8] = [0, ${t.pitch / 8}] mm.`,
+    invalidArgs({
+      api: holeApi(opts, 'thread'),
+      path: 'opts.thread.clearance',
+      got: clearance,
+      requires: `a number in [0, thread.pitch / 8] — thread.pitch is ${formatScalarForError(t.pitch)} mm, so the cap is ${t.pitch / 8}`,
+      unit: 'mm',
+      example: `plate.hole(top, { u: 10, v: 10, diameter: 6, depth: 12, thread: { pitch: ${formatScalarForError(t.pitch)}, clearance: ${t.pitch / 8} } })`,
       featureId,
-      'thread.clearance grows the internal thread outward by that many mm; beyond pitch/8 adjacent groove turns would merge.',
-    );
+      hint: threadClearanceHint(clearance, t.pitch, opts.diameter),
+    });
   }
   if (t.modeled === true && typeof opts.depth === 'number' && opts.depth < 2 * t.pitch) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `hole: a modeled thread needs depth ≥ 2 × pitch (${2 * t.pitch} mm); got depth ${opts.depth}.`,
+    invalidArgs({
+      api: holeApi(opts, 'depth, thread'),
+      path: 'opts.depth',
+      got: opts.depth,
+      requires:
+        `depth ≥ 2 × thread.pitch for a modeled thread — thread.pitch is ${formatScalarForError(t.pitch)} mm, so depth must be ≥ ${2 * t.pitch}; ` +
+        "or use depth: 'through', or leave the thread cosmetic (modeled: false)",
+      unit: 'mm',
+      example: `plate.hole(top, { u: 10, v: 10, diameter: 6, depth: ${2 * t.pitch}, thread: { pitch: ${formatScalarForError(t.pitch)}, modeled: true } })`,
       featureId,
-      "Deepen the hole, use depth: 'through', or leave the thread cosmetic (modeled: false).",
-    );
+    });
   }
 }
 
 export function validateHoleOpts(opts: HoleOpts, featureId: FeatureId | undefined): void {
-  if (!isFiniteNumber(opts.u) || !isFiniteNumber(opts.v)) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `hole: position {u: ${opts.u}, v: ${opts.v}} must be finite numbers.`,
+  const badAxis = !isFiniteNumber(opts.u) ? 'u' : !isFiniteNumber(opts.v) ? 'v' : undefined;
+  if (badAxis !== undefined) {
+    invalidArgs({
+      api: `hole(face, { ${badAxis} })`,
+      path: `opts.${badAxis}`,
+      got: badAxis === 'u' ? opts.u : opts.v,
+      showType: typeof (badAxis === 'u' ? opts.u : opts.v) !== 'number',
+      requires:
+        'a finite number; u and v are the hole centre in the face\'s own 2-D frame, measured from the face origin',
+      unit: 'mm',
+      example: HOLE_EXAMPLE,
       featureId,
-      `Hole position {u, v} must be finite numbers.`,
-    );
+    });
   }
   if (opts.name !== undefined) validateFeatureName(opts.name, featureId);
   validateCommonHoleFields(opts, featureId);
@@ -383,27 +493,47 @@ export function validateHoleOpts(opts: HoleOpts, featureId: FeatureId | undefine
 
 export function validateHolesOpts(opts: HolesOpts, featureId: FeatureId | undefined): void {
   if (!Array.isArray(opts.positions) || opts.positions.length === 0) {
-    throw new KernelError(
-      'feature.invalid-args',
-      'holes: positions array must contain at least one entry.',
+    invalidArgs({
+      api: 'holes(face, { positions })',
+      path: 'opts.positions',
+      got: opts.positions,
+      showType: !Array.isArray(opts.positions),
+      requires:
+        'a non-empty array of { u, v } face-frame points, one per hole; for a single hole call .hole() instead',
+      example: HOLES_EXAMPLE,
       featureId,
-      'holes() requires at least one position. For a single hole, use .hole() instead.',
-    );
+    });
   }
   for (let i = 0; i < opts.positions.length; i++) {
     const p = opts.positions[i];
-    if (
-      !p ||
-      typeof p !== 'object' ||
-      !isFiniteNumber((p as { u?: unknown }).u) ||
-      !isFiniteNumber((p as { v?: unknown }).v)
-    ) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `holes: positions[${i}] = ${JSON.stringify(p)} must be { u: number, v: number } with finite values.`,
+    if (!p || typeof p !== 'object') {
+      invalidArgs({
+        api: 'holes(face, { positions })',
+        path: `opts.positions[${i}]`,
+        got: p,
+        showType: true,
+        requires: 'an object { u, v } with finite numbers; u and v are the hole centre in the face frame',
+        unit: 'mm',
+        example: HOLES_EXAMPLE,
         featureId,
-        `Hole position {u, v} must be finite numbers.`,
-      );
+      });
+    }
+    const axis = !isFiniteNumber((p as { u?: unknown }).u)
+      ? 'u'
+      : !isFiniteNumber((p as { v?: unknown }).v)
+        ? 'v'
+        : undefined;
+    if (axis !== undefined) {
+      invalidArgs({
+        api: 'holes(face, { positions })',
+        path: `opts.positions[${i}].${axis}`,
+        got: (p as Record<string, unknown>)[axis],
+        showType: typeof (p as Record<string, unknown>)[axis] !== 'number',
+        requires: 'a finite number, measured from the face origin in the face\'s own 2-D frame',
+        unit: 'mm',
+        example: HOLES_EXAMPLE,
+        featureId,
+      });
     }
   }
   if (opts.name !== undefined) validateFeatureName(opts.name, featureId);

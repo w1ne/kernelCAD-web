@@ -10,6 +10,7 @@ import { useShowSketches } from './geometry/useShowSketches';
 import { useGeometryTransforms } from './geometry/useGeometryTransforms';
 import { usePreviewExecution } from './geometry/usePreviewExecution';
 import { useScriptExecution } from './geometry/useScriptExecution';
+import type { ParamUpdateOptions } from './geometry/useParamUpdate';
 import { readStudioScriptParam, type ExecutionRecord, type ExecutionStatus, type ScriptReviewSummary } from './geometry/types';
 
 export type { ExecutionStatus, ExecutionRecord, ScriptReviewSummary };
@@ -50,7 +51,10 @@ export interface GeometryContextType {
     /** Slice 2E.bridge: POST edits to the pooled CaptureSession's
      *  `params.update`. Returns once the server has acked; the SSE
      *  `relower` push that follows refreshes `scriptParams` + `scriptReview`. */
-    updateParam: (edits: { name: string; value: number | boolean }[]) => Promise<void>;
+    updateParam: (
+        edits: { name: string; value: number | boolean | string }[],
+        options?: ParamUpdateOptions,
+    ) => Promise<void>;
     setGeometryTransformOverride: (partName: string, transform: number[]) => void;
     clearGeometryTransformOverrides: () => void;
     /** Animation playback claims sole ownership of the part-transform override
@@ -64,9 +68,21 @@ export interface GeometryContextType {
 
 const GeometryContext = createContext<GeometryContextType | undefined>(undefined);
 
-export function GeometryProvider({ children, code }: { children: ReactNode; code: string }) {
+export function GeometryProvider({
+    children,
+    code,
+    suspendSourceExecution = false,
+    externalGeometries = null,
+}: {
+    children: ReactNode;
+    code: string;
+    /** Mesh-artifact path: do not evaluate `code`. */
+    suspendSourceExecution?: boolean;
+    /** Geometries loaded from a revision-matched mesh artifact. */
+    externalGeometries?: GeometryResult[] | null;
+}) {
     const studioScript = readStudioScriptParam();
-    const { engine, isReady } = useEngineReady();
+    const { engine, isReady } = useEngineReady(!suspendSourceExecution);
     const { showSketches, toggleSketchVisibility } = useShowSketches();
     const transforms = useGeometryTransforms();
     const {
@@ -84,16 +100,21 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
         transforms.setGeometryTransformOverrides,
         transforms.viewportDriverLockRef,
         setPreviewGeometries,
+        suspendSourceExecution,
     );
 
-    const displayGeometries = useMemo(
-        () => script.geometries.map((geometry) => {
+    // Apply viewport transform overrides to BOTH script-evaluated meshes and
+    // CDN mesh-artifact geometries. Embed / FunnelViewer ChatGPT widgets load
+    // via `externalGeometries`; skipping overrides there left Play/scrub
+    // advancing the timeline while part groups stayed at rest pose.
+    const displayGeometries = useMemo(() => {
+        const base = externalGeometries ?? script.geometries;
+        return base.map((geometry) => {
             if (!geometry.assemblyPartName) return geometry;
             const transform = transforms.geometryTransformOverrides[geometry.assemblyPartName];
             return transform ? { ...geometry, transform } : geometry;
-        }),
-        [script.geometries, transforms.geometryTransformOverrides],
-    );
+        });
+    }, [externalGeometries, script.geometries, transforms.geometryTransformOverrides]);
 
     const value: GeometryContextType = useMemo(() => ({
         geometries: displayGeometries,
@@ -101,9 +122,9 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
         sketchesGeometries: script.sketchesGeometries,
         showSketches,
         toggleSketchVisibility,
-        error: script.error,
-        isReady,
-        isComputing: script.isComputing,
+        error: externalGeometries ? null : script.error,
+        isReady: externalGeometries ? true : isReady,
+        isComputing: externalGeometries ? false : script.isComputing,
         executionCount: script.executionCount,
         currentCodeRevision: script.currentCodeRevision,
         lastSuccessfulRevision: script.lastSuccessfulRevision,
@@ -123,7 +144,7 @@ export function GeometryProvider({ children, code }: { children: ReactNode; code
         clearGeometryTransformOverrides: transforms.clearGeometryTransformOverrides,
         setViewportDriverLock: transforms.setViewportDriverLock,
     }), [
-        displayGeometries, previewGeometries, script.sketchesGeometries, showSketches,
+        displayGeometries, externalGeometries, previewGeometries, script.sketchesGeometries, showSketches,
         toggleSketchVisibility, script.error, isReady, script.isComputing, script.executionCount,
         script.currentCodeRevision, script.lastSuccessfulRevision, script.executionHistory,
         script.scriptParams, script.scriptReview, script.featureRecords, script.recomputeMs,

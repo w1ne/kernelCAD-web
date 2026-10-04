@@ -26,7 +26,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { accessSync, constants } from 'node:fs';
 import {
-  materialProfilePath, resolvePrinterProfile, isKnownMaterial,
+  materialProfilePath, resolvePrinterProfile, printableAreaArg, isKnownMaterial,
   DEFAULT_MATERIAL, type MaterialName,
 } from './profiles';
 
@@ -118,7 +118,7 @@ export async function sliceStlToGcode(
       '--load-filaments', materialProfilePath(material),
       '--layer-height', String(opts.layerHeight ?? 0.2),
       '--sparse-infill-density', String(opts.infill ?? 15),
-      '--printable-area', printer.bedShapeArg,
+      '--printable-area', printableAreaArg(printer),
       '--printable-height', String(printer.bedSizeMm.z),
       // `--enable-support` is a bare boolean flag (no value token) —
       // passing "0" gets consumed as the next positional argument (the

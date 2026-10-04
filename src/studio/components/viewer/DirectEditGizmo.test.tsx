@@ -35,6 +35,8 @@ const hoisted = vi.hoisted(() => ({
     planDrag: vi.fn(),
     reviewCandidate: vi.fn(),
     currentStudioScript: vi.fn(() => 'examples/test.kcad.ts'),
+    saveSourceToScript: vi.fn(),
+    setCode: vi.fn(),
 }));
 
 vi.mock('three', async () => {
@@ -59,6 +61,10 @@ vi.mock('../../context/WorkbenchContext', () => ({
     useWorkbench: () => hoisted.workbench,
 }));
 
+vi.mock('../../directEdit/saveSource', () => ({
+    saveSourceToScript: hoisted.saveSourceToScript,
+}));
+
 vi.mock('../../hooks/useRecomputeResult', () => ({
     useRecomputeResult: () => ({ features: hoisted.features }),
 }));
@@ -73,11 +79,15 @@ vi.mock('../../../modeling/directEdit/planDrag', () => ({
 
 vi.mock('../../scriptSource', () => ({
     currentStudioScript: hoisted.currentStudioScript,
+    shouldUseHostedMesh: () => false,
 }));
 
 import { DirectEditGizmo, REVIEW_BUSY_NOTICE, SOURCE_CHANGED_NOTICE } from './DirectEditGizmo';
 import { isMatedAnchor, resolveAnchor } from './directEditTarget';
 import { shellStore } from '../../store/useShellStore';
+import { CommandManager } from '../../../authoring/commands/CommandManager';
+import { setAutoApplyEnabled } from '../../directEdit/autoApply';
+import { StudioChromeProvider } from '../../context/StudioChromeContext';
 
 function face(): FaceGeometry {
     return {
@@ -229,6 +239,17 @@ beforeEach(() => {
     hoisted.reviewCandidate.mockReset();
     hoisted.currentStudioScript.mockReset();
     hoisted.currentStudioScript.mockReturnValue('examples/test.kcad.ts');
+    hoisted.saveSourceToScript.mockReset();
+    hoisted.saveSourceToScript.mockResolvedValue(undefined);
+    hoisted.setCode.mockReset();
+    hoisted.setCode.mockImplementation((next: string) => { hoisted.workbench.code = next; });
+    // Real command stack over the mocked editor, as CodeProvider wires it.
+    Object.assign(hoisted.workbench, {
+        hasControlledCode: false,
+        commandManager: new CommandManager(() => ({ code: hoisted.workbench.code, setCode: hoisted.setCode })),
+    });
+    // The staging suites below cover the review path; auto-apply has its own.
+    setAutoApplyEnabled(false);
     delete window.__kernelcad_drag_entity;
 });
 
@@ -514,5 +535,118 @@ describe('DirectEditGizmo pointer release', () => {
         expect(hoisted.planDrag).not.toHaveBeenCalled();
         expect(hoisted.reviewCandidate).not.toHaveBeenCalled();
         expect(shellStore.getSnapshot().stagedEdit).toBeNull();
+    });
+});
+
+describe('DirectEditGizmo auto-apply', () => {
+    const TO_CODE = 'const base = box(1, 1, 1).translate(5, 0, 0);\nreturn base;';
+
+    beforeEach(() => {
+        setAutoApplyEnabled(true);
+    });
+
+    async function drag(): Promise<StagedEdit | null> {
+        return (await window.__kernelcad_drag_entity!({ anchor: PART_ANCHOR, delta: HOOK_DELTA })) as StagedEdit | null;
+    }
+
+    it('applies a clean drag at once as ONE undo step; undo restores the exact source', async () => {
+        const fromCode = hoisted.workbench.code;
+        stubPlan();
+        stubCandidate();
+        render(<DirectEditGizmo geometries={[geometry()]} itemNames={['base']} />);
+
+        const applied = await drag();
+
+        expect(applied?.toCode).toBe(TO_CODE);
+        expect(hoisted.saveSourceToScript).toHaveBeenCalledWith('examples/test.kcad.ts', TO_CODE);
+        expect(hoisted.setCode).toHaveBeenCalledTimes(1);
+        expect(hoisted.workbench.code).toBe(TO_CODE);
+        expect(shellStore.getSnapshot().stagedEdit).toBeNull();
+        expect(shellStore.getSnapshot().appliedEditHistory[0]).toMatchObject({ outcome: 'approved' });
+
+        const stack = (hoisted.workbench as unknown as { commandManager: CommandManager }).commandManager;
+        expect(stack.canUndo).toBe(true);
+        stack.undo();
+        expect(hoisted.workbench.code).toBe(fromCode);
+        expect(stack.canUndo).toBe(false);
+        // Disk follows the undo on the dev script target.
+        expect(hoisted.saveSourceToScript).toHaveBeenLastCalledWith('examples/test.kcad.ts', fromCode);
+    });
+
+    it('falls back to review with the reason when the candidate fails to run', async () => {
+        const fromCode = hoisted.workbench.code;
+        stubPlan();
+        stubCandidate({ ok: false, reviewed: false, error: 'ReferenceError: nope' });
+        render(<DirectEditGizmo geometries={[geometry()]} itemNames={['base']} />);
+
+        const staged = await drag();
+
+        expect(hoisted.setCode).not.toHaveBeenCalled();
+        expect(hoisted.saveSourceToScript).not.toHaveBeenCalled();
+        expect(hoisted.workbench.code).toBe(fromCode);
+        expect(shellStore.getSnapshot().stagedEdit).toBe(staged);
+        expect(staged?.reviewReason).toContain('failed to run');
+        expect(staged?.reviewReason).toContain('ReferenceError: nope');
+    });
+
+    it('falls back to review when the validity delta drops', async () => {
+        stubPlan();
+        stubCandidate({
+            reviewed: true,
+            delta: { fromInterferences: 0, toInterferences: 1, fromVolumeMm3: 0, toVolumeMm3: 42, fromOk: true, toOk: false },
+        });
+        render(<DirectEditGizmo geometries={[geometry()]} itemNames={['base']} />);
+
+        const staged = await drag();
+
+        expect(hoisted.setCode).not.toHaveBeenCalled();
+        expect(shellStore.getSnapshot().stagedEdit).toBe(staged);
+        expect(staged?.reviewReason).toContain('validity drops (interferences 0 → 1)');
+    });
+
+    it('stages instead of applying when the setting is off', async () => {
+        setAutoApplyEnabled(false);
+        stubPlan();
+        stubCandidate();
+        render(<DirectEditGizmo geometries={[geometry()]} itemNames={['base']} />);
+
+        const staged = await drag();
+
+        expect(hoisted.setCode).not.toHaveBeenCalled();
+        expect(shellStore.getSnapshot().stagedEdit).toBe(staged);
+        expect(staged?.reviewReason).toBeUndefined();
+    });
+
+    it('keeps the edit staged when the save fails, with the reason', async () => {
+        const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+        hoisted.saveSourceToScript.mockRejectedValueOnce(new Error('save failed (403)'));
+        stubPlan();
+        stubCandidate();
+        render(<DirectEditGizmo geometries={[geometry()]} itemNames={['base']} />);
+
+        const staged = await drag();
+
+        expect(hoisted.setCode).not.toHaveBeenCalled();
+        expect(staged?.reviewReason).toBe('Not auto-applied: save failed (403)');
+        errorSpy.mockRestore();
+    });
+
+    it('read-only viewer: no drag control, a hint on selection, and nothing saves', async () => {
+        stubPlan();
+        stubCandidate();
+        render(
+            <StudioChromeProvider value={{ viewerMode: true }}>
+                <DirectEditGizmo geometries={[geometry()]} itemNames={['base']} />
+            </StudioChromeProvider>,
+        );
+
+        expect(hoisted.transformProps).toBeNull();
+        expect(shellStore.getSnapshot().directEditNotice).toBe('This view is read-only. Direct edits are off.');
+
+        // The DEV automation hook still plans, but can only stage — never save.
+        const staged = await drag();
+        expect(hoisted.saveSourceToScript).not.toHaveBeenCalled();
+        expect(hoisted.setCode).not.toHaveBeenCalled();
+        expect(shellStore.getSnapshot().stagedEdit).toBe(staged);
     });
 });

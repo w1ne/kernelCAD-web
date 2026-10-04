@@ -14,6 +14,7 @@ vi.mock('./checkReachable', () => ({ checkReachableTool: vi.fn(async () => 'reac
 vi.mock('./checkMountingHoleConsistency', () => ({ checkMountingHoleConsistencyTool: vi.fn(async () => 'mounting') }));
 vi.mock('./checkLoadCapacity', () => ({ checkLoadCapacityTool: vi.fn(async () => 'load') }));
 vi.mock('./checkStaticHold', () => ({ checkStaticHoldTool: vi.fn(async () => 'static-hold') }));
+vi.mock('./checkBodyLikeness', () => ({ checkBodyLikenessTool: vi.fn(async () => 'body-likeness') }));
 
 import { verifyTool, type VerifyCheck } from './verify';
 import { validateAssemblyTool } from './validateAssembly';
@@ -25,6 +26,7 @@ import { checkReachableTool } from './checkReachable';
 import { checkMountingHoleConsistencyTool } from './checkMountingHoleConsistency';
 import { checkLoadCapacityTool } from './checkLoadCapacity';
 import { checkStaticHoldTool } from './checkStaticHold';
+import { checkBodyLikenessTool } from './checkBodyLikeness';
 
 const ROUTES: Array<[VerifyCheck, ReturnType<typeof vi.fn>, string]> = [
   ['assembly', validateAssemblyTool as never, 'assembly'],
@@ -36,6 +38,7 @@ const ROUTES: Array<[VerifyCheck, ReturnType<typeof vi.fn>, string]> = [
   ['mounting-holes', checkMountingHoleConsistencyTool as never, 'mounting'],
   ['load-capacity', checkLoadCapacityTool as never, 'load'],
   ['static-hold', checkStaticHoldTool as never, 'static-hold'],
+  ['body-likeness', checkBodyLikenessTool as never, 'body-likeness'],
 ];
 
 describe('verify dispatcher', () => {

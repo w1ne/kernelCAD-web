@@ -8,6 +8,22 @@ import { StatusBar } from './StatusBar';
 afterEach(() => cleanup());
 
 describe('StatusBar', () => {
+    it('shows the build version in the corner (moved here from the viewport)', () => {
+        render(
+            <StatusBar
+                isComputing={false}
+                error={null}
+                geometryCount={1}
+                selectedCount={0}
+                viewMode3D="shaded"
+                layoutMode="split"
+                activeCommandLabel={null}
+            />
+        );
+
+        expect(screen.getByTestId('status-version').textContent).toMatch(/^(v\d+\.\d+\.\d+.*|dev)$/);
+    });
+
     it('renders ready state with geometry and diagnostics summary', () => {
         render(
             <StatusBar

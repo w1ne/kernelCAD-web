@@ -116,4 +116,49 @@ describe('mechanism truth — physics gate (P6, criteria 5 + 6)', () => {
         );
         expect(physicsFailures).toEqual([]);
     }, 60000);
+    it('mechanicalJoint intent skips the drop-test (actively driven)', async () => {
+        // Same bare hinge as the failing case, but with a complete
+        // mechanicalJoint intent — authoring contract says the hinge is
+        // held by an actuator even though MJCF still emits passive joints.
+        await initOcct();
+        const { arm, kcad } = makeArm('driven-hinge');
+        const baseBody = kcad.box(40, 40, 30, true).translate(0, 0, -15);
+        const armBody = kcad.box(120, 20, 20, true).translate(70, 0, 0);
+        const j = kcad.joint.clevis({
+            parentBody: baseBody,
+            childBody: armBody,
+            axis: 'Y',
+            pivotParent: [0, 0, 15],
+            pivotChild: [0, 0, 0],
+            limitsDeg: [-90, 90],
+        });
+        const parent = arm.part('base', j.parentGeometry);
+        parent.connector('hinge', {
+            type: 'axis',
+            origin: { kind: 'vec3', value: j.parentConnector.origin },
+            axis: j.parentConnector.axis,
+        });
+        const child = arm.part('arm', j.childGeometry);
+        child.connector('hinge', {
+            type: 'axis',
+            origin: { kind: 'vec3', value: j.childConnector.origin },
+            axis: j.childConnector.axis,
+        });
+        arm.part('elbow-servo', kcad.box(20, 16, 12, true));
+        arm.mate('elbow', 'base.hinge', 'arm.hinge', 'revolute', {
+            limitsDeg: [-90, 90],
+        });
+        arm.mechanicalJoint('elbow-drive', {
+            mate: 'elbow',
+            actuator: 'elbow-servo',
+            shaft: 'base',
+            supports: ['base'],
+            output: 'arm',
+        });
+
+        const result = await checkMechanismTruth(arm, { physicsCheck: true });
+        const dropFailures = result.failures.filter((f) => f.code === 'mechanism.drops-on-release');
+        expect(dropFailures).toEqual([]);
+    }, 60000);
+
 });

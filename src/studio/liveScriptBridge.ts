@@ -1,6 +1,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { loadStudioScriptSource } from './scriptSource';
+import {
+    diskScriptSource,
+    noteDiskScriptSource,
+    shouldApplyDiskSource,
+} from './linkedScriptAutosave';
 
 // Live-edit bridge (dev only). The `kernelcad-mesh-endpoint` vite plugin
 // pushes a `kernelcad:script-changed` WS event whenever a `.kcad.ts` file
@@ -22,10 +27,15 @@ type CodeSetter = (code: string) => void;
 interface BridgeState {
     activeScript: string | null;
     setCodeRef: CodeSetter | null;
+    getCodeRef: (() => string) | null;
 }
 
 const hotData = import.meta.hot?.data as { liveScriptBridge?: BridgeState } | undefined;
-const state: BridgeState = hotData?.liveScriptBridge ?? { activeScript: null, setCodeRef: null };
+const state: BridgeState = hotData?.liveScriptBridge ?? {
+    activeScript: null,
+    setCodeRef: null,
+    getCodeRef: null,
+};
 if (hotData) hotData.liveScriptBridge = state;
 
 /**
@@ -34,9 +44,14 @@ if (hotData) hotData.liveScriptBridge = state;
  * on unmount. Passing a new target replaces the previous one (single slot —
  * Studio renders one script route at a time).
  */
-export function registerLiveScriptTarget(script: string, setCode: CodeSetter): void {
+export function registerLiveScriptTarget(
+    script: string,
+    setCode: CodeSetter,
+    getCode?: () => string,
+): void {
     state.activeScript = script.replace(/^\.\//, '');
     state.setCodeRef = setCode;
+    state.getCodeRef = getCode ?? null;
 }
 
 export function unregisterLiveScriptTarget(setCode: CodeSetter): void {
@@ -46,6 +61,7 @@ export function unregisterLiveScriptTarget(setCode: CodeSetter): void {
     if (state.setCodeRef !== setCode) return;
     state.activeScript = null;
     state.setCodeRef = null;
+    state.getCodeRef = null;
 }
 
 if (import.meta.hot) {
@@ -54,7 +70,15 @@ if (import.meta.hot) {
         if (data.file !== state.activeScript) return;
         const script = state.activeScript;
         loadStudioScriptSource(script)
-            .then((source) => state.setCodeRef?.(source))
+            .then((source) => {
+                const editorCode = state.getCodeRef?.() ?? null;
+                const disk = diskScriptSource();
+                const baseline = disk && disk.script === script ? disk.source : null;
+                const apply = shouldApplyDiskSource(editorCode, baseline, source);
+                noteDiskScriptSource(script, source);
+                // A disk echo must not wipe keystrokes that have not been saved yet.
+                if (apply) state.setCodeRef?.(source);
+            })
             .catch((error) => console.error('Live script reload failed:', error));
     });
 }

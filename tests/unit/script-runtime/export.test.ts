@@ -54,7 +54,7 @@ describe('runAndExport', () => {
   });
 
   it('rejects DXF export of a non-planar solid with export.dxf.non-planar', async () => {
-    const code = 'return box(10, 10, 10);'; // 3D solid, no planar wire source
+    const code = 'return sphere(10);'; // 3D solid, not a flat part
     const result = await runAndExport({ code, fileName: 'demo.kcad.ts', format: 'dxf' });
     expect(result.bytes.length).toBe(0);
     expect(result.diagnostics.find(d => d.code === 'export.dxf.non-planar')).toBeDefined();

@@ -82,6 +82,26 @@ export interface ReviewCadInput {
   includePhysicalUseCaseJointReactions?: boolean;
   includePhysicalUseCaseJointStructure?: boolean;
   physicalUseCaseReachabilitySamplesPerMate?: number;
+  /**
+   * Wall-clock budget for the whole review (ms). Heavy stages (pose envelope,
+   * physical use case, mechanism sweep) are skipped once it is spent, and the
+   * result lists them in `skippedStages` instead of the call timing out.
+   * Default {@link DEFAULT_REVIEW_TIME_BUDGET_MS}.
+   */
+  timeBudgetMs?: number;
+}
+
+/** Default `timeBudgetMs`: well inside a 300 s MCP client timeout, since a
+ *  stage that has started runs to completion. */
+export const DEFAULT_REVIEW_TIME_BUDGET_MS = 90_000;
+
+/** Timing / budget report shared by both result variants. */
+export interface ReviewTimingReport {
+  /** Wall-clock ms per stage that ran (review_cad always sets it). */
+  stageTimingsMs?: Partial<Record<ReviewPipelineStageName, number>>;
+  /** Stages skipped because the time budget was spent; their checks did
+   *  NOT run, so the verdict is partial (mechanism → 'unverified'). */
+  skippedStages?: Array<{ stage: ReviewPipelineStageName; reason: string }>;
 }
 
 export interface RepairContext {
@@ -109,7 +129,7 @@ export interface RepairContext {
  */
 export type MechanismVerdict = 'real' | 'broken' | 'unverified';
 
-export type ReviewCadOutput =
+export type ReviewCadOutput = ReviewTimingReport & (
   | {
       ok: true;
       featureCount: number;
@@ -186,7 +206,7 @@ export type ReviewCadOutput =
       /** Deterministic geometric contact graph (see the `ok: true` variant).
        *  Present whenever a scene was built, even when `ok: false`. */
       geometry?: ContactGraphResult;
-    };
+    });
 
 type ReviewDiagnostic =
   | CompilerDiagnostic
@@ -212,11 +232,13 @@ export const REVIEW_PIPELINE_STAGES = [
 export type ReviewPipelineStageName = typeof REVIEW_PIPELINE_STAGES[number];
 
 export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCadOutput> {
-  const { evaluation, model } = await runEvaluateSourceStage(input);
+  const clock = new StageClock(input.timeBudgetMs ?? DEFAULT_REVIEW_TIME_BUDGET_MS);
+  const { evaluation, model } = await clock.time('evaluate-source', () => runEvaluateSourceStage(input));
   if (evaluation.exitCode !== 0 || !model) {
     clearActiveMcpSession();
     const diagnostics = withNextActions(evaluation.diagnostics);
     return {
+      ...clock.report(),
       ok: false,
       featureCount: evaluation.featureCount,
       diagnostics,
@@ -230,6 +252,7 @@ export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCa
   const { arm, missingAssemblyMessage } = runSelectAssemblyStage(model, input);
   if (!arm) {
     return {
+      ...clock.report(),
       ok: false,
       featureCount: evaluation.featureCount,
       diagnostics: [],
@@ -238,18 +261,16 @@ export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCa
     };
   }
 
-  const defaultPoseGeometry = runDefaultPoseGeometryStage(model, input);
-  const mechanicalReview = await runMechanicalReviewStage(
+  const defaultPoseGeometry = await clock.time('default-pose-geometry', async () => runDefaultPoseGeometryStage(model, input));
+  const mechanicalReview = await clock.time('mechanical-review', () => runMechanicalReviewStage(
     arm,
     input,
     defaultPoseGeometry.rawInterferencePairs,
     defaultPoseGeometry.wantInterference,
-  );
-  const poseEnvelope = await runPoseEnvelopeStage(arm, model, input, mechanicalReview.includePoseEnvelope);
-  const physicalUseCases = await runPhysicalUseCaseStage(arm, input, poseEnvelope);
-
+  ));
+  const { poseEnvelope, physicalUseCases, mechanism, mechanismFailures } =
+    await runBudgetedStages(clock, arm, model, input, mechanicalReview.includePoseEnvelope);
   const diagnostics = collectReviewDiagnostics(evaluation, mechanicalReview, physicalUseCases, poseEnvelope);
-  const { mechanism, mechanismFailures } = await runMechanismTruthStage(arm, input);
 
   const { fitness, ok, repairContext } = await runFitnessAndRepairStage({
     arm,
@@ -262,36 +283,8 @@ export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCa
     poseEnvelope,
   });
 
-  if (ok) {
-    return {
-      ok: true,
-      featureCount: evaluation.featureCount,
-      diagnostics,
-      assembly: arm.name,
-      validator: {
-        status: mechanicalReview.validator.status,
-        diagnostics: [...mechanicalReview.validator.diagnostics],
-        partCount: mechanicalReview.validator.partCount,
-        jointCount: mechanicalReview.validator.jointCount,
-      },
-      ...(poseEnvelope !== undefined ? { poseEnvelope } : {}),
-      ...(poseEnvelope !== undefined ? { connectorWorkspace: poseEnvelope.connectorWorkspace } : {}),
-      ...(poseEnvelope?.gripperAperture !== undefined ? { gripperAperture: poseEnvelope.gripperAperture } : {}),
-      physicalUseCaseStaticCertificates: physicalUseCases.staticCertificates,
-      physicalUseCaseJointReactionCertificates: physicalUseCases.jointReactionCertificates,
-      physicalUseCaseJointStructuralCertificates: physicalUseCases.jointStructuralCertificates,
-      fitness,
-      repairContext,
-      rawInterferencePairs: defaultPoseGeometry.rawInterferencePairs,
-      interferenceSummary: defaultPoseGeometry.interferenceSummary,
-      mechanism,
-      mechanismFailures,
-      ...(defaultPoseGeometry.geometry !== undefined ? { geometry: defaultPoseGeometry.geometry } : {}),
-    };
-  }
-
-  return {
-    ok: false,
+  const common = {
+    ...clock.report(),
     featureCount: evaluation.featureCount,
     diagnostics,
     assembly: arm.name,
@@ -309,13 +302,79 @@ export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCa
     physicalUseCaseJointStructuralCertificates: physicalUseCases.jointStructuralCertificates,
     fitness,
     repairContext,
-    suggestedRepairPrompt: buildSuggestedRepairPrompt(diagnostics, fitness, input),
     rawInterferencePairs: defaultPoseGeometry.rawInterferencePairs,
     interferenceSummary: defaultPoseGeometry.interferenceSummary,
     mechanism,
     mechanismFailures,
     ...(defaultPoseGeometry.geometry !== undefined ? { geometry: defaultPoseGeometry.geometry } : {}),
   };
+  return ok
+    ? { ...common, ok: true }
+    : { ...common, ok: false, suggestedRepairPrompt: buildSuggestedRepairPrompt(diagnostics, fitness, input) };
+}
+
+/**
+ * The heavy stages (pose envelope, physical use case, mechanism sweep) run
+ * only while the review's time budget remains; a skipped stage is recorded on
+ * the clock and never silently read as a pass (mechanism → 'unverified').
+ */
+async function runBudgetedStages(
+  clock: StageClock,
+  arm: Assembly,
+  model: BuiltModel,
+  input: ReviewCadInput,
+  includePoseEnvelope: boolean,
+) {
+  const poseEnvelope = includePoseEnvelope && clock.admit('pose-envelope')
+    ? await clock.time('pose-envelope', () => runPoseEnvelopeStage(arm, model, input, true))
+    : undefined;
+  const physicalUseCases = clock.admit('physical-use-case')
+    ? await clock.time('physical-use-case', () => runPhysicalUseCaseStage(arm, input, poseEnvelope))
+    : await runPhysicalUseCaseStage(arm, { requirePhysicalUseCase: input.requirePhysicalUseCase }, undefined);
+  const { mechanism, mechanismFailures } = clock.admit('mechanism-truth')
+    ? await clock.time('mechanism-truth', () => runMechanismTruthStage(arm, input))
+    : { mechanism: 'unverified' as MechanismVerdict, mechanismFailures: [] as readonly CompilerDiagnostic[] };
+  return { poseEnvelope, physicalUseCases, mechanism, mechanismFailures };
+}
+
+/** Per-stage wall clock against the review's time budget. */
+class StageClock {
+  private readonly start = Date.now();
+  private readonly timings: Partial<Record<ReviewPipelineStageName, number>> = {};
+  private readonly skipped: Array<{ stage: ReviewPipelineStageName; reason: string }> = [];
+
+  private readonly budgetMs: number;
+
+  constructor(budgetMs: number) {
+    this.budgetMs = budgetMs;
+  }
+
+  async time<T>(stage: ReviewPipelineStageName, run: () => Promise<T>): Promise<T> {
+    const t0 = Date.now();
+    try {
+      return await run();
+    } finally {
+      this.timings[stage] = Date.now() - t0;
+    }
+  }
+
+  /** True when `stage` may start; otherwise records it as skipped. */
+  admit(stage: ReviewPipelineStageName): boolean {
+    const elapsed = Date.now() - this.start;
+    if (elapsed < this.budgetMs) return true;
+    this.skipped.push({
+      stage,
+      reason: `time budget spent (${elapsed} ms of ${this.budgetMs} ms); raise timeBudgetMs or review a smaller assembly to run it`,
+    });
+    return false;
+  }
+
+  report(): ReviewTimingReport {
+    return {
+      stageTimingsMs: { ...this.timings },
+      ...(this.skipped.length > 0 ? { skippedStages: [...this.skipped] } : {}),
+    };
+  }
 }
 
 async function runEvaluateSourceStage(input: ReviewCadInput) {
@@ -426,6 +485,10 @@ async function runPoseEnvelopeStage(
   const dfm = findDfmSpec(model.records);
   const candidateScene = model.rootShape ?? model.tailShape;
   const loweredScene = isSceneBackend(candidateScene) ? candidateScene : undefined;
+  const ignoredPairs = new Set<string>([
+    ...arm.__ignoreInterference().map(([a, b]) => pairKey(a, b)),
+    ...(dfm?.ignore ?? []).map(([a, b]) => pairKey(a, b)),
+  ]);
   return includePoseEnvelope
     ? reviewPoseEnvelope(arm, {
         includeInterference: input.includeInterference ?? true,
@@ -435,11 +498,11 @@ async function runPoseEnvelopeStage(
         samplesPerMate: input.samplesPerMate,
         combinatorial: input.combinatorial,
         loweredScene,
+        ...(ignoredPairs.size > 0 ? { ignoredPairs } : {}),
         ...(dfm?.minClearance !== undefined
           ? {
               minClearanceMm: dfm.minClearance,
               includeArticulatedMateClearance: dfm.includeArticulatedMates,
-              ignoredPairs: new Set(dfm.ignore.map(([a, b]) => pairKey(a, b))),
             }
           : {}),
       })

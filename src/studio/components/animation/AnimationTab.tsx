@@ -88,7 +88,7 @@ export function AnimationTab(): JSX.Element {
         <div className="flex flex-col" data-testid="animation-tab">
             <div className="flex items-baseline justify-between px-3 pt-2 pb-1">
                 <span className="text-xs text-gray-200 truncate" title={name}>{name}</span>
-                <span className="text-[10px] text-gray-500">
+                <span className="text-2xs text-gray-500">
                     {(durationMs / 1000).toFixed(2)}s · {fps} fps
                 </span>
             </div>
@@ -118,7 +118,7 @@ export function AnimationTab(): JSX.Element {
 
             {canDrive && collisions.length > 0 && (
                 <div
-                    className="mx-3 mt-2 px-2 py-1.5 text-[10px] leading-tight text-amber-200/90 bg-amber-950/30 border border-amber-900/60 rounded"
+                    className="mx-3 mt-2 px-2 py-1.5 text-2xs leading-tight text-amber-200/90 bg-amber-950/30 border border-amber-900/60 rounded"
                     data-testid="animation-collision-warning"
                 >
                     ⚠ {collisions.length} pose collision{collisions.length === 1 ? '' : 's'} in

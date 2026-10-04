@@ -29,12 +29,17 @@ The first call in any model: a solid primitive, or a 2D profile to extrude.
 | Call | What it does |
 |---|---|
 | `box(x, y, z, centered?, opts?) => Shape` | Axis-aligned box. |
-| `cylinder(h, r, segments?, opts?) => Shape` | Z-axis cylinder; bottom on the XY plane, height h, radius r. |
+| `cylinder(h, r, segments?, opts?) => Shape` | Z-axis cylinder centred on the Z axis in X/Y; bottom on the XY plane (spans z = 0..h), radius r. |
 | `sphere(r) => Shape` | Sphere centered at the origin, radius r. |
 | `torus(majorR: number, minorR: number, segments?: number) => Shape` | Solid torus centered on world origin, axis along world +Z. |
 | `spring({ length, coilRadius, wireRadius, turns, axis?, pointsPerTurn?, endStyle?, segments? }) => Shape` | Build a helical spring as a circular wire profile swept along a smooth B-spline helix spine, producing one continuous watertight solid. |
-| `extrudeRect(w, h, height, opts?) => Shape` | Extrude a w-by-h rectangle (XY) by `height` along Z. |
-| `extrudeCircle(r, height, opts?) => Shape` | Extrude a radius-r circle (XY) by `height` along Z. |
+| `spurGear({ module, teeth, faceWidth, pressureAngle?, bore?, backlash? }) => Shape` | Build an involute spur gear as ONE manifold solid. |
+| `internalSpurGear({ module, teeth, faceWidth, pressureAngle?, backlash?, rimThickness?, profileShift? }) => Shape` | Build an involute INTERNAL / ring gear as ONE manifold solid: outer rim minus a bore whose flanks are the external spur profile mirrored through the pitch circle. |
+| `ringGear({ module, teeth, faceWidth, pressureAngle?, backlash?, rimThickness?, profileShift? }) => Shape` | Alias of internalSpurGear — involute internal / ring gear. |
+| `internalGear({ module, teeth, faceWidth, pressureAngle?, backlash?, rimThickness?, profileShift? }) => Shape` | Alias of internalSpurGear — involute internal gear. |
+| `planetaryToothCompatibility({ sunTeeth, planetTeeth, ringTeeth }) => void` | Validate coaxial planetary tooth counts: throws feature.invalid-args unless ringTeeth === sunTeeth + 2·planetTeeth (same module and pressure angle assumed). |
+| `extrudeRect(w, h, height, opts?) => Shape` | Extrude a w-by-h rectangle (XY, centred on the origin) by `height` along Z (spans z = 0..height). |
+| `extrudeCircle(r, height, opts?) => Shape` | Extrude a radius-r circle (XY, centred on the origin) by `height` along Z (spans z = 0..height). |
 | `extrudePolygon(points, depth, opts?) => Shape` | Extrude a 2D polygon (array of [x, y] points; coordinates and `depth` accept ParamRefs) by `depth` along Z. |
 | `extrudeRoundedRect(width, height, radius, depth, opts?) => Shape` | Extrude a rounded rectangle (corner radius) by `depth` along Z. |
 | `sheetMetal(profile: Sketch, { thickness, kFactor, faceLabels? }) => Shape` | Build a sheet-metal body from a closed planar Sketch. |
@@ -241,7 +246,7 @@ Bring in vendor geometry, and write models back out.
 
 | Call | What it does |
 |---|---|
-| `lib : { fromSTEP(path: string): Promise<Shape>; fromBREP(path: string): Promise<Shape>; fromSTL(path: string, opts?: { tolerance?: number; allowOpen?: boolean; maxTriangles?: number }): Promise<Shape>; fromDXF(path: string, opts?: { units?: LengthUnit; tolerance?: number }): Promise<Sketch[]>; fromSVG(path: string, opts?: { units?: LengthUnit; tolerance?: number; curveTolerance?: number }): Promise<Sketch[]> }` | Parts library namespace. |
+| `lib : { fromSTEP(path: string): Promise<Shape>; fromBREP(path: string): Promise<Shape>; fromSTL(path: string, opts?: { tolerance?: number; allowOpen?: boolean; maxTriangles?: number }): Promise<Shape>; fromDXF(path: string, opts?: { units?: LengthUnit; tolerance?: number }): Promise<Sketch[]>; fromSVG(path: string, opts?: { units?: LengthUnit; tolerance?: number; curveTolerance?: number }): Promise<Sketch[]>; findPart(query: string, opts?): Promise<FindPartResult>; fetchPart(idOrQuery: string, opts?): Promise<Shape>; standard: StandardParts }` | Parts library namespace. |
 | `Scene.toCompound() => Shape` | OCCT TopoDS_Compound — groups bodies without booleaning. |
 
 ## Annotate & present

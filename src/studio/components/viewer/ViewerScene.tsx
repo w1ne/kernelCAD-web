@@ -16,6 +16,7 @@ import { InteractionHandler } from "./controllers/InteractionHandler";
 import { HighlightOverlay } from "./overlays/HighlightOverlay";
 import { SnapIndicator } from "./overlays/SnapIndicator";
 import { SelectionOutline } from "./overlays/SelectionOutline";
+import { CodeLinkOverlay } from "./overlays/CodeLinkOverlay";
 import { GeometryLayer } from "./layers/GeometryLayer";
 import { SketchLayer } from "./layers/SketchLayer";
 import { DirectEditGizmo } from "./DirectEditGizmo";
@@ -199,6 +200,7 @@ function SceneOverlays({
             <HighlightOverlay hovered={hoveredItem} geometries={geometries} />
             <SnapIndicator snap={snapPoint} />
             <SelectionOutline geometries={geometries} itemNames={itemNames} selectedItemIds={selectedItemIds} />
+            <CodeLinkOverlay geometries={geometries} itemNames={itemNames} />
         </>
     );
 }

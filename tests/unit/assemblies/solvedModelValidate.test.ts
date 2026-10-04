@@ -49,17 +49,45 @@ describe('Assembly.solvedModel({validate})', () => {
 
   it('throws on validation issue when mode=error and an error-severity diagnostic exists', async () => {
     const { arm } = makeTriangleArm();
-    // The triangle fixture has 3 unit boxes at the same world origin (because
-    // their connectors mate at [0,0,0]), so the v0.6 hard gate sees pairwise
-    // BREP overlap and throws on `assembly.interference.overlap` BEFORE the
-    // mate-solver's over-constrained status is reached. Either error-severity
-    // diagnostic satisfies the gate; the regex covers both so a future
-    // re-ordering (e.g. interferences computed only when mate-solver clean)
-    // doesn't silently rewrite the assertion.
+    // Prefer mate-solver structural failures over co-occurring BREP overlap so
+    // agents see over-constrained / closed-loop DX instead of only interference.
     await expect(arm.solvedModel({}, { validate: 'error' })).rejects.toThrow(
-      /over-constrained|invalid-args|overlap|interference/,
+      /over-constrained/,
     );
   });
+
+  it('prefers closed-loop did-not-converge over co-occurring interference under validate:error', async () => {
+    // Articulated closed loop (revolute edge) + overlapping boxes at origin.
+    // Historically interference was collected first and became the thrown
+    // KernelError, hiding the v0.6.0 unsupported-loop banner from ChatGPT.
+    const { arm, kcad } = makeArm();
+    arm
+      .part('ground', kcad.box(10, 10, 10))
+      .connector('p', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } })
+      .connector('axis', {
+        type: 'axis',
+        origin: { kind: 'vec3', value: [0, 0, 0] },
+        axis: [0, 0, 1],
+      });
+    arm
+      .part('crank', kcad.box(10, 10, 10))
+      .connector('q', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } })
+      .connector('r', { type: 'frame', origin: { kind: 'vec3', value: [1, 0, 0] } });
+    arm
+      .part('rocker', kcad.box(10, 10, 10))
+      .connector('s', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } })
+      .connector('axis', {
+        type: 'axis',
+        origin: { kind: 'vec3', value: [1, 0, 0] },
+        axis: [0, 0, 1],
+      });
+    arm.mate('m1', 'ground.p', 'crank.q', 'fastened');
+    arm.mate('m2', 'crank.r', 'rocker.s', 'fastened');
+    arm.mate('m3', 'rocker.axis', 'ground.axis', 'revolute');
+    await expect(arm.solvedModel({}, { validate: 'error' })).rejects.toThrow(
+      /did not converge|UNSUPPORTED on v0\.6\.0|articulated closed/i,
+    );
+  }, 60_000);
 
   it('does NOT throw on mode=warn even with error-severity diagnostics', async () => {
     const { arm } = makeTriangleArm();

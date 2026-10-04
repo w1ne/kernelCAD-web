@@ -5,16 +5,20 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import { StagedEditSlot } from '../StagedEditSlot';
 import { fingerprintStudioScript, shellStore } from '../store/shellStore';
+import { CommandManager } from '../../authoring/commands/CommandManager';
+import { resetAutoApplySettingCache, AUTO_APPLY_STORAGE_KEY } from '../directEdit/autoApply';
 
 const setCodeMock = vi.fn();
 let workbenchCode = '';
+// Real command stack over the mocked editor, as CodeProvider wires it.
+let commandManager = new CommandManager(() => ({ code: workbenchCode, setCode: setCodeMock }));
 
 const { saveSourceToScriptMock } = vi.hoisted(() => ({
     saveSourceToScriptMock: vi.fn(),
 }));
 
 vi.mock('../context/WorkbenchContext', () => ({
-    useWorkbench: () => ({ code: workbenchCode, setCode: setCodeMock }),
+    useWorkbench: () => ({ code: workbenchCode, setCode: setCodeMock, commandManager, hasControlledCode: false }),
 }));
 
 vi.mock('../directEdit/saveSource', () => ({
@@ -27,6 +31,9 @@ beforeEach(() => {
     saveSourceToScriptMock.mockReset();
     saveSourceToScriptMock.mockResolvedValue(undefined);
     workbenchCode = '';
+    commandManager = new CommandManager(() => ({ code: workbenchCode, setCode: setCodeMock }));
+    localStorage.removeItem(AUTO_APPLY_STORAGE_KEY);
+    resetAutoApplySettingCache();
 });
 
 afterEach(() => {
@@ -34,11 +41,18 @@ afterEach(() => {
 });
 
 describe('StagedEditSlot', () => {
-    it('renders the auto-apply placeholder when no staged edit', () => {
-        const { getByText, getByRole } = render(<StagedEditSlot />);
-        expect(getByText(/Auto-apply mode · toggle off to enable review/i)).toBeDefined();
-        const button = getByRole('button', { name: /review edits/i }) as HTMLButtonElement;
-        expect(button.disabled).toBe(true);
+    it('renders a working auto-apply toggle (default on, persisted locally)', () => {
+        const { getByRole, getByTestId } = render(<StagedEditSlot />);
+        const toggle = getByRole('checkbox', { name: /auto-apply ui edits/i }) as HTMLInputElement;
+        expect(toggle.checked).toBe(true);
+        expect(getByTestId('staged-edit-auto-apply').textContent).toContain('Agent edits wait for review');
+        fireEvent.click(toggle);
+        expect(toggle.checked).toBe(false);
+        expect(localStorage.getItem(AUTO_APPLY_STORAGE_KEY)).toBe('false');
+        resetAutoApplySettingCache();
+        cleanup();
+        const again = render(<StagedEditSlot />).getByRole('checkbox', { name: /auto-apply ui edits/i }) as HTMLInputElement;
+        expect(again.checked).toBe(false);
     });
 
     it('renders intent + diff + approve/reject when stagedEdit is populated', () => {
@@ -99,7 +113,7 @@ describe('StagedEditSlot', () => {
         shellStore.clearStagedEdit();
     });
 
-    it('Approve calls workbench.setCode(toCode) and clears the slot', () => {
+    it('Approve calls workbench.setCode(toCode) and clears the slot', async () => {
         const toCode = 'const a = box(10);\nreturn a;';
         const fromCode = 'return box(10);';
         workbenchCode = fromCode;
@@ -111,7 +125,9 @@ describe('StagedEditSlot', () => {
             source: { kind: 'agent', label: 'Studio Generate' },
         });
         const { getByTestId } = render(<StagedEditSlot />);
-        fireEvent.click(getByTestId('staged-edit-approve'));
+        await act(async () => {
+            fireEvent.click(getByTestId('staged-edit-approve'));
+        });
         expect(setCodeMock).toHaveBeenCalledTimes(1);
         expect(setCodeMock).toHaveBeenCalledWith(toCode);
         expect(shellStore.getSnapshot().stagedEdit).toBeNull();

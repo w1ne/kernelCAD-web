@@ -6,10 +6,11 @@
 // discoverable via list_api as the single entry "export the model to a file".
 // Replaces the legacy `export_stl` shim (removed in the C2 cull).
 //
-// Format enum: stl | step | dxf | 3mf | glb | svg-drawing | urdf | srdf | sdf-gazebo.
+// Format enum: stl | step | dxf | 3mf | glb | svg-drawing | pdf-drawing | urdf | srdf | sdf-gazebo.
 // URDF / SDF-Gazebo exports also write companion meshes/<part>.stl files
 // next to output_path (the emitted XML references them by relative path);
-// the written paths are reported in `mesh_files`.
+// the written paths are reported in `mesh_files`. A multi-part DXF export
+// writes parts/<part>.dxf the same way, reported in `part_files`.
 
 import { writeFile, mkdir } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
@@ -25,6 +26,8 @@ import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic'
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
 import { validateOutputPath } from '../../script-runtime/safeOutputPath';
 import { loadMcpScriptSource } from '../runMcpScript';
+import type { StressInfillReport } from '../../script-runtime/stressInfillExport';
+import { infillOutput, withInfillOutDir, type StressInfillImages } from './stressInfillRenders';
 
 export interface ExportModelInput {
   file?: string;
@@ -49,9 +52,14 @@ export interface ExportModelOutput {
   /** Companion mesh files written next to output_path (URDF / SDF exports
    *  reference per-link meshes by relative path). */
   mesh_files?: string[];
-  /** svg-drawing placement report: `placed` / `overlapped` counts, `byKind`,
+  /** Per-part DXF files written next to output_path (`parts/<part>.dxf`) for a
+   *  multi-part dxf export with the default `layout: 'per-part'`. */
+  part_files?: string[];
+  /** svg-drawing / pdf-drawing placement report: `placed` / `overlapped` counts, `byKind`,
    *  the datum reference frame, and every annotation drawn. */
   drawing_report?: DrawingReport;
+  /** 3mf with options.infill: band table, saving estimate, FEA peaks, PNGs. */
+  infill?: StressInfillReport & { images: StressInfillImages };
   diagnostics?: CompilerDiagnostic[];
   error?: string;
 }
@@ -91,6 +99,16 @@ async function writeExportPayload(
   return undefined;
 }
 
+/** Companion files go in `part_files` for a multi-part DXF, `mesh_files`
+ *  for robot-description meshes; nothing when none were written. */
+function companionFilesField(
+  format: ExportFormat,
+  files: string[],
+): Pick<ExportModelOutput, 'mesh_files' | 'part_files'> {
+  if (files.length === 0) return {};
+  return format === 'dxf' ? { part_files: files } : { mesh_files: files };
+}
+
 /**
  * MCP `export_model` tool — runs a kernelCAD script and writes the geometry
  * to `output_path` in the requested `format`. The single, unified write-side
@@ -123,9 +141,10 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
 
   // `no_verify` mirrors export_part: plumb `verify: false` into the STL
   // options bag (the runtime gate is default-on).
-  const effectiveOptions = format === 'stl' && input.no_verify
+  let effectiveOptions: ExportOptions | undefined = format === 'stl' && input.no_verify
     ? { ...(options ?? {}), format: 'stl' as const, verify: false }
     : options;
+  effectiveOptions = withInfillOutDir(format, effectiveOptions, output_path);
 
   let result;
   try {
@@ -170,14 +189,18 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
     return { ok: false, error: writeError };
   }
 
+  const diagnostics = [...result.diagnostics];
+  const infill = await infillOutput(result.infillReport, options, diagnostics);
+
   return {
     ok: errorDiagnostics.length === 0,
     output_path: finalPath,
     byte_count: result.bytes.byteLength,
     feature_count: result.featureCount,
     format,
-    ...(meshFiles.length > 0 ? { mesh_files: meshFiles } : {}),
+    ...companionFilesField(format, meshFiles),
     ...(result.drawingReport === undefined ? {} : { drawing_report: result.drawingReport }),
-    diagnostics: withNextActions(result.diagnostics),
+    ...infill,
+    diagnostics: withNextActions(diagnostics),
   };
 }

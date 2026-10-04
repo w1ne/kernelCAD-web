@@ -16,8 +16,17 @@ interface ImportMetaEnv {
   readonly VITE_SUPABASE_URL: string;
   readonly VITE_SUPABASE_ANON_KEY: string;
   readonly VITE_API_BASE_URL: string;
+  /** Feedback endpoint override; defaults to https://kernelcad.com/api/feedback. */
+  readonly VITE_FEEDBACK_URL?: string;
 }
 
 interface ImportMeta {
   readonly env: ImportMetaEnv;
+}
+
+/** Kernel API declarations for the Studio code editor, generated at build
+ *  time by `scripts/editorTypings.ts` (`kernelCadEditorTypingsPlugin`). */
+declare module 'virtual:kcad-editor-typings' {
+  const typings: string;
+  export default typings;
 }

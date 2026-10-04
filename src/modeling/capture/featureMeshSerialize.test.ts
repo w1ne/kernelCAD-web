@@ -210,4 +210,21 @@ describe('featureMeshSerialize', () => {
     expect(planeFace.vertices).toBeInstanceOf(Float32Array);
     expect(cylFace.indices).toBeInstanceOf(Uint32Array);
   });
+
+  it('round-trips face / edge ownership for the selection ↔ code link', () => {
+    const original: FeatureMesh = {
+      featureId: 'hole_1',
+      featureKind: 'hole',
+      predecessors: ['box_1'],
+      faces: [],
+      edges: new Float32Array(12),
+      faceOwners: ['box_1', 'hole_1'],
+      edgeRanges: [0, 2, 2, 2],
+      edgeOwners: ['box_1', 'hole_1'],
+    };
+    const restored = rehydrateFromBridge(JSON.parse(JSON.stringify(serializeForBridge(original))));
+    expect(restored.faceOwners).toEqual(['box_1', 'hole_1']);
+    expect(restored.edgeRanges).toEqual([0, 2, 2, 2]);
+    expect(restored.edgeOwners).toEqual(['box_1', 'hole_1']);
+  });
 });

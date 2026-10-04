@@ -76,7 +76,7 @@ export function SmartWidget() {
 
             {isOpen && (
                 <div className="bg-[#1e1e1e] border border-[#444] p-3 rounded-lg shadow-xl w-64 backdrop-blur-md">
-                    <div className="text-[10px] text-gray-400 mb-1 uppercase tracking-wide">
+                    <div className="text-2xs text-gray-400 mb-1 uppercase tracking-wide">
                         Editing: <span className="text-white font-mono">{selectedItemId}</span>
                     </div>
                     <input

@@ -5,13 +5,34 @@ import { dirname, relative, resolve } from 'node:path';
 import { fileReadErrorMessage } from '../../../shared/diagnostics/fileReadError';
 import type { GripperApertureRequest } from '../../../modeling/mates/gripperAperture';
 import type { MechanismFitnessResult } from '../../../modeling/mates/mechanismFitness';
-import type { ContactGraphResult } from '../../../modeling/runtime/contactGraph';
 import {
   runReviewPipeline,
   type RepairContext,
   type ReviewCadInput,
   type ReviewCadOutput,
 } from '../../review/reviewPipeline';
+import {
+  assertLikenessPublishReady,
+  type BBox,
+  type StillVerdict,
+  type WheelSpec,
+} from '../../likeness/publishGate';
+import {
+  appendRevisionAssistPrompt,
+  buildRevisionAssist,
+  type RevisionAssist,
+} from '../../loop/revisionAssist';
+import {
+  isSolidOnlyReviewMiss,
+  solidOnlyFunctionalReview,
+} from '../../loop/designLoopSolidOnly';
+import {
+  geometryReviewFacts,
+  scriptQualityFacts,
+} from '../../loop/designLoopQualityFacts';
+export { geometryReviewFacts } from '../../loop/designLoopQualityFacts';
+import { consensusDecision, selectDesignLoopConsensus, type DesignLoopConsensus } from './designLoopConsensus';
+export type { DesignLoopConsensus } from './designLoopConsensus';
 
 export interface DesignLoopAttemptInput {
   id?: string;
@@ -51,8 +72,43 @@ export interface DesignLoopInput {
   allowReviewWarnings?: string[];
   requireVisualReview?: boolean;
   requirePhysicalAcceptance?: boolean;
+  /**
+   * When 'automotive', accepted visualReview.checks must also cover organic-body
+   * likeness stills (side-body-over-wheels, side-cabin-aft, rear-haunch,
+   * ortho-proportions-vs-reference). Pair with verify({ check: 'body-likeness' }).
+   */
+  likenessProfile?: 'automotive';
+  /**
+   * Body-likeness inputs for the hard publish gate when likenessProfile is
+   * 'automotive'. Still verdicts may also be derived from visualReview.checks
+   * that use the automotive still codes. Missing inputs fail the attempt with
+   * reference.likeness.gate-required — do not claim success.
+   */
+  bodyLikeness?: DesignLoopBodyLikenessInput;
+  /**
+   * When true (default), failing attempts with repairable feature diagnostics
+   * (boolean miss, oversized fillet, …) run bounded repair_script and attach
+   * revisionAssist suggested patches / autoApplied.suggestedCode. Does not
+   * autonomously rewrite full CAD models.
+   */
+  autoRevise?: boolean;
+  /** Treat attempts as N candidates and pick the geometric-consensus medoid
+   *  (see designLoopConsensus.ts). Default false: sequential attempts. */
+  consensus?: boolean;
   outputRecordPath?: string;
   recordTitle?: string;
+}
+
+export interface DesignLoopBodyLikenessInput {
+  body_bbox?: BBox;
+  cabin_bbox?: BBox;
+  wheels?: WheelSpec[];
+  length_axis?: 'x' | 'y';
+  still_verdicts?: StillVerdict[];
+  require_stills?: boolean;
+  footprint_margin_mm?: number;
+  max_body_above_wheel_top_mm?: number;
+  min_overhang_mm?: number;
 }
 
 export interface DesignLoopAttemptResult {
@@ -71,6 +127,8 @@ export interface DesignLoopAttemptResult {
   blockingReasons: string[];
   mechanismSummary?: MechanismFitnessResult['mechanismSummary'];
   nextActionPrompt: string;
+  /** Structured revision hints / patches for ChatGPT (agent still applies). */
+  revisionAssist?: RevisionAssist;
 }
 
 export interface DesignLoopOutput {
@@ -83,6 +141,10 @@ export interface DesignLoopOutput {
   recordUrl?: string;
   nextActionPrompt?: string;
   convergence?: ConvergenceStall;
+  /** Revision assist from the last failing attempt (when present). */
+  revisionAssist?: RevisionAssist;
+  /** Present when input.consensus was true: the selection and its evidence. */
+  consensus?: DesignLoopConsensus;
 }
 
 export interface ConvergenceStall {
@@ -163,7 +225,9 @@ export async function designLoopTool(input: DesignLoopInput): Promise<DesignLoop
     throw new Error('design_loop requires at least one attempt.');
   }
 
-  const stopOnPass = input.stopOnPass ?? true;
+  const consensus = input.consensus === true;
+  // Consensus compares every candidate, so it never stops early.
+  const stopOnPass = !consensus && (input.stopOnPass ?? true);
   const attempts: DesignLoopAttemptResult[] = [];
 
   for (const [index, attempt] of input.attempts.entries()) {
@@ -173,7 +237,14 @@ export async function designLoopTool(input: DesignLoopInput): Promise<DesignLoop
     if (attemptResult.ok && stopOnPass) break;
   }
 
-  return finaliseDesignLoop(input, attempts);
+  if (!consensus) return finaliseDesignLoop(input, attempts);
+  const selection = await selectDesignLoopConsensus(input.attempts, attempts);
+  return {
+    goal: input.goal,
+    attempts,
+    ...(await writeBuildRecord(input, attempts)),
+    ...consensusDecision(selection, attempts),
+  };
 }
 
 async function runDesignLoopAttempt(
@@ -196,17 +267,39 @@ async function runDesignLoopAttempt(
     throw new Error(`design_loop attempt ${index + 1}: ${fileReadErrorMessage(e)}`);
   }
   const reviewInput: ReviewCadInput = buildReviewInput(input, attempt, source);
-  const review = await runReviewPipeline(reviewInput);
-  return toAttemptResult({
+  const rawReview = await runReviewPipeline(reviewInput);
+  const review = isSolidOnlyReviewMiss(rawReview)
+    ? solidOnlyFunctionalReview(rawReview, input.goal)
+    : rawReview;
+  const attemptResult = toAttemptResult({
     id,
     title,
     script: attempt.file,
     review,
     allowReviewWarnings: input.allowReviewWarnings ?? [],
     requireVisualReview: input.requireVisualReview ?? true,
+    likenessProfile: input.likenessProfile,
+    bodyLikeness: input.bodyLikeness,
     visualReview: attempt.visualReview,
     source,
+    goal: input.goal,
   });
+  if (attemptResult.ok) return attemptResult;
+
+  const revisionAssist = await buildRevisionAssist({
+    source,
+    goal: input.goal,
+    reviewFacts: attemptResult.reviewFacts,
+    diagnostics: review.diagnostics,
+    autoRevise: input.autoRevise,
+  });
+  if (revisionAssist === undefined) return attemptResult;
+
+  return {
+    ...attemptResult,
+    revisionAssist,
+    nextActionPrompt: appendRevisionAssistPrompt(attemptResult.nextActionPrompt, revisionAssist),
+  };
 }
 
 function buildReviewInput(
@@ -242,12 +335,11 @@ function buildReviewInput(
   };
 }
 
-async function finaliseDesignLoop(
+/** Build the replay record and write it when outputRecordPath is set. */
+async function writeBuildRecord(
   input: DesignLoopInput,
-  attempts: DesignLoopAttemptResult[],
-): Promise<DesignLoopOutput> {
-  const finalPass = attempts.find((attempt) => attempt.ok);
-  const convergence = detectConvergenceStall(attempts);
+  attempts: readonly DesignLoopAttemptResult[],
+): Promise<Pick<DesignLoopOutput, 'record' | 'outputRecordPath' | 'recordUrl'>> {
   const record = buildRecord(input, attempts);
   const outputRecordPath = input.outputRecordPath !== undefined
     ? resolve(input.outputRecordPath)
@@ -256,16 +348,30 @@ async function finaliseDesignLoop(
     await mkdir(dirname(outputRecordPath), { recursive: true });
     await writeFile(outputRecordPath, `${JSON.stringify(record, null, 2)}\n`, 'utf-8');
   }
+  return {
+    record,
+    outputRecordPath,
+    ...(outputRecordPath !== undefined ? { recordUrl: publicRecordUrl(outputRecordPath) } : {}),
+  };
+}
 
+async function finaliseDesignLoop(
+  input: DesignLoopInput,
+  attempts: DesignLoopAttemptResult[],
+): Promise<DesignLoopOutput> {
+  const finalPass = attempts.find((attempt) => attempt.ok);
+  const convergence = detectConvergenceStall(attempts);
+  const recordFields = await writeBuildRecord(input, attempts);
+
+  const lastFail = [...attempts].reverse().find((a) => !a.ok);
   return {
     ok: finalPass !== undefined,
     goal: input.goal,
     finalAttemptId: finalPass?.id,
     attempts,
-    record,
-    outputRecordPath,
-    ...(outputRecordPath !== undefined ? { recordUrl: publicRecordUrl(outputRecordPath) } : {}),
+    ...recordFields,
     ...(convergence !== undefined ? { convergence } : {}),
+    ...(lastFail?.revisionAssist !== undefined ? { revisionAssist: lastFail.revisionAssist } : {}),
     nextActionPrompt: finalPass === undefined
       ? [convergence?.reason, attempts.at(-1)?.nextActionPrompt].filter(Boolean).join('\n\n')
       : undefined,
@@ -279,8 +385,11 @@ function toAttemptResult(input: {
   review: ReviewCadOutput;
   allowReviewWarnings: readonly string[];
   requireVisualReview: boolean;
+  likenessProfile?: DesignLoopInput['likenessProfile'];
+  bodyLikeness?: DesignLoopBodyLikenessInput;
   visualReview?: DesignLoopVisualReview;
   source: string;
+  goal: string;
 }): DesignLoopAttemptResult {
   const fitness = input.review.fitness;
   const blockingReasons = fitness?.blockingReasons.map((reason) => reason.message) ?? [];
@@ -302,9 +411,15 @@ function toAttemptResult(input: {
       message: diagnostic.message,
       hint: diagnostic.hint,
     })),
-    ...scriptQualityFacts(input.source, input.allowReviewWarnings),
+    ...scriptQualityFacts(input.source, input.goal, input.allowReviewWarnings),
     ...geometryReviewFacts(input.review.geometry, input.allowReviewWarnings),
-    ...visualReviewFacts(input.requireVisualReview, input.visualReview, input.allowReviewWarnings),
+    ...visualReviewFacts(
+      input.requireVisualReview,
+      input.visualReview,
+      input.allowReviewWarnings,
+      input.likenessProfile,
+    ),
+    ...bodyLikenessReviewFacts(input.likenessProfile, input.bodyLikeness, input.visualReview),
   ];
   const functional = input.review.ok;
   const qualityOk = reviewFacts.length === 0;
@@ -483,58 +598,74 @@ function normalizeSeverity(severity: string): string {
   return severity;
 }
 
-function scriptQualityFacts(
-  source: string,
-  allowReviewWarnings: readonly string[],
-): Array<{ code: string; severity: string; message: string; hint?: string }> {
-  const code = 'assembly.quality.box-fragment-clutter';
-  if (allowReviewWarnings.includes(code)) return [];
+const AUTOMOTIVE_LIKENESS_STILL_CODES = [
+  'side-body-over-wheels',
+  'side-cabin-aft',
+  'rear-haunch',
+  'ortho-proportions-vs-reference',
+] as const;
 
-  const boxCount = countPattern(source, /\bbox\s*\(/g);
-  const boxUnionCount = countPattern(source, /\.union\s*\(\s*box\s*\(/g);
-  const cylinderCount = countPattern(source, /\bcylinder\s*\(/g);
-  if (boxUnionCount < 6) return [];
-  if (boxCount < cylinderCount * 2) return [];
-
-  return [{
-    code,
-    severity: 'warning',
-    message: `Script uses ${boxCount} box primitives and ${boxUnionCount} box unions; this often produces visually arbitrary cuboid fragments instead of an explainable mechanical load path.`,
-    hint: 'quality.box-fragment-clutter — replace decorative cuboids with continuous brackets, cylinders/shafts/bearing washers, or fewer purpose-named bodies. Each visible sub-shape should have an obvious role in the mechanism.',
-  }];
+function automotiveStillsFromVisual(
+  visualReview: DesignLoopVisualReview | undefined,
+): StillVerdict[] {
+  return (visualReview?.checks ?? [])
+    .filter((c) => AUTOMOTIVE_LIKENESS_STILL_CODES.includes(c.code as (typeof AUTOMOTIVE_LIKENESS_STILL_CODES)[number]))
+    .map((c) => ({
+      code: c.code,
+      passed: c.passed,
+      finding: c.finding,
+    }));
 }
 
-/**
- * Deterministic floating-geometry gate.
- *
- * The visual `no-stray-or-floating-geometry` / `main-object-count` checks are
- * graded on the agent's own prose. This grades them on the geometry: the
- * contact-graph analysis (dfm surface-distance sweep → connected components)
- * reports how many disconnected bodies the scene actually contains and which
- * parts are the stray islands. Any floating body is a warning the loop cannot
- * be talked out of. It is allow-listable only by its explicit named code,
- * because a genuinely multi-body deliverable is occasionally intended.
- */
-export function geometryReviewFacts(
-  geometry: ContactGraphResult | undefined,
-  allowReviewWarnings: readonly string[],
+function resolveAutomotiveStillVerdicts(
+  bodyLikeness: DesignLoopBodyLikenessInput | undefined,
+  visualReview: DesignLoopVisualReview | undefined,
+): StillVerdict[] {
+  const explicit = bodyLikeness?.still_verdicts;
+  if (explicit && explicit.length > 0) return explicit;
+  return automotiveStillsFromVisual(visualReview);
+}
+
+function likenessGateDiagnosticsAsReviewFacts(
+  diagnostics: ReturnType<typeof assertLikenessPublishReady>['diagnostics'],
 ): Array<{ code: string; severity: string; message: string; hint?: string }> {
-  const code = 'assembly.geometry.floating-body';
-  if (geometry === undefined || geometry.floatingParts.length === 0) return [];
-  if (allowReviewWarnings.includes(code)) return [];
-  const parts = geometry.floatingParts.join(', ');
-  return [{
-    code,
-    severity: 'warning',
-    message: `Deterministic contact graph found ${geometry.objectCount} disconnected bodies; parts float free of the main body (gap > ${geometry.gapMm} mm): ${parts}.`,
-    hint: 'geometry.floating-body — the named parts have no surface contact or near-contact with the main body. Move or extend them so they seat against the structure they belong to (mate-graph connectivity is not geometric contact), then rerun review_cad. Allow-list assembly.geometry.floating-body only when the design is genuinely meant to ship as separate bodies.',
-  }];
+  return diagnostics.map((d) => ({
+    code: d.code,
+    severity: d.severity === 'error' ? 'warning' : d.severity,
+    message: d.message,
+    hint: d.hint,
+  }));
+}
+
+function bodyLikenessReviewFacts(
+  likenessProfile: DesignLoopInput['likenessProfile'],
+  bodyLikeness: DesignLoopBodyLikenessInput | undefined,
+  visualReview: DesignLoopVisualReview | undefined,
+): Array<{ code: string; severity: string; message: string; hint?: string }> {
+  if (likenessProfile !== 'automotive') return [];
+
+  const gate = assertLikenessPublishReady({
+    likenessProfile: 'automotive',
+    body: bodyLikeness?.body_bbox,
+    cabin: bodyLikeness?.cabin_bbox,
+    wheels: bodyLikeness?.wheels,
+    lengthAxis: bodyLikeness?.length_axis,
+    stillVerdicts: resolveAutomotiveStillVerdicts(bodyLikeness, visualReview),
+    requireStills: bodyLikeness?.require_stills,
+    footprintMarginMm: bodyLikeness?.footprint_margin_mm,
+    maxBodyAboveWheelTopMm: bodyLikeness?.max_body_above_wheel_top_mm,
+    minOverhangMm: bodyLikeness?.min_overhang_mm,
+  });
+
+  if (gate.successClaimable) return [];
+  return likenessGateDiagnosticsAsReviewFacts(gate.diagnostics);
 }
 
 function visualReviewFacts(
   requireVisualReview: boolean,
   visualReview: DesignLoopVisualReview | undefined,
   allowReviewWarnings: readonly string[],
+  likenessProfile?: DesignLoopInput['likenessProfile'],
 ): Array<{ code: string; severity: string; message: string; hint?: string }> {
   const missingCode = 'assembly.visual.review-required';
   const rejectedCode = 'assembly.visual.review-rejected';
@@ -555,7 +686,7 @@ function visualReviewFacts(
     );
   }
   if (visualReview.accepted) {
-    const { missing, checkResults } = visualReviewMissingFields(visualReview);
+    const { missing, checkResults } = visualReviewMissingFields(visualReview, likenessProfile);
     if (missing.length === 0) {
       const failedChecks = checkResults.filter((check) => !check.passed);
       const weakEvidence = checkResults.flatMap((check) => weakVisualCheckEvidence(check));
@@ -596,6 +727,7 @@ function visualReviewFacts(
 
 function visualReviewMissingFields(
   visualReview: DesignLoopVisualReview,
+  likenessProfile?: DesignLoopInput['likenessProfile'],
 ): { missing: string[]; checkResults: DesignLoopVisualReviewCheck[] } {
   const missing: string[] = [];
   if (visualReview.screenshotPath === undefined || visualReview.screenshotPath.trim() === '') {
@@ -608,7 +740,7 @@ function visualReviewMissingFields(
     missing.push('visualReview.checks');
   }
   const checkResults = visualReview.checks ?? [];
-  const missingCheckCodes = requiredVisualReviewCheckCodes().filter((code) =>
+  const missingCheckCodes = requiredVisualReviewCheckCodes(likenessProfile).filter((code) =>
     !checkResults.some((check) => check.code === code),
   );
   if (missingCheckCodes.length > 0) {
@@ -623,8 +755,10 @@ function visualReviewMissingFields(
   return { missing, checkResults };
 }
 
-function requiredVisualReviewCheckCodes(): readonly string[] {
-  return [
+function requiredVisualReviewCheckCodes(
+  likenessProfile?: DesignLoopInput['likenessProfile'],
+): readonly string[] {
+  const base = [
     'main-object-count',
     'proportions-match-reference',
     'required-visible-features',
@@ -634,6 +768,10 @@ function requiredVisualReviewCheckCodes(): readonly string[] {
     'device-depth-and-construction',
     'canonical-views-physically-coherent',
   ];
+  if (likenessProfile === 'automotive') {
+    return [...base, ...AUTOMOTIVE_LIKENESS_STILL_CODES];
+  }
+  return base;
 }
 
 interface WeakVisualEvidenceRule {
@@ -704,10 +842,6 @@ function visualReviewEvidenceRequirements(): string[] {
     'For no-stray-or-floating-geometry, prove every visible secondary component is supported by contact or near-contact, fasteners, brackets, or a continuous path into the parent body, and explicitly rule out visible air gaps.',
     'For device-depth-and-construction, name casing/body layers such as bezel, case back, wall, housing, cavity, crystal, gasket, or movement pocket, and explicitly rule out a flat two-face facade.',
   ];
-}
-
-function countPattern(source: string, pattern: RegExp): number {
-  return source.match(pattern)?.length ?? 0;
 }
 
 function buildQualityRepairPrompt(reviewFacts: readonly DesignLoopAttemptResult['reviewFacts'][number][]): string {

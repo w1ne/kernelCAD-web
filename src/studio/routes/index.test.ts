@@ -8,7 +8,8 @@ describe('App root route (src/studio/routes/index.tsx)', () => {
 
   it('opens the full Studio at the homepage', () => {
     expect(source).toMatch(/import\s+App\s+from\s+['"]\.\.\/App['"]/);
-    expect(source).toMatch(/<App\s*\/>/);
+    // Only header chrome (the command palette) is added to the full Studio.
+    expect(source).toMatch(/<App(\s+headerRight=\{<StudioCommandPalette \/>\})?\s*\/>/);
     expect(source).not.toContain('StartPage');
   });
 });

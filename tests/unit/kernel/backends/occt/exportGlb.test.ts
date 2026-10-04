@@ -182,6 +182,16 @@ describe('exportGlbAsync', () => {
     expect(kc.isoDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
 
+  it('names kernelCAD in asset.generator', async () => {
+    const scene = makeScene([{ name: 'cube', shape: OcctBackend.box(10, 10, 10) }]);
+    const meshed = meshAllParts(scene);
+    const bytes = await exportGlbAsync(meshed, { format: 'glb' });
+    // glTF-Transform's reader drops asset.generator; read the JSON chunk raw.
+    const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+    const json = JSON.parse(new TextDecoder().decode(bytes.subarray(20, 20 + view.getUint32(12, true))));
+    expect(json.asset.generator).toMatch(/^kernelCAD \S+ \(https:\/\/kernelcad\.com\)$/);
+  });
+
   it('records axisConvention="z-up" when axis: "z-up" is passed', async () => {
     const scene = makeScene([{ name: 'cube', shape: OcctBackend.box(10, 10, 10) }]);
     const meshed = meshAllParts(scene);

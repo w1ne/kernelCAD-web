@@ -77,6 +77,8 @@ export interface AssemblyPartRefLike {
 
 export interface AssemblyPartCaptureOpts {
   at?: Vec3Param;
+  /** Canonical engineering-material name from `arm.part(..., { material })`. */
+  materialName?: string;
   connectors?: Record<string, AssemblyConnectorFrameStoredLike>;
   placedBy?: {
     connector: string;
@@ -130,6 +132,7 @@ export function buildAssemblyPartFeatureSpec(
       partName,
       ...(opts.at !== undefined ? { at: opts.at } : {}),
       ...(opts.connectors !== undefined ? { connectors: opts.connectors } : {}),
+      ...(opts.materialName !== undefined ? { materialName: opts.materialName } : {}),
       ...(opts.placedBy !== undefined ? {
         placedBy: {
           connector: opts.placedBy.connector,

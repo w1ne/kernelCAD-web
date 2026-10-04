@@ -16,6 +16,9 @@ export interface SceneBackendPart {
    *  so glass crystals, polished metals, sheen fabrics survive
    *  `assembly.part(name, shape)`. */
   readonly material?: PBRMaterial;
+  /** Engineering-material name from `arm.part(..., { material })` (e.g.
+   *  `pla`). Print exporters (3MF) use it as the named base material. */
+  readonly materialName?: string;
 }
 
 export interface SceneBackend {

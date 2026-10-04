@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useState } from 'react';
+import { buttonClass } from '../../ui';
 
 /**
- * Email opt-in form for the landing page — until the prompt funnel reaches
- * "fully working slice" status, we keep a credible "get notified" fallback.
+ * Release-notes email opt-in: one compact row for a page footer.
  *
  * Posts to /api/subscribe (Cloudflare Pages Function backed by D1; lives in
  * site/functions/api/subscribe.ts and is uploaded into dist/functions/ by the
@@ -42,21 +42,16 @@ export function EmailSignup({ sourceParam }: EmailSignupProps) {
   const [error] = useState(() => readErrorFromUrl());
 
   return (
-    <section
-      id="signup"
-      className="mx-auto mt-20 mb-16 max-w-xl rounded border border-rule bg-vellum-soft/40 px-8 py-10 text-center"
-    >
-      <h2 className="font-serif text-3xl font-medium text-ink">
-        Get notified when we ship
-      </h2>
-      <p className="mt-2 text-sm text-ink-soft">
-        ~1 email per release. No spam. Unsubscribe anytime.
-      </p>
-      <form
-        action="/api/subscribe"
-        method="POST"
-        className="mx-auto mt-6 flex max-w-md gap-2"
-      >
+    <section id="signup" aria-labelledby="signup-title" className="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center md:justify-between">
+      <div className="min-w-0 md:max-w-md">
+        <h2 id="signup-title" className="text-ui font-semibold text-fg">
+          Release notes by email
+        </h2>
+        <p className="text-ui text-fg-2">
+          About one email per release. We store your address in a Cloudflare database and use it only for these emails.
+        </p>
+      </div>
+      <form action="/api/subscribe" method="POST" className="flex w-full gap-2 md:w-auto">
         <input
           type="email"
           name="email"
@@ -64,25 +59,16 @@ export function EmailSignup({ sourceParam }: EmailSignupProps) {
           required
           autoComplete="email"
           aria-label="Email address"
-          className="flex-1 rounded border border-rule bg-white px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:border-blueprint focus:outline-none font-sans"
+          aria-describedby="signup-status"
+          className="focus-ring h-control-lg min-w-0 flex-1 rounded-control border border-border-strong bg-surface-1 px-3 font-sans text-ui text-fg placeholder:text-fg-3 md:w-64"
         />
         <input type="hidden" name="source" value={source} />
-        <button
-          type="submit"
-          className="whitespace-nowrap rounded-lg bg-blueprint px-5 py-2.5 text-sm font-medium text-white hover:bg-blueprint-hover transition-colors font-sans"
-        >
+        <button type="submit" className={buttonClass('secondary', 'lg')}>
           Subscribe
         </button>
       </form>
-      <p
-        role="status"
-        aria-live="polite"
-        className={`mt-3 min-h-[1.2em] text-sm ${error ? 'text-copper' : 'text-ink-soft'}`}
-      >
+      <p id="signup-status" role="status" aria-live="polite" className={error ? 'text-ui text-danger md:basis-full' : 'sr-only'}>
         {error}
-      </p>
-      <p className="mt-2 text-xs text-ink-faint">
-        We use Cloudflare Web Analytics for visitor counts — no cookies, no IP storage. Your email is stored in a Cloudflare D1 database; we'll only email you when a major version ships.
       </p>
     </section>
   );

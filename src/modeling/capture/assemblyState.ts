@@ -51,6 +51,13 @@ export interface AssemblyState {
   readonly groupStates: GroupStateRecord[];
   readonly disabledCollisions: DisabledCollisionRecord[];
   ignoreInterferenceList: ReadonlyArray<readonly [string, string]>;
+  /**
+   * True once the SCRIPT called `solvedModel(...)` (a validating call). The
+   * mechanism-truth gate reads it as "the author declared this a mechanism":
+   * only a mechanism must have every part linked into the mate graph.
+   * Internal re-posing calls pass `validate: 'off'` and do not set it.
+   */
+  solvedModelRequested: boolean;
 }
 
 /** Fresh, empty `AssemblyState` for a newly constructed `Assembly`. */
@@ -75,5 +82,6 @@ export function createAssemblyState(name: string, session: CaptureSession): Asse
     groupStates: [],
     disabledCollisions: [],
     ignoreInterferenceList: [],
+    solvedModelRequested: false,
   };
 }

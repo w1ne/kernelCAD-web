@@ -87,4 +87,30 @@ export const REFERENCE_CODES = {
     group: 'reference',
     description: 'mesh_to_features found freeform, tilted-planar or off-axis cylindrical surface regions it could not represent as features.',
   },
+
+  // Body likeness publish gate (verify check: 'body-likeness').
+  'reference.likeness.auto-failed': {
+    hintTemplate:
+      'Automated body-likeness AABB/wheel checks failed (wheels outside footprint, floating rocker, or wheelbase not spanned). Adjust the envelope or wheel centres, then re-run verify({ check: \'body-likeness\' }).',
+    nextAction: { kind: 'call-tool', tool: 'verify', args: { check: 'body-likeness' } },
+    defaultSeverity: 'error',
+    group: 'reference',
+    description: 'Cheap AABB↔wheel body-likeness checks failed before publish.',
+  },
+  'reference.likeness.stills-incomplete': {
+    hintTemplate:
+      'Body-likeness still verdicts are missing. render_preview (or open_in_studio) ortho views, then pass still_verdicts for side-body-over-wheels, side-cabin-aft, rear-haunch, and ortho-proportions-vs-reference.',
+    nextAction: { kind: 'call-tool', tool: 'verify', args: { check: 'body-likeness' } },
+    defaultSeverity: 'error',
+    group: 'reference',
+    description: 'Required agent still verdicts for body likeness were not supplied.',
+  },
+  'reference.likeness.still-failed': {
+    hintTemplate:
+      'An agent still verdict failed or lacked concrete evidence. Fix the geometry cue named in the finding (body-over-wheels, cabin-aft, haunch, proportions), re-render, and re-run verify({ check: \'body-likeness\' }) before claiming success.',
+    nextAction: { kind: 'call-tool', tool: 'verify', args: { check: 'body-likeness' } },
+    defaultSeverity: 'error',
+    group: 'reference',
+    description: 'A required body-likeness still verdict failed or had weak evidence.',
+  },
 } as const satisfies Record<`reference.${string}`, DiagnosticCodeSpec>;

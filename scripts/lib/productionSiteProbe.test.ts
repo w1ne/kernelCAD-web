@@ -6,6 +6,7 @@ import {
   normalizeSiteBaseUrl,
   type ProbeResponse,
 } from './productionSiteProbe';
+import { LANDING_HERO } from './landingHero';
 
 function response(opts: {
   status: number;
@@ -297,7 +298,7 @@ describe('buildProductionSiteChecks', () => {
     });
   });
 
-  it('defaults expected demo iteration from the expected patch version', async () => {
+  it('defaults expected demo iteration to the pinned landing hero, not the release', async () => {
     const checks = buildProductionSiteChecks({
       baseUrl: 'https://kernelcad.com/',
       expectedVersion: 'v0.2.1',
@@ -306,7 +307,7 @@ describe('buildProductionSiteChecks', () => {
           status: 200,
           json: {
             version: 'v0.2.1',
-            demoIteration: 'v0.3',
+            demoIteration: 'v0.2',
             task: 'subtract-then-fillet-rim',
             source: 'docs/demos/v0.2/subtract-then-fillet-rim/demo.mp4',
           },
@@ -316,7 +317,7 @@ describe('buildProductionSiteChecks', () => {
     await expect(checks[0].run()).resolves.toEqual({
       ok: false,
       name: 'demo metadata',
-      detail: 'expected demoIteration v0.2, got v0.3',
+      detail: `expected demoIteration ${LANDING_HERO.demoIteration}, got v0.2`,
     });
   });
 

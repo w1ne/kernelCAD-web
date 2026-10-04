@@ -80,6 +80,41 @@ export function collectInterferenceCandidates(
 
 /** Pure detection over an already-resolved SceneBackend. Exposed for tests
  *  and for callers that have a Scene in hand without re-running a script. */
+/** Stable key for a world transform: where it sends the origin and the unit
+ *  axes, rounded well below any modelling tolerance. */
+function transformKey(t: SceneBackend['parts'][number]['worldTransform']): string {
+  const probe: Array<[number, number, number]> = [[0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]];
+  return probe.map((p) => t.point(p).map((c) => Math.round(c * 1e9)).join(',')).join(';');
+}
+
+/**
+ * Intersection volumes already measured, keyed by the two source part BREPs
+ * (object identity) and their world transforms. The exact boolean-volume
+ * probe dominates review time on dense parts (gears, threads), and one
+ * review asks the same question several times — default pose, mechanical
+ * validator, pose envelope, mechanism sweep all re-pose the SAME lowered
+ * part BREPs. Weakly keyed, so it lives exactly as long as the shapes.
+ */
+const intersectionVolumeMemo = new WeakMap<object, WeakMap<object, Map<string, number>>>();
+
+function memoGet(a: object, b: object, key: string): number | undefined {
+  return intersectionVolumeMemo.get(a)?.get(b)?.get(key);
+}
+
+function memoSet(a: object, b: object, key: string, vol: number): void {
+  let inner = intersectionVolumeMemo.get(a);
+  if (inner === undefined) {
+    inner = new WeakMap();
+    intersectionVolumeMemo.set(a, inner);
+  }
+  let byPose = inner.get(b);
+  if (byPose === undefined) {
+    byPose = new Map();
+    inner.set(b, byPose);
+  }
+  byPose.set(key, vol);
+}
+
 export function detectInterferences(
   scene: SceneBackend,
   epsilonMm3: number,
@@ -92,7 +127,13 @@ export function detectInterferences(
   // never touch the originals.
   const transformed = scene.parts.map((p) => {
     const clone = (p.shape as OcctBackend).clone().applyTransform(p.worldTransform);
-    return { name: p.name, shape: clone, bbox: clone.boundingBox() };
+    return {
+      name: p.name,
+      shape: clone,
+      bbox: clone.boundingBox(),
+      source: p.shape as object,
+      poseKey: transformKey(p.worldTransform),
+    };
   });
 
   const pairs: InterferencePair[] = [];
@@ -103,9 +144,13 @@ export function detectInterferences(
     // Volume-only common: no face-unification pass, which on B-spline-heavy
     // parts (threads) can run for minutes. A probe OCCT cannot complete is
     // reported, not read as "no clash".
-    let vol: number;
+    const memoKey = `${a.poseKey}|${b.poseKey}`;
+    let vol: number | undefined = memoGet(a.source, b.source, memoKey);
     try {
-      vol = a.shape.intersectionVolume(b.shape);
+      if (vol === undefined) {
+        vol = a.shape.intersectionVolume(b.shape);
+        memoSet(a.source, b.source, memoKey, vol);
+      }
     } catch (e) {
       diagnostics.push({
         target: 'export-occt',

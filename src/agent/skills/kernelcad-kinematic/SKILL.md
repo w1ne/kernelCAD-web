@@ -161,8 +161,9 @@ timeline-based proves the choreographed cycle is safe and renders it.
 
 These four calls work on any moving assembly, not just robot arms:
 
-- **Linkages** — 4-bar, scissor jacks (closed-loop → K5 fires; cut to an
-  open chain to use checkSweptCollision)
+- **Linkages** — 4-bar, scissor jacks (closed-loop → K5 /
+  `assembly.solver.did-not-converge`; cut to an open chain to use
+  checkSweptCollision — industrial tables: `lookup_cookbook("scissor lift closed loop")`)
 - **Latches** — over-center, pawl-ratchet (`checkSweptCollision` over the
   latch handle; `checkReachable` for the locking-pin engagement target)
 - **Hinges** — laptop clamshell, butterfly knife (`checkSweptCollision` over
@@ -171,7 +172,9 @@ These four calls work on any moving assembly, not just robot arms:
   (`checkSweptCollision` over the escape-wheel rotation; `checkLoadCapacity`
   for the mainspring torque)
 - **Scissor jacks** — `checkSweptCollision` over the lift parameter; the
-  closed-loop variant is rejected by K5 — author the open-chain leg instead
+  closed-loop variant is rejected by K5 — author the open-chain leg
+  (`04-scissor-jack-swept`) or the production open-chain table
+  (`lookup_cookbook("scissor lift closed loop")`); do not invent `joint.scissorLift`
 
 ## Mechanism delivery — non-bypassable
 
@@ -249,7 +252,8 @@ self-contained `.kcad.ts` files that build their own fixture, run one or two
 3. `03-cantilever-beam-stress.kcad.ts` — steel-vs-PLA cantilever beam stress
    (steel passes; PLA fires K6)
 4. `04-scissor-jack-swept.kcad.ts` — single-leg cut of a scissor jack swept
-   across the lift parameter (the closed-loop variant would emit K5)
+   across the lift parameter (the closed-loop variant would emit K5; production
+   tables → cookbook `scissor-lift-closed-loop`)
 5. `05-clamshell-hinge-swept.kcad.ts` — laptop-clamshell hinge across
    [0°, 135°]; K1 fires when the lid touches the table
 6. `06-over-center-latch-reachable.kcad.ts` — over-center latch

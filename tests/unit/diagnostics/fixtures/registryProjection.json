@@ -122,6 +122,12 @@
     "assembly.pose-envelope.connector-unresolved",
     "assembly.gripper-aperture.connector-missing",
     "assembly.mate.limit-missing",
+    "assembly.connectivity.floating-moving-part",
+    "assembly.connectivity.no-load-path",
+    "assembly.joint-topology.missing-limit",
+    "assembly.joint-topology.unsupported-axis",
+    "assembly.joint-topology.connector-missing",
+    "assembly.joint-topology.axis-invalid",
     "assembly.mounting-hole.mismatch",
     "assembly.joint-axis.unbound",
     "assembly.joint.child-modeled-in-place",
@@ -657,10 +663,10 @@
       }
     },
     "export.dxf.non-planar": {
-      "template": "DXF export requires planar input. Call list_faces to pick a planar face, or return a Region via Shape.flattenPattern().",
+      "template": "DXF needs a flat part (plate, panel, extruded profile). For any other part use `options.section: { axis, at }` for a cross-section, `flatten_pattern` for sheet metal, or STEP/STL for 3D.",
       "nextAction": {
-        "kind": "call-introspection-tool",
-        "tool": "list_faces"
+        "kind": "fix-arg",
+        "field": "options.section"
       }
     },
     "export.3mf.not-watertight": {
@@ -1040,17 +1046,17 @@
       }
     },
     "assembly.part.floating": {
-      "template": "Declare a joint or mate connecting this part to another part so the assembly graph is connected (arm.fixed/.revolute/.prismatic/.ball or arm.mate(...)).",
+      "template": "Disconnected body: declare connectors + a mate/joint linking this part into the assembly graph. Shafts/hinges/gears: type: 'axis' connector + arm.mate(..., 'revolute'); rigid mounts: type: 'frame' + mate(..., 'fastened'); or arm.fixed/.revolute/.prismatic/.ball. Connector types are only frame|axis|planar|ball.",
       "nextAction": {
         "kind": "rewrite-feature",
-        "guidance": "declare an arm.fixed/.revolute/.prismatic/.ball joint or arm.mate(...) linking this part to another"
+        "guidance": "add axis+revolute (shafts/hinges/gears) or frame+fastened (rigid) connectors+mates, or an arm.fixed/.revolute/.prismatic/.ball joint"
       }
     },
     "assembly.part.orphan": {
-      "template": "Add a joint or mate that links this sub-assembly to a part in the main mechanism so every component shares a single connected graph.",
+      "template": "Disconnected component: add a joint or mate linking this sub-assembly to the main mechanism (axis+revolute for shafts/hinges/gears, frame+fastened for rigid mounts, or arm.revolute/.prismatic/.ball/.fixed) so every body shares one connected graph.",
       "nextAction": {
         "kind": "rewrite-feature",
-        "guidance": "add a joint linking this sub-assembly to a part in the main mechanism"
+        "guidance": "link this orphan cluster to the main mechanism with axis+revolute or frame+fastened connectors+mates (or joint primitives)"
       }
     },
     "assembly.interference.overlap": {
@@ -1096,10 +1102,10 @@
       }
     },
     "assembly.solver.did-not-converge": {
-      "template": "Articulated closed loops are not yet supported by the v0.6 solver. Restrict closed loops to fastened-only mates, or split the mechanism into two open kinematic chains.",
+      "template": "UNSUPPORTED on v0.6: articulated closed-loop FK (4-bar / scissor / pin_slot loop). Do not invent joint.scissorLift or gear-contact types. Rewrite as an open chain (drop one loop-closing mate; keep a ground/base root) or use fastened-only mates in the loop. For industrial scissor tables: lookup_cookbook('scissor lift closed loop'). limitsDeg/jointSupport help open chains only.",
       "nextAction": {
         "kind": "rewrite-feature",
-        "guidance": "restrict closed loops to fastened-only mates or split into open chains"
+        "guidance": "rewrite as an open chain or fastened-only loop; for scissor tables lookup_cookbook(scissor lift closed loop); do not invent joint.scissorLift"
       }
     },
     "assembly.pose.out-of-limits": {
@@ -1156,6 +1162,48 @@
       "nextAction": {
         "kind": "fix-arg",
         "field": "limitsDeg"
+      }
+    },
+    "assembly.connectivity.floating-moving-part": {
+      "template": "Connect the moving part through mates to a stable root (ground/base/root or physicalUseCase(...).stableParts). This is independent of closed-loop FK — open chains need a rooted graph too.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "connect the moving part to a stable ground/base root through mates"
+      }
+    },
+    "assembly.connectivity.no-load-path": {
+      "template": "Ensure every physicalUseCase load part has a mate-graph path to the use-case stable parts (or the assembly stable root).",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "connect the loaded part to stableParts through the mate graph"
+      }
+    },
+    "assembly.joint-topology.missing-limit": {
+      "template": "Add limitsDeg:[min,max] (or limitsMm for prismatic) on this articulated mate so travel is finite and envelope/topology review can run.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "limitsDeg"
+      }
+    },
+    "assembly.joint-topology.unsupported-axis": {
+      "template": "Declare arm.jointSupport(..., { mate, shaft, supports, output }) for passive hinges, or arm.mechanicalJoint(..., { mate, actuator, shaft, supports, output }) for driven hinges, so the revolute axis has physical support intent.",
+      "nextAction": {
+        "kind": "rewrite-feature",
+        "guidance": "add jointSupport or mechanicalJoint intent for the revolute axis"
+      }
+    },
+    "assembly.joint-topology.connector-missing": {
+      "template": "Register the missing connector on the named part before the mate, using partRef.connector(name, { type, origin: { kind: 'vec3', value: [x,y,z] }, ... }).",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "connector"
+      }
+    },
+    "assembly.joint-topology.axis-invalid": {
+      "template": "Align the two mate endpoint axes (same direction within tolerance) or fix connector axis vectors so the joint has one coherent physical axis.",
+      "nextAction": {
+        "kind": "fix-arg",
+        "field": "axis"
       }
     },
     "assembly.mounting-hole.mismatch": {
@@ -1313,10 +1361,10 @@
       }
     },
     "mechanism.orphan-part": {
-      "template": "A part declared via arm.part(...) is unreachable from the assembly graph. Connect it to another part — either a mate (arm.mate(...)) or a joint primitive (arm.revolute/.prismatic/.ball) counts — or remove the part if it isn't structurally needed.",
+      "template": "Disconnected components in the assembly graph. Connect every orphan body with connectors + mates/joints: shafts/hinges/gears → partRef.connector(name, { type: 'axis', origin: { kind: 'vec3', value: [x,y,z] }, axis: [...] }) then arm.mate(name, 'a.conn', 'b.conn', 'revolute'); rigid mounts → type: 'frame' + mate(..., 'fastened'); or use arm.revolute/.prismatic/.ball/.fixed. Connector types are only frame|axis|planar|ball. Only a mechanism (an assembly with mates, joints, transmissions or a solvedModel call) needs every part linked; if a part is deliberately free (a loose accessory, a display or print-layout part), do not invent a mate — pass { skipMechanismCheck: true } to evaluate_script.",
       "nextAction": {
         "kind": "rewrite-feature",
-        "guidance": "add a mate or joint primitive that connects the orphan part to the rest of the assembly graph"
+        "guidance": "connect disconnected bodies with axis+revolute (shafts/hinges/gears) or frame+fastened (rigid), or arm.revolute/.prismatic/.ball/.fixed joint primitives"
       }
     },
     "mechanism.unverified-budget-exceeded": {
@@ -1340,10 +1388,10 @@
       }
     },
     "mechanism.drops-on-release": {
-      "template": "Starting from rest, the mechanism drifted by more than 5° at a joint or 50 mm at a body during a 0.5 s gravity simulation. Add a closed-loop spring / tendon crossing the drifting joint (issue #361 tracks this API), declare the joint as actively driven via the planned capacity API, or restructure the chain so gravity doesn't open it. Single-body 'spring' parts fastened to one arm contribute zero restoring moment and cannot pass this gate.",
+      "template": "Starting from rest, the mechanism drifted by more than 5° at a joint or 50 mm at a body during a 0.5 s gravity simulation. Add arm.tendon(...) crossing the drifting joint, declare the joint as actively driven via arm.mechanicalJoint(...), or restructure the chain so gravity doesn't open it. Single-body 'spring' parts fastened to one arm contribute zero restoring moment and cannot pass this gate.",
       "nextAction": {
         "kind": "rewrite-feature",
-        "guidance": "add a closed-loop spring or declare the joint as actively driven; single-body springs contribute no joint moment and cannot pass the drop-test"
+        "guidance": "add arm.tendon(...) across the joint or arm.mechanicalJoint(...) to declare it actively driven; single-body springs contribute no joint moment"
       }
     },
     "mechanism.tendon-body-intersect": {
@@ -2675,8 +2723,8 @@
       "field": "options.format"
     },
     "export.dxf.non-planar": {
-      "kind": "call-introspection-tool",
-      "tool": "list_faces"
+      "kind": "fix-arg",
+      "field": "options.section"
     },
     "export.3mf.not-watertight": {
       "kind": "rewrite-feature",
@@ -2894,11 +2942,11 @@
     },
     "assembly.part.floating": {
       "kind": "rewrite-feature",
-      "guidance": "declare an arm.fixed/.revolute/.prismatic/.ball joint or arm.mate(...) linking this part to another"
+      "guidance": "add axis+revolute (shafts/hinges/gears) or frame+fastened (rigid) connectors+mates, or an arm.fixed/.revolute/.prismatic/.ball joint"
     },
     "assembly.part.orphan": {
       "kind": "rewrite-feature",
-      "guidance": "add a joint linking this sub-assembly to a part in the main mechanism"
+      "guidance": "link this orphan cluster to the main mechanism with axis+revolute or frame+fastened connectors+mates (or joint primitives)"
     },
     "assembly.interference.overlap": {
       "kind": "rewrite-feature",
@@ -2926,7 +2974,7 @@
     },
     "assembly.solver.did-not-converge": {
       "kind": "rewrite-feature",
-      "guidance": "restrict closed loops to fastened-only mates or split into open chains"
+      "guidance": "rewrite as an open chain or fastened-only loop; for scissor tables lookup_cookbook(scissor lift closed loop); do not invent joint.scissorLift"
     },
     "assembly.pose.out-of-limits": {
       "kind": "fix-arg",
@@ -2959,6 +3007,30 @@
     "assembly.mate.limit-missing": {
       "kind": "fix-arg",
       "field": "limitsDeg"
+    },
+    "assembly.connectivity.floating-moving-part": {
+      "kind": "rewrite-feature",
+      "guidance": "connect the moving part to a stable ground/base root through mates"
+    },
+    "assembly.connectivity.no-load-path": {
+      "kind": "rewrite-feature",
+      "guidance": "connect the loaded part to stableParts through the mate graph"
+    },
+    "assembly.joint-topology.missing-limit": {
+      "kind": "fix-arg",
+      "field": "limitsDeg"
+    },
+    "assembly.joint-topology.unsupported-axis": {
+      "kind": "rewrite-feature",
+      "guidance": "add jointSupport or mechanicalJoint intent for the revolute axis"
+    },
+    "assembly.joint-topology.connector-missing": {
+      "kind": "fix-arg",
+      "field": "connector"
+    },
+    "assembly.joint-topology.axis-invalid": {
+      "kind": "fix-arg",
+      "field": "axis"
     },
     "assembly.mounting-hole.mismatch": {
       "kind": "fix-arg",
@@ -3050,7 +3122,7 @@
     },
     "mechanism.orphan-part": {
       "kind": "rewrite-feature",
-      "guidance": "add a mate or joint primitive that connects the orphan part to the rest of the assembly graph"
+      "guidance": "connect disconnected bodies with axis+revolute (shafts/hinges/gears) or frame+fastened (rigid), or arm.revolute/.prismatic/.ball/.fixed joint primitives"
     },
     "mechanism.unverified-budget-exceeded": {
       "kind": "inspect-message"
@@ -3065,7 +3137,7 @@
     },
     "mechanism.drops-on-release": {
       "kind": "rewrite-feature",
-      "guidance": "add a closed-loop spring or declare the joint as actively driven; single-body springs contribute no joint moment and cannot pass the drop-test"
+      "guidance": "add arm.tendon(...) across the joint or arm.mechanicalJoint(...) to declare it actively driven; single-body springs contribute no joint moment"
     },
     "mechanism.tendon-body-intersect": {
       "kind": "rewrite-feature",

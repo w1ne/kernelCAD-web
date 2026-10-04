@@ -4,7 +4,7 @@
 //
 // Phase 1 embed-mode smoke tests. Covers the new public surface for hosts
 // like proto.cat: backend-URL routing, controlled-mode source string,
-// brush-report short-circuit, and Toolbar gating. We deliberately avoid
+// brush-report short-circuit, and ActivityBar agent gating. We deliberately avoid
 // mounting the full <StudioApp/> — it would drag in three.js, the kernel
 // worker, and the WorkbenchProvider tree — and instead exercise each
 // changed seam in isolation.
@@ -15,20 +15,20 @@ import { StudioConfigProvider } from '../config/StudioConfigContext';
 import { getEmbedConfig, setEmbedConfig } from '../config/embedConfigRef';
 import type { BrushReport, StudioConfig } from '../config/types';
 
-// Toolbar now calls useNavigate; stub the router so tests stay router-free.
+// Stub the router so tests stay router-free.
 vi.mock('@tanstack/react-router', () => ({
     useNavigate: () => () => {},
 }));
 
-// Toolbar calls useOptionalSession. Return a stable no-session value so the
-// Toolbar renders without hitting the real Supabase client.
+// ActivityBar calls useOptionalSession. Return a stable no-session value so it
+// renders without hitting the real Supabase client.
 vi.mock('../../funnel/hooks/useSession', () => ({
     useOptionalSession: () => ({ session: null, loading: false }),
 }));
 
 // Supabase is read by `apiCall()`. Stub it the same way scriptSource.test.ts
 // does so the "unsigned-in" branch is exercised consistently.
-// isAuthConfigured is also stubbed because Toolbar now calls useOptionalSession
+// isAuthConfigured is also stubbed because useOptionalSession
 // which reads this function at hook initialisation time.
 vi.mock('../../funnel/lib/supabaseClient', () => ({
     getSupabase: () => ({
@@ -208,53 +208,17 @@ describe('onBrushReport short-circuit', () => {
     });
 });
 
-describe('Toolbar enableAgentRail gating', () => {
-    it('renders the Agent toggle when enableAgentRail is true (default)', async () => {
-        const { Toolbar } = await import('../Toolbar');
-        const { queryByLabelText } = render(
-            <Toolbar
-                isModified={false}
-                onValidate={() => {}}
-                onRun={() => {}}
-                agentRailOpen={false}
-                onToggleAgentRail={() => {}}
-                referenceImagesPresent={false}
-                referenceImagesVisible={false}
-                onToggleReferenceImages={() => {}}
-                markingMode={false}
-                onToggleMarkingMode={() => {}}
-                sectionMode={false}
-                onToggleSectionMode={() => {}}
-                inspectorOpen={false}
-                onToggleInspector={() => {}}
-                code=""
-            />,
-        );
-        expect(queryByLabelText(/agent rail/i)).not.toBeNull();
+describe('ActivityBar agent gating', () => {
+    it('shows the Agent when the host allows it (default)', async () => {
+        const { ActivityBar } = await import('../ActivityBar');
+        const { queryByTestId } = render(<ActivityBar enableAgent enableConnect viewerMode={false} />);
+        expect(queryByTestId('activity-agent')).not.toBeNull();
     });
 
-    it('hides the Agent toggle when enableAgentRail is false', async () => {
-        const { Toolbar } = await import('../Toolbar');
-        const { queryByLabelText } = render(
-            <Toolbar
-                isModified={false}
-                onValidate={() => {}}
-                onRun={() => {}}
-                agentRailOpen={false}
-                onToggleAgentRail={() => {}}
-                enableAgentRail={false}
-                referenceImagesPresent={false}
-                referenceImagesVisible={false}
-                onToggleReferenceImages={() => {}}
-                markingMode={false}
-                onToggleMarkingMode={() => {}}
-                sectionMode={false}
-                onToggleSectionMode={() => {}}
-                inspectorOpen={false}
-                onToggleInspector={() => {}}
-                code=""
-            />,
-        );
-        expect(queryByLabelText(/agent rail/i)).toBeNull();
+    it('hides the Agent when the host passes enableAgentRail=false', async () => {
+        const { ActivityBar } = await import('../ActivityBar');
+        const { queryByTestId } = render(<ActivityBar enableAgent={false} enableConnect={false} viewerMode={false} />);
+        expect(queryByTestId('activity-agent')).toBeNull();
+        expect(queryByTestId('toolbar-connect-link')).toBeNull();
     });
 });

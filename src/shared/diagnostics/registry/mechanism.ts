@@ -39,11 +39,15 @@ export const MECHANISM_CODES = {
   },
   'mechanism.orphan-part': {
     hintTemplate:
-      "A part declared via arm.part(...) is unreachable from the assembly graph. Connect it to another part — either a mate (arm.mate(...)) or a joint primitive (arm.revolute/.prismatic/.ball) counts — or remove the part if it isn't structurally needed.",
-    nextAction: { kind: 'rewrite-feature', guidance: 'add a mate or joint primitive that connects the orphan part to the rest of the assembly graph' },
+      "Disconnected components in the assembly graph. Connect every orphan body with connectors + mates/joints: shafts/hinges/gears → partRef.connector(name, { type: 'axis', origin: { kind: 'vec3', value: [x,y,z] }, axis: [...] }) then arm.mate(name, 'a.conn', 'b.conn', 'revolute'); rigid mounts → type: 'frame' + mate(..., 'fastened'); or use arm.revolute/.prismatic/.ball/.fixed. Connector types are only frame|axis|planar|ball. Only a mechanism (an assembly with mates, joints, transmissions or a solvedModel call) needs every part linked; if a part is deliberately free (a loose accessory, a display or print-layout part), do not invent a mate — pass { skipMechanismCheck: true } to evaluate_script.",
+    nextAction: {
+      kind: 'rewrite-feature',
+      guidance:
+        "connect disconnected bodies with axis+revolute (shafts/hinges/gears) or frame+fastened (rigid), or arm.revolute/.prismatic/.ball/.fixed joint primitives",
+    },
     defaultSeverity: 'error',
     group: 'mechanism',
-    description: 'A part declared on the assembly is not reachable from any other part via mate, joint-primitive, or connect edges — the assembly graph is disconnected.',
+    description: 'A part declared on a mechanism (an assembly with mates, joints, transmissions or a solvedModel call) is not reachable from any other part via mate, joint-primitive, or connect edges — the assembly graph has disconnected components. Diagnostics list every disconnected body id and suggest connector types. A plain multi-part assembly with no mates is independent bodies, not a mechanism: it gets one info note, not an error.',
   },
   // Physics-grounded loop — T3 slice (post-condition trust gate). Emitted by
   // `mechanismTruth.ts` when the BREP pose-sweep work estimate exceeds the
@@ -87,8 +91,8 @@ export const MECHANISM_CODES = {
   },
   'mechanism.drops-on-release': {
     hintTemplate:
-      "Starting from rest, the mechanism drifted by more than 5° at a joint or 50 mm at a body during a 0.5 s gravity simulation. Add a closed-loop spring / tendon crossing the drifting joint (issue #361 tracks this API), declare the joint as actively driven via the planned capacity API, or restructure the chain so gravity doesn't open it. Single-body 'spring' parts fastened to one arm contribute zero restoring moment and cannot pass this gate.",
-    nextAction: { kind: 'rewrite-feature', guidance: 'add a closed-loop spring or declare the joint as actively driven; single-body springs contribute no joint moment and cannot pass the drop-test' },
+      "Starting from rest, the mechanism drifted by more than 5° at a joint or 50 mm at a body during a 0.5 s gravity simulation. Add arm.tendon(...) crossing the drifting joint, declare the joint as actively driven via arm.mechanicalJoint(...), or restructure the chain so gravity doesn't open it. Single-body 'spring' parts fastened to one arm contribute zero restoring moment and cannot pass this gate.",
+    nextAction: { kind: 'rewrite-feature', guidance: 'add arm.tendon(...) across the joint or arm.mechanicalJoint(...) to declare it actively driven; single-body springs contribute no joint moment' },
     defaultSeverity: 'error',
     group: 'mechanism',
     description: 'Starting from REST, the mechanism does not hold its declared pose under gravity: at least one joint drifts > 5° or one body translates > 50 mm in a 0.5 s passive simulation. Means the mechanism would visibly collapse on a desk without an actuator or closed-loop spring.',

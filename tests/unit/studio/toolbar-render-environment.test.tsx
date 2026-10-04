@@ -1,24 +1,31 @@
 /** @vitest-environment happy-dom */
 import { afterEach, describe, it, expect, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { Toolbar } from '../../../src/studio/Toolbar';
+import { ViewportToolbar as Toolbar } from '../../../src/studio/ViewportToolbar';
 
 afterEach(() => cleanup());
 
 const baseProps = {
-  project: { name: 'p' },
-  filename: 'f.kcad.ts',
-  isModified: false,
   onValidate: () => {},
   onRun: () => {},
-  agentRailOpen: false,
-  onToggleAgentRail: () => {},
+  markingMode: false,
+  onToggleMarkingMode: () => {},
+  sectionMode: false,
+  onToggleSectionMode: () => {},
   referenceImagesPresent: false,
   referenceImagesVisible: true,
   onToggleReferenceImages: () => {},
+  display: {
+    viewMode3D: 'shadedWithEdges' as const,
+    setViewMode3D: () => {},
+    background: 'dark' as const,
+    setBackground: () => {},
+    gridVisible: true,
+    setGridVisible: () => {},
+  },
 };
 
-describe('Toolbar render-environment slot', () => {
+describe('ViewportToolbar render-environment slot', () => {
   it('hides the env chip + toggle when no record is present', () => {
     render(<Toolbar {...baseProps}
       renderEnvironmentPresent={false}

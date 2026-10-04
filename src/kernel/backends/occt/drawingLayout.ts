@@ -174,7 +174,7 @@ export function scaleLabel(s: number): string {
 
 // ---------------------------------------------------------------------------
 // Sheet layout (third-angle: top view above front, left view left of front,
-// isometric pictorial in the upper-right cell)
+// isometric pictorial in the upper-right cell; or the first-angle mirror)
 // ---------------------------------------------------------------------------
 
 export interface SheetSpec {
@@ -189,10 +189,37 @@ export interface SheetSpec {
   titleBlock: { w: number; h: number };
 }
 
-export const SHEETS: Record<'a4' | 'a3', SheetSpec> = {
+/** Landscape sheet sizes: ISO 216 A-series and ANSI Y14.1 A–E. */
+export type DrawingSheetSize =
+  | 'a4' | 'a3' | 'a2' | 'a1' | 'a0'
+  | 'ansi-a' | 'ansi-b' | 'ansi-c' | 'ansi-d' | 'ansi-e';
+
+export const SHEETS: Record<DrawingSheetSize, SheetSpec> = {
   a4: { w: 297, h: 210, margin: 10, gap: 18, titleBlock: { w: 96, h: 24 } },
   a3: { w: 420, h: 297, margin: 12, gap: 24, titleBlock: { w: 110, h: 28 } },
+  a2: { w: 594, h: 420, margin: 15, gap: 28, titleBlock: { w: 130, h: 32 } },
+  a1: { w: 841, h: 594, margin: 20, gap: 32, titleBlock: { w: 150, h: 36 } },
+  a0: { w: 1189, h: 841, margin: 20, gap: 36, titleBlock: { w: 180, h: 40 } },
+  'ansi-a': { w: 279.4, h: 215.9, margin: 10, gap: 18, titleBlock: { w: 96, h: 24 } },
+  'ansi-b': { w: 431.8, h: 279.4, margin: 12, gap: 24, titleBlock: { w: 110, h: 28 } },
+  'ansi-c': { w: 558.8, h: 431.8, margin: 15, gap: 28, titleBlock: { w: 130, h: 32 } },
+  'ansi-d': { w: 863.6, h: 558.8, margin: 20, gap: 32, titleBlock: { w: 150, h: 36 } },
+  'ansi-e': { w: 1117.6, h: 863.6, margin: 20, gap: 36, titleBlock: { w: 180, h: 40 } },
 };
+
+/** Sheet sizes in ascending order per series — the candidates `'auto'` walks. */
+export const SHEET_SERIES: Record<'iso' | 'ansi', readonly DrawingSheetSize[]> = {
+  iso: ['a4', 'a3', 'a2', 'a1', 'a0'],
+  ansi: ['ansi-a', 'ansi-b', 'ansi-c', 'ansi-d', 'ansi-e'],
+};
+
+/** Title-block label for a sheet size: `A3`, `ANSI B`. */
+export function sheetSizeLabel(size: DrawingSheetSize): string {
+  return size.replace('ansi-', 'ANSI ').toUpperCase();
+}
+
+/** Orthographic projection method: where each view sits relative to the front view. */
+export type ProjectionAngle = 'first' | 'third';
 
 export type DrawingViewName = 'front' | 'top' | 'left' | 'iso';
 
@@ -224,7 +251,9 @@ const DIM_BAND = 12;
 export function computeSheetLayout(
   views: Record<DrawingViewName, ViewBox2>,
   sheet: SheetSpec,
+  projection: ProjectionAngle = 'third',
 ): SheetLayout {
+  if (projection === 'first') return computeFirstAngleLayout(views, sheet);
   const { margin, gap } = sheet;
   const availW = sheet.w - 2 * margin;
   const availH = sheet.h - 2 * margin - sheet.titleBlock.h;
@@ -298,6 +327,97 @@ export function computeSheetLayout(
   );
 
   return { scale: s, scaleText: scaleLabel(s), views: { front, top, left, iso } };
+}
+
+/**
+ * First-angle arrangement of the same four views — the third-angle grid
+ * turned half a turn about the front view: the view from the left sits RIGHT
+ * of the front view, the view from above sits BELOW it, and the isometric
+ * takes the lower-left cell, so the lower-right corner stays free for the
+ * title block and parts list exactly as in third angle. The front/top views
+ * share the sheet-x mapping and the front/left views the sheet-y mapping.
+ * The dimension band sits ABOVE the front row (the front view's width
+ * dimension goes on its free top side).
+ *
+ *   row 1:  [   -   ] [ front ] [ left ]
+ *   row 2:  [  iso  ] [  top  ] [   -  ]
+ */
+function computeFirstAngleLayout(
+  views: Record<DrawingViewName, ViewBox2>,
+  sheet: SheetSpec,
+): SheetLayout {
+  const { margin, gap } = sheet;
+  const availW = sheet.w - 2 * margin;
+  const availH = sheet.h - 2 * margin - sheet.titleBlock.h;
+
+  const row1H = Math.max(views.front.h, views.left.h);
+  const row2H = Math.max(views.top.h, views.iso.h);
+  const needW = views.iso.w + views.front.w + views.left.w;
+  const needH = row1H + row2H;
+
+  // The band above the front row takes the front view's stacked horizontal
+  // dimensions, which in third angle run into the free space below it.
+  const topBand = 2 * DIM_BAND;
+  const raw = Math.min(
+    (availW - 2 * gap) / needW,
+    (availH - gap - topBand) / needH,
+  );
+  const s = pickDrawingScale(raw);
+
+  const contentW = needW * s + 2 * gap;
+  const contentH = needH * s + gap + topBand;
+  const x0 = margin + Math.max(0, (availW - contentW) / 2);
+  const y0 = margin + Math.max(0, (availH - contentH) / 2);
+
+  const frontX = x0 + views.iso.w * s + gap;
+  const leftX = frontX + views.front.w * s + gap;
+  const row1Top = y0 + topBand;
+  const row2Top = row1Top + row1H * s + gap;
+
+  const front: ViewPlacement = {
+    tx: frontX - views.front.x * s,
+    ty: row1Top + (views.front.y + views.front.h) * s,
+    box: { x: frontX, y: row1Top, w: views.front.w * s, h: views.front.h * s },
+  };
+  // Shared model x axis with the front view; top edge on the second row.
+  const top: ViewPlacement = {
+    tx: front.tx,
+    ty: row2Top + (views.top.y + views.top.h) * s,
+    box: {
+      x: front.tx + views.top.x * s,
+      y: row2Top,
+      w: views.top.w * s,
+      h: views.top.h * s,
+    },
+  };
+  // Shared model y axis with the front view.
+  const left: ViewPlacement = {
+    tx: leftX - views.left.x * s,
+    ty: front.ty,
+    box: {
+      x: leftX,
+      y: front.ty - (views.left.y + views.left.h) * s,
+      w: views.left.w * s,
+      h: views.left.h * s,
+    },
+  };
+  const isoY = row2Top + Math.max(0, (row2H - views.iso.h) * s) / 2;
+  const iso: ViewPlacement = {
+    tx: x0 - views.iso.x * s,
+    ty: isoY + (views.iso.y + views.iso.h) * s,
+    box: { x: x0, y: isoY, w: views.iso.w * s, h: views.iso.h * s },
+  };
+
+  return { scale: s, scaleText: scaleLabel(s), views: { front, top, left, iso } };
+}
+
+/** The same layout with the orthographic views (front, top, left) moved
+ *  `dy` mm down the sheet (up when negative). They keep their projection
+ *  alignment; the isometric has its own column and stays put. */
+export function shiftOrthographicViews(layout: SheetLayout, dy: number): SheetLayout {
+  const move = (p: ViewPlacement): ViewPlacement => ({ tx: p.tx, ty: p.ty + dy, box: { ...p.box, y: p.box.y + dy } });
+  const { front, top, left, iso } = layout.views;
+  return { ...layout, views: { front: move(front), top: move(top), left: move(left), iso } };
 }
 
 // ---------------------------------------------------------------------------

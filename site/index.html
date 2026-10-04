@@ -3,17 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light" />
   <meta name="description" content="Describe what you need and kernelCAD designs the part, checks it holds together, and hands you a file your shop can manufacture." />
   <meta property="og:title" content="kernelCAD — from words to manufacturable geometry" />
   <meta property="og:description" content="Describe what you need. kernelCAD designs the part, checks it holds together, and hands you a file your shop can manufacture." />
   <meta property="og:image" content="https://kernelcad.com/og-image.png" />
-  <meta property="og:url" content="https://kernelcad.com" />
+  <meta property="og:url" content="https://kernelcad.com/" />
   <meta name="twitter:card" content="summary_large_image" />
+  <link rel="canonical" href="https://kernelcad.com/" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,500;1,500&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/style.css?v=2026-07-04-tokentiers" />
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,500;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/style.css?v=2026-09-29-landing-vellum" />
   <title>kernelCAD — from words to manufacturable geometry</title>
   <!--
     Cloudflare Web Analytics — anonymous beacon (no cookies, no IP storage).
@@ -23,10 +25,11 @@
   -->
   <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "e5f5f4c6464f456d8f5376411e77f545"}'></script>
 </head>
-<body>
+<body class="landing">
+  <a class="skip-link" href="#main">Skip to content</a>
   <div class="page-wrap">
 
-    <nav class="nav">
+    <nav class="nav" aria-label="Main">
       <a class="nav-mark" href="/">
         <svg class="k" viewBox="0 0 84 84" fill="none" aria-label="kernelCAD">
           <path d="M 14,12 L 26,12 L 26,34 Q 26,36 27.5,34.5 L 46,12 L 60,12 L 36,40 Q 35,42 36,44 L 60,72 L 46,72 L 27.5,49.5 Q 26,48 26,50 L 26,72 L 14,72 Z" fill="currentColor"/>
@@ -35,6 +38,8 @@
       </a>
       <div class="nav-links">
         <a href="/docs/">docs</a>
+        <a href="/gallery">gallery</a>
+        <a href="https://app.kernelcad.com/me">your projects</a>
         <a class="app-link" href="https://app.kernelcad.com">app ↗</a>
         <a href="https://github.com/w1ne/kernelCAD-web">github</a>
         <a href="https://www.npmjs.com/package/kernelcad">npm</a>
@@ -42,9 +47,10 @@
       </div>
     </nav>
 
+    <main id="main">
     <header class="hero">
       <div class="hero-copy">
-        <h1 class="headline">From words to <span class="accent">manufacturable geometry</span>.</h1>
+        <h1 class="headline" lang="en">From words to <span class="accent">manufacturable geometry</span>.</h1>
         <p class="subhead">Describe what you need. kernelCAD designs the part, checks it holds together, and hands you a file your shop can manufacture.</p>
         <div class="modes" aria-label="Supported agent surfaces">
           <span class="mode">Claude Desktop</span><span class="sep">·</span>
@@ -109,51 +115,98 @@
       </div>
     </section>
 
+    <section class="steps" id="how-it-works" aria-labelledby="steps-title">
+      <div class="section-head">
+        <span class="section-kicker">How it works</span>
+        <h2 class="section-title" id="steps-title">Three steps from idea to part.</h2>
+      </div>
+      <ol class="steps-list">
+        <li class="step">
+          <span class="step-num" aria-hidden="true">1</span>
+          <h3 class="step-title">Connect your agent</h3>
+          <p class="step-copy">Add kernelCAD to Claude, ChatGPT, Codex or Cursor with one command. No agent? Use the one built into the app.</p>
+          <a class="step-link" href="/app/connect">Connect your agent →</a>
+        </li>
+        <li class="step">
+          <span class="step-num" aria-hidden="true">2</span>
+          <h3 class="step-title">Describe the part</h3>
+          <p class="step-copy">Say what it must do, its sizes and the parts it must fit. The agent writes editable .kcad.ts source and checks the geometry.</p>
+          <a class="step-link" href="/docs/">Read the docs →</a>
+        </li>
+        <li class="step">
+          <span class="step-num" aria-hidden="true">3</span>
+          <h3 class="step-title">Download or print</h3>
+          <p class="step-copy">Open the checked model, change a size, then download STEP or STL for your shop or your 3D printer.</p>
+          <a class="step-link" href="https://app.kernelcad.com">Open the app →</a>
+        </li>
+      </ol>
+    </section>
+
     <!-- PRICING:BEGIN (generated by site/scripts/build-pricing.ts — edit src/funnel/lib/pricingTiers.ts, not this block) -->
     <section class="pricing" id="pricing" aria-label="Pricing">
       <link rel="stylesheet" href="/pricing-island.css" />
-      <div id="pricing-root" class="mx-auto max-w-6xl px-2 text-[#0A1628]"><div class="mx-auto max-w-5xl"><div class="text-center"><span class="text-sm font-semibold uppercase tracking-wide text-[#1E5FA8]">Pricing</span><h2 class="mt-2 font-serif text-4xl font-bold tracking-tight text-[#0A1628] sm:text-5xl">Simple, token-based pricing.</h2><p class="mx-auto mt-4 max-w-xl text-[#3F4C5E]">A monthly token allowance for the build agent — a tiny cube costs a sliver, a big assembly costs more. Yearly billing is 2 months free. Cancel anytime.</p></div><div class="mt-8 flex items-center justify-center"><div class="inline-flex rounded-full bg-[#FFFDF7] p-1 ring-1 ring-[#D6CDB4]"><button type="button" aria-pressed="true" class="rounded-full px-4 py-1.5 text-sm font-medium transition-colors bg-[#1E5FA8] text-white">Monthly</button><button type="button" aria-pressed="false" class="rounded-full px-4 py-1.5 text-sm font-medium transition-colors bg-transparent text-[#3F4C5E] hover:text-[#0A1628]">Yearly <span class="ml-1 text-[#B87333]">· 2 months free</span></button></div></div><div class="mt-12"><div class="grid grid-cols-1 gap-5 md:grid-cols-3"><section aria-label="Basic plan" class="relative flex flex-col rounded-2xl p-6 bg-[#FFFDF7] ring-1 ring-[#D6CDB4]"><h3 class="text-2xl font-bold text-[#0A1628]">Basic</h3><div class="mt-2 flex items-end gap-2"><span class="text-5xl font-extrabold tracking-tight text-[#0A1628]">$19</span><span class="mb-1.5 text-sm text-[#97A0AC]">per month</span></div><p class="mt-1 text-xs text-transparent select-none" aria-hidden="true">.</p><p class="mt-3 min-h-[40px] text-sm text-[#3F4C5E]">A generous monthly token allowance for hobby and side-project builds.</p><button type="button" aria-label="Subscribe to Basic" class="mt-5 w-full rounded-lg py-3 text-sm font-semibold transition-colors disabled:cursor-default disabled:opacity-70 bg-[#EFE5C9] text-[#0A1628] hover:bg-[#E3D6B4]">Subscribe →</button><ul class="mt-6 space-y-3"><li class="flex items-start gap-2.5"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-check mt-0.5 shrink-0 text-[#1E5FA8]" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path></svg><span class="text-sm text-[#3F4C5E] leading-snug"><span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-[#1E5FA8]/12 text-[#174E8B]"><span>🎟️</span>5M tokens / month</span></span></li><li class="flex items-start gap-2.5"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-check mt-0.5 shrink-0 text-[#1E5FA8]" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path></svg><span class="text-sm text-[#3F4C5E] leading-snug">Full 3D editor &amp; viewer</span></li><li class="flex items-start gap-2.5"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-check mt-0.5 shrink-0 text-[#1E5FA8]" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path></svg><span class="text-sm text-[#3F4C5E] leading-snug"><span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-[#1E5FA8]/12 text-[#174E8B]"><span>🔌</span>MCP access — bring your own agent</span></span></li><li class="flex items-start gap-2.5"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-check mt-0.5 shrink-0 text-[#1E5FA8]" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path></svg><span class="text-sm text-[#3F4C5E] leading-snug"><span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-[#B87333]/15 text-[#8A551F]"><span>🧠</span>Build as parametric CAD (mesh-conditioned)</span></span></li><li class="flex items-start gap-2.5"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-check mt-0.5 shrink-0 text-[#1E5FA8]" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path></svg><span class="text-sm text-[#3F4C5E] leading-snug"><span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-[#B87333]/15 text-[#8A551F]"><span>🖼️</span>Image → 3D concept previews</span></span></li><li class="flex items-start gap-2.5"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-check mt-0.5 shrink-0 text-[#1E5FA8]" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path></svg><span class="text-sm text-[#3F4C5E] leading-snug">STEP / STL export</span></li><li class="flex items-start gap-2.5"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-check mt-0.5 shrink-0 text-[#1E5FA8]" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path></svg><span class="text-sm text-[#3F4C5E] leading-snug">Commercial use license</span></li></ul></section><section aria-label="Pro plan" class="relative flex flex-col rounded-2xl p-6 bg-[#FFFDF7] ring-2 ring-[#1E5FA8]"><span class="absolute -top-3 left-6 rounded-full bg-[#1E5FA8] px-3 py-0.5 text-xs font-semibold text-white shadow">Most popular</span><h3 class="text-2xl font-bold text-[#0A1628]">Pro</h3><div class="mt-2 flex items-end gap-2"><span class="text-5xl font-extrabold tracking-tight text-[#0A1628]">$39</span><span class="mb-1.5 text-sm text-[#97A0AC]">per month</span></div><p class="mt-1 text-xs text-transparent select-none" aria-hidden="true">.</p><p class="mt-3 min-h-[40px] text-sm text-[#3F4C5E]">Almost-unlimited tokens for daily, professional CAD work.</p><button type="button" aria-label="Subscribe to Pro" class="mt-5 w-full rounded-lg py-3 text-sm font-semibold transition-colors disabled:cursor-default disabled:opacity-70 bg-[#1E5FA8] text-white hover:bg-[#174E8B]">Subscribe →</button><ul class="mt-6 space-y-3"><li class="text-sm font-medium text-[#3F4C5E] underline decoration-dotted underline-offset-4">← Everything in <!-- -->Basic<!-- -->, plus:</li><li class="flex items-start gap-2.5"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-check mt-0.5 shrink-0 text-[#1E5FA8]" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path></svg><span class="text-sm text-[#3F4C5E] leading-snug"><span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium bg-[#1E5FA8]/12 text-[#174E8B]"><span>🚀</span>12M tokens / month — almost unlimited</span></span></li><li class="flex items-start gap-2.5"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-check mt-0.5 shrink-0 text-[#1E5FA8]" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path></svg><span class="text-sm text-[#3F4C5E] leading-snug"><span class="mr-1">⚡</span>Priority generation</span></li><li class="flex items-start gap-2.5"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-check mt-0.5 shrink-0 text-[#1E5FA8]" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path></svg><span class="text-sm text-[#3F4C5E] leading-snug">Every feature, no build counting</span></li></ul></section><section aria-label="Enterprise plan" class="relative flex flex-col rounded-2xl p-6 bg-[#FFFDF7] ring-1 ring-[#D6CDB4]"><h3 class="text-2xl font-bold text-[#0A1628]">Enterprise</h3><div class="mt-2 flex items-end gap-2"><span class="text-5xl font-extrabold tracking-tight text-[#0A1628]">Custom</span><span class="mb-1.5 text-sm text-[#97A0AC]">let&#x27;s talk</span></div><p class="mt-1 text-xs text-transparent select-none" aria-hidden="true">.</p><p class="mt-3 min-h-[40px] text-sm text-[#3F4C5E]">Seats, one invoice, and a security review for your whole team.</p><a href="mailto:support@kernelcad.com?subject=kernelCAD%20for%20teams" aria-label="Contact sales about Enterprise" class="mt-5 w-full rounded-lg bg-[#EFE5C9] py-3 text-center text-sm font-semibold text-[#0A1628] no-underline transition-colors hover:bg-[#E3D6B4]">Contact sales</a><ul class="mt-6 space-y-3"><li class="text-sm font-medium text-[#3F4C5E] underline decoration-dotted underline-offset-4">← Everything in <!-- -->Pro<!-- -->, plus:</li><li class="flex items-start gap-2.5"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-check mt-0.5 shrink-0 text-[#1E5FA8]" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path></svg><span class="text-sm text-[#3F4C5E] leading-snug"><span class="mr-1">👥</span>Team seats &amp; shared projects</span></li><li class="flex items-start gap-2.5"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-check mt-0.5 shrink-0 text-[#1E5FA8]" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path></svg><span class="text-sm text-[#3F4C5E] leading-snug"><span class="mr-1">🧾</span>Centralized billing &amp; invoicing</span></li><li class="flex items-start gap-2.5"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-check mt-0.5 shrink-0 text-[#1E5FA8]" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path></svg><span class="text-sm text-[#3F4C5E] leading-snug"><span class="mr-1">🔐</span>SSO / SAML</span></li><li class="flex items-start gap-2.5"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-check mt-0.5 shrink-0 text-[#1E5FA8]" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path></svg><span class="text-sm text-[#3F4C5E] leading-snug"><span class="mr-1">🎧</span>Priority support &amp; onboarding</span></li></ul></section></div></div></div></div>
+      <div id="pricing-root" class="mx-auto max-w-6xl px-2 text-[#0A1628]"><div class="mx-auto max-w-5xl"><div class="text-center"><span class="text-sm font-semibold uppercase tracking-wide text-[var(--kc-accent,#1E5FA8)]">Pricing</span><h2 class="mt-2 font-serif text-4xl font-medium tracking-tight text-[var(--kc-fg,#0A1628)] sm:text-5xl">Simple, token-based pricing.</h2><p class="mx-auto mt-4 max-w-xl text-[var(--kc-fg-2,#3F4C5E)]">A monthly token allowance for the build agent — a tiny cube costs a sliver, a big assembly costs more. Yearly billing is 2 months free. Cancel anytime.</p></div><div class="mt-8 flex items-center justify-center"><div role="group" aria-label="Billing period" class="inline-flex rounded-full bg-[var(--kc-surface-1,#FFFDF7)] p-1 ring-1 ring-inset ring-[var(--kc-border,#D6CDB4)]"><button type="button" aria-pressed="true" class="inline-flex min-h-10 items-center rounded-full px-4 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kc-accent,#1E5FA8)] bg-[var(--kc-fg,#0A1628)] text-[var(--kc-bg,#F4ECD7)]">Monthly</button><button type="button" aria-pressed="false" class="inline-flex min-h-10 items-center rounded-full px-4 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kc-accent,#1E5FA8)] bg-transparent text-[var(--kc-fg-2,#3F4C5E)] hover:text-[var(--kc-fg,#0A1628)]">Yearly · 2 months free</button></div></div><div class="mt-12"><div class="grid grid-cols-1 gap-5 md:grid-cols-3"><section aria-label="Basic plan" class="relative flex flex-col rounded-lg p-6 bg-[var(--kc-surface-1,#FFFDF7)] ring-1 ring-inset ring-[var(--kc-border,#D6CDB4)]"><h3 class="text-xl font-semibold text-[var(--kc-fg,#0A1628)]">Basic</h3><div class="mt-3 flex items-baseline gap-2"><span class="text-5xl font-semibold tracking-tight text-[var(--kc-fg,#0A1628)]">$19</span><span class="text-sm text-[var(--kc-fg-3,#566072)]">per month</span></div><p class="mt-1 min-h-4 text-xs text-[var(--kc-fg-2,#3F4C5E)]"> </p><p class="mt-3 min-h-[40px] text-sm text-[var(--kc-fg-2,#3F4C5E)]">A generous monthly token allowance for hobby and side-project builds.</p><button type="button" aria-label="Subscribe to Basic" class="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-md px-4 text-sm font-semibold no-underline transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kc-accent,#1E5FA8)] disabled:cursor-default disabled:opacity-60 bg-[var(--kc-surface-1,#FFFDF7)] text-[var(--kc-fg,#0A1628)] ring-1 ring-inset ring-[var(--kc-border-strong,#8A7F62)] hover:bg-[var(--kc-surface-2,#EFE5C9)]">Subscribe</button><ul class="mt-6 list-none space-y-3 pl-0"><li class="flex items-start gap-2.5"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check mt-0.5 shrink-0 text-[var(--kc-accent,#1E5FA8)]" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><span class="text-sm leading-snug font-semibold text-[var(--kc-fg,#0A1628)]">5M tokens / month</span></li><li class="flex items-start gap-2.5"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check mt-0.5 shrink-0 text-[var(--kc-accent,#1E5FA8)]" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><span class="text-sm leading-snug text-[var(--kc-fg-2,#3F4C5E)]">Full 3D editor &amp; viewer</span></li><li class="flex items-start gap-2.5"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check mt-0.5 shrink-0 text-[var(--kc-accent,#1E5FA8)]" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><span class="text-sm leading-snug text-[var(--kc-fg-2,#3F4C5E)]">MCP access — bring your own agent</span></li><li class="flex items-start gap-2.5"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check mt-0.5 shrink-0 text-[var(--kc-accent,#1E5FA8)]" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><span class="text-sm leading-snug text-[var(--kc-fg-2,#3F4C5E)]">Build as parametric CAD (mesh-conditioned)</span></li><li class="flex items-start gap-2.5"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check mt-0.5 shrink-0 text-[var(--kc-accent,#1E5FA8)]" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><span class="text-sm leading-snug text-[var(--kc-fg-2,#3F4C5E)]">Image → 3D concept previews</span></li><li class="flex items-start gap-2.5"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check mt-0.5 shrink-0 text-[var(--kc-accent,#1E5FA8)]" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><span class="text-sm leading-snug text-[var(--kc-fg-2,#3F4C5E)]">STEP / STL export</span></li><li class="flex items-start gap-2.5"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check mt-0.5 shrink-0 text-[var(--kc-accent,#1E5FA8)]" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><span class="text-sm leading-snug text-[var(--kc-fg-2,#3F4C5E)]">Commercial use license</span></li></ul></section><section aria-label="Pro plan" class="relative flex flex-col rounded-lg p-6 bg-[var(--kc-surface-1,#FFFDF7)] ring-2 ring-[var(--kc-accent,#1E5FA8)]"><span class="absolute -top-3 left-6 rounded-full px-3 py-0.5 text-xs font-semibold bg-[var(--kc-accent,#1E5FA8)] text-[var(--kc-on-accent,#FFFFFF)] hover:bg-[var(--kc-accent-hover,#174E8B)]">Most popular</span><h3 class="text-xl font-semibold text-[var(--kc-fg,#0A1628)]">Pro</h3><div class="mt-3 flex items-baseline gap-2"><span class="text-5xl font-semibold tracking-tight text-[var(--kc-fg,#0A1628)]">$39</span><span class="text-sm text-[var(--kc-fg-3,#566072)]">per month</span></div><p class="mt-1 min-h-4 text-xs text-[var(--kc-fg-2,#3F4C5E)]"> </p><p class="mt-3 min-h-[40px] text-sm text-[var(--kc-fg-2,#3F4C5E)]">Almost-unlimited tokens for daily, professional CAD work.</p><button type="button" aria-label="Subscribe to Pro" class="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-md px-4 text-sm font-semibold no-underline transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kc-accent,#1E5FA8)] disabled:cursor-default disabled:opacity-60 bg-[var(--kc-accent,#1E5FA8)] text-[var(--kc-on-accent,#FFFFFF)] hover:bg-[var(--kc-accent-hover,#174E8B)]">Subscribe</button><ul class="mt-6 list-none space-y-3 pl-0"><li class="text-sm font-medium text-[var(--kc-fg,#0A1628)]">Everything in <!-- -->Basic<!-- -->, plus:</li><li class="flex items-start gap-2.5"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check mt-0.5 shrink-0 text-[var(--kc-accent,#1E5FA8)]" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><span class="text-sm leading-snug font-semibold text-[var(--kc-fg,#0A1628)]">12M tokens / month — almost unlimited</span></li><li class="flex items-start gap-2.5"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check mt-0.5 shrink-0 text-[var(--kc-accent,#1E5FA8)]" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><span class="text-sm leading-snug text-[var(--kc-fg-2,#3F4C5E)]">Priority generation</span></li><li class="flex items-start gap-2.5"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check mt-0.5 shrink-0 text-[var(--kc-accent,#1E5FA8)]" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><span class="text-sm leading-snug text-[var(--kc-fg-2,#3F4C5E)]">Every feature, no build counting</span></li></ul></section><section aria-label="Enterprise plan" class="relative flex flex-col rounded-lg p-6 bg-[var(--kc-surface-1,#FFFDF7)] ring-1 ring-inset ring-[var(--kc-border,#D6CDB4)]"><h3 class="text-xl font-semibold text-[var(--kc-fg,#0A1628)]">Enterprise</h3><div class="mt-3 flex items-baseline gap-2"><span class="text-5xl font-semibold tracking-tight text-[var(--kc-fg,#0A1628)]">Custom</span><span class="text-sm text-[var(--kc-fg-3,#566072)]">let&#x27;s talk</span></div><p class="mt-1 min-h-4 text-xs text-[var(--kc-fg-2,#3F4C5E)]"> </p><p class="mt-3 min-h-[40px] text-sm text-[var(--kc-fg-2,#3F4C5E)]">Seats, one invoice, and a security review for your whole team.</p><a href="mailto:support@kernelcad.com?subject=kernelCAD%20for%20teams" aria-label="Contact sales about Enterprise" class="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-md px-4 text-sm font-semibold no-underline transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--kc-accent,#1E5FA8)] disabled:cursor-default disabled:opacity-60 bg-[var(--kc-surface-1,#FFFDF7)] text-[var(--kc-fg,#0A1628)] ring-1 ring-inset ring-[var(--kc-border-strong,#8A7F62)] hover:bg-[var(--kc-surface-2,#EFE5C9)]">Contact sales</a><ul class="mt-6 list-none space-y-3 pl-0"><li class="text-sm font-medium text-[var(--kc-fg,#0A1628)]">Everything in <!-- -->Pro<!-- -->, plus:</li><li class="flex items-start gap-2.5"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check mt-0.5 shrink-0 text-[var(--kc-accent,#1E5FA8)]" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><span class="text-sm leading-snug font-semibold text-[var(--kc-fg,#0A1628)]">Team seats &amp; shared projects</span></li><li class="flex items-start gap-2.5"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check mt-0.5 shrink-0 text-[var(--kc-accent,#1E5FA8)]" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><span class="text-sm leading-snug text-[var(--kc-fg-2,#3F4C5E)]">Centralized billing &amp; invoicing</span></li><li class="flex items-start gap-2.5"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check mt-0.5 shrink-0 text-[var(--kc-accent,#1E5FA8)]" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><span class="text-sm leading-snug text-[var(--kc-fg-2,#3F4C5E)]">SSO / SAML</span></li><li class="flex items-start gap-2.5"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check mt-0.5 shrink-0 text-[var(--kc-accent,#1E5FA8)]" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><span class="text-sm leading-snug text-[var(--kc-fg-2,#3F4C5E)]">Priority support &amp; onboarding</span></li></ul></section></div></div></div></div>
       <script type="module" src="/pricing-island.js"></script>
     </section>
     <!-- PRICING:END -->
 
-    <section class="gallery" id="gallery" hidden>
-      <div class="gallery-header">
-        <h2 class="gallery-headline">Built with kernelCAD</h2>
-        <p class="gallery-sub">Every release ships with a build. Click any to see the prompt that built it.</p>
+    <section class="gallery" id="gallery" aria-labelledby="gallery-title">
+      <div class="section-head gallery-header">
+        <span class="section-kicker">Gallery</span>
+        <h2 class="section-title gallery-headline" id="gallery-title">Built with kernelCAD</h2>
+        <p class="gallery-sub" id="gallery-sub">Models people made with kernelCAD. Open one to change it or download it.</p>
+      </div>
+      <ul class="gallery-grid" id="gallery-grid" aria-busy="true">
+        <li class="gallery-card is-skeleton" aria-hidden="true"><div class="card-media"></div><div class="card-body"><span class="skeleton-line"></span><span class="skeleton-line short"></span></div></li>
+        <li class="gallery-card is-skeleton" aria-hidden="true"><div class="card-media"></div><div class="card-body"><span class="skeleton-line"></span><span class="skeleton-line short"></span></div></li>
+        <li class="gallery-card is-skeleton" aria-hidden="true"><div class="card-media"></div><div class="card-body"><span class="skeleton-line"></span><span class="skeleton-line short"></span></div></li>
+        <li class="gallery-card is-skeleton" aria-hidden="true"><div class="card-media"></div><div class="card-body"><span class="skeleton-line"></span><span class="skeleton-line short"></span></div></li>
+      </ul>
+      <div class="gallery-footer">
+        <a class="gallery-more" href="/gallery">See the full gallery →</a>
         <a class="gallery-submit"
            href="https://github.com/w1ne/kernelCAD-web/issues/new?template=gallery-submission.md">
           Submit your build →
         </a>
       </div>
-      <div class="gallery-grid" id="gallery-grid"></div>
     </section>
 
-    <section class="signup" id="signup">
-      <h2 class="signup-headline">Get notified when we ship</h2>
-      <p class="signup-sub">~1 email per release. No spam. Unsubscribe anytime.</p>
-      <form class="signup-form" action="/api/subscribe" method="POST">
-        <input
-          type="email"
-          name="email"
-          placeholder="you@example.com"
-          required
-          autocomplete="email"
-          aria-label="Email address"
-        />
-        <input type="hidden" name="source" id="source-input" value="direct" />
-        <button type="submit" class="btn btn-primary">Subscribe</button>
-      </form>
-      <p class="signup-status" id="signup-status" role="status" aria-live="polite"></p>
-      <p class="signup-privacy">
-        We use Cloudflare Web Analytics for visitor counts — no cookies, no IP storage.
-        Your email is stored in our Cloudflare D1 database; we'll only email you when a major version ships.
-        See our <a href="https://github.com/w1ne/kernelCAD-web">source</a> for details.
-      </p>
+    <section class="returning" aria-labelledby="returning-title">
+      <div>
+        <h2 class="returning-title" id="returning-title">Already building?</h2>
+        <p class="returning-copy">Your projects and their history are in the app.</p>
+      </div>
+      <div class="returning-ctas">
+        <a class="btn btn-primary" href="https://app.kernelcad.com/me">Your projects</a>
+        <a class="btn btn-secondary" href="https://app.kernelcad.com">Open Studio</a>
+      </div>
     </section>
+    </main>
 
     <footer class="footer">
-      <div>kernelCAD · MIT</div>
+      <div class="footer-top">
+        <div class="footer-brand">
+          <span class="footer-mark">kernel<span class="cad">CAD</span></span>
+          <span>kernelCAD · MIT</span>
+        </div>
+        <form class="signup-form" id="signup" action="/api/subscribe" method="POST">
+          <label class="signup-label" for="signup-email">Release notes by email, about one per release.</label>
+          <div class="signup-row">
+            <input
+              id="signup-email"
+              type="email"
+              name="email"
+              placeholder="you@example.com"
+              required
+              autocomplete="email"
+            />
+            <input type="hidden" name="source" id="source-input" value="direct" />
+            <button type="submit" class="btn btn-secondary btn-sm">Subscribe</button>
+          </div>
+          <p class="signup-status" id="signup-status" role="status" aria-live="polite"></p>
+          <p class="signup-privacy">No cookies. We keep your email only to send release notes. <a href="/privacy.html">Privacy</a>.</p>
+        </form>
+      </div>
       <div class="footer-links">
         <a href="/terms.html">terms</a>
         <a href="/privacy.html">privacy</a>
@@ -161,57 +214,44 @@
         <a href="https://www.npmjs.com/package/kernelcad">npm</a>
         <a href="https://x.com/kernelcad">x</a>
         <a href="https://www.linkedin.com/company/kernelcad">linkedin</a>
+        <a href="/gallery">gallery</a>
         <a href="https://app.kernelcad.com">app</a>
       </div>
     </footer>
 
-    <div class="footer-stack" style="border-top: 1px solid var(--stroke, rgba(255,255,255,0.08)); padding: 14px 0 28px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; color: var(--mute, #888); font-size: 0.78rem;">
-      <span style="opacity: 0.7;">part of the engineer stack</span>
-      <nav style="display: flex; gap: 18px;">
-        <a href="https://labwired.com" style="color: inherit;">LabWired</a>
-        <a href="https://kernelcad.com" style="color: inherit;">kernelCAD</a>
-        <a href="https://koamtachi.com" style="color: inherit;">koamtachi</a>
-        <a href="https://shylenko.com" style="color: inherit;">shylenko.com</a>
+    <div class="footer-stack">
+      <span class="footer-stack-label">part of the engineer stack</span>
+      <nav class="footer-stack-links" aria-label="Engineer stack">
+        <a href="https://labwired.com">LabWired</a>
+        <a href="https://kernelcad.com">kernelCAD</a>
+        <a href="https://koamtachi.com">koamtachi</a>
+        <a href="https://shylenko.com">shylenko.com</a>
       </nav>
     </div>
 
   </div>
 
-  <dialog id="gallery-lightbox">
+  <dialog id="gallery-lightbox" aria-labelledby="lightbox-title">
     <div class="lightbox-inner">
       <button class="lightbox-close" aria-label="Close" type="button">×</button>
       <div class="lightbox-stage"></div>
       <div class="lightbox-body">
-        <h3 class="lightbox-title"></h3>
+        <h3 class="lightbox-title" id="lightbox-title"></h3>
         <p class="lightbox-meta"></p>
         <div class="lightbox-prompt-label">Build brief</div>
         <pre class="lightbox-prompt"></pre>
         <div class="lightbox-ctas">
-          <form class="lightbox-subscribe" action="/api/subscribe" method="POST">
-            <input type="email" name="email" placeholder="you@example.com" required aria-label="Email address" />
-            <input type="hidden" name="source" />
-            <button type="submit" class="btn btn-primary">Subscribe</button>
-          </form>
-          <div class="lightbox-secondary">
-            <a class="lightbox-studio-link" href="#" target="_blank" rel="noopener">Open in Studio</a>
-            <a class="lightbox-star" href="https://github.com/w1ne/kernelCAD-web" target="_blank" rel="noopener">★ Star on GitHub</a>
-            <a class="lightbox-source" href="#" target="_blank" rel="noopener">View source ↗</a>
-            <a class="lightbox-app" href="#" target="_blank" rel="noopener" hidden>Open in app ↗</a>
-          </div>
+          <a class="btn btn-primary lightbox-studio-link" href="#" target="_blank" rel="noopener">Open in Studio</a>
+          <a class="lightbox-app" href="#" target="_blank" rel="noopener" hidden>Open in app ↗</a>
+          <a class="lightbox-source" href="#" target="_blank" rel="noopener">View source ↗</a>
+          <a class="lightbox-star" href="https://github.com/w1ne/kernelCAD-web" target="_blank" rel="noopener">★ Star on GitHub</a>
         </div>
         <p class="gallery-privacy-note">Free projects are public by link. Upgrade for private projects.</p>
-        <p class="lightbox-footer">
-          <a class="gallery-submit"
-             href="https://github.com/w1ne/kernelCAD-web/issues/new?template=gallery-submission.md">
-            Submit your build →
-          </a>
-        </p>
       </div>
     </div>
   </dialog>
 
   <script>
-    // load demo video + version from build-time generated demo.json
     function cacheKeyedUrl(url, cacheKey) {
       if (!url) return url;
       if (!cacheKey) return url;
@@ -219,6 +259,7 @@
       return `${url}${separator}v=${encodeURIComponent(cacheKey)}`;
     }
 
+    // ---- Hero: demo video + version from build-time generated demo.json --
     fetch('/demo.json')
       .then(r => r.ok ? r.json() : null)
       .then(d => {
@@ -237,11 +278,13 @@
         document.getElementById('demo-artifact').textContent = `${artifact}.kcad.ts`;
       });
 
+    // ---- Gallery -----------------------------------------------------------
     let modelViewerLoading = null;
     function loadModelViewer() {
       if (!modelViewerLoading) {
         modelViewerLoading = import('https://cdn.jsdelivr.net/npm/@google/model-viewer/dist/model-viewer.min.js')
-          .catch(() => { /* graceful degrade — poster img fallback handles it */ });
+          .then(() => true)
+          .catch(() => false); // graceful degrade — tiles fall back to their poster image
       }
       return modelViewerLoading;
     }
@@ -277,14 +320,17 @@
       frame = requestAnimationFrame(tick);
     }
 
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
     function createGalleryViewer(entry, galleryCacheKey, className) {
       const orbit = galleryTileOrbit(entry);
       const viewer = document.createElement('model-viewer');
       viewer.className = className;
       viewer.setAttribute('src', cacheKeyedUrl(entry.modelUrl, galleryCacheKey));
-      viewer.setAttribute('poster', cacheKeyedUrl(entry.posterUrl, galleryCacheKey));
+      // No poster: the release posters are video frames with mixed backgrounds.
+      // The model renders on the uniform card stage instead.
       viewer.setAttribute('alt', entry.title);
-      if (!orbit.faceForward) {
+      if (!orbit.faceForward && !prefersReducedMotion) {
         viewer.setAttribute('auto-rotate', '');
         viewer.setAttribute('auto-rotate-delay', '0');
         viewer.setAttribute('rotation-per-second', '20deg');
@@ -296,21 +342,26 @@
       viewer.setAttribute('reveal', 'auto');
       viewer.setAttribute('disable-zoom', '');
       viewer.setAttribute('loading', 'lazy');
-      if (orbit.faceForward) animateRoyalWatchFace(viewer);
+      if (orbit.faceForward && !prefersReducedMotion) animateRoyalWatchFace(viewer);
       return viewer;
     }
 
+    // Curated tiles paint their release poster first, so a card is never
+    // blank. Near the viewport the tile mounts a slowly turning model over the
+    // poster; the poster goes only once the model has loaded. If the viewer
+    // cannot load, the poster stays.
     function upgradeGalleryTile(tile, entry, galleryCacheKey) {
       if (tile.dataset.modelViewerUpgraded === 'true') return;
 
       tile.dataset.modelViewerUpgraded = 'true';
-      loadModelViewer();
-
+      const media = tile.querySelector('.card-media');
       const viewer = createGalleryViewer(entry, galleryCacheKey, 'tile-viewer');
-
-      const poster = tile.querySelector('.tile-poster');
-      if (poster) poster.replaceWith(viewer);
-      else tile.prepend(viewer);
+      viewer.addEventListener('load', () => media.querySelector('.tile-poster')?.remove(), { once: true });
+      viewer.addEventListener('error', () => viewer.remove(), { once: true });
+      media.appendChild(viewer);
+      loadModelViewer().then((ok) => {
+        if (!ok) viewer.remove();
+      });
     }
 
     function mountLightboxModel(entry, galleryCacheKey) {
@@ -344,102 +395,158 @@
       }
     }
 
-    // Render the curated gallery from /gallery.json
+    // One card shape for both sources: media (4:3, uniform background), then
+    // title and one meta line. The whole card is the action; nothing sits on
+    // top of the image. Text goes in with textContent (titles come from users).
+    function galleryCard({ tag, title, meta, featured }) {
+      const li = document.createElement('li');
+      li.className = 'gallery-card';
+      const action = document.createElement(tag);
+      action.className = 'card-action';
+      // Spans only: a <button> may hold phrasing content, not <div>/<p>.
+      const media = document.createElement('span');
+      media.className = 'card-media';
+      const body = document.createElement('span');
+      body.className = 'card-body';
+      const heading = document.createElement('span');
+      heading.className = 'card-title';
+      heading.textContent = title;
+      body.appendChild(heading);
+      if (featured) {
+        const badge = document.createElement('span');
+        badge.className = 'card-badge';
+        badge.textContent = 'Featured';
+        body.appendChild(badge);
+      }
+      const metaLine = document.createElement('span');
+      metaLine.className = 'card-meta';
+      metaLine.textContent = meta;
+      body.appendChild(metaLine);
+      action.append(media, body);
+      li.appendChild(action);
+      return { li, action, media };
+    }
+
+    function posterImg(src, alt) {
+      const img = document.createElement('img');
+      img.className = 'tile-poster';
+      img.src = src;
+      img.alt = alt;
+      img.loading = 'lazy';
+      img.decoding = 'async';
+      return img;
+    }
+
+    function remixLabel(n) {
+      return n === 1 ? '1 remix' : `${n} remixes`;
+    }
+
+    function renderCommunityCards(grid, cards, galleryCacheKey) {
+      for (const card of cards) {
+        const meta = [`by ${card.ownerName || 'anonymous'}`];
+        if (card.remixCount > 0) meta.push(remixLabel(card.remixCount));
+        const { li, action, media } = galleryCard({
+          tag: 'a', title: card.title, meta: meta.join(' · '), featured: card.featured,
+        });
+        action.href = card.url;
+        media.appendChild(posterImg(cacheKeyedUrl(card.posterUrl, galleryCacheKey), card.title));
+        grid.appendChild(li);
+      }
+    }
+
+    function renderCuratedCards(grid, entries, galleryCacheKey, openLightbox) {
+      for (const entry of entries) {
+        const { li, action: tile, media } = galleryCard({
+          tag: 'button',
+          title: entry.title,
+          meta: `by @${entry.author.handle} · ${entry.version}`,
+          featured: entry.featured,
+        });
+        tile.type = 'button';
+        tile.classList.add('gallery-tile');
+        tile.dataset.slug = entry.slug;
+        tile.setAttribute('aria-haspopup', 'dialog');
+        media.appendChild(posterImg(cacheKeyedUrl(entry.posterUrl, galleryCacheKey), entry.title));
+        tile.__entry = entry;
+        armGalleryTileUpgrade(tile, entry, galleryCacheKey);
+        tile.addEventListener('click', () => {
+          upgradeGalleryTile(tile, entry, galleryCacheKey);
+          openLightbox(entry);
+        });
+        grid.appendChild(li);
+      }
+    }
+
+    function wireLightbox(galleryCacheKey) {
+      const dialog = document.getElementById('gallery-lightbox');
+      const title = dialog.querySelector('.lightbox-title');
+      const meta = dialog.querySelector('.lightbox-meta');
+      const promptEl = dialog.querySelector('.lightbox-prompt');
+      const sourceLink = dialog.querySelector('.lightbox-source');
+      const appLink = dialog.querySelector('.lightbox-app');
+      const studioLink = dialog.querySelector('.lightbox-studio-link');
+      const closeBtn = dialog.querySelector('.lightbox-close');
+
+      function openLightbox(entry) {
+        mountLightboxModel(entry, galleryCacheKey);
+        title.textContent = entry.title;
+        meta.textContent = `by @${entry.author.handle} · ${entry.version} · ${entry.createdAt}`;
+        promptEl.textContent = entry.prompt;
+        if (entry.promptUrl) {
+          fetch(entry.promptUrl)
+            .then((r) => (r.ok ? r.text() : null))
+            .then((promptText) => {
+              if (promptText) promptEl.textContent = promptText.trim();
+            })
+            .catch(() => { /* keep embedded prompt fallback */ });
+        }
+        sourceLink.href = entry.code;
+        studioLink.href = entry.studioUrl;
+        if (entry.appUrl) { appLink.href = entry.appUrl; appLink.hidden = false; }
+        else { appLink.hidden = true; }
+        dialog.showModal();
+      }
+      function closeLightbox() {
+        dialog.querySelector('.lightbox-stage').textContent = '';
+        dialog.close();
+      }
+      closeBtn.addEventListener('click', closeLightbox);
+      dialog.addEventListener('click', (e) => {
+        if (e.target === dialog) closeLightbox();
+      });
+      dialog.addEventListener('close', () => {
+        dialog.querySelector('.lightbox-stage').textContent = '';
+      });
+      return openLightbox;
+    }
+
+    // Community models (from the live gallery API at build time) come first.
+    // While the API has none, the curated release builds fill the section.
+    // With neither, the section hides: no empty box on the landing.
     fetch('/gallery.json')
       .then((r) => (r.ok ? r.json() : null))
+      .catch(() => null)
       .then((g) => {
-        if (!g || !Array.isArray(g.entries) || g.entries.length === 0) return;
         const section = document.getElementById('gallery');
         const grid = document.getElementById('gallery-grid');
+        const community = g && Array.isArray(g.community) ? g.community : [];
+        const curated = g && Array.isArray(g.entries) ? g.entries : [];
+        if (community.length === 0 && curated.length === 0) {
+          section.hidden = true;
+          return;
+        }
         const galleryCacheKey = g.generatedAt;
         grid.textContent = '';
-        for (const entry of g.entries) {
-          const tile = document.createElement('div');
-          tile.className = 'gallery-tile';
-          tile.dataset.slug = entry.slug;
-          tile.innerHTML = `
-            <img
-              class="tile-poster"
-              src="${cacheKeyedUrl(entry.posterUrl, galleryCacheKey)}"
-              alt="${entry.title}"
-              loading="lazy">
-            <span class="tile-chip tile-chip-bl title">${entry.title}</span>
-            <span class="tile-chip tile-chip-br"><span class="version">${entry.version}</span></span>
-            ${entry.featured ? '<span class="tile-featured">Featured</span>' : ''}
-            <a class="tile-studio-link" href="${entry.studioUrl}" target="_blank" rel="noopener">
-              Open in Studio
-            </a>
-          `;
-          tile.__entry = entry;
-          armGalleryTileUpgrade(tile, entry, galleryCacheKey);
-          tile.querySelector('.tile-studio-link')?.addEventListener('pointerdown', clearPromptDraftBeforeNavigation);
-          tile.querySelector('.tile-studio-link')?.addEventListener('click', (event) => {
-            event.stopPropagation();
-            clearPromptDraftBeforeNavigation();
-          });
-          tile.addEventListener('click', () => {
-            upgradeGalleryTile(tile, entry, galleryCacheKey);
-            openLightbox(entry);
-          });
-          grid.appendChild(tile);
+        if (community.length > 0) {
+          renderCommunityCards(grid, community, galleryCacheKey);
+        } else {
+          document.getElementById('gallery-sub').textContent =
+            'Every release ships with a build. Open one to see the brief that built it.';
+          renderCuratedCards(grid, curated, galleryCacheKey, wireLightbox(galleryCacheKey));
+          loadModelViewerNearGallery(section);
+          upgradeGalleryTilesNearViewport(grid, galleryCacheKey);
         }
-        section.hidden = false;
-        loadModelViewerNearGallery(section);
-        upgradeGalleryTilesNearViewport(grid, galleryCacheKey);
-
-        const dialog = document.getElementById('gallery-lightbox');
-        const title = dialog.querySelector('.lightbox-title');
-        const meta = dialog.querySelector('.lightbox-meta');
-        const promptEl = dialog.querySelector('.lightbox-prompt');
-        const sourceInput = dialog.querySelector('input[name="source"]');
-        const sourceLink = dialog.querySelector('.lightbox-source');
-        const appLink = dialog.querySelector('.lightbox-app');
-        const studioLink = dialog.querySelector('.lightbox-studio-link');
-        const closeBtn = dialog.querySelector('.lightbox-close');
-
-        function openLightbox(entry) {
-          mountLightboxModel(entry, galleryCacheKey);
-          title.textContent = entry.title;
-          meta.textContent = `by @${entry.author.handle} · ${entry.version} · ${entry.createdAt}`;
-          promptEl.textContent = entry.prompt;
-          if (entry.promptUrl) {
-            fetch(entry.promptUrl)
-              .then((r) => (r.ok ? r.text() : null))
-              .then((promptText) => {
-                if (promptText) promptEl.textContent = promptText.trim();
-              })
-              .catch(() => { /* keep embedded prompt fallback */ });
-          }
-          sourceInput.value = `gallery-lightbox:${entry.slug}`;
-          sourceLink.href = entry.code;
-          studioLink.href = entry.studioUrl;
-          if (entry.appUrl) { appLink.href = entry.appUrl; appLink.hidden = false; }
-          else { appLink.hidden = true; }
-          dialog.showModal();
-        }
-        function closeLightbox() {
-          dialog.querySelector('.lightbox-stage').textContent = '';
-          dialog.close();
-        }
-        function clearPromptDraftBeforeNavigation() {
-          const form = document.querySelector('.prompt-handoff-form');
-          if (!(form instanceof HTMLFormElement)) return;
-          form.reset();
-        }
-        closeBtn.addEventListener('click', closeLightbox);
-        studioLink.addEventListener('pointerdown', clearPromptDraftBeforeNavigation);
-        studioLink.addEventListener('click', clearPromptDraftBeforeNavigation);
-        appLink.addEventListener('pointerdown', clearPromptDraftBeforeNavigation);
-        appLink.addEventListener('click', clearPromptDraftBeforeNavigation);
-        dialog.addEventListener('click', (e) => {
-          if (e.target === dialog) closeLightbox();
-        });
-        dialog.addEventListener('close', () => {
-          dialog.querySelector('.lightbox-stage').textContent = '';
-        });
-
-        // Expose for tile click handlers (closure captured above).
-        window.__kernelcadOpenLightbox = openLightbox;
+        grid.removeAttribute('aria-busy');
       });
 
     function wireCopyButton(buttonId, command) {
@@ -459,7 +566,7 @@
     wireCopyButton('codex-mcp-btn', 'codex mcp add kernelcad -- npx -y kernelcad mcp');
     wireCopyButton('install-btn', 'npm install -g kernelcad');
 
-    // Source attribution: ?ref=hn → hidden field on signup form
+    // Source attribution: ?ref=hn → hidden field on the footer signup form
     const params = new URLSearchParams(window.location.search);
     const ref = params.get('ref');
     if (ref) document.getElementById('source-input').value = ref;

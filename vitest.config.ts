@@ -1,9 +1,10 @@
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import { fileURLToPath } from 'node:url';
+import { kernelCadEditorTypingsPlugin } from './scripts/editorTypings';
 
 export default defineConfig({
-    plugins: [react()],
+    plugins: [react(), kernelCadEditorTypingsPlugin()],
     resolve: {
         alias: {
             'verb-nurbs': fileURLToPath(
@@ -31,6 +32,7 @@ export default defineConfig({
             // Without this the island tests are collected by nothing and report
             // no failures because they never run.
             'site/island/**/*.test.ts',
+            'workers/**/*.test.ts',
         ],
         exclude: ['**/node_modules/**', '**/dist/**', 'tests/playwright/**', 'playwright-report/**', 'test-results/**'],
         deps: {

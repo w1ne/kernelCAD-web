@@ -8,9 +8,10 @@ test('quick start opens editable parts inside the Studio', async ({ page }) => {
   test.setTimeout(180_000);
   await page.goto('/');
   await expect(page.getByTestId('workbench-ready')).toBeVisible();
-  await page.getByRole('button', { name: 'Quick start', exact: true }).click();
   for (const name of ['Phone stand', 'Bracket', 'Open box']) {
-    await page.getByRole('button', { name, exact: true }).click();
+    // Starters live in the Projects pane of the activity bar.
+    if (await page.getByTestId('projects-pane').count() === 0) await page.getByTestId('activity-projects').click();
+    await page.getByTestId('projects-pane').getByRole('button', { name, exact: true }).click();
     await expect(page.getByTestId('workbench-ready')).toBeVisible();
     await expect(page.getByRole('tab', { name: 'Params', exact: true })).toBeEnabled({ timeout: 60_000 });
     await page.getByRole('tab', { name: 'Params', exact: true }).click();
@@ -23,7 +24,7 @@ test('quick start opens editable parts inside the Studio', async ({ page }) => {
     expect((await resized).ok()).toBe(true);
     await expect(width).toHaveValue('120');
     const downloadEvent = page.waitForEvent('download');
-    await page.getByRole('button', { name: 'Export STL', exact: true }).click();
+    await page.getByTitle('Export STL', { exact: true }).click();
     const download = await downloadEvent;
     const bytes = await readFile((await download.path())!);
     const geometry = new STLLoader().parse(new Uint8Array(bytes).buffer);

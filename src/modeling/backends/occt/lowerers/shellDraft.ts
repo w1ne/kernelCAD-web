@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import { invalidArgsText } from '../../../../shared/intent/invalidArgs';
 import * as replicad from 'replicad';
 import type { ShapeBackend } from '../../../../kernel/backends/backend';
 import { OcctBackend } from '../../../../kernel/backends/occt/occtBackend';
@@ -24,8 +25,14 @@ export function lowerShell(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
       code: 'feature.invalid-args',
       featureId: r.id,
       severity: 'error',
-      message: `shell requires an input named 'base'.`,
-      hint: 'Chain shell onto a solid shape.',
+      ...invalidArgsText({
+        api: 'shell(thickness, { face })',
+        path: 'inputs.base',
+        gotText: 'no base shape',
+        requires:
+          'a solid Shape to chain onto — .shell() is a method on a solid, not a standalone call',
+        example: "box(40, 30, 10).shell(2, { face: 'top' })",
+      }),
     });
     throw new Error('shell: no base shape');
   }
@@ -36,8 +43,15 @@ export function lowerShell(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
       code: 'feature.invalid-args',
       featureId: r.id,
       severity: 'error',
-      message: `shell requires a 'thickness' parameter.`,
-      hint: 'Pass a positive finite number as the first argument, e.g. .shell(1, { face: \'top\' }).',
+      ...invalidArgsText({
+        api: 'shell(thickness, { face })',
+        path: 'thickness',
+        gotText: 'nothing',
+        requires:
+          'a finite number > 0 as the FIRST argument — the wall left behind; .shell(thickness, { face }), never an options object alone',
+        unit: 'mm',
+        example: "box(40, 30, 10).shell(2, { face: 'top' })",
+      }),
     });
     throw new Error('shell: no thickness');
   }
@@ -64,8 +78,15 @@ export function lowerShell(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
       code: 'feature.kernel-failed',
       featureId: r.id,
       severity: 'error',
-      message: `OCCT shell failed: ${msg}`,
-      hint: 'OCCT could not shell that solid — try a thinner wall or a different open face. Thickness must be smaller than the shape\'s minimum thickness.',
+      message:
+        `OCCT shell failed: ${msg}. The wall offset could not be closed. Two usual causes: the wall is ` +
+        `thicker than the thinnest part of the body, or curved faces meet at sharp (non-tangent) edges — ` +
+        `a multi-station variableSweep, a ruled loft, or a union of stacked lofts.`,
+      hint:
+        'Try a thinner wall or a different open face. If the body is built from stations or stacked lofts, ' +
+        'hollow it with a boolean instead of shell(): build the same body again from profiles inset by the ' +
+        'wall thickness, starting one wall above the base and running past the open top, then ' +
+        '`outer.subtract(inner)`. Cookbook: twisted-tapered-thin-wall-vase.',
     });
     return finished(base);
   }
@@ -86,8 +107,13 @@ export function lowerDraft(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
       code: 'feature.invalid-args',
       featureId: r.id,
       severity: 'error',
-      message: `draft requires an input named 'base'.`,
-      hint: 'Chain draft onto a solid shape.',
+      ...invalidArgsText({
+        api: 'draft(angleDeg, { face })',
+        path: 'inputs.base',
+        gotText: 'no base shape',
+        requires: 'a solid Shape to chain onto — .draft() is a method on a solid',
+        example: "box(40, 30, 10).draft(3, { face: 'front' })",
+      }),
     });
     throw new Error('draft: no base shape');
   }
@@ -98,8 +124,15 @@ export function lowerDraft(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
       code: 'feature.invalid-args',
       featureId: r.id,
       severity: 'error',
-      message: `draft requires an 'angle' parameter.`,
-      hint: "Pass the taper angle in degrees, e.g. .draft(5, { face: 'front' }).",
+      ...invalidArgsText({
+        api: 'draft(angleDeg, { face })',
+        path: 'angleDeg',
+        gotText: 'nothing',
+        requires:
+          'a number in (0, 90) as the FIRST argument — the taper angle away from the pull direction (1–3 is typical for injection moulding)',
+        unit: 'deg',
+        example: "box(40, 30, 10).draft(3, { face: 'front' })",
+      }),
     });
     throw new Error('draft: no angle');
   }

@@ -342,6 +342,12 @@ function applyAssemblyModelFk(
   return worldT;
 }
 
+/** Engineering-material name recorded on an `assemblyPart` record, if any. */
+function partMaterialName(partRec: FeatureRecord | undefined): string | undefined {
+  const name = (partRec?.metadata as { materialName?: unknown } | undefined)?.materialName;
+  return typeof name === 'string' ? name : undefined;
+}
+
 function buildAssemblyModelSceneParts(
   inputs: AssemblyModelInputs,
   worldT: Map<FeatureId, Transform>,
@@ -354,12 +360,14 @@ function buildAssemblyModelSceneParts(
       (partRec?.metadata as { partName?: string } | undefined)?.partName ?? partId;
     const color = partRec ? lookupSourceColor(partRec, records) : undefined;
     const material = partRec ? lookupSourceMaterial(partRec, records) : undefined;
+    const materialName = partMaterialName(partRec);
     return {
       name: partName,
       shape: partShape as OcctBackend,
       worldTransform: worldT.get(partId) ?? Transform.identity(),
       ...(color !== undefined ? { color } : {}),
       ...(material !== undefined ? { material } : {}),
+      ...(materialName !== undefined ? { materialName } : {}),
     };
   });
 }
@@ -542,12 +550,14 @@ export function lowerSolvedAssembly(ctx: LowerContext, r: FeatureRecord): LowerO
     const partName = partMeta?.partName ?? partId;
     const color = lookupSourceColor(partRec, records);
     const material = lookupSourceMaterial(partRec, records);
+    const materialName = partMaterialName(partRec);
     return {
       name: partName,
       shape: partShape as OcctBackend,
       worldTransform: T,
       ...(color !== undefined ? { color } : {}),
       ...(material !== undefined ? { material } : {}),
+      ...(materialName !== undefined ? { materialName } : {}),
     };
   });
   const assemblyName =

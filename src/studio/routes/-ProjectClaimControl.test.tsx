@@ -5,7 +5,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { Session } from '@supabase/supabase-js';
 import type { ProjectRow } from '../../funnel/lib/apiClient';
-import { ProjectClaimControl } from './-ProjectClaimControl';
+import { AnonProjectBanner, ProjectClaimControl } from './-ProjectClaimControl';
+import { claimReturnUrl } from './-anonClaim';
 
 function makeProject(overrides: Partial<ProjectRow> = {}): ProjectRow {
   return {
@@ -151,5 +152,46 @@ describe('ProjectClaimControl', () => {
     expect(toggle.disabled).toBe(true);
     expect(screen.getByText('…')).toBeDefined();
     expect(screen.queryByText('Make public')).toBeNull();
+  });
+});
+
+describe('AnonProjectBanner', () => {
+  function renderBanner(overrides: Partial<Parameters<typeof AnonProjectBanner>[0]> = {}) {
+    const props = {
+      project: makeProject({ owner_id: null }),
+      session: null,
+      claimed: false,
+      claiming: false,
+      onClaim: vi.fn(),
+      ...overrides,
+    };
+    return { ...render(<AnonProjectBanner {...props} />), props };
+  }
+
+  it('tells a signed-out visitor the project is not saved and offers Sign in to keep it', () => {
+    renderBanner();
+    const banner = screen.getByRole('status');
+    expect(banner.textContent).toContain("This project isn't saved to an account yet —");
+    expect(screen.getByRole('button', { name: 'Sign in to keep it' })).toBeDefined();
+  });
+
+  it('lets a signed-in visitor save it to their account', () => {
+    const { props } = renderBanner({ session: makeSession('viewer-1') });
+    fireEvent.click(screen.getByRole('button', { name: 'Save it to my account' }));
+    expect(props.onClaim).toHaveBeenCalledTimes(1);
+  });
+
+  it('is hidden on an owned project and once claimed', () => {
+    const owned = renderBanner({ project: makeProject({ owner_id: 'owner-1' }) });
+    expect(owned.container.textContent).toBe('');
+    cleanup();
+    const claimed = renderBanner({ claimed: true });
+    expect(claimed.container.textContent).toBe('');
+  });
+
+  it('returns from sign-in to the same page with claim=1, keeping other params', () => {
+    expect(claimReturnUrl('https://app.kernelcad.com/p/abc?width=20')).toBe(
+      'https://app.kernelcad.com/p/abc?width=20&claim=1',
+    );
   });
 });

@@ -63,6 +63,22 @@ export interface LowerVariableSweepOpts {
    * the spine direction and the swept volume collapses. Default: `false`.
    */
   withCorrection?: boolean;
+  /**
+   * When true, the lowerer places each profile wire itself before handing it
+   * to OCCT: the profile's local origin goes to the spine point at the
+   * station's `t`, and its +Z normal is turned onto the spine tangent there
+   * by the minimal rotation (identity for a +Z tangent; 180° about X for a
+   * -Z tangent, the same convention as `Shape.alongAxis`). `Add_2` then runs
+   * with `WithContact=false, WithCorrection=false`, so OCCT keeps that
+   * placement. `withContact` / `withCorrection` are ignored in this mode.
+   *
+   * This is the mode for sketch-derived profiles (drawn in XY around the
+   * origin). OCCT's own `WithContact=true` does NOT map the profile origin
+   * onto the spine: it translates the profile until its BOUNDARY touches the
+   * spine, so a profile centred on the origin came out shifted sideways by
+   * its own half-width. Default: `false`.
+   */
+  placeProfiles?: boolean;
 }
 
 /**
@@ -182,9 +198,13 @@ export function lowerVariableSweep(
   // (used by direct-OCCT unit tests).
   // `withCorrection` is the fourth argument: when true, OCCT also rotates
   // each profile to be perpendicular to the spine tangent at its vertex.
-  const withContact = opts.withContact ?? false;
-  const withCorrection = opts.withCorrection ?? false;
-  addProfileSections(pipeShell, sections, stationVertices, withContact, withCorrection);
+  const placeProfiles = opts.placeProfiles ?? false;
+  const withContact = placeProfiles ? false : (opts.withContact ?? false);
+  const withCorrection = placeProfiles ? false : (opts.withCorrection ?? false);
+  const profileWires = placeProfiles
+    ? placeProfilesAtStations(oc, spineEdge, sections)
+    : sections.map((s) => s.profileWire);
+  addProfileSections(pipeShell, profileWires, stationVertices, withContact, withCorrection);
 
   const progress = new oc.Message_ProgressRange_1();
   pipeShell.Build(progress);
@@ -448,12 +468,64 @@ function resolveTransitionMode(oc: Oc, opts: LowerVariableSweepOpts) {
 // two-section path, matched spine vertices when stations are subdivided).
 function addProfileSections(
   pipeShell: OcPipeShell,
-  sections: VariableSweepSectionLowered[],
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  profileWires: any[],
   stationVertices: SpineAnchor['firstVertex'][],
   withContact: boolean,
   withCorrection: boolean,
 ): void {
-  for (let i = 0; i < sections.length; i++) {
-    pipeShell.Add_2(sections[i].profileWire, stationVertices[i], withContact, withCorrection);
+  for (let i = 0; i < profileWires.length; i++) {
+    pipeShell.Add_2(profileWires[i], stationVertices[i], withContact, withCorrection);
   }
+}
+
+/**
+ * `placeProfiles` mode: move each XY-plane profile wire onto its station.
+ * The profile origin lands on the spine point at `t` and the profile's +Z
+ * normal turns onto the spine tangent by the minimal rotation, so a profile
+ * drawn centred on the origin stays centred on the spine.
+ */
+function placeProfilesAtStations(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  oc: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  spineEdge: any,
+  sections: VariableSweepSectionLowered[],
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): any[] {
+  const adaptor = new oc.BRepAdaptor_Curve_2(spineEdge);
+  const u0 = adaptor.FirstParameter();
+  const u1 = adaptor.LastParameter();
+  return sections.map((s) => {
+    const u = u0 + s.t * (u1 - u0);
+    const p = new oc.gp_Pnt_1();
+    const d1 = new oc.gp_Vec_1();
+    adaptor.D1(u, p, d1);
+    const len = d1.Magnitude();
+    if (!Number.isFinite(len) || len < 1e-12) {
+      throw new Error(
+        `lowerVariableSweep: the spine tangent vanishes at the t=${s.t} station, so the profile cannot be oriented there.`,
+      );
+    }
+    const tx = d1.X() / len;
+    const ty = d1.Y() / len;
+    const tz = d1.Z() / len;
+    const trsf = new oc.gp_Trsf_1();
+    // Minimal rotation +Z → tangent. Axis = Z × T = (-ty, tx, 0).
+    const sinA = Math.hypot(tx, ty);
+    if (sinA > 1e-12) {
+      const angle = Math.atan2(sinA, tz);
+      const axis = new oc.gp_Ax1_2(new oc.gp_Pnt_3(0, 0, 0), new oc.gp_Dir_4(-ty / sinA, tx / sinA, 0));
+      trsf.SetRotation_1(axis, angle);
+    } else if (tz < 0) {
+      const axis = new oc.gp_Ax1_2(new oc.gp_Pnt_3(0, 0, 0), new oc.gp_Dir_4(1, 0, 0));
+      trsf.SetRotation_1(axis, Math.PI);
+    }
+    const move = new oc.gp_Trsf_1();
+    move.SetTranslation_1(new oc.gp_Vec_4(p.X(), p.Y(), p.Z()));
+    // Rotate about the origin first, then translate: T · R.
+    const placed = move.Multiplied(trsf);
+    const transform = new oc.BRepBuilderAPI_Transform_2(s.profileWire, placed, true);
+    return oc.TopoDS.Wire_1(transform.Shape());
+  });
 }

@@ -35,6 +35,8 @@ vi.mock('../store/useShellStore', () => ({
     useShellStore: () => ({ agentRailOpen, selectedFeatureId: null }),
     shellStore: {
         setAgentRailOpen: vi.fn(),
+        setAgentDraftPrompt: vi.fn(),
+        setInspectorOpen: vi.fn(),
         proposeStagedEdit: vi.fn(),
         pruneSectionKeepWhole: vi.fn(),
     },
@@ -66,7 +68,18 @@ vi.mock('../../funnel/lib/supabaseClient', () => ({
 }));
 
 vi.mock('../components/Layout/Header', () => ({ Header: () => <div data-testid="header" /> }));
-vi.mock('../Toolbar', () => ({ Toolbar: () => <div data-testid="toolbar" /> }));
+vi.mock('../ViewportToolbar', () => ({ ViewportToolbar: () => <div data-testid="toolbar" /> }));
+vi.mock('../context/UIContext', () => ({
+    useUI: () => ({
+        viewportBackground: 'dark',
+        setViewportBackground: vi.fn(),
+        gridVisible: true,
+        setGridVisible: vi.fn(),
+    }),
+}));
+// The hosted-agent build flag; each test sets it.
+let inAppAgent = true;
+vi.mock('../agentAvailability', () => ({ inAppAgentEnabled: () => inAppAgent }));
 vi.mock('../Viewport', () => ({ Viewport: () => <div data-testid="viewport" /> }));
 vi.mock('../Inspector', () => ({ Inspector: () => <div data-testid="inspector" /> }));
 // Mock AgentRail with the real aria-label so queryByLabelText can find it.
@@ -86,18 +99,28 @@ afterEach(() => cleanup());
 
 beforeEach(() => {
     agentRailOpen = true;
+    inAppAgent = true;
     sessionState = { session: null, loading: false };
     mockIsAuthConfigured.mockReturnValue(true);
 });
 
-describe('agent rail visibility by session state', () => {
-    // agentEnabled = enableAgentRail && authConfigured && !!session
-    it('hides the agent rail when auth is configured but no session exists', () => {
+describe('agent pane by session state', () => {
+    // The Agent stays on the activity bar; its pane shows the rail only when
+    // the agent can run, otherwise a card that says what to do.
+    it('shows the Agent on the activity bar for everyone', () => {
+        sessionState = { session: null, loading: false };
+        render(<StudioShell />);
+        expect(screen.getByTestId('activity-agent')).toBeInTheDocument();
+    });
+
+    it('shows a sign-in card with starter prompts, not the rail, when signed out', () => {
         sessionState = { session: null, loading: false };
 
         render(<StudioShell />);
 
         expect(screen.queryByLabelText('Agent rail')).toBeNull();
+        expect(screen.getByTestId('agent-sign-in-card')).toBeInTheDocument();
+        expect(screen.getByTestId('agent-sign-in').getAttribute('href')).toMatch(/^\/signin\?next=/);
     });
 
     it('shows the agent rail when auth is configured and a session exists', () => {
@@ -108,14 +131,25 @@ describe('agent rail visibility by session state', () => {
         expect(screen.queryByLabelText('Agent rail')).not.toBeNull();
     });
 
-    it('hides the agent rail in local dev (auth not configured), even with a session', () => {
+    it('says the built-in agent is off in local dev (auth not configured), even with a session', () => {
         // Local run: no Supabase env → isAuthConfigured() false. The in-Studio
-        // agent has no hosted/metered backend locally, so the rail stays hidden.
+        // agent has no hosted/metered backend locally.
         mockIsAuthConfigured.mockReturnValue(false);
         sessionState = { session: { user: { id: 'u1' } }, loading: false };
 
         render(<StudioShell />);
 
         expect(screen.queryByLabelText('Agent rail')).toBeNull();
+        expect(screen.getByTestId('agent-unavailable-card')).toBeInTheDocument();
+    });
+
+    it('does not mount an empty rail when the hosted agent is switched off', () => {
+        inAppAgent = false;
+        sessionState = { session: { user: { id: 'u1' } }, loading: false };
+
+        render(<StudioShell />);
+
+        expect(screen.queryByLabelText('Agent rail')).toBeNull();
+        expect(screen.getByTestId('agent-unavailable-card')).toBeInTheDocument();
     });
 });

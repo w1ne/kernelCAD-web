@@ -4,7 +4,7 @@ import { Canvas } from "@react-three/fiber";
 import * as THREE from "three";
 import { useMemo } from "react";
 import type { GeometryResult, SketchGeometry } from "../../shared/worker/geometryEngine";
-import type { ViewMode3D } from "../../shared/types/viewMode";
+import type { ViewMode3D, ViewportBackground } from "../../shared/types/viewMode";
 import { useWorkbench } from "../context/WorkbenchContext";
 import { useUI } from "../context/UIContext";
 import { useShellStore } from "../store/useShellStore";
@@ -13,6 +13,8 @@ import { useShellStore } from "../store/useShellStore";
 import { ViewerScene } from "./viewer/ViewerScene";
 import { DisplayReadySensor } from "./viewer/DisplayReadySensor";
 import { ViewGizmo } from "./viewer/overlays/ViewGizmo";
+import { CodeLinkLabel } from "./viewer/overlays/CodeLinkLabel";
+import { selectionCodeStore } from "../selectionCode/selectionCodeStore";
 
 // Extracted hooks
 import { useViewerGridPlacement } from "../hooks/viewer/useViewerGridPlacement";
@@ -31,6 +33,8 @@ interface ViewerProps {
     viewMode3D: ViewMode3D;
     /** Embed/status hosts: fired once after nonempty geometry + camera fit + first frame. */
     onDisplayReady?: () => void;
+    /** Overrides the stored viewport background (the embed's `?theme=`). */
+    background?: ViewportBackground;
 }
 
 /** Scene state phase: workbench/ui/shell context plus the grid, section-clipping
@@ -118,7 +122,7 @@ function useViewerSetup(geometries: GeometryResult[]) {
     };
 }
 
-export default function Viewer({ geometries, previewGeometries, sketchesGeometries, showSketches, viewMode3D, onDisplayReady }: ViewerProps) {
+export default function Viewer({ geometries, previewGeometries, sketchesGeometries, showSketches, viewMode3D, onDisplayReady, background }: ViewerProps) {
     const {
         setSelectedFace, selectedSketchName, setSelectedSketchName, sketchMode, planes, hiddenIds,
         selectedItemIds, setSelectedItemId, toggleSelection, setContextMenu, viewportBackground,
@@ -164,6 +168,7 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                     setSelectedSketchName(null);
                     setSelectedItemId(null);
                     setContextMenu({ visible: false, position: null, type: 'FACE' });
+                    selectionCodeStore.clearLink();
                 }}
             >
                 <ViewerScene
@@ -192,23 +197,20 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                     setContextMenu={setContextMenu}
                     navigationRequest={navigationRequest}
                     focusRequest={focusRequest}
-                    viewportBackground={viewportBackground}
+                    viewportBackground={background ?? viewportBackground}
                     planes={planes}
                 />
                 {onDisplayReady ? (
                     <DisplayReadySensor geometries={geometries} onDisplayReady={onDisplayReady} />
                 ) : null}
             </Canvas>
+            <CodeLinkLabel />
             <ViewGizmo
                 onNavigate={(target) => setNavigationRequest((prev) => ({
                     target,
                     id: (prev?.id ?? 0) + 1,
                 }))}
             />
-            <div className="absolute top-4 left-4 text-white/50 text-xs pointer-events-none font-mono">
-                kernelCAD v{typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'DEV'} ({typeof __COMMIT_HASH__ !== 'undefined' ? __COMMIT_HASH__ : 'DEV'}) | {viewMode3D === 'shadedWithEdges' ? 'Shaded + Edges' :
-                    viewMode3D === 'wireframe' ? 'Wireframe' : 'Shaded'}
-            </div>
         </div>
     );
 }

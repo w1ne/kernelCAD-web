@@ -21,4 +21,14 @@ maintainers.
 Forks must be renamed. Keeping the required MIT copyright notice in source
 files is expected and is not a trademark use.
 
+## Attribution in output
+
+kernelCAD writes "kernelCAD <version> (https://kernelcad.com)" into exported
+file metadata and shows a "Made with kernelCAD" link on public viewer pages
+(see [ATTRIBUTION.md](ATTRIBUTION.md)). A renamed fork may keep this
+attribution: it truthfully states that the software is built on kernelCAD. It
+may also change or remove it in `src/shared/links/attribution.ts`. It may not
+change it to suggest that its own product is kernelCAD or is endorsed by the
+kernelCAD project.
+
 Questions or permission requests: andrii@shylenko.com

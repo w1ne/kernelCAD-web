@@ -11,8 +11,10 @@ Use `assembly()` when the model needs named mechanical parts, connector frames, 
 
 `kernelcad validate <file.kcad.ts>` runs the assembly validator over the script's Scene. Three checks today:
 
-- **`assembly.part.floating`** — a part has no joint connecting it to any other part. The fix: declare the connection via `arm.mate(..., 'fastened')` or `arm.mate(..., 'revolute', ...)`.
-- **`assembly.part.orphan`** — a part is in a sub-assembly disconnected from the main mechanism.
+- **`assembly.part.floating`** / **`mechanism.orphan-part`** — disconnected body/component (no mate/joint into the graph). Fix: connectors + mates — shafts/hinges/gears use `type: 'axis'` + `arm.mate(..., 'revolute')`; rigid mounts use `type: 'frame'` + `mate(..., 'fastened')`; or `arm.fixed/.revolute/.prismatic/.ball`. Connector types are only `frame|axis|planar|ball`. Only a mechanism (any mate, joint, transmission or `.solvedModel()`) must be fully linked: a plain multi-part assembly with no mates (enclosure base + lid, print layout) is valid as-is. Don't invent mates for a deliberately free part next to a mechanism — pass `skipMechanismCheck: true` to `evaluate_script`.
+- **`assembly.part.orphan`** — a part is in a sub-assembly disconnected from the main mechanism (same connector/mate fix as floating).
+- **`assembly.mate.connector-not-found`** / **`assembly.pose-envelope.connector-unresolved`** — mate ref did not resolve. Declare `partRef.connector(...)` on **each** part **before** `arm.mate(...)`, use `'partName.connectorName'` refs, and prefer numeric `{ kind: 'vec3', value: [x,y,z] }` origins (topology origins often stay unresolved).
+- **`assembly.interference.overlap`** / **`mechanism.interpenetration`** after an edit — often stale duplicate/orphaned overlapping bodies from an in-place workaround. Keep only the intended connected mechanism graph; delete leftover copies before tweaking geometry.
 - **`assembly.interference.overlap`** — two parts share volume (promoted from `kernelcad interference`).
 - **`assembly.structure.unstructured-bodies`** (info) — a multi-body model returns loose top-level bodies with no `assembly().part(...)` structure, so the parts carry no identity for `inspect --focus`, `inspect({ of: 'part-stats' })`, or per-part review. The fix: wrap each distinct body in a named `assembly().part(name, shape)`.
 
@@ -274,7 +276,7 @@ const snapScene = solved.toScene();               // snapshot Scene; call .toUni
 **Limitations (v1):**
 - **Numeric joint origins.** Joint origins are plain `Vec3`, not `EditableVec3`. Editing geometry params (e.g. `baseX`) reshapes parts but not joint frames; future slice will lift joint origins to `EditableVec3` once `setParamValue` reactivity is wired through.
 - **One frame per part.** Joint origins are `Vec3` numeric, can't bind to faces/edges/vertices yet.
-- **Body-tree only.** Each part has at most one parent joint; no closed-chain (4-bar linkage) kinematics.
+- **Body-tree / open-chain FK only (v0.6.0).** Each part has at most one parent joint; articulated closed chains (4-bar linkages) return `assembly.solver.did-not-converge` — use an open chain or fastened-only loop until T7.x.
 - **Motion-limit review is validator/tooling-level.** `limitsDeg`/`limitsMm` are checked by pose-envelope review (`review_cad`, `validateMatePoseLimits`, or `solvedModel(poses, { posesGate: 'envelope' })`); raw `solve()` still computes the requested pose.
 - Calling `solve()` twice on the same Assembly compounds transforms; build a fresh `assembly()` per pose query.
 
@@ -398,7 +400,7 @@ The mate-aware validator walks the assembly's parts + joints + mate graph and re
 | `under-constrained`   | One or more parts have residual DOF — declare more mates. |
 | `over-constrained`    | Mates mutually contradict — remove or relax one. |
 | `redundant-ok`        | Mates over-determine the pose but agree — info-severity diagnostic, prune for hygiene. |
-| `did-not-converge`    | Newton-Raphson iter-cap hit (closed articulated loops). |
+| `did-not-converge`    | **UNSUPPORTED on v0.6.0** for articulated closed loops (4-bar etc.; often 0 iterations = refused up-front). Rewrite as an open chain or fastened-only loop — do not invent gear-contact types. |
 
 Six diagnostic codes on `ValidatorDiagnostic`:
 
@@ -407,7 +409,7 @@ Six diagnostic codes on `ValidatorDiagnostic`:
 - `assembly.mate.type-mismatch` — connector-pair / mate-type mismatch at capture.
 - `assembly.mate.connector-not-found` — malformed ref / unknown part / unknown connector.
 - `assembly.loop.unclosed` — reserved (type-only today).
-- `assembly.solver.did-not-converge` — Newton-Raphson hit the iter-cap.
+- `assembly.solver.did-not-converge` — **v0.6.0 does not solve articulated closed loops** (4-bar / parallelogram / scissor + pin_slot). Message lists body + articulated-mate ids. Fix: open chain (drop one loop-closing mate; keep ground root) or fastened-only loop. Industrial scissor tables: `lookup_cookbook("scissor lift closed loop")` (open-chain prismatic platform + mid-pose X-links — do not invent `joint.scissorLift`). `limitsDeg` / `jointSupport` / `mechanicalJoint` still apply on open chains and are reported even when the loop cannot converge.
 
 ### Validation gate on `solvedModel`
 
@@ -650,7 +652,7 @@ When a user asks for a robot arm, hand, gripper, linkage, or other physical mech
 3. If one mate drives another, declare both `coupleMates(...)` and `transmission(...)`; the coupling is the kinematic ratio, the transmission is the physical drive path. Do not jump directly from a servo horn to a distant finger; include the real adjacent horn/link/gear/belt/tendon/support parts in `path`.
 4. Run `inspect({ of: 'assembly', file })`. If `unexplainedGeometry` is non-empty, redesign before continuing unless the original prompt explicitly allows the disconnected geometry and you document why.
 5. Run `review_cad({ file, designGoal, preserveInterfaces, trackConnectors, gripperAperture? })`. Treat `fitness.functional === false`, `fitness.blockingReasons`, connector-not-in-solid, unsupported revolutes, missing mate contact, missing drive transmission, pose-limit failures, and interference pairs as repair facts, not optional style feedback.
-6. Run `design_loop({ goal, attempts, outputRecordPath? })` when comparing mechanism attempts or creating a Studio replay. Visual review is mandatory by default; a pass means functional, quality-clean, and screenshot-reviewed. A merely renderable model is not enough.
+6. Prefer `design_loop({ goal, attempts, outputRecordPath? })` for complex / robot-arm / multi-body builds — revise from `nextActionPrompt` until green or `convergence.escalate`. Visual review is mandatory by default; a pass means functional, quality-clean, and screenshot-reviewed. A merely renderable model is not enough. Use cookbook `multi-body-mechanism-real-proportions` for machine-element proportions (not sticks).
 7. Only after the deterministic tools are clean should you open Studio or a screenshot for visual review. If the image still shows arbitrary fragments, go back to `inspect({ of: 'assembly' })` and make the fragment inventory explainable.
 
 For robot arms specifically, preserve at least these interfaces between repair attempts when present: base yaw mate, shoulder pitch mate, elbow pitch mate, wrist/grip mate, tool-tip connector, and fingertip connectors. Track the tool-tip workspace and gripper aperture so the review proves movement, not just static contact.

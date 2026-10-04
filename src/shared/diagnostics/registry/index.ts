@@ -43,6 +43,7 @@ import { DIFF_CODES } from './diff';
 import { BOM_CODES } from './bom';
 import { RENDER_CODES } from './render';
 import { INSPECT_CODES } from './inspect';
+import { AUTHORING_CODES } from './authoring';
 
 export type { DiagnosticGroup, DiagnosticSeverityLevel, DiagnosticCodeSpec } from './types';
 
@@ -70,6 +71,7 @@ export const DIAGNOSTIC_REGISTRY = {
   ...BOM_CODES,
   ...RENDER_CODES,
   ...INSPECT_CODES,
+  ...AUTHORING_CODES,
 } as const satisfies Record<string, DiagnosticCodeSpec>;
 
 export type DiagnosticCode = keyof typeof DIAGNOSTIC_REGISTRY;
@@ -217,6 +219,12 @@ const LEGACY_CODE_ORDER = [
   'assembly.pose-envelope.connector-unresolved',
   'assembly.gripper-aperture.connector-missing',
   'assembly.mate.limit-missing',
+  'assembly.connectivity.floating-moving-part',
+  'assembly.connectivity.no-load-path',
+  'assembly.joint-topology.missing-limit',
+  'assembly.joint-topology.unsupported-axis',
+  'assembly.joint-topology.connector-missing',
+  'assembly.joint-topology.axis-invalid',
   'assembly.mounting-hole.mismatch',
   'assembly.joint-axis.unbound',
   'assembly.joint.child-modeled-in-place',

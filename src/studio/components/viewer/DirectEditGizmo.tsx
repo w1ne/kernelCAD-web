@@ -5,8 +5,10 @@
 // Direct-edit translate gizmo. Selecting a rendered body parks a world-space
 // translate control at its bounds center; dragging it previews a translucent
 // ghost at the snapped delta. The source edit is planned and candidate-revised
-// only on release (never per pointer frame) and handed to the shell store as a
-// staged edit for human approval. This component never writes the script.
+// only on release (never per pointer frame). A clean edit auto-applies (setting
+// on) through the shared source-edit commit as one undo step; otherwise it is
+// handed to the shell store as a staged edit for human approval. In a
+// read-only view the control is not shown; selecting a body shows a hint.
 
 import * as THREE from "three";
 import { useEffect, useMemo } from "react";
@@ -20,6 +22,8 @@ import { DirectEditGizmoControls } from "./DirectEditGizmoControls";
 import { useDirectEditDrag } from "../../hooks/viewer/useDirectEditDrag";
 import type { DragDelta } from "../../hooks/viewer/useDirectEditDrag";
 import { useDirectEditDragGesture } from "../../hooks/viewer/useDirectEditDragGesture";
+import { useSourceEditCommit } from "../../directEdit/useSourceEditCommit";
+import { shellStore } from "../../store/useShellStore";
 
 export { REVIEWING_NOTICE, REVIEW_BUSY_NOTICE, SOURCE_CHANGED_NOTICE } from "./directEditNotices";
 export type { DragDelta };
@@ -60,7 +64,20 @@ export function DirectEditGizmo({ geometries, itemNames }: DirectEditGizmoProps)
         else proxy.position.set(0, 0, 0);
     }, [proxy, center]);
 
-    const drag = useDirectEditDrag(code, scriptReview);
+    const { target, commit } = useSourceEditCommit();
+    const readOnlyHint = target.kind === 'readOnly' ? target.hint : null;
+    const hasAnchor = anchor !== null;
+    useEffect(() => {
+        if (readOnlyHint === null || !hasAnchor) return;
+        shellStore.setDirectEditNotice(readOnlyHint);
+        return () => {
+            if (shellStore.getSnapshot().directEditNotice === readOnlyHint) {
+                shellStore.setDirectEditNotice(null);
+            }
+        };
+    }, [readOnlyHint, hasAnchor]);
+
+    const drag = useDirectEditDrag(code, scriptReview, readOnlyHint === null ? commit : undefined);
     const { dragDelta, reviewing, commitAnchorDrag } = drag;
 
     const { handleMouseDown, handleObjectChange, handleMouseUp } = useDirectEditDragGesture({
@@ -76,7 +93,7 @@ export function DirectEditGizmo({ geometries, itemNames }: DirectEditGizmoProps)
         features,
     });
 
-    if (isComputing || !geometry || !anchor || !center) return null;
+    if (readOnlyHint !== null || isComputing || !geometry || !anchor || !center) return null;
 
     return (
         <DirectEditGizmoControls

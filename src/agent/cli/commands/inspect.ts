@@ -58,7 +58,8 @@ function num(v: number, decimals = 1): string {
 function formatHole(h: StepSolidReport['holes'][number]): string {
   const o = h.axisOrigin.map((v) => num(v)).join(', ');
   const d = h.axisDirection.map((v) => num(v, 3)).join(', ');
-  return `  Ø${num(h.diameterMm)} ${h.kind}, depth ${num(h.depthMm)}, axis (${o}) → (${d})`;
+  const partial = h.partial === true ? `, partial (wall covers ${h.angularCoverageDeg}°)` : '';
+  return `  Ø${num(h.diameterMm)} ${h.kind}, depth ${num(h.depthMm)}, axis (${o}) → (${d})${partial}`;
 }
 
 /** Human-readable report: one block per solid, one line per hole. */
@@ -69,7 +70,8 @@ export function formatStepReport(report: StepInspectReport): string {
     const bbox = ([0, 1, 2] as const)
       .map((i) => `[${num(s.bboxExact.min[i])}..${num(s.bboxExact.max[i])}]`)
       .join('×');
-    const holeCount = `${s.holes.length} hole${s.holes.length === 1 ? '' : 's'}`;
+    const holeCount = `${s.holes.length} hole${s.holes.length === 1 ? '' : 's'}` +
+      (s.holeDetection === 'heuristic' ? ' (heuristic)' : '');
     lines.push(
       `solid #${s.index}${name} — bbox ${bbox} mm, volume ${num(s.volumeMm3, 0)} mm³, ` +
         `${s.faceCount} face${s.faceCount === 1 ? '' : 's'}, ${holeCount}` +

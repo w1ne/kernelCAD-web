@@ -15,9 +15,9 @@ export function ErrorPanel({ code, message, originalPrompt, onRefine, busy }: Er
   const [value, setValue] = useState(prefill);
 
   return (
-    <div className="rounded-xl border border-copper bg-vellum-soft p-4">
+    <div className="rounded-xl border border-danger bg-vellum-soft p-4">
       <p className="font-serif text-xl font-medium text-ink">Generation didn't finish</p>
-      <p className="font-mono text-xs text-copper mt-1 tracking-widest uppercase">{code}</p>
+      <p className="font-mono text-xs text-danger mt-1 tracking-widest uppercase">{code}</p>
       <p className="text-sm text-ink-soft mt-2 break-words">{message}</p>
       <p className="font-mono text-xs text-ink-faint mt-3 tracking-wide">
         Tweak the prompt below and try again. (Failed gens don't count against your free quota.)

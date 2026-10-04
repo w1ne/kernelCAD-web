@@ -140,8 +140,8 @@ describe('recordMate characterisation', () => {
     expectMateError(
       () => arm.mate('bad', 'base.fr', 'child.fr', 'revolute'),
       {
-        message: "assembly.mate.type-mismatch: mate 'bad' type 'revolute' is not compatible with the connector pair (base.fr:frame, child.fr:frame).",
-        hint: "invalid-args.assembly.mate-type-mismatch — 'revolute' mates require a specific connector-type pair; see the mate-type compatibility table in mateTypes.ts.",
+        message: "mate('bad', aRef, bRef, type): type — got \"revolute\"; requires a mate type compatible with the two connectors — 'base.fr' is a 'frame' connector and 'child.fr' is a 'frame' one; 'revolute' and 'cylindrical' need two 'axis' connectors, 'fastened' two 'frame', 'planar' two 'planar', 'ball' two 'ball' (full table in mateTypes.ts). Example: arm.mate('elbow', 'upper.pivot', 'lower.pivot', 'revolute')  // both connectors declared with type: 'axis'",
+        hint: "invalid-args.assembly.mate-type-mismatch — Set type to a mate type compatible with the two connectors — 'base.fr' is a 'frame' connector and 'child.fr' is a 'frame' one; 'revolute' and 'cylindrical' need two 'axis' connectors, 'fastened' two 'frame', 'planar' two 'planar', 'ball' two 'ball' (full table in mateTypes.ts). Example: arm.mate('elbow', 'upper.pivot', 'lower.pivot', 'revolute')  // both connectors declared with type: 'axis'",
       },
     );
   });
@@ -151,8 +151,8 @@ describe('recordMate characterisation', () => {
     expectMateError(
       () => arm.mate('bad', 'base.fr', 'child.fr', 'fastened', { pose: 1 }),
       {
-        message: "assembly.mate.pose-on-zero-dof-mate: mate 'bad' is type 'fastened' and accepts no pose; remove opts.pose.",
-        hint: "invalid-args.assembly.mate-pose-on-zero-dof-mate — 'fastened' mates have no articulation DOF; drop opts.pose or change the mate type.",
+        message: "mate('bad', aRef, bRef, type, { pose }): opts.pose — got 1; requires no pose at all — a 'fastened' mate fixes every articulation DOF, so there is nothing to pose; drop opts.pose, or use 'revolute' / 'prismatic' / 'cylindrical' / 'pin_slot' if the joint should move. Example: arm.mate('elbow', 'upper.pivot', 'lower.pivot', 'revolute', { pose: 45 })",
+        hint: "invalid-args.assembly.mate-pose-on-zero-dof-mate — Set opts.pose to no pose at all — a 'fastened' mate fixes every articulation DOF, so there is nothing to pose; drop opts.pose, or use 'revolute' / 'prismatic' / 'cylindrical' / 'pin_slot' if the joint should move. Example: arm.mate('elbow', 'upper.pivot', 'lower.pivot', 'revolute', { pose: 45 })",
       },
     );
   });

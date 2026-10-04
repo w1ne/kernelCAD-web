@@ -92,7 +92,7 @@ describe.each(PRIMITIVE_EXTRUDES)('$name twistAngle capture contract', ({ name, 
 
     const err = captureError(() => call(kcad, { thickness: 2 }));
     expect(err.code).toBe('feature.invalid-args');
-    expect(err.message).toMatch(new RegExp(`${name}: unknown option 'thickness'`));
+    expect(err.message).toMatch(new RegExp(`${name}\\(\\.\\.\\., opts\\): opts\\.thickness — got an unknown option 'thickness'`));
   });
 
   it('captures twistAngle as a symbolic degree param for ParamRefs', () => {

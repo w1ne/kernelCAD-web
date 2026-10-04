@@ -22,6 +22,8 @@ vi.mock('../../../shared/worker/geometryEngine', async () => {
     };
 });
 
+vi.mock('@tanstack/react-router', () => ({ useNavigate: () => vi.fn() }));
+
 /** Force the narrow-viewport branch (`(max-width: 767px)` matches). */
 function setNarrow(narrow: boolean) {
     Object.defineProperty(window, 'matchMedia', {
@@ -53,19 +55,29 @@ afterEach(() => {
 });
 
 describe('Header on a narrow viewport', () => {
-    it('moves the instrument clusters into the overflow menu', () => {
+    it('folds the file and panel controls into one overflow menu', () => {
         renderHeader();
-        expect(screen.queryByTestId('view-3d-toggle')).toBeNull();
-        expect(screen.queryByTestId('viewport-background-toggle')).toBeNull();
-        expect(screen.queryByTestId('viewport-grid-toggle')).toBeNull();
         expect(screen.queryByTitle('Export STEP')).toBeNull();
+        expect(screen.queryByTestId('toolbar-publish')).toBeNull();
+        expect(screen.queryByTestId('toolbar-inspector')).toBeNull();
+        expect(screen.queryByRole('button', { name: 'Undo' })).toBeNull();
 
         fireEvent.click(screen.getByTestId('header-overflow'));
 
-        expect(screen.getByTestId('view-3d-toggle')).toBeDefined();
-        expect(screen.getByTestId('viewport-background-toggle')).toBeDefined();
-        expect(screen.getByTestId('viewport-grid-toggle')).toBeDefined();
-        expect(screen.getByTitle('Export STEP')).toBeDefined();
+        for (const format of ['STL', 'STEP', 'DXF', '3MF', 'GLB']) {
+            expect(screen.getByTitle(`Export ${format}`)).toBeDefined();
+        }
+        expect(screen.getByTestId('toolbar-publish')).toBeDefined();
+        expect(screen.getByTestId('toolbar-inspector')).toBeDefined();
+        expect(screen.getByRole('button', { name: 'Undo' })).toBeDefined();
+    });
+
+    it('closes the overflow menu on Escape', () => {
+        renderHeader();
+        fireEvent.click(screen.getByTestId('header-overflow'));
+        expect(screen.getByTestId('header-overflow-panel')).toBeDefined();
+        fireEvent.keyDown(document, { key: 'Escape' });
+        expect(screen.queryByTestId('header-overflow-panel')).toBeNull();
     });
 
     it('keeps the account slot pinned on the bar', () => {
@@ -83,11 +95,12 @@ describe('Header on a narrow viewport', () => {
         expect(screen.getByText('My Bracket')).toBeDefined();
     });
 
-    it('keeps the instruments inline on a wide viewport', () => {
+    it('keeps Share, the Export split button and the inspector toggle inline on a wide viewport', () => {
         setNarrow(false);
         renderHeader();
         expect(screen.queryByTestId('header-overflow')).toBeNull();
-        expect(screen.getByTestId('view-3d-toggle')).toBeDefined();
-        expect(screen.getByTitle('Export STEP')).toBeDefined();
+        expect(screen.getByTestId('toolbar-publish')).toBeDefined();
+        expect(screen.getByTestId('header-export')).toBeDefined();
+        expect(screen.getByTestId('toolbar-inspector')).toBeDefined();
     });
 });

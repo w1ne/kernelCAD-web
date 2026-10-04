@@ -1,10 +1,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import { Download, Loader2 } from 'lucide-react';
 import { useRecomputeResult } from '../hooks/useRecomputeResult';
 import { useCode } from '../context/CodeContext';
-import { downloadBlob, exportViaServer } from '../exportViaServer';
+import { downloadBlob, exportViaServer, type StudioExportFormat } from '../exportViaServer';
+import { EXPORT_FORMATS as FORMATS, hasPlanarSource } from '../exportFormats';
+import { useExportTask } from '../hooks/useExportTask';
+import { ExportStatus } from '../components/Shared/ExportStatus';
 import type { JSX } from 'react';
 
 // Studio Export tab. Slice 1.4 + Slice A export-trio.
@@ -20,52 +23,25 @@ import type { JSX } from 'react';
 // one planar face in the scene — non-planar 3D solids hit
 // export.dxf.non-planar on the runtime side, so the button is disabled
 // adaptively in the UI to surface that constraint earlier.
+//
+// Progress, cancel, the server's error hint and the shipped-with-warning
+// notice come from useExportTask / ExportStatus (shared with the header).
 
-type ExportFormat = 'stl' | 'step' | 'dxf' | '3mf' | 'glb';
-
-interface FormatDescriptor {
-    id: ExportFormat;
-    label: string;
-    help: string;
-    requiresPlanar?: boolean;
-}
-
-const FORMATS: ReadonlyArray<FormatDescriptor> = [
-    { id: 'stl', label: 'STL', help: 'Mesh; printable / preview' },
-    { id: 'step', label: 'STEP', help: 'BREP; CAD interchange' },
-    { id: 'dxf', label: 'DXF', help: 'Planar profile; laser / waterjet', requiresPlanar: true },
-    { id: '3mf', label: '3MF', help: 'Slicer mesh with per-part colors' },
-    { id: 'glb', label: 'GLB', help: 'Web / AR viewer; PBR materials' },
-];
+type ExportFormat = StudioExportFormat;
 
 export function ExportTab(): JSX.Element {
     const { geometries } = useRecomputeResult();
     const { code } = useCode();
-    const [pending, setPending] = useState<ExportFormat | null>(null);
-    const [error, setError] = useState<string | null>(null);
+    const task = useExportTask();
+    const { start } = task;
+    const pending = FORMATS.find((f) => f.label === task.state.running)?.id ?? null;
 
-    // DXF is planar-only. The runtime side already fails non-planar input with
-    // export.dxf.non-planar; this UI gate surfaces the constraint adaptively
-    // so the button is visibly inert when no planar source exists. GeometryResult
-    // does not carry a top-level `kind` field today (see src/shared/worker/
-    // workerTypes.ts:139), but faces[*].plane is populated by the lowerer for
-    // planar faces — that's the field we key on.
-    const hasPlanar = geometries.some((g) =>
-        Array.isArray(g.faces) && g.faces.some((f) => f.plane !== undefined),
-    );
+    const hasPlanar = hasPlanarSource(geometries);
 
-    const handleExport = useCallback(async (format: ExportFormat) => {
-        setError(null);
-        setPending(format);
-        try {
-            const { blob, downloadName } = await exportViaServer(format, code);
-            downloadBlob(blob, downloadName);
-        } catch (err) {
-            setError(err instanceof Error ? err.message : String(err));
-        } finally {
-            setPending(null);
-        }
-    }, [code]);
+    const handleExport = useCallback((format: ExportFormat) => {
+        const label = FORMATS.find((f) => f.id === format)?.label ?? format.toUpperCase();
+        void start(label, (options) => exportViaServer(format, code, options), downloadBlob);
+    }, [code, start]);
 
     if (geometries.length === 0) {
         return (
@@ -106,7 +82,7 @@ export function ExportTab(): JSX.Element {
                             >
                                 <span className="flex flex-col items-start gap-0.5">
                                     <span className="font-semibold">{f.label}</span>
-                                    <span className="text-[10px] text-gray-500">{help}</span>
+                                    <span className="text-2xs text-gray-500">{help}</span>
                                 </span>
                                 {isPending ? (
                                     <Loader2 className="h-4 w-4 animate-spin shrink-0" />
@@ -119,15 +95,7 @@ export function ExportTab(): JSX.Element {
                 })}
             </ul>
 
-            {error != null && (
-                <div
-                    role="alert"
-                    data-testid="export-tab-error"
-                    className="mt-2 px-3 py-2 rounded border border-red-900 bg-red-950/40 text-red-300 text-[11px]"
-                >
-                    {error}
-                </div>
-            )}
+            <ExportStatus task={task} testId="export-tab-status" />
         </div>
     );
 }

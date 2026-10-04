@@ -4,10 +4,10 @@ import type {
   Assembly,
   AssemblyPartStored,
   JointSupportIntentRecord,
-  MechanicalJointIntentRecord,
 } from '../capture/assembly';
 import type { Connector } from './connector';
 import { parseConnectorRef, type MateLimitRange, type MateRecord } from './mate';
+import { isRegistryCompleteMechanicalJointIntent } from './mechanicalJointRegistry';
 
 export type JointTopologyDiagnosticCode =
   | 'assembly.connectivity.floating-moving-part'
@@ -49,7 +49,15 @@ interface JointSupportLikeIntent {
   readonly output: string;
 }
 
-const ROOT_FALLBACK_NAMES = ['palm-root', 'palm', 'base', 'root'] as const;
+const ROOT_FALLBACK_NAMES = [
+  'palm-root',
+  'palm',
+  'base-frame',
+  'base',
+  'ground-frame',
+  'ground',
+  'root',
+] as const;
 const AXIS_ALIGNMENT_TOLERANCE = 0.999;
 const AXIS_REQUIRED_MATES = new Set(['revolute', 'prismatic', 'cylindrical', 'pin_slot']);
 const ROTATIONAL_LIMIT_MATES = new Set(['revolute', 'cylindrical', 'pin_slot']);
@@ -298,27 +306,22 @@ function collectSupportedRevoluteMates(
   const matesByName = new Map(mates.map((mate) => [mate.name, mate]));
   const fastenedGraph = buildFastenedGraph(mates, partsByName);
 
+  // Driven hinges: same registry bar as mechanismTruth / mechanism=real.
+  // Do not demand fastened-graph reachability here — that rejected valid
+  // clamshell hinges where shaft/output share the lid and supports=['base'].
   for (const intent of arm.__mechanicalJointIntents()) {
-    if (!isCompleteDrivenMechanicalIntent(intent, matesByName, partsByName, fastenedGraph)) continue;
+    if (!isRegistryCompleteMechanicalJointIntent(intent, matesByName, partsByName)) continue;
     supported.add(intent.mate);
   }
 
+  // Passive jointSupport still requires shaft/supports on the support side
+  // of the mate (fastened-graph), so a bare declaration cannot fake support.
   for (const intent of arm.__jointSupportIntents()) {
     if (!isCompleteJointSupportIntent(intent, matesByName, partsByName, fastenedGraph)) continue;
     supported.add(intent.mate);
   }
 
   return supported;
-}
-
-function isCompleteDrivenMechanicalIntent(
-  intent: MechanicalJointIntentRecord,
-  matesByName: ReadonlyMap<string, MateRecord>,
-  partsByName: ReadonlyMap<string, AssemblyPartStored>,
-  fastenedGraph: ReadonlyMap<string, ReadonlySet<string>>,
-): boolean {
-  if (!partsByName.has(intent.actuator)) return false;
-  return isCompleteJointSupportIntent(intent, matesByName, partsByName, fastenedGraph);
 }
 
 function isCompleteJointSupportIntent(

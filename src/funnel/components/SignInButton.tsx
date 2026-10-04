@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useState } from 'react';
+import { buttonClass } from '../../ui';
 import { getSupabase } from '../lib/supabaseClient';
 
 export type OAuthProvider = 'google' | 'github';
@@ -43,8 +44,7 @@ export function SignInButton({ provider = 'google', redirectTo, className, child
       onClick={handleClick}
       disabled={loading}
       className={
-        className ??
-        'inline-flex items-center gap-2 rounded-lg bg-blueprint hover:bg-blueprint-hover text-white px-4 py-2 text-sm font-medium disabled:opacity-50 transition-colors font-sans'
+        className ?? `${buttonClass('secondary', 'lg')} w-full gap-2`
       }
     >
       {provider === 'google' ? (

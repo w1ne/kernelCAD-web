@@ -2,9 +2,16 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { type OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { type WatertightReport } from '../../kernel/backends/occt/meshHeal';
+import {
+  ThreeMfMeshDefectError,
+  type ThreeMfBedWarning,
+  type ThreeMfMeshWarning,
+} from '../../kernel/backends/occt/export3mf';
 import { sliceStlToGcode, withTempStl } from '../../kernel/export/gcode/slicerCli';
 import { parseGcodeHeader } from '../../kernel/export/gcode/gcodeHeaderParser';
-import { resolvePrinterProfile, exceedsBed } from '../../kernel/export/gcode/profiles';
+import {
+  resolvePrinterProfile, exceedsBed, smallestFittingProfiles, fitsOnAdvice,
+} from '../../kernel/export/gcode/profiles';
 import { buildFrameFor, type Vec3 as FdmVec3 } from '../../modeling/runtime/dfm/fdmOrientation';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { NEXT_ACTIONS, HINT_TEMPLATES } from '../../shared/diagnostics/registry';
@@ -80,7 +87,8 @@ export async function sliceShapeToGcode(
         featureId: targetId,
         severity: 'error',
         message: `Model bounding box ${size.x.toFixed(1)}x${size.y.toFixed(1)}x${size.z.toFixed(1)}mm${placed} exceeds the '${printerProfile.name}' bed (${printerProfile.bedSizeMm.x}x${printerProfile.bedSizeMm.y}x${printerProfile.bedSizeMm.z}mm).`,
-        hint: HINT_TEMPLATES['export.gcode.exceeds-bed'].template,
+        hint: HINT_TEMPLATES['export.gcode.exceeds-bed'].template
+          + fitsOnAdvice(smallestFittingProfiles(p => !exceedsBed(size, p))),
         nextAction: NEXT_ACTIONS['export.gcode.exceeds-bed'],
       }],
     };
@@ -136,6 +144,9 @@ export function notWatertightDiagnostic(
 ): ExportResult | undefined {
   const msg = e instanceof Error ? e.message : String(e);
   if (!/watertight/i.test(msg)) return undefined;
+  const message = e instanceof ThreeMfMeshDefectError
+    ? `3MF mesh of part '${e.part}' is torn: ${e.openEdges} open and ${e.nonManifoldEdges} non-manifold edge(s) remain after repair (${e.triangles} triangles); a 3MF can ship at most ${e.budget}.`
+    : '3MF export requires a watertight mesh; the exported triangulation has non-manifold edges.';
   return {
     bytes: new Uint8Array(),
     featureCount,
@@ -144,11 +155,68 @@ export function notWatertightDiagnostic(
       code: 'export.3mf.not-watertight',
       featureId: targetId,
       severity: 'error',
-      message: '3MF export requires a watertight mesh; the exported triangulation has non-manifold edges.',
-      hint: 'The mesh has open or non-manifold edges. Inspect the source geometry (typically a self-intersecting cone or non-closed shell) and re-author the offending surface via nurbsSurfaceLowerer, raise OCCT mesh deflection, or re-mesh via Manifold; see the K1 mesher gap.',
+      message,
+      hint: THREE_MF_TORN_HINT,
       nextAction: NEXT_ACTIONS['export.3mf.not-watertight'],
     }],
   };
+}
+
+const THREE_MF_TORN_HINT =
+  'Export STEP for the exact geometry. To keep 3MF, fix the feature that leaves the gap (often a fillet or boolean at a tangent face), '
+  + 'or mesh finer (a lower mesh deflection closes seam cracks between curved faces).';
+
+/**
+ * Translate the 3MF writer's mesh warnings (a few open edges left after the
+ * heal pass, within the defect budget) into `export.3mf.not-watertight`
+ * warnings. The file is written; slicers close gaps this small.
+ */
+export function threeMfMeshDiagnostics(
+  warnings: readonly ThreeMfMeshWarning[],
+  targetId: string | undefined,
+): CompilerDiagnostic[] {
+  return warnings.map((w) => ({
+    target: 'export-occt',
+    code: 'export.3mf.not-watertight',
+    featureId: targetId,
+    severity: 'warn',
+    message: `3MF written with a small mesh gap: part '${w.part}' has ${w.openEdges} open and ${w.nonManifoldEdges} non-manifold edge(s) after repair (limit ${w.budget}). Slicers close gaps this small.`,
+    hint: THREE_MF_TORN_HINT,
+    nextAction: NEXT_ACTIONS['export.3mf.not-watertight'],
+  }));
+}
+
+/**
+ * Translate the 3MF writer's bed warnings (`arrange: 'plate' | 'assembled'`)
+ * into `export.3mf.plate-overflow` / `export.3mf.exceeds-bed` warnings. The
+ * file is still written; the message names the parts, the bed and the size
+ * the layout needs, and the hint names the smallest bundled profiles the
+ * same layout fits on.
+ */
+export function threeMfBedDiagnostics(
+  warnings: readonly ThreeMfBedWarning[],
+  targetId: string | undefined,
+): CompilerDiagnostic[] {
+  const mm = (v: readonly number[]) => `${v.map(n => n.toFixed(1)).join('x')}mm`;
+  return warnings.map((w) => {
+    const bed = `'${w.printer}' bed (${mm([w.bedMm.x, w.bedMm.y, w.bedMm.z])})`;
+    const list = w.parts.map(p => `'${p.name}' ${mm(p.sizeMm)}`).join(', ');
+    const code = w.kind === 'plate-overflow' ? 'export.3mf.plate-overflow' : 'export.3mf.exceeds-bed';
+    const message = w.kind === 'plate-overflow'
+      ? `3MF plate layout needs ${mm(w.neededMm.slice(0, 2))} of bed but the ${bed} is smaller; ${w.parts.length} part(s) were placed past the bed edge: ${list}.`
+      : w.object !== undefined
+        ? `3MF assembled object '${w.object}' (${mm(w.neededMm)}) does not fit the ${bed}; part(s) outside the build volume: ${list}.`
+        : `3MF part(s) larger than the ${bed} in X/Y or taller than its build height: ${list}.`;
+    return {
+      target: 'export-occt',
+      code,
+      featureId: targetId,
+      severity: 'warn',
+      message,
+      hint: HINT_TEMPLATES[code].template + fitsOnAdvice(w.fitsOn.map(resolvePrinterProfile)),
+      nextAction: NEXT_ACTIONS[code],
+    };
+  });
 }
 
 /**

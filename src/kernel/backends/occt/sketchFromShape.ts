@@ -377,6 +377,8 @@ export interface ExtractedLoops {
   openChains: Array<{ start: Pt2; end: Pt2 }>;
   /** All projected segments (for perimeter/area/bbox probes). */
   segments: ProjectedSegment[];
+  /** The closed loops as projected segments, in the same order as `loops`. */
+  segmentLoops: ProjectedSegment[][];
 }
 
 /**
@@ -408,6 +410,7 @@ export function extractLoops(
     bboxes: withArea.map((l) => segmentsBBox(l.segments)),
     openChains,
     segments,
+    segmentLoops: withArea.map((l) => l.segments),
   };
 }
 

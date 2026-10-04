@@ -30,11 +30,11 @@ export const EXPORT_CODES = {
   },
   'export.dxf.non-planar': {
     hintTemplate:
-      'DXF export requires planar input. Call list_faces to pick a planar face, or return a Region via Shape.flattenPattern().',
-    nextAction: { kind: 'call-introspection-tool', tool: 'list_faces' },
+      'DXF needs a flat part (plate, panel, extruded profile). For any other part use `options.section: { axis, at }` for a cross-section, `flatten_pattern` for sheet metal, or STEP/STL for 3D.',
+    nextAction: { kind: 'fix-arg', field: 'options.section' },
     defaultSeverity: 'error',
     group: 'export',
-    description: 'A DXF export was attempted on non-planar geometry (3D solid without a single planar face source, or a multi-body Scene).',
+    description: 'A DXF export was attempted on a part that is not flat (not a constant-thickness plate or extruded profile) without options.section, or the section plane missed the part.',
   },
   'export.3mf.not-watertight': {
     hintTemplate:
@@ -42,7 +42,31 @@ export const EXPORT_CODES = {
     nextAction: { kind: 'rewrite-feature', guidance: 'remesh via Manifold, raise mesh deflection, or re-author the offending surface via nurbsSurfaceLowerer' },
     defaultSeverity: 'error',
     group: 'export',
-    description: 'A 3MF export was attempted on a mesh that failed the half-edge watertight check.',
+    description: 'A 3MF part mesh has open or non-manifold edges after the heal pass. Within the shared defect budget the file is written with a warning; past it the export fails and names the counts.',
+  },
+  'export.stl.fuse-skipped': {
+    hintTemplate:
+      'The STL holds one closed shell per part instead of a fused solid, because fusing parts with many overlapping free-form faces (threads, dense lofts) takes minutes. Slicers union overlapping shells, so print as-is; for one fused solid, export the parts you need with `export({ format: "stl", feature_id })` or build a `Scene.toUnion()` yourself and accept the wait.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'print the multi-shell STL as-is, or fuse the parts explicitly with Scene.toUnion() when one solid is required' },
+    defaultSeverity: 'warn',
+    group: 'export',
+    description: 'A multi-part Scene STL skipped the world-frame fuse because two overlapping parts carry more free-form face pairs than the fuse budget; each part is written as its own closed shell.',
+  },
+  'export.3mf.plate-overflow': {
+    hintTemplate:
+      'The file was written, but some parts sit past the bed edge. Pass options.printer with a larger bed, export fewer parts per plate (one export per plate), or split the parts across several 3MF files.',
+    nextAction: { kind: 'fix-arg', field: 'options.printer' },
+    defaultSeverity: 'warn',
+    group: 'export',
+    description: 'A 3MF export with arrange \'plate\' packed more parts than fit the printer bed; the overflowing parts were placed past the bed edge.',
+  },
+  'export.3mf.exceeds-bed': {
+    hintTemplate:
+      'The file was written, but the named parts cannot print on this bed. Pass options.printer with a larger bed or build height, reorient the part (options.orient), or split it into printable sub-parts.',
+    nextAction: { kind: 'fix-arg', field: 'options.printer' },
+    defaultSeverity: 'warn',
+    group: 'export',
+    description: 'A 3MF export with arrange \'plate\' or \'assembled\' holds a part (or assembled object) larger than the printer bed in X/Y or taller than its build height.',
   },
   'export.mesh.not-watertight': {
     hintTemplate:
@@ -51,6 +75,14 @@ export const EXPORT_CODES = {
     defaultSeverity: 'error',
     group: 'export',
     description: 'A finished STL export failed the post-export edge-adjacency watertight verify (open or over-shared mesh edges remain).',
+  },
+  'export.mesh.fused-seam-fallback': {
+    hintTemplate:
+      'The fused union of the assembly parts cracked when meshed at the named seams, so the STL carries each part as its own closed shell (watertight; slicers merge overlapping shells). To get one fused shell, give the parts >=0.1 mm of overlap or a clear gap at those seams instead of a few hundredths of a mm, or export per part.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'use >=0.1 mm overlap or a clear gap at the named part seams' },
+    defaultSeverity: 'warn',
+    group: 'export',
+    description: 'A multi-part STL export fell back from the fused union mesh (not watertight at the part seams) to per-part closed shells.',
   },
   'export.part.not-found': {
     hintTemplate:

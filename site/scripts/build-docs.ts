@@ -56,13 +56,23 @@ function inlineCode(s: string): string {
   return escapeHtml(s).replace(/`([^`]+)`/g, '<code>$1</code>');
 }
 
-function shell(title: string, description: string, body: string, accent: string): string {
+/**
+ * Canonical URL for a page under site/. Cloudflare Pages serves `x.html` at the
+ * extensionless path `x` (it 308-redirects `x.html`), and `docs/index.html` at
+ * `docs/`. The canonical must name the URL that returns 200.
+ */
+export function canonicalUrl(file: string): string {
+  return `https://kernelcad.com/${file.replace(/(^|\/)index\.html$/, '$1').replace(/\.html$/, '')}`;
+}
+
+function shell(title: string, description: string, body: string, accent: string, file: string): string {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="${escapeHtml(description)}" />
+  <link rel="canonical" href="${escapeHtml(canonicalUrl(file))}" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -83,6 +93,7 @@ function shell(title: string, description: string, body: string, accent: string)
       </a>
       <div class="nav-links">
         <a href="/docs/">docs</a>
+        <a href="/gallery">gallery</a>
         <a class="app-link" href="https://app.kernelcad.com">app ↗</a>
         <a href="https://github.com/w1ne/kernelCAD-web">github</a>
         <a href="https://www.npmjs.com/package/kernelcad">npm</a>
@@ -234,9 +245,10 @@ ${renderEntries(page)}
 
     <script type="module">${BOOTSTRAP}</script>`;
 
+  const file = `docs/${page.slug}.html`;
   return {
-    file: `docs/${page.slug}.html`,
-    html: shell(`${page.task} — kernelCAD`, page.blurb, body, accentFor(index)),
+    file,
+    html: shell(`${page.task} — kernelCAD`, page.blurb, body, accentFor(index), file),
   };
 }
 
@@ -263,7 +275,7 @@ ${cards}
         Agents should call <code>lookup_api(query)</code> over the MCP server.</p>
     </main>`;
 
-  return { file: 'docs/index.html', html: shell('Script API — kernelCAD', 'The kernelCAD script API, with runnable examples that rebuild geometry in your browser.', body, 'blueprint') };
+  return { file: 'docs/index.html', html: shell('Script API — kernelCAD', 'The kernelCAD script API, with runnable examples that rebuild geometry in your browser.', body, 'blueprint', 'docs/index.html') };
 }
 
 /**

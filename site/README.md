@@ -17,6 +17,13 @@ The symlinks alias generated `site/public/*` assets into `site/` root so
 Cloudflare Pages the deploy workflow copies `site/` into a dereferenced upload
 directory. The symlinks are git-ignored.
 
+## Landing hero
+
+The hero video and poster are pinned in `scripts/lib/landingHero.ts`
+(`docs/demos/landing-hero/so100/`), not taken from the current release demo.
+A release does not change the hero; edit `LANDING_HERO` to change it. The
+packet's `meta.json` records the capture commands.
+
 ## Build (run before deploy)
 
 ```bash

@@ -16,6 +16,7 @@ export const SOURCE_CHANGED_NOTICE = makeStudioDiagnostic(
     'Source changed during the drag; redo it.',
 ).message;
 export const FALLBACK_PLAN_NOTICE = 'Direct edit could not be planned.';
+export const AUTO_APPLIED_NOTICE = 'Edit applied. Ctrl/Cmd+Z undoes it.';
 
 /** Staged-edit id: monotonic enough for the single-slot store, collision-proof
  *  even for same-millisecond proposals. */

@@ -164,6 +164,13 @@ function snapshotCatalogConnector(entry: ConnectorEntry): CatalogConnectorEntry 
   return snapshot;
 }
 
+export interface FullLowerSnapshot {
+  readonly ids: readonly string[];
+  readonly transformCounts: readonly number[];
+  readonly inputsKey: string;
+  readonly shapes: ReadonlyMap<string, ShapeBackend>;
+}
+
 export class CaptureSession {
   private idGen: FeatureIdGenerator = createFeatureIdGenerator();
   private records: FeatureRecord[] = [];
@@ -198,6 +205,61 @@ export class CaptureSession {
    *  shapes are unchanged when only mate poses moved). Type is `unknown` for
    *  the same boundary reason as `cachedFeatureMeshes`. */
   readonly cachedAssemblyPartMeshes: Map<string, Map<string, unknown>> = new Map();
+  /** The last full-record-chain lower (every record's shape) and the record
+   *  state it was taken at. `Shape.lower()` reuses a record's shape while
+   *  every record up to and including it, their transforms, the params and
+   *  the gates are unchanged — appending records (e.g. a `solvedModel` pose
+   *  scene) does not invalidate earlier shapes. Review passes call `.lower()`
+   *  once per part; each call used to re-run the whole chain (seconds per
+   *  call on boolean-heavy parts). */
+  lastFullLower?: FullLowerSnapshot;
+
+  /** Snapshot the state a full lower depends on, paired with its shapes. */
+  snapshotFullLower(shapes: ReadonlyMap<string, ShapeBackend>): FullLowerSnapshot {
+    return {
+      ids: this.records.map((r) => r.id),
+      transformCounts: this.records.map((r) => r.transforms.length),
+      inputsKey: this.fullLowerInputsKey(),
+      shapes,
+    };
+  }
+
+  /** The shape of record `id` from `lastFullLower`, when still valid. */
+  reusableLoweredShape(id: string): ShapeBackend | undefined {
+    const snap = this.lastFullLower;
+    if (snap === undefined) return undefined;
+    const k = this.records.findIndex((r) => r.id === id);
+    if (k < 0 || k >= snap.ids.length) return undefined;
+    for (let i = 0; i <= k; i += 1) {
+      if (snap.ids[i] !== this.records[i].id || snap.transformCounts[i] !== this.records[i].transforms.length) {
+        return undefined;
+      }
+    }
+    if (snap.inputsKey !== this.fullLowerInputsKey()) return undefined;
+    return snap.shapes.get(id);
+  }
+
+  /** Every still-valid shape of `lastFullLower` (the unchanged record
+   *  prefix), for seeding a RecomputeEngine run so only appended records
+   *  (e.g. a `solvedModel` pose scene) are lowered. */
+  reusableLoweredPrefix(): Map<string, ShapeBackend> {
+    const seed = new Map<string, ShapeBackend>();
+    const snap = this.lastFullLower;
+    if (snap === undefined || snap.inputsKey !== this.fullLowerInputsKey()) return seed;
+    const n = Math.min(snap.ids.length, this.records.length);
+    for (let i = 0; i < n; i += 1) {
+      const r = this.records[i];
+      if (snap.ids[i] !== r.id || snap.transformCounts[i] !== r.transforms.length) break;
+      const shape = snap.shapes.get(r.id);
+      if (shape !== undefined) seed.set(r.id, shape);
+    }
+    return seed;
+  }
+
+  private fullLowerInputsKey(): string {
+    const gates = [...this.gatedFeatureNames].map(([k, v]) => `${k}=${v ?? ''}`).join(',');
+    return `${gates}|${JSON.stringify(this.paramTable.serialize())}`;
+  }
   /** Slice 2E: per-session RecomputeEngine, attached by `buildModel` on the
    *  first run. Reused by `params.update` so `onRelower` subscribers added
    *  after the initial build still receive re-lower events.
@@ -716,6 +778,7 @@ export class CaptureSession {
       at?: Vec3Param;
       connectors?: Record<string, AssemblyConnectorFrameStored>;
       placedBy?: AssemblyPartOpts['connect'];
+      materialName?: string;
     } = {},
   ): FeatureRecord {
     return this.register(createAssemblyPartCaptureSpec(this.records, assemblyName, partName, shape.id, opts));
