@@ -3828,4 +3828,3 @@ This section preserves a separate kernelCAD changelog from before the 2026-05 ve
 -   **Architecture**: Modular design with `geometryHelpers` and `geometryExports`.
 -   **Testing**: Unit tests with Vitest.
 -   **CI/CD**: GitHub Actions for automated deployment.
-
