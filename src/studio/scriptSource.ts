@@ -272,6 +272,22 @@ function hostedMeshBody(source: string, paramOverrides: ParamOverrides | undefin
   };
 }
 
+/** `POST {base}/__kernelcad/mesh`; throws the server's error message. */
+async function meshOnServer(base: string, body: ReturnType<typeof hostedMeshBody>): Promise<BackendMeshPayload> {
+  const response = await fetch(`${base}/__kernelcad/mesh`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const payload = await response.json().catch(() => null);
+  if (!response.ok) {
+    const message = payload && typeof payload.error === 'string' ? payload.error : `HTTP ${response.status}`;
+    throw new Error(message);
+  }
+  if (!isBridgePayload(payload)) throw new Error('Mesh endpoint did not return features.');
+  return payload;
+}
+
 /** The mesh stored when the current `/p/<slug>?version=N` revision was
  *  published, or null when the page is not pinned or the artifact is missing. */
 async function storedRevisionMesh(base: string): Promise<BackendMeshPayload | null> {
@@ -321,18 +337,7 @@ export async function meshSourceHosted(
   const base = import.meta.env.VITE_API_BASE_URL;
   if (typeof base === 'string' && base.length > 0) {
     try {
-      const response = await fetch(`${base}/__kernelcad/mesh`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(hostedMeshBody(source, paramOverrides, options?.preferSource)),
-      });
-      const payload = await response.json().catch(() => null);
-      if (!response.ok) {
-        const message = payload && typeof payload.error === 'string' ? payload.error : `HTTP ${response.status}`;
-        throw new Error(message);
-      }
-      if (!isBridgePayload(payload)) throw new Error('Mesh endpoint did not return features.');
-      return payload;
+      return await meshOnServer(base, hostedMeshBody(source, paramOverrides, options?.preferSource));
     } catch (error) {
       // 3. A heavy model can exceed the live mesh budget (30 s). A pinned
       //    revision was already meshed at publish time with a longer budget,
