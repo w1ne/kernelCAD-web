@@ -12,7 +12,7 @@ import { defineConfig, globalIgnores } from 'eslint/config'
 const layerImportRegex = (layer) => `^(\\.\\./)+${layer}(/|$)|(^|/)src/${layer}(/|$)`;
 
 export default defineConfig([
-  globalIgnores(['**/dist/**', 'eval/runs/**', '.claude/worktrees/**', '.worktrees/**']),
+  globalIgnores(['**/dist/**', 'eval/runs/**', 'eval/benchmarks/cadgenbench/runs/**', 'eval/benchmarks/cadgenbench/.cache/**', '.claude/worktrees/**', '.worktrees/**']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
@@ -69,6 +69,18 @@ export default defineConfig([
       }))],
     },
   })),
+  // 11 px (text-2xs) is the smallest step of the type scale in src/index.css.
+  // Raw colours in src/studio are held by the ratchet in
+  // tests/unit/architecture/studioRawColours.test.ts.
+  {
+    files: ['src/studio/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-syntax': ['error', ...['Literal[value', 'TemplateElement[value.raw'].map((node) => ({
+        selector: `${node}=/(^|[\\s:])text-\\[10px\\]/]`,
+        message: 'text-[10px] is below the type scale. Use text-2xs (11 px).',
+      }))],
+    },
+  },
   {
     files: [
       '**/*.test.{ts,tsx}',

@@ -66,6 +66,7 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
         description: 'Per-feature health degradations — ONLY features that fell back to a passthrough (warning) or failed to lower (error). Empty when every feature is healthy. Surfaces which feature degraded even when ok is true.',
       },
       mechanism: { type: 'string', enum: ['real', 'broken', 'unverified'], description: "Mechanism-truth verdict for an assembly-built scene (default-on; omitted for dryRun, non-assembly, or skipMechanismCheck:true). 'broken' makes ok:false; 'unverified' keeps ok and surfaces a loud budget diagnostic." },
+      reviewHint: { type: 'string', description: 'Present only when a captured assembly declares articulated (non-fastened) mates: the default mechanism check is shallow (no joint-support intents, pose-envelope overlap at declared limits, or gravity drop) — run review_cad for pose-envelope + gravity checks.' },
     },
     required: ['ok', 'featureCount', 'diagnostics'],
     additionalProperties: true,
@@ -427,6 +428,24 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
     additionalProperties: true,
   },
 
+  execute_cookbook: {
+    type: 'object',
+    properties: {
+      ok: { type: 'boolean' },
+      cookbookId: { type: 'string', description: 'Resolved cookbook snippet id.' },
+      title: { type: 'string', description: 'Resolved cookbook title.' },
+      evaluate: { type: 'object', additionalProperties: true, description: 'Full evaluate_script result (same shape).' },
+      openInStudio: { type: 'object', additionalProperties: true, description: 'open_in_studio result when openInStudio was requested.' },
+      executionId: { type: 'string', description: 'Short id for logs / correlation.' },
+      code: { type: 'string', description: 'Snippet body used for evaluate / Studio.' },
+      dryRunNotEvidence: { type: 'boolean', description: 'Present when dryRun:true — dryRun success is NOT evidence of a real OCCT build.' },
+      error: { type: 'string' },
+      stage: { type: 'string', description: "'resolve' | 'evaluate' | 'open_in_studio' on failure." },
+    },
+    required: ['ok', 'executionId'],
+    additionalProperties: true,
+  },
+
   // Read-remote: bundled offline, optional remote parts-catalog tier.
   find_part: {
     type: 'object',
@@ -452,6 +471,10 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
       cachePath: { type: 'string', description: 'Local cache path of the written STEP file (success).' },
       sha256: { type: 'string', description: 'SHA-256 fingerprint of the STEP file (success).' },
       source: { type: 'string', description: "Where the part came from ('local' | 'remote') (success)." },
+      kind: { type: 'string', description: "'link_out' when the URL is a vendor configurator the agent must drive by hand." },
+      url: { type: 'string', description: 'Outbound vendor URL (link_out). May carry a referral tag; see disclosure.' },
+      instruction: { type: 'string', description: 'What to do with the link_out URL.' },
+      disclosure: { type: 'string', description: 'Referral disclosure. Present only when url carries a referral tag; show it with the link.' },
       error: { type: 'string' },
       errorCode: { type: 'string' },
       errorHint: { type: 'string' },
@@ -479,6 +502,12 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
     type: 'object',
     properties: {
       ok: { type: 'boolean' },
+      stageTimingsMs: { type: 'object', additionalProperties: { type: 'number' }, description: 'Wall-clock ms per review stage that ran.' },
+      skippedStages: {
+        type: 'array',
+        items: { type: 'object', properties: { stage: { type: 'string' }, reason: { type: 'string' } }, additionalProperties: true },
+        description: 'Stages skipped because timeBudgetMs was spent; their checks did not run.',
+      },
       featureCount: { type: 'number' },
       diagnostics: { type: 'array', items: { type: 'object', additionalProperties: true } },
       assembly: { type: 'string' },
@@ -651,7 +680,9 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
       feature_count: { type: 'number' },
       format: { type: 'string' },
       mesh_files: { type: 'array', items: { type: 'string' }, description: 'Per-link mesh files: meshes/<part>.stl for urdf/sdf-gazebo, meshes/<part>.usda mesh layers for usd-isaac.' },
+      part_files: { type: 'array', items: { type: 'string' }, description: "Per-part DXF files: parts/<part>.dxf for a multi-part dxf export (layout 'per-part', the default)." },
       written: { type: 'array', items: { type: 'object', additionalProperties: true }, description: "target:'part' — per-part export records." },
+      infill: { type: 'object', additionalProperties: true, description: "3mf with options.infill — stress-graded infill: band table (density, stress range, volume %), saving vs uniform infill at the high density, FEA peaks, and images { heatmap, bands, cutaway } PNG paths." },
       diagnostics: { type: 'array', items: { type: 'object', additionalProperties: true } },
       error: { type: 'string' },
     },
@@ -663,7 +694,7 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
     type: 'object',
     properties: {
       ok: { type: 'boolean' },
-      uploaded_path: { type: 'string', description: 'Path/name the G-code was stored under on the printer.' },
+      uploaded_path: { type: 'string', description: 'Path/name the G-code (bambu-lan: the .gcode.3mf print file) was stored under on the printer.' },
       dry_run: { type: 'boolean', description: 'True when only connectivity/auth was validated (no upload, no print start).' },
       diagnostics: { type: 'array', items: { type: 'object', additionalProperties: true } },
       error: { type: 'string' },

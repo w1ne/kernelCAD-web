@@ -12,6 +12,10 @@ describe('tokenize', () => {
     expect(tokenize('a an be the of fillet')).toEqual(['fillet']);
   });
 
+  it('keeps metric thread sizes M2..M9 (and M10+ by length)', () => {
+    expect(tokenize('M3 bolt, m4 tap, M10 nut, m1 x2')).toEqual(['m3', 'bolt', 'm4', 'tap', 'm10', 'nut']);
+  });
+
   it('drops english stopwords', () => {
     expect(tokenize('the fillet is on top of the box')).toEqual(['fillet', 'top', 'box']);
   });

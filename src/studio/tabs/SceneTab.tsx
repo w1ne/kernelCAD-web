@@ -126,7 +126,7 @@ function SceneTabPartsPanel({
                     <button
                         type="button"
                         data-testid="parts-show-all"
-                        className="text-[10px] normal-case text-blue-400 hover:text-blue-300"
+                        className="text-2xs normal-case text-blue-400 hover:text-blue-300"
                         onClick={() => partNames.forEach((p) => {
                             if (hiddenIds.includes(p)) toggleVisibility?.(p);
                         })}
@@ -216,7 +216,7 @@ function SceneTabFeatureRows({
                                 <span className="truncate flex-1" title={row.label}>
                                     {row.label}
                                 </span>
-                                <span className="text-[10px] text-gray-500 shrink-0 font-mono">
+                                <span className="text-2xs text-gray-500 shrink-0 font-mono">
                                     {row.kind}
                                 </span>
                             </button>

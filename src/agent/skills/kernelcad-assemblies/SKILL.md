@@ -11,7 +11,7 @@ Use `assembly()` when the model needs named mechanical parts, connector frames, 
 
 `kernelcad validate <file.kcad.ts>` runs the assembly validator over the script's Scene. Three checks today:
 
-- **`assembly.part.floating`** / **`mechanism.orphan-part`** — disconnected body/component (no mate/joint into the graph). Fix: connectors + mates — shafts/hinges/gears use `type: 'axis'` + `arm.mate(..., 'revolute')`; rigid mounts use `type: 'frame'` + `mate(..., 'fastened')`; or `arm.fixed/.revolute/.prismatic/.ball`. Connector types are only `frame|axis|planar|ball`.
+- **`assembly.part.floating`** / **`mechanism.orphan-part`** — disconnected body/component (no mate/joint into the graph). Fix: connectors + mates — shafts/hinges/gears use `type: 'axis'` + `arm.mate(..., 'revolute')`; rigid mounts use `type: 'frame'` + `mate(..., 'fastened')`; or `arm.fixed/.revolute/.prismatic/.ball`. Connector types are only `frame|axis|planar|ball`. Only a mechanism (any mate, joint, transmission or `.solvedModel()`) must be fully linked: a plain multi-part assembly with no mates (enclosure base + lid, print layout) is valid as-is. Don't invent mates for a deliberately free part next to a mechanism — pass `skipMechanismCheck: true` to `evaluate_script`.
 - **`assembly.part.orphan`** — a part is in a sub-assembly disconnected from the main mechanism (same connector/mate fix as floating).
 - **`assembly.mate.connector-not-found`** / **`assembly.pose-envelope.connector-unresolved`** — mate ref did not resolve. Declare `partRef.connector(...)` on **each** part **before** `arm.mate(...)`, use `'partName.connectorName'` refs, and prefer numeric `{ kind: 'vec3', value: [x,y,z] }` origins (topology origins often stay unresolved).
 - **`assembly.interference.overlap`** / **`mechanism.interpenetration`** after an edit — often stale duplicate/orphaned overlapping bodies from an in-place workaround. Keep only the intended connected mechanism graph; delete leftover copies before tweaking geometry.
@@ -409,7 +409,7 @@ Six diagnostic codes on `ValidatorDiagnostic`:
 - `assembly.mate.type-mismatch` — connector-pair / mate-type mismatch at capture.
 - `assembly.mate.connector-not-found` — malformed ref / unknown part / unknown connector.
 - `assembly.loop.unclosed` — reserved (type-only today).
-- `assembly.solver.did-not-converge` — **v0.6.0 does not solve articulated closed loops** (4-bar / parallelogram). Message lists body + articulated-mate ids. Fix: open chain (drop one loop-closing mate; keep ground root) or fastened-only loop. `limitsDeg` / `jointSupport` / `mechanicalJoint` still apply on open chains and are reported even when the loop cannot converge.
+- `assembly.solver.did-not-converge` — **v0.6.0 does not solve articulated closed loops** (4-bar / parallelogram / scissor + pin_slot). Message lists body + articulated-mate ids. Fix: open chain (drop one loop-closing mate; keep ground root) or fastened-only loop. Industrial scissor tables: `lookup_cookbook("scissor lift closed loop")` (open-chain prismatic platform + mid-pose X-links — do not invent `joint.scissorLift`). `limitsDeg` / `jointSupport` / `mechanicalJoint` still apply on open chains and are reported even when the loop cannot converge.
 
 ### Validation gate on `solvedModel`
 

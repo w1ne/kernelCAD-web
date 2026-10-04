@@ -128,7 +128,7 @@ describe('v0.3 slice 2 — named feature resolution', () => {
     }
     expect(threw).toBe(true);
     expect(errorCode).toBe('feature.invalid-args');
-    expect(hint).toContain('start with a letter');
+    expect(hint).toContain('starting with a letter');
   });
 
   it('rejects duplicate feature names on the same chain with feature.invalid-args', async () => {
@@ -151,6 +151,6 @@ describe('v0.3 slice 2 — named feature resolution', () => {
     }
     expect(threw).toBe(true);
     expect(errorCode).toBe('feature.invalid-args');
-    expect(hint).toContain("already used in this chain");
+    expect(hint).toContain('is already taken by the');
   });
 });

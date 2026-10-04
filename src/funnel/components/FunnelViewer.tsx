@@ -12,11 +12,12 @@
  * Embed hosts get explicit build/display status so an empty canvas is never
  * presented as "ready" (iframe load alone is not enough).
  */
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import Viewer from '../../studio/components/Viewer';
 import { hasNonemptyGeometry } from '../../studio/components/viewer/hasNonemptyGeometry';
 import { WorkbenchProvider, useWorkbench } from '../../studio/context/WorkbenchContext';
 import type { GeometryResult } from '../../shared/worker/geometryEngine';
+import type { ViewportBackground } from '../../shared/types/viewMode';
 import {
   geometriesFromArtifact,
   parseMeshArtifact,
@@ -50,6 +51,30 @@ export interface FunnelViewerProps {
   /** CDN animation-bake URL (transforms-only). When set (or derivable from meshUrl),
    *  shows Play/scrub chrome that drives part transforms client-side. */
   animUrl?: string | null;
+  /** Drawn over the canvas inside the source viewer's workbench providers
+   *  (the embed's model customizer). Source execution only. It reports its
+   *  own build errors, so a failed re-build over a displayed model keeps the
+   *  last good geometry visible instead of the full-canvas failure notice. */
+  overlay?: ReactNode;
+  /** Draw the viewer's own centred status text. The embed turns it off: it
+   *  shows one status line of its own over a poster. Phases are still
+   *  reported through `onPhaseChange`. Default true. */
+  statusOverlay?: boolean;
+  /** Canvas background; overrides the stored Studio preference. */
+  background?: ViewportBackground;
+}
+
+/** Props FunnelViewer passes down to the inner viewer unchanged. */
+type InnerDisplayProps = Pick<FunnelViewerProps, 'statusOverlay' | 'background'>;
+
+function funnelStatusLabel(phase: FunnelViewerPhase, detail: string | null): string | null {
+  switch (phase) {
+    case 'building_geometry': return 'Building geometry…';
+    case 'loading_mesh': return 'Loading mesh…';
+    case 'build_failed': return `Build failed: ${detail ?? 'unknown error'}`;
+    case 'viewer_failed': return `Viewer failed: ${detail ?? 'unknown error'}`;
+    default: return null;
+  }
 }
 
 /** Inner component — must be mounted inside WorkbenchProvider. */
@@ -57,10 +82,14 @@ function FunnelViewerInner({
   onPhaseChange,
   revision = null,
   instanceId,
-}: {
+  overlay,
+  statusOverlay = true,
+  background,
+}: InnerDisplayProps & {
   onPhaseChange?: (phase: FunnelViewerPhase, detail?: string | null) => void;
   revision?: number | null;
   instanceId?: string;
+  overlay?: ReactNode;
 }) {
   const {
     geometries,
@@ -129,12 +158,10 @@ function FunnelViewerInner({
     setEmptyBuildError(null);
   }, []);
 
-  const statusLabel =
-    phase === 'building_geometry' ? 'Building geometry…'
-    : phase === 'loading_mesh' ? 'Loading mesh…'
-    : phase === 'build_failed' ? `Build failed: ${detail ?? 'unknown error'}`
-    : phase === 'viewer_failed' ? `Viewer failed: ${detail ?? 'unknown error'}`
-    : null;
+  // A customizer overlay reports its own build errors; over a displayed
+  // model it keeps the last good geometry in view.
+  const overlayOwnsError = Boolean(overlay) && phase === 'build_failed' && displayReady && nonempty;
+  const statusLabel = overlayOwnsError || !statusOverlay ? null : funnelStatusLabel(phase, detail);
 
   return (
     <div className="absolute inset-0">
@@ -145,6 +172,7 @@ function FunnelViewerInner({
         showSketches={showSketches ?? false}
         viewMode3D={viewMode3D}
         onDisplayReady={onDisplayReady}
+        background={background}
       />
       {statusLabel ? (
         <div
@@ -156,6 +184,7 @@ function FunnelViewerInner({
           <p className="text-ink-faint font-mono text-sm px-6 text-center">{statusLabel}</p>
         </div>
       ) : null}
+      {overlay}
     </div>
   );
 }
@@ -170,16 +199,27 @@ function SourceViewer({
   resetKey,
   revision,
   instanceId,
-}: {
+  overlay,
+  statusOverlay,
+  background,
+}: InnerDisplayProps & {
   code: string;
   onPhaseChange?: FunnelViewerProps['onPhaseChange'];
   resetKey: number | string;
   revision?: number | null;
   instanceId?: string;
+  overlay?: ReactNode;
 }) {
   return (
     <WorkbenchProvider key={`${resetKey}:${code.length}`} initialCode={code}>
-      <FunnelViewerInner onPhaseChange={onPhaseChange} revision={revision} instanceId={instanceId} />
+      <FunnelViewerInner
+        onPhaseChange={onPhaseChange}
+        revision={revision}
+        instanceId={instanceId}
+        overlay={overlay}
+        statusOverlay={statusOverlay}
+        background={background}
+      />
     </WorkbenchProvider>
   );
 }
@@ -352,8 +392,9 @@ function MeshStatus(props: {
   revision?: number | null;
   instanceId?: string;
   onPhaseChange?: FunnelViewerProps['onPhaseChange'];
+  statusOverlay?: boolean;
 }) {
-  const { message, revision = null, instanceId, onPhaseChange } = props;
+  const { message, revision = null, instanceId, onPhaseChange, statusOverlay = true } = props;
   const phase = props.phase ?? 'viewer_failed';
   useEffect(() => {
     onPhaseChange?.(phase, message);
@@ -369,6 +410,8 @@ function MeshStatus(props: {
     }, '*');
   }, [phase, message, revision, instanceId, onPhaseChange]);
 
+  // The host draws its own status; keep the phase report, drop the text.
+  if (!statusOverlay) return <div className="relative w-full h-full" />;
   return (
     <div className="relative w-full h-full bg-code-bg grid place-items-center" data-testid="funnel-viewer-status" role="status">
       <p className="text-ink-faint font-mono text-sm px-6 text-center">{message}</p>
@@ -394,7 +437,13 @@ function LoadedMeshViewer(props: FunnelViewerProps & { geometries: GeometryResul
         suspendSourceExecution
         externalGeometries={props.geometries}
       >
-        <FunnelViewerInner onPhaseChange={props.onPhaseChange} revision={props.revision} instanceId={props.instanceId} />
+        <FunnelViewerInner
+          onPhaseChange={props.onPhaseChange}
+          revision={props.revision}
+          instanceId={props.instanceId}
+          statusOverlay={props.statusOverlay}
+          background={props.background}
+        />
         {resolvedAnimUrl ? <EmbedAnimationOverlay key={resolvedAnimUrl} animUrl={resolvedAnimUrl} /> : null}
       </WorkbenchProvider>
     </div>
@@ -414,6 +463,9 @@ export function FunnelViewer(props: FunnelViewerProps) {
           resetKey={props.resetKey ?? 0}
           revision={props.revision}
           instanceId={props.instanceId}
+          overlay={props.overlay}
+          statusOverlay={props.statusOverlay}
+          background={props.background}
         />
       </div>
     );
@@ -425,6 +477,7 @@ export function FunnelViewer(props: FunnelViewerProps) {
         revision={props.revision}
         instanceId={props.instanceId}
         onPhaseChange={props.onPhaseChange}
+        statusOverlay={props.statusOverlay}
       />
     );
   }
@@ -436,6 +489,7 @@ export function FunnelViewer(props: FunnelViewerProps) {
         revision={props.revision}
         instanceId={props.instanceId}
         onPhaseChange={props.onPhaseChange}
+        statusOverlay={props.statusOverlay}
       />
     );
   }

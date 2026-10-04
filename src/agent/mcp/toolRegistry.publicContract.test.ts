@@ -26,6 +26,7 @@ import { reviewPipelineToolEntries } from './registry/reviewPipelineTools';
 import { sketchAssemblyToolEntries } from './registry/sketchAssemblyTools';
 import { mechanismSimToolEntries } from './registry/mechanismSimTools';
 import { meshReconstructToolEntries } from './registry/meshReconstructTools';
+import { cookbookExecutionToolEntries } from './registry/cookbookExecutionTools';
 
 const EXPECTED_TOOL_NAMES = [
   'evaluate_script',
@@ -77,6 +78,7 @@ const EXPECTED_TOOL_NAMES = [
   'diff_geometry',
   'drawing_to_cad',
   'mesh_to_features',
+  'execute_cookbook',
 ] as const;
 
 const PUBLIC_CONTRACT_FIXTURE = new URL(
@@ -315,6 +317,13 @@ describe('toolRegistry public contract', () => {
     expect(TOOL_REGISTRY.slice(46, 47)).toEqual(meshReconstructToolEntries);
   });
 
+  it('composes the cookbook-execution family at the registry tail, after mesh reconstruction', () => {
+    const names = cookbookExecutionToolEntries.map(entry => entry.definition.name);
+
+    expect(names).toEqual(['execute_cookbook']);
+    expect(TOOL_REGISTRY.slice(47, 48)).toEqual(cookbookExecutionToolEntries);
+  });
+
   it('keeps the 38 historical entries at indices 0..37 and appends new families in merge order', () => {
     expect(TOOL_REGISTRY.slice(38).map(entry => entry.definition.name)).toEqual([
       'resolve_assumptions',
@@ -326,8 +335,9 @@ describe('toolRegistry public contract', () => {
       'diff_geometry',
       'drawing_to_cad',
       'mesh_to_features',
+      'execute_cookbook',
     ]);
-    expect(TOOL_REGISTRY).toHaveLength(47);
+    expect(TOOL_REGISTRY).toHaveLength(48);
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {

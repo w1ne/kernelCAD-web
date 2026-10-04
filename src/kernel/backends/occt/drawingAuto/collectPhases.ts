@@ -8,12 +8,12 @@ import type { HoleComposite, V3 } from '../drawingFeatures';
 import { dimensionToSvg, formatDimValue } from '../drawingLayout';
 import type { DrawingViewName, Pt2, SheetSpec } from '../drawingLayout';
 import { viewBasis } from '../drawingProjection';
-import { GEOMETRY_OWNER, Obstacles } from '../drawingObstacles';
+import { CAPTION_OWNER, GEOMETRY_OWNER, Obstacles } from '../drawingObstacles';
 import type { Box, Seg } from '../drawingObstacles';
 import type { AutoDrawingInput } from './contracts';
 import { POSITION_ZONE } from './iso2768';
 import { CHAR_W, TEXT_H, textBox } from './placement';
-import { HOLE_SIDES, commit, holeKey, holeLabel, toSheet } from './renderContext';
+import { commit, dimensionSides, holeKey, holeLabel, toSheet } from './renderContext';
 import type { HoleGroup, LinearItem, RenderCtx } from './renderContext';
 import { STANDARD_VIEWS, viewAlong } from './views';
 import { cross, dot, len, sub } from './vectors';
@@ -117,7 +117,8 @@ function holePositionItemsForView(
     const axisIdx = holeAxisIndex(b, screen);
     const ref = holeReferenceCoord(ctx.datums, bb, axisIdx);
     const coords = uniqueHoleCoords(holes, axisIdx, ref);
-    const side = screen === 'x' ? HOLE_SIDES[view].horizontal : HOLE_SIDES[view].vertical;
+    const sides = dimensionSides(ctx.input.projection)[view];
+    const side = screen === 'x' ? sides.horizontal : sides.vertical;
     const box = ctx.views[view].placement.box;
     for (const c of coords) {
       const hole = holes.find(h => Math.abs(h.entry[axisIdx] - c) < 0.01)!;
@@ -175,10 +176,15 @@ export function collectLinearDimensions(ctx: RenderCtx): LinearItem[] {
   if (opts.enabled && include.has('overall')) {
     const f = views.front.placement.box;
     const t = views.top.placement.box;
+    const sides = dimensionSides(ctx.input.projection);
+    const fw = sides.front.horizontal, fh = sides.front.vertical, td = sides.top.vertical;
+    const fy = fw === 'top' ? f.y : f.y + f.h;
+    const fx = fh === 'left' ? f.x : f.x + f.w;
+    const tx = td === 'left' ? t.x : t.x + t.w;
     linear.push(
-      { kind: 'overall', view: 'front', side: 'bottom', from: [f.x, f.y + f.h], to: [f.x + f.w, f.y + f.h], label: formatDimValue(bb.max[0] - bb.min[0]), order: Infinity },
-      { kind: 'overall', view: 'front', side: 'right', from: [f.x + f.w, f.y], to: [f.x + f.w, f.y + f.h], label: formatDimValue(bb.max[2] - bb.min[2]), order: Infinity },
-      { kind: 'overall', view: 'top', side: 'left', from: [t.x, t.y], to: [t.x, t.y + t.h], label: formatDimValue(bb.max[1] - bb.min[1]), order: Infinity },
+      { kind: 'overall', view: 'front', side: fw, from: [f.x, fy], to: [f.x + f.w, fy], label: formatDimValue(bb.max[0] - bb.min[0]), order: Infinity },
+      { kind: 'overall', view: 'front', side: fh, from: [fx, f.y], to: [fx, f.y + f.h], label: formatDimValue(bb.max[2] - bb.min[2]), order: Infinity },
+      { kind: 'overall', view: 'top', side: td, from: [tx, t.y], to: [tx, t.y + t.h], label: formatDimValue(bb.max[1] - bb.min[1]), order: Infinity },
     );
   }
   const buckets = new Map<string, LinearItem[]>();
@@ -216,7 +222,7 @@ export function collectLinearDimensions(ctx: RenderCtx): LinearItem[] {
       const segments: Seg[] = horizontal
         ? [[item.from[0], linePos, item.to[0], linePos], [item.from[0], item.from[1], item.from[0], linePos], [item.to[0], item.to[1], item.to[0], linePos]]
         : [[linePos, item.from[1], linePos, item.to[1]], [item.from[0], item.from[1], linePos, item.from[1]], [item.to[0], item.to[1], linePos, item.to[1]]];
-      commit(ctx, item.kind, item.view, item.label, { svg: dimSvg, boxes, segments });
+      commit(ctx, item.kind, item.view, item.label, { svg: dimSvg, boxes, segments }, true);
     });
   }
   return linear;
@@ -229,7 +235,7 @@ export function addViewCaptions(ctx: RenderCtx): void {
     const box = ctx.views[name].placement.box;
     ctx.obstacles.addBox(
       textBox(box.x + box.w / 2, box.y + box.h + 5 + ctx.bottomReserve[name], 2.6, 'middle', CAPTIONS[name]),
-      GEOMETRY_OWNER,
+      CAPTION_OWNER,
     );
   }
 }

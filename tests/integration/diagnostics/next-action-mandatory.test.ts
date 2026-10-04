@@ -24,11 +24,13 @@ const FIXTURES: Fixture[] = [
   { name: 'fillet too large → short-edges-skipped', code: `return box(10,10,10).fillet(20);`, expectCode: 'feature.edge-feature.short-edges-skipped' },
   { name: 'sphere with faceLabels → face-ref.not-applicable', code: `return sphere(5, { faceLabels: { lid: 'top' } } as any);`, expectCode: 'feature.face-ref.not-applicable' },
   { name: 'unknown label → label.unknown-name', code: `const s = path().moveTo(0,0).lineTo(10,0).lineTo(10,10).lineTo(0,10).close().extrude(5); return s.fillet(1, { face: 'nope' } as any);`, expectCode: 'feature.label.unknown-name' },
-  // Deviation from plan: original fixture `box(10,10,10);` (no return) produces
-  // no error diagnostic from the evaluate path — `export.no-shape` is emitted
-  // only by `runAndExport`. Substituted with a script exception that exercises
-  // the `cli.script-exception` → `inspect-message` next-action code path.
-  { name: 'shell with no thickness → cli.script-exception', code: `return (box(10,10,10) as any).shell();`, expectCode: 'cli.script-exception' },
+  // `.shell()` with no thickness now fails its capture-time arg check, so it
+  // reports `feature.invalid-args` (which argument, what arrived, what is
+  // required, an example) instead of an opaque script exception.
+  { name: 'shell with no thickness → feature.invalid-args', code: `return (box(10,10,10) as any).shell();`, expectCode: 'feature.invalid-args' },
+  // Keep a `cli.script-exception` fixture so that next-action code path stays
+  // covered: a plain JS throw from the script body.
+  { name: 'script throws → cli.script-exception', code: `throw new Error('boom');`, expectCode: 'cli.script-exception' },
 ];
 
 describe('next-action mandatory on wire (evaluate_script)', () => {

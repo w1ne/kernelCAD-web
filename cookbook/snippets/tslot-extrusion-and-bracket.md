@@ -39,16 +39,32 @@ let bar = box(profileSize, profileSize, length)
 for (const deg of [0, 90, 180, 270]) {
   bar = bar.subtract(slotCutter().rotateZ(deg));
 }
-const extrusion = bar.subtract(cylinder(200, coreR).translate(0, 0, -1));
+// Core bore as a real hole feature (not a subtracted cylinder) so export,
+// drawings and DFM read its diameter back. The four slot cuts split the top
+// face, so name the central island by its normal and centre — `length` is a
+// ParamRef, so atZ cannot be used here. u/v are mm from that face's centre
+// and the bore is on the rail axis, so both are 0.
+const extrusion = bar.hole({ byNormal: 'Z', atX: 0, atY: 0 }, {
+  u: 0,
+  v: 0,
+  diameter: 2 * coreR,
+  depth: 'through',
+});
 
 // Gauge sitting in the +Y face opening so inspect can read the 6 mm slot.
 const gauge = box(slotOpening, 0.2, 20).translate(-slotOpening / 2, profileSize / 2 - 0.1, 50);
 
 const plateT = 3;
 const leg = 28;
+// Base-plate clearance as a real hole: cut it on the bare plate, whose top
+// face spans the full leg × profileSize, so u/v are mm from (leg/2,
+// profileSize/2) — world (leg - 10, profileSize / 2) becomes (leg / 2 - 10, 0).
+// The second bore has to stay a subtracted cylinder: it runs UP the 3 mm
+// upright at x = plateT / 2 with a Ø5.5 tool, so it breaks out of both side
+// walls. That is not a bore in a face and hole() cannot express it.
 const connector = box(leg, profileSize, plateT)
+  .hole('top', { u: leg / 2 - 10, v: 0, diameter: 5.5, depth: 'through' })
   .union(box(plateT, profileSize, leg).translate(0, 0, plateT))
-  .subtract(cylinder(plateT + 2, 2.75).translate(leg - 10, profileSize / 2, -1))
   .subtract(cylinder(leg + 2, 2.75).translate(plateT / 2, profileSize / 2, -1));
 
 const arm = assembly('tslot-extrusion-and-connector');

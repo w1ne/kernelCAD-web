@@ -1,7 +1,7 @@
 [
   {
     "name": "evaluate_script",
-    "description": "Use this when you need to run a script and check it compiles. Run a kernelCAD .kcad.ts script and report pass/fail + feature count + diagnostics. When the scene is assembly-built (assembly().part(...) → .model()/.solvedModel()), also returns a parts summary { count, names } AND runs the mechanism-truth gate by default: the `mechanism` field reports real/broken/unverified and a broken mechanism (disconnected components / mechanism.orphan-part, self-collision, fastened drift, dof-mismatch) makes ok:false with the failures in diagnostics — multi-body assemblies need connectors + mates/joints (axis+revolute for shafts/hinges/gears; frame+fastened for rigid; or arm.revolute/.prismatic/.ball/.fixed). Pass { skipMechanismCheck: true } to opt out. Pass either { file: \"<path>\" } or { code: \"<inline source>\" }. Set { dryRun: true } for fast validation while iterating: transpile + capture + capture-light checks WITHOUT OCCT lowering, DFM gates, or meshing — milliseconds instead of seconds (100x+ on boolean/fillet-heavy scripts). A dry run catches script throws, capture-time API misuse, and assembly validity-gate failures, but NOT lowering failures or dfmSpec diagnostics; it leaves the active session untouched, so finish with a full (non-dry) evaluate_script before using session-dependent tools.",
+    "description": "Use this when you need to run a script and check it compiles. Run a kernelCAD .kcad.ts script and report pass/fail + feature count + diagnostics. When the scene is assembly-built (assembly().part(...) → .model()/.solvedModel()), also returns a parts summary { count, names } AND runs the mechanism-truth gate by default: the `mechanism` field reports real/broken/unverified and a broken mechanism (disconnected components / mechanism.orphan-part, self-collision, fastened drift, dof-mismatch) makes ok:false with the failures in diagnostics — a mechanism (any mate, joint, transmission or .solvedModel()) needs every part linked by connectors + mates/joints (axis+revolute for shafts/hinges/gears; frame+fastened for rigid; or arm.revolute/.prismatic/.ball/.fixed). A plain multi-part assembly with no mates (base + lid, print layout) is independent bodies and passes. Pass { skipMechanismCheck: true } to opt out (e.g. a deliberately free part next to a mechanism). Pass either { file: \"<path>\" } or { code: \"<inline source>\" }. Set { dryRun: true } for fast validation while iterating: transpile + capture + capture-light checks WITHOUT OCCT lowering, DFM gates, or meshing — milliseconds instead of seconds (100x+ on boolean/fillet-heavy scripts). A dry run catches script throws, capture-time API misuse, and assembly validity-gate failures, but NOT lowering failures or dfmSpec diagnostics; it leaves the active session untouched, so finish with a full (non-dry) evaluate_script before using session-dependent tools.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -87,6 +87,10 @@
             "unverified"
           ],
           "description": "Mechanism-truth verdict for an assembly-built scene (default-on; omitted for dryRun, non-assembly, or skipMechanismCheck:true). 'broken' makes ok:false; 'unverified' keeps ok and surfaces a loud budget diagnostic."
+        },
+        "reviewHint": {
+          "type": "string",
+          "description": "Present only when a captured assembly declares articulated (non-fastened) mates: the default mechanism check is shallow (no joint-support intents, pose-envelope overlap at declared limits, or gravity drop) — run review_cad for pose-envelope + gravity checks."
         }
       },
       "required": [
@@ -194,7 +198,7 @@
   },
   {
     "name": "inspect",
-    "description": "Use this when you need to read facts about a model. One reader, selected by `of`:\n- 'assembly' — physical assembly inventory (parts, bboxes, connectors, mates, disconnected solids).\n- 'robot' — URDF/SDFormat export preview (links, joints, planning groups, end-effectors, issues).\n- 'step' — inspect an imported STEP file.\n- 'shape' — volume / surfaceArea / bbox for one feature ({ feature_id? }).\n- 'mass' — mass, centre of mass, centroidal inertia tensor (inertia6 + 3x3 inertiaMatrix), principalMoments/principalAxes, symmetry flags, and optionally the radius of gyration about an arbitrary axis ({ feature_id?, density?, gyration_axis? }); density in kg/m^3, defaults to 1000 (water).\n- 'features' — features captured by the script (kind, id, params, transforms, suppression).\n- 'assemblies' — assembly intent (assemblies, parts, connectors, joints).\n- 'topology' — canonical face names + edge count for a feature ({ feature_id? }).\n- 'edges' — edges of a shape with optional EdgeQuery ({ feature_id?, query? }); returns @kc[...] refs.\n- 'face-edges' — boundary edges of a named canonical face ({ feature_id?, face_name }).\n- 'faces' — faces of a shape with optional FaceQuery ({ feature_id?, query? }); returns @kc[...] refs.\n- 'face-labels' — user-applied labels visible in the script.\n- 'mates' — mates captured by the script.\n- 'constraints' — sketch constraints captured by the script.\n- 'part-stats' — bundled parts-catalog statistics.\n- 'bend-table' — sheet-metal bend table for a flattened pattern.\n- 'params' — declared model parameters.\n- 'part-categories' — top-level part-catalog categories available in the bundled (and configured remote) catalog.\n- 'part-families' — part families within a category ({ category? }); count + exemplar ids per family.\n- 'bom' — bill of materials ({ assembly? }): one row per distinct part (grouped by geometry/catalog identity, not name) with real instance quantity, kind ('fabricated'|'purchased'), material, density, per-unit and total mass, bbox, a fabrication process hint, catalog provenance for purchased parts, and totals; `bom.*` diagnostics flag rows with no density source or missing catalog vendor info instead of guessing.\n- 'section' — numeric cross-section probe of a shape: area, perimeter, loop/hole counts, 2D bbox at a plane ({ feature_id?, plane | at+axis, stack?: { from, to, count, axis? } }). `stack` scans evenly spaced slices and returns `minAreaIndex`/`minAreaPosition` — use it to find the neck/thinnest cross-section along an axis.\n- 'continuity' — G0/G1/G2 classification of shared edges ({ feature_id?, edges? }); position gap, normal jump, curvature difference, worst-sample XYZ.\n- 'curvature' — per-face Gaussian and mean curvature min/max/mean, inflections, spikes ({ feature_id?, faces?, spike_factor? }).\nAll params except `of` are subject-specific and forwarded verbatim. Most subjects accept { file | code }.",
+    "description": "Use this when you need to read facts about a model. One reader, selected by `of`:\n- 'assembly' — physical assembly inventory (parts, bboxes, connectors, mates, disconnected solids).\n- 'robot' — URDF/SDFormat export preview (links, joints, planning groups, end-effectors, issues).\n- 'step' — inspect an imported STEP file: solid tree, exact bbox/volume, cylindrical holes (breached bores flagged partial; holeDetection: 'exact' | 'heuristic').\n- 'shape' — volume / surfaceArea / bbox for one feature ({ feature_id? }).\n- 'mass' — mass, centre of mass, centroidal inertia tensor (inertia6 + 3x3 inertiaMatrix), principalMoments/principalAxes, symmetry flags, and optionally the radius of gyration about an arbitrary axis ({ feature_id?, density?, gyration_axis? }); density in kg/m^3, defaults to 1000 (water).\n- 'features' — features captured by the script (kind, id, params, transforms, suppression).\n- 'assemblies' — assembly intent (assemblies, parts, connectors, joints).\n- 'topology' — canonical face names + edge count for a feature ({ feature_id? }).\n- 'edges' — edges of a shape with optional EdgeQuery ({ feature_id?, query? }); returns @kc[...] refs.\n- 'face-edges' — boundary edges of a named canonical face ({ feature_id?, face_name }).\n- 'faces' — faces of a shape with optional FaceQuery ({ feature_id?, query? }); returns @kc[...] refs.\n- 'face-labels' — user-applied labels visible in the script.\n- 'mates' — mates captured by the script.\n- 'constraints' — sketch constraints captured by the script.\n- 'part-stats' — bundled parts-catalog statistics.\n- 'bend-table' — sheet-metal bend table for a flattened pattern.\n- 'params' — declared model parameters.\n- 'part-categories' — top-level part-catalog categories available in the bundled (and configured remote) catalog.\n- 'part-families' — part families within a category ({ category? }); count + exemplar ids per family.\n- 'bom' — bill of materials ({ assembly? }): one row per distinct part (grouped by geometry/catalog identity, not name) with real instance quantity, kind ('fabricated'|'purchased'), material, density, per-unit and total mass, bbox, a fabrication process hint, catalog provenance for purchased parts, and totals; `bom.*` diagnostics flag rows with no density source or missing catalog vendor info instead of guessing.\n- 'section' — numeric cross-section probe of a shape: area, perimeter, loop/hole counts, 2D bbox at a plane ({ feature_id?, plane | at+axis, stack?: { from, to, count, axis? } }). `stack` scans evenly spaced slices and returns `minAreaIndex`/`minAreaPosition` — use it to find the neck/thinnest cross-section along an axis.\n- 'continuity' — G0/G1/G2 classification of shared edges ({ feature_id?, edges? }); position gap, normal jump, curvature difference, worst-sample XYZ.\n- 'curvature' — per-face Gaussian and mean curvature min/max/mean, inflections, spikes ({ feature_id?, faces?, spike_factor? }).\nAll params except `of` are subject-specific and forwarded verbatim. Most subjects accept { file | code }.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -388,7 +392,7 @@
   },
   {
     "name": "verify",
-    "description": "Use this when you need to check a design against a rule set. One verifier, selected by `check`:\n- 'assembly' — mate-aware assembly validator on the active session (run evaluate_script first).\n- 'urdf' — structural validity of a .urdf file ({ urdf_path }).\n- 'dfm' — print-readiness gates declared by dfmSpec() ({ file | code }).\n- 'dfm-preflight' — sheet-metal flat pattern vs a job-shop's ordering rules ({ vendor, material, thicknessIn|thicknessMm, ... }).\n- 'swept-collision' — sweep declared joint range(s) and report colliding poses.\n- 'reachable' — inverse-kinematics reachability for an end-effector ({ tip_link, target_position, ... }).\n- 'mounting-holes' — fastened mates expose matching hole diameters on both sides.\n- 'load-capacity' — closed-form Euler-Bernoulli beam stress / safety-factor check ({ loads, materials, ... }).\n- 'static-hold' — gravitational holding torque/force at a sampled pose grid vs each actuated joint's declared actuator capacity ({ joint?, pose?, gravity?, min_torque_margin_pct?, range_samples? }).\n- 'body-likeness' — publish gate for organic/car bodies: cheap AABB↔wheel checks plus required agent still verdicts (side-body-over-wheels, side-cabin-aft, rear-haunch, ortho-proportions-vs-reference). Pass { body_bbox | code/file+body_feature_id, wheels?, cabin_bbox?, still_verdicts?, require_stills? }. Full CV silhouette matching is NOT implemented — agents must inspect ortho PNGs/Studio and supply still_verdicts before claiming success.\nAll params except `check` are check-specific and forwarded verbatim; each check fails closed on its own missing required params.",
+    "description": "Use this when you need to check a design against a rule set. One verifier, selected by `check`:\n- 'assembly' — mate-aware assembly validator on the active session (run evaluate_script first).\n- 'urdf' — structural validity of a .urdf file ({ urdf_path }).\n- 'dfm' — print-readiness gates declared by dfmSpec() ({ file | code }).\n- 'dfm-preflight' — sheet-metal flat pattern vs a job-shop's ordering rules ({ vendor, material, thicknessIn|thicknessMm, ... }). Returns the vendor's catalog source pages as `sources`; when `disclosure` is present, show it with those links.\n- 'swept-collision' — sweep declared joint range(s) and report colliding poses.\n- 'reachable' — inverse-kinematics reachability for an end-effector ({ tip_link, target_position, ... }).\n- 'mounting-holes' — fastened mates expose matching hole diameters on both sides.\n- 'load-capacity' — closed-form Euler-Bernoulli beam stress / safety-factor check ({ loads, materials, ... }).\n- 'static-hold' — gravitational holding torque/force at a sampled pose grid vs each actuated joint's declared actuator capacity ({ joint?, pose?, gravity?, min_torque_margin_pct?, range_samples? }).\n- 'body-likeness' — publish gate for organic/car bodies: cheap AABB↔wheel checks plus required agent still verdicts (side-body-over-wheels, side-cabin-aft, rear-haunch, ortho-proportions-vs-reference). Pass { body_bbox | code/file+body_feature_id, wheels?, cabin_bbox?, still_verdicts?, require_stills? }. Full CV silhouette matching is NOT implemented — agents must inspect ortho PNGs/Studio and supply still_verdicts before claiming success.\nAll params except `check` are check-specific and forwarded verbatim; each check fails closed on its own missing required params.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -2640,7 +2644,7 @@
   },
   {
     "name": "export",
-    "description": "Use this when you need to export geometry to a file. One exporter, selected by `target`:\n- target:'model' — export the script geometry to one file. Pass { file | code }, a required { output_path }, and { format }. Supported formats: stl (binary STL mesh), step (BREP CAD interchange), dxf (planar laser/waterjet profile from a Region or planar face), 3mf (slicer-friendly mesh with per-part colors), glb (web-viewer / AR with PBR materials), svg-drawing (third-angle engineering-drawing sheet: front/top/left + isometric views, hidden edges dashed, tangent edges thin, overall bounding-box dimensions, title block; assemblies are drawn with inter-part occlusion; pass options.annotations to dimension specific features instead of the bounding box; pass options.exploded { factor, mode } to explode the isometric cell, options.balloons to number parts from the BOM, and options.partsList for an item/name/qty/material table above the title block). overall bounding-box dimensions, title block; assemblies are drawn with inter-part occlusion; pass options.annotations to dimension specific features instead of the bounding box, options.autoAnnotate to derive datums A/B/C, grouped hole callouts with position tolerances, hole positions, overall size, radius and chamfer callouts, flatness and an ISO 2768 note from the geometry (the result carries drawing_report with placed / overlapped counts), and options.sections for real section views on any cutting plane). Robot descriptions: urdf (tree-topology robot description), srdf (motion-planning semantics layered over the URDF), sdf-gazebo (SDFormat 1.10 with native ball joints, closed loops, and solved per-link poses), usd-isaac (ASCII USD physics stage: PhysicsArticulationRootAPI root, one rigid body per link at its solved pose with mass / centre of mass / principal inertia, PhysicsFixedJoint/PhysicsRevoluteJoint/PhysicsPrismaticJoint per mate with token axis, two-sided joint frames and limits, UsdPreviewSurface materials from the part appearance, and joint drives only when declared in options.drives { <mate>: { stiffness, damping, maxForce?, targetPosition? } }; options.collisionApproximation is convexHull | convexDecomposition; planar/cylindrical/pin_slot/ball mates fail closed with export.usd.joint-unsupported). bom-csv / bom-json (bill of materials over assembly.model()/solvedModel(): one row per distinct part — grouped by geometry/catalog identity, not name — with real instance quantity, kind, material, density, mass, bbox, process hint, and catalog provenance for purchased parts; same numbers as inspect({ of: 'bom' })). urdf and sdf-gazebo also write one meshes/<part>.stl per link, and usd-isaac one meshes/<part>.usda mesh layer per link, next to output_path (reported in mesh_files) — ship the whole directory to the consumer. STL exports run a watertight verify by default; failures return ok: false with export.mesh.not-watertight (open-edge count + up to 5 crack-cluster locations) but the file is still written so the broken mesh can be inspected. Optional { feature_id } selects which feature to export (default: last). Optional { options } carries per-format options bag (see the kernelcad-mcp skill for the per-format keys: dxf layers/tolerance/unit, 3mf printUnit/embedSource, glb axis/draco).\n- target:'part' — export solved-assembly parts as individual binary STL files in their modeled (world-frame) positions. Pass { file | code }, plus { part, output_path } for one part or { output_dir } for all parts (files land at <output_dir>/<part>.stl). A watertight verify runs on every exported mesh by default and fails the call with export.mesh.not-watertight; unknown part names fail with export.part.not-found listing the valid names.\nPass { no_verify: true } to skip the watertight gate. All params except `target` are forwarded verbatim; each target fails closed on its own missing required params.",
+    "description": "Use this when you need to export geometry to a file. One exporter, selected by `target`:\n- target:'model' — export the script geometry to one file. Pass { file | code }, a required { output_path }, and { format }. Supported formats: stl (binary STL mesh), step (BREP CAD interchange), dxf (2D cut file for laser / waterjet / CNC: a flat part — plate, panel, extruded profile, in any orientation — exports its outline and holes in its own plane with exact arcs and circles; a sheet-metal part or a returned Region exports its flat pattern; options.section { axis: \"x\"|\"y\"|\"z\", at } exports the cross-section of any part in world coordinates (plans, profiles); a multi-part model (cut list) writes all parts side by side on output_path, one layer per part, plus parts/<part>.dxf per part (reported in part_files; options.layout 'sheet' writes the combined sheet only); any other part fails with export.dxf.non-planar), 3mf (slicer-friendly mesh: one named object per part, colours as core-spec basematerials named by the part's engineering material; options.arrange 'plate' packs parts on the bed at Z=0 without overlap (options.orient puts each part's largest flat face down), 'assembled' keeps them together as one multi-part object for multi-colour prints; options.slicer 'bambu' | 'orca' | 'prusa' adds that slicer's per-object name + filament-slot sidecar — slot N is the Nth distinct colour/material), options.infill { fromFea: '<study>' | true, bands?, pattern? } = stress-graded FDM infill (requires the local CalculiX + gmsh toolchain; without it the export fails with fea.solver.unavailable): solves the feaStudy and writes Orca/Bambu modifier volumes, each with its own sparse_infill_density; the result carries infill { bands, saving, images }), glb (web-viewer / AR with PBR materials), svg-drawing (third-angle engineering-drawing sheet: front/top/left + isometric views, hidden edges dashed, tangent edges thin, overall bounding-box dimensions, title block; assemblies are drawn with inter-part occlusion; pass options.annotations to dimension specific features instead of the bounding box; pass options.exploded { factor, mode } to explode the isometric cell, options.balloons to number parts from the BOM, and options.partsList for an item/name/qty/material table above the title block). overall bounding-box dimensions, title block; assemblies are drawn with inter-part occlusion; pass options.annotations to dimension specific features instead of the bounding box, options.autoAnnotate to derive datums A/B/C, grouped hole callouts with position tolerances, hole positions, overall size, radius and chamfer callouts, flatness and an ISO 2768 note from the geometry (the result carries drawing_report with placed / overlapped counts), and options.sections for real section views on any cutting plane). pdf-drawing (the same sheet — views, dashed hidden lines, dimensions, hole callouts, GD&T, sections, parts list — as a printable vector PDF on a standard sheet, one call: ISO a4|a3|a2|a1|a0 or ANSI ansi-a…ansi-e landscape, default a3, or sheet \"auto\" / \"auto-ansi\" for the smallest sheet that holds the views at 1:1; the drawing scale is picked to fit; projection \"third\" (default) or \"first\" arranges the views and draws the matching symbol; a full title block carries title, part name, material, scale, units, sheet size, date and revision, settable through options.title / partName / material / revision / date; autoAnnotate is on unless options.annotations is given). Robot descriptions: urdf (tree-topology robot description), srdf (motion-planning semantics layered over the URDF), sdf-gazebo (SDFormat 1.10 with native ball joints, closed loops, and solved per-link poses), usd-isaac (ASCII USD physics stage: PhysicsArticulationRootAPI root, one rigid body per link at its solved pose with mass / centre of mass / principal inertia, PhysicsFixedJoint/PhysicsRevoluteJoint/PhysicsPrismaticJoint per mate with token axis, two-sided joint frames and limits, UsdPreviewSurface materials from the part appearance, and joint drives only when declared in options.drives { <mate>: { stiffness, damping, maxForce?, targetPosition? } }; options.collisionApproximation is convexHull | convexDecomposition; planar/cylindrical/pin_slot/ball mates fail closed with export.usd.joint-unsupported). bom-csv / bom-json (bill of materials over assembly.model()/solvedModel(): one row per distinct part — grouped by geometry/catalog identity, not name — with real instance quantity, kind, material, density, mass, bbox, process hint, and catalog provenance for purchased parts; same numbers as inspect({ of: 'bom' })). urdf and sdf-gazebo also write one meshes/<part>.stl per link, and usd-isaac one meshes/<part>.usda mesh layer per link, next to output_path (reported in mesh_files) — ship the whole directory to the consumer. STL exports run a watertight verify by default; failures return ok: false with export.mesh.not-watertight (open-edge count + up to 5 crack-cluster locations) but the file is still written so the broken mesh can be inspected. Optional { feature_id } selects which feature to export (default: last). Optional { options } carries per-format options bag (see the kernelcad-mcp skill for the per-format keys: dxf layers/tolerance/unit/section/layout, 3mf printUnit/embedSource/arrange/orient/slicer/printer/infill, glb axis/draco).\n- target:'part' — export solved-assembly parts as individual binary STL files in their modeled (world-frame) positions. Pass { file | code }, plus { part, output_path } for one part or { output_dir } for all parts (files land at <output_dir>/<part>.stl). A watertight verify runs on every exported mesh by default and fails the call with export.mesh.not-watertight; unknown part names fail with export.part.not-found listing the valid names.\nPass { no_verify: true } to skip the watertight gate. All params except `target` are forwarded verbatim; each target fails closed on its own missing required params.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -2673,6 +2677,7 @@
             "3mf",
             "glb",
             "svg-drawing",
+            "pdf-drawing",
             "urdf",
             "srdf",
             "sdf-gazebo",
@@ -2688,7 +2693,7 @@
         },
         "options": {
           "type": "object",
-          "description": "target:'model' — optional per-format options bag. Discriminator options.format must equal top-level format. dxf: { layers?, unit?: \"mm\"|\"cm\"|\"in\", tolerance? }. 3mf: { printUnit?: \"mm\"|\"cm\"|\"in\", embedSource? }. glb: { axis?: \"y-up\"|\"z-up\", draco?: false }. svg-drawing: { sheet?: \"a4\"|\"a3\", modelName?, date?, annotations?, exploded?: { factor, mode? }, balloons?, partsList?, sections?, autoAnnotate? }. svg-drawing annotations is an array of authored dimensions/notes, each { kind: \"linear\"|\"radius\"|\"diameter\"|\"angular\"|\"note\", view?: \"front\"|\"top\"|\"left\"|\"iso\", text?, offset? } plus kind-specific geometry: linear { from, to }, radius/diameter { edge: EdgeQuery }, angular { from: EdgeQuery, to: EdgeQuery }, note { at, text }. from/to/at anchors are an [x,y,z] model point, { edge: EdgeQuery } or { face: FaceQuery }. Supplying any annotation REPLACES the automatic bounding-box dimensions; an annotation whose query resolves to zero or multiple matches fails the export rather than being dropped. svg-drawing sections is an array of { plane: \"xy\"|\"xz\"|\"yz\"|{ origin, normal }, label } (any non-zero normal). svg-drawing autoAnnotate is true or { tolerance?: \"ISO2768-f\"|\"ISO2768-m\"|\"ISO2768-c\", datums?: \"auto\"|[{ label, face: FaceQuery }], include?: [\"datums\"|\"flatness\"|\"holes\"|\"hole-positions\"|\"overall\"|\"fillets\"|\"chamfers\"|\"general-tolerance\"] }; datums and tolerances declared in the script with shape.datum() / shape.tolerance() override the automatic ones."
+          "description": "target:'model' — optional per-format options bag. Discriminator options.format must equal top-level format. dxf: { layers?, unit?: \"mm\"|\"cm\"|\"in\", tolerance?, section?: { axis: \"x\"|\"y\"|\"z\", at: mm }, layout?: \"per-part\"|\"sheet\" }. 3mf: { printUnit?: \"mm\"|\"cm\"|\"in\", embedSource?, arrange?: \"none\"|\"plate\"|\"assembled\", orient?: boolean, slicer?: \"generic\"|\"bambu\"|\"orca\"|\"prusa\", printer?: printer profile id, one of \"generic-fdm\"|\"bambu-a1-mini\"|\"bambu-a1\"|\"bambu-p1s\"|\"bambu-p1p\"|\"bambu-x1c\"|\"bambu-x1e\"|\"bambu-h2d\"|\"bambu-h2s\"|\"prusa-mini-plus\"|\"prusa-mk4s\"|\"prusa-core-one\"|\"prusa-xl\"|\"creality-ender-3-v3\"|\"creality-k1\"|\"creality-k1-max\"|\"creality-k2-plus\"|\"elegoo-neptune-4-pro\"|\"anycubic-kobra-3\"|\"voron-2.4-250\"|\"voron-2.4-300\"|\"voron-2.4-350\"|\"ultimaker-s5\" (default \"generic-fdm\"; sets the bed for arrange and the slicer default; an unknown id is refused with the valid list; CLI: kernelcad print printers) }; parts that do not fit the bed are still written and reported as warn diagnostics export.3mf.plate-overflow / export.3mf.exceeds-bed, whose hint names the smallest profiles the layout fits on. glb: { axis?: \"y-up\"|\"z-up\", draco?: false }. svg-drawing: { sheet?: \"a4\"|\"a3\" (or any pdf-drawing sheet), projection?, titleBlock?: { title?, partName?, material?, revision? }, modelName?, date?, annotations?, exploded?: { factor, mode? }, balloons?, partsList?, sections?, autoAnnotate? }. svg-drawing annotations is an array of authored dimensions/notes, each { kind: \"linear\"|\"radius\"|\"diameter\"|\"angular\"|\"note\", view?: \"front\"|\"top\"|\"left\"|\"iso\", text?, offset? } plus kind-specific geometry: linear { from, to }, radius/diameter { edge: EdgeQuery }, angular { from: EdgeQuery, to: EdgeQuery }, note { at, text }. from/to/at anchors are an [x,y,z] model point, { edge: EdgeQuery } or { face: FaceQuery }. Supplying any annotation REPLACES the automatic bounding-box dimensions; an annotation whose query resolves to zero or multiple matches fails the export rather than being dropped. svg-drawing sections is an array of { plane: \"xy\"|\"xz\"|\"yz\"|{ origin, normal }, label } (any non-zero normal). svg-drawing autoAnnotate is true or { tolerance?: \"ISO2768-f\"|\"ISO2768-m\"|\"ISO2768-c\", datums?: \"auto\"|[{ label, face: FaceQuery }], include?: [\"datums\"|\"flatness\"|\"holes\"|\"hole-positions\"|\"overall\"|\"fillets\"|\"chamfers\"|\"general-tolerance\"] }; datums and tolerances declared in the script with shape.datum() / shape.tolerance() override the automatic ones. pdf-drawing: { sheet?: \"a4\"|\"a3\"|\"a2\"|\"a1\"|\"a0\"|\"ansi-a\"|\"ansi-b\"|\"ansi-c\"|\"ansi-d\"|\"ansi-e\"|\"auto\"|\"auto-ansi\" (default \"a3\"), projection?: \"third\"|\"first\", title?, partName?, material?, revision?, date? (default today), modelName?, annotations?, sections?, exploded?, balloons?, partsList?, autoAnnotate? (default true unless annotations are given) } — the svg-drawing keys mean the same. svg-drawing and pdf-drawing also take style?: \"mechanical\" (default, the part sheet) | \"architectural\" (a floor plan for a building or room model: section about 1 m above the floor with filled cut walls, wall / opening chain dimensions and overall sizes, room labels with net area, scale bar, north arrow; millimetres, or feet-inches when the model is in whole feet / inches) and plan?: { units?: \"metric\"|\"imperial\", cutHeight?: mm above the floor, rooms?: [{ name, at: [x, y] }], northDeg?: degrees clockwise from sheet up }. A building-sized model drawn in the default style gets a drawing.style.architectural-suggested warning."
         },
         "part": {
           "type": "string",
@@ -2740,6 +2745,13 @@
           },
           "description": "Per-link mesh files: meshes/<part>.stl for urdf/sdf-gazebo, meshes/<part>.usda mesh layers for usd-isaac."
         },
+        "part_files": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Per-part DXF files: parts/<part>.dxf for a multi-part dxf export (layout 'per-part', the default)."
+        },
         "written": {
           "type": "array",
           "items": {
@@ -2747,6 +2759,11 @@
             "additionalProperties": true
           },
           "description": "target:'part' — per-part export records."
+        },
+        "infill": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "3mf with options.infill — stress-graded infill: band table (density, stress range, volume %), saving vs uniform infill at the high density, FEA peaks, and images { heatmap, bands, cutaway } PNG paths."
         },
         "diagnostics": {
           "type": "array",
@@ -2953,6 +2970,22 @@
         "source": {
           "type": "string",
           "description": "Where the part came from ('local' | 'remote') (success)."
+        },
+        "kind": {
+          "type": "string",
+          "description": "'link_out' when the URL is a vendor configurator the agent must drive by hand."
+        },
+        "url": {
+          "type": "string",
+          "description": "Outbound vendor URL (link_out). May carry a referral tag; see disclosure."
+        },
+        "instruction": {
+          "type": "string",
+          "description": "What to do with the link_out URL."
+        },
+        "disclosure": {
+          "type": "string",
+          "description": "Referral disclosure. Present only when url carries a referral tag; show it with the link."
         },
         "error": {
           "type": "string"
@@ -3998,7 +4031,7 @@
   },
   {
     "name": "review_cad",
-    "description": "Use this when you need to review a mechanism for fitness and repair mode. Run the deterministic CAD review loop: evaluate the script, validate the assembly/mate graph, check mate connectors touch modeled material, sample declared mate limits, optionally check interferences at sampled poses, report connector workspace bounds, and return a mechanism fitness verdict for agent self-review. Fitness includes repairMode: none, local-fix, parameter-tune, or topology-redesign.",
+    "description": "Use this when you need to review a mechanism for fitness and repair mode. Run the deterministic CAD review loop: evaluate the script, validate the assembly/mate graph, check mate connectors touch modeled material, sample declared mate limits, optionally check interferences at sampled poses, report connector workspace bounds, and return a mechanism fitness verdict for agent self-review. Fitness includes repairMode: none, local-fix, parameter-tune, or topology-redesign. Runs within timeBudgetMs (default 90 s): stages that did not fit are listed in skippedStages (their checks did not run; mechanism is then unverified) and stageTimingsMs shows per-stage cost.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -4071,6 +4104,10 @@
           "type": "number",
           "description": "Interference volume threshold in mm^3. Default 0.01."
         },
+        "timeBudgetMs": {
+          "type": "number",
+          "description": "Wall-clock budget for the review in ms (default 90000). Once spent, the remaining heavy stages (pose envelope, physical use case, mechanism sweep) are skipped and listed in skippedStages — a partial result instead of a timeout. stageTimingsMs reports where the time went."
+        },
         "trackConnectors": {
           "type": "array",
           "description": "Optional connector refs such as [\"gripper-plate.tool-tip\"] to limit connector workspace reporting.",
@@ -4104,6 +4141,29 @@
       "properties": {
         "ok": {
           "type": "boolean"
+        },
+        "stageTimingsMs": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          },
+          "description": "Wall-clock ms per review stage that ran."
+        },
+        "skippedStages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "stage": {
+                "type": "string"
+              },
+              "reason": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": true
+          },
+          "description": "Stages skipped because timeBudgetMs was spent; their checks did not run."
         },
         "featureCount": {
           "type": "number"
@@ -4399,7 +4459,7 @@
   },
   {
     "name": "design_loop",
-    "description": "Use this when the goal is complex / production / enclosure / gearbox / robot-arm / multi-body, or when you need evaluate→review/verify→revise until green. PREFERRED over one-shot evaluate_script+open_in_studio for Adam-level parts. Runs a CAD design loop over attempt scripts: review_cad each attempt, continue past functional attempts with unresolved warnings, return repair prompts (nextActionPrompt) plus structured revisionAssist (suggestedPatches / autoApplied.suggestedCode for repairable feature failures; cookbook steers for stacked-primitive toys). Stop on ok or convergence.escalate. For organic/car bodies set likenessProfile:\"automotive\" and pass bodyLikeness (or automotive stills on visualReview.checks) — attempts fail closed until body-likeness is publishReady. Optionally write a Studio build record JSON.",
+    "description": "Use this when the goal is complex / production / enclosure / gearbox / robot-arm / multi-body, or when you need evaluate→review/verify→revise until green. PREFERRED over one-shot evaluate_script+open_in_studio for Adam-level parts. Runs a CAD design loop over attempt scripts: review_cad each attempt, continue past functional attempts with unresolved warnings, return repair prompts (nextActionPrompt) plus structured revisionAssist (suggestedPatches / autoApplied.suggestedCode for repairable feature failures; cookbook steers for stacked-primitive toys). Stop on ok or convergence.escalate. To pick among N alternative candidates for one goal without a judge, pass them all as attempts with consensus:true (geometric medoid selection). For organic/car bodies set likenessProfile:\"automotive\" and pass bodyLikeness (or automotive stills on visualReview.checks) — attempts fail closed until body-likeness is publishReady. Optionally write a Studio build record JSON.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -4521,6 +4581,10 @@
         "stopOnPass": {
           "type": "boolean",
           "description": "Stop after the first attempt that is functional and passes the quality gate. Default true."
+        },
+        "consensus": {
+          "type": "boolean",
+          "description": "Best-of-N by geometric consensus. When true, attempts are N independent candidates for the SAME goal (not a repair sequence): all are reviewed (stopOnPass ignored), all scripts are executed, candidates without a valid solid are dropped, and the candidate whose geometry agrees most with the others (medoid by symmetric Chamfer distance, same model frame) is selected. Ties go to more gates passed, then the shorter script. Returns consensus { chosenIndex, chosenAttemptId, scores, distances, reason }; ok / finalAttemptId / nextActionPrompt describe the selected candidate. Default false."
         },
         "autoRevise": {
           "type": "boolean",
@@ -4782,17 +4846,17 @@
   },
   {
     "name": "capture_animation",
-    "description": "Use this when you need to render a script's animation timeline to a video. Capture a kernelCAD script's animationView({...}) timeline to an MP4 (ffmpeg) or a PNG frame sequence, verifying the sampled poses for part interference. FILE ONLY: pass { file } (a .kcad.ts path) — there is no { code } mode, because the capture engine renders from a file on disk (its relative lib.fromSTEP imports resolve against the script directory). MP4 by default; pass { frames_dir } to write frame-0000.png... and skip ffmpeg entirely (mutually exclusive with output_path). Animation-pose interference verification runs by default (keyframe times + segment midpoints) BEFORE any browser/ffmpeg cost; { no_verify: true } skips it and { verify_every: n } additionally samples every n-th frame time. Pass { focus } or { hide } (arrays of feature ids or assembly part names, mutually exclusive) to isolate parts in the rendered frames — same semantics as `kernelcad render --focus/--hide`; visibility is render-only and does NOT affect the pose verification. Collisions DO NOT fail the call — the artifact is still written as evidence with ok: true; read verified: false + the collisions[] array. ENVIRONMENT REQUIREMENT (identical to `kernelcad render`): capture drives a headless browser against a running studio dev server reachable at http://localhost:5173 (or the VITE_PORT override); there is no bundled-static serving mode yet, so the same dev-server precondition applies in a production MCP install. Returns { ok, output_path, frame_count, duration_ms, fps, verified, verify_skipped?, collisions: [{ t_ms, a, b, volume_mm3 }], diagnostics }.",
+    "description": "Use this when you need to render a script's animation timeline to a video, or a 360° turntable of a model for sharing. Capture a kernelCAD script's animationView({...}) timeline to an MP4 (ffmpeg) or a PNG frame sequence, verifying the sampled poses for part interference. FILE ONLY: pass { file } (a .kcad.ts path) — there is no { code } mode, because the capture engine renders from a file on disk (its relative lib.fromSTEP imports resolve against the script directory). MP4 by default; pass { frames_dir } to write frame-0000.png... and skip ffmpeg entirely (mutually exclusive with output_path). Animation-pose interference verification runs by default (keyframe times + segment midpoints) BEFORE any browser/ffmpeg cost; { no_verify: true } skips it and { verify_every: n } additionally samples every n-th frame time. Pass { focus } or { hide } (arrays of feature ids or assembly part names, mutually exclusive) to isolate parts in the rendered frames — same semantics as `kernelcad render --focus/--hide`; visibility is render-only and does NOT affect the pose verification. Collisions DO NOT fail the call — the artifact is still written as evidence with ok: true; read verified: false + the collisions[] array. TURNTABLE MODE: pass { turntable: true } for a seamless 360° orbit of the model (no animationView record needed) — a share-ready loop for a README, social post or product page. It uses the 'publish' studio look by default (same as render_preview preset: 'publish': key/fill/rim lights, soft contact shadow, clean backdrop, 30° lens, constant auto-framing over the whole orbit, light rig turns with the camera); { preset: 'default' } keeps the engineering look. Knobs: width/height (default 1080×1080, max 2048, even for MP4), duration_ms (one revolution, default 6000), fps (default 30), elevation_deg (default 22), background ('white' default, 'light', 'dark', 'black', '#rrggbb', or 'transparent' with frames_dir only), shadow (default true), environment. output_path ending in .gif writes a looping GIF; otherwise MP4. Frame i sits at az 30° + 360°·i/N (the 360° endpoint is excluded, so the loop is seamless). A turntable has no poses to verify: it reports verify_skipped: true. ENVIRONMENT: needs playwright chromium (npx playwright install chromium) and ffmpeg for MP4/GIF (frames_dir needs neither); the bundled static player is served automatically, no dev server required. Returns { ok, output_path, frame_count, duration_ms, fps, verified, verify_skipped?, collisions: [{ t_ms, a, b, volume_mm3 }], diagnostics }.",
     "inputSchema": {
       "type": "object",
       "properties": {
         "file": {
           "type": "string",
-          "description": "Path to a .kcad.ts script with an animationView({...}) record. Required (no inline { code } mode)."
+          "description": "Path to a .kcad.ts script with an animationView({...}) record (any script in turntable mode). Required (no inline { code } mode)."
         },
         "output_path": {
           "type": "string",
-          "description": "MP4 output path; default <scriptDir>/<basename>-animation.mp4. Mutually exclusive with frames_dir."
+          "description": "MP4 output path (.gif → looping GIF); default <scriptDir>/<basename>-animation.mp4 (-turntable.mp4 in turntable mode). Mutually exclusive with frames_dir."
         },
         "frames_dir": {
           "type": "string",
@@ -4825,6 +4889,55 @@
             "type": "string"
           },
           "description": "Hide matching feature ids / assembly part names in the rendered frames. Mutually exclusive with focus. Render-only; does not affect pose verification."
+        },
+        "turntable": {
+          "type": "boolean",
+          "description": "Seamless 360° orbit of the model instead of the animationView timeline.",
+          "default": false
+        },
+        "preset": {
+          "type": "string",
+          "enum": [
+            "default",
+            "publish"
+          ],
+          "description": "Turntable look: 'publish' (default; studio product shot) or 'default' (engineering look)."
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 64,
+          "maximum": 2048,
+          "description": "Turntable frame width in px (default 1080; even for MP4)."
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 64,
+          "maximum": 2048,
+          "description": "Turntable frame height in px (default 1080; even for MP4)."
+        },
+        "duration_ms": {
+          "type": "number",
+          "minimum": 500,
+          "maximum": 60000,
+          "description": "Turntable: one full revolution in ms (default 6000)."
+        },
+        "elevation_deg": {
+          "type": "number",
+          "minimum": -89,
+          "maximum": 89,
+          "description": "Turntable: camera elevation above the horizon in degrees (default 22)."
+        },
+        "background": {
+          "type": "string",
+          "description": "Turntable + publish: 'white' (default), 'light', 'dark', 'black', '#rrggbb', or 'transparent' (frames_dir only — MP4/GIF have no usable alpha)."
+        },
+        "shadow": {
+          "type": "boolean",
+          "description": "Turntable + publish: soft contact shadow under the model (default true)."
+        },
+        "environment": {
+          "type": "string",
+          "description": "Turntable: HDRI environment override ('studio', 'softbox', 'neutral', 'outdoor', 'warehouse', a URL, or 'none')."
         }
       },
       "required": [
@@ -4899,7 +5012,7 @@
   },
   {
     "name": "render_preview",
-    "description": "Use this when you need to LOOK at a kernelCAD model — render its script to deterministic PNG views for visual self-check (the visual half of the evaluate → render → inspect → fix loop), with NO studio or dev server required. Pass { code } (inline source) or { file } (a .kcad.ts path), exactly one. Renders the canonical engineering views (front, right, top, iso — pass { views } for a subset, e.g. [\"iso\"] for fastest iteration) plus an optional { pose: \"<az>,<el>\" } arbitrary camera angle (degrees; az=0,el=0 is front, +az rotates CCW around +Z, +el lifts the camera). NO STUDIO / DEV-SERVER REQUIRED: a prebuilt static player (dist/headless-player) is served from an ephemeral local port automatically; a running studio dev server is used as fallback, and { base_url } forces one. The only environment dependency is playwright chromium (npx playwright install chromium). Pass { focus } or { hide } (arrays of feature ids or assembly part names, mutually exclusive) to isolate parts — same semantics as `kernelcad render --focus/--hide`. Pass { section: { axis, position, flip? } } to cut a cross-section and inspect INTERIOR geometry (wall thickness, internal pockets, whether a bore runs through) rather than only the outer shell. Pass { explode: { factor, mode? } } to pull a multi-part assembly apart (mode: \"mate-axis\" default, or \"radial\") using the same mesher as `kernelcad render --explode` — requires assembly.model()/solvedModel(). PNGs are written to { out_dir } (default: a fresh temp session directory) and returned as absolute paths with per-view camera descriptions (kernelCAD is Z-up). Mechanism truth runs first, same protocol as `kernelcad render`: a broken mechanism still renders but every tile is watermarked MECHANISM BROKEN (KERNELCAD_RENDER_STRICT=1 refuses instead); read { mechanism, mechanism_failure_codes }. The probe runs full BREP interference sweeps and can dominate latency on large assemblies — pass { no_mechanism_check: true } for fast iteration (the preview then reports mechanism: \"unverified\"; ignored under strict mode). Pass { overlay: 'zebra' | 'curvature' | 'continuity' } for a surface-quality visualisation (zebra stripes from vertex normals, curvature as vertex colours, continuity edges coloured by G0/G1/G2/broken) — numbers come from inspect({ of: 'continuity' | 'curvature' }); the overlay is the picture. Returns { ok, images: [{ name, path, description }], out_dir, bounds, mechanism, render_source, render_ms, diagnostics }. PATHS ARE LOCAL to the machine running the MCP server — local stdio clients read them directly; hosted/remote clients should use open_in_studio instead.",
+    "description": "Use this when you need to LOOK at a kernelCAD model — render its script to deterministic PNG views for visual self-check (the visual half of the evaluate → render → inspect → fix loop), with NO studio or dev server required. Pass { code } (inline source) or { file } (a .kcad.ts path), exactly one. Renders the canonical engineering views (front, right, top, iso — pass { views } for a subset, e.g. [\"iso\"] for fastest iteration) plus an optional { pose: \"<az>,<el>\" } arbitrary camera angle (degrees; az=0,el=0 is front, +az rotates CCW around +Z, +el lifts the camera). NO STUDIO / DEV-SERVER REQUIRED: a prebuilt static player (dist/headless-player) is served from an ephemeral local port automatically; a running studio dev server is used as fallback, and { base_url } forces one. The only environment dependency is playwright chromium (npx playwright install chromium). Pass { focus } or { hide } (arrays of feature ids or assembly part names, mutually exclusive) to isolate parts — same semantics as `kernelcad render --focus/--hide`. Pass { section: { axis, position, flip? } } to cut a cross-section and inspect INTERIOR geometry (wall thickness, internal pockets, whether a bore runs through) rather than only the outer shell. Pass { explode: { factor, mode? } } to pull a multi-part assembly apart (mode: \"mate-axis\" default, or \"radial\") using the same mesher as `kernelcad render --explode` — requires assembly.model()/solvedModel(). PNGs are written to { out_dir } (default: a fresh temp session directory) and returned as absolute paths with per-view camera descriptions (kernelCAD is Z-up). Mechanism truth runs first, same protocol as `kernelcad render`: a broken mechanism still renders but every tile is watermarked MECHANISM BROKEN (KERNELCAD_RENDER_STRICT=1 refuses instead); read { mechanism, mechanism_failure_codes }. The probe runs full BREP interference sweeps and can dominate latency on large assemblies — pass { no_mechanism_check: true } for fast iteration (the preview then reports mechanism: \"unverified\"; ignored under strict mode). Pass { overlay: 'zebra' | 'curvature' | 'continuity' } for a surface-quality visualisation (zebra stripes from vertex normals, curvature as vertex colours, continuity edges coloured by G0/G1/G2/broken) — numbers come from inspect({ of: 'continuity' | 'curvature' }); the overlay is the picture. PUBLISH PRESET: pass { preset: 'publish' } for a share-ready studio product shot (gallery tile, social post, README image, product page): key/fill/rim lights + room reflections, soft contact shadow, clean backdrop ({ background: 'white' (default) | 'light' | 'dark' | 'black' | '#rrggbb' | 'transparent' } — transparent gives a PNG with alpha), { shadow: false } to drop the shadow, 2× supersampled anti-aliasing, 30° lens, the model silhouette centred and auto-framed with ~11% air (a script's setCameraTarget is ignored), per-part colours/materials as authored, no watermark. With no views/pose it renders ONE image named 'hero' (3/4 front-right, az=30°, el=22°) at 1600×1200; width/height go up to 2048; views/pose still work under the preset. Output is deterministic for the same input. For a 360° loop use capture_animation({ turntable: true }). Returns { ok, images: [{ name, path, description }], out_dir, bounds, mechanism, render_source, render_ms, diagnostics }. PATHS ARE LOCAL to the machine running the MCP server — local stdio clients read them directly; hosted/remote clients should use open_in_studio instead.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -4950,13 +5063,13 @@
           "type": "integer",
           "minimum": 64,
           "maximum": 2048,
-          "description": "Per-view tile width in px (default 768)."
+          "description": "Per-view tile width in px (default 768; 1600 under preset: 'publish')."
         },
         "height": {
           "type": "integer",
           "minimum": 64,
           "maximum": 2048,
-          "description": "Per-view tile height in px (default 768)."
+          "description": "Per-view tile height in px (default 768; 1200 under preset: 'publish')."
         },
         "environment": {
           "type": "string",
@@ -5031,6 +5144,22 @@
             "continuity"
           ],
           "description": "Surface-quality overlay: 'zebra' (reflection stripes), 'curvature' (Gaussian vertex colours), 'continuity' (edges coloured G2 green / G1 yellow / G0 orange / broken red). Built as coloured STL bands through this same pipeline."
+        },
+        "preset": {
+          "type": "string",
+          "enum": [
+            "default",
+            "publish"
+          ],
+          "description": "Render look: 'default' (engineering review) or 'publish' (studio product shot for sharing; one 'hero' image unless views/pose are given)."
+        },
+        "background": {
+          "type": "string",
+          "description": "preset 'publish' only: 'white' (default), 'light', 'dark', 'black', 'transparent' (PNG alpha), or '#rrggbb'."
+        },
+        "shadow": {
+          "type": "boolean",
+          "description": "preset 'publish' only: soft contact shadow under the model (default true)."
         }
       }
     },
@@ -5348,7 +5477,7 @@
   },
   {
     "name": "send_to_printer",
-    "description": "Use this when you need to upload a .gcode file (e.g. written by export with target: \"model\", format: \"gcode\") to a real network printer and, by default, start the print. protocol: 'octoprint' (POST /api/files/local with an X-Api-Key), 'moonraker' (Klipper's POST /server/files/upload), or 'bambu-lan' (Bambu Lab LAN-mode: FTPS implicit-TLS upload on port 990 as user 'bblp' with the printer's LAN access code, then an MQTT print-start command on port 8883 — requires access_code and, unless start_print is false, serial). Pass { dry_run: true } to validate connectivity/authentication only, without uploading or starting a print. Never logs or echoes api_key/access_code.",
+    "description": "Use this when you need to upload a .gcode file (e.g. written by export with target: \"model\", format: \"gcode\") to a real network printer and, by default, start the print. protocol: 'octoprint' (POST /api/files/local with an X-Api-Key), 'moonraker' (Klipper's POST /server/files/upload), or 'bambu-lan' (Bambu Lab LAN-mode: FTPS implicit-TLS upload on port 990 as user 'bblp' with the printer's LAN access code, then an MQTT print-start command on port 8883 — requires access_code and, unless start_print is false, serial). bambu-lan uploads a .gcode.3mf print project (the printer prints 3MF projects, not bare G-code): the G-code goes in as Metadata/plate_1.gcode, inside the model 3MF from export format '3mf' when model_3mf_path is given (use options { arrange: 'plate', slicer: 'bambu' } so the printer shows the same named, coloured parts), else inside a minimal 3MF shell; the file name always ends in .3mf ('part.gcode' -> 'part.gcode.3mf'). Optional printer (a bundled profile id, the same ids as the export 3mf/gcode options.printer) is checked against protocol before anything is read or sent: an unknown id is refused with the list of valid ids, 'bambu-lan' needs a Bambu Lab profile and a Bambu Lab profile needs 'bambu-lan'. Pass { dry_run: true } to validate connectivity/authentication only, without uploading or starting a print. Never logs or echoes api_key/access_code.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -5384,9 +5513,42 @@
           "type": "string",
           "description": "Bambu printer serial number (required to start a print unless start_print is false)."
         },
+        "model_3mf_path": {
+          "type": "string",
+          "description": "bambu-lan only: model .3mf from export format '3mf' to package the G-code into (the uploaded .gcode.3mf)."
+        },
+        "printer": {
+          "type": "string",
+          "enum": [
+            "generic-fdm",
+            "bambu-a1-mini",
+            "bambu-a1",
+            "bambu-p1s",
+            "bambu-p1p",
+            "bambu-x1c",
+            "bambu-x1e",
+            "bambu-h2d",
+            "bambu-h2s",
+            "prusa-mini-plus",
+            "prusa-mk4s",
+            "prusa-core-one",
+            "prusa-xl",
+            "creality-ender-3-v3",
+            "creality-k1",
+            "creality-k1-max",
+            "creality-k2-plus",
+            "elegoo-neptune-4-pro",
+            "anycubic-kobra-3",
+            "voron-2.4-250",
+            "voron-2.4-300",
+            "voron-2.4-350",
+            "ultimaker-s5"
+          ],
+          "description": "Printer profile id; checked against protocol before upload. List them with 'kernelcad print printers'."
+        },
         "filename": {
           "type": "string",
-          "description": "Uploaded file name (default: 'kernelcad.gcode')."
+          "description": "Uploaded file name (default: 'kernelcad.gcode'; bambu-lan appends '.3mf')."
         },
         "start_print": {
           "type": "boolean",
@@ -5416,7 +5578,7 @@
         },
         "uploaded_path": {
           "type": "string",
-          "description": "Path/name the G-code was stored under on the printer."
+          "description": "Path/name the G-code (bambu-lan: the .gcode.3mf print file) was stored under on the printer."
         },
         "dry_run": {
           "type": "boolean",
@@ -6183,6 +6345,88 @@
       },
       "required": [
         "ok"
+      ],
+      "additionalProperties": true
+    }
+  },
+  {
+    "name": "execute_cookbook",
+    "description": "Use this when you need evaluate_script (and optionally open_in_studio) for an industry / cookbook demo in ONE step — after lookup_cookbook for industry demos, prefer execute_cookbook when you need evaluate+Studio together; empty lookup is not a stop (freehand-author instead). Resolves a cookbook snippet by `id` or BM25 `query` (same ranking as lookup_cookbook), evaluates its body via evaluate_script with bounded vendor timeouts, and returns explicit status with stage resolve|evaluate|open_in_studio. Pass openInStudio:true to publish the same script via open_in_studio after a green full evaluate (hosted MCP). dryRun:true is the fast capture-only path — it is NOT evidence the cookbook lowers/builds under OCCT or is safe to publish; finish with dryRun:false (default) before claiming success or opening Studio.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Cookbook snippet id (e.g. gt2-timing-belt-drive, extrude-rounded-rect-plate)."
+        },
+        "query": {
+          "type": "string",
+          "description": "When id is omitted: natural-language query; BM25 picks the top hit (same as lookup_cookbook)."
+        },
+        "openInStudio": {
+          "type": "boolean",
+          "description": "Default false. When true, after a green full (non-dryRun) evaluate, call open_in_studio on the same script (hosted MCP).",
+          "default": false
+        },
+        "dryRun": {
+          "type": "boolean",
+          "description": "Default false. dryRun:true is NOT evidence the cookbook builds under OCCT — capture-only checks; do not claim success or open Studio from a dry run alone.",
+          "default": false
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "cookbookId": {
+          "type": "string",
+          "description": "Resolved cookbook snippet id."
+        },
+        "title": {
+          "type": "string",
+          "description": "Resolved cookbook title."
+        },
+        "evaluate": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Full evaluate_script result (same shape)."
+        },
+        "openInStudio": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "open_in_studio result when openInStudio was requested."
+        },
+        "executionId": {
+          "type": "string",
+          "description": "Short id for logs / correlation."
+        },
+        "code": {
+          "type": "string",
+          "description": "Snippet body used for evaluate / Studio."
+        },
+        "dryRunNotEvidence": {
+          "type": "boolean",
+          "description": "Present when dryRun:true — dryRun success is NOT evidence of a real OCCT build."
+        },
+        "error": {
+          "type": "string"
+        },
+        "stage": {
+          "type": "string",
+          "description": "'resolve' | 'evaluate' | 'open_in_studio' on failure."
+        }
+      },
+      "required": [
+        "ok",
+        "executionId"
       ],
       "additionalProperties": true
     }

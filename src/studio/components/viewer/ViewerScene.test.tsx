@@ -38,6 +38,9 @@ vi.mock('./overlays/SnapIndicator', () => ({
 vi.mock('./overlays/SelectionOutline', () => ({
     SelectionOutline: () => <div data-testid="selection-outline" />,
 }));
+vi.mock('./overlays/CodeLinkOverlay', () => ({
+    CodeLinkOverlay: () => <div data-testid="code-link-overlay" />,
+}));
 vi.mock('./layers/GeometryLayer', () => ({
     GeometryLayer: ({ hiddenIds }: { hiddenIds: string[] }) => (
         <div data-testid="geometry-layer" data-hidden={hiddenIds.join(',')} />
@@ -123,6 +126,7 @@ describe('ViewerScene', () => {
             'highlight-overlay',
             'snap-indicator',
             'selection-outline',
+            'code-link-overlay',
             'grid',
             'geometry-layer',
             'direct-edit-gizmo',

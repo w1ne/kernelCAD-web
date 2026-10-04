@@ -5,6 +5,7 @@ import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import type { Session } from '@supabase/supabase-js';
 import UserMenu from './UserMenu';
+import { subscribeFeedbackRequests } from './feedbackRequests';
 import { useSession } from '../../../funnel/hooks/useSession';
 import { isAuthConfigured, getSupabase } from '../../../funnel/lib/supabaseClient';
 
@@ -42,11 +43,12 @@ afterEach(() => {
 });
 
 describe('UserMenu', () => {
-    it('renders nothing when auth is not configured', () => {
+    it('offers only Feedback when auth is not configured', () => {
         mockIsAuthConfigured.mockReturnValue(false);
         mockUseSession.mockReturnValue({ session: null, loading: false });
-        const { container } = render(<UserMenu />);
-        expect(container.firstChild).toBeNull();
+        render(<UserMenu />);
+        expect(screen.getByTestId('feedback-button')).toBeDefined();
+        expect(screen.queryByText('Sign in')).toBeNull();
     });
 
     it('renders nothing while the session is loading', () => {
@@ -55,10 +57,29 @@ describe('UserMenu', () => {
         expect(container.firstChild).toBeNull();
     });
 
-    it('shows a Sign in control when signed out', () => {
+    it('shows one neutral Sign in link and Feedback when signed out', () => {
         mockUseSession.mockReturnValue({ session: null, loading: false });
         render(<UserMenu />);
-        expect(screen.getByText('Sign in')).toBeDefined();
+        const signIn = screen.getByText('Sign in');
+        expect(signIn.getAttribute('href')).toBe('/signin?next=%2F');
+        // No provider (Google) button in the header: those live on the sign-in page.
+        expect(signIn.querySelector('svg')).toBeNull();
+        expect(screen.getByTestId('feedback-button')).toBeDefined();
+    });
+
+    it('moves Feedback into the account menu when signed in', () => {
+        mockUseSession.mockReturnValue({ session: fakeSession('jane@example.com'), loading: false });
+        const opened = vi.fn();
+        const off = subscribeFeedbackRequests(opened);
+        render(<UserMenu />);
+        expect(screen.queryByTestId('feedback-button')).toBeNull();
+
+        fireEvent.click(screen.getByTestId('user-menu-avatar'));
+        fireEvent.click(screen.getByRole('menuitem', { name: 'Send feedback' }));
+        off();
+
+        expect(opened).toHaveBeenCalledTimes(1);
+        expect(screen.queryByTestId('user-menu-dropdown')).toBeNull();
     });
 
     it('shows the account email and signs out when signed in', async () => {

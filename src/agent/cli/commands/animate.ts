@@ -27,6 +27,16 @@
 // envelope (still useful to attribute the fault), but BOTH kinds exit 2 —
 // only verification collisions distinguish 1 from 0.
 //
+// TURNTABLE MODE (`--turntable`): a seamless 360° orbit of the static model
+// instead of the animationView timeline — the CLI face of capture_animation
+// ({ turntable: true }), in animateTurntable.ts. Flags resolve through the MCP
+// tool's own validator and drive the same engine (captureTurntable.ts):
+// `.gif` out → GIF, other out → MP4, `--frames` → PNG sequence (the only
+// mode that keeps a transparent backdrop). Look defaults to --preset publish;
+// --preset/--width/--height/--duration-ms/--elevation/--background/
+// --no-shadow/--environment are refused without --turntable. A turntable
+// shows a static model, so there is no pose verification (exit 0 on capture).
+//
 // Progress lines go to stderr (timestamped, like the deprecated
 // scripts/captureAnimationView.mjs wrapper) in BOTH human and --json modes —
 // under --json stdout carries exactly the envelope, so stderr is the only
@@ -47,11 +57,19 @@ import {
 } from '../../render/captureAnimation';
 import type { HeadlessObjectFilter } from '../../render/headlessRender';
 import { buildObjectFilter } from './render';
+import {
+  captureTurntableFromCli,
+  configureTurntableOptions,
+  turntableCliInput,
+  turntableOnlyFlagsRefusal,
+  type TurntableCliFields,
+} from './animateTurntable';
 import { formatHuman } from '../../../shared/diagnostics/formatter';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
+import { parsePublishBackground } from '../../../shared/render/publishPreset';
 
-export interface AnimateCliInput {
+export interface AnimateCliInput extends TurntableCliFields {
   file: string;
   /** MP4 output path (positional). Mutually exclusive with `frames`. */
   out?: string;
@@ -73,6 +91,10 @@ export interface AnimateCliInput {
   /** Optional render-surface override (`--base-url <url>`). When omitted,
    *  the capture engine provisions the bundled static player. */
   baseUrl?: string;
+  /** Fit the timeline camera once, to every pose (`--lock-frame`). */
+  lockFrame?: boolean;
+  /** Opaque publish backdrop for the timeline (`--backdrop`). */
+  backdrop?: string;
   /** Progress sink forwarded to the capture engine. The command wires a
    *  timestamped stderr writer here unless --quiet. */
   onProgress?: (msg: string) => void;
@@ -171,6 +193,10 @@ function refuseAnimateUsage(input: AnimateCliInput): AnimateCliResult | null {
       safeFps(input.fps),
     );
   }
+  const timelineRefusal = input.turntable === true ? undefined : turntableOnlyFlagsRefusal(input);
+  if (timelineRefusal !== undefined) return usageRefusal(timelineRefusal.message, timelineRefusal.hint, safeFps(input.fps));
+  const lookRefusal = timelineLookRefusal(input);
+  if (lookRefusal !== null) return lookRefusal;
   if (input.skipVerify === true && input.verifyEvery !== undefined) {
     return usageRefusal(
       'animate: --no-verify and --verify-every are mutually exclusive — there is no schedule to densify when verification is skipped.',
@@ -199,8 +225,39 @@ function captureAnimationOptsFor(
     // take resolveRenderBaseUrl's 'explicit' lane and silently bypass
     // static-player provisioning (exactly the defect #625 fixed for render).
     ...(input.baseUrl !== undefined ? { baseUrl: input.baseUrl } : {}),
+    ...(input.lockFrame === true ? { lockFrame: true } : {}),
+    ...(timelineBackdropOpt(input) ?? {}),
     ...(input.onProgress !== undefined ? { onProgress: input.onProgress } : {}),
   };
+}
+
+function timelineBackdropOpt(input: AnimateCliInput): { backdrop: string } | undefined {
+  if (input.backdrop === undefined) return undefined;
+  const color = opaqueBackdrop(input.backdrop);
+  return color === undefined ? undefined : { backdrop: color };
+}
+
+function opaqueBackdrop(raw: string): string | undefined {
+  const color = parsePublishBackground(raw);
+  return color === undefined || color === 'transparent' ? undefined : color;
+}
+
+function timelineLookRefusal(input: AnimateCliInput): AnimateCliResult | null {
+  if (input.turntable === true && (input.lockFrame === true || input.backdrop !== undefined)) {
+    return usageRefusal(
+      'animate: --lock-frame and --backdrop apply only to the animationView timeline.',
+      'Drop --turntable to film the joint motion, or drop those flags for a camera orbit.',
+      safeFps(input.fps),
+    );
+  }
+  if (input.backdrop !== undefined && opaqueBackdrop(input.backdrop) === undefined) {
+    return usageRefusal(
+      `animate: --backdrop '${input.backdrop}' is not an opaque colour.`,
+      'Pass a #rrggbb hex, or one of white, light, dark, black.',
+      safeFps(input.fps),
+    );
+  }
+  return null;
 }
 
 export async function runAnimate(input: AnimateCliInput): Promise<AnimateCliResult> {
@@ -222,7 +279,14 @@ export async function runAnimate(input: AnimateCliInput): Promise<AnimateCliResu
     );
   }
 
-  const result = await captureAnimation(captureAnimationOptsFor(input, objectFilter));
+  let result: CaptureAnimationResult;
+  if (input.turntable === true) {
+    const started = captureTurntableFromCli(input, objectFilter);
+    if (!(started instanceof Promise)) return usageRefusal(started.message, started.hint, safeFps(input.fps));
+    result = await started;
+  } else {
+    result = await captureAnimation(captureAnimationOptsFor(input, objectFilter));
+  }
 
   if (result.ok && result.outPath !== undefined) {
     return {
@@ -248,12 +312,12 @@ export async function runAnimate(input: AnimateCliInput): Promise<AnimateCliResu
 }
 
 export function animateCommand(): Command {
-  const cmd = new Command('animate')
-    .description("Capture the script's animationView({...}) timeline to MP4 (ffmpeg) or a PNG frame sequence, verifying the sampled poses for part interference")
-    .argument('<file>', 'path to a .kcad.ts script with an animationView({...}) record')
+  const cmd = configureTurntableOptions(new Command('animate'))
+    .description("Capture the script's animationView({...}) timeline to MP4 (ffmpeg) or a PNG frame sequence, verifying the sampled poses for part interference; --turntable captures a 360° orbit of the model instead")
+    .argument('<file>', 'path to a .kcad.ts script with an animationView({...}) record (any script with --turntable)')
     .argument(
       '[out]',
-      'output MP4 path (default <scriptDir>/<basename>-animation.mp4); mutually exclusive with --frames',
+      'output MP4 path (default <scriptDir>/<basename>-animation.mp4, or <basename>-turntable.mp4 with --turntable; a .gif path writes a GIF in turntable mode); mutually exclusive with --frames',
     )
     .option(
       '--frames <dir>',
@@ -268,6 +332,8 @@ export function animateCommand(): Command {
     )
     .option('--focus <names>', 'show only comma-separated feature ids or assembly part names (mutually exclusive with --hide)')
     .option('--hide <names>', 'hide comma-separated feature ids or assembly part names (mutually exclusive with --focus)')
+    .option('--lock-frame', 'timeline only: fit the camera once to the whole reach so the base stays planted')
+    .option('--backdrop <color>', "timeline only: opaque publish backdrop ('white', 'light', 'dark', 'black', or #rrggbb)")
     .option(
       '--base-url <url>',
       'optional render-surface override (e.g. a running studio dev server); default is the bundled static player',
@@ -288,7 +354,12 @@ Exit codes:
 No studio dev server is required: the bundled static player
 (dist/headless-player) is served on an ephemeral port. Pass --base-url to
 render against a server you control instead. Honors VITE_PORT (dev-server
-fallback) and PW_CDP_URL (attach to an existing Chrome over CDP).`,
+fallback) and PW_CDP_URL (attach to an existing Chrome over CDP).
+
+Turntable examples:
+  kernelcad animate part.kcad.ts part.mp4 --turntable
+  kernelcad animate part.kcad.ts part.gif --turntable --width 640 --height 640 --fps 15
+  kernelcad animate part.kcad.ts --turntable --frames out/ --background transparent`,
     )
     .action(async (file: string, out: string | undefined, opts: {
       frames?: string;
@@ -299,9 +370,14 @@ fallback) and PW_CDP_URL (attach to an existing Chrome over CDP).`,
       focus?: string;
       hide?: string;
       baseUrl?: string;
+      lockFrame?: boolean;
+      backdrop?: string;
       json?: boolean;
       quiet?: boolean;
-    }) => {
+    } & TurntableCliFields & {
+      /** Commander negation: `--no-shadow` sets this false; default true. */
+      shadow: boolean;
+    }, command: Command) => {
       const r = await runAnimate({
         file,
         ...(out !== undefined ? { out } : {}),
@@ -315,9 +391,12 @@ fallback) and PW_CDP_URL (attach to an existing Chrome over CDP).`,
         // materialized default would always take the 'explicit' lane and
         // defeat static-player provisioning (#625).
         ...(opts.baseUrl !== undefined ? { baseUrl: opts.baseUrl } : {}),
+        ...(opts.lockFrame === true ? { lockFrame: true } : {}),
+        ...(opts.backdrop !== undefined ? { backdrop: opts.backdrop } : {}),
         // Progress always goes to stderr (even under --json — stdout must
         // stay pure JSON) unless --quiet.
         ...(opts.quiet ? {} : { onProgress: stderrProgressSink }),
+        ...turntableCliInput(opts, command),
       });
       if (opts.json) {
         console.log(JSON.stringify(r.result, null, 2));

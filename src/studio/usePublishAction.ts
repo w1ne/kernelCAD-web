@@ -5,7 +5,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { useOptionalSession } from '../funnel/hooks/useSession';
 import { saveProject } from '../funnel/lib/apiClient';
 
-/** Owns the toolbar's "Publish & Share" flow: sign-in gate, save, clipboard
+/** Owns the header's Share (publish) flow: sign-in gate, save, clipboard
  *  copy, and the transient success/error state. */
 export function usePublishAction(code: string, projectName: string | undefined) {
     const { session } = useOptionalSession();

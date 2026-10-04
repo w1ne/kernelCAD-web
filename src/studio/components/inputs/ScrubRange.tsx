@@ -82,7 +82,7 @@ export function ScrubRange(props: ScrubRangeProps): JSX.Element {
                     })}
                 </div>
             </div>
-            <div className="flex justify-between text-[10px] text-gray-600 mt-0.5">
+            <div className="flex justify-between text-2xs text-gray-600 mt-0.5">
                 <span>
                     {min}
                     {unit ?? ''}

@@ -14,7 +14,7 @@ const inspectToolEntry: ToolRegistryEntry = {
       'Use this when you need to read facts about a model. One reader, selected by `of`:\n' +
       "- 'assembly' — physical assembly inventory (parts, bboxes, connectors, mates, disconnected solids).\n" +
       "- 'robot' — URDF/SDFormat export preview (links, joints, planning groups, end-effectors, issues).\n" +
-      "- 'step' — inspect an imported STEP file.\n" +
+      "- 'step' — inspect an imported STEP file: solid tree, exact bbox/volume, cylindrical holes (breached bores flagged partial; holeDetection: 'exact' | 'heuristic').\n" +
       "- 'shape' — volume / surfaceArea / bbox for one feature ({ feature_id? }).\n" +
       "- 'mass' — mass, centre of mass, centroidal inertia tensor (inertia6 + 3x3 inertiaMatrix), principalMoments/principalAxes, symmetry flags, and optionally the radius of gyration about an arbitrary axis ({ feature_id?, density?, gyration_axis? }); density in kg/m^3, defaults to 1000 (water).\n" +
       "- 'features' — features captured by the script (kind, id, params, transforms, suppression).\n" +
@@ -93,7 +93,7 @@ const verifyToolEntry: ToolRegistryEntry = {
       "- 'assembly' — mate-aware assembly validator on the active session (run evaluate_script first).\n" +
       "- 'urdf' — structural validity of a .urdf file ({ urdf_path }).\n" +
       "- 'dfm' — print-readiness gates declared by dfmSpec() ({ file | code }).\n" +
-      "- 'dfm-preflight' — sheet-metal flat pattern vs a job-shop's ordering rules ({ vendor, material, thicknessIn|thicknessMm, ... }).\n" +
+      "- 'dfm-preflight' — sheet-metal flat pattern vs a job-shop's ordering rules ({ vendor, material, thicknessIn|thicknessMm, ... }). Returns the vendor's catalog source pages as `sources`; when `disclosure` is present, show it with those links.\n" +
       "- 'swept-collision' — sweep declared joint range(s) and report colliding poses.\n" +
       "- 'reachable' — inverse-kinematics reachability for an end-effector ({ tip_link, target_position, ... }).\n" +
       "- 'mounting-holes' — fastened mates expose matching hole diameters on both sides.\n" +

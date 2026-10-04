@@ -21,6 +21,9 @@ import { isKernelcadAvailable } from './oracle/kernelcad-client';
 export interface CorpusTask {
   id: string;
   dir: string;
+  /** Per-task test timeout (ms) for harnesses that export and re-lower
+   *  dense geometry. Default 60 000. */
+  timeoutMs?: number;
 }
 
 export function defineExpertCorpusSuite(opts: {
@@ -77,7 +80,7 @@ export function defineExpertCorpusSuite(opts: {
         expect(result.score!.gate_pass).toBe(true);
         expect(result.score!.score).toBe(1);
         expect(result.score!.attempts).toBe(1);
-      }, 60000);
+      }, t.timeoutMs ?? 60000);
     }
   });
 }

@@ -2,14 +2,22 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useCallback, useEffect, useRef } from 'react';
 import {
-    shouldUseHostedMesh, meshSourceHosted, devMeshAvailable, meshSourceDev,
-    type BackendMeshPayload, type ParamOverrides,
+    shouldUseHostedMesh, devMeshAvailable,
+    type BackendMeshPayload,
 } from '../../scriptSource';
 import { apiCall, rewritePath } from '../../api/apiBase';
 import { detectEmptyBuild, featureMeshesToGeometries } from './types';
 import type { FeatureMeshSerialized } from '../../../modeling/capture/featureMeshSerialize';
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { ExecutionApplyDeps } from './executionApplyDeps';
+import { meshParamEdits, type ParamEditValues } from './paramEditsForMesh';
+
+export interface ParamUpdateOptions {
+    /** Stateless path only: write every value into the source and re-run the
+     *  whole script (see `paramEditsForMesh`). The public-page customizer uses
+     *  it so the view matches its export. */
+    bakeIntoSource?: boolean;
+}
 
 /**
  * Owns the param-edit bridge: the accumulated param-override map for the
@@ -27,7 +35,7 @@ export function useParamUpdate(
     // (hosted viewer / arbitrary edited code). A param edit re-runs the whole
     // script through the stateless mesh endpoint with these applied. Cleared
     // when `code` changes (a fresh build starts from the script's defaults).
-    const paramOverridesRef = useRef<ParamOverrides>({});
+    const paramOverridesRef = useRef<ParamEditValues>({});
 
     // Slice 2E.bridge: callback exposed to consumers (forwarded by
     // `useRecomputeResult`). Awaits the server ack; the SSE push that
@@ -64,7 +72,8 @@ export function useParamUpdate(
     }, [code]);
 
     const updateParam = useCallback(async (
-        edits: { name: string; value: number | boolean }[],
+        edits: { name: string; value: number | boolean | string }[],
+        options?: ParamUpdateOptions,
     ) => {
         // Live session (pooled `?script=`): incremental params.update — only the
         // edited feature + downstream re-lower, pushed back over SSE.
@@ -96,13 +105,12 @@ export function useParamUpdate(
         // whole script through the stateless mesh endpoint with the param
         // overrides applied. This is what makes a declared parameter actually
         // move the model when there is no pooled kernel session behind the tab.
-        const hosted = shouldUseHostedMesh();
-        if (!hosted && !devMeshAvailable()) {
+        if (!shouldUseHostedMesh() && !devMeshAvailable()) {
             throw new Error(
                 'Editing parameters needs a live kernel session or a compute backend.',
             );
         }
-        const overrides: ParamOverrides = { ...paramOverridesRef.current };
+        const overrides: ParamEditValues = { ...paramOverridesRef.current };
         for (const edit of edits) overrides[edit.name] = edit.value;
         paramOverridesRef.current = overrides;
 
@@ -110,9 +118,7 @@ export function useParamUpdate(
         deps.setCurrentCodeRevision(revision);
         deps.setIsComputing(true);
         try {
-            const payload = hosted
-                ? await meshSourceHosted(code, overrides)
-                : await meshSourceDev(code, overrides);
+            const payload = await meshParamEdits(code, overrides, options?.bakeIntoSource);
             // Superseded by a newer edit (code change or another param drag).
             if (revision !== deps.mainRevisionRef.current) return;
             applyBridgePayload(payload, revision);

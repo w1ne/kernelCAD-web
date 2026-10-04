@@ -127,7 +127,7 @@ function JointRow({ snap, onChange, onCommit }: JointRowProps): JSX.Element {
             >
                 <div className="pb-1">
                     <span className="text-gray-300">{mate.name}</span>
-                    <span className="text-[10px] text-gray-500 ml-1.5 italic">
+                    <span className="text-2xs text-gray-500 ml-1.5 italic">
                         ball (XYZ Euler)
                     </span>
                 </div>
@@ -171,7 +171,7 @@ function JointRow({ snap, onChange, onCommit }: JointRowProps): JSX.Element {
         >
             <div className="px-3 pt-2 pb-0.5 flex justify-between">
                 <span className="text-gray-300">{mate.name}</span>
-                <span className="text-[10px] text-gray-500 italic">{mate.type}</span>
+                <span className="text-2xs text-gray-500 italic">{mate.type}</span>
             </div>
             <NumericScrubInput
                 name={mate.name}
@@ -209,7 +209,7 @@ function BallAxis({
     const inputName = name ?? label;
     return (
         <div className="flex items-center gap-2">
-            <span className="text-[10px] text-gray-500 w-3">{label}</span>
+            <span className="text-2xs text-gray-500 w-3">{label}</span>
             <div className="flex-1">
                 <NumericScrubInput
                     name={inputName}

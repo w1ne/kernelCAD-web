@@ -2,12 +2,15 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import {
   defaultBuildRepairPrompt,
+  type ClosedLoopEvent,
   type ClosedLoopInput,
   type ClosedLoopResult,
+  type GateReport,
   type GateVerdict,
   type LoopMessage,
 } from './types.js';
 import { selectBest, type ScoredCandidate } from './bestOfN.js';
+import { selectByConsensus, type ConsensusCandidate, type ConsensusResult } from './consensus.js';
 
 /**
  * Hard upper bound a caller may configure for repair attempts.
@@ -23,7 +26,8 @@ export const MAX_REPAIR_ATTEMPTS_CEILING = 10;
  *
  * When `candidates > 1`, the FIRST attempt fans out to N diverse samples, selects the
  * best (gate-stages, then oracle score), and the winner alone enters the repair loop
- * (W4 best-of-N). The oracle score is used for SELECTION ONLY — it never feeds a repair
+ * (W4 best-of-N). With `candidateGeometry`, the winner is instead the geometric-consensus
+ * medoid (consensus.ts) — verifier-free; gate stages only break ties. The oracle score is used for SELECTION ONLY — it never feeds a repair
  * prompt, which is the guard against iterating one sample against the scorer.
  *
  * Invariant: never returns status:'passed' unless the gate suite reported ok for the
@@ -35,6 +39,55 @@ interface AttemptOutcome {
   tokensOut: number;
   /** Set when the attempt produced a terminal loop result; absent means iterate again. */
   result?: ClosedLoopResult;
+}
+
+/** Execute one candidate's geometry for consensus selection. */
+async function consensusCandidate(
+  candidateGeometry: NonNullable<ClosedLoopInput['candidateGeometry']>,
+  code: string,
+  scriptPath: string,
+  report: GateReport,
+): Promise<ConsensusCandidate> {
+  const g = await candidateGeometry(scriptPath, report);
+  return {
+    script: code,
+    mesh: g.mesh,
+    ...(g.invalidReason !== undefined ? { invalidReason: g.invalidReason } : {}),
+    gatesPassed: report.verdicts.filter((v) => v.ok).length,
+  };
+}
+
+/** Consensus medoid when geometry was measured and any candidate is valid;
+ *  otherwise the gate/oracle ranking. */
+function pickWinner(
+  scored: ScoredCandidate[],
+  geometry: ConsensusCandidate[] | undefined,
+): { winner: ScoredCandidate; consensus?: ConsensusResult; byConsensus: boolean } {
+  if (geometry === undefined) return { winner: selectBest(scored), byConsensus: false };
+  const consensus = selectByConsensus(geometry);
+  return consensus.chosenIndex !== null
+    ? { winner: scored[consensus.chosenIndex], consensus, byConsensus: true }
+    : { winner: selectBest(scored), consensus, byConsensus: false };
+}
+
+function bestOfNEvent(
+  scored: ScoredCandidate[],
+  winner: ScoredCandidate,
+  consensus: ConsensusResult | undefined,
+  byConsensus: boolean,
+): ClosedLoopEvent {
+  return {
+    type: 'best_of_n',
+    winnerIndex: scored.indexOf(winner),
+    candidates: scored.map((c, i) => ({
+      stagesPassed: c.report.verdicts.filter((v) => v.ok).length,
+      oracleScore: c.oracleScore,
+      ...(consensus !== undefined ? { meanDistanceMm: consensus.scores[i].meanDistanceMm ?? null } : {}),
+    })),
+    ...(consensus !== undefined
+      ? { selector: byConsensus ? 'consensus' as const : 'gates-oracle' as const, reason: consensus.reason }
+      : {}),
+  };
 }
 
 /** W4 best-of-N first attempt: fan out, select the winner, maybe repair. */
@@ -53,6 +106,7 @@ async function runBestOfNAttempt(
     Array.from({ length: candidateCount }, (_, i) => input.generate(messages, { variant: i })),
   );
   const scored: ScoredCandidate[] = [];
+  const geometry: ConsensusCandidate[] = [];
   for (const gen of genResults) {
     tokensIn += gen.tokensIn;
     tokensOut += gen.tokensOut;
@@ -62,6 +116,7 @@ async function runBestOfNAttempt(
     const report = await input.gateRunner.run(scriptPath);
     const oracleScore = input.scoreCandidate ? await input.scoreCandidate(scriptPath, report) : null;
     scored.push({ scriptPath, text: gen.text, report, oracleScore });
+    if (input.candidateGeometry) geometry.push(await consensusCandidate(input.candidateGeometry, code, scriptPath, report));
   }
 
   if (scored.length === 0) {
@@ -77,20 +132,13 @@ async function runBestOfNAttempt(
     return { tokensIn, tokensOut, result: { status: 'no_script', attempts: attempt, tokensIn, tokensOut } };
   }
 
-  const winner = selectBest(scored);
+  const { winner, consensus, byConsensus } = pickWinner(scored, input.candidateGeometry ? geometry : undefined);
   // The sequential fan-out above leaves the LAST candidate on disk when the
   // host's writeScript reuses a single path. Re-materialize the winner so its
   // scriptPath holds the winner's code — the host scores that path post-loop.
   const winnerCode = input.extractScript(winner.text);
   const winnerPath = winnerCode !== null ? await input.writeScript(winnerCode) : winner.scriptPath;
-  input.onEvent?.({
-    type: 'best_of_n',
-    winnerIndex: scored.indexOf(winner),
-    candidates: scored.map((c) => ({
-      stagesPassed: c.report.verdicts.filter((v) => v.ok).length,
-      oracleScore: c.oracleScore,
-    })),
-  });
+  input.onEvent?.(bestOfNEvent(scored, winner, consensus, byConsensus));
   input.onEvent?.({ type: 'gate_report', report: winner.report });
 
   if (winner.report.ok) {

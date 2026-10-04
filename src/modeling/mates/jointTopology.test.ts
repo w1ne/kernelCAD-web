@@ -201,7 +201,9 @@ describe('reviewJointTopology', () => {
     expect(codesOf(arm)).toContain('assembly.joint-topology.axis-invalid');
   });
 
-  it('does not accept fake support intents that do not capture the driven output', () => {
+  it('suppresses unsupported-axis for registry-complete mechanicalJoint even when output is not a mate endpoint', () => {
+    // Topology uses the same registry bar as mechanism=real; output capture
+    // is reviewed by reviewMechanicalIntent, not unsupported-axis.
     const { arm, kcad } = makeApi();
     arm
       .part('base', kcad.box(10, 10, 4))
@@ -219,10 +221,10 @@ describe('reviewJointTopology', () => {
       output: 'fake-output',
     });
 
-    expect(codesOf(arm)).toContain('assembly.joint-topology.unsupported-axis');
+    expect(codesOf(arm)).not.toContain('assembly.joint-topology.unsupported-axis');
   });
 
-  it('does not accept support intents whose supports are disconnected from the hinge support side', () => {
+  it('suppresses unsupported-axis for registry-complete mechanicalJoint without fastened-graph reachability', () => {
     const arm = armLike({
       parts: [
         {
@@ -261,7 +263,36 @@ describe('reviewJointTopology', () => {
       ],
     });
 
-    expect(codesOf(arm)).toContain('assembly.joint-topology.unsupported-axis');
+    expect(codesOf(arm)).not.toContain('assembly.joint-topology.unsupported-axis');
+  });
+
+  it('suppresses unsupported-axis for clamshell hinge with mechanicalJoint shaft=output=lid', () => {
+    // ChatGPT industry H: friction cartridge drives lid-hinge; shaft and
+    // output both name the lid; supports=['base']. mechanism=real already
+    // accepted this; review_cad must not emit unsupported-axis.
+    const { arm, kcad } = makeApi();
+    arm
+      .part('base', kcad.box(120, 80, 20))
+      .connector('hinge', { type: 'axis', origin: { kind: 'vec3', value: [0, -40, 20] }, axis: [1, 0, 0] });
+    arm
+      .part('lid', kcad.box(120, 80, 10))
+      .connector('hinge', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [1, 0, 0] });
+    arm.part('friction-hinge-cartridge', kcad.cylinder(8, 4));
+    arm.mate('lid-hinge', 'base.hinge', 'lid.hinge', 'revolute', { limitsDeg: [0, 115] });
+    arm.mechanicalJoint('lid-friction-drive', {
+      mate: 'lid-hinge',
+      actuator: 'friction-hinge-cartridge',
+      shaft: 'lid',
+      supports: ['base'],
+      output: 'lid',
+      requiredSupport: {
+        kind: 'hinge-bracket',
+        around: 'base.hinge',
+        supports: ['base'],
+      },
+    });
+
+    expect(codesOf(arm)).not.toContain('assembly.joint-topology.unsupported-axis');
   });
 
   it('accepts passive support intents for supported revolute hinges', () => {

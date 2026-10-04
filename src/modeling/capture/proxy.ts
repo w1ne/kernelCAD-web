@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { FeatureId, PatternSpec, PlaneSpec, FeatureRef, EditableVec3 } from '../../shared/intent/types';
-import { isValidVec3, isValidScaleSpec, isValidPlaneSpec, isValidEditableVec3, formatScalarForError } from '../../shared/intent/types';
+import { isValidScaleSpec, isValidPlaneSpec, isValidEditableVec3, formatScalarForError } from '../../shared/intent/types';
 import { KernelError } from '../../shared/intent/kernelError';
+import { invalidArgs } from '../../shared/intent/invalidArgs';
 import type { ShapeTransform } from '../../shared/intent/featureRecord';
 import type { CaptureSession } from './captureSession';
 import { buildFaceInputRef } from './shapeOperationFeatureRecords';
@@ -89,10 +90,15 @@ import {
 import { sectionSketchOf, faceSketchOf, silhouetteOf } from './proxyDerivedSketch';
 import {
   validateGridPatternAxis,
+  validateLinearPatternOpts,
+  validateCircularPatternOpts,
   normalizeFaceSelector,
   assertFeatureNameUniqueOnChain,
   nextOrdinalForKindOnChain,
+  assertScalarEdgeValue,
 } from './proxyFeatureChain';
+
+
 export class Shape {
   readonly id: FeatureId;
   private session: CaptureSession;
@@ -669,30 +675,7 @@ export class Shape {
   }
 
   patternLinear(opts: { count: number; direction: [number, number, number]; spacing: number }): Shape {
-    if (!Number.isInteger(opts.count) || opts.count < 2) {
-      throw new KernelError(
-        'feature.invalid-args',
-        'patternLinear count must be an integer >= 2.',
-        this.id,
-        'Pass count: 2 or greater.',
-      );
-    }
-    if (!isValidVec3(opts.direction)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `patternLinear direction must be a finite Vec3; got ${formatScalarForError(opts.direction)}.`,
-        this.id,
-        'Pass direction: [x, y, z].',
-      );
-    }
-    if (typeof opts.spacing !== 'number' || !Number.isFinite(opts.spacing) || opts.spacing === 0) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `patternLinear spacing must be a non-zero finite number; got ${formatScalarForError(opts.spacing)}.`,
-        this.id,
-        'Pass a non-zero finite spacing.',
-      );
-    }
+    validateLinearPatternOpts(opts, this.id);
     const pattern: PatternSpec = {
       kind: 'linear',
       count: opts.count,
@@ -717,36 +700,11 @@ export class Shape {
   }
 
   patternCircular(opts: { count: number; axis: [number, number, number]; angleDeg?: number }): Shape {
-    if (!Number.isInteger(opts.count) || opts.count < 2) {
-      throw new KernelError(
-        'feature.invalid-args',
-        'patternCircular count must be an integer >= 2.',
-        this.id,
-        'Pass count: 2 or greater.',
-      );
-    }
-    if (!isValidVec3(opts.axis)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `patternCircular axis must be a finite Vec3; got ${formatScalarForError(opts.axis)}.`,
-        this.id,
-        'Pass axis: [x, y, z].',
-      );
-    }
-    const angleDeg = opts.angleDeg ?? 360;
-    if (typeof angleDeg !== 'number' || !Number.isFinite(angleDeg) || angleDeg === 0) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `patternCircular angleDeg must be a non-zero finite number; got ${formatScalarForError(angleDeg)}.`,
-        this.id,
-        'Pass a non-zero finite angleDeg.',
-      );
-    }
     const pattern: PatternSpec = {
       kind: 'circular',
       count: opts.count,
       axis: opts.axis,
-      angleDeg,
+      angleDeg: validateCircularPatternOpts(opts, this.id),
     };
     return this.session.patternFeature(this, pattern);
   }
@@ -777,15 +735,20 @@ export class Shape {
     opts?: { continuity?: FilletContinuity },
   ): Shape {
     if (typeof radiusOrGroups === 'number' || isParamRef(radiusOrGroups)) {
+      assertScalarEdgeValue('fillet', 'radius', radiusOrGroups, this.id);
       let continuity: FilletContinuity | undefined;
       if (opts !== undefined && opts.continuity !== undefined) {
         if (!isFilletContinuity(opts.continuity)) {
-          throw new KernelError(
-            'feature.invalid-args',
-            `fillet: continuity must be 'G1' or 'G2'.`,
-            this.id,
-            `invalid-args.fillet.continuity — got ${String(opts.continuity)}`,
-          );
+          invalidArgs({
+            api: 'fillet(radius, edges, { continuity })',
+            path: 'opts.continuity',
+            got: opts.continuity,
+            showType: typeof opts.continuity !== 'string',
+            requires:
+              "'G1' (tangent-continuous, the default) or 'G2' (curvature-continuous, a slower but smoother blend)",
+            example: "box(40, 30, 10).fillet(2, 'top', { continuity: 'G2' })",
+            featureId: this.id,
+          });
         }
         continuity = opts.continuity;
       }
@@ -803,12 +766,25 @@ export class Shape {
     edges?: EdgeSelector,
   ): Shape {
     if (typeof distanceOrGroups === 'number' || isParamRef(distanceOrGroups)) {
+      assertScalarEdgeValue('chamfer', 'distance', distanceOrGroups, this.id);
       return this.session.edgeFeature('chamfer', this, 'distance', distanceOrGroups, edges);
     }
     return this.session.variableEdgeFeature('chamfer', this, 'distance', distanceOrGroups);
   }
 
   shell(thickness: Editable<number>, opts: { face: FaceSelector | CanonicalFace | string }): Shape {
+    assertScalarEdgeValue('shell', 'thickness', thickness, this.id);
+    if (opts === undefined || opts === null || (opts as { face?: unknown }).face === undefined) {
+      invalidArgs({
+        api: 'shell(thickness, { face })',
+        path: 'opts.face',
+        got: (opts as { face?: unknown } | undefined)?.face,
+        requires:
+          "the face to open, as a canonical name ('top'), a face label, or a FaceSelector query; shell() always needs one — it removes that face and leaves a wall of `thickness` behind",
+        example: "box(40, 30, 10).shell(2, { face: 'top' })",
+        featureId: this.id,
+      });
+    }
     return this.session.edgeFeature('shell', this, 'thickness', thickness, { face: opts.face });
   }
 
@@ -901,8 +877,18 @@ export class Shape {
   }
 
   /**
-   * Drill a single hole through this Shape. Position is face-local 2D
-   * (`u`, `v` in mm). Use `depth: 'through'` to clip at the back face.
+   * Drill a single hole through this Shape. `u`, `v` are mm offsets from
+   * the centre of the entry face's outer boundary, NOT world coordinates.
+   * Earlier holes in the face do not move this origin. Axes:
+   *   top / bottom: u = +X, v = +Y
+   *   front / back: u = +X, v = +Z
+   *   left / right: u = +Y, v = +Z
+   * Face names and axes follow the part through `.rotate()`.
+   * Example: a plate spans Z 5..60, so the `front` centre is Z 32.5; a hole
+   * at world Z 45.5 is `v: 45.5 - 32.5`.
+   * A bore centre off the face, a zero depth, or a bore that leaves material
+   * on its axis fails the feature with `feature.hole.cut-missing`.
+   * Use `depth: 'through'` to clip at the back face.
    * Optional `counterbore` (wider shoulder) or `countersink` (cone) — the
    * two are mutually exclusive on a single hole.
    *
@@ -952,7 +938,9 @@ export class Shape {
   }
 
   /**
-   * Drill N holes in a single feature record. All holes share diameter,
+   * Drill N holes in a single feature record. Positions use the same
+   * (u, v) frame as `.hole()`, and every bore is checked the same way.
+   * All holes share diameter,
    * depth, and optional counterbore/countersink. Use `.hole()` chained
    * calls if you need mixed specs.
    *
@@ -1002,8 +990,11 @@ export class Shape {
 
   /**
    * Sketch-driven subtractive extrude. Useful for irregular shapes hole()
-   * can't express (slots, D-shapes, keyhole pockets). Profile coords are
-   * in face-local 2D; direction is always *into* the body.
+   * can't express (slots, D-shapes, keyhole pockets). Profile (x, y) are
+   * mm from the centre of the face's outer boundary (same origin as
+   * `.hole()`; x runs along hole u). On top, front and right, y runs along
+   * hole v; on bottom, back and left it runs the opposite way. Direction
+   * is always *into* the body.
    *
    * Pass a closed `Sketch` or a bare `PathBuilder` (auto-closed). Created
    * face refs: `wall` (always), `floor` (blind), `wall-back` (through).
@@ -1300,11 +1291,20 @@ export class Shape {
     ) {
       return this._loweredBackend;
     }
+    const { OcctBackend, initOcct } = await import('../../kernel/backends/occt/occtBackend');
+    // Reuse the session's last full lower when nothing it depends on changed.
+    const reused = this.session.reusableLoweredShape(this.id);
+    if (reused instanceof OcctBackend) {
+      this._loweredBackend = reused;
+      this._loweredAtRecordCount = records.length;
+      this._loweredAtTransformCount = transformCount;
+      return reused;
+    }
     const { RecomputeEngine } = await import('../compute/recomputeEngine');
     const { createOcctLowerer } = await import('../backends/occt/occtLowerer');
-    const { OcctBackend, initOcct } = await import('../../kernel/backends/occt/occtBackend');
     await initOcct();
     const engine = new RecomputeEngine(createOcctLowerer(this.session));
+    const pending = this.session.snapshotFullLower(new Map());
     const r = await engine.run(
       records as readonly import('../../shared/intent/featureRecord').FeatureRecord[],
       {
@@ -1320,6 +1320,7 @@ export class Shape {
     for (const [id, sh] of r.shapes) {
       this.session.cachedShapes.set(id, sh);
     }
+    this.session.lastFullLower = { ...pending, shapes: r.shapes };
     const shape = r.shapes.get(this.id);
     if (!shape) {
       throw new Error(`Shape.lower(): shape '${this.id}' not lowered (check upstream diagnostics).`);

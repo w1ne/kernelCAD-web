@@ -13,7 +13,10 @@ vi.mock('@monaco-editor/react', () => ({ DiffEditor: () => null }));
 
 const generationSubmit = vi.fn();
 vi.mock('../funnel/hooks/useGeneration', () => ({
-  useGeneration: () => ({ phase: { state: 'idle' }, events: [], submit: generationSubmit }),
+  useGeneration: () => ({ phase: { state: 'idle' }, events: [], submit: generationSubmit, cancel: vi.fn() }),
+}));
+vi.mock('./hooks/useStagedEditActions', () => ({
+  useStagedEditActions: () => ({ stagedEdit: null, handleApprove: vi.fn() }),
 }));
 
 const previewSubmit = vi.fn();

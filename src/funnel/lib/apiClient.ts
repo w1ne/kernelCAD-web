@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { getSupabase } from './supabaseClient';
 import type { Artifact } from './generateClient';
+import type { AdminStats, StatsWindow } from '../../studio/stats/types';
 
 export interface GenerationRow {
   id: string;
@@ -39,6 +40,17 @@ export async function fetchGeneration(genId: string): Promise<GenerationRow | nu
 //   4. on success, parse + return JSON as T.
 // ---------------------------------------------------------------------------
 
+/** A non-2xx answer from kernelCAD-server. `message` is the response body
+ *  (unchanged from before); `status` lets a caller tell 403 from 5xx. */
+export class ApiError extends Error {
+  readonly status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+  }
+}
+
 export async function authedFetch<T>(
   method: 'GET' | 'POST' | 'PATCH',
   path: string,
@@ -58,7 +70,7 @@ export async function authedFetch<T>(
     ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
   });
   if (!res.ok) {
-    throw new Error(await res.text().catch(() => `HTTP ${res.status}`));
+    throw new ApiError(await res.text().catch(() => `HTTP ${res.status}`), res.status);
   }
   return res.json() as Promise<T>;
 }
@@ -91,6 +103,33 @@ export async function saveProject(input: SaveProjectInput): Promise<SaveProjectR
  *  user. `claimed` is false if it was already owned. */
 export async function claimProject(slug: string): Promise<{ claimed: boolean }> {
   return authedFetch<{ claimed: boolean }>('POST', `/api/v1/projects/${encodeURIComponent(slug)}/claim`, {});
+}
+
+/** Result of following an anonymous claim link (kernelCAD-server
+ *  POST /api/v1/anon-claims). `moved` projects changed owner now;
+ *  `alreadyOwned` were already in this account (the claim is idempotent). */
+export interface AnonClaimResult {
+  moved: number;
+  alreadyOwned: number;
+}
+
+/** Move every project of the anonymous owner named in a claim link (the
+ *  `t` token an MCP tool result links to) into the signed-in user's account. */
+export async function claimAnonProjects(token: string): Promise<AnonClaimResult> {
+  return authedFetch<AnonClaimResult>('POST', '/api/v1/anon-claims', { token });
+}
+
+export type AnonClaimErrorKind = 'expired' | 'invalid' | 'foreign' | 'unavailable' | 'failed';
+
+/** Map a claimAnonProjects rejection (authedFetch puts the response body in
+ *  the message) to what the user should be told. */
+export function anonClaimErrorKind(err: unknown): AnonClaimErrorKind {
+  const text = err instanceof Error ? err.message : String(err);
+  if (text.includes('claim_token_expired')) return 'expired';
+  if (text.includes('invalid_claim_token')) return 'invalid';
+  if (text.includes('claimed_by_another_account')) return 'foreign';
+  if (text.includes('claim_unavailable')) return 'unavailable';
+  return 'failed';
 }
 
 /** POST a viewer-captured PNG (base64, no `data:` prefix) to the backend render
@@ -144,6 +183,102 @@ export async function fetchProjectBySlug(slug: string): Promise<ProjectRow | nul
     .maybeSingle();
   if (error) throw new Error(error.message);
   return (data as ProjectRow | null) ?? null;
+}
+
+// ---------------------------------------------------------------------------
+// Community gallery + remix (kernelCAD-server galleryRouter / cloneRouter).
+//   GET   /api/v1/gallery?sort=&cursor=&limit=   -> GalleryPage (public)
+//   GET   /api/v1/projects/:slug/gallery         -> ProjectGalleryState
+//   PATCH /api/v1/projects/:slug/gallery         -> { listed, listedAt } (owner)
+//   POST  /api/v1/projects/:slug/report          -> { ok }
+//   POST  /api/v1/projects/:slug/clone           -> { slug, projectId }
+// ---------------------------------------------------------------------------
+
+export type GallerySort = 'new' | 'remixed' | 'featured';
+
+export interface ProjectRef {
+  slug: string;
+  title: string;
+}
+
+export interface GalleryItem {
+  slug: string;
+  title: string;
+  /** Owner display name; null when they have none (show "anonymous"). */
+  ownerName: string | null;
+  /** Short-lived signed URL of the card render; null if unavailable. */
+  renderUrl: string | null;
+  /** Optional short turntable clip (mp4/webm, or animated webp/gif); the
+   *  card plays it on hover. Absent when the server has none. */
+  clipUrl?: string | null;
+  remixCount: number;
+  featured: boolean;
+  /** Source this project was remixed from, while that source is public. */
+  forkedFrom: ProjectRef | null;
+  listedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GalleryPage {
+  items: GalleryItem[];
+  /** Pass back as `cursor` for the next page; null on the last page. */
+  nextCursor: string | null;
+}
+
+export async function fetchGallery(
+  sort: GallerySort,
+  cursor?: string | null,
+  limit?: number,
+): Promise<GalleryPage> {
+  const qs = new URLSearchParams({ sort });
+  if (cursor) qs.set('cursor', cursor);
+  if (limit !== undefined) qs.set('limit', String(limit));
+  return authedFetch<GalleryPage>('GET', `/api/v1/gallery?${qs.toString()}`);
+}
+
+export interface ProjectGalleryState {
+  /** The project currently appears in the gallery. */
+  listed: boolean;
+  listedAt: string | null;
+  /** The signed-in caller owns the project. */
+  isOwner: boolean;
+  /** Owner-only: hidden from the gallery by moderation. */
+  hidden: boolean;
+  /** Owner-only: a render image exists, so the project can be published. */
+  hasRender: boolean;
+  remixCount: number;
+  forkedFrom: ProjectRef | null;
+}
+
+export async function fetchProjectGalleryState(slug: string): Promise<ProjectGalleryState> {
+  return authedFetch<ProjectGalleryState>('GET', `/api/v1/projects/${encodeURIComponent(slug)}/gallery`);
+}
+
+/** Error codes the publish call can fail with (in the thrown message body). */
+export const GALLERY_RENDER_REQUIRED = 'render_required';
+export const GALLERY_NOT_PUBLIC = 'not_public';
+export const GALLERY_HIDDEN = 'hidden_by_moderation';
+
+/** Owner-only publish/unpublish. Publishing needs a public project with a
+ *  captured render; it fails with GALLERY_RENDER_REQUIRED / GALLERY_NOT_PUBLIC
+ *  / GALLERY_HIDDEN otherwise. */
+export async function setProjectGalleryListed(
+  slug: string,
+  listed: boolean,
+): Promise<{ listed: boolean; listedAt: string | null }> {
+  return authedFetch('PATCH', `/api/v1/projects/${encodeURIComponent(slug)}/gallery`, { listed });
+}
+
+/** Report a project for moderation. Works signed out; rate limited per IP. */
+export async function reportProject(slug: string, reason: string): Promise<{ ok: true }> {
+  return authedFetch('POST', `/api/v1/projects/${encodeURIComponent(slug)}/report`, { reason });
+}
+
+/** Remix: copy a readable project into a new project owned by the caller
+ *  (signed in). The copy records its source, which credits it on /p/<slug>. */
+export async function remixProject(slug: string): Promise<{ slug: string; projectId: string }> {
+  return authedFetch('POST', `/api/v1/projects/${encodeURIComponent(slug)}/clone`, {});
 }
 
 // ---------------------------------------------------------------------------
@@ -203,14 +338,63 @@ export async function restoreProjectRevision(
   );
 }
 
-export async function listMyProjects(): Promise<ProjectRow[]> {
+/** A project in the owner's list: the row without its code and parameters,
+ *  which the list never shows (and which can be large). */
+export type MyProjectRow = Omit<ProjectRow, 'current_code' | 'parameters'>;
+
+/** The signed-in user's own projects, most recently updated first. Empty when
+ *  signed out. The owner filter is required: the read policy also returns
+ *  every public-by-link project of other users. */
+export async function listMyProjects(opts: { limit?: number } = {}): Promise<MyProjectRow[]> {
   const supabase = getSupabase();
-  const { data, error } = await supabase
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const ownerId = session?.user?.id;
+  if (!ownerId) return [];
+  let query = supabase
     .from('projects')
-    .select('id, slug, title, privacy, featured_at, current_code, parameters, version, updated_at, owner_id')
+    .select('id, slug, title, privacy, featured_at, version, updated_at, owner_id')
+    .eq('owner_id', ownerId)
     .order('updated_at', { ascending: false });
+  if (opts.limit !== undefined) query = query.limit(opts.limit);
+  const { data, error } = await query;
   if (error) throw new Error(error.message);
-  return (data as ProjectRow[] | null) ?? [];
+  return (data as MyProjectRow[] | null) ?? [];
+}
+
+/** Longest project title; the server save path trims titles to the same length. */
+export const PROJECT_TITLE_MAX = 80;
+
+/** Owner-only rename (the projects owner-update policy). Returns the saved
+ *  title and the new updated_at. */
+export async function renameProject(
+  id: string,
+  title: string,
+): Promise<Pick<ProjectRow, 'title' | 'updated_at'>> {
+  const clean = title.trim().slice(0, PROJECT_TITLE_MAX);
+  if (!clean) throw new Error('A project needs a name.');
+  const { data, error } = await getSupabase()
+    .from('projects')
+    .update({ title: clean })
+    .eq('id', id)
+    .select('title, updated_at')
+    .single();
+  if (error) throw new Error(error.message);
+  return data as Pick<ProjectRow, 'title' | 'updated_at'>;
+}
+
+/** Owner-only delete (the projects owner-delete policy). Revisions, gallery
+ *  rows and generations of the project go with it. Throws when no row was
+ *  deleted, so a missing permission does not look like success. */
+export async function deleteProject(id: string): Promise<void> {
+  const { data, error } = await getSupabase()
+    .from('projects')
+    .delete()
+    .eq('id', id)
+    .select('id');
+  if (error) throw new Error(error.message);
+  if (!data || (data as unknown[]).length === 0) throw new Error('Project not found or not yours.');
 }
 
 // ---------------------------------------------------------------------------
@@ -236,6 +420,16 @@ export interface MyPlan {
   tokensBudget?: number | null;
   tokensRemaining?: number | null;
   currentPeriodEnd: string | null;
+  /** True when the user has a Stripe customer, so the Customer Portal
+   *  (invoices, receipts, card) can open, also after a cancellation when the
+   *  plan is back to free. Absent on older API builds. */
+  hasBillingAccount?: boolean;
+  /** Raw Stripe subscription status ('active', 'past_due', ...). Absent on
+   *  older API builds. */
+  subscriptionStatus?: string | null;
+  /** True when a renewal charge failed (`past_due` / `unpaid`). Absent on older
+   *  API builds, which is read as false. */
+  paymentFailed?: boolean;
 }
 
 export interface CheckoutSession {
@@ -262,8 +456,9 @@ export async function createCheckoutSession(
   return authedFetch<CheckoutSession>('POST', '/api/v1/billing/create-checkout', { tier, period });
 }
 
-/** POST /api/v1/billing/portal — returns a Stripe Customer Portal URL
- * for the signed-in pro user to manage / cancel their subscription. */
+/** POST /api/v1/billing/portal — returns a Stripe Customer Portal URL for a
+ * signed-in user with a Stripe customer: manage / cancel the subscription,
+ * update the card, or download past invoices. */
 export async function openBillingPortal(): Promise<BillingPortalSession> {
   return authedFetch<BillingPortalSession>('POST', '/api/v1/billing/portal');
 }
@@ -280,4 +475,13 @@ export interface McpTokenResult {
 /** POST /api/v1/mcp/tokens — creates a one-time-visible token for cloud MCP. */
 export async function createMcpToken(): Promise<McpTokenResult> {
   return authedFetch<McpTokenResult>('POST', '/api/v1/mcp/tokens');
+}
+
+// ---------------------------------------------------------------------------
+// Admin stats (/stats)
+// ---------------------------------------------------------------------------
+
+/** GET /api/v1/admin/stats — admin-only (403 for everyone else). */
+export async function fetchAdminStats(window: StatsWindow): Promise<AdminStats> {
+  return authedFetch<AdminStats>('GET', `/api/v1/admin/stats?window=${window}`);
 }

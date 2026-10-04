@@ -22,17 +22,17 @@ function AIVariationsMessage({ msg, applyCodeSafe, handleRunCode }: AIChatMessag
                         return variations.map((v: Variation, vIdx: number) => (
                             <div key={vIdx} className="min-w-[200px] bg-black/50 p-2 rounded border border-[#444] flex flex-col gap-2">
                                 <div className="font-bold text-sm text-gray-200">{v.name}</div>
-                                <div className="text-[10px] text-gray-400 leading-tight h-10 overflow-hidden">{v.description}</div>
+                                <div className="text-2xs text-gray-400 leading-tight h-10 overflow-hidden">{v.description}</div>
                                 <div className="flex gap-1 mt-auto">
                                     <button
                                         onClick={() => applyCodeSafe(v.code)}
-                                        className="flex-1 bg-purple-600 hover:bg-purple-500 text-white text-[10px] py-1 rounded"
+                                        className="flex-1 bg-purple-600 hover:bg-purple-500 text-white text-2xs py-1 rounded"
                                     >
                                         Apply
                                     </button>
                                     <button
                                         onClick={() => handleRunCode(v.code)}
-                                        className="flex-1 bg-green-600 hover:bg-green-500 text-white text-[10px] py-1 rounded"
+                                        className="flex-1 bg-green-600 hover:bg-green-500 text-white text-2xs py-1 rounded"
                                     >
                                         Preview
                                     </button>
@@ -67,21 +67,21 @@ function AIMarkdownMessage({ msg, applyCodeSafe, insertCode, handleRunCode }: AI
                                                 await applyCodeSafe(codeString);
                                             }
                                         }}
-                                        className="bg-red-600 hover:bg-red-500 text-white text-[10px] px-2 py-1 rounded shadow-lg flex items-center gap-1"
+                                        className="bg-red-600 hover:bg-red-500 text-white text-2xs px-2 py-1 rounded shadow-lg flex items-center gap-1"
                                         title="Replace entire script"
                                     >
                                         ⚡ REPLACE
                                     </button>
                                     <button
                                         onClick={() => insertCode(codeString)}
-                                        className="bg-blue-600 hover:bg-blue-500 text-white text-[10px] px-2 py-1 rounded shadow-lg flex items-center gap-1"
+                                        className="bg-blue-600 hover:bg-blue-500 text-white text-2xs px-2 py-1 rounded shadow-lg flex items-center gap-1"
                                         title="Insert at cursor"
                                     >
                                         ⬇ INSERT
                                     </button>
                                     <button
                                         onClick={() => handleRunCode(codeString)}
-                                        className="bg-green-600 hover:bg-green-500 text-white text-[10px] px-2 py-1 rounded shadow-lg flex items-center gap-1"
+                                        className="bg-green-600 hover:bg-green-500 text-white text-2xs px-2 py-1 rounded shadow-lg flex items-center gap-1"
                                         title="Run this code (Preview)"
                                     >
                                         ▶ RUN

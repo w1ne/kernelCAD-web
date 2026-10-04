@@ -52,6 +52,8 @@ describe('inspectStepFile', () => {
     // Box (6 faces) + bore wall + bore bottom = 8.
     expect(plate.faceCount).toBe(8);
     expect(plate.holes).toHaveLength(1);
+    expect(plate.holeDetection).toBe('exact');
+    expect(report.holeDetection).toBe('exact');
     expect(plate.holes[0].kind).toBe('blind');
     expect(plate.holes[0].diameterMm).toBeCloseTo(4, 2);
     expect(plate.holes[0].depthMm).toBeCloseTo(6, 1);
@@ -70,6 +72,24 @@ describe('inspectStepFile', () => {
     // The in-process export writes empty MANIFOLD_SOLID_BREP names — the
     // pairing must report null, never ''.
     expect(report.solids.map((s) => s.name)).toEqual([null, null]);
+  });
+
+  it('reports a slot-breached bore as partial and marks holeDetection heuristic', async () => {
+    // Dogfood friction: a bore whose wall a slot runs into was silently
+    // dropped (6 of 8 bores found). It is now reported, flagged partial.
+    const part = OcctBackend.box(40, 40, 10)
+      .subtract(OcctBackend.cylinder(20, 3).translate(20, 20, -5))
+      .subtract(OcctBackend.cylinder(20, 3).translate(8, 8, -5))
+      .subtract(OcctBackend.box(10, 2, 20).translate(20, 17.5, -5));
+    const path = join(tmpDir, 'breached.step');
+    writeFileSync(path, await part.exportSTEPAsync());
+    const report = await inspectStepFile(path);
+    expect(report.holeDetection).toBe('heuristic');
+    const solid = report.solids[0];
+    expect(solid.holeDetection).toBe('heuristic');
+    expect(solid.holes).toHaveLength(2);
+    expect(solid.holes.filter((h) => h.partial === true)).toHaveLength(1);
+    expect(solid.holes.every((h) => Math.abs(h.diameterMm - 6) < 1e-3)).toBe(true);
   });
 
   it('pairs MANIFOLD_SOLID_BREP names with solids, unescaping STEP quote escapes', async () => {

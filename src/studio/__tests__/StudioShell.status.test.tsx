@@ -7,6 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 let workbenchComputing = false;
 let workbenchReady = true;
 let workbenchError: string | null = null;
+let workbenchGeometries: unknown[] = [];
 let agentRailOpen = false;
 let recomputeRawPairs: Array<{ a: string; b: string; volumeMm3: number }> = [];
 let recomputeInterferenceSummary: {
@@ -23,7 +24,7 @@ vi.mock('../context/WorkbenchContext', () => ({
         isReady: workbenchReady,
         isComputing: workbenchComputing,
         error: workbenchError,
-        geometries: [],
+        geometries: workbenchGeometries,
         selectedItemIds: [],
         viewMode3D: 'shadedWithEdges',
         layoutMode: 'split',
@@ -72,7 +73,16 @@ vi.mock('../../funnel/lib/supabaseClient', () => ({
 }));
 
 vi.mock('../components/Layout/Header', () => ({ Header: () => <div data-testid="header" /> }));
-vi.mock('../Toolbar', () => ({ Toolbar: () => <div data-testid="toolbar" /> }));
+vi.mock('../ViewportToolbar', () => ({ ViewportToolbar: () => <div data-testid="toolbar" /> }));
+vi.mock('../ActivityBar', () => ({ ActivityBar: () => <nav data-testid="activity-bar" /> }));
+vi.mock('../context/UIContext', () => ({
+    useUI: () => ({
+        viewportBackground: 'dark',
+        setViewportBackground: vi.fn(),
+        gridVisible: true,
+        setGridVisible: vi.fn(),
+    }),
+}));
 vi.mock('../Viewport', () => ({ Viewport: () => <div data-testid="viewport" /> }));
 vi.mock('../Inspector', () => ({ Inspector: () => <div data-testid="inspector" /> }));
 vi.mock('../AgentRail', () => ({ AgentRail: () => <div data-testid="agent-rail" /> }));
@@ -95,6 +105,7 @@ beforeEach(() => {
     workbenchComputing = false;
     workbenchReady = true;
     workbenchError = null;
+    workbenchGeometries = [];
     agentRailOpen = false;
     recomputeRawPairs = [];
     recomputeInterferenceSummary = null;
@@ -122,7 +133,33 @@ describe('StudioShell status plumbing', () => {
         act(() => vi.advanceTimersByTime(15_000));
 
         expect(screen.queryByText('Geometry kernel warming up...')).toBeNull();
-        expect(screen.getByText('Geometry kernel initialization timed out. Reload to retry.')).toBeTruthy();
+        expect(screen.getByText('The geometry kernel is taking longer than usual.')).toBeTruthy();
+        expect(screen.getByRole('button', { name: 'Reload' })).toBeTruthy();
+        vi.useRealTimers();
+    });
+
+    it('offers a reload next to a kernel failure', () => {
+        workbenchReady = false;
+        workbenchError = 'WASM failed to initialize';
+
+        render(<StudioShell />);
+
+        expect(screen.getByRole('button', { name: 'Reload' })).toBeTruthy();
+    });
+
+    it('shows no kernel banner over a model that already rendered', () => {
+        // The hosted mesh and the dev node kernel render without the in-browser
+        // worker, so the worker can still be booting (or stuck) while the model
+        // is on screen and the status bar says Ready.
+        vi.useFakeTimers();
+        workbenchReady = false;
+        workbenchGeometries = [{ id: 'body_1' }];
+
+        render(<StudioShell />);
+        act(() => vi.advanceTimersByTime(20_000));
+
+        expect(screen.queryByTestId('kernel-init-banner')).toBeNull();
+        expect(screen.queryByText(/timed out|taking longer|warming up/)).toBeNull();
         vi.useRealTimers();
     });
 
@@ -134,12 +171,12 @@ describe('StudioShell status plumbing', () => {
         expect(screen.getByTestId('status-is-computing').textContent).toBe('true');
     });
 
-    it('places the open agent rail before the viewport', () => {
+    it('places the activity bar (and its agent pane) before the viewport', () => {
         agentRailOpen = true;
 
         render(<StudioShell />);
 
-        const rail = screen.getByTestId('agent-rail');
+        const rail = screen.getByTestId('activity-bar');
         const viewport = screen.getByTestId('viewport');
         expect(rail.compareDocumentPosition(viewport) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     });

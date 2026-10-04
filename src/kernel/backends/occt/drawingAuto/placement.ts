@@ -83,11 +83,12 @@ export function leaderCallout(
 }
 
 /** Angles (sheet radians, y down) ordered by closeness to `preferred`,
- *  skipping near-vertical leaders whose shoulders read badly. */
-export function orderedAngles(preferred: number): number[] {
+ *  skipping near-vertical leaders whose shoulders read badly. `steps`
+ *  directions around the circle: 16 for the first try, 24 for the fallback. */
+export function orderedAngles(preferred: number, steps = 16): number[] {
   const out: Array<{ a: number; d: number }> = [];
-  for (let k = 0; k < 16; k++) {
-    const a = (k * Math.PI) / 8;
+  for (let k = 0; k < steps; k++) {
+    const a = (k * Math.PI) / (steps / 2);
     if (Math.abs(Math.cos(a)) < 0.3) continue;
     let d = Math.abs(a - preferred) % (2 * Math.PI);
     if (d > Math.PI) d = 2 * Math.PI - d;
@@ -97,3 +98,12 @@ export function orderedAngles(preferred: number): number[] {
 }
 
 export const STEMS = [6, 10, 15, 21, 28, 36];
+
+/** Fallback stems: long enough to carry a label past a crowded view and its
+ *  dimension stacks onto the free sheet around it. */
+export const FAR_STEMS = [...STEMS, 45, 56, 70, 88];
+
+/** Fallback leader directions: every 15°, nearest `preferred` first. */
+export function fallbackAngles(preferred: number): number[] {
+  return orderedAngles(preferred, 24);
+}

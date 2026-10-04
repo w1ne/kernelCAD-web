@@ -119,6 +119,12 @@ export interface CaptureAnimationOpts {
    *  An explicit value takes resolveRenderBaseUrl's 'explicit' lane and
    *  bypasses provisioning entirely. */
   baseUrl?: string;
+  /** Fit every frame to the union of the timeline's bounds so the camera
+   *  stays planted while the mechanism moves. Default keeps the per-frame fit. */
+  lockFrame?: boolean;
+  /** Opaque '#rrggbb' publish backdrop applied on every timeline frame.
+   *  Omit to keep the engineering gray viewport. */
+  backdrop?: string;
 }
 
 /** Which side is at fault when a capture refuses or aborts. Lets CLI/MCP

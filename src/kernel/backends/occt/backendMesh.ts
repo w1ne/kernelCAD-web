@@ -6,6 +6,19 @@ import { getOC } from 'replicad';
 import { stitchCracks, dropDegenerateTriangles } from './meshHeal';
 
 /**
+ * Tessellation tolerances for {@link meshShapeForExport}, honoured by both
+ * the whole-shape mesher and the per-face fallback. Omitted = the export
+ * defaults (whole shape: relative 0.01, 0.05 rad; per-face fallback:
+ * absolute 0.02 mm, 0.1 rad). A validity check that only needs a
+ * closed-manifold verdict can pass a coarser absolute deflection.
+ */
+export interface ExportMeshDeflection {
+  linear: number;
+  relative: boolean;
+  angularRad: number;
+}
+
+/**
  * Export-grade mesher. Builds an OCCT `BRepMesh_IncrementalMesh_2` with
  * `isRelative=true` (linear tolerance is scaled by each edge's length), then
  * reads back per-face triangulation via replicad's `face.triangulation()`.
@@ -20,7 +33,10 @@ import { stitchCracks, dropDegenerateTriangles } from './meshHeal';
  * Cost: ~3-4x slower mesh on cone-heavy parts, negligible on box / plate.
  * Used only for STL export; the preview path keeps the coarse defaults.
  */
-export function meshShapeForExport(shape: replicad.Shape3D): { vertices: number[]; triangles: number[] } {
+export function meshShapeForExport(
+  shape: replicad.Shape3D,
+  deflection?: ExportMeshDeflection,
+): { vertices: number[]; triangles: number[] } {
   const oc = getOC();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const wrapped = (shape as any).wrapped;
@@ -30,9 +46,9 @@ export function meshShapeForExport(shape: replicad.Shape3D): { vertices: number[
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (oc as any).BRepTools.Clean(wrapped, true);
 
-  const mesher = meshWholeShapeIfSmall(oc, shape, wrapped);
+  const mesher = meshWholeShapeIfSmall(oc, shape, wrapped, deflection);
   if (mesher === null) {
-    meshFacesIndividually(oc, shape);
+    meshFacesIndividually(oc, shape, deflection);
   }
   try {
     const { rawTriangles, rawVertices } = readFaceTriangulations(oc, shape);
@@ -46,6 +62,7 @@ function meshWholeShapeIfSmall(
   oc: ReturnType<typeof getOC>,
   shape: replicad.Shape3D,
   wrapped: unknown,
+  deflection?: ExportMeshDeflection,
 ): { delete(): void } | null {
   // Whole-shape mesher escape hatch for pathologically dense imported packages.
   //
@@ -75,13 +92,13 @@ function meshWholeShapeIfSmall(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return new (oc as any).BRepMesh_IncrementalMesh_2(
       wrapped,
-      0.01, // linear deflection — scaled per-edge because isRelative=true,
+      deflection?.linear ?? 0.01, // linear deflection — scaled per-edge because isRelative=true,
             //   so absolute deflection is ~0.01 * edgeLength (e.g. 0.3 mm on a
             //   30 mm slant; 0.6 mm on a 60 mm radius) — finer than the
             //   absolute-mode 0.05 default, with uniform refinement across
             //   face boundaries.
-      true, // isRelative — tolerance is fraction of edge length
-      0.05, // angular deflection (rad). Replicad's default is 0.1; halving to
+      deflection?.relative ?? true, // isRelative — tolerance is fraction of edge length
+      deflection?.angularRad ?? 0.05, // angular deflection (rad). Replicad's default is 0.1; halving to
             //   0.05 reduces chord error on curved surfaces. Note: tightening
             //   further does not eliminate OCCT-mesher self-intersection on
             //   adjacent cone rings (a known mesher limitation, not tolerance
@@ -97,9 +114,18 @@ function meshWholeShapeIfSmall(
   }
 }
 
-function meshFacesIndividually(oc: ReturnType<typeof getOC>, shape: replicad.Shape3D): void {
-  // No shape-level triangulation: mesh every face independently in ABSOLUTE
-  // mode so the read-back loop finds populated triangulations.
+function meshFacesIndividually(
+  oc: ReturnType<typeof getOC>,
+  shape: replicad.Shape3D,
+  deflection?: ExportMeshDeflection,
+): void {
+  // No shape-level triangulation: mesh every face independently so the
+  // read-back loop finds populated triangulations. Default: ABSOLUTE mode
+  // (0.02 mm, 0.1 rad). A caller's deflection wins here too, so the
+  // whole-shape and per-face paths honour the same tolerances.
+  const linear = deflection?.linear ?? 0.02;
+  const relative = deflection?.relative ?? false;
+  const angularRad = deflection?.angularRad ?? 0.1;
   for (const face of shape.faces) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const fw = (face as any).wrapped;
@@ -107,7 +133,7 @@ function meshFacesIndividually(oc: ReturnType<typeof getOC>, shape: replicad.Sha
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (oc as any).BRepTools.Clean(fw, true);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const fm = new (oc as any).BRepMesh_IncrementalMesh_2(fw, 0.02, false, 0.1, false);
+      const fm = new (oc as any).BRepMesh_IncrementalMesh_2(fw, linear, relative, angularRad, false);
       fm.delete();
     } catch {
       // Face left untriangulated; the read-back loop's fallback + the

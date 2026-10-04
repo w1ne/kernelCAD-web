@@ -11,9 +11,15 @@ import { sceneToWorldFrameParts, type WorldFramePart } from '../../kernel/backen
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import type { ShapeBackend } from '../../kernel/backends/backend';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
-import { NEXT_ACTIONS } from '../../shared/diagnostics/registry';
+import { HINT_TEMPLATES, NEXT_ACTIONS } from '../../shared/diagnostics/registry';
+import { looksLikeBuilding, renderArchitecturalPlan } from '../../kernel/backends/occt/drawingArchitectural';
 
-import type { ExportInput, ExportResult } from './export';
+import { svgSheetsToPdf } from '../../kernel/export/pdf/svgSheetToPdf';
+import { KERNELCAD_NAME, attributionGenerator } from '../../shared/links/attribution';
+
+import type { ExportInput, ExportResult, PdfDrawingOptions } from './export';
+
+type ScriptRun = Awaited<ReturnType<typeof runScript>>;
 
 /** svg-drawing entry path: engineering-drawing sheet rendering, including
  *  exploded views, BOM balloons / parts-list and GD&T declarations. */
@@ -22,17 +28,120 @@ export async function exportSvgDrawing(
   fileName: string,
   lowered: ShapeBackend,
   targetId: string,
-  run: Awaited<ReturnType<typeof runScript>>,
+  run: ScriptRun,
   diagnostics: CompilerDiagnostic[],
   featureCount: number,
 ): Promise<ExportResult> {
   const opts =
     (input.options as SvgDrawingOptions | undefined) ??
     { format: 'svg-drawing' as const };
+  return renderDrawingSheet(opts, fileName, lowered, targetId, run, diagnostics, featureCount);
+}
+
+/**
+ * pdf-drawing entry path: the same sheet the svg-drawing path renders — one
+ * source of truth for views, dimensions and GD&T — on a standard sheet with
+ * the full title block, transcribed into a vector PDF.
+ */
+export async function exportPdfDrawing(
+  input: ExportInput,
+  fileName: string,
+  lowered: ShapeBackend,
+  targetId: string,
+  run: ScriptRun,
+  diagnostics: CompilerDiagnostic[],
+  featureCount: number,
+): Promise<ExportResult> {
+  const pdf = (input.options as PdfDrawingOptions | undefined) ?? { format: 'pdf-drawing' as const };
+  const architectural = pdf.style === 'architectural';
+  const assemblies = run.session.assemblies as Map<string, Assembly>;
+  const material = pdf.material ?? sharedAssemblyMaterial(firstAssemblyOrUndefined(assemblies));
+  const svgOpts = pdfSheetOptions(pdf, material);
+  const sheet = await renderDrawingSheet(svgOpts, fileName, lowered, targetId, run, diagnostics, featureCount);
+  if (sheet.bytes.length === 0) return sheet;
+  const svg = new TextDecoder().decode(sheet.bytes);
+  const modelName = svgOpts.modelName ?? drawingModelName(fileName);
+  const bytes = svgSheetsToPdf([svg], {
+    title: pdf.title ?? modelName,
+    subject: `${architectural ? 'Architectural floor plan' : 'Engineering drawing'}: ${pdf.partName ?? modelName}`,
+    creator: `${KERNELCAD_NAME} pdf-drawing export`,
+    producer: attributionGenerator(),
+  });
+  return { ...sheet, bytes };
+}
+
+/** Drop the keys whose value is undefined (exact optional properties). */
+function definedOnly<T extends object>(o: T): Partial<T> {
+  return Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined)) as Partial<T>;
+}
+
+/** The svg-drawing options that render a pdf-drawing sheet: standard sheet
+ *  (default A3), full title block, today's date, autoAnnotate unless the
+ *  author dimensions the sheet. */
+function pdfSheetOptions(pdf: PdfDrawingOptions, material: string | undefined): SvgDrawingOptions {
+  const authored = (pdf.annotations ?? []).length > 0;
+  return {
+    format: 'svg-drawing',
+    sheet: pdf.sheet ?? 'a3',
+    projection: pdf.projection ?? 'third',
+    date: pdf.date ?? new Date().toISOString().slice(0, 10),
+    titleBlock: definedOnly({ title: pdf.title, partName: pdf.partName, material, revision: pdf.revision }),
+    ...definedOnly({
+      modelName: pdf.modelName,
+      annotations: pdf.annotations,
+      sections: pdf.sections,
+      exploded: pdf.exploded as SvgDrawingOptions['exploded'],
+      balloons: pdf.balloons,
+      partsList: pdf.partsList,
+      style: pdf.style,
+      plan: pdf.plan,
+    }),
+    autoAnnotate: pdf.autoAnnotate ?? !authored,
+  };
+}
+
+/** Model name for the title block: the script file name without `.kcad.ts`. */
+function drawingModelName(fileName: string): string {
   const baseName = fileName.split(/[\\/]/).pop() ?? fileName;
-  const modelName =
-    opts.modelName ?? baseName.replace(/(\.kcad)?\.ts$/, '');
+  return baseName.replace(/(\.kcad)?\.ts$/, '');
+}
+
+/** The material every assembly part declares, when they all declare the same one. */
+function sharedAssemblyMaterial(arm: Assembly | undefined): string | undefined {
+  if (arm === undefined) return undefined;
+  const names = new Set(arm.__parts().map(p => p.material));
+  if (names.size !== 1) return undefined;
+  const [only] = names;
+  return only;
+}
+
+async function renderDrawingSheet(
+  opts: SvgDrawingOptions,
+  fileName: string,
+  lowered: ShapeBackend,
+  targetId: string,
+  run: ScriptRun,
+  diagnostics: CompilerDiagnostic[],
+  featureCount: number,
+): Promise<ExportResult> {
+  const modelName = opts.modelName ?? drawingModelName(fileName);
   const drawingParts = drawingPartsForBackend(lowered);
+  const styleError = drawingStyleError(opts.style);
+  if (styleError !== undefined) return { bytes: new Uint8Array(), featureCount, diagnostics: [...diagnostics, styleError] };
+  if (opts.style === 'architectural') {
+    const plan = renderArchitecturalPlan(drawingParts, {
+      ...definedOnly({
+        sheet: opts.sheet,
+        title: opts.titleBlock?.title,
+        revision: opts.titleBlock?.revision,
+        date: opts.date,
+        plan: opts.plan,
+      }),
+      modelName,
+    });
+    return { bytes: plan.bytes, featureCount, diagnostics };
+  }
+  const styleHint = architecturalStyleHint(opts.style, drawingParts);
   const assemblies = run.session.assemblies as Map<string, Assembly>;
   const arm = firstAssemblyOrUndefined(assemblies);
 
@@ -58,8 +167,45 @@ export async function exportSvgDrawing(
   return {
     bytes: rendered.bytes,
     featureCount,
-    diagnostics: [...diagnostics, ...exploded.diagnostics, ...bom.diagnostics, ...rendered.diagnostics],
+    diagnostics: [
+      ...diagnostics, ...exploded.diagnostics, ...bom.diagnostics, ...rendered.diagnostics,
+      ...(styleHint === undefined ? [] : [styleHint]),
+    ],
     ...(rendered.report === undefined ? {} : { drawingReport: rendered.report }),
+  };
+}
+
+function drawingStyleError(style: unknown): CompilerDiagnostic | undefined {
+  if (style === undefined || style === 'mechanical' || style === 'architectural') return undefined;
+  return {
+    target: 'export-occt',
+    code: 'cli.invalid-args',
+    severity: 'error',
+    message: `drawing options.style must be 'mechanical' or 'architectural'; got ${JSON.stringify(style)}.`,
+    hint: "Pass options.style: 'architectural' for a floor plan, or omit it for the mechanical part sheet.",
+    nextAction: NEXT_ACTIONS['cli.invalid-args'],
+  };
+}
+
+/** A building-sized model drawn with the default mechanical sheet gets part
+ *  annotations (datums, flatness, ISO 2768) that mean nothing on a floor
+ *  plan: suggest the architectural style. Explicit `'mechanical'` is quiet. */
+function architecturalStyleHint(style: SvgDrawingOptions['style'], parts: readonly WorldFramePart[]): CompilerDiagnostic | undefined {
+  if (style !== undefined) return undefined;
+  const boxes = parts.map(p => p.shape.boundingBox());
+  const bbox = {
+    min: [0, 1, 2].map(k => Math.min(...boxes.map(b => b.min[k]))),
+    max: [0, 1, 2].map(k => Math.max(...boxes.map(b => b.max[k]))),
+  };
+  if (!looksLikeBuilding(bbox)) return undefined;
+  const size = [0, 1, 2].map(k => Math.round(bbox.max[k] - bbox.min[k])).join(' × ');
+  return {
+    target: 'export-occt',
+    code: 'drawing.style.architectural-suggested',
+    severity: 'warn',
+    message: `The model is building-sized (${size} mm), but the sheet uses the mechanical part style (datums, flatness, ISO 2768).`,
+    hint: HINT_TEMPLATES['drawing.style.architectural-suggested'].template,
+    nextAction: NEXT_ACTIONS['drawing.style.architectural-suggested'],
   };
 }
 

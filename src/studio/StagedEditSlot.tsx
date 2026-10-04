@@ -4,14 +4,17 @@ import { Check, RotateCcw, X } from 'lucide-react';
 import { useShellStore } from './store/useShellStore';
 import type { AppliedEditHistoryEntry, StagedEdit } from './store/shellStore';
 import { useStagedEditActions } from './hooks/useStagedEditActions';
+import { useAutoApplySetting } from './directEdit/autoApply';
 
-// Slice 1.5: real body. Reads stagedEdit from the shell store. When
-// populated, renders the intent, a minimal line-by-line diff, and
-// approve/reject buttons. When empty, renders the auto-apply placeholder.
+// Reads stagedEdit from the shell store. When populated, renders the intent,
+// a minimal line-by-line diff, and approve/reject buttons. Always renders the
+// auto-apply toggle: on, UI drags apply at once as one undo step; agent
+// edits and failed/worse candidates still wait here.
 //
-// Approve writes stagedEdit.toCode through workbench.setCode only if the
-// editor still matches the staged baseline. That keeps generated edits from
-// overwriting intervening human changes.
+// Approve applies stagedEdit.toCode through the shared source-edit commit
+// (one undo step, saved to the project or dev file) only if the editor still
+// matches the staged baseline. That keeps generated edits from overwriting
+// intervening human changes.
 
 function computeLineDiff(from: string, to: string): Array<{ kind: 'context' | 'add' | 'del'; text: string }> {
     // Trivial line diff: walk both, mark non-matching lines as add/del.
@@ -42,7 +45,7 @@ function DiffCard({ edit }: { edit: StagedEdit }) {
             data-testid="staged-edit-diff"
             className="rounded border border-[#2a2e38] bg-[#0d0d0d] overflow-auto max-h-48"
         >
-            <pre className="text-[10px] leading-snug font-mono p-2 m-0">
+            <pre className="text-2xs leading-snug font-mono p-2 m-0">
                 {lines.map((l, i) => (
                     <div
                         key={i}
@@ -65,21 +68,28 @@ function DiffCard({ edit }: { edit: StagedEdit }) {
     );
 }
 
-function PlaceholderBody() {
+export function AutoApplyToggle() {
+    const [enabled, setEnabled] = useAutoApplySetting();
     return (
-        <>
-            <p className="text-xs text-gray-300 leading-snug">
-                Auto-apply mode · toggle off to enable review
-            </p>
-            <button
-                type="button"
-                disabled
-                aria-disabled="true"
-                className="self-start px-2 py-1 text-[11px] rounded border border-[#3a3a3a] bg-[#222] text-gray-500 cursor-not-allowed"
-            >
-                Review edits
-            </button>
-        </>
+        <label
+            className="flex items-start gap-2 text-[11px] text-gray-300 leading-snug cursor-pointer"
+            data-testid="staged-edit-auto-apply"
+        >
+            <input
+                type="checkbox"
+                checked={enabled}
+                onChange={(event) => setEnabled(event.target.checked)}
+                className="mt-0.5 accent-emerald-600"
+            />
+            <span>
+                Auto-apply UI edits
+                <span className="block text-2xs text-gray-500">
+                    {enabled
+                        ? 'Drags apply at once. Ctrl/Cmd+Z undoes. Agent edits wait for review.'
+                        : 'Every edit waits here for review.'}
+                </span>
+            </span>
+        </label>
     );
 }
 
@@ -125,7 +135,7 @@ function StagedEditContextDetails({ edit }: { edit: StagedEdit }) {
 
     return (
         <div
-            className="min-w-0 rounded border border-[#252a33] bg-[#111318] px-2 py-1.5 text-[10px] text-gray-400 space-y-1 break-words"
+            className="min-w-0 rounded border border-[#252a33] bg-[#111318] px-2 py-1.5 text-2xs text-gray-400 space-y-1 break-words"
             data-testid="staged-edit-context"
         >
             <StagedEditSourceLabel edit={edit} />
@@ -148,7 +158,7 @@ function AppliedEditHistory({ entries }: { entries: readonly AppliedEditHistoryE
             data-testid="applied-edit-history"
             aria-label="Recent staged edit outcomes"
         >
-            <div className="uppercase tracking-wide text-[10px] text-gray-500">
+            <div className="uppercase tracking-wide text-2xs text-gray-500">
                 Recent edits
             </div>
             {entries.map((entry) => {
@@ -156,7 +166,7 @@ function AppliedEditHistory({ entries }: { entries: readonly AppliedEditHistoryE
                 return (
                     <div
                         key={entry.id}
-                        className="min-w-0 rounded border border-[#252a33] bg-[#111318] px-2 py-1.5 text-[10px] text-gray-400 space-y-1"
+                        className="min-w-0 rounded border border-[#252a33] bg-[#111318] px-2 py-1.5 text-2xs text-gray-400 space-y-1"
                     >
                         <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
                             <span className="font-medium text-gray-200">{formatOutcome(entry.outcome)}</span>
@@ -220,12 +230,36 @@ function formatRecheckStatus(status: AppliedEditHistoryEntry['recheckStatus']): 
     }
 }
 
+/** Why the edit waits here: auto-apply refusal, read-only view, failed run. */
+function StagedEditNotes({ edit, readOnlyHint }: { edit: StagedEdit; readOnlyHint: string | null }) {
+    return (
+        <>
+            {edit.reviewReason && (
+                <div data-testid="staged-edit-review-reason" className="rounded border border-amber-800/70 bg-amber-950/40 px-2 py-1 text-2xs text-amber-200">
+                    {edit.reviewReason}
+                </div>
+            )}
+            {readOnlyHint && (
+                <div data-testid="staged-edit-read-only" className="text-2xs text-gray-400">
+                    {readOnlyHint}
+                </div>
+            )}
+            {edit.evaluation && !edit.evaluation.ok && (
+                <div className="rounded border border-red-900 bg-red-950/30 px-2 py-1 text-2xs text-red-300">
+                    Candidate failed: {edit.evaluation.error ?? 'unknown error'}
+                </div>
+            )}
+        </>
+    );
+}
+
 export function StagedEditSlot() {
     const { appliedEditHistory } = useShellStore();
     const {
         stagedEdit,
         approving,
         approveDisabled,
+        readOnlyHint,
         visibleStaleWarning,
         handleApprove,
         handleReject,
@@ -234,13 +268,13 @@ export function StagedEditSlot() {
 
     return (
         <div className="p-3 flex flex-col gap-2" data-testid="staged-edit-slot">
-            <div className="uppercase tracking-wide text-[10px] text-gray-500">
+            <div className="uppercase tracking-wide text-2xs text-gray-500">
                 Staged edits
             </div>
 
-            {stagedEdit == null ? (
-                <PlaceholderBody />
-            ) : (
+            <AutoApplyToggle />
+
+            {stagedEdit != null && (
                 <>
                     <div
                         className="text-[11px] text-gray-200 leading-snug italic"
@@ -249,26 +283,22 @@ export function StagedEditSlot() {
                         "{stagedEdit.intent}"
                     </div>
                     {stagedEdit.specLabel && (
-                        <div data-testid="staged-edit-spec" className="self-start rounded-full border border-violet-900 bg-violet-950/40 px-2 py-0.5 text-[10px] text-violet-200">
+                        <div data-testid="staged-edit-spec" className="self-start rounded-full border border-violet-900 bg-violet-950/40 px-2 py-0.5 text-2xs text-violet-200">
                             {stagedEdit.specLabel}
                         </div>
                     )}
                     {stagedEdit.validityDelta && (
-                        <div data-testid="staged-edit-validity" className="text-[10px] text-gray-400">
+                        <div data-testid="staged-edit-validity" className="text-2xs text-gray-400">
                             interferences {stagedEdit.validityDelta.fromInterferences} → {stagedEdit.validityDelta.toInterferences}
                             {' · '}Σ volume {stagedEdit.validityDelta.fromVolumeMm3.toFixed(1)} → {stagedEdit.validityDelta.toVolumeMm3.toFixed(1)} mm³
                         </div>
                     )}
-                    {stagedEdit.evaluation && !stagedEdit.evaluation.ok && (
-                        <div className="rounded border border-red-900 bg-red-950/30 px-2 py-1 text-[10px] text-red-300">
-                            Candidate failed: {stagedEdit.evaluation.error ?? 'unknown error'}
-                        </div>
-                    )}
+                    <StagedEditNotes edit={stagedEdit} readOnlyHint={readOnlyHint} />
                     <StagedEditContextDetails edit={stagedEdit} />
                     <DiffCard edit={stagedEdit} />
                     {visibleStaleWarning != null && (
                         <div
-                            className="rounded border border-amber-800/70 bg-amber-950/40 px-2 py-1 text-[10px] text-amber-200 space-y-1.5"
+                            className="rounded border border-amber-800/70 bg-amber-950/40 px-2 py-1 text-2xs text-amber-200 space-y-1.5"
                             data-testid="staged-edit-stale-warning"
                             role="alert"
                             aria-live="polite"
@@ -280,7 +310,7 @@ export function StagedEditSlot() {
                                     type="button"
                                     onClick={handleRerunPrompt}
                                     data-testid="staged-edit-rerun-prompt"
-                                    className="inline-flex items-center gap-1 rounded border border-amber-700/70 bg-amber-900/30 px-2 py-1 text-[10px] text-amber-100 hover:bg-amber-900/50"
+                                    className="inline-flex items-center gap-1 rounded border border-amber-700/70 bg-amber-900/30 px-2 py-1 text-2xs text-amber-100 hover:bg-amber-900/50"
                                 >
                                     <RotateCcw className="h-3 w-3" /> Rerun prompt
                                 </button>

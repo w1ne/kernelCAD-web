@@ -200,7 +200,7 @@ describe('ExportTab', () => {
             expect(fetchMock).toHaveBeenCalledTimes(1);
         });
         expect(fetchMock).toHaveBeenCalledWith(
-            '/__kernelcad/export?format=stl',
+            '/__kernelcad/export?format=stl&async=1',
             expect.objectContaining({
                 method: 'POST',
                 headers: expect.objectContaining({ 'Content-Type': 'application/json' }),
@@ -208,7 +208,7 @@ describe('ExportTab', () => {
             }),
         );
         expect(clickSpy).toHaveBeenCalled();
-        expect(screen.queryByTestId('export-tab-error')).toBeNull();
+        expect(screen.queryByTestId('export-tab-status-error')).toBeNull();
 
         HTMLAnchorElement.prototype.click = originalClick;
     });
@@ -247,7 +247,7 @@ describe('ExportTab', () => {
             expect(fetchMock).toHaveBeenCalledTimes(1);
         });
         expect(fetchMock).toHaveBeenCalledWith(
-            '/__kernelcad/export?format=stl',
+            '/__kernelcad/export?format=stl&async=1',
             expect.objectContaining({
                 method: 'POST',
                 body: JSON.stringify({ source: 'return box(1, 2, 3); // edited' }),
@@ -291,7 +291,7 @@ describe('ExportTab', () => {
             expect(fetchMock).toHaveBeenCalledTimes(1);
         });
         const call = fetchMock.mock.calls[0]!;
-        expect(call[0] as string).toContain('/__kernelcad/export?format=stl');
+        expect(call[0] as string).toContain('/__kernelcad/export?format=stl&async=1');
         expect(JSON.parse((call[1] as { body: string }).body)).toEqual({
             projectSlug: 'N2yYiZxy',
             projectVersion: 6,
@@ -314,8 +314,76 @@ describe('ExportTab', () => {
         render(<ExportTab />);
         fireEvent.click(screen.getByTestId('export-stl'));
         await waitFor(() => {
-            expect(screen.getByTestId('export-tab-error')).toBeDefined();
+            expect(screen.getByTestId('export-tab-status-error')).toBeDefined();
         });
-        expect(screen.getByTestId('export-tab-error').textContent).toMatch(/script source/i);
+        expect(screen.getByTestId('export-tab-status-error').textContent).toMatch(/script source/i);
+    });
+
+    describe('server responses', () => {
+        beforeEach(() => {
+            Object.defineProperty(window, 'location', {
+                configurable: true,
+                value: { ...window.location, pathname: '/', search: '', hostname: 'localhost' },
+            });
+            recompute = { ...recompute, geometries: [{ faces: [] }] };
+        });
+
+        it('422: shows the server message and its hint', async () => {
+            vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({
+                error: 'The 3MF mesh is not watertight, and 3MF requires a closed mesh.',
+                code: 'export.3mf.not-watertight',
+                hint: 'Export STEP for the exact geometry.',
+            }), { status: 422, headers: { 'content-type': 'application/json' } })));
+            const { ExportTab } = await import('../../tabs/ExportTab');
+            render(<ExportTab />);
+            fireEvent.click(screen.getByTestId('export-3mf'));
+            await waitFor(() => expect(screen.getByTestId('export-tab-status-error')).toBeDefined());
+            expect(screen.getByTestId('export-tab-status-error').textContent)
+                .toBe('The 3MF mesh is not watertight, and 3MF requires a closed mesh.');
+            expect(screen.getByTestId('export-tab-status-hint').textContent).toBe('Export STEP for the exact geometry.');
+        });
+
+        it('200 + warning header: downloads, then shows a dismissible notice', async () => {
+            vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(new Uint8Array([1]), {
+                status: 200,
+                headers: {
+                    'content-disposition': 'attachment; filename="x.stl"',
+                    'X-KernelCAD-Export-Warning': 'export.mesh.not-watertight',
+                    'X-KernelCAD-Mesh-Open-Edges': '2',
+                },
+            })));
+            const clickSpy = vi.fn();
+            const originalClick = HTMLAnchorElement.prototype.click;
+            HTMLAnchorElement.prototype.click = clickSpy;
+            const { ExportTab } = await import('../../tabs/ExportTab');
+            render(<ExportTab />);
+            fireEvent.click(screen.getByTestId('export-stl'));
+            await waitFor(() => expect(screen.getByTestId('export-tab-status-notice')).toBeDefined());
+            expect(clickSpy).toHaveBeenCalled();
+            expect(screen.getByTestId('export-tab-status-notice').textContent).toMatch(/small mesh gap \(2 open edges\)/);
+            fireEvent.click(screen.getByTestId('export-tab-status-dismiss'));
+            expect(screen.queryByTestId('export-tab-status')).toBeNull();
+            HTMLAnchorElement.prototype.click = originalClick;
+        });
+
+        it('shows progress with elapsed time while exporting and cancels the request', async () => {
+            let signal: AbortSignal | undefined;
+            vi.stubGlobal('fetch', vi.fn((_url: string, init: { signal?: AbortSignal }) => {
+                signal = init.signal;
+                return new Promise((_resolve, reject) => {
+                    init.signal?.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError')));
+                });
+            }));
+            const { ExportTab } = await import('../../tabs/ExportTab');
+            render(<ExportTab />);
+            fireEvent.click(screen.getByTestId('export-glb'));
+            await waitFor(() => expect(screen.getByTestId('export-tab-status-progress')).toBeDefined());
+            expect(screen.getByTestId('export-tab-status-progress').textContent).toBe('Exporting GLB… 0 s');
+            expect((screen.getByTestId('export-stl') as HTMLButtonElement).disabled).toBe(true);
+            fireEvent.click(screen.getByTestId('export-tab-status-cancel'));
+            expect(signal?.aborted).toBe(true);
+            await waitFor(() => expect(screen.queryByTestId('export-tab-status')).toBeNull());
+            expect((screen.getByTestId('export-stl') as HTMLButtonElement).disabled).toBe(false);
+        });
     });
 });

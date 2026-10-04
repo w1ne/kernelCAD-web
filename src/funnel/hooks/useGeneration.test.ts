@@ -33,7 +33,7 @@ describe('useGeneration edit mode', () => {
     await act(async () => {
       await result.current.submit('add a hole', 'return box(20,20,20);');
     });
-    expect(startGeneration).toHaveBeenCalledWith({ prompt: 'add a hole', currentCode: 'return box(20,20,20);' });
+    expect(startGeneration).toHaveBeenCalledWith({ prompt: 'add a hole', currentCode: 'return box(20,20,20);' }, expect.any(AbortSignal));
     await waitFor(() => expect(result.current.phase.state).toBe('done'));
   });
 
@@ -42,7 +42,7 @@ describe('useGeneration edit mode', () => {
     await act(async () => {
       await result.current.submit('a 20mm cube');
     });
-    expect(startGeneration).toHaveBeenCalledWith({ prompt: 'a 20mm cube', currentCode: undefined });
+    expect(startGeneration).toHaveBeenCalledWith({ prompt: 'a 20mm cube', currentCode: undefined }, expect.any(AbortSignal));
   });
 
   it('forwards mesh context to startGeneration', async () => {
@@ -52,6 +52,7 @@ describe('useGeneration edit mode', () => {
     });
     expect(startGeneration).toHaveBeenCalledWith(
       expect.objectContaining({ prompt: 'a bracket', mesh: { renderImageUrl: 'https://t/r.png', proportions: [1, 0.7, 0.6] } }),
+      expect.any(AbortSignal),
     );
   });
 
@@ -76,6 +77,88 @@ describe('useGeneration edit mode', () => {
     expect(startGeneration).toHaveBeenCalledWith(expect.objectContaining({
       prompt: 'model this simple e-reader',
       referenceImage,
-    }));
+    }), expect.any(AbortSignal));
+  });
+});
+
+describe('useGeneration partial results', () => {
+  it('keeps the partial flag on the done phase', async () => {
+    const partial = { reason: 'timeout', stage: 'writing_code', unverified: ['interference'], note: 'n' };
+    async function* yieldPartial() {
+      yield { kind: 'generation', generationId: 'g1', anonId: 'a1' };
+      yield {
+        kind: 'done', generationId: 'g1', anonId: 'a1', durationMs: 1, partial,
+        artifact: { title: 'T', code: 'return box(1,1,1);', parameters: [], suggestions: [] },
+      };
+    }
+    startGeneration.mockReset();
+    parseSseStream.mockReset();
+    startGeneration.mockResolvedValue({ ok: true, body: {} } as Response);
+    parseSseStream.mockReturnValue(yieldPartial());
+    const { result } = renderHook(() => useGeneration());
+    await act(async () => {
+      await result.current.submit('a vase');
+    });
+    await waitFor(() => expect(result.current.phase.state).toBe('done'));
+    expect(result.current.phase).toMatchObject({ state: 'done', partial });
+  });
+});
+
+describe('useGeneration cancel', () => {
+  /** Rejects like fetch does once the request's signal aborts. */
+  function onAbort(signal: AbortSignal): Promise<never> {
+    return new Promise((_, reject) => {
+      signal.addEventListener('abort', () => reject(new DOMException('The operation was aborted.', 'AbortError')));
+    });
+  }
+
+  beforeEach(() => {
+    startGeneration.mockReset();
+    parseSseStream.mockReset();
+  });
+
+  it('stops a streaming run: the phase says cancelled and keeps the run id', async () => {
+    let signal: AbortSignal | undefined;
+    startGeneration.mockImplementation((_req: unknown, s: AbortSignal) => {
+      signal = s;
+      return Promise.resolve({ ok: true, body: {} } as Response);
+    });
+    parseSseStream.mockImplementation(async function* () {
+      yield { kind: 'generation', generationId: 'g7', anonId: 'a1' };
+      yield { kind: 'progress', stage: 'writing_code', message: 'Writing', elapsedMs: 5000 };
+      await onAbort(signal!);
+    });
+    const { result } = renderHook(() => useGeneration());
+    let run: Promise<void> | undefined;
+    act(() => { run = result.current.submit('a bracket'); });
+    await waitFor(() => expect(result.current.events).toHaveLength(2));
+    expect(result.current.phase.state).toBe('running');
+
+    act(() => result.current.cancel());
+    await act(async () => { await run; });
+
+    expect(signal?.aborted).toBe(true);
+    expect(result.current.phase).toEqual({ state: 'error', code: 'cancelled', message: 'Stopped.', generationId: 'g7' });
+    // The steps seen so far stay for the log.
+    expect(result.current.events).toHaveLength(2);
+  });
+
+  it('stops a run whose request has not answered yet, without a network error', async () => {
+    startGeneration.mockImplementation((_req: unknown, s: AbortSignal) => onAbort(s));
+    const { result } = renderHook(() => useGeneration());
+    let run: Promise<void> | undefined;
+    act(() => { run = result.current.submit('a bracket'); });
+    expect(result.current.phase.state).toBe('running');
+
+    act(() => result.current.cancel());
+    await act(async () => { await run; });
+
+    expect(result.current.phase).toEqual({ state: 'error', code: 'cancelled', message: 'Stopped.' });
+  });
+
+  it('does nothing when no run is active', () => {
+    const { result } = renderHook(() => useGeneration());
+    act(() => result.current.cancel());
+    expect(result.current.phase).toEqual({ state: 'idle' });
   });
 });

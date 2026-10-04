@@ -3,12 +3,14 @@
 // src/intent/cutoutValidation.ts
 //
 // Script-time validators for `Shape.cutout(profile, opts)`. Same vocabulary
-// policy as holeValidation: every trigger throws
-// `KernelError('feature.invalid-args', msg, featureId, hint)`.
+// policy as holeValidation: every trigger raises `feature.invalid-args`
+// through the shared `invalidArgs` helper (API + argument path, received
+// value, requirement with units, inline example).
 //
 // Source: spec 2026-05-05-v0.3-slice1-hole-cutout-design §D.2.
 
-import { KernelError } from '../../shared/intent/kernelError';
+import { invalidArgs } from '../../shared/intent/invalidArgs';
+import { formatScalarForError } from '../../shared/intent/types';
 import type { FeatureId, FaceRef, Param } from '../../shared/intent/types';
 import type { FaceSelector } from '../capture/proxy';
 import type { SketchCommand } from '../capture/sketch';
@@ -54,6 +56,10 @@ export function resolveCutoutOpts(opts: EditableCutoutOpts, table: ParamTable): 
   return out;
 }
 
+/** One minimal correct call, inline on every cutout message. */
+const CUTOUT_EXAMPLE =
+  "plate.cutout(sketch().moveTo(0, 0).lineTo(20, 0).lineTo(20, 10).lineTo(0, 10).close(), { face: top, depth: 'through' })";
+
 function isFiniteNumber(n: unknown): n is number {
   return typeof n === 'number' && Number.isFinite(n);
 }
@@ -63,7 +69,9 @@ function isFiniteNumber(n: unknown): n is number {
  *  (tangentArc / threePointsArc / sagittaArc / bulgeArc / radiusArc) are
  *  treated as straight chords for the intersection test. Slice-2 will
  *  add a curve-aware version. */
-function hasStraightSelfIntersection(commands: readonly SketchCommand[]): boolean {
+function hasStraightSelfIntersection(
+  commands: readonly SketchCommand[],
+): { i: number; j: number; at: [number, number] } | undefined {
   // Build the polyline: (x, y) pairs from moveTo + each subsequent endpoint.
   const pts: Array<[number, number]> = [];
   for (const c of commands) {
@@ -71,7 +79,7 @@ function hasStraightSelfIntersection(commands: readonly SketchCommand[]): boolea
     if ('x' in c && 'y' in c) pts.push([c.x.evaluated, c.y.evaluated]);
   }
   // Segments are pts[i] → pts[i+1]; closure adds pts[last] → pts[0].
-  if (pts.length < 4) return false;
+  if (pts.length < 4) return undefined;
   const segs: Array<[[number, number], [number, number]]> = [];
   for (let i = 0; i + 1 < pts.length; i++) segs.push([pts[i], pts[i + 1]]);
   segs.push([pts[pts.length - 1], pts[0]]);
@@ -80,10 +88,10 @@ function hasStraightSelfIntersection(commands: readonly SketchCommand[]): boolea
     for (let j = i + 2; j < segs.length; j++) {
       // Adjacent in the closed loop: (0, last) shares an endpoint with seg[0] and seg[last].
       if (i === 0 && j === segs.length - 1) continue;
-      if (segmentsCross(segs[i], segs[j])) return true;
+      if (segmentsCross(segs[i], segs[j])) return { i, j, at: segs[i][0] };
     }
   }
-  return false;
+  return undefined;
 }
 
 function segmentsCross(
@@ -109,38 +117,52 @@ function cross(o: [number, number], a: [number, number], b: [number, number]): n
 
 export function validateCutoutOpts(opts: CutoutOpts, featureId: FeatureId | undefined): void {
   if (opts.depth === undefined && opts.upToFace === undefined) {
-    throw new KernelError(
-      'feature.invalid-args',
-      'cutout: neither depth nor upToFace was set; one of them is required.',
+    invalidArgs({
+      api: 'cutout(profile, { face, depth })',
+      path: 'opts.depth',
+      gotText: 'neither depth nor upToFace',
+      requires:
+        "exactly one of depth (a number in mm or 'through') or upToFace (a FaceRef); a blind pocket needs a depth",
+      example: CUTOUT_EXAMPLE,
       featureId,
-      "Set either depth (number or 'through') or upToFace; one is required.",
-    );
+    });
   }
   if (opts.depth !== undefined && opts.upToFace !== undefined) {
-    throw new KernelError(
-      'feature.invalid-args',
-      'cutout: both depth and upToFace were set; they are mutually exclusive.',
+    invalidArgs({
+      api: 'cutout(profile, { face, depth, upToFace })',
+      path: 'opts.depth + opts.upToFace',
+      gotText: `depth ${formatScalarForError(opts.depth)} and upToFace ${formatScalarForError(opts.upToFace)} together`,
+      requires: 'exactly one of the two — they are mutually exclusive ways to end the cut',
+      example: CUTOUT_EXAMPLE,
       featureId,
-      'Set depth or upToFace, not both.',
-    );
+    });
   }
   if (typeof opts.depth === 'number') {
     if (!isFiniteNumber(opts.depth) || opts.depth <= 0) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `cutout: depth (${opts.depth}) must be positive when blind.`,
+      invalidArgs({
+        api: 'cutout(profile, { face, depth })',
+        path: 'opts.depth',
+        got: opts.depth,
+        requires:
+          "a finite number > 0 for a blind pocket, or the string 'through' to clip at the back face; a negative depth does not cut the other way",
+        unit: 'mm',
+        example: CUTOUT_EXAMPLE,
         featureId,
-        `cutout depth (${opts.depth}) must be positive when blind. Use 'through' if you want to clip at the back face.`,
-      );
+      });
     }
   }
   if (opts.depthMode !== undefined && opts.depthMode !== 'blind' && opts.depthMode !== 'symmetric') {
-    throw new KernelError(
-      'feature.invalid-args',
-      `cutout: depthMode (${String(opts.depthMode)}) must be 'blind' or 'symmetric'.`,
+    invalidArgs({
+      api: 'cutout(profile, { face, depthMode })',
+      path: 'opts.depthMode',
+      got: opts.depthMode,
+      showType: typeof opts.depthMode !== 'string',
+      requires:
+        "'blind' (default, cuts depth mm inward from the face) or 'symmetric' (cuts depth/2 each side of the face)",
+      example:
+        "plate.cutout(profile, { face: top, depth: 4, depthMode: 'symmetric' })",
       featureId,
-      "cutout depthMode must be 'blind' or 'symmetric'; defaults to 'blind'.",
-    );
+    });
   }
   if (opts.name !== undefined) validateFeatureName(opts.name, featureId);
 }
@@ -153,20 +175,29 @@ export function validateCutoutProfile(
 ): void {
   const closed = commands.some(c => c.kind === 'close');
   if (!closed) {
-    throw new KernelError(
-      'feature.invalid-args',
-      'cutout: profile is not closed.',
+    const last = commands[commands.length - 1];
+    invalidArgs({
+      api: 'cutout(profile, opts)',
+      path: 'profile',
+      gotText: `an open path of ${commands.length} segment(s), last command '${String(last?.kind ?? 'none')}', no close()`,
+      requires:
+        'a closed profile — the last segment must return to the start point and the path must end with .close()',
+      example: CUTOUT_EXAMPLE,
       featureId,
-      'Profile must be a closed sketch. Call .close() on the PathBuilder, or pass an already-closed Sketch.',
-    );
+    });
   }
-  if (hasStraightSelfIntersection(commands)) {
-    throw new KernelError(
-      'feature.invalid-args',
-      'cutout: profile self-intersects.',
+  const crossing = hasStraightSelfIntersection(commands);
+  if (crossing !== undefined) {
+    invalidArgs({
+      api: 'cutout(profile, opts)',
+      path: `profile segment ${crossing.i} × segment ${crossing.j}`,
+      gotText: `a profile whose segment ${crossing.i} (from [${crossing.at[0]}, ${crossing.at[1]}]) crosses segment ${crossing.j}`,
+      requires:
+        'a simple (non-self-intersecting) closed profile; walk the points in one consistent direction and remove the crossing, or split it into two cutouts',
+      unit: 'mm',
+      example: CUTOUT_EXAMPLE,
       featureId,
-      'Cutout profile self-intersects. Inspect the path segments and remove the crossing.',
-    );
+    });
   }
 }
 

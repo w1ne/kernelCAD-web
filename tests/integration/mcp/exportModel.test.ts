@@ -64,6 +64,25 @@ describe('export_model MCP tool', () => {
     expect(statSync(out).size).toBeGreaterThan(0);
   }, 60000);
 
+  it('writes a combined sheet plus parts/<part>.dxf for a multi-part dxf export', async () => {
+    const out = join(tmpDir, 'panels.dxf');
+    const r = await exportModelTool({
+      code: `
+        const cab = assembly('cabinet');
+        cab.part('side', box(18, 300, 500));
+        cab.part('shelf', box(464, 300, 18), { at: [18, 0, 200] });
+        return cab.model();
+      `,
+      output_path: out,
+      format: 'dxf',
+    });
+    expect(r.ok).toBe(true);
+    expect(r.part_files).toEqual([join(tmpDir, 'parts', 'side.dxf'), join(tmpDir, 'parts', 'shelf.dxf')]);
+    expect(r.mesh_files).toBeUndefined();
+    expect(readFileSync(out, 'utf8')).toContain('\nshelf\n');
+    for (const f of r.part_files!) expect(readFileSync(f, 'utf8')).toContain('LWPOLYLINE');
+  }, 60000);
+
   it('writes 3MF with format: "3mf"', async () => {
     const out = join(tmpDir, 'box.3mf');
     const r = await exportModelTool({
@@ -177,6 +196,7 @@ describe('export_model MCP tool', () => {
     // Header must NOT start with "solid" (binary STL convention).
     expect(buf.subarray(0, 5).toString('ascii')).not.toBe('solid');
     // kernelCAD forensic stamp in the 80-byte header.
-    expect(buf.subarray(0, 10).toString('ascii')).toBe('kernelcad ');
+    expect(buf.subarray(0, 10).toString('ascii')).toBe('kernelCAD ');
+    expect(buf.subarray(0, 80).toString('ascii')).toContain('(https://kernelcad.com)');
   }, 60000);
 });

@@ -86,7 +86,7 @@ describe('exportDxf', () => {
     );
     const text = new TextDecoder().decode(bytes);
     expect(text).toMatch(/tolerance: 0\.05 mm \(OCCT tessellation\)/);
-    expect(text).toMatch(/kernelcad \S+ \d{4}-\d{2}-\d{2}/);
+    expect(text).toMatch(/^999\r?\nkernelCAD \S+ \(https:\/\/kernelcad\.com\) \d{4}-\d{2}-\d{2}\r?\n/);
   });
 
   it('emits LWPOLYLINE only — never SPLINE entities', () => {
@@ -133,6 +133,27 @@ describe('exportDxf', () => {
     );
     const dxf = parse(bytes);
     expect(dxf.header.$INSUNITS).toBe(1);
+  });
+
+  it('writes coordinates in the declared unit (numbers x unit = model mm)', () => {
+    // A 50 x 25 mm plate with a bend line at x = 25 mm.
+    const region: Region = {
+      plane: { origin: [0, 0, 0], normal: [0, 0, 1] },
+      outer: [[0, 0], [50, 0], [50, 25], [0, 25]],
+      holes: [],
+      bendLines: [{ start: [25, 0], end: [25, 25], angle: 90, radius: 1, ordinal: 0 }],
+    };
+    const MM_PER = { mm: 1, cm: 10, in: 25.4 } as const;
+    for (const unit of ['mm', 'cm', 'in'] as const) {
+      const dxf = parse(exportDxf({ kind: 'region', region }, { format: 'dxf', unit }));
+      const cut = dxf.entities.find(e => e.type === 'LWPOLYLINE' && e.layer === 'cut')!;
+      const xs = cut.vertices!.map(v => v.x * MM_PER[unit]);
+      const ys = cut.vertices!.map(v => v.y * MM_PER[unit]);
+      expect(Math.max(...xs) - Math.min(...xs), unit).toBeCloseTo(50, 4);
+      expect(Math.max(...ys) - Math.min(...ys), unit).toBeCloseTo(25, 4);
+      const bend = dxf.entities.find(e => e.layer === 'BEND')!;
+      expect(bend.vertices![0].x * MM_PER[unit], unit).toBeCloseTo(25, 4);
+    }
   });
 
   it('accepts the planarWires input shape (outer + holes)', () => {

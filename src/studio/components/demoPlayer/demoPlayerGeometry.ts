@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import type { FaceGeometry } from '../../../shared/worker/workerTypes';
 import type { FeatureMeshSerialized } from '../../../modeling/capture/featureMeshSerialize';
 import type { RenderEnvironmentSpec } from '../../../shared/intent/renderEnvironmentRecord';
+import type { PublishFrameCapture, PublishFrameRequest, PublishStageSpec } from '../../../shared/render/publishPreset';
 import { disposeMaterialDeep } from './buildMaterialFromPBR';
 import { fitDistanceForBounds } from './cameraFit';
 import type { RenderView } from '../../../shared/render/views';
@@ -148,6 +149,13 @@ export interface DemoPlayerWindow {
    *  studio toolbar's preview-only visibility toggle. Pass null to fall
    *  back to the default three-light rig. */
   setRenderEnvironment(spec: RenderEnvironmentSpec | null): Promise<void>;
+  /** Apply (or, with null, remove) the 'publish' preset's studio stage:
+   *  key/fill/rim rig + room IBL, backdrop colour or transparent, soft
+   *  contact shadow. Re-apply after the visible model changes. */
+  setPublishStage(spec: PublishStageSpec | null): void;
+  /** Render one publish frame at the supersampled output size (canvas
+   *  capture, not a viewport screenshot) and return it as a PNG data URL. */
+  capturePublishFrame(req: PublishFrameRequest): PublishFrameCapture;
   /** Debug: dump scene state. */
   dumpScene(): {
     childCount: number;
@@ -357,6 +365,7 @@ export function fitCameraToBounds(
   bounds: { min: [number, number, number]; max: [number, number, number] },
   view: RenderView | 'demo' = 'demo',
   outputAspect?: number,
+  margin?: number,
 ): void {
   const center: [number, number, number] = [
     (bounds.min[0] + bounds.max[0]) / 2,
@@ -387,6 +396,7 @@ export function fitCameraToBounds(
     fovYDeg: camera.fov,
     canvasAspect: camera.aspect,
     outputAspect,
+    margin,
   });
   camera.up.set(up[0], up[1], up[2]);
   camera.position.set(

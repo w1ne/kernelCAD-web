@@ -6,6 +6,7 @@
 // .patternGrid call from structured input and inserts it via the shared
 // addFeature helper, then re-evaluates the script.
 
+import { invalidArgsText } from '../../../shared/intent/invalidArgs';
 import { addFeature } from '../edits/addFeature';
 import { evaluateScriptTool } from './evaluateScript';
 import { validateLinear, validateCircular, validateGridAxis } from '../../../shared/intent/patternValidation';
@@ -43,7 +44,15 @@ type PatternCallResult =
   | { call: string };
 
 function buildLinearCall(input: AddPatternFeatureInput): PatternCallResult {
-  if (!input.linear) return { error: { ok: false, error: "kind: 'linear' requires the `linear` field.", errorCode: 'feature.invalid-args' } };
+  if (!input.linear) {
+    return { error: { ok: false, errorCode: 'feature.invalid-args', error: invalidArgsText({
+      api: "add_pattern_feature({ kind: 'linear', linear })",
+      path: 'linear',
+      gotText: 'nothing',
+      requires: 'a { count, direction, spacing } object whenever kind is \'linear\'',
+      example: "{ kind: 'linear', target: 'plate', linear: { count: 4, direction: [1, 0, 0], spacing: 20 } }",
+    }).message } };
+  }
   const err = validateLinear(input.linear);
   if (err) {
     const code = err.field === 'count'
@@ -55,7 +64,15 @@ function buildLinearCall(input: AddPatternFeatureInput): PatternCallResult {
 }
 
 function buildCircularCall(input: AddPatternFeatureInput): PatternCallResult {
-  if (!input.circular) return { error: { ok: false, error: "kind: 'circular' requires the `circular` field.", errorCode: 'feature.invalid-args' } };
+  if (!input.circular) {
+    return { error: { ok: false, errorCode: 'feature.invalid-args', error: invalidArgsText({
+      api: "add_pattern_feature({ kind: 'circular', circular })",
+      path: 'circular',
+      gotText: 'nothing',
+      requires: 'a { count, axis, angleDeg? } object whenever kind is \'circular\'',
+      example: "{ kind: 'circular', target: 'plate', circular: { count: 6, axis: [0, 0, 1], angleDeg: 360 } }",
+    }).message } };
+  }
   const angleDeg = input.circular.angleDeg ?? 360;
   const err = validateCircular({ count: input.circular.count, axis: input.circular.axis, angleDeg });
   if (err) {
@@ -69,7 +86,15 @@ function buildCircularCall(input: AddPatternFeatureInput): PatternCallResult {
 }
 
 function buildGridCall(input: AddPatternFeatureInput): PatternCallResult {
-  if (!input.grid) return { error: { ok: false, error: "kind: 'grid' requires the `grid` field.", errorCode: 'feature.invalid-args' } };
+  if (!input.grid) {
+    return { error: { ok: false, errorCode: 'feature.invalid-args', error: invalidArgsText({
+      api: "add_pattern_feature({ kind: 'grid', grid })",
+      path: 'grid',
+      gotText: 'nothing',
+      requires: 'a { x, y } object, each axis { count, direction, spacing }, whenever kind is \'grid\'',
+      example: "{ kind: 'grid', target: 'plate', grid: { x: { count: 4, direction: [1, 0, 0], spacing: 20 }, y: { count: 3, direction: [0, 1, 0], spacing: 15 } } }",
+    }).message } };
+  }
   const xErr = validateGridAxis('x', input.grid.x);
   if (xErr) {
     const code = xErr.field.endsWith('count') ? 'feature.pattern.count-out-of-range' : 'feature.invalid-args';
@@ -87,7 +112,14 @@ function buildPatternCall(input: AddPatternFeatureInput): PatternCallResult {
   if (input.kind === 'linear') return buildLinearCall(input);
   if (input.kind === 'circular') return buildCircularCall(input);
   if (input.kind === 'grid') return buildGridCall(input);
-  return { error: { ok: false, error: `kind must be 'linear' | 'circular' | 'grid'; got ${String(input.kind)}.`, errorCode: 'feature.invalid-args' } };
+  return { error: { ok: false, errorCode: 'feature.invalid-args', error: invalidArgsText({
+    api: 'add_pattern_feature({ kind })',
+    path: 'kind',
+    got: input.kind,
+    showType: typeof input.kind !== 'string',
+    requires: "one of 'linear', 'circular' or 'grid', with the matching options field filled in",
+    example: "{ kind: 'linear', target: 'plate', linear: { count: 4, direction: [1, 0, 0], spacing: 20 } }",
+  }).message } };
 }
 
 export async function addPatternFeatureTool(
@@ -95,7 +127,15 @@ export async function addPatternFeatureTool(
 ): Promise<AddPatternFeatureOutput> {
   // 1. Kind-arg combo validation.
   if (!input.target || typeof input.target !== 'string') {
-    return { ok: false, error: 'target must be a non-empty string.', errorCode: 'feature.invalid-args' };
+    return { ok: false, errorCode: 'feature.invalid-args', error: invalidArgsText({
+      api: 'add_pattern_feature({ target })',
+      path: 'target',
+      got: input.target,
+      showType: typeof input.target !== 'string',
+      requires:
+        'a non-empty string naming the variable the pattern is applied to — it must already be declared in `code`',
+      example: "{ kind: 'linear', target: 'plate', linear: { count: 4, direction: [1, 0, 0], spacing: 20 } }",
+    }).message };
   }
   const built = buildPatternCall(input);
   if ('error' in built) return built.error;

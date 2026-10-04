@@ -41,6 +41,8 @@ export type FetchPartOutput =
       kind: 'link_out';
       url: string;
       instruction: string;
+      /** Referral disclosure, present only when `url` carries a referral tag. */
+      disclosure?: string;
     }
   | { ok: false; error: 'url_host_not_allowed'; host: string | null }
   | { ok: false; error: string; errorCode: string; errorHint: string };
@@ -76,6 +78,7 @@ async function fetchByUrl(url: string): Promise<FetchPartOutput> {
         kind: 'link_out',
         url: outcome.url,
         instruction: outcome.instruction,
+        ...(outcome.disclosure !== undefined ? { disclosure: outcome.disclosure } : {}),
       };
     }
     const { record } = outcome.result;

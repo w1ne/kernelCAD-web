@@ -1,0 +1,13 @@
+{
+  "taskId": "so100",
+  "heroArtifact": "so100",
+  "script": "examples/robot-arm/so100/so100-arm.kcad.ts",
+  "capturedAt": "2026-09-30T15:18:27.349Z",
+  "durationMs": 8000,
+  "capture": [
+    "node --max-old-space-size=8192 dist/cli/index.js animate examples/robot-arm/so100/so100-arm.kcad.ts docs/demos/landing-hero/so100/demo.mp4 --fps 12 --lock-frame --backdrop '#0a1628' --no-verify",
+    "ffmpeg -ss 5.2 -i docs/demos/landing-hero/so100/demo.mp4 -frames:v 1 docs/demos/landing-hero/so100/hero-frame.png"
+  ],
+  "catalogSource": "memorable-builds-policy/v0.5",
+  "overrideApprovedBy": "owner: pinned the SO-100 gripper as the kernelcad.com landing hero"
+}

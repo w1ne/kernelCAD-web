@@ -88,7 +88,7 @@ describe('static gallery landing page', () => {
     expect(galleryIdx).toBeGreaterThan(pricingIdx);
   });
 
-  it('renders gallery tiles as posters before upgrading them to rotating model-viewer elements', () => {
+  it('renders curated gallery tiles as uniform cards that upgrade to rotating model-viewer elements', () => {
     const html = readFileSync(path.resolve(__dirname, '../site/index.html'), 'utf8');
     const redirects = readFileSync(path.resolve(__dirname, '../site/_redirects'), 'utf8');
 
@@ -96,15 +96,16 @@ describe('static gallery landing page', () => {
     expect(html).toContain('auto-rotate');
     expect(html).toContain("viewer.setAttribute('rotation-per-second', '20deg')");
     expect(html).toContain("viewer.setAttribute('src', cacheKeyedUrl(entry.modelUrl, galleryCacheKey))");
-    expect(html).toContain("viewer.setAttribute('poster', cacheKeyedUrl(entry.posterUrl, galleryCacheKey))");
     expect(html).toContain('function upgradeGalleryTilesNearViewport(grid, galleryCacheKey)');
     expect(html).toContain("tile.addEventListener('pointerenter'");
     expect(html).toContain("tile.addEventListener('focus'");
-    const renderLoop = html.slice(html.indexOf('for (const entry of g.entries)'), html.indexOf('grid.appendChild(tile);'));
-    expect(renderLoop).toContain('class="tile-poster"');
-    expect(renderLoop).toContain('class="tile-studio-link"');
-    expect(renderLoop).toContain('href="${entry.studioUrl}"');
-    expect(renderLoop).toContain('Open in Studio');
+    // Uniform cards: nothing on top of the image; the whole card is the action.
+    const renderLoop = html.slice(
+      html.indexOf('function renderCuratedCards('),
+      html.indexOf('function wireLightbox('),
+    );
+    expect(renderLoop).toContain("tag: 'button'");
+    expect(renderLoop).not.toContain('tile-studio-link');
     expect(renderLoop).not.toContain('<model-viewer');
     expect(renderLoop).not.toContain('cacheKeyedUrl(entry.modelUrl, galleryCacheKey)');
     expect(html).toContain("fetch('/gallery.json')");
@@ -118,7 +119,7 @@ describe('static gallery landing page', () => {
     expect(html).toContain('<div class="lightbox-stage"></div>');
     expect(html).toContain('function mountLightboxModel(entry, galleryCacheKey)');
     expect(html).toContain("viewer.setAttribute('src', cacheKeyedUrl(entry.modelUrl, galleryCacheKey))");
-    expect(html).toContain('class="lightbox-studio-link"');
+    expect(html).toContain('lightbox-studio-link" href="#"');
     expect(html).toContain('Free projects are public by link');
     expect(redirects).toContain('/demo-poster.png /public/demo-poster.png 200');
     expect(redirects).toContain('/gallery.json  /public/gallery.json   200');
@@ -150,15 +151,14 @@ describe('static gallery landing page', () => {
     const html = readFileSync(path.resolve(__dirname, '../site/index.html'), 'utf8');
 
     expect(html).toContain("entry.slug === 'royal-pop-pocket-watch'");
-    expect(html).toContain('class="tile-poster"');
     expect(html).toContain("initial: '0deg 158deg auto'");
     expect(html).toContain("min: '-16deg 158deg auto'");
     expect(html).toContain("max: '16deg 158deg auto'");
     expect(html).toContain('function animateRoyalWatchFace(viewer)');
     expect(html).toContain('Math.sin(now / 1200) * 14');
     expect(html).toContain('`${theta.toFixed(2)}deg 158deg auto`');
-    expect(html).toContain("if (!orbit.faceForward)");
-    expect(html).toContain('if (orbit.faceForward) animateRoyalWatchFace(viewer)');
+    expect(html).toContain('if (!orbit.faceForward && !prefersReducedMotion)');
+    expect(html).toContain('if (orbit.faceForward && !prefersReducedMotion) animateRoyalWatchFace(viewer)');
     expect(html).toContain('mountLightboxModel(entry, galleryCacheKey)');
     expect(html).toContain("viewer.setAttribute('min-camera-orbit', orbit.min)");
     expect(html).toContain("viewer.setAttribute('max-camera-orbit', orbit.max)");
@@ -179,5 +179,28 @@ describe('static gallery landing page', () => {
     expect(stack).toContain('href="https://kernelcad.com"');
     expect(stack).toContain('href="https://koamtachi.com"');
     expect(stack).toContain('href="https://shylenko.com"');
+  });
+
+  it('sends /gallery to the app community gallery and links it from the nav and footer', () => {
+    const redirects = readFileSync(path.resolve(__dirname, '../site/_redirects'), 'utf8');
+    const rules = redirects
+      .split('\n')
+      .map(l => l.trim())
+      .filter(l => l && !l.startsWith('#'))
+      .map(l => l.split(/\s+/));
+    const exact = rules.findIndex(r => r[0] === '/gallery');
+    const slash = rules.findIndex(r => r[0] === '/gallery/');
+    const assets = rules.findIndex(r => r[0] === '/gallery/*');
+    expect(rules[exact]).toEqual(['/gallery', 'https://app.kernelcad.com/gallery', '301']);
+    expect(rules[slash]).toEqual(['/gallery/', 'https://app.kernelcad.com/gallery', '301']);
+    // First match wins: both must come before the curated-asset splat.
+    expect(exact).toBeLessThan(assets);
+    expect(slash).toBeLessThan(assets);
+
+    const html = readFileSync(path.resolve(__dirname, '../site/index.html'), 'utf8');
+    const nav = html.slice(html.indexOf('<div class="nav-links">'), html.indexOf('</nav>'));
+    expect(nav).toContain('<a href="/gallery">gallery</a>');
+    const footer = html.slice(html.indexOf('<footer class="footer">'), html.indexOf('</footer>'));
+    expect(footer).toContain('<a href="/gallery">gallery</a>');
   });
 });

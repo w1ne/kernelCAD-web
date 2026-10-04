@@ -39,6 +39,13 @@ import {
 import type { FeatureKind } from '../../../shared/intent/types';
 import { HelicalSweepArgsError, polygonWireXY, sweepProfileAlongHelix } from './helicalSweep';
 import { isoInternalGrooveProfile, isoMinorRadius, profileHalfExtent } from './isoThread';
+import { faceFrameOrigin } from './faceFrame';
+import {
+  findEntryMisses,
+  findUncutBores,
+  holeCutMissingDiagnostic,
+  type HoleCutRequest,
+} from './holeCutCheck';
 
 export interface HoleLowerResult {
   backend: OcctBackend;
@@ -104,7 +111,9 @@ function resolveEntry(
   const faceResult = pickFace(feature, target, records);
   if ('error' in faceResult) return faceResult;
   const face = faceResult;
-  const centroid = vecOf(face.center);
+  // (u, v) origin: centroid of the face with earlier interior cuts filled in,
+  // so a second hole on the same face is not shifted by the first.
+  const centroid = faceFrameOrigin(face);
   // replicad Face exposes normalAt(); for planar faces this is constant.
   // Some replicad face implementations expose `.normalAt()` returning a
   // Vector with .x/.y/.z. Defensive: read x/y/z fields.
@@ -554,8 +563,79 @@ export function lowerHole(
     return { backend: target, diagnostics };
   }
 
+  const requests = [requestOf(0, u, v, built.bore)];
+  const entryMiss = entryMissDiagnostic(feature, 'hole', entry, requests);
+  if (entryMiss) {
+    diagnostics.push(entryMiss);
+    return { backend: target, diagnostics };
+  }
+
   const meta = feature.metadata as { name?: string; ordinal?: number } | undefined;
-  return runCutAndClassify(target, [built.tool], [built.bore], feature.id, feature.kind, meta?.name, meta?.ordinal, diagnostics);
+  const res = runCutAndClassify(target, [built.tool], [built.bore], feature.id, feature.kind, meta?.name, meta?.ordinal, diagnostics);
+  return verifyBoresCut(res, target, feature, 'hole', entry, requests);
+}
+
+// ---------------------------------------------------------------------------
+// Fail-closed bore checks (see holeCutCheck.ts)
+// ---------------------------------------------------------------------------
+
+function requestOf(index: number, u: number, v: number, bore: BoreFrame): HoleCutRequest {
+  return {
+    index, u, v,
+    entryPoint: bore.entryPoint,
+    axisIntoBody: bore.axisIntoBody,
+    depth: bore.effectiveDepth,
+    diameter: bore.diameter,
+  };
+}
+
+/** The entry face as the author named it, for diagnostics. */
+function faceLabelOf(feature: FeatureRecord): string {
+  const ref = (feature.inputs.face as { ref?: { kind?: string; face?: string } } | undefined)?.ref;
+  return ref?.kind === 'canonical' && typeof ref.face === 'string' ? ref.face : 'the entry face';
+}
+
+function frameOf(feature: FeatureRecord, entry: ResolvedEntry) {
+  return {
+    faceLabel: faceLabelOf(feature),
+    origin: entry.centroid,
+    uBasis: entry.uBasis,
+    vBasis: entry.vBasis,
+    face: entry.face,
+  };
+}
+
+/** Pre-cut: every bore must have depth and a centre on the entry face. */
+function entryMissDiagnostic(
+  feature: FeatureRecord,
+  opLabel: 'hole' | 'holes',
+  entry: ResolvedEntry,
+  requests: readonly HoleCutRequest[],
+): CompilerDiagnostic | null {
+  const misses = findEntryMisses(entry.face, requests);
+  if (misses.length === 0) return null;
+  return holeCutMissingDiagnostic({
+    featureId: feature.id, opLabel, frame: frameOf(feature, entry), misses, total: requests.length,
+  });
+}
+
+/** Post-cut: material must be gone on every bore axis. A bore the boolean
+ *  silently dropped fails the feature instead of lowering as a success. */
+function verifyBoresCut(
+  res: HoleLowerResult,
+  target: OcctBackend,
+  feature: FeatureRecord,
+  opLabel: 'hole' | 'holes',
+  entry: ResolvedEntry,
+  requests: readonly HoleCutRequest[],
+): HoleLowerResult {
+  if (res.backend === target || res.diagnostics.some(d => d.severity === 'error')) return res;
+  const misses = findUncutBores(res.backend, requests);
+  if (misses.length === 0) return res;
+  res.diagnostics.push(holeCutMissingDiagnostic({
+    featureId: feature.id, opLabel, frame: frameOf(feature, entry), misses, total: requests.length,
+  }));
+  return { backend: target, diagnostics: res.diagnostics };
 }
 
 // Slice-3: positions are stored as Array<{u: Param, v: Param}> so that any
@@ -703,10 +783,18 @@ export function lowerHoles(
     return { backend: target, diagnostics };
   }
 
+  const requests = positions.map((p, i) => requestOf(i, p.u, p.v, built.bores[i]));
+  const entryMiss = entryMissDiagnostic(feature, 'holes', entry, requests);
+  if (entryMiss) {
+    diagnostics.push(entryMiss);
+    return { backend: target, diagnostics };
+  }
+
   const fused = fuseBatchTools(built.tools, params.thread?.modeled);
 
   const meta2 = feature.metadata as { name?: string; ordinal?: number } | undefined;
-  return runCutAndClassify(target, [fused], built.bores, feature.id, feature.kind, meta2?.name, meta2?.ordinal, diagnostics);
+  const res = runCutAndClassify(target, [fused], built.bores, feature.id, feature.kind, meta2?.name, meta2?.ordinal, diagnostics);
+  return verifyBoresCut(res, target, feature, 'holes', entry, requests);
 }
 
 /** Map a tool-building failure (thread groove, countersink cone, sub-tool

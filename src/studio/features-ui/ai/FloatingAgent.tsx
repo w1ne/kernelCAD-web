@@ -112,7 +112,7 @@ export function FloatingAgent() {
                 </div>
             )}
 
-            <div className="bg-[#252526] p-2 text-[10px] text-gray-500 flex justify-between px-4">
+            <div className="bg-[#252526] p-2 text-2xs text-gray-500 flex justify-between px-4">
                 <span>Cmd+K to Close</span>
                 <span>Enter to Submit</span>
             </div>

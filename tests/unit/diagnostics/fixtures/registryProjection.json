@@ -663,10 +663,10 @@
       }
     },
     "export.dxf.non-planar": {
-      "template": "DXF export requires planar input. Call list_faces to pick a planar face, or return a Region via Shape.flattenPattern().",
+      "template": "DXF needs a flat part (plate, panel, extruded profile). For any other part use `options.section: { axis, at }` for a cross-section, `flatten_pattern` for sheet metal, or STEP/STL for 3D.",
       "nextAction": {
-        "kind": "call-introspection-tool",
-        "tool": "list_faces"
+        "kind": "fix-arg",
+        "field": "options.section"
       }
     },
     "export.3mf.not-watertight": {
@@ -1102,10 +1102,10 @@
       }
     },
     "assembly.solver.did-not-converge": {
-      "template": "UNSUPPORTED on v0.6: articulated closed-loop FK (4-bar etc.). Do not invent gear-contact types. Rewrite as an open chain (drop one loop-closing mate; keep a ground/base root) or use fastened-only mates in the loop. limitsDeg/jointSupport help open chains only.",
+      "template": "UNSUPPORTED on v0.6: articulated closed-loop FK (4-bar / scissor / pin_slot loop). Do not invent joint.scissorLift or gear-contact types. Rewrite as an open chain (drop one loop-closing mate; keep a ground/base root) or use fastened-only mates in the loop. For industrial scissor tables: lookup_cookbook('scissor lift closed loop'). limitsDeg/jointSupport help open chains only.",
       "nextAction": {
         "kind": "rewrite-feature",
-        "guidance": "rewrite as an open chain or fastened-only loop; do not invent gear-contact types"
+        "guidance": "rewrite as an open chain or fastened-only loop; for scissor tables lookup_cookbook(scissor lift closed loop); do not invent joint.scissorLift"
       }
     },
     "assembly.pose.out-of-limits": {
@@ -1361,7 +1361,7 @@
       }
     },
     "mechanism.orphan-part": {
-      "template": "Disconnected components in the assembly graph. Connect every orphan body with connectors + mates/joints: shafts/hinges/gears → partRef.connector(name, { type: 'axis', origin: { kind: 'vec3', value: [x,y,z] }, axis: [...] }) then arm.mate(name, 'a.conn', 'b.conn', 'revolute'); rigid mounts → type: 'frame' + mate(..., 'fastened'); or use arm.revolute/.prismatic/.ball/.fixed. Connector types are only frame|axis|planar|ball.",
+      "template": "Disconnected components in the assembly graph. Connect every orphan body with connectors + mates/joints: shafts/hinges/gears → partRef.connector(name, { type: 'axis', origin: { kind: 'vec3', value: [x,y,z] }, axis: [...] }) then arm.mate(name, 'a.conn', 'b.conn', 'revolute'); rigid mounts → type: 'frame' + mate(..., 'fastened'); or use arm.revolute/.prismatic/.ball/.fixed. Connector types are only frame|axis|planar|ball. Only a mechanism (an assembly with mates, joints, transmissions or a solvedModel call) needs every part linked; if a part is deliberately free (a loose accessory, a display or print-layout part), do not invent a mate — pass { skipMechanismCheck: true } to evaluate_script.",
       "nextAction": {
         "kind": "rewrite-feature",
         "guidance": "connect disconnected bodies with axis+revolute (shafts/hinges/gears) or frame+fastened (rigid), or arm.revolute/.prismatic/.ball/.fixed joint primitives"
@@ -2723,8 +2723,8 @@
       "field": "options.format"
     },
     "export.dxf.non-planar": {
-      "kind": "call-introspection-tool",
-      "tool": "list_faces"
+      "kind": "fix-arg",
+      "field": "options.section"
     },
     "export.3mf.not-watertight": {
       "kind": "rewrite-feature",
@@ -2974,7 +2974,7 @@
     },
     "assembly.solver.did-not-converge": {
       "kind": "rewrite-feature",
-      "guidance": "rewrite as an open chain or fastened-only loop; do not invent gear-contact types"
+      "guidance": "rewrite as an open chain or fastened-only loop; for scissor tables lookup_cookbook(scissor lift closed loop); do not invent joint.scissorLift"
     },
     "assembly.pose.out-of-limits": {
       "kind": "fix-arg",

@@ -3,6 +3,7 @@
 import { exportTool } from '../tools/export';
 import { listApiTool } from '../tools/listApi';
 import { listDiagnosticCodesTool } from '../tools/listDiagnosticCodes';
+import { PRINTER_PROFILE_IDS } from '../../../kernel/export/gcode/printerProfiles';
 import type { ToolRegistryEntry } from './types';
 
 export const referenceExportToolEntries: ToolRegistryEntry[] = [
@@ -40,14 +41,27 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
       description:
         'Use this when you need to export geometry to a file. One exporter, selected by `target`:\n' +
         "- target:'model' — export the script geometry to one file. Pass { file | code }, a required { output_path }, and { format }. " +
-        'Supported formats: stl (binary STL mesh), step (BREP CAD interchange), dxf (planar laser/waterjet profile from a Region or planar face), ' +
-        '3mf (slicer-friendly mesh with per-part colors), glb (web-viewer / AR with PBR materials), ' +
+        'Supported formats: stl (binary STL mesh), step (BREP CAD interchange), ' +
+        'dxf (2D cut file for laser / waterjet / CNC: a flat part — plate, panel, extruded profile, in any orientation — exports its outline and holes in its own plane with exact arcs and circles; '
+        + 'a sheet-metal part or a returned Region exports its flat pattern; options.section { axis: "x"|"y"|"z", at } exports the cross-section of any part in world coordinates (plans, profiles); '
+        + "a multi-part model (cut list) writes all parts side by side on output_path, one layer per part, plus parts/<part>.dxf per part (reported in part_files; options.layout 'sheet' writes the combined sheet only); "
+        + 'any other part fails with export.dxf.non-planar), ' +
+        "3mf (slicer-friendly mesh: one named object per part, colours as core-spec basematerials named by the part's engineering material; " +
+        "options.arrange 'plate' packs parts on the bed at Z=0 without overlap (options.orient puts each part's largest flat face down), 'assembled' keeps them together as one multi-part object for multi-colour prints; " +
+        "options.slicer 'bambu' | 'orca' | 'prusa' adds that slicer's per-object name + filament-slot sidecar — slot N is the Nth distinct colour/material), " +
+        "options.infill { fromFea: '<study>' | true, bands?, pattern? } = stress-graded FDM infill (requires the local CalculiX + gmsh toolchain; without it the export fails with fea.solver.unavailable): " +
+        'solves the feaStudy and writes Orca/Bambu modifier volumes, each with its own sparse_infill_density; the result carries infill { bands, saving, images }), ' +
+        'glb (web-viewer / AR with PBR materials), ' +
         'svg-drawing (third-angle engineering-drawing sheet: front/top/left + isometric views, hidden edges dashed, tangent edges thin, ' +
         'overall bounding-box dimensions, title block; assemblies are drawn with inter-part occlusion; pass options.annotations to dimension specific features instead of the bounding box; ' +
         'pass options.exploded { factor, mode } to explode the isometric cell, options.balloons to number parts from the BOM, and options.partsList for an item/name/qty/material table above the title block). ' +
         'overall bounding-box dimensions, title block; assemblies are drawn with inter-part occlusion; pass options.annotations to dimension specific features instead of the bounding box, ' +
         'options.autoAnnotate to derive datums A/B/C, grouped hole callouts with position tolerances, hole positions, overall size, radius and chamfer callouts, flatness and an ISO 2768 note from the geometry ' +
         '(the result carries drawing_report with placed / overlapped counts), and options.sections for real section views on any cutting plane). ' +
+        'pdf-drawing (the same sheet — views, dashed hidden lines, dimensions, hole callouts, GD&T, sections, parts list — as a printable vector PDF on a standard sheet, one call: ' +
+        'ISO a4|a3|a2|a1|a0 or ANSI ansi-a…ansi-e landscape, default a3, or sheet "auto" / "auto-ansi" for the smallest sheet that holds the views at 1:1; the drawing scale is picked to fit; ' +
+        'projection "third" (default) or "first" arranges the views and draws the matching symbol; a full title block carries title, part name, material, scale, units, sheet size, date and revision, ' +
+        'settable through options.title / partName / material / revision / date; autoAnnotate is on unless options.annotations is given). ' +
         'Robot descriptions: urdf (tree-topology robot description), srdf (motion-planning semantics layered over the URDF), sdf-gazebo (SDFormat 1.10 with native ball joints, closed loops, and solved per-link poses), ' +
         "usd-isaac (ASCII USD physics stage: PhysicsArticulationRootAPI root, one rigid body per link at its solved pose with mass / centre of mass / principal inertia, " +
         'PhysicsFixedJoint/PhysicsRevoluteJoint/PhysicsPrismaticJoint per mate with token axis, two-sided joint frames and limits, UsdPreviewSurface materials from the part appearance, ' +
@@ -58,7 +72,7 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
         'STL exports run a watertight verify by default; failures return ok: false with export.mesh.not-watertight ' +
         '(open-edge count + up to 5 crack-cluster locations) but the file is still written so the broken mesh can be inspected. ' +
         'Optional { feature_id } selects which feature to export (default: last). ' +
-        'Optional { options } carries per-format options bag (see the kernelcad-mcp skill for the per-format keys: dxf layers/tolerance/unit, 3mf printUnit/embedSource, glb axis/draco).\n' +
+        'Optional { options } carries per-format options bag (see the kernelcad-mcp skill for the per-format keys: dxf layers/tolerance/unit/section/layout, 3mf printUnit/embedSource/arrange/orient/slicer/printer/infill, glb axis/draco).\n' +
         "- target:'part' — export solved-assembly parts as individual binary STL files in their modeled (world-frame) positions. " +
         'Pass { file | code }, plus { part, output_path } for one part or { output_dir } for all parts ' +
         '(files land at <output_dir>/<part>.stl). A watertight verify runs on every exported mesh by default ' +
@@ -77,7 +91,7 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
           output_path: { type: 'string', description: "Destination path. target:'model' — the export file (required). target:'part' — single-part .stl path." },
           format: {
             type: 'string',
-            enum: ['stl', 'step', 'dxf', '3mf', 'glb', 'svg-drawing', 'urdf', 'srdf', 'sdf-gazebo', 'usd-isaac', 'bom-csv', 'bom-json'],
+            enum: ['stl', 'step', 'dxf', '3mf', 'glb', 'svg-drawing', 'pdf-drawing', 'urdf', 'srdf', 'sdf-gazebo', 'usd-isaac', 'bom-csv', 'bom-json'],
             description: "target:'model' — output file format (required for that target).",
           },
           feature_id: { type: 'string', description: "target:'model' — optional FeatureId to export; defaults to last." },
@@ -85,10 +99,10 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
             type: 'object',
             description:
               "target:'model' — optional per-format options bag. Discriminator options.format must equal top-level format. " +
-              'dxf: { layers?, unit?: "mm"|"cm"|"in", tolerance? }. ' +
-              '3mf: { printUnit?: "mm"|"cm"|"in", embedSource? }. ' +
+              'dxf: { layers?, unit?: "mm"|"cm"|"in", tolerance?, section?: { axis: "x"|"y"|"z", at: mm }, layout?: "per-part"|"sheet" }. ' +
+              '3mf: { printUnit?: "mm"|"cm"|"in", embedSource?, arrange?: "none"|"plate"|"assembled", orient?: boolean, slicer?: "generic"|"bambu"|"orca"|"prusa", printer?: printer profile id, one of ' + PRINTER_PROFILE_IDS.map(id => `"${id}"`).join('|') + ' (default "generic-fdm"; sets the bed for arrange and the slicer default; an unknown id is refused with the valid list; CLI: kernelcad print printers) }; parts that do not fit the bed are still written and reported as warn diagnostics export.3mf.plate-overflow / export.3mf.exceeds-bed, whose hint names the smallest profiles the layout fits on. ' +
               'glb: { axis?: "y-up"|"z-up", draco?: false }. ' +
-              'svg-drawing: { sheet?: "a4"|"a3", modelName?, date?, annotations?, exploded?: { factor, mode? }, balloons?, partsList?, sections?, autoAnnotate? }. ' +
+              'svg-drawing: { sheet?: "a4"|"a3" (or any pdf-drawing sheet), projection?, titleBlock?: { title?, partName?, material?, revision? }, modelName?, date?, annotations?, exploded?: { factor, mode? }, balloons?, partsList?, sections?, autoAnnotate? }. ' +
               'svg-drawing annotations is an array of authored dimensions/notes, each '
               + '{ kind: "linear"|"radius"|"diameter"|"angular"|"note", view?: "front"|"top"|"left"|"iso", text?, offset? } plus '
               + 'kind-specific geometry: linear { from, to }, radius/diameter { edge: EdgeQuery }, angular { from: EdgeQuery, to: EdgeQuery }, note { at, text }. '
@@ -97,7 +111,15 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
               + 'svg-drawing sections is an array of { plane: "xy"|"xz"|"yz"|{ origin, normal }, label } (any non-zero normal). '
               + 'svg-drawing autoAnnotate is true or { tolerance?: "ISO2768-f"|"ISO2768-m"|"ISO2768-c", datums?: "auto"|[{ label, face: FaceQuery }], '
               + 'include?: ["datums"|"flatness"|"holes"|"hole-positions"|"overall"|"fillets"|"chamfers"|"general-tolerance"] }; '
-              + 'datums and tolerances declared in the script with shape.datum() / shape.tolerance() override the automatic ones.',
+              + 'datums and tolerances declared in the script with shape.datum() / shape.tolerance() override the automatic ones. '
+              + 'pdf-drawing: { sheet?: "a4"|"a3"|"a2"|"a1"|"a0"|"ansi-a"|"ansi-b"|"ansi-c"|"ansi-d"|"ansi-e"|"auto"|"auto-ansi" (default "a3"), '
+              + 'projection?: "third"|"first", title?, partName?, material?, revision?, date? (default today), modelName?, '
+              + 'annotations?, sections?, exploded?, balloons?, partsList?, autoAnnotate? (default true unless annotations are given) } — the svg-drawing keys mean the same. '
+              + 'svg-drawing and pdf-drawing also take style?: "mechanical" (default, the part sheet) | "architectural" (a floor plan for a building or room model: '
+              + 'section about 1 m above the floor with filled cut walls, wall / opening chain dimensions and overall sizes, room labels with net area, scale bar, north arrow; '
+              + 'millimetres, or feet-inches when the model is in whole feet / inches) and plan?: { units?: "metric"|"imperial", cutHeight?: mm above the floor, '
+              + 'rooms?: [{ name, at: [x, y] }], northDeg?: degrees clockwise from sheet up }. A building-sized model drawn in the default style gets a '
+              + 'drawing.style.architectural-suggested warning.',
           },
           part: { type: 'string', description: "target:'part' — part name for single-part export, or 'all'." },
           output_dir: { type: 'string', description: "target:'part' — destination directory (all-parts mode); files are <dir>/<part>.stl." },

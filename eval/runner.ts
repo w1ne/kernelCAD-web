@@ -20,6 +20,14 @@ const VARIANT_TEMPERATURES = [0.2, 0.5, 0.7, 0.9];
 
 export { BEST_OF_N };
 
+/**
+ * How the best-of-N fan-out picks its winner.
+ * - 'oracle': gate stages, then the task harness score (the default).
+ * - 'consensus': verifier-free geometric medoid (src/agent/loop/consensus.ts);
+ *   the harness is NOT consulted, so the measured score is not selected for.
+ */
+export type BestOfNSelector = 'oracle' | 'consensus';
+
 /** Variant index → sampling temperature; undefined on repair turns (no variant). */
 export function variantTemperature(variant: number | undefined): number | undefined {
   if (variant === undefined) return undefined;
@@ -51,6 +59,8 @@ export interface RunTaskArgs {
    * deterministic.
    */
   candidates?: number;
+  /** Best-of-N winner selection when candidates > 1. Default 'oracle'. */
+  selector?: BestOfNSelector;
   maxAttempts?: number;
   maxTokens?: number;
   /** Sent on every call when candidates <= 1 (sweep protocol temperature). */
@@ -66,6 +76,8 @@ export interface GenerateCaseArgs {
   startedAt: string;
   cookbook?: CookbookInjection;
   candidates?: number;
+  /** Best-of-N winner selection when candidates > 1. Default 'oracle'. */
+  selector?: BestOfNSelector;
   maxAttempts?: number;
   maxTokens?: number;
   /** Sent on every call when candidates <= 1 (sweep protocol temperature). */
@@ -105,6 +117,11 @@ export async function generateCase(args: GenerateCaseArgs): Promise<GenerateCase
 
   const candidates = args.candidates ?? 1;
   const maxTokens = args.maxTokens ?? MAX_TOKENS;
+  const consensus = candidates > 1 && args.selector === 'consensus';
+  // Lazy: the in-process OCCT executor is only loaded for consensus runs.
+  const executeCandidate = consensus
+    ? (await import('../src/agent/mcp/tools/consensusCandidates.js')).executeConsensusCandidate
+    : undefined;
 
   const loopResult = await runClosedLoop({
     prompt,
@@ -113,7 +130,11 @@ export async function generateCase(args: GenerateCaseArgs): Promise<GenerateCase
     buildRepairPrompt,
     maxAttempts: args.maxAttempts ?? MAX_ATTEMPTS,
     candidates,
-    scoreCandidate: async (scriptPath, report) => {
+    ...(executeCandidate !== undefined
+      ? { candidateGeometry: (scriptPath: string) => executeCandidate({ file: scriptPath }) }
+      : {}),
+    // Consensus is verifier-free: the harness never ranks candidates.
+    scoreCandidate: consensus ? undefined : async (scriptPath, report) => {
       if (!report.ok) return null;
       try {
         const ev = await evaluateScript(scriptPath);
@@ -156,6 +177,15 @@ export async function generateCase(args: GenerateCaseArgs): Promise<GenerateCase
       return { text: resp.text, tokensIn: resp.tokens_in, tokensOut: resp.tokens_out };
     },
     onEvent: (e) => {
+      if (e.type === 'best_of_n') {
+        events.push({
+          kind: 'best_of_n',
+          selector: e.selector ?? 'gates-oracle',
+          winnerIndex: e.winnerIndex,
+          candidates: e.candidates,
+          ...(e.reason !== undefined ? { reason: e.reason } : {}),
+        });
+      }
       if (e.type === 'gate_report') {
         const failing = e.report.verdicts.filter((v) => !v.ok);
         events.push({
@@ -277,6 +307,7 @@ export async function runTask(args: RunTaskArgs): Promise<TaskResult> {
     startedAt: args.startedAt,
     cookbook: args.cookbook,
     candidates: args.candidates,
+    selector: args.selector,
     maxAttempts: args.maxAttempts,
     maxTokens: args.maxTokens,
     temperature: args.temperature,

@@ -14,6 +14,15 @@ import {
   fetchProjectRevisionBySlug,
   listProjectRevisions,
   restoreProjectRevision,
+  fetchGallery,
+  fetchProjectGalleryState,
+  setProjectGalleryListed,
+  reportProject,
+  remixProject,
+  GALLERY_RENDER_REQUIRED,
+  type GalleryPage,
+  fetchAdminStats,
+  ApiError,
 } from './apiClient';
 
 describe('setProjectPrivacy', () => {
@@ -239,5 +248,113 @@ describe('restoreProjectRevision', () => {
     fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ version: 1 }) });
     await restoreProjectRevision('a/b', 1);
     expect(fetchMock.mock.calls[0]![0]).toBe('https://api.kernelcad.com/api/v1/projects/a%2Fb/revisions/1/restore');
+  });
+});
+
+describe('gallery + remix client', () => {
+  const fetchMock = vi.fn();
+
+  beforeEach(() => {
+    getSessionMock.mockReset();
+    getSupabaseMock.mockReturnValue({ auth: { getSession: getSessionMock } });
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.kernelcad.com');
+    vi.stubGlobal('fetch', fetchMock);
+    fetchMock.mockReset();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+  });
+
+  it('fetchGallery GETs the public list anonymously with sort, cursor and limit', async () => {
+    getSessionMock.mockResolvedValue({ data: { session: null } });
+    const page: GalleryPage = { items: [], nextCursor: null };
+    fetchMock.mockResolvedValueOnce({ ok: true, json: async () => page });
+    await expect(fetchGallery('remixed', 'cur/1', 12)).resolves.toEqual(page);
+    const [url, init] = fetchMock.mock.calls[0]!;
+    const u = new URL(url);
+    expect(u.pathname).toBe('/api/v1/gallery');
+    expect(Object.fromEntries(u.searchParams)).toEqual({ sort: 'remixed', cursor: 'cur/1', limit: '12' });
+    expect(init.method).toBe('GET');
+    expect(init.headers.Authorization).toBeUndefined();
+  });
+
+  it('fetchGallery omits an empty cursor', async () => {
+    getSessionMock.mockResolvedValue({ data: { session: null } });
+    fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ items: [], nextCursor: null }) });
+    await fetchGallery('new');
+    expect(fetchMock.mock.calls[0]![0]).toBe('https://api.kernelcad.com/api/v1/gallery?sort=new');
+  });
+
+  it('fetchProjectGalleryState sends the session so the server can tell the owner', async () => {
+    getSessionMock.mockResolvedValue({ data: { session: { access_token: 'tok-1' } } });
+    fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ listed: false }) });
+    await fetchProjectGalleryState('a/b');
+    const [url, init] = fetchMock.mock.calls[0]!;
+    expect(url).toBe('https://api.kernelcad.com/api/v1/projects/a%2Fb/gallery');
+    expect(init.headers.Authorization).toBe('Bearer tok-1');
+  });
+
+  it('setProjectGalleryListed PATCHes { listed } and surfaces render_required', async () => {
+    getSessionMock.mockResolvedValue({ data: { session: { access_token: 'tok-1' } } });
+    fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ listed: true, listedAt: 'x' }) });
+    await expect(setProjectGalleryListed('s1', true)).resolves.toEqual({ listed: true, listedAt: 'x' });
+    const [url, init] = fetchMock.mock.calls[0]!;
+    expect(url).toBe('https://api.kernelcad.com/api/v1/projects/s1/gallery');
+    expect(init.method).toBe('PATCH');
+    expect(JSON.parse(init.body)).toEqual({ listed: true });
+
+    fetchMock.mockResolvedValueOnce({ ok: false, status: 409, text: async () => JSON.stringify({ error: GALLERY_RENDER_REQUIRED }) });
+    await expect(setProjectGalleryListed('s1', true)).rejects.toThrow(GALLERY_RENDER_REQUIRED);
+  });
+
+  it('reportProject POSTs the reason; remixProject POSTs to clone', async () => {
+    getSessionMock.mockResolvedValue({ data: { session: { access_token: 'tok-1' } } });
+    fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ ok: true }) });
+    await reportProject('s1', 'spam');
+    expect(fetchMock.mock.calls[0]![0]).toBe('https://api.kernelcad.com/api/v1/projects/s1/report');
+    expect(fetchMock.mock.calls[0]![1].method).toBe('POST');
+    expect(JSON.parse(fetchMock.mock.calls[0]![1].body)).toEqual({ reason: 'spam' });
+
+    fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ slug: 'new-1', projectId: 'id-1' }) });
+    await expect(remixProject('s1')).resolves.toEqual({ slug: 'new-1', projectId: 'id-1' });
+    expect(fetchMock.mock.calls[1]![0]).toBe('https://api.kernelcad.com/api/v1/projects/s1/clone');
+    expect(fetchMock.mock.calls[1]![1].method).toBe('POST');
+  });
+});
+
+describe('fetchAdminStats', () => {
+  const fetchMock = vi.fn();
+
+  beforeEach(() => {
+    getSessionMock.mockReset();
+    getSupabaseMock.mockReturnValue({ auth: { getSession: getSessionMock } });
+    getSessionMock.mockResolvedValue({ data: { session: { access_token: 'tok-1' } } });
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.kernelcad.com');
+    vi.stubGlobal('fetch', fetchMock);
+    fetchMock.mockReset();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+  });
+
+  it('GETs the admin stats for a window with the bearer token', async () => {
+    fetchMock.mockResolvedValueOnce({ ok: true, json: async () => ({ window: '7d' }) });
+    await expect(fetchAdminStats('7d')).resolves.toEqual({ window: '7d' });
+    const [url, init] = fetchMock.mock.calls[0]!;
+    expect(url).toBe('https://api.kernelcad.com/api/v1/admin/stats?window=7d');
+    expect(init.method).toBe('GET');
+    expect(init.headers.Authorization).toBe('Bearer tok-1');
+  });
+
+  it('rejects with an ApiError that carries the status (403 = not an admin)', async () => {
+    fetchMock.mockResolvedValueOnce({ ok: false, status: 403, text: async () => '{"error":"forbidden"}' });
+    const err = await fetchAdminStats('28d').catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(ApiError);
+    expect((err as ApiError).status).toBe(403);
+    expect((err as ApiError).message).toBe('{"error":"forbidden"}');
   });
 });

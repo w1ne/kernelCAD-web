@@ -5,6 +5,7 @@ import {
   MISSING_FILLET_CODE,
   STACKED_PRIMITIVE_TOY_CODE,
   appendRevisionAssistPrompt,
+  buildRevisionAssist,
   hasRepairableDiagnostic,
   isProductionIntentGoal,
   missingFilletFacts,
@@ -84,5 +85,42 @@ return body;
     expect(out).toContain('Revision assist');
     expect(out).toContain('suggested-patches');
     expect(out).toContain('translate cutter');
+  });
+});
+
+describe('revisionAssist industry J/K cookbook routing', () => {
+  it('routes scissor / closed-loop goals to scissor-lift cookbook', async () => {
+    const assist = await buildRevisionAssist({
+      source: 'return box(1,1,1);',
+      goal: 'production scissor-lift table with pin_slot closed loop',
+      reviewFacts: [{ code: 'assembly.solver.did-not-converge', severity: 'error', message: 'loop' }],
+      diagnostics: [],
+      autoRevise: false,
+    });
+    expect(assist?.hints.some((h) => h.code === 'cookbook.scissor-lift')).toBe(true);
+    expect(assist?.nextTool).toEqual({
+      name: 'lookup_cookbook',
+      args: { query: 'scissor lift closed loop' },
+    });
+  });
+
+  it('routes 4-DOF arm goals to multi-dof cookbook and bridges floating yokes', async () => {
+    const assist = await buildRevisionAssist({
+      source: 'return box(1,1,1);',
+      goal: 'production 4-DOF robot arm with yaw shoulder elbow wrist',
+      reviewFacts: [{
+        code: 'assembly.geometry.floating-body',
+        severity: 'warning',
+        message: 'yoke floats',
+      }],
+      diagnostics: [],
+      autoRevise: false,
+    });
+    expect(assist?.hints.some((h) => h.code === 'cookbook.multi-dof-arm')).toBe(true);
+    expect(assist?.hints.some((h) => h.code === 'repair.bridge-yoke-load-path')).toBe(true);
+    expect(assist?.nextTool).toEqual({
+      name: 'lookup_cookbook',
+      args: { query: 'multi dof robot arm 4axis' },
+    });
   });
 });

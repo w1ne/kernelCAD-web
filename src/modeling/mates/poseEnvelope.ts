@@ -647,6 +647,9 @@ export async function detectInterferencesForPoses(
   const result = await engine.run(arm.__session().getRecords(), {
     paramTable: arm.__session().paramTable,
     gatedFeatureNames: arm.__session().gatedFeatureNames,
+    // Only the appended pose scene needs lowering; the part records are
+    // unchanged since the last full lower.
+    seedShapes: arm.__session().reusableLoweredPrefix(),
   });
   const sourceId = scene.__sourceFeatureId();
   if (sourceId === undefined) return [];

@@ -6,7 +6,7 @@ import type { CompilerDiagnostic } from '../../../../shared/diagnostics/diagnost
 import type { DrawingDeclarations, DrawingToleranceDecl } from '../../../../shared/intent/drawingGdtRecord';
 import { modelToSheet } from '../drawingAnnotations';
 import { formatDimValue } from '../drawingLayout';
-import type { DrawingViewName, Pt2, SheetSpec } from '../drawingLayout';
+import type { DrawingViewName, ProjectionAngle, Pt2, SheetSpec } from '../drawingLayout';
 import { canonicalAxis } from '../drawingFeatures';
 import type { DrawingFeatureModel, HoleComposite, PlanarFaceInfo, V3 } from '../drawingFeatures';
 import type { Box, Obstacles, Seg } from '../drawingObstacles';
@@ -34,15 +34,35 @@ export interface PlacedItem {
   text: string;
   svg: string;
   boxes: Box[];
+  /** Leader lines the placer chose (not the extension lines of a linear
+   *  dimension, which the measured feature fixes). */
+  leaders: Seg[];
   owner: number;
 }
 
-export const HOLE_SIDES: Record<DrawingViewName, { horizontal: 'top' | 'bottom'; vertical: 'left' | 'right' }> = {
+type DimSides = Record<DrawingViewName, { horizontal: 'top' | 'bottom'; vertical: 'left' | 'right' }>;
+
+/** Free side of each view that linear dimensions stack on (third angle). */
+export const HOLE_SIDES: DimSides = {
   top: { horizontal: 'top', vertical: 'left' },
   front: { horizontal: 'bottom', vertical: 'right' },
   left: { horizontal: 'bottom', vertical: 'left' },
   iso: { horizontal: 'bottom', vertical: 'right' },
 };
+
+/** The same, for the first-angle grid (see `computeSheetLayout`): the front
+ *  view's free sides are above and left, the top view's below and right,
+ *  the left view's above and right. */
+export const HOLE_SIDES_FIRST_ANGLE: DimSides = {
+  top: { horizontal: 'bottom', vertical: 'right' },
+  front: { horizontal: 'top', vertical: 'left' },
+  left: { horizontal: 'top', vertical: 'right' },
+  iso: { horizontal: 'bottom', vertical: 'right' },
+};
+
+export function dimensionSides(projection: ProjectionAngle | undefined): DimSides {
+  return projection === 'first' ? HOLE_SIDES_FIRST_ANGLE : HOLE_SIDES;
+}
 
 export function holeLabel(h: HoleComposite, count: number): string {
   let s = `⌀${formatDimValue(h.diameter)}`;
@@ -116,11 +136,18 @@ export function toSheet(ctx: RenderCtx, p: V3, view: DrawingViewName): Pt2 {
   return modelToSheet(p, view, ctx.views[view].placement, ctx.scale);
 }
 
-export function commit(ctx: RenderCtx, kind: string, view: DrawingViewName, text: string, r: Rendered): void {
+export function commit(
+  ctx: RenderCtx,
+  kind: string,
+  view: DrawingViewName,
+  text: string,
+  r: Rendered,
+  linear = false,
+): void {
   const owner = ctx.ownerSeq++;
   for (const s of r.segments) ctx.obstacles.addSegment(s, owner);
   for (const b of r.boxes) ctx.obstacles.addBox(b, owner);
-  ctx.placed.push({ kind, view, text, svg: r.svg, boxes: r.boxes, owner });
+  ctx.placed.push({ kind, view, text, svg: r.svg, boxes: r.boxes, leaders: linear ? [] : r.segments, owner });
   ctx.byKind[kind] = (ctx.byKind[kind] ?? 0) + 1;
 }
 
@@ -141,23 +168,56 @@ function isEnclosed(ctx: RenderCtx, b: Box): boolean {
   return false;
 }
 
-export function choose(
+export interface Candidate {
+  render: () => Rendered;
+  penalty: number;
+}
+
+interface Scored<C extends Candidate> {
+  r: Rendered;
+  cost: number;
+  score: number;
+  candidate: C;
+}
+
+function pick<C extends Candidate>(
   ctx: RenderCtx,
   owner: number,
-  candidates: ReadonlyArray<{ render: () => Rendered; penalty: number }>,
-): { r: Rendered; cost: number; index: number } | null {
-  let best: { r: Rendered; cost: number; score: number; index: number } | null = null;
-  for (const [index, c] of candidates.entries()) {
+  candidates: readonly C[],
+  crossAnnotations: boolean,
+): Scored<C> | null {
+  let best: Scored<C> | null = null;
+  for (const c of candidates) {
     const r = c.render();
     const cost = ctx.obstacles.cost(r.boxes, owner) +
-      r.segments.reduce((n, seg) => n + ctx.obstacles.labelHits(seg, owner) * 5, 0);
-    const crossings = r.segments.reduce((n, seg) => n + ctx.obstacles.crossings(seg), 0);
+      r.segments.reduce((n, seg) => n + (ctx.obstacles.labelHits(seg, owner) + ctx.obstacles.runsAlong(seg, owner)) * 5, 0);
+    const crossings = r.segments.reduce((n, seg) => n + ctx.obstacles.crossings(seg, crossAnnotations), 0);
     const inside = r.boxes.length > 0 && isEnclosed(ctx, r.boxes[0]) ? 25 : 0;
     const score = cost * 1000 + c.penalty + crossings * 6 + inside;
-    if (best === null || score < best.score) best = { r, cost, score, index };
+    if (best === null || score < best.score) best = { r, cost, score, candidate: c };
     if (cost === 0 && c.penalty === 0 && crossings === 0 && inside === 0) break;
   }
   return best;
+}
+
+/** The best-scoring candidate. When none of `candidates` is clear of
+ *  geometry, labels and the frame, the wider `fallback` set (more angles,
+ *  longer leaders onto the free sheet around the view) is tried as well and
+ *  the lower score wins; there a leader that crosses a dimension, extension
+ *  or other leader line is charged like one crossing the part outline, since
+ *  the long fallback leaders otherwise cut through the dimension stacks. A
+ *  clear first-tier slot never looks at the fallback, so sheets that were
+ *  already clear keep their placement. */
+export function choose<C extends Candidate>(
+  ctx: RenderCtx,
+  owner: number,
+  candidates: readonly C[],
+  fallback?: () => readonly C[],
+): { r: Rendered; cost: number; candidate: C } | null {
+  const best = pick(ctx, owner, candidates, false);
+  if (best === null || best.cost === 0 || fallback === undefined) return best;
+  const wide = pick(ctx, owner, fallback(), true);
+  return wide !== null && wide.score < best.score ? wide : best;
 }
 
 export function outwardAngle(ctx: RenderCtx, p: Pt2, view: DrawingViewName): number {

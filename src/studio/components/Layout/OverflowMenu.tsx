@@ -15,13 +15,12 @@ export interface OverflowMenuProps {
 }
 
 /**
- * Narrow-viewport overflow menu for the chrome bars.
+ * Narrow-viewport overflow menu for the header.
  *
- * The Header and Toolbar are `bar-scroll-x` containers (overflow-x:auto →
- * overflow-y:hidden), which would CLIP an in-flow dropdown to the 32-40px bar
- * height. So the panel is rendered into a portal on <body> with fixed
- * positioning, anchored under the trigger — the same escape hatch `UserMenu`
- * already uses for the account dropdown.
+ * The panel is rendered into a portal on <body> with fixed positioning,
+ * anchored under the trigger, so no bar's overflow clip or stacking context
+ * can hide it — the same escape hatch `UserMenu` uses for the account
+ * dropdown.
  *
  * The panel stays open while controls inside it are used (most are toggles
  * whose effect is visible in the viewport behind); it closes on outside click,
@@ -84,11 +83,11 @@ export function OverflowMenu({ label, children, align = 'right', testId }: Overf
                 aria-expanded={open}
                 title={label}
                 data-testid={testId}
-                className={`shrink-0 p-1.5 rounded transition-colors ${
-                    open ? 'bg-[#333] text-white' : 'text-gray-400 hover:text-white hover:bg-[#333]'
+                className={`focus-ring flex size-control-sm shrink-0 items-center justify-center rounded-control transition-colors duration-80 max-md:size-touch ${
+                    open ? 'bg-surface-3 text-fg' : 'text-fg-2 hover:bg-surface-2 hover:text-fg'
                 }`}
             >
-                <MoreHorizontal className="w-4 h-4" />
+                <MoreHorizontal className="size-4" strokeWidth={1.75} aria-hidden="true" />
             </button>
             {open &&
                 anchor &&
@@ -100,7 +99,8 @@ export function OverflowMenu({ label, children, align = 'right', testId }: Overf
                         aria-label={label}
                         data-testid={testId ? `${testId}-panel` : undefined}
                         style={{ top: anchor.top, left: anchor.left, right: anchor.right }}
-                        className="fixed z-[60] max-w-[calc(100vw-8px)] max-h-[70vh] overflow-y-auto rounded border border-[#333] bg-[#1a1a1a] shadow-xl p-2"
+                        data-theme="dark"
+                        className="fixed z-[60] max-w-[calc(100vw-8px)] max-h-[70vh] overflow-y-auto animate-pop-in rounded-panel border border-border bg-surface-1 p-2 text-fg shadow-e2"
                     >
                         {children}
                     </div>,

@@ -3,25 +3,34 @@
 import { runScript } from '../../composition/runScript';
 import { exportSceneToSTEPAsync, type OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { exportDxf, type DxfWriterOptions } from '../../kernel/backends/occt/exportDxf';
-import { export3mfAsync, type Export3mfOptions } from '../../kernel/backends/occt/export3mf';
+import { exportSceneDxf, exportShapeDxfProfile } from './exportDxfProfiles';
+import { export3mfWithReportAsync, type Export3mfOptions } from '../../kernel/backends/occt/export3mf';
 import { exportGlbAsync, type ExportGlbOptions } from '../../kernel/backends/occt/exportGlb';
 import type { Assembly } from '../../modeling/capture/assembly';
 import { lookupColorFromLineage, lookupMaterialFromLineage } from '../../kernel/backends/occt/lookupSourceColor';
 import { sceneToWorldFrameParts, type WorldFramePart } from '../../kernel/backends/occt/sceneToWorldFrame';
 import { flattenPattern } from '../../kernel/backends/occt/flattenPattern';
+import { stampStepOriginatingSystem } from '../../kernel/export/stepHeader';
+import { attributionGenerator } from '../../shared/links/attribution';
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
-import { NEXT_ACTIONS } from '../../shared/diagnostics/registry';
+import { NEXT_ACTIONS, HINT_TEMPLATES } from '../../shared/diagnostics/registry';
+import { verifyWatertight, type WatertightReport } from '../../kernel/backends/occt/meshHeal';
+import { encodeBinaryStl } from '../../kernel/backends/occt/exportStlBinary';
+import { crackSeams, describeCrackSeams } from './sceneStlSeams';
 import { Shape } from '../../modeling/capture/proxy';
 import { Scene } from '../../modeling/validation/scene';
 import { isRegion } from '../../shared/intent/region';
 import { resolveParams } from '../../shared/runtime/resolveParams';
 import { sceneToConnectorManifest } from './connectorManifestExport';
 import { findDfmSpec } from '../../modeling/runtime/dfm/runDfmChecks';
+import { exportSceneStlAsShells, freeformFuseOverBudget, meshPartsAsShells } from './sceneStlFuse';
 import {
   dracoConflictDiagnostic,
   notWatertightDiagnostic,
   sliceShapeToGcode,
+  threeMfBedDiagnostics,
+  threeMfMeshDiagnostics,
   stlNotWatertightDiagnostic,
   type GcodeOptions,
 } from './exportDiagnostics';
@@ -337,7 +346,7 @@ export async function exportSceneBackend(
     return exportSceneStep(scene, manifestRequest, manifestScene, run, diagnostics, featureCount);
   }
   if (format === 'dxf') {
-    return exportSceneDxfRejected(targetId, diagnostics, featureCount);
+    return exportSceneDxf(scene, targetId, input.options, diagnostics, featureCount);
   }
   if (format === '3mf') {
     return exportScene3mf(input, scene, targetId, diagnostics, featureCount);
@@ -367,36 +376,12 @@ export async function exportSceneStep(
         resolveParams(run.records, run.paramTable),
         manifestRequest,
       );
-  const bytes = await exportSceneToSTEPAsync(scene);
+  const bytes = stampStepOriginatingSystem(await exportSceneToSTEPAsync(scene), attributionGenerator());
   return {
     bytes,
     featureCount,
     diagnostics,
     ...(connectorManifest === undefined ? {} : { connectorManifest }),
-  };
-}
-
-/** DXF needs a single planar wire source; a multi-body Scene cannot satisfy
- *  that contract without a caller-side choice of which face / part to export.
- *  Surface the non-planar diagnostic so the agent's next move is to either
- *  pick a planar face or return a Region. */
-export function exportSceneDxfRejected(
-  targetId: string,
-  diagnostics: CompilerDiagnostic[],
-  featureCount: number,
-): ExportResult {
-  return {
-    bytes: new Uint8Array(),
-    featureCount,
-    diagnostics: [...diagnostics, {
-      target: 'export-occt',
-      code: 'export.dxf.non-planar',
-      featureId: targetId,
-      severity: 'error',
-      message: 'DXF export requires a planar input; received a multi-body Scene.',
-      hint: 'Return a Region via Shape.flattenPattern() or a single planar face.',
-      nextAction: NEXT_ACTIONS['export.dxf.non-planar'],
-    }],
   };
 }
 
@@ -413,8 +398,10 @@ export async function exportScene3mf(
   const opts3mf = (input.options as Export3mfOptions | undefined) ?? { format: '3mf' };
   try {
     const worldParts = sceneToWorldFrameParts(scene);
-    const bytes = await export3mfAsync(worldParts, opts3mf);
-    return { bytes, featureCount, diagnostics };
+    const { bytes, bedWarnings, meshWarnings } = await export3mfWithReportAsync(
+      worldParts, { assemblyName: scene.assemblyName, ...opts3mf },
+    );
+    return { bytes, featureCount, diagnostics: [...diagnostics, ...threeMfMeshDiagnostics(meshWarnings, targetId), ...threeMfBedDiagnostics(bedWarnings, targetId)] };
   } catch (e) {
     const notWatertight = notWatertightDiagnostic(e, diagnostics, featureCount, targetId);
     if (notWatertight) return notWatertight;
@@ -458,6 +445,11 @@ export async function exportSceneFusedMesh(
   featureCount: number,
 ): Promise<ExportResult> {
   const worldParts = sceneToWorldFrameParts(scene);
+  const fuseOverBudget = format === 'stl' ? freeformFuseOverBudget(worldParts) : undefined;
+  if (fuseOverBudget !== undefined) {
+    const verifyShells = (input.options as { verify?: boolean } | undefined)?.verify !== false;
+    return exportSceneStlAsShells(worldParts, fuseOverBudget, targetId, diagnostics, featureCount, verifyShells);
+  }
   let fused: OcctBackend = worldParts[0]!.shape;
   for (let i = 1; i < worldParts.length; i++) {
     fused = fused.union(worldParts[i]!.shape);
@@ -471,18 +463,58 @@ export async function exportSceneFusedMesh(
   const verify = (input.options as { verify?: boolean } | undefined)?.verify !== false;
   const { bytes, report } = await fused.exportSTLWithReportAsync();
   if (verify && !report.ok) {
-    return {
-      bytes,
-      featureCount,
-      diagnostics: [...diagnostics, stlNotWatertightDiagnostic(report, targetId)],
-    };
+    return fusedSeamFallback(worldParts, bytes, report, targetId, diagnostics, featureCount);
   }
   return { bytes, featureCount, diagnostics };
 }
 
-/** Single-shape DXF path: sheet-metal lineage flattens to a Region; a plain
- *  planar Shape exports its outer/hole wires; anything else emits the
- *  non-planar diagnostic. */
+/**
+ * The fused mesh of a multi-part Scene cracked (typically along union seams
+ * of parts that touch or overlap by a few hundredths of a mm: the B-rep is
+ * valid, its tessellation is not closed). Mesh each part on its own; when
+ * every part is watertight, ship them as separate closed shells — a valid
+ * STL that slices as their union — with a warning naming the seams.
+ * Otherwise keep the fused bytes and fail, naming the seams.
+ */
+function fusedSeamFallback(
+  worldParts: WorldFramePart[],
+  fusedBytes: Uint8Array,
+  fusedReport: WatertightReport,
+  targetId: string,
+  diagnostics: CompilerDiagnostic[],
+  featureCount: number,
+): ExportResult {
+  const seamParts = worldParts.map((p) => ({ name: p.name, bbox: p.shape.boundingBox() }));
+  const seams = describeCrackSeams(crackSeams(fusedReport, seamParts));
+  // Same per-part shell writer as the fuse-skip path above: separate closed
+  // shells are watertight together exactly when each part is.
+  const shells = worldParts.length > 1 ? meshPartsAsShells(worldParts) : undefined;
+  if (shells !== undefined && verifyWatertight(shells).ok) {
+    return {
+      bytes: Uint8Array.from(encodeBinaryStl(shells)),
+      featureCount,
+      diagnostics: [...diagnostics, {
+        target: 'export-occt',
+        code: 'export.mesh.fused-seam-fallback',
+        featureId: targetId,
+        severity: 'warn',
+        message: `The fused union of the ${worldParts.length} parts meshed with ${fusedReport.openEdgeCount} open edge(s) (${seams}). Shipped each part as its own closed shell instead: the STL is watertight and slices as the union.`,
+        hint: HINT_TEMPLATES['export.mesh.fused-seam-fallback'].template,
+        nextAction: NEXT_ACTIONS['export.mesh.fused-seam-fallback'],
+      }],
+    };
+  }
+  const base = stlNotWatertightDiagnostic(fusedReport, targetId);
+  return {
+    bytes: fusedBytes,
+    featureCount,
+    diagnostics: [...diagnostics, { ...base, message: `${base.message} Seams: ${seams}.` }],
+  };
+}
+
+/** Single-shape DXF path: sheet-metal lineage flattens to a Region; a flat
+ *  part exports its outline, `options.section` its cross-section; anything
+ *  else emits the non-planar diagnostic. */
 export function exportShapeDxf(
   shape: OcctBackend,
   targetId: string,
@@ -513,7 +545,9 @@ export function exportShapeDxf(
     }
     return false;
   })();
-  if (tracesToSheetMetal) {
+  // An explicit `options.section` asks for a cross-section, not the blank.
+  const wantsSection = (opts as { section?: unknown }).section !== undefined;
+  if (tracesToSheetMetal && !wantsSection) {
     try {
       const region = flattenPattern(run.records, targetId);
       const bytes = exportDxf({ kind: 'region', region }, opts);
@@ -556,36 +590,9 @@ export function exportShapeDxf(
       };
     }
   }
-  // Planar `Shape` entry path: extract the outer (and any hole) wires
-  // from a single planar face and ship them through the polyline writer.
-  // A `null` return from `tryExtractPlanarWires` means the shape carries
-  // no planar face we can flatten — emit the non-planar diagnostic so
-  // the agent can pick a face explicitly or switch to `flattenPattern()`.
-  const planarWires = shape.tryExtractPlanarWires();
-  if (!planarWires) {
-    return {
-      bytes: new Uint8Array(),
-      featureCount,
-      diagnostics: [...diagnostics, {
-        target: 'export-occt',
-        code: 'export.dxf.non-planar',
-        featureId: targetId,
-        severity: 'error',
-        message: 'DXF export requires a planar input (Region, planar face, or planar wire).',
-        hint: 'Call list_faces to pick a planar face, or return a Region via Shape.flattenPattern().',
-        nextAction: NEXT_ACTIONS['export.dxf.non-planar'],
-      }],
-    };
-  }
-  const bytes = exportDxf(
-    {
-      kind: 'planarWires',
-      outer: planarWires.outer,
-      holes: planarWires.holes,
-    },
-    opts,
-  );
-  return { bytes, featureCount, diagnostics };
+  // Flat part (plate, panel, extruded profile) or `options.section`: the
+  // cut profile with exact arcs; anything else is refused with a hint.
+  return exportShapeDxfProfile(shape, targetId, exportOptions, diagnostics, featureCount);
 }
 
 /** Mesh the per-link shapes referenced by a robot-description export into
@@ -674,7 +681,7 @@ async function exportSingleStep(
   diagnostics: CompilerDiagnostic[],
   featureCount: number,
 ): Promise<ExportResult> {
-  const bytes = await shape.exportSTEPAsync();
+  const bytes = stampStepOriginatingSystem(await shape.exportSTEPAsync(), attributionGenerator());
   return { bytes, featureCount, diagnostics };
 }
 
@@ -690,8 +697,8 @@ async function exportSingle3mf(
   const opts3mf = (input.options as Export3mfOptions | undefined) ?? { format: '3mf' };
   const part: WorldFramePart = { name: 'part', shape };
   try {
-    const bytes = await export3mfAsync([part], opts3mf);
-    return { bytes, featureCount, diagnostics };
+    const { bytes, bedWarnings, meshWarnings } = await export3mfWithReportAsync([part], opts3mf);
+    return { bytes, featureCount, diagnostics: [...diagnostics, ...threeMfMeshDiagnostics(meshWarnings, targetId), ...threeMfBedDiagnostics(bedWarnings, targetId)] };
   } catch (e) {
     const notWatertight = notWatertightDiagnostic(e, diagnostics, featureCount, targetId);
     if (notWatertight) return notWatertight;

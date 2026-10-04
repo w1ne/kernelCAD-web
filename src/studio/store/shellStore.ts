@@ -57,6 +57,9 @@ export interface StagedEdit {
     readonly evaluation?: StagedEditEvaluation;
     /** Example script the edit targets, so approval can save it back. */
     readonly targetScript?: string;
+    /** Why a UI edit waits here instead of auto-applying (failed run,
+     *  validity drop, save failure). */
+    readonly reviewReason?: string;
 }
 
 export type StagedEditOutcome = 'approved' | 'rejected' | 'rerun';

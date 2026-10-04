@@ -87,6 +87,33 @@ export async function evaluateScript(scriptPath: string): Promise<EvaluateResult
   }
 }
 
+/**
+ * `kernelcad export step <script> -o <out> --json`. OCCT prints transfer
+ * statistics to stdout ahead of the JSON body, so the body is read from the
+ * first line that opens a JSON object.
+ */
+export async function exportStep(scriptPath: string, outPath: string): Promise<EvaluateResult> {
+  const r = await runOnce(['export', 'step', scriptPath, '-o', outPath, '--json']);
+  const lines = r.stdout.split('\n');
+  const start = lines.findIndex((l) => l.trimEnd() === '{');
+  try {
+    if (start < 0) throw new Error('no JSON body');
+    const parsed = JSON.parse(lines.slice(start).join('\n'));
+    const diagnostics = Array.isArray(parsed.diagnostics) ? parsed.diagnostics : [];
+    return { ok: !!parsed.ok && r.code === 0, diagnostics };
+  } catch {
+    return {
+      ok: false,
+      diagnostics: [
+        {
+          code: 'cli.script-exception',
+          message: `kernelcad export exited with code ${r.code}: ${r.stderr.trim().slice(-500) || '(no output)'}`,
+        },
+      ],
+    };
+  }
+}
+
 export async function getShapeInfo(scriptPath: string): Promise<ShapeInfo> {
   // One-shot MCP call: open the server, send a single tools/call request, read response, kill.
   // Per MCP stdio transport, requests are JSON-RPC newline-delimited.

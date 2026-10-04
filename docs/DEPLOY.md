@@ -7,6 +7,7 @@ you made to the right row — do **not** cut a release tag just to push one surf
 |---|---|---|
 | `src/**` (the Studio app) | **app.kernelcad.com** | **Automatic** on push to `develop` |
 | `site/**` (landing + gallery) | **kernelcad.com** | **Manual** dispatch (see below) |
+| `workers/feedback-mailer/**` (feedback email) | Worker `kernelcad-feedback-mailer` | **Manual**: `npx -y wrangler@4.94.0 deploy -c workers/feedback-mailer/wrangler.toml` |
 | published packages | **npm** | A `v*` **release tag** (full release) |
 
 There is one trunk: **`develop`** (the GitHub default branch). There is no `main`.

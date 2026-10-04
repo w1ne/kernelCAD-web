@@ -93,5 +93,19 @@
   "continuity",
   "tangency",
   "draft",
-  "emboss"
+  "emboss",
+  "render",
+  "turntable",
+  "sheet-metal",
+  "bend",
+  "motor",
+  "shaft",
+  "bearing",
+  "nema",
+  "planetary",
+  "ring",
+  "internal",
+  "prismatic",
+  "scissor",
+  "lift"
 ]

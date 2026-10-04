@@ -52,6 +52,7 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   lookup_api: READ,
   lookup_diagnostics: READ,
   lookup_cookbook: READ,
+  execute_cookbook: READ,
   review_cad: READ,
   review_paint_peek_latest: READ,
   solve_sketch: READ,

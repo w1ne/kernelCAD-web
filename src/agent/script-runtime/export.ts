@@ -8,11 +8,14 @@ import { encodeBinaryStl } from '../../kernel/backends/occt/exportStlBinary';
 import { verifyWatertight, type WatertightReport } from '../../kernel/backends/occt/meshHeal';
 import type { DrawingAnnotation } from '../../kernel/backends/occt/drawingAnnotations';
 import type { DrawingSectionSpec } from '../../kernel/backends/occt/drawingSections';
+import type { ArchitecturalPlanOptions } from '../../kernel/backends/occt/drawingArchitectural';
 import type {
   AutoAnnotateOptions,
   DrawingReport,
 } from '../../kernel/backends/occt/exportSvgDrawing';
 import type { GcodeStats } from '../../kernel/export/gcode/gcodeHeaderParser';
+import type { DrawingSheetSize, ProjectionAngle } from '../../kernel/backends/occt/drawingLayout';
+export type { DrawingSheetSize, ProjectionAngle } from '../../kernel/backends/occt/drawingLayout';
 export type { DrawingAnnotation, DrawingAnchor } from '../../kernel/backends/occt/drawingAnnotations';
 export type { DrawingSectionSpec, SectionPlane } from '../../kernel/backends/occt/drawingSections';
 export type {
@@ -37,14 +40,24 @@ import {
   resolveConnectorManifestScene,
   resolveExportTarget,
 } from './exportPhases';
-import { exportSvgDrawing } from './exportDrawing';
+import { exportPdfDrawing, exportSvgDrawing } from './exportDrawing';
 import { withOcctPoisonRecovery } from '../../kernel/backends/occt/occtBackend';
+import { fileSafePartName } from './safeOutputPath';
+import { invalidArgsText } from '../../shared/intent/invalidArgs';
+import {
+  buildStressInfillExport,
+  type StressInfillExportOptions,
+  type StressInfillReport,
+} from './stressInfillExport';
+import type { Export3mfOptions } from '../../kernel/backends/occt/export3mf';
+import { resolvePrinterProfile } from '../../kernel/export/gcode/printerProfiles';
+export type { StressInfillExportOptions, StressInfillReport } from './stressInfillExport';
 export { stlNotWatertightDiagnostic } from './exportDiagnostics';
 
 export type { GcodeStats } from '../../kernel/export/gcode/gcodeHeaderParser';
 
 export type ExportFormat =
-  | 'stl' | 'step' | 'dxf' | '3mf' | 'glb' | 'svg-drawing'
+  | 'stl' | 'step' | 'dxf' | '3mf' | 'glb' | 'svg-drawing' | 'pdf-drawing'
   | 'urdf' | 'srdf' | 'sdf-gazebo' | 'gcode' | 'usd-isaac'
   | 'bom-csv' | 'bom-json';
 
@@ -52,8 +65,37 @@ export type ExportFormat =
 export type ExportOptions =
   | { format: 'stl'; verify?: boolean }
   | { format: 'step'; unit?: 'mm' | 'cm' | 'in' }
-  | { format: 'dxf'; layers?: DxfLayerSpec[]; unit?: 'mm' | 'cm' | 'in'; tolerance?: number }
-  | { format: '3mf'; printUnit?: 'mm' | 'cm' | 'in'; embedSource?: boolean }
+  | {
+      format: 'dxf';
+      layers?: DxfLayerSpec[];
+      unit?: 'mm' | 'cm' | 'in';
+      tolerance?: number;
+      /** Cross-section of any part at this plane (world coordinates), instead
+       *  of a flat part's outline. */
+      section?: { axis: 'x' | 'y' | 'z'; at: number };
+      /** Multi-part models: 'per-part' (default) also writes parts/<part>.dxf
+       *  next to the combined sheet; 'sheet' writes the combined sheet only. */
+      layout?: 'per-part' | 'sheet';
+    }
+  | {
+      format: '3mf';
+      printUnit?: 'mm' | 'cm' | 'in';
+      embedSource?: boolean;
+      /** Bed layout: 'none' (default, modelled positions), 'plate' (packed,
+       *  each part on Z=0), 'assembled' (one multi-part object on Z=0). */
+      arrange?: 'none' | 'plate' | 'assembled';
+      /** arrange 'plate': largest flat face down per part. */
+      orient?: boolean;
+      /** Slicer project sidecar: per-object name + filament slot. */
+      slicer?: 'generic' | 'bambu' | 'orca' | 'prusa';
+      /** Printer profile id (PRINTER_PROFILE_IDS): bed for arrange and the
+       *  slicer default; default 'generic-fdm'. */
+      printer?: string;
+      /** Stress-graded infill: solve the named feaStudy (needs the LOCAL
+       *  CalculiX + gmsh toolchain) and write one Orca/Bambu modifier
+       *  volume per stress band with its own sparse_infill_density. */
+      infill?: StressInfillExportOptions;
+    }
   | { format: 'glb'; axis?: 'y-up' | 'z-up'; draco?: false }
   | {
       format: 'svg-drawing';
@@ -73,13 +115,17 @@ export type ExportOptions =
       /** Derive datums, hole callouts with position frames, positions, overall
        *  dims, radii, chamfers, flatness and an ISO 2768 note from the B-rep. */
       autoAnnotate?: boolean | AutoAnnotateOptions;
+      /** 'architectural' draws a floor plan instead of the part sheet. */
+      style?: DrawingStyle;
+      plan?: ArchitecturalPlanOptions;
     }
+  | PdfDrawingOptions
   | { format: 'urdf' }
   | { format: 'srdf' }
   | { format: 'sdf-gazebo' }
   | {
       format: 'gcode';
-      /** Bundled printer bed-size/profile name; default 'generic-fdm'. */
+      /** Printer profile id (PRINTER_PROFILE_IDS); default 'generic-fdm'. */
       printer?: string;
       layerHeight?: number;
       /** Infill density, 0-100 (percent); default 15. */
@@ -97,6 +143,49 @@ export type ExportOptions =
     }
   | { format: 'bom-csv' }
   | { format: 'bom-json' };
+
+/**
+ * `pdf-drawing`: the svg-drawing sheet (same views, hidden lines, dimensions,
+ * GD&T, sections, parts list) on a standard sheet with a full title block,
+ * written as a vector PDF. Title-block text fields print `—` when unset.
+ */
+export interface PdfDrawingOptions {
+  format: 'pdf-drawing';
+  /** Landscape sheet size; default `a3`. `'auto'` / `'auto-ansi'` pick the
+   *  smallest ISO / ANSI sheet that holds the views at 1:1 or larger. */
+  sheet?: DrawingSheetSize | 'auto' | 'auto-ansi';
+  /** View arrangement and title-block symbol; default `'third'`. */
+  projection?: ProjectionAngle;
+  /** Drawing title; defaults to the model name (the script file name). */
+  title?: string;
+  /** Part name / number; defaults to the model name. */
+  partName?: string;
+  /** Material; defaults to the assembly parts' material when they all share one. */
+  material?: string;
+  revision?: string;
+  /** Title-block date text; defaults to today's date (YYYY-MM-DD, UTC). */
+  date?: string;
+  modelName?: string;
+  /** Authored dimensions / notes; replaces the automatic dimensions. */
+  annotations?: readonly DrawingAnnotation[];
+  sections?: readonly DrawingSectionSpec[];
+  exploded?: { factor: number; mode?: 'radial' | 'mate-axis' };
+  balloons?: boolean;
+  partsList?: boolean;
+  /** Automatic datums, hole callouts, positions, overall dims and ISO 2768
+   *  note; default ON unless `annotations` are given. `false` falls back to
+   *  the overall bounding-box dimensions. */
+  autoAnnotate?: boolean | AutoAnnotateOptions;
+  /** `'architectural'`: a floor plan (section ~1 m above the base, poché
+   *  walls, wall / opening dimensions, room labels with area, scale bar,
+   *  north arrow; feet-inches for an imperial model) instead of the
+   *  mechanical part sheet. Default `'mechanical'`. */
+  style?: DrawingStyle;
+  /** Floor-plan options for `style: 'architectural'`. */
+  plan?: ArchitecturalPlanOptions;
+}
+
+export type DrawingStyle = 'mechanical' | 'architectural';
 
 export interface DxfLayerSpec {
   name: string;
@@ -135,15 +224,121 @@ export interface ExportResult {
   bytes: Uint8Array;
   featureCount: number;
   diagnostics: CompilerDiagnostic[];
-  /** Per-link mesh files referenced by the primary output (URDF / SDF). */
+  /** Companion files written next to the primary output: per-link meshes
+   *  (URDF / SDF) or per-part DXF files (multi-part DXF). */
   meshes?: CompanionMeshFile[];
   /** Numeric authored connector sidecar, present only when requested for a STEP Scene export. */
   connectorManifest?: ConnectorManifest;
   /** Parsed slicer G-code stats, present only for `format: 'gcode'` exports that reached the slicer. */
   gcodeStats?: GcodeStats;
-  /** `svg-drawing` placement report (placed / overlapped counts, datums,
+  /** `svg-drawing` / `pdf-drawing` placement report (placed / overlapped counts, datums,
    *  every annotation drawn), present whenever the sheet carries annotations. */
   drawingReport?: DrawingReport;
+  /** `3mf` with `infill`: band table, saving estimate and render scripts. */
+  infillReport?: StressInfillReport;
+}
+
+/** 3MF options with stress-graded infill resolved into writer modifiers.
+ *  The slicer defaults to 'orca' (the format Orca and Bambu share) unless
+ *  the caller or a bambu/orca printer names one. */
+async function resolveInfill3mf(
+  input: ExportInput,
+  run: Awaited<ReturnType<typeof runScript>>,
+  shapes: ReadonlyMap<string, unknown>,
+  diagnostics: CompilerDiagnostic[],
+  featureCount: number,
+): Promise<{ input: ExportInput; report: StressInfillReport; diagnostics: CompilerDiagnostic[] } | { result: ExportResult }> {
+  const opts = input.options as Extract<ExportOptions, { format: '3mf' }>;
+  const built = await buildStressInfillExport(
+    opts.infill!, run.records, shapes, run.paramTable, input.scriptDir,
+  );
+  if (!built.ok) {
+    return { result: { bytes: new Uint8Array(), featureCount, diagnostics: [...diagnostics, ...built.diagnostics] } };
+  }
+  const printerSlicer = opts.printer !== undefined ? resolvePrinterProfile(opts.printer).slicer : 'generic';
+  const slicer = opts.slicer ?? (printerSlicer === 'generic' ? 'orca' : printerSlicer);
+  const writerOpts: Export3mfOptions = {
+    ...(opts as Export3mfOptions),
+    slicer,
+    modifiers: built.build.modifiers,
+    objectSettings: built.build.objectSettings,
+  };
+  return {
+    input: { ...input, options: writerOpts as unknown as ExportOptions },
+    report: built.build.report,
+    diagnostics: [...diagnostics, ...built.diagnostics],
+  };
+}
+
+function infillRequested(input: ExportInput): boolean {
+  return input.format === '3mf' && (input.options as { infill?: unknown } | undefined)?.infill !== undefined;
+}
+
+/** Stress-graded infill grades one solid; an assembly return is refused. */
+function infillSceneRefusal(
+  targetId: string,
+  diagnostics: CompilerDiagnostic[],
+  featureCount: number,
+): ExportResult {
+  return {
+    bytes: new Uint8Array(),
+    featureCount,
+    diagnostics: [...diagnostics, {
+      target: 'export-occt',
+      code: 'feature.invalid-args',
+      featureId: targetId,
+      severity: 'error',
+      ...invalidArgsText({
+        api: "export({ format: '3mf', options: { infill } })",
+        path: 'the script return value',
+        gotText: 'an assembly (Scene)',
+        requires: 'ONE solid part: stress-graded infill grades the shape that declares the feaStudy',
+        example: 'return bracket;',
+      }),
+      nextAction: NEXT_ACTIONS['feature.invalid-args'],
+    }],
+  };
+}
+
+/** Scene export, unless stress-graded infill was asked for (refused). */
+async function exportSceneOrRefuseInfill(
+  input: ExportInput,
+  format: ExportFormat,
+  scene: Parameters<typeof exportSceneBackend>[2],
+  targetId: string,
+  manifestRequest: ExportInput['connectorManifest'],
+  manifestScene: Scene | undefined,
+  run: Awaited<ReturnType<typeof runScript>>,
+  diagnostics: CompilerDiagnostic[],
+  featureCount: number,
+): Promise<ExportResult | undefined> {
+  if (infillRequested(input)) return infillSceneRefusal(targetId, diagnostics, featureCount);
+  return exportSceneBackend(
+    input, format, scene, targetId, manifestRequest, manifestScene, run, diagnostics, featureCount,
+  );
+}
+
+/** Single-shape export; a 3MF with `infill` gets stress-graded modifiers. */
+async function exportShapeOrInfill(
+  input: ExportInput,
+  format: ExportFormat,
+  shape: OcctBackend,
+  targetId: string,
+  scriptDir: string | undefined,
+  run: Awaited<ReturnType<typeof runScript>>,
+  shapes: ReadonlyMap<string, unknown>,
+  diagnostics: CompilerDiagnostic[],
+  featureCount: number,
+): Promise<ExportResult> {
+  if (!infillRequested(input)) {
+    return exportSingleShape(input, format, shape, targetId, scriptDir, run, diagnostics, featureCount);
+  }
+  const infill = await resolveInfill3mf(input, run, shapes, diagnostics, featureCount);
+  if ('result' in infill) return infill.result;
+  const out = await exportSingleShape(
+    infill.input, '3mf', shape, targetId, scriptDir, run, infill.diagnostics, featureCount,
+  );
+  return out.bytes.length > 0 ? { ...out, infillReport: infill.report } : out;
 }
 
 export async function runAndExport(input: ExportInput): Promise<ExportResult> {
@@ -212,6 +407,9 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
   if (format === 'svg-drawing') {
     return await exportSvgDrawing(input, fileName, lowered, targetId, run, r.diagnostics, featureCount);
   }
+  if (format === 'pdf-drawing') {
+    return await exportPdfDrawing(input, fileName, lowered, targetId, run, r.diagnostics, featureCount);
+  }
 
   // Scene-aware path: STEP/3MF/GLB keep per-part identity. STL is a single
   // triangle mesh, so multi-body Scenes are auto-fused (world-frame boolean
@@ -219,7 +417,7 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
   // header STL/3MF on assembly returns (e.g. multi-material keycaps) must
   // not fail with "return toUnion()" after the model already viewed fine.
   if (isSceneBackend(lowered)) {
-    const sceneResult = await exportSceneBackend(
+    const sceneResult = await exportSceneOrRefuseInfill(
       input, format, lowered, targetId, manifestRequest, manifestScene, run, r.diagnostics, featureCount,
     );
     if (sceneResult !== undefined) return sceneResult;
@@ -228,9 +426,7 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
   }
 
   const shape = lowered as OcctBackend;
-  return exportSingleShape(
-    input, format, shape, targetId, scriptDir, run, r.diagnostics, featureCount,
-  );
+  return exportShapeOrInfill(input, format, shape, targetId, scriptDir, run, r.shapes, r.diagnostics, featureCount);
 
   });
 }
@@ -259,9 +455,7 @@ export interface ExportPartsResult {
   diagnostics: CompilerDiagnostic[];
 }
 
-export function fileSafePartName(name: string): string {
-  return name.replace(/[^A-Za-z0-9._-]/g, '-');
-}
+export { fileSafePartName };
 
 /** Resolved world-frame scene + run bookkeeping, shared by the per-part
  *  exporter and the part-stats lister. `parts` is undefined when resolution

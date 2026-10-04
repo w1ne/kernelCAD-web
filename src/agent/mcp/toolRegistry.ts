@@ -23,11 +23,24 @@ import { reviewPipelineToolEntries } from './registry/reviewPipelineTools';
 import { sketchAssemblyToolEntries } from './registry/sketchAssemblyTools';
 import { mechanismSimToolEntries } from './registry/mechanismSimTools';
 import { meshReconstructToolEntries } from './registry/meshReconstructTools';
+import { cookbookExecutionToolEntries } from './registry/cookbookExecutionTools';
 import type { McpToolDefinition, ToolRegistryEntry } from './registry/types';
 export { runClosedLoop } from '../loop/closedLoop.js';
 export { buildRepairPrompt } from '../loop/repairPrompt.js';
 export * from '../loop/types.js';
 export type { McpToolDefinition } from './registry/types';
+// lookup_authoring_skill is hosted by kernelCAD-server; it answers from the
+// vendored SKILL.md through this sectioning helper.
+export {
+  lookupAuthoringSkill,
+  parseAuthoringSkill,
+  LOOKUP_AUTHORING_SKILL_DESCRIPTION,
+  LOOKUP_AUTHORING_SKILL_INPUT_SCHEMA,
+} from '../skills/authoringSkillLookup';
+export type {
+  LookupAuthoringSkillInput,
+  LookupAuthoringSkillResult,
+} from '../skills/authoringSkillLookup';
 
 /**
  * Registry of every MCP tool — pairs each definition with its handler.
@@ -70,6 +83,8 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...drawingImportToolEntries,
   // Appended at the tail like every family before it (public index order).
   ...meshReconstructToolEntries,
+  // Appended at the tail: cookbook one-shot execute for ChatGPT industry demos.
+  ...cookbookExecutionToolEntries,
 ];
 
 /** Merge the central MCP metadata maps onto a definition: behavioral hints

@@ -5,7 +5,9 @@ import { createPortal } from 'react-dom';
 import { ChevronDown } from 'lucide-react';
 import { useSession } from '../../../funnel/hooks/useSession';
 import { getSupabase, isAuthConfigured } from '../../../funnel/lib/supabaseClient';
-import { SignInButton } from '../../../funnel/components/SignInButton';
+import { buttonClass } from '../../../ui/buttonStyles';
+import { FeedbackButton } from './FeedbackButton';
+import { openFeedback } from './feedbackRequests';
 
 /**
  * Header auth control for the Studio editor.
@@ -16,68 +18,79 @@ import { SignInButton } from '../../../funnel/components/SignInButton';
  * its hooks unconditionally.
  */
 export default function UserMenu() {
-    if (!isAuthConfigured()) return null;
+    // No accounts here (plain local dev): feedback is the only account-slot action.
+    if (!isAuthConfigured()) return <FeedbackButton />;
     return <UserMenuInner />;
 }
 
+/** The sign-in page, returning to this page afterwards. */
+function signInHref(): string {
+    const here = typeof window === 'undefined' ? '/' : `${window.location.pathname}${window.location.search}`;
+    return `/signin?next=${encodeURIComponent(here)}`;
+}
+
+/** Signed out there is no account menu, so Feedback stays an icon next to
+ *  one neutral Sign in link (the provider buttons live on the sign-in page). */
 function SignInControl() {
     return (
-        <span title="Sign in to use the agent and save projects">
-            <SignInButton className="inline-flex items-center gap-2 rounded bg-[#222] hover:bg-[#333] text-gray-300 hover:text-white px-2 py-1 text-xs font-medium transition-colors">
+        <>
+            <FeedbackButton />
+            <a
+                href={signInHref()}
+                title="Sign in to use the agent and save projects"
+                data-testid="header-sign-in"
+                className={`${buttonClass('secondary', 'sm')} no-underline max-md:h-touch`}
+            >
                 Sign in
-            </SignInButton>
-        </span>
+            </a>
+        </>
     );
 }
+
+const ITEM_CLASS =
+    'block w-full text-left rounded-control px-2.5 py-1.5 text-ui text-fg-2 no-underline transition-colors duration-80 hover:bg-surface-2 hover:text-fg focus-ring';
 
 function AccountDropdown({
     dropdownRef,
     anchor,
     email,
+    onFeedback,
     onSignOut,
 }: {
     dropdownRef: React.RefObject<HTMLDivElement | null>;
     anchor: { top: number; right: number } | null;
     email: string;
+    onFeedback: () => void;
     onSignOut: () => void;
 }) {
     return (
         <div
             ref={dropdownRef}
             role="menu"
+            data-theme="dark"
             style={{
                 position: 'fixed',
                 top: anchor?.top ?? 0,
                 right: anchor?.right ?? 0,
             }}
-            className="w-56 bg-[#1a1a1a] border border-[#333] rounded shadow-lg z-[1000] py-1"
+            className="w-60 animate-pop-in rounded-panel border border-border bg-surface-1 p-1 shadow-e2 z-[1000]"
             data-testid="user-menu-dropdown"
         >
-            <div className="px-3 py-1.5 text-xs text-gray-400 truncate" data-testid="user-menu-email">
+            <div className="px-2.5 py-1.5 text-2xs text-fg-3 truncate" data-testid="user-menu-email">
                 {email}
             </div>
-            <div className="h-px bg-[#333] my-1" />
-            <a
-                href="/me"
-                className="block px-3 py-1.5 text-xs text-gray-300 hover:text-white hover:bg-[#222] no-underline transition-colors"
-                role="menuitem"
-            >
+            <div className="h-px bg-border my-1" />
+            <a href="/me" className={ITEM_CLASS} role="menuitem">
                 Your projects
             </a>
-            <a
-                href="/billing"
-                className="block px-3 py-1.5 text-xs text-gray-300 hover:text-white hover:bg-[#222] no-underline transition-colors"
-                role="menuitem"
-            >
+            <a href="/billing" className={ITEM_CLASS} role="menuitem">
                 Usage &amp; billing
             </a>
-            <div className="h-px bg-[#333] my-1" />
-            <button
-                type="button"
-                onClick={onSignOut}
-                className="w-full text-left px-3 py-1.5 text-xs text-gray-300 hover:text-white hover:bg-[#222] transition-colors"
-                role="menuitem"
-            >
+            <button type="button" onClick={onFeedback} className={ITEM_CLASS} role="menuitem" data-testid="user-menu-feedback">
+                Send feedback
+            </button>
+            <div className="h-px bg-border my-1" />
+            <button type="button" onClick={onSignOut} className={ITEM_CLASS} role="menuitem">
                 Sign out
             </button>
         </div>
@@ -159,6 +172,10 @@ function UserMenuInner() {
             dropdownRef={dropdownRef}
             anchor={anchor}
             email={email}
+            onFeedback={() => {
+                setOpen(false);
+                openFeedback();
+            }}
             onSignOut={handleSignOut}
         />
     ) : null;
@@ -169,17 +186,17 @@ function UserMenuInner() {
                 ref={triggerRef}
                 type="button"
                 onClick={toggleOpen}
-                className="flex items-center gap-1 rounded-full bg-[#2b2b2b] hover:bg-[#3a3a3a] pl-0.5 pr-1.5 py-0.5 text-gray-200 hover:text-white transition-colors ring-1 ring-[#444]"
+                className="focus-ring flex h-control-sm max-md:h-touch items-center gap-1 rounded-full pl-0.5 pr-1.5 text-fg-2 transition-colors duration-80 hover:bg-surface-2 hover:text-fg"
                 aria-label="Account menu"
                 aria-haspopup="menu"
                 aria-expanded={open}
                 title={email}
                 data-testid="user-menu-avatar"
             >
-                <span className="flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white text-[11px] font-semibold">
+                <span className="flex size-6 items-center justify-center rounded-full bg-accent text-on-accent text-2xs font-semibold">
                     {initial}
                 </span>
-                <ChevronDown size={12} className="text-gray-400" />
+                <ChevronDown size={12} aria-hidden="true" />
             </button>
             {/* Portaled to <body> so the header toolbar's overflow clip can't hide it. */}
             {dropdown && typeof document !== 'undefined'

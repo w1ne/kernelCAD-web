@@ -14,6 +14,7 @@ Two cases produce explicit diagnostics:
 - `feature.face-ref.ambiguous-after-split` — an upstream boolean split the named face into multiple children (e.g., a divider cut splits `top` into two halves). Geometry-fallback disambiguation is planned for a future release; current workaround: apply the edge/face feature before the splitting operation, or use a query-based selector.
 - `feature.face-ref.removed` — an upstream boolean removed the named face entirely. Reference a different face that still exists in the current shape.
 - `feature.hole.no-target-face` — the hole entry face matched, but no body sits along the bore axis to drill into. Pick an entry face on a different body, or verify the target body extends along the bore axis.
+- `feature.hole.cut-missing` — a bore centre is off the entry face, the depth is zero, or material is still on the bore axis after the cut. The feature fails; it never ships a part with a missing hole. The message gives the face centre, the u/v axes and the u/v span. See "Hole position frame" below.
 - `feature.created-ref.fallback-used` — *warning* (not error). The created-ref resolver fell back to a geometry-snapshot match after the topology lookup lost the face. The downstream feature still resolves. Lock the ref against future edits by naming the upstream feature with `.name()` and addressing it by `<name>.<slot>`.
 
 (The same `feature.face-ref.*` codes apply to both edge features (`fillet`, `chamfer`) and face features (`shell`).)
@@ -167,6 +168,34 @@ plate.cutout(
 );
 ```
 
+### Hole position frame
+
+`u`, `v` are mm offsets from the centre of the entry face's outer boundary.
+They are NOT world coordinates. Holes already in the face do not move the
+origin. Face names and axes follow the part through `.rotate()`.
+
+| Face | u | v |
+|---|---|---|
+| `top` / `bottom` | +X | +Y |
+| `front` / `back` | +X | +Z |
+| `left` / `right` | +Y | +Z |
+
+Convert a world point: `u = worldU - centreU`, `v = worldV - centreV`.
+
+```typescript
+// Plate spans Z 5..60, so the 'front' centre is at Z 32.5.
+// Hole wanted at world X 0, Z 45.5:
+plate.hole('front', { u: 0, v: 45.5 - 32.5, diameter: 3.4, depth: 'through' });
+```
+
+Every bore of `hole` / `holes` is checked. A centre off the face, a zero depth,
+or material left on the bore axis fails the feature with
+`feature.hole.cut-missing`.
+
+`cutout` profile (x, y) uses the same origin, and x runs along hole `u`. On
+`top`, `front` and `right`, profile y runs along hole `v`. On `bottom`, `back`
+and `left`, profile y runs the opposite way (-Y or -Z).
+
 Created refs emitted per feature kind (resolvable via `{ face: '<name>' }`):
 
 | Ref | Emitted when |
@@ -209,7 +238,7 @@ nutBlank.hole('top', {
 |---|---|
 | `pitch` | ISO pitch in mm, `0 < pitch ≤ diameter / 4` (M6 coarse → 1). `Editable<number>`. |
 | `modeled` | `true` cuts the 60° helical groove. `false` (default) is a cosmetic thread: only the minor-diameter bore plus the recorded `threadPitch` / `threadClearance` / `threadModeled` params. Pick it for speed; a modeled thread costs seconds per hole. |
-| `clearance` | mm of play, `0 ≤ clearance ≤ pitch / 8` (default 0). Grows the bore radius, the crest radius and each flank (normal to the flank) by that amount. `Editable<number>`. |
+| `clearance` | mm of play, `0 ≤ clearance ≤ pitch / 8` (default 0; the cap is 0.125 mm on M6 × 1, 0.156 mm on M8 × 1.25). Grows the bore radius, the crest radius and each flank (normal to the flank) by that amount. Past the cap neighbouring groove turns would merge. `Editable<number>`. |
 
 The thread is right-handed. Its groove centre crosses the face's `u` direction
 at the entry face, so a bolt threaded with `sweep(helix(...), { spine: 'helix' })`
@@ -218,6 +247,14 @@ helix start. A blind modeled thread stops short of the floor and needs
 `depth ≥ 2 × pitch`. Check the fit with `verify({ check: 'dfm' })` and a
 `dfmSpec({ minClearance })`: the exact distance between bolt and nut equals the
 clearance.
+
+**Print tolerance (FDM).** A printed nut usually needs 0.2–0.4 mm of play, more
+than the pitch/8 cap. Keep `clearance` at the cap and grow the whole internal
+thread instead: a larger nominal `diameter` shifts the bore, crest and both
+flanks outward together, and a radial shift δ opens each 60° flank by δ/2. So
+add `4 × (play − pitch/8)` to `diameter`: an M6 × 1 nut with 0.3 mm of flank
+play is `diameter: 6.7, thread: { pitch: 1, modeled: true, clearance: 0.125 }`.
+The error for an over-cap clearance prints these numbers for your pitch.
 
 ## Naming features (slice 2)
 

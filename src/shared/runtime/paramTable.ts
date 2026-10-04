@@ -14,7 +14,10 @@
 // (closed milestone-C catalog respected per discipline gate D-1).
 
 import { FEATURE_NAME_REGEX } from '../intent/featureName';
-import { KernelError } from '../intent/kernelError';
+import { invalidArgs } from '../intent/invalidArgs';
+
+/** One minimal correct declaration, inline on every param message. */
+const PARAM_EXAMPLE = "param('wallThickness', 3, { min: 1, max: 10, unit: 'mm' })";
 
 export type ParamType = 'number' | 'boolean' | 'choice' | 'string';
 
@@ -28,6 +31,15 @@ export interface ParamMetadata {
   choices?: string[];
   /** Optional for `type: 'string'`. Max character length. */
   maxLength?: number;
+  /** Presentation only (the customizer panel); the kernel ignores these. */
+  /** Readable name, e.g. "Plate width". Default: humanised from the name. */
+  label?: string;
+  /** Display unit, e.g. "mm" or "°". */
+  unit?: string;
+  /** Slider and arrow-key step for `type: 'number'`. */
+  step?: number;
+  /** Section the param is listed under, e.g. "Fasteners". */
+  group?: string;
 }
 
 export interface ParamEntry {
@@ -61,20 +73,27 @@ export class ParamTable {
     meta?: ParamMetadata,
   ): ParamEntry {
     if (!FEATURE_NAME_REGEX.test(name)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `param name '${name}' must match ${FEATURE_NAME_REGEX.source}`,
-        undefined,
-        `invalid-args.param.invalid-name — param name '${name}' must match ${FEATURE_NAME_REGEX.source}`,
-      );
+      invalidArgs({
+        api: 'param(name, defaultValue, meta)',
+        path: 'name',
+        got: name,
+        showType: typeof name !== 'string',
+        requires:
+          `a string matching ${FEATURE_NAME_REGEX.source} — start with a letter, then letters, digits, underscores or hyphens, max 32 chars (no spaces, dots or units in the name)`,
+        hintSlug: 'invalid-args.param.invalid-name',
+        example: PARAM_EXAMPLE,
+      });
     }
     if (this.entries.has(name)) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `param '${name}' already declared`,
-        undefined,
-        `invalid-args.param.duplicate-name — param '${name}' already declared`,
-      );
+      invalidArgs({
+        api: 'param(name, defaultValue, meta)',
+        path: 'name',
+        got: name,
+        requires:
+          `a name not already declared — '${name}' exists in this script; declare each param once and reuse the returned ParamRef, or read it back with the existing ref`,
+        hintSlug: 'invalid-args.param.duplicate-name',
+        example: PARAM_EXAMPLE,
+      });
     }
     assertTypeMatches(name, type, defaultValue);
     if (type === 'number') {
@@ -104,12 +123,15 @@ export class ParamTable {
   get(name: string): ParamEntry {
     const entry = this.entries.get(name);
     if (!entry) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `param '${name}' not found`,
-        undefined,
-        `invalid-args.param.unknown-name — param '${name}' not found`,
-      );
+      invalidArgs({
+        api: 'setParam(name, value)',
+        path: 'name',
+        got: name,
+        requires:
+          `the name of a param declared earlier in this script${this.entries.size === 0 ? ' (none are declared yet)' : ` — declared: ${[...this.entries.keys()].join(', ')}`}`,
+        hintSlug: 'invalid-args.param.unknown-name',
+        example: PARAM_EXAMPLE,
+      });
     }
     return entry;
   }
@@ -195,62 +217,93 @@ function jsTypeOf(type: ParamType): 'number' | 'boolean' | 'string' {
 function assertTypeMatches(name: string, type: ParamType, value: ParamValue): void {
   const expected = jsTypeOf(type);
   if (typeof value !== expected) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `param '${name}' is ${type}, got ${typeof value}`,
-      undefined,
-      `invalid-args.param.type-mismatch — param '${name}' is ${type}, got ${typeof value}`,
-    );
+    invalidArgs({
+      api: 'param(name, defaultValue, meta)',
+      path: `param('${name}') value`,
+      got: value,
+      showType: true,
+      requires: `a ${expected} — param '${name}' is declared as type '${type}'`,
+      hintSlug: 'invalid-args.param.type-mismatch',
+      example: PARAM_EXAMPLE,
+    });
   }
 }
 
 function assertValidChoice(name: string, value: string, meta: ParamMetadata | undefined): void {
   const choices = meta?.choices;
   if (!choices || choices.length === 0) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `param '${name}' declared as choice but no meta.choices provided`,
-      undefined,
-      `invalid-args.param.choice-invalid — param '${name}' declared as choice but no meta.choices provided; pass { choices: [...] }`,
-    );
+    invalidArgs({
+      api: 'param(name, defaultValue, { choices })',
+      path: 'meta.choices',
+      got: choices,
+      showType: true,
+      requires:
+        `a non-empty array of the allowed strings — param '${name}' is a choice param, so the list of options is required`,
+      hintSlug: 'invalid-args.param.choice-invalid',
+      example: "param('finish', 'matte', { choices: ['matte', 'gloss'] })",
+    });
   }
   if (!choices.includes(value)) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `param '${name}' value '${value}' is not one of the declared choices: ${choices.join(', ')}`,
-      undefined,
-      `invalid-args.param.choice-invalid — param '${name}' value '${value}' is not one of [${choices.join(', ')}]`,
-    );
+    invalidArgs({
+      api: 'param(name, defaultValue, { choices })',
+      path: `param('${name}') value`,
+      got: value,
+      requires: `one of the declared choices [${choices.join(', ')}]`,
+      hintSlug: 'invalid-args.param.choice-invalid',
+      example: `param('${name}', '${choices[0]}', { choices: [${choices.map((c) => `'${c}'`).join(', ')}] })`,
+    });
   }
 }
 
 function assertWithinMaxLength(name: string, value: string, meta: ParamMetadata | undefined): void {
   if (meta?.maxLength !== undefined && value.length > meta.maxLength) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `param '${name}' value length ${value.length} exceeds maxLength ${meta.maxLength}`,
-      undefined,
-      `invalid-args.param.value-out-of-range — param '${name}' value length ${value.length} exceeds maxLength ${meta.maxLength}`,
-    );
+    invalidArgs({
+      api: 'param(name, defaultValue, { maxLength })',
+      path: `param('${name}') value`,
+      got: value,
+      requires: `a string of at most meta.maxLength = ${meta.maxLength} characters; this one is ${value.length}`,
+      hintSlug: 'invalid-args.param.value-out-of-range',
+      example: `param('${name}', 'abc', { maxLength: ${Math.max(meta.maxLength, value.length)} })`,
+    });
   }
 }
 
 function assertWithinBounds(name: string, value: number, meta: ParamMetadata | undefined): void {
   if (!meta) return;
+  // min > max makes every value invalid, so report the declaration itself
+  // rather than the value — otherwise the agent keeps changing the value.
+  if (meta.min !== undefined && meta.max !== undefined && meta.min > meta.max) {
+    invalidArgs({
+      api: 'param(name, defaultValue, { min, max })',
+      path: `param('${name}') meta.min`,
+      got: meta.min,
+      requires:
+        `meta.min ≤ meta.max — meta.max is ${meta.max}, so no value can satisfy this declaration; swap the two bounds`,
+      unit: meta.unit,
+      hintSlug: 'invalid-args.param.value-out-of-range',
+      example: `param('${name}', ${meta.min}, { min: ${Math.min(meta.min, meta.max)}, max: ${Math.max(meta.min, meta.max)} })`,
+    });
+  }
   if (meta.min !== undefined && value < meta.min) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `param '${name}' value ${value} below min ${meta.min}`,
-      undefined,
-      `invalid-args.param.value-out-of-range — param '${name}' value ${value} below min ${meta.min}`,
-    );
+    invalidArgs({
+      api: 'param(name, defaultValue, { min, max })',
+      path: `param('${name}') value`,
+      got: value,
+      requires: `a number ≥ meta.min = ${meta.min}${meta.max !== undefined ? ` and ≤ meta.max = ${meta.max}` : ''}`,
+      unit: meta.unit,
+      hintSlug: 'invalid-args.param.value-out-of-range',
+      example: `param('${name}', ${meta.min}, { min: ${meta.min}${meta.max !== undefined ? `, max: ${meta.max}` : ''} })`,
+    });
   }
   if (meta.max !== undefined && value > meta.max) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `param '${name}' value ${value} above max ${meta.max}`,
-      undefined,
-      `invalid-args.param.value-out-of-range — param '${name}' value ${value} above max ${meta.max}`,
-    );
+    invalidArgs({
+      api: 'param(name, defaultValue, { min, max })',
+      path: `param('${name}') value`,
+      got: value,
+      requires: `a number ≤ meta.max = ${meta.max}${meta.min !== undefined ? ` and ≥ meta.min = ${meta.min}` : ''}`,
+      unit: meta.unit,
+      hintSlug: 'invalid-args.param.value-out-of-range',
+      example: `param('${name}', ${meta.max}, { ${meta.min !== undefined ? `min: ${meta.min}, ` : ''}max: ${meta.max} })`,
+    });
   }
 }

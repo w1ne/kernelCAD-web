@@ -59,7 +59,19 @@ export class OpenAICompatAgentClient implements AgentClient {
       max_tokens: args.max_tokens,
       messages: [
         { role: 'system', content: system },
-        ...args.messages.map((m) => ({ role: m.role, content: m.content })),
+        ...args.messages.map((m) => ({
+          role: m.role,
+          content:
+            m.images && m.images.length > 0
+              ? [
+                  ...m.images.map((img) => ({
+                    type: 'image_url',
+                    image_url: { url: `data:${img.mediaType};base64,${img.data}` },
+                  })),
+                  { type: 'text', text: m.content },
+                ]
+              : m.content,
+        })),
       ],
       ...(args.temperature !== undefined ? { temperature: args.temperature } : {}),
     };

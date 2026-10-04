@@ -57,12 +57,14 @@ import { initOcct } from '../../kernel/backends/occt/occtBackend';
 import { createOcctLowerer } from '../backends/occt/occtLowerer';
 import { RecomputeEngine } from '../compute/recomputeEngine';
 import { solveMates } from '../mates/solver';
+import { collectRegistryDrivenMates } from '../mates/mechanicalJointRegistry';
 import { detectInterferences, pairKey } from './detectInterferences';
 import { jointContactCapMm3, INTERPENETRATION_EPSILON_MM3 } from './jointContactCap';
 import { reposedLoweredAssemblyScene } from '../mates/loweredAssemblyScene';
 import { expandCoupledPoses } from '../mates/coupledPoses';
 import type { NumericPoses } from '../capture/forwardKinematics';
 import { parseConnectorRef, type MateRecord } from '../mates/mate';
+import { checkOrphanParts } from './mechanismOrphan';
 import { assemblyToMjcf } from './mjcfExport';
 import { loadMujocoSession } from './mujocoSession';
 import {
@@ -394,141 +396,6 @@ function estimateSweepWork(arm: Assembly, solvedSampleCount: number): number {
   const revoluteCount = arm.__mates().filter((m) => m.type === 'revolute').length;
   const lowerCount = solvedSampleCount + revoluteCount * POSE_SAMPLE_COUNT_PER_MATE;
   return lowerCount * partCount;
-}
-
-// ─────────────────────────────────────────────────────────────────────────
-// Criterion 4 — mechanism.orphan-part (graph reachability)
-// ─────────────────────────────────────────────────────────────────────────
-
-/** Add a connection in both directions. Unknown part names are ignored,
- *  matching the optional-chaining lookups the walk has always used. */
-function addUndirectedEdge(adj: Map<string, Set<string>>, a: string, b: string): void {
-  adj.get(a)?.add(b);
-  adj.get(b)?.add(a);
-}
-
-/** Mate edges: connectors address parts by name. */
-function addMateEdges(
-  adj: Map<string, Set<string>>,
-  mates: ReturnType<Assembly['__mates']>,
-): void {
-  for (const m of mates) {
-    const aPart = parseConnectorRef(m.a).partName;
-    const bPart = parseConnectorRef(m.b).partName;
-    addUndirectedEdge(adj, aPart, bPart);
-  }
-}
-
-/** Joint-primitive edges. Joints address parts by FeatureId, not by name. */
-function addJointEdges(
-  adj: Map<string, Set<string>>,
-  joints: ReturnType<Assembly['__joints']>,
-  nameByPartId: Map<FeatureId, string>,
-): void {
-  for (const j of joints) {
-    const aPart = nameByPartId.get(j.parentPartId);
-    const bPart = nameByPartId.get(j.childPartId);
-    if (aPart === undefined || bPart === undefined) continue;
-    addUndirectedEdge(adj, aPart, bPart);
-  }
-}
-
-/** `arm.part(name, shape, { connect: { to } })` places a part rigidly on a
- *  parent without declaring either a mate or a joint. That is a structural
- *  connection too — the v0.5 validator has always treated it as one
- *  (`validateAssembly`'s floating/orphan pass) — so the truth walk must
- *  agree rather than call the placed part an orphan. */
-function addConnectEdges(
-  adj: Map<string, Set<string>>,
-  parts: ReturnType<Assembly['__parts']>,
-  nameByPartId: Map<FeatureId, string>,
-): void {
-  for (const p of parts) {
-    const parentName = p.connectParentId === undefined
-      ? undefined
-      : nameByPartId.get(p.connectParentId);
-    if (parentName === undefined) continue;
-    addUndirectedEdge(adj, p.name, parentName);
-  }
-}
-
-function buildPartAdjacency(
-  parts: ReturnType<Assembly['__parts']>,
-  mates: ReturnType<Assembly['__mates']>,
-  joints: ReturnType<Assembly['__joints']>,
-): Map<string, Set<string>> {
-  // Build adjacency: part-name → set of neighbor part-names.
-  //
-  // KC-04: kernelCAD has TWO assembly conventions and BOTH connect parts —
-  // `.mate()` + connectors (`arm.__mates()`) and the joint primitives
-  // `.revolute()/.prismatic()/.ball()` (`arm.__joints()`). This
-  // walk used to read the mate edge list only, so a perfectly sound
-  // joint-primitive mechanism reported every non-first part as
-  // `mechanism.orphan-part` while `summarizeMechanismFitness` — which reads
-  // the validator/envelope stream, not this walk — reported
-  // `functional: true, repairMode: 'none'` in the SAME review_cad response.
-  // Both cannot be right; joint edges are connections, so they belong here.
-  const adj = new Map<string, Set<string>>();
-  for (const p of parts) adj.set(p.name, new Set());
-  addMateEdges(adj, mates);
-
-  const nameByPartId = new Map<FeatureId, string>();
-  for (const p of parts) nameByPartId.set(p.id, p.name);
-  addJointEdges(adj, joints, nameByPartId);
-  addConnectEdges(adj, parts, nameByPartId);
-  return adj;
-}
-
-function collectReachablePartNames(
-  adj: Map<string, Set<string>>,
-  root: string,
-): Set<string> {
-  // BFS from parts[0]. Anything unreached is an orphan.
-  const visited = new Set<string>();
-  const queue: string[] = [root];
-  visited.add(root);
-  while (queue.length > 0) {
-    const cur = queue.shift()!;
-    for (const next of adj.get(cur) ?? []) {
-      if (!visited.has(next)) {
-        visited.add(next);
-        queue.push(next);
-      }
-    }
-  }
-  return visited;
-}
-
-function checkOrphanParts(arm: Assembly): CompilerDiagnostic[] {
-  const parts = arm.__parts();
-  if (parts.length <= 1) return [];
-  const adj = buildPartAdjacency(parts, arm.__mates(), arm.__joints());
-
-  const root = parts[0].name;
-  const visited = collectReachablePartNames(adj, root);
-  const disconnected = parts.map((p) => p.name).filter((name) => !visited.has(name));
-  if (disconnected.length === 0) return [];
-
-  // One diagnostic per disconnected body, but every message names the full
-  // disconnected-component roster + the required connector/mate patterns so
-  // agents (ChatGPT) can fix gear/hinge assemblies without hunting docs.
-  const disconnectedList = disconnected.map((n) => `'${n}'`).join(', ');
-  const reachableList = [...visited].map((n) => `'${n}'`).join(', ');
-  const out: CompilerDiagnostic[] = [];
-  for (const name of disconnected) {
-    out.push(makeFailure(
-      'mechanism.orphan-part',
-      `Disconnected component: part '${name}' is not linked to the assembly graph. ` +
-        `Root '${root}' reaches only [${reachableList}]; disconnected bodies: [${disconnectedList}]. ` +
-        `No mate, joint, or connect edge links '${name}' into that graph. ` +
-        `Fix: add connectors + mates/joints — shafts/hinges/gears use ` +
-        `partRef.connector(name, { type: 'axis', origin: { kind: 'vec3', value: [x,y,z] }, axis: [ux,uy,uz] }) ` +
-        `then arm.mate(..., 'revolute'); rigid mounts use type: 'frame' + mate(..., 'fastened'); ` +
-        `or joint primitives arm.revolute/.prismatic/.ball/.fixed. ` +
-        `Connector types are only frame|axis|planar|ball (no gear-contact type).`,
-    ));
-  }
-  return out;
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -927,6 +794,11 @@ async function checkDofMismatch(
  * Reuses the rest-pose `SolvedSample.scene` lazily lowered by criteria
  * 2 + 3 — no new pose solve, no new BREP lower.
  */
+/** Appended to the joint-mesh-gap hint: the tempting fix (move the
+ *  connector onto the body) drags the mated part along with it. */
+const JOINT_MESH_GAP_CONNECTOR_MOVE_WARNING =
+  'Moving a connector also moves the part mated to it (the mate re-aligns the partner), which can silently reopen a collision — prefer growing the geometry, and re-run the collision check after any connector move.';
+
 async function checkJointMeshContinuityCriterion(
   arm: Assembly,
   solved: SolvedSample[],
@@ -963,15 +835,23 @@ async function checkJointMeshContinuityCriterion(
         `${r.bearingGapMm.toFixed(1)}mm — no bearing surface constrains ` +
         `the joint within tolerance either.`
       : '';
-    out.push(makeFailure(
+    const failure = makeFailure(
       'mechanism.joint-mesh-gap',
       `Joint '${r.mateName}' ${r.side} body '${r.partName}': nearest solid is ` +
       `${r.signedDistanceMm.toFixed(1)}mm from the pivot origin (allowed ` +
       `${allowedGap.toFixed(1)}mm = clearance bore ${r.clearanceRadiusMm.toFixed(1)}mm + ` +
       `${JOINT_MESH_GAP_TOLERANCE_MM.toFixed(1)}mm margin). The link mesh does not ` +
       `reach the joint it pivots on — extend the body geometry so its OCCT ` +
-      `knuckle solid surrounds the joint origin at rest pose.` + bearingNote,
-    ));
+      `knuckle solid surrounds the joint origin at rest pose.` + bearingNote +
+      ` Do not fix this by moving the connector alone: the mate re-aligns the ` +
+      `mated part '${r.otherPartName}' onto the moved connector, which can ` +
+      `silently reopen a collision elsewhere — re-run the collision check ` +
+      `after any connector move.`,
+    );
+    out.push({
+      ...failure,
+      hint: `${failure.hint} ${JOINT_MESH_GAP_CONNECTOR_MOVE_WARNING}`,
+    });
   }
   return out;
 }
@@ -1103,6 +983,9 @@ async function lowerAssemblySceneForPose(
   const result = await engine.run(arm.__session().getRecords(), {
     paramTable: arm.__session().paramTable,
     gatedFeatureNames: arm.__session().gatedFeatureNames,
+    // Only the appended pose scene needs lowering; the part records are
+    // unchanged since the last full lower.
+    seedShapes: arm.__session().reusableLoweredPrefix(),
   });
   const sourceId: FeatureId | undefined = scene.__sourceFeatureId();
   if (sourceId === undefined) return undefined;
@@ -1290,21 +1173,6 @@ async function runStaticEquilibrium(
  * carries the specific joint / body and the magnitude.
  */
 
-/** Mates covered by a complete mechanicalJoint intent — "actively driven". */
-function collectActivelyDrivenMates(arm: Assembly): Set<string> {
-  const driven = new Set<string>();
-  const partsByName = new Map(arm.__parts().map((part) => [part.name, part]));
-  const matesByName = new Map(arm.__mates().map((mate) => [mate.name, mate]));
-  for (const intent of arm.__mechanicalJointIntents()) {
-    if (!partsByName.has(intent.actuator)) continue;
-    if (!partsByName.has(intent.shaft) || !partsByName.has(intent.output)) continue;
-    if (intent.supports.length === 0 || intent.supports.some((s) => !partsByName.has(s))) continue;
-    const mate = matesByName.get(intent.mate);
-    if (mate === undefined || mate.type !== 'revolute') continue;
-    driven.add(intent.mate);
-  }
-  return driven;
-}
 
 function allArticulatedMatesDriven(
   jointOrder: readonly { mateName: string }[],
@@ -1372,7 +1240,7 @@ async function runDropOnRelease(
   // held by an actuator. MuJoCo emission still has no position motors, so we
   // honour the authoring contract here rather than demanding a tendon on every
   // servo joint. Passive jointSupport hinges still need arm.tendon(...).
-  const drivenMates = collectActivelyDrivenMates(arm);
+  const drivenMates = collectRegistryDrivenMates(arm);
   if (allArticulatedMatesDriven(jointOrder, drivenMates)) return [];
 
   // Reset to the model's qpos0 — criterion 5 left the session at its

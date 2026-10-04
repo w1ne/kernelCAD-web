@@ -155,6 +155,17 @@ export function renderTranscript(args: RenderTranscriptArgs): string {
         }
       }
       lines.push('');
+    } else if (ev.kind === 'best_of_n') {
+      lines.push(`## Best-of-${ev.candidates.length} (${ev.selector}) — winner #${ev.winnerIndex}`);
+      ev.candidates.forEach((c, i) => {
+        const dist = c.meanDistanceMm === undefined
+          ? ''
+          : `, mean distance ${c.meanDistanceMm === null ? 'dropped' : `${c.meanDistanceMm.toFixed(3)} mm`}`;
+        const oracle = c.oracleScore === null ? '' : `, oracle ${c.oracleScore.toFixed(2)}`;
+        lines.push(`- #${i}: ${c.stagesPassed} gate stage(s) passed${oracle}${dist}`);
+      });
+      if (ev.reason !== undefined) lines.push(`- ${ev.reason}`);
+      lines.push('');
     } else if (ev.kind === 'score') {
       // Score block is rendered at end from the score arg, not from this event.
     }

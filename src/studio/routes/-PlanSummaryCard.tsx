@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { ReactNode } from 'react';
 import type { MyPlan } from '../../funnel/lib/apiClient';
+import { planLabel } from '../../funnel/lib/planLabels';
 
 export interface PlanSummaryCardProps {
   plan: MyPlan | null;
@@ -20,11 +21,7 @@ export function PlanSummaryCard({ plan, planErr }: PlanSummaryCardProps): ReactN
         >
           <div>
             <p className="font-serif font-medium text-ink text-sm">
-              {plan.plan === 'pro'
-                ? plan.tier === 'pro'
-                  ? 'Pro plan'
-                  : 'Basic plan'
-                : 'Free plan'}
+              {planLabel(plan)}
             </p>
             <p className="font-mono text-[11px] text-ink-faint mt-1 tracking-wide">
               {plan.plan === 'pro'

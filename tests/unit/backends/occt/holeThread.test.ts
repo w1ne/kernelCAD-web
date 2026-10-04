@@ -78,9 +78,9 @@ describe('hole({ thread }) — internal ISO metric thread', () => {
   });
 
   it.each([
-    [`thread: { pitch: 2 }`, 'diameter: 6', /thread.pitch \(2\) must be > 0 and ≤ diameter \/ 4/],
-    [`thread: { pitch: 1, clearance: 0.2 }`, 'diameter: 6', /thread.clearance \(0.2\) must be in \[0, pitch\/8\]/],
-    [`thread: { pitch: 1, modeled: true }`, 'diameter: 6, depth: 1.5', /modeled thread needs depth ≥ 2 × pitch/],
+    [`thread: { pitch: 2 }`, 'diameter: 6', /opts\.thread\.pitch — got 2; requires the ISO 261 pitch, > 0 and ≤ opts\.diameter \/ 4/],
+    [`thread: { pitch: 1, clearance: 0.2 }`, 'diameter: 6', /opts\.thread\.clearance — got 0\.2; requires a number in \[0, thread\.pitch \/ 8\]/],
+    [`thread: { pitch: 1, modeled: true }`, 'diameter: 6, depth: 1.5', /opts\.depth — got 1\.5; requires depth ≥ 2 × thread\.pitch for a modeled thread/],
   ])('rejects %s at capture', async (thread, dims, message) => {
     const depth = dims.includes('depth') ? '' : ", depth: 'through'";
     await expect(

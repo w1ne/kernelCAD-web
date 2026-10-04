@@ -39,11 +39,11 @@ return box(w, h, t);
         // 2. Toolbar present.
         await expect(page.getByTestId('studio-toolbar')).toBeVisible();
 
-        // 3. Scene + Code tabs are always present.
+        // 3. Code + Checks tabs are always present.
         const inspector = page.locator('[data-testid="inspector-tabs"]').first();
         await expect(inspector).toBeVisible();
-        await expect(inspector.getByRole('tab', { name: /scene/i })).toBeVisible();
         await expect(inspector.getByRole('tab', { name: /code/i })).toBeVisible();
+        await expect(inspector.getByRole('tab', { name: /checks/i })).toBeVisible();
 
         // 4. Bottom drawer stays closed when no validity result has been
         //    published (Slice 1 useRecomputeResult returns validity: null).

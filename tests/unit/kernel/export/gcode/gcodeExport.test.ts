@@ -27,6 +27,9 @@ describe('gcode export — bed-size gate', () => {
     expect(diag).toBeDefined();
     expect(diag?.severity).toBe('error');
     expect(diag?.message).toMatch(/exceeds the 'generic-fdm' bed/);
+    expect(diag?.hint).toContain(
+      "Fits on: Creality K1 Max ('creality-k1-max'), Bambu Lab H2D ('bambu-h2d'), Bambu Lab H2S ('bambu-h2s').",
+    );
   }, 30000);
 
   it('still fails the bed gate for a 300 mm part against generic-fdm (250 mm height)', async () => {

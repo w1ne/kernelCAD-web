@@ -6,13 +6,21 @@ export type Sizes = Record<Dimension, number>;
 export interface StarterModel {
   id: StarterId;
   name: string;
+  /** One line for the starter pickers: what the part is. */
+  summary: string;
   sizes: Sizes;
 }
 export const STARTERS: readonly StarterModel[] = [
-  { id: 'stand', name: 'Phone stand', sizes: { width: 75, depth: 80, height: 65 } },
-  { id: 'bracket', name: 'Bracket', sizes: { width: 60, depth: 45, height: 40 } },
-  { id: 'box', name: 'Open box', sizes: { width: 80, depth: 55, height: 35 } },
+  { id: 'stand', name: 'Phone stand', summary: 'Tilted back with a front lip', sizes: { width: 75, depth: 80, height: 65 } },
+  { id: 'bracket', name: 'Bracket', summary: 'L-bracket with three screw holes', sizes: { width: 60, depth: 45, height: 40 } },
+  { id: 'box', name: 'Open box', summary: 'Tray with 3 mm walls', sizes: { width: 80, depth: 55, height: 35 } },
 ];
+
+/** "60 × 45 × 40 mm": the starter's default size, width × depth × height. */
+export function starterSizeLabel(model: StarterModel): string {
+  const { width, depth, height } = model.sizes;
+  return `${width} × ${depth} × ${height} mm`;
+}
 export const SIZE_LIMITS: Record<Dimension, { min: number; max: number }> = {
   width: { min: 40, max: 120 },
   depth: { min: 40, max: 120 },

@@ -11,7 +11,7 @@ import type { Shape } from '../capture/proxy';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import { resolveTopologyOriginOnBackend } from '../backends/occt/connectorTopology';
 import { parseTopoRef } from '../../kernel/naming';
-import { KernelError } from '../../shared/intent/kernelError';
+import { invalidArgs } from '../../shared/intent/invalidArgs';
 
 export type ConnectorType = 'frame' | 'axis' | 'planar' | 'ball';
 
@@ -80,6 +80,8 @@ export type ConnectorOriginInput = ConnectorOrigin | string;
  * cannot reference `@kc[other/face/...]`) and prevents accidental cross-
  * part topology binding.
  */
+const CONNECTOR_EXAMPLE = "arm.part('servo').connector('shaft', '@kc[servo/face/top#normal]')";
+
 export function normalizeConnectorOriginInput(
   input: ConnectorOriginInput,
   partName: string,
@@ -88,38 +90,44 @@ export function normalizeConnectorOriginInput(
     return input;
   }
   if (!input.startsWith('@kc[')) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `connector origin string '${input}' must be a @kc[...] topology ref.`,
-      undefined,
-      `Pass either a structured ConnectorOrigin ({ kind: 'vec3' | 'topology', ... }) or a @kc[<part>/face/<name>] / @kc[<part>/edge/<name>] / @kc[<part>/vertex/<name>] ref.`,
-    );
+    invalidArgs({
+      api: 'connector(name, origin)',
+      path: 'origin',
+      got: input,
+      requires:
+        `a @kc[<part>/face|edge|vertex/<name>] topology ref, or a structured ConnectorOrigin ({ kind: 'vec3' | 'topology', ... }); a bare face label is not accepted here, so a stale label can never silently bind`,
+      example: CONNECTOR_EXAMPLE,
+    });
   }
   const parsed = parseTopoRef(input);
   if ('error' in parsed) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `connector origin '${input}' is malformed: ${parsed.error}.`,
-      undefined,
-      `Topology refs use the @kc[owner/kind/name] grammar. ${parsed.error}.`,
-    );
+    invalidArgs({
+      api: 'connector(name, origin)',
+      path: 'origin',
+      got: input,
+      requires: `the @kc[<owner>/<kind>/<name>] grammar — ${parsed.error}`,
+      example: CONNECTOR_EXAMPLE,
+    });
   }
   if (parsed.owner !== partName) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `connector origin '${input}' references part '${parsed.owner}', but the connector is being added to part '${partName}'.`,
-      undefined,
-      `Use a ref whose owner segment matches the part name: '@kc[${partName}/${parsed.kind}/<name>]'.`,
-    );
+    invalidArgs({
+      api: 'connector(name, origin)',
+      path: 'origin owner segment',
+      got: parsed.owner,
+      requires:
+        `the owner segment to equal the part the connector is added to — that part is '${partName}', so write '@kc[${partName}/${parsed.kind}/<name>]'; a connector cannot bind to topology on another part`,
+      example: `@kc[${partName}/${parsed.kind}/${parsed.segments[parsed.segments.length - 1] ?? 'top'}]`,
+    });
   }
   const name = parsed.segments[parsed.segments.length - 1];
   if (name === undefined) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `connector origin '${input}' has no entity name segment.`,
-      undefined,
-      `Append a name segment: '@kc[${parsed.owner}/${parsed.kind}/<name>]'.`,
-    );
+    invalidArgs({
+      api: 'connector(name, origin)',
+      path: 'origin name segment',
+      got: input,
+      requires: `a trailing entity name: '@kc[${parsed.owner}/${parsed.kind}/<name>]'`,
+      example: `@kc[${parsed.owner}/${parsed.kind}/top]`,
+    });
   }
   if (parsed.kind === 'face') {
     const isNormal = parsed.modifier === 'normal';
@@ -136,12 +144,13 @@ export function normalizeConnectorOriginInput(
   if (parsed.kind === 'vertex') {
     return { kind: 'topology', query: { kind: 'vertex', name } };
   }
-  throw new KernelError(
-    'feature.invalid-args',
-    `connector origin '${input}' has kind '${parsed.kind}'; expected face/edge/vertex.`,
-    undefined,
-    `Use a topology ref of kind face, edge, or vertex.`,
-  );
+  invalidArgs({
+    api: 'connector(name, origin)',
+    path: 'origin kind segment',
+    got: parsed.kind,
+    requires: "one of 'face', 'edge' or 'vertex'",
+    example: CONNECTOR_EXAMPLE,
+  });
 }
 
 export function makeConnector(input: MakeConnectorInput): Connector {
