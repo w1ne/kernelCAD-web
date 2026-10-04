@@ -176,7 +176,7 @@ describe('declared GD&T overrides the automatic set', () => {
     try {
       renderSvgDrawing(mountingPlate(), {
         format: 'svg-drawing',
-        declarations: { datums: [{ label: 'A', face: { atZ: 999 } }], tolerances: [] },
+        declarations: { datums: [{ label: 'A', face: { atZ: 999 } }], tolerances: [], dimensions: [] },
       });
       expect.unreachable();
     } catch (e) {

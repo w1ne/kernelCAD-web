@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/runtime/drawingDeclarations.ts
 //
-// Collects the GD&T a script declared with `shape.datum()` / `shape.tolerance()`
+// Collects the GD&T and dimensions a script declared with `shape.datum()` / `shape.tolerance()`
 // for one exported target. A declaration counts when the shape it was made on
 // is the exported feature or feeds it (any upstream input, transitively), so
 // `plate.datum('A', ...)` followed by more booleans on `plate` still lands on
@@ -13,6 +13,8 @@ import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type {
   DrawingDatumMetadata,
   DrawingDeclarations,
+  DrawingDimensionMetadata,
+  DrawingDimensionSpec,
   DrawingToleranceMetadata,
 } from '../../shared/intent/drawingGdtRecord';
 
@@ -40,12 +42,16 @@ export function collectDrawingDeclarations(
   targetId: string,
 ): DrawingDeclarations {
   const upstream = upstreamIds(records, targetId);
-  const out: DrawingDeclarations = { datums: [], tolerances: [] };
+  const out: DrawingDeclarations = { datums: [], tolerances: [], dimensions: [] };
   for (const r of records) {
-    if (r.kind !== 'drawingDatum' && r.kind !== 'drawingTolerance') continue;
+    if (r.kind !== 'drawingDatum' && r.kind !== 'drawingTolerance' && r.kind !== 'drawingDimension') continue;
     const ref = r.inputs?.shape;
     if (ref === undefined || ref.kind !== 'feature' || !upstream.has(ref.id)) continue;
-    if (r.kind === 'drawingDatum') {
+    if (r.kind === 'drawingDimension') {
+      const dim: Partial<DrawingDimensionMetadata> = { ...(r.metadata as unknown as DrawingDimensionMetadata) };
+      delete dim.virtual;
+      out.dimensions.push(dim as DrawingDimensionSpec);
+    } else if (r.kind === 'drawingDatum') {
       const m = r.metadata as unknown as DrawingDatumMetadata;
       out.datums.push({ label: m.label, face: m.face });
     } else {

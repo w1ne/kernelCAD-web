@@ -713,7 +713,7 @@ function renderAutoStage(input: {
     parts, options, shape, layout, styled, s, sheet, sectionsSvg, rightReserve, diagnosticsOut,
   } = input;
   const authored = options.annotations ?? [];
-  const declarations = options.declarations ?? { datums: [], tolerances: [] };
+  const declarations = options.declarations ?? { datums: [], tolerances: [], dimensions: [] };
   const autoOn = options.autoAnnotate !== undefined && options.autoAnnotate !== false;
   const hasDeclarations = declarations.datums.length + declarations.tolerances.length > 0;
   let dimBodies = input.dimBodies;

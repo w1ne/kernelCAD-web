@@ -49,6 +49,7 @@ import {
   buildFeaStudyFeatureSpec,
   buildDrawingDatumFeatureSpec,
   buildDrawingToleranceFeatureSpec,
+  buildDrawingDimensionFeatureSpec,
   buildEmbossTextFeatureSpec,
   buildProjectCurveFeatureSpec,
   type Curve3DCaptureArgs,
@@ -566,6 +567,13 @@ export class CaptureSession {
    */
   addDrawingTolerance(spec: DrawingToleranceSpec, shapeRef: FeatureRef): FeatureId {
     const r = this.register(buildDrawingToleranceFeatureSpec(spec, shapeRef));
+    return r.id;
+  }
+
+  /** Capture a `drawingDimension` record: a dimension the viewer and the
+   *  drawing exporters show. Virtual and validated eagerly, like `addDrawingTolerance`. */
+  addDrawingDimension(spec: unknown, shapeRef: FeatureRef): FeatureId {
+    const r = this.register(buildDrawingDimensionFeatureSpec(spec, shapeRef));
     return r.id;
   }
 

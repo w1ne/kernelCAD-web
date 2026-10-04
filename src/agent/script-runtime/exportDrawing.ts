@@ -226,6 +226,7 @@ function mergeDrawingDeclarations(
   return {
     datums: [...(opts.declarations?.datums ?? []), ...captured.datums],
     tolerances: [...(opts.declarations?.tolerances ?? []), ...captured.tolerances],
+    dimensions: [...(opts.declarations?.dimensions ?? []), ...captured.dimensions],
   };
 }
 
