@@ -4,6 +4,7 @@ import { useCallback, useState, type ReactNode } from 'react';
 import type { ProjectRow } from '../../funnel/lib/apiClient';
 import { useOptionalSession } from '../../funnel/hooks/useSession';
 import { Link2 } from 'lucide-react';
+import { FeedbackLauncher } from '../components/Layout/FeedbackLauncher';
 import { ProjectGalleryControls, type GalleryControlsLook } from './-ProjectGalleryControls';
 
 const BTN_CLASS: Record<GalleryControlsLook, string> = {
@@ -83,6 +84,14 @@ export function ProjectViewerActions({
         look={look}
       />
       {!panel && share}
+      {/* The side panel has no Studio header to hold the feedback button. */}
+      {panel && (
+        <FeedbackLauncher
+          context={{ surface: 'project', slug }}
+          label="Send feedback"
+          className={BTN_CLASS.panel}
+        />
+      )}
     </div>
   );
 }

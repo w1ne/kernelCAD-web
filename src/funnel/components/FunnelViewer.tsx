@@ -29,6 +29,8 @@ import {
 } from '../meshArtifactFallback';
 import { animArtifactUrlFromMeshUrl } from '../animArtifactUrl';
 import { EmbedAnimationOverlay } from './EmbedAnimationOverlay';
+import { FeedbackLauncher } from '../../studio/components/Layout/FeedbackLauncher';
+import type { FeedbackContext, FeedbackPayload } from '../../studio/components/Layout/feedbackApi';
 
 export type FunnelViewerPhase =
   | 'building_geometry'
@@ -62,6 +64,11 @@ export interface FunnelViewerProps {
   statusOverlay?: boolean;
   /** Canvas background; overrides the stored Studio preference. */
   background?: ViewportBackground;
+  /** Adds a small "Feedback" button over the canvas that sends this context
+   *  with the message. Off (no button) when unset. */
+  feedback?: FeedbackContext;
+  /** Override the feedback network call (tests). */
+  submitFeedback?: (payload: FeedbackPayload) => Promise<void>;
 }
 
 /** Props FunnelViewer passes down to the inner viewer unchanged. */
@@ -450,7 +457,25 @@ function LoadedMeshViewer(props: FunnelViewerProps & { geometries: GeometryResul
   );
 }
 
+const FEEDBACK_BUTTON_CLASS =
+  'absolute bottom-2 left-2 z-20 rounded px-2 py-0.5 text-xs text-fg-2 opacity-70 hover:opacity-100 hover:text-fg '
+  + 'bg-surface-1/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent';
+
 export function FunnelViewer(props: FunnelViewerProps) {
+  if (!props.feedback) return <FunnelViewerContent {...props} />;
+  return (
+    <div className="relative w-full h-full">
+      <FunnelViewerContent {...props} />
+      <FeedbackLauncher
+        context={{ ...props.feedback, revision: props.feedback.revision ?? props.revision }}
+        className={FEEDBACK_BUTTON_CLASS}
+        submitFeedback={props.submitFeedback}
+      />
+    </div>
+  );
+}
+
+function FunnelViewerContent(props: FunnelViewerProps) {
   const mesh = useRevisionMesh(props);
   // No meshUrl → evaluate source (funnel / unpublished). meshUrl present → stored
   // artifact only; never browser-OCCT fallback for published ChatGPT revisions.

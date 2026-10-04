@@ -144,6 +144,12 @@ describe('downloadFileName', () => {
     expect(downloadFileName('my-bracket', params, values, 'stl')).toBe('my-bracket-Width60_LabelA_B_C.stl');
   });
 
+  it('names a drawing <slug>-drawing.pdf, keeping the changed values when there are any', () => {
+    expect(downloadFileName('my-bracket', params, defaultValues(params), 'pdf-drawing')).toBe('my-bracket-drawing.pdf');
+    const values = { ...defaultValues(params), Width: 60 };
+    expect(downloadFileName('my-bracket', params, values, 'pdf-drawing')).toBe('my-bracket-Width60-drawing.pdf');
+  });
+
   it('marks an all-default configuration', () => {
     expect(downloadFileName('my-bracket', params, defaultValues(params), '3mf')).toBe('my-bracket-default.3mf');
   });

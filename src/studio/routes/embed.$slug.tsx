@@ -347,6 +347,7 @@ function EmbedPage() {
           statusOverlay={false}
           background={theme}
           overlay={customizerOverlay(customizer)}
+          feedback={{ surface: instance ? 'chatgpt' : 'embed', slug }}
         />
       ) : null}
     </EmbedFrame>
