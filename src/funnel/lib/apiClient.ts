@@ -448,12 +448,18 @@ export async function fetchMyPlan(): Promise<MyPlan> {
 /** POST /api/v1/billing/create-checkout — returns a Stripe Checkout URL
  * the caller should redirect to (window.location.href = url). `tier` selects
  * the plan ($19 Basic by default; 'pro' for the $39 plan); `period`
- * selects monthly (default) or yearly (2 months free) billing. */
+ * selects monthly (default) or yearly (2 months free) billing. `source` is
+ * the allow-listed `?src=` the visitor arrived with (funnel attribution). */
 export async function createCheckoutSession(
   tier: PaidTier = 'basic',
   period: BillingPeriod = 'monthly',
+  source?: string,
 ): Promise<CheckoutSession> {
-  return authedFetch<CheckoutSession>('POST', '/api/v1/billing/create-checkout', { tier, period });
+  return authedFetch<CheckoutSession>('POST', '/api/v1/billing/create-checkout', {
+    tier,
+    period,
+    ...(source ? { source } : {}),
+  });
 }
 
 /** POST /api/v1/billing/portal — returns a Stripe Customer Portal URL for a

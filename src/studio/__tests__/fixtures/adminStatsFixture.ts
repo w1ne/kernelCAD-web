@@ -127,3 +127,25 @@ export function adminStatsFixture(overrides: Partial<AdminStats> = {}): AdminSta
     ...overrides,
   };
 }
+
+export const NEWER_SECTIONS: Partial<AdminStats> = {
+  connected_accounts_ever: 520,
+  oauth_funnel: {
+    by_client: [
+      { client: 'claude', steps: {
+        auth_shown: { attempts: 400, people: 300 }, login_completed: { attempts: 200, people: 180 },
+        consent: { attempts: 150, people: 140 }, grant: { attempts: 120, people: 110 } } },
+    ],
+    login_methods: { google: 90, password: 40 },
+  },
+  funnel: {
+    quota_hits: 30, quota_hit_accounts: 12, quota_hits_by_surface: { generate: 20, mcp: 10 }, quota_hits_by_tool: { export: 10 },
+    checkout_started: 8, checkout_started_accounts: 6, checkout_after_quota_hit_accounts: 4,
+    paid_after_checkout_accounts: 2, checkouts_completed: 2, checkouts_expired: 3,
+  },
+  mesh: {
+    success_rate: 0.97, served_rate: 0.99, p50_ms: 800, p95_ms: 6000, cache_hit_rate: 0.4,
+    success_rate_by_day: [1, 0.9, 0.95, null, 1, 0.97, 0.99],
+    top_errors: [{ code: 'mesh.timeout', n: 7 }],
+  },
+};

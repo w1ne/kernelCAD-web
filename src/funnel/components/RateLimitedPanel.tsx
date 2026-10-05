@@ -12,6 +12,10 @@ export interface RateLimitedPanelProps {
   onUpgrade: () => void;
   /** Disables the button while a redirect URL is being fetched. */
   busy?: boolean;
+  /** The server's quota message (402), shown instead of the generic copy. */
+  message?: string;
+  /** The server's upgrade link (402); the Upgrade button follows it. */
+  upgradeUrl?: string;
 }
 
 /**
@@ -23,6 +27,8 @@ export function RateLimitedPanel({
   authenticated,
   onUpgrade,
   busy = false,
+  message,
+  upgradeUrl,
 }: RateLimitedPanelProps) {
   const buttonCopy = authenticated
     ? busy
@@ -38,13 +44,19 @@ export function RateLimitedPanel({
       </p>
       <p className="mt-1 text-ui text-fg-2">
         {authenticated
-          ? 'Upgrade to keep generating — $19/mo, cancel anytime.'
+          ? (message ?? 'Upgrade to keep generating — $19/mo, cancel anytime.')
           : 'The build agent is free to start once you sign in — 5 builds a month, no card needed.'}
       </p>
       <div className="mt-4 flex flex-wrap gap-2">
-        <button type="button" onClick={onUpgrade} disabled={busy} className={buttonClass('primary', 'lg')}>
-          {buttonCopy}
-        </button>
+        {authenticated && upgradeUrl ? (
+          <a href={upgradeUrl} className={`${buttonClass('primary', 'lg')} no-underline`}>
+            Upgrade
+          </a>
+        ) : (
+          <button type="button" onClick={onUpgrade} disabled={busy} className={buttonClass('primary', 'lg')}>
+            {buttonCopy}
+          </button>
+        )}
         <a href="/connect" className={`${buttonClass('secondary', 'lg')} no-underline`}>
           Use your own agent
         </a>

@@ -90,7 +90,30 @@ export interface BackendMeshPayload {
   rootFeatureIds?: string[];
   /** Declared + automatic 3D dimensions (model mm) for the viewer overlay. */
   dimensions?: ViewerDimension[];
+  /** Set by the server when it answered from the stored revision artifact
+   *  instead of a fresh build: the shape is the published one, approximately. */
+  degraded?: 'revision-artifact' | string;
 }
+
+// --- Mesh status the viewer chrome shows -----------------------------------
+// `meshing`: the server answered 504 `mesh.pending` and we are waiting to
+// retry. `approximate`: the last payload was `degraded: 'revision-artifact'`.
+export interface MeshNotice { meshing: boolean; approximate: boolean }
+let meshNotice: MeshNotice = { meshing: false, approximate: false };
+const meshNoticeListeners = new Set<() => void>();
+
+function setMeshNotice(next: Partial<MeshNotice>): void {
+  const merged = { ...meshNotice, ...next };
+  if (merged.meshing === meshNotice.meshing && merged.approximate === meshNotice.approximate) return;
+  meshNotice = merged;
+  meshNoticeListeners.forEach((l) => l());
+}
+
+export function subscribeMeshNotice(listener: () => void): () => void {
+  meshNoticeListeners.add(listener);
+  return () => { meshNoticeListeners.delete(listener); };
+}
+export function getMeshNotice(): MeshNotice { return meshNotice; }
 
 export function rootVisibleFeatures(
   payload: Pick<BackendMeshPayload, 'features' | 'rootFeatureIds'>,
@@ -275,20 +298,49 @@ function hostedMeshBody(source: string, paramOverrides: ParamOverrides | undefin
   };
 }
 
-/** `POST {base}/__kernelcad/mesh`; throws the server's error message. */
+/** Retries after a 504 `mesh.pending` (the server is still building). Three
+ *  waits of at most 30 s each keep the total under ~90 s. */
+const MESH_PENDING_MAX_RETRIES = 3;
+const MESH_PENDING_MAX_WAIT_MS = 30_000;
+const MESH_PENDING_DEFAULT_WAIT_MS = 5_000;
+
+function pendingWaitMs(response: Response, payload: { retryAfterMs?: unknown } | null): number {
+  const header = Number(response.headers?.get?.('Retry-After'));
+  const ms = Number.isFinite(header) && header > 0
+    ? header * 1000
+    : typeof payload?.retryAfterMs === 'number' && payload.retryAfterMs > 0
+      ? payload.retryAfterMs
+      : MESH_PENDING_DEFAULT_WAIT_MS;
+  return Math.min(ms, MESH_PENDING_MAX_WAIT_MS);
+}
+
+/** `POST {base}/__kernelcad/mesh`; throws the server's error message. A 504
+ *  `mesh.pending` is retried (the build keeps running server-side). */
 async function meshOnServer(base: string, body: ReturnType<typeof hostedMeshBody>): Promise<BackendMeshPayload> {
-  const response = await fetch(`${base}/__kernelcad/mesh`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  const payload = await response.json().catch(() => null);
-  if (!response.ok) {
-    const message = payload && typeof payload.error === 'string' ? payload.error : `HTTP ${response.status}`;
-    throw new Error(message);
+  try {
+    for (let attempt = 0; ; attempt++) {
+      const response = await fetch(`${base}/__kernelcad/mesh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) {
+        if (response.status === 504 && payload?.code === 'mesh.pending' && attempt < MESH_PENDING_MAX_RETRIES) {
+          setMeshNotice({ meshing: true });
+          await new Promise((resolve) => setTimeout(resolve, pendingWaitMs(response, payload)));
+          continue;
+        }
+        const message = payload && typeof payload.error === 'string' ? payload.error : `HTTP ${response.status}`;
+        throw new Error(message);
+      }
+      if (!isBridgePayload(payload)) throw new Error('Mesh endpoint did not return features.');
+      setMeshNotice({ approximate: payload.degraded === 'revision-artifact' });
+      return payload;
+    }
+  } finally {
+    setMeshNotice({ meshing: false });
   }
-  if (!isBridgePayload(payload)) throw new Error('Mesh endpoint did not return features.');
-  return payload;
 }
 
 /** Public CDN holding the meshes stored at publish time. */
