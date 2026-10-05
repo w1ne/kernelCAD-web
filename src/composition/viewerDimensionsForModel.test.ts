@@ -7,6 +7,7 @@ import { runScript } from './runScript';
 import { resolveRootId } from './buildModel';
 import { meshFeaturesPerFeature } from '../modeling/capture/featureMeshing';
 import { viewerDimensionsForModel, viewerDimensionsForRoot } from './viewerDimensionsForModel';
+import { updateModelParams } from '../modeling/paramUpdate';
 
 beforeAll(async () => { await initOcct(); }, 60_000);
 
@@ -76,4 +77,14 @@ return section(20, 14).loft([section(46, 30), section(30, 20)], { spacing: 55 })
     expect(r.diagnostics.map(d => d.code)).toEqual(['viewer.dimensions.budget-exceeded']);
     expect(r.diagnostics[0].message).toContain('scene exploded');
   });
+
+  it('a param update on a model ending in shape.dimension() recomputes its dimensions', async () => {
+    const model = await buildModel({
+      code: `const w = param('w', 40, { min: 10, max: 100 });
+return box(w, 20, 10).dimension({ kind: 'linear', from: [0, 0, 0], to: [0, 20, 0], label: 'depth' });`,
+      fileName: 'p.kcad.ts',
+    });
+    const updated = (await updateModelParams(model, [{ name: 'w', value: 60 }])).model;
+    expect(viewerDimensionsForModel(updated).dimensions.map(d => d.text).sort()).toEqual(['10', '20', '60', 'depth 20']);
+  }, 60_000);
 });
