@@ -154,8 +154,8 @@ return union(sheet, front, back, left, right, s1 /* ... */);
 
 `evaluate_script` / `kernelcad evaluate` gate every `union()` (errors make `ok: false`):
 
-- `union.disconnected` — the union is more than one solid; the message names the floating operand, its bbox and the gap. Move it until it touches (shared face, zero gap) or add the member that carries it.
-- `union.member-overlap` — two operands that each carry their own `.finish()`/`.material()` (separate physical members) share more than 1 mm³; the message names both, the volume and the overlap box. Cut one member to fit (butt joint) instead of burying it in the other.
+- `union.disconnected` — the union is more than one solid; the message names the floating operand, its bbox and the gap. Move it until it touches (shared face, zero gap) or add the member that carries it. (Inside an `assembly().part(...)` the assembly validator reports floating geometry instead, as `assembly.mechanical.part-disconnected`.)
+- `union.member-overlap` — two operands that each carry their own `.finish()`/`.material()` (separate physical members) share more than 1 mm³; the message names both, the volume and the overlap box. Cut one member to fit (butt joint) instead of burying it in the other. This applies inside assembly parts too.
 
 A boss or rib merged into a body BEFORE `.finish()` has no finish of its own, so ordinary overlapping modelling unions are not affected.
 

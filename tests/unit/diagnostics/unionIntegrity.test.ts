@@ -167,6 +167,33 @@ describe('union integrity guard', () => {
     expect(r.ok).toBe(true);
   });
 
+  it('a disconnected union inside an assembly part is left to the assembly validator', async () => {
+    const r = await evaluateScriptTool({
+      code: `
+        const arm = assembly('pair');
+        arm.part('body', union(box(10, 10, 10), box(10, 10, 10).translate(15, 0, 0)));
+        return arm.model();
+      `,
+      skipMechanismCheck: true,
+    });
+    expect(byCode(r.diagnostics, 'union.disconnected')).toEqual([]);
+  });
+
+  it('member overlap inside an assembly part is still reported', async () => {
+    const r = await evaluateScriptTool({
+      code: `
+        const arm = assembly('frame');
+        const lower = box(10, 10, 10).finish('aluminium-brushed');
+        const upper = box(10, 10, 10).translate(0, 0, 8).finish('aluminium-brushed');
+        arm.part('frame', union(lower, upper));
+        return arm.model();
+      `,
+      skipMechanismCheck: true,
+    });
+    expect(r.ok).toBe(false);
+    expect(byCode(r.diagnostics, 'union.member-overlap')).toHaveLength(1);
+  });
+
   it('edge-only contact is a warning, not a gate failure (no measurable gap)', async () => {
     const r = await evaluateScriptTool({
       code: `

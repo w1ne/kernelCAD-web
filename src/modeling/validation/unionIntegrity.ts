@@ -11,6 +11,9 @@
 //
 //   - `union.disconnected` (error): the union result is more than one solid.
 //     Touching operands (shared face, zero gap) fuse into one solid and pass.
+//     Edge/point-only contact is a warning. Unions that end up inside an
+//     assembly part are skipped: the assembly validator owns floating
+//     geometry inside a part (`assembly.mechanical.part-disconnected`).
 //   - `union.member-overlap` (error): two operands that each carry their own
 //     finish/material (`.finish()` / `.material()`, i.e. `metadata.material`)
 //     share more than 1 mm³. Giving operands separate finishes declares them
@@ -151,16 +154,23 @@ export function detectUnionDefects(input: UnionIntegrityInput): CompilerDiagnost
   };
   const isChainRoot = (u: FeatureRecord): boolean =>
     !(flattensInto(u) && (consumers.get(u.id) ?? []).some(isUnion));
-  // A disconnected union whose result later flows into another union may be
-  // bridged there; only judge connectivity where no union follows.
-  const feedsUnion = (id: FeatureId, seen = new Set<FeatureId>()): boolean => {
+  const reaches = (id: FeatureId, hit: (c: FeatureRecord) => boolean, seen = new Set<FeatureId>()): boolean => {
     for (const c of consumers.get(id) ?? []) {
       if (seen.has(c.id)) continue;
       seen.add(c.id);
-      if (isUnion(c) || feedsUnion(c.id, seen)) return true;
+      if (hit(c) || reaches(c.id, hit, seen)) return true;
     }
     return false;
   };
+  // A disconnected union whose result later flows into another union may be
+  // bridged there; only judge connectivity where no union follows. A union
+  // that becomes (part of) an assembly part is left to the assembly
+  // validator, which already owns floating geometry inside a part
+  // (`assembly.mechanical.part-disconnected`, reported by review_cad /
+  // inspect_assembly). Member overlap has no assembly equivalent, so it is
+  // checked everywhere.
+  const judgeConnectivity = (id: FeatureId): boolean =>
+    !reaches(id, isUnion) && !reaches(id, c => c.kind === 'assemblyPart');
 
   // A union used only as a cutting tool (the `cutter_*` side of a
   // subtract/intersect, possibly via pattern/mirror copies) never becomes
@@ -191,7 +201,7 @@ export function detectUnionDefects(input: UnionIntegrityInput): CompilerDiagnost
     if (toolOnly(u.id)) continue;
 
     diagnostics.push(...memberOverlaps(u, leaves, byId, input.shapes, namer));
-    if (!feedsUnion(u.id)) {
+    if (judgeConnectivity(u.id)) {
       const d = disconnected(u, leaves, input.shapes, namer);
       if (d !== undefined) diagnostics.push(d);
     }
