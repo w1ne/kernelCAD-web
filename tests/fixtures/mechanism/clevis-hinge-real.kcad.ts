@@ -11,7 +11,12 @@
 
 const arm = assembly('clevis-hinge-real');
 
-const baseBody = box(40, 40, 30, true).translate(0, 0, -15);
+// The base top is at z = 0 and the pivot sits ON it (pivotParent z = 0):
+// joint.clevis builds its fork webs from the declared pivot, so a pivot
+// above the parent surface left the fork floating 12.5 mm over the base
+// (union.disconnected). The base is 24 wide (x ±12 = knuckle radius) so the
+// arm, which starts at x = KNUCKLE_R, clears it across the swing.
+const baseBody = box(24, 40, 30, true).translate(0, 0, -15);
 // The child beam must fit BETWEEN the fork plates (Y span < forkGapY) and start
 // clear of the fork's X-footprint, otherwise it engulfs the fork plates and
 // interpenetrates (caught by the absolute 20 mm³ gate). knuckleR=12 → fork
@@ -24,7 +29,7 @@ const j = joint.clevis({
   parentBody: baseBody,
   childBody: armBody,
   axis: 'Y',
-  pivotParent: [0, 0, 15],
+  pivotParent: [0, 0, 0],
   pivotChild: [0, 0, 0],
   // Upper limit capped at +25° so the arm's downward swing stays clear of the
   // tall base block at the swept extreme.
