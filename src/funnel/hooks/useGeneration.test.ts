@@ -162,3 +162,30 @@ describe('useGeneration cancel', () => {
     expect(result.current.phase).toEqual({ state: 'idle' });
   });
 });
+
+describe('useGeneration quota 402', () => {
+  beforeEach(() => {
+    startGeneration.mockReset();
+  });
+
+  it('keeps the server message and upgrade_url on a 402', async () => {
+    const body = JSON.stringify({ message: 'You used 5 of 5 builds this month.', upgrade_url: 'https://app.kernelcad.com/pricing?src=quota' });
+    startGeneration.mockResolvedValue({ ok: false, status: 402, text: async () => body } as unknown as Response);
+    const { result } = renderHook(() => useGeneration());
+    await act(async () => { await result.current.submit('a box'); });
+    expect(result.current.phase).toMatchObject({
+      state: 'error', code: 'rate_limited', message: 'You used 5 of 5 builds this month.',
+      upgradeUrl: 'https://app.kernelcad.com/pricing?src=quota',
+    });
+  });
+
+  it('ignores a non-http upgrade_url and keeps raw text for non-JSON bodies', async () => {
+    startGeneration.mockResolvedValue({ ok: false, status: 402, text: async () => JSON.stringify({ message: 'm', upgrade_url: 'javascript:alert(1)' }) } as unknown as Response);
+    const { result } = renderHook(() => useGeneration());
+    await act(async () => { await result.current.submit('a box'); });
+    expect((result.current.phase as { upgradeUrl?: string }).upgradeUrl).toBeUndefined();
+    startGeneration.mockResolvedValue({ ok: false, status: 429, text: async () => 'slow down' } as unknown as Response);
+    await act(async () => { await result.current.submit('a box'); });
+    expect(result.current.phase).toMatchObject({ code: 'rate_limited', message: 'slow down' });
+  });
+});

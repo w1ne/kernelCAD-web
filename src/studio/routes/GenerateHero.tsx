@@ -46,7 +46,13 @@ function GenerateHeroStatus({ phase, events, hasSession, onUpgrade, upgradeBusy,
     if (phase.state === 'done' && phase.partial) return <PartialResult partial={phase.partial} onOpen={onOpenResult} />;
     if (phase.state !== 'error') return null;
     if (phase.code === 'rate_limited') {
-        return <RateLimitedPanel authenticated={hasSession} onUpgrade={onUpgrade} busy={upgradeBusy} />;
+        return <RateLimitedPanel
+                authenticated={hasSession}
+                onUpgrade={onUpgrade}
+                busy={upgradeBusy}
+                message={phase.upgradeUrl ? phase.message : undefined}
+                upgradeUrl={phase.upgradeUrl}
+            />;
     }
     return (
         <div className="mt-6 rounded-panel border border-border bg-surface-1">

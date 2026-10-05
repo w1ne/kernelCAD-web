@@ -8,6 +8,9 @@ import { FunnelHeader } from '../../funnel/components/FunnelHeader';
 import { PricingSection } from '../../funnel/components/PricingSection';
 import { buttonClass } from '../../ui';
 
+/** `?src=` attribution tag: short, word characters and dashes only. */
+const SRC_PATTERN = /^[\w-]{1,32}$/;
+
 const PAID_TIERS: readonly PaidTier[] = ['basic', 'pro'];
 
 export const Route = createFileRoute('/pricing')({
@@ -15,16 +18,17 @@ export const Route = createFileRoute('/pricing')({
   // `?buy=basic|pro` (optionally `&period=yearly`) lets the marketing landing
   // deep-link straight into checkout — one click from kernelcad.com to Stripe,
   // instead of re-showing the pricing wall. Unknown values are ignored.
-  validateSearch: (s: Record<string, unknown>): { buy?: PaidTier; period?: BillingPeriod } => ({
+  validateSearch: (s: Record<string, unknown>): { buy?: PaidTier; period?: BillingPeriod; src?: string } => ({
     buy: PAID_TIERS.includes(s.buy as PaidTier) ? (s.buy as PaidTier) : undefined,
     period: s.period === 'yearly' || s.period === 'monthly' ? (s.period as BillingPeriod) : undefined,
+    src: typeof s.src === 'string' && SRC_PATTERN.test(s.src) ? s.src : undefined,
   }),
 });
 
 function PricingPage() {
   const { session, loading } = useOptionalSession();
   const navigate = useNavigate();
-  const { buy, period: buyPeriod } = Route.useSearch();
+  const { buy, period: buyPeriod, src } = Route.useSearch();
   const [plan, setPlan] = useState<MyPlan | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -38,14 +42,14 @@ function PricingPage() {
     if (!session) {
       // Preserve the intent across sign-in so the round-trip lands back here and
       // auto-fires checkout, rather than dropping the user on a bare pricing page.
-      const next = `/pricing?buy=${tier}&period=${selectedPeriod}`;
+      const next = `/pricing?buy=${tier}&period=${selectedPeriod}${src ? `&src=${src}` : ''}`;
       navigate({ to: '/signin', search: { next } });
       return;
     }
     setBusy(true);
     setErr(null);
     try {
-      const { url } = await createCheckoutSession(tier, selectedPeriod);
+      const { url } = await createCheckoutSession(tier, selectedPeriod, src);
       window.location.href = url;
     } catch (e) {
       setErr(e instanceof Error ? e.message : String(e));

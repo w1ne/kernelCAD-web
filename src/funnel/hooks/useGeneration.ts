@@ -28,7 +28,20 @@ export type GenerationPhase =
   | { state: 'idle' }
   | { state: 'running'; generationId?: string; anonId?: string; lastEvent: GenerateEvent }
   | { state: 'done'; generationId: string; anonId: string; artifact: Artifact; partial?: GenerationPartial }
-  | { state: 'error'; code: FunnelErrorCode; message: string; generationId?: string };
+  | { state: 'error'; code: FunnelErrorCode; message: string; generationId?: string; upgradeUrl?: string };
+
+/** A quota 402 carries `{ message, upgrade_url }`; any other body stays raw text. */
+function parseErrorBody(text: string): { message?: string; upgradeUrl?: string } {
+  try {
+    const j = JSON.parse(text) as { message?: unknown; upgrade_url?: unknown };
+    return {
+      ...(typeof j.message === 'string' && j.message ? { message: j.message } : {}),
+      ...(typeof j.upgrade_url === 'string' && /^https?:\/\//.test(j.upgrade_url) ? { upgradeUrl: j.upgrade_url } : {}),
+    };
+  } catch {
+    return {};
+  }
+}
 
 async function consumeGenerationStream(
   body: ReadableStream<Uint8Array>,
@@ -87,6 +100,8 @@ async function openGenerationStream(
   if (signal.aborted) return null;
 
   if (!res.ok) {
+    const text = await res.text().catch(() => `HTTP ${res.status}`);
+    const body = parseErrorBody(text);
     setPhase({
       state: 'error',
       // Agent mode requires a connected account. 401 = anonymous (must sign
@@ -94,7 +109,8 @@ async function openGenerationStream(
       // legacy rate limit. All route to the same panel, which shows "sign in"
       // vs "upgrade" based on whether there's a session.
       code: res.status === 401 || res.status === 402 || res.status === 429 ? 'rate_limited' : `http_${res.status}`,
-      message: await res.text().catch(() => `HTTP ${res.status}`),
+      message: body.message ?? text,
+      ...(res.status === 402 && body.upgradeUrl ? { upgradeUrl: body.upgradeUrl } : {}),
     });
     return null;
   }

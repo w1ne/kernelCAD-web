@@ -291,14 +291,30 @@ function useCanvasGate(posterState: 'loading' | 'loaded' | 'missing'): boolean {
 
 type PosterState = 'loading' | 'loaded' | 'missing';
 
+function useMeshNotice() {
+  return useSyncExternalStore(subscribeMeshNotice, getMeshNotice, getMeshNotice);
+}
+
+/** Shown when the server answered from the stored revision (`degraded`). */
+function ApproximateNote(): JSX.Element | null {
+  const { approximate, meshing } = useMeshNotice();
+  if (!approximate || meshing) return null;
+  return (
+    <div role="status" data-testid="approximate-preview"
+      className="pointer-events-none absolute left-3 top-3 rounded-full bg-black/60 px-3 py-1 text-2xs font-medium text-white backdrop-blur-sm">
+      Approximate preview — the full rebuild is not ready yet.
+    </div>
+  );
+}
+
 export function ModelStage(props: ModelStageProps): JSX.Element {
   const [posterState, setPosterState] = useState<PosterState>(props.posterSrc ? 'loading' : 'missing');
   const canvasReady = useCanvasGate(posterState);
   const displayed = props.phase === 'displayed';
   const waiting = props.phase === 'loading' || props.phase === 'building';
   const slow = useSlow(waiting ? props.phase : null, STAGE_SLOW_MS);
-  const notice = useSyncExternalStore(subscribeMeshNotice, getMeshNotice, getMeshNotice);
-  const status = stageStatus(props.phase, slow, notice.meshing);
+  const meshing = useMeshNotice().meshing;
+  const status = stageStatus(props.phase, slow, meshing);
 
   return (
     <div
@@ -319,14 +335,9 @@ export function ModelStage(props: ModelStageProps): JSX.Element {
         <StagePoster src={props.posterSrc} alt={props.posterAlt} state={posterState} onState={setPosterState} hidden={displayed} />
       )}
       {waiting && posterState !== 'loaded' && <StagePlaceholder />}
-      {(waiting || props.busy || notice.meshing) && <ProgressLine />}
+      {(waiting || props.busy || meshing) && <ProgressLine />}
       {status && <StageStatus text={status} />}
-      {notice.approximate && !notice.meshing && displayed && (
-        <div role="status" data-testid="approximate-preview"
-          className="pointer-events-none absolute left-3 top-3 rounded-full bg-black/60 px-3 py-1 text-2xs font-medium text-white backdrop-blur-sm">
-          Approximate preview — the full rebuild is not ready yet.
-        </div>
-      )}
+      {displayed && <ApproximateNote />}
       {props.phase === 'failed' && props.failure}
       {props.overlay}
     </div>
