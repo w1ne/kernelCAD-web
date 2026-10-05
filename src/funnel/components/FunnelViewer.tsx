@@ -29,6 +29,7 @@ import {
 } from '../meshArtifactFallback';
 import { animArtifactUrlFromMeshUrl } from '../animArtifactUrl';
 import { EmbedAnimationOverlay } from './EmbedAnimationOverlay';
+import type { MeshDimensionsInfo } from '../../studio/components/viewer/dimensions/boundsDimensions';
 
 export type FunnelViewerPhase =
   | 'building_geometry'
@@ -65,7 +66,10 @@ export interface FunnelViewerProps {
 }
 
 /** Props FunnelViewer passes down to the inner viewer unchanged. */
-type InnerDisplayProps = Pick<FunnelViewerProps, 'statusOverlay' | 'background'>;
+type InnerDisplayProps = Pick<FunnelViewerProps, 'statusOverlay' | 'background'> & {
+  /** Stored artifact's dimensions + bounds (mesh path only). */
+  meshDimensions?: MeshDimensionsInfo | null;
+};
 
 function funnelStatusLabel(phase: FunnelViewerPhase, detail: string | null): string | null {
   switch (phase) {
@@ -85,6 +89,7 @@ function FunnelViewerInner({
   overlay,
   statusOverlay = true,
   background,
+  meshDimensions,
 }: InnerDisplayProps & {
   onPhaseChange?: (phase: FunnelViewerPhase, detail?: string | null) => void;
   revision?: number | null;
@@ -173,6 +178,7 @@ function FunnelViewerInner({
         viewMode3D={viewMode3D}
         onDisplayReady={onDisplayReady}
         background={background}
+        meshDimensions={meshDimensions}
       />
       {statusLabel ? (
         <div
@@ -232,6 +238,8 @@ interface MeshLoadResult {
   key: string;
   geometries: GeometryResult[] | null;
   bounds: MeshArtifactBounds | null;
+  /** Mesh dimensions + bounds for the viewer overlay. */
+  meshDimensions?: MeshDimensionsInfo;
   fallback: boolean;
   error: string | null;
 }
@@ -368,6 +376,7 @@ function useRevisionMesh(props: FunnelViewerProps): MeshLoadResult | null {
           key,
           geometries: geometriesFromArtifact(artifact),
           bounds: artifact.bounds,
+          meshDimensions: { dimensions: artifact.dimensions, bounds: artifact.bounds },
           fallback: false,
           error: null,
         });
@@ -419,7 +428,11 @@ function MeshStatus(props: {
   );
 }
 
-function LoadedMeshViewer(props: FunnelViewerProps & { geometries: GeometryResult[]; bounds: MeshArtifactBounds }) {
+function LoadedMeshViewer(props: FunnelViewerProps & {
+  geometries: GeometryResult[];
+  bounds: MeshArtifactBounds;
+  meshDimensions?: MeshDimensionsInfo;
+}) {
   const resolvedAnimUrl = props.animUrl
     ?? (props.meshUrl ? animArtifactUrlFromMeshUrl(props.meshUrl) : null);
 
@@ -443,6 +456,7 @@ function LoadedMeshViewer(props: FunnelViewerProps & { geometries: GeometryResul
           instanceId={props.instanceId}
           statusOverlay={props.statusOverlay}
           background={props.background}
+          meshDimensions={props.meshDimensions}
         />
         {resolvedAnimUrl ? <EmbedAnimationOverlay key={resolvedAnimUrl} animUrl={resolvedAnimUrl} /> : null}
       </WorkbenchProvider>
@@ -493,5 +507,5 @@ export function FunnelViewer(props: FunnelViewerProps) {
       />
     );
   }
-  return <LoadedMeshViewer {...props} geometries={mesh.geometries} bounds={mesh.bounds} />;
+  return <LoadedMeshViewer {...props} geometries={mesh.geometries} bounds={mesh.bounds} meshDimensions={mesh.meshDimensions} />;
 }

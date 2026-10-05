@@ -7,12 +7,26 @@ import type { SerializedParamEntry } from '../../../shared/runtime/paramTable';
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { ExecutionRecord, ScriptReviewSummary } from './types';
 import type { ExecutionApplyDeps } from './executionApplyDeps';
+import type { MeshDimensionsInfo } from '../../components/viewer/dimensions/boundsDimensions';
 import { runAutoExecutionLoop } from './runAutoExecutionLoop';
 import { runExecuteGeometryAction } from './executeGeometryAction';
 import { useMeshFetch } from './useMeshFetch';
 import { useSessionToken } from './useSessionToken';
 import { useRelowerSubscription } from './useRelowerSubscription';
 import { useParamUpdate } from './useParamUpdate';
+
+/** Bounded log of execution outcomes for long sessions. */
+function useExecutionHistory() {
+    const [executionHistory, setExecutionHistory] = useState<ExecutionRecord[]>([]);
+    const pushExecutionRecord = useCallback((record: ExecutionRecord) => {
+        setExecutionHistory((prev) => {
+            const next = [...prev, record];
+            // Keep bounded history for long sessions.
+            return next.length > 200 ? next.slice(next.length - 200) : next;
+        });
+    }, []);
+    return { executionHistory, pushExecutionRecord };
+}
 
 /**
  * Owns the whole script-evaluation state machine: the pooled-session
@@ -41,21 +55,15 @@ export function useScriptExecution(
     const [executionCount, setExecutionCount] = useState(0);
     const [currentCodeRevision, setCurrentCodeRevision] = useState(0);
     const [lastSuccessfulRevision, setLastSuccessfulRevision] = useState<number | null>(null);
-    const [executionHistory, setExecutionHistory] = useState<ExecutionRecord[]>([]);
     const [scriptParams, setScriptParams] = useState<SerializedParamEntry[]>([]);
     const [scriptReview, setScriptReview] = useState<ScriptReviewSummary | null>(null);
     const [featureRecords, setFeatureRecords] = useState<FeatureRecord[]>([]);
+    const [meshDimensions, setMeshDimensions] = useState<MeshDimensionsInfo | null>(null);
     const [recomputeMs, setRecomputeMs] = useState<number>(0);
     const [staleMainResponsesDropped, setStaleMainResponsesDropped] = useState(0);
     const mainRevisionRef = useRef(0);
 
-    const pushExecutionRecord = useCallback((record: ExecutionRecord) => {
-        setExecutionHistory((prev) => {
-            const next = [...prev, record];
-            // Keep bounded history for long sessions.
-            return next.length > 200 ? next.slice(next.length - 200) : next;
-        });
-    }, []);
+    const { executionHistory, pushExecutionRecord } = useExecutionHistory();
 
     // Shared setter/ref surface for the mesh-fetch, param-update, and
     // execution-action hooks/functions below. Memoized: every field is a
@@ -73,6 +81,7 @@ export function useScriptExecution(
         setFeatureRecords,
         setScriptParams,
         setScriptReview,
+        setMeshDimensions,
         setSketchesGeometries,
         setPreviewGeometries,
         setError,
@@ -156,6 +165,7 @@ export function useScriptExecution(
         scriptParams,
         scriptReview,
         featureRecords,
+        meshDimensions,
         recomputeMs,
         staleMainResponsesDropped,
         sessionToken,

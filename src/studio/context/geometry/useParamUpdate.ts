@@ -10,6 +10,7 @@ import { detectEmptyBuild, featureMeshesToGeometries } from './types';
 import type { FeatureMeshSerialized } from '../../../modeling/capture/featureMeshSerialize';
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { ExecutionApplyDeps } from './executionApplyDeps';
+import { meshDimensionsOf } from '../../components/viewer/dimensions/boundsDimensions';
 import { meshParamEdits, type ParamEditValues } from './paramEditsForMesh';
 
 export interface ParamUpdateOptions {
@@ -53,6 +54,7 @@ export function useParamUpdate(
         deps.setFeatureRecords(recs);
         deps.setScriptParams(Object.values(payload.params ?? {}));
         deps.setScriptReview(review);
+        deps.setMeshDimensions(meshDimensionsOf(payload));
         deps.setSketchesGeometries([]);
         deps.setPreviewGeometries([]);
         deps.setError(emptyNotice);

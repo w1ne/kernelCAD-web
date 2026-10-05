@@ -16,6 +16,10 @@ import { ViewGizmo } from "./viewer/overlays/ViewGizmo";
 import { CodeLinkLabel } from "./viewer/overlays/CodeLinkLabel";
 import { MeasureButton } from "./viewer/measure/MeasureButton";
 import { MeasureTool } from "./viewer/measure/MeasureTool";
+import { DimensionsOverlay } from "./viewer/dimensions/DimensionsOverlay";
+import { DimensionsButton } from "./viewer/dimensions/DimensionsButton";
+import { useViewerDimensions } from "./viewer/dimensions/useViewerDimensions";
+import type { MeshDimensionsInfo } from "./viewer/dimensions/boundsDimensions";
 import { selectionCodeStore } from "../selectionCode/selectionCodeStore";
 
 // Extracted hooks
@@ -37,6 +41,9 @@ interface ViewerProps {
     onDisplayReady?: () => void;
     /** Overrides the stored viewport background (the embed's `?theme=`). */
     background?: ViewportBackground;
+    /** Dimensions of a stored mesh artifact (ChatGPT widget). Otherwise the
+     *  workbench's last mesh payload is used. */
+    meshDimensions?: MeshDimensionsInfo | null;
 }
 
 /** Scene state phase: workbench/ui/shell context plus the grid, section-clipping
@@ -53,7 +60,8 @@ function useViewerSetup(geometries: GeometryResult[]) {
         setSelectedItemId,
         toggleSelection,
         codeContext,
-        setHoveredItemId
+        setHoveredItemId,
+        meshDimensions,
     } = useWorkbench();
 
     const { setContextMenu, viewportBackground, gridVisible } = useUI();
@@ -97,6 +105,7 @@ function useViewerSetup(geometries: GeometryResult[]) {
     });
 
     return {
+        meshDimensions,
         setSelectedFace,
         selectedSketchName,
         setSelectedSketchName,
@@ -124,15 +133,16 @@ function useViewerSetup(geometries: GeometryResult[]) {
     };
 }
 
-export default function Viewer({ geometries, previewGeometries, sketchesGeometries, showSketches, viewMode3D, onDisplayReady, background }: ViewerProps) {
+export default function Viewer({ geometries, previewGeometries, sketchesGeometries, showSketches, viewMode3D, onDisplayReady, background, meshDimensions }: ViewerProps) {
     const {
-        setSelectedFace, selectedSketchName, setSelectedSketchName, sketchMode, planes, hiddenIds,
+        meshDimensions: workbenchDimensions, setSelectedFace, selectedSketchName, setSelectedSketchName, sketchMode, planes, hiddenIds,
         selectedItemIds, setSelectedItemId, toggleSelection, setContextMenu, viewportBackground,
         gridVisible, gridPlacement, sectionKeepWhole, clippingPlanes, itemNames, hoveredItem,
         setHoveredItem, snapPoint, setSnapPoint, navigationRequest, setNavigationRequest,
         focusRequest, cursor,
     } = useViewerSetup(geometries);
     const [measuring, setMeasuring] = useState(false);
+    const dims = useViewerDimensions(meshDimensions ?? workbenchDimensions);
 
     return (
         <div className="w-full h-full relative" style={{ cursor }} data-testid="viewer-container">
@@ -203,6 +213,7 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                     viewportBackground={background ?? viewportBackground}
                     planes={planes}
                 />
+                {dims.on ? <DimensionsOverlay dimensions={dims.dimensions} background={background ?? viewportBackground} /> : null}
                 {measuring ? <MeasureTool geometries={geometries} itemNames={itemNames} hiddenIds={hiddenIds} /> : null}
                 {onDisplayReady ? (
                     <DisplayReadySensor geometries={geometries} onDisplayReady={onDisplayReady} />
@@ -210,6 +221,7 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
             </Canvas>
             <CodeLinkLabel />
             <MeasureButton active={measuring} onToggle={() => setMeasuring((on) => !on)} />
+            <DimensionsButton on={dims.on} onToggle={dims.toggle} legacy={dims.legacy} />
             <ViewGizmo
                 onNavigate={(target) => setNavigationRequest((prev) => ({
                     target,
