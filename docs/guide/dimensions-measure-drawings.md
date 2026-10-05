@@ -9,7 +9,7 @@ You can read the size of a part straight off the 3D view, measure anything you c
 
 ## The Dimensions toggle
 
-The ruler-with-ticks button sits next to Measure, top-left of the 3D viewer. It is there in Studio, on shared `/p/<slug>` pages and in the ChatGPT viewer.
+Two buttons sit top-left of the 3D viewer: Measure is the ruler button, and Dimensions is the button with the ruler-and-ticks icon next to it. It is there in Studio, on shared `/p/<slug>` pages and in the ChatGPT viewer.
 
 ![Dimensions on, dark theme](../screenshots/dims-on-dark.png)
 
@@ -39,7 +39,7 @@ Models saved before this feature show overall size only, with the hint "Detailed
 
 ## Measure
 
-Click the ruler button, then click two points. You get the distance and the ΔX, ΔY and ΔZ between them.
+Click the Measure button (the plain ruler), then click two points. You get the distance and the ΔX, ΔY and ΔZ between them.
 
 ![Measuring between two box edges](../screenshots/measure-2-box-edge.png)
 
@@ -56,7 +56,7 @@ Call `shape.dimension()` in the script. It returns the shape, so you can chain i
 ```ts
 shape.dimension({ kind: 'linear', from, to, label })
 shape.dimension({ kind: 'diameter', edge, label })   // or kind: 'radius'
-shape.dimension({ kind: 'angular', from, to, label })
+shape.dimension({ kind: 'angular', from, to, label })   // from and to are edge queries
 ```
 
 An anchor is one of:
@@ -69,7 +69,7 @@ On a linear dimension, a circular edge anchor means the hole centre, so you get 
 
 The label is a name. kernelCAD appends the value, so `'hole spacing X'` shows as `hole spacing X 40` and `'bolt hole'` shows as `bolt hole Ø5`.
 
-Angular dimensions are drawn as a straight callout between the two points, with the ° value in the label.
+An angular dimension measures the angle between two edges: `from` and `to` are edge queries, not points. It is shown as a straight callout with the angle in degrees.
 
 ### Example: mounting bracket
 
@@ -104,8 +104,12 @@ The viewer shows `hole spacing X 40`, `hole spacing Y 18`, `thickness 6` and `bo
 
 Agents use the same call in source. `evaluate_script` returns the declared dimension values, so an agent can check them without looking at the picture.
 
-## Download drawing (PDF)
+## Drawing (PDF)
 
-On a `/p/<slug>` page, open the download menu and choose Download drawing (PDF). In Studio it is in the export menu. The drawing is A3 with automatic dimensions.
+On a `/p/<slug>` page, open the Download dropdown (next to Download STL) and choose Drawing (PDF). In Studio, use the export menu or the command palette: Export Drawing (PDF). The drawing is A3 with automatic dimensions.
 
 Declared dimensions also appear on the PDF and SVG drawing. When a model declares any, they replace the automatic bounding-box dimensions on the drawing.
+
+## Feedback
+
+The ChatGPT viewer has a small Feedback button, and `/p` pages have Send feedback.
