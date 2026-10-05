@@ -8,6 +8,7 @@ import { initOcct, OcctBackend } from '../occtBackend';
 import { computeViewerDimensions, type ViewerDimension } from './index';
 import type { WorldFramePart } from '../sceneToWorldFrame';
 import { partsFromSource } from '../../../../../tests/helpers/viewerDimensionParts';
+import { recogniseDrawingFeatures } from '../drawingFeatures';
 
 beforeAll(async () => { await initOcct(); }, 60_000);
 
@@ -120,4 +121,19 @@ describe('perforated plate', () => {
     expect(r.diagnostics.map(d => d.code)).toEqual(['viewer.dimensions.budget-exceeded']);
     expect(r.diagnostics[0].message).toMatch(/3000 ms budget/);
   }, 60_000);
+});
+
+describe('feature recogniser budget', () => {
+  it('checks the budget inside the face loop, not only between bore probes', () => {
+    // A plain box has no bores, so every call comes from the face,
+    // radius and chamfer passes.
+    const box = new OcctBackend(replicad.makeBaseBox(10, 10, 10) as replicad.Shape3D);
+    let calls = 0;
+    recogniseDrawingFeatures(box, { checkpoint: () => { calls++; } });
+    expect(calls).toBeGreaterThanOrEqual(6);
+    let seen = 0;
+    const stop = new Error('budget');
+    expect(() => recogniseDrawingFeatures(box, { checkpoint: () => { if (++seen === 2) throw stop; } })).toThrow(stop);
+    expect(seen).toBe(2);
+  });
 });

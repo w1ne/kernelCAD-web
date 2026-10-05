@@ -45,4 +45,35 @@ describe('viewerDimensionsForModel', () => {
     });
     expect(dimensions.filter(d => d.source === 'auto').map(d => d.text).sort()).toEqual(['10', '20', '60']);
   }, 60_000);
+
+  it('overall extents of a lofted (B-spline) body match its mesh, and a sphere reads its true size', async () => {
+    const code = `
+const section = (w: number, h: number) =>
+  path().moveTo(-w / 2, -h / 2).lineTo(w / 2, -h / 2).lineTo(w / 2, h / 2).lineTo(-w / 2, h / 2).close();
+return section(20, 14).loft([section(46, 30), section(30, 20)], { spacing: 55 });`;
+    const model = await buildModel({ code, fileName: 'loft.kcad.ts' });
+    const paramTable = (model.session as unknown as { paramTable: never }).paramTable;
+    const meshing = await meshFeaturesPerFeature(model.records, paramTable, model.session as never);
+    const mesh = [0, 1, 2].map(k => meshing.bounds.max[k] - meshing.bounds.min[k]);
+    const overall = viewerDimensionsForModel(model).dimensions
+      .filter(d => d.id.startsWith('auto:overall:'))
+      .map(d => Math.hypot(d.b[0] - d.a[0], d.b[1] - d.a[1], d.b[2] - d.a[2]));
+    expect(overall).toHaveLength(3);
+    overall.forEach((size, k) => expect(Math.abs(size - mesh[k]), `axis ${k}`).toBeLessThan(0.1));
+    // The plain Bnd_Box is padded on these faces; the check above would fail on it.
+    const padded = model.rootShape!.boundingBox();
+    expect(Math.max(...[0, 1, 2].map(k => padded.max[k] - padded.min[k] - mesh[k]))).toBeGreaterThan(0.1);
+
+    const ball = await buildModel({ code: 'return sphere(50);', fileName: 'ball.kcad.ts' });
+    expect(viewerDimensionsForModel(ball).dimensions.map(d => d.text)).toEqual(['100', '100', '100']);
+  }, 60_000);
+
+  it('does no work without declarations when auto is off, and never throws on a bad scene', () => {
+    const exploding = new Proxy({}, { get: () => { throw new Error('scene exploded'); } }) as never;
+    expect(viewerDimensionsForRoot({ records: [], rootShape: exploding }, { auto: false })).toEqual({ dimensions: [], diagnostics: [] });
+    const r = viewerDimensionsForRoot({ records: [], rootShape: exploding });
+    expect(r.dimensions).toEqual([]);
+    expect(r.diagnostics.map(d => d.code)).toEqual(['viewer.dimensions.budget-exceeded']);
+    expect(r.diagnostics[0].message).toContain('scene exploded');
+  });
 });

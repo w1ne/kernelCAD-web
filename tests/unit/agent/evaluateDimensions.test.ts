@@ -38,4 +38,15 @@ describe('evaluate result: declared dimensions', () => {
     const result = await evaluateScript({ code: 'return box(10, 10, 10);' });
     expect(result.dimensions).toBeUndefined();
   });
+
+  it('reports a declared dimension whose query does not resolve', async () => {
+    const result = await evaluateScript({
+      code: "return box(10, 10, 10).dimension({ kind: 'diameter', edge: { ofCurveType: 'CIRCLE' } });",
+    });
+    expect(result.exitCode).toBe(0);
+    expect(result.dimensions).toBeUndefined();
+    const unresolved = result.diagnostics.filter((d) => d.code === 'drawing.dimension.unresolved');
+    expect(unresolved).toHaveLength(1);
+    expect(unresolved[0]).toMatchObject({ severity: 'warn' });
+  });
 });

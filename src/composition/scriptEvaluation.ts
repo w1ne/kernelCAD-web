@@ -190,10 +190,13 @@ async function runOptInGates(
 }
 
 /** Declared (`shape.dimension()`) dimensions only; the automatic ones are a
- *  viewer concern and cost a model walk evaluate has no use for. */
+ *  viewer concern and cost a model walk evaluate has no use for. Their
+ *  warnings (an unresolved query, say) go to the model's diagnostics so the
+ *  agent sees why a declared dimension is missing. */
 function declaredDimensionSummaries(model: BuiltModel): DeclaredDimensionSummary[] {
-  return viewerDimensionsForModel(model, { auto: false }).dimensions
-    .map(({ text, kind, source }) => ({ text, kind, source }));
+  const { dimensions, diagnostics } = viewerDimensionsForModel(model, { auto: false });
+  model.diagnostics.push(...diagnostics);
+  return dimensions.map(({ text, kind, source }) => ({ text, kind, source }));
 }
 
 export async function evaluateAndBuildScript(

@@ -28,10 +28,13 @@ export function viewerDimensionsForRoot(root: ViewerDimensionsRoot, opts: Opts =
   const declared = root.rootId === undefined
     ? []
     : collectDrawingDeclarations(root.records, root.rootId).dimensions;
+  const auto = opts.auto ?? true;
+  if (!auto && declared.length === 0) return { dimensions: [], diagnostics: [] };
+  const rootShape = root.rootShape;
   return computeViewerDimensions({
-    parts: drawingPartsForBackend(root.rootShape),
+    parts: () => drawingPartsForBackend(rootShape),
     declared,
-    auto: opts.auto ?? true,
+    auto,
     ...(opts.budgetMs !== undefined ? { budgetMs: opts.budgetMs } : {}),
   });
 }

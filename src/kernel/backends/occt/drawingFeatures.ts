@@ -472,7 +472,7 @@ function recogniseHoles(
 
 const FULL_COVERAGE = 5.8; // rad — same threshold hole detection uses
 
-function recogniseRadii(cyls: CylFace[], tori: Face[], bores: CylindricalHole[]): RadiusFeature[] {
+function recogniseRadii(cyls: CylFace[], tori: Face[], bores: CylindricalHole[], checkpoint?: () => void): RadiusFeature[] {
   const out: RadiusFeature[] = [];
   const isBoreWall = (c: CylFace) => bores.some(b =>
     Math.abs(b.diameterMm / 2 - c.radius) < DIAM_TOL &&
@@ -482,6 +482,7 @@ function recogniseRadii(cyls: CylFace[], tori: Face[], bores: CylindricalHole[])
   interface Group { loc: V3; dir: V3; radius: number; faces: CylFace[] }
   const groups: Group[] = [];
   for (const c of cyls) {
+    checkpoint?.();
     if (isBoreWall(c)) continue;
     const g = groups.find(x =>
       Math.abs(x.radius - c.radius) < DIAM_TOL &&
@@ -508,6 +509,7 @@ function recogniseRadii(cyls: CylFace[], tori: Face[], bores: CylindricalHole[])
   interface TorusInfo { centre: V3; axis: V3; minor: number; mid: V3; tube: V3; samples: V3[] }
   const torusInfos: TorusInfo[] = [];
   for (const face of tori) {
+    checkpoint?.();
     const major = circumcircle(pointOn(face, 0.1, 0.5), pointOn(face, 0.5, 0.5), pointOn(face, 0.9, 0.5));
     const minor = circumcircle(pointOn(face, 0.5, 0.1), pointOn(face, 0.5, 0.5), pointOn(face, 0.5, 0.9));
     if (!major || !minor) continue;
@@ -609,7 +611,7 @@ function chamferFromStrip(
   return { legs, edgeDir: canonicalAxis(l1.dir), midPoint, normal: info.normal };
 }
 
-function recogniseChamfers(faces: Face[], planarByIndex: Map<number, PlanarFaceInfo>): ChamferFeature[] {
+function recogniseChamfers(faces: Face[], planarByIndex: Map<number, PlanarFaceInfo>, checkpoint?: () => void): ChamferFeature[] {
   const out: ChamferFeature[] = [];
   const faceEdges = faces.map(f => (f as unknown as { edges: Edge[] }).edges);
   const neighbourAcross = (faceIdx: number, edge: Edge): number => {
@@ -621,6 +623,7 @@ function recogniseChamfers(faces: Face[], planarByIndex: Map<number, PlanarFaceI
   };
 
   for (const [idx, info] of planarByIndex) {
+    checkpoint?.();
     const strip = chamferStripSegs(faceEdges[idx]);
     if (!strip) continue;
     const [l1, l2] = strip;
@@ -639,7 +642,9 @@ export interface RecogniseOptions {
   holes?: boolean;
   radii?: boolean;
   chamfers?: boolean;
-  /** Called between bore probes; throw from it to abort a budgeted run. */
+  /** Called per face while classifying, between bore probes and per
+   *  candidate in the radius and chamfer passes; throw from it to abort a
+   *  budgeted run. */
   checkpoint?: () => void;
 }
 
@@ -655,6 +660,7 @@ export function recogniseDrawingFeatures(backend: OcctBackend, options: Recognis
   const tori: Face[] = [];
 
   faces.forEach((face, index) => {
+    options.checkpoint?.();
     const type = (face as unknown as { geomType?: string }).geomType;
     if (type === 'PLANE') {
       const n = unit(vec(face.normalAt()));
@@ -683,9 +689,9 @@ export function recogniseDrawingFeatures(backend: OcctBackend, options: Recognis
   const { holes, unclassified, bores } = wantHoles || wantRadii
     ? recogniseHoles(backend, cones, options.checkpoint)
     : { holes: [], unclassified: [], bores: [] };
-  const radii = wantRadii ? recogniseRadii(cyls, tori, bores) : [];
+  const radii = wantRadii ? recogniseRadii(cyls, tori, bores, options.checkpoint) : [];
   const planarByIndex = new Map(planar.map(p => [p.index, p]));
-  const chamfers = wantChamfers ? recogniseChamfers(faces, planarByIndex) : [];
+  const chamfers = wantChamfers ? recogniseChamfers(faces, planarByIndex, options.checkpoint) : [];
   return {
     planar,
     holes: wantHoles ? holes : [],

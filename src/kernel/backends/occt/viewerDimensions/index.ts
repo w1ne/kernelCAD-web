@@ -3,8 +3,9 @@
 // src/kernel/backends/occt/viewerDimensions/index.ts
 //
 // Entry point for 3D viewer dimensions: declared first, then automatic, all
-// under one time budget. Never throws and never fails the build — on
-// overrun or any error the viewer gets no dimensions and one warning.
+// under one time budget. Never throws and never fails the build: on overrun
+// the viewer keeps what was computed (overall extents always) plus a
+// warning; on any other error it gets no dimensions and one warning.
 
 import type { WorldFramePart } from '../sceneToWorldFrame';
 import type { DrawingDimensionSpec } from '../../../../shared/intent/drawingGdtRecord';
@@ -20,7 +21,9 @@ export { formatMm, groupLabel } from './format';
 export const DEFAULT_BUDGET_MS = 3000;
 
 export interface ViewerDimensionsInput {
-  parts: readonly WorldFramePart[];
+  /** World-frame parts, or a function producing them (called inside the
+   *  error guard, so a failure to split the scene degrades to a warning). */
+  parts: readonly WorldFramePart[] | (() => readonly WorldFramePart[]);
   declared: readonly DrawingDimensionSpec[];
   auto: boolean;
   /** Wall-clock budget in milliseconds; default 3000. */
@@ -47,7 +50,8 @@ function budgetWarning(message: string): CompilerDiagnostic {
 
 /**
  * Declared dimensions first, then automatic ones, under one wall-clock
- * budget checked between rules (and between bore probes). On overrun the
+ * budget checked between rules and inside the feature recogniser (per face,
+ * bore, radius and chamfer candidate). On overrun the
  * dimensions already computed are kept, overall extents always included,
  * plus a budget warning. Any other error returns no dimensions and a
  * warning carrying the reason.
@@ -66,11 +70,12 @@ export function computeViewerDimensions(input: ViewerDimensionsInput): ViewerDim
   const features: ViewerDimension[] = [];
   const all = (): ViewerDimension[] => [...declared.dimensions, ...overall, ...features];
   try {
-    // Bounding boxes only: cheap, so they run before any checkpoint and
-    // every result (overrun included) carries them.
-    overall = input.auto ? overallDimensions(input.parts) : [];
-    declaredDimensions(input.parts, input.declared, checkpoint, declared);
-    if (input.auto) featureDimensions(input.parts, overall.length, checkpoint, features);
+    // Bounding boxes only, so they run before any checkpoint and every
+    // result (overrun included) carries them.
+    const parts = typeof input.parts === 'function' ? input.parts() : input.parts;
+    overall = input.auto ? overallDimensions(parts) : [];
+    declaredDimensions(parts, input.declared, checkpoint, declared);
+    if (input.auto) featureDimensions(parts, overall.length, checkpoint, features);
     return { dimensions: all(), diagnostics: declared.diagnostics };
   } catch (err) {
     if (err instanceof BudgetExceeded) {

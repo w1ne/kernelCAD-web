@@ -8,6 +8,7 @@
 // at 20 per body. Hole bores never appear as radii: the recogniser already
 // claims them as holes.
 
+import { getOC } from 'replicad';
 import type { WorldFramePart } from '../sceneToWorldFrame';
 import {
   recogniseDrawingFeatures,
@@ -50,11 +51,47 @@ function groupBy<T>(items: readonly T[], key: (t: T) => string): Array<[string, 
 // Overall extents
 // ---------------------------------------------------------------------------
 
-function unionBounds(parts: readonly WorldFramePart[]): { min: V3; max: V3 } {
+type Box3 = { min: readonly number[]; max: readonly number[] };
+type OcPnt = { X(): number; Y(): number; Z(): number; delete(): void };
+type OcBox = { IsVoid(): boolean; CornerMin(): OcPnt; CornerMax(): OcPnt; delete(): void };
+
+/**
+ * The exact box of one part from its geometry (BRepBndLib::AddOptimal).
+ * The default Bnd_Box is padded on curved B-spline faces (control-point
+ * hull) and the tessellated box falls short on curved faces (a Ø100 sphere
+ * reads 99.9), so neither gives a true overall size. Falls back to the
+ * tessellated box when the optimal pass is unavailable.
+ */
+function exactBox(part: WorldFramePart): Box3 {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- raw OCCT bindings are untyped
+  const oc = getOC() as any;
+  let box: OcBox | undefined;
+  try {
+    const b: OcBox = new oc.Bnd_Box_1();
+    box = b;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- replicad wrapper
+    oc.BRepBndLib.AddOptimal((part.shape.getReplicadShape() as any).wrapped, b, false, false);
+    if (!b.IsVoid()) {
+      const lo = b.CornerMin();
+      const hi = b.CornerMax();
+      const out = { min: [lo.X(), lo.Y(), lo.Z()], max: [hi.X(), hi.Y(), hi.Z()] };
+      lo.delete();
+      hi.delete();
+      return out;
+    }
+  } catch {
+    // fall through to the tessellated box
+  } finally {
+    box?.delete();
+  }
+  return part.shape.boundingBox({ exact: true });
+}
+
+function unionBounds(parts: readonly WorldFramePart[]): Box3 {
   const min: V3 = [Infinity, Infinity, Infinity];
   const max: V3 = [-Infinity, -Infinity, -Infinity];
   for (const p of parts) {
-    const bb = p.shape.boundingBox();
+    const bb = exactBox(p);
     for (let k = 0; k < 3; k++) {
       min[k] = Math.min(min[k], bb.min[k]);
       max[k] = Math.max(max[k], bb.max[k]);
@@ -63,7 +100,7 @@ function unionBounds(parts: readonly WorldFramePart[]): { min: V3; max: V3 } {
   return { min, max };
 }
 
-/** Three linear dimensions along the union bounding box edges. */
+/** Three linear dimensions along the edges of the exact union box. */
 export function overallExtents(parts: readonly WorldFramePart[]): Draft[] {
   const { min: [x0, y0, z0], max: [x1, y1, z1] } = unionBounds(parts);
   const edges: Array<[V3, V3]> = [
@@ -210,8 +247,8 @@ function partFeatureDims(
   }
 }
 
-/** Overall extents of the whole model. Cheap (bounding boxes only), so it
- *  runs outside the budget and every result carries it. */
+/** Overall extents of the whole model. Bounding boxes only, so it runs
+ *  outside the budget and every result carries it. */
 export function overallDimensions(parts: readonly WorldFramePart[]): ViewerDimension[] {
   return stamp('overall', 'model', overallExtents(parts));
 }

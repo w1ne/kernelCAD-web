@@ -46,14 +46,22 @@ function frameOf(lo: V3, hi: V3): DimensionFrame {
     return { lo, hi, centre: mid(lo, hi), diagonal: Math.hypot(hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]) };
 }
 
-/** The payload bounds when known, else the box around the measured points.
- *  Construction points such as an angular apex are left out: they can lie
- *  far from the body and would fling every label away from it. */
+const isOverall = (d: ViewerDimension): boolean => d.source === 'auto' && /^auto:(overall|bounds):/.test(d.id);
+
+/**
+ * The body's box: the kernel's overall extents when present (measured on
+ * the exact geometry), else the payload `bounds`, else the box around the
+ * measured points. The payload bounds come second because they also cover
+ * meshed tool bodies (a subtracted cylinder sticking out of a plate).
+ * Construction points such as an angular apex are never used: they can lie
+ * far from the body and would fling every label away from it.
+ */
 export function dimensionFrame(dimensions: readonly ViewerDimension[], bounds?: FrameBounds | null): DimensionFrame {
-    if (bounds) return frameOf([...bounds.min], [...bounds.max]);
+    const overall = dimensions.filter(isOverall);
+    if (overall.length === 0 && bounds) return frameOf([...bounds.min], [...bounds.max]);
     const lo: V3 = [Infinity, Infinity, Infinity];
     const hi: V3 = [-Infinity, -Infinity, -Infinity];
-    for (const d of dimensions) {
+    for (const d of overall.length > 0 ? overall : dimensions) {
         for (const p of [d.a, d.b]) {
             for (let k = 0; k < 3; k++) {
                 lo[k] = Math.min(lo[k], p[k]);
@@ -86,8 +94,7 @@ function alignedAxis(d: ViewerDimension): number {
  *  farther side on the second) so the line never crosses the body. */
 function silhouetteEdge(d: ViewerDimension, f: DimensionFrame, eye: ViewOctant): ViewerDimension {
     const k = alignedAxis(d);
-    const overall = d.source === 'auto' && /^auto:(overall|bounds):/.test(d.id);
-    if (!overall || k < 0) return d;
+    if (!isOverall(d) || k < 0) return d;
     const [i, j] = [0, 1, 2].filter((n) => n !== k);
     const at: V3 = [0, 0, 0];
     at[i] = eye[i] > 0 ? f.hi[i] : f.lo[i];
