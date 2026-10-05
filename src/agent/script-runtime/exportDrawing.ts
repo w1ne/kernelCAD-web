@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { runScript } from '../../composition/runScript';
-import { type OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { renderSvgDrawing, type SvgDrawingOptions } from '../../kernel/backends/occt/exportSvgDrawing';
 import { explodedPoses, applyExplodedOffsets, parseExplodeInput } from '../../modeling/runtime/explodedPoses';
 import { computeBom } from './bom';
@@ -9,7 +8,7 @@ import type { Assembly } from '../../modeling/capture/assembly';
 import type { DrawingDimensionSpec } from '../../shared/intent/drawingGdtRecord';
 import type { DrawingAnnotation, DrawingAnchor } from '../../kernel/backends/occt/drawingAnnotations';
 import { collectDrawingDeclarations } from '../../modeling/runtime/drawingDeclarations';
-import { sceneToWorldFrameParts, type WorldFramePart } from '../../kernel/backends/occt/sceneToWorldFrame';
+import { drawingPartsForBackend, sceneToWorldFrameParts, type WorldFramePart } from '../../kernel/backends/occt/sceneToWorldFrame';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import type { ShapeBackend } from '../../kernel/backends/backend';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
@@ -211,12 +210,6 @@ function architecturalStyleHint(style: SvgDrawingOptions['style'], parts: readon
     hint: HINT_TEMPLATES['drawing.style.architectural-suggested'].template,
     nextAction: NEXT_ACTIONS['drawing.style.architectural-suggested'],
   };
-}
-
-function drawingPartsForBackend(lowered: ShapeBackend): WorldFramePart[] {
-  return isSceneBackend(lowered)
-    ? sceneToWorldFrameParts(lowered)
-    : [{ name: 'part', shape: lowered as OcctBackend }];
 }
 
 function firstAssemblyOrUndefined(assemblies: Map<string, Assembly>): Assembly | undefined {
