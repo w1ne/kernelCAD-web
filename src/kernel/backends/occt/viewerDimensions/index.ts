@@ -73,7 +73,8 @@ export function computeViewerDimensions(input: ViewerDimensionsInput): ViewerDim
     // Bounding boxes only, so they run before any checkpoint and every
     // result (overrun included) carries them.
     const parts = typeof input.parts === 'function' ? input.parts() : input.parts;
-    overall = input.auto ? overallDimensions(parts) : [];
+    const exactAffordable = performance.now() - start <= budgetMs / 2;
+    overall = input.auto ? overallDimensions(parts, { exactAffordable }) : [];
     declaredDimensions(parts, input.declared, checkpoint, declared);
     if (input.auto) featureDimensions(parts, overall.length, checkpoint, features);
     return { dimensions: all(), diagnostics: declared.diagnostics };

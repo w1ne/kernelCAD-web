@@ -56,13 +56,45 @@ type OcPnt = { X(): number; Y(): number; Z(): number; delete(): void };
 type OcBox = { IsVoid(): boolean; CornerMin(): OcPnt; CornerMax(): OcPnt; delete(): void };
 
 /**
+ * Face-count ceiling for the AddOptimal pass. Measured ~11 ms per curved
+ * face (5 spheres 57 ms, 30 spheres 332 ms) against 0.6 ms for the plain
+ * box, so 40 faces keeps the worst case near 450 ms, under half of the
+ * 1 s budget. Ordinary bodies sit far below it.
+ */
+export const EXACT_BOX_MAX_FACES = 40;
+
+/** Knobs that bound the exact-box pass; both default to unbounded-off. */
+export type OverallOptions = {
+  /** Face count above which AddOptimal is skipped. */
+  maxExactFaces?: number;
+  /** False when under half of the budget remains: skip AddOptimal. */
+  exactAffordable?: boolean;
+};
+
+function faceCount(part: WorldFramePart): number {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- replicad wrapper
+    return (part.shape.getReplicadShape() as any).faces.length;
+  } catch {
+    return Infinity;
+  }
+}
+
+/**
  * The exact box of one part from its geometry (BRepBndLib::AddOptimal).
  * The default Bnd_Box is padded on curved B-spline faces (control-point
  * hull) and the tessellated box falls short on curved faces (a Ø100 sphere
  * reads 99.9), so neither gives a true overall size. Falls back to the
  * tessellated box when the optimal pass is unavailable.
  */
-function exactBox(part: WorldFramePart): Box3 {
+function exactBox(part: WorldFramePart, opts: OverallOptions): Box3 {
+  if (opts.exactAffordable === false || faceCount(part) > (opts.maxExactFaces ?? EXACT_BOX_MAX_FACES)) {
+    return part.shape.boundingBox({ exact: true });
+  }
+  return optimalBox(part);
+}
+
+function optimalBox(part: WorldFramePart): Box3 {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- raw OCCT bindings are untyped
   const oc = getOC() as any;
   let box: OcBox | undefined;
@@ -87,11 +119,11 @@ function exactBox(part: WorldFramePart): Box3 {
   return part.shape.boundingBox({ exact: true });
 }
 
-function unionBounds(parts: readonly WorldFramePart[]): Box3 {
+function unionBounds(parts: readonly WorldFramePart[], opts: OverallOptions): Box3 {
   const min: V3 = [Infinity, Infinity, Infinity];
   const max: V3 = [-Infinity, -Infinity, -Infinity];
   for (const p of parts) {
-    const bb = exactBox(p);
+    const bb = exactBox(p, opts);
     for (let k = 0; k < 3; k++) {
       min[k] = Math.min(min[k], bb.min[k]);
       max[k] = Math.max(max[k], bb.max[k]);
@@ -101,8 +133,8 @@ function unionBounds(parts: readonly WorldFramePart[]): Box3 {
 }
 
 /** Three linear dimensions along the edges of the exact union box. */
-export function overallExtents(parts: readonly WorldFramePart[]): Draft[] {
-  const { min: [x0, y0, z0], max: [x1, y1, z1] } = unionBounds(parts);
+export function overallExtents(parts: readonly WorldFramePart[], opts: OverallOptions = {}): Draft[] {
+  const { min: [x0, y0, z0], max: [x1, y1, z1] } = unionBounds(parts, opts);
   const edges: Array<[V3, V3]> = [
     [[x0, y0, z0], [x1, y0, z0]],
     [[x1, y0, z0], [x1, y1, z0]],
@@ -248,9 +280,10 @@ function partFeatureDims(
 }
 
 /** Overall extents of the whole model. Bounding boxes only, so it runs
- *  outside the budget and every result carries it. */
-export function overallDimensions(parts: readonly WorldFramePart[]): ViewerDimension[] {
-  return stamp('overall', 'model', overallExtents(parts));
+ *  outside the budget and every result carries it; the exact-box pass is
+ *  bounded by `opts` so it cannot eat the budget. */
+export function overallDimensions(parts: readonly WorldFramePart[], opts: OverallOptions = {}): ViewerDimension[] {
+  return stamp('overall', 'model', overallExtents(parts, opts));
 }
 
 /**

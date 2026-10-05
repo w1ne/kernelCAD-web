@@ -2,13 +2,14 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Real-OCCT gate for the automatic viewer dimensions. kernelCAD's
 // cylinder(height, radius): cylinder(20, 2.5) is a Ø5 bore 20 long.
-import { beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import * as replicad from 'replicad';
 import { initOcct, OcctBackend } from '../occtBackend';
 import { computeViewerDimensions, type ViewerDimension } from './index';
 import type { WorldFramePart } from '../sceneToWorldFrame';
 import { partsFromSource } from '../../../../../tests/helpers/viewerDimensionParts';
 import { recogniseDrawingFeatures } from '../drawingFeatures';
+import { overallDimensions } from './auto';
 
 beforeAll(async () => { await initOcct(); }, 60_000);
 
@@ -77,6 +78,20 @@ describe('auto viewer dimensions', () => {
   });
   it('sphere gives overall only', async () => {
     expect(await texts(`return sphere(50);`)).toEqual(['100', '100', '100']);
+  });
+  it('skips the exact-box pass above the face limit but still sizes the body', async () => {
+    const parts = await partsFromSource(`return box(40,30,10).subtract(cylinder(20,2.5).translate(5,5,-5));`);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- raw OCCT bindings are untyped
+    const spy = vi.spyOn((replicad.getOC() as any).BRepBndLib, 'AddOptimal');
+    try {
+      const over = overallDimensions(parts, { maxExactFaces: 1 });
+      expect(spy).not.toHaveBeenCalled();
+      expect(over.map(d => d.text).sort()).toEqual(['10', '30', '40']);
+      overallDimensions(parts, { exactAffordable: false });
+      expect(spy).not.toHaveBeenCalled();
+      overallDimensions(parts);
+      expect(spy).toHaveBeenCalledTimes(1);
+    } finally { spy.mockRestore(); }
   });
   it('assembly over 8 parts gives overall only', async () => {
     const parts = Array.from({ length: 9 }, (_, i) => `a.part('p${i}', box(10,10,10).subtract(cylinder(20,2).translate(5,5,-5)).translate(${i * 12},0,0));`).join('\n');
