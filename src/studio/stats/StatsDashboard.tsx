@@ -8,9 +8,10 @@
 // fetching and auth live in routes/stats.tsx.
 
 import type { ReactNode } from 'react';
-import { ColumnChart, LineChart, Meter } from './charts';
+import { ColumnChart, LineChart } from './charts';
 import { clientLabel, clientOrder, fmtInt, fmtMs, fmtPct, kpis, ratio, retentionRate, sum } from './derive';
 import { SERIES } from './palette';
+import { MeshTile, OAuthFunnelView, QuotaFunnelRow } from './FunnelPanels';
 import { SuccessPanel } from './SuccessPanel';
 import type { AdminStats, Cohort, RetentionCell } from './types';
 import { Figure, Note, Panel, SubHead, Unknown } from './ui';
@@ -35,7 +36,7 @@ function GrowthPanel({ stats }: { stats: AdminStats }): ReactNode {
   const g = stats.growth;
   return (
     <Panel id="growth" title="Sign-ups and agent connections"
-      question="Are people signing up and connecting an agent? Where do OAuth registrations fail to become grants?">
+      question="Are people signing up and connecting an agent? Where do authorize attempts drop off before a grant?">
       {!g ? <Unknown section="growth" /> : (
         <>
           <div>
@@ -51,28 +52,31 @@ function GrowthPanel({ stats }: { stats: AdminStats }): ReactNode {
                   <thead>
                     <tr>
                       <th scope="col">Client</th>
-                      <th scope="col" className="kcs-r">Connected accounts</th>
-                      <th scope="col" className="kcs-r">Registrations</th>
-                      <th scope="col" className="kcs-r">Got a grant</th>
-                      <th scope="col">Registration → grant</th>
+                      <th scope="col" className="kcs-r">Connected now (ever)</th>
+                      <th scope="col" className="kcs-r">Grants in window</th>
+                      <th scope="col" className="kcs-r">Registrations → granted (old)</th>
                     </tr>
                   </thead>
                   <tbody>
                     {[...g.by_client].sort((a, b) => clientOrder(a.client) - clientOrder(b.client)).map(c => (
                       <tr key={c.client} data-testid="client-row">
                         <td style={{ color: 'var(--kcs-text)' }}>{clientLabel(c.client)}</td>
-                        <td className="kcs-r">{fmtInt(c.connected_accounts)}</td>
-                        <td className="kcs-r">{fmtInt(c.registrations)}</td>
-                        <td className="kcs-r">{fmtInt(c.registrations_granted)}</td>
-                        <td><Meter value={ratio(c.registrations_granted, c.registrations)} label={`${clientLabel(c.client)} registration to grant`} /></td>
+                        <td className="kcs-r">
+                          {fmtInt(c.connected_accounts)}
+                          {c.connected_accounts_ever != null && <span style={{ color: 'var(--kcs-muted)' }}> ({fmtInt(c.connected_accounts_ever)} ever)</span>}
+                        </td>
+                        <td className="kcs-r">{fmtInt(c.grants_in_window)}</td>
+                        <td className="kcs-r" style={{ color: 'var(--kcs-muted)' }}>{fmtInt(c.registrations_granted)} / {fmtInt(c.registrations)}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
             )}
+            <Note>{stats.definitions['connected']}</Note>
             <Note>{stats.definitions['registration']}</Note>
           </div>
+          <OAuthFunnelView funnel={stats.oauth_funnel} definition={stats.definitions['oauth_funnel']} />
         </>
       )}
     </Panel>
@@ -164,6 +168,7 @@ function MoneyPanel({ stats }: { stats: AdminStats }): ReactNode {
           <Figure label="Failed payments" value={fmtInt(m.payment_failures)} />
         </div>
       )}
+      <QuotaFunnelRow funnel={stats.funnel} />
       <Note>Subscriptions are current; checkouts, cancellations and failed payments are Stripe events in the window.</Note>
     </Panel>
   );
@@ -176,6 +181,7 @@ function HealthPanel({ stats }: { stats: AdminStats }): ReactNode {
   const u = h.uptime;
   return (
     <Panel id="health" title="Health" question="Is prod healthy right now?">
+      <MeshTile stats={stats} />
       <div className="flex flex-wrap gap-6">
         <Figure label="Deployed commit" value={h.commit.slice(0, 7)} />
         <Figure label="Process started" value={new Date(h.process_started_at).toLocaleString()} />

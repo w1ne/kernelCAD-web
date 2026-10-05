@@ -9,7 +9,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import type { ComponentType } from 'react';
-import { adminStatsFixture } from './fixtures/adminStatsFixture';
+import { NEWER_SECTIONS, adminStatsFixture } from './fixtures/adminStatsFixture';
 
 const routerMock = vi.hoisted(() => ({
     navigate: vi.fn(),
@@ -91,11 +91,11 @@ describe('/stats', () => {
         for (const id of ['growth', 'success', 'retention', 'money', 'health', 'read-failures']) {
             expect(screen.getByTestId(`panel-${id}`)).toBeDefined();
         }
-
+        // Clients in fixed order; registration → granted is a muted secondary column.
         // Clients in fixed order, with the registration → grant conversion.
         const rows = screen.getAllByTestId('client-row');
         expect(rows.map(r => r.firstChild?.textContent)).toEqual(['Claude', 'ChatGPT', 'Claude Code', 'Other']);
-        expect(within(rows[0]!).getByRole('meter').getAttribute('aria-valuenow')).toBe('25'); // 45 / 180
+        expect(rows[0]!.textContent).toContain('45 / 180'); // old registration → granted, muted
 
         expect(screen.getAllByTestId('failure-row')).toHaveLength(3);
         expect(screen.getAllByTestId('tool-row')).toHaveLength(3);
@@ -275,5 +275,35 @@ describe('/stats', () => {
         expect(screen.getAllByTestId('read-failure-row')).toHaveLength(3);
         expect(screen.getByText(/3 reads failed/)).toBeDefined();
         expect(within(screen.getByTestId('panel-money')).getByText(/read failed/)).toBeDefined();
+    });
+});
+
+describe('/stats newer sections', () => {
+    it('renders the OAuth funnel, quota funnel, mesh tile and ever-connected', async () => {
+        mocks.useSession.mockReturnValue(signedIn);
+        mocks.fetchAdminStats.mockResolvedValue(adminStatsFixture(NEWER_SECTIONS));
+        renderStatsPage();
+        await screen.findByTestId('panel-growth');
+        const row = screen.getByTestId('oauth-funnel-row');
+        expect(row.textContent).toContain('300');
+        expect(row.textContent).toContain('(400)');
+        expect(screen.getByTestId('quota-funnel').textContent).toContain('Paid after checkout');
+        const mesh = screen.getByTestId('mesh-tile');
+        expect(mesh.textContent).toContain('97.0%');
+        expect(mesh.textContent).toContain('mesh.timeout');
+        expect(screen.getByTestId('mesh-spark')).toBeTruthy();
+        expect(screen.getByTestId('kpi-connected').textContent).toContain('520 ever');
+    });
+
+    it('falls back to since-restart mesh counters and says not available when sections are null', async () => {
+        mocks.useSession.mockReturnValue(signedIn);
+        const base = adminStatsFixture({ oauth_funnel: null, funnel: null, mesh: null });
+        base.health = { ...base.health, mesh: { requests: 12, failures: 1 } };
+        mocks.fetchAdminStats.mockResolvedValue(base);
+        renderStatsPage();
+        await screen.findByTestId('panel-growth');
+        expect(screen.getByTestId('mesh-tile').textContent).toContain('Since the server last restarted');
+        expect(screen.queryByTestId('quota-funnel')).toBeNull();
+        expect(screen.getAllByText(/not available yet/).length).toBeGreaterThanOrEqual(2);
     });
 });

@@ -20,6 +20,8 @@ export interface ClientConnections {
   grants_in_window: number;
   registrations: number;
   registrations_granted: number;
+  /** Accounts that ever got a grant, expired ones included. Absent on an older server. */
+  connected_accounts_ever?: number;
 }
 
 export interface Growth {
@@ -27,6 +29,8 @@ export interface Growth {
   accounts_total: number;
   connected_accounts_total: number;
   connected_accounts_new: number;
+  /** Accounts that ever got a grant, expired ones included. Absent on an older server. */
+  connected_accounts_ever?: number;
   by_client: ClientConnections[];
 }
 
@@ -165,6 +169,39 @@ export interface ExportsPersisted {
   mcp: { calls: number; ok: number; rejected: number; errors: number; refused: number } | null;
 }
 
+export const OAUTH_STEPS = ['auth_shown', 'login_completed', 'consent', 'grant'] as const;
+export type OAuthStep = (typeof OAUTH_STEPS)[number];
+
+export interface OAuthFunnel {
+  by_client: Array<{ client: string; steps: Partial<Record<OAuthStep, { attempts: number; people: number }>> }>;
+  login_methods?: Record<string, number> | Array<{ method: string; count: number }>;
+}
+
+/** Quota hit -> checkout -> paid. Counts only; accounts are distinct people. */
+export interface Funnel {
+  quota_hits?: number;
+  quota_hit_accounts?: number;
+  quota_hits_by_surface?: Record<string, number>;
+  quota_hits_by_tool?: Record<string, number>;
+  checkout_started?: number;
+  checkout_started_accounts?: number;
+  checkout_after_quota_hit_accounts?: number;
+  paid_after_checkout_accounts?: number;
+  checkouts_completed?: number;
+  checkouts_expired?: number;
+}
+
+export interface MeshStats {
+  success_rate: number | null;
+  served_rate?: number | null;
+  p50_ms?: number | null;
+  p95_ms?: number | null;
+  cache_hit_rate?: number | null;
+  /** Per day, aligned with `days`; null where a day had no meshes. */
+  success_rate_by_day?: Array<number | null>;
+  top_errors?: Array<{ code?: string; error?: string; count: number }>;
+}
+
 export interface ReadFailure {
   source: string;
   section: string;
@@ -182,6 +219,12 @@ export interface AdminStats {
   generations: Generations | null;
   mcp: Mcp | null;
   money: Money | null;
+  /** Newer server sections; null = read failed or migration not applied, absent = older server. */
+  oauth_funnel?: OAuthFunnel | null;
+  funnel?: Funnel | null;
+  mesh?: MeshStats | null;
+  /** Accounts that ever got a grant, expired ones included. */
+  connected_accounts_ever?: number | null;
   exports: {
     source: 'process';
     since: string;
@@ -206,6 +249,8 @@ export interface AdminStats {
     };
     uptime: UptimeSummary | null;
     uptime_configured: boolean;
+    /** Since-restart Studio mesh counters (fallback while `mesh` is null). */
+    mesh?: Record<string, unknown> | null;
   };
   read_failures: ReadFailure[];
 }

@@ -14,6 +14,7 @@ vi.mock('../funnel/lib/supabaseClient', () => ({
 import { defaultCode } from '../shared/worker/geometryEngine';
 import {
   loadGalleryScriptSource,
+  getMeshNotice,
   loadStudioScriptSource,
   meshSourceDev,
   meshSourceHosted,
@@ -481,5 +482,62 @@ describe('loadGalleryScriptSource', () => {
     })) as unknown as typeof fetch);
 
     await expect(loadGalleryScriptSource('studio-project')).rejects.toThrow(/source/i);
+  });
+});
+
+describe('hosted mesh: pending retry and degraded notice', () => {
+  const ok = { features: [], featureRecords: [], bounds: { min: [0, 0, 0], max: [1, 1, 1] } };
+  const pending = (retryAfter?: string) => ({
+    ok: false,
+    status: 504,
+    headers: { get: (k: string) => (k === 'Retry-After' ? retryAfter ?? null : null) },
+    json: async () => ({ code: 'mesh.pending', error: 'still meshing' }),
+  }) as unknown as Response;
+
+  function hosted() {
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.example.com');
+    vi.stubGlobal('window', { location: { hostname: 'app.kernelcad.com', pathname: '/', search: '' } });
+  }
+
+  it('retries a 504 mesh.pending after Retry-After, showing the meshing notice, then succeeds', async () => {
+    vi.useFakeTimers();
+    hosted();
+    const fetchMock = vi.spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(pending('2'))
+      .mockResolvedValueOnce(pending('2'))
+      .mockResolvedValueOnce({ ok: true, json: async () => ok } as Response);
+    const p = meshSourceHosted('edited', { w: 1 });
+    await vi.advanceTimersByTimeAsync(0);
+    expect(getMeshNotice().meshing).toBe(true);
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    await vi.advanceTimersByTimeAsync(2000);
+    await expect(p).resolves.toMatchObject({ features: [] });
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(getMeshNotice().meshing).toBe(false);
+    vi.useRealTimers();
+  });
+
+  it('gives up after three retries (~90 s at most) with the server error', async () => {
+    vi.useFakeTimers();
+    hosted();
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async () => pending('999'));
+    const p = meshSourceHosted('edited', { w: 1 });
+    const assertion = expect(p).rejects.toThrow('still meshing');
+    await vi.advanceTimersByTimeAsync(90_000);
+    await assertion;
+    expect(fetchMock).toHaveBeenCalledTimes(4);
+    expect(getMeshNotice().meshing).toBe(false);
+    vi.useRealTimers();
+  });
+
+  it('flags a degraded revision-artifact payload as an approximate preview', async () => {
+    hosted();
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({ ok: true, json: async () => ({ ...ok, degraded: 'revision-artifact' }) } as Response);
+    await meshSourceHosted('edited', { w: 1 });
+    expect(getMeshNotice().approximate).toBe(true);
+    vi.mocked(globalThis.fetch).mockResolvedValue({ ok: true, json: async () => ok } as Response);
+    await meshSourceHosted('edited', { w: 2 });
+    expect(getMeshNotice().approximate).toBe(false);
   });
 });

@@ -174,7 +174,7 @@ function accountKpis(s: AdminStats): Kpi[] {
     s.activity
       ? { key: 'active', label: 'Active accounts', value: fmtInt(s.activity.active_accounts), note: dataWindow(null, s.days), definition: dActive, unknown: false }
       : unknownKpi('active', 'Active accounts', dActive),
-    g ? { key: 'connected', label: 'Connected agents', value: fmtInt(g.connected_accounts_total), note: `+${fmtInt(g.connected_accounts_new)} new in window`, definition: dConnected, unknown: false }
+    g ? { key: 'connected', label: 'Connected agents', value: fmtInt(g.connected_accounts_total), note: `${(g.connected_accounts_ever ?? s.connected_accounts_ever) != null ? `${fmtInt(g.connected_accounts_ever ?? s.connected_accounts_ever)} ever · ` : ''}+${fmtInt(g.connected_accounts_new)} new in window`, definition: dConnected, unknown: false }
       : unknownKpi('connected', 'Connected agents', dConnected),
     s.money
       ? { key: 'paying', label: 'Paying', value: fmtInt(sum(Object.values(s.money.active_by_tier))), note: 'active subscriptions', definition: dPaying, unknown: false }
