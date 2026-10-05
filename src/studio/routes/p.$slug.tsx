@@ -54,6 +54,7 @@ import {
   signInHref,
   studioHref,
 } from './-projectPageModel';
+import { useShareProject } from './-useShareProject';
 import type { Session } from '@supabase/supabase-js';
 
 export const Route = createFileRoute('/p/$slug')({
@@ -146,20 +147,53 @@ function ProjectPage() {
   const { slug } = Route.useParams();
   const { session } = useOptionalSession();
   const live = useProjectLiveUpdates(slug);
+  const share = useShareProject(slug, live.project);
   const claim = useProjectClaim(slug, session, live.project);
   const onUpgrade = useUpgrade();
-  const { project, loadState } = live;
+  const { loadState } = live;
+  const project = share.project;
 
   if (isTerminal(loadState)) {
     return <ProjectLoadPage state={loadState} err={live.err} onRetry={live.retry} />;
   }
+  if (share.status === 'error') {
+    return (
+      <ProjectLoadPage
+        state="error"
+        err={share.error ?? 'This revision could not be loaded.'}
+        onRetry={share.retry}
+      />
+    );
+  }
+  // A historical `?version=` must not flash the latest model while its
+  // source is still loading.
   if (readView() === STUDIO_VIEW) {
     if (loadState !== 'ready' || !project) {
       return <ProjectLoadPage state={loadState === 'ready' ? 'loading' : loadState} err={live.err} onRetry={live.retry} />;
     }
-    return <StudioProjectView slug={slug} project={project} session={session} live={live} claim={claim} onUpgrade={onUpgrade} />;
+    return (
+      <StudioProjectView
+        slug={slug}
+        project={project}
+        session={session}
+        live={live}
+        claim={claim}
+        onUpgrade={onUpgrade}
+        historical={share.historical}
+      />
+    );
   }
-  return <ModelFirstPage slug={slug} session={session} live={live} claim={claim} onUpgrade={onUpgrade} />;
+  return (
+    <ModelFirstPage
+      slug={slug}
+      session={session}
+      live={live}
+      claim={claim}
+      onUpgrade={onUpgrade}
+      view={project}
+      historical={share.historical}
+    />
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -225,12 +259,17 @@ function LiveBadge({ project, lastLiveUpdate, now }: {
   );
 }
 
-function ModelFirstPage(props: PageProps): JSX.Element {
+function ModelFirstPage(props: PageProps & {
+  /** Revision the link asked for. Null while a historical pin is loading. */
+  view: ProjectRow | null;
+  /** Live pushes must not replace a link to an older revision. */
+  historical: boolean;
+}): JSX.Element {
   const { slug, live } = props;
   const theme = usePreferredTheme();
   const now = useNow();
   const poster = posterUrl(apiBase(), slug);
-  const project = live.project;
+  const project = props.view;
   const shared = {
     theme,
     title: project?.title ?? <span className="text-fg-3">Loading…</span>,
@@ -250,7 +289,7 @@ function ModelFirstPage(props: PageProps): JSX.Element {
   }
   return (
     <WorkbenchProvider initialCode={project.current_code} projectName={project.title}>
-      <LiveCodeApplier liveCode={live.liveCode} />
+      <LiveCodeApplier liveCode={props.historical ? undefined : live.liveCode} />
       <LiveProjectShell {...props} project={project} shared={shared} poster={poster} now={now} />
     </WorkbenchProvider>
   );
@@ -356,7 +395,10 @@ function BuildFailure({ slug, error }: { slug: string; error: string | null }): 
 // Full Studio (?view=studio)
 // ---------------------------------------------------------------------------
 
-function StudioProjectView({ slug, project, session, live, claim, onUpgrade }: PageProps & { project: ProjectRow }): JSX.Element {
+function StudioProjectView({ slug, project, session, live, claim, onUpgrade, historical }: PageProps & {
+  project: ProjectRow;
+  historical: boolean;
+}): JSX.Element {
   const headerLeft = (
     <div className="flex items-center gap-2 min-w-0">
       <a
@@ -414,7 +456,7 @@ function StudioProjectView({ slug, project, session, live, claim, onUpgrade }: P
       <App
         initialCode={project.current_code}
         projectName={project.title}
-        liveCode={live.liveCode}
+        liveCode={historical ? undefined : live.liveCode}
         viewerMode
         viewportOverlay={<StudioModelCustomizer slug={slug} hints={project.parameters} />}
         headerLeft={headerLeft}

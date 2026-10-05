@@ -106,7 +106,9 @@ function useSettledRenderCapture(
     if (!project) return;
     const FIRST_DELAY_MS = 1000; // let the first paint happen before sampling
     const POLL_MS = 600;
-    const MAX_TRIES = 25; // ~15s ceiling, then give up silently
+    // Two grabs is the stability check. More than that is a readPixels loop:
+    // each toDataURL stalls the GPU and freezes the page on a large mesh.
+    const MAX_TRIES = 2;
     const MIN_PNG_LEN = 2000; // skip a blank/near-empty canvas
     const STABLE_FRAC = 0.02; // ≤2% size change between grabs == settled
     let disposed = false;

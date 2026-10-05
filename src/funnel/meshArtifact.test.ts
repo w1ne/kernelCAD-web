@@ -148,4 +148,30 @@ describe('selectTerminalSerializedFeatures via parseMeshArtifact', () => {
     }, 2);
     expect(parsed.features.map((f) => f.featureId)).toEqual(['box_1', 'box_2']);
   });
+
+  it('drops a second solved assembly that occupies the same pose', () => {
+    const tri = {
+      vertices: [0, 0, 0, 1, 0, 0, 0, 1, 0],
+      indices: [0, 1, 2],
+      normals: [0, 0, 1, 0, 0, 1, 0, 0, 1],
+      faceId: 1,
+    };
+    const part = (id: string, asm: string) => ({
+      featureId: id,
+      featureKind: 'solvedAssembly',
+      predecessors: [asm],
+      assemblyPartName: 'base-frame',
+      transform: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+      faces: [tri],
+    });
+    const parsed = parseMeshArtifact({
+      revision: 1,
+      bounds: { min: [0, 0, 0], max: [1, 1, 0] },
+      features: [
+        part('solvedAssembly_1__base-frame', 'solvedAssembly_1'),
+        part('solvedAssembly_2__base-frame', 'solvedAssembly_2'),
+      ],
+    }, 1);
+    expect(parsed.features.map((f) => f.featureId)).toEqual(['solvedAssembly_2__base-frame']);
+  });
 });

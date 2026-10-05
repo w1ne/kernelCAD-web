@@ -91,6 +91,7 @@ export function useScriptExecution(
     }), [engine, setGeometryTransformOverrides, setPreviewGeometries, pushExecutionRecord]);
 
     const { sessionToken, sessionStatus } = useSessionToken(studioScript);
+    const hostedOpenRef = useRef(true);
     const { requestMeshAndReview } = useMeshFetch(code, applyDeps, setRecomputeMs);
 
     // Initial mesh fetch — gated on `sessionStatus` so we make exactly one
@@ -114,21 +115,39 @@ export function useScriptExecution(
 
     const { updateParam } = useParamUpdate(code, sessionToken, executionCount, applyDeps);
 
-    // Execution Loop
+    // Hosted deploy (app.kernelcad.com): the in-process worker is the
+    // legacy v0.1 runtime that throws on modern API globals, so this
+    // auto-run path must resolve via the stored artifact / server mesh
+    // instead of `engine.executeCode`. Not gated on worker `isReady` —
+    // a later ready flip must not schedule a second fetch and put the
+    // overlay back up.
     useEffect(() => {
+        if (!shouldUseHostedMesh()) return undefined;
+        if (suspendSourceExecution || studioScript) return undefined;
+        setScriptParams([]);
+        setScriptReview(null);
+        // First open paints the CDN artifact immediately. Later edits keep
+        // the debounce so a keystroke does not remesh on every character.
+        const delay = hostedOpenRef.current ? 0 : 600;
+        const timer = setTimeout(() => {
+            hostedOpenRef.current = false;
+            void runAutoExecutionLoop(applyDeps, code, executionCount);
+        }, delay);
+        return () => clearTimeout(timer);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [code, studioScript, suspendSourceExecution]);
+
+    // Execution Loop (localhost worker / dev kernel).
+    useEffect(() => {
+        if (shouldUseHostedMesh()) return;
         if (suspendSourceExecution) return;
         if (studioScript) return;
-        // Hosted deploy (app.kernelcad.com): the in-process worker is the
-        // legacy v0.1 runtime that throws on modern API globals, so this
-        // auto-run path must resolve via build-time precompute / server mesh
-        // instead of `engine.executeCode`. Not gated on worker `isReady`.
-        const hosted = shouldUseHostedMesh();
         // Assembly/kinematic models route to the node kernel (below) and never
         // touch the worker, so they must not be blocked on worker `isReady` —
         // otherwise a slow or failed worker init would stall a model the worker
         // can't run anyway.
         const routesToDevKernel = devMeshAvailable() && needsFullKernel(code);
-        if (!hosted && !routesToDevKernel && !isReady) return;
+        if (!routesToDevKernel && !isReady) return;
         setScriptParams([]);
         setScriptReview(null);
 

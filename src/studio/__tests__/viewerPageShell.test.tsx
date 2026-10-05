@@ -11,7 +11,7 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 vi.mock('../components/Viewer', () => ({ default: () => null }));
 vi.mock('../context/WorkbenchContext', () => ({ useWorkbench: () => ({}) }));
 
-import { ModelStage, ViewerPageShell } from '../ViewerPageShell';
+import { liveViewportPhase, ModelStage, STAGE_GAVE_UP, ViewerPageShell } from '../ViewerPageShell';
 
 /** Fake timers that also drive animation frames. */
 function useFakeFrames(): void {
@@ -24,6 +24,39 @@ afterEach(() => {
     cleanup();
     vi.useRealTimers();
     vi.unstubAllGlobals();
+});
+
+describe('liveViewportPhase', () => {
+    const base = {
+        displayReady: false,
+        nonempty: false,
+        isComputing: true,
+        error: null,
+        emptySettled: false,
+        stuck: false,
+    };
+
+    it('clears the overlay once geometry exists, before the frame sensor', () => {
+        expect(liveViewportPhase({ ...base, nonempty: true, isComputing: false }).phase).toBe('displayed');
+    });
+
+    it('turns a spin with no model into an error', () => {
+        expect(liveViewportPhase({ ...base, isComputing: false, stuck: true })).toEqual({
+            phase: 'failed',
+            error: STAGE_GAVE_UP,
+            busy: false,
+        });
+    });
+
+    it('keeps a model that already painted when a later rebuild fails', () => {
+        expect(liveViewportPhase({
+            ...base,
+            nonempty: true,
+            displayReady: true,
+            error: 'rebuild failed',
+            isComputing: false,
+        }).phase).toBe('displayed');
+    });
 });
 
 describe('ViewerPageShell', () => {

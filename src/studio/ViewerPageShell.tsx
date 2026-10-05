@@ -221,6 +221,8 @@ const STAGE_BACKGROUND = `#${BACKGROUND_DARK_HEX.toString(16).padStart(6, '0')}`
 
 /** After this long without a model, the status says the build is slow. */
 const STAGE_SLOW_MS = 8_000;
+/** After this long with no model, stop spinning and show an error. */
+const STAGE_WATCHDOG_MS = 12_000;
 
 export type StagePhase = 'loading' | 'building' | 'displayed' | 'failed';
 
@@ -309,7 +311,9 @@ function ApproximateNote(): JSX.Element | null {
 
 export function ModelStage(props: ModelStageProps): JSX.Element {
   const [posterState, setPosterState] = useState<PosterState>(props.posterSrc ? 'loading' : 'missing');
-  const canvasReady = useCanvasGate(posterState);
+  // Once the stored mesh is in hand, paint it. Do not keep the canvas
+  // waiting on a poster that may never arrive.
+  const canvasReady = useCanvasGate(posterState) || props.phase === 'displayed' || props.phase === 'failed';
   const displayed = props.phase === 'displayed';
   const waiting = props.phase === 'loading' || props.phase === 'building';
   const slow = useSlow(waiting ? props.phase : null, STAGE_SLOW_MS);
@@ -421,10 +425,50 @@ export interface LiveViewportState {
  *  (the auto-run can report "done" a beat before the meshes land). */
 const EMPTY_BUILD_SETTLE_MS = 800;
 
+export const STAGE_GAVE_UP = 'The model took too long to appear.';
+
+export interface LiveViewportInput {
+  displayReady: boolean;
+  nonempty: boolean;
+  isComputing: boolean;
+  error: string | null;
+  emptySettled: boolean;
+  /** Building passed the watchdog with nothing on screen. */
+  stuck: boolean;
+}
+
 /**
- * Stage phase of the workbench this is mounted in. A failed re-build over a
- * displayed model keeps the model in view: the side panel reports the
- * error, the model does not vanish.
+ * Stage phase of the workbench. Geometry on screen is the same fact the side
+ * panel uses for "Built", so the overlay clears with the panel — it does not
+ * wait for a frame callback that a stalled main thread never delivers.
+ * A failed re-build over a model that already painted keeps the model in view.
+ */
+// eslint-disable-next-line react-refresh/only-export-components
+export function liveViewportPhase(input: LiveViewportInput): LiveViewportState {
+  const { displayReady, nonempty, isComputing, error, emptySettled, stuck } = input;
+  if (nonempty && !error) return { phase: 'displayed', error: null, busy: isComputing };
+  if (nonempty && displayReady) return { phase: 'displayed', error: null, busy: isComputing };
+  if (error) return { phase: 'failed', error, busy: false };
+  if (emptySettled) return { phase: 'failed', error: 'The build produced no geometry.', busy: false };
+  if (stuck) return { phase: 'failed', error: STAGE_GAVE_UP, busy: false };
+  return { phase: 'building', error: null, busy: isComputing };
+}
+
+/** True after `active` has stayed true for `ms`. Turning it off resets during
+ *  render so the effect only schedules the timer, never a synchronous setState. */
+function useFlagAfter(active: boolean, ms: number): boolean {
+  const [timer, setTimer] = useState({ active, on: false });
+  if (timer.active !== active) setTimer({ active, on: false });
+  useEffect(() => {
+    if (!active) return undefined;
+    const t = window.setTimeout(() => setTimer({ active: true, on: true }), ms);
+    return () => window.clearTimeout(t);
+  }, [active, ms]);
+  return active && timer.active && timer.on;
+}
+
+/**
+ * Stage phase of the workbench this is mounted in.
  */
 // eslint-disable-next-line react-refresh/only-export-components
 export function useLiveViewportState(displayReady: boolean): LiveViewportState {
@@ -433,6 +477,7 @@ export function useLiveViewportState(displayReady: boolean): LiveViewportState {
   // The geometry list that stayed empty for the settle time.
   const [settledEmpty, setSettledEmpty] = useState<unknown>(null);
   const emptyCandidate = !isComputing && isReady && !error && !nonempty;
+  const stuck = useFlagAfter(!nonempty && !error, STAGE_WATCHDOG_MS);
 
   useEffect(() => {
     if (!emptyCandidate) return undefined;
@@ -441,12 +486,14 @@ export function useLiveViewportState(displayReady: boolean): LiveViewportState {
   }, [emptyCandidate, geometries]);
   const emptySettled = emptyCandidate && settledEmpty === geometries;
 
-  if (displayReady && nonempty) return { phase: 'displayed', error: null, busy: isComputing };
-  if (error) return { phase: 'failed', error, busy: false };
-  if (emptyCandidate && emptySettled) {
-    return { phase: 'failed', error: 'The build produced no geometry.', busy: false };
-  }
-  return { phase: 'building', error: null, busy: isComputing };
+  return liveViewportPhase({
+    displayReady,
+    nonempty,
+    isComputing,
+    error,
+    emptySettled,
+    stuck,
+  });
 }
 
 export interface LiveModelViewportProps {
@@ -463,7 +510,7 @@ export function LiveModelViewport({ onDisplayReady, label }: LiveModelViewportPr
   return (
     <div className="absolute inset-0" role="img" aria-label={label} data-testid="live-model-viewport">
       <Viewer
-        geometries={[...geometries]}
+        geometries={geometries}
         previewGeometries={previewGeometries ?? []}
         sketchesGeometries={sketchesGeometries ?? []}
         showSketches={showSketches ?? false}
