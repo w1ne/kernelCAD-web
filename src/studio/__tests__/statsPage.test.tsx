@@ -111,6 +111,80 @@ describe('/stats', () => {
         expect(screen.getAllByText('Table').length).toBeGreaterThan(3);
     });
 
+    it('renders the corrected (v2) metrics with a definition per tile and honest data windows', async () => {
+        const base = adminStatsFixture();
+        mocks.useSession.mockReturnValue(signedIn);
+        mocks.fetchAdminStats.mockResolvedValue(adminStatsFixture({
+            definitions: { ...base.definitions, mcp_rejected: 'Model rejection rate: rejected / calls.', connected: 'Accounts with a live OAuth grant.' },
+            mcp: {
+                ...base.mcp!,
+                version: 2,
+                data_since: '2026-09-26',
+                calls: 1100,
+                refused: 100,
+                errors: 20,
+                rejected: 300,
+                excluded: { monitor: 2000, probe: 40 },
+                rejected_by_day: [0, 0, 0, 100, 100, 50, 50],
+                tools: [{ tool: 'review_cad', calls: 100, rejected: 70, tool_errors: 2, exceptions: 1, refused: 0, p50_ms: 1, p95_ms: 2 }],
+                diagnostics: [
+                    { tool: 'review_cad', outcome: 'rejected', code: 'review.verdict', count: 70 },
+                    { tool: 'diff_geometry', outcome: 'tool_error', code: 'cli.invalid-args', count: 3 },
+                ],
+            },
+            exports_persisted: {
+                studio_data_since: '2026-09-29',
+                mcp_data_since: '2026-09-26',
+                studio: {
+                    formats: {
+                        step: { total: 10, ok: 8, warning: 1, rejected: 0, failed: 1, aborted: 0 },
+                        dxf: { total: 5, ok: 2, warning: 0, rejected: 3, failed: 0, aborted: 0 },
+                    },
+                    duration_ms: null,
+                },
+                mcp: { calls: 6, ok: 5, rejected: 0, errors: 1, refused: 0 },
+            },
+            generations: {
+                ...base.generations!,
+                instrumented_since: '2026-09-28',
+                legacy_unrecorded: 4,
+                failures: [{ status: 'timeout', reason: 'legacy', stage: 'legacy', count: 4 }],
+            },
+            health: {
+                ...base.health,
+                uptime: {
+                    from: null, to: null, window_days: null, uptime_pct: null, passing_now: 7, total_now: 8,
+                    last_run_at: '2026-09-29T09:55:00.000Z',
+                    checks: [{ check: 'web_app', ok_now: false, latency_ms: 3000, uptime_pct: null, p50_ms: null, p95_ms: null }],
+                    incidents: 0, blips: 0, deploys: 0,
+                },
+            },
+        }));
+        renderStatsPage();
+        await screen.findByTestId('panel-growth');
+
+        const kpi = (k: string) => screen.getByTestId(`kpi-${k}`).textContent;
+        expect(kpi('mcp')).toContain('2.0%');
+        expect(kpi('mcp')).toContain('since 2026-09-26');
+        expect(screen.getByTestId('kpi-def-mcp').textContent).toMatch(/Refused calls, model rejections, the uptime monitor and probes are not counted/);
+        expect(kpi('rejected')).toContain('30.0%');
+        expect(kpi('exports')).toContain('89%'); // (9 + 2 + 5) / (16 + 1 + 1)
+        expect(kpi('exports')).toContain('3 rejected');
+        expect(kpi('exports')).toContain('Studio since 2026-09-29, MCP since 2026-09-26');
+        expect(screen.getByTestId('kpi-def-connected').textContent).toBe('Accounts with a live OAuth grant.');
+        expect(within(screen.getByTestId('panel-success')).getByText(/MCP tool calls include our own traffic\./)).toBeDefined();
+        expect(kpi('uptime')).toContain('7/8');
+        for (const k of ['signups', 'active', 'connected', 'paying', 'gen', 'mcp', 'rejected', 'exports', 'uptime']) {
+            expect(screen.getByTestId(`kpi-def-${k}`).textContent!.length).toBeGreaterThan(10);
+        }
+        expect(screen.getByText('2,000 / 40')).toBeDefined();
+        expect(screen.getAllByTestId('code-row').map(r => r.textContent)).toEqual(['review_cadreview.verdictrejected70', 'diff_geometrycli.invalid-argsfailed3']);
+        expect(screen.getAllByTestId('export-row')).toHaveLength(3);
+        expect(screen.getByText(/Reasons are recorded since 2026-09-28\. 4 older failed runs show “legacy”/)).toBeDefined();
+        expect(screen.getByText('failing')).toBeDefined();
+        expect(screen.getByText(/No uptime % yet/)).toBeDefined();
+    });
+
     it('shows "Not authorised" on 403', async () => {
         mocks.useSession.mockReturnValue(signedIn);
         mocks.fetchAdminStats.mockRejectedValue(new ApiError('{"error":"forbidden"}', 403));

@@ -230,3 +230,34 @@ export async function statusBody(store: Store, checks: CheckDef[] = CHECKS): Pro
     checks: list,
   };
 }
+
+/** Longest window GET /summary serves: results are kept for KEEP_MS. */
+export const SUMMARY_MAX_DAYS = 7;
+
+/**
+ * Public /summary?days=N body (N = 1..SUMMARY_MAX_DAYS, default 1): per-check
+ * runs / okRuns / uptimePct / p50Ms / p95Ms over the last N days, plus
+ * incident, blip and deploy counts. The kernelCAD server reads it for the
+ * /stats uptime tile. Numbers and check ids only: incident error text and
+ * deploy commits are not included.
+ */
+export async function summaryBody(
+  store: Store,
+  at: number,
+  days: number,
+  checks: CheckDef[] = CHECKS,
+): Promise<Record<string, unknown>> {
+  const n = Math.min(SUMMARY_MAX_DAYS, Math.max(1, Math.floor(Number.isFinite(days) ? days : 1)));
+  const from = at - n * DAY_MS;
+  const s = summarize(await store.resultsSince(from), from, at, checks.map((c) => c.id));
+  return {
+    service: 'kernelcad-uptime',
+    days: n,
+    from: iso(s.from),
+    to: iso(s.to),
+    checks: s.checks,
+    incidents: s.incidents.map((i) => ({ checkId: i.checkId, start: iso(i.start), durationMs: i.durationMs, runs: i.runs })),
+    blips: s.blips,
+    deploys: s.deploys.length,
+  };
+}

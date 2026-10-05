@@ -11,7 +11,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { DatabaseSync } from 'node:sqlite';
 import { D1Store, type D1Like, type D1StatementLike } from './store';
-import worker, { isSummaryRun, emailSender, type Env } from './index';
+import worker, { isSummaryRun, emailSender, monitorFetch, type Env } from './index';
 import { runMonitor } from './monitor';
 import { fakeFetch, fakeProd } from './testFakes';
 
@@ -85,6 +85,23 @@ describe('Worker entry', () => {
     expect((await worker.fetch(new Request('https://x.workers.dev/status', { method: 'POST' }), env)).status).toBe(405);
   });
 
+  it('GET /summary?days=N serves per-check uptime over the window, numbers only', async () => {
+    const DB = sqliteD1();
+    const env: Env = {
+      DB,
+      EMAIL: { send: async () => ({ messageId: 'm' }) },
+      ALERT_TO: 'andrii@kernelcad.com',
+      ALERT_FROM: 'uptime@kernelcad.com',
+    };
+    await runMonitor({ store: new D1Store(DB), fetch: fakeFetch(fakeProd()), send: async () => {} }, Date.now() - 60_000);
+    const res = await worker.fetch(new Request('https://x.workers.dev/summary?days=99'), env);
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { days: number; checks: Array<{ checkId: string; runs: number; okRuns: number; uptimePct: number | null }> };
+    expect(body.days).toBe(7);
+    expect(body.checks).toHaveLength(8);
+    expect(body.checks.find((c) => c.checkId === 'healthz')).toMatchObject({ runs: 1, okRuns: 1, uptimePct: 100 });
+  });
+
   it('sends from the fixed sender to the fixed recipient', async () => {
     const calls: unknown[] = [];
     const env = {
@@ -100,5 +117,25 @@ describe('Worker entry', () => {
     expect(isSummaryRun(Date.UTC(2026, 8, 29, 7, 0, 0))).toBe(true);
     expect(isSummaryRun(Date.UTC(2026, 8, 29, 7, 5, 0))).toBe(false);
     expect(isSummaryRun(Date.UTC(2026, 8, 29, 6, 55, 0))).toBe(false);
+  });
+});
+
+describe('monitorFetch', () => {
+  it('adds the secret to MCP-origin requests only', async () => {
+    const seen: Array<[string, string | null]> = [];
+    const base = async (url: string, init?: RequestInit) => {
+      seen.push([url, new Headers(init?.headers).get('x-kernelcad-monitor')]);
+      return new Response('{}');
+    };
+    const f = monitorFetch(base, 's3cret-token-0123456789');
+    await f('https://mcp.kernelcad.com/mcp', { headers: { 'User-Agent': 'u' } });
+    await f('https://api.kernelcad.com/healthz');
+    await f('https://mcp.kernelcad.com.evil.example/mcp');
+    expect(seen).toEqual([
+      ['https://mcp.kernelcad.com/mcp', 's3cret-token-0123456789'],
+      ['https://api.kernelcad.com/healthz', null],
+      ['https://mcp.kernelcad.com.evil.example/mcp', null],
+    ]);
+    expect(monitorFetch(base, undefined)).toBe(base);
   });
 });
