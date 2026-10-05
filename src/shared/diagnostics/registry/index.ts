@@ -44,6 +44,7 @@ import { BOM_CODES } from './bom';
 import { RENDER_CODES } from './render';
 import { INSPECT_CODES } from './inspect';
 import { AUTHORING_CODES } from './authoring';
+import { UNION_CODES } from './union';
 
 export type { DiagnosticGroup, DiagnosticSeverityLevel, DiagnosticCodeSpec } from './types';
 
@@ -72,6 +73,7 @@ export const DIAGNOSTIC_REGISTRY = {
   ...RENDER_CODES,
   ...INSPECT_CODES,
   ...AUTHORING_CODES,
+  ...UNION_CODES,
 } as const satisfies Record<string, DiagnosticCodeSpec>;
 
 export type DiagnosticCode = keyof typeof DIAGNOSTIC_REGISTRY;
