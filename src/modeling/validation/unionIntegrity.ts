@@ -121,92 +121,112 @@ export function detectUnionDefects(input: UnionIntegrityInput): CompilerDiagnost
   const unions = input.records.filter(isUnion);
   if (unions.length === 0) return [];
 
-  const byId = new Map(input.records.map(r => [r.id, r] as const));
-  const consumers = new Map<FeatureId, FeatureRecord[]>();
-  for (const r of input.records) {
-    for (const ref of Object.values(r.inputs)) {
-      if (ref.kind !== 'feature') continue;
-      const list = consumers.get(ref.id) ?? [];
-      list.push(r);
-      consumers.set(ref.id, list);
-    }
-  }
-  // Shapes handed to assembly().part(...): a union of those (Scene.toUnion()
-  // on a solved snapshot) is the assembly validator's job, not ours.
-  const assemblyPartShapes = new Set<FeatureId>();
-  for (const r of input.records) {
-    if (r.kind !== 'assemblyPart') continue;
-    for (const ref of Object.values(r.inputs)) if (ref.kind === 'feature') assemblyPartShapes.add(ref.id);
-  }
-
-  // An unfinished, untransformed union consumed by another union is flattened
-  // into it: `a.union(b).union(c)` is checked once, as the members a, b, c.
-  const flattensInto = (r: FeatureRecord): boolean =>
-    !hasOwnFinish(r) && r.transforms.length === 0;
-  const leavesOf = (u: FeatureRecord): Leaf[] => {
-    const out: Leaf[] = [];
-    operandIds(u).forEach((id, index) => {
-      const rec = byId.get(id);
-      if (rec !== undefined && isUnion(rec) && flattensInto(rec)) out.push(...leavesOf(rec));
-      else out.push({ id, parent: u, index });
-    });
-    return out;
-  };
-  const isChainRoot = (u: FeatureRecord): boolean =>
-    !(flattensInto(u) && (consumers.get(u.id) ?? []).some(isUnion));
-  const reaches = (id: FeatureId, hit: (c: FeatureRecord) => boolean, seen = new Set<FeatureId>()): boolean => {
-    for (const c of consumers.get(id) ?? []) {
-      if (seen.has(c.id)) continue;
-      seen.add(c.id);
-      if (hit(c) || reaches(c.id, hit, seen)) return true;
-    }
-    return false;
-  };
-  // A disconnected union whose result later flows into another union may be
-  // bridged there; only judge connectivity where no union follows. A union
-  // that becomes (part of) an assembly part is left to the assembly
-  // validator, which already owns floating geometry inside a part
-  // (`assembly.mechanical.part-disconnected`, reported by review_cad /
-  // inspect_assembly). Member overlap has no assembly equivalent, so it is
-  // checked everywhere.
-  const judgeConnectivity = (id: FeatureId): boolean =>
-    !reaches(id, isUnion) && !reaches(id, c => c.kind === 'assemblyPart');
-
-  // A union used only as a cutting tool (the `cutter_*` side of a
-  // subtract/intersect, possibly via pattern/mirror copies) never becomes
-  // material: a set of separate hole tools is legitimately disconnected.
-  const toolOnly = (id: FeatureId, seen = new Set<FeatureId>()): boolean => {
-    const uses = input.records.flatMap(c =>
-      Object.entries(c.inputs)
-        .filter(([, ref]) => ref.kind === 'feature' && ref.id === id)
-        .map(([key]) => ({ c, key })),
-    );
-    if (uses.length === 0) return false;
-    return uses.every(({ c, key }) => {
-      if (c.kind === 'boolean') return !isUnion(c) && key.startsWith('cutter_');
-      if ((c.kind === 'pattern' || c.kind === 'mirror') && !seen.has(c.id)) {
-        seen.add(c.id);
-        return toolOnly(c.id, seen);
-      }
-      return false;
-    });
-  };
-
+  const graph = new UnionGraph(input.records);
   const namer = new OperandNamer(input.code);
   const diagnostics: CompilerDiagnostic[] = [];
   for (const u of unions) {
-    if (!isChainRoot(u)) continue;
-    const leaves = leavesOf(u);
-    if (leaves.some(l => assemblyPartShapes.has(l.id))) continue;
-    if (toolOnly(u.id)) continue;
+    if (!graph.isChainRoot(u)) continue;
+    const leaves = graph.leavesOf(u);
+    if (leaves.some(l => graph.isAssemblyPartShape(l.id))) continue;
+    if (graph.toolOnly(u.id)) continue;
 
-    diagnostics.push(...memberOverlaps(u, leaves, byId, input.shapes, namer));
-    if (judgeConnectivity(u.id)) {
+    diagnostics.push(...memberOverlaps(u, leaves, graph.byId, input.shapes, namer));
+    if (graph.judgeConnectivity(u.id)) {
       const d = disconnected(u, leaves, input.shapes, namer);
       if (d !== undefined) diagnostics.push(d);
     }
   }
   return diagnostics;
+}
+
+/** Consumer graph over the capture records, with the union-specific walks. */
+class UnionGraph {
+  readonly byId: ReadonlyMap<FeatureId, FeatureRecord>;
+  private readonly records: readonly FeatureRecord[];
+  private readonly consumers = new Map<FeatureId, FeatureRecord[]>();
+  /** Shapes handed to assembly().part(...): a union of those (Scene.toUnion()
+   *  on a solved snapshot) is the assembly validator's job, not ours. */
+  private readonly assemblyPartShapes = new Set<FeatureId>();
+
+  constructor(records: readonly FeatureRecord[]) {
+    this.records = records;
+    this.byId = new Map(records.map(r => [r.id, r] as const));
+    for (const r of records) {
+      for (const ref of Object.values(r.inputs)) {
+        if (ref.kind !== 'feature') continue;
+        const list = this.consumers.get(ref.id) ?? [];
+        list.push(r);
+        this.consumers.set(ref.id, list);
+        if (r.kind === 'assemblyPart') this.assemblyPartShapes.add(ref.id);
+      }
+    }
+  }
+
+  isAssemblyPartShape(id: FeatureId): boolean {
+    return this.assemblyPartShapes.has(id);
+  }
+
+  /** An unfinished, untransformed union consumed by another union is
+   *  flattened into it: `a.union(b).union(c)` is checked once, as a, b, c. */
+  private static flattensInto(r: FeatureRecord): boolean {
+    return !hasOwnFinish(r) && r.transforms.length === 0;
+  }
+
+  leavesOf(u: FeatureRecord): Leaf[] {
+    const out: Leaf[] = [];
+    operandIds(u).forEach((id, index) => {
+      const rec = this.byId.get(id);
+      if (rec !== undefined && isUnion(rec) && UnionGraph.flattensInto(rec)) out.push(...this.leavesOf(rec));
+      else out.push({ id, parent: u, index });
+    });
+    return out;
+  }
+
+  isChainRoot(u: FeatureRecord): boolean {
+    return !(UnionGraph.flattensInto(u) && (this.consumers.get(u.id) ?? []).some(isUnion));
+  }
+
+  private reaches(id: FeatureId, hit: (c: FeatureRecord) => boolean, seen = new Set<FeatureId>()): boolean {
+    for (const c of this.consumers.get(id) ?? []) {
+      if (seen.has(c.id)) continue;
+      seen.add(c.id);
+      if (hit(c) || this.reaches(c.id, hit, seen)) return true;
+    }
+    return false;
+  }
+
+  /** A disconnected union whose result later flows into another union may
+   *  be bridged there; only judge connectivity where no union follows. A
+   *  union that becomes (part of) an assembly part is left to the assembly
+   *  validator, which owns floating geometry inside a part
+   *  (`assembly.mechanical.part-disconnected`, reported by review_cad /
+   *  inspect_assembly). Member overlap has no assembly equivalent, so it is
+   *  checked everywhere. */
+  judgeConnectivity(id: FeatureId): boolean {
+    return !this.reaches(id, isUnion) && !this.reaches(id, c => c.kind === 'assemblyPart');
+  }
+
+  /** A union used only as a cutting tool (the `cutter_*` side of a
+   *  subtract/intersect, possibly via pattern/mirror copies) never becomes
+   *  material: a set of separate hole tools is legitimately disconnected. */
+  toolOnly(id: FeatureId, seen = new Set<FeatureId>()): boolean {
+    const uses = this.records.flatMap(c =>
+      Object.entries(c.inputs)
+        .filter(([, ref]) => ref.kind === 'feature' && ref.id === id)
+        .map(([key]) => ({ c, key })),
+    );
+    if (uses.length === 0) return false;
+    return uses.every(({ c, key }) => this.isToolUse(c, key, seen));
+  }
+
+  private isToolUse(c: FeatureRecord, key: string, seen: Set<FeatureId>): boolean {
+    if (c.kind === 'boolean') return !isUnion(c) && key.startsWith('cutter_');
+    if ((c.kind === 'pattern' || c.kind === 'mirror') && !seen.has(c.id)) {
+      seen.add(c.id);
+      return this.toolOnly(c.id, seen);
+    }
+    return false;
+  }
 }
 
 function memberOverlaps(
