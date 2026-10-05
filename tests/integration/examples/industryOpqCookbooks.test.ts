@@ -49,7 +49,10 @@ describe('industry O/P/Q chain cookbooks evaluate green', () => {
     expect(r.ok, JSON.stringify(r.diagnostics?.slice(0, 8))).toBe(true);
     expect(r.parts?.names.sort()).toEqual([
       'base-shell',
-      'feet',
+      'foot-1',
+      'foot-2',
+      'foot-3',
+      'foot-4',
       'gasket',
       'hinge-pin',
       'latch-hook',

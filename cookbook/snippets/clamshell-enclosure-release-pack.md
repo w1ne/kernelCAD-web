@@ -142,11 +142,9 @@ function lidScrew(x: number, y: number) {
 function footPad(x: number, y: number) {
   return cylinder(7.6, 6.2).translate(x, y, -25.7);
 }
-let feetShape = footPad(-90, -32).finish('rubber');
-for (const [x, y] of [[-32, -32], [-90, 32], [-32, 32]] as const) {
-  feetShape = feetShape.union(footPad(x, y));
-}
-feetShape = feetShape.finish('rubber');
+// Four separate pads, one part each (like the lid screws): fused into one
+// "feet" body they were four solids 45-74 mm apart (union.disconnected).
+const FOOT_XY = [[-90, -32], [-32, -32], [-90, 32], [-32, 32]] as const;
 // Seal land on the mating rim. Not a compressed close — the shells still
 // stop before they meet.
 const gasketShape = extrudeRoundedRect(64, 58, 8, 1.45).translate(-59, 0, 10.1)
@@ -169,7 +167,8 @@ const pin = arm.part('hinge-pin', pinShape, { material: 'mild-steel' });
 const washerA = arm.part('washer-1', washerRing(13.45), { material: 'mild-steel' });
 const washerB = arm.part('washer-2', washerRing(-14.15), { material: 'mild-steel' });
 const screws = screwXY.map(([x, y], i) => arm.part(`lid-screw-${i + 1}`, lidScrew(x, y), { material: 'mild-steel' }));
-const feet = arm.part('feet', feetShape, { material: 'abs' });
+const feet = FOOT_XY.map(([x, y], i) =>
+  arm.part(`foot-${i + 1}`, footPad(x, y).finish('rubber'), { material: 'abs' }));
 const gasket = arm.part('gasket', gasketShape, { material: 'abs' });
 const latch = arm.part('latch-hook', latchShape, { material: 'mild-steel' });
 const strike = arm.part('strike', strikeShape, { material: 'mild-steel' });
@@ -210,9 +209,11 @@ screwXY.forEach(([x, y], i) => {
   frameAt(screws[i], 'head', at, 0);
   arm.mate(`lid-screw-${i + 1}`, `lid-shell.screw-${i + 1}`, `lid-screw-${i + 1}.head`, 'fastened');
 });
-frameAt(base, 'feet', [-90, -32, -19], 2);
-frameAt(feet, 'pad', [-90, -32, -19], 2);
-arm.mate('feet', 'base-shell.feet', 'feet.pad', 'fastened');
+FOOT_XY.forEach(([x, y], i) => {
+  frameAt(base, `foot-${i + 1}`, [x, y, -19], 2);
+  frameAt(feet[i], 'pad', [x, y, -19], 2);
+  arm.mate(`foot-${i + 1}`, `base-shell.foot-${i + 1}`, `foot-${i + 1}.pad`, 'fastened');
+});
 frameAt(base, 'gasket', [-59, -26.5, 10.2], 1.2);
 frameAt(gasket, 'land', [-59, -26.5, 10.2], 1.2);
 arm.mate('gasket', 'base-shell.gasket', 'gasket.land', 'fastened');
