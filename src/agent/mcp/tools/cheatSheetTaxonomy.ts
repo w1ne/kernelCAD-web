@@ -175,7 +175,7 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
     names: [
       'sketch', 'fontPath', 'embossText', 'color', 'finish', 'material', 'wrapTexture',
       'referenceImage', 'setRenderEnvironment', 'setCameraTarget', 'setCameraDistance',
-      'animationView', 'datum', 'tolerance',
+      'animationView', 'datum', 'tolerance', 'dimension',
     ],
   },
 ];
