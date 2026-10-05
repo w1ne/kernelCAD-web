@@ -3,6 +3,7 @@
 import { useThree } from '@react-three/fiber';
 import { useMemo, useState } from 'react';
 import type { GeometryResult } from '../../../../shared/worker/geometryEngine';
+import { readThemeColor } from '../overlays/themeColor';
 import { CAD_COLORS_HEX } from '../../../../shared/constants/colors';
 import { DimensionGraphic } from '../overlays/DimensionGraphic';
 import { ScreenScaled } from '../overlays/ScreenScaled';
@@ -19,7 +20,7 @@ interface MeasureToolProps {
   hiddenIds: readonly string[];
 }
 
-const SNAP_COLORS = { vertex: CAD_COLORS_HEX.snap, edge: '#ff9f1c', face: '#ffffff' } as const;
+const SNAP_COLORS = { vertex: CAD_COLORS_HEX.snap, edge: CAD_COLORS_HEX.highlight, face: CAD_COLORS_HEX.guide } as const;
 
 function SnapMarker({ hit }: { hit: SnapHit }) {
   const color = SNAP_COLORS[hit.kind];
@@ -47,7 +48,7 @@ function Dimensions({ state }: { state: MeasureState }) {
       {a && b && (
         <DimensionGraphic kind="linear" a={a} b={b} label={formatLength(vdist(a, b))} sublabel={formatDeltas(a, b)} />
       )}
-      {a && !b && <ScreenScaled position={a as Vec3}><mesh renderOrder={3100}><circleGeometry args={[3, 12]} /><meshBasicMaterial color="#ffb703" depthTest={false} /></mesh></ScreenScaled>}
+      {a && !b && <ScreenScaled position={a as Vec3}><mesh renderOrder={3100}><circleGeometry args={[3, 12]} /><meshBasicMaterial color={readThemeColor('--kc-warn', 0xffb703)} depthTest={false} /></mesh></ScreenScaled>}
     </>
   );
 }
