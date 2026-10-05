@@ -108,7 +108,7 @@ Agents use the same call in source. `evaluate_script` returns the declared dimen
 
 On a `/p/<slug>` page, open the Download dropdown (next to Download STL) and choose Drawing (PDF). In Studio, use the export menu or the command palette: Export Drawing (PDF). The drawing is A3 with automatic dimensions.
 
-Declared dimensions also appear on the PDF and SVG drawing. When a model declares any, they replace the automatic bounding-box dimensions on the drawing.
+Declared dimensions also appear on the PDF and SVG drawing, with the same text as in the viewer (`hole spacing Y 18`). Each goes on the view that shows it at full length, so a spacing along Y lands on the top view. When a model declares any, they replace the automatic bounding-box dimensions on the drawing.
 
 ## Feedback
 
