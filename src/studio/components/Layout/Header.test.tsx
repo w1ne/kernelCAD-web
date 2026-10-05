@@ -183,7 +183,7 @@ describe('Header', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: 'More export formats' }));
     const labels = screen.getAllByRole('menuitem').map((m) => m.textContent?.split(' — ')[0]);
-    expect(labels).toEqual(['STL', 'STEP', 'DXF', '3MF', 'GLB']);
+    expect(labels).toEqual(['STL', 'STEP', 'DXF', '3MF', 'GLB', 'Drawing (PDF)']);
   });
 
   it('shows a failed export as the server message and hint, not an alert', async () => {

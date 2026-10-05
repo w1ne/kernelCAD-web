@@ -51,4 +51,13 @@ describe('ProjectViewerActions', () => {
     expect(share.disabled).toBe(true);
     expect(share.title).toBe('Make this project public to share a link');
   });
+
+  it('side panel look carries its own Send feedback button; the header look does not', () => {
+    const { unmount } = render(<ProjectViewerActions slug="demo" project={makeProject()} look="panel" />);
+    fireEvent.click(screen.getByRole('button', { name: 'Send feedback' }));
+    expect(screen.getByTestId('feedback-dialog')).toBeTruthy();
+    unmount();
+    render(<ProjectViewerActions slug="demo" project={makeProject()} />);
+    expect(screen.queryByTestId('feedback-launcher')).toBeNull();
+  });
 });

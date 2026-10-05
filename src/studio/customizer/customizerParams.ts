@@ -59,7 +59,12 @@ export type CustomizerFormat = 'stl' | '3mf' | 'step';
 
 export const CUSTOMIZER_FORMATS: readonly CustomizerFormat[] = ['stl', '3mf', 'step'];
 
-export const FORMAT_LABELS: Record<CustomizerFormat, string> = { stl: 'STL', '3mf': '3MF', step: 'STEP' };
+/** The customizer's mesh/solid formats plus the project page's drawing sheet. */
+export type DownloadFormat = CustomizerFormat | 'pdf-drawing';
+
+export const FORMAT_LABELS: Record<DownloadFormat, string> = {
+  stl: 'STL', '3mf': '3MF', step: 'STEP', 'pdf-drawing': 'Drawing (PDF)',
+};
 
 /** STEP for an assembly of several parts, STL for a printable part. */
 export function defaultDownloadFormat(geometries: readonly Pick<GeometryResult, 'assemblyPartName'>[]): CustomizerFormat {
@@ -272,7 +277,7 @@ export function downloadFileName(
   slug: string,
   params: readonly CustomizerParam[],
   values: CustomizerValues,
-  format: CustomizerFormat,
+  format: DownloadFormat,
 ): string {
   const parts = params
     .filter((param) => values[param.name] !== undefined && values[param.name] !== param.defaultValue)
@@ -280,5 +285,7 @@ export function downloadFileName(
     .filter((part) => part.length > 0);
   const summary = (parts.join('_') || 'default').slice(0, MAX_SUMMARY_LENGTH);
   const base = fileSafe(slug) || 'model';
+  // `<slug>-drawing.pdf`; a configured model keeps its summary: `<slug>-Width60-drawing.pdf`.
+  if (format === 'pdf-drawing') return `${base}${parts.length > 0 ? `-${summary}` : ''}-drawing.pdf`;
   return `${base}-${summary}.${format}`;
 }

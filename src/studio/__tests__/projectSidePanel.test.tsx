@@ -145,6 +145,21 @@ describe('ProjectSidePanel', () => {
         expect(exporter.downloadBlob).toHaveBeenCalledWith(blob, 'pipe-clamp-Width62.stl');
     });
 
+    it('offers the dimensioned drawing in the download menu and exports it as a PDF', async () => {
+        const blob = new Blob(['%PDF']);
+        exporter.exportViaServer.mockResolvedValue({ blob, downloadName: 'x.pdf' });
+        render(<Harness />);
+
+        fireEvent.click(screen.getByTestId('download-formats'));
+        await act(async () => {
+            fireEvent.click(screen.getByRole('menuitem', { name: /^Drawing \(PDF\)/ }));
+        });
+
+        await waitFor(() => expect(exporter.downloadBlob).toHaveBeenCalledTimes(1));
+        expect(exporter.exportViaServer.mock.calls[0][0]).toBe('pdf-drawing');
+        expect(exporter.downloadBlob).toHaveBeenCalledWith(blob, 'pipe-clamp-drawing.pdf');
+    });
+
     it('shows the export error with the server hint', async () => {
         exporter.exportViaServer.mockRejectedValue(Object.assign(new Error('mesh is not closed'), { hint: 'Try STEP instead.' }));
         render(<Harness />);

@@ -5,7 +5,7 @@
 // The embed draws one status line of its own. FunnelViewer must be able to
 // stay silent (no second "Building geometry…") while it still reports phases,
 // and must pass the embed theme to the canvas background.
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ReactNode } from 'react';
 
@@ -33,6 +33,7 @@ vi.mock('../../studio/components/Viewer', () => ({
 }));
 
 import { FunnelViewer } from './FunnelViewer';
+import type { FeedbackPayload } from '../../studio/components/Layout/feedbackApi';
 
 afterEach(() => {
   cleanup();
@@ -63,5 +64,39 @@ describe('FunnelViewer status overlay', () => {
   it('passes the background to the canvas', () => {
     render(<FunnelViewer code="return box(1, 1, 1);" background="light" />);
     expect(harness.viewerProps?.background).toBe('light');
+  });
+});
+
+describe('FunnelViewer feedback button', () => {
+  it('draws no button unless a feedback context is given', () => {
+    render(<FunnelViewer code="return box(1, 1, 1);" />);
+    expect(screen.queryByTestId('feedback-launcher')).toBeNull();
+  });
+
+  it('opens the feedback dialog and sends surface, slug, revision and url', async () => {
+    const submit = vi.fn<(p: FeedbackPayload) => Promise<void>>().mockResolvedValue();
+    render(
+      <FunnelViewer
+        code="return box(1, 1, 1);"
+        revision={7}
+        feedback={{ surface: 'chatgpt', slug: 'pipe-clamp' }}
+        submitFeedback={submit}
+      />,
+    );
+    expect(screen.queryByTestId('feedback-dialog')).toBeNull();
+
+    fireEvent.click(screen.getByTestId('feedback-launcher'));
+    fireEvent.change(screen.getByLabelText('Message'), { target: { value: 'The hole is in the wrong place.' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Send' }));
+
+    await screen.findByRole('status');
+    expect(submit).toHaveBeenCalledTimes(1);
+    expect(submit.mock.calls[0][0]).toMatchObject({
+      message: 'The hole is in the wrong place.',
+      surface: 'chatgpt',
+      slug: 'pipe-clamp',
+      revision: 7,
+      url: window.location.href,
+    });
   });
 });

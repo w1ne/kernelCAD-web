@@ -19,6 +19,7 @@ import {
   exportViaServer,
   isExportAbort,
   ServerExportError,
+  exportFileExtension,
 } from './exportViaServer';
 
 afterEach(() => {
@@ -50,6 +51,39 @@ describe('exportViaServer', () => {
     );
     expect(result.downloadName).toBe('x.stl');
     expect(result.blob.size).toBe(3);
+  });
+
+  it('posts pdf-drawing and keeps the server filename (.pdf)', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      blob: async () => new Blob([new Uint8Array([0x25, 0x50, 0x44, 0x46])]),
+      headers: new Headers({ 'content-disposition': 'attachment; filename="model-drawing.pdf"' }),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: { pathname: '/', search: '', hostname: 'localhost' },
+    });
+
+    const result = await exportViaServer('pdf-drawing', 'return box(1,1,1);');
+
+    expect(fetchMock.mock.calls[0]![0]).toBe('/__kernelcad/export?format=pdf-drawing&async=1');
+    expect(result.downloadName).toBe('model-drawing.pdf');
+  });
+
+  it('names a pdf-drawing download .pdf when the server sends no filename', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      blob: async () => new Blob(['%PDF']),
+      headers: new Headers(),
+    }));
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: { pathname: '/', search: '', hostname: 'localhost' },
+    });
+    expect((await exportViaServer('pdf-drawing', 'return box(1,1,1);')).downloadName).toBe('kernelcad-drawing.pdf');
+    expect(exportFileExtension('pdf-drawing')).toBe('pdf');
+    expect(exportFileExtension('glb')).toBe('glb');
   });
 
   it('POSTs projectSlug + source on /p/<slug> so lib.fromSTEP assets materialize', async () => {

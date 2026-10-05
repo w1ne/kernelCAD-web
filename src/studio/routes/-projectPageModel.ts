@@ -18,7 +18,7 @@ import {
   customizerParamsFrom,
   downloadFileName,
   readUrlValues,
-  type CustomizerFormat,
+  type DownloadFormat,
   type CustomizerParam,
   type CustomizerParamHint,
   type CustomizerValues,
@@ -203,10 +203,11 @@ export function modelSizeLabel(
 // ---------------------------------------------------------------------------
 
 /** What each format is for, shown under the menu entry. */
-export const FORMAT_HINTS: Record<CustomizerFormat, string> = {
+export const FORMAT_HINTS: Record<DownloadFormat, string> = {
   stl: 'Mesh for 3D printing',
   '3mf': 'Mesh with units, for slicers',
   step: 'Exact solid for CAD tools',
+  'pdf-drawing': 'Dimensioned A3 sheet to print',
 };
 
 export interface ConfiguredSource {
@@ -228,7 +229,7 @@ export function configuredSource(
   entries: readonly SerializedParamEntry[],
   hints: readonly CustomizerParamHint[] | undefined,
   search: string,
-  format: CustomizerFormat,
+  format: DownloadFormat,
 ): ConfiguredSource {
   const params = customizerParamsFrom(entries, hints);
   const { values } = readUrlValues(search, params);
