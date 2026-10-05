@@ -27,7 +27,9 @@ const evaluateScriptToolEntry: ToolRegistryEntry = {
       'instead of seconds (100x+ on boolean/fillet-heavy scripts). A dry run catches script ' +
       'throws, capture-time API misuse, and assembly validity-gate failures, but NOT ' +
       'lowering failures or dfmSpec diagnostics; it leaves the active session untouched, ' +
-      'so finish with a full (non-dry) evaluate_script before using session-dependent tools.',
+      'so finish with a full (non-dry) evaluate_script before using session-dependent tools. ' +
+      'To show a measurement in the 3D viewer (e.g. hole spacing), declare it in the script with shape.dimension({ kind: "linear", from, to, label }); ' +
+      'a full evaluate lists them as dimensions: [{ text, kind, source }], and a shared /p link with ?dims=1 forces them on.',
     inputSchema: {
       type: 'object',
       properties: {

@@ -6,6 +6,7 @@ import {
   evaluateAndBuildScript,
   withIntentLint,
   type EvaluateInput,
+  type EvaluateResult,
   type FeatureHealthEntry,
 } from '../../cli/commands/evaluate';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
@@ -65,6 +66,9 @@ export interface EvaluateScriptOutput {
    * so this is always `[]` for `dryRun: true`.
    */
   featureHealth: FeatureHealthEntry[];
+  /** Dimensions declared with `shape.dimension()`, as the viewer labels them.
+   *  Present only on a full evaluation of a script that declares any. */
+  dimensions?: NonNullable<EvaluateResult['dimensions']>;
   /**
    * Mechanism-truth verdict (T3), present ONLY for a full (non-dry)
    * evaluation of an assembly-built scene with `skipMechanismCheck` unset.
@@ -168,6 +172,7 @@ export async function evaluateScriptTool(
     // the eval helper.
     diagnostics: mergedDiagnostics,
     featureHealth: r.featureHealth,
+    ...(r.dimensions !== undefined ? { dimensions: r.dimensions } : {}),
     ...(parts !== undefined ? { parts } : {}),
     ...(mechanism !== undefined ? { mechanism } : {}),
     ...(reviewHint !== undefined ? { reviewHint } : {}),
