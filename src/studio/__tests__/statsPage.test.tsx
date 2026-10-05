@@ -298,11 +298,12 @@ describe('/stats newer sections', () => {
     it('falls back to since-restart mesh counters and says not available when sections are null', async () => {
         mocks.useSession.mockReturnValue(signedIn);
         const base = adminStatsFixture({ oauth_funnel: null, funnel: null, mesh: null });
-        base.health = { ...base.health, mesh: { requests: 12, failures: 1 } };
+        base.health = { ...base.health, mesh: { outcomes: { ok: 11, error: 1 }, cache: { hit: 3 }, success_rate: 11 / 12, served_rate: 11 / 12, duration_ms: { samples: 11, p50: 700, p95: 2000, max: 3000 } } };
         mocks.fetchAdminStats.mockResolvedValue(base);
         renderStatsPage();
         await screen.findByTestId('panel-growth');
         expect(screen.getByTestId('mesh-tile').textContent).toContain('Since the server last restarted');
+        expect(screen.getByTestId('mesh-tile').textContent).toContain('91.7%');
         expect(screen.queryByTestId('quota-funnel')).toBeNull();
         expect(screen.getAllByText(/not available yet/).length).toBeGreaterThanOrEqual(2);
     });

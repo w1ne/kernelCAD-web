@@ -146,6 +146,6 @@ export const NEWER_SECTIONS: Partial<AdminStats> = {
   mesh: {
     success_rate: 0.97, served_rate: 0.99, p50_ms: 800, p95_ms: 6000, cache_hit_rate: 0.4,
     success_rate_by_day: [1, 0.9, 0.95, null, 1, 0.97, 0.99],
-    top_errors: [{ code: 'mesh.timeout', count: 7 }],
+    top_errors: [{ code: 'mesh.timeout', n: 7 }],
   },
 };

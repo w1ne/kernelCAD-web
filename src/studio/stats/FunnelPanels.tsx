@@ -9,7 +9,7 @@
 import type { ReactNode } from 'react';
 import { clientLabel, clientOrder, fmtInt, fmtMs, fmtPct, ratio } from './derive';
 import { Meter } from './charts';
-import { OAUTH_STEPS, type AdminStats, type Funnel, type MeshStats, type OAuthFunnel } from './types';
+import { OAUTH_STEPS, type AdminStats, type Funnel, type OAuthFunnel } from './types';
 import { Figure, Note, SubHead } from './ui';
 
 function NotYet({ what }: { what: string }): ReactNode {
@@ -108,24 +108,24 @@ function Spark({ values, label }: { values: Array<number | null>; label: string 
   );
 }
 
-function counterEntries(raw: Record<string, unknown>): Array<[string, number]> {
-  return Object.entries(raw).filter((e): e is [string, number] => typeof e[1] === 'number');
-}
-
 export function MeshTile({ stats }: { stats: AdminStats }): ReactNode {
-  const mesh: MeshStats | null | undefined = stats.mesh;
-  const since = stats.health.mesh;
+  const mesh = stats.mesh;
+  const proc = stats.health.mesh;
   if (!mesh) {
-    const counters = since ? counterEntries(since) : [];
     return (
       <div data-testid="mesh-tile">
         <SubHead>Studio mesh</SubHead>
-        {counters.length === 0 ? <NotYet what="Studio mesh stats" /> : (
+        {!proc ? <NotYet what="Studio mesh stats" /> : (
           <>
             <div className="flex flex-wrap gap-6">
-              {counters.map(([k, n]) => <Figure key={k} label={k.replace(/_/g, ' ')} value={fmtInt(n)} />)}
+              <Figure label="Success" value={fmtPct(proc.success_rate, 1)} />
+              <Figure label="Served" value={fmtPct(proc.served_rate, 1)} />
+              <Figure label="p50 / p95" value={proc.duration_ms.samples > 0 ? `${fmtMs(proc.duration_ms.p50)} / ${fmtMs(proc.duration_ms.p95)}` : '—'} />
             </div>
-            <Note>Since the server last restarted (resets on every deploy); the windowed numbers are not available yet.</Note>
+            <Note>
+              Since the server last restarted (resets on every deploy); the windowed numbers are not available yet.
+              {' '}{Object.entries(proc.outcomes).filter(([, n]) => n > 0).map(([k, n]) => `${k} ${n}`).join(' · ')}
+            </Note>
           </>
         )}
       </div>
@@ -143,13 +143,15 @@ export function MeshTile({ stats }: { stats: AdminStats }): ReactNode {
         <Figure label="Cache hit" value={fmtPct(mesh.cache_hit_rate ?? null, 0)} />
         {byDay && byDay.length > 1 && byDay.some(v => v !== null) && <Spark values={byDay} label="Mesh success rate per day" />}
       </div>
-      <Note>Share of Studio mesh requests that produced a mesh; “served” also counts approximate previews and cached answers.</Note>
+      <Note>
+        Success = meshes built / ({fmtInt(mesh.eligible ?? 0)} requests that count: aborted, rejected and still-meshing ones are left out). “Served” also counts the stored-revision fallback. Times are over successful requests.
+      </Note>
       {errors.length > 0 && (
         <table>
           <thead><tr><th scope="col">Top mesh errors</th><th scope="col" className="kcs-r">Count</th></tr></thead>
           <tbody>
             {errors.map(e => (
-              <tr key={e.code ?? e.error} data-testid="mesh-error-row"><td>{e.code ?? e.error}</td><td className="kcs-r">{fmtInt(e.count)}</td></tr>
+              <tr key={e.code} data-testid="mesh-error-row"><td>{e.code}</td><td className="kcs-r">{fmtInt(e.n)}</td></tr>
             ))}
           </tbody>
         </table>

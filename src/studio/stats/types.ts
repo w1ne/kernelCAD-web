@@ -191,15 +191,37 @@ export interface Funnel {
   checkouts_expired?: number;
 }
 
+/** admin_mesh_stats(): Studio mesh requests in the window. Rates are 0..1, times ms. */
 export interface MeshStats {
+  days?: string[];
+  requests?: number;
+  outcomes?: Record<string, number>;
+  /** Requests minus aborted, rejected and pending. */
+  eligible?: number;
+  /** ok / eligible; null with no eligible requests. */
   success_rate: number | null;
+  /** (ok + fallback) / eligible. */
   served_rate?: number | null;
+  /** Over successful requests. */
   p50_ms?: number | null;
   p95_ms?: number | null;
+  p95_all_ms?: number | null;
+  /** Of ok requests, answered from cache / shared / joined. */
   cache_hit_rate?: number | null;
-  /** Per day, aligned with `days`; null where a day had no meshes. */
+  /** Per day, aligned with `days`; null on a day with no eligible requests. */
   success_rate_by_day?: Array<number | null>;
-  top_errors?: Array<{ code?: string; error?: string; count: number }>;
+  requests_by_day?: number[];
+  p95_ms_by_day?: Array<number | null>;
+  top_errors?: Array<{ code: string; n: number }>;
+}
+
+/** Since-restart counters of one server process (lib/meshMetrics). */
+export interface MeshProcessStats {
+  outcomes: Record<string, number>;
+  cache: Record<string, number>;
+  success_rate: number | null;
+  served_rate: number | null;
+  duration_ms: { samples: number; p50: number; p95: number; max: number };
 }
 
 export interface ReadFailure {
@@ -250,7 +272,7 @@ export interface AdminStats {
     uptime: UptimeSummary | null;
     uptime_configured: boolean;
     /** Since-restart Studio mesh counters (fallback while `mesh` is null). */
-    mesh?: Record<string, unknown> | null;
+    mesh?: MeshProcessStats | null;
   };
   read_failures: ReadFailure[];
 }
