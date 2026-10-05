@@ -13,10 +13,10 @@ export function MeasureButton({ active, onToggle }: { active: boolean; onToggle:
       title="Measure (click two points, Esc clears)"
       onClick={onToggle}
       className={
-        'absolute left-3 top-3 z-20 flex h-9 w-9 items-center justify-center rounded-md border shadow-lg backdrop-blur transition focus:outline-none focus:ring-2 focus:ring-cyan-300 ' +
+        'absolute left-3 top-3 z-20 flex h-9 w-9 items-center justify-center rounded-md border shadow-lg backdrop-blur transition focus:outline-none focus:ring-2 focus:ring-accent ' +
         (active
-          ? 'border-amber-300 bg-amber-400 text-neutral-950'
-          : 'border-white/20 bg-neutral-950/85 text-white hover:bg-neutral-800')
+          ? 'border-warn bg-warn text-on-accent'
+          : 'border-border bg-surface-1 text-fg hover:bg-surface-2')
       }
     >
       <Ruler size={18} aria-hidden="true" />
