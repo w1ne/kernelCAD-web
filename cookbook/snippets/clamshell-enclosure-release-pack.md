@@ -64,7 +64,10 @@ const cheeks = union(
   yCyl(R, 6, 12),
   yCyl(R, -12, -6),
 ).subtract(yCyl(boreR, -13, 13));
-const bridge = box(12, 16, 10).translate(-22, -8, -5);
+// The bridge reaches x = -7.8 so it bites into the cheeks (R 8) while
+// staying outside the lid tongue (R 7.6): ending at x = -10 left the cheeks
+// floating 2 mm off the base (union.disconnected).
+const bridge = box(14.2, 16, 10).translate(-22, -8, -5);
 
 let baseShell = box(78, 72, 28).translate(-98, -36, -18);
 baseShell = baseShell.subtract(box(70, 64, 26).translate(-94, -32, -14));

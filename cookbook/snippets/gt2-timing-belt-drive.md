@@ -44,13 +44,16 @@ const pulleyA = gt2Pulley(z1, pd1);
 const pulleyB = gt2Pulley(z2, pd2).translate(C, 0, 0);
 
 // Closed pitch-line loop: two 180° wraps + two tangents. Cord r=0.7 so
-// inspect volume / (π r²) recovers beltLength.
+// inspect volume / (π r²) recovers beltLength. The wraps are cut exactly at
+// the pulley centres (x = 0 and x = C) so their end faces meet the tangent
+// cord ends; a gap there leaves the belt as four loose pieces
+// (union.disconnected).
 const cordR = 0.7;
 const wrapA = torus(pd1 / 2, cordR)
-  .subtract(box(pd1 * 2, pd1 * 2, 4).translate(-0.2, -pd1, -2));
+  .subtract(box(pd1 * 2, pd1 * 2, 4).translate(0, -pd1, -2));
 const wrapB = torus(pd2 / 2, cordR)
   .translate(C, 0, 0)
-  .subtract(box(pd2 * 2, pd2 * 2, 4).translate(C - pd2 * 2 + 0.2, -pd2, -2));
+  .subtract(box(pd2 * 2, pd2 * 2, 4).translate(C - pd2 * 2, -pd2, -2));
 const tanTop = cylinder(C, cordR).alongAxis([1, 0, 0]).translate(0, pd1 / 2, 0);
 const tanBot = cylinder(C, cordR).alongAxis([1, 0, 0]).translate(0, -pd1 / 2, 0);
 const belt = wrapA.union(wrapB, tanTop, tanBot);

@@ -21,6 +21,10 @@ const evaluateScriptToolEntry: ToolRegistryEntry = {
       'arm.revolute/.prismatic/.ball/.fixed). A plain multi-part assembly with no mates (base + lid, ' +
       'print layout) is independent bodies and passes. Pass { skipMechanismCheck: true } to opt out ' +
       '(e.g. a deliberately free part next to a mechanism). ' +
+      'Every union() is checked too (no opt-out): union.disconnected (the union is several ' +
+      'separate solids — a floating operand) and union.member-overlap (two operands that each ' +
+      'carry their own .finish()/.material() share > 1 mm³ — cut members to fit, e.g. a cross ' +
+      'tube between rails is span minus two rail widths) make ok:false. ' +
       'Pass either { file: "<path>" } or { code: "<inline source>" }. ' +
       'Set { dryRun: true } for fast validation while iterating: transpile + capture + ' +
       'capture-light checks WITHOUT OCCT lowering, DFM gates, or meshing — milliseconds ' +
