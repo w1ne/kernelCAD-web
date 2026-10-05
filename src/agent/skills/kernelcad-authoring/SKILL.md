@@ -138,6 +138,27 @@ return arm.solvedModel({}, { validate: 'error' });
 - Anonymous loose top-level bodies in a multi-body model are a defect smell: the review loop emits `assembly.structure.unstructured-bodies` (info) with the recovery hint. Wrap each loose body in a named part.
 - Part names are the durable handles for `inspect --focus`, `inspect({ of: 'part-stats' })`, and Studio's hide / keep-whole / per-part validity — choose stable, descriptive names.
 
+### Multi-member fabrications (frames, weldments, sheet on tubes)
+
+A tube frame, weldment, rack, or tray is several members cut to length. Build it one of two ways:
+
+1. **`assembly().part(name, member)` per member** — interference between parts is checked; every part's own unions get the same `union.*` checks below. Preferred when the members are bought or cut separately.
+2. **One `union()` of members that touch but never overlap.** Members butt against each other: a cross member between two side rails is `span - 2 * railWidth` long and starts at `x = railWidth`, so its end faces sit on the rails' inner faces. The first and last cross members sit inside the frame, next to the front/back rails, not inside them. A sheet on top of the tubes sits at `z = tubeHeight`, on the tubes.
+
+```ts
+const crossLen = width.subtract(tube.multiply(2));   // fits BETWEEN the rails
+const s1 = tubeX(crossLen).translate(tube, endInset, 0).finish('aluminium-brushed');
+const sheet = box(width, depth, sheetT).translate(0, 0, tube).finish('aluminium-brushed'); // on the tubes
+return union(sheet, front, back, left, right, s1 /* ... */);
+```
+
+`evaluate_script` / `kernelcad evaluate` gate every `union()` (errors make `ok: false`):
+
+- `union.disconnected` — the union is more than one solid; the message names the floating operand, its bbox and the gap. Move it until it touches (shared face, zero gap) or add the member that carries it. This applies inside `assembly().part(...)` too: a part that is several floating pieces fails evaluate (the assembly validator's `assembly.mechanical.part-disconnected` is only a warning; it is not a substitute).
+- `union.member-overlap` — two operands that each carry their own `.finish()`/`.material()` and the SAME one (two pieces of the same stock) share more than 1 mm³; the message names both, the volume and the overlap box. Most often this is one part finished piece by piece: fuse the same-material pieces first and call `.finish()` once on the result. If they really are separate members, cut one to fit (butt joint) instead of burying it in the other. This applies inside assembly parts too. Operands with DIFFERENT materials may overlap (inlay, over-mould, multi-material part).
+
+Finish once, after the booleans: a boss or rib merged into a body BEFORE `.finish()` has no finish of its own, so ordinary overlapping modelling unions are not affected. Give a piece its own finish only when it is a different material (inlay, over-mould) or a separate member.
+
 - If a model has moving parts, design the joint structure before styling: name the parent/child parts, joint type, axis/frame, limits, and editable pose parameters up front.
 - If two parts are intended to touch, author the relationship with connectors and mates rather than relying on raw `translate()` offsets alone. Raw offsets are acceptable for free placement, but touching load-path geometry needs named interfaces the validator and Studio can inspect.
 - Prefer `assembly().model()` for multi-part scenes so Studio receives per-part identity, material, mate, and transform metadata. Collapse with `.toCompound()` or `.toUnion()` only when a downstream export truly requires one body.
@@ -756,6 +777,7 @@ These root causes account for most non-converging repairs; fix the cause, not th
 - **Open or degenerate sketches** — `extrude`/`revolve` need a single closed loop: close the path and remove zero-length segments or duplicate points, or the kernel fails with a sketch-construction error.
 - **Undeclared connectors** — declare a connector on the part before referencing it in a mate, and give it a finite `[x, y, z]` origin.
 - **Over-tight fillets/chamfers** — keep the radius below half the local wall/edge thickness; larger radii fail in the kernel.
+- **Members run into each other or float** — `union.member-overlap` / `union.disconnected` on a frame or tray: cut cross members to `span - 2 * railWidth` and place them at the rail width, keep end members inside the frame, and seat sheets on the tubes (see Multi-member fabrications).
 - **ParamRef arithmetic** — never use JS operators on a `param()` result; use `.add/.subtract/.multiply/.divide/.negate` (see the Cookbook entry for worked examples).
 
 ## CLI Commands
@@ -1021,6 +1043,7 @@ When you need a canonical pattern, call MCP tool `lookup_cookbook(query, k?)` to
 | twisted-tapered-thin-wall-vase | You need a hollow, open-top vessel whose cross-section twists and tapers with height (a twisted hex vase, a faceted planter, a lamp shade) with an even wall. Build the outer body with variableSweep through per-station profiles, then hollow it by subtracting the same sweep built from profiles inset by the wall thickness — a boolean hollow that works where shell() cannot close the offset (curved faces that meet at sharp edges: multi-station sweeps, ruled lofts, unions of stacked lofts). |
 | typed-params-boolean-choice-string | A `.kcad.ts` script needs an editable value that isn't a plain number: a feature on/off switch (`param('HasLid', true)`), a closed set of named options like a fastener size (`param('Screw', 'M4', { choices: [...] })`), or free text such as a nameplate/label (`param('Label', 'KCAD', { maxLength })`). All three resolve eagerly — read `.value` in script logic (`if`, object-key lookup, `sketch.text`) instead of the numeric ParamRef's symbolic `.add()`/`.multiply()` chain. |
 | union-of-stacked-primitives | Simple blockouts only — compose primitives by translate+union without overlap. NOT for real / production / complex / enclosure / gearbox / bearing housing / robot-arm prompts (use multi-feature-machined-housing or multi-body-mechanism-real-proportions instead). |
+| welded-tube-frame-tray | A frame, rack, tray, table base or weldment built from tube / bar members, optionally with a sheet or deck on top. Members are cut to fit BETWEEN each other (butt joints) so they touch but never overlap, and the sheet sits on the tubes. Use one union() when the frame is one welded body; use assembly().part() per member when members are separate BOM lines. |
 | wood-joinery-dado-rabbet-mortise | You are cutting a dado groove, a rabbet rebate, and a mortise-and-tenon in lumber, with a named fit-clearance param widening the receiving cuts (groove, rebate, mortise) while the male tenon stays nominal. |
 | wrap-texture-can-label | You need a bitmap texture (label, decal, logo) wrapped onto a cylinder without hand-authoring UVs. Call `shape.wrapTexture(imageRef, { type: 'cylinder', axis })` so UVs are projected from final world-space vertices; `{ type: 'flat' \| 'sphere' \| 'box' }` cover planar and other wraps. |
 

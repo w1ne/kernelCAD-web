@@ -51,6 +51,7 @@ const EMITTING_FILES = [
   'modeling/sketch/index.ts',
   'modeling/compute/recomputeEngine.ts',
   'modeling/validation/unstructuredBodies.ts', // agent-parts-discipline
+  'modeling/validation/unionIntegrity.ts', // union integrity guard
   'agent/cli/commands/evaluate.ts',
   'agent/cli/commands/export.ts',
   'agent/mcp/tools/inspectContinuity.ts',
@@ -142,7 +143,7 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     }
   });
 
-  it('catalogue has exactly 331 codes', () => {
+  it('catalogue has exactly 335 codes', () => {
     // 47 baseline (milestone-C diagnostic-vocab spec)
     //  + 23 NURBS Slice B/C/D (Curve3D / variableSweep / surface / G2 / 2D path NURBS)
     //  + 31 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
@@ -305,7 +306,8 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     // + 6 authoring.prefer-api.* (evaluate_script intent lint) = 331.
     // + 2 viewer dimensions: drawing.dimension.unresolved,
     //   viewer.dimensions.budget-exceeded = 333.
-    expect(catalogue.size).toBe(333);
+    // + 2 union integrity guard: union.disconnected, union.member-overlap = 335.
+    expect(catalogue.size).toBe(335);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

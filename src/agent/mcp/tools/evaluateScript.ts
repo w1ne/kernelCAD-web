@@ -202,9 +202,12 @@ function sceneParts(returnValue: unknown): { count: number; names: string[] } | 
 
 function didBuildSucceed(model: BuildOutcome['model'], dfmReport: BuildOutcome['dfmReport']): boolean {
   const dfmErrors = new Set(dfmReport?.diagnostics ?? []);
+  // Union-guard errors (union.*) are verdicts on a model that DID build, like
+  // dfm gate errors: keep the session and still probe the mechanism so the
+  // agent sees every finding at once. `ok` is false via exitCode either way.
   return (
     model !== undefined &&
-    model.diagnostics.every(d => d.severity !== 'error' || dfmErrors.has(d))
+    model.diagnostics.every(d => d.severity !== 'error' || dfmErrors.has(d) || d.code.startsWith('union.'))
   );
 }
 

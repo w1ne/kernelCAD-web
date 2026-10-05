@@ -26,7 +26,8 @@ export type DiagnosticGroup =
   | 'render'
   | 'inspect'
   | 'authoring'
-  | 'viewer';
+  | 'viewer'
+  | 'union';
 
 export type DiagnosticSeverityLevel = 'info' | 'warn' | 'error';
 

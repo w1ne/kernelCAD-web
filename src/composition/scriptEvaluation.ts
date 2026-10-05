@@ -31,6 +31,7 @@ import {
   type FeaGateReport,
 } from '../modeling/runtime/fea/runFeaGate';
 import { detectUnstructuredBodies } from '../modeling/validation/unstructuredBodies';
+import { detectUnionDefects } from '../modeling/validation/unionIntegrity';
 import type { SweepEvaluator } from '../kinematic/sweepTolerance';
 import { createScriptApi } from './scriptApi';
 import { viewerDimensionsForModel } from './viewerDimensionsForModel';
@@ -229,6 +230,15 @@ export async function evaluateAndBuildScript(
   if (!fatal) {
     model.diagnostics.push(
       ...detectUnstructuredBodies({ returnValue: model.returnValue, code: model.code }),
+    );
+    // Union integrity guard: a `union()` model gets the floating-part and
+    // member-overlap checks an `assembly()` model gets from its validator.
+    // Error severity with no opt-out at this seam (CLI evaluate, MCP
+    // evaluate_script, review_cad, the eval harness). open_in_studio lives in
+    // kernelCAD-server and is gated separately there (follow-up branch).
+    // Studio's per-keystroke recompute does not call it.
+    model.diagnostics.push(
+      ...detectUnionDefects({ records: model.records, shapes: model.shapes, code: model.code }),
     );
   }
 

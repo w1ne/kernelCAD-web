@@ -36,6 +36,7 @@ const ALLOWED_GROUPS = new Set([
   'inspect',
   'authoring',
   'viewer',
+  'union',
 ]);
 
 // Mirror of the well-formed-shape predicate from nextAction.test.ts so the

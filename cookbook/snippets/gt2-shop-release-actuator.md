@@ -114,10 +114,13 @@ function bearing608() {
     .moveTo(4.05, 0).lineTo(6.35, 0).lineTo(6.35, 1.95).lineTo(5.55, 3.5)
     .lineTo(6.35, 5.05).lineTo(6.35, 7).lineTo(4.05, 7).lineTo(4.05, 0)
     .close().revolve();
-  let balls = sphere(1.35).translate(7.6, 0, 3.5);
+  // Balls (r 2.1) seat into both grooves (apexes at r 5.55 and 9.65), so the
+  // races and balls fuse into one solid. At r 1.35 they touched neither race
+  // and the "one solid" was nine loose pieces (union.disconnected).
+  let balls = sphere(2.1).translate(7.6, 0, 3.5);
   for (let i = 1; i < 7; i += 1) {
     const a = (2 * Math.PI * i) / 7;
-    balls = balls.union(sphere(1.35).translate(7.6 * Math.cos(a), 7.6 * Math.sin(a), 3.5));
+    balls = balls.union(sphere(2.1).translate(7.6 * Math.cos(a), 7.6 * Math.sin(a), 3.5));
   }
   return outer.union(inner, balls);
 }

@@ -38,23 +38,33 @@ const PALM_Z = 26;
 const FINGER_Y = 11;
 const FINGER_Z = 12;
 
-function fingerLink(length: number, width: number, height: number, material: typeof linkMaterial, rootClearanceOverride?: number) {
+// Same-material pieces of one link are one piece of stock: they are fused
+// first and finished once. Finishing each overlapping piece separately
+// declares them separate same-material pieces (union.member-overlap). The
+// dorsal rail is a different material and may overlap the link.
+function fingerLink(
+  length: number,
+  width: number,
+  height: number,
+  material: typeof linkMaterial,
+  rootClearanceOverride?: number,
+  extraBody?: ReturnType<typeof box>,
+) {
   const rootClearance = rootClearanceOverride ?? Math.max(13, width + 3);
   const neckStart = 5.5;
   const neckEnd = rootClearance + 3;
   const rootNeck = box(neckEnd - neckStart, width * 0.9, height * 0.8, true)
-    .translate((neckStart + neckEnd) / 2, 0, 0)
-    .material(material);
+    .translate((neckStart + neckEnd) / 2, 0, 0);
   const core = box(length, width, height, true)
-    .translate(rootClearance + length / 2, 0, 0)
-    .material(material);
+    .translate(rootClearance + length / 2, 0, 0);
   const dorsalRail = box(length * 0.72, 2.4, 2.4, true)
     .translate(rootClearance + 3 + length * 0.42, 0, height / 2 + 0.35)
     .material({ baseColor: '#5b6066', metalness: 0.0, roughness: 0.55 });
   const railWeb = box(length * 0.58, 1.5, 2.0, true)
-    .translate(rootClearance + 5 + length * 0.36, 0, height / 2 - 0.45)
-    .material(material);
-  return rootNeck.union(core).union(railWeb).union(dorsalRail);
+    .translate(rootClearance + 5 + length * 0.36, 0, height / 2 - 0.45);
+  let body = rootNeck.union(core).union(railWeb);
+  if (extraBody !== undefined) body = body.union(extraBody);
+  return body.material(material).union(dorsalRail);
 }
 
 function outboardForkBridges(
@@ -64,14 +74,12 @@ function outboardForkBridges(
   yWidth: number,
   zCenter: number,
   zHeight: number,
-  material: typeof linkMaterial,
 ) {
+  // No finish of its own: fused into the link body, which is finished once.
   const right = box(xLength, yWidth, zHeight, true)
-    .translate(xCenter, yCenter, zCenter)
-    .material(material);
+    .translate(xCenter, yCenter, zCenter);
   const left = box(xLength, yWidth, zHeight, true)
-    .translate(xCenter, -yCenter, zCenter)
-    .material(material);
+    .translate(xCenter, -yCenter, zCenter);
   return right.union(left);
 }
 
@@ -106,21 +114,24 @@ const dipStyle = {
   holeClearance: 0.4,
 };
 
-const proximalRaw = fingerLink(49, FINGER_Y, FINGER_Z, linkMaterial)
-  .union(outboardForkBridges(50, 8, 7.7, 5.0, 1.8, 8.0, linkMaterial));
+const proximalRaw = fingerLink(
+  49, FINGER_Y, FINGER_Z, linkMaterial, undefined,
+  outboardForkBridges(50, 8, 7.7, 5.0, 1.8, 8.0),
+);
 const middleRaw = fingerLink(36.5, FINGER_Y * 0.88, FINGER_Z * 0.88, linkMaterial);
+// Tip body + its web are one tipMaterial piece (fused, finished once); the
+// dark nail strip is a different material and may overlap it.
 const distalRaw = box(26, 5.2, FINGER_Z * 0.68, true)
   .translate(dipStyle.knuckleR + 13, 0, 0)
+  .union(
+    box(18, 1.4, 1.8, true)
+      .translate(dipStyle.knuckleR + 15, 0, FINGER_Z * 0.34 - 0.45),
+  )
   .material(tipMaterial)
   .union(
     box(20, 2.4, 2.4, true)
       .translate(dipStyle.knuckleR + 15, 0, FINGER_Z * 0.34 + 0.35)
       .material({ baseColor: '#070b10', metalness: 0.0, roughness: 0.58 }),
-  )
-  .union(
-    box(18, 1.4, 1.8, true)
-      .translate(dipStyle.knuckleR + 15, 0, FINGER_Z * 0.34 - 0.45)
-      .material(tipMaterial),
   );
 
 const mcp = joint.clevis({

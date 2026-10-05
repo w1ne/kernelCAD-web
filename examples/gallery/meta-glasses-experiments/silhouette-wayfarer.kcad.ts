@@ -135,7 +135,9 @@ const cameraCounterbore = cylinder(3.0, CAMERA_R, 64)
   .translate(CAMERA_X, -0.4, CAMERA_Z);
 const cameraGlass = cylinder(0.7, 2.5, 48)
   .alongAxis([0, 1, 0])
-  .translate(CAMERA_X, 1.7, CAMERA_Z);
+  // Seated on the counterbore floor (y = 2.6); at y = 1.7 it floated 0.2 mm
+  // off it (union.disconnected).
+  .translate(CAMERA_X, 1.9, CAMERA_Z);
 const ledPocket = cylinder(1.0, LED_R, 32)
   .alongAxis([0, 1, 0])
   .translate(LED_X, -0.3, CAMERA_Z);

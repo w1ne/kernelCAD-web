@@ -36,14 +36,16 @@ let body = box(50, 30, 10).hole('top', {
 });
 
 if (hasFoot.value) {
-  body = body.union(box(10, 10, 4).translate(0, 0, -7));
+  // The foot sits flush under the body (z -4..0): a union of parts that
+  // never touch is flagged union.disconnected.
+  body = body.union(box(10, 10, 4).translate(0, 0, -4));
 }
 
 const text = sketch
   .text(label.value, { size: 4, align: 'center', position: [0, 0] })
   .extrude(0.5)
   .rotate([1, 0, 0], 90)
-  .translate(15, -15.5, 5);
+  .translate(25, 0, 5); // raised label on the front face (y = 0), centred in X
 
 return body.union(text);
 ```

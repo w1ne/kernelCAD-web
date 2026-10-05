@@ -66,7 +66,10 @@ const text = sketch
   .text(label.value, { size: 6, align: 'center', position: [0, 0] })
   .extrude(0.6)
   .rotate([1, 0, 0], 90)
-  .translate(0, -depth / 2 - 0.6, height / 2)
+  // box() is corner-anchored (x 0..width, y 0..depth): the label sits on the
+  // front face y = 0, centred in X. Placing it at y = -depth/2 left it
+  // floating 20 mm in front of the body (union.disconnected).
+  .translate(width / 2, 0, height / 2)
   .color('#222222');
 
 return body.union(text);

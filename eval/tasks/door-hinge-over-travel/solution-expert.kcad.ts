@@ -63,7 +63,12 @@ const PANEL_OFFSET_X = HINGE_GAP_MM * 2 + KNUCKLE_R; // 13mm offset clears wall
 const doorPanel = box(DOOR_W, DOOR_T, DOOR_H, true)
   .translate(PANEL_OFFSET_X + DOOR_W / 2, -DOOR_T / 2 - HINGE_GAP_MM, 0);
 const doorKnuckle = cylinder(KNUCKLE_H, KNUCKLE_R).translate(0, 0, -KNUCKLE_H / 2);
-const doorShape = doorPanel.union(doorKnuckle).color('plate');
+// Hinge leaf: ties the knuckle to the panel's hinge-side edge (x 0..14,
+// y -6..-1), on the room side of the wall face (y < 0) and only carried
+// further into the room by the opening swing. Without it the knuckle floated
+// 10.9 mm from the panel (union.disconnected).
+const hingeLeaf = box(PANEL_OFFSET_X + 1, 5, KNUCKLE_H).translate(0, -6, -KNUCKLE_H / 2);
+const doorShape = doorPanel.union(doorKnuckle, hingeLeaf).color('plate');
 const doorPart = door.part('door', doorShape);
 
 // Wall hinge connector: inside the mortise so the axis line intersects the

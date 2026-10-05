@@ -60,13 +60,13 @@ function axis(origin) {
 
 function fingerBody(name, direction) {
   const padY = direction * (fingerReach - padLen / 2);
+  // Boss and finger are one piece of stock: fused, then finished once.
   const hingeBoss = cylinder(fingerThickness + 2, 4.5, 24)
-    .translate(0, 0, 0)
-    .material(materialFinger);
+    .translate(0, 0, 0);
   return hingeBoss
     .union(box(fingerWidth, fingerReach, fingerThickness, true)
-    .translate(0, direction * fingerReach / 2, 0)
-    .material(materialFinger))
+    .translate(0, direction * fingerReach / 2, 0))
+    .material(materialFinger)
     .union(
       box(fingerWidth + 3, padLen, fingerThickness + 1, true)
         .translate(0, padY, 0)

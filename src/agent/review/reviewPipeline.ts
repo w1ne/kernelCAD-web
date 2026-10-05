@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { evaluateAndBuildScript, type EvaluateInput } from '../cli/commands/evaluate';
+import { failedOnlyOnUnionGuard } from '../../modeling/validation/unionIntegrity';
 import type { Assembly } from '../../modeling/capture/assembly';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../shared/diagnostics/diagnostic';
@@ -234,7 +235,18 @@ export type ReviewPipelineStageName = typeof REVIEW_PIPELINE_STAGES[number];
 export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCadOutput> {
   const clock = new StageClock(input.timeBudgetMs ?? DEFAULT_REVIEW_TIME_BUDGET_MS);
   const { evaluation, model } = await clock.time('evaluate-source', () => runEvaluateSourceStage(input));
-  if (evaluation.exitCode !== 0 || !model) {
+  // A build that failed ONLY on the union guard (union.disconnected /
+  // union.member-overlap) still produced the model: when it captured an
+  // assembly, keep reviewing so the mechanical findings are reported next to
+  // the union errors (`ok` stays false below). A solid-only script has nothing
+  // more to review, so it takes the early failure return with its union
+  // errors; it must never reach the "no assembly captured" path, which
+  // design_loop promotes to a functional solid-only review.
+  const unionGuardOnly =
+    failedOnlyOnUnionGuard(evaluation.diagnostics) &&
+    model !== undefined &&
+    model.session.assemblies.size > 0;
+  if ((evaluation.exitCode !== 0 && !unionGuardOnly) || !model) {
     clearActiveMcpSession();
     const diagnostics = withNextActions(evaluation.diagnostics);
     return {
@@ -251,12 +263,15 @@ export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCa
 
   const { arm, missingAssemblyMessage } = runSelectAssemblyStage(model, input);
   if (!arm) {
+    // Defence in depth: evaluation errors (e.g. union.* on an assembly that
+    // is not the selected one) are never dropped here.
+    const evaluationErrors = withNextActions(evaluation.diagnostics.filter((d) => d.severity === 'error'));
     return {
       ...clock.report(),
       ok: false,
       featureCount: evaluation.featureCount,
-      diagnostics: [],
-      repairContext: await buildRepairContext(undefined, [], undefined, input),
+      diagnostics: evaluationErrors,
+      repairContext: await buildRepairContext(undefined, evaluationErrors, undefined, input),
       suggestedRepairPrompt: `${missingAssemblyMessage} Return arm.model() or arm.solvedModel(...) from a script that calls assembly(...).`,
     };
   }
@@ -308,7 +323,7 @@ export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCa
     mechanismFailures,
     ...(defaultPoseGeometry.geometry !== undefined ? { geometry: defaultPoseGeometry.geometry } : {}),
   };
-  return ok
+  return ok && !unionGuardOnly
     ? { ...common, ok: true }
     : { ...common, ok: false, suggestedRepairPrompt: buildSuggestedRepairPrompt(diagnostics, fitness, input) };
 }

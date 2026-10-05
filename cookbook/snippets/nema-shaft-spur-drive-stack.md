@@ -122,10 +122,12 @@ const flangeZ = 7.3;
 let motorBody = extrudeRoundedRect(42.3, 42.3, 2, 5).translate(0, 0, flangeZ);
 motorBody = motorBody
   .union(extrudeRoundedRect(36, 36, 2.4, 28).translate(0, 0, flangeZ + 4.6))
-  .union(extrudeRoundedRect(22, 2.2, 0.6, 24).translate(0, 19.4, flangeZ + 6))
-  .union(extrudeRoundedRect(22, 2.2, 0.6, 24).translate(0, -19.4, flangeZ + 6))
-  .union(extrudeRoundedRect(2.2, 22, 0.6, 24).translate(19.4, 0, flangeZ + 6))
-  .union(extrudeRoundedRect(2.2, 22, 0.6, 24).translate(-19.4, 0, flangeZ + 6))
+  // Side ribs bite 0.1 mm into the 36 mm core (at 19.4 they stood 0.3 mm
+  // off it: union.disconnected).
+  .union(extrudeRoundedRect(22, 2.2, 0.6, 24).translate(0, 19.0, flangeZ + 6))
+  .union(extrudeRoundedRect(22, 2.2, 0.6, 24).translate(0, -19.0, flangeZ + 6))
+  .union(extrudeRoundedRect(2.2, 22, 0.6, 24).translate(19.0, 0, flangeZ + 6))
+  .union(extrudeRoundedRect(2.2, 22, 0.6, 24).translate(-19.0, 0, flangeZ + 6))
   .union(cylinder(2.6, 15).translate(0, 0, flangeZ + 32.4))
   .union(cylinder(2.2, 8).translate(0, 0, flangeZ + 34.8))
   .finish('anodized-black');
