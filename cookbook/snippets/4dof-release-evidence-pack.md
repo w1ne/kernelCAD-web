@@ -118,6 +118,9 @@ const turret = arm.part(
     .union(roundPlate(12, 8, 2, 42, 0, 22, 4))
     .union(roundPlate(12, 8, 2, 42, 0, -22, 4))
     .union(roundPlate(30, 20, 3, 8, -28, 40, 22))
+    // Gusset from the top plate / cheek to the servo mount plate (alone the
+    // mount plate floated 6.8 mm off the turret: union.disconnected).
+    .union(roundPlate(14, 8, 1, 8, -14, 26, 22))
     .finish('anodized', { color: '#8aa0ad' }),
   { material: 'aluminum-6061' },
 );
@@ -134,12 +137,16 @@ shoulderServo.connector('mount', { type: 'frame', origin: { kind: 'vec3', value:
 
 const upper = arm.part(
   'upper-link',
-  linkTube(upperLen - 18, 6.2, 8)
+  // Tube starts inside the shoulder axle (x = 3; from x = 8 the axle and
+  // hubs floated off it), far end unchanged.
+  linkTube(upperLen - 13, 6.2, 3)
     .union(cylinder(96, 4.4).rotate([1, 0, 0], 90).translate(0, 48, 0))
     .union(cylinder(8, 8).rotate([1, 0, 0], 90).translate(0, 16, 0))
     .union(cylinder(8, 8).rotate([1, 0, 0], 90).translate(0, -8, 0))
     .union(clevis(upperLen - 6))
     .union(roundPlate(26, 16, 2, 8, upperLen - 22, 32, -4))
+    // Gusset from the clevis cheek to the servo mount plate (5.5 mm gap).
+    .union(roundPlate(10, 8, 1, 8, upperLen - 22, 20, -4))
     .finish('anodized', { color: '#d5dde3' }),
   { material: 'aluminum-6061' },
 );
@@ -156,10 +163,13 @@ elbowServo.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [u
 
 const forearm = arm.part(
   'forearm-link',
-  linkTube(foreLen - 16, 5.4, 6)
+  // Tube starts 1 mm inside the r 5 elbow hub (from x = 6 it floated 1 mm
+  // off it); a gusset ties the servo mount plate to the clevis cheek.
+  linkTube(foreLen - 14, 5.4, 4)
     .union(cylinder(36, 5).rotate([1, 0, 0], 90).translate(0, 18, 0))
     .union(clevis(foreLen - 4))
     .union(roundPlate(22, 14, 2, 7, foreLen - 18, 28, -3.5))
+    .union(roundPlate(8, 4, 1, 7, foreLen - 14, 19.5, -3.5))
     .finish('anodized', { color: '#c5d0d8' }),
   { material: 'aluminum-6061' },
 );

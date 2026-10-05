@@ -171,7 +171,9 @@ tiltServo.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [-1
 
 const tiltHead = arm.part(
   'tilt-head',
-  cylinder(headLen - 18, 6.2).rotate([0, 1, 0], 90).translate(10, 0, 0)
+  // Tube starts at x = 3, inside the r 4.2 tilt axle (from x = 10 the axle
+  // and hubs floated off it: union.disconnected); its far end is unchanged.
+  cylinder(headLen - 11, 6.2).rotate([0, 1, 0], 90).translate(3, 0, 0)
     .union(cylinder(92, 4.2).rotate([1, 0, 0], 90).translate(0, 46, 0))
     .union(cylinder(8, 8).rotate([1, 0, 0], 90).translate(0, 16, 0))
     .union(cylinder(8, 8).rotate([1, 0, 0], 90).translate(0, -10, 0))
