@@ -142,11 +142,14 @@ housing = housing
   .subtract(cylinder(baseT + 2, 5.2).translate(ax, ay, -1))
   .subtract(sideWindow(8))
   .subtract(sideWindow(54));
-for (const [x, y] of [[10, 10], [130, 10], [10, 70], [130, 70]] as const) {
-  housing = housing
-    .subtract(cylinder(baseT + 2, 1.55).translate(x, y, -1))
-    .subtract(cylinder(2.2, 2.7).translate(x, y, baseT - 2.2));
-}
+// Mounting holes through the flange as real hole features. The flange ring's
+// top face is centred on (cx, cy), so u = x - cx and v = y - cy.
+housing = housing.holes({ byNormal: 'Z', atX: cx, atY: cy, atZ: baseT }, {
+  positions: [[10, 10], [130, 10], [10, 70], [130, 70]].map(([x, y]) => ({ u: x - cx, v: y - cy })),
+  diameter: 3.1,
+  depth: 'through',
+  counterbore: { diameter: 5.4, depth: 2.2 },
+});
 housing = housing
   .fillet(0.6, { parallel: [0, 0, 1] })
   .datum('A', { atZ: 0 })

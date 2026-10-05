@@ -68,11 +68,14 @@ for (const x of [0, cd]) {
   plate = plate.subtract(cylinder(12, 4.7).translate(x, gearY, -1));
 }
 const offs = [[-15.5, -15.5], [15.5, -15.5], [-15.5, 15.5], [15.5, 15.5]] as const;
-for (const [u, v] of offs) {
-  plate = plate
-    .subtract(cylinder(12, 1.8).translate(u, v, -2))
-    .subtract(cylinder(2.8, 3.2).translate(u, v, 4.4));
-}
+// NEMA 17 bolt holes as real hole features with a counterbore, drilled from
+// the recess floor (z = 6.35), whose centre is the origin: u = x, v = y.
+plate = plate.holes({ byNormal: 'Z', atX: 0, atY: 0, atZ: 6.35 }, {
+  positions: offs.map(([x, y]) => ({ u: x, v: y })),
+  diameter: 3.6,
+  depth: 7,
+  counterbore: { diameter: 6.4, depth: 1.95 },
+});
 plate = plate
   .datum('A', { atZ: 0 })
   .datum('B', { atX: -44 })

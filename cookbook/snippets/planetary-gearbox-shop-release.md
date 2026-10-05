@@ -73,10 +73,16 @@ let housing = path()
   .close()
   .revolve();
 const boltR = flangeR - 4;
-for (let i = 0; i < 6; i += 1) {
-  const a = (Math.PI / 6) + (2 * Math.PI * i) / 6;
-  housing = housing.subtract(cylinder(6, 1.55).translate(boltR * Math.cos(a), boltR * Math.sin(a), -13));
-}
+// Six flange bolt holes as real hole features, entered from the bottom face
+// (centre at the origin): u = x, v = y.
+housing = housing.holes({ byNormal: '-Z', atX: 0, atY: 0, atZ: -12 }, {
+  positions: Array.from({ length: 6 }, (_, i) => {
+    const a = Math.PI / 6 + (2 * Math.PI * i) / 6;
+    return { u: boltR * Math.cos(a), v: boltR * Math.sin(a) };
+  }),
+  diameter: 3.1,
+  depth: 'through',
+});
 housing = housing
   .datum('A', { atZ: -12 })
   .datum('B', { atX: -flangeR })

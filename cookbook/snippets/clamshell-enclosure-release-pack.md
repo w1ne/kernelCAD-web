@@ -109,10 +109,14 @@ let lidShell = extrudeRoundedRect(64, 68, 11, 20).translate(50, 0, -8);
 lidShell = lidShell.subtract(extrudeRoundedRect(50, 54, 7, 16).translate(52, 0, -6));
 lidShell = lidShell.subtract(extrudeRoundedRect(36, 28, 4, 2.2).translate(50, 0, 9.0));
 const screwXY = [[26, 24], [74, 24], [26, -24], [74, -24]] as const;
-for (const [x, y] of screwXY) {
-  lidShell = lidShell.subtract(cylinder(3.2, 3.9).translate(x, y, 10.2));
-  lidShell = lidShell.subtract(cylinder(10, 1.95).translate(x, y, 4));
-}
+// Lid screw clearances as real hole features, counterbored from the top face.
+// The lid is centred on (50, 0), so u = x - 50 and v = y.
+lidShell = lidShell.holes({ byNormal: 'Z', atX: 50, atY: 0, atZ: 12 }, {
+  positions: screwXY.map(([x, y]) => ({ u: x - 50, v: y })),
+  diameter: 3.9,
+  depth: 8,
+  counterbore: { diameter: 7.8, depth: 1.8 },
+});
 const lidLip = extrudeRoundedRect(64, 68, 11, 2.8).translate(50, 0, 11.5)
   .subtract(extrudeRoundedRect(54, 58, 8, 3.6).translate(50, 0, 11.1));
 const lidBody = union(tongue, neck, lidShell, lidLip).finish('abs', { color: '#f3f6f8' });
