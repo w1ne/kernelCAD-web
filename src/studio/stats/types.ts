@@ -6,7 +6,7 @@
 // which. Per-day arrays align with `days` (UTC, oldest first).
 //
 // Fields marked "v2" come from the server's admin_stats_measurement()
-// (migration 20261005130000). An older server omits them; the page then
+// (migration 20261005160000). An older server omits them; the page then
 // says the number uses the old definition instead of guessing.
 
 export type StatsWindow = '7d' | '28d' | '90d';

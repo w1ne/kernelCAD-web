@@ -11,7 +11,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { DatabaseSync } from 'node:sqlite';
 import { D1Store, type D1Like, type D1StatementLike } from './store';
-import worker, { isSummaryRun, emailSender, type Env } from './index';
+import worker, { isSummaryRun, emailSender, monitorFetch, type Env } from './index';
 import { runMonitor } from './monitor';
 import { fakeFetch, fakeProd } from './testFakes';
 
@@ -117,5 +117,25 @@ describe('Worker entry', () => {
     expect(isSummaryRun(Date.UTC(2026, 8, 29, 7, 0, 0))).toBe(true);
     expect(isSummaryRun(Date.UTC(2026, 8, 29, 7, 5, 0))).toBe(false);
     expect(isSummaryRun(Date.UTC(2026, 8, 29, 6, 55, 0))).toBe(false);
+  });
+});
+
+describe('monitorFetch', () => {
+  it('adds the secret to MCP-origin requests only', async () => {
+    const seen: Array<[string, string | null]> = [];
+    const base = async (url: string, init?: RequestInit) => {
+      seen.push([url, new Headers(init?.headers).get('x-kernelcad-monitor')]);
+      return new Response('{}');
+    };
+    const f = monitorFetch(base, 's3cret-token-0123456789');
+    await f('https://mcp.kernelcad.com/mcp', { headers: { 'User-Agent': 'u' } });
+    await f('https://api.kernelcad.com/healthz');
+    await f('https://mcp.kernelcad.com.evil.example/mcp');
+    expect(seen).toEqual([
+      ['https://mcp.kernelcad.com/mcp', 's3cret-token-0123456789'],
+      ['https://api.kernelcad.com/healthz', null],
+      ['https://mcp.kernelcad.com.evil.example/mcp', null],
+    ]);
+    expect(monitorFetch(base, undefined)).toBe(base);
   });
 });

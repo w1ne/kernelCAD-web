@@ -115,12 +115,13 @@ describe('/stats', () => {
         const base = adminStatsFixture();
         mocks.useSession.mockReturnValue(signedIn);
         mocks.fetchAdminStats.mockResolvedValue(adminStatsFixture({
-            definitions: { ...base.definitions, mcp_rejected: 'Model rejection rate: rejected / calls.' },
+            definitions: { ...base.definitions, mcp_rejected: 'Model rejection rate: rejected / calls.', connected: 'Accounts with a live OAuth grant.' },
             mcp: {
                 ...base.mcp!,
                 version: 2,
                 data_since: '2026-09-26',
-                calls: 1000,
+                calls: 1100,
+                refused: 100,
                 errors: 20,
                 rejected: 300,
                 excluded: { monitor: 2000, probe: 40 },
@@ -165,11 +166,13 @@ describe('/stats', () => {
         const kpi = (k: string) => screen.getByTestId(`kpi-${k}`).textContent;
         expect(kpi('mcp')).toContain('2.0%');
         expect(kpi('mcp')).toContain('since 2026-09-26');
-        expect(screen.getByTestId('kpi-def-mcp').textContent).toMatch(/Model rejections, refusals, the uptime monitor and probes are not counted/);
+        expect(screen.getByTestId('kpi-def-mcp').textContent).toMatch(/Refused calls, model rejections, the uptime monitor and probes are not counted/);
         expect(kpi('rejected')).toContain('30.0%');
         expect(kpi('exports')).toContain('89%'); // (9 + 2 + 5) / (16 + 1 + 1)
         expect(kpi('exports')).toContain('3 rejected');
-        expect(kpi('exports')).toContain('since 2026-09-29');
+        expect(kpi('exports')).toContain('Studio since 2026-09-29, MCP since 2026-09-26');
+        expect(screen.getByTestId('kpi-def-connected').textContent).toBe('Accounts with a live OAuth grant.');
+        expect(within(screen.getByTestId('panel-success')).getByText(/MCP tool calls include our own traffic\./)).toBeDefined();
         expect(kpi('uptime')).toContain('7/8');
         for (const k of ['signups', 'active', 'connected', 'paying', 'gen', 'mcp', 'rejected', 'exports', 'uptime']) {
             expect(screen.getByTestId(`kpi-def-${k}`).textContent!.length).toBeGreaterThan(10);

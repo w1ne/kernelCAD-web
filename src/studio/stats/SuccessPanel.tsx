@@ -7,6 +7,7 @@
 import type { ReactNode } from 'react';
 import { ColumnChart, LineChart, Meter } from './charts';
 import {
+  attemptedCalls,
   clientLabel,
   clientOrder,
   dataWindow,
@@ -91,8 +92,8 @@ function TopTools({ m }: { m: Mcp }): ReactNode {
             {m.tools.slice(0, 10).map(t => (
               <tr key={t.tool} data-testid="tool-row">
                 <td>{t.tool}</td><td className="kcs-r">{fmtInt(t.calls)}</td>
-                <td className="kcs-r">{fmtPct(ratio(toolErrors(t), t.calls), 1)}</td>
-                {v2 && <td className="kcs-r">{fmtPct(ratio(t.rejected ?? 0, t.calls), 1)}</td>}
+                <td className="kcs-r">{fmtPct(ratio(toolErrors(t), t.calls - (v2 ? t.refused : 0)), 1)}</td>
+                {v2 && <td className="kcs-r">{fmtPct(ratio(t.rejected ?? 0, t.calls - t.refused), 1)}</td>}
                 <td className="kcs-r">{fmtMs(t.p95_ms)}</td>
               </tr>
             ))}
@@ -105,6 +106,7 @@ function TopTools({ m }: { m: Mcp }): ReactNode {
 
 function FailingTools({ m }: { m: Mcp }): ReactNode {
   const failing = failingTools(m.tools);
+  const ran = (t: Mcp['tools'][number]) => t.calls - (isMcpV2(m) ? t.refused : 0);
   return (
     <div>
       <SubHead>Top failing tools</SubHead>
@@ -115,7 +117,7 @@ function FailingTools({ m }: { m: Mcp }): ReactNode {
             {failing.map(t => (
               <tr key={t.tool} data-testid="failing-tool-row">
                 <td>{t.tool}</td><td className="kcs-r">{fmtInt(toolErrors(t))}</td>
-                <td className="kcs-r">{fmtPct(ratio(toolErrors(t), t.calls), 1)}</td>
+                <td className="kcs-r">{fmtPct(ratio(toolErrors(t), ran(t)), 1)}</td>
               </tr>
             ))}
           </tbody>
@@ -194,8 +196,8 @@ function McpCalls({ stats }: { stats: AdminStats }): ReactNode {
         ...(v2 && m.rejected_by_day ? [{ key: 'rejected', label: 'Rejected', color: SERIES.s3, values: m.rejected_by_day }] : []),
       ]} />
       <div className="flex flex-wrap gap-6 mt-2">
-        <Figure label="Failure rate" value={fmtPct(ratio(m.errors, m.calls), 1)} />
-        {v2 && <Figure label="Model rejection rate" value={fmtPct(ratio(m.rejected ?? 0, m.calls), 1)} />}
+        <Figure label="Failure rate" value={fmtPct(ratio(m.errors, attemptedCalls(m)), 1)} />
+        {v2 && <Figure label="Model rejection rate" value={fmtPct(ratio(m.rejected ?? 0, attemptedCalls(m)), 1)} />}
         <Figure label="Latency p50 / p95" value={`${fmtMs(m.latency_ms?.p50)} / ${fmtMs(m.latency_ms?.p95)}`} />
         {v2 && m.excluded && (
           <Figure label="Left out (monitor / probes)" value={`${fmtInt(m.excluded.monitor)} / ${fmtInt(m.excluded.probe)}`} />
@@ -209,7 +211,8 @@ function McpCalls({ stats }: { stats: AdminStats }): ReactNode {
       </div>
       <Note>
         Data {dataWindow(m.data_since, stats.days)}. {stats.definitions['mcp_error']}{' '}
-        {v2 ? stats.definitions['mcp_rejected'] : 'This server predates the corrected definition: monitor traffic and model rejections are included.'}
+        {v2 ? stats.definitions['mcp_rejected'] : 'This server predates the corrected definition: monitor traffic and model rejections are included.'}{' '}
+        {stats.excluded.note}
       </Note>
     </div>
   );

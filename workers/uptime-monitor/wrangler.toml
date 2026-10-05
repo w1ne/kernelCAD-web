@@ -11,6 +11,9 @@
 #   1. Tables (once, idempotent):
 #      npx -y wrangler@4.94.0 d1 execute kernelcad-subscribers --remote \
 #        --file=workers/uptime-monitor/migrations/0001_uptime.sql
+#   1b. Monitor secret (optional; same value as the server's UPTIME_MONITOR_TOKEN,
+#       so its MCP calls are left out of /stats):
+#      npx -y wrangler@4.94.0 secret put MONITOR_TOKEN -c workers/uptime-monitor/wrangler.toml
 #   2. Worker:
 #      npx -y wrangler@4.94.0 deploy -c workers/uptime-monitor/wrangler.toml
 #   3. Check:

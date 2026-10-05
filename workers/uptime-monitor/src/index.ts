@@ -17,6 +17,7 @@
 
 import { runDailySummary, runMonitor, statusBody, summaryBody, type SendFn } from './monitor';
 import { D1Store, type D1Like } from './store';
+import { MCP_ORIGIN, type FetchLike } from './checks';
 
 export interface SendEmailBinding {
   send(message: {
@@ -32,6 +33,13 @@ export interface Env {
   EMAIL: SendEmailBinding;
   ALERT_TO: string;
   ALERT_FROM: string;
+  /**
+   * Optional secret (wrangler secret put MONITOR_TOKEN). Sent as
+   * x-kernelcad-monitor on MCP calls only, so the server can tag them as
+   * monitor traffic and leave them out of /stats (server env
+   * UPTIME_MONITOR_TOKEN holds the same value).
+   */
+  MONITOR_TOKEN?: string;
 }
 
 export const FROM_NAME = 'kernelCAD uptime';
@@ -64,10 +72,21 @@ export function isSummaryRun(at: number): boolean {
   return d.getUTCHours() === SUMMARY_HOUR_UTC && d.getUTCMinutes() < 5;
 }
 
+/** fetch that adds the monitor secret to requests for the MCP origin, and only those. */
+export function monitorFetch(base: FetchLike, token: string | undefined): FetchLike {
+  if (!token) return base;
+  return (input, init) => {
+    if (!input.startsWith(`${MCP_ORIGIN}/`)) return base(input, init);
+    const headers = new Headers(init?.headers);
+    headers.set('x-kernelcad-monitor', token);
+    return base(input, { ...init, headers });
+  };
+}
+
 export async function scheduledRun(env: Env, at: number): Promise<void> {
   const store = new D1Store(env.DB);
   const send = emailSender(env);
-  const out = await runMonitor({ store, fetch: (i, init) => fetch(i, init), send }, at);
+  const out = await runMonitor({ store, fetch: monitorFetch((i, init) => fetch(i, init), env.MONITOR_TOKEN), send }, at);
   const failed = out.results.filter((r) => !r.ok).map((r) => `${r.id}: ${r.error}`);
   console.log(
     `uptime-monitor ran ${out.results.length} checks, ${failed.length} failed` +

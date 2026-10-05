@@ -120,6 +120,14 @@ export function persistedExportTotals(p: ExportsPersisted): { succeeded: number;
   return { succeeded, failed, rejected, total };
 }
 
+/**
+ * Calls that ran: v2 leaves refused calls (auth, rate limit, quota) out of
+ * the failure and rejection denominators; the old section has no split.
+ */
+export function attemptedCalls(m: Mcp): number {
+  return isMcpV2(m) ? m.calls - (m.refused ?? 0) : m.calls;
+}
+
 /** True when the MCP section uses the corrected definition (user traffic, rejections apart). */
 export function isMcpV2(m: Mcp | null): boolean {
   return m?.version === 2;
@@ -157,7 +165,7 @@ function unknownKpi(key: string, label: string, definition: string): Kpi {
 function accountKpis(s: AdminStats): Kpi[] {
   const dSignups = 'New accounts created, internal accounts excluded.';
   const dActive = 'Accounts with a revision, a hosted run or an MCP token issued.';
-  const dConnected = 'Accounts with a stored OAuth grant, any client.';
+  const dConnected = s.definitions['connected'] ?? 'Accounts with a stored OAuth grant, any client.';
   const dPaying = 'Active or trialing subscriptions now.';
   const g = s.growth;
   return [
@@ -185,15 +193,15 @@ function mcpKpis(s: AdminStats): Kpi[] {
   const m = s.mcp;
   const v2 = isMcpV2(m);
   const dMcp = v2
-    ? 'Calls where the tool failed (tool error or server exception). Model rejections, refusals, the uptime monitor and probes are not counted.'
+    ? 'Calls that ran where the tool failed (tool error or server exception). Refused calls, model rejections, the uptime monitor and probes are not counted.'
     : 'Old server definition: all traffic, model rejections counted as errors.';
   const dRejected = 'Calls where the tool worked and refused the model: diagnostics, a review verdict, a union guard.';
   if (!m) return [unknownKpi('mcp', 'MCP failure rate', dMcp), unknownKpi('rejected', 'Model rejection rate', dRejected)];
   const win = dataWindow(m.data_since, s.days);
   return [
-    { key: 'mcp', label: 'MCP failure rate', value: fmtPct(ratio(m.errors, m.calls), 1), note: `${fmtInt(m.calls)} ${v2 ? 'user ' : ''}calls · ${win}`, definition: dMcp, unknown: false },
+    { key: 'mcp', label: 'MCP failure rate', value: fmtPct(ratio(m.errors, attemptedCalls(m)), 1), note: `${fmtInt(m.calls)} ${v2 ? 'user ' : ''}calls · ${win}`, definition: dMcp, unknown: false },
     v2
-      ? { key: 'rejected', label: 'Model rejection rate', value: fmtPct(ratio(m.rejected ?? 0, m.calls), 1), note: `${fmtInt(m.rejected ?? 0)} rejected · ${win}`, definition: dRejected, unknown: false }
+      ? { key: 'rejected', label: 'Model rejection rate', value: fmtPct(ratio(m.rejected ?? 0, attemptedCalls(m)), 1), note: `${fmtInt(m.rejected ?? 0)} rejected · ${win}`, definition: dRejected, unknown: false }
       : { key: 'rejected', label: 'Model rejection rate', value: '—', note: 'server not updated', definition: dRejected, unknown: false },
   ];
 }
@@ -205,7 +213,7 @@ function exportKpi(s: AdminStats): Kpi {
     return {
       key: 'exports', label: 'Export success',
       value: fmtPct(ratio(ex.succeeded, ex.succeeded + ex.failed)),
-      note: `${fmtInt(ex.total)} exports, ${fmtInt(ex.rejected)} rejected · ${dataWindow(p.studio_data_since, s.days)}`,
+      note: `${fmtInt(ex.total)} exports, ${fmtInt(ex.rejected)} rejected · Studio ${dataWindow(p.studio_data_since, s.days)}, MCP ${dataWindow(p.mcp_data_since, s.days)}`,
       definition: 'Studio + MCP exports that produced a file / those that finished; invalid-model rejections and aborts not counted.',
       unknown: false,
     };

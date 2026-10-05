@@ -23,7 +23,7 @@ function KpiStrip({ stats }: { stats: AdminStats }): ReactNode {
           <div className="text-xs" style={{ color: 'var(--kcs-muted)' }}>{k.label}</div>
           <div className="text-2xl font-semibold mt-1" style={{ color: 'var(--kcs-text)' }}>{k.value}</div>
           <div className="text-xs mt-1" style={{ color: k.unknown ? 'var(--kcs-critical-text)' : 'var(--kcs-muted)' }}>{k.note}</div>
-          <div className="text-xs mt-1" data-testid={`kpi-def-${k.key}`} style={{ color: 'var(--kcs-muted)', opacity: 0.85 }}>{k.definition}</div>
+          <div className="text-xs mt-1" data-testid={`kpi-def-${k.key}`} style={{ color: 'var(--kcs-muted)' }}>{k.definition}</div>
         </li>
       ))}
     </ul>
