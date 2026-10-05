@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { Canvas } from "@react-three/fiber";
 import * as THREE from "three";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import type { GeometryResult, SketchGeometry } from "../../shared/worker/geometryEngine";
 import type { ViewMode3D, ViewportBackground } from "../../shared/types/viewMode";
 import { useWorkbench } from "../context/WorkbenchContext";
@@ -14,6 +14,8 @@ import { ViewerScene } from "./viewer/ViewerScene";
 import { DisplayReadySensor } from "./viewer/DisplayReadySensor";
 import { ViewGizmo } from "./viewer/overlays/ViewGizmo";
 import { CodeLinkLabel } from "./viewer/overlays/CodeLinkLabel";
+import { MeasureButton } from "./viewer/measure/MeasureButton";
+import { MeasureTool } from "./viewer/measure/MeasureTool";
 import { selectionCodeStore } from "../selectionCode/selectionCodeStore";
 
 // Extracted hooks
@@ -130,6 +132,7 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
         setHoveredItem, snapPoint, setSnapPoint, navigationRequest, setNavigationRequest,
         focusRequest, cursor,
     } = useViewerSetup(geometries);
+    const [measuring, setMeasuring] = useState(false);
 
     return (
         <div className="w-full h-full relative" style={{ cursor }} data-testid="viewer-container">
@@ -200,11 +203,13 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                     viewportBackground={background ?? viewportBackground}
                     planes={planes}
                 />
+                {measuring ? <MeasureTool geometries={geometries} itemNames={itemNames} hiddenIds={hiddenIds} /> : null}
                 {onDisplayReady ? (
                     <DisplayReadySensor geometries={geometries} onDisplayReady={onDisplayReady} />
                 ) : null}
             </Canvas>
             <CodeLinkLabel />
+            <MeasureButton active={measuring} onToggle={() => setMeasuring((on) => !on)} />
             <ViewGizmo
                 onNavigate={(target) => setNavigationRequest((prev) => ({
                     target,
