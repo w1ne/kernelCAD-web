@@ -12,6 +12,7 @@ import type { DimensionAnchor, DrawingDimensionSpec } from '../../../../shared/i
 import type { CompilerDiagnostic } from '../../../../shared/diagnostics/diagnostic';
 import { HINT_TEMPLATES, NEXT_ACTIONS } from '../../../../shared/diagnostics/registry';
 import type { Vec3 } from '../../../../shared/intent/types';
+import type { EdgeQuery } from '../../../../shared/intent/queryTypes';
 import { circleOf, edgeMid, fail, oneEdge, resolveAnchor } from '../drawingAnchors';
 import type { Checkpoint } from './auto';
 import type { V3, ViewerDimension } from './types';
@@ -21,12 +22,21 @@ import { add, cross, dot, len, scale, sub, unit } from './vec';
 type Draft = Omit<ViewerDimension, 'id' | 'source'>;
 type Parts = readonly WorldFramePart[];
 
-const isCircle = (e: Edge): boolean => (e as unknown as { geomType?: string }).geomType === 'CIRCLE';
+const geomType = (e: Edge): string | undefined => (e as unknown as { geomType?: string }).geomType;
+const isCircle = (e: Edge): boolean => geomType(e) === 'CIRCLE';
+
+/** Angular dimensions measure between straight edges only. */
+function straightEdge(parts: Parts, q: EdgeQuery, role: string): Edge {
+  const e = oneEdge(parts, q, role);
+  if (geomType(e) !== 'LINE') fail(`${role}: edge is a ${geomType(e) ?? 'UNKNOWN'}, not a LINE — angular needs two straight edges`);
+  return e;
+}
 const pt = (p: { x: number; y: number; z: number }): V3 => [p.x, p.y, p.z];
 
 /** A linear end: a circular edge means its centre (hole-to-hole is
- *  centre-to-centre); any other anchor resolves as on a drawing. */
-function linearEnd(parts: Parts, anchor: DimensionAnchor, role: string): V3 {
+ *  centre-to-centre); any other anchor resolves as on a drawing. Shared by
+ *  the viewer and the drawing sheet so both measure the same points. */
+export function dimensionEnd(parts: Parts, anchor: DimensionAnchor, role: string): V3 {
   if (!Array.isArray(anchor) && 'edge' in anchor) {
     const edge = oneEdge(parts, anchor.edge, role);
     return isCircle(edge) ? circleOf(edge, role).center : edgeMid(edge);
@@ -36,8 +46,8 @@ function linearEnd(parts: Parts, anchor: DimensionAnchor, role: string): V3 {
 }
 
 function linearDraft(parts: Parts, spec: Extract<DrawingDimensionSpec, { kind: 'linear' }>, role: string): Draft {
-  const a = linearEnd(parts, spec.from, `${role}.from`);
-  const b = linearEnd(parts, spec.to, `${role}.to`);
+  const a = dimensionEnd(parts, spec.from, `${role}.from`);
+  const b = dimensionEnd(parts, spec.to, `${role}.to`);
   const value = formatMm(len(sub(b, a)));
   return { kind: 'linear', a, b, text: spec.label ? `${spec.label} ${value}` : value };
 }
@@ -73,8 +83,8 @@ function awayFrom(apex: V3, e: Edge): V3 {
 }
 
 function angularDraft(parts: Parts, spec: Extract<DrawingDimensionSpec, { kind: 'angular' }>, role: string): Draft {
-  const eA = oneEdge(parts, spec.from, `${role}.from`);
-  const eB = oneEdge(parts, spec.to, `${role}.to`);
+  const eA = straightEdge(parts, spec.from, `${role}.from`);
+  const eB = straightEdge(parts, spec.to, `${role}.to`);
   const dir = (e: Edge): V3 => unit(sub(pt(e.endPoint), pt(e.startPoint)));
   const apex = apexOf(pt(eA.startPoint), dir(eA), pt(eB.startPoint), dir(eB), role);
   const cos = Math.max(-1, Math.min(1, dot(awayFrom(apex, eA), awayFrom(apex, eB))));

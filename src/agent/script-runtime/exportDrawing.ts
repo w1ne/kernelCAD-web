@@ -5,8 +5,7 @@ import { renderSvgDrawing, type SvgDrawingOptions } from '../../kernel/backends/
 import { explodedPoses, applyExplodedOffsets, parseExplodeInput } from '../../modeling/runtime/explodedPoses';
 import { computeBom } from './bom';
 import type { Assembly } from '../../modeling/capture/assembly';
-import type { DrawingDimensionSpec } from '../../shared/intent/drawingGdtRecord';
-import type { DrawingAnnotation, DrawingAnchor } from '../../kernel/backends/occt/drawingAnnotations';
+import { declaredDrawingAnnotation } from '../../kernel/backends/occt/viewerDimensions/drawingAnnotation';
 import { collectDrawingDeclarations } from '../../modeling/runtime/drawingDeclarations';
 import { drawingPartsForBackend, sceneToWorldFrameParts, type WorldFramePart } from '../../kernel/backends/occt/sceneToWorldFrame';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
@@ -158,7 +157,7 @@ async function renderDrawingSheet(
   // this target or anything feeding it.
   const captured = collectDrawingDeclarations(run.records, targetId);
   const declarations = mergeDrawingDeclarations(opts, captured);
-  const annotations = effectiveAnnotations(opts, captured);
+  const annotations = effectiveAnnotations(opts, captured, drawingParts);
   const rendered = renderSvgDrawing(drawingParts, {
     ...opts,
     ...(annotations !== undefined ? { annotations } : {}),
@@ -216,21 +215,16 @@ function firstAssemblyOrUndefined(assemblies: Map<string, Assembly>): Assembly |
   return assemblies.size > 0 ? assemblies.values().next().value as Assembly | undefined : undefined;
 }
 
-/** Authored export-option annotations win; declared dimensions are not merged on top of them. */
+/** Authored export-option annotations win; declared dimensions are not
+ *  merged on top of them. Declared ones resolve like the viewer's (see
+ *  `declaredDrawingAnnotation`). */
 function effectiveAnnotations(
   opts: SvgDrawingOptions,
   captured: ReturnType<typeof collectDrawingDeclarations>,
+  parts: readonly WorldFramePart[],
 ): SvgDrawingOptions['annotations'] {
   if ((opts.annotations ?? []).length > 0 || captured.dimensions.length === 0) return opts.annotations;
-  return captured.dimensions.map(toDrawingAnnotation);
-}
-
-/** A `shape.dimension()` declaration as a drawing annotation (front view). */
-export function toDrawingAnnotation(d: DrawingDimensionSpec): DrawingAnnotation {
-  const text = d.label !== undefined ? { text: d.label } : {};
-  if (d.kind === 'linear') return { kind: 'linear', from: d.from as DrawingAnchor, to: d.to as DrawingAnchor, ...text };
-  if (d.kind === 'angular') return { kind: 'angular', from: d.from, to: d.to, ...text };
-  return { kind: d.kind, edge: d.edge, ...text };
+  return captured.dimensions.map((d, i) => declaredDrawingAnnotation(parts, d, i));
 }
 
 function mergeDrawingDeclarations(

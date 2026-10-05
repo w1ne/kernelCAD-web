@@ -72,6 +72,8 @@ export type { DrawingAnchor } from './drawingAnchors';
  *
  * - `view` — which sheet view to draw on. Default `'front'`.
  * - `text` — override the computed label (units and prefixes are then yours).
+ * - `prefix` — a name printed before the computed value (`shape.dimension()`
+ *   labels): `hole spacing X 40`. Ignored when `text` is set.
  * - `offset` — push the annotation further away from the geometry, in SHEET
  *   millimetres, on top of the automatic placement: extra dimension-line
  *   distance for `linear`/`angular`, extra leader-stem length for
@@ -98,6 +100,7 @@ export type DrawingAnnotation =
       to: DrawingAnchor;
       view?: DrawingViewName;
       text?: string;
+      prefix?: string;
       offset?: number;
       /** Appended to the label: `± 0.1`, `+0.2/−0.05`, or a fit class like `'H7'`. */
       tol?: DimensionTolerance;
@@ -108,6 +111,7 @@ export type DrawingAnnotation =
       edge: EdgeQuery;
       view?: DrawingViewName;
       text?: string;
+      prefix?: string;
       offset?: number;
     }
   | {
@@ -117,6 +121,7 @@ export type DrawingAnnotation =
       to: EdgeQuery;
       view?: DrawingViewName;
       text?: string;
+      prefix?: string;
       offset?: number;
     }
   | {
@@ -513,6 +518,13 @@ interface AnnotationRenderContext {
   toSheet: (p: Vec3) => Pt2;
 }
 
+/** The printed label: authored `text` replaces the value; a `prefix` name
+ *  goes in front of it. */
+function dimLabel(a: { text?: string; prefix?: string }, value: string): string {
+  if (a.text) return esc(a.text);
+  return a.prefix ? `${esc(a.prefix)} ${value}` : value;
+}
+
 /** One `linear` dimension: orientation, stacking side and label. */
 function linearAnnotationSvg(
   a: Extract<DrawingAnnotation, { kind: 'linear' }>,
@@ -541,14 +553,14 @@ function linearAnnotationSvg(
         from: [p0[0], p0[1]],
         to: [p1[0], p1[1]],
         linePos: box.y + box.h + dist,
-        label: a.text ? esc(a.text) : formatDimValue(measured),
+        label: dimLabel(a, formatDimValue(measured)),
       }
     : {
         kind: 'vertical',
         from: [p0[0], p0[1]],
         to: [p1[0], p1[1]],
         linePos: box.x + box.w + dist,
-        label: a.text ? esc(a.text) : formatDimValue(measured),
+        label: dimLabel(a, formatDimValue(measured)),
       };
   if (horizontal) {
     bottomReserve[view] = Math.max(bottomReserve[view], dist);
@@ -577,7 +589,7 @@ function radialAnnotationSvg(
     // Model radius through the same scale as every other length.
     radius: radius * scale,
     angle: LEADER_BASE_ANGLE + nextIndex(view, 'leader') * LEADER_STEP_ANGLE,
-    label: a.text ? esc(a.text) : `${prefix}${formatDimValue(value)}`,
+    label: dimLabel(a, `${prefix}${formatDimValue(value)}`),
     stemExtra: extra,
   });
 }
@@ -636,7 +648,7 @@ function angularAnnotationSvg(
     startAngle: a0,
     endAngle: a1,
     radius: ANGULAR_RADIUS + idx * DIM_STEP + extra,
-    label: a.text ? esc(a.text) : `${formatDimValue(Math.abs(sweep) * 180 / Math.PI)}°`,
+    label: dimLabel(a, `${formatDimValue(Math.abs(sweep) * 180 / Math.PI)}°`),
   });
 }
 

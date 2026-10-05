@@ -62,6 +62,16 @@ describe('declared viewer dimensions', () => {
     expect(diagnostics).toEqual([]);
     expect(dimensions[0]).toMatchObject({ kind: 'angular', text: '90°' });
   });
+  it('declared angular on a non-straight edge warns and is skipped', async () => {
+    const parts = await partsFromSource(PLATE);
+    const r = computeViewerDimensions({ parts, auto: false, declared: [
+      { kind: 'angular', from: { ofCurveType: 'CIRCLE', near: [5, 10, 10] }, to: { ofCurveType: 'LINE', near: [20, 0, 0] } },
+    ] });
+    expect(r.dimensions).toEqual([]);
+    expect(r.diagnostics).toHaveLength(1);
+    expect(r.diagnostics[0]).toMatchObject({ code: 'drawing.dimension.unresolved', severity: 'warn' });
+    expect(r.diagnostics[0].message).toContain('not a LINE');
+  });
   it('unresolved declared dimension warns and is skipped', async () => {
     const parts = await partsFromSource(`return box(10,10,10);`);
     const r = computeViewerDimensions({ parts, auto: true, declared: [{ kind: 'diameter', edge: { ofCurveType: 'CIRCLE' } }] });
