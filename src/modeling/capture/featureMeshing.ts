@@ -190,6 +190,9 @@ export interface MeshFeaturesResult {
    *  boolean is silent": it is NOT a no-op on the per-feature meshing path,
    *  but a leaf color IS discarded when the fuse head recolors the result. */
   colorShadowingWarnings: AttributeShadowingWarning[];
+  /** Lowered shape per feature from this pass (seeded + freshly compiled), so
+   *  callers can reuse them (viewer dimensions) instead of lowering again. */
+  shapes?: ReadonlyMap<FeatureId, ShapeBackend>;
 }
 
 /**
@@ -844,6 +847,7 @@ export async function meshFeaturesPerFeature(
     explicitMaterialByFeatureId,
     colorByFeatureId,
     warnings,
+    linkState.shapeById,
   );
 }
 
@@ -869,6 +873,7 @@ function finishMeshFeatures(
   explicitMaterialByFeatureId: ReadonlyMap<FeatureId, PBRMaterial>,
   colorByFeatureId: ReadonlyMap<FeatureId, string>,
   warnings: PerFaceMaterialWarning[],
+  shapes: ReadonlyMap<FeatureId, ShapeBackend>,
 ): MeshFeaturesResult {
   const bounds = buildMeshBounds(features, meshBounds);
 
@@ -890,6 +895,7 @@ function finishMeshFeatures(
     failedFeatureIds,
     materialShadowingWarnings,
     colorShadowingWarnings,
+    shapes,
     ...(warnings.length > 0 ? { perFaceMaterialWarnings: warnings } : {}),
   };
 }

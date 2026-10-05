@@ -258,8 +258,13 @@ export function collectFullCylinders(backend: OcctBackend, kind: 'hole' | 'pin')
  * Returns one entry per merged co-axial bore. Convex cylinders (bosses)
  * and partial concave cylinders (fillet-like channels) are excluded.
  */
-export function detectCylindricalHoles(backend: OcctBackend): CylindricalHole[] {
-  return resolveBoreExtents(collectConcaveCylindricalFaces(backend)).map((b) => classifyBore(backend, b));
+export function detectCylindricalHoles(backend: OcctBackend, checkpoint?: () => void): CylindricalHole[] {
+  // `checkpoint` (optional) runs before each bore's end probes, the
+  // expensive step, so a time-budgeted caller can abort between bores.
+  return resolveBoreExtents(collectConcaveCylindricalFaces(backend)).map((b) => {
+    checkpoint?.();
+    return classifyBore(backend, b);
+  });
 }
 
 /**

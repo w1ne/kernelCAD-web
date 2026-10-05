@@ -97,7 +97,11 @@ export async function updateModelParams(
   }
   const tailId = model.records.length > 0 ? model.records[model.records.length - 1].id : undefined;
   const tailShape = tailId ? result.shapes.get(tailId) : undefined;
-  if (!tailShape) {
+  const rootShape = model.rootId ? result.shapes.get(model.rootId) : undefined;
+  // A virtual tail (`shape.dimension()`, `shape.datum()`, ...) has no shape
+  // of its own; the returned root still does.
+  const shape = tailShape ?? rootShape;
+  if (!shape) {
     throw new KernelError(
       'recompute.lowering.exception',
       'params.update: no shape produced for the chain tail; check upstream diagnostics.',
@@ -113,7 +117,7 @@ export async function updateModelParams(
     warnings: session.warnings.slice(warningsBefore),
     tailId,
     tailShape,
-    rootShape: model.rootId ? result.shapes.get(model.rootId) : undefined,
+    rootShape,
   };
 
   // Slice 2E: notify `onRelower` subscribers with the records re-lowered by
@@ -128,7 +132,7 @@ export async function updateModelParams(
   return {
     model: nextModel,
     result: {
-      shape: tailShape,
+      shape,
       relowered,
       skipped,
       warnings: nextModel.warnings,

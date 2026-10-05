@@ -173,6 +173,8 @@ export interface EvaluateWithEnvelopeResult {
    *  only when the caller asked for it (`trace: true` / `--trace-out`), since
    *  building it parses the script's syntax tree. */
   trace?: FeatureTraceEntry[];
+  /** Dimensions declared with `shape.dimension()`; absent when none. */
+  dimensions?: EvaluateResult['dimensions'];
 }
 
 /**
@@ -273,6 +275,7 @@ function evaluationResult(
     exitCode: evaluation.exitCode,
     featureCount: evaluation.featureCount,
     diagnostics: evaluation.diagnostics,
+    ...(evaluation.dimensions !== undefined ? { dimensions: evaluation.dimensions } : {}),
     ...(trace !== undefined ? { trace } : {}),
   };
 }
@@ -370,6 +373,7 @@ function printEvaluateResult(r: EvaluateWithEnvelopeResult, opts: EvaluateCliOpt
       ok: r.exitCode === 0,
       featureCount: r.featureCount,
       diagnostics: r.diagnostics,
+      ...(r.dimensions !== undefined ? { dimensions: r.dimensions } : {}),
       ...(r.envelopeDiagnostics !== undefined ? {
         envelopeDiagnostics: r.envelopeDiagnostics,
         envelopeSampleCount: r.envelopeSampleCount,
@@ -377,6 +381,7 @@ function printEvaluateResult(r: EvaluateWithEnvelopeResult, opts: EvaluateCliOpt
     }, null, 2));
   } else {
     console.log(`Features: ${r.featureCount}`);
+    for (const d of r.dimensions ?? []) console.log(`Dimension (${d.kind}): ${d.text}`);
     if (r.diagnostics.length > 0) {
       console.log(formatHuman(r.diagnostics));
     }

@@ -117,8 +117,10 @@ describe('diagnostic catalogue invariants', () => {
     //   sanity gate), export.stl.fuse-skipped, drawing.style.architectural-suggested = 324.
     // + 1 export.mesh.fused-seam-fallback (multi-part STL per-part shells) = 325.
     // + 6 authoring.prefer-api.* (evaluate_script intent lint) = 331.
-    expect(DIAGNOSTIC_CODES).toHaveLength(331);
-    expect(new Set(DIAGNOSTIC_CODES).size).toBe(331);
+    // + 2 viewer dimensions: drawing.dimension.unresolved,
+    //   viewer.dimensions.budget-exceeded = 333.
+    expect(DIAGNOSTIC_CODES).toHaveLength(333);
+    expect(new Set(DIAGNOSTIC_CODES).size).toBe(333);
   });
 
   it('every code has a non-empty hint template', () => {

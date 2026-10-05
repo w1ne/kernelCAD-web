@@ -10,6 +10,7 @@ import type { SerializedParamTable } from '../shared/runtime/paramTable';
 import type { ScriptReviewSummary } from './context/GeometryContext';
 import type { FeatureMeshSerialized } from '../modeling/capture/featureMeshSerialize';
 import type { FeatureRecord } from '../shared/intent/featureRecord';
+import type { ViewerDimension } from '../shared/intent/viewerDimension';
 
 async function parseJsonOrThrowHelpful(response: Response, fallbackMessage: string): Promise<unknown> {
   try {
@@ -87,6 +88,8 @@ export interface BackendMeshPayload {
   /** Returned/root feature ids. Construction history remains available in
    * `features` for inspection but is hidden from the default scene. */
   rootFeatureIds?: string[];
+  /** Declared + automatic 3D dimensions (model mm) for the viewer overlay. */
+  dimensions?: ViewerDimension[];
 }
 
 export function rootVisibleFeatures(

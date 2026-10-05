@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { runScript } from '../../composition/runScript';
-import { type OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { renderSvgDrawing, type SvgDrawingOptions } from '../../kernel/backends/occt/exportSvgDrawing';
 import { explodedPoses, applyExplodedOffsets, parseExplodeInput } from '../../modeling/runtime/explodedPoses';
 import { computeBom } from './bom';
 import type { Assembly } from '../../modeling/capture/assembly';
+import { declaredDrawingAnnotation } from '../../kernel/backends/occt/viewerDimensions/drawingAnnotation';
 import { collectDrawingDeclarations } from '../../modeling/runtime/drawingDeclarations';
-import { sceneToWorldFrameParts, type WorldFramePart } from '../../kernel/backends/occt/sceneToWorldFrame';
+import { drawingPartsForBackend, sceneToWorldFrameParts, type WorldFramePart } from '../../kernel/backends/occt/sceneToWorldFrame';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import type { ShapeBackend } from '../../kernel/backends/backend';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
@@ -157,8 +157,10 @@ async function renderDrawingSheet(
   // this target or anything feeding it.
   const captured = collectDrawingDeclarations(run.records, targetId);
   const declarations = mergeDrawingDeclarations(opts, captured);
+  const annotations = effectiveAnnotations(opts, captured, drawingParts);
   const rendered = renderSvgDrawing(drawingParts, {
     ...opts,
+    ...(annotations !== undefined ? { annotations } : {}),
     modelName,
     declarations,
     ...(exploded.parts !== undefined ? { explodedParts: exploded.parts } : {}),
@@ -209,14 +211,20 @@ function architecturalStyleHint(style: SvgDrawingOptions['style'], parts: readon
   };
 }
 
-function drawingPartsForBackend(lowered: ShapeBackend): WorldFramePart[] {
-  return isSceneBackend(lowered)
-    ? sceneToWorldFrameParts(lowered)
-    : [{ name: 'part', shape: lowered as OcctBackend }];
-}
-
 function firstAssemblyOrUndefined(assemblies: Map<string, Assembly>): Assembly | undefined {
   return assemblies.size > 0 ? assemblies.values().next().value as Assembly | undefined : undefined;
+}
+
+/** Authored export-option annotations win; declared dimensions are not
+ *  merged on top of them. Declared ones resolve like the viewer's (see
+ *  `declaredDrawingAnnotation`). */
+function effectiveAnnotations(
+  opts: SvgDrawingOptions,
+  captured: ReturnType<typeof collectDrawingDeclarations>,
+  parts: readonly WorldFramePart[],
+): SvgDrawingOptions['annotations'] {
+  if ((opts.annotations ?? []).length > 0 || captured.dimensions.length === 0) return opts.annotations;
+  return captured.dimensions.map((d, i) => declaredDrawingAnnotation(parts, d, i));
 }
 
 function mergeDrawingDeclarations(
@@ -226,6 +234,7 @@ function mergeDrawingDeclarations(
   return {
     datums: [...(opts.declarations?.datums ?? []), ...captured.datums],
     tolerances: [...(opts.declarations?.tolerances ?? []), ...captured.tolerances],
+    dimensions: [...(opts.declarations?.dimensions ?? []), ...captured.dimensions],
   };
 }
 

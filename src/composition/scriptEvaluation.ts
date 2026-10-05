@@ -33,6 +33,8 @@ import {
 import { detectUnstructuredBodies } from '../modeling/validation/unstructuredBodies';
 import type { SweepEvaluator } from '../kinematic/sweepTolerance';
 import { createScriptApi } from './scriptApi';
+import { viewerDimensionsForModel } from './viewerDimensionsForModel';
+import type { ViewerDimension } from '../shared/intent/viewerDimension';
 
 export interface EvaluateInput {
   file?: string;
@@ -78,6 +80,15 @@ export interface EvaluateResult {
    *  A full build always populates this (possibly `[]`); a dry run leaves it
    *  `[]` since no geometry is lowered. */
   featureHealth: FeatureHealthEntry[];
+  /** Dimensions declared with `shape.dimension()`, as the viewer will label
+   *  them. Present only when the script declares at least one. */
+  dimensions?: DeclaredDimensionSummary[];
+}
+
+export interface DeclaredDimensionSummary {
+  text: string;
+  kind: ViewerDimension['kind'];
+  source: ViewerDimension['source'];
 }
 
 export interface EvaluateAndBuildResult {
@@ -178,6 +189,16 @@ async function runOptInGates(
   };
 }
 
+/** Declared (`shape.dimension()`) dimensions only; the automatic ones are a
+ *  viewer concern and cost a model walk evaluate has no use for. Their
+ *  warnings (an unresolved query, say) go to the model's diagnostics so the
+ *  agent sees why a declared dimension is missing. */
+function declaredDimensionSummaries(model: BuiltModel): DeclaredDimensionSummary[] {
+  const { dimensions, diagnostics } = viewerDimensionsForModel(model, { auto: false });
+  model.diagnostics.push(...diagnostics);
+  return dimensions.map(({ text, kind, source }) => ({ text, kind, source }));
+}
+
 export async function evaluateAndBuildScript(
   input: EvaluateInput,
   opts?: EvaluateOptions,
@@ -214,12 +235,14 @@ export async function evaluateAndBuildScript(
   const gates = await runOptInGates(model, fatal);
 
   const fatalAfterGates = model.diagnostics.some(d => d.severity === 'error');
+  const dimensions = fatalAfterGates ? [] : declaredDimensionSummaries(model);
   return {
     evaluation: {
       exitCode: fatalAfterGates ? 1 : 0,
       featureCount: model.records.length,
       diagnostics: withNextActions(model.diagnostics),
       featureHealth: nonHealthyFeatures(model.health),
+      ...(dimensions.length > 0 ? { dimensions } : {}),
     },
     model,
     ...gates,

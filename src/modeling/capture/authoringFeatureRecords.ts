@@ -21,6 +21,7 @@ import {
   GDT_MODIFIERS,
   GDT_TYPES,
   type DrawingDatumMetadata,
+  type DrawingDimensionMetadata,
   type DrawingToleranceMetadata,
   type DrawingToleranceSpec,
 } from '../../shared/intent/drawingGdtRecord';
@@ -616,7 +617,7 @@ function validateFeaStudyOptions(args: FeaStudySpec, bad: BadFn): void {
 const isQueryObject = (v: unknown): boolean =>
   typeof v === 'object' && v !== null && !Array.isArray(v);
 
-const invalidGdt = (method: 'datum' | 'tolerance', field: string, why: string): never => {
+const invalidGdt = (method: 'datum' | 'tolerance' | 'dimension', field: string, why: string): never => {
   throw new KernelError(
     'feature.invalid-args',
     `${method}: ${field} ${why}.`,
@@ -669,6 +670,47 @@ export function buildDrawingToleranceFeatureSpec(
   const metadata = buildToleranceMetadata(spec, hasFace, hasEdge, datums);
   return {
     kind: 'drawingTolerance',
+    params: {},
+    inputs: { shape: shapeRef },
+    metadata: metadata as unknown as Record<string, unknown>,
+  };
+}
+
+const DIMENSION_KINDS = ['linear', 'diameter', 'radius', 'angular'] as const;
+
+function isAnchor(v: unknown): boolean {
+  if (Array.isArray(v)) return v.length === 3 && v.every(n => typeof n === 'number' && Number.isFinite(n));
+  if (!v || typeof v !== 'object') return false;
+  const o = v as Record<string, unknown>;
+  return isQueryObject(o.edge) || isQueryObject(o.face);
+}
+
+/** Capture-time validation for `shape.dimension({...})`. Queries resolve
+ *  later against the final body; a miss there is the warning
+ *  `drawing.dimension.unresolved`, not a build failure. */
+export function buildDrawingDimensionFeatureSpec(
+  spec: unknown,
+  shapeRef: FeatureRef,
+): AuthoringFeatureSpec {
+  const s = (spec ?? {}) as Record<string, unknown>;
+  if (!DIMENSION_KINDS.includes(s.kind as typeof DIMENSION_KINDS[number])) {
+    invalidGdt('dimension', 'kind', `must be one of ${DIMENSION_KINDS.join(', ')}; got ${JSON.stringify(s.kind)}`);
+  }
+  if (s.kind === 'linear') {
+    if (!isAnchor(s.from)) invalidGdt('dimension', 'from', 'must be [x, y, z], { edge } or { face }');
+    if (!isAnchor(s.to)) invalidGdt('dimension', 'to', 'must be [x, y, z], { edge } or { face }');
+  } else if (s.kind === 'angular') {
+    if (!isQueryObject(s.from)) invalidGdt('dimension', 'from', 'must be an EdgeQuery');
+    if (!isQueryObject(s.to)) invalidGdt('dimension', 'to', 'must be an EdgeQuery');
+  } else if (!isQueryObject(s.edge)) {
+    invalidGdt('dimension', 'edge', 'must be an EdgeQuery naming a circular edge');
+  }
+  if (s.label !== undefined && typeof s.label !== 'string') {
+    invalidGdt('dimension', 'label', 'must be a string');
+  }
+  const metadata = { ...(s as object), virtual: true } as DrawingDimensionMetadata;
+  return {
+    kind: 'drawingDimension',
     params: {},
     inputs: { shape: shapeRef },
     metadata: metadata as unknown as Record<string, unknown>,

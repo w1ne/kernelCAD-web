@@ -11,6 +11,7 @@ import { useGeometryTransforms } from './geometry/useGeometryTransforms';
 import { usePreviewExecution } from './geometry/usePreviewExecution';
 import { useScriptExecution } from './geometry/useScriptExecution';
 import type { ParamUpdateOptions } from './geometry/useParamUpdate';
+import type { MeshDimensionsInfo } from '../components/viewer/dimensions/boundsDimensions';
 import { readStudioScriptParam, type ExecutionRecord, type ExecutionStatus, type ScriptReviewSummary } from './geometry/types';
 
 export type { ExecutionStatus, ExecutionRecord, ScriptReviewSummary };
@@ -31,6 +32,9 @@ export interface GeometryContextType {
     scriptParams: SerializedParamEntry[];
     scriptReview: ScriptReviewSummary | null;
     featureRecords: FeatureRecord[];
+    /** Dimensions and bounds of the last mesh payload (null: none yet, a
+     *  worker build, or a stored mesh artifact the host passes to the viewer). */
+    meshDimensions: MeshDimensionsInfo | null;
     recomputeMs: number;
     staleMainResponsesDropped: number;
     stalePreviewResponsesDropped: number;
@@ -132,6 +136,7 @@ export function GeometryProvider({
         scriptParams: script.scriptParams,
         scriptReview: script.scriptReview,
         featureRecords: script.featureRecords,
+        meshDimensions: externalGeometries ? null : script.meshDimensions,
         recomputeMs: script.recomputeMs,
         staleMainResponsesDropped: script.staleMainResponsesDropped,
         stalePreviewResponsesDropped,
@@ -147,7 +152,7 @@ export function GeometryProvider({
         displayGeometries, externalGeometries, previewGeometries, script.sketchesGeometries, showSketches,
         toggleSketchVisibility, script.error, isReady, script.isComputing, script.executionCount,
         script.currentCodeRevision, script.lastSuccessfulRevision, script.executionHistory,
-        script.scriptParams, script.scriptReview, script.featureRecords, script.recomputeMs,
+        script.scriptParams, script.scriptReview, script.featureRecords, script.meshDimensions, script.recomputeMs,
         script.staleMainResponsesDropped, stalePreviewResponsesDropped, script.sessionToken,
         script.kernelEpoch, script.executeGeometry, setPreviewCode, script.updateParam,
         transforms.setGeometryTransformOverride, transforms.clearGeometryTransformOverrides,

@@ -210,6 +210,30 @@ function kernelCadMeshEndpoint(): Plugin {
         await bundle.animationBakeHandler(req, res);
       });
 
+      // Viewer dimensions for the mesh payload, from the shapes the mesher
+      // already lowered (param overrides included). Never fails the response;
+      // problems are logged and yield no dimensions.
+      async function dimensionsFromMeshing(
+        records: readonly import('./src/shared/intent/featureRecord').FeatureRecord[],
+        rootId: string | undefined,
+        shapes: ReadonlyMap<string, unknown> | undefined,
+      ): Promise<unknown[]> {
+        try {
+          const { viewerDimensionsForRoot } = await import('./src/composition/viewerDimensionsForModel');
+          const rootShape = rootId === undefined ? undefined : shapes?.get(rootId);
+          const result = viewerDimensionsForRoot({
+            records,
+            rootId,
+            rootShape: rootShape as Parameters<typeof viewerDimensionsForRoot>[0]['rootShape'],
+          });
+          for (const d of result.diagnostics) console.warn(`[kernelcad] viewer dimensions: ${d.code}: ${d.message}`);
+          return result.dimensions;
+        } catch (error) {
+          console.warn('[kernelcad] viewer dimensions failed:', error);
+          return [];
+        }
+      }
+
       server.middlewares.use('/__kernelcad/mesh', async (req, res) => {
         try {
           const url = new URL(req.url ?? '', 'http://localhost');
@@ -229,11 +253,12 @@ function kernelCadMeshEndpoint(): Plugin {
 
           ensureOcctShims();
 
-          const [{ loadScriptFeatures }, { meshFeaturesPerFeature }, { serializeForBridge }, { runScript }] = await Promise.all([
+          const [{ loadScriptFeatures }, { meshFeaturesPerFeature }, { serializeForBridge }, { runScript }, { resolveRootId }] = await Promise.all([
             import('./src/modeling/runtime/scriptLoader'),
             import('./src/modeling/capture/featureMeshing'),
             import('./src/modeling/capture/featureMeshSerialize'),
             import('./src/composition/runScript'),
+            import('./src/composition/buildModel'),
           ]);
 
           // Slice 2E.bridge: with a session token, mesh against the pooled
@@ -243,6 +268,7 @@ function kernelCadMeshEndpoint(): Plugin {
           let source: string;
           let records: readonly import('./src/shared/intent/featureRecord').FeatureRecord[];
           let paramTable: import('./src/shared/runtime/paramTable').ParamTable;
+          let rootId: string | undefined;
           let meshSession: {
             importedGeometry: Map<string, unknown>;
             getSurfaceRecord?: (id: string) => unknown;
@@ -297,6 +323,7 @@ function kernelCadMeshEndpoint(): Plugin {
               }
             }
             meshSession = run.session as unknown as typeof meshSession;
+            rootId = resolveRootId(run.returnValue, records.at(-1)?.id);
           } else if (sessionToken) {
             const bundle = await getPoolBundle();
             const entry = bundle.pool.get(sessionToken);
@@ -314,6 +341,7 @@ function kernelCadMeshEndpoint(): Plugin {
             // `cachedFeatureMeshes`, and `cachedAssemblyPartMeshes` —
             // meshFeaturesPerFeature derives its own seedShapes from those.
             meshSession = entry.model.session as unknown as typeof meshSession;
+            rootId = entry.model.rootId;
           } else {
             const scriptPath = resolveExampleScript(script);
             if (!scriptPath) {
@@ -327,6 +355,7 @@ function kernelCadMeshEndpoint(): Plugin {
             records = loaded.features.map((f) => f.record);
             paramTable = loaded.paramTable;
             meshSession = loaded.session as unknown as typeof meshSession;
+            rootId = resolveRootId(loaded.returnValue, records.at(-1)?.id);
           }
 
           const meshing = await meshFeaturesPerFeature(
@@ -361,6 +390,7 @@ function kernelCadMeshEndpoint(): Plugin {
             featureRecords: records,
             bounds: meshing.bounds,
             params: paramTable.serialize(),
+            dimensions: await dimensionsFromMeshing(records, rootId, meshing.shapes),
           }));
         } catch (error) {
           res.statusCode = 500;
