@@ -12,7 +12,6 @@ import { useShellStore } from "../store/useShellStore";
 // Extracted Components
 import { ViewerScene } from "./viewer/ViewerScene";
 import { DisplayReadySensor } from "./viewer/DisplayReadySensor";
-import { installRoomEnvironment } from "./viewer/roomEnvironment";
 import { ViewGizmo } from "./viewer/overlays/ViewGizmo";
 import { CodeLinkLabel } from "./viewer/overlays/CodeLinkLabel";
 import { MeasureButton } from "./viewer/measure/MeasureButton";
@@ -164,12 +163,9 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                     // compositing and toDataURL returns a blank PNG.
                     preserveDrawingBuffer: true,
                 }}
-                onCreated={({ gl, scene }) => {
+                onCreated={({ gl }) => {
                     // Section tool clips per-material; opt the renderer into local clipping.
                     gl.localClippingEnabled = true;
-                    // Named materials are metals. Without an environment they
-                    // render as solid black faces with white specular hits.
-                    installRoomEnvironment(gl, scene);
                 }}
                 raycaster={{
                     params: {

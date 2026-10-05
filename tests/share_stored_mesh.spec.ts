@@ -73,6 +73,47 @@ async function replayProdReads(page: Page): Promise<void> {
   await page.route('https://api.kernelcad.com/**', replay);
 }
 
+/** T-slot, GT2, and NEMA pins. These are the pages whose metals went solid
+ *  black with blown white highlights when the room environment was missing. */
+function expectsShadedMetal(entry: ShareCase): boolean {
+  if (entry.slug === '6iPuq1ee' || entry.slug === 'Ux9hXUPe' || entry.slug === 'OGm0lP_B') return true;
+  return entry.slug === 'V4P2zJTm' && (entry.version === 1 || entry.version === 4 || entry.version === 6);
+}
+
+/** Fraction of model pixels that are near-black (luma < 20) or blown white.
+ *  Read from a compositor screenshot so a cleared WebGL drawing buffer cannot
+ *  report a false black frame. */
+async function extremeLumaFraction(page: Page): Promise<number> {
+  const png = await page.locator('canvas').screenshot();
+  const url = `data:image/png;base64,${png.toString('base64')}`;
+  return page.evaluate(async (src) => {
+    const img = new Image();
+    img.src = src;
+    await img.decode();
+    const size = 96;
+    const copy = document.createElement('canvas');
+    copy.width = size;
+    copy.height = size;
+    const ctx = copy.getContext('2d', { willReadFrequently: true });
+    if (!ctx) return 1;
+    ctx.drawImage(img, 0, 0, size, size);
+    const pixels = ctx.getImageData(0, 0, size, size).data;
+    let model = 0;
+    let extreme = 0;
+    for (let i = 0; i < pixels.length; i += 4) {
+      const r = pixels[i] ?? 0;
+      const g = pixels[i + 1] ?? 0;
+      const b = pixels[i + 2] ?? 0;
+      // Stage background is #202126. Skip it and the empty margin.
+      if (Math.abs(r - 32) < 18 && Math.abs(g - 33) < 18 && Math.abs(b - 38) < 18) continue;
+      model += 1;
+      const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      if (lum < 20 || lum > 245) extreme += 1;
+    }
+    return model === 0 ? 1 : extreme / model;
+  }, url);
+}
+
 /** Luminance spread of the painted canvas. A metal with no environment, or
  *  two coincident meshes, collapses to solid black and solid white. */
 async function shadeStats(page: Page): Promise<{ model: number; extreme: number; mid: number }> {
@@ -138,13 +179,17 @@ test.describe('share pages paint the stored mesh', () => {
         await expect(page.getByTestId('model-stage-status')).toHaveCount(0);
         await expect(page.getByText(new RegExp(`\\br${entry.version}\\b`)).first()).toBeVisible();
         expect(forbidden, `remesh or gallery mesh requested: ${forbidden.join(', ')}`).toEqual([]);
-        await page.waitForTimeout(400);
+        await page.waitForTimeout(700);
         const shade = await shadeStats(page);
+        const extremeLuma = expectsShadedMetal(entry) ? await extremeLumaFraction(page) : undefined;
         const shot = await page.getByTestId('model-stage').screenshot();
         await testInfo.attach(`${entry.slug}-v${entry.version}`, {
-          body: JSON.stringify({ elapsed, shade }),
+          body: JSON.stringify({ elapsed, shade, extremeLuma }),
           contentType: 'application/json',
         });
+        if (extremeLuma !== undefined) {
+          expect(extremeLuma, 'near-black or blown-white model pixels').toBeLessThanOrEqual(0.15);
+        }
         await testInfo.attach(`${entry.slug}-v${entry.version}.png`, {
           body: shot,
           contentType: 'image/png',

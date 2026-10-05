@@ -3,6 +3,27 @@
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { buildShapeMaterial } from './buildShapeMaterial';
+import { setRoomEnvironmentForTest } from '../roomEnvironment';
+
+describe('buildShapeMaterial room environment', () => {
+  it('pins the installed room onto a PBR material', () => {
+    const env = new THREE.Texture();
+    setRoomEnvironmentForTest(env);
+    try {
+      const material = buildShapeMaterial(
+        { baseColor: '#b0b4b8', metalness: 0.6, roughness: 0.35 },
+        false,
+        '#b0b4b8',
+        'shaded',
+      ) as THREE.MeshPhysicalMaterial;
+      expect(material.envMap).toBe(env);
+      expect(material.envMapIntensity).toBe(1);
+    } finally {
+      setRoomEnvironmentForTest(null);
+      env.dispose();
+    }
+  });
+});
 
 describe('buildShapeMaterial clippingPlanes', () => {
   it('defaults to no clipping planes', () => {

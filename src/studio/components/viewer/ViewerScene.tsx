@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import * as THREE from "three";
+import { useLayoutEffect } from "react";
+import { useThree } from "@react-three/fiber";
 import { Grid } from "@react-three/drei/core/Grid";
 import { OrbitControls } from "@react-three/drei/core/OrbitControls";
+import { installRoomEnvironment } from "./roomEnvironment";
 import type { GeometryResult, SketchGeometry } from "../../../shared/worker/geometryEngine";
 import type { SketchPlaneEntity } from "../../../shared/types/plane";
 import type { ViewMode3D, ViewportBackground } from "../../../shared/types/viewMode";
@@ -102,6 +105,7 @@ export function ViewerScene({
 }: ViewerSceneProps) {
     return (
         <>
+            <RoomEnvironmentRig />
             <RendererSnapshotPublisher />
             <SceneBackground mode={viewportBackground} />
 
@@ -164,6 +168,16 @@ export function ViewerScene({
             />
         </>
     );
+}
+
+/** Procedural IBL on the scene this canvas actually renders. Lives in the
+ *  tree so its cleanup is the effect cleanup, not a module-level handle that
+ *  a second canvas or a StrictMode remount can use to blank the live scene. */
+function RoomEnvironmentRig() {
+    const gl = useThree((state) => state.gl);
+    const scene = useThree((state) => state.scene);
+    useLayoutEffect(() => installRoomEnvironment(gl, scene), [gl, scene]);
+    return null;
 }
 
 function SceneLights() {

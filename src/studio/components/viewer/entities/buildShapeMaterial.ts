@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import type { GeometryResult } from '../../../../shared/worker/geometryEngine';
 import type { ViewMode3D } from '../../../../shared/types/viewMode';
 import { buildMaterialFromPBR } from '../../demoPlayer/buildMaterialFromPBR';
+import { currentRoomEnvironment } from '../roomEnvironment';
 
 /**
  * Build the THREE material for a shape given the geometry record, selection
@@ -62,6 +63,14 @@ export function buildShapeMaterial(
     }
     if (pbr && !isSelected) {
         const pbrMaterial = buildMaterialFromPBR(pbr) as THREE.MeshPhysicalMaterial;
+        // scene.environment is the fallback when envMap is null. Pin the
+        // installed room onto the material too, so a later clear of
+        // scene.environment cannot turn the metal black.
+        const env = currentRoomEnvironment();
+        if (env) {
+            pbrMaterial.envMap = env;
+            pbrMaterial.envMapIntensity = 1;
+        }
         pbrMaterial.flatShading = flatShading;
         pbrMaterial.side = THREE.DoubleSide;
         pbrMaterial.depthWrite = (pbr.opacity ?? 1) >= 1;
