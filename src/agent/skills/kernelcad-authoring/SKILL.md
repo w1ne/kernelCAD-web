@@ -142,7 +142,7 @@ return arm.solvedModel({}, { validate: 'error' });
 
 A tube frame, weldment, rack, or tray is several members cut to length. Build it one of two ways:
 
-1. **`assembly().part(name, member)` per member** — interference and floating parts are checked per part. Preferred when the members are bought or cut separately.
+1. **`assembly().part(name, member)` per member** — interference between parts is checked; every part's own unions get the same `union.*` checks below. Preferred when the members are bought or cut separately.
 2. **One `union()` of members that touch but never overlap.** Members butt against each other: a cross member between two side rails is `span - 2 * railWidth` long and starts at `x = railWidth`, so its end faces sit on the rails' inner faces. The first and last cross members sit inside the frame, next to the front/back rails, not inside them. A sheet on top of the tubes sits at `z = tubeHeight`, on the tubes.
 
 ```ts
@@ -154,10 +154,10 @@ return union(sheet, front, back, left, right, s1 /* ... */);
 
 `evaluate_script` / `kernelcad evaluate` gate every `union()` (errors make `ok: false`):
 
-- `union.disconnected` — the union is more than one solid; the message names the floating operand, its bbox and the gap. Move it until it touches (shared face, zero gap) or add the member that carries it. (Inside an `assembly().part(...)` the assembly validator reports floating geometry instead, as `assembly.mechanical.part-disconnected`.)
-- `union.member-overlap` — two operands that each carry their own `.finish()`/`.material()` and the SAME one (two pieces of the same stock) share more than 1 mm³; the message names both, the volume and the overlap box. Cut one member to fit (butt joint) instead of burying it in the other. This applies inside assembly parts too. Operands with DIFFERENT materials may overlap (inlay, over-mould, multi-material part).
+- `union.disconnected` — the union is more than one solid; the message names the floating operand, its bbox and the gap. Move it until it touches (shared face, zero gap) or add the member that carries it. This applies inside `assembly().part(...)` too: a part that is several floating pieces fails evaluate (the assembly validator's `assembly.mechanical.part-disconnected` is only a warning; it is not a substitute).
+- `union.member-overlap` — two operands that each carry their own `.finish()`/`.material()` and the SAME one (two pieces of the same stock) share more than 1 mm³; the message names both, the volume and the overlap box. Most often this is one part finished piece by piece: fuse the same-material pieces first and call `.finish()` once on the result. If they really are separate members, cut one to fit (butt joint) instead of burying it in the other. This applies inside assembly parts too. Operands with DIFFERENT materials may overlap (inlay, over-mould, multi-material part).
 
-A boss or rib merged into a body BEFORE `.finish()` has no finish of its own, so ordinary overlapping modelling unions are not affected.
+Finish once, after the booleans: a boss or rib merged into a body BEFORE `.finish()` has no finish of its own, so ordinary overlapping modelling unions are not affected. Give a piece its own finish only when it is a different material (inlay, over-mould) or a separate member.
 
 - If a model has moving parts, design the joint structure before styling: name the parent/child parts, joint type, axis/frame, limits, and editable pose parameters up front.
 - If two parts are intended to touch, author the relationship with connectors and mates rather than relying on raw `translate()` offsets alone. Raw offsets are acceptable for free placement, but touching load-path geometry needs named interfaces the validator and Studio can inspect.

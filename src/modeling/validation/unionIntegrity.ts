@@ -11,9 +11,8 @@
 //
 //   - `union.disconnected` (error): the union result is more than one solid.
 //     Touching operands (shared face, zero gap) fuse into one solid and pass.
-//     Edge/point-only contact is a warning. Unions that end up inside an
-//     assembly part are skipped: the assembly validator owns floating
-//     geometry inside a part (`assembly.mechanical.part-disconnected`).
+//     Edge/point-only contact is a warning. Applies inside assembly parts
+//     too.
 //   - `union.member-overlap` (error): two operands that each carry their own
 //     finish/material (`.finish()` / `.material()`, i.e. `metadata.material`)
 //     and the SAME one share more than 1 mm³. Two pieces of the same stock
@@ -57,6 +56,9 @@ const TOUCH_EPS_MM = 1e-4;
 const CONNECT_TOL_MM = 1e-3;
 /** Solids below this volume (mm³) are fuse slivers, not parts. */
 const SLIVER_MM3 = 1e-3;
+/** Cap on BREP overlap probes per union; beyond it a warning says the check
+ *  was partial. Keeps a union of hundreds of same-material pieces bounded. */
+export const MAX_OVERLAP_PROBES = 300;
 
 export interface UnionIntegrityInput {
   records: readonly FeatureRecord[];
@@ -207,14 +209,12 @@ class UnionGraph {
   }
 
   /** A disconnected union whose result later flows into another union may
-   *  be bridged there; only judge connectivity where no union follows. A
-   *  union that becomes (part of) an assembly part is left to the assembly
-   *  validator, which owns floating geometry inside a part
-   *  (`assembly.mechanical.part-disconnected`, reported by review_cad /
-   *  inspect_assembly). Member overlap has no assembly equivalent, so it is
-   *  checked everywhere. */
+   *  be bridged there; only judge connectivity where no union follows. This
+   *  includes unions inside `assembly().part(...)`: floating geometry in a
+   *  part fails evaluate too (the assembly validator's part-disconnected is
+   *  only a warning). */
   judgeConnectivity(id: FeatureId): boolean {
-    return !this.reaches(id, isUnion) && !this.reaches(id, c => c.kind === 'assemblyPart');
+    return !this.reaches(id, isUnion);
   }
 
   /** A union used only as a cutting tool (the `cutter_*` side of a
@@ -254,43 +254,66 @@ function memberOverlaps(
     .map(m => ({ ...m, box: m.shape.boundingBox(), stock: materialKey(byId.get(m.leaf.id)) }));
   if (members.length < 2) return [];
 
-  const out: CompilerDiagnostic[] = [];
+  // Different materials overlapping is intentional (inlay, over-mould,
+  // multi-material part); two pieces of the same stock cannot
+  // interpenetrate. Pairs whose boxes only touch never reach the BREP probe.
+  const candidates: Array<[Member, Member]> = [];
   for (let i = 0; i < members.length; i++) {
     for (let j = i + 1; j < members.length; j++) {
       const a = members[i];
       const b = members[j];
-      if (a.leaf.id === b.leaf.id) continue;
-      // Different materials overlapping is intentional (inlay, over-mould,
-      // multi-material part); two pieces of the same stock cannot
-      // interpenetrate.
-      if (a.stock !== b.stock) continue;
-      if (!boxesOverlap(a.box, b.box, TOUCH_EPS_MM)) continue;
-      let volume: number;
-      try {
-        volume = a.shape.intersectionVolume(b.shape);
-      } catch {
-        continue; // a probe OCCT cannot complete is not evidence of a clash
-      }
-      if (volume <= MEMBER_OVERLAP_MIN_MM3) continue;
-      const nameA = namer.name(a.leaf);
-      const nameB = namer.name(b.leaf);
-      out.push({
-        target: 'export-occt',
-        code: 'union.member-overlap',
-        severity: 'error',
-        featureId: u.id,
-        ...(u.scriptLocation !== undefined ? { scriptLocation: u.scriptLocation } : {}),
-        message:
-          `union() members ${nameA} and ${nameB} are separate pieces of the same material (same finish) ` +
-          `but share ${fmt(volume, 1)} mm³ of volume; overlap box ${fmtBox(overlapBox(a.shape, b.shape, a.box, b.box))}. ` +
-          'One member runs into the other instead of being cut to fit.',
-        hint:
-          'Cut the member to fit between its neighbours (a cross member between two rails is span minus two rail widths, placed at the rail width) so the end faces touch, or build each member as assembly().part(name, shape).',
-        nextAction: NEXT_ACTIONS['union.member-overlap'],
-      });
+      if (a.leaf.id === b.leaf.id || a.stock !== b.stock) continue;
+      if (boxesOverlap(a.box, b.box, TOUCH_EPS_MM)) candidates.push([a, b]);
     }
   }
+
+  const out: CompilerDiagnostic[] = [];
+  for (const [a, b] of candidates.slice(0, MAX_OVERLAP_PROBES)) {
+    const d = probeMemberPair(u, a, b, namer);
+    if (d !== undefined) out.push(d);
+  }
+  if (candidates.length > MAX_OVERLAP_PROBES) {
+    out.push({
+      target: 'export-occt',
+      code: 'union.member-overlap',
+      severity: 'warn',
+      featureId: u.id,
+      ...(u.scriptLocation !== undefined ? { scriptLocation: u.scriptLocation } : {}),
+      message:
+        `union() overlap checking was partial: ${candidates.length} same-material member pairs have overlapping ` +
+        `bounding boxes; only the first ${MAX_OVERLAP_PROBES} were measured.`,
+      hint:
+        'Fuse same-material pieces first and call .finish() once on the result, or split the members into assembly().part(...) parts, so fewer pairs need checking.',
+      nextAction: NEXT_ACTIONS['union.member-overlap'],
+    });
+  }
   return out;
+}
+
+type Member = { leaf: Leaf; shape: OcctBackend; box: Box; stock: string };
+
+function probeMemberPair(u: FeatureRecord, a: Member, b: Member, namer: OperandNamer): CompilerDiagnostic | undefined {
+  let volume: number;
+  try {
+    volume = a.shape.intersectionVolume(b.shape);
+  } catch {
+    return undefined; // a probe OCCT cannot complete is not evidence of a clash
+  }
+  if (volume <= MEMBER_OVERLAP_MIN_MM3) return undefined;
+  return {
+    target: 'export-occt',
+    code: 'union.member-overlap',
+    severity: 'error',
+    featureId: u.id,
+    ...(u.scriptLocation !== undefined ? { scriptLocation: u.scriptLocation } : {}),
+    message:
+      `union() members ${namer.name(a.leaf)} and ${namer.name(b.leaf)} are separate pieces of the same material (same finish) ` +
+      `but share ${fmt(volume, 1)} mm³ of volume; overlap box ${fmtBox(overlapBox(a.shape, b.shape, a.box, b.box))}. ` +
+      'Either they are one part finished piece by piece, or one member runs into the other instead of being cut to fit.',
+    hint:
+      'If the pieces are one part of the same material, fuse them first and call .finish() once on the result. If they are separate members, cut them to fit (a cross member between two rails is span minus two rail widths, placed at the rail width, so its end faces touch: butt joint) or build each as assembly().part(name, shape).',
+    nextAction: NEXT_ACTIONS['union.member-overlap'],
+  };
 }
 
 /** Bounding box of `a ∩ b`; falls back to the AABB intersection when the
@@ -370,7 +393,7 @@ function disconnected(
     // along an edge or a point only. Not a measurable gap, so not a gate
     // failure, but worth saying.
     return disconnectedDiagnostic(u, 'warn', solidCount,
-      'Every operand touches another, but only along edges or points, which does not fuse them into one body.');
+      'Operands are touching but not fused: contact only along edges or points, or a face contact the kernel did not merge. Overlap them slightly or give them a shared face.');
   }
 
   const groupNames = (g: number[]) => {
@@ -502,4 +525,14 @@ class OperandNamer {
     }
     return this.calls;
   }
+}
+
+/** True when evaluation failed ONLY because of this guard's `union.*`
+ *  errors: the model built, so review / inspection tools can continue and
+ *  report their own findings next to the union errors. */
+export function failedOnlyOnUnionGuard(
+  diagnostics: readonly Pick<CompilerDiagnostic, 'code' | 'severity'>[],
+): boolean {
+  const errors = diagnostics.filter(d => d.severity === 'error');
+  return errors.length > 0 && errors.every(d => d.code.startsWith('union.'));
 }

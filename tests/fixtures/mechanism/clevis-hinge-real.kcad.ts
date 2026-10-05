@@ -31,8 +31,10 @@ const j = joint.clevis({
   axis: 'Y',
   pivotParent: [0, 0, 0],
   pivotChild: [0, 0, 0],
-  // Upper limit capped at +25° so the arm's downward swing stays clear of the
-  // tall base block at the swept extreme.
+  // Limits kept from the original fixture. With the base narrowed to the
+  // knuckle radius (x ±12) the arm, which starts at x = 12, no longer reaches
+  // the base inside this range (mechanism stays 'real' up to [-90, 120]), so
+  // the +25° cap is conservative, not a clearance requirement.
   limitsDeg: [-45, 25],
   style: { knuckleR: KNUCKLE_R, forkGapY: 24, tongueY: 20 },
 });

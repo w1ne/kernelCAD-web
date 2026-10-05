@@ -436,8 +436,13 @@ export class Shape {
    * @param opts.face   apply to faces matching an upstream `faceLabels` entry
    *              only, exactly like `.material({ face })`.
    *
-   * Same lifecycle as `.color()` / `.material()`: apply to leaf parts before a
-   * boolean; identity dies at booleans.
+   * Same lifecycle as `.color()` / `.material()`: the finish lives on the
+   * record it is applied to. For one part of one material, build the
+   * geometry first (fuse bosses, ribs, segments) and call `.finish()` ONCE on
+   * the result. Finish separate leaves only when they differ (an inlay,
+   * over-mould or second material) or are separate members: two operands
+   * finished with the same material that overlap in a `union()` are reported
+   * as `union.member-overlap`.
    */
   finish(name: FinishToken | AnyMaterialName, opts?: { color?: string; face?: string }): Shape {
     // A finish token wins when the name is both (steel, pla, abs, nylon map to

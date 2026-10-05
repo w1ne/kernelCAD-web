@@ -23,10 +23,10 @@ export const UNION_CODES = {
   },
   'union.member-overlap': {
     hintTemplate:
-      'Cut the members to fit instead of burying one in the other: a cross member between two rails is span minus two rail widths, placed at the rail width, so its end faces touch the rails (butt joint). Or build each member as assembly().part(name, shape) so interference is checked per part. Only pieces of the same material are checked; a different-material inlay may overlap.',
+      'If the pieces are one part of the same material, fuse them first and call .finish() once on the result. If they are separate members, cut them to fit (a cross member between two rails is span minus two rail widths, placed at the rail width, so its end faces touch: butt joint) or build each as assembly().part(name, shape). Only pieces of the same material are checked; a different-material inlay may overlap.',
     nextAction: {
       kind: 'rewrite-feature',
-      guidance: 'shorten or move one member so the two same-material operands touch instead of sharing volume (butt joint)',
+      guidance: 'fuse the same-material pieces first and call .finish() once on the result; if they are separate members, cut one to fit (butt joint) or make each an assembly part',
     },
     defaultSeverity: 'error',
     group: 'union',

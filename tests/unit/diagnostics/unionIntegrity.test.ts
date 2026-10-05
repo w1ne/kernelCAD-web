@@ -137,6 +137,45 @@ describe('union integrity guard', () => {
     expect(spy).not.toHaveBeenCalled();
   });
 
+  it('boss sunk 0.5 mm into a plate, both finished with the same material: member-overlap (finish once instead)', async () => {
+    const r = await evaluateScriptTool({
+      code: `
+        const plate = box(40, 40, 5).finish('aluminium-brushed');
+        const boss = cylinder(10, 5).translate(20, 20, 4.5).finish('aluminium-brushed');
+        return union(plate, boss);
+      `,
+    });
+    expect(r.ok).toBe(false);
+    const d = byCode(r.diagnostics, 'union.member-overlap');
+    expect(d).toHaveLength(1);
+    expect(d[0].hint).toMatch(/fuse them first and call \.finish\(\) once/);
+  });
+
+  it('the same boss fused first and finished once passes', async () => {
+    const r = await evaluateScriptTool({
+      code: `return union(box(40, 40, 5), cylinder(10, 5).translate(20, 20, 4.5)).finish('aluminium-brushed');`,
+    });
+    expect(unionDiags(r.diagnostics)).toEqual([]);
+    expect(r.ok).toBe(true);
+  });
+
+  it('caps BREP overlap probes per union and warns that checking was partial', async () => {
+    const spy = vi.spyOn(OcctBackend.prototype, 'intersectionVolume');
+    // 26 same-material blocks that all overlap each other: 325 candidate pairs.
+    const r = await evaluateScriptTool({
+      code: `
+        const blocks = [];
+        for (let i = 0; i < 26; i++) blocks.push(box(10, 10, 10).translate(i * 0.2, 0, 0).finish('aluminium-brushed'));
+        return union(...blocks);
+      `,
+    });
+    expect(spy).toHaveBeenCalledTimes(300);
+    const partial = byCode(r.diagnostics, 'union.member-overlap').filter(d => d.severity === 'warn');
+    expect(partial).toHaveLength(1);
+    expect(partial[0].message).toMatch(/325 same-material member pairs/);
+    expect(partial[0].message).toMatch(/first 300/);
+  }, 120_000);
+
   it('overlap through a chained .union() is still caught', async () => {
     const r = await evaluateScriptTool({
       code: `
@@ -181,7 +220,7 @@ describe('union integrity guard', () => {
     expect(r.ok).toBe(true);
   });
 
-  it('a disconnected union inside an assembly part is left to the assembly validator', async () => {
+  it('a disconnected union inside an assembly part fails evaluate too', async () => {
     const r = await evaluateScriptTool({
       code: `
         const arm = assembly('pair');
@@ -190,7 +229,10 @@ describe('union integrity guard', () => {
       `,
       skipMechanismCheck: true,
     });
-    expect(byCode(r.diagnostics, 'union.disconnected')).toEqual([]);
+    expect(r.ok).toBe(false);
+    const d = byCode(r.diagnostics, 'union.disconnected');
+    expect(d).toHaveLength(1);
+    expect(d[0].severity).toBe('error');
   });
 
   it('member overlap inside an assembly part is still reported', async () => {
@@ -219,7 +261,7 @@ describe('union integrity guard', () => {
     const d = byCode(r.diagnostics, 'union.disconnected');
     expect(d).toHaveLength(1);
     expect(d[0].severity).toBe('warn');
-    expect(d[0].message).toMatch(/edges or points/);
+    expect(d[0].message).toMatch(/touching but not fused/);
     expect(r.ok).toBe(true);
   });
 

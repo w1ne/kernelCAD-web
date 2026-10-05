@@ -312,12 +312,9 @@ function buildDefaultServo(kc: KernelCadApi, opts: SupportedServoRevoluteOptions
     metalness: 0.1,
     roughness: 0.45,
   });
-  // Shaft stub runs from the case face (y/2) to the horn's back face
-  // (y/2 + 1.5); the horn sits on it. Each piece carries its own material,
-  // so they touch instead of overlapping (union.member-overlap).
-  const shaft = kc.cylinder(1.5, 2.5, 24)
+  const shaft = kc.cylinder(6, 2.5, 24)
     .rotate([1, 0, 0], 90)
-    .translate(0, y / 2 + 1.5, z * 0.25)
+    .translate(0, y / 2 + 3, z * 0.25)
     .material({
       baseColor: '#b7bcc2',
       metalness: 0.7,

@@ -69,12 +69,15 @@ describe('mechanical transmission review', () => {
 
       expect(prompt).toMatch(/assembly\.transmission\.missing-for-coupled-mate/);
       expect(factCodes).toHaveLength(8);
-      expect(factCodes.slice(0, 5)).toEqual(expect.arrayContaining([
+      // The floating part also fails the evaluate-time union guard; review
+      // continues past it, so both its error and review's own facts appear.
+      expect(factCodes).toEqual(expect.arrayContaining([
         'assembly.joint-topology.unsupported-axis',
         'assembly.joint-topology.missing-limit',
         'assembly.mate.limit-missing',
         'assembly.mechanical.part-disconnected',
         'assembly.transmission.missing-for-coupled-mate',
+        'union.disconnected',
       ]));
       expect(factCodes).not.toContain('assembly.mounting-hole.mismatch');
     }
@@ -111,6 +114,7 @@ describe('mechanical transmission review', () => {
     });
 
     expect(result.ok).toBe(true);
+    expect(result.ok && result.reviewFacts.some((f) => f.code === 'union.disconnected')).toBe(true); // The floating geometry also fails the evaluate-time union guard.
     if (result.ok) {
       expect(result.transmissions).toEqual([
         expect.objectContaining({
@@ -164,6 +168,7 @@ describe('mechanical transmission review', () => {
     });
 
     expect(result.ok).toBe(false);
+    expect(result.diagnostics.some((d) => d.code === 'union.disconnected')).toBe(true); // The floating geometry also fails the evaluate-time union guard.
     expect(result.diagnostics).toEqual(expect.arrayContaining([
       expect.objectContaining({
         code: 'assembly.transmission.path-disconnected',

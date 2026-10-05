@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { evaluateAndBuildScript, type EvaluateInput } from '../cli/commands/evaluate';
+import { failedOnlyOnUnionGuard } from '../../modeling/validation/unionIntegrity';
 import type { Assembly } from '../../modeling/capture/assembly';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../shared/diagnostics/diagnostic';
@@ -234,7 +235,12 @@ export type ReviewPipelineStageName = typeof REVIEW_PIPELINE_STAGES[number];
 export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCadOutput> {
   const clock = new StageClock(input.timeBudgetMs ?? DEFAULT_REVIEW_TIME_BUDGET_MS);
   const { evaluation, model } = await clock.time('evaluate-source', () => runEvaluateSourceStage(input));
-  if (evaluation.exitCode !== 0 || !model) {
+  // A build that failed ONLY on the union guard (union.disconnected /
+  // union.member-overlap) still produced the model: keep reviewing so the
+  // mechanical findings are reported next to the union errors. `ok` stays
+  // false below.
+  const unionGuardOnly = failedOnlyOnUnionGuard(evaluation.diagnostics);
+  if ((evaluation.exitCode !== 0 && !unionGuardOnly) || !model) {
     clearActiveMcpSession();
     const diagnostics = withNextActions(evaluation.diagnostics);
     return {
@@ -308,7 +314,7 @@ export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCa
     mechanismFailures,
     ...(defaultPoseGeometry.geometry !== undefined ? { geometry: defaultPoseGeometry.geometry } : {}),
   };
-  return ok
+  return ok && !unionGuardOnly
     ? { ...common, ok: true }
     : { ...common, ok: false, suggestedRepairPrompt: buildSuggestedRepairPrompt(diagnostics, fitness, input) };
 }

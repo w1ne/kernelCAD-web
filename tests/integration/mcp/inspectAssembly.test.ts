@@ -28,7 +28,13 @@ describe('inspect_assembly MCP tool', () => {
           componentCount: 2,
         }),
       });
+      // The evaluate-time union guard fails the floating part (error) and the
+      // inventory still reports the assembly validator's own fact.
       expect(result.reviewFacts).toEqual([
+        expect.objectContaining({
+          code: 'union.disconnected',
+          severity: 'error',
+        }),
         expect.objectContaining({
           code: 'assembly.mechanical.part-disconnected',
           severity: 'warning',
@@ -59,6 +65,7 @@ describe('inspect_assembly MCP tool', () => {
     });
 
     expect(result.ok).toBe(true);
+    expect(result.ok && result.reviewFacts.some((f) => f.code === 'union.disconnected')).toBe(true); // The floating geometry also fails the evaluate-time union guard.
     if (result.ok) {
       expect(result.parts[0]).toMatchObject({
         name: 'gapped-link',
@@ -88,6 +95,7 @@ describe('inspect_assembly MCP tool', () => {
     });
 
     expect(result.ok).toBe(true);
+    expect(result.ok && result.reviewFacts.some((f) => f.code === 'union.disconnected')).toBe(true); // The floating geometry also fails the evaluate-time union guard.
     if (result.ok) {
       expect(result.parts[0]).toMatchObject({
         name: 'loose-pin-as-one-part',
@@ -123,6 +131,7 @@ describe('inspect_assembly MCP tool', () => {
     });
 
     expect(result.ok).toBe(true);
+    expect(result.ok && result.reviewFacts.some((f) => f.code === 'union.disconnected')).toBe(true); // The floating geometry also fails the evaluate-time union guard.
     if (result.ok) {
       expect(result.parts[0]).toMatchObject({
         name: 'bbox-hidden-floater',

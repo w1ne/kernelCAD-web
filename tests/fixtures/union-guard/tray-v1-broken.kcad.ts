@@ -1,7 +1,9 @@
 // Regression fixture: aluminium tray from ChatGPT (project iKbYOv6f v1), verbatim.
 // Defects: cross tubes (1070 long from x=5) run 25 mm into both side rails;
-// s5 sits inside the back rail (y 1070..1100); tubes sit 7 mm below the sheet
-// (tubeZ = 40 - 3 - 30), so the sheet floats. All returned as one union().
+// s5 sits inside the back rail (y 1070..1100). All returned as one union() of
+// members finished with the same material, so it fails union.member-overlap.
+// The sheet does NOT float: tubeZ = 40 - 3 - 30 = 7 is the tubes' bottom
+// offset, so tubes span z 7..37 and the sheet z 37..40 (face contact).
 const width = param('width', 1080, {min:900,max:1300,description:'Overall X size, mm'});
 const depth = param('depth', 1100, {min:900,max:1300,description:'Overall Y size, mm'});
 const overallHeight = param('overallHeight', 40, {min:30,max:60,description:'Overall assembled height, mm'});

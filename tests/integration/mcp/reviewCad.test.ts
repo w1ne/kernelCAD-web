@@ -119,6 +119,7 @@ describe('review_cad MCP tool', () => {
     });
 
     expect(r.ok).toBe(false);
+    expect(r.diagnostics.some((d) => d.code === 'union.disconnected')).toBe(true); // The floating geometry also fails the evaluate-time union guard.
     if (!r.ok) {
       expect(r.fitness?.blockingReasons.some((reason) => reason.code === 'assembly.mechanical.revolute-unsupported')).toBe(true);
       expect(r.suggestedRepairPrompt).toMatch(/assembly\.mechanical\.revolute-unsupported/);
@@ -143,6 +144,7 @@ describe('review_cad MCP tool', () => {
     });
 
     expect(r.ok).toBe(false);
+    expect(r.diagnostics.some((d) => d.code === 'union.disconnected')).toBe(true); // The floating geometry also fails the evaluate-time union guard.
     if (!r.ok) {
       expect(r.fitness?.blockingReasons.some((reason) => reason.code === 'assembly.mechanical.revolute-contact-missing')).toBe(true);
       expect(r.suggestedRepairPrompt).toMatch(/assembly\.mechanical\.revolute-contact-missing/);
@@ -196,6 +198,7 @@ describe('review_cad MCP tool', () => {
     });
 
     expect(r.ok).toBe(false);
+    expect(r.diagnostics.some((d) => d.code === 'union.disconnected')).toBe(true); // The floating geometry also fails the evaluate-time union guard.
     expect(r.diagnostics.some((diagnostic) =>
       diagnostic.code === 'assembly.mechanical.part-disconnected' &&
       diagnostic.severity === 'warning' &&
@@ -288,6 +291,7 @@ describe('review_cad MCP tool', () => {
     });
 
     expect(r.ok).toBe(false);
+    expect(r.diagnostics.some((d) => d.code === 'union.disconnected')).toBe(true); // The floating geometry also fails the evaluate-time union guard.
     if (!r.ok) {
       expect(r.fitness?.blockingReasons.some((reason) => reason.code === 'assembly.mechanical.intent.required-support-missing')).toBe(true);
       expect(r.suggestedRepairPrompt).toMatch(/assembly\.mechanical\.intent\.required-support-missing/);

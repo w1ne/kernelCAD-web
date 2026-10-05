@@ -212,9 +212,10 @@ export async function evaluateAndBuildScript(
     );
     // Union integrity guard: a `union()` model gets the floating-part and
     // member-overlap checks an `assembly()` model gets from its validator.
-    // Error severity with no opt-out — this is the seam every ship path
-    // (CLI evaluate, MCP evaluate_script, which open_in_studio reuses)
-    // goes through. Studio's per-keystroke recompute does not call it.
+    // Error severity with no opt-out at this seam (CLI evaluate, MCP
+    // evaluate_script, review_cad, the eval harness). open_in_studio lives in
+    // kernelCAD-server and is gated separately there (follow-up branch).
+    // Studio's per-keystroke recompute does not call it.
     model.diagnostics.push(
       ...detectUnionDefects({ records: model.records, shapes: model.shapes, code: model.code }),
     );

@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { evaluateAndBuildScript, type EvaluateInput } from '../../cli/commands/evaluate';
+import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
+import { failedOnlyOnUnionGuard } from '../../../modeling/validation/unionIntegrity';
 import type { Assembly, AssemblyPartStored, TransmissionIntentRecord } from '../../../modeling/capture/assembly';
 import type { Vec3 } from '../../../shared/intent/types';
 import {
@@ -109,7 +111,11 @@ export async function inspectAssemblyTool(
   input: InspectAssemblyInput,
 ): Promise<InspectAssemblyOutput> {
   const { evaluation, model } = await evaluateAndBuildScript(input as EvaluateInput);
-  if (evaluation.exitCode !== 0 || !model) {
+  // Union-guard errors (union.disconnected / union.member-overlap) do not
+  // stop the inventory: the model built, and the errors are listed as
+  // review facts next to the mechanical ones.
+  const unionGuardOnly = failedOnlyOnUnionGuard(evaluation.diagnostics);
+  if ((evaluation.exitCode !== 0 && !unionGuardOnly) || !model) {
     return {
       ok: false,
       featureCount: evaluation.featureCount,
@@ -141,6 +147,7 @@ export async function inspectAssemblyTool(
     arm.__parts().map((part) => summarizePart(part, disconnectedByPart.get(part.name))),
   );
   const reviewFacts = [
+    ...evaluation.diagnostics.filter((d) => d.code.startsWith('union.')).map(toReviewFact),
     ...mechanical.diagnostics.map(toReviewFact),
     ...mechanicalTransmission.diagnostics.map(toReviewFact),
   ];
@@ -265,7 +272,7 @@ function summarizeTransmission(intent: TransmissionIntentRecord): InspectAssembl
 }
 
 function toReviewFact(
-  diagnostic: MechanicalPlausibilityDiagnostic | MechanicalTransmissionDiagnostic,
+  diagnostic: MechanicalPlausibilityDiagnostic | MechanicalTransmissionDiagnostic | CompilerDiagnostic,
 ): InspectAssemblyReviewFact {
   return {
     code: diagnostic.code,
