@@ -201,10 +201,11 @@ const meterPocket = cylinder(10, 4.5, 32).translate(PKT_X, PKT_Y, -1);
 const meterSocket = cylinder(5.85, 2.6, 16).translate(0, 0, -1.15);   // +1.0 deeper: spline tip clears after the servo raise
 const bossRelief  = cylinder(1.85, 3.4, 16).translate(0, 0, -1.15);   // boss top (z 6.0 world) clears the relief ceiling
 const ventGroove  = box(1.5, 6.5, 1.4).translate(-0.75, 8.1, 6.7).rotate([0, 0, 1], 7);
-// Flange spans z -1.05..0: same bottom as before (0.1 mm floor clearance
-// against discCbore kept), now reaching up to the disc. At z -1.05..-0.3 it
-// hung 0.3 mm below the disc as a loose ring (union.disconnected).
-const discFlange  = cylinder(1.05, 5, 32).translate(0, 0, -1.05);
+// Flange sits flush under the disc (z -0.75..0); at z -1.05..-0.3 it hung
+// 0.3 mm below the disc as a loose ring (union.disconnected). Keeping the old
+// -1.05 bottom left a 0.0009 mm wall at the hub-cavity edge, so the bottom
+// is raised 0.3 mm instead (more floor clearance against discCbore).
+const discFlange  = cylinder(0.75, 5, 32).translate(0, 0, -0.75);
 const meterDisc = cylinder(DISC_T, DISC_R, 96)
   .union(discFlange)
   .subtract(meterPocket, meterSocket, bossRelief, ventGroove)

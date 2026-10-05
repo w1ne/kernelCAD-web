@@ -168,11 +168,7 @@ describe('carousel v7.6.1 — pinned current behavior (descriptive, not normativ
     expect(flagged).toEqual(['base', 'cover', 'meter-disc', 'skirt']);
     expect(wallFor(report761, 'base')!.thinnestMm).toBeCloseTo(0.0070, 2);
     expect(wallFor(report761, 'skirt')!.thinnestMm).toBeCloseTo(0.0228, 2);
-    // meter-disc: 0.0128 -> 0.0009 when the floating disc flange
-    // (z -1.05..-0.3, 0.3 mm below the disc: union.disconnected) was
-    // extended to the disc (z -1.05..0, original bottom kept). The thinnest
-    // sample moved to the hub-cavity edge at the flange's bottom face.
-    expect(wallFor(report761, 'meter-disc')!.thinnestMm).toBeCloseTo(0.0009, 2);
+    expect(wallFor(report761, 'meter-disc')!.thinnestMm).toBeCloseTo(0.0128, 2);
     expect(wallFor(report761, 'cover')!.thinnestMm).toBeCloseTo(0.0160, 2);
     // The cover's WIDEST reported cluster is the ≈0.60 mm screw-boss wall
     // class (thinnest-first ordering puts it last in the reported list).
