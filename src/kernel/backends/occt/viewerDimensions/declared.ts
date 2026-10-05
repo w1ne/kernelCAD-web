@@ -103,23 +103,21 @@ function unresolvedWarning(role: string, kind: string, err: unknown): CompilerDi
   };
 }
 
-/** Resolve every declared spec; unresolvable ones become warnings. */
+/** Resolve every declared spec into `out`; unresolvable ones become
+ *  warnings. Appends as it goes so a budget overrun keeps resolved specs. */
 export function declaredDimensions(
   parts: Parts,
   specs: readonly DrawingDimensionSpec[],
   checkpoint: Checkpoint,
-): { dimensions: ViewerDimension[]; diagnostics: CompilerDiagnostic[] } {
-  const dimensions: ViewerDimension[] = [];
-  const diagnostics: CompilerDiagnostic[] = [];
+  out: { dimensions: ViewerDimension[]; diagnostics: CompilerDiagnostic[] },
+): void {
   specs.forEach((spec, i) => {
     checkpoint();
     const role = `dimensions[${i}]`;
     try {
-      dimensions.push({ ...draftFor(parts, spec, role), id: `declared:${i}`, source: 'declared' });
+      out.dimensions.push({ ...draftFor(parts, spec, role), id: `declared:${i}`, source: 'declared' });
     } catch (err) {
-      diagnostics.push(unresolvedWarning(role, spec.kind, err));
+      out.diagnostics.push(unresolvedWarning(role, spec.kind, err));
     }
   });
-  checkpoint();
-  return { dimensions, diagnostics };
 }

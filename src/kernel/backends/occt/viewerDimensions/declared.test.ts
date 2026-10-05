@@ -3,6 +3,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { initOcct } from '../occtBackend';
 import { computeViewerDimensions } from './index';
+import type { WorldFramePart } from '../sceneToWorldFrame';
 import { partsFromSource } from '../../../../../tests/helpers/viewerDimensionParts';
 
 beforeAll(async () => { await initOcct(); }, 60_000);
@@ -12,6 +13,14 @@ const PLATE = `return box(40,20,10)
     .subtract(cylinder(20,2.5).translate(35,10,-5));`;
 
 describe('declared viewer dimensions', () => {
+  it('a non-budget error returns no dimensions and a warning with the reason', () => {
+    const broken = [{ name: 'part', shape: { boundingBox: () => { throw new Error('bbox exploded'); } } }] as unknown as WorldFramePart[];
+    const r = computeViewerDimensions({ parts: broken, auto: true, declared: [] });
+    expect(r.dimensions).toEqual([]);
+    expect(r.diagnostics).toHaveLength(1);
+    expect(r.diagnostics[0]).toMatchObject({ code: 'viewer.dimensions.budget-exceeded', severity: 'warn' });
+    expect(r.diagnostics[0].message).toContain('bbox exploded');
+  });
   it('declared linear between two hole rims measures centre distance', async () => {
     const parts = await partsFromSource(PLATE);
     const { dimensions } = computeViewerDimensions({ parts, auto: false, declared: [
@@ -19,6 +28,9 @@ describe('declared viewer dimensions', () => {
     ] });
     expect(dimensions).toHaveLength(1);
     expect(dimensions[0]).toMatchObject({ source: 'declared', text: 'pitch 30' });
+    // Circular edges anchor at their centres: the top rims of the two holes.
+    dimensions[0].a.forEach((x, k) => expect(x).toBeCloseTo([5, 10, 10][k], 6));
+    dimensions[0].b.forEach((x, k) => expect(x).toBeCloseTo([35, 10, 10][k], 6));
   });
   it('declared diameter reads the hole rim', async () => {
     const parts = await partsFromSource(PLATE);
@@ -42,10 +54,10 @@ describe('declared viewer dimensions', () => {
     expect(r.dimensions.filter(d => d.source === 'declared')).toHaveLength(0);
     expect(r.dimensions).toHaveLength(3);
   });
-  it('budget exceeded returns [] and a warning', async () => {
+  it('budget exceeded keeps overall extents and warns', async () => {
     const parts = await partsFromSource(`return box(10,10,10);`);
-    const r = computeViewerDimensions({ parts, auto: true, declared: [], budgetMs: 0 });
-    expect(r.dimensions).toEqual([]);
+    const r = computeViewerDimensions({ parts, auto: true, declared: [], budgetMs: -1 });
+    expect(r.dimensions.map(d => d.id)).toEqual(['auto:overall:model:0', 'auto:overall:model:1', 'auto:overall:model:2']);
     expect(r.diagnostics.map(d => d.code)).toContain('viewer.dimensions.budget-exceeded');
   });
 });

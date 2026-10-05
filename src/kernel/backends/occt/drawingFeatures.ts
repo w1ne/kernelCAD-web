@@ -102,6 +102,9 @@ export interface RadiusFeature {
   axis: V3;
   /** Point on the arc surface, mid-way along the face. */
   arcPoint: V3;
+  /** Centre of the arc through `arcPoint`: its foot on the cylinder axis, or
+   *  the torus tube centre. Exact for convex and concave arcs alike. */
+  centre: V3;
   /** Sampled points along the arc surface, for choosing a leader target. */
   samples: V3[];
   surface: 'cylinder' | 'torus';
@@ -496,12 +499,13 @@ function recogniseRadii(cyls: CylFace[], tori: Face[], bores: CylindricalHole[])
       radius: g.radius,
       axis: canonicalAxis(g.dir),
       arcPoint: biggest.mid,
+      centre: add(g.loc, scale(g.dir, dot(sub(biggest.mid, g.loc), g.dir))),
       samples: g.faces.flatMap(f => f.samples),
       surface: 'cylinder',
     });
   }
 
-  interface TorusInfo { centre: V3; axis: V3; minor: number; mid: V3; samples: V3[] }
+  interface TorusInfo { centre: V3; axis: V3; minor: number; mid: V3; tube: V3; samples: V3[] }
   const torusInfos: TorusInfo[] = [];
   for (const face of tori) {
     const major = circumcircle(pointOn(face, 0.1, 0.5), pointOn(face, 0.5, 0.5), pointOn(face, 0.9, 0.5));
@@ -514,6 +518,9 @@ function recogniseRadii(cyls: CylFace[], tori: Face[], bores: CylindricalHole[])
       axis: canonicalAxis(major.normal),
       minor: minor.radius,
       mid: pointOn(face, 0.5, 0.5),
+      // The minor circle passes through `mid`, so its centre is the tube
+      // centre the arc at `mid` is struck from.
+      tube: minor.centre,
       samples,
     });
   }
@@ -529,7 +536,7 @@ function recogniseRadii(cyls: CylFace[], tori: Face[], bores: CylindricalHole[])
       continue;
     }
     seen.push(t);
-    out.push({ radius: t.minor, axis: t.axis, arcPoint: t.mid, samples: t.samples, surface: 'torus' });
+    out.push({ radius: t.minor, axis: t.axis, arcPoint: t.mid, centre: t.tube, samples: t.samples, surface: 'torus' });
   }
   return out;
 }

@@ -18,7 +18,7 @@ import {
 } from '../drawingFeatures';
 import type { V3, ViewerDimension } from './types';
 import { formatMm, groupLabel } from './format';
-import { add, cross, dot, perpendicular, reject, scale, sub, unit } from './vec';
+import { add, cross, dot, perpendicular, scale, sub, unit } from './vec';
 
 /** Auto dimensions per body, overall extents included. */
 export const MAX_AUTO_PER_BODY = 20;
@@ -139,24 +139,20 @@ export function spacingDims(model: DrawingFeatureModel): Draft[] {
 // Radii and chamfers
 // ---------------------------------------------------------------------------
 
-/** Radius callout from the arc centre to the arc point. The centre is
- *  approximated by stepping inward along the arc normal, taken as the
- *  direction from the body centre to the arc point (axial part removed). */
-function radiusDraft(f: RadiusFeature, count: number, bodyCentre: V3): Draft {
-  const normal = unit(reject(sub(f.arcPoint, bodyCentre), unit(f.axis)));
-  const centre = sub(f.arcPoint, scale(normal, f.radius));
+/** Radius callout from the arc centre (from the recogniser) to the arc point. */
+function radiusDraft(f: RadiusFeature, count: number): Draft {
   return {
     kind: 'radius',
-    a: centre,
+    a: f.centre,
     b: f.arcPoint,
-    centre,
+    centre: f.centre,
     axis: f.axis,
     text: groupLabel(count, `R${formatMm(f.radius)}`),
   };
 }
 
-export function radiusDims(model: DrawingFeatureModel, bodyCentre: V3): Draft[] {
-  return groupBy(model.radii, r => formatMm(r.radius)).map(([, feats]) => radiusDraft(feats[0], feats.length, bodyCentre));
+export function radiusDims(model: DrawingFeatureModel): Draft[] {
+  return groupBy(model.radii, r => formatMm(r.radius)).map(([, feats]) => radiusDraft(feats[0], feats.length));
 }
 
 function chamferText(c: ChamferFeature): string {
@@ -186,42 +182,53 @@ function stamp(rule: string, partKey: string, drafts: readonly Draft[], part?: s
   }));
 }
 
-function boxCentre(part: WorldFramePart): V3 {
-  const bb = part.shape.boundingBox();
-  return scale(add(bb.min, bb.max), 0.5);
-}
-
-/** Feature rules for one part, in priority order, each behind a checkpoint. */
-function partFeatureDims(part: WorldFramePart, tag: string | undefined, checkpoint: Checkpoint): ViewerDimension[] {
+/** Feature rules for one part, in priority order, each behind a checkpoint.
+ *  Results are appended to `out` as each rule completes (at most `cap`), so
+ *  a budget overrun keeps everything finished before it. */
+function partFeatureDims(
+  part: WorldFramePart,
+  tag: string | undefined,
+  checkpoint: Checkpoint,
+  out: ViewerDimension[],
+  cap: number,
+): void {
   checkpoint();
   const model = recogniseDrawingFeatures(part.shape, { checkpoint });
   checkpoint();
   const rules: Array<[string, () => Draft[]]> = [
     ['holes', () => holeDims(model)],
     ['spacing', () => spacingDims(model)],
-    ['radii', () => radiusDims(model, boxCentre(part))],
+    ['radii', () => radiusDims(model)],
     ['chamfers', () => chamferDims(model)],
   ];
-  const out: ViewerDimension[] = [];
+  let left = cap;
   for (const [rule, run] of rules) {
-    out.push(...stamp(rule, part.name, run(), tag));
+    const dims = stamp(rule, part.name, run(), tag).slice(0, Math.max(0, left));
+    out.push(...dims);
+    left -= dims.length;
     checkpoint();
   }
-  return out;
+}
+
+/** Overall extents of the whole model. Cheap (bounding boxes only), so it
+ *  runs outside the budget and every result carries it. */
+export function overallDimensions(parts: readonly WorldFramePart[]): ViewerDimension[] {
+  return stamp('overall', 'model', overallExtents(parts));
 }
 
 /**
- * All automatic dimensions: overall extents of the whole model first, then
- * per-part feature dimensions when the model has at most eight parts. Each
- * body's list (overall extents included) is capped at 20.
+ * Per-part feature dimensions, appended to `out`, when the model has at most
+ * eight parts. Each body's list is capped at 20 including the `overallCount`
+ * overall extents. Appending (rather than returning) keeps completed rules
+ * when a checkpoint throws on budget overrun.
  */
-export function autoDimensions(parts: readonly WorldFramePart[], checkpoint: Checkpoint): ViewerDimension[] {
-  checkpoint();
-  const overall = stamp('overall', 'model', overallExtents(parts));
-  checkpoint();
-  if (parts.length > MAX_DIMENSIONED_PARTS) return overall;
+export function featureDimensions(
+  parts: readonly WorldFramePart[],
+  overallCount: number,
+  checkpoint: Checkpoint,
+  out: ViewerDimension[],
+): void {
+  if (parts.length > MAX_DIMENSIONED_PARTS) return;
   const multi = parts.length > 1;
-  const perPartCap = MAX_AUTO_PER_BODY - overall.length;
-  const features = parts.flatMap(p => partFeatureDims(p, multi ? p.name : undefined, checkpoint).slice(0, perPartCap));
-  return [...overall, ...features];
+  for (const p of parts) partFeatureDims(p, multi ? p.name : undefined, checkpoint, out, MAX_AUTO_PER_BODY - overallCount);
 }

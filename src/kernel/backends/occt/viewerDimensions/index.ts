@@ -10,7 +10,7 @@ import type { WorldFramePart } from '../sceneToWorldFrame';
 import type { DrawingDimensionSpec } from '../../../../shared/intent/drawingGdtRecord';
 import type { CompilerDiagnostic } from '../../../../shared/diagnostics/diagnostic';
 import { HINT_TEMPLATES, NEXT_ACTIONS } from '../../../../shared/diagnostics/registry';
-import { autoDimensions } from './auto';
+import { featureDimensions, overallDimensions } from './auto';
 import { declaredDimensions } from './declared';
 import type { ViewerDimension } from './types';
 
@@ -34,18 +34,24 @@ export interface ViewerDimensionsResult {
 
 class BudgetExceeded extends Error {}
 
-function budgetWarning(err: unknown): CompilerDiagnostic {
-  const why = err instanceof Error ? err.message : String(err);
+function budgetWarning(message: string): CompilerDiagnostic {
   return {
     target: 'export-occt',
     code: 'viewer.dimensions.budget-exceeded',
     severity: 'warn',
-    message: `Viewer dimensions skipped: ${why}`,
+    message,
     hint: HINT_TEMPLATES['viewer.dimensions.budget-exceeded'].template,
     nextAction: NEXT_ACTIONS['viewer.dimensions.budget-exceeded'],
   };
 }
 
+/**
+ * Declared dimensions first, then automatic ones, under one wall-clock
+ * budget checked between rules (and between bore probes). On overrun the
+ * dimensions already computed are kept, overall extents always included,
+ * plus a budget warning. Any other error returns no dimensions and a
+ * warning carrying the reason.
+ */
 export function computeViewerDimensions(input: ViewerDimensionsInput): ViewerDimensionsResult {
   const budgetMs = input.budgetMs ?? DEFAULT_BUDGET_MS;
   const start = performance.now();
@@ -55,12 +61,25 @@ export function computeViewerDimensions(input: ViewerDimensionsInput): ViewerDim
       throw new BudgetExceeded(`computation passed its ${budgetMs} ms budget (${Math.round(elapsed)} ms)`);
     }
   };
+  const declared: ViewerDimensionsResult = { dimensions: [], diagnostics: [] };
+  let overall: ViewerDimension[] = [];
+  const features: ViewerDimension[] = [];
+  const all = (): ViewerDimension[] => [...declared.dimensions, ...overall, ...features];
   try {
-    checkpoint();
-    const declared = declaredDimensions(input.parts, input.declared, checkpoint);
-    const auto = input.auto ? autoDimensions(input.parts, checkpoint) : [];
-    return { dimensions: [...declared.dimensions, ...auto], diagnostics: declared.diagnostics };
+    // Bounding boxes only: cheap, so they run before any checkpoint and
+    // every result (overrun included) carries them.
+    overall = input.auto ? overallDimensions(input.parts) : [];
+    declaredDimensions(input.parts, input.declared, checkpoint, declared);
+    if (input.auto) featureDimensions(input.parts, overall.length, checkpoint, features);
+    return { dimensions: all(), diagnostics: declared.diagnostics };
   } catch (err) {
-    return { dimensions: [], diagnostics: [budgetWarning(err)] };
+    if (err instanceof BudgetExceeded) {
+      return {
+        dimensions: all(),
+        diagnostics: [...declared.diagnostics, budgetWarning(`Viewer dimensions incomplete: ${err.message}; showing the dimensions computed before the cut-off.`)],
+      };
+    }
+    const why = err instanceof Error ? err.message : String(err);
+    return { dimensions: [], diagnostics: [budgetWarning(`Viewer dimensions failed: ${why}`)] };
   }
 }

@@ -25,6 +25,3 @@ export function perpendicular(axis: readonly number[]): V3 {
   }
   return unit(cross(axis, best));
 }
-
-/** `v` with its component along unit `axis` removed. */
-export const reject = (v: readonly number[], axis: readonly number[]): V3 => sub(v, scale(axis, dot(v, axis)));
