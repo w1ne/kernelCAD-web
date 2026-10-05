@@ -23,13 +23,13 @@ export const UNION_CODES = {
   },
   'union.member-overlap': {
     hintTemplate:
-      'Cut the members to fit instead of burying one in the other: a cross member between two rails is span minus two rail widths, placed at the rail width, so its end faces touch the rails (butt joint). Or build each member as assembly().part(name, shape) so interference is checked per part.',
+      'Cut the members to fit instead of burying one in the other: a cross member between two rails is span minus two rail widths, placed at the rail width, so its end faces touch the rails (butt joint). Or build each member as assembly().part(name, shape) so interference is checked per part. Only pieces of the same material are checked; a different-material inlay may overlap.',
     nextAction: {
       kind: 'rewrite-feature',
-      guidance: 'shorten or move one member so the two separately finished operands touch instead of sharing volume (butt joint)',
+      guidance: 'shorten or move one member so the two same-material operands touch instead of sharing volume (butt joint)',
     },
     defaultSeverity: 'error',
     group: 'union',
-    description: 'Two union() operands that each carry their own finish/material (declared separate physical parts) share more than 1 mm³ of volume.',
+    description: 'Two union() operands that each carry their own finish/material, and the same one (separate pieces of the same stock), share more than 1 mm³ of volume.',
   },
 } as const satisfies Record<string, DiagnosticCodeSpec>;

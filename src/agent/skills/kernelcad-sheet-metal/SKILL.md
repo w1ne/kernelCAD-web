@@ -86,7 +86,7 @@ After authoring a sheet-metal part, run before reporting done:
 
 ## Mounting sheet on a frame
 
-A sheet (flat panel or bent part) that sits on tubes or a frame touches them: put its underside at the frame top (`z = tubeHeight` for tubes on `z = 0`), not a few mm above. If sheet and frame are fused with `union()`, `evaluate_script` fails with `union.disconnected` when the sheet floats (the message gives the gap) and `union.member-overlap` when separately finished members share more than 1 mm³. Prefer `assembly().part('sheet', ...)` + one part per frame member when they are separate BOM lines; recipe: `welded-tube-frame-tray`.
+A sheet (flat panel or bent part) that sits on tubes or a frame touches them: put its underside at the frame top (`z = tubeHeight` for tubes on `z = 0`), not a few mm above. If sheet and frame are fused with `union()`, `evaluate_script` fails with `union.disconnected` when the sheet floats (the message gives the gap) and `union.member-overlap` when members finished with the same material share more than 1 mm³. Prefer `assembly().part('sheet', ...)` + one part per frame member when they are separate BOM lines; recipe: `welded-tube-frame-tray`.
 
 ## Related skills
 

@@ -16,9 +16,10 @@
 //     geometry inside a part (`assembly.mechanical.part-disconnected`).
 //   - `union.member-overlap` (error): two operands that each carry their own
 //     finish/material (`.finish()` / `.material()`, i.e. `metadata.material`)
-//     share more than 1 mm³. Giving operands separate finishes declares them
-//     separate physical members, and members are cut to fit, not buried in
-//     each other. Operands without their own finish (a boss or rib merged
+//     and the SAME one share more than 1 mm³. Two pieces of the same stock
+//     are separate members, cut to fit, never buried in each other.
+//     Different materials overlapping (inlay, over-mould, multi-material
+//     part) is intentional and passes. Operands without their own finish (a boss or rib merged
 //     into a body before `.finish()`) are exempt, so ordinary modelling is
 //     unaffected. `.color()` is a display hint in a different slot and does
 //     not count.
@@ -81,6 +82,16 @@ function isUnion(r: FeatureRecord): boolean {
 
 function hasOwnFinish(r: FeatureRecord | undefined): boolean {
   return r?.metadata?.material !== undefined;
+}
+
+/** Canonical key of a record's own material (key order independent), so two
+ *  operands finished with the same token / PBR compare equal. */
+function materialKey(r: FeatureRecord | undefined): string {
+  const canon = (v: unknown): unknown =>
+    v !== null && typeof v === 'object' && !Array.isArray(v)
+      ? Object.fromEntries(Object.keys(v).sort().map(k => [k, canon((v as Record<string, unknown>)[k])]))
+      : v;
+  return JSON.stringify(canon(r?.metadata?.material));
 }
 
 /** Operand feature ids of a boolean record, in call order (base first). */
@@ -240,7 +251,7 @@ function memberOverlaps(
     .filter(l => hasOwnFinish(byId.get(l.id)))
     .map(l => ({ leaf: l, shape: asOcct(shapes.get(l.id)) }))
     .filter((m): m is { leaf: Leaf; shape: OcctBackend } => m.shape !== undefined)
-    .map(m => ({ ...m, box: m.shape.boundingBox() }));
+    .map(m => ({ ...m, box: m.shape.boundingBox(), stock: materialKey(byId.get(m.leaf.id)) }));
   if (members.length < 2) return [];
 
   const out: CompilerDiagnostic[] = [];
@@ -249,6 +260,10 @@ function memberOverlaps(
       const a = members[i];
       const b = members[j];
       if (a.leaf.id === b.leaf.id) continue;
+      // Different materials overlapping is intentional (inlay, over-mould,
+      // multi-material part); two pieces of the same stock cannot
+      // interpenetrate.
+      if (a.stock !== b.stock) continue;
       if (!boxesOverlap(a.box, b.box, TOUCH_EPS_MM)) continue;
       let volume: number;
       try {
@@ -266,7 +281,7 @@ function memberOverlaps(
         featureId: u.id,
         ...(u.scriptLocation !== undefined ? { scriptLocation: u.scriptLocation } : {}),
         message:
-          `union() members ${nameA} and ${nameB} each carry their own finish (separate physical parts) ` +
+          `union() members ${nameA} and ${nameB} are separate pieces of the same material (same finish) ` +
           `but share ${fmt(volume, 1)} mm³ of volume; overlap box ${fmtBox(overlapBox(a.shape, b.shape, a.box, b.box))}. ` +
           'One member runs into the other instead of being cut to fit.',
         hint:

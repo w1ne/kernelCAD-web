@@ -23,7 +23,7 @@ const evaluateScriptToolEntry: ToolRegistryEntry = {
       '(e.g. a deliberately free part next to a mechanism). ' +
       'Every union() is checked too (no opt-out): union.disconnected (the union is several ' +
       'separate solids — a floating operand) and union.member-overlap (two operands that each ' +
-      'carry their own .finish()/.material() share > 1 mm³ — cut members to fit, e.g. a cross ' +
+      'carry their own .finish()/.material(), the same one, share > 1 mm³ — cut members to fit, e.g. a cross ' +
       'tube between rails is span minus two rail widths) make ok:false. ' +
       'Pass either { file: "<path>" } or { code: "<inline source>" }. ' +
       'Set { dryRun: true } for fast validation while iterating: transpile + capture + ' +

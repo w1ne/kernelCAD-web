@@ -22,8 +22,9 @@ return lower.union(upper);
 Stacked primitives must touch (shared face) or overlap: a `union()` whose
 operands do not touch fails `evaluate_script` with `union.disconnected`
 (the message names the floating operand and the gap). Operands that each
-carry their own `.finish()` are treated as separate members and must not
-overlap by more than 1 mm³ (`union.member-overlap`) — see
+carry their own `.finish()` with the SAME material are separate pieces of
+one stock and must not overlap by more than 1 mm³ (`union.member-overlap`);
+different materials may overlap (inlay, over-mould) — see
 `welded-tube-frame-tray` for frames.
 
 Do not use this pattern to attach wide boxes onto a freeform loft / rail-loft

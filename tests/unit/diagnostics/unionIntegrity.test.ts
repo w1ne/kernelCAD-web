@@ -86,7 +86,7 @@ describe('union integrity guard', () => {
     const r = await evaluateScriptTool({
       code: `
         const a = box(10, 10, 10).finish('aluminium-brushed');
-        const b = box(10, 10, 10).translate(10, 0, 0).finish('anodized-black');
+        const b = box(10, 10, 10).translate(10, 0, 0).finish('aluminium-brushed');
         return union(a, b);
       `,
     });
@@ -94,11 +94,11 @@ describe('union integrity guard', () => {
     expect(r.ok).toBe(true);
   });
 
-  it('separately finished blocks overlapping 0.5 mm³ pass (below the 1 mm³ threshold)', async () => {
+  it('same-material blocks overlapping 0.5 mm³ pass (below the 1 mm³ threshold)', async () => {
     const r = await evaluateScriptTool({
       code: `
         const a = box(10, 10, 10).finish('aluminium-brushed');
-        const b = box(10, 10, 10).translate(9, 9, 9.5).finish('anodized-black');
+        const b = box(10, 10, 10).translate(9, 9, 9.5).finish('aluminium-brushed');
         return union(a, b);
       `,
     });
@@ -106,11 +106,11 @@ describe('union integrity guard', () => {
     expect(r.ok).toBe(true);
   });
 
-  it('separately finished blocks overlapping 10x10x2 mm fail with volume ~200 mm³', async () => {
+  it('same-material blocks overlapping 10x10x2 mm fail with volume ~200 mm³', async () => {
     const r = await evaluateScriptTool({
       code: `
         const lower = box(10, 10, 10).finish('aluminium-brushed');
-        const upper = box(10, 10, 10).translate(0, 0, 8).finish('anodized-black');
+        const upper = box(10, 10, 10).translate(0, 0, 8).finish('aluminium-brushed');
         return union(lower, upper);
       `,
     });
@@ -123,12 +123,26 @@ describe('union integrity guard', () => {
     expect(vol).toBeCloseTo(200, 0);
   });
 
+  it('separately finished blocks of DIFFERENT materials may overlap (inlay / over-mould)', async () => {
+    const spy = vi.spyOn(OcctBackend.prototype, 'intersectionVolume');
+    const r = await evaluateScriptTool({
+      code: `
+        const body = box(10, 10, 10).finish('aluminium-brushed');
+        const inlay = box(10, 10, 10).translate(0, 0, 8).finish('anodized-black');
+        return union(body, inlay);
+      `,
+    });
+    expect(unionDiags(r.diagnostics)).toEqual([]);
+    expect(r.ok).toBe(true);
+    expect(spy).not.toHaveBeenCalled();
+  });
+
   it('overlap through a chained .union() is still caught', async () => {
     const r = await evaluateScriptTool({
       code: `
         const a = box(10, 10, 10).finish('aluminium-brushed');
         const b = box(10, 10, 10).translate(10, 0, 0).finish('aluminium-brushed');
-        const c = box(10, 10, 10).translate(0, 0, 8).finish('anodized-black');
+        const c = box(10, 10, 10).translate(0, 0, 8).finish('aluminium-brushed');
         return a.union(b).union(c);
       `,
     });
@@ -223,7 +237,7 @@ describe('union integrity guard', () => {
     const r = await evaluateScriptTool({
       code: `
         const a = box(10, 10, 10).finish('aluminium-brushed');
-        const b = box(10, 10, 10).translate(10, 0, 0).finish('anodized-black');
+        const b = box(10, 10, 10).translate(10, 0, 0).finish('aluminium-brushed');
         return union(a, b);
       `,
     });

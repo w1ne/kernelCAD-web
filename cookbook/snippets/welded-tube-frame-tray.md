@@ -30,7 +30,7 @@ Fabrication rules this snippet encodes:
 - All tubes stand on `z = 0`; the sheet underside is at `z = tube`.
 
 `evaluate_script` gates every `union()`: `union.member-overlap` (error)
-names two separately finished members that share more than 1 mm³ — a cross
+names two members of the same material (same finish) that share more than 1 mm³ — a cross
 tube run into a rail — and `union.disconnected` (error) names an operand
 that floats, with its gap. Fix the member length or position; never hide it
 by dropping the finishes.
