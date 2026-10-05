@@ -396,8 +396,9 @@ function classifyChain(
 function recogniseHoles(
   backend: OcctBackend,
   cones: ConeFace[],
+  checkpoint?: () => void,
 ): { holes: HoleComposite[]; unclassified: UnclassifiedBore[]; bores: CylindricalHole[] } {
-  const bores = detectCylindricalHoles(backend);
+  const bores = detectCylindricalHoles(backend, checkpoint);
   const holes: HoleComposite[] = [];
   const unclassified: UnclassifiedBore[] = [];
 
@@ -631,6 +632,8 @@ export interface RecogniseOptions {
   holes?: boolean;
   radii?: boolean;
   chamfers?: boolean;
+  /** Called between bore probes; throw from it to abort a budgeted run. */
+  checkpoint?: () => void;
 }
 
 export function recogniseDrawingFeatures(backend: OcctBackend, options: RecogniseOptions = {}): DrawingFeatureModel {
@@ -671,7 +674,7 @@ export function recogniseDrawingFeatures(backend: OcctBackend, options: Recognis
   });
 
   const { holes, unclassified, bores } = wantHoles || wantRadii
-    ? recogniseHoles(backend, cones)
+    ? recogniseHoles(backend, cones, options.checkpoint)
     : { holes: [], unclassified: [], bores: [] };
   const radii = wantRadii ? recogniseRadii(cyls, tori, bores) : [];
   const planarByIndex = new Map(planar.map(p => [p.index, p]));

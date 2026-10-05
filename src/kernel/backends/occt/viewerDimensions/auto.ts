@@ -1,0 +1,227 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+// src/kernel/backends/occt/viewerDimensions/auto.ts
+//
+// Automatic 3D viewer dimensions from B-rep feature recognition. Each rule
+// is one small function; `autoDimensions` concatenates them in priority
+// order (overall > holes > spacing > radii > chamfers) and caps the result
+// at 20 per body. Hole bores never appear as radii: the recogniser already
+// claims them as holes.
+
+import type { WorldFramePart } from '../sceneToWorldFrame';
+import {
+  recogniseDrawingFeatures,
+  type ChamferFeature,
+  type DrawingFeatureModel,
+  type HoleComposite,
+  type RadiusFeature,
+} from '../drawingFeatures';
+import type { V3, ViewerDimension } from './types';
+import { formatMm, groupLabel } from './format';
+import { add, cross, dot, perpendicular, reject, scale, sub, unit } from './vec';
+
+/** Auto dimensions per body, overall extents included. */
+export const MAX_AUTO_PER_BODY = 20;
+/** Above this part count an assembly gets overall extents only. */
+export const MAX_DIMENSIONED_PARTS = 8;
+
+/** A rule's output before it is stamped with id / source / part. */
+type Draft = Omit<ViewerDimension, 'id' | 'source' | 'part'>;
+
+/** Called before and after each rule; throws when the budget is spent. */
+export type Checkpoint = () => void;
+
+const PARALLEL = 0.999;
+const ALIGN_TOL = 0.01;
+
+/** Group items by a label key, keeping first-appearance order. */
+function groupBy<T>(items: readonly T[], key: (t: T) => string): Array<[string, T[]]> {
+  const groups = new Map<string, T[]>();
+  for (const it of items) {
+    const k = key(it);
+    const g = groups.get(k);
+    if (g) g.push(it);
+    else groups.set(k, [it]);
+  }
+  return [...groups];
+}
+
+// ---------------------------------------------------------------------------
+// Overall extents
+// ---------------------------------------------------------------------------
+
+function unionBounds(parts: readonly WorldFramePart[]): { min: V3; max: V3 } {
+  const min: V3 = [Infinity, Infinity, Infinity];
+  const max: V3 = [-Infinity, -Infinity, -Infinity];
+  for (const p of parts) {
+    const bb = p.shape.boundingBox();
+    for (let k = 0; k < 3; k++) {
+      min[k] = Math.min(min[k], bb.min[k]);
+      max[k] = Math.max(max[k], bb.max[k]);
+    }
+  }
+  return { min, max };
+}
+
+/** Three linear dimensions along the union bounding box edges. */
+export function overallExtents(parts: readonly WorldFramePart[]): Draft[] {
+  const { min: [x0, y0, z0], max: [x1, y1, z1] } = unionBounds(parts);
+  const edges: Array<[V3, V3]> = [
+    [[x0, y0, z0], [x1, y0, z0]],
+    [[x1, y0, z0], [x1, y1, z0]],
+    [[x1, y0, z0], [x1, y0, z1]],
+  ];
+  return edges.map(([a, b]) => ({ kind: 'linear', a, b, text: formatMm(Math.hypot(...sub(b, a))) }));
+}
+
+// ---------------------------------------------------------------------------
+// Holes and their spacing
+// ---------------------------------------------------------------------------
+
+/** One diameter callout per hole size, at the first hole of the size. */
+export function holeDims(model: DrawingFeatureModel): Draft[] {
+  return groupBy(model.holes, h => formatMm(h.diameter)).map(([d, holes]) => {
+    const h = holes[0];
+    const across = scale(perpendicular(h.axis), h.diameter / 2);
+    return {
+      kind: 'diameter',
+      a: sub(h.entry, across),
+      b: add(h.entry, across),
+      centre: h.entry,
+      axis: h.axis,
+      text: groupLabel(holes.length, `Ø${d}`),
+    };
+  });
+}
+
+const WORLD_AXES: readonly V3[] = [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
+
+/** First pair of holes aligned on `other` with the smallest non-zero
+ *  centre distance along `dir`. */
+function closestAlignedPair(holes: readonly HoleComposite[], dir: V3, other: V3): Draft | null {
+  let best: { d: number; i: number; j: number } | null = null;
+  for (let i = 0; i < holes.length; i++) {
+    for (let j = i + 1; j < holes.length; j++) {
+      const delta = sub(holes[j].entry, holes[i].entry);
+      if (Math.abs(dot(delta, other)) > ALIGN_TOL) continue;
+      const d = Math.abs(dot(delta, dir));
+      if (d > ALIGN_TOL && (best === null || d < best.d - 1e-9)) best = { d, i, j };
+    }
+  }
+  if (best === null) return null;
+  return { kind: 'linear', a: holes[best.i].entry, b: holes[best.j].entry, text: formatMm(best.d) };
+}
+
+/** Spacing for holes sharing one axis direction: at most one linear
+ *  dimension along each in-plane world axis. Off-axis holes are skipped. */
+function spacingForAxisGroup(holes: readonly HoleComposite[]): Draft[] {
+  const inPlane = WORLD_AXES.filter(w => Math.abs(dot(w, holes[0].axis)) < PARALLEL);
+  if (inPlane.length !== 2) return [];
+  const out: Draft[] = [];
+  for (const [dir, other] of [[inPlane[0], inPlane[1]], [inPlane[1], inPlane[0]]]) {
+    const pair = closestAlignedPair(holes, dir, other);
+    if (pair) out.push(pair);
+  }
+  return out;
+}
+
+export function spacingDims(model: DrawingFeatureModel): Draft[] {
+  const groups: HoleComposite[][] = [];
+  for (const h of model.holes) {
+    const g = groups.find(gr => Math.abs(dot(gr[0].axis, h.axis)) > PARALLEL);
+    if (g) g.push(h);
+    else groups.push([h]);
+  }
+  return groups.filter(g => g.length > 1).flatMap(spacingForAxisGroup);
+}
+
+// ---------------------------------------------------------------------------
+// Radii and chamfers
+// ---------------------------------------------------------------------------
+
+/** Radius callout from the arc centre to the arc point. The centre is
+ *  approximated by stepping inward along the arc normal, taken as the
+ *  direction from the body centre to the arc point (axial part removed). */
+function radiusDraft(f: RadiusFeature, count: number, bodyCentre: V3): Draft {
+  const normal = unit(reject(sub(f.arcPoint, bodyCentre), unit(f.axis)));
+  const centre = sub(f.arcPoint, scale(normal, f.radius));
+  return {
+    kind: 'radius',
+    a: centre,
+    b: f.arcPoint,
+    centre,
+    axis: f.axis,
+    text: groupLabel(count, `R${formatMm(f.radius)}`),
+  };
+}
+
+export function radiusDims(model: DrawingFeatureModel, bodyCentre: V3): Draft[] {
+  return groupBy(model.radii, r => formatMm(r.radius)).map(([, feats]) => radiusDraft(feats[0], feats.length, bodyCentre));
+}
+
+function chamferText(c: ChamferFeature): string {
+  const [l0, l1] = c.legs.map(formatMm);
+  return l0 === l1 ? `${l0}×45°` : `${l0}×${l1}`;
+}
+
+/** One linear callout per chamfer size, across the chamfer strip. No count
+ *  prefix: `4× 2×45°` reads as a multiplication. */
+export function chamferDims(model: DrawingFeatureModel): Draft[] {
+  return groupBy(model.chamfers, chamferText).map(([text, [c]]) => {
+    const across = scale(unit(cross(c.normal, c.edgeDir)), Math.hypot(c.legs[0], c.legs[1]) / 2);
+    return { kind: 'linear', a: sub(c.midPoint, across), b: add(c.midPoint, across), text };
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Assembly
+// ---------------------------------------------------------------------------
+
+function stamp(rule: string, partKey: string, drafts: readonly Draft[], part?: string): ViewerDimension[] {
+  return drafts.map((d, i) => ({
+    ...d,
+    id: `auto:${rule}:${partKey}:${i}`,
+    source: 'auto',
+    ...(part !== undefined ? { part } : {}),
+  }));
+}
+
+function boxCentre(part: WorldFramePart): V3 {
+  const bb = part.shape.boundingBox();
+  return scale(add(bb.min, bb.max), 0.5);
+}
+
+/** Feature rules for one part, in priority order, each behind a checkpoint. */
+function partFeatureDims(part: WorldFramePart, tag: string | undefined, checkpoint: Checkpoint): ViewerDimension[] {
+  checkpoint();
+  const model = recogniseDrawingFeatures(part.shape, { checkpoint });
+  checkpoint();
+  const rules: Array<[string, () => Draft[]]> = [
+    ['holes', () => holeDims(model)],
+    ['spacing', () => spacingDims(model)],
+    ['radii', () => radiusDims(model, boxCentre(part))],
+    ['chamfers', () => chamferDims(model)],
+  ];
+  const out: ViewerDimension[] = [];
+  for (const [rule, run] of rules) {
+    out.push(...stamp(rule, part.name, run(), tag));
+    checkpoint();
+  }
+  return out;
+}
+
+/**
+ * All automatic dimensions: overall extents of the whole model first, then
+ * per-part feature dimensions when the model has at most eight parts. Each
+ * body's list (overall extents included) is capped at 20.
+ */
+export function autoDimensions(parts: readonly WorldFramePart[], checkpoint: Checkpoint): ViewerDimension[] {
+  checkpoint();
+  const overall = stamp('overall', 'model', overallExtents(parts));
+  checkpoint();
+  if (parts.length > MAX_DIMENSIONED_PARTS) return overall;
+  const multi = parts.length > 1;
+  const perPartCap = MAX_AUTO_PER_BODY - overall.length;
+  const features = parts.flatMap(p => partFeatureDims(p, multi ? p.name : undefined, checkpoint).slice(0, perPartCap));
+  return [...overall, ...features];
+}
