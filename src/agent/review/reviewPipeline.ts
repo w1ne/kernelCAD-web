@@ -194,6 +194,13 @@ export type ReviewCadOutput = ReviewTimingReport & (
       repairContext: RepairContext;
       suggestedRepairPrompt: string;
       /**
+       * Set only when the review could not run on the model as given:
+       * `review.no-assembly` (the script returned no assembly). A review
+       * verdict on a captured assembly carries no errorCode; its reasons are
+       * in `diagnostics` / `fitness`.
+       */
+      errorCode?: 'review.no-assembly';
+      /**
        * Raw interference pairs at the default pose (see the `ok: true`
        * variant). Always present when an assembly was selected, even when
        * `ok: false`, so the Studio HUD can still report the count.
@@ -269,6 +276,7 @@ export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCa
     return {
       ...clock.report(),
       ok: false,
+      errorCode: 'review.no-assembly',
       featureCount: evaluation.featureCount,
       diagnostics: evaluationErrors,
       repairContext: await buildRepairContext(undefined, evaluationErrors, undefined, input),

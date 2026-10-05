@@ -23,6 +23,7 @@ function KpiStrip({ stats }: { stats: AdminStats }): ReactNode {
           <div className="text-xs" style={{ color: 'var(--kcs-muted)' }}>{k.label}</div>
           <div className="text-2xl font-semibold mt-1" style={{ color: 'var(--kcs-text)' }}>{k.value}</div>
           <div className="text-xs mt-1" style={{ color: k.unknown ? 'var(--kcs-critical-text)' : 'var(--kcs-muted)' }}>{k.note}</div>
+          <div className="text-xs mt-1" data-testid={`kpi-def-${k.key}`} style={{ color: 'var(--kcs-muted)', opacity: 0.85 }}>{k.definition}</div>
         </li>
       ))}
     </ul>
@@ -195,18 +196,29 @@ function HealthPanel({ stats }: { stats: AdminStats }): ReactNode {
           : !u ? <Unknown section="uptime monitor" /> : (
             <>
               <table>
-                <thead><tr><th scope="col">Check</th><th scope="col" className="kcs-r">Uptime</th><th scope="col" className="kcs-r">p50</th><th scope="col" className="kcs-r">p95</th></tr></thead>
+                <thead><tr><th scope="col">Check</th><th scope="col">Now</th><th scope="col" className="kcs-r">Uptime</th><th scope="col" className="kcs-r">p95</th></tr></thead>
                 <tbody>
                   {u.checks.map(c => (
                     <tr key={c.check} data-testid="uptime-row">
                       <td>{c.check}</td>
+                      <td style={{ color: c.ok_now === false ? 'var(--kcs-critical-text)' : undefined }}>
+                        {c.ok_now == null ? '—' : c.ok_now ? 'passing' : 'failing'}
+                      </td>
                       <td className="kcs-r">{c.uptime_pct === null ? '—' : `${c.uptime_pct.toFixed(2)}%`}</td>
-                      <td className="kcs-r">{fmtMs(c.p50_ms)}</td><td className="kcs-r">{fmtMs(c.p95_ms)}</td>
+                      <td className="kcs-r">
+                        {c.p95_ms != null ? fmtMs(c.p95_ms) : c.latency_ms != null ? `${fmtMs(c.latency_ms)} (last)` : '—'}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-              <Note>{u.incidents} incidents · {u.blips} blips · {u.deploys} deploys{u.from && u.to ? ` · ${new Date(u.from).toLocaleString()} – ${new Date(u.to).toLocaleString()}` : ''}</Note>
+              <Note>
+                {u.last_run_at ? `Last run ${new Date(u.last_run_at).toLocaleString()}. ` : ''}
+                {u.uptime_pct === null
+                  ? 'No uptime % yet: the deployed monitor does not serve /summary.'
+                  : `${u.window_days ? `Last ${u.window_days} days` : 'Monitor window'} (the monitor keeps 7): ${u.incidents} incidents · ${u.blips} blips · ${u.deploys} deploys.`}
+              </Note>
+              <Note>{stats.definitions['uptime'] ?? ''}</Note>
             </>
           )}
       </div>

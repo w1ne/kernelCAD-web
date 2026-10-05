@@ -15,7 +15,7 @@
 // Email goes through the Cloudflare Email Service `send_email` binding, the
 // same setup as workers/feedback-mailer.
 
-import { runDailySummary, runMonitor, statusBody, type SendFn } from './monitor';
+import { runDailySummary, runMonitor, statusBody, summaryBody, type SendFn } from './monitor';
 import { D1Store, type D1Like } from './store';
 
 export interface SendEmailBinding {
@@ -86,11 +86,14 @@ export default {
 
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
-    if (url.pathname !== '/status') return new Response('Not found', { status: 404 });
+    if (url.pathname !== '/status' && url.pathname !== '/summary') return new Response('Not found', { status: 404 });
     if (request.method !== 'GET' && request.method !== 'HEAD') {
       return new Response('Method Not Allowed', { status: 405, headers: { Allow: 'GET, HEAD' } });
     }
-    const body = await statusBody(new D1Store(env.DB));
+    const store = new D1Store(env.DB);
+    const body = url.pathname === '/status'
+      ? await statusBody(store)
+      : await summaryBody(store, Date.now(), Number(url.searchParams.get('days') ?? '1'));
     return new Response(JSON.stringify(body, null, 2), {
       status: 200,
       headers: {

@@ -85,6 +85,23 @@ describe('Worker entry', () => {
     expect((await worker.fetch(new Request('https://x.workers.dev/status', { method: 'POST' }), env)).status).toBe(405);
   });
 
+  it('GET /summary?days=N serves per-check uptime over the window, numbers only', async () => {
+    const DB = sqliteD1();
+    const env: Env = {
+      DB,
+      EMAIL: { send: async () => ({ messageId: 'm' }) },
+      ALERT_TO: 'andrii@kernelcad.com',
+      ALERT_FROM: 'uptime@kernelcad.com',
+    };
+    await runMonitor({ store: new D1Store(DB), fetch: fakeFetch(fakeProd()), send: async () => {} }, Date.now() - 60_000);
+    const res = await worker.fetch(new Request('https://x.workers.dev/summary?days=99'), env);
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { days: number; checks: Array<{ checkId: string; runs: number; okRuns: number; uptimePct: number | null }> };
+    expect(body.days).toBe(7);
+    expect(body.checks).toHaveLength(8);
+    expect(body.checks.find((c) => c.checkId === 'healthz')).toMatchObject({ runs: 1, okRuns: 1, uptimePct: 100 });
+  });
+
   it('sends from the fixed sender to the fixed recipient', async () => {
     const calls: unknown[] = [];
     const env = {

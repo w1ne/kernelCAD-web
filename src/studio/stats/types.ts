@@ -4,6 +4,10 @@
 // Shape of GET /api/v1/admin/stats (kernelCAD-server lib/adminStats.ts).
 // Every database section is null when its read failed; `read_failures` says
 // which. Per-day arrays align with `days` (UTC, oldest first).
+//
+// Fields marked "v2" come from the server's admin_stats_measurement()
+// (migration 20261005130000). An older server omits them; the page then
+// says the number uses the old definition instead of guessing.
 
 export type StatsWindow = '7d' | '28d' | '90d';
 export const STATS_WINDOWS: readonly StatsWindow[] = ['7d', '28d', '90d'];
@@ -61,6 +65,10 @@ export interface Generations {
   by_status: Record<string, number>;
   by_day: Record<string, number[]>;
   failures: GenerationFailure[];
+  /** v2: reason/stage are recorded since this day; older failed rows show reason 'legacy'. */
+  instrumented_since?: string | null;
+  /** v2: failed rows in the window from before instrumentation, without a reason. */
+  legacy_unrecorded?: number;
   duration_ms: { p50: number | null; p95: number | null } | null;
   prompt_tokens: number;
   completion_tokens: number;
@@ -70,6 +78,8 @@ export interface Generations {
 export interface McpTool {
   tool: string;
   calls: number;
+  /** v2: the tool refused the caller's model. Not an error. */
+  rejected?: number;
   tool_errors: number;
   exceptions: number;
   refused: number;
@@ -78,14 +88,27 @@ export interface McpTool {
 }
 
 export interface Mcp {
+  /** 2 = user traffic only, rejections apart from errors. Absent = old definition (all traffic, rejections are errors). */
+  version?: number;
+  /** v2: first day the tool-call table has data (YYYY-MM-DD). */
+  data_since?: string | null;
   calls: number;
+  /** tool_error + exception (v2: real failures only). */
   errors: number;
+  ok?: number;
+  rejected?: number;
+  tool_errors?: number;
+  exceptions?: number;
+  refused?: number;
+  /** v2: calls left out of every number: our uptime monitor and directory / scanner probes. */
+  excluded?: { monitor: number; probe: number };
   latency_ms: { p50: number | null; p95: number | null } | null;
   calls_by_day: number[];
   errors_by_day: number[];
+  rejected_by_day?: number[];
   tools: McpTool[];
-  clients: Array<{ client: string; calls: number; errors: number }>;
-  diagnostics: Array<{ tool: string; code: string; count: number }>;
+  clients: Array<{ client: string; calls: number; errors: number; rejected?: number }>;
+  diagnostics: Array<{ tool: string; code: string; count: number; outcome?: string }>;
 }
 
 export interface Money {
@@ -106,14 +129,40 @@ export interface ExportFormatCounters {
   byClass: Record<string, number>;
 }
 
+export interface UptimeCheck {
+  check: string;
+  /** Latest run passed (monitor /status). */
+  ok_now?: boolean | null;
+  latency_ms?: number | null;
+  /** Over the summary window (monitor /summary). */
+  uptime_pct: number | null;
+  p50_ms: number | null;
+  p95_ms: number | null;
+}
+
 export interface UptimeSummary {
   from: string | null;
   to: string | null;
+  window_days?: number | null;
+  /** Passing runs / runs over the summary window, percent; null when the monitor has no /summary yet. */
   uptime_pct: number | null;
-  checks: Array<{ check: string; uptime_pct: number | null; p50_ms: number | null; p95_ms: number | null }>;
+  passing_now?: number | null;
+  total_now?: number | null;
+  last_run_at?: string | null;
+  checks: UptimeCheck[];
   incidents: number;
   blips: number;
   deploys: number;
+}
+
+export interface ExportsPersisted {
+  studio_data_since: string | null;
+  mcp_data_since: string | null;
+  studio: {
+    formats: Record<string, Omit<ExportFormatCounters, 'byClass'>>;
+    duration_ms: { p50: number | null; p95: number | null } | null;
+  } | null;
+  mcp: { calls: number; ok: number; rejected: number; errors: number; refused: number } | null;
 }
 
 export interface ReadFailure {
@@ -140,6 +189,8 @@ export interface AdminStats {
     formats: Record<string, ExportFormatCounters>;
     durationMs: { samples: number; p50: number; p95: number; max: number };
   };
+  /** v2: export outcomes from the database (Studio export_events + MCP export calls). */
+  exports_persisted?: ExportsPersisted | null;
   health: {
     commit: string;
     process_started_at: string;
