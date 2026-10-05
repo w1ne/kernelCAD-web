@@ -4,7 +4,7 @@ import { useContext, useMemo } from 'react';
 import type { ViewerDimension } from '../../../../shared/intent/viewerDimension';
 import { ProjectContext } from '../../../context/ProjectContext';
 import { readStudioScriptParam } from '../../../context/geometry/types';
-import { resolveViewerDimensions, type MeshDimensionsInfo } from './boundsDimensions';
+import { resolveViewerDimensions, type DimensionBounds, type MeshDimensionsInfo } from './boundsDimensions';
 import { dimsForced, useDimensionsToggle } from './useDimensionsToggle';
 
 function locationSearch(): string {
@@ -17,6 +17,8 @@ function locationSearch(): string {
  *  and the toggle. */
 export function useViewerDimensions(info: MeshDimensionsInfo | null | undefined): {
     dimensions: ViewerDimension[];
+    /** The payload's body bounds, which frame the overlay layout. */
+    bounds: DimensionBounds | null;
     legacy: boolean;
     available: boolean;
     on: boolean;
@@ -27,5 +29,5 @@ export function useViewerDimensions(info: MeshDimensionsInfo | null | undefined)
     const modelKey = `${readStudioScriptParam() ?? ''}|${projectId}`;
     const { dimensions, legacy } = useMemo(() => resolveViewerDimensions(info), [info]);
     const { on, toggle } = useDimensionsToggle(info ? dimensions : undefined, search, modelKey);
-    return { dimensions, legacy, available: Boolean(info) || dimsForced(search), on, toggle };
+    return { dimensions, bounds: info?.bounds ?? null, legacy, available: Boolean(info) || dimsForced(search), on, toggle };
 }

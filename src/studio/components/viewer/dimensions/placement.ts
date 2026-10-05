@@ -27,7 +27,8 @@ export interface PlacedDimension {
 const add = (p: V3, q: V3): V3 => [p[0] + q[0], p[1] + q[1], p[2] + q[2]];
 const mid = (p: V3, q: V3): V3 => [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2, (p[2] + q[2]) / 2];
 
-/** Box around every dimension point. Overall extents lie on its edges. */
+/** The body's box. Overall extents lie on its edges and labels move out
+ *  from its centre. */
 export interface DimensionFrame {
     lo: V3;
     hi: V3;
@@ -35,18 +36,32 @@ export interface DimensionFrame {
     diagonal: number;
 }
 
-export function dimensionFrame(dimensions: readonly ViewerDimension[]): DimensionFrame {
+/** Bounds of the body, as the mesh payload reports them. */
+export interface FrameBounds {
+    min: readonly [number, number, number];
+    max: readonly [number, number, number];
+}
+
+function frameOf(lo: V3, hi: V3): DimensionFrame {
+    return { lo, hi, centre: mid(lo, hi), diagonal: Math.hypot(hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]) };
+}
+
+/** The payload bounds when known, else the box around the measured points.
+ *  Construction points such as an angular apex are left out: they can lie
+ *  far from the body and would fling every label away from it. */
+export function dimensionFrame(dimensions: readonly ViewerDimension[], bounds?: FrameBounds | null): DimensionFrame {
+    if (bounds) return frameOf([...bounds.min], [...bounds.max]);
     const lo: V3 = [Infinity, Infinity, Infinity];
     const hi: V3 = [-Infinity, -Infinity, -Infinity];
     for (const d of dimensions) {
-        for (const p of [d.a, d.b, ...(d.centre ? [d.centre] : [])]) {
+        for (const p of [d.a, d.b]) {
             for (let k = 0; k < 3; k++) {
                 lo[k] = Math.min(lo[k], p[k]);
                 hi[k] = Math.max(hi[k], p[k]);
             }
         }
     }
-    return { lo, hi, centre: mid(lo, hi), diagonal: Math.hypot(hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]) };
+    return frameOf(lo, hi);
 }
 
 /** `length` along the direction from `centre` to `p` (straight up when `p` is the centre). */
@@ -106,13 +121,15 @@ function place(d: ViewerDimension, priority: number, centre: V3, offset: number)
 
 /** Lay out dimensions around the body. Declared dimensions come first in
  *  priority; auto ones keep the kernel's order (overall > holes > spacing >
- *  radii > chamfers). Overall extents follow the camera octant `eye`. */
+ *  radii > chamfers). Overall extents follow the camera octant `eye`. The
+ *  frame is the payload `bounds` when given (see `dimensionFrame`). */
 export function placeDimensions(
     dimensions: readonly ViewerDimension[],
     eye: ViewOctant = [1, 1, 1],
+    bounds?: FrameBounds | null,
 ): PlacedDimension[] {
     if (dimensions.length === 0) return [];
-    const f = dimensionFrame(dimensions);
+    const f = dimensionFrame(dimensions, bounds);
     const offset = LABEL_OFFSET_FRACTION * f.diagonal;
     const ordered = [
         ...dimensions.filter((d) => d.source === 'declared'),

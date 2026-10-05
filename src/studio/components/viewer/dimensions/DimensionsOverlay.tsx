@@ -4,7 +4,7 @@ import { Line } from '@react-three/drei/core/Line';
 import { useMemo } from 'react';
 import type { ViewerDimension } from '../../../../shared/intent/viewerDimension';
 import { DimensionGraphic } from '../overlays/DimensionGraphic';
-import { dimensionColor, dimensionFrame, placeDimensions, type PlacedDimension } from './placement';
+import { dimensionColor, dimensionFrame, placeDimensions, type FrameBounds, type PlacedDimension } from './placement';
 import { useViewOctant } from './useViewOctant';
 import { useVisibleDimensions } from './useVisibleDimensions';
 
@@ -21,10 +21,14 @@ function PlacedDimensionGraphic({ d, color }: { d: PlacedDimension; color: strin
 
 /** Declared and automatic dimensions drawn in the scene (inside the Canvas).
  *  Labels that would cover a more important one are hidden each frame. */
-export function DimensionsOverlay({ dimensions }: { dimensions: readonly ViewerDimension[] }) {
-    const centre = useMemo(() => dimensionFrame(dimensions).centre, [dimensions]);
+export function DimensionsOverlay({ dimensions, bounds }: {
+    dimensions: readonly ViewerDimension[];
+    /** The mesh payload's body bounds; frames the layout when present. */
+    bounds?: FrameBounds | null;
+}) {
+    const centre = useMemo(() => dimensionFrame(dimensions, bounds).centre, [dimensions, bounds]);
     const eye = useViewOctant(centre);
-    const placed = useMemo(() => placeDimensions(dimensions, eye), [dimensions, eye]);
+    const placed = useMemo(() => placeDimensions(dimensions, eye, bounds), [dimensions, eye, bounds]);
     const visible = useVisibleDimensions(placed);
     return (
         <group name="viewer-dimensions">

@@ -56,6 +56,28 @@ describe('placeDimensions', () => {
         expect(placed.label).toBe('90°');
     });
 
+    it('frames the layout on the payload bounds, not on a far-away angular apex', () => {
+        // Two nearly parallel edges meet far outside the 40 x 20 x 10 plate.
+        const angle: ViewerDimension = {
+            id: 'declared:0', kind: 'angular', a: [20, 0, 10], b: [20, 20, 10],
+            centre: [5000, 10, 10], text: '0.2°', source: 'declared',
+        };
+        const bounds = { min: [0, 0, 0] as const, max: [40, 20, 10] as const };
+        const expectOnPlate = (placed: ReturnType<typeof placeDimensions>) => {
+            const overall = placed.filter((p) => p.id.startsWith('auto:'));
+            // Overall extents stay on the plate's edges and every label within
+            // one offset of the plate (the apex is 5 m away).
+            overall.forEach((p) => p.extension!.forEach(([from]) => from.forEach((x, k) => {
+                expect(x).toBeGreaterThanOrEqual(bounds.min[k] - 1e-9);
+                expect(x).toBeLessThanOrEqual(bounds.max[k] + 1e-9);
+            })));
+            placed.forEach((p) => [p.a, p.b].forEach((q) => expect(Math.hypot(q[0] - 20, q[1] - 10, q[2] - 5)).toBeLessThan(diag)));
+        };
+        expectOnPlate(placeDimensions([angle, ...plate], [1, 1, 1], bounds));
+        // Without bounds the apex is still left out of the frame.
+        expectOnPlate(placeDimensions([angle, ...plate], [1, 1, 1]));
+    });
+
     it('puts declared dimensions first and passes the part name as the sublabel', () => {
         const declared: ViewerDimension = { id: 'declared:0', kind: 'linear', a: [0, 0, 0], b: [0, 20, 0], text: '20', source: 'declared', part: 'lid' };
         const placed = placeDimensions([...plate, declared]);

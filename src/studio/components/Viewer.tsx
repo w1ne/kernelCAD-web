@@ -213,7 +213,7 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                     viewportBackground={background ?? viewportBackground}
                     planes={planes}
                 />
-                {dims.on ? <DimensionsOverlay dimensions={dims.dimensions} /> : null}
+                {dims.on ? <DimensionsOverlay dimensions={dims.dimensions} bounds={dims.bounds} /> : null}
                 {measuring ? <MeasureTool geometries={geometries} itemNames={itemNames} hiddenIds={hiddenIds} /> : null}
                 {onDisplayReady ? (
                     <DisplayReadySensor geometries={geometries} onDisplayReady={onDisplayReady} />
