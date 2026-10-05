@@ -13,7 +13,7 @@
 // positions are unchanged from the fused version.
 
 setCameraTarget(0, 0, 35);
-setCameraDistance(620);
+setCameraDistance(800); // wider 170 mm pitch
 
 const beige = '#d8d3c9';
 const tan = '#b9b3a8';
@@ -205,7 +205,10 @@ function validationLoop(cx) {
   return p.list;
 }
 
-const centers = [-250, -125, 0, 125, 250];
+// 170 mm pitch: each candidate spans about cx-52..cx+105 (the 38° thumb
+// reaches furthest), so at 125 (and still at 140) one candidate's thumb ran
+// into the next one's index finger / ghost overlay.
+const centers = [-340, -170, 0, 170, 340];
 const board = assembly('robot-hand-workflow-candidates');
 for (const [name, shape] of [
   ...mechanismTemplate(centers[0]),

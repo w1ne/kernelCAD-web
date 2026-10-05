@@ -145,13 +145,15 @@ const shoulderColumnShape = cylinder(shoulderColumnH, spineR, 32)
   .union(
     box(10, 4, 6, true).translate(0, shoulderCheekCenterY.negate(), shoulderColumnH.add(3)),
   )
-  // Struts under each lug tie it to the spine below the column top (z 30 to
-  // 36.5), outside the upper arm's |y| <= beamW/2 band near the pivot. On
-  // their own the lugs floated 9.5 mm off the spine (union.disconnected).
-  .union(box(6, shoulderCheekCenterY.subtract(4), 6.5, true)
-    .translate(0, shoulderCheekCenterY.add(4).divide(2), shoulderColumnH.subtract(2.75)))
-  .union(box(6, shoulderCheekCenterY.subtract(4), 6.5, true)
-    .translate(0, shoulderCheekCenterY.add(4).divide(2).negate(), shoulderColumnH.subtract(2.75)))
+  // Struts under each lug tie it to the spine: z 30..36, i.e. entirely below
+  // the column top and the lugs (which they meet face to face at z = 36), so
+  // they stay 14 mm or more below the shoulder pitch axis and clear of the
+  // upper arm's sweep. On their own the lugs floated 9.5 mm off the spine
+  // (union.disconnected).
+  .union(box(6, shoulderCheekCenterY.subtract(4), 6, true)
+    .translate(0, shoulderCheekCenterY.add(4).divide(2), shoulderColumnH.subtract(3)))
+  .union(box(6, shoulderCheekCenterY.subtract(4), 6, true)
+    .translate(0, shoulderCheekCenterY.add(4).divide(2).negate(), shoulderColumnH.subtract(3)))
   .color('frame');
 const shoulderColumnPart = arm.part('shoulder-column', shoulderColumnShape);
 
@@ -353,7 +355,8 @@ const gripperPlate = box(gripperPlateT, 28, 28, true)
   .union(
     // Side bearing towers carry the grip driver axis at z=18 while leaving
     // the driver's central swept volume open.
-    // Towers reach back 2 mm into the palm plate (they sat 1 mm off it).
+    // Towers extend 2 mm further back so they overlap the palm plate by 1 mm
+    // (they sat 1 mm off it).
     box(10, 4, 8, true).fillet(0.6).translate(gripDriverXNum - 1, 8, gripDriverZNum - 4),
   )
   .union(

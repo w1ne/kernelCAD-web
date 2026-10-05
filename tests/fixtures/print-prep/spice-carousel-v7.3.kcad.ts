@@ -189,9 +189,10 @@ const meterPocket = cylinder(10, 4.5, 32).translate(PKT_X, PKT_Y, -1);
 const meterSocket = cylinder(4.35, 2.6, 16).translate(0, 0, -1.15);
 const bossRelief  = cylinder(0.85, 3.4, 16).translate(0, 0, -1.15);
 const ventGroove  = box(1.5, 6.5, 1.4).translate(-0.75, 8.1, 6.7).rotate([0, 0, 1], 7);
-// Flange sits flush under the disc (z -0.75..0); at z -1.05..-0.3 it hung
-// 0.3 mm below the disc as a loose ring (union.disconnected).
-const discFlange  = cylinder(0.75, 5, 32).translate(0, 0, -0.75);
+// Flange spans z -1.05..0: same bottom as before (0.1 mm floor clearance
+// against discCbore kept), now reaching up to the disc. At z -1.05..-0.3 it
+// hung 0.3 mm below the disc as a loose ring (union.disconnected).
+const discFlange  = cylinder(1.05, 5, 32).translate(0, 0, -1.05);
 const meterDisc = cylinder(DISC_T, DISC_R, 96)
   .union(discFlange)
   .subtract(meterPocket, meterSocket, bossRelief, ventGroove)

@@ -125,6 +125,16 @@ export async function inspectAssemblyTool(
   }
 
   const arm = selectAssembly(model.session.assemblies as Map<string, Assembly>, input.assembly);
+  if (arm === undefined && unionGuardOnly) {
+    // No assembly to inventory and the solid failed the union guard: surface
+    // that failure, not "no assembly captured".
+    return {
+      ok: false,
+      featureCount: evaluation.featureCount,
+      error: evaluation.diagnostics.find((d) => d.severity === 'error')?.message ?? 'Script evaluation failed.',
+      suggestedRepairPrompt: 'Fix the union.* diagnostics from evaluate_script (connect floating operands; fuse same-material pieces and finish once), then rerun inspect_assembly.',
+    };
+  }
   if (arm === undefined) {
     return {
       ok: false,
