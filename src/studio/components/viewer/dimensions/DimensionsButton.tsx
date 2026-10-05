@@ -18,10 +18,10 @@ export function DimensionsButton({ on, onToggle, legacy }: { on: boolean; onTogg
                 title={on ? 'Hide dimensions' : 'Show dimensions'}
                 onClick={onToggle}
                 className={
-                    'absolute left-14 top-3 z-20 flex h-9 w-9 items-center justify-center rounded-md border shadow-lg backdrop-blur transition focus:outline-none focus:ring-2 focus:ring-cyan-300 ' +
+                    'absolute left-14 top-3 z-20 flex h-9 w-9 items-center justify-center rounded-md border shadow-lg backdrop-blur transition focus:outline-none focus:ring-2 focus:ring-accent ' +
                     (on
-                        ? 'border-amber-300 bg-amber-400 text-neutral-950'
-                        : 'border-white/20 bg-neutral-950/85 text-white hover:bg-neutral-800')
+                        ? 'border-warn bg-warn text-on-accent'
+                        : 'border-border bg-surface-1 text-fg hover:bg-surface-2')
                 }
             >
                 <RulerDimensionLine size={18} aria-hidden="true" />
@@ -29,7 +29,7 @@ export function DimensionsButton({ on, onToggle, legacy }: { on: boolean; onTogg
             {on && legacy ? (
                 <p
                     data-testid="dimensions-legacy-hint"
-                    className="pointer-events-none absolute left-3 top-14 z-20 rounded-md bg-neutral-950/80 px-2 py-1 text-2xs text-neutral-200 shadow"
+                    className="pointer-events-none absolute left-3 top-14 z-20 rounded-md bg-surface-1 px-2 py-1 text-2xs text-fg-2 shadow"
                 >
                     {LEGACY_DIMENSIONS_HINT}
                 </p>

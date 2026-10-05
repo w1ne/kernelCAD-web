@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { describe, expect, it } from 'vitest';
+/** @vitest-environment jsdom */
+import { afterEach, describe, expect, it } from 'vitest';
 import type { ViewerDimension } from '../../../../shared/intent/viewerDimension';
 import { boundsDimensions } from './boundsDimensions';
 import { dimensionColor, placeDimensions } from './placement';
@@ -66,11 +67,20 @@ describe('placeDimensions', () => {
 });
 
 describe('dimensionColor', () => {
-    it('declared uses the accent, auto a neutral grey, per background', () => {
-        expect(dimensionColor('declared', 'dark')).toBe('#5B9BE6');
-        expect(dimensionColor('declared', 'light')).toBe('#1E5FA8');
-        expect(dimensionColor('auto', 'dark')).not.toBe(dimensionColor('declared', 'dark'));
-        expect(dimensionColor('auto', 'light')).not.toBe(dimensionColor('auto', 'dark'));
-        expect(dimensionColor('auto', 'checkered')).toBe(dimensionColor('auto', 'dark'));
+    afterEach(() => {
+        document.documentElement.style.removeProperty('--kc-accent');
+        document.documentElement.style.removeProperty('--kc-fg-2');
+    });
+
+    it('reads the accent token for declared and the neutral grey token for auto', () => {
+        document.documentElement.style.setProperty('--kc-accent', '#1E5FA8');
+        document.documentElement.style.setProperty('--kc-fg-2', '#3F4C5E');
+        expect(dimensionColor('declared')).toBe('#1e5fa8');
+        expect(dimensionColor('auto')).toBe('#3f4c5e');
+    });
+
+    it('falls back to the dark-theme values when no theme is loaded', () => {
+        expect(dimensionColor('declared')).toBe('#5b9be6');
+        expect(dimensionColor('auto')).toBe('#aab3c2');
     });
 });

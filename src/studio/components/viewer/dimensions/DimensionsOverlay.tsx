@@ -3,7 +3,6 @@
 import { Line } from '@react-three/drei/core/Line';
 import { useMemo } from 'react';
 import type { ViewerDimension } from '../../../../shared/intent/viewerDimension';
-import type { ViewportBackground } from '../../../../shared/types/viewMode';
 import { DimensionGraphic } from '../overlays/DimensionGraphic';
 import { dimensionColor, dimensionFrame, placeDimensions, type PlacedDimension } from './placement';
 import { useViewOctant } from './useViewOctant';
@@ -22,10 +21,7 @@ function PlacedDimensionGraphic({ d, color }: { d: PlacedDimension; color: strin
 
 /** Declared and automatic dimensions drawn in the scene (inside the Canvas).
  *  Labels that would cover a more important one are hidden each frame. */
-export function DimensionsOverlay({ dimensions, background }: {
-    dimensions: readonly ViewerDimension[];
-    background: ViewportBackground;
-}) {
+export function DimensionsOverlay({ dimensions }: { dimensions: readonly ViewerDimension[] }) {
     const centre = useMemo(() => dimensionFrame(dimensions).centre, [dimensions]);
     const eye = useViewOctant(centre);
     const placed = useMemo(() => placeDimensions(dimensions, eye), [dimensions, eye]);
@@ -33,7 +29,7 @@ export function DimensionsOverlay({ dimensions, background }: {
     return (
         <group name="viewer-dimensions">
             {placed.filter((d) => visible.has(d.id)).map((d) => (
-                <PlacedDimensionGraphic key={d.id} d={d} color={dimensionColor(d.source, background)} />
+                <PlacedDimensionGraphic key={d.id} d={d} color={dimensionColor(d.source)} />
             ))}
         </group>
     );

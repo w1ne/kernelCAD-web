@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { V3, ViewerDimension } from '../../../../shared/intent/viewerDimension';
-import type { ViewportBackground } from '../../../../shared/types/viewMode';
 import type { DimensionKind } from '../overlays/DimensionGraphic';
+import { readThemeColor } from '../overlays/themeColor';
 
 /** Labels sit this fraction of the bounding-box diagonal outside the body. */
 export const LABEL_OFFSET_FRACTION = 0.06;
@@ -121,14 +121,15 @@ export function placeDimensions(
     return ordered.map((d, i) => place(silhouetteEdge(d, f, eye), i, f.centre, offset));
 }
 
-/** Declared dimensions use the accent token (`--kc-accent`), auto ones a
- *  neutral grey (`--kc-fg-2` / `--kc-fg-3`), picked for the canvas
- *  background rather than the page theme so lines read on either. */
-const PALETTE: Record<'light' | 'dark', Record<ViewerDimension['source'], string>> = {
-    light: { declared: '#1E5FA8', auto: '#566072' },
-    dark: { declared: '#5B9BE6', auto: '#AAB3C2' },
+/** Declared dimensions use the accent token (`--kc-accent`), auto ones the
+ *  neutral grey (`--kc-fg-2`), read from the active Studio theme. The
+ *  numeric fallbacks (dark-theme values) apply when no theme is loaded. */
+const TOKEN: Record<ViewerDimension['source'], [variable: string, fallback: number]> = {
+    declared: ['--kc-accent', 0x5b9be6],
+    auto: ['--kc-fg-2', 0xaab3c2],
 };
 
-export function dimensionColor(source: ViewerDimension['source'], background: ViewportBackground): string {
-    return PALETTE[background === 'light' ? 'light' : 'dark'][source];
+export function dimensionColor(source: ViewerDimension['source']): string {
+    const [variable, fallback] = TOKEN[source];
+    return `#${readThemeColor(variable, fallback).getHexString()}`;
 }
