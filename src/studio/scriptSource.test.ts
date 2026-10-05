@@ -238,7 +238,7 @@ describe('param overrides (stateless re-run path)', () => {
     );
   });
 
-  it('shows the stored revision mesh when the live mesh times out', async () => {
+  it('falls back to the API route when the CDN copy is missing', async () => {
     vi.stubEnv('VITE_API_BASE_URL', 'https://api.example.com');
     vi.stubGlobal('window', {
       location: { hostname: 'app.kernelcad.com', pathname: '/p/BHEaiMyr', search: '?version=2' },
@@ -257,6 +257,25 @@ describe('param overrides (stateless re-run path)', () => {
 
     await expect(meshSourceHosted('ignored')).resolves.toEqual(stored);
     expect(fetchMock).toHaveBeenCalledWith('https://api.example.com/api/v1/projects/BHEaiMyr/revisions/2/mesh-artifact');
+  });
+
+  it('reads the stored revision mesh from the CDN when the API answers 503', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.example.com');
+    vi.stubGlobal('window', {
+      location: { hostname: 'app.kernelcad.com', pathname: '/p/BHEaiMyr', search: '?version=2' },
+    });
+    const stored = { revision: 2, features: [{ featureId: 'ball' }], bounds: { min: [0, 0, 0], max: [1, 1, 1] } };
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      const url = String(input);
+      if (url === 'https://mesh.kernelcad.com/mesh-artifacts/BHEaiMyr/v2.json') {
+        return { ok: true, json: async () => stored } as Response;
+      }
+      if (url.endsWith('/mesh-artifact')) return { ok: false, status: 503, json: async () => null } as Response;
+      return { ok: false, status: 500, json: async () => ({ error: 'mesh timed out after 30000 ms' }) } as Response;
+    });
+
+    await expect(meshSourceHosted('ignored')).resolves.toEqual(stored);
+    expect(fetchMock).not.toHaveBeenCalledWith(expect.stringContaining('/revisions/2/mesh-artifact'));
   });
 
   it('keeps the live mesh error when the page is not pinned to a revision', async () => {

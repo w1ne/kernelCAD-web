@@ -291,13 +291,11 @@ async function meshOnServer(base: string, body: ReturnType<typeof hostedMeshBody
   return payload;
 }
 
-/** The mesh stored when the current `/p/<slug>?version=N` revision was
- *  published, or null when the page is not pinned or the artifact is missing. */
-async function storedRevisionMesh(base: string): Promise<BackendMeshPayload | null> {
-  const project = currentHostedProject();
-  if (!project?.version) return null;
+/** Public CDN holding the meshes stored at publish time. */
+const MESH_CDN_BASE = (import.meta.env.VITE_MESH_CDN_BASE as string | undefined) ?? 'https://mesh.kernelcad.com';
+
+async function fetchBridgePayload(url: string): Promise<BackendMeshPayload | null> {
   try {
-    const url = `${base}/api/v1/projects/${encodeURIComponent(project.slug)}/revisions/${project.version}/mesh-artifact`;
     const res = await fetch(url);
     if (!res.ok) return null;
     const payload = await res.json().catch(() => null);
@@ -305,6 +303,18 @@ async function storedRevisionMesh(base: string): Promise<BackendMeshPayload | nu
   } catch {
     return null;
   }
+}
+
+/** The mesh stored when the current `/p/<slug>?version=N` revision was
+ *  published, or null when the page is not pinned or the artifact is missing.
+ *  Reads the CDN first: the API route that redirects to it runs on the same
+ *  server as the mesh build that just failed, and answers 503 under load. */
+async function storedRevisionMesh(base: string): Promise<BackendMeshPayload | null> {
+  const project = currentHostedProject();
+  if (!project?.version) return null;
+  const slug = encodeURIComponent(project.slug);
+  return await fetchBridgePayload(`${MESH_CDN_BASE}/mesh-artifacts/${slug}/v${project.version}.json`)
+    ?? await fetchBridgePayload(`${base}/api/v1/projects/${slug}/revisions/${project.version}/mesh-artifact`);
 }
 
 /**

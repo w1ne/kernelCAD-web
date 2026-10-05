@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { useOptionalSession } from '../../../funnel/hooks/useSession';
 import {
     FEEDBACK_CATEGORIES, MESSAGE_MAX, MESSAGE_MIN, appVersion, postFeedback,
-    type FeedbackCategory, type FeedbackPayload,
+    contextFields, type FeedbackCategory, type FeedbackContext, type FeedbackPayload,
 } from './feedbackApi';
 
 /**
@@ -32,6 +32,8 @@ const CATEGORY_PLACEHOLDER: Record<FeedbackCategory, string> = {
 export interface FeedbackModalProps {
     open: boolean;
     onClose: () => void;
+    /** Where it was opened (the ChatGPT viewer, a project page); sent with the message. */
+    context?: FeedbackContext;
     /** Override the network call (tests). */
     submitFeedback?: (payload: FeedbackPayload) => Promise<void>;
 }
@@ -178,7 +180,7 @@ function DialogFrame({ onDismiss, busy, children }: {
     return createPortal(frame, document.body);
 }
 
-function FeedbackDialog({ onClose, submitFeedback = postFeedback }: Omit<FeedbackModalProps, 'open'>) {
+function FeedbackDialog({ onClose, context, submitFeedback = postFeedback }: Omit<FeedbackModalProps, 'open'>) {
     const { session } = useOptionalSession();
     const signedInEmail = session?.user.email ?? '';
 
@@ -213,6 +215,7 @@ function FeedbackDialog({ onClose, submitFeedback = postFeedback }: Omit<Feedbac
             path: window.location.pathname,
             appVersion: appVersion(),
             honeypot,
+            ...contextFields(context),
         };
         try {
             await submitFeedback(payload);

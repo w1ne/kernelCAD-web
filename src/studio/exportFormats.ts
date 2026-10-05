@@ -18,6 +18,7 @@ export const EXPORT_FORMATS: ReadonlyArray<ExportFormatDescriptor> = [
     { id: 'dxf', label: 'DXF', help: 'Planar profile; laser / waterjet', requiresPlanar: true },
     { id: '3mf', label: '3MF', help: 'Slicer mesh with per-part colors' },
     { id: 'glb', label: 'GLB', help: 'Web / AR viewer; PBR materials' },
+    { id: 'pdf-drawing', label: 'Drawing (PDF)', help: 'Dimensioned A3 engineering drawing' },
 ];
 
 /**

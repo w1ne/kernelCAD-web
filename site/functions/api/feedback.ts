@@ -16,7 +16,9 @@
 //
 // Behaviour follows LabWired's POST /v1/feedback:
 //   - JSON body { message (10–4000 chars), email?, category?, path?,
-//     appVersion?, userId?, userEmail?, honeypot? }
+//     appVersion?, userId?, userEmail?, honeypot?, surface?, slug?,
+//     revision?, url? } (the last four say where it came from: the ChatGPT
+//     viewer or a project page; stored as JSON in `context`)
 //   - honeypot filled → silent 204, nothing stored
 //   - 5 submissions per hour per IP, and per user id when one is sent → 429
 
@@ -101,6 +103,16 @@ export function clientIp(request: Request): string {
   return 'unknown';
 }
 
+/** Where the feedback was sent from. Only the keys that were sent. */
+export interface FeedbackContext {
+  surface?: string;
+  slug?: string;
+  revision?: number;
+  url?: string;
+}
+
+const SURFACE_RE = /^[a-z][a-z0-9_-]{0,31}$/;
+
 export interface ParsedFeedback {
   message: string;
   email: string | null;
@@ -109,6 +121,7 @@ export interface ParsedFeedback {
   appVersion: string | null;
   userId: string | null;
   userEmail: string | null;
+  context: FeedbackContext | null;
   honeypot: string;
 }
 
@@ -122,6 +135,24 @@ function optionalString(value: unknown, max: number): string | null | undefined 
   if (typeof value !== 'string') return undefined;
   const trimmed = value.trim();
   return trimmed === '' ? null : trimmed.slice(0, max);
+}
+
+/** surface / slug / revision / url, or undefined when one is malformed. */
+function parseContext(body: Record<string, unknown>): FeedbackContext | null | undefined {
+  const surface = optionalString(body.surface, 32);
+  const slug = optionalString(body.slug, SHORT_FIELD_MAX);
+  const url = optionalString(body.url, PATH_MAX);
+  const revision = body.revision;
+  const revisionOk = revision == null || (typeof revision === 'number' && Number.isInteger(revision) && revision > 0);
+  if (surface === undefined || slug === undefined || url === undefined || !revisionOk) return undefined;
+  if (surface !== null && !SURFACE_RE.test(surface)) return undefined;
+  const context: FeedbackContext = {
+    ...(surface ? { surface } : {}),
+    ...(slug ? { slug } : {}),
+    ...(typeof revision === 'number' ? { revision } : {}),
+    ...(url ? { url } : {}),
+  };
+  return Object.keys(context).length > 0 ? context : null;
 }
 
 export function parseFeedbackBody(raw: unknown): ParseResult {
@@ -156,10 +187,12 @@ export function parseFeedbackBody(raw: unknown): ParseResult {
   if (path === undefined || appVersion === undefined || userId === undefined || userEmail === undefined) {
     return { ok: false, error: 'invalid_field' };
   }
+  const context = parseContext(body);
+  if (context === undefined) return { ok: false, error: 'invalid_field' };
 
   return {
     ok: true,
-    value: { message, email, category, path, appVersion, userId, userEmail, honeypot },
+    value: { message, email, category, path, appVersion, userId, userEmail, context, honeypot },
   };
 }
 
@@ -175,6 +208,13 @@ export function buildFeedbackEmail(
     `User id: ${fb.userId ?? 'anonymous'}`,
     `User email: ${fb.userEmail ?? 'none'}`,
     `Path: ${fb.path ?? 'none'}`,
+    ...(fb.context
+      ? [
+          `Surface: ${fb.context.surface ?? 'none'}`,
+          `Project: ${fb.context.slug ?? 'none'}${fb.context.revision ? ` r${fb.context.revision}` : ''}`,
+          `URL: ${fb.context.url ?? 'none'}`,
+        ]
+      : []),
     `App version: ${fb.appVersion ?? 'none'}`,
     `Country: ${meta.country ?? 'unknown'}`,
     `User-Agent: ${meta.userAgent ?? 'none'}`,
@@ -216,6 +256,35 @@ async function countSince(env: Env, column: 'ip_hash' | 'user_id', value: string
   return Number(row?.n ?? 0);
 }
 
+const INSERT_BASE =
+  'INSERT INTO feedback (created_at, category, message, email, user_id, user_email, path, app_version, user_agent, ip_hash, ip_country';
+
+/**
+ * Insert the row. A database that has not had migration 0003 yet has no
+ * `context` column: store the row without it rather than failing the submission.
+ */
+async function insertFeedback(
+  env: Env,
+  fb: ParsedFeedback,
+  meta: { now: number; ipHash: string; userAgent: string | null; country: string | null },
+): Promise<void> {
+  const values = [
+    meta.now, fb.category, fb.message, fb.email, fb.userId, fb.userEmail,
+    fb.path, fb.appVersion, meta.userAgent, meta.ipHash, meta.country,
+  ];
+  const run = (withContext: boolean) => env.DB.prepare(
+    `${INSERT_BASE}${withContext ? ', context' : ''}) VALUES (${'?, '.repeat(values.length - 1 + (withContext ? 1 : 0))}?)`,
+  )
+    .bind(...values, ...(withContext ? [fb.context ? JSON.stringify(fb.context) : null] : []))
+    .run();
+  try {
+    await run(true);
+  } catch (err) {
+    if (!/no column named context/i.test(String(err))) throw err;
+    await run(false);
+  }
+}
+
 export const onRequestPost: PagesFunction<Env> = async ({ request, env, waitUntil }) => {
   const declaredLength = Number(request.headers.get('Content-Length') ?? 0);
   if (declaredLength > BODY_MAX_BYTES) {
@@ -251,23 +320,12 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env, waitUnti
       return json(request, { error: 'rate_limited' }, 429);
     }
 
-    await env.DB.prepare(
-      'INSERT INTO feedback (created_at, category, message, email, user_id, user_email, path, app_version, user_agent, ip_hash, ip_country) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-    )
-      .bind(
-        now,
-        fb.category,
-        fb.message,
-        fb.email,
-        fb.userId,
-        fb.userEmail,
-        fb.path,
-        fb.appVersion,
-        request.headers.get('User-Agent')?.slice(0, 500) ?? null,
-        ipHash,
-        request.headers.get('cf-ipcountry') ?? null,
-      )
-      .run();
+    await insertFeedback(env, fb, {
+      now,
+      ipHash,
+      userAgent: request.headers.get('User-Agent')?.slice(0, 500) ?? null,
+      country: request.headers.get('cf-ipcountry'),
+    });
   } catch (err) {
     // Don't leak DB internals. `wrangler pages deployment tail` shows the error.
     console.error('feedback.d1', err);

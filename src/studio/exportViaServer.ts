@@ -9,7 +9,12 @@
 import { apiCall, rewritePath } from './api/apiBase';
 import { currentHostedProject, shouldUseHostedMesh } from './scriptSource';
 
-export type StudioExportFormat = 'stl' | 'step' | 'dxf' | '3mf' | 'glb';
+export type StudioExportFormat = 'stl' | 'step' | 'dxf' | '3mf' | 'glb' | 'pdf-drawing';
+
+/** File extension of a format's download (`pdf-drawing` is a `.pdf`). */
+export function exportFileExtension(format: StudioExportFormat): string {
+  return format === 'pdf-drawing' ? 'pdf' : format;
+}
 
 /** Response headers of an export that shipped with a warning (the server
  *  exposes both to browsers). */
@@ -168,7 +173,7 @@ async function fileFromResponse(response: Response, format: StudioExportFormat):
     response.headers
       .get('content-disposition')
       ?.match(/filename="?([^";]+)"?/)?.[1]
-    ?? `kernelcad-export.${format}`;
+    ?? (format === 'pdf-drawing' ? 'kernelcad-drawing.pdf' : `kernelcad-export.${exportFileExtension(format)}`);
   const warning = exportWarningFrom(response.headers, format);
   return { blob, downloadName, ...(warning ? { warning } : {}) };
 }

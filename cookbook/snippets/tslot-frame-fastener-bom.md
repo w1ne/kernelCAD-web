@@ -53,8 +53,7 @@ function slotCutter() {
 }
 
 function extrusion() {
-  let bar = box(profileSize, profileSize, length)
-    .translate(-profileSize / 2, -profileSize / 2, 0);
+  let bar = extrudeRoundedRect(profileSize, profileSize, 1.15, length);
   for (const deg of [0, 90, 180, 270]) {
     bar = bar.subtract(slotCutter().rotateZ(deg));
   }
@@ -78,27 +77,22 @@ function yCyl(r, y0, len, x, z) {
   return cylinder(len, r).rotateX(-90).translate(x, y0, z);
 }
 
-// Gusset screw clearances as real holes. The entry face is the gusset's -Y
-// face; on front/back faces u = +X and v = +Z, measured from the face centre
-// (12, 71), so world x = 0 and 22 become u = -12 and 10, and world z = 72
-// becomes v = 1.
-const gusset = box(40, 3, 18)
-  .translate(-8, 10, 62)
-  .holes('front', {
-    positions: [{ u: -12, v: 1 }, { u: 10, v: 1 }],
-    diameter: 5.6,
-    depth: 'through',
-  });
+let gusset = box(42, 3.2, 20).translate(-8, 10, 60);
+gusset = gusset.union(box(10, 8, 10).translate(4, 13.2, 66));
+gusset = gusset.subtract(yCyl(2.8, 8, 10, 0, 72));
+gusset = gusset.subtract(yCyl(2.8, 8, 10, 22, 72));
+gusset = gusset.finish('anodized', { color: '#5d6d78' });
 
-function capScrew(x, z) {
-  const head = yCyl(4, 13, 3.2, x, z);
-  const shank = yCyl(2.25, 6, 7, x, z);
-  return head.union(shank);
+function capScrew(x: number, z: number) {
+  const head = yCyl(4.8, 13.1, 3.1, x, z);
+  const socket = yCyl(2.1, 14.4, 1.8, x, z);
+  const shank = yCyl(2.25, 6, 7.2, x, z);
+  return head.union(shank).subtract(socket).finish('steel');
 }
 
 const arm = assembly('tslot-frame-corner');
-const up = arm.part('upright', upright, { material: 'aluminum-6061' });
-const rl = arm.part('rail', rail, { material: 'aluminum-6061' });
+const up = arm.part('upright', upright.finish('aluminium-brushed'), { material: 'aluminum-6061' });
+const rl = arm.part('rail', rail.finish('aluminium-brushed'), { material: 'aluminum-6061' });
 const gu = arm.part('gusset', gusset, { material: 'aluminum-6061' });
 const s1 = arm.part('screw-1', capScrew(0, 72), { material: 'mild-steel' });
 const s2 = arm.part('screw-2', capScrew(22, 72), { material: 'mild-steel' });
