@@ -4,6 +4,7 @@ import type { FeatureMeshSerialized } from '../modeling/capture/featureMeshSeria
 import type { PBRMaterial } from '../shared/intent/material';
 import type { GeometryResult } from '../shared/worker/geometryEngine';
 import { featureMeshesToGeometries } from '../studio/context/geometry/types';
+import type { ViewerDimension } from '../shared/intent/viewerDimension';
 
 export interface MeshArtifactBounds {
   min: [number, number, number];
@@ -16,6 +17,8 @@ export interface MeshArtifact {
   revision: number;
   bounds: MeshArtifactBounds;
   features: FeatureMeshSerialized[];
+  /** Absent on artifacts saved before viewer dimensions existed. */
+  dimensions?: ViewerDimension[];
 }
 
 function isVec3(value: unknown): value is [number, number, number] {
@@ -103,15 +106,30 @@ function parseDrawableFeatures(raw: unknown): FeatureMeshSerialized[] {
   return selectTerminalSerializedFeatures(features);
 }
 
+function isDimension(value: unknown): value is ViewerDimension {
+  if (typeof value !== 'object' || value === null) return false;
+  const d = value as Partial<ViewerDimension>;
+  return typeof d.id === 'string' && typeof d.text === 'string' && typeof d.kind === 'string'
+    && (d.source === 'declared' || d.source === 'auto') && isVec3(d.a) && isVec3(d.b);
+}
+
+/** Dimensions are optional decoration: a malformed entry is dropped, never
+ *  fatal. A missing field stays missing (legacy artifact). */
+function parseDimensions(raw: unknown): { dimensions?: ViewerDimension[] } {
+  if (!Array.isArray(raw)) return {};
+  return { dimensions: raw.filter(isDimension) };
+}
+
 export function parseMeshArtifact(value: unknown, expectedRevision?: number | null): MeshArtifact {
   if (typeof value !== 'object' || value === null) {
     throw new Error('Mesh artifact is not an object.');
   }
-  const body = value as { revision?: unknown; bounds?: unknown; features?: unknown };
+  const body = value as { revision?: unknown; bounds?: unknown; features?: unknown; dimensions?: unknown };
   return {
     revision: parseRevision(body, expectedRevision),
     bounds: parseBounds(body),
     features: parseDrawableFeatures(body.features),
+    ...parseDimensions(body.dimensions),
   };
 }
 

@@ -58,39 +58,76 @@ const carrierR = (moduleMm * (zSun + zPlanet)) / 2; // m(Zsun+Zplanet)/2
 const ringOuterR = (moduleMm * zRing) / 2 + 1.25 * moduleMm + rim;
 const seatR = ringOuterR + 0.4;
 
-let housing = box(68, 68, 20).translate(-34, -34, -12);
-housing = housing.subtract(cylinder(18, seatR).translate(0, 0, -7));
-// Blind bolt holes, 8 mm up from the bottom face, as real hole features:
-// u/v are mm from the bottom face centre (0, 0). The seat pocket adds a second
-// 'bottom', so name the outer one by its normal and centre.
+const wallR = seatR + 4.4;
+const flangeR = wallR + 8;
+// Turned cup: mounting flange, bore for the ring, shaft clearance through the floor.
+let housing = path()
+  .moveTo(3.4, -12)
+  .lineTo(flangeR, -12)
+  .lineTo(flangeR, -8)
+  .lineTo(wallR, -8)
+  .lineTo(wallR, 8)
+  .lineTo(seatR, 8)
+  .lineTo(seatR, -7.5)
+  .lineTo(3.4, -7.5)
+  .close()
+  .revolve();
+const boltR = flangeR - 4;
+// Six flange bolt holes as real hole features, entered from the bottom face
+// (centre at the origin): u = x, v = y.
 housing = housing.holes({ byNormal: '-Z', atX: 0, atY: 0, atZ: -12 }, {
-  positions: [{ u: -26, v: -26 }, { u: 26, v: -26 }, { u: -26, v: 26 }, { u: 26, v: 26 }],
-  diameter: 3.4,
-  depth: 8,
+  positions: Array.from({ length: 6 }, (_, i) => {
+    const a = Math.PI / 6 + (2 * Math.PI * i) / 6;
+    return { u: boltR * Math.cos(a), v: boltR * Math.sin(a) };
+  }),
+  diameter: 3.1,
+  depth: 'through',
 });
 housing = housing
-  .fillet(1, { parallel: [0, 0, 1] })
   .datum('A', { atZ: -12 })
-  .datum('B', { atX: -34 })
-  .datum('C', { atY: -34 })
+  .datum('B', { atX: -flangeR })
+  .datum('C', { atY: 0 })
   .tolerance({
     type: 'position', value: 0.2, modifier: '⌀', datums: ['A', 'B', 'C'],
-    edge: { ofCurveType: 'CIRCLE', near: [-26, -26, -12] },
-  });
+    edge: { ofCurveType: 'CIRCLE', near: [boltR * Math.cos(Math.PI / 6), boltR * Math.sin(Math.PI / 6), -12] },
+  })
+  .finish('anodized', { color: '#3e6f86' });
 
-const cover = box(68, 68, 3).translate(-34, -34, 8);
+let cover = path()
+  .moveTo(17.5, 8.15)
+  .lineTo(flangeR - 0.4, 8.15)
+  .lineTo(flangeR - 0.4, 11.2)
+  .lineTo(17.5, 11.2)
+  .close()
+  .revolve();
+for (let i = 0; i < 6; i += 1) {
+  const a = (Math.PI / 6) + (2 * Math.PI * i) / 6;
+  cover = cover.union(
+    cylinder(1.8, 2.5).translate(boltR * Math.cos(a), boltR * Math.sin(a), 11.2),
+  );
+}
+cover = cover.finish('anodized-black');
 const ring = internalSpurGear({
   module: moduleMm, teeth: zRing, faceWidth: face, backlash, rimThickness: rim,
-});
-const sun = spurGear({ module: moduleMm, teeth: zSun, faceWidth: face, bore: 5, backlash });
-const sunShaft = cylinder(9.5, 2.15).translate(0, 0, -6.6);
+}).finish('steel');
+const sun = spurGear({ module: moduleMm, teeth: zSun, faceWidth: face, bore: 5, backlash })
+  .finish('abs', { color: '#f3efe4' });
+const sunShaft = path()
+  .moveTo(0, -8).lineTo(2.15, -8).lineTo(2.15, -1.5)
+  .lineTo(2.65, -1.5).lineTo(2.65, -0.25).lineTo(2.05, -0.25).lineTo(2.05, 3.1).lineTo(0, 3.1)
+  .close().revolve().finish('stainless');
 
-let carrier = cylinder(4, carrierR - 0.35).translate(0, 0, -7);
-carrier = carrier.subtract(cylinder(6, 2.6).translate(0, 0, -8));
+let carrier = cylinder(4.2, carrierR - 0.4).translate(0, 0, -7.1);
+carrier = carrier.union(cylinder(3.2, 5.2).translate(0, 0, -7.4));
 for (let i = 0; i < planetCount; i += 1) {
   const a = (2 * Math.PI * i) / planetCount;
-  carrier = carrier.union(cylinder(11, 1.55).translate(carrierR * Math.cos(a), carrierR * Math.sin(a), -7));
+  const px = carrierR * Math.cos(a);
+  const py = carrierR * Math.sin(a);
+  carrier = carrier
+    .union(cylinder(3.4, 3.3).translate(px, py, -7.1))
+    .union(cylinder(11, 1.55).translate(px, py, -7));
 }
+carrier = carrier.subtract(cylinder(8, 2.65).translate(0, 0, -9)).finish('aluminium-brushed');
 
 const arm = assembly('planetary-gearbox-shop');
 const h = arm.part('housing', housing, { material: 'aluminum-6061' });
@@ -106,7 +143,8 @@ for (let i = 0; i < planetCount; i += 1) {
   const rad = (ang * Math.PI) / 180;
   const planet = spurGear({ module: moduleMm, teeth: zPlanet, faceWidth: face, bore: 4, backlash })
     .rotateZ((zPlanet % 2 === 0 ? 180 / zPlanet : 0) + ang)
-    .translate(carrierR * Math.cos(rad), carrierR * Math.sin(rad), 0);
+    .translate(carrierR * Math.cos(rad), carrierR * Math.sin(rad), 0)
+    .finish('abs', { color: '#f6f1e4' });
   planets.push(arm.part(`planet-${i + 1}`, planet, { material: 'nylon' }));
 }
 

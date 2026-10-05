@@ -107,5 +107,8 @@
   "internal",
   "prismatic",
   "scissor",
-  "lift"
+  "lift",
+  "callout",
+  "hole-spacing",
+  "annotation"
 ]

@@ -13,7 +13,8 @@
 // transform invariant in one place, so adding new scene-walk exporters does
 // not risk re-introducing the lifecycle bug.
 
-import type { SceneBackend } from '../sceneBackend';
+import { isSceneBackend, type SceneBackend } from '../sceneBackend';
+import type { ShapeBackend } from '../backend';
 import type { PBRMaterial } from '../../../shared/intent/material';
 import type { OcctBackend } from './occtBackend';
 
@@ -62,4 +63,11 @@ export function sceneToWorldFrameParts(scene: SceneBackend): WorldFramePart[] {
     }
     return entry;
   });
+}
+
+/** World-frame parts for a lowered root: a scene's parts, or the single shape as `part`. */
+export function drawingPartsForBackend(lowered: ShapeBackend): WorldFramePart[] {
+  return isSceneBackend(lowered)
+    ? sceneToWorldFrameParts(lowered)
+    : [{ name: 'part', shape: lowered as OcctBackend }];
 }

@@ -29,6 +29,9 @@ import {
 } from '../meshArtifactFallback';
 import { animArtifactUrlFromMeshUrl } from '../animArtifactUrl';
 import { EmbedAnimationOverlay } from './EmbedAnimationOverlay';
+import type { MeshDimensionsInfo } from '../../studio/components/viewer/dimensions/boundsDimensions';
+import { FeedbackLauncher } from '../../studio/components/Layout/FeedbackLauncher';
+import type { FeedbackContext, FeedbackPayload } from '../../studio/components/Layout/feedbackApi';
 
 export type FunnelViewerPhase =
   | 'building_geometry'
@@ -62,10 +65,18 @@ export interface FunnelViewerProps {
   statusOverlay?: boolean;
   /** Canvas background; overrides the stored Studio preference. */
   background?: ViewportBackground;
+  /** Adds a small "Feedback" button over the canvas that sends this context
+   *  with the message. Off (no button) when unset. */
+  feedback?: FeedbackContext;
+  /** Override the feedback network call (tests). */
+  submitFeedback?: (payload: FeedbackPayload) => Promise<void>;
 }
 
 /** Props FunnelViewer passes down to the inner viewer unchanged. */
-type InnerDisplayProps = Pick<FunnelViewerProps, 'statusOverlay' | 'background'>;
+type InnerDisplayProps = Pick<FunnelViewerProps, 'statusOverlay' | 'background'> & {
+  /** Stored artifact's dimensions + bounds (mesh path only). */
+  meshDimensions?: MeshDimensionsInfo | null;
+};
 
 function funnelStatusLabel(phase: FunnelViewerPhase, detail: string | null): string | null {
   switch (phase) {
@@ -85,6 +96,7 @@ function FunnelViewerInner({
   overlay,
   statusOverlay = true,
   background,
+  meshDimensions,
 }: InnerDisplayProps & {
   onPhaseChange?: (phase: FunnelViewerPhase, detail?: string | null) => void;
   revision?: number | null;
@@ -173,6 +185,7 @@ function FunnelViewerInner({
         viewMode3D={viewMode3D}
         onDisplayReady={onDisplayReady}
         background={background}
+        meshDimensions={meshDimensions}
       />
       {statusLabel ? (
         <div
@@ -232,6 +245,8 @@ interface MeshLoadResult {
   key: string;
   geometries: GeometryResult[] | null;
   bounds: MeshArtifactBounds | null;
+  /** Mesh dimensions + bounds for the viewer overlay. */
+  meshDimensions?: MeshDimensionsInfo;
   fallback: boolean;
   error: string | null;
 }
@@ -368,6 +383,7 @@ function useRevisionMesh(props: FunnelViewerProps): MeshLoadResult | null {
           key,
           geometries: geometriesFromArtifact(artifact),
           bounds: artifact.bounds,
+          meshDimensions: { dimensions: artifact.dimensions, bounds: artifact.bounds },
           fallback: false,
           error: null,
         });
@@ -419,7 +435,11 @@ function MeshStatus(props: {
   );
 }
 
-function LoadedMeshViewer(props: FunnelViewerProps & { geometries: GeometryResult[]; bounds: MeshArtifactBounds }) {
+function LoadedMeshViewer(props: FunnelViewerProps & {
+  geometries: GeometryResult[];
+  bounds: MeshArtifactBounds;
+  meshDimensions?: MeshDimensionsInfo;
+}) {
   const resolvedAnimUrl = props.animUrl
     ?? (props.meshUrl ? animArtifactUrlFromMeshUrl(props.meshUrl) : null);
 
@@ -443,6 +463,7 @@ function LoadedMeshViewer(props: FunnelViewerProps & { geometries: GeometryResul
           instanceId={props.instanceId}
           statusOverlay={props.statusOverlay}
           background={props.background}
+          meshDimensions={props.meshDimensions}
         />
         {resolvedAnimUrl ? <EmbedAnimationOverlay key={resolvedAnimUrl} animUrl={resolvedAnimUrl} /> : null}
       </WorkbenchProvider>
@@ -450,7 +471,25 @@ function LoadedMeshViewer(props: FunnelViewerProps & { geometries: GeometryResul
   );
 }
 
+const FEEDBACK_BUTTON_CLASS =
+  'absolute bottom-2 left-2 z-20 rounded px-2 py-0.5 text-xs text-fg-2 opacity-70 hover:opacity-100 hover:text-fg '
+  + 'bg-surface-1/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent';
+
 export function FunnelViewer(props: FunnelViewerProps) {
+  if (!props.feedback) return <FunnelViewerContent {...props} />;
+  return (
+    <div className="relative w-full h-full">
+      <FunnelViewerContent {...props} />
+      <FeedbackLauncher
+        context={{ ...props.feedback, revision: props.feedback.revision ?? props.revision }}
+        className={FEEDBACK_BUTTON_CLASS}
+        submitFeedback={props.submitFeedback}
+      />
+    </div>
+  );
+}
+
+function FunnelViewerContent(props: FunnelViewerProps) {
   const mesh = useRevisionMesh(props);
   // No meshUrl → evaluate source (funnel / unpublished). meshUrl present → stored
   // artifact only; never browser-OCCT fallback for published ChatGPT revisions.
@@ -493,5 +532,5 @@ export function FunnelViewer(props: FunnelViewerProps) {
       />
     );
   }
-  return <LoadedMeshViewer {...props} geometries={mesh.geometries} bounds={mesh.bounds} />;
+  return <LoadedMeshViewer {...props} geometries={mesh.geometries} bounds={mesh.bounds} meshDimensions={mesh.meshDimensions} />;
 }

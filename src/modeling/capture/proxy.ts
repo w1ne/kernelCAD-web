@@ -35,7 +35,7 @@ import type { TextureProjection } from '../../shared/intent/textureProjection';
 import { isTextureProjection } from '../../shared/intent/textureProjection';
 import { validateBendArgs } from '../sheetMetal';
 import type { Region } from '../../shared/intent/region';
-import type { DrawingToleranceSpec } from '../../shared/intent/drawingGdtRecord';
+import type { DrawingDimensionSpec, DrawingToleranceSpec } from '../../shared/intent/drawingGdtRecord';
 import type {
   FeaStudyHandle,
   FeaStudyMetadata,
@@ -306,6 +306,24 @@ export class Shape {
    */
   tolerance(spec: DrawingToleranceSpec): Shape {
     this.session.addDrawingTolerance(spec, { kind: 'feature', id: this.id });
+    return this;
+  }
+
+  /**
+   * Declare a dimension to show on the 3D model and on drawings.
+   * Declaration-only, returns this same shape.
+   *
+   * ```ts
+   * const plate = box(80, 50, 10)
+   *   .subtract(cylinder(2.5, 20).translate(20, 25, -5))
+   *   .subtract(cylinder(2.5, 20).translate(60, 25, -5))
+   *   .dimension({ kind: 'linear', from: { edge: { ofCurveType: 'CIRCLE', near: [20, 25, 10] } },
+   *                to: { edge: { ofCurveType: 'CIRCLE', near: [60, 25, 10] } }, label: 'hole spacing' });
+   * return plate;
+   * ```
+   */
+  dimension(spec: DrawingDimensionSpec): Shape {
+    this.session.addDrawingDimension(spec, { kind: 'feature', id: this.id });
     return this;
   }
 

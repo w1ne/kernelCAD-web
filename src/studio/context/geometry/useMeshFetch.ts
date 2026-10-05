@@ -8,6 +8,8 @@ import { shouldUseHostedMesh, meshSourceHosted } from '../../scriptSource';
 import { apiCall, rewritePath } from '../../api/apiBase';
 import { overlayLiveReview, featureMeshesToGeometries, isAbortError, type ScriptReviewSummary } from './types';
 import type { ExecutionApplyDeps } from './executionApplyDeps';
+import type { ViewerDimension } from '../../../shared/intent/viewerDimension';
+import { meshDimensionsOf } from '../../components/viewer/dimensions/boundsDimensions';
 
 export type MeshFetchOpts = { keepExistingOnError?: boolean; skipReview?: boolean; liveReview?: boolean };
 
@@ -35,6 +37,7 @@ function fetchHostedMeshAndReview(
             deps.setPreviewGeometries([]);
             deps.setScriptParams(Object.values(payload.params ?? {}));
             deps.setScriptReview(payload.review ?? null);
+            deps.setMeshDimensions(meshDimensionsOf(payload));
             deps.setSketchesGeometries([]);
             deps.setError(null);
             deps.setLastSuccessfulRevision(revision);
@@ -66,6 +69,7 @@ interface DevMeshPayload {
     featureRecords?: FeatureRecord[];
     bounds: { min: [number, number, number]; max: [number, number, number] };
     params?: SerializedParamTable;
+    dimensions?: ViewerDimension[];
 }
 
 /** The review sub-fetch chained after a successful dev-kernel mesh fetch. */
@@ -147,6 +151,7 @@ function fetchDevMeshAndReview(
                 setRecomputeMs(Math.max(0, Math.round(performance.now() - fetchStart)));
                 deps.setScriptParams(Object.values(payload.params ?? {}));
                 if (!opts?.skipReview && !opts?.liveReview) deps.setScriptReview(null);
+                deps.setMeshDimensions(meshDimensionsOf(payload));
                 deps.setSketchesGeometries([]);
                 deps.setPreviewGeometries([]);
                 deps.setError(null);

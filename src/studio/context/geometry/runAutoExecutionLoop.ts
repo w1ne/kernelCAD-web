@@ -14,6 +14,7 @@ import {
 } from '../../scriptSource';
 import { detectEmptyBuild, featureMeshesToGeometries } from './types';
 import type { ExecutionApplyDeps } from './executionApplyDeps';
+import { meshDimensionsOf } from '../../components/viewer/dimensions/boundsDimensions';
 
 /** Applies a hosted/dev-kernel mesh payload to context state, incl. the
  *  empty-build guard. Shared by the hosted and dev-kernel branches of the
@@ -33,6 +34,7 @@ function applyAutoRunPayload(deps: ExecutionApplyDeps, revision: number, executi
     deps.setFeatureRecords(records);
     deps.setScriptParams(Object.values(payload.params ?? {}));
     deps.setScriptReview(review);
+    deps.setMeshDimensions(meshDimensionsOf(payload));
     deps.setSketchesGeometries([]);
     deps.setPreviewGeometries([]);
     deps.setError(emptyNotice);
@@ -133,6 +135,7 @@ async function runWorkerOrDevKernelAutoExecution(
                 return;
             }
             deps.setGeometries(result.geometries);
+            deps.setMeshDimensions(null);
             deps.setGeometryTransformOverrides({});
             deps.setSketchesGeometries(remapSketchNames(result.sketches, code));
             deps.setError(null);

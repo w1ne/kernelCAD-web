@@ -14,6 +14,14 @@ export const FEEDBACK_ENDPOINT =
 export const MESSAGE_MIN = 10;
 export const MESSAGE_MAX = 4000;
 
+/** Where the feedback was sent from. The server keeps it next to the message. */
+export interface FeedbackContext {
+    /** `chatgpt` (the widget viewer), `embed` or `project` (the /p/<slug> page). */
+    surface: string;
+    slug?: string;
+    revision?: number | null;
+}
+
 export interface FeedbackPayload {
     message: string;
     category: FeedbackCategory;
@@ -23,6 +31,22 @@ export interface FeedbackPayload {
     path: string;
     appVersion: string;
     honeypot: string;
+    surface?: string;
+    slug?: string;
+    revision?: number;
+    /** The full address of the page, for the surface the user was on. */
+    url?: string;
+}
+
+/** The context fields of a payload; empty for the Studio's own form. */
+export function contextFields(context: FeedbackContext | undefined): Partial<FeedbackPayload> {
+    if (!context) return {};
+    return {
+        surface: context.surface,
+        ...(context.slug ? { slug: context.slug } : {}),
+        ...(typeof context.revision === 'number' ? { revision: context.revision } : {}),
+        url: window.location.href,
+    };
 }
 
 export function appVersion(): string {

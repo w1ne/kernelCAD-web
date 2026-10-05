@@ -27,14 +27,15 @@ interface Row {
   user_agent: string | null;
   ip_hash: string;
   ip_country: string | null;
+  context?: string | null;
 }
 
 const INSERT_COLUMNS = [
   'created_at', 'category', 'message', 'email', 'user_id', 'user_email',
-  'path', 'app_version', 'user_agent', 'ip_hash', 'ip_country',
+  'path', 'app_version', 'user_agent', 'ip_hash', 'ip_country', 'context',
 ] as const;
 
-function makeMockDB(opts?: { throwOnRun?: boolean; rows?: Row[] }) {
+function makeMockDB(opts?: { throwOnRun?: boolean; rows?: Row[]; legacySchema?: boolean }) {
   const rows: Row[] = opts?.rows ?? [];
   const sql: string[] = [];
   const prepare = (query: string) => {
@@ -51,6 +52,7 @@ function makeMockDB(opts?: { throwOnRun?: boolean; rows?: Row[] }) {
         run: async () => {
           if (opts?.throwOnRun) throw new Error('mock D1 failure');
           if (!/^INSERT INTO feedback/.test(query)) throw new Error(`unexpected query: ${query}`);
+          if (opts?.legacySchema && /, context\)/.test(query)) throw new Error('table feedback has no column named context');
           const row = Object.fromEntries(INSERT_COLUMNS.map((c, i) => [c, values[i]])) as unknown as Row;
           rows.push(row);
           return { success: true, meta: {} };
@@ -250,6 +252,54 @@ describe('POST /api/feedback', () => {
     const res = await onRequestPost(makeContext(makeRequest(VALID), db));
     expect(res.status).toBe(503);
     expect(await res.json()).toEqual({ error: 'temporary' });
+  });
+});
+
+describe('feedback context', () => {
+  const CONTEXT = { surface: 'chatgpt', slug: 'abc123', revision: 4, url: 'https://app.kernelcad.com/embed/abc123?revision=4' };
+
+  it('stores surface, slug, revision and url as JSON in context', async () => {
+    const db = makeMockDB();
+    const res = await onRequestPost(makeContext(makeRequest({ ...VALID, ...CONTEXT }), db));
+    expect(res.status).toBe(200);
+    expect(JSON.parse(db.rows[0].context as string)).toEqual(CONTEXT);
+  });
+
+  it('stores null context for a plain Studio submission', async () => {
+    const db = makeMockDB();
+    await onRequestPost(makeContext(makeRequest(VALID), db));
+    expect(db.rows[0].context).toBeNull();
+  });
+
+  it('still stores the row on a database without the context column', async () => {
+    const db = makeMockDB({ legacySchema: true });
+    const res = await onRequestPost(makeContext(makeRequest({ ...VALID, ...CONTEXT }), db));
+    expect(res.status).toBe(200);
+    expect(db.rows).toHaveLength(1);
+    expect(db.rows[0].message).toBe(VALID.message);
+  });
+
+  it('puts the context in the founder email', async () => {
+    const db = makeMockDB();
+    const mailer = makeMockMailer();
+    await onRequestPost(makeContext(makeRequest({ ...VALID, ...CONTEXT }), db, mailer));
+    await settleWaitUntil();
+    expect(mailer.sent[0].text).toContain('Surface: chatgpt');
+    expect(mailer.sent[0].text).toContain('Project: abc123 r4');
+    expect(mailer.sent[0].text).toContain(`URL: ${CONTEXT.url}`);
+  });
+
+  it.each([
+    [{ surface: 'Not A Surface' }],
+    [{ revision: 0 }],
+    [{ revision: '4' }],
+    [{ slug: 7 }],
+  ])('rejects malformed context %j with invalid_field', async (extra) => {
+    const db = makeMockDB();
+    const res = await onRequestPost(makeContext(makeRequest({ ...VALID, ...extra }), db));
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: 'invalid_field' });
+    expect(db.rows).toHaveLength(0);
   });
 });
 

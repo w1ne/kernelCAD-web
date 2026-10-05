@@ -80,8 +80,25 @@ export interface DrawingToleranceMetadata extends DrawingToleranceDecl {
   virtual: true;
 }
 
+/** A point, or a feature the viewer resolves to a point, a dimension attaches to. */
+export type DimensionAnchor =
+  | readonly [number, number, number]
+  | { edge: EdgeQuery }
+  | { face: FaceQuery };
+
+/** `shape.dimension({...})` argument. */
+export type DrawingDimensionSpec =
+  | { kind: 'linear'; from: DimensionAnchor; to: DimensionAnchor; label?: string }
+  | { kind: 'diameter' | 'radius'; edge: EdgeQuery; label?: string }
+  | { kind: 'angular'; from: EdgeQuery; to: EdgeQuery; label?: string };
+
+/** Metadata stored on a `drawingDimension` record. */
+export type DrawingDimensionMetadata = DrawingDimensionSpec & { virtual: true };
+
 /** Everything the exporter needs from the feature graph. */
 export interface DrawingDeclarations {
   datums: DrawingDatumDecl[];
   tolerances: DrawingToleranceDecl[];
+  /** Declared dimensions, in capture order. */
+  dimensions: DrawingDimensionSpec[];
 }

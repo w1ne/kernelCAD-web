@@ -16,6 +16,8 @@ export interface LoadedScript {
   /** v0.5: the underlying capture session, so callers can wire its
    *  `importedGeometry` map into a lowerer for `lib.fromSTEP` records. */
   session: CaptureSession;
+  /** The script's `return` value (see BuiltModel.returnValue). */
+  returnValue?: unknown;
 }
 
 export async function loadScriptFeatures(scriptPath: string): Promise<LoadedScript> {
@@ -27,11 +29,12 @@ export async function loadScriptFeatures(scriptPath: string): Promise<LoadedScri
   const source = readFileSync(scriptPath, 'utf8');
   const fileName = basename(scriptPath);
   const scriptDir = dirname(resolve(scriptPath));
-  const { records, paramTable, session } = await runScript({ code: source, fileName, scriptDir });
+  const { records, paramTable, session, returnValue } = await runScript({ code: source, fileName, scriptDir });
   return {
     source,
     paramTable,
     session,
+    returnValue,
     features: records.map((r) => ({ id: r.id, kind: r.kind, record: r })),
   };
 }

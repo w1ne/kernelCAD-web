@@ -35,6 +35,7 @@ const ALLOWED_GROUPS = new Set([
   'render',
   'inspect',
   'authoring',
+  'viewer',
   'union',
 ]);
 

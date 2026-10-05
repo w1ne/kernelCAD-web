@@ -177,6 +177,7 @@ export type FeatureKind =
   // output. Read by the svg-drawing exporter.
   | 'drawingDatum'
   | 'drawingTolerance'
+  | 'drawingDimension'
   // NURBS Slice B: 3D parametric curve (Geom_BSplineCurve under the hood)
   //   and multi-section sweep (BRepOffsetAPI_MakePipeShell).
   | 'curve3d'

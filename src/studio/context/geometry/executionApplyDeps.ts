@@ -5,6 +5,7 @@ import type { GeometryEngine, GeometryResult, SketchGeometry } from '../../../sh
 import type { SerializedParamEntry } from '../../../shared/runtime/paramTable';
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { ExecutionRecord, ScriptReviewSummary } from './types';
+import type { MeshDimensionsInfo } from '../../components/viewer/dimensions/boundsDimensions';
 
 /** Shared setter/ref surface both the auto-run loop and the explicit
  *  `executeGeometry` action apply a mesh/worker result through. Extracted so
@@ -21,6 +22,8 @@ export interface ExecutionApplyDeps {
     setFeatureRecords: (r: FeatureRecord[]) => void;
     setScriptParams: (p: SerializedParamEntry[]) => void;
     setScriptReview: Dispatch<SetStateAction<ScriptReviewSummary | null>>;
+    /** Dimensions + bounds of the last mesh payload; null for worker builds. */
+    setMeshDimensions: (info: MeshDimensionsInfo | null) => void;
     setSketchesGeometries: (s: SketchGeometry[]) => void;
     setPreviewGeometries: (g: GeometryResult[]) => void;
     setError: (e: string | null) => void;

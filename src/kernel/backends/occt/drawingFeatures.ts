@@ -102,6 +102,9 @@ export interface RadiusFeature {
   axis: V3;
   /** Point on the arc surface, mid-way along the face. */
   arcPoint: V3;
+  /** Centre of the arc through `arcPoint`: its foot on the cylinder axis, or
+   *  the torus tube centre. Exact for convex and concave arcs alike. */
+  centre: V3;
   /** Sampled points along the arc surface, for choosing a leader target. */
   samples: V3[];
   surface: 'cylinder' | 'torus';
@@ -396,8 +399,9 @@ function classifyChain(
 function recogniseHoles(
   backend: OcctBackend,
   cones: ConeFace[],
+  checkpoint?: () => void,
 ): { holes: HoleComposite[]; unclassified: UnclassifiedBore[]; bores: CylindricalHole[] } {
-  const bores = detectCylindricalHoles(backend);
+  const bores = detectCylindricalHoles(backend, checkpoint);
   const holes: HoleComposite[] = [];
   const unclassified: UnclassifiedBore[] = [];
 
@@ -468,7 +472,7 @@ function recogniseHoles(
 
 const FULL_COVERAGE = 5.8; // rad — same threshold hole detection uses
 
-function recogniseRadii(cyls: CylFace[], tori: Face[], bores: CylindricalHole[]): RadiusFeature[] {
+function recogniseRadii(cyls: CylFace[], tori: Face[], bores: CylindricalHole[], checkpoint?: () => void): RadiusFeature[] {
   const out: RadiusFeature[] = [];
   const isBoreWall = (c: CylFace) => bores.some(b =>
     Math.abs(b.diameterMm / 2 - c.radius) < DIAM_TOL &&
@@ -478,6 +482,7 @@ function recogniseRadii(cyls: CylFace[], tori: Face[], bores: CylindricalHole[])
   interface Group { loc: V3; dir: V3; radius: number; faces: CylFace[] }
   const groups: Group[] = [];
   for (const c of cyls) {
+    checkpoint?.();
     if (isBoreWall(c)) continue;
     const g = groups.find(x =>
       Math.abs(x.radius - c.radius) < DIAM_TOL &&
@@ -495,14 +500,16 @@ function recogniseRadii(cyls: CylFace[], tori: Face[], bores: CylindricalHole[])
       radius: g.radius,
       axis: canonicalAxis(g.dir),
       arcPoint: biggest.mid,
+      centre: add(g.loc, scale(g.dir, dot(sub(biggest.mid, g.loc), g.dir))),
       samples: g.faces.flatMap(f => f.samples),
       surface: 'cylinder',
     });
   }
 
-  interface TorusInfo { centre: V3; axis: V3; minor: number; mid: V3; samples: V3[] }
+  interface TorusInfo { centre: V3; axis: V3; minor: number; mid: V3; tube: V3; samples: V3[] }
   const torusInfos: TorusInfo[] = [];
   for (const face of tori) {
+    checkpoint?.();
     const major = circumcircle(pointOn(face, 0.1, 0.5), pointOn(face, 0.5, 0.5), pointOn(face, 0.9, 0.5));
     const minor = circumcircle(pointOn(face, 0.5, 0.1), pointOn(face, 0.5, 0.5), pointOn(face, 0.5, 0.9));
     if (!major || !minor) continue;
@@ -513,6 +520,9 @@ function recogniseRadii(cyls: CylFace[], tori: Face[], bores: CylindricalHole[])
       axis: canonicalAxis(major.normal),
       minor: minor.radius,
       mid: pointOn(face, 0.5, 0.5),
+      // The minor circle passes through `mid`, so its centre is the tube
+      // centre the arc at `mid` is struck from.
+      tube: minor.centre,
       samples,
     });
   }
@@ -528,7 +538,7 @@ function recogniseRadii(cyls: CylFace[], tori: Face[], bores: CylindricalHole[])
       continue;
     }
     seen.push(t);
-    out.push({ radius: t.minor, axis: t.axis, arcPoint: t.mid, samples: t.samples, surface: 'torus' });
+    out.push({ radius: t.minor, axis: t.axis, arcPoint: t.mid, centre: t.tube, samples: t.samples, surface: 'torus' });
   }
   return out;
 }
@@ -601,7 +611,7 @@ function chamferFromStrip(
   return { legs, edgeDir: canonicalAxis(l1.dir), midPoint, normal: info.normal };
 }
 
-function recogniseChamfers(faces: Face[], planarByIndex: Map<number, PlanarFaceInfo>): ChamferFeature[] {
+function recogniseChamfers(faces: Face[], planarByIndex: Map<number, PlanarFaceInfo>, checkpoint?: () => void): ChamferFeature[] {
   const out: ChamferFeature[] = [];
   const faceEdges = faces.map(f => (f as unknown as { edges: Edge[] }).edges);
   const neighbourAcross = (faceIdx: number, edge: Edge): number => {
@@ -613,6 +623,7 @@ function recogniseChamfers(faces: Face[], planarByIndex: Map<number, PlanarFaceI
   };
 
   for (const [idx, info] of planarByIndex) {
+    checkpoint?.();
     const strip = chamferStripSegs(faceEdges[idx]);
     if (!strip) continue;
     const [l1, l2] = strip;
@@ -631,6 +642,10 @@ export interface RecogniseOptions {
   holes?: boolean;
   radii?: boolean;
   chamfers?: boolean;
+  /** Called per face while classifying, between bore probes and per
+   *  candidate in the radius and chamfer passes; throw from it to abort a
+   *  budgeted run. */
+  checkpoint?: () => void;
 }
 
 export function recogniseDrawingFeatures(backend: OcctBackend, options: RecogniseOptions = {}): DrawingFeatureModel {
@@ -645,6 +660,7 @@ export function recogniseDrawingFeatures(backend: OcctBackend, options: Recognis
   const tori: Face[] = [];
 
   faces.forEach((face, index) => {
+    options.checkpoint?.();
     const type = (face as unknown as { geomType?: string }).geomType;
     if (type === 'PLANE') {
       const n = unit(vec(face.normalAt()));
@@ -671,11 +687,11 @@ export function recogniseDrawingFeatures(backend: OcctBackend, options: Recognis
   });
 
   const { holes, unclassified, bores } = wantHoles || wantRadii
-    ? recogniseHoles(backend, cones)
+    ? recogniseHoles(backend, cones, options.checkpoint)
     : { holes: [], unclassified: [], bores: [] };
-  const radii = wantRadii ? recogniseRadii(cyls, tori, bores) : [];
+  const radii = wantRadii ? recogniseRadii(cyls, tori, bores, options.checkpoint) : [];
   const planarByIndex = new Map(planar.map(p => [p.index, p]));
-  const chamfers = wantChamfers ? recogniseChamfers(faces, planarByIndex) : [];
+  const chamfers = wantChamfers ? recogniseChamfers(faces, planarByIndex, options.checkpoint) : [];
   return {
     planar,
     holes: wantHoles ? holes : [],

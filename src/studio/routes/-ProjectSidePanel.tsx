@@ -24,6 +24,7 @@ import {
   FORMAT_LABELS,
   defaultDownloadFormat,
   type CustomizerFormat,
+  type DownloadFormat,
   type CustomizerParamHint,
 } from '../customizer/customizerParams';
 import { KeepThisModel } from './-ProjectClaimControl';
@@ -52,7 +53,7 @@ export interface ProjectDownload {
   state: ExportTaskState;
   /** "Exporting STL… 3 s", or null when idle. */
   progress: string | null;
-  start: (format: CustomizerFormat) => void;
+  start: (format: DownloadFormat) => void;
   cancel: () => void;
   dismiss: () => void;
 }
@@ -69,7 +70,7 @@ export function useProjectDownload(slug: string, hints: readonly CustomizerParam
   const { start: startTask } = task;
   const ready = !error && hasNonemptyGeometry(geometries);
 
-  const start = useCallback((format: CustomizerFormat) => {
+  const start = useCallback((format: DownloadFormat) => {
     void startTask(
       FORMAT_LABELS[format],
       async (options) => {
@@ -93,8 +94,11 @@ export function useProjectDownload(slug: string, hints: readonly CustomizerParam
   };
 }
 
+/** The mesh/solid formats, then the drawing sheet. */
+const MENU_FORMATS: readonly DownloadFormat[] = [...CUSTOMIZER_FORMATS, 'pdf-drawing'];
+
 function formatMenu(download: ProjectDownload): MenuEntry[] {
-  return CUSTOMIZER_FORMATS.map((format) => ({
+  return MENU_FORMATS.map((format) => ({
     id: format,
     label: `${FORMAT_LABELS[format]} · ${FORMAT_HINTS[format]}`,
     onSelect: () => download.start(format),

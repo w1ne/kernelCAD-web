@@ -570,6 +570,15 @@ Contracts worth knowing:
 `FaceSelector = CanonicalFace | string (label) | FaceQuery`
 `CanonicalFace = 'top' | 'bottom' | 'left' | 'right' | 'front' | 'back'`
 
+**Declare dimensions** the viewer should show with `shape.dimension(spec)`: a declaration only, it returns the same shape and adds no geometry. `{ kind: 'linear', from, to, label? }` measures between two anchors, each a point `[x, y, z]`, `{ edge: EdgeQuery }` or `{ face: FaceQuery }`; a circular edge anchor means the circle centre, so two holes give their centre distance. `{ kind: 'diameter' | 'radius', edge, label? }` calls out one circular edge (`Ø5`, `R3`). `{ kind: 'angular', from, to, label? }` measures between two edges. A label is a name, not a number: a linear dimension reads `<label> <value>` (`hole spacing 30`), so never type the number into the label. Declared dimensions turn the viewer's Dimensions toggle on by default, and a shared project link with `?dims=1` forces it on. `evaluate_script` returns them as `dimensions: [{ text, kind, source }]`, so check the text before you publish. Recipe: `dimension-callouts`.
+
+```typescript
+const holeAt = (x: number, y: number) => ({ edge: { ofCurveType: 'CIRCLE' as const, near: [x, y, 6] as [number, number, number] } });
+const plate = box(60, 40, 6)
+  .holes('top', { positions: [{ u: -15, v: 0 }, { u: 15, v: 0 }], diameter: 5, depth: 'through' })
+  .dimension({ kind: 'linear', from: holeAt(15, 20), to: holeAt(45, 20), label: 'hole spacing' }); // "hole spacing 30"
+```
+
 ### Sketch methods
 
 A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape` (or another `Sketch` for `reflect`).
@@ -962,6 +971,7 @@ When you need a canonical pattern, call MCP tool `lookup_cookbook(query, k?)` to
 | clearance-hole-through-plate | You need a through-hole sized for a bolt with a small clearance margin. Use `hole(face, { diameter, depth: 'through' })` (or `holes` for a pattern), not a subtracted cylinder; for a tapped hole see `threaded-hole-tap-drill`. |
 | countersunk-flat-head-screw | You need countersunk holes whose cone matches a flat-head screw so the head sits flush: hole or holes with countersink { diameter, angleDeg } cut a real cone widest at the entry face, and a revolved 90° head of the same diameter fills it with no gap on the cone and no overlap (M3–M6 ISO 10642 table). |
 | diff-two-model-versions-by-material | You edited a script and need to know what physically changed, not just that something did. A signed volume delta is ambiguous — a boss that grew and a pocket that deepened report the same magnitude, and a body that only moved reports zero. Call diff_geometry({ baseFile, params }) to re-lower the SAME script with different param() values, or diff_geometry({ baseFile, file }) to compare separate scripts. Per matched body you get addedMm3 = volume(revised-base), removedMm3 = volume(base-revised), commonMm3, exact bbox/face/edge/hole-count deltas, a surface deviation, and a verdict — identical \| moved \| resized \| topology-changed. Branch on the verdict; quote the numbers. Author the model with named params and named features (as below) so both the override form and the report read cleanly. Reach for this when diff_scripts sets deeperDiffAvailable, instead of re-rendering and eyeballing. |
+| dimension-callouts | You want the viewer to show a named measurement on the model, for example the spacing between two holes or a hole diameter, by declaring it with shape.dimension() in the script. Labels are names, the viewer adds the value; open the shared link with ?dims=1 to force the callouts on. |
 | drawing-auto-dimension-gdt | You need a quotable engineering drawing without writing every callout. Export svg-drawing with autoAnnotate to derive datums, grouped bore callouts with position frames, positions from the datums, overall size, radii, chamfers, flatness and an ISO 2768 note from the geometry, and declare the datums or tolerances that are design intent with shape.datum and shape.tolerance. |
 | drawing-hole-and-gdt-callouts | You exported a svg-drawing sheet and need standard fabrication callouts — ⌀ hole diameters with THRU/blind/counterbore/countersink, a pattern count, a fillet radius, a chamfer size, a datum letter, and a feature-control-frame tolerance — instead of only the automatic bounding-box dimensions. |
 | drawing-pdf-sheet | You need a drawing to send to a shop or publish — a vector PDF on an ISO A0–A4 or ANSI A–E sheet with orthographic views, hidden lines, the automatic dimensions, hole callouts and GD&T, and a title block carrying title, part name, material, scale, units, projection, sheet size, date and revision. Export format pdf-drawing; the sheet content is the svg-drawing sheet. |

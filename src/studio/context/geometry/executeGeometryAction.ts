@@ -14,6 +14,7 @@ import {
 } from '../../scriptSource';
 import { featureMeshesToGeometries } from './types';
 import type { ExecutionApplyDeps } from './executionApplyDeps';
+import { meshDimensionsOf } from '../../components/viewer/dimensions/boundsDimensions';
 
 /** Applies a stateless mesh-endpoint payload to context state for the
  *  explicit `executeGeometry` (Validate) action. Unlike the auto-run loop's
@@ -25,6 +26,7 @@ function applyExecuteGeometryPayload(deps: ExecutionApplyDeps, revision: number,
     deps.setFeatureRecords((payload.featureRecords as FeatureRecord[]) ?? []);
     deps.setScriptParams(Object.values(payload.params ?? {}));
     deps.setScriptReview(payload.review ?? { ok: true, diagnostics: [] });
+    deps.setMeshDimensions(meshDimensionsOf(payload));
     deps.setSketchesGeometries([]);
     deps.setPreviewGeometries([]);
     deps.setError(null);
@@ -97,6 +99,7 @@ async function runKernelOrWorkerExecuteGeometry(
                 return;
             }
             deps.setGeometries(result.geometries);
+            deps.setMeshDimensions(null);
             deps.setGeometryTransformOverrides({});
             deps.setSketchesGeometries(remapSketchNames(result.sketches, codeToExecute));
             deps.setError(null);

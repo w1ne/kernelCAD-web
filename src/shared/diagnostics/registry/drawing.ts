@@ -77,4 +77,14 @@ export const DRAWING_CODES = {
     group: 'drawing',
     description: 'svg-drawing balloons or partsList was requested but the script has no assembly, so no BOM rows exist to number balloons or fill the table.',
   },
+  // Declared dimensions (shape.dimension()) in the 3D viewer (1). Warn: the
+  // build and every other dimension still ship; only this one is skipped.
+  'drawing.dimension.unresolved': {
+    hintTemplate:
+      "A shape.dimension() edge/face query matched zero or more than one entity, or a diameter/radius edge is not a circle, or an angular edge is not straight. Inspect the model with list_edges / list_faces, then tighten the query or add 'near'.",
+    nextAction: { kind: 'call-introspection-tool', tool: 'list_edges' },
+    defaultSeverity: 'warn',
+    group: 'drawing',
+    description: 'A declared dimension (shape.dimension()) could not be resolved to its geometry, so the viewer skipped it.',
+  },
 } as const satisfies Record<`drawing.${string}`, DiagnosticCodeSpec>;
