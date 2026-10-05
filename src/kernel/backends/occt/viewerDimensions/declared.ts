@@ -16,7 +16,7 @@ import type { EdgeQuery } from '../../../../shared/intent/queryTypes';
 import { circleOf, edgeMid, fail, oneEdge, resolveAnchor } from '../drawingAnchors';
 import type { Checkpoint } from './auto';
 import type { V3, ViewerDimension } from './types';
-import { formatMm } from './format';
+import { formatMm } from '../../../../shared/intent/viewerDimensionFormat';
 import { add, cross, dot, len, scale, sub, unit } from './vec';
 
 type Draft = Omit<ViewerDimension, 'id' | 'source'>;

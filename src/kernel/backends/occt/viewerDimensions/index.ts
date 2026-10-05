@@ -16,7 +16,7 @@ import { declaredDimensions } from './declared';
 import type { ViewerDimension } from './types';
 
 export type { V3, ViewerDimension } from './types';
-export { formatMm, groupLabel } from './format';
+export { formatMm, groupLabel } from '../../../../shared/intent/viewerDimensionFormat';
 
 export const DEFAULT_BUDGET_MS = 3000;
 

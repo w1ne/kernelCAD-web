@@ -18,7 +18,7 @@ import {
   type RadiusFeature,
 } from '../drawingFeatures';
 import type { V3, ViewerDimension } from './types';
-import { formatMm, groupLabel } from './format';
+import { formatMm, groupLabel } from '../../../../shared/intent/viewerDimensionFormat';
 import { add, cross, dot, perpendicular, scale, sub, unit } from './vec';
 
 /** Auto dimensions per body, overall extents included. */

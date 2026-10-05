@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { V3, ViewerDimension } from '../../../../shared/intent/viewerDimension';
-import { formatMm } from '../../../../kernel/backends/occt/viewerDimensions/format';
+import { formatMm } from '../../../../shared/intent/viewerDimensionFormat';
 
 export interface DimensionBounds {
     min: readonly [number, number, number];

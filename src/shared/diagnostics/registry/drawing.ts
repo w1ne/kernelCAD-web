@@ -81,7 +81,7 @@ export const DRAWING_CODES = {
   // build and every other dimension still ship; only this one is skipped.
   'drawing.dimension.unresolved': {
     hintTemplate:
-      "A shape.dimension() edge/face query matched zero or more than one entity, or a diameter/radius edge is not a circle. Inspect the model with list_edges / list_faces, then tighten the query or add 'near'.",
+      "A shape.dimension() edge/face query matched zero or more than one entity, or a diameter/radius edge is not a circle, or an angular edge is not straight. Inspect the model with list_edges / list_faces, then tighten the query or add 'near'.",
     nextAction: { kind: 'call-introspection-tool', tool: 'list_edges' },
     defaultSeverity: 'warn',
     group: 'drawing',
