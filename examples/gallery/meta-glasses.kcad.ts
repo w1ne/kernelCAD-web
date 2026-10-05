@@ -253,19 +253,18 @@ const privacyLedDiffuser = yCylinder(0.64, PRIVACY_LED_R, 32)
   })
   .color('#d15a34');
 
+// Temple segments are one piece of stock: they carry no finish of their own;
+// the fused temple gets RUBBER_DARK once (below). Finishing each overlapping
+// segment separately declares them separate same-material pieces
+// (union.member-overlap).
 function darkBox(w, d, h, x, y, z) {
-  return box(w, d, h, true)
-    .translate(x, y, z)
-    .material(RUBBER_DARK)
-    .color('#151718');
+  return box(w, d, h, true).translate(x, y, z);
 }
 
 function darkBoxRotX(w, d, h, x, y, z, deg) {
   return box(w, d, h, true)
     .rotate([1, 0, 0], deg)
-    .translate(x, y, z)
-    .material(RUBBER_DARK)
-    .color('#151718');
+    .translate(x, y, z);
 }
 
 function sideTemple(sign: 1 | -1) {

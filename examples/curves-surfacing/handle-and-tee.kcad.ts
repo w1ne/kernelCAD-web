@@ -7,7 +7,7 @@
 //   npx tsx src/agent/cli/index.ts evaluate examples/curves-surfacing/handle-and-tee.kcad.ts
 //
 // EXPECTED (measured 2026-09-14):
-//   Features: 23
+//   Features: 22 (two bodies: handle, welded tee)
 //   OK
 
 const start = path().moveTo(-8, -5).lineTo(8, -5).lineTo(8, 5).lineTo(-8, 5).close();
@@ -31,7 +31,9 @@ const rib = variableSweep(crown, [
   { t: 1, profile: path().moveTo(-1.2, -1.2).lineTo(1.2, -1.2).lineTo(1.2, 1.2).lineTo(-1.2, 1.2).close() },
 ]);
 
-const boss = cylinder(12, 7).translate(0, 0, 40);
+// The boss sinks 0.5 mm into the grip: resting exactly on the loft's top face
+// (z = 40) the fuse kept them as two solids touching face to face.
+const boss = cylinder(12.5, 7).translate(0, 0, 39.5);
 
 const run = cylinder(36, 7).translate(40, 0, 0);
 const branch = cylinder(22, 5).rotateY(90).translate(28, 0, 18);
@@ -40,4 +42,9 @@ const seams = await surfaceIntersection(run, branch);
 const weldHit = seams[0].pointAt(0.5);
 const weldMark = sphere(1.2).translate(weldHit[0], weldHit[1], weldHit[2]);
 
-return grip.union(boss).union(rib).union(tee).union(weldMark);
+// Two separate objects: the handle and the welded tee. Returned as two bodies,
+// not fused: one union() of both was two solids 19 mm apart
+// (union.disconnected).
+const handle = grip.union(boss).union(rib);
+const weldedTee = tee.union(weldMark);
+return [handle, weldedTee];

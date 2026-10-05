@@ -182,10 +182,14 @@ function validationLoop(cx) {
 }
 
 const centers = [-250, -125, 0, 125, 250];
-const comparison = mechanismTemplate(centers[0])
-  .union(referenceConditioned(centers[1]))
-  .union(meshFeatureFitting(centers[2]))
-  .union(masterSkeleton(centers[3]))
-  .union(validationLoop(centers[4]));
+// Five separate models on one board: each candidate is its own named part.
+// Fusing them into one union() made a single "body" of 85 separate solids
+// (union.disconnected).
+const board = assembly('robot-hand-workflow-candidates');
+board.part('A-mechanism-template', mechanismTemplate(centers[0]));
+board.part('B-reference-conditioned', referenceConditioned(centers[1]));
+board.part('C-mesh-feature-fitting', meshFeatureFitting(centers[2]));
+board.part('D-master-skeleton', masterSkeleton(centers[3]));
+board.part('E-validation-loop', validationLoop(centers[4]));
 
-return comparison;
+return board.model();
