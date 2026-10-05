@@ -109,6 +109,32 @@ describe('Dimensions toggle in every viewer', () => {
         expect(screen.getByTestId('dimensions-legacy-hint').textContent).toBe(LEGACY_DIMENSIONS_HINT);
     });
 
+    it('public project page: kernel returned no dimensions -> bounds, no hint', () => {
+        state.meshDimensions = { dimensions: [], bounds: BOUNDS };
+        render(<LiveModelViewport onDisplayReady={() => {}} label="Model" />);
+        fireEvent.click(screen.getByTestId('dimensions-toggle'));
+        expect(graphics().map((g) => g.textContent)).toEqual(['40', '20', '10']);
+        expect(screen.queryByTestId('dimensions-legacy-hint')).toBeNull();
+    });
+
+    it('no dimension info (worker build): no Dimensions button', () => {
+        state.meshDimensions = null;
+        render(<Viewer geometries={[]} previewGeometries={[]} sketchesGeometries={[]} showSketches={false} viewMode3D="shadedWithEdges" />);
+        expect(screen.queryByTestId('dimensions-toggle')).toBeNull();
+        expect(screen.getByTestId('measure-toggle')).toBeTruthy();
+    });
+
+    it('no dimension info but ?dims=1: the button stays', () => {
+        state.meshDimensions = null;
+        window.history.replaceState(null, '', '/studio?dims=1');
+        try {
+            render(<Viewer geometries={[]} previewGeometries={[]} sketchesGeometries={[]} showSketches={false} viewMode3D="shadedWithEdges" />);
+            expect(screen.getByTestId('dimensions-toggle').getAttribute('aria-pressed')).toBe('true');
+        } finally {
+            window.history.replaceState(null, '', '/');
+        }
+    });
+
     it('ChatGPT widget viewer (source)', () => {
         render(<FunnelViewer code="return box(1, 1, 1);" />);
         expectDeclaredDefaultsOn();

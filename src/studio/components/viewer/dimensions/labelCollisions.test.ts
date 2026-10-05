@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it } from 'vitest';
-import { visibleLabels } from './labelCollisions';
+import { markVisible, visibleLabels } from './labelCollisions';
 
 describe('visibleLabels', () => {
     it('hides the lower-priority of two overlapping labels', () => {
@@ -32,5 +32,19 @@ describe('visibleLabels', () => {
             { id: 'c', priority: 2, box: { x: 60, y: 0, w: 40, h: 12 } },
         ]);
         expect(kept).toEqual(['a', 'c']);
+    });
+
+    it('markVisible writes the same result in place and skips inactive labels', () => {
+        const labels = [
+            { id: 'a', priority: 0, box: { x: 0, y: 0, w: 40, h: 12 } },
+            { id: 'b', priority: 1, box: { x: 30, y: 0, w: 40, h: 12 } },
+            { id: 'c', priority: 2, box: { x: 60, y: 0, w: 40, h: 12 } },
+        ];
+        const out = [false, false, false];
+        markVisible(labels, [true, true, true], out);
+        expect(out).toEqual([true, false, true]);
+        // An inactive (end-on) label neither shows nor hides others.
+        markVisible(labels, [false, true, true], out);
+        expect(out).toEqual([false, true, false]);
     });
 });

@@ -32,6 +32,11 @@ describe('resolveViewerDimensions', () => {
         expect(r.legacy).toBe(true);
         expect(r.dimensions.map(d => d.text)).toEqual(['40', '20', '10']);
     });
+    it('falls back to bounds without the hint when the kernel returned no dimensions', () => {
+        const r = resolveViewerDimensions({ dimensions: [], bounds: { min: [0, 0, 0], max: [40, 20, 10] } });
+        expect(r.legacy).toBe(false);
+        expect(r.dimensions.map(d => d.text)).toEqual(['40', '20', '10']);
+    });
     it('is empty without a payload', () => {
         expect(resolveViewerDimensions(null)).toEqual({ dimensions: [], legacy: false });
     });

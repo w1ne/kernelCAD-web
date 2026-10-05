@@ -15,16 +15,38 @@ describe('initialOn', () => {
 });
 
 describe('useDimensionsToggle', () => {
-    it('follows the default until the user toggles', () => {
-        const { result, rerender } = renderHook(({ dims }) => useDimensionsToggle(dims, ''), {
-            initialProps: { dims: undefined as ViewerDimension[] | undefined },
+    const declared = (id: string) => ({ id, source: 'declared' }) as ViewerDimension;
+
+    it('follows the default until the user toggles, and keeps the choice across rebuilds of the same model', () => {
+        const { result, rerender } = renderHook(({ dims, model }) => useDimensionsToggle(dims, '', model), {
+            initialProps: { dims: undefined as ViewerDimension[] | undefined, model: 'project-a' },
         });
         expect(result.current.on).toBe(false);
-        rerender({ dims: [{ source: 'declared' } as ViewerDimension] });
+        rerender({ dims: [declared('declared:0')], model: 'project-a' });
         expect(result.current.on).toBe(true);
         act(() => result.current.toggle());
         expect(result.current.on).toBe(false);
-        rerender({ dims: [{ source: 'declared' } as ViewerDimension, { source: 'declared' } as ViewerDimension] });
+        // Rebuild: a new payload with the same declared dimensions.
+        rerender({ dims: [declared('declared:0'), { id: 'auto:overall:model:0', source: 'auto' } as ViewerDimension], model: 'project-a' });
         expect(result.current.on).toBe(false);
+    });
+
+    it('resets the choice when the model changes, so declared dimensions show again', () => {
+        const { result, rerender } = renderHook(({ dims, model }) => useDimensionsToggle(dims, '', model), {
+            initialProps: { dims: [declared('declared:0')] as ViewerDimension[], model: 'project-a' },
+        });
+        act(() => result.current.toggle());
+        expect(result.current.on).toBe(false);
+        rerender({ dims: [declared('declared:0')], model: 'project-b' });
+        expect(result.current.on).toBe(true);
+    });
+
+    it('resets the choice when the declared dimensions change', () => {
+        const { result, rerender } = renderHook(({ dims }) => useDimensionsToggle(dims, '', 'm'), {
+            initialProps: { dims: [declared('declared:0')] as ViewerDimension[] },
+        });
+        act(() => result.current.toggle());
+        rerender({ dims: [declared('declared:0'), declared('declared:1')] });
+        expect(result.current.on).toBe(true);
     });
 });

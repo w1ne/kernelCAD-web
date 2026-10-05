@@ -38,13 +38,16 @@ export function boundsDimensions(bounds: DimensionBounds): ViewerDimension[] {
 }
 
 /** Dimensions to draw for a payload, and whether it predates dimensions
- *  (then only the bounding box is known and the viewer says so). */
+ *  (then only the bounding box is known and the viewer says so). An empty
+ *  `dimensions` list also falls back to the bounding box, without the hint. */
 export function resolveViewerDimensions(info: MeshDimensionsInfo | null | undefined): {
     dimensions: ViewerDimension[];
     legacy: boolean;
 } {
-    if (info?.dimensions) return { dimensions: info.dimensions, legacy: false };
-    if (info?.bounds) return { dimensions: boundsDimensions(info.bounds), legacy: true };
+    if (info?.dimensions && info.dimensions.length > 0) return { dimensions: info.dimensions, legacy: false };
+    // No field: the payload predates dimensions (hint to republish). An empty
+    // list: the kernel ran out of budget or failed, so show the box, no hint.
+    if (info?.bounds) return { dimensions: boundsDimensions(info.bounds), legacy: info.dimensions === undefined };
     return { dimensions: [], legacy: false };
 }
 

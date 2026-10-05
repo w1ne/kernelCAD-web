@@ -221,7 +221,7 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
             </Canvas>
             <CodeLinkLabel />
             <MeasureButton active={measuring} onToggle={() => setMeasuring((on) => !on)} />
-            <DimensionsButton on={dims.on} onToggle={dims.toggle} legacy={dims.legacy} />
+            {dims.available ? <DimensionsButton on={dims.on} onToggle={dims.toggle} legacy={dims.legacy} /> : null}
             <ViewGizmo
                 onNavigate={(target) => setNavigationRequest((prev) => ({
                     target,
