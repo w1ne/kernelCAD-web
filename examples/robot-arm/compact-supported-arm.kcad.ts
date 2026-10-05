@@ -135,15 +135,20 @@ const toolPalm = arm.part(
     // leave y = 0 empty. This 2x2 post sits directly above the grip-driver
     // (z ∈ [gripAxis[2] + 4, gripAxis[2] + 6]; driver z ∈ [gripAxis[2] − 2, gripAxis[2] + 2])
     // so the Z-line passes through its ±X / ±Y side faces.
-    .union(box(2, 2, 2, true).translate(gripAxis[0], 0, gripAxis[2] + 5))
+    // The post is carried by a 2 x 21 mm bridge resting on both side tabs'
+    // top faces (z = gripAxis[2] + 4), clear of the driver (top z + 2); on its
+    // own it floated 4.5 mm between the tabs (union.disconnected).
+    .union(box(2, 21, 2, true).translate(gripAxis[0], 0, gripAxis[2] + 5))
     // v0.7.4 — left/right hinge binding posts. Gate 2 requires the curl
     // mate axes (Z-lines through leftHinge / rightHinge) to intersect the
     // tool-palm BREP. The pin-mount boxes stop short at |y| = 20; the
     // hinges are at |y| = 22. Small 2x2 tabs sit just above the hinge
     // pins (pin z ∈ [-4, 4]; tab z ∈ [5, 7]) so they bind the Z-axis
     // without colliding with the pin parts.
-    .union(box(2, 2, 2, true).translate(leftHinge[0], leftHinge[1], 6))
-    .union(box(2, 2, 2, true).translate(rightHinge[0], rightHinge[1], 6))
+    // Each post extends inward to y = ±20 so it sits on the upper pin-mount
+    // block's outer face; as 2x2 cubes they floated 1 mm off it.
+    .union(box(2, 3, 2, true).translate(leftHinge[0], leftHinge[1] - 0.5, 6))
+    .union(box(2, 3, 2, true).translate(rightHinge[0], rightHinge[1] + 0.5, 6))
     .color('tool'),
 );
 
@@ -179,7 +184,9 @@ const leftFinger = arm.part(
   'left-finger',
   box(fingerLen, 5, 5, true)
     .translate(6 + fingerLen / 2, 0, 0)
-    .union(box(12, 4, 6, true).translate(0, 5, 0))
+    // Knuckle reaches x = 8 and y = 2.5 so it shares a face with the finger
+    // body (it sat 0.5 mm off it); still 0.5 mm clear of the 4x4 hinge pin.
+    .union(box(14, 4, 6, true).translate(1, 4.5, 0))
     // v0.7.4 — hinge binding stub. Gate 2 requires the curl mate axis
     // (Z-line through finger-local origin) to intersect the finger BREP.
     // The knuckle box (y ∈ [3, 7]) and the finger body (x ∈ [6, 40]) both
@@ -187,6 +194,12 @@ const leftFinger = arm.part(
     // left-hinge-pin (pin z ∈ [-4, 4]) AND the tool-palm hinge binding
     // post (z ∈ [5, 7]) so it binds the Z-axis without collision.
     .union(box(2, 2, 2, true).translate(0, 0, 9))
+    // The stub is carried by an arm at its own height (z 8..10) and a riser
+    // down to the knuckle top at y 4.5..6.5, clear of the pin (|y| <= 2) and
+    // the palm's binding post below the stub; alone it floated 7.4 mm above
+    // the finger (union.disconnected).
+    .union(box(2, 6.5, 2, true).translate(0, 2.25, 9))
+    .union(box(2, 2, 5, true).translate(0, 5.5, 5.5))
     .color('tool'),
 );
 
@@ -194,8 +207,10 @@ const rightFinger = arm.part(
   'right-finger',
   box(fingerLen, 5, 5, true)
     .translate(6 + fingerLen / 2, 0, 0)
-    .union(box(12, 4, 6, true).translate(0, -5, 0))
+    .union(box(14, 4, 6, true).translate(1, -4.5, 0))
     .union(box(2, 2, 2, true).translate(0, 0, 9))
+    .union(box(2, 6.5, 2, true).translate(0, -2.25, 9))
+    .union(box(2, 2, 5, true).translate(0, -5.5, 5.5))
     .color('tool'),
 );
 

@@ -210,7 +210,9 @@ const meterPocket = cylinder(10, 4.5, 32).translate(PKT_X, PKT_Y, -1);
 const hubCavity = cylinder(6.0, 3.8, 32).translate(0, 0, -1.2);
 const armSlot   = box(26, 5.2, 2.2, true).translate(0, 0, 3.7);
 const ventGroove  = box(1.5, 6.5, 1.4).translate(-0.75, 8.1, 6.7).rotate([0, 0, 1], 7);
-const discFlange  = cylinder(0.75, 5, 32).translate(0, 0, -1.05);
+// Flange sits flush under the disc (z -0.75..0); at z -1.05..-0.3 it hung
+// 0.3 mm below the disc as a loose ring (union.disconnected).
+const discFlange  = cylinder(0.75, 5, 32).translate(0, 0, -0.75);
 const meterDisc = cylinder(DISC_T, DISC_R, 96)
   .union(discFlange)
   .subtract(meterPocket, hubCavity, armSlot, ventGroove)

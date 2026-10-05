@@ -79,6 +79,12 @@ export const EXEMPT_UNVERIFIED: ReadonlySet<string> = new Set([
   'examples/gallery/meta-glasses-experiments/silhouette-wayfarer.kcad.ts',
   'examples/gallery/meta-glasses-experiments/words-to-geometry-wayfarer.kcad.ts',
   'examples/patterns/servo-vented-plate.kcad.ts',
+  // Comparison board: five robot-hand candidate models shown side by side,
+  // each drawn as display pieces (floating labels, gapped finger segments,
+  // ghost overlays). Genuinely multi-body: every piece is its own named part
+  // with no mates, and overlays deliberately overlap the hands they annotate.
+  // It is a picture, not a mechanism.
+  'examples/robot-hand/workflow-candidates-comparison.kcad.ts',
   // Deliberately broken single-part repair fixtures. They exist to FAIL
   // evaluation so the trace-guided repair walkthrough has something real to
   // fix; tests/integration/examples/repairExamples.test.ts pins that each one

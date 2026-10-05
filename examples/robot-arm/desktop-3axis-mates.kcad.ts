@@ -145,6 +145,13 @@ const shoulderColumnShape = cylinder(shoulderColumnH, spineR, 32)
   .union(
     box(10, 4, 6, true).translate(0, shoulderCheekCenterY.negate(), shoulderColumnH.add(3)),
   )
+  // Struts under each lug tie it to the spine below the column top (z 30 to
+  // 36.5), outside the upper arm's |y| <= beamW/2 band near the pivot. On
+  // their own the lugs floated 9.5 mm off the spine (union.disconnected).
+  .union(box(6, shoulderCheekCenterY.subtract(4), 6.5, true)
+    .translate(0, shoulderCheekCenterY.add(4).divide(2), shoulderColumnH.subtract(2.75)))
+  .union(box(6, shoulderCheekCenterY.subtract(4), 6.5, true)
+    .translate(0, shoulderCheekCenterY.add(4).divide(2).negate(), shoulderColumnH.subtract(2.75)))
   .color('frame');
 const shoulderColumnPart = arm.part('shoulder-column', shoulderColumnShape);
 
@@ -238,7 +245,16 @@ const elbowAxisTabP = box(elbowClearance, elbowAxisTabWY, 2)
 const elbowAxisTabN = box(elbowClearance, elbowAxisTabWY, 2)
   .translate(upperArmLen.subtract(elbowClearance), -(elbowAxisTabYInner + elbowAxisTabWY), -1)
   .color('plate');
-const elbowAxisBridges = elbowAxisTabP.union(elbowAxisTabN);
+// Each tab is tied back to the beam's side face by a 3 mm web that stops
+// 5 mm short of the elbow axis (outside the elbow stubs' r = pivotDia/2);
+// on their own the tabs floated 5.3 mm off the beam (union.disconnected).
+const elbowAxisWebP = box(3, 6.5, 2)
+  .translate(upperArmBeamLen.subtract(2), beamW.divide(2).subtract(0.5), -1)
+  .color('plate');
+const elbowAxisWebN = box(3, 6.5, 2)
+  .translate(upperArmBeamLen.subtract(2), beamW.divide(2).subtract(0.5).add(6.5).negate(), -1)
+  .color('plate');
+const elbowAxisBridges = elbowAxisTabP.union(elbowAxisTabN).union(elbowAxisWebP).union(elbowAxisWebN);
 const upperArmShape = upperArmBeamShape
   .union(upperArmRibTop)
   .union(upperArmRibBot)
@@ -300,7 +316,8 @@ const forearmBeamShape = box(forearmLen, beamW.subtract(2), beamT.subtract(2), t
   .translate(halfForearm, 0, 0)
   .color('beam');
 const forearmRib = box(forearmLen.subtract(16), ribT.subtract(1), ribH.subtract(1), true)
-  .translate(halfForearm, 0, halfBeamT.add(ribH.divide(2)).subtract(1))
+  // Seated 0.1 mm into the forearm beam's top face (it hovered 0.5 mm above).
+  .translate(halfForearm, 0, halfBeamT.add(ribH.divide(2)).subtract(1.6))
   .color('beam');
 // Proximal root reinforcement — matches the forearm beam cross-section so
 // it stays inside the elbow yoke envelope under elbow pitch rotation.
@@ -336,24 +353,25 @@ const gripperPlate = box(gripperPlateT, 28, 28, true)
   .union(
     // Side bearing towers carry the grip driver axis at z=18 while leaving
     // the driver's central swept volume open.
-    box(8, 4, 8, true).fillet(0.6).translate(gripDriverXNum, 8, gripDriverZNum - 4),
+    // Towers reach back 2 mm into the palm plate (they sat 1 mm off it).
+    box(10, 4, 8, true).fillet(0.6).translate(gripDriverXNum - 1, 8, gripDriverZNum - 4),
   )
   .union(
-    box(8, 4, 8, true).fillet(0.6).translate(gripDriverXNum, -8, gripDriverZNum - 4),
+    box(10, 4, 8, true).fillet(0.6).translate(gripDriverXNum - 1, -8, gripDriverZNum - 4),
   )
   .union(
     // Thin upper/lower hinge straps bridge from the palm edge to each finger
     // hinge while leaving the finger's swept XY plane clear at grip:max.
-    box(12, 16, 2, true).fillet(0.4).translate(gripperHingeXNum - 6, 21, 5),
+    box(14, 16, 2, true).fillet(0.4).translate(gripperHingeXNum - 7, 21, 5),
   )
   .union(
-    box(12, 16, 2, true).fillet(0.4).translate(gripperHingeXNum - 6, 21, -5),
+    box(14, 16, 2, true).fillet(0.4).translate(gripperHingeXNum - 7, 21, -5),
   )
   .union(
-    box(12, 16, 2, true).fillet(0.4).translate(gripperHingeXNum - 6, -21, 5),
+    box(14, 16, 2, true).fillet(0.4).translate(gripperHingeXNum - 7, -21, 5),
   )
   .union(
-    box(12, 16, 2, true).fillet(0.4).translate(gripperHingeXNum - 6, -21, -5),
+    box(14, 16, 2, true).fillet(0.4).translate(gripperHingeXNum - 7, -21, -5),
   )
   .union(
     // v0.7.4 — grip-axis binding post. Gate 2 requires the joint axis
@@ -367,6 +385,11 @@ const gripperPlate = box(gripperPlateT, 28, 28, true)
     // the grip-driver's swept volume.
     box(2, 2, 2, true).translate(gripDriverXNum, 0, gripDriverZNum + 5),
   )
+  // The post is carried by risers on both towers and a bridge 0.5 mm above
+  // the driver's top face; on its own it floated 9.7 mm above the palm.
+  .union(box(2, 4, 7, true).translate(gripDriverXNum, 8, gripDriverZNum + 3))
+  .union(box(2, 4, 7, true).translate(gripDriverXNum, -8, gripDriverZNum + 3))
+  .union(box(2, 20, 2, true).translate(gripDriverXNum, 0, gripDriverZNum + 5.5))
   .color('tool');
 const gripperPlatePart = arm.part('gripper-plate', gripperPlate);
 

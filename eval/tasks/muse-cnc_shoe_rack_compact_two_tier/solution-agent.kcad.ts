@@ -50,9 +50,11 @@ function shelf(idx: number, z: number) {
   let s = body;
   for (const sign of [-1, 1] as const) {
     for (const ty of tabCenters) {
-      // Tab reaches through the panel, stopping 0.2 mm shy of the outer face.
-      const tab = box(T - CLR, TAB_W, SHELF_T, true)
-        .translate(sign * (innerSpan / 2 + (T - CLR) / 2 - 0.01), ty, z + SHELF_T / 2);
+      // Tab grows from the shelf end (overlapping it by 0.01 mm) through the
+      // panel, stopping 0.2 mm shy of the outer face. It used to start at the
+      // panel's inner face, 0.19 mm off the shelf (union.disconnected).
+      const tab = box(T, TAB_W, SHELF_T, true)
+        .translate(sign * (innerSpan / 2 - CLR - 0.01 + T / 2), ty, z + SHELF_T / 2);
       s = s.union(tab);
     }
   }
