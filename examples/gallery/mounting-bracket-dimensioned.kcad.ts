@@ -8,7 +8,7 @@
 //   hole spacing X 40
 //   hole spacing Y 18
 //   thickness 6
-//   Ø5
+//   bolt hole Ø5
 const baseW = 60;
 const baseD = 40;
 const t = 6;
@@ -32,6 +32,6 @@ bracket = bracket
   .dimension({ kind: 'linear', from: hole(10, 8), to: hole(50, 8), label: 'hole spacing X' })
   .dimension({ kind: 'linear', from: hole(10, 8), to: hole(10, 26), label: 'hole spacing Y' })
   .dimension({ kind: 'linear', from: [0, 0, 0], to: [0, 0, t], label: 'thickness' })
-  .dimension({ kind: 'diameter', edge: hole(10, 8).edge });
+  .dimension({ kind: 'diameter', edge: hole(10, 8).edge, label: 'bolt hole' });
 
 return bracket;

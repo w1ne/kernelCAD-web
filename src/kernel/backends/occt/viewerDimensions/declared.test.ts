@@ -39,6 +39,21 @@ describe('declared viewer dimensions', () => {
     ] });
     expect(dimensions[0]).toMatchObject({ id: 'declared:0', kind: 'diameter', text: 'Ø5', source: 'declared' });
   });
+  it('declared labelled diameter and radius read "<label> <value>"', async () => {
+    const parts = await partsFromSource(PLATE);
+    const { dimensions } = computeViewerDimensions({ parts, auto: false, declared: [
+      { kind: 'diameter', edge: { ofCurveType: 'CIRCLE', near: [5, 10, 10] }, label: 'bolt hole' },
+      { kind: 'radius', edge: { ofCurveType: 'CIRCLE', near: [5, 10, 10] }, label: 'bore' },
+    ] });
+    expect(dimensions.map(d => d.text)).toEqual(['bolt hole Ø5', 'bore R2.5']);
+  });
+  it('declared labelled angular reads "<label> <value>"', async () => {
+    const parts = await partsFromSource(`return box(10,10,10);`);
+    const { dimensions } = computeViewerDimensions({ parts, auto: false, declared: [
+      { kind: 'angular', from: { ofCurveType: 'LINE', near: [5, 0, 0] }, to: { ofCurveType: 'LINE', near: [0, 5, 0] }, label: 'corner' },
+    ] });
+    expect(dimensions[0]).toMatchObject({ kind: 'angular', text: 'corner 90°' });
+  });
   it('declared angular between two box edges is 90°', async () => {
     const parts = await partsFromSource(`return box(10,10,10);`);
     const { dimensions, diagnostics } = computeViewerDimensions({ parts, auto: false, declared: [

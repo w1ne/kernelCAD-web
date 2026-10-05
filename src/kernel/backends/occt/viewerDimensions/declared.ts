@@ -51,7 +51,7 @@ function radialDraft(parts: Parts, spec: Extract<DrawingDimensionSpec, { kind: '
   const diameter = spec.kind === 'diameter';
   const a = diameter ? sub(center, sub(rim, center)) : center;
   const value = diameter ? `Ø${formatMm(radius * 2)}` : `R${formatMm(radius)}`;
-  return { kind: spec.kind, a, b: rim, centre: center, axis, text: spec.label ?? value };
+  return { kind: spec.kind, a, b: rim, centre: center, axis, text: spec.label ? `${spec.label} ${value}` : value };
 }
 
 /** Closest-approach midpoint of two lines (p + s·d, q + t·e). */
@@ -79,7 +79,8 @@ function angularDraft(parts: Parts, spec: Extract<DrawingDimensionSpec, { kind: 
   const apex = apexOf(pt(eA.startPoint), dir(eA), pt(eB.startPoint), dir(eB), role);
   const cos = Math.max(-1, Math.min(1, dot(awayFrom(apex, eA), awayFrom(apex, eB))));
   const deg = (Math.acos(cos) * 180) / Math.PI;
-  return { kind: 'angular', a: edgeMid(eA), b: edgeMid(eB), centre: apex, text: spec.label ?? `${formatMm(deg)}°` };
+  const value = `${formatMm(deg)}°`;
+  return { kind: 'angular', a: edgeMid(eA), b: edgeMid(eB), centre: apex, text: spec.label ? `${spec.label} ${value}` : value };
 }
 
 function draftFor(parts: Parts, spec: DrawingDimensionSpec, role: string): Draft {
