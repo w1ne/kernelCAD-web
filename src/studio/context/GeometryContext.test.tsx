@@ -447,7 +447,7 @@ describe('GeometryContext latest-intent-wins', () => {
       '/__kernelcad/session?script=examples%2Frobot-arm%2Fdesktop-3axis-mates.kcad.ts',
       expect.objectContaining({ headers: {} }),
     );
-    expect(fetchUrl(fetchMock, 2)).toBe('/__kernelcad/mesh?session=tok-abc');
+    expect(fetchUrl(fetchMock, 2)).toBe('/__kernelcad/mesh?session=tok-abc&share=1');
     expectFetchSignal(fetchMock, 2);
     // Initial by-token load uses the cheap live review channel — the full
     // pose-envelope review runs on an explicit Validate press instead.
@@ -552,7 +552,7 @@ describe('GeometryContext latest-intent-wins', () => {
     });
 
     expect(mockEngine.executeCode).not.toHaveBeenCalled();
-    expect(fetchUrl(fetchMock, 4)).toBe('/__kernelcad/mesh?session=tok-bolt');
+    expect(fetchUrl(fetchMock, 4)).toBe('/__kernelcad/mesh?session=tok-bolt&share=1');
     expect(fetchUrl(fetchMock, 5)).toBe(
       '/__kernelcad/review?session=tok-bolt&script=examples%2Fcookbook-parity%2Fiso-metric-bolt-and-nut.kcad.ts',
     );
@@ -831,6 +831,7 @@ describe('GeometryContext latest-intent-wins', () => {
     expect(JSON.parse((meshCall![1] as RequestInit).body as string)).toEqual({
       source: 'return box(w, 1, 1);',
       params: { w: 9 },
+      shareGeometry: true,
     });
     expect(screen.getByTestId('error').textContent).toBe('');
   });
@@ -877,6 +878,7 @@ describe('GeometryContext latest-intent-wins', () => {
     expect(meshCall).toBeTruthy();
     expect(JSON.parse((meshCall![1] as RequestInit).body as string)).toEqual({
       source: "const t = param('t', 5); return box(t.add(2), 1, 1);",
+      shareGeometry: true,
     });
     expect(screen.getByTestId('error').textContent).toBe('');
   });
@@ -1022,7 +1024,7 @@ describe('GeometryContext latest-intent-wins', () => {
     await flushUntil(() => fetchMock.mock.calls.length >= 5);
 
     expect(fetchMock).toHaveBeenCalledTimes(5);
-    expect(fetchUrl(fetchMock, 4)).toBe('/__kernelcad/mesh?session=tok-abc');
+    expect(fetchUrl(fetchMock, 4)).toBe('/__kernelcad/mesh?session=tok-abc&share=1');
     expectFetchSignal(fetchMock, 4);
     expect(screen.getByTestId('script-param-name').textContent).toBe('heightAdjustMm');
     // 5th fetch is the live-channel review re-run that refreshes the HUD

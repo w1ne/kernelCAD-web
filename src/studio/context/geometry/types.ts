@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { GeometryResult } from '../../../shared/worker/geometryEngine';
-import { rehydrateFromBridge, type FeatureMeshSerialized } from '../../../modeling/capture/featureMeshSerialize';
+import { rehydrateFeatureMeshes, type FeatureMeshSerialized, type SharedGeometrySerialized } from '../../../modeling/capture/featureMeshSerialize';
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 
 export type ExecutionStatus = 'success' | 'error' | 'stale';
@@ -233,24 +233,25 @@ export function readStudioScriptParam(): string | null {
     return new URLSearchParams(window.location.search).get('script');
 }
 
-export function featureMeshesToGeometries(features: FeatureMeshSerialized[]): GeometryResult[] {
-    return features.map((feature) => {
-        const mesh = rehydrateFromBridge(feature);
-        return {
-            faces: mesh.faces,
-            volume: mesh.volume,
-            edges: mesh.edges,
-            color: mesh.color,
-            material: mesh.material,
-            transform: mesh.transform ? [...mesh.transform] : undefined,
-            assemblyFeatureId: mesh.assemblyFeatureId,
-            assemblyPartName: mesh.assemblyPartName,
-            featureId: mesh.featureId,
-            ...(mesh.faceOwners !== undefined ? { faceOwners: mesh.faceOwners } : {}),
-            ...(mesh.edgeRanges !== undefined ? { edgeRanges: mesh.edgeRanges } : {}),
-            ...(mesh.edgeOwners !== undefined ? { edgeOwners: mesh.edgeOwners } : {}),
-        };
-    });
+export function featureMeshesToGeometries(
+    features: FeatureMeshSerialized[],
+    geometries?: Record<string, SharedGeometrySerialized>,
+): GeometryResult[] {
+    return rehydrateFeatureMeshes({ features, ...(geometries !== undefined ? { geometries } : {}) }).map((mesh) => ({
+        faces: mesh.faces,
+        volume: mesh.volume,
+        edges: mesh.edges,
+        color: mesh.color,
+        material: mesh.material,
+        transform: mesh.transform ? [...mesh.transform] : undefined,
+        assemblyFeatureId: mesh.assemblyFeatureId,
+        assemblyPartName: mesh.assemblyPartName,
+        featureId: mesh.featureId,
+        ...(mesh.geometryId !== undefined ? { geometryId: mesh.geometryId } : {}),
+        ...(mesh.faceOwners !== undefined ? { faceOwners: mesh.faceOwners } : {}),
+        ...(mesh.edgeRanges !== undefined ? { edgeRanges: mesh.edgeRanges } : {}),
+        ...(mesh.edgeOwners !== undefined ? { edgeOwners: mesh.edgeOwners } : {}),
+    }));
 }
 
 export function isAbortError(err: unknown): boolean {

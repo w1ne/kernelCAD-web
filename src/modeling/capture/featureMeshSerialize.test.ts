@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/modeling/capture/featureMeshSerialize.test.ts
 import { describe, it, expect } from 'vitest';
-import { serializeForBridge, rehydrateFromBridge } from './featureMeshSerialize';
+import { serializeForBridge, rehydrateFromBridge, serializeFeatureMeshes, rehydrateFeatureMeshes } from './featureMeshSerialize';
 import type { FeatureMesh } from './featureMeshing';
 
 describe('featureMeshSerialize', () => {
@@ -226,5 +226,88 @@ describe('featureMeshSerialize', () => {
     expect(restored.faceOwners).toEqual(['box_1', 'hole_1']);
     expect(restored.edgeRanges).toEqual([0, 2, 2, 2]);
     expect(restored.edgeOwners).toEqual(['box_1', 'hole_1']);
+  });
+});
+
+function part(name: string, geometryId: string | undefined, tx: number): FeatureMesh {
+  return {
+    featureId: `model_1__${name}`,
+    featureKind: 'assemblyModel',
+    predecessors: ['model_1'],
+    faces: [{
+      vertices: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
+      indices: new Uint32Array([0, 1, 2]),
+      normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+      faceId: 0,
+    }],
+    edges: new Float32Array([0, 0, 0, 1, 0, 0]),
+    edgeRanges: [0, 2],
+    faceOwners: ['box_1'],
+    assemblyFeatureId: 'model_1',
+    assemblyPartName: name,
+    transform: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, tx, 0, 0, 1],
+    color: '#336699',
+    ...(geometryId !== undefined ? { geometryId } : {}),
+  } as FeatureMesh;
+}
+
+describe('shared-geometry payload', () => {
+  const meshes = [part('a', 'g1', 0), part('b', 'g1', 10), part('c', undefined, 20)];
+
+  it('default serialization stays expanded (geometryId is additive)', () => {
+    const payload = serializeFeatureMeshes(meshes);
+    expect(payload.geometries).toBeUndefined();
+    expect(payload.features[1].faces).toHaveLength(1);
+    expect(payload.features[1].geometryId).toBe('g1');
+  });
+
+  it('default output for a mesh without geometryId is unchanged', () => {
+    const m = part('c', undefined, 20);
+    const expected = {
+      featureId: 'model_1__c',
+      featureKind: 'assemblyModel',
+      predecessors: ['model_1'],
+      faces: [{
+        vertices: [0, 0, 0, 1, 0, 0, 0, 1, 0],
+        indices: [0, 1, 2],
+        normals: [0, 0, 1, 0, 0, 1, 0, 0, 1],
+        faceId: 0,
+      }],
+      edges: [0, 0, 0, 1, 0, 0],
+      color: '#336699',
+      faceOwners: ['box_1'],
+      edgeRanges: [0, 2],
+      assemblyFeatureId: 'model_1',
+      assemblyPartName: 'c',
+      transform: [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 20, 0, 0, 1],
+    };
+    const viaJson = JSON.parse(JSON.stringify(serializeForBridge(m)));
+    expect(viaJson).toEqual(expected);
+    expect(JSON.parse(JSON.stringify(serializeFeatureMeshes([m]))).features[0]).toEqual(expected);
+  });
+
+  it('shared and expanded payloads rehydrate to identical meshes', () => {
+    const expanded = rehydrateFeatureMeshes(JSON.parse(JSON.stringify(serializeFeatureMeshes(meshes))));
+    const shared = rehydrateFeatureMeshes(JSON.parse(JSON.stringify(serializeFeatureMeshes(meshes, { shareGeometry: true }))));
+    expect(shared).toEqual(expanded);
+  });
+
+  it('keys the shared table by geometryId even when arrays are distinct objects', () => {
+    const twin = part('b', 'g1', 10);
+    const payload = serializeFeatureMeshes([meshes[0], twin], { shareGeometry: true });
+    expect(Object.keys(payload.geometries ?? {})).toEqual(['g1']);
+  });
+
+  it('ships each geometry once and shares it by reference after rehydration', () => {
+    const payload = serializeFeatureMeshes(meshes, { shareGeometry: true });
+    expect(Object.keys(payload.geometries ?? {})).toEqual(['g1']);
+    expect(payload.features[0].faces).toEqual([]);
+    expect(payload.features[1].faces).toEqual([]);
+    expect(payload.features[2].faces).toHaveLength(1);
+    const restored = rehydrateFeatureMeshes(JSON.parse(JSON.stringify(payload)));
+    expect(restored[1].faces).toBe(restored[0].faces);
+    expect(restored[1].edges).toBe(restored[0].edges);
+    expect(restored[1].transform?.[12]).toBe(10);
+    expect(JSON.stringify(payload).length).toBeLessThan(JSON.stringify(serializeFeatureMeshes(meshes)).length);
   });
 });

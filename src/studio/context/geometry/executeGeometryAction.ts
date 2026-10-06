@@ -21,7 +21,7 @@ import { meshDimensionsOf } from '../../components/viewer/dimensions/boundsDimen
  *  `applyAutoRunPayload`, this path has no empty-build guard — it mirrors
  *  `executeGeometry`'s original inline apply blocks exactly. */
 function applyExecuteGeometryPayload(deps: ExecutionApplyDeps, revision: number, executionCount: number, payload: BackendMeshPayload): void {
-    deps.setGeometries(featureMeshesToGeometries(payload.features as FeatureMeshSerialized[]));
+    deps.setGeometries(featureMeshesToGeometries(payload.features as FeatureMeshSerialized[], payload.geometries));
     deps.setGeometryTransformOverrides({});
     deps.setFeatureRecords((payload.featureRecords as FeatureRecord[]) ?? []);
     deps.setScriptParams(Object.values(payload.params ?? {}));

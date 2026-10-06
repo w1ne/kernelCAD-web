@@ -10,7 +10,7 @@ import {
 import { apiCall, rewritePath } from './api/apiBase';
 import type { SerializedParamTable } from '../shared/runtime/paramTable';
 import type { ScriptReviewSummary } from './context/GeometryContext';
-import type { FeatureMeshSerialized } from '../modeling/capture/featureMeshSerialize';
+import type { FeatureMeshSerialized, SharedGeometrySerialized } from '../modeling/capture/featureMeshSerialize';
 import type { FeatureRecord } from '../shared/intent/featureRecord';
 import type { ViewerDimension } from '../shared/intent/viewerDimension';
 
@@ -80,6 +80,8 @@ export function currentStudioScript(): string | null {
  */
 export interface BackendMeshPayload {
   features: FeatureMeshSerialized[];
+  /** Present only when the dev bridge answered with the opt-in shared form. */
+  geometries?: Record<string, SharedGeometrySerialized>;
   featureRecords?: FeatureRecord[];
   bounds: { min: [number, number, number]; max: [number, number, number] };
   params?: SerializedParamTable;
@@ -275,7 +277,7 @@ export async function meshSourceDev(
   const response = await fetch(rewritePath('/__kernelcad/mesh', base), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...headers },
-    body: JSON.stringify({ source, ...(hasOverrides(paramOverrides) ? { params: paramOverrides } : {}) }),
+    body: JSON.stringify({ source, ...(hasOverrides(paramOverrides) ? { params: paramOverrides } : {}), shareGeometry: true }),
   });
   const payload = await response.json().catch(() => null);
   if (!response.ok) {

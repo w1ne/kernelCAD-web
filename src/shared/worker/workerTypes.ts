@@ -148,6 +148,10 @@ export interface GeometryResult {
     transform?: number[];
     assemblyFeatureId?: string;
     assemblyPartName?: string;
+    /** Geometry identity of an assembly part (`FeatureMesh.geometryId`).
+     *  Parts with equal ids have identical local geometry and may be drawn
+     *  as one instanced mesh. */
+    geometryId?: string;
     /** FeatureRecord id of the feature this mesh shows. Absent on the legacy
      *  in-browser worker path. */
     featureId?: string;

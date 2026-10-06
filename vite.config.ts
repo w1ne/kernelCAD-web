@@ -244,6 +244,8 @@ function kernelCadMeshEndpoint(): Plugin {
           // the in-browser worker can't run the modern assembly/joint/tendon
           // API. GET ?script= / ?session= keep their existing behaviour.
           const isPost = (req.method ?? 'GET').toUpperCase() === 'POST';
+          // Opt-in shared-geometry payload (?share=1 or POST shareGeometry:true).
+          let shareGeometry = url.searchParams.get('share') === '1';
           if (!script && !sessionToken && !isPost) {
             res.statusCode = 400;
             res.setHeader('content-type', 'application/json');
@@ -253,7 +255,7 @@ function kernelCadMeshEndpoint(): Plugin {
 
           ensureOcctShims();
 
-          const [{ loadScriptFeatures }, { meshFeaturesPerFeature }, { serializeForBridge }, { runScript }, { resolveRootId }] = await Promise.all([
+          const [{ loadScriptFeatures }, { meshFeaturesPerFeature }, { serializeFeatureMeshes }, { runScript }, { resolveRootId }] = await Promise.all([
             import('./src/modeling/runtime/scriptLoader'),
             import('./src/modeling/capture/featureMeshing'),
             import('./src/modeling/capture/featureMeshSerialize'),
@@ -283,7 +285,7 @@ function kernelCadMeshEndpoint(): Plugin {
             // runScript carries no extra trust boundary.
             const chunks: Buffer[] = [];
             for await (const chunk of req) chunks.push(chunk as Buffer);
-            let parsedBody: { source?: unknown; params?: unknown };
+            let parsedBody: { source?: unknown; params?: unknown; shareGeometry?: unknown };
             try {
               parsedBody = JSON.parse(Buffer.concat(chunks).toString('utf-8') || '{}');
             } catch {
@@ -299,6 +301,7 @@ function kernelCadMeshEndpoint(): Plugin {
               return;
             }
             source = parsedBody.source;
+            if (parsedBody.shareGeometry === true) shareGeometry = true;
             // Compile straight from the source string (no file). scriptDir =
             // examples root so any relative asset paths resolve the same way
             // a shipped example would.
@@ -386,7 +389,7 @@ function kernelCadMeshEndpoint(): Plugin {
           // ids/kinds/params are JSON-safe.
           res.end(JSON.stringify({
             source,
-            features: meshing.features.map(serializeForBridge),
+            ...serializeFeatureMeshes(meshing.features, { shareGeometry }),
             featureRecords: records,
             bounds: meshing.bounds,
             params: paramTable.serialize(),

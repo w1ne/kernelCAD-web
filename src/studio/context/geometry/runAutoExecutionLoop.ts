@@ -22,7 +22,7 @@ import { meshDimensionsOf } from '../../components/viewer/dimensions/boundsDimen
  *  empty-build guard. Shared by the hosted and dev-kernel branches of the
  *  auto-run loop below. */
 function applyAutoRunPayload(deps: ExecutionApplyDeps, revision: number, executionCount: number, payload: BackendMeshPayload): void {
-    const geometries = featureMeshesToGeometries(rootVisibleFeatures(payload));
+    const geometries = featureMeshesToGeometries(rootVisibleFeatures(payload), payload.geometries);
     const records = (payload.featureRecords as FeatureRecord[]) ?? [];
     // Placeholder, NOT a verdict: a mesh response with no `review` block
     // means nothing validated this model. `reviewWasValidated` recognises

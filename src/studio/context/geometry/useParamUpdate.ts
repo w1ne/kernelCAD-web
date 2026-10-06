@@ -45,7 +45,7 @@ export function useParamUpdate(
     // execution loop's apply, incl. the empty-build guard). Used by the
     // no-session param recompute path.
     const applyBridgePayload = useCallback((payload: BackendMeshPayload, revision: number) => {
-        const geos = featureMeshesToGeometries(payload.features as FeatureMeshSerialized[]);
+        const geos = featureMeshesToGeometries(payload.features as FeatureMeshSerialized[], payload.geometries);
         const recs = (payload.featureRecords as FeatureRecord[]) ?? [];
         const review = payload.review ?? { ok: true, diagnostics: [] };
         const emptyNotice = detectEmptyBuild(geos.length, recs, review);

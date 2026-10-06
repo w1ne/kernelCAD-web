@@ -59,6 +59,8 @@ export interface FeatureMeshSerialized {
   assemblyFeatureId?: string;
   /** Assembly part name when this mesh is a SceneBackend part fan-out. */
   assemblyPartName?: string;
+  /** Geometry identity of an assembly part mesh; see FeatureMesh.geometryId. */
+  geometryId?: string;
   /** Column-major 4x4 local-to-world transform for viewport-side posing. */
   transform?: number[];
   /** True for virtual (non-geometry) records such as referenceImage. */
@@ -82,12 +84,10 @@ function copyLinkFields(m: LinkFields): LinkFields {
   };
 }
 
-export function serializeForBridge(m: FeatureMesh): FeatureMeshSerialized {
+type GeometryFields = Pick<FeatureMeshSerialized, 'faces' | 'volume' | 'edges' | 'faceOwners' | 'edgeRanges' | 'edgeOwners'>;
+
+function serializeGeometry(m: FeatureMesh): GeometryFields {
   return {
-    featureId: m.featureId,
-    featureKind: m.featureKind,
-    predecessors: [...m.predecessors],
-    op: m.op,
     faces: m.faces.map((f) => ({
       vertices: Array.from(f.vertices),
       indices: Array.from(f.indices),
@@ -99,15 +99,25 @@ export function serializeForBridge(m: FeatureMesh): FeatureMeshSerialized {
     })),
     volume: m.volume,
     edges: m.edges ? Array.from(m.edges) : undefined,
+    ...copyLinkFields(m),
+  };
+}
+
+function serializeHeader(m: FeatureMesh): Omit<FeatureMeshSerialized, keyof GeometryFields> {
+  return {
+    featureId: m.featureId,
+    featureKind: m.featureKind,
+    predecessors: [...m.predecessors],
+    op: m.op,
     ...(m.color !== undefined ? { color: m.color } : {}),
     ...(m.material !== undefined ? { material: m.material } : {}),
     ...(m.materialByFaceId !== undefined ? { materialByFaceId: m.materialByFaceId } : {}),
-    ...copyLinkFields(m),
     ...(m.displayName !== undefined ? { displayName: m.displayName } : {}),
     ...(m.filterNames !== undefined ? { filterNames: [...m.filterNames] } : {}),
     ...(m.sourceMetadataName !== undefined ? { sourceMetadataName: m.sourceMetadataName } : {}),
     ...(m.assemblyFeatureId !== undefined ? { assemblyFeatureId: m.assemblyFeatureId } : {}),
     ...(m.assemblyPartName !== undefined ? { assemblyPartName: m.assemblyPartName } : {}),
+    ...(m.geometryId !== undefined ? { geometryId: m.geometryId } : {}),
     ...(m.transform !== undefined ? { transform: Array.from(m.transform) } : {}),
     ...(m.virtual === true ? { virtual: true } : {}),
     ...(m.referenceImage !== undefined ? { referenceImage: m.referenceImage } : {}),
@@ -116,13 +126,15 @@ export function serializeForBridge(m: FeatureMesh): FeatureMeshSerialized {
   };
 }
 
-export function rehydrateFromBridge(s: FeatureMeshSerialized): FeatureMesh {
+export function serializeForBridge(m: FeatureMesh): FeatureMeshSerialized {
+  return { ...serializeHeader(m), ...serializeGeometry(m) };
+}
+
+type RehydratedGeometry = Pick<FeatureMesh, 'faces' | 'volume' | 'edges' | 'faceOwners' | 'edgeRanges' | 'edgeOwners'>;
+
+function rehydrateGeometry(g: SharedGeometrySerialized): RehydratedGeometry {
   return {
-    featureId: s.featureId as FeatureMesh['featureId'],
-    featureKind: s.featureKind as FeatureMesh['featureKind'],
-    predecessors: [...s.predecessors] as FeatureMesh['predecessors'],
-    op: s.op,
-    faces: s.faces.map((f) => ({
+    faces: g.faces.map((f) => ({
       vertices: new Float32Array(f.vertices),
       indices: new Uint32Array(f.indices),
       normals: new Float32Array(f.normals),
@@ -131,21 +143,78 @@ export function rehydrateFromBridge(s: FeatureMeshSerialized): FeatureMesh {
       plane: f.plane,
       cylinder: f.cylinder,
     })),
-    volume: s.volume,
-    edges: s.edges ? new Float32Array(s.edges) : undefined,
+    volume: g.volume,
+    edges: g.edges ? new Float32Array(g.edges) : undefined,
+    ...copyLinkFields(g),
+  };
+}
+
+function rehydrateHeader(s: FeatureMeshSerialized): Omit<FeatureMesh, keyof RehydratedGeometry> {
+  return {
+    featureId: s.featureId as FeatureMesh['featureId'],
+    featureKind: s.featureKind as FeatureMesh['featureKind'],
+    predecessors: [...s.predecessors] as FeatureMesh['predecessors'],
+    op: s.op,
     ...(s.color !== undefined ? { color: s.color } : {}),
     ...(s.material !== undefined ? { material: s.material } : {}),
     ...(s.materialByFaceId !== undefined ? { materialByFaceId: s.materialByFaceId } : {}),
-    ...copyLinkFields(s),
     ...(s.displayName !== undefined ? { displayName: s.displayName } : {}),
     ...(s.filterNames !== undefined ? { filterNames: [...s.filterNames] } : {}),
     ...(s.sourceMetadataName !== undefined ? { sourceMetadataName: s.sourceMetadataName } : {}),
     ...(s.assemblyFeatureId !== undefined ? { assemblyFeatureId: s.assemblyFeatureId as FeatureMesh['featureId'] } : {}),
     ...(s.assemblyPartName !== undefined ? { assemblyPartName: s.assemblyPartName } : {}),
+    ...(s.geometryId !== undefined ? { geometryId: s.geometryId } : {}),
     ...(s.transform !== undefined ? { transform: [...s.transform] } : {}),
     ...(s.virtual === true ? { virtual: true } : {}),
     ...(s.referenceImage !== undefined ? { referenceImage: s.referenceImage } : {}),
     ...(s.renderEnvironment !== undefined ? { renderEnvironment: s.renderEnvironment } : {}),
     ...(s.cameraTarget !== undefined ? { cameraTarget: s.cameraTarget } : {}),
   };
+}
+
+export function rehydrateFromBridge(s: FeatureMeshSerialized): FeatureMesh {
+  return { ...rehydrateHeader(s), ...rehydrateGeometry(s) };
+}
+
+export interface SharedGeometrySerialized {
+  faces: FaceGeometrySerialized[];
+  volume?: number;
+  edges?: number[];
+  faceOwners?: string[];
+  edgeRanges?: number[];
+  edgeOwners?: string[];
+}
+
+/** Mesh-bridge payload. `geometries` is present only in the opt-in shared form. */
+export interface FeatureMeshPayload {
+  features: FeatureMeshSerialized[];
+  geometries?: Record<string, SharedGeometrySerialized>;
+}
+
+export function serializeFeatureMeshes(
+  meshes: readonly FeatureMesh[],
+  opts: { shareGeometry?: boolean } = {},
+): FeatureMeshPayload {
+  if (opts.shareGeometry !== true) return { features: meshes.map(serializeForBridge) };
+  const geometries: Record<string, SharedGeometrySerialized> = {};
+  const features = meshes.map((m): FeatureMeshSerialized => {
+    if (m.geometryId === undefined) return serializeForBridge(m);
+    if (geometries[m.geometryId] === undefined) geometries[m.geometryId] = serializeGeometry(m);
+    return { ...serializeHeader(m), faces: [] };
+  });
+  return Object.keys(geometries).length > 0 ? { features, geometries } : { features };
+}
+
+export function rehydrateFeatureMeshes(payload: FeatureMeshPayload): FeatureMesh[] {
+  const byId = new Map<string, RehydratedGeometry>();
+  return payload.features.map((s) => {
+    const shared = s.geometryId === undefined ? undefined : payload.geometries?.[s.geometryId];
+    if (shared === undefined || s.geometryId === undefined) return rehydrateFromBridge(s);
+    let geometry = byId.get(s.geometryId);
+    if (geometry === undefined) {
+      geometry = rehydrateGeometry(shared);
+      byId.set(s.geometryId, geometry);
+    }
+    return { ...rehydrateFromBridge(s), ...geometry };
+  });
 }

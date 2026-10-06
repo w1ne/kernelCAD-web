@@ -87,7 +87,7 @@ describe('meshSourceDev', () => {
     expect(fetchMock).toHaveBeenCalledWith('/__kernelcad/mesh', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ source: 'return box(1,1,1);' }),
+      body: JSON.stringify({ source: 'return box(1,1,1);', shareGeometry: true }),
     });
   });
 
@@ -176,7 +176,7 @@ describe('param overrides (stateless re-run path)', () => {
     expect(fetchMock).toHaveBeenCalledWith('/__kernelcad/mesh', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ source: 'return box(w,1,1);', params: { w: 5 } }),
+      body: JSON.stringify({ source: 'return box(w,1,1);', params: { w: 5 }, shareGeometry: true }),
     });
   });
 
@@ -184,7 +184,7 @@ describe('param overrides (stateless re-run path)', () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({ ok: true, json: async () => ({ features: [] }) } as Response);
     await meshSourceDev('x', {});
     const body = JSON.parse((fetchMock.mock.calls[0][1] as RequestInit).body as string);
-    expect(body).toEqual({ source: 'x' });
+    expect(body).toEqual({ source: 'x', shareGeometry: true });
   });
 
   it('meshSourceHosted skips the static precompute and posts params to the backend when overrides are given', async () => {

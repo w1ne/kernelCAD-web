@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useCallback, useEffect, useRef, type MutableRefObject } from 'react';
-import type { FeatureMeshSerialized } from '../../../modeling/capture/featureMeshSerialize';
+import type { FeatureMeshSerialized, SharedGeometrySerialized } from '../../../modeling/capture/featureMeshSerialize';
 import type { SerializedParamTable } from '../../../shared/runtime/paramTable';
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import { shouldUseHostedMesh, meshSourceHosted } from '../../scriptSource';
@@ -30,7 +30,7 @@ function fetchHostedMeshAndReview(
                 deps.setStaleMainResponsesDropped((prev) => prev + 1);
                 return;
             }
-            deps.setGeometries(featureMeshesToGeometries(payload.features));
+            deps.setGeometries(featureMeshesToGeometries(payload.features, payload.geometries));
             deps.setGeometryTransformOverrides({});
             deps.setFeatureRecords(payload.featureRecords ?? []);
             setRecomputeMs(Math.max(0, Math.round(performance.now() - fetchStart)));
@@ -66,6 +66,7 @@ function fetchHostedMeshAndReview(
 
 interface DevMeshPayload {
     features: FeatureMeshSerialized[];
+    geometries?: Record<string, SharedGeometrySerialized>;
     featureRecords?: FeatureRecord[];
     bounds: { min: [number, number, number]; max: [number, number, number] };
     params?: SerializedParamTable;
@@ -145,7 +146,7 @@ function fetchDevMeshAndReview(
                     deps.setStaleMainResponsesDropped((prev) => prev + 1);
                     return;
                 }
-                deps.setGeometries(featureMeshesToGeometries(payload.features));
+                deps.setGeometries(featureMeshesToGeometries(payload.features, payload.geometries));
                 deps.setGeometryTransformOverrides({});
                 deps.setFeatureRecords(payload.featureRecords ?? []);
                 setRecomputeMs(Math.max(0, Math.round(performance.now() - fetchStart)));
@@ -232,8 +233,8 @@ export function useMeshFetch(
         activeMeshFetchAbortRef.current?.abort();
         activeMeshFetchAbortRef.current = abortController;
         const meshPath = token
-            ? `/__kernelcad/mesh?session=${encodeURIComponent(token)}`
-            : `/__kernelcad/mesh?script=${encodeURIComponent(script)}`;
+            ? `/__kernelcad/mesh?session=${encodeURIComponent(token)}&share=1`
+            : `/__kernelcad/mesh?script=${encodeURIComponent(script)}&share=1`;
         // `live=1` asks the dev middleware for the cheap relower-path review:
         // raw interference pairs from the live pooled session only, skipping
         // the full script re-eval + pose-envelope sweep (minutes on jointed
@@ -241,7 +242,7 @@ export function useMeshFetch(
         // runs on initial load / explicit Validate.
         const reviewPath = token
             ? `/__kernelcad/review?session=${encodeURIComponent(token)}&script=${encodeURIComponent(script)}${opts?.liveReview ? '&live=1' : ''}`
-            : `/__kernelcad/review?script=${encodeURIComponent(script)}`;
+            : `/__kernelcad/review?script=${encodeURIComponent(script)}&share=1`;
 
         if (!token && shouldUseHostedMesh()) {
             const promise = fetchHostedMeshAndReview(deps, code, revision, fetchStart, opts, setRecomputeMs);
