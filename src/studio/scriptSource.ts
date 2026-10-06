@@ -337,20 +337,34 @@ function isBridgePayload(value: unknown): value is BackendMeshPayload {
   return !!value && typeof value === 'object' && Array.isArray((value as { features?: unknown }).features);
 }
 
-/** `/__kernelcad/mesh` body: the stored `/p/<slug>` project, or the source.
- *  `preferSource`: the caller rewrote the source (param values baked into
- *  it), so the stored project body would drop the edit. */
+/** `/__kernelcad/mesh` body. On a `/p/<slug>` page the revision's own
+ *  unedited code is sent as the stored project (slug + version). Any other
+ *  code — an edit, a live agent update, a restore, or a `preferSource`
+ *  rewrite with param values baked in — is sent as `source` together with the
+ *  project, so the server meshes that source against the project's asset
+ *  manifest and relative imports still resolve. Off a project page: source. */
 function hostedMeshBody(source: string, paramOverrides: ParamOverrides | undefined, preferSource?: boolean) {
-  // The stored project body is only that revision's own code. Edited,
-  // live-updated, or restored source is sent as source, or the server would
-  // mesh the old stored model.
-  const project = preferSource || !isPinnedRevisionSource(source) ? null : currentHostedProject();
+  const project = currentHostedProject();
+  const projectRef = project
+    ? { projectSlug: project.slug, ...(project.version ? { projectVersion: project.version } : {}) }
+    : null;
+  const storedRevision = !!projectRef && !preferSource && isPinnedRevisionSource(source);
   return {
-    ...(project
-      ? { projectSlug: project.slug, ...(project.version ? { projectVersion: project.version } : {}) }
-      : { source }),
+    ...(storedRevision ? projectRef : { source, ...(projectRef ?? {}) }),
     ...(hasOverrides(paramOverrides) ? { params: paramOverrides } : {}),
   };
+}
+
+/** Readable message for a mesh error body. A 422 `project.asset.missing`
+ *  names the file the source imports that the project does not hold. */
+function meshErrorMessage(status: number, payload: { error?: unknown; code?: unknown; path?: unknown } | null): string {
+  const assetMissing = payload?.error === 'project.asset.missing' || payload?.code === 'project.asset.missing';
+  if (status === 422 && assetMissing) {
+    const path = typeof payload?.path === 'string' && payload.path ? `"${payload.path}"` : 'a file';
+    return `This model imports ${path}, which is not in the project's files. `
+      + 'Add the file to the project or remove the import.';
+  }
+  return payload && typeof payload.error === 'string' ? payload.error : `HTTP ${status}`;
 }
 
 /** Retries after a 504 `mesh.pending` (the server is still building). Three
@@ -386,8 +400,7 @@ async function meshOnServer(base: string, body: ReturnType<typeof hostedMeshBody
           await new Promise((resolve) => setTimeout(resolve, pendingWaitMs(response, payload)));
           continue;
         }
-        const message = payload && typeof payload.error === 'string' ? payload.error : `HTTP ${response.status}`;
-        throw new Error(message);
+        throw new Error(meshErrorMessage(response.status, payload));
       }
       if (!isBridgePayload(payload)) throw new Error('Mesh endpoint did not return features.');
       setMeshNotice({ approximate: payload.degraded === 'revision-artifact' });
