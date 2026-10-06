@@ -60,6 +60,9 @@ export const EXEMPT_UNVERIFIED: ReadonlySet<string> = new Set([
   // rewrite has a real 1 → 0 interference to fix. See
   // docs/demos/direct-edit/README.md and tests/e2e/direct-edit-drag.spec.ts.
   'examples/direct-edit-drag-to-clearance.kcad.ts',
+  // Plant-scale static layouts (assembly instancing, 2026-10): ~1,000 mate-less parts.
+  'examples/plant/rack-row.kcad.ts',
+  'examples/plant/roller-conveyor.kcad.ts',
   'examples/bom/panel-with-fasteners.kcad.ts',
   'examples/cookbook-parity/countersunk-flat-head-screw.kcad.ts',
   'examples/cookbook-parity/engineering-material-presets-mass.kcad.ts',

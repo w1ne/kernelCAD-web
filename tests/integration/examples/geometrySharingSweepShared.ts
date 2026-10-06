@@ -39,6 +39,8 @@ export const KNOWN_SHARING: readonly string[] = [
   'examples/robot-arm/desktop-3axis-mates.kcad.ts',
   'examples/robot-arm/skill-built-supported-arm-01-colliding.kcad.ts',
   'examples/robot-arm/skill-built-supported-arm.kcad.ts',
+  'examples/plant/rack-row.kcad.ts',
+  'examples/plant/roller-conveyor.kcad.ts',
 ];
 // Examples that cannot be captured at all in the test environment, for reasons
 // unrelated to sharing. Only these may fail to capture; every other error is
@@ -54,11 +56,33 @@ const UNBUILDABLE: ReadonlyMap<string, string> = new Map([
   ['examples/portfolio/watch-from-screenshot-agent-loop-v2.kcad.ts', 'pre-existing: uses the deleted arm.fixed API'],
 ]);
 const skipped: string[] = [];
+// Plant-scale examples (~1,000 parts) are swept at a reduced repeat count:
+// the sharing-OFF build lowers every part on its own, which at full scale
+// costs minutes per example (each perforated door is ~6 s of booleans).
+// Every unique shape and every placement (`at` and `rotate`) is still
+// built, so sharing is checked for all of them; only the copy count drops.
+// The rack row keeps one ladder section (with its two brackets) at two racks.
+const SCALED_DOWN: ReadonlyMap<string, ReadonlyArray<readonly [string, string]>> = new Map([
+  ['examples/plant/rack-row.kcad.ts', [
+    ['const RACKS = 40;', 'const RACKS = 2;'],
+    ['const SECTIONS = Math.floor(RACKS / 5);', 'const SECTIONS = 1;'],
+  ]],
+  ['examples/plant/roller-conveyor.kcad.ts', [['const SEGMENTS = 20;', 'const SEGMENTS = 2;']]],
+]);
+
+function exampleSource(path: string): string {
+  let code = readFileSync(join(REPO_ROOT, path), 'utf8');
+  for (const [from, to] of SCALED_DOWN.get(path) ?? []) {
+    if (!code.includes(from)) throw new Error(`${path}: scale-down anchor '${from}' not found`);
+    code = code.replace(from, to);
+  }
+  return code;
+}
 
 /** True when the planner would really alias at least one part's lowering. */
 async function plansRealSharing(path: string): Promise<boolean> {
   const abs = join(REPO_ROOT, path);
-  const run = await runScript({ code: readFileSync(abs, 'utf8'), fileName: abs, scriptDir: dirname(abs) });
+  const run = await runScript({ code: exampleSource(path), fileName: abs, scriptDir: dirname(abs) });
   return planSharedLowering(run.records, computeGeometryKeys(run.records, run.paramTable)).size > 0;
 }
 
@@ -90,9 +114,17 @@ async function buildFacts(path: string, sharing: boolean): Promise<BuildFacts> {
   setGeometrySharingForTests(sharing);
   const abs = join(REPO_ROOT, path);
   const lower = vi.spyOn(OcctLowerer.prototype, 'lower');
-  const model = await buildModel({ code: readFileSync(abs, 'utf8'), fileName: abs, scriptDir: dirname(abs) });
+  const model = await buildModel({ code: exampleSource(path), fileName: abs, scriptDir: dirname(abs) });
   const partLowerings = lower.mock.calls.filter((c) => (c[0] as { kind: string }).kind === 'assemblyPart').length;
   lower.mockRestore();
+  // Mesh before measuring: an exact bbox / mass query can leave a finer
+  // triangulation on the B-rep, which a later mesh pass reuses — measuring
+  // first would make the mesh depend on which part was queried, not on sharing.
+  const meshed = await meshFeaturesPerFeature(model.records, model.session.paramTable, model.session);
+  const meshes = new Map<string, MeshFacts>();
+  for (const f of meshed.features) {
+    if (f.assemblyPartName !== undefined) meshes.set(f.featureId, worldBounds(f));
+  }
   const parts = new Map<string, PartFacts>();
   for (const r of model.records) {
     const s = model.shapes.get(r.id);
@@ -101,11 +133,6 @@ async function buildFacts(path: string, sharing: boolean): Promise<BuildFacts> {
       const bb = p.shape.boundingBox({ exact: true });
       parts.set(`${r.id}/${p.name}`, { volume: p.shape.volume(), area: p.shape.surfaceArea(), min: [...bb.min], max: [...bb.max] });
     }
-  }
-  const meshed = await meshFeaturesPerFeature(model.records, model.session.paramTable, model.session);
-  const meshes = new Map<string, MeshFacts>();
-  for (const f of meshed.features) {
-    if (f.assemblyPartName !== undefined) meshes.set(f.featureId, worldBounds(f));
   }
   return { parts, meshes, partLowerings };
 }
@@ -142,11 +169,15 @@ function close(a: number, b: number): boolean {
   return Math.abs(a - b) <= 1e-6 * Math.max(1, Math.abs(a), Math.abs(b));
 }
 
-// Capture alone takes ~90 s: pinned to the lightest shard so it does not stack on a busy one.
-const HEAVY: ReadonlySet<string> = new Set(['examples/robot-arm/so100/so100-arm.kcad.ts']);
+// Slow examples pinned to their own shard (0-based) so they never stack:
+// so100 capture alone takes ~90 s; the scaled-down rack row ~55 s.
+const PINNED: ReadonlyMap<string, number> = new Map([
+  ['examples/robot-arm/so100/so100-arm.kcad.ts', SHARD_COUNT - 1],
+  ['examples/plant/rack-row.kcad.ts', 1],
+]);
 
 export function registerSharingSweepShard(shard: number): void {
-  const mine = assemblyExamples.filter((p, i) => (HEAVY.has(p) ? SHARD_COUNT - 1 : i % SHARD_COUNT) === shard);
+  const mine = assemblyExamples.filter((p, i) => (PINNED.get(p) ?? i % SHARD_COUNT) === shard);
   describe(`geometry sharing never changes a part (example sweep, shard ${shard + 1}/${SHARD_COUNT})`, () => {
     beforeAll(async () => { await initOcct(); });
     afterAll(() => { setGeometrySharingForTests(true); });
