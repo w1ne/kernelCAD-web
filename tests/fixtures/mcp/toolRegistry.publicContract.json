@@ -26,7 +26,7 @@
     "annotations": {
       "readOnlyHint": true,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": true
     },
     "outputSchema": {
       "type": "object",
@@ -403,7 +403,7 @@
     "annotations": {
       "readOnlyHint": true,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": true
     },
     "outputSchema": {
       "type": "object",
@@ -1725,7 +1725,7 @@
     "annotations": {
       "readOnlyHint": false,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": true
     },
     "outputSchema": {
       "type": "object",
@@ -5601,7 +5601,7 @@
     },
     "annotations": {
       "readOnlyHint": false,
-      "destructiveHint": false,
+      "destructiveHint": true,
       "openWorldHint": true
     },
     "outputSchema": {
@@ -6410,9 +6410,9 @@
       }
     },
     "annotations": {
-      "readOnlyHint": true,
+      "readOnlyHint": false,
       "destructiveHint": false,
-      "openWorldHint": false
+      "openWorldHint": true
     },
     "outputSchema": {
       "type": "object",

@@ -32,6 +32,8 @@ export interface ToolAnnotations {
 const READ: ToolAnnotations = { readOnlyHint: true, destructiveHint: false, openWorldHint: false };
 const READ_REMOTE: ToolAnnotations = { readOnlyHint: true, destructiveHint: false, openWorldHint: true };
 const AUTHOR: ToolAnnotations = { readOnlyHint: false, destructiveHint: false, openWorldHint: false };
+/** Authoring that may fetch its input from a URL or call a remote vision model. */
+const AUTHOR_REMOTE: ToolAnnotations = { readOnlyHint: false, destructiveHint: false, openWorldHint: true };
 const AUTHOR_DESTRUCTIVE: ToolAnnotations = { readOnlyHint: false, destructiveHint: true, openWorldHint: false };
 const WRITES_FILE: ToolAnnotations = { readOnlyHint: false, destructiveHint: false, openWorldHint: true };
 /** Analysis that changes nothing about the design but CAN drop artifacts on
@@ -39,12 +41,17 @@ const WRITES_FILE: ToolAnnotations = { readOnlyHint: false, destructiveHint: fal
  *  Read-only is the honest label for the design; openWorld is the honest
  *  label for the optional file output. */
 const READ_MAY_WRITE_ARTIFACTS: ToolAnnotations = { readOnlyHint: true, destructiveHint: false, openWorldHint: true };
+/** Starts a job on real hardware that cannot be taken back (a print uses
+ *  material and machine time). */
+const PHYSICAL_ACTION: ToolAnnotations = { readOnlyHint: false, destructiveHint: true, openWorldHint: true };
 
 export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
-  // Read / compute / analysis — no mutation, no external effect.
-  evaluate_script: READ,
+  // Read / compute / analysis — no mutation. evaluate_script loads imported
+  // geometry from https:// and asset URLs (lib.fromSTEP etc.) and inspect can
+  // read the remote parts catalog, so both are open-world.
+  evaluate_script: READ_REMOTE,
   diff_scripts: READ,
-  inspect: READ,
+  inspect: READ_REMOTE,
   query: READ,
   verify: READ,
   why_did_this_fail: READ,
@@ -52,7 +59,6 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   lookup_api: READ,
   lookup_diagnostics: READ,
   lookup_cookbook: READ,
-  execute_cookbook: READ,
   review_cad: READ,
   review_paint_peek_latest: READ,
   solve_sketch: READ,
@@ -79,7 +85,8 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   add_variable_sweep: AUTHOR,
   project_curve: AUTHOR,
   add_pattern_feature: AUTHOR,
-  trace_from_image: AUTHOR,
+  // Fetches imageUrl (http(s)/data/file) and can call a remote vision model.
+  trace_from_image: AUTHOR_REMOTE,
   resolve_assumptions: AUTHOR,
   add_constraint: AUTHOR,
   add_part: AUTHOR,
@@ -104,7 +111,11 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   capture_animation: WRITES_FILE,
 
   // Uploads a file to, and can start a print on, a real network printer.
-  send_to_printer: WRITES_FILE,
+  send_to_printer: PHYSICAL_ACTION,
+
+  // Evaluates a cookbook snippet; with openInStudio:true it publishes the
+  // result as a Studio project, which is a user-visible write.
+  execute_cookbook: WRITES_FILE,
 
   // Renders the model to PNG views on the local filesystem — does not change the
   // design, but writes image files (same class as capture_animation).
