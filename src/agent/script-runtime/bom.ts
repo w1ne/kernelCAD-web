@@ -28,6 +28,7 @@
 // FLAT blank bbox (recovered outline + [0, thickness] z), not the folded body.
 
 import type { Assembly, AssemblyPartStored } from '../../modeling/capture/assembly';
+import { computeGeometryKeys } from '../../modeling/compute/geometryIdentity';
 import type { CaptureSession } from '../../modeling/capture/captureSession';
 import type { CatalogPartMetadata } from '../../shared/parts/types';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
@@ -181,15 +182,40 @@ interface PartMeasurement {
   groupKey: string;
 }
 
-/** Lower one part and resolve its grouping identity + density/material. */
-async function measurePart(part: AssemblyPartStored, records: readonly FeatureRecord[]): Promise<PartMeasurement> {
-  const record = recordById(records, part.originalShape.id);
-  const catalogPart = record?.metadata?.catalogPart;
+interface ShapeMeasure {
+  readonly bbox: BomBbox;
+  readonly volumeMm3: number;
+  readonly surfaceAreaMm2: number;
+}
+
+/** Lower + measure a part's source shape once per geometry key. */
+async function measureShape(
+  part: AssemblyPartStored,
+  key: string | undefined,
+  cache: Map<string, ShapeMeasure>,
+): Promise<ShapeMeasure> {
+  const hit = key === undefined ? undefined : cache.get(key);
+  if (hit !== undefined) return hit;
   const lowered = await part.originalShape.lower();
   const bb = lowered.boundingBox({ exact: true });
-  const loweredBbox: BomBbox = { min: [bb.min[0], bb.min[1], bb.min[2]], max: [bb.max[0], bb.max[1], bb.max[2]] };
-  const volumeMm3 = lowered.volume();
-  const surfaceAreaMm2 = lowered.surfaceArea();
+  const measured: ShapeMeasure = {
+    bbox: { min: [bb.min[0], bb.min[1], bb.min[2]], max: [bb.max[0], bb.max[1], bb.max[2]] },
+    volumeMm3: lowered.volume(),
+    surfaceAreaMm2: lowered.surfaceArea(),
+  };
+  if (key !== undefined) cache.set(key, measured);
+  return measured;
+}
+
+/** Resolve a part's grouping identity + density/material from its measurement. */
+function measurePart(
+  part: AssemblyPartStored,
+  records: readonly FeatureRecord[],
+  measure: ShapeMeasure,
+): PartMeasurement {
+  const record = recordById(records, part.originalShape.id);
+  const catalogPart = record?.metadata?.catalogPart;
+  const { bbox: loweredBbox, volumeMm3, surfaceAreaMm2 } = measure;
 
   const kind: BomKind = catalogPart !== undefined ? 'purchased' : 'fabricated';
   // Sheet-metal fabricated parts report the flat blank bbox (stock size);
@@ -302,17 +328,20 @@ function createBomRow(
 
 /**
  * Compute BOM rows + totals + diagnostics for one Assembly. Pure over the
- * capture graph; each fabricated part is lowered once (`.lower()`) to read
+ * capture graph; each distinct geometry is lowered once (`.lower()`) to read
  * its geometry.
  */
 export async function computeBom(arm: Assembly, session: CaptureSession): Promise<BomResult> {
   const diagnostics: CompilerDiagnostic[] = [];
   const groups = new Map<string, BomRow & { __density: number | null }>();
   const records = session.getRecords();
+  const keys = computeGeometryKeys(records, session.paramTable);
+  const measures = new Map<string, ShapeMeasure>();
   let item = 0;
 
   for (const part of arm.__parts()) {
-    const measured = await measurePart(part, records);
+    const measure = await measureShape(part, keys.get(part.originalShape.id), measures);
+    const measured = measurePart(part, records, measure);
     diagnostics.push(...bomDiagnosticsFor(part, measured.kind, measured.catalogPart, measured.density));
 
     const existing = groups.get(measured.groupKey);

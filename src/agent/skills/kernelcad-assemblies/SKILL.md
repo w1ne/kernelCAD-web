@@ -152,7 +152,7 @@ interface Assembly {
 
 ## Repeated parts
 
-Rows of racks, rollers on a conveyor, bolt circles: build the shape in a function and call it in the loop. Identical calls share one geometry automatically — the kernel lowers and tessellates it once, Studio draws all copies in one draw call, GLB export writes one mesh. Place copies with `at` and orient them with `rotate`; do not bake each copy's own position into its shape with a per-copy `.translate()` / `.rotate()` (that makes every copy a different geometry). Transforms inside the recipe itself, identical on every call, are fine.
+Rows of racks, rollers on a conveyor, bolt circles: build the shape in a function and call it in the loop. Identical calls share one geometry automatically — the kernel lowers and tessellates it once, Studio draws all copies in one draw call, GLB export writes one mesh. Place copies with `at` and orient them with `rotate`; do not bake each copy's own position into its shape with a per-copy `.translate()` / `.rotate()` (that makes every copy a different geometry). Transforms inside the recipe itself, identical on every call, are fine. Check `inspect({ of: 'assembly' }).uniqueGeometries`: it should be the number of distinct shapes you meant, not the part count; per-part `geometryId` shows which parts share one.
 
 ```typescript
 const arm = assembly('rack-row');

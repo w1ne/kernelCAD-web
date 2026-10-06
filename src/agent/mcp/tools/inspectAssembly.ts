@@ -15,6 +15,7 @@ import {
   type MechanicalTransmissionDiagnostic,
 } from '../../../modeling/mates/mechanicalTransmission';
 import { formatTopoRef, type TopoKind, type TopoModifier } from '../../../kernel/naming';
+import { computeGeometryKeys } from '../../../modeling/compute/geometryIdentity';
 import { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
 import { resolveTopologyOriginOnBackend } from '../../../modeling/backends/occt/connectorTopology';
 
@@ -29,6 +30,8 @@ export interface InspectAssemblyInput {
 
 export interface InspectAssemblyPartSummary {
   name: string;
+  /** Geometry identity; equal ids = identical shape, lowered and drawn once. */
+  geometryId?: string;
   bbox: Bbox;
   connectorCount: number;
   connectors: InspectAssemblyConnectorSummary[];
@@ -92,6 +95,8 @@ export type InspectAssemblyOutput =
       featureCount: number;
       assembly: string;
       partCount: number;
+      /** Distinct geometries among the parts (parts without an id count once each). */
+      uniqueGeometries: number;
       mateCount: number;
       parts: InspectAssemblyPartSummary[];
       mates: InspectAssemblyMateSummary[];
@@ -153,8 +158,9 @@ export async function inspectAssemblyTool(
       .filter(isPartDisconnected)
       .map((diagnostic) => [diagnostic.partName, diagnostic]),
   );
+  const keys = computeGeometryKeys(model.session.getRecords(), model.session.paramTable);
   const parts = await Promise.all(
-    arm.__parts().map((part) => summarizePart(part, disconnectedByPart.get(part.name))),
+    arm.__parts().map((part) => summarizePart(part, disconnectedByPart.get(part.name), keys.get(part.id))),
   );
   const reviewFacts = [
     ...evaluation.diagnostics.filter((d) => d.code.startsWith('union.')).map(toReviewFact),
@@ -170,6 +176,7 @@ export async function inspectAssemblyTool(
     featureCount: evaluation.featureCount,
     assembly: arm.name,
     partCount: parts.length,
+    uniqueGeometries: countUniqueGeometries(parts),
     mateCount: arm.__mates().length,
     parts,
     mates: arm.__mates().map((mate) => ({
@@ -185,15 +192,27 @@ export async function inspectAssemblyTool(
   };
 }
 
+function countUniqueGeometries(parts: readonly InspectAssemblyPartSummary[]): number {
+  const ids = new Set<string>();
+  let unkeyed = 0;
+  for (const p of parts) {
+    if (p.geometryId === undefined) unkeyed += 1;
+    else ids.add(p.geometryId);
+  }
+  return ids.size + unkeyed;
+}
+
 async function summarizePart(
   part: AssemblyPartStored,
   disconnected?: PartDisconnectedDiagnostic,
+  geometryId?: string,
 ): Promise<InspectAssemblyPartSummary> {
   const lowered = await part.originalShape.lower();
   const bbox = lowered.boundingBox();
   const connectors = part.mateConnectors.map((c) => summarizeConnector(part.name, c, lowered));
   return {
     name: part.name,
+    ...(geometryId !== undefined ? { geometryId } : {}),
     bbox,
     connectorCount: part.mateConnectors.length,
     connectors,

@@ -164,4 +164,21 @@ describe('inspect_assembly MCP tool', () => {
       parts: [expect.objectContaining({ name: 'base' })],
     });
   });
+
+  it('reports per-part geometryId and the number of unique geometries', async () => {
+    const result = await inspectAssemblyTool({
+      code: `
+        const arm = assembly('row');
+        for (let i = 0; i < 6; i++) arm.part('r' + i, box(10, 10, 10), { at: [i * 20, 0, 0] });
+        arm.part('odd', box(10, 10, 12), { at: [200, 0, 0] });
+        return arm.model();
+      `,
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.partCount).toBe(7);
+    expect(result.uniqueGeometries).toBe(2);
+    expect(result.parts[5].geometryId).toBe(result.parts[0].geometryId);
+    expect(result.parts[6].geometryId).not.toBe(result.parts[0].geometryId);
+  }, 60_000);
 });
