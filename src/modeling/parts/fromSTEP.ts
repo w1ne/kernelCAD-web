@@ -11,7 +11,7 @@
 import { readFile } from 'node:fs/promises';
 import { resolveScriptRelativePath } from '../../shared/runtime/scriptRelativePath';
 import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
-import { importStepCached, StepParseError } from './stepParseCache';
+import { importStepCached, StepParseError, stepContentSha256 } from './stepParseCache';
 import { Shape } from '../capture/proxy';
 import type { CaptureSession } from '../capture/captureSession';
 import { KernelError } from '../../shared/intent/kernelError';
@@ -92,6 +92,7 @@ export async function fromSTEP(ctx: FromSTEPContext, path: string): Promise<Shap
     inputs: {},
     metadata: {
       sourcePath: absPath,
+      contentSha256: stepContentSha256(buf),
     },
   });
   ctx.session.importedGeometry.set(shape.id, backend);
@@ -151,7 +152,7 @@ export async function fromStepBytes(
     kind: 'importedStep',
     params: {},
     inputs: {},
-    metadata: { sourcePath: sourceLabel },
+    metadata: { sourcePath: sourceLabel, contentSha256: stepContentSha256(bytes) },
   });
   ctx.session.importedGeometry.set(shape.id, backend);
   return shape;

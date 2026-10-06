@@ -68,6 +68,13 @@ function sha256Hex(bytes: Buffer | Uint8Array): string {
   return createHash('sha256').update(bytes).digest('hex');
 }
 
+/** sha256 of raw STEP bytes — the parse-cache key, also stored on the
+ *  `importedStep` record as `metadata.contentSha256` so geometry identity
+ *  (`modeling/compute/geometryIdentity.ts`) can share identical imports. */
+export function stepContentSha256(bytes: Buffer | Uint8Array): string {
+  return sha256Hex(bytes);
+}
+
 /**
  * Parse STEP bytes into an OcctBackend, reusing a cached parse when the exact
  * same bytes were seen before. Always returns a fresh clone the caller owns
