@@ -4,12 +4,16 @@ import { useCallback, useEffect, useState } from 'react';
 import {
   fetchProjectRevisionBySlug,
   listProjectRevisions,
+  type ProjectRevision,
+  type ProjectRevisionBody,
   type ProjectRow,
 } from '../../funnel/lib/apiClient';
 import { setHostedRevisionHint } from '../scriptSource';
 import {
   isHistoricalPin,
   readRequestedVersion,
+  revisionTitleField,
+  shareHeadingTitle,
   shareProjectView,
   type PinnedRevision,
 } from './-shareRevision';
@@ -39,27 +43,34 @@ function requestedFromLocation(): number | null {
   return readRequestedVersion(window.location.search ?? '');
 }
 
-function fetchPin(slug: string, version: number, token: string): Promise<PinResult> {
-  return Promise.all([
-    fetchProjectRevisionBySlug(slug, version),
-    listProjectRevisions(slug).catch(() => []),
-  ]).then(
-    ([body, list]) => {
-      if (body.version !== version) {
-        return { token, revision: null, error: 'This revision could not be loaded.' };
-      }
-      const createdAt = list.find((entry) => entry.version === version)?.created_at ?? null;
-      return {
-        token,
-        revision: {
-          version: body.version,
-          code: body.code,
-          parameters: body.parameters,
-          createdAt,
-        },
-        error: null,
-      };
+function pinFromBody(
+  body: ProjectRevisionBody,
+  version: number,
+  token: string,
+  listed: ProjectRevision[] | null,
+): PinResult {
+  if (body.version !== version) {
+    return { token, revision: null, error: 'This revision could not be loaded.' };
+  }
+  return {
+    token,
+    revision: {
+      version: body.version,
+      code: body.code,
+      parameters: body.parameters,
+      title: revisionTitleField(body),
+      createdAt: listed?.find((entry) => entry.version === version)?.created_at ?? null,
     },
+    error: null,
+  };
+}
+
+function fetchPin(slug: string, version: number, token: string): Promise<PinResult> {
+  // The list is only the timestamp. A slow list must not hold the title.
+  let listed: ProjectRevision[] | null = null;
+  void listProjectRevisions(slug).then((rows) => { listed = rows; }).catch(() => { listed = []; });
+  return fetchProjectRevisionBySlug(slug, version).then(
+    (body) => pinFromBody(body, version, token, listed),
     (err: unknown) => ({
       token,
       revision: null,
@@ -77,10 +88,16 @@ function shareView(
   revision: PinnedRevision | null,
 ): ProjectRow | null {
   if (failed) return null;
-  // Paint the stored mesh while the revision's title is still in flight.
-  // Do not show the latest row's name in that gap.
+  // Paint the stored mesh while the revision body is still in flight.
+  // The heading stays the project title until that body supplies a better one.
   if (pending) {
-    return { ...row, title: '', version: requested ?? row.version, current_code: ' ', parameters: [] };
+    return {
+      ...row,
+      title: shareHeadingTitle(null, null, row.title),
+      version: requested ?? row.version,
+      current_code: ' ',
+      parameters: [],
+    };
   }
   return shareProjectView(row, historical ? requested : null, revision);
 }

@@ -80,10 +80,16 @@ function expectsShadedMetal(entry: ShareCase): boolean {
   return entry.slug === 'V4P2zJTm' && (entry.version === 1 || entry.version === 4 || entry.version === 6);
 }
 
-/** Fraction of model pixels that are near-black (luma < 20) or blown white.
- *  Read from a compositor screenshot so a cleared WebGL drawing buffer cannot
- *  report a false black frame. */
-async function extremeLumaFraction(page: Page): Promise<number> {
+/** Clamshell and housing are light plastic. Their dark pockets are real;
+ *  blown-white faces (luma > 245) are the overexposure this check flags. */
+function expectsBlownWhite(entry: ShareCase): boolean {
+  return entry.slug === 'cgghWRGN' || entry.slug === 'ONMZ6l4s';
+}
+
+/** Fraction of model pixels that are near-black (luma < 20) or blown white,
+ *  plus the blown-white fraction on its own. Read from a compositor
+ *  screenshot so a cleared WebGL drawing buffer cannot report a false frame. */
+async function modelLumaFractions(page: Page): Promise<{ extreme: number; blown: number }> {
   const png = await page.locator('canvas').screenshot();
   const url = `data:image/png;base64,${png.toString('base64')}`;
   return page.evaluate(async (src) => {
@@ -95,11 +101,12 @@ async function extremeLumaFraction(page: Page): Promise<number> {
     copy.width = size;
     copy.height = size;
     const ctx = copy.getContext('2d', { willReadFrequently: true });
-    if (!ctx) return 1;
+    if (!ctx) return { extreme: 1, blown: 1 };
     ctx.drawImage(img, 0, 0, size, size);
     const pixels = ctx.getImageData(0, 0, size, size).data;
     let model = 0;
     let extreme = 0;
+    let blown = 0;
     for (let i = 0; i < pixels.length; i += 4) {
       const r = pixels[i] ?? 0;
       const g = pixels[i + 1] ?? 0;
@@ -109,8 +116,10 @@ async function extremeLumaFraction(page: Page): Promise<number> {
       model += 1;
       const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
       if (lum < 20 || lum > 245) extreme += 1;
+      if (lum > 245) blown += 1;
     }
-    return model === 0 ? 1 : extreme / model;
+    if (model === 0) return { extreme: 1, blown: 1 };
+    return { extreme: extreme / model, blown: blown / model };
   }, url);
 }
 
@@ -177,18 +186,24 @@ test.describe('share pages paint the stored mesh', () => {
         await expect(page.getByRole('heading', { level: 1 })).toHaveText(entry.title, { timeout: PAINT_MS });
         await expect(page.getByTestId('approximate-preview')).toHaveCount(0);
         await expect(page.getByTestId('model-stage-status')).toHaveCount(0);
+        await expect(page.getByRole('button', { name: 'Download STEP' }).first()).toBeVisible();
         await expect(page.getByText(new RegExp(`\\br${entry.version}\\b`)).first()).toBeVisible();
         expect(forbidden, `remesh or gallery mesh requested: ${forbidden.join(', ')}`).toEqual([]);
         await page.waitForTimeout(700);
         const shade = await shadeStats(page);
-        const extremeLuma = expectsShadedMetal(entry) ? await extremeLumaFraction(page) : undefined;
+        const luma = expectsShadedMetal(entry) || expectsBlownWhite(entry)
+          ? await modelLumaFractions(page)
+          : undefined;
         const shot = await page.getByTestId('model-stage').screenshot();
         await testInfo.attach(`${entry.slug}-v${entry.version}`, {
-          body: JSON.stringify({ elapsed, shade, extremeLuma }),
+          body: JSON.stringify({ elapsed, shade, luma }),
           contentType: 'application/json',
         });
-        if (extremeLuma !== undefined) {
-          expect(extremeLuma, 'near-black or blown-white model pixels').toBeLessThanOrEqual(0.15);
+        if (expectsShadedMetal(entry) && luma) {
+          expect(luma.extreme, 'near-black or blown-white model pixels').toBeLessThanOrEqual(0.15);
+        }
+        if (expectsBlownWhite(entry) && luma) {
+          expect(luma.blown, 'blown-white model pixels').toBeLessThanOrEqual(0.15);
         }
         await testInfo.attach(`${entry.slug}-v${entry.version}.png`, {
           body: shot,

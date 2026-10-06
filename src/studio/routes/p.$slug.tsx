@@ -4,8 +4,8 @@
  * /p/<slug> — the page a shared model link opens (most visitors arrive here
  * from a chat with their agent).
  *
- * Default: the model-first page (`ViewerPageShell`). The stored render shows
- * at once, then the live model; a side panel (a bottom sheet on a phone)
+ * Default: the model-first page (`ViewerPageShell`). A stored mesh paints as
+ * the final model; a side panel (a bottom sheet on a phone)
  * holds the title and checks, the customizer, one Download, "Keep this
  * model", "Continue in chat", and share / remix / report / revisions.
  *
@@ -55,6 +55,7 @@ import {
   studioHref,
 } from './-projectPageModel';
 import { useShareProject } from './-useShareProject';
+import { shareHeadingTitle } from './-shareRevision';
 import type { Session } from '@supabase/supabase-js';
 
 export const Route = createFileRoute('/p/$slug')({
@@ -272,7 +273,9 @@ function ModelFirstPage(props: PageProps & {
   const project = props.view;
   const shared = {
     theme,
-    title: project?.title ?? <span className="text-fg-3">Loading…</span>,
+    title: project
+      ? shareHeadingTitle(project.title, null, null)
+      : <span className="text-fg-3">Loading…</span>,
     titleAside: <LiveBadge project={project} lastLiveUpdate={live.lastLiveUpdate} now={now} />,
     headerActions: <HeaderActions slug={slug} session={props.session} />,
     panelLabel: 'Model details',
@@ -290,14 +293,13 @@ function ModelFirstPage(props: PageProps & {
   return (
     <WorkbenchProvider initialCode={project.current_code} projectName={project.title}>
       <LiveCodeApplier liveCode={props.historical ? undefined : live.liveCode} />
-      <LiveProjectShell {...props} project={project} shared={shared} poster={poster} now={now} />
+      <LiveProjectShell {...props} project={project} shared={shared} now={now} />
     </WorkbenchProvider>
   );
 }
 
 function LiveProjectShell(props: PageProps & {
   project: ProjectRow;
-  poster: string;
   now: number;
   shared: Omit<Parameters<typeof ViewerPageShell>[0], 'stage' | 'panel' | 'actionBar'>;
 }): JSX.Element {
@@ -315,7 +317,6 @@ function LiveProjectShell(props: PageProps & {
       {...props.shared}
       stage={
         <ModelStage
-          posterSrc={props.poster}
           posterAlt={`Render of ${project.title}`}
           phase={stage.phase}
           busy={stage.busy}

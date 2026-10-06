@@ -463,6 +463,20 @@ async function storedRevisionMesh(base: string): Promise<BackendMeshPayload | nu
 const NO_HOSTED_BACKEND = 'No precomputed mesh for this edit, and no compute backend is configured. '
   + 'Editing gallery models in the hosted viewer needs a kernel backend.';
 
+/**
+ * The mesh stored for this `/p/<slug>` revision, on any host. Null when this
+ * page is not a share link or the artifact is missing. Does not remesh.
+ * A hit is the final model: `approximate` stays off.
+ */
+export async function storedShareMesh(): Promise<BackendMeshPayload | null> {
+  if (!currentHostedProject()) return null;
+  const base = typeof import.meta.env.VITE_API_BASE_URL === 'string' ? import.meta.env.VITE_API_BASE_URL : '';
+  const stored = await storedRevisionMesh(base);
+  if (!stored) return null;
+  setMeshNotice({ meshing: false, approximate: false });
+  return stored;
+}
+
 /** Project viewers paint the mesh stored at publish time. They do not hash
  *  the source against the gallery and they do not remesh on the request path. */
 async function meshStoredProject(

@@ -23,6 +23,7 @@ import {
   reviewSourceDev,
   rootVisibleFeatures,
   setHostedRevisionHint,
+  storedShareMesh,
 } from './scriptSource';
 
 afterEach(() => {
@@ -606,5 +607,47 @@ describe('hosted mesh: pending retry and degraded notice', () => {
     vi.mocked(globalThis.fetch).mockResolvedValue({ ok: true, json: async () => ok } as Response);
     await meshSourceHosted('edited', { w: 2 });
     expect(getMeshNotice().approximate).toBe(false);
+  });
+});
+
+describe('storedShareMesh', () => {
+  const face = {
+    vertices: [0, 0, 0, 1, 0, 0, 0, 1, 0],
+    indices: [0, 1, 2],
+    normals: [0, 0, 1, 0, 0, 1, 0, 0, 1],
+    faceId: 1,
+  };
+  const stored = {
+    revision: 1,
+    features: [{ featureId: 'rail', featureKind: 'box', predecessors: [], faces: [face] }],
+    bounds: { min: [0, 0, 0], max: [1, 1, 1] },
+  };
+
+  it('paints a pinned artifact on localhost without remeshing', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.example.com');
+    vi.stubEnv('VITE_HOSTED_MESH', '');
+    vi.stubGlobal('window', {
+      location: { hostname: 'localhost', pathname: '/p/OGm0lP_B', search: '?version=1' },
+    });
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      const url = String(input);
+      if (url === 'https://mesh.kernelcad.com/mesh-artifacts/OGm0lP_B/v1.json') {
+        return { ok: true, json: async () => stored } as Response;
+      }
+      return { ok: false, status: 404, json: async () => null } as Response;
+    });
+
+    const payload = await storedShareMesh();
+    expect(payload?.features.map((feature) => feature.featureId)).toEqual(['rail']);
+    expect(getMeshNotice().approximate).toBe(false);
+    expect(getMeshNotice().meshing).toBe(false);
+    expect(fetchMock.mock.calls.some((call) => String(call[0]).includes('/__kernelcad/mesh'))).toBe(false);
+  });
+
+  it('returns null off a share page', async () => {
+    vi.stubGlobal('window', { location: { hostname: 'localhost', pathname: '/studio', search: '' } });
+    const fetchMock = vi.spyOn(globalThis, 'fetch');
+    await expect(storedShareMesh()).resolves.toBeNull();
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

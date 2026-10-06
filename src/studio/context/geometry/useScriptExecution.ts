@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useCallback, useEffect, useMemo, useRef, useState, type MutableRefObject } from 'react';
 import { GeometryEngine, type GeometryResult, type SketchGeometry } from '../../../shared/worker/geometryEngine';
-import { shouldUseHostedMesh, devMeshAvailable, needsFullKernel } from '../../scriptSource';
+import { shouldUseHostedMesh, devMeshAvailable, needsFullKernel, currentHostedProject } from '../../scriptSource';
 import type { SerializedParamEntry } from '../../../shared/runtime/paramTable';
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { ExecutionRecord, ScriptReviewSummary } from './types';
@@ -211,9 +211,12 @@ function useWorkerSourceRun(
         if (!routesToDevKernel && !isReady) return;
         setScriptParams([]);
         setScriptReview(null);
+        // A share page with a stored artifact paints on the first turn.
+        // The 600ms debounce is for local edits.
+        const delay = currentHostedProject() ? 0 : 600;
         const timer = setTimeout(() => {
             void runAutoExecutionLoop(applyDeps, code, executionCount);
-        }, 600);
+        }, delay);
         return () => clearTimeout(timer);
         // applyDeps stands in for engine and pushExecutionRecord, which were
         // the original dependencies of this loop.

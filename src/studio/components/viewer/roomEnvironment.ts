@@ -34,9 +34,12 @@ export function setRoomEnvironmentForTest(texture: THREE.Texture | null): void {
   liveEnvironment = texture;
 }
 
+/** IBL strength. A full 1.0 plus the key light clips light aluminium and plastic. */
+const ROOM_ENVIRONMENT_INTENSITY = 0.55;
+
 function bindEnvironment(scene: THREE.Scene, texture: THREE.Texture): void {
   scene.environment = texture;
-  scene.environmentIntensity = 1;
+  scene.environmentIntensity = ROOM_ENVIRONMENT_INTENSITY;
   liveEnvironment = texture;
   scene.traverse((obj) => {
     const mesh = obj as THREE.Mesh;

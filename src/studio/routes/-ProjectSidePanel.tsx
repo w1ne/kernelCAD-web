@@ -22,7 +22,6 @@ import { StudioModelCustomizer } from '../customizer/StudioModelCustomizer';
 import {
   CUSTOMIZER_FORMATS,
   FORMAT_LABELS,
-  defaultDownloadFormat,
   type CustomizerFormat,
   type DownloadFormat,
   type CustomizerParamHint,
@@ -84,7 +83,9 @@ export function useProjectDownload(slug: string, hints: readonly CustomizerParam
   }, [startTask, slug, code, scriptParams, hints]);
 
   return {
-    defaultFormat: defaultDownloadFormat(geometries ?? []),
+    // Share pages export STEP from the primary button, including a single
+    // solid that has no assembly part name. The format menu still lists STL.
+    defaultFormat: 'step',
     ready,
     state: task.state,
     progress: exportProgressText(task.state),

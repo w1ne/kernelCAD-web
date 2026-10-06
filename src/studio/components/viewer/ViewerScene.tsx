@@ -183,9 +183,10 @@ function RoomEnvironmentRig() {
 function SceneLights() {
     return (
         <>
-            <ambientLight intensity={0.5} />
-            <directionalLight position={[10, 20, 10]} intensity={0.7} />
-            <directionalLight position={[-5, -10, -5]} intensity={0.3} />
+            {/* The key stays dim so a light face keeps a shade gradient. */}
+            <ambientLight intensity={0.38} />
+            <directionalLight position={[10, 20, 10]} intensity={0.35} />
+            <directionalLight position={[-5, -10, -5]} intensity={0.12} />
         </>
     );
 }

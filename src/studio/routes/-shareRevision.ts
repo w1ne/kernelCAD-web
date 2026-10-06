@@ -13,25 +13,65 @@ export function readRequestedVersion(search: string): number | null {
   return Number.isSafeInteger(version) ? version : null;
 }
 
+/** Blank, a lone comment marker, or a shebang — not a title. */
+function isSkippableLead(trimmed: string): boolean {
+  return trimmed === ''
+    || trimmed.startsWith('#!')
+    || /^\/\/\s*$/.test(trimmed)
+    || trimmed === '/*'
+    || trimmed === '/**'
+    || trimmed === '*/'
+    || trimmed === '*';
+}
+
+/** Body of one leading comment line. Null when the line is source code. */
+function leadingCommentBody(trimmed: string): string | null {
+  if (trimmed.startsWith('//')) return trimmed.replace(/^\/\/\s?/, '').trim() || null;
+  if (trimmed.startsWith('/*')) return trimmed.replace(/^\/\*+\s?/, '').replace(/\*+\/\s*$/, '').trim() || null;
+  if (trimmed.startsWith('*')) return trimmed.replace(/^\*+\s?/, '').replace(/\*+\/\s*$/, '').trim() || null;
+  return null;
+}
+
 /**
- * First sentence of the leading `//` comment. Saved rows only store the
+ * First sentence of the first meaningful leading comment line. Blank lines,
+ * lone `//` markers, and shebangs are skipped. Saved rows only store the
  * latest title; an older revision's source is the title we have for it.
  */
 export function revisionTitleFromSource(code: string): string | null {
-  const lines: string[] = [];
   for (const line of code.split('\n')) {
     const trimmed = line.trim();
-    if (trimmed.startsWith('//')) {
-      lines.push(trimmed.replace(/^\/\/\s?/, ''));
-      continue;
-    }
-    if (trimmed === '' && lines.length === 0) continue;
-    break;
+    if (isSkippableLead(trimmed)) continue;
+    const body = leadingCommentBody(trimmed);
+    if (!body) break;
+    const sentence = body.split(/(?<=\.)\s/)[0]?.replace(/\.$/, '').trim();
+    if (sentence) return sentence;
   }
-  const text = lines.join(' ').replace(/\s+/g, ' ').trim();
-  if (!text) return null;
-  const sentence = text.split(/(?<=\.)\s/)[0]?.replace(/\.$/, '').trim();
-  return sentence || null;
+  return null;
+}
+
+function nonempty(value: string | null | undefined): string | null {
+  const text = value?.replace(/\s+/g, ' ').trim();
+  return text ? text : null;
+}
+
+/** Title the API stored on the revision, once that column exists. */
+export function revisionTitleField(body: { title?: unknown }): string | null {
+  return typeof body.title === 'string' ? body.title : null;
+}
+
+/**
+ * Heading for a pin: revision title, then the leading comment, then the
+ * project title. Always a non-blank string.
+ */
+export function shareHeadingTitle(
+  revisionTitle: string | null | undefined,
+  code: string | null | undefined,
+  projectTitle: string | null | undefined,
+): string {
+  return nonempty(revisionTitle)
+    ?? (code ? revisionTitleFromSource(code) : null)
+    ?? nonempty(projectTitle)
+    ?? 'Untitled';
 }
 
 export interface PinnedRevision {
@@ -39,6 +79,8 @@ export interface PinnedRevision {
   code: string;
   parameters: ProjectRow['parameters'];
   createdAt?: string | null;
+  /** Set when the revision API sends a title. Absent until that column ships. */
+  title?: string | null;
 }
 
 /**
@@ -55,7 +97,7 @@ export function shareProjectView(
   }
   return {
     ...project,
-    title: revisionTitleFromSource(revision.code) ?? project.title,
+    title: shareHeadingTitle(revision.title, revision.code, project.title),
     version: revision.version,
     current_code: revision.code,
     parameters: revision.parameters,
