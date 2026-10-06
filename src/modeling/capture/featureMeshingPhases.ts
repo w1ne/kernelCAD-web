@@ -137,7 +137,9 @@ export interface SceneFanoutCtx {
   emitFeature: (mesh: FeatureMesh) => void;
   bounds: MeshBoundsAccumulator;
   failedFeatureIds: FeatureId[];
-  cachedAssemblyPartMeshes?: Map<FeatureId, Map<string, { faces: FaceGeometry[]; volume?: number; edges?: Float32Array }>>;
+  cachedAssemblyPartMeshes?: Map<FeatureId, Map<string, CachedScenePartMesh>>;
+  /** Per meshing call: tessellation by geometry key, shared by all instances. */
+  meshByGeometryKey?: Map<string, CachedScenePartMesh>;
   explodeOffsets?: ReadonlyMap<string, readonly [number, number, number]>;
   assembliesIn?: ReadonlyMap<string, unknown>;
   recordById: ReadonlyMap<FeatureId, FeatureRecord>;
@@ -224,7 +226,14 @@ export function emitSceneBackendFanout(
 
 /** Selection ↔ code link data of one part mesh (see `featureOwnership.ts`). */
 type PartLinkData = FeatureOwnership & { edgeRanges?: number[] };
-type CachedScenePartMesh = { faces: FaceGeometry[]; volume?: number; edges?: Float32Array; link?: PartLinkData };
+export type CachedScenePartMesh = {
+  faces: FaceGeometry[];
+  volume?: number;
+  edges?: Float32Array;
+  link?: PartLinkData;
+  /** Key the entry was meshed for; a pose-cache hit requires it to match. */
+  geometryKey?: string;
+};
 type ScenePartMeshCache = Map<string, CachedScenePartMesh>;
 
 interface ResolvedScenePartMesh {
@@ -261,55 +270,84 @@ function partLinkData(
   };
 }
 
-/** Resolve one assembly part's mesh, reusing (and populating) the pose cache. */
+/** Resolve one assembly part's mesh: pose cache, then the per-call
+ *  geometry-key map, then a fresh tessellation (stored in both). */
 function resolveScenePartMesh(
   featureId: FeatureId,
   part: SceneBackendPart,
   partCache: ScenePartMeshCache | undefined,
   ctx: SceneFanoutCtx,
 ): ResolvedScenePartMesh | undefined {
-  // Pose-cache fast path: when the assembly is being re-lowered for a
-  // pose-only edit, the per-part LOCAL shape is unchanged (same OCCT
-  // backend instance is reused via the engine's seedShapes seed) and
-  // only `part.worldTransform` has refreshed. Reuse cached triangle
-  // data so we skip the expensive `meshShape()` call per part.
+  // Pose-cache fast path (pose-only edits): same LOCAL geometry, fresh
+  // worldTransform. The key check makes a geometry edit a miss.
   const cachedPart = partCache?.get(part.name);
-  if (cachedPart) {
-    return {
-      faces: cachedPart.faces,
-      volume: cachedPart.volume,
-      edges: cachedPart.edges,
-      link: cachedPart.link ?? {},
-      fromCache: true,
-      partCache,
-    };
+  if (cachedPart && cachedPart.geometryKey === part.geometryKey) {
+    return fromEntry(cachedPart, true, partCache);
   }
+  const shared = part.geometryKey === undefined ? undefined : ctx.meshByGeometryKey?.get(part.geometryKey);
+  if (shared) return fromEntry(shared, true, storeInPoseCache(featureId, part.name, shared, partCache, ctx));
+  const entry = meshScenePart(featureId, part, ctx);
+  if (entry === undefined) return undefined;
+  if (part.geometryKey !== undefined) ctx.meshByGeometryKey?.set(part.geometryKey, entry);
+  return fromEntry(entry, false, storeInPoseCache(featureId, part.name, entry, partCache, ctx));
+}
+
+function fromEntry(
+  entry: CachedScenePartMesh,
+  fromCache: boolean,
+  partCache: ScenePartMeshCache | undefined,
+): ResolvedScenePartMesh {
+  return {
+    faces: entry.faces,
+    volume: entry.volume,
+    edges: entry.edges,
+    link: entry.link ?? {},
+    fromCache,
+    partCache,
+  };
+}
+
+/** Tessellate one part; undefined (with a warning) when it produced no mesh. */
+function meshScenePart(
+  featureId: FeatureId,
+  part: SceneBackendPart,
+  ctx: SceneFanoutCtx,
+): CachedScenePartMesh | undefined {
   const rawShape = ctx.extractRawShape(part.shape);
   const meshed = meshShape(rawShape);
   if (!meshed) {
-    // Per-part shape failed to mesh. Skip THIS part — the lowerer
-    // already populated the part shape, and a single bad part must
-    // not sink an otherwise-renderable assembly. Surface a soft
-    // warning so the skip is not silently lost; the post-loop check
-    // below escalates to a hard failure only when EVERY part skips.
+    // Per-part shape failed to mesh. Skip THIS part — a single bad part must
+    // not sink an otherwise-renderable assembly; the caller escalates only
+    // when EVERY part skips.
     console.warn(
       `meshFeaturesPerFeature: assembly '${featureId}' part '${part.name}' compiled but produced no mesh — skipping part`,
     );
     return undefined;
   }
-  const faces = meshed.faces;
-  const volume = meshed.volume;
-  const edges = meshed.edges;
-  const link = partLinkData(part, rawShape, meshed, ctx);
-  let nextCache = partCache;
-  if (ctx.cachedAssemblyPartMeshes !== undefined) {
-    if (!nextCache) {
-      nextCache = new Map();
-      ctx.cachedAssemblyPartMeshes.set(featureId, nextCache);
-    }
-    nextCache.set(part.name, { faces, ...(volume !== undefined ? { volume } : {}), ...(edges ? { edges } : {}), link });
+  return {
+    faces: meshed.faces,
+    ...(meshed.volume !== undefined ? { volume: meshed.volume } : {}),
+    ...(meshed.edges ? { edges: meshed.edges } : {}),
+    link: partLinkData(part, rawShape, meshed, ctx),
+    ...(part.geometryKey !== undefined ? { geometryKey: part.geometryKey } : {}),
+  };
+}
+
+function storeInPoseCache(
+  featureId: FeatureId,
+  partName: string,
+  entry: CachedScenePartMesh,
+  partCache: ScenePartMeshCache | undefined,
+  ctx: SceneFanoutCtx,
+): ScenePartMeshCache | undefined {
+  if (ctx.cachedAssemblyPartMeshes === undefined) return partCache;
+  let next = partCache;
+  if (!next) {
+    next = new Map();
+    ctx.cachedAssemblyPartMeshes.set(featureId, next);
   }
-  return { faces, volume, edges, link, fromCache: false, partCache: nextCache };
+  next.set(partName, entry);
+  return next;
 }
 
 /** Build + emit one assembly part's FeatureMesh; returns the local mesh and
@@ -330,6 +368,7 @@ function emitScenePartMesh(
     ...(resolved.volume !== undefined ? { volume: resolved.volume } : {}),
     ...(resolved.edges ? { edges: resolved.edges } : {}),
     ...resolved.link,
+    ...(part.geometryKey !== undefined ? { geometryId: part.geometryKey } : {}),
   };
   if (!resolved.fromCache) ctx.attachPlanarUVs(local.faces);
   const extra = ctx.explodeOffsets?.get(part.name);

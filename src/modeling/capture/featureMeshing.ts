@@ -34,6 +34,7 @@ import {
   resolvePerFaceMaterialOverrides,
   splitConnectorRef,
   uniqueStrings,
+  type CachedScenePartMesh,
   type MeshBoundsAccumulator,
 } from './featureMeshingPhases';
 
@@ -111,6 +112,10 @@ export interface FeatureMesh {
   assemblyFeatureId?: FeatureId;
   /** Assembly part name when this mesh is a SceneBackend part fan-out. */
   assemblyPartName?: string;
+  /** Geometry identity of an assembly part mesh (`SceneBackendPart.geometryKey`).
+   *  Meshes with equal ids share `faces` / `edges` / link arrays by reference;
+   *  only `transform`, part name and appearance differ. */
+  geometryId?: string;
   /** Column-major 4x4 local-to-world transform for viewport-side posing. */
   transform?: readonly number[];
   /** True for virtual (non-geometry) records such as referenceImage. */
@@ -122,6 +127,9 @@ export interface FeatureMesh {
   /** Camera-target payload; present when featureKind === 'cameraTarget'. */
   cameraTarget?: CameraTargetMetadata;
 }
+
+/** Pose cache of assembly part meshes: assembly featureId → part name → mesh. */
+type AssemblyPartMeshCache = Map<FeatureId, Map<string, CachedScenePartMesh>>;
 
 export interface Bounds {
   min: [number, number, number];
@@ -790,9 +798,8 @@ export async function meshFeaturesPerFeature(
   const cachedFeatureMeshes = session?.cachedFeatureMeshes as
     | Map<FeatureId, FeatureMesh>
     | undefined;
-  const cachedAssemblyPartMeshes = session?.cachedAssemblyPartMeshes as
-    | Map<FeatureId, Map<string, { faces: FaceGeometry[]; volume?: number; edges?: Float32Array }>>
-    | undefined;
+  const cachedAssemblyPartMeshes = session?.cachedAssemblyPartMeshes as AssemblyPartMeshCache | undefined;
+  const meshByGeometryKey = new Map<string, CachedScenePartMesh>();
   const cachedShapesIn = session?.cachedShapes;
   const assembliesIn = session?.assemblies;
 
@@ -817,6 +824,7 @@ export async function meshFeaturesPerFeature(
       failedFeatureIds,
       constructionClosure,
       cachedAssemblyPartMeshes,
+      meshByGeometryKey,
       explodeOffsets: session?.explodeOffsets,
       assembliesIn,
       recordById,
@@ -910,7 +918,9 @@ interface MeshFeatureEventContext {
   readonly meshBounds: MeshBoundsAccumulator;
   readonly failedFeatureIds: FeatureId[];
   readonly constructionClosure: ReadonlySet<FeatureId>;
-  readonly cachedAssemblyPartMeshes?: Map<FeatureId, Map<string, { faces: FaceGeometry[]; volume?: number; edges?: Float32Array }>>;
+  readonly cachedAssemblyPartMeshes?: AssemblyPartMeshCache;
+  /** Per meshing call: tessellation by geometry key, shared by all instances. */
+  readonly meshByGeometryKey: Map<string, CachedScenePartMesh>;
   readonly explodeOffsets?: ReadonlyMap<string, readonly [number, number, number]>;
   readonly assembliesIn?: ReadonlyMap<string, unknown>;
   readonly recordById: ReadonlyMap<FeatureId, FeatureRecord>;
@@ -1028,6 +1038,7 @@ function handleMeshFeatureEvent(event: FeatureEvent, ctx: MeshFeatureEventContex
       bounds: ctx.meshBounds,
       failedFeatureIds: ctx.failedFeatureIds,
       cachedAssemblyPartMeshes: ctx.cachedAssemblyPartMeshes,
+      meshByGeometryKey: ctx.meshByGeometryKey,
       explodeOffsets: ctx.explodeOffsets,
       assembliesIn: ctx.assembliesIn,
       recordById: ctx.recordById,
