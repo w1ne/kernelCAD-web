@@ -149,13 +149,11 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
             <Canvas
                 camera={{ position: [40, 40, 40], fov: SKETCH_FOV }}
                 gl={{
-                    // Neutral, not ACES Filmic. ACES crushes saturated
-                    // coral/pink/orange baseColors toward desaturated dark —
-                    // CAD palettes prize accurate hue over film-emulation
-                    // roll-off. This is the same conclusion demoPlayer/
-                    // ViewerPane.tsx:43-51 reached and documented; the Studio
-                    // canvas was simply never brought in line with it.
-                    toneMapping: THREE.NeutralToneMapping,
+                    // AgX rolls the highlights off so light aluminium and
+                    // plastic keep face shading, and it holds saturated CAD
+                    // hues. Exposure 0.9 keeps that roll-off from crushing
+                    // mid-grey metals toward black.
+                    toneMapping: THREE.AgXToneMapping,
                     outputColorSpace: THREE.SRGBColorSpace,
                     // Marking-tool requires reading the WebGL canvas via
                     // toDataURL after the user paints. Without this, the
@@ -166,6 +164,7 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                 onCreated={({ gl }) => {
                     // Section tool clips per-material; opt the renderer into local clipping.
                     gl.localClippingEnabled = true;
+                    gl.toneMappingExposure = 0.9;
                 }}
                 raycaster={{
                     params: {
