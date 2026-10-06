@@ -10,6 +10,7 @@ import {
 } from '../../funnel/lib/apiClient';
 import { shouldApplyProjectUpdate } from '../../funnel/lib/liveProject';
 import { captureViewerPngBase64 } from '../components/viewer/captureViewerPng';
+import { isHistoricalPin, readRequestedVersion } from './-shareRevision';
 
 /** Where the initial row load stands:
  *  - `loading`: the row request is in flight.
@@ -104,6 +105,9 @@ function useSettledRenderCapture(
 ): void {
   useEffect(() => {
     if (!project) return;
+    // A `?version=N` pin of an older revision is not the project's latest
+    // model; uploading its frame would replace the agent-visible render.
+    if (typeof window !== 'undefined' && isHistoricalPin(project, readRequestedVersion(window.location.search ?? ''))) return;
     const FIRST_DELAY_MS = 1000; // let the first paint happen before sampling
     const POLL_MS = 600;
     const MAX_TRIES = 25; // ~15s ceiling, then give up silently
@@ -212,7 +216,10 @@ export function useProjectLiveUpdates(slug: string): ProjectLiveUpdates {
   } = useBoundedLoad(slug, fetchProjectBySlug);
   const [privacyBusy, setPrivacyBusy] = useState(false);
   const [upgradeNeeded, setUpgradeNeeded] = useState(false);
-  const [liveCode, setLiveCode] = useState<string | undefined>();
+  // Keyed by slug: another project's pushed code must not carry over.
+  const [live, setLive] = useState<{ slug: string; code: string | undefined }>({ slug, code: undefined });
+  const liveCode = live.slug === slug ? live.code : undefined;
+  const setLiveCode = useCallback((code: string | undefined) => setLive({ slug, code }), [slug]);
   const [lastLiveUpdate, setLastLiveUpdate] = useState<Date | null>(null);
   const versionRef = useRef<number | null>(null);
 
@@ -250,7 +257,7 @@ export function useProjectLiveUpdates(slug: string): ProjectLiveUpdates {
     if (versionRef.current != null) versionRef.current += 1;
     setLiveCode(code);
     setLastLiveUpdate(new Date());
-  }, []);
+  }, [setLiveCode]);
 
   return {
     project,

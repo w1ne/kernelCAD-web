@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useCallback, useEffect, useMemo, useRef, useState, type MutableRefObject } from 'react';
 import { GeometryEngine, type GeometryResult, type SketchGeometry } from '../../../shared/worker/geometryEngine';
-import { shouldUseHostedMesh, devMeshAvailable, needsFullKernel } from '../../scriptSource';
+import { shouldUseHostedMesh, devMeshAvailable, needsFullKernel, isPinnedRevisionSource } from '../../scriptSource';
 import type { SerializedParamEntry } from '../../../shared/runtime/paramTable';
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { ExecutionRecord, ScriptReviewSummary } from './types';
@@ -114,30 +114,14 @@ export function useScriptExecution(
 
     const { updateParam } = useParamUpdate(code, sessionToken, executionCount, applyDeps);
 
-    // Execution Loop
-    useEffect(() => {
-        if (suspendSourceExecution) return;
-        if (studioScript) return;
-        // Hosted deploy (app.kernelcad.com): the in-process worker is the
-        // legacy v0.1 runtime that throws on modern API globals, so this
-        // auto-run path must resolve via build-time precompute / server mesh
-        // instead of `engine.executeCode`. Not gated on worker `isReady`.
-        const hosted = shouldUseHostedMesh();
-        // Assembly/kinematic models route to the node kernel (below) and never
-        // touch the worker, so they must not be blocked on worker `isReady` —
-        // otherwise a slow or failed worker init would stall a model the worker
-        // can't run anyway.
-        const routesToDevKernel = devMeshAvailable() && needsFullKernel(code);
-        if (!hosted && !routesToDevKernel && !isReady) return;
-        setScriptParams([]);
-        setScriptReview(null);
-
-        const timer = setTimeout(() => {
-            void runAutoExecutionLoop(applyDeps, code, executionCount);
-        }, 600);
-        return () => clearTimeout(timer);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [code, isReady, engine, pushExecutionRecord, studioScript, suspendSourceExecution]);
+    useHostedSourceRun(
+        code, studioScript, suspendSourceExecution, applyDeps, executionCount,
+        setScriptParams, setScriptReview,
+    );
+    useWorkerSourceRun(
+        code, studioScript, suspendSourceExecution, isReady, applyDeps, executionCount,
+        setScriptParams, setScriptReview,
+    );
 
     const executeGeometry = useCallback(async (codeToExecute: string) => {
         // `?script=` models already live on the node kernel session. Validate
@@ -173,4 +157,69 @@ export function useScriptExecution(
         executeGeometry,
         updateParam,
     };
+}
+
+/** Hosted deploy: the in-process worker is the legacy runtime, so this path
+ *  resolves via the stored artifact. Not gated on worker `isReady` — a later
+ *  ready flip must not schedule a second fetch. */
+function useHostedSourceRun(
+    code: string,
+    studioScript: string | null,
+    suspendSourceExecution: boolean,
+    applyDeps: ExecutionApplyDeps,
+    executionCount: number,
+    setScriptParams: (next: SerializedParamEntry[]) => void,
+    setScriptReview: (next: ScriptReviewSummary | null) => void,
+): void {
+    const hostedOpenRef = useRef(true);
+    useEffect(() => {
+        if (!shouldUseHostedMesh()) return undefined;
+        if (suspendSourceExecution || studioScript) return undefined;
+        setScriptParams([]);
+        setScriptReview(null);
+        // First open paints the CDN artifact immediately. Later edits keep
+        // the debounce so a keystroke does not remesh on every character.
+        const delay = hostedOpenRef.current ? 0 : 600;
+        const timer = setTimeout(() => {
+            hostedOpenRef.current = false;
+            void runAutoExecutionLoop(applyDeps, code, executionCount);
+        }, delay);
+        return () => clearTimeout(timer);
+        // The loop reads executionCount when the timer fires; listing it
+        // would restart the timer on every successful run.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [code, studioScript, suspendSourceExecution]);
+}
+
+/** Localhost worker / dev kernel. Assembly models route to the node kernel
+ *  and must not wait on worker `isReady`. */
+function useWorkerSourceRun(
+    code: string,
+    studioScript: string | null,
+    suspendSourceExecution: boolean,
+    isReady: boolean,
+    applyDeps: ExecutionApplyDeps,
+    executionCount: number,
+    setScriptParams: (next: SerializedParamEntry[]) => void,
+    setScriptReview: (next: ScriptReviewSummary | null) => void,
+): void {
+    useEffect(() => {
+        if (shouldUseHostedMesh()) return;
+        if (suspendSourceExecution) return;
+        if (studioScript) return;
+        const routesToDevKernel = devMeshAvailable() && needsFullKernel(code);
+        if (!routesToDevKernel && !isReady) return;
+        setScriptParams([]);
+        setScriptReview(null);
+        // A share page's unedited revision paints its stored artifact on the
+        // first turn. The 600ms debounce is for edits and live updates.
+        const delay = isPinnedRevisionSource(code) ? 0 : 600;
+        const timer = setTimeout(() => {
+            void runAutoExecutionLoop(applyDeps, code, executionCount);
+        }, delay);
+        return () => clearTimeout(timer);
+        // applyDeps stands in for engine and pushExecutionRecord, which were
+        // the original dependencies of this loop.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [code, isReady, studioScript, suspendSourceExecution, applyDeps]);
 }

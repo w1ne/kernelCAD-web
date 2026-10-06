@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import { parseMeshArtifact } from '../funnel/meshArtifact';
+import { dedupeCoincidentParts } from './storedMeshDedupe';
 import {
   findGallerySourceUrl,
   findGallerySourceUrlForScriptPath,
@@ -127,18 +129,64 @@ export function rootVisibleFeatures(
   ));
 }
 
+/** Share pages know the row version before the URL does (`/p/<slug>` with no
+ *  `?version=`), and the source that revision was published with. The URL pin
+ *  wins over the hint's version. A hint only applies to the slug it was set for. */
+interface HostedRevisionHint {
+  slug: string;
+  version?: number;
+  code?: string;
+}
+
+let hostedRevisionHint: HostedRevisionHint | undefined;
+
+export function setHostedRevisionHint(
+  hint: { slug: string; version?: number | null; code?: string | null } | null,
+): void {
+  if (!hint) {
+    hostedRevisionHint = undefined;
+    return;
+  }
+  const version = typeof hint.version === 'number' && hint.version > 0 ? hint.version : undefined;
+  hostedRevisionHint = {
+    slug: hint.slug,
+    ...(version ? { version } : {}),
+    ...(typeof hint.code === 'string' ? { code: hint.code } : {}),
+  };
+}
+
+function hostedSlugFromLocation(): string | null {
+  if (typeof window === 'undefined') return null;
+  const match = window.location.pathname?.match(/^\/p\/([^/]+)\/?$/);
+  return match ? decodeURIComponent(match[1]!) : null;
+}
+
+function hintForSlug(slug: string): HostedRevisionHint | undefined {
+  return hostedRevisionHint?.slug === slug ? hostedRevisionHint : undefined;
+}
+
 /** Hosted Studio project identity from `/p/<slug>?version=N`. Shared by mesh
  *  and export so relative project assets resolve against the same bundle. */
 export function currentHostedProject(): { slug: string; version?: number } | null {
-  if (typeof window === 'undefined') return null;
-  const match = window.location.pathname?.match(/^\/p\/([^/]+)\/?$/);
-  if (!match) return null;
+  const slug = hostedSlugFromLocation();
+  if (!slug) return null;
   const rawVersion = new URLSearchParams(window.location.search ?? '').get('version');
-  const version = rawVersion && /^\d+$/.test(rawVersion) ? Number(rawVersion) : undefined;
+  const fromUrl = rawVersion && /^\d+$/.test(rawVersion) ? Number(rawVersion) : undefined;
+  const version = fromUrl && fromUrl > 0 ? fromUrl : hintForSlug(slug)?.version;
   return {
-    slug: decodeURIComponent(match[1]!),
+    slug,
     ...(version && version > 0 ? { version } : {}),
   };
+}
+
+/** True only when `source` is exactly the unedited code of the revision this
+ *  share page shows. Any edit, live agent update, or restore is a different
+ *  model and must not paint the stored artifact. */
+export function isPinnedRevisionSource(source: string): boolean {
+  const slug = hostedSlugFromLocation();
+  if (!slug) return false;
+  const code = hintForSlug(slug)?.code;
+  return typeof code === 'string' && code === source;
 }
 
 /**
@@ -151,7 +199,11 @@ export function currentHostedProject(): { slug: string; version?: number } | nul
  * keep using the in-process worker path unchanged.
  */
 export function shouldUseHostedMesh(): boolean {
-  return typeof window !== 'undefined' && window.location.hostname === 'app.kernelcad.com';
+  if (typeof window === 'undefined') return false;
+  if (window.location.hostname === 'app.kernelcad.com') return true;
+  // Local build pointed at production APIs (Playwright). Production builds
+  // leave this unset and keep the hostname gate.
+  return import.meta.env.VITE_HOSTED_MESH === '1';
 }
 
 /**
@@ -289,7 +341,10 @@ function isBridgePayload(value: unknown): value is BackendMeshPayload {
  *  `preferSource`: the caller rewrote the source (param values baked into
  *  it), so the stored project body would drop the edit. */
 function hostedMeshBody(source: string, paramOverrides: ParamOverrides | undefined, preferSource?: boolean) {
-  const project = preferSource ? null : currentHostedProject();
+  // The stored project body is only that revision's own code. Edited,
+  // live-updated, or restored source is sent as source, or the server would
+  // mesh the old stored model.
+  const project = preferSource || !isPinnedRevisionSource(source) ? null : currentHostedProject();
   return {
     ...(project
       ? { projectSlug: project.slug, ...(project.version ? { projectVersion: project.version } : {}) }
@@ -344,11 +399,138 @@ async function meshOnServer(base: string, body: ReturnType<typeof hostedMeshBody
 }
 
 /** Public CDN holding the meshes stored at publish time. */
-const MESH_CDN_BASE = (import.meta.env.VITE_MESH_CDN_BASE as string | undefined) ?? 'https://mesh.kernelcad.com';
+const MESH_CDN_BASE = import.meta.env.VITE_MESH_CDN_BASE ?? 'https://mesh.kernelcad.com';
 
-async function fetchBridgePayload(url: string): Promise<BackendMeshPayload | null> {
+/** A hung CDN read must not leave the viewer on "Building…" forever. */
+const ARTIFACT_FETCH_MS = 8_000;
+
+const storedMeshCache = new Map<string, Promise<BackendMeshPayload | null>>();
+
+/** Tests share one module cache. A failed read is not cached. */
+export function clearStoredMeshCache(): void {
+  storedMeshCache.clear();
+}
+
+async function fetchBridgePayloadOnce(url: string): Promise<BackendMeshPayload | null> {
+  const controller = typeof AbortController === 'function' ? new AbortController() : null;
+  const timer = controller ? setTimeout(() => controller.abort(), ARTIFACT_FETCH_MS) : undefined;
   try {
-    const res = await fetch(url);
+    const res = await fetch(url, controller ? { signal: controller.signal } : undefined);
+    if (!res.ok) return null;
+    const payload = await res.json().catch(() => null);
+    return isBridgePayload(payload) ? payload : null;
+  } catch {
+    return null;
+  } finally {
+    if (timer !== undefined) clearTimeout(timer);
+  }
+}
+
+/** One parse per URL. Repeat opens, SSE refetches, and poll retries must not
+ *  re-download and re-parse a multi-megabyte mesh on the main thread. */
+async function fetchBridgePayload(url: string): Promise<BackendMeshPayload | null> {
+  const cached = storedMeshCache.get(url);
+  if (cached) return cached;
+  const pending = fetchBridgePayloadOnce(url).then((payload) => {
+    if (!payload) storedMeshCache.delete(url);
+    return payload;
+  });
+  storedMeshCache.set(url, pending);
+  return pending;
+}
+
+function payloadRevision(payload: BackendMeshPayload): number | null {
+  const revision = (payload as { revision?: unknown }).revision;
+  return typeof revision === 'number' && revision > 0 ? revision : null;
+}
+
+/** Drop empty records and coincident duplicate parts. A payload the parser
+ *  rejects (tests, legacy) is painted as-is. */
+function prepareStoredPayload(payload: BackendMeshPayload, expected: number | null): BackendMeshPayload {
+  try {
+    const parsed = parseMeshArtifact(payload, expected);
+    // Two solved assemblies sometimes share one artifact at the same pose.
+    const next: BackendMeshPayload = { ...payload, features: dedupeCoincidentParts(parsed.features) };
+    if (parsed.dimensions) next.dimensions = parsed.dimensions;
+    delete next.degraded;
+    return next;
+  } catch {
+    return payload;
+  }
+}
+
+function storedMeshUrls(base: string, project: { slug: string; version?: number }): string[] {
+  const slug = encodeURIComponent(project.slug);
+  if (project.version) {
+    const urls = [`${MESH_CDN_BASE}/mesh-artifacts/${slug}/v${project.version}.json`];
+    if (base) urls.push(`${base}/api/v1/projects/${slug}/revisions/${project.version}/mesh-artifact`);
+    return urls;
+  }
+  return [`${MESH_CDN_BASE}/mesh-artifacts/${slug}/latest.json`];
+}
+
+async function readStoredMesh(url: string, expected: number | null): Promise<BackendMeshPayload | null> {
+  const payload = await fetchBridgePayload(url);
+  if (!payload) return null;
+  const revision = payloadRevision(payload);
+  // A newer latest.json is a different model. Never paint it for a pin.
+  if (expected && revision && revision !== expected) return null;
+  return prepareStoredPayload(payload, expected);
+}
+
+/** The mesh stored when this `/p/<slug>` revision was published.
+ *  Unpinned pages use `latest.json`. Reads the CDN before the API redirect:
+ *  that redirect runs on the mesh server and answers 503 under load. */
+async function storedRevisionMesh(base: string): Promise<BackendMeshPayload | null> {
+  const project = currentHostedProject();
+  if (!project) return null;
+  const expected = project.version ?? null;
+  for (const url of storedMeshUrls(base, project)) {
+    const payload = await readStoredMesh(url, expected);
+    if (payload) return payload;
+  }
+  return null;
+}
+
+const NO_HOSTED_BACKEND = 'No precomputed mesh for this edit, and no compute backend is configured. '
+  + 'Editing gallery models in the hosted viewer needs a kernel backend.';
+
+/**
+ * The mesh stored for this `/p/<slug>` revision, on any host. Null when this
+ * page is not a share link, `source` is not the revision's own code, or the
+ * artifact is missing. Does not remesh. A hit is the final model:
+ * `approximate` stays off.
+ */
+export async function storedShareMesh(source: string): Promise<BackendMeshPayload | null> {
+  if (!currentHostedProject() || !isPinnedRevisionSource(source)) return null;
+  const base = typeof import.meta.env.VITE_API_BASE_URL === 'string' ? import.meta.env.VITE_API_BASE_URL : '';
+  const stored = await storedRevisionMesh(base);
+  if (!stored) return null;
+  setMeshNotice({ meshing: false, approximate: false });
+  return stored;
+}
+
+/** The revision's own unedited code paints the mesh stored at publish time.
+ *  A miss returns null so the caller falls back to the server path. */
+async function meshStoredProject(
+  source: string,
+  paramOverrides: ParamOverrides | undefined,
+  preferSource: boolean | undefined,
+): Promise<BackendMeshPayload | null> {
+  if (hasOverrides(paramOverrides) || preferSource) return null;
+  return storedShareMesh(source);
+}
+
+/** Static precompute by source hash — only without param overrides: the
+ *  precompute is keyed on the unmodified source and cannot reflect a slider. */
+async function meshGalleryPrecompute(
+  source: string,
+  paramOverrides: ParamOverrides | undefined,
+): Promise<BackendMeshPayload | null> {
+  if (hasOverrides(paramOverrides)) return null;
+  try {
+    const hash = await sha256Hex(source);
+    const res = await fetch(galleryPrecomputedMeshUrl(hash));
     if (!res.ok) return null;
     const payload = await res.json().catch(() => null);
     return isBridgePayload(payload) ? payload : null;
@@ -357,21 +539,40 @@ async function fetchBridgePayload(url: string): Promise<BackendMeshPayload | nul
   }
 }
 
-/** The mesh stored when the current `/p/<slug>?version=N` revision was
- *  published, or null when the page is not pinned or the artifact is missing.
- *  Reads the CDN first: the API route that redirects to it runs on the same
- *  server as the mesh build that just failed, and answers 503 under load. */
-async function storedRevisionMesh(base: string): Promise<BackendMeshPayload | null> {
-  const project = currentHostedProject();
-  if (!project?.version) return null;
-  const slug = encodeURIComponent(project.slug);
-  return await fetchBridgePayload(`${MESH_CDN_BASE}/mesh-artifacts/${slug}/v${project.version}.json`)
-    ?? await fetchBridgePayload(`${base}/api/v1/projects/${slug}/revisions/${project.version}/mesh-artifact`);
+/** A server failure may show the mesh stored at publish time only when it is
+ *  the same model: the revision's own unedited code. Edited, live-updated, or
+ *  restored source (the hint is cleared or differs) surfaces the server error. */
+function storedFallbackAllowed(
+  source: string,
+  paramOverrides: ParamOverrides | undefined,
+  preferSource: boolean | undefined,
+): boolean {
+  if (hasOverrides(paramOverrides) || preferSource) return false;
+  return isPinnedRevisionSource(source);
+}
+
+/** Server mesh for an edit. A pinned revision that exceeds the live budget
+ *  falls back to the mesh stored at publish time. */
+async function meshViaServer(
+  source: string,
+  paramOverrides: ParamOverrides | undefined,
+  preferSource: boolean | undefined,
+): Promise<BackendMeshPayload> {
+  const base = import.meta.env.VITE_API_BASE_URL;
+  if (typeof base !== 'string' || base.length === 0) throw new Error(NO_HOSTED_BACKEND);
+  try {
+    return await meshOnServer(base, hostedMeshBody(source, paramOverrides, preferSource));
+  } catch (error) {
+    const stored = storedFallbackAllowed(source, paramOverrides, preferSource) ? await storedRevisionMesh(base) : null;
+    if (stored) return stored;
+    throw error;
+  }
 }
 
 /**
  * Compute the mesh bridge payload for a source string on the hosted deploy.
- * Tries the build-time precompute first (a static `_mesh/<sha>.json` on the
+ * A share page's unedited revision code paints its stored artifact first.
+ * Otherwise tries the build-time precompute (a static `_mesh/<sha>.json` on the
  * marketing CDN — instant, zero server compute; the common case since
  * curated gallery sources are static and unedited on first open). Falls back
  * to the server mesh endpoint (`POST {VITE_API_BASE_URL}/__kernelcad/mesh`)
@@ -382,41 +583,10 @@ export async function meshSourceHosted(
   paramOverrides?: ParamOverrides,
   options?: { preferSource?: boolean },
 ): Promise<BackendMeshPayload> {
-  // 1. Static precompute by source hash — ONLY when there are no param
-  //    overrides. The precompute is keyed on the unmodified source, so it
-  //    cannot reflect a slider edit; with overrides we must hit the backend.
-  if (!hasOverrides(paramOverrides)) {
-    try {
-      const hash = await sha256Hex(source);
-      const res = await fetch(galleryPrecomputedMeshUrl(hash));
-      if (res.ok) {
-        const payload = await res.json().catch(() => null);
-        if (isBridgePayload(payload)) return payload;
-      }
-    } catch {
-      // fall through to backend
-    }
-  }
-
-  // 2. Server mesh endpoint for edited / non-gallery code (and param edits).
-  const base = import.meta.env.VITE_API_BASE_URL;
-  if (typeof base === 'string' && base.length > 0) {
-    try {
-      return await meshOnServer(base, hostedMeshBody(source, paramOverrides, options?.preferSource));
-    } catch (error) {
-      // 3. A heavy model can exceed the live mesh budget (30 s). A pinned
-      //    revision was already meshed at publish time with a longer budget,
-      //    so show that stored mesh instead of a build failure.
-      const stored = hasOverrides(paramOverrides) || options?.preferSource
-        ? null
-        : await storedRevisionMesh(base);
-      if (stored) return stored;
-      throw error;
-    }
-  }
-
-  throw new Error(
-    'No precomputed mesh for this edit, and no compute backend is configured. '
-    + 'Editing gallery models in the hosted viewer needs a kernel backend.',
-  );
+  const preferSource = options?.preferSource;
+  const stored = await meshStoredProject(source, paramOverrides, preferSource);
+  if (stored) return stored;
+  const gallery = await meshGalleryPrecompute(source, paramOverrides);
+  if (gallery) return gallery;
+  return meshViaServer(source, paramOverrides, preferSource);
 }

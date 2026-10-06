@@ -298,6 +298,8 @@ export interface ProjectRevisionBody {
   version: number;
   code: string;
   parameters: Artifact['parameters'];
+  /** Saved with the revision once `project_revisions.title` is migrated. */
+  title?: string | null;
 }
 
 /**

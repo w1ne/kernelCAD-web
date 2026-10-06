@@ -4,8 +4,8 @@
  * /p/<slug> — the page a shared model link opens (most visitors arrive here
  * from a chat with their agent).
  *
- * Default: the model-first page (`ViewerPageShell`). The stored render shows
- * at once, then the live model; a side panel (a bottom sheet on a phone)
+ * Default: the model-first page (`ViewerPageShell`). A stored mesh paints as
+ * the final model; a side panel (a bottom sheet on a phone)
  * holds the title and checks, the customizer, one Download, "Keep this
  * model", "Continue in chat", and share / remix / report / revisions.
  *
@@ -54,6 +54,8 @@ import {
   signInHref,
   studioHref,
 } from './-projectPageModel';
+import { useShareProject } from './-useShareProject';
+import { shareHeadingTitle } from './-shareRevision';
 import type { Session } from '@supabase/supabase-js';
 
 export const Route = createFileRoute('/p/$slug')({
@@ -146,20 +148,54 @@ function ProjectPage() {
   const { slug } = Route.useParams();
   const { session } = useOptionalSession();
   const live = useProjectLiveUpdates(slug);
+  const share = useShareProject(slug, live.project, live.liveCode);
   const claim = useProjectClaim(slug, session, live.project);
   const onUpgrade = useUpgrade();
-  const { project, loadState } = live;
+  const { loadState } = live;
+  const project = share.project;
 
   if (isTerminal(loadState)) {
     return <ProjectLoadPage state={loadState} err={live.err} onRetry={live.retry} />;
   }
+  if (share.status === 'error') {
+    return (
+      <ProjectLoadPage
+        state="error"
+        err={share.error ?? 'This revision could not be loaded.'}
+        onRetry={share.retry}
+      />
+    );
+  }
+  // A historical `?version=` must not flash the latest model while its
+  // source is still loading.
   if (readView() === STUDIO_VIEW) {
     if (loadState !== 'ready' || !project) {
       return <ProjectLoadPage state={loadState === 'ready' ? 'loading' : loadState} err={live.err} onRetry={live.retry} />;
     }
-    return <StudioProjectView slug={slug} project={project} session={session} live={live} claim={claim} onUpgrade={onUpgrade} />;
+    return (
+      <StudioProjectView
+        slug={slug}
+        project={project}
+        session={session}
+        live={live}
+        claim={claim}
+        onUpgrade={onUpgrade}
+        historical={share.historical}
+      />
+    );
   }
-  return <ModelFirstPage slug={slug} session={session} live={live} claim={claim} onUpgrade={onUpgrade} />;
+  return (
+    <ModelFirstPage
+      slug={slug}
+      session={session}
+      live={live}
+      claim={claim}
+      onUpgrade={onUpgrade}
+      view={project}
+      historical={share.historical}
+      pinned={share.requested != null}
+    />
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -225,40 +261,56 @@ function LiveBadge({ project, lastLiveUpdate, now }: {
   );
 }
 
-function ModelFirstPage(props: PageProps): JSX.Element {
+function ModelFirstPage(props: PageProps & {
+  /** Revision the link asked for. Null while a historical pin is loading. */
+  view: ProjectRow | null;
+  /** Live pushes must not replace a link to an older revision. */
+  historical: boolean;
+  /** `?version=` is set, so the latest render must not stand in for it. */
+  pinned: boolean;
+}): JSX.Element {
   const { slug, live } = props;
   const theme = usePreferredTheme();
   const now = useNow();
   const poster = posterUrl(apiBase(), slug);
-  const project = live.project;
+  const project = props.view;
   const shared = {
     theme,
-    title: project?.title ?? <span className="text-fg-3">Loading…</span>,
+    title: project
+      ? shareHeadingTitle(project.title, null, null)
+      : <span className="text-fg-3">Loading…</span>,
     titleAside: <LiveBadge project={project} lastLiveUpdate={live.lastLiveUpdate} now={now} />,
     headerActions: <HeaderActions slug={slug} session={props.session} />,
     panelLabel: 'Model details',
   };
 
   if (!project) {
+    // A historical pin's poster is the latest render. Leave the stage empty
+    // until that revision's own mesh is the one we can show.
     return (
       <ViewerPageShell
         {...shared}
-        stage={<ModelStage posterSrc={poster} posterAlt="Stored render of the model" phase="loading" />}
+        stage={
+          <ModelStage
+            posterSrc={props.pinned ? null : poster}
+            posterAlt="Stored render of the model"
+            phase="loading"
+          />
+        }
         panel={<ProjectSidePanelSkeleton slow={live.loadState === 'slow'} onRetry={live.retry} />}
       />
     );
   }
   return (
     <WorkbenchProvider initialCode={project.current_code} projectName={project.title}>
-      <LiveCodeApplier liveCode={live.liveCode} />
-      <LiveProjectShell {...props} project={project} shared={shared} poster={poster} now={now} />
+      <LiveCodeApplier liveCode={props.historical ? undefined : live.liveCode} />
+      <LiveProjectShell {...props} project={project} shared={shared} now={now} />
     </WorkbenchProvider>
   );
 }
 
 function LiveProjectShell(props: PageProps & {
   project: ProjectRow;
-  poster: string;
   now: number;
   shared: Omit<Parameters<typeof ViewerPageShell>[0], 'stage' | 'panel' | 'actionBar'>;
 }): JSX.Element {
@@ -276,7 +328,6 @@ function LiveProjectShell(props: PageProps & {
       {...props.shared}
       stage={
         <ModelStage
-          posterSrc={props.poster}
           posterAlt={`Render of ${project.title}`}
           phase={stage.phase}
           busy={stage.busy}
@@ -356,7 +407,10 @@ function BuildFailure({ slug, error }: { slug: string; error: string | null }): 
 // Full Studio (?view=studio)
 // ---------------------------------------------------------------------------
 
-function StudioProjectView({ slug, project, session, live, claim, onUpgrade }: PageProps & { project: ProjectRow }): JSX.Element {
+function StudioProjectView({ slug, project, session, live, claim, onUpgrade, historical }: PageProps & {
+  project: ProjectRow;
+  historical: boolean;
+}): JSX.Element {
   const headerLeft = (
     <div className="flex items-center gap-2 min-w-0">
       <a
@@ -414,7 +468,7 @@ function StudioProjectView({ slug, project, session, live, claim, onUpgrade }: P
       <App
         initialCode={project.current_code}
         projectName={project.title}
-        liveCode={live.liveCode}
+        liveCode={historical ? undefined : live.liveCode}
         viewerMode
         viewportOverlay={<StudioModelCustomizer slug={slug} hints={project.parameters} />}
         headerLeft={headerLeft}

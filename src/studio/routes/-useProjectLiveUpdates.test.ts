@@ -301,6 +301,50 @@ describe('useProjectLiveUpdates', () => {
         expect(postProjectRenderMock).toHaveBeenCalledWith('demo', png);
     });
 
+    it('keeps sampling past two grabs until the frame settles', async () => {
+        const sizes = [3000, 5000, 8000, 8050];
+        let call = 0;
+        fetchProjectBySlugMock.mockResolvedValue(project({ version: 1 }));
+        captureViewerPngBase64Mock.mockImplementation(() => 'p'.repeat(sizes[Math.min(call++, sizes.length - 1)]!));
+        postProjectRenderMock.mockResolvedValue({ url: 'https://cdn/render.png' });
+        const { result } = renderHook(() => useProjectLiveUpdates('demo'));
+        await waitFor(() => expect(result.current.project).not.toBeNull());
+
+        await act(async () => {
+            await new Promise((resolve) => setTimeout(resolve, 3200));
+        });
+
+        expect(captureViewerPngBase64Mock).toHaveBeenCalledTimes(4);
+        expect(postProjectRenderMock).toHaveBeenCalledWith('demo', 'p'.repeat(8050));
+    });
+
+    it('does not upload a historical ?version= pin as the latest render', async () => {
+        window.history.replaceState(null, '', '/p/demo?version=1');
+        try {
+            fetchProjectBySlugMock.mockResolvedValue(project({ version: 3 }));
+            captureViewerPngBase64Mock.mockReturnValue('p'.repeat(3000));
+            const { result } = renderHook(() => useProjectLiveUpdates('demo'));
+            await waitFor(() => expect(result.current.project).not.toBeNull());
+            await act(async () => {
+                await new Promise((resolve) => setTimeout(resolve, 1800));
+            });
+            expect(captureViewerPngBase64Mock).not.toHaveBeenCalled();
+            expect(postProjectRenderMock).not.toHaveBeenCalled();
+        } finally {
+            window.history.replaceState(null, '', '/');
+        }
+    });
+
+    it('drops the previous project\'s live code when the slug changes', async () => {
+        fetchProjectBySlugMock.mockResolvedValue(project({ version: 1 }));
+        const { result, rerender } = renderHook(({ slug }) => useProjectLiveUpdates(slug), { initialProps: { slug: 'demo' } });
+        await waitFor(() => expect(result.current.project).not.toBeNull());
+        act(() => result.current.handleRestored('restored();'));
+        expect(result.current.liveCode).toBe('restored();');
+        rerender({ slug: 'other' });
+        expect(result.current.liveCode).toBeUndefined();
+    });
+
     describe('initial load state', () => {
         it('reports a missing or private slug as not_found instead of loading forever', async () => {
             fetchProjectBySlugMock.mockResolvedValue(null);
