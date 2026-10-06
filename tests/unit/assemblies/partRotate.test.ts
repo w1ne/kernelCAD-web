@@ -112,7 +112,7 @@ describe('assembly.part rotate option', () => {
     expect(() => arm.part('cap', kc.box(2, 2, 2), {
       connectors: { bottom: { origin: [1, 1, 0] } },
       connect: { connector: 'bottom', to: forged as never },
-    })).toThrow(/rotated part/);
+    })).toThrow(/connect onto a rotated part/);
   });
 
   it('applies Euler degrees as Rz applied first, then Ry, then Rx (R = Rx·Ry·Rz)', async () => {

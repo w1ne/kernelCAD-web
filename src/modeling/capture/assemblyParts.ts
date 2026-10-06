@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { assertTopoRefSafeName } from '../../kernel/naming/uniquenessValidator';
 import { KernelError } from '../../shared/intent/kernelError';
+import { invalidArgs } from '../../shared/intent/invalidArgs';
 import type { EditableVec3, FeatureId, Param, Unit, Vec3, Vec3Param } from '../../shared/intent/types';
 import { formatScalarForError, isValidEditableVec3 } from '../../shared/intent/types';
 import {
@@ -271,12 +272,16 @@ export function normalizePartRotate(
   const rotate = opts.rotate;
   if (rotate === undefined) return undefined;
   if (opts.connect !== undefined || Object.keys(connectors).length > 0) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `assembly part '${partName}': rotate cannot be combined with connectors / connect placement (including connectors promoted from a catalog part).`,
+    invalidArgs({
+      api: `assembly.part('${partName}', shape, { rotate })`,
+      path: 'opts.rotate',
+      got: rotate,
+      requires: 'no `connectors` and no `connect`: rotate cannot be combined with connectors / connect placement (including connectors promoted from a catalog part)',
+      example: "arm.part('p', box(10, 10, 10), { at: [0, 0, 0], rotate: [0, 0, 90] })",
       featureId,
-      'invalid-args.assembly.part-rotate-with-connectors — place the part with at + rotate, or with connect, not both. Mate-style connectors added later via part.connector(name, opts) are fine.',
-    );
+      hintSlug: 'invalid-args.assembly.part-rotate-with-connectors',
+      hint: 'invalid-args.assembly.part-rotate-with-connectors — place the part with at + rotate, or with connect, not both. Mate-style connectors added later via part.connector(name, opts) are fine.',
+    });
   }
   if (isFiniteVec3(rotate)) return { eulerDeg: [rotate[0], rotate[1], rotate[2]] };
   const r = rotate as { axis?: unknown; degrees?: unknown };
@@ -284,12 +289,16 @@ export function normalizePartRotate(
     && typeof r.degrees === 'number' && Number.isFinite(r.degrees)) {
     return { axis: [r.axis[0], r.axis[1], r.axis[2]], degrees: r.degrees };
   }
-  throw new KernelError(
-    'feature.invalid-args',
-    `assembly part '${partName}': rotate must be { axis: [x, y, z], degrees } with a non-zero finite axis, or [rx, ry, rz] Euler degrees; got ${formatScalarForError(rotate)}.`,
+  return invalidArgs({
+    api: `assembly.part('${partName}', shape, { rotate })`,
+    path: 'opts.rotate',
+    got: rotate,
+    requires: 'rotate must be { axis: [x, y, z], degrees } with a non-zero finite axis, or [rx, ry, rz] Euler degrees',
+    unit: 'deg',
+    example: 'rotate: { axis: [0, 0, 1], degrees: 90 } or rotate: [0, 0, 90]',
     featureId,
-    'invalid-args.assembly.part-rotate — pass rotate: { axis: [0, 0, 1], degrees: 90 } or rotate: [0, 0, 90] (plain numbers).',
-  );
+    hintSlug: 'invalid-args.assembly.part-rotate',
+  });
 }
 
 /** `connect` computes the child's `at` from the target's UNROTATED frame, so a
@@ -304,12 +313,16 @@ function assertConnectTargetNotRotated(
   if (connect === undefined) return;
   const target = connect.to.partId === undefined ? undefined : session.getRecordById(connect.to.partId);
   if ((target?.metadata as { rotate?: unknown } | undefined)?.rotate === undefined) return;
-  throw new KernelError(
-    'feature.invalid-args',
-    `assembly part '${partName}': connect target '${connect.to.partName}' is a rotated part; connect placement onto rotated parts is not supported yet.`,
+  invalidArgs({
+    api: `assembly.part('${partName}', shape, { connect })`,
+    path: 'opts.connect.to',
+    got: connect.to.partName,
+    requires: 'a connector on an unrotated part: connect onto a rotated part is not supported yet',
+    example: "arm.part('cap', shape, { at: [0, 0, 10], rotate: [0, 0, 90] })",
     featureId,
-    'invalid-args.assembly.connect-to-rotated-part — place the child with at (+ rotate) in world coordinates, or leave the target unrotated.',
-  );
+    hintSlug: 'invalid-args.assembly.connect-to-rotated-part',
+    hint: 'invalid-args.assembly.connect-to-rotated-part — place the child with at (+ rotate) in world coordinates, or leave the target unrotated.',
+  });
 }
 
 function resolvePartPlacement(
