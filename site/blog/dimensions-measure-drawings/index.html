@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light" />
+  <meta name="description" content="Read part sizes straight off the 3D view, measure anything you click, and download a dimensioned drawing as a PDF." />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="kernelCAD now shows the sizes on your model" />
+  <meta property="og:description" content="Read part sizes straight off the 3D view, measure anything you click, and download a dimensioned drawing as a PDF." />
+  <meta property="og:image" content="https://kernelcad.com/blog/dimensions-measure-drawings/bracket-dimensions.png" />
+  <meta property="og:url" content="https://kernelcad.com/blog/dimensions-measure-drawings/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="kernelCAD now shows the sizes on your model" />
+  <meta name="twitter:description" content="Read part sizes straight off the 3D view, measure anything you click, and download a dimensioned drawing as a PDF." />
+  <meta name="twitter:image" content="https://kernelcad.com/blog/dimensions-measure-drawings/bracket-dimensions.png" />
+  <link rel="canonical" href="https://kernelcad.com/blog/dimensions-measure-drawings/" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,500;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/style.css" />
+  <title>kernelCAD now shows the sizes on your model</title>
+  <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "e5f5f4c6464f456d8f5376411e77f545"}'></script>
+  <style>
+    .legal { max-width: 760px; margin: 0 auto; padding: 1rem 0 4rem; }
+    .legal h1 { font-family: 'Source Serif 4', serif; font-size: 2.2rem; line-height: 1.2; margin: 1.5rem 0 0.25rem; }
+    .legal .effective { color: var(--ink-faint, #8a8475); font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; margin-bottom: 2rem; }
+    .legal h2 { font-family: 'Source Serif 4', serif; font-size: 1.35rem; margin: 2.2rem 0 0.5rem; }
+    .legal p, .legal li { font-family: 'Inter', sans-serif; line-height: 1.65; color: var(--ink-soft, #3a3a3a); }
+    .legal ul { padding-left: 1.25rem; }
+    .legal code { font-family: 'JetBrains Mono', monospace; font-size: 0.88em; }
+    .legal a { color: var(--blueprint, #2f6df0); }
+    .legal strong { color: var(--ink, #1a1a1a); }
+    .legal .lede { font-size: 1.1rem; color: var(--ink); }
+    .legal figure { margin: 1.5rem 0; }
+    .legal figure img { display: block; width: 100%; height: auto; border: 1px solid var(--rule); border-radius: 6px; background: var(--paper); }
+    .legal figcaption { font-family: 'Inter', sans-serif; font-size: 0.85rem; color: var(--ink-faint); margin-top: 0.5rem; }
+    .legal pre { background: var(--code-bg); color: var(--code-text); border-radius: 6px; padding: 16px 18px; overflow-x: auto; margin: 1.25rem 0; }
+    .legal pre code { font-size: 0.85rem; line-height: 1.6; color: inherit; }
+    .legal p code, .legal li code { background: var(--vellum-soft); padding: 1px 5px; border-radius: 3px; }
+    .post-list { list-style: none; padding: 0; margin: 2rem 0; }
+    .post-list li { padding: 1.25rem 0; border-top: 1px solid var(--rule); }
+    .post-list li:last-child { border-bottom: 1px solid var(--rule); }
+    .post-list a.post-title { font-family: 'Source Serif 4', serif; font-size: 1.4rem; text-decoration: none; }
+    .post-list a.post-title:hover { text-decoration: underline; }
+    .post-list .effective { margin: 0.25rem 0 0.5rem; }
+    .post-list p { margin: 0; }
+  </style>
+</head>
+<body>
+  <div class="page-wrap">
+    <nav class="nav">
+      <a class="nav-mark" href="/">
+        <svg class="k" viewBox="0 0 84 84" fill="none" aria-label="kernelCAD">
+          <path d="M 14,12 L 26,12 L 26,34 Q 26,36 27.5,34.5 L 46,12 L 60,12 L 36,40 Q 35,42 36,44 L 60,72 L 46,72 L 27.5,49.5 Q 26,48 26,50 L 26,72 L 14,72 Z" fill="currentColor"/>
+        </svg>
+        <span>kernel<span class="cad">CAD</span></span>
+      </a>
+      <div class="nav-links">
+        <a href="/blog/">blog</a>
+        <a class="app-link" href="https://app.kernelcad.com">app ↗</a>
+        <a href="https://github.com/w1ne/kernelCAD-web">github</a>
+        <a href="https://www.npmjs.com/package/kernelcad">npm</a>
+        <a href="https://x.com/kernelcad">@kernelcad</a>
+      </div>
+    </nav>
+
+    <main class="legal">
+      <article>
+      <p class="effective"><a href="/blog/">Blog</a> · <time datetime="2026-10-06">2026-10-06</time> · Andrii Shylenko</p>
+      <h1>kernelCAD now shows the sizes on your model</h1>
+
+      <p class="lede">You can now read the size of a part straight off the 3D view, measure anything you click, and download a dimensioned drawing as a PDF.</p>
+
+      <h2>Dimensions on the model</h2>
+      <p>There is a new button next to Measure, top-left of the viewer. Press it and kernelCAD draws the overall size, the holes ("2× Ø5"), the spacing between holes, radii ("12× R3") and chamfers. It works in Studio, on shared project pages and in the ChatGPT viewer.</p>
+      <figure>
+        <img src="bracket-dimensions.png" alt="Mounting bracket in the kernelCAD viewer with dimensions on: overall size 60, 40 and 46, hole spacing X 40, hole spacing Y 18, thickness 6 and bolt hole Ø5" width="645" height="956" loading="lazy" />
+        <figcaption>The mounting bracket with its declared dimensions (blue) and overall size (grey).</figcaption>
+      </figure>
+      <p>It is off by default, so the view stays clean. If the model declares its own dimensions, it starts on.</p>
+      <p>Declared dimensions are blue. Automatic ones are grey. Big assemblies show overall size only, to keep the picture readable.</p>
+
+      <h2>Measure</h2>
+      <p>Click the ruler, click two points. You get the distance and the difference along X, Y and Z. It snaps to corners, edges and faces. Click once on a round edge and you get its diameter. Esc clears it.</p>
+      <figure>
+        <img src="bracket-measure-hole.png" alt="Measure tool showing Ø 5.0 mm after one click on a hole edge of the bracket" width="645" height="956" loading="lazy" />
+        <figcaption>One click on a round edge gives its diameter.</figcaption>
+      </figure>
+
+      <h2>Say which dimensions matter</h2>
+      <p>Automatic dimensions are a good start. The ones that matter are the ones you pick, so you can declare them in the script:</p>
+      <pre><code>bracket = bracket
+  .dimension({ kind: 'linear', from: hole(10, 8), to: hole(50, 8), label: 'hole spacing X' })
+  .dimension({ kind: 'diameter', edge: hole(10, 8).edge, label: 'bolt hole' });</code></pre>
+      <p>The viewer shows "hole spacing X 40" and "bolt hole Ø5". A circular edge as an anchor means the hole centre, so you get centre-to-centre distances. You can open the full mounting bracket and try it.</p>
+      <p>An agent can do the same, and <code>evaluate_script</code> returns the values, so it can check its own numbers.</p>
+
+      <h2>Drawings</h2>
+      <p>On a shared project page, the Download dropdown now has "Drawing (PDF)". Studio has "Export Drawing (PDF)" in the export menu and command palette. You get an A3 sheet with the dimensions on it. If you declared dimensions, those are on the sheet instead of the plain bounding box sizes.</p>
+      <figure>
+        <img src="bracket-drawing-pdf.png" alt="The mounting bracket as a PDF drawing on an A3 sheet: top, front, left and isometric views with hole spacing X 40, hole spacing Y 18, thickness 6, bolt hole Ø5 and overall sizes" width="1819" height="1286" loading="lazy" />
+        <figcaption>The same bracket as a PDF drawing. The declared dimensions land on the views where they read best.</figcaption>
+      </figure>
+
+      <h2>Try it</h2>
+      <p><a href="https://app.kernelcad.com/p/C3RFHCzF?version=1&amp;dims=1">Open the mounting bracket example</a>, or add <code>?dims=1</code> to any project link. Models saved earlier show only the overall size until you republish them.</p>
+      <p>See the <a href="/docs/">docs</a> for the full API.</p>
+      </article>
+    </main>
+
+    <footer class="footer">
+      <div>kernelCAD · MIT</div>
+      <div class="footer-links">
+        <a href="/terms.html">terms</a>
+        <a href="/privacy.html">privacy</a>
+        <a href="https://github.com/w1ne/kernelCAD-web">github</a>
+        <a href="https://www.npmjs.com/package/kernelcad">npm</a>
+        <a href="https://x.com/kernelcad">x</a>
+        <a href="https://app.kernelcad.com">app</a>
+      </div>
+    </footer>
+    <div class="footer-stack" style="border-top: 1px solid var(--stroke, rgba(255,255,255,0.08)); padding: 14px 0 28px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; color: var(--mute, #888); font-size: 0.78rem;">
+      <span style="opacity: 0.7;">part of the engineer stack</span>
+      <nav style="display: flex; gap: 18px;">
+        <a href="https://labwired.com" style="color: inherit;">LabWired</a>
+        <a href="https://kernelcad.com" style="color: inherit;">kernelCAD</a>
+        <a href="https://koamtachi.com" style="color: inherit;">koamtachi</a>
+        <a href="https://shylenko.com" style="color: inherit;">shylenko.com</a>
+      </nav>
+    </div>
+  </div>
+</body>
+</html>
