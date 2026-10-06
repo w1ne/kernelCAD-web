@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import * as THREE from "three";
-import { useCallback, useMemo, useEffect } from "react";
+import { useCallback, useMemo, useEffect, useLayoutEffect, useRef } from "react";
 import { type ThreeEvent } from "@react-three/fiber";
 import type { GeometryResult, FaceGeometry } from "../../../../shared/worker/geometryEngine";
 import type { ViewMode3D } from "../../../../shared/types/viewMode";
@@ -11,6 +11,7 @@ import { CAD_COLORS, CAD_COLORS_HEX, faceOverlayColor } from "../../../../shared
 import { useConsolidatedGeometry } from "../../../hooks/viewer/useConsolidatedGeometry";
 import { DEFAULT_COLOR, resolveColor } from "../../../../shared/render/palette";
 import { buildShapeMaterial } from "./buildShapeMaterial";
+import { pinRoomEnvironment } from "../roomEnvironment";
 import { matrixFromGeometryTransform } from "./geometryTransform";
 import { selectionCodeStore } from "../../../selectionCode/selectionCodeStore";
 import { resolvePickFeature, type GeometryPick } from "../../../selectionCode/geometryLineage";
@@ -116,6 +117,16 @@ export function FaceSelectionOverlay({ face, isSelected }: { face?: FaceGeometry
     );
 }
 
+/** The room belongs to the scene (and WebGL context) the mesh is drawn in;
+ *  pin that one, never a page-wide texture from another canvas. */
+function usePinnedRoomEnvironment(material: THREE.Material) {
+    const meshRef = useRef<THREE.Mesh>(null);
+    useLayoutEffect(() => {
+        pinRoomEnvironment(meshRef.current, material);
+    }, [material]);
+    return meshRef;
+}
+
 export function ConsolidatedShape({
     geometry,
     shapeIndex,
@@ -192,12 +203,14 @@ export function ConsolidatedShape({
         ),
         [geometry.material, isSelected, color, viewMode3D, clippingPlanes, clipIntersection],
     );
+    const meshRef = usePinnedRoomEnvironment(material);
 
     if (!mergedGeometry) return null;
 
     return (
         <group matrix={transformMatrix} matrixAutoUpdate={transformMatrix ? false : undefined}>
             <mesh
+                ref={meshRef}
                 geometry={mergedGeometry}
                 material={material}
                 onClick={handleClick}

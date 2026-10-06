@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it, vi } from 'vitest';
-import { geometriesFromArtifact, parseMeshArtifact } from './meshArtifact';
+import { clampDisplayedArtifactMaterial, geometriesFromArtifact, parseMeshArtifact } from './meshArtifact';
 
 const solidFeature = {
   featureId: 'panel',
@@ -30,6 +30,40 @@ const artifact = {
   bounds: { min: [0, 0, 0], max: [10, 10, 10] },
   features: [solidFeature],
 };
+
+describe('clampDisplayedArtifactMaterial', () => {
+  it('caps metalness, lifts roughness, and drops anisotropy without a map', () => {
+    const clamped = clampDisplayedArtifactMaterial({
+      baseColor: '#b0b4b8',
+      metalness: 1,
+      roughness: 0.25,
+      anisotropy: 0.8,
+    });
+    expect(clamped).toMatchObject({
+      baseColor: '#b0b4b8',
+      metalness: 0.6,
+      roughness: 0.35,
+      anisotropy: 0,
+    });
+  });
+
+  it('leaves a mild dielectric unchanged', () => {
+    const material = { baseColor: '#111111', roughness: 0.4 };
+    expect(clampDisplayedArtifactMaterial(material)).toBe(material);
+  });
+
+  it('applies the clamp when a stored artifact is parsed', () => {
+    const parsed = parseMeshArtifact({
+      revision: 1,
+      bounds: { min: [0, 0, 0], max: [1, 1, 1] },
+      features: [{
+        ...solidFeature,
+        material: { baseColor: '#888888', metalness: 1, roughness: 0.3, anisotropy: 0.8 },
+      }],
+    });
+    expect(parsed.features[0]?.material).toMatchObject({ metalness: 0.6, roughness: 0.35, anisotropy: 0 });
+  });
+});
 
 describe('parseMeshArtifact', () => {
   it('keeps revision, materials, and camera bounds', () => {
