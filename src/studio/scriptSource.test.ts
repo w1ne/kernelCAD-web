@@ -368,11 +368,11 @@ describe('param overrides (stateless re-run path)', () => {
     expect(fetchMock.mock.calls.some((call) => String(call[0]).includes('mesh-artifact'))).toBe(false);
     expect(fetchMock).toHaveBeenCalledWith(
       'https://api.example.com/__kernelcad/mesh',
-      expect.objectContaining({ body: JSON.stringify({ source: 'edited code' }) }),
+      expect.objectContaining({ body: JSON.stringify({ source: 'edited code', projectSlug: 'BHEaiMyr', projectVersion: 2 }) }),
     );
   });
 
-  it('sends the source, not the stored project, when no revision code is known for the page', async () => {
+  it('sends the source with the project when no revision code is known for the page', async () => {
     vi.stubEnv('VITE_API_BASE_URL', 'https://api.example.com');
     vi.stubGlobal('window', {
       location: { hostname: 'app.kernelcad.com', pathname: '/p/BHEaiMyr', search: '?version=2' },
@@ -386,7 +386,38 @@ describe('param overrides (stateless re-run path)', () => {
     await meshSourceHosted('live updated code', { w: 2 });
     expect(fetchMock).toHaveBeenCalledWith(
       'https://api.example.com/__kernelcad/mesh',
-      expect.objectContaining({ body: JSON.stringify({ source: 'live updated code', params: { w: 2 } }) }),
+      expect.objectContaining({ body: JSON.stringify({ source: 'live updated code', projectSlug: 'BHEaiMyr', projectVersion: 2, params: { w: 2 } }) }),
+    );
+  });
+
+  it('sends an edit on an unpinned project page as source plus the project slug', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.example.com');
+    vi.stubGlobal('window', { location: { hostname: 'app.kernelcad.com', pathname: '/p/keycap-123', search: '' } });
+    setHostedRevisionHint({ slug: 'keycap-123', code: 'revision code' });
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => (
+      String(input).endsWith('/__kernelcad/mesh')
+        ? ({ ok: true, json: async () => ({ features: [], featureRecords: [], bounds: { min: [0, 0, 0], max: [1, 1, 1] } }) } as Response)
+        : ({ ok: false, status: 404, json: async () => null } as Response)
+    ));
+
+    await meshSourceHosted('edited code');
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.example.com/__kernelcad/mesh',
+      expect.objectContaining({ body: JSON.stringify({ source: 'edited code', projectSlug: 'keycap-123' }) }),
+    );
+  });
+
+  it('surfaces a 422 project.asset.missing as a readable error naming the file', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.example.com');
+    vi.stubGlobal('window', { location: { hostname: 'app.kernelcad.com', pathname: '/p/keycap-123', search: '' } });
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => (
+      String(input).endsWith('/__kernelcad/mesh')
+        ? ({ ok: false, status: 422, json: async () => ({ error: 'project.asset.missing', path: 'missing.stp' }) } as Response)
+        : ({ ok: false, status: 404, json: async () => null } as Response)
+    ));
+
+    await expect(meshSourceHosted('edited code')).rejects.toThrow(
+      'This model imports "missing.stp", which is not in the project\'s files. Add the file to the project or remove the import.',
     );
   });
 
@@ -411,7 +442,7 @@ describe('param overrides (stateless re-run path)', () => {
     expect(fetchMock.mock.calls.some((call) => String(call[0]).includes('mesh-artifact'))).toBe(false);
     expect(fetchMock).toHaveBeenCalledWith(
       'https://api.example.com/__kernelcad/mesh',
-      expect.objectContaining({ body: JSON.stringify({ source: 'live updated code' }) }),
+      expect.objectContaining({ body: JSON.stringify({ source: 'live updated code', projectSlug: 'BHEaiMyr', projectVersion: 2 }) }),
     );
   });
 
@@ -522,7 +553,7 @@ describe('param overrides (stateless re-run path)', () => {
     expect(fetchMock).toHaveBeenCalledWith(
       'https://api.example.com/__kernelcad/mesh',
       expect.objectContaining({
-        body: JSON.stringify({ source: "param('Cap', 'round')", params: { dishDepth: 1 } }),
+        body: JSON.stringify({ source: "param('Cap', 'round')", projectSlug: 'keycap-123', params: { dishDepth: 1 } }),
       }),
     );
   });
