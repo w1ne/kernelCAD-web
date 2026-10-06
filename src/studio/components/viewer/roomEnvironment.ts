@@ -21,17 +21,47 @@ interface InstalledRoom {
 
 const installedByScene = new WeakMap<THREE.Scene, InstalledRoom>();
 
-/** The texture most recently installed. Materials built after the canvas
- *  mounts read this so they don't depend on a later scene-environment walk. */
-let liveEnvironment: THREE.Texture | null = null;
-
-export function currentRoomEnvironment(): THREE.Texture | null {
-  return liveEnvironment;
+/** The room installed on `scene`, or null. A PMREM texture belongs to the
+ *  WebGL context that built it, so there is no page-wide "current" room: a
+ *  second canvas (another context) must never receive this scene's texture. */
+export function roomEnvironmentFor(scene: THREE.Scene | null | undefined): THREE.Texture | null {
+  return scene ? installedByScene.get(scene)?.texture ?? null : null;
 }
 
-/** Test seam. Production code sets the texture only from a successful install. */
-export function setRoomEnvironmentForTest(texture: THREE.Texture | null): void {
-  liveEnvironment = texture;
+function sceneOf(object: THREE.Object3D): THREE.Scene | null {
+  let node: THREE.Object3D | null = object;
+  while (node) {
+    if (node instanceof THREE.Scene) return node;
+    node = node.parent;
+  }
+  return null;
+}
+
+function pinOnMaterial(mat: THREE.Material, texture: THREE.Texture): void {
+  if (!(mat instanceof THREE.MeshStandardMaterial)) return;
+  if (mat.envMap === texture) return;
+  mat.envMap = texture;
+  mat.envMapIntensity = 1;
+  mat.needsUpdate = true;
+}
+
+/** Pin the room of the scene `object` is drawn in onto `material`, so a later
+ *  clear of scene.environment cannot turn the metal black. Materials built
+ *  before the room exists get it from the install walk instead. A no-op when
+ *  `object` is not in a scene with a room (tests, a second canvas mid-mount). */
+export function pinRoomEnvironment(object: unknown, material: THREE.Material | THREE.Material[]): void {
+  if (!(object instanceof THREE.Object3D)) return;
+  const texture = roomEnvironmentFor(sceneOf(object));
+  if (!texture) return;
+  for (const mat of Array.isArray(material) ? material : [material]) pinOnMaterial(mat, texture);
+}
+
+/** Test seam: register `texture` as the room of `scene` without a renderer. */
+export function registerRoomForTest(scene: THREE.Scene, texture: THREE.Texture): () => void {
+  const record: InstalledRoom = { texture, pmrem: { dispose() {} } as THREE.PMREMGenerator, users: 1 };
+  installedByScene.set(scene, record);
+  bindEnvironment(scene, texture);
+  return () => releaseRoomEnvironment(scene, record);
 }
 
 /** IBL strength. A full 1.0 plus the key light clips light aluminium and plastic. */
@@ -40,19 +70,10 @@ const ROOM_ENVIRONMENT_INTENSITY = 0.55;
 function bindEnvironment(scene: THREE.Scene, texture: THREE.Texture): void {
   scene.environment = texture;
   scene.environmentIntensity = ROOM_ENVIRONMENT_INTENSITY;
-  liveEnvironment = texture;
   scene.traverse((obj) => {
-    const mesh = obj as THREE.Mesh;
-    const material = mesh.material;
+    const material = (obj as THREE.Mesh).material;
     if (!material) return;
-    const list = Array.isArray(material) ? material : [material];
-    for (const mat of list) {
-      if (!(mat instanceof THREE.MeshStandardMaterial)) continue;
-      if (mat.envMap === texture) continue;
-      mat.envMap = texture;
-      mat.envMapIntensity = 1;
-      mat.needsUpdate = true;
-    }
+    for (const mat of Array.isArray(material) ? material : [material]) pinOnMaterial(mat, texture);
   });
 }
 
@@ -67,7 +88,16 @@ function releaseRoomEnvironment(scene: THREE.Scene, record: InstalledRoom): void
     if (installedByScene.get(scene) !== record) return;
     if (scene.environment === record.texture) scene.environment = null;
     installedByScene.delete(scene);
-    if (liveEnvironment === record.texture) liveEnvironment = null;
+    scene.traverse((obj) => {
+      const material = (obj as THREE.Mesh).material;
+      if (!material) return;
+      for (const mat of Array.isArray(material) ? material : [material]) {
+        if (mat instanceof THREE.MeshStandardMaterial && mat.envMap === record.texture) {
+          mat.envMap = null;
+          mat.needsUpdate = true;
+        }
+      }
+    });
     record.texture.dispose();
     record.pmrem.dispose();
   });
