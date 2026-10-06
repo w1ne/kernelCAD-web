@@ -193,6 +193,7 @@ function ProjectPage() {
       onUpgrade={onUpgrade}
       view={project}
       historical={share.historical}
+      pinned={share.requested != null}
     />
   );
 }
@@ -265,6 +266,8 @@ function ModelFirstPage(props: PageProps & {
   view: ProjectRow | null;
   /** Live pushes must not replace a link to an older revision. */
   historical: boolean;
+  /** `?version=` is set, so the latest render must not stand in for it. */
+  pinned: boolean;
 }): JSX.Element {
   const { slug, live } = props;
   const theme = usePreferredTheme();
@@ -282,10 +285,18 @@ function ModelFirstPage(props: PageProps & {
   };
 
   if (!project) {
+    // A historical pin's poster is the latest render. Leave the stage empty
+    // until that revision's own mesh is the one we can show.
     return (
       <ViewerPageShell
         {...shared}
-        stage={<ModelStage posterSrc={poster} posterAlt="Stored render of the model" phase="loading" />}
+        stage={
+          <ModelStage
+            posterSrc={props.pinned ? null : poster}
+            posterAlt="Stored render of the model"
+            phase="loading"
+          />
+        }
         panel={<ProjectSidePanelSkeleton slow={live.loadState === 'slow'} onRetry={live.retry} />}
       />
     );

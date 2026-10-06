@@ -13,8 +13,7 @@ import {
   isHistoricalPin,
   readRequestedVersion,
   revisionTitleField,
-  shareHeadingTitle,
-  shareProjectView,
+  sharePageModel,
   type PinnedRevision,
 } from './-shareRevision';
 
@@ -79,29 +78,6 @@ function fetchPin(slug: string, version: number, token: string): Promise<PinResu
   );
 }
 
-function shareView(
-  row: ProjectRow,
-  requested: number | null,
-  historical: boolean,
-  failed: boolean,
-  pending: boolean,
-  revision: PinnedRevision | null,
-): ProjectRow | null {
-  if (failed) return null;
-  // Paint the stored mesh while the revision body is still in flight.
-  // The heading stays the project title until that body supplies a better one.
-  if (pending) {
-    return {
-      ...row,
-      title: shareHeadingTitle(null, null, row.title),
-      version: requested ?? row.version,
-      current_code: ' ',
-      parameters: [],
-    };
-  }
-  return shareProjectView(row, historical ? requested : null, revision);
-}
-
 function shareStatus(row: ProjectRow | null, failed: boolean, pending: boolean): ShareStatus {
   if (row && failed) return 'error';
   if (row && pending) return 'loading';
@@ -133,7 +109,9 @@ export function useShareProject(slug: string, row: ProjectRow | null): ShareProj
   const current = result?.token === token ? result : null;
   const failed = historical && !!current?.error;
   const pending = historical && !current;
-  const view = row ? shareView(row, requested, historical, failed, pending, current?.revision ?? null) : null;
+  const view = row
+    ? sharePageModel(row, requested, current?.revision ?? null, { historical, pending, failed })
+    : null;
   // The mesh loader reads this before its debounced fetch. Set it during
   // render so the first paint asks for this revision's artifact.
   if (view) setHostedRevisionHint(view.version);

@@ -109,3 +109,18 @@ export function shareProjectView(
 export function isHistoricalPin(project: ProjectRow, requested: number | null): boolean {
   return requested != null && requested !== project.version;
 }
+
+/**
+ * The row the page may render. A historical pin that is still loading, or
+ * that failed, yields null so the latest title, timestamp, and source stay
+ * off the page. The shell shows a neutral heading until this returns.
+ */
+export function sharePageModel(
+  project: ProjectRow,
+  requested: number | null,
+  revision: PinnedRevision | null,
+  flags: { historical: boolean; pending: boolean; failed: boolean },
+): ProjectRow | null {
+  if (flags.failed || flags.pending) return null;
+  return shareProjectView(project, flags.historical ? requested : null, revision);
+}

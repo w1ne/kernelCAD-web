@@ -7,6 +7,7 @@ import {
   readRequestedVersion,
   revisionTitleFromSource,
   shareHeadingTitle,
+  sharePageModel,
   shareProjectView,
 } from './-shareRevision';
 
@@ -89,6 +90,24 @@ describe('shareProjectView', () => {
     expect(view.version).toBe(1);
     expect(view.current_code).toContain('GT2');
     expect(view.updated_at).toBe('2026-10-05T22:39:10.000Z');
+  });
+
+  it('withholds the latest row until the pinned revision resolves', () => {
+    const project = row(6, 'T-slot frame corner — two rails, gusset, cap screws, named materials');
+    const waiting = { historical: true, pending: true, failed: false };
+    expect(sharePageModel(project, 1, null, waiting)).toBeNull();
+    expect(sharePageModel(project, 1, null, { historical: true, pending: false, failed: true })).toBeNull();
+
+    const resolved = sharePageModel(project, 1, {
+      version: 1,
+      code: '// Compact GT2 belt-driven rotary actuator. Not a transmission.\nconst x = 1;\n',
+      parameters: [],
+      createdAt: '2026-10-05T22:39:10.000Z',
+    }, { historical: true, pending: false, failed: false });
+    expect(resolved?.title).toBe('Compact GT2 belt-driven rotary actuator');
+    expect(resolved?.version).toBe(1);
+    expect(resolved?.current_code).toContain('GT2');
+    expect(resolved?.updated_at).toBe('2026-10-05T22:39:10.000Z');
   });
 
   it('uses the project title when the revision has no title of its own', () => {
