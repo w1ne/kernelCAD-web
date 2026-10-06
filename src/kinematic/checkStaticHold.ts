@@ -28,6 +28,8 @@
 //   - gravity is a single uniform world-frame vector (no distributed load
 //     cases — pair with `checkLoadCapacity` for applied external loads).
 
+import { recordById } from '../shared/intent/recordIndex';
+import { partPlacementTransform } from '../modeling/backends/occt/lowerers/partPlacement';
 import type { Assembly, AssemblyJointStored, AssemblyPartStored } from '../modeling/capture/assembly';
 import { forwardKinematics, type NumericPoses as FkNumericPoses } from '../modeling/capture/forwardKinematics';
 import type { FeatureId } from '../shared/intent/types';
@@ -215,13 +217,21 @@ async function lowerPartMasses(
   }
 
   const partByName = new Map(parts.map((p) => [p.name, p]));
+  const session = arm.__session();
+  const records = session.getRecords();
   const massByPartId = new Map<FeatureId, PartMassLocal>();
   for (const scenePart of lowered.parts) {
     const part = partByName.get(scenePart.name);
     if (part === undefined) continue;
     const density = resolvePartDensity(part);
     const mp = scenePart.shape.massProperties(density);
-    massByPartId.set(part.id, { mass: mp.mass, comLocalMm: mp.com });
+    // Part shapes are local-frame; FK places the `at:` frame, so lift the COM
+    // through the part placement first.
+    const partRec = recordById(records, part.id);
+    const comLocalMm = partRec === undefined
+      ? mp.com
+      : partPlacementTransform(partRec, session.paramTable).point(mp.com);
+    massByPartId.set(part.id, { mass: mp.mass, comLocalMm });
   }
 
   return { zeroPoses, massByPartId };

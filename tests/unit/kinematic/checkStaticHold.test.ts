@@ -71,6 +71,29 @@ describe('checkStaticHold — gravitational torque vs actuator capacity', () => 
     expect(j.worstRequired).toBeCloseTo(expected, 3);
   });
 
+  it('counts the part `at:` placement in the centre of mass (same torque as a translated shape)', async () => {
+    // Same beam, but its +L/2 offset comes from the part placement instead of
+    // a shape translate. The lowered part shape is local-frame; `at:` lives
+    // in the scene worldTransform, so the COM must still sit at x = L/2.
+    const expected = expectedTorqueAtHorizontal(STEEL_DENSITY);
+    const session = new CaptureSession();
+    const kc = createScriptApi({ session });
+    const arm = kc.assembly('hinged-beam-at');
+    const wall = arm.part('wall', kc.box(40, 40, 40, true));
+    const beam = arm.part('beam', kc.box(LENGTH_MM, WIDTH_MM, HEIGHT_MM, true), {
+      at: [LENGTH_MM / 2, 0, 0],
+      density: STEEL_DENSITY,
+    });
+    arm.revolute('shoulder', wall, beam, {
+      axis: [0, 1, 0],
+      origin: [0, 0, 0],
+      limitsDeg: [-90, 90],
+      actuator: { torqueNm: expected * 10 },
+    });
+    const r = await checkStaticHold(arm, { pose: { shoulder: 0 } });
+    expect(r.joints[0]!.worstRequired).toBeCloseTo(expected, 3);
+  });
+
   it('worst-pose detection: horizontal (0 deg) is worse than near-vertical', async () => {
     const expected = expectedTorqueAtHorizontal(STEEL_DENSITY);
     const { arm } = buildHingedBeam({ torqueNm: expected * 10, limitsDeg: [-90, 90] });

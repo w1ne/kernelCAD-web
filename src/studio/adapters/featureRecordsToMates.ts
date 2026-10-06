@@ -20,6 +20,8 @@ import { parseConnectorRef, type MateRecord } from '../../modeling/mates/mate';
 import type { EncodedMateRecord } from '../../modeling/capture/captureSession';
 import type { Param, Vec3 } from '../../shared/intent/types';
 import type { ParamTable } from '../../shared/runtime/paramTable';
+import { recordById } from '../../shared/intent/recordIndex';
+import { partPlacementTransform } from '../../modeling/backends/occt/lowerers/partPlacement';
 import type { ParamRefExpr } from '../../shared/runtime/paramRef';
 
 /**
@@ -243,10 +245,31 @@ function connectorAxis(connector: Connector): Vec3 {
   return connector.axis ?? connector.normal ?? [0, 0, 1];
 }
 
+/**
+ * Connector origins live in the part's placed (`at:`) frame, but the part's
+ * viewport transform is its full worldTransform (solved · placement), so the
+ * preview carries the connector in the part's LOCAL frame instead.
+ */
+function connectorInLocalFrame(
+  records: readonly FeatureRecord[],
+  partId: string,
+  connector: Connector,
+  origin: Vec3,
+  paramTable: ParamTable | null,
+): { origin: Vec3; axis: Vec3 } {
+  const partRec = recordById(records, partId);
+  const axis = connectorAxis(connector);
+  if (partRec === undefined) return { origin, axis };
+  const toLocal = partPlacementTransform(partRec, paramTable ?? undefined).inverse();
+  return { origin: toLocal.point(origin), axis: toLocal.axisDir(axis) };
+}
+
 function buildPreview(
+  records: readonly FeatureRecord[],
   rec: FeatureRecord,
   em: EncodedMateRecord,
   namesByPartId: ReadonlyMap<string, string>,
+  paramTable: ParamTable | null,
 ): JointViewportPreview | undefined {
   const meta = rec.metadata as
     | { connectorsByPartId?: Record<string, readonly Connector[]> }
@@ -256,19 +279,22 @@ function buildPreview(
   const a = parseConnectorRef(em.a);
   const b = parseConnectorRef(em.b);
   let parentConnector: Connector | undefined;
+  let parentPartId = '';
   for (const [partId, connectors] of Object.entries(connectorsByPartId)) {
     const partName = namesByPartId.get(partId) ?? partId;
     if (partName !== a.partName) continue;
     parentConnector = connectors.find((connector) => connector.name === a.connectorName);
+    parentPartId = partId;
     if (parentConnector) break;
   }
   if (!parentConnector || parentConnector.origin.kind !== 'vec3') return undefined;
+  const local = connectorInLocalFrame(records, parentPartId, parentConnector, parentConnector.origin.value, paramTable);
   return {
     assemblyFeatureId: rec.id,
     parentPartName: a.partName,
     childPartName: b.partName,
-    parentConnectorOrigin: parentConnector.origin.value,
-    parentConnectorAxis: connectorAxis(parentConnector),
+    parentConnectorOrigin: local.origin,
+    parentConnectorAxis: local.axis,
   };
 }
 
@@ -318,7 +344,7 @@ export function extractJointSnapshots(
     const mates = meta?.mates;
     if (!mates || mates.length === 0) continue;
     for (const em of mates) {
-      const snap = encodedToSnapshot(em, paramTable, buildPreview(rec, em, namesByPartId));
+      const snap = encodedToSnapshot(em, paramTable, buildPreview(records, rec, em, namesByPartId, paramTable));
       if (snap === null) continue;
       if (!byName.has(em.name)) order.push(em.name);
       byName.set(em.name, snap);
