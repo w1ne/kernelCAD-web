@@ -922,6 +922,9 @@ interface MeshFeatureEventContext {
   readonly cachedFeatureMeshes?: Map<FeatureId, FeatureMesh>;
   /** Lowered shape per feature, so ownership can inherit from predecessors. */
   readonly shapeById: Map<FeatureId, ShapeBackend>;
+  /** Reverse of `shapeById` (first writer wins), so a part's owning record is
+   *  found in O(1) instead of scanning every lowered shape per part. */
+  readonly idByShape: Map<ShapeBackend, FeatureId>;
   readonly recordOrder: ReadonlyMap<FeatureId, number>;
 }
 
@@ -944,9 +947,13 @@ type CompiledEvent = Extract<FeatureEvent, { kind: 'feature.compiled' }>;
 function newLinkState(
   records: readonly FeatureRecord[],
   seedShapes: ReadonlyMap<FeatureId, ShapeBackend> | undefined,
-): Pick<MeshFeatureEventContext, 'shapeById' | 'recordOrder'> {
+): Pick<MeshFeatureEventContext, 'shapeById' | 'idByShape' | 'recordOrder'> {
+  const shapeById = new Map<FeatureId, ShapeBackend>(seedShapes ?? []);
+  const idByShape = new Map<ShapeBackend, FeatureId>();
+  for (const [id, shape] of shapeById) if (!idByShape.has(shape)) idByShape.set(shape, id);
   return {
-    shapeById: new Map<FeatureId, ShapeBackend>(seedShapes ?? []),
+    shapeById,
+    idByShape,
     recordOrder: new Map<FeatureId, number>(records.map((r, i) => [r.id, i])),
   };
 }
@@ -994,6 +1001,7 @@ function handleMeshFeatureEvent(event: FeatureEvent, ctx: MeshFeatureEventContex
   }
   if (event.kind !== 'feature.compiled') return;
   ctx.shapeById.set(event.featureId, event.shape);
+  if (!ctx.idByShape.has(event.shape)) ctx.idByShape.set(event.shape, event.featureId);
 
   // Construction-input closure: this record was an intermediate input
   // to an assemblyPart's source shape. Its geometry is already presented
@@ -1026,10 +1034,7 @@ function handleMeshFeatureEvent(event: FeatureEvent, ctx: MeshFeatureEventContex
       meshIdentityFields,
       metadataNameOf,
       collectTendonMeshes,
-      ownerIdOfShape: (shape) => {
-        for (const [id, s] of ctx.shapeById) if (s === shape) return id;
-        return undefined;
-      },
+      ownerIdOfShape: (shape) => ctx.idByShape.get(shape),
       recordOrder: ctx.recordOrder,
     });
     return;

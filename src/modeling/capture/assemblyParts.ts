@@ -32,6 +32,7 @@ import type {
 } from './assemblyTypes';
 import type { AssemblyState } from './assemblyState';
 import type { WrapGeomOptions, WrapGeomRecord } from '../mates/tendon';
+import { recordById } from '../../shared/intent/recordIndex';
 
 function normalizeConnectors(
   partName: string,
@@ -123,7 +124,7 @@ function transformCatalogConnectors(
   const catalogConnectors = session.catalogConnectors.get(shape.id);
   if (catalogConnectors === undefined) return [];
 
-  const transforms = session.getRecords().find((record) => record.id === shape.id)?.transforms ?? [];
+  const transforms = recordById(session.getRecords(), shape.id)?.transforms ?? [];
   let total = Transform.identity();
   for (const transform of transforms) {
     let next: Transform;
@@ -503,7 +504,7 @@ function applyMaterialFinishDefault(
   resolvedMaterial: ResolvedMaterial | undefined,
 ): void {
   if (resolvedMaterial?.finish === undefined) return;
-  const record = state.session.getRecords().find((r) => r.id === shape.id);
+  const record = recordById(state.session.getRecords(), shape.id);
   const md = record?.metadata;
   const hasExplicitAppearance =
     md?.material !== undefined ||

@@ -31,6 +31,7 @@
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { FeatureId, FeatureRef } from '../../../shared/intent/types';
 import { isPBRMaterial, type PBRMaterial } from '../../../shared/intent/material';
+import { getRecordIndex } from '../../../shared/intent/recordIndex';
 
 /**
  * Walk inputs.shape → upstream metadata.color to find the nearest color
@@ -73,7 +74,7 @@ function sourceShapeRecord(
 ): FeatureRecord | undefined {
   const shapeInput = partRecord.inputs.shape as FeatureRef | undefined;
   if (!shapeInput || shapeInput.kind !== 'feature') return undefined;
-  return allRecords.find((r) => r.id === shapeInput.id);
+  return getRecordIndex(allRecords).get(shapeInput.id);
 }
 
 /**
@@ -126,9 +127,7 @@ function walkLineage<T>(
   allRecords: readonly FeatureRecord[],
   pick: (record: FeatureRecord) => T | undefined,
 ): T | undefined {
-  const recordById = new Map<FeatureId, FeatureRecord>(
-    allRecords.map((r) => [r.id, r]),
-  );
+  const recordById = getRecordIndex(allRecords);
 
   const seen = new Set<FeatureId>();
   let record: FeatureRecord | undefined = start;

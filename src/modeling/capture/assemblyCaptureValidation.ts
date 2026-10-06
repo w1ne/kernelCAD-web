@@ -19,6 +19,7 @@ import {
   type SolvedAssemblyMateMetadata,
   type SolvedAssemblyPoseInput,
 } from './assemblyFeatureRecords';
+import { recordById } from '../../shared/intent/recordIndex';
 
 export function createAssemblyPartCaptureSpec(
   records: readonly FeatureRecord[],
@@ -27,7 +28,7 @@ export function createAssemblyPartCaptureSpec(
   shapeId: FeatureId,
   opts: AssemblyPartCaptureOpts = {},
 ): AssemblyFeatureSpec {
-  if (!records.some(r => r.id === shapeId)) {
+  if (recordById(records, shapeId) === undefined) {
     throw new Error(`assembly.part: shape '${shapeId}' is not from this CaptureSession`);
   }
   return buildAssemblyPartFeatureSpec(assemblyName, partName, shapeId, opts);
@@ -138,7 +139,7 @@ export function createAssemblyExportCaptureSpec(
   sceneFeatureId: FeatureId,
   op: 'compound' | 'union',
 ): AssemblyFeatureSpec {
-  const sourceRecord = records.find(r => r.id === sceneFeatureId);
+  const sourceRecord = recordById(records, sceneFeatureId);
   if (!sourceRecord) {
     throw new Error(`assemblyExport: source scene feature '${sceneFeatureId}' is not from this CaptureSession`);
   }
@@ -154,7 +155,7 @@ function requireRecordKind<K extends FeatureRecord['kind']>(
   kind: K,
   message: string,
 ): FeatureRecord & { kind: K } {
-  const record = records.find(r => r.id === id);
+  const record = recordById(records, id);
   if (!record || record.kind !== kind) {
     throw new Error(message);
   }

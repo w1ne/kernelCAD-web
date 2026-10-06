@@ -8,6 +8,7 @@ import { Scene, type SceneDiagnostic, type ScenePart } from '../validation/scene
 import type { CaptureSession } from './captureSession';
 import { Shape } from './proxy';
 import type { AssemblyJointStored, AssemblyPartStored } from './assemblyTypes';
+import { recordById } from '../../shared/intent/recordIndex';
 
 /**
  * Copy catalog identity from a fetched Shape into the public Scene part
@@ -166,7 +167,7 @@ export class SolvedKinematics {
     const catalogMetadataByShapeId = catalogPartSceneMetadataByShapeId(this.session);
     const sceneParts: ScenePart[] = [];
     for (const part of this.partsByName.values()) {
-      const partRecord = records.find(r => r.id === part.id);
+      const partRecord = recordById(records, part.id);
       const color = partRecord ? lookupSourceColor(partRecord, records) : undefined;
       const metadata = catalogMetadataByShapeId.get(part.originalShape.id);
       sceneParts.push({

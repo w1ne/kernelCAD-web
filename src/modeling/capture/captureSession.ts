@@ -90,6 +90,7 @@ import {
   type ConnectorEntry,
 } from '../../shared/parts/connectorManifestSchema';
 import type { CatalogConnectorEntry } from '../../shared/parts/types';
+import { recordById } from '../../shared/intent/recordIndex';
 
 export type { EncodedMateRecord, SolvedAssemblyMateMetadata } from './assemblyFeatureRecords';
 
@@ -706,9 +707,13 @@ export class CaptureSession {
     return new Sketch(id, this);
   }
 
+  /** O(1) record lookup (see shared/intent/recordIndex.ts). */
+  getRecordById(id: FeatureId): FeatureRecord | undefined {
+    return recordById(this.records, id);
+  }
+
   appendTransform(id: string, t: ShapeTransform): void {
-    // O(n) lookup is deliberate v0.1 simplicity; revisit if profiling shows it.
-    const r = this.records.find(x => x.id === id);
+    const r = this.getRecordById(id);
     if (!r) throw new Error(`Feature '${id}' not registered`);
     r.transforms.push(t);
     // Slice-5: Param-typed translate/rotateAxis transforms can carry ParamRefs.
@@ -725,11 +730,11 @@ export class CaptureSession {
 
   boolean(op: 'union' | 'difference' | 'intersection', base: Shape, cutters: Shape[]): Shape {
     // Validate all input shapes belong to this session.
-    if (!this.records.some(r => r.id === base.id)) {
+    if (this.getRecordById(base.id) === undefined) {
       throw new Error(`boolean: base shape '${base.id}' is not from this CaptureSession`);
     }
     for (let i = 0; i < cutters.length; i++) {
-      if (!this.records.some(r => r.id === cutters[i].id)) {
+      if (this.getRecordById(cutters[i].id) === undefined) {
         throw new Error(`boolean: cutter shape '${cutters[i].id}' is not from this CaptureSession`);
       }
     }
@@ -750,7 +755,7 @@ export class CaptureSession {
   }
 
   mirrorFeature(base: Shape, plane: PlaneSpec): Shape {
-    if (!this.records.some(r => r.id === base.id)) {
+    if (this.getRecordById(base.id) === undefined) {
       throw new Error(`mirror: base shape '${base.id}' is not from this CaptureSession`);
     }
     const inputs: Record<string, FeatureRef> = {
@@ -765,7 +770,7 @@ export class CaptureSession {
   }
 
   patternFeature(base: Shape, pattern: PatternSpec): Shape {
-    if (!this.records.some(r => r.id === base.id)) {
+    if (this.getRecordById(base.id) === undefined) {
       throw new Error(`pattern: base shape '${base.id}' is not from this CaptureSession`);
     }
     return this.createShape({

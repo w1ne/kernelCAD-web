@@ -19,6 +19,7 @@ import { mateFk, type ResolvedMatePart } from '../../../mates/solver';
 import { resolveTopologyOriginOnBackend } from '../connectorTopology';
 import { built, finished, noShape, type LowerContext, type LowerOutcome } from './context';
 import { normalizeAxis, readVec3Param } from './helpers';
+import { recordById } from '../../../../shared/intent/recordIndex';
 
 /** `assemblyPart` — clones the wrapped source shape and applies its `at:`. */
 export function lowerAssemblyPart(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
@@ -153,7 +154,7 @@ function resolveMateParts(
   let topologyResolutionFailed = false;
   for (let i = 0; i < partIds.length; i++) {
     const partId = partIds[i];
-    const partRec = records.find((rec) => rec.id === partId);
+    const partRec = recordById(records, partId);
     if (requirePartRecord && (!partRec || partRec.kind !== 'assemblyPart')) {
       ctx.diagnostics.push({
         target: ctx.target,
@@ -355,7 +356,7 @@ function buildAssemblyModelSceneParts(
   const { partEntries, partIds, records } = inputs;
   return partEntries.map(([, partShape], i) => {
     const partId = partIds[i];
-    const partRec = records.find((rec) => rec.id === partId);
+    const partRec = recordById(records, partId);
     const partName =
       (partRec?.metadata as { partName?: string } | undefined)?.partName ?? partId;
     const color = partRec ? lookupSourceColor(partRec, records) : undefined;
@@ -545,7 +546,7 @@ export function lowerSolvedAssembly(ctx: LowerContext, r: FeatureRecord): LowerO
         'invalid-args.solve.internal — please file a bug.',
       );
     }
-    const partRec = records.find((rec) => rec.id === partId)!;
+    const partRec = recordById(records, partId)!;
     const partMeta = partRec.metadata as { partName?: string } | undefined;
     const partName = partMeta?.partName ?? partId;
     const color = lookupSourceColor(partRec, records);
@@ -586,7 +587,7 @@ function reconstructParts(
 ): AssemblyPartStored[] | undefined {
   const parts: AssemblyPartStored[] = [];
   for (const partId of partIds) {
-    const partRec = records.find(rec => rec.id === partId);
+    const partRec = recordById(records, partId);
     if (!partRec || partRec.kind !== 'assemblyPart') {
       ctx.diagnostics.push({
         target: ctx.target,
@@ -612,7 +613,7 @@ function reconstructJoints(
 ): AssemblyJointStored[] | undefined {
   const joints: AssemblyJointStored[] = [];
   for (const jointId of jointIds) {
-    const jointRec = records.find(rec => rec.id === jointId);
+    const jointRec = recordById(records, jointId);
     if (!jointRec || jointRec.kind !== 'assemblyJoint') {
       ctx.diagnostics.push({
         target: ctx.target,
@@ -828,7 +829,7 @@ function warnPlacementIgnoredByMateFk(
   partId: FeatureId,
   records: readonly FeatureRecord[],
 ): void {
-  const partRec = records.find((rec) => rec.id === partId);
+  const partRec = recordById(records, partId);
   // `resolvePartPlacement` defaults `at` to [0,0,0] even when the
   // user passed nothing — so we can't just check for presence.
   // Only fire the diagnostic when `at` is a non-trivial vec3

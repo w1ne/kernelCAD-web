@@ -34,6 +34,7 @@ import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import { tryResolveMaterial } from '../../modeling/properties/materialLibrary';
 import { flattenPattern } from '../../kernel/backends/occt/flattenPattern';
+import { recordById } from '../../shared/intent/recordIndex';
 
 export type BomKind = 'fabricated' | 'purchased';
 export type BomProcessHint = 'sheet-metal' | 'machined' | 'printed';
@@ -162,7 +163,7 @@ function declarationKey(part: AssemblyPartStored): string {
  *  A hint, not a CAM decision: never blocks the row. */
 function processHintFor(records: readonly FeatureRecord[], part: AssemblyPartStored): BomProcessHint {
   if (sheetMetalRoot(records, part.originalShape.id) !== undefined) return 'sheet-metal';
-  const record = records.find((r) => r.id === part.originalShape.id);
+  const record = recordById(records, part.originalShape.id);
   const kind = record?.kind;
   if (kind === 'importedStep' || kind === 'importedBrep' || kind === 'importedStl' || kind === 'importedMesh') {
     return 'machined';
@@ -182,7 +183,7 @@ interface PartMeasurement {
 
 /** Lower one part and resolve its grouping identity + density/material. */
 async function measurePart(part: AssemblyPartStored, records: readonly FeatureRecord[]): Promise<PartMeasurement> {
-  const record = records.find((r) => r.id === part.originalShape.id);
+  const record = recordById(records, part.originalShape.id);
   const catalogPart = record?.metadata?.catalogPart;
   const lowered = await part.originalShape.lower();
   const bb = lowered.boundingBox({ exact: true });
