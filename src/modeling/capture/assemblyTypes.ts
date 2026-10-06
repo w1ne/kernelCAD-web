@@ -158,8 +158,19 @@ export type AssemblyCrossSection =
 
 export type AssemblyPartRole = 'structure' | 'contact-target';
 
+/** Part orientation about its own local origin, applied before `at`
+ *  (world = translate(at) · rotate). `{ axis, degrees }` is axis-angle;
+ *  `[rx, ry, rz]` is XYZ Euler degrees, the same convention ball-joint poses
+ *  use (rotation matrix Rx·Ry·Rz: Z is applied first, then Y, then X).
+ *  Plain numbers only. */
+export type AssemblyPartRotate = { axis: Vec3; degrees: number } | Vec3;
+
 export interface AssemblyPartOpts {
   at?: EditableVec3;
+  /** Orientation of the part about its local origin, applied before `at`.
+   *  Identical shapes placed with different rotations still share one
+   *  geometry. Not combinable with `connectors` / `connect`. */
+  rotate?: AssemblyPartRotate;
   connectors?: Record<string, AssemblyConnectorFrame>;
   connect?: {
     connector: string;

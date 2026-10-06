@@ -14,6 +14,7 @@ import { toVec3Param } from '../../shared/runtime/editableHelpers';
 import { paramExprToDebugString, type ParamRefExpr } from '../../shared/runtime/paramRef';
 import { Transform } from '../../shared/runtime/se3';
 import type { PartLineage } from '../../kernel/naming/evolutionRecord';
+import type { StoredPartRotate } from './assemblyFeatureRecords';
 import type { Shape } from './proxy';
 import type { CaptureSession } from './captureSession';
 import { resolveMaterial, type ResolvedMaterial } from '../properties/materialLibrary';
@@ -250,6 +251,64 @@ function subtractParams(a: Param, b: Param): Param {
     { kind: 'binop', op: '-', left: paramToExpr(a), right: paramToExpr(b) },
     a.unit,
     a.evaluated - b.evaluated,
+  );
+}
+
+function isFiniteVec3(v: unknown): v is Vec3 {
+  return Array.isArray(v) && v.length === 3 && v.every((n) => typeof n === 'number' && Number.isFinite(n));
+}
+
+/** Validate `opts.rotate` and normalize it for the part record.
+ *  `connectors` is the MERGED frame map (user-declared plus catalog-promoted):
+ *  frames are authored in the part's unrotated local frame, so any of them
+ *  would silently disagree with the rotated placement. */
+export function normalizePartRotate(
+  partName: string,
+  featureId: FeatureId,
+  opts: AssemblyPartOpts,
+  connectors: Record<string, AssemblyConnectorFrameStored> = {},
+): StoredPartRotate | undefined {
+  const rotate = opts.rotate;
+  if (rotate === undefined) return undefined;
+  if (opts.connect !== undefined || Object.keys(connectors).length > 0) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `assembly part '${partName}': rotate cannot be combined with connectors / connect placement (including connectors promoted from a catalog part).`,
+      featureId,
+      'invalid-args.assembly.part-rotate-with-connectors — place the part with at + rotate, or with connect, not both. Mate-style connectors added later via part.connector(name, opts) are fine.',
+    );
+  }
+  if (isFiniteVec3(rotate)) return { eulerDeg: [rotate[0], rotate[1], rotate[2]] };
+  const r = rotate as { axis?: unknown; degrees?: unknown };
+  if (isFiniteVec3(r.axis) && Math.hypot(r.axis[0], r.axis[1], r.axis[2]) > 0
+    && typeof r.degrees === 'number' && Number.isFinite(r.degrees)) {
+    return { axis: [r.axis[0], r.axis[1], r.axis[2]], degrees: r.degrees };
+  }
+  throw new KernelError(
+    'feature.invalid-args',
+    `assembly part '${partName}': rotate must be { axis: [x, y, z], degrees } with a non-zero finite axis, or [rx, ry, rz] Euler degrees; got ${formatScalarForError(rotate)}.`,
+    featureId,
+    'invalid-args.assembly.part-rotate — pass rotate: { axis: [0, 0, 1], degrees: 90 } or rotate: [0, 0, 90] (plain numbers).',
+  );
+}
+
+/** `connect` computes the child's `at` from the target's UNROTATED frame, so a
+ *  rotated target would silently misplace it. Reject until rotated targets are
+ *  supported. */
+function assertConnectTargetNotRotated(
+  session: CaptureSession,
+  partName: string,
+  featureId: FeatureId,
+  connect: AssemblyPartOpts['connect'],
+): void {
+  if (connect === undefined) return;
+  const target = connect.to.partId === undefined ? undefined : session.getRecordById(connect.to.partId);
+  if ((target?.metadata as { rotate?: unknown } | undefined)?.rotate === undefined) return;
+  throw new KernelError(
+    'feature.invalid-args',
+    `assembly part '${partName}': connect target '${connect.to.partName}' is a rotated part; connect placement onto rotated parts is not supported yet.`,
+    featureId,
+    'invalid-args.assembly.connect-to-rotated-part — place the child with at (+ rotate) in world coordinates, or leave the target unrotated.',
   );
 }
 
@@ -616,9 +675,12 @@ export function recordPartInternal(
     ? transformCatalogConnectors(state.session, shape)
     : [];
   mergeCatalogConnectors(connectors, transformedCatalogConnectors, shape.id);
+  assertConnectTargetNotRotated(state.session, name, shape.id, opts.connect);
+  const rotate = normalizePartRotate(name, shape.id, opts, connectors);
   const at = resolvePartPlacement(state.name, name, shape.id, opts.at, connectors, opts.connect);
   const record = state.session.assemblyPart(state.name, name, shape, {
     at, connectors, placedBy: opts.connect,
+    ...(rotate !== undefined ? { rotate } : {}),
     ...(resolvedMaterial !== undefined ? { materialName: resolvedMaterial.name } : {}),
   });
   // Q1.5: write the part-lineage entry now that the capture-session has

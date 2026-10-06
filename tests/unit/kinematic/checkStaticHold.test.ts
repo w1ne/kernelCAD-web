@@ -94,6 +94,29 @@ describe('checkStaticHold — gravitational torque vs actuator capacity', () => 
     expect(r.joints[0]!.worstRequired).toBeCloseTo(expected, 3);
   });
 
+  it('counts the part `rotate:` placement in the centre of mass (rotated beam gives the same torque)', async () => {
+    // The beam is modelled across Y and rotated 90 degrees about Z so it lies
+    // along X; its COM must follow the rotation to x = L/2.
+    const expected = expectedTorqueAtHorizontal(STEEL_DENSITY);
+    const session = new CaptureSession();
+    const kc = createScriptApi({ session });
+    const arm = kc.assembly('hinged-beam-rot');
+    const wall = arm.part('wall', kc.box(40, 40, 40, true));
+    const beam = arm.part('beam', kc.box(WIDTH_MM, LENGTH_MM, HEIGHT_MM, true), {
+      at: [LENGTH_MM / 2, 0, 0],
+      rotate: [0, 0, 90],
+      density: STEEL_DENSITY,
+    });
+    arm.revolute('shoulder', wall, beam, {
+      axis: [0, 1, 0],
+      origin: [0, 0, 0],
+      limitsDeg: [-90, 90],
+      actuator: { torqueNm: expected * 10 },
+    });
+    const r = await checkStaticHold(arm, { pose: { shoulder: 0 } });
+    expect(r.joints[0]!.worstRequired).toBeCloseTo(expected, 3);
+  });
+
   it('worst-pose detection: horizontal (0 deg) is worse than near-vertical', async () => {
     const expected = expectedTorqueAtHorizontal(STEEL_DENSITY);
     const { arm } = buildHingedBeam({ torqueNm: expected * 10, limitsDeg: [-90, 90] });

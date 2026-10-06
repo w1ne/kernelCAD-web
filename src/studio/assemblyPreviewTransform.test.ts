@@ -59,9 +59,9 @@ describe('computeAssemblyPreviewTransform', () => {
 });
 
 describe('computeAssemblyPreviewTransform on a real lowered assembly', () => {
-    const code = (pose: number) => `
+    const code = (pose: number, baseOpts = '{ at: [10, 5, 0] }') => `
         const arm = assembly('two-link');
-        const base = arm.part('base', box(20, 20, 6), { at: [10, 5, 0] });
+        const base = arm.part('base', box(20, 20, 6), ${baseOpts});
         const link = arm.part('link', box(80, 10, 6), { at: [30, 0, 6] });
         base.connector('shoulder', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 6] }, axis: [0, 0, 1] });
         link.connector('shoulder', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
@@ -69,21 +69,21 @@ describe('computeAssemblyPreviewTransform on a real lowered assembly', () => {
         return arm.model();
     `;
 
-    async function lowered(pose: number) {
+    async function lowered(pose: number, baseOpts?: string) {
         const { buildModel } = await import('../composition/buildModel');
         const { isSceneBackend } = await import('../kernel/backends/sceneBackend');
-        const model = await buildModel({ code: code(pose), fileName: 'preview.kcad.ts' });
+        const model = await buildModel({ code: code(pose, baseOpts), fileName: 'preview.kcad.ts' });
         const scene = model.rootShape;
         if (!isSceneBackend(scene)) throw new Error('expected a scene');
         return { model, scene };
     }
 
-    it('pivots around the parent connector when the parent part has a non-zero at', async () => {
+    async function expectPreviewMatchesLowered(baseOpts?: string) {
         const { initOcct } = await import('../kernel/backends/occt/occtBackend');
         const { extractJointSnapshots } = await import('./adapters/featureRecordsToMates');
         await initOcct();
-        const rest = await lowered(0);
-        const target = await lowered(30);
+        const rest = await lowered(0, baseOpts);
+        const target = await lowered(30, baseOpts);
         const geometries: GeometryResult[] = rest.scene.parts.map((p) => ({
             faces: [],
             assemblyPartName: p.name,
@@ -101,5 +101,13 @@ describe('computeAssemblyPreviewTransform on a real lowered assembly', () => {
             const b = new THREE.Vector3(...p).applyMatrix4(want);
             expect(a.distanceTo(b)).toBeLessThan(1e-6);
         }
+    }
+
+    it('pivots around the parent connector when the parent part has a non-zero at', async () => {
+        await expectPreviewMatchesLowered();
+    }, 120_000);
+
+    it('pivots around the parent connector when the parent part is rotated', async () => {
+        await expectPreviewMatchesLowered('{ at: [10, 5, 0], rotate: [0, 0, 90] }');
     }, 120_000);
 });

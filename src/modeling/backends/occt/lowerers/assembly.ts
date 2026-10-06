@@ -801,6 +801,7 @@ function applySolvedMateFk(
 
 type PartPlacementMeta = {
   at?: { x?: { evaluated?: number }; y?: { evaluated?: number }; z?: { evaluated?: number } };
+  rotate?: unknown;
   placedBy?: unknown;
   partName?: string;
 };
@@ -821,6 +822,7 @@ function emitPlacementIgnoredByMateFk(
   ax: number,
   ay: number,
   az: number,
+  hasRotate: boolean,
 ): void {
   const partName = partMeta?.partName ?? partId;
   ctx.diagnostics.push({
@@ -828,7 +830,7 @@ function emitPlacementIgnoredByMateFk(
     code: 'assembly.placement-ignored-by-mate-fk',
     featureId: partRec.id,
     severity: 'info',
-    message: `assembly.part '${partName}' has both an authored \`at:\` placement (${ax.toFixed(2)}, ${ay.toFixed(2)}, ${az.toFixed(2)}) AND a mate-FK-derived pose; the \`at:\` is being ignored.`,
+    message: `assembly.part '${partName}' has both an authored \`at:\` placement (${ax.toFixed(2)}, ${ay.toFixed(2)}, ${az.toFixed(2)}) (rotate: ${hasRotate ? 'set' : 'none'}) AND a mate-FK-derived pose; the \`at:\` is being ignored.`,
     hint: "Remove the `at:` and let the mate decide the pose, or place the part's local frame so its mate connector sits at the origin (mate FK composes parent_world ∘ trans(parent_conn) ∘ joint ∘ trans(-child_conn)).",
   });
 }
@@ -855,9 +857,10 @@ function warnPlacementIgnoredByMateFk(
   const partMeta = partRec?.metadata as PartPlacementMeta | undefined;
   const [ax, ay, az] = readPartAtVector(partMeta?.at);
   const atIsNonTrivial = Math.abs(ax) + Math.abs(ay) + Math.abs(az) > 1e-6;
+  const hasRotate = partMeta?.rotate !== undefined;
   const placedByConnect = partMeta?.placedBy !== undefined;
-  if (partRec && atIsNonTrivial && !placedByConnect) {
-    emitPlacementIgnoredByMateFk(ctx, partRec, partMeta, partId, ax, ay, az);
+  if (partRec && (atIsNonTrivial || hasRotate) && !placedByConnect) {
+    emitPlacementIgnoredByMateFk(ctx, partRec, partMeta, partId, ax, ay, az, hasRotate);
   }
 }
 

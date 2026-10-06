@@ -261,7 +261,9 @@ function connectorInLocalFrame(
   const axis = connectorAxis(connector);
   if (partRec === undefined) return { origin, axis };
   const toLocal = partPlacementTransform(partRec, paramTable ?? undefined).inverse();
-  return { origin: toLocal.point(origin), axis: toLocal.axisDir(axis) };
+  const [ox, oy, oz] = toLocal.point(origin);
+  const [ax, ay, az] = toLocal.axisDir(axis);
+  return { origin: [ox, oy, oz], axis: [ax, ay, az] };
 }
 
 function buildPreview(

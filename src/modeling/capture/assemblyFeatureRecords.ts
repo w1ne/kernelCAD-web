@@ -75,8 +75,14 @@ export interface AssemblyPartRefLike {
   name: string;
 }
 
+/** Normalized `assembly.part(..., { rotate })`, stored on the record. */
+export type StoredPartRotate =
+  | { readonly axis: Vec3; readonly degrees: number }
+  | { readonly eulerDeg: Vec3 };
+
 export interface AssemblyPartCaptureOpts {
   at?: Vec3Param;
+  rotate?: StoredPartRotate;
   /** Canonical engineering-material name from `arm.part(..., { material })`. */
   materialName?: string;
   connectors?: Record<string, AssemblyConnectorFrameStoredLike>;
@@ -131,6 +137,7 @@ export function buildAssemblyPartFeatureSpec(
       assemblyName,
       partName,
       ...(opts.at !== undefined ? { at: opts.at } : {}),
+      ...(opts.rotate !== undefined ? { rotate: opts.rotate } : {}),
       ...(opts.connectors !== undefined ? { connectors: opts.connectors } : {}),
       ...(opts.materialName !== undefined ? { materialName: opts.materialName } : {}),
       ...(opts.placedBy !== undefined ? {

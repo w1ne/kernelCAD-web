@@ -111,6 +111,11 @@ Exploded views reuse that same assembly: `render_preview({ explode: { factor, mo
 interface Assembly {
   part(name: string, shape: Shape, opts?: {
     at?: [number, number, number];
+    /** Orientation about the part's local origin, applied before `at`:
+     *  { axis: [x, y, z], degrees } or [rx, ry, rz] Euler degrees
+     *  (rotation matrix Rx·Ry·Rz: Z is applied first, then Y, then X).
+     *  Not combinable with `connectors` / `connect`. */
+    rotate?: { axis: [number, number, number]; degrees: number } | [number, number, number];
     connectors?: Record<string, { origin: [number, number, number]; axis?: [number, number, number] }>;
     connect?: { connector: string; to: AssemblyConnectorRef; name?: string };
     /** Named material grade: seeds the density default AND a default finish.
@@ -143,6 +148,20 @@ interface Assembly {
   model(): Scene;
   solvedModel(poses: Poses): Scene;
 }
+```
+
+## Repeated parts
+
+Rows of racks, rollers on a conveyor, bolt circles: build the shape in a function and call it in the loop. Identical calls share one geometry automatically — the kernel lowers and tessellates it once, Studio draws all copies in one draw call, GLB export writes one mesh. Place copies with `at` and orient them with `rotate`; do not bake each copy's own position into its shape with a per-copy `.translate()` / `.rotate()` (that makes every copy a different geometry). Transforms inside the recipe itself, identical on every call, are fine.
+
+```typescript
+const arm = assembly('rack-row');
+const rack = () => box(600, 1000, 2000).subtract(box(560, 1010, 1960).translate(20, -5, 20));
+for (let i = 0; i < 40; i++) {
+  arm.part(`rack-${i}`, rack(), { at: [i * 620, 0, 0], material: 'mild-steel' });
+}
+arm.part('end-cap', box(20, 1000, 2000), { at: [40 * 620, 0, 0], rotate: { axis: [0, 0, 1], degrees: 180 } });
+return arm.model();
 ```
 
 ## Scene API

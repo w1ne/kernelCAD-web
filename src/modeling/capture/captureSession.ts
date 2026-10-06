@@ -789,6 +789,7 @@ export class CaptureSession {
     shape: Shape,
     opts: {
       at?: Vec3Param;
+      rotate?: import('./assemblyFeatureRecords').StoredPartRotate;
       connectors?: Record<string, AssemblyConnectorFrameStored>;
       placedBy?: AssemblyPartOpts['connect'];
       materialName?: string;
