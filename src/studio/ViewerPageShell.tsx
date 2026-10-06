@@ -318,14 +318,51 @@ export function ModelStage(props: ModelStageProps): JSX.Element {
   const waiting = props.phase === 'loading' || props.phase === 'building';
   const slow = useSlow(waiting ? props.phase : null, STAGE_SLOW_MS);
   const meshing = useMeshNotice().meshing;
-  const status = stageStatus(props.phase, slow, meshing);
 
+  return (
+    <StageFrame
+      phase={props.phase}
+      posterSrc={props.posterSrc}
+      posterAlt={props.posterAlt}
+      posterState={posterState}
+      onPosterState={setPosterState}
+      canvasReady={canvasReady}
+      displayed={displayed}
+      waiting={waiting}
+      showProgress={waiting || Boolean(props.busy) || meshing}
+      status={stageStatus(props.phase, slow, meshing)}
+      failure={props.failure}
+      overlay={props.overlay}
+    >
+      {props.children}
+    </StageFrame>
+  );
+}
+
+function StageFrame({
+  phase, posterSrc, posterAlt, posterState, onPosterState, canvasReady, displayed, waiting,
+  showProgress, status, failure, overlay, children,
+}: {
+  phase: StagePhase;
+  posterSrc?: string | null;
+  posterAlt: string;
+  posterState: PosterState;
+  onPosterState: (state: PosterState) => void;
+  canvasReady: boolean;
+  displayed: boolean;
+  waiting: boolean;
+  showProgress: boolean;
+  status: string | null;
+  failure?: ReactNode;
+  overlay?: ReactNode;
+  children?: ReactNode;
+}): JSX.Element {
   return (
     <div
       className="absolute inset-0 overflow-hidden"
       style={{ background: STAGE_BACKGROUND }}
       data-testid="model-stage"
-      data-phase={props.phase}
+      data-phase={phase}
     >
       <div
         className={cx(
@@ -333,17 +370,17 @@ export function ModelStage(props: ModelStageProps): JSX.Element {
           displayed ? 'opacity-100' : 'opacity-0',
         )}
       >
-        {canvasReady && props.children}
+        {canvasReady && children}
       </div>
-      {props.posterSrc && (
-        <StagePoster src={props.posterSrc} alt={props.posterAlt} state={posterState} onState={setPosterState} hidden={displayed} />
+      {posterSrc && (
+        <StagePoster src={posterSrc} alt={posterAlt} state={posterState} onState={onPosterState} hidden={displayed} />
       )}
       {waiting && posterState !== 'loaded' && <StagePlaceholder />}
-      {(waiting || props.busy || meshing) && <ProgressLine />}
+      {showProgress && <ProgressLine />}
       {status && <StageStatus text={status} />}
       {displayed && <ApproximateNote />}
-      {props.phase === 'failed' && props.failure}
-      {props.overlay}
+      {phase === 'failed' && failure}
+      {overlay}
     </div>
   );
 }

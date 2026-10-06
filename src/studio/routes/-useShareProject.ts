@@ -39,6 +39,59 @@ function requestedFromLocation(): number | null {
   return readRequestedVersion(window.location.search ?? '');
 }
 
+function fetchPin(slug: string, version: number, token: string): Promise<PinResult> {
+  return Promise.all([
+    fetchProjectRevisionBySlug(slug, version),
+    listProjectRevisions(slug).catch(() => []),
+  ]).then(
+    ([body, list]) => {
+      if (body.version !== version) {
+        return { token, revision: null, error: 'This revision could not be loaded.' };
+      }
+      const createdAt = list.find((entry) => entry.version === version)?.created_at ?? null;
+      return {
+        token,
+        revision: {
+          version: body.version,
+          code: body.code,
+          parameters: body.parameters,
+          createdAt,
+        },
+        error: null,
+      };
+    },
+    (err: unknown) => ({
+      token,
+      revision: null,
+      error: err instanceof Error ? err.message : String(err),
+    }),
+  );
+}
+
+function shareView(
+  row: ProjectRow,
+  requested: number | null,
+  historical: boolean,
+  failed: boolean,
+  pending: boolean,
+  revision: PinnedRevision | null,
+): ProjectRow | null {
+  if (failed) return null;
+  // Paint the stored mesh while the revision's title is still in flight.
+  // Do not show the latest row's name in that gap.
+  if (pending) {
+    return { ...row, title: '', version: requested ?? row.version, current_code: ' ', parameters: [] };
+  }
+  return shareProjectView(row, historical ? requested : null, revision);
+}
+
+function shareStatus(row: ProjectRow | null, failed: boolean, pending: boolean): ShareStatus {
+  if (row && failed) return 'error';
+  if (row && pending) return 'loading';
+  if (row) return 'ready';
+  return 'pending';
+}
+
 /** Resolve `?version=N` against the loaded row. The current revision needs no
  *  extra fetch. An older pin is a failed read when the revision API fails —
  *  the latest row must not stand in for it. */
@@ -52,35 +105,9 @@ export function useShareProject(slug: string, row: ProjectRow | null): ShareProj
   useEffect(() => {
     if (!row || !requested || !isHistoricalPin(row, requested)) return undefined;
     let disposed = false;
-    const version = requested;
-    Promise.all([
-      fetchProjectRevisionBySlug(slug, version),
-      listProjectRevisions(slug).catch(() => []),
-    ]).then(
-      ([body, list]) => {
-        if (disposed) return;
-        if (body.version !== version) {
-          setResult({ token, revision: null, error: 'This revision could not be loaded.' });
-          return;
-        }
-        const createdAt = list.find((entry) => entry.version === version)?.created_at ?? null;
-        setResult({
-          token,
-          revision: {
-            version: body.version,
-            code: body.code,
-            parameters: body.parameters,
-            createdAt,
-          },
-          error: null,
-        });
-      },
-      (err: unknown) => {
-        if (disposed) return;
-        const message = err instanceof Error ? err.message : String(err);
-        setResult({ token, revision: null, error: message });
-      },
-    );
+    void fetchPin(slug, requested, token).then((next) => {
+      if (!disposed) setResult(next);
+    });
     return () => {
       disposed = true;
     };
@@ -89,23 +116,13 @@ export function useShareProject(slug: string, row: ProjectRow | null): ShareProj
   const current = result?.token === token ? result : null;
   const failed = historical && !!current?.error;
   const pending = historical && !current;
-  // The stored mesh is addressed by the URL pin. Paint it while the
-  // revision's title and source are still in flight — do not show the
-  // latest row's name in that gap.
-  const view = !row || failed
-    ? null
-    : pending
-      ? { ...row, title: '', version: requested ?? row.version, current_code: ' ', parameters: [] }
-      : shareProjectView(row, historical ? requested : null, current?.revision ?? null);
+  const view = row ? shareView(row, requested, historical, failed, pending, current?.revision ?? null) : null;
   // The mesh loader reads this before its debounced fetch. Set it during
   // render so the first paint asks for this revision's artifact.
   if (view) setHostedRevisionHint(view.version);
 
   const retry = useCallback(() => setAttempt((n) => n + 1), []);
-  let status: ShareStatus = 'pending';
-  if (row && failed) status = 'error';
-  else if (row && pending) status = 'loading';
-  else if (row) status = 'ready';
+  const status = shareStatus(row, failed, pending);
 
   return {
     requested,

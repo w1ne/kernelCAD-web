@@ -460,58 +460,68 @@ async function storedRevisionMesh(base: string): Promise<BackendMeshPayload | nu
  * to the server mesh endpoint (`POST {VITE_API_BASE_URL}/__kernelcad/mesh`)
  * for edited code, when a backend is configured. Throws if neither resolves.
  */
+const NO_HOSTED_BACKEND = 'No precomputed mesh for this edit, and no compute backend is configured. '
+  + 'Editing gallery models in the hosted viewer needs a kernel backend.';
+
+/** Project viewers paint the mesh stored at publish time. They do not hash
+ *  the source against the gallery and they do not remesh on the request path. */
+async function meshStoredProject(
+  paramOverrides: ParamOverrides | undefined,
+  preferSource: boolean | undefined,
+): Promise<BackendMeshPayload | null> {
+  if (hasOverrides(paramOverrides) || preferSource || !currentHostedProject()) return null;
+  const base = typeof import.meta.env.VITE_API_BASE_URL === 'string' ? import.meta.env.VITE_API_BASE_URL : '';
+  const stored = await storedRevisionMesh(base);
+  if (!stored) throw new Error(STORED_MESH_MISSING);
+  setMeshNotice({ meshing: false, approximate: false });
+  return stored;
+}
+
+/** Static precompute by source hash. Only the unmodified gallery source is
+ *  in that set; a saved project is not. */
+async function meshGalleryPrecompute(
+  source: string,
+  paramOverrides: ParamOverrides | undefined,
+): Promise<BackendMeshPayload | null> {
+  if (hasOverrides(paramOverrides) || currentHostedProject()) return null;
+  try {
+    const hash = await sha256Hex(source);
+    const res = await fetch(galleryPrecomputedMeshUrl(hash));
+    if (!res.ok) return null;
+    const payload = await res.json().catch(() => null);
+    return isBridgePayload(payload) ? payload : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Server mesh for an edit. A pinned revision that exceeds the live budget
+ *  falls back to the mesh stored at publish time. */
+async function meshViaServer(
+  source: string,
+  paramOverrides: ParamOverrides | undefined,
+  preferSource: boolean | undefined,
+): Promise<BackendMeshPayload> {
+  const base = import.meta.env.VITE_API_BASE_URL;
+  if (typeof base !== 'string' || base.length === 0) throw new Error(NO_HOSTED_BACKEND);
+  try {
+    return await meshOnServer(base, hostedMeshBody(source, paramOverrides, preferSource));
+  } catch (error) {
+    const stored = hasOverrides(paramOverrides) || preferSource ? null : await storedRevisionMesh(base);
+    if (stored) return stored;
+    throw error;
+  }
+}
+
 export async function meshSourceHosted(
   source: string,
   paramOverrides?: ParamOverrides,
   options?: { preferSource?: boolean },
 ): Promise<BackendMeshPayload> {
-  // Project viewers paint the mesh stored at publish time. They do not hash
-  // the source against the gallery (that 404s on every /p/ page) and they do
-  // not remesh on the request path. Hetzner compute stays at publish/save.
-  if (!hasOverrides(paramOverrides) && !options?.preferSource && currentHostedProject()) {
-    const base = typeof import.meta.env.VITE_API_BASE_URL === 'string' ? import.meta.env.VITE_API_BASE_URL : '';
-    const stored = await storedRevisionMesh(base);
-    if (!stored) throw new Error(STORED_MESH_MISSING);
-    // The stored artifact is the model, not a degraded stand-in for a rebuild.
-    setMeshNotice({ meshing: false, approximate: false });
-    return stored;
-  }
-
-  // 1. Static precompute by source hash — ONLY when there are no param
-  //    overrides and this is not a saved project. The precompute is keyed on
-  //    the unmodified gallery source. Project sources are not in that set.
-  if (!hasOverrides(paramOverrides) && !currentHostedProject()) {
-    try {
-      const hash = await sha256Hex(source);
-      const res = await fetch(galleryPrecomputedMeshUrl(hash));
-      if (res.ok) {
-        const payload = await res.json().catch(() => null);
-        if (isBridgePayload(payload)) return payload;
-      }
-    } catch {
-      // fall through to backend
-    }
-  }
-
-  // 2. Server mesh endpoint for edited / non-gallery code (and param edits).
-  const base = import.meta.env.VITE_API_BASE_URL;
-  if (typeof base === 'string' && base.length > 0) {
-    try {
-      return await meshOnServer(base, hostedMeshBody(source, paramOverrides, options?.preferSource));
-    } catch (error) {
-      // 3. A heavy model can exceed the live mesh budget (30 s). A pinned
-      //    revision was already meshed at publish time with a longer budget,
-      //    so show that stored mesh instead of a build failure.
-      const stored = hasOverrides(paramOverrides) || options?.preferSource
-        ? null
-        : await storedRevisionMesh(base);
-      if (stored) return stored;
-      throw error;
-    }
-  }
-
-  throw new Error(
-    'No precomputed mesh for this edit, and no compute backend is configured. '
-    + 'Editing gallery models in the hosted viewer needs a kernel backend.',
-  );
+  const preferSource = options?.preferSource;
+  const stored = await meshStoredProject(paramOverrides, preferSource);
+  if (stored) return stored;
+  const gallery = await meshGalleryPrecompute(source, paramOverrides);
+  if (gallery) return gallery;
+  return meshViaServer(source, paramOverrides, preferSource);
 }
