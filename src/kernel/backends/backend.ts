@@ -76,6 +76,18 @@ export interface ResolvedInputs {
    */
   records?: readonly FeatureRecord[];
   /**
+   * Per-build geometry identity keys (`modeling/compute/geometryIdentity.ts`),
+   * present when the script has assembly parts. Assembly lowerers copy the
+   * part's key onto `SceneBackendPart.geometryKey`.
+   */
+  geometryKeys?: ReadonlyMap<string, string>;
+  /**
+   * The run's live param table. `records` are the RAW captured records (only
+   * the record being lowered is param-resolved), so lowerers that read another
+   * record's ParamRef fields (assembly part `at:`) resolve them against this.
+   */
+  paramTable?: import('../../shared/runtime/paramTable').ParamTable;
+  /**
    * W1.3 NURBS: per-record map of resolved surfaces keyed by SurfaceId.
    * Populated by the recompute engine for `surfaceThicken` / `surfaceToShape`
    * records that have a `{ kind: 'surface' }` input ref. Values are

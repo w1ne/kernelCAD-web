@@ -35,7 +35,9 @@ describe('OCCT assembly lowerer', () => {
     expect(result.diagnostics).toEqual([]);
     expect(result.shapes.get(base.id)).toBeDefined();
     expect(result.shapes.get(link.id)).toBeDefined();
-    expect(result.shapes.get(link.id)?.boundingBox().min[0]).toBeGreaterThan(20);
+    // Part records lower to their LOCAL-frame source shape; `at:` lives in
+    // SceneBackendPart.worldTransform (assembly instancing, 2026-10).
+    expect(result.shapes.get(link.id)?.boundingBox().min[0]).toBeCloseTo(0, 6);
   });
 
   it('lowers assembly.model() to a SceneBackend with one entry per placed part', async () => {
@@ -66,11 +68,12 @@ describe('OCCT assembly lowerer', () => {
     expect(scene.assemblyName).toBe('static assembly');
     expect(scene.parts.length).toBe(2);
     expect(scene.parts.map(p => p.name)).toEqual(['left', 'right']);
-    // model() is the kinematic-zero view: per-part worldTransform is identity
-    // (the `at:` placement is already baked into each part's local shape).
+    // model() is the kinematic-zero view (model() parts carry their `at:`
+    // placement in worldTransform).
     for (const p of scene.parts) {
       expect(p.worldTransform).toBeInstanceOf(Transform);
     }
+    expect(scene.parts[1].worldTransform.point([0, 0, 0])).toEqual([30, 0, 0]);
     // Each part lowers to its own OcctBackend with non-empty geometry.
     const left = scene.parts[0].shape as OcctBackend;
     expect(left).toBeInstanceOf(OcctBackend);
@@ -78,9 +81,8 @@ describe('OCCT assembly lowerer', () => {
     const right = scene.parts[1].shape as OcctBackend;
     expect(right).toBeInstanceOf(OcctBackend);
     expect(right.volume()).toBeGreaterThan(900);
-    // Per-part bbox reflects each part's own local frame (with `at:` baked in
-    // upstream). The 'right' part's local shape was authored at +X = 30.
-    const rightBb = right.boundingBox();
+    // Per-part WORLD bbox: the 'right' part is placed at +X = 30 by its `at:`.
+    const rightBb = right.clone().applyTransform(scene.parts[1].worldTransform).boundingBox();
     expect(rightBb.min[0]).toBeGreaterThan(20);
     expect(rightBb.max[0]).toBeGreaterThan(30);
   });
@@ -117,8 +119,8 @@ describe('OCCT assembly lowerer', () => {
     expect(scene.assemblyName).toBe('connector assembly');
     expect(scene.parts.map(p => p.name)).toEqual(['base', 'link']);
 
-    // Per-part bbox span: the 'link' part is placed via connector so its local
-    // shape carries the computed translation. The combined assembly extent
+    // Per-part WORLD bbox span: the 'link' part is placed via connector (the
+    // computed `at:` lives in its worldTransform). The combined assembly extent
     // (legacy bbox) is exercised by sceneToCompoundUnion / sceneAssemblyModel.
     const baseShape = scene.parts[0].shape as OcctBackend;
     const baseBb = baseShape.boundingBox();
@@ -126,7 +128,7 @@ describe('OCCT assembly lowerer', () => {
     expect(baseBb.max[0]).toBeCloseTo(20, 5);
 
     const linkShape = scene.parts[1].shape as OcctBackend;
-    const linkBb = linkShape.boundingBox();
+    const linkBb = linkShape.clone().applyTransform(scene.parts[1].worldTransform).boundingBox();
     // link's right edge sits at base.mount.origin.x (10) + link.length/2 from
     // the connector — full extent reaches +X = 100 in world.
     expect(linkBb.max[0]).toBeCloseTo(100, 5);

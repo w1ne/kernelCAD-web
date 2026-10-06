@@ -7,7 +7,7 @@ import { lookupSourceColor, lookupSourceMaterial } from '../../../../kernel/back
 import { isSceneBackend, type SceneBackend, type SceneBackendPart } from '../../../../kernel/backends/sceneBackend';
 import type { FeatureRecord } from '../../../../shared/intent/featureRecord';
 import { KernelError } from '../../../../shared/intent/kernelError';
-import type { FeatureId, Param, Vec3, Vec3Param } from '../../../../shared/intent/types';
+import type { FeatureId, Param, Vec3 } from '../../../../shared/intent/types';
 import { Transform } from '../../../../shared/runtime/se3';
 import type { AssemblyJointStored, AssemblyPartStored } from '../../../capture/assembly';
 import { forwardKinematics, type NumericPoses } from '../../../capture/forwardKinematics';
@@ -18,12 +18,12 @@ import type { MateType } from '../../../mates/mateTypes';
 import { mateFk, type ResolvedMatePart } from '../../../mates/solver';
 import { resolveTopologyOriginOnBackend } from '../connectorTopology';
 import { built, finished, noShape, type LowerContext, type LowerOutcome } from './context';
-import { normalizeAxis, readVec3Param } from './helpers';
+import { normalizeAxis } from './helpers';
 import { recordById } from '../../../../shared/intent/recordIndex';
+import { partPlacementTransform } from './partPlacement';
 
-/** `assemblyPart` — clones the wrapped source shape and applies its `at:`. */
+/** `assemblyPart` — a local-frame clone of the wrapped source shape; placement lives in SceneBackendPart.worldTransform. */
 export function lowerAssemblyPart(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
-  let shape: ShapeBackend;
   const base = ctx.inputs.byKey.shape as OcctBackend | undefined;
   if (!base) {
     ctx.diagnostics.push({
@@ -36,13 +36,7 @@ export function lowerAssemblyPart(ctx: LowerContext, r: FeatureRecord): LowerOut
     });
     return noShape();
   }
-  shape = base.clone();
-  const at = (r.metadata as { at?: Vec3Param } | undefined)?.at;
-  if (at !== undefined) {
-    const [tx, ty, tz] = readVec3Param(at);
-    shape = shape.translate(tx, ty, tz);
-  }
-  return built(shape);
+  return built(base.clone());
 }
 
 /** `assemblyJoint` — validates the joint axis; the shape is part A unchanged. */
@@ -185,9 +179,12 @@ function resolveMateParts(
           records,
           consumerId: partId,
         });
+        // The part shape is local-frame; connector origins live in the placed
+        // (`at:`) frame, so map the resolved point through the placement.
+        const placed = partPlacementTransform(partRec!, ctx.inputs.paramTable).point(value);
         resolvedConnectors.push({
           ...c,
-          origin: { kind: 'vec3', value },
+          origin: { kind: 'vec3', value: [placed[0], placed[1], placed[2]] },
         });
       } catch (err) {
         const msg = (err as Error).message;
@@ -260,7 +257,7 @@ export function lowerAssemblyModel(ctx: LowerContext, r: FeatureRecord): LowerOu
   const worldT = applyAssemblyModelFk(ctx, r, inputs);
   if (!worldT) return noShape();
 
-  const sceneParts = buildAssemblyModelSceneParts(inputs, worldT);
+  const sceneParts = buildAssemblyModelSceneParts(ctx, inputs, worldT);
   const sceneBackend: SceneBackend = {
     target: ctx.target,
     assemblyName: inputs.assemblyName,
@@ -343,6 +340,23 @@ function applyAssemblyModelFk(
   return worldT;
 }
 
+/** World transform (solved frame · part placement) and geometry key of one part. */
+function placedPart(
+  ctx: LowerContext,
+  partRec: FeatureRecord | undefined,
+  partId: FeatureId,
+  solved: Transform,
+): { worldTransform: Transform; geometryKey?: string } {
+  const placement = partRec === undefined
+    ? Transform.identity()
+    : partPlacementTransform(partRec, ctx.inputs.paramTable);
+  const geometryKey = ctx.inputs.geometryKeys?.get(partId);
+  return {
+    worldTransform: solved.compose(placement),
+    ...(geometryKey !== undefined ? { geometryKey } : {}),
+  };
+}
+
 /** Engineering-material name recorded on an `assemblyPart` record, if any. */
 function partMaterialName(partRec: FeatureRecord | undefined): string | undefined {
   const name = (partRec?.metadata as { materialName?: unknown } | undefined)?.materialName;
@@ -350,6 +364,7 @@ function partMaterialName(partRec: FeatureRecord | undefined): string | undefine
 }
 
 function buildAssemblyModelSceneParts(
+  ctx: LowerContext,
   inputs: AssemblyModelInputs,
   worldT: Map<FeatureId, Transform>,
 ): SceneBackendPart[] {
@@ -365,7 +380,7 @@ function buildAssemblyModelSceneParts(
     return {
       name: partName,
       shape: partShape as OcctBackend,
-      worldTransform: worldT.get(partId) ?? Transform.identity(),
+      ...placedPart(ctx, partRec, partId, worldT.get(partId) ?? Transform.identity()),
       ...(color !== undefined ? { color } : {}),
       ...(material !== undefined ? { material } : {}),
       ...(materialName !== undefined ? { materialName } : {}),
@@ -555,7 +570,7 @@ export function lowerSolvedAssembly(ctx: LowerContext, r: FeatureRecord): LowerO
     return {
       name: partName,
       shape: partShape as OcctBackend,
-      worldTransform: T,
+      ...placedPart(ctx, partRec, partId, T),
       ...(color !== undefined ? { color } : {}),
       ...(material !== undefined ? { material } : {}),
       ...(materialName !== undefined ? { materialName } : {}),

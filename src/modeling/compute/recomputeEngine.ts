@@ -14,6 +14,7 @@ import { resolveParams } from '../../shared/runtime/resolveParams';
 import type { SoftWarningPhase, SoftWarningSink } from '../../shared/runtime/softWarning';
 import { isOcctWasmPoisoned, WASM_POISON_MARKER, describeOcctThrow } from '../../kernel/backends/occt/occtException';
 import { resetOcct } from '../../kernel/backends/occt/occtBackend';
+import { prepareSharing, type SharingState } from './sharedLowering';
 
 function normalizeBooleanOp(expr: string | undefined): 'subtract' | 'union' | 'intersect' | undefined {
   if (!expr) return undefined;
@@ -146,6 +147,7 @@ function emitFeatureCompiledEvent(
   featureHealth: 'healthy' | 'warning',
   predecessorsOf: Map<FeatureId, FeatureId[]>,
   onEvent: FeatureEventSink | undefined,
+  sharedFrom?: FeatureId,
 ): number {
   if (onEvent) {
     const op = r.kind === 'boolean'
@@ -160,10 +162,24 @@ function emitFeatureCompiledEvent(
       diagnostics: featureDiags,
       health: featureHealth,
       op,
+      ...(sharedFrom !== undefined ? { sharedFrom } : {}),
     });
     return 1;
   }
   return 0;
+}
+
+/** Remember the first HEALTHY lowered (or seeded) record of each geometry key. */
+function noteFirstShared(
+  id: FeatureId,
+  sharing: SharingState | undefined,
+  shapes: ReadonlyMap<FeatureId, ShapeBackend>,
+  health: ReadonlyMap<FeatureId, 'healthy' | 'warning' | 'error'>,
+): void {
+  if (sharing === undefined) return;
+  const key = sharing.keys.get(id);
+  if (key === undefined || sharing.firstByKey.has(key)) return;
+  if (health.get(id) === 'healthy' && shapes.has(id)) sharing.firstByKey.set(key, id);
 }
 
 /** Build the structured diagnostic for a throw during lowering. Preserves
@@ -444,12 +460,18 @@ export class RecomputeEngine {
       health: Map<FeatureId, 'healthy' | 'warning' | 'error'>;
       onEvent: FeatureEventSink | undefined;
       opts: RecomputeOptions | undefined;
+      sharing: SharingState | undefined;
     },
   ): Promise<number> {
     const { idToRecord, predecessorsOf, shapes, diagnostics, health, onEvent, opts } = ctx;
     const r = idToRecord.get(id)!;
     const prepared = this.prepareRecord(id, r, opts, health);
-    if (prepared === null) return 0;
+    if (prepared === null) {
+      noteFirstShared(id, ctx.sharing, shapes, health);
+      return 0;
+    }
+    const aliased = this.tryAliasShared(r, ctx);
+    if (aliased !== undefined) return aliased;
 
     // Resolve inputs
     const { byKey, inputsOk } = this.resolveRecordInputs(r, idToRecord, shapes, diagnostics);
@@ -463,9 +485,35 @@ export class RecomputeEngine {
     }
 
     // Lower
-    return this.lowerAndEmit(prepared.recordForLower, r, records, byKey, {
-      predecessorsOf, shapes, diagnostics, health, onEvent,
+    const emitted = await this.lowerAndEmit(prepared.recordForLower, r, records, byKey, {
+      predecessorsOf, shapes, diagnostics, health, onEvent, sharing: ctx.sharing, paramTable: opts?.paramTable,
     });
+    noteFirstShared(r.id, ctx.sharing, shapes, health);
+    return emitted;
+  }
+
+  /** Reuse the first lowered shape with this record's geometry key when the
+   *  sharing plan marked the record aliasable. Returns the emitted-event
+   *  count, or undefined to lower normally. */
+  private tryAliasShared(
+    r: FeatureRecord,
+    ctx: {
+      predecessorsOf: Map<FeatureId, FeatureId[]>;
+      shapes: Map<FeatureId, ShapeBackend>;
+      health: Map<FeatureId, 'healthy' | 'warning' | 'error'>;
+      onEvent: FeatureEventSink | undefined;
+      sharing: SharingState | undefined;
+    },
+  ): number | undefined {
+    const sharing = ctx.sharing;
+    if (sharing === undefined || !sharing.aliasable.has(r.id)) return undefined;
+    const key = sharing.keys.get(r.id);
+    const leaderId = key === undefined ? undefined : sharing.firstByKey.get(key);
+    const shape = leaderId === undefined ? undefined : ctx.shapes.get(leaderId);
+    if (leaderId === undefined || shape === undefined) return undefined;
+    ctx.shapes.set(r.id, shape);
+    ctx.health.set(r.id, 'healthy');
+    return emitFeatureCompiledEvent(r, shape, [], 'healthy', ctx.predecessorsOf, ctx.onEvent, leaderId);
   }
 
   /** Lowering phase of `processRecord`: calls the lowerer, then emits the
@@ -482,11 +530,18 @@ export class RecomputeEngine {
       diagnostics: CompilerDiagnostic[];
       health: Map<FeatureId, 'healthy' | 'warning' | 'error'>;
       onEvent: FeatureEventSink | undefined;
+      sharing: SharingState | undefined;
+      paramTable: ParamTable | undefined;
     },
   ): Promise<number> {
     const { predecessorsOf, shapes, diagnostics, health, onEvent } = ctx;
     try {
-      const res = await this.lowerer.lower(recordForLower, { byKey, records });
+      const res = await this.lowerer.lower(recordForLower, {
+        byKey,
+        records,
+        ...(ctx.sharing !== undefined ? { geometryKeys: ctx.sharing.keys } : {}),
+        ...(ctx.paramTable !== undefined ? { paramTable: ctx.paramTable } : {}),
+      });
       diagnostics.push(...res.diagnostics);
       const featureDiags = res.diagnostics;
       if (featureDiags.some((d) => d.severity === 'error')) {
@@ -522,11 +577,12 @@ export class RecomputeEngine {
 
     // Build dep graph
     const { order, predecessorsOf, idToRecord } = buildRecomputeGraph(records);
+    const sharing = prepareSharing(records, opts?.paramTable, opts?.seedShapes);
     let emittedCount = 0;
 
     for (const id of order) {
       emittedCount += await this.processRecord(id, records, {
-        idToRecord, predecessorsOf, shapes, diagnostics, health, onEvent, opts,
+        idToRecord, predecessorsOf, shapes, diagnostics, health, onEvent, opts, sharing,
       });
     }
 

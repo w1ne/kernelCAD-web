@@ -15,6 +15,9 @@ export type FeatureEvent =
       diagnostics: CompilerDiagnostic[];
       health: 'healthy' | 'warning';
       op?: 'subtract' | 'union' | 'intersect';
+      /** Set when the engine reused the shape of this earlier record (same
+       *  geometry key) instead of lowering; `shape` is that record's object. */
+      sharedFrom?: FeatureId;
     }
   | {
       kind: 'feature.failed';

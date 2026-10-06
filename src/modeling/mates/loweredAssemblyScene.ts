@@ -3,7 +3,9 @@
 
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
-import type { Transform } from '../../shared/runtime/se3';
+import { recordById } from '../../shared/intent/recordIndex';
+import { Transform } from '../../shared/runtime/se3';
+import { partPlacementTransform } from '../backends/occt/lowerers/partPlacement';
 import type { Assembly } from '../capture/assembly';
 
 /**
@@ -31,8 +33,9 @@ export function matchingLoweredAssemblyScene(
 
 /**
  * Build a new scene with cached local BREPs and the requested solved world
- * transforms. Returns undefined rather than guessing if either cache or pose
- * coverage is incomplete.
+ * transforms. Each part keeps its placement (`at:`), which the lowered
+ * worldTransform composes after the solved frame. Returns undefined rather
+ * than guessing if either cache or pose coverage is incomplete.
  */
 export function reposedLoweredAssemblyScene(
   arm: Assembly,
@@ -42,11 +45,25 @@ export function reposedLoweredAssemblyScene(
   const scene = matchingLoweredAssemblyScene(arm, candidate);
   if (scene === undefined) return undefined;
 
+  const placements = partPlacements(arm);
   const parts = [] as SceneBackend['parts'][number][];
   for (const part of scene.parts) {
-    const worldTransform = transforms.get(part.name);
-    if (worldTransform === undefined) return undefined;
-    parts.push({ ...part, worldTransform });
+    const solved = transforms.get(part.name);
+    if (solved === undefined) return undefined;
+    const placement = placements.get(part.name) ?? Transform.identity();
+    parts.push({ ...part, worldTransform: solved.compose(placement) });
   }
   return { ...scene, parts };
+}
+
+/** Part name -> placement transform from its param-resolved part record. */
+function partPlacements(arm: Assembly): Map<string, Transform> {
+  const session = arm.__session();
+  const records = session.getRecords();
+  const out = new Map<string, Transform>();
+  for (const part of arm.__parts()) {
+    const rec = recordById(records, part.id);
+    if (rec !== undefined) out.set(part.name, partPlacementTransform(rec, session.paramTable));
+  }
+  return out;
 }

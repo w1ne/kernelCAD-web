@@ -4,7 +4,7 @@ import type { Scene } from '../../modeling/validation/scene';
 import type { Connector } from '../../modeling/mates/connector';
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
-import type { Param, Vec3 } from '../../shared/intent/types';
+import type { Vec3 } from '../../shared/intent/types';
 import {
   validateConnectorManifest,
   type ConnectorEntry,
@@ -20,14 +20,6 @@ interface AssemblyModelMetadata {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-function isResolvedParam(value: unknown): value is Param {
-  return isRecord(value)
-    && typeof value.expression === 'string'
-    && typeof value.unit === 'string'
-    && typeof value.evaluated === 'number'
-    && Number.isFinite(value.evaluated);
 }
 
 function mutableVec3(vector: readonly [number, number, number]): Vec3 {
@@ -107,17 +99,6 @@ function readAssemblyPartName(
     throw new Error(`connector-manifest export assemblyPart '${record.id}' is missing partName.`);
   }
   return partName;
-}
-
-function readAssemblyPartAt(record: FeatureRecord): Vec3 {
-  if (!isRecord(record.metadata) || !isRecord(record.metadata.at)) {
-    throw new Error(`connector-manifest export assemblyPart '${record.id}' is missing resolved at placement.`);
-  }
-  const { x, y, z } = record.metadata.at;
-  if (!isResolvedParam(x) || !isResolvedParam(y) || !isResolvedParam(z)) {
-    throw new Error(`connector-manifest export assemblyPart '${record.id}' has invalid resolved at placement.`);
-  }
-  return [x.evaluated, y.evaluated, z.evaluated];
 }
 
 function sourceAssemblyHasJoints(
@@ -236,10 +217,8 @@ function collectManifestConnectors(
         `connector-manifest export Scene and lowered part name agreement failed at index ${index}.`,
       );
     }
-    const at = readAssemblyPartAt(assemblyPart);
-    const transform = backendPart.worldTransform.compose(
-      Transform.translation(at[0], at[1], at[2]),
-    );
+    // Lowered worldTransform already carries the part placement (at/rotate).
+    const transform = backendPart.worldTransform;
     for (const connector of scenePart.connectors ?? []) {
       if (connectorNames.has(connector.name)) {
         throw new Error(`connector-manifest export has duplicate connector name '${connector.name}'.`);
@@ -253,9 +232,9 @@ function collectManifestConnectors(
 
 /**
  * Convert the numeric, source-scoped connectors of a mate-free static
- * assembly Scene into a portable manifest. The assembly part's `at` placement
- * is baked into the lowered part shape, while SceneBackend.worldTransform is
- * applied later by STEP export, so the manifest uses their exact composition.
+ * assembly Scene into a portable manifest. The lowered SceneBackend.worldTransform
+ * carries the part placement (`at`, `rotate`) composed after the solved frame,
+ * so the manifest uses it directly.
  */
 export function sceneToConnectorManifest(
   scene: Scene,

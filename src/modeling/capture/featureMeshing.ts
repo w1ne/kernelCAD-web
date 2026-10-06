@@ -1011,7 +1011,9 @@ function handleMeshFeatureEvent(event: FeatureEvent, ctx: MeshFeatureEventContex
   // (solvedAssembly / assemblyModel / assemblyExport) is the consumer,
   // not a construction input — it's not in the closure.
   if (ctx.constructionClosure.has(event.featureId)) {
-    recordClosureOwnership(event, ctx);
+    // A shared (aliased) record holds the leader's shape object; its face
+    // owners were already recorded for the leader and must not be rewritten.
+    if (event.sharedFrom === undefined) recordClosureOwnership(event, ctx);
     return;
   }
 

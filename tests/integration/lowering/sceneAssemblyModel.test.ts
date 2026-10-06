@@ -59,7 +59,7 @@ function expectIdentity(t: Transform): void {
 describe('assemblyModel lowerer — SceneBackend emission', () => {
   beforeAll(async () => { await initOcct(); });
 
-  it('emits SceneBackend with worldTransform=identity per part', async () => {
+  it('emits SceneBackend with worldTransform = part placement per part', async () => {
     const { shape, diagnostics } = await lowerScript(`
       const arm = assembly('test');
       arm.part('base', box(10, 10, 10), { at: [0, 0, 0] });
@@ -78,11 +78,12 @@ describe('assemblyModel lowerer — SceneBackend emission', () => {
     expect(scene.parts[0].worldTransform).toBeInstanceOf(Transform);
     expect(scene.parts[1].worldTransform).toBeInstanceOf(Transform);
 
-    // Mate-free model() is the unposed view: every worldTransform is identity.
-    // (`at:` placements are baked into each part's local shape upstream, so
-    // the assembly-frame transform per part is I.)
+    // Mate-free model() is the unposed view: the solved frame is identity and
+    // each part's worldTransform is its `at:` placement (part shapes are
+    // local-frame since assembly instancing, 2026-10).
     expectIdentity(scene.parts[0].worldTransform);
-    expectIdentity(scene.parts[1].worldTransform);
+    expect(scene.parts[1].worldTransform.point([0, 0, 0])).toEqual([30, 0, 0]);
+    expect(scene.parts[1].shape.boundingBox().min[0]).toBeCloseTo(0, 6);
   });
 
   it('applies mate default pose from assembly.model() metadata', async () => {

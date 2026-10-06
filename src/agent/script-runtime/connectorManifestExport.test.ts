@@ -16,7 +16,6 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { Param, Vec3Param } from '../../shared/intent/types';
-import { ParamTable } from '../../shared/runtime/paramTable';
 import { resolveParams } from '../../shared/runtime/resolveParams';
 import { Transform } from '../../shared/runtime/se3';
 import type { ShapeBackend } from '../../kernel/backends/backend';
@@ -118,7 +117,9 @@ function makeFixture(parts: readonly FixturePart[], options: FixtureOptions = {}
     parts: parts.map((part) => ({
       name: part.name,
       shape: {} as ShapeBackend,
-      worldTransform: part.worldTransform ?? Transform.identity(),
+      // Lowering composes the part placement after the solved frame.
+      worldTransform: (part.worldTransform ?? Transform.identity())
+        .compose(Transform.translation(...(part.at ?? [0, 0, 0]))),
     })),
   };
   return {
@@ -153,12 +154,13 @@ const RUNTIME_CODE = `
   return arm.model();
 `;
 
-async function lowerRuntimeScene(code = RUNTIME_CODE) {
+async function lowerRuntimeScene(code = RUNTIME_CODE, params: Record<string, number> = {}) {
   const run = await runScript({ code, fileName: 'connector-manifest.kcad.ts' });
   if (!(run.returnValue instanceof Scene)) throw new Error('fixture did not return a Scene');
   const scene = run.returnValue;
   const sourceId = scene.__sourceFeatureId();
   if (sourceId === undefined) throw new Error('fixture Scene has no source id');
+  for (const [name, value] of Object.entries(params)) run.paramTable.set(name, value);
   const engine = new RecomputeEngine(createOcctLowerer(run.session));
   const recomputed = await engine.run(run.records, { paramTable: run.paramTable });
   if (recomputed.diagnostics.some((diagnostic) => diagnostic.severity === 'error')) {
@@ -175,7 +177,7 @@ describe('sceneToConnectorManifest', () => {
   it('matches the STEP world frame for a real placed assembly part', async () => {
     const { scene, lowered, run } = await lowerRuntimeScene();
 
-    expect(lowered.parts[0].worldTransform.point([1, 1, 1])).toEqual([1, 1, 1]);
+    expect(lowered.parts[0].worldTransform.point([1, 1, 1])).toEqual([11, 21, 31]);
     expect(sceneToWorldFrameParts(lowered)[0].shape.boundingBox().min).toEqual([10, 20, 30]);
     expect(sceneToConnectorManifest(
       scene,
@@ -195,24 +197,25 @@ describe('sceneToConnectorManifest', () => {
     });
   });
 
-  it('uses resolved ParamRef placements rather than their stale capture snapshots', () => {
-    const fixture = makeFixture([{ id: 'servo-part', name: 'servo', connectors: [FRAME] }]);
-    const part = fixture.records.find((record) => record.id === 'servo-part')!;
-    const at = (part.metadata as { at: Vec3Param }).at;
-    part.metadata = {
-      ...part.metadata,
-      at: {
-        ...at,
-        x: { expression: 'offset', unit: 'mm', evaluated: 0, paramRef: 'offset' },
-      },
-    };
-    const table = new ParamTable();
-    table.declare('offset', 'number', 40);
+  it('uses resolved ParamRef placements rather than their stale capture snapshots', async () => {
+    // The captured `at.x` snapshot is 0; the live table says 40. Lowering
+    // must place the part (and so the manifest) from the live value.
+    const { scene, lowered, run } = await lowerRuntimeScene(`
+      const offset = param('offset', 0);
+      const arm = assembly('target');
+      arm.part('servo', box(1, 1, 1), { at: [offset, 0, 0] })
+        .connector('pwm-contact', {
+          type: 'frame',
+          origin: { kind: 'vec3', value: [1, 1, 1] },
+          normal: [1, 0, 0],
+        });
+      return arm.model();
+    `, { offset: 40 });
 
     const manifest = sceneToConnectorManifest(
-      fixture.scene,
-      fixture.lowered,
-      resolveParams(fixture.records, table),
+      scene,
+      lowered,
+      resolveParams(run.records, run.paramTable),
       { partId: 'servo', family: 'micro-servo' },
     );
 
@@ -386,22 +389,6 @@ describe('sceneToConnectorManifest', () => {
       fixture.records,
       { partId: 'servo', family: 'micro-servo' },
     )).toThrow(/joint-free/i);
-  });
-
-  it('fails closed on a malformed resolved part placement', () => {
-    const fixture = makeFixture([{ id: 'servo-part', name: 'servo', connectors: [FRAME] }]);
-    const part = fixture.records.find((record) => record.id === 'servo-part')!;
-    part.metadata = {
-      ...part.metadata,
-      at: { x: scalar(0), y: null, z: scalar(0) },
-    };
-
-    expect(() => sceneToConnectorManifest(
-      fixture.scene,
-      fixture.lowered,
-      fixture.records,
-      { partId: 'servo', family: 'micro-servo' },
-    )).toThrow(/invalid resolved at placement/i);
   });
 
   it('fails closed when the source is solved, parts are ambiguous, or names disagree', () => {

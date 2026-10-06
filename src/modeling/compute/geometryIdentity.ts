@@ -114,7 +114,13 @@ function computeKey(r: FeatureRecord, ctx: KeyCtx): string | null {
   if (r.kind === 'importedStep' && importIdentity(r) === undefined) return null;
   const inputs = keyedInputs(r, ctx);
   if (inputs === null) return null;
-  if (r.kind === 'assemblyPart') return digest(`assemblyPart|${stableStringify(inputs)}`);
+  if (r.kind === 'assemblyPart') {
+    // The part key covers its source geometry only (`at:` lives in the scene
+    // part's worldTransform). Part handles expose no transform API, so record
+    // transforms never appear on captured parts; if one does, refuse to share.
+    if (r.transforms.length > 0) return null;
+    return digest(`assemblyPart|${stableStringify(inputs)}`);
+  }
   const canonical: FeatureRecord = {
     ...r,
     id: '',

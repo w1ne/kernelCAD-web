@@ -6,8 +6,13 @@ import type { PBRMaterial } from '../../shared/intent/material';
 
 export interface SceneBackendPart {
   readonly name: string;
-  readonly shape: ShapeBackend;          // LOCAL-frame, untransformed
+  readonly shape: ShapeBackend;          // LOCAL-frame, untransformed; placement (at/rotate) lives in worldTransform
   readonly worldTransform: Transform;
+  /** Geometry identity of `shape`. Parts with equal keys have identical
+   *  local geometry and, when the engine shared them, the SAME `shape`
+   *  object — consumers must clone before any transform (replicad transforms
+   *  destroy their source handle). Absent = never shared. */
+  readonly geometryKey?: string;
   /** Legacy role-token / hex string color attribution (from `.color()`). The
    *  renderer falls back to this when `material` is undefined. */
   readonly color?: string;
