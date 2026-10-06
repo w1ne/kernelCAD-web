@@ -103,7 +103,14 @@ export async function exportGlb(opts: ExportGlbOptions): Promise<void> {
 
   const { evaluation, model } = await evaluateAndBuildScript({ file: opts.scriptPath });
   if (evaluation.exitCode !== 0 || !model) {
-    throw new Error(`evaluation failed (exitCode=${evaluation.exitCode}, has model=${!!model})`);
+    const diags = (evaluation.diagnostics ?? [])
+      .filter((d) => d.severity === 'error')
+      .map((d) => `[${d.code ?? 'error'}] ${d.message}`)
+      .join('\n  ');
+    throw new Error(
+      `evaluation failed for ${opts.scriptPath} (exitCode=${evaluation.exitCode}, has model=${!!model})` +
+        (diags ? `\n  ${diags}` : ''),
+    );
   }
 
   const scene = new ThreeScene();
