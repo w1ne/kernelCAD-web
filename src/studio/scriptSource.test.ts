@@ -27,6 +27,7 @@ import {
 } from './scriptSource';
 
 afterEach(() => {
+  vi.useRealTimers();
   clearStoredMeshCache();
   setHostedRevisionHint(null);
   vi.restoreAllMocks();
@@ -315,7 +316,9 @@ describe('param overrides (stateless re-run path)', () => {
   });
 
   it('keeps the 504 mesh.pending retry when the stored artifact is missing', async () => {
-    vi.useFakeTimers();
+    // Fake only the retry wait. The gallery hash uses crypto.subtle (real
+    // threadpool work), so the test must yield real macrotasks while it settles.
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
     vi.stubEnv('VITE_API_BASE_URL', 'https://api.example.com');
     vi.stubGlobal('window', {
       location: { hostname: 'app.kernelcad.com', pathname: '/p/BHEaiMyr', search: '?version=2' },
@@ -339,13 +342,12 @@ describe('param overrides (stateless re-run path)', () => {
 
     const p = meshSourceHosted('revision code');
     // The stored reads, gallery hash, and first POST settle over a few turns.
-    for (let i = 0; i < 20 && !getMeshNotice().meshing; i++) await vi.advanceTimersByTimeAsync(0);
+    for (let i = 0; i < 5000 && !getMeshNotice().meshing; i++) await new Promise<void>((r) => setImmediate(r));
     expect(getMeshNotice().meshing).toBe(true);
     await vi.advanceTimersByTimeAsync(1000);
     await expect(p).resolves.toEqual(built);
     expect(posts).toBe(2);
     expect(getMeshNotice().meshing).toBe(false);
-    vi.useRealTimers();
   });
 
   it('sends edited source to the server instead of painting the stored mesh', async () => {
