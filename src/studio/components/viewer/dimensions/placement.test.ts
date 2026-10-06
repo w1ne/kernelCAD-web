@@ -4,7 +4,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import type { ViewerDimension } from '../../../../shared/intent/viewerDimension';
 import { boundsDimensions } from './boundsDimensions';
-import { dimensionColor, dimensionFrame, placeDimensions } from './placement';
+import { dimensionColor, dimensionFrame, measuresSame, placeDimensions, withoutAutoDuplicates } from './placement';
 
 const plate = boundsDimensions({ min: [0, 0, 0], max: [40, 20, 10] });
 const diag = Math.hypot(40, 20, 10);
@@ -33,6 +33,33 @@ describe('placeDimensions', () => {
         ]);
         // Camera below (-z): the x-extent moves to the top edge.
         expect(edge([1, 1, -1])[0]).toEqual([[0, 20, 10], [40, 20, 10]]);
+    });
+
+    it('moves a short linear dimension perpendicular to itself by at most half its length', () => {
+        const thickness: ViewerDimension = { id: 'declared:0', kind: 'linear', a: [0, 0, 0], b: [0, 0, 4], text: '4', source: 'declared' };
+        const [placed] = placeDimensions([thickness, ...plate]);
+        const moved = placed.a.map((x, k) => x - thickness.a[k]);
+        expect(Math.hypot(...moved)).toBeCloseTo(2, 9);
+        expect(moved[2]).toBeCloseTo(0, 9);
+        expect(placed.b[2] - placed.a[2]).toBeCloseTo(4, 9);
+    });
+
+    it('offers other label anchors: along and beyond a line, around a hole', () => {
+        const hole: ViewerDimension = {
+            id: 'auto:holes:root:0', kind: 'diameter', a: [2.5, 10, 10], b: [7.5, 10, 10],
+            centre: [5, 10, 10], axis: [0, 0, 1], text: 'Ø5', source: 'auto',
+        };
+        const placed = placeDimensions([...plate, hole]);
+        const [length] = placed;
+        expect(length.labelAlternates![0]).toEqual(length.a.map((x, k) => x + (length.b[k] - x) * 0.25));
+        const callout = placed.find((p) => p.id === hole.id)!;
+        // The other three sides: same height along the axis, same distance from the hole.
+        const dist = (p: number[]) => Math.hypot(p[0] - 5, p[1] - 10, p[2] - 10);
+        callout.labelAlternates!.slice(0, 3).forEach((p) => {
+            expect(p[2]).toBeCloseTo(callout.labelAt![2], 9);
+            expect(dist(p)).toBeCloseTo(dist(callout.labelAt!), 9);
+        });
+        expect(callout.labelAlternates).toHaveLength(11);
     });
 
     it('keeps a hole callout on the hole and moves only its label', () => {
@@ -87,6 +114,40 @@ describe('placeDimensions', () => {
         expect(first.id).toBe('declared:0');
         expect(first.sublabel).toBe('lid');
         expect(first.source).toBe('declared');
+    });
+});
+
+describe('withoutAutoDuplicates', () => {
+    const dim = (id: string, kind: ViewerDimension['kind'], a: [number, number, number], b: [number, number, number], extra: Partial<ViewerDimension> = {}): ViewerDimension =>
+        ({ id, kind, a, b, text: id, source: id.startsWith('declared') ? 'declared' : 'auto', ...extra });
+    const z: [number, number, number] = [0, 0, -1];
+
+    it('drops an automatic hole callout of the same size, even one standing for a group', () => {
+        const declared = dim('declared:0', 'diameter', [12.5, 8, 6], [7.5, 8, 6], { axis: z });
+        expect(measuresSame(declared, dim('auto:holes:p:0', 'diameter', [50, 10.5, 6], [50, 5.5, 6], { axis: z }))).toBe(true);
+        expect(measuresSame(declared, dim('auto:holes:p:1', 'diameter', [53, 8, 6], [47, 8, 6], { axis: z }))).toBe(false);
+        expect(measuresSame(declared, dim('auto:holes:p:2', 'diameter', [12.5, 8, 6], [7.5, 8, 6], { axis: [1, 0, 0] }))).toBe(false);
+        expect(measuresSame(declared, dim('auto:radii:p:0', 'radius', [12.5, 8, 6], [7.5, 8, 6], { axis: z }))).toBe(false);
+    });
+
+    it('drops an automatic linear dimension between the same points, in either order', () => {
+        const declared = dim('declared:0', 'linear', [0, 0, 0], [60, 0, 0]);
+        expect(measuresSame(declared, dim('auto:overall:m:0', 'linear', [60, 0, 0], [0, 0, 0]))).toBe(true);
+        // Same length and direction elsewhere: an overall extent is kept.
+        expect(measuresSame(declared, dim('auto:overall:m:1', 'linear', [0, 40, 0], [60, 40, 0]))).toBe(false);
+    });
+
+    it('drops an automatic hole spacing of the same size and direction between other holes of the pattern', () => {
+        const declared = dim('declared:1', 'linear', [10, 8, 6], [10, 26, 6]);
+        expect(measuresSame(declared, dim('auto:spacing:p:1', 'linear', [50, 8, 6], [50, 26, 6]))).toBe(true);
+        expect(measuresSame(declared, dim('auto:spacing:p:0', 'linear', [50, 8, 6], [32, 8, 6]))).toBe(false);
+    });
+
+    it('keeps everything when nothing is declared, and never drops a declared dimension', () => {
+        const auto = [dim('auto:spacing:p:0', 'linear', [0, 0, 0], [10, 0, 0])];
+        expect(withoutAutoDuplicates(auto)).toEqual(auto);
+        const both = [dim('declared:0', 'linear', [0, 0, 0], [10, 0, 0]), dim('declared:1', 'linear', [0, 0, 0], [10, 0, 0])];
+        expect(withoutAutoDuplicates([...both, ...auto])).toEqual(both);
     });
 });
 

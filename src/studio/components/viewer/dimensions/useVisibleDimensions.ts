@@ -4,7 +4,7 @@ import { useFrame } from '@react-three/fiber';
 import { useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import type { V3 } from '../../../../shared/intent/viewerDimension';
-import { markVisible, type PlacedLabel } from './labelCollisions';
+import { overlapsKept, type PlacedLabel } from './labelCollisions';
 import type { PlacedDimension } from './placement';
 
 /** Approximate label pill size in CSS pixels (text-sm semibold + padding). */
@@ -26,12 +26,16 @@ type Size = { width: number; height: number };
 export interface LabelPass {
     placed: readonly PlacedDimension[];
     labels: PlacedLabel[];
-    anchors: V3[];
+    /** Label anchors per slot: the first one, then `labelAlternates`. */
+    anchors: V3[][];
     worldLengths: number[];
     active: boolean[];
     next: boolean[];
     shown: boolean[];
-    allIds: ReadonlySet<string>;
+    /** Index into `anchors[i]` of the anchor label i sits at. */
+    nextAnchor: number[];
+    anchor: number[];
+    all: ReadonlyMap<string, number>;
 }
 
 export function prepareLabelPass(placed: readonly PlacedDimension[]): LabelPass {
@@ -47,12 +51,17 @@ export function prepareLabelPass(placed: readonly PlacedDimension[]): LabelPass 
                 h: LINE_PX + (d.sublabel ? SUBLINE_PX : 0),
             },
         })),
-        anchors: placed.map((d) => d.labelAt ?? [(d.a[0] + d.b[0]) / 2, (d.a[1] + d.b[1]) / 2, (d.a[2] + d.b[2]) / 2]),
+        anchors: placed.map((d) => [
+            d.labelAt ?? [(d.a[0] + d.b[0]) / 2, (d.a[1] + d.b[1]) / 2, (d.a[2] + d.b[2]) / 2],
+            ...(d.labelAlternates ?? []),
+        ]),
         worldLengths: placed.map((d) => Math.hypot(d.b[0] - d.a[0], d.b[1] - d.a[1], d.b[2] - d.a[2])),
         active: placed.map(() => false),
         next: placed.map(() => false),
         shown: placed.map(() => true),
-        allIds: new Set(placed.map((d) => d.id)),
+        nextAnchor: placed.map(() => 0),
+        anchor: placed.map(() => 0),
+        all: new Map(placed.map((d) => [d.id, 0])),
     };
 }
 
@@ -81,25 +90,49 @@ function projectSlot(pass: LabelPass, i: number, camera: THREE.Camera, size: Siz
     const d = pass.placed[i];
     const a = toScreen(scratchA.set(d.a[0], d.a[1], d.a[2]), camera, size);
     const b = toScreen(scratchB.set(d.b[0], d.b[1], d.b[2]), camera, size);
-    const anchor = pass.anchors[i];
+    const anchor = pass.anchors[i][0];
     const wpp = worldPerPixel(camera, scratchC.set(anchor[0], anchor[1], anchor[2]), size.height);
-    const c = toScreen(scratchC, camera, size);
     const screen = Math.hypot(b.x - a.x, b.y - a.y);
     pass.active[i] = screen >= MIN_SCREEN_LENGTH_PX && screen * wpp >= MIN_FORESHORTENING * pass.worldLengths[i];
+    centreBox(pass, i, toScreen(scratchC, camera, size));
+}
+
+function centreBox(pass: LabelPass, i: number, c: THREE.Vector3): void {
     const box = pass.labels[i].box;
     box.x = c.x - box.w / 2;
     box.y = c.y - box.h / 2;
+}
+
+/** Greedy in priority order: an active label is kept at the first of its
+ *  anchors where it covers no kept label, else hidden. Writes `next` and
+ *  `nextAnchor`. */
+function markPlaced(pass: LabelPass, camera: THREE.Camera, size: Size): void {
+    for (let i = 0; i < pass.placed.length; i++) {
+        pass.next[i] = false;
+        pass.nextAnchor[i] = 0;
+        if (!pass.active[i]) continue;
+        const anchors = pass.anchors[i];
+        for (let k = 0; k < anchors.length; k++) {
+            if (k > 0) centreBox(pass, i, toScreen(scratchC.set(anchors[k][0], anchors[k][1], anchors[k][2]), camera, size));
+            if (!overlapsKept(pass.labels, pass.next, i)) {
+                pass.next[i] = true;
+                pass.nextAnchor[i] = k;
+                break;
+            }
+        }
+    }
 }
 
 /** One label pass for this camera: updates `pass.shown`, returns true when
  *  the visible set changed. Allocates nothing. */
 export function runLabelPass(pass: LabelPass, camera: THREE.Camera, size: Size): boolean {
     for (let i = 0; i < pass.placed.length; i++) projectSlot(pass, i, camera, size);
-    markVisible(pass.labels, pass.active, pass.next);
+    markPlaced(pass, camera, size);
     let changed = false;
     for (let i = 0; i < pass.next.length; i++) {
-        if (pass.next[i] !== pass.shown[i]) {
+        if (pass.next[i] !== pass.shown[i] || pass.nextAnchor[i] !== pass.anchor[i]) {
             pass.shown[i] = pass.next[i];
+            pass.anchor[i] = pass.nextAnchor[i];
             changed = true;
         }
     }
@@ -113,15 +146,16 @@ export function screenLabels(placed: readonly PlacedDimension[], camera: THREE.C
     return pass.labels.filter((_, i) => pass.active[i]);
 }
 
-/** Ids of dimensions seen side-on whose label does not collide with a more
- *  important one. Runs on animation frames, only when the camera, canvas
+/** Dimensions seen side-on whose label does not collide with a more
+ *  important one, each with the index of the anchor its label sits at (0:
+ *  the first, k: `labelAlternates[k - 1]`). Runs on animation frames, only when the camera, canvas
  *  size or dimensions changed; React state changes only when the visible
  *  set does. */
-export function useVisibleDimensions(placed: readonly PlacedDimension[]): ReadonlySet<string> {
+export function useVisibleDimensions(placed: readonly PlacedDimension[]): ReadonlyMap<string, number> {
     const pass = useMemo(() => prepareLabelPass(placed), [placed]);
     // Camera and canvas state the last pass ran for; an unchanged view skips the pass.
     const stamp = useRef({ pass: null as LabelPass | null, view: new THREE.Matrix4(), proj: new THREE.Matrix4(), w: -1, h: -1 });
-    const [visible, setVisible] = useState<{ pass: LabelPass; ids: ReadonlySet<string> } | null>(null);
+    const [visible, setVisible] = useState<{ pass: LabelPass; ids: ReadonlyMap<string, number> } | null>(null);
     useFrame(({ camera, size }) => {
         const s = stamp.current;
         const same = s.pass === pass && s.w === size.width && s.h === size.height
@@ -134,9 +168,11 @@ export function useVisibleDimensions(placed: readonly PlacedDimension[]): Readon
         s.proj.copy(camera.projectionMatrix);
         const changed = runLabelPass(pass, camera, size);
         if (changed || visible?.pass !== pass) {
-            setVisible({ pass, ids: new Set(pass.placed.filter((_, i) => pass.shown[i]).map((d) => d.id)) });
+            const ids = new Map<string, number>();
+            pass.placed.forEach((d, i) => { if (pass.shown[i]) ids.set(d.id, pass.anchor[i]); });
+            setVisible({ pass, ids });
         }
     });
     // Until the first pass with these dimensions, show them all.
-    return visible?.pass === pass ? visible.ids : pass.allIds;
+    return visible?.pass === pass ? visible.ids : pass.all;
 }
