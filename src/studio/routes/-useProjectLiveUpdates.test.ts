@@ -335,6 +335,16 @@ describe('useProjectLiveUpdates', () => {
         }
     });
 
+    it('drops the previous project\'s live code when the slug changes', async () => {
+        fetchProjectBySlugMock.mockResolvedValue(project({ version: 1 }));
+        const { result, rerender } = renderHook(({ slug }) => useProjectLiveUpdates(slug), { initialProps: { slug: 'demo' } });
+        await waitFor(() => expect(result.current.project).not.toBeNull());
+        act(() => result.current.handleRestored('restored();'));
+        expect(result.current.liveCode).toBe('restored();');
+        rerender({ slug: 'other' });
+        expect(result.current.liveCode).toBeUndefined();
+    });
+
     describe('initial load state', () => {
         it('reports a missing or private slug as not_found instead of loading forever', async () => {
             fetchProjectBySlugMock.mockResolvedValue(null);

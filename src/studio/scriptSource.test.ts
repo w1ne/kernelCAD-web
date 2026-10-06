@@ -207,6 +207,7 @@ describe('param overrides (stateless re-run path)', () => {
     vi.stubGlobal('window', {
       location: { hostname: 'app.kernelcad.com', pathname: '/p/keycap-123' },
     });
+    setHostedRevisionHint({ slug: 'keycap-123', code: 'source ignored for persisted project' });
     const payload = { features: [], featureRecords: [], bounds: { min: [0, 0, 0], max: [1, 1, 1] } };
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
       ok: true,
@@ -229,6 +230,7 @@ describe('param overrides (stateless re-run path)', () => {
     vi.stubGlobal('window', {
       location: { hostname: 'app.kernelcad.com', pathname: '/p/keycap-123', search: '?version=7' },
     });
+    setHostedRevisionHint({ slug: 'keycap-123', version: 7, code: 'ignored' });
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
       ok: true,
       json: async () => ({ features: [], featureRecords: [], bounds: { min: [0, 0, 0], max: [1, 1, 1] } }),
@@ -275,6 +277,7 @@ describe('param overrides (stateless re-run path)', () => {
     vi.stubGlobal('window', {
       location: { hostname: 'app.kernelcad.com', pathname: '/p/BHEaiMyr', search: '?version=2' },
     });
+    setHostedRevisionHint({ slug: 'BHEaiMyr', version: 2, code: 'ignored' });
     const stored = { revision: 2, features: [{ featureId: 'ball' }], bounds: { min: [0, 0, 0], max: [1, 1, 1] } };
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
       const url = String(input);
@@ -363,6 +366,53 @@ describe('param overrides (stateless re-run path)', () => {
 
     await expect(meshSourceHosted('edited code')).resolves.toEqual(built);
     expect(fetchMock.mock.calls.some((call) => String(call[0]).includes('mesh-artifact'))).toBe(false);
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.example.com/__kernelcad/mesh',
+      expect.objectContaining({ body: JSON.stringify({ source: 'edited code' }) }),
+    );
+  });
+
+  it('sends the source, not the stored project, when no revision code is known for the page', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.example.com');
+    vi.stubGlobal('window', {
+      location: { hostname: 'app.kernelcad.com', pathname: '/p/BHEaiMyr', search: '?version=2' },
+    });
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => (
+      String(input).endsWith('/__kernelcad/mesh')
+        ? ({ ok: true, json: async () => ({ features: [], featureRecords: [], bounds: { min: [0, 0, 0], max: [1, 1, 1] } }) } as Response)
+        : ({ ok: false, status: 404, json: async () => null } as Response)
+    ));
+
+    await meshSourceHosted('live updated code', { w: 2 });
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.example.com/__kernelcad/mesh',
+      expect.objectContaining({ body: JSON.stringify({ source: 'live updated code', params: { w: 2 } }) }),
+    );
+  });
+
+  it('after a live update clears the hint, a server failure never paints the stored mesh', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.example.com');
+    vi.stubGlobal('window', {
+      location: { hostname: 'app.kernelcad.com', pathname: '/p/BHEaiMyr', search: '?version=2' },
+    });
+    setHostedRevisionHint({ slug: 'BHEaiMyr', version: 2, code: 'revision code' });
+    // useShareProject drops the hint once live code replaces the revision's.
+    setHostedRevisionHint(null);
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      const url = String(input);
+      if (url.endsWith('/__kernelcad/mesh')) return { ok: false, status: 500, json: async () => ({ error: 'live build failed' }) } as Response;
+      if (url.includes('mesh-artifact')) {
+        return { ok: true, json: async () => ({ revision: 2, features: [{ featureId: 'stored' }], bounds: { min: [0, 0, 0], max: [1, 1, 1] } }) } as Response;
+      }
+      return { ok: false, status: 404, json: async () => null } as Response;
+    });
+
+    await expect(meshSourceHosted('live updated code')).rejects.toThrow('live build failed');
+    expect(fetchMock.mock.calls.some((call) => String(call[0]).includes('mesh-artifact'))).toBe(false);
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.example.com/__kernelcad/mesh',
+      expect.objectContaining({ body: JSON.stringify({ source: 'live updated code' }) }),
+    );
   });
 
   it('does not fall back to the stored mesh when edited source fails on the server', async () => {

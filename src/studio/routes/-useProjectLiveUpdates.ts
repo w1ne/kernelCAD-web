@@ -216,7 +216,10 @@ export function useProjectLiveUpdates(slug: string): ProjectLiveUpdates {
   } = useBoundedLoad(slug, fetchProjectBySlug);
   const [privacyBusy, setPrivacyBusy] = useState(false);
   const [upgradeNeeded, setUpgradeNeeded] = useState(false);
-  const [liveCode, setLiveCode] = useState<string | undefined>();
+  // Keyed by slug: another project's pushed code must not carry over.
+  const [live, setLive] = useState<{ slug: string; code: string | undefined }>({ slug, code: undefined });
+  const liveCode = live.slug === slug ? live.code : undefined;
+  const setLiveCode = useCallback((code: string | undefined) => setLive({ slug, code }), [slug]);
   const [lastLiveUpdate, setLastLiveUpdate] = useState<Date | null>(null);
   const versionRef = useRef<number | null>(null);
 
@@ -254,7 +257,7 @@ export function useProjectLiveUpdates(slug: string): ProjectLiveUpdates {
     if (versionRef.current != null) versionRef.current += 1;
     setLiveCode(code);
     setLastLiveUpdate(new Date());
-  }, []);
+  }, [setLiveCode]);
 
   return {
     project,

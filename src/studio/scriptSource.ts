@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { parseMeshArtifact } from '../funnel/meshArtifact';
+import { dedupeCoincidentParts } from './storedMeshDedupe';
 import {
   findGallerySourceUrl,
   findGallerySourceUrlForScriptPath,
@@ -340,7 +341,10 @@ function isBridgePayload(value: unknown): value is BackendMeshPayload {
  *  `preferSource`: the caller rewrote the source (param values baked into
  *  it), so the stored project body would drop the edit. */
 function hostedMeshBody(source: string, paramOverrides: ParamOverrides | undefined, preferSource?: boolean) {
-  const project = preferSource ? null : currentHostedProject();
+  // The stored project body is only that revision's own code. Edited,
+  // live-updated, or restored source is sent as source, or the server would
+  // mesh the old stored model.
+  const project = preferSource || !isPinnedRevisionSource(source) ? null : currentHostedProject();
   return {
     ...(project
       ? { projectSlug: project.slug, ...(project.version ? { projectVersion: project.version } : {}) }
@@ -445,7 +449,8 @@ function payloadRevision(payload: BackendMeshPayload): number | null {
 function prepareStoredPayload(payload: BackendMeshPayload, expected: number | null): BackendMeshPayload {
   try {
     const parsed = parseMeshArtifact(payload, expected);
-    const next: BackendMeshPayload = { ...payload, features: parsed.features };
+    // Two solved assemblies sometimes share one artifact at the same pose.
+    const next: BackendMeshPayload = { ...payload, features: dedupeCoincidentParts(parsed.features) };
     if (parsed.dimensions) next.dimensions = parsed.dimensions;
     delete next.degraded;
     return next;
@@ -535,17 +540,15 @@ async function meshGalleryPrecompute(
 }
 
 /** A server failure may show the mesh stored at publish time only when it is
- *  the same model: the revision's own code, or (no code known) a `?version=`
- *  pin as before. Edited source must surface the server error instead. */
+ *  the same model: the revision's own unedited code. Edited, live-updated, or
+ *  restored source (the hint is cleared or differs) surfaces the server error. */
 function storedFallbackAllowed(
   source: string,
   paramOverrides: ParamOverrides | undefined,
   preferSource: boolean | undefined,
 ): boolean {
   if (hasOverrides(paramOverrides) || preferSource) return false;
-  if (isPinnedRevisionSource(source)) return true;
-  const slug = hostedSlugFromLocation();
-  return !!slug && hintForSlug(slug)?.code === undefined && !!currentHostedProject()?.version;
+  return isPinnedRevisionSource(source);
 }
 
 /** Server mesh for an edit. A pinned revision that exceeds the live budget
