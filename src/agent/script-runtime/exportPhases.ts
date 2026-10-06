@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import { canExportInstanced, exportSceneGlbInstancedAsync } from '../../kernel/backends/occt/exportGlbInstanced';
 import { runScript } from '../../composition/runScript';
 import { exportSceneToSTEPAsync, type OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { exportDxf, type DxfWriterOptions } from '../../kernel/backends/occt/exportDxf';
@@ -421,8 +422,9 @@ export async function exportSceneGlb(
 ): Promise<ExportResult> {
   const optsGlb: ExportGlbOptions = { ...((input.options as ExportGlbOptions | undefined) ?? { format: 'glb' }), scriptDir: (input.options as ExportGlbOptions | undefined)?.scriptDir ?? input.scriptDir };
   try {
-    const worldParts = sceneToWorldFrameParts(scene);
-    const bytes = await exportGlbAsync(worldParts, optsGlb);
+    const bytes = canExportInstanced(scene)
+      ? await exportSceneGlbInstancedAsync(scene, optsGlb)
+      : await exportGlbAsync(sceneToWorldFrameParts(scene), optsGlb);
     return { bytes, featureCount, diagnostics };
   } catch (e) {
     const dracoDiag = dracoConflictDiagnostic(e, diagnostics, featureCount, targetId);

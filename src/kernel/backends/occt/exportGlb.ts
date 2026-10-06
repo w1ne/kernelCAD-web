@@ -123,12 +123,7 @@ export async function exportGlbAsync(
   );
 
   const axis = options.axis ?? 'y-up';
-  const root = new THREE.Group();
-  if (axis === 'y-up') {
-    // kernelCAD world is Z-up; glTF default is Y-up. Rotate the scene root
-    // -PI/2 about X so +Z becomes +Y in viewer space.
-    root.rotateX(-Math.PI / 2);
-  }
+  const root = glbRoot(axis);
 
   // Parts that wrapped a texture (`material.textureProjection`) — UVs go
   // onto the three.js geometry now (so GLTFExporter serializes a real
@@ -153,58 +148,53 @@ export async function exportGlbAsync(
       wrappedParts.push({ name: p.name, projection });
     }
 
-    const mat = buildMaterial(p.material, p.color);
+    const mat = buildGlbMaterial(p.material, p.color);
     const mesh = new THREE.Mesh(geom, mat);
     mesh.name = p.name;
     root.add(mesh);
   }
 
-  const scene = new THREE.Scene();
-  scene.add(root);
-
-  const exporter = new GLTFExporter();
-  const isoDate = new Date().toISOString().slice(0, 10);
-  const exporterOptions = {
-    binary: true,
-    includeCustomExtensions: true,
-  } as unknown as Parameters<GLTFExporter['parse']>[3];
-
-  const buffer = await new Promise<ArrayBuffer>((resolve, reject) => {
-    exporter.parse(
-      scene,
-      (out) => {
-        if (out instanceof ArrayBuffer) {
-          resolve(out);
-        } else {
-          reject(
-            new Error('GLTFExporter returned JSON; expected ArrayBuffer (binary: true).'),
-          );
-        }
-      },
-      (err) => reject(err),
-      exporterOptions,
-    );
-  });
-  // Inject kernelCAD provenance into `asset.extras`. The three-stdlib
-  // GLTFExporter does not surface an `extras` hook on the asset root, so we
-  // post-process the GLB JSON chunk to add the provenance block. The
-  // alternative would be a custom writer plugin, but the post-process is
-  // simpler and keeps the writer's exporter usage stock.
-  //
-  // `asset.generator` names kernelCAD (see shared/links/attribution.ts). It is
-  // written last, after the texture post-process, because glTF-Transform
-  // stamps its own generator when it rewrites the file.
-  let out: Uint8Array = new Uint8Array(buffer);
+  // `asset.extras` + generator are stamped last by finalizeGlb, after the
+  // texture post-process (glTF-Transform stamps its own generator on rewrite).
+  let out: Uint8Array = await encodeGlbRoot(root);
   if (wrappedParts.length > 0) {
     out = await embedWrappedTextures(out, meshed, wrappedParts, options.scriptDir);
   }
 
-  return injectAssetExtras(out, {
-    kernelcad: {
-      version: KERNELCAD_VERSION,
-      isoDate,
-      axisConvention: axis,
-    },
+  return finalizeGlb(out, axis);
+}
+
+/** Scene-graph root with the axis convention applied. */
+export function glbRoot(axis: 'y-up' | 'z-up'): THREE.Group {
+  const root = new THREE.Group();
+  // kernelCAD world is Z-up; glTF default is Y-up.
+  if (axis === 'y-up') root.rotateX(-Math.PI / 2);
+  return root;
+}
+
+/** GLTFExporter binary encode of a root group. */
+export async function encodeGlbRoot(root: THREE.Group): Promise<Uint8Array> {
+  const scene = new THREE.Scene();
+  scene.add(root);
+  const exporter = new GLTFExporter();
+  const exporterOptions = { binary: true, includeCustomExtensions: true } as unknown as Parameters<GLTFExporter['parse']>[3];
+  const buffer = await new Promise<ArrayBuffer>((resolve, reject) => {
+    exporter.parse(
+      scene,
+      (out) => (out instanceof ArrayBuffer
+        ? resolve(out)
+        : reject(new Error('GLTFExporter returned JSON; expected ArrayBuffer (binary: true).'))),
+      (err) => reject(err),
+      exporterOptions,
+    );
+  });
+  return new Uint8Array(buffer);
+}
+
+/** Stamp kernelCAD provenance (asset.extras + generator) on finished GLB bytes. */
+export function finalizeGlb(bytes: Uint8Array, axis: 'y-up' | 'z-up'): Uint8Array {
+  return injectAssetExtras(bytes, {
+    kernelcad: { version: KERNELCAD_VERSION, isoDate: new Date().toISOString().slice(0, 10), axisConvention: axis },
   }, attributionGenerator(KERNELCAD_VERSION));
 }
 
@@ -338,7 +328,7 @@ function hasMesh(p: WorldFramePart | MeshedGlbPart): p is MeshedGlbPart {
  * properties and writes the corresponding `KHR_materials_*` extensions
  * automatically when fields are present.
  */
-function buildMaterial(
+export function buildGlbMaterial(
   pbr: PBRMaterial | undefined,
   color: string | undefined,
 ): THREE.MeshPhysicalMaterial {
