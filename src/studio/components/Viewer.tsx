@@ -44,6 +44,10 @@ interface ViewerProps {
     /** Dimensions of a stored mesh artifact (ChatGPT widget). Otherwise the
      *  workbench's last mesh payload is used. */
     meshDimensions?: MeshDimensionsInfo | null;
+    /** Draw Studio's origin XY/XZ/YZ planes (default). The public viewers
+     *  (/p page, ChatGPT widget, embed) pass false: the planes are a modelling
+     *  aid there is nothing to do with, and they sit on the model's origin. */
+    showOriginPlanes?: boolean;
 }
 
 /** Scene state phase: workbench/ui/shell context plus the grid, section-clipping
@@ -133,7 +137,7 @@ function useViewerSetup(geometries: GeometryResult[]) {
     };
 }
 
-export default function Viewer({ geometries, previewGeometries, sketchesGeometries, showSketches, viewMode3D, onDisplayReady, background, meshDimensions }: ViewerProps) {
+export default function Viewer({ geometries, previewGeometries, sketchesGeometries, showSketches, viewMode3D, onDisplayReady, background, meshDimensions, showOriginPlanes = true }: ViewerProps) {
     const {
         meshDimensions: workbenchDimensions, setSelectedFace, selectedSketchName, setSelectedSketchName, sketchMode, planes, hiddenIds,
         selectedItemIds, setSelectedItemId, toggleSelection, setContextMenu, viewportBackground,
@@ -143,6 +147,10 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
     } = useViewerSetup(geometries);
     const [measuring, setMeasuring] = useState(false);
     const dims = useViewerDimensions(meshDimensions ?? workbenchDimensions);
+    const shownPlanes = useMemo(
+        () => (showOriginPlanes ? planes : planes.filter((p) => p.type !== 'base')),
+        [planes, showOriginPlanes],
+    );
 
     return (
         <div className="w-full h-full relative" style={{ cursor }} data-testid="viewer-container">
@@ -211,7 +219,7 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                     navigationRequest={navigationRequest}
                     focusRequest={focusRequest}
                     viewportBackground={background ?? viewportBackground}
-                    planes={planes}
+                    planes={shownPlanes}
                 />
                 {dims.on ? <DimensionsOverlay dimensions={dims.dimensions} bounds={dims.bounds} /> : null}
                 {measuring ? <MeasureTool geometries={geometries} itemNames={itemNames} hiddenIds={hiddenIds} /> : null}

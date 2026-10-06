@@ -469,6 +469,7 @@ export function LiveModelViewport({ onDisplayReady, label }: LiveModelViewportPr
         showSketches={showSketches ?? false}
         viewMode3D={viewMode3D}
         onDisplayReady={onReady}
+        showOriginPlanes={false}
       />
     </div>
   );

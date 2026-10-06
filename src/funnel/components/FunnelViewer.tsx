@@ -186,6 +186,7 @@ function FunnelViewerInner({
         onDisplayReady={onDisplayReady}
         background={background}
         meshDimensions={meshDimensions}
+        showOriginPlanes={false}
       />
       {statusLabel ? (
         <div
