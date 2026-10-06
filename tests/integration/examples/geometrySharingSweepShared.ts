@@ -7,7 +7,7 @@
 // (1e-6 relative). Examples with no repeated key are skipped (visibly) before
 // any lowering. The sweep asserts that at least one example really exercises
 // sharing, so it can never pass vacuously. Errors are never swallowed.
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { discoverAllExamples, REPO_ROOT } from '../physics-loop/exampleSweepShared';
@@ -17,6 +17,9 @@ import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { isSceneBackend } from '../../../src/kernel/backends/sceneBackend';
 import { sceneToWorldFrameParts } from '../../../src/kernel/backends/occt/sceneToWorldFrame';
 import { computeGeometryKeys, setGeometrySharingForTests } from '../../../src/modeling/compute/geometryIdentity';
+import { planSharedLowering } from '../../../src/modeling/compute/sharedLowering';
+import { OcctLowerer } from '../../../src/modeling/backends/occt/occtLowerer';
+import { meshFeaturesPerFeature, type FeatureMesh } from '../../../src/modeling/capture/featureMeshing';
 
 interface PartFacts { volume: number; area: number; min: number[]; max: number[] }
 
@@ -24,7 +27,7 @@ export const SHARD_COUNT = 6;
 
 export const assemblyExamples = discoverAllExamples().filter((p) => readFileSync(join(REPO_ROOT, p), 'utf8').includes('assembly('));
 const exercised: string[] = [];
-// Examples known to repeat a geometry key. A shard fails if one of its own
+// Examples whose parts the planner really aliases. A shard fails if one of its own
 // members stops exercising sharing, so detection cannot silently regress.
 export const KNOWN_SHARING: readonly string[] = [
   'examples/bom/panel-with-fasteners.kcad.ts',
@@ -52,35 +55,87 @@ const UNBUILDABLE: ReadonlyMap<string, string> = new Map([
 ]);
 const skipped: string[] = [];
 
-async function hasRepeatedPartKey(path: string): Promise<boolean> {
+/** True when the planner would really alias at least one part's lowering. */
+async function plansRealSharing(path: string): Promise<boolean> {
   const abs = join(REPO_ROOT, path);
   const run = await runScript({ code: readFileSync(abs, 'utf8'), fileName: abs, scriptDir: dirname(abs) });
-  const keys = computeGeometryKeys(run.records, run.paramTable);
-  const seen = new Set<string>();
-  for (const r of run.records) {
-    if (r.kind !== 'assemblyPart') continue;
-    const k = keys.get(r.id);
-    if (k === undefined) continue;
-    if (seen.has(k)) return true;
-    seen.add(k);
-  }
-  return false;
+  return planSharedLowering(run.records, computeGeometryKeys(run.records, run.paramTable)).size > 0;
 }
 
-async function partFacts(path: string, sharing: boolean): Promise<Map<string, PartFacts>> {
+interface MeshFacts { triangles: number; vertices: number; min: number[]; max: number[] }
+interface BuildFacts { parts: Map<string, PartFacts>; meshes: Map<string, MeshFacts>; partLowerings: number }
+
+function worldBounds(mesh: FeatureMesh): MeshFacts {
+  const m = mesh.transform ?? [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+  const min = [Infinity, Infinity, Infinity];
+  const max = [-Infinity, -Infinity, -Infinity];
+  let triangles = 0;
+  let vertices = 0;
+  for (const f of mesh.faces) {
+    triangles += f.indices.length / 3;
+    vertices += f.vertices.length / 3;
+    for (let i = 0; i < f.vertices.length; i += 3) {
+      const [x, y, z] = [f.vertices[i], f.vertices[i + 1], f.vertices[i + 2]];
+      for (let k = 0; k < 3; k++) {
+        const w = m[k] * x + m[4 + k] * y + m[8 + k] * z + m[12 + k];
+        min[k] = Math.min(min[k], w);
+        max[k] = Math.max(max[k], w);
+      }
+    }
+  }
+  return { triangles, vertices, min, max };
+}
+
+async function buildFacts(path: string, sharing: boolean): Promise<BuildFacts> {
   setGeometrySharingForTests(sharing);
   const abs = join(REPO_ROOT, path);
+  const lower = vi.spyOn(OcctLowerer.prototype, 'lower');
   const model = await buildModel({ code: readFileSync(abs, 'utf8'), fileName: abs, scriptDir: dirname(abs) });
-  const out = new Map<string, PartFacts>();
+  const partLowerings = lower.mock.calls.filter((c) => (c[0] as { kind: string }).kind === 'assemblyPart').length;
+  lower.mockRestore();
+  const parts = new Map<string, PartFacts>();
   for (const r of model.records) {
     const s = model.shapes.get(r.id);
     if (!isSceneBackend(s)) continue;
     for (const p of sceneToWorldFrameParts(s)) {
       const bb = p.shape.boundingBox({ exact: true });
-      out.set(`${r.id}/${p.name}`, { volume: p.shape.volume(), area: p.shape.surfaceArea(), min: [...bb.min], max: [...bb.max] });
+      parts.set(`${r.id}/${p.name}`, { volume: p.shape.volume(), area: p.shape.surfaceArea(), min: [...bb.min], max: [...bb.max] });
     }
   }
-  return out;
+  const meshed = await meshFeaturesPerFeature(model.records, model.session.paramTable, model.session);
+  const meshes = new Map<string, MeshFacts>();
+  for (const f of meshed.features) {
+    if (f.assemblyPartName !== undefined) meshes.set(f.featureId, worldBounds(f));
+  }
+  return { parts, meshes, partLowerings };
+}
+
+function expectSameParts(path: string, off: Map<string, PartFacts>, on: Map<string, PartFacts>): void {
+  expect([...on.keys()].sort()).toEqual([...off.keys()].sort());
+  for (const [name, a] of off) {
+    const b = on.get(name)!;
+    expect(close(a.volume, b.volume), `${path} ${name} volume ${a.volume} vs ${b.volume}`).toBe(true);
+    expect(close(a.area, b.area), `${path} ${name} area`).toBe(true);
+    for (let i = 0; i < 3; i++) {
+      expect(close(a.min[i], b.min[i]), `${path} ${name} min[${i}]`).toBe(true);
+      expect(close(a.max[i], b.max[i]), `${path} ${name} max[${i}]`).toBe(true);
+    }
+  }
+}
+
+function expectSameMeshes(path: string, off: Map<string, MeshFacts>, on: Map<string, MeshFacts>): void {
+  expect([...on.keys()].sort(), `${path} meshed part features`).toEqual([...off.keys()].sort());
+  expect(off.size, `${path} meshed no part features`).toBeGreaterThan(0);
+  for (const [id, a] of off) {
+    const b = on.get(id)!;
+    expect(b.triangles, `${path} ${id} triangles`).toBe(a.triangles);
+    expect(b.vertices, `${path} ${id} vertices`).toBe(a.vertices);
+    for (let i = 0; i < 3; i++) {
+      // Float32 vertices: compare the world bbox at 1e-4 relative.
+      expect(Math.abs(a.min[i] - b.min[i]) <= 1e-4 * Math.max(1, Math.abs(a.min[i])), `${path} ${id} mesh min[${i}]`).toBe(true);
+      expect(Math.abs(a.max[i] - b.max[i]) <= 1e-4 * Math.max(1, Math.abs(a.max[i])), `${path} ${id} mesh max[${i}]`).toBe(true);
+    }
+  }
 }
 
 function close(a: number, b: number): boolean {
@@ -103,33 +158,27 @@ export function registerSharingSweepShard(shard: number): void {
 
     it.each(mine)('%s', async (path) => {
       const unbuildable = UNBUILDABLE.get(path);
-      let repeated: boolean;
+      let plans: boolean;
       try {
-        repeated = await hasRepeatedPartKey(path);
+        plans = await plansRealSharing(path);
       } catch (e) {
         if (unbuildable === undefined) throw e;
         skipped.push(path);
         console.info(`[sharing sweep] SKIP ${path}: ${unbuildable}`);
         return;
       }
-      if (!repeated) {
+      if (!plans) {
         skipped.push(path);
-        console.info(`[sharing sweep] SKIP ${path}: no repeated geometry key, sharing not exercised`);
+        console.info(`[sharing sweep] SKIP ${path}: planner aliases nothing, sharing not exercised`);
         return;
       }
+      const off = await buildFacts(path, false);
+      const on = await buildFacts(path, true);
+      // Real sharing happened: the engine lowered fewer parts with sharing on.
+      expect(on.partLowerings, `${path} sharing ON must alias lowerings`).toBeLessThan(off.partLowerings);
       exercised.push(path);
-      const off = await partFacts(path, false);
-      const on = await partFacts(path, true);
-      expect([...on.keys()].sort()).toEqual([...off.keys()].sort());
-      for (const [name, a] of off) {
-        const b = on.get(name)!;
-        expect(close(a.volume, b.volume), `${path} ${name} volume ${a.volume} vs ${b.volume}`).toBe(true);
-        expect(close(a.area, b.area), `${path} ${name} area`).toBe(true);
-        for (let i = 0; i < 3; i++) {
-          expect(close(a.min[i], b.min[i]), `${path} ${name} min[${i}]`).toBe(true);
-          expect(close(a.max[i], b.max[i]), `${path} ${name} max[${i}]`).toBe(true);
-        }
-      }
+      expectSameParts(path, off.parts, on.parts);
+      expectSameMeshes(path, off.meshes, on.meshes);
     }, 600_000);
 
     it('every known-sharing example in this shard exercised sharing', () => {

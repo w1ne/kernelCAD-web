@@ -20,6 +20,7 @@ import { OcctBackend, pbrFromMetadata } from '../../kernel/backends/occt/occtBac
 import { meshShape } from '../../kernel/backends/occt/meshing';
 import { resolveFaceLabelToFace } from '../../kernel/backends/occt/edgeSelection';
 import { faceHashOf } from '../../kernel/backends/occt/createdRefs';
+import { isGeometrySharingEnabled } from '../compute/geometryIdentity';
 import { transformFeatureMesh } from './transformMesh';
 import { computeFeatureOwnership, type FeatureOwnership } from './featureOwnership';
 import { Transform } from '../../shared/runtime/se3';
@@ -284,11 +285,12 @@ function resolveScenePartMesh(
   if (cachedPart && cachedPart.geometryKey === part.geometryKey) {
     return fromEntry(cachedPart, true, partCache);
   }
-  const shared = part.geometryKey === undefined ? undefined : ctx.meshByGeometryKey?.get(part.geometryKey);
+  const reuseKey = isGeometrySharingEnabled() ? part.geometryKey : undefined;
+  const shared = reuseKey === undefined ? undefined : ctx.meshByGeometryKey?.get(reuseKey);
   if (shared) return fromEntry(shared, true, storeInPoseCache(featureId, part.name, shared, partCache, ctx));
   const entry = meshScenePart(featureId, part, ctx);
   if (entry === undefined) return undefined;
-  if (part.geometryKey !== undefined) ctx.meshByGeometryKey?.set(part.geometryKey, entry);
+  if (reuseKey !== undefined) ctx.meshByGeometryKey?.set(reuseKey, entry);
   return fromEntry(entry, false, storeInPoseCache(featureId, part.name, entry, partCache, ctx));
 }
 
