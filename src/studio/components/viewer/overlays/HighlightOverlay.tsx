@@ -39,27 +39,29 @@ function brepEdgeHighlight(hovered: HoverResult, geometries: GeometryResult[]) {
     );
 }
 
+/** The hovered face of a consolidated (or instanced) shape, placed by its
+ *  part's transform; null when the hit is not a shape face. */
+function faceHighlight(hovered: HoverResult, geometries: GeometryResult[]) {
+    const { object, id } = hovered;
+    if (!object.userData.faceMap) return null;
+    const shapeIndex = hovered.shapeIndex ?? (object.userData.shapeIndex as number | undefined);
+    const geometry = typeof shapeIndex === 'number' ? geometries[shapeIndex] : undefined;
+    const face = geometry?.faces.find(f => f.faceId === (id as number));
+    if (!geometry || !face) return null;
+    const transformMatrix = matrixFromGeometryTransform(geometry);
+    return (
+        <group matrix={transformMatrix} matrixAutoUpdate={transformMatrix ? false : undefined}>
+            <FaceSelectionOverlay face={face} isSelected={false} />
+        </group>
+    );
+}
+
 export function HighlightOverlay({ hovered, geometries }: HighlightOverlayProps) {
     if (!hovered || !hovered.object) return null;
-    const { type, object, id } = hovered;
+    const { type, object } = hovered;
 
     if (type === 'FACE') {
-        if (object.userData.faceMap) {
-            const shapeIndex = hovered.shapeIndex ?? (object.userData.shapeIndex as number | undefined);
-            const faceId = id as number;
-            if (typeof shapeIndex === 'number' && geometries[shapeIndex]) {
-                const geometry = geometries[shapeIndex];
-                const face = geometry.faces.find(f => f.faceId === faceId);
-                const transformMatrix = matrixFromGeometryTransform(geometry);
-                if (face) {
-                    return (
-                        <group matrix={transformMatrix} matrixAutoUpdate={transformMatrix ? false : undefined}>
-                            <FaceSelectionOverlay face={face} isSelected={false} />
-                        </group>
-                    );
-                }
-            }
-        }
+        return faceHighlight(hovered, geometries);
     } else if (type === 'EDGE') {
         const brepEdge = brepEdgeHighlight(hovered, geometries);
         if (brepEdge) return brepEdge;

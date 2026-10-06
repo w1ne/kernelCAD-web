@@ -11,11 +11,13 @@ import { useViewTargetRequests } from "../studioNavigation";
 
 /** The hovered shape face or BREP edge as a selection ↔ code pick. */
 export function hoverToPick(hovered: HoverResult | null): GeometryPick | null {
-    const userData = hovered?.object?.userData;
-    const shapeIndex: unknown = hovered?.shapeIndex ?? userData?.shapeIndex;
-    if (!hovered || typeof shapeIndex !== 'number' || typeof hovered.id !== 'number') return null;
-    if (hovered.type === 'FACE' && userData?.faceMap) return { shapeIndex, kind: 'face', id: hovered.id };
-    if (hovered.type === 'EDGE' && userData?.edgeRanges && hovered.id >= 0) return { shapeIndex, kind: 'edge', id: hovered.id };
+    if (!hovered || typeof hovered.id !== 'number') return null;
+    const userData = hovered.object?.userData ?? {};
+    // Instanced objects resolve the part per instance (HoverResult.shapeIndex).
+    const shapeIndex: unknown = hovered.shapeIndex ?? userData.shapeIndex;
+    if (typeof shapeIndex !== 'number') return null;
+    if (hovered.type === 'FACE' && userData.faceMap) return { shapeIndex, kind: 'face', id: hovered.id };
+    if (hovered.type === 'EDGE' && userData.edgeRanges && hovered.id >= 0) return { shapeIndex, kind: 'edge', id: hovered.id };
     return null;
 }
 
