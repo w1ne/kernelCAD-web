@@ -187,7 +187,7 @@ function segmentDigit(digit, size, frontFaceY, color) {
   const xLeft = -digitW / 2 + stroke / 2;
   const xRight = digitW / 2 - stroke / 2;
   const patterns = {
-    '1': ['ur', 'lr'],
+    '1': ['r'],
     '2': ['top', 'ur', 'mid', 'll', 'bot'],
     '6': ['top', 'ul', 'mid', 'll', 'lr', 'bot'],
     '9': ['top', 'ul', 'ur', 'mid', 'lr', 'bot'],
@@ -199,6 +199,8 @@ function segmentDigit(digit, size, frontFaceY, color) {
     if (seg === 'top') s = box(hLen, t, stroke, true).translate(0, y, zTop);
     if (seg === 'mid') s = box(hLen, t, stroke, true).translate(0, y, zMid);
     if (seg === 'bot') s = box(hLen, t, stroke, true).translate(0, y, zBot);
+    // Full-height stem for '1': two stacked half-strokes leave a gap at mid.
+    if (seg === 'r') s = box(stroke, t, digitH, true).translate(xRight, y, 0);
     if (seg === 'ul') s = box(stroke, t, vLen, true).translate(xLeft, y, digitH * 0.25);
     if (seg === 'ur') s = box(stroke, t, vLen, true).translate(xRight, y, digitH * 0.25);
     if (seg === 'll') s = box(stroke, t, vLen, true).translate(xLeft, y, -digitH * 0.25);
@@ -214,13 +216,15 @@ function faceText(value, size, x, z, frontFaceY, color) {
   const gap = size * 0.12;
   const digitAdvance = size * 0.6;
   const total = chars.length * digitAdvance + (chars.length - 1) * gap;
-  let shape;
+  // One shape per digit: adjacent digits are separated by a gap, so unioning
+  // them would be a disconnected union (union.disconnected). Each digit is its
+  // own part, fixed to the dial.
+  const digits = [];
   for (let i = 0; i < chars.length; i += 1) {
     const dx = -total / 2 + digitAdvance / 2 + i * (digitAdvance + gap);
-    const digit = segmentDigit(chars[i], size, frontFaceY, color).translate(dx, 0, 0);
-    shape = shape ? shape.union(digit) : digit;
+    digits.push(segmentDigit(chars[i], size, frontFaceY, color).translate(dx + x, 0, z));
   }
-  return shape.translate(x, 0, z);
+  return digits;
 }
 
 // =============================================================================
@@ -453,9 +457,10 @@ const numerals = [
   ['9', -NUMERAL_RADIUS, 0],
 ];
 for (const [value, x, z] of numerals) {
-  const numeral = faceText(value, NUMERAL_SIZE, x, z, DIAL_Y_FRONT - 0.4, '#f0d34a');
-  const part = watch.part(`numeral-${value}`, numeral);
-  fixed('raised numeral on dial face', dial, part, { origin: [x, DIAL_Y_FRONT, z] });
+  faceText(value, NUMERAL_SIZE, x, z, DIAL_Y_FRONT - 0.4, '#f0d34a').forEach((digit, i) => {
+    const part = watch.part(`numeral-${value}-${i}`, digit);
+    fixed('raised numeral on dial face', dial, part, { origin: [x, DIAL_Y_FRONT, z] });
+  });
 }
 
 // STICK HOUR MARKERS — yellow rectangles around the perimeter.
