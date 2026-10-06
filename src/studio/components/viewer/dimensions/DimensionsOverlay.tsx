@@ -19,6 +19,12 @@ function PlacedDimensionGraphic({ d, color }: { d: PlacedDimension; color: strin
     );
 }
 
+/** `d` with its label at anchor `k` (0: as placed, k: `labelAlternates[k - 1]`). */
+function atAnchor(d: PlacedDimension, k: number): PlacedDimension {
+    const at = k > 0 ? d.labelAlternates?.[k - 1] : undefined;
+    return at ? { ...d, labelAt: at } : d;
+}
+
 /** Declared and automatic dimensions drawn in the scene (inside the Canvas).
  *  Labels that would cover a more important one are hidden each frame. */
 export function DimensionsOverlay({ dimensions, bounds }: {
@@ -33,7 +39,7 @@ export function DimensionsOverlay({ dimensions, bounds }: {
     return (
         <group name="viewer-dimensions">
             {placed.filter((d) => visible.has(d.id)).map((d) => (
-                <PlacedDimensionGraphic key={d.id} d={d} color={dimensionColor(d.source)} />
+                <PlacedDimensionGraphic key={d.id} d={atAnchor(d, visible.get(d.id) ?? 0)} color={dimensionColor(d.source)} />
             ))}
         </group>
     );

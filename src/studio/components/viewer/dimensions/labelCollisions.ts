@@ -20,18 +20,20 @@ function overlaps(a: LabelBox, b: LabelBox): boolean {
     return a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
 }
 
+/** True when label `i`'s box overlaps a label before it that `kept` marks shown. */
+export function overlapsKept(labels: readonly PlacedLabel[], kept: readonly boolean[], i: number): boolean {
+    for (let j = 0; j < i; j++) {
+        if (kept[j] && overlaps(labels[j].box, labels[i].box)) return true;
+    }
+    return false;
+}
+
 /** In-place greedy pass for the per-frame path. `labels` must already be in
  *  priority order (as `placeDimensions` emits them). `out[i]` becomes true
  *  when label i is `active` and overlaps no earlier kept label. Allocates
  *  nothing. */
 export function markVisible(labels: readonly PlacedLabel[], active: readonly boolean[], out: boolean[]): void {
-    for (let i = 0; i < labels.length; i++) {
-        let keep = active[i];
-        for (let j = 0; keep && j < i; j++) {
-            if (out[j] && overlaps(labels[j].box, labels[i].box)) keep = false;
-        }
-        out[i] = keep;
-    }
+    for (let i = 0; i < labels.length; i++) out[i] = active[i] && !overlapsKept(labels, out, i);
 }
 
 /** Ids of the labels to show: greedy in priority order, a label is dropped

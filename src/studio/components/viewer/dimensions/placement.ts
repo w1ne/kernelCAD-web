@@ -6,6 +6,10 @@ import { readThemeColor } from '../overlays/themeColor';
 
 /** Labels sit this fraction of the bounding-box diagonal outside the body. */
 export const LABEL_OFFSET_FRACTION = 0.06;
+/** A linear dimension line moves off the body by at most this fraction of
+ *  its own length, so a short one (a 6 mm thickness on a 70 mm body) stays
+ *  next to the edge it measures. */
+export const LABEL_OFFSET_PER_LENGTH = 0.5;
 
 /** One dimension ready to draw: graphic endpoints, label and draw order. */
 export interface PlacedDimension {
@@ -20,11 +24,17 @@ export interface PlacedDimension {
     priority: number;
     /** Label anchor when it is not the midpoint of a–b (hole and radius callouts). */
     labelAt?: V3;
+    /** Other label anchors, tried in order when the label at the first
+     *  anchor (`labelAt`, else the midpoint) would cover a more important one. */
+    labelAlternates?: V3[];
     /** Thin lines from the measured points to the moved dimension line. */
     extension?: Array<[V3, V3]>;
 }
 
 const add = (p: V3, q: V3): V3 => [p[0] + q[0], p[1] + q[1], p[2] + q[2]];
+const sub = (p: V3, q: V3): V3 => [p[0] - q[0], p[1] - q[1], p[2] - q[2]];
+const dot = (p: V3, q: V3): number => p[0] * q[0] + p[1] * q[1] + p[2] * q[2];
+const len = (p: V3): number => Math.hypot(p[0], p[1], p[2]);
 const mid = (p: V3, q: V3): V3 => [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2, (p[2] + q[2]) / 2];
 
 /** The body's box. Overall extents lie on its edges and labels move out
@@ -106,6 +116,88 @@ function silhouetteEdge(d: ViewerDimension, f: DimensionFrame, eye: ViewOctant):
     return { ...d, a, b };
 }
 
+/** How far a linear dimension line moves: perpendicular to the line, away
+ *  from the body centre, by the frame offset but at most
+ *  `LABEL_OFFSET_PER_LENGTH` of the line's length. */
+function lineShift(d: ViewerDimension, centre: V3, offset: number): V3 {
+    const along = sub(d.b, d.a);
+    const length = len(along);
+    const m = mid(d.a, d.b);
+    let v = sub(m, centre);
+    if (length > 1e-9) {
+        const t = dot(v, along) / (length * length);
+        v = sub(v, [along[0] * t, along[1] * t, along[2] * t]);
+    }
+    const n = len(v);
+    const size = Math.min(offset, LABEL_OFFSET_PER_LENGTH * length);
+    // The line runs through the centre: any perpendicular will do.
+    if (n < 1e-9) return Math.abs(along[2]) < 0.9 * length ? [0, 0, size] : [0, -size, 0];
+    return [(v[0] / n) * size, (v[1] / n) * size, (v[2] / n) * size];
+}
+
+/** `shift` turned a quarter, half and three quarters around `axis` (the
+ *  hole axis): the other sides of a hole its label can sit on. No axis, or a
+ *  shift along it: no alternatives. */
+function aroundAxis(shift: V3, axis: V3 | undefined): V3[] {
+    if (!axis || len(axis) < 1e-9) return [];
+    const n: V3 = [axis[0] / len(axis), axis[1] / len(axis), axis[2] / len(axis)];
+    const h = dot(shift, n);
+    const axial: V3 = [n[0] * h, n[1] * h, n[2] * h];
+    const u = sub(shift, axial);
+    if (len(u) < 1e-9) return [];
+    const w: V3 = [n[1] * u[2] - n[2] * u[1], n[2] * u[0] - n[0] * u[2], n[0] * u[1] - n[1] * u[0]];
+    const neg = (v: V3): V3 => [-v[0], -v[1], -v[2]];
+    return [add(axial, w), add(axial, neg(u)), add(axial, neg(w))];
+}
+
+/** Hole label alternatives: the other three sides at the same distance,
+ *  then all four sides at each of `FAR_LABEL` times it (on a long leader). */
+const FAR_LABEL = [2, 3.5];
+function alternateShifts(shift: V3, axis: V3 | undefined): V3[] {
+    return [
+        ...aroundAxis(shift, axis),
+        ...FAR_LABEL.flatMap((k) => {
+            const far: V3 = [shift[0] * k, shift[1] * k, shift[2] * k];
+            return [far, ...aroundAxis(far, axis)];
+        }),
+    ];
+}
+
+/** Within this many mm two dimensions measure the same thing. */
+const SAME_MM = 1e-3;
+const near = (p: V3, q: V3): boolean => len(sub(p, q)) < SAME_MM;
+function parallel(p: V3, q: V3): boolean {
+    const lp = len(p);
+    const lq = len(q);
+    return lp > 1e-9 && lq > 1e-9 && Math.abs(Math.abs(dot(p, q)) / (lp * lq) - 1) < 1e-6;
+}
+
+/** True when the declared `d` already says what the automatic `auto` says:
+ *  - a hole or radius callout of the same size about a parallel axis (the
+ *    automatic one may stand for a whole group, `4× Ø5`);
+ *  - a linear dimension between the same two points;
+ *  - a hole spacing the same size and direction as the declared one (in a
+ *    hole pattern the automatic spacing may pick another pair of holes).
+ *  Angular dimensions are never automatic and never match. */
+export function measuresSame(d: ViewerDimension, auto: ViewerDimension): boolean {
+    if (d.kind !== auto.kind || d.kind === 'angular') return false;
+    const size = len(sub(d.b, d.a));
+    if (Math.abs(size - len(sub(auto.b, auto.a))) >= SAME_MM) return false;
+    if (d.kind === 'diameter' || d.kind === 'radius') {
+        return !d.axis || !auto.axis || parallel(d.axis, auto.axis);
+    }
+    if ((near(d.a, auto.a) && near(d.b, auto.b)) || (near(d.a, auto.b) && near(d.b, auto.a))) return true;
+    return /^auto:spacing:/.test(auto.id) && parallel(sub(d.b, d.a), sub(auto.b, auto.a));
+}
+
+/** Automatic dimensions that a declared one already covers are dropped, so
+ *  the author's label is the one drawn (and the only one). */
+export function withoutAutoDuplicates(dimensions: readonly ViewerDimension[]): ViewerDimension[] {
+    const declared = dimensions.filter((d) => d.source === 'declared');
+    if (declared.length === 0) return [...dimensions];
+    return dimensions.filter((d) => d.source === 'declared' || !declared.some((x) => measuresSame(x, d)));
+}
+
 function place(d: ViewerDimension, priority: number, centre: V3, offset: number): PlacedDimension {
     const base = {
         id: d.id,
@@ -114,19 +206,30 @@ function place(d: ViewerDimension, priority: number, centre: V3, offset: number)
         priority,
         ...(d.part ? { sublabel: d.part } : {}),
     };
-    const shift = outward(mid(d.a, d.b), centre, offset);
     if (d.kind === 'diameter' || d.kind === 'radius') {
         // The callout must stay on the circle it measures; only the label moves.
-        return { ...base, kind: d.kind, a: d.a, b: d.b, labelAt: add(mid(d.a, d.b), shift) };
+        const m = mid(d.a, d.b);
+        const shift = outward(m, centre, offset);
+        return {
+            ...base, kind: d.kind, a: d.a, b: d.b,
+            labelAt: add(m, shift),
+            labelAlternates: alternateShifts(shift, d.axis).map((s) => add(m, s)),
+        };
     }
     // Linear and angular (drawn as a straight callout with its ° label):
     // the dimension line moves off the body, extension lines lead back.
+    const shift = lineShift(d, centre, offset);
     const a = add(d.a, shift);
     const b = add(d.b, shift);
-    return { ...base, kind: 'linear', a, b, extension: [[d.a, a], [d.b, b]] };
+    const along = (t: number): V3 => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+    const out = (k: number): V3 => add(mid(a, b), [shift[0] * k, shift[1] * k, shift[2] * k]);
+    // Alternatives: slid along the line, then further out on a leader.
+    const labelAlternates = [along(0.25), along(0.75), ...(len(shift) > 1e-9 ? [out(1), out(2)] : [])];
+    return { ...base, kind: 'linear', a, b, extension: [[d.a, a], [d.b, b]], labelAlternates };
 }
 
-/** Lay out dimensions around the body. Declared dimensions come first in
+/** Lay out dimensions around the body. Automatic dimensions a declared one
+ *  duplicates are dropped (see `withoutAutoDuplicates`). Declared come first in
  *  priority; auto ones keep the kernel's order (overall > holes > spacing >
  *  radii > chamfers). Overall extents follow the camera octant `eye`. The
  *  frame is the payload `bounds` when given (see `dimensionFrame`). */
@@ -138,9 +241,12 @@ export function placeDimensions(
     if (dimensions.length === 0) return [];
     const f = dimensionFrame(dimensions, bounds);
     const offset = LABEL_OFFSET_FRACTION * f.diagonal;
+    // The frame is taken before deduplication: a declared overall width
+    // still leaves the kernel's overall extents to frame the body.
+    const kept = withoutAutoDuplicates(dimensions);
     const ordered = [
-        ...dimensions.filter((d) => d.source === 'declared'),
-        ...dimensions.filter((d) => d.source !== 'declared'),
+        ...kept.filter((d) => d.source === 'declared'),
+        ...kept.filter((d) => d.source !== 'declared'),
     ];
     return ordered.map((d, i) => place(silhouetteEdge(d, f, eye), i, f.centre, offset));
 }

@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { boundsDimensions } from './boundsDimensions';
 import { placeDimensions } from './placement';
-import { screenLabels } from './useVisibleDimensions';
+import { prepareLabelPass, runLabelPass, screenLabels } from './useVisibleDimensions';
 
 function topCamera(): THREE.Camera {
     const cam = new THREE.OrthographicCamera(-40, 40, 30, -30, 0.1, 1000);
@@ -38,5 +38,15 @@ describe('screenLabels', () => {
         // x-extent midpoint is x=20 (the view centre); box is centred there.
         expect(length.box.x + length.box.w / 2).toBeCloseTo(400, 3);
         expect(length.box.w).toBeGreaterThan(0);
+    });
+
+    it('moves a colliding label to its first free alternative anchor', () => {
+        const [first] = placeDimensions(boundsDimensions({ min: [0, 0, 0], max: [40, 20, 10] }), [1, 1, 1]);
+        // A second dimension whose label would sit exactly on the first one.
+        const twin = { ...first, id: 'declared:twin', priority: 1, labelAlternates: [first.a.map((x, k) => (x + first.b[k]) / 2) as [number, number, number], [20, 10, 30] as [number, number, number]] };
+        const pass = prepareLabelPass([first, twin]);
+        runLabelPass(pass, topCamera(), size);
+        expect(pass.shown).toEqual([true, true]);
+        expect(pass.anchor).toEqual([0, 2]);
     });
 });
