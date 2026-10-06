@@ -1,11 +1,14 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type * as THREE from "three";
+import { useMemo } from "react";
 import type { GeometryResult } from "../../../../shared/worker/geometryEngine";
 import type { ViewMode3D } from "../../../../shared/types/viewMode";
 import { Shape } from "../entities/ShapeGeometry";
-import { sectionPartKey } from "../sectionParts";
+import { InstancedShape } from "../entities/InstancedShape";
+import { groupForInstancing, visibleEntries } from "../instancing/groupForInstancing";
 import { NO_PLANES } from "../../../hooks/viewer/useViewerSectionClipping";
+import { useWorkbench } from "../../../context/WorkbenchContext";
 
 interface GeometryLayerProps {
     geometries: GeometryResult[];
@@ -18,48 +21,44 @@ interface GeometryLayerProps {
 }
 
 /**
- * Renders every computed geometry as a shape, applying per-part hide and
- * keep-whole section rules. Extracted verbatim from Viewer.
+ * Renders every computed geometry, applying per-part hide and keep-whole
+ * section rules; repeated assembly geometry renders instanced (see
+ * instancing/groupForInstancing.ts). Parts are named by their authored
+ * assembly part name first, then the return-variable name, so selection
+ * and the marking overlay's `ownerId` never fall back to `shape#<index>`
+ * for assembly parts.
  */
 export function GeometryLayer({
-    geometries,
-    itemNames,
-    hiddenIds,
-    viewMode3D,
-    selectedItemIds,
-    sectionKeepWhole,
-    clippingPlanes,
+    geometries, itemNames, hiddenIds, viewMode3D, selectedItemIds, sectionKeepWhole, clippingPlanes,
 }: GeometryLayerProps) {
+    const { selectedFace } = useWorkbench();
+    const { singles, groups } = useMemo(() => groupForInstancing(visibleEntries({
+        geometries, itemNames, hiddenIds, selectedItemIds, sectionKeepWhole,
+        selectedFaceShapeIndex: selectedFace?.shapeIndex,
+    })), [geometries, itemNames, hiddenIds, selectedItemIds, sectionKeepWhole, selectedFace?.shapeIndex]);
     return (
         <group>
-            {geometries.map((g, i) => {
-                // Prefer the authored assembly part name over the
-                // return-variable name. For assemblies a single returned
-                // variable expands into many per-part geometries, so
-                // `itemNames[i]` is absent for all but the first — using
-                // it alone leaves parts anonymous and downstream consumers
-                // (selection, the marking/review overlay's `ownerId`) fall
-                // back to `shape#<index>`. `assemblyPartName` carries the
-                // real authored name per part. Mirrors `sectionPartKey`.
-                const name = g.assemblyPartName ?? itemNames[i];
-                if (name && hiddenIds.includes(name)) return null;
-                // Hide whole assembly parts by name (the Parts list in the
-                // Scene tab toggles `assemblyPartName` into hiddenIds).
-                if (g.assemblyPartName && hiddenIds.includes(g.assemblyPartName)) return null;
-                const partKey = sectionPartKey(g, name, i);
-                return (
-                    <Shape
-                        key={i}
-                        geometry={g}
-                        shapeIndex={i}
-                        viewMode3D={viewMode3D}
-                        clippingPlanes={sectionKeepWhole.has(partKey) ? NO_PLANES : clippingPlanes}
-                        clipIntersection={true}
-                        isSelected={name ? selectedItemIds.includes(name) : false}
-                        name={name ?? undefined}
-                    />
-                );
-            })}
+            {singles.map((e) => (
+                <Shape
+                    key={e.shapeIndex}
+                    geometry={e.geometry}
+                    shapeIndex={e.shapeIndex}
+                    viewMode3D={viewMode3D}
+                    clippingPlanes={e.keepWhole ? NO_PLANES : clippingPlanes}
+                    clipIntersection={true}
+                    isSelected={e.isSelected}
+                    name={e.name}
+                />
+            ))}
+            {groups.map((g) => (
+                <InstancedShape
+                    key={`${g.key}:${g.members.length}`}
+                    group={g}
+                    viewMode3D={viewMode3D}
+                    clippingPlanes={g.members[0].keepWhole ? NO_PLANES : clippingPlanes}
+                    clipIntersection={true}
+                />
+            ))}
         </group>
     );
 }

@@ -12,13 +12,10 @@ import { useViewTargetRequests } from "../studioNavigation";
 /** The hovered shape face or BREP edge as a selection ↔ code pick. */
 export function hoverToPick(hovered: HoverResult | null): GeometryPick | null {
     const userData = hovered?.object?.userData;
-    if (!hovered || typeof userData?.shapeIndex !== 'number' || typeof hovered.id !== 'number') return null;
-    if (hovered.type === 'FACE' && userData.faceMap) {
-        return { shapeIndex: userData.shapeIndex, kind: 'face', id: hovered.id };
-    }
-    if (hovered.type === 'EDGE' && userData.edgeRanges && hovered.id >= 0) {
-        return { shapeIndex: userData.shapeIndex, kind: 'edge', id: hovered.id };
-    }
+    const shapeIndex: unknown = hovered?.shapeIndex ?? userData?.shapeIndex;
+    if (!hovered || typeof shapeIndex !== 'number' || typeof hovered.id !== 'number') return null;
+    if (hovered.type === 'FACE' && userData?.faceMap) return { shapeIndex, kind: 'face', id: hovered.id };
+    if (hovered.type === 'EDGE' && userData?.edgeRanges && hovered.id >= 0) return { shapeIndex, kind: 'edge', id: hovered.id };
     return null;
 }
 
@@ -55,11 +52,8 @@ export function useViewerInteraction({
 
     useEffect(() => {
         selectionCodeStore.setPreselect(hoverToPick(hoveredItem));
-        if (hoveredItem?.object?.userData?.ownerId) {
-            setHoveredItemId(hoveredItem.object.userData.ownerId);
-        } else {
-            setHoveredItemId(null);
-        }
+        const owner: unknown = hoveredItem?.ownerId ?? hoveredItem?.object?.userData?.ownerId;
+        setHoveredItemId(typeof owner === 'string' && owner ? owner : null);
     }, [hoveredItem, setHoveredItemId]);
 
     const cursor = useMemo(() => {

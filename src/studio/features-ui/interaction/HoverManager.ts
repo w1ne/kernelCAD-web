@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import * as THREE from 'three';
 import { edgeIndexAtVertex } from '../../selectionCode/geometryLineage';
+import { resolvePickedPart } from '../../components/viewer/instancing/resolvePickedPart';
 
 export type InteractionType = 'VERTEX' | 'EDGE' | 'FACE';
 
@@ -10,6 +11,10 @@ export interface HoverResult {
     id: string | number; // ID of the entity/face
     object: THREE.Object3D;
     point: THREE.Vector3;
+    /** Part identity of the hit (instanced objects resolve per instance). */
+    shapeIndex?: number;
+    ownerId?: string;
+    instanceId?: number;
 }
 
 export class HoverManager {
@@ -60,11 +65,14 @@ export class HoverManager {
             id = edgeIndexAtVertex(userData.edgeRanges, winner.index);
         }
 
+        const picked = resolvePickedPart(winner);
         return {
             type,
             id: id,
             object: winner.object,
-            point: winner.point
+            point: winner.point,
+            ...picked,
+            ...(winner.instanceId !== undefined ? { instanceId: winner.instanceId } : {}),
         };
     }
 

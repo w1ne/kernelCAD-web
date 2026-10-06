@@ -106,6 +106,29 @@ describe('viewer picking and colours', () => {
         ]);
         expect(hoverToPick(faceHover)).toEqual({ shapeIndex: 3, kind: 'face', id: 5 });
     });
+
+    it('hovering an instanced part resolves that instance\'s shapeIndex and owner', () => {
+        const mesh = new THREE.Mesh();
+        mesh.userData = { type: 'FACE', id: 'consolidated', faceMap: [5], instanceShapeIndices: [3, 8], instanceParts: ['rack-0', 'rack-1'] };
+        const hover = HoverManager.getBestHover([
+            { object: mesh, distance: 10, point: new THREE.Vector3(), faceIndex: 0, instanceId: 1 } as THREE.Intersection,
+        ]);
+        expect(hover?.ownerId).toBe('rack-1');
+        expect(hoverToPick(hover)).toEqual({ shapeIndex: 8, kind: 'face', id: 5 });
+    });
+
+    it('hovering an instanced BREP edge resolves the edge on that instance only', () => {
+        const lines = new THREE.LineSegments(new THREE.BufferGeometry());
+        lines.userData = {
+            type: 'EDGE', id: 'edges', edgeRanges: [0, 2, 2, 4],
+            instanceShapeIndices: [3, 8, 11], instanceParts: ['rack-0', 'rack-1', 'rack-2'],
+        };
+        const hover = HoverManager.getBestHover([
+            { object: lines, distance: 10, point: new THREE.Vector3(), index: 4, instanceId: 2 } as THREE.Intersection,
+        ]);
+        expect(hover).toMatchObject({ type: 'EDGE', id: 1, shapeIndex: 11, ownerId: 'rack-2', instanceId: 2 });
+        expect(hoverToPick(hover)).toEqual({ shapeIndex: 11, kind: 'edge', id: 1 });
+    });
 });
 
 describe('resolvePickFeature', () => {

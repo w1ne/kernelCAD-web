@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import * as THREE from 'three';
 import { rendererSnapshot } from '../rendererSnapshot';
+import { resolvePickedPart } from '../instancing/resolvePickedPart';
 
 export interface StruckPartsResult {
   parts: string[];
@@ -85,12 +86,24 @@ function isPaintedMaskPixel(img: ImageData, x: number, y: number): boolean {
 
 function firstNamedHit(intersects: THREE.Intersection[]): string | null {
   for (let k = 0; k < Math.min(3, intersects.length); k++) {
+    const instanced = instancedHitName(intersects[k]);
+    if (instanced) return instanced;
     let obj: THREE.Object3D | null = intersects[k].object;
     while (obj) {
       const named = namedIdentifier(obj);
       if (named) return named;
       obj = obj.parent;
     }
+  }
+  return null;
+}
+
+/** Instanced objects carry part identity per instance, not per object. */
+function instancedHitName(hit: THREE.Intersection): string | null {
+  const picked = resolvePickedPart(hit);
+  if (picked.ownerId) return picked.ownerId;
+  if (picked.shapeIndex !== undefined && Array.isArray(hit.object.userData.instanceShapeIndices)) {
+    return `shape#${picked.shapeIndex}`;
   }
   return null;
 }

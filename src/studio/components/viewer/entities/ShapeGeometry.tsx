@@ -116,6 +116,36 @@ export function FaceSelectionOverlay({ face, isSelected }: { face?: FaceGeometry
     );
 }
 
+/** Click on a shape face: multi-select toggle, or select the face + part,
+ *  link it to code and open the face context menu. Shared by plain and
+ *  instanced shapes; the caller passes the clicked part. */
+// eslint-disable-next-line react-refresh/only-export-components
+export function useShapePick(): (
+    e: ThreeEvent<MouseEvent>, geometry: GeometryResult, shapeIndex: number, name: string | undefined,
+) => void {
+    const { setSelectedFace, setSelectedSketchName, setSelectedItemId, toggleSelection, featureRecords } = useWorkbench();
+    const { setContextMenu } = useUI();
+    return useCallback((e, geometry, shapeIndex, name) => {
+        e.stopPropagation();
+        const isMulti = e.metaKey || e.ctrlKey || e.shiftKey;
+        if (name && isMulti) {
+            toggleSelection(name, true);
+            return;
+        }
+        setSelectedSketchName(null);
+        let faceId = -1;
+        if (e.object.userData.faceMap && e.faceIndex != null) {
+            faceId = e.object.userData.faceMap[e.faceIndex] ?? -1;
+        } else if (typeof e.object.userData.id === 'number') {
+            faceId = e.object.userData.id;
+        }
+        setSelectedFace({ shapeIndex, faceId });
+        if (name) setSelectedItemId(name);
+        linkClickToCode(geometry, shapeIndex, faceId, e.nativeEvent, featureRecords ?? []);
+        setContextMenu({ visible: true, position: { x: e.nativeEvent.clientX, y: e.nativeEvent.clientY }, type: 'FACE' });
+    }, [featureRecords, setSelectedFace, setSelectedSketchName, setSelectedItemId, toggleSelection, setContextMenu]);
+}
+
 export function ConsolidatedShape({
     geometry,
     shapeIndex,
@@ -125,16 +155,7 @@ export function ConsolidatedShape({
     isSelected,
     name
 }: ShapeProps) {
-    const {
-        selectedFace,
-        setSelectedFace,
-        setSelectedSketchName,
-        setSelectedItemId,
-        toggleSelection,
-        featureRecords,
-    } = useWorkbench();
-
-    const { setContextMenu } = useUI();
+    const { selectedFace } = useWorkbench();
 
     const { geometry: mergedGeometry, faceMap } = useConsolidatedGeometry(geometry.faces);
     const transformMatrix = useMemo(() => matrixFromGeometryTransform(geometry), [geometry]);
@@ -153,35 +174,11 @@ export function ConsolidatedShape({
         return () => { edgesGeo?.dispose(); };
     }, [edgesGeo]);
 
-    const handleClick = useCallback((e: ThreeEvent<MouseEvent>) => {
-        e.stopPropagation();
-        const isMulti = e.metaKey || e.ctrlKey || e.shiftKey;
-
-        if (name && isMulti) {
-            toggleSelection(name, true);
-            return;
-        }
-
-        setSelectedSketchName(null);
-        let faceId = -1;
-        if (e.object.userData.faceMap && e.faceIndex != null) {
-            faceId = e.object.userData.faceMap[e.faceIndex] ?? -1;
-        } else if (typeof e.object.userData.id === 'number') {
-            faceId = e.object.userData.id;
-        }
-
-        setSelectedFace({ shapeIndex, faceId });
-        if (name) setSelectedItemId(name);
-        linkClickToCode(geometry, shapeIndex, faceId, e.nativeEvent, featureRecords ?? []);
-
-        const x = e.nativeEvent.clientX;
-        const y = e.nativeEvent.clientY;
-        setContextMenu({
-            visible: true,
-            position: { x, y },
-            type: 'FACE'
-        });
-    }, [geometry, featureRecords, name, shapeIndex, setSelectedFace, setSelectedSketchName, setSelectedItemId, toggleSelection, setContextMenu]);
+    const pick = useShapePick();
+    const handleClick = useCallback(
+        (e: ThreeEvent<MouseEvent>) => pick(e, geometry, shapeIndex, name),
+        [pick, geometry, shapeIndex, name],
+    );
 
     const resolvedColor = resolveColor(geometry.color) ?? DEFAULT_COLOR;
     const color = isSelected ? CAD_COLORS.selection : resolvedColor;

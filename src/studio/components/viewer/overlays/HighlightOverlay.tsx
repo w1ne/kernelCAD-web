@@ -13,16 +13,27 @@ interface HighlightOverlayProps {
     geometries: GeometryResult[];
 }
 
-/** One hovered BREP edge of a shape's merged edge set, or null when `object`
- *  is not such an edge set. */
-function brepEdgeHighlight(object: THREE.Object3D, id: string | number) {
+/** World matrix of the hovered edge set. Instanced edge objects have no
+ *  per-object transform; the instance transform comes from the part geometry. */
+function edgeWorldMatrix(hovered: HoverResult, geometries: GeometryResult[]): THREE.Matrix4 {
+    const { object } = hovered;
+    if (!Array.isArray(object.userData.instanceShapeIndices) || hovered.shapeIndex === undefined) return object.matrixWorld;
+    const part = geometries[hovered.shapeIndex];
+    const local = part ? matrixFromGeometryTransform(part) : undefined;
+    return local ? object.matrixWorld.clone().multiply(local) : object.matrixWorld;
+}
+
+/** One hovered BREP edge of a shape's merged edge set, or null when the
+ *  hovered object is not such an edge set. */
+function brepEdgeHighlight(hovered: HoverResult, geometries: GeometryResult[]) {
+    const { object, id } = hovered;
     if (!object.userData.edgeRanges || !(object instanceof THREE.LineSegments)) return null;
     return (
         <EdgeRangeLines
             positions={object.geometry.getAttribute('position').array as Float32Array}
             edgeRanges={object.userData.edgeRanges as number[]}
             edgeIndex={id as number}
-            matrix={object.matrixWorld}
+            matrix={edgeWorldMatrix(hovered, geometries)}
             color={CAD_COLORS_HEX.highlight}
         />
     );
@@ -34,7 +45,7 @@ export function HighlightOverlay({ hovered, geometries }: HighlightOverlayProps)
 
     if (type === 'FACE') {
         if (object.userData.faceMap) {
-            const shapeIndex = object.userData.shapeIndex as number;
+            const shapeIndex = hovered.shapeIndex ?? (object.userData.shapeIndex as number | undefined);
             const faceId = id as number;
             if (typeof shapeIndex === 'number' && geometries[shapeIndex]) {
                 const geometry = geometries[shapeIndex];
@@ -50,7 +61,7 @@ export function HighlightOverlay({ hovered, geometries }: HighlightOverlayProps)
             }
         }
     } else if (type === 'EDGE') {
-        const brepEdge = brepEdgeHighlight(object, id);
+        const brepEdge = brepEdgeHighlight(hovered, geometries);
         if (brepEdge) return brepEdge;
         if (object instanceof THREE.Line || object instanceof THREE.LineSegments) {
             return (
