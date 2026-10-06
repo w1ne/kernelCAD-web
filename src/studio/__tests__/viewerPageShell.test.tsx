@@ -6,12 +6,35 @@
 // sheet handle, and the model stage's poster → live model hand-over.
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, renderHook, screen } from '@testing-library/react';
+
+const shellMocks = vi.hoisted(() => {
+    const listeners = new Set<() => void>();
+    const state = {
+        workbench: {} as Record<string, unknown>,
+        notice: { meshing: false, approximate: false },
+    };
+    return {
+        state,
+        listeners,
+        setMeshing(meshing: boolean) {
+            state.notice = { ...state.notice, meshing };
+            listeners.forEach((listener) => listener());
+        },
+    };
+});
 
 vi.mock('../components/Viewer', () => ({ default: () => null }));
-vi.mock('../context/WorkbenchContext', () => ({ useWorkbench: () => ({}) }));
+vi.mock('../context/WorkbenchContext', () => ({ useWorkbench: () => shellMocks.state.workbench }));
+vi.mock('../scriptSource', () => ({
+    getMeshNotice: () => shellMocks.state.notice,
+    subscribeMeshNotice: (listener: () => void) => {
+        shellMocks.listeners.add(listener);
+        return () => shellMocks.listeners.delete(listener);
+    },
+}));
 
-import { liveViewportPhase, ModelStage, STAGE_GAVE_UP, ViewerPageShell } from '../ViewerPageShell';
+import { liveViewportPhase, ModelStage, STAGE_GAVE_UP, useLiveViewportState, ViewerPageShell } from '../ViewerPageShell';
 
 /** Fake timers that also drive animation frames. */
 function useFakeFrames(): void {
@@ -21,6 +44,8 @@ function useFakeFrames(): void {
 }
 
 afterEach(() => {
+    shellMocks.state.workbench = {};
+    shellMocks.setMeshing(false);
     cleanup();
     vi.useRealTimers();
     vi.unstubAllGlobals();
@@ -56,6 +81,35 @@ describe('liveViewportPhase', () => {
             error: 'rebuild failed',
             isComputing: false,
         }).phase).toBe('displayed');
+    });
+});
+
+describe('useLiveViewportState watchdog', () => {
+    it('does not give up while the server reports "Still meshing…"', () => {
+        vi.useFakeTimers();
+        shellMocks.state.workbench = { geometries: [], isReady: false, isComputing: true, error: null };
+        shellMocks.setMeshing(true);
+        const { result } = renderHook(() => useLiveViewportState(false));
+        act(() => { vi.advanceTimersByTime(90_000); });
+        expect(result.current.phase).toBe('building');
+    });
+
+    it('waits past the server budget while a build request is in flight', () => {
+        vi.useFakeTimers();
+        shellMocks.state.workbench = { geometries: [], isReady: false, isComputing: true, error: null };
+        const { result } = renderHook(() => useLiveViewportState(false));
+        act(() => { vi.advanceTimersByTime(30_000); });
+        expect(result.current.phase).toBe('building');
+        act(() => { vi.advanceTimersByTime(20_000); });
+        expect(result.current.phase).toBe('failed');
+    });
+
+    it('gives up after 12 s when nothing is building and nothing is on screen', () => {
+        vi.useFakeTimers();
+        shellMocks.state.workbench = { geometries: [], isReady: false, isComputing: false, error: null };
+        const { result } = renderHook(() => useLiveViewportState(false));
+        act(() => { vi.advanceTimersByTime(12_500); });
+        expect(result.current).toEqual({ phase: 'failed', error: STAGE_GAVE_UP, busy: false });
     });
 });
 

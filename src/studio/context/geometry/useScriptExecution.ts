@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useCallback, useEffect, useMemo, useRef, useState, type MutableRefObject } from 'react';
 import { GeometryEngine, type GeometryResult, type SketchGeometry } from '../../../shared/worker/geometryEngine';
-import { shouldUseHostedMesh, devMeshAvailable, needsFullKernel, currentHostedProject } from '../../scriptSource';
+import { shouldUseHostedMesh, devMeshAvailable, needsFullKernel, isPinnedRevisionSource } from '../../scriptSource';
 import type { SerializedParamEntry } from '../../../shared/runtime/paramTable';
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { ExecutionRecord, ScriptReviewSummary } from './types';
@@ -211,9 +211,9 @@ function useWorkerSourceRun(
         if (!routesToDevKernel && !isReady) return;
         setScriptParams([]);
         setScriptReview(null);
-        // A share page with a stored artifact paints on the first turn.
-        // The 600ms debounce is for local edits.
-        const delay = currentHostedProject() ? 0 : 600;
+        // A share page's unedited revision paints its stored artifact on the
+        // first turn. The 600ms debounce is for edits and live updates.
+        const delay = isPinnedRevisionSource(code) ? 0 : 600;
         const timer = setTimeout(() => {
             void runAutoExecutionLoop(applyDeps, code, executionCount);
         }, delay);

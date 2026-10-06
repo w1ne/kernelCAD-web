@@ -221,8 +221,13 @@ const STAGE_BACKGROUND = `#${BACKGROUND_DARK_HEX.toString(16).padStart(6, '0')}`
 
 /** After this long without a model, the status says the build is slow. */
 const STAGE_SLOW_MS = 8_000;
-/** After this long with no model, stop spinning and show an error. */
+/** After this long with no model and nothing building, stop spinning and
+ *  show an error. */
 const STAGE_WATCHDOG_MS = 12_000;
+/** While a build request is in flight: past the server's 30 s live budget.
+ *  A 504 `mesh.pending` ("Still meshing…", up to ~90 s of retries) pauses the
+ *  watchdog entirely. */
+const STAGE_BUSY_WATCHDOG_MS = 45_000;
 
 export type StagePhase = 'loading' | 'building' | 'displayed' | 'failed';
 
@@ -514,7 +519,11 @@ export function useLiveViewportState(displayReady: boolean): LiveViewportState {
   // The geometry list that stayed empty for the settle time.
   const [settledEmpty, setSettledEmpty] = useState<unknown>(null);
   const emptyCandidate = !isComputing && isReady && !error && !nonempty;
-  const stuck = useFlagAfter(!nonempty && !error, STAGE_WATCHDOG_MS);
+  const meshing = useMeshNotice().meshing;
+  const stuck = useFlagAfter(
+    !nonempty && !error && !meshing,
+    isComputing ? STAGE_BUSY_WATCHDOG_MS : STAGE_WATCHDOG_MS,
+  );
 
   useEffect(() => {
     if (!emptyCandidate) return undefined;

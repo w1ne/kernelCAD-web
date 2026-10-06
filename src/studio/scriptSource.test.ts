@@ -249,6 +249,7 @@ describe('param overrides (stateless re-run path)', () => {
     vi.stubGlobal('window', {
       location: { hostname: 'app.kernelcad.com', pathname: '/p/BHEaiMyr', search: '?version=2' },
     });
+    setHostedRevisionHint({ slug: 'BHEaiMyr', version: 2, code: 'ignored' });
     const stored = { revision: 2, features: [{ featureId: 'ball' }], bounds: { min: [0, 0, 0], max: [1, 1, 1] } };
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
       const url = String(input);
@@ -288,20 +289,98 @@ describe('param overrides (stateless re-run path)', () => {
     expect(fetchMock).not.toHaveBeenCalledWith(expect.stringContaining('/revisions/2/mesh-artifact'));
   });
 
-  it('keeps a missing-artifact error when nothing is stored and does not remesh', async () => {
+  it('falls back to the server mesh when the stored artifact is missing', async () => {
     vi.stubEnv('VITE_API_BASE_URL', 'https://api.example.com');
     vi.stubGlobal('window', {
       location: { hostname: 'app.kernelcad.com', pathname: '/p/BHEaiMyr', search: '' },
     });
+    setHostedRevisionHint({ slug: 'BHEaiMyr', version: 3, code: 'revision code' });
+    const built = { features: [{ featureId: 'server' }], featureRecords: [], bounds: { min: [0, 0, 0], max: [1, 1, 1] } };
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => (
       String(input).endsWith('/__kernelcad/mesh')
-        ? Promise.reject(new TypeError('Failed to fetch'))
+        ? ({ ok: true, json: async () => built } as Response)
         : ({ ok: false, status: 404, json: async () => null } as Response)
     ));
 
-    await expect(meshSourceHosted('ignored')).rejects.toThrow('stored mesh');
-    expect(fetchMock.mock.calls.some((call) => String(call[0]).includes('/__kernelcad/mesh'))).toBe(false);
-    expect(fetchMock.mock.calls.some((call) => String(call[0]).includes('/gallery/_mesh/'))).toBe(false);
+    await expect(meshSourceHosted('revision code')).resolves.toEqual(built);
+    const urls = fetchMock.mock.calls.map((call) => String(call[0]));
+    expect(urls[0]).toBe('https://mesh.kernelcad.com/mesh-artifacts/BHEaiMyr/v3.json');
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.example.com/__kernelcad/mesh',
+      expect.objectContaining({ body: JSON.stringify({ projectSlug: 'BHEaiMyr', projectVersion: 3 }) }),
+    );
+  });
+
+  it('keeps the 504 mesh.pending retry when the stored artifact is missing', async () => {
+    vi.useFakeTimers();
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.example.com');
+    vi.stubGlobal('window', {
+      location: { hostname: 'app.kernelcad.com', pathname: '/p/BHEaiMyr', search: '?version=2' },
+    });
+    setHostedRevisionHint({ slug: 'BHEaiMyr', version: 2, code: 'revision code' });
+    const built = { features: [{ featureId: 'server' }], featureRecords: [], bounds: { min: [0, 0, 0], max: [1, 1, 1] } };
+    let posts = 0;
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      if (!String(input).endsWith('/__kernelcad/mesh')) return { ok: false, status: 404, json: async () => null } as Response;
+      posts += 1;
+      if (posts === 1) {
+        return {
+          ok: false,
+          status: 504,
+          headers: { get: (k: string) => (k === 'Retry-After' ? '1' : null) },
+          json: async () => ({ code: 'mesh.pending', error: 'still meshing' }),
+        } as unknown as Response;
+      }
+      return { ok: true, json: async () => built } as Response;
+    });
+
+    const p = meshSourceHosted('revision code');
+    // The stored reads, gallery hash, and first POST settle over a few turns.
+    for (let i = 0; i < 20 && !getMeshNotice().meshing; i++) await vi.advanceTimersByTimeAsync(0);
+    expect(getMeshNotice().meshing).toBe(true);
+    await vi.advanceTimersByTimeAsync(1000);
+    await expect(p).resolves.toEqual(built);
+    expect(posts).toBe(2);
+    expect(getMeshNotice().meshing).toBe(false);
+    vi.useRealTimers();
+  });
+
+  it('sends edited source to the server instead of painting the stored mesh', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.example.com');
+    vi.stubGlobal('window', {
+      location: { hostname: 'app.kernelcad.com', pathname: '/p/BHEaiMyr', search: '?version=2' },
+    });
+    setHostedRevisionHint({ slug: 'BHEaiMyr', version: 2, code: 'revision code' });
+    const built = { features: [{ featureId: 'edited' }], featureRecords: [], bounds: { min: [0, 0, 0], max: [1, 1, 1] } };
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      const url = String(input);
+      if (url.endsWith('/__kernelcad/mesh')) return { ok: true, json: async () => built } as Response;
+      if (url.includes('mesh-artifact')) {
+        return { ok: true, json: async () => ({ revision: 2, features: [{ featureId: 'stored' }], bounds: { min: [0, 0, 0], max: [1, 1, 1] } }) } as Response;
+      }
+      return { ok: false, status: 404, json: async () => null } as Response;
+    });
+
+    await expect(meshSourceHosted('edited code')).resolves.toEqual(built);
+    expect(fetchMock.mock.calls.some((call) => String(call[0]).includes('mesh-artifact'))).toBe(false);
+  });
+
+  it('does not fall back to the stored mesh when edited source fails on the server', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.example.com');
+    vi.stubGlobal('window', {
+      location: { hostname: 'app.kernelcad.com', pathname: '/p/BHEaiMyr', search: '?version=2' },
+    });
+    setHostedRevisionHint({ slug: 'BHEaiMyr', version: 2, code: 'revision code' });
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      const url = String(input);
+      if (url.endsWith('/__kernelcad/mesh')) return { ok: false, status: 500, json: async () => ({ error: 'edit failed' }) } as Response;
+      if (url.includes('mesh-artifact')) {
+        return { ok: true, json: async () => ({ revision: 2, features: [{ featureId: 'stored' }], bounds: { min: [0, 0, 0], max: [1, 1, 1] } }) } as Response;
+      }
+      return { ok: false, status: 404, json: async () => null } as Response;
+    });
+
+    await expect(meshSourceHosted('edited code')).rejects.toThrow('edit failed');
   });
 
   it('paints a pinned revision from the CDN without a gallery lookup or a rebuild', async () => {
@@ -309,6 +388,7 @@ describe('param overrides (stateless re-run path)', () => {
     vi.stubGlobal('window', {
       location: { hostname: 'app.kernelcad.com', pathname: '/p/V4P2zJTm', search: '?version=1' },
     });
+    setHostedRevisionHint({ slug: 'V4P2zJTm', version: 1, code: 'ignored source' });
     const face = {
       vertices: [0, 0, 0, 1, 0, 0, 0, 1, 0],
       indices: [0, 1, 2],
@@ -349,6 +429,7 @@ describe('param overrides (stateless re-run path)', () => {
     vi.stubGlobal('window', {
       location: { hostname: 'app.kernelcad.com', pathname: '/p/V4P2zJTm', search: '?version=1' },
     });
+    setHostedRevisionHint({ slug: 'V4P2zJTm', version: 1, code: 'ignored' });
     vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
       const url = String(input);
       if (url.endsWith('/v1.json')) return { ok: false, status: 404, json: async () => null } as Response;
@@ -358,7 +439,9 @@ describe('param overrides (stateless re-run path)', () => {
       return { ok: false, status: 500, json: async () => ({ error: 'remeshed' }) } as Response;
     });
 
-    await expect(meshSourceHosted('ignored')).rejects.toThrow('stored mesh');
+    // Neither the stored-first read nor the server-failure fallback may
+    // paint revision 6; the server error surfaces.
+    await expect(meshSourceHosted('ignored')).rejects.toThrow('remeshed');
   });
 
   it('does not use the stored mesh for a parameter edit', async () => {
@@ -629,6 +712,7 @@ describe('storedShareMesh', () => {
     vi.stubGlobal('window', {
       location: { hostname: 'localhost', pathname: '/p/OGm0lP_B', search: '?version=1' },
     });
+    setHostedRevisionHint({ slug: 'OGm0lP_B', version: 1, code: 'rail()' });
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
       const url = String(input);
       if (url === 'https://mesh.kernelcad.com/mesh-artifacts/OGm0lP_B/v1.json') {
@@ -637,17 +721,25 @@ describe('storedShareMesh', () => {
       return { ok: false, status: 404, json: async () => null } as Response;
     });
 
-    const payload = await storedShareMesh();
+    const payload = await storedShareMesh('rail()');
     expect(payload?.features.map((feature) => feature.featureId)).toEqual(['rail']);
     expect(getMeshNotice().approximate).toBe(false);
     expect(getMeshNotice().meshing).toBe(false);
     expect(fetchMock.mock.calls.some((call) => String(call[0]).includes('/__kernelcad/mesh'))).toBe(false);
   });
 
+  it('returns null for source other than the revision\'s own code', async () => {
+    vi.stubGlobal('window', { location: { hostname: 'localhost', pathname: '/p/OGm0lP_B', search: '?version=1' } });
+    setHostedRevisionHint({ slug: 'OGm0lP_B', version: 1, code: 'rail()' });
+    const fetchMock = vi.spyOn(globalThis, 'fetch');
+    await expect(storedShareMesh('rail(2)')).resolves.toBeNull();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it('returns null off a share page', async () => {
     vi.stubGlobal('window', { location: { hostname: 'localhost', pathname: '/studio', search: '' } });
     const fetchMock = vi.spyOn(globalThis, 'fetch');
-    await expect(storedShareMesh()).resolves.toBeNull();
+    await expect(storedShareMesh('rail()')).resolves.toBeNull();
     expect(fetchMock).not.toHaveBeenCalled();
   });
 });

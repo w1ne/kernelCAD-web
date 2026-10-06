@@ -10,6 +10,7 @@ import {
 } from '../../funnel/lib/apiClient';
 import { shouldApplyProjectUpdate } from '../../funnel/lib/liveProject';
 import { captureViewerPngBase64 } from '../components/viewer/captureViewerPng';
+import { isHistoricalPin, readRequestedVersion } from './-shareRevision';
 
 /** Where the initial row load stands:
  *  - `loading`: the row request is in flight.
@@ -104,11 +105,12 @@ function useSettledRenderCapture(
 ): void {
   useEffect(() => {
     if (!project) return;
+    // A `?version=N` pin of an older revision is not the project's latest
+    // model; uploading its frame would replace the agent-visible render.
+    if (typeof window !== 'undefined' && isHistoricalPin(project, readRequestedVersion(window.location.search ?? ''))) return;
     const FIRST_DELAY_MS = 1000; // let the first paint happen before sampling
     const POLL_MS = 600;
-    // Two grabs is the stability check. More than that is a readPixels loop:
-    // each toDataURL stalls the GPU and freezes the page on a large mesh.
-    const MAX_TRIES = 2;
+    const MAX_TRIES = 25; // ~15s ceiling, then give up silently
     const MIN_PNG_LEN = 2000; // skip a blank/near-empty canvas
     const STABLE_FRAC = 0.02; // ≤2% size change between grabs == settled
     let disposed = false;

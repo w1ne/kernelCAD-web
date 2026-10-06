@@ -85,10 +85,29 @@ function shareStatus(row: ProjectRow | null, failed: boolean, pending: boolean):
   return 'pending';
 }
 
+/** The stored-mesh hint for this page: the shown revision and its exact code.
+ *  A live agent update or restore on a current-revision page replaces that
+ *  code, so the hint is dropped — the stored artifact is no longer this model.
+ *  A historical pin ignores live pushes and keeps its hint. */
+export function revisionHint(
+  slug: string,
+  view: ProjectRow | null,
+  historical: boolean,
+  liveCode: string | undefined,
+): { slug: string; version: number | null; code: string } | null {
+  if (!view) return null;
+  if (!historical && liveCode !== undefined && liveCode !== view.current_code) return null;
+  return { slug, version: view.version ?? null, code: view.current_code };
+}
+
 /** Resolve `?version=N` against the loaded row. The current revision needs no
  *  extra fetch. An older pin is a failed read when the revision API fails —
  *  the latest row must not stand in for it. */
-export function useShareProject(slug: string, row: ProjectRow | null): ShareProject {
+export function useShareProject(
+  slug: string,
+  row: ProjectRow | null,
+  liveCode?: string,
+): ShareProject {
   const requested = requestedFromLocation();
   const historical = !!row && isHistoricalPin(row, requested);
   const [attempt, setAttempt] = useState(0);
@@ -114,7 +133,7 @@ export function useShareProject(slug: string, row: ProjectRow | null): ShareProj
     : null;
   // The mesh loader reads this before its debounced fetch. Set it during
   // render so the first paint asks for this revision's artifact.
-  if (view) setHostedRevisionHint(view.version);
+  setHostedRevisionHint(revisionHint(slug, view, historical, liveCode));
 
   const retry = useCallback(() => setAttempt((n) => n + 1), []);
   const status = shareStatus(row, failed, pending);

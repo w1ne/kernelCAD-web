@@ -10,7 +10,7 @@ import {
     meshSourceDev,
     needsFullKernel,
     rootVisibleFeatures,
-    currentHostedProject,
+    isPinnedRevisionSource,
     storedShareMesh,
     type BackendMeshPayload,
 } from '../../scriptSource';
@@ -185,16 +185,19 @@ async function runWorkerOrDevKernelAutoExecution(
     }
 }
 
-/** Paint the published artifact and skip a worker or server rebuild.
+/** Paint the published artifact and skip a worker or server rebuild — only
+ *  when `code` is exactly the shown revision's unedited source. A live agent
+ *  update, a restore, or an edit is a different model and takes the normal path.
  *  True when this run is done (painted, or a newer run owns the page). */
 async function finishWithStoredShareMesh(
     deps: ExecutionApplyDeps,
+    code: string,
     revision: number,
     executionCount: number,
 ): Promise<boolean> {
-    if (!currentHostedProject()) return false;
+    if (!isPinnedRevisionSource(code)) return false;
     deps.setIsComputing(true);
-    const payload = await storedShareMesh();
+    const payload = await storedShareMesh(code);
     if (revision !== deps.mainRevisionRef.current) {
         deps.setStaleMainResponsesDropped((prev) => prev + 1);
         return true;
@@ -222,7 +225,7 @@ export async function runAutoExecutionLoop(
     deps.setCurrentCodeRevision(revision);
     // A stored artifact is the final model. Do not parse, preview, or remesh
     // first — that paints a rough body under "Building the model…".
-    if (await finishWithStoredShareMesh(deps, revision, executionCount)) return;
+    if (await finishWithStoredShareMesh(deps, code, revision, executionCount)) return;
     // These two probes now run inside the 600ms debounce timer instead of
     // the effect body (the original computed them before scheduling the
     // timer). Inert: `shouldUseHostedMesh()` reads `window.location.hostname`

@@ -19,7 +19,7 @@ vi.mock('@react-three/fiber', () => ({
         >
             <button
                 data-testid="canvas-created"
-                onClick={() => (props.onCreated as (state: { gl: { localClippingEnabled?: boolean; toneMappingExposure?: number } }) => void)({ gl: mockGlState })}
+                onClick={() => (props.onCreated as (state: { gl: { localClippingEnabled?: boolean } }) => void)({ gl: mockGlState })}
             />
             <button
                 data-testid="canvas-missed"
@@ -74,7 +74,7 @@ vi.mock('./viewer/overlays/ViewGizmo', () => ({
     ),
 }));
 
-const mockGlState: { localClippingEnabled?: boolean; toneMappingExposure?: number } = {};
+const mockGlState: { localClippingEnabled?: boolean } = {};
 
 const mockWorkbench: {
     setSelectedFace: ReturnType<typeof vi.fn>;
@@ -140,7 +140,6 @@ function renderViewer(props: Partial<Parameters<typeof Viewer>[0]> = {}) {
 beforeEach(() => {
     vi.clearAllMocks();
     mockGlState.localClippingEnabled = false;
-    mockGlState.toneMappingExposure = undefined;
     mockWorkbench.sketchMode = { active: false };
     mockWorkbench.selectedSketchName = 'sketch-1';
     mockWorkbench.codeContext = { returnedVariables: ['box1', 'cyl1'] };
@@ -171,7 +170,7 @@ describe('Viewer', () => {
         const canvas = screen.getByTestId('mock-canvas');
         expect(canvas.getAttribute('data-camera')).toBe(JSON.stringify({ position: [40, 40, 40], fov: 40 }));
         expect(canvas.getAttribute('data-preserve-drawing')).toBe('true');
-        expect(canvas.getAttribute('data-tone-mapping')).toBe(String(THREE.AgXToneMapping));
+        expect(canvas.getAttribute('data-tone-mapping')).toBe(String(THREE.NeutralToneMapping));
         expect(canvas.getAttribute('data-color-space')).toBe(String(THREE.SRGBColorSpace));
         expect(canvas.getAttribute('data-line-threshold')).toBe('0.4');
         expect(canvas.getAttribute('data-points-threshold')).toBe('0.2');
@@ -181,7 +180,6 @@ describe('Viewer', () => {
         renderViewer();
         fireEvent.click(screen.getByTestId('canvas-created'));
         expect(mockGlState.localClippingEnabled).toBe(true);
-        expect(mockGlState.toneMappingExposure).toBe(0.9);
     });
 
     it('clears selection, sketch and context menu on a missed pointer', () => {

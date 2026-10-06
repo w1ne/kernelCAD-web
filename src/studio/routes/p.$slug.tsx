@@ -148,7 +148,7 @@ function ProjectPage() {
   const { slug } = Route.useParams();
   const { session } = useOptionalSession();
   const live = useProjectLiveUpdates(slug);
-  const share = useShareProject(slug, live.project);
+  const share = useShareProject(slug, live.project, live.liveCode);
   const claim = useProjectClaim(slug, session, live.project);
   const onUpgrade = useUpgrade();
   const { loadState } = live;

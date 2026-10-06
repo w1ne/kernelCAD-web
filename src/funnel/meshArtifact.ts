@@ -69,32 +69,7 @@ function readDrawableFeature(feature: unknown): FeatureMeshSerialized | null {
   if (record.material !== undefined && !isMaterial(record.material)) {
     throw new Error('Mesh artifact material is malformed.');
   }
-  if (record.material === undefined) return record;
-  const material = clampDisplayedArtifactMaterial(record.material);
-  return material === record.material ? record : { ...record, material };
-}
-
-/** Display clamp for artifact PBR. Metalness 1 with roughness near 0 has no
- *  diffuse term, so a missing or disposed environment paints the face solid
- *  black with a pure white specular hit. Artifact meshes also have no vertex
- *  tangents; anisotropy then builds a degenerate tangent frame and the same
- *  black-and-white shading even when the room is present. */
-export const ARTIFACT_DISPLAY_METALNESS_MAX = 0.6;
-export const ARTIFACT_DISPLAY_ROUGHNESS_MIN = 0.35;
-
-export function clampDisplayedArtifactMaterial(material: PBRMaterial): PBRMaterial {
-  const metalness = typeof material.metalness === 'number'
-    ? Math.min(material.metalness, ARTIFACT_DISPLAY_METALNESS_MAX)
-    : material.metalness;
-  const roughness = typeof material.roughness === 'number'
-    ? Math.max(material.roughness, ARTIFACT_DISPLAY_ROUGHNESS_MIN)
-    : material.roughness;
-  const anisotropy = material.textures?.anisotropy ? material.anisotropy : 0;
-  const authoredAnisotropy = material.anisotropy ?? 0;
-  if (metalness === material.metalness && roughness === material.roughness && anisotropy === authoredAnisotropy) {
-    return material;
-  }
-  return { ...material, metalness, roughness, anisotropy };
+  return record;
 }
 
 /**

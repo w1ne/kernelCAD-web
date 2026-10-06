@@ -140,9 +140,9 @@ describe('ProjectSidePanel', () => {
 
         await waitFor(() => expect(exporter.downloadBlob).toHaveBeenCalledTimes(1));
         const [format, code] = exporter.exportViaServer.mock.calls[0];
-        expect(format).toBe('step');
+        expect(format).toBe('stl');
         expect(code).toContain("param('Width', 62");
-        expect(exporter.downloadBlob).toHaveBeenCalledWith(blob, 'pipe-clamp-Width62.step');
+        expect(exporter.downloadBlob).toHaveBeenCalledWith(blob, 'pipe-clamp-Width62.stl');
     });
 
     it('offers the dimensioned drawing in the download menu and exports it as a PDF', async () => {

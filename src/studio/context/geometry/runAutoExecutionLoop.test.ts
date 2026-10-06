@@ -48,19 +48,20 @@ function deps(): ExecutionApplyDeps & { geometries: unknown[]; executeCode: Retu
 }
 
 describe('runAutoExecutionLoop stored artifact', () => {
-  it('paints the stored mesh and does not run the worker', async () => {
+  const face = {
+    vertices: [0, 0, 0, 1, 0, 0, 0, 1, 0],
+    indices: [0, 1, 2],
+    normals: [0, 0, 1, 0, 0, 1, 0, 0, 1],
+    faceId: 1,
+  };
+
+  function sharePage(): ReturnType<typeof vi.fn> {
     vi.stubEnv('VITE_API_BASE_URL', 'https://api.example.com');
     vi.stubEnv('VITE_HOSTED_MESH', '');
     vi.stubGlobal('window', {
       location: { hostname: 'localhost', pathname: '/p/OGm0lP_B', search: '?version=1' },
     });
-    const face = {
-      vertices: [0, 0, 0, 1, 0, 0, 0, 1, 0],
-      indices: [0, 1, 2],
-      normals: [0, 0, 1, 0, 0, 1, 0, 0, 1],
-      faceId: 1,
-    };
-    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+    return vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
       const url = String(input);
       if (url === 'https://mesh.kernelcad.com/mesh-artifacts/OGm0lP_B/v1.json') {
         return {
@@ -73,13 +74,37 @@ describe('runAutoExecutionLoop stored artifact', () => {
         } as Response;
       }
       return { ok: false, status: 404, json: async () => null } as Response;
-    });
+    }) as unknown as ReturnType<typeof vi.fn>;
+  }
 
+  it('paints the stored mesh for the revision\'s own code and does not run the worker', async () => {
+    sharePage();
+    setHostedRevisionHint({ slug: 'OGm0lP_B', version: 1, code: 'assembly("tslot")' });
     const apply = deps();
     await runAutoExecutionLoop(apply, 'assembly("tslot")', 0);
     expect(apply.executeCode).not.toHaveBeenCalled();
     expect(apply.geometries).toHaveLength(1);
     expect(apply.setPreviewGeometries).toHaveBeenCalledWith([]);
     expect(apply.setError).toHaveBeenCalledWith(null);
+  });
+
+  it('does not paint the stored mesh for live-updated or edited code', async () => {
+    const fetchMock = sharePage();
+    setHostedRevisionHint({ slug: 'OGm0lP_B', version: 1, code: 'assembly("tslot")' });
+    const apply = deps();
+    apply.executeCode.mockResolvedValue({ geometries: [], sketches: [] });
+    await runAutoExecutionLoop(apply, 'return box(1, 2, 3);', 0);
+    expect(fetchMock.mock.calls.some((call) => String(call[0]).includes('mesh-artifacts'))).toBe(false);
+    expect(apply.executeCode).toHaveBeenCalledWith('return box(1, 2, 3);');
+  });
+
+  it('ignores a hint set for another slug', async () => {
+    const fetchMock = sharePage();
+    setHostedRevisionHint({ slug: 'other', version: 1, code: 'return box(1, 2, 3);' });
+    const apply = deps();
+    apply.executeCode.mockResolvedValue({ geometries: [], sketches: [] });
+    await runAutoExecutionLoop(apply, 'return box(1, 2, 3);', 0);
+    expect(fetchMock.mock.calls.some((call) => String(call[0]).includes('mesh-artifacts'))).toBe(false);
+    expect(apply.executeCode).toHaveBeenCalled();
   });
 });
