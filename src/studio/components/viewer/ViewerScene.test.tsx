@@ -12,6 +12,10 @@ import { cleanup, render } from '@testing-library/react';
 import * as THREE from 'three';
 import type { GeometryResult } from '../../../shared/worker/geometryEngine';
 
+vi.mock('@react-three/fiber', () => ({
+    useThree: (selector: (state: { gl: object; scene: object }) => unknown) =>
+        selector({ gl: {}, scene: {} }),
+}));
 vi.mock('@react-three/drei/core/Grid', () => ({
     Grid: () => <div data-testid="grid" />,
 }));

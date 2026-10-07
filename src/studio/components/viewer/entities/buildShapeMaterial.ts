@@ -62,6 +62,11 @@ export function buildShapeMaterial(
     }
     if (pbr && !isSelected) {
         const pbrMaterial = buildMaterialFromPBR(pbr) as THREE.MeshPhysicalMaterial;
+        // Published meshes have no vertex tangents. Anisotropy with no map
+        // builds a degenerate tangent frame, so brushed aluminium paints as
+        // solid black on one face and blown white on the next. Keep the
+        // authored value only when an anisotropy map is actually present.
+        if (!pbr.textures?.anisotropy) pbrMaterial.anisotropy = 0;
         pbrMaterial.flatShading = flatShading;
         pbrMaterial.side = THREE.DoubleSide;
         pbrMaterial.depthWrite = (pbr.opacity ?? 1) >= 1;
