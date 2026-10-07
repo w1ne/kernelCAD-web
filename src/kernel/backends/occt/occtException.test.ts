@@ -115,6 +115,13 @@ describe('isOcctWasmPoisoned', () => {
     expect(isOcctWasmPoisoned(err)).toBe(true);
   });
 
+  it('recognizes a broken wasm function table', () => {
+    const err = new Error('null function or function signature mismatch');
+    err.name = 'RuntimeError';
+    expect(isOcctWasmPoisoned(err)).toBe(true);
+    expect(isOcctWasmPoisoned(new Error('RuntimeError: null function or function signature mismatch'))).toBe(true);
+  });
+
   it('recognizes worker-wrapped Error messages', () => {
     expect(isOcctWasmPoisoned(new Error('RuntimeError: memory access out of bounds'))).toBe(true);
   });
