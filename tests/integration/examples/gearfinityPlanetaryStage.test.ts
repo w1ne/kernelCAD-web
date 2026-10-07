@@ -80,7 +80,8 @@ describe('Gearfinity-inspired planetary stage gallery example', () => {
   // micro-poses blew past the 5-minute CLI budget. The deterministic
   // BREP-sweep budget (`BREP_SWEEP_BUDGET`, see mechanismTruth.ts) now
   // estimates the sweep work up front (~600 work units > 300 budget) and
-  // SKIPS criteria 2/3/7/8 rather than grinding through them, so the
+  // SKIPS criteria 2/3/8 rather than grinding through them. Rest-pose
+  // joint-mesh continuity (criterion 7) still runs. With no gap, the
   // verdict degrades to `mechanism: 'unverified'` and the run completes
   // in normal time. Rest-pose static interference is still checked by
   // the validate interference surface (interferencePairs), which runs

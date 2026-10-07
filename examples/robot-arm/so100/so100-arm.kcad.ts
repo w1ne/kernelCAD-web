@@ -9,7 +9,9 @@ const lift = param('liftDeg', 0, { min: 0, max: 200, description: 'Shoulder pitc
 const elbow = param('elbowDeg', 0, { min: -180, max: 0, description: 'Elbow pitch' });
 const wrist = param('wristDeg', 0, { min: -140, max: 65, description: 'Wrist pitch' });
 const roll = param('rollDeg', 0, { min: -180, max: 180, description: 'Wrist roll' });
-const jaw = param('jawDeg', 0, { min: -11, max: 110, description: 'Gripper opening' });
+// -11° is the closed stop: the moving finger meets the fixed jaw.
+// 0° leaves the pincer open; the reach animation still drives jawDeg.
+const jaw = param('jawDeg', -11, { min: -11, max: 110, description: 'Gripper opening' });
 
 type Vec3 = [number, number, number];
 type Joint = { xyz: Vec3; rpy: Vec3; axis: Vec3; q: ReturnType<typeof param> };
@@ -53,6 +55,13 @@ function axisInParent(j: Joint): Vec3 {
 
 function bake(shape: { rotate: (axis: Vec3, deg: number) => typeof shape }, j: Joint) {
   return shape.rotate([1, 0, 0], j.rpy[0]).rotate([0, 1, 0], j.rpy[1]).rotate([0, 0, 1], j.rpy[2]);
+}
+
+// Printed boss on the joint axis. The vendor shells stop ~20 mm short of
+// the elbow and wrist pivots, and a servo box fastened to one link is not
+// the link. The boss is the revolute child; the next shell fastens to it.
+function axleBoss() {
+  return cylinder(46, 23).translate(0, 0, -23).rotate([0, 1, 0], 90).color(PRINT);
 }
 
 const arm = assembly('so100-arm');
@@ -105,21 +114,65 @@ const upper = await printed('upper-arm', 'Upper_Arm.stl', shoulderLift, shoulder
 const lower = await printed('lower-arm', 'Lower_Arm.stl', elbowFlex, shoulderLift);
 const wristLink = await printed('wrist', 'Wrist_Pitch_Roll.stl', wristFlex, elbowFlex);
 const hand = await printed('hand', 'Fixed_Jaw.stl', wristRoll, wristFlex);
-await printed('jaw', 'Moving_Jaw.stl', gripper, wristRoll);
+// The sim STL is an open shell in the jaw link frame. Baking only the
+// gripper rpy (Ry 180) left that finger rolled about Y relative to the
+// fixed jaw, which already carries the wrist-roll bake. The fingertip
+// then sat beside the fixed finger and could not close. The STEP solid
+// is the same frame in millimetres; bake the wrist roll on top of the
+// gripper rpy so the finger lies in the closing plane.
+const jawRaw = await lib.fromSTEP('parts/Moving_Jaw.step');
+const jawLink = arm.part('jaw', bake(bake(jawRaw, gripper), wristRoll).color(PRINT));
+jawLink.connector('in', {
+  type: 'axis',
+  origin: { kind: 'vec3', value: [0, 0, 0] },
+  axis: spun(wristRoll, axisInParent(gripper)),
+});
+// Passive horn bolts to the jaw mount face (bolt circle at local z = -24,
+// same seat as so100.kcad.ts). A couple of millimetres of the disc sit in
+// the hub so the fastened connector is inside both solids; the rest of
+// the aluminium disc stands proud of the knuckle.
+const HORN_Z = -26.8;
+const hornRaw = (await lib.fromSTEP('parts/Passive_Horn.step'))
+  .finish('aluminium')
+  .translate(0, 0, HORN_Z);
+const jawHorn = arm.part('jaw-horn', bake(bake(hornRaw, gripper), wristRoll));
+// Local (0, 0, -24.8) is inside the hub and inside the seated horn.
+// Ry(90) * Ry(180) sends (0, 0, z) to (-z, 0, 0).
+const hornMount: Vec3 = [24.8, 0, 0];
+jawLink.connector('horn', { type: 'frame', origin: { kind: 'vec3', value: hornMount } });
+jawHorn.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: hornMount } });
 
 hinge(base, 'pan', null, shoulderPan);
 hinge(shoulder, 'lift', shoulderPan, shoulderLift);
 hinge(upper, 'elbow', shoulderLift, elbowFlex);
 hinge(lower, 'wrist', elbowFlex, wristFlex);
 hinge(wristLink, 'roll', wristFlex, wristRoll);
+
+function boss(name: string) {
+  const part = arm.part(name, axleBoss());
+  part.connector('in', {
+    type: 'axis',
+    origin: { kind: 'vec3', value: [0, 0, 0] },
+    axis: [1, 0, 0],
+  });
+  part.connector('link', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+  return part;
+}
+boss('elbow-boss');
+boss('wrist-boss');
+lower.connector('elbow-boss', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+wristLink.connector('wrist-boss', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
 hinge(hand, 'jaw', wristRoll, gripper);
 
 arm.mate('pan', 'base.pan', 'shoulder.in', 'revolute', { pose: pan, limitsDeg: [-110, 110] });
 arm.mate('lift', 'shoulder.lift', 'upper-arm.in', 'revolute', { pose: lift, limitsDeg: [0, 200] });
-arm.mate('elbow', 'upper-arm.elbow', 'lower-arm.in', 'revolute', { pose: elbow, limitsDeg: [-180, 0] });
-arm.mate('wrist', 'lower-arm.wrist', 'wrist.in', 'revolute', { pose: wrist, limitsDeg: [-140, 65] });
+arm.mate('elbow', 'upper-arm.elbow', 'elbow-boss.in', 'revolute', { pose: elbow, limitsDeg: [-180, 0] });
+arm.mate('elbow-boss-fix', 'elbow-boss.link', 'lower-arm.elbow-boss', 'fastened');
+arm.mate('wrist', 'lower-arm.wrist', 'wrist-boss.in', 'revolute', { pose: wrist, limitsDeg: [-140, 65] });
+arm.mate('wrist-boss-fix', 'wrist-boss.link', 'wrist.wrist-boss', 'fastened');
 arm.mate('roll', 'wrist.roll', 'hand.in', 'revolute', { pose: roll, limitsDeg: [-180, 180] });
 arm.mate('jaw', 'hand.jaw', 'jaw.in', 'revolute', { pose: jaw, limitsDeg: [-11, 110] });
+arm.mate('jaw-horn-bolts', 'jaw.horn', 'jaw-horn.mount', 'fastened');
 
 servo(base, 'base', 'base-servo', [0, -32.7, 46.5], [25, 46, 40], null);
 servo(shoulder, 'shoulder', 'shoulder-servo', [0, 90, 30.6], [40, 46, 25], shoulderPan);
@@ -180,6 +233,7 @@ return arm.solvedModel({}, {
     ['lower-arm', 'wrist'],
     ['wrist', 'hand'],
     ['hand', 'jaw'],
+    ['jaw', 'jaw-horn'],
     ['base', 'base-servo'],
     ['shoulder', 'shoulder-servo'],
     ['upper-arm', 'upper-servo'],

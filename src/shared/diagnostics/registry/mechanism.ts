@@ -51,15 +51,16 @@ export const MECHANISM_CODES = {
   },
   // Physics-grounded loop — T3 slice (post-condition trust gate). Emitted by
   // `mechanismTruth.ts` when the BREP pose-sweep work estimate exceeds the
-  // (auto-scaled) budget and criteria 2/3/7/8 are SKIPPED, degrading the
-  // verdict to 'unverified'. Replaces the old silent console.warn: the
-  // 'unverified' verdict now carries machine-readable evidence (work
-  // estimate, budget, part count) so an agent can react instead of mistaking
-  // it for a clean 'real'. Non-fatal (severity 'warn') — "could not verify"
-  // is not "broken".
+  // (auto-scaled) budget and criteria 2/3/8 are SKIPPED. Criterion 7
+  // (rest-pose joint-mesh continuity) still runs; a gap there is 'broken'.
+  // Otherwise the verdict degrades to 'unverified'. Replaces the old silent
+  // console.warn: the 'unverified' verdict now carries machine-readable
+  // evidence (work estimate, budget, part count) so an agent can react
+  // instead of mistaking it for a clean 'real'. Non-fatal (severity 'warn')
+  // — "could not verify the pose sweep" is not "broken".
   'mechanism.unverified-budget-exceeded': {
     hintTemplate:
-      "The articulated collision/pose sweep was skipped because its estimated work exceeded the budget, so the mechanism is 'unverified' (NOT certified collision-free). Verify a tractable subset of the assembly, reduce the part/pose count, or pass a larger sweepBudget to force a full sweep. The cheap criteria (orphan-part, fastened-rigidity) still ran.",
+      "The articulated collision/pose sweep was skipped because its estimated work exceeded the budget, so the mechanism is not certified collision-free across its travel. Rest-pose joint-mesh continuity still ran: a link that does not meet its body fails as mechanism.joint-mesh-gap. Verify a tractable subset of the assembly, reduce the part/pose count, or pass a larger sweepBudget to force a full sweep.",
     nextAction: { kind: 'inspect-message' },
     defaultSeverity: 'warn',
     group: 'mechanism',
@@ -67,7 +68,7 @@ export const MECHANISM_CODES = {
   },
   'mechanism.joint-mesh-gap': {
     hintTemplate:
-      'Extend the parent body geometry so its OCCT solid reaches the joint origin at rest pose. Most commonly: increase the height of the column / boss that hosts the joint, or move the part-local connector origin onto an actual face/edge of the body. A pivot deliberately in open space (annular rim seat, spindle riding in the bore of a fastened block) passes when the mated rigid groups maintain bearing contact within tolerance somewhere away from the axis.',
+      'Extend the parent body geometry so its OCCT solid reaches the joint origin at rest pose. Most commonly: increase the height of the column / boss that hosts the joint, or move the part-local connector origin onto an actual face/edge of the body. A pivot deliberately in open space (annular rim seat, spindle riding in the bore of a fastened block) passes when the mated rigid groups maintain bearing contact within tolerance near the joint axis. A fingertip pinch or a box grazing the next link far from that axis does not count.',
     nextAction: { kind: 'fix-arg', field: 'partGeometry' },
     defaultSeverity: 'error',
     group: 'mechanism',

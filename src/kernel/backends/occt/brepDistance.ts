@@ -28,3 +28,36 @@ export function brepExtremaDistance(oc: any, shapeA: any, shapeB: any): number |
     dist.delete?.();
   }
 }
+
+/** Closest-point pair from the same distance solver. Index is 1-based,
+ *  matching OCCT's `PointOnShape*(N)`. */
+export function brepExtremaContact(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  oc: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  shapeA: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  shapeB: any,
+): { distanceMm: number; pointA: readonly [number, number, number]; pointB: readonly [number, number, number] } | undefined {
+  const dist = new oc.BRepExtrema_DistShapeShape_1();
+  dist.LoadS1(shapeA);
+  dist.LoadS2(shapeB);
+  try {
+    const ok = dist.Perform(new oc.Message_ProgressRange_1());
+    if (!ok || !dist.IsDone() || dist.NbSolution() < 1) return undefined;
+    const p1 = dist.PointOnShape1(1);
+    const p2 = dist.PointOnShape2(1);
+    try {
+      return {
+        distanceMm: dist.Value(),
+        pointA: [p1.X(), p1.Y(), p1.Z()],
+        pointB: [p2.X(), p2.Y(), p2.Z()],
+      };
+    } finally {
+      p1.delete?.();
+      p2.delete?.();
+    }
+  } finally {
+    dist.delete?.();
+  }
+}
