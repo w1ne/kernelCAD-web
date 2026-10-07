@@ -19,6 +19,11 @@ function looksLikeWasmPoisonText(text: string): boolean {
   // Emscripten abort() after unrecoverable wasm failure (truncated BREP, etc.).
   if (t.includes('aborted()') || t.includes('aborted(')) return true;
   if (t.includes('runtimeerror') && t.includes('aborted')) return true;
+  // Function-table corruption. Prod OCCT workers threw
+  // "RuntimeError: null function or function signature mismatch" and every
+  // later feature was recorded as a normal compile failure, so the worker
+  // stayed up and the viewer never painted.
+  if (t.includes('function signature mismatch') || t.includes('null function')) return true;
   return false;
 }
 
