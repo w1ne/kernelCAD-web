@@ -11,6 +11,7 @@ import { CAD_COLORS, CAD_COLORS_HEX, faceOverlayColor } from "../../../../shared
 import { useConsolidatedGeometry } from "../../../hooks/viewer/useConsolidatedGeometry";
 import { DEFAULT_COLOR, resolveColor } from "../../../../shared/render/palette";
 import { buildShapeMaterial } from "./buildShapeMaterial";
+import { pinRoomEnvironment } from "../roomEnvironment";
 import { matrixFromGeometryTransform } from "./geometryTransform";
 import { selectionCodeStore } from "../../../selectionCode/selectionCodeStore";
 import { resolvePickFeature, type GeometryPick } from "../../../selectionCode/geometryLineage";
@@ -116,6 +117,16 @@ export function FaceSelectionOverlay({ face, isSelected }: { face?: FaceGeometry
     );
 }
 
+/** The room belongs to the scene (and WebGL context) the mesh is drawn in.
+ *  A callback ref pins it on mount and again when the material changes, which
+ *  a layout effect keyed only on the material would miss if the mesh appears
+ *  a frame later. */
+function usePinnedRoomEnvironment(material: THREE.Material) {
+    return useCallback((node: THREE.Mesh | null) => {
+        if (node) pinRoomEnvironment(node, material);
+    }, [material]);
+}
+
 export function ConsolidatedShape({
     geometry,
     shapeIndex,
@@ -192,12 +203,14 @@ export function ConsolidatedShape({
         ),
         [geometry.material, isSelected, color, viewMode3D, clippingPlanes, clipIntersection],
     );
+    const meshRef = usePinnedRoomEnvironment(material);
 
     if (!mergedGeometry) return null;
 
     return (
         <group matrix={transformMatrix} matrixAutoUpdate={transformMatrix ? false : undefined}>
             <mesh
+                ref={meshRef}
                 geometry={mergedGeometry}
                 material={material}
                 onClick={handleClick}

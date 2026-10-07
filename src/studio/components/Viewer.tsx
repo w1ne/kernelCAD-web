@@ -11,6 +11,7 @@ import { useShellStore } from "../store/useShellStore";
 
 // Extracted Components
 import { ViewerScene } from "./viewer/ViewerScene";
+import { VIEWER_TONE_MAPPING, VIEWER_TONE_MAPPING_EXPOSURE } from "./viewer/viewerLighting";
 import { DisplayReadySensor } from "./viewer/DisplayReadySensor";
 import { ViewGizmo } from "./viewer/overlays/ViewGizmo";
 import { CodeLinkLabel } from "./viewer/overlays/CodeLinkLabel";
@@ -157,13 +158,11 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
             <Canvas
                 camera={{ position: [40, 40, 40], fov: SKETCH_FOV }}
                 gl={{
-                    // Neutral, not ACES Filmic. ACES crushes saturated
-                    // coral/pink/orange baseColors toward desaturated dark —
-                    // CAD palettes prize accurate hue over film-emulation
-                    // roll-off. This is the same conclusion demoPlayer/
-                    // ViewerPane.tsx:43-51 reached and documented; the Studio
-                    // canvas was simply never brought in line with it.
-                    toneMapping: THREE.NeutralToneMapping,
+                    // AgX holds saturated CAD hues (ACES Filmic does not) and
+                    // rolls light aluminium and plastic off before they clip
+                    // to white. The demo player keeps its own Neutral rig;
+                    // that path is calibrated for hero capture, not this canvas.
+                    toneMapping: VIEWER_TONE_MAPPING,
                     outputColorSpace: THREE.SRGBColorSpace,
                     // Marking-tool requires reading the WebGL canvas via
                     // toDataURL after the user paints. Without this, the
@@ -174,6 +173,7 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                 onCreated={({ gl }) => {
                     // Section tool clips per-material; opt the renderer into local clipping.
                     gl.localClippingEnabled = true;
+                    gl.toneMappingExposure = VIEWER_TONE_MAPPING_EXPOSURE;
                 }}
                 raycaster={{
                     params: {

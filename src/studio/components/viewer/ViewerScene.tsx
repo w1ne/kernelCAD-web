@@ -1,8 +1,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import * as THREE from "three";
+import { useLayoutEffect } from "react";
+import { useThree } from "@react-three/fiber";
 import { Grid } from "@react-three/drei/core/Grid";
 import { OrbitControls } from "@react-three/drei/core/OrbitControls";
+import { installRoomEnvironment } from "./roomEnvironment";
+import { VIEWER_FILL_LIGHT, VIEWER_HEMISPHERE, VIEWER_KEY_LIGHT } from "./viewerLighting";
 import type { GeometryResult, SketchGeometry } from "../../../shared/worker/geometryEngine";
 import type { SketchPlaneEntity } from "../../../shared/types/plane";
 import type { ViewMode3D, ViewportBackground } from "../../../shared/types/viewMode";
@@ -102,6 +106,7 @@ export function ViewerScene({
 }: ViewerSceneProps) {
     return (
         <>
+            <RoomEnvironmentRig />
             <RendererSnapshotPublisher />
             <SceneBackground mode={viewportBackground} />
 
@@ -166,12 +171,27 @@ export function ViewerScene({
     );
 }
 
+/** Procedural IBL on the scene this canvas actually renders. Lives in the
+ *  tree so its cleanup is the effect cleanup, not a module-level handle that
+ *  a second canvas or a StrictMode remount can use to blank the live scene. */
+function RoomEnvironmentRig() {
+    const gl = useThree((state) => state.gl);
+    const scene = useThree((state) => state.scene);
+    useLayoutEffect(() => installRoomEnvironment(gl, scene), [gl, scene]);
+    return null;
+}
+
 function SceneLights() {
     return (
         <>
-            <ambientLight intensity={0.5} />
-            <directionalLight position={[10, 20, 10]} intensity={0.7} />
-            <directionalLight position={[-5, -10, -5]} intensity={0.3} />
+            <hemisphereLight
+                color={VIEWER_HEMISPHERE.sky}
+                groundColor={VIEWER_HEMISPHERE.ground}
+                intensity={VIEWER_HEMISPHERE.intensity}
+                position={VIEWER_HEMISPHERE.position}
+            />
+            <directionalLight position={VIEWER_KEY_LIGHT.position} intensity={VIEWER_KEY_LIGHT.intensity} />
+            <directionalLight position={VIEWER_FILL_LIGHT.position} intensity={VIEWER_FILL_LIGHT.intensity} />
         </>
     );
 }

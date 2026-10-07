@@ -4,6 +4,36 @@ import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { buildShapeMaterial } from './buildShapeMaterial';
 
+describe('buildShapeMaterial anisotropy', () => {
+  it('drops anisotropy when the mesh has no anisotropy map', () => {
+    const m = buildShapeMaterial(
+      { baseColor: '#b0b4b8', metalness: 1, roughness: 0.3, anisotropy: 0.8 },
+      false,
+      '#b0b4b8',
+      'shaded',
+    ) as THREE.MeshPhysicalMaterial;
+    expect(m.anisotropy).toBe(0);
+    expect(m.metalness).toBe(1);
+    expect(m.roughness).toBe(0.3);
+  });
+
+  it('keeps anisotropy when an anisotropy map is set', () => {
+    const m = buildShapeMaterial(
+      {
+        baseColor: '#b0b4b8',
+        metalness: 1,
+        roughness: 0.3,
+        anisotropy: 0.8,
+        textures: { anisotropy: { path: '/textures/brush.png' } },
+      },
+      false,
+      '#b0b4b8',
+      'shaded',
+    ) as THREE.MeshPhysicalMaterial;
+    expect(m.anisotropy).toBeCloseTo(0.8);
+  });
+});
+
 describe('buildShapeMaterial clippingPlanes', () => {
   it('defaults to no clipping planes', () => {
     const m = buildShapeMaterial(undefined, false, '#ffffff', 'shaded');

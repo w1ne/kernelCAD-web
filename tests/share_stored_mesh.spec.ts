@@ -198,8 +198,9 @@ test.describe('share pages paint the stored mesh', () => {
           body: JSON.stringify({ elapsed, shade, luma }),
           contentType: 'application/json',
         });
-        // Shade and luma are recorded, not asserted: the viewer lighting is
-        // reviewed separately (feat/viewer-lighting-agx).
+        // Shade and luma are recorded, not asserted, on this opt-in paint
+        // check. The Studio rig (AgX, room IBL, Z-up lights) is locked by the
+        // viewer unit tests.
         await testInfo.attach(`${entry.slug}-v${entry.version}.png`, {
           body: shot,
           contentType: 'image/png',
