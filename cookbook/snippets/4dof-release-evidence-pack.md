@@ -40,6 +40,14 @@ ball mates are a stop (`export.usd.joint-unsupported`).
 // checkStaticHold reads arm.revolute actuators, NOT mates. solvedModel must
 // receive those joint poses; mates still drive the mechanism geometry.
 //
+// Joint hardware: pitch joints are joint.clevis (fork sandwiches a round
+// tongue, capped pin through both ears). Each link tube starts inside its
+// tongue so the spar is seated in the hub. Parent yokes (hub + side spines
+// + cheek disks) bridge the fork back into the tube — sub-millimetre
+// running clearance, not a multi-mm air gap. Yaw is a spigot inside a bored
+// collar (0.28 mm radial, ~0.4 mm axial) so the turret sits on the pedestal
+// without a shared volume. Servo bottoms are 0.2 mm above their shelves.
+//
 // Follow-up AFTER evaluate_script ok + mechanism=real (do not fake results):
 // 1. inspect({ of: 'bom' }) or export bom-csv|bom-json. Materials are set;
 //    mass is null only if a row is still bom.material.unassigned.
@@ -71,134 +79,266 @@ animationView({
   fps: 24,
 });
 
-const shoulderZ = 78;
-const upperLen = 115;
-const foreLen = 95;
-const wristLen = 48;
+const YAW_Z = 54;
+const SHOULDER_Z = 36;
+const upperLen = 112;
+const foreLen = 90;
+const wristLen = 44;
+const yawBoreR = 16.28;
+
+const pinMat = { baseColor: '#1c2228', metalness: 0.94, roughness: 0.22 };
+
+function clevisStyle(knuckleR, tongueY, plateT, pinR) {
+  return {
+    knuckleR,
+    tongueY,
+    forkGapY: tongueY + 0.8,
+    plateT,
+    pinR,
+    pinCapR: pinR + 2.4,
+    pinCapThickness: pinR + 2.2,
+    holeClearance: 0.15,
+    pinMaterial: pinMat,
+  };
+}
+
+const shoulderStyle = clevisStyle(14, 16, 5.4, 4.2);
+const elbowStyle = clevisStyle(12, 13, 4.8, 3.6);
+const wristStyle = clevisStyle(10, 11, 4.2, 3.1);
+const shoulderLimits = [-15, 55];
+const elbowLimits = [-85, 70];
+const wristLimits = [-90, 90];
+
+function xTube(x0, x1, r) {
+  return cylinder(x1 - x0, r).rotate([0, 1, 0], 90).translate(x0, 0, 0);
+}
+
+function yCyl(len, r, cx, cz) {
+  return cylinder(len, r).rotate([1, 0, 0], 90).translate(cx, len / 2, cz);
+}
+
+function capFaceY(style) {
+  // Outer axial face of the clevis cap (pin axis is Y). pinCapR is radial.
+  const shaftLen = style.forkGapY + 2 * style.plateT;
+  return shaftLen / 2 + style.pinCapThickness - 0.5;
+}
+
+function parentYoke(pivotX, style, tubeR) {
+  const plateOffset = style.forkGapY / 2 + style.plateT / 2;
+  // Stop 0.35 mm before the tongue disk so the parent never enters it.
+  const stop = pivotX - style.knuckleR - 0.35;
+  const collar = xTube(stop - 18, stop, tubeR + 1.8);
+  const cheek = (ySign) => yCyl(style.plateT, style.knuckleR, pivotX, 0)
+    .translate(0, ySign * plateOffset, 0);
+  const spineZ = Math.max(tubeR * 1.2, style.knuckleR * 0.72);
+  const spine = (ySign) => box(style.knuckleR + 12, style.plateT, spineZ, false).translate(
+    stop - 10,
+    ySign * plateOffset - style.plateT / 2,
+    -spineZ / 2,
+  );
+  return collar.union(cheek(1)).union(cheek(-1)).union(spine(1)).union(spine(-1));
+}
+
+const HORN_Z = 8;
+
+function servoPad(mount, bodyW, bodyD, yInner) {
+  const zTop = mount[2] - 0.2;
+  const yEnd = mount[1] + bodyD / 2 + 4;
+  const xHalf = bodyW / 2 + 8;
+  return box(xHalf * 2, yEnd - yInner, 5, false).translate(mount[0] - xHalf, yInner, zTop - 5);
+}
+
+function dropGusset(pivotX, knuckleR, tubeR, shelfTop) {
+  const x1 = pivotX - knuckleR - 1.2;
+  const x0 = x1 - 18;
+  const z1 = -tubeR + 2.2;
+  const z0 = shelfTop - 4;
+  return box(x1 - x0, tubeR + 6, z1 - z0, false).translate(x0, -2, z0);
+}
+
+function servoSolid(w, d, h) {
+  const body = box(w, d, h, true).translate(0, 0, h / 2);
+  const ear = box(w + 14, 3.6, 2.8, true).translate(0, 0, h - 0.4);
+  const screw = (x) => cylinder(h + 1.7, 1.45).translate(x, 0, -0.12).finish('steel');
+  // Side output at pin height. The horn stops 0.6 mm short of the cap face
+  // and stays above the mounting pad (pad top is 0.2 mm below the body).
+  const stub = cylinder(4.2, 2.3).rotate([1, 0, 0], 90).translate(0, -d / 2 + 0.5, HORN_Z).finish('steel');
+  const horn = cylinder(1.6, 5.4).rotate([1, 0, 0], 90).translate(0, -d / 2 - 2.6, HORN_Z).finish('abs', { color: '#c5ced6' });
+  return body.union(ear).union(screw((w + 9) / 2)).union(screw(-(w + 9) / 2)).union(stub).union(horn);
+}
+
+const upperTubeR = shoulderStyle.tongueY / 2 - 0.45;
+const foreTubeR = elbowStyle.tongueY / 2 - 0.45;
+const wristTubeR = wristStyle.tongueY / 2 - 0.4;
+
+const foot = (x, y) => cylinder(3.2, 5.2).translate(x, y, 6.2);
+const baseSolid = box(152, 116, 8, true).translate(0, 0, 4)
+  .union(cylinder(34, 20).translate(0, 0, 8))
+  .union(cylinder(4, 32).translate(0, 0, 42))
+  .union(cylinder(16, 16).translate(0, 0, 46))
+  .union(foot(58, 42)).union(foot(58, -42)).union(foot(-58, 42)).union(foot(-58, -42))
+  .union(box(42, 34, 30, true).translate(-54, 0, 20).finish('abs', { color: '#243140' }))
+  .union(cylinder(18, 4.2).rotate([0, 1, 0], 90).translate(-36, 0, 30).finish('steel'));
+
+const shoulderPlateY = shoulderStyle.forkGapY / 2 + shoulderStyle.plateT / 2;
+const mastTop = SHOULDER_Z - shoulderStyle.knuckleR - 0.4;
+const shoulderWeb = (ySign) => box(16, shoulderStyle.plateT, 22, true).translate(
+  0,
+  ySign * shoulderPlateY,
+  SHOULDER_Z - 6,
+);
+const shoulderServoD = 18;
+const shoulderMount = [0, capFaceY(shoulderStyle) + shoulderServoD / 2 + 4.8, SHOULDER_Z - HORN_Z];
+const turretSolid = cylinder(17.75, 23).translate(0, 0, -7.55)
+  .subtract(cylinder(16.7, yawBoreR).translate(0, 0, -8.4))
+  .union(cylinder(mastTop - 8.5, 17).translate(0, 0, 8.5))
+  .union(shoulderWeb(1))
+  .union(shoulderWeb(-1))
+  .union(servoPad(shoulderMount, 32, shoulderServoD, shoulderStyle.tongueY / 2 + 0.5));
+
+const elbowServoD = 16;
+const wristServoD = 14;
+const elbowMount = [upperLen, capFaceY(elbowStyle) + elbowServoD / 2 + 4.8, -HORN_Z];
+const wristMount = [foreLen, capFaceY(wristStyle) + wristServoD / 2 + 4.8, -HORN_Z];
+const upperRaw = xTube(shoulderStyle.pinR + 0.55, upperLen - elbowStyle.knuckleR - 0.15, upperTubeR)
+  .union(parentYoke(upperLen, elbowStyle, upperTubeR))
+  .union(servoPad(elbowMount, 28, elbowServoD, elbowStyle.tongueY / 2 + 0.5))
+  .union(dropGusset(upperLen, elbowStyle.knuckleR, upperTubeR, elbowMount[2] - 0.2));
+const foreRaw = xTube(elbowStyle.pinR + 0.55, foreLen - wristStyle.knuckleR - 0.15, foreTubeR)
+  .union(parentYoke(foreLen, wristStyle, foreTubeR))
+  .union(servoPad(wristMount, 24, wristServoD, wristStyle.tongueY / 2 + 0.5))
+  .union(dropGusset(foreLen, wristStyle.knuckleR, foreTubeR, wristMount[2] - 0.2));
+const wristRaw = xTube(wristStyle.pinR + 0.55, wristLen, wristTubeR)
+  .union(xTube(wristLen - 2, wristLen + 9, 11.5));
+
+// Pin axis is -Y so a positive pitch angle lifts the link. The reach-cycle
+// keys are positive; +Y would drive the arm down through the pedestal.
+const wristJoint = joint.clevis({
+  parentBody: foreRaw,
+  childBody: wristRaw,
+  axis: [0, -1, 0],
+  pivotParent: [foreLen, 0, 0],
+  pivotChild: [0, 0, 0],
+  limitsDeg: wristLimits,
+  liftDir: [1, 0, 0],
+  liftPivot: false,
+  style: wristStyle,
+});
+const elbowJoint = joint.clevis({
+  parentBody: upperRaw,
+  childBody: wristJoint.parentGeometry,
+  axis: [0, -1, 0],
+  pivotParent: [upperLen, 0, 0],
+  pivotChild: [0, 0, 0],
+  limitsDeg: elbowLimits,
+  liftDir: [1, 0, 0],
+  liftPivot: false,
+  style: elbowStyle,
+});
+const shoulderJoint = joint.clevis({
+  parentBody: turretSolid,
+  childBody: elbowJoint.parentGeometry,
+  axis: [0, -1, 0],
+  pivotParent: [0, 0, SHOULDER_Z],
+  pivotChild: [0, 0, 0],
+  limitsDeg: shoulderLimits,
+  liftDir: [0, 0, 1],
+  liftPivot: false,
+  style: shoulderStyle,
+});
 
 const arm = assembly('multi-dof-4axis-release');
 
-function roundPlate(w: number, d: number, r: number, t: number, x: number, y: number, z: number) {
-  return extrudeRoundedRect(w, d, r, t).translate(x, y, z);
-}
-function servoBody(w: number, d: number, h: number) {
-  const earT = Math.min(5, d * 0.4);
-  return extrudeRoundedRect(w, d, Math.min(3, d * 0.2), h).translate(0, 0, -h / 2)
-    .union(extrudeRoundedRect(w + 10, earT, 1.4, 2.6).translate(0, 0, h / 2 - 2.6))
-    .union(cylinder(3.2, Math.min(5, d * 0.3)).translate(0, -d / 2 + 1, 0));
-}
-function linkTube(len: number, r: number, x0: number) {
-  return cylinder(len, r).rotate([0, 1, 0], 90).translate(x0, 0, 0);
-}
-function clevis(x: number) {
-  return roundPlate(24, 7, 2, 28, x, 15, -14)
-    .union(roundPlate(24, 7, 2, 28, x, -15, -14))
-    .union(roundPlate(14, 32, 2, 7, x, 0, -3.5));
-}
+const base = arm.part('base-frame', baseSolid, { material: 'mild-steel' });
+base.connector('yaw', {
+  type: 'axis',
+  origin: { kind: 'vec3', value: [0, 0, YAW_Z] },
+  axis: [0, 0, 1],
+  jointClearanceRadius: yawBoreR,
+});
 
-const base = arm.part(
-  'base-frame',
-  roundPlate(136, 108, 14, 8, 0, 0, 0)
-    .union(cylinder(36, 18).translate(0, 0, 6))
-    .union(cylinder(4, 26).translate(0, 0, 41))
-    .union(cylinder(5.5, 16).translate(0, 0, 44.2))
-    .union(cylinder(1.6, 9).translate(0, 0, 49))
-    .union(servoBody(36, 28, 24).translate(-50, 0, 20))
-    .finish('steel'),
-  { material: 'mild-steel' },
-);
-base.connector('yaw', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 50] }, axis: [0, 0, 1] });
-
-const turret = arm.part(
-  'yaw-turret',
-  cylinder(36, 15).translate(0, 0, -1)
-    .union(roundPlate(18, 56, 3, 8, 0, 0, 24))
-    .union(roundPlate(22, 7, 2, 34, 0, 22, 11))
-    .union(roundPlate(22, 7, 2, 34, 0, -22, 11))
-    .union(roundPlate(12, 8, 2, 42, 0, 22, 4))
-    .union(roundPlate(12, 8, 2, 42, 0, -22, 4))
-    .union(roundPlate(30, 20, 3, 8, -28, 40, 22))
-    // Gusset from the top plate / cheek to the servo mount plate (alone the
-    // mount plate floated 6.8 mm off the turret: union.disconnected).
-    .union(roundPlate(14, 8, 1, 8, -14, 26, 22))
-    .finish('anodized', { color: '#8aa0ad' }),
-  { material: 'aluminum-6061' },
-);
-turret.connector('yaw', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
-turret.connector('shoulder', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, shoulderZ - 50] }, axis: [0, 1, 0] });
-turret.connector('shoulder-servo-mount', { type: 'frame', origin: { kind: 'vec3', value: [-32, 40, shoulderZ - 50] } });
+const turret = arm.part('yaw-turret', shoulderJoint.parentGeometry, { material: 'aluminum-6061' });
+turret.connector('yaw', {
+  type: 'axis',
+  origin: { kind: 'vec3', value: [0, 0, 0] },
+  axis: [0, 0, 1],
+  jointClearanceRadius: yawBoreR,
+});
+turret.connector('shoulder', {
+  type: 'axis',
+  origin: { kind: 'vec3', value: shoulderJoint.parentConnector.origin },
+  axis: shoulderJoint.parentConnector.axis,
+  jointClearanceRadius: shoulderJoint.parentConnector.clearanceRadius,
+});
+turret.connector('shoulder-servo-mount', {
+  type: 'frame',
+  origin: { kind: 'vec3', value: shoulderMount },
+});
 
 const shoulderServo = arm.part(
   'shoulder-servo',
-  servoBody(28, 18, 30).translate(-32, 40, shoulderZ - 50).finish('abs', { color: '#243140' }),
-  { material: 'nylon' },
+  servoSolid(32, shoulderServoD, 30).translate(shoulderMount[0], shoulderMount[1], shoulderMount[2]),
+  { material: 'abs' },
 );
-shoulderServo.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [-32, 40, shoulderZ - 50] } });
+shoulderServo.connector('mount', {
+  type: 'frame',
+  origin: { kind: 'vec3', value: shoulderMount },
+});
 
-const upper = arm.part(
-  'upper-link',
-  // Tube starts inside the shoulder axle (x = 3; from x = 8 the axle and
-  // hubs floated off it), far end unchanged.
-  linkTube(upperLen - 13, 6.2, 3)
-    .union(cylinder(96, 4.4).rotate([1, 0, 0], 90).translate(0, 48, 0))
-    .union(cylinder(8, 8).rotate([1, 0, 0], 90).translate(0, 16, 0))
-    .union(cylinder(8, 8).rotate([1, 0, 0], 90).translate(0, -8, 0))
-    .union(clevis(upperLen - 6))
-    .union(roundPlate(26, 16, 2, 8, upperLen - 22, 32, -4))
-    // Gusset from the clevis cheek to the servo mount plate (5.5 mm gap).
-    .union(roundPlate(10, 8, 1, 8, upperLen - 22, 20, -4))
-    .finish('anodized', { color: '#d5dde3' }),
-  { material: 'aluminum-6061' },
-);
-upper.connector('shoulder', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 1, 0] });
-upper.connector('elbow', { type: 'axis', origin: { kind: 'vec3', value: [upperLen, 0, 0] }, axis: [0, 1, 0] });
-upper.connector('elbow-servo-mount', { type: 'frame', origin: { kind: 'vec3', value: [upperLen - 20, 34, 0] } });
+const upper = arm.part('upper-link', shoulderJoint.childGeometry, { material: 'aluminum-6061' });
+upper.connector('shoulder', {
+  type: 'axis',
+  origin: { kind: 'vec3', value: shoulderJoint.childConnector.origin },
+  axis: shoulderJoint.childConnector.axis,
+  jointClearanceRadius: shoulderJoint.childConnector.clearanceRadius,
+});
+upper.connector('elbow', {
+  type: 'axis',
+  origin: { kind: 'vec3', value: elbowJoint.parentConnector.origin },
+  axis: elbowJoint.parentConnector.axis,
+  jointClearanceRadius: elbowJoint.parentConnector.clearanceRadius,
+});
+upper.connector('elbow-servo-mount', {
+  type: 'frame',
+  origin: { kind: 'vec3', value: elbowMount },
+});
 
-const elbowServo = arm.part(
-  'elbow-servo',
-  servoBody(26, 16, 26).translate(upperLen - 20, 34, 0).finish('abs', { color: '#243140' }),
-  { material: 'nylon' },
-);
-elbowServo.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [upperLen - 20, 34, 0] } });
+const elbowServo = arm.part('elbow-servo', servoSolid(28, elbowServoD, 26).translate(elbowMount[0], elbowMount[1], elbowMount[2]), { material: 'abs' });
+elbowServo.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: elbowMount } });
 
-const forearm = arm.part(
-  'forearm-link',
-  // Tube starts 1 mm inside the r 5 elbow hub (from x = 6 it floated 1 mm
-  // off it); a gusset ties the servo mount plate to the clevis cheek.
-  linkTube(foreLen - 14, 5.4, 4)
-    .union(cylinder(36, 5).rotate([1, 0, 0], 90).translate(0, 18, 0))
-    .union(clevis(foreLen - 4))
-    .union(roundPlate(22, 14, 2, 7, foreLen - 18, 28, -3.5))
-    .union(roundPlate(8, 4, 1, 7, foreLen - 14, 19.5, -3.5))
-    .finish('anodized', { color: '#c5d0d8' }),
-  { material: 'aluminum-6061' },
-);
-forearm.connector('elbow', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 1, 0] });
-forearm.connector('wrist', { type: 'axis', origin: { kind: 'vec3', value: [foreLen, 0, 0] }, axis: [0, 1, 0] });
-forearm.connector('wrist-servo-mount', { type: 'frame', origin: { kind: 'vec3', value: [foreLen - 16, 30, 0] } });
+const forearm = arm.part('forearm-link', elbowJoint.childGeometry, { material: 'aluminum-6061' });
+forearm.connector('elbow', {
+  type: 'axis',
+  origin: { kind: 'vec3', value: elbowJoint.childConnector.origin },
+  axis: elbowJoint.childConnector.axis,
+  jointClearanceRadius: elbowJoint.childConnector.clearanceRadius,
+});
+forearm.connector('wrist', {
+  type: 'axis',
+  origin: { kind: 'vec3', value: wristJoint.parentConnector.origin },
+  axis: wristJoint.parentConnector.axis,
+  jointClearanceRadius: wristJoint.parentConnector.clearanceRadius,
+});
+forearm.connector('wrist-servo-mount', {
+  type: 'frame',
+  origin: { kind: 'vec3', value: wristMount },
+});
 
-const wristServo = arm.part(
-  'wrist-servo',
-  servoBody(22, 14, 22).translate(foreLen - 16, 30, 0).finish('abs', { color: '#243140' }),
-  { material: 'nylon' },
-);
-wristServo.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [foreLen - 16, 30, 0] } });
+const wristServo = arm.part('wrist-servo', servoSolid(24, wristServoD, 22).translate(wristMount[0], wristMount[1], wristMount[2]), { material: 'abs' });
+wristServo.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: wristMount } });
 
-const wrist = arm.part(
-  'wrist-link',
-  linkTube(wristLen - 6, 5, 4)
-    .union(cylinder(28, 5).rotate([1, 0, 0], 90).translate(0, 14, 0))
-    .union(cylinder(16, 8).rotate([0, 1, 0], 90).translate(wristLen - 4, 0, -3))
-    .union(cylinder(3, 10.5).rotate([0, 1, 0], 90).translate(wristLen + 4, 0, -3))
-    .finish('anodized', { color: '#b7c3cc' }),
-  { material: 'aluminum-6061' },
-);
-wrist.connector('proximal', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 1, 0] });
+const wrist = arm.part('wrist-link', wristJoint.childGeometry, { material: 'aluminum-6061' });
+wrist.connector('proximal', {
+  type: 'axis',
+  origin: { kind: 'vec3', value: wristJoint.childConnector.origin },
+  axis: wristJoint.childConnector.axis,
+  jointClearanceRadius: wristJoint.childConnector.clearanceRadius,
+});
 
 arm.mate('base-yaw', 'base-frame.yaw', 'yaw-turret.yaw', 'revolute', { pose: baseYawDeg, limitsDeg: [-90, 90] });
-arm.mate('shoulder-pitch', 'yaw-turret.shoulder', 'upper-link.shoulder', 'revolute', { pose: shoulderDeg, limitsDeg: [-15, 55] });
-arm.mate('elbow-pitch', 'upper-link.elbow', 'forearm-link.elbow', 'revolute', { pose: elbowDeg, limitsDeg: [-85, 70] });
-arm.mate('wrist-pitch', 'forearm-link.wrist', 'wrist-link.proximal', 'revolute', { pose: wristDeg, limitsDeg: [-90, 90] });
+arm.mate('shoulder-pitch', 'yaw-turret.shoulder', 'upper-link.shoulder', 'revolute', { pose: shoulderDeg, limitsDeg: shoulderLimits });
+arm.mate('elbow-pitch', 'upper-link.elbow', 'forearm-link.elbow', 'revolute', { pose: elbowDeg, limitsDeg: elbowLimits });
+arm.mate('wrist-pitch', 'forearm-link.wrist', 'wrist-link.proximal', 'revolute', { pose: wristDeg, limitsDeg: wristLimits });
 arm.mate('shoulder-servo-fix', 'yaw-turret.shoulder-servo-mount', 'shoulder-servo.mount', 'fastened');
 arm.mate('elbow-servo-fix', 'upper-link.elbow-servo-mount', 'elbow-servo.mount', 'fastened');
 arm.mate('wrist-servo-fix', 'forearm-link.wrist-servo-mount', 'wrist-servo.mount', 'fastened');
@@ -220,10 +360,25 @@ arm.mechanicalJoint('wrist-drive', {
   requiredSupport: { kind: 'hinge-bracket', around: 'forearm-link.wrist', supports: ['forearm-link'], minBearingLengthMm: 20 },
 });
 
-arm.revolute('yaw-hold', base, turret, { axis: [0, 0, 1], origin: [0, 0, 50], limitsDeg: [-90, 90], actuator: { torqueNm: 25 } });
-arm.revolute('shoulder-hold', turret, upper, { axis: [0, 1, 0], origin: [0, 0, shoulderZ - 50], limitsDeg: [-15, 55], actuator: { torqueNm: 45 } });
-arm.revolute('elbow-hold', upper, forearm, { axis: [0, 1, 0], origin: [upperLen, 0, 0], limitsDeg: [-85, 70], actuator: { torqueNm: 22 } });
-arm.revolute('wrist-hold', forearm, wrist, { axis: [0, 1, 0], origin: [foreLen, 0, 0], limitsDeg: [-90, 90], actuator: { torqueNm: 8 } });
+arm.revolute('yaw-hold', base, turret, { axis: [0, 0, 1], origin: [0, 0, YAW_Z], limitsDeg: [-90, 90], actuator: { torqueNm: 25 } });
+arm.revolute('shoulder-hold', turret, upper, {
+  axis: shoulderJoint.parentConnector.axis,
+  origin: shoulderJoint.parentConnector.origin,
+  limitsDeg: shoulderLimits,
+  actuator: { torqueNm: 45 },
+});
+arm.revolute('elbow-hold', upper, forearm, {
+  axis: elbowJoint.parentConnector.axis,
+  origin: elbowJoint.parentConnector.origin,
+  limitsDeg: elbowLimits,
+  actuator: { torqueNm: 22 },
+});
+arm.revolute('wrist-hold', forearm, wrist, {
+  axis: wristJoint.parentConnector.axis,
+  origin: wristJoint.parentConnector.origin,
+  limitsDeg: wristLimits,
+  actuator: { torqueNm: 8 },
+});
 
 const hold = await kinematic.checkStaticHold(arm, { minTorqueMarginPct: 15 });
 if (!hold.ok) {
@@ -232,13 +387,5 @@ if (!hold.ok) {
 
 return arm.solvedModel(
   { 'yaw-hold': 0, 'shoulder-hold': 0, 'elbow-hold': 0, 'wrist-hold': 0 },
-  {
-    ignore: [
-      ['yaw-turret', 'upper-link'], ['upper-link', 'forearm-link'], ['forearm-link', 'wrist-link'],
-      ['yaw-turret', 'shoulder-servo'], ['upper-link', 'elbow-servo'], ['forearm-link', 'wrist-servo'],
-      ['shoulder-servo', 'upper-link'], ['elbow-servo', 'forearm-link'], ['wrist-servo', 'wrist-link'],
-      ['base-frame', 'yaw-turret'],
-    ],
-  },
 );
 ```
