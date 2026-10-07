@@ -10,7 +10,9 @@ const lift = param('liftDeg', 0, { min: 0, max: 200, description: 'Shoulder pitc
 const elbow = param('elbowDeg', 0, { min: -180, max: 0, description: 'Elbow pitch' });
 const wrist = param('wristDeg', 0, { min: -140, max: 65, description: 'Wrist pitch' });
 const roll = param('rollDeg', 0, { min: -180, max: 180, description: 'Wrist roll' });
-const jaw = param('jawDeg', 0, { min: -11, max: 110, description: 'Gripper opening' });
+// -11° is the closed stop: the moving finger meets the fixed jaw.
+// 0° leaves the pincer open; the reach animation still drives jawDeg.
+const jaw = param('jawDeg', -11, { min: -11, max: 110, description: 'Gripper opening' });
 
 type Vec3 = [number, number, number];
 type Mat3 = [Vec3, Vec3, Vec3];

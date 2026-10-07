@@ -31,15 +31,13 @@
 // margin alone).
 //
 // Bearing-contact fallback: a pivot deliberately in open space (annular
-// rim seats, spindles running in a bore of a part FASTENED to the mated
-// part, hollow-axis valve rotors) is NOT floating — the joint is
-// constrained by bearing contact away from the axis. When a pivot probe
-// exceeds the allowed gap, the helper measures the true minimum distance
-// between the two mated RIGID GROUPS (parts joined transitively by
-// fastened mates) and reports it as `bearingGapMm`; the caller passes
-// the joint when that distance is within the same tolerance. A
-// genuinely floating part exceeds the tolerance everywhere and still
-// fails.
+// rim seat, hollow-axis rotor) is NOT floating when the two mated bodies
+// themselves meet near the joint axis. The distance is between those two
+// bodies only — a servo box or horn fastened to one side does not count,
+// or a link that never reaches its joint passes by grazing a neighbour.
+// Contact farther than JOINT_BEARING_AXIS_RADIUS_MM from the axis (a
+// fingertip pinch) does not count either. The caller passes the joint
+// when `bearingGapMm` is within the same 1 mm tolerance.
 //
 // Implementation notes:
 //
@@ -60,7 +58,7 @@ import type { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { OcctBackend as OcctBackendClass } from '../../kernel/backends/occt/occtBackend';
 import type { Transform, Vec3 } from '../../shared/runtime/se3';
 import { parseConnectorRef, type MateRecord } from '../mates/mate';
-import { brepExtremaDistance, wrappedShape } from './brepDistance';
+import { brepExtremaContact, brepExtremaDistance, wrappedShape } from './brepDistance';
 
 /**
  * Per-spec tolerance (mm) for the joint-mesh-continuity check. Wide
@@ -74,6 +72,16 @@ import { brepExtremaDistance, wrappedShape } from './brepDistance';
  * the tolerance — fix the clevis instead.
  */
 export const JOINT_MESH_GAP_TOLERANCE_MM = 1.0;
+
+/**
+ * A bearing that "connects" two links must sit on the joint, not on a
+ * fingertip or a servo box grazing the next link far from the axis.
+ * 32 mm covers the annular-rim seat (disc radius 28 mm, ring to 30 mm)
+ * and still rejects a gripper finger ~70 mm out on the jaw. Not a
+ * substitute for the 1 mm gap tolerance — a far contact never counts,
+ * however small the gap.
+ */
+export const JOINT_BEARING_AXIS_RADIUS_MM = 32;
 
 /**
  * Radius (mm) of the probe sphere used to detect "point lies inside
@@ -135,6 +143,13 @@ export interface JointMeshGapResult {
    * OCCT distance solver failed.
    */
   readonly bearingGapMm?: number;
+  /**
+   * Set when the closest surface contact sits farther than
+   * {@link JOINT_BEARING_AXIS_RADIUS_MM} from the joint axis. That
+   * contact is not a bearing: a fingertip pinch or a distant box graze
+   * must not pass a joint whose pivot is in the air.
+   */
+  readonly bearingOffAxisRadialMm?: number;
 }
 
 /**
@@ -166,29 +181,6 @@ function indexAssemblyParts(arm: Assembly): Map<string, ReturnType<Assembly['__p
   const partByName = new Map<string, ReturnType<Assembly['__parts']>[number]>();
   for (const p of arm.__parts()) partByName.set(p.name, p);
   return partByName;
-}
-
-// Fastened-mate adjacency for the bearing-contact fallback: parts
-// joined by fastened mates move as one rigid link, so a bearing
-// surface on ANY part of the group constrains a joint mated to the
-// group (e.g. a spindle running in a bore of a block fastened to the
-// mate's declared parent).
-function buildFastenedAdjacency(arm: Assembly): Map<string, Set<string>> {
-  const fastenedAdj = new Map<string, Set<string>>();
-  for (const m of arm.__mates()) {
-    if (m.type !== 'fastened') continue;
-    try {
-      const a = parseConnectorRef(m.a).partName;
-      const b = parseConnectorRef(m.b).partName;
-      if (!fastenedAdj.has(a)) fastenedAdj.set(a, new Set());
-      if (!fastenedAdj.has(b)) fastenedAdj.set(b, new Set());
-      fastenedAdj.get(a)!.add(b);
-      fastenedAdj.get(b)!.add(a);
-    } catch {
-      continue;
-    }
-  }
-  return fastenedAdj;
 }
 
 interface ResolvedMateContext {
@@ -267,23 +259,27 @@ function buildSideRow(
   };
 }
 
+interface BearingAxis {
+  readonly origin: readonly [number, number, number];
+  readonly direction: readonly [number, number, number];
+}
+
 function applyBearingGap(
   rows: JointMeshGapResult[],
-  fastenedAdj: ReadonlyMap<string, ReadonlySet<string>>,
   sceneByPartName: ReadonlyMap<string, SceneBackend['parts'][number]>,
   parentPartName: string,
   childPartName: string,
+  axis: BearingAxis | undefined,
 ): JointMeshGapResult[] {
-  // Bearing-contact fallback (only paid for when a pivot probe fails):
-  // measure the true minimum distance between the two mated rigid
-  // groups. The caller passes the joint when this lands within
-  // tolerance — the pivot sits in deliberately open space (annular rim
-  // seat, bushing-at-a-distance) but real material constrains the
-  // joint elsewhere.
+  // Bearing-contact fallback (only paid for when a pivot probe fails).
+  // Distance is between the two mated bodies, not a servo or horn
+  // fastened to one of them — those used to graze the neighbour and
+  // pass a link that never reaches its joint. Contact farther than
+  // JOINT_BEARING_AXIS_RADIUS_MM from the axis is not a seat either.
   if (rows.some((r) => r.signedDistanceMm > r.clearanceRadiusMm + JOINT_MESH_GAP_TOLERANCE_MM)) {
-    const bearingGapMm = measureMateBearingGap(fastenedAdj, sceneByPartName, parentPartName, childPartName);
-    if (bearingGapMm !== undefined) {
-      return rows.map((r) => ({ ...r, bearingGapMm }));
+    const bearing = measureMateBearingGap(sceneByPartName, parentPartName, childPartName, axis);
+    if (bearing !== undefined) {
+      return rows.map((r) => ({ ...r, ...bearing }));
     }
   }
   return rows;
@@ -294,7 +290,6 @@ function collectMateRows(
   rest: JointMeshContinuityRestSample,
   sceneByPartName: ReadonlyMap<string, SceneBackend['parts'][number]>,
   partByName: ReadonlyMap<string, ReturnType<Assembly['__parts']>[number]>,
-  fastenedAdj: ReadonlyMap<string, ReadonlySet<string>>,
 ): JointMeshGapResult[] {
   const ctx = resolveMateContext(mate, rest, partByName);
   if (ctx === undefined) return [];
@@ -320,7 +315,20 @@ function collectMateRows(
     if (row !== undefined) rows.push(row);
   }
 
-  return applyBearingGap(rows, fastenedAdj, sceneByPartName, ctx.parsedA.partName, ctx.parsedB.partName);
+  const axis = bearingAxisFromParent(ctx);
+  return applyBearingGap(rows, sceneByPartName, ctx.parsedA.partName, ctx.parsedB.partName, axis);
+}
+
+function bearingAxisFromParent(ctx: ResolvedMateContext): BearingAxis | undefined {
+  const local = ctx.aConn.axis;
+  if (local === undefined) return undefined;
+  const spun = ctx.T_A.axisDir(local);
+  const len = Math.hypot(spun[0], spun[1], spun[2]);
+  if (len < 1e-9) return undefined;
+  return {
+    origin: ctx.pivotWorld,
+    direction: [spun[0] / len, spun[1] / len, spun[2] / len],
+  };
 }
 
 export function checkJointMeshContinuity(
@@ -332,79 +340,78 @@ export function checkJointMeshContinuity(
 
   const partByName = indexAssemblyParts(arm);
 
-  const fastenedAdj = buildFastenedAdjacency(arm);
-
   for (const mate of arm.__mates()) {
-    out.push(...collectMateRows(mate, rest, sceneByPartName, partByName, fastenedAdj));
+    out.push(...collectMateRows(mate, rest, sceneByPartName, partByName));
   }
 
   return out;
 }
 
 /**
- * Collect the rigid group of `root`: every part reachable from it over
- * fastened-mate edges (inclusive of `root` itself). Articulated mates
- * are NOT traversed — they are the joints whose bearing we're checking.
- */
-function collectFastenedGroup(
-  fastenedAdj: ReadonlyMap<string, ReadonlySet<string>>,
-  root: string,
-): Set<string> {
-  const visited = new Set<string>([root]);
-  const queue = [root];
-  while (queue.length > 0) {
-    const cur = queue.shift()!;
-    for (const next of fastenedAdj.get(cur) ?? []) {
-      if (!visited.has(next)) {
-        visited.add(next);
-        queue.push(next);
-      }
-    }
-  }
-  return visited;
-}
-
-/**
- * Minimum world-space distance (mm) between the rigid groups of the two
- * mated parts. Early-exits as soon as a pair lands within
- * `JOINT_MESH_GAP_TOLERANCE_MM` (the caller only compares against that
- * threshold). If the two groups intersect — a pathological assembly
- * that declares both an articulated mate and a fastened chain between
- * the same parts — falls back to the directly-mated pair so a shared
- * part can't trivially report zero.
+ * Minimum world-space distance (mm) between the two mated bodies.
+ * Early-exits once a contact within tolerance is also within the
+ * joint-axis radius. A fastened accessory is not consulted.
  */
 function measureMateBearingGap(
-  fastenedAdj: ReadonlyMap<string, ReadonlySet<string>>,
   sceneByPartName: ReadonlyMap<string, SceneBackend['parts'][number]>,
   parentPartName: string,
   childPartName: string,
-): number | undefined {
-  let groupA = collectFastenedGroup(fastenedAdj, parentPartName);
-  let groupB = collectFastenedGroup(fastenedAdj, childPartName);
-  if ([...groupA].some((n) => groupB.has(n))) {
-    groupA = new Set([parentPartName]);
-    groupB = new Set([childPartName]);
-  }
+  axis: BearingAxis | undefined,
+): { bearingGapMm?: number; bearingOffAxisRadialMm?: number } | undefined {
+  const pair = [
+    [parentPartName, childPartName],
+  ] as const;
 
   let best: number | undefined;
-  for (const aName of groupA) {
+  let offAxisRadial: number | undefined;
+  for (const [aName, bName] of pair) {
     const a = sceneByPartName.get(aName);
     if (a === undefined) continue;
-    for (const bName of groupB) {
-      const b = sceneByPartName.get(bName);
-      if (b === undefined) continue;
-      const d = measureBodyToBodyGap(
+    const b = sceneByPartName.get(bName);
+    if (b === undefined) continue;
+    {
+      const contact = measureBodyToBodyContact(
         a.shape as OcctBackend,
         a.worldTransform,
         b.shape as OcctBackend,
         b.worldTransform,
       );
-      if (d === undefined) continue;
-      if (best === undefined || d < best) best = d;
-      if (best <= JOINT_MESH_GAP_TOLERANCE_MM) return best;
+      if (contact === undefined) continue;
+      if (axis !== undefined) {
+        const radial = Math.max(
+          radialDistanceMm(contact.pointA, axis),
+          radialDistanceMm(contact.pointB, axis),
+        );
+        if (radial > JOINT_BEARING_AXIS_RADIUS_MM) {
+          if (offAxisRadial === undefined || radial < offAxisRadial) offAxisRadial = radial;
+          continue;
+        }
+      }
+      if (best === undefined || contact.distanceMm < best) best = contact.distanceMm;
+      if (best <= JOINT_MESH_GAP_TOLERANCE_MM) {
+        return { bearingGapMm: best };
+      }
     }
   }
-  return best;
+  if (best === undefined && offAxisRadial === undefined) return undefined;
+  return {
+    ...(best !== undefined ? { bearingGapMm: best } : {}),
+    ...(offAxisRadial !== undefined ? { bearingOffAxisRadialMm: offAxisRadial } : {}),
+  };
+}
+
+function radialDistanceMm(
+  point: readonly [number, number, number],
+  axis: BearingAxis,
+): number {
+  const rx = point[0] - axis.origin[0];
+  const ry = point[1] - axis.origin[1];
+  const rz = point[2] - axis.origin[2];
+  const proj = rx * axis.direction[0] + ry * axis.direction[1] + rz * axis.direction[2];
+  const px = rx - axis.direction[0] * proj;
+  const py = ry - axis.direction[1] * proj;
+  const pz = rz - axis.direction[2] * proj;
+  return Math.hypot(px, py, pz);
 }
 
 /**
@@ -489,6 +496,23 @@ export function measureBodyToBodyGap(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const oc = getOC() as any;
     return brepExtremaDistance(oc, wrappedShape(worldA), wrappedShape(worldB));
+  } catch {
+    return undefined;
+  }
+}
+
+function measureBodyToBodyContact(
+  localShapeA: OcctBackend,
+  worldTransformA: Transform,
+  localShapeB: OcctBackend,
+  worldTransformB: Transform,
+): { distanceMm: number; pointA: readonly [number, number, number]; pointB: readonly [number, number, number] } | undefined {
+  try {
+    const worldA = localShapeA.clone().applyTransform(worldTransformA);
+    const worldB = localShapeB.clone().applyTransform(worldTransformB);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const oc = getOC() as any;
+    return brepExtremaContact(oc, wrappedShape(worldA), wrappedShape(worldB));
   } catch {
     return undefined;
   }

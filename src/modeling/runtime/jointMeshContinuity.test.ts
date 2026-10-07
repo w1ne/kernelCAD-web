@@ -173,8 +173,60 @@ describe('joint-mesh-continuity helper (P8)', () => {
     expect(gaps.length).toBeGreaterThanOrEqual(1);
     // The fallback ran and reported the true rigid-group clearance in
     // the diagnostic, so the agent sees both distances.
-    const withBearing = gaps.find((g) => g.message.includes('Nearest contact between the mated rigid groups'));
+    const withBearing = gaps.find((g) => g.message.includes('Nearest contact between the two mated bodies'));
     expect(withBearing).toBeDefined();
     expect(result.mechanism).toBe('broken');
   }, 90000);
+
+  it('fingertip-only contact far from the axis does not connect the link to the body', async () => {
+    // Pads meet 0.2 mm apart, but 40 mm off the hinge. That is a finger
+    // pinch, not a knuckle. The pivot is in the air on both sides.
+    const { arm, kcad } = makeArm('far-finger');
+    const parent = arm.part('wrist', kcad.box(10, 10, 10, true).translate(40, 0, 0));
+    parent.connector('jaw', {
+      type: 'axis',
+      origin: { kind: 'vec3', value: [0, 0, 0] },
+      axis: [0, 0, 1],
+    });
+    const child = arm.part('claw', kcad.box(10, 10, 10, true).translate(40, 0, 10.2));
+    child.connector('in', {
+      type: 'axis',
+      origin: { kind: 'vec3', value: [0, 0, 0] },
+      axis: [0, 0, 1],
+    });
+    arm.mate('jaw', 'wrist.jaw', 'claw.in', 'revolute', { limitsDeg: [-20, 20] });
+
+    const result = await checkMechanismTruth(arm);
+    const gaps = result.failures.filter((f) => f.code === 'mechanism.joint-mesh-gap');
+    expect(gaps.length).toBeGreaterThanOrEqual(1);
+    expect(gaps.some((g) => g.message.includes('off the joint axis'))).toBe(true);
+    expect(result.mechanism).toBe('broken');
+  }, 90000);
+
+  it('a fastened box that only grazes the neighbour does not connect a floating link', async () => {
+    const { arm, kcad } = makeArm('servo-graze');
+    const parent = arm.part('link', kcad.box(10, 10, 10, true).translate(0, 0, -20));
+    parent.connector('hinge', {
+      type: 'axis',
+      origin: { kind: 'vec3', value: [0, 0, 0] },
+      axis: [0, 0, 1],
+    });
+    parent.connector('servo', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    const child = arm.part('claw', kcad.box(10, 10, 10, true).translate(0, 0, 20));
+    child.connector('in', {
+      type: 'axis',
+      origin: { kind: 'vec3', value: [0, 0, 0] },
+      axis: [0, 0, 1],
+    });
+    // Overlaps the claw completely, and does not contain the pivot at the origin.
+    const servo = arm.part('servo', kcad.box(10, 10, 10, true).translate(0, 0, 20));
+    servo.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm.mate('servo-fix', 'link.servo', 'servo.mount', 'fastened');
+    arm.mate('jaw', 'link.hinge', 'claw.in', 'revolute', { limitsDeg: [-20, 20] });
+
+    const result = await checkMechanismTruth(arm);
+    expect(result.failures.some((f) => f.code === 'mechanism.joint-mesh-gap')).toBe(true);
+    expect(result.mechanism).toBe('broken');
+  }, 90000);
+
 });

@@ -85,4 +85,25 @@ describe('loadSnippets', () => {
     const snippets = loadSnippets(rootDir, tagsPath);
     expect(snippets.map((s) => s.id)).toEqual(['alpha-snippet', 'beta-snippet']);
   });
+
+  it('accepts an example path that points at a real .kcad.ts file', () => {
+    const root = mkdtempSync(join(tmpdir(), 'cookbook-ex-'));
+    mkdirSync(join(root, 'snippets'), { recursive: true });
+    writeFileSync(join(root, 'model.kcad.ts'), 'return box(1, 1, 1);\n');
+    writeFileSync(join(root, 'tags.json'), JSON.stringify(['assembly']));
+    const md = goodSnippet
+      .replace('id: fillet-face-after-subtract', 'id: vendor-arm')
+      .replace('title: Fillet only the top face after subtract', 'title: Vendor arm')
+      .replace('tags: [fillet, subtract, face-ref]', 'tags: [assembly]')
+      .replace('when_to_use: After subtracting a hole or pocket, you want to round only the rim.', 'when_to_use: Run the example file.\nexample: model.kcad.ts');
+    writeFileSync(join(root, 'snippets', 'vendor-arm.md'), md);
+    const prev = process.cwd();
+    process.chdir(root);
+    try {
+      const snippets = loadSnippets(join(root, 'snippets'), join(root, 'tags.json'));
+      expect(snippets[0].example).toBe('model.kcad.ts');
+    } finally {
+      process.chdir(prev);
+    }
+  });
 });

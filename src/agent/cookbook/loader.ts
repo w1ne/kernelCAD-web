@@ -12,6 +12,12 @@ export interface Snippet {
   when_to_use: string;
   body: string;       // raw TS code, fences stripped
   filepath: string;   // for traceability
+  /**
+   * Repo-relative `.kcad.ts` to evaluate instead of `body`. Used when the
+   * real model imports vendor meshes that cannot be copied into a temp
+   * snippet. `body` stays as the agent-facing note.
+   */
+  example?: string;
 }
 
 const FRONTMATTER_RE = /^---\n([\s\S]*?)\n---\n([\s\S]*)$/;
@@ -80,6 +86,16 @@ function parseSnippet(raw: string, filepath: string, allowedTags: Set<string>): 
     throw new Error(`${filepath}: exactly one code fence required, found ${matches.length}`);
   }
 
+  const example = typeof fm.example === 'string' ? fm.example.trim() : undefined;
+  if (example !== undefined) {
+    if (example.length === 0 || example.startsWith('/') || example.includes('..') || !example.endsWith('.kcad.ts')) {
+      throw new Error(`${filepath}: example must be a repo-relative .kcad.ts path`);
+    }
+    if (!existsSync(example)) {
+      throw new Error(`${filepath}: example file not found: ${example}`);
+    }
+  }
+
   return {
     id: fm.id as string,
     title: fm.title as string,
@@ -88,5 +104,6 @@ function parseSnippet(raw: string, filepath: string, allowedTags: Set<string>): 
     when_to_use: fm.when_to_use as string,
     body: matches[0][1].trim(),
     filepath,
+    ...(example !== undefined ? { example } : {}),
   };
 }
