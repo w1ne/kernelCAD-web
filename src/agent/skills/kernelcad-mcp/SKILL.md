@@ -64,6 +64,7 @@ Use before freehand authoring on production / industry prompts. Prefer `design_l
 | Sheet-metal bend (≤2 bends, sharp fuse) | `sheet-metal-l-bracket-bend` | Slice-1 limits; see `kernelcad-sheet-metal` |
 | T-slot extrusion + bracket | `tslot-extrusion-and-bracket` | |
 | Pipe / tube route | `pipe-route-swept-tube` | |
+| Freight box trailer with roof solar-battery packs | `freight-trailer-roof-solar-batteries` | Keep-out grid + kingpin/bogie reaction station. Not FEA. Doors fastened shut. |
 | Drawings + GD&T callouts | `drawing-auto-dimension-gdt`, `drawing-hole-and-gdt-callouts` | |
 | Static-hold / actuator torque | `static-hold-actuator-torque-check` | Also kinematic skill cookbooks |
 
