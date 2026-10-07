@@ -14,7 +14,6 @@ import { OcctLowerer } from '../backends/occt/occtLowerer';
 import type { FeatureEvent } from '../compute/featureEvents';
 import { OcctBackend, initOcct } from '../../kernel/backends/occt/occtBackend';
 import { RecomputeEngine } from '../compute/recomputeEngine';
-import { WASM_POISON_MARKER } from '../../shared/occt/wasmPoison';
 import { meshShape } from '../../kernel/backends/occt/meshing';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import { generatePlanarUVs } from './planarUv';
@@ -809,7 +808,7 @@ export async function meshFeaturesPerFeature(
 
   const linkState = newLinkState(records, seedShapes);
 
-  const recompute = await engine.run(records, {
+  await engine.run(records, {
     paramTable,
     ...(seedShapes !== undefined && seedShapes.size > 0 ? { seedShapes } : {}),
     onEvent: (event) => handleMeshFeatureEvent(event, {
@@ -830,11 +829,6 @@ export async function meshFeaturesPerFeature(
       ...linkState,
     }),
   });
-
-  // resetOcct + one retry still failed. A per-feature failure list would keep
-  // this process's dead heap in service; throw so the host recycles it.
-  const poison = recompute.diagnostics.find((d) => d.message.includes(WASM_POISON_MARKER));
-  if (poison) throw new Error(poison.message);
 
   reEmitSeededFeatureMeshes(
     records,

@@ -594,24 +594,12 @@ export class RecomputeEngine {
         return await this.runPass(records, opts);
       } catch (retryErr) {
         if (!isOcctWasmPoisoned(retryErr)) throw retryErr;
-        const message =
+        // Throw, do not return a per-feature diagnostic. A returned failure
+        // leaves this dead heap in service and the viewer never gets a mesh.
+        throw new Error(
           `${WASM_POISON_MARKER}: ${describeOcctThrow(retryErr)}. ` +
-          'OCCT was reset and the full recompute retried; still failing. Restart the host process.';
-        return {
-          shapes: new Map(),
-          diagnostics: [{
-            target: this.lowerer.target,
-            code: 'recompute.lowering.exception',
-            severity: 'error',
-            message,
-            hint:
-              'The OCCT wasm heap was corrupted (often by an embind double-free). ' +
-              'Reset + retry did not recover; restart the Node/export process or reload Studio.',
-          }],
-          health: new Map(),
-          mechanism: 'unverified',
-          mechanismFailures: [],
-        };
+          'OCCT was reset and the full recompute retried; still failing. Restart the host process.',
+        );
       }
     }
   }
