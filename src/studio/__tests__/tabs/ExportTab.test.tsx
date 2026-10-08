@@ -96,7 +96,7 @@ describe('ExportTab', () => {
         render(<ExportTab />);
         fireEvent.click(screen.getByTestId('export-order'));
         expect((await screen.findByTestId('shop-offer')).textContent).toContain('SendCutSend');
-        expect(screen.getByTestId('shop-offer').textContent).toContain('$32.21');
+        expect(screen.getByTestId('shop-offer').textContent).toContain('from $32.21');
         fireEvent.click(screen.getByTestId('shop-pay'));
         await waitFor(() => expect(opened).toHaveBeenCalledWith(
             'https://checkout.stripe.com/c/pay/cs_test',

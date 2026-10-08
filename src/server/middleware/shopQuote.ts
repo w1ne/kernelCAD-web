@@ -162,12 +162,23 @@ function mime(format: 'dxf' | 'step'): string {
     return format === 'dxf' ? 'image/vnd.dxf' : 'model/step';
 }
 
+function hasBendLines(bytes: Uint8Array): boolean {
+    return /\n\s*8\r?\nBEND\r?\n/.test(new TextDecoder().decode(bytes));
+}
+
 export async function quoteShops(source: string, deps: ShopDeps = {}): Promise<ShopQuoteOk | ShopFail> {
     if (!source.trim()) return fail('shop.source.missing', 'Open a part first.');
     const exportFile = deps.exportFile ?? defaultExport;
+    // The network cuts and bends sheet. A part with no flat outline is not a
+    // sheet part, so it is refused rather than priced as one.
+    const flat = await exportFile(source, 'dxf');
+    if (!flat.ok) {
+        return fail('shop.not_sheet', 'Shops here cut and bend sheet. This part has no flat outline to cut.');
+    }
+    // A bent part goes as the formed STEP so the shop prices the bends too.
     let format: 'dxf' | 'step' = 'dxf';
-    let made = await exportFile(source, format);
-    if (!made.ok) {
+    let made: { ok: true; bytes: Uint8Array } | { ok: false; message: string } = flat;
+    if (hasBendLines(flat.bytes)) {
         format = 'step';
         made = await exportFile(source, format);
     }
@@ -186,12 +197,21 @@ export async function quoteShops(source: string, deps: ShopDeps = {}): Promise<S
         if (!isShopFail(finished)) data = finished;
     }
     const rows = Array.isArray(data.offers) ? data.offers : [];
+    const seen = new Set<string>();
     const offers = rows.flatMap((row: unknown) => {
         const offer = offerOf(row);
-        return offer ? [offer] : [];
-    });
+        if (!offer) return [];
+        const key = `${offer.shop}|${offer.total_cents}`;
+        if (seen.has(key)) return [];
+        seen.add(key);
+        return [offer];
+    }).sort((a, b) => a.total_cents - b.total_cents);
     const recommended = recommend(offers, rows);
-    if (!recommended) return fail('shop.none', 'No shop returned a price for this plate.');
+    if (!recommended) {
+        return fail('shop.none', format === 'step'
+            ? 'No shop priced the bends on this part yet. A flat part without a fold can be ordered.'
+            : 'No shop returned a price for this part.');
+    }
     return { ok: true, fabrication_file: format, recommended, offers };
 }
 

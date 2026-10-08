@@ -51,7 +51,7 @@ export function ExportTab(): JSX.Element {
     const { geometries } = useRecomputeResult();
     const { code } = useCode();
     const [ordering, setOrdering] = useState(false);
-    const [paying, setPaying] = useState(false);
+    const [payingOffer, setPayingOffer] = useState<string | null>(null);
     const [orderError, setOrderError] = useState<string | null>(null);
     const [shopOffers, setShopOffers] = useState<ShopOfferRow[]>([]);
     const task = useExportTask();
@@ -171,31 +171,36 @@ export function ExportTab(): JSX.Element {
                             setOrderError(payload.message ?? 'No shop returned a price.');
                             return;
                         }
-                        setShopOffers(offers);
+                        // The cheapest offer per shop, three shops at most.
+                        const perShop = new Map<string, ShopOfferRow>();
+                        for (const offer of [...offers].sort((a, b) => a.totalCents - b.totalCents)) {
+                            if (!perShop.has(offer.shop)) perShop.set(offer.shop, offer);
+                        }
+                        setShopOffers([...perShop.values()].slice(0, 3));
                     })().catch((err: unknown) => {
                         setOrderError(err instanceof Error ? err.message : 'The shop request failed.');
                     }).finally(() => setOrdering(false));
                 }}
-                className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded border border-emerald-900 bg-[#14211b] text-gray-200 text-xs disabled:opacity-50"
+                className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded border border-border bg-surface-1 text-fg text-xs disabled:opacity-50"
             >
                 <span className="flex flex-col items-start gap-0.5">
                     <span className="font-semibold">{ordering ? 'Asking shops…' : 'Order'}</span>
-                    <span className="text-2xs text-gray-500">Ask the shops, then pay the one that prices it</span>
+                    <span className="text-2xs text-fg-3">Get shop prices, then pay the one you pick</span>
                 </span>
                 {ordering ? <Loader2 className="h-4 w-4 animate-spin shrink-0" /> : <ShoppingBag className="h-4 w-4 shrink-0" />}
             </button>
             {shopOffers.length > 0 && (
-                <ul data-testid="shop-offer" className="m-0 flex flex-col gap-2 px-3 py-2 rounded border border-emerald-900 text-[11px] text-gray-200">
+                <ul data-testid="shop-offer" className="m-0 flex flex-col gap-2 px-3 py-2 rounded border border-border text-[11px] text-fg">
                     {shopOffers.map((offer) => (
                         <li key={offer.offerId}>
-                            <p className="m-0">{offer.shop} prices this {offer.file.toUpperCase()} at ${(offer.totalCents / 100).toFixed(2)}{offer.shippingLabel ? `, ${offer.shippingLabel}` : ''}.</p>
+                            <p className="m-0">{offer.shop}, from ${(offer.totalCents / 100).toFixed(2)}{offer.shippingLabel ? ` · ${offer.shippingLabel}` : ''}</p>
                             <button
                                 type="button"
                                 data-testid="shop-pay"
-                                disabled={paying}
-                                className="mt-1 rounded border border-emerald-800 px-2 py-1 text-emerald-300 disabled:opacity-50"
+                                disabled={payingOffer !== null}
+                                className="mt-1 rounded border border-border-strong px-2 py-1 text-accent disabled:opacity-50"
                                 onClick={() => {
-                                    setPaying(true);
+                                    setPayingOffer(offer.offerId);
                                     setOrderError(null);
                                     void (async () => {
                                         const { base, headers } = await apiCall();
@@ -215,17 +220,17 @@ export function ExportTab(): JSX.Element {
                                         window.open(payload.checkout_url, '_blank', 'noopener');
                                     })().catch((err: unknown) => {
                                         setOrderError(err instanceof Error ? err.message : 'The payment page did not open.');
-                                    }).finally(() => setPaying(false));
+                                    }).finally(() => setPayingOffer(null));
                                 }}
                             >
-                                {paying ? 'Opening payment…' : `Pay ${offer.shop}`}
+                                {payingOffer === offer.offerId ? 'Opening payment…' : `Pay ${offer.shop}`}
                             </button>
                         </li>
                     ))}
                 </ul>
             )}
             {orderError && (
-                <p role="alert" data-testid="export-order-error" className="text-[11px] text-red-300">{orderError}</p>
+                <p role="alert" data-testid="export-order-error" className="text-[11px] text-danger">{orderError}</p>
             )}
 
             <ExportStatus task={task} testId="export-tab-status" />

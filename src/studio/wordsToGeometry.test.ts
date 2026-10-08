@@ -35,6 +35,9 @@ describe('wordsToGeometry', () => {
     it('refuses a prompt that is not a plate, bolt, or L-bracket', () => {
         expect(wordsToGeometry('')).toMatchObject({ ok: false, code: 'words.empty' });
         expect(wordsToGeometry('a walking robot with five fingers')).toMatchObject({ ok: false, code: 'words.unsupported' });
+        expect(wordsToGeometry('60x40x5 mm plate with 3 M3 holes')).toMatchObject({ ok: false, code: 'words.unsupported' });
+        expect(wordsToGeometry('60x40x5 mm plate with three 4 mm holes')).toMatchObject({ ok: false, code: 'words.unsupported' });
+        expect(wordsToGeometry('60x40x5 mm plate with holes')).toMatchObject({ ok: false, code: 'words.unsupported' });
     });
 
     it('captures geometry for each generate-page example', async () => {

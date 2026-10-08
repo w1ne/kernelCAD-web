@@ -28,7 +28,7 @@ function jsonRpc(data: unknown): Response {
 }
 
 describe('quoteShops', () => {
-    it('sends the plate as a shop file and recommends the live price', async () => {
+    it('sends a bent part as the formed STEP and recommends the live price', async () => {
         const bodies: Array<{ params: { name: string; arguments: Record<string, unknown> } }> = [];
         const fetchImpl = vi.fn(async (_url: string, init?: RequestInit) => {
             const body = JSON.parse(String(init?.body)) as { params: { name: string; arguments: Record<string, unknown> } };
@@ -60,9 +60,10 @@ describe('quoteShops', () => {
         const quoted = await quoteShops(PLATE, {
             fetch: fetchImpl as unknown as typeof fetch,
             url: 'https://shops.test/mcp',
-            exportFile: async (_source, format) => format === 'dxf'
-                ? { ok: false, message: 'not flat' }
-                : { ok: true, bytes: Uint8Array.from([1, 2, 3]) },
+            exportFile: async (_source, format) => ({
+                ok: true,
+                bytes: format === 'dxf' ? new TextEncoder().encode('0\nLINE\n  8\nBEND\n') : Uint8Array.from([1, 2, 3]),
+            }),
         });
         expect(bodies[0]?.params.name).toBe('get_fabrication_quote');
         expect(bodies[0]?.params.arguments.process).toBe('sheetmetal');
@@ -74,6 +75,19 @@ describe('quoteShops', () => {
             fabrication_file: 'step',
             recommended: { offer_id: 'of_low', shop: 'Weerg', total_cents: 2600, shipping_option_id: 'standard' },
         });
+    });
+
+    it('refuses a part with no flat outline before asking any shop', async () => {
+        const fetchImpl = vi.fn();
+        const quoted = await quoteShops('return cylinder(30, 4);', {
+            fetch: fetchImpl as unknown as typeof fetch,
+            url: 'https://shops.test/mcp',
+            exportFile: async (_source, format) => format === 'dxf'
+                ? { ok: false, message: 'not flat' }
+                : { ok: true, bytes: Uint8Array.from([1, 2, 3]) },
+        });
+        expect(fetchImpl).not.toHaveBeenCalled();
+        expect(quoted).toMatchObject({ ok: false, code: 'shop.not_sheet' });
     });
 
     it('exports the parametric plate to a real shop file before asking', async () => {
@@ -98,7 +112,7 @@ describe('quoteShops', () => {
         });
         if (!quoted.ok) throw new Error(`${quoted.code}: ${quoted.message}`);
         const file = bodies[0]?.params.arguments.design_file ?? '';
-        expect(file.startsWith('data:model/step;base64,') || file.startsWith('data:image/vnd.dxf;base64,')).toBe(true);
+        expect(file.startsWith('data:image/vnd.dxf;base64,')).toBe(true);
         expect(file.length).toBeGreaterThan(40);
         expect(quoted).toMatchObject({ ok: true, recommended: { shop: 'Weerg' } });
     });

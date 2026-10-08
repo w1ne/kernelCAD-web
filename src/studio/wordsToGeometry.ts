@@ -40,6 +40,11 @@ const COUNT_WORDS: Record<string, number> = {
     four: 4,
 };
 
+const HOLE_SIZE_MISSING = 'Say the hole size, like 4 M3 holes or 2 5 mm holes.';
+
+/** Hole layouts the plate builder places: centre, a pair, or the four corners. */
+const PLACED_COUNTS = new Set([1, 2, 4]);
+
 export interface WordsGeometry {
     ok: true;
     source: string;
@@ -77,10 +82,10 @@ function sizeOf(prompt: string): [number, number, number] | null {
 
 function countOf(token: string): number | null {
     const word = COUNT_WORDS[token.toLowerCase()];
-    if (word) return word;
+    if (word) return PLACED_COUNTS.has(word) ? word : null;
     const value = Number(token);
-    if (!Number.isInteger(value) || value < 1 || value > 4) return null;
-    return value;
+    if (!Number.isInteger(value)) return null;
+    return PLACED_COUNTS.has(value) ? value : null;
 }
 
 function holeRequest(prompt: string): { count: number; diameter: number; note: string } | { error: string } | null {
@@ -266,11 +271,13 @@ export function wordsToGeometry(prompt: string): WordsResult {
     if (size && /plate|bracket|panel|sheet|rectangle/i.test(text)) {
         const holes = holeRequest(text);
         if (holes && 'error' in holes) return { ok: false, code: 'words.unsupported', message: holes.error };
+        if (!holes && /\bholes?\b/i.test(text)) return { ok: false, code: 'words.unsupported', message: HOLE_SIZE_MISSING };
         return plateSource(text, size, holes);
     }
     if (size) {
         const holes = holeRequest(text);
         if (holes && 'error' in holes) return { ok: false, code: 'words.unsupported', message: holes.error };
+        if (!holes && /\bholes?\b/i.test(text)) return { ok: false, code: 'words.unsupported', message: HOLE_SIZE_MISSING };
         if (holes || /mm|millimetre|millimeter/i.test(text)) return plateSource(text, size, holes);
     }
     return {
