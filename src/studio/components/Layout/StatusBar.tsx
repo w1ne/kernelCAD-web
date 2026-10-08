@@ -3,6 +3,7 @@
 import { AlertTriangle, CheckCircle2, Loader2, MousePointer2 } from 'lucide-react';
 import type { StudioLayoutMode } from '../../../shared/types/layout';
 import type { ViewMode3D } from '../../../shared/types/viewMode';
+import { plainLine } from '../../plainLine';
 
 interface StatusBarProps {
     isComputing: boolean;
@@ -37,8 +38,7 @@ function formatLayoutMode(mode: StudioLayoutMode): string {
 }
 
 function compactError(error: string): string {
-    const firstLine = error.split('\n')[0]?.trim() || 'Unknown error';
-    return firstLine.length > 96 ? `${firstLine.slice(0, 93)}...` : firstLine;
+    return plainLine(error, 96);
 }
 
 function StateIndicator({ error, isComputing }: { error: string | null; isComputing: boolean }) {

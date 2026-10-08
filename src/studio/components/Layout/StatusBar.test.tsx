@@ -81,24 +81,7 @@ describe('StatusBar', () => {
         expect(screen.getByText('Last compute 874 ms')).toBeDefined();
     });
 
-    it('renders error state with compact message', () => {
-        render(
-            <StatusBar
-                isComputing={false}
-                error={'OpenCascade Error (Code: 103)'}
-                geometryCount={0}
-                selectedCount={0}
-                viewMode3D="shaded"
-                layoutMode="code"
-                activeCommandLabel={null}
-            />
-        );
-
-        expect(screen.getByText('Error')).toBeDefined();
-        expect(screen.getByText(/OpenCascade Error/)).toBeDefined();
-    });
-
-    it('renders only the first line of multi-line errors', () => {
+    it('renders a kernel failure as one short line', () => {
         render(
             <StatusBar
                 isComputing={false}
@@ -111,7 +94,9 @@ describe('StatusBar', () => {
             />
         );
 
-        expect(screen.getByText('OpenCascade Error (Code: 103)')).toBeDefined();
+        expect(screen.getByText('Error')).toBeDefined();
+        expect(screen.getByText('This shape did not build.')).toBeDefined();
+        expect(screen.queryByText(/OpenCascade/)).toBeNull();
         expect(screen.queryByText('Stack trace line')).toBeNull();
     });
 
@@ -209,9 +194,8 @@ describe('StatusBar', () => {
         expect(screen.queryByTestId('direct-edit-notice')).toBeNull();
     });
 
-    it('truncates long first-line errors', () => {
-        const firstLine = `OpenCascade Error ${'x'.repeat(100)}`;
-        const expected = `${firstLine.slice(0, 93)}...`;
+    it('truncates a long ordinary error', () => {
+        const firstLine = `Cannot place the hole ${'because the face is too small '.repeat(8)}`;
 
         render(
             <StatusBar
@@ -225,7 +209,10 @@ describe('StatusBar', () => {
             />
         );
 
-        expect(screen.getByText(expected)).toBeDefined();
+        const shown = screen.getByText(/Cannot place the hole/);
+        expect(shown.textContent?.startsWith('Cannot place the hole')).toBe(true);
+        expect(shown.textContent?.endsWith('…')).toBe(true);
+        expect(shown.textContent?.length).toBeLessThanOrEqual(96);
         expect(screen.queryByText(firstLine)).toBeNull();
     });
 });

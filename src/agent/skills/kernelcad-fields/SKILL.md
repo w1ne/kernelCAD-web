@@ -37,7 +37,7 @@ return sdf.materialize(field, { resolution: 30 });
 - **`smoothBlend` is union-only.** Smooth-intersect / smooth-difference
   are deferred to slice 2+.
 - **`materialize` is synchronous.** It runs marching-cubes on the host
-  (Node + browser) and synchronously sews via OCCT WASM. No async surface.
+  (Node + browser) and sews in the same call. No async surface.
 
 ## Resulting `Shape` limitations
 
@@ -51,7 +51,7 @@ return sdf.materialize(field, { resolution: 30 });
   in principle but quality is poor and OOM risk is real at high
   resolution; surface as `feature.kernel-failed`.
 - Booleans (`union` / `subtract` / `intersect`) **do** work — standard
-  OCCT BREP booleans operate on the polyhedral solid.
+  Booleans run on the polyhedral solid.
 
 ## MCP introspection
 
@@ -71,8 +71,8 @@ return sdf.materialize(field, { resolution: 30 });
 
 ## Memory + perf (measured, slice 1)
 
-Surface-nets emits ~2 triangles per voxel on the surface, then OCCT sews
-each triangle as an individual planar face. The OCCT sewing step
+Surface-nets emits ~2 triangles per voxel on the surface, then the kernel sews
+each triangle as an individual planar face. Sewing
 dominates runtime and scales with triangle count (≈ resolution²·surface).
 Default resolution 30 is the slice-1 sweet spot: agents can bump it for
 fine surface quality at the cost of seconds-to-minutes more capture time.

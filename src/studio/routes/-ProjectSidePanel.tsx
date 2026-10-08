@@ -19,6 +19,7 @@ import { downloadBlob, exportViaServer } from '../exportViaServer';
 import { exportProgressText, useExportTask, type ExportTaskState } from '../hooks/useExportTask';
 import { jointContactCapMm3 } from '../../modeling/runtime/jointContactCap';
 import { StudioModelCustomizer } from '../customizer/StudioModelCustomizer';
+import { plainLine } from '../plainLine';
 import {
   CUSTOMIZER_FORMATS,
   FORMAT_LABELS,
@@ -175,8 +176,8 @@ export function DownloadStatus({ download }: { download: ProjectDownload }): JSX
     >
       <AlertTriangle className="mt-0.5 size-4 shrink-0" strokeWidth={1.75} aria-hidden="true" />
       <div className="min-w-0 flex-1">
-        <p className="break-words font-medium">{error ? `Download failed: ${error.message}` : notice}</p>
-        {error?.hint && <p className="mt-0.5 break-words text-fg-2">{error.hint}</p>}
+        <p className="break-words font-medium">{error ? `Download failed: ${plainLine(error.message)}` : notice}</p>
+        {error?.hint && <p className="mt-0.5 break-words text-fg-2">{plainLine(error.hint)}</p>}
       </div>
       <button
         type="button"

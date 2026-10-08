@@ -87,7 +87,7 @@ describe('occt worker message protocol', () => {
     expect(message).toEqual({ type: 'ERROR', id: 'exec-2', error: 'Error: boom' });
   });
 
-  it('EXECUTE throwing a numeric code replies the OpenCascade advice message', async () => {
+  it('EXECUTE throwing a numeric code replies one short line', async () => {
     const { message } = await dispatch({
       type: 'EXECUTE',
       id: 'exec-3',
@@ -96,7 +96,7 @@ describe('occt worker message protocol', () => {
     expect(message).toEqual({
       type: 'ERROR',
       id: 'exec-3',
-      error: 'OpenCascade Error (Code: 7). This often means an invalid geometric operation.',
+      error: 'This shape did not build.',
     });
   });
 

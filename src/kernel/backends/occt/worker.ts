@@ -294,7 +294,7 @@ async function handleExecute(request: ExecuteRequest): Promise<void> {
   } catch (error: unknown) {
     let message = String(error);
     if (message.match(/^\d+$/)) {
-      message = `OpenCascade Error (Code: ${message}). This often means an invalid geometric operation.`;
+      message = 'This shape did not build.';
     }
     postResponse({ type: 'ERROR', id, error: message });
   }

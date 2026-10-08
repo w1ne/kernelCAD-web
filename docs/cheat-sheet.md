@@ -13,7 +13,7 @@ description of any entry, call `lookup_api(query)`.
 | [Remove material](#remove-material) | Cut into a solid: bolt holes, pockets, slots, plain subtraction. |
 | [Combine shapes](#combine-shapes) | Merge or intersect solids, or group them without paying for a boolean. |
 | [Finish edges](#finish-edges) | Break edges, add draft, hollow out a wall, fold sheet metal. |
-| [Select geometry](#select-geometry) | Pick the edges or faces a feature acts on. Query inside OCCT first, then sort or group what comes back. |
+| [Select geometry](#select-geometry) | Pick the edges or faces a feature acts on. Query first, then sort or group what comes back. |
 | [Place & transform](#place--transform) | Move a body into position, mirror it, or repeat it. |
 | [Assemble](#assemble) | Build a mechanism from parts: connectors, mates, joints, posed Scenes. |
 | [Curves & surfaces](#curves--surfaces) | NURBS curves and surfaces, plus the evaluators for measuring them before they become solids. |
@@ -55,8 +55,8 @@ The first call in any model: a solid primitive, or a 2D profile to extrude.
 | `PathBuilder.sagittaArc(x: Editable<number>, y: Editable<number>, sagitta: Editable<number>) => PathBuilder` | Arc by chord + perpendicular bulge height. |
 | `PathBuilder.bulgeArc(x: Editable<number>, y: Editable<number>, bulge: Editable<number>) => PathBuilder` | Arc by chord + DXF bulge factor (tan(angle/4)). |
 | `PathBuilder.radiusArc(x: Editable<number>, y: Editable<number>, radius: Editable<number>) => PathBuilder` | Arc by chord + explicit radius. |
-| `PathBuilder.tangentCircle(entities: TangentEntity2D[], opts?: { radius?: Editable<number>; near?: [Editable<number>, Editable<number>] }) => Sketch` | Closed circle TANGENT to other 2D geometry, solved by OCCT Geom2dGcc. |
-| `PathBuilder.tangentLine(a: TangentEntity2D, b: TangentEntity2D, opts?: { near?: [Editable<number>, Editable<number>] }) => PathBuilder` | Straight segment along the line TANGENT to two circles (OCCT Geom2dGcc_Lin2d2Tan) — the belt/pulley move. |
+| `PathBuilder.tangentCircle(entities: TangentEntity2D[], opts?: { radius?: Editable<number>; near?: [Editable<number>, Editable<number>] }) => Sketch` | Closed circle tangent to other 2D geometry. |
+| `PathBuilder.tangentLine(a: TangentEntity2D, b: TangentEntity2D, opts?: { near?: [Editable<number>, Editable<number>] }) => PathBuilder` | Straight segment along the line TANGENT to two circles — the belt/pulley move. |
 | `PathBuilder.smoothSpline(x: Editable<number>, y: Editable<number>) => PathBuilder` | C1-smooth spline segment from current position to (x, y); inherits start tangent from prior segment. |
 | `PathBuilder.spline(points: Array<[Editable<number>, Editable<number>]>, opts?: { tension?: Editable<number> }) => PathBuilder` | NURBS Slice D — N-waypoint B-spline interpolation. |
 | `PathBuilder.nurbsSegment(controlPoints: Array<[Editable<number>, Editable<number>]>, opts?: { degree?: number; weights?: number[]; knots?: number[] }) => PathBuilder` | NURBS Slice D — explicit B-spline segment defined by a control polygon. |
@@ -104,7 +104,7 @@ Merge or intersect solids, or group them without paying for a boolean.
 | `Shape.union(...others) => Shape` | Boolean union with one or more shapes. |
 | `Shape.intersect(...others) => Shape` | Boolean intersection. |
 | `Curve3D.analytics.intersect(other: Curve3D \| Surface, opts?: { tolerance?: number }) => CurveCurveIntersection[] \| CurveSurfaceIntersection[]` | Geometric intersection of this curve with another `Curve3D` (returns `{ tA, tB, ptA, ptB, distance }` records) or with a `Surface` from `nurbsSurface()` (returns `{ tCurve, uv, pt }` records). |
-| `Scene.toCompound() => Shape` | OCCT TopoDS_Compound — groups bodies without booleaning. |
+| `Scene.toCompound() => Shape` | Groups bodies without booleaning. |
 | `Scene.toUnion() => Shape` | Explicit boolean fuse of all parts into one Shape. |
 
 ## Finish edges
@@ -122,7 +122,7 @@ Break edges, add draft, hollow out a wall, fold sheet metal.
 
 ## Select geometry
 
-Pick the edges or faces a feature acts on. Query inside OCCT first, then sort or group what comes back.
+Pick the edges or faces a feature acts on. Query first, then sort or group what comes back.
 
 | Call | What it does |
 |---|---|
@@ -182,18 +182,18 @@ NURBS curves and surfaces, plus the evaluators for measuring them before they be
 
 | Call | What it does |
 |---|---|
-| `nurbsCurve(controlPoints: Vec3[], opts?: { degree?: number; weights?: number[]; knots?: number[]; closed?: boolean }) => Curve3D` | 3D parametric NURBS curve specified by an explicit `Geom_BSplineCurve` control net. |
+| `nurbsCurve(controlPoints: Vec3[], opts?: { degree?: number; weights?: number[]; knots?: number[]; closed?: boolean }) => Curve3D` | 3D NURBS curve from a control net. |
 | `spline3d(points: Vec3[], opts?: { tension?: number; closed?: boolean }) => Curve3D` | Catmull-Rom-to-cubic-Bezier convenience that interpolates the supplied points through a cubic NURBS curve. |
 | `hermiteG2(a: { point: Vec3; tangent: Vec3; curvature?: Vec3 }, b: { point: Vec3; tangent: Vec3; curvature?: Vec3 }) => Curve3D` | Quintic Hermite Curve3D that interpolates the two endpoints with matching positions, first derivatives (tangents), and second derivatives (curvatures). |
 | `PathBuilder.hermiteG2(a: HermiteEndpoint2D, b: HermiteEndpoint2D) => PathBuilder` | NURBS Slice D — 2D quintic-Hermite transition between two endpoints, each with prescribed point + first derivative (tangent) + optional second derivative (curvature). |
 | `curveBridge(a: Curve3D, b: Curve3D, opts: { continuity: 'G1' \| 'G2'; ends?: 'end-start' \| 'end-end' \| 'start-start' \| 'start-end'; tension?: number }) => Curve3D` | Infer end points, tangents and (G2) curvature from two existing Curve3Ds and build a degree-5 Hermite blend. |
-| `surfaceIntersection(a: Shape \| Surface, b: Shape \| Surface) => Promise<Curve3D[]>` | Exact surface–surface or face–face intersection via OCCT `BRepAlgoAPI_Section`. |
+| `surfaceIntersection(a: Shape \| Surface, b: Shape \| Surface) => Promise<Curve3D[]>` | Exact surface–surface or face–face intersection. |
 | `nurbsSurface({ controls, degree, weights?, knots?, periodic? }) => Surface` | Build a NURBS surface from an explicit control net + degree. |
 | `surfaceFromCurves(sections: Sketch[]) => Surface` | Skin a NURBS surface through 2+ closed Sketch cross-sections in declaration order. |
 | `surfaceFromBoundary(curves: [Curve3D, Curve3D, Curve3D, Curve3D], opts?: { continuity?: "C0" \| "C1" \| "C2" \| ("C0" \| "C1" \| "C2")[]; sampling?: number }) => Surface` | Build the shipped filling surface: one NURBS face through 4 boundary curves. |
-| `sew(surfaces: Surface[], opts?: { tolerance?: number; requireClosed?: boolean }) => Shape` | Stitch N surfaces into a shell or closed solid via OCCT `BRepBuilderAPI_Sewing`. |
+| `sew(surfaces: Surface[], opts?: { tolerance?: number; requireClosed?: boolean }) => Shape` | Stitch N surfaces into a shell or closed solid. |
 | `Surface.thicken(t: Editable<number>) => Shape` | Offset both sides of this surface by `t` mm and return the closed solid Shape. |
-| `Surface.toShape() => Shape` | Wrap this surface as a single-face zero-volume Shape (TopoDS_Shell). |
+| `Surface.toShape() => Shape` | Wrap this surface as a single-face zero-volume Shape. |
 | `Surface.trimTo(by: Surface) => Surface` | Trim this surface at its intersection with `by` (a Surface cutter) and return a new Surface representing the kept half. |
 | `Surface.split(by: Surface) => [Surface, Surface]` | Split this surface at its intersection with `by` (a Surface cutter) and return both resulting Surface halves as `[first, second]`, ordered by descending face area. |
 | `Shape.projectCurve(opts: { source: ProjectCurveSource; face: FaceSelector \| string; scaleMode?: 'original' \| 'native' \| 'bounds'; asEdge?: boolean }) => Sketch` | Wrap a 2D closed curve onto a 3D face along the face normal. |
@@ -247,7 +247,7 @@ Bring in vendor geometry, and write models back out.
 | Call | What it does |
 |---|---|
 | `lib : { fromSTEP(path: string): Promise<Shape>; fromBREP(path: string): Promise<Shape>; fromSTL(path: string, opts?: { tolerance?: number; allowOpen?: boolean; maxTriangles?: number }): Promise<Shape>; fromDXF(path: string, opts?: { units?: LengthUnit; tolerance?: number }): Promise<Sketch[]>; fromSVG(path: string, opts?: { units?: LengthUnit; tolerance?: number; curveTolerance?: number }): Promise<Sketch[]>; findPart(query: string, opts?): Promise<FindPartResult>; fetchPart(idOrQuery: string, opts?): Promise<Shape>; standard: StandardParts }` | Parts library namespace. |
-| `Scene.toCompound() => Shape` | OCCT TopoDS_Compound — groups bodies without booleaning. |
+| `Scene.toCompound() => Shape` | Groups bodies without booleaning. |
 
 ## Annotate & present
 

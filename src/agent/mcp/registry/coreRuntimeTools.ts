@@ -27,7 +27,7 @@ const evaluateScriptToolEntry: ToolRegistryEntry = {
       'tube between rails is span minus two rail widths) make ok:false. ' +
       'Pass either { file: "<path>" } or { code: "<inline source>" }. ' +
       'Set { dryRun: true } for fast validation while iterating: transpile + capture + ' +
-      'capture-light checks WITHOUT OCCT lowering, DFM gates, or meshing — milliseconds ' +
+      'capture-light checks without building solids, DFM gates, or meshing — milliseconds ' +
       'instead of seconds (100x+ on boolean/fillet-heavy scripts). A dry run catches script ' +
       'throws, capture-time API misuse, and assembly validity-gate failures, but NOT ' +
       'lowering failures or dfmSpec diagnostics; it leaves the active session untouched, ' +
@@ -42,7 +42,7 @@ const evaluateScriptToolEntry: ToolRegistryEntry = {
         dryRun: {
           type: 'boolean',
           description:
-            'Fast validation only: skip OCCT lowering, DFM gates, and meshing. ' +
+            'Fast validation only: skip solid build, DFM gates, and meshing. ' +
             'Does not set or clear the active session.',
         },
         skipMechanismCheck: {

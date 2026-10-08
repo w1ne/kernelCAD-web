@@ -78,7 +78,7 @@ const brow = path()
 Each `smoothSpline(x, y)` inherits its start tangent from the previous segment,
 so chained calls interpolate smoothly through many points without C0 kinks.
 
-**Why this matters:** chained `sagittaArc` segments hit OCCT BlendChain solver
+**Why this matters:** chained `sagittaArc` segments hit the fillet solver
 cliffs at sub-arc joins — the tangent discontinuity at each join becomes a
 sub-mm coplanar edge that breaks downstream fillet/chamfer. Round-6 empirical:
 Agent D found the operating window for chained sagittaArcs is sagitta=0..2.9
@@ -157,7 +157,7 @@ warning naming the skipped count. The chamfer **succeeds** on the long edges.
 Pre-empirical pattern (BAD — leaves the acetate bevel off entirely):
 
 ```ts
-// "OCCT will reject this, skip and document" — DO NOT do this
+// "the kernel will reject this, skip and document" — DO NOT do this
 const bodyFinished = bodyWithBores;  // chamfer skipped
 ```
 

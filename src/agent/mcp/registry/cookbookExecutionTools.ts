@@ -15,7 +15,7 @@ export const cookbookExecutionToolEntries: ToolRegistryEntry[] = [
         'Use this when you need evaluate_script (and optionally open_in_studio) for an industry / cookbook demo in ONE step — after lookup_cookbook for industry demos, prefer execute_cookbook when you need evaluate+Studio together; empty lookup is not a stop (freehand-author instead). ' +
         'Resolves a cookbook snippet by `id` or BM25 `query` (same ranking as lookup_cookbook), evaluates its body via evaluate_script with bounded vendor timeouts, and returns explicit status with stage resolve|evaluate|open_in_studio. ' +
         'Pass openInStudio:true to publish the same script via open_in_studio after a green full evaluate (hosted MCP). ' +
-        'dryRun:true is the fast capture-only path — it is NOT evidence the cookbook lowers/builds under OCCT or is safe to publish; finish with dryRun:false (default) before claiming success or opening Studio.',
+        'dryRun:true is the fast capture-only path — it is NOT evidence the cookbook builds a solid or is safe to publish; finish with dryRun:false (default) before claiming success or opening Studio.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -37,7 +37,7 @@ export const cookbookExecutionToolEntries: ToolRegistryEntry[] = [
           dryRun: {
             type: 'boolean',
             description:
-              'Default false. dryRun:true is NOT evidence the cookbook builds under OCCT — capture-only checks; do not claim success or open Studio from a dry run alone.',
+              'Default false. dryRun:true is NOT evidence the cookbook builds a solid — capture-only checks; do not claim success or open Studio from a dry run alone.',
             default: false,
           },
         },

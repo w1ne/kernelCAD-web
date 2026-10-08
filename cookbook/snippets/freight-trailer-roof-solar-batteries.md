@@ -17,7 +17,7 @@ when_to_use: >-
   inside the front-fairing, rear-door, and side-walkway keep-outs, then
   center that grid on the kingpin/bogie static-reaction station. The rule
   is closed-form packing plus a reaction split — not an FEA solve and not
-  an OCCT mass-properties query. Doors are modeled closed and fastened;
+  a mass-properties query. Doors are modeled closed and fastened;
   they are not a swinging mechanism.
 ---
 
@@ -44,7 +44,7 @@ still carry their own named finishes inside that solid. FEA is not run.
 //    targetX = share * kingpinX + (1 - share) * bogieCenterX
 //    is the station that puts `share` of the pack weight on the kingpin.
 // 4. Center the grid on targetX and clamp it inside the keep-out window.
-// FEA is not solved. OCCT mass properties are not queried. Doors are closed
+// FEA is not solved. Mass properties are not queried. Doors are closed
 // and fastened — no revolute, so this is not a swinging-door mechanism.
 // animationView scrubs gapAlong / gapAcross; it does not add or remove cabinets.
 

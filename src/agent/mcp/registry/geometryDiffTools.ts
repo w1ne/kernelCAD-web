@@ -22,7 +22,7 @@ const diffGeometryToolEntry: ToolRegistryEntry = {
       'Bodies pair by name and fall back to declaration-order positional pairing; anything left ' +
       'over is listed in `unmatched` and raises diff.body.unmatched. Per matched body it returns ' +
       'addedMm3 = volume(revised - base), removedMm3 = volume(base - revised), commonMm3 = ' +
-      'volume(base ∩ revised) from OCCT booleans, exact bbox with min/max/extent deltas, face / ' +
+      'volume of the overlap from boolean intersection, exact bbox with min/max/extent deltas, face / ' +
       'edge / hole count deltas (hole counts reuse the cylindrical-hole detector), maxDeviationMm ' +
       '(two-sided discrete Hausdorff distance between the two surfaces), and a `verdict` — ' +
       'identical | moved | resized | topology-changed, precedence topology-changed > resized > ' +

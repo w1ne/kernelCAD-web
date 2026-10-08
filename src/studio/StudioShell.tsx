@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { useCallback, useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
+import { plainLine } from './plainLine';
 import { Header } from './components/Layout/Header';
 import { ViewportToolbar } from './ViewportToolbar';
 import { ActivityBar } from './ActivityBar';
@@ -90,7 +91,7 @@ function KernelInitBanner({ error }: { error: string | null }) {
             {!needsReload && <Loader2 className="h-4 w-4 shrink-0 animate-spin" />}
             <span>
                 {error
-                    ? `Geometry kernel failed: ${error}`
+                    ? `Geometry kernel failed: ${plainLine(error)}`
                     : slow
                         ? 'The geometry kernel is taking longer than usual.'
                         : 'Geometry kernel warming up...'}

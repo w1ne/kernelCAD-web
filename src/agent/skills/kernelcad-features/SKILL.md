@@ -129,7 +129,7 @@ const branded = bottle.union(raised);
 | `source` | `ProjectCurveSource` | `{ kind: 'sketchCommands', commands }` or `{ kind: 'drawing', drawingJson }` (drawing-JSON branch is a follow-up). |
 | `face` | `FaceSelector \| string` | Canonical / label. |
 | `scaleMode` | `'original' \| 'native' \| 'bounds'` | Same as embossText. |
-| `asEdge` | `boolean?` | **NOT IMPLEMENTED.** When `true`, the lowerer emits `feature.project-curve.no-intersection`. The OCCT binding is available; the lowering is not. Use closed-curve projection. |
+| `asEdge` | `boolean?` | **NOT IMPLEMENTED.** When `true`, the lowerer emits `feature.project-curve.no-intersection`. Use closed-curve projection. |
 
 ### Recovery table
 

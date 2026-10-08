@@ -59,6 +59,12 @@ describe('modelCheck', () => {
   it('reports a failed build first', () => {
     expect(modelCheck({ error: 'boom\nstack', hasGeometry: true, review: validated, interferences: 0 }))
       .toEqual({ tone: 'danger', label: 'Did not build', detail: 'boom' });
+    expect(modelCheck({
+      error: 'OpenCascade Error (Code: 7). This often means an invalid geometric operation.',
+      hasGeometry: false,
+      review: null,
+      interferences: 0,
+    })).toEqual({ tone: 'danger', label: 'Did not build', detail: 'This shape did not build.' });
   });
 
   it('has no verdict before a model is built', () => {
