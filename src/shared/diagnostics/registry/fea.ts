@@ -30,6 +30,15 @@ export const FEA_CODES = {
     description:
       'Element-quality statistics (minSICN) or the solver\'s nodal stress-error estimator indicate the FEA stress field is mesh-limited rather than geometry-limited.',
   },
+  'fea.mesh.too-large': {
+    hintTemplate:
+      'The mesh is too fine for the solver budget: it exceeded the in-loop element ceiling, the gmsh or CalculiX time limit, or CalculiX was killed (memory limit, exit 255). RAISE feaStudy.meshSize (try roughly 2x the current value) and re-run; do not shrink it.',
+    nextAction: { kind: 'fix-arg', field: 'feaStudy.meshSize' },
+    defaultSeverity: 'error',
+    group: 'fea',
+    description:
+      'The FEA run was aborted because the mesh was too large or too slow for the solver (element ceiling, mesh/solve timeout, or the solver process was killed); a coarser meshSize is needed.',
+  },
   'fea.solver.unavailable': {
     hintTemplate:
       'The FEA toolchain is not installed on this machine, so no structural evidence could be produced (the result is NOT a pass). Install CalculiX and gmsh — `sudo apt-get install -y calculix-ccx` plus `python3 -m venv .fea-venv && .fea-venv/bin/pip install gmsh==4.15.2` — or point KERNELCAD_CCX / KERNELCAD_FEA_PYTHON at existing installs.',
