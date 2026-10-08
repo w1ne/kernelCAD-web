@@ -10,6 +10,7 @@ import { useGeneration } from '../../funnel/hooks/useGeneration';
 import { useSession } from '../../funnel/hooks/useSession';
 import { createCheckoutSession } from '../../funnel/lib/apiClient';
 import { inAppAgentEnabled } from '../agentAvailability';
+import { stashWordsGeometry, wordsToGeometry } from '../wordsToGeometry';
 import GenerateHero from './GenerateHero';
 
 export const Route = createFileRoute('/generate')({
@@ -47,6 +48,8 @@ function GeneratePage() {
   const [signInOpen, setSignInOpen] = useState(false);
   const [upgradeBusy, setUpgradeBusy] = useState(false);
   const [initialPrompt] = useState(readInitialPrompt);
+  const [localMessage, setLocalMessage] = useState<string | null>(null);
+  const navigate = useNavigate();
   // The last prompt sent, for "Try again" after a failure.
   const lastPrompt = useRef('');
 
@@ -75,9 +78,26 @@ function GeneratePage() {
     }
   }, [session]);
 
+  const openWords = useCallback(
+    (prompt: string) => {
+      const made = wordsToGeometry(prompt);
+      if (!made.ok) {
+        setLocalMessage(made.message);
+        return;
+      }
+      setLocalMessage(null);
+      stashWordsGeometry(made);
+      void navigate({ to: '/' });
+    },
+    [navigate],
+  );
+
   const handleSubmit = useCallback(
     (prompt: string) => {
-      if (!agentEnabled) return;
+      if (!agentEnabled) {
+        openWords(prompt);
+        return;
+      }
       if (!session) {
         // Stash so the post-OAuth landing can pick it up and auto-submit.
         try {
@@ -90,8 +110,13 @@ function GeneratePage() {
       }
       run(prompt);
     },
-    [agentEnabled, session, run],
+    [agentEnabled, openWords, session, run],
   );
+
+  useEffect(() => {
+    if (agentEnabled || !initialPrompt.trim()) return;
+    openWords(initialPrompt);
+  }, [agentEnabled, initialPrompt, openWords]);
 
   // After OAuth returns with a session, auto-resume the stashed prompt.
   useEffect(() => {
@@ -134,6 +159,7 @@ function GeneratePage() {
           onSignIn={() => setSignInOpen(true)}
           onOpenResult={openResult}
           onRetry={() => handleSubmit(lastPrompt.current)}
+          notice={localMessage}
         />
 
         <GallerySection />

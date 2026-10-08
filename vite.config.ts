@@ -401,6 +401,47 @@ function kernelCadMeshEndpoint(): Plugin {
         }
       });
 
+      const runShop = (action: 'quote' | 'order', req: import('node:http').IncomingMessage, res: import('node:http').ServerResponse) => {
+        if (req.method !== 'POST') {
+          res.statusCode = 405;
+          res.setHeader('content-type', 'application/json');
+          res.end(JSON.stringify({ ok: false, code: 'shop.method', message: 'POST only.' }));
+          return;
+        }
+        const chunks: Buffer[] = [];
+        req.on('data', (chunk: Buffer) => chunks.push(chunk));
+        req.on('end', () => {
+          void (async () => {
+            const raw = Buffer.concat(chunks).toString('utf8');
+            const body = raw.trim().length === 0 ? {} : JSON.parse(raw) as Record<string, unknown>;
+            const { quoteShops, orderShop } = await import('./src/server/middleware/shopQuote');
+            const result = action === 'quote'
+              ? await quoteShops(typeof body.source === 'string' ? body.source : '')
+              : await orderShop({
+                offer_id: typeof body.offer_id === 'string' ? body.offer_id : '',
+                shipping_option_id: typeof body.shipping_option_id === 'string' ? body.shipping_option_id : '',
+              });
+            res.statusCode = result.ok ? 200 : 400;
+            res.setHeader('content-type', 'application/json');
+            res.end(JSON.stringify(result));
+          })().catch((error: unknown) => {
+            res.statusCode = 500;
+            res.setHeader('content-type', 'application/json');
+            res.end(JSON.stringify({
+              ok: false,
+              code: 'shop.upstream',
+              message: error instanceof Error ? error.message : 'The shop request failed.',
+            }));
+          });
+        });
+      };
+      server.middlewares.use('/__kernelcad/manufacture/shops/order', (req, res) => {
+        runShop('order', req, res);
+      });
+      server.middlewares.use('/__kernelcad/manufacture/shops', (req, res) => {
+        runShop('quote', req, res);
+      });
+
       server.middlewares.use('/__kernelcad/export', async (req, res) => {
         try {
           const url = new URL(req.url ?? '', 'http://localhost');

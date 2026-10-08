@@ -69,6 +69,46 @@ describe('ExportTab', () => {
         expect(screen.getByTestId('export-step')).toBeDefined();
     });
 
+    it('shows the shop price and opens that shop payment page', async () => {
+        recompute = { ...recompute, geometries: [{ faces: [] }] };
+        const { ExportTab } = await import('../../tabs/ExportTab');
+        const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+            const url = String(input);
+            if (url.endsWith('/shops/order')) {
+                return new Response(JSON.stringify({
+                    ok: true,
+                    checkout_url: 'https://checkout.stripe.com/c/pay/cs_test',
+                }), { status: 200, headers: { 'content-type': 'application/json' } });
+            }
+            return new Response(JSON.stringify({
+                ok: true,
+                fabrication_file: 'step',
+                recommended: {
+                    shop: 'SendCutSend',
+                    total_cents: 3221,
+                    shipping_label: 'Standard',
+                    offer_id: 'of_scs',
+                    shipping_option_id: 'standard',
+                },
+            }), { status: 200, headers: { 'content-type': 'application/json' } });
+        });
+        const opened = vi.spyOn(window, 'open').mockImplementation(() => null);
+        render(<ExportTab />);
+        fireEvent.click(screen.getByTestId('export-order'));
+        expect((await screen.findByTestId('shop-offer')).textContent).toContain('SendCutSend');
+        expect(screen.getByTestId('shop-offer').textContent).toContain('$32.21');
+        fireEvent.click(screen.getByTestId('shop-pay'));
+        await waitFor(() => expect(opened).toHaveBeenCalledWith(
+            'https://checkout.stripe.com/c/pay/cs_test',
+            '_blank',
+            'noopener',
+        ));
+        const orderCall = fetchMock.mock.calls.map((call) => String(call[0])).find((url) => url.endsWith('/shops/order'));
+        expect(orderCall?.endsWith('/__kernelcad/manufacture/shops/order')).toBe(true);
+        fetchMock.mockRestore();
+        opened.mockRestore();
+    });
+
     it('renders five format buttons (stl, step, dxf, 3mf, glb) when geometries exist', async () => {
         recompute = { ...recompute, geometries: [{ faces: [] }] };
         const { ExportTab } = await import('../../tabs/ExportTab');
