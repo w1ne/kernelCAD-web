@@ -56,7 +56,7 @@ Per actuated joint (revolute/prismatic with a declared `actuator: { torqueNm
 | forceN }` on `arm.revolute(...)`/`arm.prismatic(...)`), samples a pose grid
 (or an explicit `opts.pose`) and computes the gravitational torque/force the
 actuator must supply to hold the downstream mass still, using real mass
-properties (OCCT volume/CoM via the part's declared `density`/`material`,
+properties (volume and center of mass from the part's declared `density`/`material`,
 same substrate as `inspect({ of: 'mass' })`). Reports the worst pose,
 required torque/force, declared capacity, and margin percent.
 `opts.minTorqueMarginPct` (default 20) is a floor, not a hard pass/fail — a

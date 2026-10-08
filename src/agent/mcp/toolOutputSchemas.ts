@@ -452,7 +452,7 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
       openInStudio: { type: 'object', additionalProperties: true, description: 'open_in_studio result when openInStudio was requested.' },
       executionId: { type: 'string', description: 'Short id for logs / correlation.' },
       code: { type: 'string', description: 'Snippet body used for evaluate / Studio.' },
-      dryRunNotEvidence: { type: 'boolean', description: 'Present when dryRun:true — dryRun success is NOT evidence of a real OCCT build.' },
+      dryRunNotEvidence: { type: 'boolean', description: 'Present when dryRun:true — dryRun success is not evidence the solid built.' },
       error: { type: 'string' },
       stage: { type: 'string', description: "'resolve' | 'evaluate' | 'open_in_studio' on failure." },
     },

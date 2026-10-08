@@ -179,7 +179,7 @@ async function attachOpenInStudio(
   if (dryRun) {
     return studioFail(
       base,
-      'openInStudio requires a full (non-dryRun) green evaluate; dryRun:true is NOT evidence the cookbook builds under OCCT',
+      'openInStudio requires a full (non-dryRun) green evaluate; dryRun:true is NOT evidence the cookbook builds a solid',
     );
   }
 

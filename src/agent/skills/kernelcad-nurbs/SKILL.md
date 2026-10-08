@@ -18,14 +18,14 @@ const panel = surfaceFromCurves([s0, s1]).thicken(2);
 
 | Method | Returns | Notes |
 |---|---|---|
-| `.thicken(t)` | `Shape` (closed solid) | Offsets both sides by `t` mm via `BRepOffsetAPI_MakeThickSolid.MakeThickSolidBySimple`. `t` accepts `Editable<number>`. |
+| `.thicken(t)` | `Shape` (closed solid) | Offsets both sides by `t` mm. `t` accepts `Editable<number>`. |
 | `.toShape()` | `Shape` (zero-volume shell) | Single-face Shape; use as profile placeholder for future face-aware features. |
-| `.trimTo(by)` | `Surface` | Trim this surface at its intersection with `by` (a `Surface` cutter) and return the kept half. No geometry computed at capture time — the lowerer runs `BRepAlgoAPI_Section` and imprints the section curve with `BRepFeat_SplitShape`. Use before `sew` to align adjacent patch edges. Emits `feature.surface-trim.no-intersection` when the cutter misses. Shape/Curve3D cutters are deferred. |
+| `.trimTo(by)` | `Surface` | Trim this surface where it meets `by` and keep the larger piece. Use before `sew`. Emits `feature.surface-trim.no-intersection` when the cutter misses. |
 | `.split(by)` | `[Surface, Surface]` | Split this surface at its intersection with `by` (a `Surface` cutter) and return both resulting halves, ordered by descending area. The cutter must be a `Surface`; Shape/Curve3D cutters are deferred. Emits `feature.surface-trim.no-intersection` when the cutter misses. |
 
 Top-level finishing ops that consume `Surface` instances:
 
-- `sew(surfaces, opts?)` — stitch N surfaces into a shell or closed solid via OCCT `BRepBuilderAPI_Sewing`. Edges within `tolerance` mm (default 1e-6) are merged. `requireClosed: true` emits `feature.surface-sew.open-shell` instead of a partial shell when the result is still open. Returns a `Shape`.
+- `sew(surfaces, opts?)` — stitch N surfaces into a shell or closed solid. Edges within `tolerance` mm (default 1e-6) are merged. `requireClosed: true` emits `feature.surface-sew.open-shell` instead of a partial shell when the result is still open. Returns a `Shape`.
 - The workflow for a multi-patch body: `trimTo` each patch to shared boundary curves → `sew([...], { requireClosed: true })` → optionally `.draft(angleDeg, { face })` for mold release.
 
 `surfaceFromCurves(sections)` skins through 2+ closed `Sketch` cross-sections in declaration order. Section order = skin direction.
@@ -54,7 +54,7 @@ The opaque-renderer trap and the periodic-V seam gate were both learned in the v
 
 ## NURBS curves (Slice B)
 
-`Curve3D` is a peer-type alongside `Shape` and `Surface`. It captures a 3D parametric curve and lowers to a `TopoDS_Edge` backed by `Geom_BSplineCurve` (direct OCCT, no replicad wrapper). Curves park their edges on `session.importedGeometry` and are consumed by `variableSweep` (and future `surfaceFromBoundary` / G2 blends in Slice C).
+`Curve3D` is a peer-type alongside `Shape` and `Surface`. It captures a 3D parametric curve. `variableSweep` and `surfaceFromBoundary` consume it.
 
 ```ts
 // Explicit control net — defaults to cubic non-rational.
@@ -72,7 +72,7 @@ const brow = spline3d([
 ], { tension: 0.5 });
 ```
 
-`Curve3D` exposes synchronous evaluation: `.sample(n)` (returns n+1 points), `.pointAt(t)`, `.tangentAt(t)` (unit vector), `.length()` (arc length in mm), `.domain()` (always `[0, 1]`). Evaluation lazily lowers the curve through `BRepAdaptor_Curve`; per-session cache keeps repeat calls cheap.
+`Curve3D` exposes synchronous evaluation: `.sample(n)` (returns n+1 points), `.pointAt(t)`, `.tangentAt(t)` (unit vector), `.length()` (arc length in mm), `.domain()` (always `[0, 1]`). Repeat calls reuse the built curve.
 
 ### Curve3D diagnostic codes
 
@@ -80,11 +80,11 @@ const brow = spline3d([
 - `feature.curve3d.weights-length-mismatch` — weights array length ≠ controlPoints length.
 - `feature.curve3d.weights-non-positive` — a weight is zero or negative (undefined for B-splines).
 - `feature.curve3d.knots-length-mismatch` — knot count ≠ controlPoints.length + degree + 1.
-- `feature.curve3d.closed-endpoints-mismatch` — `closed: true` but first ≠ last (warn; OCCT closes internally).
+- `feature.curve3d.closed-endpoints-mismatch` — `closed: true` but first ≠ last (warn; the curve is closed for you).
 
 ## Multi-section sweep — variableSweep (Slice B)
 
-Blend two or more profile sketches along a spine. Lowers to `BRepOffsetAPI_MakePipeShell`. Use for tapered limbs (wing sections, fairings), varying-cross-section sweeps that lofts cannot express because they need an explicit spine path, eyewear temples that taper along a curved spine.
+Blend two or more profile sketches along a spine. Use for tapered limbs, fairings, and sweeps that need an explicit path.
 
 ```ts
 const spine = spline3d([[-50, 0, 0], [-20, 6, 4], [20, 6, 4], [50, 0, 0]]);
@@ -109,11 +109,11 @@ Spine accepts a `Curve3D`, a planar `Sketch` (its lifted outer wire is used as t
 
 ### variableSweep gotcha — section locations are spine vertices (intermediate stations subdivide)
 
-`BRepOffsetAPI_MakePipeShell::Add_2` requires a location `TopoDS_Vertex` that is one of the spine wire's own sub-shapes; a fresh vertex at the same coordinates aborts the build. The lowerer maps `t=0` to the spine's first vertex and `t=1` to its last. For every intermediate station it rebuilds the spine wire with a shared vertex at that station first (extract the edge's `Geom_Curve`, split it into sub-edges over the station-bounded parameter ranges, stitch them back with `BRepBuilderAPI_MakeWire`) and anchors the profile there. Each section's `t` is the spine's normalized **curve parameter** — the same mapping as `Curve3D.pointAt(t)` — not normalized arc length; use `curve.analytics.divideByEqualArcLength(n)` first if you want stations spaced by arc length. For twisted solids (turbine blades, drill flutes, staggered sections) use `Sketch.loft` with `twistDeg` (an even total twist distributed across the sections) and/or per-plane `rotationDeg` (`rotationDeg` overrides the distributed `twistDeg`; both rotate about `twistCenter`) instead — `variableSweep` has no per-section orientation control, and rail-guided lofts reject rotation.
+Each section's `t` is the spine's curve parameter, the same mapping as `Curve3D.pointAt(t)`, not arc length. Use `curve.analytics.divideByEqualArcLength(n)` when stations must be spaced by length. `variableSweep` cannot twist a section. For a twist, use `Sketch.loft` with `twistDeg` or per-plane `rotationDeg`.
 
 ## Filling surfaces — surfaceFromBoundary (Slice C)
 
-`surfaceFromBoundary(curves, opts?)` builds the shipped filling surface: one NURBS face through 4 boundary `Curve3D`s. Lowers to `BRepOffsetAPI_MakeFilling` (direct OCCT) with `Add_1(edge, GeomAbs_Cn, isBound=true)` per boundary. Use for the front face of an eyewear shell, an ergonomic palm rest, or any 4-bounded freeform panel.
+`surfaceFromBoundary(curves, opts?)` builds the shipped filling surface: one NURBS face through 4 boundary `Curve3D`s. Use for the front face of an eyewear shell, an ergonomic palm rest, or any 4-bounded freeform panel.
 
 ```ts
 const bottom = nurbsCurve([[0, 0, 0], [25, 0, 1], [50, 0, 0]]);
@@ -123,7 +123,7 @@ const left   = nurbsCurve([[0, 25, 0], [0, 12, 0.5], [0, 0, 0]]);
 const panel  = surfaceFromBoundary([bottom, right, top, left]).thicken(2);
 ```
 
-The 4 curves must be passed in exact loop order: `curves[0]` = bottom, `curves[1]` = right, `curves[2]` = top, `curves[3]` = left. Adjacent endpoints must coincide within 1e-6 mm — share the corner Vec3 across both meeting curves. `opts.continuity` accepts a single grade (`'C0' | 'C1' | 'C2'`) applied to all 4 edges or a length-4 array per edge; defaults to `'C0'`. `opts.sampling` controls `NbPtsOnCur` (default 15).
+The 4 curves must be passed in exact loop order: `curves[0]` = bottom, `curves[1]` = right, `curves[2]` = top, `curves[3]` = left. Adjacent endpoints must coincide within 1e-6 mm — share the corner Vec3 across both meeting curves. `opts.continuity` accepts a single grade (`'C0' | 'C1' | 'C2'`) applied to all 4 edges or a length-4 array per edge; defaults to `'C0'`. `opts.sampling` is points along each edge (default 15).
 
 The result is a `Surface` peer — chain `.thicken(t)` to get a closed solid or `.toShape()` to wrap as a zero-volume single-face shell for downstream face-aware features.
 
@@ -133,7 +133,7 @@ The result is a `Surface` peer — chain `.thicken(t)` to get a closed solid or 
 - `feature.surface-from-boundary.too-few-curves` (error) — fewer than 4 curves passed. Hint: build all 4 edges; a 3-sided patch is not supported.
 - `feature.surface-from-boundary.too-many-curves` (error) — more than 4 curves passed. Hint: collapse to 4 by stitching adjacent curves with `hermiteG2`.
 - `feature.surface-from-boundary.continuity-orphan` (error) — `opts.continuity` is an array but its length is not 4. Hint: pass a single grade or an array of 4 grades (one per edge).
-- `feature.surface-from-boundary.degenerate-patch` (error) — OCCT `BRepOffsetAPI_MakeFilling` failed to produce a face (typically because two opposite boundary curves overlap or the loop is non-planar at the corners). Hint: render the 4 input curves and check the loop is a closed quadrilateral with non-degenerate corners.
+- `feature.surface-from-boundary.degenerate-patch` (error) — the fill failed to produce a face (typically because two opposite boundary curves overlap or the loop is non-planar at the corners). Hint: render the 4 input curves and check the loop is a closed quadrilateral with non-degenerate corners.
 
 ## Quintic Hermite transitions — hermiteG2 (Slice C)
 
@@ -170,7 +170,7 @@ const blend = left.bridge(right, { continuity: 'G2' });
 
 ## Surface–surface intersection — `surfaceIntersection`
 
-`await surfaceIntersection(a, b)` returns the exact section of two `Shape`s or `Surface`s as `Curve3D[]` via OCCT `BRepAlgoAPI_Section`. Use a seam as a sweep spine, a `projectCurve` source, or a trim boundary.
+`await surfaceIntersection(a, b)` returns the exact section of two `Shape`s or `Surface`s as `Curve3D[]`. Use a seam as a sweep spine, a `projectCurve` source, or a trim boundary.
 
 ```ts
 const run = cylinder(40, 8);
@@ -186,7 +186,7 @@ No curve → `feature.surface-intersection.none`. Await the call: both operands 
 
 ## Rail-constrained loft — `Sketch.loft(..., { rails })`
 
-`opts.rails` (one or two `Curve3D`s) switches the loft from ThruSections to `BRepOffsetAPI_MakePipeShell`: first rail = spine, second = auxiliary spine (`SetMode_5`). Each rail must pass within 1 mm of every section; a miss or a third rail emits `feature.loft.rail-miss`.
+`opts.rails` takes one or two `Curve3D`s: first rail is the spine, second is an auxiliary spine. Each rail must pass within 1 mm of every section. A miss or a third rail emits `feature.loft.rail-miss`.
 
 ```ts
 const s0 = path().moveTo(-8, -5).lineTo(8, -5).lineTo(8, 5).lineTo(-8, 5).close();
@@ -204,7 +204,7 @@ const grip = s0.loft(s1, {
 
 ## G1/G2 fillet continuity (Slice C)
 
-`Shape.fillet(radius, edges?, { continuity })` accepts `'G1'` (default — tangent-continuous polynomial blend, `ChFi3d_Polynomial`) and `'G2'` (curvature-continuous rational blend, `ChFi3d_Rational`). `'G2'` is preferred on edges adjacent to a NURBS surface (from `surfaceFromBoundary` / `nurbsSurface` / `surfaceFromCurves`) so the blend does not introduce a visible curvature crease at the surface-to-fillet boundary.
+`Shape.fillet(radius, edges?, { continuity })` accepts `'G1'` (default, tangent) and `'G2'` (curvature-continuous). `'G2'` is preferred on edges adjacent to a NURBS surface (from `surfaceFromBoundary` / `nurbsSurface` / `surfaceFromCurves`) so the blend does not introduce a visible curvature crease at the surface-to-fillet boundary.
 
 ```ts
 const panel = surfaceFromBoundary([bottom, right, top, left]).thicken(2);
@@ -217,7 +217,7 @@ Emitted when the requested `'G2'` continuity cannot improve the blend at the cho
 
 ### G1-vs-G2 BREP-identity gotcha — planar/cylindrical fillets
 
-**Constant-radius fillets between planar faces or between a planar face and a cylindrical face produce BREP-identical output under both `'G1'` and `'G2'`.** OCCT's rational-fillet path only diverges from the polynomial path when the adjacent faces carry non-trivial parametric curvature (`nurbsSurface` / `surfaceFromBoundary` / `surfaceFromCurves`). Thread `continuity: 'G2'` through your authoring layer for forward-compatibility with future surface-adjacent fillets, but do NOT gate on a different lowered BREP — verify the upgrade on a NURBS-adjacent edge, not on a box corner. Eyewear front faces lifted from `surfaceFromBoundary` ARE NURBS-adjacent; cylindrical lens openings cut through a flat box are NOT.
+A constant-radius fillet between planar faces, or between a plane and a cylinder, is the same solid for `'G1'` and `'G2'`. `'G2'` changes the solid only when a neighbor is a freeform surface (`nurbsSurface`, `surfaceFromBoundary`, `surfaceFromCurves`). Check G2 on that edge, not on a box corner.
 
 ## 2D NURBS path segments (Slice D)
 
@@ -252,11 +252,11 @@ const transition = path()
   .close();
 ```
 
-All three methods accept `Editable<number>` coords so symbolic params survive into capture. Coords are mm; the lowerer composes the resulting OCCT edges with replicad-drawn edges via `BRepBuilderAPI_MakeWire`.
+All three methods accept `Editable<number>` coords so symbolic params survive into capture. Coords are mm. The segments join into one wire.
 
 ### 2D path NURBS diagnostic codes
 
-- `feature.path.spline.degenerate-points` (error) — fewer than 2 points, NaN coord, two consecutive duplicates within 1e-9 mm, no prior `moveTo`, or `points[0]` not matching the current pen position within 1e-6 mm (a gap disconnects the wire and OCCT silently drops the unreachable edges, so a revolve/extrude of the profile would degenerate). Hint: pass ≥ 2 distinct finite Vec2 waypoints with `points[0]` exactly at the current pen position.
+- `feature.path.spline.degenerate-points` (error) — fewer than 2 points, NaN coord, two consecutive duplicates within 1e-9 mm, no prior `moveTo`, or `points[0]` not matching the current pen position within 1e-6 mm (a gap disconnects the wire and the unreachable edges are dropped, so a revolve or extrude of the profile degenerates). Hint: pass ≥ 2 distinct finite Vec2 waypoints with `points[0]` exactly at the current pen position.
 - `feature.path.nurbs-segment.degenerate-controls` (error) — fewer than `degree + 1` control points, non-finite coord, or `controlPoints[0]` not matching current pen position within 1e-6 mm. Hint: provide at least degree+1 finite Vec2 control points with the first matching the current pen position.
 - `feature.path.nurbs-segment.weights-non-positive` (error) — weight ≤ 0. Hint: weights must be strictly positive (zero collapses the basis; negative is undefined for B-splines).
 - `feature.path.hermite-g2.start-mismatch` (error) — `a.point` not matching current pen position within 1e-6 mm. Hint: align `a.point` with the path's current position, or call `moveTo` first.
@@ -265,7 +265,7 @@ All three methods accept `Editable<number>` coords so symbolic params survive in
 
 1. **Skinned-surface lofts can't consume NURBS sketches.** `surfaceFromCurves(sections)` lowers each `Sketch` through a raw `Drawing` cast (`nurbsSurfaceLowerer.buildSkinnedSurface`); the NURBS-aware sketch lowerer is bypassed in that path. Use `path().spline(...)` for extruded subtractive cutouts and standalone closed profiles; do NOT pass `path().spline(...)` sketches as `surfaceFromCurves` sections. For freeform sections that need lofting, use Slice C's `surfaceFromBoundary` filling surface or stick to line/arc primitives in the section profile.
 2. **`makeBSplineApproximation` can overshoot the waypoint y-extent** at the default `tolerance: 1e-4` (peak ~75% overshoot observed in Slice D Task 3). If overshoot pollutes the silhouette, either tighten the tolerance through `opts.tension`, or switch to `.nurbsSegment(controlPoints, ...)` for explicit shape control where precision beats convenience.
-3. **Wire-discontinuity is defensively tolerated.** Capture-time validation rejects obvious gaps (start-mismatch within 1e-6 mm for `.nurbsSegment` / `.hermiteG2`), but OCCT's `assembleWire` silently bridges sub-tolerance gaps in the lowerer — this is acceptable for v1; explicit gap-gating is queued for a follow-up slice.
+3. **Wire-discontinuity is defensively tolerated.** Capture-time validation rejects obvious gaps (start-mismatch within 1e-6 mm for `.nurbsSegment` / `.hermiteG2`), sub-tolerance gaps are bridged. Do not rely on that.
 
 ## JS-side analytics — when to use which
 
@@ -352,7 +352,7 @@ These are not real-time-graphics methods; for per-frame queries on large counts 
 
 ### When NOT to use `.analytics.*`
 
-- **Export**: `tessellate()` is viewport-grade only. STEP / STL / glTF exports go through the kernel mesher (`BRepMesh_IncrementalMesh`) independently.
+- **Export**: `tessellate()` is a preview. STEP, STL, and glTF use the export mesher.
 - **Geometry construction**: analytics methods return data, not curves. To build a curve from analytics output (e.g. a refit through closest-point samples), call `nurbsCurve` or `spline3d` with the points.
 - **Set-theoretic intersection of queries**: `curve.analytics.intersect(other)` is geometric (curve-curve, curve-surface). Topological / set-theoretic intersection of `Query<Face>` selections uses `kc.q.intersection(a, b)` (different method on a different receiver).
 
@@ -367,7 +367,7 @@ These are not real-time-graphics methods; for per-frame queries on large counts 
 - `feature.curve3d.analytics.intersect-no-intersection` (warn) — `intersect(other)` returned an empty array within tolerance. Not a fatal error; surfaced as a warning when downstream code asserts at least one crossing.
 - `feature.path.spline.tangent-zero-magnitude` (error) — `startTangent` or `endTangent` has magnitude < 1e-12. Hint: pass a non-zero vector; only the direction matters, but the vector must be non-degenerate.
 - `feature.path.spline.tangent-on-2d-only` (error) — tangent vectors must be 2D `[number, number]` arrays (path is planar). Hint: drop the third coordinate.
-- `feature.nurbs.bridge-conversion-failed` (error) — internal bridge could not lift the JS-fit curve back into a `Geom_BSplineCurve`. Hint: reduce waypoint count or relax tolerance; surfaces with > 200 waypoints occasionally hit this on tight fits.
+- `feature.nurbs.bridge-conversion-failed` (error) — the bridge curve could not be built. Hint: reduce waypoint count or relax tolerance. Tight fits with more than 200 waypoints can hit this.
 
 ## Reference-driven surfacing — derive sections, don't free-hand them
 
@@ -376,7 +376,7 @@ cross-section coordinates by eye and iterate in a chat loop — eyeballed
 waypoints never converge. Prefer `lookup_cookbook("automotive body envelope")`
 for the rail-loft / surfaceFromCurves stack (not the stylized polyline loft).
 
-**>2 loft rails / network bodies.** OCCT MakePipeShell hard-caps at 2 rails
+**>2 loft rails / network bodies.** Loft hard-caps at 2 rails
 (`feature.loft.rail-miss`). Do not raise rail count. Panel with
 `surfaceFromCurves` / `surfaceFromBoundary`, `.thicken` each panel (or `sew` a closed Surface shell — sew returns a Shape, no `.thicken`), G2 fillet — `lookup_cookbook("network body panels via sew")`.
 
@@ -417,7 +417,7 @@ Derive the curves from a reference photo:
   returns both halves as `[Surface, Surface]` when you need both sides. Then
   `sew([...], { requireClosed: true })` fuses coincident-edged patches into a
   closed solid, then optionally `.draft(angle, { face })` tapers a face for mold
-  release (analytic faces only; OCCT refuses to draft spline faces, emitting
+  release (analytic faces only; spline faces cannot be drafted, emitting
   `feature.draft.failed`). A single patch can still `.thicken()` to a solid.
   Face-face blends and standalone surface offset are deferred to a later slice.
 

@@ -172,7 +172,7 @@ and the export warns `drawing.style.architectural-suggested`. Pass
 ## Current limits
 
 - Per-view scale overrides are not available — every view, including section cells, shares one drawing scale (a section cell may use a SMALLER local scale than the main views if it wouldn't otherwise fit the reserved band, but never a larger one).
-- GD&T (`datum`/`fcf`) and the `hole`/`fillet`/`chamfer` callouts are authored through `options.annotations`, the same surface as every other dimension — there is no `Shape.datum()` / `Shape.tolerance()` capture-graph method. That would need a new capture-graph `FeatureKind` + OCCT lowerer + a way for the lowered `WorldFramePart` (which today carries only the final geometry, not feature records) to reach the exporter — a bigger change than adding an export-time annotation kind, and out of scope for this slice.
+- GD&T (`datum`/`fcf`) and the `hole`/`fillet`/`chamfer` callouts are authored through `options.annotations`, the same surface as every other dimension — there is no `Shape.datum()` / `Shape.tolerance()` capture-graph method. Adding a capture-graph method for that is out of scope. Use `options.annotations`.
 - `chamfer`'s leg `size` is author-supplied — not recoverable from a bare edge query without feature history.
 - Section planes must be axis-aligned; an oblique `{ origin, normal }` fails loudly rather than being approximated (see "Section views" above).
 - Exploded isometric + balloons: pass `exploded` plus `balloons` / `partsList`. A script that is not an `assembly()` fails explode with `render.explode.no-assembly`; balloons without a BOM warn `drawing.balloons.bom-unavailable`. Balloon and table labels share the existing overlap check.

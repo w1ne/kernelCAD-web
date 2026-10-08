@@ -5,7 +5,7 @@ description: kernelCAD model authoring API — primitives, transforms, booleans,
 
 # kernelCAD — authoring
 
-Author or modify kernelCAD models in TypeScript. Scripts live in `.kcad.ts` files; the kernelCAD CLI (`kernelcad evaluate <file>` and `kernelcad export stl|step|dxf|3mf|glb <file> -o <out>`) runs them on an OpenCASCADE WASM kernel.
+Author or modify kernelCAD models in TypeScript. Scripts live in `.kcad.ts` files; the kernelCAD CLI (`kernelcad evaluate <file>` and `kernelcad export stl|step|dxf|3mf|glb <file> -o <out>`) runs them.
 
 `.kcad.ts` scripts are single files: top-level `import`/`require` is refused with `feature.invalid-args` — define helpers in the same file.
 
@@ -183,7 +183,7 @@ Use `lib.fromSTEP(...)` for off-the-shelf components whenever physical fit matte
 - Before placing a vendor STEP, run `kernelcad inspect step <file.step>` (or the `inspect({ of: 'step' })` MCP tool) to read the solid tree, per-solid exact bbox + volume, and detected cylindrical holes (axis, diameter, depth, blind/through) — find mounting-hole positions and verify the part-local frame from exact geometry instead of measuring renders.
 - Build modeled brackets, mounts, clearances, cable paths, and keepouts around the imported part rather than approximating the part with generic boxes/cylinders.
 - Placeholder geometry is acceptable for early blockouts, but final review must label it as a placeholder or replace it with catalog geometry.
-- Format choice when the vendor offers several: STEP (`lib.fromSTEP`) is the default and the most portable. OCCT `.brep` (`lib.fromBREP`) is lossless and the fastest to load, but only kernelCAD/OCCT writes it — it is for round-tripping our own geometry, not vendor interchange. Reach for `.stl` (`lib.fromSTL`) only when nothing better exists: it is a triangle mesh, so you keep bbox/volume/booleans but lose analytic surfaces, which means no reliable fillet/chamfer on curved edges, no canonical face refs, and no hole detection. If a mostly prismatic part is STL/OBJ/3MF-only and you need editable geometry (mounting holes, params), run `mesh_to_features` (CLI `kernelcad reconstruct`): it emits a feature-tree script and measures it against the mesh — use it when the verdict is faithful, otherwise model the interface yourself from the reported regions rather than trusting facet normals.
+- Format choice when the vendor offers several: STEP (`lib.fromSTEP`) is the default and the most portable. Native `.brep` (`lib.fromBREP`) is lossless and the fastest to load. Use it to round-trip kernelCAD geometry. Use STEP to interchange with other CAD systems. Reach for `.stl` (`lib.fromSTL`) only when nothing better exists: it is a triangle mesh, so you keep bbox/volume/booleans but lose analytic surfaces, which means no reliable fillet/chamfer on curved edges, no canonical face refs, and no hole detection. If a mostly prismatic part is STL/OBJ/3MF-only and you need editable geometry (mounting holes, params), run `mesh_to_features` (CLI `kernelcad reconstruct`): it emits a feature-tree script and measures it against the mesh — use it when the verdict is faithful, otherwise model the interface yourself from the reported regions rather than trusting facet normals.
 
 > For off-the-shelf fasteners, bearings, motors, headers, and connectors, prefer the bundled parts catalog: load the `kernelcad-parts` skill. The catalog exposes `lib.findPart`, `lib.fetchPart`, and a typed `lib.standard.*` namespace, plus four MCP tools for discovery. Bundled parts ship with pre-defined connector frames so they participate in mates without any `partRef.connector(...)` boilerplate.
 
@@ -289,9 +289,9 @@ select<T>(items: Iterable<T>): ShapeList<T>;
 // STEP — the default for vendor catalog components.
 lib.fromSTEP(path: string): Promise<Shape>;
 
-// OCCT native BREP — lossless (exact analytic surfaces + full topology, no
+// Native BREP — lossless (exact analytic surfaces and full topology, no
 // schema translation, no tessellation). Every downstream op is valid on the
-// result. OCCT-specific: use STEP to interchange with other CAD systems.
+// result. Use STEP to interchange with other CAD systems.
 lib.fromBREP(path: string): Promise<Shape>;
 
 // STL (ASCII or binary) — THIS IS A MESH, NOT ANALYTIC B-REP. Triangles are
@@ -310,7 +310,7 @@ lib.fromSTL(path: string, opts?: {
   maxTriangles?: number;  // cost cap (default 200000; import is ~0.45 ms/triangle)
 }): Promise<Shape>;
 
-// Reference-image overlay — virtual node (no OCCT geometry). The renderer draws
+// Reference-image overlay — virtual node (no solid). The renderer draws
 // the image on the chosen plane for tracing or design review. Path resolved
 // relative to the calling .kcad.ts file. Supported formats: .png .jpg .jpeg .webp.
 // Validation errors (missing file, bad format, invalid plane) are pushed as
@@ -328,7 +328,7 @@ referenceImage(path: string, opts: {
 // built-in `preset` key or a custom .hdr `url` (mutually exclusive).
 // `intensity` (default 1.0; clamped to (0, 100]) scales envMapIntensity on
 // every PBR material; `rotation` (degrees, default 0) rotates the env map
-// around the world Y axis. Virtual record — no OCCT geometry produced.
+// around the world Y axis. Virtual record — display only.
 // Default behavior (script never calls this) is the existing three-light
 // rig. Multiple calls register multiple records; the renderer applies the
 // last one.
@@ -345,7 +345,7 @@ setRenderEnvironment(spec: {
 // bail above origin, scope with offset eyepiece, lamp with tall shaft).
 // Pass an explicit (x, y, z) in the script's world frame to re-aim the
 // camera; the renderer translates it into its recentered scene frame
-// automatically. Virtual record — no OCCT geometry produced. Multiple
+// automatically. Virtual record — display only. Multiple
 // calls register multiple records; the renderer applies the last one.
 setCameraTarget(x: number, y: number, z: number): CameraTargetHandle;
 
@@ -390,7 +390,7 @@ animationView(spec: {
   }>;
   fps?: number;          // default 30
 }): AnimationViewHandle;
-// Virtual record — no OCCT geometry. Every animated param MUST be declared
+// Virtual record — display only. Every animated param MUST be declared
 // NUMERIC by a prior param() call; undeclared/non-numeric params, two tracks
 // on the same param, and malformed keys (empty tracks/keys, non-finite or
 // negative atMs, duplicate atMs, unknown ease) THROW KernelError
@@ -401,7 +401,7 @@ animationView(spec: {
 // record carries an `animation.view.shadowed` warn naming the shadowed ids.
 
 // Declare printability (design-for-manufacture) gates for the model.
-// Declaration-only: registers a virtual record (no OCCT geometry);
+// Declaration-only: registers a virtual record (display only);
 // enforcement runs on every `evaluate` / `evaluate_script` once a dfmSpec
 // record is present. At least one of minWall / minClearance / channels is
 // required. Malformed declarations THROW KernelError
@@ -433,7 +433,7 @@ match these constraints?"*. They cannot answer *"the highest three faces"*,
 half — sort / group / filter over results the kernel has ALREADY resolved.
 
 Compose the two, don't substitute one for the other: let the declarative query
-filter inside OCCT first, then rank or bucket the resolved list in TypeScript.
+filter in the kernel first, then rank or bucket the resolved list in TypeScript.
 
 ```typescript
 // selectEdges returns a ShapeList; select(...) wraps any other result array.
@@ -457,7 +457,7 @@ Contracts worth knowing:
 
 - **Immutable.** Every method returns a NEW list; nothing sorts in place.
 - **Identity survives.** The algebra reorders the SAME descriptor objects — it
-  never re-derives one — so `EdgeSegment.id` and the `@kc[...]` ref plus OCCT
+  never re-derives one — so `EdgeSegment.id` and the `@kc[...]` ref
   handle on a `ResolvedEntity` are intact after any sort or group.
 - **Float-noise tolerant.** Both `sortBy` and `groupBy` compare on a quantized
   metric (1e-6 by default, or an explicit `tolerance` in mm) with the incoming
@@ -563,7 +563,7 @@ Contracts worth knowing:
 .transform(t: Transform): Shape
 
 // Eager lowering (for inspection; rarely called by agents directly):
-.lower(): Promise<OcctBackend>
+.lower() — internal; do not call from a script
 ```
 
 `EdgeSelector = EdgeQuery | EdgeSegment[] | { face: string | FaceQuery } | undefined`
@@ -680,7 +680,7 @@ const blade = root.loft(tip, {
 .close(): Sketch                                // Close path; returns a Sketch.
 ```
 
-`tangentCircle` / `tangentLine` take entities of the form `{ kind: 'line', from: [x,y], to: [x,y] }` (an INFINITE line; `from`->`to` sets direction) or `{ kind: 'circle', center: [x,y], radius }`, each with an optional `side: 'outside'` (default) `| 'enclosed' | 'enclosing' | 'unqualified'`. Points are not supported — the bundled OCCT does not bind `Handle_Geom2d_Point`. These constructions have SEVERAL solutions (a radius-r circle tangent to two perpendicular lines has four, one per quadrant). `side` filters first, `opts.near: [x,y]` then picks the closest solution, and if more than one still survives the build FAILS with `sketch.tangency.ambiguous` listing every candidate rather than guessing. No such construction existing fails with `sketch.tangency.no-solution` naming the geometric reason.
+`tangentCircle` / `tangentLine` take entities of the form `{ kind: 'line', from: [x,y], to: [x,y] }` (an INFINITE line; `from`->`to` sets direction) or `{ kind: 'circle', center: [x,y], radius }`, each with an optional `side: 'outside'` (default) `| 'enclosed' | 'enclosing' | 'unqualified'`. Points are not supported. These constructions have SEVERAL solutions (a radius-r circle tangent to two perpendicular lines has four, one per quadrant). `side` filters first, `opts.near: [x,y]` then picks the closest solution, and if more than one still survives the build FAILS with `sketch.tangency.ambiguous` listing every candidate rather than guessing. No such construction existing fails with `sketch.tangency.no-solution` naming the geometric reason.
 
 Every PathBuilder coord and scalar accepts `Editable<number>` (`number | ParamRef<number>`), so symbolic params survive into capture and the dispatcher's pre-resolve substitutes them at lower time. That includes `.circle(cx, cy, r, segments?)` (each vertex is captured as `cx + r·cos θ`; `segments` stays a plain integer), `tangentCircle` / `tangentLine` entity coordinates and radii, and the `extrude` / `revolve` / `loft` / `reflect` scalars above. Capture-time checks read the param's current value, not a placeholder. Raw `sweep` rail arrays stay numeric; a rail from `helix(...)` is the parametric one. Build derived dimensions with the ParamRef arithmetic methods (`.add`, `.subtract`, `.multiply`, `.divide`, `.negate`).
 
@@ -858,7 +858,7 @@ kernelcad mcp
 
 `animationView({...})` declares a kinematic-motion timeline that
 `kernelcad animate` (or the `capture_animation` MCP tool) renders to an MP4 or
-a PNG frame sequence. It is a virtual record — no OCCT geometry is produced —
+a PNG frame sequence. Display only —
 and the captured artifact is evidence of the motion, not a design source.
 
 Use the keyframe-track form for a mechanism cycle: each track animates one
@@ -986,7 +986,7 @@ When you need a canonical pattern, call MCP tool `lookup_cookbook(query, k?)` to
 | fea-study-safety-factor-gate | The design has to carry a real load and you need evidence, not a guess: peak von Mises stress, peak displacement, and a safety factor against the material's yield. Declare the study on the shape with shape.feaStudy({ material, fixed, loads, meshSize?, minSafetyFactor? }) — `fixed` and `loads[].faces` take the same FaceQuery / @kc[...] selectors as the rest of the API, and `force` is the TOTAL newtons on those faces. Declaring minSafetyFactor makes it an enforcement gate: evaluate_script fails with fea.safety-factor.below-min and names the governing region. Then run run_fea for the full summary, per-region hot spots and heatmap PNGs. Needs the external CalculiX + gmsh toolchain; check with fea_summary({}). Use this instead of verify({ check: 'load-capacity' }) when the geometry is not a plain cantilever beam or when you need to know WHERE it is overloaded. |
 | fillet-face-after-subtract | After subtracting a hole or pocket, you want to round only the rim of the resulting opening — not every edge in the part. |
 | fillet-translated-shape | You translated a primitive and now want to fillet one of its canonical faces by name (canonical face refs survive translate). |
-| freight-trailer-roof-solar-batteries | Prompt asks for a freight box / dry-van semi-trailer with solar-battery modules, or solar-panel-plus-battery cabinets, mounted on the roof and an optimal or balanced location for them. Pack the maximum grid that fits inside the front-fairing, rear-door, and side-walkway keep-outs, then center that grid on the kingpin/bogie static-reaction station. The rule is closed-form packing plus a reaction split — not an FEA solve and not an OCCT mass-properties query. Doors are modeled closed and fastened; they are not a swinging mechanism. |
+| freight-trailer-roof-solar-batteries | Prompt asks for a freight box / dry-van semi-trailer with solar-battery modules, or solar-panel-plus-battery cabinets, mounted on the roof and an optimal or balanced location for them. Pack the maximum grid that fits inside the front-fairing, rear-door, and side-walkway keep-outs, then center that grid on the kingpin/bogie static-reaction station. The rule is closed-form packing plus a reaction split — not an FEA solve and not a mass-properties query. Doors are modeled closed and fastened; they are not a swinging mechanism. |
 | g2-bridge-and-intersection-curve | You need a curvature-continuous blend between adjacent 3D curves, or the exact intersection curve of crossing faces (a weld seam, a trim spine) as a Curve3D you can sweep. |
 | gcode-export-and-print | You have a finished, watertight kernelCAD part and want to go straight to a physical print — slice it to G-code with a real slicer (no manual GUI step), then upload it to a network-connected printer and start the print, without a human touching a slicer or a printer's touchscreen. |
 | gridfinity-bin | You need a Gridfinity-compatible storage bin: X × Y grid units on the 42 mm pitch (0.5 mm clearance), height in 7 mm units, one profiled foot per cell (0.8 / 1.8 / 2.15 mm = 4.75 mm), optional Ø6 × 2 mm magnet holes at ±13 mm, optional dividers, and a stacking lip (0.7 / 1.8 / 1.9 mm). The script throws a clear error when magnets do not fit the foot or the floor, or when the bin is too shallow for a cavity under the lip. |
@@ -1005,7 +1005,7 @@ When you need a canonical pattern, call MCP tool `lookup_cookbook(query, k?)` to
 | multi-feature-machined-housing | Prompt asks for a real / production / complex mechanical housing, bearing housing, gearbox-ish enclosure, or multi-feature machined part with walls, fillets, bosses, pockets, and hole patterns. Prefer this over union-of-stacked-primitives — Adam-level bar requires manufacturing-intent BREP, not a toy stack of boxes. |
 | nema-motor-mounting-plate | Prompt asks for a NEMA mounting plate, stepper motor mount, or motor flange plate with the standard four-bolt pattern (±15.5 mm, Ø3.2 clearance). Prefer catalog `lib.standard.nema17()` when the parts catalog is available; this snippet uses a BREP stand-in motor so evaluate stays offline/CI-green. Declare matching `bolt-holes-N` frames on the plate (`.holes()` auto-connectors stay on the holes feature id) and mate with the 4-arg form. |
 | nema-shaft-spur-drive-stack | Prompt asks for one manufacturable drive stack: a NEMA-style mounting plate, a motor stand-in, two shafts in bearing seats, and an involute spur pair under the plate. Prefer catalog nema17 and bearing608 when those parts are available; this script uses BREP stand-ins so evaluate stays offline. Spur flanks are a static geometric mesh at m(z1+z2)/2 — not tooth-contact dynamics, not coupleMates, not a gear-pair transmission. Do not animate the pair. Do not export USD Isaac: the cylindrical drive-shaft mate fails with export.usd.joint-unsupported. The idler shaft is fastened. Only one of the four bolt-hole frames is mated — four fastened mates on that pair plus the cylindrical mate are a loop the solver refuses. After a full evaluate_script, inspect BOM and export a PDF or SVG drawing. Datums are annotation, not a certification. Report FEA UNVERIFIED unless CalculiX and gmsh are present. Prefer design_loop until green. |
-| network-body-panels-via-sew | You need a network-style organic body / multi-guide fairing and loft rails would exceed OCCT MakePipeShell's 2-rail cap. Do NOT pass >2 rails to Sketch.loft — panel with surfaceFromCurves / surfaceFromBoundary, sew closed, thicken, then G2 fillet. Pair with automotive-body-envelope for car proportions and verify body-likeness before publish. |
+| network-body-panels-via-sew | You need a network-style organic body / multi-guide fairing and loft accepts at most 2 rails. Do NOT pass >2 rails to Sketch.loft — panel with surfaceFromCurves / surfaceFromBoundary, sew closed, thicken, then G2 fillet. Pair with automotive-body-envelope for car proportions and verify body-likeness before publish. |
 | non-overlapping-l-bracket | You're building two perpendicular plates joined at a right angle; both plates have the same thickness; volumes must not overlap at the joint. |
 | parametric-bolt-pattern-skeleton | You want a compact bolt-hole part with an editable bolt-diameter parameter that can be changed later. |
 | path-hermite-g2-blend-2d | You're authoring a freeform 2D outline that should transition from one prescribed point + tangent (+ curvature) to another with G2 continuity (no visible curvature crease where adjacent neighbours meet). Drop a single .hermiteG2(a, b) call into the chain; a.point must match the current pen position. Tangent magnitude is the first derivative (typical ~ chord length, NOT unit length). |
@@ -1468,7 +1468,7 @@ Rules:
 ## Reference images
 
 `referenceImage(path, opts)` places a reference photo as a plane overlay in the
-Studio viewport. It is a virtual node — no OCCT geometry is created, and the
+Studio viewport. Display only, and the
 image is hidden during scoring (`--hide-reference-images`).
 
 ```typescript

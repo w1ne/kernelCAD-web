@@ -57,7 +57,7 @@ export function ExportTab(): JSX.Element {
     return (
         <div className="flex flex-col gap-2 p-3" data-testid="export-tab">
             <p className="text-[11px] text-gray-500">
-                Exports run server-side via the OCCT backend and stream a download.
+                Exports run on the server and stream a download.
             </p>
 
             <ul className="flex flex-col gap-2">

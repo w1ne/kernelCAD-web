@@ -32,7 +32,7 @@ export function authorPluginJson({ entries, version }: PluginManifestInput): str
     name: 'kernelcad',
     version,
     description:
-      'kernelCAD authoring skills — OCCT NURBS BREP CAD, agent-first, ships STEP.',
+      'kernelCAD authoring skills — agent-first CAD. Editable source, ships STEP.',
     kernelcad: {
       requires: { kernelcad: `^${minorOf(version)}` },
       mcp: {

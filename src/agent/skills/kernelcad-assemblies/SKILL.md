@@ -5,7 +5,7 @@ description: Multi-part assemblies — assembly(), parts, connectors, 7 mate typ
 
 # kernelCAD — assemblies
 
-Use `assembly()` when the model needs named mechanical parts, connector frames, and joint metadata that a human or agent can inspect later. Call `.model()` after adding parts to return a `Scene` with per-part bodies; iterate `.parts` for per-part rendering / export, call `.toCompound()` for an OCCT group (lossless on color/name/identity, default for STEP), or `.toUnion()` for one fused solid (lossy on color/name — antipattern except when downstream truly needs a single Shape). Connector and joint records remain metadata for now; `.model()` does not solve motion (use `.solvedModel(poses)` for that). Use MCP `inspect({ of: 'assemblies', file? code? })` to inspect the captured assembly intent without recomputing topology.
+Use `assembly()` when the model needs named mechanical parts, connector frames, and joint metadata that a human or agent can inspect later. Call `.model()` after adding parts to return a `Scene` with per-part bodies; iterate `.parts` for per-part rendering / export, call `.toCompound()` to group bodies without booleaning (keeps color, name, and identity; default for STEP), or `.toUnion()` for one fused solid (lossy on color/name — antipattern except when downstream truly needs a single Shape). Connector and joint records remain metadata for now; `.model()` does not solve motion (use `.solvedModel(poses)` for that). Use MCP `inspect({ of: 'assemblies', file? code? })` to inspect the captured assembly intent without recomputing topology.
 
 ## Assembly validity
 
@@ -169,7 +169,7 @@ interface Scene extends Iterable<ScenePart> {
   // Undefined when the assembly declared no mates.
   readonly mates?: readonly MateRecord[];
 
-  // OCCT TopoDS_Compound — groups bodies without booleaning. Lossless on
+  // Groups bodies without booleaning. Keeps color, name, and identity.
   // per-part identity. Default path for STEP export with named bodies, or
   // when a single Shape handle is needed without paying for a fuse.
   toCompound(): Shape;

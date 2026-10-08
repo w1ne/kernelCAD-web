@@ -118,7 +118,7 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
   {
     task: 'Select geometry',
     blurb:
-      'Pick the edges or faces a feature acts on. Query inside OCCT first, then sort or group what comes back.',
+      'Pick the edges or faces a feature acts on. Query first, then sort or group what comes back.',
     names: [
       'selectEdges', 'selectEdge', 'select', 'q',
       'sortBy', 'sortByDistance', 'groupBy', 'filterBy', 'filterByPosition',

@@ -77,7 +77,7 @@ After authoring a sheet-metal part, run before reporting done:
 |------|----------------|
 | G-eval | `kernelcad evaluate` exits 0 — no `feature.sheetMetal.*` / `feature.bend.*` / `feature.flattenPattern.*` diagnostics |
 | G-kfactor-valid | `kFactor` is a finite number in `[0, 1]`; pick 0.33-0.45 for mild steel / aluminum unless you have a measured value |
-| G-radius-vs-thickness | Inner bend radius `>= 0.5 * thickness`; tighter bends fail OCCT and emit `feature.kernel-failed` |
+| G-radius-vs-thickness | Inner bend radius `>= 0.5 * thickness`; tighter bends fail and emit `feature.kernel-failed` |
 | G-bend-edge-linear | Every `.bend(...)` selector resolves to a straight edge (slice 1: `{ atX }`, `{ atY }`, or `{ face: 'top' }`) |
 | G-bend-table-exists | `inspect({ of: 'bend-table' })` returns one entry per `.bend(...)` call with non-negative bend allowance and a finite axis line |
 | G-flatten-roundtrip | `shape.flattenPattern()` produces a `Region` whose `outer` polyline area equals the source profile area within `1e-6` (chain has <= 2 bends in slice 1) |
