@@ -55,6 +55,38 @@ function isShopFail(value: Record<string, unknown> | ShopFail): value is ShopFai
     return value.ok === false && typeof value.code === 'string';
 }
 
+type McpEnvelope = {
+    result?: { structuredContent?: unknown; isError?: boolean; content?: unknown };
+    error?: { message?: unknown };
+};
+
+function replyText(envelope: McpEnvelope): string {
+    const blocks = Array.isArray(envelope.result?.content)
+        ? envelope.result.content as Array<{ text?: unknown }>
+        : [];
+    return blocks.map((block) => typeof block.text === 'string' ? block.text : '').filter(Boolean).join('\n');
+}
+
+async function readShopReply(response: Response): Promise<Record<string, unknown> | ShopFail> {
+    const raw = await response.text();
+    let payload: unknown = null;
+    try {
+        payload = raw ? JSON.parse(raw) : null;
+    } catch {
+        return fail('shop.upstream', 'The shop network returned a page, not a quote.');
+    }
+    if (!response.ok) return fail('shop.upstream', `The shop network returned ${response.status}.`);
+    const envelope: McpEnvelope = payload && typeof payload === 'object' ? payload as McpEnvelope : {};
+    if (envelope.error) {
+        const message = typeof envelope.error.message === 'string' ? envelope.error.message : 'The shop network refused the call.';
+        return fail('shop.upstream', message);
+    }
+    if (envelope.result?.isError) return fail('shop.upstream', replyText(envelope) || 'The shop network could not price this file.');
+    const data = envelope.result?.structuredContent;
+    if (!data || typeof data !== 'object') return fail('shop.upstream', 'The shop network returned no quote.');
+    return data as Record<string, unknown>;
+}
+
 async function callShop(
     name: string,
     args: Record<string, unknown>,
@@ -80,29 +112,7 @@ async function callShop(
     } catch (err) {
         return fail('shop.upstream', err instanceof Error ? err.message : 'The shop network did not answer.');
     }
-    const raw = await response.text();
-    let payload: unknown = null;
-    try {
-        payload = raw ? JSON.parse(raw) : null;
-    } catch {
-        return fail('shop.upstream', 'The shop network returned a page, not a quote.');
-    }
-    if (!response.ok) return fail('shop.upstream', `The shop network returned ${response.status}.`);
-    const envelope = payload && typeof payload === 'object'
-        ? payload as { result?: { structuredContent?: unknown; isError?: boolean }; error?: { message?: unknown } }
-        : {};
-    const blocks = envelope.result && Array.isArray((envelope.result as { content?: unknown }).content)
-        ? (envelope.result as { content: Array<{ text?: unknown }> }).content
-        : [];
-    const text = blocks.map((block) => typeof block.text === 'string' ? block.text : '').filter(Boolean).join('\n');
-    if (envelope.error) {
-        const message = typeof envelope.error.message === 'string' ? envelope.error.message : 'The shop network refused the call.';
-        return fail('shop.upstream', message);
-    }
-    if (envelope.result?.isError) return fail('shop.upstream', text || 'The shop network could not price this file.');
-    const data = envelope.result?.structuredContent;
-    if (!data || typeof data !== 'object') return fail('shop.upstream', 'The shop network returned no quote.');
-    return data as Record<string, unknown>;
+    return readShopReply(response);
 }
 
 function offerOf(raw: unknown): ShopOffer | null {
@@ -166,23 +176,41 @@ function hasBendLines(bytes: Uint8Array): boolean {
     return /\n\s*8\r?\nBEND\r?\n/.test(new TextDecoder().decode(bytes));
 }
 
-export async function quoteShops(source: string, deps: ShopDeps = {}): Promise<ShopQuoteOk | ShopFail> {
-    if (!source.trim()) return fail('shop.source.missing', 'Open a part first.');
-    const exportFile = deps.exportFile ?? defaultExport;
-    // The network cuts and bends sheet. A part with no flat outline is not a
-    // sheet part, so it is refused rather than priced as one.
+/** The network cuts and bends sheet. A part with no flat outline is not a
+ *  sheet part, so it is refused rather than priced as one. A bent part goes
+ *  as the formed STEP so the shop prices the bends too. */
+async function shopFile(
+    source: string,
+    exportFile: ExportFile,
+): Promise<{ ok: true; format: 'dxf' | 'step'; bytes: Uint8Array } | ShopFail> {
     const flat = await exportFile(source, 'dxf');
     if (!flat.ok) {
         return fail('shop.not_sheet', 'Shops here cut and bend sheet. This part has no flat outline to cut.');
     }
-    // A bent part goes as the formed STEP so the shop prices the bends too.
-    let format: 'dxf' | 'step' = 'dxf';
-    let made: { ok: true; bytes: Uint8Array } | { ok: false; message: string } = flat;
-    if (hasBendLines(flat.bytes)) {
-        format = 'step';
-        made = await exportFile(source, format);
-    }
-    if (!made.ok) return fail('shop.build.failed', made.message);
+    if (!hasBendLines(flat.bytes)) return { ok: true, format: 'dxf', bytes: flat.bytes };
+    const formed = await exportFile(source, 'step');
+    if (!formed.ok) return fail('shop.build.failed', formed.message);
+    return { ok: true, format: 'step', bytes: formed.bytes };
+}
+
+/** One row per shop and price, cheapest first. */
+function uniqueOffers(rows: unknown[]): ShopOffer[] {
+    const seen = new Set<string>();
+    return rows.flatMap((row: unknown) => {
+        const offer = offerOf(row);
+        if (!offer) return [];
+        const key = `${offer.shop}|${offer.total_cents}`;
+        if (seen.has(key)) return [];
+        seen.add(key);
+        return [offer];
+    }).sort((a, b) => a.total_cents - b.total_cents);
+}
+
+export async function quoteShops(source: string, deps: ShopDeps = {}): Promise<ShopQuoteOk | ShopFail> {
+    if (!source.trim()) return fail('shop.source.missing', 'Open a part first.');
+    const made = await shopFile(source, deps.exportFile ?? defaultExport);
+    if (!made.ok) return made;
+    const { format } = made;
     const started = await callShop('get_fabrication_quote', {
         process: 'sheetmetal',
         quantities: [1],
@@ -197,15 +225,7 @@ export async function quoteShops(source: string, deps: ShopDeps = {}): Promise<S
         if (!isShopFail(finished)) data = finished;
     }
     const rows = Array.isArray(data.offers) ? data.offers : [];
-    const seen = new Set<string>();
-    const offers = rows.flatMap((row: unknown) => {
-        const offer = offerOf(row);
-        if (!offer) return [];
-        const key = `${offer.shop}|${offer.total_cents}`;
-        if (seen.has(key)) return [];
-        seen.add(key);
-        return [offer];
-    }).sort((a, b) => a.total_cents - b.total_cents);
+    const offers = uniqueOffers(rows);
     const recommended = recommend(offers, rows);
     if (!recommended) {
         return fail('shop.none', format === 'step'

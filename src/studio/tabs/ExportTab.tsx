@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { useCallback, useState } from 'react';
-import { Download, Loader2, ShoppingBag } from 'lucide-react';
+import { useCallback } from 'react';
+import { Download, Loader2 } from 'lucide-react';
 import { useRecomputeResult } from '../hooks/useRecomputeResult';
 import { useCode } from '../context/CodeContext';
-import { apiCall, rewritePath } from '../api/apiBase';
 import { downloadBlob, exportViaServer, type StudioExportFormat } from '../exportViaServer';
 import { EXPORT_FORMATS as FORMATS, hasPlanarSource } from '../exportFormats';
 import { useExportTask } from '../hooks/useExportTask';
+import { ShopOrder } from './ShopOrder';
 import { ExportStatus } from '../components/Shared/ExportStatus';
 import type { JSX } from 'react';
 
@@ -30,30 +30,9 @@ import type { JSX } from 'react';
 
 type ExportFormat = StudioExportFormat;
 
-interface ShopOfferRow {
-    shop: string;
-    totalCents: number;
-    shippingLabel: string | null;
-    offerId: string;
-    shippingOptionId: string;
-    file: string;
-}
-
-function shopOrigin(base: string): string {
-    if (typeof window !== 'undefined') {
-        const host = window.location.hostname;
-        if (host === 'localhost' || host === '127.0.0.1' || host === '0.0.0.0') return base;
-    }
-    return base || import.meta.env.VITE_API_BASE_URL || '';
-}
-
 export function ExportTab(): JSX.Element {
     const { geometries } = useRecomputeResult();
     const { code } = useCode();
-    const [ordering, setOrdering] = useState(false);
-    const [payingOffer, setPayingOffer] = useState<string | null>(null);
-    const [orderError, setOrderError] = useState<string | null>(null);
-    const [shopOffers, setShopOffers] = useState<ShopOfferRow[]>([]);
     const task = useExportTask();
     const { start } = task;
     const pending = FORMATS.find((f) => f.label === task.state.running)?.id ?? null;
@@ -117,121 +96,7 @@ export function ExportTab(): JSX.Element {
                 })}
             </ul>
 
-            <button
-                type="button"
-                data-testid="export-order"
-                disabled={ordering || !code.trim()}
-                title="Ask the shops for a price, then open that shop's payment page."
-                onClick={() => {
-                    if (!code.trim()) return;
-                    setOrdering(true);
-                    setShopOffers([]);
-                    setOrderError(null);
-                    void (async () => {
-                        const { base, headers } = await apiCall();
-                        const response = await fetch(rewritePath('/__kernelcad/manufacture/shops', shopOrigin(base)), {
-                            method: 'POST',
-                            headers: { ...headers, 'content-type': 'application/json' },
-                            body: JSON.stringify({ source: code }),
-                        });
-                        const payload = await response.json() as {
-                            ok?: boolean;
-                            message?: string;
-                            fabrication_file?: string;
-                            offers?: Array<{
-                                shop?: string;
-                                total_cents?: number;
-                                shipping_label?: string | null;
-                                offer_id?: string;
-                                shipping_option_id?: string;
-                            }>;
-                            recommended?: {
-                                shop?: string;
-                                total_cents?: number;
-                                shipping_label?: string | null;
-                                offer_id?: string;
-                                shipping_option_id?: string;
-                            };
-                        };
-                        const rows = payload.offers && payload.offers.length > 0
-                            ? payload.offers
-                            : payload.recommended ? [payload.recommended] : [];
-                        const offers = rows.flatMap((row) => {
-                            if (!row.offer_id || !row.shipping_option_id || typeof row.total_cents !== 'number') return [];
-                            return [{
-                                shop: row.shop ?? 'shop',
-                                totalCents: row.total_cents,
-                                shippingLabel: row.shipping_label ?? null,
-                                offerId: row.offer_id,
-                                shippingOptionId: row.shipping_option_id,
-                                file: payload.fabrication_file ?? 'step',
-                            }];
-                        });
-                        if (!payload.ok || offers.length === 0) {
-                            setOrderError(payload.message ?? 'No shop returned a price.');
-                            return;
-                        }
-                        // The cheapest offer per shop, three shops at most.
-                        const perShop = new Map<string, ShopOfferRow>();
-                        for (const offer of [...offers].sort((a, b) => a.totalCents - b.totalCents)) {
-                            if (!perShop.has(offer.shop)) perShop.set(offer.shop, offer);
-                        }
-                        setShopOffers([...perShop.values()].slice(0, 3));
-                    })().catch((err: unknown) => {
-                        setOrderError(err instanceof Error ? err.message : 'The shop request failed.');
-                    }).finally(() => setOrdering(false));
-                }}
-                className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded border border-border bg-surface-1 text-fg text-xs disabled:opacity-50"
-            >
-                <span className="flex flex-col items-start gap-0.5">
-                    <span className="font-semibold">{ordering ? 'Asking shops…' : 'Order'}</span>
-                    <span className="text-2xs text-fg-3">Get shop prices, then pay the one you pick</span>
-                </span>
-                {ordering ? <Loader2 className="h-4 w-4 animate-spin shrink-0" /> : <ShoppingBag className="h-4 w-4 shrink-0" />}
-            </button>
-            {shopOffers.length > 0 && (
-                <ul data-testid="shop-offer" className="m-0 flex flex-col gap-2 px-3 py-2 rounded border border-border text-[11px] text-fg">
-                    {shopOffers.map((offer) => (
-                        <li key={offer.offerId}>
-                            <p className="m-0">{offer.shop}, from ${(offer.totalCents / 100).toFixed(2)}{offer.shippingLabel ? ` · ${offer.shippingLabel}` : ''}</p>
-                            <button
-                                type="button"
-                                data-testid="shop-pay"
-                                disabled={payingOffer !== null}
-                                className="mt-1 rounded border border-border-strong px-2 py-1 text-accent disabled:opacity-50"
-                                onClick={() => {
-                                    setPayingOffer(offer.offerId);
-                                    setOrderError(null);
-                                    void (async () => {
-                                        const { base, headers } = await apiCall();
-                                        const response = await fetch(rewritePath('/__kernelcad/manufacture/shops/order', shopOrigin(base)), {
-                                            method: 'POST',
-                                            headers: { ...headers, 'content-type': 'application/json' },
-                                            body: JSON.stringify({
-                                                offer_id: offer.offerId,
-                                                shipping_option_id: offer.shippingOptionId,
-                                            }),
-                                        });
-                                        const payload = await response.json() as { ok?: boolean; message?: string; checkout_url?: string };
-                                        if (!payload.ok || !payload.checkout_url) {
-                                            setOrderError(payload.message ?? 'The shop did not open a payment page.');
-                                            return;
-                                        }
-                                        window.open(payload.checkout_url, '_blank', 'noopener');
-                                    })().catch((err: unknown) => {
-                                        setOrderError(err instanceof Error ? err.message : 'The payment page did not open.');
-                                    }).finally(() => setPayingOffer(null));
-                                }}
-                            >
-                                {payingOffer === offer.offerId ? 'Opening payment…' : `Pay ${offer.shop}`}
-                            </button>
-                        </li>
-                    ))}
-                </ul>
-            )}
-            {orderError && (
-                <p role="alert" data-testid="export-order-error" className="text-[11px] text-danger">{orderError}</p>
-            )}
+            <ShopOrder code={code} />
 
             <ExportStatus task={task} testId="export-tab-status" />
         </div>

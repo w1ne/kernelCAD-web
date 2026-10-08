@@ -88,27 +88,37 @@ function countOf(token: string): number | null {
     return PLACED_COUNTS.has(value) ? value : null;
 }
 
-function holeRequest(prompt: string): { count: number; diameter: number; note: string } | { error: string } | null {
-    const threaded = prompt.match(/(\d+|a|an|one|two|three|four)\s+M(\d+(?:\.\d+)?)\b(?:\s+mounting)?\s+holes?/i)
-        ?? prompt.match(/\bM(\d+(?:\.\d+)?)\s+holes?/i);
-    if (threaded) {
-        const thread = threaded[2] ?? threaded[1];
-        const count = threaded[2] != null ? countOf(threaded[1]!) : 1;
-        const diameter = thread ? CLEARANCE_MM[thread] : undefined;
-        if (count == null) return { error: 'Say 1, 2, or 4 holes. Other counts are not placed.' };
-        if (diameter == null || thread == null) {
-            return { error: `M${thread ?? ''} has no clearance drill in this builder. Use M2, M2.5, M3, M4, M5, M6, M8, M10, or M12.` };
-        }
-        return { count, diameter, note: `M${thread} clearance is ${num(diameter)} mm (ISO 273 medium). The prompt named the thread.` };
+type HoleRequest = { count: number; diameter: number; note: string } | { error: string } | null;
+
+const COUNT_REFUSAL = 'Say 1, 2, or 4 holes. Other counts are not placed.';
+
+function threadedHoles(prompt: string): HoleRequest {
+    const counted = prompt.match(/(\d+|a|an|one|two|three|four)\s+M(\d+(?:\.\d+)?)\b(?:\s+mounting)?\s+holes?/i);
+    const single = counted ? null : prompt.match(/\bM(\d+(?:\.\d+)?)\s+holes?/i);
+    if (!counted && !single) return null;
+    const thread = counted ? counted[2]! : single![1]!;
+    const count = counted ? countOf(counted[1]!) : 1;
+    if (count == null) return { error: COUNT_REFUSAL };
+    const diameter = CLEARANCE_MM[thread];
+    if (diameter == null) {
+        return { error: `M${thread} has no clearance drill in this builder. Use M2, M2.5, M3, M4, M5, M6, M8, M10, or M12.` };
     }
-    const drilled = prompt.match(/(\d+|a|an|one|two|three|four)\s+(\d+(?:\.\d+)?)\s*mm\s+holes?/i)
-        ?? prompt.match(/(\d+(?:\.\d+)?)\s*mm\s+holes?/i);
-    if (!drilled) return null;
-    const diameter = Number(drilled[2] ?? drilled[1]);
-    const count = drilled[2] != null ? countOf(drilled[1]!) : 1;
-    if (count == null) return { error: 'Say 1, 2, or 4 holes. Other counts are not placed.' };
+    return { count, diameter, note: `M${thread} clearance is ${num(diameter)} mm (ISO 273 medium). The prompt named the thread.` };
+}
+
+function drilledHoles(prompt: string): HoleRequest {
+    const counted = prompt.match(/(\d+|a|an|one|two|three|four)\s+(\d+(?:\.\d+)?)\s*mm\s+holes?/i);
+    const single = counted ? null : prompt.match(/(\d+(?:\.\d+)?)\s*mm\s+holes?/i);
+    if (!counted && !single) return null;
+    const diameter = Number(counted ? counted[2] : single![1]);
+    const count = counted ? countOf(counted[1]!) : 1;
+    if (count == null) return { error: COUNT_REFUSAL };
     if (!Number.isFinite(diameter) || diameter <= 0 || diameter > 40) return { error: 'The hole diameter is not a usable millimetre size.' };
     return { count, diameter, note: `Hole diameter ${num(diameter)} mm is taken from the prompt.` };
+}
+
+function holeRequest(prompt: string): HoleRequest {
+    return threadedHoles(prompt) ?? drilledHoles(prompt);
 }
 
 function plateSource(prompt: string, size: [number, number, number], holes: { count: number; diameter: number; note: string } | null): WordsGeometry | WordsRefusal {
@@ -258,6 +268,18 @@ function bracketSource(prompt: string): WordsGeometry | WordsRefusal | null {
     };
 }
 
+/** A sized prompt that names a flat part, holes, or millimetres is a plate. */
+function plateFromWords(text: string): WordsResult | null {
+    const size = sizeOf(text);
+    if (!size) return null;
+    const named = /plate|bracket|panel|sheet|rectangle/i.test(text);
+    const holes = holeRequest(text);
+    if (holes && 'error' in holes) return { ok: false, code: 'words.unsupported', message: holes.error };
+    if (!holes && /\bholes?\b/i.test(text)) return { ok: false, code: 'words.unsupported', message: HOLE_SIZE_MISSING };
+    if (named || holes || /mm|millimetre|millimeter/i.test(text)) return plateSource(text, size, holes);
+    return null;
+}
+
 export function wordsToGeometry(prompt: string): WordsResult {
     const text = prompt.trim();
     if (!text) {
@@ -267,19 +289,8 @@ export function wordsToGeometry(prompt: string): WordsResult {
     if (bolt) return bolt;
     const bracket = bracketSource(text);
     if (bracket) return bracket;
-    const size = sizeOf(text);
-    if (size && /plate|bracket|panel|sheet|rectangle/i.test(text)) {
-        const holes = holeRequest(text);
-        if (holes && 'error' in holes) return { ok: false, code: 'words.unsupported', message: holes.error };
-        if (!holes && /\bholes?\b/i.test(text)) return { ok: false, code: 'words.unsupported', message: HOLE_SIZE_MISSING };
-        return plateSource(text, size, holes);
-    }
-    if (size) {
-        const holes = holeRequest(text);
-        if (holes && 'error' in holes) return { ok: false, code: 'words.unsupported', message: holes.error };
-        if (!holes && /\bholes?\b/i.test(text)) return { ok: false, code: 'words.unsupported', message: HOLE_SIZE_MISSING };
-        if (holes || /mm|millimetre|millimeter/i.test(text)) return plateSource(text, size, holes);
-    }
+    const plate = plateFromWords(text);
+    if (plate) return plate;
     return {
         ok: false,
         code: 'words.unsupported',
