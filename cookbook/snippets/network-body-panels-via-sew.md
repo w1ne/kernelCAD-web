@@ -11,14 +11,14 @@ keywords:
   - MakePipeShell rail limit
   - G2 fillet body panels
 when_to_use: >-
-  You need a network-style organic body / multi-guide fairing and loft rails
-  would exceed OCCT MakePipeShell's 2-rail cap. Do NOT pass >2 rails to
+  You need a network-style organic body / multi-guide fairing and loft
+  accepts at most 2 rails. Do NOT pass >2 rails to
   Sketch.loft — panel with surfaceFromCurves / surfaceFromBoundary, sew closed,
   thicken, then G2 fillet. Pair with automotive-body-envelope for car proportions
   and verify body-likeness before publish.
 ---
 
-OCCT `MakePipeShell` accepts **at most 2 rails** (spine + auxiliary). Raising
+A loft accepts **at most 2 rails** (spine + auxiliary). Raising
 `opts.rails` past 2 always fails with `feature.loft.rail-miss`. For network-style
 bodies, switch to a **multi-patch sew** workflow instead of pretending more
 rails work.
