@@ -61,8 +61,8 @@ for (const agent of detectAgents()) {
   console.log(SNIPPETS[agent]);
 }
 console.log('');
-console.log('Hosted MCP (opt-in fallback): set KERNELCAD_API_KEY and point your agent at');
-console.log('  https://api.kernelcad.com/mcp');
+console.log('Hosted MCP:');
+console.log('  claude mcp add --transport http kernelcad https://mcp.kernelcad.com/mcp');
 console.log('');
 `;
 }

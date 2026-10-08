@@ -28,7 +28,7 @@ export async function installCommand(target: string): Promise<void> {
   // Soft-deprecation notice (Task D6 — pointing users at the new cross-agent flow).
   if (process.env.KERNELCAD_SUPPRESS_DEPRECATION !== '1') {
     console.error(
-      '[kernelcad skill install] consider `npx skills add kernelcad/skills` for cross-agent install.',
+      '[kernelcad skill install] consider `npx skills add w1ne/kernelcad-skills` for cross-agent install.',
     );
   }
 }

@@ -34,7 +34,7 @@ Cross-agent install for the kernelCAD skill tree. Local MCP by default; hosted M
 ## Install
 
 \`\`\`bash
-npx skills add kernelcad/skills
+npx skills add w1ne/kernelcad-skills
 \`\`\`
 
 The \`skills\` CLI drops each \`SKILL.md\` into your agent's skill directory:
@@ -90,9 +90,11 @@ Add the kernelcad MCP entry to your settings:
 { "mcp.servers": { "kernelcad": { "command": "kernelcad", "args": ["mcp"] } } }
 \`\`\`
 
-### Hosted (opt-in fallback)
+### Hosted
 
-Set \`KERNELCAD_API_KEY\` in your environment and point your agent at \`https://api.kernelcad.com/mcp\` instead of the local stdio command.
+\`\`\`bash
+claude mcp add --transport http kernelcad https://mcp.kernelcad.com/mcp
+\`\`\`
 
 ## Skills in this distribution
 
