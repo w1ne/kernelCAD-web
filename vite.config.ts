@@ -414,6 +414,9 @@ function kernelCadMeshEndpoint(): Plugin {
           void (async () => {
             const raw = Buffer.concat(chunks).toString('utf8');
             const body = raw.trim().length === 0 ? {} : JSON.parse(raw) as Record<string, unknown>;
+            // The quote builds the part in this process, so OCCT needs the
+            // same Node shims as the export endpoint.
+            ensureOcctShims();
             const { quoteShops, orderShop } = await import('./src/server/middleware/shopQuote');
             const result = action === 'quote'
               ? await quoteShops(typeof body.source === 'string' ? body.source : '')

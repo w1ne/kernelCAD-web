@@ -187,6 +187,9 @@ function fitsPart(offer: ShopOffer, sheet: SheetInfo | null): boolean {
 }
 
 async function defaultExport(source: string, format: 'dxf' | 'step') {
+    // This process builds the part itself; nothing else may have loaded OCCT.
+    const { initOcct } = await import('../../kernel/backends/occt/occtBackend');
+    await initOcct();
     const { runAndExport } = await import('../../agent/script-runtime/export');
     const made = await runAndExport({
         code: source,
