@@ -51,6 +51,10 @@ function fail(code: string, message: string): ShopFail {
     return { ok: false, code, message };
 }
 
+function isShopFail(value: Record<string, unknown> | ShopFail): value is ShopFail {
+    return value.ok === false && typeof value.code === 'string';
+}
+
 async function callShop(
     name: string,
     args: Record<string, unknown>,
@@ -173,16 +177,16 @@ export async function quoteShops(source: string, deps: ShopDeps = {}): Promise<S
         quantities: [1],
         design_file: `data:${mime(format)};base64,${Buffer.from(made.bytes).toString('base64')}`,
     }, deps);
-    if ('ok' in started && started.ok === false) return started;
-    let data = started;
+    if (isShopFail(started)) return started;
+    let data: Record<string, unknown> = started;
     const quoteId = typeof data.quote_id === 'string' ? data.quote_id : null;
     const early = Array.isArray(data.offers) ? data.offers : [];
     if (quoteId && data.status === 'quoting' && early.length === 0) {
         const finished = await callShop('finalize_quote', { quote_id: quoteId }, deps);
-        if (!('ok' in finished && finished.ok === false)) data = finished;
+        if (!isShopFail(finished)) data = finished;
     }
     const rows = Array.isArray(data.offers) ? data.offers : [];
-    const offers = rows.flatMap((row) => {
+    const offers = rows.flatMap((row: unknown) => {
         const offer = offerOf(row);
         return offer ? [offer] : [];
     });
@@ -202,7 +206,7 @@ export async function orderShop(
         offer_id: input.offer_id,
         shipping_option_id: input.shipping_option_id,
     }, deps);
-    if ('ok' in opened && opened.ok === false) return opened;
+    if (isShopFail(opened)) return opened;
     const checkoutUrl = typeof opened.checkout_url === 'string' ? opened.checkout_url : null;
     if (!checkoutUrl) return fail('shop.checkout.missing', 'The shop did not open a payment page.');
     return {

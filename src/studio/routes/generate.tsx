@@ -113,11 +113,6 @@ function GeneratePage() {
     [agentEnabled, openWords, session, run],
   );
 
-  useEffect(() => {
-    if (agentEnabled || !initialPrompt.trim()) return;
-    openWords(initialPrompt);
-  }, [agentEnabled, initialPrompt, openWords]);
-
   // After OAuth returns with a session, auto-resume the stashed prompt.
   useEffect(() => {
     if (sessionLoading || !session) return;
