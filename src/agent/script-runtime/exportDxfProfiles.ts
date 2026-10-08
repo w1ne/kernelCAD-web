@@ -97,7 +97,8 @@ export function exportShapeDxfProfile(
     return nonPlanar(targetId, `${what}: ${r.reason}.`, diagnostics, featureCount);
   }
   const bytes = exportDxf({ kind: 'profiles', layers: [{ loops: r.profile.loops }] }, opts);
-  return { bytes, featureCount, diagnostics };
+  const sheet = !section && r.profile.thickness > 0 ? { thicknessMm: r.profile.thickness, bendCount: 0 } : undefined;
+  return { bytes, featureCount, diagnostics, ...(sheet ? { sheet } : {}) };
 }
 
 /** DXF layer names cannot hold `<>/\":;?*|=,` or a backtick. */

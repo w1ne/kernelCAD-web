@@ -85,6 +85,9 @@ describe('ExportTab', () => {
                 fabrication_file: 'step',
                 recommended: {
                     shop: 'SendCutSend',
+                    process: 'sheetmetal',
+                    material: 'aluminum_5052',
+                    thickness_mm: 2.03,
                     total_cents: 3221,
                     shipping_label: 'Standard',
                     offer_id: 'of_scs',
@@ -92,17 +95,17 @@ describe('ExportTab', () => {
                 },
             }), { status: 200, headers: { 'content-type': 'application/json' } });
         });
-        const opened = vi.spyOn(window, 'open').mockImplementation(() => null);
+        const tab = { opener: {}, location: { href: '' }, close: vi.fn() };
+        const opened = vi.spyOn(window, 'open').mockImplementation(() => tab as unknown as Window);
         render(<ExportTab />);
         fireEvent.click(screen.getByTestId('export-order'));
         expect((await screen.findByTestId('shop-offer')).textContent).toContain('SendCutSend');
-        expect(screen.getByTestId('shop-offer').textContent).toContain('from $32.21');
+        expect(screen.getByTestId('shop-offer').textContent).toContain('aluminum 5052, 2.03 mm sheet, from $32.21');
         fireEvent.click(screen.getByTestId('shop-pay'));
-        await waitFor(() => expect(opened).toHaveBeenCalledWith(
-            'https://checkout.stripe.com/c/pay/cs_test',
-            '_blank',
-            'noopener',
-        ));
+        // The tab opens inside the click, before the request, so it is not a blocked popup.
+        expect(opened).toHaveBeenCalledWith('about:blank', '_blank');
+        expect(tab.opener).toBeNull();
+        await waitFor(() => expect(tab.location.href).toBe('https://checkout.stripe.com/c/pay/cs_test'));
         const orderCall = fetchMock.mock.calls.map((call) => String(call[0])).find((url) => url.endsWith('/shops/order'));
         expect(orderCall?.endsWith('/__kernelcad/manufacture/shops/order')).toBe(true);
         fetchMock.mockRestore();

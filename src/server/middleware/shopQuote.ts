@@ -13,11 +13,20 @@ export interface ShopOffer {
     readonly total_cents: number;
     readonly shipping_option_id: string;
     readonly shipping_label: string | null;
+    /** How the shop makes it: sheetmetal, fdm_print, cnc, ... */
+    readonly process: string | null;
+    readonly material: string | null;
+    /** Sheet the shop quoted, in mm; null for non-sheet processes. */
+    readonly thickness_mm: number | null;
+    /** Bends the shop priced; 0 when it only cuts. */
+    readonly bends: number;
 }
 
 export interface ShopQuoteOk {
     readonly ok: true;
     readonly fabrication_file: 'dxf' | 'step';
+    /** Sheet thickness the part asked for, in mm; null when it is not sheet. */
+    readonly thickness_mm: number | null;
     readonly recommended: ShopOffer;
     readonly offers: ShopOffer[];
 }
@@ -35,10 +44,15 @@ export interface ShopFail {
     readonly message: string;
 }
 
+export interface SheetInfo {
+    readonly thicknessMm: number;
+    readonly bendCount: number;
+}
+
 export type ExportFile = (
     source: string,
     format: 'dxf' | 'step',
-) => Promise<{ ok: true; bytes: Uint8Array } | { ok: false; message: string }>;
+) => Promise<{ ok: true; bytes: Uint8Array; sheet?: SheetInfo } | { ok: false; message: string }>;
 
 export interface ShopDeps {
     readonly fetch?: typeof fetch;
@@ -115,41 +129,61 @@ async function callShop(
     return readShopReply(response);
 }
 
+const SHEET_PROCESSES = new Set(['sheetmetal', 'laser_cut']);
+/** A shop that quotes a sheet this far off the asked thickness is quoting
+ *  a different part. */
+const THICKNESS_TOLERANCE = 0.2;
+
+function str(value: unknown): string | null {
+    return typeof value === 'string' && value.length > 0 ? value : null;
+}
+
+function firstShipping(row: Record<string, unknown>): { id: string; label?: unknown } | undefined {
+    if (!Array.isArray(row.shipping_options)) return undefined;
+    return row.shipping_options.find((item) => item && typeof item === 'object'
+        && typeof (item as { id?: unknown }).id === 'string') as { id: string; label?: unknown } | undefined;
+}
+
 function offerOf(raw: unknown): ShopOffer | null {
     if (!raw || typeof raw !== 'object') return null;
     const row = raw as Record<string, unknown>;
-    const offerId = typeof row.offer_id === 'string' ? row.offer_id : row.id;
-    if (typeof offerId !== 'string') return null;
-    if (typeof row.total_from_cents !== 'number') return null;
-    const shipping = Array.isArray(row.shipping_options)
-        ? row.shipping_options.find((item) => item && typeof item === 'object' && typeof (item as { id?: unknown }).id === 'string') as { id: string; label?: unknown } | undefined
-        : undefined;
-    if (!shipping) return null;
-    const shop = typeof row.vendor_display_name === 'string'
-        ? row.vendor_display_name
-        : typeof row.vendor === 'string' ? row.vendor : 'shop';
+    const offerId = str(row.offer_id) ?? str(row.id);
+    const shipping = firstShipping(row);
+    if (!offerId || typeof row.total_from_cents !== 'number' || !shipping) return null;
+    const spec = row.spec_resolved && typeof row.spec_resolved === 'object'
+        ? row.spec_resolved as Record<string, unknown>
+        : {};
     return {
         offer_id: offerId,
-        shop,
+        shop: str(row.vendor_display_name) ?? str(row.vendor) ?? 'shop',
         total_cents: row.total_from_cents,
         shipping_option_id: shipping.id,
-        shipping_label: typeof shipping.label === 'string' ? shipping.label : null,
+        shipping_label: str(shipping.label),
+        process: str(row.process),
+        material: str(spec.material),
+        thickness_mm: specThicknessMm(spec),
+        bends: typeof spec.bends === 'number' ? spec.bends : 0,
     };
 }
 
-function recommend(offers: ShopOffer[], rows: unknown[]): ShopOffer | null {
-    const liveIds = new Set(rows.flatMap((raw) => {
-        if (!raw || typeof raw !== 'object') return [];
-        const row = raw as { id?: unknown; offer_id?: unknown; price_basis?: unknown };
-        if (row.price_basis !== 'vendor_api') return [];
-        const id = typeof row.offer_id === 'string' ? row.offer_id : row.id;
-        return typeof id === 'string' ? [id] : [];
-    }));
-    const pool = offers.filter((offer) => liveIds.size === 0 || liveIds.has(offer.offer_id));
-    return pool.reduce<ShopOffer | null>((best, offer) => {
-        if (!best || offer.total_cents < best.total_cents) return offer;
-        return best;
-    }, null);
+/** `thickness_in: 0.08`, or a label like "2 mm" / "0.125 in (8 ga)". */
+function specThicknessMm(spec: Record<string, unknown>): number | null {
+    if (typeof spec.thickness_in === 'number') return Math.round(spec.thickness_in * 25.4 * 100) / 100;
+    const label = typeof spec.thickness === 'string' ? spec.thickness.match(/^([\d.]+)\s*(mm|in)\b/) : null;
+    if (!label) return null;
+    const value = Number(label[1]);
+    return Math.round((label[2] === 'in' ? value * 25.4 : value) * 100) / 100;
+}
+
+/** Keeps offers that make the part that was asked for: the right sheet for a
+ *  sheet part, and no sheet offer at all for a part that is not sheet. */
+function fitsPart(offer: ShopOffer, sheet: SheetInfo | null): boolean {
+    const sheetOffer = offer.process !== null && SHEET_PROCESSES.has(offer.process);
+    if (sheet === null) return !sheetOffer;
+    if (!sheetOffer || offer.bends < sheet.bendCount) return false;
+    const thicknessMm = sheet.thicknessMm;
+    if (offer.thickness_mm === null) return true;
+    return Math.abs(offer.thickness_mm - thicknessMm) <= thicknessMm * THICKNESS_TOLERANCE;
 }
 
 async function defaultExport(source: string, format: 'dxf' | 'step') {
@@ -165,94 +199,109 @@ async function defaultExport(source: string, format: 'dxf' | 'step') {
             ?? 'The part did not become a fabrication file.';
         return { ok: false as const, message };
     }
-    return { ok: true as const, bytes: made.bytes };
+    return { ok: true as const, bytes: made.bytes, ...(made.sheet ? { sheet: made.sheet } : {}) };
 }
 
-function mime(format: 'dxf' | 'step'): string {
-    return format === 'dxf' ? 'image/vnd.dxf' : 'model/step';
+function dataUrl(format: 'dxf' | 'step', bytes: Uint8Array): string {
+    const mime = format === 'dxf' ? 'image/vnd.dxf' : 'model/step';
+    return `data:${mime};base64,${Buffer.from(bytes).toString('base64')}`;
 }
 
-function hasBendLines(bytes: Uint8Array): boolean {
-    return /\n\s*8\r?\nBEND\r?\n/.test(new TextDecoder().decode(bytes));
+interface ShopRequest {
+    readonly format: 'dxf' | 'step';
+    readonly sheet: SheetInfo | null;
+    readonly args: Record<string, unknown>;
 }
 
-/** The network cuts and bends sheet. A part with no flat outline is not a
- *  sheet part, so it is refused rather than priced as one. A bent part goes
- *  as the formed STEP so the shop prices the bends too. */
-async function shopFile(
-    source: string,
-    exportFile: ExportFile,
-): Promise<{ ok: true; format: 'dxf' | 'step'; bytes: Uint8Array } | ShopFail> {
+/** A flat sheet part goes out as its DXF and a bent one as its formed STEP
+ *  (shops cut a DXF flat), both with the sheet thickness and bend count the
+ *  file does not carry. Any other part goes out as STEP to the 3D-print and
+ *  CNC shops. */
+async function shopRequest(source: string, exportFile: ExportFile): Promise<ShopRequest | ShopFail> {
     const flat = await exportFile(source, 'dxf');
-    if (!flat.ok) {
-        return fail('shop.not_sheet', 'Shops here cut and bend sheet. This part has no flat outline to cut.');
+    const sheet = flat.ok && flat.sheet ? flat.sheet : null;
+    if (flat.ok && sheet && sheet.bendCount === 0) {
+        return { format: 'dxf', sheet, args: { ...sheetArgs(sheet), units: 'mm', design_file: dataUrl('dxf', flat.bytes) } };
     }
-    if (!hasBendLines(flat.bytes)) return { ok: true, format: 'dxf', bytes: flat.bytes };
-    const formed = await exportFile(source, 'step');
-    if (!formed.ok) return fail('shop.build.failed', formed.message);
-    return { ok: true, format: 'step', bytes: formed.bytes };
+    const solid = await exportFile(source, 'step');
+    if (!solid.ok) return fail('shop.build.failed', solid.message);
+    const design_file = dataUrl('step', solid.bytes);
+    if (sheet) return { format: 'step', sheet, args: { ...sheetArgs(sheet), design_file } };
+    return { format: 'step', sheet: null, args: { processes: ['3d printing', 'cnc'], design_file } };
 }
 
-/** One row per shop and price, cheapest first. */
-function uniqueOffers(rows: unknown[]): ShopOffer[] {
+function sheetArgs(sheet: SheetInfo): Record<string, unknown> {
+    return {
+        process: 'sheetmetal',
+        thickness_in: Math.round((sheet.thicknessMm / 25.4) * 10000) / 10000,
+        ...(sheet.bendCount > 0 ? { bend_count: sheet.bendCount } : {}),
+    };
+}
+
+/** One row per shop, process, material and price, cheapest first. */
+function uniqueOffers(rows: unknown[], sheet: SheetInfo | null): ShopOffer[] {
     const seen = new Set<string>();
     return rows.flatMap((row: unknown) => {
         const offer = offerOf(row);
-        if (!offer) return [];
-        const key = `${offer.shop}|${offer.total_cents}`;
+        if (!offer || !fitsPart(offer, sheet)) return [];
+        const key = `${offer.shop}|${offer.process}|${offer.material}|${offer.total_cents}`;
         if (seen.has(key)) return [];
         seen.add(key);
         return [offer];
     }).sort((a, b) => a.total_cents - b.total_cents);
 }
 
+async function finishedQuote(started: Record<string, unknown>, deps: ShopDeps): Promise<Record<string, unknown>> {
+    const quoteId = str(started.quote_id);
+    const early = Array.isArray(started.offers) ? started.offers : [];
+    if (!quoteId || started.status !== 'quoting' || early.length > 0) return started;
+    const finished = await callShop('finalize_quote', { quote_id: quoteId }, deps);
+    return isShopFail(finished) ? started : finished;
+}
+
 export async function quoteShops(source: string, deps: ShopDeps = {}): Promise<ShopQuoteOk | ShopFail> {
     if (!source.trim()) return fail('shop.source.missing', 'Open a part first.');
-    const made = await shopFile(source, deps.exportFile ?? defaultExport);
-    if (!made.ok) return made;
-    const { format } = made;
-    const started = await callShop('get_fabrication_quote', {
-        process: 'sheetmetal',
-        quantities: [1],
-        design_file: `data:${mime(format)};base64,${Buffer.from(made.bytes).toString('base64')}`,
-    }, deps);
+    const request = await shopRequest(source, deps.exportFile ?? defaultExport);
+    if ('ok' in request) return request;
+    const started = await callShop('get_fabrication_quote', { quantities: [1], ...request.args }, deps);
     if (isShopFail(started)) return started;
-    let data: Record<string, unknown> = started;
-    const quoteId = typeof data.quote_id === 'string' ? data.quote_id : null;
-    const early = Array.isArray(data.offers) ? data.offers : [];
-    if (quoteId && data.status === 'quoting' && early.length === 0) {
-        const finished = await callShop('finalize_quote', { quote_id: quoteId }, deps);
-        if (!isShopFail(finished)) data = finished;
-    }
-    const rows = Array.isArray(data.offers) ? data.offers : [];
-    const offers = uniqueOffers(rows);
-    const recommended = recommend(offers, rows);
+    const data = await finishedQuote(started, deps);
+    const offers = uniqueOffers(Array.isArray(data.offers) ? data.offers : [], request.sheet);
+    const recommended = offers[0];
     if (!recommended) {
-        return fail('shop.none', format === 'step'
-            ? 'No shop priced the bends on this part yet. A flat part without a fold can be ordered.'
-            : 'No shop returned a price for this part.');
+        return fail('shop.none', request.sheet === null
+            ? 'No 3D-print or CNC shop returned a price for this part.'
+            : `No shop returned a price for this part in ${request.sheet.thicknessMm} mm sheet.`);
     }
-    return { ok: true, fabrication_file: format, recommended, offers };
+    return {
+        ok: true,
+        fabrication_file: request.format,
+        thickness_mm: request.sheet?.thicknessMm ?? null,
+        recommended,
+        offers,
+    };
 }
 
 export async function orderShop(
-    input: { offer_id: string; shipping_option_id: string },
+    input: { offer_id: string; shipping_option_id: string; return_url?: string },
     deps: ShopDeps = {},
 ): Promise<ShopOrderOk | ShopFail> {
     if (!input.offer_id || !input.shipping_option_id) {
         return fail('shop.offer.missing', 'Choose a shop offer first.');
     }
+    const returnUrl = input.return_url && /^https?:\/\//.test(input.return_url) ? input.return_url : null;
     const opened = await callShop('create_checkout', {
         offer_id: input.offer_id,
         shipping_option_id: input.shipping_option_id,
+        ...(returnUrl ? { return_url: returnUrl } : {}),
     }, deps);
     if (isShopFail(opened)) return opened;
-    const checkoutUrl = typeof opened.checkout_url === 'string' ? opened.checkout_url : null;
+    const checkoutUrl = str(opened.checkout_url);
     if (!checkoutUrl) return fail('shop.checkout.missing', 'The shop did not open a payment page.');
     return {
         ok: true,
         checkout_url: checkoutUrl,
         total_cents: typeof opened.total_cents === 'number' ? opened.total_cents : null,
-        order_id: typeof opened.order_id === 'string' ? opened.order_id : null,
+        order_id: str(opened.order_id),
     };
 }

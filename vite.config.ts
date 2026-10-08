@@ -420,6 +420,7 @@ function kernelCadMeshEndpoint(): Plugin {
               : await orderShop({
                 offer_id: typeof body.offer_id === 'string' ? body.offer_id : '',
                 shipping_option_id: typeof body.shipping_option_id === 'string' ? body.shipping_option_id : '',
+                return_url: typeof body.return_url === 'string' ? body.return_url : undefined,
               });
             res.statusCode = result.ok ? 200 : 400;
             res.setHeader('content-type', 'application/json');
