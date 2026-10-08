@@ -10,7 +10,7 @@
 import { mkdirSync, copyFileSync, writeFileSync, readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { walkSkillTree } from '../src/agent/cli/lib/walkSkillTree.ts';
-import { authorPluginJson } from './lib/distSkillManifest.ts';
+import { authorPluginJson, publishedSkillDir } from './lib/distSkillManifest.ts';
 import { authorHarnessAgentsMd } from './lib/distHarnessAuthor.ts';
 import { authorReadme } from './lib/distReadme.ts';
 import { authorPostinstall } from './lib/distPostinstallScript.ts';
@@ -23,17 +23,19 @@ export async function runDistGenerate({ repoRoot, outDir }) {
   const skillRoot = join(repoRoot, 'src/agent/skills');
   const entries = walkSkillTree(skillRoot);
 
-  // 1. Copy the SKILL.md tree under skills/, preserving relative paths.
+  // 1. Each skill is a direct child of skills/. A root SKILL.md makes the
+  // installer return before it walks skills/, and a parent SKILL.md hides
+  // children nested under it.
+  const seen = new Map();
   for (const entry of entries) {
-    const dst = join(outDir, 'skills', entry.relPath);
+    const dir = publishedSkillDir(entry.relPath);
+    const prior = seen.get(dir);
+    if (prior) throw new Error(`two skills share the directory '${dir}': ${prior} and ${entry.relPath}`);
+    seen.set(dir, entry.relPath);
+    const dst = join(outDir, 'skills', dir, 'SKILL.md');
     mkdirSync(dirname(dst), { recursive: true });
     copyFileSync(entry.absPath, dst);
   }
-
-  // 2. Copy the top-level entry SKILL.md to outDir/SKILL.md (the index).
-  const indexEntry = entries.find((e) => e.relPath === 'kernelcad/SKILL.md');
-  if (!indexEntry) throw new Error('kernelcad/SKILL.md not found in skill tree.');
-  writeFileSync(join(outDir, 'SKILL.md'), indexEntry.source);
 
   // 3. VERSION.
   writeFileSync(join(outDir, 'VERSION'), `${pkg.version}\n`);

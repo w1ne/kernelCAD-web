@@ -21,7 +21,7 @@ describe('authorReadme', () => {
 
   it('opens with an install command users can paste', () => {
     const md = authorReadme({ entries, version: '0.11.0' });
-    expect(md).toMatch(/npx skills add kernelcad\/skills/);
+    expect(md).toMatch(/npx skills add w1ne\/kernelcad-skills/);
   });
 
   it('lists the four supported agents with their global-scope paths', () => {
@@ -39,8 +39,7 @@ describe('authorReadme', () => {
   it('shows both local-default and hosted-fallback MCP setup', () => {
     const md = authorReadme({ entries, version: '0.11.0' });
     expect(md).toMatch(/kernelcad mcp/);
-    expect(md).toMatch(/https:\/\/api\.kernelcad\.com\/mcp/);
-    expect(md).toMatch(/KERNELCAD_API_KEY/);
+    expect(md).toMatch(/claude mcp add --transport http kernelcad https:\/\/mcp\.kernelcad\.com\/mcp/);
   });
 
   it('lists each discovered skill with its description', () => {

@@ -21,6 +21,8 @@ describe('authorPluginJson', () => {
     ];
     const out = JSON.parse(authorPluginJson({ entries, version: '0.11.0' }));
     expect(out.skills).toHaveLength(3);
+    expect(out.skills.find((s: { name: string }) => s.name === 'blockout-model').path)
+      .toBe('skills/blockout-model/SKILL.md');
     expect(out.skills.map((s: { name: string }) => s.name).sort()).toEqual([
       'blockout-model',
       'kernelcad',
@@ -56,8 +58,8 @@ describe('authorPluginJson', () => {
     expect(out.kernelcad.mcp.default).toBe('local');
     expect(out.kernelcad.mcp.local.command).toBe('kernelcad');
     expect(out.kernelcad.mcp.local.args).toEqual(['mcp']);
-    expect(out.kernelcad.mcp.remote.url).toBe('https://api.kernelcad.com/mcp');
-    expect(out.kernelcad.mcp.remote.authEnv).toBe('KERNELCAD_API_KEY');
+    expect(out.kernelcad.mcp.remote.url).toBe('https://mcp.kernelcad.com/mcp');
+    expect(out.kernelcad.mcp.remote.authEnv).toBeUndefined();
   });
 
   it('emits skills[] in deterministic sort order regardless of input order', () => {
