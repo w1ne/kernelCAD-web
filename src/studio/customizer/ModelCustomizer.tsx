@@ -13,6 +13,7 @@ import { useState, type JSX } from 'react';
 import { ChevronDown, ChevronRight, Loader2, RotateCcw } from 'lucide-react';
 import { Button, cx } from '../../ui';
 import { downloadBlob, type ExportViaServerOptions } from '../exportViaServer';
+import { plainLine } from '../plainLine';
 import { exportProgressText, useExportTask, type ExportedFile } from '../hooks/useExportTask';
 import {
   changedValues,
@@ -58,11 +59,8 @@ export interface ModelCustomizerProps {
   className?: string;
 }
 
-const MAX_ERROR_LENGTH = 160;
-
 function shortError(message: string): string {
-  const firstLine = message.split('\n')[0] ?? message;
-  return firstLine.length > MAX_ERROR_LENGTH ? `${firstLine.slice(0, MAX_ERROR_LENGTH - 1)}…` : firstLine;
+  return plainLine(message);
 }
 
 function isNarrowScreen(): boolean {
@@ -118,7 +116,7 @@ function StatusLine({ busy, message, hint, notice }: {
         </span>
       )}
       {message && <span className="text-danger" data-testid="customizer-error">{shortError(message)}</span>}
-      {message && hint && <span className="text-fg-2" data-testid="customizer-error-hint">{hint}</span>}
+      {message && hint && <span className="text-fg-2" data-testid="customizer-error-hint">{plainLine(hint)}</span>}
       {notice && <span className="text-warn" data-testid="customizer-notice">{notice}</span>}
     </div>
   );

@@ -4,6 +4,7 @@ import React from 'react';
 import type { ValidatorDiagnostic } from '../modeling/mates/validator';
 import { useFeatureSelection } from './hooks/useFeatureSelection';
 import { routeDiagnosticToSelection } from './logic/diagnosticRouter';
+import { plainLine } from './plainLine';
 
 export interface DiagnosticRowProps {
     readonly diagnostic: ValidatorDiagnostic;
@@ -59,7 +60,7 @@ export const DiagnosticRow: React.FC<DiagnosticRowProps> = ({ diagnostic }) => {
                 {diagnostic.code}
             </code>
             <span className="font-semibold text-gray-100 flex-shrink-0">{target}</span>
-            <span className="italic text-gray-400 truncate flex-1">{diagnostic.hint}</span>
+            <span className="italic text-gray-400 truncate flex-1">{diagnostic.hint ? plainLine(diagnostic.hint) : ''}</span>
             <button
                 type="button"
                 aria-label={`Jump to ${target}`}

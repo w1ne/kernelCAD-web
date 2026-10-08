@@ -14,6 +14,7 @@ import {
 import { SeverityIcon } from './SeverityIcon';
 import { CopyPromptButton } from './SuggestionCard';
 import { diagnosticTargetLabel } from './repairWorkflow';
+import { plainLine } from '../../plainLine';
 
 /** A titled block of the Checks tab. */
 export function ChecksSection({
@@ -186,7 +187,7 @@ function FindingRow({ diagnostic, actions }: { diagnostic: ValidatorDiagnostic; 
             >
                 <SeverityIcon severity={diagnostic.severity} className="mt-0.5" />
                 <span className="min-w-0 flex-1">
-                    <span className="block text-ui text-fg">{diagnostic.message || diagnostic.code}</span>
+                    <span className="block text-ui text-fg">{plainLine(diagnostic.message || diagnostic.code)}</span>
                     <span className="mt-0.5 block truncate font-mono text-2xs text-fg-3">
                         {diagnostic.code}
                         {target != null && <span className="font-sans text-fg-2"> · {target}</span>}
@@ -194,7 +195,7 @@ function FindingRow({ diagnostic, actions }: { diagnostic: ValidatorDiagnostic; 
                     {diagnostic.hint && (
                         <span className="mt-1 block text-ui text-fg-2" data-testid="diagnostic-hint">
                             <span className="font-medium">Fix: </span>
-                            {diagnostic.hint}
+                            {plainLine(diagnostic.hint)}
                         </span>
                     )}
                 </span>

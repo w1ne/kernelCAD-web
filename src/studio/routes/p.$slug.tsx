@@ -28,6 +28,7 @@ import {
 import { useProjectLiveUpdates, type LoadState, type ProjectLiveUpdates } from './-useProjectLiveUpdates';
 import { StudioModelCustomizer } from '../customizer/StudioModelCustomizer';
 import { PageState, type PageStateAction } from '../components/Shared/PageState';
+import { plainLine } from '../plainLine';
 import { WorkbenchProvider } from '../context/WorkbenchContext';
 import {
   LiveModelViewport,
@@ -390,8 +391,8 @@ function BuildFailure({ slug, error }: { slug: string; error: string | null }): 
           The saved source has an error, so there is nothing to show yet. Open it in Studio to see the code and the error.
         </p>
         {error && (
-          <p className="mt-3 max-h-24 overflow-auto break-words rounded-control bg-surface-2 px-2 py-1.5 font-mono text-code text-danger">
-            {error}
+          <p className="mt-3 break-words text-ui text-danger">
+            {plainLine(error)}
           </p>
         )}
         <div className="mt-4 flex flex-wrap gap-2">

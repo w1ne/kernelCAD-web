@@ -13,6 +13,7 @@ import type { GeometryResult } from '../../shared/worker/geometryEngine';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { SerializedParamEntry } from '../../shared/runtime/paramTable';
 import { reviewToValidity } from '../adapters/reviewToValidity';
+import { plainLine } from '../plainLine';
 import {
   bakeParamValues,
   customizerParamsFrom,
@@ -95,7 +96,7 @@ function plural(n: number, word: string): string {
 }
 
 function firstLine(text: string): string {
-  return (text.split('\n')[0] ?? text).trim();
+  return plainLine(text);
 }
 
 /**

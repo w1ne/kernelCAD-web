@@ -9,6 +9,7 @@
 import type { JSX } from 'react';
 import { Loader2, X } from 'lucide-react';
 import { exportProgressText, type ExportTask } from '../../hooks/useExportTask';
+import { plainLine } from '../../plainLine';
 
 function toneOf(state: ExportTask['state']): string {
     if (state.error !== null) return 'border-red-900 bg-red-950/90 text-red-200';
@@ -24,9 +25,9 @@ function StatusLines({ state, progress, testId }: {
     return (
         <div className="flex-1 min-w-0 flex flex-col gap-1">
             {progress !== null && <span data-testid={`${testId}-progress`}>{progress}</span>}
-            {state.error !== null && <span data-testid={`${testId}-error`}>{state.error.message}</span>}
+            {state.error !== null && <span data-testid={`${testId}-error`}>{plainLine(state.error.message)}</span>}
             {state.error?.hint && (
-                <span className="text-red-300/80" data-testid={`${testId}-hint`}>{state.error.hint}</span>
+                <span className="text-red-300/80" data-testid={`${testId}-hint`}>{plainLine(state.error.hint)}</span>
             )}
             {state.notice !== null && <span data-testid={`${testId}-notice`}>{state.notice}</span>}
         </div>

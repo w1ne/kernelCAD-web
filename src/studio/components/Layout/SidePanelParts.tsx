@@ -4,6 +4,7 @@ import type { JSX } from 'react';
 import SceneBrowser from '../SceneBrowser';
 import { useWorkbench } from '../../context/WorkbenchContext';
 import { extractHistoryItems, type HistoryItem } from '../../../shared/codeGeneration/codeAnalysis';
+import { plainLine } from '../../plainLine';
 
 interface BuildLoopPanelProps {
     readonly verdict: string;
@@ -66,7 +67,7 @@ export function BuildLoopPanel({
                                     {blockingReasons.map((reason, index) => (
                                         <div key={`${reason.code ?? 'blocker'}-${index}`} className="border border-[#332626] bg-[#1d1515] px-2 py-1.5">
                                             <div className="font-mono text-[11px] text-red-200">{reason.code}</div>
-                                            <div className="mt-1 text-gray-200">{reason.message}</div>
+                                            {reason.message && <div className="mt-1 text-gray-200">{plainLine(reason.message)}</div>}
                                         </div>
                                     ))}
                                 </div>
@@ -89,7 +90,7 @@ export function BuildLoopPanel({
                                         {nonBlockingDiagnostics.map((diagnostic, index) => (
                                             <div key={`${diagnostic.code ?? 'fact'}-${index}`} className="border border-[#333327] bg-[#1c1c14] px-2 py-1.5">
                                                 <div className="font-mono text-[11px] text-yellow-200">{diagnostic.code}</div>
-                                                <div className="mt-1 text-gray-200">{diagnostic.message}</div>
+                                                {diagnostic.message && <div className="mt-1 text-gray-200">{plainLine(diagnostic.message)}</div>}
                                             </div>
                                         ))}
                                     </div>

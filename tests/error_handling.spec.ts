@@ -55,7 +55,7 @@ test.describe('Error Handling E2E', () => {
         expect(error).toMatch(/syntax|unexpected/i);
     });
 
-    test('Zero Radius Fillet (OpenCascade Error)', async ({ page }) => {
+    test('Zero radius fillet', async ({ page }) => {
         const code = `
 const box = replicad.makeBaseBox(10, 10, 10);
 return fillet(box, 0);
@@ -65,7 +65,7 @@ return fillet(box, 0);
 
         const error = await waitForStability(page, initialCount + 1);
         expect(error).toBeTruthy();
-        expect(error).toMatch(/fail|zero|radius|OpenCascade Error/i);
+        expect(error).toMatch(/fail|zero|radius|did not build/i);
     });
 
     test('Invalid Face Selection', async ({ page }) => {
