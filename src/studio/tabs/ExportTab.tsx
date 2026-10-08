@@ -7,6 +7,7 @@ import { useCode } from '../context/CodeContext';
 import { downloadBlob, exportViaServer, type StudioExportFormat } from '../exportViaServer';
 import { EXPORT_FORMATS as FORMATS, hasPlanarSource } from '../exportFormats';
 import { useExportTask } from '../hooks/useExportTask';
+import { ShopOrder } from './ShopOrder';
 import { ExportStatus } from '../components/Shared/ExportStatus';
 import type { JSX } from 'react';
 
@@ -94,6 +95,8 @@ export function ExportTab(): JSX.Element {
                     );
                 })}
             </ul>
+
+            <ShopOrder code={code} />
 
             <ExportStatus task={task} testId="export-tab-status" />
         </div>

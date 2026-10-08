@@ -29,6 +29,7 @@ interface GenerateHeroProps {
     readonly onOpenResult: () => void;
     /** Re-sends the last prompt after a failure. */
     readonly onRetry: () => void;
+    readonly notice?: string | null;
 }
 
 /** What happened, in plain words, for a failed run. */
@@ -104,7 +105,7 @@ function AgentUnavailable(): JSX.Element {
         <div className="mt-4 rounded-panel border border-border bg-surface-1 p-4 text-left sm:p-5">
             <p className="text-body font-semibold text-fg">The built-in agent is off right now</p>
             <p className="mt-1 text-ui text-fg-2">
-                Connect your own agent to design models, or open a free example and change it.
+                A plate, a hex bolt, or an L-bracket still builds from the box above. Connect your own agent for anything else.
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
                 <a href="/connect" className={`${buttonClass('primary', 'lg')} no-underline`}>
@@ -119,7 +120,7 @@ function AgentUnavailable(): JSX.Element {
 }
 
 function GenerateHero(props: GenerateHeroProps): JSX.Element {
-    const { agentEnabled, isBusy, initialPrompt, onSubmit, hasSession, sessionLoading, onSignIn } = props;
+    const { agentEnabled, isBusy, initialPrompt, onSubmit, hasSession, sessionLoading, onSignIn, notice } = props;
     const showSignIn = agentEnabled && !hasSession && !sessionLoading;
     return (
         <header className="mx-auto max-w-2xl pb-16 pt-6 text-center sm:pt-12">
@@ -133,7 +134,7 @@ function GenerateHero(props: GenerateHeroProps): JSX.Element {
             <div className="mt-8">
                 <PromptBox
                     onSubmit={onSubmit}
-                    disabled={!agentEnabled}
+                    disabled={isBusy}
                     busy={isBusy}
                     initialValue={initialPrompt}
                     secondaryAction={
@@ -150,6 +151,7 @@ function GenerateHero(props: GenerateHeroProps): JSX.Element {
                         ) : undefined
                     }
                 />
+                {notice && <p role="alert" className="mt-4 text-left text-ui text-danger">{notice}</p>}
                 {!agentEnabled && <AgentUnavailable />}
                 <SessionLine {...props} />
             </div>

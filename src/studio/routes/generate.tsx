@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { EmailSignup } from '../../funnel/components/EmailSignup';
 import { FunnelHeader } from '../../funnel/components/FunnelHeader';
 import { GallerySection } from '../../funnel/components/GallerySection';
@@ -10,6 +10,7 @@ import { useGeneration } from '../../funnel/hooks/useGeneration';
 import { useSession } from '../../funnel/hooks/useSession';
 import { createCheckoutSession } from '../../funnel/lib/apiClient';
 import { inAppAgentEnabled } from '../agentAvailability';
+import { stashWordsGeometry, wordsToGeometry } from '../wordsToGeometry';
 import GenerateHero from './GenerateHero';
 
 export const Route = createFileRoute('/generate')({
@@ -40,6 +41,26 @@ function useOpenResult(phase: ReturnType<typeof useGeneration>['phase']): () => 
   return openResult;
 }
 
+/** Builds a plate, bolt, or L-bracket from the prompt and opens it in Studio. */
+function useWordsHandoff(): { message: string | null; open: (prompt: string) => void } {
+  const [message, setMessage] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const open = useCallback(
+    (prompt: string) => {
+      const made = wordsToGeometry(prompt);
+      if (!made.ok) {
+        setMessage(made.message);
+        return;
+      }
+      setMessage(null);
+      stashWordsGeometry(made);
+      void navigate({ to: '/' });
+    },
+    [navigate],
+  );
+  return useMemo(() => ({ message, open }), [message, open]);
+}
+
 function GeneratePage() {
   const agentEnabled = inAppAgentEnabled();
   const { phase, events, submit } = useGeneration();
@@ -47,6 +68,7 @@ function GeneratePage() {
   const [signInOpen, setSignInOpen] = useState(false);
   const [upgradeBusy, setUpgradeBusy] = useState(false);
   const [initialPrompt] = useState(readInitialPrompt);
+  const words = useWordsHandoff();
   // The last prompt sent, for "Try again" after a failure.
   const lastPrompt = useRef('');
 
@@ -77,7 +99,10 @@ function GeneratePage() {
 
   const handleSubmit = useCallback(
     (prompt: string) => {
-      if (!agentEnabled) return;
+      if (!agentEnabled) {
+        words.open(prompt);
+        return;
+      }
       if (!session) {
         // Stash so the post-OAuth landing can pick it up and auto-submit.
         try {
@@ -90,7 +115,7 @@ function GeneratePage() {
       }
       run(prompt);
     },
-    [agentEnabled, session, run],
+    [agentEnabled, words, session, run],
   );
 
   // After OAuth returns with a session, auto-resume the stashed prompt.
@@ -134,6 +159,7 @@ function GeneratePage() {
           onSignIn={() => setSignInOpen(true)}
           onOpenResult={openResult}
           onRetry={() => handleSubmit(lastPrompt.current)}
+          notice={words.message}
         />
 
         <GallerySection />

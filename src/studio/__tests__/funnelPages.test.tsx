@@ -97,10 +97,10 @@ describe('/generate hero', () => {
     expect(screen.getByRole('link', { name: 'Use your own agent' }).getAttribute('href')).toBe('/connect');
   });
 
-  it('points to /connect when the built-in agent is off', () => {
-    hero({ agentEnabled: false });
+  it('points to /connect when the built-in agent is off and still accepts a plate prompt', () => {
+    hero({ agentEnabled: false, initialPrompt: '60x40x5 mm bracket with 4 M3 mounting holes' });
     expect(screen.getByRole('link', { name: 'Connect your agent' }).getAttribute('href')).toBe('/connect');
-    expect((screen.getByRole('button', { name: /Create/ }) as HTMLButtonElement).disabled).toBe(true);
+    expect((screen.getByRole('button', { name: /Create/ }) as HTMLButtonElement).disabled).toBe(false);
   });
 });
 
