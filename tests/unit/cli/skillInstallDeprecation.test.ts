@@ -19,7 +19,7 @@ describe('kernelcad skill install (deprecation notice)', () => {
     try {
       await installCommand(dst);
       const calls = errSpy.mock.calls.flat().join('\n');
-      expect(calls).toMatch(/npx skills add kernelcad\/skills/);
+      expect(calls).toMatch(/npx skills add w1ne\/kernelcad-skills/);
     } finally {
       rmSync(dst, { recursive: true, force: true });
     }

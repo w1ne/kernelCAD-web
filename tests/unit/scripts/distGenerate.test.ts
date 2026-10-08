@@ -17,7 +17,10 @@ describe('distGenerate', () => {
       await runDistGenerate({ repoRoot, outDir: out });
       // Top-level required files.
       expect(existsSync(join(out, 'README.md'))).toBe(true);
-      expect(existsSync(join(out, 'SKILL.md'))).toBe(true);
+      // A root SKILL.md makes `skills` return before it walks skills/.
+      expect(existsSync(join(out, 'SKILL.md'))).toBe(false);
+      expect(existsSync(join(out, 'skills/blockout-model/SKILL.md'))).toBe(true);
+      expect(existsSync(join(out, 'skills/kernelcad-from-reference/blockout-model/SKILL.md'))).toBe(false);
       expect(existsSync(join(out, 'VERSION'))).toBe(true);
       expect(existsSync(join(out, 'LICENSE'))).toBe(true);
       expect(existsSync(join(out, 'CHANGELOG.md'))).toBe(true);

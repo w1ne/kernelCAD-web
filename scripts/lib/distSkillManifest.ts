@@ -16,12 +16,26 @@ export interface PluginManifestInput {
 
 const ENTRY_SKILL_NAME = 'kernelcad';
 
+/**
+ * Directory the skills CLI installs. A parent that itself has SKILL.md hides
+ * nested children, so every skill is a direct child of `skills/`.
+ */
+export function publishedSkillDir(relPath: string): string {
+  const parts = relPath.split('/');
+  if (parts.at(-1) !== 'SKILL.md' || parts.length < 2) {
+    throw new Error(`skill path must end in a directory and SKILL.md: ${relPath}`);
+  }
+  const dir = parts.at(-2);
+  if (!dir) throw new Error(`skill path has no directory: ${relPath}`);
+  return dir;
+}
+
 export function authorPluginJson({ entries, version }: PluginManifestInput): string {
   const skills = entries
     .map((e) => {
       const item: { name: string; path: string; entry?: true } = {
         name: e.frontmatter.name,
-        path: `skills/${e.relPath}`,
+        path: `skills/${publishedSkillDir(e.relPath)}/SKILL.md`,
       };
       if (e.frontmatter.name === ENTRY_SKILL_NAME) item.entry = true;
       return item;
@@ -39,8 +53,7 @@ export function authorPluginJson({ entries, version }: PluginManifestInput): str
         default: 'local',
         local: { command: 'kernelcad', args: ['mcp'] },
         remote: {
-          url: 'https://api.kernelcad.com/mcp',
-          authEnv: 'KERNELCAD_API_KEY',
+          url: 'https://mcp.kernelcad.com/mcp',
         },
       },
     },
