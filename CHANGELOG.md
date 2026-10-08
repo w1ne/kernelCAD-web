@@ -8,6 +8,12 @@
 - Drawing (PDF) in the `/p/<slug>` Download dropdown, and Export Drawing (PDF) in Studio's export menu and command palette.
 - Example `examples/gallery/mounting-bracket-dimensioned.kcad.ts` and guide `docs/guide/dimensions-measure-drawings.md`.
 
+## Fixed
+
+- FEA no longer throws `Maximum call stack size exceeded` after a successful solve on large meshes (~90k+ elements).
+- FEA returns an error diagnostic instead of throwing when CalculiX is killed or exits non-zero mid-solve (for example a memory limit); the message includes the exit code and the solver's last output.
+- New diagnostic `fea.mesh.too-large` for the element ceiling, mesh/solve timeouts and killed solves. It tells the agent to raise `meshSize`; these cases previously reused `fea.mesh.quality-low`, whose hint said to lower it.
+
 # kernelCAD v0.17.0
 
 ## Summary

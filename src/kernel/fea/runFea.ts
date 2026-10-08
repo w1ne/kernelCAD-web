@@ -28,6 +28,7 @@ import { describeAllFaces, labelSurfaces, nodesForFaces, resolveSelector } from 
 import { parseDat } from './datParser';
 import { resolveFeaMaterial } from './feaMaterials';
 import { parseFrd } from './frdParser';
+import { maxOf } from './maxOf';
 import { LOW_QUALITY_SICN, meshStep } from './gmshDriver';
 import { writeInp } from './inpWriter';
 import { resolveStudyParams } from './studyParams';
@@ -288,16 +289,17 @@ async function meshAndBindFaces(
       timeoutMs: opts.meshTimeoutMs ?? DEFAULT_MESH_TIMEOUT_MS,
     });
   } catch (e) {
-    diagnostics.push(
-      diag('fea.mesh.quality-low', 'error', `feaStudy '${study.name}': ${(e as Error).message}`, owner),
-    );
+    const message = (e as Error).message;
+    // A gmsh timeout means the mesh is too fine, not too coarse.
+    const code = /mesh budget/.test(message) ? 'fea.mesh.too-large' : 'fea.mesh.quality-low';
+    diagnostics.push(diag(code, 'error', `feaStudy '${study.name}': ${message}`, owner));
     return undefined;
   }
   artifacts.meshPath = join(jobDir, 'mesh.json');
   if (meshed.mesh.elements.length > MAX_ELEMENTS) {
     diagnostics.push(
       diag(
-        'fea.mesh.quality-low',
+        'fea.mesh.too-large',
         'error',
         `feaStudy '${study.name}': the mesh has ${meshed.mesh.elements.length} elements, past the ${MAX_ELEMENTS}-element in-loop ceiling. Raise meshSize (currently ${meshSize.toFixed(3)} mm).`,
         owner,
@@ -341,6 +343,11 @@ async function meshAndBindFaces(
   return { meshed, labelled, fixedBind, loads, meshSize };
 }
 
+function tailOf(out: string): string {
+  const t = out.trim();
+  return t === '' ? '(no output)' : t.split('\n').slice(-5).join(' | ');
+}
+
 /** Write the CalculiX deck and run the bounded solve. Returns undefined after
  *  pushing the failing diagnostic. */
 async function solveFeaDeck(
@@ -374,9 +381,22 @@ async function solveFeaDeck(
   if (run.timedOut) {
     diagnostics.push(
       diag(
-        'fea.mesh.quality-low',
+        'fea.mesh.too-large',
         'error',
         `feaStudy '${study.name}': CalculiX exceeded its ${opts.solveTimeoutMs ?? DEFAULT_SOLVE_TIMEOUT_MS} ms budget on a ${meshed.mesh.elements.length}-element mesh. Raise meshSize.`,
+        owner,
+      ),
+    );
+    return undefined;
+  }
+  if (run.code !== 0) {
+    // ccx writes the .frd header first, so a killed/OOM solve leaves a
+    // partial file behind. Exit 255 with no message is the usual resource kill.
+    diagnostics.push(
+      diag(
+        'fea.mesh.too-large',
+        'error',
+        `feaStudy '${study.name}': CalculiX failed on a ${meshed.mesh.elements.length}-element mesh (exit ${run.code}); this is usually a memory limit or crash from too fine a mesh. Raise meshSize (currently ${meshed.mesh.meshSize.toFixed(3)} mm). Solver output: ${tailOf(run.out)}`,
         owner,
       ),
     );
@@ -402,7 +422,8 @@ async function readFeaFields(
   jobDir: string,
   frdPath: string,
 ): Promise<{ fields: ReturnType<typeof parseFrd>; dat: ReturnType<typeof parseDat> }> {
-  // 6. Read the fields back.
+  // 6. Read the fields back. Throws on an unparseable/partial .frd; the
+  // caller turns that into a diagnostic.
   const fields = parseFrd(await readFile(frdPath, 'utf8'));
   const datPath = join(jobDir, 'job.dat');
   const dat = existsSync(datPath) ? parseDat(await readFile(datPath, 'utf8')) : {};
@@ -513,7 +534,7 @@ export function computeFeaSummary(
 
   const { applied, reaction, equilibriumResidual } = computeEquilibrium(loads, dat);
 
-  const maxErr = fields.stressErrorPercent.length > 0 ? Math.max(...fields.stressErrorPercent) : undefined;
+  const maxErr = fields.stressErrorPercent.length > 0 ? maxOf(fields.stressErrorPercent) : undefined;
   const trust = trustFrom(meshed.mesh.quality, meshed.mesh.elements.length, maxErr);
   const minSafetyFactor = maxVm > 0 ? yieldMPa / maxVm : Infinity;
 
@@ -628,7 +649,21 @@ export async function runFeaStudy(
   }
   const { solveMs, frdPath } = solved;
 
-  const { fields, dat } = await readFeaFields(jobDir, frdPath);
+  let fieldsAndDat: Awaited<ReturnType<typeof readFeaFields>>;
+  try {
+    fieldsAndDat = await readFeaFields(jobDir, frdPath);
+  } catch (e) {
+    diagnostics.push(
+      diag(
+        'fea.mesh.too-large',
+        'error',
+        `feaStudy '${study.name}': CalculiX exited 0 but its result file is unusable (${(e as Error).message}). Raise meshSize (currently ${meshSize.toFixed(3)} mm) and retry.`,
+        owner,
+      ),
+    );
+    return { ok: false, diagnostics: withNextActions(diagnostics), artifacts };
+  }
+  const { fields, dat } = fieldsAndDat;
   const computed = computeFeaSummary(ctx, material, meshed, labelled, fields, dat, loads, meshSize, solveMs);
   appendFeaSummaryDiagnostics(ctx, material, computed);
 

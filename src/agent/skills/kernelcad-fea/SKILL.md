@@ -139,6 +139,7 @@ for a printed part.
 | --- | --- | --- |
 | `fea.safety-factor.below-min` | Solved SF is under the declared floor. | Add material at `hotSpots[0].region`, pick a stronger grade, spread the load, or lower the floor if it was conservative. |
 | `fea.mesh.quality-low` | Stress is mesh-limited, or the mesh has inverted elements / too many slivers. | Re-run with a smaller `meshSize`; simplify slivers in the geometry. |
+| `fea.mesh.too-large` | The mesh passed the element ceiling, gmsh or CalculiX timed out, or CalculiX was killed (memory limit, exit 255). | RAISE `meshSize` (about 2x) and re-run; the message carries the solver's last output lines. |
 | `fea.solver.unavailable` | `ccx` or gmsh not found (or the gate was switched off). | Install the toolchain above, or set `KERNELCAD_CCX` / `KERNELCAD_FEA_PYTHON`. |
 | `fea.study.fixed-unresolved` | `fixed` matched no face, or no meshed surface. | `inspect({ of: 'faces' })`, then pass a selector that matches. |
 | `fea.study.load-unresolved` | A load's `faces` matched no face, or no meshed surface. | Same — the force would otherwise land on no node and report a false pass. |

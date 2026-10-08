@@ -19,6 +19,7 @@
 // field (default 8 bands). The numbers in the summary are the continuous
 // truth; the picture is for locating the problem, not measuring it.
 
+import { maxOf } from './maxOf';
 import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { FeaFieldResult, FeaMesh } from './types';
@@ -99,7 +100,7 @@ export async function buildHeatmap(
 ): Promise<HeatmapBuild> {
   const vmByNode = new Map<number, number>();
   for (let i = 0; i < fields.nodeIds.length; i++) vmByNode.set(fields.nodeIds[i], fields.vonMises[i]);
-  const maxMPa = Math.max(...fields.vonMises, 0);
+  const maxMPa = Math.max(maxOf(fields.vonMises), 0);
 
   const buckets: Array<Array<readonly [readonly number[], readonly number[], readonly number[]]>> =
     Array.from({ length: bandCount }, () => []);
