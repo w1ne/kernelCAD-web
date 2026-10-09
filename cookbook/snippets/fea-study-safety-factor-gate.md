@@ -49,10 +49,12 @@ bracket.feaStudy({
 // Report-only as written: evaluate stays fast and needs no solver. Get the
 // evidence with the run_fea MCP tool:
 //   run_fea({ file: 'bracket.kcad.ts', output_dir: '/tmp/bracket-fea' })
-//   -> summary.minSafetyFactor ~6.3, maxVonMisesMPa ~42.5,
-//      maxDisplacementMm ~0.26, hotSpots[0].region = the root fillet face,
-//      equilibriumResidual ~1e-12, plus heatmap PNGs.
+//   -> run_fea refines the mesh itself: summary.refinement.passes
+//      4 mm 42.5 MPa, 2.62 mm 46.3 MPa, 1.91 mm 49.7 MPa (stoppedBy 'max-passes'),
+//      so summary.minSafetyFactor ~5.4, maxVonMisesMPa ~49.7 (the finest pass),
+//      hotSpots[0].region = the root fillet face, plus heatmap PNGs.
 // Read summary.trust first: meshTrusted false means the STRESS number is
-// mesh-limited; lower meshSize before acting on it.
+// still mesh-limited (here it climbs ~7 % per step); keep a margin or continue
+// with run_fea({ mesh_size: 1.9 }).
 return bracket;
 ```

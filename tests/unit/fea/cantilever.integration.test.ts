@@ -36,6 +36,7 @@ import { createOcctLowerer } from '../../../src/modeling/backends/occt/occtLower
 import { runScript } from '../../../src/modeling/runtime/runScript';
 import { findFeaStudies } from '../../../src/modeling/runtime/fea/findFeaStudies';
 import { runFeaStudy } from '../../../src/kernel/fea/runFea';
+import { runFeaStudyRefined } from '../../../src/kernel/fea/autoRefine';
 import { detectFeaToolchain, requireFeaToolchainIfDemanded, type FeaToolchain } from '../../../src/kernel/fea/toolchain';
 
 const L = 200;
@@ -162,4 +163,41 @@ describe('FEA cantilever vs Euler-Bernoulli', () => {
       await rm(outDir, { recursive: true, force: true });
     }
   }, 300_000);
+
+  // At 4 mm the error estimate in the root region is ~31 %, so one
+  // refinement pass runs; the peak moves ~0.5 % and refinement stops there.
+  // The governing face flips between the equally stressed top and bottom
+  // faces, which the convergence rule must accept.
+  it('refines the cantilever once and stops on a converged peak', async () => {
+    if (!toolchain.ok) {
+      requireFeaToolchainIfDemanded(toolchain);
+      console.warn(`[skipped] FEA integration test needs ${toolchain.missing.join(' and ')}.`);
+      expect(toolchain.missing.length).toBeGreaterThan(0);
+      return;
+    }
+    await initOcct();
+    const run = await runScript({ code: SCRIPT, fileName: '<cantilever-refine>' });
+    const engine = new RecomputeEngine(createOcctLowerer(run.session));
+    const lowered = await engine.run(run.records, { paramTable: run.paramTable });
+    const study = findFeaStudies(run.records)[0];
+    const outDir = await mkdtemp(join(tmpdir(), 'kernelcad-fea-test-'));
+    try {
+      const result = await runFeaStudyRefined(
+        lowered.shapes.get(study.shapeId) as OcctBackend,
+        study.metadata,
+        study.shapeId,
+        run.records,
+        { outDir, paramTable: run.session.paramTable, toolchain },
+      );
+      const s = result.summary!;
+      expect(s.trust.meshTrusted).toBe(true);
+      expect(s.refinement?.passes).toHaveLength(2);
+      expect(s.refinement?.converged).toBe(true);
+      expect(s.refinement!.passes[1].peakChangePercent!).toBeLessThan(5);
+      expect(['converged', 'trusted']).toContain(s.refinement?.stoppedBy);
+      expect(Math.abs(s.maxVonMisesMPa - ANALYTIC_ROOT_STRESS) / ANALYTIC_ROOT_STRESS).toBeLessThan(0.15);
+    } finally {
+      await rm(outDir, { recursive: true, force: true });
+    }
+  }, 600_000);
 });

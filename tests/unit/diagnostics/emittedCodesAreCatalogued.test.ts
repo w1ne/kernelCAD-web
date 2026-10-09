@@ -309,7 +309,9 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     // + 2 union integrity guard: union.disconnected, union.member-overlap = 335.
     // + 1 FEA oversized mesh: fea.mesh.too-large = 336.
     // + 1 FEA clamp-edge singularity: fea.stress.support-singularity = 337.
-    expect(catalogue.size).toBe(337);
+    // + 2 FEA auto-refinement: fea.mesh.refine-stopped,
+    //   fea.safety-factor.unverified = 339.
+    expect(catalogue.size).toBe(339);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

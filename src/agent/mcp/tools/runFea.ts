@@ -30,7 +30,8 @@ import {
   type FoundFeaStudy,
 } from '../../../modeling/runtime/fea/findFeaStudies';
 import { buildHeatmap, type HeatmapBand } from '../../../kernel/fea/heatmap';
-import { runFeaStudy, type RunFeaResult } from '../../../kernel/fea/runFea';
+import type { RunFeaResult } from '../../../kernel/fea/runFea';
+import { runFeaStudyRefined } from '../../../kernel/fea/autoRefine';
 import { detectFeaToolchain } from '../../../kernel/fea/toolchain';
 import type { FeaSummary } from '../../../kernel/fea/types';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
@@ -46,9 +47,14 @@ export interface RunFeaInput {
   /** Directory the solver deck, result files, summary JSON and heatmap PNGs
    *  are written to. Default: a fresh temp session dir. */
   output_dir?: string;
-  /** Override the study's meshSize (mm) for this run only — the cheap way to
-   *  re-run at higher fidelity after a `fea.mesh.quality-low` warning. */
+  /** Override the study's meshSize (mm) for this run only. With refinement
+   *  on, it sets the FIRST pass's element size. */
   mesh_size?: number;
+  /** Automatic mesh refinement (default true): when the stress field is
+   *  untrusted only because the solver's error estimate is high, re-solve on
+   *  a finer mesh inside the element and wall-time budgets, and report the
+   *  finest pass with `summary.refinement`. false: one solve at mesh_size. */
+  refine?: boolean;
   /** Render stress heatmap PNGs (default true). Turn off for a fast
    *  numbers-only run. */
   heatmaps?: boolean;
@@ -214,8 +220,9 @@ export async function runFeaTool(input: RunFeaInput): Promise<RunFeaOutput> {
     ? { ...study.metadata, meshSize: input.mesh_size }
     : study.metadata;
 
-  const result = await runFeaStudy(shape, metadata, study.shapeId, run.records, {
+  const result = await runFeaStudyRefined(shape, metadata, study.shapeId, run.records, {
     outDir,
+    ...(input.refine === false ? { refine: false } : {}),
     paramTable: run.session.paramTable,
     cwd: input.file !== undefined ? dirname(resolve(input.file)) : process.cwd(),
     ...(input.mesh_timeout_ms !== undefined ? { meshTimeoutMs: input.mesh_timeout_ms } : {}),

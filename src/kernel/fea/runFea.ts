@@ -52,6 +52,16 @@ export const DEFAULT_SOLVE_TIMEOUT_MS = 300_000;
 /** Hard ceiling on mesh size — a deck past this is a workstation job, not an
  *  in-loop agent check, and the study should be coarsened instead. */
 export const MAX_ELEMENTS = 400_000;
+
+/** The element ceiling this process enforces: `KERNELCAD_FEA_MAX_ELEMENTS`
+ *  when it is a positive number, else MAX_ELEMENTS. A host whose solver
+ *  memory is capped sets it (about 30000 quadratic tets fit in 1 GB), so an
+ *  oversized mesh is refused before CalculiX is killed for memory, and
+ *  auto-refinement plans its passes inside it. */
+export function feaElementBudget(env: NodeJS.ProcessEnv = process.env): number {
+  const v = Number(env.KERNELCAD_FEA_MAX_ELEMENTS);
+  return Number.isFinite(v) && v > 0 ? Math.floor(v) : MAX_ELEMENTS;
+}
 /** Above this nodal stress-error estimate the stress field is mesh-limited. */
 export const STRESS_ERROR_WARN_PERCENT = 25;
 /** When more than this fraction of the solved nodes sits next to a fixed-face
@@ -159,6 +169,15 @@ function trustFrom(
     );
   }
   return { meshTrusted: reasons.length === 0, reasons };
+}
+
+/** True when element shape alone breaks trust (the first two signals of
+ *  trustFrom): inverted elements, or poor elements past 1 % of the mesh. */
+export function meshQualityLimited(
+  quality: { minSICN: number; lowQualityCount: number },
+  elementCount: number,
+): boolean {
+  return quality.minSICN <= 0 || quality.lowQualityCount > elementCount * 0.01;
 }
 
 /** Nearest labelled surface for a node, by membership first and proximity
@@ -306,12 +325,13 @@ async function meshAndBindFaces(
     return undefined;
   }
   artifacts.meshPath = join(jobDir, 'mesh.json');
-  if (meshed.mesh.elements.length > MAX_ELEMENTS) {
+  const ceiling = feaElementBudget();
+  if (meshed.mesh.elements.length > ceiling) {
     diagnostics.push(
       diag(
         'fea.mesh.too-large',
         'error',
-        `feaStudy '${study.name}': the mesh has ${meshed.mesh.elements.length} elements, past the ${MAX_ELEMENTS}-element in-loop ceiling. Raise meshSize (currently ${meshSize.toFixed(3)} mm).`,
+        `feaStudy '${study.name}': the mesh has ${meshed.mesh.elements.length} elements, past the ${ceiling}-element in-loop ceiling. Raise meshSize (currently ${meshSize.toFixed(3)} mm).`,
         owner,
       ),
     );
