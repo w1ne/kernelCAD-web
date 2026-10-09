@@ -487,6 +487,43 @@ export async function meshForHeadlessRender(opts: HeadlessRenderOpts): Promise<{
   return { meshing, serialized };
 }
 
+/** Belt-and-suspenders: nuke ANY dev chrome AFTER mesh load and BEFORE the
+ *  first screenshot. The headless URL param + __root.tsx suppression doesn't
+ *  always catch the TanStack Router devtools badge; React StrictMode can
+ *  re-inject it at mount. Run once, post-load — there is no HMR in headless
+ *  production. If a late re-injection ever bites again, wire this through a
+ *  MutationObserver rather than a per-frame scan. */
+export async function removeDevChrome(page: Pick<Page, 'evaluate'>): Promise<void> {
+  await page.evaluate(`
+    (() => {
+      const sels = [
+        '[data-testid="tsr-devtools"]',
+        '.TanStackRouterDevtools',
+        '[data-tanstack-router-devtools]',
+        'vite-error-overlay',
+      ];
+      for (const sel of sels) document.querySelectorAll(sel).forEach((n) => n.remove());
+      // Heuristic: any fixed-position element with "TanStack" in text content.
+      document.querySelectorAll('*').forEach((el) => {
+        const cs = (el instanceof Element) ? getComputedStyle(el) : null;
+        if (cs && cs.position === 'fixed' && /TanStack/i.test(el.textContent || '') && el.children.length < 8) {
+          el.remove();
+        }
+      });
+    })()
+  `);
+}
+
+/** Replace the page's scene with these meshes at full opacity. */
+export async function swapSceneMeshes(
+  page: Page,
+  serialized: readonly FeatureMeshSerialized[],
+  bounds: unknown,
+): Promise<void> {
+  await loadFeatureMeshesIntoPage(page, serialized, bounds);
+  await page.evaluate(() => window.__demoPlayer!.forceFullOpacity());
+}
+
 /** Launch the demo-player page, load meshes into it and apply the capture
  *  options (watermark, section, visibility, reference images, environment). */
 export async function openRenderPage(
@@ -547,32 +584,8 @@ export async function openRenderPage(
     // the contact shadow is baked from exactly the visible model.
     if (opts.publish) await applyPublishStageOnPage(page, opts.publish);
 
-    // Belt-and-suspenders: nuke ANY dev chrome AFTER mesh load and BEFORE the
-    // first screenshot. The headless URL param + __root.tsx suppression doesn't
-    // always catch the TanStack Router devtools badge — it can get re-injected
-    // by React StrictMode double-render at mount. We run this once, post-load:
-    // by then any mount-time re-injection has settled, and there is no HMR in
-    // headless production (no file watcher). If a late re-injection ever bites
-    // again, wire this through a MutationObserver — don't re-add the per-frame
-    // scan.
-    await page.evaluate(`
-      (() => {
-        const sels = [
-          '[data-testid="tsr-devtools"]',
-          '.TanStackRouterDevtools',
-          '[data-tanstack-router-devtools]',
-          'vite-error-overlay',
-        ];
-        for (const sel of sels) document.querySelectorAll(sel).forEach((n) => n.remove());
-        // Heuristic: any fixed-position element with "TanStack" in text content.
-        document.querySelectorAll('*').forEach((el) => {
-          const cs = (el instanceof Element) ? getComputedStyle(el) : null;
-          if (cs && cs.position === 'fixed' && /TanStack/i.test(el.textContent || '') && el.children.length < 8) {
-            el.remove();
-          }
-        });
-      })()
-    `);
+    // Belt-and-suspenders dev-chrome removal, once after mesh load.
+    await removeDevChrome(page);
 
     return { pageHandle, objectVisibility };
   } catch (e) {
@@ -644,6 +657,24 @@ async function captureViews(
     }
   }
   return { pngsByView, maskPngsByView, maskObjects, inspectionPngsByChannel, inspectionChannelMetadata };
+}
+
+/** Engineering-look tiles of the scene already on `page`: one screenshot per
+ *  canonical view, cropped and resized to `width × height`. */
+export async function captureEngineeringTiles(
+  page: Page,
+  size: { width: number; height: number },
+  views: readonly RenderView[],
+): Promise<Partial<Record<RenderView, Buffer>>> {
+  const out: Partial<Record<RenderView, Buffer>> = {};
+  for (const view of views) {
+    await page.evaluate(
+      ({ v, a }) => window.__demoPlayer!.setRenderView(v, a),
+      { v: view, a: size.width / size.height },
+    );
+    out[view] = await cropToAspect(await page.screenshot({ type: 'png' }), size.width, size.height, {});
+  }
+  return out;
 }
 
 /** Per-pose capture: parse `<az>,<el>`, snap the camera, screenshot, collect. */

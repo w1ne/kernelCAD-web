@@ -16,7 +16,7 @@
 // know WHERE the part is overloaded to change the right dimension, and it
 // needs the trust flags to know whether the stress number deserves belief.
 
-import { mkdir, mkdtemp } from 'node:fs/promises';
+import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, isAbsolute, join, resolve } from 'node:path';
 import { RecomputeEngine } from '../../../modeling/compute/recomputeEngine';
@@ -34,6 +34,7 @@ import { runFeaStudy, type RunFeaResult } from '../../../kernel/fea/runFea';
 import { detectFeaToolchain } from '../../../kernel/fea/toolchain';
 import type { FeaSummary } from '../../../kernel/fea/types';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
+import { loadMeshScene, renderMeshViews } from '../../render/meshScenesRender';
 import { renderPreviewTool } from './renderPreview';
 
 export interface RunFeaInput {
@@ -135,6 +136,30 @@ async function lowerStudyShape(
   return { ok: true, shape };
 }
 
+/** iso + front heatmap tiles drawn straight from the band meshes (no script
+ *  evaluation, no STL->B-rep import); undefined falls back to render_preview. */
+async function renderHeatmapFast(scriptPath: string, dir: string): Promise<string[] | undefined> {
+  try {
+    const scene = await loadMeshScene('heatmap', scriptPath);
+    if (scene === undefined) return undefined;
+    const views = ['iso', 'front'] as const;
+    const tiles = (await renderMeshViews([scene], { views, width: 768, height: 768 })).heatmap;
+    if (tiles === undefined) return undefined;
+    await mkdir(dir, { recursive: true });
+    const paths: string[] = [];
+    for (const v of views) {
+      const png = tiles[v];
+      if (png === undefined) return undefined;
+      const path = join(dir, `${v}.png`);
+      await writeFile(path, png);
+      paths.push(path);
+    }
+    return paths;
+  } catch {
+    return undefined;
+  }
+}
+
 async function renderStudyHeatmap(
   result: RunFeaResult,
   heatmaps: boolean | undefined,
@@ -153,6 +178,8 @@ async function renderStudyHeatmap(
     // through, because an agent silently receiving no pictures would assume
     // the feature is missing rather than that its browser is.
     try {
+      const fast = await renderHeatmapFast(built.scriptPath, join(outDir, 'heatmap'));
+      if (fast !== undefined) return { images: fast, legend };
       const preview = await renderPreviewTool({
         file: built.scriptPath,
         out_dir: join(outDir, 'heatmap'),
