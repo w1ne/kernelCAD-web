@@ -8,7 +8,7 @@
 - `shape.dimension()` for declared linear, diameter, radius and angular dimensions. They show in the viewer, replace the automatic bounding-box dimensions on the PDF/SVG drawing, and `evaluate_script` returns their values.
 - Drawing (PDF) in the `/p/<slug>` Download dropdown, and Export Drawing (PDF) in Studio's export menu and command palette.
 - Example `examples/gallery/mounting-bracket-dimensioned.kcad.ts` and guide `docs/guide/dimensions-measure-drawings.md`.
-- Stress-graded infill now works in PrusaSlicer: `export({ format: '3mf', options: { slicer: 'prusa', infill: { fromFea } } })` writes the bands as PrusaSlicer modifier volumes (`Slic3r_PE_model.config`, `fill_density` / `fill_pattern`). Sliced with PrusaSlicer 2.8.1, the graded bracket uses 23 % less filament than uniform 60 %. Orca/Bambu stay the default.
+- Stress-graded infill now works in PrusaSlicer: `export({ format: '3mf', options: { slicer: 'prusa', infill: { fromFea } } })` writes the bands as PrusaSlicer modifier volumes (`Slic3r_PE_model.config`, with PrusaSlicer's own fill density and pattern keys). Sliced with PrusaSlicer 2.8.1, the graded bracket uses 23 % less filament than uniform 60 %. Orca/Bambu stay the default.
 
 ## Fixed
 

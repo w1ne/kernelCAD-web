@@ -173,6 +173,9 @@ faces (the screw bosses) always get the densest band, because the clamp load
 the solve leaves out still acts there. The result reports the band table, a filament
 and time saving against uniform infill at the high density, and heatmap /
 band / cutaway PNGs. Recipe: `lookup_cookbook('stress-graded-infill-fdm')`.
+Cura is not supported: it reads per-object settings from a 3MF (an infill mesh with its own
+infill density), but that path could not be verified end to end here, so no Cura file is
+written; in Cura, add the dense regions as infill meshes by hand.
 The study models solid material: treat the safety factor as an upper bound
 for a printed part.
 
