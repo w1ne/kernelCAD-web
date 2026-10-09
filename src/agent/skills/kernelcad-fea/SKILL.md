@@ -23,9 +23,10 @@ return bracket;
 
 ```
 run_fea({ file: 'bracket.kcad.ts', output_dir: '/tmp/bracket-fea' })
-// → { ok: true, summary: { minSafetyFactor: 6.27, maxVonMisesMPa: 43.04,
-//     maxDisplacementMm: 0.2649, hotSpots: [{ region: '@kc[fillet_1/face/f7]', ... }],
-//     trust: { meshTrusted: false, reasons: [...] }, equilibriumResidual: 5.3e-13 },
+// → { ok: true, summary: { minSafetyFactor: 6.35, maxVonMisesMPa: 42.52,
+//     maxDisplacementMm: 0.2595, hotSpots: [{ region: '@kc[fillet_1/face/f7]', ... }],
+//     trust: { meshTrusted: false, reasons: [...] }, equilibriumResidual: 5.3e-13,
+//     governingField: 'away-from-supports', peakAtSupportMPa: 40.04 },
 //     images: ['.../heatmap/iso.png', '.../heatmap/front.png'] }
 ```
 
@@ -61,7 +62,7 @@ a handle, not a Shape — it is not part of the geometry chain.
 | --- | --- |
 | `material` | A grade name, or explicit `{ E, nu, yield }` in MPa / – / MPa. |
 | `fixed` | Faces held rigid (all 3 translations). A `FaceQuery` or a `@kc[...]` ref. |
-| `loads[]` | `{ faces, force: [Fx, Fy, Fz], name? }`. `force` is the TOTAL in newtons over those faces, not per node. |
+| `loads[]` | `{ faces, force: [Fx, Fy, Fz], name? }`. `force` is the TOTAL in newtons over those faces, applied as a uniform traction (area-weighted consistent nodal loads), not per node. |
 | `meshSize` | Target element size, mm. Default: bounding-box diagonal / 20. |
 | `minSafetyFactor` | Declaring it turns the study into an enforcement gate. |
 | `name` | Study name; `run_fea({ study })` selects by it. Default `study`. |
@@ -93,12 +94,26 @@ lot, pass `{ E, nu, yield }` directly.
 
 - **`minSafetyFactor`** = material yield / peak von Mises. Under 1 means the
   part yields at this load.
+- **Support zone.** A `fixed` face is clamped rigidly, and the stress at the
+  edge of a rigid clamp is singular: it climbs as the mesh is refined and real
+  bolt or washer clamping spreads it. So `maxVonMisesMPa`, `minSafetyFactor`,
+  `hotSpots` and the trust estimate are taken AWAY from the fixed-face edges
+  (`governingField: 'away-from-supports'`). The excluded zone reaches 0.4 x
+  the local wall thickness from each edge (`supportZoneRadiusMm`), the first
+  read-out point of the structural hot-spot method. The raw clamp-edge value is
+  kept as `peakAtSupportMPa` / `peakAtSupportAt` / `peakAtSupportRegion`, and
+  `fea.stress.support-singularity` warns when it is higher than the governing
+  peak. When the zone covers more than half the part, nothing is excluded
+  (`governingField: 'all-nodes'`) and the warning says so. If the bolt region
+  itself is the question, model the washer or head contact as a load face and
+  fix the far side instead.
 - **`hotSpots[]`** — the peak per region, named by `@kc[...]` face ref, sorted
   worst first. This is where to add material. The peak is very often at a
   fillet or a corner, not at the loaded face.
 - **`trust.meshTrusted`** — `false` means the *stress* number is mesh-limited
   (inverted elements, >1% poor elements, or CalculiX's own nodal stress-error
-  estimate above 25%). Displacement converges much faster and stays usable.
+  estimate above 25% in the high-stress region, where von Mises is at least
+  half the governing peak). Displacement converges much faster and stays usable.
   Re-run with a smaller `meshSize` on the study (or pass mesh_size to
   run_fea for a one-off) before acting on a marginal stress.
 - **`equilibriumResidual`** — `|reaction + applied| / |applied|`. Near 1e-12 is
@@ -127,7 +142,9 @@ The same study drives per-region infill for a 3D print: export a 3MF with
 bins the part by von Mises / yield (default < 15 % -> 10 %, 15-40 % -> 25 %,
 > 40 % -> 60 % gyroid) and writes one Orca/Bambu modifier volume per dense
 band. The bands are voxel unions (2-5 mm cells) grown until watertight, so
-they err toward more infill. The result reports the band table, a filament
+they err toward more infill. Elements in the support zone around the fixed
+faces (the screw bosses) always get the densest band, because the clamp load
+the solve leaves out still acts there. The result reports the band table, a filament
 and time saving against uniform infill at the high density, and heatmap /
 band / cutaway PNGs. Recipe: `lookup_cookbook('stress-graded-infill-fdm')`.
 The study models solid material: treat the safety factor as an upper bound
@@ -139,6 +156,7 @@ for a printed part.
 | --- | --- | --- |
 | `fea.safety-factor.below-min` | Solved SF is under the declared floor. | Add material at `hotSpots[0].region`, pick a stronger grade, spread the load, or lower the floor if it was conservative. |
 | `fea.mesh.quality-low` | Stress is mesh-limited, or the mesh has inverted elements / too many slivers. | Re-run with a smaller `meshSize`; simplify slivers in the geometry. |
+| `fea.stress.support-singularity` (warn) | The raw peak sits at a fixed-face edge, where a rigid clamp makes stress singular; it is reported as `peakAtSupportMPa` and left out of the safety factor. | Read `maxVonMisesMPa` / `minSafetyFactor` as the result. To judge the bolt region itself, load the washer face and fix the far side. |
 | `fea.mesh.too-large` | The mesh passed the element ceiling, gmsh or CalculiX timed out, or CalculiX was killed (memory limit, exit 255). | RAISE `meshSize` (about 2x) and re-run; the message carries the solver's last output lines. |
 | `fea.solver.unavailable` | `ccx` or gmsh not found (or the gate was switched off). | Install the toolchain above, or set `KERNELCAD_CCX` / `KERNELCAD_FEA_PYTHON`. |
 | `fea.study.fixed-unresolved` | `fixed` matched no face, or no meshed surface. | `inspect({ of: 'faces' })`, then pass a selector that matches. |

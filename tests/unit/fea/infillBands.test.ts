@@ -248,3 +248,20 @@ describe('well-composed growth', () => {
     }
   });
 });
+
+describe('support zone in the infill bands', () => {
+  it('prints every element touching a support-zone node in the top band', () => {
+    const mesh = boxMesh(20, 10, 10, 2);
+    // A uniformly low field: everything would be the base band.
+    const fields = field(mesh, () => 1);
+    const plain = buildStressInfill(mesh, fields, 50);
+    expect(plain.bands[2].stressVolumePercent).toBe(0);
+    // The clamped x = 0 end: its nodes are the support zone.
+    const zone = new Set([...mesh.nodes].filter(([, p]) => p[0] === 0).map(([id]) => id));
+    const graded = buildStressInfill(mesh, fields, 50, { supportAdjacent: zone });
+    // One 2 mm cell layer of a 20 mm bar: 10 % of the volume.
+    expect(graded.bands[2].stressVolumePercent).toBeCloseTo(10, 6);
+    expect(graded.bands[2].modifier).toBeDefined();
+  });
+});
+

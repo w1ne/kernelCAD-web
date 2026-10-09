@@ -18,13 +18,16 @@
 //
 // EXPECTED OUTPUT (measured; digits move with the mesh)
 //
-//   infill.bands  low 10 % ~70 % of the volume, mid 25 % ~29 %, high 60 % ~1 %
-//                 (the high band sits at the root fillet and the screw bores)
-//   infill.saving ~39 % less filament than uniform 60 % (estimate); OrcaSlicer
-//                 2.4.2 slicing the same file: 17.3 g / 1h27m vs 27.8 g /
-//                 3h42m for uniform 60 %
-//   infill.fea    peak ~45 MPa vs 55 MPa PETG yield -> safety factor ~1.2,
-//                 ~5 mm tip deflection: it holds, with little margin
+//   infill.bands  low 10 % ~65 % of the volume, mid 25 % ~27 %, high 60 % ~8 %
+//                 (the high band is the two screw bosses, which always print
+//                 dense, and the wall just below the lower bore)
+//   infill.saving ~36 % less filament than uniform 60 % (estimate: 21.1 g vs
+//                 33.0 g)
+//   infill.fea    peak ~31 MPa vs 55 MPa PETG yield -> safety factor ~1.8,
+//                 ~4.9 mm tip deflection. The ~50 MPa at the edge of the lower
+//                 bore is the rigid-clamp singularity (peakAtSupportMPa, with a
+//                 fea.stress.support-singularity warning), not the governing
+//                 stress
 //   infill.images heatmap / bands / cutaway PNGs
 
 const wall = param('wall', 6, { min: 4, max: 12 });

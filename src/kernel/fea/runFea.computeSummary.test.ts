@@ -99,7 +99,7 @@ describe('computeFeaSummary — characterisation', () => {
       trust: {
         meshTrusted: false,
         reasons: [
-          "the solver's own nodal stress-error estimate peaks at 30.0% (above 25%), so the peak stress is mesh-limited",
+          "the solver's own nodal stress-error estimate in the high-stress region peaks at 30.0% (above 25%), so the peak stress is mesh-limited",
         ],
       },
       hotSpots: [
@@ -193,5 +193,69 @@ describe('computeFeaSummary — characterisation', () => {
     expect(result.summary.reactionForceN).toBeUndefined();
     expect(result.summary.equilibriumResidual).toBeUndefined();
     expect(result.minSafetyFactor).toBe(Infinity);
+  });
+
+  describe('support zone', () => {
+    // Five nodes in a row; nodes 1 and 2 sit on the clamp edge. Node 1 holds
+    // the singular spike.
+    const nodes = new Map<number, readonly [number, number, number]>([
+      [1, [0, 0, 0]], [2, [1, 0, 0]], [3, [2, 0, 0]], [4, [3, 0, 0]], [5, [4, 0, 0]],
+    ]);
+    const mesh: FeaMesh = { nodes, elements: [], surfaces: [], quality: QUALITY, meshSize: 1 };
+    const labelled: FeaSurface[] = [
+      { tag: 1, centroid: [0, 0, 0], area: 1, nodes: [1, 2], tris: [], ref: '@kc[face:bore]' },
+      { tag: 2, centroid: [3, 0, 0], area: 1, nodes: [3, 4, 5], tris: [], ref: '@kc[face:web]' },
+    ];
+    const fields: FeaFieldResult = {
+      nodeIds: [1, 2, 3, 4, 5],
+      displacement: [[0, 0, 0], [0, 0, 0], [0, 0, 0.1], [0, 0, 0.2], [0, 0, 0.3]],
+      vonMises: [240, 180, 100, 120, 20],
+      stressErrorPercent: [60, 40, 10, 12, 80],
+    };
+    const study: FeaStudyMetadata = {
+      name: 'clamped', material: 'mild-steel', fixed: '@kc[face:bore]', loads: [], virtual: true,
+    };
+    const run = (adjacent: number[]) => computeFeaSummary(
+      ctxFor(study), MATERIAL, { mesh, volumeCount: 1, meshMs: 1 }, labelled, fields, {}, [], 1, 1,
+      { adjacent: new Set(adjacent), radiusMm: { min: 0.8, max: 1.6 } },
+    );
+
+    it('governs on the field away from the clamp edge and keeps the raw peak beside it', () => {
+      const { summary } = run([1, 2]);
+      expect(summary.maxVonMisesMPa).toBe(120);
+      expect(summary.maxVonMisesAt).toEqual([3, 0, 0]);
+      expect(summary.minSafetyFactor).toBeCloseTo(250 / 120, 12);
+      expect(summary.governingField).toBe('away-from-supports');
+      expect(summary.supportAdjacentNodeCount).toBe(2);
+      expect(summary.supportZoneRadiusMm).toEqual({ min: 0.8, max: 1.6 });
+      expect(summary.peakAtSupportMPa).toBe(240);
+      expect(summary.peakAtSupportAt).toEqual([0, 0, 0]);
+      expect(summary.peakAtSupportRegion).toBe('@kc[face:bore]');
+      expect(summary.maxStressErrorAtSupportPercent).toBe(60);
+      // Hot spots come from the governing field only.
+      expect(summary.hotSpots.map(h => [h.region, h.maxVonMisesMPa])).toEqual([['@kc[face:web]', 120]]);
+      // Trust reads the error estimate where the governing stress is high
+      // (>= 60 MPa here): 10 and 12 %, not the 80 % at the 20 MPa node or the
+      // 60 % at the singular node.
+      expect(summary.maxStressErrorPercent).toBe(12);
+      expect(summary.trust.meshTrusted).toBe(true);
+      // Displacement is not filtered.
+      expect(summary.maxDisplacementMm).toBeCloseTo(0.3, 12);
+    });
+
+    it('falls back to the raw field when the zone covers more than half the part', () => {
+      const { summary } = run([1, 2, 3]);
+      expect(summary.governingField).toBe('all-nodes');
+      expect(summary.maxVonMisesMPa).toBe(240);
+      expect(summary.peakAtSupportMPa).toBe(240);
+      expect(summary.hotSpots[0].region).toBe('@kc[face:bore]');
+    });
+
+    it('adds no support fields when the zone is empty', () => {
+      const { summary } = run([]);
+      expect(summary.maxVonMisesMPa).toBe(240);
+      expect(summary.governingField).toBeUndefined();
+      expect(summary.peakAtSupportMPa).toBeUndefined();
+    });
   });
 });

@@ -10,6 +10,10 @@
 
 ## Fixed
 
+- FEA face loads are applied as the consistent nodal forces of a uniform traction: each loaded surface triangle takes its area share of the total force, on its mid-side nodes. The total used to be split equally over every face node, including corner nodes that should carry none.
+- FEA no longer reports the stress singularity at the edge of a clamped (`fixed`) face as the part's peak. `maxVonMisesMPa`, `minSafetyFactor`, hot spots, the `minSafetyFactor` gate and the trust estimate now exclude a support zone of 0.4 x the local wall thickness around the fixed-face edges. The raw clamp-edge value is reported as `peakAtSupportMPa` (with location and region), and the new warning `fea.stress.support-singularity` explains it. On the cookbook PETG bracket the governing peak is 31.0 / 30.7 / 29.7 MPa at 2.5 / 1.8 / 1.4 mm meshes, while the clamp-edge value climbs from 50.0 to 53.1 MPa.
+- `trust.meshTrusted` and `maxStressErrorPercent` use CalculiX's error estimate in the high-stress region only (von Mises at least half the governing peak). The estimator is relative, so near-zero-stress regions read 40 % or more and previously flagged almost every solve.
+- Stress-graded infill prints the support zone around fixed faces (screw bosses) in the densest band.
 - FEA no longer throws `Maximum call stack size exceeded` after a successful solve on large meshes (~90k+ elements).
 - FEA returns an error diagnostic instead of throwing when CalculiX is killed or exits non-zero mid-solve (for example a memory limit); the message includes the exit code and the solver's last output.
 - New diagnostic `fea.mesh.too-large` for the element ceiling, mesh/solve timeouts and killed solves. It tells the agent to raise `meshSize`; these cases previously reused `fea.mesh.quality-low`, whose hint said to lower it.

@@ -67,10 +67,12 @@ bracket.feaStudy({
 //   export({ target: 'model', file: 'bracket.kcad.ts', output_path: 'bracket.3mf', format: '3mf',
 //            options: { format: '3mf', printer: 'bambu-a1', arrange: 'assembled',
 //                       infill: { fromFea: 'shelf-load' } } })
-//   -> bands: low 10 % ~70 % of volume, mid 25 % ~29 %, high 60 % ~1 % (root of the lower bore)
-//   -> saving: ~39 % less filament than uniform 60 % (estimate); OrcaSlicer 2.4.2 on the
-//      same file: 17.3 g / 1h27m vs 27.8 g / 3h42m uniform 60 %
-//   -> fea: peak ~45 MPa vs 55 MPa yield, safety factor ~1.2, ~5 mm deflection
+//   -> bands: low 10 % ~65 % of volume, mid 25 % ~27 %, high 60 % ~8 % (both screw
+//      bosses, which always print dense, and the wall below the lower bore)
+//   -> saving: ~36 % less filament than uniform 60 % (estimate: 21.1 g vs 33.0 g)
+//   -> fea: peak ~31 MPa vs 55 MPa yield, safety factor ~1.8, ~4.9 mm deflection;
+//      the ~50 MPa at the edge of the lower bore is the clamp singularity, reported
+//      as peakAtSupportMPa with a fea.stress.support-singularity warning
 // Open bracket.3mf in Bambu Studio / OrcaSlicer: the modifiers show under the
 // object with their own infill density.
 return bracket;
