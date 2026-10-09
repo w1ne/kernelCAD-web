@@ -11,7 +11,7 @@
 import { evaluateAndBuildScript, type EvaluateInput } from '../../cli/commands/evaluate';
 import type { Assembly } from '../../../modeling/capture/assembly';
 import { checkLoadCapacity } from '../../../kinematic';
-import { checkLoadCapacityFea, type FeaLoadCapacityOutput } from './checkLoadCapacityFea';
+import { checkLoadCapacityFea, type FeaLoadCapacityInput, type FeaLoadCapacityOutput } from './checkLoadCapacityFea';
 import type {
   KinematicDiagnostic,
   LoadCapacityElementResult,
@@ -39,6 +39,8 @@ export interface CheckLoadCapacityInput extends EvaluateInput {
   study?: string;
   /** mode 'fea': element size override, mm. */
   mesh_size?: number;
+  /** mode 'fea': automatic mesh refinement (default true). */
+  refine?: boolean;
   /** mode 'fea': also render stress heatmap PNGs (default false). */
   heatmaps?: boolean;
 }
@@ -55,6 +57,12 @@ export type CheckLoadCapacityOutput =
   | { ok: false; source: 'local'; error: string; errorCode?: string }
   | FeaLoadCapacityOutput;
 
+/** The mode 'fea' keys the caller set (an absent key keeps its default). */
+function feaModeInput(input: CheckLoadCapacityInput): FeaLoadCapacityInput {
+  const keys = ['file', 'code', 'study', 'mesh_size', 'refine', 'heatmaps', 'safety_factor_threshold'] as const;
+  return Object.fromEntries(keys.filter(k => input[k] !== undefined).map(k => [k, input[k]])) as FeaLoadCapacityInput;
+}
+
 /**
  * `check_load_capacity` MCP tool. Runs the closed-form beam stress path on
  * every loaded part with a declared rectangular `crossSection`. Returns
@@ -66,14 +74,7 @@ export async function checkLoadCapacityTool(
   input: CheckLoadCapacityInput,
 ): Promise<CheckLoadCapacityOutput> {
   if (input.mode === 'fea') {
-    return checkLoadCapacityFea({
-      ...(input.file !== undefined ? { file: input.file } : {}),
-      ...(input.code !== undefined ? { code: input.code } : {}),
-      ...(input.study !== undefined ? { study: input.study } : {}),
-      ...(input.mesh_size !== undefined ? { mesh_size: input.mesh_size } : {}),
-      ...(input.heatmaps !== undefined ? { heatmaps: input.heatmaps } : {}),
-      ...(input.safety_factor_threshold !== undefined ? { safety_factor_threshold: input.safety_factor_threshold } : {}),
-    });
+    return checkLoadCapacityFea(feaModeInput(input));
   }
   const { evaluation, model } = await evaluateAndBuildScript(input);
   if (evaluation.exitCode !== 0 || !model) {

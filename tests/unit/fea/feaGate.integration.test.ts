@@ -79,4 +79,24 @@ describe('feaStudy evaluate-time gate', () => {
       else process.env.KERNELCAD_FEA_GATE = prev;
     }
   }, 60_000);
+
+  it('reports a margin met on an untrusted mesh as unverified, and does not refine by default', async () => {
+    if (!toolchain.ok) {
+      requireFeaToolchainIfDemanded(toolchain);
+      console.warn(`[skipped] FEA gate test needs ${toolchain.missing.join(' and ')}.`);
+      expect(toolchain.missing.length).toBeGreaterThan(0);
+      return;
+    }
+    // The worked example solves at 4 mm with an error estimate above 25 %
+    // and a safety factor well over its declared 2.
+    const r = await evaluateScript({ file: 'examples/fea/shelf-bracket-fea.kcad.ts' });
+    expect(r.exitCode).toBe(0);
+    const unverified = r.diagnostics.find(d => d.code === 'fea.safety-factor.unverified');
+    expect(unverified, 'an untrusted pass must not read as a confirmed one').toBeDefined();
+    expect(unverified!.severity).toBe('warn');
+    expect(unverified!.message).toMatch(/UNVERIFIED/);
+    expect(unverified!.message).toMatch(/4\.00 mm mesh/);
+    expect(unverified!.nextAction).toEqual({ kind: 'call-tool', tool: 'verify', args: { check: 'load-capacity', mode: 'fea' } });
+    expect(r.diagnostics.some(d => d.code === 'fea.mesh.quality-low')).toBe(false);
+  }, 600_000);
 });

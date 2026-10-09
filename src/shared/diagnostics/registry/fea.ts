@@ -4,7 +4,7 @@
 import type { DiagnosticCodeSpec } from './types';
 
 export const FEA_CODES = {
-  // Structural FEA gate (7) — the linear-static study declared by
+  // Structural FEA gate (9) — the linear-static study declared by
   // `shape.feaStudy({...})`. Same contract as the dfm.* gates: the
   // declaration lives in the model, the solver run is the enforcement, and a
   // missing toolchain is reported rather than silently passed.
@@ -21,6 +21,15 @@ export const FEA_CODES = {
     description:
       'A feaStudy declaring minSafetyFactor solved to a minimum safety factor below that floor: the peak von Mises stress is too close to (or past) the material yield.',
   },
+  'fea.safety-factor.unverified': {
+    hintTemplate:
+      'The evaluate-time gate met the declared minSafetyFactor on a mesh whose stress field is not trusted (see error.message for the reasons), so the margin is unverified, not confirmed. The gate solves once and does not refine. Run verify({ check: \'load-capacity\', mode: \'fea\' }), which refines the mesh automatically, then set the study\'s meshSize to the finest trusted pass in its fea.refinement record so every evaluate gates on a trusted mesh.',
+    nextAction: { kind: 'call-tool', tool: 'verify', args: { check: 'load-capacity', mode: 'fea' } },
+    defaultSeverity: 'warn',
+    group: 'fea',
+    description:
+      'A feaStudy gate passed its declared minSafetyFactor on an untrusted mesh (mesh-limited stress); the pass is reported as unverified rather than green.',
+  },
   'fea.mesh.quality-low': {
     hintTemplate:
       'The tetrahedral mesh contains poorly shaped or inverted elements, or CalculiX\'s own nodal stress-error estimate is high, so the stress field should not be trusted as reported (displacement is far less sensitive). Re-run with a smaller meshSize, or simplify slivers and near-zero-width features in the geometry.',
@@ -29,6 +38,15 @@ export const FEA_CODES = {
     group: 'fea',
     description:
       'Element-quality statistics (minSICN) or the solver\'s nodal stress-error estimator indicate the FEA stress field is mesh-limited rather than geometry-limited.',
+  },
+  'fea.mesh.refine-stopped': {
+    hintTemplate:
+      'Automatic mesh refinement stopped before the stress field was trusted, because the next pass did not fit the element budget (KERNELCAD_FEA_MAX_ELEMENTS) or the wall-time budget (KERNELCAD_FEA_REFINE_TIME_MS), or a finer pass failed (memory or time limit). The result is the finest pass that solved, and the message lists every pass with its peak stress and error estimate. Raise those budgets where you control them, run the study with a local CalculiX + gmsh toolchain that has more memory, or treat the peak stress as mesh-limited and keep a larger safety margin; displacement is reliable.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'warn',
+    group: 'fea',
+    description:
+      'Bounded FEA auto-refinement ran out of element or wall-time budget, or a finer pass failed, before the stress field was trusted; the finest solved pass is reported with its refinement record.',
   },
   'fea.mesh.too-large': {
     hintTemplate:

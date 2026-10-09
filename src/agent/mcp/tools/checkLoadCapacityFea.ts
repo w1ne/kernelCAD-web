@@ -12,7 +12,7 @@
 // `fea`.
 
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
-import type { FeaSummary } from '../../../kernel/fea/types';
+import type { FeaRefinement, FeaSummary } from '../../../kernel/fea/types';
 import { runFeaTool, type RunFeaInput } from './runFea';
 
 /** Same floor as the beam mode when neither the call nor the study sets one. */
@@ -24,6 +24,8 @@ export interface FeaLoadCapacityInput {
   /** feaStudy name; defaults to the last declared study. */
   study?: string;
   mesh_size?: number;
+  /** Automatic mesh refinement (default true), as for run_fea. */
+  refine?: boolean;
   /** Render the stress heatmap PNGs (default false here: a verdict). */
   heatmaps?: boolean;
   /** Pass floor. Default: the study's minSafetyFactor, else 1.5. */
@@ -66,6 +68,9 @@ export type FeaLoadCapacityOutput =
         trustReasons: string[];
         elementCount: number;
         meshSizeMm: number;
+        /** The auto-refinement record: every pass, whether the peak
+         *  converged, and why refinement stopped. Absent with refine: false. */
+        refinement?: FeaRefinement;
         /** Raw peak at the clamped edge of a fixed face (singular, mesh-dependent). */
         peakAtSupportPa?: number;
         peakAtSupportRegion?: string;
@@ -80,7 +85,7 @@ const MPA = 1e6;
 /** Only the keys the caller set: runFeaTool treats a present key as an override. */
 function feaRunInput(input: FeaLoadCapacityInput): RunFeaInput {
   const picked = Object.fromEntries(
-    (['file', 'code', 'study', 'mesh_size'] as const)
+    (['file', 'code', 'study', 'mesh_size', 'refine'] as const)
       .filter(k => input[k] !== undefined)
       .map(k => [k, input[k]]),
   );
@@ -131,6 +136,7 @@ function feaFacts(s: FeaSummary, images: string[] | undefined) {
     trustReasons: [...s.trust.reasons],
     elementCount: s.elementCount,
     meshSizeMm: s.meshSizeMm,
+    ...(s.refinement !== undefined ? { refinement: s.refinement } : {}),
     ...(s.peakAtSupportMPa !== undefined ? { peakAtSupportPa: s.peakAtSupportMPa * MPA } : {}),
     ...(s.peakAtSupportRegion !== undefined ? { peakAtSupportRegion: s.peakAtSupportRegion } : {}),
     ...(images ? { images } : {}),
