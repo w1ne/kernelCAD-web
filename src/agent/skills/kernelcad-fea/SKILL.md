@@ -124,6 +124,31 @@ lot, pass `{ E, nu, yield }` directly.
   the numbers in `summary` are the continuous truth. Use the picture to locate
   the problem, the numbers to measure it.
 
+## A verdict in the load-capacity shape
+
+When all you need is "does it hold?", ask `verify` instead of reading the
+whole summary:
+
+```
+verify({ check: 'load-capacity', mode: 'fea', file: 'bracket.kcad.ts' })
+```
+
+It solves the study and answers in the same shape as the closed-form beam
+check, so one reader handles both methods:
+
+- `ok`: whether `safetyFactor` reaches `threshold`. The threshold is
+  `safety_factor_threshold`, else the study's `minSafetyFactor`, else 1.5.
+- `elements[]`: one entry per stress region, `{ partName: '@kc[...]',
+  stressPa, yieldPa, safetyFactor, at }`, worst first.
+- `failures[]`: the regions under the threshold.
+- `diagnostics`: carries `fea.safety-factor.below-min` with the region to fix.
+- `fea`: `peakStressPa`, `maxDisplacementMm`, `meshTrusted` and
+  `trustReasons`, plus `peakAtSupportPa` when a clamped edge holds a
+  singular peak.
+
+Heatmaps are off by default here (`heatmaps: true` to render them). The
+study name and mesh size override work exactly as for `run_fea`.
+
 ## The gate
 
 A study with `minSafetyFactor` runs on every `evaluate_script` /

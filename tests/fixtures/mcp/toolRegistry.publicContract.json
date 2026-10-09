@@ -426,7 +426,7 @@
   },
   {
     "name": "verify",
-    "description": "Use this when you need to check a design against a rule set. One verifier, selected by `check`:\n- 'assembly' — mate-aware assembly validator on the active session (run evaluate_script first).\n- 'urdf' — structural validity of a .urdf file ({ urdf_path }).\n- 'dfm' — print-readiness gates declared by dfmSpec() ({ file | code }).\n- 'dfm-preflight' — sheet-metal flat pattern vs a job-shop's ordering rules ({ vendor, material, thicknessIn|thicknessMm, ... }). Returns the vendor's catalog source pages as `sources`; when `disclosure` is present, show it with those links.\n- 'swept-collision' — sweep declared joint range(s) and report colliding poses.\n- 'reachable' — inverse-kinematics reachability for an end-effector ({ tip_link, target_position, ... }).\n- 'mounting-holes' — fastened mates expose matching hole diameters on both sides.\n- 'load-capacity' — closed-form Euler-Bernoulli beam stress / safety-factor check ({ loads, materials, ... }).\n- 'static-hold' — gravitational holding torque/force at a sampled pose grid vs each actuated joint's declared actuator capacity ({ joint?, pose?, gravity?, min_torque_margin_pct?, range_samples? }).\n- 'body-likeness' — publish gate for organic/car bodies: cheap AABB↔wheel checks plus required agent still verdicts (side-body-over-wheels, side-cabin-aft, rear-haunch, ortho-proportions-vs-reference). Pass { body_bbox | code/file+body_feature_id, wheels?, cabin_bbox?, still_verdicts?, require_stills? }. Full CV silhouette matching is NOT implemented — agents must inspect ortho PNGs/Studio and supply still_verdicts before claiming success.\nAll params except `check` are check-specific and forwarded verbatim; each check fails closed on its own missing required params.",
+    "description": "Use this when you need to check a design against a rule set. One verifier, selected by `check`:\n- 'assembly' — mate-aware assembly validator on the active session (run evaluate_script first).\n- 'urdf' — structural validity of a .urdf file ({ urdf_path }).\n- 'dfm' — print-readiness gates declared by dfmSpec() ({ file | code }).\n- 'dfm-preflight' — sheet-metal flat pattern vs a job-shop's ordering rules ({ vendor, material, thicknessIn|thicknessMm, ... }). Returns the vendor's catalog source pages as `sources`; when `disclosure` is present, show it with those links.\n- 'swept-collision' — sweep declared joint range(s) and report colliding poses.\n- 'reachable' — inverse-kinematics reachability for an end-effector ({ tip_link, target_position, ... }).\n- 'mounting-holes' — fastened mates expose matching hole diameters on both sides.\n- 'load-capacity' — will it hold? Closed-form Euler-Bernoulli beam check ({ loads, materials, ... }), or mode:'fea' to solve the script's feaStudy (quadratic-tet FEA, CalculiX) — both return { ok, safetyFactor, elements[{ partName, stressPa, yieldPa, safetyFactor }], failures[], diagnostics }; fea adds the threshold, the stress regions as @kc[...] faces with their location, and fea { peakStressPa, maxDisplacementMm, meshTrusted, peakAtSupportPa }.\n- 'static-hold' — gravitational holding torque/force at a sampled pose grid vs each actuated joint's declared actuator capacity ({ joint?, pose?, gravity?, min_torque_margin_pct?, range_samples? }).\n- 'body-likeness' — publish gate for organic/car bodies: cheap AABB↔wheel checks plus required agent still verdicts (side-body-over-wheels, side-cabin-aft, rear-haunch, ortho-proportions-vs-reference). Pass { body_bbox | code/file+body_feature_id, wheels?, cabin_bbox?, still_verdicts?, require_stills? }. Full CV silhouette matching is NOT implemented — agents must inspect ortho PNGs/Studio and supply still_verdicts before claiming success.\nAll params except `check` are check-specific and forwarded verbatim; each check fails closed on its own missing required params.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -576,13 +576,26 @@
           "type": "string",
           "enum": [
             "stub",
-            "beam"
+            "beam",
+            "fea"
           ],
-          "description": "check:'load-capacity' — 'beam' (default) or 'stub'."
+          "description": "check:'load-capacity' — 'beam' (default), 'stub', or 'fea' (solve the script's feaStudy; needs the CalculiX + gmsh toolchain)."
         },
         "safety_factor_threshold": {
           "type": "number",
-          "description": "check:'load-capacity' — pass/fail safety-factor floor (default 1.5)."
+          "description": "check:'load-capacity' — pass/fail safety-factor floor (default 1.5; mode 'fea': the study's minSafetyFactor when declared)."
+        },
+        "study": {
+          "type": "string",
+          "description": "check:'load-capacity' mode:'fea' — feaStudy name (default: the last declared one)."
+        },
+        "mesh_size": {
+          "type": "number",
+          "description": "check:'load-capacity' mode:'fea' — element size override, mm."
+        },
+        "heatmaps": {
+          "type": "boolean",
+          "description": "check:'load-capacity' mode:'fea' — also render stress heatmap PNGs (default false)."
         },
         "pose": {
           "description": "check:'static-hold' — explicit pose (joint name -> deg/mm) or array of poses; omit to sample a grid across the evaluated joint's range."

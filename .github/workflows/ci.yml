@@ -203,7 +203,8 @@ jobs:
           NODE_OPTIONS=--max-old-space-size=3072 npx vitest run \
             tests/unit/fea/feaGate.integration.test.ts \
             tests/unit/fea/cantilever.integration.test.ts \
-            tests/unit/fea/stressInfill.integration.test.ts
+            tests/unit/fea/stressInfill.integration.test.ts \
+            tests/unit/fea/loadCapacityFea.integration.test.ts
 
       - name: USD-Isaac export validation (real pxr schemas, skip-is-failure)
         env:

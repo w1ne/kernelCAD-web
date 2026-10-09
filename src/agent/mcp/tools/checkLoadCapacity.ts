@@ -4,11 +4,14 @@
 //
 // MCP tool: wraps the kc.kinematic.checkLoadCapacity facade. Runs the
 // closed-form Euler-Bernoulli beam path on cantilever-shaped parts and
-// reports per-part stress / safety-factor records.
+// reports per-part stress / safety-factor records. mode 'fea' answers the
+// same question from the script's solid feaStudy, in the same shape
+// (./checkLoadCapacityFea.ts).
 
 import { evaluateAndBuildScript, type EvaluateInput } from '../../cli/commands/evaluate';
 import type { Assembly } from '../../../modeling/capture/assembly';
 import { checkLoadCapacity } from '../../../kinematic';
+import { checkLoadCapacityFea, type FeaLoadCapacityOutput } from './checkLoadCapacityFea';
 import type {
   KinematicDiagnostic,
   LoadCapacityElementResult,
@@ -27,10 +30,17 @@ export interface CheckLoadCapacityInput extends EvaluateInput {
    *  abs | pet | custom). 'custom' requires yieldStressMPa +
    *  youngsModulusGPa inline. */
   materials?: MaterialDeclaration;
-  /** 'beam' (default) | 'stub'. */
-  mode?: 'stub' | 'beam';
-  /** Pass-fail floor on the computed safety factor; defaults to 1.5. */
+  /** 'beam' (default) | 'stub' | 'fea' (solve the script's feaStudy). */
+  mode?: 'stub' | 'beam' | 'fea';
+  /** Pass-fail floor on the computed safety factor; defaults to 1.5
+   *  (mode 'fea': the study's minSafetyFactor when it declares one). */
   safety_factor_threshold?: number;
+  /** mode 'fea': study name (default: the last declared feaStudy). */
+  study?: string;
+  /** mode 'fea': element size override, mm. */
+  mesh_size?: number;
+  /** mode 'fea': also render stress heatmap PNGs (default false). */
+  heatmaps?: boolean;
 }
 
 export type CheckLoadCapacityOutput =
@@ -42,7 +52,8 @@ export type CheckLoadCapacityOutput =
       failures: ReadonlyArray<LoadCapacityFailure>;
       diagnostics: ReadonlyArray<KinematicDiagnostic>;
     }
-  | { ok: false; source: 'local'; error: string; errorCode?: string };
+  | { ok: false; source: 'local'; error: string; errorCode?: string }
+  | FeaLoadCapacityOutput;
 
 /**
  * `check_load_capacity` MCP tool. Runs the closed-form beam stress path on
@@ -54,6 +65,16 @@ export type CheckLoadCapacityOutput =
 export async function checkLoadCapacityTool(
   input: CheckLoadCapacityInput,
 ): Promise<CheckLoadCapacityOutput> {
+  if (input.mode === 'fea') {
+    return checkLoadCapacityFea({
+      ...(input.file !== undefined ? { file: input.file } : {}),
+      ...(input.code !== undefined ? { code: input.code } : {}),
+      ...(input.study !== undefined ? { study: input.study } : {}),
+      ...(input.mesh_size !== undefined ? { mesh_size: input.mesh_size } : {}),
+      ...(input.heatmaps !== undefined ? { heatmaps: input.heatmaps } : {}),
+      ...(input.safety_factor_threshold !== undefined ? { safety_factor_threshold: input.safety_factor_threshold } : {}),
+    });
+  }
   const { evaluation, model } = await evaluateAndBuildScript(input);
   if (evaluation.exitCode !== 0 || !model) {
     return {
@@ -75,7 +96,7 @@ export async function checkLoadCapacityTool(
     };
   }
   const opts: LoadCapacityOpts = {
-    mode: input.mode,
+    mode: input.mode as 'stub' | 'beam' | undefined,
     materials: input.materials,
     safetyFactorThreshold: input.safety_factor_threshold,
   };

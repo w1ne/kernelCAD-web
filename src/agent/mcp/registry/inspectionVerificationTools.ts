@@ -97,7 +97,7 @@ const verifyToolEntry: ToolRegistryEntry = {
       "- 'swept-collision' — sweep declared joint range(s) and report colliding poses.\n" +
       "- 'reachable' — inverse-kinematics reachability for an end-effector ({ tip_link, target_position, ... }).\n" +
       "- 'mounting-holes' — fastened mates expose matching hole diameters on both sides.\n" +
-      "- 'load-capacity' — closed-form Euler-Bernoulli beam stress / safety-factor check ({ loads, materials, ... }).\n" +
+      "- 'load-capacity' — will it hold? Closed-form Euler-Bernoulli beam check ({ loads, materials, ... }), or mode:'fea' to solve the script's feaStudy (quadratic-tet FEA, CalculiX) — both return { ok, safetyFactor, elements[{ partName, stressPa, yieldPa, safetyFactor }], failures[], diagnostics }; fea adds the threshold, the stress regions as @kc[...] faces with their location, and fea { peakStressPa, maxDisplacementMm, meshTrusted, peakAtSupportPa }.\n" +
       "- 'static-hold' — gravitational holding torque/force at a sampled pose grid vs each actuated joint's declared actuator capacity ({ joint?, pose?, gravity?, min_torque_margin_pct?, range_samples? }).\n" +
       "- 'body-likeness' — publish gate for organic/car bodies: cheap AABB↔wheel checks plus required agent still verdicts (side-body-over-wheels, side-cabin-aft, rear-haunch, ortho-proportions-vs-reference). Pass { body_bbox | code/file+body_feature_id, wheels?, cabin_bbox?, still_verdicts?, require_stills? }. Full CV silhouette matching is NOT implemented — agents must inspect ortho PNGs/Studio and supply still_verdicts before claiming success.\n" +
       'All params except `check` are check-specific and forwarded verbatim; each check fails closed on its own missing required params.',
@@ -134,8 +134,11 @@ const verifyToolEntry: ToolRegistryEntry = {
         seed: { type: 'object', description: "check:'reachable' — numeric IK seed pose (joint name -> deg/mm)." },
         loads: { type: 'object', description: "check:'load-capacity' — partName -> { force?: [Fx,Fy,Fz] N, torque?: [Tx,Ty,Tz] N*m }." },
         materials: { type: 'object', description: "check:'load-capacity' — partName -> material declaration." },
-        mode: { type: 'string', enum: ['stub', 'beam'], description: "check:'load-capacity' — 'beam' (default) or 'stub'." },
-        safety_factor_threshold: { type: 'number', description: "check:'load-capacity' — pass/fail safety-factor floor (default 1.5)." },
+        mode: { type: 'string', enum: ['stub', 'beam', 'fea'], description: "check:'load-capacity' — 'beam' (default), 'stub', or 'fea' (solve the script's feaStudy; needs the CalculiX + gmsh toolchain)." },
+        safety_factor_threshold: { type: 'number', description: "check:'load-capacity' — pass/fail safety-factor floor (default 1.5; mode 'fea': the study's minSafetyFactor when declared)." },
+        study: { type: 'string', description: "check:'load-capacity' mode:'fea' — feaStudy name (default: the last declared one)." },
+        mesh_size: { type: 'number', description: "check:'load-capacity' mode:'fea' — element size override, mm." },
+        heatmaps: { type: 'boolean', description: "check:'load-capacity' mode:'fea' — also render stress heatmap PNGs (default false)." },
         pose: { description: "check:'static-hold' — explicit pose (joint name -> deg/mm) or array of poses; omit to sample a grid across the evaluated joint's range." },
         gravity: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3, description: "check:'static-hold' — gravity vector, m/s^2, world frame (default [0, 0, -9.81])." },
         min_torque_margin_pct: { type: 'number', description: "check:'static-hold' — safety-margin floor as a percent of actuator capacity (default 20)." },
