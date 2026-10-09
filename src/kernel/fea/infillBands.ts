@@ -62,6 +62,9 @@ export interface StressInfillOptions {
   shellMm?: number;
   /** Filament density for the gram estimate, g/cm^3. */
   filamentDensityGCm3?: number;
+  /** Nodes in the support zone next to a fixed-face edge (supportZone.ts). Every
+   *  element touching one prints in the TOP band; see `elementBands`. */
+  supportAdjacent?: ReadonlySet<number>;
 }
 
 export interface InfillMesh {
@@ -75,7 +78,8 @@ export interface InfillBandResult {
   fromMPa: number;
   /** Upper edge, MPa; `Infinity` for the top band. */
   toMPa: number;
-  /** Part volume whose stress falls in this band, percent. */
+  /** Part volume whose stress falls in this band, percent (elements next to
+   *  a fixed-face edge count in the top band). */
   stressVolumePercent: number;
   /** Part volume the slicer prints at this density (after voxel growth),
    *  percent. This is the number the saving estimate uses. */
@@ -164,18 +168,35 @@ export function defaultCellMm(min: readonly number[], max: readonly number[]): n
   return cell;
 }
 
-/** Element band from its mean nodal stress; mean (not max) so one singular
- *  corner node at a fixed hole does not paint its whole neighbourhood. */
+/** Element band from its mean nodal stress; mean (not max) so one node's
+ *  peak does not paint its whole neighbourhood.
+ *
+ *  Elements touching a node next to a fixed-face edge go to the TOP band
+ *  regardless of their stress. Their solved stress is the clamp-edge
+ *  singularity, so it depends on the mesh and does not govern the safety
+ *  factor. What the solve leaves out there (bolt preload, bearing on the
+ *  bore, washer contact) still loads that material in the real part, and
+ *  dense infill around fasteners is standard FDM practice. Forcing the band
+ *  keeps the bolt bosses dense on every mesh instead of only when the
+ *  singular spike happens to cross the band edge. Every other element has
+ *  only governing-field nodes, so it is classified from the governing
+ *  field. */
 function elementBands(
   mesh: FeaMesh,
   fields: FeaFieldResult,
   yieldMPa: number,
   bands: readonly InfillBandSpec[],
+  supportAdjacent?: ReadonlySet<number>,
 ): Int8Array {
   const vmByNode = new Map<number, number>();
   for (let i = 0; i < fields.nodeIds.length; i++) vmByNode.set(fields.nodeIds[i], fields.vonMises[i]);
   const out = new Int8Array(mesh.elements.length);
+  const top = bands.length - 1;
   mesh.elements.forEach((el, e) => {
+    if (supportAdjacent !== undefined && el.nodes.some(n => supportAdjacent.has(n))) {
+      out[e] = top;
+      return;
+    }
     let sum = 0;
     for (const n of el.nodes) sum += vmByNode.get(n) ?? 0;
     out[e] = classifyStress(sum / el.nodes.length, yieldMPa, bands);
@@ -504,7 +525,7 @@ export function buildStressInfill(
   if (!(yieldMPa > 0)) throw new Error(`stress-graded infill needs a positive yield; got ${yieldMPa}.`);
   if (mesh.elements.length === 0) throw new Error('stress-graded infill: the FEA mesh has no elements.');
 
-  const elemBand = elementBands(mesh, fields, yieldMPa, bands);
+  const elemBand = elementBands(mesh, fields, yieldMPa, bands, options.supportAdjacent);
 
   const min = [Infinity, Infinity, Infinity];
   const max = [-Infinity, -Infinity, -Infinity];

@@ -768,7 +768,7 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
       summary: {
         type: 'object',
         additionalProperties: true,
-        description: 'Solved evidence: maxVonMisesMPa, maxVonMisesAt, maxDisplacementMm, maxDisplacementAt, minSafetyFactor (+ minSafetyFactorRequired), nodeCount/elementCount/meshSizeMm, quality (minSICN, meanSICN, lowQualityCount), maxStressErrorPercent, trust { meshTrusted, reasons }, hotSpots [{ region, maxVonMisesMPa, nodeId, at, safetyFactor }], appliedForceN / reactionForceN / equilibriumResidual, meshMs / solveMs.',
+        description: 'Solved evidence: maxVonMisesMPa, maxVonMisesAt, maxDisplacementMm, maxDisplacementAt, minSafetyFactor (+ minSafetyFactorRequired), nodeCount/elementCount/meshSizeMm, quality (minSICN, meanSICN, lowQualityCount), maxStressErrorPercent (high-stress region), trust { meshTrusted, reasons }, hotSpots [{ region, maxVonMisesMPa, nodeId, at, safetyFactor }]; the stress values, safety factor and hot spots exclude the support zone next to fixed-face edges (governingField), whose clamp-singular raw peak is reported as peakAtSupportMPa / peakAtSupportAt / peakAtSupportRegion with supportAdjacentNodeCount and supportZoneRadiusMm; appliedForceN / reactionForceN / equilibriumResidual, meshMs / solveMs.',
       },
       images: { type: 'array', items: { type: 'string' }, description: 'Absolute PNG paths of the rendered stress heatmap.' },
       legend: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Heatmap colour bands { color, fromMPa, toMPa } — the scale the PNGs are drawn on.' },

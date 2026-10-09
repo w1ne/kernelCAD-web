@@ -4,7 +4,7 @@
 import type { DiagnosticCodeSpec } from './types';
 
 export const FEA_CODES = {
-  // Structural FEA gate (5) — the linear-static study declared by
+  // Structural FEA gate (7) — the linear-static study declared by
   // `shape.feaStudy({...})`. Same contract as the dfm.* gates: the
   // declaration lives in the model, the solver run is the enforcement, and a
   // missing toolchain is reported rather than silently passed.
@@ -47,6 +47,15 @@ export const FEA_CODES = {
     group: 'fea',
     description:
       'run_fea or a declared feaStudy gate could not run because the external CalculiX (ccx) solver or the gmsh Python module was not found.',
+  },
+  'fea.stress.support-singularity': {
+    hintTemplate:
+      'The highest raw stress sits in the support zone next to the edge of a fixed face (within 0.4 x the local wall thickness). A fixed face is clamped rigidly, which makes the stress at its edge singular: that value keeps climbing as the mesh is refined, and real bolt or washer clamping spreads it, so it is not a prediction. The safety factor uses the field away from the supports (summary.maxVonMisesMPa); the clamp-edge value is kept as summary.peakAtSupportMPa. If the support region itself is the concern, model the bolt head or washer contact as a load face and fix the far side instead.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'warn',
+    group: 'fea',
+    description:
+      'The raw FEA peak lies at a fixed-face (clamp) edge, where the rigid-support idealisation makes stress mesh-dependent; it was reported separately and excluded from the governing safety factor, or, when the support zone covers most of the part, could not be excluded.',
   },
   'fea.study.fixed-unresolved': {
     hintTemplate:

@@ -5348,7 +5348,7 @@
   },
   {
     "name": "run_fea",
-    "description": "Use this when you need to know whether a part will hold a load. Runs the linear-static structural study a script declares with `shape.feaStudy({ material, fixed, loads, meshSize?, minSafetyFactor? })`: meshes the solid with quadratic tetrahedra, solves it with CalculiX, and returns evidence — peak von Mises stress (MPa), peak displacement (mm), the minimum safety factor against the material yield, per-region hot spots named by @kc[...] face ref, mesh-quality trust flags, an equilibrium residual, and stress-heatmap PNG paths.\nRequires the external solver toolchain (CalculiX `ccx` plus the gmsh Python module). When it is absent the call fails with `fea.solver.unavailable` and the exact install command — never a silent pass.\nPass { file | code }, optional `study` (defaults to the last declared study), `output_dir` (keeps the .inp/.frd deck for reproduction), `mesh_size` (mm, overrides the study for this run), and `heatmaps: false` for a fast numbers-only run.",
+    "description": "Use this when you need to know whether a part will hold a load. Runs the linear-static structural study a script declares with `shape.feaStudy({ material, fixed, loads, meshSize?, minSafetyFactor? })`: meshes the solid with quadratic tetrahedra, solves it with CalculiX, and returns evidence — peak von Mises stress (MPa), peak displacement (mm), the minimum safety factor against the material yield (taken away from the clamp-singular edges of the fixed faces; the raw clamp-edge peak is reported separately as peakAtSupportMPa), per-region hot spots named by @kc[...] face ref, mesh-quality trust flags, an equilibrium residual, and stress-heatmap PNG paths.\nRequires the external solver toolchain (CalculiX `ccx` plus the gmsh Python module). When it is absent the call fails with `fea.solver.unavailable` and the exact install command — never a silent pass.\nPass { file | code }, optional `study` (defaults to the last declared study), `output_dir` (keeps the .inp/.frd deck for reproduction), `mesh_size` (mm, overrides the study for this run), and `heatmaps: false` for a fast numbers-only run.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -5401,7 +5401,7 @@
         "summary": {
           "type": "object",
           "additionalProperties": true,
-          "description": "Solved evidence: maxVonMisesMPa, maxVonMisesAt, maxDisplacementMm, maxDisplacementAt, minSafetyFactor (+ minSafetyFactorRequired), nodeCount/elementCount/meshSizeMm, quality (minSICN, meanSICN, lowQualityCount), maxStressErrorPercent, trust { meshTrusted, reasons }, hotSpots [{ region, maxVonMisesMPa, nodeId, at, safetyFactor }], appliedForceN / reactionForceN / equilibriumResidual, meshMs / solveMs."
+          "description": "Solved evidence: maxVonMisesMPa, maxVonMisesAt, maxDisplacementMm, maxDisplacementAt, minSafetyFactor (+ minSafetyFactorRequired), nodeCount/elementCount/meshSizeMm, quality (minSICN, meanSICN, lowQualityCount), maxStressErrorPercent (high-stress region), trust { meshTrusted, reasons }, hotSpots [{ region, maxVonMisesMPa, nodeId, at, safetyFactor }]; the stress values, safety factor and hot spots exclude the support zone next to fixed-face edges (governingField), whose clamp-singular raw peak is reported as peakAtSupportMPa / peakAtSupportAt / peakAtSupportRegion with supportAdjacentNodeCount and supportZoneRadiusMm; appliedForceN / reactionForceN / equilibriumResidual, meshMs / solveMs."
         },
         "images": {
           "type": "array",

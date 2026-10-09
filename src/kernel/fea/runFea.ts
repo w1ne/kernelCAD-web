@@ -32,6 +32,7 @@ import { maxOf } from './maxOf';
 import { LOW_QUALITY_SICN, meshStep } from './gmshDriver';
 import { writeInp } from './inpWriter';
 import { resolveStudyParams } from './studyParams';
+import { supportZone, type SupportZone } from './supportZone';
 import { detectFeaToolchain, runBounded, type FeaToolchain } from './toolchain';
 import type { ParamTable } from '../../shared/runtime/paramTable';
 import type {
@@ -53,6 +54,10 @@ export const DEFAULT_SOLVE_TIMEOUT_MS = 300_000;
 export const MAX_ELEMENTS = 400_000;
 /** Above this nodal stress-error estimate the stress field is mesh-limited. */
 export const STRESS_ERROR_WARN_PERCENT = 25;
+/** When more than this fraction of the solved nodes sits next to a fixed-face
+ *  edge, excluding them would throw away most of the field, so the governing
+ *  values fall back to the raw field (and a warning says so). */
+export const MAX_SUPPORT_ADJACENT_FRACTION = 0.5;
 
 export interface RunFeaOptions {
   /** Directory the .inp / .frd / mesh.json land in. Kept on success so an
@@ -78,7 +83,12 @@ export interface RunFeaResult {
   artifacts: { geometryPath?: string; inpPath?: string; frdPath?: string; meshPath?: string };
   /** Mesh + solved fields, for callers that render the field (the heatmap
    *  builder). Present only on a completed solve. */
-  raw?: { mesh: FeaMesh; fields: FeaFieldResult };
+  raw?: {
+    mesh: FeaMesh;
+    fields: FeaFieldResult;
+    /** Nodes in the support zone next to a fixed-face edge (supportZone.ts). */
+    supportAdjacent: ReadonlySet<number>;
+  };
 }
 
 function diag(
@@ -145,7 +155,7 @@ function trustFrom(
   }
   if (maxErrorPercent !== undefined && maxErrorPercent > STRESS_ERROR_WARN_PERCENT) {
     reasons.push(
-      `the solver's own nodal stress-error estimate peaks at ${maxErrorPercent.toFixed(1)}% (above ${STRESS_ERROR_WARN_PERCENT}%), so the peak stress is mesh-limited`,
+      `the solver's own nodal stress-error estimate in the high-stress region peaks at ${maxErrorPercent.toFixed(1)}% (above ${STRESS_ERROR_WARN_PERCENT}%), so the peak stress is mesh-limited`,
     );
   }
   return { meshTrusted: reasons.length === 0, reasons };
@@ -438,19 +448,22 @@ interface FeaSummaryComputation {
   minSafetyFactor: number;
   yieldMPa: number;
   hotSpots: FeaHotSpot[];
+  support: SupportSplit;
 }
 
-/** Global peaks over every solved node. The scan is strictly-greater, so
- *  equal peaks keep the first node, as the single-pass original did. */
+/** Global peaks: stress over the governing nodes (`include`), displacement
+ *  over every node. The scan is strictly-greater, so equal peaks keep the
+ *  first node, as the single-pass original did. */
 function findGlobalPeaks(
   fields: ReturnType<typeof parseFrd>,
+  include: (i: number) => boolean,
 ): { maxVm: number; maxVmNode: number; maxDisp: number; maxDispNode: number } {
   let maxVm = 0;
   let maxVmNode = fields.nodeIds[0] ?? 0;
   let maxDisp = 0;
   let maxDispNode = fields.nodeIds[0] ?? 0;
   for (let i = 0; i < fields.nodeIds.length; i++) {
-    if (fields.vonMises[i] > maxVm) { maxVm = fields.vonMises[i]; maxVmNode = fields.nodeIds[i]; }
+    if (include(i) && fields.vonMises[i] > maxVm) { maxVm = fields.vonMises[i]; maxVmNode = fields.nodeIds[i]; }
     const d = Math.hypot(...fields.displacement[i]);
     if (d > maxDisp) { maxDisp = d; maxDispNode = fields.nodeIds[i]; }
   }
@@ -465,9 +478,11 @@ function computeHotSpots(
   labelled: ReturnType<typeof labelSurfaces>,
   coordOf: (id: number) => [number, number, number],
   yieldMPa: number,
+  include: (i: number) => boolean,
 ): FeaHotSpot[] {
   const perRegion = new Map<string, { vm: number; node: number }>();
   for (let i = 0; i < fields.nodeIds.length; i++) {
+    if (!include(i)) continue;
     const id = fields.nodeIds[i];
     const region = regionForNode(id, coordOf(id), labelled);
     const prev = perRegion.get(region);
@@ -485,6 +500,120 @@ function computeHotSpots(
     }))
     .sort((a, b) => b.maxVonMisesMPa - a.maxVonMisesMPa)
     .slice(0, 5);
+}
+
+/** The raw peak inside the support zone, reported beside the governing one. */
+export interface FeaSupportPeak {
+  maxVonMisesMPa: number;
+  nodeId: number;
+  at: [number, number, number];
+  region: string;
+  maxStressErrorPercent?: number;
+}
+
+/** How the solved nodes split into governing and support-adjacent. */
+interface SupportSplit {
+  /** 'none': no support zone (no fixed-face edge, or not computed);
+   *  'away-from-supports': governing excludes the zone;
+   *  'all-nodes': the zone covers too much of the part to exclude. */
+  mode: 'none' | 'away-from-supports' | 'all-nodes';
+  include: (i: number) => boolean;
+  adjacentCount: number;
+  peak?: FeaSupportPeak;
+  radiusMm?: { min: number; max: number };
+}
+
+/** One pass over the solved nodes: which are in the zone, how many, the
+ *  highest-stress one (index, or -1) and the worst error estimate there. */
+function scanSupportZone(
+  fields: ReturnType<typeof parseFrd>,
+  adjacent: ReadonlySet<number>,
+): { isAdjacent: boolean[]; count: number; best: number; worstErr: number | undefined } {
+  const isAdjacent = fields.nodeIds.map(id => adjacent.has(id));
+  let count = 0;
+  let best = -1;
+  let worstErr: number | undefined;
+  isAdjacent.forEach((inZone, i) => {
+    if (!inZone) return;
+    count++;
+    if (best < 0 || fields.vonMises[i] > fields.vonMises[best]) best = i;
+    const e = fields.stressErrorPercent[i];
+    if (e !== undefined && !(worstErr !== undefined && worstErr >= e)) worstErr = e;
+  });
+  return { isAdjacent, count, best, worstErr };
+}
+
+function splitBySupport(
+  fields: ReturnType<typeof parseFrd>,
+  zone: Pick<SupportZone, 'adjacent' | 'radiusMm'> | undefined,
+  labelled: readonly FeaSurface[],
+  coordOf: (id: number) => [number, number, number],
+): SupportSplit {
+  const all = () => true;
+  const none: SupportSplit = { mode: 'none', include: all, adjacentCount: 0 };
+  if (zone === undefined || zone.adjacent.size === 0) return none;
+  const { isAdjacent, count, best, worstErr } = scanSupportZone(fields, zone.adjacent);
+  if (best < 0) return none;
+  const id = fields.nodeIds[best];
+  const at = coordOf(id);
+  const peak: FeaSupportPeak = {
+    maxVonMisesMPa: fields.vonMises[best],
+    nodeId: id,
+    at,
+    region: regionForNode(id, at, labelled),
+    ...(worstErr !== undefined ? { maxStressErrorPercent: worstErr } : {}),
+  };
+  const common = { adjacentCount: count, peak, ...(zone.radiusMm !== undefined ? { radiusMm: zone.radiusMm } : {}) };
+  if (count > fields.nodeIds.length * MAX_SUPPORT_ADJACENT_FRACTION) {
+    return { mode: 'all-nodes', include: all, ...common };
+  }
+  return { mode: 'away-from-supports', include: i => !isAdjacent[i], ...common };
+}
+
+/** Nodes at or above this fraction of the governing peak form the
+ *  high-stress region whose error estimate decides trust. */
+export const ERROR_REGION_FRACTION = 0.5;
+
+/**
+ * Worst nodal error estimate in the HIGH-STRESS part of the governing field
+ * (von Mises at least half the governing peak).
+ *
+ * CalculiX's estimator is relative to the local stress, so where the stress
+ * is near zero (the neutral fibre of a bent section, a lightly loaded web) it
+ * reads 40 % or more while describing a few MPa that can never govern. Over
+ * the whole part it would flag every solve; over the high-stress region it
+ * tracks whether the peak that sets the safety factor has converged.
+ */
+function governingError(
+  fields: ReturnType<typeof parseFrd>,
+  include: (i: number) => boolean,
+  maxVm: number,
+): number | undefined {
+  if (fields.stressErrorPercent.length === 0) return undefined;
+  const floor = maxVm * ERROR_REGION_FRACTION;
+  let worst: number | undefined;
+  for (let i = 0; i < fields.stressErrorPercent.length; i++) {
+    if (!include(i) || !(fields.vonMises[i] >= floor)) continue;
+    const e = fields.stressErrorPercent[i];
+    if (worst === undefined || e > worst) worst = e;
+  }
+  return worst ?? maxOf(fields.stressErrorPercent);
+}
+
+/** Summary fields describing the support split; empty when there is none. */
+function supportSummaryFields(split: SupportSplit): Partial<FeaSummary> {
+  if (split.mode === 'none' || split.peak === undefined) return {};
+  return {
+    governingField: split.mode,
+    supportAdjacentNodeCount: split.adjacentCount,
+    ...(split.radiusMm !== undefined ? { supportZoneRadiusMm: split.radiusMm } : {}),
+    peakAtSupportMPa: split.peak.maxVonMisesMPa,
+    peakAtSupportAt: split.peak.at,
+    peakAtSupportRegion: split.peak.region,
+    ...(split.peak.maxStressErrorPercent !== undefined
+      ? { maxStressErrorAtSupportPercent: split.peak.maxStressErrorPercent }
+      : {}),
+  };
 }
 
 /** Sum the applied force vectors and close the loop against the reaction
@@ -521,20 +650,24 @@ export function computeFeaSummary(
   loads: readonly FeaResolvedLoad[],
   meshSize: number,
   solveMs: number,
+  /** Support zone next to the fixed-face edges (supportZone.ts). The
+   *  governing peak, safety factor, hot spots and error estimate exclude it. */
+  zone?: Pick<SupportZone, 'adjacent' | 'radiusMm'>,
 ): FeaSummaryComputation {
   const { study } = ctx;
-  const { maxVm, maxVmNode, maxDisp, maxDispNode } = findGlobalPeaks(fields);
   const coordOf = (id: number): [number, number, number] => {
     const c = meshed.mesh.nodes.get(id);
     return c !== undefined ? [c[0], c[1], c[2]] : [0, 0, 0];
   };
+  const support = splitBySupport(fields, zone, labelled, coordOf);
+  const { maxVm, maxVmNode, maxDisp, maxDispNode } = findGlobalPeaks(fields, support.include);
 
   const yieldMPa = material.props.yield;
-  const hotSpots: FeaHotSpot[] = computeHotSpots(fields, labelled, coordOf, yieldMPa);
+  const hotSpots: FeaHotSpot[] = computeHotSpots(fields, labelled, coordOf, yieldMPa, support.include);
 
   const { applied, reaction, equilibriumResidual } = computeEquilibrium(loads, dat);
 
-  const maxErr = fields.stressErrorPercent.length > 0 ? maxOf(fields.stressErrorPercent) : undefined;
+  const maxErr = governingError(fields, support.include, maxVm);
   const trust = trustFrom(meshed.mesh.quality, meshed.mesh.elements.length, maxErr);
   const minSafetyFactor = maxVm > 0 ? yieldMPa / maxVm : Infinity;
 
@@ -554,6 +687,7 @@ export function computeFeaSummary(
     ...(maxErr !== undefined ? { maxStressErrorPercent: maxErr } : {}),
     trust,
     hotSpots,
+    ...supportSummaryFields(support),
     appliedForceN: applied,
     ...(reaction !== undefined ? { reactionForceN: [reaction[0], reaction[1], reaction[2]] } : {}),
     ...(equilibriumResidual !== undefined ? { equilibriumResidual } : {}),
@@ -561,7 +695,27 @@ export function computeFeaSummary(
     meshMs: meshed.meshMs,
   };
 
-  return { summary, trust, maxVm, maxDisp, minSafetyFactor, yieldMPa, hotSpots };
+  return { summary, trust, maxVm, maxDisp, minSafetyFactor, yieldMPa, hotSpots, support };
+}
+
+const fmtAt = (p: readonly number[]): string => `[${p.map(v => Number(v.toFixed(2))).join(', ')}]`;
+
+/** The support-singularity warning text, or undefined when the support peak
+ *  does not exceed the governing one (nothing was hidden). */
+function supportSingularityMessage(computed: FeaSummaryComputation, yieldMPa: number): string | undefined {
+  const { support, maxVm, minSafetyFactor } = computed;
+  const peak = support.peak;
+  if (peak === undefined || support.mode === 'none') return undefined;
+  const errNote = peak.maxStressErrorPercent !== undefined
+    ? ` The solver's error estimate in that zone reaches ${peak.maxStressErrorPercent.toFixed(1)}%.`
+    : '';
+  if (support.mode === 'all-nodes') {
+    return `${support.adjacentCount} solved nodes (over ${Math.round(MAX_SUPPORT_ADJACENT_FRACTION * 100)}% of the part) lie in the support zone next to a fixed-face edge, so the clamp-edge singularity could not be separated from the field. ` +
+      `The peak (${maxVm.toFixed(1)} MPa) and safety factor (${minSafetyFactor.toFixed(2)}) use the RAW field, including the clamp edge, and are mesh-dependent.${errNote}`;
+  }
+  if (!(peak.maxVonMisesMPa > maxVm)) return undefined;
+  return `the raw peak ${peak.maxVonMisesMPa.toFixed(1)} MPa (safety factor ${(yieldMPa / peak.maxVonMisesMPa).toFixed(2)}) sits at ${fmtAt(peak.at)} on ${peak.region}, next to the edge of a fixed face, where the rigid clamp makes the stress singular and mesh-dependent.${errNote} ` +
+    `The governing peak away from the supports is ${maxVm.toFixed(1)} MPa (safety factor ${minSafetyFactor.toFixed(2)}); that is the value the safety factor and gate use.`;
 }
 
 /** Push the mesh-trust warning and the declared safety-factor error, in the
@@ -573,6 +727,10 @@ function appendFeaSummaryDiagnostics(
 ): void {
   const { study, owner, diagnostics } = ctx;
   const { trust, maxVm, maxDisp, minSafetyFactor, yieldMPa, hotSpots } = computed;
+  const supportWarning = supportSingularityMessage(computed, yieldMPa);
+  if (supportWarning !== undefined) {
+    diagnostics.push(diag('fea.stress.support-singularity', 'warn', `feaStudy '${study.name}': ${supportWarning}`, owner));
+  }
   if (!trust.meshTrusted) {
     diagnostics.push(
       diag(
@@ -664,7 +822,13 @@ export async function runFeaStudy(
     return { ok: false, diagnostics: withNextActions(diagnostics), artifacts };
   }
   const { fields, dat } = fieldsAndDat;
-  const computed = computeFeaSummary(ctx, material, meshed, labelled, fields, dat, loads, meshSize, solveMs);
+  const zone = supportZone(
+    { nodes: meshed.mesh.nodes, elements: meshed.mesh.elements, skinTris: labelled.flatMap(srf => srf.tris) },
+    fixedBind.tris,
+  );
+  const computed = computeFeaSummary(
+    ctx, material, meshed, labelled, fields, dat, loads, meshSize, solveMs, zone,
+  );
   appendFeaSummaryDiagnostics(ctx, material, computed);
 
   await writeFile(join(opts.outDir, 'fea-summary.json'), JSON.stringify(computed.summary, null, 2), 'utf8');
@@ -673,7 +837,7 @@ export async function runFeaStudy(
     summary: computed.summary,
     diagnostics: withNextActions(diagnostics),
     artifacts,
-    raw: { mesh: { ...meshed.mesh, surfaces: labelled }, fields },
+    raw: { mesh: { ...meshed.mesh, surfaces: labelled }, fields, supportAdjacent: zone.adjacent },
   };
 }
 

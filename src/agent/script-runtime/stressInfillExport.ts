@@ -77,7 +77,9 @@ export interface StressInfillReport {
   yieldMPa: number;
   bands: InfillBandRow[];
   saving: InfillSaving;
-  fea: Pick<FeaSummary, 'maxVonMisesMPa' | 'maxVonMisesAt' | 'minSafetyFactor' | 'maxDisplacementMm' | 'trust'>;
+  /** Governing values (away from the fixed-face edges), plus the raw clamp-
+   *  edge peak when there is one. */
+  fea: Pick<FeaSummary, 'maxVonMisesMPa' | 'maxVonMisesAt' | 'minSafetyFactor' | 'maxDisplacementMm' | 'trust' | 'peakAtSupportMPa'>;
   /** Part bounds from the FEA mesh, mm (model frame). */
   boundsMm: { min: [number, number, number]; max: [number, number, number] };
   outDir: string;
@@ -269,8 +271,9 @@ export async function buildStressInfillExport(
     ...(infill.pattern !== undefined ? { pattern: infill.pattern } : {}),
     ...(infill.cellMm !== undefined ? { cellMm: infill.cellMm } : {}),
     ...(density !== undefined ? { filamentDensityGCm3: density } : {}),
+    supportAdjacent: fea.raw.supportAdjacent,
   });
-  const { maxVonMisesMPa, maxVonMisesAt, minSafetyFactor, maxDisplacementMm, trust } = fea.summary;
+  const { maxVonMisesMPa, maxVonMisesAt, minSafetyFactor, maxDisplacementMm, trust, peakAtSupportMPa } = fea.summary;
   const report: StressInfillReport = {
     study: study.metadata.name,
     pattern: result.pattern,
@@ -278,7 +281,10 @@ export async function buildStressInfillExport(
     yieldMPa,
     bands: bandRows(result),
     saving: result.saving,
-    fea: { maxVonMisesMPa, maxVonMisesAt, minSafetyFactor, maxDisplacementMm, trust },
+    fea: {
+      maxVonMisesMPa, maxVonMisesAt, minSafetyFactor, maxDisplacementMm, trust,
+      ...(peakAtSupportMPa !== undefined ? { peakAtSupportMPa } : {}),
+    },
     boundsMm: meshBounds(fea.raw.mesh),
     outDir,
     renderScripts: await writeRenderScripts(fea.raw.mesh, fea.raw.fields, result, outDir),

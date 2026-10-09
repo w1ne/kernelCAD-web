@@ -125,12 +125,33 @@ export interface FeaSummary {
   elementCount: number;
   meshSizeMm: number;
   quality: FeaMeshQuality;
-  /** Worst nodal stress-error estimate in percent, or undefined when the
-   *  solver emitted no error block. */
+  /** Worst nodal stress-error estimate in percent over the high-stress part
+   *  of the governing field (von Mises >= half the governing peak), or
+   *  undefined when the solver emitted no error block. */
   maxStressErrorPercent?: number;
   /** Trust flags an agent must read before believing the numbers. */
   trust: FeaTrust;
   hotSpots: readonly FeaHotSpot[];
+  /** Which nodes the governing values above (maxVonMises*, minSafetyFactor,
+   *  hotSpots, maxStressErrorPercent, trust) were taken over.
+   *  'away-from-supports': nodes within 0.4 x the local wall thickness of a
+   *  fixed-face edge (the support zone) are excluded, because a rigid clamp makes the stress there singular and
+   *  mesh-dependent. 'all-nodes': the support zone covered too much of the
+   *  part to exclude, so the raw field governs. Absent when the fixed region
+   *  has no edge. */
+  governingField?: 'away-from-supports' | 'all-nodes';
+  /** Solved nodes in the support zone. */
+  supportAdjacentNodeCount?: number;
+  /** Range of the support-zone radius over the fixed-face edges, mm. */
+  supportZoneRadiusMm?: { min: number; max: number };
+  /** Raw peak von Mises inside that support zone, MPa, and where it is. A
+   *  clamp idealisation value: it grows as the mesh is refined, and real bolt
+   *  clamping spreads it. */
+  peakAtSupportMPa?: number;
+  peakAtSupportAt?: [number, number, number];
+  peakAtSupportRegion?: string;
+  /** Worst solver error estimate inside the support zone, percent. */
+  maxStressErrorAtSupportPercent?: number;
   appliedForceN: [number, number, number];
   reactionForceN?: [number, number, number];
   /** Relative equilibrium residual |R + F| / |F|. Near 0 is healthy. */
