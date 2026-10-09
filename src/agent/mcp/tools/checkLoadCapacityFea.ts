@@ -77,52 +77,80 @@ export type FeaLoadCapacityOutput =
 
 const MPA = 1e6;
 
-export async function checkLoadCapacityFea(input: FeaLoadCapacityInput): Promise<FeaLoadCapacityOutput> {
-  const feaInput: RunFeaInput = {
-    ...(input.file !== undefined ? { file: input.file } : {}),
-    ...(input.code !== undefined ? { code: input.code } : {}),
-    ...(input.study !== undefined ? { study: input.study } : {}),
-    ...(input.mesh_size !== undefined ? { mesh_size: input.mesh_size } : {}),
-    heatmaps: input.heatmaps ?? false,
-  };
-  const run = await runFeaTool(feaInput);
-  const s: FeaSummary | undefined = run.summary;
-  if (!run.ok || s === undefined) {
-    const first = run.diagnostics?.find(d => d.severity === 'error');
-    return {
-      ok: false,
-      source: 'local',
-      method: 'fea',
-      error: run.error ?? first?.message ?? 'FEA study did not solve.',
-      ...(run.errorCode ?? first?.code ? { errorCode: (run.errorCode ?? first?.code) as string } : {}),
-      ...(run.diagnostics ? { diagnostics: run.diagnostics } : {}),
-    };
-  }
+/** Only the keys the caller set: runFeaTool treats a present key as an override. */
+function feaRunInput(input: FeaLoadCapacityInput): RunFeaInput {
+  const picked = Object.fromEntries(
+    (['file', 'code', 'study', 'mesh_size'] as const)
+      .filter(k => input[k] !== undefined)
+      .map(k => [k, input[k]]),
+  );
+  return { ...picked, heatmaps: input.heatmaps ?? false };
+}
 
-  const yieldPa = s.material.yield * MPA;
-  const threshold = input.safety_factor_threshold ?? s.minSafetyFactorRequired ?? DEFAULT_SF_THRESHOLD;
-  const elements: FeaLoadCapacityElement[] = s.hotSpots.map(h => ({
+function solveFailure(run: Awaited<ReturnType<typeof runFeaTool>>): FeaLoadCapacityOutput {
+  const first = run.diagnostics?.find(d => d.severity === 'error');
+  const errorCode = run.errorCode ?? first?.code;
+  return {
+    ok: false,
+    source: 'local',
+    method: 'fea',
+    error: run.error ?? first?.message ?? 'FEA study did not solve.',
+    ...(errorCode !== undefined ? { errorCode } : {}),
+    ...(run.diagnostics ? { diagnostics: run.diagnostics } : {}),
+  };
+}
+
+function regionElements(s: FeaSummary, yieldPa: number): FeaLoadCapacityElement[] {
+  return s.hotSpots.map(h => ({
     partName: h.region,
     stressPa: h.maxVonMisesMPa * MPA,
     yieldPa,
     safetyFactor: h.safetyFactor,
     at: h.at,
   }));
+}
+
+function belowMinDiagnostic(s: FeaSummary, threshold: number, worst: string | undefined): CompilerDiagnostic {
+  return {
+    target: 'export-occt',
+    code: 'fea.safety-factor.below-min',
+    severity: 'error',
+    message:
+      `FEA study '${s.study}': safety factor ${s.minSafetyFactor.toFixed(2)} < threshold ${threshold} ` +
+      `(peak ${s.maxVonMisesMPa.toFixed(1)} MPa vs ${s.material.name} yield ${s.material.yield} MPa` +
+      `${worst ? ` at ${worst}` : ''}). Thicken or fillet that region, switch material, or reduce the load.`,
+  } as CompilerDiagnostic;
+}
+
+function feaFacts(s: FeaSummary, images: string[] | undefined) {
+  return {
+    peakStressPa: s.maxVonMisesMPa * MPA,
+    peakAt: s.maxVonMisesAt,
+    maxDisplacementMm: s.maxDisplacementMm,
+    meshTrusted: s.trust.meshTrusted,
+    trustReasons: [...s.trust.reasons],
+    elementCount: s.elementCount,
+    meshSizeMm: s.meshSizeMm,
+    ...(s.peakAtSupportMPa !== undefined ? { peakAtSupportPa: s.peakAtSupportMPa * MPA } : {}),
+    ...(s.peakAtSupportRegion !== undefined ? { peakAtSupportRegion: s.peakAtSupportRegion } : {}),
+    ...(images ? { images } : {}),
+  };
+}
+
+export async function checkLoadCapacityFea(input: FeaLoadCapacityInput): Promise<FeaLoadCapacityOutput> {
+  const run = await runFeaTool(feaRunInput(input));
+  const s = run.summary;
+  if (!run.ok || s === undefined) return solveFailure(run);
+
+  const yieldPa = s.material.yield * MPA;
+  const threshold = input.safety_factor_threshold ?? s.minSafetyFactorRequired ?? DEFAULT_SF_THRESHOLD;
+  const elements = regionElements(s, yieldPa);
   const failures: FeaLoadCapacityFailure[] = elements
     .filter(e => e.safetyFactor < threshold)
     .map(e => ({ element: e.partName, elementKind: 'region', stress: e.stressPa, yieldStress: yieldPa, reason: 'stress-exceeds-yield' }));
   const diagnostics: CompilerDiagnostic[] = [...(run.diagnostics ?? [])];
-  if (s.minSafetyFactor < threshold && !diagnostics.some(d => d.code === 'fea.safety-factor.below-min')) {
-    diagnostics.push({
-      target: 'export-occt',
-      code: 'fea.safety-factor.below-min',
-      severity: 'error',
-      message:
-        `FEA study '${s.study}': safety factor ${s.minSafetyFactor.toFixed(2)} < threshold ${threshold} ` +
-        `(peak ${s.maxVonMisesMPa.toFixed(1)} MPa vs ${s.material.name} yield ${s.material.yield} MPa` +
-        `${failures[0] ? ` at ${failures[0].element}` : ''}). Thicken or fillet that region, switch material, or reduce the load.`,
-    } as CompilerDiagnostic);
-  }
+  const reported = diagnostics.some(d => d.code === 'fea.safety-factor.below-min');
+  if (s.minSafetyFactor < threshold && !reported) diagnostics.push(belowMinDiagnostic(s, threshold, failures[0]?.element));
 
   return {
     ok: s.minSafetyFactor >= threshold,
@@ -134,18 +162,7 @@ export async function checkLoadCapacityFea(input: FeaLoadCapacityInput): Promise
     threshold,
     elements,
     failures,
-    fea: {
-      peakStressPa: s.maxVonMisesMPa * MPA,
-      peakAt: s.maxVonMisesAt,
-      maxDisplacementMm: s.maxDisplacementMm,
-      meshTrusted: s.trust.meshTrusted,
-      trustReasons: [...s.trust.reasons],
-      elementCount: s.elementCount,
-      meshSizeMm: s.meshSizeMm,
-      ...(s.peakAtSupportMPa !== undefined ? { peakAtSupportPa: s.peakAtSupportMPa * MPA } : {}),
-      ...(s.peakAtSupportRegion !== undefined ? { peakAtSupportRegion: s.peakAtSupportRegion } : {}),
-      ...(run.images ? { images: run.images } : {}),
-    },
+    fea: feaFacts(s, run.images),
     diagnostics,
   };
 }
