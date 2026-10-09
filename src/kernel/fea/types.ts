@@ -66,6 +66,11 @@ export interface FeaResolvedLoad {
   set: FeaNodeSet;
   /** Total force on the set, N. */
   force: readonly [number, number, number];
+  /** Corner-node triangles of the loaded surfaces. When present the deck
+   *  writer spreads the force as a consistent uniform traction (area-weighted,
+   *  on the quadratic faces' mid-side nodes); when absent it falls back to an
+   *  equal split over `set`. */
+  tris?: readonly (readonly [number, number, number])[];
 }
 
 export interface FeaJobSpec {

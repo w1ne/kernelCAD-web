@@ -337,7 +337,7 @@ async function meshAndBindFaces(
       );
       return undefined;
     }
-    loads.push({ name: l.name, force: l.force, set: { name: `NLOAD${i}`, nodes: bind.nodes } });
+    loads.push({ name: l.name, force: l.force, set: { name: `NLOAD${i}`, nodes: bind.nodes }, tris: bind.tris });
   }
 
   return { meshed, labelled, fixedBind, loads, meshSize };

@@ -151,16 +151,25 @@ export function surfaceMatches(surface: FeaSurface, face: FaceDescriptor, scaleM
 }
 
 /**
- * Collect the mesh nodes of every surface matching any of `faces`.
- * Returns the node ids plus the surfaces that matched, so the caller can tell
- * a partial binding (2 of 3 declared faces found) from a total one.
+ * Collect the mesh nodes (and surface triangles) of every surface matching
+ * any of `faces`. Returns the node ids plus the surfaces that matched, so the
+ * caller can tell a partial binding (2 of 3 declared faces found) from a
+ * total one. A surface matched by two descriptors is counted once, so its
+ * triangles never carry a load twice.
  */
 export function nodesForFaces(
   surfaces: readonly FeaSurface[],
   faces: readonly FaceDescriptor[],
   scaleMm: number,
-): { nodes: number[]; matchedRefs: string[]; unmatchedRefs: string[] } {
+): {
+  nodes: number[];
+  tris: Array<readonly [number, number, number]>;
+  matchedRefs: string[];
+  unmatchedRefs: string[];
+} {
   const nodes = new Set<number>();
+  const seen = new Set<number>();
+  const tris: Array<readonly [number, number, number]> = [];
   const matchedRefs: string[] = [];
   const unmatchedRefs: string[] = [];
   for (const face of faces) {
@@ -170,9 +179,14 @@ export function nodesForFaces(
       continue;
     }
     matchedRefs.push(face.ref);
-    for (const s of hits) for (const n of s.nodes) nodes.add(n);
+    for (const s of hits) {
+      for (const n of s.nodes) nodes.add(n);
+      if (seen.has(s.tag)) continue;
+      seen.add(s.tag);
+      tris.push(...s.tris);
+    }
   }
-  return { nodes: [...nodes].sort((a, b) => a - b), matchedRefs, unmatchedRefs };
+  return { nodes: [...nodes].sort((a, b) => a - b), tris, matchedRefs, unmatchedRefs };
 }
 
 /** Label each meshed surface with the kernelCAD face ref it corresponds to,
