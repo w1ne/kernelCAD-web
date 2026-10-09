@@ -15,7 +15,7 @@
 //   - 'prusa': `Metadata/Slic3r_PE_model.config` gives each object its name
 //     and one volume per part as a triangle-index range with its own
 //     extruder. Same reason for no `Slic3r_PE.config`.
-//   - Modifier volumes ('bambu'/'orca' only): a `<part subtype="modifier_part">`
+//   - Modifier volumes ('bambu'/'orca'): a `<part subtype="modifier_part">`
 //     whose extra `<metadata key value>` entries become that volume's own
 //     print settings (e.g. `sparse_infill_density`), and object-level
 //     `<metadata>` entries become the object's settings. Format source:
@@ -24,6 +24,15 @@
 //     `volume->config` / `model_object->config` via `set_deserialize`) and
 //     src/libslic3r/Model.cpp (`ModelVolume::type_from_string`:
 //     "modifier_part" -> PARAMETER_MODIFIER). BambuStudio shares the file.
+//   - Modifier volumes ('prusa'): one mesh object whose triangles are the
+//     part followed by each modifier; `<volume firstid lastid>` slices that
+//     range back into volumes, a `volume_type` of "ParameterModifier" marks a
+//     modifier, and every other `<metadata type="volume" key value>` goes to
+//     the volume's own print config (`fill_density` ...). Object-level
+//     `type="object"` entries become the object's config. Orca-style keys in
+//     `settings` are translated by `toPrusaSetting`. Format source:
+//     PrusaSlicer src/libslic3r/Format/3mf.cpp (`_generate_volumes`,
+//     `_handle_start_config_metadata`) and Model.cpp (`type_from_string`).
 //
 // Filament slot N is the Nth distinct (material, colour) pair in part
 // order; the core-spec `<basematerials>` carries the colour for each.
@@ -40,9 +49,10 @@ export interface SlicerVolume {
   /** 'prusa': first/last triangle index of this part inside its object. */
   firstTriangle: number;
   lastTriangle: number;
-  /** 'bambu'/'orca': volume type; default 'normal_part'. */
+  /** Volume type; default 'normal_part'. 'prusa' writes `ParameterModifier`. */
   subtype?: 'normal_part' | 'modifier_part';
-  /** 'bambu'/'orca': per-volume print settings (config key -> value). */
+  /** Per-volume print settings (Orca config key -> value); 'prusa' gets them
+   *  translated to PrusaSlicer keys. */
   settings?: Readonly<Record<string, string>>;
 }
 
@@ -52,7 +62,7 @@ export interface SlicerObject {
   id: number;
   name: string;
   volumes: SlicerVolume[];
-  /** 'bambu'/'orca': object-level print settings (config key -> value). */
+  /** Object-level print settings (Orca config key -> value). */
   settings?: Readonly<Record<string, string>>;
 }
 
@@ -139,14 +149,16 @@ function prusaModelConfig(
       `  <object id="${o.id}" instances_count="1">`,
       `    <metadata type="object" key="name" value="${esc(o.name)}"/>`,
       `    <metadata type="object" key="extruder" value="${o.volumes[0].extruder}"/>`,
+      ...prusaSettingLines(o.settings, 'object', '    ', esc),
     );
     for (const v of o.volumes) {
       lines.push(
         `    <volume firstid="${v.firstTriangle}" lastid="${v.lastTriangle}">`,
         `      <metadata type="volume" key="name" value="${esc(v.name)}"/>`,
-        `      <metadata type="volume" key="volume_type" value="ModelPart"/>`,
+        `      <metadata type="volume" key="volume_type" value="${v.subtype === 'modifier_part' ? 'ParameterModifier' : 'ModelPart'}"/>`,
         `      <metadata type="volume" key="matrix" value="${IDENTITY_4X4}"/>`,
         `      <metadata type="volume" key="extruder" value="${v.extruder}"/>`,
+        ...prusaSettingLines(v.settings, 'volume', '      ', esc),
         `    </volume>`,
       );
     }
@@ -154,4 +166,56 @@ function prusaModelConfig(
   }
   lines.push('</config>', '');
   return lines.join('\n');
+}
+
+/** Orca config key -> PrusaSlicer config key, for the settings kernelCAD writes. */
+const PRUSA_KEYS: Readonly<Record<string, string>> = {
+  sparse_infill_density: 'fill_density',
+  sparse_infill_pattern: 'fill_pattern',
+};
+
+/** Orca sparse_infill_pattern -> PrusaSlicer fill_pattern; same-named ones omitted. */
+const PRUSA_PATTERNS: Readonly<Record<string, string>> = {
+  'zig-zag': 'zigzag',
+};
+
+/** PrusaSlicer's `fill_pattern` values (PrintConfig.cpp `s_keys_map_InfillPattern`). */
+const PRUSA_FILL_PATTERNS: ReadonlySet<string> = new Set([
+  'rectilinear', 'monotonic', 'monotoniclines', 'zigzag', 'alignedrectilinear', 'grid', 'triangles', 'stars', 'cubic', 'line',
+  'concentric', 'honeycomb', '3dhoneycomb', 'gyroid', 'hilbertcurve', 'archimedeanchords',
+  'octagramspiral', 'adaptivecubic', 'supportcubic', 'lightning',
+]);
+
+/**
+ * Translate one Orca-style setting to its PrusaSlicer `[key, value]`. Throws
+ * on a key or pattern PrusaSlicer has no equivalent for, so a modifier never
+ * silently loses its setting.
+ */
+export function toPrusaSetting(key: string, value: string): [string, string] {
+  const prusaKey = PRUSA_KEYS[key];
+  if (prusaKey === undefined) {
+    throw new Error(
+      `3MF slicer 'prusa': setting '${key}' has no PrusaSlicer translation (supported: ${Object.keys(PRUSA_KEYS).join(', ')}).`,
+    );
+  }
+  if (prusaKey !== 'fill_pattern') return [prusaKey, value];
+  const pattern = PRUSA_PATTERNS[value] ?? value;
+  if (!PRUSA_FILL_PATTERNS.has(pattern)) {
+    throw new Error(
+      `3MF slicer 'prusa': infill pattern '${value}' is not a PrusaSlicer fill_pattern (${[...PRUSA_FILL_PATTERNS].join(', ')}).`,
+    );
+  }
+  return [prusaKey, pattern];
+}
+
+function prusaSettingLines(
+  settings: Readonly<Record<string, string>> | undefined,
+  type: 'object' | 'volume',
+  indent: string,
+  esc: (s: string) => string,
+): string[] {
+  return Object.entries(settings ?? {}).map(([k, v]) => {
+    const [key, value] = toPrusaSetting(k, v);
+    return `${indent}<metadata type="${type}" key="${esc(key)}" value="${esc(value)}"/>`;
+  });
 }

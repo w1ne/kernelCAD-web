@@ -2,10 +2,13 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // tests/unit/kernel/backends/occt/export3mfModifiers.test.ts
 //
-// Per-region infill 3MF (Orca / Bambu): the part and its modifier volumes
+// Per-region infill 3MF (Orca / Bambu, and PrusaSlicer): the part and its modifier volumes
 // are one component object; `Metadata/model_settings.config` gives the
 // object its base `sparse_infill_density` and each `modifier_part` its own.
 // Format source: OrcaSlicer src/libslic3r/Format/bbs_3mf.cpp + Model.cpp.
+// PrusaSlicer instead takes ONE mesh object (part triangles then modifier
+// triangles) plus `Metadata/Slic3r_PE_model.config` volumes with
+// firstid/lastid ranges (src/libslic3r/Format/3mf.cpp).
 //
 // When an OrcaSlicer binary is present the file is also SLICED and the
 // G-code must carry several times more sparse-infill extrusion under the
@@ -121,12 +124,60 @@ describe('3MF modifier volumes (Orca/Bambu)', () => {
   });
 
   it('refuses formats and inputs it cannot honour', async () => {
-    await expect(export3mfWithReportAsync([PART], { ...OPTS, slicer: 'prusa' })).rejects.toThrow(/bambu' or 'orca' only.*PrusaSlicer/);
-    await expect(export3mfWithReportAsync([PART], { ...OPTS, slicer: 'generic' })).rejects.toThrow(/bambu' or 'orca' only/);
+    await expect(export3mfWithReportAsync([PART], { ...OPTS, slicer: 'generic' })).rejects.toThrow(/'bambu', 'orca' or 'prusa' only/);
     await expect(export3mfWithReportAsync([PART, { ...PART, name: 'b2' }], OPTS)).rejects.toThrow(/exactly one part/);
     await expect(export3mfWithReportAsync([PART], { ...OPTS, orient: true })).rejects.toThrow(/orient/);
     const open = { ...DENSE, mesh: { vertices: DENSE.mesh.vertices, triangles: DENSE.mesh.triangles.slice(3) } };
     await expect(export3mfWithReportAsync([PART], { ...OPTS, modifiers: [open] })).rejects.toThrow(/not watertight/);
+  });
+});
+
+describe('3MF modifier volumes (PrusaSlicer)', () => {
+  const PRUSA: Export3mfOptions = { ...OPTS, slicer: 'prusa' };
+
+  it('writes one mesh object with firstid/lastid volumes and translated settings', async () => {
+    const { bytes } = await export3mfWithReportAsync([PART], PRUSA);
+    const entries = unzipSync(bytes);
+    expect(entries['Metadata/model_settings.config']).toBeUndefined();
+    const model = new JSDOM(strFromU8(entries['3D/3dmodel.model']), { contentType: 'text/xml' }).window.document;
+    const cfg = new JSDOM(strFromU8(entries['Metadata/Slic3r_PE_model.config']), { contentType: 'text/xml' }).window.document;
+
+    expect(model.getElementsByTagName('object')).toHaveLength(1);
+    expect(model.getElementsByTagName('component')).toHaveLength(0);
+    const tris = model.getElementsByTagName('triangle').length;
+    expect(tris).toBe(24);
+    // The bed position is baked into the vertices (PrusaSlicer would apply a
+    // build-item transform to the first volume only), so no item transform.
+    expect(model.getElementsByTagName('item')[0].getAttribute('transform')).toBeNull();
+    const xs = Array.from(model.getElementsByTagName('vertex')).map((v) => Number(v.getAttribute('x')));
+    expect(Math.min(...xs)).toBeCloseTo(128 - 20, 6);
+    expect(Math.max(...xs)).toBeCloseTo(128 + 22 - 0, 6);
+
+    const object = cfg.getElementsByTagName('object')[0];
+    const typed = (el: Element, type: string) => Object.fromEntries(
+      Array.from(el.children).filter((c) => c.tagName === 'metadata' && c.getAttribute('type') === type)
+        .map((c) => [c.getAttribute('key'), c.getAttribute('value')]),
+    );
+    expect(typed(object, 'object')).toMatchObject({ fill_density: '10%', fill_pattern: 'gyroid' });
+    const volumes = Array.from(object.getElementsByTagName('volume'));
+    expect(volumes.map((v) => [v.getAttribute('firstid'), v.getAttribute('lastid')])).toEqual([['0', '11'], ['12', '23']]);
+    expect(typed(volumes[0], 'volume')).toMatchObject({ volume_type: 'ModelPart' });
+    expect(typed(volumes[0], 'volume').fill_density).toBeUndefined();
+    expect(typed(volumes[1], 'volume')).toMatchObject({
+      volume_type: 'ParameterModifier', fill_density: '60%', fill_pattern: 'gyroid',
+    });
+    // Each volume's vertices form one contiguous block, as the importer rebases on min..max.
+    const tri = Array.from(model.getElementsByTagName('triangle')).map((t) => ['v1', 'v2', 'v3'].map((a) => Number(t.getAttribute(a))));
+    const first = tri.slice(0, 12).flat();
+    const second = tri.slice(12).flat();
+    expect(Math.max(...first)).toBeLessThan(Math.min(...second));
+  });
+
+  it('refuses a setting or pattern PrusaSlicer cannot take', async () => {
+    const bad = { ...DENSE, settings: { wall_loops: '4' } };
+    await expect(export3mfWithReportAsync([PART], { ...PRUSA, modifiers: [bad] })).rejects.toThrow(/no PrusaSlicer translation/);
+    const pat = { ...DENSE, settings: { sparse_infill_pattern: 'tpmsd' } };
+    await expect(export3mfWithReportAsync([PART], { ...PRUSA, modifiers: [pat] })).rejects.toThrow(/not a PrusaSlicer fill_pattern/);
   });
 });
 
@@ -190,4 +241,58 @@ describe('3MF modifier volumes sliced by OrcaSlicer', () => {
       await rm(dir, { recursive: true, force: true });
     }
   }, 300_000);
+});
+
+/** PrusaSlicer binary: KERNELCAD_PRUSA_SLICER, else prusa-slicer on PATH. */
+function findPrusa(): string | undefined {
+  const env = process.env.KERNELCAD_PRUSA_SLICER;
+  if (env !== undefined && existsSync(env)) return env;
+  for (const dir of (process.env.PATH ?? '').split(':')) {
+    for (const bin of ['prusa-slicer', 'PrusaSlicer']) {
+      if (dir !== '' && existsSync(join(dir, bin))) return join(dir, bin);
+    }
+  }
+  return undefined;
+}
+
+const PRUSA_BIN = findPrusa();
+
+/** Filament used by a PrusaSlicer G-code, cm3. */
+function prusaFilamentCm3(gcode: string): number {
+  const m = /; filament used \[cm3\] = ([\d.]+)/.exec(gcode);
+  return m ? Number(m[1]) : NaN;
+}
+
+describe('3MF modifier volumes sliced by PrusaSlicer', () => {
+  it('prints the 60% modifier region denser than the 10% body (between uniform 10% and 60%)', async (ctx) => {
+    if (PRUSA_BIN === undefined) {
+      console.warn('[skipped] PrusaSlicer not found (set KERNELCAD_PRUSA_SLICER or put prusa-slicer on PATH); the per-region infill slice check did not run.');
+      ctx.skip();
+      return;
+    }
+    const dir = await mkdtemp(join(tmpdir(), 'kc-infill-prusa-'));
+    try {
+      const slice = async (name: string, bytes: Uint8Array, density: string): Promise<number> => {
+        const file = join(dir, `${name}.3mf`);
+        await writeFile(file, bytes);
+        const out = join(dir, `${name}.gcode`);
+        const r = spawnSync(PRUSA_BIN, [
+          '--export-gcode', '--fill-density', density, '--fill-pattern', 'gyroid', '--output', out, file,
+        ], { encoding: 'utf8', timeout: 240_000, maxBuffer: 64 * 1024 * 1024 });
+        expect(r.status, `${r.stdout}\n${r.stderr}`).toBe(0);
+        return prusaFilamentCm3(await readFile(out, 'utf8'));
+      };
+      const graded = await slice('graded', (await export3mfWithReportAsync([PART], { ...OPTS, slicer: 'prusa' })).bytes, '15%');
+      const plain = (await export3mfWithReportAsync([PART], { format: '3mf', slicer: 'prusa', printer: 'bambu-a1', arrange: 'assembled' })).bytes;
+      const low = await slice('low', plain, '10%');
+      const high = await slice('high', plain, '60%');
+      // The object's own 10% applies outside the modifier, 60% inside it, so
+      // the graded part sits strictly between the two uniform fills (and the
+      // CLI's 15% never wins over the 3MF's per-object settings).
+      expect(graded).toBeGreaterThan(low * 1.1);
+      expect(graded).toBeLessThan(high);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  }, 600_000);
 });

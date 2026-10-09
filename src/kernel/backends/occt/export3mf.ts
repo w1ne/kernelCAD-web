@@ -125,14 +125,14 @@ export interface Export3mfOptions {
   printer?: string;
   /** Name of the multi-part object for `arrange: 'assembled'`. */
   assemblyName?: string;
-  /** Slicer modifier volumes for a SINGLE-part export ('bambu'/'orca'
-   *  only): each is a closed mesh in the part's frame with its own print
+  /** Slicer modifier volumes for a SINGLE-part export ('bambu'/'orca'/
+   *  'prusa'): each is a closed mesh in the part's frame with its own print
    *  settings (e.g. per-region `sparse_infill_density`). The part and its
    *  modifiers are written as one object; later modifiers win where they
    *  overlap. With `arrange` other than 'none' the object is dropped to
    *  Z=0 and centred on the bed (modifiers move with it). */
   modifiers?: readonly ThreeMfModifier[];
-  /** Object-level print settings for the part ('bambu'/'orca', with
+  /** Object-level print settings for the part ('bambu'/'orca'/'prusa', with
    *  `modifiers`), e.g. the base `sparse_infill_density`. */
   objectSettings?: Readonly<Record<string, string>>;
 }
@@ -505,12 +505,14 @@ function layoutParts(
     if (slicer === 'prusa') {
       // PrusaSlicer's multi-part object is one mesh split into volumes by
       // triangle ranges; per-triangle pindex keeps each part's colour in the
-      // core model too.
+      // core model too. The bed position is baked into the vertices: for a
+      // file it did not write, PrusaSlicer applies the build item's transform
+      // to the first volume only (it resets the instance transform after it).
       const vertices: number[] = [];
       const triangles: number[] = [];
       const trianglePindex: number[] = [];
       const volumes: SlicerVolume[] = [];
-      moved.forEach((m, i) => {
+      moved.map((m) => translateMesh(m, ...center)).forEach((m, i) => {
         const base = vertices.length / 3;
         volumes.push(volume(i, 1, triangles.length / 3));
         for (const c of m.vertices) vertices.push(c);
@@ -520,7 +522,7 @@ function layoutParts(
       return {
         meshObjects: [{ id: 1, name, mesh: { vertices, triangles }, pindex: partPindex[0], trianglePindex }],
         componentObjects: [],
-        buildItems: [{ objectId: 1, translate: center }],
+        buildItems: [{ objectId: 1 }],
         slicerObjects: [{ id: 1, name, volumes }],
         bedWarnings,
       };
@@ -563,8 +565,10 @@ function layoutParts(
   };
 }
 
-/** One part plus its modifier volumes as a single component object, so the
- *  slicer loads them as one object with per-volume settings. */
+/** One part plus its modifier volumes as a single object, so the slicer
+ *  loads them as one object with per-volume settings: Orca/Bambu get a
+ *  component object, PrusaSlicer one mesh split into volumes by triangle
+ *  range. */
 function layoutWithModifiers(
   parts: ReadonlyArray<MeshedPart>,
   partPindex: readonly number[],
@@ -577,10 +581,9 @@ function layoutWithModifiers(
   if (parts.length !== 1) {
     throw new Error(`export3mfAsync: modifiers need exactly one part; got ${parts.length}.`);
   }
-  if (slicer !== 'bambu' && slicer !== 'orca') {
+  if (slicer === 'generic') {
     throw new Error(
-      `export3mfAsync: modifier volumes are written for slicer 'bambu' or 'orca' only; got '${slicer}'. `
-      + 'PrusaSlicer uses a different modifier format that is not supported yet.',
+      `export3mfAsync: modifier volumes are written for slicer 'bambu', 'orca' or 'prusa' only; got '${slicer}'.`,
     );
   }
   if (options.orient) {
@@ -593,6 +596,79 @@ function layoutWithModifiers(
     }
   }
   const part = parts[0];
+  const placed = placeModifierMeshes(part, modifiers, arrange, options);
+  const names = [part.name, ...modifiers.map((m) => m.name)];
+  const volumes: SlicerVolume[] = placed.meshes.map((m, i) => ({
+    name: names[i],
+    extruder: partSlot[0],
+    objectId: i + 1,
+    firstTriangle: 0,
+    lastTriangle: m.triangles.length / 3 - 1,
+    subtype: i === 0 ? 'normal_part' : 'modifier_part',
+    ...(i === 0 ? {} : { settings: modifiers[i - 1].settings }),
+  }));
+  const objectSettings = options.objectSettings !== undefined ? { settings: options.objectSettings } : {};
+  const translate = placed.translate !== undefined ? { translate: placed.translate } : {};
+  if (slicer === 'prusa') {
+    return prusaModifierLayout(part.name, placed.meshes, volumes, partPindex[0], objectSettings, placed.translate, placed.bedWarnings);
+  }
+  const parentId = placed.meshes.length + 1;
+  return {
+    meshObjects: placed.meshes.map((mesh, i) => ({
+      id: i + 1,
+      name: names[i],
+      mesh,
+      pindex: partPindex[0],
+    })),
+    componentObjects: [{ id: parentId, name: part.name, componentIds: placed.meshes.map((_, i) => i + 1) }],
+    buildItems: [{ objectId: parentId, ...translate }],
+    slicerObjects: [{ id: parentId, name: part.name, volumes, ...objectSettings }],
+    bedWarnings: placed.bedWarnings,
+  };
+}
+
+/** PrusaSlicer: part and modifiers concatenated into one mesh object; each
+ *  volume's firstid/lastid is its triangle range, and its vertices stay one
+ *  contiguous block (the importer rebases a volume on its min..max vertex). */
+function prusaModifierLayout(
+  name: string,
+  meshes: readonly MeshData[],
+  volumes: SlicerVolume[],
+  pindex: number,
+  objectSettings: { settings?: Readonly<Record<string, string>> },
+  translate: Vec3 | undefined,
+  bedWarnings: ThreeMfBedWarning[],
+): Layout {
+  const vertices: number[] = [];
+  const triangles: number[] = [];
+  // Bed position baked into the vertices, not a build-item transform:
+  // PrusaSlicer applies that to the first volume only for foreign files.
+  const placed = translate === undefined ? meshes : meshes.map((m) => translateMesh(m, ...translate));
+  placed.forEach((m, i) => {
+    const base = vertices.length / 3;
+    volumes[i].objectId = 1;
+    volumes[i].firstTriangle = triangles.length / 3;
+    volumes[i].lastTriangle = triangles.length / 3 + m.triangles.length / 3 - 1;
+    for (const c of m.vertices) vertices.push(c);
+    for (const t of m.triangles) triangles.push(t + base);
+  });
+  return {
+    meshObjects: [{ id: 1, name, mesh: { vertices, triangles }, pindex }],
+    componentObjects: [],
+    buildItems: [{ objectId: 1 }],
+    slicerObjects: [{ id: 1, name, volumes, ...objectSettings }],
+    bedWarnings,
+  };
+}
+
+/** Part + modifier meshes, dropped to Z=0 and centred on the bed unless
+ *  `arrange` is 'none' (the modifiers move with the part). */
+function placeModifierMeshes(
+  part: MeshedPart,
+  modifiers: readonly ThreeMfModifier[],
+  arrange: ThreeMfArrange,
+  options: Export3mfOptions,
+): { meshes: MeshData[]; translate: Vec3 | undefined; bedWarnings: ThreeMfBedWarning[] } {
   let meshes: MeshData[] = [part.mesh, ...modifiers.map((m) => m.mesh)];
   let translate: Vec3 | undefined;
   const bedWarnings: ThreeMfBedWarning[] = [];
@@ -611,33 +687,7 @@ function layoutWithModifiers(
       ));
     }
   }
-  const parentId = meshes.length + 1;
-  const volumes: SlicerVolume[] = meshes.map((m, i) => ({
-    name: i === 0 ? part.name : modifiers[i - 1].name,
-    extruder: partSlot[0],
-    objectId: i + 1,
-    firstTriangle: 0,
-    lastTriangle: m.triangles.length / 3 - 1,
-    subtype: i === 0 ? 'normal_part' : 'modifier_part',
-    ...(i === 0 ? {} : { settings: modifiers[i - 1].settings }),
-  }));
-  return {
-    meshObjects: meshes.map((mesh, i) => ({
-      id: i + 1,
-      name: i === 0 ? part.name : modifiers[i - 1].name,
-      mesh,
-      pindex: partPindex[0],
-    })),
-    componentObjects: [{ id: parentId, name: part.name, componentIds: meshes.map((_, i) => i + 1) }],
-    buildItems: [{ objectId: parentId, ...(translate !== undefined ? { translate } : {}) }],
-    slicerObjects: [{
-      id: parentId,
-      name: part.name,
-      volumes,
-      ...(options.objectSettings !== undefined ? { settings: options.objectSettings } : {}),
-    }],
-    bedWarnings,
-  };
+  return { meshes, translate, bedWarnings };
 }
 
 function bedWarning(

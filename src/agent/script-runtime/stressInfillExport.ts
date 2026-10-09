@@ -43,7 +43,8 @@ export interface StressInfillExportOptions {
   fromFea: string | true;
   /** Band table; default low < 15 % yield 10 %, mid < 40 % 25 %, high 60 %. */
   bands?: InfillBandSpec[];
-  /** Infill pattern for every band (Orca/Bambu `sparse_infill_pattern`);
+  /** Infill pattern for every band (Orca/Bambu `sparse_infill_pattern`, mapped
+   *  to PrusaSlicer's `fill_pattern` for slicer 'prusa');
    *  default 'gyroid'. */
   pattern?: string;
   /** Voxel edge for the modifier volumes, mm (default 2-5 mm by part size). */
@@ -219,7 +220,7 @@ async function resolveOutDir(outDir: string | undefined): Promise<string> {
   return dir;
 }
 
-/** One Orca/Bambu modifier per band above the base band. */
+/** One modifier per band above the base band (Orca keys; the writer translates for PrusaSlicer). */
 function bandModifiers(result: StressInfillResult): ThreeMfModifier[] {
   return result.bands.flatMap((b, k) => (k === 0 || b.modifier === undefined ? [] : [{
     name: `infill-${b.name}-${b.densityPercent}pct`,

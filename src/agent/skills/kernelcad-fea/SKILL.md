@@ -240,8 +240,9 @@ NOT met stays an error either way.
 The same study drives per-region infill for a 3D print: export a 3MF with
 `options.infill { fromFea: '<study>' | true }` and the export solves the study,
 bins the part by von Mises / yield (default < 15 % -> 10 %, 15-40 % -> 25 %,
-> 40 % -> 60 % gyroid) and writes one Orca/Bambu modifier volume per dense
-band. The bands are voxel unions (2-5 mm cells) grown until watertight, so
+> 40 % -> 60 % gyroid) and writes one modifier volume per dense
+band (Orca/Bambu format by default; `options.slicer: 'prusa'` writes PrusaSlicer's
+format, which the other two do not read). The bands are voxel unions (2-5 mm cells) grown until watertight, so
 they err toward more infill. Elements in the support zone around the fixed
 faces (the screw bosses) always get the densest band, because the clamp load
 the solve leaves out still acts there. The result reports the band table, a filament
@@ -250,9 +251,12 @@ band / cutaway PNGs. Recipe: `lookup_cookbook('stress-graded-infill-fdm')`.
 The export solves once by default: the bands barely move with the mesh (the
 bracket: band volumes within 3 points, saving 36.1 vs 36.4 %) and refining
 made the export 23x slower (10 s to 237 s). `infill.refine: true` refines
-like `run_fea`; check `fea.trust` in the report either way. The study models
-solid material: treat the safety factor as an upper bound for a printed
-part.
+like `run_fea`; check `fea.trust` in the report either way.
+Cura is not supported: it reads per-object settings from a 3MF (an infill mesh with its own
+infill density), but that path could not be verified end to end here, so no Cura file is
+written; in Cura, add the dense regions as infill meshes by hand.
+The study models solid material: treat the safety factor as an upper bound
+for a printed part.
 
 ## Diagnostics
 
