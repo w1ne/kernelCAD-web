@@ -19,7 +19,8 @@ const runFeaToolEntry: ToolRegistryEntry = {
     description:
       'Use this when you need to know whether a part will hold a load. Runs the linear-static structural study a script declares with `shape.feaStudy({ material, fixed, loads, meshSize?, minSafetyFactor? })`: meshes the solid with quadratic tetrahedra, solves it with CalculiX, and returns evidence — peak von Mises stress (MPa), peak displacement (mm), the minimum safety factor against the material yield (taken away from the clamp-singular edges of the fixed faces; the raw clamp-edge peak is reported separately as peakAtSupportMPa), per-region hot spots named by @kc[...] face ref, mesh-quality trust flags, an equilibrium residual, and stress-heatmap PNG paths.\n' +
       'Requires the external solver toolchain (CalculiX `ccx` plus the gmsh Python module). When it is absent the call fails with `fea.solver.unavailable` and the exact install command — never a silent pass.\n' +
-      'Pass { file | code }, optional `study` (defaults to the last declared study), `output_dir` (keeps the .inp/.frd deck for reproduction), `mesh_size` (mm, overrides the study for this run), and `heatmaps: false` for a fast numbers-only run.',
+      'Pass { file | code }, optional `study` (defaults to the last declared study), `output_dir` (keeps the .inp/.frd deck for reproduction), `mesh_size` (mm, overrides the study for this run), and `heatmaps: false` for a fast numbers-only run.\n' +
+      'Mesh refinement is automatic: when the stress is untrusted only because the solver\'s error estimate is high, it re-solves on a finer mesh (at most 2 more passes, inside the element and wall-time budgets) and returns the finest pass, with summary.refinement listing each pass\'s mesh size, element count and peak stress and whether the peak converged. `refine: false` solves once at mesh_size.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -29,6 +30,7 @@ const runFeaToolEntry: ToolRegistryEntry = {
         output_dir: { type: 'string', description: 'Directory for the solver deck, results, summary JSON and heatmap PNGs.' },
         mesh_size: { type: 'number', description: 'Target element size in mm, overriding the study for this run.' },
         heatmaps: { type: 'boolean', description: 'Render stress heatmap PNGs (default true).' },
+        refine: { type: 'boolean', description: 'Automatic mesh refinement until the stress is trusted, inside the element and wall-time budgets (default true). false: one solve at mesh_size.' },
         mesh_timeout_ms: { type: 'number', description: 'Wall-clock budget for meshing (default 120000).' },
         solve_timeout_ms: { type: 'number', description: 'Wall-clock budget for the solve (default 300000).' },
       },

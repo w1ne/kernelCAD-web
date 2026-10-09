@@ -122,8 +122,10 @@ describe('diagnostic catalogue invariants', () => {
     // + 2 union integrity guard: union.disconnected, union.member-overlap = 335.
     // + 1 FEA oversized mesh: fea.mesh.too-large = 336.
     // + 1 FEA clamp-edge singularity: fea.stress.support-singularity = 337.
-    expect(DIAGNOSTIC_CODES).toHaveLength(337);
-    expect(new Set(DIAGNOSTIC_CODES).size).toBe(337);
+    // + 2 FEA auto-refinement: fea.mesh.refine-stopped,
+    //   fea.safety-factor.unverified = 339.
+    expect(DIAGNOSTIC_CODES).toHaveLength(339);
+    expect(new Set(DIAGNOSTIC_CODES).size).toBe(339);
   });
 
   it('every code has a non-empty hint template', () => {

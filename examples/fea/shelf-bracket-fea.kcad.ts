@@ -20,25 +20,28 @@
 //
 // EXPECTED OUTPUT (measured; last digits move with mesh size)
 //
-//   evaluate:
+//   evaluate (the gate: one solve at the study's 4 mm, no refinement):
 //     Features: 5
-//     WARN [fea.mesh.quality-low] ... nodal stress-error estimate in the
-//          high-stress region peaks at 30.6%
+//     WARN [fea.safety-factor.unverified] safety factor 6.35 meets the
+//          declared 2, but on a 4.00 mm mesh whose stress is not trusted
+//          (error estimate 30.6% in the high-stress region) ... UNVERIFIED
 //     OK
 //
-//   run_fea summary:
-//     minSafetyFactor     6.35   (required 2)  -> ok: true
-//     maxVonMisesMPa      42.52  against the 270 MPa yield of aluminum-6061
-//     maxDisplacementMm   0.2595
-//     nodes / elements    9731 / 5246 at meshSize 4 mm
-//     equilibriumResidual 5.3e-13  (reaction balances the applied 400 N)
-//     hotSpots[0]         @kc[fillet_1/face/f7] at 42.5 MPa — the ROOT FILLET,
-//                         not the loaded face and not the wall face
+//   run_fea summary (refines automatically):
+//     refinement.passes   4 mm     5246 el   42.5 MPa  error 30.6%
+//                         2.62 mm 17815 el   46.3 MPa  error 27.4%  (+8.1%)
+//                         1.91 mm 39194 el   49.7 MPa  error 25.4%  (+6.9%)
+//     stoppedBy           max-passes (converged: false; trust stays false)
+//     minSafetyFactor     5.43   (required 2)  -> ok: true
+//     maxVonMisesMPa      49.70  against the 270 MPa yield of aluminum-6061
+//     hotSpots[0]         @kc[fillet_1/face/f7] — the ROOT FILLET, not the
+//                         loaded face and not the wall face
 //     images              heatmap/iso.png, heatmap/front.png
 //
-//   The mesh-quality warning is honest, not a failure: at 4 mm elements the
-//   peak stress is mesh-limited (displacement is not). Re-run with
-//   `mesh_size: 2` for a converged stress number.
+//   The fillet peak climbs as the mesh refines: the 4 mm gate number reads
+//   about 15 % low and is still climbing at 1.91 mm. The margin is wide
+//   here, so the verdict holds; for a tight margin, continue from the last
+//   pass with run_fea({ mesh_size: 1.9 }) and gate on the size it settles at.
 //
 // TO SEE IT FAIL
 //

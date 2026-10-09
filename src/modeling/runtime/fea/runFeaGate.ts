@@ -20,18 +20,30 @@
 // it is unverified, and unverified must not look green. Set
 // `KERNELCAD_FEA_GATE=off` to skip the run deliberately (the skip itself is
 // reported, so it cannot be mistaken for a pass either).
+//
+// NO MESH REFINEMENT by default. `run_fea` and verify mode 'fea' refine an
+// untrusted mesh automatically, but the gate runs on EVERY evaluate, and one
+// refinement pass costs 3-6x the first solve (the cookbook bracket: 11 s
+// becomes about 45 s). Instead the gate never lets an untrusted mesh read as
+// a confirmed pass: when the declared margin is met on an untrusted mesh it
+// reports `fea.safety-factor.unverified` (in place of the generic
+// `fea.mesh.quality-low`), whose next step is the refining verify call and
+// then pinning the study's meshSize to the trusted pass. A failing margin
+// stays an error either way. `KERNELCAD_FEA_GATE_REFINE=on` makes the gate
+// refine too, for CI or a host where the wall time is acceptable.
 
 import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
-import { cleanupJobDir, runFeaStudy } from '../../../kernel/fea/runFea';
+import { cleanupJobDir } from '../../../kernel/fea/runFea';
+import { runFeaStudyRefined } from '../../../kernel/fea/autoRefine';
 import type { FeaSummary } from '../../../kernel/fea/types';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
 import { HINT_TEMPLATES } from '../../../shared/diagnostics/registry';
 import type { BuiltModel } from '../../buildModel';
-import { findFeaStudies } from './findFeaStudies';
+import { findFeaStudies, type FoundFeaStudy } from './findFeaStudies';
 
 export interface FeaGateReport {
   diagnostics: CompilerDiagnostic[];
@@ -43,6 +55,58 @@ export interface FeaGateReport {
 /** `KERNELCAD_FEA_GATE=off` disables the evaluate-time solve. */
 function gateEnabled(): boolean {
   return (process.env.KERNELCAD_FEA_GATE ?? 'on').toLowerCase() !== 'off';
+}
+
+/** `KERNELCAD_FEA_GATE_REFINE=on` lets the gate auto-refine. */
+function gateRefineEnabled(): boolean {
+  return (process.env.KERNELCAD_FEA_GATE_REFINE ?? 'off').toLowerCase() === 'on';
+}
+
+/** A margin met on an untrusted mesh is unverified, not a pass: swap the
+ *  generic mesh warning for one that says so and names the refining call. */
+export function markUnverifiedPass(
+  diagnostics: readonly CompilerDiagnostic[],
+  summary: FeaSummary,
+  study: FoundFeaStudy,
+): CompilerDiagnostic[] {
+  const min = study.metadata.minSafetyFactor;
+  if (min === undefined || summary.trust.meshTrusted || summary.minSafetyFactor < min) return [...diagnostics];
+  return [
+    ...diagnostics.filter(d => d.code !== 'fea.mesh.quality-low'),
+    {
+      target: 'export-occt',
+      code: 'fea.safety-factor.unverified',
+      severity: 'warn',
+      featureId: study.recordId,
+      message:
+        `feaStudy '${summary.study}': safety factor ${summary.minSafetyFactor.toFixed(2)} meets the declared ${min}, ` +
+        `but on a ${summary.meshSizeMm.toFixed(2)} mm mesh whose stress is not trusted (${summary.trust.reasons.join('; ')}), ` +
+        'so the margin is UNVERIFIED. The gate solves once; verify({ check: \'load-capacity\', mode: \'fea\' }) refines the mesh.',
+      hint: HINT_TEMPLATES['fea.safety-factor.unverified'].template,
+    },
+  ];
+}
+
+/** Solve one gated study in a throwaway job dir. */
+async function solveGatedStudy(
+  model: BuiltModel,
+  study: FoundFeaStudy,
+  shape: OcctBackend,
+): Promise<{ diagnostics: CompilerDiagnostic[]; summary?: FeaSummary }> {
+  const outDir = await mkdtemp(join(tmpdir(), 'kernelcad-fea-gate-'));
+  try {
+    const r = await runFeaStudyRefined(shape, study.metadata, study.shapeId, model.records, {
+      outDir,
+      paramTable: model.session.paramTable,
+      refine: gateRefineEnabled(),
+    });
+    if (r.summary === undefined) return { diagnostics: r.diagnostics };
+    return { diagnostics: markUnverifiedPass(r.diagnostics, r.summary, study), summary: r.summary };
+  } finally {
+    // The gate wants the verdict, not the deck; `run_fea` is the tool that
+    // keeps artifacts around for inspection.
+    await cleanupJobDir(outDir);
+  }
 }
 
 /**
@@ -90,19 +154,9 @@ export async function runFeaGateOnModel(model: BuiltModel): Promise<FeaGateRepor
       });
       continue;
     }
-    const outDir = await mkdtemp(join(tmpdir(), 'kernelcad-fea-gate-'));
-    try {
-      const r = await runFeaStudy(shape, study.metadata, study.shapeId, model.records, {
-        outDir,
-        paramTable: model.session.paramTable,
-      });
-      diagnostics.push(...r.diagnostics);
-      if (r.summary !== undefined) summaries.push(r.summary);
-    } finally {
-      // The gate wants the verdict, not the deck; `run_fea` is the tool that
-      // keeps artifacts around for inspection.
-      await cleanupJobDir(outDir);
-    }
+    const r = await solveGatedStudy(model, study, shape);
+    diagnostics.push(...r.diagnostics);
+    if (r.summary !== undefined) summaries.push(r.summary);
   }
 
   return { diagnostics: withNextActions(diagnostics), summaries, skipped };

@@ -23,7 +23,7 @@ import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { ParamTable } from '../../shared/runtime/paramTable';
 import { findFeaStudies, selectFeaStudy, type FoundFeaStudy } from '../../modeling/runtime/fea/findFeaStudies';
 import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
-import { runFeaStudy } from '../../kernel/fea/runFea';
+import { runFeaStudyRefined } from '../../kernel/fea/autoRefine';
 import type { FeaToolchain } from '../../kernel/fea/toolchain';
 import { binaryStl, buildHeatmap } from '../../kernel/fea/heatmap';
 import { writeRenderBodies, type RenderBodyRef } from '../../kernel/fea/renderBodies';
@@ -44,13 +44,24 @@ export interface StressInfillExportOptions {
   fromFea: string | true;
   /** Band table; default low < 15 % yield 10 %, mid < 40 % 25 %, high 60 %. */
   bands?: InfillBandSpec[];
-  /** Infill pattern for every band (Orca/Bambu `sparse_infill_pattern`);
+  /** Infill pattern for every band (Orca/Bambu `sparse_infill_pattern`, mapped
+   *  to PrusaSlicer's `fill_pattern` for slicer 'prusa');
    *  default 'gyroid'. */
   pattern?: string;
   /** Voxel edge for the modifier volumes, mm (default 2-5 mm by part size). */
   cellMm?: number;
-  /** Override the study's meshSize for this run, mm. */
+  /** Override the study's meshSize for this run, mm (the first pass's size
+   *  when refining). */
   meshSize?: number;
+  /** Automatic mesh refinement until the stress is trusted, as run_fea
+   *  does (default FALSE here). The bands barely move with the mesh (the
+   *  cookbook bracket: band volumes within 3 points, filament saving 36.1 vs
+   *  36.4 %), while refining made the export about 23x slower (10 s to
+   *  237 s), because banding and the render scripts scale with the finer
+   *  mesh too. The report keeps the trust flag, so an untrusted safety
+   *  factor stays visible; true refines, and the bands and safety factor
+   *  then come from the finest pass. */
+  refine?: boolean;
   /** Where the FEA job, band STLs and render scripts go. Default: temp dir
    *  (the MCP export puts them in `<output>-infill/`). */
   outDir?: string;
@@ -80,7 +91,7 @@ export interface StressInfillReport {
   saving: InfillSaving;
   /** Governing values (away from the fixed-face edges), plus the raw clamp-
    *  edge peak when there is one. */
-  fea: Pick<FeaSummary, 'maxVonMisesMPa' | 'maxVonMisesAt' | 'minSafetyFactor' | 'maxDisplacementMm' | 'trust' | 'peakAtSupportMPa'>;
+  fea: Pick<FeaSummary, 'maxVonMisesMPa' | 'maxVonMisesAt' | 'minSafetyFactor' | 'maxDisplacementMm' | 'trust' | 'peakAtSupportMPa' | 'refinement'>;
   /** Part bounds from the FEA mesh, mm (model frame). */
   boundsMm: { min: [number, number, number]; max: [number, number, number] };
   outDir: string;
@@ -132,6 +143,7 @@ const INFILL_FIELD_CHECKS: ReadonlyArray<(o: Partial<StressInfillExportOptions>)
     : 'infill.pattern must be an Orca/Bambu sparse_infill_pattern name, e.g. "gyroid".'),
   (o) => (o.cellMm === undefined || isPositive(o.cellMm) ? undefined : 'infill.cellMm must be a positive number of mm.'),
   (o) => (o.meshSize === undefined || isPositive(o.meshSize) ? undefined : 'infill.meshSize must be a positive number of mm.'),
+  (o) => (o.refine === undefined || typeof o.refine === 'boolean' ? undefined : 'infill.refine must be true or false.'),
 ];
 
 /** Validate the user-facing `infill` option; undefined when valid. */
@@ -209,7 +221,7 @@ async function resolveOutDir(outDir: string | undefined): Promise<string> {
   return dir;
 }
 
-/** One Orca/Bambu modifier per band above the base band. */
+/** One modifier per band above the base band (Orca keys; the writer translates for PrusaSlicer). */
 function bandModifiers(result: StressInfillResult): ThreeMfModifier[] {
   return result.bands.flatMap((b, k) => (k === 0 || b.modifier === undefined ? [] : [{
     name: `infill-${b.name}-${b.densityPercent}pct`,
@@ -249,8 +261,9 @@ export async function buildStressInfillExport(
   const outDir = await resolveOutDir(infill.outDir);
 
   const metadata = infill.meshSize !== undefined ? { ...study.metadata, meshSize: infill.meshSize } : study.metadata;
-  const fea = await runFeaStudy(shape, metadata, study.shapeId, records, {
+  const fea = await runFeaStudyRefined(shape, metadata, study.shapeId, records, {
     outDir,
+    refine: infill.refine === true,
     ...(paramTable !== undefined ? { paramTable } : {}),
     ...(cwd !== undefined ? { cwd } : {}),
     ...(toolchain !== undefined ? { toolchain } : {}),
@@ -274,7 +287,7 @@ export async function buildStressInfillExport(
     ...(density !== undefined ? { filamentDensityGCm3: density } : {}),
     supportAdjacent: fea.raw.supportAdjacent,
   });
-  const { maxVonMisesMPa, maxVonMisesAt, minSafetyFactor, maxDisplacementMm, trust, peakAtSupportMPa } = fea.summary;
+  const { maxVonMisesMPa, maxVonMisesAt, minSafetyFactor, maxDisplacementMm, trust, peakAtSupportMPa, refinement } = fea.summary;
   const report: StressInfillReport = {
     study: study.metadata.name,
     pattern: result.pattern,
@@ -285,6 +298,7 @@ export async function buildStressInfillExport(
     fea: {
       maxVonMisesMPa, maxVonMisesAt, minSafetyFactor, maxDisplacementMm, trust,
       ...(peakAtSupportMPa !== undefined ? { peakAtSupportMPa } : {}),
+      ...(refinement !== undefined ? { refinement } : {}),
     },
     boundsMm: meshBounds(fea.raw.mesh),
     outDir,

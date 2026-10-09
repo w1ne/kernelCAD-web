@@ -92,8 +92,10 @@ export type ExportOptions =
        *  slicer default; default 'generic-fdm'. */
       printer?: string;
       /** Stress-graded infill: solve the named feaStudy (needs the LOCAL
-       *  CalculiX + gmsh toolchain) and write one Orca/Bambu modifier
-       *  volume per stress band with its own sparse_infill_density. */
+       *  CalculiX + gmsh toolchain) and write one modifier volume per
+       *  stress band with its own infill density: Orca/Bambu format by
+       *  default (sparse_infill_density), PrusaSlicer's with
+       *  `slicer: 'prusa'` (fill_density). */
       infill?: StressInfillExportOptions;
     }
   | { format: 'glb'; axis?: 'y-up' | 'z-up'; draco?: false }
@@ -243,7 +245,8 @@ export interface ExportResult {
 
 /** 3MF options with stress-graded infill resolved into writer modifiers.
  *  The slicer defaults to 'orca' (the format Orca and Bambu share) unless
- *  the caller or a bambu/orca printer names one. */
+ *  the caller or a printer profile names one ('prusa' writes PrusaSlicer's
+ *  modifier format, which Orca and Bambu do not read, and vice versa). */
 async function resolveInfill3mf(
   input: ExportInput,
   run: Awaited<ReturnType<typeof runScript>>,
