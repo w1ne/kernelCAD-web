@@ -849,6 +849,9 @@ export default defineConfig(({ command }) => ({
     },
   },
   server: {
+    // Order calls: the hosted API only allows app.kernelcad.com as an origin,
+    // so dev serves them same-origin and forwards them (run with VITE_API_BASE_URL= empty).
+    proxy: { '/api/v1/orders': { target: 'https://api.kernelcad.com', changeOrigin: true } },
     watch: {
       ignored: [
         '**/.git/**',
