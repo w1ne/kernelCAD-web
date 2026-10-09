@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 //
 // Stress-graded infill export, end to end: script -> real gmsh + CalculiX
-// solve -> infill bands -> Orca/Bambu 3MF with per-region density.
+// solve -> infill bands -> Orca/Bambu or PrusaSlicer 3MF with per-region density.
 //
 // The solver test runs the shipped recipe (examples/fea/stress-graded-infill-
 // bracket.kcad.ts). Without the toolchain it is SKIPPED and prints why; with
@@ -137,5 +137,39 @@ describe('stress-graded infill with the real solver', () => {
       expect((await readFile(p, 'utf8'))).toContain('lib.fromSTL');
     }
     expect(join(rep.outDir, 'infill-report.json')).toBeTruthy();
+  }, 600_000);
+
+  it("writes the same bands as PrusaSlicer modifier volumes with slicer: 'prusa'", async (ctx) => {
+    if (!toolchain.ok) {
+      requireFeaToolchainIfDemanded(toolchain);
+      console.warn(`[skipped] stress-graded infill e2e needs ${toolchain.missing.join(' and ')}. ${toolchain.hint ?? ''}`);
+      ctx.skip();
+      return;
+    }
+    const res = await runAndExport({
+      code: await readFile(RECIPE, 'utf8'),
+      fileName: 'bracket.kcad.ts',
+      scriptDir: dirname(RECIPE),
+      format: '3mf',
+      options: { ...INFILL_OPTS, slicer: 'prusa' as const },
+    });
+    expect(res.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+    const entries = unzipSync(res.bytes);
+    expect(entries['Metadata/model_settings.config']).toBeUndefined();
+    const cfg = strFromU8(entries['Metadata/Slic3r_PE_model.config']);
+    expect(cfg.match(/value="ParameterModifier"/g)).toHaveLength(2);
+    expect(cfg).toContain('<metadata type="object" key="fill_density" value="10%"/>');
+    expect(cfg).toContain('<metadata type="volume" key="fill_density" value="25%"/>');
+    expect(cfg).toContain('<metadata type="volume" key="fill_density" value="60%"/>');
+    // One mesh object; the volumes' triangle ranges tile it exactly.
+    const model = strFromU8(entries['3D/3dmodel.model']);
+    expect(model.match(/<object /g)).toHaveLength(1);
+    const triangles = (model.match(/<triangle /g) ?? []).length;
+    const ranges = [...cfg.matchAll(/<volume firstid="(\d+)" lastid="(\d+)"/g)].map((m) => [Number(m[1]), Number(m[2])]);
+    expect(ranges).toHaveLength(3);
+    expect(ranges[0][0]).toBe(0);
+    expect(ranges[1][0]).toBe(ranges[0][1] + 1);
+    expect(ranges[2][0]).toBe(ranges[1][1] + 1);
+    expect(ranges[2][1]).toBe(triangles - 1);
   }, 600_000);
 });

@@ -165,8 +165,9 @@ declared margin is UNVERIFIED — a skipped gate never reads as green.
 The same study drives per-region infill for a 3D print: export a 3MF with
 `options.infill { fromFea: '<study>' | true }` and the export solves the study,
 bins the part by von Mises / yield (default < 15 % -> 10 %, 15-40 % -> 25 %,
-> 40 % -> 60 % gyroid) and writes one Orca/Bambu modifier volume per dense
-band. The bands are voxel unions (2-5 mm cells) grown until watertight, so
+> 40 % -> 60 % gyroid) and writes one modifier volume per dense
+band (Orca/Bambu format by default; `options.slicer: 'prusa'` writes PrusaSlicer's
+format, which the other two do not read). The bands are voxel unions (2-5 mm cells) grown until watertight, so
 they err toward more infill. Elements in the support zone around the fixed
 faces (the screw bosses) always get the densest band, because the clamp load
 the solve leaves out still acts there. The result reports the band table, a filament
