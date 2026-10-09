@@ -224,6 +224,9 @@ export interface ExportResult {
   bytes: Uint8Array;
   featureCount: number;
   diagnostics: CompilerDiagnostic[];
+  /** `dxf` of a flat or sheet-metal part: the sheet it is cut from. A shop
+   *  needs the thickness, which the DXF itself does not carry. */
+  sheet?: { thicknessMm: number; bendCount: number };
   /** Companion files written next to the primary output: per-link meshes
    *  (URDF / SDF) or per-part DXF files (multi-part DXF). */
   meshes?: CompanionMeshFile[];

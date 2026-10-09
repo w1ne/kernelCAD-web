@@ -10,6 +10,8 @@ import type { Assembly } from '../../modeling/capture/assembly';
 import { lookupColorFromLineage, lookupMaterialFromLineage } from '../../kernel/backends/occt/lookupSourceColor';
 import { sceneToWorldFrameParts, type WorldFramePart } from '../../kernel/backends/occt/sceneToWorldFrame';
 import { flattenPattern } from '../../kernel/backends/occt/flattenPattern';
+import { findRootSheetMetalRecord } from '../../modeling/sheetMetal';
+import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import { stampStepOriginatingSystem } from '../../kernel/export/stepHeader';
 import { attributionGenerator } from '../../shared/links/attribution';
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
@@ -512,6 +514,15 @@ function fusedSeamFallback(
   };
 }
 
+/** Thickness of the sheet a bent part is made from, read off its root
+ *  `sheetMetal` record. */
+function sheetThickness(records: readonly FeatureRecord[], targetId: string): number | undefined {
+  const target = records.find((rec) => rec.id === targetId);
+  const root = target ? findRootSheetMetalRecord(target, records) : undefined;
+  const value = (root?.params.thickness as { evaluated?: unknown } | undefined)?.evaluated;
+  return typeof value === 'number' && value > 0 ? value : undefined;
+}
+
 /** Single-shape DXF path: sheet-metal lineage flattens to a Region; a flat
  *  part exports its outline, `options.section` its cross-section; anything
  *  else emits the non-planar diagnostic. */
@@ -551,7 +562,9 @@ export function exportShapeDxf(
     try {
       const region = flattenPattern(run.records, targetId);
       const bytes = exportDxf({ kind: 'region', region }, opts);
-      return { bytes, featureCount, diagnostics };
+      const thicknessMm = sheetThickness(run.records, targetId);
+      const sheet = thicknessMm ? { thicknessMm, bendCount: region.bendLines.length } : undefined;
+      return { bytes, featureCount, diagnostics, ...(sheet ? { sheet } : {}) };
     } catch (e) {
       const errCode = (e as { code?: string }).code;
       const msg = e instanceof Error ? e.message : String(e);

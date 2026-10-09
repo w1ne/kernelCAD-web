@@ -60,6 +60,9 @@ export interface ExportModelOutput {
   drawing_report?: DrawingReport;
   /** 3mf with options.infill: band table, saving estimate, FEA peaks, PNGs. */
   infill?: StressInfillReport & { images: StressInfillImages };
+  /** dxf of a flat or sheet-metal part: sheet thickness (mm) and bend count,
+   *  which the DXF itself does not carry. */
+  sheet?: { thickness_mm: number; bend_count: number };
   diagnostics?: CompilerDiagnostic[];
   error?: string;
 }
@@ -200,6 +203,7 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
     format,
     ...companionFilesField(format, meshFiles),
     ...(result.drawingReport === undefined ? {} : { drawing_report: result.drawingReport }),
+    ...(result.sheet === undefined ? {} : { sheet: { thickness_mm: result.sheet.thicknessMm, bend_count: result.sheet.bendCount } }),
     ...infill,
     diagnostics: withNextActions(diagnostics),
   };
