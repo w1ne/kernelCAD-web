@@ -23,6 +23,7 @@ import { maxOf } from './maxOf';
 import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { FeaFieldResult, FeaMesh } from './types';
+import { writeRenderBodies, type RenderBodyRef } from './renderBodies';
 
 /** Default band count. Eight reads clearly at thumbnail size and keeps the
  *  generated script's STL import count low. */
@@ -122,6 +123,7 @@ export async function buildHeatmap(
 
   const bands: HeatmapBand[] = [];
   const imports: string[] = [];
+  const refs: RenderBodyRef[] = [];
   for (let i = 0; i < bandCount; i++) {
     if (buckets[i].length === 0) continue;
     const stlPath = join(outDir, `stress-band-${i}.stl`);
@@ -135,6 +137,7 @@ export async function buildHeatmap(
       triangleCount: buckets[i].length,
       stlPath,
     });
+    refs.push({ name: `band-${i}`, color, file: `stress-band-${i}.stl` });
     imports.push(
       `arm.part('band-${i}', (await lib.fromSTL('./stress-band-${i}.stl', { allowOpen: true })).color('${color}'));`,
     );
@@ -157,6 +160,7 @@ export async function buildHeatmap(
   ].join('\n');
   const scriptPath = join(outDir, 'stress-heatmap.kcad.ts');
   await writeFile(scriptPath, script, 'utf8');
+  await writeRenderBodies(outDir, refs);
 
   return { bands, scriptPath, maxMPa };
 }

@@ -11,11 +11,14 @@
 // A render failure (no chromium) never invalidates the export: it comes back
 // as a warn diagnostic naming the cause.
 
+import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import type { ExportOptions } from '../../script-runtime/export';
 import type { StressInfillReport } from '../../script-runtime/stressInfillExport';
 import { validateOutputPath } from '../../script-runtime/safeOutputPath';
+import { resolvePublishLook } from '../../../shared/render/publishPreset';
+import { loadMeshScene, renderMeshScenes, type MeshScene } from '../../render/meshScenesRender';
 import { renderPreviewTool } from './renderPreview';
 
 export interface StressInfillImages {
@@ -24,15 +27,54 @@ export interface StressInfillImages {
   cutaway?: string;
 }
 
+type RenderJob = { key: keyof StressInfillImages; file: string };
+
+/** The band bodies of each render script, read from the sidecar next to it. */
+async function loadScenes(jobs: readonly RenderJob[]): Promise<MeshScene[] | undefined> {
+  const scenes = await Promise.all(jobs.map((j) => loadMeshScene(j.key, j.file)));
+  return scenes.every((sc) => sc !== undefined) ? (scenes as MeshScene[]) : undefined;
+}
+
+/** Draw all three views as display-only meshes from one browser page, in the
+ *  same publish look the per-script path used. Undefined when the bodies are
+ *  not available (the caller then renders the scripts). */
+async function renderScenesFast(
+  report: StressInfillReport,
+  jobs: readonly RenderJob[],
+): Promise<StressInfillImages | undefined> {
+  const scenes = await loadScenes(jobs);
+  if (scenes === undefined) return undefined;
+  const look = resolvePublishLook({ preset: 'publish', background: 'white' }, 'publish');
+  if (!look.ok || look.publish === undefined) return undefined;
+  const pngs = await renderMeshScenes(scenes, { publish: look.publish });
+  const images: StressInfillImages = {};
+  for (const job of jobs) {
+    const png = pngs[job.key];
+    if (png === undefined) continue;
+    const dir = join(report.outDir, 'renders', job.key);
+    await mkdir(dir, { recursive: true });
+    const path = join(dir, 'hero.png');
+    await writeFile(path, png);
+    images[job.key] = path;
+  }
+  return images;
+}
+
 export async function renderStressInfill(
   report: StressInfillReport,
   diagnostics: CompilerDiagnostic[],
 ): Promise<StressInfillImages> {
-  const jobs: Array<{ key: keyof StressInfillImages; file: string }> = [
+  const jobs: RenderJob[] = [
     { key: 'heatmap', file: report.renderScripts.heatmap },
     { key: 'bands', file: report.renderScripts.bands },
     { key: 'cutaway', file: report.renderScripts.cutaway },
   ];
+  try {
+    const fast = await renderScenesFast(report, jobs);
+    if (fast !== undefined && Object.keys(fast).length === jobs.length) return fast;
+  } catch {
+    // Fall through to the per-script path, which reports its own failure.
+  }
   const images: StressInfillImages = {};
   for (const job of jobs) {
     try {
