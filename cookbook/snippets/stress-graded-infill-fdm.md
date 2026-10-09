@@ -27,14 +27,15 @@ when_to_use: >-
   study, splits the volume into stress bands relative to yield (default < 15 %
   -> 10 %, 15-40 % -> 25 %, > 40 % -> 60 % gyroid; override with
   infill.bands [{ name, fromYield, densityPercent }]) and writes one
-  Orca/Bambu modifier volume per dense band with its own
-  sparse_infill_density. The result carries infill { bands (volume % per
+  modifier volume per dense band with its own infill density (Orca/Bambu
+  format by default; options.slicer 'prusa' writes PrusaSlicer's format). The result carries infill { bands (volume % per
   band), saving (filament + time vs uniform infill at the high density),
   fea (peak stress, safety factor), images { heatmap, bands, cutaway } }.
   Requires the LOCAL CalculiX + gmsh toolchain (check with fea_summary({}));
   without it the export fails with fea.solver.unavailable and writes nothing.
-  Orca/Bambu only — PrusaSlicer's modifier format is not written yet. The
-  FEA treats the print as solid, so the safety factor is an upper bound.
+  The two slicer formats are not interchangeable: pick the slicer the file
+  opens in. The FEA treats the print as solid, so the safety factor is an
+  upper bound.
 ---
 
 ```typescript
@@ -74,6 +75,10 @@ bracket.feaStudy({
 //      the ~50 MPa at the edge of the lower bore is the clamp singularity, reported
 //      as peakAtSupportMPa with a fea.stress.support-singularity warning
 // Open bracket.3mf in Bambu Studio / OrcaSlicer: the modifiers show under the
-// object with their own infill density.
+// object with their own infill density. For PrusaSlicer add slicer: 'prusa'
+// (modifiers load the same way, as ParameterModifier volumes).
+// Sliced for real, 0.2 mm layers, gyroid, same bracket (graded vs uniform 60 %):
+//   OrcaSlicer 2.4.2    17.3 g / 1h35m vs 28.2 g / 2h37m  (-38 % filament, -39 % time)
+//   PrusaSlicer 2.8.1   23.0 g / 2h17m vs 29.9 g / 2h59m  (-23 % filament, -23 % time)
 return bracket;
 ```

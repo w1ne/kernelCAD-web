@@ -8,9 +8,11 @@
 - `shape.dimension()` for declared linear, diameter, radius and angular dimensions. They show in the viewer, replace the automatic bounding-box dimensions on the PDF/SVG drawing, and `evaluate_script` returns their values.
 - Drawing (PDF) in the `/p/<slug>` Download dropdown, and Export Drawing (PDF) in Studio's export menu and command palette.
 - Example `examples/gallery/mounting-bracket-dimensioned.kcad.ts` and guide `docs/guide/dimensions-measure-drawings.md`.
+- Stress-graded infill now works in PrusaSlicer: `export({ format: '3mf', options: { slicer: 'prusa', infill: { fromFea } } })` writes the bands as PrusaSlicer modifier volumes (`Slic3r_PE_model.config`, with PrusaSlicer's own fill density and pattern keys). Sliced with PrusaSlicer 2.8.1, the graded bracket uses 23 % less filament than uniform 60 %. Orca/Bambu stay the default.
 
 ## Fixed
 
+- 3MF export with `slicer: 'prusa'` and `arrange: 'assembled'` placed only the first part on the bed; the other parts stayed at the origin. The bed position is now written into the vertices.
 - FEA face loads are applied as the consistent nodal forces of a uniform traction: each loaded surface triangle takes its area share of the total force, on its mid-side nodes. The total used to be split equally over every face node, including corner nodes that should carry none.
 - FEA no longer reports the stress singularity at the edge of a clamped (`fixed`) face as the part's peak. `maxVonMisesMPa`, `minSafetyFactor`, hot spots, the `minSafetyFactor` gate and the trust estimate now exclude a support zone of 0.4 x the local wall thickness around the fixed-face edges. The raw clamp-edge value is reported as `peakAtSupportMPa` (with location and region), and the new warning `fea.stress.support-singularity` explains it. On the cookbook PETG bracket the governing peak is 31.0 / 30.7 / 29.7 MPa at 2.5 / 1.8 / 1.4 mm meshes, while the clamp-edge value climbs from 50.0 to 53.1 MPa.
 - `trust.meshTrusted` and `maxStressErrorPercent` use CalculiX's error estimate in the high-stress region only (von Mises at least half the governing peak). The estimator is relative, so near-zero-stress regions read 40 % or more and previously flagged almost every solve.
