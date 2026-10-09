@@ -2,6 +2,7 @@
 
 ## Added
 
+- `verify({ check: 'load-capacity', mode: 'fea' })` answers "will it hold?" from the script's `feaStudy` in the same shape as the beam check: `ok`, `safetyFactor`, `elements[]` (stress regions as `@kc[...]` faces, in Pa), `failures[]`, plus `fea` with deflection, mesh trust and the clamp-edge peak.
 - Dimensions toggle in the 3D viewer (Studio, `/p/<slug>`, ChatGPT viewer): automatic overall size, grouped holes, hole spacing, radii and chamfers; on by default when a model declares dimensions; `?dims=1` forces it on.
 - Measure tool: click two points for distance and ΔX/ΔY/ΔZ, with snapping to corners, edges and faces; one click on a round edge shows its diameter.
 - `shape.dimension()` for declared linear, diameter, radius and angular dimensions. They show in the viewer, replace the automatic bounding-box dimensions on the PDF/SVG drawing, and `evaluate_script` returns their values.
