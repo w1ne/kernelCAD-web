@@ -17,4 +17,4 @@ export function wrappedShape(backend: OcctBackend): any {
 }
 
 /** Re-exported from the kernel layer (one implementation for every caller). */
-export { brepExtremaDistance } from '../../kernel/backends/occt/brepDistance';
+export { brepExtremaContact, brepExtremaDistance } from '../../kernel/backends/occt/brepDistance';

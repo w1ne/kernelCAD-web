@@ -26,7 +26,8 @@ describe('SO-100 arm servo mounts sit on the servo body', () => {
       .sort();
     // The two remaining points are the shoulder and wrist joint frames.
     // Each one sits in its servo, past the printed shell. Moving the frame
-    // would shift the arm.
+    // would shift the arm. The elbow and wrist bosses are separate parts
+    // on those axes; their own connectors sit inside the boss solid.
     expect(offSolid).toEqual(['lower-arm.wrist', 'shoulder.lift']);
   }, PER_EXAMPLE_TIMEOUT_MS);
 });

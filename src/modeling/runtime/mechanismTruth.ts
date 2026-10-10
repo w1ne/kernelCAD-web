@@ -69,6 +69,7 @@ import { assemblyToMjcf } from './mjcfExport';
 import { loadMujocoSession } from './mujocoSession';
 import {
   checkJointMeshContinuity,
+  JOINT_BEARING_AXIS_RADIUS_MM,
   JOINT_MESH_GAP_TOLERANCE_MM,
 } from './jointMeshContinuity';
 import {
@@ -86,11 +87,13 @@ export const POSE_SAMPLE_COUNT_PER_MATE = 3;
 
 /**
  * Deterministic work budget for the BREP-lowering criteria (2
- * interpenetration, 3 dof-mismatch, 7 joint-mesh-gap, 8
- * tendon-body-intersect). Those criteria lower the whole assembly once
- * per pose sample and run pairwise BREP overlap, so cost grows as
- * `(distinct pose lowers) × parts`. On a dense assembly this is a
- * Cartesian blow-up: the Gearfinity planetary stage (24 parts × 13 pose
+ * interpenetration, 3 dof-mismatch, 8 tendon-body-intersect). Those
+ * criteria lower the whole assembly once per pose sample and run
+ * pairwise BREP overlap, so cost grows as `(distinct pose lowers) ×
+ * parts`. Criterion 7 (joint-mesh-gap) is NOT in that sweep: it probes
+ * the rest pose only, and a disconnected link must still fail when the
+ * sweep is skipped. On a dense assembly the pose sweep is a Cartesian
+ * blow-up: the Gearfinity planetary stage (24 parts × 13 pose
  * samples + 4 revolute mates × 3 dof micro-poses) timed the
  * `validate --include-interference` CLI out past 5 minutes (issue #348).
  *
@@ -191,9 +194,11 @@ export interface MechanismTruthOptions {
   /**
    * Override for the deterministic BREP-sweep work budget (see
    * {@link BREP_SWEEP_BUDGET}). When the estimated sweep work exceeds
-   * this, criteria 2/3/7/8 are skipped and the verdict degrades to
-   * `'unverified'`. Mainly a test seam (pass a tiny budget to force the
-   * degradation path) and an escape hatch for tractable large assemblies
+   * this, criteria 2/3/8 (pose sweep) are skipped and the verdict
+   * degrades to `'unverified'` unless rest-pose joint-mesh continuity
+   * (criterion 7) finds a disconnected body, which is `'broken'`.
+   * Mainly a test seam (pass a tiny budget to force the degradation
+   * path) and an escape hatch for tractable large assemblies
    * (pass `Infinity` to always sweep). Defaults to `BREP_SWEEP_BUDGET`.
    */
   readonly sweepBudget?: number;
@@ -287,39 +292,55 @@ export async function checkMechanismTruth(
     return { mechanism: failures.length === 0 ? 'real' : 'broken', failures };
   }
 
-  // BREP-sweep budget gate (issue #348). Criteria 2/3/7/8 each lower the
+  // BREP-sweep budget gate (issue #348). Criteria 2/3/8 each lower the
   // whole assembly per pose sample — a Cartesian cost that explodes on
   // dense mechanisms (Gearfinity: 24 parts × 13 samples + 4 mates × 3 dof
   // micro-poses ≈ 600 work units, > 5 min). Estimate the work from the
-  // assembly graph (no lowering) and skip the sweep when it's intractable;
+  // assembly graph (no lowering) and skip that sweep when it's intractable;
   // the verdict then degrades to 'unverified' rather than timing out.
-  // Computed BEFORE criterion 1 so the shared rest-scene lower below only
-  // runs when a criterion actually needs a lowered scene.
+  // Criterion 7 is not part of the sweep: one rest lower is enough to
+  // tell a floating end-effector from a connected chain, and skipping it
+  // let a disconnected claw pass as 'unverified' (ok: true).
   const partCount = arm.__parts().length;
   const sweepBudget = effectiveSweepBudget(opts.sweepBudget);
   const sweepWork = estimateSweepWork(arm, solved.length);
   const sweepSkipped = sweepWork > sweepBudget;
 
   // One lowered rest scene is shared by criterion 1 (local bbox corners),
-  // the sweep's per-pose detection (re-posed via `solveMates` transforms),
-  // and criteria 7/8. `Shape.lower()` re-runs the ENTIRE record chain, so
-  // the old per-fastened-part bbox lowering was O(parts) full-assembly
-  // lowers — the dominant cost of `validate --include-interference` on the
-  // 42-part turbojet. Skipped when no criterion needs a scene (no fastened
-  // mates AND an over-budget sweep).
+  // criterion 7 (joint-mesh continuity), and — when the sweep runs — the
+  // per-pose detection (re-posed via `solveMates` transforms) plus
+  // criterion 8. `Shape.lower()` re-runs the ENTIRE record chain, so the
+  // old per-fastened-part bbox lowering was O(parts) full-assembly lowers.
+  // The rest lower always runs: criterion 7 needs it even when the pose
+  // sweep is over budget. That is one lower, not the Cartesian sweep.
   const loweredBase: LoweredSceneBase = {};
-  const hasFastenedMates = arm.__mates().some((m) => m.type === 'fastened');
-  if (hasFastenedMates || !sweepSkipped) {
-    const restSample = solved.find((s) => s.sample.name === 'rest');
-    if (restSample !== undefined) {
-      await lowerSceneForSample(arm, restSample, loweredBase);
-    }
+  const restSample = solved.find((s) => s.sample.name === 'rest');
+  if (restSample !== undefined) {
+    await lowerSceneForSample(arm, restSample, loweredBase);
+  }
+  if (loweredBase.scene === undefined && arm.__mates().length > 0) {
+    // A failed lower used to skip criterion 7 and leave the verdict
+    // 'unverified'. That is a pass for a disconnected body. If the
+    // bodies cannot be measured, the chain is not certified connected.
+    failures.push(makeFailure(
+      'mechanism.joint-mesh-gap',
+      'Rest-pose body continuity could not be measured because the assembly did not lower. A link that cannot be shown to meet its joint is not an unverified mechanism.',
+    ));
   }
 
   // Criterion 1 (mechanism.disconnect) — fastened-mate invariant. Reads the
   // part local bboxes from the shared rest scene when available; falls back
   // to per-part `originalShape.lower()` only when that scene is missing.
   failures.push(...(await checkFastenedInvariant(arm, solved, loweredBase.scene)));
+
+  // Criterion 7 (mechanism.joint-mesh-gap) — at REST pose, every joint
+  // pivot must lie inside both its parent and child body meshes, or the
+  // two rigid groups must bear on each other. This is the "connected to
+  // a body" gate. It does not honor `solvedModel({ ignore })` and it runs
+  // even when the pose sweep is skipped: a floating claw is a defect, not
+  // an unverified sweep. P8 slice; closes the visual-mesh-gap hole MJCF
+  // cannot see.
+  failures.push(...(await checkJointMeshContinuityCriterion(arm, solved, loweredBase)));
 
   if (sweepSkipped) {
     // LOUD skip (T3): the over-budget skip used to emit ONLY a console.warn
@@ -329,7 +350,8 @@ export async function checkMechanismTruth(
     // carrying the work estimate, the (auto-scaled) budget, and the part
     // count so 'unverified' is evidence, not silence. Severity 'warn':
     // "couldn't verify" must NOT make `ok: false` on its own (that's
-    // reserved for a definitive 'broken').
+    // reserved for a definitive 'broken', including a rest-pose
+    // joint-mesh gap above).
     failures.push(makeBudgetExceeded(sweepWork, sweepBudget, partCount, solved.length));
   } else {
     // `loweredBase` was populated above (the rest sample's full lower);
@@ -345,13 +367,6 @@ export async function checkMechanismTruth(
     // count stability under ±ε around the declared axis. Skipped when the
     // assembly has no revolute mates.
     failures.push(...(await checkDofMismatch(arm, loweredBase)));
-
-    // Criterion 7 (mechanism.joint-mesh-gap) — at REST pose, every joint
-    // pivot must lie inside both its parent and child body meshes. P8
-    // slice; closes the visual-mesh-gap hole MJCF cannot see (joints in
-    // physics are constraints on abstract rigid bodies, not assertions
-    // about material continuity in the rendered geometry).
-    failures.push(...(await checkJointMeshContinuityCriterion(arm, solved, loweredBase)));
 
     // Criterion 8 (mechanism.tendon-body-intersect) — a balance tendon's
     // routed path must not cut through a non-anchor body at any sampled
@@ -831,9 +846,14 @@ async function checkJointMeshContinuityCriterion(
     // constrained by material away from the axis, not floating.
     if (r.bearingGapMm !== undefined && r.bearingGapMm <= JOINT_MESH_GAP_TOLERANCE_MM) continue;
     const bearingNote = r.bearingGapMm !== undefined
-      ? ` Nearest contact between the mated rigid groups is ` +
+      ? ` Nearest contact between the two mated bodies is ` +
         `${r.bearingGapMm.toFixed(1)}mm — no bearing surface constrains ` +
         `the joint within tolerance either.`
+      : '';
+    const offAxisNote = r.bearingOffAxisRadialMm !== undefined
+      ? ` The closest surface contact sits ${r.bearingOffAxisRadialMm.toFixed(1)}mm ` +
+        `off the joint axis, outside the ${JOINT_BEARING_AXIS_RADIUS_MM.toFixed(0)}mm ` +
+        `knuckle radius, so it does not connect the link to the body.`
       : '';
     const failure = makeFailure(
       'mechanism.joint-mesh-gap',
@@ -842,7 +862,7 @@ async function checkJointMeshContinuityCriterion(
       `${allowedGap.toFixed(1)}mm = clearance bore ${r.clearanceRadiusMm.toFixed(1)}mm + ` +
       `${JOINT_MESH_GAP_TOLERANCE_MM.toFixed(1)}mm margin). The link mesh does not ` +
       `reach the joint it pivots on — extend the body geometry so its OCCT ` +
-      `knuckle solid surrounds the joint origin at rest pose.` + bearingNote +
+      `knuckle solid surrounds the joint origin at rest pose.` + bearingNote + offAxisNote +
       ` Do not fix this by moving the connector alone: the mate re-aligns the ` +
       `mated part '${r.otherPartName}' onto the moved connector, which can ` +
       `silently reopen a collision elsewhere — re-run the collision check ` +
@@ -1349,14 +1369,14 @@ function makeBudgetExceeded(
     code,
     severity: 'warn',
     message:
-      `The articulated BREP pose-sweep (collision/dof/joint-mesh/tendon criteria) was SKIPPED: ` +
+      `The articulated BREP pose-sweep (collision/dof/tendon criteria) was SKIPPED: ` +
       `estimated work ${sweepWork} exceeds the budget ${sweepBudget} ` +
       `(${partCount} part${partCount === 1 ? '' : 's'} × ${poseSampleCount} solved pose ` +
       `sample${poseSampleCount === 1 ? '' : 's'} + revolute dof micro-poses). The mechanism ` +
-      `verdict is 'unverified' — it is NOT certified collision-free across its travel; the ` +
-      `cheap criteria (orphan-part, fastened-rigidity) still ran and found no defect. ` +
-      `Reduce the part/pose count, verify a tractable sub-assembly, or pass a larger ` +
-      `sweepBudget to force the full sweep.`,
+      `is NOT certified collision-free across its travel. Rest-pose joint-mesh ` +
+      `continuity still ran — a link that does not meet its body is 'broken', ` +
+      `not unverified. Reduce the part/pose count, verify a tractable ` +
+      `sub-assembly, or pass a larger sweepBudget to force the full sweep.`,
     hint: HINT_TEMPLATES[code].template,
     nextAction: HINT_TEMPLATES[code].nextAction,
   };

@@ -12,6 +12,8 @@
 // freehand-author instead.
 
 import { randomBytes } from 'node:crypto';
+import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 import { search, type Snippet } from '../../cookbook/index';
 import { evaluateScriptTool, type EvaluateScriptOutput } from './evaluateScript';
 import { getCookbookSnippets } from './lookupCookbook';
@@ -243,11 +245,19 @@ export async function executeCookbookTool(
   }
 
   const { snippet } = resolved;
-  const code = snippet.body;
+  // Vendor-mesh examples (SO-ARM100) are not self-contained snippet bodies.
+  // Evaluate the declared file so relative lib.fromSTEP / fromSTL paths resolve.
+  const code = snippet.example
+    ? await readFile(resolve(snippet.example), 'utf8')
+    : snippet.body;
 
   let evaluate: EvaluateScriptOutput;
   try {
-    evaluate = await evaluateScriptTool({ code, dryRun: dryRun || undefined });
+    evaluate = await evaluateScriptTool(
+      snippet.example
+        ? { file: resolve(snippet.example), dryRun: dryRun || undefined }
+        : { code, dryRun: dryRun || undefined },
+    );
   } catch (err) {
     return fail(executionId, 'evaluate', err instanceof Error ? err.message : String(err), {
       cookbookId: snippet.id,

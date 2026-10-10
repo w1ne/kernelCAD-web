@@ -23,8 +23,10 @@ async function main(): Promise<void> {
   let failed = 0;
 
   for (const s of snippets) {
-    const file = join(tmp, `${s.id}.kcad.ts`);
-    writeFileSync(file, s.body);
+    // Snippets that point at a repo example import meshes beside that file.
+    // Evaluating a temp copy of the fence would miss those assets.
+    const file = s.example ?? join(tmp, `${s.id}.kcad.ts`);
+    if (!s.example) writeFileSync(file, s.body);
     const r = await evaluateScript(file);
     if (r.ok) {
       console.log(`✓ ${s.id}`);
