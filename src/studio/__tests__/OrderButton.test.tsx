@@ -2,9 +2,10 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 /** @vitest-environment happy-dom */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 
-vi.mock('../context/CodeContext', () => ({ useCode: () => ({ code: 'box(10,10,10)' }) }));
+const state = { code: 'box(10,10,10)' };
+vi.mock('../context/CodeContext', () => ({ useCode: () => ({ code: state.code }) }));
 vi.mock('../api/apiBase', () => ({ apiCall: async () => ({ base: 'https://api.test', headers: {} }) }));
 
 import { OrderButton } from '../OrderButton';
@@ -13,13 +14,13 @@ const json = (body: unknown, status = 200) =>
     new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
 
 const ESTIMATE = {
-    ok: true, request_id: 'r1', estimate_cents: 4400, currency: 'usd', method: {},
+    ok: true, status: 'ready', request_id: 'r1', estimate_cents: 4400, currency: 'usd', method: {},
     summary: 'Sheet-metal mild steel 4.78 mm, 1 pc - about $44, confirmed by a person before your card is charged',
 };
 
 let calls: string[];
-beforeEach(() => { calls = []; window.history.replaceState({}, '', '/'); });
-afterEach(() => { cleanup(); vi.restoreAllMocks(); });
+beforeEach(() => { calls = []; state.code = 'box(10,10,10)'; window.history.replaceState({}, '', '/'); });
+afterEach(() => { cleanup(); vi.useRealTimers(); vi.restoreAllMocks(); });
 
 function mockFetch(pay: () => Response) {
     return vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
@@ -78,5 +79,73 @@ describe('OrderButton', () => {
         render(<OrderButton />);
         expect(await screen.findByTestId('order-summary')).toBeTruthy();
         expect(calls).toHaveLength(1);
+    });
+
+    describe('pre-pricing', () => {
+        const READY = { ok: true, status: 'ready', estimate_cents: 3800, summary: 's', currency: 'usd' };
+        const advance = (ms: number) => act(async () => { await vi.advanceTimersByTimeAsync(ms); });
+        const route = (price: () => unknown, estimate: () => unknown) =>
+            vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+                const url = String(input);
+                calls.push(url);
+                return json(url.endsWith('/price') ? price() : estimate());
+            });
+        const priceCalls = () => calls.filter((c) => c.endsWith('/price')).length;
+
+        beforeEach(() => { vi.useFakeTimers(); });
+
+        it('shows the price on the button once the server has it', async () => {
+            route(() => READY, () => ESTIMATE);
+            render(<OrderButton />);
+            expect(screen.getByTestId('toolbar-order').getAttribute('aria-label')).toBe('Order');
+            await advance(2900);
+            expect(priceCalls()).toBe(0);
+            await advance(200);
+            expect(screen.getByTestId('toolbar-order').getAttribute('aria-label')).toBe('Order · $38');
+        });
+
+        it('shows the summary and Pay straight away when the price is known', async () => {
+            route(() => READY, () => ({ ...ESTIMATE, estimate_cents: 3800 }));
+            render(<OrderButton />);
+            await advance(3100);
+            fireEvent.click(screen.getByTestId('toolbar-order'));
+            await advance(0);
+            expect(screen.getByTestId('order-summary')).toBeTruthy();
+            expect(screen.getByRole('button', { name: 'Pay $38' })).toBeTruthy();
+        });
+
+        it('polls the estimate while pricing, then shows Pay', async () => {
+            let n = 0;
+            route(() => ({ ok: true, status: 'pricing' }), () => (++n < 3 ? { ok: true, status: 'pricing' } : ESTIMATE));
+            render(<OrderButton />);
+            fireEvent.click(screen.getByTestId('toolbar-order'));
+            await advance(0);
+            expect(screen.getByText(/Pricing/)).toBeTruthy();
+            await advance(3000);
+            expect(screen.queryByTestId('order-summary')).toBeNull();
+            await advance(3000);
+            expect(screen.getByRole('button', { name: 'Pay $44' })).toBeTruthy();
+        });
+
+        it('restarts pricing when the code changes', async () => {
+            route(() => ({ ok: true, status: 'pricing' }), () => ESTIMATE);
+            const view = render(<OrderButton />);
+            await advance(3100);
+            expect(priceCalls()).toBe(1);
+            state.code = 'box(20,20,20)';
+            view.rerender(<OrderButton />);
+            await advance(2900);
+            expect(priceCalls()).toBe(1);
+            await advance(200);
+            expect(priceCalls()).toBe(2);
+        });
+
+        it('shows the server message when pricing fails', async () => {
+            route(() => ({ ok: true, status: 'pricing' }), () => ({ ok: false, code: 'x', message: 'No maker can make this.' }));
+            render(<OrderButton />);
+            fireEvent.click(screen.getByTestId('toolbar-order'));
+            await advance(0);
+            expect(screen.getByRole('alert').textContent).toBe('No maker can make this.');
+        });
     });
 });

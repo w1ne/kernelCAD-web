@@ -9,7 +9,12 @@ import { Button } from '../ui/Button';
 import { IconButton, type IconButtonSize } from '../ui/IconButton';
 import { defaultCode } from '../shared/worker/geometryEngine';
 import { useCode } from './context/CodeContext';
-import { formatDollars, requestEstimate, requestPayUrl, type OrderEstimate } from './orderApi';
+import { formatDollars, requestEstimate, requestPayUrl, requestPrice, type OrderEstimate } from './orderApi';
+
+const POLL_MS = 3000;
+const MAX_POLLS = 40; // about two minutes
+const STABLE_MS = 3000;
+const SLOW_MESSAGE = 'Pricing is taking longer than usual. Please try again in a minute.';
 
 const ICON = { className: 'size-4', strokeWidth: 1.75 } as const;
 
@@ -39,6 +44,31 @@ async function payInNewTab(requestId: string): Promise<void> {
     }
 }
 
+/** Prices the part in the background once the code has been stable for a moment. */
+function usePrePrice(code: string): number | null {
+    const [cents, setCents] = useState<number | null>(null);
+    useEffect(() => {
+        setCents(null);
+        const slug = currentSlug();
+        if (!code.trim() || (slug && code === defaultCode)) return undefined;
+        const controller = new AbortController();
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        let polls = 0;
+        const check = (): void => {
+            requestPrice(code, slug, controller.signal)
+                .then((price) => {
+                    if (controller.signal.aborted) return;
+                    if (price !== null) setCents(price);
+                    else if (++polls < MAX_POLLS) timer = setTimeout(check, POLL_MS);
+                })
+                .catch(() => undefined);
+        };
+        timer = setTimeout(check, STABLE_MS);
+        return () => { controller.abort(); clearTimeout(timer); };
+    }, [code]);
+    return cents;
+}
+
 function useOrderFlow(code: string) {
     const [open, setOpen] = useState(false);
     const [phase, setPhase] = useState<Phase>('idle');
@@ -46,32 +76,47 @@ function useOrderFlow(code: string) {
     const [error, setError] = useState<string | null>(null);
     const [paying, setPaying] = useState(false);
     const abortRef = useRef<AbortController | null>(null);
+    const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
-    const close = useCallback(() => {
+    const stop = useCallback(() => {
         abortRef.current?.abort();
         abortRef.current = null;
-        setOpen(false);
-        setPhase('idle');
+        clearTimeout(timerRef.current);
     }, []);
 
-    useEffect(() => () => abortRef.current?.abort(), []);
+    const close = useCallback(() => {
+        stop();
+        setOpen(false);
+        setPhase('idle');
+    }, [stop]);
+
+    useEffect(() => stop, [stop]);
 
     const start = useCallback(() => {
-        abortRef.current?.abort();
+        stop();
         const controller = new AbortController();
         abortRef.current = controller;
         setOpen(true);
         setPhase('asking');
         setEstimate(null);
         setError(null);
-        requestEstimate(code, currentSlug(), controller.signal)
-            .then((result) => { setEstimate(result); setPhase('ready'); })
-            .catch((err: unknown) => {
-                if (controller.signal.aborted) return;
-                setError(err instanceof Error ? err.message : 'Ordering did not work just now.');
-                setPhase('error');
-            });
-    }, [code]);
+        let polls = 0;
+        const fail = (message: string): void => { setError(message); setPhase('error'); };
+        const ask = (): void => {
+            requestEstimate(code, currentSlug(), controller.signal)
+                .then((result) => {
+                    if (controller.signal.aborted) return;
+                    if (result) { setEstimate(result); setPhase('ready'); }
+                    else if (++polls < MAX_POLLS) timerRef.current = setTimeout(ask, POLL_MS);
+                    else fail(SLOW_MESSAGE);
+                })
+                .catch((err: unknown) => {
+                    if (controller.signal.aborted) return;
+                    fail(err instanceof Error ? err.message : 'Ordering did not work just now.');
+                });
+        };
+        ask();
+    }, [code, stop]);
 
     const pay = useCallback(() => {
         if (!estimate) return;
@@ -135,6 +180,7 @@ export function OrderButton({ size = 'sm' }: { size?: IconButtonSize }): JSX.Ele
     const { code } = useCode();
     const flow = useOrderFlow(code);
     const { open, phase, start, close } = flow;
+    const priceCents = usePrePrice(code);
     useAutoOrder(code, start);
     const rootRef = useRef<HTMLDivElement | null>(null);
 
@@ -155,7 +201,7 @@ export function OrderButton({ size = 'sm' }: { size?: IconButtonSize }): JSX.Ele
     return (
         <div ref={rootRef} className="relative">
             <IconButton
-                label="Order"
+                label={priceCents === null ? 'Order' : `Order · ${formatDollars(priceCents)}`}
                 description="Get a price and order this part"
                 icon={phase === 'asking' ? <Loader2 {...ICON} className="size-4 animate-spin" /> : <ShoppingBag {...ICON} />}
                 size={size}
