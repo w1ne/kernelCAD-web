@@ -1,86 +1,44 @@
----
-id: automotive-body-envelope
-title: Real car body from measured station sections (ported open hatchback)
-tags: [shell, sketch, continuity, sweep, assembly, reference-image]
-keywords:
-  - automotive body envelope
-  - organic car body
-  - realistic car body
-  - sedan hatchback body
-  - car from open source model
-  - station sections from reference mesh
-  - berlinetta body
-  - sports car body shell
-  - rail loft body
-  - spline loft sections
-  - nurbsSegment loft sections
-  - surfaceFromCurves car body
-  - fairing body envelope
-  - car body with glass separate
-  - wheel arches wheels in arches
-  - body likeness gate
-  - network body panels via sew
-when_to_use: You need a car / van / berlinetta / fairing body that reads as a REAL vehicle, not a child-like extruded side outline with a box roof. Copy this ported hatchback (station tables measured from an open CC-BY model) and re-param it; for a different car, measure its stations from an open reference instead of free-handing. Degree-3 nurbsSegment sections lofted in short runs, greenhouse as a second loft, glass/lamps as thin separate skins, wheels in arches.
----
-
-The main block below is a **real car**: a generic five-door compact hatchback
-ported from the OSRF Gazebo `hatchback` model (Nate Koenig, CC-BY 3.0 — see
-`ATTRIBUTION.md` and `examples/from-reference/hatchback/`). Its numbers are
-**measured**, not invented: `examples/from-reference/hatchback/extract-stations.py`
-slices the source mesh every 10 mm, smooths along the length, and samples the
-`LOWER` / `GREENHOUSE` tables. Change `length`, `width`, `height`, `wheelbase`
-or `rideHeight` and the measured shape stretches with them (front overhang,
-wheelbase span and rear overhang scale independently).
-
-**Never** build a car as flat extruded side outlines plus box roof / hood —
-that is the "child-like CAD" failure. For another body style, keep this
-structure and measure new tables from an openly licensed reference (mesh,
-blueprint, section drawing): `s` along the length, half-widths `w` and heights
-`z` per station.
-
-**Stack (what this recipe does)**
-
-1. **Stations from a reference, not by eye.** Each row is one cross-section at
-   distance `s` from the front bumper.
-2. **Sections = closed degree-3 `nurbsSegment` control polygons** with the
-   SAME point count on every station (left/right mirrored, flat floor line).
-   Compatible sections loft cleanly.
-3. **Loft in short runs** (`loftStations`, 3 spans per run, runs share their
-   end sections) and fuse. Same surface, but it tessellates in seconds.
-4. **Two lofts: lower body + greenhouse**, unioned at the beltline, so the
-   cabin has real tumblehome above wide shoulders.
-5. **Wheel wells**: one short revolved tub per corner cut through the outer
-   flank only. Tyres and rims are separate parts sitting in the wells.
-6. **Glass and lamps are thin skins**: the same loft grown 4–6 mm, minus the
-   body loft, intersected with a window / lamp mask. Separate parts, zero
-   interference — never cut a through-Y window arch out of the body.
-7. Mirrors and other appendages are separate parts (`assembly().part`).
-
-**Gotchas (measured, not hypothetical)**
-
-- `path().spline(waypoints)` sections make OCCT build huge interpolated
-  surfaces: a 4-station car loft took 60 s to tessellate vs 7 s with
-  `nurbsSegment` control points; 11+ `spline` stations did not finish in 8 min.
-- One loft through 10+ stations is slow to mesh even with `nurbsSegment`
-  (13 rows ≈ 170 s). Chunk into runs of 3 spans (≈ 18 s).
-- Tiny end sections (a near-point nose / tail station) wreck tessellation
-  time. End on a real cap section on the bumper face instead.
-- A skin made from a loft that is chunked differently from the body (e.g. rows
-  10.. instead of 9..) follows a different surface and interferes with it.
-  Start partial skins on a run boundary of the body loft.
-- Unioning a wide axis-aligned box into a freeform loft → self-intersect /
-  non-manifold fuse; keep appendages as separate parts.
-- Subtracting a cutter that only grazes a loft (exact tangency) → noop or
-  fragile topology; overlap ≥0.1 mm or skip the cut.
-- Open shells into solid booleans → reject; thicken/sew closed first.
-- ParamRef arithmetic only via `.add/.subtract/.multiply/.divide` — map
-  measured numbers through helper functions (`X`, `Y`, `Z` below).
-
-```typescript
-// Compact hatchback ported from OSRF gazebo_models `hatchback` (CC-BY 3.0).
-// Full provenance + extraction script: examples/from-reference/hatchback/.
-// Check: render side --pose 180,0, front --pose -90,0, 3/4 --pose -130,22
-// (nose is at x = 0, the car runs along +x), then verify body-likeness.
+// Real Object Brief
+// Artifact: a generic five-door compact hatchback, ported from an existing
+//   open model instead of free-handed: the body is lofted through station
+//   sections MEASURED from the OSRF Gazebo `hatchback` mesh.
+// Source: OSRF gazebo_models `hatchback/meshes/hatchback.obj`, Copyright 2012 Nathan Koenig,
+//   CC-BY 3.0 (https://github.com/osrf/gazebo_models, commit 8163eb4b).
+//   Unbranded; see ./PROVENANCE.md for the license, checksum and extraction.
+// Scale: millimetres. Source envelope 4001 L x 1880 W (body, no mirrors) x
+//   1568 H, wheelbase 2516, tyre Ø641, half-track 787, sill 196 above ground.
+// How the port works:
+//   - `extract-stations.py` slices the source mesh every 10 mm along its
+//     length, takes the convex section hull, smooths along the length and
+//     samples the numbers in LOWER / GREENHOUSE below (half-widths `w` and
+//     heights `z` in source mm; `s` = distance from the front bumper). A few
+//     cells are hand-faired where the coarse mesh kinks; PROVENANCE.md lists
+//     every one.
+//   - Each row becomes a closed degree-3 `nurbsSegment` section on a YZ
+//     plane at x = s. Every section has the same control-point count, so the
+//     loft gets compatible sections without re-parametrisation.
+//   - Rows are lofted in short runs (`loftStations`, 3 spans each) and fused:
+//     one ThruSections over 10+ stations tessellates extremely slowly.
+//   - The lower body and the greenhouse are separate lofts unioned at the
+//     beltline. Glass is a 4 mm skin (greenhouse loft grown 4 mm, minus the
+//     cabin) intersected with a window mask, kept as its own part (no
+//     through-cut into the body). Lamps reuse the same trick on nose / tail.
+//   - Source row values are remapped through `param()`s, so length, width,
+//     height, wheelbase and ride height stretch the measured shape piecewise
+//     (front overhang / wheelbase / rear overhang scale independently).
+// Validation focus:
+//   - Side: long roof with a steep tailgate, short bonnet, raked
+//     windscreen, three side windows with B/C pillars, arches around the tyres.
+//   - Front / rear: tumblehome greenhouse narrower than the shoulders,
+//     headlamps / intake / tail lamps at the source positions.
+//   - Every part watertight on export; no interference between glass and body.
+//
+// RUN
+//   node dist/cli/index.js evaluate examples/from-reference/hatchback/hatchback.kcad.ts
+//   node dist/cli/index.js export stl examples/from-reference/hatchback/hatchback.kcad.ts --parts all -o /tmp/hatchback
+//   node dist/cli/index.js render examples/from-reference/hatchback/hatchback.kcad.ts -o /tmp/hatchback.png \
+//     --separate --pose 180,0 --pose -90,0 --pose -130,22 --no-mechanism-check  # side, front, 3/4 front
+//   node dist/cli/index.js interference examples/from-reference/hatchback/hatchback.kcad.ts
 
 // --- Editable parameters (defaults = source model) ---------------------------
 const length = param('length', 4001, { min: 3600, max: 4600, description: 'overall length, bumper to bumper (mm)' });
@@ -283,28 +241,3 @@ for (const [name, s, side] of corners) {
   car.part(`rim-${name}`, rim(s, side));
 }
 return car.model();
-```
-
-**Rails and network surfaces**
-
-`profile.loft(other, { planes, rails })` accepts **≤2 rails** that pass within
-1 mm of every section (`examples/curves-surfacing/handle-and-tee.kcad.ts`);
-rails do not apply `planes[].origin` to NURBS sections. When you need more
-guides, split the body into panels (`surfaceFromCurves` /
-`surfaceFromBoundary`), thicken each Surface (or `sew` a closed shell), then
-G2 fillet — see `lookup_cookbook("network body panels via sew")`.
-
-**Before publish / open_in_studio (likeness gate)**
-
-Silhouette-weak evidence is not success. After `evaluate_script` +
-`render_preview` (or CLI stills for this model: side `--pose 180,0`, front `--pose -90,0`,
-3/4 front `--pose -130,22` — the nose sits at x = 0), call:
-
-`verify({ check: 'body-likeness', body_bbox, wheels, still_verdicts })`
-
-Required still codes: `side-body-over-wheels`, `side-cabin-aft`, `rear-haunch`,
-`ortho-proportions-vs-reference` (concrete findings, not empty strings).
-
-Automated: wheel footprint, rocker vs tire top, wheelbase span, optional cabin-aft
-(when `cabin_bbox` given). Agent-required: the four still codes. Full CV
-silhouette IoU is **not** implemented — do not claim it.
