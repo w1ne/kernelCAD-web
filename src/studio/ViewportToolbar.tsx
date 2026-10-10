@@ -20,6 +20,7 @@ import type { ViewTarget } from './components/viewer/controllers/cameraPose';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { viewTargetRequests } from './hooks/studioNavigation';
 import { useIsNarrow } from './hooks/useIsNarrow';
+import { OrderButton } from './OrderButton';
 
 const ICON = { className: 'size-4', strokeWidth: 1.75 } as const;
 
@@ -169,12 +170,45 @@ function useRunShortcut(onRun: () => void): void {
     useKeyboardShortcuts(bindings, options);
 }
 
+function OptionalToggles(props: ViewportToolbarProps): JSX.Element {
+    const {
+        referenceImagesPresent, referenceImagesVisible, onToggleReferenceImages,
+        renderEnvironmentPresent = false, renderEnvironmentVisible = true, renderEnvironmentPresetLabel = '',
+        onToggleRenderEnvironment,
+    } = props;
+    const size = useIsNarrow() ? 'touch' : 'sm';
+    return (
+        <>
+            {referenceImagesPresent && (
+                <IconButton
+                    label={referenceImagesVisible ? 'Hide reference images' : 'Show reference images'}
+                    icon={<ImageIcon {...ICON} />}
+                    size={size}
+                    tooltipSide="bottom"
+                    pressed={referenceImagesVisible}
+                    onClick={onToggleReferenceImages}
+                />
+            )}
+            {renderEnvironmentPresent && (
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    aria-pressed={renderEnvironmentVisible}
+                    aria-label={renderEnvironmentVisible ? 'Disable HDRI environment' : 'Enable HDRI environment'}
+                    onClick={onToggleRenderEnvironment}
+                    data-testid="toolbar-render-environment"
+                >
+                    Env: {renderEnvironmentPresetLabel}
+                </Button>
+            )}
+        </>
+    );
+}
+
 export function ViewportToolbar(props: ViewportToolbarProps): JSX.Element {
     const {
         onRun, onValidate, runNeeded = false, markingMode, onToggleMarkingMode, sectionMode, onToggleSectionMode,
-        referenceImagesPresent, referenceImagesVisible, onToggleReferenceImages,
-        renderEnvironmentPresent = false, renderEnvironmentVisible = true, renderEnvironmentPresetLabel = '',
-        onToggleRenderEnvironment, display,
+        display,
     } = props;
     // Phones get 44 px touch targets; the desktop toolbar stays dense.
     const narrow = useIsNarrow();
@@ -225,6 +259,7 @@ export function ViewportToolbar(props: ViewportToolbarProps): JSX.Element {
                 data-testid="toolbar-mark"
             />
             <Divider />
+            <OrderButton size={size} />
             <IconButton
                 label="Fit model in view"
                 icon={<Maximize {...ICON} />}
@@ -248,28 +283,7 @@ export function ViewportToolbar(props: ViewportToolbarProps): JSX.Element {
                     />
                 )}
             />
-            {referenceImagesPresent && (
-                <IconButton
-                    label={referenceImagesVisible ? 'Hide reference images' : 'Show reference images'}
-                    icon={<ImageIcon {...ICON} />}
-                    size={size}
-                    tooltipSide="bottom"
-                    pressed={referenceImagesVisible}
-                    onClick={onToggleReferenceImages}
-                />
-            )}
-            {renderEnvironmentPresent && (
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    aria-pressed={renderEnvironmentVisible}
-                    aria-label={renderEnvironmentVisible ? 'Disable HDRI environment' : 'Enable HDRI environment'}
-                    onClick={onToggleRenderEnvironment}
-                    data-testid="toolbar-render-environment"
-                >
-                    Env: {renderEnvironmentPresetLabel}
-                </Button>
-            )}
+            <OptionalToggles {...props} />
         </div>
     );
 }
