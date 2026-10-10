@@ -9,6 +9,8 @@ import { smoothBlend as sdfSmoothBlend } from './sdf/smoothBlend';
 import { materialize as sdfMaterialize } from './sdf/materialize';
 import { mm, ul } from './apiSupport';
 import type { KernelCadApi } from './api';
+import type { TubeSpecMetadata } from '../shared/intent/tubeRecord';
+import { Shape } from './capture/proxy';
 
 type CaptureShapeMethods = Pick<KernelCadApi, 'sheetMetal' | 'sdf'>;
 
@@ -20,6 +22,8 @@ type CaptureRecordMethods = Pick<
   | 'setCameraDistance'
   | 'animationView'
   | 'dfmSpec'
+  | 'tube'
+  | 'tubeSpec'
 >;
 
 function makeCaptureShapeMethods(session: CaptureSession): CaptureShapeMethods {
@@ -131,6 +135,16 @@ function makeCaptureRecordMethods(session: CaptureSession): CaptureRecordMethods
       const metadata = record.metadata as unknown as import('../shared/intent/dfmSpecRecord').DfmSpecMetadata;
       return { id, metadata };
     },
+
+    tube(name, opts) {
+      return new Shape(session.addTube(name, opts), session);
+    },
+
+    tubeSpec(spec) {
+      const id = session.addTubeSpec(spec);
+      const record = session.getRecords().find(r => r.id === id)!;
+      return { id, metadata: record.metadata as unknown as TubeSpecMetadata };
+    },
   };
 }
 
@@ -146,6 +160,8 @@ export function makeCaptureMethods(
   | 'setCameraDistance'
   | 'animationView'
   | 'dfmSpec'
+  | 'tube'
+  | 'tubeSpec'
 > {
   return {
     ...makeCaptureShapeMethods(session),

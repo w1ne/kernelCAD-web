@@ -13,6 +13,8 @@ import type { RenderEnvironmentSpec } from '../../shared/intent/renderEnvironmen
 import type { CameraTargetSpec } from '../../shared/intent/cameraTargetRecord';
 import type { AnimationViewSpec } from '../../shared/intent/animationViewRecord';
 import type { DfmSpec } from '../../shared/intent/dfmSpecRecord';
+import type { TubeMetadata } from '../../shared/intent/tubeRecord';
+import { buildTubeFeatureSpec, buildTubeSpecFeatureSpec, type TubeOptions, type TubeSpec } from './tubeRecords';
 import type { FeaStudySpec } from '../../shared/intent/feaStudyRecord';
 import type { DrawingToleranceSpec } from '../../shared/intent/drawingGdtRecord';
 import { Curve3DProxy } from './curveProxy';
@@ -529,6 +531,19 @@ export class CaptureSession {
   addDfmSpec(args: DfmSpec): FeatureId {
     const r = this.register(buildDfmSpecFeatureSpec(args));
     return r.id;
+  }
+
+  /** Capture a bent tube between two ends (assembly-space corner points). */
+  addTube(name: string, opts: TubeOptions): FeatureId {
+    const used = this.getRecords().filter((r) => r.kind === 'tube')
+      .map((r) => (r.metadata as unknown as { tube: TubeMetadata }).tube.name);
+    return this.register(buildTubeFeatureSpec(name, opts, used, this.paramTable)).id;
+  }
+
+  /** Capture the tube rule set. Virtual; malformed input throws (an
+   *  enforcement gate must not be silently disabled). */
+  addTubeSpec(spec: TubeSpec): FeatureId {
+    return this.register(buildTubeSpecFeatureSpec(spec)).id;
   }
 
   /**

@@ -8,6 +8,7 @@ import {
   makeConnector,
   normalizeConnectorOriginInput,
   type Connector,
+  type FluidPort,
 } from '../mates/connector';
 import { parseConnectorRef } from '../mates/mate';
 import { toVec3Param } from '../../shared/runtime/editableHelpers';
@@ -453,29 +454,51 @@ function createPartWrapGeom(
   };
 }
 
+function fluidPortFail(
+  id: FeatureId, partName: string, connName: string, reason: string, msg: string, hint: string,
+): never {
+  throw new KernelError(
+    'feature.invalid-args',
+    `tube.port.${reason}: connector '${connName}' on part '${partName}' ${msg}`,
+    id,
+    hint,
+  );
+}
+
+const isPositiveFinite = (n: unknown): boolean => typeof n === 'number' && Number.isFinite(n) && n > 0;
+
+/** True for a finite, non-zero 3-vector (so `port()` can never return NaN). */
+function isUsableAxis(axis: unknown): boolean {
+  return Array.isArray(axis) && axis.length === 3 &&
+    axis.every((n) => typeof n === 'number' && Number.isFinite(n)) &&
+    Math.hypot(axis[0], axis[1], axis[2]) > 0;
+}
+
+function isValidPortData(port: unknown): boolean {
+  if (typeof port !== 'object' || port === null || Array.isArray(port)) return false;
+  const p = port as FluidPort;
+  return isPositiveFinite(p.od) && typeof p.system === 'string' && p.system.length > 0 &&
+    (p.minStraight === undefined || isPositiveFinite(p.minStraight));
+}
+
 /** Validate the `port` option of a mate-style `connector(name, opts)` call. */
 function validateFluidPort(
   opts: AssemblyConnectorOpts, connName: string, partName: string, id: FeatureId,
 ): void {
-  const port = opts.port;
-  if (port === undefined) return;
-  const bad = (reason: string, msg: string, hint: string): never => {
-    throw new KernelError(
-      'feature.invalid-args',
-      `tube.port.${reason}: connector '${connName}' on part '${partName}' ${msg}`,
-      id,
-      hint,
-    );
-  };
+  if (opts.port === undefined) return;
+  const bad = (reason: string, msg: string, hint: string): never =>
+    fluidPortFail(id, partName, connName, reason, msg, hint);
   if (opts.type !== 'axis' || opts.axis === undefined) {
     bad('axis-required', 'carries port data but is not an axis connector with an axis.',
       "Declare it as { type: 'axis', origin, axis: [x, y, z] } with the axis pointing out of the part.");
   }
-  const okNum = (n: unknown): boolean => typeof n === 'number' && Number.isFinite(n) && n > 0;
-  if (!okNum(port.od) || typeof port.system !== 'string' || port.system.length === 0 ||
-      (port.minStraight !== undefined && !okNum(port.minStraight))) {
-    bad('invalid', `has invalid port data ${JSON.stringify(port)}.`,
-      'Pass port: { system: <name>, od: <mm>, minStraight?: <mm> } with positive numbers.');
+  if (!isValidPortData(opts.port)) {
+    bad('invalid', `has invalid port data ${JSON.stringify(opts.port)}.`,
+      'Pass port: { system: <name>, od: <mm>, minStraight?: <mm> } as an object with positive numbers.');
+  }
+  if (!isUsableAxis(opts.axis)) {
+    bad('invalid', `has an unusable axis ${JSON.stringify(opts.axis)}.`,
+      'Give the port connector a finite, non-zero axis [x, y, z] pointing out of the part.');
   }
 }
 
