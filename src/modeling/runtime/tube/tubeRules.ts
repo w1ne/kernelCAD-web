@@ -49,9 +49,10 @@ function finding(code: TubeRuleFinding['code'], text: string): TubeRuleFinding {
   return { code, message: `${code}: ${text}`, hint: DIAGNOSTIC_REGISTRY[code].hintTemplate };
 }
 
+/** A tube with no bends is exempt: its bend radius is never used. */
 function bendRadiusRule({ name, path, od, spec }: TubeRuleInput): TubeRuleFinding[] {
   const need = spec.minBendRadiusFactor * od;
-  if (path.bendRadius >= need - LENGTH_TOL_MM) return [];
+  if (path.bends.length === 0 || path.bendRadius >= need - LENGTH_TOL_MM) return [];
   return [finding('tube.bend.radius-too-small',
     `tube '${name}' bends at ${mm2(path.bendRadius)} mm; the rule needs ${mm2(need)} mm ` +
     `(${spec.minBendRadiusFactor} x OD ${mm2(od)}).`)];

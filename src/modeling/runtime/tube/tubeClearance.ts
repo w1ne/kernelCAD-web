@@ -13,6 +13,10 @@
 //     the tube is not exempt. Nothing left after the trim: pair skipped.
 //   - Two tubes are always measured in full, shared port or not.
 //
+// Resilience. A kernel failure on one tube or one pair (bounding box, the
+// trimmed-rod sweep, the distance, the shared-volume probe) becomes a warn
+// `feature.kernel-failed` naming it; every other pair is still measured.
+//
 // Cost. Pairs are ordered by the distance between their bounding boxes (a
 // lower bound on the true distance) and the exact kernel measurement runs
 // only while that bound is below the required distance or below the nearest
@@ -45,7 +49,7 @@ type Bbox = { min: [number, number, number]; max: [number, number, number] };
 /** One measurable solid in the world frame. */
 interface Body { name: string; shape: OcctBackend; bbox: Bbox; tube?: ResolvedTube }
 
-interface Pair { tube: Body & { tube: ResolvedTube }; other: Body; need: number; side: OcctBackend; lower: number }
+interface Pair { tube: TubeBody; other: Body; need: number; side: OcctBackend; lower: number }
 
 function pairNeed(spec: TubeRuleSpec, a: string | undefined, b: string | undefined): number {
   const mins = spec.clearance.pairs
@@ -54,14 +58,35 @@ function pairNeed(spec: TubeRuleSpec, a: string | undefined, b: string | undefin
   return mins.length > 0 ? Math.max(...mins) : spec.clearance.default;
 }
 
+type TubeBody = Body & { tube: ResolvedTube };
+
+function kernelFailed(tube: ResolvedTube, what: string, scope: string): CompilerDiagnostic {
+  return {
+    target: 'export-occt',
+    code: 'feature.kernel-failed',
+    severity: 'warn',
+    featureId: tube.id,
+    message: `tube.clearance: ${what} failed on tube '${tube.name}'${scope}.`,
+    hint: 'The OCCT kernel could not process this geometry: check it for degenerate shapes with evaluate. The remaining pairs were still measured.',
+  };
+}
+
+const pairScope = (other: string): string => ` and '${other}'; this pair's clearance was not checked`;
+
 /** The tube where it is in the world: its scene part when it has one, else
  *  the shape as built. Undefined when there is nothing to measure. */
-function tubeBody(tube: ResolvedTube, diagnostics: CompilerDiagnostic[]): Body | undefined {
+function tubeBody(tube: ResolvedTube, diagnostics: CompilerDiagnostic[]): TubeBody | undefined {
   if (tube.scenePart !== undefined) {
     const t = transformScenePart(tube.scenePart, diagnostics);
     return t.shape !== undefined && t.bbox !== undefined ? { name: tube.name, shape: t.shape, bbox: t.bbox, tube } : undefined;
   }
-  return tube.shape === undefined ? undefined : { name: tube.name, shape: tube.shape, bbox: tube.shape.boundingBox(), tube };
+  if (tube.shape === undefined) return undefined;
+  try {
+    return { name: tube.name, shape: tube.shape, bbox: tube.shape.boundingBox(), tube };
+  } catch {
+    diagnostics.push(kernelFailed(tube, 'the bounding box', "; the tube's clearance was not checked"));
+    return undefined;
+  }
 }
 
 function obstacleBodies(ctx: TubeSceneContext, diagnostics: CompilerDiagnostic[]): Body[] {
@@ -76,7 +101,7 @@ function obstacleBodies(ctx: TubeSceneContext, diagnostics: CompilerDiagnostic[]
  *  one of the tube's ports, a solid rod with that fitting zone trimmed off.
  *  Undefined when the trim leaves nothing. A tube that was scaled or mirrored
  *  has no placement for the rod and is measured whole. */
-function tubeSideAgainst(body: Body & { tube: ResolvedTube }, partName: string, spec: TubeRuleSpec): OcctBackend | undefined {
+function tubeSideAgainst(body: TubeBody, partName: string, spec: TubeRuleSpec): OcctBackend | undefined {
   const { path, od, meta, placement } = body.tube;
   const ownsFrom = meta.from.part === partName;
   const ownsTo = meta.to.part === partName;
@@ -87,32 +112,30 @@ function tubeSideAgainst(body: Body & { tube: ResolvedTube }, partName: string, 
   return tubeSolid(trimmed, od, od).applyTransform(placement);
 }
 
-function buildPairs(tubes: Array<Body & { tube: ResolvedTube }>, obstacles: Body[], spec: TubeRuleSpec): Pair[] {
+/** One tube against one part. The trimmed-rod sweep and its bounding box are
+ *  kernel calls: a failure skips this pair only. */
+function partPair(t: TubeBody, other: Body, spec: TubeRuleSpec, diagnostics: CompilerDiagnostic[]): Pair[] {
+  try {
+    const side = tubeSideAgainst(t, other.name, spec);
+    if (side === undefined) return [];
+    const bbox = side === t.shape ? t.bbox : side.boundingBox();
+    return [{ tube: t, other, need: spec.clearance.default, side, lower: bboxGap(bbox, other.bbox) }];
+  } catch {
+    diagnostics.push(kernelFailed(t.tube, 'building the tube without its fitting zone', pairScope(other.name)));
+    return [];
+  }
+}
+
+function buildPairs(tubes: TubeBody[], obstacles: Body[], spec: TubeRuleSpec, diagnostics: CompilerDiagnostic[]): Pair[] {
   const pairs: Pair[] = [];
   tubes.forEach((t, i) => {
-    for (const other of obstacles) {
-      const side = tubeSideAgainst(t, other.name, spec);
-      if (side === undefined) continue;
-      const bbox = side === t.shape ? t.bbox : side.boundingBox();
-      pairs.push({ tube: t, other, need: spec.clearance.default, side, lower: bboxGap(bbox, other.bbox) });
-    }
+    for (const other of obstacles) pairs.push(...partPair(t, other, spec, diagnostics));
     for (const other of tubes.slice(i + 1)) {
       const need = pairNeed(spec, t.tube.meta.system, other.tube.meta.system);
       pairs.push({ tube: t, other, need, side: t.shape, lower: bboxGap(t.bbox, other.bbox) });
     }
   });
   return pairs.sort((a, b) => a.lower - b.lower);
-}
-
-function kernelFailed(pair: Pair, what: string): CompilerDiagnostic {
-  return {
-    target: 'export-occt',
-    code: 'feature.kernel-failed',
-    severity: 'warn',
-    featureId: pair.tube.tube.id,
-    message: `tube.clearance: ${what} failed on tube '${pair.tube.name}' and '${pair.other.name}'; this pair's clearance was not checked.`,
-    hint: 'The OCCT kernel could not process this pair: check both for degenerate geometry with evaluate. The remaining pairs were still measured.',
-  };
 }
 
 function measure(pair: Pair): BrepClosest | undefined {
@@ -129,7 +152,7 @@ function contactDiagnostic(pair: Pair, at: V3): CompilerDiagnostic {
   try {
     volume = pair.side.intersectionVolume(pair.other.shape);
   } catch {
-    return kernelFailed(pair, 'the shared-volume probe');
+    return kernelFailed(pair.tube.tube, 'the shared-volume probe', pairScope(pair.other.name));
   }
   const { tube, other, need } = pair;
   if (volume > OVERLAP_EPSILON_MM3) {
@@ -161,18 +184,18 @@ export function checkTubeClearance(
   tubes: readonly ResolvedTube[], ctx: TubeSceneContext, spec: TubeRuleSpec, diagnostics: CompilerDiagnostic[],
 ): Map<string, NearestClearance> {
   const nearest = new Map<string, NearestClearance>();
-  const bodies = tubes.flatMap((t) => tubeBody(t, diagnostics) ?? []) as Array<Body & { tube: ResolvedTube }>;
+  const bodies = tubes.flatMap((t) => tubeBody(t, diagnostics) ?? []);
   const best = (name: string): number => nearest.get(name)?.mm ?? Infinity;
   const note = (name: string, mm: number, to: string, at: V3): void => {
     if (mm < best(name)) nearest.set(name, { mm, to, at });
   };
-  for (const pair of buildPairs(bodies, obstacleBodies(ctx, diagnostics), spec)) {
+  for (const pair of buildPairs(bodies, obstacleBodies(ctx, diagnostics), spec, diagnostics)) {
     const { tube, other, lower } = pair;
     const nearer = lower < best(tube.name) || (other.tube !== undefined && lower < best(other.name));
     if (lower >= pair.need && !nearer) continue;
     const m = measure(pair);
     if (m === undefined) {
-      diagnostics.push(kernelFailed(pair, 'the distance measurement'));
+      diagnostics.push(kernelFailed(tube.tube, 'the distance measurement', pairScope(other.name)));
       continue;
     }
     const mm = m.distance <= CONTACT_EPS_MM ? 0 : m.distance;

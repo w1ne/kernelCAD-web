@@ -35,6 +35,14 @@ describe('checkTubeRules', () => {
       path: path(elbow, 25) })).toEqual([]);
   });
 
+  it('a tube with no bends is exempt from the bend-radius rule', () => {
+    const straight = path([[0, 0, 0], [200, 0, 0]], 12);
+    expect(checkTubeRules({ name: 't', od: 10, spec, meta: meta(), path: straight })).toEqual([]);
+    // Collinear via corners are dropped: still no bend.
+    const collinear = path([[0, 0, 0], [100, 0, 0], [200, 0, 0]], 12);
+    expect(checkTubeRules({ name: 't', od: 10, spec, meta: meta(), path: collinear })).toEqual([]);
+  });
+
   it('straight between bends below rule', () => {
     // middle leg 75 - 30 - 30 = 15 mm, rule 2 x 10 = 20 mm
     const f = checkTubeRules({ name: 't', od: 10, spec, meta: meta(),

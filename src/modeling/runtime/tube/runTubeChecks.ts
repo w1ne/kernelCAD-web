@@ -86,13 +86,22 @@ function densityOf(tube: ResolvedTube): number | undefined {
   return resolved.ok ? resolved.material.density : undefined;
 }
 
+/** The lowered solid's volume; the section times the cut length when there
+ *  is no solid or the kernel cannot measure it. */
+function tubeVolumeMm3(tube: ResolvedTube, analytic: number): number {
+  try {
+    return tube.shape?.volume() ?? analytic;
+  } catch {
+    return analytic;
+  }
+}
+
 function massKg(tube: ResolvedTube): number | null {
   const density = densityOf(tube);
   if (density === undefined) return null;
   const bore = tube.od / 2 - tube.wall;
   const section = Math.PI * ((tube.od / 2) ** 2 - bore ** 2);
-  const volumeMm3 = tube.shape?.volume() ?? section * tube.path.cutLength;
-  return (volumeMm3 * density) / 1e9;
+  return (tubeVolumeMm3(tube, section * tube.path.cutLength) * density) / 1e9;
 }
 
 function pressureDrop(tube: ResolvedTube): number | null {

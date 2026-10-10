@@ -4,23 +4,47 @@
 // Tube gates on built scripts: path rules, port positions, clearance against
 // parts and other tubes, and the per-tube line report.
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { buildModel } from '../../../src/modeling/buildModel';
+import { OcctBackend } from '../../../src/kernel/backends/occt/occtBackend';
 import { runTubeChecksOnModel, type TubeCheckReport } from '../../../src/modeling/runtime/tube/runTubeChecks';
 import { DIAGNOSTIC_REGISTRY } from '../../../src/shared/diagnostics/registry';
 
-// Counts exact kernel distance measurements, to hold the bounding-box prefilter to its job.
-const kernel = vi.hoisted(() => ({ exactCalls: 0 }));
+// Counts exact kernel distance measurements, to hold the bounding-box prefilter to its job, and
+// fails the measurement whose 1-based call number is `failCall`.
+const kernel = vi.hoisted(() => ({ exactCalls: 0, failCall: 0, failRod: false }));
 vi.mock('../../../src/modeling/runtime/brepDistance', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../src/modeling/runtime/brepDistance')>();
   return {
     ...actual,
     brepExtremaClosest: (...args: Parameters<typeof actual.brepExtremaClosest>) => {
       kernel.exactCalls += 1;
+      if (kernel.exactCalls === kernel.failCall) return undefined;
       return actual.brepExtremaClosest(...args);
     },
   };
 });
+// When `failRod` is set, the sweep that builds a tube solid throws (set after the model is built).
+vi.mock('../../../src/modeling/backends/occt/tubeLowerer', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../src/modeling/backends/occt/tubeLowerer')>();
+  return {
+    ...actual,
+    tubeSolid: (...args: Parameters<typeof actual.tubeSolid>) => {
+      if (kernel.failRod) throw new Error('injected sweep failure');
+      return actual.tubeSolid(...args);
+    },
+  };
+});
+
+/** Build the script, then run the gate; `arm` runs in between, to inject kernel faults into the gate only. */
+async function runWithFault(code: string, arm: () => void): Promise<TubeCheckReport> {
+  const model = await buildModel({ fileName: 'tube-gates.kcad.ts', code });
+  expect(model.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+  arm();
+  const report = await runTubeChecksOnModel(model);
+  for (const d of report!.diagnostics) expect(d.hint.trim().length, `${d.code} has no hint`).toBeGreaterThan(0);
+  return report!;
+}
 
 async function runRaw(code: string): Promise<TubeCheckReport | undefined> {
   const model = await buildModel({ fileName: 'tube-gates.kcad.ts', code });
@@ -50,6 +74,12 @@ const wall = asm.part('wall', box(10, 200, 200), { at: [150, -80, 0] });
 
 beforeEach(() => {
   kernel.exactCalls = 0;
+  kernel.failCall = 0;
+  kernel.failRod = false;
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
 });
 
 describe('tube gates: path rules and line report', () => {
@@ -138,7 +168,7 @@ return box(1, 1, 1);`);
 
   it('no tubeSpec gives the defaulted warning and still enforces', async () => {
     const r = await run(HEAD + `
-const t = tube('fuel-1', { from: block.port('p1'), to: { point: [20, 20, 200] }, wall: 1, bendRadius: 12 });
+const t = tube('fuel-1', { from: block.port('p1'), to: { point: [20, 150, 120] }, via: [[20, 20, 120]], wall: 1, bendRadius: 12 });
 asm.part('fuel-1', t); return asm.model();`);
     expect(r.usedDefaultSpec).toBe(true);
     expect(codes(r)).toEqual(['tube.spec.defaulted', 'tube.bend.radius-too-small']);
@@ -215,6 +245,65 @@ return asm.model();`);
     // 10 mm of wall across a 10 x 1 mm tube section: pi * (25 - 16) * 10 = 282.74 mm^3.
     expect(r.diagnostics[0].message).toBe("tube.clearance.overlap: tube 'fuel-1' passes through 'wall' (282.74 mm^3 shared).");
     expect(r.lines[0].minClearance).toMatchObject({ to: 'wall', mm: 0 });
+  });
+
+  it('a tube touching a part without entering it violates at 0 mm', async () => {
+    // Tangent: the tube's outer surface (x = 145 + 5) lies on the wall face at x = 150.
+    const r = await run(HEAD + `
+tubeSpec({});
+tube('loose', { from: { point: [145, 20, 20] }, to: { point: [145, 20, 100] }, od: 10, wall: 1, bendRadius: 30 });
+return asm.model();`);
+    expect(codes(r)).toEqual(['tube.clearance.violated']);
+    expect(r.diagnostics[0].message).toMatch(
+      /^tube\.clearance\.violated: tube 'loose' is 0\.00 mm from 'wall'; the rule needs 6\.00 mm\. Closest point on the tube: \[150\.00, 20\.00, /);
+    expect(r.lines[0].minClearance).toMatchObject({ to: 'wall', mm: 0 });
+  });
+
+  it('a failed distance measurement warns for that pair and the others are still measured', async () => {
+    const src = HEAD + `
+tubeSpec({});
+const t = tube('fuel-1', { from: block.port('p1'), to: { point: [142, 20, 200] }, via: [[20, 20, 120], [142, 20, 120]], wall: 1, bendRadius: 30 });
+asm.part('fuel-1', t);
+return asm.model();`;
+    // The wall is the nearest pair, so it is measured first.
+    const r = await runWithFault(src, () => { kernel.failCall = 1; });
+    expect(codes(r)).toEqual(['feature.kernel-failed']);
+    expect(r.diagnostics[0].severity).toBe('warn');
+    expect(r.diagnostics[0].message).toBe(
+      "tube.clearance: the distance measurement failed on tube 'fuel-1' and 'wall'; this pair's clearance was not checked.");
+    expect(r.lines[0].minClearance).toMatchObject({ to: 'block', mm: expect.closeTo(25, 6) });
+    expect(r.lines[0].cutLength).toBeGreaterThan(0);
+  });
+
+  it('a failed fitting-zone sweep warns for the port owner and the other parts are still measured', async () => {
+    const src = HEAD + `
+tubeSpec({});
+const t = tube('fuel-1', { from: block.port('p1'), to: { point: [142, 20, 200] }, via: [[20, 20, 120], [142, 20, 120]], wall: 1, bendRadius: 30 });
+asm.part('fuel-1', t);
+return asm.model();`;
+    const r = await runWithFault(src, () => { kernel.failRod = true; });
+    expect(codes(r)).toEqual(['feature.kernel-failed', 'tube.clearance.violated']);
+    expect(r.diagnostics[0].message).toBe(
+      "tube.clearance: building the tube without its fitting zone failed on tube 'fuel-1' and 'block'; this pair's clearance was not checked.");
+    expect(r.diagnostics[1].message).toContain("tube 'fuel-1' is 3.00 mm from 'wall'");
+  });
+
+  it('a tube whose bounding box fails still gets its rules and line report', async () => {
+    const src = `
+tubeSpec({});
+tube('a', { from: { point: [0, 0, 0] }, to: { point: [100, 60, 0] }, via: [[100, 0, 0]], od: 10, wall: 1, bendRadius: 20, density: 8000 });
+return box(1, 1, 1);`;
+    const r = await runWithFault(src, () => {
+      vi.spyOn(OcctBackend.prototype, 'boundingBox').mockImplementation(() => { throw new Error('injected bbox failure'); });
+      vi.spyOn(OcctBackend.prototype, 'volume').mockImplementation(() => { throw new Error('injected volume failure'); });
+    });
+    expect(codes(r)).toEqual(['tube.bend.radius-too-small', 'feature.kernel-failed']);
+    expect(r.diagnostics[1].message).toBe(
+      "tube.clearance: the bounding box failed on tube 'a'; the tube's clearance was not checked.");
+    expect(r.lines).toHaveLength(1);
+    expect(r.lines[0].minClearance).toBeUndefined();
+    // Mass falls back to section x cut length when the solid cannot be measured.
+    expect(r.lines[0].massKg).toBeCloseTo((Math.PI * (25 - 16) * r.lines[0].cutLength * 8000) / 1e9, 12);
   });
 
   it('a system pair rule is stricter than the default', async () => {
