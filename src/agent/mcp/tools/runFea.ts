@@ -52,9 +52,9 @@ export interface RunFeaInput {
    *  on, it sets the FIRST pass's element size. */
   mesh_size?: number;
   /** Automatic mesh refinement (default true): when the stress field is
-   *  untrusted only because the solver's error estimate is high, re-solve on
-   *  a finer mesh inside the element and wall-time budgets, and report the
-   *  finest pass with `summary.refinement`. false: one solve at mesh_size. */
+   *  untrusted only because the solver's error estimate is high, re-solve
+   *  once at 0.75x the element size inside the element budget, and report the
+   *  finer pass with `summary.refinement`. false: one solve at mesh_size. */
   refine?: boolean;
   /** Render stress heatmap PNGs (default true). Turn off for a fast
    *  numbers-only run. */

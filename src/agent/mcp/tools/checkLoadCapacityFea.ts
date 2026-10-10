@@ -68,8 +68,7 @@ export type FeaLoadCapacityOutput =
         trustReasons: string[];
         elementCount: number;
         meshSizeMm: number;
-        /** The auto-refinement record: every pass, whether the peak
-         *  converged, and why refinement stopped. Absent with refine: false. */
+        /** The auto-refinement record: every pass and why refinement stopped. Absent with refine: false. */
         refinement?: FeaRefinement;
         /** Raw peak at the clamped edge of a fixed face (singular, mesh-dependent). */
         peakAtSupportPa?: number;
