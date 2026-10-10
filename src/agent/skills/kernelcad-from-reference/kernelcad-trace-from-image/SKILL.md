@@ -84,8 +84,10 @@ the same labels can flow into kernelCAD constant names (`const bridge_top
 **Backend hint.** Leave `backend` unset; let the router pick. The router
 falls through to:
 
-- `'opencv'` — uniform background + silhouette/curve features only.
-- `'hybrid'` — uniform background + any `point`/`bbox` feature.
+- `'opencv'` — uniform background + `silhouette` features only.
+- `'hybrid'` — uniform background + any `point`/`bbox`/`curve` feature (curves
+  are part of the outline, e.g. a roof line, so the LLM picks them out; opencv
+  only returns the whole silhouette).
 - `'vision-llm'` — cluttered background; or you explicitly want the LLM.
 
 Forcing `'opencv'` on a `point`/`bbox` request emits a
