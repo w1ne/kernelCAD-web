@@ -73,6 +73,33 @@ describe('tube()', () => {
       wall: 0.89, bendRadius: 28.6, ...patch })).toThrowError(prefixRe(prefix));
   });
 
+  it.each([
+    ['tube.flow.invalid', { flow: { lpm: 0, fluid: 'water' } }],
+    ['tube.flow.invalid', { flow: { lpm: -2, fluid: 'water' } }],
+    ['tube.flow.invalid', { flow: { lpm: Number.NaN, fluid: 'water' } }],
+    ['tube.flow.invalid', { flow: { lpm: Number.POSITIVE_INFINITY, fluid: 'water' } }],
+    ['tube.flow.invalid', { flow: { lpm: '5', fluid: 'water' } }],
+    ['tube.flow.invalid', { flow: 5 }],
+    ['tube.flow.invalid', { flow: null }],
+    ['tube.flow.invalid', { flow: ['water'] }],
+    ['tube.density.invalid', { density: 0 }],
+    ['tube.density.invalid', { density: -7800 }],
+    ['tube.density.invalid', { density: Number.NaN }],
+    ['tube.density.invalid', { density: Number.POSITIVE_INFINITY }],
+    ['tube.density.invalid', { density: '7800' }],
+  ])('%s for %j', (prefix, patch) => {
+    const { api } = makeApi();
+    expect(() => api.tube('t', { from: { point: [0, 0, 0] }, to: { point: [0, 0, 50] }, ...free, ...patch } as never))
+      .toThrowError(prefixRe(prefix));
+  });
+
+  it('accepts a positive flow and density', () => {
+    const { session, api } = makeApi();
+    api.tube('t', { from: { point: [0, 0, 0] }, to: { point: [0, 0, 50] }, ...free, density: 7800, flow: { lpm: 0.5, fluid: 'water' } });
+    const meta = (session.getRecords().find((r) => r.kind === 'tube')!.metadata as unknown as { tube: TubeMetadata }).tube;
+    expect(meta).toMatchObject({ densityKgM3: 7800, flow: { lpm: 0.5, fluid: 'water' } });
+  });
+
   it('rejects mismatched port ods between the two ends', () => {
     const { api, asm, pump } = rig();
     const other = asm.part('other', api.box(10, 10, 10), { at: [200, 0, 100] })
@@ -153,6 +180,22 @@ describe('tubeSpec()', () => {
   ])('throws feature.invalid-args naming tubeSpec for %j', (spec) => {
     const { api } = makeApi();
     expect(() => api.tubeSpec(spec as never)).toThrowError(/^tubeSpec:/);
+  });
+
+  it.each([
+    [{ minBendRadius: 3 }, /^tubeSpec: minBendRadius is not a tubeSpec field/],
+    [{ maxBendAngle: 90, clearence: { default: 10 } }, /^tubeSpec: clearence is not a tubeSpec field/],
+    [{ clearance: { defualt: 10 } }, /^tubeSpec: clearance\.defualt is not a tubeSpec field/],
+    [{ clearance: { default: 10, pair: [] } }, /^tubeSpec: clearance\.pair is not a tubeSpec field/],
+  ])('throws on the unknown key in %j', (spec, message) => {
+    const { api } = makeApi();
+    expect(() => api.tubeSpec(spec as never)).toThrowError(message);
+  });
+
+  it('names the accepted fields when a key is unknown', () => {
+    const { api } = makeApi();
+    expect(() => api.tubeSpec({ minBendRadius: 3 } as never)).toThrowError(
+      /minBendRadiusFactor, minStraightBetweenBends, minStraightAtEnd, maxBendAngle, clearance/);
   });
 
   it('records a virtual tubeSpec feature', () => {

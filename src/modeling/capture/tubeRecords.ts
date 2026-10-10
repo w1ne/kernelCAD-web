@@ -171,10 +171,24 @@ function resolveBendRadius(radius: Editable<number>, table: ParamTable): { param
 
 function validateFlow(flow: TubeOptions['flow']): void {
   if (flow === undefined) return;
+  if (typeof flow !== 'object' || flow === null || Array.isArray(flow)) {
+    fail(`tube.flow.invalid: flow must be { lpm, fluid }; got ${JSON.stringify(flow)}.`,
+      "Example: flow: { lpm: 6, fluid: 'water' }.");
+  }
+  if (!isPositive(flow.lpm)) {
+    fail(`tube.flow.invalid: flow.lpm must be a positive finite number in litres per minute; got ${JSON.stringify(flow.lpm)}.`,
+      'Pass the flow rate in L/min, for example flow: { lpm: 6, fluid }; leave flow out for a line with no flow estimate.');
+  }
   if (!Object.prototype.hasOwnProperty.call(TUBE_FLUIDS, flow.fluid)) {
     fail(`tube.flow.unknown-fluid: fluid ${JSON.stringify(flow.fluid)} is not known.`,
       `Use one of: ${Object.keys(TUBE_FLUIDS).join(', ')}.`);
   }
+}
+
+function validateDensity(density: TubeOptions['density']): void {
+  if (density === undefined || isPositive(density)) return;
+  fail(`tube.density.invalid: density must be a positive finite number in kg/m^3; got ${JSON.stringify(density)}.`,
+    'Pass the tube material density in kg/m^3, for example density: 7850, or name a material instead.');
 }
 
 /** Corner points in mm, read through the ParamTable: a symbolic Param's
@@ -228,6 +242,7 @@ export function buildTubeFeatureSpec(
   const wall = resolveWall(opts.wall, od.mm, table);
   const bendRadius = resolveBendRadius(opts.bendRadius, table);
   validateFlow(opts.flow);
+  validateDensity(opts.density);
   const metadata = buildTubeMetadata(name, opts, from, to, via);
   checkPath(name, metadata, bendRadius.mm, table);
   return {
@@ -274,11 +289,24 @@ function clearancePair(i: number, p: unknown): { a: string; b: string; min: numb
   return { a: pair.a as string, b: pair.b as string, min };
 }
 
+const SPEC_FIELDS = ['minBendRadiusFactor', 'minStraightBetweenBends', 'minStraightAtEnd', 'maxBendAngle', 'clearance'];
+const CLEARANCE_FIELDS = ['default', 'pairs'];
+
+/** A misspelt rule would be dropped and its default enforced instead: refuse it. */
+function rejectUnknownKeys(obj: object, allowed: readonly string[], prefix: string): void {
+  for (const key of Object.keys(obj)) {
+    if (!allowed.includes(key)) {
+      badSpec(`${prefix}${key}`, `is not a tubeSpec field; the fields are ${allowed.map((k) => prefix + k).join(', ')}`);
+    }
+  }
+}
+
 function clearanceField(v: unknown): TubeSpecMetadata['clearance'] {
   if (v === undefined) return { default: TUBE_SPEC_DEFAULTS.clearance.default, pairs: [] };
   if (typeof v !== 'object' || v === null || Array.isArray(v)) {
     badSpec('clearance', `must be { default?, pairs? }; got ${JSON.stringify(v)}`);
   }
+  rejectUnknownKeys(v, CLEARANCE_FIELDS, 'clearance.');
   const c = v as { default?: unknown; pairs?: unknown };
   if (c.pairs !== undefined && !Array.isArray(c.pairs)) {
     badSpec('clearance.pairs', `must be an array of { a, b, min }; got ${JSON.stringify(c.pairs)}`);
@@ -293,6 +321,7 @@ export function buildTubeSpecFeatureSpec(spec: TubeSpec): AuthoringFeatureSpec {
   if (typeof spec !== 'object' || spec === null || Array.isArray(spec)) {
     badSpec('spec', `must be an object like { minBendRadiusFactor?, clearance? }; got ${JSON.stringify(spec)}`);
   }
+  rejectUnknownKeys(spec, SPEC_FIELDS, '');
   const metadata: TubeSpecMetadata = {
     virtual: true,
     minBendRadiusFactor: positiveField('minBendRadiusFactor', spec.minBendRadiusFactor, TUBE_SPEC_DEFAULTS.minBendRadiusFactor),
