@@ -6,6 +6,8 @@ import { cleanup, fireEvent, render, screen, within } from '@testing-library/rea
 import { ViewportToolbar, type ViewportDisplay } from '../ViewportToolbar';
 import { viewTargetRequests } from '../hooks/studioNavigation';
 
+vi.mock('../OrderButton', () => ({ OrderButton: () => null }));
+
 afterEach(() => cleanup());
 
 function display(overrides: Partial<ViewportDisplay> = {}): ViewportDisplay {

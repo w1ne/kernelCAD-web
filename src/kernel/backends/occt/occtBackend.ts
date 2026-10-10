@@ -20,6 +20,7 @@ import { validateTriangleMesh, addTriangleFaces } from './fromTriangleMeshPhases
 import { resolveColor } from '../../../shared/render/palette';
 import { type PBRMaterial } from '../../../shared/intent/material';
 import { sceneToWorldFrameParts } from './sceneToWorldFrame';
+import { writeStepAssembly } from './stepAssemblyExport';
 import { computeMassProperties, type MassProperties, type GyrationAxis } from '../../properties/massProperties';
 import { KernelError } from '../../../shared/intent/kernelError';
 import {
@@ -1389,8 +1390,11 @@ export class OcctBackend implements ShapeBackend {
  * Scene-aware STEP export. Builds a `replicad.ShapeConfig[]` from the
  * `SceneBackend`'s parts (apply each part's `worldTransform` to a fresh
  * clone of its local-frame OCCT shape), then routes through replicad's
- * native `exportSTEP` so the resulting STEP file ships a separate named
- * body per part with its role color attached via XCAFDoc / STEP layers.
+ * XCAF STEP writer (`writeStepAssembly`) so the resulting STEP file ships a
+ * separate named body per part with its role color attached via XCAFDoc /
+ * STEP layers. (`replicad.exportSTEP` is not used: its GC finalizers
+ * double-free the STEP work session and corrupt the wasm heap; see
+ * stepAssemblyExport.ts.)
  *
  * Why a free function instead of a `Scene.exportSTEP()` method: the agent-
  * facing Scene surface stays lean (per the kernelCAD product strategy —
@@ -1401,7 +1405,7 @@ export class OcctBackend implements ShapeBackend {
  * Lifecycle: clones every part shape before `applyTransform` because
  * replicad's translate/rotate mutate-and-destroy the source OCCT handle
  * (cf. commit 1d597dd). Color tokens (e.g. 'plate', 'gear') are resolved
- * to `#rrggbb` via the role palette before being passed to replicad.
+ * to `#rrggbb` via the role palette before being passed to the writer.
  */
 export async function exportSceneToSTEPAsync(
   sceneBackend: SceneBackend,
@@ -1409,23 +1413,13 @@ export async function exportSceneToSTEPAsync(
   // `sceneToWorldFrameParts` enforces the non-empty-scene invariant and
   // owns the clone-before-transform contract for every multi-body exporter.
   const worldParts = sceneToWorldFrameParts(sceneBackend);
-  const shapeConfigs = worldParts.map((p) => {
-    const config: {
-      shape: ReplicadShape3D;
-      name: string;
-      color?: string;
-    } = {
-      shape: p.shape.getReplicadShape(),
+  return writeStepAssembly(
+    worldParts.map((p) => ({
+      shape: p.shape.getReplicadShape().wrapped,
       name: p.name,
-    };
-    const hex = resolveColor(p.color);
-    if (hex !== undefined) config.color = hex;
-    return config;
-  });
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const blob = replicad.exportSTEP(shapeConfigs as any);
-  const buf = await blob.arrayBuffer();
-  return new Uint8Array(buf);
+      color: resolveColor(p.color),
+    })),
+  );
 }
 
 /**

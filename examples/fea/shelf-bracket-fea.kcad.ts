@@ -38,10 +38,10 @@
 //                         loaded face and not the wall face
 //     images              heatmap/iso.png, heatmap/front.png
 //
-//   The fillet peak climbs as the mesh refines: the 4 mm gate number reads
-//   about 15 % low and is still climbing at 1.91 mm. The margin is wide
-//   here, so the verdict holds; for a tight margin, continue from the last
-//   pass with run_fea({ mesh_size: 1.9 }) and gate on the size it settles at.
+//   The fillet peak climbs as the mesh refines (about 50 MPa at 1.9 mm in a
+//   finer run), so the 4 mm gate number reads about 15 % low. The margin is
+//   wide here, so the verdict holds; for a tight margin, run
+//   run_fea({ mesh_size: 1.9 }) and gate on the size it settles at.
 //
 // TO SEE IT FAIL
 //

@@ -65,3 +65,15 @@ At runtime, without code changes:
 A fork that keeps the attribution states truthfully that it is built on
 kernelCAD, which the [trademark policy](TRADEMARKS.md) allows. A renamed fork
 can change or remove the attribution in `attribution.ts`.
+
+## Third-party shapes in examples and cookbook recipes
+
+Some examples and recipes are ports of openly licensed models: their numbers
+were measured from the source and re-modelled in kernelCAD. The source files
+themselves are not redistributed. Each entry names the source and its license,
+and links the provenance file that records the commit, checksum, extraction and
+hand edits.
+
+| Used in | Source | Author and changes | License | Provenance |
+| --- | --- | --- | --- | --- |
+| `examples/from-reference/hatchback/hatchback.kcad.ts`, cookbook `automotive-body-envelope` | `hatchback` from [osrf/gazebo_models](https://github.com/osrf/gazebo_models) (commit `8163eb4b`) | Copyright 2012 Nathan Koenig (Open Source Robotics Foundation); modified: measured and re-modelled, mesh not included | [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/) | [`PROVENANCE.md`](examples/from-reference/hatchback/PROVENANCE.md) |

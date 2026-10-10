@@ -139,7 +139,7 @@ const verifyToolEntry: ToolRegistryEntry = {
         study: { type: 'string', description: "check:'load-capacity' mode:'fea' — feaStudy name (default: the last declared one)." },
         mesh_size: { type: 'number', description: "check:'load-capacity' mode:'fea' — element size override, mm." },
         heatmaps: { type: 'boolean', description: "check:'load-capacity' mode:'fea' — also render stress heatmap PNGs (default false)." },
-        refine: { type: 'boolean', description: "check:'load-capacity' mode:'fea' — automatic mesh refinement until the stress is trusted, inside the element and wall-time budgets (default true); false solves once at the study's meshSize." },
+        refine: { type: 'boolean', description: "check:'load-capacity' mode:'fea' — one automatic finer pass (0.75x element size) when the stress is untrusted, inside the element budget (default true); false solves once at the study's meshSize." },
         pose: { description: "check:'static-hold' — explicit pose (joint name -> deg/mm) or array of poses; omit to sample a grid across the evaluated joint's range." },
         gravity: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3, description: "check:'static-hold' — gravity vector, m/s^2, world frame (default [0, 0, -9.81])." },
         min_torque_margin_pct: { type: 'number', description: "check:'static-hold' — safety-margin floor as a percent of actuator capacity (default 20)." },

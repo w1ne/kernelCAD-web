@@ -222,6 +222,41 @@ describe('extractFeaturesViaLLM', () => {
     expect(client.calls).toHaveLength(1);
   });
 
+  // Shapes OpenAI-compatible vision models (Qwen3-VL on DeepInfra) return for
+  // the same points; seen on prod 2026-10-10 as "waypoint is not a 2-tuple".
+  it('accepts a flat [x1, y1, x2, y2] bbox, a nested flat bbox and {x, y} points', async () => {
+    const reqs: TraceFeatureRequest[] = [
+      { label: 'wheel', kind: 'bbox' },
+      { label: 'window', kind: 'bbox' },
+      { label: 'axle', kind: 'point' },
+    ];
+    const response = JSON.stringify({
+      features: [
+        { label: 'wheel', kind: 'bbox', waypoints: [0.11, 0.55, 0.36, 0.88], confidence: 0.9 },
+        { label: 'window', kind: 'bbox', waypoints: [[0.36, 0.37, 0.64, 0.55]], confidence: 0.8 },
+        { label: 'axle', kind: 'point', waypoints: [{ x: 0.5, y: 0.72 }], confidence: 0.7 },
+      ],
+    });
+    const out = await extractFeaturesViaLLM(new MockVisionClient([response]), bytes, 'image/png', reqs, undefined, 12);
+    expect(out.map((f) => f.waypoints)).toEqual([
+      [[0.11, 0.55], [0.36, 0.88]],
+      [[0.36, 0.37], [0.64, 0.55]],
+      [[0.5, 0.72]],
+    ]);
+  });
+
+  it('still rejects an odd-length flat list and out-of-range values in the new shapes', async () => {
+    const reqs: TraceFeatureRequest[] = [{ label: 'wheel', kind: 'bbox' }];
+    const odd = JSON.stringify({ features: [{ label: 'wheel', kind: 'bbox', waypoints: [0.1, 0.2, 0.3] }] });
+    await expect(
+      extractFeaturesViaLLM(new MockVisionClient([odd, odd]), bytes, 'image/png', reqs, undefined, 12),
+    ).rejects.toThrow(/2-tuple/);
+    const big = JSON.stringify({ features: [{ label: 'wheel', kind: 'bbox', waypoints: [110, 550, 360, 880] }] });
+    await expect(
+      extractFeaturesViaLLM(new MockVisionClient([big, big]), bytes, 'image/png', reqs, undefined, 12),
+    ).rejects.toThrow(/out of \[0/);
+  });
+
   it('rejects waypoints outside [0, 1]', async () => {
     const response = JSON.stringify({
       features: [

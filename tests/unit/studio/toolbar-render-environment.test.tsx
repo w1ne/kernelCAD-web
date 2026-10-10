@@ -1,6 +1,7 @@
 /** @vitest-environment happy-dom */
 import { afterEach, describe, it, expect, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+vi.mock('../../../src/studio/OrderButton', () => ({ OrderButton: () => null }));
 import { ViewportToolbar as Toolbar } from '../../../src/studio/ViewportToolbar';
 
 afterEach(() => cleanup());

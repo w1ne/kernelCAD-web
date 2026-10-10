@@ -69,3 +69,30 @@ describe('buildShapeMaterial cutaway clipping', () => {
     expect(unclipped.side).toBe(THREE.FrontSide);
   });
 });
+
+describe('buildShapeMaterial publish look', () => {
+  it('gives an unmaterialed shape a smooth physical material with a clear coat', () => {
+    const m = buildShapeMaterial(undefined, false, '#bfc4c8', 'shadedWithEdges', [], false, 'publish');
+    expect(m).toBeInstanceOf(THREE.MeshPhysicalMaterial);
+    const pm = m as THREE.MeshPhysicalMaterial;
+    expect(pm.flatShading).toBe(false);
+    expect(pm.clearcoat).toBeGreaterThan(0);
+    expect(pm.metalness).toBe(0);
+    expect(pm.color.getHexString()).toBe('bfc4c8');
+  });
+
+  it('keeps an authored material, shaded smoothly', () => {
+    const m = buildShapeMaterial(
+      { baseColor: '#3060a0', metalness: 0.2, roughness: 0.5 },
+      false, '#3060a0', 'shadedWithEdges', [], false, 'publish',
+    ) as THREE.MeshPhysicalMaterial;
+    expect(m.flatShading).toBe(false);
+    expect(m.metalness).toBeCloseTo(0.2);
+  });
+
+  it('leaves the engineering look as it was (flat Lambert with edges)', () => {
+    const m = buildShapeMaterial(undefined, false, '#bfc4c8', 'shadedWithEdges');
+    expect(m).toBeInstanceOf(THREE.MeshLambertMaterial);
+    expect((m as THREE.MeshLambertMaterial).flatShading).toBe(true);
+  });
+});

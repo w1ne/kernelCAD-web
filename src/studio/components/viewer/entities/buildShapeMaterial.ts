@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import type { GeometryResult } from '../../../../shared/worker/geometryEngine';
 import type { ViewMode3D } from '../../../../shared/types/viewMode';
 import { buildMaterialFromPBR } from '../../demoPlayer/buildMaterialFromPBR';
+import { PUBLISH_DEFAULT_MATERIAL, type ViewerLook } from '../publishLook';
 
 /**
  * Build the THREE material for a shape given the geometry record, selection
@@ -20,6 +21,11 @@ import { buildMaterialFromPBR } from '../../demoPlayer/buildMaterialFromPBR';
  *                           the BREP edge polylines (rendered by ShapeGeometry)
  *                           carry the visual. The triangulation is never shown.
  *  - `'shadedWithEdges'`  — flat shading + black edge overlay rendered separately
+ *
+ * The `'publish'` look (the embed viewer) always shades smoothly — the
+ * kernel's vertex normals are the surface normals — and gives a shape with
+ * no material a neutral physical one with a light clear coat instead of
+ * Lambert, so it reflects the room like the authored materials do.
  */
 
 /** Face opacity used by the wireframe-mode ghost film. */
@@ -32,8 +38,9 @@ export function buildShapeMaterial(
     viewMode3D: ViewMode3D,
     clippingPlanes: THREE.Plane[] = [],
     clipIntersection = false,
+    look: ViewerLook = 'engineering',
 ): THREE.Material {
-    const flatShading = viewMode3D === 'shadedWithEdges';
+    const flatShading = viewMode3D === 'shadedWithEdges' && look === 'engineering';
     const applyClip = (m: THREE.Material): THREE.Material => {
         // Empty array ⇒ no clipping (three.js no-ops). Non-empty ⇒ GPU clip;
         // clipShadows keeps cast shadows consistent with the cut.
@@ -71,6 +78,9 @@ export function buildShapeMaterial(
         pbrMaterial.side = THREE.DoubleSide;
         pbrMaterial.depthWrite = (pbr.opacity ?? 1) >= 1;
         return applyClip(pbrMaterial);
+    }
+    if (look === 'publish') {
+        return applyClip(new THREE.MeshPhysicalMaterial({ color, ...PUBLISH_DEFAULT_MATERIAL }));
     }
     return applyClip(new THREE.MeshLambertMaterial({
         color,

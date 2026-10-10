@@ -18,6 +18,7 @@ import { hasNonemptyGeometry } from '../../studio/components/viewer/hasNonemptyG
 import { WorkbenchProvider, useWorkbench } from '../../studio/context/WorkbenchContext';
 import type { GeometryResult } from '../../shared/worker/geometryEngine';
 import type { ViewportBackground } from '../../shared/types/viewMode';
+import type { ViewerLook } from '../../studio/components/viewer/publishLook';
 import {
   geometriesFromArtifact,
   parseMeshArtifact,
@@ -31,6 +32,7 @@ import { animArtifactUrlFromMeshUrl } from '../animArtifactUrl';
 import { EmbedAnimationOverlay } from './EmbedAnimationOverlay';
 import type { MeshDimensionsInfo } from '../../studio/components/viewer/dimensions/boundsDimensions';
 import { FeedbackLauncher } from '../../studio/components/Layout/FeedbackLauncher';
+import { useMarkFix, type MarkFixTarget } from '../markFix/MarkFix';
 import type { FeedbackContext, FeedbackPayload } from '../../studio/components/Layout/feedbackApi';
 
 export type FunnelViewerPhase =
@@ -65,15 +67,19 @@ export interface FunnelViewerProps {
   statusOverlay?: boolean;
   /** Canvas background; overrides the stored Studio preference. */
   background?: ViewportBackground;
+  /** 'publish' draws a product render (the embed). Default 'engineering'. */
+  look?: ViewerLook;
   /** Adds a small "Feedback" button over the canvas that sends this context
    *  with the message. Off (no button) when unset. */
   feedback?: FeedbackContext;
   /** Override the feedback network call (tests). */
   submitFeedback?: (payload: FeedbackPayload) => Promise<void>;
+  /** ChatGPT embed: offer "Mark & fix" once the hosting widget says it takes edit requests. */
+  markFix?: MarkFixTarget;
 }
 
 /** Props FunnelViewer passes down to the inner viewer unchanged. */
-type InnerDisplayProps = Pick<FunnelViewerProps, 'statusOverlay' | 'background'> & {
+type InnerDisplayProps = Pick<FunnelViewerProps, 'statusOverlay' | 'background' | 'markFix' | 'look'> & {
   /** Stored artifact's dimensions + bounds (mesh path only). */
   meshDimensions?: MeshDimensionsInfo | null;
 };
@@ -88,31 +94,17 @@ function funnelStatusLabel(phase: FunnelViewerPhase, detail: string | null): str
   }
 }
 
-/** Inner component — must be mounted inside WorkbenchProvider. */
-function FunnelViewerInner({
-  onPhaseChange,
-  revision = null,
-  instanceId,
-  overlay,
-  statusOverlay = true,
-  background,
-  meshDimensions,
-}: InnerDisplayProps & {
+/**
+ * The viewer's display phase from the workbench state, reported to
+ * `onPhaseChange` and to the parent window (the ChatGPT widget).
+ */
+function useFunnelPhase(args: {
   onPhaseChange?: (phase: FunnelViewerPhase, detail?: string | null) => void;
-  revision?: number | null;
+  revision: number | null;
   instanceId?: string;
-  overlay?: ReactNode;
 }) {
-  const {
-    geometries,
-    previewGeometries,
-    sketchesGeometries,
-    showSketches,
-    viewMode3D,
-    isReady,
-    isComputing,
-    error,
-  } = useWorkbench();
+  const { onPhaseChange, revision, instanceId } = args;
+  const { geometries, isReady, isComputing, error } = useWorkbench();
 
   const [displayReady, setDisplayReady] = useState(false);
   const [viewerError, setViewerError] = useState<string | null>(null);
@@ -170,6 +162,36 @@ function FunnelViewerInner({
     setEmptyBuildError(null);
   }, []);
 
+  return { phase, detail, displayReady, nonempty, onDisplayReady };
+}
+
+/** Inner component — must be mounted inside WorkbenchProvider. */
+function FunnelViewerInner({
+  onPhaseChange,
+  revision = null,
+  instanceId,
+  overlay,
+  statusOverlay = true,
+  background,
+  meshDimensions,
+  markFix,
+  look,
+}: InnerDisplayProps & {
+  onPhaseChange?: (phase: FunnelViewerPhase, detail?: string | null) => void;
+  revision?: number | null;
+  instanceId?: string;
+  overlay?: ReactNode;
+}) {
+  const {
+    geometries,
+    previewGeometries,
+    sketchesGeometries,
+    showSketches,
+    viewMode3D,
+  } = useWorkbench();
+  const { phase, detail, displayReady, nonempty, onDisplayReady } = useFunnelPhase({ onPhaseChange, revision, instanceId });
+  const mark = useMarkFix({ target: markFix, geometries, displayed: phase === 'model_displayed' });
+
   // A customizer overlay reports its own build errors; over a displayed
   // model it keeps the last good geometry in view.
   const overlayOwnsError = Boolean(overlay) && phase === 'build_failed' && displayReady && nonempty;
@@ -187,6 +209,8 @@ function FunnelViewerInner({
         background={background}
         meshDimensions={meshDimensions}
         showOriginPlanes={false}
+        canvasExtras={mark.canvas}
+        look={look}
       />
       {statusLabel ? (
         <div
@@ -199,6 +223,7 @@ function FunnelViewerInner({
         </div>
       ) : null}
       {overlay}
+      {mark.overlay}
     </div>
   );
 }
@@ -216,6 +241,8 @@ function SourceViewer({
   overlay,
   statusOverlay,
   background,
+  markFix,
+  look,
 }: InnerDisplayProps & {
   code: string;
   onPhaseChange?: FunnelViewerProps['onPhaseChange'];
@@ -233,6 +260,8 @@ function SourceViewer({
         overlay={overlay}
         statusOverlay={statusOverlay}
         background={background}
+        markFix={markFix}
+        look={look}
       />
     </WorkbenchProvider>
   );
@@ -465,6 +494,8 @@ function LoadedMeshViewer(props: FunnelViewerProps & {
           statusOverlay={props.statusOverlay}
           background={props.background}
           meshDimensions={props.meshDimensions}
+          markFix={props.markFix}
+          look={props.look}
         />
         {resolvedAnimUrl ? <EmbedAnimationOverlay key={resolvedAnimUrl} animUrl={resolvedAnimUrl} /> : null}
       </WorkbenchProvider>
@@ -506,6 +537,8 @@ function FunnelViewerContent(props: FunnelViewerProps) {
           overlay={props.overlay}
           statusOverlay={props.statusOverlay}
           background={props.background}
+          markFix={props.markFix}
+          look={props.look}
         />
       </div>
     );

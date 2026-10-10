@@ -169,11 +169,6 @@ export interface FeaTrust {
    *  stress field should not be believed as-is. */
   meshTrusted: boolean;
   reasons: readonly string[];
-  /** What the trust rests on when it is not the plain per-mesh check:
-   *  'peak-convergence' means the solver's error estimate was still above
-   *  its threshold but the governing peak moved less than 5 % between the
-   *  last two refinement passes (autoRefine.ts). Absent otherwise. */
-  basis?: 'peak-convergence';
 }
 
 /** One solve of an auto-refined run. */
@@ -185,46 +180,28 @@ export interface FeaRefinementPass {
   maxStressErrorPercent?: number;
   /** The per-mesh trust check of this pass on its own. */
   meshTrusted: boolean;
-  /** Governing region of the peak (`hotSpots[0].region`). */
-  region?: string;
-  /** |peak - previous peak| / peak, percent. Absent on the first pass. */
-  peakChangePercent?: number;
-  /** Mesh + solve wall time of this pass, ms. */
-  wallMs: number;
 }
 
 /** Why auto-refinement stopped where it did. */
 export type FeaRefinementStop =
   /** The last pass passed the per-mesh trust check. */
   | 'trusted'
-  /** The governing peak moved < 5 % over the last refinement step. */
-  | 'converged'
   /** Untrusted for element quality only (slivers / inverted elements),
    *  which a smaller element size does not reliably fix. */
   | 'quality-limited'
   /** The solver emitted no error estimate to refine against. */
   | 'no-error-estimate'
-  /** The next pass would exceed the element budget. */
+  /** The finer pass would exceed the element budget. */
   | 'element-budget'
-  /** The next pass would exceed the wall-time budget. */
-  | 'time-budget'
-  /** Every allowed pass ran and the result is still untrusted. */
-  | 'max-passes'
-  /** A refinement pass failed (mesh or solve); the previous pass stands. */
-  | 'pass-failed';
+  /** The finer pass failed (mesh or solve); the first pass stands. */
+  | 'pass-failed'
+  /** The finer pass solved and is still untrusted. */
+  | 'still-untrusted';
 
 export interface FeaRefinement {
   /** Every solve in order, coarsest first; the summary is the last one. */
   passes: readonly FeaRefinementPass[];
-  /** The governing peak changed < 5 % over the last refinement step (a
-   *  real step: element size ratio <= 0.8), and its region carried that
-   *  peak on the coarser mesh too. */
-  converged: boolean;
   stoppedBy: FeaRefinementStop;
-  /** Element budget the passes were held to (KERNELCAD_FEA_MAX_ELEMENTS). */
-  elementBudget: number;
-  /** Total wall-time budget for all passes, ms (KERNELCAD_FEA_REFINE_TIME_MS). */
-  timeBudgetMs: number;
   /** Why it stopped, in words (budget numbers, the failed pass's error). */
   note?: string;
 }

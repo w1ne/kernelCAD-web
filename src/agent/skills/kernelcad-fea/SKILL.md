@@ -23,11 +23,11 @@ return bracket;
 
 ```
 run_fea({ file: 'bracket.kcad.ts', output_dir: '/tmp/bracket-fea' })
-// → { ok: true, summary: { minSafetyFactor: 5.43, maxVonMisesMPa: 49.70,
+// → { ok: true, summary: { minSafetyFactor: 6.10, maxVonMisesMPa: 44.28,
 //     hotSpots: [{ region: '@kc[fillet_1/face/f7]', ... }],
 //     trust: { meshTrusted: false, reasons: [...] },
-//     refinement: { passes: [4 mm: 42.5 MPa, 2.62 mm: 46.3 MPa, 1.91 mm: 49.7 MPa],
-//                   converged: false, stoppedBy: 'max-passes' },
+//     refinement: { passes: [4 mm: 42.5 MPa, 3 mm: 44.3 MPa],
+//                   stoppedBy: 'still-untrusted' },
 //     governingField: 'away-from-supports' },
 //     images: ['.../heatmap/iso.png', '.../heatmap/front.png'] }
 ```
@@ -120,8 +120,8 @@ lot, pass `{ E, nu, yield }` directly.
   when the result is still untrusted, `summary.refinement.stoppedBy` says why.
 - **`refinement`** — every pass of the automatic refinement, coarsest
   first: `{ meshSizeMm, elementCount, governingPeakMPa,
-  maxStressErrorPercent, meshTrusted, region, peakChangePercent }`, plus
-  `converged` and `stoppedBy`. The summary's own numbers are the last pass.
+  maxStressErrorPercent, meshTrusted }` (one or two), plus `stoppedBy`. The
+  summary's own numbers are the last pass.
 - **`equilibriumResidual`** — `|reaction + applied| / |applied|`. Near 1e-12 is
   healthy; anything large means the load or the constraint did not land where
   the study said, and the safety factor is meaningless.
@@ -132,48 +132,24 @@ lot, pass `{ E, nu, yield }` directly.
 
 ## Automatic mesh refinement
 
-`run_fea` and verify mode 'fea' refine the mesh themselves, so you do not
-hand-tune `meshSize` to get a trusted stress. Pass `refine: false` to solve
-exactly once at the study's (or mesh_size's) element size. The stress-graded
-infill export does not refine unless asked (`infill.refine: true`). The
-rules:
+`run_fea` and verify mode 'fea' add one finer pass themselves. Pass
+`refine: false` to solve exactly once at the study's (or mesh_size's) element
+size. The stress-graded infill export does not refine unless asked
+(`infill.refine: true`). The rule:
 
-1. **Trigger.** Only when the stress is untrusted because CalculiX's error
-   estimate in the high-stress region is above 25 %. Untrusted for element
-   shape alone (inverted elements, >1 % slivers) does not refine: slivers
-   come from the geometry, and smaller elements make more of them. Fix the
-   thin feature instead (`stoppedBy: 'quality-limited'`).
-2. **Step.** The next element size is the current one x (20 / error)^(1/p),
-   kept between x0.5 and x0.8. p is 1 for the first step, then the rate the
-   error estimate actually fell over the last step, held to 1-2 (at fillets
-   it falls slowly, and extrapolating that would ask for a huge mesh).
-3. **Budgets.** The next element count is predicted as N x (h_old/h_new)^3
-   and its time as the last pass's x (N_new/N_old)^1.5. The step shrinks to
-   fit 90 % of `KERNELCAD_FEA_MAX_ELEMENTS` (default 400000, also the hard
-   ceiling for any mesh) and the time left of `KERNELCAD_FEA_REFINE_TIME_MS`
-   (default 300000 ms for all passes). If no step of x0.8 or finer fits,
-   refinement stops (`'element-budget'` / `'time-budget'`). A finer pass
-   that fails (memory kill, timeout) is dropped and the previous one stands
-   (`'pass-failed'`). At most 2 passes after the first (`'max-passes'`).
-4. **Convergence.** If the governing peak moved less than 5 % over the last
-   step, its region already carried that peak (within 5 %) on the coarser
-   mesh, and no elements are bad, the result is
-   trusted even with the error estimate still above 25 %
-   (`trust.basis: 'peak-convergence'`, `stoppedBy: 'converged'`). The step
-   is at least a x0.8 refinement, so by Richardson extrapolation the error
-   left in the finer peak is at most about 4 x the change (first-order
-   convergence), 20 %, and about 2.3 x (12 %) at a x0.7 step: inside the
-   25 % the estimator is held to. It cannot rule out two coarse meshes
-   agreeing by accident, which is why it also checks the region. A
-   singular peak (a sharp inside corner away from the supports) keeps
-   growing and never meets it.
-
-When a budget or a failed pass stops refinement before the stress is
-trusted, `fea.mesh.refine-stopped` lists every pass; the next step is a
-larger budget, a local toolchain with more memory, or reading the stress as
-mesh-limited with a bigger margin. `fea.mesh.quality-low` (retry with a
-smaller meshSize) now appears only when refinement was skipped (refine
-false, the gate, element quality) or used all its passes.
+- Only when the stress is untrusted because CalculiX's error estimate in the
+  high-stress region is above 25 %. Untrusted for element shape alone
+  (inverted elements, >1 % slivers) does not refine (`'quality-limited'`):
+  slivers come from the geometry, and smaller elements make more of them.
+- The study is re-solved once at x0.75 the element size, if the predicted
+  element count N x (1/0.75)^3 fits `KERNELCAD_FEA_MAX_ELEMENTS` (default
+  400000, also the hard ceiling for any mesh). The finer result is the
+  answer, trusted or not by the normal rule.
+- If the pass does not fit (`'element-budget'`), fails (memory kill, timeout;
+  the first result stands, `'pass-failed'`) or is still untrusted
+  (`'still-untrusted'`), `fea.mesh.refine-stopped` lists the passes. The next
+  step is a larger budget, a local toolchain with more memory, or reading the
+  stress as mesh-limited with a bigger margin.
 
 Peaks are not monotone in the mesh, and coarse meshes can read LOW. On the
 cookbook bracket (PETG, 120 N):
@@ -181,13 +157,12 @@ cookbook bracket (PETG, 120 N):
 | Run | Passes (mesh mm / elements / governing peak MPa / error %) | Result | Wall |
 | --- | --- | --- | --- |
 | `refine: false` | 2.5 / 11388 / 31.0 / 30.0 | SF 1.77, untrusted | 5 s |
-| default | 2.5 / 11388 / 31.0 / 30.0; 1.67 / 36516 / 29.3 / 26.3; 1.27 / 79737 / 30.2 / 20.2 | SF 1.82, trusted, peak converged (3.2 %) | 136 s |
-| 30000-element budget | 2.5 / 11388 / 31.0 / 30.0; 1.87 / 28452 / 29.0 / 24.5 | SF 1.89, trusted | 42 s |
+| default | 2.5 / 11388 / 31.0 / 30.0; 1.875 / 28529 / 30.2 / 26.0 | SF 1.82, still untrusted (26.0 %, just over 25 %) | 33 s |
 
 The aluminium bracket at the top of this page reads 42.5 MPa at 4 mm and
-49.7 MPa at 1.91 mm (still +6.9 % on the last step, `'max-passes'`): the
-coarse mesh read about 15 % low. When refinement ends untrusted, size
-against the finest pass and keep a margin, or run a finer mesh_size.
+44.3 MPa at 3 mm (error 31 % on both): the coarse mesh reads low. When
+refinement ends untrusted, size against the finer pass and keep a margin, or
+run a finer mesh_size.
 
 ## A verdict in the load-capacity shape
 
@@ -226,8 +201,8 @@ margin is not met — the same seam the `dfmSpec` gates use. A study *without*
 declared margin is UNVERIFIED — a skipped gate never reads as green.
 
 The gate does NOT refine the mesh: it runs on every evaluate, and one
-refinement pass costs 3-20x the first solve (the bracket: 5 s becomes about
-2 min). Instead, a margin met on an untrusted mesh is reported as
+refinement pass costs several times the first solve (the bracket: 5 s
+becomes about 33 s). Instead, a margin met on an untrusted mesh is reported as
 `fea.safety-factor.unverified` (warning), not as a pass. Its next step: run
 verify mode 'fea', which refines, then set the study's `meshSize` to the
 size of the trusted pass in `fea.refinement`, so every evaluate gates on a
@@ -250,7 +225,8 @@ and time saving against uniform infill at the high density, and heatmap /
 band / cutaway PNGs. Recipe: `lookup_cookbook('stress-graded-infill-fdm')`.
 The export solves once by default: the bands barely move with the mesh (the
 bracket: band volumes within 3 points, saving 36.1 vs 36.4 %) and refining
-made the export 23x slower (10 s to 237 s). `infill.refine: true` refines
+made the export many times slower (the finer solve, banding and render
+scripts all scale with the mesh). `infill.refine: true` refines
 like `run_fea`; check `fea.trust` in the report either way.
 Cura is not supported: it reads per-object settings from a 3MF (an infill mesh with its own
 infill density), but that path could not be verified end to end here, so no Cura file is
@@ -263,8 +239,8 @@ for a printed part.
 | Code | What happened | What to do |
 | --- | --- | --- |
 | `fea.safety-factor.below-min` | Solved SF is under the declared floor. | Add material at `hotSpots[0].region`, pick a stronger grade, spread the load, or lower the floor if it was conservative. |
-| `fea.mesh.quality-low` | Stress is mesh-limited, or the mesh has inverted elements / too many slivers; refinement was off, not applicable, or used all its passes. | Re-run with a smaller `meshSize`; simplify slivers in the geometry. |
-| `fea.mesh.refine-stopped` (warn) | Automatic refinement hit the element or wall-time budget, or a finer pass failed, before the stress was trusted. | Read the pass table in the message. Raise `KERNELCAD_FEA_MAX_ELEMENTS` / `KERNELCAD_FEA_REFINE_TIME_MS` where you control them, run locally with more memory, or keep a larger margin. |
+| `fea.mesh.quality-low` | Stress is mesh-limited, or the mesh has inverted elements / too many slivers; refinement was off or not applicable. | Re-run with a smaller `meshSize`; simplify slivers in the geometry. |
+| `fea.mesh.refine-stopped` (warn) | The one finer pass did not fit the element budget, failed, or was still untrusted. | Read the pass table in the message. Raise `KERNELCAD_FEA_MAX_ELEMENTS` where you control it, run locally with more memory, or keep a larger margin. |
 | `fea.safety-factor.unverified` (warn) | The gate met `minSafetyFactor` on an untrusted mesh; the margin is not confirmed. | Run verify mode 'fea' (it refines), then pin the study's `meshSize` to the trusted pass. |
 | `fea.stress.support-singularity` (warn) | The raw peak sits at a fixed-face edge, where a rigid clamp makes stress singular; it is reported as `peakAtSupportMPa` and left out of the safety factor. | Read `maxVonMisesMPa` / `minSafetyFactor` as the result. To judge the bolt region itself, load the washer face and fix the far side. |
 | `fea.mesh.too-large` | The mesh passed the element ceiling, gmsh or CalculiX timed out, or CalculiX was killed (memory limit, exit 255). | RAISE `meshSize` (about 2x) and re-run; the message carries the solver's last output lines. |
