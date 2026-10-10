@@ -12,6 +12,7 @@ import { useShellStore } from "../store/useShellStore";
 // Extracted Components
 import { ViewerScene } from "./viewer/ViewerScene";
 import { VIEWER_TONE_MAPPING, VIEWER_TONE_MAPPING_EXPOSURE } from "./viewer/viewerLighting";
+import { PUBLISH_LOOK_EXPOSURE, PUBLISH_LOOK_TONE_MAPPING, type ViewerLook } from "./viewer/publishLook";
 import { DisplayReadySensor } from "./viewer/DisplayReadySensor";
 import { ViewGizmo } from "./viewer/overlays/ViewGizmo";
 import { CodeLinkLabel } from "./viewer/overlays/CodeLinkLabel";
@@ -49,6 +50,10 @@ interface ViewerProps {
      *  (/p page, ChatGPT widget, embed) pass false: the planes are a modelling
      *  aid there is nothing to do with, and they sit on the model's origin. */
     showOriginPlanes?: boolean;
+    /** 'publish' draws the model as a product render (the embed): smooth
+     *  shading, soft feature edges, camera-relative studio lights, contact
+     *  shadow, no grid. Default 'engineering' (Studio). */
+    look?: ViewerLook;
     /** Extra R3F nodes drawn inside the canvas (the embed's Mark & fix pins). */
     canvasExtras?: ReactNode;
 }
@@ -140,7 +145,7 @@ function useViewerSetup(geometries: GeometryResult[]) {
     };
 }
 
-export default function Viewer({ geometries, previewGeometries, sketchesGeometries, showSketches, viewMode3D, onDisplayReady, background, meshDimensions, showOriginPlanes = true, canvasExtras }: ViewerProps) {
+export default function Viewer({ geometries, previewGeometries, sketchesGeometries, showSketches, viewMode3D, onDisplayReady, background, meshDimensions, showOriginPlanes = true, canvasExtras, look = 'engineering' }: ViewerProps) {
     const {
         meshDimensions: workbenchDimensions, setSelectedFace, selectedSketchName, setSelectedSketchName, sketchMode, planes, hiddenIds,
         selectedItemIds, setSelectedItemId, toggleSelection, setContextMenu, viewportBackground,
@@ -164,7 +169,10 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                     // rolls light aluminium and plastic off before they clip
                     // to white. The demo player keeps its own Neutral rig;
                     // that path is calibrated for hero capture, not this canvas.
-                    toneMapping: VIEWER_TONE_MAPPING,
+                    // The publish look (embed) uses Neutral like the publish
+                    // render preset: it keeps the clear-coat highlights
+                    // and the white backdrop without AgX's grey cast.
+                    toneMapping: look === 'publish' ? PUBLISH_LOOK_TONE_MAPPING : VIEWER_TONE_MAPPING,
                     outputColorSpace: THREE.SRGBColorSpace,
                     // Marking-tool requires reading the WebGL canvas via
                     // toDataURL after the user paints. Without this, the
@@ -175,7 +183,7 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                 onCreated={({ gl }) => {
                     // Section tool clips per-material; opt the renderer into local clipping.
                     gl.localClippingEnabled = true;
-                    gl.toneMappingExposure = VIEWER_TONE_MAPPING_EXPOSURE;
+                    gl.toneMappingExposure = look === 'publish' ? PUBLISH_LOOK_EXPOSURE : VIEWER_TONE_MAPPING_EXPOSURE;
                 }}
                 raycaster={{
                     params: {
@@ -222,6 +230,7 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                     focusRequest={focusRequest}
                     viewportBackground={background ?? viewportBackground}
                     planes={shownPlanes}
+                    look={look}
                 />
                 {dims.on ? <DimensionsOverlay dimensions={dims.dimensions} bounds={dims.bounds} /> : null}
                 {measuring ? <MeasureTool geometries={geometries} itemNames={itemNames} hiddenIds={hiddenIds} /> : null}

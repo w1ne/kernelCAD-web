@@ -29,6 +29,8 @@ import { ParametricLayer } from "./layers/ParametricLayer";
 import { GhostShape } from "./entities/ShapeGeometry";
 import { CameraHandler } from "./controllers/CameraHandler";
 import { CAPTURE_HIDDEN_FLAG } from "./captureViewerPng";
+import { PublishStage } from "./PublishStage";
+import type { ViewerLook } from "./publishLook";
 
 // Tag value for scene furniture (origin construction planes + ground grid) that
 // render-to-image capture hides so the PNG shows the clean framed model, not the
@@ -69,6 +71,9 @@ interface ViewerSceneProps {
     focusRequest: { target: ViewportFocusTarget; id: number } | null;
     viewportBackground: ViewportBackground;
     planes: SketchPlaneEntity[];
+    /** 'publish' (embed): studio rig + contact shadow instead of the
+     *  engineering lights, and no ground grid. */
+    look?: ViewerLook;
 }
 
 /**
@@ -103,14 +108,18 @@ export function ViewerScene({
     focusRequest,
     viewportBackground,
     planes,
+    look = 'engineering',
 }: ViewerSceneProps) {
+    const publish = look === 'publish';
     return (
         <>
             <RoomEnvironmentRig />
             <RendererSnapshotPublisher />
             <SceneBackground mode={viewportBackground} />
 
-            <SceneLights />
+            {publish
+                ? <PublishStage geometries={geometries} background={viewportBackground} />
+                : <SceneLights />}
 
             <SceneOverlays
                 geometries={geometries}
@@ -120,11 +129,12 @@ export function ViewerScene({
                 setHoveredItem={setHoveredItem}
                 snapPoint={snapPoint}
                 setSnapPoint={setSnapPoint}
+                mouseHoverOnly={publish}
             />
 
             <GroundGrid
                 gridPlacement={gridPlacement}
-                gridVisible={gridVisible}
+                gridVisible={gridVisible && !publish}
                 sketchActive={sketchActive}
             />
 
@@ -136,6 +146,7 @@ export function ViewerScene({
                 selectedItemIds={selectedItemIds}
                 sectionKeepWhole={sectionKeepWhole}
                 clippingPlanes={clippingPlanes}
+                look={look}
             />
 
             <group>
@@ -204,6 +215,7 @@ function SceneOverlays({
     setHoveredItem,
     snapPoint,
     setSnapPoint,
+    mouseHoverOnly,
 }: Pick<
     ViewerSceneProps,
     | 'geometries'
@@ -213,10 +225,10 @@ function SceneOverlays({
     | 'setHoveredItem'
     | 'snapPoint'
     | 'setSnapPoint'
->) {
+> & { mouseHoverOnly: boolean }) {
     return (
         <>
-            <InteractionHandler setHovered={setHoveredItem} setSnap={setSnapPoint} />
+            <InteractionHandler setHovered={setHoveredItem} setSnap={setSnapPoint} mouseHoverOnly={mouseHoverOnly} />
             <HighlightOverlay hovered={hoveredItem} geometries={geometries} />
             <SnapIndicator snap={snapPoint} />
             <SelectionOutline geometries={geometries} itemNames={itemNames} selectedItemIds={selectedItemIds} />

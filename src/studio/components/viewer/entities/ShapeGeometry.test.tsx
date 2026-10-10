@@ -137,6 +137,22 @@ describe('ConsolidatedShape scene graph per view mode', () => {
         expect(container.querySelectorAll('mesh')).toHaveLength(1);
     });
 
+    it('publish look — the full BREP edge set (pick target) plus a crease line', () => {
+        const { container } = render(
+            <ConsolidatedShape
+                geometry={geometryWithEdges}
+                shapeIndex={0}
+                viewMode3D="shadedWithEdges"
+                isSelected={false}
+                name="body_1"
+                look="publish"
+            />,
+        );
+        const lines = container.querySelectorAll('lineSegments');
+        expect(lines).toHaveLength(2);
+        expect(container.querySelectorAll('mesh')).toHaveLength(1);
+    });
+
     it('shaded — no edge lines', () => {
         const { container } = renderShape('shaded');
         expect(container.querySelectorAll('lineSegments')).toHaveLength(0);

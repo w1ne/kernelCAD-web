@@ -6,6 +6,7 @@ import type { ViewMode3D } from "../../../../shared/types/viewMode";
 import { Shape } from "../entities/ShapeGeometry";
 import { sectionPartKey } from "../sectionParts";
 import { NO_PLANES } from "../../../hooks/viewer/useViewerSectionClipping";
+import { MODEL_ROOT_USERDATA, type ViewerLook } from "../publishLook";
 
 interface GeometryLayerProps {
     geometries: GeometryResult[];
@@ -15,6 +16,7 @@ interface GeometryLayerProps {
     selectedItemIds: string[];
     sectionKeepWhole: ReadonlySet<string>;
     clippingPlanes: THREE.Plane[];
+    look?: ViewerLook;
 }
 
 /**
@@ -29,9 +31,11 @@ export function GeometryLayer({
     selectedItemIds,
     sectionKeepWhole,
     clippingPlanes,
+    look = 'engineering',
 }: GeometryLayerProps) {
     return (
-        <group>
+        // Tagged so the publish look's contact shadow finds the model.
+        <group userData={MODEL_ROOT_USERDATA}>
             {geometries.map((g, i) => {
                 // Prefer the authored assembly part name over the
                 // return-variable name. For assemblies a single returned
@@ -57,6 +61,7 @@ export function GeometryLayer({
                         clipIntersection={true}
                         isSelected={name ? selectedItemIds.includes(name) : false}
                         name={name ?? undefined}
+                        look={look}
                     />
                 );
             })}
