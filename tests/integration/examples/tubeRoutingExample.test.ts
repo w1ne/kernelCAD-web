@@ -1,0 +1,47 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+//
+// The shipped tube-routing example: five lines across three fluid systems
+// pass every gate, and the broken twin fails on the one rule its header names.
+
+import { describe, it, expect, beforeAll, afterEach, vi } from 'vitest';
+import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
+import { evaluateCommand } from '../../../src/agent/cli/commands/evaluate';
+
+const GOOD = 'examples/tube-routing-engine/engine-lines.kcad.ts';
+const BROKEN = 'examples/tube-routing-engine/engine-lines-broken.kcad.ts';
+
+beforeAll(async () => { await initOcct(); }, 120_000);
+
+afterEach(() => {
+  vi.restoreAllMocks();
+  process.exitCode = 0;
+});
+
+async function evaluateJson(file: string): Promise<any> {
+  const lines: string[] = [];
+  vi.spyOn(console, 'log').mockImplementation((s: unknown) => { lines.push(String(s)); });
+  await evaluateCommand().parseAsync(['node', 'evaluate', file, '--json']);
+  return JSON.parse(lines.join('\n'));
+}
+
+describe('tube-routing engine example', () => {
+  it('the engine example routes five lines across three systems and passes every gate', async () => {
+    const r = await evaluateJson(GOOD);
+    expect(r.ok).toBe(true);
+    expect(r.diagnostics.filter((d: { severity: string }) => d.severity !== 'info')).toEqual([]);
+    expect(r.tubes.lines).toHaveLength(5);
+    expect(new Set(r.tubes.lines.map((l: { system: string }) => l.system)).size).toBe(3);
+    for (const l of r.tubes.lines) {
+      expect(l.bends).toBeGreaterThanOrEqual(2);
+      expect(l.minClearance.mm).toBeGreaterThanOrEqual(6);
+    }
+  }, 180_000);
+
+  it('the broken twin fails on exactly the documented rule', async () => {
+    const r = await evaluateJson(BROKEN);
+    expect(r.ok).toBe(false);
+    expect(r.diagnostics.filter((d: { severity: string }) => d.severity === 'error').map((d: { code: string }) => d.code))
+      .toEqual(['tube.clearance.violated']);
+  }, 180_000);
+});

@@ -11,6 +11,11 @@
 - Drawing (PDF) in the `/p/<slug>` Download dropdown, and Export Drawing (PDF) in Studio's export menu and command palette.
 - Example `examples/gallery/mounting-bracket-dimensioned.kcad.ts` and guide `docs/guide/dimensions-measure-drawings.md`.
 - Stress-graded infill now works in PrusaSlicer: `export({ format: '3mf', options: { slicer: 'prusa', infill: { fromFea } } })` writes the bands as PrusaSlicer modifier volumes (`Slic3r_PE_model.config`, with PrusaSlicer's own fill density and pattern keys). Sliced with PrusaSlicer 2.8.1, the graded bracket uses 23 % less filament than uniform 60 %. Orca/Bambu stay the default.
+- Bent tubes between ports. `tube(name, { from, to, via, wall, bendRadius })` builds a rigid tube as straight legs joined by constant-radius bends, one hollow solid per tube. Ports are axis connectors with `port: { system, od }`; `part.port(name)` passes one to `tube` as an end.
+- `tubeSpec({...})` declares the rules every tube must meet: minimum bend radius, straight between bends and at the ends (as multiples of the OD), maximum bend angle, and clearance to parts and other tubes, with a separate distance per pair of fluid systems. A broken rule fails evaluation with a `tube.*` diagnostic that names the tube, the bend or leg, and the measured value.
+- `evaluate_script` and `kernelcad evaluate --json` return a `tubes` report: per tube the bend table (XYZ points and length / rotation / angle rows), cut length, nearest part or tube, mass, bore volume and a pressure-drop estimate; per system the line count, total length and mass.
+- `export bend-table` (CLI and the `export` tool) writes one CSV per tube.
+- Skill `kernelcad-tubes`, cookbook recipes `tube-between-two-ports`, `tube-clearance-between-fluid-lines` and `tube-bend-table-line-report`, and example `examples/tube-routing-engine/` (five lines in three systems around a case and gearbox, with a broken twin that fails the clearance rule).
 
 ## Fixed
 

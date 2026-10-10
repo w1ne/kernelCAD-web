@@ -404,7 +404,7 @@ After applying edge/face features, run before reporting done:
 
 ## Bent tubes
 
-`tube(name, opts)` builds a bent tube between two ports; `tubeSpec({ ... })` declares the bending and clearance rules it must meet.
+`tube(name, opts)` and `tubeSpec({ ... })` route bent tubes between ports and check them against bending and clearance rules: load `kernelcad-tubes`.
 
 ## Related skills
 
