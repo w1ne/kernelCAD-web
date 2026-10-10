@@ -24,6 +24,7 @@ import { lowerDraft, lowerShell } from './shellDraft';
 import { lowerExtrude, lowerSketch } from './sketchExtrude';
 import { lowerSurfaceSew, lowerSurfaceThicken, lowerSurfaceToShape } from './surfaces';
 import { lowerSweep } from './sweep';
+import { lowerTube } from './tube';
 import { lowerVirtualRecord } from './virtual';
 
 /**
@@ -83,6 +84,7 @@ export const LOWERERS: Partial<Record<FeatureKind, KindLowerer>> = {
   variableSweep: lowerVariableSweep,
   embossText: lowerEmbossText,
   projectCurve: lowerProjectCurve,
+  tube: lowerTube,
   // capture-only declarations — no BREP output
   referenceImage: lowerVirtualRecord,
   renderEnvironment: lowerVirtualRecord,
@@ -92,4 +94,5 @@ export const LOWERERS: Partial<Record<FeatureKind, KindLowerer>> = {
   drawingDatum: lowerVirtualRecord,
   drawingTolerance: lowerVirtualRecord,
   drawingDimension: lowerVirtualRecord,
+  tubeSpec: lowerVirtualRecord,
 };
