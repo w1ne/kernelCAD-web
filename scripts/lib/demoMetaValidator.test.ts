@@ -144,4 +144,37 @@ describe('validateDemoMeta', () => {
     expect(errs.some((e) => e.includes("missing key 'capturedAt'"))).toBe(true);
     expect(errs.some((e) => e.includes("missing key 'taskId'"))).toBe(true);
   });
+
+  describe('proof requirement (v0.18+)', () => {
+    const v018 = {
+      ...validBase,
+      module: 'v0.18',
+      heroArtifact: 'pi5-case-heat-set-inserts',
+      catalogSource: 'memorable-builds-policy/v0.18',
+      proof: {
+        userJob: 'Raspberry Pi 5 case with M2.5 heat-set inserts for a Bambu P1S',
+        kind: 'print-photo',
+        ref: 'docs/demos/v0.18/pi5-case/print.jpg',
+      },
+    };
+
+    it('accepts a functional hero with proof', () => {
+      expect(validateDemoMeta(v018, 'v0.18')).toEqual([]);
+    });
+
+    it('rejects a v0.18 hero without proof', () => {
+      const { proof: _proof, ...noProof } = v018;
+      const errs = validateDemoMeta(noProof, 'v0.18');
+      expect(errs.some((e) => e.includes("missing 'proof'"))).toBe(true);
+    });
+
+    it('rejects proof with an unknown kind, empty job or empty ref', () => {
+      const errs = validateDemoMeta({ ...v018, proof: { userJob: ' ', kind: 'render', ref: '' } }, 'v0.18');
+      expect(errs).toHaveLength(3);
+    });
+
+    it('does not require proof before v0.18', () => {
+      expect(validateDemoMeta(validBase, 'v0.21')).toEqual([]);
+    });
+  });
 });

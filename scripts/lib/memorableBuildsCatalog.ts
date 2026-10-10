@@ -29,6 +29,7 @@ export const ALL_VERSIONS = [
   'v0.21',
   'v0.3', 'v0.4', 'v0.5', 'v0.6', 'v0.7', 'v0.8', 'v0.9',
   'v0.10', 'v0.11', 'v0.12', 'v0.13', 'v0.14', 'v0.15', 'v0.16', 'v0.17',
+  'v0.18',
   'v1.0',
 ] as const;
 
@@ -117,6 +118,15 @@ const CATALOG: Record<CatalogVersion, CatalogCandidate[]> = {
     { slug: 'engraved-coaster', recommended: false },
     { slug: 'cookie-cutter-shape', recommended: false },
   ],
+  // From v0.18 the hero is a real user job taken end to end (see
+  // PROOF_REQUIRED_VERSIONS): functional parts users actually make, shown
+  // with a passing verify report or a photo of the printed/fabricated part.
+  'v0.18': [
+    { slug: 'pi5-case-heat-set-inserts', recommended: true },
+    { slug: 'nema17-motor-mount', recommended: false },
+    { slug: 'shaft-coupler-set-screws', recommended: false },
+    { slug: 'snap-fit-pcb-enclosure', recommended: false },
+  ],
   'v1.0': [
     { slug: 'mechanical-music-box', recommended: true },
     { slug: 'articulated-robot-arm', recommended: false },
@@ -133,6 +143,13 @@ export const GENERIC_PRIMITIVE_DENYLIST = new Set<string>([
   'sphere',
   'torus-only',
 ]);
+
+// Versions whose hero must carry `meta.proof`: the user job it solves and
+// evidence that it works (a passing verify report, or a print/fabrication
+// photo). A recognisable object alone is not enough from these versions on.
+export const PROOF_REQUIRED_VERSIONS = new Set<string>(['v0.18', 'v1.0']);
+
+export const PROOF_KINDS = ['verify-report', 'print-photo', 'fabrication-photo'] as const;
 
 export function getCatalogForVersion(version: string): CatalogEntry | undefined {
   if (!(ALL_VERSIONS as readonly string[]).includes(version)) return undefined;

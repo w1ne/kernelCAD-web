@@ -10,11 +10,12 @@ import {
 } from './memorableBuildsCatalog';
 
 describe('memorableBuildsCatalog', () => {
-  it('exposes shortlists for v0.21 and every version v0.3 through v0.17 plus v1.0', () => {
+  it('exposes shortlists for v0.21 and every version v0.3 through v0.18 plus v1.0', () => {
     expect(ALL_VERSIONS).toEqual([
       'v0.21',
       'v0.3', 'v0.4', 'v0.5', 'v0.6', 'v0.7', 'v0.8', 'v0.9',
       'v0.10', 'v0.11', 'v0.12', 'v0.13', 'v0.14', 'v0.15', 'v0.16', 'v0.17',
+      'v0.18',
       'v1.0',
     ]);
   });
