@@ -101,7 +101,7 @@ describe('OrderButton', () => {
             await advance(2900);
             expect(priceCalls()).toBe(0);
             await advance(200);
-            expect(screen.getByTestId('toolbar-order').getAttribute('aria-label')).toBe('Order · $38');
+            expect(screen.getByTestId('toolbar-order').textContent).toBe('Order · $38');
         });
 
         it('shows the summary and Pay straight away when the price is known', async () => {

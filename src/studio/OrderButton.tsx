@@ -200,16 +200,19 @@ export function OrderButton({ size = 'sm' }: { size?: IconButtonSize }): JSX.Ele
 
     return (
         <div ref={rootRef} className="relative">
-            <IconButton
-                label={priceCents === null ? 'Order' : `Order · ${formatDollars(priceCents)}`}
-                description="Get a price and order this part"
-                icon={phase === 'asking' ? <Loader2 {...ICON} className="size-4 animate-spin" /> : <ShoppingBag {...ICON} />}
-                size={size}
-                tooltipSide="bottom"
-                pressed={open}
+            {/* A text button so the real price is on the toolbar, not only in a tooltip. */}
+            <Button
+                variant="secondary"
+                size={size === 'sm' ? 'sm' : 'md'}
+                aria-pressed={open}
+                aria-label={priceCents === null ? 'Order' : `Order, ${formatDollars(priceCents)}`}
+                title="Get a price and order this part"
+                leadingIcon={phase === 'asking' ? <Loader2 {...ICON} className="size-4 animate-spin" /> : <ShoppingBag {...ICON} />}
                 onClick={open ? close : start}
                 data-testid="toolbar-order"
-            />
+            >
+                {priceCents === null ? 'Order' : `Order · ${formatDollars(priceCents)}`}
+            </Button>
             {open && <OrderPopover flow={flow} />}
         </div>
     );
