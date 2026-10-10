@@ -196,9 +196,37 @@ function validateFeatureEntry(
   return { label: r.label, kind: r.kind as TraceFeatureKind, rawWaypoints: r.waypoints, confidence };
 }
 
+/**
+ * Accept the other shapes vision models commonly use for the same points and
+ * turn them into `[[x, y], ...]`:
+ * - a flat list of numbers, e.g. a bbox as `[x1, y1, x2, y2]` (Qwen-VL and
+ *   other OpenAI-compatible models answer bboxes this way);
+ * - `{ x, y }` objects.
+ * Anything else is passed through unchanged and validated as before.
+ */
+function normalizeWaypointShape(rawWaypoints: unknown[]): unknown[] {
+  if (rawWaypoints.length >= 2 && rawWaypoints.length % 2 === 0 && rawWaypoints.every((v) => typeof v === 'number')) {
+    const pairs: unknown[] = [];
+    for (let i = 0; i < rawWaypoints.length; i += 2) pairs.push([rawWaypoints[i], rawWaypoints[i + 1]]);
+    return pairs;
+  }
+  return rawWaypoints.map((wp) => {
+    if (wp && typeof wp === 'object' && !Array.isArray(wp) && 'x' in wp && 'y' in wp) {
+      const o = wp as { x: unknown; y: unknown };
+      return [o.x, o.y];
+    }
+    // A single flat bbox nested one level: [[x1, y1, x2, y2]].
+    return wp;
+  }).flatMap((wp) =>
+    Array.isArray(wp) && wp.length === 4 && wp.every((v) => typeof v === 'number') && rawWaypoints.length === 1
+      ? [[wp[0], wp[1]], [wp[2], wp[3]]]
+      : [wp],
+  );
+}
+
 function validateWaypoints(rawWaypoints: unknown[], label: string): Vec2Normalized[] {
   const validatedWaypoints: Vec2Normalized[] = [];
-  for (const wp of rawWaypoints) {
+  for (const wp of normalizeWaypointShape(rawWaypoints)) {
     if (!Array.isArray(wp) || wp.length !== 2) {
       throw new Error(
         `visionLlmBackend: feature "${label}" waypoint is not a 2-tuple`,
