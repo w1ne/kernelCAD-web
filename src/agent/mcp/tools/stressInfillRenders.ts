@@ -19,7 +19,6 @@ import type { StressInfillReport } from '../../script-runtime/stressInfillExport
 import { validateOutputPath } from '../../script-runtime/safeOutputPath';
 import { resolvePublishLook } from '../../../shared/render/publishPreset';
 import { loadMeshScene, renderMeshScenes, type MeshScene } from '../../render/meshScenesRender';
-import { renderPreviewTool } from './renderPreview';
 
 export interface StressInfillImages {
   heatmap?: string;
@@ -30,36 +29,17 @@ export interface StressInfillImages {
 type RenderJob = { key: keyof StressInfillImages; file: string };
 
 /** The band bodies of each render script, read from the sidecar next to it. */
-async function loadScenes(jobs: readonly RenderJob[]): Promise<MeshScene[] | undefined> {
-  const scenes = await Promise.all(jobs.map((j) => loadMeshScene(j.key, j.file)));
-  return scenes.every((sc) => sc !== undefined) ? (scenes as MeshScene[]) : undefined;
+async function loadScenes(jobs: readonly RenderJob[]): Promise<MeshScene[]> {
+  return Promise.all(jobs.map(async (j) => {
+    const scene = await loadMeshScene(j.key, j.file);
+    if (scene === undefined) throw new Error(`the ${j.key} band list (render-bodies.json) is missing`);
+    return scene;
+  }));
 }
 
 /** Draw all three views as display-only meshes from one browser page, in the
- *  same publish look the per-script path used. Undefined when the bodies are
- *  not available (the caller then renders the scripts). */
-async function renderScenesFast(
-  report: StressInfillReport,
-  jobs: readonly RenderJob[],
-): Promise<StressInfillImages | undefined> {
-  const scenes = await loadScenes(jobs);
-  if (scenes === undefined) return undefined;
-  const look = resolvePublishLook({ preset: 'publish', background: 'white' }, 'publish');
-  if (!look.ok || look.publish === undefined) return undefined;
-  const pngs = await renderMeshScenes(scenes, { publish: look.publish });
-  const images: StressInfillImages = {};
-  for (const job of jobs) {
-    const png = pngs[job.key];
-    if (png === undefined) continue;
-    const dir = join(report.outDir, 'renders', job.key);
-    await mkdir(dir, { recursive: true });
-    const path = join(dir, 'hero.png');
-    await writeFile(path, png);
-    images[job.key] = path;
-  }
-  return images;
-}
-
+ *  publish look. A failure never invalidates the export: it comes back as a
+ *  warning with the reason, and the 3MF and band table stand. */
 export async function renderStressInfill(
   report: StressInfillReport,
   diagnostics: CompilerDiagnostic[],
@@ -69,40 +49,27 @@ export async function renderStressInfill(
     { key: 'bands', file: report.renderScripts.bands },
     { key: 'cutaway', file: report.renderScripts.cutaway },
   ];
-  try {
-    const fast = await renderScenesFast(report, jobs);
-    if (fast !== undefined && Object.keys(fast).length === jobs.length) return fast;
-  } catch {
-    // Fall through to the per-script path, which reports its own failure.
-  }
   const images: StressInfillImages = {};
-  for (const job of jobs) {
-    try {
-      const out = await renderPreviewTool({
-        file: job.file,
-        out_dir: join(report.outDir, 'renders', job.key),
-        preset: 'publish',
-        background: 'white',
-        no_mechanism_check: true,
-      });
-      if (out.ok && out.images.length > 0) {
-        images[job.key] = out.images[0].path;
-      } else {
-        diagnostics.push(...out.diagnostics.map((d) => ({
-          ...d,
-          severity: 'warn' as const,
-          message: `stress-graded infill ${job.key} render: ${d.message} The 3MF and the band table are unaffected.`,
-        })));
-      }
-    } catch (e) {
-      diagnostics.push({
-        target: 'export-occt',
-        code: 'cli.export-exception',
-        severity: 'warn',
-        message: `stress-graded infill: the ${job.key} render failed (${(e as Error).message}). The 3MF and the band table are unaffected.`,
-        hint: 'Ensure playwright chromium is installed (npx playwright install chromium).',
-      });
+  try {
+    const look = resolvePublishLook({ preset: 'publish', background: 'white' }, 'publish');
+    if (!look.ok || look.publish === undefined) throw new Error('the publish look did not resolve');
+    const pngs = await renderMeshScenes(await loadScenes(jobs), { publish: look.publish });
+    for (const job of jobs) {
+      const png = pngs[job.key];
+      if (png === undefined) throw new Error(`the ${job.key} view did not render`);
+      const dir = join(report.outDir, 'renders', job.key);
+      await mkdir(dir, { recursive: true });
+      images[job.key] = join(dir, 'hero.png');
+      await writeFile(images[job.key]!, png);
     }
+  } catch (e) {
+    diagnostics.push({
+      target: 'export-occt',
+      code: 'cli.export-exception',
+      severity: 'warn',
+      message: `stress-graded infill: the renders failed (${(e as Error).message}). The 3MF and the band table are unaffected.`,
+      hint: 'Ensure playwright chromium is installed (npx playwright install chromium), or pass infill.renders: false.',
+    });
   }
   return images;
 }

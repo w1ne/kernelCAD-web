@@ -41,12 +41,12 @@ export const FEA_CODES = {
   },
   'fea.mesh.refine-stopped': {
     hintTemplate:
-      'Automatic mesh refinement stopped before the stress field was trusted, because the next pass did not fit the element budget (KERNELCAD_FEA_MAX_ELEMENTS) or the wall-time budget (KERNELCAD_FEA_REFINE_TIME_MS), or a finer pass failed (memory or time limit). The result is the finest pass that solved, and the message lists every pass with its peak stress and error estimate. Raise those budgets where you control them, run the study with a local CalculiX + gmsh toolchain that has more memory, or treat the peak stress as mesh-limited and keep a larger safety margin; displacement is reliable.',
+      'Automatic mesh refinement stopped before the stress field was trusted, because the finer pass did not fit the element budget (KERNELCAD_FEA_MAX_ELEMENTS), failed (memory or time limit), or was still untrusted. The result is the finest pass that solved, and the message lists every pass with its peak stress and error estimate. Raise that budget where you control it, run the study with a local CalculiX + gmsh toolchain that has more memory, or treat the peak stress as mesh-limited and keep a larger safety margin; displacement is reliable.',
     nextAction: { kind: 'inspect-message' },
     defaultSeverity: 'warn',
     group: 'fea',
     description:
-      'Bounded FEA auto-refinement ran out of element or wall-time budget, or a finer pass failed, before the stress field was trusted; the finest solved pass is reported with its refinement record.',
+      'Bounded FEA auto-refinement skipped its one finer pass (element budget), or the pass failed or stayed untrusted, before the stress field was trusted; the finest solved pass is reported with its refinement record.',
   },
   'fea.mesh.too-large': {
     hintTemplate:

@@ -3,7 +3,7 @@
 ## Added
 
 - `verify({ check: 'load-capacity', mode: 'fea' })` answers "will it hold?" from the script's `feaStudy` in the same shape as the beam check: `ok`, `safetyFactor`, `elements[]` (stress regions as `@kc[...]` faces, in Pa), `failures[]`, plus `fea` with deflection, mesh trust and the clamp-edge peak.
-- FEA refines the mesh automatically. `run_fea` and `verify({ check: 'load-capacity', mode: 'fea' })` re-solve on a finer mesh when the stress is untrusted only because CalculiX's error estimate is high: at most 2 more passes, inside an element budget (`KERNELCAD_FEA_MAX_ELEMENTS`, default 400000, which is also the hard ceiling now) and a wall-time budget (`KERNELCAD_FEA_REFINE_TIME_MS`, default 300 s). The result is the finest pass; `summary.refinement` (and `fea.refinement` in verify) lists each pass's mesh size, element count, governing peak and error estimate, whether the peak converged, and why refinement stopped. A peak that moves less than 5 % over a real refinement step counts as converged and trusted. `refine: false` solves once. Stress-graded infill export solves once unless `infill.refine: true` (its bands barely move with the mesh, and refining made the export 23x slower). New warning `fea.mesh.refine-stopped` when a budget or a failed pass stops refinement before the stress is trusted.
+- FEA refines the mesh automatically. `run_fea` and `verify({ check: 'load-capacity', mode: 'fea' })` re-solve on a finer mesh when the stress is untrusted only because CalculiX's error estimate is high: one more pass at 0.75x the element size, when it fits the element budget (`KERNELCAD_FEA_MAX_ELEMENTS`, default 400000, which is also the hard ceiling now). The result is the finer pass; `summary.refinement` (and `fea.refinement` in verify) lists each pass's mesh size, element count, governing peak and error estimate, and why refinement stopped. `refine: false` solves once. Stress-graded infill export solves once unless `infill.refine: true` (its bands barely move with the mesh, and refining made the export much slower). New warning `fea.mesh.refine-stopped` when the element budget, a failed pass or a still-untrusted finer pass stops refinement before the stress is trusted.
 - The evaluate-time FEA gate does not refine (it runs on every evaluate), but a declared `minSafetyFactor` met on an untrusted mesh now reports `fea.safety-factor.unverified` instead of reading as a plain pass. `KERNELCAD_FEA_GATE_REFINE=on` makes the gate refine too.
 - Dimensions toggle in the 3D viewer (Studio, `/p/<slug>`, ChatGPT viewer): automatic overall size, grouped holes, hole spacing, radii and chamfers; on by default when a model declares dimensions; `?dims=1` forces it on.
 - Measure tool: click two points for distance and ΔX/ΔY/ΔZ, with snapping to corners, edges and faces; one click on a round edge shows its diameter.
@@ -11,6 +11,10 @@
 - Drawing (PDF) in the `/p/<slug>` Download dropdown, and Export Drawing (PDF) in Studio's export menu and command palette.
 - Example `examples/gallery/mounting-bracket-dimensioned.kcad.ts` and guide `docs/guide/dimensions-measure-drawings.md`.
 - Stress-graded infill now works in PrusaSlicer: `export({ format: '3mf', options: { slicer: 'prusa', infill: { fromFea } } })` writes the bands as PrusaSlicer modifier volumes (`Slic3r_PE_model.config`, with PrusaSlicer's own fill density and pattern keys). Sliced with PrusaSlicer 2.8.1, the graded bracket uses 23 % less filament than uniform 60 %. Orca/Bambu stay the default.
+
+## Changed
+
+- FEA automatic mesh refinement is a single re-solve at 0.75x the element size (was up to 2 passes with a step-size formula, a wall-time budget and a peak-convergence trust rule). `KERNELCAD_FEA_REFINE_TIME_MS` and `trust.basis` are gone; `KERNELCAD_FEA_MAX_ELEMENTS` still caps the mesh.
 
 ## Fixed
 
