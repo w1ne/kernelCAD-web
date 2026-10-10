@@ -5,6 +5,7 @@ import { basename, dirname, join } from 'node:path';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { exportScript } from '../../../src/agent/cli/commands/export';
 import { exportModelTool } from '../../../src/agent/mcp/tools/exportModel';
+import { bendTableFileNames } from '../../../src/agent/script-runtime/exportBendTable';
 import { runAndExport } from '../../../src/agent/script-runtime/export';
 
 const ONE_LINE = 'tests/fixtures/tube/one-line.kcad.ts';
@@ -36,7 +37,25 @@ describe('bend-table export', () => {
     expect(r.ok).toBe(true);
     expect((r.table_files ?? []).map((f) => basename(f))).toEqual(['fuel-1.csv']);
     expect(await readdir(out)).toEqual(['fuel-1.csv']);
+    const csv = await readFile(r.table_files![0], 'utf8');
+    expect(csv.split('\n')[0]).toBe('name,fuel-1');
+    expect(csv).toContain('bend,l_mm,r_deg,a_deg');
   }, 120_000);
+
+  it('MCP refuses a script whose tube gate fails, writing nothing', async () => {
+    const out = await outDir();
+    const r = await exportModelTool({ file: TIGHT, format: 'bend-table', output_path: out });
+    expect(r.ok).toBe(false);
+    expect(r.diagnostics?.map((d) => d.code)).toContain('tube.bend.radius-too-small');
+    expect(r.table_files).toBeUndefined();
+    expect(await readdir(out)).toEqual([]);
+  }, 120_000);
+
+  it('gives tubes that differ only by case, or by a Windows device name, distinct safe files', () => {
+    expect(bendTableFileNames(['fuel', 'Fuel', 'FUEL', 'NUL', 'com1', 'con.x', 'Console'])).toEqual([
+      'fuel.csv', 'Fuel-2.csv', 'FUEL-3.csv', 'tube-NUL.csv', 'tube-com1.csv', 'tube-con.x.csv', 'Console.csv',
+    ]);
+  });
 
   it('fails clearly when the model has no tubes, and writes nothing', async () => {
     const out = await outDir();
