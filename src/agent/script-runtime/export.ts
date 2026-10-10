@@ -43,6 +43,7 @@ import {
 import { exportPdfDrawing, exportSvgDrawing } from './exportDrawing';
 import { withOcctPoisonRecovery } from '../../kernel/backends/occt/occtBackend';
 import { fileSafePartName } from './safeOutputPath';
+import { exportBendTable } from './exportBendTable';
 import { invalidArgsText } from '../../shared/intent/invalidArgs';
 import {
   buildStressInfillExport,
@@ -59,7 +60,7 @@ export type { GcodeStats } from '../../kernel/export/gcode/gcodeHeaderParser';
 export type ExportFormat =
   | 'stl' | 'step' | 'dxf' | '3mf' | 'glb' | 'svg-drawing' | 'pdf-drawing'
   | 'urdf' | 'srdf' | 'sdf-gazebo' | 'gcode' | 'usd-isaac'
-  | 'bom-csv' | 'bom-json';
+  | 'bom-csv' | 'bom-json' | 'bend-table';
 
 /** Per-format option payloads. The union member is selected by `format`. */
 export type ExportOptions =
@@ -144,7 +145,8 @@ export type ExportOptions =
       collisionApproximation?: 'convexHull' | 'convexDecomposition';
     }
   | { format: 'bom-csv' }
-  | { format: 'bom-json' };
+  | { format: 'bom-json' }
+  | { format: 'bend-table' };
 
 /**
  * `pdf-drawing`: the svg-drawing sheet (same views, hidden lines, dimensions,
@@ -232,6 +234,10 @@ export interface ExportResult {
   /** Companion files written next to the primary output: per-link meshes
    *  (URDF / SDF) or per-part DXF files (multi-part DXF). */
   meshes?: CompanionMeshFile[];
+  /** `bend-table`: one `<tube>.csv` per tube (`relPath` is relative to the
+   *  output DIRECTORY, not to a primary file). `bytes` repeats the first one so
+   *  the empty-bytes failure check still separates success from refusal. */
+  tables?: CompanionMeshFile[];
   /** Numeric authored connector sidecar, present only when requested for a STEP Scene export. */
   connectorManifest?: ConnectorManifest;
   /** Parsed slicer G-code stats, present only for `format: 'gcode'` exports that reached the slicer. */
@@ -348,6 +354,8 @@ async function exportShapeOrInfill(
 }
 
 export async function runAndExport(input: ExportInput): Promise<ExportResult> {
+  // Text derived from the tube report, not a solid: no occt recompute needed.
+  if (input.format === 'bend-table') return exportBendTable(input);
   return withOcctPoisonRecovery(async () => {
 
   const { code, fileName, format, feature_id, scriptDir, connectorManifest: manifestRequest } = input;

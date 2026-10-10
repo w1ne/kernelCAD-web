@@ -237,4 +237,11 @@ export const EXPORT_CODES = {
     group: 'export',
     description: 'A link in a usd-isaac physics stage has a non-finite or non-positive mass and cannot be given a valid UsdPhysics MassAPI.',
   },
+  'export.bend-table.no-tubes': {
+    hintTemplate: 'Declare at least one tube() in the script before exporting a bend table.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'Add a tube(name, { from, to, via?, wall, bendRadius }) call, then re-export with format: \'bend-table\'.' },
+    defaultSeverity: 'error',
+    group: 'export',
+    description: 'A bend-table export was requested for a script that declares no tube().',
+  },
 } as const satisfies Record<`export.${string}`, DiagnosticCodeSpec>;
