@@ -68,6 +68,9 @@ vi.mock('./entities/ShapeGeometry', () => ({
 vi.mock('./controllers/CameraHandler', () => ({
     CameraHandler: () => <div data-testid="camera-handler" />,
 }));
+vi.mock('./PublishStage', () => ({
+    PublishStage: () => <div data-testid="publish-stage" />,
+}));
 vi.mock('./captureViewerPng', () => ({
     CAPTURE_HIDDEN_FLAG: '__kcadCaptureHidden',
 }));
@@ -143,6 +146,13 @@ describe('ViewerScene', () => {
     it('hides the grid when gridVisible is false and while sketching', () => {
         expect(testIds(renderScene({ gridVisible: false }).container)).not.toContain('grid');
         expect(testIds(renderScene({ sketchActive: true }).container)).not.toContain('grid');
+    });
+
+    it('publish look swaps the engineering lights for the publish stage and drops the grid', () => {
+        const ids = testIds(renderScene({ look: 'publish' }).container);
+        expect(ids).toContain('publish-stage');
+        expect(ids).not.toContain('grid');
+        expect(testIds(renderScene().container)).not.toContain('publish-stage');
     });
 
     it('shows the sketch layer only when showSketches is set', () => {

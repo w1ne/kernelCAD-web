@@ -11,6 +11,7 @@ import { CAD_COLORS, CAD_COLORS_HEX, faceOverlayColor } from "../../../../shared
 import { useConsolidatedGeometry } from "../../../hooks/viewer/useConsolidatedGeometry";
 import { DEFAULT_COLOR, resolveColor } from "../../../../shared/render/palette";
 import { buildShapeMaterial } from "./buildShapeMaterial";
+import { featureEdgePositions, publishEdgeColor, PUBLISH_EDGE_OPACITY, type ViewerLook } from "../publishLook";
 import { pinRoomEnvironment } from "../roomEnvironment";
 import { matrixFromGeometryTransform } from "./geometryTransform";
 import { selectionCodeStore } from "../../../selectionCode/selectionCodeStore";
@@ -48,6 +49,8 @@ interface ShapeProps {
     clipIntersection?: boolean;
     isSelected: boolean;
     name: string | undefined;
+    /** 'publish' (the embed): smooth shading, soft feature edges only. */
+    look?: ViewerLook;
 }
 
 function bufferGeometryFromFace(face: FaceGeometry): THREE.BufferGeometry {
@@ -134,7 +137,8 @@ export function ConsolidatedShape({
     clippingPlanes,
     clipIntersection,
     isSelected,
-    name
+    name,
+    look = 'engineering',
 }: ShapeProps) {
     const {
         selectedFace,
@@ -199,9 +203,9 @@ export function ConsolidatedShape({
     const material = useMemo(
         () => buildShapeMaterial(
             geometry.material, isSelected, color, viewMode3D,
-            clippingPlanes ?? EMPTY_PLANES, clipIntersection ?? false,
+            clippingPlanes ?? EMPTY_PLANES, clipIntersection ?? false, look,
         ),
-        [geometry.material, isSelected, color, viewMode3D, clippingPlanes, clipIntersection],
+        [geometry.material, isSelected, color, viewMode3D, clippingPlanes, clipIntersection, look],
     );
     const meshRef = usePinnedRoomEnvironment(material);
 
@@ -216,25 +220,17 @@ export function ConsolidatedShape({
                 onClick={handleClick}
                 userData={{ type: 'FACE', id: 'consolidated', shapeIndex, faceMap, ownerId: name }}
             />
-            {viewMode3D !== 'shaded' && edgesGeo && (
-                // BREP edge curves. In shadedWithEdges they overlay the shaded
-                // faces in black; in wireframe mode they ARE the shape (faces
-                // are ghosted by buildShapeMaterial), drawn in the body colour
-                // so they read against the viewport background.
-                <lineSegments
-                    geometry={edgesGeo}
-                    renderOrder={500}
-                    // Pickable BREP edges: `edgeRanges` maps a raycast hit
-                    // to one edge (HoverManager / HighlightOverlay).
-                    userData={geometry.edgeRanges ? { type: 'EDGE', id: 'edges', shapeIndex, edgeRanges: geometry.edgeRanges, ownerId: name } : {}}
-                >
-                    <lineBasicMaterial
-                        color={viewMode3D === 'wireframe' ? color : 0x000000}
-                        clippingPlanes={clippingPlanes ?? EMPTY_PLANES}
-                        clipIntersection={clipIntersection ?? false}
-                    />
-                </lineSegments>
-            )}
+            <ShapeEdges
+                edgesGeo={edgesGeo}
+                geometry={geometry}
+                shapeIndex={shapeIndex}
+                name={name}
+                color={color}
+                viewMode3D={viewMode3D}
+                clippingPlanes={clippingPlanes ?? EMPTY_PLANES}
+                clipIntersection={clipIntersection ?? false}
+                look={look}
+            />
             {selectedFace?.shapeIndex === shapeIndex && (
                 <FaceSelectionOverlay
                     face={geometry.faces.find(f => f.faceId === selectedFace.faceId)}
@@ -242,6 +238,68 @@ export function ConsolidatedShape({
                 />
             )}
         </group>
+    );
+}
+
+/** BREP edge curves. In shadedWithEdges they overlay the shaded faces in
+ *  black; in wireframe mode they ARE the shape (faces are ghosted by
+ *  buildShapeMaterial), drawn in the body colour so they read against the
+ *  viewport background. Under the publish look this full set stays only as
+ *  the pick target (`visible: false` skips drawing, not raycasting) and
+ *  PublishFeatureEdges draws the creases. */
+function ShapeEdges({ edgesGeo, geometry, shapeIndex, name, color, viewMode3D, clippingPlanes, clipIntersection, look }: {
+    edgesGeo: THREE.BufferGeometry | null;
+    geometry: GeometryResult;
+    shapeIndex: number;
+    name: string | undefined;
+    color: number | string;
+    viewMode3D: ViewMode3D;
+    clippingPlanes: THREE.Plane[];
+    clipIntersection: boolean;
+    look: ViewerLook;
+}) {
+    if (viewMode3D === 'shaded' || !edgesGeo) return null;
+    const publishEdges = look === 'publish' && viewMode3D === 'shadedWithEdges';
+    return (
+        <>
+            <lineSegments
+                geometry={edgesGeo}
+                renderOrder={500}
+                // Pickable BREP edges: `edgeRanges` maps a raycast hit
+                // to one edge (HoverManager / HighlightOverlay).
+                userData={geometry.edgeRanges ? { type: 'EDGE', id: 'edges', shapeIndex, edgeRanges: geometry.edgeRanges, ownerId: name } : {}}
+            >
+                <lineBasicMaterial
+                    color={viewMode3D === 'wireframe' ? color : 0x000000}
+                    visible={!publishEdges}
+                    clippingPlanes={clippingPlanes}
+                    clipIntersection={clipIntersection}
+                />
+            </lineSegments>
+            {publishEdges && geometry.edges ? <PublishFeatureEdges geometry={geometry} color={color} /> : null}
+        </>
+    );
+}
+
+/** The publish look's edge line: creases only (no seams of periodic faces,
+ *  no tangent blends), in a darker shade of the body, part-transparent. Not
+ *  pickable: it carries no userData type. */
+function PublishFeatureEdges({ geometry, color }: { geometry: GeometryResult; color: number | string }) {
+    const lines = useMemo(() => {
+        if (!geometry.edges) return null;
+        const positions = featureEdgePositions(geometry.faces, geometry.edges, geometry.edgeRanges);
+        if (positions.length === 0) return null;
+        const geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        return geo;
+    }, [geometry.faces, geometry.edges, geometry.edgeRanges]);
+    const edgeColor = useMemo(() => publishEdgeColor(color), [color]);
+    useEffect(() => () => { lines?.dispose(); }, [lines]);
+    if (!lines) return null;
+    return (
+        <lineSegments geometry={lines} renderOrder={500}>
+            <lineBasicMaterial color={edgeColor} transparent opacity={PUBLISH_EDGE_OPACITY} depthWrite={false} />
+        </lineSegments>
     );
 }
 

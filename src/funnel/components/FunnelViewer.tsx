@@ -18,6 +18,7 @@ import { hasNonemptyGeometry } from '../../studio/components/viewer/hasNonemptyG
 import { WorkbenchProvider, useWorkbench } from '../../studio/context/WorkbenchContext';
 import type { GeometryResult } from '../../shared/worker/geometryEngine';
 import type { ViewportBackground } from '../../shared/types/viewMode';
+import type { ViewerLook } from '../../studio/components/viewer/publishLook';
 import {
   geometriesFromArtifact,
   parseMeshArtifact,
@@ -66,6 +67,8 @@ export interface FunnelViewerProps {
   statusOverlay?: boolean;
   /** Canvas background; overrides the stored Studio preference. */
   background?: ViewportBackground;
+  /** 'publish' draws a product render (the embed). Default 'engineering'. */
+  look?: ViewerLook;
   /** Adds a small "Feedback" button over the canvas that sends this context
    *  with the message. Off (no button) when unset. */
   feedback?: FeedbackContext;
@@ -76,7 +79,7 @@ export interface FunnelViewerProps {
 }
 
 /** Props FunnelViewer passes down to the inner viewer unchanged. */
-type InnerDisplayProps = Pick<FunnelViewerProps, 'statusOverlay' | 'background' | 'markFix'> & {
+type InnerDisplayProps = Pick<FunnelViewerProps, 'statusOverlay' | 'background' | 'markFix' | 'look'> & {
   /** Stored artifact's dimensions + bounds (mesh path only). */
   meshDimensions?: MeshDimensionsInfo | null;
 };
@@ -172,6 +175,7 @@ function FunnelViewerInner({
   background,
   meshDimensions,
   markFix,
+  look,
 }: InnerDisplayProps & {
   onPhaseChange?: (phase: FunnelViewerPhase, detail?: string | null) => void;
   revision?: number | null;
@@ -206,6 +210,7 @@ function FunnelViewerInner({
         meshDimensions={meshDimensions}
         showOriginPlanes={false}
         canvasExtras={mark.canvas}
+        look={look}
       />
       {statusLabel ? (
         <div
@@ -237,6 +242,7 @@ function SourceViewer({
   statusOverlay,
   background,
   markFix,
+  look,
 }: InnerDisplayProps & {
   code: string;
   onPhaseChange?: FunnelViewerProps['onPhaseChange'];
@@ -255,6 +261,7 @@ function SourceViewer({
         statusOverlay={statusOverlay}
         background={background}
         markFix={markFix}
+        look={look}
       />
     </WorkbenchProvider>
   );
@@ -488,6 +495,7 @@ function LoadedMeshViewer(props: FunnelViewerProps & {
           background={props.background}
           meshDimensions={props.meshDimensions}
           markFix={props.markFix}
+          look={props.look}
         />
         {resolvedAnimUrl ? <EmbedAnimationOverlay key={resolvedAnimUrl} animUrl={resolvedAnimUrl} /> : null}
       </WorkbenchProvider>
@@ -530,6 +538,7 @@ function FunnelViewerContent(props: FunnelViewerProps) {
           statusOverlay={props.statusOverlay}
           background={props.background}
           markFix={props.markFix}
+          look={props.look}
         />
       </div>
     );
