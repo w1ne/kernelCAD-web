@@ -64,6 +64,8 @@ export {
   AnthropicVisionClient,
   defaultVisionClient,
 } from './anthropicVisionClient';
+export { OpenAiCompatVisionClient } from './openAiCompatVisionClient';
+export type { OpenAiCompatVisionClientOptions } from './openAiCompatVisionClient';
 export type {
   AnthropicSdkLike,
   AnthropicVisionClientOptions,
