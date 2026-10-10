@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it } from 'vitest';
 import {
-  buildTubePath, isTubePathError, trimPathEnds, tubePathErrorMessage, type TubePath, type V3,
+  buildTubePath, isTubePathError, trimPathEnds, tubePathErrorArgs, type TubePath, type V3,
 } from '../../../src/shared/tube/tubePath';
 
 function ok(points: V3[], r: number): TubePath {
@@ -95,22 +95,34 @@ describe('trimPathEnds', () => {
   });
 });
 
-describe('tubePathErrorMessage', () => {
-  it('names the short leg and how much is missing', () => {
-    expect(tubePathErrorMessage('hyd-1', { kind: 'unreachable', leg: 1, missingMm: 10 })).toBe(
-      "tube.corner.unreachable: tube 'hyd-1' leg 1 is 10.00 mm too short for the bends at its ends. Move a corner to lengthen the leg or lower bendRadius.",
-    );
+describe('tubePathErrorArgs', () => {
+  it('names the tube, the short leg and how much is missing', () => {
+    expect(tubePathErrorArgs('hyd-1', { kind: 'unreachable', leg: 1, missingMm: 10 })).toEqual({
+      api: 'tube.corner.unreachable',
+      path: "tube 'hyd-1' leg 1",
+      gotText: 'a leg 10.00 mm too short for the bends at its ends',
+      requires: 'the leg at least 10.00 mm longer (move a corner), or a lower bendRadius',
+      example: "tube('hyd-1', { from, to, via: [[x, y, z]], wall, bendRadius })",
+    });
+    expect(tubePathErrorArgs('hyd-1', { kind: 'unreachable', leg: 0, missingMm: 0.456 }).gotText)
+      .toBe('a leg 0.46 mm too short for the bends at its ends');
   });
 
-  it('names the corner that folds back', () => {
-    expect(tubePathErrorMessage('hyd-1', { kind: 'reversal', corner: 2 })).toBe(
-      "tube.corner.collinear-reversal: tube 'hyd-1' folds back on itself at corner 2. Offset the next corner sideways.",
-    );
+  it('names the tube and the corner that folds back', () => {
+    expect(tubePathErrorArgs('hyd-1', { kind: 'reversal', corner: 2 })).toMatchObject({
+      api: 'tube.corner.collinear-reversal',
+      path: "tube 'hyd-1' corner 2",
+      gotText: 'a tube that folds straight back on itself',
+      requires: 'the next corner offset sideways',
+    });
   });
 
   it('asks for two distinct end points', () => {
-    expect(tubePathErrorMessage('hyd-1', { kind: 'too-few-points' })).toBe(
-      "tube.corner.too-few-points: tube 'hyd-1' needs two distinct end points.",
-    );
+    expect(tubePathErrorArgs('hyd-1', { kind: 'too-few-points' })).toMatchObject({
+      api: 'tube.corner.too-few-points',
+      path: "tube 'hyd-1' from / to",
+      gotText: 'fewer than two distinct points',
+      requires: 'two distinct end points',
+    });
   });
 });

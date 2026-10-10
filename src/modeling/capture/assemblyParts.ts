@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { assertTopoRefSafeName } from '../../kernel/naming/uniquenessValidator';
 import { KernelError } from '../../shared/intent/kernelError';
+import { invalidArgs } from '../../shared/intent/invalidArgs';
 import type { EditableVec3, FeatureId, Param, Unit, Vec3, Vec3Param } from '../../shared/intent/types';
 import { formatScalarForError, isValidEditableVec3 } from '../../shared/intent/types';
 import {
@@ -454,15 +455,23 @@ function createPartWrapGeom(
   };
 }
 
-function fluidPortFail(
-  id: FeatureId, partName: string, connName: string, reason: string, msg: string, hint: string,
-): never {
-  throw new KernelError(
-    'feature.invalid-args',
-    `tube.port.${reason}: connector '${connName}' on part '${partName}' ${msg}`,
-    id,
-    hint,
-  );
+/** One raiser for every `tube.port.*` error: the connector and its part are
+ *  the argument path, so both names are always in the message. */
+interface FluidPortFault { reason: string; gotText: string; requires: string; hint: string }
+
+const FLUID_PORT_EXAMPLE =
+  "part.connector('out', { type: 'axis', origin: { kind: 'vec3', value: [20, 20, 40] }, axis: [0, 0, 1], port: { system: 'fuel', od: 10 } })";
+
+function fluidPortFail(id: FeatureId, partName: string, connName: string, fault: FluidPortFault): never {
+  invalidArgs({
+    api: `tube.port.${fault.reason}`,
+    path: `connector '${connName}' on part '${partName}'`,
+    gotText: fault.gotText,
+    requires: fault.requires,
+    example: FLUID_PORT_EXAMPLE,
+    featureId: id,
+    hint: fault.hint,
+  });
 }
 
 const isPositiveFinite = (n: unknown): boolean => typeof n === 'number' && Number.isFinite(n) && n > 0;
@@ -486,19 +495,30 @@ function validateFluidPort(
   opts: AssemblyConnectorOpts, connName: string, partName: string, id: FeatureId,
 ): void {
   if (opts.port === undefined) return;
-  const bad = (reason: string, msg: string, hint: string): never =>
-    fluidPortFail(id, partName, connName, reason, msg, hint);
+  const bad = (fault: FluidPortFault): never => fluidPortFail(id, partName, connName, fault);
   if (opts.type !== 'axis' || opts.axis === undefined) {
-    bad('axis-required', 'carries port data but is not an axis connector with an axis.',
-      "Declare it as { type: 'axis', origin, axis: [x, y, z] } with the axis pointing out of the part.");
+    bad({
+      reason: 'axis-required',
+      gotText: `port data on a '${String(opts.type)}' connector ${opts.axis === undefined ? 'with no axis' : 'that is not an axis connector'}`,
+      requires: "an axis connector with an axis: { type: 'axis', origin, axis: [x, y, z] }",
+      hint: "Declare it as { type: 'axis', origin, axis: [x, y, z] } with the axis pointing out of the part.",
+    });
   }
   if (!isValidPortData(opts.port)) {
-    bad('invalid', `has invalid port data ${JSON.stringify(opts.port)}.`,
-      'Pass port: { system: <name>, od: <mm>, minStraight?: <mm> } as an object with positive numbers.');
+    bad({
+      reason: 'invalid',
+      gotText: `port data ${JSON.stringify(opts.port)}`,
+      requires: 'port: { system: <non-empty name>, od: <positive mm>, minStraight?: <positive mm> }',
+      hint: 'Pass port: { system: <name>, od: <mm>, minStraight?: <mm> } as an object with positive numbers.',
+    });
   }
   if (!isUsableAxis(opts.axis)) {
-    bad('invalid', `has an unusable axis ${JSON.stringify(opts.axis)}.`,
-      'Give the port connector a finite, non-zero axis [x, y, z] pointing out of the part.');
+    bad({
+      reason: 'invalid',
+      gotText: `axis ${JSON.stringify(opts.axis)}`,
+      requires: 'a finite, non-zero axis [x, y, z]',
+      hint: 'Give the port connector a finite, non-zero axis [x, y, z] pointing out of the part.',
+    });
   }
 }
 
@@ -512,21 +532,31 @@ function createPartPort(
   mateConnectors: Connector[],
 ): (connName: string) => TubeEnd {
   return (connName) => {
-    const fail = (reason: string, msg: string, hint: string): never => {
-      throw new KernelError('feature.invalid-args', `tube.port.${reason}: ${msg}`, id, hint);
-    };
+    const fail = (fault: FluidPortFault): never => fluidPortFail(id, name, connName, fault);
     const c = mateConnectors.find((m) => m.name === connName);
     if (c === undefined) {
-      return fail('not-found', `part '${name}' has no connector '${connName}'.`,
-        `Register it first: part.connector('${connName}', { type: 'axis', origin, axis, port: { system, od } }).`);
+      return fail({
+        reason: 'not-found',
+        gotText: 'no connector of that name',
+        requires: 'a connector registered on the part before port() is called',
+        hint: `Register it first: part.connector('${connName}', { type: 'axis', origin, axis, port: { system, od } }).`,
+      });
     }
     if (c.port === undefined) {
-      return fail('not-a-port', `connector '${connName}' on part '${name}' has no port data.`,
-        'Add port: { system, od } to the connector options.');
+      return fail({
+        reason: 'not-a-port',
+        gotText: 'a connector with no port data',
+        requires: 'port: { system, od } in the connector options',
+        hint: 'Add port: { system, od } to the connector options.',
+      });
     }
     if (c.origin.kind !== 'vec3' || placedByConnect) {
-      return fail('unresolved', `port '${connName}' on part '${name}' has no fixed position at capture time.`,
-        'Pass { point: [x, y, z], axis: [x, y, z] } to tube() instead.');
+      return fail({
+        reason: 'unresolved',
+        gotText: 'a port with no fixed position at capture time',
+        requires: "a { kind: 'vec3' } origin on a part placed with `at`, or a plain point end",
+        hint: 'Pass { point: [x, y, z], axis: [x, y, z] } to tube() instead.',
+      });
     }
     const a = c.axis ?? [0, 0, 1];
     const len = Math.hypot(a[0], a[1], a[2]);

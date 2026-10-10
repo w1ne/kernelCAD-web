@@ -47,6 +47,20 @@ describe('tube lowerer', () => {
     const diagnostics: CompilerDiagnostic[] = [];
     const out = lowerTube({ diagnostics } as unknown as LowerContext, record);
     expect(out.done).toBe(true);
-    expect(diagnostics[0].message).toMatch(/^tube\.corner\.unreachable: tube 't' leg 1 is /);
+    expect(diagnostics[0]).toMatchObject({ code: 'feature.invalid-args', featureId: 'tube_1', severity: 'error',
+      hint: 'Fix the tube() arguments named in the message, then re-evaluate.' });
+    expect(diagnostics[0].message).toBe(
+      "tube.corner.unreachable: tube 't' leg 1 — got a leg 90.00 mm too short for the bends at its ends; " +
+      'requires the leg at least 90.00 mm longer (move a corner), or a lower bendRadius. ' +
+      "Example: tube('t', { from, to, via: [[x, y, z]], wall, bendRadius })");
+  });
+
+  it('a record without tube metadata gives a diagnostic naming the record', () => {
+    const record = { id: 'tube_9', kind: 'tube', inputs: {}, transforms: [], suppressed: false, params: {}, metadata: {} } as unknown as FeatureRecord;
+    const diagnostics: CompilerDiagnostic[] = [];
+    lowerTube({ diagnostics } as unknown as LowerContext, record);
+    expect(diagnostics[0].featureId).toBe('tube_9');
+    expect(diagnostics[0].message).toMatch(
+      /^tube\.record\.invalid: record 'tube_9' metadata\.tube — got missing or malformed tube metadata; requires the metadata written by tube\(name, opts\)\./);
   });
 });

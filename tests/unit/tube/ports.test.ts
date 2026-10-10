@@ -48,6 +48,34 @@ describe('part.port()', () => {
     expect(() => run(pump)).toThrowError(new RegExp(`^${prefix.replace(/\./g, '\\.')}:`));
   });
 
+  it('port errors name the connector, the part and the feature', () => {
+    const { api } = makeApi();
+    const pump = api.assembly('rig').part('pump', api.box(40, 40, 40));
+    const caught = (run: () => unknown): { message: string; hint: string; featureId?: string } => {
+      try { run(); } catch (e) { return e as { message: string; hint: string; featureId?: string }; }
+      throw new Error('did not throw');
+    };
+    const missing = caught(() => pump.port('nope'));
+    expect(missing.message).toMatch(
+      /^tube\.port\.not-found: connector 'nope' on part 'pump' — got no connector of that name; requires a connector registered on the part before port\(\) is called\./);
+    expect(missing.hint).toBe("Register it first: part.connector('nope', { type: 'axis', origin, axis, port: { system, od } }).");
+    expect(missing.featureId).toBe(pump.id);
+    const badOd = caught(() => pump.connector('b', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1],
+      port: { system: 'oil', od: 0 } }));
+    expect(badOd.message).toMatch(
+      /^tube\.port\.invalid: connector 'b' on part 'pump' — got port data \{"system":"oil","od":0\}; requires port: \{ system: <non-empty name>, od: <positive mm>/);
+    expect(badOd.hint).toBe('Pass port: { system: <name>, od: <mm>, minStraight?: <mm> } as an object with positive numbers.');
+    expect(badOd.featureId).toBe(pump.id);
+    const badAxis = caught(() => pump.connector('c', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 0],
+      port: { system: 'oil', od: 6 } }));
+    expect(badAxis.message).toMatch(
+      /^tube\.port\.invalid: connector 'c' on part 'pump' — got axis \[0,0,0\]; requires a finite, non-zero axis \[x, y, z\]\./);
+    const frame = caught(() => pump.connector('d', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] },
+      port: { system: 'oil', od: 6 } }));
+    expect(frame.message).toMatch(
+      /^tube\.port\.axis-required: connector 'd' on part 'pump' — got port data on a 'frame' connector with no axis; requires an axis connector with an axis/);
+  });
+
   it('rejects port data on a non-axis connector and a non-positive od', () => {
     const { api } = makeApi();
     const pump = api.assembly('rig').part('pump', api.box(40, 40, 40));

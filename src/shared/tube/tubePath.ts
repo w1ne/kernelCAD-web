@@ -47,14 +47,38 @@ export function isTubePathError(v: TubePath | TubePathError): v is TubePathError
   return 'kind' in v;
 }
 
-export function tubePathErrorMessage(name: string, e: TubePathError): string {
+/** The parts of a path-error message, in the shape the shared invalid-args
+ *  raiser takes: `<api>: <path> — got <gotText>; requires <requires>.` Capture
+ *  and the lowerer both render through it, so the text is built once. */
+export interface TubePathErrorArgs { api: string; path: string; gotText: string; requires: string; example: string }
+
+export function tubePathErrorArgs(name: string, e: TubePathError): TubePathErrorArgs {
+  const example = `tube('${name}', { from, to, via: [[x, y, z]], wall, bendRadius })`;
   if (e.kind === 'unreachable') {
-    return `tube.corner.unreachable: tube '${name}' leg ${e.leg} is ${e.missingMm.toFixed(2)} mm too short for the bends at its ends. Move a corner to lengthen the leg or lower bendRadius.`;
+    return {
+      api: 'tube.corner.unreachable',
+      path: `tube '${name}' leg ${e.leg}`,
+      gotText: `a leg ${e.missingMm.toFixed(2)} mm too short for the bends at its ends`,
+      requires: `the leg at least ${e.missingMm.toFixed(2)} mm longer (move a corner), or a lower bendRadius`,
+      example,
+    };
   }
   if (e.kind === 'reversal') {
-    return `tube.corner.collinear-reversal: tube '${name}' folds back on itself at corner ${e.corner}. Offset the next corner sideways.`;
+    return {
+      api: 'tube.corner.collinear-reversal',
+      path: `tube '${name}' corner ${e.corner}`,
+      gotText: 'a tube that folds straight back on itself',
+      requires: 'the next corner offset sideways',
+      example,
+    };
   }
-  return `tube.corner.too-few-points: tube '${name}' needs two distinct end points.`;
+  return {
+    api: 'tube.corner.too-few-points',
+    path: `tube '${name}' from / to`,
+    gotText: 'fewer than two distinct points',
+    requires: 'two distinct end points',
+    example: `tube('${name}', { from: { point: [0, 0, 0] }, to: { point: [0, 0, 100] }, od, wall, bendRadius })`,
+  };
 }
 
 /** Angle between two unit vectors, in radians. */
