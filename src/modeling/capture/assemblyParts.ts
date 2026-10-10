@@ -27,6 +27,7 @@ import type {
   AssemblyCrossSection,
   AssemblyPartOpts,
   AssemblyPartRef,
+  TubeEnd,
   AssemblyPartStored,
   SubAssemblyHandle,
 } from './assemblyTypes';
@@ -340,6 +341,7 @@ function createPartConnector(
       // alongside the structured ConnectorOrigin union. Normalise here BEFORE
       // constructing the Connector record so downstream solvers see only the
       // structured form.
+      validateFluidPort(opts, connectorName, name, id);
       const normalizedOrigin = normalizeConnectorOriginInput(opts.origin, name);
       mateConnectors.push(
         makeConnector({
@@ -351,6 +353,7 @@ function createPartConnector(
           ...(opts.jointClearanceRadius !== undefined
             ? { jointClearanceRadius: opts.jointClearanceRadius }
             : {}),
+          ...(opts.port !== undefined ? { port: { ...opts.port } } : {}),
         }),
       );
       return getRef();
@@ -450,6 +453,69 @@ function createPartWrapGeom(
   };
 }
 
+/** Validate the `port` option of a mate-style `connector(name, opts)` call. */
+function validateFluidPort(
+  opts: AssemblyConnectorOpts, connName: string, partName: string, id: FeatureId,
+): void {
+  const port = opts.port;
+  if (port === undefined) return;
+  const bad = (reason: string, msg: string, hint: string): never => {
+    throw new KernelError(
+      'feature.invalid-args',
+      `tube.port.${reason}: connector '${connName}' on part '${partName}' ${msg}`,
+      id,
+      hint,
+    );
+  };
+  if (opts.type !== 'axis' || opts.axis === undefined) {
+    bad('axis-required', 'carries port data but is not an axis connector with an axis.',
+      "Declare it as { type: 'axis', origin, axis: [x, y, z] } with the axis pointing out of the part.");
+  }
+  const okNum = (n: unknown): boolean => typeof n === 'number' && Number.isFinite(n) && n > 0;
+  if (!okNum(port.od) || typeof port.system !== 'string' || port.system.length === 0 ||
+      (port.minStraight !== undefined && !okNum(port.minStraight))) {
+    bad('invalid', `has invalid port data ${JSON.stringify(port)}.`,
+      'Pass port: { system: <name>, od: <mm>, minStraight?: <mm> } with positive numbers.');
+  }
+}
+
+/** Build the part-ref `port` method: resolve a port connector to a `TubeEnd`.
+ *  Extracted from `makePartRef` to keep it under the function-length ratchet. */
+function createPartPort(
+  id: FeatureId,
+  name: string,
+  at: Vec3Param,
+  placedByConnect: boolean,
+  mateConnectors: Connector[],
+): (connName: string) => TubeEnd {
+  return (connName) => {
+    const fail = (reason: string, msg: string, hint: string): never => {
+      throw new KernelError('feature.invalid-args', `tube.port.${reason}: ${msg}`, id, hint);
+    };
+    const c = mateConnectors.find((m) => m.name === connName);
+    if (c === undefined) {
+      return fail('not-found', `part '${name}' has no connector '${connName}'.`,
+        `Register it first: part.connector('${connName}', { type: 'axis', origin, axis, port: { system, od } }).`);
+    }
+    if (c.port === undefined) {
+      return fail('not-a-port', `connector '${connName}' on part '${name}' has no port data.`,
+        'Add port: { system, od } to the connector options.');
+    }
+    if (c.origin.kind !== 'vec3' || placedByConnect) {
+      return fail('unresolved', `port '${connName}' on part '${name}' has no fixed position at capture time.`,
+        'Pass { point: [x, y, z], axis: [x, y, z] } to tube() instead.');
+    }
+    const a = c.axis ?? [0, 0, 1];
+    const len = Math.hypot(a[0], a[1], a[2]);
+    return {
+      base: at, offset: c.origin.value, axis: [a[0] / len, a[1] / len, a[2] / len],
+      od: c.port.od, system: c.port.system,
+      ...(c.port.minStraight !== undefined ? { minStraight: c.port.minStraight } : {}),
+      part: name, connector: connName,
+    };
+  };
+}
+
 export function makePartRef(
   assemblyName: string,
   id: FeatureId,
@@ -463,6 +529,7 @@ export function makePartRef(
   // `solvedModel`) delegate straight to it so there is exactly one
   // implementation of each.
   owner: Assembly,
+  placedByConnect = false,
 ): AssemblyPartRef {
   const connector = createPartConnector(
     assemblyName, id, name, at, connectors, mateConnectors, () => ref,
@@ -478,6 +545,7 @@ export function makePartRef(
     wrapGeoms,
     connector: connector as AssemblyPartRef['connector'],
     wrapGeom,
+    port: createPartPort(id, name, at, placedByConnect, mateConnectors),
     part: addPart,
     model: () => owner.model(),
     solve: (poses) => owner.solve(poses),
@@ -644,6 +712,7 @@ export function recordPartInternal(
     // another part to this same assembly (delegates straight to this method).
     (chainName, chainShape, chainOpts) => recordPart(state, arm, chainName, chainShape, chainOpts),
     arm,
+    opts.connect !== undefined,
   );
   for (const connector of transformedCatalogConnectors) {
     part.connector(connector.name, {

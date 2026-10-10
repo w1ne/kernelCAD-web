@@ -25,6 +25,15 @@ export type TopologyQuery =
   | { kind: 'vertex'; name: string }
   | { kind: 'edge-axis'; name: string };
 
+/** Fluid port data carried by an `axis` connector: the tube system the port
+ *  belongs to, the tube outer diameter (mm) and an optional minimum straight
+ *  run (mm) a tube must keep leaving the port. */
+export interface FluidPort {
+  system: string;
+  od: number;
+  minStraight?: number;
+}
+
 export interface Connector {
   readonly name: string;
   readonly type: ConnectorType;
@@ -42,6 +51,8 @@ export interface Connector {
    *  requiring the pivot POINT to sit in solid. Absent ⇒ the gate falls
    *  back to the point-in-solid test (1 mm tolerance). */
   readonly jointClearanceRadius?: number;
+  /** Fluid port data; only valid on `axis` connectors. */
+  readonly port?: FluidPort;
 }
 
 export interface MakeConnectorInput {
@@ -51,6 +62,7 @@ export interface MakeConnectorInput {
   axis?: Vec3;
   normal?: Vec3;
   jointClearanceRadius?: number;
+  port?: FluidPort;
 }
 
 /** Capture-time input form for `Connector.origin`. Accepts the canonical
@@ -166,6 +178,7 @@ export function makeConnector(input: MakeConnectorInput): Connector {
     ...(input.jointClearanceRadius !== undefined
       ? { jointClearanceRadius: input.jointClearanceRadius }
       : {}),
+    ...(input.port !== undefined ? { port: input.port } : {}),
   };
 }
 
