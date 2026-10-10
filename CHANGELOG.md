@@ -19,6 +19,7 @@
 
 ## Fixed
 
+- `trace_from_image` reads more of the waypoint shapes vision models return: a curve wrapped in an extra list, `[x, y, extra]` points and `"x, y"` strings. When a waypoint still can't be read, the error now shows it.
 - `trace_from_image` traces a `curve` feature (a roof line, a brow) with the vision model instead of returning the whole outer silhouette. Only `silhouette` still uses the opencv contour.
 - STEP export of a multi-part scene no longer corrupts the OCCT wasm heap. Replicad's exporter left the STEP work session to two garbage-collection finalizers that freed it twice, so a later, unrelated OCCT call could fail with `memory access out of bounds` or `null function or function signature mismatch` (seen as an intermittent `usecase-twisted-vase` eval failure after the Raspberry Pi enclosure's STEP export). The scene exporter now writes the STEP file with explicit ownership; the output is unchanged.
 - Stress-graded infill export renders (heatmap, printed bands, cutaway) are about 6x faster. The band meshes are drawn as display-only meshes in one browser page instead of three script evaluations that rebuilt every band as a B-rep through `lib.fromSTL` (about 20 s of CAD work per image). The three images look the same; the generated `.kcad.ts` scripts are still written. `run_fea`'s stress heatmap uses the same path.
