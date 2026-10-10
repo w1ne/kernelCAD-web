@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { Canvas } from "@react-three/fiber";
 import * as THREE from "three";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import type { GeometryResult, SketchGeometry } from "../../shared/worker/geometryEngine";
 import type { ViewMode3D, ViewportBackground } from "../../shared/types/viewMode";
 import { useWorkbench } from "../context/WorkbenchContext";
@@ -49,6 +49,8 @@ interface ViewerProps {
      *  (/p page, ChatGPT widget, embed) pass false: the planes are a modelling
      *  aid there is nothing to do with, and they sit on the model's origin. */
     showOriginPlanes?: boolean;
+    /** Extra R3F nodes drawn inside the canvas (the embed's Mark & fix pins). */
+    canvasExtras?: ReactNode;
 }
 
 /** Scene state phase: workbench/ui/shell context plus the grid, section-clipping
@@ -138,7 +140,7 @@ function useViewerSetup(geometries: GeometryResult[]) {
     };
 }
 
-export default function Viewer({ geometries, previewGeometries, sketchesGeometries, showSketches, viewMode3D, onDisplayReady, background, meshDimensions, showOriginPlanes = true }: ViewerProps) {
+export default function Viewer({ geometries, previewGeometries, sketchesGeometries, showSketches, viewMode3D, onDisplayReady, background, meshDimensions, showOriginPlanes = true, canvasExtras }: ViewerProps) {
     const {
         meshDimensions: workbenchDimensions, setSelectedFace, selectedSketchName, setSelectedSketchName, sketchMode, planes, hiddenIds,
         selectedItemIds, setSelectedItemId, toggleSelection, setContextMenu, viewportBackground,
@@ -223,6 +225,7 @@ export default function Viewer({ geometries, previewGeometries, sketchesGeometri
                 />
                 {dims.on ? <DimensionsOverlay dimensions={dims.dimensions} bounds={dims.bounds} /> : null}
                 {measuring ? <MeasureTool geometries={geometries} itemNames={itemNames} hiddenIds={hiddenIds} /> : null}
+                {canvasExtras}
                 {onDisplayReady ? (
                     <DisplayReadySensor geometries={geometries} onDisplayReady={onDisplayReady} />
                 ) : null}
