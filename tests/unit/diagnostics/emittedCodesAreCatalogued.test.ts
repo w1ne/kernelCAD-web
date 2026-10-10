@@ -143,7 +143,7 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     }
   });
 
-  it('catalogue has exactly 337 codes', () => {
+  it('catalogue has exactly 347 codes', () => {
     // 47 baseline (milestone-C diagnostic-vocab spec)
     //  + 23 NURBS Slice B/C/D (Curve3D / variableSweep / surface / G2 / 2D path NURBS)
     //  + 31 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
@@ -311,7 +311,11 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     // + 1 FEA clamp-edge singularity: fea.stress.support-singularity = 337.
     // + 2 FEA auto-refinement: fea.mesh.refine-stopped,
     //   fea.safety-factor.unverified = 339.
-    expect(catalogue.size).toBe(339);
+    // + 8 tube gates: tube.bend.radius-too-small,
+    //   tube.straight.between-bends-too-short, tube.straight.end-too-short,
+    //   tube.bend.angle-exceeded, tube.clearance.violated,
+    //   tube.clearance.overlap, tube.port.misaligned, tube.spec.defaulted = 347.
+    expect(catalogue.size).toBe(347);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

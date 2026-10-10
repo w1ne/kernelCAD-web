@@ -28,3 +28,30 @@ export function brepExtremaDistance(oc: any, shapeA: any, shapeB: any): number |
     dist.delete?.();
   }
 }
+
+export interface BrepClosest {
+  distance: number;
+  /** Closest point on `shapeA`, then on `shapeB`. */
+  onA: [number, number, number];
+  onB: [number, number, number];
+}
+
+/**
+ * `brepExtremaDistance` plus the first pair of closest points, for gates
+ * that report where the two shapes come nearest.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function brepExtremaClosest(oc: any, shapeA: any, shapeB: any): BrepClosest | undefined {
+  const dist = new oc.BRepExtrema_DistShapeShape_1();
+  dist.LoadS1(shapeA);
+  dist.LoadS2(shapeB);
+  try {
+    const ok = dist.Perform(new oc.Message_ProgressRange_1());
+    if (!ok || !dist.IsDone() || dist.NbSolution() < 1) return undefined;
+    const a = dist.PointOnShape1(1);
+    const b = dist.PointOnShape2(1);
+    return { distance: dist.Value(), onA: [a.X(), a.Y(), a.Z()], onB: [b.X(), b.Y(), b.Z()] };
+  } finally {
+    dist.delete?.();
+  }
+}
