@@ -21,7 +21,7 @@ interface ApiReply {
     url?: string;
 }
 
-const FALLBACK = 'Ordering did not work just now. Please try again in a minute.';
+const FALLBACK = 'Ordering did not work just now. Please try again.';
 
 async function post(path: string, body: unknown, signal?: AbortSignal): Promise<ApiReply> {
     const { base, headers } = await apiCall();

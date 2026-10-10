@@ -112,7 +112,7 @@ function OrderPopover({ flow }: { flow: ReturnType<typeof useOrderFlow> }): JSX.
             {phase === 'asking' && (
                 <p className="flex items-center gap-2 text-fg-2">
                     <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-                    Asking makers… (about a minute)
+                    Pricing…
                 </p>
             )}
             {phase === 'ready' && estimate && (

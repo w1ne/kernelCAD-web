@@ -34,7 +34,7 @@ describe('OrderButton', () => {
         mockFetch(() => json({ ok: true, url: 'https://checkout.stripe.com/x' }));
         render(<OrderButton />);
         fireEvent.click(screen.getByTestId('toolbar-order'));
-        expect(screen.getByText(/Asking makers/)).toBeTruthy();
+        expect(screen.getByText(/Pricing/)).toBeTruthy();
         expect((await screen.findByTestId('order-summary')).textContent).toContain('about $44');
         expect(screen.getByRole('button', { name: 'Pay $44' })).toBeTruthy();
         expect(calls[0]).toBe('https://api.test/api/v1/orders/estimate');
