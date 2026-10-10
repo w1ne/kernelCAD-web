@@ -18,6 +18,7 @@
 
 ## Fixed
 
+- STEP export of a multi-part scene no longer corrupts the OCCT wasm heap. Replicad's exporter left the STEP work session to two garbage-collection finalizers that freed it twice, so a later, unrelated OCCT call could fail with `memory access out of bounds` or `null function or function signature mismatch` (seen as an intermittent `usecase-twisted-vase` eval failure after the Raspberry Pi enclosure's STEP export). The scene exporter now writes the STEP file with explicit ownership; the output is unchanged.
 - Stress-graded infill export renders (heatmap, printed bands, cutaway) are about 6x faster. The band meshes are drawn as display-only meshes in one browser page instead of three script evaluations that rebuilt every band as a B-rep through `lib.fromSTL` (about 20 s of CAD work per image). The three images look the same; the generated `.kcad.ts` scripts are still written. `run_fea`'s stress heatmap uses the same path.
 - 3MF export with `slicer: 'prusa'` and `arrange: 'assembled'` placed only the first part on the bed; the other parts stayed at the origin. The bed position is now written into the vertices.
 - FEA face loads are applied as the consistent nodal forces of a uniform traction: each loaded surface triangle takes its area share of the total force, on its mid-side nodes. The total used to be split equally over every face node, including corner nodes that should carry none.
