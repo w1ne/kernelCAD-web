@@ -7,7 +7,8 @@
 // picks one of `'opencv' | 'vision-llm' | 'hybrid'`.
 //
 // Heuristic (spec §3):
-// - Uniform background AND silhouette/curve-only → `'opencv'` (free, deterministic).
+// - Uniform background AND silhouette-only → `'opencv'` (free, deterministic).
+// - Uniform background AND any curve → `'hybrid'` (a curve is part of the outline).
 // - Uniform background AND any point/bbox feature → `'hybrid'` (opencv for the
 //   silhouette, LLM for the named labels).
 // - Non-uniform background → `'vision-llm'` (opencv would fail on clutter).
@@ -36,11 +37,13 @@ export async function decideBackend(
   const stddev = await cornerColorStdDev(imageBytes);
   const uniformBg = stddev < UNIFORM_BG_THRESHOLD;
 
-  const hasNamedPointOrBbox = features.some(
-    (f) => f.kind === 'point' || f.kind === 'bbox',
+  // A curve is part of the outline (roof line, brow): only the LLM can pick
+  // it out; opencv returns the whole silhouette.
+  const needsLabels = features.some(
+    (f) => f.kind === 'point' || f.kind === 'bbox' || f.kind === 'curve',
   );
 
   if (!uniformBg) return 'vision-llm';
-  if (hasNamedPointOrBbox) return 'hybrid';
+  if (needsLabels) return 'hybrid';
   return 'opencv';
 }
