@@ -5,11 +5,11 @@ import {
   dryRunScript,
   evaluateAndBuildScript,
   withIntentLint,
-  tubesOutput,
   type EvaluateInput,
   type EvaluateResult,
   type FeatureHealthEntry,
 } from '../../cli/commands/evaluate';
+import { tubesOutput } from '../../../composition/scriptEvaluation';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
 import { clearActiveMcpSession, setActiveMcpSession } from '../activeSession';
@@ -212,13 +212,13 @@ function didBuildSucceed(
   gateReports: ReadonlyArray<{ diagnostics: readonly unknown[] } | undefined>,
 ): boolean {
   // Tube gate errors are verdicts on a model that built, exactly like dfm ones.
-  const dfmErrors = new Set<unknown>(gateReports.flatMap(r => r?.diagnostics ?? []));
+  const gateDiagnostics = new Set<unknown>(gateReports.flatMap(r => r?.diagnostics ?? []));
   // Union-guard errors (union.*) are verdicts on a model that DID build, like
   // dfm gate errors: keep the session and still probe the mechanism so the
   // agent sees every finding at once. `ok` is false via exitCode either way.
   return (
     model !== undefined &&
-    model.diagnostics.every(d => d.severity !== 'error' || dfmErrors.has(d) || d.code.startsWith('union.'))
+    model.diagnostics.every(d => d.severity !== 'error' || gateDiagnostics.has(d) || d.code.startsWith('union.'))
   );
 }
 

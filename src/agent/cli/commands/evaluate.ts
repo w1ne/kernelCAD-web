@@ -211,10 +211,10 @@ export async function evaluateWithEnvelope(
 
   // Don't run envelope on a broken script — surface the underlying failure.
   // The `!model` case shouldn't happen for exitCode 0, but be defensive.
-  if (evaluation.exitCode !== 0 || !model) return envelopeResult(evaluation, evaluation.exitCode);
+  if (evaluation.exitCode !== 0 || !model) return envelopeResult(evaluation, evaluation.exitCode, tubes);
 
   const assemblies = Array.from(model.session.assemblies.values()) as Assembly[];
-  if (assemblies.length === 0) return envelopeResult(evaluation, 0);
+  if (assemblies.length === 0) return envelopeResult(evaluation, 0, tubes);
 
   const { envelopeDiagnostics, envelopeSampleCount } = await reviewAssemblies(assemblies, input);
 
@@ -225,6 +225,7 @@ export async function evaluateWithEnvelope(
     diagnostics: evaluation.diagnostics,
     envelopeDiagnostics,
     envelopeSampleCount,
+    ...(tubes !== undefined ? { tubes } : {}),
     ...(trace !== undefined ? { trace } : {}),
   };
 }
@@ -287,13 +288,18 @@ function evaluationResult(
   };
 }
 
-function envelopeResult(evaluation: EvaluateResult, exitCode: number): EvaluateWithEnvelopeResult {
+function envelopeResult(
+  evaluation: EvaluateResult,
+  exitCode: number,
+  tubes: EvaluateWithEnvelopeResult['tubes'],
+): EvaluateWithEnvelopeResult {
   return {
     exitCode,
     featureCount: evaluation.featureCount,
     diagnostics: evaluation.diagnostics,
     envelopeDiagnostics: [],
     envelopeSampleCount: 0,
+    ...(tubes !== undefined ? { tubes } : {}),
   };
 }
 

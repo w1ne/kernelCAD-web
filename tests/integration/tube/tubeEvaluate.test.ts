@@ -11,6 +11,7 @@ import { evaluateCommand } from '../../../src/agent/cli/commands/evaluate';
 import { evaluateScriptTool } from '../../../src/agent/mcp/tools/evaluateScript';
 
 const GOOD = 'tests/fixtures/tube/one-line.kcad.ts';
+const NO_SPEC = 'tests/fixtures/tube/one-line-no-spec.kcad.ts';
 const BAD = 'tests/fixtures/tube/one-line-tight-bend.kcad.ts';
 
 beforeAll(async () => { await initOcct(); }, 120_000);
@@ -20,10 +21,10 @@ afterEach(() => {
   process.exitCode = 0;
 });
 
-async function evaluateJson(file: string): Promise<any> {
+async function evaluateJson(file: string, ...flags: string[]): Promise<any> {
   const lines: string[] = [];
   vi.spyOn(console, 'log').mockImplementation((s: unknown) => { lines.push(String(s)); });
-  await evaluateCommand().parseAsync(['node', 'evaluate', file, '--json']);
+  await evaluateCommand().parseAsync(['node', 'evaluate', file, '--json', ...flags]);
   return JSON.parse(lines.join('\n'));
 }
 
@@ -48,7 +49,27 @@ describe('tube gate on the evaluation seam', () => {
     expect('tubes' in out).toBe(false);
   }, 120_000);
 
-  it('evaluate_script returns tubes for the passing fixture and warns do not fail it', async () => {
+  it('--envelope keeps tubes, for a passing and a failing line', async () => {
+    const good = await evaluateJson(GOOD, '--envelope');
+    expect(good.ok).toBe(true);
+    expect(good.tubes.lines[0]).toMatchObject({ name: 'fuel-1', bends: 1 });
+    expect(good.tubes.systems).toHaveLength(1);
+
+    const bad = await evaluateJson(BAD, '--envelope');
+    expect(bad.ok).toBe(false);
+    expect(bad.diagnostics.map((d: { code: string }) => d.code)).toContain('tube.bend.radius-too-small');
+    expect(bad.tubes.lines[0]).toMatchObject({ name: 'fuel-1', bends: 1 });
+  }, 120_000);
+
+  it('a warn from the gate does not fail evaluation: a line without tubeSpec still reports', async () => {
+    const out = await evaluateJson(NO_SPEC);
+    expect(out.ok).toBe(true);
+    const warn = out.diagnostics.find((d: { code: string }) => d.code === 'tube.spec.defaulted');
+    expect(warn).toMatchObject({ severity: 'warn' });
+    expect(out.tubes.lines).toHaveLength(1);
+  }, 120_000);
+
+  it('evaluate_script returns tubes for the passing fixture and fails the broken one', async () => {
     const code = await readFile(GOOD, 'utf8');
     const r = await evaluateScriptTool({ code });
     expect(r.ok).toBe(true);
