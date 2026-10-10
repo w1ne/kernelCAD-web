@@ -36,7 +36,6 @@ import { detectFeaToolchain } from '../../../kernel/fea/toolchain';
 import type { FeaSummary } from '../../../kernel/fea/types';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { loadMeshScene, renderMeshViews } from '../../render/meshScenesRender';
-import { renderPreviewTool } from './renderPreview';
 
 export interface RunFeaInput {
   /** Path to a `.kcad.ts` script declaring at least one `feaStudy`. */
@@ -143,27 +142,22 @@ async function lowerStudyShape(
 }
 
 /** iso + front heatmap tiles drawn straight from the band meshes (no script
- *  evaluation, no STL->B-rep import); undefined falls back to render_preview. */
-async function renderHeatmapFast(scriptPath: string, dir: string): Promise<string[] | undefined> {
-  try {
-    const scene = await loadMeshScene('heatmap', scriptPath);
-    if (scene === undefined) return undefined;
-    const views = ['iso', 'front'] as const;
-    const tiles = (await renderMeshViews([scene], { views, width: 768, height: 768 })).heatmap;
-    if (tiles === undefined) return undefined;
-    await mkdir(dir, { recursive: true });
-    const paths: string[] = [];
-    for (const v of views) {
-      const png = tiles[v];
-      if (png === undefined) return undefined;
-      const path = join(dir, `${v}.png`);
-      await writeFile(path, png);
-      paths.push(path);
-    }
-    return paths;
-  } catch {
-    return undefined;
+ *  evaluation, no STL->B-rep import). Throws with the reason on failure. */
+async function renderHeatmapTiles(scriptPath: string, dir: string): Promise<string[]> {
+  const scene = await loadMeshScene('heatmap', scriptPath);
+  if (scene === undefined) throw new Error('the heatmap band list (render-bodies.json) is missing');
+  const views = ['iso', 'front'] as const;
+  const tiles = (await renderMeshViews([scene], { views, width: 768, height: 768 })).heatmap;
+  await mkdir(dir, { recursive: true });
+  const paths: string[] = [];
+  for (const v of views) {
+    const png = tiles?.[v];
+    if (png === undefined) throw new Error(`the ${v} view did not render`);
+    const path = join(dir, `${v}.png`);
+    await writeFile(path, png);
+    paths.push(path);
   }
+  return paths;
 }
 
 async function renderStudyHeatmap(
@@ -172,52 +166,23 @@ async function renderStudyHeatmap(
   outDir: string,
   diagnostics: CompilerDiagnostic[],
 ): Promise<{ images: string[] | undefined; legend: HeatmapBand[] | undefined }> {
-  let images: string[] | undefined;
-  let legend: HeatmapBand[] | undefined;
-  if (result.raw !== undefined && heatmaps !== false) {
-    const built = await buildHeatmap(result.raw.mesh, result.raw.fields, outDir);
-    legend = built.bands;
-    // Reuse the existing offline render pipeline verbatim — same camera set,
-    // lighting, and watermark as every other kernelCAD visual artifact. A
-    // render failure (no chromium, no player bundle) must not invalidate the
-    // numbers, so it degrades to "no images" — but the REASON is passed
-    // through, because an agent silently receiving no pictures would assume
-    // the feature is missing rather than that its browser is.
-    try {
-      const fast = await renderHeatmapFast(built.scriptPath, join(outDir, 'heatmap'));
-      if (fast !== undefined) return { images: fast, legend };
-      const preview = await renderPreviewTool({
-        file: built.scriptPath,
-        out_dir: join(outDir, 'heatmap'),
-        views: ['iso', 'front'],
-        no_mechanism_check: true,
-      });
-      if (preview.ok && preview.images.length > 0) {
-        images = preview.images.map(i => i.path);
-      } else {
-        // Demoted to warn on the way through: a missing browser is a
-        // reporting problem, not a structural one, and must not turn a
-        // solved study into a failure.
-        diagnostics.push(
-          ...preview.diagnostics.map(d => ({
-            ...d,
-            severity: 'warn' as const,
-            message: `run_fea heatmap render: ${d.message} The solved numbers are unaffected.`,
-          })),
-        );
-      }
-    } catch (e) {
-      diagnostics.push({
-        target: 'export-occt',
-        code: 'cli.export-exception',
-        severity: 'warn',
-        message: `run_fea: the stress heatmap did not render (${(e as Error).message}). The solved numbers above are unaffected.`,
-        hint: 'Ensure playwright chromium is installed (npx playwright install chromium), or pass heatmaps: false to skip rendering.',
-      });
-    }
+  if (result.raw === undefined || heatmaps === false) return { images: undefined, legend: undefined };
+  const built = await buildHeatmap(result.raw.mesh, result.raw.fields, outDir);
+  // A render failure (no chromium) must not invalidate the numbers, so it
+  // degrades to "no images" as a warning, with the reason: an agent silently
+  // receiving no pictures would assume the feature is missing.
+  try {
+    return { images: await renderHeatmapTiles(built.scriptPath, join(outDir, 'heatmap')), legend: built.bands };
+  } catch (e) {
+    diagnostics.push({
+      target: 'export-occt',
+      code: 'cli.export-exception',
+      severity: 'warn',
+      message: `run_fea: the stress heatmap did not render (${(e as Error).message}). The solved numbers above are unaffected.`,
+      hint: 'Ensure playwright chromium is installed (npx playwright install chromium), or pass heatmaps: false to skip rendering.',
+    });
+    return { images: undefined, legend: built.bands };
   }
-
-  return { images, legend };
 }
 
 /**
