@@ -129,8 +129,9 @@ describe('diagnostic catalogue invariants', () => {
     //   tube.bend.angle-exceeded, tube.clearance.violated,
     //   tube.clearance.overlap, tube.port.misaligned, tube.spec.defaulted = 347.
     // + 1 bend-table export: export.bend-table.no-tubes = 348.
-    expect(DIAGNOSTIC_CODES).toHaveLength(348);
-    expect(new Set(DIAGNOSTIC_CODES).size).toBe(348);
+    // + 1 tube plain end naming a missing part: tube.end.part-not-found = 349.
+    expect(DIAGNOSTIC_CODES).toHaveLength(349);
+    expect(new Set(DIAGNOSTIC_CODES).size).toBe(349);
   });
 
   it('every code has a non-empty hint template', () => {

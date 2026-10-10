@@ -10,8 +10,10 @@ import type { V3 } from '../tube/tubePath';
 import type { Vec3Param } from './types';
 
 export interface TubeEndMeta {
-  /** Set when the end came from a port. */
+  /** The assembly part the end sits on: the port's part, or the part a
+   *  plain end names. */
   part?: string;
+  /** Set when the end came from a port. */
   connector?: string;
   /** Port axis, pointing out of the part. */
   axis?: V3;

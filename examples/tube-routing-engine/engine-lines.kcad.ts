@@ -1,8 +1,12 @@
 // examples/tube-routing-engine/engine-lines.kcad.ts
 //
 // Five bent tubes routed around an engine-like envelope: a 300 mm case, a
-// gearbox under it, a fuel pump and a hydraulic manifold on the gearbox front
-// face, two actuators and a fuel inlet block on the case side.
+// gearbox under it, a fuel pump and a hydraulic manifold on the gearbox, two
+// actuators and a fuel inlet block on the case.
+//
+// Directions: the case axis is X, forward is -X (the inlet) and aft is +X (the
+// nozzle); Z is up; the accessory side is -Y, where the pump, the manifold,
+// the actuators and the fuel block sit.
 //
 //   fuel-a, fuel-b   fuel       12.7 mm    pump -> fuel inlet block
 //   hyd-a, hyd-b     hydraulic  9.525 mm   manifold -> actuator 1, actuator 2
@@ -30,8 +34,8 @@
 
 const pumpX = param('PumpX', 60, { unit: 'mm', description: 'fuel pump station along the case axis' });
 const manifoldX = param('ManifoldX', -80, { unit: 'mm', description: 'hydraulic manifold station along the case axis' });
-const act1X = param('Actuator1X', -200, { unit: 'mm', description: 'front actuator station' });
-const act2X = param('Actuator2X', 130, { unit: 'mm', description: 'rear actuator station' });
+const act1X = param('Actuator1X', -200, { unit: 'mm', description: 'forward actuator station' });
+const act2X = param('Actuator2X', 130, { unit: 'mm', description: 'aft actuator station' });
 const fuelBlockX = param('FuelBlockX', 235, { unit: 'mm', description: 'fuel inlet block station' });
 const hydRunZ = param('HydRunZ', -112, { unit: 'mm', description: 'height of the hydraulic run along the case' });
 const fuelRunZ = param('FuelRunZ', -140, { unit: 'mm', description: 'height of the fuel run along the case' });
@@ -57,14 +61,14 @@ const caseShape = xCyl(CASE_R, -300, 300)
 const engineCase = asm.part('case', caseShape, { at: [0, 0, 0] })
   .connector('oil-in', { type: 'axis', origin: { kind: 'vec3', value: [215, 0, -162] }, axis: [0, 0, -1], port: { system: 'oil', od: 6.35 } });
 
-// Gearbox under the case, with an oil boss and a cover on its rear face.
+// Gearbox under the case, with an oil boss and a cover on its aft face.
 const gearboxShape = box(300, 260, 160).translate(-150, -130, -330)
   .union(xCyl(9, 150, 162).translate(0, -100, -250), xCyl(48, 150, 158).translate(0, 40, -250))
   .color('#6f7782');
 const gearbox = asm.part('gearbox', gearboxShape, { at: [0, 0, 0] })
   .connector('oil-out', { type: 'axis', origin: { kind: 'vec3', value: [162, -100, -250] }, axis: [1, 0, 0], port: { system: 'oil', od: 6.35 } });
 
-// Fuel pump on the gearbox front face: two outlets on top.
+// Fuel pump on the accessory side of the gearbox: two outlets on top.
 const pumpShape = yCyl(38, -90, 0)
   .union(yCyl(46, -10, 0), yCyl(28, -105, -90), zCyl(11, 0, -42, 0, 50), zCyl(11, 0, -67, 0, 50))
   .color('#a8742c');
@@ -72,7 +76,7 @@ const pump = asm.part('pump', pumpShape, { at: [pumpX, -130, -282] })
   .connector('out-a', { type: 'axis', origin: { kind: 'vec3', value: [0, -42, 50] }, axis: [0, 0, 1], port: { system: 'fuel', od: 12.7 } })
   .connector('out-b', { type: 'axis', origin: { kind: 'vec3', value: [0, -67, 50] }, axis: [0, 0, 1], port: { system: 'fuel', od: 12.7 } });
 
-// Hydraulic manifold on the gearbox front face: one outlet per actuator.
+// Hydraulic manifold on the accessory side of the gearbox: one outlet per actuator.
 const manifoldShape = box(90, 75, 60).translate(-45, -75, -30)
   .union(zCyl(10, -20, -60, 30, 42), zCyl(10, 20, -60, 30, 42))
   .color('#3d4654');
@@ -80,7 +84,7 @@ const manifold = asm.part('manifold', manifoldShape, { at: [manifoldX, -130, -22
   .connector('a', { type: 'axis', origin: { kind: 'vec3', value: [-20, -60, 42] }, axis: [0, 0, 1], port: { system: 'hydraulic', od: 9.525 } })
   .connector('b', { type: 'axis', origin: { kind: 'vec3', value: [20, -60, 42] }, axis: [0, 0, 1], port: { system: 'hydraulic', od: 9.525 } });
 
-// Two actuators on the case side, rod forward, port underneath.
+// Two actuators on the accessory side of the case, rod forward, port underneath.
 const actuatorShape = () => xCyl(25, -55, 55)
   .union(xCyl(8, -95, -55), xCyl(28, 45, 55), zCyl(10, 0, 0, -37, 0))
   .color('#8a9099');
@@ -89,7 +93,7 @@ const act1 = asm.part('actuator-1', actuatorShape(), { at: [act1X, -190, 0] })
 const act2 = asm.part('actuator-2', actuatorShape(), { at: [act2X, -190, 0] })
   .connector('in', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, -37] }, axis: [0, 0, -1], port: { system: 'hydraulic', od: 9.525 } });
 
-// Fuel inlet block on its case pad, two inlets underneath.
+// Fuel inlet block on its pad on the accessory side of the case, two inlets underneath.
 const fuelBlockShape = box(60, 50, 38).translate(-30, -210, -50)
   .union(zCyl(11, 0, -172, -65, -50), zCyl(11, 0, -197, -65, -50))
   .color('#8a9099');

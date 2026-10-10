@@ -316,7 +316,8 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //   tube.bend.angle-exceeded, tube.clearance.violated,
     //   tube.clearance.overlap, tube.port.misaligned, tube.spec.defaulted = 347.
     // + 1 bend-table export: export.bend-table.no-tubes = 348.
-    expect(catalogue.size).toBe(348);
+    // + 1 tube plain end naming a missing part: tube.end.part-not-found = 349.
+    expect(catalogue.size).toBe(349);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

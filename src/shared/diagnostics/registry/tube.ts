@@ -73,4 +73,12 @@ export const TUBE_CODES = {
     group: 'tube',
     description: 'The script builds tubes without a tubeSpec, so the default bending and clearance rules were enforced.',
   },
+  'tube.end.part-not-found': {
+    hintTemplate:
+      'Set `part` on the tube end to the name the part was added under with `asm.part(name, ...)`, or remove `part` if the end sits in free space.',
+    nextAction: { kind: 'fix-arg', field: 'part' },
+    defaultSeverity: 'error',
+    group: 'tube',
+    description: 'A plain tube end names a part that the assembly does not have, so the end has no fitting zone.',
+  },
 } as const satisfies Record<`tube.${string}`, DiagnosticCodeSpec>;

@@ -23,9 +23,17 @@ import { mm } from '../apiSupport';
 import type { TubeEnd } from './assemblyTypes';
 import type { AuthoringFeatureSpec } from './authoringFeatureRecords';
 
+/** A tube end that is not a port. `part` names the assembly part the end
+ *  sits on, which excuses the end straight from clearance against that part. */
+export interface TubePointEnd {
+  point: EditableVec3;
+  axis?: Vec3;
+  part?: string;
+}
+
 export interface TubeOptions {
-  from: TubeEnd | { point: EditableVec3; axis?: Vec3 };
-  to: TubeEnd | { point: EditableVec3; axis?: Vec3 };
+  from: TubeEnd | TubePointEnd;
+  to: TubeEnd | TubePointEnd;
   via?: EditableVec3[];
   od?: Editable<number>;
   wall: Editable<number>;
@@ -102,6 +110,17 @@ function unitAxis(axis: unknown, which: string): V3 {
   return [axis[0] / len, axis[1] / len, axis[2] / len];
 }
 
+/** The assembly part a plain end sits on: a non-empty name. */
+function endPartName(part: unknown, which: string): string {
+  if (typeof part !== 'string' || part.length === 0) {
+    fail({ reason: 'end.invalid', path: `${which}.part`, gotText: json(part),
+      requires: 'the name of the assembly part the end sits on, as a non-empty string',
+      example: `${which}: { point: [0, 0, 100], axis: [0, 0, 1], part: 'pump' }`,
+      hint: "Pass the name the part was added under, for example part: 'pump', or leave part out for an end in free space." });
+  }
+  return part;
+}
+
 interface ResolvedEnd {
   point: { base?: Vec3Param; offset: Vec3Param };
   meta: TubeEndMeta;
@@ -125,12 +144,15 @@ function portEnd(e: TubeEnd): ResolvedEnd {
 function endOf(e: TubeOptions['from'], which: string): ResolvedEnd {
   if (typeof e === 'object' && e !== null && 'offset' in e) return portEnd(e);
   if (typeof e !== 'object' || e === null || !('point' in e)) {
-    fail({ reason: 'end.invalid', path: which, got: e, requires: 'part.port(name) or { point: [x, y, z], axis? }',
+    fail({ reason: 'end.invalid', path: which, got: e, requires: 'part.port(name) or { point: [x, y, z], axis?, part? }',
       hint: "Example: from: pump.port('out'), to: { point: [0, 0, 100] }." });
   }
   return {
     point: { offset: toVec3Param(e.point, 'mm') },
-    meta: e.axis !== undefined ? { axis: unitAxis(e.axis, which) } : {},
+    meta: {
+      ...(e.part !== undefined ? { part: endPartName(e.part, which) } : {}),
+      ...(e.axis !== undefined ? { axis: unitAxis(e.axis, which) } : {}),
+    },
   };
 }
 

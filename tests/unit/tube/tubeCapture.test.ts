@@ -182,6 +182,24 @@ describe('tube()', () => {
       .toThrowError(prefixRe('tube.end.invalid'));
   });
 
+  it.each([
+    ['an empty string', ''],
+    ['a number', 5],
+    ['null', null],
+  ])('tube.end.invalid for a point end whose part is %s', (_label, part) => {
+    const { api } = makeApi();
+    expect(() => api.tube('t', { from: { point: [0, 0, 0], part: part as unknown as string }, to: { point: [0, 0, 50] }, ...free }))
+      .toThrowError(prefixRe('tube.end.invalid'));
+  });
+
+  it('carries the part a point end names into the record', () => {
+    const { session, api } = makeApi();
+    api.tube('t', { from: { point: [0, 0, 0], axis: [0, 0, 1], part: 'pump' }, to: { point: [0, 0, 50] }, ...free });
+    const meta = (session.getRecords().find((r) => r.kind === 'tube')!.metadata as unknown as { tube: TubeMetadata }).tube;
+    expect(meta.from).toEqual({ part: 'pump', axis: [0, 0, 1] });
+    expect(meta.to).toEqual({});
+  });
+
   it('normalises a point-end axis to a unit vector', () => {
     const { session, api } = makeApi();
     api.tube('t', { from: { point: [0, 0, 0], axis: [0, 0, 4] }, to: { point: [0, 0, 50] }, ...free });

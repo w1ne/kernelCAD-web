@@ -397,6 +397,68 @@ return asm.model();`);
   });
 });
 
+describe('tube gates: a plain end that names its part', () => {
+  const line = (from: string, rest = "to: { point: [20, 150, 120] }, via: [[20, 20, 120]]") => HEAD + `
+tubeSpec({});
+const t = tube('fuel-1', { from: ${from}, ${rest}, od: 10, wall: 1, bendRadius: 30 });
+asm.part('fuel-1', t); return asm.model();`;
+
+  it('on the part surface with `part` set, the end straight is the fitting zone', async () => {
+    const r = await run(line("{ point: [20, 20, 40], axis: [0, 0, 1], part: 'block' }"));
+    expect(r.diagnostics).toEqual([]);
+    // 2.5 x OD of end straight is excused; the rest starts 25 mm above the block.
+    expect(r.lines[0].minClearance).toMatchObject({ to: 'block', mm: expect.closeTo(25, 6) });
+  });
+
+  it('the same end without `part` touches the block and violates at 0 mm', async () => {
+    const r = await run(line('{ point: [20, 20, 40], axis: [0, 0, 1] }'));
+    expect(codes(r)).toEqual(['tube.clearance.violated']);
+    expect(r.diagnostics[0].message).toContain("tube 'fuel-1' is 0.00 mm from 'block'; the rule needs 6.00 mm.");
+  });
+
+  it('with `part` set the tube is still measured against that part outside the end straight', async () => {
+    // Up, over the block, down its far side, and back in: the free end stops 4 mm from the block's -X face.
+    const r = await run(line("{ point: [20, 20, 40], axis: [0, 0, 1], part: 'block' }",
+      'to: { point: [-4, 20, 20] }, via: [[20, 20, 140], [-70, 20, 140], [-70, 20, 20]]'));
+    expect(codes(r)).toEqual(['tube.clearance.violated']);
+    expect(r.diagnostics[0].message).toContain("tube 'fuel-1' is 4.00 mm from 'block'; the rule needs 6.00 mm.");
+  });
+
+  it('a part name the assembly does not have is reported, and the tube is measured in full', async () => {
+    const r = await run(line("{ point: [20, 20, 40], axis: [0, 0, 1], part: 'blok' }"));
+    expect(codes(r)).toEqual(['tube.end.part-not-found', 'tube.clearance.violated']);
+    expect(r.diagnostics[0].severity).toBe('error');
+    expect(r.diagnostics[0].message).toBe(
+      "tube.end.part-not-found: tube 'fuel-1' from end names part 'blok', which is not a part of the assembly; its parts are 'block', 'wall', 'fuel-1'.");
+  });
+
+  it('an end on a part a mate moved is routed to the solved position and names the part', async () => {
+    // The fastened mate seats the valve on the base; its outlet ends up at [20, 20, 30].
+    const r = await run(`
+const asm = assembly('rig');
+const base = asm.part('base', box(40, 40, 10), { at: [0, 0, 0] })
+  .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [20, 20, 10] } });
+const valve = asm.part('valve', box(20, 20, 20), { at: [0, 0, 0] })
+  .connector('seat', { type: 'frame', origin: { kind: 'vec3', value: [10, 10, 0] } });
+asm.mate('seat-on-mount', 'valve.seat', 'base.mount', 'fastened');
+tubeSpec({});
+const t = tube('oil-1', { from: { point: [20, 20, 30], axis: [0, 0, 1], part: 'valve' }, to: { point: [20, 20, 130] }, od: 6, wall: 0.7, bendRadius: 18 });
+asm.part('oil-1', t);
+return asm.solvedModel({});`);
+    expect(r.diagnostics).toEqual([]);
+    expect(r.lines[0].minClearance).toMatchObject({ to: 'valve', mm: expect.closeTo(15, 6) });
+  });
+
+  it('a named part with no assembly at all is reported', async () => {
+    const r = await run(`
+tubeSpec({});
+return tube('solo', { from: { point: [0, 0, 0], part: 'pump' }, to: { point: [0, 0, 100] }, od: 10, wall: 1, bendRadius: 30 });`);
+    expect(codes(r)).toEqual(['tube.end.part-not-found']);
+    expect(r.diagnostics[0].message).toBe(
+      "tube.end.part-not-found: tube 'solo' from end names part 'pump', but the script returns no assembly.");
+  });
+});
+
 describe('tube gates: port positions', () => {
   it('a tube end that no longer sits on its port is reported', async () => {
     // The fastened mate seats the valve on the base: it ends up 10 mm along x, y and z from its `at`.

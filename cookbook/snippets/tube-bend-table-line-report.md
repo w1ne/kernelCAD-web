@@ -15,8 +15,8 @@ when_to_use: >-
   corner points, length / rotation / angle rows, cut length, mass and a
   pressure-drop estimate. Give the tube a density (or a known material) and a
   flow, evaluate, and read tubes.lines in the result; export bend-table writes
-  one CSV per tube. The ends here are plain points, the form for an end that
-  is not on a modelled part.
+  one CSV per tube. The ends here are plain points in free space; an end that
+  sits on an assembly part also names it, { point, axis, part }.
 ---
 
 ```typescript

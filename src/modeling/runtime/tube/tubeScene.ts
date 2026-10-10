@@ -200,6 +200,23 @@ function endPositionText(tube: ResolvedTube, placement: Transform, end: TubeEndS
     `tube '${tube.name}' leaves port '${port.label}' ${mm2(off)} deg off the port axis; the part turned.`;
 }
 
+/** A plain end may name the part it sits on. A name the scene does not have
+ *  would leave the end with no fitting zone and no message saying why. */
+export function checkEndParts(ctx: TubeSceneContext, tubes: readonly ResolvedTube[]): CompilerDiagnostic[] {
+  const names = ctx.scene?.parts.map((p) => `'${p.name}'`).join(', ');
+  const out: CompilerDiagnostic[] = [];
+  for (const tube of tubes) {
+    for (const { which, meta } of endsOf(tube)) {
+      if (meta.part === undefined || ctx.scene?.parts.some((p) => p.name === meta.part)) continue;
+      const why = names === undefined ? 'but the script returns no assembly' :
+        `which is not a part of the assembly; its parts are ${names}`;
+      out.push(tubeDiagnostic('tube.end.part-not-found',
+        `tube '${tube.name}' ${which} end names part '${meta.part}', ${why}.`, tube.id));
+    }
+  }
+  return out;
+}
+
 /** Every tube end must still sit on its port, or on its captured point when
  *  it has no port. A mate that moves the port's part, or a tube moved in the
  *  assembly, leaves the end hanging. */

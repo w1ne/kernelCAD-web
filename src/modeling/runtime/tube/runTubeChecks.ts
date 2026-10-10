@@ -5,7 +5,8 @@
 //
 //   - the bend and straight rules of the model's LAST `tubeSpec({...})`
 //     (or the defaults, with a `tube.spec.defaulted` warning),
-//   - that each end still sits on its port after the assembly is solved,
+//   - that each end still sits on its port after the assembly is solved, and
+//     that a part named by a plain end exists,
 //   - clearance against the scene's parts and the other tubes,
 //
 // and one line report per tube: bend table, cut length, nearest neighbour,
@@ -26,7 +27,7 @@ import { tryResolveMaterial } from '../../properties/materialLibrary';
 import { checkTubeClearance, type NearestClearance } from './tubeClearance';
 import { checkTubeRules, type TubeRuleSpec } from './tubeRules';
 import {
-  checkPortPositions, resolveTube, tubeDiagnostic, tubeDiagnosticFromMessage, tubeSceneContext, type ResolvedTube,
+  checkEndParts, checkPortPositions, resolveTube, tubeDiagnostic, tubeDiagnosticFromMessage, tubeSceneContext, type ResolvedTube,
 } from './tubeScene';
 
 export interface TubeLineReport {
@@ -175,7 +176,7 @@ export async function runTubeChecksOnModel(model: BuiltModel): Promise<TubeCheck
     }
   }
   const tRules = performance.now();
-  diagnostics.push(...checkPortPositions(model, ctx, tubes));
+  diagnostics.push(...checkEndParts(ctx, tubes), ...checkPortPositions(model, ctx, tubes));
   const tPorts = performance.now();
   const nearest = checkTubeClearance(tubes, ctx, spec, diagnostics);
   const tEnd = performance.now();

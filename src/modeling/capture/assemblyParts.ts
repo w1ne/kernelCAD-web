@@ -554,8 +554,8 @@ function createPartPort(
       return fail({
         reason: 'unresolved',
         gotText: 'a port with no fixed position at capture time',
-        requires: "a { kind: 'vec3' } origin on a part placed with `at`, or a plain point end",
-        hint: 'Pass { point: [x, y, z], axis: [x, y, z] } to tube() instead.',
+        requires: "a { kind: 'vec3' } origin on a part placed with `at`, or a plain point end that names the part",
+        hint: `Pass { point: [x, y, z], axis: [x, y, z], part: '${name}' } to tube() instead, with the port position in assembly space.`,
       });
     }
     const a = c.axis ?? [0, 0, 1];

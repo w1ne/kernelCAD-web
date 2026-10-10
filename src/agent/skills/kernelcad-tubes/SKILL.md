@@ -59,21 +59,21 @@ part.connector('out', {
 
 `part.port(name)` returns the port position, axis, size and system for `from` / `to`. It works when the connector has a `{ kind: 'vec3' }` origin and the part is placed with `at`. The position is `at` plus the origin, so `at: [x, 0, 0]` with `x = param('X', 60)` moves the port and the tube end with it.
 
-`part.port(name)` does not work in three cases:
+`part.port(name)` does not work in three cases. In each, pass a plain end instead: `{ point: [x, y, z], axis: [x, y, z], part: '<part name>' }`, with the position and axis in assembly space.
 
-- The connector origin is a face reference, or the part is placed with `connect`: the call fails with `tube.port.unresolved`. Give the connector a `{ kind: 'vec3' }` origin and place the part with `at`.
-- The part is moved by a mate: the call gives the position before the mate, and the gate reports `tube.port.misaligned` with the port's solved position. Place the part with `at` where the mate puts it, so the port is already there when the tube is routed.
-- The end is not on a part: pass `{ point: [x, y, z], axis: [x, y, z] }`.
+- The connector origin is a face reference, or the part is placed with `connect`: the call fails with `tube.port.unresolved`.
+- The part is moved by a mate: the call gives the position before the mate, and the gate reports `tube.port.misaligned` with the port's solved position. Use that position as the `point`.
+- The end is not on a part: leave `part` out.
 
-A plain point has no owning part. A tube that ends at a plain point on a part's surface is measured against that part in full and fails `tube.clearance.violated` at 0.00 mm, so use plain points for ends that sit in free space or on something the script does not model.
+`part` is the name the part was added under with `asm.part(name, ...)`. It makes that part the owner of the end, exactly as for a port: the end straight the rule requires may touch the part, and the rest of the tube is measured against it. Without `part`, a tube that ends on a part's surface is measured against that part in full and fails `tube.clearance.violated` at 0.00 mm. A name the assembly does not have fails `tube.end.part-not-found`, which lists the part names.
 
-A plain point carries no size: when neither end is a port, pass `od`. `axis` is optional on a plain point; without it the direction of that end leg is not checked. At both ends the axis points out of the fitting, from the end toward the tube's next corner, so a tube that arrives at its `to` end from below has `axis: [0, 0, -1]` there.
+A plain end carries no size and no system: when neither end is a port, pass `od`, and pass `system` if a clearance pair should apply. `axis` is optional; without it the direction of that end leg is not checked. At both ends the axis points out of the fitting, from the end toward the tube's next corner, so a tube that arrives at its `to` end from below has `axis: [0, 0, -1]` there.
 
 ## tube()
 
 ```typescript
 tube(name, {
-  from, to,            // part.port(name) or { point: [x, y, z], axis?: [x, y, z] }
+  from, to,            // part.port(name) or { point: [x, y, z], axis?: [x, y, z], part?: 'name' }
   via?: [[x, y, z]],   // corner points in order; numbers or params
   od?,                 // mm; defaults to the port size
   wall,                // mm, below od / 2
@@ -116,18 +116,26 @@ tube(name, {
 
 Two kinds of failure, both with measured values in the message.
 
-Argument errors stop the script at the `tube` or `tubeSpec` call. The code is `feature.invalid-args` and the message starts with a `tube.<reason>:` or `tubeSpec:` prefix:
+Argument errors stop the script at the `tube`, `tubeSpec`, `connector` or `part.port` call. The code is `feature.invalid-args` and the message starts with a `tube.<reason>:` or `tubeSpec:` prefix:
 
 | Prefix | What to change |
 |---|---|
-| `tube.corner.unreachable` | A leg is too short for the bends at its ends. Lengthen the leg by the stated amount, or lower `bendRadius`. |
-| `tube.port.od-mismatch` | Make the port sizes and `od` agree. |
+| `tube.name.invalid` | Use a unique, non-empty name with no comma, double quote or line break. |
+| `tube.end.invalid` | Pass `part.port(name)` or `{ point, axis?, part? }`: finite coordinates, a finite non-zero `axis`, a non-empty `part` name. |
+| `tube.via.invalid` | Pass `via` as an array of `[x, y, z]` corner points. |
 | `tube.od.required` | Pass `od`, or end the tube on a port. |
-| `tube.wall.invalid`, `tube.od.invalid`, `tube.bend-radius.invalid` | Pass a positive number; `wall` below `od / 2`. |
-| `tube.port.not-found`, `tube.port.not-a-port` | Register the connector before calling `part.port(name)`, with `port: { system, od }`. |
-| `tube.port.unresolved` | Give the connector a `{ kind: 'vec3' }` origin and place the part with `at`. A `{ point, axis }` end works only where the tube does not touch a modelled part. |
-| `tube.name.invalid` | Use a unique name with no comma, quote or line break. |
+| `tube.od.invalid`, `tube.wall.invalid`, `tube.bend-radius.invalid` | Pass a positive number; `wall` below `od / 2`. |
+| `tube.port.od-mismatch` | Make the port sizes and `od` agree. |
+| `tube.flow.invalid` | Pass `flow` as `{ lpm, fluid }` with a positive `lpm`, or leave it out. |
 | `tube.flow.unknown-fluid` | Use one of the listed fluids, or leave `flow` out. |
+| `tube.density.invalid` | Pass a positive `density` in kg/m^3, or name a material instead. |
+| `tube.corner.unreachable` | A leg is too short for the bends at its ends. Lengthen the leg by the stated amount, or lower `bendRadius`. |
+| `tube.corner.collinear-reversal` | The tube folds straight back on itself at a corner. Offset the next corner sideways. |
+| `tube.corner.too-few-points` | The two ends are the same point. Give two distinct ends. |
+| `tube.port.axis-required` | `port` data is only allowed on a connector with `type: 'axis'` and an `axis`. |
+| `tube.port.invalid` | Pass `port: { system, od, minStraight? }` with a non-empty `system` and positive numbers, on a connector with a finite non-zero `axis`. |
+| `tube.port.not-found`, `tube.port.not-a-port` | Register the connector before calling `part.port(name)`, with `port: { system, od }`. |
+| `tube.port.unresolved` | Pass `{ point, axis, part }` for that end. |
 
 Gate errors come after the build, as `tube.*` diagnostics. The script built, so the report is still there to read:
 
@@ -137,9 +145,10 @@ Gate errors come after the build, as `tube.*` diagnostics. The script built, so 
 | `tube.straight.between-bends-too-short` | Move the two corners of the named leg apart by the shortfall, or lower `bendRadius`. Legs are numbered from 0. |
 | `tube.straight.end-too-short` | Move the first (or last) corner away from the port along the port axis by the shortfall. |
 | `tube.bend.angle-exceeded` | Move the corner so the bend opens up, or add a corner to split it. Bends are numbered from 1. |
-| `tube.port.misaligned` | "off the port axis": put the corner at the point the message gives. "from port" or "from its captured point": the part or the tube moved; place the part with `at` at the stated position, and add the tube with no `at`. |
-| `tube.clearance.violated` | Move the corner nearest the stated closest point away from the named part or tube by the shortfall (rule minus measured). |
+| `tube.port.misaligned` | "off the port axis": put the corner at the point the message gives. "from port" or "from its captured point": the part or the tube moved; route the end to the stated position as `{ point, axis, part }`, and add the tube with no `at`. |
+| `tube.clearance.violated` | Move the corner nearest the stated closest point away from the named part or tube by the shortfall (rule minus measured). At 0.00 mm from the part a plain end sits on, add `part` to that end. |
 | `tube.clearance.overlap` | The tube passes through the named part or tube. Route the leg around it. |
+| `tube.end.part-not-found` | Set `part` on that end to one of the part names the message lists, or remove it for an end in free space. |
 
 A pair of tubes is reported once, on the tube declared first, so the corner to move may belong to the other tube named in the message.
 
@@ -148,7 +157,7 @@ A pair of tubes is reported once, on the tube declared first, so the corner to m
 1. Write the ports and a first set of corners on the port axes.
 2. Evaluate: `evaluate_script`, or `kernelcad evaluate <file> --json`.
 3. For each `tube.*` diagnostic, change the argument the table names by at least the stated amount.
-4. Repeat until there are no errors, then read `tubes.lines[].minClearance` to see how much room each line has left.
+4. Repeat until there are no errors, then read `tubes.lines[].minClearance` to see how much room each line has left (the field is absent for a tube with nothing near it).
 
 ## The line report
 
@@ -164,7 +173,7 @@ A pair of tubes is reported once, on the tube declared first, so the corner to m
 | `xyz` | bend-table corner points in the tube's own frame: first point at the origin, first leg along +X |
 | `lra` | one row per bend: `l` straight before the bend (mm), `r` rotation of the bend plane from the previous bend (degrees), `a` bend angle (degrees) |
 | `lastStraight`, `minStraight` | straight after the last bend; shortest straight of the tube (mm) |
-| `minClearance` | `{ mm, to, at }`: distance to the nearest part or tube, its name, and the closest point on this tube |
+| `minClearance` | `{ mm, to, at }`: distance to the nearest part or tube, its name, and the closest point on this tube. Absent when there is nothing around the tube to measure against |
 | `massKg` | tube mass, or `null` without a known material or a `density` |
 | `volumeInternalMl` | bore volume |
 | `pressureDropKPa` | estimate for the declared `flow`, or `null` without one |
@@ -190,7 +199,7 @@ The export is refused when the build or a tube gate reports an error; fix the ro
 | G-eval | `kernelcad evaluate` exits 0 with no `tube.*` error and no `feature.invalid-args` |
 | G-spec-declared | no `tube.spec.defaulted` warning: the script calls `tubeSpec` |
 | G-lines-present | `tubes.lines` has one entry per tube you meant to route, each with the system you expect |
-| G-clearance-margin | every `minClearance.mm` is at or above the rule for that pair |
+| G-clearance-margin | every `minClearance.mm` is at or above the rule for that pair; a line with no `minClearance` has no neighbour, which is a pass only if you expected none |
 | G-render | a render shows every tube leaving its boss square and passing through no part |
 
 ## Related skills

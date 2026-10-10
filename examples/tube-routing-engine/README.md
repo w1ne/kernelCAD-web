@@ -8,16 +8,16 @@ Blue is hydraulic, orange is fuel, yellow is oil.
 
 ## What is in it
 
-`engine-lines.kcad.ts` builds seven parts and five tubes:
+`engine-lines.kcad.ts` builds seven parts and five tubes. The case axis is X: forward is -X (the inlet), aft is +X (the nozzle), Z is up, and the accessory side is -Y.
 
 | Part | What it is | Ports |
 |---|---|---|
 | `case` | 300 mm cylinder, 600 mm long, with flanges and mounting pads | `oil-in` |
-| `gearbox` | box under the case | `oil-out` |
-| `pump` | fuel pump on the gearbox front face | `out-a`, `out-b` |
-| `manifold` | hydraulic manifold on the gearbox front face | `a`, `b` |
-| `actuator-1`, `actuator-2` | cylinders on the case side | `in` |
-| `fuel-block` | fuel inlet block on the case side | `in-a`, `in-b` |
+| `gearbox` | box under the case, oil boss on its aft face | `oil-out` |
+| `pump` | fuel pump on the accessory side of the gearbox | `out-a`, `out-b` |
+| `manifold` | hydraulic manifold on the accessory side of the gearbox | `a`, `b` |
+| `actuator-1`, `actuator-2` | cylinders on the accessory side of the case, forward and aft | `in` |
+| `fuel-block` | fuel inlet block on the accessory side of the case, aft | `in-a`, `in-b` |
 
 | Line | System | OD (mm) | From | To | Bends | Cut length (mm) | Nearest neighbour |
 |---|---|---|---|---|---|---|---|
@@ -89,7 +89,7 @@ The hint says to move the two corners apart by the shortfall, 16.6 mm. Setting `
 
 ## How it was routed
 
-The leg lengths were sized from the rule table before any corner was written: an end leg needs `bendRadius + 2.5 x OD` and a leg between two 90 degree bends needs `2 x bendRadius + 2 x OD`. With those numbers in hand the first set of corners passed every gate on the first evaluation. A second evaluation followed changes to the parts (the mounting pads moved into the case, the fuel block and the oil line moved) and a third followed the gearbox cover and the `flow` values; both passed. The only gate diagnostics met while building the example are the ones in the table above and the one in the broken twin.
+Three evaluations. The first set of corners passed every gate, so no diagnostic had to be acted on while routing; the second and third evaluations followed changes to the parts and also passed. The diagnostic that was acted on is the `tube.straight.between-bends-too-short` above, from moving the pump, fixed by moving `FuelBlockX` by the stated shortfall.
 
 ## The broken twin
 

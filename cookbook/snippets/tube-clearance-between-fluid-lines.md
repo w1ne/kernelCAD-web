@@ -23,8 +23,8 @@ when_to_use: >-
 // end on a second block. The two systems must stay 12 mm apart.
 const asm = assembly('two-lines');
 
-// Each boss is fused to its block, so the block owns the port and the tube
-// may touch it there.
+// The ports sit on the block faces. The block owns its ports, so each tube
+// may touch it along the end straight.
 const supply = asm.part('supply', box(120, 60, 60), { at: [0, 0, 0] })
   .connector('fuel-out', { type: 'axis', origin: { kind: 'vec3', value: [30, 30, 60] }, axis: [0, 0, 1], port: { system: 'fuel', od: 12.7 } })
   .connector('hyd-out', { type: 'axis', origin: { kind: 'vec3', value: [90, 30, 60] }, axis: [0, 0, 1], port: { system: 'hydraulic', od: 9.525 } });
