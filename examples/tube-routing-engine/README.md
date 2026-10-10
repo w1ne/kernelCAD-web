@@ -102,7 +102,7 @@ node dist/cli/index.js evaluate examples/tube-routing-engine/engine-lines-broken
 It fails with one error:
 
 ```
-tube.clearance.violated: tube 'fuel-b' is 11.24 mm from 'hyd-b'; the rule needs 12.00 mm. Closest point on the tube: [101.40, -195.01, -133.97].
+tube.clearance.violated: tube 'fuel-b' is 11.24 mm from 'hyd-b'; the rule needs 12.00 mm. Closest point on the tube: [101.40, -195.01, -133.97]; on 'hyd-b': [101.40, -191.49, -123.29].
 ```
 
 A pair of tubes is reported once, on the tube declared first, so the message names `fuel-b` although the corner that moved belongs to `hyd-b`. `export bend-table` on this script writes nothing and prints the same error.

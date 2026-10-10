@@ -93,6 +93,17 @@ describe('checkTubeRules', () => {
     expect(m).toContain('[0.00, 0.00, 80.00]');
   });
 
+  it('a corner behind the port is sent in front of it, at the end-straight need', () => {
+    const f = checkTubeRules({ name: 't', od: 10, spec, meta: meta({ from: { axis: [0, 0, 1] } }),
+      path: path([[0, 0, 0], [0, 0, -80], [100, 0, -80]], 30) });
+    const m = f.find((x) => x.code === 'tube.port.misaligned')!.message;
+    expect(m).toBe("tube.port.misaligned: tube 't' leaves its from port 180.00 deg off the port axis; put the corner at [0.00, 0.00, 25.00].");
+    // A port that asks for a longer straight moves the point out with it.
+    const g = checkTubeRules({ name: 't', od: 10, spec, meta: meta({ from: { axis: [0, 0, 1], minStraight: 40 } }),
+      path: path([[0, 0, 0], [0, 0, -80], [100, 0, -80]], 30) });
+    expect(g.find((x) => x.code === 'tube.port.misaligned')!.message).toContain('put the corner at [0.00, 0.00, 40.00].');
+  });
+
   it('the to end compares the reversed end leg with the port axis', () => {
     const pts: V3[] = [[0, 0, 0], [100, 0, 0], [100, 100, 0]];
     expect(checkTubeRules({ name: 't', od: 10, spec, meta: meta({ to: { axis: [0, -1, 0] } }), path: path(pts, 30) }))

@@ -143,7 +143,7 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     }
   });
 
-  it('catalogue has exactly 348 codes', () => {
+  it('catalogue has exactly 351 codes', () => {
     // 47 baseline (milestone-C diagnostic-vocab spec)
     //  + 23 NURBS Slice B/C/D (Curve3D / variableSweep / surface / G2 / 2D path NURBS)
     //  + 31 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
@@ -317,7 +317,8 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //   tube.clearance.overlap, tube.port.misaligned, tube.spec.defaulted = 347.
     // + 1 bend-table export: export.bend-table.no-tubes = 348.
     // + 1 tube plain end naming a missing part: tube.end.part-not-found = 349.
-    expect(catalogue.size).toBe(349);
+    // + 2 tube gate holes: tube.clearance.pair-unused, tube.part.duplicate = 351.
+    expect(catalogue.size).toBe(351);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

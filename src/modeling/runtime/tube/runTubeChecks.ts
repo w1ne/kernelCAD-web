@@ -5,9 +5,11 @@
 //
 //   - the bend and straight rules of the model's LAST `tubeSpec({...})`
 //     (or the defaults, with a `tube.spec.defaulted` warning),
-//   - that each end still sits on its port after the assembly is solved, and
-//     that a part named by a plain end exists,
-//   - clearance against the scene's parts and the other tubes,
+//   - that each end still sits on its port after the assembly is solved, that
+//     a part named by a plain end exists and the end touches it, and that no
+//     tube shape is carried by two parts,
+//   - clearance against the scene's parts and the other tubes, with a warning
+//     for a clearance pair that names a system no tube has,
 //
 // and one line report per tube: bend table, cut length, nearest neighbour,
 // mass, internal volume and a pressure-drop estimate.
@@ -24,10 +26,11 @@ import { bendTableFromPath, type LraRow } from '../../../shared/tube/bendTable';
 import { pressureDropKPa, TUBE_FLUIDS } from '../../../shared/tube/pressureDrop';
 import type { V3 } from '../../../shared/tube/tubePath';
 import { tryResolveMaterial } from '../../properties/materialLibrary';
-import { checkTubeClearance, type NearestClearance } from './tubeClearance';
+import { checkTubeClearance, unusedPairWarnings, type NearestClearance } from './tubeClearance';
+import { checkEndParts, checkTubeParts } from './tubeEndParts';
 import { checkTubeRules, type TubeRuleSpec } from './tubeRules';
 import {
-  checkEndParts, checkPortPositions, resolveTube, tubeDiagnostic, tubeDiagnosticFromMessage, tubeSceneContext, type ResolvedTube,
+  checkPortPositions, resolveTube, tubeDiagnostic, tubeDiagnosticFromMessage, tubeSceneContext, type ResolvedTube,
 } from './tubeScene';
 
 export interface TubeLineReport {
@@ -176,9 +179,11 @@ export async function runTubeChecksOnModel(model: BuiltModel): Promise<TubeCheck
     }
   }
   const tRules = performance.now();
-  diagnostics.push(...checkEndParts(ctx, tubes), ...checkPortPositions(model, ctx, tubes));
+  const ends = checkEndParts(ctx, tubes);
+  diagnostics.push(...checkTubeParts(ctx, tubes), ...ends.diagnostics, ...checkPortPositions(model, ctx, tubes));
   const tPorts = performance.now();
-  const nearest = checkTubeClearance(tubes, ctx, spec, diagnostics);
+  diagnostics.push(...unusedPairWarnings(tubes, spec));
+  const nearest = checkTubeClearance(ends.tubes, ctx, spec, diagnostics);
   const tEnd = performance.now();
 
   const lines = tubes.map((t) => lineReport(t, nearest.get(t.name)));

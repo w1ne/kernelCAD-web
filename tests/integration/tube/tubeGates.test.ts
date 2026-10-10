@@ -219,7 +219,7 @@ asm.part('fuel-1', t);
 return asm.model();`);
     expect(codes(r)).toEqual(['tube.clearance.violated']);
     const m = r.diagnostics[0].message;
-    expect(m).toMatch(/tube 'fuel-1' is 3\.00 mm from 'wall'; the rule needs 6\.00 mm\. Closest point on the tube: \[147\.00, /);
+    expect(m).toMatch(/tube 'fuel-1' is 3\.00 mm from 'wall'; the rule needs 6\.00 mm\. Closest point on the tube: \[147\.00, [-\d.]+, [-\d.]+\]; on 'wall': \[150\.00, [-\d.]+, [-\d.]+\]\.$/);
     expect(r.lines[0].minClearance).toMatchObject({ to: 'wall', mm: expect.closeTo(3, 6) });
     expect(r.lines[0].minClearance!.at[0]).toBeCloseTo(147, 6);
   });
@@ -332,6 +332,57 @@ asm.part('fuel-1', a); asm.part('bleed-1', b);
 return asm.model();`);
     expect(messages(r, 'tube.clearance.violated')).toEqual([
       expect.stringContaining("is 21.21 mm from 'bleed-1'; the rule needs 30.00 mm.")]);
+    // The fuel / oil pair matches no tube: a warning, not an error.
+    expect(messages(r, 'tube.clearance.pair-unused')).toEqual([
+      "tube.clearance.pair-unused: clearance pair 'fuel' / 'oil' (99.00 mm) applies to no tubes: no tube has system 'oil'. " +
+      "Systems in this script: 'bleed', 'fuel'."]);
+  });
+
+  it('a misspelt system in a clearance pair warns and names the systems present', async () => {
+    const r = await run(`
+const asm = assembly('rig');
+tubeSpec({ clearance: { default: 6, pairs: [{ a: 'fuel', b: 'bleeed', min: 25 }, { a: 'x', b: 'y', min: 9 }] } });
+const a = tube('a', { from: { point: [200, 0, 0] }, to: { point: [200, 0, 200] }, od: 10, wall: 1, bendRadius: 30, system: 'fuel' });
+const b = tube('b', { from: { point: [225, 0, 0] }, to: { point: [225, 0, 200] }, od: 10, wall: 1, bendRadius: 30, system: 'bleed' });
+asm.part('a', a); asm.part('b', b);
+return asm.model();`);
+    expect(codes(r)).toEqual(['tube.clearance.pair-unused', 'tube.clearance.pair-unused']);
+    expect(r.diagnostics.map((d) => d.severity)).toEqual(['warn', 'warn']);
+    expect(r.diagnostics.map((d) => d.message)).toEqual([
+      "tube.clearance.pair-unused: clearance pair 'fuel' / 'bleeed' (25.00 mm) applies to no tubes: no tube has system 'bleeed'. " +
+      "Systems in this script: 'bleed', 'fuel'.",
+      "tube.clearance.pair-unused: clearance pair 'x' / 'y' (9.00 mm) applies to no tubes: no tube has system 'x' or 'y'. " +
+      "Systems in this script: 'bleed', 'fuel'."]);
+  });
+
+  it('a clearance wider than the end straight does not fail a tube against its own port owner', async () => {
+    const src = (rest: string) => `
+const asm = assembly('rig');
+const block = asm.part('block', box(40, 40, 40), { at: [0, 0, 0] })
+  .connector('p1', { type: 'axis', origin: { kind: 'vec3', value: [20, 20, 40] }, axis: [0, 0, 1], port: { system: 'air', od: 3.175 } });
+tubeSpec({ clearance: { default: 10 } });
+const a = tube('a', { from: block.port('p1'), ${rest}, wall: 0.5, bendRadius: 10 });
+asm.part('a', a);
+return asm.model();`;
+    // 2.5 x OD is 7.94 mm; the rule is 10 mm. The zone is the larger of the two.
+    const ok = await run(src('to: { point: [20, 20, 200] }'));
+    expect(ok.diagnostics).toEqual([]);
+    expect(ok.lines[0].minClearance).toMatchObject({ to: 'block', mm: expect.closeTo(10, 6) });
+    // Up, over, down the far side and back in: the free end stops 6 mm from the block's -X face.
+    const grazing = await run(src('to: { point: [-6, 20, 20] }, via: [[20, 20, 140], [-70, 20, 140], [-70, 20, 20]]'));
+    expect(messages(grazing, 'tube.clearance.violated')).toEqual([
+      expect.stringContaining("tube 'a' is 6.00 mm from 'block'; the rule needs 10.00 mm.")]);
+  });
+
+  it('a tube shape added under a second part name is reported', async () => {
+    const r = await run(HEAD + `
+tubeSpec({});
+const a = tube('a', { from: block.port('p1'), to: { point: [20, 150, 120] }, via: [[20, 20, 120]], wall: 1, bendRadius: 30 });
+asm.part('a', a); asm.part('a2', a, { at: [0, 0, -300] });
+return asm.model();`);
+    expect(messages(r, 'tube.part.duplicate')).toEqual([
+      "tube.part.duplicate: tube 'a' is added to the assembly as parts 'a', 'a2'; only 'a' is checked."]);
+    expect(r.diagnostics.find((d) => d.code === 'tube.part.duplicate')!.severity).toBe('error');
   });
 
   it('the port owner is exempt at the fitting but not elsewhere', async () => {
@@ -430,6 +481,32 @@ asm.part('fuel-1', t); return asm.model();`;
     expect(r.diagnostics[0].severity).toBe('error');
     expect(r.diagnostics[0].message).toBe(
       "tube.end.part-not-found: tube 'fuel-1' from end names part 'blok', which is not a part of the assembly; its parts are 'block', 'wall', 'fuel-1'.");
+  });
+
+  it('an end 3 mm off the part it names is not on it, and gets no fitting zone', async () => {
+    const r = await run(HEAD + `
+tubeSpec({});
+const a = tube('a', { from: { point: [20, 20, 43], axis: [0, 0, 1], part: 'block' }, to: { point: [20, 20, 200] }, od: 10, wall: 1, bendRadius: 30 });
+asm.part('a', a);
+return asm.model();`);
+    expect(codes(r)).toEqual(['tube.port.misaligned', 'tube.clearance.violated']);
+    expect(r.diagnostics[0].message).toBe(
+      "tube.port.misaligned: tube 'a' from end is 3.00 mm from part 'block', which it names as its part; the end must touch the part.");
+    expect(r.diagnostics[1].message).toContain("tube 'a' is 3.00 mm from 'block'; the rule needs 6.00 mm.");
+  });
+
+  it('an end that names a part far away is reported', async () => {
+    const r = await run(`
+const asm = assembly('rig');
+const block = asm.part('block', box(40, 40, 40), { at: [0, 0, 0] });
+asm.part('wall', box(10, 200, 200), { at: [300, -80, 0] });
+tubeSpec({});
+const a = tube('a', { from: { point: [20, 20, 40], axis: [0, 0, 1], part: 'block' }, to: { point: [20, 150, 120], axis: [0, -1, 0], part: 'wall' }, via: [[20, 20, 120]], od: 10, wall: 1, bendRadius: 30 });
+asm.part('a', a);
+return asm.model();`);
+    // The wall is 275 mm away in x and its edge 20 mm short of the end stub in y.
+    expect(r.diagnostics.map((d) => d.message)).toEqual([
+      "tube.port.misaligned: tube 'a' to end is 275.73 mm from part 'wall', which it names as its part; the end must touch the part."]);
   });
 
   it('an end on a part a mate moved is routed to the solved position and names the part', async () => {

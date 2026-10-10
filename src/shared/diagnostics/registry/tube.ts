@@ -59,11 +59,11 @@ export const TUBE_CODES = {
   },
   'tube.port.misaligned': {
     hintTemplate:
-      'Put the first (or last) corner on the port axis; the message gives the nearest point on the axis. A tube end off its port means the part moved: pass the port again or fix the point.',
+      'Put the first (or last) corner on the port axis; the message gives the point. When the message says the end is off its port, its captured point or its part, the part or the tube moved: route that end to the stated position as `{ point, axis, part }`, with the end touching the part, and add the tube with no `at`.',
     nextAction: { kind: 'fix-arg', field: 'via' },
     defaultSeverity: 'error',
     group: 'tube',
-    description: 'A tube end leg is off its port axis, or the tube end no longer sits on its port.',
+    description: 'A tube end leg is off its port axis, or the tube end no longer sits on its port or on the part it names.',
   },
   'tube.spec.defaulted': {
     hintTemplate:
@@ -80,5 +80,21 @@ export const TUBE_CODES = {
     defaultSeverity: 'error',
     group: 'tube',
     description: 'A plain tube end names a part that the assembly does not have, so the end has no fitting zone.',
+  },
+  'tube.clearance.pair-unused': {
+    hintTemplate:
+      'Check the spelling of the system names in `clearance.pairs` against the `system` of the ports and tubes; the message lists the systems present. Remove the pair if the script has no such line.',
+    nextAction: { kind: 'fix-arg', field: 'tubeSpec' },
+    defaultSeverity: 'warn',
+    group: 'tube',
+    description: 'A tubeSpec clearance pair names a fluid system that no tube in the script has, so the pair applies to nothing.',
+  },
+  'tube.part.duplicate': {
+    hintTemplate:
+      'A tube can be added to the assembly once. Declare a second `tube()` for the second line and add that instead.',
+    nextAction: { kind: 'fix-arg', field: 'tube' },
+    defaultSeverity: 'error',
+    group: 'tube',
+    description: 'One tube shape is added to the assembly under more than one part name; only the first is checked.',
   },
 } as const satisfies Record<`tube.${string}`, DiagnosticCodeSpec>;

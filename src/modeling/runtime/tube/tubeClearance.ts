@@ -8,8 +8,9 @@
 //     tube systems (either order), else `clearance.default`. A part has no
 //     system, so tube-to-part pairs use the default.
 //   - A tube against the part that owns one of its ports is measured as a
-//     solid rod of the path with the end straight the rule requires at that
-//     port trimmed off: the fitting zone is contact by design, the rest of
+//     solid rod of the path with the fitting zone at that port trimmed off
+//     (the end straight the rule requires, or the clearance itself when that
+//     is longer, never more than the end straight the tube has): the fitting zone is contact by design, the rest of
 //     the tube is not exempt. Nothing left after the trim: pair skipped.
 //   - Two tubes are always measured in full, shared port or not.
 //
@@ -27,6 +28,7 @@ import { getOC } from 'replicad';
 import type { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
 import type { SceneBackend } from '../../../kernel/backends/sceneBackend';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
+import type { TubeEndMeta } from '../../../shared/intent/tubeRecord';
 import { trimPathEnds, type V3 } from '../../../shared/tube/tubePath';
 import { tubeSolid } from '../../backends/occt/tubeLowerer';
 import { brepExtremaClosest, wrappedShape, type BrepClosest } from '../brepDistance';
@@ -60,7 +62,7 @@ function pairNeed(spec: TubeRuleSpec, a: string | undefined, b: string | undefin
 
 type TubeBody = Body & { tube: ResolvedTube };
 
-function kernelFailed(tube: ResolvedTube, what: string, scope: string): CompilerDiagnostic {
+export function kernelFailed(tube: ResolvedTube, what: string, scope: string): CompilerDiagnostic {
   return {
     target: 'export-occt',
     code: 'feature.kernel-failed',
@@ -106,8 +108,10 @@ function tubeSideAgainst(body: TubeBody, partName: string, spec: TubeRuleSpec): 
   const ownsFrom = meta.from.part === partName;
   const ownsTo = meta.to.part === partName;
   if ((!ownsFrom && !ownsTo) || placement === undefined) return body.shape;
-  const trimmed = trimPathEnds(path,
-    ownsFrom ? endStraightNeed(od, meta.from, spec) : 0, ownsTo ? endStraightNeed(od, meta.to, spec) : 0);
+  // The zone is at least the clearance the part is held to: a rule wider than
+  // the end straight must not fail the tube against the part it is plugged into.
+  const zone = (end: TubeEndMeta): number => Math.max(endStraightNeed(od, end, spec), spec.clearance.default);
+  const trimmed = trimPathEnds(path, ownsFrom ? zone(meta.from) : 0, ownsTo ? zone(meta.to) : 0);
   if (trimmed === undefined) return undefined;
   return tubeSolid(trimmed, od, od).applyTransform(placement);
 }
@@ -147,31 +151,47 @@ function measure(pair: Pair): BrepClosest | undefined {
 }
 
 /** Touching or crossing: shared volume decides between overlap and contact. */
-function contactDiagnostic(pair: Pair, at: V3): CompilerDiagnostic {
+function contactDiagnostic(pair: Pair, at: V3, onOther: V3): CompilerDiagnostic {
   let volume: number;
   try {
     volume = pair.side.intersectionVolume(pair.other.shape);
   } catch {
     return kernelFailed(pair.tube.tube, 'the shared-volume probe', pairScope(pair.other.name));
   }
-  const { tube, other, need } = pair;
+  const { tube, other } = pair;
   if (volume > OVERLAP_EPSILON_MM3) {
     return tubeDiagnostic('tube.clearance.overlap',
       `tube '${tube.name}' passes through '${other.name}' (${mm2(volume)} mm^3 shared).`, tube.tube.id);
   }
-  return violation(tube, other.name, 0, need, at);
+  return violation(pair, 0, at, onOther);
 }
 
-function violation(tube: Pair['tube'], other: string, d: number, need: number, at: V3): CompilerDiagnostic {
+function violation({ tube, other, need }: Pair, d: number, at: V3, onOther: V3): CompilerDiagnostic {
   return tubeDiagnostic('tube.clearance.violated',
-    `tube '${tube.name}' is ${mm2(d)} mm from '${other}'; the rule needs ${mm2(need)} mm. ` +
-    `Closest point on the tube: ${xyz2(at)}.`, tube.tube.id);
+    `tube '${tube.name}' is ${mm2(d)} mm from '${other.name}'; the rule needs ${mm2(need)} mm. ` +
+    `Closest point on the tube: ${xyz2(at)}; on '${other.name}': ${xyz2(onOther)}.`, tube.tube.id);
 }
 
 function classify(pair: Pair, m: BrepClosest): CompilerDiagnostic | undefined {
-  if (m.distance <= CONTACT_EPS_MM) return contactDiagnostic(pair, m.onA);
-  if (m.distance < pair.need - RULE_TOL_MM) return violation(pair.tube, pair.other.name, m.distance, pair.need, m.onA);
+  if (m.distance <= CONTACT_EPS_MM) return contactDiagnostic(pair, m.onA, m.onB);
+  if (m.distance < pair.need - RULE_TOL_MM) return violation(pair, m.distance, m.onA, m.onB);
   return undefined;
+}
+
+/** A clearance pair naming a system no tube has never applies: most often a
+ *  misspelt system. A warning, because a shared rule set may list pairs a
+ *  script does not use. */
+export function unusedPairWarnings(tubes: readonly ResolvedTube[], spec: TubeRuleSpec): CompilerDiagnostic[] {
+  const present = [...new Set(tubes.flatMap((t) => t.meta.system ?? []))].sort();
+  const listed = present.length > 0 ? `Systems in this script: ${present.map((s) => `'${s}'`).join(', ')}.` :
+    'No tube in this script has a system.';
+  return spec.clearance.pairs.flatMap((p) => {
+    const missing = [...new Set([p.a, p.b])].filter((s) => !present.includes(s));
+    if (missing.length === 0) return [];
+    return [tubeDiagnostic('tube.clearance.pair-unused',
+      `clearance pair '${p.a}' / '${p.b}' (${mm2(p.min)} mm) applies to no tubes: ` +
+      `no tube has system ${missing.map((s) => `'${s}'`).join(' or ')}. ${listed}`)];
+  });
 }
 
 /**

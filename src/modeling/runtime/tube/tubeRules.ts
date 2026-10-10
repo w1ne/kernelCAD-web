@@ -94,18 +94,22 @@ function bendAngleRule({ name, path, spec }: TubeRuleInput): TubeRuleFinding[] {
 
 /** The end leg must leave along the port axis. `leaving` is the leg direction
  *  out of the end; the fix point is the neighbouring corner projected onto the
- *  line through the end along the port axis. */
-function portAxisRule({ name, path, meta }: TubeRuleInput): TubeRuleFinding[] {
+ *  line through the end along the port axis, no closer to the port than the
+ *  end straight the rule requires. */
+function portAxisRule({ name, path, od, meta, spec }: TubeRuleInput): TubeRuleFinding[] {
   const n = path.points.length;
-  const ends: Array<{ which: string; end: V3; corner: V3; leaving: V3; axis?: V3 }> = [
-    { which: 'from', end: path.points[0], corner: path.points[1], leaving: path.startDir, axis: meta.from.axis },
-    { which: 'to', end: path.points[n - 1], corner: path.points[n - 2], leaving: scale(path.endDir, -1), axis: meta.to.axis },
+  const ends: Array<{ which: string; end: V3; corner: V3; leaving: V3; of: TubeEndMeta }> = [
+    { which: 'from', end: path.points[0], corner: path.points[1], leaving: path.startDir, of: meta.from },
+    { which: 'to', end: path.points[n - 1], corner: path.points[n - 2], leaving: scale(path.endDir, -1), of: meta.to },
   ];
-  return ends.flatMap(({ which, end, corner, leaving, axis }) => {
+  return ends.flatMap(({ which, end, corner, leaving, of }) => {
+    const axis = of.axis;
     if (axis === undefined) return [];
     const off = angleDeg(leaving, axis);
     if (off <= PORT_AXIS_TOL_DEG) return [];
-    const onAxis = add(end, scale(axis, dot(sub(corner, end), axis)));
+    // A corner behind the port, or closer than the end straight, is sent out in front of it.
+    const along = Math.max(dot(sub(corner, end), axis), endStraightNeed(od, of, spec));
+    const onAxis = add(end, scale(axis, along));
     return [finding('tube.port.misaligned',
       `tube '${name}' leaves its ${which} port ${mm2(off)} deg off the port axis; put the corner at ${xyz2(onAxis)}.`)];
   });

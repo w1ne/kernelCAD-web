@@ -65,7 +65,7 @@ part.connector('out', {
 - The part is moved by a mate: the call gives the position before the mate, and the gate reports `tube.port.misaligned` with the port's solved position. Use that position as the `point`.
 - The end is not on a part: leave `part` out.
 
-`part` is the name the part was added under with `asm.part(name, ...)`. It makes that part the owner of the end, exactly as for a port: the end straight the rule requires may touch the part, and the rest of the tube is measured against it. Without `part`, a tube that ends on a part's surface is measured against that part in full and fails `tube.clearance.violated` at 0.00 mm. A name the assembly does not have fails `tube.end.part-not-found`, which lists the part names.
+`part` is the name the part was added under with `asm.part(name, ...)`. It makes that part the owner of the end, exactly as for a port: the fitting zone at that end may touch the part, and the rest of the tube is measured against it. The end must touch the named part: an end more than 0.01 mm away fails `tube.port.misaligned` with the measured gap and gets no fitting zone. A name the assembly does not have fails `tube.end.part-not-found`, which lists the part names. Without `part`, a tube that ends on a part's surface is measured against that part in full and fails `tube.clearance.violated` at 0.00 mm.
 
 A plain end carries no size and no system: when neither end is a port, pass `od`, and pass `system` if a clearance pair should apply. `axis` is optional; without it the direction of that end leg is not checked. At both ends the axis points out of the fitting, from the end toward the tube's next corner, so a tube that arrives at its `to` end from below has `axis: [0, 0, -1]` there.
 
@@ -86,10 +86,10 @@ tube(name, {
 ```
 
 - The corners in `via` are where the leg centrelines would meet if the bends were sharp. The kernel rounds each corner with `bendRadius`.
-- The kernel does not generate the end legs. The first corner must lie on the `from` port axis and the last corner on the `to` port axis. Take the port position and add a multiple of the port axis. When a corner is off the axis, `tube.port.misaligned` gives the nearest point on it.
+- The kernel does not generate the end legs. The first corner must lie on the `from` port axis and the last corner on the `to` port axis. Take the port position and add a multiple of the port axis. When a corner is off the axis, `tube.port.misaligned` gives the point on the axis to use: the nearest one, or the end-straight length in front of the port when the corner is closer than that or behind it.
 - With no `via` the tube is one straight leg from `from` to `to`. A tube with no bends is exempt from the bend-radius and end-straight rules.
 - `name` must be unique among the tubes of the script, with no comma, double quote or line break. It names the tube in diagnostics, in the report and in the bend-table file.
-- Add the tube to the assembly with `asm.part(name, t)` and no `at`. A tube placed with `at`, or translated after routing, is reported by `tube.port.misaligned` because its ends left their ports.
+- Add the tube to the assembly with `asm.part(name, t)`, once, and no `at`. The same tube shape under a second part name fails `tube.part.duplicate`. A tube placed with `at`, or translated after routing, is reported by `tube.port.misaligned` because its ends left their ports.
 - `.color(...)` on a tube is fine. Do not cut, fuse or otherwise modify the tube shape before adding it: the result is no longer recognised as that tube, so the tube is measured against its own modified copy and fails `tube.clearance.overlap`.
 - An unknown `material` with no `density` is accepted; the tube's mass is then `null`.
 - Units are mm, degrees, kg/m^3 and L/min.
@@ -105,11 +105,12 @@ tube(name, {
 | `minStraightAtEnd` | 2.5 | the straight at each end is at least this many times the OD, or the port's `minStraight` when that is longer | `tube.straight.end-too-short` |
 | `maxBendAngle` | 180 | no bend turns through more than this many degrees | `tube.bend.angle-exceeded` |
 | `clearance.default` | 6 | mm between a tube and any part or other tube | `tube.clearance.violated`, `tube.clearance.overlap` |
-| `clearance.pairs` | none | `[{ a, b, min }]`: mm between a tube of system `a` and a tube of system `b`, in either order | `tube.clearance.violated` |
+| `clearance.pairs` | none | `[{ a, b, min }]`: mm between a tube of system `a` and a tube of system `b`, in either order. It replaces the default for that pair, so it may be lower as well as higher; when several pairs match, the largest `min` applies | `tube.clearance.violated`, `tube.clearance.pair-unused` |
 
 - Without `tubeSpec` the defaults apply and the result carries a `tube.spec.defaulted` warning. Declare `tubeSpec({})` to accept the defaults without the warning.
 - `tubeSpec` rejects unknown keys, so a misspelt rule fails instead of being ignored.
-- Clearance is measured surface to surface on the solids, in the solved assembly. Against the part that owns one of the tube's ports, the end straight the rule requires is left out of the measurement; the rest of the tube is measured.
+- Clearance is measured surface to surface on the solids, in the solved assembly. Against the part that owns one of the tube's ends, a fitting zone at that end is left out of the measurement and the rest of the tube is measured. The zone is the end straight the rule requires, or `clearance.default` when that is longer, and never more than the end straight the tube has.
+- A pair whose `a` or `b` is the system of no tube applies to nothing. It gives a `tube.clearance.pair-unused` warning that lists the systems present; the usual cause is a misspelt system name.
 - A straight is what is left of a leg after the bends at its ends. A 90 degree bend uses `bendRadius` of each leg it joins, so a leg between two 90 degree bends needs `2 * bendRadius + minStraightBetweenBends * od`, and an end leg needs `bendRadius + minStraightAtEnd * od`. Size the legs from these before writing corners.
 
 ## Reading the diagnostics
@@ -145,10 +146,12 @@ Gate errors come after the build, as `tube.*` diagnostics. The script built, so 
 | `tube.straight.between-bends-too-short` | Move the two corners of the named leg apart by the shortfall, or lower `bendRadius`. Legs are numbered from 0. |
 | `tube.straight.end-too-short` | Move the first (or last) corner away from the port along the port axis by the shortfall. |
 | `tube.bend.angle-exceeded` | Move the corner so the bend opens up, or add a corner to split it. Bends are numbered from 1. |
-| `tube.port.misaligned` | "off the port axis": put the corner at the point the message gives. "from port" or "from its captured point": the part or the tube moved; route the end to the stated position as `{ point, axis, part }`, and add the tube with no `at`. |
-| `tube.clearance.violated` | Move the corner nearest the stated closest point away from the named part or tube by the shortfall (rule minus measured). At 0.00 mm from the part a plain end sits on, add `part` to that end. |
+| `tube.port.misaligned` | "off the port axis": put the corner at the point the message gives. "from port" or "from its captured point": the part or the tube moved; route the end to the stated position as `{ point, axis, part }`, and add the tube with no `at`. "from part": the end does not touch the part it names; move the `point` onto the part's surface. |
+| `tube.clearance.violated` | The message gives the closest point on the tube and the closest point on the other body. Move the corner nearest the first point away from the second by the shortfall (rule minus measured). At 0.00 mm from the part a plain end sits on, add `part` to that end. |
+| `tube.clearance.pair-unused` (warning) | Correct the system name in `clearance.pairs` to one of the systems the message lists, or remove the pair. |
 | `tube.clearance.overlap` | The tube passes through the named part or tube. Route the leg around it. |
 | `tube.end.part-not-found` | Set `part` on that end to one of the part names the message lists, or remove it for an end in free space. |
+| `tube.part.duplicate` | The same tube shape was added under two part names and only the first is checked. Declare a second `tube()` for the second line. |
 
 A pair of tubes is reported once, on the tube declared first, so the corner to move may belong to the other tube named in the message.
 
