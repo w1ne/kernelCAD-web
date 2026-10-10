@@ -17,6 +17,7 @@
 //   coord-extraction task. Tweakable per-call via constructor `model` option.
 
 import Anthropic from '@anthropic-ai/sdk';
+import { OpenAiCompatVisionClient, type FetchLike } from './openAiCompatVisionClient';
 
 const DEFAULT_MODEL = 'claude-haiku-4-5-20251001';
 const DEFAULT_MAX_TOKENS = 2048;
@@ -107,24 +108,43 @@ export class AnthropicVisionClient {
 export interface DefaultVisionClientOptions {
   /** Override the SDK for tests; the API-key + model env-var resolution still runs. */
   sdkOverride?: AnthropicSdkLike;
+  /** Override fetch for the OpenAI-compatible client (tests). */
+  fetchOverride?: FetchLike;
+}
+
+/** What the trace backends need from a vision client. */
+export interface VisionLlmClientLike {
+  generate(req: VisionRequest): Promise<VisionResponse>;
 }
 
 /**
- * Resolve a vision client from environment variables.
+ * Resolve a vision client from environment variables, in this order:
  *
- * Reads `ANTHROPIC_API_KEY` (required) and `KERNELCAD_VISION_MODEL` (optional;
- * defaults to {@link DEFAULT_MODEL}). The caller-supplied key model means the
- * agent host pays for the vision calls — no proxying through any kernelCAD
- * service.
+ * 1. `ANTHROPIC_API_KEY` set → Anthropic (`KERNELCAD_VISION_MODEL`, default
+ *    {@link DEFAULT_MODEL}).
+ * 2. `KERNELCAD_VISION_BASE_URL` + `KERNELCAD_VISION_API_KEY` +
+ *    `KERNELCAD_VISION_MODEL` set → any OpenAI-compatible endpoint with image
+ *    input (DeepInfra, OpenRouter, vLLM, Ollama, OpenAI).
+ * 3. Neither → throws, naming both options.
+ *
+ * Either way the operator's own key pays for the calls — nothing is proxied
+ * through a kernelCAD service.
  */
-export function defaultVisionClient(opts: DefaultVisionClientOptions = {}): AnthropicVisionClient {
+export function defaultVisionClient(opts: DefaultVisionClientOptions = {}): VisionLlmClientLike {
   const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey || apiKey.length === 0) {
-    throw new Error(
-      'defaultVisionClient: ANTHROPIC_API_KEY environment variable is not set. ' +
-        'The vision-LLM backend requires the caller to supply their own Anthropic API key.',
-    );
+  if (apiKey && apiKey.length > 0) {
+    const model = process.env.KERNELCAD_VISION_MODEL ?? DEFAULT_MODEL;
+    return new AnthropicVisionClient({ apiKey, model, sdkOverride: opts.sdkOverride });
   }
-  const model = process.env.KERNELCAD_VISION_MODEL ?? DEFAULT_MODEL;
-  return new AnthropicVisionClient({ apiKey, model, sdkOverride: opts.sdkOverride });
+  const baseUrl = process.env.KERNELCAD_VISION_BASE_URL;
+  const compatKey = process.env.KERNELCAD_VISION_API_KEY;
+  const compatModel = process.env.KERNELCAD_VISION_MODEL;
+  if (baseUrl && compatKey && compatModel) {
+    return new OpenAiCompatVisionClient({ baseUrl, apiKey: compatKey, model: compatModel, fetchOverride: opts.fetchOverride });
+  }
+  throw new Error(
+    'defaultVisionClient: no vision model is configured. Set ANTHROPIC_API_KEY, or ' +
+      'KERNELCAD_VISION_BASE_URL + KERNELCAD_VISION_API_KEY + KERNELCAD_VISION_MODEL for an ' +
+      'OpenAI-compatible endpoint with image input. Without one, only the opencv silhouette backend works.',
+  );
 }
