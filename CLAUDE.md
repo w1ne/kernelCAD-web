@@ -47,7 +47,7 @@ When reviewing a PR that ships a `v0.X.0` tag (cuts a per-module release):
 
 1. Verify `docs/demos/v0.X/<task>/whats-new.md` contains a `## Hero artifact` section, a `## Why memorable` section with all three bullets filled (no `TODO:`), and a `## What's new` section.
 2. Verify `docs/demos/v0.X/<task>/meta.json` contains `heroArtifact`, `catalogSource`, and `overrideApprovedBy` keys.
-3. Verify the §1 bar of the memorable-builds policy spec (in kernelCAD-private) is satisfied by the *artifact itself*, not by the prose. If `heroArtifact` is generic (box, bracket, plate, etc.) or the new tool isn't visibly central to the build, fail the review and cite the policy spec.
+3. Judge the *artifact itself*, not the prose. From v0.18 the hero must be a real user job taken end to end (for example a Pi 5 case with heat-set inserts, a motor mount, a coupler with set screws), and `meta.json.proof` must name that job and point at a passing verify report or a photo of the printed or fabricated part. Fail the review if the hero is a bare primitive (box, cube, cylinder), if the new tool isn't visibly central to the build, or if the proof doesn't show the part working. A recognisable object with no proof is not enough.
 4. If `meta.json.overrideApprovedBy` is non-null, the override path was used. Surface this to the controller for traceability — it is not automatically a fail, but should not be a default.
 
 This rule binds the `superpowers:code-reviewer` agent and any human reviewer working in this repo.

@@ -10,6 +10,8 @@ import {
   isCatalogSlug,
   GENERIC_PRIMITIVE_DENYLIST,
   GRANDFATHERED_VERSIONS,
+  PROOF_KINDS,
+  PROOF_REQUIRED_VERSIONS,
 } from './memorableBuildsCatalog';
 
 const REQUIRED_PRE_EXISTING = ['gitSha', 'capturedAt', 'taskId'] as const;
@@ -57,5 +59,27 @@ export function validateDemoMeta(meta: Record<string, unknown>, version: string)
     errors.push(`heroArtifact '${heroArtifact}' does not match catalog for ${version} and no overrideApprovedBy is set`);
   }
 
+  if (PROOF_REQUIRED_VERSIONS.has(version)) errors.push(...validateProof(meta.proof));
+
+  return errors;
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+// `proof` = { userJob, kind, ref }: the real job the hero solves, and the
+// evidence (verify report path, or print/fabrication photo path) that it works.
+function validateProof(proof: unknown): string[] {
+  if (proof === null || typeof proof !== 'object') {
+    return ["meta.json missing 'proof' ({ userJob, kind, ref }) required from this version"];
+  }
+  const { userJob, kind, ref } = proof as Record<string, unknown>;
+  const errors: string[] = [];
+  if (!isNonEmptyString(userJob)) errors.push("proof.userJob must describe the user job the hero solves");
+  if (!(PROOF_KINDS as readonly unknown[]).includes(kind)) {
+    errors.push(`proof.kind must be one of ${PROOF_KINDS.join(', ')}`);
+  }
+  if (!isNonEmptyString(ref)) errors.push('proof.ref must point at the verify report or photo');
   return errors;
 }
