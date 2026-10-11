@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import { jointContactCapMm3 } from '../runtime/jointContactCap';
 import type { Assembly } from '../capture/assembly';
 import type { NumericPoses } from '../capture/forwardKinematics';
 import { createOcctLowerer } from '../backends/occt/occtLowerer';
@@ -334,6 +335,11 @@ function createInterferenceReporter(
   return (sampleName: string, pair: InterferencePair): void => {
     const pairId = pairKey(pair.a, pair.b);
     if (ignoredPairs.has(pairId)) return;
+    // One rule with the validator and interferenceSummary: shared volume at
+    // or below the uniform contact-noise cap is touching / tessellation
+    // noise (reported as non-actionable contact-noise there), never a
+    // blocking interference here.
+    if (pair.volumeMm3 <= jointContactCapMm3()) return;
     const key = `${sampleName}\u0000${pairId}`;
     if (reportedInterferences.has(key)) return;
     reportedInterferences.add(key);
