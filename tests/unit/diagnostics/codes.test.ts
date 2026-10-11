@@ -147,6 +147,7 @@ describe('diagnostic catalogue invariants', () => {
     expect(DIAGNOSTIC_CODES).toContain('assembly.mounting-hole.unverified');
     expect(DIAGNOSTIC_CODES).toContain('assembly.mounting-hole.misaligned');
     expect(DIAGNOSTIC_CODES).toContain('assembly.connectivity.assumed-root');
+    expect(DIAGNOSTIC_CODES).toContain('script.no-return');
   });
 
   it('every code has a non-empty hint template', () => {

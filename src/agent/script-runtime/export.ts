@@ -3,6 +3,7 @@
 import type { ShapeBackend } from '../../kernel/backends/backend';
 import { resolveRootId } from '../../composition/buildModel';
 import type { DrawingReviewOptions } from '../../shared/intent/drawingReview';
+import { detectMissingReturn } from '../../modeling/validation/missingReturn';
 import { runScript } from '../../composition/runScript';
 import { RecomputeEngine } from '../../modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../modeling/backends/occt/occtLowerer';
@@ -422,6 +423,9 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
   const assemblyXml = await exportAssemblyFormat(input, format, run, r.diagnostics, featureCount);
   if (assemblyXml !== undefined) return assemblyXml;
 
+  // No `return` and no explicit feature_id: the last created shape is
+  // exported — say so (script.no-return) instead of a silent OK.
+  if (feature_id === undefined) r.diagnostics.push(...detectMissingReturn({ returnValue: run.returnValue, records: run.records }));
   const target = resolveExportTarget(feature_id, run.returnValue, run.records, r.diagnostics, featureCount);
   if ('result' in target) return target.result;
   const targetId = target.targetId;

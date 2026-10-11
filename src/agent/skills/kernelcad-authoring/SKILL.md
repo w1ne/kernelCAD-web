@@ -206,6 +206,7 @@ Verify the install with `kernelcad --version` (should print `0.1.0` or higher).
 - Box: corner-anchored at the origin (spans `[0, x] × [0, y] × [0, z]`). `centered: true` (4th argument) anchors at the centroid.
 - Cylinder: axis along Z, base at `z=0`, top at `z=h`.
 - Sphere: centred at the origin.
+- Return ONE Shape or assembly model; no `return` warns `script.no-return`.
 
 ## API Surface
 

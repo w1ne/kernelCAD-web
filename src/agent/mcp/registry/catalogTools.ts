@@ -24,7 +24,12 @@ export const catalogToolEntries: ToolRegistryEntry[] = [
           query: {
             type: 'string',
             description:
-              'Natural-language description of what you want to do (e.g. "round the rim of a hole", "build an L-bracket").',
+              'Natural-language description of what you want to do (e.g. "round the rim of a hole", "build an L-bracket"). One of query / id is required.',
+          },
+          id: {
+            type: 'string',
+            description:
+              'Exact snippet id as the skills cite it (e.g. "clearance-hole-through-plate"); returns that snippet. An unknown id is ranked as a query.',
           },
           k: {
             type: 'number',
@@ -32,7 +37,6 @@ export const catalogToolEntries: ToolRegistryEntry[] = [
             default: 3,
           },
         },
-        required: ['query'],
       },
     },
     handler: input => lookupCookbookTool(input as unknown as Parameters<typeof lookupCookbookTool>[0]),
