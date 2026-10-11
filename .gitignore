@@ -95,6 +95,9 @@ site/docs/
 # Blog draft previews (npm run site:build-blog -- --drafts). Never committed, so
 # never deployed; a build without --drafts deletes the directory.
 site/blog/drafts/
+# A post's model and video, made by the blog build next to its page.
+site/blog/*/model.glb
+site/blog/*/video.mp4
 
 # FEA solver toolchain venv (gmsh); created by the kernelcad-fea setup step
 .fea-venv

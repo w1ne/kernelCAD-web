@@ -88,6 +88,37 @@ describe('renderBlog', () => {
     expect(build.files.some((f) => f.html.includes('not-yet'))).toBe(false);
   });
 
+  it('shows the video and the model after the lede, and builds their files next to the page', () => {
+    const useCase = post(
+      'docs/guide/first-post.md',
+      { ...FIELDS, kind: 'use-case', model: 'examples/demo/model.kcad.ts', video: 'docs/demos/demo/demo.mp4' },
+      'The lede.\n\n## Next\n\nText.\n',
+    );
+    const build = renderBlog([useCase], { repoRoot: repo });
+    const html = build.files.find((f) => f.path === 'site/blog/first-post/index.html')!.html;
+    const lede = html.indexOf('<p class="lede">');
+    const video = html.indexOf('<video src="video.mp4" controls playsinline preload="metadata"></video>');
+    const viewer = html.indexOf('<model-viewer src="model.glb"');
+    expect(lede).toBeGreaterThan(-1);
+    expect(video).toBeGreaterThan(lede);
+    expect(viewer).toBeGreaterThan(video);
+    expect(viewer).toBeLessThan(html.indexOf('<h2>Next</h2>'));
+    expect(html).toContain('<code>examples/demo/model.kcad.ts</code>');
+    expect(html).toContain('<script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer/dist/model-viewer.min.js"></script>');
+    expect(html).toContain('    .legal model-viewer {');
+    expect(build.assets).toEqual([
+      { kind: 'copy', from: 'docs/demos/demo/demo.mp4', to: 'site/blog/first-post/video.mp4' },
+      { kind: 'glb', from: 'examples/demo/model.kcad.ts', to: 'site/blog/first-post/model.glb' },
+    ]);
+  });
+
+  it('gives a post without a model or video no viewer, no script and no files to build', () => {
+    const build = renderBlog([first], { repoRoot: repo });
+    expect(build.assets).toEqual([]);
+    expect(build.files[0].html).not.toContain('model-viewer');
+    expect(build.files[0].html).not.toContain('<video');
+  });
+
   it('puts the title, summary and canonical URL in the head', () => {
     const html = page([first], 'site/blog/first-post/index.html');
     expect(html).toContain('<title>First post</title>');

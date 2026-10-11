@@ -14,8 +14,14 @@
 // A guide with front matter is a post (fields: site/scripts/blogFrontMatter.ts);
 // a guide without front matter is not, and is skipped. The file name is the
 // slug: docs/guide/<slug>.md becomes site/blog/<slug>/index.html, and the blog
-// index, site/blog/index.html, lists the published posts newest first. The
-// build writes nothing outside site/blog/.
+// index, site/blog/index.html, lists the published posts newest first.
+//
+// A post with `video` shows it after the lede, and a post with `model` shows a
+// 3D view of it there (<model-viewer>, as on the landing gallery). The build
+// makes those files next to the page once every check has passed: video.mp4,
+// a copy, and model.glb, through the gallery's GLB pipeline and turned Z-up to
+// Y-up (site/scripts/blogModel.ts). Both are git-ignored; site:build makes
+// them again on deploy. The build writes nothing outside site/blog/.
 //
 // A draft (status: draft) is never on the index and never in site/blog/<slug>/.
 // With --drafts it is built to site/blog/drafts/<slug>/index.html, marked
@@ -70,12 +76,32 @@
 // a reader sees is what was checked. A drifted value fails with the file, the
 // line, the model and the real value.
 
-import { mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync, openSync, readSync, closeSync } from 'node:fs';
+import {
+  closeSync,
+  copyFileSync,
+  mkdirSync,
+  openSync,
+  readFileSync,
+  readSync,
+  readdirSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseGuide, type BlogFrontMatter } from './blogFrontMatter';
 import { MarkdownError, escapeAttr, escapeText, parseBlocks, renderInline, type Block, type FigureBlock } from './blogMarkdown';
-import { DEFAULT_OG_IMAGE, SITE_ORIGIN, indexPage, pageShell, postByline } from './blogPage';
+import {
+  DEFAULT_OG_IMAGE,
+  POST_MODEL_FILE,
+  POST_VIDEO_FILE,
+  SITE_ORIGIN,
+  indexPage,
+  pageShell,
+  postByline,
+  postMedia,
+} from './blogPage';
 import { checkOrphanPages, checkPost, needsEvaluator, type CheckFailure, type Evaluator } from './blogChecks';
 
 export const GUIDE_DIR = 'docs/guide';
@@ -161,10 +187,20 @@ export interface RenderedPost {
   readonly images: readonly PostImage[];
 }
 
+/** A file a page shows that the build makes: the model as GLB, or the video copied. */
+export interface AssetJob {
+  readonly kind: 'glb' | 'copy';
+  /** Repository path of the source: the model script or the video. */
+  readonly from: string;
+  /** Repository path of the output, next to the page. */
+  readonly to: string;
+}
+
 export interface BlogBuild {
   readonly files: readonly OutputFile[];
   /** Published posts newest first, then drafts when they were asked for. */
   readonly posts: readonly RenderedPost[];
+  readonly assets: readonly AssetJob[];
 }
 
 export interface RenderOptions {
@@ -190,7 +226,11 @@ export function renderBlog(posts: readonly BlogPost[], opts: RenderOptions): Blo
     path: `${BLOG_DIR}/index.html`,
     html: indexPage(published.map((post) => ({ slug: post.slug, ...post.meta }))),
   };
-  return { files: [...rendered.map((r) => r.file), index], posts: rendered.map((r) => r.rendered) };
+  return {
+    files: [...rendered.map((r) => r.file), index],
+    posts: rendered.map((r) => r.rendered),
+    assets: rendered.flatMap((r) => r.assets),
+  };
 }
 
 interface PageContext {
@@ -201,11 +241,16 @@ interface PageContext {
   readonly images: PostImage[];
 }
 
-function renderPost(post: BlogPost, repoRoot: string, draft: boolean): { file: OutputFile; rendered: RenderedPost } {
+function renderPost(
+  post: BlogPost,
+  repoRoot: string,
+  draft: boolean,
+): { file: OutputFile; rendered: RenderedPost; assets: AssetJob[] } {
   const pageDir = draft ? `/blog/drafts/${post.slug}/` : `/blog/${post.slug}/`;
   const ctx: PageContext = { repoRoot, post, pageDir, images: [] };
   const [lede, ...rest] = post.blocks;
   const note = draft && post.meta.note !== undefined ? [`      <p class="effective">${escapeText(post.meta.note)}</p>`] : [];
+  const media = postMedia(post.meta);
   const main = [
     '      <article>',
     postByline(post.meta.date, draft),
@@ -213,9 +258,15 @@ function renderPost(post: BlogPost, repoRoot: string, draft: boolean): { file: O
     `      <h1>${escapeText(post.meta.title)}</h1>`,
     '',
     `      <p class="lede">${renderInline((lede as { text: string }).text)}</p>`,
+    ...media.lines,
     ...rest.flatMap((block) => renderBlock(block, ctx)),
     '      </article>',
   ].join('\n');
+  const outDir = `site${pageDir}`;
+  const assets: AssetJob[] = [
+    ...(post.meta.video === undefined ? [] : [{ kind: 'copy' as const, from: post.meta.video, to: `${outDir}${POST_VIDEO_FILE}` }]),
+    ...(post.meta.model === undefined ? [] : [{ kind: 'glb' as const, from: post.meta.model, to: `${outDir}${POST_MODEL_FILE}` }]),
+  ];
   const firstImage = ctx.images.find((image) => image.underSite);
   const html = pageShell(
     {
@@ -225,12 +276,12 @@ function renderPost(post: BlogPost, repoRoot: string, draft: boolean): { file: O
       image: firstImage ? `${SITE_ORIGIN}${siteUrl(repoRoot, firstImage.file)}` : DEFAULT_OG_IMAGE,
       url: `${SITE_ORIGIN}${pageDir}`,
       noindex: draft,
-      extraStyle: [],
+      extraStyle: media.style,
     },
     main,
   );
   const pagePath = `site${pageDir}index.html`;
-  return { file: { path: pagePath, html }, rendered: { post, path: pagePath, images: ctx.images } };
+  return { file: { path: pagePath, html }, rendered: { post, path: pagePath, images: ctx.images }, assets };
 }
 
 /** One block as lines of the article; a `##` heading opens with a blank line. */
@@ -293,16 +344,38 @@ export function pngSize(file: string): { width: number; height: number } | null 
   }
 }
 
-function writeOutputs(repoRoot: string, files: readonly OutputFile[]): void {
-  for (const file of files) {
-    // The one place the build touches disk: refuse anything outside site/blog/.
-    if (!file.path.startsWith(`${BLOG_DIR}/`) || file.path.includes('..')) {
-      throw new Error(`refusing to write ${file.path}: the blog build writes only under ${BLOG_DIR}/`);
-    }
-    const target = path.join(repoRoot, file.path);
-    mkdirSync(path.dirname(target), { recursive: true });
-    writeFileSync(target, file.html);
+/** Absolute path of an output, refusing anything outside site/blog/. */
+function blogTarget(repoRoot: string, repoPath: string): string {
+  if (!repoPath.startsWith(`${BLOG_DIR}/`) || repoPath.split('/').includes('..')) {
+    throw new Error(`refusing to write ${repoPath}: the blog build writes only under ${BLOG_DIR}/`);
   }
+  const target = path.join(repoRoot, repoPath);
+  mkdirSync(path.dirname(target), { recursive: true });
+  return target;
+}
+
+function writeOutputs(repoRoot: string, files: readonly OutputFile[]): void {
+  for (const file of files) writeFileSync(blogTarget(repoRoot, file.path), file.html);
+}
+
+/**
+ * The video copied, and the model as GLB (site/scripts/blogModel.ts, loaded
+ * only when a post has a model). Its raw export goes to the system temp
+ * directory, not next to the page.
+ */
+async function buildAssets(repoRoot: string, jobs: readonly AssetJob[]): Promise<string[]> {
+  const built: string[] = [];
+  for (const job of jobs) {
+    const target = blogTarget(repoRoot, job.to);
+    if (job.kind === 'copy') {
+      copyFileSync(path.join(repoRoot, job.from), target);
+    } else {
+      const { buildPostGlb } = await import('./blogModel');
+      await buildPostGlb(repoRoot, path.join(repoRoot, job.from), target, job.to);
+    }
+    built.push(`  ${job.to}: ${statSync(target).size.toLocaleString('en')} bytes from ${job.from}`);
+  }
+  return built;
 }
 
 /** Stands in when no post needs the kernel, so the build never loads it. */
@@ -343,8 +416,10 @@ async function main(args: readonly string[]): Promise<number> {
     console.error(`build-blog: ${failures.length} check(s) failed`);
     return 1;
   }
+  // The heavy part, once every check has passed.
+  const assets = await buildAssets(REPO_ROOT, build.assets);
   const previews = build.posts.filter((r) => r.post.meta.status === 'draft').length;
-  console.log(summary.join('\n'));
+  console.log([...summary, ...assets].join('\n'));
   console.log(`✓ ${BLOG_DIR}: ${build.posts.length - previews} published post(s), the index${drafts ? `, ${previews} draft preview(s)` : ''}`);
   return 0;
 }

@@ -12,6 +12,42 @@ export const BLOG_AUTHOR = 'Andrii Shylenko';
 export const DEFAULT_OG_IMAGE = `${SITE_ORIGIN}/og-image.png`;
 const INDEX_BLURB = 'Release notes and how-tos from the kernelCAD team.';
 
+/** The 3D viewer the landing gallery and the app use, from the same CDN URL. */
+export const MODEL_VIEWER_SRC = 'https://cdn.jsdelivr.net/npm/@google/model-viewer/dist/model-viewer.min.js';
+
+/** File names of the built media, next to the page. */
+export const POST_VIDEO_FILE = 'video.mp4';
+export const POST_MODEL_FILE = 'model.glb';
+
+const MEDIA_STYLE = {
+  video: '    .legal figure video { display: block; width: 100%; height: auto; border: 1px solid var(--rule); border-radius: 6px; background: var(--paper); }',
+  model: '    .legal model-viewer { display: block; width: 100%; height: 440px; border: 1px solid var(--rule); border-radius: 6px; background: var(--paper); }',
+};
+
+/**
+ * The video and the 3D view of the model, shown right after the lede, with the
+ * CSS lines the page needs for them. Empty for a post with neither.
+ */
+export function postMedia(media: { readonly video?: string; readonly model?: string }): { lines: string[]; style: string[] } {
+  const lines: string[] = [];
+  const style: string[] = [];
+  if (media.video !== undefined) {
+    lines.push('      <figure>', `        <video src="${POST_VIDEO_FILE}" controls playsinline preload="metadata"></video>`, '      </figure>');
+    style.push(MEDIA_STYLE.video);
+  }
+  if (media.model !== undefined) {
+    lines.push(
+      '      <figure>',
+      `        <model-viewer src="${POST_MODEL_FILE}" alt="${escapeAttr(`The model built from ${media.model}`)}" camera-controls auto-rotate rotation-per-second="12deg" interaction-prompt="none" touch-action="pan-y" loading="lazy"></model-viewer>`,
+      `        <figcaption>The model, built from <code>${escapeText(media.model)}</code>. Drag to turn it.</figcaption>`,
+      '      </figure>',
+      `      <script type="module" src="${MODEL_VIEWER_SRC}"></script>`,
+    );
+    style.push(MEDIA_STYLE.model);
+  }
+  return { lines, style };
+}
+
 export interface PageHead {
   readonly title: string;
   readonly description: string;
