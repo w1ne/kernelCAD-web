@@ -110,5 +110,6 @@
   "lift",
   "callout",
   "hole-spacing",
-  "annotation"
+  "annotation",
+  "tube-routing"
 ]

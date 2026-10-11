@@ -402,6 +402,10 @@ After applying edge/face features, run before reporting done:
 | G-shell-thickness-positive | Shell offset `t` is positive (outward) AND less than the smallest local feature radius — otherwise shells inverts or self-intersects |
 | G-no-overlap | `kernelcad interference` reports zero overlaps; subtractive features (`hole`, `cutout`) clear their target volume completely |
 
+## Bent tubes
+
+`tube(name, opts)` and `tubeSpec({ ... })` route bent tubes between ports and check them against bending and clearance rules: load `kernelcad-tubes`.
+
 ## Related skills
 
 - `kernelcad-authoring` — primitives and sketches that this skill operates on.

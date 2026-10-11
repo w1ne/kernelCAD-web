@@ -76,6 +76,8 @@ export interface ExportCliResult {
   meshFiles?: string[];
   /** svg-drawing / pdf-drawing placement report. */
   drawingReport?: DrawingReport;
+  /** `bend-table`: the CSV files written, one per tube, inside the `--out` directory. */
+  tableFiles?: string[];
 }
 
 /** Parse `--options <json>`: a JSON object, `format` defaulted to the
@@ -469,7 +471,7 @@ function exportOptionsFor(
 }
 
 type ExportPublication =
-  | { ok: true; meshFiles: string[] }
+  | { ok: true; meshFiles: string[]; tableFiles: string[] }
   | { ok: false; result: ExportCliResult };
 
 async function publishExportOutputs(
@@ -478,7 +480,18 @@ async function publishExportOutputs(
   result: ExportResult,
 ): Promise<ExportPublication> {
   const meshFiles: string[] = [];
+  const tableFiles: string[] = [];
   try {
+    if (result.tables !== undefined) {
+      // bend-table: `outPath` is a directory; each table is a file inside it.
+      await mkdir(outPath, { recursive: true });
+      for (const t of result.tables) {
+        const tablePath = join(outPath, t.relPath);
+        await writeFile(tablePath, t.bytes);
+        tableFiles.push(tablePath);
+      }
+      return { ok: true, meshFiles, tableFiles };
+    }
     await writeFile(outPath, result.bytes);
     if (trustedManifestOutput !== undefined) {
       if (await outputPathsAlias(outPath, trustedManifestOutput)) {
@@ -517,7 +530,7 @@ async function publishExportOutputs(
       },
     };
   }
-  return { ok: true, meshFiles };
+  return { ok: true, meshFiles, tableFiles };
 }
 
 export async function exportScript(input: ExportInput): Promise<ExportCliResult> {
@@ -564,12 +577,15 @@ export async function exportScript(input: ExportInput): Promise<ExportCliResult>
   // BEFORE the gate fails the command — same contract as part-mode.
   const published = await publishExportOutputs(outPath, trustedManifestOutput, result);
   if (!published.ok) return published.result;
-  const { meshFiles } = published;
+  const { meshFiles, tableFiles } = published;
   return {
     exitCode: fatal ? 1 : 0,
-    bytesWritten: result.bytes.length,
+    bytesWritten: result.tables !== undefined
+      ? result.tables.reduce((n, t) => n + t.bytes.length, 0)
+      : result.bytes.length,
     diagnostics: withNextActions(result.diagnostics),
     ...(meshFiles.length > 0 ? { meshFiles } : {}),
+    ...(tableFiles.length > 0 ? { tableFiles } : {}),
     ...(result.drawingReport !== undefined ? { drawingReport: result.drawingReport } : {}),
   };
 }
@@ -698,7 +714,7 @@ function collectParts(value: string, prev: string[]): string[] {
 
 const SUPPORTED_FORMATS = new Set<ExportFormat>([
   'stl', 'step', 'dxf', '3mf', 'glb', 'svg-drawing', 'pdf-drawing', 'urdf', 'srdf', 'sdf-gazebo', 'gcode', 'usd-isaac',
-  'bom-csv', 'bom-json',
+  'bom-csv', 'bom-json', 'bend-table',
 ]);
 
 interface ExportCommandOpts {
@@ -745,6 +761,18 @@ async function runPartMode(
   process.exitCode = r.exitCode;
 }
 
+/** `meshFiles` / `tableFiles` keys of the `--json` report, when files were written. */
+function writtenFilesJson(r: ExportCliResult): Pick<ExportCliResult, 'meshFiles' | 'tableFiles'> {
+  return {
+    ...(r.meshFiles !== undefined ? { meshFiles: r.meshFiles } : {}),
+    ...(r.tableFiles !== undefined ? { tableFiles: r.tableFiles } : {}),
+  };
+}
+
+function printTableFiles(r: ExportCliResult): void {
+  for (const t of r.tableFiles ?? []) console.log(`wrote table ${t}`);
+}
+
 /** Default branch: whole-script export and its report. */
 async function runExportMode(
   format: string,
@@ -778,13 +806,14 @@ async function runExportMode(
       ok: r.exitCode === 0,
       bytesWritten: r.bytesWritten,
       out: opts.out,
-      ...(r.meshFiles !== undefined ? { meshFiles: r.meshFiles } : {}),
+      ...writtenFilesJson(r),
       ...(r.drawingReport !== undefined ? { drawingReport: r.drawingReport } : {}),
       diagnostics: r.diagnostics,
     }, null, 2));
   } else {
     if (r.diagnostics.length > 0) console.log(formatHuman(r.diagnostics));
     if (r.exitCode === 0) console.log(`Wrote ${r.bytesWritten} bytes to ${opts.out}`);
+    printTableFiles(r);
     if (r.drawingReport !== undefined) {
       const kinds = Object.entries(r.drawingReport.byKind).map(([k, n]) => `${k} ${n}`).join(', ');
       console.log(`drawing: ${r.drawingReport.placed} annotation(s) placed, ${r.drawingReport.overlapped} overlapped (${kinds})`);
@@ -796,10 +825,10 @@ async function runExportMode(
 
 export function exportCommand(): Command {
   const cmd = new Command('export')
-    .description('Export a .kcad.ts script to STL, STEP, DXF, 3MF, GLB, an SVG or PDF engineering-drawing sheet, or a bill of materials')
-    .argument('<format>', 'stl | step | dxf | 3mf | glb | svg-drawing | pdf-drawing | urdf | srdf | sdf-gazebo | usd-isaac | bom-csv | bom-json')
+    .description('Export a .kcad.ts script to STL, STEP, DXF, 3MF, GLB, an SVG or PDF engineering-drawing sheet, a bill of materials, or tube bend tables')
+    .argument('<format>', 'stl | step | dxf | 3mf | glb | svg-drawing | pdf-drawing | urdf | srdf | sdf-gazebo | usd-isaac | bom-csv | bom-json | bend-table')
     .argument('<file>', 'path to .kcad.ts script')
-    .requiredOption('-o, --out <path>', 'output file path (output directory for --parts all and repeated --part)')
+    .requiredOption('-o, --out <path>', 'output file path (output directory for bend-table, --parts all and repeated --part)')
     .option('--part <name>', 'export a single named assembly part (STL only); repeat for a subset (-o is then a directory)', collectParts, [] as string[])
     .option('--parts <all>', "export every assembly part as <out-dir>/<part>.stl (value must be 'all')")
     .option('--connector-manifest <path>', 'write numeric authored connector manifest beside a STEP export')

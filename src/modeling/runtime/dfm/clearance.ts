@@ -76,7 +76,7 @@ export interface ClearanceCheckOptions {
 /** One scene part, cloned into the world frame for measurement. `shape` and
  *  `bbox` are undefined when the up-front clone/applyTransform stage failed
  *  for the part — its pairs are recorded as 'unknown'. */
-interface TransformedPart {
+export interface TransformedPart {
   name: string;
   shape?: OcctBackend;
   bbox?: { min: [number, number, number]; max: [number, number, number] };
@@ -172,7 +172,7 @@ function hasMeasurableGeometry(part: TransformedPart): part is MeasuredPart {
 
 /** Clone + apply one part's worldTransform; a kernel failure emits ONE warn
  *  diagnostic and leaves the part unmeasurable (`shape`/`bbox` undefined). */
-function transformScenePart(
+export function transformScenePart(
   p: SceneBackend['parts'][number],
   diagnostics: CompilerDiagnostic[],
 ): TransformedPart {
@@ -273,7 +273,7 @@ function classifyMeasuredPair(
 /** Euclidean lower bound on the distance between two parts from their
  *  axis-aligned bboxes: per-axis `max(0, gap)`, combined. 0 when the
  *  bboxes overlap on every axis. */
-function bboxGap(
+export function bboxGap(
   a: { min: [number, number, number]; max: [number, number, number] },
   b: { min: [number, number, number]; max: [number, number, number] },
 ): number {

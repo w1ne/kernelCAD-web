@@ -196,7 +196,11 @@ export type FeatureKind =
   | 'projectCurve'
   // NURBS Slice E (2) — sew N surfaces into a solid Shell/Solid via
   // BRepBuilderAPI_Sewing (Task 5 lowerer). Returns a Shape.
-  | 'surfaceSew';
+  | 'surfaceSew'
+  // Bent tube: corner points, one bend radius, round hollow section.
+  | 'tube'
+  // Capture-only bending and clearance rules for the tubes in the model.
+  | 'tubeSpec';
 
 /**
  * Runtime guard for PlaneSpec. Returns true for cardinal strings
