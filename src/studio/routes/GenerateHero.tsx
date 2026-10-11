@@ -46,7 +46,7 @@ function GenerateHeroStatus({ phase, events, hasSession, onUpgrade, upgradeBusy,
     if (phase.state === 'running') return <GenerationProgress events={events} />;
     if (phase.state === 'done' && phase.partial) return <PartialResult partial={phase.partial} onOpen={onOpenResult} />;
     if (phase.state !== 'error') return null;
-    if (phase.code === 'rate_limited') {
+    if (phase.code === 'rate_limited' || phase.code === 'anon_limit') {
         return <RateLimitedPanel
                 authenticated={hasSession}
                 onUpgrade={onUpgrade}

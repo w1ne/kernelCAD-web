@@ -190,21 +190,23 @@ export interface GenerateRequest {
   /** A bounded simple-device reference photo plus a real-world scale anchor.
    * The hosted route validates, hashes, and materializes it before authoring. */
   referenceImage?: ReferenceImage;
+  /** Cloudflare Turnstile token, sent only for signed-out builds. */
+  turnstileToken?: string;
 }
 
 export async function startGeneration(req: GenerateRequest, signal?: AbortSignal): Promise<Response> {
   const base = import.meta.env.VITE_API_BASE_URL;
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-  // Agent mode requires a connected account (every run lands against a plan), so
-  // forward the Supabase session token when there is one. Without it the server
-  // returns 401 and the UI prompts sign-in. Guarded so an env-less/local build
-  // (no auth) doesn't throw — it just sends no token.
+  // Forward the Supabase session token when there is one. Without it the
+  // request is a signed-out build: the server either runs it (free build) or
+  // answers 401 `anon_limit`, and the UI prompts sign-in. Guarded so an
+  // env-less/local build (no auth) doesn't throw — it just sends no token.
   if (isAuthConfigured()) {
     try {
       const { data: { session } } = await getSupabase().auth.getSession();
       if (session?.access_token) headers['Authorization'] = `Bearer ${session.access_token}`;
     } catch {
-      // no session / auth unavailable → anonymous → server will 401
+      // no session / auth unavailable → signed-out request
     }
   }
   return fetch(`${base}/api/v1/generate`, {

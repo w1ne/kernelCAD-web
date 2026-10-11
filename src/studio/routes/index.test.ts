@@ -74,12 +74,13 @@ describe('Generate page (src/studio/routes/generate.tsx)', () => {
     expect(modalIdx).toBeGreaterThan(heroIdx);
   });
 
-  it('gates generation by stashing the prompt and opening sign-in', () => {
+  it('on anon_limit, stashes the prompt and opens sign-in, then resumes after', () => {
     expect(source).toContain('const agentEnabled = inAppAgentEnabled()');
     expect(source).toContain('if (!agentEnabled) return');
     expect(source).toContain("const PENDING_PROMPT_KEY = 'kc:pendingPrompt'");
-    expect(source).toContain('window.localStorage.setItem(PENDING_PROMPT_KEY, prompt)');
-    expect(source).toContain('setSignInOpen(true)');
+    expect(source).toContain('window.localStorage.setItem(PENDING_PROMPT_KEY, lastPrompt.current)');
+    expect(source).toContain("phase.code === 'anon_limit'");
+    expect(source).toContain('useOptionalSession()');
     expect(source).toContain('window.localStorage.getItem(PENDING_PROMPT_KEY)');
     expect(source).toContain('void submit(pending)');
   });

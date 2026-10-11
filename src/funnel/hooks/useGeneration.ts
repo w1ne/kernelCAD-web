@@ -20,7 +20,9 @@ export type FunnelClientErrorCode =
   | 'missing_generation_id'
   | 'stream_closed'
   /** The user stopped waiting for the run (`cancel()`). */
-  | 'cancelled';
+  | 'cancelled'
+  /** A signed-out build was refused (401 `anon_limit`): sign in to continue. */
+  | 'anon_limit';
 
 export type FunnelErrorCode = FunnelClientErrorCode | `http_${number}` | (string & {});
 
@@ -28,13 +30,14 @@ export type GenerationPhase =
   | { state: 'idle' }
   | { state: 'running'; generationId?: string; anonId?: string; lastEvent: GenerateEvent }
   | { state: 'done'; generationId: string; anonId: string; artifact: Artifact; partial?: GenerationPartial }
-  | { state: 'error'; code: FunnelErrorCode; message: string; generationId?: string; upgradeUrl?: string };
+  | { state: 'error'; code: FunnelErrorCode; message: string; generationId?: string; upgradeUrl?: string; anonReason?: string };
 
 /** A quota 402 carries `{ message, upgrade_url }`; any other body stays raw text. */
-function parseErrorBody(text: string): { message?: string; upgradeUrl?: string } {
+function parseErrorBody(text: string): { message?: string; upgradeUrl?: string; anonLimit?: { reason: string } } {
   try {
-    const j = JSON.parse(text) as { message?: unknown; upgrade_url?: unknown };
+    const j = JSON.parse(text) as { message?: unknown; upgrade_url?: unknown; error?: unknown; reason?: unknown };
     return {
+      ...(j.error === 'anon_limit' ? { anonLimit: { reason: typeof j.reason === 'string' ? j.reason : '' } } : {}),
       ...(typeof j.message === 'string' && j.message ? { message: j.message } : {}),
       ...(typeof j.upgrade_url === 'string' && /^https?:\/\//.test(j.upgrade_url) ? { upgradeUrl: j.upgrade_url } : {}),
     };
@@ -102,6 +105,16 @@ async function openGenerationStream(
   if (!res.ok) {
     const text = await res.text().catch(() => `HTTP ${res.status}`);
     const body = parseErrorBody(text);
+    if (res.status === 401 && body.anonLimit) {
+      // No free build for this signed-out visitor: the page asks them to sign in.
+      setPhase({
+        state: 'error',
+        code: 'anon_limit',
+        message: 'Sign in to build.',
+        ...(body.anonLimit.reason ? { anonReason: body.anonLimit.reason } : {}),
+      });
+      return null;
+    }
     setPhase({
       state: 'error',
       // Agent mode requires a connected account. 401 = anonymous (must sign
@@ -133,6 +146,7 @@ export function useGeneration() {
     currentCode?: string,
     mesh?: GenerateRequest['mesh'],
     referenceImage?: GenerateRequest['referenceImage'],
+    turnstileToken?: string,
   ) => {
     controllerRef.current?.abort();
     const controller = new AbortController();
@@ -143,7 +157,7 @@ export function useGeneration() {
       lastEvent: { kind: 'status', phase: 'running' },
     });
 
-    const body = await openGenerationStream({ prompt, currentCode, mesh, referenceImage }, controller.signal, setPhase);
+    const body = await openGenerationStream({ prompt, currentCode, mesh, referenceImage, ...(turnstileToken ? { turnstileToken } : {}) }, controller.signal, setPhase);
     if (!body) return;
 
     let exhausted: boolean;
