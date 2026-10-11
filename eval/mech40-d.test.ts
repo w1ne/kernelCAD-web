@@ -16,4 +16,6 @@ defineMech40Suite([
   '38-fdm-pin-running-fit',
   '39-bearing-608-press-seat',
   '40-hex-nut-trap-clamp',
+  '41-sheet-u-channel',
+  '42-sheet-z-bracket',
 ]);

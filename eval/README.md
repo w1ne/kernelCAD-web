@@ -9,8 +9,9 @@ SKILL.md and its references, `--skills a,b` picks a set.
 
 ## mech40 — mechanical agent eval
 
-`eval/tasks/mech40/` is 40 mechanical jobs drawn from what users build most,
-each a plain-language request with concrete dimensions:
+`eval/tasks/mech40/` is 42 mechanical jobs (the set keeps its mech40 name)
+drawn from what users build most, each a plain-language request with
+concrete dimensions:
 
 | Group | Tasks |
 |---|---|
@@ -20,7 +21,7 @@ each a plain-language request with concrete dimensions:
 | Couplers / set screws | 20 5→8 mm coupler · 21 shaft collar · 22 D-shaft knob |
 | Gears | 23 24-tooth spur gear · 24 2:1 gear pair · 25 gear with hub and set screw |
 | Hinges and joints | 26 pin hinge · 27 hinged-lid box · 28 two-link arm (revolute mates) |
-| Sheet metal | 29 L-bracket · 30 down tab · 31 45° bracket (flat patterns) |
+| Sheet metal | 29 L-bracket · 30 down tab · 31 45° bracket · 41 U-channel · 42 Z-bracket (folded part + flat pattern) |
 | Threads, countersinks, fixtures | 32 tapped rail block · 33 countersunk plate · 34 board-edge drill guide · 35 drilling template · 36 vise soft jaw · 37 M6 fixture plate |
 | FDM fits | 38 running-fit pin · 39 608 bearing seat · 40 M3 nut trap |
 
@@ -36,16 +37,15 @@ export that is re-imported. Probes are relative to each part's bbox corner,
 so a correct part placed elsewhere still passes.
 
 Every task ships an expert `solution-expert.kcad.ts` that passes its own
-checker — `npm run eval:mech40:self-check` (40/40), and in `npm test` via
+checker — `npm run eval:mech40:self-check` (42/42), and in `npm test` via
 `eval/mech40-{a,b,c,d}.test.ts`.
 
-**Open finding.** The sheet-metal bend lowering keeps the unfolded flange
-(an L from a 100 × 60 × 2 blank measures 100 × 60 × 100 and 17 880 mm³) and a
-two-bend chain lowers to two solids, so tasks 29–31 use single bends and
-list their folded-envelope and volume checks under `open`: those are
-measured and reported as `metrics['open: …']`, not scored, and the
-regression suite asserts they still fail so the day the kernel is fixed they
-become normal checks.
+**Sheet metal.** Tasks 29–31 and 41–42 score the folded part, not only the
+recorded intent: the folded envelope, one connected solid, probes on the web
+and flanges, and volume within 3 % of the blank. 41 (U-channel) and 42
+(Z-bracket) are two-bend chains; they were left out of the first cut while
+the bend lowering kept the unfolded flange and split two-bend chains into
+two solids.
 
 ### Run the agent
 
