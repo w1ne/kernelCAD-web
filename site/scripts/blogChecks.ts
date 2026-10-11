@@ -107,7 +107,7 @@ async function checkKcadBlocks(rendered: RenderedPost, evaluator: Evaluator, fai
     const output = await evaluator.code(block.code);
     const bad = output.diagnostics.filter((d) => d.severity === 'error' || d.severity === 'warning');
     if (!output.ok || bad.length > 0) {
-      const detail = bad.map((d) => `${d.code}: ${d.message}`).join('; ') || 'the evaluation failed';
+      const detail = bad.map((d) => (d.message.startsWith(d.code) ? d.message : `${d.code}: ${d.message}`)).join('; ') || 'the evaluation failed';
       failures.push({ file: rendered.post.file, line: block.line, message: `kcad block ${i + 1} does not evaluate clean: ${detail}` });
     }
   }
@@ -196,7 +196,9 @@ async function checkOne(
   const resolved = resolvePath(output, quote.path);
   if (typeof resolved === 'string') return `${quote.path} in ${model}: ${resolved}`;
   const real = compare(resolved.value, quote, above);
-  return real === null ? null : `${quote.path} in ${model} is ${real}; the article says ${describeExpected(quote, above)}`;
+  if (real === null) return null;
+  if (quote.expected.kind === 'block') return `${quote.path} in ${model} differs from the code block above; the model gives:\n${real}`;
+  return `${quote.path} in ${model} is ${real}; the article says ${describeExpected(quote)}`;
 }
 
 /** The value must be in the text above, so what the reader sees is what was checked. */
@@ -235,9 +237,9 @@ function describeBlock(block: Block): string {
   return block.kind === 'code' ? 'code block' : block.kind;
 }
 
-function describeExpected(quote: Quote, above: Block): string {
-  if (quote.expected.kind === 'block') return `\n${(above as { code: string }).code}`;
-  return quote.op === 'contains' ? `it contains "${quote.expected.text}"` : quote.expected.text;
+function describeExpected(quote: Quote): string {
+  const text = quote.expected.kind === 'block' ? '' : quote.expected.text;
+  return quote.op === 'contains' ? `it contains "${text}"` : text;
 }
 
 /** null when the real value matches; otherwise the real value, for the message. */
@@ -253,7 +255,7 @@ function compare(actual: unknown, quote: Quote, above: Block): string | null {
     }
     case 'block': {
       const code = (above as { code: string }).code;
-      return typeof actual === 'string' && actual.trimEnd() === code.trimEnd() ? null : `\n${show(actual)}`;
+      return typeof actual === 'string' && actual.trimEnd() === code.trimEnd() ? null : show(actual).trimEnd();
     }
     case 'text': {
       if (quote.op === 'contains') return typeof actual === 'string' && actual.includes(expected.text) ? null : show(actual);
