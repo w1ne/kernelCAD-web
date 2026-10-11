@@ -31,7 +31,7 @@ import type { GateRunner } from '../../src/agent/loop/types';
 import { createInProcessGateRunner } from './inProcessGate';
 import { failingChecks, listMech40Tasks, runHarness, type Mech40Task } from './tasks';
 import {
-  RESULTS_SCHEMA, resultsFileName, summarize, summarizeTask,
+  INFRA_ERROR_CODE, RESULTS_SCHEMA, resultsFileName, summarize, summarizeTask,
   type ResultsFile, type SampleResult,
 } from './metrics';
 
@@ -105,7 +105,7 @@ async function runSample(task: Mech40Task, i: number, opts: Mech40Options, deps:
     };
   } catch (err) {
     deps.log?.(`[${task.id}#${i}] infra error: ${err instanceof Error ? err.message : String(err)}`);
-    return { pass: false, evals: 0, failureCode: 'eval.infra-error', tokensIn: 0, tokensOut: 0, ms: Date.now() - start };
+    return { pass: false, evals: 0, failureCode: INFRA_ERROR_CODE, tokensIn: 0, tokensOut: 0, ms: Date.now() - start };
   }
 }
 
@@ -241,7 +241,8 @@ async function main(stdout: (line: string) => void): Promise<void> {
   writeFileSync(out, `${JSON.stringify(results, null, 2)}\n`);
   const s = results.summary;
   console.error(`\nmech40 ${results.model}: pass@1 ${s.pass_at_1}, pass@${results.k} ${s.pass_at_k}, `
-    + `mean evals-to-success ${s.mean_evals_to_success ?? '—'} (${s.tasks} tasks × ${results.k})`);
+    + `mean evals-to-success ${s.mean_evals_to_success ?? '—'} (${s.tasks} tasks × ${results.k}`
+    + `${s.infra_errors ? `, ${s.infra_errors} infra error(s) not scored` : ''})`);
   // The only line on stdout: the results path (CI passes --out and does not
   // need it, but local callers do `out=$(... runAgent.ts)`).
   stdout(out);
