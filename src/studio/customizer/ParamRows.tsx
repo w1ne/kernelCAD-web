@@ -271,8 +271,8 @@ function ColorRow({ param, value, onChange, onCommit, onReset }: ParamRowProps &
     const check = checkParamValue(param, text);
     if (check.ok && check.value !== value) onChange(check.value);
   };
-  // Short forms ('#36c', 'red') apply on Enter or blur only, so typing
-  // '#336' on the way to '#3366cc' does not rewrite the field mid-entry.
+  // Short forms (#36c, red) apply on Enter or blur only, so typing #336
+  // on the way to #3366cc does not rewrite the field mid-entry.
   const commitDraft = () => {
     accept(draft);
     onCommit();

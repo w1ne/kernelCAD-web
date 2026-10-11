@@ -45,12 +45,9 @@ DFM checks walls, overhangs and clearance; it does NOT check whether text,
 logos, slots or other decorations overlap holes, sit off the part, or collide
 with each other. Only the pictures show that. Render
 (`render_preview` / `kernelcad render`) the top, front and iso views and look
-at each one before you report a layout as finished. Before you call a whole
-part done, render the inspection sheet (`render_preview({ file, sheet: true })`
-or `kernelcad render --sheet`): all seven views (iso, front, back, left, right,
-top, bottom), labelled, in one image. A cutout missing on the back or the
-underside only shows there. A model is done when every tile matches the
-request, not when it compiles.
+at each one before you report a layout as finished. For a whole part, check
+the seven-view sheet (`render_preview({ file, sheet: true })`): done means
+every tile matches the request, not that it compiles.
 
 ## Inner loop: render after every visible change
 
@@ -233,12 +230,8 @@ param<T extends number | boolean>(name: string, defaultValue: T, opts?: {
 // ParamRef arithmetic uses methods, never JS operators (`+ - * /` throw):
 //   const w = param('w', 60), t = param('t', 2);
 //   box(w.add(5), w.subtract(t).multiply(2), w.divide(4)); // also .negate()
-// Colour param: a hex default ('#rrggbb' / '#rgb', no `choices`) makes it a
-// colour — the customizer shows a colour picker, the value is '#rrggbb', and
-// set_param also takes '#rgb' or a CSS name. Pass the ref itself to .color()
-// or .finish(token, { color }) (examples/params/color-enclosure.kcad.ts):
-//   const body = param('BodyColor', '#3366cc', { label: 'Body colour' });
-//   box(60, 40, 18).color(body);  lid.finish('abs', { color: body });
+// Hex default ('#rrggbb') = colour param with a picker; pass the ref to
+// .color(c) / .finish(t, { color: c }): param('BodyColor', '#3366cc')
 
 params({ width: 60, addCablePort: true }): {
   width: ParamRef<number>;
@@ -756,7 +749,9 @@ Entity and selection recovery:
 - If `DISTANCE`, `RADIUS`, or `ANGLE` reports a missing value, add a numeric `value`.
 - If the type is unsupported, call `inspect({ of: 'constraints' })` or `lookup_api({})` and choose one of the supported types above.
 
-## Threads (ISO metric)
+## Threads
+
+ISO metric threads.
 
 - Designations: `'M6'` = coarse pitch from the ISO 261 table (M1–M64); `'M6x0.75'` sets the pitch and works for any size (`'M70x4'` jar neck). `isoThread(spec)` returns the numbers (pitch, minor/pitch diameter, tap drill) for callouts and clearance holes.
 - External thread: `threadedRod({ spec, length })` — real 60° profile along +Z from z = 0, one helical sweep, valid solid, STEP-exportable. `chamfer: true` for 45° ends (one more boolean), `cosmetic: true` for an instant major-diameter cylinder with the spec in metadata, `clearance` (≤ pitch/10) for printed fits. Union a head for a bolt; union onto a body for a neck.
@@ -764,7 +759,7 @@ Entity and selection recovery:
 - Mating in phase: the rod's ridge crosses +X at every z = k·pitch and a modelled hole's groove crosses its face u-axis at the entry face, so put the hole's entry face on a whole pitch of the rod (e.g. lift the nut by k·P). Verify with `verify({ check: 'dfm' })` / interference — a cosmetic hole on a modelled rod reports interfering, as it should.
 - Example: `examples/threads/threaded-jar-and-lid.kcad.ts` (M64 × 4 neck + tapped lid).
 
-
+## Labels — naming faces at creation time
 
 Declare a label on a creating op via the `faceLabels` option. The value map accepts two kinds of entries:
 
@@ -1098,7 +1093,7 @@ When you need a canonical pattern, call MCP tool `lookup_cookbook(query, k?)` to
 - Always `return` a single shape from the top of the script. Only the returned shape is exported, probed and measured; "the last thing I created" is NOT a fallback. If a probe reports the same bbox no matter what you edit, check what the script returns.
 - Symmetric parts: `.mirror(plane)` (source + reflection); `.reflect(plane)` gives the reflection only.
 - In booleans, prefer ≥0.1 mm of overlap (unions) or offset (cuts) over exact tangency or coincident faces.
-- Helical features: rail from `helix(...)`. ISO threads: `threadedRod` / `threadedHole`. Custom threads, worms, helical grooves: sweep with `spine: 'helix'`. Round-wire coils and springs: `spine: 'smooth'` (the default polyline spine is not watertight). Internal threads: `hole({ thread })`, not a sweep.
+- Helical features: rail from `helix(...)`. Threads, worms, helical grooves: sweep with `spine: 'helix'`. Round-wire coils and springs: `spine: 'smooth'` (the default polyline spine is not watertight). Internal threads: `hole({ thread })`, not a sweep.
 
 ## Manufacturing intent → API
 
@@ -1107,8 +1102,7 @@ Intent words → call this API; do not hand-build it (subtracted cylinders, type
 | Intent words | API | Cookbook id |
 |---|---|---|
 | bolt hole, clearance hole, M3–M6 | `hole(face, { diameter, depth })`, `holes` | clearance-hole-through-plate |
-| thread, tapped, tap drill | `threadedHole(face, { u, v, spec: 'M6', depth })` or `hole(face, { diameter: <nominal>, thread: { pitch } })` | threaded-hole-tap-drill |
-| threaded rod, stud, screw thread, jar neck | `threadedRod({ spec: 'M6', length })` | — |
+| thread, tapped, tap drill | `hole(face, { diameter: <nominal>, thread: { pitch } })` | threaded-hole-tap-drill |
 | counterbore, countersink | `hole` + `counterbore` / `countersink` option | countersunk-flat-head-screw |
 | heat-set insert | blind `hole` at the insert pilot Ø | heat-set-insert-pilot |
 | nut trap, captive nut | `hole` + `cutout(hexPath, { face, depth })` | hex-nut-trap-bolt-clearance |

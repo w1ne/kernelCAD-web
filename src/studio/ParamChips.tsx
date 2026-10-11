@@ -37,7 +37,7 @@ export function ParamChips() {
                         <span
                             aria-hidden="true"
                             data-testid={`param-chip-swatch-${entry.name}`}
-                            className="inline-block size-2.5 rounded-full border border-[#555]"
+                            className="inline-block size-2.5 rounded-full border border-border-strong"
                             style={{ backgroundColor: entry.value as string }}
                         />
                     )}

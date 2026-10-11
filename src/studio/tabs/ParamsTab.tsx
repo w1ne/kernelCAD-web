@@ -103,13 +103,13 @@ interface ParamRowProps {
 function ColorParamRow({ entry, updater }: Omit<ParamRowProps, 'interference'>): JSX.Element {
     return (
         <li
-            className="flex items-center gap-3 h-6 px-3 text-xs text-gray-300"
+            className="flex items-center gap-3 h-6 px-3 text-xs text-fg-2"
             data-testid={`param-row-${entry.name}`}
         >
             <span className="flex-1 truncate" title={entry.name}>
                 {entry.name}
             </span>
-            <span className="font-mono text-gray-400">{entry.value as string}</span>
+            <span className="font-mono text-fg-3">{entry.value as string}</span>
             <input
                 type="color"
                 value={entry.value as string}
@@ -119,7 +119,7 @@ function ColorParamRow({ entry, updater }: Omit<ParamRowProps, 'interference'>):
                 onBlur={updater.flush}
                 aria-label={`${entry.name} value`}
                 data-testid={`param-color-${entry.name}`}
-                className="h-5 w-7 cursor-pointer bg-transparent border border-[#333] rounded p-0"
+                className="h-5 w-7 cursor-pointer bg-transparent border border-border rounded p-0"
             />
         </li>
     );
