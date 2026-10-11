@@ -936,6 +936,15 @@ export class Shape {
    * A bore centre off the face, a zero depth, or a bore that leaves material
    * on its axis fails the feature with `feature.hole.cut-missing`.
    * Use `depth: 'through'` to clip at the back face.
+   * On ANY face (a cylinder side for a set screw or cross pin, a cone, a
+   * fillet) place the hole by world point instead of `u`/`v`:
+   * `at: [x, y, z]` (projected onto the face) or, on a cylindrical face,
+   * `at: { angleDeg, z }`; the bore follows the inward face normal there
+   * unless `axis: [dx, dy, dz]` (into the body) is given, and `'through'`
+   * stops at the first exit along the axis (e.g. into a shaft bore).
+   * With a FaceQuery that matches several faces the one nearest `at` is used:
+   *   collar.hole({ ofSurfaceType: 'CYLINDER' }, { at: { angleDeg: 0, z: 5 },
+   *     diameter: 4, depth: 'through', thread: { pitch: 0.7 } })
    * Optional `counterbore` (wider shoulder) or `countersink` (cone) — the
    * two are mutually exclusive on a single hole.
    *
@@ -975,7 +984,8 @@ export class Shape {
           ? resolved.depth
           : 0;
     const centers: HoleCenter[] = [
-      { u: resolved.u, v: resolved.v, depthMm: holeDepth, axis: [0, 0, -1] },
+      // An `at` hole's face frame is centred on its entry point.
+      { u: resolved.at ? 0 : resolved.u, v: resolved.at ? 0 : resolved.v, depthMm: holeDepth, axis: [0, 0, -1] },
     ];
     const partName =
       (metadata as { partName?: string }).partName ?? holeShape.id;
