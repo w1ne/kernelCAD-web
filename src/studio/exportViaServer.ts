@@ -8,6 +8,9 @@
 
 import { apiCall, rewritePath } from './api/apiBase';
 import { currentHostedProject, shouldUseHostedMesh } from './scriptSource';
+import type { StudioDrawingOptions } from './draftingSettings';
+import type { DrawingReport } from '../kernel/backends/occt/drawingAuto/contracts';
+import type { CompilerDiagnostic } from '../shared/diagnostics/diagnostic';
 
 export type StudioExportFormat = 'stl' | 'step' | 'dxf' | '3mf' | 'glb' | 'pdf-drawing';
 
@@ -71,6 +74,7 @@ export interface ExportProgress {
 }
 
 export interface ExportViaServerOptions {
+  drawingOptions?: StudioDrawingOptions;
   /** Cancels the request, the retry wait and the job polling. */
   signal?: AbortSignal;
   onProgress?: (progress: ExportProgress) => void;
@@ -94,7 +98,7 @@ export async function exportViaServer(
   options: ExportViaServerOptions = {},
 ): Promise<ServerExportResult> {
   const { signal, onProgress } = options;
-  const request = await exportRequest(format, code);
+  const request = await exportRequest(format, code, options.drawingOptions);
   const post = () => fetch(request.url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...request.headers },
@@ -113,7 +117,7 @@ export async function exportViaServer(
 }
 
 /** URL, auth headers and JSON body of the export POST. */
-async function exportRequest(format: StudioExportFormat, code: string): Promise<{
+async function exportRequest(format: StudioExportFormat | 'svg-drawing', code: string, drawingOptions?: StudioDrawingOptions, review = false): Promise<{
   url: string;
   base: string;
   headers: Record<string, string>;
@@ -134,7 +138,7 @@ async function exportRequest(format: StudioExportFormat, code: string): Promise<
       ? (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? ''
       : '');
   const url = rewritePath(
-    `/__kernelcad/export?format=${format}&async=1`,
+    `/__kernelcad/export?format=${format}&${review ? 'review=1' : 'async=1'}`,
     effectiveBase,
   );
   // Always send projectSlug on /p/<slug> so the server materializes STEP/STL
@@ -147,7 +151,22 @@ async function exportRequest(format: StudioExportFormat, code: string): Promise<
         ...(source ? { source } : {}),
       }
     : { source };
-  return { url, base: effectiveBase, headers, body };
+  return { url, base: effectiveBase, headers, body: { ...body, ...(drawingOptions ? { options: { ...drawingOptions, format } } : {}) } };
+}
+
+export interface DrawingPreviewResult { svg: string; drawingReport?: DrawingReport; diagnostics: CompilerDiagnostic[] }
+
+/** Same source/asset/auth adapter as PDF, returning the SVG sheet and report
+ * before downloading a final drawing. Preview is a bounded synchronous read. */
+export async function previewDrawingViaServer(code: string, drawingOptions: StudioDrawingOptions = {}, options: ExportViaServerOptions = {}): Promise<DrawingPreviewResult> {
+  const request = await exportRequest('svg-drawing', code, drawingOptions, true);
+  options.onProgress?.({ phase: 'running' });
+  const response = await postWithBusyRetry(() => fetch(request.url, { method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...request.headers }, body: JSON.stringify(request.body), signal: options.signal }), options);
+  if (!response.ok) throw await errorFromResponse(response);
+  const result = await response.json() as DrawingPreviewResult;
+  if (typeof result.svg !== 'string' || !result.svg.includes('<svg')) throw new Error('Drawing preview did not return an SVG sheet.');
+  return { svg: result.svg, ...(result.drawingReport ? { drawingReport: result.drawingReport } : {}), diagnostics: result.diagnostics ?? [] };
 }
 
 /** POST once; on 429 / 503 with a short Retry-After, wait it out and POST

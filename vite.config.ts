@@ -411,7 +411,7 @@ function kernelCadMeshEndpoint(): Plugin {
           // follow-up slice; until then they fire export.<format>.not-implemented
           // from the runtime, which would surface as "export produced no bytes"
           // here.
-          const SUPPORTED_STUDIO_FORMATS = ['stl', 'step', 'dxf', '3mf', 'glb'] as const;
+          const SUPPORTED_STUDIO_FORMATS = ['stl', 'step', 'dxf', '3mf', 'glb', 'svg-drawing', 'pdf-drawing'] as const;
           type StudioFormat = (typeof SUPPORTED_STUDIO_FORMATS)[number];
           if (!SUPPORTED_STUDIO_FORMATS.includes(formatParam as StudioFormat)) {
             res.statusCode = 400;
@@ -429,11 +429,12 @@ function kernelCadMeshEndpoint(): Plugin {
           let code: string;
           let fileName: string;
           let scriptDir: string;
+          let exportOptions: import('./src/agent/script-runtime/export').ExportInput['options'];
 
           if (isPost) {
             const chunks: Buffer[] = [];
             for await (const chunk of req) chunks.push(chunk as Buffer);
-            let parsedBody: { source?: unknown };
+            let parsedBody: { source?: unknown; options?: unknown };
             try {
               parsedBody = JSON.parse(Buffer.concat(chunks).toString('utf-8') || '{}');
             } catch {
@@ -449,6 +450,15 @@ function kernelCadMeshEndpoint(): Plugin {
               return;
             }
             code = parsedBody.source;
+            if (parsedBody.options !== undefined) {
+              if (!parsedBody.options || typeof parsedBody.options !== 'object' || Array.isArray(parsedBody.options)) {
+                res.statusCode = 400;
+                res.setHeader('content-type', 'application/json');
+                res.end(JSON.stringify({ error: 'Export options must be a JSON object.' }));
+                return;
+              }
+              exportOptions = { ...parsedBody.options, format: formatParam } as typeof exportOptions;
+            }
             fileName = 'studio-export.kcad.ts';
             // Relative asset paths resolve the same way as mesh POST.
             scriptDir = resolve(repoRoot, 'examples');
@@ -474,11 +484,15 @@ function kernelCadMeshEndpoint(): Plugin {
           ensureOcctShims();
 
           const { runAndExport } = await import('./src/agent/script-runtime/export');
+          if (url.searchParams.get('review') === '1' && formatParam === 'svg-drawing') {
+            exportOptions = { ...exportOptions, format: 'svg-drawing', pdfSheet: true };
+          }
           const result = await runAndExport({
             code,
             fileName,
             format: formatParam as StudioFormat,
             scriptDir,
+            ...(exportOptions ? { options: exportOptions } : {}),
           });
 
           if (result.bytes.length === 0) {
@@ -497,9 +511,18 @@ function kernelCadMeshEndpoint(): Plugin {
             dxf: 'image/vnd.dxf',
             '3mf': 'model/3mf',
             glb: 'model/gltf-binary',
+            'svg-drawing': 'image/svg+xml',
+            'pdf-drawing': 'application/pdf',
           };
+          if (url.searchParams.get('review') === '1' && formatParam === 'svg-drawing') {
+            res.statusCode = 200;
+            res.setHeader('content-type', 'application/json');
+            res.end(JSON.stringify({ svg: new TextDecoder().decode(result.bytes), drawingReport: result.drawingReport, diagnostics: result.diagnostics }));
+            return;
+          }
           const contentType = CONTENT_TYPES[formatParam as StudioFormat];
-          const downloadName = `${fileName.replace(/\.[^./]+$/, '')}.${formatParam}`;
+          const extension = formatParam === 'pdf-drawing' ? 'pdf' : formatParam === 'svg-drawing' ? 'svg' : formatParam;
+          const downloadName = `${fileName.replace(/\.[^./]+$/, '')}.${extension}`;
           res.statusCode = 200;
           res.setHeader('content-type', contentType);
           res.setHeader('content-disposition', `attachment; filename="${downloadName}"`);

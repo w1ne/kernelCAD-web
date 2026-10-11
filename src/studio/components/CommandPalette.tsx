@@ -43,6 +43,8 @@ import { useOptionalSession } from '../../funnel/hooks/useSession';
 import { listMyProjects } from '../../funnel/lib/apiClient';
 import { rankCommands, uniqueValues } from './commandPaletteModel';
 import { projectHref, relativeTime } from './projectCardModel';
+import { draftingOptionsForSource } from '../draftingSettings';
+import { useDraftingPreferences } from '../hooks/useDraftingPreferences';
 
 export type PalettePage = 'commands' | 'shortcuts';
 
@@ -462,9 +464,10 @@ function useStudioCommandActions(exportTask: ExportTask, showShortcuts: () => vo
     const workbench = useWorkbench();
     const ui = useUI();
     const project = useProject();
-    const live = useRef({ workbench, ui, project, exportTask, showShortcuts });
+    const drafting = useDraftingPreferences();
+    const live = useRef({ workbench, ui, project, drafting, exportTask, showShortcuts });
     useEffect(() => {
-        live.current = { workbench, ui, project, exportTask, showShortcuts };
+        live.current = { workbench, ui, project, drafting, exportTask, showShortcuts };
     });
 
     return useMemo<StudioCommandActions>(() => ({
@@ -489,11 +492,12 @@ function useStudioCommandActions(exportTask: ExportTask, showShortcuts: () => vo
         },
         viewTarget: (target) => viewTargetRequests.request(target),
         exportFormat: (format, label) => {
-            const { workbench: wb, project: pj, exportTask: task } = live.current;
+            const { workbench: wb, project: pj, drafting, exportTask: task } = live.current;
             const fallback = `${sanitizeName(pj.activeProject?.name)}.${format}`;
             void task.start(
                 label,
-                (options) => exportViaServer(format, wb.code, options),
+                (options) => exportViaServer(format, wb.code, { ...options,
+                    ...(format === 'pdf-drawing' && drafting.settings ? { drawingOptions: draftingOptionsForSource(drafting.settings, wb.code) } : {}) }),
                 (blob, downloadName) => downloadBlob(blob, downloadName || fallback),
             );
         },

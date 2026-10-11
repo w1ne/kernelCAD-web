@@ -284,6 +284,22 @@ body {
   text-wrap: balance;
 }
 
+/* DRAFTING EXAMPLES */
+.drafting-feature {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: 32px;
+  align-items: center;
+  margin-bottom: 112px;
+}
+.drafting-feature-copy p { color: var(--ink-soft); line-height: 1.65; }
+.drafting-feature-links { display: flex; flex-wrap: wrap; gap: 12px 24px; }
+.drafting-feature-sheet { display: block; border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; background: white; }
+.drafting-feature-sheet img { display: block; width: 100%; height: auto; }
+@media (max-width: 800px) {
+  .drafting-feature { grid-template-columns: 1fr; gap: 24px; margin-bottom: 72px; }
+}
+
 /* HOW IT WORKS */
 .steps { margin: 0 0 112px; }
 .steps-list {

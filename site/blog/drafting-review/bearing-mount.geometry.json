@@ -1,0 +1,115 @@
+{
+  "boundingBox": {
+    "min": [
+      -8.881784197001252e-16,
+      -8.881784197001252e-16,
+      0
+    ],
+    "max": [
+      120,
+      80,
+      66
+    ]
+  },
+  "volumeMm3": 183682.72363617423,
+  "solidCount": 1,
+  "brepValid": true,
+  "evaluation": {
+    "exitCode": 0,
+    "featureCount": 10,
+    "diagnostics": [],
+    "featureHealth": []
+  },
+  "holes": [
+    {
+      "entry": [
+        106,
+        14,
+        12
+      ],
+      "axis": [
+        0,
+        0,
+        -1
+      ],
+      "diameter": 9,
+      "through": true,
+      "counterbore": {
+        "diameter": 15,
+        "depth": 5.01
+      }
+    },
+    {
+      "entry": [
+        14.000000000000007,
+        14,
+        12
+      ],
+      "axis": [
+        0,
+        0,
+        -1
+      ],
+      "diameter": 9,
+      "through": true,
+      "counterbore": {
+        "diameter": 15,
+        "depth": 5.01
+      }
+    },
+    {
+      "entry": [
+        106,
+        66,
+        12
+      ],
+      "axis": [
+        0,
+        0,
+        -1
+      ],
+      "diameter": 9,
+      "through": true,
+      "counterbore": {
+        "diameter": 15,
+        "depth": 5.01
+      }
+    },
+    {
+      "entry": [
+        14.000000000000007,
+        66,
+        12
+      ],
+      "axis": [
+        0,
+        0,
+        -1
+      ],
+      "diameter": 9,
+      "through": true,
+      "counterbore": {
+        "diameter": 15,
+        "depth": 5.01
+      }
+    },
+    {
+      "entry": [
+        60,
+        22,
+        39
+      ],
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "diameter": 32,
+      "through": true,
+      "counterbore": {
+        "diameter": 44,
+        "depth": 8.009999999999998
+      }
+    }
+  ]
+}

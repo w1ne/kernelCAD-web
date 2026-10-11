@@ -10,12 +10,20 @@ import type { WorldFramePart } from '../sceneToWorldFrame';
 import type { Box } from '../drawingObstacles';
 import type { V3 } from '../drawingFeatures';
 import type { AutoAnnotateOptions } from './options';
+import type { DrawingAnnotationOverride } from '../../../../shared/intent/drafting';
 
 export interface DrawingReportAnnotation {
+  id: string;
+  source: 'auto' | 'authored';
   kind: string;
   view: DrawingViewName;
   text: string;
+  /** Editable primary label, excluding engineering tolerance suffixes. */
+  primaryText?: string;
   overlapped: boolean;
+  originalText?: string;
+  suppressed?: boolean;
+  offset?: number;
 }
 
 export interface DrawingReport {
@@ -23,6 +31,8 @@ export interface DrawingReport {
   placed: number;
   /** Annotations rendered but still colliding with something. */
   overlapped: number;
+  suppressed?: number;
+  draftingProfile?: string;
   byKind: Record<string, number>;
   datums: Array<{ label: string; source: 'auto' | 'declared'; normal: V3 | null; point: V3 }>;
   annotations: DrawingReportAnnotation[];
@@ -34,6 +44,7 @@ export interface AutoDrawingInput {
   parts: readonly WorldFramePart[];
   compound: OcctBackend;
   autoAnnotate: boolean | AutoAnnotateOptions | undefined;
+  annotationOverrides?: Readonly<Record<string, DrawingAnnotationOverride>>;
   declarations: DrawingDeclarations;
   /** Datums `options.annotations` already draws — they constrain the rules
    *  but are not drawn again. */

@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { runScript } from '../../composition/runScript';
 import { renderSvgDrawing, type SvgDrawingOptions } from '../../kernel/backends/occt/exportSvgDrawing';
+import { applyDraftingProfile } from '../../kernel/backends/occt/draftingReview';
 import { explodedPoses, applyExplodedOffsets, parseExplodeInput } from '../../modeling/runtime/explodedPoses';
 import { computeBom } from './bom';
 import type { Assembly } from '../../modeling/capture/assembly';
@@ -32,9 +33,18 @@ export async function exportSvgDrawing(
   diagnostics: CompilerDiagnostic[],
   featureCount: number,
 ): Promise<ExportResult> {
-  const opts =
+  let opts =
     (input.options as SvgDrawingOptions | undefined) ??
     { format: 'svg-drawing' as const };
+  if (opts.pdfSheet === true) {
+    const pdf: PdfDrawingOptions = { ...opts, format: 'pdf-drawing', ...definedOnly({
+      title: opts.titleBlock?.title, partName: opts.titleBlock?.partName,
+      material: opts.titleBlock?.material, revision: opts.titleBlock?.revision,
+    }) };
+    const assemblies = run.session.assemblies as Map<string, Assembly>;
+    const material = pdf.material ?? sharedAssemblyMaterial(firstAssemblyOrUndefined(assemblies));
+    opts = pdfSheetOptions(pdf, material);
+  }
   return renderDrawingSheet(opts, fileName, lowered, targetId, run, diagnostics, featureCount);
 }
 
@@ -79,6 +89,7 @@ function definedOnly<T extends object>(o: T): Partial<T> {
  *  (default A3), full title block, today's date, autoAnnotate unless the
  *  author dimensions the sheet. */
 function pdfSheetOptions(pdf: PdfDrawingOptions, material: string | undefined): SvgDrawingOptions {
+  pdf = applyDraftingProfile(pdf);
   const authored = (pdf.annotations ?? []).length > 0;
   return {
     format: 'svg-drawing',
@@ -88,6 +99,8 @@ function pdfSheetOptions(pdf: PdfDrawingOptions, material: string | undefined): 
     titleBlock: definedOnly({ title: pdf.title, partName: pdf.partName, material, revision: pdf.revision }),
     ...definedOnly({
       modelName: pdf.modelName,
+      draftingProfile: pdf.draftingProfile,
+      annotationOverrides: pdf.annotationOverrides,
       annotations: pdf.annotations,
       sections: pdf.sections,
       exploded: pdf.exploded as SvgDrawingOptions['exploded'],

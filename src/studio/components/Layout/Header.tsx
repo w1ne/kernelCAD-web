@@ -22,6 +22,8 @@ import {
     type ExportHandler,
 } from './HeaderClusters';
 import { useLastExportFormat } from './useLastExportFormat';
+import { useDraftingPreferences } from '../../hooks/useDraftingPreferences';
+import { draftingOptionsForSource, type StudioDrawingOptions } from '../../draftingSettings';
 
 /** Labelled row inside the narrow-viewport overflow menu. */
 function MenuRow({ label, children }: { label: string; children: ReactNode }) {
@@ -44,11 +46,12 @@ function exportModelViaServer(
     label: string,
     code: string,
     projectName: string | undefined,
+    drawingOptions?: StudioDrawingOptions,
 ): void {
     const fallback = `${(projectName || 'model').replace(/[^a-z0-9]/gi, '_')}.${format}`;
     void task.start(
         label,
-        (options) => exportViaServer(format, code, options),
+        (options) => exportViaServer(format, code, { ...options, ...(format === 'pdf-drawing' && drawingOptions ? { drawingOptions } : {}) }),
         (blob, downloadName) => downloadBlob(blob, downloadName || fallback),
     );
 }
@@ -107,6 +110,7 @@ function ProjectSwitcher({ name, hideName, onOpen }: { name: string; hideName: b
 /** Share and export state for the header: publish, the last export format,
  *  the running export task. */
 function useHeaderFileActions(code: string, projectName: string | undefined) {
+    const drafting = useDraftingPreferences();
     const publish = usePublishAction(code, projectName);
     const onPublish = publish.handlePublish;
     const share = useMemo(() => () => void onPublish(), [onPublish]);
@@ -116,7 +120,8 @@ function useHeaderFileActions(code: string, projectName: string | undefined) {
     const [lastFormat, rememberFormat] = useLastExportFormat();
     const onExport: ExportHandler = (format, label) => {
         rememberFormat(format);
-        exportModelViaServer(exportTask, format, label, code, projectName);
+        exportModelViaServer(exportTask, format, label, code, projectName,
+            drafting.settings ? draftingOptionsForSource(drafting.settings, code) : undefined);
     };
     return { publish, share, exportTask, lastFormat, onExport };
 }

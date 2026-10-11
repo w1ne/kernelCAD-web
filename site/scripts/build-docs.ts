@@ -232,6 +232,14 @@ function renderPage(
   const note = page.note
     ? `      <p class="docs-note">${inlineCode(page.note)}</p>`
     : '';
+  const drawingExample = page.task === 'Import & export'
+    ? `      <section class="docs-example">
+        <h2 class="docs-h2">Worked drafting example</h2>
+        <p class="docs-caption">One mounting plate, three dimensioning styles, and a bearing mount with a section view. Read the <a href="/blog/drafting-review/">drafting tutorial and review workflow</a>.</p>
+        <a href="/blog/drafting-review/mounting-plate-baseline.svg"><img src="/blog/drafting-review/mounting-plate-baseline.png" alt="Baseline drawing of a mounting plate with a centre bore, four mounting holes and datums" width="1680" height="1188" loading="lazy" style="display:block;width:100%;height:auto" /></a>
+        <p class="docs-caption"><a href="/blog/drafting-review/mounting-plate-baseline.pdf">Download vector PDF</a> · <a href="/blog/drafting-review/mounting-plate.kcad.ts" download>Download editable source</a></p>
+      </section>`
+    : '';
 
   const body = `    <main class="docs-main">
       <p class="docs-crumb"><a href="/docs/">docs</a> / ${escapeHtml(page.task)}</p>
@@ -239,6 +247,7 @@ function renderPage(
       <p class="docs-blurb">${inlineCode(page.blurb)}</p>
 ${renderExample(page, highlighted, model)}
 ${note}
+${drawingExample}
       <h2 class="docs-h2">Calls</h2>
 ${renderEntries(page)}
     </main>

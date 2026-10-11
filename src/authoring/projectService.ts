@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { z } from 'zod';
+import { DraftingSettingsSchema, type DraftingSettings } from './draftingSettings';
 
 export interface KernelCADProject {
     version: string;
@@ -8,6 +9,7 @@ export interface KernelCADProject {
     code: string;
     viewState: ViewState;
     lastUpdated: string;
+    drafting?: DraftingSettings;
 }
 
 export interface ViewState {
@@ -64,6 +66,7 @@ const ProjectSchema = z.object({
     code: z.string(),
     viewState: ViewStateSchema,
     lastUpdated: z.string().datetime(),
+    drafting: DraftingSettingsSchema.optional(),
 });
 
 const LegacyProjectSchemaV10 = z.object({

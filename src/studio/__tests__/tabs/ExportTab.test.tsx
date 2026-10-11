@@ -55,6 +55,14 @@ afterEach(() => {
 });
 
 describe('ExportTab', () => {
+    it('opens a drawing review before exporting a PDF', async () => {
+        recompute = { ...recompute, geometries: [{ faces: [] }] };
+        const { ExportTab } = await import('../../tabs/ExportTab');
+        render(<ExportTab />);
+        fireEvent.click(screen.getByTestId('export-pdf-drawing'));
+        expect(screen.getByRole('dialog', { name: 'Drawing review' })).toBeDefined();
+        expect(screen.getByRole('button', { name: 'Generate preview' })).toBeDefined();
+    });
     it('renders the empty state when no geometries are present', async () => {
         const { ExportTab } = await import('../../tabs/ExportTab');
         render(<ExportTab />);

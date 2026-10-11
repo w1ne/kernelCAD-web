@@ -57,6 +57,7 @@ import {
 import {
   renderAnnotations,
   DIM_BASE,
+  escAttr,
   type DrawingAnnotation,
 } from './drawingAnnotations';
 import { renderSections, type DrawingSectionSpec } from './drawingSections';
@@ -76,6 +77,8 @@ import {
 import { attributionGenerator } from '../../../shared/links/attribution';
 import { generalToleranceCell, sheetTitleBlock, FULL_TITLE_BLOCK } from './drawingTitleBlock';
 import type { DrawingDeclarations } from '../../../shared/intent/drawingGdtRecord';
+import type { DraftingProfile, DraftingProfileId, DrawingAnnotationOverride } from '../../../shared/intent/drafting';
+import { applyDraftingProfile, authoredAnnotationIds, invalidReview, resolveDraftingProfile } from './draftingReview';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { NEXT_ACTIONS } from '../../../shared/diagnostics/registry';
 
@@ -109,6 +112,10 @@ export interface DrawingTitleBlock {
 
 export interface SvgDrawingOptions {
   format: 'svg-drawing';
+  /** Runtime preview uses the printable PDF sheet/title/material defaults. */
+  pdfSheet?: boolean;
+  draftingProfile?: DraftingProfileId | DraftingProfile;
+  annotationOverrides?: Readonly<Record<string, DrawingAnnotationOverride>>;
   /** Sheet size, always landscape; default `a4` (297×210 mm). `'auto'` /
    *  `'auto-ansi'` pick the smallest ISO / ANSI sheet that holds the views at
    *  1:1 or larger, else the largest sheet of the series. */
@@ -304,6 +311,7 @@ export function renderSvgDrawing(
   parts: WorldFramePart[],
   options: SvgDrawingOptions,
 ): SvgDrawingResult {
+  options = applyDraftingProfile(options);
   const diagnosticsOut: CompilerDiagnostic[] = [];
   if (parts.length === 0) {
     throw new Error('svg-drawing export requires at least one part.');
@@ -388,6 +396,17 @@ export function renderSvgDrawing(
   const dimBodies = pass.autoStage.dimBodies;
   const bottomReserve = pass.autoStage.bottomReserve;
   const report = pass.autoStage.report;
+  if (report) {
+    report.suppressed = report.annotations.filter(a => a.suppressed).length;
+    const profile = resolveDraftingProfile(options.draftingProfile);
+    if (profile) report.draftingProfile = profile.id;
+  }
+  const ids = new Set(report?.annotations.map(a => a.id) ?? []);
+  const missing = Object.keys(options.annotationOverrides ?? {}).filter(id => !ids.has(id));
+  if (missing.length) diagnosticsOut.push({ target: 'export-occt', code: 'drawing.annotation.override-missing', severity: 'warn',
+    message: `Drawing annotation override IDs not found: ${missing.join(', ')}.`,
+    hint: 'Review the current report and remove or replace stale annotation IDs after geometry or dimension strategy changes.',
+    nextAction: NEXT_ACTIONS['drawing.annotation.override-missing'] });
   const generalTolerance = pass.autoStage.generalTolerance;
 
   const viewGroups = renderViewGroups(styled, layout, bottomReserve, s, explodedShape);
@@ -560,7 +579,15 @@ function renderDimensionStage(
   report: DrawingReport | undefined;
 } {
   // --- dimensions: authored if the caller supplied any, else automatic ----
-  const authored = options.annotations ?? [];
+  const original = options.annotations ?? [];
+  const ids = authoredAnnotationIds(original);
+  const authored = original.map((a, i) => {
+    const o = options.annotationOverrides?.[ids[i]];
+    if (o?.text !== undefined && (a.kind === 'datum' || a.kind === 'fcf')) invalidReview(`annotation ${ids[i]} has no primary label; edit its datum or tolerance declaration`);
+    return { ...a, ...(o?.text !== undefined ? { text: o.text } : {}), ...(o?.view !== undefined ? { view: o.view } : {}),
+      ...(o?.offset !== undefined ? { offset: (a.offset ?? 0) + o.offset } : {}) } as DrawingAnnotation;
+  });
+  const visible = authored.flatMap((a, i) => options.annotationOverrides?.[ids[i]]?.suppress ? [] : [{ a, i }]);
   const autoOn = options.autoAnnotate !== undefined && options.autoAnnotate !== false;
   const f = layout.views.front.box;
   const t = layout.views.top.box;
@@ -572,27 +599,49 @@ function renderDimensionStage(
   if (authored.length > 0) {
     const rendered = renderAnnotations({
       parts,
-      annotations: authored,
+      annotations: visible.map(({ a }) => a),
+      reviewedViewIds: new Map(visible.flatMap(({ i }, index) =>
+        options.annotationOverrides?.[ids[i]]?.view !== undefined ? [[index, { id: ids[i], originalView: original[i].view ?? 'front' }] as const] : [])),
+      reviewedTextIds: new Set(visible.flatMap(({ i }, index) => options.annotationOverrides?.[ids[i]]?.text !== undefined ? [index] : [])),
       placements: layout.views,
       scale: s,
     });
-    dimBodies = rendered.svg;
+    dimBodies = rendered.svg.map((svg, i) => svg.replace(/^(<g\b[^>]*)(>)/, `$1 data-kc-annotation-id="${escAttr(ids[visible[i].i])}"$2`));
     bottomReserve = rendered.bottomReserve;
     rightReserve = rendered.rightReserve;
-    const crowded = new Set(rendered.overlaps.flat());
+    const crowded = new Set(rendered.overlaps.flat().map(i => visible[i].i));
+    const labels = new Map(visible.map(({ i }, index) => [i, drawingAnnotationText(rendered.svg[index])]));
+    const primaryLabel = (i: number): string => {
+      const a = authored[i];
+      if ('text' in a && a.text !== undefined) return a.text;
+      // Measure without the suffix so the review editor cannot copy it into
+      // an override and accidentally duplicate the declared tolerance.
+      return drawingAnnotationText(renderAnnotations({ parts, annotations: [{ ...a, tol: undefined } as DrawingAnnotation], placements: layout.views, scale: s }).svg[0]);
+    };
+    const originalLabel = (i: number): string => {
+      const a = original[i];
+      if ('text' in a && a.text !== undefined) return a.text;
+      if (!options.annotationOverrides?.[ids[i]]?.text && !options.annotationOverrides?.[ids[i]]?.suppress) return labels.get(i) ?? a.kind;
+      return drawingAnnotationText(renderAnnotations({ parts, annotations: [a], placements: layout.views, scale: s }).svg[0]);
+    };
     report = {
-      placed: authored.length - crowded.size,
+      placed: visible.length - crowded.size,
       overlapped: crowded.size,
-      byKind: authored.reduce<Record<string, number>>((acc, a) => {
+      byKind: visible.reduce<Record<string, number>>((acc, { a }) => {
         acc[a.kind] = (acc[a.kind] ?? 0) + 1;
         return acc;
       }, {}),
       datums: [],
       annotations: authored.map((a, i) => ({
+        id: ids[i], source: 'authored',
         kind: a.kind,
         view: a.view ?? 'front',
-        text: 'text' in a && a.text !== undefined ? a.text : a.kind === 'datum' ? `datum ${a.label}` : a.kind,
+        text: labels.get(i) ?? ('text' in a && a.text !== undefined ? a.text : originalLabel(i)),
+        ...(a.kind === 'linear' && a.tol !== undefined ? { primaryText: primaryLabel(i) } : {}),
         overlapped: crowded.has(i),
+        ...(options.annotationOverrides?.[ids[i]]?.suppress ? { suppressed: true } : {}),
+        ...(options.annotationOverrides?.[ids[i]]?.text !== undefined ? { originalText: originalLabel(i) } : {}),
+        ...(options.annotationOverrides?.[ids[i]]?.offset !== undefined ? { offset: options.annotationOverrides[ids[i]].offset } : {}),
       })),
     };
     if (rendered.overlaps.length > 0) {
@@ -649,6 +698,11 @@ function renderDimensionStage(
   }
 
   return { dimBodies, bottomReserve, rightReserve, report };
+}
+
+function drawingAnnotationText(svg: string): string {
+  return [...svg.matchAll(/<text\b[^>]*>([^<]*)<\/text>/g)].map(m =>
+    m[1].replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, '&')).join(' | ');
 }
 
 /**
@@ -730,6 +784,7 @@ function renderAutoStage(input: {
       parts,
       compound: compoundBackend,
       autoAnnotate: options.autoAnnotate,
+      ...(options.annotationOverrides ? { annotationOverrides: options.annotationOverrides } : {}),
       declarations,
       authoredDatums: authored.flatMap(a => (a.kind === 'datum' ? [{ label: a.label, face: a.face }] : [])),
       authoredSvg: dimBodies,

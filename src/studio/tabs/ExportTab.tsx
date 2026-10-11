@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { Download, Loader2 } from 'lucide-react';
 import { useRecomputeResult } from '../hooks/useRecomputeResult';
 import { useCode } from '../context/CodeContext';
@@ -9,6 +9,8 @@ import { EXPORT_FORMATS as FORMATS, hasPlanarSource } from '../exportFormats';
 import { useExportTask } from '../hooks/useExportTask';
 import { ExportStatus } from '../components/Shared/ExportStatus';
 import type { JSX } from 'react';
+import { DraftingReview } from '../components/DraftingReview';
+import { useDraftingPreferences } from '../hooks/useDraftingPreferences';
 
 // Studio Export tab. Slice 1.4 + Slice A export-trio.
 //
@@ -33,12 +35,15 @@ export function ExportTab(): JSX.Element {
     const { geometries } = useRecomputeResult();
     const { code } = useCode();
     const task = useExportTask();
+    const drafting = useDraftingPreferences();
+    const [reviewOpen, setReviewOpen] = useState(false);
     const { start } = task;
     const pending = FORMATS.find((f) => f.label === task.state.running)?.id ?? null;
 
     const hasPlanar = hasPlanarSource(geometries);
 
     const handleExport = useCallback((format: ExportFormat) => {
+        if (format === 'pdf-drawing') { setReviewOpen(true); return; }
         const label = FORMATS.find((f) => f.id === format)?.label ?? format.toUpperCase();
         void start(label, (options) => exportViaServer(format, code, options), downloadBlob);
     }, [code, start]);
@@ -57,7 +62,7 @@ export function ExportTab(): JSX.Element {
     return (
         <div className="flex flex-col gap-2 p-3" data-testid="export-tab">
             <p className="text-[11px] text-gray-500">
-                Exports run on the server and stream a download.
+                Download geometry or review a dimensioned drawing.
             </p>
 
             <ul className="flex flex-col gap-2">
@@ -96,6 +101,7 @@ export function ExportTab(): JSX.Element {
             </ul>
 
             <ExportStatus task={task} testId="export-tab-status" />
+            {reviewOpen && <DraftingReview key={code} code={code} settings={drafting.settings} onChange={drafting.save} onClose={() => setReviewOpen(false)} />}
         </div>
     );
 }

@@ -77,6 +77,18 @@ afterEach(() => {
 });
 
 describe('Header', () => {
+  it('exports a PDF with saved drafting choices for the current project source', async () => {
+    const code = 'return box(10, 10, 10);';
+    const now = new Date().toISOString();
+    localStorage.setItem('kernelcad_project_index', JSON.stringify([{ id: 'drawing', name: 'Drawing part', lastUpdated: now }]));
+    localStorage.setItem('kernelcad_project_drawing', JSON.stringify({ version: '1.1', name: 'Drawing part', code,
+      viewState: { viewMode: 'code', viewMode3D: 'shaded', sidePanelVisible: true, showSketches: true }, lastUpdated: now,
+      drafting: { sourceFingerprint: code, draftingProfile: 'machining', dimensioningStyle: 'chain', annotationOverrides: { h: { offset: 4 } } } }));
+    render(<WorkbenchProvider><Header /></WorkbenchProvider>);
+    fireEvent.click(screen.getByRole('button', { name: 'More export formats' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: /^Drawing/ }));
+    await waitFor(() => expect(exportViaServerMod.exportViaServer).toHaveBeenCalledWith('pdf-drawing', expect.any(String), expect.objectContaining({ drawingOptions: expect.objectContaining({ draftingProfile: 'machining', autoAnnotate: { dimensioningStyle: 'chain' } }) })));
+  });
   it('should render project name', () => {
     render(
       <WorkbenchProvider>

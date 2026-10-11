@@ -7,6 +7,8 @@ import { meshShapeForExport, type OcctBackend } from '../../kernel/backends/occt
 import { encodeBinaryStl } from '../../kernel/backends/occt/exportStlBinary';
 import { verifyWatertight, type WatertightReport } from '../../kernel/backends/occt/meshHeal';
 import type { DrawingAnnotation } from '../../kernel/backends/occt/drawingAnnotations';
+import type { DraftingProfile, DraftingProfileId, DrawingAnnotationOverride } from '../../shared/intent/drafting';
+export type { DraftingProfile, DraftingProfileId, DrawingAnnotationOverride, DimensioningStyle } from '../../shared/intent/drafting';
 import type { DrawingSectionSpec } from '../../kernel/backends/occt/drawingSections';
 import type { ArchitecturalPlanOptions } from '../../kernel/backends/occt/drawingArchitectural';
 import type {
@@ -102,7 +104,12 @@ export type ExportOptions =
   | { format: 'glb'; axis?: 'y-up' | 'z-up'; draco?: false }
   | {
       format: 'svg-drawing';
-      sheet?: 'a4' | 'a3';
+      /** Printable review preview with PDF sheet and title-block defaults. */
+      pdfSheet?: boolean;
+      draftingProfile?: DraftingProfileId | DraftingProfile;
+      annotationOverrides?: Readonly<Record<string, DrawingAnnotationOverride>>;
+      sheet?: DrawingSheetSize | 'auto' | 'auto-ansi';
+      projection?: ProjectionAngle;
       modelName?: string;
       date?: string;
       /** Authored dimensions / notes; replaces the automatic bbox dimensions. */
@@ -155,6 +162,8 @@ export type ExportOptions =
  */
 export interface PdfDrawingOptions {
   format: 'pdf-drawing';
+  draftingProfile?: DraftingProfileId | DraftingProfile;
+  annotationOverrides?: Readonly<Record<string, DrawingAnnotationOverride>>;
   /** Landscape sheet size; default `a3`. `'auto'` / `'auto-ansi'` pick the
    *  smallest ISO / ANSI sheet that holds the views at 1:1 or larger. */
   sheet?: DrawingSheetSize | 'auto' | 'auto-ansi';
