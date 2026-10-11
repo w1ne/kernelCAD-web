@@ -196,6 +196,11 @@ describe('quoted numbers and diagnostics', () => {
     expect(failure.line).toBe(bodyLine(FIELDS) + 1);
   });
 
+  it('need the check\'s model inside the repository', async () => {
+    const [failure] = await failures('It prints true.\n<!-- check ../outside.kcad.ts: ok = true -->\n');
+    expect(failure.message).toBe("the check's model ../outside.kcad.ts must be a path inside the repository");
+  });
+
   it('need a model in the check or in the front matter', async () => {
     const { model: _model, ...noModel } = FIELDS;
     const [failure] = await failures('It is 2.\n<!-- check: tubes.lines.length = 2 -->\n', noModel);

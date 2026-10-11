@@ -199,6 +199,7 @@ async function checkOne(
   if (typeof quote === 'string') return quote;
   const model = quote.model ?? defaultModel;
   if (model === undefined) return `the check names no model and the front matter has no "model"`;
+  if (model.startsWith('/') || model.split(/[\\/]/).includes('..')) return `the check's model ${model} must be a path inside the repository`;
   if (!existsSync(path.join(repoRoot, model))) return `the check's model ${model} does not exist`;
   if (above === undefined) return 'a check goes right under the paragraph or code block it covers';
 

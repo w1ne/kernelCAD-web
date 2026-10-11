@@ -91,6 +91,23 @@ describe('parseGuide', () => {
     expect(errorOf(source([...BASE, 'status: wip'])).field).toBe('status');
   });
 
+  it('rejects an empty status instead of publishing the post', () => {
+    // `status:` with nothing after it is YAML null; it must not read as "published".
+    const err = errorOf(source([...BASE, 'status:']));
+    expect(err.field).toBe('status');
+    expect(err.message).toContain('draft or published');
+  });
+
+  it.each([
+    ['model', '../outside.kcad.ts'],
+    ['model', 'examples/../../outside.kcad.ts'],
+    ['video', '/tmp/clip.mp4'],
+  ])('rejects a %s path that leaves the repository: %s', (field, value) => {
+    const err = errorOf(source([...BASE, `${field}: ${value}`]));
+    expect(err.field).toBe(field);
+    expect(err.message).toContain('inside the repository');
+  });
+
   it.each(['11.10.2026', '2026-13-01', '2026-02-30', '2026-1-5'])('rejects the date %s', (date) => {
     const err = errorOf(source([...BASE.slice(0, 2), `date: ${date}`, 'kind: guide']));
     expect(err.field).toBe('date');

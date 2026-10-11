@@ -131,8 +131,16 @@ function validate(file: string, raw: Record<string, unknown>): BlogFrontMatter {
     }
     return value.trim();
   };
+  const repoPath = (field: string, value: string | undefined): string | undefined => {
+    if (value !== undefined && (value.startsWith('/') || /^[A-Za-z]:/.test(value) || value.split(/[\\/]/).includes('..'))) {
+      throw new FrontMatterError(file, field, `"${field}" is a path from the repository root and must stay inside the repository, not "${value}"`);
+    }
+    return value;
+  };
   const oneOf = <T extends string>(field: string, allowed: readonly T[], fallback?: T): T => {
-    const value = raw[field] ?? fallback;
+    // Only a missing key takes the fallback: `status:` with no value is YAML
+    // null and must fail, not quietly publish the post.
+    const value = field in raw ? raw[field] : fallback;
     if (!allowed.includes(value as T)) {
       throw new FrontMatterError(file, field, `"${field}" must be ${allowed.join(' or ')}, not "${String(value)}"`);
     }
@@ -145,8 +153,8 @@ function validate(file: string, raw: Record<string, unknown>): BlogFrontMatter {
     date: isoDate(file, raw.date),
     kind: oneOf('kind', BLOG_KINDS),
     status: oneOf('status', BLOG_STATUSES, 'published'),
-    ...optional('model', text('model')),
-    ...optional('video', text('video')),
+    ...optional('model', repoPath('model', text('model'))),
+    ...optional('video', repoPath('video', text('video'))),
     ...optional('note', text('note')),
   };
 
