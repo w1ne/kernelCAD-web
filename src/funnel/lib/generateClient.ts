@@ -38,6 +38,10 @@ export type GenerateEvent =
   | { kind: 'attached'; message: string }
   | { kind: 'tool_call'; name: string; args: unknown }
   | { kind: 'tool_result'; name: string; ok: boolean }
+  /** A chunk of the script being written. `reset` starts a new buffer for
+   *  `attempt` (a new attempt always replaces the previous one); otherwise
+   *  `delta` appends to the current buffer. */
+  | { kind: 'code'; attempt: number; delta: string; reset?: boolean }
   | { kind: 'done'; artifact: Artifact; generationId: string; anonId: string; durationMs: number; partial?: GenerationPartial }
   | { kind: 'error'; code: 'llm_failed' | 'gate_failed' | 'eval_failed' | 'timeout'; message: string; generationId: string };
 
@@ -135,47 +139,50 @@ function parsePartial(v: unknown): GenerationPartial | undefined {
   };
 }
 
+type EventParser = (p: Record<string, unknown>) => GenerateEvent;
+
+/** One parser per SSE event name; a name without one is ignored. */
+const EVENT_PARSERS: Record<string, EventParser> = {
+  generation: (p) => ({ kind: 'generation', generationId: asString(p.generationId), anonId: asString(p.anonId) }),
+  status: (p) => ({ kind: 'status', phase: p.phase as 'running' | 'tool_calling' }),
+  progress: (p) => ({
+    kind: 'progress',
+    stage: asString(p.stage),
+    message: asString(p.message),
+    ...(typeof p.attempt === 'number' ? { attempt: p.attempt } : {}),
+    elapsedMs: Number(p.elapsedMs ?? 0),
+  }),
+  attached: (p) => ({ kind: 'attached', message: asString(p.message) }),
+  tool_call: (p) => ({ kind: 'tool_call', name: asString(p.name), args: p.args }),
+  tool_result: (p) => ({ kind: 'tool_result', name: asString(p.name), ok: Boolean(p.ok) }),
+  code: (p) => ({
+    kind: 'code',
+    attempt: typeof p.attempt === 'number' && Number.isFinite(p.attempt) ? p.attempt : 1,
+    delta: asString(p.delta),
+    ...(p.reset === true ? { reset: true } : {}),
+  }),
+  done: (p) => {
+    const partial = parsePartial(p.partial);
+    return {
+      kind: 'done',
+      artifact: p.artifact as Artifact,
+      generationId: asString(p.generationId),
+      anonId: asString(p.anonId),
+      durationMs: Number(p.durationMs ?? 0),
+      ...(partial ? { partial } : {}),
+    };
+  },
+  error: (p) => ({
+    kind: 'error',
+    code: p.code as 'llm_failed' | 'gate_failed' | 'eval_failed' | 'timeout',
+    message: asString(p.message),
+    generationId: asString(p.generationId),
+  }),
+};
+
 function mapToEvent(name: string, p: Record<string, unknown>): GenerateEvent | null {
-  switch (name) {
-    case 'generation':
-      return { kind: 'generation', generationId: asString(p.generationId), anonId: asString(p.anonId) };
-    case 'status':
-      return { kind: 'status', phase: p.phase as 'running' | 'tool_calling' };
-    case 'progress':
-      return {
-        kind: 'progress',
-        stage: asString(p.stage),
-        message: asString(p.message),
-        ...(typeof p.attempt === 'number' ? { attempt: p.attempt } : {}),
-        elapsedMs: Number(p.elapsedMs ?? 0),
-      };
-    case 'attached':
-      return { kind: 'attached', message: asString(p.message) };
-    case 'tool_call':
-      return { kind: 'tool_call', name: asString(p.name), args: p.args };
-    case 'tool_result':
-      return { kind: 'tool_result', name: asString(p.name), ok: Boolean(p.ok) };
-    case 'done': {
-      const partial = parsePartial(p.partial);
-      return {
-        kind: 'done',
-        artifact: p.artifact as Artifact,
-        generationId: asString(p.generationId),
-        anonId: asString(p.anonId),
-        durationMs: Number(p.durationMs ?? 0),
-        ...(partial ? { partial } : {}),
-      };
-    }
-    case 'error':
-      return {
-        kind: 'error',
-        code: p.code as 'llm_failed' | 'gate_failed' | 'eval_failed' | 'timeout',
-        message: asString(p.message),
-        generationId: asString(p.generationId),
-      };
-    default:
-      return null;
-  }
+  const parse = Object.hasOwn(EVENT_PARSERS, name) ? EVENT_PARSERS[name] : undefined;
+  return parse ? parse(p) : null;
 }
 
 export interface GenerateRequest {

@@ -168,7 +168,7 @@ function useRepairRollback(phase: GenerationPhase, workflow: AgentRepairWorkflow
 
 /** All state of the agent pane: the run, the review, the queue and the composer. */
 function useAgentPane() {
-    const { phase, events, submit, cancel } = useGeneration();
+    const { phase, events, liveCode, submit, cancel } = useGeneration();
     const { code } = useCode();
     const currentCode = code ?? '';
     const { executeGeometry } = useGeometry();
@@ -206,7 +206,7 @@ function useAgentPane() {
         failure,
     });
     return {
-        phase, events, cancel, currentCode, executeGeometry, selectedFeatureId, selectFeature, stagedEdit,
+        phase, events, liveCode, cancel, currentCode, executeGeometry, selectedFeatureId, selectFeature, stagedEdit,
         prompt, setPrompt, preview, conceptBusy, run, review, concept, accept, applied, agentFree, copyForOwnAgent,
     };
 }
@@ -234,7 +234,7 @@ function AgentTranscript({ pane }: { pane: AgentPaneState }) {
         <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-3" data-testid="agent-transcript">
             {showIntro && <AgentIntro onPick={pane.setPrompt} />}
             {started && <UserMessage snapshot={snapshot} />}
-            <RunProgress phase={phase} events={pane.events} onCancel={pane.cancel} />
+            <RunProgress phase={phase} events={pane.events} liveCode={pane.liveCode} onCancel={pane.cancel} />
 
             {/* Review gate: size, verified badge, before/after, diff, accept/discard. Never auto-applies. */}
             {review.reviewing && phase.state === 'done' && (
