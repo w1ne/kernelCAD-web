@@ -84,15 +84,19 @@ const diffScriptsToolEntry: ToolRegistryEntry = {
       "deltas, numbers matching inspect({ of: 'part-stats' })), total interference-volume delta with " +
       'per-pair detail, mate-graph changes (added/removed/changed mates incl. type, ' +
       'connectors, pose, limits), and param changes (value/min/max). Single-shape scripts ' +
-      'diff as one "(root)" pseudo-part. Use after editing a script to verify exactly what ' +
-      'changed physically before re-rendering. Read-only — never touches the active session.',
+      'diff as one "(root)" pseudo-part; a `return [a, b]` multi-body script diffs per body as "body[0]", "body[1]". ' +
+      'An error that still leaves geometry (e.g. a skipped fillet) is listed under base/revised.errors beside the diff. ' +
+      'Use after editing a script to verify exactly what changed physically before re-rendering. ' +
+      "On a hosted server pass both versions inline: { baseCode: 'return box(10, 10, 10);', code: 'return box(10, 10, 12);' } " +
+      '(base_code/old_code/before and revised_code/new_code/after are accepted as aliases). ' +
+      'Read-only — never touches the active session.',
     inputSchema: {
       type: 'object',
       properties: {
-        baseFile: { type: 'string', description: 'Baseline script — path to a .kcad.ts file.' },
-        baseCode: { type: 'string', description: 'Baseline script — inline source.' },
-        file: { type: 'string', description: 'Revised script — path to a .kcad.ts file.' },
-        code: { type: 'string', description: 'Revised script — inline source.' },
+        baseFile: { type: 'string', description: 'Baseline (before) script — path to a .kcad.ts file. Local servers only.' },
+        baseCode: { type: 'string', description: 'Baseline (before) script — inline source. One of baseFile / baseCode is required.' },
+        file: { type: 'string', description: 'Revised (after) script — path to a .kcad.ts file. Local servers only.' },
+        code: { type: 'string', description: 'Revised (after) script — inline source. One of file / code is required.' },
       },
     },
   },
