@@ -191,7 +191,7 @@ body {
   color: var(--ink); text-decoration: none;
 }
 .hero-examples a:hover { border-color: var(--ink); }
-.hero-agent a, .hero-star a { color: var(--blueprint); text-decoration: none; }
+.hero-agent a, .hero-star a { color: var(--blueprint); text-decoration: none; white-space: nowrap; }
 .hero-agent a:hover, .hero-star a:hover { text-decoration: underline; }
 .hero-star a { color: var(--ink-soft); font-size: 13px; }
 
