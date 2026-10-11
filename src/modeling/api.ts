@@ -250,6 +250,9 @@ export interface KernelCadApi {
     defaultValue: C,
     meta: ParamMetadata & { choices: readonly C[] },
   ): TypedParamRef<C>;
+  /** Colour param: a '#rgb' / '#rrggbb' default (and no `choices`). The value
+   *  is '#rrggbb'; pass the ref straight to `.color()` or `.finish(t, { color })`. */
+  param(name: string, defaultValue: `#${string}`, meta?: ParamMetadata): TypedParamRef<`#${string}`>;
   param(name: string, defaultValue: string, meta?: ParamMetadata): TypedParamRef<string>;
   params<R extends Record<string, number | boolean>>(decl: R): { [K in keyof R]: ParamRef<R[K]> };
 

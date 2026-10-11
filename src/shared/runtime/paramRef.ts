@@ -213,7 +213,7 @@ export function makeParamRef<T extends number | boolean>(
  * need to re-evaluate downstream geometry expressions the way numeric
  * ParamRefs do.
  */
-export type TypedParamKind = 'choice' | 'string';
+export type TypedParamKind = 'choice' | 'string' | 'color';
 
 export class TypedParamRef<T extends string = string> {
   readonly $param: string;
@@ -244,7 +244,8 @@ export class TypedParamRef<T extends string = string> {
 }
 
 export function isTypedParamRef(value: unknown): value is TypedParamRef {
-  return isParamRef(value) && ((value as { _type?: unknown })._type === 'choice' || (value as { _type?: unknown })._type === 'string');
+  const type = isParamRef(value) ? (value as { _type?: unknown })._type : undefined;
+  return type === 'choice' || type === 'string' || type === 'color';
 }
 
 export function makeTypedParamRef<T extends string = string>(

@@ -78,7 +78,9 @@ export function ParamsTab(): JSX.Element {
                 </div>
             )}
             <ul className="flex flex-col divide-y divide-[#1f1f1f]">
-                {entries.map((entry) => (
+                {entries.map((entry) => entry.type === 'color' ? (
+                    <ColorParamRow key={entry.name} entry={entry} updater={updater} />
+                ) : (
                     <ParamRow
                         key={entry.name}
                         entry={entry}
@@ -95,6 +97,32 @@ interface ParamRowProps {
     readonly entry: ParamEntry;
     readonly updater: ParamUpdater;
     readonly interference?: ScrubInterference;
+}
+
+/** A colour param: its '#rrggbb' value and a native colour picker. */
+function ColorParamRow({ entry, updater }: Omit<ParamRowProps, 'interference'>): JSX.Element {
+    return (
+        <li
+            className="flex items-center gap-3 h-6 px-3 text-xs text-gray-300"
+            data-testid={`param-row-${entry.name}`}
+        >
+            <span className="flex-1 truncate" title={entry.name}>
+                {entry.name}
+            </span>
+            <span className="font-mono text-gray-400">{entry.value as string}</span>
+            <input
+                type="color"
+                value={entry.value as string}
+                onChange={(e) => {
+                    updater.commitDebounced([{ name: entry.name, value: e.target.value }]);
+                }}
+                onBlur={updater.flush}
+                aria-label={`${entry.name} value`}
+                data-testid={`param-color-${entry.name}`}
+                className="h-5 w-7 cursor-pointer bg-transparent border border-[#333] rounded p-0"
+            />
+        </li>
+    );
 }
 
 function ParamRow({ entry, updater, interference }: ParamRowProps): JSX.Element {

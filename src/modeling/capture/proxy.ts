@@ -20,7 +20,7 @@ import {
   resolveCutoutOpts,
   type EditableCutoutOpts,
 } from '../validation/cutoutValidation';
-import { isParamRef, type Editable } from '../../shared/runtime/paramRef';
+import { isParamRef, isTypedParamRef, type Editable, type TypedParamRef } from '../../shared/runtime/paramRef';
 import { toParam, toVec3Param } from '../../shared/runtime/editableHelpers';
 import { Transform } from '../../shared/runtime/se3';
 import type { ColorToken } from '../../shared/render/palette';
@@ -327,7 +327,8 @@ export class Shape {
     return this;
   }
 
-  color(name: ColorToken | `#${string}`): Shape {
+  /** A colour `param()` ref is accepted directly (its '#rrggbb' value is used). */
+  color(name: ColorToken | `#${string}` | TypedParamRef<string>): Shape {
     const records = this.session.getRecords();
     const record = records.find(r => r.id === this.id);
     if (record === undefined) {
@@ -342,7 +343,7 @@ export class Shape {
     if (record.metadata === undefined) {
       (record as { metadata: Record<string, unknown> }).metadata = {};
     }
-    (record.metadata as Record<string, unknown>).color = name;
+    (record.metadata as Record<string, unknown>).color = isTypedParamRef(name) ? name.value : name;
     return this;
   }
 
@@ -462,7 +463,7 @@ export class Shape {
    * finished with the same material that overlap in a `union()` are reported
    * as `union.member-overlap`.
    */
-  finish(name: FinishToken | AnyMaterialName, opts?: { color?: string; face?: string }): Shape {
+  finish(name: FinishToken | AnyMaterialName, opts?: { color?: string | TypedParamRef<string>; face?: string }): Shape {
     // A finish token wins when the name is both (steel, pla, abs, nylon map to
     // the identically named token anyway). Otherwise an engineering material
     // name applies its registry default finish, so one material vocabulary
@@ -489,7 +490,7 @@ export class Shape {
     // extra clamp warning.
     const pbr = expandFinish(
       token,
-      opts?.color !== undefined ? { color: opts.color } : undefined,
+      opts?.color !== undefined ? { color: isTypedParamRef(opts.color) ? opts.color.value : opts.color } : undefined,
       this.id,
     );
     return this.material(opts?.face !== undefined ? { ...pbr, face: opts.face } : pbr);
