@@ -250,6 +250,38 @@ describe('useGeneration quota 402', () => {
   });
 });
 
+describe('useGeneration signed-out builds', () => {
+  beforeEach(() => {
+    startGeneration.mockReset();
+  });
+
+  it('forwards the Turnstile token in the request', async () => {
+    startGeneration.mockResolvedValue({ ok: true, body: {} } as Response);
+    parseSseStream.mockReturnValue(yieldDone());
+    const { result } = renderHook(() => useGeneration());
+    await act(async () => { await result.current.submit('a cube', undefined, undefined, undefined, undefined, 'tok'); });
+    expect(startGeneration.mock.calls[0]![0]).toMatchObject({ prompt: 'a cube', turnstileToken: 'tok' });
+  });
+
+  it('maps a 401 anon_limit to its own code with the reason', async () => {
+    startGeneration.mockResolvedValue({
+      ok: false, status: 401, text: async () => JSON.stringify({ error: 'anon_limit', reason: 'rate' }),
+    } as unknown as Response);
+    const { result } = renderHook(() => useGeneration());
+    await act(async () => { await result.current.submit('a cube'); });
+    expect(result.current.phase).toMatchObject({ state: 'error', code: 'anon_limit', anonReason: 'rate' });
+  });
+
+  it('keeps a plain 401 as rate_limited', async () => {
+    startGeneration.mockResolvedValue({
+      ok: false, status: 401, text: async () => JSON.stringify({ error: 'unauthorized' }),
+    } as unknown as Response);
+    const { result } = renderHook(() => useGeneration());
+    await act(async () => { await result.current.submit('a cube'); });
+    expect(result.current.phase).toMatchObject({ state: 'error', code: 'rate_limited' });
+  });
+});
+
 describe('useGeneration live code', () => {
   beforeEach(() => {
     startGeneration.mockReset();
