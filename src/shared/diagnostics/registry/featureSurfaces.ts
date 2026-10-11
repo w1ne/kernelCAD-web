@@ -224,7 +224,7 @@ export const FEATURE_SURFACES_CODES = {
   },
   'feature.surface-from-boundary.degenerate-patch': {
     hintTemplate:
-      'BRepOffsetAPI_MakeFilling could not produce a face. The boundary curves are likely coincident, self-intersecting, or topologically invalid. Inspect the curve sequence with list_features and visualize each Curve3D before retrying.',
+      'BRepOffsetAPI_MakeFilling could not produce a face. The boundary curves are likely coincident, self-intersecting, or topologically invalid. Inspect the curve sequence with inspect({ of: \'features\' }) and visualize each Curve3D before retrying.',
     nextAction: { kind: 'rewrite-feature', guidance: 'rebuild the 4 boundary curves so they form a non-self-intersecting closed loop, then retry surfaceFromBoundary' },
     defaultSeverity: 'error',
     group: 'feature',

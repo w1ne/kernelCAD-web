@@ -5,6 +5,7 @@ import type { BackendTarget } from '../types/backendTarget';
 import type { DiagnosticCode } from './registry';
 import { NEXT_ACTIONS } from './registry';
 import type { NextAction } from './nextAction';
+import { refineSelectionNextAction, routeRetiredToolMentions } from './liveToolRouting';
 
 export type { BackendTarget };
 export type { DiagnosticCode };
@@ -40,8 +41,11 @@ export interface CompilerDiagnostic {
  * identity-op, leaving the explicitly-set value in place.
  */
 export function withNextAction(d: CompilerDiagnostic): CompilerDiagnostic {
-  if (d.nextAction !== undefined) return d;
-  return { ...d, nextAction: NEXT_ACTIONS[d.code] };
+  const message = routeRetiredToolMentions(d.message);
+  const hint = routeRetiredToolMentions(d.hint);
+  const nextAction = d.nextAction ?? refineSelectionNextAction(d.code, d.message, NEXT_ACTIONS[d.code]);
+  if (message === d.message && hint === d.hint && nextAction === d.nextAction) return d;
+  return { ...d, message, hint, nextAction };
 }
 
 /** Variadic form of {@link withNextAction} for the common case where a

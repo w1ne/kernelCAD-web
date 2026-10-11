@@ -7,7 +7,7 @@ export const DFM_CODES = {
   // DFM preflight (23) — Slice E
   'dfm.input.vendor-required': {
     hintTemplate:
-      'dfm_preflight requires a vendor identifier. Pass `vendor: "sendcutsend"` (or another supported vendor SKU listed in catalogs/sources-manifest.json).',
+      'verify({ check: \'dfm-preflight\' }) requires a vendor identifier. Pass `vendor: "sendcutsend"` (or another supported vendor SKU listed in catalogs/sources-manifest.json).',
     nextAction: { kind: 'fix-arg', field: 'vendor' },
     defaultSeverity: 'error',
     group: 'dfm',
@@ -15,7 +15,7 @@ export const DFM_CODES = {
   },
   'dfm.input.material-required': {
     hintTemplate:
-      'dfm_preflight requires a material SKU. Pass `material: "<sku>"` (use list_part_categories or the vendor catalog.json to enumerate the supported SKUs).',
+      'verify({ check: \'dfm-preflight\' }) requires a material SKU. Pass `material: "<sku>"` (use inspect({ of: \'part-categories\' }) or the vendor catalog.json to enumerate the supported SKUs).',
     nextAction: { kind: 'fix-arg', field: 'material' },
     defaultSeverity: 'error',
     group: 'dfm',
@@ -23,7 +23,7 @@ export const DFM_CODES = {
   },
   'dfm.input.thickness-required': {
     hintTemplate:
-      'dfm_preflight requires a thickness. Pass `thicknessIn: <inches>` or `thicknessMm: <mm>`; pick a value from catalog[sku].thicknessesIn.',
+      'verify({ check: \'dfm-preflight\' }) requires a thickness. Pass `thicknessIn: <inches>` or `thicknessMm: <mm>`; pick a value from catalog[sku].thicknessesIn.',
     nextAction: { kind: 'fix-arg', field: 'thicknessMm' },
     defaultSeverity: 'error',
     group: 'dfm',
@@ -31,7 +31,7 @@ export const DFM_CODES = {
   },
   'dfm.units.dxf-not-mm': {
     hintTemplate:
-      'DXF $INSUNITS header must be 4 (mm). Re-export from kernelCAD with the default unit, or pass `unit: "mm"` to export_model.',
+      'DXF $INSUNITS header must be 4 (mm). Re-export from kernelCAD with the default unit, or pass `unit: "mm"` to export.',
     nextAction: { kind: 'fix-arg', field: 'unit' },
     defaultSeverity: 'error',
     group: 'dfm',
@@ -135,7 +135,7 @@ export const DFM_CODES = {
   },
   'dfm.bend.layer-missing': {
     hintTemplate:
-      'DXF input has bend metadata in the source but no BEND layer in the DXF. Re-export with export_model({ format: "dxf" }); the writer auto-emits the BEND layer.',
+      'DXF input has bend metadata in the source but no BEND layer in the DXF. Re-export with export({ target: "model", format: "dxf" }); the writer auto-emits the BEND layer.',
     nextAction: { kind: 'fix-arg', field: 'format' },
     defaultSeverity: 'error',
     group: 'dfm',
@@ -175,7 +175,7 @@ export const DFM_CODES = {
   },
   'dfm.dxf.spline-present': {
     hintTemplate:
-      'DXF contains SPLINE entities on the cut layer. Re-export from kernelCAD (export_model emits LWPOLYLINE only).',
+      'DXF contains SPLINE entities on the cut layer. Re-export from kernelCAD (export emits LWPOLYLINE only).',
     nextAction: { kind: 'fix-arg', field: 'format' },
     defaultSeverity: 'error',
     group: 'dfm',

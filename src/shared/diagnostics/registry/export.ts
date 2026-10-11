@@ -7,8 +7,8 @@ export const EXPORT_CODES = {
   // Export (19)
   'export.feature-not-found': {
     hintTemplate:
-      'The feature_id passed to export_model was not found. Use list_features to see available IDs.',
-    nextAction: { kind: 'call-introspection-tool', tool: 'list_features' },
+      'The feature_id passed to export was not found. Use inspect({ of: \'features\' }) to see available IDs.',
+    nextAction: { kind: 'call-tool', tool: 'inspect', args: { of: 'features' } },
     defaultSeverity: 'error',
     group: 'export',
     description: 'An export tool received a feature_id that does not match any feature in the recompute graph.',
@@ -86,7 +86,7 @@ export const EXPORT_CODES = {
   },
   'export.part.not-found': {
     hintTemplate:
-      'The requested part name is not in the solved assembly. Pick one of the valid names listed in the message, or call list_part_stats to enumerate parts.',
+      'The requested part name is not in the solved assembly. Pick one of the valid names listed in the message, or call inspect({ of: \'part-stats\' }) to enumerate parts.',
     nextAction: { kind: 'fix-arg', field: 'part' },
     defaultSeverity: 'error',
     group: 'export',
@@ -126,7 +126,7 @@ export const EXPORT_CODES = {
   },
   'export.urdf.closed-loop': {
     hintTemplate:
-      'URDF requires a tree topology (one parent per link); the assembly has a closed kinematic loop. Switch to export_model with format: \'sdf-gazebo\' which supports closed loops natively, or restructure the mate graph to a spanning tree.',
+      'URDF requires a tree topology (one parent per link); the assembly has a closed kinematic loop. Switch to export with format: \'sdf-gazebo\' which supports closed loops natively, or restructure the mate graph to a spanning tree.',
     nextAction: { kind: 'fix-arg', field: 'format' },
     defaultSeverity: 'error',
     group: 'export',
@@ -142,7 +142,7 @@ export const EXPORT_CODES = {
   },
   'export.srdf.acm-sparse-sampling': {
     hintTemplate:
-      'ACM derivation used fewer than 4 samples per mate; interior collisions may be missed. Increase options.samplesPerMate on export_model({ format: \'srdf\', ... }) or set combinatorial: true.',
+      'ACM derivation used fewer than 4 samples per mate; interior collisions may be missed. Increase options.samplesPerMate on export({ target: \'model\', format: \'srdf\', ... }) or set combinatorial: true.',
     nextAction: { kind: 'fix-arg', field: 'samplesPerMate' },
     defaultSeverity: 'warn',
     group: 'export',
@@ -183,7 +183,7 @@ export const EXPORT_CODES = {
   'export.sdf-gazebo.dangling-link-ref': {
     hintTemplate:
       'A <joint> in the emitted SDF references a <link> that is not declared in the model. Verify every part on the mate-graph is also declared via arm.part(...).',
-    nextAction: { kind: 'call-introspection-tool', tool: 'inspect_robot' },
+    nextAction: { kind: 'call-tool', tool: 'inspect', args: { of: 'robot' } },
     defaultSeverity: 'error',
     group: 'export',
     description: 'SDFormat structural validation detected a joint referencing an undeclared link.',

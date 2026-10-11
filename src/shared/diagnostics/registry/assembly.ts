@@ -258,7 +258,7 @@ export const ASSEMBLY_CODES = {
   // Assembly validator — v0.7 kinematic-grounding gates (3)
   'assembly.mounting-hole.mismatch': {
     hintTemplate:
-      "Make the hole features on the two bound faces compatible: same kind (clearance ↔ threaded), same nominal diameter, same depth. Use list_face_labels to inspect available holes. This is an authoring-time signal; the merge gate is mechanism.disconnect which fires under motion at validate-time.",
+      "Make the hole features on the two bound faces compatible: same kind (clearance ↔ threaded), same nominal diameter, same depth. Use inspect({ of: 'face-labels' }) to inspect available holes. This is an authoring-time signal; the merge gate is mechanism.disconnect which fires under motion at validate-time.",
     nextAction: { kind: 'fix-arg', field: 'holeFeatures' },
     defaultSeverity: 'info',
     group: 'assembly',
@@ -283,7 +283,7 @@ export const ASSEMBLY_CODES = {
   },
   'assembly.structure.unstructured-bodies': {
     hintTemplate:
-      'Wrap the loose bodies in assembly().part(name, shape) so each part carries identity, per-part stats, and review handles; name every returned shape. This is an authoring-time signal — a multi-body model with no part names loses inspect --focus, list_part_stats, and Studio per-part validity.',
+      'Wrap the loose bodies in assembly().part(name, shape) so each part carries identity, per-part stats, and review handles; name every returned shape. This is an authoring-time signal — a multi-body model with no part names loses inspect --focus, inspect({ of: \'part-stats\' }), and Studio per-part validity.',
     nextAction: {
       kind: 'rewrite-feature',
       guidance: 'wrap each loose top-level body in a named assembly().part(name, shape)',
