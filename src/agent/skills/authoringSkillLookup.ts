@@ -256,7 +256,7 @@ function searchAnswer(sections: AuthoringSkillSection[], query: string): LookupA
  *
  * - no args → index of sections (id, title, size, one-line summary) plus the
  *   quick-start (preamble, coordinate system, conventions, intent routing,
- *   finish checklist), under ~12k chars;
+ *   finish checklist), under INDEX_CHAR_BUDGET chars;
  * - `section` / `topic` → that section's full text (`'all'` → SKILL.md plus
  *   every reference file);
  * - `query` → the best-matching sections' text, capped, plus the ids of the
@@ -300,11 +300,15 @@ export function lookupAuthoringSkill(
   };
 }
 
+/** Ceiling on the no-argument answer (quick-start + index); the tool
+ *  description quotes it and the size test enforces it. */
+export const INDEX_CHAR_BUDGET = 16_000;
+
 /** Tool description for `lookup_authoring_skill` (hosted by kernelCAD-server). */
 export const LOOKUP_AUTHORING_SKILL_DESCRIPTION = [
   'Return the kernelcad-authoring skill — conventions for writing .kcad.ts scripts (API surface, parameters, evaluation contract, common pitfalls) — in sections.',
   '',
-  'Call with NO arguments first: you get the quick-start (units, axes, the return rule, the rules that prevent most failures, the intent → API routing table, the "Before you finish" checklist) and an index of every section with a one-line summary (under ~12k chars). Then pull what you need: `{ section: "<id>" }` returns one section (e.g. "top-level-functions", "materials", "dfm-gates-print-readiness"); `{ query: "fillet after subtract" }` returns the best-matching sections. `{ section: "all" }` returns the full ~140k-char skill (SKILL.md plus its reference files) — only if your client accepts large responses.',
+  'Call with NO arguments first: you get the quick-start (units, axes, the return rule, the rules that prevent most failures, the intent → API routing table, the "Before you finish" checklist) and an index of every section with a one-line summary (under ' + `${INDEX_CHAR_BUDGET / 1000}k` + ' chars). Then pull what you need: `{ section: "<id>" }` returns one section (e.g. "top-level-functions", "materials", "dfm-gates-print-readiness"); `{ query: "fillet after subtract" }` returns the best-matching sections. `{ section: "all" }` returns the full ~140k-char skill (SKILL.md plus its reference files) — only if your client accepts large responses.',
   '',
   'Clients that list resources can also read `kernelcad://skills/authoring` (the SKILL.md core).',
   '',
