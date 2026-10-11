@@ -81,6 +81,40 @@ describe('useGeneration edit mode', () => {
   });
 });
 
+describe('useGeneration attachments', () => {
+  beforeEach(() => {
+    startGeneration.mockReset();
+    parseSseStream.mockReset();
+    startGeneration.mockResolvedValue({ ok: true, body: {} } as Response);
+    parseSseStream.mockReturnValue(yieldDone());
+  });
+
+  it('forwards an STL attachment with the edit request', async () => {
+    const { result } = renderHook(() => useGeneration());
+    const attachments: NonNullable<GenerateRequest['attachments']> = [{
+      format: 'stl',
+      fileName: 'cup.stl',
+      dataUrl: 'data:model/stl;base64,AAAA',
+      encoding: 'binary',
+      triangleCount: 12,
+      bounds: { min: [0, 0, 0], max: [80, 80, 95] },
+    }];
+    await act(async () => {
+      await result.current.submit('add a stand', 'return box(1,1,1);', undefined, undefined, attachments);
+    });
+    expect(startGeneration).toHaveBeenCalledWith(
+      expect.objectContaining({ prompt: 'add a stand', currentCode: 'return box(1,1,1);', attachments }),
+      expect.any(AbortSignal),
+    );
+  });
+
+  it('omits the attachments field when there are none', async () => {
+    const { result } = renderHook(() => useGeneration());
+    await act(async () => { await result.current.submit('a cube', undefined, undefined, undefined, []); });
+    expect(Object.keys(startGeneration.mock.calls[0][0])).not.toContain('attachments');
+  });
+});
+
 describe('useGeneration partial results', () => {
   it('keeps the partial flag on the done phase', async () => {
     const partial = { reason: 'timeout', stage: 'writing_code', unverified: ['interference'], note: 'n' };

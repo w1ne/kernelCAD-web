@@ -71,6 +71,22 @@ export interface ReferenceImage {
   };
 }
 
+/** A 3D file the user attached for the agent to import and build around
+ * (`lib.fromSTL`), rather than recreate. The browser has already checked the
+ * size and triangle budget and measured the mesh; the server must re-check the
+ * bytes before materializing them for the run. See ./meshAttachment.ts. */
+export interface StlAttachment {
+  format: 'stl';
+  fileName: string;
+  /** `data:model/stl;base64,…` — binary or ASCII STL bytes. */
+  dataUrl: string;
+  encoding: 'binary' | 'ascii';
+  triangleCount: number;
+  /** Axis-aligned vertex bounds in the file's units (STL is unitless; mm by convention). */
+  bounds: { min: [number, number, number]; max: [number, number, number] };
+}
+export type GenerateAttachment = StlAttachment;
+
 /**
  * Parse a Server-Sent Events stream from POST /api/v1/generate into typed events.
  *
@@ -197,6 +213,9 @@ export interface GenerateRequest {
   /** A bounded simple-device reference photo plus a real-world scale anchor.
    * The hosted route validates, hashes, and materializes it before authoring. */
   referenceImage?: ReferenceImage;
+  /** Files the agent imports into the model instead of recreating them (one
+   * STL today). Mutually exclusive with `referenceImage` in the composer. */
+  attachments?: GenerateAttachment[];
 }
 
 export async function startGeneration(req: GenerateRequest, signal?: AbortSignal): Promise<Response> {

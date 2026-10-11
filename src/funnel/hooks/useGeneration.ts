@@ -144,6 +144,7 @@ export function useGeneration() {
     currentCode?: string,
     mesh?: GenerateRequest['mesh'],
     referenceImage?: GenerateRequest['referenceImage'],
+    attachments?: GenerateRequest['attachments'],
   ) => {
     controllerRef.current?.abort();
     const controller = new AbortController();
@@ -155,7 +156,11 @@ export function useGeneration() {
       lastEvent: { kind: 'status', phase: 'running' },
     });
 
-    const body = await openGenerationStream({ prompt, currentCode, mesh, referenceImage }, controller.signal, setPhase);
+    const body = await openGenerationStream(
+      { prompt, currentCode, mesh, referenceImage, ...(attachments?.length ? { attachments } : {}) },
+      controller.signal,
+      setPhase,
+    );
     if (!body) return;
 
     let exhausted: boolean;
