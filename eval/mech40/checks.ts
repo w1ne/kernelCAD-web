@@ -16,6 +16,8 @@ import type { HarnessResult } from '../types';
 import { OcctBackend } from '../../src/kernel/backends/occt/occtBackend';
 import { flattenPattern } from '../../src/kernel/backends/occt/flattenPattern';
 import { Scene } from '../../src/modeling/validation/scene';
+import type { Assembly } from '../../src/modeling/capture/assembly';
+import { solveMates } from '../../src/modeling/mates/solver';
 import {
   bbox, buildUsecase, emptyIn, exportAs, fullIn, hasHoles, holesOf, isClosedSolid, materialIn, near, reimportStep,
   type HoleSpec, type UsecaseBuild, type Vec3,
@@ -269,6 +271,60 @@ export function overlap(a: OcctBackend, b: OcctBackend): number {
 }
 
 export { emptyIn, fullIn, materialIn, near };
+
+/**
+ * Every assembly part's world shape with the mates re-solved at `poses`
+ * (mate name → degrees / mm). A checker that only reads the returned scene
+ * sees the default pose; a hinge whose positive travel swings the lid into
+ * the box looks fine there. Undefined when the build holds no assembly or
+ * the mates do not solve at that pose.
+ */
+export async function posedParts(b: UsecaseBuild, poses: Readonly<Record<string, number>>): Promise<Map<string, OcctBackend> | undefined> {
+  const arm = [...(b.model?.session.assemblies.values() ?? [])][0] as Assembly | undefined;
+  if (!arm) return undefined;
+  const solved = await solveMates(arm, { ...poses });
+  if (solved.status !== 'solved' && solved.status !== 'redundant-ok') return undefined;
+  const out = new Map<string, OcctBackend>();
+  for (const part of arm.__parts()) {
+    const lowered = await part.originalShape.lower();
+    if (!(lowered instanceof OcctBackend)) return undefined;
+    const pose = solved.poses.get(part.name);
+    const own = lowered.clone();
+    out.set(part.name, pose ? own.applyTransform(pose) : own);
+  }
+  return out;
+}
+
+/** The poses a joint check should visit: both limits and mid-travel. */
+export function travelPoses(m: MateSummary | undefined): number[] {
+  if (!m?.limitsDeg) return [];
+  const [lo, hi] = m.limitsDeg;
+  return [lo, (lo + hi) / 2, hi];
+}
+
+/**
+ * No two listed parts share material at any of the given pose sets, and
+ * every pose solves. `extra` adds a per-pose condition on the posed parts.
+ */
+export async function clearAcrossPoses(
+  b: UsecaseBuild,
+  poseSets: readonly Readonly<Record<string, number>>[],
+  pairs: readonly (readonly [string, string])[],
+  extra?: (parts: Map<string, OcctBackend>) => boolean,
+): Promise<boolean> {
+  if (poseSets.length === 0) return false;
+  for (const poses of poseSets) {
+    const parts = await posedParts(b, poses);
+    if (!parts) return false;
+    for (const [p, q] of pairs) {
+      const a = parts.get(p);
+      const c = parts.get(q);
+      if (!a || !c || overlap(a, c) > 1e-6) return false;
+    }
+    if (extra && !extra(parts)) return false;
+  }
+  return true;
+}
 
 /** STEP export re-imports with `solids` solids and the model's volume (0.5%). */
 export async function stepExportOk(b: UsecaseBuild, solids: number): Promise<boolean> {
