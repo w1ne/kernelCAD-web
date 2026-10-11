@@ -177,7 +177,8 @@ describe('static gallery landing page', () => {
     expect(stack).not.toContain('proto.cat');
     expect(stack).toContain('href="https://labwired.com"');
     expect(stack).toContain('href="https://kernelcad.com"');
-    expect(stack).toContain('href="https://koamtachi.com"');
+    expect(stack).toContain('href="https://komatachi.com"');
+    expect(stack).toContain('<a href="https://dobo.bot/">Dobo</a>');
     expect(stack).toContain('href="https://shylenko.com"');
   });
 
