@@ -30,6 +30,7 @@ import {
   runFeaGateOnModel,
   type FeaGateReport,
 } from '../modeling/runtime/fea/runFeaGate';
+import { detectMissingReturn } from '../modeling/validation/missingReturn';
 import { detectUnstructuredBodies } from '../modeling/validation/unstructuredBodies';
 import { detectUnionDefects } from '../modeling/validation/unionIntegrity';
 import type { SweepEvaluator } from '../kinematic/sweepTolerance';
@@ -230,6 +231,7 @@ export async function evaluateAndBuildScript(
   if (!fatal) {
     model.diagnostics.push(
       ...detectUnstructuredBodies({ returnValue: model.returnValue, code: model.code }),
+      ...detectMissingReturn({ returnValue: model.returnValue, records: model.records }),
     );
     // Union integrity guard: a `union()` model gets the floating-part and
     // member-overlap checks an `assembly()` model gets from its validator.

@@ -41,7 +41,7 @@ A two-tier skill system. **Load `kernelcad-authoring` to write or modify any `.k
 ## Universal conventions
 
 - **Units**: millimetres, degrees, Z-up right-handed.
-- **Return rule**: every `.kcad.ts` script `return`s a single `Shape` (or `Scene` from `assembly().model()`).
+- **Return rule**: every `.kcad.ts` script `return`s a single `Shape` (or `Scene` from `assembly().model()`); without a `return` the last created shape is used and evaluate warns `script.no-return`.
 - **Diagnostic-anchored hints**: when a kernelCAD tool throws, the error carries a `hint` field tied to a diagnostic code (`feature.*`, `assembly.*`, etc.). Read the hint — it carries the fix.
 - **Clarify load-bearing intent before generating**: when a generation request is ambiguous on parameters the design hangs on — overall dimensions, units, symmetry, part count, fit/clearance targets — ask 1–3 targeted clarifying questions BEFORE authoring geometry. Guessing a load-bearing number produces a confidently wrong model. If you proceed without answers, state each assumption explicitly and encode it as a named `param()` so it stays visible and editable.
 - **Words to CAD / Words to geometry**: preserve the prompt-to-geometry mapping. Important nouns and constraints from the user's words should become named source sections, parameters, parts, connectors, materials, tests, or visible artifacts; do not reduce the job to untraceable hand-tuned shapes.

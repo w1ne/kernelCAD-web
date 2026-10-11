@@ -27,7 +27,8 @@ export type DiagnosticGroup =
   | 'inspect'
   | 'authoring'
   | 'viewer'
-  | 'union';
+  | 'union'
+  | 'script';
 
 export type DiagnosticSeverityLevel = 'info' | 'warn' | 'error';
 
