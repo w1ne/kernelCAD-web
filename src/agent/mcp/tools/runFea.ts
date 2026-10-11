@@ -31,19 +31,23 @@ import {
 } from '../../../modeling/runtime/fea/findFeaStudies';
 import { buildHeatmap, type HeatmapBand } from '../../../kernel/fea/heatmap';
 import type { RunFeaResult } from '../../../kernel/fea/runFea';
-import { runFeaStudyRefined } from '../../../kernel/fea/autoRefine';
+import { runFeaStudyRefined, type FeaSolverChoice } from '../../../kernel/fea/autoRefine';
 import { detectFeaToolchain } from '../../../kernel/fea/toolchain';
 import type { FeaSummary } from '../../../kernel/fea/types';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { loadMeshScene, renderMeshViews } from '../../render/meshScenesRender';
+import { resolveRootId } from '../../../composition/buildModel';
+import type { FeaStudyMetadata } from '../../../shared/intent/feaStudyRecord';
+import { inlineFeaStudy, RUN_FEA_EXAMPLE } from './runFeaArgs';
 
 export interface RunFeaInput {
   /** Path to a `.kcad.ts` script declaring at least one `feaStudy`. */
   file?: string;
   /** Inline kernelCAD script source. Mutually exclusive with `file`. */
   code?: string;
-  /** Study name to run; defaults to the LAST declared study. */
-  study?: string;
+  /** Study name to run; defaults to the LAST declared study. An object is
+   *  read as an inline study ({ material, fixed, loads, ... }). */
+  study?: string | Record<string, unknown>;
   /** Directory the solver deck, result files, summary JSON and heatmap PNGs
    *  are written to. Default: a fresh temp session dir. */
   output_dir?: string;
@@ -62,6 +66,17 @@ export interface RunFeaInput {
   mesh_timeout_ms?: number;
   /** Wall-clock budget for the solve stage, ms. */
   solve_timeout_ms?: number;
+  /** 'auto' (default): CalculiX + gmsh when installed, else the in-process
+   *  voxel solver. 'calculix': require the external toolchain (fails up
+   *  front with `fea.solver.unavailable` when absent). 'in-process': always
+   *  the in-process solver. */
+  solver?: FeaSolverChoice;
+  /** Inline study, for a script that declares no feaStudy (or to override
+   *  it): bound to the shape the script returns. Same fields as feaStudy(). */
+  material?: unknown;
+  fixed?: unknown;
+  loads?: unknown;
+  min_safety_factor?: number;
 }
 
 export interface RunFeaOutput {
@@ -77,16 +92,34 @@ export interface RunFeaOutput {
   diagnostics?: CompilerDiagnostic[];
   error?: string;
   errorCode?: string;
+  /** Present when the external toolchain was required and is missing. */
+  toolchain?: { missing: readonly string[]; hint?: string };
 }
 
 type FeaStudyResolution =
   | { ok: false; output: RunFeaOutput }
   | { ok: true; run: RunScriptResult; study: FoundFeaStudy };
 
+/** The inline study bound to the shape the script returns. */
+function inlineStudyOn(run: RunScriptResult, metadata: FeaStudyMetadata): FeaStudyResolution {
+  const tailId = run.records.length > 0 ? run.records[run.records.length - 1].id : undefined;
+  const shapeId = resolveRootId(run.returnValue, tailId);
+  if (shapeId === undefined) {
+    return {
+      ok: false,
+      output: { ok: false, error: `run_fea: the script returns no shape to analyse. Example: ${RUN_FEA_EXAMPLE}.`, errorCode: 'export.no-shape' },
+    };
+  }
+  return { ok: true, run, study: { recordId: '__inline__', shapeId, metadata } };
+}
+
 async function resolveFeaStudy(input: RunFeaInput): Promise<FeaStudyResolution> {
+  const inline = inlineFeaStudy(input as unknown as Record<string, unknown>);
+  if (inline.kind === 'error') return { ok: false, output: { ok: false, error: inline.error, errorCode: inline.errorCode } };
   const script = await runMcpScript(input);
   if (!script.ok) return { ok: false, output: script };
   const { run } = script;
+  if (inline.kind === 'ok') return inlineStudyOn(run, inline.metadata);
 
   const studies = findFeaStudies(run.records);
   if (studies.length === 0) {
@@ -95,12 +128,13 @@ async function resolveFeaStudy(input: RunFeaInput): Promise<FeaStudyResolution> 
       output: {
         ok: false,
         error:
-          'The script declares no feaStudy. Add shape.feaStudy({ material, fixed, loads }) to the part you want analysed.',
+          'The script declares no feaStudy. Either add shape.feaStudy({ material, fixed, loads }) to the part you want analysed, ' +
+          `or pass the study on the call: ${RUN_FEA_EXAMPLE}.`,
         errorCode: 'feature.invalid-args',
       },
     };
   }
-  const study = selectFeaStudy(studies, input.study);
+  const study = selectFeaStudy(studies, typeof input.study === 'string' ? input.study : undefined);
   if (study === undefined) {
     return {
       ok: false,
@@ -194,7 +228,46 @@ async function renderStudyHeatmap(
  * the last of which is reported as `fea.solver.unavailable` with the install
  * command, never as a silent pass.
  */
+function refineOptions(input: RunFeaInput, run: RunScriptResult, outDir: string): Parameters<typeof runFeaStudyRefined>[4] {
+  return {
+    outDir,
+    ...(input.refine === false ? { refine: false } : {}),
+    ...(input.solver !== undefined ? { solver: input.solver } : {}),
+    paramTable: run.session.paramTable,
+    cwd: input.file !== undefined ? dirname(resolve(input.file)) : process.cwd(),
+    ...(input.mesh_timeout_ms !== undefined ? { meshTimeoutMs: input.mesh_timeout_ms } : {}),
+    ...(input.solve_timeout_ms !== undefined ? { solveTimeoutMs: input.solve_timeout_ms } : {}),
+  };
+}
+
+/** `solver: 'calculix'` with no toolchain fails BEFORE the script runs,
+ *  with the missing pieces and the install command. */
+async function requireToolchain(input: RunFeaInput): Promise<RunFeaOutput | undefined> {
+  if (input.solver !== 'calculix') return undefined;
+  const tc = await detectFeaToolchain(input.file !== undefined ? dirname(resolve(input.file)) : process.cwd());
+  if (tc.ok) return undefined;
+  return {
+    ok: false,
+    error:
+      `run_fea: solver 'calculix' needs ${tc.missing.join(' and ')}, which this machine does not have. ${tc.hint ?? ''} ` +
+      "Omit `solver` (or pass 'in-process') to solve with the built-in voxel solver instead.",
+    errorCode: 'fea.solver.unavailable',
+    toolchain: { missing: tc.missing, ...(tc.hint !== undefined ? { hint: tc.hint } : {}) },
+  };
+}
+
+function badSolverArg(solver: unknown): RunFeaOutput | undefined {
+  if (solver === undefined || solver === 'auto' || solver === 'calculix' || solver === 'in-process') return undefined;
+  return {
+    ok: false,
+    error: `run_fea: solver must be 'auto', 'calculix' or 'in-process'; got ${JSON.stringify(solver)}. Example: ${RUN_FEA_EXAMPLE}.`,
+    errorCode: 'feature.invalid-args',
+  };
+}
+
 export async function runFeaTool(input: RunFeaInput): Promise<RunFeaOutput> {
+  const upFront = badSolverArg(input.solver) ?? (await requireToolchain(input));
+  if (upFront !== undefined) return upFront;
   const resolved = await resolveFeaStudy(input);
   if (!resolved.ok) return resolved.output;
   const { run, study } = resolved;
@@ -212,14 +285,7 @@ export async function runFeaTool(input: RunFeaInput): Promise<RunFeaOutput> {
     ? { ...study.metadata, meshSize: input.mesh_size }
     : study.metadata;
 
-  const result = await runFeaStudyRefined(shape, metadata, study.shapeId, run.records, {
-    outDir,
-    ...(input.refine === false ? { refine: false } : {}),
-    paramTable: run.session.paramTable,
-    cwd: input.file !== undefined ? dirname(resolve(input.file)) : process.cwd(),
-    ...(input.mesh_timeout_ms !== undefined ? { meshTimeoutMs: input.mesh_timeout_ms } : {}),
-    ...(input.solve_timeout_ms !== undefined ? { solveTimeoutMs: input.solve_timeout_ms } : {}),
-  });
+  const result = await runFeaStudyRefined(shape, metadata, study.shapeId, run.records, refineOptions(input, run, outDir));
 
   const diagnostics = [...result.diagnostics];
   const { images, legend } = await renderStudyHeatmap(result, input.heatmaps, outDir, diagnostics);

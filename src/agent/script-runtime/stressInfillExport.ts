@@ -264,6 +264,8 @@ export async function buildStressInfillExport(
   const fea = await runFeaStudyRefined(shape, metadata, study.shapeId, records, {
     outDir,
     refine: infill.refine === true,
+    // Infill grading needs the CalculiX tet stress field; never the voxel fallback.
+    solver: 'calculix',
     ...(paramTable !== undefined ? { paramTable } : {}),
     ...(cwd !== undefined ? { cwd } : {}),
     ...(toolchain !== undefined ? { toolchain } : {}),
