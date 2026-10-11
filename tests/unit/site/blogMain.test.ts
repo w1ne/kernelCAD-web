@@ -99,6 +99,14 @@ describe('main', () => {
     expect(exists('site/blog/later')).toBe(false);
   });
 
+  it('copies a draft image kept outside site/ next to the preview, and puts nothing in site/blog/<slug>/', async () => {
+    write('docs/guide/later/view.png', png(64, 48));
+    write('docs/guide/later.md', guide({ ...FIELDS, status: 'draft' }, 'The lede.\n\n![A view](later/view.png "Caption.")\n'));
+    expect(await main(['--drafts'], repo)).toBe(0);
+    expect(exists('site/blog/drafts/later/view.png')).toBe(true);
+    expect(exists('site/blog/later')).toBe(false);
+  });
+
   it('refuses an unknown argument', async () => {
     await expect(main(['--draft'], repo)).rejects.toThrow('unknown argument --draft; the only option is --drafts');
   });

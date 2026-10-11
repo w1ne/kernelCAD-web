@@ -26,9 +26,9 @@
 // A draft (status: draft) is never on the index and never in site/blog/<slug>/.
 // With --drafts it is built to site/blog/drafts/<slug>/index.html, marked
 // noindex. That directory is git-ignored and every build without --drafts
-// deletes it, so a preview cannot be deployed. A site/blog/<slug>/ page that no
-// published guide builds any more (the post went back to draft) fails the
-// build until the directory is removed.
+// deletes it, so a preview cannot be deployed. Any file in a site/blog/<dir>/
+// that no published guide builds (the page of a post that went back to draft,
+// or a draft's images put there early) fails the build until it is removed.
 //
 // MARKDOWN
 //
@@ -36,8 +36,12 @@
 // is the lede. The title comes from front matter, so the body has no level-1
 // heading. An image alone on its line is a figure, its "title" the caption:
 // ![alt](path "caption"). The path is relative to the Markdown file, as on
-// GitHub, and must point at a file under site/; width and height come from the
-// PNG itself.
+// GitHub; width and height come from the PNG itself. A published post's images
+// must be files under site/, normally site/blog/<slug>/, where the page links
+// them. A draft's images may be anywhere else in the repository, for example
+// docs/guide/<slug>/: its preview copies them next to the page, so nothing of
+// the draft is in site/ before it is published. Publishing means moving them
+// into site/blog/<slug>/; the build fails with the line of any left behind.
 //
 // CHECKS
 //
@@ -182,8 +186,10 @@ export interface PostImage {
   readonly src: string;
   /** Absolute path on disk. */
   readonly file: string;
-  /** False when the path leaves site/, so the page cannot link it. */
+  /** False when the path leaves site/, so a published page cannot link it. */
   readonly underSite: boolean;
+  /** False when the path leaves the repository. */
+  readonly inRepo: boolean;
 }
 
 export interface RenderedPost {
@@ -242,9 +248,12 @@ export function renderBlog(posts: readonly BlogPost[], opts: RenderOptions): Blo
 interface PageContext {
   readonly repoRoot: string;
   readonly post: BlogPost;
+  readonly draft: boolean;
   /** Site path of the page's directory, e.g. `/blog/<slug>/`. */
   readonly pageDir: string;
   readonly images: PostImage[];
+  /** Files the page needs copied next to it: a draft's images from outside site/. */
+  readonly copies: AssetJob[];
 }
 
 function renderPost(
@@ -253,7 +262,7 @@ function renderPost(
   draft: boolean,
 ): { file: OutputFile; rendered: RenderedPost; assets: AssetJob[] } {
   const pageDir = draft ? `/blog/drafts/${post.slug}/` : `/blog/${post.slug}/`;
-  const ctx: PageContext = { repoRoot, post, pageDir, images: [] };
+  const ctx: PageContext = { repoRoot, post, draft, pageDir, images: [], copies: [] };
   const [lede, ...rest] = post.blocks;
   const note = draft && post.meta.note !== undefined ? [`      <p class="effective">${escapeText(post.meta.note)}</p>`] : [];
   const media = postMedia(post.meta);
@@ -270,6 +279,7 @@ function renderPost(
   ].join('\n');
   const outDir = `site${pageDir}`;
   const assets: AssetJob[] = [
+    ...ctx.copies,
     ...(post.meta.video === undefined ? [] : [{ kind: 'copy' as const, from: post.meta.video, to: `${outDir}${POST_VIDEO_FILE}` }]),
     ...(post.meta.model === undefined ? [] : [{ kind: 'glb' as const, from: post.meta.model, to: `${outDir}${POST_MODEL_FILE}` }]),
   ];
@@ -313,8 +323,18 @@ function renderBlock(block: Block, ctx: PageContext): string[] {
 function renderFigure(block: FigureBlock, ctx: PageContext): string[] {
   const file = path.resolve(ctx.repoRoot, path.posix.dirname(ctx.post.file), block.src);
   const url = siteUrl(ctx.repoRoot, file);
-  ctx.images.push({ line: block.line, src: block.src, file, underSite: url !== null });
-  const src = url === null ? block.src : url.startsWith(ctx.pageDir) ? url.slice(ctx.pageDir.length) : url;
+  const fromRoot = path.relative(ctx.repoRoot, file);
+  const inRepo = fromRoot !== '' && !fromRoot.startsWith('..') && !path.isAbsolute(fromRoot);
+  ctx.images.push({ line: block.line, src: block.src, file, underSite: url !== null, inRepo });
+  let src = url === null ? block.src : url.startsWith(ctx.pageDir) ? url.slice(ctx.pageDir.length) : url;
+  if (url === null && inRepo && ctx.draft) {
+    // A draft keeps its images out of site/, where the deploy would pick them
+    // up before the post is published; its preview gets a copy next to it.
+    const from = fromRoot.split(path.sep).join('/');
+    const known = ctx.copies.find((copy) => copy.from === from);
+    src = known ? path.posix.basename(known.to) : previewName(ctx, path.basename(file));
+    if (!known) ctx.copies.push({ kind: 'copy', from, to: `site${ctx.pageDir}${src}` });
+  }
   const size = pngSize(file);
   const dims = size ? ` width="${size.width}" height="${size.height}"` : '';
   return [
@@ -323,6 +343,14 @@ function renderFigure(block: FigureBlock, ctx: PageContext): string[] {
     ...(block.caption === null ? [] : [`        <figcaption>${renderInline(block.caption)}</figcaption>`]),
     '      </figure>',
   ];
+}
+
+/** A file name next to a preview page, clear of its other copies and of the page's own files. */
+function previewName(ctx: PageContext, base: string): string {
+  const taken = new Set(['index.html', POST_MODEL_FILE, POST_VIDEO_FILE, ...ctx.copies.map((copy) => path.posix.basename(copy.to))]);
+  let name = base;
+  for (let n = 2; taken.has(name); n++) name = `${n}-${base}`;
+  return name;
 }
 
 /** Site path (`/blog/x/y.png`) of a file under site/, or null for any other file. */

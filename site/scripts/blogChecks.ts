@@ -61,21 +61,28 @@ export function needsEvaluator(rendered: RenderedPost): boolean {
 }
 
 /**
- * A `site/blog/<slug>/index.html` that no published guide builds: the page of
- * a post that was turned back into a draft or deleted. It would still be
- * served, so it fails the build until its directory is removed.
+ * Files in a `site/blog/<dir>/` that no published guide builds: the page of a
+ * post that went back to draft or was deleted, or a draft's images put there
+ * early. The deploy would serve them on their own, so they fail the build
+ * until the directory is removed or the post is published. Named by
+ * `index.html` when there is one, else by the first file.
  */
 export function checkOrphanPages(repoRoot: string, publishedSlugs: readonly string[]): CheckFailure[] {
   const blogDir = path.join(repoRoot, 'site/blog');
   if (!existsSync(blogDir)) return [];
   return readdirSync(blogDir, { withFileTypes: true })
     .filter((entry) => entry.isDirectory() && entry.name !== 'drafts' && !publishedSlugs.includes(entry.name))
-    .filter((entry) => existsSync(path.join(blogDir, entry.name, 'index.html')))
-    .map((entry) => ({
-      file: `site/blog/${entry.name}/index.html`,
-      line: 1,
-      message: `no published guide builds this page; delete site/blog/${entry.name}/ or publish docs/guide/${entry.name}.md`,
-    }));
+    .flatMap((entry) => {
+      const files = readdirSync(path.join(blogDir, entry.name)).sort();
+      if (files.length === 0) return [];
+      const named = files.includes('index.html') ? 'index.html' : files[0];
+      return [{
+        file: `site/blog/${entry.name}/${named}`,
+        line: 1,
+        message: `no published guide builds site/blog/${entry.name}/, so the deploy would serve its files on their own; ` +
+          `delete the directory or publish docs/guide/${entry.name}.md (a draft keeps its images outside site/)`,
+      }];
+    });
 }
 
 // ---- files -------------------------------------------------------------------
@@ -93,8 +100,12 @@ function checkFiles(rendered: RenderedPost, repoRoot: string): CheckFailure[] {
     if (!value.endsWith(suffix)) fail(line, `${field} ${value} must be a ${suffix} file`);
     else if (!existsSync(path.join(repoRoot, value))) fail(line, `${field} ${value} does not exist`);
   }
+  // A published page links its images where they are, so they must be under
+  // site/. A draft's preview copies them, so they may be anywhere in the repo.
+  const draft = post.meta.status === 'draft';
   for (const image of rendered.images) {
-    if (!image.underSite) fail(image.line, `image ${image.src} is not under site/; put it in site/blog/${post.slug}/ and link it from there`);
+    if (!image.inRepo) fail(image.line, `image ${image.src} is outside the repository`);
+    else if (!image.underSite && !draft) fail(image.line, `image ${image.src} is not under site/; put it in site/blog/${post.slug}/ and link it from there`);
     else if (!existsSync(image.file)) fail(image.line, `image ${image.src} does not exist`);
   }
   return failures;

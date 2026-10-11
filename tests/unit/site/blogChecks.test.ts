@@ -368,4 +368,48 @@ describe('drafts', () => {
     ]);
     expect(checkOrphanPages(repo, ['a-how-to', 'old-post'])).toEqual([]);
   });
+
+  // A draft's images must not sit where the deploy picks them up. They may be
+  // anywhere in the repository; the preview copies them next to its page.
+  describe('images', () => {
+    const { model: _model, ...noModel } = FIELDS;
+    const later = (src: string) =>
+      postFromSource('docs/guide/later.md', guide({ ...noModel, status: 'draft' }, `![A view](${src} "Caption.")\n`))!;
+
+    it('a draft may keep an image outside site/, and its preview gets a copy next to the page', async () => {
+      // A PNG signature and IHDR chunk for a 64 x 48 image.
+      writeFileSync(join(repo, 'examples/demo/view.png'), Buffer.from('89504e470d0a1a0a0000000d49484452000000400000003000', 'hex'));
+      const preview = renderBlog([later('../../examples/demo/view.png')], { repoRoot: repo, drafts: true });
+      const page = preview.files.find((f) => f.path === 'site/blog/drafts/later/index.html')!.html;
+      expect(page).toContain('<img src="view.png" alt="A view" width="64" height="48" loading="lazy" />');
+      expect(preview.assets).toEqual([{ kind: 'copy', from: 'examples/demo/view.png', to: 'site/blog/drafts/later/view.png' }]);
+      expect((await checkPost(preview.posts[0], fakeEvaluator(), repo)).failures).toEqual([]);
+    });
+
+    it('a published post still needs its images under site/', async () => {
+      const [failure] = await failures('![A view](../../examples/demo/view.png "Caption.")\n');
+      expect(failure.message).toContain('is not under site/');
+    });
+
+    it('an image outside the repository fails, draft or not', async () => {
+      const preview = renderBlog([later('../../../outside.png')], { repoRoot: repo, drafts: true });
+      const found = (await checkPost(preview.posts[0], fakeEvaluator(), repo)).failures;
+      expect(found.map((f) => f.message)).toEqual(['image ../../../outside.png is outside the repository']);
+      expect(preview.assets).toEqual([]);
+    });
+
+    it('files left in a site/blog directory that no published guide builds fail the build', () => {
+      const other = mkdtempSync(join(tmpdir(), 'kc-blog-orphan-'));
+      try {
+        mkdirSync(join(other, 'site/blog/later'), { recursive: true });
+        writeFileSync(join(other, 'site/blog/later/view.png'), 'png');
+        expect(checkOrphanPages(other, [])).toEqual([
+          { file: 'site/blog/later/view.png', line: 1, message: expect.stringContaining('no published guide builds site/blog/later/') },
+        ]);
+        expect(checkOrphanPages(other, ['later'])).toEqual([]);
+      } finally {
+        rmSync(other, { recursive: true, force: true });
+      }
+    });
+  });
 });
