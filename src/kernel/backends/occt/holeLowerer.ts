@@ -41,6 +41,7 @@ import type { FeatureKind } from '../../../shared/intent/types';
 import { HelicalSweepArgsError, polygonWireXY, sweepProfileAlongHelix } from './helicalSweep';
 import { isoInternalGrooveProfile, isoMinorRadius, profileHalfExtent } from './isoThread';
 import { faceFrameOrigin } from './faceFrame';
+import { firstExitDepth, isPointPlacedHole, resolvePointEntry } from './holeAtPoint';
 import {
   findEntryMisses,
   findUncutBores,
@@ -60,6 +61,9 @@ interface ResolvedEntry {
   axisIntoBody: Vec3;
   uBasis: Vec3;
   vBasis: Vec3;
+  /** Extra tool length behind the entry point (mm): an `at` hole on a curved
+   *  face or at an angle starts its cutter clear of the surface. */
+  lead?: number;
 }
 
 function vecOf(p: { x: number; y: number; z: number }): Vec3 {
@@ -338,11 +342,12 @@ function buildOneTool(
   // Bore length: extend slightly past the floor / back plane so the boolean
   // cleanly cuts through (avoid degenerate coplanar ops).
   const OVERSHOOT = 0.01;
-  const cylinderLength = effectiveDepth + OVERSHOOT * 2;
+  const lead = entry.lead ?? 0;
+  const cylinderLength = effectiveDepth + OVERSHOOT * 2 + lead;
 
-  // Position the cylinder so its base sits OVERSHOOT above the entry plane,
-  // extending into the body for `cylinderLength`.
-  const cylinderBase = add(entryPoint, scale(entry.axisIntoBody, -OVERSHOOT));
+  // Position the cylinder so its base sits OVERSHOOT (+ lead) above the entry
+  // plane, extending into the body for `cylinderLength`.
+  const cylinderBase = add(entryPoint, scale(entry.axisIntoBody, -OVERSHOOT - lead));
   // Replicad's `makeCylinder(radius, height, location?, direction?)` treats
   // location as the base center and direction as the cylinder axis (unit
   // vector). Both Point arguments accept Vec3-shape arrays.
@@ -356,8 +361,8 @@ function buildOneTool(
 
   // Counterbore: a wider cylinder stacked at the entry plane, depth = cb.depth.
   if (counterbore) {
-    const cbBase = add(entryPoint, scale(entry.axisIntoBody, -OVERSHOOT));
-    const cbLen = counterbore.depth + OVERSHOOT * 2;
+    const cbBase = add(entryPoint, scale(entry.axisIntoBody, -OVERSHOOT - lead));
+    const cbLen = counterbore.depth + OVERSHOOT * 2 + lead;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const cb = (replicad as any).makeCylinder(
       counterbore.diameter / 2,
@@ -512,6 +517,73 @@ function attachCreatedRefs(
   return merged;
 }
 
+/** Entry frame of an `at` hole: centred on the projected entry point, (u, v)
+ *  perpendicular to the drill axis, with a lead long enough that the cutter
+ *  starts clear of a curved or tilted entry surface (`maxDiameter` is the
+ *  widest tool section: bore, counterbore or countersink rim). */
+function resolvePointHoleEntry(
+  feature: FeatureRecord,
+  target: OcctBackend,
+  records: readonly FeatureRecord[] | undefined,
+  maxDiameter: number,
+): ResolvedEntry | { error: CompilerDiagnostic } {
+  const res = resolvePointEntry(feature, target, records);
+  if ('error' in res) return res;
+  const { uBasis, vBasis } = buildUvBasis(neg(res.axisIntoBody));
+  const cosTilt = Math.min(1, -dot(res.axisIntoBody, res.normalOutward));
+  const tanTilt = Math.sqrt(Math.max(0, 1 - cosTilt * cosTilt)) / Math.max(cosTilt, 1e-3);
+  return {
+    face: res.face,
+    centroid: res.point,
+    normalOutward: res.normalOutward,
+    axisIntoBody: res.axisIntoBody,
+    uBasis,
+    vBasis,
+    lead: (maxDiameter / 2) * (1 + tanTilt),
+  };
+}
+
+/** Entry frame, (u, v) and through depth of a single `hole` — face-frame
+ *  `{ u, v }` or point-placed `at` (whose frame is centred on its entry point). */
+function placeSingleHole(
+  feature: FeatureRecord,
+  target: OcctBackend,
+  records: readonly FeatureRecord[] | undefined,
+  g: Pick<HoleGeometryParams, 'diameter' | 'through' | 'counterbore' | 'countersink'>,
+): { entry: ResolvedEntry; u: number; v: number; throughDepth: number } | { error: CompilerDiagnostic } {
+  const pointPlaced = isPointPlacedHole(feature);
+  const widest = Math.max(g.diameter, g.counterbore?.diameter ?? 0, g.countersink?.diameter ?? 0);
+  const entry = pointPlaced
+    ? resolvePointHoleEntry(feature, target, records, widest)
+    : resolveEntry(feature, target, records);
+  if ('error' in entry) return entry;
+  const u = pointPlaced ? 0 : feature.params.u.evaluated;
+  const v = pointPlaced ? 0 : feature.params.v.evaluated;
+  if (!g.through) return { entry, u, v, throughDepth: 0 };
+  const td = pointPlaced ? pointThroughDepth(target, entry, feature.id) : deriveThroughDepth(target, entry, g.diameter, feature.id);
+  return typeof td === 'number' ? { entry, u, v, throughDepth: td } : td;
+}
+
+/** `through` for an `at` hole: to the first exit along the drill axis. */
+function pointThroughDepth(
+  target: OcctBackend,
+  entry: ResolvedEntry,
+  featureId: string,
+): number | { error: CompilerDiagnostic } {
+  const depth = firstExitDepth(target, entry.centroid, entry.axisIntoBody);
+  if (depth !== undefined) return depth;
+  return {
+    error: {
+      target: 'export-occt',
+      code: 'feature.hole.no-target-face',
+      featureId,
+      severity: 'error',
+      message: `'through' requested but the drill axis does not run through material from the entry point.`,
+      hint: 'Check `axis` points into the part (omit it to drill along the inward face normal), or give a numeric depth.',
+    },
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Public entry points
 // ---------------------------------------------------------------------------
@@ -522,36 +594,13 @@ export function lowerHole(
   records: readonly FeatureRecord[] | undefined,
 ): HoleLowerResult {
   const diagnostics: CompilerDiagnostic[] = [];
-  const entryRes = resolveEntry(feature, target, records);
-  if ('error' in entryRes) {
-    diagnostics.push(entryRes.error);
+  const { thread, nominalDiameter, diameter, through, numericDepth, counterbore, countersink } = resolveHoleGeometryParams(feature);
+  const placed = placeSingleHole(feature, target, records, { diameter, through, counterbore, countersink });
+  if ('error' in placed) {
+    diagnostics.push(placed.error);
     return { backend: target, diagnostics };
   }
-  const entry = entryRes;
-
-  const u = feature.params.u.evaluated;
-  const v = feature.params.v.evaluated;
-  const thread = readThread(feature);
-  const nominalDiameter = feature.params.diameter.evaluated;
-  const diameter = drilledDiameter(nominalDiameter, thread);
-  const through = feature.params.depthMode?.expression === "'through'";
-  const numericDepth = feature.params.depth?.evaluated;
-  const counterbore = feature.params.counterboreDiameter
-    ? { diameter: feature.params.counterboreDiameter.evaluated, depth: feature.params.counterboreDepth.evaluated }
-    : undefined;
-  const countersink = feature.params.countersinkDiameter
-    ? { diameter: feature.params.countersinkDiameter.evaluated, angleDeg: feature.params.countersinkAngleDeg.evaluated }
-    : undefined;
-
-  let throughDepth = 0;
-  if (through) {
-    const td = deriveThroughDepth(target, entry, diameter, feature.id);
-    if (typeof td !== 'number') {
-      diagnostics.push(td.error);
-      return { backend: target, diagnostics };
-    }
-    throughDepth = td;
-  }
+  const { entry, u, v, throughDepth } = placed;
 
   let built: OneToolBuild;
   try {

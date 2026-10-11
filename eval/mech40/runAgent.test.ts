@@ -34,9 +34,9 @@ function opts(k: number): Mech40Options {
 }
 
 describe('mech40 task set', () => {
-  it('has 40 tasks, each with prompt, checker and reference solution', () => {
-    expect(listMech40Tasks()).toHaveLength(40);
-    expect(readdirSync(MECH40_DIR)).toHaveLength(40);
+  it('has 42 tasks (the 40 + the two-bend sheet-metal tasks 41-42), each with prompt, checker and reference solution', () => {
+    expect(listMech40Tasks()).toHaveLength(42);
+    expect(readdirSync(MECH40_DIR)).toHaveLength(42);
   });
 });
 

@@ -13,7 +13,14 @@
 
 import { invalidArgs } from '../../shared/intent/invalidArgs';
 import { formatScalarForError } from '../../shared/intent/types';
-import type { FeatureId, FaceRef, Param } from '../../shared/intent/types';
+import type { FeatureId, FaceRef, Param, Vec3 } from '../../shared/intent/types';
+import {
+  resolveHoleAt,
+  serializeHoleAt,
+  validateHolePlacement,
+  type EditableHoleAt,
+  type HoleAt,
+} from './holePlacement';
 import type { FaceSelector } from '../capture/proxy';
 import type { Editable } from '../../shared/runtime/paramRef';
 import { currentValue, currentBool } from '../../shared/runtime/editableHelpers';
@@ -46,8 +53,13 @@ export interface HoleCounterbore { diameter: number; depth: number }
 export interface HoleCountersink { diameter: number; angleDeg?: number }
 
 export interface EditableHoleOpts {
-  u: Editable<number>;
-  v: Editable<number>;
+  /** Face-frame position (planar entry faces). Omit both when using `at`. */
+  u?: Editable<number>;
+  v?: Editable<number>;
+  /** World-point placement on any face (see holePlacement.ts). */
+  at?: EditableHoleAt;
+  /** Drill direction into the body for an `at` hole (default: inward normal). */
+  axis?: Vec3;
   diameter: Editable<number>;
   depth?: Editable<number> | 'through';
   upToFace?: FaceRef;
@@ -67,6 +79,8 @@ export interface EditableHoleOpts {
 export interface HoleOpts {
   u: number;
   v: number;
+  at?: HoleAt;
+  axis?: Vec3;
   diameter: number;
   depth?: number | 'through';
   upToFace?: FaceRef;
@@ -117,11 +131,13 @@ function resolveThread(thread: EditableHoleThread | undefined, table: ParamTable
  *  early — at declare/edit time rather than deferring to lower). */
 export function resolveHoleOpts(opts: EditableHoleOpts, table: ParamTable): HoleOpts {
   const out: HoleOpts = {
-    u: currentValue(opts.u, table),
-    v: currentValue(opts.v, table),
+    u: currentValue(opts.u as Editable<number>, table),
+    v: currentValue(opts.v as Editable<number>, table),
     diameter: currentValue(opts.diameter, table),
     name: opts.name,
   };
+  if (opts.at !== undefined) out.at = resolveHoleAt(opts.at, table);
+  if (opts.axis !== undefined) out.axis = opts.axis;
   if (opts.depth !== undefined) {
     out.depth = opts.depth === 'through' ? 'through' : currentValue(opts.depth, table);
   }
@@ -473,7 +489,8 @@ function validateThread(opts: HoleOpts | HolesOpts, featureId: FeatureId | undef
 }
 
 export function validateHoleOpts(opts: HoleOpts, featureId: FeatureId | undefined): void {
-  const badAxis = !isFiniteNumber(opts.u) ? 'u' : !isFiniteNumber(opts.v) ? 'v' : undefined;
+  const pointPlaced = validateHolePlacement(opts, featureId);
+  const badAxis = pointPlaced ? undefined : !isFiniteNumber(opts.u) ? 'u' : !isFiniteNumber(opts.v) ? 'v' : undefined;
   if (badAxis !== undefined) {
     invalidArgs({
       api: `hole(face, { ${badAxis} })`,
@@ -481,7 +498,7 @@ export function validateHoleOpts(opts: HoleOpts, featureId: FeatureId | undefine
       got: badAxis === 'u' ? opts.u : opts.v,
       showType: typeof (badAxis === 'u' ? opts.u : opts.v) !== 'number',
       requires:
-        'a finite number; u and v are the hole centre in the face\'s own 2-D frame, measured from the face origin',
+        'a finite number; u and v are the hole centre in the face\'s own 2-D frame, measured from the face origin (on a curved face such as a cylinder side, place the hole with `at: [x, y, z]` or `at: { angleDeg, z }` instead)',
       unit: 'mm',
       example: HOLE_EXAMPLE,
       featureId,
@@ -584,11 +601,9 @@ function paramUnitless(value: string | number): Param {
 // so it lives under metadata for now.
 
 export function serializeHoleParams(_face: FaceSelector, opts: EditableHoleOpts): SerializedHoleCapture {
-  const params: Record<string, Param> = {
-    u: paramMm(opts.u),
-    v: paramMm(opts.v),
-    diameter: paramMm(opts.diameter),
-  };
+  const params: Record<string, Param> = opts.at !== undefined
+    ? { ...serializeHoleAt(opts.at, opts.axis), diameter: paramMm(opts.diameter) }
+    : { u: paramMm(opts.u as Editable<number>), v: paramMm(opts.v as Editable<number>), diameter: paramMm(opts.diameter) };
   if (typeof opts.depth === 'number' || (typeof opts.depth === 'object' && opts.depth !== null)) {
     params.depth = paramMm(opts.depth as Editable<number>);
   } else if (opts.depth === 'through') {

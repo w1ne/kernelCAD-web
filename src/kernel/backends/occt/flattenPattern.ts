@@ -97,7 +97,9 @@ function walkFlattenLineage(
   while (cur) {
     chain.push(cur);
     if (cur.kind === 'sheetMetal') break;
-    const baseRef = cur.inputs.base;
+    // `.bend()` chains via inputs.base; holes / cutouts made on the blank
+    // before bending chain via inputs.target.
+    const baseRef = cur.inputs.base ?? cur.inputs.target;
     if (!baseRef || baseRef.kind !== 'feature') break;
     cur = recById.get(baseRef.id);
   }

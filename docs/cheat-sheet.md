@@ -90,7 +90,7 @@ Cut into a solid: bolt holes, pockets, slots, plain subtraction.
 |---|---|
 | `Shape.subtract(...others) => Shape` | Boolean difference (this minus others). |
 | `ParamRef.subtract(other: number \| ParamRef<number>) => ParamRef<number>` | Build a ParamRef whose value equals this ParamRef minus `other`. |
-| `Shape.hole(face: FaceSelector \| string, opts: { u, v, diameter, depth?: number \| "through", upToFace?: FaceRef, counterbore?: { diameter, depth }, countersink?: { diameter, angleDeg? }, thread?: { pitch, modeled?: boolean, clearance? } }) => Shape` | Drill a single hole. |
+| `Shape.hole(face: FaceSelector \| string, opts: { u, v, diameter, depth?: number \| "through", at?: Vec3 \| { angleDeg, z }, axis?: Vec3, upToFace?: FaceRef, counterbore?: { diameter, depth }, countersink?: { diameter, angleDeg? }, thread?: { pitch, modeled?: boolean, clearance? } }) => Shape` | Drill a single hole. |
 | `Shape.holes(face: FaceSelector \| string, opts: { positions: Array<{u,v}>, diameter, depth?, upToFace?, counterbore?, countersink?, thread? }) => Shape` | Drill N holes in one feature record. |
 | `Shape.cutout(profile: PathBuilder \| Sketch, opts: { face: FaceSelector \| string, depth?: number \| "through", upToFace?: FaceRef, depthMode?: "blind" \| "symmetric" }) => Shape` | Sketch-driven subtractive extrude for irregular shapes hole() can't express (slots, D-shapes, keyhole pockets). |
 

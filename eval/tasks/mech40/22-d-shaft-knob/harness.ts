@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { hasThreads, hole, mechHarness, sizeNear, threadMinor, volumeIn } from '../../../mech40/checks';
 
-// π·15²·15 − D-bore area (≈ 25.3 mm²)·12 − set screw and spot face ≈ 10 280 mm³.
+// π·15²·15 − D-bore area (≈ 25.3 mm²)·12 − set screw (± an optional spot face) ≈ 10 280 mm³.
 export default mechHarness({
   checks({ part, build }) {
     const p = part();

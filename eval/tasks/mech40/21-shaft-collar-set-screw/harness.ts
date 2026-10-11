@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { hasThreads, hole, mechHarness, sizeNear, threadMinor, volumeIn } from '../../../mech40/checks';
 
-// π(11² − 4²)·10 − set screw and spot face ≈ 3 255 mm³.
+// π(11² − 4²)·10 − set screw (± an optional spot face) ≈ 3 255 mm³.
 export default mechHarness({
   checks({ part, build }) {
     const p = part();

@@ -2,8 +2,6 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { flatPattern, mechHarness, near, sheetMetalOf, volumeIn } from '../../../mech40/checks';
 
-const OPEN = 'open sheet-metal finding: the bend lowering keeps the unfolded flange (an L from a 100 × 60 × 2 blank measures 100 × 60 × 100 and 17 880 mm³; two-bend chains are two solids) (eval/README.md, mech40)';
-
 export default mechHarness({
   checks({ part, build }) {
     const sm = sheetMetalOf(build);
@@ -17,9 +15,5 @@ export default mechHarness({
       'folded: 40 mm leg + 40 mm leg at 45° (envelope ≈ 70 × 30 × 30)': near(p.size[0], 70, 2) && near(p.size[1], 30) && near(p.size[2], 30, 2),
       'folded volume ≈ blank volume 4 800 mm³ (±3%)': volumeIn(p, 4656, 4944),
     };
-  },
-  open: {
-    'folded: 40 mm leg + 40 mm leg at 45° (envelope ≈ 70 × 30 × 30)': OPEN,
-    'folded volume ≈ blank volume 4 800 mm³ (±3%)': OPEN,
   },
 });
