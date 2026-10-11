@@ -851,19 +851,25 @@ export class Shape {
    * its lineage to a `sheetMetal(...)` record (validated at lowering time;
    * non-sheet-metal callers see `feature.invalid-args`).
    *
-   * @param edgeRef the linear edge to fold around. Same selector shape as
-   *               `.fillet(edges, ...)`: an EdgeQuery, EdgeSegment[],
-   *               `{ face: <canonical|label> }`, or a string label name.
+   * @param edgeRef the bend line in FLAT-BLANK coordinates: `{ atX: x }`
+   *               (line x = const, runs along Y) or `{ atY: y }`; every bend
+   *               of a chain uses blank coordinates, even after earlier folds.
    * @param angle  fold angle in degrees. Positive = fold toward the sheet's
    *               +normal; negative = fold the other way.
-   * @param radius inner bend radius in mm. Recommended `radius >= 0.5 * thickness`
-   *               to avoid sewing failure (`feature.kernel-failed`).
+   * @param radius inner bend radius in mm. Recommended `radius >= 0.5 * thickness`.
+   *
+   * The shorter side of the blank across the line folds (ties: the +X / +Y
+   * side), so a web with a bend near each end keeps the web in place. The
+   * bend zone is the strip of width BA centred on the line; it becomes the
+   * arc and the flange keeps its holes and cutouts. Holes made on the flat
+   * blank before `.bend()` are carried into the folded flange.
    *
    * Bend-allowance math (K-factor):
    *   `BA = (pi * |angle| / 180) * (kFactor * thickness + radius)`
    *
    * Slice-1 lowering limits:
-   *   - edge must be linear (else `feature.bend.edge-not-linear`)
+   *   - the line must be `{ atX }` / `{ atY }` (else `feature.bend.edge-not-linear`)
+   *   - bend zones of parallel lines may not overlap (`feature.invalid-args`)
    *   - at most 2 bends in the chain for `.flattenPattern()` (else
    *     `feature.flattenPattern.multi-bend-unsupported`).
    */

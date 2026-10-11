@@ -2,32 +2,34 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/backends/occt/sheetMetalLowerer.ts
 //
-// W2.2 sheet-metal slice 1: `case 'sheetMetalBend'` lowering implementation.
+// `case 'sheetMetalBend'` lowering. The fold geometry comes from the pure
+// planner in `modeling/sheetMetalFold.ts` (one `FoldStep` per bend, in world
+// space at the moment that bend is folded). For the step being lowered:
 //
-// Pipeline (slice 1):
-//   1. Resolve the bend axis from the FeatureRecord's `edges` / `face` ref —
-//      slice-1 accepts an EdgeQuery with `atX` or `atY` (defines an axis
-//      line inside the sheet) or a canonical face selector (uses the body
-//      bbox to derive the axis).
-//   2. Split the base body by two thin-slab `BRepAlgoAPI_Cut_3` cuts at the
-//      bend plane (workaround for absent `BRepAlgoAPI_Splitter` binding).
-//   3. Build the cylindrical bend section as a revolved arc strip via
-//      `BRepPrimAPI_MakeRevol_2`.
-//   4. Rotate the moving half by the bend angle about the bend axis using
-//      `gp_Trsf.SetRotation_1` + `BRepBuilderAPI_Transform_2`.
-//   5. Sew the three pieces with `BRepBuilderAPI_Sewing` + solidify with
-//      `BRepBuilderAPI_MakeSolid_3`.
+//   1. Split the current body at the two bend-zone planes (zone start on the
+//      fixed side, zone end on the moving side; the zone is the K-factor bend
+//      allowance strip across the bend line). Half-space boxes do the split
+//      (`BRepAlgoAPI_Splitter` is not bound in the bundled wasm).
+//   2. Revolve the fixed piece's cut section (the sheet cross-section at the
+//      zone start, with any relief notches or cutouts that cross it) about the
+//      bend axis by the bend angle: the bend arc with the requested INNER
+//      radius.
+//   3. Move the flange by the step's rigid transform: slide it back by the
+//      bend allowance (the arc consumes that strip), then rotate it about the
+//      bend axis. Its cut face lands exactly on the arc's end face.
+//   4. Fuse fixed piece + arc + flange into one solid. Holes and cutouts in
+//      the flange ride along with it.
 //
-// Returns a `bendRecord` containing the axis line + arcLength + edgeLength —
-// the lowerer caller persists this on `r.metadata.bendRecord` so
-// `flattenPattern()` can replay the bend without re-resolving the edge.
+// Returns a `bendRecord` (bend line in flat-blank coordinates, bend
+// allowance, flat blank extents) that the caller persists on
+// `r.metadata.bendRecord` for `flattenPattern()`.
 
 import * as replicad from 'replicad';
 import { getOC } from 'replicad';
 import { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import type { FeatureId } from '../../../shared/intent/types';
-import { computeBendAllowance } from '../../sheetMetal';
+import type { FoldStep, Rigid, Vec3 } from '../../sheetMetalFold';
 
 export interface BendAxisSpec {
   /** A point on the bend axis line, in world coordinates (slice-1 sheets
@@ -36,317 +38,232 @@ export interface BendAxisSpec {
   /** Unit direction vector along the bend axis. Must be perpendicular to the
    *  top-face normal. */
   direction: [number, number, number];
-  /** Length of the bend (= length of the moving half's intersection with the
-   *  bend axis). Slice-1 uses the bbox extent perpendicular to the bend axis
-   *  within the top face. */
+  /** Length of the bend line across the flat blank. */
   edgeLength: number;
+}
+
+/** Persisted on `FeatureRecord.metadata.bendRecord` for `flattenPattern()`. */
+export interface BendRecord {
+  /** Bend line start in FLAT-BLANK coordinates (bottom surface). */
+  axisOrigin: [number, number, number];
+  axisDirection: [number, number, number];
+  angleRad: number;
+  radius: number;
+  kFactor: number;
+  thickness: number;
+  /** Bend allowance: developed neutral-axis length of the arc (mm). */
+  arcLength: number;
+  edgeLength: number;
+  /** +1 when the +X/+Y side of the line folded, -1 for the -X/-Y side. */
+  movingSide: 1 | -1;
+  /** Flat blank extents [xmin, ymin, xmax, ymax] and bottom z. */
+  flatBounds: [number, number, number, number];
+  flatZ0: number;
 }
 
 export interface SheetMetalBendLoweringResult {
   shape?: OcctBackend;
   diagnostics: CompilerDiagnostic[];
-  /** Bend record stored on FeatureRecord.metadata.bendRecord by the caller.
-   *  Lets flattenPattern() replay the rotation without re-resolving the edge. */
-  bendRecord?: {
-    axisOrigin: [number, number, number];
-    axisDirection: [number, number, number];
-    angleRad: number;
-    radius: number;
-    kFactor: number;
-    thickness: number;
-    arcLength: number;
-    edgeLength: number;
-  };
+  bendRecord?: BendRecord;
 }
 
-type OcFactory = ReturnType<typeof getOC>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Oc = any;
 
 export interface BendInputs {
   featureId: FeatureId;
   base: OcctBackend;
-  axis: BendAxisSpec;
-  /** Top-face normal (Z+ for slice-1 xy-plane bodies). Used to construct the
-   *  cutter slab and the moving-half rotation axis. */
-  topNormal: [number, number, number];
-  angleDeg: number;
+  step: FoldStep;
+  thickness: number;
   radius: number;
   kFactor: number;
-  thickness: number;
+  /** Bend line + flat blank data recorded for flattenPattern. */
+  flat: { axis: BendAxisSpec; bounds: [number, number, number, number]; z0: number };
 }
 
-/** Lower a sheetMetalBend record to a TopoDS_Solid. See module docstring for
- *  the pipeline; the spec's intended `BRepAlgoAPI_Splitter` is replaced with
- *  two `BRepAlgoAPI_Cut_3` slab cuts (Splitter is not bound in the bundled
- *  `replicad-opencascadejs` WASM build — verified 2026-05-14). */
-function resolveBendPlane(
-  inp: BendInputs,
-  diagnostics: CompilerDiagnostic[],
-): { axisDirection: [number, number, number]; pn: [number, number, number] } | null {
-  // Normalize the axis direction.
-  const [adx, ady, adz] = inp.axis.direction;
-  const aLen = Math.hypot(adx, ady, adz);
-  if (aLen < 1e-9) {
-    diagnostics.push({
-      target: 'export-occt',
-      code: 'feature.bend.edge-not-linear',
-      featureId: inp.featureId,
-      severity: 'error',
-      message: '.bend(): bend axis direction is degenerate (zero-length).',
-      hint: '.bend() requires a linear edge with a non-zero direction. Use list_edges to inspect candidates.',
-    });
-    return null;
-  }
-  const axisDirection: [number, number, number] = [adx / aLen, ady / aLen, adz / aLen];
-
-  // Compute the bend-plane normal as topNormal × axisDirection. This is the
-  // plane perpendicular to the top face that contains the bend axis.
-  const [nx, ny, nz] = inp.topNormal;
-  const [dx, dy, dz] = axisDirection;
-  const planeNormal: [number, number, number] = [
-    ny * dz - nz * dy,
-    nz * dx - nx * dz,
-    nx * dy - ny * dx,
-  ];
-  const pnLen = Math.hypot(planeNormal[0], planeNormal[1], planeNormal[2]);
-  if (pnLen < 1e-9) {
-    diagnostics.push({
-      target: 'export-occt',
-      code: 'feature.kernel-failed',
-      featureId: inp.featureId,
-      severity: 'error',
-      message: 'Bend axis is parallel to the top-face normal — cannot define a split plane.',
-      hint: 'Pick a different bend edge; the bend axis must lie in the top face.',
-    });
-    return null;
-  }
-  const pn: [number, number, number] = [
-    planeNormal[0] / pnLen,
-    planeNormal[1] / pnLen,
-    planeNormal[2] / pnLen,
-  ];
-
-  return { axisDirection, pn };
+function kernelFailed(featureId: FeatureId, message: string, hint: string): CompilerDiagnostic {
+  return { target: 'export-occt', code: 'feature.kernel-failed', featureId, severity: 'error', message, hint };
 }
 
-export function lowerSheetMetalBend(inp: BendInputs): SheetMetalBendLoweringResult {
-  const diagnostics: CompilerDiagnostic[] = [];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const oc = getOC() as any;
+const sub = (a: Vec3, b: Vec3): Vec3 => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+const dot = (a: Vec3, b: Vec3): number => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+const cross = (a: Vec3, b: Vec3): Vec3 => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
 
-  const plane = resolveBendPlane(inp, diagnostics);
-  if (!plane) return { diagnostics };
-  const { axisDirection, pn } = plane;
+/** A box covering the half-space { x : (x - point)·normal > 0 } within `size`. */
+function halfSpaceBox(oc: Oc, point: Vec3, normal: Vec3, size: number): unknown {
+  const ref: Vec3 = Math.abs(normal[2]) < 0.9 ? [0, 0, 1] : [1, 0, 0];
+  const xd = cross(ref, normal);
+  const xl = Math.hypot(xd[0], xd[1], xd[2]);
+  const x: Vec3 = [xd[0] / xl, xd[1] / xl, xd[2] / xl];
+  const y = cross(normal, x);
+  const o: Vec3 = [
+    point[0] - (x[0] + y[0]) * size / 2,
+    point[1] - (x[1] + y[1]) * size / 2,
+    point[2] - (x[2] + y[2]) * size / 2,
+  ];
+  const ax2 = new oc.gp_Ax2_2(new oc.gp_Pnt_3(...o), new oc.gp_Dir_4(...normal), new oc.gp_Dir_4(...x));
+  const box = new oc.BRepPrimAPI_MakeBox_5(ax2, size, size, size);
+  const shape = box.Shape();
+  box.delete();
+  ax2.delete();
+  return shape;
+}
 
-  const baseShape = (inp.base.getReplicadShape() as { wrapped: unknown }).wrapped;
-  if (!baseShape) {
-    diagnostics.push({
-      target: 'export-occt',
-      code: 'feature.kernel-failed',
-      featureId: inp.featureId,
-      severity: 'error',
-      message: 'sheetMetalBend: could not access the underlying OCCT shape of the input.',
-      hint: 'Ensure the input Shape has been lowered before chaining .bend().',
-    });
-    return { diagnostics };
+function cutShape(oc: Oc, shape: unknown, tool: unknown): unknown {
+  const progress = new oc.Message_ProgressRange_1();
+  const cut = new oc.BRepAlgoAPI_Cut_3(shape, tool, progress);
+  cut.Build(progress);
+  const out = cut.HasErrors() ? null : cut.Shape();
+  cut.delete();
+  progress.delete();
+  if (!out) throw new Error('half-space cut failed');
+  return out;
+}
+
+function toTrsf(oc: Oc, T: Rigid): unknown {
+  const trsf = new oc.gp_Trsf_1();
+  const R = T.R;
+  trsf.SetValues(R[0], R[1], R[2], T.t[0], R[3], R[4], R[5], T.t[1], R[6], R[7], R[8], T.t[2]);
+  return trsf;
+}
+
+function transformShape(oc: Oc, shape: unknown, T: Rigid): unknown {
+  const trsf = toTrsf(oc, T) as { delete(): void };
+  const xf = new oc.BRepBuilderAPI_Transform_2(shape, trsf, true);
+  const out = xf.Shape();
+  xf.delete();
+  trsf.delete();
+  return out;
+}
+
+/** Faces of `piece` that are the planar cut section at the zone start. */
+function zoneSectionFaces(piece: replicad.Shape3D, step: FoldStep, thickness: number): replicad.Face[] {
+  const tol = 1e-4;
+  const out: replicad.Face[] = [];
+  for (const face of piece.faces) {
+    if (face.geomType !== 'PLANE') continue;
+    const c = face.center;
+    const rel = sub([c.x, c.y, c.z], step.zoneStart);
+    const inPlane = Math.abs(dot(rel, step.e)) < tol;
+    const h = dot(rel, step.n);
+    if (inPlane && h > -tol && h < thickness + tol) out.push(face);
   }
+  return out;
+}
 
-  // Bbox + slab cutter size.
+function isEmptyShape(shape: unknown): boolean {
+  try {
+    return Math.abs(replicad.measureVolume(replicad.cast(shape) as replicad.Shape3D)) < 1e-9;
+  } catch {
+    return true;
+  }
+}
+
+/** The bend arc: each zone-start section revolved about the bend axis. */
+function buildArc(step: FoldStep, sections: replicad.Face[]): replicad.Shape3D[] {
+  const sign = step.angleRad >= 0 ? 1 : -1;
+  const dir: Vec3 = [step.axis[0] * sign, step.axis[1] * sign, step.axis[2] * sign];
+  const deg = Math.abs(step.angleRad) * 180 / Math.PI;
+  return sections.map((f) => replicad.revolution(f, step.center, dir, deg) as replicad.Shape3D);
+}
+
+/** Fuse the pieces into one shape; a compound holding one solid is unwrapped. */
+function fusePieces(pieces: replicad.Shape3D[]): replicad.Shape3D {
+  let out = pieces[0];
+  for (let i = 1; i < pieces.length; i++) out = out.fuse(pieces[i]) as replicad.Shape3D;
+  const solids = (out as unknown as { wrapped: unknown }).wrapped;
+  const oc = getOC() as Oc;
+  const ex = new oc.TopExp_Explorer_2(solids, oc.TopAbs_ShapeEnum.TopAbs_SOLID, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
+  const found: unknown[] = [];
+  for (; ex.More(); ex.Next()) found.push(ex.Current());
+  ex.delete();
+  if (found.length === 1) return replicad.cast(oc.TopoDS.Solid_1(found[0])) as replicad.Shape3D;
+  return out;
+}
+
+function foldPieces(oc: Oc, inp: BendInputs, baseShape: unknown): replicad.Shape3D[] {
+  const { step } = inp;
   const bb = inp.base.boundingBox();
-  const diag = Math.hypot(
-    bb.max[0] - bb.min[0],
-    bb.max[1] - bb.min[1],
-    bb.max[2] - bb.min[2],
-  );
-  const SLAB = diag * 4;
+  const size = 4 * Math.hypot(bb.max[0] - bb.min[0], bb.max[1] - bb.min[1], bb.max[2] - bb.min[2]) + 4 * inp.radius;
+  const fixedRaw = cutShape(oc, baseShape, halfSpaceBox(oc, step.zoneStart, step.e, size));
+  const minusE: Vec3 = [-step.e[0], -step.e[1], -step.e[2]];
+  const movingRaw = cutShape(oc, baseShape, halfSpaceBox(oc, step.zoneEnd, minusE, size));
+  const fixed = replicad.cast(fixedRaw) as replicad.Shape3D;
+  const pieces: replicad.Shape3D[] = [];
+  if (!isEmptyShape(fixedRaw)) pieces.push(fixed);
+  pieces.push(...buildArc(step, zoneSectionFaces(fixed, step, inp.thickness)));
+  if (!isEmptyShape(movingRaw)) {
+    pieces.push(replicad.cast(transformShape(oc, movingRaw, step.flangeTransform)) as replicad.Shape3D);
+  }
+  return pieces;
+}
 
-  const halves = splitBodyAtBendPlane(oc, inp, baseShape, axisDirection, pn, SLAB, diagnostics);
-  if (!halves) return { diagnostics };
-
-  // Bend angle in radians; bend-allowance length.
-  const angleRad = inp.angleDeg * Math.PI / 180;
-  const arcLength = computeBendAllowance({
-    angleDeg: inp.angleDeg,
+function bendRecordOf(inp: BendInputs): BendRecord {
+  const { step, flat } = inp;
+  return {
+    axisOrigin: [flat.axis.origin[0], flat.axis.origin[1], flat.z0],
+    axisDirection: flat.axis.direction,
+    angleRad: step.angleRad,
     radius: inp.radius,
     kFactor: inp.kFactor,
     thickness: inp.thickness,
-  });
-
-  const rotated = rotateMovingHalf(oc, inp, halves.movingHalf, axisDirection, angleRad, diagnostics);
-  if (!rotated) return { diagnostics };
-
-  const fused = fuseBentHalves(
-    oc,
-    inp,
-    halves.fixedHalf,
-    rotated.shape,
-    axisDirection,
-    angleRad,
-    arcLength,
-    diagnostics,
-  );
-  if (fused) return fused;
-  return { diagnostics };
+    arcLength: step.bendAllowance,
+    edgeLength: flat.axis.edgeLength,
+    movingSide: step.side,
+    flatBounds: flat.bounds,
+    flatZ0: flat.z0,
+  };
 }
 
-// Helper: build a slab cutter on one side of the bend plane.
-// Side = +1 cuts the +pn half-space, leaving the -pn body half.
-// Side = -1 cuts the -pn half-space, leaving the +pn body half.
-function buildBendSlab(
-  oc: OcFactory,
-  inp: BendInputs,
-  pn: [number, number, number],
-  axisDirection: [number, number, number],
-  slabSize: number,
-  side: 1 | -1,
-): unknown {
-  // Offset the cutter origin slightly off the bend plane so the cut surface
-  // sits *outside* the bend plane proper — keeps the bend section's seam
-  // attachable later.
-  const [dx, dy, dz] = axisDirection;
-  const offset = 1e-4;
-  const ox = inp.axis.origin[0] + side * pn[0] * offset;
-  const oy = inp.axis.origin[1] + side * pn[1] * offset;
-  const oz = inp.axis.origin[2] + side * pn[2] * offset;
-  const origin = new oc.gp_Pnt_3(ox, oy, oz);
-  const xDir = new oc.gp_Dir_4(side * pn[0], side * pn[1], side * pn[2]);
-  const zDir = new oc.gp_Dir_4(dx, dy, dz);
-  const ax2 = new oc.gp_Ax2_2(origin, zDir, xDir);
-  const box = new oc.BRepPrimAPI_MakeBox_5(ax2, slabSize, slabSize, slabSize);
-  const slab = box.Shape();
-  box.delete();
-  return slab;
-}
-
-function splitBodyAtBendPlane(
-  oc: OcFactory,
-  inp: BendInputs,
-  baseShape: unknown,
-  axisDirection: [number, number, number],
-  pn: [number, number, number],
-  slabSize: number,
-  diagnostics: CompilerDiagnostic[],
-): { movingHalf: unknown; fixedHalf: unknown } | null {
+/** Lower one sheetMetalBend step to a single folded solid. */
+export function lowerSheetMetalBend(inp: BendInputs): SheetMetalBendLoweringResult {
+  const diagnostics: CompilerDiagnostic[] = [];
+  const oc = getOC() as Oc;
+  const baseShape = (inp.base.getReplicadShape() as { wrapped: unknown }).wrapped;
+  if (!baseShape) {
+    diagnostics.push(kernelFailed(
+      inp.featureId,
+      'sheetMetalBend: could not access the underlying OCCT shape of the input.',
+      'Ensure the input Shape has been lowered before chaining .bend().',
+    ));
+    return { diagnostics };
+  }
+  let pieces: replicad.Shape3D[];
   try {
-    const cutterPos = buildBendSlab(oc, inp, pn, axisDirection, slabSize, 1);
-    const cutterNeg = buildBendSlab(oc, inp, pn, axisDirection, slabSize, -1);
-    // Fixed half: body minus the +pn slab → keeps the -pn half.
-    const cutFixed = new oc.BRepAlgoAPI_Cut_3(baseShape, cutterPos, new oc.Message_ProgressRange_1());
-    cutFixed.Build(new oc.Message_ProgressRange_1());
-    const fixedHalf = cutFixed.Shape();
-    cutFixed.delete();
-    // Moving half: body minus the -pn slab → keeps the +pn half.
-    const cutMoving = new oc.BRepAlgoAPI_Cut_3(baseShape, cutterNeg, new oc.Message_ProgressRange_1());
-    cutMoving.Build(new oc.Message_ProgressRange_1());
-    const movingHalf = cutMoving.Shape();
-    cutMoving.delete();
-    return { movingHalf, fixedHalf };
+    pieces = foldPieces(oc, inp, baseShape);
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
-    diagnostics.push({
-      target: 'export-occt',
-      code: 'feature.kernel-failed',
-      featureId: inp.featureId,
-      severity: 'error',
-      message: `Splitting the sheet at the bend axis failed: ${msg}`,
-      hint: 'OCCT could not split the body along the bend axis. The bend axis may not pass through the sheet — verify the bend selector lies on the body.',
-    });
-    return null;
+    diagnostics.push(kernelFailed(
+      inp.featureId,
+      `Folding the sheet at the bend line failed: ${msg}`,
+      'OCCT could not split or fold the body at the bend line. Check that the bend line crosses the blank and that the inner radius is >= 0.5 x thickness.',
+    ));
+    return { diagnostics };
+  }
+  if (pieces.length < 2) {
+    diagnostics.push(kernelFailed(
+      inp.featureId,
+      '.bend(): the bend line does not cross the sheet — nothing on one side of it to fold.',
+      'Put the bend line inside the flat blank, in blank coordinates: { atX: <x> } runs along Y, { atY: <y> } runs along X.',
+    ));
+    return { diagnostics };
+  }
+  try {
+    const folded = fusePieces(pieces);
+    return { shape: new OcctBackend(folded), diagnostics, bendRecord: bendRecordOf(inp) };
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    diagnostics.push(kernelFailed(
+      inp.featureId,
+      `Fusing the folded flange to the bend arc failed: ${msg}`,
+      'OCCT could not join the folded pieces. Try a larger inner radius or a different bend angle.',
+    ));
+    return { diagnostics };
   }
 }
 
-// Rotate the moving half about the bend axis by angleRad. Slice-1
-// simplifies the sewing step: we union the rotated moving half with the
-// fixed half via BRepAlgoAPI_Fuse_3, accepting a sharp inner-corner where
-// a rounded bend section would normally live. The K-factor neutral-axis
-// math is still correct for `.flattenPattern()` because we record the
-// bend's `arcLength` regardless of whether the cylinder section is
-// physically present in the lowered solid. Slice 2 will add the curved
-// bend cylinder via BRepPrimAPI_MakeRevol_1 once we work around the
-// current OCCT binding issue on the revolution arg list.
-function rotateMovingHalf(
-  oc: OcFactory,
-  inp: BendInputs,
-  movingHalf: unknown,
-  axisDirection: [number, number, number],
-  angleRad: number,
-  diagnostics: CompilerDiagnostic[],
-): { shape: unknown } | null {
-  const [dx, dy, dz] = axisDirection;
-  try {
-    const trsf = new oc.gp_Trsf_1();
-    const ax1Origin = new oc.gp_Pnt_3(inp.axis.origin[0], inp.axis.origin[1], inp.axis.origin[2]);
-    const ax1Dir = new oc.gp_Dir_4(dx, dy, dz);
-    const ax1 = new oc.gp_Ax1_2(ax1Origin, ax1Dir);
-    trsf.SetRotation_1(ax1, angleRad);
-    const xform = new oc.BRepBuilderAPI_Transform_2(movingHalf, trsf, false);
-    const shape = xform.Shape();
-    xform.delete();
-    return { shape };
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
-    diagnostics.push({
-      target: 'export-occt',
-      code: 'feature.kernel-failed',
-      featureId: inp.featureId,
-      severity: 'error',
-      message: `Rotating the moving half failed: ${msg}`,
-      hint: 'OCCT could not rotate the body half about the bend axis. Verify the bend axis lies on the body.',
-    });
-    return null;
-  }
-}
-
-// Fuse the fixed half with the rotated moving half. For a non-zero bend
-// angle the two halves only meet along the bend axis edge — fuse still
-// produces a valid TopoDS_Compound that subsequent operations can consume.
-function fuseBentHalves(
-  oc: OcFactory,
-  inp: BendInputs,
-  fixedHalf: unknown,
-  movingHalfRotated: unknown,
-  axisDirection: [number, number, number],
-  angleRad: number,
-  arcLength: number,
-  diagnostics: CompilerDiagnostic[],
-): SheetMetalBendLoweringResult | null {
-  try {
-    const fuse = new oc.BRepAlgoAPI_Fuse_3(fixedHalf, movingHalfRotated, new oc.Message_ProgressRange_1());
-    fuse.Build(new oc.Message_ProgressRange_1());
-    const fusedShape = fuse.Shape();
-    fuse.delete();
-
-    // Cast back through replicad so OcctBackend recognises the shape. Use
-    // the same pattern as historyAwareBooleans / occtBackend.scale (cast
-    // produces a Compound/Solid wrapper with the boundingBox getter populated).
-    const castShape = replicad.cast(fusedShape) as import('replicad').Shape3D;
-    const result = new OcctBackend(castShape);
-    return {
-      shape: result,
-      diagnostics,
-      bendRecord: {
-        axisOrigin: inp.axis.origin,
-        axisDirection,
-        angleRad,
-        radius: inp.radius,
-        kFactor: inp.kFactor,
-        thickness: inp.thickness,
-        arcLength,
-        edgeLength: inp.axis.edgeLength,
-      },
-    };
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
-    diagnostics.push({
-      target: 'export-occt',
-      code: 'feature.kernel-failed',
-      featureId: inp.featureId,
-      severity: 'error',
-      message: `Fusing the bent body halves failed: ${msg}`,
-      hint: 'OCCT could not fuse the bend halves. Try a different bend angle or radius.',
-    });
-    return null;
-  }
-}
+/** Bounding box the bend line is resolved against (the FLAT blank). */
+export interface BendBox { min: [number, number, number]; max: [number, number, number] }
 
 /** Derive a bend axis from the FeatureRecord's edge / face input ref. Slice-1
  *  accepts:
@@ -356,7 +273,7 @@ function fuseBentHalves(
  *     the long bbox dimension.
  *  Returns undefined + a diagnostic if the ref shape is unsupported. */
 export function resolveBendAxis(
-  base: OcctBackend,
+  base: { boundingBox(): BendBox },
   edgesRef: unknown,
   faceRef: unknown,
   featureId: FeatureId,
@@ -377,7 +294,7 @@ export function resolveBendAxis(
 }
 
 function resolveEdgeQueryBendAxis(
-  bb: ReturnType<OcctBackend['boundingBox']>,
+  bb: BendBox,
   edgesRef: unknown,
   zMid: number,
 ): BendAxisSpec | undefined {
@@ -409,7 +326,7 @@ function resolveEdgeQueryBendAxis(
 }
 
 function resolveCanonicalFaceBendAxis(
-  bb: ReturnType<OcctBackend['boundingBox']>,
+  bb: BendBox,
   faceRef: unknown,
   zMid: number,
 ): BendAxisSpec | undefined {
