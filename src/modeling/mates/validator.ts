@@ -38,6 +38,7 @@ import { parseConnectorRef } from './mate';
 import { jointContactCapMm3 } from '../runtime/jointContactCap';
 import { validateMatePhysicalRealization } from './matePhysicalRealization';
 import { validateMountingHoleConsistency } from './mountingHoleConsistency';
+import { validateMountingHoleAlignment } from './mountingHoleAlignment';
 import type { ConnectorWorkspace, PoseEnvelopeReviewResult } from './poseEnvelope';
 import { reviewJointTopology } from './jointTopology';
 import { solveMates, type SolveResult, type SolveStatus } from './solver';
@@ -95,6 +96,8 @@ export type ValidatorDiagnosticCode = Extract<
   | 'assembly.joint-topology.connector-missing'
   | 'assembly.joint-topology.axis-invalid'
   | 'assembly.mounting-hole.mismatch'
+  | 'assembly.mounting-hole.unverified'
+  | 'assembly.mounting-hole.misaligned'
   | 'assembly.joint-axis.unbound'
   | 'assembly.joint.child-modeled-in-place'
   | 'assembly.joint.load-exceeded'
@@ -650,6 +653,9 @@ export async function validateAssemblyWithMates(
   //    construction.
   diagnostics.push(...validateJointLoadCapacity(arm, externalLoads));
   diagnostics.push(...validateMountingHoleConsistency(arm));
+  if (solveStatus === 'solved' || solveStatus === 'redundant-ok') {
+    diagnostics.push(...await validateMountingHoleAlignment(arm, solveResult?.poses));
+  }
   const axisBindingResult = await validateJointAxisBindingWithCache(arm);
   diagnostics.push(...axisBindingResult.diagnostics);
   diagnostics.push(...await validateJointVisualExposure({
