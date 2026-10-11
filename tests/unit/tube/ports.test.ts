@@ -119,3 +119,45 @@ describe('part.port()', () => {
     expect(() => pump.port('out')).toThrowError(/^tube\.port\.unresolved:/);
   });
 });
+
+describe('connector origin must be numeric', () => {
+  const HINT = /build the part in its own frame and place it with a param in `at`/;
+
+  it.each([
+    ['a bare param', (x: unknown) => [x, 20, 20]],
+    ['a param expression', (x: { add(n: number): unknown }) => [x.add(0), 20, 20]],
+    ['NaN', () => [Number.NaN, 20, 20]],
+    ['a string', () => ['20', 20, 20]],
+    ['two components', () => [20, 20]],
+  ])('rejects %s in a vec3 origin, on a port and on a plain frame connector', (_label, value) => {
+    for (const rest of [{ type: 'axis', axis: [1, 0, 0], port: { system: 'fuel', od: 10 } }, { type: 'frame' }]) {
+      const { api } = makeApi();
+      const part = api.assembly('rig').part('b', api.box(40, 40, 40));
+      let thrown: { code?: string; message?: string; hint?: string } = {};
+      try {
+        part.connector('p', { ...rest, origin: { kind: 'vec3', value: value(api.param('X', 200) as never) } } as never);
+      } catch (e) { thrown = e as typeof thrown; }
+      expect(thrown.code).toBe('feature.invalid-args');
+      expect(thrown.message).toMatch(/^connector\(name, opts\): origin\.value — got .*; requires three finite numbers \[x, y, z\] in the part's own frame/);
+      expect(thrown.hint).toMatch(HINT);
+      expect(part.mateConnectors).toHaveLength(0);
+    }
+  });
+
+  it('names the param in the message', () => {
+    const { api } = makeApi();
+    const x = api.param('X', 200);
+    expect(() => api.assembly('rig').part('b', api.box(40, 40, 40))
+      .connector('p', { type: 'frame', origin: { kind: 'vec3', value: [x as never, 20, 20] } }))
+      .toThrowError(/got \[param X, 20, 20\]/);
+  });
+
+  it('still accepts plain numbers and topology references', () => {
+    const { api } = makeApi();
+    const part = api.assembly('rig').part('b', api.box(40, 40, 40))
+      .connector('a', { type: 'frame', origin: { kind: 'vec3', value: [0, -1.5, 40] } })
+      .connector('t', { type: 'axis', origin: '@kc[b/face/top]', axis: [0, 0, 1] });
+    expect(part.mateConnectors.map((c) => c.origin.kind)).toEqual(['vec3', 'topology']);
+  });
+});
+

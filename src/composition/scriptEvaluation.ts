@@ -221,6 +221,23 @@ async function runOptInGates(
   };
 }
 
+/** The port report, or `undefined` with a warning on the model when it fails:
+ *  a report must never take the evaluation down with it. */
+function portReportOrWarning(model: BuiltModel): PortReportEntry[] | undefined {
+  try {
+    return portReportOnModel(model);
+  } catch (e) {
+    model.diagnostics.push({
+      target: 'export-occt',
+      code: 'feature.kernel-failed',
+      severity: 'warn',
+      message: `ports: the port report failed (${e instanceof Error ? e.message : String(e)}); \`ports\` is left out of this result.`,
+      hint: 'The verdict and the other reports are not affected. Check the connectors that carry port data for an origin or axis that is not plain numbers.',
+    });
+    return undefined;
+  }
+}
+
 /** Declared (`shape.dimension()`) dimensions only; the automatic ones are a
  *  viewer concern and cost a model walk evaluate has no use for. Their
  *  warnings (an unresolved query, say) go to the model's diagnostics so the
@@ -275,7 +292,7 @@ export async function evaluateAndBuildScript(
 
   const gates = await runOptInGates(model, fatal);
 
-  const portReport = portReportOnModel(model);
+  const portReport = portReportOrWarning(model);
 
   const fatalAfterGates = model.diagnostics.some(d => d.severity === 'error');
   const dimensions = fatalAfterGates ? [] : declaredDimensionSummaries(model);

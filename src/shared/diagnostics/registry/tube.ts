@@ -105,4 +105,12 @@ export const TUBE_CODES = {
     group: 'tube',
     description: 'A tubeSpec systems entry names a fluid system that no tube in the script has, so its rule overrides apply to nothing.',
   },
+  'tube.spec.system-rule-invalid': {
+    hintTemplate:
+      'A `systems` value in `tubeSpec` comes from a param that now gives a number the rule cannot be. Set the param so the factor is positive (and `maxBendAngle` is at most 180), or give the entry a plain number.',
+    nextAction: { kind: 'fix-arg', field: 'tubeSpec' },
+    defaultSeverity: 'error',
+    group: 'tube',
+    description: 'A tubeSpec systems override resolves to a non-finite or non-positive number (or a bend angle above 180), so the top-level rule was applied instead.',
+  },
 } as const satisfies Record<`tube.${string}`, DiagnosticCodeSpec>;

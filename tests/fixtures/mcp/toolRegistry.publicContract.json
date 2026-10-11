@@ -207,7 +207,7 @@
             ],
             "additionalProperties": false
           },
-          "description": "Every fluid port (a connector with port data) of the assembly the script returns. Present, possibly empty, whenever the script declares an assembly, with or without tubes; omitted otherwise and for dryRun."
+          "description": "Every fluid port (a connector with port data) of the assembly the script returns. Present, possibly empty, whenever the script declares an assembly and builds a model, with or without tubes; omitted otherwise and for dryRun."
         },
         "mechanism": {
           "type": "string",

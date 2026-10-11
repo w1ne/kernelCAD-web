@@ -6,11 +6,12 @@
 
 import { describe, it, expect } from 'vitest';
 import {
-  checkTubeRules, effectiveRules, endStraightNeed, type TubeRuleFinding, type TubeRuleSpec,
+  checkTubeRules, effectiveRules, endStraightNeed, resolveTubeSpec, type TubeRuleFinding, type TubeRuleSpec,
 } from '../../../src/modeling/runtime/tube/tubeRules';
 import { TUBE_SPEC_DEFAULTS, type TubeMetadata } from '../../../src/shared/intent/tubeRecord';
 import { buildTubePath, type TubePath, type V3 } from '../../../src/shared/tube/tubePath';
 import { DIAGNOSTIC_REGISTRY } from '../../../src/shared/diagnostics/registry';
+import { ParamTable } from '../../../src/shared/runtime/paramTable';
 
 const spec = TUBE_SPEC_DEFAULTS;
 const meta = (over: Partial<TubeMetadata> = {}): TubeMetadata =>
@@ -203,3 +204,34 @@ describe('per-system rules', () => {
       "tube.bend.angle-exceeded: tube 't' bend 1 is 126.87 deg; the limit is 90.00 deg (system 'oil')."]);
   });
 });
+
+describe('resolveTubeSpec', () => {
+  const num = (v: number, unit = 'unitless') => ({ expression: String(v), unit, evaluated: v }) as never;
+
+  it('reads override params through the table', () => {
+    const table = new ParamTable();
+    table.declare('K', 'number', 1.5);
+    const r = resolveTubeSpec({ ...spec, virtual: true, clearance: { default: 6, pairs: [] },
+      systems: { 'hot-gas': { minBendRadiusFactor: { expression: '{$param:K}', unit: 'unitless', evaluated: 0, paramRef: 'K' } as never } } }, table);
+    expect(r.invalid).toEqual([]);
+    expect(r.spec.systems).toEqual({ 'hot-gas': { minBendRadiusFactor: 1.5 } });
+  });
+
+  it('drops an override that resolves to a number the rule cannot be, and reports it', () => {
+    const r = resolveTubeSpec({ ...spec, virtual: true, clearance: { default: 6, pairs: [] },
+      systems: {
+        'hot-gas': { minBendRadiusFactor: num(0), minStraightAtEnd: num(1) },
+        oil: { minStraightBetweenBends: num(Number.NaN), maxBendAngle: num(200, 'deg') },
+        fuel: { minStraightAtEnd: num(-2), maxBendAngle: num(180, 'deg') },
+      } }, new ParamTable());
+    expect(r.invalid).toEqual([
+      { system: 'hot-gas', key: 'minBendRadiusFactor', value: 0, applied: 3 },
+      { system: 'oil', key: 'minStraightBetweenBends', value: Number.NaN, applied: 2 },
+      { system: 'oil', key: 'maxBendAngle', value: 200, applied: 180 },
+      { system: 'fuel', key: 'minStraightAtEnd', value: -2, applied: 2.5 },
+    ]);
+    expect(r.spec.systems).toEqual({ 'hot-gas': { minStraightAtEnd: 1 }, oil: {}, fuel: { maxBendAngle: 180 } });
+    expect(effectiveRules(r.spec, 'hot-gas')).toMatchObject({ minBendRadiusFactor: 3, minStraightAtEnd: 1 });
+  });
+});
+

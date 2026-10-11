@@ -46,7 +46,7 @@ A port is an axis connector that also says what connects to it. Add `port` to th
 ```typescript
 part.connector('out', {
   type: 'axis',
-  origin: { kind: 'vec3', value: [30, 30, 60] },   // in the part's own frame, before `at`
+  origin: { kind: 'vec3', value: [30, 30, 60] },   // in the part's own frame, before `at`; plain numbers only
   axis: [0, 0, 1],                                 // pointing out of the part
   port: { system: 'hydraulic', od: 9.525, minStraight: 30 },   // minStraight is optional, mm
 });
@@ -55,6 +55,7 @@ part.connector('out', {
 - `system` is a free name. It becomes the tube's system and is what `clearance.pairs` matches on.
 - `od` is the tube outer diameter the port takes, in mm. A tube between two ports takes its `od` from them; ports of different sizes, or an explicit `od` that disagrees, fail with `tube.port.od-mismatch`.
 - `minStraight` raises the straight the tube must keep at this end above the `tubeSpec` rule.
+- The origin takes three plain numbers. A param in it fails with `feature.invalid-args`. To move a port with a param, build the part in its own frame and put the param in the part's `at`.
 - Model the boss as part of the part that owns the port (`body.union(boss)`), with the port at the boss face. The tube touches the boss by design, and only the part that owns the port is excused for that contact. A boss added as a separate assembly part is a clearance violation at 0 mm.
 
 `part.port(name)` returns the port position, axis, size and system for `from` / `to`. It works when the connector has a `{ kind: 'vec3' }` origin and the part is placed with `at`. The position is `at` plus the origin, so `at: [x, 0, 0]` with `x = param('X', 60)` moves the port and the tube end with it.
@@ -175,8 +176,10 @@ Gate errors come after the build, as `tube.*` diagnostics. The script built, so 
 | `tube.port.misaligned` | "off the port axis": put the corner at the point the message gives. "from port" or "from its captured point": the part or the tube moved; route the end to the stated position as `{ point, axis, part }`, and add the tube with no `at`. "from part": the end does not touch the part it names; move the `point` onto the part's surface. |
 | `tube.clearance.violated` | The message gives the closest point on the tube and the closest point on the other body. Move the corner nearest the first point away from the second by the shortfall (rule minus measured). At 0.00 mm from the part a plain end sits on, add `part` to that end. |
 | `tube.clearance.pair-unused` (warning) | Correct the system name in `clearance.pairs` to one of the systems the message lists, or remove the pair. |
+| `tube.spec.system-rule-invalid` | A param in a `systems` entry now gives a value the rule cannot be, and the top-level rule was applied. Fix the param, or use a plain number. |
 | `tube.spec.system-unused` (warning) | Correct the system name in `systems` to one of the systems the message lists, or remove the entry. |
 | `tube.clearance.overlap` | The tube passes through the named part or tube. Route the leg around it. |
+| `feature.kernel-failed` with a `tube.gate:` message | The gate could not finish a check on the named tube, so that tube is not verified. The message carries the cause; check the tube's ends, its ports and the parts they sit on. |
 | `tube.end.part-not-found` | Set `part` on that end to one of the part names the message lists, or remove it for an end in free space. |
 | `tube.part.duplicate` | The same tube shape was added under two part names and only the first is checked. Declare a second `tube()` for the second line. |
 
@@ -191,7 +194,7 @@ A pair of tubes is reported once, on the tube declared first, so the corner to m
 
 ## The port report
 
-`evaluate_script` and `kernelcad evaluate <file> --json` (with or without `--envelope`) return a `ports` array whenever the script declares an assembly. It does not need a tube: it is there for a script that only places parts, and when a gate fails. It lists the ports of the assembly the script returns, in the order the parts and connectors were declared. A dry run (`dryRun: true`) builds nothing and has no `ports`.
+`evaluate_script` and `kernelcad evaluate <file> --json` (with or without `--envelope`) return a `ports` array whenever the script declares an assembly and builds a model (a script that throws while it runs has no `ports`). It does not need a tube: it is there for a script that only places parts, and when a gate fails. It lists the ports of the assembly the script returns, in the order the parts and connectors were declared. A dry run (`dryRun: true`) builds nothing and has no `ports`.
 
 ```json
 "ports": [
@@ -210,6 +213,8 @@ A pair of tubes is reported once, on the tube declared first, so the corner to m
 | `usedBy` | names of the tubes that end on the port, `[]` when it is free. A plain `{ point }` end counts when it sits within 0.01 mm of `origin` |
 | `unresolved` | why there is no position; `origin`, `axis` and `placedBy` are then left out |
 
+A mate's transform is applied on top of `at`. A part that is both placed with `at` and moved by a mate lands at `at` plus the mate's offset, not where either one alone would put it. Read `ports` for the real position.
+
 Placing corners from a port:
 
 - First corner of a tube that leaves the port: `origin + L * axis`. `L` is at least `bendRadius + minStraightAtEnd * od` for a 90 degree bend (use the port's `minStraight` in place of `minStraightAtEnd * od` when it is longer).
@@ -224,7 +229,6 @@ Placing corners from a port:
 | `no built assembly` | the build failed, or the script does not return the assembly. Fix the errors in `diagnostics`, or return `asm.model()` |
 | `part '<name>' is not in the built assembly` | the part did not make it into the scene |
 | `the connector origin is a face, edge or vertex reference` | give the port a `{ kind: 'vec3' }` origin |
-| `the connector origin is not three finite numbers` | a param or a bad value in the origin. An origin takes plain numbers; move the port by its part's `at` |
 | `the part is placed with connect` | place the part with `at` |
 
 A port that nothing connects to is not an error. Two tubes in one `usedBy` are the two-tubes-from-one-port case and fail `tube.clearance.overlap`.

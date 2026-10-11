@@ -683,3 +683,55 @@ return asm.model();`;
     expect(messages(other, 'tube.clearance.violated')).toHaveLength(1);
   }, 180_000);
 });
+
+describe('tube gates: a fault in the gate itself', () => {
+  /** Two lines on one block. The fault makes the stored origin of p1 unreadable as a number, after the build. */
+  const TWO = HEAD + `
+tubeSpec({});
+const a = tube('fuel-1', { from: block.port('p1'), to: { point: [20, 20, 200] }, wall: 1, bendRadius: 30 });
+const b = tube('bleed-1', { from: block.port('p2'), to: { point: [100, 20, 20] }, wall: 1, bendRadius: 30 });
+asm.part('fuel-1', a); asm.part('bleed-1', b);
+return asm.model();`;
+  const poison = { [Symbol.toPrimitive]: () => { throw new Error('injected origin fault'); } };
+
+  async function runPoisoned(): Promise<TubeCheckReport> {
+    const model = await buildModel({ fileName: 'tube-gates.kcad.ts', code: TWO });
+    const parts = (Array.from(model.session.assemblies.values())[0] as { __parts(): Array<{ name: string; mateConnectors: Array<{ name: string; origin: { value: unknown[] } }> }> }).__parts();
+    parts.find((p) => p.name === 'block')!.mateConnectors.find((c) => c.name === 'p1')!.origin.value = [poison, 20, 40];
+    return (await runTubeChecksOnModel(model))!;
+  }
+
+  it('an exception on one tube becomes an error on that tube and the other tube is still checked', async () => {
+    const r = await runPoisoned();
+    expect(r.diagnostics.map((d) => [d.code, d.severity, d.featureId !== undefined])).toEqual([
+      ['feature.kernel-failed', 'error', true]]);
+    expect(r.diagnostics[0].message).toBe(
+      "tube.gate: checking the port positions failed on tube 'fuel-1' (injected origin fault); the tube is not verified.");
+    expect(r.diagnostics[0].hint.trim().length).toBeGreaterThan(0);
+    expect(r.lines.map((l) => l.name)).toEqual(['fuel-1', 'bleed-1']);
+    expect(r.lines[1].minClearance).toMatchObject({ to: 'fuel-1', mm: expect.any(Number) });
+  }, 120_000);
+
+  it('the same script with no fault is clean', async () => {
+    expect((await run(TWO)).diagnostics).toEqual([]);
+  }, 120_000);
+});
+
+describe('tube gates: an override param that went bad after capture', () => {
+  it('reports the system and key, and applies the top-level rule', async () => {
+    const model = await buildModel({ fileName: 'tube-gates.kcad.ts', code: `
+const K = param('K', 1.5);
+tubeSpec({ systems: { 'hot-gas': { minBendRadiusFactor: K } } });
+return tube('duct', { from: { point: [0, 0, 0] }, to: { point: [600, 600, 0] }, via: [[600, 0, 0]], od: 114.3, wall: 1.6, bendRadius: 171.45, system: 'hot-gas' });` });
+    expect((await runTubeChecksOnModel(model))!.diagnostics).toEqual([]);
+    model.session.paramTable.set('K', 0);
+    const r = (await runTubeChecksOnModel(model))!;
+    expect(r.diagnostics.map((d) => [d.severity, d.message])).toEqual([
+      ['error', "tube.spec.system-rule-invalid: tubeSpec systems 'hot-gas' minBendRadiusFactor resolves to 0; " +
+        'it must be a positive finite number. The top-level value 3 was applied.'],
+      ['error', "tube.bend.radius-too-small: tube 'duct' bends at 171.45 mm; the rule needs 342.90 mm (3 x OD 114.30)."],
+    ]);
+    expect(r.diagnostics[0].hint.trim().length).toBeGreaterThan(0);
+  }, 120_000);
+});
+

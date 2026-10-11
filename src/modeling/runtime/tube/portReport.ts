@@ -89,19 +89,27 @@ function tubesOf(model: BuiltModel, ctx: TubeSceneContext): TubeOnScene[] {
   return model.records.filter((r: FeatureRecord) => r.kind === 'tube' && !r.suppressed).flatMap((r) => {
     const meta = (r.metadata as { tube?: unknown } | undefined)?.tube;
     if (!isTubeMetadata(meta)) return [];
-    const resolved = resolveTube(model, ctx, r)[0];
+    // A tube that cannot be resolved is still matched to its ports by name; the gate reports why.
+    let resolved: ResolvedTube | undefined;
+    try {
+      resolved = resolveTube(model, ctx, r)[0];
+    } catch {
+      resolved = undefined;
+    }
     return [resolved !== undefined ? { meta, resolved } : { meta }];
   });
 }
 
 /** A tube ends on the port when an end names it (`part.port(name)`), or when a
  *  plain end sits at the port's position: the way to route to a port that
- *  `part.port` cannot give, such as one on a part moved by a mate. */
+ *  `part.port` cannot give, such as one on a part moved by a mate. A plain end
+ *  that names another part belongs to that part, wherever it sits. */
 function endsOnPort(tube: TubeOnScene, part: string, name: string, origin: V3 | undefined): boolean {
   if ([tube.meta.from, tube.meta.to].some((e) => e.part === part && e.connector === name)) return true;
   const placement = tube.resolved?.placement;
   if (origin === undefined || tube.resolved === undefined || placement === undefined) return false;
   return endsOf(tube.resolved).some((e) => e.meta.connector === undefined &&
+    (e.meta.part === undefined || e.meta.part === part) &&
     norm(sub(placement.point(e.captured) as V3, origin)) <= PORT_POSITION_TOL_MM);
 }
 

@@ -7,7 +7,8 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { evaluateAndBuildScript } from '../../../src/composition/scriptEvaluation';
-import type { PortReportEntry } from '../../../src/modeling/runtime/tube/portReport';
+import { buildModel } from '../../../src/modeling/buildModel';
+import { portReportOnModel, type PortReportEntry } from '../../../src/modeling/runtime/tube/portReport';
 
 beforeAll(async () => { await initOcct(); }, 120_000);
 
@@ -85,6 +86,43 @@ return asm.solvedModel({});`;
     ]);
   }, 120_000);
 
+  /** As `mated`, with the valve's own `at` and seat origin given. The solver works in the parts' own frames
+   *  (seat onto mount) and its transform is applied on top of `at`. */
+  const matedAt = (at: string, seat = '[10, 10, 0]') => `
+const S = param('S', 5);
+const asm = assembly('rig');
+const base = asm.part('base', box(40, 40, 10), { at: [0, 0, 0] })
+  .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [20, 20, 10] } });
+const valve = asm.part('valve', box(20, 20, 20), { at: ${at} })
+  .connector('seat', { type: 'frame', origin: { kind: 'vec3', value: ${seat} } })
+  .connector('out', { type: 'axis', origin: { kind: 'vec3', value: [10, 10, 20] }, axis: [0, 0, 1], port: { system: 'oil', od: 6 } });
+asm.mate('seat-on-mount', 'valve.seat', 'base.mount', 'fastened');
+return asm.solvedModel({});`;
+  const out = { part: 'valve', name: 'out', system: 'oil', od: 6, axis: [0, 0, 1], usedBy: [] };
+
+  it('a part that is both placed and mated reports at plus the mate offset, the solved position', async () => {
+    // The mate offset is [10, 10, 10] (seat [10, 10, 0] onto mount [20, 20, 10]); the port is at at + [10, 10, 20] + offset.
+    expect(await ports(matedAt('[3, -40, 7]'))).toEqual([{ ...out, origin: [23, -20, 37], placedBy: 'mate' }]);
+    // The same with at driven by a param: S = 5.
+    expect(await ports(matedAt('[S, S.multiply(2), 0]'))).toEqual([{ ...out, origin: [25, 30, 30], placedBy: 'mate' }]);
+  }, 120_000);
+
+  it('a mate whose solved transform is the identity reports placedBy at', async () => {
+    // Seat and mount share one origin, so the fastened mate moves nothing: the part is where at puts it.
+    expect(await ports(matedAt('[3, -40, 7]', '[20, 20, 10]'))).toEqual([{ ...out, origin: [13, -30, 27], placedBy: 'at' }]);
+    expect(await ports(matedAt('[S.multiply(2), 10, 10]', '[20, 20, 10]'))).toEqual([{ ...out, origin: [20, 20, 30], placedBy: 'at' }]);
+  }, 120_000);
+
+  it('a plain end at a port position is not credited when it names another part', async () => {
+    const r = await ports(mated(`
+const other = tube('other', { from: { point: [20, 20, 30], axis: [0, 0, 1], part: 'base' }, to: { point: [20, 20, 130] }, od: 6, wall: 0.7, bendRadius: 18 });
+asm.part('other', other);
+const free = tube('free', { from: { point: [0, 20, 5], axis: [-1, 0, 0] }, to: { point: [-100, 20, 5] }, od: 6, wall: 0.7, bendRadius: 18 });
+asm.part('free', free);`));
+    // 'other' sits on valve.out but says it belongs to base; 'free' names no part and sits on base.vent.
+    expect(r!.map((p) => [p.part, p.name, p.usedBy])).toEqual([['base', 'vent', ['free']], ['valve', 'out', []]]);
+  }, 120_000);
+
   it('a part turned by a mate reports the turned axis', async () => {
     const r = await ports(`
 const asm = assembly('rig');
@@ -134,14 +172,16 @@ return asm.model();`);
     ]);
   }, 120_000);
 
-  it('a connector origin that holds a param is listed as unresolved, not at a made-up position', async () => {
-    const r = await ports(`
-const X = param('X', 200);
+  it('a stored origin that is not numeric is listed as unresolved, not at a made-up position', async () => {
+    // Capture refuses this; the report must still not invent a position if such a connector reaches it.
+    const model = await buildModel({ fileName: 'ports.kcad.ts', code: `
 const asm = assembly('rig');
 asm.part('block', box(40, 40, 40), { at: [0, 0, 0] })
-  .connector('side', { type: 'axis', origin: { kind: 'vec3', value: [X, 20, 20] }, axis: [1, 0, 0], port: { system: 'fuel', od: 10 } });
-return asm.model();`);
-    expect(r).toEqual([{ part: 'block', name: 'side', system: 'fuel', od: 10, usedBy: [],
+  .connector('side', { type: 'axis', origin: { kind: 'vec3', value: [40, 20, 20] }, axis: [1, 0, 0], port: { system: 'fuel', od: 10 } });
+return asm.model();` });
+    const parts = (Array.from(model.session.assemblies.values())[0] as { __parts(): Array<{ mateConnectors: Array<{ origin: { value: unknown[] } }> }> }).__parts();
+    parts[0].mateConnectors[0].origin.value = [Number.NaN, 20, 20];
+    expect(portReportOnModel(model)).toEqual([{ part: 'block', name: 'side', system: 'fuel', od: 10, usedBy: [],
       unresolved: 'the connector origin is not three finite numbers' }]);
   }, 120_000);
 

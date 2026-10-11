@@ -28,21 +28,33 @@ export interface TubeRuleSpec extends TubeRuleNumbers {
   systems?: Record<string, Partial<TubeRuleNumbers>>;
 }
 
+/** A `systems` value that resolved to a number its rule cannot be. */
+export interface InvalidSystemRule { system: string; key: TubeRuleKey; value: number; applied: number }
+
+const isUsableRule = (key: TubeRuleKey, v: number): boolean =>
+  Number.isFinite(v) && v > 0 && (key !== 'maxBendAngle' || v <= 180);
+
 /** The captured spec with its `systems` params read through the param table
- *  (a captured Param that references a script parameter has `evaluated: 0`). */
-export function resolveTubeSpec(meta: TubeSpecMetadata, table: ParamTable): TubeRuleSpec {
+ *  (a captured Param that references a script parameter has `evaluated: 0`).
+ *  Capture checks every value, but a param can change afterwards: a value that
+ *  is no longer a usable rule is left out, so the top-level rule applies, and
+ *  listed in `invalid` for the gate to report. */
+export function resolveTubeSpec(meta: TubeSpecMetadata, table: ParamTable): { spec: TubeRuleSpec; invalid: InvalidSystemRule[] } {
   const { systems, ...rest } = meta;
-  if (systems === undefined) return rest;
+  const invalid: InvalidSystemRule[] = [];
+  if (systems === undefined) return { spec: rest, invalid };
   const resolved: NonNullable<TubeRuleSpec['systems']> = {};
-  for (const [name, entry] of Object.entries(resolveParams(systems, table))) {
+  for (const [system, entry] of Object.entries(resolveParams(systems, table))) {
     const rules: Partial<TubeRuleNumbers> = {};
     for (const key of TUBE_RULE_KEYS) {
-      const p = entry[key];
-      if (p !== undefined) rules[key] = p.evaluated;
+      const value = entry[key]?.evaluated;
+      if (value === undefined) continue;
+      if (isUsableRule(key, value)) rules[key] = value;
+      else invalid.push({ system, key, value, applied: rest[key] });
     }
-    resolved[name] = rules;
+    resolved[system] = rules;
   }
-  return { ...rest, systems: resolved };
+  return { spec: { ...rest, systems: resolved }, invalid };
 }
 
 /** The rules one tube is held to. `overridden` lists the rules that came from

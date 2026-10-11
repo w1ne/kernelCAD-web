@@ -6,6 +6,9 @@
 
 import { describe, it, expect, beforeAll, afterEach, vi } from 'vitest';
 import { readFile } from 'node:fs/promises';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { evaluateCommand } from '../../../src/agent/cli/commands/evaluate';
 import { evaluateScriptTool } from '../../../src/agent/mcp/tools/evaluateScript';
@@ -139,4 +142,31 @@ return asm.model();` });
     fits(unresolved);
     expect((await evaluateScriptTool({ code: 'return box(10, 10, 10);' })).ports).toBeUndefined();
   }, 180_000);
+
+  it('a param in a connector origin fails as invalid-args with JSON, not a stack trace', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'kcad-origin-param-'));
+    try {
+      const file = join(dir, 'origin-param.kcad.ts');
+      writeFileSync(file, `
+const x = param('X', 200);
+const asm = assembly('rig');
+const b = asm.part('b', box(40, 40, 40), { at: [0, 0, 0] })
+  .connector('p', { type: 'axis', origin: { kind: 'vec3', value: [x.add(0), 20, 20] }, axis: [1, 0, 0], port: { system: 'fuel', od: 10 } });
+tubeSpec({});
+asm.part('t', tube('t', { from: b.port('p'), to: { point: [400, 20, 20] }, wall: 1, bendRadius: 30 }));
+return asm.model();`);
+      const out = await evaluateJson(file);
+      expect(out.ok).toBe(false);
+      expect(out.diagnostics.filter((d: { severity: string }) => d.severity === 'error')).toEqual([
+        expect.objectContaining({ code: 'feature.invalid-args',
+          message: expect.stringContaining('origin.value — got [param (X + 0), 20, 20]; requires three finite numbers'),
+          hint: expect.stringContaining('place it with a param in `at`') })]);
+      const mcp = await evaluateScriptTool({ code: readFileSync(file, 'utf8') });
+      expect(mcp.ok).toBe(false);
+      expect(mcp.diagnostics.map(d => d.code)).toContain('feature.invalid-args');
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  }, 120_000);
 });
+

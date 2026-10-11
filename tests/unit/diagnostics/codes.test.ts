@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { DIAGNOSTIC_CODES, HINT_TEMPLATES } from '../../../src/shared/diagnostics/registry';
 
 describe('diagnostic catalogue invariants', () => {
-  it('emits exactly 352 codes', () => {
+  it('emits exactly 353 codes', () => {
     // 204 from develop (NURBS analytics, Query DSL, K1-K9 kinematic, assembly/mechanism gates)
     // + 6 parts catalog codes (parts.* — Slice C bundled parts catalog)
     // + 1 feature.emboss-text.boolean-noop (#393 silent no-op guard)
@@ -132,8 +132,9 @@ describe('diagnostic catalogue invariants', () => {
     // + 1 tube plain end naming a missing part: tube.end.part-not-found = 349.
     // + 2 tube gate holes: tube.clearance.pair-unused, tube.part.duplicate = 351.
     // + 1 per-system tube rules: tube.spec.system-unused = 352.
-    expect(DIAGNOSTIC_CODES).toHaveLength(352);
-    expect(new Set(DIAGNOSTIC_CODES).size).toBe(352);
+    // + 1 override param gone bad after capture: tube.spec.system-rule-invalid = 353.
+    expect(DIAGNOSTIC_CODES).toHaveLength(353);
+    expect(new Set(DIAGNOSTIC_CODES).size).toBe(353);
   });
 
   it('every code has a non-empty hint template', () => {
