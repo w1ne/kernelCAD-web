@@ -1,0 +1,5 @@
+# 9-cylinder radial aircraft engine
+
+> 9-cylinder radial aircraft engine: round crankcase, nine finned cylinders in a star, domed heads, prop hub.
+
+This is a static display model with 47 named parts. A revolved crankcase carries nine steel barrels in a star, 40° apart. Each barrel's cooling fins are one revolved comb profile. Each aluminium head has its own fins, a domed cap, and a rocker box on the front flank. Two pushrod tubes per cylinder run from the cam case to the rocker box, an exhaust stub leaves the back of each head, and a hub with a six-bolt propeller flange sits on the nose. Parts touch but do not overlap: every barrel spigot, pushrod and exhaust stub sits in a bore cut into the part it plugs into. kernelCAD's interference check finds no clashes between the 47 parts. There is no crank train inside. Params: `cylinderCount` (5, 7 or 9) and `barrelLength` (both choices). Checked with `kernelcad evaluate`, MCP `evaluate_script` (no interpenetration), `kernelcad interference`, and the 7-view sheet. Source: [`radial-engine.kcad.ts`](radial-engine.kcad.ts).
