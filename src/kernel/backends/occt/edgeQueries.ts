@@ -186,10 +186,59 @@ function dot3(a: Vec3, b: Vec3): number {
   return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
 }
 
-/** The (up to two) faces whose boundary contains `edge`. */
-function adjacentFacesOf(shape: { faces: Face[] }, edge: Edge): Face[] {
+/** Edge → adjacent faces of one shape, built in a single pass. */
+interface EdgeFaceIndex {
+  /** OCCT edge hash → entries (the hash is orientation-independent). */
+  readonly byHash: Map<number, { edge: unknown; faces: Face[] }[]>;
+}
+
+const HASH_UPPER = 2147483647;
+
+/** Cached per replicad shape wrapper: a query over every edge used to rescan
+ *  every face's edges per edge (and re-materialise every Face / Edge wrapper
+ *  each time), which made a 144-hole plate's { convex: true } take ~35 s. */
+const edgeFaceIndexCache = new WeakMap<object, EdgeFaceIndex>();
+
+type WrappedShape = { HashCode(upper: number): number; IsSame(other: unknown): boolean };
+
+function edgeFaceIndexOf(shape: { faces: Face[] }): EdgeFaceIndex {
+  const hit = edgeFaceIndexCache.get(shape);
+  if (hit) return hit;
+  const byHash = new Map<number, { edge: unknown; faces: Face[] }[]>();
   // Using face.edges (rather than face.outerWire().edges) avoids creating
   // intermediate Wire wrappers whose disposal can invalidate the parent face.
+  for (const face of shape.faces) {
+    const faceEdges = (face as unknown as { edges?: Edge[] }).edges ?? [];
+    for (const faceEdge of faceEdges) {
+      const wrapped = (faceEdge as unknown as { wrapped: WrappedShape }).wrapped;
+      const hash = wrapped.HashCode(HASH_UPPER);
+      let bucket = byHash.get(hash);
+      if (!bucket) {
+        bucket = [];
+        byHash.set(hash, bucket);
+      }
+      let entry = bucket.find((x) => (x.edge as WrappedShape).IsSame(wrapped));
+      if (!entry) {
+        entry = { edge: wrapped, faces: [] };
+        bucket.push(entry);
+      }
+      if (!entry.faces.includes(face)) entry.faces.push(face);
+    }
+  }
+  const index = { byHash };
+  edgeFaceIndexCache.set(shape, index);
+  return index;
+}
+
+/** The (up to two) faces whose boundary contains `edge`. */
+function adjacentFacesOf(shape: { faces: Face[] }, edge: Edge): Face[] {
+  const wrapped = (edge as unknown as { wrapped?: WrappedShape }).wrapped;
+  if (wrapped && typeof wrapped.HashCode === 'function') {
+    const bucket = edgeFaceIndexOf(shape).byHash.get(wrapped.HashCode(HASH_UPPER)) ?? [];
+    const entry = bucket.find((x) => (x.edge as WrappedShape).IsSame(wrapped));
+    if (entry) return entry.faces.slice(0, 2);
+  }
+  // An edge from another wrapper (not a sub-shape of this one): geometric match.
   const adjacent: Face[] = [];
   for (const face of shape.faces) {
     const faceEdges = (face as unknown as { edges?: Edge[] }).edges ?? [];
@@ -261,17 +310,21 @@ function convexityOf(faceA: Face, edge: Edge, p: Vec3, nA: Vec3, nB: Vec3): bool
   const eps = Math.min(Math.max(len * 1e-3, 1e-4), 1e-2);
   const plus: Vec3 = [p[0] + side[0] * eps, p[1] + side[1] * eps, p[2] + side[2] * eps];
   const minus: Vec3 = [p[0] - side[0] * eps, p[1] - side[1] * eps, p[2] - side[2] * eps];
-  let dPlus: number;
-  let dMinus: number;
+  // One distance query when the +side step is off the face (the common
+  // case for half the edges); the second only to tell a seam from a rim.
+  let inward: Vec3;
   try {
-    dPlus = distanceToFace(faceA, plus);
-    dMinus = distanceToFace(faceA, minus);
+    const onFace = eps * 0.25;
+    if (distanceToFace(faceA, plus) > onFace) {
+      inward = [-side[0], -side[1], -side[2]];
+    } else if (distanceToFace(faceA, minus) > onFace) {
+      inward = side;
+    } else {
+      return null; // both sides on the face: a seam — undecidable here
+    }
   } catch {
     return null;
   }
-  // Ambiguous (both sides on the face: a seam) — undecidable here.
-  if (Math.abs(dPlus - dMinus) < eps * 0.25) return null;
-  const inward = dPlus < dMinus ? side : ([-side[0], -side[1], -side[2]] as Vec3);
   const d = dot3(inward, nB);
   if (Math.abs(d) < 1e-9) return null; // tangent (G1) — neither convex nor concave
   return d < 0;
