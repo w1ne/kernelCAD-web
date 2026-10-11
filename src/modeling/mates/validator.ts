@@ -845,7 +845,7 @@ function foldJointTopologyDiagnostics(
   for (const d of review.diagnostics) {
     diagnostics.push({
       code: d.code as ValidatorDiagnosticCode,
-      severity: 'error',
+      severity: d.severity,
       message: d.message,
       hint: d.hint,
       ...(d.partName !== undefined ? { partName: d.partName } : {}),

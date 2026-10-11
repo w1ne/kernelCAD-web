@@ -143,3 +143,20 @@ export async function callMcpTool(name: string, input: Record<string, unknown>):
 export function getToolDefinition(name: string): McpToolDefinition | undefined {
   return toolDefinitions.get(name);
 }
+
+/**
+ * Look up a registered tool by name: its merged definition (annotations +
+ * output schema, exactly as in {@link TOOLS}) and its handler.
+ *
+ * Name-keyed access for consumers (kernelCAD-server) that today index
+ * TOOL_REGISTRY / TOOLS by position: resolving by name does not depend on
+ * the registry order, so a consumer that switches to this lookup no longer
+ * needs the order frozen.
+ *
+ * @returns the entry, or undefined when no tool by that name is registered
+ */
+export function getToolByName(name: string): ToolRegistryEntry | undefined {
+  const definition = toolDefinitions.get(name);
+  const handler = toolHandlers.get(name);
+  return definition !== undefined && handler !== undefined ? { definition, handler } : undefined;
+}

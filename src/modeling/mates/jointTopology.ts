@@ -8,6 +8,7 @@ import type {
 import type { Connector } from './connector';
 import { parseConnectorRef, type MateLimitRange, type MateRecord } from './mate';
 import { isRegistryCompleteMechanicalJointIntent } from './mechanicalJointRegistry';
+import { collectFreePassiveMates } from './passiveJoints';
 
 export type JointTopologyDiagnosticCode =
   | 'assembly.connectivity.floating-moving-part'
@@ -19,7 +20,9 @@ export type JointTopologyDiagnosticCode =
 
 export interface JointTopologyDiagnostic {
   readonly code: JointTopologyDiagnosticCode;
-  readonly severity: 'error';
+  /** 'warning' only for a free passive joint's missing limit / support
+   *  intent (see passiveJoints.ts); every other topology defect is 'error'. */
+  readonly severity: 'error' | 'warning';
   readonly message: string;
   readonly hint: string;
   readonly mateName?: string;
@@ -70,6 +73,7 @@ export function reviewJointTopology(arm: Assembly): JointTopologyReviewResult {
   const graph = new Map<string, Set<string>>();
   const movingParts = new Set<string>();
   const supportedRevoluteMates = collectSupportedRevoluteMates(arm, partsByName);
+  const passiveMates = collectFreePassiveMates(arm);
 
   for (const part of parts) {
     graph.set(part.name, new Set());
@@ -77,9 +81,12 @@ export function reviewJointTopology(arm: Assembly): JointTopologyReviewResult {
 
   const checkedMates = mates.filter((mate) => mate.type !== 'fastened');
 
-  collectMateTopologyDiagnostics(mates, partsByName, graph, movingParts, supportedRevoluteMates, diagnostics);
+  collectMateTopologyDiagnostics(mates, partsByName, graph, movingParts, { supportedRevoluteMates, passiveMates }, diagnostics);
 
   const stableRoots = collectStableRoots(arm, partsByName);
+  // Nothing declared stable: the solver grounds the first part, so does the
+  // reachability walk (otherwise every moving part "floats" in a plain hinge).
+  if (stableRoots.size === 0 && parts.length > 0) stableRoots.add(parts[0].name);
   const reachableFromRoots = findReachableParts(stableRoots, graph);
 
   collectFloatingMovingPartDiagnostics(movingParts, reachableFromRoots, stableRoots, diagnostics);
@@ -97,7 +104,7 @@ function collectMateTopologyDiagnostics(
   partsByName: ReadonlyMap<string, AssemblyPartStored>,
   graph: Map<string, Set<string>>,
   movingParts: Set<string>,
-  supportedRevoluteMates: ReadonlySet<string>,
+  mateSets: MateContractSets,
   diagnostics: JointTopologyDiagnostic[],
 ): void {
   for (const mate of mates) {
@@ -117,7 +124,7 @@ function collectMateTopologyDiagnostics(
     validateEndpointContract(mate, a, diagnostics);
     validateEndpointContract(mate, b, diagnostics);
     validateMateAxisAlignment(mate, a, b, diagnostics);
-    validateMateContract(mate, supportedRevoluteMates, diagnostics);
+    validateMateContract(mate, mateSets, diagnostics);
   }
 }
 
@@ -261,15 +268,22 @@ function validateMateAxisAlignment(
   }
 }
 
+interface MateContractSets {
+  readonly supportedRevoluteMates: ReadonlySet<string>;
+  /** Free passive mates: their missing limit / support intent is a 'warning'. */
+  readonly passiveMates: ReadonlySet<string>;
+}
+
 function validateMateContract(
   mate: MateRecord,
-  supportedRevoluteMates: ReadonlySet<string>,
+  { supportedRevoluteMates, passiveMates }: MateContractSets,
   diagnostics: JointTopologyDiagnostic[],
 ): void {
+  const severity = passiveMates.has(mate.name) ? 'warning' : 'error';
   if (ROTATIONAL_LIMIT_MATES.has(mate.type) && !isFiniteRange(mate.limitsDeg)) {
     diagnostics.push({
       code: 'assembly.joint-topology.missing-limit',
-      severity: 'error',
+      severity,
       mateName: mate.name,
       message: `Mate '${mate.name}' is type '${mate.type}' and needs finite limitsDeg.`,
       hint: `joint-topology.missing-limit — add limitsDeg: [minDeg, maxDeg] to '${mate.name}'.`,
@@ -279,7 +293,7 @@ function validateMateContract(
   if (mate.type === 'prismatic' && !isFiniteRange(mate.limitsMm)) {
     diagnostics.push({
       code: 'assembly.joint-topology.missing-limit',
-      severity: 'error',
+      severity,
       mateName: mate.name,
       message: `Mate '${mate.name}' is prismatic and needs finite limitsMm.`,
       hint: `joint-topology.missing-limit — add limitsMm: [minMm, maxMm] to '${mate.name}'.`,
@@ -289,7 +303,7 @@ function validateMateContract(
   if (mate.type === 'revolute' && !supportedRevoluteMates.has(mate.name)) {
     diagnostics.push({
       code: 'assembly.joint-topology.unsupported-axis',
-      severity: 'error',
+      severity,
       mateName: mate.name,
       message: `Revolute mate '${mate.name}' has no joint support intent declaring support.`,
       hint: `joint-topology.unsupported-axis — add arm.jointSupport(..., { mate: '${mate.name}', shaft, supports, output }) for passive hinges, or arm.mechanicalJoint(..., { mate: '${mate.name}', actuator, shaft, supports, output }) for driven hinges, so the hinge axis has physical support intent.`,
