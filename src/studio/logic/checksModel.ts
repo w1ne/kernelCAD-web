@@ -7,7 +7,7 @@
 // the same numbers.
 
 import type { ValidatorDiagnostic } from '../../modeling/mates/validator';
-import { jointContactCapMm3 } from '../../modeling/runtime/jointContactCap';
+import { jointContactCapMm3, pairContactCapMm3 } from '../../modeling/runtime/jointContactCap';
 import type { StudioRecomputeResult } from '../types';
 
 export type CheckSeverity = ValidatorDiagnostic['severity'];
@@ -96,7 +96,7 @@ export function actionableInterferences(
         if (d.partA && d.partB) reported.add(pairKey(d.partA, d.partB));
     }
     return (result.rawInterferencePairs ?? [])
-        .filter((p) => p.volumeMm3 > cap && !reported.has(pairKey(p.a, p.b)))
+        .filter((p) => p.volumeMm3 > Math.min(cap, pairContactCapMm3(p)) && !reported.has(pairKey(p.a, p.b)))
         .sort((x, y) => y.volumeMm3 - x.volumeMm3);
 }
 

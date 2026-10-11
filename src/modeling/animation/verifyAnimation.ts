@@ -41,12 +41,15 @@ import {
 } from '../buildModel';
 import type { Assembly } from '../capture/assembly';
 import {
+  annotateRunningFits,
   detectInterferences,
   pairKey,
 } from '../runtime/detectInterferences';
+import { runningFitPairKeysFromRecords } from '../mates/validator';
 import {
   INTERPENETRATION_EPSILON_MM3,
   jointContactCapMm3,
+  pairContactCapMm3,
 } from '../runtime/jointContactCap';
 import { isSceneBackend, type SceneBackend } from '../../kernel/backends/sceneBackend';
 import type { CompilerDiagnostic, DiagnosticCode } from '../../shared/diagnostics/diagnostic';
@@ -137,6 +140,7 @@ export async function verifyAnimation(
   const diagnostics: CompilerDiagnostic[] = [];
   const collisions: AnimationCollision[] = [];
   const cap = jointContactCapMm3();
+  const runningFits = runningFitPairKeysFromRecords(model.records);
 
   const ignored = modelIgnorePairs(model);
   for (const key of opts.ignorePairs ?? []) ignored.add(key);
@@ -166,7 +170,7 @@ export async function verifyAnimation(
     posesSampled += 1;
     if (!isSceneBackend(outcome.lowered)) continue; // single-body model: nothing to clash
     anyPoseResolvedScene = true;
-    collectPoseCollisions(tMs, outcome.lowered, ignored, cap, collisions, diagnostics);
+    collectPoseCollisions(tMs, outcome.lowered, { ignored, cap, runningFits }, collisions, diagnostics);
   }
 
   // Gate hole: the script declared an assembly, yet not one sampled pose
@@ -233,21 +237,22 @@ async function lowerPoseAtTime(
 function collectPoseCollisions(
   tMs: number,
   lowered: SceneBackend,
-  ignored: ReadonlySet<string>,
-  cap: number,
+  gate: { ignored: ReadonlySet<string>; cap: number; runningFits: ReadonlySet<string> },
   collisions: AnimationCollision[],
   diagnostics: CompilerDiagnostic[],
 ): void {
-  const result = detectInterferences(lowered, INTERPENETRATION_EPSILON_MM3, ignored);
-  for (const pair of result.pairs) {
+  const { cap } = gate;
+  const result = detectInterferences(lowered, INTERPENETRATION_EPSILON_MM3, gate.ignored);
+  for (const pair of annotateRunningFits(result.pairs, gate.runningFits)) {
     // Mechanism-gate classification: at or below the cap is touching /
     // tessellation noise, NOT an interference.
-    if (pair.volumeMm3 <= cap) continue;
+    const pairCap = Math.min(cap, +pairContactCapMm3(pair).toFixed(2));
+    if (pair.volumeMm3 <= pairCap) continue;
     collisions.push({ tMs, a: pair.a, b: pair.b, volumeMm3: pair.volumeMm3 });
     diagnostics.push(diag(
       'animation.collision',
       `verifyAnimation: parts '${pair.a}' and '${pair.b}' collide at tMs=${tMs} of the animation timeline — ` +
-        `shared volume ${pair.volumeMm3.toFixed(2)} mm³ exceeds the ${cap} mm³ interference threshold.`,
+        `shared volume ${pair.volumeMm3.toFixed(2)} mm³ exceeds the ${pairCap} mm³ interference threshold.`,
       `Adjust the keyframes so the pose at tMs=${tMs} keeps '${pair.a}' and '${pair.b}' clear, or reshape / add clearance to the colliding geometry.`,
     ));
   }

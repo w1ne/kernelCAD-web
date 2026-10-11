@@ -30,6 +30,31 @@ export interface InterferencePair {
   readonly b: string;
   /** Intersection volume in mm³. Always > epsilon. */
   readonly volumeMm3: number;
+  /** Volume (mm³) of the smaller of the two parts — scales the contact-noise
+   *  cap (`pairContactCapMm3`). Absent when it could not be measured. */
+  readonly smallerPartVolumeMm3?: number;
+  /** True when a moving (non-fastened) mate joins the two parts — set by
+   *  `annotateRunningFits`; the detector itself does not know the mates. */
+  readonly runningFit?: boolean;
+}
+
+/** Part-name pairs (as `pairKey`) joined by a moving mate or joint: anything
+ *  with a declared kind other than fastened / fixed. */
+export function runningFitPairKeys(
+  joints: Iterable<{ readonly a?: string; readonly b?: string; readonly type?: string }>,
+): Set<string> {
+  const out = new Set<string>();
+  for (const j of joints) {
+    if (j.a === undefined || j.b === undefined || j.type === undefined) continue;
+    if (j.type === 'fastened' || j.type === 'fixed') continue;
+    out.add(pairKey(j.a, j.b));
+  }
+  return out;
+}
+
+/** `pairs` with `runningFit` set on those joined by a moving joint. */
+export function annotateRunningFits<P extends InterferencePair>(pairs: readonly P[], running: ReadonlySet<string>): P[] {
+  return pairs.map((p) => (running.has(pairKey(p.a, p.b)) ? { ...p, runningFit: true } : p));
 }
 
 export interface CheckInterferenceResult {
@@ -115,6 +140,31 @@ function memoSet(a: object, b: object, key: string, vol: number): void {
   byPose.set(key, vol);
 }
 
+/** Part volumes already measured, keyed by the source part BREP. */
+const partVolumeMemo = new WeakMap<object, number>();
+
+function partVolume(source: object, shape: OcctBackend): number | undefined {
+  let v = partVolumeMemo.get(source);
+  if (v === undefined) {
+    try {
+      v = shape.volume();
+    } catch {
+      return undefined;
+    }
+    partVolumeMemo.set(source, v);
+  }
+  return Number.isFinite(v) && v > 0 ? v : undefined;
+}
+
+function smallerPartVolume(
+  a: { source: object; shape: OcctBackend },
+  b: { source: object; shape: OcctBackend },
+): number | undefined {
+  const va = partVolume(a.source, a.shape);
+  const vb = partVolume(b.source, b.shape);
+  return va === undefined || vb === undefined ? undefined : Math.min(va, vb);
+}
+
 export function detectInterferences(
   scene: SceneBackend,
   epsilonMm3: number,
@@ -162,7 +212,11 @@ export function detectInterferences(
       continue;
     }
     if (vol > epsilonMm3) {
-      pairs.push({ a: a.name, b: b.name, volumeMm3: vol });
+      const smaller = smallerPartVolume(a, b);
+      pairs.push({
+        a: a.name, b: b.name, volumeMm3: vol,
+        ...(smaller !== undefined ? { smallerPartVolumeMm3: smaller } : {}),
+      });
     }
   }
   return {

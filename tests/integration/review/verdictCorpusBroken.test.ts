@@ -67,6 +67,12 @@ const EXPECTATIONS: Record<string, (v: CorpusVerdicts) => void> = {
     expect(blockingCodes(v)).toContain('assembly.mounting-hole.misaligned');
     expect(v.review.blocking).toContain('assembly.mounting-hole.misaligned');
   },
+  'bad-10-hinge-knuckle-overlap.kcad.ts': (v) => {
+    // ~10 mm³ shared by two ~2400 mm³ leaves: under the uniform 20 mm³ cap,
+    // over the per-pair cap scaled to the smaller part.
+    expect(blockingCodes(v)).toContain('assembly.interference.overlap');
+    expect(v.review.blocking).toContain('assembly.interference.overlap');
+  },
 };
 
 describe('verdict corpus — broken variants are caught', () => {

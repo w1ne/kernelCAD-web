@@ -26,7 +26,9 @@
 // their interference as acceptable; ISO 286: a running fit has ~0 solid
 // overlap). The ONLY way to excuse a genuine overlap is the existing per-pair
 // user `ignore` list passed to `solvedModel({ ignore: [...] })` — the
-// SolidWorks "Ignore" / press-fit escape hatch.
+// SolidWorks "Ignore" / press-fit escape hatch. The threshold is uniform
+// across mate types but not across part sizes: `pairContactCapMm3` lowers it
+// for small parts (0.2 % of the smaller part, 1..20 mm³).
 
 /**
  * Absolute "any overlap at all" floor (mm³). Shared volume at or below this is
@@ -58,4 +60,49 @@ export const JOINT_CONTACT_NOISE_MM3 = 20;
  */
 export function jointContactCapMm3(): number {
   return JOINT_CONTACT_NOISE_MM3;
+}
+
+/**
+ * The 20 mm³ cap is sized for arm-class hardware. Across a MOVING joint
+ * (revolute, prismatic, cylindrical, planar, ball, pin-slot — a running fit,
+ * ~0 overlap per ISO 286) it is a large allowance on a small part: a butt
+ * hinge whose 40 × 27 × 2 leaves (~2400 mm³ each) have knuckles overlapping
+ * axially by 0.1 mm shares ~10 mm³ — a real interference that the bare 20 mm³
+ * cap passed. For a running-fit pair the cap therefore also scales with the
+ * SMALLER part: 0.2 % of its volume, never below `CONTACT_NOISE_FLOOR_MM3`
+ * and never above `JOINT_CONTACT_NOISE_MM3`. The same hinge with a 0.4 mm
+ * gap (leaf plate grazing the other knuckle, 1.13 mm³) or line-to-line
+ * knuckles (1.9 mm³) stays contact noise; a 0.05 mm knuckle overlap (~6 mm³)
+ * is caught. Fastened and unmated pairs keep the uniform cap: a screw seated
+ * in its boss legitimately shares a few mm³ (thread engagement, a modelled
+ * shank in a tapped hole), which a running fit never does.
+ */
+export const CONTACT_NOISE_PART_FRACTION = 0.002;
+
+/** Lower bound of the per-pair cap (mm³), so sub-cm³ parts are not judged on
+ *  boolean slivers far below any print or machining tolerance. */
+export const CONTACT_NOISE_FLOOR_MM3 = 1;
+
+/** A pair's shared volume plus, when known, the volume of the smaller of
+ *  its two parts and whether a moving (running-fit) joint connects them. */
+export interface ContactNoisePair {
+  readonly volumeMm3: number;
+  readonly smallerPartVolumeMm3?: number;
+  readonly runningFit?: boolean;
+}
+
+/** The contact-noise cap (mm³) for one pair: `jointContactCapMm3()`, scaled
+ *  down for small parts across a running-fit joint (see
+ *  `CONTACT_NOISE_PART_FRACTION`). Falls back to the uniform cap for other
+ *  pairs and when the part volume is unknown. */
+export function pairContactCapMm3(pair: Omit<ContactNoisePair, 'volumeMm3'>): number {
+  const v = pair.smallerPartVolumeMm3;
+  const uniform = jointContactCapMm3();
+  if (pair.runningFit !== true || v === undefined || !Number.isFinite(v) || v <= 0) return uniform;
+  return Math.min(uniform, Math.max(CONTACT_NOISE_FLOOR_MM3, v * CONTACT_NOISE_PART_FRACTION));
+}
+
+/** True when the pair's shared volume is a real interference, not contact noise. */
+export function isActionableInterference(pair: ContactNoisePair): boolean {
+  return pair.volumeMm3 > pairContactCapMm3(pair);
 }

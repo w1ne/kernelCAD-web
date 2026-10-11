@@ -60,7 +60,7 @@ import { solveMates } from '../mates/solver';
 import { collectRegistryDrivenMates } from '../mates/mechanicalJointRegistry';
 import { collectFreePassiveMates } from '../mates/passiveJoints';
 import { detectInterferences, pairKey } from './detectInterferences';
-import { jointContactCapMm3, INTERPENETRATION_EPSILON_MM3 } from './jointContactCap';
+import { isActionableInterference, pairContactCapMm3, INTERPENETRATION_EPSILON_MM3 } from './jointContactCap';
 import { reposedLoweredAssemblyScene } from '../mates/loweredAssemblyScene';
 import { expandCoupledPoses } from '../mates/coupledPoses';
 import type { NumericPoses } from '../capture/forwardKinematics';
@@ -662,11 +662,12 @@ async function checkInterpenetration(
       const key = pairKey(pair.a, pair.b);
       const mateType = matedPairs.get(key);
       // ABSOLUTE-volume gate (replaces the old 5 %-of-bbox fraction). A SINGLE
-      // uniform noise threshold (20 mm³) applies to every pair, adjacent or
-      // not (decision #1) — a correct clearance-fit joint has ~0 overlap, so
+      // uniform noise threshold (20 mm³, scaled down for small parts) applies
+      // to every pair, adjacent or not (decision #1) — a correct clearance-fit joint has ~0 overlap, so
       // adjacency earns no extra budget.
-      const cap = jointContactCapMm3();
-      if (pair.volumeMm3 <= cap) continue;
+      const judged = mateType !== undefined && mateType !== 'fastened' ? { ...pair, runningFit: true } : pair;
+      const cap = +pairContactCapMm3(judged).toFixed(2);
+      if (!isActionableInterference(judged)) continue;
 
       const relation = mateType === undefined
         ? `are NOT joined by a mate that would explain the contact`

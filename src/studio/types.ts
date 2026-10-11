@@ -85,6 +85,9 @@ export interface StudioRecomputeResult {
         readonly a: string;
         readonly b: string;
         readonly volumeMm3: number;
+        /** Smaller part's volume and running-fit flag: scale the pair's contact-noise cap. */
+        readonly smallerPartVolumeMm3?: number;
+        readonly runningFit?: boolean;
     }>;
     readonly interferenceSummary: {
         readonly rawCount: number;
