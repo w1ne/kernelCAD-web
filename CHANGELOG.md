@@ -39,6 +39,7 @@
 
 ## Changed
 
+- Mark in host chats (ChatGPT apps, Claude / MCP Apps) is paint only. The embed's Mark is a pencil toggle in the viewer toolbar, with Undo and Clear icons once there are marks. There is no note box, Send button, panel, hint or dialog. With the pencil on, a drag that starts on the model paints a stroke that sticks to the surface (constant 24 px brush, one bright colour at 50 % opacity); a drag on the background, right or middle drag, and two fingers still orbit, pan and zoom; a second finger within 150 ms drops the partial stroke; a two-finger tap undoes. Turning the pencil on with touch asks the host for fullscreen so a drag paints instead of scrolling the chat. Each change is posted to the widget as `kernelcad.marks` (stroke paths on the model and on screen, touched faces with share and rough coverage, bounds, camera, viewport, annotated screenshot), and the widget puts it into the host model's context, so the user types the change in the host chat's own composer. Marks stay until Clear or a new revision. The legacy note panel and `kernelcad.edit-request` posting are gone from the embed.
 - FEA automatic mesh refinement is a single re-solve at 0.75x the element size (was up to 2 passes with a step-size formula, a wall-time budget and a peak-convergence trust rule). `KERNELCAD_FEA_REFINE_TIME_MS` and `trust.basis` are gone; `KERNELCAD_FEA_MAX_ELEMENTS` still caps the mesh.
 
 ## Fixed
