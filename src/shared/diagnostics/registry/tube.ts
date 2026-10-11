@@ -59,7 +59,7 @@ export const TUBE_CODES = {
   },
   'tube.port.misaligned': {
     hintTemplate:
-      'Put the first (or last) corner on the port axis; the message gives the point. When the message says the end is off its port, its captured point or its part, the part or the tube moved: route that end to the stated position as `{ point, axis, part }`, with the end touching the part, and add the tube with no `at`.',
+      'Put the first (or last) corner on the port axis; the message gives the point, or for a branch the line to run along. When the message says the end is off its port, its captured point or its part, the part or the tube moved: route that end to the stated position as `{ point, axis, part }`, with the end touching the part, and add the tube with no `at`.',
     nextAction: { kind: 'fix-arg', field: 'via' },
     defaultSeverity: 'error',
     group: 'tube',
