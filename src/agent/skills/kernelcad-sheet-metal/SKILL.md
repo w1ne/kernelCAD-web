@@ -50,13 +50,28 @@ BA = (pi * |angle_deg| / 180) * (kFactor * thickness + radius)
 - `kFactor` = neutral-axis offset ratio. Typical values: 0.33-0.45 (mild steel / aluminum).
 - Slice 1 supports the K-factor formula only.
 
+## How a bend folds
+
+- The bend line is in FLAT-BLANK coordinates for every bend of a chain:
+  `.bend({ atX: 25 }, 90, 2).bend({ atX: 75 }, 90, 2)` is a U-channel, even
+  though the second line has moved by the time it folds.
+- The strip of width `BA` centred on the line becomes the arc (inner radius =
+  `radius`); the flange beyond it keeps its flat length, so the flat pattern
+  is exactly the blank (flange lengths + bend allowances).
+- The SHORTER side of the blank across the line folds (a tie folds the +X /
+  +Y side). A web with a bend near each end stays on the bench.
+- Holes and cutouts drilled in the flat blank before `.bend()` ride along
+  with their flange: `sheetMetal(...).holes({ byNormal: 'Z' }, ...).bend(...)`.
+- Parallel bend lines whose zones overlap fail with `feature.invalid-args`.
+
 ## Slice-1 limits
 
 - Bend axis derived from `{ atX }` / `{ atY }` EdgeQuery or `{ face: 'top' }`. Other selectors emit `feature.bend.edge-not-linear`.
 - `radius >= 0.5 * thickness` recommended; tighter bends emit `feature.kernel-failed`.
 - `flattenPattern()` supports at most 2 bends in the chain; 3+ emits `feature.flattenPattern.multi-bend-unsupported`.
 - Sketch profiles must be polylines (`path().moveTo / lineTo / close`). Arcs in the profile are not supported by `flattenPattern()` in slice 1.
-- The lowering pipeline (slice 1) omits the curved bend section in favor of a sharp-corner fuse — agents see the rotation but not the radiused inside corner. The K-factor math still holds for flat-pattern recovery.
+- A hole that crosses the bend zone loses the part of it inside the zone (the arc is the sheet section at the zone start, revolved). Keep holes `>= BA/2 + radius` from the line.
+- Perpendicular bends (`atX` and `atY` on one blank, e.g. a four-sided tray) are not modelled with corner reliefs yet.
 
 ## MCP introspection
 
@@ -91,6 +106,6 @@ A sheet (flat panel or bent part) that sits on tubes or a frame touches them: pu
 ## Related skills
 
 - `kernelcad-authoring` — `path()` + `Sketch` shape this skill operates on; rotate / translate the bracket after folding.
-- `kernelcad-features` — fillet / chamfer / hole apply to the folded result; remember the slice-1 sharp-corner approximation when placing features on the inside corner.
+- `kernelcad-features` — fillet / chamfer / hole apply to the folded result, or drill the flat blank before `.bend()`.
 - `kernelcad-params` — `thickness`, `kFactor`, `angle`, `radius` all accept `Editable<number>`; wire to params for fab-iteration.
 - `kernelcad-mcp` — `flatten_pattern` and `inspect({ of: 'bend-table' })` are the inspection surface for downstream CAM / nesting tools.
