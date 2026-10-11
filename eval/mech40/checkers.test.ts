@@ -3,7 +3,7 @@
 // Negative tests for mech40 checkers: near-miss parts that a sampled or
 // loose check used to pass. Each script is the reference task with ONE
 // deliberate defect; the named check must fail and the others must not.
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -63,4 +63,14 @@ describe('hole diameter tolerances', () => {
     expect(fit(hole(22.1, [0, 0, 0])).diameterTol).toBe(FIT_DIAMETER_TOL);
     expect(fit(hole(3.4, [0, 0, 0]), 0.03).diameterTol).toBe(0.03);
   });
+
+  it('27: a hinge whose positive travel swings the lid INTO the box fails (was the old reference)', async () => {
+    // The pre-fix reference: axis +X at y = 60, z = 30 with the lid
+    // extending −Y, so 0–110° rotates the lid down through the cavity
+    // (5072 mm³ shared with the base at 90°). Closed it looks perfect.
+    const fixed = readFileSync(join(__dirname, '../tasks/mech40/27-hinged-lid-box/solution-expert.kcad.ts'), 'utf8');
+    const old = fixed.replaceAll('axis: [-1, 0, 0]', 'axis: [1, 0, 0]');
+    expect(old).not.toEqual(fixed);
+    expect(await failing('27-hinged-lid-box', old)).toEqual(['lid opens up and away from the box across its travel (mid and open limit)']);
+  }, 120_000);
 });
