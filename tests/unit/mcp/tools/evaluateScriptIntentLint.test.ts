@@ -3,8 +3,14 @@
 //
 // evaluate_script carries the authoring intent lint (usage triage 2026-10-03):
 // an M4 bracket whose holes are subtracted cylinders still evaluates ok and
-// builds its geometry, and the result names hole({ thread }) / holes() as
-// info diagnostics.
+// builds its geometry, and the result names holes() as an info diagnostic.
+//
+// Comments never drive a hint (intentLint.ts strips them): the bracket's
+// "4x M4 screws" lives only in a comment and its cuts are Ø4.5 — M4
+// CLEARANCE holes — so a "tap a thread" hint would be wrong advice; the
+// hole-by-cylinder hint comes from the code's structure (four subtracted
+// cylinders) and is right. When the CODE carries thread intent (a string
+// such as 'M4 tapped'), the thread hint fires.
 import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
 import { evaluateScriptTool } from '../../../../src/agent/mcp/tools/evaluateScript';
 import { evaluateWithEnvelope } from '../../../../src/agent/cli/commands/evaluate';
@@ -22,7 +28,19 @@ body = body.subtract(cylinder(t + 2, 2.25).translate(50, 30, -1));
 return body;
 `;
 
-const LINT_CODES = ['authoring.prefer-api.thread', 'authoring.prefer-api.hole-by-cylinder'];
+const LINT_CODES = ['authoring.prefer-api.hole-by-cylinder'];
+
+// The same cuts, with the thread intent in the code: a tap-drill named as such.
+const M4_TAPPED_IN_CODE = `
+const t = 5;
+const holeSpec = 'M4 tapped';
+let body = box(60, 40, t);
+body = body.subtract(cylinder(t + 2, 1.65).translate(10, 10, -1));
+body = body.subtract(cylinder(t + 2, 1.65).translate(50, 10, -1));
+body = body.subtract(cylinder(t + 2, 1.65).translate(10, 30, -1));
+body = body.subtract(cylinder(t + 2, 1.65).translate(50, 30, -1));
+return body;
+`;
 
 describe('evaluate_script — authoring intent lint', () => {
   beforeAll(async () => { await initOcct(); });
@@ -53,6 +71,20 @@ describe('evaluate_script — authoring intent lint', () => {
     const result = await evaluateWithEnvelope({ code: M4_BRACKET });
     expect(result.exitCode).toBe(0);
     expect(result.diagnostics.map((d) => d.code)).toEqual(LINT_CODES);
+  });
+
+  it('thread intent in a comment alone does not fire the thread hint (Ø4.5 cuts are clearance holes)', async () => {
+    const result = await evaluateScriptTool({ code: M4_BRACKET });
+    expect(result.diagnostics.map((d) => d.code)).not.toContain('authoring.prefer-api.thread');
+  });
+
+  it('thread intent in the code fires the thread hint alongside hole-by-cylinder', async () => {
+    const result = await evaluateScriptTool({ code: M4_TAPPED_IN_CODE, dryRun: true });
+    expect(result.ok).toBe(true);
+    expect(result.diagnostics.map((d) => d.code)).toEqual([
+      'authoring.prefer-api.thread',
+      'authoring.prefer-api.hole-by-cylinder',
+    ]);
   });
 
   it('the same bracket built with holes({ thread }) gets no hints', async () => {
