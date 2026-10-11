@@ -88,7 +88,10 @@ export interface RunFeaOutput {
    *  unstated is decoration, not evidence. */
   legend?: Array<{ color: string; fromMPa: number; toMPa: number }>;
   out_dir?: string;
-  artifacts?: { geometryPath?: string; inpPath?: string; frdPath?: string; meshPath?: string };
+  artifacts?: { geometryPath?: string; inpPath?: string; frdPath?: string; meshPath?: string; summaryPath?: string };
+  /** Why no heatmap PNGs came back although heatmaps were not turned off
+   *  (e.g. the in-process voxel solver keeps no nodal mesh to colour). */
+  heatmapSkipped?: string;
   diagnostics?: CompilerDiagnostic[];
   error?: string;
   errorCode?: string;
@@ -315,10 +318,15 @@ export async function runFeaTool(input: RunFeaInput): Promise<RunFeaOutput> {
   const diagnostics = [...result.diagnostics];
   const { images, legend } = await renderStudyHeatmap(result, input.heatmaps, outDir, diagnostics);
 
+  const heatmapSkipped = input.heatmaps !== false && result.raw === undefined && result.summary !== undefined
+    ? `no stress heatmap for the ${result.summary.solver} solver (it keeps no nodal mesh to colour); the numbers and hotSpots in summary are the evidence. Install CalculiX + gmsh for heatmap PNGs.`
+    : undefined;
+
   return {
     ok: result.ok,
     ...(result.summary !== undefined ? { summary: result.summary } : {}),
     ...(images !== undefined ? { images } : {}),
+    ...(heatmapSkipped !== undefined ? { heatmapSkipped } : {}),
     ...(legend !== undefined
       ? { legend: legend.map(b => ({ color: b.color, fromMPa: b.fromMPa, toMPa: b.toMPa })) }
       : {}),
