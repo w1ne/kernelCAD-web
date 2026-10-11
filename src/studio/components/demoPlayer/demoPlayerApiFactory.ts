@@ -15,6 +15,7 @@ import type { ReferenceImageMetadata } from '../../../shared/intent/referenceIma
 import type { RenderEnvironmentSpec } from '../../../shared/intent/renderEnvironmentRecord';
 import type { CameraTargetMetadata } from '../../../shared/intent/cameraTargetRecord';
 import { applyEnvironment } from '../../../shared/render/environment';
+import { hasMetallicMaterial, installMetalRoomEnvironment } from './metalRoomEnvironment';
 import { buildMaterialFromPBR, disposeMaterialDeep, DEFAULT_MESH_COLOR } from './buildMaterialFromPBR';
 import { buildReferenceImagePlane } from './buildReferenceImagePlane';
 import { fitDistanceForBounds } from './cameraFit';
@@ -798,6 +799,10 @@ function applyGlassEnvironmentIfNeeded(
   });
   const effectiveEnv: RenderEnvironmentSpec | null =
     renderEnvSpec ?? (anyGlass ? { preset: 'studio' } : null);
+  // Metals reflect only the environment: with none they render near-black.
+  // Same idea as the glass fallback, but with the synchronous procedural
+  // room so a default render stays deterministic.
+  const anyMetal = effectiveEnv === null && hasMetallicMaterial(geometryFeatures);
 
   // Apply HDRI / IBL environment if the script declared one (or if the
   // auto-glass fallback above kicked in). Async, but we don't await —
@@ -809,6 +814,8 @@ function applyGlassEnvironmentIfNeeded(
     void applyEnvironment(ctx.renderer, ctx.scene, effectiveEnv).then(() => {
       ctx.renderer.render(ctx.scene, ctx.camera);
     });
+    // applyEnvironment(null) clears synchronously, before its first await.
+    if (anyMetal) installMetalRoomEnvironment(ctx.renderer, ctx.scene);
   } catch (e) {
     console.warn(
       '[kernelcad] applyEnvironment failed; glass will render flat:',
