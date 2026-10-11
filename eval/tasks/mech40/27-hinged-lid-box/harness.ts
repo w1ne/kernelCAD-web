@@ -12,6 +12,7 @@ export default mechHarness({
       'base 80 × 60 × 30, lid 80 × 60 × 3': sizeNear(base, [80, 60, 30]) && sizeNear(lid, [80, 60, 3]),
       'lid closed on the rim': near(lid.min[2], base.min[2] + 30) && near(lid.min[0], base.min[0]) && near(lid.min[1], base.min[1]),
       'base 2 mm walls and floor, open cavity': base.full([0, 10, 1], [1.9, 50, 29]) && base.full([10, 58.1, 1], [70, 60, 29])
+        && base.full([78.1, 10, 1], [80, 50, 29]) && base.full([10, 0, 1], [70, 1.9, 29])
         && base.full([10, 10, 0], [70, 50, 1.9]) && base.empty([2.1, 2.1, 2.1], [77.9, 57.9, 30]),
       'revolute mate base ↔ lid, 110° of travel': limitsCover(hinge, 110),
       'parts do not overlap': overlap(base.shape, lid.shape) < 1e-6,
