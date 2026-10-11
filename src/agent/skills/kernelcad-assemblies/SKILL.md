@@ -152,8 +152,8 @@ interface Assembly {
 ```typescript
 interface ScenePart {
   readonly name: string;            // assembly-unique name from assembly.part(name, ...)
-  readonly shape: Shape;            // LOCAL-frame (untransformed)
-  readonly worldTransform: Transform; // SE(3); identity for kinematic-zero model() apart from each part's `at`
+  readonly shape: Shape;            // LOCAL-frame: no `at`, no worldTransform
+  readonly worldTransform: Transform; // SE(3) applied after `at`: world = worldTransform · T(at) · shape
   readonly color?: string;          // role token / hex; resolved from source shape's metadata
   readonly metadata?: Readonly<Record<string, unknown>>;
 }
