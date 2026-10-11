@@ -34,13 +34,15 @@ import { makeRegion, type Region, type BendLineRecord, type Vec2 } from '../../.
 export function flattenPattern(
   records: readonly FeatureRecord[],
   terminalId?: string,
+  opts: { holes?: readonly Vec2[][] } = {},
 ): Region {
   const { recById, terminal } = resolveFlattenTerminal(records, terminalId);
   const { root, chain } = walkFlattenLineage(recById, terminal);
   const bendRecords = collectBendRecords(chain);
   const outer = resolveSketchOutline(recById, root, terminal);
-  // Slice-1 polylines have no holes; reserved for future slices.
-  const holes: Vec2[][] = [];
+  // Holes / cutouts live only in the lowered blank solid; the caller reads
+  // them back (flatBlankInnerLoops on the `flatBlankRecordId` shape).
+  const holes: Vec2[][] = (opts.holes ?? []).map((h) => h.slice());
   const bendLines = buildBendLines(bendRecords);
 
   // The flat blank length is the sketch's original outline plus, for each
@@ -55,6 +57,25 @@ export function flattenPattern(
     holes,
     bendLines,
   });
+}
+
+/**
+ * Id of the record holding the flat blank as it was just before the first
+ * bend (the sheetMetal root plus any holes / cutouts made on it) — the shape
+ * whose top face carries the flat pattern's inner loops. Same lineage walk
+ * and errors as {@link flattenPattern}.
+ */
+export function flatBlankRecordId(records: readonly FeatureRecord[], terminalId?: string): string {
+  const { recById, terminal } = resolveFlattenTerminal(records, terminalId);
+  const { chain } = walkFlattenLineage(recById, terminal);
+  // chain is terminal-first; the blank is the last record before the
+  // root-most bend.
+  let blank = chain[chain.length - 1];
+  for (let i = chain.length - 1; i >= 0; i--) {
+    if (chain[i].kind === 'sheetMetalBend') break;
+    blank = chain[i];
+  }
+  return blank.id;
 }
 
 /** Resolve the record map and the terminal (caller's choice, or last record). */
