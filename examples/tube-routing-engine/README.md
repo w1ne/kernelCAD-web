@@ -106,3 +106,32 @@ tube.clearance.violated: tube 'fuel-b' is 11.24 mm from 'hyd-b'; the rule needs 
 ```
 
 A pair of tubes is reported once, on the tube declared first, so the message names `fuel-b` although the corner that moved belongs to `hyd-b`. `export bend-table` on this script writes nothing and prints the same error.
+
+## A branch
+
+`engine-lines-branch.kcad.ts` is the same engine with one hydraulic outlet on the manifold. `hyd-main` runs from the manifold to actuator 2, and `hyd-branch` tees off it and runs to actuator 1:
+
+```typescript
+from: { tube: 'hyd-main', at: teeAt, axis: [0, -1, 0] },
+```
+
+`at` is the station of the tee, in mm along the trunk centreline from the trunk's `from` end: the first straight, the first bend, then the distance along the run. The script writes it from the same parameters that place the trunk, so the tee stays at `TeeX` when `ManifoldX` or `HydRunZ` changes. `axis` is the direction the branch leaves along, square to the trunk leg.
+
+```bash
+node dist/cli/index.js evaluate examples/tube-routing-engine/engine-lines-branch.kcad.ts --json
+```
+
+It reports no diagnostics. `hyd-branch` has `from: { tube: 'hyd-main', at: 113.72 }` and a cut length of 393.41 mm, measured from the wall of `hyd-main`; `hyd-main` has `branches: [{ tube: 'hyd-branch', at: 113.72 }]`, and its bend-table CSV ends with:
+
+```
+branch,at_mm
+hyd-branch,113.725
+```
+
+The branch is cut to the outer wall of the trunk, so the two solids touch and do not overlap. The trunk is not drilled.
+
+| Change | Result |
+|---|---|
+| `TeeX` 0 to 40 | passes; the tee moves 40 mm aft and `hyd-branch` grows by 40 mm |
+| `TeeX` 0 to -20 | fails `tube.branch.too-close`: the tee is 11.40 mm from bend 1 of the trunk and the rule needs 19.05 mm |
+

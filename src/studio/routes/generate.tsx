@@ -7,8 +7,10 @@ import { FunnelHeader } from '../../funnel/components/FunnelHeader';
 import { GallerySection } from '../../funnel/components/GallerySection';
 import { SignInModal } from '../../funnel/components/SignInModal';
 import { useGeneration } from '../../funnel/hooks/useGeneration';
-import { useSession } from '../../funnel/hooks/useSession';
+import { useOptionalSession } from '../../funnel/hooks/useSession';
 import { createCheckoutSession } from '../../funnel/lib/apiClient';
+import { parseGenerateQuery, shouldAutoSubmit, stripGenerateQuery } from '../../funnel/lib/heroHandoff';
+import { getTurnstileToken } from '../../funnel/lib/turnstile';
 import { inAppAgentEnabled } from '../agentAvailability';
 import { stashWordsGeometry, wordsToGeometry } from '../wordsToGeometry';
 import GenerateHero from './GenerateHero';
@@ -21,9 +23,22 @@ export const Route = createFileRoute('/generate')({
 // sign-in we can resume generation without making them retype.
 const PENDING_PROMPT_KEY = 'kc:pendingPrompt';
 
-function readInitialPrompt(): string {
-  if (typeof window === 'undefined') return '';
-  return new URLSearchParams(window.location.search).get('prompt') ?? '';
+interface Handoff {
+  prompt: string;
+  /** Build on load: `?auto=1` from the marketing site only. */
+  auto: boolean;
+  hadParams: boolean;
+}
+
+/** Reads `?q=` and `?auto=1` once, with the referrer at that moment. */
+function readHandoff(): Handoff {
+  if (typeof window === 'undefined') return { prompt: '', auto: false, hadParams: false };
+  const q = parseGenerateQuery(window.location.search);
+  return {
+    prompt: q.prompt,
+    auto: q.prompt !== '' && shouldAutoSubmit(q.auto, document.referrer),
+    hadParams: q.hadParams,
+  };
 }
 
 /**
@@ -61,13 +76,81 @@ function useWordsHandoff(): { message: string | null; open: (prompt: string) => 
   return useMemo(() => ({ message, open }), [message, open]);
 }
 
-function GeneratePage() {
+/** Starts checkout for a signed-in user; a signed-out one is sent to sign-in first. */
+function useUpgrade(hasSession: boolean, openSignIn: () => void): { upgradeBusy: boolean; handleUpgrade: () => Promise<void> } {
+  const [upgradeBusy, setUpgradeBusy] = useState(false);
+  const handleUpgrade = useCallback(async () => {
+    // Unauthenticated rate-limit (e.g. anon path) -> push into sign-in first.
+    if (!hasSession) {
+      openSignIn();
+      return;
+    }
+    setUpgradeBusy(true);
+    try {
+      const { url } = await createCheckoutSession();
+      window.location.href = url;
+    } catch {
+      // Stay on page; the user can retry. Don't swallow silently in the
+      // rendered UI - surface via the panel's busy state clearing.
+      setUpgradeBusy(false);
+    }
+  }, [hasSession, openSignIn]);
+  return { upgradeBusy, handleUpgrade };
+}
+
+interface SignInResume {
+  agentEnabled: boolean;
+  phase: ReturnType<typeof useGeneration>['phase'];
+  session: unknown;
+  sessionLoading: boolean;
+  lastPrompt: { current: string };
+  /** Builds a prompt as a signed-in user. */
+  run: (prompt: string) => void;
+}
+
+/**
+ * Keeps the prompt through sign-in when the server has no free build for this
+ * visitor, and builds it once a session exists. Returns whether sign-in is needed.
+ */
+function useSignInResume({ agentEnabled, phase, session, sessionLoading, lastPrompt, run }: SignInResume): boolean {
+  const needsSignIn = phase.state === 'error' && phase.code === 'anon_limit';
+  useEffect(() => {
+    if (!needsSignIn) return;
+    try {
+      window.localStorage.setItem(PENDING_PROMPT_KEY, lastPrompt.current);
+    } catch {
+      // Storage unavailable (private mode) - proceed without resume.
+    }
+  }, [needsSignIn, phase, lastPrompt]);
+
+  // After OAuth returns with a session, auto-resume the stashed prompt.
+  useEffect(() => {
+    if (sessionLoading || !session) return;
+    if (!agentEnabled) return;
+    if (phase.state !== 'idle' && !needsSignIn) return;
+    let pending: string | null = null;
+    try {
+      pending = window.localStorage.getItem(PENDING_PROMPT_KEY);
+    } catch {
+      return;
+    }
+    if (pending) {
+      window.localStorage.removeItem(PENDING_PROMPT_KEY);
+      run(pending);
+    }
+  }, [agentEnabled, sessionLoading, session, phase.state, needsSignIn, run]);
+  return needsSignIn;
+}
+
+export function GeneratePage() {
   const agentEnabled = inAppAgentEnabled();
   const { phase, events, liveCode, submit } = useGeneration();
-  const { session, loading: sessionLoading } = useSession();
+  const { session, loading: sessionLoading } = useOptionalSession();
   const [signInOpen, setSignInOpen] = useState(false);
-  const [upgradeBusy, setUpgradeBusy] = useState(false);
-  const [initialPrompt] = useState(readInitialPrompt);
+  const [signInDismissed, setSignInDismissed] = useState<unknown>(null);
+  const [handoff] = useState(readHandoff);
+  const initialPrompt = handoff.prompt;
+  const autoPending = useRef(handoff.auto);
   const words = useWordsHandoff();
   // The last prompt sent, for "Try again" after a failure.
   const lastPrompt = useRef('');
@@ -80,22 +163,24 @@ function GeneratePage() {
     [submit],
   );
 
-  const handleUpgrade = useCallback(async () => {
-    // Unauthenticated rate-limit (e.g. anon path) -> push into sign-in first.
-    if (!session) {
-      setSignInOpen(true);
-      return;
-    }
-    setUpgradeBusy(true);
-    try {
-      const { url } = await createCheckoutSession();
-      window.location.href = url;
-    } catch {
-      // Stay on page; the user can retry. Don't swallow silently in the
-      // rendered UI - surface via the panel's busy state clearing.
-      setUpgradeBusy(false);
-    }
-  }, [session]);
+  // Signed-out visitors build without an account. With a Turnstile site key
+  // they first pass the check; if that fails the request goes without a token
+  // and the server decides.
+  const runSignedOut = useCallback(
+    async (prompt: string) => {
+      lastPrompt.current = prompt;
+      let token: string | undefined;
+      try {
+        token = await getTurnstileToken(import.meta.env.VITE_TURNSTILE_SITE_KEY);
+      } catch {
+        token = undefined;
+      }
+      void submit(prompt, undefined, undefined, undefined, undefined, token);
+    },
+    [submit],
+  );
+
+  const { upgradeBusy, handleUpgrade } = useUpgrade(!!session, () => setSignInOpen(true));
 
   const handleSubmit = useCallback(
     (prompt: string) => {
@@ -103,38 +188,30 @@ function GeneratePage() {
         words.open(prompt);
         return;
       }
+      if (sessionLoading) return;
       if (!session) {
-        // Stash so the post-OAuth landing can pick it up and auto-submit.
-        try {
-          window.localStorage.setItem(PENDING_PROMPT_KEY, prompt);
-        } catch {
-          // Storage unavailable (private mode) - proceed without resume.
-        }
-        setSignInOpen(true);
+        void runSignedOut(prompt);
         return;
       }
       run(prompt);
     },
-    [agentEnabled, words, session, run],
+    [agentEnabled, words, session, sessionLoading, run, runSignedOut],
   );
 
-  // After OAuth returns with a session, auto-resume the stashed prompt.
+  // The URL carried the landing page's prompt; drop it so reload and Back do
+  // not build again.
   useEffect(() => {
-    if (sessionLoading || !session) return;
-    if (!agentEnabled) return;
-    if (phase.state !== 'idle') return;
-    let pending: string | null = null;
-    try {
-      pending = window.localStorage.getItem(PENDING_PROMPT_KEY);
-    } catch {
-      return;
-    }
-    if (pending) {
-      window.localStorage.removeItem(PENDING_PROMPT_KEY);
-      lastPrompt.current = pending;
-      void submit(pending);
-    }
-  }, [agentEnabled, sessionLoading, session, phase.state, submit]);
+    if (handoff.hadParams) stripGenerateQuery();
+  }, [handoff.hadParams]);
+
+  // `?auto=1` from the marketing site: build once, after the session is known.
+  useEffect(() => {
+    if (!autoPending.current || sessionLoading) return;
+    autoPending.current = false;
+    if (agentEnabled) handleSubmit(initialPrompt);
+  }, [agentEnabled, sessionLoading, handleSubmit, initialPrompt]);
+
+  const needsSignIn = useSignInResume({ agentEnabled, phase, session, sessionLoading, lastPrompt, run });
 
   const openResult = useOpenResult(phase);
 
@@ -169,8 +246,11 @@ function GeneratePage() {
       </footer>
 
       <SignInModal
-        open={signInOpen}
-        onClose={() => setSignInOpen(false)}
+        open={signInOpen || (needsSignIn && signInDismissed !== phase)}
+        onClose={() => {
+          setSignInOpen(false);
+          setSignInDismissed(phase);
+        }}
         title="Sign in to generate"
         description="Your description will be kept."
       />

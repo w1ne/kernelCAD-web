@@ -615,3 +615,245 @@ return asm.model();`);
       .toBe("tube.port.misaligned: tube 'fuel-1' from end is 5.00 mm from port 'block.p1'; the port is at [20.00, 20.00, 40.00].");
   });
 });
+
+describe('tube gates: per-system rules', () => {
+  /** A 114.3 mm hot-gas duct bent at 1.5 x OD and a 6.35 mm fuel line bent at 1.5 x OD, 400 mm apart. */
+  const twoSizes = (specArgs: string) => `
+const asm = assembly('rig');
+tubeSpec(${specArgs});
+const duct = tube('duct', { from: { point: [0, 0, 0], axis: [1, 0, 0] }, to: { point: [600, 600, 0], axis: [0, -1, 0] },
+  via: [[600, 0, 0]], od: 114.3, wall: 1.6, bendRadius: 171.45, system: 'hot-gas' });
+const sense = tube('sense', { from: { point: [0, 0, 400], axis: [1, 0, 0] }, to: { point: [100, 100, 400], axis: [0, -1, 0] },
+  via: [[100, 0, 400]], od: 6.35, wall: 0.71, bendRadius: 9.525, system: 'fuel' });
+asm.part('duct', duct); asm.part('sense', sense);
+return asm.model();`;
+
+  it('one factor cannot fit both sizes; a hot-gas override passes the duct and still fails the small line', async () => {
+    const strict = await run(twoSizes('{}'));
+    expect(messages(strict, 'tube.bend.radius-too-small')).toEqual([
+      "tube.bend.radius-too-small: tube 'duct' bends at 171.45 mm; the rule needs 342.90 mm (3 x OD 114.30).",
+      "tube.bend.radius-too-small: tube 'sense' bends at 9.53 mm; the rule needs 19.05 mm (3 x OD 6.35)."]);
+    const loose = await run(twoSizes('{ minBendRadiusFactor: 1.5 }'));
+    expect(loose.diagnostics).toEqual([]);   // the small line is let through with the duct
+    const bySystem = await run(twoSizes("{ systems: { 'hot-gas': { minBendRadiusFactor: 1.5 } } }"));
+    expect(bySystem.diagnostics.map((d) => d.message)).toEqual([
+      "tube.bend.radius-too-small: tube 'sense' bends at 9.53 mm; the rule needs 19.05 mm (3 x OD 6.35)."]);
+  }, 120_000);
+
+  it('a param in an override is read at its current value', async () => {
+    const src = (k: number) => twoSizes(`{ systems: { 'hot-gas': { minBendRadiusFactor: param('K', ${k}) } } }`);
+    expect(messages(await run(src(1.5)), 'tube.bend.radius-too-small')).toEqual([
+      expect.stringContaining("tube 'sense'")]);
+    expect(messages(await run(src(2)), 'tube.bend.radius-too-small')).toEqual([
+      "tube.bend.radius-too-small: tube 'duct' bends at 171.45 mm; the rule needs 228.60 mm (2 x OD 114.30, system 'hot-gas').",
+      expect.stringContaining("tube 'sense'")]);
+  }, 120_000);
+
+  it('a systems entry no tube uses warns and names the systems present', async () => {
+    const r = await run(twoSizes("{ minBendRadiusFactor: 1.5, systems: { 'hot-gass': { minBendRadiusFactor: 1 }, fuel: {} } }"));
+    expect(r.diagnostics.map((d) => [d.severity, d.message])).toEqual([['warn',
+      "tube.spec.system-unused: the tubeSpec rules for system 'hot-gass' apply to no tubes: no tube has system 'hot-gass'. " +
+      "Systems in this script: 'fuel', 'hot-gas'."]]);
+    expect(r.diagnostics[0].nextAction).toEqual(DIAGNOSTIC_REGISTRY['tube.spec.system-unused'].nextAction);
+  }, 120_000);
+
+  it('the end-straight override sets the fitting zone left out of clearance', async () => {
+    // The block carries a tower beside its port: 3 mm from the tube surface, up to 18 mm above the port face.
+    const src = (specArgs: string) => `
+const asm = assembly('rig');
+const block = asm.part('block', box(40, 40, 40).union(box(12, 40, 18).translate(28, 0, 40)), { at: [0, 0, 0] })
+  .connector('p1', { type: 'axis', origin: { kind: 'vec3', value: [20, 20, 40] }, axis: [0, 0, 1], port: { system: 'fuel', od: 10 } });
+tubeSpec(${specArgs});
+const a = tube('a', { from: block.port('p1'), to: { point: [20, 20, 240] }, wall: 1, bendRadius: 30 });
+asm.part('a', a);
+return asm.model();`;
+    // 2.5 x OD: the first 25 mm is the fitting zone, which clears the tower top by 7 mm.
+    const wide = await run(src('{}'));
+    expect(errors(wide)).toEqual([]);
+    expect(wide.lines[0].minClearance).toMatchObject({ to: 'block', mm: expect.closeTo(Math.hypot(3, 7), 6) });
+    // 1 x OD for fuel: the zone is 10 mm, so the tube beside the tower is measured.
+    const narrow = await run(src('{ systems: { fuel: { minStraightAtEnd: 1 } } }'));
+    expect(messages(narrow, 'tube.clearance.violated')).toEqual([
+      expect.stringContaining("tube 'a' is 3.00 mm from 'block'; the rule needs 6.00 mm.")]);
+    // And the other way: a short top-level rule, lengthened for fuel.
+    const back = await run(src('{ minStraightAtEnd: 1, systems: { fuel: { minStraightAtEnd: 2.5 } } }'));
+    expect(errors(back)).toEqual([]);
+    // An override for another system changes nothing for this tube.
+    const other = await run(src('{ minStraightAtEnd: 1, systems: { oil: { minStraightAtEnd: 2.5 } } }'));
+    expect(messages(other, 'tube.clearance.violated')).toHaveLength(1);
+  }, 180_000);
+});
+
+describe('tube gates: a fault in the gate itself', () => {
+  /** Two lines on one block. The fault makes the stored origin of p1 unreadable as a number, after the build. */
+  const TWO = HEAD + `
+tubeSpec({});
+const a = tube('fuel-1', { from: block.port('p1'), to: { point: [20, 20, 200] }, wall: 1, bendRadius: 30 });
+const b = tube('bleed-1', { from: block.port('p2'), to: { point: [100, 20, 20] }, wall: 1, bendRadius: 30 });
+asm.part('fuel-1', a); asm.part('bleed-1', b);
+return asm.model();`;
+  const poison = { [Symbol.toPrimitive]: () => { throw new Error('injected origin fault'); } };
+
+  async function runPoisoned(): Promise<TubeCheckReport> {
+    const model = await buildModel({ fileName: 'tube-gates.kcad.ts', code: TWO });
+    const parts = (Array.from(model.session.assemblies.values())[0] as { __parts(): Array<{ name: string; mateConnectors: Array<{ name: string; origin: { value: unknown[] } }> }> }).__parts();
+    parts.find((p) => p.name === 'block')!.mateConnectors.find((c) => c.name === 'p1')!.origin.value = [poison, 20, 40];
+    return (await runTubeChecksOnModel(model))!;
+  }
+
+  it('an exception on one tube becomes an error on that tube and the other tube is still checked', async () => {
+    const r = await runPoisoned();
+    expect(r.diagnostics.map((d) => [d.code, d.severity, d.featureId !== undefined])).toEqual([
+      ['feature.kernel-failed', 'error', true]]);
+    expect(r.diagnostics[0].message).toBe(
+      "tube.gate: checking the port positions failed on tube 'fuel-1' (injected origin fault); the tube is not verified.");
+    expect(r.diagnostics[0].hint.trim().length).toBeGreaterThan(0);
+    expect(r.lines.map((l) => l.name)).toEqual(['fuel-1', 'bleed-1']);
+    expect(r.lines[1].minClearance).toMatchObject({ to: 'fuel-1', mm: expect.any(Number) });
+  }, 120_000);
+
+  it('the same script with no fault is clean', async () => {
+    expect((await run(TWO)).diagnostics).toEqual([]);
+  }, 120_000);
+});
+
+describe('tube gates: an override param that went bad after capture', () => {
+  it('reports the system and key, and applies the top-level rule', async () => {
+    const model = await buildModel({ fileName: 'tube-gates.kcad.ts', code: `
+const K = param('K', 1.5);
+tubeSpec({ systems: { 'hot-gas': { minBendRadiusFactor: K } } });
+return tube('duct', { from: { point: [0, 0, 0] }, to: { point: [600, 600, 0] }, via: [[600, 0, 0]], od: 114.3, wall: 1.6, bendRadius: 171.45, system: 'hot-gas' });` });
+    expect((await runTubeChecksOnModel(model))!.diagnostics).toEqual([]);
+    model.session.paramTable.set('K', 0);
+    const r = (await runTubeChecksOnModel(model))!;
+    expect(r.diagnostics.map((d) => [d.severity, d.message])).toEqual([
+      ['error', "tube.spec.system-rule-invalid: tubeSpec systems 'hot-gas' minBendRadiusFactor resolves to 0; " +
+        'it must be a positive finite number. The top-level value 3 was applied.'],
+      ['error', "tube.bend.radius-too-small: tube 'duct' bends at 171.45 mm; the rule needs 342.90 mm (3 x OD 114.30)."],
+    ]);
+    expect(r.diagnostics[0].hint.trim().length).toBeGreaterThan(0);
+  }, 120_000);
+});
+
+describe('tube gates: params in the top-level tubeSpec numbers', () => {
+  /** Build once, then run the gate at each value of the param: the gate must read the param, not the captured number. */
+  async function atValues(code: string, name: string, values: number[]): Promise<TubeCheckReport[]> {
+    const model = await buildModel({ fileName: 'tube-gates.kcad.ts', code });
+    expect(model.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+    const out: TubeCheckReport[] = [];
+    for (const v of values) {
+      model.session.paramTable.set(name, v);
+      out.push((await runTubeChecksOnModel(model))!);
+    }
+    return out;
+  }
+
+  /** p1 up 80 mm, across 110 mm, up 80 mm, bent at 30 mm: 50 mm straight at each end and between the bends, 15 mm from the wall. */
+  const twoBends = (specArgs: string) => HEAD + `
+tubeSpec(${specArgs});
+const t = tube('fuel-1', { from: block.port('p1'), to: { point: [130, 20, 200] }, via: [[20, 20, 120], [130, 20, 120]], wall: 1, bendRadius: 30 });
+asm.part('fuel-1', t);
+return asm.model();`;
+
+  it.each([
+    ['minBendRadiusFactor', "{ minBendRadiusFactor: param('P', 3) }", 3, 3.5,
+      "tube.bend.radius-too-small: tube 'fuel-1' bends at 30.00 mm; the rule needs 35.00 mm (3.5 x OD 10.00)."],
+    ['minStraightBetweenBends', "{ minStraightBetweenBends: param('P', 2) }", 5, 6,
+      "tube.straight.between-bends-too-short: tube 'fuel-1' leg 1 has 50.00 mm straight between bends; the rule needs 60.00 mm."],
+    ['minStraightAtEnd', "{ minStraightAtEnd: param('P', 2.5) }", 5, 5.5,
+      "tube.straight.end-too-short: tube 'fuel-1' has 50.00 mm straight at its from end; the rule needs 55.00 mm."],
+    ['maxBendAngle', "{ maxBendAngle: param('P', 180) }", 90, 75,
+      "tube.bend.angle-exceeded: tube 'fuel-1' bend 1 is 90.00 deg; the limit is 75.00 deg."],
+    ['clearance.default', "{ clearance: { default: param('P', 6) } }", 15, 16,
+      "tube.clearance.violated: tube 'fuel-1' is 15.00 mm from 'wall'; the rule needs 16.00 mm."],
+    ['a param expression', "{ minBendRadiusFactor: param('P', 1).multiply(2) }", 1.5, 1.75,
+      "tube.bend.radius-too-small: tube 'fuel-1' bends at 30.00 mm; the rule needs 35.00 mm (3.5 x OD 10.00)."],
+  ])('%s: the gate uses the resolved value, and changing the param flips a pass to a fail', async (_rule, specArgs, pass, fail, message) => {
+    const [ok, broken] = await atValues(twoBends(specArgs), 'P', [pass, fail]);
+    expect(ok.diagnostics).toEqual([]);
+    expect(errors(broken)[0].message.startsWith(message), errors(broken)[0].message).toBe(true);
+    // The same value written at capture gives the same verdict as the same value set afterwards.
+    const captured = await run(twoBends(specArgs.replace(/param\('P', [\d.]+\)/, `param('P', ${fail})`)));
+    expect(errors(captured).map((d) => d.message)).toEqual(errors(broken).map((d) => d.message));
+  }, 180_000);
+
+  it('clearance.pairs[].min: the gate uses the resolved value, and changing the param flips a pass to a fail', async () => {
+    const [ok, broken] = await atValues(HEAD + `
+tubeSpec({ clearance: { pairs: [{ a: 'fuel', b: 'bleed', min: param('P', 10) }] } });
+const a = tube('fuel-1', { from: block.port('p1'), to: { point: [20, 20, 200] }, wall: 1, bendRadius: 30 });
+const b = tube('bleed-1', { from: block.port('p2'), to: { point: [100, 20, 200] }, via: [[100, 20, 20]], wall: 1, bendRadius: 30 });
+asm.part('fuel-1', a); asm.part('bleed-1', b);
+return asm.model();`, 'P', [21, 22]);
+    expect(ok.diagnostics).toEqual([]);
+    expect(messages(broken, 'tube.clearance.violated')).toEqual([
+      expect.stringContaining("tube 'fuel-1' is 21.21 mm from 'bleed-1'; the rule needs 22.00 mm.")]);
+  }, 180_000);
+
+  it('a misspelt pair with a param min still warns with the resolved number', async () => {
+    const r = await run(twoBends("{ clearance: { pairs: [{ a: 'fuel', b: 'bleeed', min: param('P', 12.5) }] } }"));
+    expect(messages(r, 'tube.clearance.pair-unused')).toEqual([
+      expect.stringContaining("clearance pair 'fuel' / 'bleeed' (12.50 mm) applies to no tubes")]);
+  }, 120_000);
+
+  it('the fitting zone left out of clearance follows a param in minStraightAtEnd', async () => {
+    // The tower of the per-system test: 3 mm from the tube, up to 18 mm above the port face.
+    const [wide, narrow] = await atValues(`
+const asm = assembly('rig');
+const block = asm.part('block', box(40, 40, 40).union(box(12, 40, 18).translate(28, 0, 40)), { at: [0, 0, 0] })
+  .connector('p1', { type: 'axis', origin: { kind: 'vec3', value: [20, 20, 40] }, axis: [0, 0, 1], port: { system: 'fuel', od: 10 } });
+tubeSpec({ minStraightAtEnd: param('E', 2.5) });
+const a = tube('a', { from: block.port('p1'), to: { point: [20, 20, 240] }, wall: 1, bendRadius: 30 });
+asm.part('a', a);
+return asm.model();`, 'E', [2.5, 1]);
+    expect(errors(wide)).toEqual([]);
+    expect(wide.lines[0].minClearance).toMatchObject({ to: 'block', mm: expect.closeTo(Math.hypot(3, 7), 6) });
+    expect(messages(narrow, 'tube.clearance.violated')).toEqual([
+      expect.stringContaining("tube 'a' is 3.00 mm from 'block'; the rule needs 6.00 mm.")]);
+  }, 180_000);
+
+  it('a top-level param that went bad after capture is reported with the rule and the value, and the default applies', async () => {
+    const code = twoBends('{ minBendRadiusFactor: P, clearance: { default: P.multiply(3) } }').replace('tubeSpec(', "const P = param('P', 2);\ntubeSpec(");
+    const [bad] = await atValues(code, 'P', [-1]);
+    expect(bad.diagnostics.map((d) => [d.severity, d.message])).toEqual([
+      ['error', 'tube.spec.rule-invalid: tubeSpec minBendRadiusFactor resolves to -1; it must be a positive finite number. The default 3 was applied.'],
+      ['error', 'tube.spec.rule-invalid: tubeSpec clearance.default resolves to -3; it must be a positive finite number. The default 6 was applied.'],
+    ]);
+    expect(bad.diagnostics[0].hint.trim().length).toBeGreaterThan(0);
+    expect(bad.diagnostics[0].nextAction).toEqual(DIAGNOSTIC_REGISTRY['tube.spec.rule-invalid'].nextAction);
+    expect(bad.lines).toHaveLength(1);
+  }, 120_000);
+
+  it('a bad pair min and a bad maxBendAngle are reported too; the pair is left out and the angle default applies', async () => {
+    const code = HEAD + `
+const P = param('P', 10);
+tubeSpec({ maxBendAngle: P.multiply(12), clearance: { pairs: [{ a: 'fuel', b: 'bleed', min: P }] } });
+const a = tube('fuel-1', { from: block.port('p1'), to: { point: [20, 150, 120] }, via: [[20, 20, 120]], wall: 1, bendRadius: 30 });
+const b = tube('bleed-1', { from: block.port('p2'), to: { point: [100, 20, 200] }, via: [[100, 20, 20]], wall: 1, bendRadius: 30 });
+asm.part('fuel-1', a); asm.part('bleed-1', b);
+return asm.model();`;
+    const [ok, bad] = await atValues(code, 'P', [10, -5]);
+    expect(ok.diagnostics).toEqual([]);
+    // No rule finding follows: 180 deg and the 6 mm default clearance are what the two 90 degree lines are held to.
+    expect(bad.diagnostics.map((d) => [d.severity, d.message])).toEqual([
+      ['error', 'tube.spec.rule-invalid: tubeSpec maxBendAngle resolves to -60; it must be a number in (0, 180] degrees. The default 180 was applied.'],
+      ['error', "tube.spec.rule-invalid: tubeSpec clearance.pairs[0].min ('fuel' / 'bleed') resolves to -5; it must be a positive finite number. " +
+        'The pair was left out, so clearance.default applies to it.'],
+    ]);
+    expect(bad.lines.map((l) => l.name)).toEqual(['fuel-1', 'bleed-1']);
+  }, 180_000);
+
+  it('a spec expression that divides by zero after capture names the rule, falls back, and the lines are still reported', async () => {
+    const code = twoBends('{ minBendRadiusFactor: N.divide(D), clearance: { default: N.multiply(2).divide(D) } }')
+      .replace('tubeSpec(', "const N = param('N', 3);\nconst D = param('D', 1);\ntubeSpec(");
+    const [ok, bad] = await atValues(code, 'D', [1, 0]);
+    expect(ok.diagnostics).toEqual([]);
+    expect(bad.diagnostics.map((d) => [d.severity, d.message])).toEqual([
+      ['error', 'tube.spec.rule-invalid: tubeSpec minBendRadiusFactor cannot be evaluated (division by zero in ParamRef expression); ' +
+        'it must be a positive finite number. The default 3 was applied.'],
+      ['error', 'tube.spec.rule-invalid: tubeSpec clearance.default cannot be evaluated (division by zero in ParamRef expression); ' +
+        'it must be a positive finite number. The default 6 was applied.'],
+    ]);
+    expect(bad.lines).toHaveLength(1);
+    expect(bad.lines[0].minClearance).toBeDefined();
+  }, 120_000);
+});

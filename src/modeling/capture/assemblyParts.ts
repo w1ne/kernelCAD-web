@@ -528,7 +528,6 @@ function createPartPort(
   id: FeatureId,
   name: string,
   at: Vec3Param,
-  placedByConnect: boolean,
   mateConnectors: Connector[],
 ): (connName: string) => TubeEnd {
   return (connName) => {
@@ -550,11 +549,13 @@ function createPartPort(
         hint: 'Add port: { system, od } to the connector options.',
       });
     }
-    if (c.origin.kind !== 'vec3' || placedByConnect) {
+    // `at` is the part's placement whether the script gave it or `connect`
+    // worked it out from the two connectors, so both give `at + origin`.
+    if (c.origin.kind !== 'vec3') {
       return fail({
         reason: 'unresolved',
         gotText: 'a port with no fixed position at capture time',
-        requires: "a { kind: 'vec3' } origin on a part placed with `at`, or a plain point end that names the part",
+        requires: "a { kind: 'vec3' } origin, or a plain point end that names the part",
         hint: `Pass { point: [x, y, z], axis: [x, y, z], part: '${name}' } to tube() instead, with the port position in assembly space.`,
       });
     }
@@ -582,7 +583,6 @@ export function makePartRef(
   // `solvedModel`) delegate straight to it so there is exactly one
   // implementation of each.
   owner: Assembly,
-  placedByConnect = false,
 ): AssemblyPartRef {
   const connector = createPartConnector(
     assemblyName, id, name, at, connectors, mateConnectors, () => ref,
@@ -598,7 +598,7 @@ export function makePartRef(
     wrapGeoms,
     connector: connector as AssemblyPartRef['connector'],
     wrapGeom,
-    port: createPartPort(id, name, at, placedByConnect, mateConnectors),
+    port: createPartPort(id, name, at, mateConnectors),
     part: addPart,
     model: () => owner.model(),
     solve: (poses) => owner.solve(poses),
@@ -765,7 +765,6 @@ export function recordPartInternal(
     // another part to this same assembly (delegates straight to this method).
     (chainName, chainShape, chainOpts) => recordPart(state, arm, chainName, chainShape, chainOpts),
     arm,
-    opts.connect !== undefined,
   );
   for (const connector of transformedCatalogConnectors) {
     part.connector(connector.name, {

@@ -51,7 +51,7 @@ export const TUBE_CODES = {
   },
   'tube.clearance.overlap': {
     hintTemplate:
-      'The tube passes through the named part or tube. Re-route the leg around it.',
+      'The tube passes through the named part or tube. Re-route the leg around it. Two tubes from one port share their first leg: make the second a branch of the first, `from: { tube, at, axis }`.',
     nextAction: { kind: 'fix-arg', field: 'via' },
     defaultSeverity: 'error',
     group: 'tube',
@@ -59,7 +59,7 @@ export const TUBE_CODES = {
   },
   'tube.port.misaligned': {
     hintTemplate:
-      'Put the first (or last) corner on the port axis; the message gives the point. When the message says the end is off its port, its captured point or its part, the part or the tube moved: route that end to the stated position as `{ point, axis, part }`, with the end touching the part, and add the tube with no `at`.',
+      'Put the first (or last) corner on the port axis; the message gives the point, or for a branch the line to run along. When the message says the end is off its port, its captured point or its part, the part or the tube moved: route that end to the stated position as `{ point, axis, part }`, with the end touching the part, and add the tube with no `at`.',
     nextAction: { kind: 'fix-arg', field: 'via' },
     defaultSeverity: 'error',
     group: 'tube',
@@ -96,5 +96,61 @@ export const TUBE_CODES = {
     defaultSeverity: 'error',
     group: 'tube',
     description: 'One tube shape is added to the assembly under more than one part name; only the first is checked.',
+  },
+  'tube.spec.system-unused': {
+    hintTemplate:
+      'Check the spelling of the system name in `systems` against the `system` of the ports and tubes; the message lists the systems present. Remove the entry if the script has no such line.',
+    nextAction: { kind: 'fix-arg', field: 'tubeSpec' },
+    defaultSeverity: 'warn',
+    group: 'tube',
+    description: 'A tubeSpec systems entry names a fluid system that no tube in the script has, so its rule overrides apply to nothing.',
+  },
+  'tube.spec.system-rule-invalid': {
+    hintTemplate:
+      'A `systems` value in `tubeSpec` comes from a param that now gives a number the rule cannot be. Set the param so the factor is positive (and `maxBendAngle` is at most 180), or give the entry a plain number.',
+    nextAction: { kind: 'fix-arg', field: 'tubeSpec' },
+    defaultSeverity: 'error',
+    group: 'tube',
+    description: 'A tubeSpec systems override resolves to a non-finite or non-positive number (or a bend angle above 180), so the top-level rule was applied instead.',
+  },
+  'tube.spec.rule-invalid': {
+    hintTemplate:
+      'A rule or clearance number in `tubeSpec` comes from a param that now gives a number it cannot be; the message names the field and the value. Set the param so the number is positive (and `maxBendAngle` is at most 180), or write a plain number.',
+    nextAction: { kind: 'fix-arg', field: 'tubeSpec' },
+    defaultSeverity: 'error',
+    group: 'tube',
+    description: 'A top-level tubeSpec rule or clearance number resolves to a non-finite or non-positive number (or a bend angle above 180). The default was applied in its place; a clearance pair with such a `min` was left out.',
+  },
+  'tube.branch.not-on-straight': {
+    hintTemplate:
+      'Set `at` on the branch end to a station on a straight leg of the trunk; the message lists the straight ranges, in mm along the trunk centreline from its `from` end. A branch cannot sit on a bend.',
+    nextAction: { kind: 'fix-arg', field: 'at' },
+    defaultSeverity: 'error',
+    group: 'tube',
+    description: 'A branch end names a station that is on a bend of its trunk or beyond the trunk, so the branch has no place to join and is not built.',
+  },
+  'tube.branch.too-close': {
+    hintTemplate:
+      "Move `at` into the range the message gives. A branch keeps the trunk's straight-between-bends length from a bend and the trunk's end straight from either end of the trunk.",
+    nextAction: { kind: 'fix-arg', field: 'at' },
+    defaultSeverity: 'error',
+    group: 'tube',
+    description: "A branch joins its trunk closer to a bend or to an end of the trunk than the trunk's straight rules allow.",
+  },
+  'tube.branch.axis-not-square': {
+    hintTemplate:
+      'Set `axis` on the branch end square to the trunk leg; the message gives the leg direction and the nearest square axis. Only 90 degree tees are built. Put the first corner of the branch on that axis.',
+    nextAction: { kind: 'fix-arg', field: 'axis' },
+    defaultSeverity: 'error',
+    group: 'tube',
+    description: 'The axis of a branch end is not at 90 degrees to the trunk leg it joins.',
+  },
+  'tube.branch.od-too-large': {
+    hintTemplate:
+      'Lower the `od` of the branch to the trunk OD or less, or branch off a larger tube. To join a larger line, make it the trunk and this one the branch.',
+    nextAction: { kind: 'fix-arg', field: 'od' },
+    defaultSeverity: 'error',
+    group: 'tube',
+    description: 'A branch has a larger outer diameter than the trunk it joins.',
   },
 } as const satisfies Record<`tube.${string}`, DiagnosticCodeSpec>;

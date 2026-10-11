@@ -53,37 +53,22 @@
       <div class="hero-copy">
         <h1 class="headline" lang="en">From words to <span class="accent">manufacturable geometry</span>.</h1>
         <p class="subhead">Describe what you need. kernelCAD designs the part, checks it holds together, and hands you a file your shop can manufacture.</p>
-        <div class="modes" aria-label="Supported agent surfaces">
-          <span class="mode">Claude Desktop</span><span class="sep">·</span>
-          <span class="mode">Codex</span><span class="sep">·</span>
-          <span class="mode">Claude Code</span><span class="sep">·</span>
-          <span class="mode">Cursor</span><span class="sep">·</span>
-          <span class="mode">CLI</span>
-        </div>
-        <div class="ctas-primary">
-          <a class="btn btn-primary" href="https://app.kernelcad.com">Try in browser →</a>
-          <a class="btn btn-secondary" href="https://github.com/w1ne/kernelCAD-web">★ Star on GitHub</a>
-        </div>
-        <div class="install-stack" aria-label="Install commands">
-          <a class="install install-link" id="claude-desktop-link" href="/app/connect" aria-label="Connect kernelCAD to your agent">
-            <span class="install-command">Connect your agent</span>
-            <span class="copy">→</span>
-          </a>
-          <button class="install install-secondary" id="claude-mcp-btn" aria-label="Copy Claude Code MCP install command">
-            <span class="install-command"><span class="prompt">$</span> claude mcp add --transport http kernelcad https://mcp.kernelcad.com/mcp</span>
-            <span class="copy">copy</span>
-          </button>
-          <button class="install install-secondary" id="codex-mcp-btn" aria-label="Copy Codex MCP install command">
-            <span class="install-command"><span class="prompt">$</span> codex mcp add kernelcad -- npx -y kernelcad mcp</span>
-            <span class="copy">copy</span>
-          </button>
-          <button class="install install-secondary" id="install-btn" aria-label="Copy CLI install command">
-            <span class="install-command"><span class="prompt">$</span> npm install -g kernelcad</span>
-            <span class="copy">copy</span>
-          </button>
-        </div>
-        <p class="install-note" id="claude-desktop-note">Bring your own Claude — modeling, introspection &amp; review run free and unlimited. The built-in hosted agent (paid) handles generation.</p>
-        <p class="install-note">Use editable .kcad.ts source and deterministic review with review_cad.</p>
+        <form class="hero-form" method="get" action="https://app.kernelcad.com/generate">
+          <label class="hero-label" for="hero-q">Describe the part you need</label>
+          <div class="hero-form-row">
+            <input id="hero-q" name="q" type="text" required maxlength="2000" autocomplete="off" placeholder="60 × 40 mm bracket, four M3 holes" />
+            <input type="hidden" name="auto" value="1" />
+            <button class="btn btn-primary" type="submit">Build</button>
+          </div>
+        </form>
+        <p class="hero-examples">
+          <span>Or open one:</span>
+          <a href="https://app.kernelcad.com/p/N2yYiZxy?version=6">Keycap</a>
+          <a href="https://app.kernelcad.com/studio?gallery=ratchet-height-adjust-stool">Stool</a>
+          <a href="https://app.kernelcad.com/studio?gallery=rocket-keychain">Keychain</a>
+        </p>
+        <p class="hero-agent">Already use Claude, ChatGPT, Cursor or Codex? <a href="https://app.kernelcad.com/connect">Connect your agent →</a></p>
+        <p class="hero-star"><a href="https://github.com/w1ne/kernelCAD-web">★ Star on GitHub</a></p>
       </div>
       <div class="hero-proof" aria-label="kernelCAD generated artifact preview">
         <div class="demo-meta">
@@ -125,13 +110,13 @@
         <li class="step">
           <span class="step-num" aria-hidden="true">1</span>
           <h3 class="step-title">Connect your agent</h3>
-          <p class="step-copy">Add kernelCAD to Claude, ChatGPT, Codex or Cursor with one command. No agent? Use the one built into the app.</p>
+          <p class="step-copy">Add kernelCAD to Claude, ChatGPT, Codex or Cursor. No agent? Use the one built into the app.</p>
           <a class="step-link" href="/app/connect">Connect your agent →</a>
         </li>
         <li class="step">
           <span class="step-num" aria-hidden="true">2</span>
           <h3 class="step-title">Describe the part</h3>
-          <p class="step-copy">Say what it must do, its sizes and the parts it must fit. The agent writes editable .kcad.ts source and checks the geometry.</p>
+          <p class="step-copy">Say what it must do, its sizes and the parts it must fit. The agent writes editable .kcad.ts source and runs a deterministic review of the geometry with review_cad.</p>
           <a class="step-link" href="/docs/">Read the docs →</a>
         </li>
         <li class="step">
@@ -550,23 +535,6 @@
         }
         grid.removeAttribute('aria-busy');
       });
-
-    function wireCopyButton(buttonId, command) {
-      const button = document.getElementById(buttonId);
-      if (!button) return;
-      button.addEventListener('click', () => {
-        navigator.clipboard.writeText(command);
-        const copy = button.querySelector('.copy');
-        const orig = copy.textContent;
-        copy.textContent = 'copied';
-        setTimeout(() => { copy.textContent = orig; }, 1200);
-      });
-    }
-
-    // copy command buttons
-    wireCopyButton('claude-mcp-btn', 'claude mcp add --transport http kernelcad https://mcp.kernelcad.com/mcp');
-    wireCopyButton('codex-mcp-btn', 'codex mcp add kernelcad -- npx -y kernelcad mcp');
-    wireCopyButton('install-btn', 'npm install -g kernelcad');
 
     // Source attribution: ?ref=hn → hidden field on the footer signup form
     const params = new URLSearchParams(window.location.search);

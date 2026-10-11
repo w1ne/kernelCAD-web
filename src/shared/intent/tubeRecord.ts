@@ -7,7 +7,7 @@
 // the bending and clearance rules the tube gates enforce.
 
 import type { V3 } from '../tube/tubePath';
-import type { Vec3Param } from './types';
+import type { Param, Vec3Param } from './types';
 
 export interface TubeEndMeta {
   /** The assembly part the end sits on: the port's part, or the part a
@@ -19,6 +19,11 @@ export interface TubeEndMeta {
   axis?: V3;
   minStraight?: number;
   system?: string;
+  /** Set when the end is a tee on another tube: the trunk's name and the
+   *  station on its centreline, mm from the trunk's `from` end. The end's
+   *  corner point is then a placeholder; `tubeGeometry` places it on the
+   *  trunk's resolved path. */
+  branch?: { tube: string; at: Param };
 }
 
 /** Stored at `metadata.tube` on a `tube` record, whose params are
@@ -36,13 +41,24 @@ export interface TubeMetadata {
   flow?: { lpm: number; fluid: string };
 }
 
-export interface TubeSpecMetadata {
+/** The four bend and straight rules. A `systems` entry may override any of them. */
+export const TUBE_RULE_KEYS = ['minBendRadiusFactor', 'minStraightBetweenBends', 'minStraightAtEnd', 'maxBendAngle'] as const;
+export type TubeRuleKey = typeof TUBE_RULE_KEYS[number];
+export type TubeRuleNumbers = Record<TubeRuleKey, number>;
+
+/** A top-level rule or clearance number as captured: the plain number the
+ *  script wrote, or a Param when the script gave a param. Resolve a Param
+ *  against the param table before reading a number (`resolveTubeSpec`); its
+ *  `evaluated` is not current. */
+export type TubeRuleValue = number | Param;
+
+export interface TubeSpecMetadata extends Record<TubeRuleKey, TubeRuleValue> {
   virtual: true;
-  minBendRadiusFactor: number;
-  minStraightBetweenBends: number;
-  minStraightAtEnd: number;
-  maxBendAngle: number;
-  clearance: { default: number; pairs: Array<{ a: string; b: string; min: number }> };
+  clearance: { default: TubeRuleValue; pairs: Array<{ a: string; b: string; min: TubeRuleValue }> };
+  /** Rule overrides by system name. Absent when the spec declares none. The
+   *  values are captured Params: resolve them against the param table before
+   *  reading a number. */
+  systems?: Record<string, Partial<Record<TubeRuleKey, Param>>>;
 }
 
 export const TUBE_SPEC_DEFAULTS = {
@@ -63,7 +79,8 @@ export function isTubeMetadata(v: unknown): v is TubeMetadata {
 const ev = (p: Vec3Param | undefined): V3 =>
   p === undefined ? [0, 0, 0] : [p.x.evaluated, p.y.evaluated, p.z.evaluated];
 
-/** The corner points in mm: each point's evaluated `base + offset`. */
+/** The corner points in mm: each point's evaluated `base + offset`. A branch
+ *  end is a placeholder here; read a tube's centreline through `tubeGeometry`. */
 export function tubeCornerPoints(meta: TubeMetadata): V3[] {
   return meta.points.map((p) => {
     const b = ev(p.base);

@@ -952,6 +952,15 @@ function predecessorShapesOf(
 
 type CompiledEvent = Extract<FeatureEvent, { kind: 'feature.compiled' }>;
 
+/** The predecessors a mesh lists. Viewers hide every mesh another mesh lists
+ *  (the render tail, the mesh artifact) and the shadowing check follows these
+ *  links. A tube's inputs name the trunk it branches off: that orders the
+ *  lowering, but the trunk is a tube of its own and must stay drawn, so a tube
+ *  mesh lists none. */
+function meshPredecessors(event: CompiledEvent): FeatureId[] {
+  return event.featureKind === 'tube' ? [] : event.predecessors;
+}
+
 /** Per-run state of the selection ↔ code link ownership pass. */
 function newLinkState(
   records: readonly FeatureRecord[],
@@ -1086,7 +1095,7 @@ function handleMeshFeatureEvent(event: FeatureEvent, ctx: MeshFeatureEventContex
   const emitted: FeatureMesh = {
     featureId: event.featureId,
     featureKind: event.featureKind,
-    predecessors: event.predecessors,
+    predecessors: meshPredecessors(event),
     op: event.op,
     faces: meshed.faces,
     volume: meshed.volume,

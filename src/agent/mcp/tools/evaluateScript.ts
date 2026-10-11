@@ -10,6 +10,7 @@ import {
   type FeatureHealthEntry,
 } from '../../cli/commands/evaluate';
 import { tubesOutput } from '../../../composition/scriptEvaluation';
+import type { PortReportEntry } from '../../../modeling/runtime/tube/portReport';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
 import { clearActiveMcpSession, setActiveMcpSession } from '../activeSession';
@@ -74,6 +75,12 @@ export interface EvaluateScriptOutput {
    *  `systems`: per-system totals). Present only when the model has tubes.
    *  The gate's diagnostics are already in `diagnostics`. */
   tubes?: NonNullable<ReturnType<typeof tubesOutput>>;
+  /** Every fluid port of the script's assembly: where it is in assembly
+   *  space (params and mates resolved), its system and size, and the tubes
+   *  that end on it. Present, possibly empty, on a full evaluation of a
+   *  script that declares an assembly. A port whose position cannot be
+   *  stated has `unresolved` (why) and no `origin`. */
+  ports?: PortReportEntry[];
   /**
    * Mechanism-truth verdict (T3), present ONLY for a full (non-dry)
    * evaluation of an assembly-built scene with `skipMechanismCheck` unset.
@@ -122,7 +129,7 @@ export async function evaluateScriptTool(
 ): Promise<EvaluateScriptOutput> {
   if (input.dryRun) return evaluateDryRun(input);
 
-  const { evaluation, model, dfmReport, tubeReport } = await evaluateAndBuildScript(input as EvaluateInput);
+  const { evaluation, model, dfmReport, tubeReport, portReport } = await evaluateAndBuildScript(input as EvaluateInput);
   // Authoring intent lint (usage triage 2026-10-03): info-only hints naming
   // the API for intent the source states but builds by hand. Agents skip
   // lookup_cookbook, but every agent reads this result.
@@ -180,6 +187,7 @@ export async function evaluateScriptTool(
     featureHealth: r.featureHealth,
     ...(r.dimensions !== undefined ? { dimensions: r.dimensions } : {}),
     ...(tubes !== undefined ? { tubes } : {}),
+    ...(portReport !== undefined ? { ports: portReport } : {}),
     ...(parts !== undefined ? { parts } : {}),
     ...(mechanism !== undefined ? { mechanism } : {}),
     ...(reviewHint !== undefined ? { reviewHint } : {}),

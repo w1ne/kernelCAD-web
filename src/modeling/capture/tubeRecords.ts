@@ -6,18 +6,26 @@
 // `tube.*` / `tubeSpec:` message prefix; a tube rule that is silently
 // ignored would disable the gate it declares.
 
-import type { EditableVec3, Param, Vec3, Vec3Param } from '../../shared/intent/types';
+import type { FeatureRecord } from '../../shared/intent/featureRecord';
+import type { EditableVec3, FeatureId, FeatureRef, Param, Vec3, Vec3Param } from '../../shared/intent/types';
 import type { Editable } from '../../shared/runtime/paramRef';
-import { toVec3Param, paramValue, resolveVec3Param } from '../../shared/runtime/editableHelpers';
+import { isParamRef } from '../../shared/runtime/paramRef';
+import { toParam, toVec3Param, paramValue } from '../../shared/runtime/editableHelpers';
 import type { ParamTable } from '../../shared/runtime/paramTable';
+import { resolveParams } from '../../shared/runtime/resolveParams';
 import { invalidArgs } from '../../shared/intent/invalidArgs';
 import {
+  TUBE_RULE_KEYS,
   TUBE_SPEC_DEFAULTS,
+  tubeCornerPoints,
   type TubeEndMeta,
   type TubeMetadata,
+  type TubeRuleKey,
+  type TubeRuleValue,
   type TubeSpecMetadata,
 } from '../../shared/intent/tubeRecord';
-import { buildTubePath, isTubePathError, tubePathErrorArgs, type V3 } from '../../shared/tube/tubePath';
+import { isBranchFault, isTubeGeometryError, TRUNK_INPUT, tubeGeometry, type TubeEndName } from '../../shared/tube/tubeBranch';
+import { tubePathErrorArgs, type V3 } from '../../shared/tube/tubePath';
 import { TUBE_FLUIDS } from '../../shared/tube/pressureDrop';
 import { mm } from '../apiSupport';
 import type { TubeEnd } from './assemblyTypes';
@@ -31,9 +39,18 @@ export interface TubePointEnd {
   part?: string;
 }
 
+/** A tube end that is a 90 degree tee on another tube. `tube` is the trunk's
+ *  name, `at` the station in mm along the trunk centreline from the trunk's
+ *  `from` end, `axis` the direction the branch leaves along. */
+export interface TubeBranchEnd {
+  tube: string;
+  at: Editable<number>;
+  axis: Vec3;
+}
+
 export interface TubeOptions {
-  from: TubeEnd | TubePointEnd;
-  to: TubeEnd | TubePointEnd;
+  from: TubeEnd | TubePointEnd | TubeBranchEnd;
+  to: TubeEnd | TubePointEnd | TubeBranchEnd;
   via?: EditableVec3[];
   od?: Editable<number>;
   wall: Editable<number>;
@@ -45,13 +62,19 @@ export interface TubeOptions {
   flow?: { lpm: number; fluid: string };
 }
 
+/** Every number may be a plain number or a param. */
 export interface TubeSpec {
-  minBendRadiusFactor?: number;
-  minStraightBetweenBends?: number;
-  minStraightAtEnd?: number;
-  maxBendAngle?: number;
-  clearance?: { default?: number; pairs?: Array<{ a: string; b: string; min: number }> };
+  minBendRadiusFactor?: Editable<number>;
+  minStraightBetweenBends?: Editable<number>;
+  minStraightAtEnd?: Editable<number>;
+  maxBendAngle?: Editable<number>;
+  clearance?: { default?: Editable<number>; pairs?: Array<{ a: string; b: string; min: Editable<number> }> };
+  /** Rule overrides for the tubes of one system; a rule left out falls back
+   *  to the top level. Clearance between systems stays in `clearance.pairs`. */
+  systems?: Record<string, TubeSystemRules>;
 }
+
+export type TubeSystemRules = Partial<Record<TubeRuleKey, Editable<number>>>;
 
 const OD_MATCH_TOL_MM = 1e-6;
 
@@ -125,6 +148,63 @@ interface ResolvedEnd {
   point: { base?: Vec3Param; offset: Vec3Param };
   meta: TubeEndMeta;
   od?: number;
+  /** The trunk record, when the end is a branch. */
+  trunkId?: FeatureId;
+}
+
+const BRANCH_EXAMPLE = "{ tube: 'act-supply', at: 180, axis: [0, 1, 0] }";
+
+const tubeNameOf = (r: FeatureRecord): string => (r.metadata as unknown as { tube: TubeMetadata }).tube.name;
+
+/** The station as a Param. A param that is not a number, or an expression
+ *  that cannot be evaluated, throws inside the param helpers: report it as
+ *  an argument error on the end. */
+function stationParam(at: unknown, which: string, table: ParamTable): Param {
+  const requires = 'a number or a param: mm along the trunk centreline from its from end';
+  const bad = (gotText: string): never => fail({ reason: 'end.invalid', path: `${which}.at`, gotText, requires,
+    example: `${which}: ${BRANCH_EXAMPLE}`, hint: 'Pass at as a distance in mm, for example at: 180.' });
+  if (!isParamRef(at) && typeof at !== 'number') bad(json(at));
+  let read: { p: Param; value: number };
+  try {
+    const p = mm(at as Editable<number>);
+    read = { p, value: paramValue(p, table) };
+  } catch (e) {
+    return bad(`a param that cannot be read as a number (${e instanceof Error ? e.message : String(e)})`);
+  }
+  if (!Number.isFinite(read.value)) bad(json(read.value));
+  return read.p;
+}
+
+/** A branch end: the trunk must be a tube declared before this one. The
+ *  corner point is a zero placeholder; `tubeGeometry` places it on the trunk. */
+function branchEnd(e: TubeBranchEnd, which: string, tubes: readonly FeatureRecord[], table: ParamTable): ResolvedEnd {
+  if (typeof e.tube !== 'string' || e.tube.length === 0) {
+    fail({ reason: 'end.invalid', path: `${which}.tube`, gotText: json(e.tube), requires: 'the name of the tube to branch off',
+      example: `${which}: ${BRANCH_EXAMPLE}`, hint: 'Pass the name the trunk was declared with in tube(name, ...).' });
+  }
+  const trunk = tubes.find((r) => tubeNameOf(r) === e.tube);
+  if (trunk === undefined) {
+    const declared = tubes.map((r) => `'${tubeNameOf(r)}'`).join(', ');
+    fail({ reason: 'branch.trunk-not-found', path: `${which}.tube`,
+      gotText: `'${e.tube}', which no tube declared before this one is called`,
+      requires: declared.length > 0 ? `one of the tubes declared so far: ${declared}` : 'a trunk declared with tube() before the branch',
+      example: `${which}: ${BRANCH_EXAMPLE}`,
+      hint: 'Declare the trunk with tube() before the tube that branches off it, and pass its name.' });
+  }
+  if (e.axis === undefined) {
+    fail({ reason: 'end.invalid', path: `${which}.axis`, gotText: 'no axis', requires: 'the direction the branch leaves the trunk along, [x, y, z]',
+      example: `${which}: ${BRANCH_EXAMPLE}`, hint: 'Pass an axis square to the trunk leg, for example axis: [0, 1, 0].' });
+  }
+  const trunkSystem = (trunk.metadata as unknown as { tube: TubeMetadata }).tube.system;
+  return {
+    point: { offset: toVec3Param([0, 0, 0], 'mm') },
+    meta: {
+      axis: unitAxis(e.axis, which),
+      ...(trunkSystem !== undefined ? { system: trunkSystem } : {}),
+      branch: { tube: e.tube, at: stationParam(e.at, which, table) },
+    },
+    trunkId: trunk.id,
+  };
 }
 
 function portEnd(e: TubeEnd): ResolvedEnd {
@@ -141,10 +221,12 @@ function portEnd(e: TubeEnd): ResolvedEnd {
   };
 }
 
-function endOf(e: TubeOptions['from'], which: string): ResolvedEnd {
+function endOf(e: TubeOptions['from'], which: string, tubes: readonly FeatureRecord[], table: ParamTable): ResolvedEnd {
   if (typeof e === 'object' && e !== null && 'offset' in e) return portEnd(e);
+  if (typeof e === 'object' && e !== null && 'tube' in e) return branchEnd(e, which, tubes, table);
   if (typeof e !== 'object' || e === null || !('point' in e)) {
-    fail({ reason: 'end.invalid', path: which, got: e, requires: 'part.port(name) or { point: [x, y, z], axis?, part? }',
+    fail({ reason: 'end.invalid', path: which, got: e,
+      requires: 'part.port(name), { point: [x, y, z], axis?, part? } or { tube, at, axis }',
       hint: "Example: from: pump.port('out'), to: { point: [0, 0, 100] }." });
   }
   return {
@@ -238,35 +320,67 @@ function validateDensity(density: TubeOptions['density']): void {
     hint: 'Pass the tube material density in kg/m^3, for example density: 7850, or name a material instead.' });
 }
 
-/** Corner points in mm, read through the ParamTable: a symbolic Param's
- *  `evaluated` is a placeholder (0) at capture time. */
-function resolvedCorners(meta: TubeMetadata, table: ParamTable): V3[] {
-  const zero: V3 = [0, 0, 0];
-  return meta.points.map((p) => {
-    const b = p.base !== undefined ? resolveVec3Param(p.base, table) : zero;
-    const o = resolveVec3Param(p.offset, table);
-    return [b[0] + o[0], b[1] + o[1], b[2] + o[2]];
-  });
+/** The corner points as captured, read through the param table: the ends,
+ *  the via corners and the part positions. A branch end is a zero placeholder
+ *  here; its joint is computed from the trunk, which was checked when it was
+ *  captured. */
+function capturedCorners(record: FeatureRecord): V3[] {
+  return tubeCornerPoints((record.metadata as unknown as { tube: TubeMetadata }).tube);
 }
 
-function checkPath(name: string, meta: TubeMetadata, bendRadius: number, table: ParamTable): void {
-  const points = resolvedCorners(meta, table);
-  if (!points.every((p) => p.every(isFiniteNum))) {
+/** The path must fit at the current param values. Every captured corner must
+ *  be a finite point first: the path maths drops a corner it cannot use, which
+ *  would build the tube along another route with no diagnostic. A branch end
+ *  is placed on its trunk as the lowerer will place it; a station that cannot
+ *  be placed is left to the lowerer, which reports it against the values of
+ *  every build. */
+function checkPath(name: string, record: FeatureRecord, tubes: readonly FeatureRecord[], table: ParamTable): void {
+  const resolved = (r: FeatureRecord): FeatureRecord => resolveParams(r, table);
+  const own = resolved(record);
+  if (!capturedCorners(own).every((p) => p.every(isFiniteNum))) {
     fail({ reason: 'end.invalid', path: `tube '${name}' corner points`, gotText: 'a non-finite coordinate (NaN or Infinity)',
       requires: 'finite [x, y, z] for the ends, the via corners and the part positions',
       hint: 'Check the end points, the via corners and the part positions for NaN or Infinity.' });
   }
-  const path = buildTubePath(points, bendRadius);
-  if (isTubePathError(path)) {
-    invalidArgs({ ...tubePathErrorArgs(name, path),
-      hint: 'Move a corner, lower bendRadius, or add a via corner so every leg is long enough for the bends at its ends.' });
+  const geometry = tubeGeometry(own, (id) => {
+    const trunk = tubes.find((r) => r.id === id);
+    return trunk === undefined ? undefined : resolved(trunk);
+  });
+  if (!isTubeGeometryError(geometry) || isBranchFault(geometry)) return;
+  invalidArgs({ ...tubePathErrorArgs(name, geometry),
+    hint: 'Move a corner, lower bendRadius, or add a via corner so every leg is long enough for the bends at its ends.' });
+}
+
+const SYSTEM_HINT = "A branch carries its trunk's fluid: leave system out, and end the branch on a port of the trunk's system. " +
+  'A line of another system needs its own trunk.';
+
+/** The system of a tube with a branch end: its trunk's. A line must not change
+ *  system without saying so, so a `system` option or a port at the other end
+ *  that names another system is refused, as are two trunks of different
+ *  systems. Undefined when no trunk has a system: the tube then takes the
+ *  system the way any tube does. */
+function branchSystem(opts: TubeOptions, ends: ReadonlyArray<[TubeEndName, ResolvedEnd]>): string | undefined {
+  const trunks = ends.filter(([, e]) => e.meta.branch !== undefined && e.meta.system !== undefined).map(([, e]) => e.meta);
+  const systems = [...new Set(trunks.map((m) => m.system as string))];
+  if (systems.length === 0) return undefined;
+  const of = trunks.map((m) => `trunk '${m.branch!.tube}' is '${m.system}'`).join(', ');
+  const mismatch = (path: string, gotText: string): never => fail({ reason: 'branch.system-mismatch', path, gotText,
+    requires: "the trunk's system: no system option, and ports of that system", hint: SYSTEM_HINT });
+  if (systems.length > 1) mismatch('system', `two trunks of different systems: ${of}`);
+  if (opts.system !== undefined && opts.system !== systems[0]) mismatch('system', `'${opts.system}', but ${of}`);
+  for (const [which, e] of ends) {
+    const port = e.meta.connector !== undefined && e.meta.branch === undefined ? e.meta : undefined;
+    if (port?.system !== undefined && port.system !== systems[0]) {
+      mismatch(which, `port '${port.part}.${port.connector}' of system '${port.system}', but ${of}`);
+    }
   }
+  return systems[0];
 }
 
 function buildTubeMetadata(
   name: string, opts: TubeOptions, from: ResolvedEnd, to: ResolvedEnd, via: Array<{ offset: Vec3Param }>,
 ): TubeMetadata {
-  const system = opts.system ?? from.meta.system ?? to.meta.system;
+  const system = branchSystem(opts, [['from', from], ['to', to]]) ?? opts.system ?? from.meta.system ?? to.meta.system;
   return {
     name,
     points: [from.point, ...via, to.point],
@@ -279,12 +393,23 @@ function buildTubeMetadata(
   };
 }
 
+function trunkInputs(from: ResolvedEnd, to: ResolvedEnd): Record<string, FeatureRef> {
+  const inputs: Record<string, FeatureRef> = {};
+  const ends: Array<[TubeEndName, ResolvedEnd]> = [['from', from], ['to', to]];
+  for (const [which, end] of ends) {
+    if (end.trunkId !== undefined) inputs[TRUNK_INPUT[which]] = { kind: 'feature', id: end.trunkId };
+  }
+  return inputs;
+}
+
+/** `tubes` are the tube records declared so far: a name must be new, and a
+ *  branch end must name one of them. */
 export function buildTubeFeatureSpec(
-  name: string, opts: TubeOptions, usedNames: readonly string[], table: ParamTable,
+  name: string, opts: TubeOptions, tubes: readonly FeatureRecord[], table: ParamTable,
 ): AuthoringFeatureSpec {
-  validateName(name, usedNames);
-  const from = endOf(opts.from, 'from');
-  const to = endOf(opts.to, 'to');
+  validateName(name, tubes.map(tubeNameOf));
+  const from = endOf(opts.from, 'from', tubes, table);
+  const to = endOf(opts.to, 'to', tubes, table);
   const via = viaPoints(opts.via);
   const od = resolveOd(opts.od, from, to, table);
   const wall = resolveWall(opts.wall, od.mm, table);
@@ -292,13 +417,14 @@ export function buildTubeFeatureSpec(
   validateFlow(opts.flow);
   validateDensity(opts.density);
   const metadata = buildTubeMetadata(name, opts, from, to, via);
-  checkPath(name, metadata, bendRadius.mm, table);
-  return {
+  const spec: AuthoringFeatureSpec = {
     kind: 'tube',
     params: { od: od.param, wall, bendRadius: bendRadius.param },
-    inputs: {},
+    inputs: trunkInputs(from, to),
     metadata: { tube: metadata } as unknown as Record<string, unknown>,
   };
+  checkPath(name, { id: '' as FeatureId, transforms: [], suppressed: false, ...spec } as FeatureRecord, tubes, table);
+  return spec;
 }
 
 // ---------------------------------------------------------------------------
@@ -320,30 +446,55 @@ function badSpec(field: string, gotText: string, requires: string): never {
   });
 }
 
-function positiveField(field: string, v: unknown, fallback: number): number {
-  if (v === undefined) return fallback;
-  if (!isPositive(v)) badSpec(field, json(v), 'a positive finite number');
-  return v;
+/** What a spec number is: a multiple of the OD, a bend angle, or a distance. */
+type RuleKind = 'factor' | 'angle' | 'distance';
+const RULE_UNIT = { factor: 'unitless', angle: 'deg', distance: 'mm' } as const;
+const kindOf = (key: TubeRuleKey): RuleKind => (key === 'maxBendAngle' ? 'angle' : 'factor');
+
+/** One spec number as a Param: a number or a param, checked at its current value. */
+function ruleParam(field: string, kind: RuleKind, v: unknown, table: ParamTable): Param {
+  const requires = kind === 'angle' ? 'a number in (0, 180] degrees' : 'a positive finite number';
+  if (!isParamRef(v) && typeof v !== 'number') badSpec(field, json(v), requires);
+  const { p, value } = readRuleParam(field, v as Editable<number>, RULE_UNIT[kind], requires, table);
+  if (!isPositive(value) || (kind === 'angle' && value > 180)) badSpec(field, json(value), requires);
+  return p;
 }
 
-function bendAngleField(v: unknown): number {
-  if (v === undefined) return TUBE_SPEC_DEFAULTS.maxBendAngle;
-  if (!isPositive(v) || v > 180) badSpec('maxBendAngle', json(v), 'a number in (0, 180] degrees');
-  return v;
+/** The Param and its current value. A param that is not a number (a string
+ *  or choice param) or an expression that cannot be evaluated (division by
+ *  zero) throws inside the param helpers: report it as a tubeSpec argument
+ *  error on the field, like every other bad value. */
+function readRuleParam(
+  field: string, v: Editable<number>, unit: Param['unit'], requires: string, table: ParamTable,
+): { p: Param; value: number } {
+  try {
+    const p = toParam(v, unit);
+    return { p, value: paramValue(p, table) };
+  } catch (e) {
+    const why = e instanceof Error ? e.message : String(e);
+    return badSpec(field, `a param that cannot be read as a number (${why})`, requires);
+  }
 }
 
-function clearancePair(i: number, p: unknown): { a: string; b: string; min: number } {
+/** A top-level number as stored: a plain number stays the number it was (the
+ *  record a spec without params always had), a param is stored as a Param. */
+function ruleValue(field: string, kind: RuleKind, v: unknown, table: ParamTable): TubeRuleValue {
+  const p = ruleParam(field, kind, v, table);
+  return isParamRef(v) ? p : (v as number);
+}
+
+function clearancePair(i: number, p: unknown, table: ParamTable): TubeSpecMetadata['clearance']['pairs'][number] {
   const pair = p as { a?: unknown; b?: unknown; min?: unknown } | null;
   const nameOk = (n: unknown): n is string => typeof n === 'string' && n.length > 0;
   if (typeof pair !== 'object' || pair === null || !nameOk(pair.a) || !nameOk(pair.b)) {
     badSpec(`clearance.pairs[${i}]`, json(p), '{ a, b, min } with two non-empty system names');
   }
-  const min = positiveField(`clearance.pairs[${i}].min`, pair.min, Number.NaN);
-  if (Number.isNaN(min)) badSpec(`clearance.pairs[${i}].min`, 'no min', 'a positive finite number (the field is required)');
-  return { a: pair.a as string, b: pair.b as string, min };
+  const field = `clearance.pairs[${i}].min`;
+  if (pair.min === undefined) badSpec(field, 'no min', 'a positive finite number (the field is required)');
+  return { a: pair.a as string, b: pair.b as string, min: ruleValue(field, 'distance', pair.min, table) };
 }
 
-const SPEC_FIELDS = ['minBendRadiusFactor', 'minStraightBetweenBends', 'minStraightAtEnd', 'maxBendAngle', 'clearance'];
+const SPEC_FIELDS = [...TUBE_RULE_KEYS, 'clearance', 'systems'];
 const CLEARANCE_FIELDS = ['default', 'pairs'];
 
 /** A misspelt rule would be dropped and its default enforced instead: refuse it. */
@@ -355,7 +506,7 @@ function rejectUnknownKeys(obj: object, allowed: readonly string[], prefix: stri
   }
 }
 
-function clearanceField(v: unknown): TubeSpecMetadata['clearance'] {
+function clearanceField(v: unknown, table: ParamTable): TubeSpecMetadata['clearance'] {
   if (v === undefined) return { default: TUBE_SPEC_DEFAULTS.clearance.default, pairs: [] };
   if (typeof v !== 'object' || v === null || Array.isArray(v)) {
     badSpec('clearance', json(v), 'an object { default?, pairs? }');
@@ -366,23 +517,60 @@ function clearanceField(v: unknown): TubeSpecMetadata['clearance'] {
     badSpec('clearance.pairs', json(c.pairs), 'an array of { a, b, min }');
   }
   return {
-    default: positiveField('clearance.default', c.default, TUBE_SPEC_DEFAULTS.clearance.default),
-    pairs: ((c.pairs as unknown[] | undefined) ?? []).map((p, i) => clearancePair(i, p)),
+    default: c.default === undefined ? TUBE_SPEC_DEFAULTS.clearance.default :
+      ruleValue('clearance.default', 'distance', c.default, table),
+    pairs: ((c.pairs as unknown[] | undefined) ?? []).map((p, i) => clearancePair(i, p, table)),
   };
 }
 
-export function buildTubeSpecFeatureSpec(spec: TubeSpec): AuthoringFeatureSpec {
+function systemEntry(name: string, entry: unknown, table: ParamTable): Partial<Record<TubeRuleKey, Param>> {
+  const prefix = `systems.${name}.`;
+  const fields = TUBE_RULE_KEYS.map((k) => prefix + k).join(', ');
+  if (typeof entry !== 'object' || entry === null || Array.isArray(entry)) {
+    badSpec(`systems.${name}`, json(entry), `an object with any of ${TUBE_RULE_KEYS.join(', ')}`);
+  }
+  if ('clearance' in entry) {
+    badSpec(`${prefix}clearance`, 'a field a systems entry does not have',
+      `clearance between systems in clearance.pairs, and one of ${fields}`);
+  }
+  rejectUnknownKeys(entry, TUBE_RULE_KEYS, prefix);
+  const rules = entry as Partial<Record<TubeRuleKey, unknown>>;
+  const out: Partial<Record<TubeRuleKey, Param>> = {};
+  for (const key of TUBE_RULE_KEYS) {
+    if (rules[key] !== undefined) out[key] = ruleParam(prefix + key, kindOf(key), rules[key], table);
+  }
+  return out;
+}
+
+function systemsField(v: unknown, table: ParamTable): TubeSpecMetadata['systems'] {
+  if (v === undefined) return undefined;
+  if (typeof v !== 'object' || v === null || Array.isArray(v)) {
+    badSpec('systems', json(v), "an object keyed by system name, like { 'hot-gas': { minBendRadiusFactor: 1.5 } }");
+  }
+  const out: NonNullable<TubeSpecMetadata['systems']> = {};
+  for (const [name, entry] of Object.entries(v)) {
+    if (name.length === 0) badSpec('systems', 'an entry with an empty name', 'a non-empty system name for every entry');
+    out[name] = systemEntry(name, entry, table);
+  }
+  return out;
+}
+
+export function buildTubeSpecFeatureSpec(spec: TubeSpec, table: ParamTable): AuthoringFeatureSpec {
   if (typeof spec !== 'object' || spec === null || Array.isArray(spec)) {
     badSpec('spec', json(spec), 'an object like { minBendRadiusFactor?, clearance? }');
   }
   rejectUnknownKeys(spec, SPEC_FIELDS, '');
+  const systems = systemsField(spec.systems, table);
+  const rule = (key: TubeRuleKey): TubeRuleValue =>
+    (spec[key] === undefined ? TUBE_SPEC_DEFAULTS[key] : ruleValue(key, kindOf(key), spec[key], table));
   const metadata: TubeSpecMetadata = {
     virtual: true,
-    minBendRadiusFactor: positiveField('minBendRadiusFactor', spec.minBendRadiusFactor, TUBE_SPEC_DEFAULTS.minBendRadiusFactor),
-    minStraightBetweenBends: positiveField('minStraightBetweenBends', spec.minStraightBetweenBends, TUBE_SPEC_DEFAULTS.minStraightBetweenBends),
-    minStraightAtEnd: positiveField('minStraightAtEnd', spec.minStraightAtEnd, TUBE_SPEC_DEFAULTS.minStraightAtEnd),
-    maxBendAngle: bendAngleField(spec.maxBendAngle),
-    clearance: clearanceField(spec.clearance),
+    minBendRadiusFactor: rule('minBendRadiusFactor'),
+    minStraightBetweenBends: rule('minStraightBetweenBends'),
+    minStraightAtEnd: rule('minStraightAtEnd'),
+    maxBendAngle: rule('maxBendAngle'),
+    clearance: clearanceField(spec.clearance, table),
+    ...(systems !== undefined ? { systems } : {}),
   };
   return { kind: 'tubeSpec', params: {}, inputs: {}, metadata: metadata as unknown as Record<string, unknown> };
 }

@@ -486,9 +486,12 @@ export class RecomputeEngine {
     },
   ): Promise<number> {
     const { predecessorsOf, shapes, diagnostics, health, onEvent, paramTable } = ctx;
+    // `records` are unresolved; a lowerer that reads an upstream record's numbers resolves it through this.
+    const resolveRecord = (rec: FeatureRecord): FeatureRecord =>
+      (paramTable ? resolveParams(rec, paramTable) as FeatureRecord : rec);
     try {
       const res = await this.lowerer.lower(recordForLower, {
-        byKey, records, ...(paramTable !== undefined ? { paramTable } : {}),
+        byKey, records, resolveRecord, ...(paramTable !== undefined ? { paramTable } : {}),
       });
       diagnostics.push(...res.diagnostics);
       const featureDiags = res.diagnostics;
