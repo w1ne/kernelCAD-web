@@ -33,6 +33,14 @@ export function ParamChips() {
                     className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#222]/90 border border-[#333] text-[11px] text-gray-200"
                 >
                     <span className="text-gray-400">{entry.name}</span>
+                    {entry.type === 'color' && (
+                        <span
+                            aria-hidden="true"
+                            data-testid={`param-chip-swatch-${entry.name}`}
+                            className="inline-block size-2.5 rounded-full border border-[#555]"
+                            style={{ backgroundColor: entry.value as string }}
+                        />
+                    )}
                     <span className="font-mono">{formatValue(entry.value)}</span>
                 </span>
             ))}

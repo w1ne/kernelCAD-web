@@ -124,4 +124,32 @@ describe('setParamValueTool', () => {
     expect(str.ok).toBe(true);
     expect(str.new_code).toContain(`param('Label', 'PROTO',`);
   });
+  describe('color params', () => {
+    const code = `
+      const body = param('BodyColor', '#3366cc', { label: 'Body colour' });
+      return box(40, 30, 10).color(body);
+    `;
+
+    it('round-trips a #rrggbb value', async () => {
+      const r = await setParamValueTool({ code, param_name: 'BodyColor', new_value: '#ff8800' });
+      expect(r.ok).toBe(true);
+      expect(r.new_code).toContain(`param('BodyColor', '#ff8800',`);
+      expect(r.diagnostics?.filter(d => d.severity === 'error')).toHaveLength(0);
+    });
+
+    it('normalises #rgb and CSS names to #rrggbb in the rewritten source', async () => {
+      const short = await setParamValueTool({ code, param_name: 'BodyColor', new_value: '#F80' });
+      expect(short.new_code).toContain(`param('BodyColor', '#ff8800',`);
+      const named = await setParamValueTool({ code, param_name: 'BodyColor', new_value: 'navy' });
+      expect(named.new_code).toContain(`param('BodyColor', '#000080',`);
+    });
+
+    it('rejects a value that is not a colour', async () => {
+      const r = await setParamValueTool({ code, param_name: 'BodyColor', new_value: 'blurple' });
+      expect(r.ok).toBe(false);
+      expect(r.new_code).toBeUndefined();
+      expect(r.error).toMatch(/colour/);
+      expect(r.error).toMatch(/type-mismatch/);
+    });
+  });
 });

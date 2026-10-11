@@ -6,6 +6,7 @@ import { evaluateScriptTool } from './evaluateScript';
 import { evaluateAndBuildScript } from '../../cli/commands/evaluate';
 import { isKernelError } from '../../../shared/intent/kernelError';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
+import { normalizeColor } from '../../../shared/runtime/paramColor';
 
 export interface SetParamValueInput {
   code: string;
@@ -27,11 +28,15 @@ export async function setParamValueTool(
   // script can evaluate at all. See `validateAgainstDeclaration` below for
   // why this can't be skipped in favor of the evaluation-based gate alone.
   const declResult = parseParamDeclaration(input.code, input.param_name);
+  let newValue = input.new_value;
   if (declResult.ok) {
-    const sourceError = validateAgainstDeclaration(declResult.declaration, input.new_value);
+    const sourceError = validateAgainstDeclaration(declResult.declaration, newValue);
     if (sourceError !== undefined) {
       return { ok: false, error: sourceError };
     }
+    // A colour is written back as '#rrggbb' whatever form it arrived in
+    // ('#rgb', a CSS name), so the source keeps a colour-param default.
+    if (declResult.declaration.kind === 'color') newValue = normalizeColor(newValue) ?? newValue;
   }
   // declResult.ok === false (not found / multiple matches) is deliberately
   // NOT surfaced here — `setParamValue` below re-does the same lookup and
@@ -43,12 +48,12 @@ export async function setParamValueTool(
   // (not treated as a rejection) whenever the ORIGINAL script fails to
   // evaluate for an unrelated reason — Gate 1 above is what still catches a
   // type/choice mismatch in that case.
-  const typeError = await validateNewValueAgainstDeclaredType(input.code, input.param_name, input.new_value);
+  const typeError = await validateNewValueAgainstDeclaredType(input.code, input.param_name, newValue);
   if (typeError !== undefined) {
     return { ok: false, error: typeError };
   }
 
-  const edit = setParamValue(input.code, input.param_name, input.new_value);
+  const edit = setParamValue(input.code, input.param_name, newValue);
   if (!edit.ok || !edit.new_code) {
     return { ok: false, error: edit.error };
   }
@@ -92,7 +97,7 @@ function validateAgainstDeclaration(
   const { name, kind } = declaration;
   if (kind === 'unknown') return undefined;
 
-  const expectedJsType = kind === 'choice' || kind === 'string' ? 'string' : kind;
+  const expectedJsType = kind === 'number' || kind === 'boolean' ? kind : 'string';
   if (typeof newValue !== expectedJsType) {
     return (
       `param '${name}' is ${kind}, got ${typeof newValue} ` +
@@ -108,6 +113,13 @@ function validateAgainstDeclaration(
         `(invalid-args.param.choice-invalid — param '${name}' value '${String(newValue)}' is not one of [${choices.join(', ')}])`
       );
     }
+  }
+
+  if (kind === 'color' && normalizeColor(newValue) === undefined) {
+    return (
+      `param '${name}' is a colour, got '${String(newValue)}' — pass '#rrggbb', '#rgb' or a basic CSS colour name ` +
+      `(invalid-args.param.type-mismatch — param '${name}' is color, got '${String(newValue)}')`
+    );
   }
 
   if (kind === 'string' && declaration.maxLength !== undefined) {

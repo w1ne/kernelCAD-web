@@ -38,6 +38,7 @@ import type { Assembly } from '../../../modeling/capture/assembly';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
 import { runMcpScript } from '../runMcpScript';
+import type { ParamType } from '../../../shared/runtime/paramTable';
 
 export interface DiffScriptsInput {
   /** Baseline script — path on disk. One of baseFile / baseCode is required. */
@@ -94,7 +95,7 @@ export interface DiffMateSummary {
 
 export interface DiffParamSummary {
   name: string;
-  type: 'number' | 'boolean' | 'choice' | 'string';
+  type: ParamType;
   value: number | boolean | string;
   min?: number;
   max?: number;

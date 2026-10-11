@@ -154,3 +154,22 @@ describe('downloadFileName', () => {
     expect(downloadFileName('my-bracket', params, defaultValues(params), '3mf')).toBe('my-bracket-default.3mf');
   });
 });
+
+describe('color params', () => {
+  const [color] = customizerParamsFrom([
+    { name: 'BodyColor', type: 'color', value: '#3366cc', defaultValue: '#3366cc' },
+  ]);
+
+  it('reads #rrggbb, #rgb and CSS names from a shared link as #rrggbb and refuses the rest', () => {
+    expect(readUrlValues('?p.BodyColor=%23F80', [color]).values).toEqual({ BodyColor: '#ff8800' });
+    expect(readUrlValues('?p.BodyColor=navy', [color]).values).toEqual({ BodyColor: '#000080' });
+    expect(readUrlValues('?p.BodyColor=blurple', [color]).ignored).toEqual(['BodyColor=blurple: not a colour (#rrggbb)']);
+  });
+
+  it('round-trips through the URL and bakes into the source', () => {
+    const search = writeUrlValues('', [color], { BodyColor: '#ff8800' });
+    expect(readUrlValues(search, [color]).values).toEqual({ BodyColor: '#ff8800' });
+    const code = "const c = param('BodyColor', '#3366cc');\nreturn box(1, 1, 1).color(c);";
+    expect(bakeParamValues(code, { BodyColor: '#ff8800' })).toContain("param('BodyColor', '#ff8800')");
+  });
+});

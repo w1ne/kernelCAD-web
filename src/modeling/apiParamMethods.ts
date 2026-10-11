@@ -11,6 +11,7 @@ import {
   type TypedParamRef,
 } from '../shared/runtime/paramRef';
 import type { ParamMetadata } from '../shared/runtime/paramTable';
+import { isColorParamDefault } from '../shared/runtime/paramColor';
 import { currentValue, toParam } from '../shared/runtime/editableHelpers';
 import {
   selectEdges as selectEdgesBackend,
@@ -40,9 +41,11 @@ export function makeParamMethods(
         );
       }
       if (typeof defaultValue === 'string') {
-        const type = meta?.choices ? 'choice' : 'string';
-        session.paramTable.declare(name, type, defaultValue, meta);
-        return makeTypedParamRef(name, type, defaultValue);
+        // A hex default ('#rgb' / '#rrggbb') without `choices` is a colour
+        // param (see shared/runtime/paramColor.ts); its value is normalised.
+        const type = meta?.choices ? 'choice' : isColorParamDefault(defaultValue, meta) ? 'color' : 'string';
+        const entry = session.paramTable.declare(name, type, defaultValue, meta);
+        return makeTypedParamRef(name, type, entry.value as string);
       }
       const type = typeof defaultValue === 'boolean' ? 'boolean' : 'number';
       session.paramTable.declare(name, type, defaultValue, meta);

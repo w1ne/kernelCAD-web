@@ -233,6 +233,12 @@ param<T extends number | boolean>(name: string, defaultValue: T, opts?: {
 // ParamRef arithmetic uses methods, never JS operators (`+ - * /` throw):
 //   const w = param('w', 60), t = param('t', 2);
 //   box(w.add(5), w.subtract(t).multiply(2), w.divide(4)); // also .negate()
+// Colour param: a hex default ('#rrggbb' / '#rgb', no `choices`) makes it a
+// colour — the customizer shows a colour picker, the value is '#rrggbb', and
+// set_param also takes '#rgb' or a CSS name. Pass the ref itself to .color()
+// or .finish(token, { color }) (examples/params/color-enclosure.kcad.ts):
+//   const body = param('BodyColor', '#3366cc', { label: 'Body colour' });
+//   box(60, 40, 18).color(body);  lid.finish('abs', { color: body });
 
 params({ width: 60, addCablePort: true }): {
   width: ParamRef<number>;
