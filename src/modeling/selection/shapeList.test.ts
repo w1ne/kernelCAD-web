@@ -405,6 +405,33 @@ describe('filterBy', () => {
     const list = select([edge('e0', [0, 0, 0])]);
     expect(() => list.filterBy(7 as unknown as string)).toThrow(/expected a predicate/);
   });
+  // FIX-03 — one vocabulary with EdgeQuery / FaceQuery.
+  it('treats public and OCCT geometry names as aliases', () => {
+    const faces = select([
+      face('plane', [0, 0, 0], 1),
+      face('occt', [0, 0, 0], 1, { surfaceType: 'CYLINDRE' }),
+      face('public', [0, 0, 0], 1, { surfaceType: 'CYLINDER' }),
+    ]);
+    expect([...faces.filterBy('CYLINDER')].map((f) => f.ref)).toEqual(['occt', 'public']);
+    expect([...faces.filterBy('cylindre')].map((f) => f.ref)).toEqual(['occt', 'public']);
+    const edges = select([edge('spline', [0, 0, 0], { curveType: 'BSPLINE_CURVE' })]);
+    expect(edges.filterBy('BSPLINE').length).toBe(1);
+  });
+
+  it('accepts signed / lower-case axis names', () => {
+    const list = select([
+      edge('alongX', [0, 0, 0], { direction: [1, 0, 0] }),
+      edge('alongZ', [0, 0, 0], { direction: [0, 0, 1] }),
+    ]);
+    expect([...list.filterBy('-Z' as 'Z')].map((e) => e.id)).toEqual(['alongZ']);
+    expect([...list.filterBy('x' as 'X')].map((e) => e.id)).toEqual(['alongX']);
+  });
+
+  it('rejects an unknown type token instead of returning an empty list', () => {
+    const list = select([edge('e0', [0, 0, 0])]);
+    expect(() => list.filterBy('CIRCEL')).toThrow(KernelError);
+    expect(() => list.filterBy('CIRCEL')).toThrow(/geometry type/);
+  });
 });
 
 describe('filterByPosition', () => {

@@ -14,7 +14,6 @@
   "src/kernel/backends/occt/drawingAuto.ts": 1,
   "src/kernel/backends/occt/drawingAuto/resolvePhases.ts": 1,
   "src/kernel/backends/occt/drawingSections.ts": 1,
-  "src/kernel/backends/occt/edgeQueries.ts": 1,
   "src/kernel/backends/occt/edgeSelection.ts": 4,
   "src/kernel/backends/occt/flattenPattern.ts": 9,
   "src/kernel/backends/occt/holeLowerer.ts": 2,

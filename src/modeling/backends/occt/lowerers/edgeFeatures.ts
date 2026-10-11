@@ -390,7 +390,7 @@ function selectSharpEdgesForFillet(edgesResult: Edge[], base: OcctBackend): Edge
   const SMOOTH_THRESHOLD = 5; // degrees; edges with dihedral > (180 - threshold) are smooth
   let nullCount = 0;
   const sharpEdges = edgesResult.filter((e) => {
-    const d = computeDihedralPublic(shapeForDihedral, e);
+    const d = computeDihedralPublic(shapeForDihedral, e, { convexity: false });
     // null means the dihedral could not be computed — either the edge has only one
     // adjacent face, isSameEdge found no match, or normalAt threw a non-Error C++
     // exception (typical for cylinder cap edges sitting on the parametric U-seam
