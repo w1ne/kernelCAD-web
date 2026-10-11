@@ -8,6 +8,7 @@ import {
   galleryPrecomputedMeshUrl,
 } from './gallerySource';
 import { apiCall, rewritePath } from './api/apiBase';
+import { bearerAuthHeader, generationIdsForSource } from '../funnel/lib/generationAssets';
 import type { SerializedParamTable } from '../shared/runtime/paramTable';
 import type { ScriptReviewSummary } from './context/GeometryContext';
 import type { FeatureMeshSerialized } from '../modeling/capture/featureMeshSerialize';
@@ -342,16 +343,20 @@ function isBridgePayload(value: unknown): value is BackendMeshPayload {
  *  code — an edit, a live agent update, a restore, or a `preferSource`
  *  rewrite with param values baked in — is sent as `source` together with the
  *  project, so the server meshes that source against the project's asset
- *  manifest and relative imports still resolve. Off a project page: source. */
+ *  manifest and relative imports still resolve. Off a project page: source.
+ *  Unsaved generated code that imports a generation's file (an attached STL)
+ *  also names those generations; the server serves the file to their owner. */
 function hostedMeshBody(source: string, paramOverrides: ParamOverrides | undefined, preferSource?: boolean) {
   const project = currentHostedProject();
   const projectRef = project
     ? { projectSlug: project.slug, ...(project.version ? { projectVersion: project.version } : {}) }
     : null;
   const storedRevision = !!projectRef && !preferSource && isPinnedRevisionSource(source);
+  const generationIds = storedRevision ? [] : generationIdsForSource(source);
   return {
     ...(storedRevision ? projectRef : { source, ...(projectRef ?? {}) }),
     ...(hasOverrides(paramOverrides) ? { params: paramOverrides } : {}),
+    ...(generationIds.length > 0 ? { generationIds } : {}),
   };
 }
 
@@ -363,6 +368,9 @@ function meshErrorMessage(status: number, payload: { error?: unknown; code?: unk
     const path = typeof payload?.path === 'string' && payload.path ? `"${payload.path}"` : 'a file';
     return `This model imports ${path}, which is not in the project's files. `
       + 'Add the file to the project or remove the import.';
+  }
+  if (status === 401 && payload?.error === 'generation_assets_require_auth') {
+    return 'This model imports a file you attached to the agent. Sign in to see it.';
   }
   return payload && typeof payload.error === 'string' ? payload.error : `HTTP ${status}`;
 }
@@ -386,11 +394,13 @@ function pendingWaitMs(response: Response, payload: { retryAfterMs?: unknown } |
 /** `POST {base}/__kernelcad/mesh`; throws the server's error message. A 504
  *  `mesh.pending` is retried (the build keeps running server-side). */
 async function meshOnServer(base: string, body: ReturnType<typeof hostedMeshBody>): Promise<BackendMeshPayload> {
+  // Only a request for generation files needs the caller's identity.
+  const auth = body.generationIds ? await bearerAuthHeader() : {};
   try {
     for (let attempt = 0; ; attempt++) {
       const response = await fetch(`${base}/__kernelcad/mesh`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...auth },
         body: JSON.stringify(body),
       });
       const payload = await response.json().catch(() => null);

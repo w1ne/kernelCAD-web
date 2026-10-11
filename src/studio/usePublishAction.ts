@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useOptionalSession } from '../funnel/hooks/useSession';
 import { saveProject } from '../funnel/lib/apiClient';
+import { generationIdsForSource } from '../funnel/lib/generationAssets';
 
 /** Owns the header's Share (publish) flow: sign-in gate, save, clipboard
  *  copy, and the transient success/error state. */
@@ -22,7 +23,10 @@ export function usePublishAction(code: string, projectName: string | undefined) 
         setPublishedLink(null);
         try {
             const title = projectName?.slice(0, 60) || code.slice(0, 60) || 'Untitled';
+            // Files the agent's runs hold (an attached STL) go into the project.
+            const assetGenerationIds = generationIdsForSource(code);
             const result = await saveProject({
+                ...(assetGenerationIds.length > 0 ? { assetGenerationIds } : {}),
                 title,
                 code,
                 parameters: [],
