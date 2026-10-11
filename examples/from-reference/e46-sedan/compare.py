@@ -12,9 +12,11 @@ to (and over) an orthographic render of the model:
 
 Usage: compare.py <view: side|front|rear|top> <render.png> <out.png>
 
-The render must be a kernelCAD orthographic view whose silhouette fills the
-model's bounding box (the script auto-detects the model by background colour,
-so pass renders made with a plain background).
+The render is a kernelCAD side / front / rear / top view on a plain
+background (the model is found by background colour). The headless renderer
+uses a perspective camera: side and top frames are fitted on overall length,
+front and rear frames on the body width at bumper height, so in those two
+views the far roof reads lower than the published height.
 """
 import sys
 from PIL import Image, ImageDraw, ImageFont
@@ -48,9 +50,17 @@ def main():
         ext_x, ext_y = W, H  # mirrors stick out past W; fit on height
     else:
         ext_x, ext_y = L, W
-    # mm -> px from the dimension that is not affected by mirrors
-    if view in ('front', 'rear', 'top'):
-        mmpx = (y1 - y0) / ext_y if view != 'top' else (x1 - x0) / ext_x
+    # mm -> px. Side / top: overall length. Front / rear: the headless camera
+    # is a perspective camera, so the far roof looks lower than the near
+    # bumper; fit the published WIDTH to the widest row in the bumper band
+    # (below the mirrors) and accept that the height reads short.
+    if view in ('front', 'rear'):
+        rgb = img.convert('RGB'); px = rgb.load(); bg = rgb.getpixel((5, 5))
+        best = 0
+        for y in range(int(y0 + 0.45 * (y1 - y0)), int(y0 + 0.8 * (y1 - y0))):
+            xs = [x for x in range(x0, x1 + 1) if sum(abs(px[x, y][i] - bg[i]) for i in range(3)) > 60]
+            if xs: best = max(best, xs[-1] - xs[0])
+        mmpx = best / W
     else:
         mmpx = (x1 - x0) / ext_x
     ref = Image.new('RGB', img.size, (250, 250, 248))
@@ -90,7 +100,8 @@ def main():
     except OSError:
         f = ImageFont.load_default()
     d.text((12, 8), f'reference: published E46 sedan dimensions ({view})', fill=(30, 30, 30), font=f)
-    d.text((img.width + 12, 8), 'kernelCAD render + same reference frame (red)', fill=(30, 30, 30), font=f)
+    note = ' (perspective camera: fitted on bumper width)' if view in ('front', 'rear') else ''
+    d.text((img.width + 12, 8), 'kernelCAD render + same reference frame (red)' + note, fill=(30, 30, 30), font=f)
     comp.save(out)
     print(out, 'mm/px', round(1 / mmpx, 2))
 
