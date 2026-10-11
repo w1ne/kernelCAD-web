@@ -77,7 +77,8 @@ const BARE_LABEL = /^[A-Za-z_][\w-]*$/;
 const fmt = (v: number): string => String(Math.round(v * 1000) / 1000);
 
 /**
- * A bare label names ONE face. After a boolean, a canonical label is carried
+ * A bare label names ONE face — or one plane split into several faces (the
+ * two feet of a bridge, which bind together). After a boolean, a canonical label is carried
  * by every face that inherited it ('top' on box.union(boss) is both the
  * shoulder at z=10 and the boss top at z=30), and a load spread across all
  * of them would be silently split. More than one match is an error that
@@ -101,6 +102,39 @@ function ambiguousBareLabel(label: string, faces: readonly FaceDescriptor[]): Re
       'Pick one with a face query (the centre query above, or a single { atZ: <z> } / { atX: <x> } when it is unique) — or, to bind every one of them deliberately, ' +
       `write '@kcq[face(withLabel("${label}"))]'.`,
   };
+}
+
+/** Distance tolerance for "the same plane" (mm). */
+const COPLANAR_TOL_MM = 1e-4;
+
+/** Unit outward normal of a planar face, undefined for any other surface. */
+function planeNormal(face: Face): [number, number, number] | undefined {
+  if (face.geomType !== 'PLANE') return undefined;
+  try {
+    const n = face.normalAt();
+    const len = Math.hypot(n.x, n.y, n.z);
+    return len > 0 ? [n.x / len, n.y / len, n.z / len] : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/** Every matched face is planar, with the same outward normal, on one plane. */
+function onePlane(allFaces: readonly Face[], matched: readonly FaceDescriptor[]): boolean {
+  const faces = matched.map((d) => allFaces.find((f) => {
+    const c = f.center;
+    return Math.abs(c.x - d.centroid[0]) < CENTROID_TOL_MM && Math.abs(c.y - d.centroid[1]) < CENTROID_TOL_MM
+      && Math.abs(c.z - d.centroid[2]) < CENTROID_TOL_MM;
+  }));
+  if (faces.some((f) => f === undefined)) return false;
+  const normals = faces.map((f) => planeNormal(f!));
+  const n0 = normals[0];
+  if (n0 === undefined) return false;
+  const offset = (d: FaceDescriptor): number => n0[0] * d.centroid[0] + n0[1] * d.centroid[1] + n0[2] * d.centroid[2];
+  const o0 = offset(matched[0]);
+  return normals.every((n, i) => n !== undefined
+    && n[0] * n0[0] + n[1] * n0[1] + n[2] * n0[2] > 1 - 1e-9
+    && Math.abs(offset(matched[i]) - o0) <= COPLANAR_TOL_MM);
 }
 
 /** Resolve a ref / Query string through the Query evaluator. */
@@ -154,7 +188,11 @@ export function resolveSelector(
   if (typeof selector === 'string') {
     if (BARE_LABEL.test(selector)) {
       const r = resolveByQuery(shape, allFaces, selector, `@kcq[face(withLabel("${selector}"))]`, ctx);
-      return r.ok && r.faces.length > 1 ? ambiguousBareLabel(selector, r.faces) : r;
+      if (!r.ok || r.faces.length <= 1) return r;
+      // Split faces of ONE plane (the two feet of a bridge, a bottom cut
+      // by a slot) are one support: bind them together. Faces on different
+      // planes or facing different ways are a real ambiguity.
+      return onePlane(allFaces, r.faces) ? r : ambiguousBareLabel(selector, r.faces);
     }
     // An explicit Query string binds every face it selects.
     if (selector.startsWith('@kcq[')) return resolveByQuery(shape, allFaces, selector, selector, ctx);
