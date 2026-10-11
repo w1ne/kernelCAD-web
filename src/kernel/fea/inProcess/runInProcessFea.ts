@@ -46,8 +46,19 @@ export const IN_PROCESS_MAX_ELEMENTS = 20_000;
 export interface InProcessFeaOptions {
   outDir: string;
   paramTable?: ParamTable;
-  /** Wall-clock budget for the CG iteration, ms. */
+  /** Wall-clock budget for the CG iteration, ms (default 120 s). */
   solveTimeoutMs?: number;
+  /**
+   * What a solve that runs out of `solveTimeoutMs` reports. 'error' (default,
+   * run_fea): `fea.mesh.too-large`. 'unverified' (the evaluate-time gate,
+   * which runs on a short budget): a warn-level
+   * `fea.safety-factor.unverified` naming the full-solve call, with no
+   * summary — the margin was not checked, and that is not the user's mesh.
+   */
+  onTimeout?: 'error' | 'unverified';
+  /** Brick target when the study gives no meshSize (default
+   *  IN_PROCESS_TARGET_ELEMENTS); the gate asks for fewer to stay fast. */
+  targetElements?: number;
 }
 
 export interface InProcessFeaResult {
@@ -63,23 +74,59 @@ function diag(code: DiagnosticCode, severity: CompilerDiagnostic['severity'], me
   return { target: 'export-occt', code, severity, message, hint: HINT_TEMPLATES[code].template, featureId };
 }
 
-/** Brick edge for this shape: the study's meshSize when given (clamped to the
- *  element ceiling), else the size that puts about IN_PROCESS_TARGET_ELEMENTS
- *  solid bricks in the part. */
+export interface InProcessBrickSize {
+  size: number;
+  /** The requested (or 2-through-thickness) size was coarsened to the ceiling. */
+  clamped: boolean;
+  /**
+   * Two bricks across the thinnest extent would need more than
+   * IN_PROCESS_MAX_ELEMENTS bricks: the part is too thin (for its footprint)
+   * for the voxel solver, and a clamped grid would leave under two bricks
+   * through the wall.
+   */
+  tooThin: boolean;
+  /** Thinnest bounding-box extent, mm. */
+  thinnest: number;
+  /** Solid bricks two-through-the-thinnest-extent would take (estimate). */
+  bricksForTwoThrough: number;
+}
+
+/** Brick edge for this shape: the study's meshSize when given, else the size
+ *  that puts about IN_PROCESS_TARGET_ELEMENTS solid bricks in the part with at
+ *  least 2 across the thinnest extent. Never finer than the
+ *  IN_PROCESS_MAX_ELEMENTS ceiling allows. */
 export function inProcessBrickSize(
   min: readonly number[],
   max: readonly number[],
   solidVolume: number,
   meshSize: number | undefined,
-): { size: number; clamped: boolean } {
+  targetElements: number = IN_PROCESS_TARGET_ELEMENTS,
+): InProcessBrickSize {
   const ext = [0, 1, 2].map(a => Math.max(max[a] - min[a], 1e-6));
   const bboxVol = ext[0] * ext[1] * ext[2];
   const fill = Math.min(1, Math.max(0.02, solidVolume / bboxVol));
-  const sizeFor = (count: number): number => Math.cbrt((bboxVol * fill) / count);
+  const solidVol = bboxVol * fill;
+  const sizeFor = (count: number): number => Math.cbrt(solidVol / count);
   const floor = sizeFor(IN_PROCESS_MAX_ELEMENTS);
-  if (meshSize !== undefined) return { size: Math.max(meshSize, floor), clamped: meshSize < floor };
-  // At least 2 bricks across the thinnest extent.
-  return { size: Math.min(sizeFor(IN_PROCESS_TARGET_ELEMENTS), Math.min(...ext) / 2), clamped: false };
+  const thinnest = Math.min(...ext);
+  const twoThrough = thinnest / 2;
+  const base = { thinnest, bricksForTwoThrough: Math.round(solidVol / twoThrough ** 3), tooThin: twoThrough < floor };
+  if (meshSize !== undefined) return { ...base, size: Math.max(meshSize, floor), clamped: meshSize < floor };
+  const wanted = Math.min(sizeFor(Math.min(targetElements, IN_PROCESS_MAX_ELEMENTS)), twoThrough);
+  return { ...base, size: Math.max(wanted, floor), clamped: wanted < floor };
+}
+
+/** The too-thin refusal: said up front, before any voxelizing or solving. */
+function tooThinDiagnostic(study: FeaStudyMetadata, b: InProcessBrickSize, owner: string): CompilerDiagnostic {
+  return diag(
+    'fea.solver.unavailable',
+    'error',
+    `feaStudy '${study.name}': the part is too thin for the in-process solver. Its thinnest extent is ${b.thinnest.toFixed(2)} mm, ` +
+      `and two voxel bricks through it would take about ${b.bricksForTwoThrough} bricks, over the ${IN_PROCESS_MAX_ELEMENTS}-brick ceiling; ` +
+      'fewer than two bricks through the wall would not resolve bending. No structural result was produced (this is NOT a pass). ' +
+      'Install CalculiX + gmsh (tetrahedral mesh) for thin plates and shells.',
+    owner,
+  );
 }
 
 /** Indices (in `shape.faces` order) of the faces a study selector names. */
@@ -131,11 +178,15 @@ interface Prepared {
   faces: FaceDescriptor[];
 }
 
-function buildGrid(shape: OcctBackend, study: FeaStudyMetadata): Omit<Prepared, 'fixed' | 'loads' | 'faces'> {
+function buildGrid(
+  shape: OcctBackend,
+  study: FeaStudyMetadata,
+  sizing: InProcessBrickSize,
+  solidVolume: number,
+): Omit<Prepared, 'fixed' | 'loads' | 'faces'> {
   const started = Date.now();
   const bb = shape.boundingBox();
-  const solidVolume = shape.volume();
-  const { size, clamped } = inProcessBrickSize(bb.min, bb.max, solidVolume, study.meshSize);
+  const { size, clamped } = sizing;
   const tri = triangulateFaces(shape, Math.max(size / 10, 1e-3));
   const spec: GridSpec = { min: [bb.min[0], bb.min[1], bb.min[2]], max: [bb.max[0], bb.max[1], bb.max[2]], size };
   const grid = voxelize(tri.soup, spec);
@@ -158,8 +209,16 @@ function prepare(
   owner: string,
   records: readonly FeatureRecord[] | undefined,
   diagnostics: CompilerDiagnostic[],
+  targetElements: number | undefined,
 ): Prepared | undefined {
-  const base = buildGrid(shape, study);
+  const bb0 = shape.boundingBox();
+  const solidVolume = shape.volume();
+  const sizing = inProcessBrickSize(bb0.min, bb0.max, solidVolume, study.meshSize, targetElements);
+  if (sizing.tooThin) {
+    diagnostics.push(tooThinDiagnostic(study, sizing, owner));
+    return undefined;
+  }
+  const base = buildGrid(shape, study, sizing, solidVolume);
   if (base.model.elementCount === 0) {
     diagnostics.push(diag('fea.mesh.quality-low', 'error', `feaStudy '${study.name}': the in-process voxel grid caught no solid brick (open or non-solid shape).`, owner));
     return undefined;
@@ -258,7 +317,7 @@ function trustReasons(prep: Prepared): string[] {
   if (prep.dropped > 0) {
     reasons.push(`${prep.dropped} voxel brick(s) joined to the part only along an edge or corner were dropped (they would hinge); thin curved walls need a smaller mesh_size`);
   }
-  if (prep.clamped) reasons.push(`the requested mesh size was coarsened to stay under ${IN_PROCESS_MAX_ELEMENTS} bricks`);
+  if (prep.clamped) reasons.push(`the mesh size was coarsened to stay under ${IN_PROCESS_MAX_ELEMENTS} bricks`);
   return reasons;
 }
 
@@ -332,6 +391,33 @@ function verdictDiagnostics(study: FeaStudyMetadata, summary: FeaSummary, owner:
   return out;
 }
 
+/** Default CG wall-clock budget (run_fea / verify). */
+export const DEFAULT_SOLVE_TIMEOUT_MS = 120_000;
+
+/** A short-budget (gate) solve that did not finish: unverified, not failed. */
+function timedOutUnverified(
+  study: FeaStudyMetadata,
+  prep: Prepared,
+  solved: VoxelSolveResult,
+  budgetMs: number | undefined,
+  owner: string,
+): CompilerDiagnostic {
+  const min = study.minSafetyFactor;
+  return {
+    ...diag(
+      'fea.safety-factor.unverified',
+      'warn',
+      `feaStudy '${study.name}': the evaluate-time in-process solve stopped at its ${((budgetMs ?? DEFAULT_SOLVE_TIMEOUT_MS) / 1000).toFixed(1)} s budget ` +
+        `(${prep.model.elementCount} bricks, ${solved.iterations} iterations) before it converged, so ` +
+        `${min !== undefined ? `the declared minSafetyFactor ${min} is` : 'the study is'} UNVERIFIED — neither passed nor failed. ` +
+        'Evaluate keeps a short solver budget; run_fea or verify({ check: \'load-capacity\', mode: \'fea\' }) runs the full solve.',
+      owner,
+    ),
+    hint:
+      'The evaluate-time gate gives the in-process solver only a few seconds so evaluate stays fast, and this study did not finish in that budget. Nothing is wrong with the model or its meshSize. Run verify({ check: \'load-capacity\', mode: \'fea\' }) (or run_fea) for the full solve and its verdict.',
+  };
+}
+
 /**
  * Solve one declared study in-process. Same contract as `runFeaStudy`:
  * `ok` is false on an unresolved selector, a solve that did not converge, or
@@ -352,7 +438,7 @@ export async function runInProcessFeaStudy(
     diagnostics.push(diag('feature.invalid-args', 'error', material.message, owner));
     return { ok: false, diagnostics: withNextActions(diagnostics), artifacts: {} };
   }
-  const prep = prepare(shape, study, owner, records, diagnostics);
+  const prep = prepare(shape, study, owner, records, diagnostics, opts.targetElements);
   if (prep === undefined) return { ok: false, diagnostics: withNextActions(diagnostics), artifacts: {} };
 
   const solved = solveVoxelModel({
@@ -361,14 +447,21 @@ export async function runInProcessFeaStudy(
     nu: material.props.nu,
     fixedNodes: new Set(prep.fixed.nodes),
     force: forceVector(prep.model, prep.loads),
-    ...(opts.solveTimeoutMs !== undefined ? { timeoutMs: opts.solveTimeoutMs } : {}),
+    timeoutMs: opts.solveTimeoutMs ?? DEFAULT_SOLVE_TIMEOUT_MS,
   });
   if (!solved.converged) {
+    if (solved.timedOut && opts.onTimeout === 'unverified') {
+      diagnostics.push(timedOutUnverified(study, prep, solved, opts.solveTimeoutMs, owner));
+      return { ok: true, diagnostics: withNextActions(diagnostics), artifacts: {} };
+    }
     diagnostics.push(diag(
       'fea.mesh.too-large',
       'error',
-      `feaStudy '${study.name}': the in-process solver did not converge on ${prep.model.elementCount} bricks ` +
-        `(${solved.iterations} iterations, residual ${solved.relResidual.toExponential(2)}). Raise meshSize, or check that the fixed faces actually hold the part.`,
+      solved.timedOut
+        ? `feaStudy '${study.name}': the in-process solve ran out of its ${((opts.solveTimeoutMs ?? DEFAULT_SOLVE_TIMEOUT_MS) / 1000).toFixed(0)} s budget ` +
+          `on ${prep.model.elementCount} bricks (${solved.iterations} iterations, residual ${solved.relResidual.toExponential(2)}). Raise meshSize to coarsen the grid.`
+        : `feaStudy '${study.name}': the in-process solver did not converge on ${prep.model.elementCount} bricks ` +
+          `(${solved.iterations} iterations, residual ${solved.relResidual.toExponential(2)}). Check that the fixed faces actually hold the part, or raise meshSize.`,
       owner,
     ));
     return { ok: false, diagnostics: withNextActions(diagnostics), artifacts: {} };
