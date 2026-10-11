@@ -350,7 +350,7 @@ const headlamp = (side: 1 | -1): Shape[] => {
   const housing = endSkin(NOSE_R, mask, -1.5, 1.5, 1).material({ baseColor: '#9aa3ab', metalness: 0.9, roughness: 0.18 });
   const lens = endSkin(NOSE_R, prismFront(offsetPoly(pts, 7), -50, 400).subtract(mask), -1.5, 3, 1).material({ baseColor: '#d7dde3', metalness: 0.6, roughness: 0.1, clearcoat: 1 });
   const rings = endSkin(NOSE_R, union(...EYES.map(([y, r]) => eyeAt(side * y, r).subtract(eyeAt(side * y, r - 10))), ...EYES.map(([y]) => eyeAt(side * y, 44).subtract(eyeAt(side * y, 37)))), 1.5, 5, 1).material(CHROME);
-  const cores = endSkin(NOSE_R, union(...EYES.map(([y]) => eyeAt(side * y, 22))), 1.5, 3, 1).material({ baseColor: '#f6f8fa', metalness: 0.1, roughness: 0.1, emissive: '#e8eef4', emissiveIntensity: 0.6 });
+  const cores = endSkin(NOSE_R, union(...EYES.map(([y]) => eyeAt(side * y, 22))), 1.5, 3, 1).material({ baseColor: '#f6f8fa', metalness: 0.1, roughness: 0.1 });
   const IND: P[] = [[680, 618], [748, 632], [800, 660], [776, 668], [680, 644]];
   const indicator = endSkin(NOSE_R, prismFront(side === 1 ? IND : mirrorY(IND), -50, 400), 1.5, 3, 1)
     .material({ baseColor: '#e9c79a', metalness: 0.4, roughness: 0.05, clearcoat: 1 });
