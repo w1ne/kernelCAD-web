@@ -7,6 +7,7 @@ import { runTask, BEST_OF_N, type BestOfNSelector } from './runner';
 import { AnthropicAgentClient, MockAgentClient } from './agent';
 import { isKernelcadAvailable } from './oracle/kernelcad-client';
 import { loadCombinedSkillMd } from './skillContext';
+import { describeSkillSelection, loadSkillSelection, parseSkillSelection, type SkillSelection } from './lib/systemPrompt';
 import type { AgentClient, AgentResponse, TaskResult } from './types';
 
 export const MODEL = process.env.EVAL_MODEL ?? 'claude-sonnet-4-6';
@@ -107,7 +108,7 @@ export function makeAgent(_model: string): AgentClient {
 }
 
 /** Flags that take a value — their value is never the task argument. */
-const VALUE_FLAGS = ['--fixture', '--best-of', '--selector'];
+const VALUE_FLAGS = ['--fixture', '--best-of', '--selector', '--skills'];
 
 export interface BestOfFlags {
   /** First-attempt fan-out width; undefined = the default for the mode. */
@@ -151,8 +152,10 @@ async function main(): Promise<void> {
   const useCookbook = args.includes('--cookbook');
   const taskArg = parseTaskArg(args);
   let bestOfFlags: BestOfFlags;
+  let skillSelection: SkillSelection;
   try {
     bestOfFlags = parseBestOfFlags(args);
+    skillSelection = parseSkillSelection(args);
   } catch (err) {
     fail(err instanceof Error ? err.message : String(err));
   }
@@ -177,7 +180,10 @@ async function main(): Promise<void> {
     fail('ANTHROPIC_API_KEY env var is required (or pass --mock to replay a fixture).');
   }
 
-  const skillMd = loadCombinedSkillMd();
+  // Default: authoring + MCP core only. `--all-skills` restores the old
+  // every-SKILL.md context; `--skills a,b` picks an explicit subset.
+  const skillMd = loadSkillSelection(skillSelection, loadCombinedSkillMd);
+  console.error(`[eval] skills: ${describeSkillSelection(skillSelection)} (${formatNum(skillMd.length)} chars)`);
 
   // Lazy-load the injector only when --cookbook is enabled to avoid the
   // cookbook IO/parse cost in the default code path.
