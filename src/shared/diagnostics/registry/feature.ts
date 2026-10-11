@@ -344,6 +344,22 @@ export const FEATURE_CODES = {
     group: 'feature',
     description: '.flattenPattern() was called on a Shape with more than 2 bends, exceeding the slice-1 limit.',
   },
+  'feature.sheetMetal.crossing-bends': {
+    hintTemplate:
+      'An { atX } and an { atY } bend line cross (bend lines span the whole blank). Notch the blank outline at the corner (corner relief, at least one bend allowance past each line) so each flange folds on its own, or fold the flanges as separate parts.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'add corner relief to the blank outline where the two bend lines cross' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'Two crossing .bend() lines meet at a corner that still holds material (no corner relief).',
+  },
+  'feature.sheetMetal.fold-invalid': {
+    hintTemplate:
+      'The folded sheet is not one closed solid with the conserved volume (input minus bend strip plus arc): flanges collide or the split took the wrong material. Check bend order, bend zones and corner relief.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'reorder or respace the bends so no flange folds into another' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A .bend() produced several solids, an invalid solid, or lost / overlapped material.',
+  },
   // Draft (1) — Slice E Task 6/7
   'feature.draft.failed': {
     hintTemplate:

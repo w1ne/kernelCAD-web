@@ -17,7 +17,7 @@ describe('flatten_pattern MCP tool', () => {
     expect(out.region?.outer.length).toBeGreaterThanOrEqual(4);
   });
 
-  it('returns diagnostics for 3+ bend chain', async () => {
+  it('flattens a 3-bend chain', async () => {
     const code = `
       const s = path().moveTo(0, 0).lineTo(150, 0).lineTo(150, 60).lineTo(0, 60).close();
       const blank = sheetMetal(s, { thickness: 2, kFactor: 0.38 });
@@ -27,8 +27,8 @@ describe('flatten_pattern MCP tool', () => {
         .bend({ atX: 120 }, 90, 3);
     `;
     const out = await flattenPatternTool({ code });
-    expect(out.ok).toBe(false);
-    expect(out.diagnostics.some(d => d.code === 'feature.flattenPattern.multi-bend-unsupported')).toBe(true);
+    expect(out.ok).toBe(true);
+    expect(out.region?.bendLines.length).toBe(3);
   });
 
   it('returns invalid-args when neither file nor code is provided', async () => {
