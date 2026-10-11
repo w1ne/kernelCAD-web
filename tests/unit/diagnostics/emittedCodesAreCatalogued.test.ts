@@ -143,7 +143,7 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     }
   });
 
-  it('catalogue has exactly 343 codes', () => {
+  it('catalogue has exactly 345 codes', () => {
     // 47 baseline (milestone-C diagnostic-vocab spec)
     //  + 23 NURBS Slice B/C/D (Curve3D / variableSweep / surface / G2 / 2D path NURBS)
     //  + 31 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
@@ -314,8 +314,10 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     // + 2 FIX-10 kernel recovery: feature.boolean.recovered,
     //   feature.shell.boolean-fallback = 341.
     // + 2 closed-curve seam warnings: feature.curve3d.closed-seam-kink,
-    //   feature.variable-sweep.closed-seam-section-dropped = 343.
-    expect(catalogue.size).toBe(343);
+    //   feature.variable-sweep.closed-seam-section-dropped = 343,
+    // + 2 fastened-mate hole gates: assembly.mounting-hole.unverified,
+    //   assembly.mounting-hole.misaligned = 345.
+    expect(catalogue.size).toBe(345);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

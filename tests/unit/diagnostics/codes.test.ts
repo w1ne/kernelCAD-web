@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { DIAGNOSTIC_CODES, HINT_TEMPLATES } from '../../../src/shared/diagnostics/registry';
 
 describe('diagnostic catalogue invariants', () => {
-  it('emits exactly 343 codes', () => {
+  it('emits exactly 345 codes', () => {
     // 204 from develop (NURBS analytics, Query DSL, K1-K9 kinematic, assembly/mechanism gates)
     // + 6 parts catalog codes (parts.* — Slice C bundled parts catalog)
     // + 1 feature.emboss-text.boolean-noop (#393 silent no-op guard)
@@ -127,9 +127,11 @@ describe('diagnostic catalogue invariants', () => {
     // + 2 FIX-10 kernel recovery: feature.boolean.recovered,
     //   feature.shell.boolean-fallback = 341.
     // + 2 closed-curve seam warnings: feature.curve3d.closed-seam-kink,
-    //   feature.variable-sweep.closed-seam-section-dropped = 343.
-    expect(DIAGNOSTIC_CODES).toHaveLength(343);
-    expect(new Set(DIAGNOSTIC_CODES).size).toBe(343);
+    //   feature.variable-sweep.closed-seam-section-dropped = 343,
+    // + 2 fastened-mate hole gates: assembly.mounting-hole.unverified,
+    //   assembly.mounting-hole.misaligned = 345.
+    expect(DIAGNOSTIC_CODES).toHaveLength(345);
+    expect(new Set(DIAGNOSTIC_CODES).size).toBe(345);
   });
 
   it('every code has a non-empty hint template', () => {

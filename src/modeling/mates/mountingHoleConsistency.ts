@@ -9,25 +9,33 @@
 //
 // For every mate with `type === 'fastened'`, both connector-bound faces
 // must expose compatible `kind: 'hole'` / `kind: 'holes'` records:
-//   - matching diameter (±0.05 mm), AND
+//   - diameters one screw can use: equal (±0.05 mm — dowel / bolt+nut), or
+//     a clearance hole on one side and a tap drill / threaded hole /
+//     insert bore for the SAME ISO metric size on the other (M3: 3.4 mm
+//     clearance over a 2.5 mm tap drill or a hole({ thread }) of nominal 3)
+//     — see `fastenerSizesFor`, AND
 //   - combined depth admits a screw (one side `through`, or
 //     A.depth + B.depth ≥ max(A.depth, B.depth) + 1 mm).
+// A through hole drilled from the opposite face also opens on the bound
+// face. Neither bound face carrying a hole is a rigid bonded / welded /
+// press-fit attachment, not a mismatch.
 //
-// On mismatch (or when only one side / neither side has a hole on the
-// bound face), emit a single `assembly.mounting-hole.mismatch` diagnostic
-// (severity error). Pure, synchronous: walks `arm.__session().getRecords()`
-// from each part's `originalShape.id` upstream through `inputs.target`
-// chains; no lower / no async.
+// On mismatch (or when only one side has a hole on the bound face), emit a
+// single `assembly.mounting-hole.mismatch` diagnostic (severity info).
+// Sides the gate cannot resolve emit `assembly.mounting-hole.unverified`
+// instead — never a mismatch. Pure, synchronous: walks
+// `arm.__session().getRecords()` from each part's `originalShape.id`
+// upstream through `inputs.target` chains; no lower / no async. The
+// geometric hole-ALIGNMENT gate lives in `mountingHoleAlignment.ts`.
 //
 // This module is dead code until Phase 6 wires it into
 // `validateAssemblyWithMates`. That's intentional — keep the gate isolated
 // behind a separate import so callers (lowerer, MCP) can compose it.
 //
 // v0.7.4 ships **topology-bound origins only**. Connectors with
-// `origin: { kind: 'vec3', ... }` emit an info-severity "deferred" note
-// and the gate is skipped for that side (per spec open-question 2). The
-// vec3-origin face-inference path (project origin onto BREP, pick closest
-// face) is queued for v0.7.x.
+// `origin: { kind: 'vec3', ... }` emit an info-severity
+// `assembly.mounting-hole.unverified` note and the record gate is skipped
+// for that side; the geometric alignment gate still covers the mate.
 
 import type { Assembly, AssemblyPartStored } from '../capture/assembly';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
@@ -41,6 +49,19 @@ import type { ValidatorDiagnostic } from './validator';
 /** Hole match tolerance per spec §Gate 1. */
 const DIAMETER_EPSILON_MM = 0.05;
 
+/** ISO metric coarse sizes a fastened joint may use (nominal mm). */
+const METRIC_NOMINAL_SIZES_MM = [1.6, 2, 2.5, 3, 4, 5, 6, 8, 10, 12, 14, 16, 20, 24, 30] as const;
+
+/** Smallest tap drill / self-tapping pilot accepted, as a fraction of the
+ *  nominal size (M3 tap drill 2.5 = 0.83·d; plastic pilots go to ~0.75·d). */
+const MIN_TAPPED_FRACTION = 0.72;
+
+/** Largest clearance / heat-set-insert bore accepted for a nominal size:
+ *  1.5·d + 0.5 mm (M3 insert bore 4.2 mm, M3 coarse clearance 3.6 mm). */
+function maxClearanceMm(nominal: number): number {
+  return nominal * 1.5 + 0.5;
+}
+
 /** Minimum extra depth (mm) beyond the longer side that the combined
  *  blind+blind depth must provide to admit a screw. Per plan §Phase 3 Step 2.6. */
 const SCREW_HEAD_CLEARANCE_MM = 1;
@@ -51,7 +72,7 @@ const SCREW_HEAD_CLEARANCE_MM = 1;
  * — never returned to callers in this shape; only the final
  * `ValidatorDiagnostic` is.
  */
-interface SideObservation {
+export interface SideObservation {
   readonly partName: string;
   readonly connectorName: string;
   /** Set when the connector binds a face via topology + face-center. */
@@ -61,6 +82,8 @@ interface SideObservation {
     readonly diameterMm: number;
     /** `'through'` collapses the depth check (any screw fits). */
     readonly depth: number | 'through';
+    /** Set when the hole carries `thread` — `diameterMm` is the nominal size. */
+    readonly threaded?: boolean;
   };
   /**
    * Set when this side cannot be gated. Severity drives diagnostic level:
@@ -78,129 +101,156 @@ interface SideObservation {
   };
 }
 
+/** Verdict of the hole-record gate for one fastened mate. */
+export type FastenedMateHoleVerdict =
+  /** Both bound faces carry holes one fastener can use. */
+  | 'ok'
+  /** Neither bound face carries a hole: a bonded / welded / press-fit joint. */
+  | 'rigid'
+  /** The bound hole features cannot take one fastener. */
+  | 'mismatch'
+  /** A side could not be resolved to a bound face; nothing was decided. */
+  | 'unverified';
+
+/** One fastened mate as the hole-record gate saw it. */
+export interface FastenedMateHoleObservation {
+  readonly mateName: string;
+  readonly sideA: SideObservation;
+  readonly sideB: SideObservation;
+  readonly verdict: FastenedMateHoleVerdict;
+  /** Human-readable per-side observation strings (bound face + hole). */
+  readonly observedA: string;
+  readonly observedB: string;
+}
+
+/**
+ * Observe every fastened mate's two bound faces. The structured view behind
+ * {@link validateMountingHoleConsistency}; `kc.kinematic` builds its
+ * `mismatches` list from it so only real mismatches (never unresolved
+ * sides) fail the gate.
+ */
+export function observeFastenedMateHoles(arm: Assembly): FastenedMateHoleObservation[] {
+  const parts = arm.__parts();
+  const session = arm.__session();
+  const records = session.getRecords();
+  const paramTable = session.paramTable;
+  const out: FastenedMateHoleObservation[] = [];
+  for (const mate of arm.__mates()) {
+    if (mate.type !== 'fastened') continue;
+    const sideA = observeSide(mate.a, parts, records, paramTable);
+    const sideB = observeSide(mate.b, parts, records, paramTable);
+    const observedA = describeHole(sideA);
+    const observedB = describeHole(sideB);
+    const verdict: FastenedMateHoleVerdict = sideA.deferred !== undefined || sideB.deferred !== undefined
+      ? 'unverified'
+      : decideMate(sideA, sideB);
+    out.push({ mateName: mate.name, sideA, sideB, verdict, observedA, observedB });
+  }
+  return out;
+}
+
 /**
  * v0.7.4 Gate 1 entry point. Pure: no I/O, no lower, no async.
  *
  * Returns the list of diagnostics — possibly empty. Iterates only mates
  * with `type === 'fastened'`. For each mate emits at most one
- * `assembly.mounting-hole.mismatch` (severity error) when the two sides
- * disagree, plus at most one info-severity entry per vec3-origin side
- * to surface the deferred-face-inference behaviour.
- *
- * Dead code in this slice — Phase 6 of the v0.7.4 plan wires it into
- * `validateAssemblyWithMates`.
+ * `assembly.mounting-hole.mismatch` (severity info) when the two sides
+ * cannot take one fastener, plus one `assembly.mounting-hole.unverified`
+ * note per side the gate cannot resolve (info for a vec3 origin, warning
+ * for an unsupported topology query).
  */
 export function validateMountingHoleConsistency(arm: Assembly): ValidatorDiagnostic[] {
   const out: ValidatorDiagnostic[] = [];
-  const parts = arm.__parts();
-  const session = arm.__session();
-  const records = session.getRecords();
-  const paramTable = session.paramTable;
-
-  for (const mate of arm.__mates()) {
-    if (mate.type !== 'fastened') continue;
-
-    const aSide = observeSide(mate.a, parts, records, paramTable);
-    const bSide = observeSide(mate.b, parts, records, paramTable);
-
-    // Surface "deferred" notes. vec3-origin sides emit info-severity (the
-    // documented v0.7.x deferral path); non-face-center topology kinds
-    // (face-normal, vertex, edge-axis, tracked, created, propagated, query)
-    // emit warning-severity — those connector shapes are unsupported by the
-    // mounting-hole gate and would otherwise silently never be verified.
-    // Only emitted on the side that defers; topology-bound sides on the
-    // same mate proceed normally — the gate's verdict for that mate is
-    // decided below using whichever side(s) successfully resolved.
-    if (aSide.deferred !== undefined) {
-      out.push({
-        code: 'assembly.mounting-hole.mismatch',
-        severity: aSide.deferred.severity,
-        mateName: mate.name,
-        partA: aSide.partName,
-        message: `Mate '${mate.name}' (fastened) side '${aSide.partName}.${aSide.connectorName}': ${aSide.deferred.reason}.`,
-        hint: aSide.deferred.hint,
-      });
-    }
-    if (bSide.deferred !== undefined) {
-      out.push({
-        code: 'assembly.mounting-hole.mismatch',
-        severity: bSide.deferred.severity,
-        mateName: mate.name,
-        partB: bSide.partName,
-        message: `Mate '${mate.name}' (fastened) side '${bSide.partName}.${bSide.connectorName}': ${bSide.deferred.reason}.`,
-        hint: bSide.deferred.hint,
-      });
-    }
-
-    // If either side deferred, skip the binary verdict for this mate — the
-    // deferred note (info for vec3-origin, warning for unsupported topology)
-    // already surfaced the limitation. Phase 6 may revisit; for v0.7.4 we
-    // don't error on unknown holes for deferred sides.
-    if (aSide.deferred !== undefined || bSide.deferred !== undefined) {
-      continue;
-    }
-
-    const verdict = decideMate(aSide, bSide);
-    if (verdict.kind === 'ok') continue;
-    out.push({
-      code: 'assembly.mounting-hole.mismatch',
-      // Demoted to 'info' under the physics-grounded loop (P3,
-      // 2026-06-01): this is an authoring-time signal that the bound
-      // hole features don't match; the merge gate is
-      // mechanism.disconnect which fires under motion at validate-time.
-      severity: 'info',
-      mateName: mate.name,
-      partA: aSide.partName,
-      partB: bSide.partName,
-      message: `Mate '${mate.name}' (fastened) hole features incompatible: ${verdict.observedA} vs ${verdict.observedB}.`,
-      hint:
-        `invalid-args.assembly.mounting-hole-mismatch — mate '${mate.name}' (fastened) expects compatible hole features on both bound faces. ` +
-        `Side '${aSide.partName}.${aSide.connectorName}': ${verdict.observedA}. ` +
-        `Side '${bSide.partName}.${bSide.connectorName}': ${verdict.observedB}. ` +
-        `Adjust the diameter or depth on the side that does not match, or change the connector origin to a face that already exposes a matching hole.`,
-    });
+  for (const observation of observeFastenedMateHoles(arm)) {
+    out.push(...unverifiedNotes(observation));
+    if (observation.verdict === 'mismatch') out.push(mismatchDiagnostic(observation));
   }
-
   return out;
 }
 
-interface MateVerdict {
-  readonly kind: 'ok' | 'mismatch';
-  readonly observedA: string;
-  readonly observedB: string;
+function unverifiedNotes(observation: FastenedMateHoleObservation): ValidatorDiagnostic[] {
+  const out: ValidatorDiagnostic[] = [];
+  for (const [side, key] of [[observation.sideA, 'partA'], [observation.sideB, 'partB']] as const) {
+    if (side.deferred === undefined) continue;
+    out.push({
+      code: 'assembly.mounting-hole.unverified',
+      severity: side.deferred.severity,
+      mateName: observation.mateName,
+      [key]: side.partName,
+      message: `Mate '${observation.mateName}' (fastened) side '${side.partName}.${side.connectorName}': ${side.deferred.reason}.`,
+      hint: side.deferred.hint,
+    });
+  }
+  return out;
+}
+
+function mismatchDiagnostic(observation: FastenedMateHoleObservation): ValidatorDiagnostic {
+  const { mateName, sideA, sideB, observedA, observedB } = observation;
+  return {
+    code: 'assembly.mounting-hole.mismatch',
+    // Demoted to 'info' under the physics-grounded loop (P3,
+    // 2026-06-01): this is an authoring-time signal that the bound
+    // hole features don't match; the merge gate is
+    // mechanism.disconnect which fires under motion at validate-time.
+    severity: 'info',
+    mateName,
+    partA: sideA.partName,
+    partB: sideB.partName,
+    message: `Mate '${mateName}' (fastened) hole features incompatible: ${observedA} vs ${observedB}.`,
+    hint:
+      `invalid-args.assembly.mounting-hole-mismatch — mate '${mateName}' (fastened) expects hole features one screw can use on both bound faces: ` +
+      `the same diameter, or a clearance hole over a tap drill / hole({ thread }) of the same metric size (M3: 3.4 mm clearance + 2.5 mm tap drill). ` +
+      `Side '${sideA.partName}.${sideA.connectorName}': ${observedA}. ` +
+      `Side '${sideB.partName}.${sideB.connectorName}': ${observedB}. ` +
+      `Adjust the diameter or depth on the side that does not match, or change the connector origin to a face that already exposes a matching hole.`,
+  };
 }
 
 /** Apply the Gate 1 compatibility rule to two fully-observed sides. */
-function decideMate(aSide: SideObservation, bSide: SideObservation): MateVerdict {
-  const observedA = describeHole(aSide);
-  const observedB = describeHole(bSide);
-
+function decideMate(aSide: SideObservation, bSide: SideObservation): FastenedMateHoleVerdict {
   const aHole = aSide.hole;
   const bHole = bSide.hole;
+  // Neither bound face drilled: an adhesive / weld / press-fit / snap joint.
+  if (!aHole && !bHole) return 'rigid';
+  // One side drilled, the other blank: the screw has nowhere to go.
+  if (!aHole || !bHole) return 'mismatch';
+  if (!holeDiametersCompatible(aHole, bHole)) return 'mismatch';
+  return depthAdmitsScrew(aHole.depth, bHole.depth) ? 'ok' : 'mismatch';
+}
 
-  // Either side missing a hole feature: always a mismatch — a fastened
-  // mate with no fastener target can never be installed.
-  if (!aHole || !bHole) {
-    return { kind: 'mismatch', observedA, observedB };
-  }
+type ObservedHole = NonNullable<SideObservation['hole']>;
 
-  // Diameter agreement (±0.05 mm).
-  if (Math.abs(aHole.diameterMm - bHole.diameterMm) > DIAMETER_EPSILON_MM) {
-    return { kind: 'mismatch', observedA, observedB };
-  }
+/**
+ * True when one fastener can use both holes: equal diameters (±0.05 mm),
+ * or some ISO metric size N for which each hole is a tap drill / threaded
+ * hole (engages the thread) or a clearance / insert bore (passes the
+ * shank), with at least one side passing the shank — two threaded holes
+ * hold no screw.
+ */
+export function holeDiametersCompatible(a: ObservedHole, b: ObservedHole): boolean {
+  if (Math.abs(a.diameterMm - b.diameterMm) <= DIAMETER_EPSILON_MM) return true;
+  return METRIC_NOMINAL_SIZES_MM.some((size) => {
+    const roleA = holeRole(a, size);
+    const roleB = holeRole(b, size);
+    return roleA !== undefined && roleB !== undefined && (roleA === 'clearance' || roleB === 'clearance');
+  });
+}
 
-  // Combined depth admits a screw: through on at least one side, or
-  // A.depth + B.depth ≥ max(A.depth, B.depth) + clearance.
-  if (aHole.depth === 'through' || bHole.depth === 'through') {
-    return { kind: 'ok', observedA, observedB };
-  }
-  const combined = aHole.depth + bHole.depth;
-  const required = Math.max(aHole.depth, bHole.depth) + SCREW_HEAD_CLEARANCE_MM;
-  if (combined < required) {
-    return { kind: 'mismatch', observedA, observedB };
-  }
+/** What `hole` does for a screw of nominal `size`: engage its thread, let
+ *  the shank through, or neither (too small / too large). */
+function holeRole(hole: ObservedHole, size: number): 'tapped' | 'clearance' | undefined {
+  const d = hole.diameterMm;
+  if (hole.threaded === true) return Math.abs(d - size) <= DIAMETER_EPSILON_MM ? 'tapped' : undefined;
+  if (d >= size * MIN_TAPPED_FRACTION - DIAMETER_EPSILON_MM && d < size - DIAMETER_EPSILON_MM) return 'tapped';
+  if (d >= size - DIAMETER_EPSILON_MM && d <= maxClearanceMm(size) + DIAMETER_EPSILON_MM) return 'clearance';
+  return undefined;
+}
 
-  return { kind: 'ok', observedA, observedB };
+/** Combined depth admits a screw: through on at least one side, or
+ *  A.depth + B.depth ≥ max(A.depth, B.depth) + clearance. */
+function depthAdmitsScrew(a: number | 'through', b: number | 'through'): boolean {
+  if (a === 'through' || b === 'through') return true;
+  return a + b >= Math.max(a, b) + SCREW_HEAD_CLEARANCE_MM;
 }
 
 /** Render a human-readable observation string used in the diagnostic hint. */
@@ -213,7 +263,7 @@ function describeHole(side: SideObservation): string {
   if (!side.hole) {
     return `no hole feature found on bound face '${side.boundFaceName}'`;
   }
-  const dia = `${side.hole.diameterMm} mm`;
+  const dia = `${side.hole.diameterMm} mm${side.hole.threaded === true ? ' threaded' : ''}`;
   const depth = side.hole.depth === 'through' ? 'through' : `${side.hole.depth} mm`;
   return `hole on face '${side.boundFaceName}' (diameter ${dia}, depth ${depth})`;
 }
@@ -286,9 +336,9 @@ function extractBoundFace(connector: Connector): BoundFace {
     return {
       kind: 'deferred',
       severity: 'info',
-      reason: 'vec3-origin face inference deferred to v0.7.x',
+      reason: 'the connector origin is a vec3 point, so the hole-record gate cannot tell which face it binds (not a mismatch; the geometric hole-alignment check still covers this mate)',
       hint: (partName, connectorName) =>
-        `invalid-args.assembly.mounting-hole-mismatch — side '${partName}.${connectorName}' uses a vec3 connector origin; v0.7.4 mounting-hole consistency only gates topology-bound origins. Switch to origin: { kind: 'topology', query: { kind: 'face-center', name: '<face>' } } to enable the gate on this side.`,
+        `mounting-hole.unverified — side '${partName}.${connectorName}' uses a vec3 connector origin, so hole diameters are not compared by feature record. This is informational. To have hole() / holes() diameters compared too, bind the connector to the drilled face: origin: { kind: 'topology', query: { kind: 'face-center', name: 'top' } }.`,
     };
   }
   if (connector.origin.query.kind === 'face-center') {
@@ -306,7 +356,7 @@ function extractBoundFace(connector: Connector): BoundFace {
     severity: 'warning',
     reason: `connector uses topology query kind '${queryKind}'; the mounting-hole gate only supports 'face-center' for face inference. The gate cannot verify this side. Either change the connector origin to a face-center query or accept that this mate is ungated`,
     hint: (partName, connectorName) =>
-      `invalid-args.assembly.mounting-hole-mismatch — mate connector '${partName}.${connectorName}' uses topology query kind '${queryKind}'; the mounting-hole gate only supports 'face-center' for face inference. The gate cannot verify this side. Either change the connector origin to a face-center query (origin: { kind: 'topology', query: { kind: 'face-center', name: '<face>' } }) or accept that this mate is ungated.`,
+      `mounting-hole.unverified — mate connector '${partName}.${connectorName}' uses topology query kind '${queryKind}'; the mounting-hole gate only supports 'face-center' for face inference. The gate cannot verify this side. Either change the connector origin to a face-center query (origin: { kind: 'topology', query: { kind: 'face-center', name: '<face>' } }) or accept that this mate is ungated.`,
   };
 }
 
@@ -332,9 +382,8 @@ function findHoleOnFace(
     if (currentId === undefined) return undefined;
     const rec: FeatureRecord | undefined = byId.get(currentId);
     if (!rec) return undefined;
-    if ((rec.kind === 'hole' || rec.kind === 'holes') && faceRefMatches(rec, boundFaceName)) {
-      return readHoleParams(rec, paramTable);
-    }
+    const hole = holeOnBoundFace(rec, boundFaceName, paramTable);
+    if (hole !== undefined) return hole;
     // Continue walking upstream via inputs.target.id, which the hole / holes
     // / cutout / fillet / chamfer / shell / pattern proxies all set.
     const target = rec.inputs.target;
@@ -345,6 +394,26 @@ function findHoleOnFace(
     }
   }
   return undefined;
+}
+
+/** Canonical faces a through hole drilled from one face also opens on. */
+const OPPOSITE_FACE: Readonly<Record<string, string>> = {
+  top: 'bottom', bottom: 'top', left: 'right', right: 'left', front: 'back', back: 'front',
+};
+
+/** The hole a hole / holes record opens on `boundFaceName`: drilled from
+ *  that face, or a through hole drilled from the opposite canonical face. */
+function holeOnBoundFace(
+  rec: FeatureRecord,
+  boundFaceName: string,
+  paramTable: ParamTable,
+): SideObservation['hole'] | undefined {
+  if (rec.kind !== 'hole' && rec.kind !== 'holes') return undefined;
+  if (faceRefMatches(rec, boundFaceName)) return readHoleParams(rec, paramTable);
+  const opposite = OPPOSITE_FACE[boundFaceName];
+  if (opposite === undefined || !faceRefMatches(rec, opposite)) return undefined;
+  const hole = readHoleParams(rec, paramTable);
+  return hole?.depth === 'through' ? hole : undefined;
 }
 
 function faceRefMatches(rec: FeatureRecord, boundFaceName: string): boolean {
@@ -375,13 +444,14 @@ function readHoleParams(
   // Depth: numeric `params.depth` OR through (depthMode param set with
   // expression "'through'"). serializeHoleParams sets exactly one of these.
   // See src/intent/holeValidation.ts:351.
+  const threaded = params.threadPitch !== undefined ? { threaded: true } : {};
   const depthMode = params.depthMode;
   if (depthMode !== undefined && depthMode.expression === "'through'") {
-    return { diameterMm: diaParam.evaluated, depth: 'through' };
+    return { diameterMm: diaParam.evaluated, depth: 'through', ...threaded };
   }
   const depthParam = params.depth;
   if (isFinitePositive(depthParam)) {
-    return { diameterMm: diaParam.evaluated, depth: depthParam.evaluated };
+    return { diameterMm: diaParam.evaluated, depth: depthParam.evaluated, ...threaded };
   }
   // Hole record with neither a numeric depth nor a through marker is
   // malformed — treated as "no hole" so the gate emits a mismatch with the

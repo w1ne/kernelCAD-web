@@ -19,6 +19,7 @@ import {
   type MechanicalPlausibilityDiagnostic,
 } from '../../modeling/mates/mechanicalPlausibility';
 import { checkMechanismTruth } from '../../modeling/runtime/mechanismTruth';
+import { checkOrphanParts } from '../../modeling/runtime/mechanismOrphan';
 import {
   reviewMechanicalIntent,
   type MechanicalIntentDiagnostic,
@@ -216,7 +217,7 @@ export type ReviewCadOutput = ReviewTimingReport & (
       geometry?: ContactGraphResult;
     });
 
-type ReviewDiagnostic =
+export type ReviewDiagnostic =
   | CompilerDiagnostic
   | ValidatorDiagnostic
   | PoseEnvelopeDiagnostic
@@ -620,22 +621,80 @@ async function runMechanismTruthStage(
   }
 }
 
+/** The lowered scene a review reads default-pose interferences from. */
+type ReviewScene = Pick<BuiltModel, 'rootShape' | 'tailShape'>;
+
+type MechanicalReview = Awaited<ReturnType<typeof runMechanicalReviewStage>>;
+
+/** The static (no motion) findings of a mechanical review, in the shape the
+ *  ONE blocking rule set — {@link summarizeMechanismFitness} — consumes. */
+function staticFitnessInput(mechanicalReview: MechanicalReview) {
+  return {
+    validatorDiagnostics: mechanicalReview.validator.diagnostics,
+    mechanicalPlausibilityDiagnostics: mechanicalReview.mechanicalPlausibility.diagnostics,
+    mechanicalIntentDiagnostics: mechanicalReview.mechanicalIntent.diagnostics,
+    mechanicalTransmissionDiagnostics: mechanicalReview.mechanicalTransmission.diagnostics,
+    jointTopologyDiagnostics: mechanicalReview.jointTopology.diagnostics,
+  };
+}
+
+/** Result of {@link runStaticAssemblyReview}. */
+export interface StaticAssemblyReview {
+  readonly validator: MechanicalReview['validator'];
+  /** Every static finding: joint topology, validator (incl. default-pose
+   *  interference), mechanical plausibility / intent / transmission, and
+   *  parts no mate links into a mated assembly (mechanism.orphan-part). */
+  readonly diagnostics: readonly ReviewDiagnostic[];
+  /** Same blocking rules review_cad applies to these findings. */
+  readonly fitness: MechanismFitnessResult;
+}
+
+/**
+ * The static half of review_cad: the same default-pose interference
+ * detection, the same mechanical-review stage and the same blocking rules
+ * ({@link summarizeMechanismFitness}) and the graph-only orphan-part check,
+ * without the pose-envelope sweep and the mechanism-truth motion probes. `verify({ check: 'assembly' })` runs
+ * this, so anything it blocks on review_cad blocks on too.
+ */
+export async function runStaticAssemblyReview(
+  arm: Assembly,
+  scene: ReviewScene,
+  epsilonMm3?: number,
+): Promise<StaticAssemblyReview> {
+  const rawInterferencePairs = safeDetectDefaultPoseInterferences(scene, epsilonMm3);
+  const mechanicalReview = await runMechanicalReviewStage(arm, {}, rawInterferencePairs, true);
+  // The graph-only mechanism-truth criterion (a part no mate links into a
+  // mated assembly); the motion criteria stay with review_cad.
+  const orphanParts = withNextActions(checkOrphanParts(arm));
+  return {
+    validator: mechanicalReview.validator,
+    diagnostics: [
+      ...mechanicalReview.jointTopology.diagnostics,
+      ...mechanicalReview.validator.diagnostics,
+      ...mechanicalReview.mechanicalPlausibility.diagnostics,
+      ...mechanicalReview.mechanicalIntent.diagnostics,
+      ...mechanicalReview.mechanicalTransmission.diagnostics,
+      ...orphanParts,
+    ],
+    fitness: summarizeMechanismFitness({
+      ...staticFitnessInput(mechanicalReview),
+      mechanismTruthDiagnostics: orphanParts,
+    }),
+  };
+}
+
 async function runFitnessAndRepairStage(input: {
   arm: Assembly;
   diagnostics: readonly ReviewDiagnostic[];
   input: ReviewCadInput;
   mechanism: MechanismVerdict;
   mechanismFailures: readonly CompilerDiagnostic[];
-  mechanicalReview: Awaited<ReturnType<typeof runMechanicalReviewStage>>;
+  mechanicalReview: MechanicalReview;
   physicalUseCases: Awaited<ReturnType<typeof runPhysicalUseCaseStage>>;
   poseEnvelope: PoseEnvelopeReviewResult | undefined;
 }): Promise<{ fitness: MechanismFitnessResult; ok: boolean; repairContext: RepairContext }> {
   const fitness = summarizeMechanismFitness({
-    validatorDiagnostics: input.mechanicalReview.validator.diagnostics,
-    mechanicalPlausibilityDiagnostics: input.mechanicalReview.mechanicalPlausibility.diagnostics,
-    mechanicalIntentDiagnostics: input.mechanicalReview.mechanicalIntent.diagnostics,
-    mechanicalTransmissionDiagnostics: input.mechanicalReview.mechanicalTransmission.diagnostics,
-    jointTopologyDiagnostics: input.mechanicalReview.jointTopology.diagnostics,
+    ...staticFitnessInput(input.mechanicalReview),
     mechanismTruthDiagnostics: input.mechanismFailures,
     physicalUseCaseDiagnostics: input.physicalUseCases.diagnostics,
     physicalUseCaseCount: input.physicalUseCases.checkedUseCaseCount,
@@ -718,7 +777,7 @@ function mergeConnectorRefs(
  * continue to surface the real problem.
  */
 function safeDetectDefaultPoseInterferences(
-  model: BuiltModel,
+  model: ReviewScene,
   epsilonMm3?: number,
 ): InterferencePair[] {
   try {
@@ -731,11 +790,15 @@ function safeDetectDefaultPoseInterferences(
   }
 }
 
-async function evaluateForReview(input: EvaluateInput) {
+/** Evaluate a script the way review_cad does: the solvedModel validate
+ *  gate defaults to 'warn' so findings are reported, not thrown. */
+export async function evaluateForReview(input: EvaluateInput) {
+  // Forced, not defaulted: evaluate_script's applyEvaluateDefaults() leaves
+  // 'error' set for the rest of the process, which made a long-lived MCP
+  // server's review stop at the first validator error instead of reporting
+  // every finding with its blocking verdict.
   const priorDefault = process.env.KERNELCAD_VALIDATE_DEFAULT;
-  if (priorDefault === undefined) {
-    process.env.KERNELCAD_VALIDATE_DEFAULT = 'warn';
-  }
+  process.env.KERNELCAD_VALIDATE_DEFAULT = 'warn';
   try {
     return await evaluateAndBuildScript(input);
   } finally {

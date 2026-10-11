@@ -129,6 +129,14 @@ function collectReachablePartNames(
   return visited;
 }
 
+function declaresMechanism(arm: Assembly): boolean {
+  return arm.__mates().length > 0
+    || arm.__joints().length > 0
+    || arm.__transmissionIntents().length > 0
+    || arm.__mechanicalJointIntents().length > 0
+    || arm.__tendons().length > 0;
+}
+
 export function checkOrphanParts(arm: Assembly): CompilerDiagnostic[] {
   const parts = arm.__parts();
   if (parts.length <= 1) return [];
@@ -139,10 +147,12 @@ export function checkOrphanParts(arm: Assembly): CompilerDiagnostic[] {
   const disconnected = parts.map((p) => p.name).filter((name) => !visited.has(name));
   if (disconnected.length === 0) return [];
 
-  // Zero mates and zero joints: independent bodies (enclosure base + lid, a
+  // Nothing claims the bodies are linked — no mate, joint, transmission,
+  // mechanicalJoint or tendon: independent bodies (enclosure base + lid, a
   // print layout, body + text), even when the script returns solvedModel().
-  // Nothing claims they are linked, so there is nothing to report.
-  if (arm.__mates().length === 0 && arm.__joints().length === 0) return [];
+  // A declared transmission / drive / tendon DOES claim a mechanism, so
+  // floating gears with no axle mates still report orphans.
+  if (!declaresMechanism(arm)) return [];
 
   // One diagnostic per disconnected body, but every message names the full
   // disconnected-component roster + the required connector/mate patterns so

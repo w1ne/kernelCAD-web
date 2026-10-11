@@ -20,8 +20,9 @@ export type JointTopologyDiagnosticCode =
 
 export interface JointTopologyDiagnostic {
   readonly code: JointTopologyDiagnosticCode;
-  /** 'warning' only for a free passive joint's missing limit / support
-   *  intent (see passiveJoints.ts); every other topology defect is 'error'. */
+  /** 'warning' for a free passive joint's missing limit (see
+   *  passiveJoints.ts) and for any undeclared revolute support intent;
+   *  every other topology defect is 'error'. */
   readonly severity: 'error' | 'warning';
   readonly message: string;
   readonly hint: string;
@@ -84,9 +85,13 @@ export function reviewJointTopology(arm: Assembly): JointTopologyReviewResult {
   collectMateTopologyDiagnostics(mates, partsByName, graph, movingParts, { supportedRevoluteMates, passiveMates }, diagnostics);
 
   const stableRoots = collectStableRoots(arm, partsByName);
-  // Nothing declared stable: the solver grounds the first part, so does the
-  // reachability walk (otherwise every moving part "floats" in a plain hinge).
-  if (stableRoots.size === 0 && parts.length > 0) stableRoots.add(parts[0].name);
+  // Nothing declared stable in a purely passive mechanism (a plain hinge,
+  // a free slider): the solver grounds the first part, so does the
+  // reachability walk. An actuated / loaded mechanism must declare its root
+  // — parts[0] may itself be a moving link there.
+  if (stableRoots.size === 0 && parts.length > 0 && everyMovingMateIsPassive(mates, passiveMates)) {
+    stableRoots.add(parts[0].name);
+  }
   const reachableFromRoots = findReachableParts(stableRoots, graph);
 
   collectFloatingMovingPartDiagnostics(movingParts, reachableFromRoots, stableRoots, diagnostics);
@@ -97,6 +102,10 @@ export function reviewJointTopology(arm: Assembly): JointTopologyReviewResult {
     checkedMateCount: checkedMates.length,
     checkedMovingPartCount: movingParts.size,
   };
+}
+
+function everyMovingMateIsPassive(mates: readonly MateRecord[], passiveMates: ReadonlySet<string>): boolean {
+  return mates.every((mate) => mate.type === 'fastened' || passiveMates.has(mate.name));
 }
 
 function collectMateTopologyDiagnostics(
@@ -301,14 +310,30 @@ function validateMateContract(
   }
 
   if (mate.type === 'revolute' && !supportedRevoluteMates.has(mate.name)) {
-    diagnostics.push({
-      code: 'assembly.joint-topology.unsupported-axis',
-      severity,
-      mateName: mate.name,
-      message: `Revolute mate '${mate.name}' has no joint support intent declaring support.`,
-      hint: `joint-topology.unsupported-axis — add arm.jointSupport(..., { mate: '${mate.name}', shaft, supports, output }) for passive hinges, or arm.mechanicalJoint(..., { mate: '${mate.name}', actuator, shaft, supports, output }) for driven hinges, so the hinge axis has physical support intent.`,
-    });
+    diagnostics.push(unsupportedAxisNote(mate));
   }
+}
+
+/**
+ * A revolute mate with no jointSupport / mechanicalJoint declaration. Always
+ * a 'warning', never a blocker: whether the hinge is physically carried is
+ * decided from geometry by assembly.joint-axis.unbound and
+ * assembly.mechanical.revolute-unsupported / revolute-contact-missing. The
+ * declaration only records WHICH parts carry the axis (load-path
+ * certificates read it), so the hint spells out the exact call to add.
+ */
+function unsupportedAxisNote(mate: MateRecord): JointTopologyDiagnostic {
+  const ends = mateEndpointParts(mate);
+  const support = ends?.a ?? '<support part>';
+  const output = ends?.b ?? '<moving part>';
+  const example = `arm.jointSupport('${mate.name}-support', { mate: '${mate.name}', shaft: '${support}', supports: ['${support}'], output: '${output}' })`;
+  return {
+    code: 'assembly.joint-topology.unsupported-axis',
+    severity: 'warning',
+    mateName: mate.name,
+    message: `Revolute mate '${mate.name}' declares no joint support intent (informational; physical support is checked from geometry).`,
+    hint: `joint-topology.unsupported-axis — optional: record which parts carry the '${mate.name}' axis with ${example} (use the part that holds the pin/shaft as shaft and supports), or arm.mechanicalJoint(..., { mate: '${mate.name}', actuator, shaft, supports, output }) for a driven hinge.`,
+  };
 }
 
 function collectSupportedRevoluteMates(

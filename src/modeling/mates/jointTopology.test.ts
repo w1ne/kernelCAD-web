@@ -106,6 +106,12 @@ describe('reviewJointTopology', () => {
     expect(unsupportedAxis).toBeTruthy();
     expect(unsupportedAxis?.hint).toContain('jointSupport');
     expect(unsupportedAxis?.hint).toContain('mechanicalJoint');
+    // Advisory, never a blocker: physical support is gated from geometry.
+    // The hint names the exact call to add, filled in for this mate.
+    expect(unsupportedAxis?.severity).toBe('warning');
+    expect(unsupportedAxis?.hint).toContain(
+      "arm.jointSupport('hinge-support', { mate: 'hinge', shaft: 'base', supports: ['base'], output: 'link' })",
+    );
   });
 
   it('reports missing connectors and invalid axes from stored mate records', () => {
@@ -398,6 +404,27 @@ describe('reviewJointTopology', () => {
       checkedMateCount: 1,
       checkedMovingPartCount: 2,
     });
+  });
+
+  it('grounds parts[0] when nothing is declared stable only for a purely passive mechanism', () => {
+    const build = (actuated: boolean) => {
+      const { arm, kcad } = makeApi();
+      arm.part('link1', kcad.box(20, 4, 4))
+        .connector('elbow', { type: 'axis', origin: { kind: 'vec3', value: [20, 0, 0] }, axis: [0, 0, 1] });
+      arm.part('link2', kcad.box(20, 4, 4).translate(20, 0, 0))
+        .connector('elbow', { type: 'axis', origin: { kind: 'vec3', value: [20, 0, 0] }, axis: [0, 0, 1] });
+      arm.part('motor', kcad.box(4, 4, 4).translate(16, 0, 4));
+      arm.mate('elbow', 'link1.elbow', 'link2.elbow', 'revolute', { limitsDeg: [-90, 90] });
+      if (actuated) {
+        arm.mechanicalJoint('elbow-drive', { mate: 'elbow', actuator: 'motor', shaft: 'link1', supports: ['link1'], output: 'link2' });
+      }
+      return arm;
+    };
+    // Passive hinge: the first part is the ground, as the solver treats it.
+    expect(codesOf(build(false))).not.toContain('assembly.connectivity.floating-moving-part');
+    // Actuated arm with no declared stable part: parts[0] is itself a moving
+    // link, so it must not be assumed grounded.
+    expect(codesOf(build(true))).toContain('assembly.connectivity.floating-moving-part');
   });
 
   it('recognises base-frame as a stable root fallback for open-chain mechanisms', () => {
