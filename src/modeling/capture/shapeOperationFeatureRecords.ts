@@ -140,6 +140,25 @@ function isFaceWrapperSelector(selector: ShapeOperationEdgeSelector): boolean {
     !('id' in selector && 'midpoint' in selector && 'direction' in selector && 'curveType' in selector);
 }
 
+/**
+ * `{ face }` selects every edge of one face and takes no other key. Extra
+ * keys (`{ face: 'top', byNormal: '+Z', region: 'temple' }`) used to be
+ * dropped silently, so the entry filleted all of 'top' whatever they said.
+ */
+function rejectFaceWrapperExtraKeys(selector: Record<string, unknown>): void {
+  const extra = Object.keys(selector).filter((k) => k !== 'face');
+  if (extra.length === 0) return;
+  invalidArgs({
+    api: 'edge selector { face }',
+    path: extra.join(', '),
+    gotText: `unknown key${extra.length > 1 ? 's' : ''} ${extra.join(', ')} next to face`,
+    requires:
+      "only the key face — { face: 'top' } selects every edge of that face; narrow the face inside it ({ face: { byNormal: '+Z', atZ: 10 } }) or use an EdgeQuery ({ atZ: 10, parallel: 'X' })",
+    example: "fillet(1, { face: 'top' })",
+    hintSlug: 'invalid-args.selector.unknown-key',
+  });
+}
+
 /** True for a bare edge-segment descriptor (`{ id, midpoint, direction, curveType }`). */
 function isEdgeSegmentSelector(selector: ShapeOperationEdgeSelector): boolean {
   return typeof selector === 'object' && selector !== null &&
@@ -200,6 +219,7 @@ export function buildEdgeFeatureRef(
   }
 
   if (isFaceWrapperSelector(selector)) {
+    rejectFaceWrapperExtraKeys(selector as Record<string, unknown>);
     return { key: 'face', value: buildFaceInputRef(baseId, (selector as { face: ShapeOperationFaceSelector }).face) };
   }
 
