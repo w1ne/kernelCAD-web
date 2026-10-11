@@ -83,8 +83,15 @@ describe('passive free joint — evaluate_script and review_cad agree', () => {
     const rv = await reviewCadTool({ code: LIMITED_HINGE });
     expect(rv.mechanism).toBe(ev.mechanism);
     expect(rv.ok).toBe(true);
-    const drift = (rv.mechanismFailures ?? []).filter((d) => d.code === 'mechanism.drops-on-release');
+    const drift = (rv.mechanismFailures ?? []).filter((d) => d.code === 'mechanism.drops-on-release') as Array<Diag & { message?: string }>;
+    expect(drift.length).toBeGreaterThan(0);
     expect(drift.every((d) => d.severity === 'info')).toBe(true);
+    // The note tells a user whose hinge really must hold how to opt in.
+    const note = drift.map((d) => d.message ?? '').join('\n');
+    expect(note).toMatch(/limitsDeg \/ limitsMm are end stops, not a holding requirement/);
+    expect(note).toMatch(/capacity: \{ envelope: \{ maxResultantForceN, maxResultantMomentNmm \} \}/);
+    expect(note).toMatch(/arm\.physicalUseCase\('<name>', \{ stableParts: .*loads: \[/);
+    expect(note).toContain("arm.mate('hinge'");
   }, 240_000);
 
   it('a hinge with a declared load rating must hold: drift blocks (control)', async () => {

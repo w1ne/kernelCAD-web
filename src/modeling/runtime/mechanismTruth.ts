@@ -1224,8 +1224,11 @@ function passiveDriftNote(mate: string, driftDeg: number): CompilerDiagnostic {
   return makeFailure(
     'mechanism.drops-on-release',
     `Mate '${mate}' swung ${driftDeg.toFixed(1)}° from rest in ${DROP_TEST_DURATION_S.toFixed(1)} s under gravity. ` +
-    `It is a free passive joint (no actuator, no declared load; limits are end stops), so this is informational, not a defect. ` +
-    `If it must hold its pose, declare that: arm.mechanicalJoint(...), arm.tendon(...), a mate capacity, or a physicalUseCase with loads.`,
+    `It is a free passive joint (no actuator, no declared load), so this is informational, not a defect — declared limitsDeg / limitsMm are end stops, not a holding requirement. ` +
+    `If '${mate}' must HOLD its pose (a stay, a detent, a lid that stays open), declare it and the drop test will fail it when it sags: ` +
+    `give the mate a load rating — arm.mate('${mate}', a, b, type, { limitsDeg, capacity: { envelope: { maxResultantForceN, maxResultantMomentNmm } } }) — ` +
+    `or a load case — arm.physicalUseCase('<name>', { stableParts: ['<base>'], loads: [{ part: '<moving part>', force: [0, 0, -<N>] }] }); ` +
+    `a motor-held joint is arm.mechanicalJoint(...), a spring-balanced one arm.tendon(...).`,
     'info',
   );
 }
