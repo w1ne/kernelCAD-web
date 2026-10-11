@@ -22,7 +22,9 @@ export type FunnelClientErrorCode =
   | 'missing_generation_id'
   | 'stream_closed'
   /** The user stopped waiting for the run (`cancel()`). */
-  | 'cancelled';
+  | 'cancelled'
+  /** A signed-out build was refused (401 `anon_limit`): sign in to continue. */
+  | 'anon_limit';
 
 export type FunnelErrorCode = FunnelClientErrorCode | `http_${number}` | (string & {});
 
@@ -30,13 +32,14 @@ export type GenerationPhase =
   | { state: 'idle' }
   | { state: 'running'; generationId?: string; anonId?: string; lastEvent: GenerateEvent }
   | { state: 'done'; generationId: string; anonId: string; artifact: Artifact; partial?: GenerationPartial }
-  | { state: 'error'; code: FunnelErrorCode; message: string; generationId?: string; upgradeUrl?: string };
+  | { state: 'error'; code: FunnelErrorCode; message: string; generationId?: string; upgradeUrl?: string; anonReason?: string };
 
 /** A quota 402 carries `{ message, upgrade_url }`; any other body stays raw text. */
-function parseErrorBody(text: string): { message?: string; upgradeUrl?: string } {
+function parseErrorBody(text: string): { message?: string; upgradeUrl?: string; anonLimit?: { reason: string } } {
   try {
-    const j = JSON.parse(text) as { message?: unknown; upgrade_url?: unknown };
+    const j = JSON.parse(text) as { message?: unknown; upgrade_url?: unknown; error?: unknown; reason?: unknown };
     return {
+      ...(j.error === 'anon_limit' ? { anonLimit: { reason: typeof j.reason === 'string' ? j.reason : '' } } : {}),
       ...(typeof j.message === 'string' && j.message ? { message: j.message } : {}),
       ...(typeof j.upgrade_url === 'string' && /^https?:\/\//.test(j.upgrade_url) ? { upgradeUrl: j.upgrade_url } : {}),
     };
@@ -93,6 +96,29 @@ async function consumeGenerationStream(
   return true;
 }
 
+/** The error phase for a non-2xx reply from the generate endpoint. */
+function errorPhaseFor(status: number, text: string, body: ReturnType<typeof parseErrorBody>): GenerationPhase {
+  if (status === 401 && body.anonLimit) {
+    // No free build for this signed-out visitor: the page asks them to sign in.
+    return {
+      state: 'error',
+      code: 'anon_limit',
+      message: 'Sign in to build.',
+      ...(body.anonLimit.reason ? { anonReason: body.anonLimit.reason } : {}),
+    };
+  }
+  return {
+    state: 'error',
+    // Agent mode requires a connected account. 401 = anonymous (must sign
+    // in); 402 = signed-in but monthly quota exhausted (must upgrade); 429 =
+    // legacy rate limit. All route to the same panel, which shows "sign in"
+    // vs "upgrade" based on whether there's a session.
+    code: status === 401 || status === 402 || status === 429 ? 'rate_limited' : `http_${status}`,
+    message: body.message ?? text,
+    ...(status === 402 && body.upgradeUrl ? { upgradeUrl: body.upgradeUrl } : {}),
+  };
+}
+
 /** POST the request and return its event stream, or set the error phase
  *  and return null. Returns null without a phase change once aborted. */
 async function openGenerationStream(
@@ -114,16 +140,7 @@ async function openGenerationStream(
   if (!res.ok) {
     const text = await res.text().catch(() => `HTTP ${res.status}`);
     const body = parseErrorBody(text);
-    setPhase({
-      state: 'error',
-      // Agent mode requires a connected account. 401 = anonymous (must sign
-      // in); 402 = signed-in but monthly quota exhausted (must upgrade); 429 =
-      // legacy rate limit. All route to the same panel, which shows "sign in"
-      // vs "upgrade" based on whether there's a session.
-      code: res.status === 401 || res.status === 402 || res.status === 429 ? 'rate_limited' : `http_${res.status}`,
-      message: body.message ?? text,
-      ...(res.status === 402 && body.upgradeUrl ? { upgradeUrl: body.upgradeUrl } : {}),
-    });
+    setPhase(errorPhaseFor(res.status, text, body));
     return null;
   }
 
@@ -148,6 +165,7 @@ export function useGeneration() {
     mesh?: GenerateRequest['mesh'],
     referenceImage?: GenerateRequest['referenceImage'],
     attachments?: GenerateRequest['attachments'],
+    turnstileToken?: string,
   ) => {
     controllerRef.current?.abort();
     const controller = new AbortController();
@@ -160,7 +178,11 @@ export function useGeneration() {
     });
 
     const body = await openGenerationStream(
-      { prompt, currentCode, mesh, referenceImage, ...(attachments?.length ? { attachments } : {}) },
+      {
+        prompt, currentCode, mesh, referenceImage,
+        ...(attachments?.length ? { attachments } : {}),
+        ...(turnstileToken ? { turnstileToken } : {}),
+      },
       controller.signal,
       setPhase,
     );
