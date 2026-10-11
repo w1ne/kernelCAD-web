@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { emptyIn, hole, limitsCover, mateBetween, mechHarness, near, overlap } from '../../../mech40/checks';
+import { emptyIn, fit, hole, limitsCover, mateBetween, mechHarness, near, overlap } from '../../../mech40/checks';
 
 export default mechHarness({
   parts: ['leafA', 'leafB'],
@@ -20,7 +20,7 @@ export default mechHarness({
         && b.full([5, 8, 0], [35, 27.8, 1.9]),
       'leaf A: outer knuckles and a Ø2 pin standing 2 mm proud': a.full([3, 24.2, 4.5], [11, 25.8, 5.6]) && a.full([33, 24.2, 4.5], [41, 25.8, 5.6])
         && a.full([0.2, 24.6, 2.6], [43.8, 25.4, 3.4]) && a.empty([18, 24.6, 4.3], [26, 25.4, 6]),
-      'leaf B: middle knuckle with a Ø2.4 bore': b.holes([hole(2.4, [20, 3, 3], [1, 0, 0])]) && b.full([16, 2.2, 4.5], [24, 3.8, 5.6]),
+      'leaf B: middle knuckle with a Ø2.4 bore': b.holes([fit(hole(2.4, [20, 3, 3], [1, 0, 0]))]) && b.full([16, 2.2, 4.5], [24, 3.8, 5.6]),
       'gaps: 5 mm between knuckles, 0.2 mm around the pin': gapEmpty([10.1, -3, 0.5], [14.9, -1.5, 5.5]) && gapEmpty([25.1, -3, 0.5], [29.9, -1.5, 5.5])
         && gapEmpty([16, -0.1, 4.02], [24, 0.1, 4.18]),
       'revolute mate between the leaves, 180° of travel': limitsCover(hinge, 180),

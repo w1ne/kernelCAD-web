@@ -16,7 +16,9 @@ export default mechHarness({
       'lid 100 × 70 × 2.5 resting on the rim': sizeNear(lid, [100, 70, 2.5])
         && near(lid.min[2], base.min[2] + 35) && near(lid.min[0], base.min[0]) && near(lid.min[1], base.min[1]),
       '2.5 mm walls': base.full([0, 20, 3], [2.4, 50, 34]) && base.empty([2.6, 20, 3], [4, 50, 35])
-        && base.full([20, 67.6, 3], [80, 70, 34]) && base.empty([20, 66, 3], [80, 67.4, 35]),
+        && base.full([20, 67.6, 3], [80, 70, 34]) && base.empty([20, 66, 3], [80, 67.4, 35])
+        && base.full([97.6, 20, 3], [100, 50, 34]) && base.empty([96, 20, 3], [97.4, 50, 35])
+        && base.full([20, 0, 3], [80, 2.4, 34]) && base.empty([20, 2.6, 3], [80, 4, 35]),
       '2.5 mm floor, open cavity': base.full([20, 20, 0], [80, 50, 2.4]) && base.empty([16, 2.6, 2.6], [84, 67.4, 35])
         && base.empty([2.6, 16, 2.6], [97.4, 54, 35]),
       'Ø10 bosses at the corners': bosses.every(([x, y]) => base.full([x + 1.6, y - 0.5, 3], [x + 4.8, y + 0.5, 34.9])),

@@ -69,9 +69,25 @@ export function volumeIn(l: LocalShape, lo: number, hi: number): boolean {
   return l.volume >= lo && l.volume <= hi;
 }
 
+/**
+ * Diameter tolerance of every mech40 hole spec (mm). Kernel hole detection
+ * reads the exact B-rep cylinder radius, so this is about the spec, not the
+ * measurement: the shared 0.1 mm position tolerance let a Ø4.4 hole pass a
+ * Ø4.5 clearance spec.
+ */
+export const HOLE_DIAMETER_TOL = 0.05;
+/** Diameter tolerance where the fit is the point (press seats, running and
+ *  pin clearances, nut-trap bolts): see `fit`. */
+export const FIT_DIAMETER_TOL = 0.02;
+
 /** Shorthand hole spec along an axis at a local point. */
 export function hole(diameter: number, at: Vec3, axis: Vec3 = [0, 0, 1], kind?: 'through' | 'blind', depth?: number): HoleSpec {
-  return { diameter, at, axis, ...(kind ? { kind } : {}), ...(depth !== undefined ? { depth } : {}) };
+  return { diameter, at, axis, diameterTol: HOLE_DIAMETER_TOL, ...(kind ? { kind } : {}), ...(depth !== undefined ? { depth } : {}) };
+}
+
+/** The hole spec with a fit-grade diameter tolerance. */
+export function fit(spec: HoleSpec, diameterTol: number = FIT_DIAMETER_TOL): HoleSpec {
+  return { ...spec, diameterTol };
 }
 
 /** ISO 68-1 minor diameter (the tap drill a threaded hole drills). */

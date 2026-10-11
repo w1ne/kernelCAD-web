@@ -11,7 +11,12 @@ export default mechHarness({
       'plate 80 × 40 × 5': sizeNear(p, [80, 40, 5]),
       'slot at x = 20: 6 wide, through': slotOpen(20),
       'slot at x = 60: 6 wide, through': slotOpen(60),
-      'round slot ends (corners of a 6 × 20 box stay solid)': p.full([10.05, 17.05, 0.5], [10.6, 17.6, 4.5]) && p.full([69.4, 22.4, 0.5], [69.95, 22.95, 4.5]),
+      'round slot ends (corners of a 6 × 20 box stay solid)': [20, 60].every((c) => [[-1, -1], [1, -1], [-1, 1], [1, 1]].every(([sx, sy]) => {
+        // The 0.55 mm square in each corner of the slot's 20 × 6 bounding box.
+        const x = sx < 0 ? c - 9.95 : c + 9.4;
+        const y = sy < 0 ? 17.05 : 22.4;
+        return p.full([x, y, 0.5], [x + 0.55, y + 0.55, 4.5]);
+      })),
       'solid beside and between the slots': p.full([0, 0, 0], [80, 16.5, 5]) && p.full([31, 0, 0], [49, 40, 5]),
       'volume ≈ 14 877 mm³ (±1%)': volumeIn(p, 14728, 15026),
     };

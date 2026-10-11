@@ -13,6 +13,7 @@ export default mechHarness({
     return {
       'envelope 93 × 64 × 30': sizeNear(p, [93, 64, 30]),
       '2 mm walls, 2 mm floor': p.full([0, 20, 3], [1.9, 44, 29]) && p.full([20, 62.1, 3], [80, 64, 29])
+        && p.full([55, 0.1, 3], [80, 1.9, 29]) && p.full([91.1, 2, 2], [93, 62, 5])
         && p.full([20, 20, 0], [60, 44, 1.9]) && p.empty([12, 12, 2.1], [60, 52, 30]),
       'standoffs Ø6 × 5 on the 58 × 49 pattern': standoffs.every(([x, y]) => p.full([x + 1.2, y - 0.4, 2.2], [x + 2.8, y + 0.4, 6.9]))
         && standoffs.every(([x, y]) => p.empty([x - 3, y - 3, 7.1], [x + 3, y + 3, 29])),
