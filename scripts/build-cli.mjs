@@ -51,6 +51,8 @@ await esbuild.build({
 
 copyFileSync('node_modules/replicad-opencascadejs/src/replicad_single.wasm', 'dist/cli/replicad_single.wasm');
 copyDir('src/agent/skills', 'dist/cli/skills');
+// Bundling relocates profiles.ts beside index.js; its material files must follow it.
+copyDir('src/kernel/export/gcode/profiles', 'dist/cli/profiles');
 mkdirSync('dist/cli/fonts', { recursive: true });
 copyFileSync('src/shared/fonts/LiberationSans-Regular.ttf', 'dist/cli/fonts/LiberationSans-Regular.ttf');
 copyFileSync('src/shared/fonts/LICENSE-FONTS.md', 'dist/cli/fonts/LICENSE-FONTS.md');

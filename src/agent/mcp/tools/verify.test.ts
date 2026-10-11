@@ -14,6 +14,7 @@ vi.mock('./checkReachable', () => ({ checkReachableTool: vi.fn(async () => 'reac
 vi.mock('./checkMountingHoleConsistency', () => ({ checkMountingHoleConsistencyTool: vi.fn(async () => 'mounting') }));
 vi.mock('./checkLoadCapacity', () => ({ checkLoadCapacityTool: vi.fn(async () => 'load') }));
 vi.mock('./checkStaticHold', () => ({ checkStaticHoldTool: vi.fn(async () => 'static-hold') }));
+vi.mock('./checkFastenerInstallation', () => ({ checkFastenerInstallationTool: vi.fn(async () => 'fastener-installation') }));
 vi.mock('./checkBodyLikeness', () => ({ checkBodyLikenessTool: vi.fn(async () => 'body-likeness') }));
 
 import { verifyTool, type VerifyCheck } from './verify';
@@ -27,6 +28,7 @@ import { checkMountingHoleConsistencyTool } from './checkMountingHoleConsistency
 import { checkLoadCapacityTool } from './checkLoadCapacity';
 import { checkStaticHoldTool } from './checkStaticHold';
 import { checkBodyLikenessTool } from './checkBodyLikeness';
+import { checkFastenerInstallationTool } from './checkFastenerInstallation';
 
 const ROUTES: Array<[VerifyCheck, ReturnType<typeof vi.fn>, string]> = [
   ['assembly', validateAssemblyTool as never, 'assembly'],
@@ -38,6 +40,7 @@ const ROUTES: Array<[VerifyCheck, ReturnType<typeof vi.fn>, string]> = [
   ['mounting-holes', checkMountingHoleConsistencyTool as never, 'mounting'],
   ['load-capacity', checkLoadCapacityTool as never, 'load'],
   ['static-hold', checkStaticHoldTool as never, 'static-hold'],
+  ['fastener-installation', checkFastenerInstallationTool as never, 'fastener-installation'],
   ['body-likeness', checkBodyLikenessTool as never, 'body-likeness'],
 ];
 
@@ -55,6 +58,12 @@ describe('verify dispatcher', () => {
     const arg = (checkReachableTool as unknown as ReturnType<typeof vi.fn>).mock.calls[0][0];
     expect(arg).toEqual({ code: 'SRC', tip_link: 'hand', extra: 7 });
     expect(arg).not.toHaveProperty('check');
+  });
+
+  it('forwards explicit fastener stations and tolerances unchanged', async () => {
+    const params = { code: 'SRC', fasteners: [{ part: 'screw', against: ['plate'], engagementPart: 'nut', minEngagementMm: 2, maxProtrusionMm: 1 }], toleranceMm: .02, angleToleranceDeg: .5 };
+    await verifyTool({ check: 'fastener-installation', ...params });
+    expect(checkFastenerInstallationTool).toHaveBeenCalledWith(params);
   });
 
   it('throws an actionable error on an unknown check', async () => {

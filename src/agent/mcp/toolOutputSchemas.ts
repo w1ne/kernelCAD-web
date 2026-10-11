@@ -279,6 +279,39 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
     type: 'object',
     properties: {
       ok: { type: 'boolean', description: 'Whether the verification ran and passed its gate.' },
+      source: { type: 'string', description: "fastener-installation: local geometry evidence." },
+      assembly: { type: ['string', 'null'], description: 'Audited lowered assembly.' },
+      status: { type: 'string', description: 'fastener-installation: pass, fail, partial, or no-coverage; partial/zero coverage cannot pass.' },
+      counts: {
+        type: 'object',
+        properties: {
+          requested: { type: 'integer', minimum: 0 }, measured: { type: 'integer', minimum: 0 },
+          passed: { type: 'integer', minimum: 0 }, failed: { type: 'integer', minimum: 0 }, unknown: { type: 'integer', minimum: 0 },
+        },
+        required: ['requested', 'measured', 'passed', 'failed', 'unknown'], additionalProperties: false,
+      },
+      stations: {
+        type: 'array', description: 'Explicit fastener-installation stations only; no whole-assembly certification.',
+        items: {
+          type: 'object',
+          properties: {
+            part: { type: 'string' }, against: { type: 'array', items: { type: 'string' } },
+            engagementPart: { type: ['string', 'null'] }, catalogId: { type: ['string', 'null'] },
+            status: { type: 'string', enum: ['pass', 'fail', 'partial'] },
+            metrics: {
+              type: 'array', items: {
+                type: 'object', properties: {
+                  name: { type: 'string' }, part: { type: ['string', 'null'] },
+                  status: { type: 'string', enum: ['pass', 'fail', 'unknown', 'not-applicable'] },
+                  value: { type: ['number', 'null'] }, unit: { type: 'string', enum: ['mm', 'deg'] },
+                  limit: { type: ['number', 'null'] }, basis: { type: 'string' }, repairHint: { type: ['string', 'null'] },
+                }, required: ['name', 'part', 'status', 'value', 'unit', 'limit', 'basis', 'repairHint'], additionalProperties: false,
+              },
+            },
+          }, required: ['part', 'against', 'engagementPart', 'catalogId', 'status', 'metrics'], additionalProperties: false,
+        },
+      },
+      limitations: { type: 'array', items: { type: 'string' }, description: 'Coverage and physical limitations of the geometry audit.' },
       diagnostics: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Verifier diagnostics (most checks).' },
       error: { type: 'string', description: 'Failure message (present on failure).' },
       errorCode: { type: 'string' },
@@ -752,6 +785,19 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
       byte_count: { type: 'number', description: "target:'model' — file size in bytes." },
       feature_count: { type: 'number' },
       format: { type: 'string' },
+      gcode_stats: {
+        type: 'object',
+        description: 'G-code only: slicer predictions and generator identity reported by artifact comments; not physical measurements.',
+        properties: {
+          slicer: { type: 'object', properties: { name: { type: 'string', enum: ['OrcaSlicer', 'PrusaSlicer'] }, version: { type: 'string' } }, required: ['name', 'version'], additionalProperties: false },
+          estimatedPrintTimeSeconds: { type: 'number', minimum: 0 },
+          filamentUsedGrams: { type: 'number', minimum: 0 },
+          filamentUsedMeters: { type: 'number', minimum: 0 },
+          layerCount: { type: 'integer', minimum: 0 },
+          maxZMm: { type: 'number', minimum: 0 },
+        },
+        additionalProperties: false,
+      },
       mesh_files: { type: 'array', items: { type: 'string' }, description: 'Per-link mesh files: meshes/<part>.stl for urdf/sdf-gazebo, meshes/<part>.usda mesh layers for usd-isaac.' },
       part_files: { type: 'array', items: { type: 'string' }, description: "Per-part DXF files: parts/<part>.dxf for a multi-part dxf export (layout 'per-part', the default)." },
       written: { type: 'array', items: { type: 'object', additionalProperties: true }, description: "target:'part' — per-part export records." },

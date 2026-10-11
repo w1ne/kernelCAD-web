@@ -25,6 +25,11 @@ import {
   type DocsModelManifest,
 } from './docsModels';
 
+import { TOOLS, type McpToolDefinition } from '../../src/agent/mcp/toolRegistry';
+import { CONNECT_CLIENTS } from '../../src/studio/connect/connectClients';
+import { loadSnippets } from '../../src/agent/cookbook/loader';
+import { buildMcpReference, buildDesignGuide, type GuideEntry } from '../../src/docs/workflowDocs';
+
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
 /**
@@ -93,6 +98,8 @@ function shell(title: string, description: string, body: string, accent: string,
       </a>
       <div class="nav-links">
         <a href="/docs/">docs</a>
+        <a href="/docs/mcp-tools">MCP</a>
+        <a href="/docs/design-guide">design guide</a>
         <a href="/gallery">gallery</a>
         <a class="app-link" href="https://app.kernelcad.com">app ↗</a>
         <a href="https://github.com/w1ne/kernelCAD-web">github</a>
@@ -105,6 +112,8 @@ ${body}
     <footer class="footer">
       <div>kernelCAD · MIT</div>
       <div class="footer-links">
+        <a href="/docs/mcp-tools">MCP tools</a>
+        <a href="/docs/design-guide">design guide</a>
         <a href="/terms.html">terms</a>
         <a href="/privacy.html">privacy</a>
         <a href="https://github.com/w1ne/kernelCAD-web">github</a>
@@ -267,6 +276,8 @@ function renderIndex(pages: DocsPage[]): RenderedPage {
       <h1 class="docs-title">Script API</h1>
       <p class="docs-blurb">The kernelCAD script API, grouped by the task you're doing. Every page has
         an example you can edit and run.</p>
+      <p class="docs-note"><a href="/docs/mcp-tools">MCP tool reference and client setup</a> ·
+        <a href="/docs/design-guide">Search recipes and manufacturing guidance</a></p>
       <ul class="docs-cards">
 ${cards}
       </ul>
@@ -276,6 +287,128 @@ ${cards}
     </main>`;
 
   return { file: 'docs/index.html', html: shell('Script API — kernelCAD', 'The kernelCAD script API, with runnable examples that rebuild geometry in your browser.', body, 'blueprint', 'docs/index.html') };
+}
+
+
+/** Progressive search: every entry remains available when JavaScript is off. */
+const SEARCH_BOOTSTRAP = `
+(function () {
+  var input = document.querySelector('[data-workflow-search]');
+  var status = document.querySelector('[data-search-status]');
+  var entries = Array.from(document.querySelectorAll('[data-search-entry]'));
+  var texts = entries.map(function (entry) { return entry.textContent.toLowerCase(); });
+  input.hidden = false;
+  input.addEventListener('input', function () {
+    var words = input.value.toLowerCase().trim().split(/\\s+/).filter(Boolean);
+    var matched = 0;
+    var shown = 0;
+    entries.forEach(function (entry, index) {
+      var match = words.every(function (word) { return texts[index].includes(word); });
+      if (match) matched++;
+      var visible = match && (!words.length || shown < 50);
+      entry.hidden = !visible;
+      if (visible) shown++;
+    });
+    status.textContent = shown + ' shown of ' + matched + ' matching entries' +
+      (matched > shown ? ' — refine your search to see other matches.' : '.');
+  });
+})();
+`;
+
+function searchBox(label: string): string {
+  return `<label>${escapeHtml(label)} <input type="search" data-workflow-search hidden
+    aria-label="${escapeHtml(label)}" placeholder="Search names, descriptions, or fields" /></label>
+    <p data-search-status role="status">All entries are listed below. Browser Find also works without JavaScript.</p>
+    <style>.workflow-entry { margin: 1.5rem 0; }
+    .workflow-entry pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: .8rem; }
+    .workflow-entry summary { cursor: pointer; }
+    [data-workflow-search] { width: min(100%, 32rem); padding: .6rem; }</style>`;
+}
+
+/** Public reference is the local registry; hosted discovery has a separate contract. */
+export function renderMcpReferencePage(tools: readonly McpToolDefinition[] = TOOLS): RenderedPage {
+  const clients = CONNECT_CLIENTS.map(client =>
+    `<li><a href="https://app.kernelcad.com/connect?client=${escapeHtml(client.id)}">${escapeHtml(client.label)}</a></li>`,
+  ).join('\n');
+  const entries = buildMcpReference(tools).tools.map(tool => `<section class="workflow-entry" data-search-entry>
+    <h2 class="docs-h2" id="${escapeHtml(tool.name)}"><code>${escapeHtml(tool.name)}</code></h2>
+    <p>${escapeHtml(tool.description)}</p>
+    <details><summary>Input schema</summary><pre>${escapeHtml(JSON.stringify(tool.inputSchema, null, 2))}</pre></details>
+    ${tool.outputSchema ? `<details><summary>Output schema</summary><pre>${escapeHtml(JSON.stringify(tool.outputSchema, null, 2))}</pre></details>` : ''}
+    ${tool.annotations ? `<details><summary>Behavior annotations</summary><pre>${escapeHtml(JSON.stringify(tool.annotations, null, 2))}</pre></details>` : ''}
+  </section>`).join('\n');
+  const body = `<main class="docs-main">
+    <p class="docs-crumb"><a href="/docs/">docs</a> / MCP tools</p>
+    <h1 class="docs-title">Local MCP tools</h1>
+    <p class="docs-blurb">${tools.length} tools from the local kernelCAD MCP registry. Input and output schemas and
+      behavior annotations below are generated from the same definitions the server discovers.</p>
+    <p class="docs-note">Scope: local <code>kernelcad mcp</code>. Hosted tool discovery depends on authentication,
+      the selected profile, and server-native tools; this page does not promise the hosted tool set.
+      Ask your connected server for its current tools.</p>
+    <p><a href="/docs/mcp-tools.json" download>Download the complete local contract (JSON)</a> ·
+      <a href="/docs/design-guide">Design guide</a> · <a href="/docs/workflows">Short workflow demos</a></p>
+    <h2 class="docs-h2">Connect your client</h2>
+    <p>Use the existing sign-in and setup guide for your client:</p><ul>${clients}</ul>
+    <p>For a local stdio server, use <code>npx -y kernelcad mcp</code> in your client's MCP configuration.</p>
+    ${searchBox('Search local tools')}
+    ${entries}
+  </main><script>${SEARCH_BOOTSTRAP}</script>`;
+  return { file: 'docs/mcp-tools.html', html: shell('Local MCP tools — kernelCAD', 'Search the local MCP tool contract, schemas and client setup.', body, 'blueprint', 'docs/mcp-tools.html') };
+}
+
+function readDesignGuide(): GuideEntry[] {
+  const root = path.join(REPO_ROOT, 'src/agent/skills/kernelcad-shopcheck/catalogs');
+  const json = (file: string) => JSON.parse(readFileSync(path.join(root, file), 'utf8'));
+  return buildDesignGuide(
+    loadSnippets(path.join(REPO_ROOT, 'cookbook/snippets'), path.join(REPO_ROOT, 'cookbook/tags.json')),
+    json('vendors/sendcutsend/rules.json'), json('vendors/sendcutsend/catalog.json'), json('sources-manifest.json'),
+  );
+}
+
+export function renderDesignGuidePage(entries: readonly GuideEntry[] = readDesignGuide()): RenderedPage {
+  const content = entries.map(entry => `<section class="workflow-entry" data-search-entry>
+    <h2 class="docs-h2" id="${escapeHtml(entry.id)}">${escapeHtml(entry.title)}</h2>
+    <p>${escapeHtml(entry.kind)} · ${escapeHtml(entry.summary)}</p>
+    <p>${entry.keywords.map(escapeHtml).join(' · ')}</p>
+    <p><a href="${escapeHtml(entry.sourceUrl)}">${entry.kind === 'recipe' ? 'Recipe source' : 'Versioned catalog source'}</a>
+      ${entry.snapshotDate ? ` · Snapshot: ${escapeHtml(entry.snapshotDate)}. Recheck the vendor before ordering.` : ''}</p>
+    ${entry.sourceUrls ? `<p>Snapshot source pages: ${entry.sourceUrls.map(url => `<a href="${escapeHtml(url)}">${escapeHtml(url)}</a>`).join(' · ')}</p>` : ''}
+    <details><summary>${entry.kind === 'recipe' ? 'Recipe code' : entry.kind === 'material' ? 'Stocked thicknesses and services (snapshot)' : 'Recorded rule and limits'}</summary>
+      <pre>${escapeHtml(entry.content)}</pre></details>
+  </section>`).join('\n');
+  const body = `<main class="docs-main">
+    <p class="docs-crumb"><a href="/docs/">docs</a> / Design guide</p>
+    <h1 class="docs-title">Design guide</h1>
+    <p class="docs-blurb">Find native cookbook recipes, recorded shop checks, and material catalog snapshots.
+      Read the source, adapt the recipe, and verify your model before manufacture.</p>
+    <p class="docs-note">Agents can use the existing <a href="/docs/mcp-tools#lookup_cookbook"><code>lookup_cookbook</code></a>
+      tool to retrieve recipes. Shop rows are dated snapshots of our local rule/catalog data,
+      not current vendor acceptance or a guarantee of manufacturing suitability.</p>
+    <p><a href="/docs/mcp-tools">MCP tool reference and setup</a> · <a href="/docs/workflows">Short workflow demos</a></p>
+    ${searchBox('Search design guidance')}
+    ${content}
+  </main><script>${SEARCH_BOOTSTRAP}</script>`;
+  return { file: 'docs/design-guide.html', html: shell('Design guide — kernelCAD', 'Search native cookbook recipes and dated manufacturing guidance.', body, 'copper', 'docs/design-guide.html') };
+}
+
+/** Native playback for short demonstrations captured from executed workflows. */
+export function renderWorkflowDemosPage(): RenderedPage {
+  const demos = [
+    ['reference-and-setup', 'Discover tools and connect', 'Search the local contract, open its exact arguments, then use the existing client setup. The reference is a local preview; the Claude setup is a public website readback.'],
+    ['design-guidance', 'Retrieve guidance and check geometry', 'Find an existing recipe, retain dated manufacturing sources, evaluate it, and inspect its actual mesh. Guidance retrieval is separate from geometry verification.'],
+    ['gcode-estimates', 'Export G-code with slicer predictions', 'Executed OrcaSlicer 2.4.2 export: retained G-code and structured estimated time/material. No printer contacted.'],
+    ['fastener-installation', 'Find and repair a fastener installation fault', 'Audit explicit stations on actual BREP geometry, repair a lifted screw, rerun the measurements, and retain source, STEP, drawing and reports. Simplified threads do not certify torque, preload or strength.'],
+  ];
+  const body = `<main class="docs-main"><p class="docs-crumb"><a href="/docs/">docs</a> / workflow demos</p>
+    <h1 class="docs-title">Agent workflow demos</h1>
+    <p>Short replays of actual local captures and tool results. Source changes and local tests do not prove a hosted release or physical acceptance.</p>
+    ${demos.map(([id, title, description]) => `<section><h2 class="docs-h2">${escapeHtml(title)}</h2>
+      <p>${escapeHtml(description)}</p><video controls preload="none" style="width:100%;height:auto" src="/demos/agent-workflows/${escapeHtml(id)}.mp4"></video>
+      <p><a href="/demos/agent-workflows/${escapeHtml(id)}.mp4">Open video</a></p></section>`).join('')}
+    <p><a href="/demos/agent-workflows/fastener-evidence.zip" download>Download the fastener source, STEP, drawing and reports</a></p>
+    <p><a href="/docs/mcp-tools">Exact tool schemas and client setup</a> · <a href="/docs/design-guide">Design guide</a></p>
+  </main>`;
+  return { file: 'docs/workflows.html', html: shell('Agent workflow demos — kernelCAD', 'Short demonstrations of tool discovery, design guidance and manufacturing evidence.', body, 'blueprint', 'docs/workflows.html') };
 }
 
 /**
@@ -295,6 +428,9 @@ export async function renderDocsSite(
   });
   return [
     renderIndex(pages),
+    renderMcpReferencePage(),
+    renderDesignGuidePage(),
+    renderWorkflowDemosPage(),
     ...pages.map((page, index) => renderPage(page, index, highlighter, models?.get(page.slug))),
   ];
 }
@@ -323,6 +459,7 @@ async function main(): Promise<void> {
   for (const page of rendered) {
     writeFileSync(path.join(REPO_ROOT, 'site', page.file), page.html);
   }
+  writeFileSync(path.join(REPO_ROOT, 'site/docs/mcp-tools.json'), JSON.stringify(buildMcpReference(TOOLS), null, 2) + '\n');
   console.log(`✓ site/docs — ${rendered.length} pages, ${models.size} prebaked models`);
 }
 

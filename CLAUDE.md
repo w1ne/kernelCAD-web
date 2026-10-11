@@ -1,5 +1,13 @@
 # Repo conventions for Claude Code agents working in kernelCAD-web
 
+## Every feature and tool
+
+Follow [AGENTS.md](AGENTS.md): check current comparable websites and the existing
+kernelCAD website before implementation, update discovery/docs, and produce and
+visually inspect a short MP4 demonstration for every new or materially changed
+feature/tool. This expands the release-only demo rule below. Keep dated competitor
+comparisons private; retain source, verification and truthful demo provenance.
+
 ## Deployment
 
 Before deploying anything, read `docs/DEPLOY.md`. Short version: one trunk

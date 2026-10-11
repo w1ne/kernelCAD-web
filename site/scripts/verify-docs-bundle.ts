@@ -28,11 +28,12 @@ const SITE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 /**
  * What one docs page costs a first-time reader before they can see and rotate
  * the model, gzipped — which is how everything is served, so it is the honest
- * unit. The viewer is eager: the island loads on every visit, so its bytes are
- * on this path, not off it.
+ * unit. Runnable example pages eagerly load the viewer; static reference and
+ * index pages do not. Count the viewer and model only when the HTML references
+ * them, without exempting any page from the budget.
  *
- * Per page: the HTML, the two stylesheets, the island bundle, and this page's
- * own prebaked model. The 11 MB kernel is NOT here — it stays behind Run, and a
+ * Per page: the HTML, the two stylesheets, any referenced island bundle, and
+ * any referenced prebaked model. The 11 MB kernel is NOT here — it stays behind Run, and a
  * reader who never edits never fetches it.
  *
  * The budget sits just above the current worst page (~166.8 KB, curves &
@@ -51,8 +52,18 @@ function gzippedBytes(file: string): number {
  * The critical-path budget. Fails the build if any page's first-view payload
  * exceeds `PER_PAGE_BUDGET`, so the win this branch bought cannot silently rot.
  */
+export function docsPagePayloadBytes(
+  html: string,
+  sizes: { html: number; styles: number; viewer: number; model: number },
+): number {
+  return sizes.html + sizes.styles +
+    (html.includes('/docs-island.js') ? sizes.viewer : 0) +
+    (html.includes('data-docs-model=') ? sizes.model : 0);
+}
+
 function verifyBudget(failures: string[]): { worst: number; page: string } {
-  const shared = gzippedBytes('docs-island.js') + gzippedBytes('docs.css') + gzippedBytes('style.css');
+  const styles = gzippedBytes('docs.css') + gzippedBytes('style.css');
+  const viewer = gzippedBytes('docs-island.js');
 
   let worst = 0;
   let worstPage = '';
@@ -62,7 +73,9 @@ function verifyBudget(failures: string[]): { worst: number; page: string } {
     const model = existsSync(modelFile)
       ? gzipSync(readFileSync(modelFile), { level: 9 }).length
       : 0;
-    const total = shared + gzippedBytes(`docs/${html}`) + model;
+    const total = docsPagePayloadBytes(readFileSync(path.join(SITE, 'docs', html), 'utf8'), {
+      html: gzippedBytes(`docs/${html}`), styles, viewer, model,
+    });
     if (total > worst) {
       worst = total;
       worstPage = slug;
@@ -171,4 +184,5 @@ function main(): void {
   );
 }
 
-main();
+// Keep imports side-effect free so the payload gate can be regression-tested.
+if (import.meta.url === `file://${process.argv[1]}`) main();

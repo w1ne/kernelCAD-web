@@ -26,6 +26,7 @@ import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic'
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
 import { validateOutputPath } from '../../script-runtime/safeOutputPath';
 import { loadMcpScriptSource } from '../runMcpScript';
+import type { GcodeStats } from '../../../kernel/export/gcode/gcodeHeaderParser';
 import type { StressInfillReport } from '../../script-runtime/stressInfillExport';
 import { infillOutput, withInfillOutDir, type StressInfillImages } from './stressInfillRenders';
 
@@ -65,6 +66,8 @@ export interface ExportModelOutput {
   /** dxf of a flat or sheet-metal part: sheet thickness (mm) and bend count,
    *  which the DXF itself does not carry. */
   sheet?: { thickness_mm: number; bend_count: number };
+  /** Slicer predictions and generator identity from the retained G-code header. */
+  gcode_stats?: GcodeStats;
   diagnostics?: CompilerDiagnostic[];
   error?: string;
 }
@@ -222,6 +225,7 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
     ...companionFilesField(format, meshFiles),
     ...(result.drawingReport === undefined ? {} : { drawing_report: result.drawingReport }),
     ...(result.sheet === undefined ? {} : { sheet: { thickness_mm: result.sheet.thicknessMm, bend_count: result.sheet.bendCount } }),
+    ...(format === 'gcode' && errorDiagnostics.length === 0 && result.gcodeStats !== undefined && Object.keys(result.gcodeStats).length > 0 ? { gcode_stats: result.gcodeStats } : {}),
     ...infill,
     diagnostics: withNextActions(diagnostics),
   };

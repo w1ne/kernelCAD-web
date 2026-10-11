@@ -785,3 +785,28 @@ After authoring a multi-part assembly, run before reporting done:
 - `kernelcad-params` — pose ParamRefs drive mate angles reactively.
 - `kernelcad-features` — features apply per part inside the assembly the same way as standalone Shapes.
 - `kernelcad-mcp` — `inspect({ of: 'assemblies' })` inspects captured intent without re-evaluating.
+
+### Explicit fastener installation audit
+
+After placing catalog screws, run `verify({ check: 'fastener-installation', file,
+fasteners: [{ part: 'left-screw', against: ['left-washer', 'l-bracket', 'base'],
+engagementPart: 'left-nut', minEngagementMm: 2.3, maxProtrusionMm: 1.2 }] })`.
+Use assembly part names, list every clearance target, and declare the receiver
+separately. Linear/angle tolerances default to 0.05 mm / 1 degree.
+
+The tool joins hash-bound imported catalog dimensions/interfaces to the actual
+lowered assembly shapes and solved poses. It measures trimmed annular head
+bearing gap, each target's cylindrical bore diameter, coaxial offset, tilt and
+axial overlap, then receiver geometric engagement and tip protrusion. A wall
+contact cannot seat the head. Each metric carries numeric values, evidence basis
+and repair hints. `ok` is true only for supported, measured passing stations;
+`partial`/unknown and `no-coverage` require follow-up. Unlisted screws are outside
+coverage. Unsupported heads, manual geometry, breached/ambiguous or blind bores
+remain unknown. Simplified threads do not certify thread contact, strength,
+torque, preload or physical installation; declared overlap/protrusion limits are
+geometric requirements.
+
+Runnable repair example: `examples/fastener-installation/l-bracket-mount.kcad.ts`.
+Generate its four catalog envelopes with `npx tsx
+scripts/generateFastenerInstallationCatalog.ts assets/parts`, audit both screw
+stations, then change `liftedHeadMm` from 1.5 to 0 and repeat the same audit.
