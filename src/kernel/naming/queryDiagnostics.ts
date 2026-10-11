@@ -112,6 +112,23 @@ export function throwQueryUnknownLabel(
   );
 }
 
+/** `withFeatureName("<owner>")` — the owner of an `@kc[<owner>/face/<label>]`
+ *  ref — names no feature in the scene. Same code as an unknown createdBy Id. */
+export function throwQueryUnknownOwner(
+  _query: Query<unknown>,
+  scene: QueryScene,
+  owner: string,
+  known: readonly string[],
+): never {
+  const knownList = known.slice(0, 10).join(', ');
+  throw new KernelError(
+    'query.unknown-id',
+    `the owner '${owner}' (withFeatureName("${owner}")) names no feature in the scene.`,
+    scene.featureId,
+    `Owners in scope: ${knownList}${known.length > 10 ? ', ...' : ''}. The owner is a feature name given with { name: '<owner>' } (e.g. hole(face, { ..., name: 'hA' })) or a feature id as printed by inspect (box_1, hole_2) — not a script variable name.`,
+  );
+}
+
 export function throwQueryIdHierarchyClash(
   name: string,
   existingOp: string,
