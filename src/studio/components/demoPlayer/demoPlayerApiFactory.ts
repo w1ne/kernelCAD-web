@@ -15,7 +15,7 @@ import type { ReferenceImageMetadata } from '../../../shared/intent/referenceIma
 import type { RenderEnvironmentSpec } from '../../../shared/intent/renderEnvironmentRecord';
 import type { CameraTargetMetadata } from '../../../shared/intent/cameraTargetRecord';
 import { applyEnvironment } from '../../../shared/render/environment';
-import { hasMetallicMaterial, installMetalRoomEnvironment } from './metalRoomEnvironment';
+import { installDefaultRoomEnvironment } from './defaultRoomEnvironment';
 import { buildMaterialFromPBR, disposeMaterialDeep, DEFAULT_MESH_COLOR } from './buildMaterialFromPBR';
 import { buildReferenceImagePlane } from './buildReferenceImagePlane';
 import { fitDistanceForBounds } from './cameraFit';
@@ -799,10 +799,14 @@ function applyGlassEnvironmentIfNeeded(
   });
   const effectiveEnv: RenderEnvironmentSpec | null =
     renderEnvSpec ?? (anyGlass ? { preset: 'studio' } : null);
-  // Metals reflect only the environment: with none they render near-black.
-  // Same idea as the glass fallback, but with the synchronous procedural
-  // room so a default render stays deterministic.
-  const anyMetal = effectiveEnv === null && hasMetallicMaterial(geometryFeatures);
+  // No declared environment: light every default render with the same
+  // synchronous procedural room (deterministic, no .hdr download). Metals
+  // reflect only the environment, so without it they render near-black —
+  // but installing it only when a metal was on screen made every OTHER part
+  // ~3–4× brighter in that render (an ABS box read RGB ~30 alone and ~120
+  // next to a steel part). One environment for all default renders keeps a
+  // finish's brightness independent of what else is in the scene.
+  const defaultRoom = effectiveEnv === null;
 
   // Apply HDRI / IBL environment if the script declared one (or if the
   // auto-glass fallback above kicked in). Async, but we don't await —
@@ -815,7 +819,7 @@ function applyGlassEnvironmentIfNeeded(
       ctx.renderer.render(ctx.scene, ctx.camera);
     });
     // applyEnvironment(null) clears synchronously, before its first await.
-    if (anyMetal) installMetalRoomEnvironment(ctx.renderer, ctx.scene);
+    if (defaultRoom) installDefaultRoomEnvironment(ctx.renderer, ctx.scene);
   } catch (e) {
     console.warn(
       '[kernelcad] applyEnvironment failed; glass will render flat:',
