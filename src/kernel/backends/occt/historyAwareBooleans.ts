@@ -238,7 +238,11 @@ export function booleanShapesWithHistory(
   const inputVolumes = inputs.map((s) => volumeOf(oc, s));
   for (const plan of recoveryPlans(op, combinedDiagonal(oc, inputs))) {
     const retry = attemptBoolean(oc, op, inputs, plan, inputVolumes);
-    if (retry.ok) return { ...retry.result, exactFailure: exact.error };
+    if (retry.ok) {
+      // The invalid exact result is no longer the answer of last resort.
+      if (exact.fallback) freeShape(exact.fallback.shape);
+      return { ...retry.result, exactFailure: exact.error };
+    }
   }
   if (exact.fallback) return exact.fallback;
   throw new Error(`${exact.error} Fuzzy-boolean retries (scaled fuzzy value, coarse fuzzy${op === 'fuse' ? ', glue' : ''}) also failed.`);
@@ -322,13 +326,26 @@ function judgeRecovered(
   let candidate = result;
   if (!isValidShape(oc, candidate.shape)) {
     const fixed = fixRecoveredResult(oc, candidate, plan.fuzzy);
+    freeShape(result.shape); // rejected, or superseded by the fixed copy
     if (!fixed) return { ok: false, error: `${plan.strategy} result invalid after ShapeFix` };
     candidate = fixed;
   }
   if (!plausibleBooleanVolume(op, volumeOf(oc, candidate.shape), inputVolumes)) {
+    freeShape(candidate.shape);
     return { ok: false, error: `${plan.strategy} result volume implausible` };
   }
   return { ok: true, result: candidate };
+}
+
+/** Delete a TopoDS_Shape handle that is not returned to anyone (a rejected
+ *  attempt). Wrappers are reference-counted handles: freeing one never
+ *  frees geometry another live handle still holds. */
+function freeShape(shape: unknown): void {
+  try {
+    (shape as { delete?: () => void } | undefined)?.delete?.();
+  } catch {
+    // already freed / poisoned heap
+  }
 }
 
 /** ShapeFix the result and carry the history across: sub-shapes ShapeFix
@@ -339,7 +356,10 @@ function fixRecoveredResult(
   fuzzy: number,
 ): BooleanHistoryResult | undefined {
   const fixedShape = shapeFix(oc, result.shape, Math.max(fuzzy, 1e-7));
-  if (!fixedShape || !isValidShape(oc, fixedShape)) return undefined;
+  if (!fixedShape || !isValidShape(oc, fixedShape)) {
+    freeShape(fixedShape);
+    return undefined;
+  }
   const hashOf = (s: unknown) => shapeHash(oc, s);
   const tol = Math.max(fuzzy * 10, 1e-6);
   const faceRemap = rematchSubshapes(oc, result.shape, fixedShape, 'face', hashOf, tol);

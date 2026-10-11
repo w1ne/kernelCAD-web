@@ -7,6 +7,7 @@ import { OcctBackend } from '../../../../kernel/backends/occt/occtBackend';
 import { draftWithHistory } from '../../../../kernel/backends/occt/draftWithHistory';
 import { pickFace } from '../../../../kernel/backends/occt/edgeSelection';
 import {
+  discardOcctShape,
   mergeEdgeFeatureHistory,
   shellWithHistory,
 } from '../../../../kernel/backends/occt/historyAwareEdgeFeatures';
@@ -86,7 +87,8 @@ export function lowerShell(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
 
 function shellBuilds(base: OcctBackend, faces: { hash: string }[], thickness: number): boolean {
   try {
-    shellWithHistory(base, faces, thickness);
+    // A probe: only whether it builds matters; free the solid.
+    discardOcctShape(shellWithHistory(base, faces, thickness).shape);
     return true;
   } catch {
     return false;

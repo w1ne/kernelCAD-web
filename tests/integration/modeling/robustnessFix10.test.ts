@@ -13,7 +13,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { initOcct, OcctBackend } from '../../../src/kernel/backends/occt/occtBackend';
 import { shellWithHistory } from '../../../src/kernel/backends/occt/historyAwareEdgeFeatures';
 import { intersectWithHistory } from '../../../src/kernel/backends/occt/historyAwareBooleans';
-import { volumeOf } from '../../../src/kernel/backends/occt/booleanRecovery';
+import { isValidShape, volumeOf } from '../../../src/kernel/backends/occt/booleanRecovery';
 import { buildModel } from '../../../src/modeling/buildModel';
 import { probeMaxFeasible, floorToReadable } from '../../../src/modeling/backends/occt/lowerers/feasibilityProbe';
 import { shellFailureDiagnostic } from '../../../src/modeling/backends/occt/lowerers/shellDraft';
@@ -138,6 +138,21 @@ describe('FIX-10 shell after fillet-all', () => {
     // Bounding box unchanged.
     const bb = shelled.boundingBox();
     expect(bb.max[2] - bb.min[2]).toBeCloseTo(30, 2);
+  }, 180_000);
+
+  it('cylinder(30, 20).fillet(4).shell(1.5, top): an invalid thick-solid result falls through to the valid fallback', async () => {
+    // MakeThickSolid reports IsDone here but BRepCheck rejects the solid; it
+    // used to be returned as-is with no diagnostic.
+    const outer = (await build(`return cylinder(30, 20).fillet(4);`)).tailShape!;
+    const m = await build(`return cylinder(30, 20).fillet(4).shell(1.5, { face: 'top' });`);
+    expect(m.diagnostics.filter((d) => d.severity === 'error'), JSON.stringify(m.diagnostics)).toEqual([]);
+    expect(m.diagnostics.map((d) => d.code)).toContain('feature.shell.boolean-fallback');
+    const shelled = m.tailShape as OcctBackend;
+    expect(isValidShape(getOC(), (shelled.getReplicadShape() as unknown as { wrapped: unknown }).wrapped)).toBe(true);
+    expect(shelled.volume()).toBeGreaterThan(0);
+    expect(shelled.volume()).toBeLessThan(outer.volume() * 0.5);
+    const bb = shelled.boundingBox();
+    expect(bb.max[2] - bb.min[2]).toBeCloseTo(outer.boundingBox().max[2] - outer.boundingBox().min[2], 2);
   }, 180_000);
 
   it('a failing shell only suggests a thinner wall that was verified to build', () => {
