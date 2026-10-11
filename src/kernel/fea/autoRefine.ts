@@ -43,10 +43,13 @@ function solveInProcess(
   records: readonly FeatureRecord[] | undefined,
   opts: RefineFeaOptions,
 ): Promise<RunFeaResult> {
+  const timeoutMs = opts.inProcessSolveTimeoutMs ?? opts.solveTimeoutMs;
   return runInProcessFeaStudy(shape, declared, owner, records, {
     outDir: opts.outDir,
     ...(opts.paramTable !== undefined ? { paramTable: opts.paramTable } : {}),
-    ...(opts.solveTimeoutMs !== undefined ? { solveTimeoutMs: opts.solveTimeoutMs } : {}),
+    ...(timeoutMs !== undefined ? { solveTimeoutMs: timeoutMs } : {}),
+    ...(opts.inProcessOnTimeout !== undefined ? { onTimeout: opts.inProcessOnTimeout } : {}),
+    ...(opts.inProcessTargetElements !== undefined ? { targetElements: opts.inProcessTargetElements } : {}),
   });
 }
 
@@ -62,6 +65,13 @@ export interface RefineFeaOptions extends RunFeaOptions {
   solver?: FeaSolverChoice;
   /** Override for tests; default KERNELCAD_FEA_MAX_ELEMENTS. */
   elementBudget?: number;
+  /** CG budget for the in-process solver only (solveTimeoutMs also bounds
+   *  CalculiX, so a short gate budget must not go through it). */
+  inProcessSolveTimeoutMs?: number;
+  /** See InProcessFeaOptions.onTimeout. */
+  inProcessOnTimeout?: 'error' | 'unverified';
+  /** In-process brick target when the study gives no meshSize. */
+  inProcessTargetElements?: number;
 }
 
 const passRecord = (s: FeaSummary): FeaRefinementPass => ({

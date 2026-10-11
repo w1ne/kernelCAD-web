@@ -31,6 +31,20 @@
 // then pinning the study's meshSize to the trusted pass. A failing margin
 // stays an error either way. `KERNELCAD_FEA_GATE_REFINE=on` makes the gate
 // refine too, for CI or a host where the wall time is acceptable.
+//
+// WITHOUT CalculiX (the hosted case) the gate uses the in-process voxel
+// solver, which runs synchronously on the evaluate thread, so it gets a
+// short CG budget (GATE_IN_PROCESS_SOLVE_MS, KERNELCAD_FEA_GATE_SOLVE_MS
+// overrides) and a coarser default grid (GATE_IN_PROCESS_TARGET_ELEMENTS,
+// still at least two bricks through the thinnest extent). A solve that does not finish in it reports
+// `fea.safety-factor.unverified` (warn: neither passed nor failed) and names
+// the full-solve call; it is never blamed on the user's mesh size. The voxel
+// grid itself is capped at IN_PROCESS_MAX_ELEMENTS bricks, and a part too thin
+// to fit two bricks through under that cap is refused before any voxelizing,
+// so meshing is bounded too. Chosen over refusing the in-process solver at
+// the gate outright: a quick solve still catches a clearly violated margin
+// (the common case worth gating), and when it cannot finish, the result is
+// exactly as non-green as the old `fea.solver.unavailable`.
 
 import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -55,6 +69,17 @@ export interface FeaGateReport {
 /** `KERNELCAD_FEA_GATE=off` disables the evaluate-time solve. */
 function gateEnabled(): boolean {
   return (process.env.KERNELCAD_FEA_GATE ?? 'on').toLowerCase() !== 'off';
+}
+
+/** In-process CG budget for one gated study, ms. */
+export const GATE_IN_PROCESS_SOLVE_MS = 5_000;
+/** In-process brick target for a gated study without meshSize: about 1-2 s
+ *  of solve (the run_fea default, 6000, takes ~5 s on a thin cantilever). */
+export const GATE_IN_PROCESS_TARGET_ELEMENTS = 2_000;
+
+function gateInProcessSolveMs(): number {
+  const raw = Number(process.env.KERNELCAD_FEA_GATE_SOLVE_MS);
+  return Number.isFinite(raw) && raw > 0 ? raw : GATE_IN_PROCESS_SOLVE_MS;
 }
 
 /** `KERNELCAD_FEA_GATE_REFINE=on` lets the gate auto-refine. */
@@ -99,6 +124,9 @@ async function solveGatedStudy(
       outDir,
       paramTable: model.session.paramTable,
       refine: gateRefineEnabled(),
+      inProcessSolveTimeoutMs: gateInProcessSolveMs(),
+      inProcessOnTimeout: 'unverified',
+      inProcessTargetElements: GATE_IN_PROCESS_TARGET_ELEMENTS,
     });
     if (r.summary === undefined) return { diagnostics: r.diagnostics };
     return { diagnostics: markUnverifiedPass(r.diagnostics, r.summary, study), summary: r.summary };
