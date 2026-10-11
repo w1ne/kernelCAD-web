@@ -7,6 +7,7 @@
 /demo.mp4      /public/demo.mp4       200
 /demo-poster.png /public/demo-poster.png 200
 /demo.json     /public/demo.json      200
+/demos/*       /public/demos/:splat   200
 /gallery.json  /public/gallery.json   200
 /gallery/*     /public/gallery/:splat 200
 /favicon.svg   /public/favicon.svg    200
