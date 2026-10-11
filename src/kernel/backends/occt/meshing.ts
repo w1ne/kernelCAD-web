@@ -94,6 +94,44 @@ export const FINE_MESH_OPTIONS: MeshOptions = { tolerance: 0.1, angularTolerance
  */
 export const COARSE_MESH_OPTIONS: MeshOptions = { tolerance: 1.0, angularTolerance: 0.5 };
 
+/**
+ * Display linear deflection per mm of a shape's bounding-box diagonal.
+ *
+ * FINE's absolute 0.1 mm is right for a bracket and absurd for a car: a 4 m
+ * lofted hatchback body meshed to 508k triangles (48 MB of viewer JSON) and the
+ * published-mesh build ran past its memory cap. Scaling the sag with the part
+ * keeps it at 0.025 % of the part's size, so parts under ~400 mm are unchanged
+ * (the 0.1 mm floor binds) and a 4.7 m diagonal gets ~1.2 mm. The angular
+ * criterion (0.3 rad) is unchanged, so curvature is still resolved.
+ * Display only: file exports mesh through `meshShapeForExport` at full quality.
+ */
+export const DISPLAY_RELATIVE_DEFLECTION = 2.5e-4;
+/** Ceiling on the scaled display deflection (mm). */
+export const DISPLAY_MAX_DEFLECTION = 2;
+
+function shapeDiagonal(shape: unknown): number {
+  try {
+    if (!isRecord(shape)) return 0;
+    const bb = shape.boundingBox as { bounds?: unknown } | undefined;
+    const bounds = isRecord(bb) ? (bb as { bounds?: unknown }).bounds : undefined;
+    if (!Array.isArray(bounds) || bounds.length !== 2) return 0;
+    const [lo, hi] = bounds as [number[], number[]];
+    const d = Math.hypot(hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]);
+    return Number.isFinite(d) ? d : 0;
+  } catch {
+    return 0;
+  }
+}
+
+/** {@link FINE_MESH_OPTIONS} with the linear deflection scaled to the shape's
+ *  size ({@link DISPLAY_RELATIVE_DEFLECTION}). The default for `meshShape`. */
+export function displayMeshOptions(shape: unknown): MeshOptions {
+  const diagonal = shapeDiagonal(shape);
+  const scaled = Math.min(DISPLAY_MAX_DEFLECTION, diagonal * DISPLAY_RELATIVE_DEFLECTION);
+  if (!(scaled > FINE_MESH_OPTIONS.tolerance)) return FINE_MESH_OPTIONS;
+  return { ...FINE_MESH_OPTIONS, tolerance: scaled };
+}
+
 export function isRecord(value: unknown): value is UnknownRecord {
   return typeof value === 'object' && value !== null;
 }
@@ -689,16 +727,18 @@ function edgeGroupsToRanges(
  * Returns null if the shape has no valid face geometries (e.g. deleted,
  * non-record, or all faces fail to mesh).
  *
- * `options` controls tessellation quality. Defaults to {@link FINE_MESH_OPTIONS}
- * so existing single-pass callers are unchanged. Pass {@link COARSE_MESH_OPTIONS}
+ * `meshOptions` controls tessellation quality. Defaults to
+ * {@link displayMeshOptions}: FINE, with the linear deflection scaled up for
+ * parts larger than ~400 mm. Pass {@link COARSE_MESH_OPTIONS}
  * (or any looser {@link MeshOptions}) for a fast preview mesh.
  */
 export function meshShape(
   shape: unknown,
-  options: MeshOptions = FINE_MESH_OPTIONS,
+  meshOptions?: MeshOptions,
 ): MeshedShape | null {
   if (!isRecord(shape)) return null;
   if (shape.isDeleted) return null;
+  const options = meshOptions ?? displayMeshOptions(shape);
 
   const facesRaw = shape.faces;
   const faces = (() => {
