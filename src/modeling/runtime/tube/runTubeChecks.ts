@@ -4,7 +4,12 @@
 // Tube gate orchestrator. For every `tube` record of a built model:
 //
 //   - the bend and straight rules of the model's LAST `tubeSpec({...})`
-//     (or the defaults, with a `tube.spec.defaulted` warning),
+//     (or the defaults, with a `tube.spec.defaulted` warning), its numbers
+//     read through the param table, as overridden
+//     for the tube's system by the spec's `systems`, with a warning for a
+//     `systems` entry that names a system no tube has,
+//   - for a tube that branches off another tube: that the joint keeps the
+//     trunk's straights, leaves square and is no larger than the trunk,
 //   - that each end still sits on its port after the assembly is solved, that
 //     a part named by a plain end exists and the end touches it, and that no
 //     tube shape is carried by two parts,
@@ -13,6 +18,10 @@
 //
 // and one line report per tube: bend table, cut length, nearest neighbour,
 // mass, internal volume and a pressure-drop estimate.
+//
+// Resilience. The gate never throws. An exception in one tube's step becomes
+// an error `feature.kernel-failed` on that tube (a tube that could not be
+// checked must not read as a pass) and the other tubes are still checked.
 //
 // A tube that is not part of any assembly, and a script with no assembly at
 // all, still gets the path rules and a line report; its clearance has only
@@ -24,11 +33,15 @@ import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import { TUBE_SPEC_DEFAULTS, type TubeSpecMetadata } from '../../../shared/intent/tubeRecord';
 import { bendTableFromPath, type LraRow } from '../../../shared/tube/bendTable';
 import { pressureDropKPa, TUBE_FLUIDS } from '../../../shared/tube/pressureDrop';
+import type { ParamTable } from '../../../shared/runtime/paramTable';
 import type { V3 } from '../../../shared/tube/tubePath';
 import { tryResolveMaterial } from '../../properties/materialLibrary';
-import { checkTubeClearance, unusedPairWarnings, type NearestClearance } from './tubeClearance';
+import { checkBranchRules } from './tubeBranchRules';
+import { checkTubeClearance, systemsPresent, unusedPairWarnings, type NearestClearance } from './tubeClearance';
 import { checkEndParts, checkTubeParts } from './tubeEndParts';
-import { checkTubeRules, type TubeRuleSpec } from './tubeRules';
+import {
+  checkTubeRules, resolveTubeSpec, ruleMust, type InvalidRule, type InvalidSystemRule, type TubeRuleSpec,
+} from './tubeRules';
 import {
   checkPortPositions, resolveTube, tubeDiagnostic, tubeDiagnosticFromMessage, tubeSceneContext, type ResolvedTube,
 } from './tubeScene';
@@ -60,7 +73,18 @@ export interface TubeLineReport {
   volumeInternalMl: number;
   /** Null when the tube declares no flow. */
   pressureDropKPa: number | null;
+  /** Set when that end is a branch off another tube: the trunk and the
+   *  station on its centreline, mm from the trunk's `from` end. The cut
+   *  length and the end straight of this tube are then measured from the
+   *  trunk wall. */
+  from?: TubeJointReport;
+  to?: TubeJointReport;
+  /** The tubes that branch off this one, by station. Absent when there are none. */
+  branches?: TubeJointReport[];
 }
+
+/** One joint: the other tube's name and the station on the trunk, mm. */
+export interface TubeJointReport { tube: string; at: number }
 
 export interface TubeCheckReport {
   lines: TubeLineReport[];
@@ -72,14 +96,42 @@ export interface TubeCheckReport {
   timings: Record<string, number>;
 }
 
-/** The tubeSpec governing a record list: the LAST `tubeSpec` record wins. */
-export function findTubeSpec(records: readonly FeatureRecord[]): TubeRuleSpec | undefined {
+type ResolvedSpec = ReturnType<typeof resolveTubeSpec>;
+
+/** The tubeSpec governing a record list, with its params resolved: the LAST
+ *  `tubeSpec` record wins. `invalid` and `invalidRules` list the values that
+ *  were replaced. */
+export function findTubeSpec(records: readonly FeatureRecord[], table: ParamTable): ResolvedSpec | undefined {
   for (let i = records.length - 1; i >= 0; i--) {
     if (records[i].kind === 'tubeSpec' && !records[i].suppressed) {
-      return records[i].metadata as unknown as TubeSpecMetadata;
+      return resolveTubeSpec(records[i].metadata as unknown as TubeSpecMetadata, table);
     }
   }
   return undefined;
+}
+
+function invalidSystemRule({ system, key, value, applied }: InvalidSystemRule): CompilerDiagnostic {
+  return tubeDiagnostic('tube.spec.system-rule-invalid',
+    `tubeSpec systems '${system}' ${key} resolves to ${value}; it must be ${ruleMust(key)}. The top-level value ${applied} was applied.`);
+}
+
+function invalidRule({ rule, value, error, must, applied }: InvalidRule): CompilerDiagnostic {
+  const got = error !== undefined ? `cannot be evaluated (${error})` : `resolves to ${value}`;
+  return tubeDiagnostic('tube.spec.rule-invalid', `tubeSpec ${rule} ${got}; it must be ${must}. ${applied}`);
+}
+
+/** Top-level values first: a `systems` message quotes the top-level value that was applied. */
+const specDiagnostics = (declared: ResolvedSpec): CompilerDiagnostic[] =>
+  [...declared.invalidRules.map(invalidRule), ...declared.invalid.map(invalidSystemRule)];
+
+/** A `systems` entry naming a system no tube has overrides nothing: most
+ *  often a misspelt system. A warning, because a shared rule set may carry
+ *  entries a script does not use. */
+function unusedSystemWarnings(tubes: readonly ResolvedTube[], spec: TubeRuleSpec): CompilerDiagnostic[] {
+  const present = systemsPresent(tubes);
+  return Object.keys(spec.systems ?? {}).filter((name) => !present.names.includes(name)).map((name) =>
+    tubeDiagnostic('tube.spec.system-unused',
+      `the tubeSpec rules for system '${name}' apply to no tubes: no tube has system '${name}'. ${present.text}`));
 }
 
 /** kg/m^3 from the tube's own density, else its named material; undefined
@@ -121,7 +173,24 @@ function pressureDrop(tube: ResolvedTube): number | null {
   });
 }
 
-function lineReport(tube: ResolvedTube, nearest: NearestClearance | undefined): TubeLineReport {
+/** The joints of a tube: where its own ends branch off a trunk, and the tubes that branch off it. */
+function jointReport(tube: ResolvedTube, tubes: readonly ResolvedTube[]): Pick<TubeLineReport, 'from' | 'to' | 'branches'> {
+  const end = (which: 'from' | 'to'): TubeJointReport | undefined => {
+    const j = tube.joints.find((x) => x.which === which);
+    return j === undefined ? undefined : { tube: j.trunk, at: j.at };
+  };
+  const from = end('from');
+  const to = end('to');
+  const branches = tubes.flatMap((t) => t.joints.filter((j) => j.trunkId === tube.id).map((j) => ({ tube: t.name, at: j.at })))
+    .sort((a, b) => a.at - b.at);
+  return {
+    ...(from !== undefined ? { from } : {}),
+    ...(to !== undefined ? { to } : {}),
+    ...(branches.length > 0 ? { branches } : {}),
+  };
+}
+
+function lineReport(tube: ResolvedTube, nearest: NearestClearance | undefined, tubes: readonly ResolvedTube[]): TubeLineReport {
   const { path, od, wall, meta } = tube;
   const table = bendTableFromPath(path);
   return {
@@ -141,6 +210,7 @@ function lineReport(tube: ResolvedTube, nearest: NearestClearance | undefined): 
     massKg: massKg(tube),
     volumeInternalMl: (Math.PI * (od / 2 - wall) ** 2 * path.cutLength) / 1000,
     pressureDropKPa: pressureDrop(tube),
+    ...jointReport(tube, tubes),
   };
 }
 
@@ -157,6 +227,31 @@ function summarise(lines: readonly TubeLineReport[]): TubeCheckReport['systems']
   return [...systems.values()];
 }
 
+type GuardedTube = Pick<ResolvedTube, 'id' | 'name'>;
+
+/** The declared tube name of a record that may not resolve. */
+function recordTubeName(record: FeatureRecord): string {
+  const name = (record.metadata as { tube?: { name?: unknown } } | undefined)?.tube?.name;
+  return typeof name === 'string' ? name : record.id;
+}
+
+/** An exception inside the gate, as an error on the tube it happened on (or
+ *  on the whole gate for `tube === undefined`). Error, not warn: what was not
+ *  checked is not verified. */
+function gateFailed(tube: GuardedTube | undefined, step: string, e: unknown): CompilerDiagnostic {
+  const why = e instanceof Error ? e.message : String(e);
+  return {
+    target: 'export-occt',
+    code: 'feature.kernel-failed',
+    severity: 'error',
+    ...(tube !== undefined ? { featureId: tube.id } : {}),
+    message: tube !== undefined ?
+      `tube.gate: ${step} failed on tube '${tube.name}' (${why}); the tube is not verified.` :
+      `tube.gate: ${step} failed (${why}); the tubes are not verified.`,
+    hint: 'The tube gate could not finish this check. Look at the tube\'s ends, its ports and the parts they sit on for a value that is not a plain number or a shape the kernel cannot measure; the other tubes were still checked.',
+  };
+}
+
 /**
  * Run the tube gates on a built model. Returns `undefined` when the model has
  * no `tube` records. `model.records` are unresolved: each tube is read
@@ -165,28 +260,64 @@ function summarise(lines: readonly TubeLineReport[]): TubeCheckReport['systems']
 export async function runTubeChecksOnModel(model: BuiltModel): Promise<TubeCheckReport | undefined> {
   const records = model.records.filter((r) => r.kind === 'tube' && !r.suppressed);
   if (records.length === 0) return undefined;
+  try {
+    return checkTubes(model, records);
+  } catch (e) {
+    // Nothing per tube caught it (the spec or the scene could not be read): one error for the whole gate.
+    return { lines: [], systems: [], diagnostics: [gateFailed(undefined, 'reading the tube spec and the scene', e)],
+      usedDefaultSpec: false, timings: {} };
+  }
+}
+
+function checkTubes(model: BuiltModel, records: readonly FeatureRecord[]): TubeCheckReport {
   const t0 = performance.now();
-  const declared = findTubeSpec(model.records);
-  const spec: TubeRuleSpec = declared ?? TUBE_SPEC_DEFAULTS;
-  const diagnostics: CompilerDiagnostic[] = declared !== undefined ? [] : [tubeDiagnostic('tube.spec.defaulted',
-    `no tubeSpec declared; the default rules were applied to ${records.length} tube(s).`)];
+  const declared = findTubeSpec(model.records, model.session.paramTable);
+  const spec: TubeRuleSpec = declared?.spec ?? TUBE_SPEC_DEFAULTS;
+  const diagnostics: CompilerDiagnostic[] = declared !== undefined ? specDiagnostics(declared) :
+    [tubeDiagnostic('tube.spec.defaulted', `no tubeSpec declared; the default rules were applied to ${records.length} tube(s).`)];
   const ctx = tubeSceneContext(model);
-  const tubes = records.flatMap((r) => resolveTube(model, ctx, r));
+  const guard = <T>(tube: GuardedTube, step: string, fallback: T, run: () => T): T => {
+    try {
+      return run();
+    } catch (e) {
+      diagnostics.push(gateFailed(tube, step, e));
+      return fallback;
+    }
+  };
+  const tubes = records.flatMap((r) =>
+    guard({ id: r.id, name: recordTubeName(r) }, 'resolving the tube', [], () => resolveTube(model, ctx, r)));
 
   for (const t of tubes) {
-    for (const f of checkTubeRules({ name: t.name, path: t.path, od: t.od, meta: t.meta, spec })) {
-      diagnostics.push(tubeDiagnosticFromMessage(f.code, f.message, t.id));
-    }
+    guard(t, 'checking the bend and straight rules', undefined, () => {
+      for (const f of checkTubeRules({ name: t.name, path: t.path, od: t.od, meta: t.meta, spec })) {
+        diagnostics.push(tubeDiagnosticFromMessage(f.code, f.message, t.id));
+      }
+    });
+    guard(t, 'checking the branch rules', undefined, () => { diagnostics.push(...checkBranchRules(t, tubes, spec)); });
   }
   const tRules = performance.now();
-  const ends = checkEndParts(ctx, tubes);
-  diagnostics.push(...checkTubeParts(ctx, tubes), ...ends.diagnostics, ...checkPortPositions(model, ctx, tubes));
+  // One pass per check, each tube on its own, so the diagnostics keep their order: parts, ends, port positions.
+  for (const t of tubes) guard(t, 'checking the parts that carry it', undefined, () => { diagnostics.push(...checkTubeParts(ctx, [t])); });
+  const checked = tubes.map((t) => guard(t, 'checking the parts its ends name', t, () => {
+    const ends = checkEndParts(ctx, [t]);
+    diagnostics.push(...ends.diagnostics);
+    return ends.tubes[0];
+  }));
+  for (const t of tubes) {
+    guard(t, 'checking the port positions', undefined, () => { diagnostics.push(...checkPortPositions(model, ctx, [t], tubes)); });
+  }
   const tPorts = performance.now();
-  diagnostics.push(...unusedPairWarnings(tubes, spec));
-  const nearest = checkTubeClearance(ends.tubes, ctx, spec, diagnostics);
+  diagnostics.push(...unusedSystemWarnings(tubes, spec), ...unusedPairWarnings(tubes, spec));
+  let nearest = new Map<string, NearestClearance>();
+  try {
+    nearest = checkTubeClearance(checked, ctx, spec, diagnostics);
+  } catch (e) {
+    diagnostics.push(gateFailed(undefined, 'measuring clearance', e));
+  }
   const tEnd = performance.now();
 
-  const lines = tubes.map((t) => lineReport(t, nearest.get(t.name)));
+  const lines = tubes.flatMap((t) =>
+    guard<TubeLineReport[]>(t, 'writing the line report', [], () => [lineReport(t, nearest.get(t.name), tubes)]));
   return {
     lines,
     systems: summarise(lines),

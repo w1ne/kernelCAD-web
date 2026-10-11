@@ -76,6 +76,15 @@ export interface ResolvedInputs {
    */
   records?: readonly FeatureRecord[];
   /**
+   * A record of `records` with its params read through the run's param table.
+   * `records` are as captured: a Param that references a script parameter has
+   * `evaluated: 0`. A lowerer that reads another record's numbers (a tube
+   * branch reads its trunk's path) must go through this. The recompute engine
+   * always passes it; when the run has no param table it returns the record
+   * unchanged. Optional only for a caller that drives a lowerer directly.
+   */
+  resolveRecord?: (record: FeatureRecord) => FeatureRecord;
+  /**
    * W1.3 NURBS: per-record map of resolved surfaces keyed by SurfaceId.
    * Populated by the recompute engine for `surfaceThicken` / `surfaceToShape`
    * records that have a `{ kind: 'surface' }` input ref. Values are

@@ -75,15 +75,31 @@ const f = (n: number): string => {
   return s === '-0.000' ? '0.000' : s;
 };
 
-export function formatBendTableCsv(name: string, od: number, wall: number, table: BendTable): string {
+/** One joint of a tube with another: the other tube's name and the station
+ *  on the trunk centreline, mm from the trunk's `from` end. */
+export interface BendTableJoint { tube: string; at: number }
+
+/** The joints of one tube. `from` / `to`: that end is a saddle cut on the
+ *  named trunk, and the cut length is measured from the trunk wall.
+ *  `branches`: the tubes that join this one, each at its station. */
+export interface BendTableJoints { from?: BendTableJoint; to?: BendTableJoint; branches?: readonly BendTableJoint[] }
+
+/** A tube without joints gives the table it always gave: the joint rows are added, never reordered. */
+export function formatBendTableCsv(name: string, od: number, wall: number, table: BendTable, joints: BendTableJoints = {}): string {
   const head = [
     `name,${name}`, `od_mm,${od}`, `wall_mm,${wall}`,
     `bend_radius_mm,${table.bendRadius}`, `cut_length_mm,${f(table.cutLength)}`,
+    ...(['from', 'to'] as const).flatMap((which) => {
+      const j = joints[which];
+      return j === undefined ? [] : [`${which}_tube,${j.tube}`, `${which}_at_mm,${f(j.at)}`];
+    }),
   ];
+  const branches = joints.branches === undefined || joints.branches.length === 0 ? [] :
+    ['branch,at_mm', ...joints.branches.map((b) => `${b.tube},${f(b.at)}`), ''];
   const xyz = table.xyz.map((p, i) => `${i + 1},${f(p[0])},${f(p[1])},${f(p[2])}`);
   const lra = table.lra.map((row, i) => `${i + 1},${f(row.l)},${f(row.r)},${f(row.a)}`);
   return [
     ...head, '', 'point,x_mm,y_mm,z_mm', ...xyz, '', 'bend,l_mm,r_deg,a_deg', ...lra,
-    `last_straight_mm,${f(table.lastStraight)}`, '',
+    `last_straight_mm,${f(table.lastStraight)}`, '', ...branches,
   ].join('\n');
 }

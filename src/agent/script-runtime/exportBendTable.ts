@@ -74,6 +74,10 @@ export async function exportBendTable(input: ExportInput): Promise<ExportResult>
     bytes: encoder.encode(formatBendTableCsv(line.name, line.od, line.wall, {
       lra: line.lra, lastStraight: line.lastStraight, xyz: line.xyz,
       bendRadius: line.bendRadius, cutLength: line.cutLength,
+    }, {
+      ...(line.from !== undefined ? { from: line.from } : {}),
+      ...(line.to !== undefined ? { to: line.to } : {}),
+      ...(line.branches !== undefined ? { branches: line.branches } : {}),
     })),
   }));
   return { bytes: tables[0].bytes, tables, featureCount, diagnostics: evaluation.diagnostics };

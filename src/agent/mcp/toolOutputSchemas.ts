@@ -43,6 +43,18 @@ const SOURCE_EDIT: JSONSchemaObject = {
   additionalProperties: true,
 };
 
+/** One tube joint in the line report: the other tube and the station on the trunk. */
+const TUBE_JOINT = (description: string): Record<string, unknown> => ({
+  type: 'object',
+  properties: {
+    tube: { type: 'string', description: 'Name of the other tube of the joint.' },
+    at: { type: 'number', description: "Station of the tee: mm along the trunk centreline from the trunk's from end." },
+  },
+  required: ['tube', 'at'],
+  additionalProperties: false,
+  description,
+});
+
 export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
   evaluate_script: {
     type: 'object',
@@ -84,7 +96,15 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
         properties: {
           lines: {
             type: 'array',
-            items: { type: 'object', additionalProperties: true },
+            items: {
+              type: 'object',
+              properties: {
+                from: TUBE_JOINT('Set when the from end branches off another tube: the trunk and the station of the tee on it. The cut length and bend table of this tube then start on the trunk wall. Omitted for any other end.'),
+                to: TUBE_JOINT('Set when the to end branches off another tube: the trunk and the station of the tee on it. Omitted for any other end.'),
+                branches: { type: 'array', items: TUBE_JOINT('One tube that branches off this one.'), description: 'The tubes that branch off this one, by station. Omitted when there are none.' },
+              },
+              additionalProperties: true,
+            },
             description: 'One entry per tube: name, system, od, wall, bendRadius, material, cutLength (mm), bends, xyz (bend-table corner points), lra (length/rotation/angle rows), lastStraight, minStraight, minClearance { mm, to, at } (exact nearest part or tube), massKg (null without a known material or density), volumeInternalMl, pressureDropKPa (null without a declared flow).',
           },
           systems: {
@@ -96,6 +116,27 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
         required: ['lines', 'systems'],
         additionalProperties: false,
         description: 'Tube line report. Present only when the model has tubes; the gate diagnostics are in diagnostics.',
+      },
+      ports: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            part: { type: 'string', description: 'The assembly part that owns the port.' },
+            name: { type: 'string', description: 'The connector name; part.port(name) gives this port to tube().' },
+            system: { type: 'string' },
+            od: { type: 'number', description: 'Tube outer diameter the port takes, mm.' },
+            minStraight: { type: 'number', description: 'Straight a tube must keep leaving the port, mm. Omitted when the port declares none.' },
+            origin: { type: 'array', items: { type: 'number' }, description: 'Port position [x, y, z] in assembly space, mm, with params and mates resolved. Omitted when unresolved is set.' },
+            axis: { type: 'array', items: { type: 'number' }, description: 'Unit axis [x, y, z] pointing out of the part, assembly space. Omitted when unresolved is set.' },
+            placedBy: { type: 'string', enum: ['at', 'connect', 'mate'], description: "'at': the part is where its at puts it. 'connect': the part is where its connect puts it. For both, part.port(name) gives this position. 'mate': a mate or joint moved or turned the part after that; origin and axis are the solved ones, and part.port(name) still gives the position before the solve. Omitted when unresolved is set." },
+            usedBy: { type: 'array', items: { type: 'string' }, description: 'Names of the tubes that end on the port; empty when the port is free.' },
+            unresolved: { type: 'string', description: 'Why the position is missing: the script does not build the assembly, the part failed to build, another part failed so the solve did not run and this part is positioned by a mate, a joint or connect, the part is not in the built assembly, or the connector origin is a topology reference or not numeric. Omitted when origin is given.' },
+          },
+          required: ['part', 'name', 'system', 'od', 'usedBy'],
+          additionalProperties: false,
+        },
+        description: 'Every fluid port (a connector with port data) of the assembly the script returns. Present, possibly empty, whenever the script declares an assembly and builds a model, with or without tubes; omitted otherwise and for dryRun.',
       },
       mechanism: { type: 'string', enum: ['real', 'broken', 'unverified'], description: "Mechanism-truth verdict for an assembly-built scene (default-on; omitted for dryRun, non-assembly, or skipMechanismCheck:true). 'broken' makes ok:false; 'unverified' keeps ok and surfaces a loud budget diagnostic." },
       reviewHint: { type: 'string', description: 'Present only when a captured assembly declares articulated (non-fastened) mates: the default mechanism check is shallow (no joint-support intents, pose-envelope overlap at declared limits, or gravity drop) — run review_cad for pose-envelope + gravity checks.' },

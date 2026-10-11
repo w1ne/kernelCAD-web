@@ -182,6 +182,18 @@ describe('tube()', () => {
       .toThrowError(prefixRe('tube.end.invalid'));
   });
 
+  // A corner the path maths cannot use must be refused, not dropped: a dropped
+  // corner builds and reports the tube along another route with no diagnostic.
+  it.each([
+    ['a NaN coordinate', [50, Number.NaN, 0]],
+    ['two coordinates', [50, 30]],
+    ['an infinite coordinate', [Number.POSITIVE_INFINITY, 0, 50]],
+  ])('tube.end.invalid for a via corner with %s', (_label, corner) => {
+    const { api } = makeApi();
+    expect(() => api.tube('t', { from: { point: [0, 0, 0] }, to: { point: [100, 0, 0] }, via: [corner as V3], ...free }))
+      .toThrowError(/^tube\.end\.invalid: tube 't' corner points — got a non-finite coordinate \(NaN or Infinity\); requires finite \[x, y, z\] for the ends, the via corners and the part positions\./);
+  });
+
   it.each([
     ['an empty string', ''],
     ['a number', 5],
@@ -235,7 +247,7 @@ describe('tubeSpec()', () => {
 
   it.each([
     [{ minBendRadius: 3 },
-      /^tubeSpec: minBendRadius — got a field tubeSpec does not have; requires one of minBendRadiusFactor, minStraightBetweenBends, minStraightAtEnd, maxBendAngle, clearance\./],
+      /^tubeSpec: minBendRadius — got a field tubeSpec does not have; requires one of minBendRadiusFactor, minStraightBetweenBends, minStraightAtEnd, maxBendAngle, clearance, systems\./],
     [{ maxBendAngle: 90, clearence: { default: 10 } },
       /^tubeSpec: clearence — got a field tubeSpec does not have; requires one of minBendRadiusFactor, /],
     [{ clearance: { defualt: 10 } },
@@ -264,6 +276,115 @@ describe('tubeSpec()', () => {
     let hint = '';
     try { api.tubeSpec({ maxBendAngle: 200 }); } catch (e) { hint = (e as { hint: string }).hint; }
     expect(hint).toBe('invalid-args.tube-spec.maxBendAngle — fix the field; tubeSpec is an enforcement gate, malformed declarations fail the build rather than silently disabling checks.');
+  });
+
+  it('a top-level rule or clearance number may be a param; a plain number is stored as the number it was', () => {
+    const { api } = makeApi();
+    const k = api.param('K', 4);
+    const c = api.param('C', 8);
+    const { metadata } = api.tubeSpec({
+      minBendRadiusFactor: k, minStraightBetweenBends: k.divide(2), minStraightAtEnd: 2.5, maxBendAngle: api.param('A', 120),
+      clearance: { default: c, pairs: [{ a: 'fuel', b: 'bleed', min: c.multiply(3) }, { a: 'fuel', b: 'oil', min: 12 }] },
+    });
+    expect(metadata.minBendRadiusFactor).toMatchObject({ paramRef: 'K', unit: 'unitless' });
+    expect(metadata.minStraightBetweenBends).toMatchObject({ unit: 'unitless', paramRef: { kind: 'binop', op: '/' } });
+    expect(metadata.minStraightAtEnd).toBe(2.5);
+    expect(metadata.maxBendAngle).toMatchObject({ paramRef: 'A', unit: 'deg' });
+    expect(metadata.clearance.default).toMatchObject({ paramRef: 'C', unit: 'mm' });
+    expect(metadata.clearance.pairs[0]).toMatchObject({ a: 'fuel', b: 'bleed', min: { unit: 'mm', paramRef: { kind: 'binop', op: '*' } } });
+    expect(metadata.clearance.pairs[1]).toEqual({ a: 'fuel', b: 'oil', min: 12 });
+    // A rule left out is the default number, param or no param elsewhere in the spec.
+    expect(api.tubeSpec({ minBendRadiusFactor: k }).metadata).toMatchObject({
+      minStraightBetweenBends: 2, minStraightAtEnd: 2.5, maxBendAngle: 180, clearance: { default: 6, pairs: [] } });
+  });
+
+  it.each([
+    ['minBendRadiusFactor', 0, (p: unknown) => ({ minBendRadiusFactor: p }),
+      /^tubeSpec: minBendRadiusFactor — got 0; requires a positive finite number\./],
+    ['minStraightBetweenBends', -2, (p: unknown) => ({ minStraightBetweenBends: p }),
+      /^tubeSpec: minStraightBetweenBends — got -2; requires a positive finite number\./],
+    ['minStraightAtEnd', 0, (p: unknown) => ({ minStraightAtEnd: p }),
+      /^tubeSpec: minStraightAtEnd — got 0; requires a positive finite number\./],
+    ['maxBendAngle', 200, (p: unknown) => ({ maxBendAngle: p }),
+      /^tubeSpec: maxBendAngle — got 200; requires a number in \(0, 180\] degrees\./],
+    ['clearance.default', -1, (p: unknown) => ({ clearance: { default: p } }),
+      /^tubeSpec: clearance\.default — got -1; requires a positive finite number\./],
+    ['clearance.pairs[0].min', 0, (p: unknown) => ({ clearance: { pairs: [{ a: 'x', b: 'y', min: p }] } }),
+      /^tubeSpec: clearance\.pairs\[0\]\.min — got 0; requires a positive finite number\./],
+  ])('a param in %s is checked at its current value (%d)', (_field, value, spec, message) => {
+    const { api } = makeApi();
+    expect(() => api.tubeSpec(spec(api.param('P', value)) as never)).toThrowError(message);
+  });
+
+  it.each([
+    ['minBendRadiusFactor', (p: unknown) => ({ minBendRadiusFactor: p })],
+    ['maxBendAngle', (p: unknown) => ({ maxBendAngle: p })],
+    ['clearance.default', (p: unknown) => ({ clearance: { default: p } })],
+    ['clearance.pairs[0].min', (p: unknown) => ({ clearance: { pairs: [{ a: 'x', b: 'y', min: p }] } })],
+    ['systems.oil.minStraightAtEnd', (p: unknown) => ({ systems: { oil: { minStraightAtEnd: p } } })],
+  ])('a param in %s that is not a number, or cannot be evaluated, fails as a tubeSpec argument error', (field, spec) => {
+    const { api } = makeApi();
+    const caught = (run: () => unknown): { code?: string; message: string } => {
+      try { run(); } catch (e) { return e as { code?: string; message: string }; }
+      throw new Error('did not throw');
+    };
+    const text = caught(() => api.tubeSpec(spec(api.param('S', 'steel')) as never));
+    expect(text.code).toBe('feature.invalid-args');
+    expect(text.message.startsWith(`tubeSpec: ${field} — got a param that cannot be read as a number (`), text.message).toBe(true);
+    const zero = api.param('Z', 0);
+    const divided = caught(() => api.tubeSpec(spec(api.param('N', 6).divide(zero)) as never));
+    expect(divided.code).toBe('feature.invalid-args');
+    expect(divided.message.startsWith(`tubeSpec: ${field} — got a param that cannot be read as a number (division by zero`), divided.message).toBe(true);
+  });
+
+  it('stores a systems entry as params and leaves it out when none is declared', () => {
+    const { api } = makeApi();
+    expect('systems' in api.tubeSpec({}).metadata).toBe(false);
+    const { metadata } = api.tubeSpec({ systems: { 'hot-gas': { minBendRadiusFactor: 1.5, maxBendAngle: 120 }, idle: {} } });
+    expect(metadata.minBendRadiusFactor).toBe(3);
+    expect(metadata.systems).toEqual({
+      'hot-gas': {
+        minBendRadiusFactor: { expression: '1.5', unit: 'unitless', evaluated: 1.5 },
+        maxBendAngle: { expression: '120', unit: 'deg', evaluated: 120 },
+      },
+      idle: {},
+    });
+  });
+
+  it('a systems value may be a param, validated at its current value', () => {
+    const { session, api } = makeApi();
+    const k = api.param('K', 1.5);
+    const { id, metadata } = api.tubeSpec({ systems: { 'hot-gas': { minBendRadiusFactor: k, minStraightAtEnd: k.multiply(2) } } });
+    expect(metadata.systems!['hot-gas'].minBendRadiusFactor).toMatchObject({ paramRef: 'K', unit: 'unitless' });
+    expect((session.getRecords().find((r) => r.id === id)!.metadata as { paramRefs?: string[] }).paramRefs).toEqual(['K']);
+    const zero = api.param('Z', 0);
+    expect(() => api.tubeSpec({ systems: { 'hot-gas': { minBendRadiusFactor: zero } } })).toThrowError(
+      /^tubeSpec: systems\.hot-gas\.minBendRadiusFactor — got 0; requires a positive finite number\./);
+    const wide = api.param('A', 200);
+    expect(() => api.tubeSpec({ systems: { 'hot-gas': { maxBendAngle: wide } } })).toThrowError(
+      /^tubeSpec: systems\.hot-gas\.maxBendAngle — got 200; requires a number in \(0, 180\] degrees\./);
+  });
+
+  it.each([
+    [{ systems: { 'hot-gas': { minBendRadius: 1.5 } } },
+      /^tubeSpec: systems\.hot-gas\.minBendRadius — got a field tubeSpec does not have; requires one of systems\.hot-gas\.minBendRadiusFactor, systems\.hot-gas\.minStraightBetweenBends, systems\.hot-gas\.minStraightAtEnd, systems\.hot-gas\.maxBendAngle\./],
+    [{ systems: { 'hot-gas': { clearance: { default: 3 } } } },
+      /^tubeSpec: systems\.hot-gas\.clearance — got a field a systems entry does not have; requires clearance between systems in clearance\.pairs, and one of systems\.hot-gas\.minBendRadiusFactor, /],
+    [{ systems: { 'hot-gas': { minBendRadiusFactor: -1 } } },
+      /^tubeSpec: systems\.hot-gas\.minBendRadiusFactor — got -1; requires a positive finite number\./],
+    [{ systems: { 'hot-gas': { minStraightAtEnd: '1' } } },
+      /^tubeSpec: systems\.hot-gas\.minStraightAtEnd — got "1"; requires a positive finite number\./],
+    [{ systems: { 'hot-gas': { maxBendAngle: 181 } } },
+      /^tubeSpec: systems\.hot-gas\.maxBendAngle — got 181; requires a number in \(0, 180\] degrees\./],
+    [{ systems: { 'hot-gas': 1.5 } },
+      /^tubeSpec: systems\.hot-gas — got 1\.5; requires an object with any of minBendRadiusFactor, minStraightBetweenBends, minStraightAtEnd, maxBendAngle\./],
+    [{ systems: { '': { maxBendAngle: 90 } } },
+      /^tubeSpec: systems — got an entry with an empty name; requires a non-empty system name for every entry\./],
+    [{ systems: ['hot-gas'] },
+      /^tubeSpec: systems — got \["hot-gas"\]; requires an object keyed by system name, like \{ 'hot-gas': \{ minBendRadiusFactor: 1\.5 \} \}\./],
+  ])('throws on the malformed systems entry in %j', (spec, message) => {
+    const { api } = makeApi();
+    expect(() => api.tubeSpec(spec as never)).toThrowError(message);
   });
 
   it('records a virtual tubeSpec feature', () => {
