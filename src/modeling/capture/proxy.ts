@@ -52,6 +52,13 @@ export type EdgeSelector =
   | EdgeSegment
   | EdgeSegment[]
   | { face: CanonicalFace | string }
+  // A canonical face name / face label (all edges of that face), an
+  // `@kc[<feature>/edge/e<N>]` / `@kc[<feature>/face/<name>]` ref string as
+  // printed by inspect, or an `@kcq[...]` Query DSL string.
+  | CanonicalFace
+  | string
+  // Several `@kc[<feature>/edge/e<N>]` refs.
+  | string[]
   // Q8 — Query DSL value (kc.q.edge(...) etc) reaches every edge-feature
   // lowerer through the same {edges} slot. Captured at append-time and
   // dispatched through the Q3 evaluator at lower-time.
