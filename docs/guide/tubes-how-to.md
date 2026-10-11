@@ -72,6 +72,7 @@ The tube goes into the assembly with `asm.part(name, tube)` and no `at`, because
 ```ts
 tubeSpec({ clearance: { default: 6, pairs: [{ a: 'fuel', b: 'hydraulic', min: 12 }] } });
 ```
+<!-- check: source contains block -->
 
 A tube keeps `default` mm from every part and from the other tubes. A pair replaces that distance for two systems, so a fuel line and a hydraulic line keep `min` mm apart. A tube that breaks a rule fails the evaluation with an error that names the tube and the measured value.
 
@@ -100,6 +101,7 @@ It prints `"ok": true` and a `tubes` object. `tubes.lines` has an entry for each
 ```ts
 via: [[manifoldX.add(20), -190, hydRunZ], [act2X, -190, hydRunZ.add(-8)]],
 ```
+<!-- check examples/tube-routing-engine/engine-lines-broken.kcad.ts: source contains block -->
 
 Evaluating it prints `"ok": false` and 1 diagnostic:
 <!-- check examples/tube-routing-engine/engine-lines-broken.kcad.ts: ok = false -->
@@ -118,6 +120,7 @@ The fix is to put the corner back at the height of the run, as `engine-lines.kca
 ```ts
 via: [[manifoldX.add(20), -190, hydRunZ], [act2X, -190, hydRunZ]],
 ```
+<!-- check: source contains block -->
 
 ## Bend tables and STEP
 

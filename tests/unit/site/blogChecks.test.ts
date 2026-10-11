@@ -81,6 +81,10 @@ beforeAll(() => {
   writeFileSync(join(repo, 'site/blog/a-how-to/index.html'), '<!DOCTYPE html>\n');
   mkdirSync(join(repo, 'site/blog/old-post'), { recursive: true });
   writeFileSync(join(repo, 'site/blog/old-post/index.html'), '<!DOCTYPE html>\n');
+  mkdirSync(join(repo, 'docs/demos'), { recursive: true });
+  writeFileSync(join(repo, 'docs/demos/clip.mp4'), 'video');
+  writeFileSync(join(repo, 'docs/demos/clip.mov'), 'video');
+  writeFileSync(join(repo, 'examples/demo/lines.kcad.js'), 'return box(1, 1, 1);\n');
 });
 
 afterAll(() => {
@@ -196,6 +200,96 @@ describe('quoted numbers and diagnostics', () => {
     const { model: _model, ...noModel } = FIELDS;
     const [failure] = await failures('It is 2.\n<!-- check: tubes.lines.length = 2 -->\n', noModel);
     expect(failure.message).toContain('names no model');
+  });
+});
+
+// Each comparison once with a value that matches and once with one that does
+// not, so a comparison that always passes, or always fails, shows up here.
+describe('each comparison, passing and failing', () => {
+  const cases: ReadonlyArray<{
+    name: string;
+    pass: { body: string; fields?: Record<string, string>; evaluator?: Evaluator };
+    fail: { body: string; fields?: Record<string, string>; evaluator?: Evaluator };
+    message: string;
+  }> = [
+    {
+      name: 'exact text',
+      pass: { body: 'The second line is fuel-b.\n<!-- check: tubes.lines[1].name = fuel-b -->\n' },
+      fail: { body: 'The second line is fuel-c.\n<!-- check: tubes.lines[1].name = fuel-c -->\n' },
+      message: `tubes.lines[1].name in ${MODEL} is fuel-b; the article says fuel-c`,
+    },
+    {
+      name: 'exact text against a boolean',
+      pass: { body: 'It prints `"ok": true`.\n<!-- check: ok = true -->\n' },
+      fail: { body: 'It prints `"ok": false`.\n<!-- check: ok = false -->\n' },
+      message: `ok in ${MODEL} is true; the article says false`,
+    },
+    {
+      name: 'contains',
+      pass: { body: `It says the rule needs 12.00 mm.\n<!-- check ${BROKEN}: diagnostics[0].message contains the rule needs 12.00 mm -->\n` },
+      fail: { body: `It says the rule needs 13.00 mm.\n<!-- check ${BROKEN}: diagnostics[0].message contains the rule needs 13.00 mm -->\n` },
+      message: `diagnostics[0].message in ${BROKEN} is ${MESSAGE}; the article says it contains "the rule needs 13.00 mm"`,
+    },
+    {
+      name: 'a list of numbers',
+      pass: { body: 'It is at [60, -197, -232].\n<!-- check: ports[name=out-b].origin = [60, -197, -232] -->\n' },
+      fail: { body: 'It is at [60, -197, -230].\n<!-- check: ports[name=out-b].origin = [60, -197, -230] -->\n' },
+      message: `ports[name=out-b].origin in ${MODEL} is [60,-197,-232]; the article says [60, -197, -230]`,
+    },
+    {
+      name: 'a whole number, rounded to no decimals',
+      pass: { body: 'The nearest line is 12 mm away.\n<!-- check: tubes.lines[0].minClearance.mm = 12 -->\n' },
+      fail: { body: 'The nearest line is 13 mm away.\n<!-- check: tubes.lines[0].minClearance.mm = 13 -->\n' },
+      message: `tubes.lines[0].minClearance.mm in ${MODEL} is 12.300000000000011; the article says 13`,
+    },
+    {
+      name: 'the model file suffix',
+      pass: { body: 'Text.\n', fields: { ...FIELDS, model: MODEL } },
+      fail: { body: 'Text.\n', fields: { ...FIELDS, model: 'examples/demo/lines.kcad.js' } },
+      message: 'model examples/demo/lines.kcad.js must be a .kcad.ts file',
+    },
+    {
+      name: 'the video file suffix',
+      pass: { body: 'Text.\n', fields: { ...FIELDS, video: 'docs/demos/clip.mp4' } },
+      fail: { body: 'Text.\n', fields: { ...FIELDS, video: 'docs/demos/clip.mov' } },
+      message: 'video docs/demos/clip.mov must be a .mp4 file',
+    },
+    {
+      name: "the check's own model",
+      pass: { body: `It prints false.\n<!-- check ${BROKEN}: ok = false -->\n` },
+      fail: { body: 'It prints false.\n<!-- check examples/demo/none.kcad.ts: ok = false -->\n' },
+      message: "the check's model examples/demo/none.kcad.ts does not exist",
+    },
+    {
+      name: 'a code line quoted from the model source',
+      pass: { body: '```ts\nreturn box(1, 1, 1);\n```\n<!-- check: source contains block -->\n' },
+      fail: { body: '```ts\nreturn box(2, 2, 2);\n```\n<!-- check: source contains block -->\n' },
+      message: `the source of ${MODEL} does not contain the code block above`,
+    },
+    {
+      name: 'a kcad block whose evaluation fails with no diagnostic',
+      pass: { body: '```kcad\nreturn box(1, 1, 1);\n```\n', evaluator: fakeEvaluator(() => ({ ok: true, featureCount: 1, diagnostics: [] })) },
+      fail: { body: '```kcad\nreturn box(1, 1, 1);\n```\n', evaluator: fakeEvaluator(() => ({ ok: false, featureCount: 0, diagnostics: [] })) },
+      message: 'kcad block 1 does not evaluate clean: the evaluation failed',
+    },
+  ];
+
+  it.each(cases)('$name: a matching value passes', async ({ pass }) => {
+    expect(await failures(pass.body, pass.fields, pass.evaluator)).toEqual([]);
+  });
+
+  it.each(cases)('$name: a different value fails', async ({ fail, message }) => {
+    const found = await failures(fail.body, fail.fields, fail.evaluator);
+    expect(found.map((f) => f.message)).toEqual([message]);
+  });
+
+  it('reads the source of a model without evaluating it', async () => {
+    const noEvaluation: Evaluator = {
+      file: () => Promise.reject(new Error('evaluated')),
+      code: () => Promise.reject(new Error('evaluated')),
+    };
+    const body = '```ts\nreturn box(1, 1, 1);\n```\n<!-- check: source contains block -->\n';
+    expect(await failures(body, FIELDS, noEvaluation)).toEqual([]);
   });
 });
 

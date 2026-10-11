@@ -58,6 +58,7 @@
 //   <!-- check examples/x/broken.kcad.ts: diagnostics[0].code = tube.clearance.violated -->
 //   <!-- check examples/x/broken.kcad.ts: diagnostics[0].message contains needs 12.00 mm -->
 //   <!-- check: tubes.lines[name=hyd-b].bendTableCsv = block -->
+//   <!-- check examples/x/broken.kcad.ts: source contains block -->
 //
 //   model  optional, a repository path; without it, the front matter `model`.
 //   path   into the --json output: keys joined by dots; [n] is the nth element
@@ -65,12 +66,17 @@
 //          that matches (none or several is a failure); .length is the size
 //          of a list. `bendTableCsv` on a line of tubes.lines is the CSV that
 //          `kernelcad export bend-table` writes for that tube, formatted from
-//          the same line by the same function.
-//   value  a number is compared at the precision written: 309.29 matches
-//          309.2947. [a, b, c] compares a list of numbers the same way. `block`
-//          compares the whole code block above. Anything else is text, compared
-//          exactly; double quotes around it are dropped. `contains` passes when
-//          the text is part of the value.
+//          the same line by the same function. `source` is not in the output:
+//          it is the text of the model file, so a line of code quoted from an
+//          example is checked against that example.
+//   value  a number: the real value is rounded to as many decimals as the
+//          article writes, then compared, so 309.29 matches 309.2947 and a
+//          whole number like 12 matches any value that rounds to 12. [a, b, c]
+//          compares a list of numbers that way, element by element. `block`
+//          is the whole code block above: `= block` compares it with the value,
+//          `contains block` finds it inside the value. Anything else is text,
+//          compared exactly; double quotes around it are dropped. `contains`
+//          passes when the text is part of the value.
 //
 // The value as written must also appear in the block above the check, so what
 // a reader sees is what was checked. A drifted value fails with the file, the

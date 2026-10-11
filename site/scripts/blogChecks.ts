@@ -8,11 +8,12 @@
 //   <!-- check: <path> = <value> -->
 //   <!-- check <model>: <path> = <value> -->
 //   <!-- check <model>: <path> contains <text> -->
+//   <!-- check <model>: source contains block -->
 //
 // Each failure names the Markdown file and line, and for a quoted value the
 // real one.
 
-import { existsSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { formatBendTableCsv, type BendTable, type BendTableJoints } from '../../src/shared/tube/bendTable';
 import { plainText, type Block, type CheckBlock } from './blogMarkdown';
@@ -132,6 +133,8 @@ interface Quote {
 
 const CHECK = /^(?:([^\s:]+)\s*)?:\s*(\S+)\s+(=|contains)\s+(.+)$/;
 const NUMBER = /^-?\d+(?:\.\d+)?$/;
+/** The path that names the model file's own text instead of its evaluate output. */
+const SOURCE_PATH = 'source';
 
 function readQuote(block: CheckBlock): Quote | string {
   const match = CHECK.exec(block.text);
@@ -140,7 +143,6 @@ function readQuote(block: CheckBlock): Quote | string {
   const value = raw.trim();
   let expected: Expected;
   if (value === 'block') {
-    if (op !== '=') return '"block" goes with =, not contains';
     expected = { kind: 'block' };
   } else if (op === '=' && NUMBER.test(value)) {
     expected = { kind: 'number', text: value, value: Number(value), decimals: decimals(value) };
@@ -192,11 +194,16 @@ async function checkOne(
   const shown = shownAbove(quote, above);
   if (shown !== null) return shown;
 
-  const output = await evaluator.file(model);
-  const resolved = resolvePath(output, quote.path);
+  // `source` is the model file's own text: no evaluation needed.
+  const resolved = quote.path === SOURCE_PATH
+    ? { value: readFileSync(path.join(repoRoot, model), 'utf8') }
+    : resolvePath(await evaluator.file(model), quote.path);
   if (typeof resolved === 'string') return `${quote.path} in ${model}: ${resolved}`;
   const real = compare(resolved.value, quote, above);
   if (real === null) return null;
+  if (quote.expected.kind === 'block' && quote.op === 'contains') {
+    return `${quote.path === SOURCE_PATH ? `the source of ${model}` : `${quote.path} in ${model}`} does not contain the code block above`;
+  }
   if (quote.expected.kind === 'block') return `${quote.path} in ${model} differs from the code block above; the model gives:\n${real}`;
   return `${quote.path} in ${model} is ${real}; the article says ${describeExpected(quote)}`;
 }
@@ -255,7 +262,9 @@ function compare(actual: unknown, quote: Quote, above: Block): string | null {
     }
     case 'block': {
       const code = (above as { code: string }).code;
-      return typeof actual === 'string' && actual.trimEnd() === code.trimEnd() ? null : show(actual).trimEnd();
+      if (typeof actual !== 'string') return show(actual);
+      const ok = quote.op === 'contains' ? actual.includes(code) : actual.trimEnd() === code.trimEnd();
+      return ok ? null : actual.trimEnd();
     }
     case 'text': {
       if (quote.op === 'contains') return typeof actual === 'string' && actual.includes(expected.text) ? null : show(actual);
