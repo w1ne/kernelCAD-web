@@ -31,6 +31,7 @@
 
 import type { Edge } from 'replicad';
 import { KernelError } from '../../../shared/intent/kernelError';
+import { invalidArgs } from '../../../shared/intent/invalidArgs';
 import type { Vec3 } from '../../../shared/intent/types';
 import type { EdgeQuery, FaceQuery } from '../../../shared/intent/queryTypes';
 import type { WorldFramePart } from './sceneToWorldFrame';
@@ -552,18 +553,20 @@ function linearAnnotationSvg(
     ? Math.abs(m1[0] - m0[0])
     : Math.abs(m1[1] - m0[1]);
   if (ctx.reviewedViewId !== undefined && measured < 1e-8) {
-    throw new KernelError('feature.invalid-args',
-      `Drawing annotation ${ctx.reviewedViewId}: view ${view} collapses this linear measurement.`, undefined,
-      'Choose a view where the two anchors project to distinct points, or remove this view override.');
+    invalidArgs({ api: `Drawing annotation ${ctx.reviewedViewId}`, path: 'view', got: view,
+      requires: `a view that preserves the linear measurement; view ${view} collapses this linear measurement`,
+      example: `{ annotationOverrides: { ${JSON.stringify(ctx.reviewedViewId)}: { view: ${JSON.stringify(ctx.reviewedOriginalView)} } } }`,
+      hint: 'Choose a view where the two anchors project to distinct points, or remove this view override.' });
   }
   if (ctx.reviewedOriginalView !== undefined) {
     const original0 = projectPointForDrawing(model0, ctx.reviewedOriginalView);
     const original1 = projectPointForDrawing(model1, ctx.reviewedOriginalView);
     const intended = Math.max(Math.abs(original1[0] - original0[0]), Math.abs(original1[1] - original0[1]));
     if (Math.abs(intended - measured) > Math.max(1e-6, intended * 1e-9)) {
-      throw new KernelError('feature.invalid-args',
-        `Drawing annotation ${ctx.reviewedViewId}: view ${view} changes the intended linear measurement from ${formatDimValue(intended)} to ${formatDimValue(measured)}.`, undefined,
-        'Choose a view that preserves the original dominant-axis measurement, or remove this view override.');
+      invalidArgs({ api: `Drawing annotation ${ctx.reviewedViewId}`, path: 'view', got: view,
+        requires: `a view that preserves the original dominant-axis measurement; view ${view} changes the intended linear measurement from ${formatDimValue(intended)} to ${formatDimValue(measured)}`,
+        example: `{ annotationOverrides: { ${JSON.stringify(ctx.reviewedViewId)}: { view: ${JSON.stringify(ctx.reviewedOriginalView)} } } }`,
+        hint: 'Choose a view that preserves the original dominant-axis measurement, or remove this view override.' });
     }
   }
   const side = horizontal ? 'bottom' : 'right';
@@ -629,9 +632,10 @@ function angularAnnotationSvg(
   if (ctx.reviewedOriginalView !== undefined) {
     const original = projectedAngularGeometry(eA, eB, ctx.reviewedOriginalView, role);
     if (Math.abs(Math.abs(original.sweep) - Math.abs(geometry.sweep)) > 1e-8) {
-      throw new KernelError('feature.invalid-args',
-        `Drawing annotation ${ctx.reviewedViewId}: view ${view} changes the intended included angle from ${formatDimValue(Math.abs(original.sweep) * 180 / Math.PI)}° to ${formatDimValue(Math.abs(geometry.sweep) * 180 / Math.PI)}°.`, undefined,
-        'Choose a view that preserves the original included angle, or remove this view override.');
+      invalidArgs({ api: `Drawing annotation ${ctx.reviewedViewId}`, path: 'view', got: view,
+        requires: `a view that preserves the original included angle; view ${view} changes the intended included angle from ${formatDimValue(Math.abs(original.sweep) * 180 / Math.PI)}° to ${formatDimValue(Math.abs(geometry.sweep) * 180 / Math.PI)}°`,
+        example: `{ annotationOverrides: { ${JSON.stringify(ctx.reviewedViewId)}: { view: ${JSON.stringify(ctx.reviewedOriginalView)} } } }`,
+        hint: 'Choose a view that preserves the original included angle, or remove this view override.' });
     }
   }
   const apexSheet: Pt2 = [

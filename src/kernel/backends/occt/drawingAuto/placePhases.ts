@@ -13,6 +13,7 @@ import { flatnessFor } from './iso2768';
 import { FAR_STEMS, fallbackAngles, leaderCallout, orderedAngles, STEMS } from './placement';
 import { beginAnnotation, choose, commit, outwardAngle, toSheet } from './renderContext';
 import type { Candidate, RenderCtx } from './renderContext';
+import type { EdgeLine } from './views';
 import { edgeOnLines, viewAlong } from './views';
 import { cross, dot, len } from './vectors';
 import { annotationId, invalidReview } from '../draftingReview';
@@ -151,19 +152,22 @@ export function placeFlatnessOnA(ctx: RenderCtx): void {
         ? fcfCells(declaredFlat.decl)
         : fcfCells({ type: 'flatness', value: flatnessFor(opts.tolerance, longest) });
       if (declaredFlat) ctx.consumedTols.add(declaredFlat.index);
-      const review = beginAnnotation(ctx, annotationId('flatness', 'A'), 'flatness', lines[0].view, cells.join(' '));
-      if (!review) return;
-      if (review.originalText !== undefined) invalidReview(`annotation ${review.id} has no primary label; edit its tolerance declaration`);
-      const available = ctx.input.annotationOverrides?.[review.id]?.view !== undefined ? lines.filter(line => line.view === review.view) : lines;
-      if (!available.length) invalidReview(`annotation ${review.id}: view ${review.view} cannot show this toleranced face edge-on`);
-      const owner = ctx.ownerSeq;
-      const build = (wide: boolean) => available.flatMap((line, li) =>
-        fcfLineCandidates(line, cells, 'flatness', (p2, v) => toSheet(ctx, p2, v), wide, review.offset)
-          .map(c => ({ ...c, penalty: c.penalty + li * 12, view: line.view })));
-      const best = choose(ctx, owner, build(false), () => build(true));
-      if (best) commit(ctx, 'flatness', best.candidate.view, cells.join(' '), best.r, false, review);
+      placeFlatnessFrame(ctx, lines, cells);
     }
   }
+}
+
+function placeFlatnessFrame(ctx: RenderCtx, lines: EdgeLine[], cells: string[]): void {
+  const review = beginAnnotation(ctx, annotationId('flatness', 'A'), 'flatness', lines[0].view, cells.join(' '));
+  if (!review) return;
+  if (review.originalText !== undefined) invalidReview(`annotation ${review.id} has no primary label; edit its tolerance declaration`);
+  const available = ctx.input.annotationOverrides?.[review.id]?.view !== undefined ? lines.filter(line => line.view === review.view) : lines;
+  if (!available.length) invalidReview(`annotation ${review.id}: view ${review.view} cannot show this toleranced face edge-on`);
+  const build = (wide: boolean) => available.flatMap((line, li) =>
+    fcfLineCandidates(line, cells, 'flatness', (p2, v) => toSheet(ctx, p2, v), wide, review.offset)
+      .map(c => ({ ...c, penalty: c.penalty + li * 12, view: line.view })));
+  const best = choose(ctx, ctx.ownerSeq, build(false), () => build(true));
+  if (best) commit(ctx, 'flatness', best.candidate.view, cells.join(' '), best.r, false, review);
 }
 
 export function placeRadiusAndChamferNotes(ctx: RenderCtx): void {

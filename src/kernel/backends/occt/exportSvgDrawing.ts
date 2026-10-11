@@ -73,6 +73,7 @@ import {
   renderAutoDrawing,
   type AutoAnnotateOptions,
   type DrawingReport,
+  type DrawingReportAnnotation,
 } from './drawingAuto';
 import { attributionGenerator } from '../../../shared/links/attribution';
 import { generalToleranceCell, sheetTitleBlock, FULL_TITLE_BLOCK } from './drawingTitleBlock';
@@ -396,17 +397,7 @@ export function renderSvgDrawing(
   const dimBodies = pass.autoStage.dimBodies;
   const bottomReserve = pass.autoStage.bottomReserve;
   const report = pass.autoStage.report;
-  if (report) {
-    report.suppressed = report.annotations.filter(a => a.suppressed).length;
-    const profile = resolveDraftingProfile(options.draftingProfile);
-    if (profile) report.draftingProfile = profile.id;
-  }
-  const ids = new Set(report?.annotations.map(a => a.id) ?? []);
-  const missing = Object.keys(options.annotationOverrides ?? {}).filter(id => !ids.has(id));
-  if (missing.length) diagnosticsOut.push({ target: 'export-occt', code: 'drawing.annotation.override-missing', severity: 'warn',
-    message: `Drawing annotation override IDs not found: ${missing.join(', ')}.`,
-    hint: 'Review the current report and remove or replace stale annotation IDs after geometry or dimension strategy changes.',
-    nextAction: NEXT_ACTIONS['drawing.annotation.override-missing'] });
+  finalizeDrawingReview(report, options, diagnosticsOut);
   const generalTolerance = pass.autoStage.generalTolerance;
 
   const viewGroups = renderViewGroups(styled, layout, bottomReserve, s, explodedShape);
@@ -438,6 +429,21 @@ export function renderSvgDrawing(
     sheetSize,
     projection,
   });
+}
+
+/** Complete review metadata after selecting the final placement pass. */
+function finalizeDrawingReview(report: DrawingReport | undefined, options: SvgDrawingOptions, diagnosticsOut: CompilerDiagnostic[]): void {
+  if (report) {
+    report.suppressed = report.annotations.filter(a => a.suppressed).length;
+    const profile = resolveDraftingProfile(options.draftingProfile);
+    if (profile) report.draftingProfile = profile.id;
+  }
+  const ids = new Set(report?.annotations.map(a => a.id) ?? []);
+  const missing = Object.keys(options.annotationOverrides ?? {}).filter(id => !ids.has(id));
+  if (missing.length) diagnosticsOut.push({ target: 'export-occt', code: 'drawing.annotation.override-missing', severity: 'warn',
+    message: `Drawing annotation override IDs not found: ${missing.join(', ')}.`,
+    hint: 'Review the current report and remove or replace stale annotation IDs after geometry or dimension strategy changes.',
+    nextAction: NEXT_ACTIONS['drawing.annotation.override-missing'] });
 }
 
 /**
@@ -578,84 +584,16 @@ function renderDimensionStage(
   rightReserve: Record<DrawingViewName, number>;
   report: DrawingReport | undefined;
 } {
-  // --- dimensions: authored if the caller supplied any, else automatic ----
-  const original = options.annotations ?? [];
-  const ids = authoredAnnotationIds(original);
-  const authored = original.map((a, i) => {
-    const o = options.annotationOverrides?.[ids[i]];
-    if (o?.text !== undefined && (a.kind === 'datum' || a.kind === 'fcf')) invalidReview(`annotation ${ids[i]} has no primary label; edit its datum or tolerance declaration`);
-    return { ...a, ...(o?.text !== undefined ? { text: o.text } : {}), ...(o?.view !== undefined ? { view: o.view } : {}),
-      ...(o?.offset !== undefined ? { offset: (a.offset ?? 0) + o.offset } : {}) } as DrawingAnnotation;
-  });
-  const visible = authored.flatMap((a, i) => options.annotationOverrides?.[ids[i]]?.suppress ? [] : [{ a, i }]);
+  if (options.annotations?.length) return renderAuthoredDimensionStage(parts, options, layout, s, diagnosticsOut);
   const autoOn = options.autoAnnotate !== undefined && options.autoAnnotate !== false;
   const f = layout.views.front.box;
   const t = layout.views.top.box;
   let dimBodies: string[];
   let bottomReserve: Record<DrawingViewName, number>;
-  let rightReserve: Record<DrawingViewName, number> = { front: 0, top: 0, left: 0, iso: 0 };
+  const rightReserve: Record<DrawingViewName, number> = { front: 0, top: 0, left: 0, iso: 0 };
   let report: DrawingReport | undefined;
 
-  if (authored.length > 0) {
-    const rendered = renderAnnotations({
-      parts,
-      annotations: visible.map(({ a }) => a),
-      reviewedViewIds: new Map(visible.flatMap(({ i }, index) =>
-        options.annotationOverrides?.[ids[i]]?.view !== undefined ? [[index, { id: ids[i], originalView: original[i].view ?? 'front' }] as const] : [])),
-      reviewedTextIds: new Set(visible.flatMap(({ i }, index) => options.annotationOverrides?.[ids[i]]?.text !== undefined ? [index] : [])),
-      placements: layout.views,
-      scale: s,
-    });
-    dimBodies = rendered.svg.map((svg, i) => svg.replace(/^(<g\b[^>]*)(>)/, `$1 data-kc-annotation-id="${escAttr(ids[visible[i].i])}"$2`));
-    bottomReserve = rendered.bottomReserve;
-    rightReserve = rendered.rightReserve;
-    const crowded = new Set(rendered.overlaps.flat().map(i => visible[i].i));
-    const labels = new Map(visible.map(({ i }, index) => [i, drawingAnnotationText(rendered.svg[index])]));
-    const primaryLabel = (i: number): string => {
-      const a = authored[i];
-      if ('text' in a && a.text !== undefined) return a.text;
-      // Measure without the suffix so the review editor cannot copy it into
-      // an override and accidentally duplicate the declared tolerance.
-      return drawingAnnotationText(renderAnnotations({ parts, annotations: [{ ...a, tol: undefined } as DrawingAnnotation], placements: layout.views, scale: s }).svg[0]);
-    };
-    const originalLabel = (i: number): string => {
-      const a = original[i];
-      if ('text' in a && a.text !== undefined) return a.text;
-      if (!options.annotationOverrides?.[ids[i]]?.text && !options.annotationOverrides?.[ids[i]]?.suppress) return labels.get(i) ?? a.kind;
-      return drawingAnnotationText(renderAnnotations({ parts, annotations: [a], placements: layout.views, scale: s }).svg[0]);
-    };
-    report = {
-      placed: visible.length - crowded.size,
-      overlapped: crowded.size,
-      byKind: visible.reduce<Record<string, number>>((acc, { a }) => {
-        acc[a.kind] = (acc[a.kind] ?? 0) + 1;
-        return acc;
-      }, {}),
-      datums: [],
-      annotations: authored.map((a, i) => ({
-        id: ids[i], source: 'authored',
-        kind: a.kind,
-        view: a.view ?? 'front',
-        text: labels.get(i) ?? ('text' in a && a.text !== undefined ? a.text : originalLabel(i)),
-        ...(a.kind === 'linear' && a.tol !== undefined ? { primaryText: primaryLabel(i) } : {}),
-        overlapped: crowded.has(i),
-        ...(options.annotationOverrides?.[ids[i]]?.suppress ? { suppressed: true } : {}),
-        ...(options.annotationOverrides?.[ids[i]]?.text !== undefined ? { originalText: originalLabel(i) } : {}),
-        ...(options.annotationOverrides?.[ids[i]]?.offset !== undefined ? { offset: options.annotationOverrides[ids[i]].offset } : {}),
-      })),
-    };
-    if (rendered.overlaps.length > 0) {
-      const pairs = rendered.overlaps.map(([i, j]) => `annotations[${i}] / annotations[${j}]`).join(', ');
-      diagnosticsOut.push({
-        target: 'export-occt',
-        code: 'drawing.annotation.overlap',
-        severity: 'warn',
-        message: `svg-drawing: ${rendered.overlaps.length} annotation pair(s) have overlapping rendered labels: ${pairs}.`,
-        hint: 'Reorder the annotations array, pass a different `view`, or add `offset` to push one of them further out.',
-        nextAction: NEXT_ACTIONS['drawing.annotation.overlap'],
-      });
-    }
-  } else if (autoOn) {
+  if (autoOn) {
     dimBodies = [];
     bottomReserve = { front: 0, top: 0, left: 0, iso: 0 };
   } else if (options.projection === 'first') {
@@ -698,6 +636,84 @@ function renderDimensionStage(
   }
 
   return { dimBodies, bottomReserve, rightReserve, report };
+}
+
+interface AuthoredReportContext {
+  parts: WorldFramePart[];
+  options: SvgDrawingOptions;
+  layout: SheetLayout;
+  scale: number;
+  original: readonly DrawingAnnotation[];
+  ids: string[];
+  authored: DrawingAnnotation[];
+  visible: { a: DrawingAnnotation; i: number }[];
+  labels: Map<number, string>;
+  crowded: Set<number>;
+}
+
+function reviewedAuthoredAnnotation(a: DrawingAnnotation, id: string, options: SvgDrawingOptions): DrawingAnnotation {
+  const o = options.annotationOverrides?.[id];
+  if (o?.text !== undefined && (a.kind === 'datum' || a.kind === 'fcf')) invalidReview(`annotation ${id} has no primary label; edit its datum or tolerance declaration`);
+  return { ...a, ...(o?.text !== undefined ? { text: o.text } : {}), ...(o?.view !== undefined ? { view: o.view } : {}),
+    ...(o?.offset !== undefined ? { offset: (a.offset ?? 0) + o.offset } : {}) } as DrawingAnnotation;
+}
+
+function renderAuthoredDimensionStage(parts: WorldFramePart[], options: SvgDrawingOptions, layout: SheetLayout, s: number, diagnosticsOut: CompilerDiagnostic[]) {
+  const original = options.annotations ?? [];
+  const ids = authoredAnnotationIds(original);
+  const authored = original.map((a, i) => reviewedAuthoredAnnotation(a, ids[i], options));
+  const visible = authored.flatMap((a, i) => options.annotationOverrides?.[ids[i]]?.suppress ? [] : [{ a, i }]);
+  const rendered = renderAnnotations({ parts, annotations: visible.map(({ a }) => a),
+    reviewedViewIds: new Map(visible.flatMap(({ i }, index) =>
+      options.annotationOverrides?.[ids[i]]?.view !== undefined ? [[index, { id: ids[i], originalView: original[i].view ?? 'front' }] as const] : [])),
+    reviewedTextIds: new Set(visible.flatMap(({ i }, index) => options.annotationOverrides?.[ids[i]]?.text !== undefined ? [index] : [])),
+    placements: layout.views, scale: s });
+  const ctx: AuthoredReportContext = { parts, options, layout, scale: s, original, ids, authored, visible,
+    crowded: new Set(rendered.overlaps.flat().map(i => visible[i].i)),
+    labels: new Map(visible.map(({ i }, index) => [i, drawingAnnotationText(rendered.svg[index])])) };
+  const dimBodies = rendered.svg.map((svg, i) => svg.replace(/^(<g\b[^>]*)(>)/, `$1 data-kc-annotation-id="${escAttr(ids[visible[i].i])}"$2`));
+  const report: DrawingReport = { placed: visible.length - ctx.crowded.size, overlapped: ctx.crowded.size,
+    byKind: visible.reduce<Record<string, number>>((acc, { a }) => { acc[a.kind] = (acc[a.kind] ?? 0) + 1; return acc; }, {}),
+    datums: [], annotations: authored.map((a, i) => authoredReportRow(ctx, a, i)) };
+  reportAuthoredOverlaps(rendered.overlaps, diagnosticsOut);
+  return { dimBodies, bottomReserve: rendered.bottomReserve, rightReserve: rendered.rightReserve, report };
+}
+
+function authoredPrimaryLabel(ctx: AuthoredReportContext, i: number): string {
+  const a = ctx.authored[i];
+  if ('text' in a && a.text !== undefined) return a.text;
+  // Measure without the suffix so editing cannot duplicate the tolerance.
+  return drawingAnnotationText(renderAnnotations({ parts: ctx.parts, annotations: [{ ...a, tol: undefined } as DrawingAnnotation], placements: ctx.layout.views, scale: ctx.scale }).svg[0]);
+}
+
+function authoredOriginalLabel(ctx: AuthoredReportContext, i: number): string {
+  const a = ctx.original[i];
+  if ('text' in a && a.text !== undefined) return a.text;
+  if (!ctx.options.annotationOverrides?.[ctx.ids[i]]?.text && !ctx.options.annotationOverrides?.[ctx.ids[i]]?.suppress) return ctx.labels.get(i) ?? a.kind;
+  return drawingAnnotationText(renderAnnotations({ parts: ctx.parts, annotations: [a], placements: ctx.layout.views, scale: ctx.scale }).svg[0]);
+}
+
+function authoredReportOverrideFields(ctx: AuthoredReportContext, i: number) {
+  const o = ctx.options.annotationOverrides?.[ctx.ids[i]];
+  return { ...(o?.suppress ? { suppressed: true } : {}),
+    ...(o?.text !== undefined ? { originalText: authoredOriginalLabel(ctx, i) } : {}),
+    ...(o?.offset !== undefined ? { offset: o.offset } : {}) };
+}
+
+function authoredReportRow(ctx: AuthoredReportContext, a: DrawingAnnotation, i: number): DrawingReportAnnotation {
+  return { id: ctx.ids[i], source: 'authored', kind: a.kind, view: a.view ?? 'front',
+    text: ctx.labels.get(i) ?? ('text' in a && a.text !== undefined ? a.text : authoredOriginalLabel(ctx, i)),
+    ...(a.kind === 'linear' && a.tol !== undefined ? { primaryText: authoredPrimaryLabel(ctx, i) } : {}),
+    overlapped: ctx.crowded.has(i), ...authoredReportOverrideFields(ctx, i) };
+}
+
+function reportAuthoredOverlaps(overlaps: readonly (readonly [number, number])[], diagnosticsOut: CompilerDiagnostic[]): void {
+  if (!overlaps.length) return;
+  const pairs = overlaps.map(([i, j]) => `annotations[${i}] / annotations[${j}]`).join(', ');
+  diagnosticsOut.push({ target: 'export-occt', code: 'drawing.annotation.overlap', severity: 'warn',
+    message: `svg-drawing: ${overlaps.length} annotation pair(s) have overlapping rendered labels: ${pairs}.`,
+    hint: 'Reorder the annotations array, pass a different `view`, or add `offset` to push one of them further out.',
+    nextAction: NEXT_ACTIONS['drawing.annotation.overlap'] });
 }
 
 function drawingAnnotationText(svg: string): string {

@@ -170,16 +170,25 @@ export interface AnnotationReview {
   originalText?: string;
 }
 
+/** Keep a hole's attached feature-control frame when its primary label is edited. */
+function reviewedLabel(kind: string, text: string, edited: string | undefined): string {
+  if (edited === undefined) return text;
+  return kind === 'hole' && text.includes(' | ')
+    ? edited + text.slice(text.indexOf(' | ')) : edited;
+}
+
+function recordSuppressedAnnotation(ctx: RenderCtx, kind: string, review: AnnotationReview): void {
+  ctx.annotations.push({ id: review.id, source: 'auto', kind, view: review.view, text: review.text, overlapped: false, suppressed: true,
+    ...(review.originalText !== undefined ? { originalText: review.originalText } : {}), ...(review.offset ? { offset: review.offset } : {}) });
+}
+
 /** Review before placement: suppressed annotations never become obstacles. */
 export function beginAnnotation(ctx: RenderCtx, id: string, kind: string, view: DrawingViewName, text: string): AnnotationReview | null {
   const o: DrawingAnnotationOverride | undefined = ctx.input.annotationOverrides?.[id];
-  const editedText = o?.text !== undefined && kind === 'hole' && text.includes(' | ')
-    ? o.text + text.slice(text.indexOf(' | ')) : o?.text ?? text;
-  const review: AnnotationReview = { id, view: o?.view ?? view, text: editedText, offset: o?.offset ?? 0,
+  const review: AnnotationReview = { id, view: o?.view ?? view, text: reviewedLabel(kind, text, o?.text), offset: o?.offset ?? 0,
     ...(o?.text !== undefined ? { originalText: text } : {}) };
   if (o?.suppress) {
-    ctx.annotations.push({ id, source: 'auto', kind, view: review.view, text: review.text, overlapped: false, suppressed: true,
-      ...(review.originalText !== undefined ? { originalText: review.originalText } : {}), ...(review.offset ? { offset: review.offset } : {}) });
+    recordSuppressedAnnotation(ctx, kind, review);
     return null;
   }
   return review;
