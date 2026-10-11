@@ -16,6 +16,39 @@ import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { evaluateScriptTool } from '../../../src/agent/mcp/tools/evaluateScript';
 import { lookupCookbookTool } from '../../../src/agent/mcp/tools/lookupCookbook';
 import { runAndExport } from '../../../src/agent/script-runtime/export';
+import { SHAPE_METHODS } from '../../../src/agent/mcp/tools/listApi';
+import { SHAPE_METHOD_HINT_EXAMPLES } from '../../../src/modeling/runtime/shapeMethodHintExamples';
+import { Shape } from '../../../src/modeling/capture/proxy';
+
+/** Count the top-level comma-separated arguments of the call in `example`. */
+function topLevelArgCount(example: string, method: string): number {
+  const start = example.indexOf(`.${method}(`) + method.length + 2;
+  let depth = 0;
+  let n = 1;
+  for (let i = start; i < example.length; i++) {
+    const c = example[i];
+    if ('([{'.includes(c)) depth++;
+    else if (')]}'.includes(c)) { if (depth === 0) return n; depth--; }
+    else if (c === ',' && depth === 0) n++;
+  }
+  throw new Error(`unbalanced call in ${example}`);
+}
+
+/** Positional parameters in a list_api signature: (a, b?, opts?) => … */
+function signatureParams(sig: string): { min: number; max: number } {
+  const inner = sig.slice(1, sig.indexOf(') =>'));
+  if (inner.startsWith('...')) return { min: 1, max: Infinity };
+  let depth = 0;
+  const parts: string[] = [];
+  let cur = '';
+  for (const c of inner) {
+    if ('([{<'.includes(c)) depth++;
+    if (')]}>'.includes(c)) depth--;
+    if (c === ',' && depth === 0) { parts.push(cur.trim()); cur = ''; } else cur += c;
+  }
+  if (cur.trim()) parts.push(cur.trim());
+  return { min: parts.filter((p) => !/^\w+\?/.test(p)).length, max: parts.length };
+}
 
 const NO_RETURN = `const a = box(10, 10, 10);
 const b = a.subtract(cylinder(20, 2).translate(5, 5, -1));`;
@@ -54,6 +87,34 @@ describe('script authoring hints', () => {
     expect(d.message).toMatch(/holes is a Shape method/);
     expect(d.hint).toContain('body.holes(');
   }, 60_000);
+
+  it('fillet called as a free function shows the radius-first signature', async () => {
+    const r = await evaluateScriptTool({ code: "let plate = box(20, 20, 5);\nreturn fillet({ byNormal: 'Z' }, 1);" });
+    const d = r.diagnostics[0];
+    expect(d.message).toMatch(/fillet is a Shape method/);
+    expect(d.hint).toContain('plate.fillet(2,');
+    expect(d.hint).not.toContain('byNormal');
+  }, 60_000);
+
+  it('every free-function hint example matches its list_api signature and evaluates', async () => {
+    const byName = new Map(SHAPE_METHODS.map((e) => [e.name, e]));
+    const proto = Shape.prototype as unknown as Record<string, unknown>;
+    for (const [method, example] of Object.entries(SHAPE_METHOD_HINT_EXAMPLES)) {
+      expect(typeof proto[method], method).toBe('function');
+      const entry = byName.get(method);
+      expect(entry, `${method} is in list_api SHAPE_METHODS`).toBeDefined();
+      const { min, max } = signatureParams(entry!.signature);
+      const n = topLevelArgCount(example, method);
+      expect(n, `${example} vs ${entry!.signature}`).toBeGreaterThanOrEqual(min);
+      expect(n, `${example} vs ${entry!.signature}`).toBeLessThanOrEqual(max);
+      const r = await evaluateScriptTool({ code: `let plate = box(40, 30, 10);\n${example};\nreturn plate;` });
+      const errs = r.diagnostics.filter((x) => x.severity === 'error');
+      expect(errs, `${example}: ${JSON.stringify(errs)}`).toEqual([]);
+    }
+    // A method without a worked example gets the bare form, never a made-up argument list.
+    const r = await evaluateScriptTool({ code: 'let plate = box(20, 20, 5);\nreturn embossText({});' });
+    expect(r.diagnostics[0].hint).toContain('body.embossText(...)');
+  }, 300_000);
 
   it('an unknown free name keeps the plain ReferenceError', async () => {
     const r = await evaluateScriptTool({ code: 'return notAThing(1);' });
