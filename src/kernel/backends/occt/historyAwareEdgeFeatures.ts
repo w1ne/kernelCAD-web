@@ -20,6 +20,7 @@ import type { OcctBackend } from './occtBackend';
 import type { FaceHash, EdgeHash, HistoryMap } from '../../naming/evolutionRecord';
 import type { FilletContinuity } from '../../../shared/intent/filletContinuityRecord';
 import { shellByOffsetSubtract } from './shellOffsetFallback';
+import { isValidShape } from './booleanRecovery';
 
 export interface EdgeFeatureHistoryResult {
   /** The result TopoDS_Shape, ready to wrap in a new OcctBackend. */
@@ -266,6 +267,16 @@ export function chamferWithHistory(
   }
 }
 
+/** Free a TopoDS_Shape handle nobody will reference (a rejected attempt or
+ *  a probe result). Never call it on a shape that is returned. */
+export function discardOcctShape(shape: unknown): void {
+  try {
+    (shape as { delete?: () => void } | undefined)?.delete?.();
+  } catch {
+    // already freed, or the heap is poisoned: nothing to release
+  }
+}
+
 /**
  * Create a shelled (hollow) version of `body` by removing `facesToRemove` and
  * offsetting all remaining faces inward by `thickness`. Captures face/edge
@@ -334,7 +345,13 @@ export function shellWithHistory(
       const { builder, progress } = built;
       try {
         const resultShape = builder.Shape();
-        if (!plausibleShellVolume(shapeVolume(oc, resultShape), bodyVolume, thickness)) continue;
+        // MakeThickSolid can report IsDone with a solid BRepCheck rejects
+        // (cylinder(30, 20).fillet(4).shell(1.5, top): bad wire at the
+        // blend seam). An invalid solid is a failed join mode, not a result.
+        if (!plausibleShellVolume(shapeVolume(oc, resultShape), bodyVolume, thickness) || !isValidShape(oc, resultShape)) {
+          discardOcctShape(resultShape);
+          continue;
+        }
 
         const faceHistory = new Map<FaceHash, FaceHash[]>();
         const edgeHistory = new Map<EdgeHash, EdgeHash[]>();
