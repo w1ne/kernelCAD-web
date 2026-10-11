@@ -180,7 +180,6 @@ interface Prepared {
 
 function buildGrid(
   shape: OcctBackend,
-  study: FeaStudyMetadata,
   sizing: InProcessBrickSize,
   solidVolume: number,
 ): Omit<Prepared, 'fixed' | 'loads' | 'faces'> {
@@ -218,7 +217,7 @@ function prepare(
     diagnostics.push(tooThinDiagnostic(study, sizing, owner));
     return undefined;
   }
-  const base = buildGrid(shape, study, sizing, solidVolume);
+  const base = buildGrid(shape, sizing, solidVolume);
   if (base.model.elementCount === 0) {
     diagnostics.push(diag('fea.mesh.quality-low', 'error', `feaStudy '${study.name}': the in-process voxel grid caught no solid brick (open or non-solid shape).`, owner));
     return undefined;
