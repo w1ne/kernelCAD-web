@@ -74,6 +74,35 @@ function describe(face: Face, ref: string): FaceDescriptor {
 /** A bare face label ('bottom', 'top', 'wall'): read as withLabel. */
 const BARE_LABEL = /^[A-Za-z_][\w-]*$/;
 
+const fmt = (v: number): string => String(Math.round(v * 1000) / 1000);
+
+/**
+ * A bare label names ONE face. After a boolean, a canonical label is carried
+ * by every face that inherited it ('top' on box.union(boss) is both the
+ * shoulder at z=10 and the boss top at z=30), and a load spread across all
+ * of them would be silently split. More than one match is an error that
+ * lists the faces and the selectors that pick each one; the explicit Query
+ * form keeps the bind-them-all meaning for a label that really is a set.
+ */
+function ambiguousBareLabel(label: string, faces: readonly FaceDescriptor[]): ResolveSelectorResult {
+  const list = faces
+    .map((f, i) => {
+      const [x, y, z] = f.centroid.map(fmt);
+      return `  ${i + 1}. centre [${x}, ${y}, ${z}], area ${fmt(f.area)} mm^2 -> { atX: ${x}, atY: ${y}, atZ: ${z} }`;
+    })
+    .join('\n');
+  return {
+    ok: false,
+    ambiguous: true,
+    faces: [...faces],
+    error:
+      `'${label}' is ambiguous: ${faces.length} faces carry that label on the built shape, so the selector would split ` +
+      `the load or support across all of them:\n${list}\n` +
+      'Pick one with a face query (the centre query above, or a single { atZ: <z> } / { atX: <x> } when it is unique) — or, to bind every one of them deliberately, ' +
+      `write '@kcq[face(withLabel("${label}"))]'.`,
+  };
+}
+
 /** Resolve a ref / Query string through the Query evaluator. */
 function resolveByQuery(
   shape: OcctBackend,
@@ -99,9 +128,12 @@ function resolveByQuery(
 
 export interface ResolveSelectorResult {
   ok: boolean;
+  /** The bound faces; on an ambiguous bare label, the candidates. */
   faces: FaceDescriptor[];
   /** Present when `ok` is false. */
   error?: string;
+  /** A bare label matched more than one face (see ambiguousBareLabel). */
+  ambiguous?: boolean;
 }
 
 /**
@@ -120,7 +152,12 @@ export function resolveSelector(
   const allFaces = (shape.getReplicadShape() as unknown as { faces: Face[] }).faces;
 
   if (typeof selector === 'string') {
-    if (BARE_LABEL.test(selector)) return resolveByQuery(shape, allFaces, selector, `@kcq[face(withLabel("${selector}"))]`, ctx);
+    if (BARE_LABEL.test(selector)) {
+      const r = resolveByQuery(shape, allFaces, selector, `@kcq[face(withLabel("${selector}"))]`, ctx);
+      return r.ok && r.faces.length > 1 ? ambiguousBareLabel(selector, r.faces) : r;
+    }
+    // An explicit Query string binds every face it selects.
+    if (selector.startsWith('@kcq[')) return resolveByQuery(shape, allFaces, selector, selector, ctx);
     const parsed = parseTopoRef(selector);
     if ('error' in parsed) {
       return { ok: false, faces: [], error: `could not parse topology ref '${selector}': ${parsed.error}` };
