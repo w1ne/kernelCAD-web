@@ -48,6 +48,8 @@ export interface ParsedGuide {
   readonly body: string;
   /** 1-based line of the file on which `body` starts. */
   readonly bodyLine: number;
+  /** 1-based file line of each top-level front matter key. */
+  readonly fieldLines: Readonly<Record<string, number>>;
 }
 
 const REQUIRED = ['title', 'summary', 'date', 'kind'] as const;
@@ -82,10 +84,16 @@ export function parseGuide(file: string, source: string): ParsedGuide | null {
     throw new FrontMatterError(file, null, 'front matter starts on line 1 but has no closing --- line');
   }
   const raw = readYaml(file, lines.slice(1, close).join('\n'));
+  const fieldLines: Record<string, number> = {};
+  lines.slice(1, close).forEach((line, i) => {
+    const key = /^([A-Za-z_][\w-]*)\s*:/.exec(line);
+    if (key) fieldLines[key[1]] = i + 2;
+  });
   return {
     meta: validate(file, raw),
     body: lines.slice(close + 1).join('\n'),
     bodyLine: close + 2,
+    fieldLines,
   };
 }
 

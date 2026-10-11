@@ -39,6 +39,7 @@ describe('parseGuide', () => {
     expect(parsed!.body).toBe('\nThe lede.\n');
     // Lines 1-6 are the fences and the four fields; the body starts on line 7.
     expect(parsed!.bodyLine).toBe(7);
+    expect(parsed!.fieldLines).toEqual({ title: 2, summary: 3, date: 4, kind: 5 });
   });
 
   it('returns null for a page without front matter: it is not a post', () => {

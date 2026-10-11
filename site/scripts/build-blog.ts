@@ -4,30 +4,83 @@
 //
 // Builds the blog from docs/guide/*.md.
 //
-//   npx tsx site/scripts/build-blog.ts
+//   npx tsx site/scripts/build-blog.ts            published posts and the index
+//   npx tsx site/scripts/build-blog.ts --drafts   the same, plus a preview of each draft
+//
+// `npm run site:build` runs the first form.
+//
+// POSTS
 //
 // A guide with front matter is a post (fields: site/scripts/blogFrontMatter.ts);
 // a guide without front matter is not, and is skipped. The file name is the
 // slug: docs/guide/<slug>.md becomes site/blog/<slug>/index.html, and the blog
 // index, site/blog/index.html, lists the published posts newest first. The
-// build writes nothing else.
+// build writes nothing outside site/blog/.
 //
-// The body is the Markdown subset in site/scripts/blogMarkdown.ts. Its first
-// paragraph is the lede. The title comes from front matter, so the body has no
-// level-1 heading. An image alone on its line is a figure, its "title" the
-// caption: ![alt](path "caption"). The path is relative to the Markdown file,
-// as on GitHub, and must point at a file under site/; the page links it from
-// there, and width and height come from the PNG itself.
+// A draft (status: draft) is never on the index and never in site/blog/<slug>/.
+// With --drafts it is built to site/blog/drafts/<slug>/index.html, marked
+// noindex. That directory is git-ignored and every build without --drafts
+// deletes it, so a preview cannot be deployed. A site/blog/<slug>/ page that no
+// published guide builds any more (the post went back to draft) fails the
+// build until the directory is removed.
+//
+// MARKDOWN
+//
+// The body is the subset in site/scripts/blogMarkdown.ts. Its first paragraph
+// is the lede. The title comes from front matter, so the body has no level-1
+// heading. An image alone on its line is a figure, its "title" the caption:
+// ![alt](path "caption"). The path is relative to the Markdown file, as on
+// GitHub, and must point at a file under site/; width and height come from the
+// PNG itself.
+//
+// CHECKS
+//
+// After writing the pages, the build checks every post it wrote and exits 1
+// with file:line for each failure:
+//
+//   - every ```kcad block evaluates with no error and no warning. A kcad block
+//     is a whole script; use ```ts for a fragment.
+//   - every image exists, and so do the `model` and `video` files.
+//   - every quoted value matches `kernelcad evaluate <model> --json`.
+//
+// A quoted value is marked by a check comment on the line right under the
+// paragraph, list or code block that shows it. Rendered Markdown hides it.
+//
+//   Each fuel line is 309.29 mm long.
+//   <!-- check: tubes.lines[name=fuel-a].cutLength = 309.29 -->
+//
+//   <!-- check examples/x/broken.kcad.ts: diagnostics[0].code = tube.clearance.violated -->
+//   <!-- check examples/x/broken.kcad.ts: diagnostics[0].message contains needs 12.00 mm -->
+//   <!-- check: tubes.lines[name=hyd-b].bendTableCsv = block -->
+//
+//   model  optional, a repository path; without it, the front matter `model`.
+//   path   into the --json output: keys joined by dots; [n] is the nth element
+//          of a list; [key=value] or [key=value,key=value] is the one element
+//          that matches (none or several is a failure); .length is the size
+//          of a list. `bendTableCsv` on a line of tubes.lines is the CSV that
+//          `kernelcad export bend-table` writes for that tube, formatted from
+//          the same line by the same function.
+//   value  a number is compared at the precision written: 309.29 matches
+//          309.2947. [a, b, c] compares a list of numbers the same way. `block`
+//          compares the whole code block above. Anything else is text, compared
+//          exactly; double quotes around it are dropped. `contains` passes when
+//          the text is part of the value.
+//
+// The value as written must also appear in the block above the check, so what
+// a reader sees is what was checked. A drifted value fails with the file, the
+// line, the model and the real value.
 
-import { mkdirSync, readFileSync, readdirSync, writeFileSync, openSync, readSync, closeSync } from 'node:fs';
+import { mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync, openSync, readSync, closeSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseGuide, type BlogFrontMatter } from './blogFrontMatter';
 import { MarkdownError, escapeAttr, escapeText, parseBlocks, renderInline, type Block, type FigureBlock } from './blogMarkdown';
 import { DEFAULT_OG_IMAGE, SITE_ORIGIN, indexPage, pageShell, postByline } from './blogPage';
+import { checkOrphanPages, checkPost, needsEvaluator, type CheckFailure, type Evaluator } from './blogChecks';
 
 export const GUIDE_DIR = 'docs/guide';
 export const BLOG_DIR = 'site/blog';
+export const DRAFTS_DIR = 'site/blog/drafts';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -50,6 +103,8 @@ export interface BlogPost {
   readonly file: string;
   readonly slug: string;
   readonly meta: BlogFrontMatter;
+  /** File line of each front matter key, for messages about its value. */
+  readonly fieldLines: Readonly<Record<string, number>>;
   readonly blocks: readonly Block[];
 }
 
@@ -65,7 +120,7 @@ export function postFromSource(file: string, source: string): BlogPost | null {
     throw new BlogSourceError(file, null, 'site/blog/drafts/ is where draft previews go; choose another file name');
   }
   try {
-    return { file, slug, meta: parsed.meta, blocks: parseBlocks(parsed.body, parsed.bodyLine) };
+    return { file, slug, meta: parsed.meta, fieldLines: parsed.fieldLines, blocks: parseBlocks(parsed.body, parsed.bodyLine) };
   } catch (err) {
     if (err instanceof MarkdownError) throw new BlogSourceError(file, err.line, err.detail);
     throw err;
@@ -108,11 +163,14 @@ export interface RenderedPost {
 
 export interface BlogBuild {
   readonly files: readonly OutputFile[];
+  /** Published posts newest first, then drafts when they were asked for. */
   readonly posts: readonly RenderedPost[];
 }
 
 export interface RenderOptions {
   readonly repoRoot: string;
+  /** Also build each draft to site/blog/drafts/<slug>/. Never adds it to the index. */
+  readonly drafts?: boolean;
 }
 
 /** Newest first; same day by slug, so the order never depends on the disk. */
@@ -123,7 +181,11 @@ function newestFirst(a: BlogPost, b: BlogPost): number {
 /** Every page of the blog, as files to write. Reads the images for their size. */
 export function renderBlog(posts: readonly BlogPost[], opts: RenderOptions): BlogBuild {
   const published = posts.filter((post) => post.meta.status === 'published').sort(newestFirst);
-  const rendered = published.map((post) => renderPost(post, opts.repoRoot));
+  const drafts = opts.drafts ? posts.filter((post) => post.meta.status === 'draft').sort(newestFirst) : [];
+  const rendered = [
+    ...published.map((post) => renderPost(post, opts.repoRoot, false)),
+    ...drafts.map((post) => renderPost(post, opts.repoRoot, true)),
+  ];
   const index: OutputFile = {
     path: `${BLOG_DIR}/index.html`,
     html: indexPage(published.map((post) => ({ slug: post.slug, ...post.meta }))),
@@ -139,13 +201,15 @@ interface PageContext {
   readonly images: PostImage[];
 }
 
-function renderPost(post: BlogPost, repoRoot: string): { file: OutputFile; rendered: RenderedPost } {
-  const pageDir = `/blog/${post.slug}/`;
+function renderPost(post: BlogPost, repoRoot: string, draft: boolean): { file: OutputFile; rendered: RenderedPost } {
+  const pageDir = draft ? `/blog/drafts/${post.slug}/` : `/blog/${post.slug}/`;
   const ctx: PageContext = { repoRoot, post, pageDir, images: [] };
   const [lede, ...rest] = post.blocks;
+  const note = draft && post.meta.note !== undefined ? [`      <p class="effective">${escapeText(post.meta.note)}</p>`] : [];
   const main = [
     '      <article>',
-    postByline(post.meta.date, false),
+    postByline(post.meta.date, draft),
+    ...note,
     `      <h1>${escapeText(post.meta.title)}</h1>`,
     '',
     `      <p class="lede">${renderInline((lede as { text: string }).text)}</p>`,
@@ -160,12 +224,12 @@ function renderPost(post: BlogPost, repoRoot: string): { file: OutputFile; rende
       ogType: 'article',
       image: firstImage ? `${SITE_ORIGIN}${siteUrl(repoRoot, firstImage.file)}` : DEFAULT_OG_IMAGE,
       url: `${SITE_ORIGIN}${pageDir}`,
-      noindex: false,
+      noindex: draft,
       extraStyle: [],
     },
     main,
   );
-  const pagePath = `${BLOG_DIR}/${post.slug}/index.html`;
+  const pagePath = `site${pageDir}index.html`;
   return { file: { path: pagePath, html }, rendered: { post, path: pagePath, images: ctx.images } };
 }
 
@@ -241,18 +305,56 @@ function writeOutputs(repoRoot: string, files: readonly OutputFile[]): void {
   }
 }
 
-function main(): void {
-  const posts = readPosts(REPO_ROOT);
-  const build = renderBlog(posts, { repoRoot: REPO_ROOT });
+/** Stands in when no post needs the kernel, so the build never loads it. */
+const NO_EVALUATOR: Evaluator = {
+  file: () => Promise.reject(new Error('no post needs an evaluation')),
+  code: () => Promise.reject(new Error('no post needs an evaluation')),
+};
+
+/** Runs every check on what was built; returns the failures and a line per page. */
+async function checkBuild(build: BlogBuild): Promise<{ failures: CheckFailure[]; summary: string[] }> {
+  const published = build.posts.filter((r) => r.post.meta.status === 'published').map((r) => r.post.slug);
+  const failures = checkOrphanPages(REPO_ROOT, published);
+  const evaluator = build.posts.some(needsEvaluator)
+    ? (await import('./blogEvaluator')).createEvaluator(REPO_ROOT)
+    : NO_EVALUATOR;
+  const summary: string[] = [];
+  for (const rendered of build.posts) {
+    const report = await checkPost(rendered, evaluator, REPO_ROOT);
+    failures.push(...report.failures);
+    summary.push(`  ${rendered.path}: ${report.kcadBlocks} kcad block(s) evaluated, ${report.quotes} quoted value(s) match`);
+  }
+  return { failures, summary };
+}
+
+async function main(args: readonly string[]): Promise<number> {
+  const unknown = args.filter((arg) => arg !== '--drafts');
+  if (unknown.length > 0) throw new Error(`unknown argument ${unknown.join(' ')}; the only option is --drafts`);
+  const drafts = args.includes('--drafts');
+
+  const build = renderBlog(readPosts(REPO_ROOT), { repoRoot: REPO_ROOT, drafts });
+  // Previews are rebuilt from nothing each time, and removed when not asked for.
+  rmSync(path.join(REPO_ROOT, DRAFTS_DIR), { recursive: true, force: true });
   writeOutputs(REPO_ROOT, build.files);
-  console.log(`✓ ${BLOG_DIR} — ${build.posts.length} published post(s) and the index`);
+
+  const { failures, summary } = await checkBuild(build);
+  if (failures.length > 0) {
+    for (const failure of failures) console.error(`${failure.file}:${failure.line}: ${failure.message}`);
+    console.error(`build-blog: ${failures.length} check(s) failed`);
+    return 1;
+  }
+  const previews = build.posts.filter((r) => r.post.meta.status === 'draft').length;
+  console.log(summary.join('\n'));
+  console.log(`✓ ${BLOG_DIR}: ${build.posts.length - previews} published post(s), the index${drafts ? `, ${previews} draft preview(s)` : ''}`);
+  return 0;
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  try {
-    main();
-  } catch (err) {
-    console.error(`build-blog failed: ${err instanceof Error ? err.message : String(err)}`);
-    process.exit(1);
-  }
+  main(process.argv.slice(2)).then(
+    (code) => process.exit(code),
+    (err: unknown) => {
+      console.error(`build-blog failed: ${err instanceof Error ? err.message : String(err)}`);
+      process.exit(1);
+    },
+  );
 }
