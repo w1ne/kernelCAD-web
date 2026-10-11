@@ -327,6 +327,8 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     expect(catalogue.has('tool.trace-from-image.part-detection-failed')).toBe(true);
     expect(catalogue.has('feature.boolean.recovered')).toBe(true);
     expect(catalogue.has('feature.shell.boolean-fallback')).toBe(true);
+    expect(catalogue.has('feature.sheetMetal.crossing-bends')).toBe(true);
+    expect(catalogue.has('feature.sheetMetal.fold-invalid')).toBe(true);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

@@ -50,6 +50,34 @@ describe('planFold (pure)', () => {
     expect(movingSide({ orient: 'x', at: 80, angleDeg: 90, radius: 2 }, blank)).toBe(1);
   });
 
+  it('a lip on a folded flange splits only that flange cell', () => {
+    const b = { min: [0, 0] as [number, number], max: [120, 40] as [number, number], z0: 0, thickness: 1.5, kFactor: 0.4 };
+    const steps = planFold([
+      { orient: 'x', at: 20, angleDeg: 90, radius: 2 },
+      { orient: 'x', at: 100, angleDeg: 90, radius: 2 },
+      { orient: 'x', at: 10, angleDeg: 90, radius: 2 },
+    ], b);
+    const half = steps[0].bendAllowance / 2;
+    // The lip's cell is the left flange: blank edge .. bend-1 zone start.
+    expect(steps[2].cell.min).toEqual([0, 0]);
+    expect(steps[2].cell.max[0]).toBeCloseTo(20 - half, 9);
+    expect(steps[2].cell.max[1]).toBe(40);
+    expect(steps[2].reliefChecks).toEqual([]);
+  });
+
+  it('a crossing bend asks for corner relief where the two bends meet', () => {
+    const b = { min: [0, 0] as [number, number], max: [100, 60] as [number, number], z0: 0, thickness: 1.5, kFactor: 0.4 };
+    const steps = planFold([
+      { orient: 'x', at: 85, angleDeg: 90, radius: 2 },
+      { orient: 'y', at: 15, angleDeg: 90, radius: 2 },
+    ], b);
+    const half = steps[0].bendAllowance / 2;
+    // Bend 2's cell stops at bend 1's zone start along X.
+    expect(steps[1].cell.max[0]).toBeCloseTo(85 - half, 9);
+    expect(steps[1].reliefChecks).toHaveLength(1);
+    expect(steps[1].reliefChecks[0].crossing.at).toBe(85);
+  });
+
   it('rejects overlapping bend zones', () => {
     expect(() => planFold([
       { orient: 'x', at: 50, angleDeg: 90, radius: 2 },
@@ -141,6 +169,65 @@ describe('sheetMetalBend lowering — folded geometry', () => {
     expect(holes[0].axisOrigin[0]).toBeCloseTo(20, 3);
     expect(holes[0].axisOrigin[1]).toBeCloseTo(40, 3);
     expect(Math.abs(holes[0].axisDirection[2])).toBeCloseTo(1, 6);
+  });
+
+  it('C-channel with lips (3 bends): one closed solid, volume conserved (was 2 solids, 6997 mm³)', async () => {
+    const { shape, errors } = await lower(`
+      return sheetMetal(path().moveTo(0, 0).lineTo(120, 0).lineTo(120, 40).lineTo(0, 40).close(), { thickness: 1.5, kFactor: 0.4 })
+        .bend({ atX: 20 }, 90, 2).bend({ atX: 100 }, 90, 2).bend({ atX: 10 }, 90, 2);`);
+    expect(errors).toEqual([]);
+    expect(solidCount(shape!)).toBe(1);
+    // Blank 7200 mm³ plus θ·(0.5 − K)·t²·w per bend.
+    const perBend = (Math.PI / 2) * 0.1 * 1.5 * 1.5 * 40;
+    expect(shape!.volume()).toBeCloseTo(7200 + 3 * perBend, 1);
+    const bb = shape!.boundingBox();
+    // The right flange keeps its full height; the lipped left flange is shorter.
+    expect(bb.max[2]).toBeCloseTo(21.46, 1);
+    expect(bb.min[0]).toBeCloseTo(18.54, 1);
+    expect(bb.max[0]).toBeCloseTo(101.46, 1);
+  });
+
+  it('lips on both flanges (4 bends) stay one conserved solid', async () => {
+    const { shape, errors } = await lower(`
+      return sheetMetal(path().moveTo(0, 0).lineTo(120, 0).lineTo(120, 40).lineTo(0, 40).close(), { thickness: 1.5, kFactor: 0.4 })
+        .bend({ atX: 20 }, 90, 2).bend({ atX: 100 }, 90, 2).bend({ atX: 10 }, 90, 2).bend({ atX: 110 }, 90, 2);`);
+    expect(errors).toEqual([]);
+    expect(solidCount(shape!)).toBe(1);
+    const perBend = (Math.PI / 2) * 0.1 * 1.5 * 1.5 * 40;
+    expect(shape!.volume()).toBeCloseTo(7200 + 4 * perBend, 1);
+  });
+
+  it('crossing atX / atY bends without corner relief fail with feature.sheetMetal.crossing-bends (was 845 mm³ lost silently)', async () => {
+    const { shape, errors } = await lower(`
+      return sheetMetal(${BLANK}, { thickness: 1.5, kFactor: 0.4 }).bend({ atX: 85 }, 90, 2).bend({ atY: 15 }, 90, 2);`);
+    expect(errors.map(e => e.code)).toContain('feature.sheetMetal.crossing-bends');
+    expect(errors.find(e => e.code === 'feature.sheetMetal.crossing-bends')?.hint).toMatch(/corner relief/);
+    expect(shape).toBeUndefined();
+  });
+
+  it('crossing bends with a corner-relief notch fold into one conserved solid', async () => {
+    const { shape, errors } = await lower(`
+      const outline = path().moveTo(0, 0).lineTo(82, 0).lineTo(82, 18).lineTo(100, 18).lineTo(100, 60).lineTo(0, 60).close();
+      return sheetMetal(outline, { thickness: 1.5, kFactor: 0.4 }).bend({ atX: 85 }, 90, 2).bend({ atY: 15 }, 90, 2);`);
+    expect(errors).toEqual([]);
+    expect(solidCount(shape!)).toBe(1);
+    // (6000 − 18·18) mm² · 1.5, plus θ·(0.5 − K)·t² over each bend's length (42, 82).
+    const delta = (Math.PI / 2) * 0.1 * 1.5 * 1.5 * (42 + 82);
+    expect(shape!.volume()).toBeCloseTo(5676 * 1.5 + delta, 1);
+  });
+
+  it('lips folding into each other fail with feature.sheetMetal.fold-invalid, not a clean broken solid', async () => {
+    const { shape, errors } = await lower(`
+      return sheetMetal(path().moveTo(0, 0).lineTo(100, 0).lineTo(100, 40).lineTo(0, 40).close(), { thickness: 1.5, kFactor: 0.4 })
+        .bend({ atX: 30 }, 90, 2).bend({ atX: 70 }, 90, 2).bend({ atX: 22 }, 90, 2).bend({ atX: 78 }, 90, 2);`);
+    expect(errors.map(e => e.code)).toContain('feature.sheetMetal.fold-invalid');
+    expect(shape).toBeUndefined();
+  });
+
+  it('a bend line off the blank still says it does not cross the sheet', async () => {
+    const { errors } = await lower(`
+      return sheetMetal(path().moveTo(0, 0).lineTo(80, 0).lineTo(80, 40).lineTo(0, 40).close(), { thickness: 2, kFactor: 0.4 }).bend({ atX: 120 }, 90, 2);`);
+    expect(errors.map(e => e.message).join('\n')).toMatch(/does not cross the sheet/);
   });
 
   it('overlapping bend zones fail with feature.invalid-args', async () => {

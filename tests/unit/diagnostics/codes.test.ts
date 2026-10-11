@@ -142,6 +142,8 @@ describe('diagnostic catalogue invariants', () => {
     expect(DIAGNOSTIC_CODES).toContain('tool.trace-from-image.part-detection-failed');
     expect(DIAGNOSTIC_CODES).toContain('feature.boolean.recovered');
     expect(DIAGNOSTIC_CODES).toContain('feature.shell.boolean-fallback');
+    expect(DIAGNOSTIC_CODES).toContain('feature.sheetMetal.crossing-bends');
+    expect(DIAGNOSTIC_CODES).toContain('feature.sheetMetal.fold-invalid');
   });
 
   it('every code has a non-empty hint template', () => {

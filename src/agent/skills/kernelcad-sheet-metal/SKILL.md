@@ -68,10 +68,10 @@ BA = (pi * |angle_deg| / 180) * (kFactor * thickness + radius)
 
 - Bend axis derived from `{ atX }` / `{ atY }` EdgeQuery or `{ face: 'top' }`. Other selectors emit `feature.bend.edge-not-linear`.
 - `radius >= 0.5 * thickness` recommended; tighter bends emit `feature.kernel-failed`.
-- `flattenPattern()` supports at most 2 bends in the chain; 3+ emits `feature.flattenPattern.multi-bend-unsupported`.
+- `flattenPattern()` flattens any number of bends (a C-channel with lips is 4). A fold that collides with another flange or loses material fails with `feature.sheetMetal.fold-invalid` instead of producing a broken solid.
 - Sketch profiles must be polylines (`path().moveTo / lineTo / close`). Arcs in the profile are not supported by `flattenPattern()` in slice 1.
 - A hole that crosses the bend zone loses the part of it inside the zone (the arc is the sheet section at the zone start, revolved). Keep holes `>= BA/2 + radius` from the line.
-- Perpendicular bends (`atX` and `atY` on one blank, e.g. a four-sided tray) are not modelled with corner reliefs yet.
+- Bend lines span the whole blank, so an `atX` and an `atY` bend always cross. That folds only when the blank outline has corner relief there — notch the corner at least one bend allowance past each line (e.g. `path().moveTo(0,0).lineTo(82,0).lineTo(82,18).lineTo(100,18)...` for bends at x = 85 and y = 15). Without relief: `feature.sheetMetal.crossing-bends`.
 
 ## MCP introspection
 
@@ -82,7 +82,8 @@ BA = (pi * |angle_deg| / 180) * (kFactor * thickness + radius)
 
 - `feature.sheetMetal.kfactor-invalid` (error) — `kFactor` not in `[0, 1]` or non-finite. Hint: pass a value in `[0, 1]`; typical 0.33-0.45.
 - `feature.bend.edge-not-linear` (error) — resolved bend axis cannot be derived from the selector. Hint: pick a straight perimeter edge; slice-1 supports `{ atX: <n> }`, `{ atY: <n> }`, or `{ face: 'top' }`.
-- `feature.flattenPattern.multi-bend-unsupported` (error) — chain has 3+ bends. Hint: flatten an upstream Shape with `<= 2` bends, or wait for slice 2.
+- `feature.sheetMetal.crossing-bends` (error) — an `atX` and an `atY` bend cross where the blank still has material. Hint: add corner relief to the outline.
+- `feature.sheetMetal.fold-invalid` (error) — the fold produced several solids, an invalid solid, or lost / overlapped material (flanges folding into each other). Hint: reorder or respace the bends.
 
 ## Verification gates
 
@@ -95,8 +96,8 @@ After authoring a sheet-metal part, run before reporting done:
 | G-radius-vs-thickness | Inner bend radius `>= 0.5 * thickness`; tighter bends fail and emit `feature.kernel-failed` |
 | G-bend-edge-linear | Every `.bend(...)` selector resolves to a straight edge (slice 1: `{ atX }`, `{ atY }`, or `{ face: 'top' }`) |
 | G-bend-table-exists | `inspect({ of: 'bend-table' })` returns one entry per `.bend(...)` call with non-negative bend allowance and a finite axis line |
-| G-flatten-roundtrip | `shape.flattenPattern()` produces a `Region` whose `outer` polyline area equals the source profile area within `1e-6` (chain has <= 2 bends in slice 1) |
-| G-flatten-bend-count | `flattenPattern()` chains have at most 2 bends — 3+ emits `feature.flattenPattern.multi-bend-unsupported` |
+| G-flatten-roundtrip | `shape.flattenPattern()` produces a `Region` whose `outer` polyline area equals the source profile area within `1e-6` |
+| G-fold-valid | No `feature.sheetMetal.fold-invalid` / `feature.sheetMetal.crossing-bends`: every fold is one closed solid with conserved volume |
 | G-profile-polyline | Sketch profile uses only `moveTo` / `lineTo` / `close` — no arcs (slice 1) |
 
 ## Mounting sheet on a frame

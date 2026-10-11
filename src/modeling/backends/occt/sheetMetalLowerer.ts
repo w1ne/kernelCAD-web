@@ -6,10 +6,16 @@
 // planner in `modeling/sheetMetalFold.ts` (one `FoldStep` per bend, in world
 // space at the moment that bend is folded). For the step being lowered:
 //
-//   1. Split the current body at the two bend-zone planes (zone start on the
-//      fixed side, zone end on the moving side; the zone is the K-factor bend
-//      allowance strip across the bend line). Half-space boxes do the split
-//      (`BRepAlgoAPI_Splitter` is not bound in the bundled wasm).
+//   1. Isolate the flat cell holding the bend line (the rigid strip between
+//      the neighbouring earlier bend zones, mapped to world by the planner),
+//      then split ONLY that cell at the two bend-zone planes (zone start on
+//      the fixed side, zone end on the moving side; the zone is the K-factor
+//      bend allowance strip across the bend line). Half-space boxes do the
+//      split (`BRepAlgoAPI_Splitter` is not bound in the bundled wasm). The
+//      rest of the body (earlier flanges and arcs) joins the fixed or the
+//      moving piece whole, by which side of the cell it is attached to — a
+//      world-wide half-space would slice an unrelated flange crossing the
+//      plane.
 //   2. Revolve the fixed piece's cut section (the sheet cross-section at the
 //      zone start, with any relief notches or cutouts that cross it) about the
 //      bend axis by the bend angle: the bend arc with the requested INNER
@@ -19,6 +25,9 @@
 //      bend axis. Its cut face lands exactly on the arc's end face.
 //   4. Fuse fixed piece + arc + flange into one solid. Holes and cutouts in
 //      the flange ride along with it.
+//   5. Check the result: one closed, valid solid whose volume is the input's
+//      minus the zone strip plus the arc. Anything else is an error
+//      (`feature.sheetMetal.fold-invalid`), never a clean model.
 //
 // Returns a `bendRecord` (bend line in flat-blank coordinates, bend
 // allowance, flat blank extents) that the caller persists on
@@ -29,7 +38,8 @@ import { getOC } from 'replicad';
 import { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import type { FeatureId } from '../../../shared/intent/types';
-import type { FoldStep, Rigid, Vec3 } from '../../sheetMetalFold';
+import { type FlatCell, type FoldStep, type ReliefCheck, type Rigid, type Vec3 } from '../../sheetMetalFold';
+import { brepExtremaDistance } from '../../../kernel/backends/occt/brepDistance';
 
 export interface BendAxisSpec {
   /** A point on the bend axis line, in world coordinates (slice-1 sheets
@@ -79,6 +89,15 @@ export interface BendInputs {
   kFactor: number;
   /** Bend line + flat blank data recorded for flattenPattern. */
   flat: { axis: BendAxisSpec; bounds: [number, number, number, number]; z0: number };
+}
+
+/** A fold that cannot be made, with its own diagnostic code. */
+class FoldRejected extends Error {
+  readonly diagnostic: CompilerDiagnostic;
+  constructor(diagnostic: CompilerDiagnostic) {
+    super(diagnostic.message);
+    this.diagnostic = diagnostic;
+  }
 }
 
 function kernelFailed(featureId: FeatureId, message: string, hint: string): CompilerDiagnostic {
@@ -181,21 +200,152 @@ function fusePieces(pieces: replicad.Shape3D[]): replicad.Shape3D {
   return out;
 }
 
-function foldPieces(oc: Oc, inp: BendInputs, baseShape: unknown): replicad.Shape3D[] {
+/** A solid box over a flat cell (full sheet thickness plus `pad` above and
+ *  below, the blank edges extended by `pad`), placed in world space. */
+function cellTool(oc: Oc, cell: FlatCell, inp: BendInputs, pad: number): unknown {
+  const [bx0, by0, bx1, by1] = inp.flat.bounds;
+  const lo = (v: number, edge: number): number => (Math.abs(v - edge) < 1e-9 ? v - pad : v);
+  const hi = (v: number, edge: number): number => (Math.abs(v - edge) < 1e-9 ? v + pad : v);
+  const p0: Vec3 = [lo(cell.min[0], bx0), lo(cell.min[1], by0), inp.flat.z0 - pad];
+  const p1: Vec3 = [hi(cell.max[0], bx1), hi(cell.max[1], by1), inp.flat.z0 + inp.thickness + pad];
+  const a = new oc.gp_Pnt_3(...p0);
+  const b = new oc.gp_Pnt_3(...p1);
+  const maker = new oc.BRepPrimAPI_MakeBox_4(a, b);
+  const flatBox = maker.Shape();
+  maker.delete();
+  a.delete();
+  b.delete();
+  return transformShape(oc, flatBox, cell.transform);
+}
+
+function booleanOp(oc: Oc, kind: 'common' | 'cut', shape: unknown, tool: unknown): unknown {
+  const progress = new oc.Message_ProgressRange_1();
+  const op = kind === 'common'
+    ? new oc.BRepAlgoAPI_Common_3(shape, tool, progress)
+    : new oc.BRepAlgoAPI_Cut_3(shape, tool, progress);
+  op.Build(progress);
+  const out = op.HasErrors() ? null : op.Shape();
+  op.delete();
+  progress.delete();
+  if (!out) throw new Error(`cell ${kind} failed`);
+  return out;
+}
+
+function solidsOf(oc: Oc, shape: unknown): unknown[] {
+  const ex = new oc.TopExp_Explorer_2(shape, oc.TopAbs_ShapeEnum.TopAbs_SOLID, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
+  const out: unknown[] = [];
+  for (; ex.More(); ex.Next()) out.push(oc.TopoDS.Solid_1(ex.Current()));
+  ex.delete();
+  return out;
+}
+
+function volumeOf(shape: unknown): number {
+  return isEmptyShape(shape) ? 0 : Math.abs(replicad.measureVolume(replicad.cast(shape) as replicad.Shape3D));
+}
+
+const TOUCH_TOL_MM = 1e-3;
+
+/** Rest-of-body solids attached to the moving end of the cell go with the
+ *  flange; everything else stays. */
+function splitRest(oc: Oc, rest: unknown, fixedCell: unknown, movingCell: unknown): { fixed: unknown[]; moving: unknown[] } {
+  const out = { fixed: [] as unknown[], moving: [] as unknown[] };
+  const hasMoving = !isEmptyShape(movingCell);
+  const hasFixed = !isEmptyShape(fixedCell);
+  for (const solid of solidsOf(oc, rest)) {
+    const dMoving = hasMoving ? brepExtremaDistance(oc, solid, movingCell) ?? Infinity : Infinity;
+    const dFixed = hasFixed ? brepExtremaDistance(oc, solid, fixedCell) ?? Infinity : Infinity;
+    if (dMoving <= TOUCH_TOL_MM && dFixed > TOUCH_TOL_MM) out.moving.push(solid);
+    else out.fixed.push(solid);
+  }
+  return out;
+}
+
+/** Crossing earlier bends need corner relief: no material where the two
+ *  bends' zone-and-moving sides meet. */
+function checkRelief(oc: Oc, inp: BendInputs, baseShape: unknown): void {
+  for (const check of inp.step.reliefChecks) {
+    const material = check.regions.reduce((sum, region) => sum + volumeOf(booleanOp(oc, 'common', baseShape, cellTool(oc, region, inp, 0.01))), 0);
+    if (material > 1e-3) throw new FoldRejected(crossingBendsDiagnostic(inp, check, material));
+  }
+}
+
+interface FoldParts {
+  pieces: replicad.Shape3D[];
+  /** Volume the folded solid must have: input − zone strip + arcs. */
+  expectedVolume: number;
+}
+
+function foldPieces(oc: Oc, inp: BendInputs, baseShape: unknown): FoldParts {
   const { step } = inp;
+  checkRelief(oc, inp, baseShape);
   const bb = inp.base.boundingBox();
   const size = 4 * Math.hypot(bb.max[0] - bb.min[0], bb.max[1] - bb.min[1], bb.max[2] - bb.min[2]) + 4 * inp.radius;
-  const fixedRaw = cutShape(oc, baseShape, halfSpaceBox(oc, step.zoneStart, step.e, size));
+  const tool = cellTool(oc, step.cell, inp, Math.max(inp.thickness, 1));
+  const cellBody = booleanOp(oc, 'common', baseShape, tool);
+  const rest = booleanOp(oc, 'cut', baseShape, tool);
+  const fixedRaw = cutShape(oc, cellBody, halfSpaceBox(oc, step.zoneStart, step.e, size));
   const minusE: Vec3 = [-step.e[0], -step.e[1], -step.e[2]];
-  const movingRaw = cutShape(oc, baseShape, halfSpaceBox(oc, step.zoneEnd, minusE, size));
-  const fixed = replicad.cast(fixedRaw) as replicad.Shape3D;
+  const movingRaw = cutShape(oc, cellBody, halfSpaceBox(oc, step.zoneEnd, minusE, size));
+  const restSplit = splitRest(oc, rest, fixedRaw, movingRaw);
+  const fixedCell = replicad.cast(fixedRaw) as replicad.Shape3D;
+  const arcs = buildArc(step, zoneSectionFaces(fixedCell, step, inp.thickness));
   const pieces: replicad.Shape3D[] = [];
-  if (!isEmptyShape(fixedRaw)) pieces.push(fixed);
-  pieces.push(...buildArc(step, zoneSectionFaces(fixed, step, inp.thickness)));
-  if (!isEmptyShape(movingRaw)) {
-    pieces.push(replicad.cast(transformShape(oc, movingRaw, step.flangeTransform)) as replicad.Shape3D);
+  if (!isEmptyShape(fixedRaw)) pieces.push(fixedCell);
+  for (const solid of restSplit.fixed) pieces.push(replicad.cast(solid) as replicad.Shape3D);
+  pieces.push(...arcs);
+  const moving = [movingRaw, ...restSplit.moving].filter((shape) => !isEmptyShape(shape));
+  for (const shape of moving) {
+    pieces.push(replicad.cast(transformShape(oc, shape, step.flangeTransform)) as replicad.Shape3D);
   }
-  return pieces;
+  const strip = volumeOf(cellBody) - volumeOf(fixedRaw) - volumeOf(movingRaw);
+  const arcVolume = arcs.reduce((sum, arc) => sum + Math.abs(replicad.measureVolume(arc)), 0);
+  if (moving.length === 0) return { pieces: pieces.slice(0, 1), expectedVolume: 0 };
+  return { pieces, expectedVolume: volumeOf(baseShape) - strip + arcVolume };
+}
+
+/** One closed valid solid with the conserved volume, else why not. */
+function foldDefect(oc: Oc, folded: replicad.Shape3D, expectedVolume: number): string | undefined {
+  const wrapped = (folded as unknown as { wrapped: unknown }).wrapped;
+  const solids = solidsOf(oc, wrapped).length;
+  if (solids !== 1) return `the fold produced ${solids} separate solids instead of one`;
+  const analyzer = new oc.BRepCheck_Analyzer(wrapped, true, false);
+  const valid = analyzer.IsValid_2();
+  analyzer.delete();
+  if (!valid) return 'the folded solid is not a valid closed solid (BRepCheck failed)';
+  const volume = volumeOf(wrapped);
+  const tol = Math.max(0.5, 2e-3 * expectedVolume);
+  if (Math.abs(volume - expectedVolume) > tol) {
+    return `the folded volume ${volume.toFixed(1)} mm³ differs from the conserved ${expectedVolume.toFixed(1)} mm³ (input − bend strip + arc) by ${(volume - expectedVolume).toFixed(1)} mm³ — material was lost or overlapped`;
+  }
+  return undefined;
+}
+
+function foldInvalid(featureId: FeatureId, why: string): CompilerDiagnostic {
+  return {
+    target: 'export-occt',
+    code: 'feature.sheetMetal.fold-invalid',
+    featureId,
+    severity: 'error',
+    message: `.bend(): ${why}.`,
+    hint: 'sheetMetal.fold-invalid — the folded flanges collide or the bend split the wrong material. Check that bend zones do not overlap, that a later bend does not fold one flange into another, and that crossing { atX } / { atY } bends have corner relief.',
+  };
+}
+
+function crossingBendsDiagnostic(inp: BendInputs, check: ReliefCheck, material: number): CompilerDiagnostic {
+  const mine = inp.step.bend;
+  const other = check.crossing;
+  return {
+    target: 'export-occt',
+    code: 'feature.sheetMetal.crossing-bends',
+    featureId: inp.featureId,
+    severity: 'error',
+    message:
+      `.bend(): the bend line ${mine.orient === 'x' ? 'atX' : 'atY'} = ${mine.at} crosses the earlier bend ${other.orient === 'x' ? 'atX' : 'atY'} = ${other.at}, ` +
+      `and the corner where they meet still holds ${material.toFixed(1)} mm³ of material — folding it would tear or overlap the corner.`,
+    hint:
+      'sheetMetal.crossing-bends — bend lines run across the whole blank, so an atX and an atY bend always cross. Add corner relief: notch the blank outline at the corner ' +
+      '(remove the square where the two flanges would meet, at least one bend allowance past each bend line) so each flange folds on its own; or fold the flanges as separate parts.',
+  };
 }
 
 function bendRecordOf(inp: BendInputs): BendRecord {
@@ -228,10 +378,11 @@ export function lowerSheetMetalBend(inp: BendInputs): SheetMetalBendLoweringResu
     ));
     return { diagnostics };
   }
-  let pieces: replicad.Shape3D[];
+  let parts: FoldParts;
   try {
-    pieces = foldPieces(oc, inp, baseShape);
+    parts = foldPieces(oc, inp, baseShape);
   } catch (e) {
+    if (e instanceof FoldRejected) return { diagnostics: [e.diagnostic] };
     const msg = e instanceof Error ? e.message : String(e);
     diagnostics.push(kernelFailed(
       inp.featureId,
@@ -240,7 +391,7 @@ export function lowerSheetMetalBend(inp: BendInputs): SheetMetalBendLoweringResu
     ));
     return { diagnostics };
   }
-  if (pieces.length < 2) {
+  if (parts.pieces.length < 2) {
     diagnostics.push(kernelFailed(
       inp.featureId,
       '.bend(): the bend line does not cross the sheet — nothing on one side of it to fold.',
@@ -248,9 +399,9 @@ export function lowerSheetMetalBend(inp: BendInputs): SheetMetalBendLoweringResu
     ));
     return { diagnostics };
   }
+  let folded: replicad.Shape3D;
   try {
-    const folded = fusePieces(pieces);
-    return { shape: new OcctBackend(folded), diagnostics, bendRecord: bendRecordOf(inp) };
+    folded = fusePieces(parts.pieces);
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     diagnostics.push(kernelFailed(
@@ -260,6 +411,9 @@ export function lowerSheetMetalBend(inp: BendInputs): SheetMetalBendLoweringResu
     ));
     return { diagnostics };
   }
+  const defect = foldDefect(oc, folded, parts.expectedVolume);
+  if (defect !== undefined) return { diagnostics: [foldInvalid(inp.featureId, defect)] };
+  return { shape: new OcctBackend(folded), diagnostics, bendRecord: bendRecordOf(inp) };
 }
 
 /** Bounding box the bend line is resolved against (the FLAT blank). */
