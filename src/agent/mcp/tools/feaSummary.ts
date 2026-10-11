@@ -42,6 +42,9 @@ export interface FeaSummaryOutput {
     gmshVersion?: string;
     missing: string[];
     hint?: string;
+    /** What run_fea solves with by default here: CalculiX when the toolchain
+     *  is available, else the in-process voxel solver (an estimate). */
+    default_solver: 'calculix' | 'in-process-voxel';
   };
   /** Named grades with their solver-unit properties (MPa / - / MPa). */
   materials: Record<string, FeaMaterialProps>;
@@ -64,6 +67,7 @@ export async function feaSummaryTool(input: FeaSummaryInput): Promise<FeaSummary
       ...(tc.gmshVersion !== undefined ? { gmshVersion: tc.gmshVersion } : {}),
       missing: [...tc.missing],
       ...(tc.hint !== undefined ? { hint: tc.hint } : {}),
+      default_solver: tc.ok ? 'calculix' : 'in-process-voxel',
     },
     materials: feaMaterialTable(),
     material_names: [...FEA_MATERIAL_NAMES],

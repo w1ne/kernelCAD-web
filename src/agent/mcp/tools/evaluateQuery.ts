@@ -23,6 +23,8 @@ import type { Query, QueryAst, QueryScene, ResolvedEntity } from '../../../kerne
 import { runMcpScript } from '../runMcpScript';
 import { HINT_TEMPLATES } from '../../../shared/diagnostics/registry';
 import { isKernelError } from '../../../shared/intent/kernelError';
+import { captureAllFaceSnapshots, faceHashOf, surfaceTypeOf } from '../../../kernel/backends/occt/createdRefs';
+import type { Face } from 'replicad';
 
 export interface EvaluateQueryInput {
   file?: string;
@@ -58,12 +60,9 @@ export type EvaluateQueryOutput =
 
 export async function evaluateQueryTool(input: EvaluateQueryInput): Promise<EvaluateQueryOutput> {
   // ----- Parse the Query input (any form) ----------------------------------
-  let query: Query<unknown>;
-  try {
-    query = parseAnyTopologyInput(input.query as never);
-  } catch (e) {
-    return queryErrorEnvelope(e, 'query.invalid-syntax');
-  }
+  const parsed = parseQueryInput(input.query);
+  if (!parsed.ok) return parsed;
+  const query = (parsed as { query: Query<unknown> }).query;
 
   // ----- Run the script + lower the target feature -------------------------
   const script = await runMcpScript(input);
@@ -97,14 +96,66 @@ export async function evaluateQueryTool(input: EvaluateQueryInput): Promise<Eval
     };
   }
 
-  const scene: QueryScene = { backend: shape, featureId: targetId, records: run.records };
+  return evaluateQueryOnShape(query, input.expect, shape, targetId, run.records);
+}
 
-  // ----- Evaluate -----------------------------------------------------------
+/** Evaluate an already-parsed Query against an already-lowered shape — the
+ *  half of `evaluateQueryTool` that does not run the script, so a caller that
+ *  holds the lowered shape (lineage mode) resolves against the SAME face
+ *  hashes it will then look up, not those of a fresh run. */
+export function evaluateQueryOnShape(
+  query: Query<unknown>,
+  expect: EvaluateQueryInput['expect'],
+  shape: OcctBackend,
+  featureId: string,
+  records: QueryScene['records'],
+): EvaluateQueryOutput {
+  const scene: QueryScene = { backend: withLiveFaceGeometry(shape), featureId, records };
   try {
-    return evaluateExpectation(query, input.expect, scene);
+    return evaluateExpectation(query, expect, scene);
   } catch (e) {
     return queryErrorEnvelope(e, 'unknown');
   }
+}
+
+/** Parse any accepted Query surface into a Query, or the coded envelope. */
+export function parseQueryInput(input: EvaluateQueryInput['query']): { ok: true; query: Query<unknown> } | EvaluateQueryOutput {
+  try {
+    return { ok: true, query: parseAnyTopologyInput(input as never) };
+  } catch (e) {
+    return queryErrorEnvelope(e, 'query.invalid-syntax');
+  }
+}
+
+/**
+ * The lowered shape with every live face's lineage entry carrying its CURRENT
+ * geometry (centroid / normal / area snapshot and surface type).
+ *
+ * Lowerers only attach a snapshot and surface type to faces a downstream op
+ * touched, so on a plain primitive (or anything before its first hole/cutout)
+ * the geometric filters had nothing to read: `face(geometryType(PLANE))`
+ * matched no face of a box, and `face(closestTo([x, y, z]))` ranked every
+ * face at infinite distance and returned an arbitrary one. The evaluator reads
+ * these fields from the lineage map, so the map handed to it is enriched from
+ * the faces that actually exist. The shape's own map is left untouched.
+ */
+function withLiveFaceGeometry(shape: OcctBackend): OcctBackend {
+  const map = shape.historyMap;
+  if (map === undefined) return shape;
+  const faces = (shape.getReplicadShape() as unknown as { faces: Face[] }).faces;
+  const live = captureAllFaceSnapshots(faces);
+  const enriched = new Map(map);
+  for (const face of faces) {
+    const hash = faceHashOf(face);
+    const lineage = enriched.get(hash);
+    if (lineage === undefined) continue;
+    enriched.set(hash, {
+      ...lineage,
+      snapshot: live.get(hash) ?? lineage.snapshot,
+      surfaceType: lineage.surfaceType ?? surfaceTypeOf(face),
+    });
+  }
+  return new OcctBackend(shape.getReplicadShape(), shape.kind, enriched);
 }
 
 function queryErrorEnvelope(e: unknown, fallbackCode: string): EvaluateQueryOutput {

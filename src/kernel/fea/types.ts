@@ -114,6 +114,10 @@ export interface FeaHotSpot {
 
 export interface FeaSummary {
   study: string;
+  /** Which solver produced the numbers: CalculiX on a gmsh tet mesh (absent
+   *  on older summaries), or the in-process voxel solver used when that
+   *  toolchain is not installed (always `trust.meshTrusted: false`). */
+  solver?: 'calculix' | 'in-process-voxel';
   material: { name: string } & FeaMaterialProps;
   maxVonMisesMPa: number;
   maxVonMisesAt: [number, number, number];

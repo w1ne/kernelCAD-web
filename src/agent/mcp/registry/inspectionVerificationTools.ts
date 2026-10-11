@@ -134,7 +134,7 @@ const verifyToolEntry: ToolRegistryEntry = {
         seed: { type: 'object', description: "check:'reachable' — numeric IK seed pose (joint name -> deg/mm)." },
         loads: { type: 'object', description: "check:'load-capacity' — partName -> { force?: [Fx,Fy,Fz] N, torque?: [Tx,Ty,Tz] N*m }." },
         materials: { type: 'object', description: "check:'load-capacity' — partName -> material declaration." },
-        mode: { type: 'string', enum: ['stub', 'beam', 'fea'], description: "check:'load-capacity' — 'beam' (default), 'stub', or 'fea' (solve the script's feaStudy; needs the CalculiX + gmsh toolchain)." },
+        mode: { type: 'string', enum: ['stub', 'beam', 'fea'], description: "check:'load-capacity' — 'beam' (default), 'stub', or 'fea' (solve the script's feaStudy: CalculiX + gmsh when installed, else the in-process voxel estimate)." },
         safety_factor_threshold: { type: 'number', description: "check:'load-capacity' — pass/fail safety-factor floor (default 1.5; mode 'fea': the study's minSafetyFactor when declared)." },
         study: { type: 'string', description: "check:'load-capacity' mode:'fea' — feaStudy name (default: the last declared one)." },
         mesh_size: { type: 'number', description: "check:'load-capacity' mode:'fea' — element size override, mm." },
@@ -223,19 +223,25 @@ const queryToolEntry: ToolRegistryEntry = {
     name: 'query',
     description:
       "Use this when you need to resolve or inspect topology against a script's lowered geometry. " +
-      "Selected by `mode` (default 'evaluate'):\n" +
-      "- 'evaluate' — inspect a Query (@kc[...] ref, @kcq[...] DSL, or { ast }); returns matched entities. Pass expect:'unique' to assert exactly-one.\n" +
-      "- 'resolve' — resolve a single @kc[...] / @kcq[...] ref to one entity ({ ref }).\n" +
-      "- 'lineage' — walk the HistoryMap for a named face ref ({ feature_id, ref }).\n" +
-      'All params except `mode` are forwarded verbatim.',
+      "Pass the script as `code` (inline; works on a hosted server) or `file`. Selected by `mode` (default 'evaluate'):\n" +
+      "- 'evaluate' — list the faces a Query matches ({ query }). Pass expect:'unique' to assert exactly-one.\n" +
+      "- 'resolve' — resolve one ref to one face ({ ref }).\n" +
+      "- 'lineage' — the creating/modifying history of a face ({ ref }; feature_id defaults to the last feature).\n" +
+      'Query forms (faces only; edge/vertex kinds return query.unsupported-entity-type):\n' +
+      "- a bare face label: 'top', 'bottom', 'left', 'right', 'front', 'back', or a hole/cutout slot like 'wall'.\n" +
+      "- @kc[<feature-id>/face/<label>] — feature ids are the ones refs print, e.g. '@kc[box_1/face/top]', '@kc[hole_1/face/wall]'.\n" +
+      '- @kcq[face(<filter>, ...)] — filters AND together: createdBy("box_1"), withLabel("top"), geometryType(PLANE|CYLINDER|CONE|SPHERE|TORUS|BSPLINE_SURFACE), ' +
+      'closestTo([x,y,z]) or closestTo([x,y,z], k), containsPoint([x,y,z]); combine with union(a, b), intersection(a, b), subtraction(a, b). ' +
+      "Example: '@kcq[face(geometryType(CYLINDER), closestTo([0,0,10]))]'.\n" +
+      'Each matched face comes back with its canonical @kc ref, centroid, normal and area.',
     inputSchema: {
       type: 'object',
       properties: {
         mode: { type: 'string', enum: ['evaluate', 'resolve', 'lineage'], description: "Resolution mode (default 'evaluate')." },
         file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
         code: { type: 'string', description: 'Inline kernelCAD script source.' },
-        query: { description: "mode:'evaluate' — Query input: @kc[...] / @kcq[...] string or { ast } object." },
-        ref: { type: 'string', description: "mode:'resolve'|'lineage' — topology ref string." },
+        query: { description: "mode:'evaluate' — Query: a bare face label ('top'), an @kc[<feature-id>/face/<label>] ref, an @kcq[face(...)] expression, or { ast }." },
+        ref: { type: 'string', description: "mode:'resolve'|'lineage' — one face: '@kc[box_1/face/top]', '@kcq[...]', or '<feature-id>.<label>' (lineage)." },
         expect: { type: 'string', enum: ['any', 'unique'], description: "mode:'evaluate' — 'unique' asserts exactly-one." },
         feature_id: { type: 'string', description: 'Optional FeatureId; defaults to the last lowered shape (use "auto" for lineage).' },
       },

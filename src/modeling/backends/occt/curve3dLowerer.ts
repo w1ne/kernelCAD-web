@@ -43,13 +43,18 @@ export interface Curve3DLowerResult {
 export function lowerCurve3D(m: Curve3DMetadata): Curve3DLowerResult {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
-  const n = m.controlPoints.length;
-  const periodic = m.closed ?? false;
+  const closed = closeControlNet(m);
+  const n = closed.controlPoints.length;
+  // A clamped knot vector cannot describe a periodic curve (OCCT throws), so a
+  // `closed` curve without explicit knots is built as a clamped curve whose
+  // first and last poles coincide: geometrically closed, and C1 at the seam
+  // when the net's end tangents match (spline3d's closed net does).
+  const periodic = (m.closed ?? false) && m.knots !== undefined;
 
   // 1-indexed (1..n) per OCCT convention.
   const polesArr = new oc.TColgp_Array1OfPnt_2(1, n);
   for (let i = 0; i < n; i++) {
-    const [x, y, z] = m.controlPoints[i];
+    const [x, y, z] = closed.controlPoints[i];
     polesArr.SetValue(i + 1, new oc.gp_Pnt_3(x, y, z));
   }
 
@@ -57,10 +62,10 @@ export function lowerCurve3D(m: Curve3DMetadata): Curve3DLowerResult {
   // matches and every weight is finite and positive.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let weightsArr: any | undefined;
-  if (m.weights !== undefined) {
+  if (closed.weights !== undefined) {
     weightsArr = new oc.TColStd_Array1OfReal_2(1, n);
     for (let i = 0; i < n; i++) {
-      weightsArr.SetValue(i + 1, m.weights[i]);
+      weightsArr.SetValue(i + 1, closed.weights[i]);
     }
   }
 
@@ -104,4 +109,18 @@ export function lowerCurve3D(m: Curve3DMetadata): Curve3DLowerResult {
   const edge = edgeBuilder.Edge();
 
   return { edge };
+}
+
+/** For a `closed` curve with no explicit knots, append the first pole (and
+ *  weight) when the net does not already end where it starts, so the clamped
+ *  curve closes on itself. Every other curve passes through untouched. */
+function closeControlNet(m: Curve3DMetadata): Pick<Curve3DMetadata, 'controlPoints' | 'weights'> {
+  if (m.closed !== true || m.knots !== undefined) return m;
+  const first = m.controlPoints[0];
+  const last = m.controlPoints[m.controlPoints.length - 1];
+  if (first.every((v, k) => Math.abs(v - last[k]) < 1e-9)) return m;
+  return {
+    controlPoints: [...m.controlPoints, first],
+    ...(m.weights !== undefined ? { weights: [...m.weights, m.weights[0]] } : {}),
+  };
 }

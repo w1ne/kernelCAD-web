@@ -98,6 +98,11 @@ export function makeNurbsSurfaceMethods(
       }
       const tension = opts?.tension ?? 0.5;
       const scale = (1 - tension) / 6;
+      if (opts?.closed === true) {
+        return session.addCurve3D({
+          metadata: { controlPoints: closedCatmullRomNet(points, scale), degree: 3, closed: true },
+        });
+      }
 
       // Extend with phantom endpoints (mirror across first/last actual point).
       const subt = (a: Vec3, b: Vec3): Vec3 => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
@@ -364,4 +369,38 @@ function requireVariableSweepSections(
     );
   }
   return sections;
+}
+
+/**
+ * Control net of a CLOSED Catmull-Rom spline through `points`, as one clamped
+ * cubic B-spline that starts and ends at points[0] with the same tangent on
+ * both sides of the seam (C1). Neighbours wrap around instead of the open
+ * spline's mirrored phantom endpoints, and there is one extra segment from the
+ * last point back to the first. A trailing duplicate of points[0] is ignored.
+ *
+ * The open-spline net with `closed: true` used to reach OCCT as a "periodic"
+ * curve over a clamped knot vector, which it rejects, so every closed spine
+ * (a ring band, a loop handle) failed to lower.
+ */
+function closedCatmullRomNet(input: readonly Vec3[], scale: number): Vec3[] {
+  const first = input[0];
+  const last = input[input.length - 1];
+  const pts = input.length > 2 && first.every((v, k) => Math.abs(v - last[k]) < 1e-9)
+    ? input.slice(0, -1)
+    : input.slice();
+  const n = pts.length;
+  const at = (i: number): Vec3 => pts[((i % n) + n) % n];
+  const net: Vec3[] = [at(0)];
+  for (let i = 0; i < n; i++) {
+    const p0 = at(i - 1);
+    const p1 = at(i);
+    const p2 = at(i + 1);
+    const p3 = at(i + 2);
+    net.push(
+      [p1[0] + (p2[0] - p0[0]) * scale, p1[1] + (p2[1] - p0[1]) * scale, p1[2] + (p2[2] - p0[2]) * scale],
+      [p2[0] - (p3[0] - p1[0]) * scale, p2[1] - (p3[1] - p1[1]) * scale, p2[2] - (p3[2] - p1[2]) * scale],
+      p2,
+    );
+  }
+  return net;
 }
