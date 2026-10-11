@@ -48,3 +48,22 @@ describe('bare label selectors on a boolean result', () => {
     expect(all.faces).toHaveLength(2);
   });
 });
+
+describe('bare label split across one plane', () => {
+  it("a bridge's two feet are one 'bottom' support (coplanar split faces bind together)", async () => {
+    const m = await buildModel({ fileName: 'bridge.kcad.ts', code: 'return box(60,20,10).subtract(box(20,20,5).translate(20,0,0));' });
+    const r = resolveSelector(m.tailShape as OcctBackend, 'bottom', { owner: m.records[m.records.length - 1].id, records: m.records });
+    expect(r.ok).toBe(true);
+    expect(r.ambiguous).toBeUndefined();
+    expect(r.faces).toHaveLength(2);
+    expect(r.faces.every(f => Math.abs(f.centroid[2]) < 1e-6)).toBe(true);
+    expect(r.faces.reduce((s, f) => s + f.area, 0)).toBeCloseTo(2 * 20 * 20, 3);
+  });
+
+  it('faces with the same label on parallel but different planes stay ambiguous', async () => {
+    const m = await buildModel({ fileName: 'steps.kcad.ts', code: 'return box(80,20,5).union(box(5,20,30).translate(0,0,5)).union(box(5,20,30).translate(75,0,5));' });
+    const r = resolveSelector(m.tailShape as OcctBackend, 'top', { owner: m.records[m.records.length - 1].id, records: m.records });
+    expect(r.ok).toBe(false);
+    expect(r.ambiguous).toBe(true);
+  });
+});
