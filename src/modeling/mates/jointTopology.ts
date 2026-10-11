@@ -9,9 +9,11 @@ import type { Connector } from './connector';
 import { parseConnectorRef, type MateLimitRange, type MateRecord } from './mate';
 import { isRegistryCompleteMechanicalJointIntent } from './mechanicalJointRegistry';
 import { collectFreePassiveMates } from './passiveJoints';
+import { solverGroundedPart } from './solverRoot';
 
 export type JointTopologyDiagnosticCode =
   | 'assembly.connectivity.floating-moving-part'
+  | 'assembly.connectivity.assumed-root'
   | 'assembly.connectivity.no-load-path'
   | 'assembly.joint-topology.connector-missing'
   | 'assembly.joint-topology.axis-invalid'
@@ -82,15 +84,20 @@ export function reviewJointTopology(arm: Assembly): JointTopologyReviewResult {
 
   const checkedMates = mates.filter((mate) => mate.type !== 'fastened');
 
-  collectMateTopologyDiagnostics(mates, partsByName, graph, movingParts, { supportedRevoluteMates, passiveMates }, diagnostics);
+  const derivedLimitMates = collectCoupledMatesWithLimitedSource(arm);
+  collectMateTopologyDiagnostics(mates, partsByName, graph, movingParts, { supportedRevoluteMates, passiveMates, derivedLimitMates }, diagnostics);
 
   const stableRoots = collectStableRoots(arm, partsByName);
-  // Nothing declared stable in a purely passive mechanism (a plain hinge,
-  // a free slider): the solver grounds the first part, so does the
-  // reachability walk. An actuated / loaded mechanism must declare its root
-  // — parts[0] may itself be a moving link there.
-  if (stableRoots.size === 0 && parts.length > 0 && everyMovingMateIsPassive(mates, passiveMates)) {
-    stableRoots.add(parts[0].name);
+  // Nothing declared stable: the mate solver grounds solverGroundedPart()
+  // (parts[0]), so the reachability walk grounds the same part — a moving
+  // link disconnected from it still floats. With moving mates, say which
+  // part was assumed so an arm whose first part is a link can fix it.
+  if (stableRoots.size === 0) {
+    const assumed = solverGroundedPart(parts);
+    if (assumed !== undefined) {
+      stableRoots.add(assumed.name);
+      if (checkedMates.length > 0) diagnostics.push(assumedRootNote(assumed.name));
+    }
   }
   const reachableFromRoots = findReachableParts(stableRoots, graph);
 
@@ -104,8 +111,15 @@ export function reviewJointTopology(arm: Assembly): JointTopologyReviewResult {
   };
 }
 
-function everyMovingMateIsPassive(mates: readonly MateRecord[], passiveMates: ReadonlySet<string>): boolean {
-  return mates.every((mate) => mate.type === 'fastened' || passiveMates.has(mate.name));
+function assumedRootNote(partName: string): JointTopologyDiagnostic {
+  return {
+    code: 'assembly.connectivity.assumed-root',
+    severity: 'warning',
+    partName,
+    stableParts: [partName],
+    message: `No stable root is declared; assuming the first part '${partName}' is grounded (the mate solver holds it still).`,
+    hint: `connectivity.assumed-root — if '${partName}' is the fixed base this is fine; otherwise list the base first in arm.add(...) order or declare arm.physicalUseCase(..., { stableParts: ['<base part>'] }).`,
+  };
 }
 
 function collectMateTopologyDiagnostics(
@@ -281,15 +295,40 @@ interface MateContractSets {
   readonly supportedRevoluteMates: ReadonlySet<string>;
   /** Free passive mates: their missing limit / support intent is a 'warning'. */
   readonly passiveMates: ReadonlySet<string>;
+  /** Coupled driven mates (arm.coupleMates) whose source chain ends in a
+   *  mate with finite limits: their travel is source × ratio + offset, so
+   *  they have a finite range without declaring their own. */
+  readonly derivedLimitMates: ReadonlySet<string>;
+}
+
+function collectCoupledMatesWithLimitedSource(arm: Assembly): ReadonlySet<string> {
+  const matesByName = new Map(arm.__mates().map((mate) => [mate.name, mate]));
+  const sourceOf = new Map(arm.__mateCouplings().map((coupling) => [coupling.driven, coupling.source]));
+  const out = new Set<string>();
+  for (const driven of sourceOf.keys()) {
+    const seen = new Set<string>([driven]);
+    let source = sourceOf.get(driven);
+    while (source !== undefined && !seen.has(source)) {
+      seen.add(source);
+      const mate = matesByName.get(source);
+      if (mate !== undefined && (isFiniteRange(mate.limitsDeg) || isFiniteRange(mate.limitsMm))) {
+        out.add(driven);
+        break;
+      }
+      source = sourceOf.get(source);
+    }
+  }
+  return out;
 }
 
 function validateMateContract(
   mate: MateRecord,
-  { supportedRevoluteMates, passiveMates }: MateContractSets,
+  { supportedRevoluteMates, passiveMates, derivedLimitMates }: MateContractSets,
   diagnostics: JointTopologyDiagnostic[],
 ): void {
   const severity = passiveMates.has(mate.name) ? 'warning' : 'error';
-  if (ROTATIONAL_LIMIT_MATES.has(mate.type) && !isFiniteRange(mate.limitsDeg)) {
+  const limitDerived = derivedLimitMates.has(mate.name);
+  if (ROTATIONAL_LIMIT_MATES.has(mate.type) && !limitDerived && !isFiniteRange(mate.limitsDeg)) {
     diagnostics.push({
       code: 'assembly.joint-topology.missing-limit',
       severity,
@@ -299,7 +338,7 @@ function validateMateContract(
     });
   }
 
-  if (mate.type === 'prismatic' && !isFiniteRange(mate.limitsMm)) {
+  if (mate.type === 'prismatic' && !limitDerived && !isFiniteRange(mate.limitsMm)) {
     diagnostics.push({
       code: 'assembly.joint-topology.missing-limit',
       severity,
