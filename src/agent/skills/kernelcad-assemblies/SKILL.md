@@ -210,7 +210,7 @@ const fused = scene.toUnion();               // antipattern; only when one solid
 
 Connector origins are in their owning **part's local frame** (URDF/MuJoCo convention). Multi-mate chains compose correctly; the FK tree-walk handles N joints.
 
-**`at` with a mate:** a mated part goes where its mate puts it, so its own `at` does not move it; the root part (declared first) keeps its `at`, and every part mated to it follows.
+**`at` with a mate:** mates are solved outward from the first declared part. That part keeps its `at`, and every part a mate places goes where the mate puts it; its own `at` is then ignored. A part that no chain of mates links to the first declared part is not solved: the built model leaves it at its own `at` and does not apply its mates. Declare the base part first.
 
 **Companion rule — author each part's shape in its own part-local frame, NOT in world coordinates.** A part's local frame has its origin at the joint where this part attaches to its parent (or at the world origin, for the root part). All `.translate(x, y, z)` calls on the child's shape are interpreted in this *part-local* frame.
 
