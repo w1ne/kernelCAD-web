@@ -68,6 +68,7 @@ import { Transform } from '../../shared/runtime/se3';
 import type { Vec3 as Se3Vec3 } from '../../shared/runtime/se3';
 import { resolveConnectorOrigin, type Connector } from './connector';
 import { parseConnectorRef, type MateRecord } from './mate';
+import { partAtFor, placementFromSceneMotion } from './partFrame';
 import type { MateType } from './mateTypes';
 import type { ValidatorDiagnostic } from './validator';
 
@@ -122,7 +123,10 @@ export interface JointAxisBindingResult {
    * defensive fall-through inside the implementation).
    */
   readonly worldShapes: ReadonlyMap<string, OcctBackend>;
-  /** Per-part SE(3) world transform, same key set as `worldShapes`. */
+  /** Per-part placement of the part's own frame, same key set as
+   *  `worldShapes`: lifts connector origins and axes, as declared, to world.
+   *  For a mated part it is the scene `worldTransform` with `at` put back
+   *  (`placementFromSceneMotion`), because the scene shape carries `at`. */
   readonly worldTransforms: ReadonlyMap<string, Transform>;
 }
 
@@ -187,7 +191,7 @@ export async function validateJointAxisBindingWithCache(
 
   const worldShapes = buildWorldShapes(lowered);
   const partsByName = indexPartsByName(arm);
-  const worldTransforms = indexWorldTransforms(lowered);
+  const worldTransforms = indexPartPlacements(lowered, arm);
 
   const out = await collectAxisBindingDiagnostics(gatedMates, partsByName, worldTransforms, worldShapes);
   return { diagnostics: out, worldShapes, worldTransforms };
@@ -228,10 +232,18 @@ function indexPartsByName(arm: Assembly): Map<string, AssemblyPartStored> {
   return partsByName;
 }
 
-function indexWorldTransforms(lowered: SceneBackend): Map<string, Transform> {
-  const worldTransforms = new Map<string, Transform>();
-  for (const p of lowered.parts) worldTransforms.set(p.name, p.worldTransform);
-  return worldTransforms;
+// Connector origins are declared on the part's source shape, but a scene
+// part's shape already carries `at` and its `worldTransform` is the motion on
+// top of it. Put a mated part's `at` back so a declared origin lifts straight
+// to where the connector is.
+function indexPartPlacements(lowered: SceneBackend, arm: Assembly): Map<string, Transform> {
+  const atOf = partAtFor(arm.__mates(), arm.__parts(), arm.__session().paramTable);
+  const placements = new Map<string, Transform>();
+  for (const p of lowered.parts) {
+    const at = atOf(p.name);
+    placements.set(p.name, at === undefined ? p.worldTransform : placementFromSceneMotion(p.worldTransform, at));
+  }
+  return placements;
 }
 
 async function collectAxisBindingDiagnostics(

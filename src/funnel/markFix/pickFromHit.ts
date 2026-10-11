@@ -8,7 +8,7 @@
 import * as THREE from 'three';
 import type { GeometryResult } from '../../shared/worker/geometryEngine';
 import { pickOwner } from '../../studio/selectionCode/geometryLineage';
-import type { EditPick, SurfaceKind } from './editRequest';
+import type { EditPick, SurfaceKind } from './marks';
 
 interface FaceUserData {
   type?: unknown;

@@ -96,6 +96,14 @@ export interface ResolvedInputs {
     import('../../shared/intent/surfaceRecord').SurfaceId,
     import('./occt/nurbsSurfaceLowerer').BuiltSurface
   >;
+  /**
+   * The param table the engine resolved the record being lowered against.
+   * `records` holds every other record as captured, where a Param that
+   * references a script parameter still reads `evaluated: 0`; a lowerer that
+   * reads such a Param from another record resolves it against this table.
+   * Absent when the engine ran without one.
+   */
+  paramTable?: import('../../shared/runtime/paramTable').ParamTable;
 }
 
 export interface LowerResult {
