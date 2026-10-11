@@ -275,6 +275,14 @@ assembly(name?: string): Assembly;
 // changes and sweep(rail, { spine: 'helix' }) can build the exact helix.
 helix({ radius, pitch, turns, axis?, pointsPerTurn?, startAngle? }): [number, number, number][];
 
+// ISO metric threads (see "Threads" below). isoThread('M6') -> { spec: 'M6x1',
+// diameter, pitch, minorDiameter, tapDrill, ... }; 'M6x0.75' / 'M70x4' set the pitch.
+isoThread(spec: string): IsoThreadInfo;
+// Real external thread along +Z, z = 0..length, ONE sweep (M6 x 20 ~2-3 s).
+threadedRod({ spec, length, chamfer?: boolean | number, cosmetic?: boolean, clearance? }): Shape;
+// 3D Bezier curve (3 points = quadratic, 4 = cubic) -> Curve3D.
+bezier(points: [number, number, number][]): Curve3D;
+
 // Edge selection — lowers the shape lazily (awaitable).
 // selectEdges returns a ShapeList: still an EdgeSegment[] (fillet/chamfer accept
 // it directly), plus the selector algebra described under "Selector algebra" below.
@@ -581,6 +589,7 @@ Contracts worth knowing:
 const holeAt = (x: number, y: number) => ({ edge: { ofCurveType: 'CIRCLE' as const, near: [x, y, 6] as [number, number, number] } });
 const plate = box(60, 40, 6)
   .holes('top', { positions: [{ u: -15, v: 0 }, { u: 15, v: 0 }], diameter: 5, depth: 'through' })
+  .threadedHole('top', { u: 0, v: 12, spec: 'M5', depth: 8 }) // ISO tapped hole by designation; modeled: true cuts the thread
   .dimension({ kind: 'linear', from: holeAt(15, 20), to: holeAt(45, 20), label: 'hole spacing' }); // "hole spacing 30"
 ```
 
@@ -616,7 +625,10 @@ A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape
 //   extent below the pitch and off the axis, or lowering fails with
 //   feature.invalid-args. frenet / transitionMode do nothing here.
 // frenet: true rotates the profile with the rail curvature.
-.sweep(rail: [number, number, number][], opts?: { frenet?: boolean; transitionMode?: 'right' | 'transformed' | 'round'; spine?: 'polyline' | 'smooth' | 'helix' }): Shape
+// section: 'transverse' (spine 'helix' only): the profile is the cross-section
+//   PERPENDICULAR to the axis, sketch origin on the axis — a twisted extrusion that
+//   turns once per pitch (how threadedRod builds a whole rod without a boolean).
+.sweep(rail: [number, number, number][], opts?: { frenet?: boolean; transitionMode?: 'right' | 'transformed' | 'round'; spine?: 'polyline' | 'smooth' | 'helix'; section?: 'axial' | 'transverse' }): Shape
 
 // Loft through one or more additional sections to produce a 3D solid.
 // Use for nozzles (round-to-square), wings, fairings, transition pieces,
@@ -678,6 +690,8 @@ const blade = root.loft(tip, {
 .smoothSpline(x: Editable<number>, y: Editable<number>): PathBuilder  // C1-smooth single-segment spline to (x, y); inherits start tangent.
 .spline(points: Array<[Editable<number>, Editable<number>]>, opts?: { tension?: Editable<number> }): PathBuilder    // (Slice D) N-waypoint B-spline interpolation through every point. See kernelcad-nurbs.
 .nurbsSegment(controlPoints: Array<[Editable<number>, Editable<number>]>, opts?: { degree?: number; weights?: number[]; knots?: number[] }): PathBuilder  // (Slice D) Explicit B-spline control polygon — controlPoints[0] must match current pen. See kernelcad-nurbs.
+.bezierTo(c1: [Editable<number>, Editable<number>], c2: [Editable<number>, Editable<number>], end: [Editable<number>, Editable<number>]): PathBuilder  // Exact cubic Bezier (SVG C) from the pen.
+.quadraticTo(c: [Editable<number>, Editable<number>], end: [Editable<number>, Editable<number>]): PathBuilder  // Exact quadratic Bezier (SVG Q) from the pen.
 .hermiteG2(a: HermiteEndpoint2D, b: HermiteEndpoint2D): PathBuilder  // (Slice D) 2D quintic-Hermite G2 transition. See kernelcad-nurbs.
 .tangentCircle(entities: TangentEntity2D[], opts?: { radius?: Editable<number>; near?: [Editable<number>, Editable<number>] }): Sketch  // Circle TANGENT to other geometry. 2 entities + opts.radius = sketch-fillet; 3 entities, no radius = through-three. Terminal, like circle().
 .tangentLine(a: TangentEntity2D, b: TangentEntity2D, opts?: { near?: [Editable<number>, Editable<number>] }): PathBuilder  // Segment along the line tangent to two circles — the belt/pulley move. Both entities must be circles.
@@ -736,7 +750,15 @@ Entity and selection recovery:
 - If `DISTANCE`, `RADIUS`, or `ANGLE` reports a missing value, add a numeric `value`.
 - If the type is unsupported, call `inspect({ of: 'constraints' })` or `lookup_api({})` and choose one of the supported types above.
 
-## Labels — naming faces at creation time
+## Threads (ISO metric)
+
+- Designations: `'M6'` = coarse pitch from the ISO 261 table (M1–M64); `'M6x0.75'` sets the pitch and works for any size (`'M70x4'` jar neck). `isoThread(spec)` returns the numbers (pitch, minor/pitch diameter, tap drill) for callouts and clearance holes.
+- External thread: `threadedRod({ spec, length })` — real 60° profile along +Z from z = 0, one helical sweep, valid solid, STEP-exportable. `chamfer: true` for 45° ends (one more boolean), `cosmetic: true` for an instant major-diameter cylinder with the spec in metadata, `clearance` (≤ pitch/10) for printed fits. Union a head for a bolt; union onto a body for a neck.
+- Internal thread: `body.threadedHole(face, { u, v, spec, depth })` — same frame and refs as `hole`. Default cosmetic (minor-diameter bore + recorded thread, fast); `modeled: true` cuts the real thread (seconds), with `clearance` (≤ pitch/8) of play.
+- Mating in phase: the rod's ridge crosses +X at every z = k·pitch and a modelled hole's groove crosses its face u-axis at the entry face, so put the hole's entry face on a whole pitch of the rod (e.g. lift the nut by k·P). Verify with `verify({ check: 'dfm' })` / interference — a cosmetic hole on a modelled rod reports interfering, as it should.
+- Example: `examples/threads/threaded-jar-and-lid.kcad.ts` (M64 × 4 neck + tapped lid).
+
+
 
 Declare a label on a creating op via the `faceLabels` option. The value map accepts two kinds of entries:
 
@@ -1070,7 +1092,7 @@ When you need a canonical pattern, call MCP tool `lookup_cookbook(query, k?)` to
 - Always `return` a single shape from the top of the script. Only the returned shape is exported, probed and measured; "the last thing I created" is NOT a fallback. If a probe reports the same bbox no matter what you edit, check what the script returns.
 - Symmetric parts: `.mirror(plane)` (source + reflection); `.reflect(plane)` gives the reflection only.
 - In booleans, prefer ≥0.1 mm of overlap (unions) or offset (cuts) over exact tangency or coincident faces.
-- Helical features: rail from `helix(...)`. Threads, worms, helical grooves: sweep with `spine: 'helix'`. Round-wire coils and springs: `spine: 'smooth'` (the default polyline spine is not watertight). Internal threads: `hole({ thread })`, not a sweep.
+- Helical features: rail from `helix(...)`. ISO threads: `threadedRod` / `threadedHole`. Custom threads, worms, helical grooves: sweep with `spine: 'helix'`. Round-wire coils and springs: `spine: 'smooth'` (the default polyline spine is not watertight). Internal threads: `hole({ thread })`, not a sweep.
 
 ## Manufacturing intent → API
 
@@ -1079,7 +1101,8 @@ Intent words → call this API; do not hand-build it (subtracted cylinders, type
 | Intent words | API | Cookbook id |
 |---|---|---|
 | bolt hole, clearance hole, M3–M6 | `hole(face, { diameter, depth })`, `holes` | clearance-hole-through-plate |
-| thread, tapped, tap drill | `hole(face, { diameter: <nominal>, thread: { pitch } })` | threaded-hole-tap-drill |
+| thread, tapped, tap drill | `threadedHole(face, { u, v, spec: 'M6', depth })` or `hole(face, { diameter: <nominal>, thread: { pitch } })` | threaded-hole-tap-drill |
+| threaded rod, stud, screw thread, jar neck | `threadedRod({ spec: 'M6', length })` | — |
 | counterbore, countersink | `hole` + `counterbore` / `countersink` option | countersunk-flat-head-screw |
 | heat-set insert | blind `hole` at the insert pilot Ø | heat-set-insert-pilot |
 | nut trap, captive nut | `hole` + `cutout(hexPath, { face, depth })` | hex-nut-trap-bolt-clearance |

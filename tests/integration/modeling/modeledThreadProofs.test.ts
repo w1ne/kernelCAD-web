@@ -213,4 +213,47 @@ describe.runIf(SLOW_GEOMETRY_TESTS)('modeled thread proofs (KERNELCAD_SLOW_GEOME
     expect(clash.diagnostics.filter((x) => x.code === 'feature.kernel-failed')).toHaveLength(0);
     expect(clash.pairs).toEqual([]);
   }, 400_000);
+
+  describe('threadedRod in a modelled threadedHole', () => {
+    // threadedRod's ridge crosses +X at every whole pitch; the nut's entry
+    // face sits on z = 8 = 8 × P, so groove and ridge are in phase.
+    const fit = (modeled: boolean) => `
+      const rod = threadedRod({ spec: 'M6', length: 12 });
+      const nut = box(12, 12, 6).translate(-6, -6, 0).threadedHole({ atZ: 6, byNormal: 'Z' }, {
+        u: 0, v: 0, spec: 'M6', depth: 'through', modeled: ${modeled}, clearance: 0.05,
+      });
+      dfmSpec({ minClearance: 0.04 });
+      const arm = assembly('rod-fit');
+      arm.part('rod', rod);
+      arm.part('nut', nut, { at: [0, 0, 2] });
+      return arm.model();
+    `;
+    interface DfmOut { clearance: Array<{ a: string; b: string; distanceMm: number; status: string; exact: boolean }> }
+
+    it('keeps the thread clearance between rod and nut (no interference)', async () => {
+      const out = (await callMcpTool('verify', { check: 'dfm', code: fit(true) })) as DfmOut;
+      const pair = out.clearance.find((p) => p.a !== p.b)!;
+      expect(pair.exact).toBe(true);
+      expect(pair.status).toBe('ok');
+      // The rod's flanks are swept B-splines; they hold the 0.05 mm play to a
+      // few micrometres.
+      expect(Math.abs(pair.distanceMm - 0.05)).toBeLessThan(0.005);
+      const clash = await checkInterference({ code: fit(true), fileName: 'rod-fit.kcad.ts' });
+      expect(clash.diagnostics.filter((x) => x.code === 'feature.kernel-failed')).toHaveLength(0);
+      expect(clash.pairs).toEqual([]);
+    }, 400_000);
+
+    it('reports the cosmetic-hole control as interfering', async () => {
+      const out = (await callMcpTool('verify', { check: 'dfm', code: fit(false) })) as DfmOut;
+      expect(out.clearance.find((p) => p.a !== p.b)!.status).toBe('interfering');
+    }, 180_000);
+  });
+
+  it('threaded jar and lid example evaluates with both threads modelled', async () => {
+    const file = 'examples/threads/threaded-jar-and-lid.kcad.ts';
+    const ev = await evaluateScript({ file });
+    expect(ev.exitCode, JSON.stringify(ev.diagnostics)).toBe(0);
+    // ~20 s. (list_part_stats on these two large helical parts takes minutes,
+    // so the part check stays out of this proof.)
+  }, 120_000);
 });

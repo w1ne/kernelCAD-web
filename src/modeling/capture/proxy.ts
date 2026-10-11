@@ -88,6 +88,7 @@ import {
   assignMaterialMetadata,
 } from './proxyMaterial';
 import { sectionSketchOf, faceSketchOf, silhouetteOf } from './proxyDerivedSketch';
+import { threadedHoleToHoleOpts, type ThreadedHoleOpts } from './threadedHole';
 import {
   validateGridPatternAxis,
   validateLinearPatternOpts,
@@ -958,6 +959,18 @@ export class Shape {
     const conns = generateBoltHoleConnectors(centers, { partName });
     this.session.attachAutoConnectors(holeShape.id, conns);
     return holeShape;
+  }
+
+  /**
+   * ISO metric tapped hole by designation: `spec: 'M6'` (coarse pitch) or
+   * `'M6x0.75'`. Same face / (u, v) frame and created refs as `.hole()` — it
+   * IS `hole(face, { diameter: D, thread: { pitch } })`. Default cosmetic:
+   * drills the ISO minor diameter and records the thread for drawings;
+   * `modeled: true` cuts the real 60° internal thread (mates a `threadedRod`
+   * in phase when the entry face sits at a whole number of pitches).
+   */
+  threadedHole(face: FaceSelector | CanonicalFace | string, opts: ThreadedHoleOpts): Shape {
+    return this.hole(face, threadedHoleToHoleOpts(opts));
   }
 
   /**

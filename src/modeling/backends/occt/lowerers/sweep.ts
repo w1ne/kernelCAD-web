@@ -73,6 +73,7 @@ function sweepSketchProfile(ctx: LowerContext, r: FeatureRecord): ShapeBackend |
         pitch: o.pitch,
         turns: o.turns,
         startAngle: o.startAngle ?? 0,
+        section: helixSectionOf(r),
       });
     }
     return OcctBackend.sweepFromSketch(
@@ -107,6 +108,11 @@ function sweepSketchProfile(ctx: LowerContext, r: FeatureRecord): ShapeBackend |
     });
     return undefined;
   }
+}
+
+/** `opts.section` of a helix sweep; the capture layer already validated it. */
+function helixSectionOf(r: FeatureRecord): 'axial' | 'transverse' {
+  return (r.metadata as { section?: unknown } | undefined)?.section === 'transverse' ? 'transverse' : 'axial';
 }
 
 /** Regenerate (helix) or read (polyline) the rail and validate every point. */
