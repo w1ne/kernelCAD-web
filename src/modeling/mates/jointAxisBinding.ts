@@ -68,7 +68,7 @@ import { Transform } from '../../shared/runtime/se3';
 import type { Vec3 as Se3Vec3 } from '../../shared/runtime/se3';
 import { resolveConnectorOrigin, type Connector } from './connector';
 import { parseConnectorRef, type MateRecord } from './mate';
-import { matedPartNames, placementFromSceneMotion, resolvedPartAt } from './partFrame';
+import { partAtFor, placementFromSceneMotion } from './partFrame';
 import type { MateType } from './mateTypes';
 import type { ValidatorDiagnostic } from './validator';
 
@@ -237,14 +237,11 @@ function indexPartsByName(arm: Assembly): Map<string, AssemblyPartStored> {
 // top of it. Put a mated part's `at` back so a declared origin lifts straight
 // to where the connector is.
 function indexPartPlacements(lowered: SceneBackend, arm: Assembly): Map<string, Transform> {
-  const mated = matedPartNames(arm.__mates());
-  const atByName = new Map(arm.__parts().map((p) => [p.name, p.at]));
-  const table = arm.__session().paramTable;
+  const atOf = partAtFor(arm.__mates(), arm.__parts(), arm.__session().paramTable);
   const placements = new Map<string, Transform>();
   for (const p of lowered.parts) {
-    placements.set(p.name, mated.has(p.name)
-      ? placementFromSceneMotion(p.worldTransform, resolvedPartAt(atByName.get(p.name), table))
-      : p.worldTransform);
+    const at = atOf(p.name);
+    placements.set(p.name, at === undefined ? p.worldTransform : placementFromSceneMotion(p.worldTransform, at));
   }
   return placements;
 }

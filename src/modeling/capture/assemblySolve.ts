@@ -8,7 +8,7 @@ import { parseConnectorRef } from '../mates/mate';
 import { currentValue, toParam } from '../../shared/runtime/editableHelpers';
 import { isParamRef, type Editable } from '../../shared/runtime/paramRef';
 import { Transform } from '../../shared/runtime/se3';
-import { matedPartNames, resolvedPartAt, sceneMotion } from '../mates/partFrame';
+import { partAtFor, sceneMotion } from '../mates/partFrame';
 import { reviewPoseEnvelope, type PoseEnvelopeDiagnostic } from '../mates/poseEnvelope';
 import { solveMates } from '../mates/solver';
 import { validateAssemblyWithMates, type ValidatorDiagnostic } from '../mates/validator';
@@ -351,15 +351,14 @@ export function buildMateMetadata(state: AssemblyState): import('./captureSessio
  *  the lowered scene. `solveMates` gives where a part's own frame sits, so a
  *  mated part's `at` comes back out; any other part keeps its transform. */
 function scenePartMotion(
-  part: AssemblyPartStored,
+  partName: string,
   placements: ReadonlyMap<string, Transform> | undefined,
-  mated: ReadonlySet<string>,
-  session: CaptureSession,
+  atOf: ReturnType<typeof partAtFor>,
 ): Transform {
-  const placement = placements?.get(part.name);
+  const placement = placements?.get(partName);
   if (placement === undefined) return Transform.identity();
-  if (!mated.has(part.name)) return placement;
-  return sceneMotion(placement, resolvedPartAt(part.at, session.paramTable));
+  const at = atOf(partName);
+  return at === undefined ? placement : sceneMotion(placement, at);
 }
 
 /**
@@ -397,13 +396,13 @@ export function makeScene(
   const sceneFeatureId = sceneShape.id;
   const session = state.session;
   const catalogMetadataByShapeId = catalogPartSceneMetadataByShapeId(session);
-  const mated = matedPartNames(state.mates);
+  const atOf = partAtFor(state.mates, state.parts, session.paramTable);
   const sceneParts: ScenePart[] = state.parts.map((p: AssemblyPartStored) => {
     const metadata = catalogMetadataByShapeId.get(p.originalShape.id);
     return {
       name: p.name,
       shape: p.originalShape,
-      worldTransform: scenePartMotion(p, matePartTransforms, mated, session),
+      worldTransform: scenePartMotion(p.name, matePartTransforms, atOf),
       ...(metadata === undefined ? {} : { metadata }),
       ...(p.mateConnectors.length > 0 ? { connectors: [...p.mateConnectors] } : {}),
     };

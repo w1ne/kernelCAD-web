@@ -517,7 +517,10 @@ type Bbox3 = { min: [number, number, number]; max: [number, number, number] };
 
 /** Bounding box of each scene part in the part's own frame. A scene part's
  *  shape carries its `at`, while the `solveMates` placements the corners are
- *  moved by place the part's own frame, so each box moves back by `at`. */
+ *  moved by place the part's own frame, so each box moves back by `at`. This
+ *  covers every part, not only mated ones (so not `partAtFor`): the box then
+ *  matches the `originalShape.lower()` fallback for every part, and criterion
+ *  1 only reads parts on fastened mates. */
 function sourceFrameBboxes(arm: Assembly, scene: SceneBackend): Map<string, Bbox3> {
   const table = arm.__session().paramTable;
   const atByName = new Map(arm.__parts().map((p) => [p.name, p.at]));

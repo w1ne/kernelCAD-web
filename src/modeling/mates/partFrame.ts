@@ -41,6 +41,20 @@ export function matedPartNames(mates: readonly Pick<MateRecord, 'a' | 'b'>[]): S
   return names;
 }
 
+/** Look up, by part name, the `at` to convert by: the resolved `at` of a
+ *  mated part, or `undefined` for a part in no mate, which keeps the
+ *  transform it has. Use it wherever a placement and a scene motion meet, so
+ *  the mated-only rule lives here. */
+export function partAtFor(
+  mates: readonly Pick<MateRecord, 'a' | 'b'>[],
+  parts: readonly { readonly name: string; readonly at?: Vec3Param }[],
+  table: ParamTable | undefined,
+): (partName: string) => Vec3 | undefined {
+  const mated = matedPartNames(mates);
+  const atByName = new Map(parts.map((p) => [p.name, p.at]));
+  return (partName) => (mated.has(partName) ? resolvedPartAt(atByName.get(partName), table) : undefined);
+}
+
 /** Placement of a part that no mate moves: where its `at` puts it. */
 export function atPlacement(at: Vec3): Transform {
   return Transform.translation(at[0], at[1], at[2]);

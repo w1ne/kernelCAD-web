@@ -5,7 +5,7 @@ import type { SceneBackend } from '../../kernel/backends/sceneBackend';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import type { Transform } from '../../shared/runtime/se3';
 import type { Assembly } from '../capture/assembly';
-import { matedPartNames, resolvedPartAt, sceneMotion } from './partFrame';
+import { partAtFor, sceneMotion } from './partFrame';
 
 /**
  * Accept only a complete evaluated scene for this exact assembly. A scene's
@@ -46,16 +46,13 @@ export function reposedLoweredAssemblyScene(
   const scene = matchingLoweredAssemblyScene(arm, candidate);
   if (scene === undefined) return undefined;
 
-  const mated = matedPartNames(arm.__mates());
-  const atByName = new Map(arm.__parts().map((part) => [part.name, part.at]));
-  const table = arm.__session().paramTable;
+  const atOf = partAtFor(arm.__mates(), arm.__parts(), arm.__session().paramTable);
   const parts = [] as SceneBackend['parts'][number][];
   for (const part of scene.parts) {
     const placement = transforms.get(part.name);
     if (placement === undefined) return undefined;
-    const worldTransform = mated.has(part.name)
-      ? sceneMotion(placement, resolvedPartAt(atByName.get(part.name), table))
-      : placement;
+    const at = atOf(part.name);
+    const worldTransform = at === undefined ? placement : sceneMotion(placement, at);
     parts.push({ ...part, worldTransform });
   }
   return { ...scene, parts };
