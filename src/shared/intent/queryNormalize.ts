@@ -392,6 +392,30 @@ function aliased(queryName: QueryName, obj: Record<string, unknown>, canonical: 
   return a !== undefined ? a : b;
 }
 
+/** A param() inside a query is captured as a Param record (pre-resolved by
+ *  the recompute engine): read its current `evaluated` number. */
+function isParamRecord(v: unknown): v is { evaluated: number } {
+  return typeof v === 'object' && v !== null
+    && typeof (v as { expression?: unknown }).expression === 'string'
+    && typeof (v as { unit?: unknown }).unit === 'string'
+    && typeof (v as { evaluated?: unknown }).evaluated === 'number';
+}
+
+function unwrapParamValue(v: unknown): unknown {
+  if (isParamRecord(v)) return v.evaluated;
+  if (Array.isArray(v)) return v.map(unwrapParamValue);
+  if (typeof v === 'object' && v !== null && (Object.getPrototypeOf(Object.getPrototypeOf(v) ?? {}) === null)) {
+    return unwrapParams(v as Record<string, unknown>);
+  }
+  return v;
+}
+
+function unwrapParams(obj: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const k of Object.keys(obj)) out[k] = unwrapParamValue(obj[k]);
+  return out;
+}
+
 function assign<T extends object, K extends keyof T>(out: T, key: K, value: T[K] | undefined): void {
   if (value !== undefined) out[key] = value;
 }
@@ -402,7 +426,7 @@ function assign<T extends object, K extends keyof T>(out: T, key: K, value: T[K]
  */
 export function normalizeEdgeQuery(raw: EdgeQuery | unknown): NormalizedEdgeQuery {
   const Q: QueryName = 'EdgeQuery';
-  const obj = requireObject(Q, raw);
+  const obj = unwrapParams(requireObject(Q, raw));
   rejectUnknownKeys(Q, obj, EDGE_QUERY_ACCEPTED_KEYS);
   const out: NormalizedEdgeQuery = {};
   assign(out, 'atZ', num(Q, 'atZ', obj.atZ));
@@ -435,7 +459,7 @@ export function normalizeEdgeQuery(raw: EdgeQuery | unknown): NormalizedEdgeQuer
  */
 export function normalizeFaceQuery(raw: FaceQuery | unknown): NormalizedFaceQuery {
   const Q: QueryName = 'FaceQuery';
-  const obj = requireObject(Q, raw);
+  const obj = unwrapParams(requireObject(Q, raw));
   rejectUnknownKeys(Q, obj, FACE_QUERY_ACCEPTED_KEYS);
   const out: NormalizedFaceQuery = {};
   assign(out, 'atZ', num(Q, 'atZ', obj.atZ));
