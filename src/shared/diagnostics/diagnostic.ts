@@ -41,8 +41,10 @@ export interface CompilerDiagnostic {
  * identity-op, leaving the explicitly-set value in place.
  */
 export function withNextAction(d: CompilerDiagnostic): CompilerDiagnostic {
-  const message = routeRetiredToolMentions(d.message);
-  const hint = routeRetiredToolMentions(d.hint);
+  // Hand-built literals (tests, mocks, some emit paths) can arrive without a
+  // hint or message at runtime despite the type; route only real strings.
+  const message = typeof d.message === 'string' ? routeRetiredToolMentions(d.message) : d.message;
+  const hint = typeof d.hint === 'string' ? routeRetiredToolMentions(d.hint) : d.hint;
   const nextAction = d.nextAction ?? refineSelectionNextAction(d.code, d.message, NEXT_ACTIONS[d.code]);
   if (message === d.message && hint === d.hint && nextAction === d.nextAction) return d;
   return { ...d, message, hint, nextAction };
