@@ -321,7 +321,14 @@ A port that nothing connects to is not an error. Two tubes in one `usedBy` are t
 kernelcad export bend-table line.kcad.ts -o out/bend-tables
 ```
 
-`-o` is a directory. The export writes one CSV per tube, named after the tube: a header with the name, OD, wall, bend radius and cut length, then the XYZ points, then the bend rows and the last straight. A trunk's file ends with a `branch,at_mm` section, one row per branch with its station. A branch's header has `from_tube` and `from_at_mm` (or `to_tube`, `to_at_mm`) after the cut length. From MCP: `export({ format: 'bend-table', output_path: 'out/bend-tables', code })`.
+`-o` is a directory. The export writes one CSV per tube, named after the tube: a header with the name, OD, wall, bend radius and cut length, then the XYZ points, then the bend rows and the last straight. A trunk's file ends with a `branch,at_mm` section, one row per branch with its station. A branch's header has the trunk's name and the station after the cut length, as two rows. A branch joined at its start has the `from` rows; one joined at its end has the `to` rows:
+
+```text
+from_tube,trunk
+from_at_mm,180.000
+```
+
+From MCP: `export({ format: 'bend-table', output_path: 'out/bend-tables', code })`.
 
 The export is refused when the build or a tube gate reports an error; fix the route first. A script with no tube gives `export.bend-table.no-tubes`.
 
