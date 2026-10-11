@@ -19,9 +19,9 @@ import type { Connector } from '../../mates/connector';
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import { isTubeMetadata, type TubeMetadata } from '../../../shared/intent/tubeRecord';
 import type { Transform } from '../../../shared/runtime/se3';
-import { norm, sub, type V3 } from '../../../shared/tube/tubePath';
+import { add, norm, sub, unit, type V3 } from '../../../shared/tube/tubePath';
 import {
-  endsOf, partFrameInWorld, PORT_POSITION_TOL_MM, resolveTube, scenePartOf, tubeSceneContext,
+  endsOf, partAt, partFrameInWorld, PORT_POSITION_TOL_MM, resolveTube, scenePartOf, tubeSceneContext,
   type ResolvedTube, type TubeSceneContext,
 } from './tubeScene';
 
@@ -61,11 +61,8 @@ function isIdentity(t: Transform): boolean {
 
 type Placed = Pick<PortReportEntry, 'origin' | 'axis' | 'placedBy'> | { unresolved: string };
 
-/** Where the port is in the solved scene, or why that cannot be stated. */
-function placePort(model: BuiltModel, ctx: TubeSceneContext, stored: AssemblyPartStored, connector: Connector): Placed {
-  if (ctx.scene === undefined) return { unresolved: NO_SCENE };
-  const scenePart = scenePartOf(ctx, stored.name);
-  if (scenePart === undefined) return { unresolved: `part '${stored.name}' is not in the built assembly` };
+/** The connector's point and axis in its part's own frame, or why they are not fixed numbers. */
+function localFrame(connector: Connector): { origin: V3; axis: V3 } | { unresolved: string } {
   if (connector.origin.kind !== 'vec3') {
     return { unresolved: 'the connector origin is a face, edge or vertex reference, not a fixed point' };
   }
@@ -73,14 +70,65 @@ function placePort(model: BuiltModel, ctx: TubeSceneContext, stored: AssemblyPar
   if (local.length !== 3 || !local.every((n) => typeof n === 'number' && Number.isFinite(n))) {
     return { unresolved: 'the connector origin is not three finite numbers' };
   }
+  return { origin: [...connector.origin.value] as V3, axis: [...(connector.axis ?? [0, 0, 1])] as V3 };
+}
+
+/** Where the port is in the solved scene, or why that cannot be stated. */
+function placeInScene(model: BuiltModel, ctx: TubeSceneContext, stored: AssemblyPartStored, connector: Connector): Placed {
+  const scenePart = scenePartOf(ctx, stored.name);
+  if (scenePart === undefined) return { unresolved: `part '${stored.name}' is not in the built assembly` };
+  const local = localFrame(connector);
+  if ('unresolved' in local) return local;
   if (stored.connectParentId !== undefined) return { unresolved: 'the part is placed with connect, not with at' };
-  const world = partFrameInWorld(model, stored, scenePart, [...connector.origin.value] as V3,
-    [...(connector.axis ?? [0, 0, 1])] as V3);
+  const world = partFrameInWorld(model, stored, scenePart, local.origin, local.axis);
   return {
     origin: tidy(world.origin),
     axis: tidy(world.axis),
     placedBy: isIdentity(scenePart.worldTransform) ? 'at' : 'mate',
   };
+}
+
+/** An assembly the script asked for (`model()` / `solvedModel()`) that did
+ *  not build. Its parts are still known from the script: which of them built,
+ *  and which of them the solve would have positioned. */
+interface UnbuiltAssembly {
+  /** Names of the parts whose own shape did not build. */
+  failed: ReadonlySet<string>;
+  /** Names of the parts a mate or a joint refers to. */
+  solved: ReadonlySet<string>;
+}
+
+const SCENE_KINDS: readonly string[] = ['assemblyModel', 'solvedAssembly'];
+
+/** Undefined when the script never builds the assembly: nothing says its
+ *  parts were meant to be where `at` puts them. */
+function unbuiltAssembly(model: BuiltModel, assembly: Assembly): UnbuiltAssembly | undefined {
+  const asked = model.records.some((r) => SCENE_KINDS.includes(r.kind) && !r.suppressed &&
+    (r.metadata as { assemblyName?: unknown } | undefined)?.assemblyName === assembly.name);
+  if (!asked) return undefined;
+  const parts = assembly.__parts();
+  const nameOf = new Map(parts.map((p) => [p.id, p.name]));
+  const mated = assembly.__mates().flatMap((m) => [m.a, m.b]).map((ref) => ref.slice(0, Math.max(0, ref.indexOf('.'))));
+  const jointed = assembly.__joints().flatMap((j) => [j.parentPartId, j.childPartId]).flatMap((id) => nameOf.get(id) ?? []);
+  return {
+    failed: new Set(parts.filter((p) => model.shapes.get(p.id) === undefined).map((p) => p.name)),
+    solved: new Set([...mated, ...jointed]),
+  };
+}
+
+/** Where the port is when the assembly did not build. A part placed with `at`
+ *  that no mate or joint refers to is where `at` puts it, solve or no solve;
+ *  any other part's position is the solve's to give, and it did not run. */
+function placeWithoutScene(model: BuiltModel, unbuilt: UnbuiltAssembly, stored: AssemblyPartStored, connector: Connector): Placed {
+  if (unbuilt.failed.has(stored.name)) return { unresolved: `part '${stored.name}' failed to build` };
+  const local = localFrame(connector);
+  if ('unresolved' in local) return local;
+  const failed = [...unbuilt.failed].map((n) => `'${n}'`);
+  const why = failed.length === 0 ? '' : ` (part${failed.length > 1 ? 's' : ''} ${failed.join(', ')} failed to build)`;
+  const notSolved = `the assembly was not built${why}, so the solve did not run; part '${stored.name}'`;
+  if (stored.connectParentId !== undefined) return { unresolved: `${notSolved} is placed with connect` };
+  if (unbuilt.solved.has(stored.name)) return { unresolved: `${notSolved} is positioned by a mate` };
+  return { origin: tidy(add(partAt(model, stored), local.origin)), axis: tidy(unit(local.axis)), placedBy: 'at' };
 }
 
 interface TubeOnScene { meta: TubeMetadata; resolved?: ResolvedTube }
@@ -115,8 +163,10 @@ function endsOnPort(tube: TubeOnScene, part: string, name: string, origin: V3 | 
 
 /**
  * Every fluid port of the model's assembly: the assembly the script returns,
- * or, when no assembly was built, every assembly the script declares (each
- * port then `unresolved`). Returns `undefined` when the script declares no
+ * or, when no assembly was built, every assembly the script declares. With
+ * no built assembly a port has a position only on a part placed with `at`
+ * that no mate or joint refers to, in an assembly the script asked for; every
+ * other port is `unresolved`. Returns `undefined` when the script declares no
  * assembly, and `[]` when its assembly has no ports. Runs on a failed build
  * too; it reads the model and never changes it.
  */
@@ -127,11 +177,17 @@ export function portReportOnModel(model: BuiltModel): PortReportEntry[] | undefi
   const scene = ctx.scene;
   const reported = scene === undefined ? assemblies : assemblies.filter((a) => a.name === scene.assemblyName);
   const tubes = tubesOf(model, ctx);
-  return reported.flatMap((a) => a.__parts()).flatMap((stored) =>
+  const unbuilt = new Map(scene === undefined ? assemblies.map((a) => [a, unbuiltAssembly(model, a)]) : []);
+  const place = (a: Assembly, stored: AssemblyPartStored, connector: Connector): Placed => {
+    if (scene !== undefined) return placeInScene(model, ctx, stored, connector);
+    const known = unbuilt.get(a);
+    return known === undefined ? { unresolved: NO_SCENE } : placeWithoutScene(model, known, stored, connector);
+  };
+  return reported.flatMap((a) => a.__parts().map((stored) => ({ a, stored }))).flatMap(({ a, stored }) =>
     stored.mateConnectors.flatMap((connector): PortReportEntry[] => {
       const port = connector.port;
       if (port === undefined) return [];
-      const placed = placePort(model, ctx, stored, connector);
+      const placed = place(a, stored, connector);
       const origin = 'unresolved' in placed ? undefined : placed.origin;
       return [{
         part: stored.name,

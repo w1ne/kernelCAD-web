@@ -152,13 +152,18 @@ export function scenePartOf(ctx: TubeSceneContext, name: string): SceneBackendPa
   return ctx.scene?.parts.find((p) => p.name === name);
 }
 
+/** A part's `at`, read through the param table. */
+export function partAt(model: BuiltModel, stored: AssemblyPartStored): V3 {
+  return vec(resolveParams(stored.at, model.session.paramTable));
+}
+
 /** A point and a direction given in a part's own frame, where they are in the
  *  solved scene: the part's `at` (read through the param table), then the
  *  pose the mate solver gave the part. */
 export function partFrameInWorld(
   model: BuiltModel, stored: AssemblyPartStored, scenePart: SceneBackendPart, local: V3, axis: V3,
 ): { origin: V3; axis: V3 } {
-  const at = vec(resolveParams(stored.at, model.session.paramTable));
+  const at = partAt(model, stored);
   return {
     origin: scenePart.worldTransform.point(add(at, local)) as V3,
     axis: unit(scenePart.worldTransform.axisDir(axis) as V3),

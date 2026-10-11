@@ -195,3 +195,91 @@ return box(10, 10, 10);`);
       unresolved: 'no built assembly: the build failed, or the script does not return this assembly' }]);
   }, 120_000);
 });
+
+/** Bounding box of an assembly part's own built shape (it carries the part's `at`). */
+type Box = { min: number[]; max: number[] };
+async function builtParts(code: string): Promise<{ report: PortReportEntry[]; box: (part: string) => Box }> {
+  const model = await buildModel({ fileName: 'ports.kcad.ts', code });
+  const parts = (Array.from(model.session.assemblies.values()) as Array<{ __parts(): Array<{ name: string; id: string }> }>)
+    .flatMap((a) => a.__parts());
+  const box = (part: string): Box =>
+    (model.shapes.get(parts.find((p) => p.name === part)!.id as never) as unknown as { boundingBox(): Box }).boundingBox();
+  return { report: portReportOnModel(model)!, box };
+}
+
+/** A port on top of a box, in the middle: [w / 2, w / 2, w] in the part's frame. */
+const topPort = (w: number, system = 'oil') =>
+  `.connector('out', { type: 'axis', origin: { kind: 'vec3', value: [${w / 2}, ${w / 2}, ${w}] }, axis: [0, 0, 1], port: { system: '${system}', od: 6 } })`;
+/** The top-face centre of a built box: where `topPort` must be reported. */
+const topOf = (b: Box): number[] => [(b.min[0] + b.max[0]) / 2, (b.min[1] + b.max[1]) / 2, b.max[2]];
+/** A shape that fails to build: no edge of the box can take the fillet. */
+const BROKEN = 'box(20, 20, 20).fillet(500)';
+
+describe('port report when a part fails to build', () => {
+  const threeParts = (end: string) => `
+const X = param('X', 35);
+const asm = assembly('rig');
+const a = asm.part('a', box(20, 20, 20), { at: [X, 5, -10] })${topPort(20)};
+const bad = asm.part('bad', ${BROKEN}, { at: [100, 0, 0] })${topPort(20)};
+const c = asm.part('c', box(30, 30, 30), { at: [200, X.multiply(2), 0] })${topPort(30, 'fuel')};
+${end}`;
+
+  it('resolves the ports of the good parts and names the failed part', async () => {
+    const { report, box } = await builtParts(threeParts('return asm.model();'));
+    expect(report).toEqual([
+      { part: 'a', name: 'out', system: 'oil', od: 6, origin: [45, 15, 10], axis: [0, 0, 1], placedBy: 'at', usedBy: [] },
+      { part: 'bad', name: 'out', system: 'oil', od: 6, usedBy: [], unresolved: "part 'bad' failed to build" },
+      { part: 'c', name: 'out', system: 'fuel', od: 6, origin: [215, 85, 30], axis: [0, 0, 1], placedBy: 'at', usedBy: [] },
+    ]);
+    // The numbers above are the built shapes', not only the report's own arithmetic.
+    expect(report[0].origin).toEqual(topOf(box('a')));
+    expect(report[2].origin).toEqual(topOf(box('c')));
+  }, 120_000);
+
+  it('does the same through evaluate, where the build is a failure', async () => {
+    const r = await evaluateAndBuildScript({ code: threeParts('return asm.solvedModel({});') });
+    expect(r.evaluation.exitCode).toBe(1);
+    expect(r.portReport!.map((p) => [p.part, p.origin ?? p.unresolved])).toEqual([
+      ['a', [45, 15, 10]], ['bad', "part 'bad' failed to build"], ['c', [215, 85, 30]]]);
+  }, 120_000);
+
+  it('a tube on a good port is still listed in usedBy', async () => {
+    const { report } = await builtParts(threeParts(`
+tubeSpec({});
+asm.part('line', tube('line', { from: a.port('out'), to: { point: [X.add(10), 15, 200] }, wall: 0.7, bendRadius: 18 }));
+return asm.model();`));
+    expect(report.map((p) => [p.part, p.usedBy])).toEqual([['a', ['line']], ['bad', []], ['c', []]]);
+    expect(report[0].origin).toEqual([45, 15, 10]);
+  }, 120_000);
+
+  it('a part a mate positions, or one placed with connect, stays unresolved: the solve did not run', async () => {
+    const { report } = await builtParts(`
+const asm = assembly('rig');
+const base = asm.part('base', box(40, 40, 10), { at: [0, 0, 0], connectors: { pad: { origin: [5, 5, 10], axis: [0, 0, 1] } } })
+  .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [20, 20, 10] } })${topPort(10)};
+const valve = asm.part('valve', box(20, 20, 20), { at: [0, 0, 0] })
+  .connector('seat', { type: 'frame', origin: { kind: 'vec3', value: [10, 10, 0] } })${topPort(20)};
+asm.part('cap', box(10, 10, 10), { connectors: { foot: { origin: [5, 5, 0], axis: [0, 0, 1] } }, connect: { connector: 'foot', to: base.connector('pad') } })${topPort(10)};
+asm.part('free', box(20, 20, 20), { at: [300, 0, 0] })${topPort(20)};
+asm.part('bad', ${BROKEN}, { at: [100, 0, 0] })${topPort(20)};
+asm.mate('seat-on-mount', 'valve.seat', 'base.mount', 'fastened');
+return asm.solvedModel({});`);
+    const notSolved = "the assembly was not built (part 'bad' failed to build), so the solve did not run";
+    expect(report.map((p) => [p.part, p.origin ?? p.unresolved])).toEqual([
+      ['base', `${notSolved}; part 'base' is positioned by a mate`],
+      ['valve', `${notSolved}; part 'valve' is positioned by a mate`],
+      ['cap', `${notSolved}; part 'cap' is placed with connect`],
+      ['free', [310, 10, 20]],
+      ['bad', "part 'bad' failed to build"],
+    ]);
+    expect(report.every((p) => (p.origin === undefined) === (p.placedBy === undefined))).toBe(true);
+  }, 120_000);
+
+  it('an assembly the script never builds keeps the old reason, failed part or not', async () => {
+    const { report } = await builtParts(`
+const asm = assembly('rig');
+asm.part('a', box(20, 20, 20), { at: [0, 0, 0] })${topPort(20)};
+return box(10, 10, 10);`);
+    expect(report.map((p) => p.unresolved)).toEqual(['no built assembly: the build failed, or the script does not return this assembly']);
+  }, 120_000);
+});
