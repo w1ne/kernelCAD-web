@@ -76,12 +76,77 @@ function useWordsHandoff(): { message: string | null; open: (prompt: string) => 
   return useMemo(() => ({ message, open }), [message, open]);
 }
 
+/** Starts checkout for a signed-in user; a signed-out one is sent to sign-in first. */
+function useUpgrade(hasSession: boolean, openSignIn: () => void): { upgradeBusy: boolean; handleUpgrade: () => Promise<void> } {
+  const [upgradeBusy, setUpgradeBusy] = useState(false);
+  const handleUpgrade = useCallback(async () => {
+    // Unauthenticated rate-limit (e.g. anon path) -> push into sign-in first.
+    if (!hasSession) {
+      openSignIn();
+      return;
+    }
+    setUpgradeBusy(true);
+    try {
+      const { url } = await createCheckoutSession();
+      window.location.href = url;
+    } catch {
+      // Stay on page; the user can retry. Don't swallow silently in the
+      // rendered UI - surface via the panel's busy state clearing.
+      setUpgradeBusy(false);
+    }
+  }, [hasSession, openSignIn]);
+  return { upgradeBusy, handleUpgrade };
+}
+
+interface SignInResume {
+  agentEnabled: boolean;
+  phase: ReturnType<typeof useGeneration>['phase'];
+  session: unknown;
+  sessionLoading: boolean;
+  lastPrompt: { current: string };
+  /** Builds a prompt as a signed-in user. */
+  run: (prompt: string) => void;
+}
+
+/**
+ * Keeps the prompt through sign-in when the server has no free build for this
+ * visitor, and builds it once a session exists. Returns whether sign-in is needed.
+ */
+function useSignInResume({ agentEnabled, phase, session, sessionLoading, lastPrompt, run }: SignInResume): boolean {
+  const needsSignIn = phase.state === 'error' && phase.code === 'anon_limit';
+  useEffect(() => {
+    if (!needsSignIn) return;
+    try {
+      window.localStorage.setItem(PENDING_PROMPT_KEY, lastPrompt.current);
+    } catch {
+      // Storage unavailable (private mode) - proceed without resume.
+    }
+  }, [needsSignIn, phase, lastPrompt]);
+
+  // After OAuth returns with a session, auto-resume the stashed prompt.
+  useEffect(() => {
+    if (sessionLoading || !session) return;
+    if (!agentEnabled) return;
+    if (phase.state !== 'idle' && !needsSignIn) return;
+    let pending: string | null = null;
+    try {
+      pending = window.localStorage.getItem(PENDING_PROMPT_KEY);
+    } catch {
+      return;
+    }
+    if (pending) {
+      window.localStorage.removeItem(PENDING_PROMPT_KEY);
+      run(pending);
+    }
+  }, [agentEnabled, sessionLoading, session, phase.state, needsSignIn, run]);
+  return needsSignIn;
+}
+
 export function GeneratePage() {
   const agentEnabled = inAppAgentEnabled();
   const { phase, events, liveCode, submit } = useGeneration();
   const { session, loading: sessionLoading } = useOptionalSession();
   const [signInOpen, setSignInOpen] = useState(false);
-  const [upgradeBusy, setUpgradeBusy] = useState(false);
   const [signInDismissed, setSignInDismissed] = useState<unknown>(null);
   const [handoff] = useState(readHandoff);
   const initialPrompt = handoff.prompt;
@@ -115,22 +180,7 @@ export function GeneratePage() {
     [submit],
   );
 
-  const handleUpgrade = useCallback(async () => {
-    // Unauthenticated rate-limit (e.g. anon path) -> push into sign-in first.
-    if (!session) {
-      setSignInOpen(true);
-      return;
-    }
-    setUpgradeBusy(true);
-    try {
-      const { url } = await createCheckoutSession();
-      window.location.href = url;
-    } catch {
-      // Stay on page; the user can retry. Don't swallow silently in the
-      // rendered UI - surface via the panel's busy state clearing.
-      setUpgradeBusy(false);
-    }
-  }, [session]);
+  const { upgradeBusy, handleUpgrade } = useUpgrade(!!session, () => setSignInOpen(true));
 
   const handleSubmit = useCallback(
     (prompt: string) => {
@@ -161,35 +211,7 @@ export function GeneratePage() {
     if (agentEnabled) handleSubmit(initialPrompt);
   }, [agentEnabled, sessionLoading, handleSubmit, initialPrompt]);
 
-  // The server has no free build for this visitor: keep the prompt through
-  // sign-in, and the effect below resumes it afterwards.
-  const needsSignIn = phase.state === 'error' && phase.code === 'anon_limit';
-  useEffect(() => {
-    if (!needsSignIn) return;
-    try {
-      window.localStorage.setItem(PENDING_PROMPT_KEY, lastPrompt.current);
-    } catch {
-      // Storage unavailable (private mode) - proceed without resume.
-    }
-  }, [needsSignIn, phase]);
-
-  // After OAuth returns with a session, auto-resume the stashed prompt.
-  useEffect(() => {
-    if (sessionLoading || !session) return;
-    if (!agentEnabled) return;
-    if (phase.state !== 'idle' && !needsSignIn) return;
-    let pending: string | null = null;
-    try {
-      pending = window.localStorage.getItem(PENDING_PROMPT_KEY);
-    } catch {
-      return;
-    }
-    if (pending) {
-      window.localStorage.removeItem(PENDING_PROMPT_KEY);
-      lastPrompt.current = pending;
-      void submit(pending);
-    }
-  }, [agentEnabled, sessionLoading, session, phase.state, needsSignIn, submit]);
+  const needsSignIn = useSignInResume({ agentEnabled, phase, session, sessionLoading, lastPrompt, run });
 
   const openResult = useOpenResult(phase);
 

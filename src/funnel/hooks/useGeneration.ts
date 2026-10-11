@@ -96,6 +96,29 @@ async function consumeGenerationStream(
   return true;
 }
 
+/** The error phase for a non-2xx reply from the generate endpoint. */
+function errorPhaseFor(status: number, text: string, body: ReturnType<typeof parseErrorBody>): GenerationPhase {
+  if (status === 401 && body.anonLimit) {
+    // No free build for this signed-out visitor: the page asks them to sign in.
+    return {
+      state: 'error',
+      code: 'anon_limit',
+      message: 'Sign in to build.',
+      ...(body.anonLimit.reason ? { anonReason: body.anonLimit.reason } : {}),
+    };
+  }
+  return {
+    state: 'error',
+    // Agent mode requires a connected account. 401 = anonymous (must sign
+    // in); 402 = signed-in but monthly quota exhausted (must upgrade); 429 =
+    // legacy rate limit. All route to the same panel, which shows "sign in"
+    // vs "upgrade" based on whether there's a session.
+    code: status === 401 || status === 402 || status === 429 ? 'rate_limited' : `http_${status}`,
+    message: body.message ?? text,
+    ...(status === 402 && body.upgradeUrl ? { upgradeUrl: body.upgradeUrl } : {}),
+  };
+}
+
 /** POST the request and return its event stream, or set the error phase
  *  and return null. Returns null without a phase change once aborted. */
 async function openGenerationStream(
@@ -117,26 +140,7 @@ async function openGenerationStream(
   if (!res.ok) {
     const text = await res.text().catch(() => `HTTP ${res.status}`);
     const body = parseErrorBody(text);
-    if (res.status === 401 && body.anonLimit) {
-      // No free build for this signed-out visitor: the page asks them to sign in.
-      setPhase({
-        state: 'error',
-        code: 'anon_limit',
-        message: 'Sign in to build.',
-        ...(body.anonLimit.reason ? { anonReason: body.anonLimit.reason } : {}),
-      });
-      return null;
-    }
-    setPhase({
-      state: 'error',
-      // Agent mode requires a connected account. 401 = anonymous (must sign
-      // in); 402 = signed-in but monthly quota exhausted (must upgrade); 429 =
-      // legacy rate limit. All route to the same panel, which shows "sign in"
-      // vs "upgrade" based on whether there's a session.
-      code: res.status === 401 || res.status === 402 || res.status === 429 ? 'rate_limited' : `http_${res.status}`,
-      message: body.message ?? text,
-      ...(res.status === 402 && body.upgradeUrl ? { upgradeUrl: body.upgradeUrl } : {}),
-    });
+    setPhase(errorPhaseFor(res.status, text, body));
     return null;
   }
 

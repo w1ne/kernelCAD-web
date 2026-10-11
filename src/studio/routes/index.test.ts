@@ -82,7 +82,7 @@ describe('Generate page (src/studio/routes/generate.tsx)', () => {
     expect(source).toContain("phase.code === 'anon_limit'");
     expect(source).toContain('useOptionalSession()');
     expect(source).toContain('window.localStorage.getItem(PENDING_PROMPT_KEY)');
-    expect(source).toContain('void submit(pending)');
+    expect(source).toContain('run(pending)');
   });
 
   it('renders <GallerySection /> in the JSX tree', () => {

@@ -5,52 +5,25 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 
 describe('static gallery landing page', () => {
-  it('copies MCP client install one-liners instead of the raw server command', () => {
+  it('keeps install commands out of the hero and links to the connect page', () => {
     const html = readFileSync(path.resolve(__dirname, '../site/index.html'), 'utf8');
 
-    expect(html).toContain('claude mcp add --transport http kernelcad https://mcp.kernelcad.com/mcp');
-    expect(html).toContain('codex mcp add kernelcad -- npx -y kernelcad mcp');
-    expect(html).not.toContain("wireCopyButton('mcp-btn', 'kernelcad mcp')");
+    expect(html).not.toContain('claude mcp add');
+    expect(html).not.toContain('codex mcp add');
+    expect(html).not.toContain('aria-label="Install commands"');
+    expect(html).toContain('href="https://app.kernelcad.com/connect"');
+    expect(html).toContain('Connect your agent');
   });
 
-  it('exposes Claude Desktop on the supported-surfaces row and install stack', () => {
+  it('starts a build from the hero prompt box', () => {
     const html = readFileSync(path.resolve(__dirname, '../site/index.html'), 'utf8');
 
-    // Chip lives inside the supported-surfaces row.
-    const modesStart = html.indexOf('aria-label="Supported agent surfaces"');
-    expect(modesStart).toBeGreaterThan(-1);
-    const modesEnd = html.indexOf('</div>', modesStart);
-    expect(modesEnd).toBeGreaterThan(modesStart);
-    const modesBlock = html.slice(modesStart, modesEnd);
-    expect(modesBlock).toContain('Claude Desktop');
-
-    // Claude Desktop chip is ordered FIRST (most consumer-facing).
-    const claudeDesktopIdx = modesBlock.indexOf('Claude Desktop');
-    const codexIdx = modesBlock.indexOf('Codex');
-    const claudeCodeIdx = modesBlock.indexOf('Claude Code');
-    const cursorIdx = modesBlock.indexOf('Cursor');
-    const cliChipIdx = modesBlock.indexOf('>CLI<');
-    expect(claudeDesktopIdx).toBeGreaterThan(-1);
-    expect(claudeDesktopIdx).toBeLessThan(codexIdx);
-    expect(claudeDesktopIdx).toBeLessThan(claudeCodeIdx);
-    expect(claudeDesktopIdx).toBeLessThan(cursorIdx);
-    expect(claudeDesktopIdx).toBeLessThan(cliChipIdx);
-
-    // Fourth install card: anchor (not a copy-button) that links to /app/connect.
-    const stackStart = html.indexOf('aria-label="Install commands"');
-    expect(stackStart).toBeGreaterThan(-1);
-    const stackEnd = html.indexOf('</div>', stackStart);
-    const stackBlock = html.slice(stackStart, stackEnd);
-    expect(stackBlock).toContain('id="claude-desktop-link"');
-    expect(stackBlock).toContain('href="/app/connect"');
-    expect(stackBlock).toContain('Connect your agent');
-
-    // Caption sits near the install stack and states the real monetization
-    // model: bring-your-own-Claude is free + unlimited; the built-in hosted
-    // agent (generation) is the paid path.
-    expect(html).toContain('id="claude-desktop-note"');
-    expect(html).toContain('free and unlimited');
-    expect(html).toContain('built-in hosted agent (paid)');
+    const formStart = html.indexOf('class="hero-form"');
+    expect(formStart).toBeGreaterThan(-1);
+    const formBlock = html.slice(formStart, html.indexOf('</form>', formStart));
+    expect(formBlock).toContain('action="https://app.kernelcad.com/generate"');
+    expect(formBlock).toContain('name="q"');
+    expect(formBlock).toContain('name="auto"');
   });
 
   it('documents the same full marketing build command used by deploy', () => {
