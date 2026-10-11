@@ -15,11 +15,14 @@
 
 import { FEATURE_NAME_REGEX } from '../intent/featureName';
 import { invalidArgs } from '../intent/invalidArgs';
+import { normalizeColor } from './paramColor';
 
 /** One minimal correct declaration, inline on every param message. */
 const PARAM_EXAMPLE = "param('wallThickness', 3, { min: 1, max: 10, unit: 'mm' })";
 
-export type ParamType = 'number' | 'boolean' | 'choice' | 'string';
+/** `color` is a string param whose default is a hex colour ('#rgb' or
+ *  '#rrggbb'); its value is always stored as lowercase '#rrggbb'. */
+export type ParamType = 'number' | 'boolean' | 'choice' | 'string' | 'color';
 
 export type ParamValue = number | boolean | string;
 
@@ -105,11 +108,12 @@ export class ParamTable {
     if (type === 'string') {
       assertWithinMaxLength(name, defaultValue as string, meta);
     }
+    const initial = type === 'color' ? assertColor(name, defaultValue as string) : defaultValue;
     const entry: ParamEntry = {
       name,
       type,
-      value: defaultValue,
-      defaultValue,
+      value: initial,
+      defaultValue: initial,
       meta: meta ? { ...meta } : undefined,
     };
     this.entries.set(name, entry);
@@ -148,7 +152,7 @@ export class ParamTable {
     if (entry.type === 'string') {
       assertWithinMaxLength(name, value as string, entry.meta);
     }
-    entry.value = value;
+    entry.value = entry.type === 'color' ? assertColor(name, value as string) : value;
     return entry;
   }
 
@@ -211,7 +215,23 @@ export class ParamTable {
 function jsTypeOf(type: ParamType): 'number' | 'boolean' | 'string' {
   if (type === 'number') return 'number';
   if (type === 'boolean') return 'boolean';
-  return 'string'; // 'choice' and 'string' are both JS strings.
+  return 'string'; // 'choice', 'string' and 'color' are all JS strings.
+}
+
+/** Normalised '#rrggbb' for a colour param value, or a typed error. */
+function assertColor(name: string, value: string): string {
+  const color = normalizeColor(value);
+  if (color === undefined) {
+    invalidArgs({
+      api: 'param(name, defaultValue, meta)',
+      path: `param('${name}') value`,
+      got: value,
+      requires: `a colour — '#rrggbb', '#rgb' or a basic CSS colour name; param '${name}' is a colour param`,
+      hintSlug: 'invalid-args.param.type-mismatch',
+      example: `param('${name}', '#3366cc')`,
+    });
+  }
+  return color;
 }
 
 function assertTypeMatches(name: string, type: ParamType, value: ParamValue): void {

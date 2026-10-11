@@ -33,6 +33,8 @@ The first call in any model: a solid primitive, or a 2D profile to extrude.
 | `sphere(r) => Shape` | Sphere centered at the origin, radius r. |
 | `torus(majorR: number, minorR: number, segments?: number) => Shape` | Solid torus centered on world origin, axis along world +Z. |
 | `spring({ length, coilRadius, wireRadius, turns, axis?, pointsPerTurn?, endStyle?, segments? }) => Shape` | Build a helical spring as a circular wire profile swept along a smooth B-spline helix spine, producing one continuous watertight solid. |
+| `threadedRod({ spec: string, length: number, chamfer?: boolean \| number, cosmetic?: boolean, clearance?: number }) => Shape` | A real ISO metric EXTERNAL thread (60° basic profile, right-hand) along +Z from z = 0 to `length`; the ridge centre crosses +X at every z = k·pitch, so a modelled `threadedHole` whose entry face is on a whole pitch mates in phase. |
+| `isoThread(spec: string) => { spec, diameter, pitch, coarse, standard, pitchDiameter, minorDiameter, rootDiameter, tapDrill, threadDepth }` | Resolve an ISO metric thread designation. |
 | `spurGear({ module, teeth, faceWidth, pressureAngle?, bore?, backlash? }) => Shape` | Build an involute spur gear as ONE manifold solid. |
 | `internalSpurGear({ module, teeth, faceWidth, pressureAngle?, backlash?, rimThickness?, profileShift? }) => Shape` | Build an involute INTERNAL / ring gear as ONE manifold solid: outer rim minus a bore whose flanks are the external spur profile mirrored through the pitch circle. |
 | `ringGear({ module, teeth, faceWidth, pressureAngle?, backlash?, rimThickness?, profileShift? }) => Shape` | Alias of internalSpurGear — involute internal / ring gear. |
@@ -60,6 +62,8 @@ The first call in any model: a solid primitive, or a 2D profile to extrude.
 | `PathBuilder.smoothSpline(x: Editable<number>, y: Editable<number>) => PathBuilder` | C1-smooth spline segment from current position to (x, y); inherits start tangent from prior segment. |
 | `PathBuilder.spline(points: Array<[Editable<number>, Editable<number>]>, opts?: { tension?: Editable<number> }) => PathBuilder` | NURBS Slice D — N-waypoint B-spline interpolation. |
 | `PathBuilder.nurbsSegment(controlPoints: Array<[Editable<number>, Editable<number>]>, opts?: { degree?: number; weights?: number[]; knots?: number[] }) => PathBuilder` | NURBS Slice D — explicit B-spline segment defined by a control polygon. |
+| `PathBuilder.bezierTo(c1: [Editable<number>, Editable<number>], c2: [Editable<number>, Editable<number>], end: [Editable<number>, Editable<number>]) => PathBuilder` | Cubic Bézier from the current pen via control points c1, c2 to end (SVG `C`). |
+| `PathBuilder.quadraticTo(c: [Editable<number>, Editable<number>], end: [Editable<number>, Editable<number>]) => PathBuilder` | Quadratic Bézier from the current pen via control point c to end (SVG `Q`). |
 | `hermiteG2(a: { point: Vec3; tangent: Vec3; curvature?: Vec3 }, b: { point: Vec3; tangent: Vec3; curvature?: Vec3 }) => Curve3D` | Quintic Hermite Curve3D that interpolates the two endpoints with matching positions, first derivatives (tangents), and second derivatives (curvatures). |
 | `PathBuilder.hermiteG2(a: HermiteEndpoint2D, b: HermiteEndpoint2D) => PathBuilder` | NURBS Slice D — 2D quintic-Hermite transition between two endpoints, each with prescribed point + first derivative (tangent) + optional second derivative (curvature). |
 | `Shape.sectionSketch(plane: 'xy' \| 'xz' \| 'yz' \| { plane, offset? } \| { origin, normal }, opts?: { curveTolerance? }) => Promise<Sketch>` | AWAIT THIS — returns Promise<Sketch>; chaining a Sketch method (e.g. |
@@ -75,7 +79,7 @@ Turn a profile into a solid, or grow one along a path.
 | `Sketch.extrude(depth: Editable<number>, opts?: { faceLabels?, twistAngle? }) => Shape` | Extrude this closed sketch normal to its plane by `depth` (mm). |
 | `Sketch.revolve(opts?: { angleDeg?: Editable<number> }) => Shape` | Revolve around the Z axis, 360 degrees unless `angleDeg` (number or ParamRef). |
 | `Sketch.revolve() => Shape` | Revolve 360 degrees around the Z axis. |
-| `Sketch.sweep(rail, opts?: { frenet?, transitionMode?, spine? }) => Shape` | Sweep this profile along a 3D rail. |
+| `Sketch.sweep(rail, opts?: { frenet?, transitionMode?, spine?, section?: 'axial' \| 'transverse' }) => Shape` | Sweep this profile along a 3D rail. |
 | `Sketch.sweep(rail, opts?: { frenet?, transitionMode?, spine? }) => Shape` | Sweep this profile along a 3D rail. |
 | `Sketch.loft(other: Sketch \| Sketch[], opts?: { spacing?, planes?, twistDeg?, twistCenter?, ruled?, startPoint?, endPoint?, faceLabels? }) => Shape` | Loft this profile through one or more additional sections to produce a 3D solid that smoothly interpolates between them. |
 | `Sketch.loft(other: Sketch \| Sketch[], opts?: { spacing?, planes?, twistDeg?, twistCenter?, ruled?, startPoint?, endPoint?, faceLabels?, rails?: Curve3D[] }) => Shape` | Loft this profile through one or more additional sections to produce a 3D solid that smoothly interpolates between them. |
@@ -92,6 +96,7 @@ Cut into a solid: bolt holes, pockets, slots, plain subtraction.
 | `ParamRef.subtract(other: number \| ParamRef<number>) => ParamRef<number>` | Build a ParamRef whose value equals this ParamRef minus `other`. |
 | `Shape.hole(face: FaceSelector \| string, opts: { u, v, diameter, depth?: number \| "through", at?: Vec3 \| { angleDeg, z }, axis?: Vec3, upToFace?: FaceRef, counterbore?: { diameter, depth }, countersink?: { diameter, angleDeg? }, thread?: { pitch, modeled?: boolean, clearance? } }) => Shape` | Drill a single hole. |
 | `Shape.holes(face: FaceSelector \| string, opts: { positions: Array<{u,v}>, diameter, depth?, upToFace?, counterbore?, countersink?, thread? }) => Shape` | Drill N holes in one feature record. |
+| `Shape.threadedHole(face: FaceSelector \| string, opts: { u, v, spec: string, depth: number \| 'through', modeled?: boolean, clearance?, name? }) => Shape` | ISO metric tapped hole by designation (`spec: 'M6'` coarse, or `'M6x0.75'`). |
 | `Shape.cutout(profile: PathBuilder \| Sketch, opts: { face: FaceSelector \| string, depth?: number \| "through", upToFace?: FaceRef, depthMode?: "blind" \| "symmetric" }) => Shape` | Sketch-driven subtractive extrude for irregular shapes hole() can't express (slots, D-shapes, keyhole pockets). |
 
 ## Combine shapes
@@ -183,6 +188,7 @@ NURBS curves and surfaces, plus the evaluators for measuring them before they be
 | Call | What it does |
 |---|---|
 | `nurbsCurve(controlPoints: Vec3[], opts?: { degree?: number; weights?: number[]; knots?: number[]; closed?: boolean }) => Curve3D` | 3D NURBS curve from a control net. |
+| `bezier(points: Vec3[]) => Curve3D` | 3D Bézier curve on its control polygon: 3 points = quadratic, 4 = cubic (2–26 points). |
 | `spline3d(points: Vec3[], opts?: { tension?: number; closed?: boolean }) => Curve3D` | Catmull-Rom-to-cubic-Bezier convenience that interpolates the supplied points through a cubic NURBS curve. |
 | `hermiteG2(a: { point: Vec3; tangent: Vec3; curvature?: Vec3 }, b: { point: Vec3; tangent: Vec3; curvature?: Vec3 }) => Curve3D` | Quintic Hermite Curve3D that interpolates the two endpoints with matching positions, first derivatives (tangents), and second derivatives (curvatures). |
 | `PathBuilder.hermiteG2(a: HermiteEndpoint2D, b: HermiteEndpoint2D) => PathBuilder` | NURBS Slice D — 2D quintic-Hermite transition between two endpoints, each with prescribed point + first derivative (tangent) + optional second derivative (curvature). |
@@ -260,7 +266,7 @@ Adjust a model's appearance without changing its geometry: text, color, lighting
 | `sketch : { text(content: string, opts: { size: Editable<number>; align?: "left" \| "center" \| "right"; position?: [Editable<number>, Editable<number>]; rotation?: Editable<number>; font?: string }): Sketch }` | Sketch primitives namespace. |
 | `fontPath(p: string) => FontPath` | Brand a string as a font filesystem path (TTF). |
 | `Shape.embossText(opts: { textContent: string; fontFamily?: string; size: Editable<number>; depth: Editable<number>; align?: 'left' \| 'center' \| 'right'; anchorU?: Editable<number>; anchorV?: Editable<number>; rotation?: Editable<number>; scaleMode?: 'original' \| 'native' \| 'bounds'; face: FaceSelector \| string }) => Shape` | Raise or recess text on a target face. |
-| `Shape.color(name: ColorToken \| `#${string}`) => Shape` | Set HUE ONLY: a role color (servo/gear/beam/shaft/plate/pin/frame/tool) or a literal `#rrggbb` hex. |
+| `Shape.color(name: ColorToken \| `#${string}` \| ColorParamRef) => Shape` | Set HUE ONLY: a role color (servo/gear/beam/shaft/plate/pin/frame/tool) or a literal `#rrggbb` hex, or a colour `param()` ref. |
 | `Shape.finish(name: FinishToken \| MaterialGrade, opts?: { color?: string; face?: string }) => Shape` | PREFERRED way to make a part look like a real material. |
 | `Shape.material(opts: PBRMaterial & { face?: string }) => Shape` | ADVANCED / renderer-level escape hatch exposing raw PBR floats for glass, clearcoat, anisotropy, and image textures when no `.finish()` token fits. |
 | `Shape.wrapTexture(imageRef: TextureRef, projection: { type: 'flat'; onto?: 'xy' \| 'xz' \| 'yz' } \| { type: 'cylinder'; axis: [number, number, number] } \| { type: 'sphere' } \| { type: 'box' }) => Shape` | Project a bitmap (label, decal, logo) onto this shape without hand-authoring UVs. |

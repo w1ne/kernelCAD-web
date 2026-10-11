@@ -375,7 +375,9 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
         'the model silhouette centred and auto-framed with ~11% air (a script\'s setCameraTarget is ignored), per-part colours/materials ' +
         'as authored, no watermark. With no views/pose it renders ONE image named \'hero\' (3/4 front-right, az=30°, el=22°) ' +
         'at 1600×1200; width/height go up to 2048; views/pose still work under the preset. Output is deterministic for the ' +
-        'same input. For a 360° loop use capture_animation({ turntable: true }). Returns { ok, images: [{ name, path, description }], ' +
+        'same input. For a 360° loop use capture_animation({ turntable: true }). INSPECTION SHEET: { sheet: true } renders all ' +
+        'seven views (iso, front, back, left, right, top, bottom) and adds one labelled image named \'sheet\' tiling them — ' +
+        'do not call a model done because it compiled; call it done when every tile of the sheet matches the request. Returns { ok, images: [{ name, path, description }], ' +
         'out_dir, bounds, mechanism, render_source, render_ms, diagnostics }. PATHS ARE LOCAL to the machine running the ' +
         'MCP server — local stdio clients read them directly; hosted/remote clients should use open_in_studio instead.',
       inputSchema: {
@@ -383,7 +385,8 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
         properties: {
           code: { type: 'string', description: 'Inline kernelCAD script source. Mutually exclusive with file. Relative imports resolve against a temp dir — use file for scripts with relative lib.fromSTEP(...) imports.' },
           file: { type: 'string', description: 'Path to a .kcad.ts script on disk. Mutually exclusive with code.' },
-          views: { type: 'array', items: { type: 'string', enum: ['front', 'right', 'top', 'iso'] }, description: 'Canonical views to render (default: all four). Fewer views = faster.' },
+          views: { type: 'array', items: { type: 'string', enum: ['front', 'back', 'left', 'right', 'top', 'bottom', 'iso'] }, description: 'Views to render (default: front, right, top, iso; all seven with sheet). Fewer views = faster.' },
+          sheet: { type: 'boolean', description: "Also write one labelled image 'sheet' tiling every rendered view. With no views it renders all seven (adds back, left, bottom) — use it before calling a model done, so a missing cutout on the back or underside is not missed.", default: false },
           pose: { type: 'string', description: "Extra arbitrary camera pose '<az>,<el>' in degrees, e.g. '30,20'." },
           focus: { type: 'array', items: { type: 'string' }, description: 'Show only matching feature ids / assembly part names. Mutually exclusive with hide.' },
           hide: { type: 'array', items: { type: 'string' }, description: 'Hide matching feature ids / assembly part names. Mutually exclusive with focus.' },

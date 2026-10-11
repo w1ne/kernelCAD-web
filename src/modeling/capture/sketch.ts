@@ -7,6 +7,7 @@ import type { CaptureSession } from './captureSession';
 import { validateFaceLabels } from './faceLabels';
 import { Shape } from './proxy';
 import { KernelError } from '../../shared/intent/kernelError';
+import { invalidArgs } from '../../shared/intent/invalidArgs';
 import { helix as sampleHelix, helixOptionsFromSpec, helixRailSpecOf, type HelixRailSpec } from '../helix';
 import type { FaceLabelsMap } from '../../shared/intent/featureRecord';
 import { type Editable, type ParamRefExpr } from '../../shared/runtime/paramRef';
@@ -21,6 +22,7 @@ import type { SketchCommand } from '../../shared/capture/sketchCommand';
 import type { Curve3D } from './curveProxy';
 import { type TangentEntity2D } from '../../shared/capture/tangency';
 import { reflectSketchCommands } from './sketchReflect';
+import { checkSweepSection } from './sweepSection';
 import { toNearSpec, validateTangentEntity } from './sketchTangency';
 import {
   checkNurbsPenMatch,
@@ -329,6 +331,13 @@ export class Sketch {
    *   valid solid. The profile's axial extent must stay below the pitch
    *   (adjacent turns may not overlap) and it may not cross the axis;
    *   `frenet` and `transitionMode` have no effect.
+   *   With `opts.section: 'transverse'` the profile is instead the
+   *   CROSS-SECTION perpendicular to the helix axis, sketch origin on the
+   *   axis (sketch X = helix angle 0). The sweep is then a twisted
+   *   extrusion: the section turns a full revolution per pitch while it
+   *   advances, so a whole threaded rod is ONE sweep with no boolean
+   *   (`threadedRod` builds exactly this). The helix radius only shapes the
+   *   spine; `pitch` and `turns` set the twist rate and the length.
    *
    * A rail from `helix(...)` remembers its (possibly ParamRef) dimensions, so a
    * sweep along it is regenerated from the live param values at lower time
@@ -344,12 +353,14 @@ export class Sketch {
       frenet?: boolean;
       transitionMode?: 'right' | 'transformed' | 'round';
       spine?: 'polyline' | 'smooth' | 'helix';
+      section?: 'axial' | 'transverse';
       faceLabels?: FaceLabelsMap;
     } = {},
   ): Shape {
     const faceLabels = validateFaceLabels(opts?.faceLabels, 'sweep');
     const transitionMode = opts.transitionMode ?? 'right';
     const spine = opts.spine ?? 'polyline';
+    const section = checkSweepSection(opts.section, spine, this.id);
     const helixSpec = this.#unmodifiedHelixSpec(rail);
     if (spine === 'helix' && helixSpec === undefined) {
       throw new KernelError(
@@ -373,6 +384,7 @@ export class Sketch {
         transitionMode,
         spine,
         ...(helixSpec ? { helix: helixSpec } : {}),
+        ...(section === 'transverse' ? { section } : {}),
         ...(faceLabels ? { faceLabels } : {}),
       },
     });
@@ -766,6 +778,12 @@ export class PathBuilder {
    * PathBuilder method.
    */
   #currentPenPosition(): { x: number; y: number } | null {
+    const pen = this.#currentPen();
+    return pen === null ? null : { x: this.#now(pen.x), y: this.#now(pen.y) };
+  }
+
+  /** {@link #currentPenPosition} as the (possibly symbolic) Params that set it. */
+  #currentPen(): { x: Param; y: Param } | null {
     for (let i = this.commands.length - 1; i >= 0; i--) {
       const cmd = this.commands[i];
       switch (cmd.kind) {
@@ -777,17 +795,13 @@ export class PathBuilder {
         case 'bulgeArc':
         case 'radiusArc':
         case 'smoothSpline':
-          return { x: this.#now(cmd.x), y: this.#now(cmd.y) };
-        case 'spline': {
-          const last = cmd.points[cmd.points.length - 1];
-          return { x: this.#now(last.x), y: this.#now(last.y) };
-        }
-        case 'nurbsSegment': {
-          const last = cmd.controlPoints[cmd.controlPoints.length - 1];
-          return { x: this.#now(last.x), y: this.#now(last.y) };
-        }
+          return { x: cmd.x, y: cmd.y };
+        case 'spline':
+          return cmd.points[cmd.points.length - 1];
+        case 'nurbsSegment':
+          return cmd.controlPoints[cmd.controlPoints.length - 1];
         case 'hermiteG2_2d':
-          return { x: this.#now(cmd.bx), y: this.#now(cmd.by) };
+          return { x: cmd.bx, y: cmd.by };
         case 'close':
           // `close` is supposed to be terminal — keep scanning back for the
           // last drawing command (defensive; nothing should append after
@@ -916,6 +930,50 @@ export class PathBuilder {
       degree: toParam(degree, 'unitless'),
       weights: paramWeights,
       knots: paramKnots,
+    });
+    return this;
+  }
+
+  /**
+   * Cubic Bézier from the current pen through control points `c1`, `c2` to
+   * `end` (SVG `C`). Exact — lowered as a degree-3 Bézier segment, and the
+   * pen ends at `end`. Coordinates accept ParamRefs. Call `moveTo` first.
+   */
+  bezierTo(
+    c1: [Editable<number>, Editable<number>],
+    c2: [Editable<number>, Editable<number>],
+    end: [Editable<number>, Editable<number>],
+  ): PathBuilder {
+    return this.#bezierSegment('bezierTo', [c1, c2, end]);
+  }
+
+  /**
+   * Quadratic Bézier from the current pen through control point `c` to
+   * `end` (SVG `Q`). Exact degree-2 segment; the pen ends at `end`.
+   */
+  quadraticTo(c: [Editable<number>, Editable<number>], end: [Editable<number>, Editable<number>]): PathBuilder {
+    return this.#bezierSegment('quadraticTo', [c, end]);
+  }
+
+  #bezierSegment(api: string, points: Array<[Editable<number>, Editable<number>]>): PathBuilder {
+    const pen = this.#currentPen();
+    if (pen === null) {
+      invalidArgs({
+        api: `path().${api}(...)`,
+        path: 'pen',
+        gotText: 'no current point',
+        requires: `a current point — call moveTo(x, y) before ${api}`,
+        example: 'path().moveTo(0, 0).bezierTo([5, 10], [15, 10], [20, 0]).close()',
+      });
+    }
+    // Same tuple / finiteness checks as nurbsSegment's control points.
+    const rest = toNurbsControlPoints(points, 1, (p: Param) => this.#now(p));
+    // A clamped B-spline of degree n on n + 1 points with no interior knot IS
+    // their Bézier curve.
+    this.commands.push({
+      kind: 'nurbsSegment',
+      controlPoints: [pen, ...rest],
+      degree: toParam(points.length, 'unitless'),
     });
     return this;
   }

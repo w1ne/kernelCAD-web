@@ -38,7 +38,9 @@ DFM checks walls, overhangs and clearance; it does NOT check whether text,
 logos, slots or other decorations overlap holes, sit off the part, or collide
 with each other. Only the pictures show that. Render
 (`render_preview` / `kernelcad render`) the top, front and iso views and look
-at each one before you report a layout as finished.
+at each one before you report a layout as finished. For a whole part, check
+the seven-view sheet (`render_preview({ file, sheet: true })`): done means
+every tile matches the request, not that it compiles.
 
 ## Inner loop: render after every visible change
 

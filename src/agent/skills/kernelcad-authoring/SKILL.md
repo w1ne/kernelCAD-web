@@ -44,10 +44,11 @@ Intent words → call this API; do not hand-build it (subtracted cylinders, type
 | Intent words | API | Cookbook id |
 |---|---|---|
 | bolt hole, clearance hole, M3–M8 | `body.holes(face, { positions: [{ u, v }], diameter, depth: 'through' })`; ISO 273 clearance M3 3.4 · M4 4.5 · M5 5.5 · M6 6.6 · M8 9 | clearance-hole-through-plate |
-| thread, tapped, tap drill, M-size into the part | `body.hole(face, { diameter: <nominal>, depth, thread: { pitch } })` — drills the ISO minor Ø (d − 1.0825·P); coarse P: M3 0.5 · M4 0.7 · M5 0.8 · M6 1 · M8 1.25 | threaded-hole-tap-drill |
+| thread, tapped, tap drill, M-size into the part | `body.threadedHole(face, { u, v, spec: 'M5', depth })` (`modeled: true` = real thread) or `body.hole(face, { diameter: <nominal>, depth, thread: { pitch } })`; coarse P: M3 0.5 · M4 0.7 · M5 0.8 · M6 1 · M8 1.25 | threaded-hole-tap-drill |
+| external thread, threaded rod, bolt, jar neck | `threadedRod({ spec: 'M6', length })` (+ union a head); `isoThread(spec)` gives pitch / tap drill | iso-metric-bolt-and-nut |
 | counterbore, socket head flush | `body.hole(face, { diameter, depth, counterbore: { diameter, depth } })` (M3 Ø6.5×3.4, M4 Ø8×4.4, M5 Ø10×5.4, M6 Ø11×6.4) | drawing-hole-and-gdt-callouts |
 | countersink, flat head flush | `body.hole(face, { diameter, depth, countersink: { diameter, angleDeg: 90 } })` | countersunk-flat-head-screw |
-| bent tube, pipe, hydraulic / fuel / coolant line between fittings, bend table | `tube(name, opts)` + `tubeSpec(rules)` between `part.port(name)`s — load the `kernelcad-tubes` skill | pipe-route-swept-tube |
+| bent tube, pipe, hydraulic / fuel / coolant line between fittings, bend table | `tube(name, opts)` + `tubeSpec(rules)` between `part.port(name)`s (skill `kernelcad-tubes`) | pipe-route-swept-tube |
 | heat-set insert | blind `hole` at the insert pilot Ø | heat-set-insert-pilot |
 | nut trap, captive nut | `hole` + `cutout(hexPath, { face, depth })` | hex-nut-trap-bolt-clearance |
 | set screw, radial hole, cross hole | `hole({ ofSurfaceType: 'CYLINDER' }, { at: { angleDeg, z }, diameter, depth: 'through', thread })` straight into the round side (`'through'` stops at the bore; `at: [x, y, z]` + optional `axis` for any face / angle); a spot-face flat first is optional | threaded-hole-tap-drill |

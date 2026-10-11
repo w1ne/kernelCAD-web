@@ -29,6 +29,9 @@ kernelcad parts path/to/script.kcad.ts --json                  # list assembly p
 # so the default 1024×1024 square tiles frame correctly.
 kernelcad render path/to/script.kcad.ts -o /tmp/out.png
 
+# All seven views (adds back, left, bottom) in one labelled inspection sheet.
+kernelcad render path/to/script.kcad.ts -o /tmp/sheet.png --sheet
+
 # Clip the model with a section plane to expose interiors in headless captures.
 # Keeps the negative-axis side by default; --section-flip keeps the positive side.
 kernelcad render path/to/script.kcad.ts -o /tmp/cut.png --section z=10

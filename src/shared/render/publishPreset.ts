@@ -10,6 +10,8 @@
 // them. Pure data + pure helpers only: this module is imported by both the
 // browser bundle and the CLI, so it must not touch three.js or Node APIs.
 
+import type { RenderView } from './views';
+
 /** Named render looks. 'default' is the engineering-review look every render
  *  has always used; 'publish' is the studio product shot. */
 export const RENDER_PRESETS = ['default', 'publish'] as const;
@@ -35,7 +37,7 @@ export interface PublishFrameRequest {
   margin: number;
   /** Camera direction. `view` snaps to a canonical engineering view;
    *  otherwise az/el in degrees (same convention as setRenderPose). */
-  view?: 'front' | 'right' | 'top' | 'iso';
+  view?: RenderView;
   azDeg?: number;
   elDeg?: number;
   /** 'pose' fits the model for this az only; 'orbit' fits the worst case

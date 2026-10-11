@@ -54,6 +54,9 @@ export interface HelicalSweepSpec {
   readonly turns: number;
   /** Angle of the start point, radians. */
   readonly startAngle: number;
+  /** Profile placement: `'axial'` (default) or `'transverse'` (see
+   *  {@link sweepProfileAlongHelix}). */
+  readonly section?: 'axial' | 'transverse';
 }
 
 /** A failure the lowerer maps to `feature.invalid-args` (author-fixable). */
@@ -154,20 +157,8 @@ function boundsOf(shape: unknown): Box2 {
   return out;
 }
 
-/**
- * Sweep a planar profile wire (authored in local XY: x = radial offset from
- * the helix start point, y = axial offset) along the exact helix. Returns the
- * solid as a TopoDS_Shape.
- *
- * @throws HelicalSweepArgsError when the profile would cross the axis or
- *   overlap the next turn (author-fixable).
- * @throws Error when OCCT cannot build a valid solid.
- */
-export function sweepProfileAlongHelix(profileWireXY: unknown, spec: HelicalSweepSpec): unknown {
-  validateSpec(spec);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const oc = getOC() as any;
-
+/** Reject an AXIAL profile that would cross the axis or overlap the next turn. */
+function checkAxialProfile(profileWireXY: unknown, spec: HelicalSweepSpec): void {
   // The optimal 2D bounds of a line/arc profile are tight; a small slack keeps
   // arc bulges from tripping the overlap check on a profile that fits.
   const b = boundsOf(profileWireXY);
@@ -184,16 +175,49 @@ export function sweepProfileAlongHelix(profileWireXY: unknown, spec: HelicalSwee
       'Profile y is the axial offset; keep its axial extent below the pitch (an ISO thread ridge spans about 0.81·pitch).',
     );
   }
+}
 
-  // Place the profile: local X → radial direction at the start angle, local
-  // Y → axis, local origin → the helix start point.
+/** Where the profile's local frame lands: origin, plane normal and local X. */
+function profilePlacement(spec: HelicalSweepSpec): { origin: Vec3; normal: Vec3; xDir: Vec3 } {
   const radial = add(scale(spec.refDir, Math.cos(spec.startAngle)), scale(spec.normalDir, Math.sin(spec.startAngle)));
-  const start = add(spec.origin, scale(radial, spec.radius));
-  const normal = cross(radial, spec.axis);
+  if (spec.section === 'transverse') {
+    // Local X → radial direction at the start angle, local Y → the
+    // perpendicular direction 90° further round, local origin → the axis
+    // point. The plane normal is the axis itself.
+    return { origin: spec.origin, normal: spec.axis, xDir: radial };
+  }
+  // Local X → radial direction at the start angle, local Y → axis, local
+  // origin → the helix start point.
+  return { origin: add(spec.origin, scale(radial, spec.radius)), normal: cross(radial, spec.axis), xDir: radial };
+}
+
+/**
+ * Sweep a planar profile wire along the exact helix by screw motion. Returns
+ * the solid as a TopoDS_Shape.
+ *
+ * `spec.section` picks how the local XY profile is placed:
+ *   - `'axial'` (default): x = radial offset from the helix start point,
+ *     y = axial offset — a thread ridge or groove cross-section.
+ *   - `'transverse'`: the profile lies in the plane perpendicular to the axis,
+ *     origin ON the axis (x along refDir at the start angle). The result is a
+ *     twisted extrusion: the section turns once per pitch as it advances. A
+ *     whole threaded rod is one such sweep — no boolean against a core.
+ *
+ * @throws HelicalSweepArgsError when an axial profile would cross the axis or
+ *   overlap the next turn (author-fixable).
+ * @throws Error when OCCT cannot build a valid solid.
+ */
+export function sweepProfileAlongHelix(profileWireXY: unknown, spec: HelicalSweepSpec): unknown {
+  validateSpec(spec);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const oc = getOC() as any;
+  if (spec.section !== 'transverse') checkAxialProfile(profileWireXY, spec);
+
+  const place = profilePlacement(spec);
   const fromAx3 = new oc.gp_Ax3_1();
-  const toPnt = new oc.gp_Pnt_3(start[0], start[1], start[2]);
-  const toN = new oc.gp_Dir_4(normal[0], normal[1], normal[2]);
-  const toX = new oc.gp_Dir_4(radial[0], radial[1], radial[2]);
+  const toPnt = new oc.gp_Pnt_3(place.origin[0], place.origin[1], place.origin[2]);
+  const toN = new oc.gp_Dir_4(place.normal[0], place.normal[1], place.normal[2]);
+  const toX = new oc.gp_Dir_4(place.xDir[0], place.xDir[1], place.xDir[2]);
   const toAx3 = new oc.gp_Ax3_3(toPnt, toN, toX);
   const trsf = new oc.gp_Trsf_1();
   trsf.SetDisplacement(fromAx3, toAx3);

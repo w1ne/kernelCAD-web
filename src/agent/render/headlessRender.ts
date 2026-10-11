@@ -14,7 +14,7 @@ import sharp from 'sharp';
 import { loadScriptFeatures } from '../../modeling/runtime/scriptLoader';
 import { meshFeaturesPerFeature } from '../../modeling/capture/featureMeshing';
 import { serializeForBridge, type FeatureMeshSerialized } from '../../modeling/capture/featureMeshSerialize';
-import type { RenderView } from '../../shared/render/views';
+import { CANONICAL_VIEWS, SHEET_VIEWS, type RenderView } from '../../shared/render/views';
 import type { PublishStageSpec } from '../../shared/render/publishPreset';
 import { PUBLISH_QUERY_PARTS, applyPublishStageOnPage, capturePublishTile } from './publishCapture';
 
@@ -44,7 +44,9 @@ declare const window: {
   };
 };
 
-export const ALL_VIEWS: readonly RenderView[] = ['front', 'right', 'top', 'iso'];
+/** Default capture set (the 2×2 grid). `SHEET_VIEWS` adds back/left/bottom. */
+export const ALL_VIEWS: readonly RenderView[] = CANONICAL_VIEWS;
+export { SHEET_VIEWS };
 
 export interface HeadlessObjectFilter {
   mode: 'focus' | 'hide';
@@ -841,4 +843,61 @@ export async function composite2x2(
     ])
     .png()
     .toBuffer();
+}
+
+/** Columns of the inspection sheet: 7 views fill a 4×2 grid, last cell empty. */
+const SHEET_COLUMNS = 4;
+
+/** Compose every captured view into one labelled inspection sheet.
+ *
+ *  Layout (4 columns, row-major, `SHEET_VIEWS` order):
+ *    +-------+-------+-------+-------+
+ *    |  iso  | front | back  | left  |
+ *    +-------+-------+-------+-------+
+ *    | right |  top  |bottom |       |
+ *    +-------+-------+-------+-------+
+ *
+ *  Each tile carries its view name in the top-left corner so a reviewer —
+ *  human or model — can tell back from front without guessing. Views missing
+ *  from `pngsByView` are skipped and the rest close up, so a partial capture
+ *  still yields a sheet. Input tiles share `tileWidth × tileHeight`.
+ */
+export async function compositeSheet(
+  pngsByView: Partial<Record<RenderView, Buffer>>,
+  tileWidth: number,
+  tileHeight: number,
+): Promise<Buffer> {
+  const views = SHEET_VIEWS.filter((v) => pngsByView[v] !== undefined);
+  if (views.length === 0) throw new Error('compositeSheet: no views captured');
+  const cols = Math.min(SHEET_COLUMNS, views.length);
+  const rows = Math.ceil(views.length / cols);
+  const fontSize = Math.max(14, Math.round(Math.min(tileWidth, tileHeight) / 24));
+  const layers: sharp.OverlayOptions[] = [];
+  views.forEach((view, i) => {
+    const left = (i % cols) * tileWidth;
+    const top = Math.floor(i / cols) * tileHeight;
+    layers.push({ input: pngsByView[view]!, top, left });
+    layers.push({ input: sheetLabel(view.toUpperCase(), fontSize), top: top + 8, left: left + 8 });
+  });
+  return sharp({
+    create: {
+      width: cols * tileWidth,
+      height: rows * tileHeight,
+      channels: 4,
+      background: { r: 0, g: 0, b: 0, alpha: 1 },
+    },
+  })
+    .composite(layers)
+    .png()
+    .toBuffer();
+}
+
+function sheetLabel(text: string, fontSize: number): Buffer {
+  const pad = Math.round(fontSize / 3);
+  const w = Math.round(text.length * fontSize * 0.62) + pad * 2;
+  const h = fontSize + pad * 2;
+  return Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">
+    <rect width="${w}" height="${h}" rx="4" ry="4" fill="rgba(20,20,20,0.75)"/>
+    <text x="${pad}" y="${pad + fontSize * 0.85}" fill="#ffffff" font-family="monospace" font-size="${fontSize}" font-weight="700">${text}</text>
+  </svg>`);
 }

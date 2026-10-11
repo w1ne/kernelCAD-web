@@ -126,8 +126,10 @@ const NON_TOOL_ALLOWLIST = new Set<string>([
   'base_url',
   // Hosted-product tool that lives in kernelCAD-server's registry, not the
   // local TOOL_REGISTRY — referenced in prose to redirect hosted/remote
-  // clients ("hosted clients should use `open_in_studio` instead").
+  // clients ("hosted clients should use `open_in_studio` instead") and in
+  // the one-viewer-per-response rule (`get_project` is hosted-only too).
   'open_in_studio',
+  'get_project',
   // add_surface({ kind: 'trim'|'sew'|'draft' }) parameter names documented
   // in kernelcad-mcp/SKILL.md alongside the real add_surface tool name,
   // which DOES resolve in the registry — these are its input fields.
