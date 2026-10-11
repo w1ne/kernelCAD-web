@@ -2,6 +2,7 @@
 
 ## Added
 
+- Live code while the agent works. The Studio agent pane and the `/generate` page show the script as the server streams it (`code` events on `POST /api/v1/generate`), following the newest line, with "Attempt 2 — fixing" when the agent rewrites it. The finished run shows the final script in the review as before. Older servers send no `code` events and the pane shows the steps only.
 - Inspection sheet: `render_preview({ sheet: true })` and `kernelcad render --sheet` render all seven views (iso, front, back, left, right, top, bottom) and write one labelled image tiling them, so a cutout missing on the back or underside shows in a single look. `back`, `left` and `bottom` are also valid on their own in `render_preview` `views` and `kernelcad render inspect --views`. The default views are unchanged (front, right, top, iso).
 - `trace_from_image` works without an Anthropic key: the `hybrid` and `vision-llm` backends (named points, bboxes, curves) can use any OpenAI-compatible vision endpoint (`KERNELCAD_VISION_BASE_URL` + `KERNELCAD_VISION_API_KEY` + `KERNELCAD_VISION_MODEL`; DeepInfra, OpenRouter, vLLM, Ollama, OpenAI). `ANTHROPIC_API_KEY` still wins when set. Before, a host without it could only trace the outer silhouette.
 - `verify({ check: 'load-capacity', mode: 'fea' })` answers "will it hold?" from the script's `feaStudy` in the same shape as the beam check: `ok`, `safetyFactor`, `elements[]` (stress regions as `@kc[...]` faces, in Pa), `failures[]`, plus `fea` with deflection, mesh trust and the clamp-edge peak.

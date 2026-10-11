@@ -189,3 +189,33 @@ describe('useGeneration quota 402', () => {
     expect(result.current.phase).toMatchObject({ code: 'rate_limited', message: 'slow down' });
   });
 });
+
+describe('useGeneration live code', () => {
+  beforeEach(() => {
+    startGeneration.mockReset();
+    parseSseStream.mockReset();
+    startGeneration.mockResolvedValue({ ok: true, body: {} } as Response);
+  });
+
+  it('accumulates code chunks into liveCode, outside the event log, then takes the final script', async () => {
+    let release: () => void = () => {};
+    const gate = new Promise<void>((r) => { release = r; });
+    parseSseStream.mockReturnValue((async function* () {
+      yield { kind: 'generation', generationId: 'g1', anonId: 'a1' };
+      yield { kind: 'code', attempt: 1, delta: 'const a', reset: true };
+      yield { kind: 'code', attempt: 1, delta: ' = 1;' };
+      await gate;
+      yield { kind: 'code', attempt: 2, delta: 'fixed', reset: true };
+      yield { kind: 'done', generationId: 'g1', anonId: 'a1', artifact: { title: 'T', code: 'final();', parameters: [], suggestions: [] } };
+    })());
+    const { result } = renderHook(() => useGeneration());
+    let run: Promise<void> = Promise.resolve();
+    act(() => { run = result.current.submit('a box'); });
+    await waitFor(() => expect(result.current.liveCode).toEqual({ attempt: 1, code: 'const a = 1;', final: false }));
+    expect(result.current.events.some((e) => e.kind === 'code')).toBe(false);
+    expect(result.current.phase.state).toBe('running');
+    release();
+    await act(async () => { await run; });
+    expect(result.current.liveCode).toEqual({ attempt: 2, code: 'final();', final: true });
+  });
+});
