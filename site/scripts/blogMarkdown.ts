@@ -45,6 +45,7 @@ export class MarkdownError extends Error {
 const FENCE_OPEN = /^```([\w+-]*)\s*$/;
 const HEADING = /^(#{1,6})\s+(.*?)\s*$/;
 const IMAGE = /^!\[([^\]]*)\]\(([^\s)]+)(?:\s+"([^"]*)")?\)\s*$/;
+const INLINE_IMAGE = /!\[[^\]]*\]\(/;
 const LIST_ITEM = /^(?:([-*])|(\d+)\.)\s+(.*)$/;
 const COMMENT = /^<!--([\s\S]*?)-->\s*$/;
 
@@ -90,6 +91,9 @@ export function parseBlocks(body: string, firstLine: number): Block[] {
       if (block.block) blocks.push(block.block);
       i = block.next;
     } else {
+      if (INLINE_IMAGE.test(line) && !IMAGE.test(line)) {
+        throw new MarkdownError(lineNo, 'an image goes alone on its own line, where it becomes a figure');
+      }
       if (!structuralLine(line, lineNo, open, flush, blocks)) textLine(line, lineNo, open, flush);
       i += 1;
     }

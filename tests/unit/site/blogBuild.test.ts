@@ -191,6 +191,8 @@ describe('renderBlog', () => {
     ['a fence that is never closed', 'The lede.\n\n```ts\nconst a = 1;\n', 10],
     ['a body that does not start with a paragraph', '## Section first\n', 8],
     ['a check comment over two lines', 'The lede.\n<!-- check: a = 1\n-->\n', 9],
+    ['an image inside a paragraph', 'The lede.\n\nSee ![a view](view.png) here.\n', 10],
+    ['an image inside a list item', 'The lede.\n\n- see ![a view](view.png)\n', 10],
   ])('rejects %s with the file and line', (_name, body, line) => {
     let error: unknown;
     try {
