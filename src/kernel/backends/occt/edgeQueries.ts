@@ -229,6 +229,14 @@ export function computeDihedralPublic(shape: { faces: Face[] }, edge: Edge): { a
 /**
  * Resolve a FaceQuery against an OcctBackend shape. AND-combined.
  */
+/** OCCT / replicad surface names ('CYLINDRE', 'BSPLINE_SURFACE') mapped to the
+ *  public FaceQuery names ('CYLINDER', 'BSPLINE'); either spelling matches. */
+function publicSurfaceType(t: string | undefined): string | undefined {
+  if (t === 'CYLINDRE') return 'CYLINDER';
+  if (t === 'BSPLINE_SURFACE') return 'BSPLINE';
+  return t;
+}
+
 export function resolveFaceQuery(base: OcctBackend, query: FaceQuery): Face[] {
   const tol = query.tolerance ?? DEFAULT_POS_TOL;
   const shape = base.getReplicadShape();
@@ -264,7 +272,8 @@ export function resolveFaceQuery(base: OcctBackend, query: FaceQuery): Face[] {
     });
   }
   if (query.ofSurfaceType) {
-    faces = faces.filter(f => (f as unknown as { geomType?: string }).geomType === query.ofSurfaceType);
+    const want = publicSurfaceType(query.ofSurfaceType);
+    faces = faces.filter(f => publicSurfaceType((f as unknown as { geomType?: string }).geomType) === want);
   }
   if (query.containsPoint) {
     const p = query.containsPoint;
