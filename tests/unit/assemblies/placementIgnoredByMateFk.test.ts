@@ -78,7 +78,7 @@ describe('assembly.placement-ignored-by-mate-fk diagnostic', () => {
     ).toEqual([]);
   });
 
-  it('emits for the mated child only when the first part also has `at:`', async () => {
+  it('emits for the mated child with its own `at:` when the root also has `at:`', async () => {
     const model = await buildModel({
       fileName: 'root-and-child-at.kcad.ts',
       code: `

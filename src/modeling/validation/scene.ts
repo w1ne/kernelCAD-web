@@ -38,7 +38,7 @@ export type SceneDiagnostic = ValidatorDiagnostic | PoseEnvelopeDiagnostic;
  *
  *    world = worldTransform · T(at) · shape
  *
- *  with `at` from `assembly.part(name, shape, { at })` (zero when absent). */
+ *  with `at` from `assembly.part(name, shape, { at })` (zero when absent; a part placed with `connect` gets the offset `connect` computes). */
 export interface ScenePart {
   /** Assembly-unique name from `assembly.part(name, ...)`. */
   readonly name: string;
