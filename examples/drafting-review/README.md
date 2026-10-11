@@ -9,13 +9,17 @@ depth label edits. The public tutorial is sourced from
 ```bash
 # Install from the lockfile once, then run these from the repository root:
 npx tsx examples/drafting-review/run.ts
-npx tsx site/scripts/build-drafting-post.ts
+npm run site:build-blog
 ```
 
 The first command rebuilds the named SVG/PDF/PNG outputs and their reports under
 `site/blog/drafting-review/`. Pass another output directory to write an isolated
-bundle. The second rebuilds the blog's static HTML from the guide without
-recomputing geometry. Source downloads are byte-identical copies of the two
+bundle. The shared blog command rebuilds the static article and index from the
+guide, validates its image/video files, and copies the Studio demonstration
+from `docs/demos/drafting-review/demo.mp4` into the post. It does not recompute
+these drawing sheets. The recording's invocation, settings and local validation
+evidence are retained in `docs/demos/drafting-review/`. Source downloads are
+byte-identical copies of the two
 `.kcad.ts` files. The manifest records source hashes and options. The bearing
 review JSON records current annotation IDs, before/after labels and the reason
 for restoring the source's nominal depths instead of displaying the B-rep's

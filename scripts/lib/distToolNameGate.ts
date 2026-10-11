@@ -84,6 +84,8 @@ const NON_TOOL_ALLOWLIST = new Set<string>([
   'part_files',
   // export result field carrying the svg-drawing placement report.
   'drawing_report',
+  // export result field carrying slicer estimates, not an MCP tool call.
+  'gcode_stats',
   'binding_name',
   'curve_bindings',
   'chain_anchor',

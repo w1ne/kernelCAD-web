@@ -24,8 +24,8 @@ return box(width, width, height)
 //   export target:'model' format:'gcode' output_path:'part.gcode'
 //     options:{ format:'gcode', printer:'generic-fdm', material:'pla',
 //               layerHeight:0.2, infill:15, supports:false }
-//   -> ok:true, byte_count, and the slicer's own real stats in
-//      the result's gcodeStats (estimatedPrintTimeSeconds,
+//   -> ok:true, byte_count, and slicer predictions in
+//      the result's optional gcode_stats (estimatedPrintTimeSeconds,
 //      filamentUsedGrams, layerCount, maxZMm).
 //   No slicer installed? You get ok:false with
 //   export.gcode.slicer-unavailable and an install hint — never a
@@ -36,3 +36,9 @@ return box(width, width, height)
 //   -> uploads and starts the print. Pass dry_run:true first to
 //      confirm connectivity/auth before ever touching hardware.
 ```
+
+MCP export receipts expose optional `gcode_stats`; CLI `--json` uses
+`gcodeStats`. Header provenance is `slicer: { name, version }`; absent fields
+are omitted. These are predicted time/material values, not physical print
+measurements. OrcaSlicer is the supported CLI; PrusaSlicer header parsing
+does not establish PrusaSlicer CLI compatibility.

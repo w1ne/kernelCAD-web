@@ -96,6 +96,7 @@ const verifyToolEntry: ToolRegistryEntry = {
       "- 'dfm-preflight' — sheet-metal flat pattern vs a job-shop's ordering rules ({ vendor, material, thicknessIn|thicknessMm, ... }). Returns the vendor's catalog source pages as `sources`; when `disclosure` is present, show it with those links.\n" +
       "- 'swept-collision' — sweep declared joint range(s) and report colliding poses.\n" +
       "- 'reachable' — inverse-kinematics reachability for an end-effector ({ tip_link, target_position, ... }).\n" +
+      "- 'fastener-installation' — measured explicit catalog-screw installation stations on lowered assembly BREP ({ file | code, fasteners:[{ part, against, engagementPart?, minEngagementMm?, maxProtrusionMm? }], toleranceMm?, angleToleranceDeg? }). Reports annular bearing gap, bore axis/diameter/overlap and receiver geometric engagement/protrusion. Unknown or zero coverage cannot pass. Simplified threads do not certify torque, preload or strength.\n" +
       "- 'mounting-holes' — fastened mates expose matching hole diameters on both sides.\n" +
       "- 'load-capacity' — will it hold? Closed-form Euler-Bernoulli beam check ({ loads, materials, ... }), or mode:'fea' to solve the script's feaStudy (quadratic-tet FEA, CalculiX) — both return { ok, safetyFactor, elements[{ partName, stressPa, yieldPa, safetyFactor }], failures[], diagnostics }; fea adds the threshold, the stress regions as @kc[...] faces with their location, and fea { peakStressPa, maxDisplacementMm, meshTrusted, peakAtSupportPa, refinement }; it refines the mesh automatically until the stress is trusted (refine: false for one solve).\n" +
       "- 'static-hold' — gravitational holding torque/force at a sampled pose grid vs each actuated joint's declared actuator capacity ({ joint?, pose?, gravity?, min_torque_margin_pct?, range_samples? }).\n" +
@@ -106,12 +107,24 @@ const verifyToolEntry: ToolRegistryEntry = {
       properties: {
         check: {
           type: 'string',
-          enum: ['assembly', 'urdf', 'dfm', 'dfm-preflight', 'swept-collision', 'reachable', 'mounting-holes', 'load-capacity', 'static-hold', 'body-likeness'],
+          enum: ['assembly', 'urdf', 'dfm', 'dfm-preflight', 'swept-collision', 'reachable', 'mounting-holes', 'load-capacity', 'static-hold', 'body-likeness', 'fastener-installation'],
           description: 'Which verification to run.',
         },
         file: { type: 'string', description: 'Path to a .kcad.ts script (assembly/dfm/dfm-preflight/swept-collision/reachable/mounting-holes/load-capacity/static-hold).' },
         code: { type: 'string', description: 'Inline kernelCAD script source (same checks as `file`).' },
         assembly: { type: 'string', description: 'Assembly name; defaults to the first captured assembly.' },
+        fasteners: {
+          type: 'array', description: "check:'fastener-installation' — explicit named stations; empty means no coverage.",
+          items: { type: 'object', additionalProperties: false, properties: {
+            part: { type: 'string', minLength: 1 },
+            against: { type: 'array', minItems: 1, uniqueItems: true, items: { type: 'string', minLength: 1 } },
+            engagementPart: { type: 'string', minLength: 1 },
+            minEngagementMm: { type: 'number', minimum: 0, description: 'Declared geometric axial overlap minimum; no thread-strength claim.' },
+            maxProtrusionMm: { type: 'number', minimum: 0 },
+          }, required: ['part', 'against'] },
+        },
+        toleranceMm: { type: 'number', minimum: 0, description: "check:'fastener-installation' — linear tolerance, default .05 mm." },
+        angleToleranceDeg: { type: 'number', minimum: 0, maximum: 90, description: "check:'fastener-installation' — axis tilt tolerance, default 1 degree." },
         urdf_path: { type: 'string', description: "check:'urdf' — path to the .urdf file." },
         dxf: { type: 'string', description: "check:'dfm-preflight' — path to a DXF file." },
         featureId: { type: 'string', description: "check:'dfm-preflight' — FeatureId to scope to." },

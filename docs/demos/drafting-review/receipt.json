@@ -1,0 +1,691 @@
+{
+  "capturedAt": "2026-10-11T22:48:41.448Z",
+  "environment": "LOCAL Studio validation; illustrative model; not physical acceptance",
+  "url": "http://127.0.0.1:5248/studio?script=examples/drafting-review/mounting-plate.kcad.ts",
+  "cdpPort": 9444,
+  "viewport": {
+    "width": 1440,
+    "height": 1100
+  },
+  "sampleIntervalMs": 250,
+  "frameCount": 22,
+  "durationSeconds": 47.915,
+  "samples": [
+    2.216,
+    4.381,
+    5.989,
+    7.96,
+    10.123,
+    12.302,
+    13.954,
+    15.9,
+    18.782,
+    20.845,
+    22.953,
+    25.393,
+    27.416,
+    29.431,
+    31.483,
+    33.905,
+    35.996,
+    38.448,
+    40.933,
+    43.296,
+    45.64,
+    47.913
+  ],
+  "stages": [
+    {
+      "label": "01-draft",
+      "seconds": 0.005,
+      "text": "Drawing review\n\nDraft — generate a fresh preview\n\nGenerate the sheet to review dimensions and callouts.\n\nDrafting profile\nGeneral review\nMachining\nSheet metal\nDimension style\nBaseline from datums\nChain between features\nSymmetry and pitch\nProfile settings and datums\nProfile name\nSave profile\n\nReview dimensions and datum selection before release.\n\nAnnotations\nGenerate preview\nMark reviewed\nExport reviewed PDF",
+      "inputs": [
+        {
+          "value": "",
+          "type": "text"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "",
+          "disabled": false
+        },
+        {
+          "text": "Apply datums",
+          "disabled": false
+        },
+        {
+          "text": "Save profile",
+          "disabled": false
+        },
+        {
+          "text": "Generate preview",
+          "disabled": false
+        },
+        {
+          "text": "Mark reviewed",
+          "disabled": true
+        },
+        {
+          "text": "Export reviewed PDF",
+          "disabled": true
+        }
+      ]
+    },
+    {
+      "label": "02-preview",
+      "seconds": 6.966,
+      "text": "Drawing review\n\nPreview ready for review\n\n18 placed · 0 crowded · 0 hidden\n\nDrafting profile\nGeneral review\nMachining\nSheet metal\nDimension style\nBaseline from datums\nChain between features\nSymmetry and pitch\nProfile settings and datums\nProfile name\nSave profile\n\nReview dimensions and datum selection before release.\n\nAnnotations\n12\ntop · auto\n50\ntop · auto\n88\ntop · auto\n12\ntop · auto\n35\ntop · auto\n58\ntop · auto\n70\ntop · auto\n100\nfront · auto\n12\nfront · auto\n4× ⌀9 THRU [REVIEW CHECK] | ⌖ ⌀0.2 A B C\ntop · auto\n⌀30 THRU | ⌖ ⌀0.1 A B C\ntop · auto\ndatum A\nfront · auto\ndatum B\ntop · auto\ndatum C\ntop · auto\n⏥ 0.4\nfront · auto\n4× R6\ntop · auto\n2× 0.5 × 45°\nleft · auto\n2× 0.5 × 45°\nfront · auto\nRefresh preview\nMark reviewed\nExport reviewed PDF",
+      "inputs": [
+        {
+          "value": "",
+          "type": "text"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "",
+          "disabled": false
+        },
+        {
+          "text": "Apply datums",
+          "disabled": false
+        },
+        {
+          "text": "Save profile",
+          "disabled": false
+        },
+        {
+          "text": "12top · auto",
+          "disabled": false
+        },
+        {
+          "text": "50top · auto",
+          "disabled": false
+        },
+        {
+          "text": "88top · auto",
+          "disabled": false
+        },
+        {
+          "text": "12top · auto",
+          "disabled": false
+        },
+        {
+          "text": "35top · auto",
+          "disabled": false
+        },
+        {
+          "text": "58top · auto",
+          "disabled": false
+        },
+        {
+          "text": "70top · auto",
+          "disabled": false
+        },
+        {
+          "text": "100front · auto",
+          "disabled": false
+        },
+        {
+          "text": "12front · auto",
+          "disabled": false
+        },
+        {
+          "text": "4× ⌀9 THRU [REVIEW CHECK] | ⌖ ⌀0.2 A B Ctop · auto",
+          "disabled": false
+        },
+        {
+          "text": "⌀30 THRU | ⌖ ⌀0.1 A B Ctop · auto",
+          "disabled": false
+        },
+        {
+          "text": "datum Afront · auto",
+          "disabled": false
+        },
+        {
+          "text": "datum Btop · auto",
+          "disabled": false
+        },
+        {
+          "text": "datum Ctop · auto",
+          "disabled": false
+        },
+        {
+          "text": "⏥ 0.4front · auto",
+          "disabled": false
+        },
+        {
+          "text": "4× R6top · auto",
+          "disabled": false
+        },
+        {
+          "text": "2× 0.5 × 45°left · auto",
+          "disabled": false
+        },
+        {
+          "text": "2× 0.5 × 45°front · auto",
+          "disabled": false
+        },
+        {
+          "text": "Refresh preview",
+          "disabled": false
+        },
+        {
+          "text": "Mark reviewed",
+          "disabled": false
+        },
+        {
+          "text": "Export reviewed PDF",
+          "disabled": true
+        }
+      ]
+    },
+    {
+      "label": "03-edited",
+      "seconds": 16.495,
+      "text": "Drawing review\n\nDraft — generate a fresh preview\n\n18 placed · 0 crowded · 0 hidden\n\nDrafting profile\nGeneral review\nMachining\nSheet metal\nDimension style\nBaseline from datums\nChain between features\nSymmetry and pitch\nProfile settings and datums\nProfile name\nSave profile\n\nReview dimensions and datum selection before release.\n\nAnnotations\n12\ntop · auto\n50\ntop · auto\n88\ntop · auto\n12\ntop · auto\n35\ntop · auto\n58\ntop · auto\n70\ntop · auto\n100\nfront · auto\n12\nfront · auto\n4× ⌀9 THRU [REVIEW CHECK] | ⌖ ⌀0.2 A B C\ntop · auto\n⌀30 THRU | ⌖ ⌀0.1 A B C\ntop · auto\ndatum A\nfront · auto\ndatum B\ntop · auto\ndatum C\ntop · auto\n⏥ 0.4\nfront · auto\n4× R6\ntop · auto\n2× 0.5 × 45°\nleft · auto\n2× 0.5 × 45°\nfront · auto\n Hide annotation\nAnnotation text\nAnnotation view\nfront\ntop\nleft\niso\nExtra offset (sheet mm)\nReset annotation\nRefresh preview\nMark reviewed\nExport reviewed PDF",
+      "inputs": [
+        {
+          "value": "",
+          "type": "text"
+        },
+        {
+          "value": "on",
+          "type": "checkbox"
+        },
+        {
+          "value": "4 × Ø9 THRU — VERIFY",
+          "type": "text"
+        },
+        {
+          "value": "8",
+          "type": "number"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "",
+          "disabled": false
+        },
+        {
+          "text": "Apply datums",
+          "disabled": false
+        },
+        {
+          "text": "Save profile",
+          "disabled": false
+        },
+        {
+          "text": "12top · auto",
+          "disabled": false
+        },
+        {
+          "text": "50top · auto",
+          "disabled": false
+        },
+        {
+          "text": "88top · auto",
+          "disabled": false
+        },
+        {
+          "text": "12top · auto",
+          "disabled": false
+        },
+        {
+          "text": "35top · auto",
+          "disabled": false
+        },
+        {
+          "text": "58top · auto",
+          "disabled": false
+        },
+        {
+          "text": "70top · auto",
+          "disabled": false
+        },
+        {
+          "text": "100front · auto",
+          "disabled": false
+        },
+        {
+          "text": "12front · auto",
+          "disabled": false
+        },
+        {
+          "text": "4× ⌀9 THRU [REVIEW CHECK] | ⌖ ⌀0.2 A B Ctop · auto",
+          "disabled": false
+        },
+        {
+          "text": "⌀30 THRU | ⌖ ⌀0.1 A B Ctop · auto",
+          "disabled": false
+        },
+        {
+          "text": "datum Afront · auto",
+          "disabled": false
+        },
+        {
+          "text": "datum Btop · auto",
+          "disabled": false
+        },
+        {
+          "text": "datum Ctop · auto",
+          "disabled": false
+        },
+        {
+          "text": "⏥ 0.4front · auto",
+          "disabled": false
+        },
+        {
+          "text": "4× R6top · auto",
+          "disabled": false
+        },
+        {
+          "text": "2× 0.5 × 45°left · auto",
+          "disabled": false
+        },
+        {
+          "text": "2× 0.5 × 45°front · auto",
+          "disabled": false
+        },
+        {
+          "text": "Reset annotation",
+          "disabled": false
+        },
+        {
+          "text": "Refresh preview",
+          "disabled": false
+        },
+        {
+          "text": "Mark reviewed",
+          "disabled": true
+        },
+        {
+          "text": "Export reviewed PDF",
+          "disabled": true
+        }
+      ]
+    },
+    {
+      "label": "04-refreshed",
+      "seconds": 25.397,
+      "text": "Drawing review\n\nPreview ready for review\n\n18 placed · 0 crowded · 0 hidden\n\nDrafting profile\nGeneral review\nMachining\nSheet metal\nDimension style\nBaseline from datums\nChain between features\nSymmetry and pitch\nProfile settings and datums\nProfile name\nSave profile\n\nReview dimensions and datum selection before release.\n\nAnnotations\n12\ntop · auto\n50\ntop · auto\n88\ntop · auto\n12\ntop · auto\n35\ntop · auto\n58\ntop · auto\n70\ntop · auto\n100\nfront · auto\n12\nfront · auto\n4 × Ø9 THRU — VERIFY | ⌖ ⌀0.2 A B C\ntop · auto\n⌀30 THRU | ⌖ ⌀0.1 A B C\ntop · auto\ndatum A\nfront · auto\ndatum B\ntop · auto\ndatum C\ntop · auto\n⏥ 0.4\nfront · auto\n4× R6\ntop · auto\n2× 0.5 × 45°\nleft · auto\n2× 0.5 × 45°\nfront · auto\n Hide annotation\nAnnotation text\nAnnotation view\nfront\ntop\nleft\niso\nExtra offset (sheet mm)\nReset annotation\nRefresh preview\nMark reviewed\nExport reviewed PDF",
+      "inputs": [
+        {
+          "value": "",
+          "type": "text"
+        },
+        {
+          "value": "on",
+          "type": "checkbox"
+        },
+        {
+          "value": "4 × Ø9 THRU — VERIFY",
+          "type": "text"
+        },
+        {
+          "value": "8",
+          "type": "number"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "",
+          "disabled": false
+        },
+        {
+          "text": "Apply datums",
+          "disabled": false
+        },
+        {
+          "text": "Save profile",
+          "disabled": false
+        },
+        {
+          "text": "12top · auto",
+          "disabled": false
+        },
+        {
+          "text": "50top · auto",
+          "disabled": false
+        },
+        {
+          "text": "88top · auto",
+          "disabled": false
+        },
+        {
+          "text": "12top · auto",
+          "disabled": false
+        },
+        {
+          "text": "35top · auto",
+          "disabled": false
+        },
+        {
+          "text": "58top · auto",
+          "disabled": false
+        },
+        {
+          "text": "70top · auto",
+          "disabled": false
+        },
+        {
+          "text": "100front · auto",
+          "disabled": false
+        },
+        {
+          "text": "12front · auto",
+          "disabled": false
+        },
+        {
+          "text": "4 × Ø9 THRU — VERIFY | ⌖ ⌀0.2 A B Ctop · auto",
+          "disabled": false
+        },
+        {
+          "text": "⌀30 THRU | ⌖ ⌀0.1 A B Ctop · auto",
+          "disabled": false
+        },
+        {
+          "text": "datum Afront · auto",
+          "disabled": false
+        },
+        {
+          "text": "datum Btop · auto",
+          "disabled": false
+        },
+        {
+          "text": "datum Ctop · auto",
+          "disabled": false
+        },
+        {
+          "text": "⏥ 0.4front · auto",
+          "disabled": false
+        },
+        {
+          "text": "4× R6top · auto",
+          "disabled": false
+        },
+        {
+          "text": "2× 0.5 × 45°left · auto",
+          "disabled": false
+        },
+        {
+          "text": "2× 0.5 × 45°front · auto",
+          "disabled": false
+        },
+        {
+          "text": "Reset annotation",
+          "disabled": false
+        },
+        {
+          "text": "Refresh preview",
+          "disabled": false
+        },
+        {
+          "text": "Mark reviewed",
+          "disabled": false
+        },
+        {
+          "text": "Export reviewed PDF",
+          "disabled": true
+        }
+      ]
+    },
+    {
+      "label": "05-reviewed",
+      "seconds": 31.843,
+      "text": "Drawing review\n\nReviewed preview\n\n18 placed · 0 crowded · 0 hidden\n\nDrafting profile\nGeneral review\nMachining\nSheet metal\nDimension style\nBaseline from datums\nChain between features\nSymmetry and pitch\nProfile settings and datums\nProfile name\nSave profile\n\nReview dimensions and datum selection before release.\n\nAnnotations\n12\ntop · auto\n50\ntop · auto\n88\ntop · auto\n12\ntop · auto\n35\ntop · auto\n58\ntop · auto\n70\ntop · auto\n100\nfront · auto\n12\nfront · auto\n4 × Ø9 THRU — VERIFY | ⌖ ⌀0.2 A B C\ntop · auto\n⌀30 THRU | ⌖ ⌀0.1 A B C\ntop · auto\ndatum A\nfront · auto\ndatum B\ntop · auto\ndatum C\ntop · auto\n⏥ 0.4\nfront · auto\n4× R6\ntop · auto\n2× 0.5 × 45°\nleft · auto\n2× 0.5 × 45°\nfront · auto\n Hide annotation\nAnnotation text\nAnnotation view\nfront\ntop\nleft\niso\nExtra offset (sheet mm)\nReset annotation\nRefresh preview\nMark reviewed\nExport reviewed PDF",
+      "inputs": [
+        {
+          "value": "",
+          "type": "text"
+        },
+        {
+          "value": "on",
+          "type": "checkbox"
+        },
+        {
+          "value": "4 × Ø9 THRU — VERIFY",
+          "type": "text"
+        },
+        {
+          "value": "8",
+          "type": "number"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "",
+          "disabled": false
+        },
+        {
+          "text": "Apply datums",
+          "disabled": false
+        },
+        {
+          "text": "Save profile",
+          "disabled": false
+        },
+        {
+          "text": "12top · auto",
+          "disabled": false
+        },
+        {
+          "text": "50top · auto",
+          "disabled": false
+        },
+        {
+          "text": "88top · auto",
+          "disabled": false
+        },
+        {
+          "text": "12top · auto",
+          "disabled": false
+        },
+        {
+          "text": "35top · auto",
+          "disabled": false
+        },
+        {
+          "text": "58top · auto",
+          "disabled": false
+        },
+        {
+          "text": "70top · auto",
+          "disabled": false
+        },
+        {
+          "text": "100front · auto",
+          "disabled": false
+        },
+        {
+          "text": "12front · auto",
+          "disabled": false
+        },
+        {
+          "text": "4 × Ø9 THRU — VERIFY | ⌖ ⌀0.2 A B Ctop · auto",
+          "disabled": false
+        },
+        {
+          "text": "⌀30 THRU | ⌖ ⌀0.1 A B Ctop · auto",
+          "disabled": false
+        },
+        {
+          "text": "datum Afront · auto",
+          "disabled": false
+        },
+        {
+          "text": "datum Btop · auto",
+          "disabled": false
+        },
+        {
+          "text": "datum Ctop · auto",
+          "disabled": false
+        },
+        {
+          "text": "⏥ 0.4front · auto",
+          "disabled": false
+        },
+        {
+          "text": "4× R6top · auto",
+          "disabled": false
+        },
+        {
+          "text": "2× 0.5 × 45°left · auto",
+          "disabled": false
+        },
+        {
+          "text": "2× 0.5 × 45°front · auto",
+          "disabled": false
+        },
+        {
+          "text": "Reset annotation",
+          "disabled": false
+        },
+        {
+          "text": "Refresh preview",
+          "disabled": false
+        },
+        {
+          "text": "Mark reviewed",
+          "disabled": false
+        },
+        {
+          "text": "Export reviewed PDF",
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "label": "06-exported",
+      "seconds": 41.05,
+      "text": "Drawing review\n\nReviewed preview\n\n18 placed · 0 crowded · 0 hidden\n\nDrafting profile\nGeneral review\nMachining\nSheet metal\nDimension style\nBaseline from datums\nChain between features\nSymmetry and pitch\nProfile settings and datums\nProfile name\nSave profile\n\nReview dimensions and datum selection before release.\n\nAnnotations\n12\ntop · auto\n50\ntop · auto\n88\ntop · auto\n12\ntop · auto\n35\ntop · auto\n58\ntop · auto\n70\ntop · auto\n100\nfront · auto\n12\nfront · auto\n4 × Ø9 THRU — VERIFY | ⌖ ⌀0.2 A B C\ntop · auto\n⌀30 THRU | ⌖ ⌀0.1 A B C\ntop · auto\ndatum A\nfront · auto\ndatum B\ntop · auto\ndatum C\ntop · auto\n⏥ 0.4\nfront · auto\n4× R6\ntop · auto\n2× 0.5 × 45°\nleft · auto\n2× 0.5 × 45°\nfront · auto\n Hide annotation\nAnnotation text\nAnnotation view\nfront\ntop\nleft\niso\nExtra offset (sheet mm)\nReset annotation\nRefresh preview\nMark reviewed\nExport reviewed PDF",
+      "inputs": [
+        {
+          "value": "",
+          "type": "text"
+        },
+        {
+          "value": "on",
+          "type": "checkbox"
+        },
+        {
+          "value": "4 × Ø9 THRU — VERIFY",
+          "type": "text"
+        },
+        {
+          "value": "8",
+          "type": "number"
+        }
+      ],
+      "buttons": [
+        {
+          "text": "",
+          "disabled": false
+        },
+        {
+          "text": "Apply datums",
+          "disabled": false
+        },
+        {
+          "text": "Save profile",
+          "disabled": false
+        },
+        {
+          "text": "12top · auto",
+          "disabled": false
+        },
+        {
+          "text": "50top · auto",
+          "disabled": false
+        },
+        {
+          "text": "88top · auto",
+          "disabled": false
+        },
+        {
+          "text": "12top · auto",
+          "disabled": false
+        },
+        {
+          "text": "35top · auto",
+          "disabled": false
+        },
+        {
+          "text": "58top · auto",
+          "disabled": false
+        },
+        {
+          "text": "70top · auto",
+          "disabled": false
+        },
+        {
+          "text": "100front · auto",
+          "disabled": false
+        },
+        {
+          "text": "12front · auto",
+          "disabled": false
+        },
+        {
+          "text": "4 × Ø9 THRU — VERIFY | ⌖ ⌀0.2 A B Ctop · auto",
+          "disabled": false
+        },
+        {
+          "text": "⌀30 THRU | ⌖ ⌀0.1 A B Ctop · auto",
+          "disabled": false
+        },
+        {
+          "text": "datum Afront · auto",
+          "disabled": false
+        },
+        {
+          "text": "datum Btop · auto",
+          "disabled": false
+        },
+        {
+          "text": "datum Ctop · auto",
+          "disabled": false
+        },
+        {
+          "text": "⏥ 0.4front · auto",
+          "disabled": false
+        },
+        {
+          "text": "4× R6top · auto",
+          "disabled": false
+        },
+        {
+          "text": "2× 0.5 × 45°left · auto",
+          "disabled": false
+        },
+        {
+          "text": "2× 0.5 × 45°front · auto",
+          "disabled": false
+        },
+        {
+          "text": "Reset annotation",
+          "disabled": false
+        },
+        {
+          "text": "Refresh preview",
+          "disabled": false
+        },
+        {
+          "text": "Mark reviewed",
+          "disabled": false
+        },
+        {
+          "text": "Export reviewed PDF",
+          "disabled": false
+        }
+      ]
+    }
+  ],
+  "pdf": {
+    "bytes": 12632,
+    "magic": "%PDF-1.4",
+    "sha256": "1eb83f7449dc0d9a887edb294db25f96f3ce6f75f48360ba922b394342da3822"
+  },
+  "ownedTarget": "2A2EEBDDC09BA290FD057B1D3D2707EC"
+}

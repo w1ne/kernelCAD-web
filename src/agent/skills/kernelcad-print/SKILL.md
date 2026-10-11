@@ -64,8 +64,8 @@ export({
 
 CLI equivalent: `kernelcad export gcode <file> -o <out.gcode>`.
 
-This shells out to a real slicer CLI (OrcaSlicer, or PrusaSlicer if that's
-what's on PATH) — never a placeholder. Detection order: `KERNELCAD_SLICER`
+This shells out to a real slicer CLI using OrcaSlicer flags (OrcaSlicer is
+the supported CLI; PrusaSlicer header parsing is supported separately) — never a placeholder. Detection order: `KERNELCAD_SLICER`
 env var, then PATH lookup of `orca-slicer`, `prusa-slicer`, `PrusaSlicer`.
 
 Before invoking the slicer, the model's bounding box — in the FDM
@@ -80,12 +80,17 @@ Result diagnostics:
   split into sub-parts, or pick a printer profile with a bigger bed; the
   hint names the smallest profiles it fits on.
 - `export.gcode.slicer-unavailable` — no slicer CLI found. Install
-  OrcaSlicer (or PrusaSlicer) and put it on PATH, or set
+  OrcaSlicer and put it on PATH, or set
   `KERNELCAD_SLICER` to its binary path. The tool never fakes a result.
 
-On success, the result carries `gcodeStats` parsed from the slicer's own
-G-code comments — real numbers, not estimates: `estimatedPrintTimeSeconds`,
-`filamentUsedGrams`, `filamentUsedMeters`, `layerCount`, `maxZMm`.
+On success, MCP returns `gcode_stats`; CLI `--json` and runtime results use
+`gcodeStats`. Values are slicer predictions parsed from the retained G-code
+comments, not physical measurements: `estimatedPrintTimeSeconds`,
+`filamentUsedGrams`, `filamentUsedMeters`, `layerCount`, `maxZMm`, and optional
+`slicer: { name, version }` header provenance. All filament slots are summed;
+explicit total mass takes precedence. Missing or malformed fields are omitted.
+Header identity does not independently verify the executable. No printer is
+contacted by an export.
 
 ## Sending it to a printer: `send_to_printer`
 

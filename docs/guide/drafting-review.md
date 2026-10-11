@@ -1,13 +1,14 @@
 ---
-title: Drafting, dimensioning styles and annotation review
+title: 'From model to reviewed drawing: three dimensioning styles'
 summary: Generate a real drawing from a model, compare baseline, chain and symmetry dimensions, and review callouts before release.
+date: 2026-10-11
+kind: guide
+video: docs/demos/drafting-review/demo.mp4
 ---
-
-# Drafting, dimensioning styles and annotation review
 
 A drawing communicates how a part is made and inspected. Generating a sheet is the beginning of that work: a geometric feature recogniser does not know the mating part, the intended fit, the setup, or the inspection method.
 
-The [worked tutorial](https://kernelcad.com/blog/drafting-review/) includes editable source, vector SVG and PDF sheets, PNG previews and reports. Its mounting plate and bearing mount are illustrative designs. They have not been manufactured, load-tested or approved for release.
+This worked tutorial includes editable source, vector SVG and PDF sheets, PNG previews and reports. Its mounting plate and bearing mount are illustrative designs. They have not been manufactured, load-tested or approved for release. The video records the local Studio preview, annotation edit, refresh, review and PDF export workflow.
 
 ## Reproduce the examples
 
@@ -15,13 +16,14 @@ From a checkout with dependencies installed:
 
 ```bash
 npx tsx examples/drafting-review/run.ts
+npm run site:build-blog
 ```
 
-This rebuilds only this tutorial's assets under `site/blog/drafting-review/`. The manifest records source hashes, options and files. The same mounting plate is exported in three styles; the bearing mount also gets a section and a saved annotation review. Edit `.kcad.ts` source and rerun the command. Do not edit generated SVG paths or PDF content.
+The first command rebuilds this tutorial's drawing assets under `site/blog/drafting-review/`. The second generates the blog page and index from this guide and copies the recorded Studio video. The manifest records source hashes, options and files. The same mounting plate is exported in three styles; the bearing mount also gets a section and a saved annotation review. Edit `.kcad.ts` source and rerun the command. Do not edit generated SVG paths or PDF content.
 
 The mounting plate is 100 × 70 × 12 mm, with a nominal 30 mm central bore, four 9 mm through holes at X 12/88 and Y 12/58, R6 corners and a real 0.5 mm top-edge chamfer. Datum A is the underside; B and C are the front and left side planes. The source's position tolerance of 0.2 mm is an illustrative declared requirement, not a fit derived from an M8 screw or a manufacturing capability.
 
-[Download mounting-plate source](https://kernelcad.com/blog/drafting-review/mounting-plate.kcad.ts) · [generation manifest](https://kernelcad.com/blog/drafting-review/manifest.json)
+[Download mounting-plate source](/blog/drafting-review/mounting-plate.kcad.ts) · [generation manifest](/blog/drafting-review/manifest.json)
 
 ## Choose a dimensioning style
 
@@ -44,21 +46,21 @@ For this plate, baseline X coordinates are 12, 50 and 88; chain spans are 12, 38
 
 ### Baseline: one origin for each coordinate
 
-![The mounting plate in baseline style, with coordinates from common side origins, hole callouts and datums](https://kernelcad.com/blog/drafting-review/mounting-plate-baseline.png)
+![The mounting plate in baseline style, with coordinates from common side origins, hole callouts and datums](../../site/blog/drafting-review/mounting-plate-baseline.png)
 
-[Full-size SVG](https://kernelcad.com/blog/drafting-review/mounting-plate-baseline.svg) · [vector PDF](https://kernelcad.com/blog/drafting-review/mounting-plate-baseline.pdf) · [annotation report](https://kernelcad.com/blog/drafting-review/mounting-plate-baseline.report.json)
+[Full-size SVG](/blog/drafting-review/mounting-plate-baseline.svg) · [vector PDF](/blog/drafting-review/mounting-plate-baseline.pdf) · [annotation report](/blog/drafting-review/mounting-plate-baseline.report.json)
 
 ### Chain: successive local spacings
 
-![The same mounting plate in chain style, measuring consecutive hole-centre coordinates](https://kernelcad.com/blog/drafting-review/mounting-plate-chain.png)
+![The same mounting plate in chain style, measuring consecutive hole-centre coordinates](../../site/blog/drafting-review/mounting-plate-chain.png)
 
-[Full-size SVG](https://kernelcad.com/blog/drafting-review/mounting-plate-chain.svg) · [vector PDF](https://kernelcad.com/blog/drafting-review/mounting-plate-chain.pdf) · [annotation report](https://kernelcad.com/blog/drafting-review/mounting-plate-chain.report.json)
+[Full-size SVG](/blog/drafting-review/mounting-plate-chain.svg) · [vector PDF](/blog/drafting-review/mounting-plate-chain.pdf) · [annotation report](/blog/drafting-review/mounting-plate-chain.report.json)
 
 ### Symmetry: offsets about the midpoint
 
-![The same mounting plate in symmetry style, with centreline offsets for the mirrored hole pattern](https://kernelcad.com/blog/drafting-review/mounting-plate-symmetry.png)
+![The same mounting plate in symmetry style, with centreline offsets for the mirrored hole pattern](../../site/blog/drafting-review/mounting-plate-symmetry.png)
 
-[Full-size SVG](https://kernelcad.com/blog/drafting-review/mounting-plate-symmetry.svg) · [vector PDF](https://kernelcad.com/blog/drafting-review/mounting-plate-symmetry.pdf) · [annotation report](https://kernelcad.com/blog/drafting-review/mounting-plate-symmetry.report.json)
+[Full-size SVG](/blog/drafting-review/mounting-plate-symmetry.svg) · [vector PDF](/blog/drafting-review/mounting-plate-symmetry.pdf) · [annotation report](/blog/drafting-review/mounting-plate-symmetry.report.json)
 
 ## Drafting profiles
 
@@ -131,14 +133,14 @@ The placeholder above must be replaced by a real ID. Hole-label edits replace th
 
 The bearing mount demonstrates an actual edit: automatic recognition reports counterbore depths 5.01 and 8.01 mm because the B-rep contains the hole tool's 0.01 mm boolean allowance. The source specifies nominal depths 5 and 8. The generator finds the current hole IDs and restores those source nominal labels, saves the before/after decisions in `bearing-mount-review.json`, and exports again. It does not round arbitrary measurements or change the solid.
 
-[Unreviewed sheet](https://kernelcad.com/blog/drafting-review/bearing-mount-unreviewed.svg) · [saved review decisions](https://kernelcad.com/blog/drafting-review/bearing-mount-review.json)
+[Unreviewed sheet](/blog/drafting-review/bearing-mount-unreviewed.svg) · [saved review decisions](/blog/drafting-review/bearing-mount-review.json)
 
 ## Sections and acceptance
 
 The bearing mount has a 120 × 80 × 12 base, a connected 56 × 36 × 54 pedestal, a 32 mm through throat and a nominal 44 × 8 mm front seat. A YZ section at X 60 exposes the counterbore shoulder and through passage. This example uses an axis-aligned section; explicit oblique planes are also supported through an auxiliary view. Sections cut real geometry and hatch material rather than clipping only the picture.
 
-![The bearing mount with a hatched centre section exposing the stepped bearing seat, four counterbored mounting holes and reviewed nominal depth labels](https://kernelcad.com/blog/drafting-review/bearing-mount.png)
+![The bearing mount with a hatched centre section exposing the stepped bearing seat, four counterbored mounting holes and reviewed nominal depth labels](../../site/blog/drafting-review/bearing-mount.png)
 
-[Full-size SVG](https://kernelcad.com/blog/drafting-review/bearing-mount.svg) · [vector PDF](https://kernelcad.com/blog/drafting-review/bearing-mount.pdf) · [editable source](https://kernelcad.com/blog/drafting-review/bearing-mount.kcad.ts) · [annotation report](https://kernelcad.com/blog/drafting-review/bearing-mount.report.json)
+[Full-size SVG](/blog/drafting-review/bearing-mount.svg) · [vector PDF](/blog/drafting-review/bearing-mount.pdf) · [editable source](/blog/drafting-review/bearing-mount.kcad.ts) · [annotation report](/blog/drafting-review/bearing-mount.report.json)
 
 Before releasing a drawing, check the datum setup, every hole count and depth, all required interface dimensions, the tolerance meaning, section geometry, units, projection, scale, material and revision. Inspect the full-size PDF and SVG visually even when the overlap count is zero. Check the source geometry separately. Physical fit, strength, manufacturing capability and inspection acceptance require their own evidence.

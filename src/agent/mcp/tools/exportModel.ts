@@ -26,6 +26,7 @@ import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic'
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
 import { validateOutputPath } from '../../script-runtime/safeOutputPath';
 import { loadMcpScriptSource } from '../runMcpScript';
+import type { GcodeStats } from '../../../kernel/export/gcode/gcodeHeaderParser';
 import type { StressInfillReport } from '../../script-runtime/stressInfillExport';
 import { infillOutput, withInfillOutDir, type StressInfillImages } from './stressInfillRenders';
 
@@ -65,6 +66,8 @@ export interface ExportModelOutput {
   /** dxf of a flat or sheet-metal part: sheet thickness (mm) and bend count,
    *  which the DXF itself does not carry. */
   sheet?: { thickness_mm: number; bend_count: number };
+  /** Slicer predictions and generator identity from the retained G-code header. */
+  gcode_stats?: GcodeStats;
   diagnostics?: CompilerDiagnostic[];
   error?: string;
 }
@@ -128,6 +131,19 @@ function companionFilesField(
   if (files.length === 0) return {};
   if (format === 'bend-table') return { table_files: files };
   return format === 'dxf' ? { part_files: files } : { mesh_files: files };
+}
+
+/** Optional format receipts; slicer predictions require a successful G-code export. */
+function exportMetadataFields(
+  format: ExportFormat,
+  result: ExportResult,
+  hasErrors: boolean,
+): Pick<ExportModelOutput, 'drawing_report' | 'sheet' | 'gcode_stats'> {
+  return {
+    ...(result.drawingReport === undefined ? {} : { drawing_report: result.drawingReport }),
+    ...(result.sheet === undefined ? {} : { sheet: { thickness_mm: result.sheet.thicknessMm, bend_count: result.sheet.bendCount } }),
+    ...(format === 'gcode' && !hasErrors && result.gcodeStats !== undefined && Object.keys(result.gcodeStats).length > 0 ? { gcode_stats: result.gcodeStats } : {}),
+  };
 }
 
 /**
@@ -220,8 +236,7 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
     feature_count: result.featureCount,
     format,
     ...companionFilesField(format, meshFiles),
-    ...(result.drawingReport === undefined ? {} : { drawing_report: result.drawingReport }),
-    ...(result.sheet === undefined ? {} : { sheet: { thickness_mm: result.sheet.thicknessMm, bend_count: result.sheet.bendCount } }),
+    ...exportMetadataFields(format, result, errorDiagnostics.length > 0),
     ...infill,
     diagnostics: withNextActions(diagnostics),
   };

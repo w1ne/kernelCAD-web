@@ -6,9 +6,10 @@
 
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { runInNewContext } from 'node:vm';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { renderDocsSite, escapeHtml, canonicalUrl } from './build-docs';
+import { renderDocsSite, renderMcpReferencePage, escapeHtml, canonicalUrl } from './build-docs';
 import { buildDocsPages } from '../../src/docs/liveDocs';
 import { CHEAT_SHEET_TAXONOMY } from '../../src/agent/mcp/tools/cheatSheetTaxonomy';
 
@@ -37,7 +38,7 @@ describe('build-docs', () => {
       const page = pages.find((p) => p.task === group.task)!;
       expect(byFile.has(`docs/${page.slug}.html`), `missing page for ${group.task}`).toBe(true);
     }
-    expect(rendered.length).toBe(CHEAT_SHEET_TAXONOMY.length + 1);
+    expect(rendered.length).toBe(CHEAT_SHEET_TAXONOMY.length + 4);
   });
 
   it('gives every page a canonical link to the URL Pages serves', () => {
@@ -152,4 +153,79 @@ describe('build-docs', () => {
       expect(source, `build-docs.ts hardcodes the API name ${name}`).not.toContain(name);
     }
   });
+});
+
+
+describe('workflow discovery pages', () => {
+  it('executes progressive search, caps matching results, and handles empty queries', () => {
+    const html = byFile.get('docs/mcp-tools.html')!;
+    const script = html.match(/<script>([\s\S]*?)<\/script>/)![1];
+    const entries = Array.from({ length: 60 }, (_, index) => ({ textContent: 'bracket hole ' + index, hidden: false }));
+    const listeners = new Map<string, () => void>();
+    const input = { value: '', hidden: true, addEventListener: (name: string, listener: () => void) => listeners.set(name, listener) };
+    const status = { textContent: '' };
+    runInNewContext(script, { document: {
+      querySelector: (selector: string) => selector === '[data-workflow-search]' ? input : status,
+      querySelectorAll: () => entries,
+    } });
+    expect(input.hidden).toBe(false);
+    input.value = 'bracket hole';
+    listeners.get('input')!();
+    expect(entries.filter(entry => !entry.hidden)).toHaveLength(50);
+    expect(status.textContent).toContain('50 shown of 60');
+    input.value = 'nonexistent';
+    listeners.get('input')!();
+    expect(entries.every(entry => entry.hidden)).toBe(true);
+    input.value = '';
+    listeners.get('input')!();
+    expect(entries.every(entry => !entry.hidden)).toBe(true);
+  });
+
+  it('publishes complete static local MCP schemas and existing client setup links', () => {
+    const html = byFile.get('docs/mcp-tools.html')!;
+    expect(html).toContain('Local MCP tools');
+    expect(html).toContain('Hosted tool discovery depends on authentication');
+    expect(html).toContain('/docs/mcp-tools.json');
+    expect(html).toContain('Input schema');
+    expect(html).toContain('Output schema');
+    expect(html).toContain('readOnlyHint');
+    expect(html).toContain('data-search-entry');
+    for (const client of ['chatgpt', 'claude', 'claude-code', 'codex', 'cursor', 'vscode']) {
+      expect(html).toContain('https://app.kernelcad.com/connect?client=' + client);
+    }
+    expect(byFile.get('docs/index.html')).toContain('/docs/mcp-tools');
+    expect(byFile.get('docs/index.html')).toContain('/docs/design-guide');
+  });
+
+  it('escapes schema and tool text rather than injecting executable HTML', () => {
+    const page = renderMcpReferencePage([{
+      name: 'evil<script>', description: '</details><img src=x onerror=alert(1)>',
+      inputSchema: { type: 'object', properties: { danger: { description: '</pre><script>alert(1)</script>' } } },
+    }]);
+    expect(page.html).not.toContain('<img src=x');
+    expect(page.html).not.toContain('<script>alert(1)');
+    expect(page.html).toContain('&lt;img src=x');
+    expect(page.html).toContain('&lt;/pre&gt;');
+  });
+
+  it('publishes recipe content and dated cited shop snapshots without JavaScript', () => {
+    const html = byFile.get('docs/design-guide.html')!;
+    expect(html).toContain('lookup_cookbook');
+    expect(html).toContain('2026-05-23');
+    expect(html).toContain('https://sendcutsend.com/materials/');
+    expect(html).toContain('Recheck the vendor');
+    expect(html).toContain('Recipe source');
+    expect(html).toContain('Stocked thicknesses');
+    expect(html).toContain('data-search-entry');
+  });
+});
+
+
+it('exposes readable workflow demos through native video without eager media loading', async () => {
+  const pages = await renderDocsSite();
+  const demo = pages.find(page => page.file === 'docs/workflows.html')!;
+  expect(demo.html).toContain('preload="none"');
+  expect(demo.html).toContain('/demos/agent-workflows/gcode-estimates.mp4');
+  expect(demo.html).toContain('No printer contacted');
+  expect(pages.find(page => page.file === 'docs/mcp-tools.html')!.html).toContain('/docs/workflows');
 });

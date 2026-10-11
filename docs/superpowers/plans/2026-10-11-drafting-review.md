@@ -39,7 +39,10 @@ same options. Persist source-scoped review settings, not a second CAD source of 
   PDF/download behavior compatible. Support drawing formats in the local endpoint.
 - [x] Add the review panel and reusable profile controls. Wire saved options into toolbar,
   palette and Export tab PDF actions. Disable stale results after source/profile changes.
-- [ ] Run UI/transport/persistence tests and inspect the actual review interface.
+- [x] Run UI/transport/persistence tests and inspect the actual review interface.
+  The 23 affected Studio tests passed. The actual local browser workflow and
+  reviewed PDF export are recorded in the [demo bundle](../../demos/drafting-review/README.md)
+  and its [42.667-second MP4](../../demos/drafting-review/demo.mp4).
 
 ### Examples and documentation
 
@@ -75,3 +78,10 @@ have zero reported overlaps. Independent specification and quality reviews found
 view, tolerance-text and restored-preference issues, which were fixed and rechecked.
 Hosted route/worker transport: 34 focused tests and server typecheck passed.
 Exact vendor integration and production deployment remain release steps below.
+
+The local Studio demo shows preview → primary hole text and extra offset edit →
+refresh → mark reviewed → actual PDF export. Its receipt verifies a 12,632-byte
+`%PDF-1.4` file. Captured intermediate typing and review/export states, retained
+source/settings, visually inspected decoded keyframes and ffprobe metadata are
+included in the linked bundle. This records local illustrative behavior;
+hosted deployment and physical acceptance remain separate gates.

@@ -142,18 +142,28 @@ kernelCAD runs as an MCP server, so Claude Desktop can drive it locally. After
 Restart Claude Desktop. The kernelCAD MCP tools (`review_cad`, model
 introspection, export helpers, etc.) appear in the tools list.
 
-For prompt-driven authoring against the hosted gateway, sign in at
-[app.kernelcad.com/connect](https://app.kernelcad.com/connect) and use the
-generated `kernelcad mcp --cloud --token <…>` snippet. The hosted surface adds
-`generate_kcad_from_prompt` (turn a natural-language brief into a `.kcad.ts`
-source) on top of the introspection and review tools, and serves the
-`kernelcad-authoring` skill as an MCP resource so Claude Desktop loads it
-automatically on connect. Free tier: 3 LLM-generated parts per month;
-introspection and review tools are unlimited.
+For hosted workflows, sign in at [the existing connection guide](https://app.kernelcad.com/connect?client=claude).
+It gives the current connector and OAuth steps for your client. The hosted tool
+set depends on authentication, your selected profile, and server-native tools;
+use the connected server's discovery rather than assuming the local list.
 
-> A one-shot `kernelcad install --claude-desktop` command that edits this
-> config for you is on the next slice — until then the snippet above is the
-> interim path.
+The local installer is available. Preview the config change before applying it:
+
+```bash
+npx -y kernelcad install --claude-desktop --dry-run
+npx -y kernelcad install --claude-desktop
+```
+
+Other hosted setup guides: [ChatGPT](https://app.kernelcad.com/connect?client=chatgpt),
+[Claude Code](https://app.kernelcad.com/connect?client=claude-code),
+[Codex](https://app.kernelcad.com/connect?client=codex),
+[Cursor](https://app.kernelcad.com/connect?client=cursor), and
+[VS Code](https://app.kernelcad.com/connect?client=vscode).
+
+Browse the generated [local MCP tool reference](https://kernelcad.com/docs/mcp-tools)
+for complete input/output schemas and behavior annotations, or search the
+[design guide](https://kernelcad.com/docs/design-guide) for existing recipes and
+cited, dated manufacturing catalog snapshots.
 
 ## Contributing
 

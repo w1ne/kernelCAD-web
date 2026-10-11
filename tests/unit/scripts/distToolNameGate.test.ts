@@ -9,6 +9,17 @@ import { runToolNameGate } from '../../../scripts/lib/distToolNameGate';
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 
 describe('distToolNameGate', () => {
+  it('accepts the documented G-code result field while rejecting a misspelled tool', () => {
+    const out = mkdtempSync(join(tmpdir(), 'kc-tn-export-field-'));
+    try {
+      writeFileSync(join(out, 'README.md'), 'Export returns `gcode_stats`. Call `definitely_not_a_real_tool_xyz`.\n');
+      const r = runToolNameGate({ outDir: out, repoRoot });
+      expect(r.hits.map(hit => hit.match)).toEqual(['definitely_not_a_real_tool_xyz']);
+    } finally {
+      rmSync(out, { recursive: true, force: true });
+    }
+  });
+
   it('passes when every backtick-quoted tool reference resolves in TOOL_REGISTRY', () => {
     const out = mkdtempSync(join(tmpdir(), 'kc-tn-clean-'));
     try {
