@@ -3,7 +3,6 @@ title: Review your drawing before downloading it
 summary: Choose a dimension style, edit a callout and download the reviewed PDF in Studio.
 date: 2026-10-11
 kind: guide
-video: docs/demos/drafting-review/demo.mp4
 ---
 
 Choose how dimensions appear, tidy up a label, and download your drawing. Here is the whole workflow in Studio.
@@ -38,4 +37,4 @@ Check the sheet, click **Mark reviewed**, then **Export reviewed PDF**. If you c
 
 Want the same paper size and style next time? Enter a **Profile name** and click **Save profile**.
 
-The video and Studio screenshots show a local walkthrough. These example parts have not been manufactured or tested.
+[Watch the Studio walkthrough](/blog/drafting-review/walkthrough.mp4). The video and Studio screenshots show a local walkthrough. These example parts have not been manufactured or tested.

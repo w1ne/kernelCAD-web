@@ -33,8 +33,9 @@ describe('drafting guide in the shared blog pipeline', () => {
     expect(html).not.toContain('oblique sections are rejected');
     expect(html).not.toContain('Drawing settings');
     expect(html).not.toMatch(/<link rel="preload"[^>]+\.png/);
-    expect(html).toContain('<video src="video.mp4" controls playsinline preload="metadata"></video>');
-    expect(build.assets).toContainEqual({ kind: 'copy', from: 'docs/demos/drafting-review/demo.mp4', to: 'site/blog/drafting-review/video.mp4' });
+    expect(html).not.toContain('<video');
+    expect(html).toContain('href="/blog/drafting-review/walkthrough.mp4"');
+    expect(readFileSync(resolve('site/blog/drafting-review/walkthrough.mp4'))).toEqual(readFileSync(resolve('docs/demos/drafting-review/demo.mp4')));
     expect(build.posts[0].images).toHaveLength(5);
     expect(build.posts[0].images.every((image) => image.inRepo && image.underSite)).toBe(true);
     const index = build.files.find((file) => file.path === 'site/blog/index.html')!.html;
