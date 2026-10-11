@@ -34,7 +34,16 @@
 // keys land in one bucket instead of two adjacent ones.
 
 import { KernelError } from '../../shared/intent/kernelError';
+import { invalidArgs } from '../../shared/intent/invalidArgs';
 import type { Vec3 } from '../../shared/intent/types';
+import {
+  axisNameToVec,
+  canonicalCurveType,
+  canonicalGeometryType,
+  canonicalSurfaceType,
+  CANONICAL_CURVE_TYPES,
+  CANONICAL_SURFACE_TYPES,
+} from '../../shared/intent/queryNormalize';
 
 /** Digits kept when quantizing a metric. 1e-6 mm is a nanometre at the mm
  *  scale kernelCAD works in — far below any real geometric distinction, and
@@ -160,9 +169,10 @@ export function quantizeMetric(value: number, tolerance?: number): number {
 }
 
 function axisVector(axis: SelectionAxis): Vec3 {
-  if (axis === 'X') return [1, 0, 0];
-  if (axis === 'Y') return [0, 1, 0];
-  if (axis === 'Z') return [0, 0, 1];
+  if (typeof axis === 'string') {
+    const v = axisNameToVec(axis);
+    if (v) return v;
+  }
   if (!Array.isArray(axis) || axis.length !== 3 || !axis.every((n) => Number.isFinite(n))) {
     throw new KernelError(
       'feature.invalid-args',
@@ -183,8 +193,10 @@ function axisVector(axis: SelectionAxis): Vec3 {
   return [axis[0] / len, axis[1] / len, axis[2] / len];
 }
 
+/** 'X' | 'Y' | 'Z', any case, optionally signed ('-Z', '+x'). Axis tests in
+ *  filterBy are sign-agnostic (parallel either way). */
 function isAxisName(v: unknown): v is 'X' | 'Y' | 'Z' {
-  return v === 'X' || v === 'Y' || v === 'Z';
+  return typeof v === 'string' && axisNameToVec(v) !== undefined;
 }
 
 function dot(a: Vec3, b: Vec3): number {
@@ -390,8 +402,9 @@ export class ShapeList<T> extends Array<T> {
    *    direction is parallel to that axis (an edge's tangent, a face's
    *    normal), within `opts.angleTolerance` degrees;
    *  - any other string — keep entities whose geometry type matches, e.g.
-   *    `'CIRCLE'` / `'LINE'` for edges, `'PLANE'` / `'CYLINDRE'` for faces
-   *    (case-insensitive).
+   *    `'CIRCLE'` / `'LINE'` for edges, `'PLANE'` / `'CYLINDER'` for faces
+   *    (case-insensitive; OCCT spellings such as `'CYLINDRE'` and short
+   *    forms such as `'BSPLINE'` are aliases). An unknown token throws.
    *
    * This composes with, rather than replaces, `EdgeQuery` / `FaceQuery`: run
    * the declarative query against the shape first (the kernel does that
@@ -418,9 +431,29 @@ export class ShapeList<T> extends Array<T> {
       );
     }
     if (typeof spec === 'string') {
-      const wanted = spec.toUpperCase();
+      // Alias-aware: 'CYLINDER' ≡ OCCT 'CYLINDRE', 'BSPLINE' ≡ 'BSPLINE_CURVE'
+      // / 'BSPLINE_SURFACE'. An unrecognised token is an error, not an empty
+      // list — a typo must not read as "nothing matched".
+      const wantedSurface = canonicalSurfaceType(spec);
+      const wantedCurve = canonicalCurveType(spec);
+      if (wantedSurface === undefined && wantedCurve === undefined) {
+        invalidArgs({
+          api: 'ShapeList.filterBy(spec)',
+          path: 'spec',
+          got: spec,
+          requires: `an axis 'X' | 'Y' | 'Z' (optionally signed), a predicate, or a geometry type: ${[...CANONICAL_CURVE_TYPES, ...CANONICAL_SURFACE_TYPES].join(', ')} (aliases such as CYLINDRE / BSPLINE accepted)`,
+          example: "edges.filterBy('CIRCLE')",
+          hintSlug: 'invalid-args.shape-list.bad-filter',
+        });      }
       return new ShapeList<T>(
-        this.filter((item) => geomTypeOf(item as unknown as SelectableGeometry)?.toUpperCase() === wanted),
+        this.filter((item) => {
+          const own = geomTypeOf(item as unknown as SelectableGeometry);
+          if (own === undefined) return false;
+          // 'BSPLINE' reads as BSPLINE_CURVE on an edge and BSPLINE_SURFACE
+          // on a face — compare against both readings of `spec`.
+          const ownCanon = canonicalGeometryType(own) ?? own.toUpperCase();
+          return ownCanon === wantedSurface || ownCanon === wantedCurve;
+        }),
       );
     }
     throw new KernelError(

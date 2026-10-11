@@ -13,7 +13,7 @@
 //     (label translates to probe-point query in occtLowerer.ts)
 
 import type { Edge, Face } from 'replicad';
-import { makeVertex, measureArea, measureDistanceBetween } from 'replicad';
+import { getOC, makeVertex, measureArea, measureDistanceBetween } from 'replicad';
 import type { OcctBackend } from './occtBackend';
 import { KernelError } from '../../../shared/intent/kernelError';
 import type { Vec3 } from '../../../shared/intent/types';
@@ -24,7 +24,14 @@ export type { Vec3 };
 // an upward shared→kernel dep. Re-exported here for back-compat with all
 // existing kernel-relative imports.
 export type { BoundingRegion, EdgeQuery, FaceQuery, EdgeSegment } from '../../../shared/intent/queryTypes';
-import type { EdgeQuery, FaceQuery, EdgeSegment } from '../../../shared/intent/queryTypes';
+import type { BoundingRegion, EdgeQuery, FaceQuery, EdgeSegment } from '../../../shared/intent/queryTypes';
+import {
+  canonicalCurveType,
+  canonicalSurfaceType,
+  normalizeEdgeQuery,
+  normalizeFaceQuery,
+  type NormalizedEdgeQuery,
+} from '../../../shared/intent/queryNormalize';
 
 const DEFAULT_POS_TOL = 1.0;
 
@@ -45,7 +52,9 @@ function edgeDirection(edge: Edge): Vec3 {
   const l = edge.endPoint;
   const dx = l.x - f.x, dy = l.y - f.y, dz = l.z - f.z;
   const len = Math.hypot(dx, dy, dz);
-  return len > 0 ? [dx / len, dy / len, dz / len] : [0, 0, 0];
+  // Closed edges (full circles) have start == end up to float noise; a
+  // normalised noise vector would masquerade as a real direction.
+  return len > 1e-9 ? [dx / len, dy / len, dz / len] : [0, 0, 0];
 }
 
 function isParallel(a: Vec3, b: Vec3, angleTolDeg: number): boolean {
@@ -75,8 +84,14 @@ function distance(a: Vec3, b: Vec3): number {
 /**
  * Resolve an EdgeQuery against an OcctBackend shape. Returns matching Edge
  * instances. Multiple keys are AND-combined.
+ *
+ * The query is validated + normalised first (`normalizeEdgeQuery`): unknown
+ * keys, ill-typed values, and empty regions throw `feature.invalid-args`
+ * instead of silently degrading the selection; axis letters, `parallelTo`,
+ * `{ min, max }` regions and geometry-type aliases are resolved here.
  */
-export function resolveEdgeQuery(base: OcctBackend, query: EdgeQuery): Edge[] {
+export function resolveEdgeQuery(base: OcctBackend, rawQuery: EdgeQuery): Edge[] {
+  const query = normalizeEdgeQuery(rawQuery);
   const tol = query.tolerance ?? DEFAULT_POS_TOL;
   const angleTol = query.angleTolerance ?? 10;
   const shape = base.getReplicadShape();
@@ -96,16 +111,7 @@ export function resolveEdgeQuery(base: OcctBackend, query: EdgeQuery): Edge[] {
   }
   if (query.within) {
     const w = query.within;
-    edges = edges.filter(e => {
-      const m = edgeMidpoint(e);
-      if (w.xMin !== undefined && m[0] < w.xMin) return false;
-      if (w.xMax !== undefined && m[0] > w.xMax) return false;
-      if (w.yMin !== undefined && m[1] < w.yMin) return false;
-      if (w.yMax !== undefined && m[1] > w.yMax) return false;
-      if (w.zMin !== undefined && m[2] < w.zMin) return false;
-      if (w.zMax !== undefined && m[2] > w.zMax) return false;
-      return true;
-    });
+    edges = edges.filter(e => pointInRegion(edgeMidpoint(e), w));
   }
   if (query.parallel) {
     const p = query.parallel;
@@ -116,10 +122,8 @@ export function resolveEdgeQuery(base: OcctBackend, query: EdgeQuery): Edge[] {
     edges = edges.filter(e => isPerpendicular(edgeDirection(e), p, angleTol));
   }
   if (query.ofCurveType) {
-    edges = edges.filter(e => {
-      const ct = (e as unknown as { geomType?: string }).geomType;
-      return ct === query.ofCurveType;
-    });
+    const wanted = query.ofCurveType;
+    edges = edges.filter(e => canonicalCurveType((e as unknown as { geomType?: string }).geomType) === wanted);
   }
   if (query.near) {
     const p = query.near;
@@ -129,32 +133,61 @@ export function resolveEdgeQuery(base: OcctBackend, query: EdgeQuery): Edge[] {
   // Convexity / dihedral filtering — kernel doesn't natively expose; compute on the fly.
   if (query.convex !== undefined || query.concave !== undefined ||
       query.minAngle !== undefined || query.maxAngle !== undefined) {
-    edges = edges.filter(e => {
-      const dihedral = computeDihedral(shape as unknown as { faces: Face[] }, e);
-      if (dihedral === null) return query.convex === undefined && query.concave === undefined;
-      if (query.convex === true && dihedral.convex !== true) return false;
-      if (query.convex === false && dihedral.convex !== false) return false;
-      if (query.concave === true && dihedral.convex !== false) return false;
-      if (query.concave === false && dihedral.convex !== true) return false;
-      if (query.minAngle !== undefined && dihedral.angleDeg < query.minAngle) return false;
-      if (query.maxAngle !== undefined && dihedral.angleDeg > query.maxAngle) return false;
-      return true;
-    });
+    edges = edges.filter(e => dihedralMatches(shape as unknown as { faces: Face[] }, e, query));
   }
 
   return edges;
 }
 
-/**
- * Compute dihedral angle for an edge (between its two adjacent faces).
- * Returns { angleDeg, convex } or null if edge is a boundary (single adjacent face)
- * or adjacency can't be determined.
- */
-function computeDihedral(
-  shape: { faces: Face[] },
-  edge: Edge,
-): { angleDeg: number; convex: boolean; normalA: Vec3; normalB: Vec3 } | null {
-  // Find faces that contain this edge by walking each face's edge list.
+function pointInRegion(m: Vec3, w: BoundingRegion): boolean {
+  if (w.xMin !== undefined && m[0] < w.xMin) return false;
+  if (w.xMax !== undefined && m[0] > w.xMax) return false;
+  if (w.yMin !== undefined && m[1] < w.yMin) return false;
+  if (w.yMax !== undefined && m[1] > w.yMax) return false;
+  if (w.zMin !== undefined && m[2] < w.zMin) return false;
+  if (w.zMax !== undefined && m[2] > w.zMax) return false;
+  return true;
+}
+
+function dihedralMatches(shape: { faces: Face[] }, e: Edge, query: NormalizedEdgeQuery): boolean {
+  const wantsConvexity = query.convex !== undefined || query.concave !== undefined;
+  const dihedral = computeDihedral(shape, e, { convexity: wantsConvexity });
+  if (dihedral === null) return !wantsConvexity;
+  if (query.convex === true && dihedral.convex !== true) return false;
+  if (query.convex === false && dihedral.convex !== false) return false;
+  if (query.concave === true && dihedral.convex !== false) return false;
+  if (query.concave === false && dihedral.convex !== true) return false;
+  if (query.minAngle !== undefined && dihedral.angleDeg < query.minAngle) return false;
+  if (query.maxAngle !== undefined && dihedral.angleDeg > query.maxAngle) return false;
+  return true;
+}
+
+/** Result of {@link computeDihedral}. `convex` is null when convexity was
+ *  not requested or could not be decided (e.g. a seam edge). Normals are
+ *  unit vectors (OCCT's raw surface normal carries the parametric scale —
+ *  a radius-10 cylinder reports |n| = 10). */
+export interface EdgeDihedral {
+  angleDeg: number;
+  convex: boolean | null;
+  normalA: Vec3;
+  normalB: Vec3;
+}
+
+function unit(v: Vec3): Vec3 | null {
+  const len = Math.hypot(v[0], v[1], v[2]);
+  return len > 1e-12 ? [v[0] / len, v[1] / len, v[2] / len] : null;
+}
+
+function cross(a: Vec3, b: Vec3): Vec3 {
+  return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+}
+
+function dot3(a: Vec3, b: Vec3): number {
+  return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+}
+
+/** The (up to two) faces whose boundary contains `edge`. */
+function adjacentFacesOf(shape: { faces: Face[] }, edge: Edge): Face[] {
   // Using face.edges (rather than face.outerWire().edges) avoids creating
   // intermediate Wire wrappers whose disposal can invalidate the parent face.
   const adjacent: Face[] = [];
@@ -165,77 +198,30 @@ function computeDihedral(
       if (adjacent.length === 2) break;
     }
   }
-  if (adjacent.length < 2) return null;
-  const mid = edgeMidpoint(edge);
-  const midPoint = { x: mid[0], y: mid[1], z: mid[2] } as unknown as Parameters<Face['normalAt']>[0];
-  let nA: ReturnType<Face['normalAt']>;
-  let nB: ReturnType<Face['normalAt']>;
+  return adjacent;
+}
+
+/** A point ON the edge at mid-parameter. The chord midpoint used by the
+ *  position filters is off-curve for arcs and coincides with the seam start
+ *  point on full circles, where `normalAt` throws. */
+function edgeInteriorPoint(edge: Edge): Vec3 {
   try {
-    nA = adjacent[0].normalAt(midPoint);
-    nB = adjacent[1].normalAt(midPoint);
+    return vec(edge.pointAt(0.5));
+  } catch {
+    return edgeMidpoint(edge);
+  }
+}
+
+function unitNormalAt(face: Face, p: Vec3): Vec3 | null {
+  try {
+    // Pass a [x, y, z] tuple: replicad's point coercion reads a plain
+    // { x, y, z } object as the ORIGIN, which is how the old dihedral code
+    // evaluated every normal at (0,0,0).
+    const n = face.normalAt(p);
+    return unit([n.x, n.y, n.z]);
   } catch {
     // OCCT/replicad throws non-Error C++ Standard_Failure (raw WASM pointer)
-    // when normalAt is called on a CYLINDRE/CONE/SPHERE face at a point on
-    // its parametric U-seam. Cylinder cap edge midpoints sit exactly on the
-    // seam. Treat as "dihedral undetermined" — return null.
-    return null;
-  }
-  const a: Vec3 = [nA.x, nA.y, nA.z];
-  const b: Vec3 = [nB.x, nB.y, nB.z];
-  const cosAng = a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
-  const angleDeg = (Math.acos(Math.max(-1, Math.min(1, cosAng))) * 180) / Math.PI;
-  // Convexity test (orientation-independent): for a closed solid with outward
-  // face normals, an edge is convex iff the average normal (nA + nB) points
-  // away from the face centroids (i.e., outward from the solid). Compare the
-  // direction (mid - faceCentroid) against (nA + nB).
-  const cA: Vec3 = [adjacent[0].center.x, adjacent[0].center.y, adjacent[0].center.z];
-  const cB: Vec3 = [adjacent[1].center.x, adjacent[1].center.y, adjacent[1].center.z];
-  const centroid: Vec3 = [(cA[0] + cB[0]) / 2, (cA[1] + cB[1]) / 2, (cA[2] + cB[2]) / 2];
-  const outward: Vec3 = [mid[0] - centroid[0], mid[1] - centroid[1], mid[2] - centroid[2]];
-  const sumN: Vec3 = [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
-  const sign = sumN[0]*outward[0] + sumN[1]*outward[1] + sumN[2]*outward[2];
-  return { angleDeg: 180 - angleDeg, convex: sign >= 0, normalA: a, normalB: b };
-}
-
-/**
- * Geometric edge identity check via endpoint comparison.
- *
- * Two edges are considered the same if their endpoints match (in either
- * orientation) within an absolute tolerance of 1e-6. This is mm-scale
- * (1e-6 mm = 1 nanometer) — appropriate for all kernelCAD work today,
- * which operates exclusively in millimeters. Callers working at radically
- * different scales would need a parameterized tolerance.
- *
- * Used to identify "the same edge" across separate Replicad shape wrappers,
- * because Replicad allocates fresh Edge objects on each `.edges` access
- * (no stable identity between iterations).
- */
-export function isSameEdge(a: Edge, b: Edge): boolean {
-  const af = a.startPoint, al = a.endPoint;
-  const bf = b.startPoint, bl = b.endPoint;
-  const eq = (p: { x: number; y: number; z: number }, q: { x: number; y: number; z: number }) =>
-    Math.abs(p.x - q.x) < 1e-6 && Math.abs(p.y - q.y) < 1e-6 && Math.abs(p.z - q.z) < 1e-6;
-  return (eq(af, bf) && eq(al, bl)) || (eq(af, bl) && eq(al, bf));
-}
-
-/** Unit vector, or null for a zero-length input. */
-function unitVec(v: Vec3): Vec3 | null {
-  const len = Math.hypot(v[0], v[1], v[2]);
-  return len > 1e-12 ? [v[0] / len, v[1] / len, v[2] / len] : null;
-}
-
-function crossVec(a: Vec3, b: Vec3): Vec3 {
-  return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
-}
-
-/** Unit outward normal of `face` at `p`, or null at a parametric singularity.
- *  `p` is passed as a tuple: replicad reads a plain { x, y, z } object as the
- *  origin. */
-function unitNormalAtPoint(face: Face, p: Vec3): Vec3 | null {
-  try {
-    const n = face.normalAt(p);
-    return unitVec([n.x, n.y, n.z]);
-  } catch {
+    // when normalAt hits a parametric singularity. Treat as undetermined.
     return null;
   }
 }
@@ -251,109 +237,117 @@ function distanceToFace(face: Face, p: Vec3): number {
 }
 
 /**
- * Dihedral of `edge` with normals evaluated ON the edge (mid-parameter
- * point, passed as a tuple: replicad reads a plain { x, y, z } object as the
- * origin, which is what `computeDihedral` does for selectors). `angleDeg` is
- * the interior angle (180 = G1-smooth). `convex` is true / false, or null
- * when undecidable (seam, tangent). Null overall for a boundary edge or
- * normals that cannot be evaluated. `opts.convexity: false` skips the
- * (costlier) convexity classification and reports `convex: null`.
- *
- * Convexity steps off the edge INTO one adjacent face along the in-surface
- * normal to the edge and asks which side of the other face's tangent plane
- * the step lands on (convex iff it goes below). The in-face side is picked by
- * measuring which of ±step lies on the trimmed face, so holed / non-convex
- * faces (a pocket rim on a plate top) are classified correctly. Used by the
- * fillet / chamfer lowering (smooth-edge filter, expected volume change);
- * selector convexity (`computeDihedral`) is unchanged.
+ * Convexity of the edge between faces A and B (outward normals nA, nB):
+ * step off the edge INTO face A along the in-surface normal to the edge,
+ * then ask which side of face B's tangent plane that step lands on. Convex
+ * iff the step goes below B's plane (dot(step, nB) < 0). The in-face side is
+ * picked by measuring which of ±step actually lies on the trimmed face A, so
+ * holed / non-convex faces (a pocket rim on a plate top) are classified
+ * correctly — the old centroid heuristic got those backwards.
  */
-export function edgeDihedralOnEdge(
-  shape: { faces: Face[] },
-  edge: Edge,
-  opts: { convexity?: boolean } = {},
-): { angleDeg: number; convex: boolean | null } | null {
-  const adjacent = twoAdjacentFaces(shape, edge);
-  if (!adjacent) return null;
-  const frame = edgeFrameAt(edge);
-  if (!frame) return null;
-  const nA = unitNormalAtPoint(adjacent[0], frame.p);
-  const nB = unitNormalAtPoint(adjacent[1], frame.p);
-  if (!nA || !nB) return null;
-  const cosAng = nA[0] * nB[0] + nA[1] * nB[1] + nA[2] * nB[2];
-  const angleDeg = 180 - (Math.acos(Math.max(-1, Math.min(1, cosAng))) * 180) / Math.PI;
-  const convex = opts.convexity === false ? null : convexityAcross(adjacent[0], edge, frame, nA, nB);
-  return { angleDeg, convex };
-}
-
-/** Local convexity of `edge` (see {@link edgeDihedralOnEdge}). */
-export function edgeConvexity(shape: { faces: Face[] }, edge: Edge): boolean | null {
-  return edgeDihedralOnEdge(shape, edge)?.convex ?? null;
-}
-
-function convexityAcross(faceA: Face, edge: Edge, frame: { p: Vec3; t: Vec3 }, nA: Vec3, nB: Vec3): boolean | null {
-  const inward = stepIntoFace(faceA, edge, frame, nA);
-  if (!inward) return null;
-  const d = inward[0] * nB[0] + inward[1] * nB[1] + inward[2] * nB[2];
-  if (Math.abs(d) < 1e-9) return null; // tangent (G1)
+function convexityOf(faceA: Face, edge: Edge, p: Vec3, nA: Vec3, nB: Vec3): boolean | null {
+  let t: Vec3 | null;
+  try {
+    const tv = edge.tangentAt(0.5);
+    t = unit([tv.x, tv.y, tv.z]);
+  } catch {
+    t = null;
+  }
+  if (!t) return null;
+  const side = unit(cross(nA, t));
+  if (!side) return null;
+  let len = 1;
+  try { len = edge.length; } catch { /* keep default */ }
+  const eps = Math.min(Math.max(len * 1e-3, 1e-4), 1e-2);
+  const plus: Vec3 = [p[0] + side[0] * eps, p[1] + side[1] * eps, p[2] + side[2] * eps];
+  const minus: Vec3 = [p[0] - side[0] * eps, p[1] - side[1] * eps, p[2] - side[2] * eps];
+  let dPlus: number;
+  let dMinus: number;
+  try {
+    dPlus = distanceToFace(faceA, plus);
+    dMinus = distanceToFace(faceA, minus);
+  } catch {
+    return null;
+  }
+  // Ambiguous (both sides on the face: a seam) — undecidable here.
+  if (Math.abs(dPlus - dMinus) < eps * 0.25) return null;
+  const inward = dPlus < dMinus ? side : ([-side[0], -side[1], -side[2]] as Vec3);
+  const d = dot3(inward, nB);
+  if (Math.abs(d) < 1e-9) return null; // tangent (G1) — neither convex nor concave
   return d < 0;
 }
 
-/** {@link isSameEdge} plus the mid-parameter point: the two halves of a
- *  split circle share both endpoints but are different edges. */
-function isSameEdgeOnCurve(a: Edge, b: Edge): boolean {
-  if (!isSameEdge(a, b)) return false;
+/**
+ * Compute dihedral angle for an edge (between its two adjacent faces).
+ * Returns null if the edge is a boundary (single adjacent face) or the
+ * normals can't be evaluated. `opts.convexity: false` skips the (costlier)
+ * convexity classification and reports `convex: null`.
+ */
+function computeDihedral(
+  shape: { faces: Face[] },
+  edge: Edge,
+  opts: { convexity?: boolean } = {},
+): EdgeDihedral | null {
+  const adjacent = adjacentFacesOf(shape, edge);
+  if (adjacent.length < 2) return null;
+  const p = edgeInteriorPoint(edge);
+  const a = unitNormalAt(adjacent[0], p);
+  const b = unitNormalAt(adjacent[1], p);
+  if (!a || !b) return null;
+  const cosAng = dot3(a, b);
+  const angleDeg = (Math.acos(Math.max(-1, Math.min(1, cosAng))) * 180) / Math.PI;
+  const convex = opts.convexity === false ? null : convexityOf(adjacent[0], edge, p, a, b);
+  return { angleDeg: 180 - angleDeg, convex, normalA: a, normalB: b };
+}
+
+/** True when the edge bounds exactly one face — an open (sheet / shell)
+ *  boundary. A seam edge (one face on both sides, e.g. the vertical seam of
+ *  a cylinder; OCCT lists it once per face) is NOT a boundary. */
+export function isBoundaryEdge(shape: { faces: Face[] }, edge: Edge): boolean {
+  const adjacent = adjacentFacesOf(shape, edge);
+  if (adjacent.length !== 1) return adjacent.length === 0;
   try {
-    const pa = a.pointAt(0.5);
-    const pb = b.pointAt(0.5);
-    return Math.abs(pa.x - pb.x) < 1e-6 && Math.abs(pa.y - pb.y) < 1e-6 && Math.abs(pa.z - pb.z) < 1e-6;
+    const oc = getOC() as unknown as {
+      BRep_Tool: { IsClosed_2(e: unknown, f: unknown): boolean };
+    };
+    const faceEdge = ((adjacent[0] as unknown as { edges?: Edge[] }).edges ?? [])
+      .find((we) => isSameEdge(we, edge));
+    const e = (faceEdge ?? edge) as unknown as { wrapped: unknown };
+    const f = adjacent[0] as unknown as { wrapped: unknown };
+    return !oc.BRep_Tool.IsClosed_2(e.wrapped, f.wrapped);
   } catch {
     return true;
   }
 }
 
-/** The two faces whose boundary contains `edge`, or null (boundary edge). */
-function twoAdjacentFaces(shape: { faces: Face[] }, edge: Edge): [Face, Face] | null {
-  const adjacent: Face[] = [];
-  for (const face of shape.faces) {
-    const faceEdges = (face as unknown as { edges?: Edge[] }).edges ?? [];
-    if (faceEdges.some(we => isSameEdgeOnCurve(we, edge))) {
-      adjacent.push(face);
-      if (adjacent.length === 2) return [adjacent[0], adjacent[1]];
-    }
-  }
-  return null;
-}
-
-/** A point on the edge at mid-parameter and the unit tangent there. */
-function edgeFrameAt(edge: Edge): { p: Vec3; t: Vec3 } | null {
+/**
+ * Geometric edge identity check via endpoint comparison.
+ *
+ * Two edges are considered the same if their endpoints match (in either
+ * orientation) and their mid-parameter points match, within an absolute
+ * tolerance of 1e-6. This is mm-scale
+ * (1e-6 mm = 1 nanometer) — appropriate for all kernelCAD work today,
+ * which operates exclusively in millimeters. Callers working at radically
+ * different scales would need a parameterized tolerance.
+ *
+ * Used to identify "the same edge" across separate Replicad shape wrappers,
+ * because Replicad allocates fresh Edge objects on each `.edges` access
+ * (no stable identity between iterations).
+ */
+export function isSameEdge(a: Edge, b: Edge): boolean {
+  const af = a.startPoint, al = a.endPoint;
+  const bf = b.startPoint, bl = b.endPoint;
+  const eq = (p: { x: number; y: number; z: number }, q: { x: number; y: number; z: number }) =>
+    Math.abs(p.x - q.x) < 1e-6 && Math.abs(p.y - q.y) < 1e-6 && Math.abs(p.z - q.z) < 1e-6;
+  if (!((eq(af, bf) && eq(al, bl)) || (eq(af, bl) && eq(al, bf)))) return false;
+  // Shared endpoints are not enough: the two halves of a split circle (and
+  // any closed edge vs another closed edge through the same vertex) share
+  // both endpoints. Compare the mid-parameter point too — it is independent
+  // of edge orientation.
   try {
-    const pt = edge.pointAt(0.5);
-    const tv = edge.tangentAt(0.5);
-    const t = unitVec([tv.x, tv.y, tv.z]);
-    return t ? { p: [pt.x, pt.y, pt.z], t } : null;
+    return eq(a.pointAt(0.5), b.pointAt(0.5));
   } catch {
-    return null;
-  }
-}
-
-/** Unit in-surface direction from the edge INTO `face` (normal `n`), picked
- *  by measuring which of ±step lies on the trimmed face; null on a seam. */
-function stepIntoFace(face: Face, edge: Edge, frame: { p: Vec3; t: Vec3 }, n: Vec3): Vec3 | null {
-  const side = unitVec(crossVec(n, frame.t));
-  if (!side) return null;
-  let len = 1;
-  try { len = edge.length; } catch { /* keep default */ }
-  const eps = Math.min(Math.max(len * 1e-3, 1e-4), 1e-2);
-  const { p } = frame;
-  const plus: Vec3 = [p[0] + side[0] * eps, p[1] + side[1] * eps, p[2] + side[2] * eps];
-  const minus: Vec3 = [p[0] - side[0] * eps, p[1] - side[1] * eps, p[2] - side[2] * eps];
-  try {
-    const onFace = eps * 0.25;
-    if (distanceToFace(face, plus) > onFace) return [-side[0], -side[1], -side[2]];
-    if (distanceToFace(face, minus) > onFace) return side;
-    return null; // both sides on the face: a seam
-  } catch {
-    return null;
+    return true;
   }
 }
 
@@ -361,14 +355,34 @@ function stepIntoFace(face: Face, edge: Edge, frame: { p: Vec3; t: Vec3 }, n: Ve
  * Public re-export of the dihedral helper for label resolvers that need
  * convexity information without going through the full toEdgeSegment shape.
  */
-export function computeDihedralPublic(shape: { faces: Face[] }, edge: Edge): { angleDeg: number; convex: boolean; normalA: Vec3; normalB: Vec3 } | null {
-  return computeDihedral(shape, edge);
+export function computeDihedralPublic(
+  shape: { faces: Face[] },
+  edge: Edge,
+  opts: { convexity?: boolean } = {},
+): EdgeDihedral | null {
+  return computeDihedral(shape, edge, opts);
+}
+
+/** Unit outward normal of a face at its UV-centre (null if undefined). */
+export function faceUnitNormal(f: Face): Vec3 | null {
+  try {
+    const n = f.normalAt();
+    return unit([n.x, n.y, n.z]);
+  } catch {
+    return null;
+  }
 }
 
 /**
  * Resolve a FaceQuery against an OcctBackend shape. AND-combined.
+ *
+ * Validated + normalised first (`normalizeFaceQuery`): unknown keys and
+ * ill-typed values throw `feature.invalid-args`; axis letters, the EdgeQuery
+ * spelling `parallel`, `{ min, max }` regions, and public surface names
+ * (`'CYLINDER'` ≡ OCCT `'CYLINDRE'`) are resolved here.
  */
-export function resolveFaceQuery(base: OcctBackend, query: FaceQuery): Face[] {
+export function resolveFaceQuery(base: OcctBackend, rawQuery: FaceQuery): Face[] {
+  const query = normalizeFaceQuery(rawQuery);
   const tol = query.tolerance ?? DEFAULT_POS_TOL;
   const shape = base.getReplicadShape();
   let faces: Face[] = (shape as unknown as { faces: Face[] }).faces;
@@ -386,31 +400,31 @@ export function resolveFaceQuery(base: OcctBackend, query: FaceQuery): Face[] {
     faces = faces.filter(f => Math.abs(vec(f.center)[1] - y) <= tol);
   }
   if (query.parallelTo) {
-    const target: Vec3 = typeof query.parallelTo === 'string'
-      ? planeNormal(query.parallelTo)
-      : query.parallelTo;
+    const target = query.parallelTo;
     faces = faces.filter(f => {
-      const n = f.normalAt();
-      return isParallel([n.x, n.y, n.z], target, 10);
+      const n = faceUnitNormal(f);
+      return n !== null && isParallel(n, target, 10);
     });
   }
   if (query.inPlane) {
-    const target = planeNormal(query.inPlane);
-    const angleTol = 10; // degrees
+    const target = query.inPlane;
     faces = faces.filter(f => {
-      const n = f.normalAt();
-      return isParallel([n.x, n.y, n.z], target, angleTol);
+      const n = faceUnitNormal(f);
+      return n !== null && isParallel(n, target, 10);
     });
   }
   if (query.ofSurfaceType) {
-    faces = faces.filter(f => (f as unknown as { geomType?: string }).geomType === query.ofSurfaceType);
+    const wanted = query.ofSurfaceType;
+    faces = faces.filter(f => canonicalSurfaceType((f as unknown as { geomType?: string }).geomType) === wanted);
   }
   if (query.containsPoint) {
+    // Distance to the TRIMMED face, within the position tolerance. (This
+    // used to call uvCoordinates with an {x,y,z} object, which replicad reads
+    // as the origin — so every face "contained" every point.)
     const p = query.containsPoint;
     faces = faces.filter(f => {
       try {
-        f.uvCoordinates({ x: p[0], y: p[1], z: p[2] } as unknown as Parameters<Face['uvCoordinates']>[0]);
-        return true;
+        return distanceToFace(f, p) <= tol;
       } catch {
         return false;
       }
@@ -423,7 +437,7 @@ export function resolveFaceQuery(base: OcctBackend, query: FaceQuery): Face[] {
 
   // v0.2-finish additions ------------------------------------------------
   if (query.byNormal !== undefined) {
-    const axisVec = signedAxisVec(query.byNormal);
+    const axisVec = unit(query.byNormal) ?? query.byNormal;
     // byNormal uses a fixed cosine threshold (0.01 ≈ 8°) rather than honoring
     // query.tolerance because the latter is documented as a position tolerance
     // in millimetres (default 1.0 — see top of FaceQuery type), not a unit-vector
@@ -431,9 +445,8 @@ export function resolveFaceQuery(base: OcctBackend, query: FaceQuery): Face[] {
     // front-hemisphere face" (dot > 0).
     const normalTol = 0.01;
     faces = faces.filter(f => {
-      const n = f.normalAt();
-      const dot = n.x * axisVec[0] + n.y * axisVec[1] + n.z * axisVec[2];
-      return dot > 1 - normalTol;
+      const n = faceUnitNormal(f);
+      return n !== null && dot3(n, axisVec) > 1 - normalTol;
     });
   }
   if (query.minArea !== undefined) {
@@ -461,64 +474,39 @@ export function resolveFaceQuery(base: OcctBackend, query: FaceQuery): Face[] {
   return faces;
 }
 
-function planeNormal(name: 'XY' | 'YZ' | 'XZ'): Vec3 {
-  if (name === 'XY') return [0, 0, 1];
-  if (name === 'YZ') return [1, 0, 0];
-  return [0, 1, 0];
-}
-
-function signedAxisVec(axis: 'X' | '-X' | 'Y' | '-Y' | 'Z' | '-Z'): Vec3 {
-  switch (axis) {
-    case 'X':  return [1, 0, 0];
-    case '-X': return [-1, 0, 0];
-    case 'Y':  return [0, 1, 0];
-    case '-Y': return [0, -1, 0];
-    case 'Z':  return [0, 0, 1];
-    case '-Z': return [0, 0, -1];
-    default:
-      throw new KernelError(
-        'feature.invalid-args',
-        `byNormal: invalid axis string "${axis}" — expected 'X'|'-X'|'Y'|'-Y'|'Z'|'-Z'`,
-      );
-  }
-}
-
 /**
- * Convert an Edge to an EdgeSegment (the agent-facing summary).
- * The `id` is a stable index within this lowering — derived from edge order.
- */
-/**
- * Circumradius of a CIRCLE edge, in mm.
+ * Circle geometry of a CIRCLE edge: centre, unit axis, and radius (mm).
  *
  * Read off three points sampled at t = 0, 1/3, 2/3 of the edge's parametric
- * domain and solved as a triangle circumradius: R = abc / 4A. Exact for
- * circular geometry (any three distinct points on a circle determine it), and
- * it needs no OCCT symbol beyond the `pointAt` replicad already exposes.
+ * domain and solved as the triangle circumcircle. Exact for circular geometry
+ * (any three distinct points on a circle determine it), and it needs no OCCT
+ * symbol beyond the `pointAt` replicad already exposes. The axis follows the
+ * curve's parametrisation (right-hand rule).
  *
  * Returns undefined for every non-CIRCLE curve type — an approximate radius
  * for a spline or a line would be a lie the selector algebra would then sort
  * on. Absent is honest; wrong is not.
  */
-function circleRadius(edge: Edge): number | undefined {
+function circleGeometry(edge: Edge): { center: Vec3; axis: Vec3; radius: number } | undefined {
   if ((edge as unknown as { geomType?: string }).geomType !== 'CIRCLE') return undefined;
   try {
-    const a = edge.pointAt(0);
-    const b = edge.pointAt(1 / 3);
-    const c = edge.pointAt(2 / 3);
-    const ab: Vec3 = [b.x - a.x, b.y - a.y, b.z - a.z];
-    const ac: Vec3 = [c.x - a.x, c.y - a.y, c.z - a.z];
-    const cross: Vec3 = [
-      ab[1] * ac[2] - ab[2] * ac[1],
-      ab[2] * ac[0] - ab[0] * ac[2],
-      ab[0] * ac[1] - ab[1] * ac[0],
-    ];
-    const twiceArea = Math.hypot(cross[0], cross[1], cross[2]);
-    if (twiceArea < 1e-12) return undefined; // collinear samples — degenerate
-    const lenAB = Math.hypot(ab[0], ab[1], ab[2]);
-    const lenAC = Math.hypot(ac[0], ac[1], ac[2]);
-    const lenBC = Math.hypot(c.x - b.x, c.y - b.y, c.z - b.z);
-    const r = (lenAB * lenAC * lenBC) / (2 * twiceArea);
-    return Number.isFinite(r) ? r : undefined;
+    const a = vec(edge.pointAt(0));
+    const b = vec(edge.pointAt(1 / 3));
+    const c = vec(edge.pointAt(2 / 3));
+    const u: Vec3 = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
+    const v: Vec3 = [c[0] - a[0], c[1] - a[1], c[2] - a[2]];
+    const w = cross(u, v);
+    const w2 = dot3(w, w);
+    if (w2 < 1e-24) return undefined; // collinear samples — degenerate
+    // Circumcentre: a + ((|u|² v − |v|² u) × w) / (2 |w|²).
+    const uu = dot3(u, u);
+    const vv = dot3(v, v);
+    const k = cross([uu * v[0] - vv * u[0], uu * v[1] - vv * u[1], uu * v[2] - vv * u[2]], w);
+    const center: Vec3 = [a[0] + k[0] / (2 * w2), a[1] + k[1] / (2 * w2), a[2] + k[2] / (2 * w2)];
+    const radius = distance(center, a);
+    const axis = unit(w);
+    if (!axis || !Number.isFinite(radius)) return undefined;
+    return { center, axis, radius };
   } catch {
     // Same defensive posture as computeDihedral: replicad/OCCT throws raw
     // Standard_Failure pointers on degenerate curves.
@@ -526,21 +514,32 @@ function circleRadius(edge: Edge): number | undefined {
   }
 }
 
+/**
+ * Convert an Edge to an EdgeSegment (the agent-facing summary).
+ * The `id` is a stable index within this lowering — derived from edge order.
+ *
+ * Circles additionally carry `center`, `axis` and `radius`, and report the
+ * axis as `direction` (a chord direction is zero on a full circle and
+ * meaningless on an arc). `boundary` is true only when the edge bounds a
+ * single face — an edge whose dihedral is merely undeterminable (a seam) is
+ * not a boundary.
+ */
 export function toEdgeSegment(edge: Edge, index: number, shape: { faces: Face[] }): EdgeSegment {
   const dihedral = computeDihedral(shape, edge);
-  const radius = circleRadius(edge);
+  const circle = circleGeometry(edge);
+  const curveType = (edge as unknown as { geomType?: string }).geomType ?? 'UNKNOWN';
   return {
     id: `e${index}`,
     midpoint: edgeMidpoint(edge),
-    direction: edgeDirection(edge),
+    direction: circle ? circle.axis : edgeDirection(edge),
     length: edge.length ?? 0,
-    curveType: (edge as unknown as { geomType?: string }).geomType ?? 'UNKNOWN',
-    ...(radius !== undefined ? { radius } : {}),
+    curveType,
+    ...(circle ? { radius: circle.radius, center: circle.center, axis: circle.axis } : {}),
     convex: dihedral?.convex ?? null,
     dihedralAngleDeg: dihedral?.angleDeg ?? null,
     normalA: dihedral?.normalA ?? null,
     normalB: dihedral?.normalB ?? null,
-    boundary: dihedral === null,
+    boundary: dihedral !== null ? false : isBoundaryEdge(shape, edge),
   };
 }
 
