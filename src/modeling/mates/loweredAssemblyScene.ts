@@ -5,6 +5,7 @@ import type { SceneBackend } from '../../kernel/backends/sceneBackend';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import type { Transform } from '../../shared/runtime/se3';
 import type { Assembly } from '../capture/assembly';
+import { partAtFor, sceneMotion } from './partFrame';
 
 /**
  * Accept only a complete evaluated scene for this exact assembly. A scene's
@@ -30,9 +31,12 @@ export function matchingLoweredAssemblyScene(
 }
 
 /**
- * Build a new scene with cached local BREPs and the requested solved world
- * transforms. Returns undefined rather than guessing if either cache or pose
- * coverage is incomplete.
+ * Build a new scene with cached local BREPs posed by `solveMates` placements
+ * (`transforms`, where each part's own frame sits). The cached shapes already
+ * carry each part's `at`, so a mated part's motion is `sceneMotion(placement,
+ * at)`, the same transform the lowerer's `mateFk` emits for that pose.
+ * Returns undefined rather than guessing if either cache or pose coverage is
+ * incomplete.
  */
 export function reposedLoweredAssemblyScene(
   arm: Assembly,
@@ -42,10 +46,13 @@ export function reposedLoweredAssemblyScene(
   const scene = matchingLoweredAssemblyScene(arm, candidate);
   if (scene === undefined) return undefined;
 
+  const atOf = partAtFor(arm.__mates(), arm.__parts(), arm.__session().paramTable);
   const parts = [] as SceneBackend['parts'][number][];
   for (const part of scene.parts) {
-    const worldTransform = transforms.get(part.name);
-    if (worldTransform === undefined) return undefined;
+    const placement = transforms.get(part.name);
+    if (placement === undefined) return undefined;
+    const at = atOf(part.name);
+    const worldTransform = at === undefined ? placement : sceneMotion(placement, at);
     parts.push({ ...part, worldTransform });
   }
   return { ...scene, parts };

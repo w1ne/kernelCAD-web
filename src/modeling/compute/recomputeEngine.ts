@@ -490,7 +490,9 @@ export class RecomputeEngine {
     const resolveRecord = (rec: FeatureRecord): FeatureRecord =>
       (paramTable ? resolveParams(rec, paramTable) as FeatureRecord : rec);
     try {
-      const res = await this.lowerer.lower(recordForLower, { byKey, records, resolveRecord });
+      const res = await this.lowerer.lower(recordForLower, {
+        byKey, records, resolveRecord, ...(paramTable !== undefined ? { paramTable } : {}),
+      });
       diagnostics.push(...res.diagnostics);
       const featureDiags = res.diagnostics;
       if (featureDiags.some((d) => d.severity === 'error')) {

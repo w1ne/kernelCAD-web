@@ -152,8 +152,8 @@ interface Assembly {
 ```typescript
 interface ScenePart {
   readonly name: string;            // assembly-unique name from assembly.part(name, ...)
-  readonly shape: Shape;            // LOCAL-frame (untransformed)
-  readonly worldTransform: Transform; // SE(3); identity for kinematic-zero model() apart from each part's `at`
+  readonly shape: Shape;            // LOCAL-frame: no `at`, no worldTransform
+  readonly worldTransform: Transform; // SE(3) applied after `at`: world = worldTransform · T(at) · shape
   readonly color?: string;          // role token / hex; resolved from source shape's metadata
   readonly metadata?: Readonly<Record<string, unknown>>;
 }
@@ -209,6 +209,8 @@ const fused = scene.toUnion();               // antipattern; only when one solid
 | `arm.mate(name, a, b, 'ball', { limitsDeg? })` | `[xDeg, yDeg, zDeg]` — XYZ Euler |
 
 Connector origins are in their owning **part's local frame** (URDF/MuJoCo convention). Multi-mate chains compose correctly; the FK tree-walk handles N joints.
+
+**`at` with a mate:** mates are solved outward from the first declared part. That part keeps its `at`, and every part a mate places goes where the mate puts it; its own `at` is then ignored. A part that no chain of mates links to the first declared part is not solved: the built model leaves it at its own `at` and does not apply its mates. Declare the base part first.
 
 **Companion rule — author each part's shape in its own part-local frame, NOT in world coordinates.** A part's local frame has its origin at the joint where this part attaches to its parent (or at the world origin, for the root part). All `.translate(x, y, z)` calls on the child's shape are interpreted in this *part-local* frame.
 

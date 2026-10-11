@@ -54,6 +54,7 @@ import {
   type ConnectorOrigin,
 } from './connector';
 import { expandCoupledPoses } from './coupledPoses';
+import { atPlacement, resolvedPartAt } from './partFrame';
 import type { MatePose, MateRecord } from './mate';
 import { parseConnectorRef } from './mate';
 import type { MateType } from './mateTypes';
@@ -67,8 +68,14 @@ export type SolveStatus =
 
 export interface SolveResult {
   status: SolveStatus;
-  /** part-name -> world-transform. Always populated on 'solved' /
-   *  'redundant-ok'; best-effort on 'did-not-converge' (T7 will refine). */
+  /** part-name -> where the part's own frame sits (its placement): apply it
+   *  to the part's source shape and to its connector origins as declared. A
+   *  mated part that no mate places (the first part of its mate component,
+   *  or one the walk does not reach) sits where its `at` puts it; a part in
+   *  no mate gets identity. A scene part's shape already carries `at`, so its
+   *  `worldTransform` is `sceneMotion(placement, at)` (see `./partFrame`).
+   *  Always populated on 'solved' / 'redundant-ok'; best-effort on
+   *  'did-not-converge' (T7 will refine). */
   poses: Map<string, Transform>;
   /** Loop solver iteration count when relevant (0 on tree topologies and on
    *  fastened-only loops which classify without Newton iteration). */
@@ -236,6 +243,7 @@ export async function solveMates(
     arm,
     expandedPoses,
     opts?.solveDisconnectedComponents === true,
+    restingPlacementFor(arm, adjacency),
   );
 
   if (loopMates.length === 0) {
@@ -265,7 +273,9 @@ export interface ResolvedMatePart {
   readonly id: FeatureId;
   readonly name: string;
   /** Connectors with numeric `vec3` origins only — topology origins must be
-   *  resolved by the caller before passing through here. */
+   *  resolved by the caller before passing through here. Origins are in the
+   *  frame of the shape the result is applied to: the lowerer gives them
+   *  where the part's `at` puts them, because its scene shapes carry `at`. */
   readonly connectors: readonly Connector[];
 }
 
@@ -280,7 +290,11 @@ export interface ResolvedMatePart {
  * (caller resolves any `topology` queries to `vec3` ahead of time).
  *
  * Returns a `Map<FeatureId, Transform>` keyed by part FeatureId — matching
- * the return shape of `forwardKinematics`. Disconnected parts default to
+ * the return shape of `forwardKinematics`. Each transform moves the part's
+ * shape in the frame its connectors are given in (the walk root stays put);
+ * with connectors where `at` puts them, as the lowerer passes them, that is
+ * the scene part's `worldTransform` and equals `sceneMotion` of the
+ * `solveMates` placement. Disconnected parts default to
  * identity. Loop-closure mates are dropped from the tree walk (the loop
  * residual lives in `solveMates`); when only tree mates are present this is
  * functionally complete for the OCCT lowerer's geometry placement.
@@ -295,19 +309,40 @@ export function mateFk(
   mates: readonly MateRecord[],
   numericPoses: NumericPoses,
 ): Map<FeatureId, Transform> {
-  const worldT = new Map<FeatureId, Transform>();
-  if (parts.length === 0) return worldT;
+  return mateFkWithPlacedParts(parts, mates, numericPoses).transforms;
+}
+
+/** `mateFk`'s transforms, plus the parts a mate edge placed. */
+export interface MateFkResult {
+  readonly transforms: Map<FeatureId, Transform>;
+  /** Parts the walk reached through a mate: every reached part except the
+   *  walk root `parts[0]`. A mate decides where these go, so their own `at`
+   *  does not move them. The root and the parts the walk does not reach
+   *  stay where their `at` puts them. */
+  readonly placedByMate: ReadonlySet<FeatureId>;
+}
+
+/** `mateFk`, also reporting which parts a mate edge placed. */
+export function mateFkWithPlacedParts(
+  parts: readonly ResolvedMatePart[],
+  mates: readonly MateRecord[],
+  numericPoses: NumericPoses,
+): MateFkResult {
+  const transforms = new Map<FeatureId, Transform>();
+  const placedByMate = new Set<FeatureId>();
+  if (parts.length === 0) return { transforms, placedByMate };
 
   const adjacency = buildResolvedMateAdjacency(parts, mates);
   const partByName = new Map(parts.map((p) => [p.name, p]));
-  const worldTByName = walkResolvedMateTree(parts, adjacency, partByName, numericPoses);
+  const { worldTByName, placedNames } = walkResolvedMateTree(parts, adjacency, partByName, numericPoses);
 
   // 3. Re-key the result by FeatureId so callers (and the lowerer) can
   //    intersect it with v0.5 `forwardKinematics`'s map seamlessly.
   for (const p of parts) {
-    worldT.set(p.id, worldTByName.get(p.name)!);
+    transforms.set(p.id, worldTByName.get(p.name)!);
+    if (placedNames.has(p.name)) placedByMate.add(p.id);
   }
-  return worldT;
+  return { transforms, placedByMate };
 }
 
 /** 1. Adjacency: part-name -> array of mate edges. Mirrors `solveMates`'s
@@ -340,18 +375,20 @@ function buildResolvedMateAdjacency(
 }
 
 /** 2. BFS spanning tree from `parts[0]`. Compose child world transform from
- *  parent's via the mate's local SE(3) contribution. */
+ *  parent's via the mate's local SE(3) contribution. `placedNames` holds
+ *  every part a mate edge reached (the root is not one of them). */
 function walkResolvedMateTree(
   parts: readonly ResolvedMatePart[],
   adjacency: ReadonlyMap<string, MateEdge[]>,
   partByName: ReadonlyMap<string, ResolvedMatePart>,
   numericPoses: NumericPoses,
-): Map<string, Transform> {
+): { worldTByName: Map<string, Transform>; placedNames: Set<string> } {
   const root = parts[0];
   const worldTByName = new Map<string, Transform>();
   worldTByName.set(root.name, Transform.identity());
   const queue: string[] = [root.name];
   const visited = new Set<string>([root.name]);
+  const placedNames = new Set<string>();
   const seenMate = new Set<string>();
 
   while (queue.length > 0) {
@@ -362,6 +399,7 @@ function walkResolvedMateTree(
       seenMate.add(edge.mate.name);
       if (visited.has(edge.neighbor)) continue; // loop-closure mate — owned by solveMates
       visited.add(edge.neighbor);
+      placedNames.add(edge.neighbor);
 
       worldTByName.set(
         edge.neighbor,
@@ -376,7 +414,7 @@ function walkResolvedMateTree(
   for (const p of parts) {
     if (!worldTByName.has(p.name)) worldTByName.set(p.name, Transform.identity());
   }
-  return worldTByName;
+  return { worldTByName, placedNames };
 }
 
 /** Compose one child's world transform from the parent's through the parent
@@ -480,10 +518,25 @@ interface SpanningTreeResult {
   loopMates: MateRecord[];
 }
 
+/** Where a part sits when no mate edge places it. A part in a mate (the
+ *  first part of its mate component, or one the walk does not reach) stays
+ *  where its `at` puts it, so the parts mated to it follow that `at`. A part
+ *  in no mate keeps identity, as before. */
+function restingPlacementFor(
+  arm: Assembly,
+  adjacency: ReadonlyMap<string, MateEdge[]>,
+): (part: AssemblyPartStored) => Transform {
+  return (part) => {
+    if ((adjacency.get(part.name)?.length ?? 0) === 0) return Transform.identity();
+    return atPlacement(resolvedPartAt(part.at, arm.__session().paramTable));
+  };
+}
+
 /** BFS from `parts[0]`, optionally continuing from the first unvisited part
- *  in each disconnected component. Visited neighbors compose their world
- *  transform from the parent through the connecting mate. Mates that would
- *  connect already-visited parts are deferred to `loopMates`. */
+ *  in each disconnected component. Visited neighbors compose their placement
+ *  from the parent through the connecting mate; every root and every part the
+ *  walk does not reach gets `rest(part)`. Mates that would connect
+ *  already-visited parts are deferred to `loopMates`. */
 async function walkSpanningTree(
   parts: readonly AssemblyPartStored[],
   adjacency: ReadonlyMap<string, MateEdge[]>,
@@ -491,6 +544,7 @@ async function walkSpanningTree(
   arm: Assembly,
   poses: NumericPoses | undefined,
   solveDisconnectedComponents: boolean,
+  rest: (part: AssemblyPartStored) => Transform,
 ): Promise<SpanningTreeResult> {
   const worldT = new Map<string, Transform>();
   const loopMates: MateRecord[] = [];
@@ -500,7 +554,7 @@ async function walkSpanningTree(
   const visited = new Set<string>();
   let nextRoot: AssemblyPartStored | undefined = parts[0];
   while (nextRoot !== undefined) {
-    worldT.set(nextRoot.name, Transform.identity());
+    worldT.set(nextRoot.name, rest(nextRoot));
     visited.add(nextRoot.name);
     queue.push(nextRoot.name);
 
@@ -527,10 +581,10 @@ async function walkSpanningTree(
       : undefined;
   }
 
-  // Disconnected parts default to identity so callers always see one
-  // transform per part. (T5 doesn't yet require a fully connected graph.)
+  // Parts the walk did not reach rest where they are, so callers always see
+  // one transform per part. (T5 doesn't yet require a fully connected graph.)
   for (const p of parts) {
-    if (!worldT.has(p.name)) worldT.set(p.name, Transform.identity());
+    if (!worldT.has(p.name)) worldT.set(p.name, rest(p));
   }
 
   return { worldT, loopMates };

@@ -89,31 +89,34 @@ return asm.solvedModel({});`;
     ]);
   }, 120_000);
 
-  /** As `mated`, with the valve's own `at` and seat origin given. The solver works in the parts' own frames
-   *  (seat onto mount) and its transform is applied on top of `at`. */
-  const matedAt = (at: string, seat = '[10, 10, 0]') => `
+  /** As `mated`, with the valve's own `at` given. The mate puts the seat [10, 10, 0] on the mount [20, 20, 10],
+   *  so it decides where the valve's own frame sits: at [10, 10, 10], whatever the valve's `at` is. */
+  const matedAt = (at: string) => `
 const S = param('S', 5);
 const asm = assembly('rig');
 const base = asm.part('base', box(40, 40, 10), { at: [0, 0, 0] })
   .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [20, 20, 10] } });
 const valve = asm.part('valve', box(20, 20, 20), { at: ${at} })
-  .connector('seat', { type: 'frame', origin: { kind: 'vec3', value: ${seat} } })
+  .connector('seat', { type: 'frame', origin: { kind: 'vec3', value: [10, 10, 0] } })
   .connector('out', { type: 'axis', origin: { kind: 'vec3', value: [10, 10, 20] }, axis: [0, 0, 1], port: { system: 'oil', od: 6 } });
 asm.mate('seat-on-mount', 'valve.seat', 'base.mount', 'fastened');
 return asm.solvedModel({});`;
   const out = { part: 'valve', name: 'out', system: 'oil', od: 6, axis: [0, 0, 1], usedBy: [] };
 
-  it('a part that is both placed and mated reports at plus the mate offset, the solved position', async () => {
-    // The mate offset is [10, 10, 10] (seat [10, 10, 0] onto mount [20, 20, 10]); the port is at at + [10, 10, 20] + offset.
-    expect(await ports(matedAt('[3, -40, 7]'))).toEqual([{ ...out, origin: [23, -20, 37], placedBy: 'mate' }]);
-    // The same with at driven by a param: S = 5.
-    expect(await ports(matedAt('[S, S.multiply(2), 0]'))).toEqual([{ ...out, origin: [25, 30, 30], placedBy: 'mate' }]);
+  it('a part that is both placed and mated goes where the mate puts it, and its own at does not move it', async () => {
+    // The valve's frame sits at [10, 10, 10] (mount [20, 20, 10] minus seat [10, 10, 0]), so the port
+    // [10, 10, 20] is at [20, 20, 30] for any at; an at other than [10, 10, 10] means the mate moved the part.
+    expect(await ports(matedAt('[3, -40, 7]'))).toEqual([{ ...out, origin: [20, 20, 30], placedBy: 'mate' }]);
+    // The same with at driven by a param: S = 5, so at is [5, 10, 0].
+    expect(await ports(matedAt('[S, S.multiply(2), 0]'))).toEqual([{ ...out, origin: [20, 20, 30], placedBy: 'mate' }]);
   }, 120_000);
 
   it('a mate whose solved transform is the identity reports placedBy at', async () => {
-    // Seat and mount share one origin, so the fastened mate moves nothing: the part is where at puts it.
-    expect(await ports(matedAt('[3, -40, 7]', '[20, 20, 10]'))).toEqual([{ ...out, origin: [13, -30, 27], placedBy: 'at' }]);
-    expect(await ports(matedAt('[S.multiply(2), 10, 10]', '[20, 20, 10]'))).toEqual([{ ...out, origin: [20, 20, 30], placedBy: 'at' }]);
+    // at [10, 10, 10] is where the mate puts the valve's frame, so the mate moves nothing: the port is at
+    // at + [10, 10, 20] = [20, 20, 30], where at alone puts it.
+    expect(await ports(matedAt('[10, 10, 10]'))).toEqual([{ ...out, origin: [20, 20, 30], placedBy: 'at' }]);
+    // The same with at driven by a param: S = 5, so at is [10, 10, 10].
+    expect(await ports(matedAt('[S.multiply(2), 10, 10]'))).toEqual([{ ...out, origin: [20, 20, 30], placedBy: 'at' }]);
   }, 120_000);
 
   it('a plain end at a port position is not credited when it names another part', async () => {
@@ -379,6 +382,12 @@ return asm.solvedModel({});`);
     expect(report).toHaveLength(1);
     expect(report[0].placedBy).toBe('mate');
     expect(report[0].origin).toEqual(topOf(box('cap')));
+    // connect puts the foot [10, 10, 0] on the pad [10, 10, 10], so the cap's at is [0, 0, 10]. The mate then
+    // puts the seat [10, 10, 0] on the mount [70, 60, 10]: the cap's frame sits at [60, 50, 10] and its at does
+    // not move it. The cap stands on the base, z from 10 to 30, and the port [10, 10, 20] is at [70, 60, 30].
+    expect(report[0].origin).toEqual([70, 60, 30]);
+    expect(box('cap').min[2]).toBeCloseTo(10, 6);
+    expect(box('cap').max[2]).toBeCloseTo(30, 6);
   }, 120_000);
 
   it('part.port() on the connect part ends a tube on the port: the gate passes and usedBy lists it', async () => {
@@ -403,9 +412,12 @@ asm.mate('seat-on-mount', 'cap.seat', 'base.mount', 'fastened');
 tubeSpec({});
 asm.part('line', tube('line', { from: cap.port('out'), to: { point: [10, 10, 200] }, wall: 0.7, bendRadius: 18 }));
 return asm.solvedModel({});`);
-    expect(report[0].placedBy).toBe('mate');
+    // The tube starts where cap.port('out') was at capture, at + out = [0, 0, 10] + [10, 10, 20] = [10, 10, 30].
+    // The solve puts the port at [70, 60, 30], as above: 60 mm along x and 50 along y away, so the end is
+    // sqrt(60^2 + 50^2) = 78.10 mm from it.
+    expect(report[0]).toMatchObject({ origin: [70, 60, 30], placedBy: 'mate' });
     expect(errors.filter((m) => m.startsWith('tube.port.misaligned'))).toEqual([
-      expect.stringMatching(/^tube\.port\.misaligned: tube 'line' from end is \d+\.\d\d mm from port 'cap\.out'; the port is at \[/)]);
+      expect.stringMatching(/^tube\.port\.misaligned: tube 'line' from end is 78\.10 mm from port 'cap\.out'; the port is at \[70\.00, 60\.00, 30\.00\]/)]);
   }, 120_000);
 
   it('the output schema allows placedBy connect', () => {
