@@ -9,7 +9,7 @@ import { computeViewerDimensions, type ViewerDimension } from './index';
 import type { WorldFramePart } from '../sceneToWorldFrame';
 import { partsFromSource } from '../../../../../tests/helpers/viewerDimensionParts';
 import { recogniseDrawingFeatures } from '../drawingFeatures';
-import { overallDimensions } from './auto';
+import { overallDimensions, scaledTessellatedBox } from './auto';
 
 beforeAll(async () => { await initOcct(); }, 60_000);
 
@@ -91,6 +91,29 @@ describe('auto viewer dimensions', () => {
       expect(spy).not.toHaveBeenCalled();
       overallDimensions(parts);
       expect(spy).toHaveBeenCalledTimes(1);
+    } finally { spy.mockRestore(); }
+  });
+  it('falls back to a size-scaled tessellated box, not the fixed 0.05 mm re-mesh', async () => {
+    const parts = await partsFromSource(`return sphere(1000);`);
+    const getMesh = vi.spyOn(parts[0]!.shape, 'getMesh');
+    const box = scaledTessellatedBox(parts[0]!);
+    expect(getMesh).not.toHaveBeenCalled();
+    // Sag 2e-4 of the ~3464 mm diagonal: within 1 mm of the true 2000 mm.
+    for (let k = 0; k < 3; k++) {
+      expect(box.max[k]! - box.min[k]!).toBeGreaterThan(1998.5);
+      expect(box.max[k]! - box.min[k]!).toBeLessThanOrEqual(2000 + 1e-6);
+    }
+  });
+  it('gives every part past the deadline the plain box', async () => {
+    const parts = await partsFromSource(`return box(40,30,10);`);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- raw OCCT bindings are untyped
+    const spy = vi.spyOn((replicad.getOC() as any).BRepBndLib, 'AddOptimal');
+    const mesh = vi.spyOn(parts[0]!.shape.getReplicadShape() as unknown as { mesh: () => unknown }, 'mesh');
+    try {
+      const over = overallDimensions(parts, { deadline: performance.now() - 1 });
+      expect(spy).not.toHaveBeenCalled();
+      expect(mesh).not.toHaveBeenCalled();
+      expect(over.map(d => d.text).sort()).toEqual(['10', '30', '40']);
     } finally { spy.mockRestore(); }
   });
   it('assembly over 8 parts gives overall only', async () => {
