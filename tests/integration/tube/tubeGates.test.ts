@@ -735,3 +735,91 @@ return tube('duct', { from: { point: [0, 0, 0] }, to: { point: [600, 600, 0] }, 
   }, 120_000);
 });
 
+describe('tube gates: params in the top-level tubeSpec numbers', () => {
+  /** Build once, then run the gate at each value of the param: the gate must read the param, not the captured number. */
+  async function atValues(code: string, name: string, values: number[]): Promise<TubeCheckReport[]> {
+    const model = await buildModel({ fileName: 'tube-gates.kcad.ts', code });
+    expect(model.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+    const out: TubeCheckReport[] = [];
+    for (const v of values) {
+      model.session.paramTable.set(name, v);
+      out.push((await runTubeChecksOnModel(model))!);
+    }
+    return out;
+  }
+
+  /** p1 up 80 mm, across 110 mm, up 80 mm, bent at 30 mm: 50 mm straight at each end and between the bends, 15 mm from the wall. */
+  const twoBends = (specArgs: string) => HEAD + `
+tubeSpec(${specArgs});
+const t = tube('fuel-1', { from: block.port('p1'), to: { point: [130, 20, 200] }, via: [[20, 20, 120], [130, 20, 120]], wall: 1, bendRadius: 30 });
+asm.part('fuel-1', t);
+return asm.model();`;
+
+  it.each([
+    ['minBendRadiusFactor', "{ minBendRadiusFactor: param('P', 3) }", 3, 3.5,
+      "tube.bend.radius-too-small: tube 'fuel-1' bends at 30.00 mm; the rule needs 35.00 mm (3.5 x OD 10.00)."],
+    ['minStraightBetweenBends', "{ minStraightBetweenBends: param('P', 2) }", 5, 6,
+      "tube.straight.between-bends-too-short: tube 'fuel-1' leg 1 has 50.00 mm straight between bends; the rule needs 60.00 mm."],
+    ['minStraightAtEnd', "{ minStraightAtEnd: param('P', 2.5) }", 5, 5.5,
+      "tube.straight.end-too-short: tube 'fuel-1' has 50.00 mm straight at its from end; the rule needs 55.00 mm."],
+    ['maxBendAngle', "{ maxBendAngle: param('P', 180) }", 90, 75,
+      "tube.bend.angle-exceeded: tube 'fuel-1' bend 1 is 90.00 deg; the limit is 75.00 deg."],
+    ['clearance.default', "{ clearance: { default: param('P', 6) } }", 15, 16,
+      "tube.clearance.violated: tube 'fuel-1' is 15.00 mm from 'wall'; the rule needs 16.00 mm."],
+    ['a param expression', "{ minBendRadiusFactor: param('P', 1).multiply(2) }", 1.5, 1.75,
+      "tube.bend.radius-too-small: tube 'fuel-1' bends at 30.00 mm; the rule needs 35.00 mm (3.5 x OD 10.00)."],
+  ])('%s: the gate uses the resolved value, and changing the param flips a pass to a fail', async (_rule, specArgs, pass, fail, message) => {
+    const [ok, broken] = await atValues(twoBends(specArgs), 'P', [pass, fail]);
+    expect(ok.diagnostics).toEqual([]);
+    expect(errors(broken)[0].message.startsWith(message), errors(broken)[0].message).toBe(true);
+    // The same value written at capture gives the same verdict as the same value set afterwards.
+    const captured = await run(twoBends(specArgs.replace(/param\('P', [\d.]+\)/, `param('P', ${fail})`)));
+    expect(errors(captured).map((d) => d.message)).toEqual(errors(broken).map((d) => d.message));
+  }, 180_000);
+
+  it('clearance.pairs[].min: the gate uses the resolved value, and changing the param flips a pass to a fail', async () => {
+    const [ok, broken] = await atValues(HEAD + `
+tubeSpec({ clearance: { pairs: [{ a: 'fuel', b: 'bleed', min: param('P', 10) }] } });
+const a = tube('fuel-1', { from: block.port('p1'), to: { point: [20, 20, 200] }, wall: 1, bendRadius: 30 });
+const b = tube('bleed-1', { from: block.port('p2'), to: { point: [100, 20, 200] }, via: [[100, 20, 20]], wall: 1, bendRadius: 30 });
+asm.part('fuel-1', a); asm.part('bleed-1', b);
+return asm.model();`, 'P', [21, 22]);
+    expect(ok.diagnostics).toEqual([]);
+    expect(messages(broken, 'tube.clearance.violated')).toEqual([
+      expect.stringContaining("tube 'fuel-1' is 21.21 mm from 'bleed-1'; the rule needs 22.00 mm.")]);
+  }, 180_000);
+
+  it('a misspelt pair with a param min still warns with the resolved number', async () => {
+    const r = await run(twoBends("{ clearance: { pairs: [{ a: 'fuel', b: 'bleeed', min: param('P', 12.5) }] } }"));
+    expect(messages(r, 'tube.clearance.pair-unused')).toEqual([
+      expect.stringContaining("clearance pair 'fuel' / 'bleeed' (12.50 mm) applies to no tubes")]);
+  }, 120_000);
+
+  it('the fitting zone left out of clearance follows a param in minStraightAtEnd', async () => {
+    // The tower of the per-system test: 3 mm from the tube, up to 18 mm above the port face.
+    const [wide, narrow] = await atValues(`
+const asm = assembly('rig');
+const block = asm.part('block', box(40, 40, 40).union(box(12, 40, 18).translate(28, 0, 40)), { at: [0, 0, 0] })
+  .connector('p1', { type: 'axis', origin: { kind: 'vec3', value: [20, 20, 40] }, axis: [0, 0, 1], port: { system: 'fuel', od: 10 } });
+tubeSpec({ minStraightAtEnd: param('E', 2.5) });
+const a = tube('a', { from: block.port('p1'), to: { point: [20, 20, 240] }, wall: 1, bendRadius: 30 });
+asm.part('a', a);
+return asm.model();`, 'E', [2.5, 1]);
+    expect(errors(wide)).toEqual([]);
+    expect(wide.lines[0].minClearance).toMatchObject({ to: 'block', mm: expect.closeTo(Math.hypot(3, 7), 6) });
+    expect(messages(narrow, 'tube.clearance.violated')).toEqual([
+      expect.stringContaining("tube 'a' is 3.00 mm from 'block'; the rule needs 6.00 mm.")]);
+  }, 180_000);
+
+  it('a top-level param that went bad after capture is reported with the rule and the value, and the default applies', async () => {
+    const code = twoBends('{ minBendRadiusFactor: P, clearance: { default: P.multiply(3) } }').replace('tubeSpec(', "const P = param('P', 2);\ntubeSpec(");
+    const [bad] = await atValues(code, 'P', [-1]);
+    expect(bad.diagnostics.map((d) => [d.severity, d.message])).toEqual([
+      ['error', 'tube.spec.rule-invalid: tubeSpec minBendRadiusFactor resolves to -1; it must be a positive finite number. The default 3 was applied.'],
+      ['error', 'tube.spec.rule-invalid: tubeSpec clearance.default resolves to -3; it must be a positive finite number. The default 6 was applied.'],
+    ]);
+    expect(bad.diagnostics[0].hint.trim().length).toBeGreaterThan(0);
+    expect(bad.diagnostics[0].nextAction).toEqual(DIAGNOSTIC_REGISTRY['tube.spec.rule-invalid'].nextAction);
+    expect(bad.lines).toHaveLength(1);
+  }, 120_000);
+});

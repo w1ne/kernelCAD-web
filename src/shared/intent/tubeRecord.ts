@@ -41,9 +41,15 @@ export const TUBE_RULE_KEYS = ['minBendRadiusFactor', 'minStraightBetweenBends',
 export type TubeRuleKey = typeof TUBE_RULE_KEYS[number];
 export type TubeRuleNumbers = Record<TubeRuleKey, number>;
 
-export interface TubeSpecMetadata extends TubeRuleNumbers {
+/** A top-level rule or clearance number as captured: the plain number the
+ *  script wrote, or a Param when the script gave a param. Resolve a Param
+ *  against the param table before reading a number (`resolveTubeSpec`); its
+ *  `evaluated` is not current. */
+export type TubeRuleValue = number | Param;
+
+export interface TubeSpecMetadata extends Record<TubeRuleKey, TubeRuleValue> {
   virtual: true;
-  clearance: { default: number; pairs: Array<{ a: string; b: string; min: number }> };
+  clearance: { default: TubeRuleValue; pairs: Array<{ a: string; b: string; min: TubeRuleValue }> };
   /** Rule overrides by system name. Absent when the spec declares none. The
    *  values are captured Params: resolve them against the param table before
    *  reading a number. */

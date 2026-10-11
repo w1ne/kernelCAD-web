@@ -113,4 +113,12 @@ export const TUBE_CODES = {
     group: 'tube',
     description: 'A tubeSpec systems override resolves to a non-finite or non-positive number (or a bend angle above 180), so the top-level rule was applied instead.',
   },
+  'tube.spec.rule-invalid': {
+    hintTemplate:
+      'A rule or clearance number in `tubeSpec` comes from a param that now gives a number it cannot be; the message names the field and the value. Set the param so the number is positive (and `maxBendAngle` is at most 180), or write a plain number.',
+    nextAction: { kind: 'fix-arg', field: 'tubeSpec' },
+    defaultSeverity: 'error',
+    group: 'tube',
+    description: 'A top-level tubeSpec rule or clearance number resolves to a non-finite or non-positive number (or a bend angle above 180). The default was applied in its place; a clearance pair with such a `min` was left out.',
+  },
 } as const satisfies Record<`tube.${string}`, DiagnosticCodeSpec>;

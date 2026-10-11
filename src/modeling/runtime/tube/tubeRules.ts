@@ -4,12 +4,15 @@
 // Bend and straight rules on one tube path, in the frame the tube was
 // captured in. Pure math over the path; no kernel calls. The rules come from
 // `tubeSpec({...})` (or its defaults) and from the ports the tube ends on.
+// A spec number may be a param: `resolveTubeSpec` reads every one through the
+// param table, and the gates read only the resolved `TubeRuleSpec`.
 // A `systems` entry of the spec overrides rules for the tubes of one system:
 // every rule number is read through `effectiveRules`, never off the spec.
 
 import { DIAGNOSTIC_REGISTRY } from '../../../shared/diagnostics/registry';
 import {
-  TUBE_RULE_KEYS, type TubeEndMeta, type TubeMetadata, type TubeRuleKey, type TubeRuleNumbers, type TubeSpecMetadata,
+  TUBE_RULE_KEYS, TUBE_SPEC_DEFAULTS,
+  type TubeEndMeta, type TubeMetadata, type TubeRuleKey, type TubeRuleNumbers, type TubeRuleValue, type TubeSpecMetadata,
 } from '../../../shared/intent/tubeRecord';
 import type { ParamTable } from '../../../shared/runtime/paramTable';
 import { resolveParams } from '../../../shared/runtime/resolveParams';
@@ -24,37 +27,80 @@ export interface TubeRuleFinding {
 
 /** A tube spec with every number resolved: what the gates read. */
 export interface TubeRuleSpec extends TubeRuleNumbers {
-  clearance: TubeSpecMetadata['clearance'];
+  clearance: { default: number; pairs: Array<{ a: string; b: string; min: number }> };
   systems?: Record<string, Partial<TubeRuleNumbers>>;
 }
 
 /** A `systems` value that resolved to a number its rule cannot be. */
 export interface InvalidSystemRule { system: string; key: TubeRuleKey; value: number; applied: number }
 
+/** A top-level rule or clearance number that resolved to a number it cannot
+ *  be. `rule` is the field as the script writes it; `applied` is the sentence
+ *  saying what the gate used in its place. */
+export interface InvalidRule { rule: string; value: number; must: string; applied: string }
+
 const isUsableRule = (key: TubeRuleKey, v: number): boolean =>
   Number.isFinite(v) && v > 0 && (key !== 'maxBendAngle' || v <= 180);
 
-/** The captured spec with its `systems` params read through the param table
- *  (a captured Param that references a script parameter has `evaluated: 0`).
- *  Capture checks every value, but a param can change afterwards: a value that
- *  is no longer a usable rule is left out, so the top-level rule applies, and
- *  listed in `invalid` for the gate to report. */
-export function resolveTubeSpec(meta: TubeSpecMetadata, table: ParamTable): { spec: TubeRuleSpec; invalid: InvalidSystemRule[] } {
-  const { systems, ...rest } = meta;
+const POSITIVE = 'a positive finite number';
+export const ruleMust = (key: TubeRuleKey): string => (key === 'maxBendAngle' ? 'a number in (0, 180] degrees' : POSITIVE);
+
+const numberOf = (v: TubeRuleValue): number => (typeof v === 'number' ? v : v.evaluated);
+
+/** The spec's clearance numbers. A default that is not usable falls back to
+ *  the built-in default; a pair whose `min` is not usable is left out, so the
+ *  default clearance applies to that pair. */
+function resolveClearance(clearance: TubeSpecMetadata['clearance'], invalid: InvalidRule[]): TubeRuleSpec['clearance'] {
+  const fallback = TUBE_SPEC_DEFAULTS.clearance.default;
+  let def = numberOf(clearance.default);
+  if (!(Number.isFinite(def) && def > 0)) {
+    invalid.push({ rule: 'clearance.default', value: def, must: POSITIVE, applied: `The default ${fallback} was applied.` });
+    def = fallback;
+  }
+  const pairs = clearance.pairs.flatMap((p, i) => {
+    const min = numberOf(p.min);
+    if (Number.isFinite(min) && min > 0) return [{ a: p.a, b: p.b, min }];
+    invalid.push({ rule: `clearance.pairs[${i}].min ('${p.a}' / '${p.b}')`, value: min, must: POSITIVE,
+      applied: 'The pair was left out, so clearance.default applies to it.' });
+    return [];
+  });
+  return { default: def, pairs };
+}
+
+/** The captured spec with every param read through the param table (a
+ *  captured Param that references a script parameter has `evaluated: 0`).
+ *  Capture checks every value, but a param can change afterwards. A value
+ *  that is no longer usable is replaced and listed for the gate to report:
+ *  a top-level rule by its default (`invalidRules`), a `systems` value by the
+ *  top-level rule (`invalid`). */
+export function resolveTubeSpec(
+  meta: TubeSpecMetadata, table: ParamTable,
+): { spec: TubeRuleSpec; invalid: InvalidSystemRule[]; invalidRules: InvalidRule[] } {
+  const { systems, clearance, ...rules } = resolveParams(meta, table);
   const invalid: InvalidSystemRule[] = [];
-  if (systems === undefined) return { spec: rest, invalid };
+  const invalidRules: InvalidRule[] = [];
+  const top = {} as TubeRuleNumbers;
+  for (const key of TUBE_RULE_KEYS) {
+    const value = numberOf(rules[key]);
+    top[key] = isUsableRule(key, value) ? value : TUBE_SPEC_DEFAULTS[key];
+    if (!isUsableRule(key, value)) {
+      invalidRules.push({ rule: key, value, must: ruleMust(key), applied: `The default ${TUBE_SPEC_DEFAULTS[key]} was applied.` });
+    }
+  }
+  const spec: TubeRuleSpec = { ...top, clearance: resolveClearance(clearance, invalidRules) };
+  if (systems === undefined) return { spec, invalid, invalidRules };
   const resolved: NonNullable<TubeRuleSpec['systems']> = {};
-  for (const [system, entry] of Object.entries(resolveParams(systems, table))) {
-    const rules: Partial<TubeRuleNumbers> = {};
+  for (const [system, entry] of Object.entries(systems)) {
+    const overrides: Partial<TubeRuleNumbers> = {};
     for (const key of TUBE_RULE_KEYS) {
       const value = entry[key]?.evaluated;
       if (value === undefined) continue;
-      if (isUsableRule(key, value)) rules[key] = value;
-      else invalid.push({ system, key, value, applied: rest[key] });
+      if (isUsableRule(key, value)) overrides[key] = value;
+      else invalid.push({ system, key, value, applied: top[key] });
     }
-    resolved[system] = rules;
+    resolved[system] = overrides;
   }
-  return { spec: { ...rest, systems: resolved }, invalid };
+  return { spec: { ...spec, systems: resolved }, invalid, invalidRules };
 }
 
 /** The rules one tube is held to. `overridden` lists the rules that came from

@@ -113,6 +113,7 @@ tube(name, {
 
 - Without `tubeSpec` the defaults apply and the result carries a `tube.spec.defaulted` warning. Declare `tubeSpec({})` to accept the defaults without the warning.
 - `tubeSpec` rejects unknown keys, so a misspelt rule fails instead of being ignored.
+- Every number may be a param: the four rule numbers, `clearance.default` and a pair's `min`, for example `tubeSpec({ minBendRadiusFactor: param('K', 3), clearance: { default: C } })`. The gate reads the param's current value and the messages print it. The value is checked when `tubeSpec` is called and again when the gate runs.
 - A tube's system is its own `system`, else the system of the port it ends on.
 - Clearance is measured surface to surface on the solids, in the solved assembly. Against the part that owns one of the tube's ends, a fitting zone at that end is left out of the measurement and the rest of the tube is measured. The zone is the end straight the rule requires, or `clearance.default` when that is longer, and never more than the end straight the tube has.
 - A pair whose `a` or `b` is the system of no tube applies to nothing. It gives a `tube.clearance.pair-unused` warning that lists the systems present; the usual cause is a misspelt system name.
@@ -136,7 +137,7 @@ tubeSpec({
 - An entry may set `minBendRadiusFactor`, `minStraightBetweenBends`, `minStraightAtEnd` and `maxBendAngle`. A rule it leaves out comes from the top level. Any other key fails; clearance between systems stays in `clearance.pairs`.
 - The entry applies to every tube whose system has that name. Tubes of other systems, and tubes with no system, are checked exactly as without `systems`.
 - The end-straight override also sets the fitting zone left out of clearance at the tube's ends, and the point `tube.port.misaligned` suggests.
-- A value in an entry may be a param. The top-level rule numbers are plain numbers.
+- A value in an entry may be a param, like the top-level numbers.
 - When a rule from an entry fails, the message names the value and the system: `the rule needs 171.45 mm (1.5 x OD 114.30, system 'hot-gas')`.
 - An entry whose system no tube has gives a `tube.spec.system-unused` warning that lists the systems present.
 
@@ -177,6 +178,7 @@ Gate errors come after the build, as `tube.*` diagnostics. The script built, so 
 | `tube.clearance.violated` | The message gives the closest point on the tube and the closest point on the other body. Move the corner nearest the first point away from the second by the shortfall (rule minus measured). At 0.00 mm from the part a plain end sits on, add `part` to that end. |
 | `tube.clearance.pair-unused` (warning) | Correct the system name in `clearance.pairs` to one of the systems the message lists, or remove the pair. |
 | `tube.spec.system-rule-invalid` | A param in a `systems` entry now gives a value the rule cannot be, and the top-level rule was applied. Fix the param, or use a plain number. |
+| `tube.spec.rule-invalid` | A param in a top-level rule or clearance number now gives a value it cannot be; the message names the field and the value. The default was applied, and a clearance pair with such a `min` was left out. Fix the param, or use a plain number. |
 | `tube.spec.system-unused` (warning) | Correct the system name in `systems` to one of the systems the message lists, or remove the entry. |
 | `tube.clearance.overlap` | The tube passes through the named part or tube. Route the leg around it. |
 | `feature.kernel-failed` with a `tube.gate:` message | The gate could not finish a check on the named tube, so that tube is not verified. The message carries the cause; check the tube's ends, its ports and the parts they sit on. |

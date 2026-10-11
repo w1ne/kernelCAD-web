@@ -18,6 +18,7 @@ import {
   type TubeEndMeta,
   type TubeMetadata,
   type TubeRuleKey,
+  type TubeRuleValue,
   type TubeSpecMetadata,
 } from '../../shared/intent/tubeRecord';
 import { buildTubePath, isTubePathError, tubePathErrorArgs, type V3 } from '../../shared/tube/tubePath';
@@ -48,12 +49,13 @@ export interface TubeOptions {
   flow?: { lpm: number; fluid: string };
 }
 
+/** Every number may be a plain number or a param. */
 export interface TubeSpec {
-  minBendRadiusFactor?: number;
-  minStraightBetweenBends?: number;
-  minStraightAtEnd?: number;
-  maxBendAngle?: number;
-  clearance?: { default?: number; pairs?: Array<{ a: string; b: string; min: number }> };
+  minBendRadiusFactor?: Editable<number>;
+  minStraightBetweenBends?: Editable<number>;
+  minStraightAtEnd?: Editable<number>;
+  maxBendAngle?: Editable<number>;
+  clearance?: { default?: Editable<number>; pairs?: Array<{ a: string; b: string; min: Editable<number> }> };
   /** Rule overrides for the tubes of one system; a rule left out falls back
    *  to the top level. Clearance between systems stays in `clearance.pairs`. */
   systems?: Record<string, TubeSystemRules>;
@@ -328,27 +330,37 @@ function badSpec(field: string, gotText: string, requires: string): never {
   });
 }
 
-function positiveField(field: string, v: unknown, fallback: number): number {
-  if (v === undefined) return fallback;
-  if (!isPositive(v)) badSpec(field, json(v), 'a positive finite number');
-  return v;
+/** What a spec number is: a multiple of the OD, a bend angle, or a distance. */
+type RuleKind = 'factor' | 'angle' | 'distance';
+const RULE_UNIT = { factor: 'unitless', angle: 'deg', distance: 'mm' } as const;
+const kindOf = (key: TubeRuleKey): RuleKind => (key === 'maxBendAngle' ? 'angle' : 'factor');
+
+/** One spec number as a Param: a number or a param, checked at its current value. */
+function ruleParam(field: string, kind: RuleKind, v: unknown, table: ParamTable): Param {
+  const requires = kind === 'angle' ? 'a number in (0, 180] degrees' : 'a positive finite number';
+  if (!isParamRef(v) && typeof v !== 'number') badSpec(field, json(v), requires);
+  const p = toParam(v as Editable<number>, RULE_UNIT[kind]);
+  const value = paramValue(p, table);
+  if (!isPositive(value) || (kind === 'angle' && value > 180)) badSpec(field, json(value), requires);
+  return p;
 }
 
-function bendAngleField(v: unknown): number {
-  if (v === undefined) return TUBE_SPEC_DEFAULTS.maxBendAngle;
-  if (!isPositive(v) || v > 180) badSpec('maxBendAngle', json(v), 'a number in (0, 180] degrees');
-  return v;
+/** A top-level number as stored: a plain number stays the number it was (the
+ *  record a spec without params always had), a param is stored as a Param. */
+function ruleValue(field: string, kind: RuleKind, v: unknown, table: ParamTable): TubeRuleValue {
+  const p = ruleParam(field, kind, v, table);
+  return isParamRef(v) ? p : (v as number);
 }
 
-function clearancePair(i: number, p: unknown): { a: string; b: string; min: number } {
+function clearancePair(i: number, p: unknown, table: ParamTable): TubeSpecMetadata['clearance']['pairs'][number] {
   const pair = p as { a?: unknown; b?: unknown; min?: unknown } | null;
   const nameOk = (n: unknown): n is string => typeof n === 'string' && n.length > 0;
   if (typeof pair !== 'object' || pair === null || !nameOk(pair.a) || !nameOk(pair.b)) {
     badSpec(`clearance.pairs[${i}]`, json(p), '{ a, b, min } with two non-empty system names');
   }
-  const min = positiveField(`clearance.pairs[${i}].min`, pair.min, Number.NaN);
-  if (Number.isNaN(min)) badSpec(`clearance.pairs[${i}].min`, 'no min', 'a positive finite number (the field is required)');
-  return { a: pair.a as string, b: pair.b as string, min };
+  const field = `clearance.pairs[${i}].min`;
+  if (pair.min === undefined) badSpec(field, 'no min', 'a positive finite number (the field is required)');
+  return { a: pair.a as string, b: pair.b as string, min: ruleValue(field, 'distance', pair.min, table) };
 }
 
 const SPEC_FIELDS = [...TUBE_RULE_KEYS, 'clearance', 'systems'];
@@ -363,7 +375,7 @@ function rejectUnknownKeys(obj: object, allowed: readonly string[], prefix: stri
   }
 }
 
-function clearanceField(v: unknown): TubeSpecMetadata['clearance'] {
+function clearanceField(v: unknown, table: ParamTable): TubeSpecMetadata['clearance'] {
   if (v === undefined) return { default: TUBE_SPEC_DEFAULTS.clearance.default, pairs: [] };
   if (typeof v !== 'object' || v === null || Array.isArray(v)) {
     badSpec('clearance', json(v), 'an object { default?, pairs? }');
@@ -374,20 +386,10 @@ function clearanceField(v: unknown): TubeSpecMetadata['clearance'] {
     badSpec('clearance.pairs', json(c.pairs), 'an array of { a, b, min }');
   }
   return {
-    default: positiveField('clearance.default', c.default, TUBE_SPEC_DEFAULTS.clearance.default),
-    pairs: ((c.pairs as unknown[] | undefined) ?? []).map((p, i) => clearancePair(i, p)),
+    default: c.default === undefined ? TUBE_SPEC_DEFAULTS.clearance.default :
+      ruleValue('clearance.default', 'distance', c.default, table),
+    pairs: ((c.pairs as unknown[] | undefined) ?? []).map((p, i) => clearancePair(i, p, table)),
   };
-}
-
-/** One override value: a number or a param, checked at its current value. */
-function systemRule(field: string, key: TubeRuleKey, v: unknown, table: ParamTable): Param {
-  const isAngle = key === 'maxBendAngle';
-  const requires = isAngle ? 'a number in (0, 180] degrees' : 'a positive finite number';
-  if (!isParamRef(v) && typeof v !== 'number') badSpec(field, json(v), requires);
-  const p = toParam(v as Editable<number>, isAngle ? 'deg' : 'unitless');
-  const value = paramValue(p, table);
-  if (!isPositive(value) || (isAngle && value > 180)) badSpec(field, json(value), requires);
-  return p;
 }
 
 function systemEntry(name: string, entry: unknown, table: ParamTable): Partial<Record<TubeRuleKey, Param>> {
@@ -404,7 +406,7 @@ function systemEntry(name: string, entry: unknown, table: ParamTable): Partial<R
   const rules = entry as Partial<Record<TubeRuleKey, unknown>>;
   const out: Partial<Record<TubeRuleKey, Param>> = {};
   for (const key of TUBE_RULE_KEYS) {
-    if (rules[key] !== undefined) out[key] = systemRule(prefix + key, key, rules[key], table);
+    if (rules[key] !== undefined) out[key] = ruleParam(prefix + key, kindOf(key), rules[key], table);
   }
   return out;
 }
@@ -428,13 +430,15 @@ export function buildTubeSpecFeatureSpec(spec: TubeSpec, table: ParamTable): Aut
   }
   rejectUnknownKeys(spec, SPEC_FIELDS, '');
   const systems = systemsField(spec.systems, table);
+  const rule = (key: TubeRuleKey): TubeRuleValue =>
+    (spec[key] === undefined ? TUBE_SPEC_DEFAULTS[key] : ruleValue(key, kindOf(key), spec[key], table));
   const metadata: TubeSpecMetadata = {
     virtual: true,
-    minBendRadiusFactor: positiveField('minBendRadiusFactor', spec.minBendRadiusFactor, TUBE_SPEC_DEFAULTS.minBendRadiusFactor),
-    minStraightBetweenBends: positiveField('minStraightBetweenBends', spec.minStraightBetweenBends, TUBE_SPEC_DEFAULTS.minStraightBetweenBends),
-    minStraightAtEnd: positiveField('minStraightAtEnd', spec.minStraightAtEnd, TUBE_SPEC_DEFAULTS.minStraightAtEnd),
-    maxBendAngle: bendAngleField(spec.maxBendAngle),
-    clearance: clearanceField(spec.clearance),
+    minBendRadiusFactor: rule('minBendRadiusFactor'),
+    minStraightBetweenBends: rule('minStraightBetweenBends'),
+    minStraightAtEnd: rule('minStraightAtEnd'),
+    maxBendAngle: rule('maxBendAngle'),
+    clearance: clearanceField(spec.clearance, table),
     ...(systems !== undefined ? { systems } : {}),
   };
   return { kind: 'tubeSpec', params: {}, inputs: {}, metadata: metadata as unknown as Record<string, unknown> };

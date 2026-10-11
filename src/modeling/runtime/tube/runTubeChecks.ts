@@ -4,7 +4,8 @@
 // Tube gate orchestrator. For every `tube` record of a built model:
 //
 //   - the bend and straight rules of the model's LAST `tubeSpec({...})`
-//     (or the defaults, with a `tube.spec.defaulted` warning), as overridden
+//     (or the defaults, with a `tube.spec.defaulted` warning), its numbers
+//     read through the param table, as overridden
 //     for the tube's system by the spec's `systems`, with a warning for a
 //     `systems` entry that names a system no tube has,
 //   - that each end still sits on its port after the assembly is solved, that
@@ -35,7 +36,9 @@ import type { V3 } from '../../../shared/tube/tubePath';
 import { tryResolveMaterial } from '../../properties/materialLibrary';
 import { checkTubeClearance, systemsPresent, unusedPairWarnings, type NearestClearance } from './tubeClearance';
 import { checkEndParts, checkTubeParts } from './tubeEndParts';
-import { checkTubeRules, resolveTubeSpec, type InvalidSystemRule, type TubeRuleSpec } from './tubeRules';
+import {
+  checkTubeRules, resolveTubeSpec, ruleMust, type InvalidRule, type InvalidSystemRule, type TubeRuleSpec,
+} from './tubeRules';
 import {
   checkPortPositions, resolveTube, tubeDiagnostic, tubeDiagnosticFromMessage, tubeSceneContext, type ResolvedTube,
 } from './tubeScene';
@@ -79,11 +82,12 @@ export interface TubeCheckReport {
   timings: Record<string, number>;
 }
 
+type ResolvedSpec = ReturnType<typeof resolveTubeSpec>;
+
 /** The tubeSpec governing a record list, with its params resolved: the LAST
- *  `tubeSpec` record wins. `invalid` lists the overrides that were dropped. */
-export function findTubeSpec(
-  records: readonly FeatureRecord[], table: ParamTable,
-): { spec: TubeRuleSpec; invalid: InvalidSystemRule[] } | undefined {
+ *  `tubeSpec` record wins. `invalid` and `invalidRules` list the values that
+ *  were replaced. */
+export function findTubeSpec(records: readonly FeatureRecord[], table: ParamTable): ResolvedSpec | undefined {
   for (let i = records.length - 1; i >= 0; i--) {
     if (records[i].kind === 'tubeSpec' && !records[i].suppressed) {
       return resolveTubeSpec(records[i].metadata as unknown as TubeSpecMetadata, table);
@@ -93,10 +97,17 @@ export function findTubeSpec(
 }
 
 function invalidSystemRule({ system, key, value, applied }: InvalidSystemRule): CompilerDiagnostic {
-  const must = key === 'maxBendAngle' ? 'a number in (0, 180] degrees' : 'a positive finite number';
   return tubeDiagnostic('tube.spec.system-rule-invalid',
-    `tubeSpec systems '${system}' ${key} resolves to ${value}; it must be ${must}. The top-level value ${applied} was applied.`);
+    `tubeSpec systems '${system}' ${key} resolves to ${value}; it must be ${ruleMust(key)}. The top-level value ${applied} was applied.`);
 }
+
+function invalidRule({ rule, value, must, applied }: InvalidRule): CompilerDiagnostic {
+  return tubeDiagnostic('tube.spec.rule-invalid', `tubeSpec ${rule} resolves to ${value}; it must be ${must}. ${applied}`);
+}
+
+/** Top-level values first: a `systems` message quotes the top-level value that was applied. */
+const specDiagnostics = (declared: ResolvedSpec): CompilerDiagnostic[] =>
+  [...declared.invalidRules.map(invalidRule), ...declared.invalid.map(invalidSystemRule)];
 
 /** A `systems` entry naming a system no tube has overrides nothing: most
  *  often a misspelt system. A warning, because a shared rule set may carry
@@ -229,7 +240,7 @@ function checkTubes(model: BuiltModel, records: readonly FeatureRecord[]): TubeC
   const t0 = performance.now();
   const declared = findTubeSpec(model.records, model.session.paramTable);
   const spec: TubeRuleSpec = declared?.spec ?? TUBE_SPEC_DEFAULTS;
-  const diagnostics: CompilerDiagnostic[] = declared !== undefined ? declared.invalid.map(invalidSystemRule) :
+  const diagnostics: CompilerDiagnostic[] = declared !== undefined ? specDiagnostics(declared) :
     [tubeDiagnostic('tube.spec.defaulted', `no tubeSpec declared; the default rules were applied to ${records.length} tube(s).`)];
   const ctx = tubeSceneContext(model);
   const guard = <T>(tube: GuardedTube, step: string, fallback: T, run: () => T): T => {

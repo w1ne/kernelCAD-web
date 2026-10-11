@@ -217,6 +217,50 @@ describe('resolveTubeSpec', () => {
     expect(r.spec.systems).toEqual({ 'hot-gas': { minBendRadiusFactor: 1.5 } });
   });
 
+  const ref = (name: string, unit = 'unitless') => ({ expression: `{$param:${name}}`, unit, evaluated: 0, paramRef: name }) as never;
+
+  it('a spec of plain numbers resolves to the same numbers', () => {
+    const plain = { ...spec, virtual: true as const, clearance: { default: 6, pairs: [{ a: 'fuel', b: 'bleed', min: 25 }] } };
+    const { virtual: _virtual, ...numbers } = plain;
+    expect(resolveTubeSpec(plain, new ParamTable())).toEqual({ spec: numbers, invalid: [], invalidRules: [] });
+  });
+
+  it('reads top-level rule and clearance params through the table', () => {
+    const table = new ParamTable();
+    table.declare('K', 'number', 4);
+    table.declare('A', 'number', 120);
+    table.declare('C', 'number', 8);
+    const r = resolveTubeSpec({ virtual: true, minBendRadiusFactor: ref('K'), minStraightBetweenBends: ref('K'), minStraightAtEnd: ref('K'),
+      maxBendAngle: ref('A', 'deg'), clearance: { default: ref('C', 'mm'), pairs: [{ a: 'fuel', b: 'bleed', min: ref('C', 'mm') }] },
+      systems: { oil: { minBendRadiusFactor: ref('A') } } }, table);
+    expect(r.invalid).toEqual([]);
+    expect(r.invalidRules).toEqual([]);
+    expect(r.spec).toEqual({ minBendRadiusFactor: 4, minStraightBetweenBends: 4, minStraightAtEnd: 4, maxBendAngle: 120,
+      clearance: { default: 8, pairs: [{ a: 'fuel', b: 'bleed', min: 8 }] }, systems: { oil: { minBendRadiusFactor: 120 } } });
+    expect(effectiveRules(r.spec, 'fuel')).toMatchObject({ minBendRadiusFactor: 4, minStraightAtEnd: 4, maxBendAngle: 120 });
+  });
+
+  it('a top-level param that resolves to a number the rule cannot be falls back to the default and is reported', () => {
+    const table = new ParamTable();
+    table.declare('Z', 'number', 0);
+    table.declare('W', 'number', 200);
+    const r = resolveTubeSpec({ virtual: true, minBendRadiusFactor: ref('Z'), minStraightBetweenBends: 2, minStraightAtEnd: ref('Z'),
+      maxBendAngle: ref('W', 'deg'), clearance: { default: ref('Z', 'mm'), pairs: [{ a: 'fuel', b: 'bleed', min: ref('Z', 'mm') }, { a: 'fuel', b: 'oil', min: 12 }] },
+      systems: { oil: { minStraightAtEnd: ref('Z') } } }, table);
+    expect(r.invalidRules).toEqual([
+      { rule: 'minBendRadiusFactor', value: 0, must: 'a positive finite number', applied: 'The default 3 was applied.' },
+      { rule: 'minStraightAtEnd', value: 0, must: 'a positive finite number', applied: 'The default 2.5 was applied.' },
+      { rule: 'maxBendAngle', value: 200, must: 'a number in (0, 180] degrees', applied: 'The default 180 was applied.' },
+      { rule: 'clearance.default', value: 0, must: 'a positive finite number', applied: 'The default 6 was applied.' },
+      { rule: "clearance.pairs[0].min ('fuel' / 'bleed')", value: 0, must: 'a positive finite number',
+        applied: 'The pair was left out, so clearance.default applies to it.' },
+    ]);
+    // The override falls back to the top-level value that was applied, not to the bad one.
+    expect(r.invalid).toEqual([{ system: 'oil', key: 'minStraightAtEnd', value: 0, applied: 2.5 }]);
+    expect(r.spec).toEqual({ minBendRadiusFactor: 3, minStraightBetweenBends: 2, minStraightAtEnd: 2.5, maxBendAngle: 180,
+      clearance: { default: 6, pairs: [{ a: 'fuel', b: 'oil', min: 12 }] }, systems: { oil: {} } });
+  });
+
   it('drops an override that resolves to a number the rule cannot be, and reports it', () => {
     const r = resolveTubeSpec({ ...spec, virtual: true, clearance: { default: 6, pairs: [] },
       systems: {
