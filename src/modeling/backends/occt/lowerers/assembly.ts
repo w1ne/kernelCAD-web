@@ -15,6 +15,7 @@ import { expandCoupledPoses, type MateCouplingRecord } from '../../../mates/coup
 import type { Connector } from '../../../mates/connector';
 import type { MateRecord } from '../../../mates/mate';
 import type { MateType } from '../../../mates/mateTypes';
+import { resolvedPartAt } from '../../../mates/partFrame';
 import { mateFk, type ResolvedMatePart } from '../../../mates/solver';
 import { resolveTopologyOriginOnBackend } from '../connectorTopology';
 import { built, finished, noShape, type LowerContext, type LowerOutcome } from './context';
@@ -130,11 +131,33 @@ function readPartEntries(ctx: LowerContext): PartEntry[] {
     .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }));
 }
 
+/** The part's `at` as `lowerAssemblyPart` applied it: the captured Param
+ *  resolved against the engine's param table (`records` holds it as captured,
+ *  where a script-parameter reference reads `evaluated: 0`). */
+function loweredPartAt(ctx: LowerContext, partRec: FeatureRecord | undefined): readonly [number, number, number] {
+  const meta = partRec?.metadata as { at?: Vec3Param } | undefined;
+  return resolvedPartAt(meta?.at, ctx.inputs.paramTable);
+}
+
+/** A vec3 connector declared on the source shape, moved by the part's `at`. */
+function connectorMovedByAt(
+  c: Connector,
+  origin: Vec3,
+  at: readonly [number, number, number],
+): Connector {
+  return { ...c, origin: { kind: 'vec3', value: [origin[0] + at[0], origin[1] + at[1], origin[2] + at[2]] } };
+}
+
 /**
- * Resolve topology connector origins via each part's already-lowered backend,
- * then build the pure-data `ResolvedMatePart[]` input for `mateFk`. Vec3
- * origins pass through unchanged. `opLabel` prefixes the diagnostics so the
- * two callers keep their own message text.
+ * Build the pure-data `ResolvedMatePart[]` input for `mateFk`, with every
+ * connector origin where the part's `at` puts it. The scene parts this
+ * lowerer emits carry shapes that `lowerAssemblyPart` already moved by `at`,
+ * and `mateFk` returns the motion of the shapes in the frame its connectors
+ * are given in, so the result is the scene part's `worldTransform`. Topology
+ * origins are resolved on that moved shape, so they already are in this
+ * frame; vec3 origins are declared on the source shape and get `at` added.
+ * `opLabel` prefixes the diagnostics so the two callers keep their own
+ * message text.
  */
 function resolveMateParts(
   ctx: LowerContext,
@@ -173,10 +196,11 @@ function resolveMateParts(
       continue;
     }
     const partBackend = partEntries[i][1] as OcctBackend;
+    const at = loweredPartAt(ctx, partRec);
     const resolvedConnectors: Connector[] = [];
     for (const c of rawConnectors) {
       if (c.origin.kind === 'vec3') {
-        resolvedConnectors.push(c);
+        resolvedConnectors.push(connectorMovedByAt(c, c.origin.value, at));
         continue;
       }
       try {

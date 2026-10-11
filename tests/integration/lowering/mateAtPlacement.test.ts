@@ -1,0 +1,268 @@
+// tests/integration/lowering/mateAtPlacement.test.ts
+//
+// A part placed with `at` and fastened (or hinged, or slid) to another part
+// must land where the mate puts it. The built scene part's shape already
+// carries its `at`; the scene part's `worldTransform` is the motion the mate
+// adds on top. The mate used to compute that motion as if the part sat at the
+// origin, so the `at` was added on top of it (rotated by the joint), and a
+// child did not follow a parent placed with `at`.
+//
+// Every expected number below is worked out by hand from the box sizes and
+// connector origins, not read back from the solver.
+//
+//   mount: box(20, 20, 10, centred) -> local x,y in [-10, 10], z in [-5, 5]
+//          connector `seat` at local [4, -3, 5] (on the top face)
+//   valve: box(12, 6, 8, centred)   -> local x in [-6, 6], y in [-3, 3], z in [-4, 4]
+//          connector `base` at local [1, 2, -4] (on the bottom face)
+
+import { describe, it, expect, beforeAll } from 'vitest';
+import { initOcct, type OcctBackend } from '../../../src/kernel/backends/occt/occtBackend';
+import { runScript } from '../../../src/modeling/runtime/runScript';
+import { RecomputeEngine } from '../../../src/modeling/compute/recomputeEngine';
+import { OcctLowerer } from '../../../src/modeling/backends/occt/occtLowerer';
+import { isSceneBackend, type SceneBackend } from '../../../src/kernel/backends/sceneBackend';
+import { buildModel, updateModelParams, type BuiltModel } from '../../../src/modeling/buildModel';
+import type { Assembly } from '../../../src/modeling/capture/assembly';
+import type { Scene } from '../../../src/modeling/validation/scene';
+import { solveMates } from '../../../src/modeling/mates/solver';
+import { resolvedPartAt, sceneMotion } from '../../../src/modeling/mates/partFrame';
+import { reposedLoweredAssemblyScene } from '../../../src/modeling/mates/loweredAssemblyScene';
+import type { Transform } from '../../../src/shared/runtime/se3';
+
+type V3 = [number, number, number];
+interface Box { min: V3; max: V3 }
+type MateKind = 'fastened' | 'revolute' | 'prismatic';
+
+function script(opts: {
+  entry: 'solvedModel' | 'model';
+  kind: MateKind;
+  valveAt?: V3;
+  mountAt?: V3;
+}): string {
+  const { entry, kind, valveAt, mountAt } = opts;
+  const type = kind === 'fastened' ? `type: 'frame'` : `type: 'axis'`;
+  // The revolute turns about +X so that a wrongly carried `at` = [0, 0, 27]
+  // shows up rotated (along -Y), not just along Z.
+  const axis = kind === 'revolute' ? ', axis: [1, 0, 0]' : kind === 'prismatic' ? ', axis: [0, 0, 1]' : '';
+  const pose = kind === 'revolute' ? ', { pose: 90 }' : kind === 'prismatic' ? ', { pose: 6 }' : '';
+  const at = (v?: V3) => (v === undefined ? '' : `, { at: [${v.join(', ')}] }`);
+  const ret = entry === 'solvedModel'
+    ? `return arm.solvedModel({}, { validate: 'off' });`
+    : 'return arm.model();';
+  return `
+    const arm = assembly('rig');
+    arm.part('mount', box(20, 20, 10, true)${at(mountAt)})
+       .connector('seat', { ${type}, origin: { kind: 'vec3', value: [4, -3, 5] }${axis} });
+    arm.part('valve', box(12, 6, 8, true)${at(valveAt)})
+       .connector('base', { ${type}, origin: { kind: 'vec3', value: [1, 2, -4] }${axis} });
+    arm.mate('m', 'mount.seat', 'valve.base', '${kind}'${pose});
+    ${ret}
+  `;
+}
+
+/** World bounding box of every part of the built scene, by part name. */
+async function builtBoxes(code: string): Promise<Map<string, Box>> {
+  const { records } = await runScript({ code, fileName: 'mate-at.kcad.ts' });
+  const r = await new RecomputeEngine(new OcctLowerer()).run(records);
+  expect(r.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+  const scene = r.shapes.get(records[records.length - 1].id);
+  if (!isSceneBackend(scene)) throw new Error('the model did not build to an assembly scene');
+  const out = new Map<string, Box>();
+  for (const p of scene.parts) {
+    const bb = (p.shape as OcctBackend).clone().applyTransform(p.worldTransform).boundingBox();
+    out.set(p.name, { min: [bb.min[0], bb.min[1], bb.min[2]], max: [bb.max[0], bb.max[1], bb.max[2]] });
+  }
+  return out;
+}
+
+function expectBox(actual: Box | undefined, expected: Box): void {
+  expect(actual).toBeDefined();
+  for (let i = 0; i < 3; i++) {
+    expect(actual!.min[i]).toBeCloseTo(expected.min[i], 6);
+    expect(actual!.max[i]).toBeCloseTo(expected.max[i], 6);
+  }
+}
+
+const add = (a: V3, b: V3): V3 => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+const near = (a: V3, b: V3): void => {
+  for (let i = 0; i < 3; i++) expect(a[i]).toBeCloseTo(b[i], 6);
+};
+
+// The mount stays where it was authored.
+const MOUNT_AT_ORIGIN: Box = { min: [-10, -10, -5], max: [10, 10, 5] };
+// Seat on the mount: mount min corner + [14, 7, 10] = [4, -3, 5].
+const seatOf = (mount: Box): V3 => add(mount.min, [14, 7, 10]);
+
+// Fastened: the valve moves so `base` meets `seat`, translation only:
+// valve local + ([4, -3, 5] - [1, 2, -4]) = local + [3, -5, 9].
+const FASTENED: Box = { min: [-3, -8, 5], max: [9, -2, 13] };
+// Revolute about +X by 90 deg at the seat: world = seat + Rx90(local - base),
+// Rx90 maps (x, y, z) to (x, -z, y). The valve's 6 mm (Y) and 8 mm (Z) sides
+// swap, which is the joint angle.
+const REVOLUTE: Box = { min: [-3, -11, 0], max: [9, -3, 6] };
+// Prismatic +6 mm along +Z: the fastened box lifted by 6.
+const PRISMATIC: Box = { min: [-3, -8, 11], max: [9, -2, 19] };
+
+const EXPECTED: Record<MateKind, Box> = { fastened: FASTENED, revolute: REVOLUTE, prismatic: PRISMATIC };
+
+describe('a mate places a part that has `at` where the mate says', () => {
+  beforeAll(async () => { await initOcct(); });
+
+  for (const entry of ['solvedModel', 'model'] as const) {
+    for (const kind of ['fastened', 'revolute', 'prismatic'] as const) {
+      it(`${entry}: ${kind} valve with at [0, 0, 27] lands on the mount`, async () => {
+        const withAt = await builtBoxes(script({ entry, kind, valveAt: [0, 0, 27] }));
+        expectBox(withAt.get('mount'), MOUNT_AT_ORIGIN);
+        expectBox(withAt.get('valve'), EXPECTED[kind]);
+
+        // The same model without `at` lands in the same place: the mate,
+        // not the `at`, decides where a mated part goes.
+        const withoutAt = await builtBoxes(script({ entry, kind }));
+        expectBox(withoutAt.get('valve'), EXPECTED[kind]);
+      });
+    }
+  }
+
+  it('the valve connector meets the mount connector (fastened)', async () => {
+    const boxes = await builtBoxes(script({ entry: 'solvedModel', kind: 'fastened', valveAt: [0, 0, 27] }));
+    // `base` on the valve: valve min corner + [7, 5, 0] (unrotated valve).
+    near(add(boxes.get('valve')!.min, [7, 5, 0]), seatOf(boxes.get('mount')!));
+  });
+
+  it('the revolute keeps its joint angle and its pivot', async () => {
+    const boxes = await builtBoxes(script({ entry: 'solvedModel', kind: 'revolute', valveAt: [0, 0, 27] }));
+    const valve = boxes.get('valve')!;
+    // Rotated 90 deg about X: 12 along X, 8 (was Z) along Y, 6 (was Y) along Z.
+    near([valve.max[0] - valve.min[0], valve.max[1] - valve.min[1], valve.max[2] - valve.min[2]], [12, 8, 6]);
+    // The pivot (`base`, local [1, 2, -4]) sits at min corner + [7, 8, 5] after
+    // the turn, and that is the seat.
+    near(add(valve.min, [7, 8, 5]), seatOf(boxes.get('mount')!));
+  });
+
+  it('the slider moves the valve connector along the axis by the pose', async () => {
+    const boxes = await builtBoxes(script({ entry: 'solvedModel', kind: 'prismatic', valveAt: [0, 0, 27] }));
+    near(add(boxes.get('valve')!.min, [7, 5, 0]), add(seatOf(boxes.get('mount')!), [0, 0, 6]));
+  });
+
+  for (const kind of ['fastened', 'revolute'] as const) {
+    it(`${kind}: a child follows a parent placed with at`, async () => {
+      const boxes = await builtBoxes(script({
+        entry: 'solvedModel', kind, mountAt: [100, 0, 0], valveAt: [0, 0, 27],
+      }));
+      // The mount (first part, fixed) keeps its `at`.
+      const mount: Box = { min: [90, -10, -5], max: [110, 10, 5] };
+      expectBox(boxes.get('mount'), mount);
+      // The valve is placed relative to the moved mount.
+      const e = EXPECTED[kind];
+      expectBox(boxes.get('valve'), { min: add(e.min, [100, 0, 0]), max: add(e.max, [100, 0, 0]) });
+    });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Every path that poses a mated part agrees with the built scene: the
+// capture-time Scene, the `solveMates` placement (with `at` taken back out),
+// the re-posed lowered scene the pose sweeps use, and the joint-axis gate.
+
+function sameTransform(actual: Transform, expected: Transform): void {
+  const a = actual.toMat4();
+  const e = expected.toMat4();
+  for (let i = 0; i < 16; i++) expect(a[i]).toBeCloseTo(e[i], 9);
+}
+
+interface Built { model: BuiltModel; arm: Assembly; scene: Scene; lowered: SceneBackend }
+
+async function build(code: string): Promise<Built> {
+  const model = await buildModel({ code, fileName: 'mate-at-paths.kcad.ts' });
+  expect(model.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+  const scene = model.returnValue as Scene;
+  const lowered = model.shapes.get(scene.__sourceFeatureId()!);
+  if (!isSceneBackend(lowered)) throw new Error('the model did not build to an assembly scene');
+  const arm = model.session.assemblies.get('rig') as Assembly;
+  return { model, arm, scene, lowered };
+}
+
+const boxOf = (lowered: SceneBackend, name: string): Box => {
+  const p = lowered.parts.find((q) => q.name === name)!;
+  const bb = (p.shape as OcctBackend).clone().applyTransform(p.worldTransform).boundingBox();
+  return { min: [bb.min[0], bb.min[1], bb.min[2]], max: [bb.max[0], bb.max[1], bb.max[2]] };
+};
+
+describe('every path agrees with the built scene for a part with `at`', () => {
+  beforeAll(async () => { await initOcct(); });
+
+  for (const kind of ['fastened', 'revolute'] as const) {
+    it(`${kind}: capture Scene, solveMates and the re-posed scene match the lowered scene`, async () => {
+      const code = script({ entry: 'solvedModel', kind, mountAt: [100, 0, 0], valveAt: [0, 0, 27] });
+      const { model, arm, scene, lowered } = await build(code);
+      const solved = await solveMates(arm);
+      const reposed = reposedLoweredAssemblyScene(arm, lowered, solved.poses)!;
+      expect(reposed).toBeDefined();
+      for (const part of lowered.parts) {
+        const at = resolvedPartAt(arm.__parts().find((p) => p.name === part.name)!.at, model.session.paramTable);
+        sameTransform(scene.part(part.name).worldTransform, part.worldTransform);
+        sameTransform(sceneMotion(solved.poses.get(part.name)!, at), part.worldTransform);
+        sameTransform(reposed.parts.find((p) => p.name === part.name)!.worldTransform, part.worldTransform);
+      }
+    });
+  }
+
+  it('a param-driven at is resolved, and the mate still decides after a param edit', async () => {
+    const code = `
+      const dx = param('dx', 100);
+      const lift = param('lift', 27);
+      const arm = assembly('rig');
+      arm.part('mount', box(20, 20, 10, true), { at: [dx, 0, 0] })
+         .connector('seat', { type: 'frame', origin: { kind: 'vec3', value: [4, -3, 5] } });
+      arm.part('valve', box(12, 6, 8, true), { at: [0, 0, lift] })
+         .connector('base', { type: 'frame', origin: { kind: 'vec3', value: [1, 2, -4] } });
+      arm.mate('m', 'mount.seat', 'valve.base', 'fastened');
+      return arm.solvedModel({}, { validate: 'off' });
+    `;
+    const { model, lowered } = await build(code);
+    expectBox(boxOf(lowered, 'mount'), { min: [90, -10, -5], max: [110, 10, 5] });
+    expectBox(boxOf(lowered, 'valve'), { min: [97, -8, 5], max: [109, -2, 13] });
+
+    const updated = await updateModelParams(model, [{ name: 'dx', value: 60 }, { name: 'lift', value: 40 }]);
+    const after = updated.result.shape;
+    if (!isSceneBackend(after)) throw new Error('the update did not build to an assembly scene');
+    expectBox(boxOf(after, 'mount'), { min: [50, -10, -5], max: [70, 10, 5] });
+    expectBox(boxOf(after, 'valve'), { min: [57, -8, 5], max: [69, -2, 13] });
+  });
+
+  it('topology connectors on a part with at keep landing where they did', async () => {
+    // Same shape as the mounting-hole eval task: plate b authored at z=5 so
+    // its bottom face meets the top face of plate a.
+    const code = `
+      const arm = assembly('rig');
+      arm.part('a', box(20, 20, 5))
+         .connector('h', { type: 'frame', origin: { kind: 'topology', query: { kind: 'face-center', name: 'top' } } });
+      arm.part('b', box(20, 20, 5), { at: [0, 0, 5] })
+         .connector('h', { type: 'frame', origin: { kind: 'topology', query: { kind: 'face-center', name: 'bottom' } } });
+      arm.mate('screw', 'a.h', 'b.h', 'fastened');
+      return arm.solvedModel({}, { validate: 'off' });
+    `;
+    const { scene, lowered } = await build(code);
+    expectBox(boxOf(lowered, 'b'), { min: [0, 0, 5], max: [20, 20, 10] });
+    for (const part of lowered.parts) sameTransform(scene.part(part.name).worldTransform, part.worldTransform);
+  });
+
+  it('the joint-axis gate sees the hinge where the built scene has it', async () => {
+    // Hinge axis along +X through both bodies; the valve has `at` off the axis.
+    const code = `
+      const arm = assembly('rig');
+      arm.part('mount', box(20, 20, 10, true))
+         .connector('pin', { type: 'axis', origin: { kind: 'vec3', value: [10, 0, 0] }, axis: [1, 0, 0] });
+      arm.part('valve', box(12, 6, 8, true), { at: [0, 0, 27] })
+         .connector('pin', { type: 'axis', origin: { kind: 'vec3', value: [-6, 0, 0] }, axis: [1, 0, 0] });
+      arm.mate('hinge', 'mount.pin', 'valve.pin', 'revolute', { pose: 30, limitsDeg: [-90, 90] });
+      return arm.solvedModel({}, { validate: 'warn' });
+    `;
+    const { scene, lowered } = await build(code);
+    // The valve hangs off the mount's +X face, turned 30 deg about X.
+    const valve = boxOf(lowered, 'valve');
+    expect(valve.min[0]).toBeCloseTo(10, 6);
+    expect(valve.max[0]).toBeCloseTo(22, 6);
+    expect(scene.warnings.filter((w) => w.code === 'assembly.joint-axis.unbound')).toEqual([]);
+  });
+});

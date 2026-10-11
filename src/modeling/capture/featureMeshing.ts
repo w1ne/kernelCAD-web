@@ -9,7 +9,8 @@ import type { PBRMaterial } from '../../shared/intent/material';
 import type { ReferenceImageMetadata } from '../../shared/intent/referenceImageRecord';
 import type { RenderEnvironmentMetadata } from '../../shared/intent/renderEnvironmentRecord';
 import type { CameraTargetMetadata } from '../../shared/intent/cameraTargetRecord';
-import type { Vec3 } from '../../shared/intent/types';
+import type { Vec3, Vec3Param } from '../../shared/intent/types';
+import type { ParamTable } from '../../shared/runtime/paramTable';
 import { OcctLowerer } from '../backends/occt/occtLowerer';
 import type { FeatureEvent } from '../compute/featureEvents';
 import { OcctBackend, initOcct } from '../../kernel/backends/occt/occtBackend';
@@ -19,6 +20,7 @@ import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import { generatePlanarUVs } from './planarUv';
 import { computeFeatureOwnership } from './featureOwnership';
 import { helixPolylineRouted } from '../mates/helixPolyline';
+import { matedPartNames, resolvedPartAt } from '../mates/partFrame';
 import {
   accumulateMeshBounds,
   buildMeshBounds,
@@ -219,6 +221,8 @@ interface AssemblyLikeForTendons {
   }[];
   __parts(): readonly {
     readonly name: string;
+    /** Placement as captured; the scene part's shape already carries it. */
+    readonly at?: Vec3Param;
     readonly mateConnectors: readonly {
       readonly name: string;
       readonly origin:
@@ -231,6 +235,9 @@ interface AssemblyLikeForTendons {
       readonly origin: Vec3;
     }[];
   }[];
+  /** Optional so structural fakes without mates keep working. */
+  __mates?(): readonly { readonly a: string; readonly b: string }[];
+  __session?(): { readonly paramTable: ParamTable };
 }
 
 function isAssemblyLikeForTendons(value: unknown): value is AssemblyLikeForTendons {
@@ -532,14 +539,20 @@ function collectTendonLookups(
   const originByRef = new Map<string, Vec3>();
   // (partName, wrapName) → part-local wrap origin lookup (P11 Slice 3).
   const wrapOriginByRef = new Map<string, Vec3>();
+  // The scene transforms below move shapes that already carry `at`; a mated
+  // part's declared origins get its `at` so they land on its body.
+  const mated = matedPartNames(arm.__mates?.() ?? []);
+  const table = arm.__session?.().paramTable;
   for (const part of arm.__parts()) {
+    const at = mated.has(part.name) ? resolvedPartAt(part.at, table) : ([0, 0, 0] as const);
+    const onPart = (v: Vec3): Vec3 => [v[0] + at[0], v[1] + at[1], v[2] + at[2]];
     for (const conn of part.mateConnectors) {
       if (conn.origin.kind === 'vec3') {
-        originByRef.set(`${part.name}.${conn.name}`, conn.origin.value);
+        originByRef.set(`${part.name}.${conn.name}`, onPart(conn.origin.value));
       }
     }
     for (const wg of part.wrapGeoms ?? []) {
-      wrapOriginByRef.set(`${part.name}.${wg.name}`, wg.origin);
+      wrapOriginByRef.set(`${part.name}.${wg.name}`, onPart(wg.origin));
     }
   }
 
