@@ -84,8 +84,10 @@ the same labels can flow into kernelCAD constant names (`const bridge_top
 **Backend hint.** Leave `backend` unset; let the router pick. The router
 falls through to:
 
-- `'opencv'` — uniform background + silhouette/curve features only.
-- `'hybrid'` — uniform background + any `point`/`bbox` feature.
+- `'opencv'` — uniform background + `silhouette` features only.
+- `'hybrid'` — uniform background + any `point`/`bbox`/`curve` feature (curves
+  are part of the outline, e.g. a roof line, so the LLM picks them out; opencv
+  only returns the whole silhouette).
 - `'vision-llm'` — cluttered background; or you explicitly want the LLM.
 
 Forcing `'opencv'` on a `point`/`bbox` request emits a
@@ -237,9 +239,11 @@ the gap between the traced outline and the reference photo.
 
 ## Tool reference
 
-- `trace_from_image` — the MCP tool this skill drives. Caller-supplied
-  `ANTHROPIC_API_KEY` is required when the router picks `'vision-llm'` or
-  `'hybrid'`. Cost ~$0.005 per call against Claude Haiku — do **not** loop
+- `trace_from_image` — the MCP tool this skill drives. `'vision-llm'` and
+  `'hybrid'` need a vision model on the server running the tool:
+  `ANTHROPIC_API_KEY`, or an OpenAI-compatible endpoint
+  (`KERNELCAD_VISION_BASE_URL` + `KERNELCAD_VISION_API_KEY` +
+  `KERNELCAD_VISION_MODEL`). Each call costs a vision-model request — do **not** loop
   `trace_from_image` inside an outer iteration loop. One call per
   surface/curve is enough.
 - `resolve_assumptions` — confirms/overrides the open facts in the

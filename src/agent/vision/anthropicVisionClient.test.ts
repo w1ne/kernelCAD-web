@@ -72,9 +72,11 @@ describe('AnthropicVisionClient', () => {
     expect(textBlock.text).toBe('find the silhouette');
   });
 
-  it('defaultVisionClient() throws when ANTHROPIC_API_KEY is missing', () => {
+  it('defaultVisionClient() throws naming both options when nothing is configured', () => {
     delete process.env.ANTHROPIC_API_KEY;
-    expect(() => defaultVisionClient()).toThrowError(/ANTHROPIC_API_KEY/);
+    delete process.env.KERNELCAD_VISION_BASE_URL;
+    delete process.env.KERNELCAD_VISION_API_KEY;
+    expect(() => defaultVisionClient()).toThrowError(/ANTHROPIC_API_KEY.*KERNELCAD_VISION_BASE_URL/s);
   });
 
   it('reads model from KERNELCAD_VISION_MODEL env var', async () => {
