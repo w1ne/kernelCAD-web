@@ -202,18 +202,30 @@ function isPlainObject(v: object): boolean {
   return proto === null || Object.getPrototypeOf(proto) === null || proto.constructor?.name === 'Object';
 }
 
+function paramRefToSeededParam(node: ParamRef, table: ParamTable | undefined): Param {
+  const p = toParam(node as Editable<number>, 'mm');
+  if (table === undefined || p.paramRef === undefined) return p;
+  try {
+    const expr: ParamRefExpr = typeof p.paramRef === 'string' ? { kind: 'param', name: p.paramRef } : p.paramRef;
+    return { ...p, evaluated: resolveExpr(expr, table) };
+  } catch {
+    return p;
+  }
+}
+
+function walkParamRefObject(obj: Record<string, unknown>, table: ParamTable | undefined, depth: number): unknown {
+  let changed = false;
+  const out: Record<string, unknown> = {};
+  for (const k of Object.keys(obj)) {
+    out[k] = walkParamRefs(obj[k], table, depth + 1);
+    if (out[k] !== obj[k]) changed = true;
+  }
+  return changed ? out : obj;
+}
+
 function walkParamRefs(node: unknown, table: ParamTable | undefined, depth: number): unknown {
   if (depth > 16 || node === null || typeof node !== 'object') return node;
-  if (isParamRef(node) && !isTypedParamRef(node)) {
-    const p = toParam(node as Editable<number>, 'mm');
-    if (table === undefined || p.paramRef === undefined) return p;
-    try {
-      const expr: ParamRefExpr = typeof p.paramRef === 'string' ? { kind: 'param', name: p.paramRef } : p.paramRef;
-      return { ...p, evaluated: resolveExpr(expr, table) };
-    } catch {
-      return p;
-    }
-  }
+  if (isParamRef(node) && !isTypedParamRef(node)) return paramRefToSeededParam(node, table);
   if (Array.isArray(node)) {
     const out = node.map((v) => walkParamRefs(v, table, depth + 1));
     return out.some((v, i) => v !== node[i]) ? out : node;
@@ -221,12 +233,5 @@ function walkParamRefs(node: unknown, table: ParamTable | undefined, depth: numb
   // Scripts run in a vm context: their object literals carry THAT realm's
   // Object.prototype, so test for "a plain object" by shape, not identity.
   if (!isPlainObject(node)) return node;
-  const obj = node as Record<string, unknown>;
-  let changed = false;
-  const out: Record<string, unknown> = {};
-  for (const k of Object.keys(obj)) {
-    out[k] = walkParamRefs(obj[k], table, depth + 1);
-    if (out[k] !== obj[k]) changed = true;
-  }
-  return changed ? out : node;
+  return walkParamRefObject(node as Record<string, unknown>, table, depth);
 }

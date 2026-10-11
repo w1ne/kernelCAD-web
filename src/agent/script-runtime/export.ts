@@ -28,6 +28,7 @@ export type {
 import { sceneToWorldFrameParts } from '../../kernel/backends/occt/sceneToWorldFrame';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
+import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import { NEXT_ACTIONS, HINT_TEMPLATES } from '../../shared/diagnostics/registry';
 import { Scene } from '../../modeling/validation/scene';
 import type { ConnectorManifest } from '../../shared/parts/connectorManifestSchema';
@@ -348,6 +349,15 @@ async function exportShapeOrInfill(
   return out.bytes.length > 0 ? { ...out, infillReport: infill.report } : out;
 }
 
+/** No `return` and no explicit feature_id: the last created shape is
+ *  exported — say so (script.no-return) instead of a silent OK. */
+function exportMissingReturn(
+  featureId: string | undefined,
+  run: { returnValue: unknown; records: readonly FeatureRecord[] },
+): CompilerDiagnostic[] {
+  return featureId === undefined ? detectMissingReturn({ returnValue: run.returnValue, records: run.records }) : [];
+}
+
 export async function runAndExport(input: ExportInput): Promise<ExportResult> {
   return withOcctPoisonRecovery(async () => {
 
@@ -381,9 +391,7 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
   const assemblyXml = await exportAssemblyFormat(input, format, run, r.diagnostics, featureCount);
   if (assemblyXml !== undefined) return assemblyXml;
 
-  // No `return` and no explicit feature_id: the last created shape is
-  // exported — say so (script.no-return) instead of a silent OK.
-  if (feature_id === undefined) r.diagnostics.push(...detectMissingReturn({ returnValue: run.returnValue, records: run.records }));
+  r.diagnostics.push(...exportMissingReturn(feature_id, run));
   const target = resolveExportTarget(feature_id, run.returnValue, run.records, r.diagnostics, featureCount);
   if ('result' in target) return target.result;
   const targetId = target.targetId;
