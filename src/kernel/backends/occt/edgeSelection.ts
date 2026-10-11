@@ -35,7 +35,7 @@ import {
 import { OcctBackend } from './occtBackend';
 import { resolveEdgeQuery, resolveFaceQuery, computeDihedralPublic } from './edgeQueries';
 import type { FaceQuery } from './edgeQueries';
-import { EDGE_QUERY_KEYS } from '../../../shared/intent/queryKeys';
+import { KernelError } from '../../../shared/intent/kernelError';
 import { resolveFaceRef } from '../../naming/resolveFaceRef';
 import { resolveEdgeRef } from '../../naming/resolveEdgeRef';
 import {
@@ -61,8 +61,6 @@ import {
 import type { QueryDslFaceRef } from './faceSelectionPhases';
 
 export { resolveFaceLabelToFace } from './faceSelectionPhases';
-
-const KNOWN_EDGE_QUERY_KEYS = new Set<string>(EDGE_QUERY_KEYS);
 
 // EdgeList holds replicad Edge wrappers, which EdgeFinder.inList() accepts.
 export type EdgeList = Edge[];
@@ -165,7 +163,12 @@ function pickEdgesForFaceQuery(
   base: OcctBackend,
   query: FaceQuery,
 ): PickEdgesResult {
-  const faces = resolveFaceQuery(base, query);
+  let faces: Face[];
+  try {
+    faces = resolveFaceQuery(base, query);
+  } catch (e) {
+    return selectorValidationError(record, e);
+  }
   if (faces.length === 0) {
     return {
       error: {
@@ -463,20 +466,30 @@ function resolveQueryEdgesRef(
   base: OcctBackend,
   ref: Extract<EdgeRef, { kind: 'query' }>,
 ): EdgeList | { error: CompilerDiagnostic } {
-  const unknownKeys = Object.keys(ref.query).filter(k => !KNOWN_EDGE_QUERY_KEYS.has(k));
-  if (unknownKeys.length > 0) {
+  try {
+    return resolveEdgeQuery(base, ref.query);
+  } catch (e) {
+    return selectorValidationError(record, e);
+  }
+}
+
+/** Map a selector-validation KernelError (thrown by `normalizeEdgeQuery` /
+ *  `normalizeFaceQuery` inside the resolvers) onto the lowerer's diagnostic
+ *  shape. Anything else is re-thrown untouched. */
+function selectorValidationError(record: FeatureRecord, e: unknown): { error: CompilerDiagnostic } {
+  if (e instanceof KernelError && e.code === 'feature.invalid-args') {
     return {
       error: {
         target: 'export-occt',
         code: 'feature.invalid-args',
         featureId: record.id,
         severity: 'error',
-        message: `EdgeQuery has unknown keys: ${unknownKeys.join(', ')}. Valid keys: ${Array.from(KNOWN_EDGE_QUERY_KEYS).join(', ')}.`,
-        hint: 'Drop unknown keys from the EdgeQuery; check the EdgeQuery type for the valid key set.',
+        message: e.message,
+        hint: e.hint ?? 'Fix the selector query; see the message for the offending key.',
       },
     };
   }
-  return resolveEdgeQuery(base, ref.query);
+  throw e;
 }
 
 function resolveSingleSegmentEdgeRef(

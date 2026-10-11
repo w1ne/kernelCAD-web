@@ -28,6 +28,7 @@ import type {
   EntityMarker,
 } from './query';
 import { __installEvaluatorDelegates } from './query';
+import { sameGeometryType } from '../../shared/intent/queryNormalize';
 import {
   parseTopoRef,
   formatTopoRef,
@@ -417,12 +418,9 @@ function matchesGeometryType(
   requested: GeometryType,
 ): boolean {
   if (!surfaceType) return false;
-  if (surfaceType === requested) return true;
-  // OCCT's 'CYLINDRE' vs the public-API 'CYLINDER'.
-  if (surfaceType === 'CYLINDRE' && requested === 'CYLINDER') return true;
-  // OCCT's 'BSPLINE' covers BSPLINE_SURFACE on faces.
-  if (surfaceType === 'BSPLINE' && requested === 'BSPLINE_SURFACE') return true;
-  return false;
+  // Alias-aware: OCCT 'CYLINDRE' ≡ public 'CYLINDER', 'BSPLINE' ≡
+  // 'BSPLINE_SURFACE', and so on (see shared/intent/queryNormalize.ts).
+  return sameGeometryType(surfaceType, requested);
 }
 
 function filterNth(input: ResolvedEntity[], index: number): ResolvedEntity[] {

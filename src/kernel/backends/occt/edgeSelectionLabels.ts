@@ -126,7 +126,7 @@ export function labelToEdgeQuery(
   _base: OcctBackend,
   label: string,
   records: readonly FeatureRecord[] | undefined,
-): { query: import('./edgeQueries').EdgeQuery } | { error: CompilerDiagnostic } {
+): { query: import('./edgeQueries').EdgeQuery & { within?: import('./edgeQueries').BoundingRegion } } | { error: CompilerDiagnostic } {
   const labeled = resolveLabeledSegment(record, label, records);
   if ('error' in labeled) return labeled;
 
