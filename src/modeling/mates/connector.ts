@@ -72,6 +72,28 @@ export interface MakeConnectorInput {
  *  before the connector record is built. */
 export type ConnectorOriginInput = ConnectorOrigin | string;
 
+const VEC3_ORIGIN_EXAMPLE =
+  "part.connector('out', { type: 'axis', origin: { kind: 'vec3', value: [30, 30, 60] }, axis: [0, 0, 1] })";
+
+/** A non-string origin is one of the two structured kinds. Anything else (no
+ *  origin, a plain `[x, y, z]`, an unknown kind) would be stored as it is and
+ *  read as a topology origin later, where it throws. */
+function assertStructuredOrigin(input: unknown): asserts input is ConnectorOrigin {
+  const kind = typeof input === 'object' && input !== null ? (input as { kind?: unknown }).kind : undefined;
+  if (kind === 'vec3' || kind === 'topology') return;
+  const isPoint = Array.isArray(input) && input.length === 3;
+  invalidArgs({
+    api: 'connector(name, opts)',
+    path: 'origin',
+    gotText: input === undefined || input === null ? 'no origin' : String(JSON.stringify(input)),
+    requires: "{ kind: 'vec3', value: [x, y, z] } or a @kc[<part>/face|edge|vertex/<name>] topology ref",
+    example: VEC3_ORIGIN_EXAMPLE,
+    hint: isPoint ?
+      `Write the point as { kind: 'vec3', value: [${(input as unknown[]).map(describeOriginComponent).join(', ')}] }.` :
+      "Give every connector an origin in the part's own frame, for example origin: { kind: 'vec3', value: [0, 0, 0] }.",
+  });
+}
+
 const describeOriginComponent = (c: unknown): string =>
   isParamRef(c) ? `param ${c.$param}` : typeof c === 'number' ? String(c) : String(JSON.stringify(c));
 
@@ -87,7 +109,7 @@ function assertNumericOrigin(value: unknown): void {
     path: 'origin.value',
     gotText: Array.isArray(value) ? `[${value.map(describeOriginComponent).join(', ')}]` : describeOriginComponent(value),
     requires: "three finite numbers [x, y, z] in the part's own frame",
-    example: "part.connector('out', { type: 'axis', origin: { kind: 'vec3', value: [30, 30, 60] }, axis: [0, 0, 1] })",
+    example: VEC3_ORIGIN_EXAMPLE,
     hint: 'A connector origin cannot hold a param. To move a connector with a param, build the part in its own frame and place it with a param in `at`: asm.part(name, shape, { at: [x, 0, 0] }).',
   });
 }
@@ -120,6 +142,7 @@ export function normalizeConnectorOriginInput(
   partName: string,
 ): ConnectorOrigin {
   if (typeof input !== 'string') {
+    assertStructuredOrigin(input);
     if (input.kind === 'vec3') assertNumericOrigin(input.value);
     return input;
   }

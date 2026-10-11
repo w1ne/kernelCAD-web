@@ -161,3 +161,41 @@ describe('connector origin must be numeric', () => {
   });
 });
 
+describe('connector origin must be given in a known form', () => {
+  const make = (opts: unknown) => {
+    const { api } = makeApi();
+    const part = api.assembly('rig').part('b', api.box(40, 40, 40));
+    let thrown: { code?: string; message?: string; hint?: string } = {};
+    try { part.connector('c', opts as never); } catch (e) { thrown = e as typeof thrown; }
+    return { part, thrown };
+  };
+
+  it.each([
+    ['omitted', { type: 'frame' }, 'no origin'],
+    ['null', { type: 'frame', origin: null }, 'no origin'],
+    ['a number', { type: 'frame', origin: 5 }, '5'],
+    ['an unknown kind', { type: 'frame', origin: { kind: 'point', value: [1, 2, 3] } }, '{"kind":"point","value":[1,2,3]}'],
+    ['an object with no kind', { type: 'axis', axis: [0, 0, 1], origin: { value: [1, 2, 3] } }, '{"value":[1,2,3]}'],
+  ])('rejects an origin that is %s', (_label, opts, got) => {
+    const { part, thrown } = make(opts);
+    expect(thrown.code).toBe('feature.invalid-args');
+    expect(thrown.message).toContain(`connector(name, opts): origin — got ${got}; requires { kind: 'vec3', value: [x, y, z] } or a @kc[<part>/face|edge|vertex/<name>] topology ref.`);
+    expect(thrown.message).toContain("Example: part.connector('out', { type: 'axis', origin: { kind: 'vec3', value: [30, 30, 60] }, axis: [0, 0, 1] })");
+    expect(part.mateConnectors).toHaveLength(0);
+  });
+
+  it('rejects a plain array and says how to write it', () => {
+    const { part, thrown } = make({ type: 'frame', origin: [1, 2, 3] });
+    expect(thrown.code).toBe('feature.invalid-args');
+    expect(thrown.message).toContain('connector(name, opts): origin — got [1,2,3]; requires');
+    expect(thrown.hint).toContain("Write the point as { kind: 'vec3', value: [1, 2, 3] }.");
+    expect(part.mateConnectors).toHaveLength(0);
+  });
+
+  it('accepts both structured kinds', () => {
+    const { part, thrown } = make({ type: 'frame', origin: { kind: 'topology', query: { kind: 'face-center', name: 'top' } } });
+    expect(thrown).toEqual({});
+    expect(part.mateConnectors[0].origin.kind).toBe('topology');
+  });
+});
+
