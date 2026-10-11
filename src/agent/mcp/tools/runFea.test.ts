@@ -35,3 +35,32 @@ describe('run_fea MCP tool (characterisation)', () => {
     });
   });
 });
+
+describe('run_fea partial inline fields', () => {
+  const declared = [
+    'const b = box(60, 12, 6);',
+    "b.feaStudy({ name: 'bend', material: 'pla', fixed: { atX: 0 }, loads: [{ faces: { atX: 60 }, force: [0, 0, -50] }], meshSize: 2 });",
+    'return b;',
+  ].join('\n');
+
+  it("merges a lone material onto the script's declared study instead of failing validation", async () => {
+    const r = await runFeaTool({ code: declared, material: 'steel', solver: 'in-process', heatmaps: false } as never);
+    expect(r.error).toBeUndefined();
+    expect(r.summary?.study).toBe('bend');
+    expect(r.summary?.material.name).toMatch(/steel/);
+    // fixed / loads / meshSize still come from the script.
+    expect(r.summary?.appliedForceN).toEqual([0, 0, -50]);
+  }, 120_000);
+
+  it('the declared study runs unchanged without inline fields', async () => {
+    const r = await runFeaTool({ code: declared, solver: 'in-process', heatmaps: false } as never);
+    expect(r.summary?.material.name).toBe('pla');
+  }, 120_000);
+
+  it('partial fields with no declared study say what is missing', async () => {
+    const r = await runFeaTool({ code: 'return box(10, 10, 10);', material: 'steel' } as never);
+    expect(r.ok).toBe(false);
+    expect(r.errorCode).toBe('feature.invalid-args');
+    expect(r.error).toMatch(/^run_fea inline study: .*fixed/);
+  }, 60_000);
+});
