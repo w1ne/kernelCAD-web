@@ -6,10 +6,13 @@
 // writes and where, and the Markdown it accepts.
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import { BlogSourceError, postFromSource, renderBlog, type BlogPost } from '../../../site/scripts/build-blog';
+import { join, resolve } from 'node:path';
+import { BlogSourceError, postFromSource, readPosts, renderBlog, type BlogPost } from '../../../site/scripts/build-blog';
+
+const REPO_ROOT = resolve(__dirname, '../../..');
+const REFERENCE = join(__dirname, 'fixtures/blog-reference');
 
 function guide(fields: Record<string, string>, body: string): string {
   const lines = Object.entries(fields).map(([key, value]) => `${key}: ${value}`);
@@ -175,5 +178,64 @@ describe('renderBlog', () => {
 
   it('skips a guide without front matter', () => {
     expect(postFromSource('docs/guide/plain.md', '# A plain guide\n\nText.\n')).toBeNull();
+  });
+});
+
+// The words a reader sees: no tags, no styles or scripts, entities decoded,
+// whitespace collapsed.
+function visibleText(html: string): string {
+  return html
+    .replace(/<(script|style)\b[\s\S]*?<\/\1>/g, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, '&')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// The dimensions post was a hand-written page before the build existed. The
+// fixtures are copies of that page and of the hand-written index, taken before
+// the post moved onto the build. They are the reference: the build must
+// reproduce them, not the other way round.
+describe('the dimensions post on the blog build', () => {
+  const posts = readPosts(REPO_ROOT);
+  const dimensions = posts.find((p) => p.slug === 'dimensions-measure-drawings');
+  const referencePost = readFileSync(join(REFERENCE, 'dimensions-measure-drawings.html'), 'utf8');
+  const referenceIndex = readFileSync(join(REFERENCE, 'index.html'), 'utf8');
+
+  function built(only: readonly BlogPost[], path: string): string {
+    const file = renderBlog(only, { repoRoot: REPO_ROOT }).files.find((f) => f.path === path);
+    if (!file) throw new Error(`no output at ${path}`);
+    return file.html;
+  }
+
+  it('is a published guide', () => {
+    expect(dimensions?.meta).toMatchObject({ kind: 'guide', status: 'published', date: '2026-10-06' });
+  });
+
+  it('renders the same text as the hand-written page', () => {
+    const html = built([dimensions!], 'site/blog/dimensions-measure-drawings/index.html');
+    expect(visibleText(html)).toBe(visibleText(referencePost));
+  });
+
+  it('differs from the hand-written page only in the image height the build reads from the PNG', () => {
+    // The page said height="1286"; bracket-drawing-pdf.png is 1819 x 1287.
+    const html = built([dimensions!], 'site/blog/dimensions-measure-drawings/index.html');
+    expect(html).toBe(referencePost.replace('width="1819" height="1286"', 'width="1819" height="1287"'));
+  });
+
+  it('builds the hand-written index from that one post', () => {
+    expect(built([dimensions!], 'site/blog/index.html')).toBe(referenceIndex);
+  });
+});
+
+describe('the committed blog pages', () => {
+  it('are what the build writes from docs/guide', () => {
+    // Run `npx tsx site/scripts/build-blog.ts` and commit site/blog/ when this fails.
+    for (const file of renderBlog(readPosts(REPO_ROOT), { repoRoot: REPO_ROOT }).files) {
+      expect(readFileSync(join(REPO_ROOT, file.path), 'utf8'), file.path).toBe(file.html);
+    }
   });
 });
