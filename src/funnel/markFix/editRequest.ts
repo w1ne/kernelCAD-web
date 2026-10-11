@@ -5,12 +5,21 @@
  * iframe) and the widget that hosts it. Pure functions only: the overlay and
  * the host channel build on these, and the tests pin them.
  *
- * embed -> widget  `kernelcad.edit-request`      the user's pins + note
- * widget -> embed  `kernelcad.widget-hello`      the widget can take edit requests
+ * embed -> widget  `kernelcad.edit-request`      the user's pins + note (legacy panel)
+ * embed -> widget  `kernelcad.marks`             the current marks, every time they change
+ * widget -> embed  `kernelcad.widget-hello`      the features the widget supports
  * widget -> embed  `kernelcad.edit-request-ack`  the request reached the chat (or not)
  *
  * The embed shows "Mark & fix" only after a hello for its own instance, so a
  * widget that predates this protocol never gets a button that goes nowhere.
+ *
+ * Features in the hello:
+ *  - `edit-request`   the widget can post a composed message into the chat.
+ *  - `marks-context`  the widget forwards `kernelcad.marks` into the host
+ *                     model's context (ui/update-model-context + ChatGPT
+ *                     widgetState). With it the embed only paints: no note
+ *                     box, no Send. The user types the change in the host
+ *                     chat's own composer and the next turn sees the marks.
  */
 
 export const EDIT_REQUEST_VERSION = 1;
@@ -171,11 +180,60 @@ export function buildEditRequest(args: {
   return message;
 }
 
+export type WidgetFeature = 'edit-request' | 'marks-context';
+
+/** The features a widget hello for this instance offers, or null when it is not one. */
+export function readWidgetHello(data: unknown, instanceId: string): WidgetFeature[] | null {
+  if (!isRecord(data) || data.source !== 'kernelcad-widget' || data.type !== 'kernelcad.widget-hello') return null;
+  if (data.instanceId !== instanceId || !Array.isArray(data.features)) return null;
+  const known: WidgetFeature[] = ['edit-request', 'marks-context'];
+  return known.filter((f) => (data.features as unknown[]).includes(f));
+}
+
 /** A widget hello for this instance that offers edit requests. */
 export function isWidgetHello(data: unknown, instanceId: string): boolean {
-  if (!isRecord(data) || data.source !== 'kernelcad-widget' || data.type !== 'kernelcad.widget-hello') return false;
-  if (data.instanceId !== instanceId) return false;
-  return Array.isArray(data.features) && data.features.includes('edit-request');
+  return readWidgetHello(data, instanceId)?.includes('edit-request') ?? false;
+}
+
+export const MARKS_VERSION = 1;
+
+/**
+ * The current marks, posted to the widget whenever they change (an empty
+ * list clears them). `seq` only grows, so the widget can drop a late copy.
+ */
+export interface MarksMessage {
+  source: 'kernelcad-embed';
+  type: 'kernelcad.marks';
+  v: typeof MARKS_VERSION;
+  seq: number;
+  slug: string;
+  revision: number | null;
+  instanceId: string;
+  picks: EditPick[];
+  screenshot?: string;
+}
+
+export function buildMarksMessage(args: {
+  seq: number;
+  slug: string;
+  revision: number | null | undefined;
+  instanceId: string;
+  picks: readonly EditPick[];
+  screenshot?: string | null;
+}): MarksMessage {
+  const base = buildEditRequest({ ...args, requestId: '', note: '' });
+  const message: MarksMessage = {
+    source: 'kernelcad-embed',
+    type: 'kernelcad.marks',
+    v: MARKS_VERSION,
+    seq: args.seq,
+    slug: base.slug,
+    revision: base.revision,
+    instanceId: base.instanceId,
+    picks: base.picks,
+  };
+  if (base.screenshot && base.picks.length > 0) message.screenshot = base.screenshot;
+  return message;
 }
 
 /** The widget's answer to one of this instance's edit requests, or null. */

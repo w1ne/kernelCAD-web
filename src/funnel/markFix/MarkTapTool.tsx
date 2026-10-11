@@ -78,13 +78,9 @@ const PIN_CLASS =
   'flex h-8 w-8 -translate-y-1 items-center justify-center rounded-full border-2 border-white bg-accent '
   + 'text-ui font-semibold text-on-accent shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-white';
 
-export function MarkTapTool(props: {
-  geometries: readonly GeometryResult[];
-  picks: readonly EditPick[];
-  onPick: (pick: EditPick) => void;
-  onRemove: (index: number) => void;
-}) {
-  const { geometries, picks, onPick, onRemove } = props;
+/** Turns canvas taps into picks; mounted only while marking is on. */
+function TapToPick(props: { geometries: readonly GeometryResult[]; onPick: (pick: EditPick) => void }) {
+  const { geometries, onPick } = props;
   const el = useThree((s) => s.gl.domElement);
   const camera = useThree((s) => s.camera);
   const scene = useThree((s) => s.scene);
@@ -98,11 +94,29 @@ export function MarkTapTool(props: {
     const hit = firstFaceHit(filterClippedIntersections(ray.intersectObjects(scene.children, true)));
     if (hit) onPick(pickFromHit(hit, geometries, ray.ray.direction));
   });
+  return null;
+}
+
+/**
+ * `interactive` (default true): taps drop pins and a pin tap removes it.
+ * Off: the pins stay drawn where they are, inert, so marks the host model
+ * still sees stay visible after the user leaves mark mode.
+ */
+export function MarkTapTool(props: {
+  geometries: readonly GeometryResult[];
+  picks: readonly EditPick[];
+  onPick: (pick: EditPick) => void;
+  onRemove: (index: number) => void;
+  interactive?: boolean;
+}) {
+  const { geometries, picks, onPick, onRemove, interactive = true } = props;
 
   return (
     <group name="mark-fix-pins">
+      {interactive ? <TapToPick geometries={geometries} onPick={onPick} /> : null}
       {picks.map((pick, i) => (
         <Html key={`${i}:${pick.point.join(',')}`} position={pick.point} center zIndexRange={[26, 21]}>
+          {interactive ? (
           <button
             type="button"
             data-testid="mark-fix-pin"
@@ -118,6 +132,9 @@ export function MarkTapTool(props: {
           >
             {i + 1}
           </button>
+          ) : (
+            <span data-testid="mark-fix-pin" aria-hidden="true" className={`${PIN_CLASS} pointer-events-none`}>{i + 1}</span>
+          )}
         </Html>
       ))}
     </group>

@@ -1,7 +1,17 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-/** The Mark & fix button and panel drawn over the embed's canvas. */
-import { MousePointerClick, X } from 'lucide-react';
+/**
+ * The Mark & fix controls drawn over the embed's canvas.
+ *
+ * `MarkPaintBar` is the host-chat mode (the widget forwards marks into the
+ * host model's context): one compact row in the viewer's top toolbar, never
+ * over the middle of the model, and no text box — the user says what to
+ * change in the host chat's own composer.
+ *
+ * `MarkFixLauncher` + `MarkFixPanel` are the legacy flow for widgets that can
+ * only take a composed edit request: a note box and Send at the bottom.
+ */
+import { Check, MousePointerClick, Trash2, Undo2, X } from 'lucide-react';
 import { useId } from 'react';
 import { Button } from '../../ui';
 import { MAX_NOTE_CHARS, MAX_PICKS, pickLabel, sendBlocker, type EditPick } from './editRequest';
@@ -36,6 +46,121 @@ export function MarkFixLauncher(props: { disabled: boolean; sent: boolean; onOpe
           Sent to chat
         </p>
       ) : null}
+    </div>
+  );
+}
+
+const BAR_BUTTON =
+  'flex h-9 min-w-9 items-center justify-center gap-1.5 rounded-md px-2 text-ui font-medium transition '
+  + 'focus:outline-none focus:ring-2 focus:ring-accent disabled:cursor-not-allowed disabled:opacity-40';
+
+/** One line under the bar; inert so taps go through to the model. */
+function paintHint(count: number): string {
+  if (count === 0) return 'Tap the model to mark it, then type the change in the chat.';
+  if (count >= MAX_PICKS) return `${MAX_PICKS} marks is the most. Now type the change in the chat.`;
+  return 'Marked. Now type the change in the chat.';
+}
+
+/**
+ * Host-chat mark mode. Off: a "Mark" button (with the mark count and a clear
+ * button while marks are kept). On: Done, the count, Undo and Clear in the
+ * same top row, plus a one-line inert hint under it.
+ */
+export function MarkPaintBar(props: {
+  active: boolean;
+  count: number;
+  disabled: boolean;
+  onStart: () => void;
+  onDone: () => void;
+  onUndo: () => void;
+  onClear: () => void;
+}) {
+  const { active, count, disabled } = props;
+  const clear = (
+    <button
+      type="button"
+      data-testid="mark-fix-clear"
+      aria-label="Clear all marks"
+      title="Clear all marks"
+      disabled={count === 0}
+      onClick={props.onClear}
+      className={`${BAR_BUTTON} text-fg-2 hover:bg-surface-2 hover:text-fg`}
+    >
+      <Trash2 size={16} aria-hidden="true" />
+    </button>
+  );
+  if (!active) {
+    return (
+      <div
+        data-testid="mark-paint-bar"
+        data-active="false"
+        className="absolute left-[100px] top-3 z-20 flex items-center gap-0.5 rounded-md border border-border bg-surface-1 p-0 text-fg shadow-lg backdrop-blur"
+      >
+        <button
+          type="button"
+          data-testid="mark-fix-toggle"
+          aria-label={count > 0 ? `Mark: ${count} marked, tap to add or change marks` : 'Mark: tap the model to show what to change'}
+          title={disabled ? 'Available once the model is shown' : 'Mark what to change, then say it in the chat'}
+          disabled={disabled}
+          onClick={props.onStart}
+          className={`${BAR_BUTTON} px-2.5 text-fg hover:bg-surface-2 max-[359px]:[&>span.label]:sr-only`}
+        >
+          <MousePointerClick size={18} aria-hidden="true" />
+          <span className="label">Mark</span>
+          {count > 0 ? (
+            <span data-testid="mark-fix-count" className="flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-2xs font-semibold text-on-accent">{count}</span>
+          ) : null}
+        </button>
+        {count > 0 ? clear : null}
+      </div>
+    );
+  }
+  return (
+    <div
+      className="pointer-events-none absolute left-[100px] right-3 top-3 z-20 flex flex-col items-start gap-1.5"
+      onKeyDown={(e) => { if (e.key === 'Escape') props.onDone(); }}
+    >
+      <div
+        data-testid="mark-paint-bar"
+        data-active="true"
+        role="toolbar"
+        aria-label="Marking"
+        className="pointer-events-auto flex items-center gap-0.5 rounded-md border border-accent bg-surface-1 text-fg shadow-lg backdrop-blur"
+      >
+        <button
+          type="button"
+          data-testid="mark-fix-done"
+          aria-label={count > 0 ? `Done marking (${count} marked)` : 'Done marking'}
+          title="Stop marking. Marks stay for the chat."
+          onClick={props.onDone}
+          className={`${BAR_BUTTON} bg-accent px-2.5 text-on-accent hover:opacity-90 max-[359px]:[&>span.label]:sr-only`}
+        >
+          <Check size={18} aria-hidden="true" />
+          <span className="label">Done</span>
+        </button>
+        <span data-testid="mark-fix-count" aria-hidden="true" className="min-w-6 px-1 text-center text-ui font-semibold tabular-nums text-fg">
+          {count}
+        </span>
+        <button
+          type="button"
+          data-testid="mark-fix-undo"
+          aria-label="Undo last mark"
+          title="Undo last mark"
+          disabled={count === 0}
+          onClick={props.onUndo}
+          className={`${BAR_BUTTON} text-fg-2 hover:bg-surface-2 hover:text-fg`}
+        >
+          <Undo2 size={16} aria-hidden="true" />
+        </button>
+        {clear}
+      </div>
+      <p
+        data-testid="mark-paint-hint"
+        aria-live="polite"
+        className="rounded bg-surface-1/80 px-1.5 py-0.5 text-2xs text-fg-2 shadow"
+      >
+        {paintHint(count)}
+      </p>
     </div>
   );
 }

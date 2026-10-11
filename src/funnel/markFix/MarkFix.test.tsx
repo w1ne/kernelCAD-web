@@ -9,15 +9,20 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ReactNode } from 'react';
-import type { EditPick, EditRequestMessage } from './editRequest';
+import type { EditPick, EditRequestMessage, MarksMessage } from './editRequest';
 
 vi.mock('./MarkTapTool', () => ({
-  MarkTapTool: (props: { onPick: (p: EditPick) => void }) => (
-    <button
-      type="button"
-      data-testid="fake-tap"
-      onClick={() => props.onPick({ featureId: 'roof', faceId: 3, surface: 'plane', point: [1, 2, 3], normal: [0, 0, 1] })}
-    />
+  MarkTapTool: (props: { onPick: (p: EditPick) => void; picks: readonly EditPick[]; interactive?: boolean }) => (
+    <>
+      {props.interactive === false ? null : (
+        <button
+          type="button"
+          data-testid="fake-tap"
+          onClick={() => props.onPick({ featureId: 'roof', faceId: 3, surface: 'plane', point: [1, 2, 3], normal: [0, 0, 1] })}
+        />
+      )}
+      {props.picks.map((_, i) => <span key={i} data-testid="fake-pin" data-interactive={String(props.interactive !== false)} />)}
+    </>
   ),
 }));
 
@@ -131,5 +136,122 @@ describe('Mark & fix overlay', () => {
     expect(screen.queryByTestId('mark-fix-panel')).toBeNull();
     fireEvent.click(screen.getByTestId('mark-fix-toggle'));
     expect(screen.queryAllByTestId('mark-fix-chip')).toHaveLength(0);
+  });
+});
+
+const paintHello = { ...hello, features: ['edit-request', 'marks-context'] };
+
+function marksPosts(): MarksMessage[] {
+  return parent.postMessage.mock.calls
+    .map((call) => call[0] as { type?: string })
+    .filter((m): m is MarksMessage => m.type === 'kernelcad.marks');
+}
+
+describe('Mark in a host chat (widget forwards marks-context)', () => {
+  it('marking is only painting: no note box, no Send, no panel', () => {
+    render(<Harness target={TARGET} />);
+    fromParent(paintHello);
+    fireEvent.click(screen.getByTestId('mark-fix-toggle'));
+    fireEvent.click(screen.getByTestId('fake-tap'));
+    expect(screen.queryByTestId('mark-fix-panel')).toBeNull();
+    expect(screen.queryByTestId('mark-fix-note')).toBeNull();
+    expect(screen.queryByTestId('mark-fix-send')).toBeNull();
+    expect(screen.queryByRole('textbox')).toBeNull();
+    expect(screen.queryByText(/send to chat/i)).toBeNull();
+    expect(screen.getByTestId('mark-paint-bar').dataset.active).toBe('true');
+    expect(screen.getByTestId('mark-paint-hint').textContent).toMatch(/type the change in the chat/i);
+  });
+
+  it('posts nothing until the first mark, then the marks after each change', async () => {
+    render(<Harness target={TARGET} />);
+    fromParent(paintHello);
+    fireEvent.click(screen.getByTestId('mark-fix-toggle'));
+    await new Promise((r) => setTimeout(r, 300));
+    expect(marksPosts()).toHaveLength(0);
+
+    fireEvent.click(screen.getByTestId('fake-tap'));
+    await vi.waitFor(() => expect(marksPosts()).toHaveLength(1));
+    const [first] = marksPosts();
+    expect(parent.postMessage.mock.calls.find((c) => c[0] === first)?.[1]).toBe('*');
+    expect(first).toMatchObject({
+      source: 'kernelcad-embed',
+      type: 'kernelcad.marks',
+      v: 1,
+      seq: 1,
+      slug: 'sedan',
+      revision: 4,
+      instanceId: 'inst-1',
+      picks: [{ featureId: 'roof', faceId: 3, surface: 'plane', point: [1, 2, 3], normal: [0, 0, 1] }],
+    });
+    expect(first).not.toHaveProperty('note');
+
+    fireEvent.click(screen.getByTestId('fake-tap'));
+    await vi.waitFor(() => expect(marksPosts()).toHaveLength(2));
+    expect(marksPosts()[1]!.picks).toHaveLength(2);
+    expect(marksPosts()[1]!.seq).toBe(2);
+
+    fireEvent.click(screen.getByTestId('mark-fix-undo'));
+    await vi.waitFor(() => expect(marksPosts()).toHaveLength(3));
+    expect(marksPosts()[2]!.picks).toHaveLength(1);
+
+    fireEvent.click(screen.getByTestId('mark-fix-clear'));
+    await vi.waitFor(() => expect(marksPosts()).toHaveLength(4));
+    expect(marksPosts()[3]!.picks).toEqual([]);
+    expect(marksPosts()[3]).not.toHaveProperty('screenshot');
+    // No edit request in this mode: the user types in the host composer.
+    expect(parent.postMessage.mock.calls.some((c) => (c[0] as { type?: string }).type === 'kernelcad.edit-request')).toBe(false);
+  });
+
+  it('Done leaves mark mode but keeps the marks drawn and in context', async () => {
+    render(<Harness target={TARGET} />);
+    fromParent(paintHello);
+    fireEvent.click(screen.getByTestId('mark-fix-toggle'));
+    fireEvent.click(screen.getByTestId('fake-tap'));
+    await vi.waitFor(() => expect(marksPosts()).toHaveLength(1));
+    fireEvent.click(screen.getByTestId('mark-fix-done'));
+
+    expect(screen.getByTestId('mark-paint-bar').dataset.active).toBe('false');
+    expect(screen.queryByTestId('fake-tap')).toBeNull();
+    const pins = screen.getAllByTestId('fake-pin');
+    expect(pins).toHaveLength(1);
+    expect(pins[0]!.dataset.interactive).toBe('false');
+    expect(screen.getByTestId('mark-fix-count').textContent).toBe('1');
+    await new Promise((r) => setTimeout(r, 300));
+    expect(marksPosts()).toHaveLength(1);
+
+    // Clear from the idle bar drops them for the host too.
+    fireEvent.click(screen.getByTestId('mark-fix-clear'));
+    expect(screen.queryAllByTestId('fake-pin')).toHaveLength(0);
+    await vi.waitFor(() => expect(marksPosts()).toHaveLength(2));
+    expect(marksPosts()[1]!.picks).toEqual([]);
+  });
+
+  it('Escape leaves mark mode', () => {
+    render(<Harness target={TARGET} />);
+    fromParent(paintHello);
+    fireEvent.click(screen.getByTestId('mark-fix-toggle'));
+    act(() => { window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' })); });
+    expect(screen.getByTestId('mark-paint-bar').dataset.active).toBe('false');
+  });
+
+  it('a new revision starts with no marks and tells the widget', async () => {
+    const { rerender } = render(<Harness target={TARGET} />);
+    fromParent(paintHello);
+    fireEvent.click(screen.getByTestId('mark-fix-toggle'));
+    fireEvent.click(screen.getByTestId('fake-tap'));
+    await vi.waitFor(() => expect(marksPosts()).toHaveLength(1));
+    rerender(<Harness target={{ ...TARGET, revision: 5 }} />);
+    expect(screen.queryAllByTestId('fake-pin')).toHaveLength(0);
+    expect(screen.getByTestId('mark-paint-bar').dataset.active).toBe('false');
+    await vi.waitFor(() => expect(marksPosts()).toHaveLength(2));
+    expect(marksPosts()[1]).toMatchObject({ revision: 5, picks: [] });
+  });
+
+  it('an older widget (edit-request only) keeps the legacy note panel', () => {
+    render(<Harness target={TARGET} />);
+    fromParent(hello);
+    fireEvent.click(screen.getByTestId('mark-fix-toggle'));
+    expect(screen.getByTestId('mark-fix-panel')).toBeTruthy();
+    expect(screen.queryByTestId('mark-paint-bar')).toBeNull();
   });
 });

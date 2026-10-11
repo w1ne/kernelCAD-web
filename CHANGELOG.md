@@ -39,6 +39,7 @@
 
 ## Changed
 
+- Mark in host chats (ChatGPT apps, Claude / MCP Apps) is paint only. When the hosting widget announces `marks-context`, tapping Mark just drops numbered marks on the model: no note box, no "Send to chat", no panel over the model. A compact bar in the top toolbar row has Done, the mark count, Undo and Clear; marks stay drawn after Done. Each change is posted to the widget as `kernelcad.marks` (picks + small screenshot), and the widget puts it into the host model's context, so the user types the change in the host chat's own composer. A new revision clears the marks. Widgets that only offer `edit-request` keep the old note panel.
 - FEA automatic mesh refinement is a single re-solve at 0.75x the element size (was up to 2 passes with a step-size formula, a wall-time budget and a peak-convergence trust rule). `KERNELCAD_FEA_REFINE_TIME_MS` and `trust.basis` are gone; `KERNELCAD_FEA_MAX_ELEMENTS` still caps the mesh.
 
 ## Fixed

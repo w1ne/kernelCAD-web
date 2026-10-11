@@ -6,21 +6,44 @@
  * waiting for the widget's ack.
  */
 import { useEffect, useState } from 'react';
-import { isWidgetHello, readWidgetAck, type EditRequestMessage, type WidgetAck } from './editRequest';
+import { readWidgetAck, readWidgetHello, type EditRequestMessage, type MarksMessage, type WidgetAck } from './editRequest';
 
-/** True once the parent widget announced edit-request support for this instance. */
-export function useWidgetAcceptsEdits(instanceId: string | undefined): boolean {
-  const [accepts, setAccepts] = useState(false);
+export interface WidgetSupport {
+  /** The widget can post a composed edit message into the chat (legacy panel). */
+  editRequest: boolean;
+  /** The widget forwards the live marks into the host model's context: paint only. */
+  marksContext: boolean;
+}
+
+const NONE: WidgetSupport = { editRequest: false, marksContext: false };
+
+/** What the parent widget announced for this instance (nothing until its hello). */
+export function useWidgetSupport(instanceId: string | undefined): WidgetSupport {
+  const [support, setSupport] = useState<WidgetSupport>(NONE);
   useEffect(() => {
     if (!instanceId || typeof window === 'undefined' || window.parent === window) return undefined;
     const onMessage = (event: MessageEvent) => {
       if (event.source !== window.parent) return;
-      if (isWidgetHello(event.data, instanceId)) setAccepts(true);
+      const features = readWidgetHello(event.data, instanceId);
+      if (!features) return;
+      const next = { editRequest: features.includes('edit-request'), marksContext: features.includes('marks-context') };
+      setSupport((prev) => (prev.editRequest === next.editRequest && prev.marksContext === next.marksContext ? prev : next));
     };
     window.addEventListener('message', onMessage);
     return () => window.removeEventListener('message', onMessage);
   }, [instanceId]);
-  return accepts;
+  return support;
+}
+
+/** True once the parent widget announced edit-request support for this instance. */
+export function useWidgetAcceptsEdits(instanceId: string | undefined): boolean {
+  return useWidgetSupport(instanceId).editRequest;
+}
+
+/** Fire-and-forget: the widget turns this into host model context. */
+export function postMarks(message: MarksMessage): void {
+  if (typeof window === 'undefined' || window.parent === window) return;
+  window.parent.postMessage(message, '*');
 }
 
 /** How long to wait for the widget to confirm the chat took the message. */

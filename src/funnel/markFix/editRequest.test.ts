@@ -2,6 +2,8 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it } from 'vitest';
 import {
+  buildMarksMessage,
+  readWidgetHello,
   addPick,
   buildEditRequest,
   cleanText,
@@ -164,5 +166,38 @@ describe('cleanText', () => {
   it('flattens whitespace and control characters', () => {
     expect(cleanText('  a\tb\r\n\u0007c  ', 10)).toBe('a b c');
     expect(cleanText('abcdef', 3)).toBe('abc');
+  });
+});
+
+describe('readWidgetHello', () => {
+  const base = { source: 'kernelcad-widget', type: 'kernelcad.widget-hello', instanceId: 'i1' };
+  it('lists the known features for this instance', () => {
+    expect(readWidgetHello({ ...base, features: ['edit-request', 'marks-context', 'future'] }, 'i1')).toEqual(['edit-request', 'marks-context']);
+    expect(readWidgetHello({ ...base, features: ['edit-request'] }, 'i1')).toEqual(['edit-request']);
+  });
+  it('is null for another instance or a non-hello', () => {
+    expect(readWidgetHello({ ...base, features: ['marks-context'] }, 'other')).toBeNull();
+    expect(readWidgetHello({ ...base, type: 'x', features: [] }, 'i1')).toBeNull();
+    expect(readWidgetHello({ ...base }, 'i1')).toBeNull();
+  });
+});
+
+describe('buildMarksMessage', () => {
+  const pick = { featureId: 'roof', surface: 'plane' as const, point: [1.234, 2, 3] as [number, number, number], normal: [0, 0, 2] as [number, number, number] };
+  it('normalizes picks and carries no note', () => {
+    const m = buildMarksMessage({ seq: 3, slug: 'sedan', revision: 2, instanceId: 'i1', picks: [pick] });
+    expect(m).toEqual({
+      source: 'kernelcad-embed', type: 'kernelcad.marks', v: 1, seq: 3, slug: 'sedan', revision: 2, instanceId: 'i1',
+      picks: [{ featureId: 'roof', surface: 'plane', point: [1.23, 2, 3], normal: [0, 0, 1] }],
+    });
+  });
+  it('clamps to MAX_PICKS and drops a screenshot on an empty list', () => {
+    const many = Array.from({ length: 9 }, () => pick);
+    expect(buildMarksMessage({ seq: 1, slug: 's', revision: null, instanceId: 'i', picks: many }).picks).toHaveLength(5);
+    const shot = 'data:image/jpeg;base64,QUJD';
+    expect(buildMarksMessage({ seq: 1, slug: 's', revision: 0, instanceId: 'i', picks: [], screenshot: shot })).not.toHaveProperty('screenshot');
+    const withShot = buildMarksMessage({ seq: 1, slug: 's', revision: 0, instanceId: 'i', picks: [pick], screenshot: shot });
+    expect(withShot.screenshot).toBe(shot);
+    expect(withShot.revision).toBeNull();
   });
 });
