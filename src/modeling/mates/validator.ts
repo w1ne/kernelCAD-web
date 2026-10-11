@@ -151,6 +151,15 @@ export interface ValidatorResult {
 
 export interface ValidateAssemblyInput {
   readonly records: readonly FeatureRecord[];
+  /**
+   * Whether the assembly declares ANY connectivity (a joint or a mate). When
+   * it declares none, its parts are independent bodies (a base + lid print
+   * layout, a kit of parts) — valid as-is, the same policy as
+   * mechanism.orphan-part — so the floating / orphan checks are skipped.
+   * Defaults to "the records carry a joint or mate edge"; the mate-aware
+   * validator passes the assembly's own mate list, which records may lack.
+   */
+  readonly connectivityDeclared?: boolean;
   /** Optional: results from `checkInterference()`. Folded into the
    *  diagnostic stream as `assembly.interference.overlap` items. */
   readonly interferencePairs?: readonly InterferencePair[];
@@ -204,12 +213,16 @@ export function validateAssembly(input: ValidateAssemblyInput): ValidatorResult 
   // Build an undirected adjacency map: part name -> set of neighbour names.
   const adj = buildPartAdjacency(parts, joints, mateEdges);
 
-  // Check 1 — floating parts (zero joints).
-  diagnostics.push(...collectFloatingDiagnostics(parts, adj));
-
-  // Check 2 — orphan from main component. Skip when there are <2 parts
-  // (single-part assemblies are trivially connected).
-  diagnostics.push(...collectOrphanDiagnostics(parts, adj));
+  // Checks 1–2 only apply once the author declared connectivity: an
+  // assembly with zero joints and zero mates is a set of independent bodies.
+  const connectivityDeclared = input.connectivityDeclared ?? (joints.length > 0 || mateEdges.length > 0);
+  if (connectivityDeclared) {
+    // Check 1 — floating parts (zero joints).
+    diagnostics.push(...collectFloatingDiagnostics(parts, adj));
+    // Check 2 — orphan from main component. Skip when there are <2 parts
+    // (single-part assemblies are trivially connected).
+    diagnostics.push(...collectOrphanDiagnostics(parts, adj));
+  }
 
   // Check 3 — interference (promoted from checkInterference). Errors,
   // not warnings, because solid bodies sharing volume is mechanically
@@ -557,6 +570,7 @@ export async function validateAssemblyWithMates(
   });
   const base = validateAssembly({
     records,
+    ...(arm.__mates().length > 0 || arm.__joints().length > 0 ? { connectivityDeclared: true } : {}),
     ...(interferencePairs !== undefined ? { interferencePairs } : {}),
     ...(ignoreInterference !== undefined ? { ignore: ignoreInterference } : {}),
   });

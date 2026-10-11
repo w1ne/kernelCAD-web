@@ -46,28 +46,33 @@ describe('validate_assembly MCP tool', () => {
     }
   });
 
-  it('returns status=warning with a floating-part diagnostic when a part has no joint or mate', async () => {
+  it('returns status=warning with a floating-part diagnostic when a part of a mated assembly has no joint or mate', async () => {
     const ev = await evaluateScriptTool({
-      // Intentionally floating/unmated parts — the point is to exercise the
-      // validate_assembly floating-part warning. The default T3 mechanism
-      // gate would (correctly) flag this as broken (orphan-part); opt out so
-      // the setup evaluates and the validate_assembly assertion stays focused.
+      // A mated pair plus one intentionally floating part — the point is to
+      // exercise the validate_assembly floating-part warning. The default T3
+      // mechanism gate would (correctly) flag this as broken (orphan-part);
+      // opt out so the setup evaluates and the assertion stays focused.
       skipMechanismCheck: true,
       code: `
         const arm = assembly('rig');
-        arm.part('a', box(1, 1, 1));
-        arm.part('b', box(1, 1, 1), { at: [5, 0, 0] });
+        arm.part('a', box(1, 1, 1)).connector('c', { type: 'frame', origin: { kind: 'vec3', value: [1, 0, 0] } });
+        arm.part('b', box(1, 1, 1)).connector('c', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+        arm.part('loose', box(1, 1, 1), { at: [5, 0, 0] });
+        arm.mate('ab', 'a.c', 'b.c', 'fastened');
         return arm.model();
       `,
     });
     expect(ev.ok).toBe(true);
 
     const r = await validateAssemblyTool({});
-    expect(r.ok).toBe(true);
-    if (r.ok) {
+    // A loose part in a MATED assembly blocks (ok: false) with a warning.
+    expect(r.ok).toBe(false);
+    expect('status' in r).toBe(true);
+    if ('status' in r) {
       expect(r.status).toBe('warning');
-      expect(r.partCount).toBe(2);
-      expect(r.diagnostics.some((d) => d.code === 'assembly.part.floating')).toBe(true);
+      expect(r.partCount).toBe(3);
+      const floating = r.diagnostics.filter((d) => d.code === 'assembly.part.floating');
+      expect(floating.map((d) => d.partName)).toEqual(['loose']);
       // Hint vocabulary is the load-bearing recovery surface for agents.
       for (const d of r.diagnostics) {
         expect(d.hint.length).toBeGreaterThan(0);
