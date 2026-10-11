@@ -101,7 +101,7 @@ export function DraftingReview({ code, settings, onChange, onClose }: DraftingRe
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-2 sm:p-5" data-theme="dark">
+    <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/60 p-2 sm:p-5" data-theme="dark">
       <div ref={panel} role="dialog" aria-modal="true" aria-labelledby="drafting-review-title" tabIndex={-1}
         className="flex max-h-full w-full max-w-6xl flex-col overflow-hidden rounded-panel border border-border bg-surface-1 text-fg shadow-2xl">
         <header className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3">
