@@ -108,7 +108,8 @@ export function isValidShape(oc: ReturnType<typeof getOC>, shape: unknown): bool
 /**
  * Volume bounds a correct boolean result must respect. A fuzzy/glue result
  * outside them is the wrong answer even if BRepCheck accepts it (glue on a
- * tangent cutter happily returns the uncut body).
+ * tangent cutter happily returns the uncut body; a coarse fuzzy cut can
+ * return nothing at all). Cut: body − Σtools ≤ result ≤ body.
  */
 export function plausibleBooleanVolume(
   op: 'cut' | 'fuse' | 'intersect',
@@ -123,7 +124,13 @@ export function plausibleBooleanVolume(
     const sum = inputs.reduce((a, b) => a + b, 0);
     return result <= sum + tol && result >= largest - tol;
   }
-  if (op === 'cut') return result <= inputs[0] + tol;
+  if (op === 'cut') {
+    // A cut removes at most the tools' volume: an empty (or near-empty)
+    // result from cutting a small tool out of a big body is the fuzzy
+    // boolean eating the body, not a cut.
+    const tools = inputs.slice(1).reduce((a, b) => a + b, 0);
+    return result <= inputs[0] + tol && result >= inputs[0] - tools - tol;
+  }
   return result <= Math.min(...inputs) + tol;
 }
 

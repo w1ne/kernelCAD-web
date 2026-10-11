@@ -105,6 +105,14 @@ describe('boolean recovery (fuzzy retry)', () => {
     expect(plausibleBooleanVolume('fuse', 7000, [8000, 2356])).toBe(false);
     expect(plausibleBooleanVolume('intersect', 3000, [8000, 2356])).toBe(false);
     expect(scaledFuzzyValue(1e9)).toBe(1e-2);
+  });
+
+  it('a fuzzy cut that returns an empty (or over-cut) result is rejected', () => {
+    expect(plausibleBooleanVolume('cut', 0, [8000, 2356])).toBe(false);
+    expect(plausibleBooleanVolume('cut', 5000, [8000, 2356])).toBe(false); // removed more than the tool holds
+    expect(plausibleBooleanVolume('cut', 8000 - 2356, [8000, 2356])).toBe(true);
+    expect(plausibleBooleanVolume('cut', 8000 - 2356 * 1.5, [8000, 2356, 2356])).toBe(true); // two tools
+    expect(plausibleBooleanVolume('cut', 0, [1000, 5000])).toBe(true); // the tool swallows the body
     expect(scaledFuzzyValue(0.001)).toBe(1e-6);
   });
 
