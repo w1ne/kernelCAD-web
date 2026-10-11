@@ -23,6 +23,7 @@ import { Shape } from '../capture/proxy';
 import { findTopLevelImport, normalizeUserScript } from '../../shared/runtime/normalizeUserScript';
 import { NO_WRAP_OFFSET, type IsolationOptions, type IsolationResult, type ScriptWrapOffset } from './isolationTypes';
 import { ScriptLocationResolver } from './scriptLocationCapture';
+import { shapeMethodHint } from './shapeMethodHintExamples';
 
 /** Pluggable script runner. `runIsolated` (node `vm`) backs the node facade;
  *  `runInRealm` (new Function) backs the browser facade. */
@@ -174,6 +175,6 @@ function withShapeMethodHint(e: unknown): unknown {
     'cli.script-exception',
     `ReferenceError: ${method} is not defined — ${method} is a Shape method, not a global function.`,
     undefined,
-    `Call it on the body: \`body.${method}(...)\` (e.g. \`plate = plate.${method}({ byNormal: 'Z' }, { ... })\`), and keep the returned shape.`,
+    shapeMethodHint(method),
   );
 }
