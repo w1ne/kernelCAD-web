@@ -133,6 +133,19 @@ function companionFilesField(
   return format === 'dxf' ? { part_files: files } : { mesh_files: files };
 }
 
+/** Optional format receipts; slicer predictions require a successful G-code export. */
+function exportMetadataFields(
+  format: ExportFormat,
+  result: ExportResult,
+  hasErrors: boolean,
+): Pick<ExportModelOutput, 'drawing_report' | 'sheet' | 'gcode_stats'> {
+  return {
+    ...(result.drawingReport === undefined ? {} : { drawing_report: result.drawingReport }),
+    ...(result.sheet === undefined ? {} : { sheet: { thickness_mm: result.sheet.thicknessMm, bend_count: result.sheet.bendCount } }),
+    ...(format === 'gcode' && !hasErrors && result.gcodeStats !== undefined && Object.keys(result.gcodeStats).length > 0 ? { gcode_stats: result.gcodeStats } : {}),
+  };
+}
+
 /**
  * MCP `export_model` tool — runs a kernelCAD script and writes the geometry
  * to `output_path` in the requested `format`. The single, unified write-side
@@ -223,9 +236,7 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
     feature_count: result.featureCount,
     format,
     ...companionFilesField(format, meshFiles),
-    ...(result.drawingReport === undefined ? {} : { drawing_report: result.drawingReport }),
-    ...(result.sheet === undefined ? {} : { sheet: { thickness_mm: result.sheet.thicknessMm, bend_count: result.sheet.bendCount } }),
-    ...(format === 'gcode' && errorDiagnostics.length === 0 && result.gcodeStats !== undefined && Object.keys(result.gcodeStats).length > 0 ? { gcode_stats: result.gcodeStats } : {}),
+    ...exportMetadataFields(format, result, errorDiagnostics.length > 0),
     ...infill,
     diagnostics: withNextActions(diagnostics),
   };

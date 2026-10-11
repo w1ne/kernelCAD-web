@@ -536,6 +536,17 @@ async function publishExportOutputs(
   return { ok: true, meshFiles, tableFiles };
 }
 
+/** Only a successful G-code export carries nonempty slicer predictions. */
+function gcodeStatsField(
+  format: ExportFormat,
+  fatal: boolean,
+  result: ExportResult,
+): Pick<ExportCliResult, 'gcodeStats'> {
+  return format === 'gcode' && !fatal && result.gcodeStats !== undefined && Object.keys(result.gcodeStats).length > 0
+    ? { gcodeStats: result.gcodeStats }
+    : {};
+}
+
 export async function exportScript(input: ExportInput): Promise<ExportCliResult> {
   const targets = await prepareExportTargets(input);
   if (!targets.ok) return targets.result;
@@ -590,7 +601,7 @@ export async function exportScript(input: ExportInput): Promise<ExportCliResult>
     ...(meshFiles.length > 0 ? { meshFiles } : {}),
     ...(tableFiles.length > 0 ? { tableFiles } : {}),
     ...(result.drawingReport !== undefined ? { drawingReport: result.drawingReport } : {}),
-    ...(input.format === 'gcode' && !fatal && result.gcodeStats !== undefined && Object.keys(result.gcodeStats).length > 0 ? { gcodeStats: result.gcodeStats } : {}),
+    ...gcodeStatsField(input.format, fatal, result),
   };
 }
 

@@ -8,6 +8,7 @@ import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { inspectCylindricalHoles, collectFullCylinders, type CylindricalHole } from '../../kernel/backends/occt/holeDetection';
 import { brepExtremaDistance } from '../../kernel/backends/occt/brepDistance';
 import { validateHashBoundConnectorManifest } from '../../shared/parts/connectorManifestSchema';
+import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import { resolveParams } from '../../shared/runtime/resolveParams';
 import { Transform, type Vec3 } from '../../shared/runtime/se3';
 import type { FastenerInstallationOptions, FastenerInstallationReport, FastenerStation, FastenerStationReport, InstallationMetric } from './fastenerInstallationTypes';
@@ -26,35 +27,41 @@ function measured(name: string, part: string | null, value: number, limit: numbe
 function notApplicable(name: string): InstallationMetric {
   return { name, part: null, status: 'not-applicable', value: null, unit: 'mm', limit: null, basis: 'No receiver or corresponding geometric limit declared.', repairHint: null };
 }
-function validateOptions(options: FastenerInstallationOptions): void {
-  if (options.assembly !== undefined && (typeof options.assembly !== 'string' || !options.assembly)) throw new Error('assembly must be a nonempty name.');
-  if (!Array.isArray(options.fasteners)) throw new Error('fasteners must be an explicit station array.');
+function validateTolerances(options: FastenerInstallationOptions): void {
   for (const key of ['toleranceMm','angleToleranceDeg'] as const) {
     const n = options[key];
     if (n !== undefined && (!Number.isFinite(n) || n < 0 || (key === 'angleToleranceDeg' && n > 90))) throw new Error(`${key} must be finite and nonnegative (angle <= 90).`);
   }
+}
+function validateStationTargets(s: FastenerStation): void {
+  if (!Array.isArray(s.against) || !s.against.length || s.against.some((p: string) => typeof p !== 'string' || !p || p === s.part) || new Set(s.against).size !== s.against.length) throw new Error('against must contain unique target part names.');
+}
+function validateStationReceiver(s: FastenerStation): void {
+  if (s.engagementPart !== undefined && (typeof s.engagementPart !== 'string' || !s.engagementPart || s.engagementPart === s.part)) throw new Error('engagementPart must name a receiver part.');
+  for (const key of ['minEngagementMm','maxProtrusionMm'] as const) if (s[key] !== undefined && (!Number.isFinite(s[key]) || s[key]! < 0 || !s.engagementPart)) throw new Error(`${key} requires a receiver and a finite nonnegative limit.`);
+}
+function validateStation(s: FastenerStation, seen: Set<string>): void {
+  if (!s || typeof s.part !== 'string' || !s.part || seen.has(s.part)) throw new Error('Station part names must be nonempty and unique.');
+  seen.add(s.part);
+  validateStationTargets(s);
+  validateStationReceiver(s);
+}
+function validateOptions(options: FastenerInstallationOptions): void {
+  if (options.assembly !== undefined && (typeof options.assembly !== 'string' || !options.assembly)) throw new Error('assembly must be a nonempty name.');
+  if (!Array.isArray(options.fasteners)) throw new Error('fasteners must be an explicit station array.');
+  validateTolerances(options);
   const seen = new Set<string>();
-  for (const s of options.fasteners) {
-    if (!s || typeof s.part !== 'string' || !s.part || seen.has(s.part)) throw new Error('Station part names must be nonempty and unique.');
-    seen.add(s.part);
-    if (!Array.isArray(s.against) || !s.against.length || s.against.some((p: string) => typeof p !== 'string' || !p || p === s.part) || new Set(s.against).size !== s.against.length) throw new Error('against must contain unique target part names.');
-    if (s.engagementPart !== undefined && (typeof s.engagementPart !== 'string' || !s.engagementPart || s.engagementPart === s.part)) throw new Error('engagementPart must name a receiver part.');
-    for (const key of ['minEngagementMm','maxProtrusionMm'] as const) if (s[key] !== undefined && (!Number.isFinite(s[key]) || s[key]! < 0 || !s.engagementPart)) throw new Error(`${key} requires a receiver and a finite nonnegative limit.`);
-  }
+  for (const s of options.fasteners) validateStation(s,seen);
 }
 interface ScrewFrame { origin: Vec3; axis: Vec3; length: number; diameter: number; catalogId: string; world: OcctBackend }
 function sceneOf(model: BuiltModel, assembly?: string): SceneBackend | undefined {
   const candidates = [model.rootShape, ...[...model.shapes.values()].reverse()];
   return candidates.find(s => isSceneBackend(s) && (assembly === undefined || s.assemblyName === assembly)) as SceneBackend | undefined;
 }
-function screwOf(model: BuiltModel, scene: SceneBackend, name: string): ScrewFrame | undefined {
-  const arm = (model.session.assemblies as Map<string, Assembly>).get(scene.assemblyName);
-  const stored = arm?.__parts().find(p => p.name === name);
-  const placed = scene.parts.find(p => p.name === name);
-  if (!stored || !placed || !(placed.shape instanceof OcctBackend)) return undefined;
-  const record = model.records.find(r => r.id === stored.originalShape.id);
-  const catalog = record?.metadata?.catalogPart;
-  if (record?.kind !== 'importedStep' || !catalog || !['socket-head-cap-screw','button-head-cap-screw'].includes(catalog.family)) return undefined;
+interface ScrewInterfaces { bearingOrigin: Vec3; tipOrigin: Vec3; length: number; diameter: number; catalogId: string }
+function screwInterfaces(record: FeatureRecord): ScrewInterfaces | undefined {
+  const catalog = record.metadata?.catalogPart;
+  if (record.kind !== 'importedStep' || !catalog || !['socket-head-cap-screw','button-head-cap-screw'].includes(catalog.family)) return undefined;
   const manifest = catalog.connectorManifest;
   if (!manifest) return undefined;
   validateHashBoundConnectorManifest(manifest, { partId: catalog.id, family: catalog.family, geometrySha256: catalog.sha256 });
@@ -63,6 +70,9 @@ function screwOf(model: BuiltModel, scene: SceneBackend, name: string): ScrewFra
   const length = Number(catalog.attributes.lengthMm);
   const diameter = Number(catalog.attributes.shankDiameterMm ?? String(catalog.attributes.thread).slice(1));
   if (bearing?.type !== 'frame' || !tip || !(length > 0) || !(diameter > 0)) return undefined;
+  return { bearingOrigin: bearing.origin, tipOrigin: tip.origin, length, diameter, catalogId: catalog.id };
+}
+function recordPlacement(model: BuiltModel, record: FeatureRecord): Transform | undefined {
   let placement = Transform.identity();
   const resolved = resolveParams(record, model.session.paramTable);
   for (const t of resolved.transforms) {
@@ -70,10 +80,24 @@ function screwOf(model: BuiltModel, scene: SceneBackend, name: string): ScrewFra
     else if (t.op === 'rotateAxis') placement = Transform.rotationAroundPivot([t.axis.x.evaluated,t.axis.y.evaluated,t.axis.z.evaluated],t.degrees.evaluated,t.pivot ? [t.pivot.x.evaluated,t.pivot.y.evaluated,t.pivot.z.evaluated] : [0,0,0]).compose(placement);
     else return undefined;
   }
+  return placement;
+}
+function screwOf(model: BuiltModel, scene: SceneBackend, name: string): ScrewFrame | undefined {
+  const arm = (model.session.assemblies as Map<string, Assembly>).get(scene.assemblyName);
+  const stored = arm?.__parts().find(p => p.name === name);
+  const placed = scene.parts.find(p => p.name === name);
+  if (!stored || !placed || !(placed.shape instanceof OcctBackend)) return undefined;
+  const record = model.records.find(r => r.id === stored.originalShape.id);
+  if (!record) return undefined;
+  const interfaces = screwInterfaces(record);
+  if (!interfaces) return undefined;
+  let placement = recordPlacement(model,record);
+  if (!placement) return undefined;
+  const { length, diameter, catalogId } = interfaces;
   const at = resolveParams(stored.at, model.session.paramTable);
   placement = placed.worldTransform.compose(Transform.translation(at.x.evaluated,at.y.evaluated,at.z.evaluated)).compose(placement);
-  const origin = placement.point(bearing.origin);
-  const end = placement.point(tip.origin);
+  const origin = placement.point(interfaces.bearingOrigin);
+  const end = placement.point(interfaces.tipOrigin);
   if (Math.abs(norm(sub(end,origin))-length) > .01) return undefined;
   const axis = unit(sub(end,origin));
   const world = (placed.shape as OcctBackend).clone().applyTransform(placed.worldTransform);
@@ -86,7 +110,7 @@ function screwOf(model: BuiltModel, scene: SceneBackend, name: string): ScrewFra
     return lateral<.01 && Math.abs(2*c.radiusMm-diameter)<.01 && Math.abs(start)<.01 && Math.abs(finish-length)<.01 && Math.abs(dot(c.dir0,axis))>.999999;
   });
   if (!shaft) return undefined;
-  return { origin, axis, length, diameter, catalogId: catalog.id, world };
+  return { origin, axis, length, diameter, catalogId, world };
 }
 /** Strict probes propagate kernel errors. Hole inspector's legacy end classification
  * catches errors as outside; never rely on that classification here. */
