@@ -24,6 +24,12 @@ describe('kernelcad skill install', () => {
     }
   });
 
+  it('copies a skill\'s references/*.md next to its SKILL.md', async () => {
+    const target = mkdtempSync(join(tmpdir(), 'kc-skill-install-'));
+    await installCommand(target);
+    expect(existsSync(join(target, 'kernelcad-authoring', 'references', 'api.md'))).toBe(true);
+  });
+
   it('the installed kernelcad/SKILL.md has the expected frontmatter name', async () => {
     const target = mkdtempSync(join(tmpdir(), 'kc-skill-install-'));
     await installCommand(target);
@@ -40,5 +46,7 @@ describe('kernelcad skill onefile', () => {
     expect(matches.length).toBeGreaterThanOrEqual(6);
     expect(text).toContain('name: kernelcad\n');
     expect(text).toContain('name: kernelcad-authoring\n');
+    // The lean authoring SKILL.md's reference files are part of the one file.
+    expect(text).toContain('### Top-level functions');
   });
 });

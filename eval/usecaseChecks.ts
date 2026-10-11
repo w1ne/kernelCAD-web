@@ -27,6 +27,7 @@ import { isSceneBackend } from '../src/kernel/backends/sceneBackend';
 import { inspectStepBuffer, type StepInspectReport } from '../src/kernel/import/inspectStep';
 import type { CompilerDiagnostic } from '../src/shared/diagnostics/diagnostic';
 import type { DfmCheckReport } from '../src/modeling/runtime/dfm/runDfmChecks';
+import type { BuiltModel } from '../src/composition/buildModel';
 
 export type Vec3 = [number, number, number];
 
@@ -48,6 +49,8 @@ export interface UsecaseBuild {
   /** One entry per assembly part, or a single `body` for a plain shape. */
   parts: UsecasePart[];
   dfm?: DfmCheckReport;
+  /** The built model (records, return value) for checks that read intent. */
+  model?: BuiltModel;
 }
 
 export const near = (a: number, b: number, tol = TOL_MM): boolean => Math.abs(a - b) <= tol;
@@ -83,6 +86,7 @@ export async function buildUsecase(scriptPath: string, code?: string): Promise<U
     diagnostics: evaluation.diagnostics,
     parts,
     dfm: dfmReport,
+    ...(model !== undefined ? { model } : {}),
   };
 }
 

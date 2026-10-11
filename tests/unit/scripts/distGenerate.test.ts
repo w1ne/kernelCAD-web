@@ -20,6 +20,8 @@ describe('distGenerate', () => {
       // A root SKILL.md makes `skills` return before it walks skills/.
       expect(existsSync(join(out, 'SKILL.md'))).toBe(false);
       expect(existsSync(join(out, 'skills/blockout-model/SKILL.md'))).toBe(true);
+      // Reference files the lean SKILL.md links to ship beside it.
+      expect(existsSync(join(out, 'skills/kernelcad-authoring/references/api.md'))).toBe(true);
       expect(existsSync(join(out, 'skills/kernelcad-from-reference/blockout-model/SKILL.md'))).toBe(false);
       expect(existsSync(join(out, 'VERSION'))).toBe(true);
       expect(existsSync(join(out, 'LICENSE'))).toBe(true);
