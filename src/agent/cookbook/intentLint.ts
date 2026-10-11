@@ -11,24 +11,28 @@
 // naming the API and the cookbook recipe.
 //
 // Pure text scan of the source. No kernel work, never changes geometry, never
-// fails an evaluation. Comments count: agents write their intent there. But a
-// comment sentence that negates its own mention ("NOT a swept V-thread",
-// "teeth not modelled") is dropped first.
+// fails an evaluation. Comments do NOT count: the TypeScript scanner strips
+// every comment before any rule matches, so prose such as "// M3 screws" or
+// "// not a real thread" can neither fire nor suppress a rule. A rule reads
+// intent only from code — identifiers, string literals (part names, labels)
+// and calls. (FIX-05: a word in a comment fired the thread hint on a plain
+// clearance-hole script; a comment is narration, not a modelling decision.)
 //
-// Each rule also needs an actionable target: something in the CODE (comments
-// stripped) that the named API would replace. A word with nothing to convert
-// is a hint the agent "fixes" by changing the wrong thing, then retries.
+// Each rule also needs an actionable target: something in the code that the
+// named API would replace. A word with nothing to convert is a hint the
+// agent "fixes" by changing the wrong thing, then retries.
 
+import * as ts from 'typescript';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { DIAGNOSTIC_REGISTRY, NEXT_ACTIONS, type DiagnosticCode } from '../../shared/diagnostics/registry';
 
-/** One script, read three ways. */
+/** One script, read two ways. */
 export interface IntentLintSource {
   /** The script as given. */
   src: string;
-  /** Code only: comments blanked, strings kept. Structure checks read this. */
+  /** Code only: comments blanked (TS scanner), strings kept. Every rule reads this. */
   code: string;
-  /** Code plus every comment sentence that does not negate itself. Word checks read this. */
+  /** Text the intent-word checks read: the code, with colour palette tokens blanked. */
   prose: string;
 }
 
@@ -99,13 +103,6 @@ const TYPED_TRACE_MIN = 40;
 const CYLINDER_TOOL = /\b(?:cylinder|extrudeCircle|circle)\s*\(/g;
 const LOOP_TEXT = /\.(?:map|flatMap|forEach|reduce)\s*\(|\bArray\.from\s*\(|\bfor\s*\(|\bwhile\s*\(/;
 const HOLE_BY_CYLINDER_MIN = 3;
-
-/**
- * A comment sentence that says the thing is NOT built. Common phrasings
- * only — this is a filter for honest disclaimers, not a parser.
- */
-const NEGATED =
-  /\bnot\s+(?:a\s+|an\s+)?(?:real|true|actual|swept|modell?ed|cut|tapped|threaded)\b|\bno\s+(?:real\s+|actual\s+)?(?:threads?|threading|gears?|teeth|bends?|sheet[- ]?metal|inserts?)\b|\b(?:does|do|did)\s*(?:not|n't)\s+model\b|\bschematic\s+only\b|\breference\s+only\b/i;
 
 // ------------------------------------------------------------- the rules --
 
@@ -225,77 +222,48 @@ export function lintAuthoringIntent(src: string | undefined): CompilerDiagnostic
 
 // ------------------------------------------------------- source reading --
 
-/** Split comments from code; keep the comment sentences that do not negate themselves. */
+/** `.color('gear')` names a palette colour, not intent: blank the token. */
+const PALETTE_TOKEN = /(\.\s*color\s*\(\s*)(['"`])[^'"`\n]*\2/g;
+
+/** Comments blanked by the TypeScript scanner; string literals kept. */
 export function readSource(src: string): IntentLintSource {
-  const { code, comments } = scanComments(src);
-  const kept = commentBlocks(src, comments)
-    .flatMap((b) => b.split(/(?<=[.!?;])\s+/))
-    .filter((sentence) => !NEGATED.test(sentence));
-  return { src, code, prose: `${code}\n${kept.join('\n')}` };
+  const code = stripComments(src);
+  return { src, code, prose: code.replace(PALETTE_TOKEN, '$1$2$2') };
 }
 
-interface Comment {
-  start: number;
-  end: number;
-  text: string;
+/**
+ * `src` with every comment replaced by spaces (newlines kept, so offsets and
+ * line numbers are unchanged). Comment ranges come from the TypeScript
+ * parser's own trivia, so a `//` inside a string, template or regex literal
+ * is never mistaken for a comment.
+ */
+export function stripComments(src: string): string {
+  const ranges = commentRanges(src);
+  if (ranges.length === 0) return src;
+  let out = '';
+  let at = 0;
+  for (const r of ranges) {
+    out += src.slice(at, r.pos) + src.slice(r.pos, r.end).replace(/[^\n]/g, ' ');
+    at = r.end;
+  }
+  return out + src.slice(at);
 }
 
-/** Code with comments blanked (strings kept), plus the comments. */
-function scanComments(src: string): { code: string; comments: Comment[] } {
-  const code: string[] = [];
-  const comments: Comment[] = [];
-  let i = 0;
-  while (i < src.length) {
-    const c = src[i];
-    if (c === '/' && (src[i + 1] === '/' || src[i + 1] === '*')) {
-      const cm = readComment(src, i);
-      comments.push(cm);
-      code.push(' ');
-      i = cm.end;
-    } else if (c === '"' || c === "'" || c === '`') {
-      const end = stringEnd(src, i);
-      // A palette token (`.color('gear')`) names a colour, not intent.
-      const palette = /\.\s*color\s*\(\s*$/.test(code.slice(-16).join(''));
-      code.push(palette ? `${c}${c}` : src.slice(i, end));
-      i = end;
-    } else {
-      code.push(c);
-      i++;
+function commentRanges(src: string): ts.CommentRange[] {
+  const sf = ts.createSourceFile('intent-lint.ts', src, ts.ScriptTarget.Latest, false, ts.ScriptKind.TS);
+  const byPos = new Map<number, ts.CommentRange>();
+  const visit = (node: ts.Node): void => {
+    if (ts.isJSDoc(node)) return; // its text is already a leading-trivia range of the next token
+    const children = node.getChildren(sf);
+    if (children.length > 0) {
+      for (const child of children) visit(child);
+      return;
     }
-  }
-  return { code: code.join(''), comments };
-}
-
-function readComment(src: string, at: number): Comment {
-  if (src[at + 1] === '/') {
-    const nl = src.indexOf('\n', at);
-    const end = nl < 0 ? src.length : nl;
-    return { start: at, end, text: src.slice(at + 2, end) };
-  }
-  const close = src.indexOf('*/', at + 2);
-  const end = close < 0 ? src.length : close + 2;
-  const body = src.slice(at + 2, close < 0 ? src.length : close);
-  return { start: at, end, text: body.replace(/^\s*\*/gm, ' ') };
-}
-
-/** Index just past the string literal that opens at `at`. */
-function stringEnd(src: string, at: number): number {
-  const q = src[at];
-  let j = at + 1;
-  while (j < src.length && src[j] !== q && !(q !== '`' && src[j] === '\n')) j += src[j] === '\\' ? 2 : 1;
-  return j + 1;
-}
-
-/** Consecutive comments (only whitespace between) form one: a sentence often runs across `//` lines. */
-function commentBlocks(src: string, comments: readonly Comment[]): string[] {
-  const blocks: string[] = [];
-  let prevEnd = -1;
-  for (const cm of comments) {
-    if (prevEnd >= 0 && /^\s*$/.test(src.slice(prevEnd, cm.start))) blocks[blocks.length - 1] += ` ${cm.text}`;
-    else blocks.push(cm.text);
-    prevEnd = cm.end;
-  }
-  return blocks;
+    for (const r of ts.getLeadingCommentRanges(src, node.pos) ?? []) byPos.set(r.pos, r);
+    for (const r of ts.getTrailingCommentRanges(src, node.end) ?? []) byPos.set(r.pos, r);
+  };
+  visit(sf);
+  return [...byPos.values()].sort((x, y) => x.pos - y.pos);
 }
 
 // ------------------------------------------------- actionable targets --

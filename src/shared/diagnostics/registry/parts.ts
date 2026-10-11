@@ -8,7 +8,7 @@ export const PARTS_CODES = {
   'parts.input.id-or-query-required': {
     hintTemplate:
       'Pass either an `id` (for a known catalog record) or a `query` (for fuzzy search). Both are missing in this call.',
-    nextAction: { kind: 'call-tool', tool: 'list_part_categories', args: {} },
+    nextAction: { kind: 'call-tool', tool: 'inspect', args: { of: 'part-categories' } },
     defaultSeverity: 'error',
     group: 'parts',
     description: 'find_part or fetch_part was called with neither an id nor a query.',

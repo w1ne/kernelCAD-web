@@ -29,6 +29,7 @@ function armLike(overrides: {
     __physicalUseCases: () => overrides.physicalUseCases ?? [],
     __mechanicalJointIntents: () => overrides.mechanicalJointIntents ?? [],
     __jointSupportIntents: () => overrides.jointSupportIntents ?? [],
+    __tendons: () => [],
   } as unknown as Assembly;
 }
 
@@ -420,4 +421,44 @@ describe('reviewJointTopology', () => {
     expect(codes).not.toContain('assembly.joint-topology.unsupported-axis');
   });
 
+
+  describe('free passive joints (FIX-05)', () => {
+    function plainHinge(opts: { limitsDeg?: [number, number]; actuated?: boolean; loaded?: boolean } = {}) {
+      const { arm, kcad } = makeApi();
+      arm
+        .part('leafA', kcad.box(10, 10, 4))
+        .connector('hinge', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+      arm
+        .part('leafB', kcad.box(4, 4, 20))
+        .connector('hinge', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+      arm.mate('hinge', 'leafA.hinge', 'leafB.hinge', 'revolute', opts.limitsDeg ? { limitsDeg: opts.limitsDeg } : {});
+      if (opts.actuated) {
+        arm.mechanicalJoint('drive', { mate: 'hinge', actuator: 'leafA', shaft: 'leafA', supports: ['leafA'], output: 'leafB' });
+      }
+      if (opts.loaded) {
+        arm.physicalUseCase('hold', { stableParts: ['leafA'], loads: [{ part: 'leafB', force: [0, 0, -1] }] });
+      }
+      return arm;
+    }
+
+    it('an unlimited, unactuated, unloaded hinge: limit/support findings are warnings and nothing floats', () => {
+      const diagnostics = reviewJointTopology(plainHinge()).diagnostics;
+      expect(diagnostics.map((d) => d.code).sort()).toEqual([
+        'assembly.joint-topology.missing-limit',
+        'assembly.joint-topology.unsupported-axis',
+      ]);
+      expect(diagnostics.every((d) => d.severity === 'warning')).toBe(true);
+    });
+
+    it('a declared load makes the same hinge a hold requirement: errors again', () => {
+      const diagnostics = reviewJointTopology(plainHinge({ loaded: true })).diagnostics;
+      const limit = diagnostics.find((d) => d.code === 'assembly.joint-topology.missing-limit');
+      expect(limit?.severity).toBe('error');
+    });
+
+    it('an actuated hinge keeps the missing-limit error', () => {
+      const diagnostics = reviewJointTopology(plainHinge({ actuated: true })).diagnostics;
+      expect(diagnostics.find((d) => d.code === 'assembly.joint-topology.missing-limit')?.severity).toBe('error');
+    });
+  });
 });

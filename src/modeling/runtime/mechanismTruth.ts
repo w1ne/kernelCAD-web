@@ -58,6 +58,7 @@ import { createOcctLowerer } from '../backends/occt/occtLowerer';
 import { RecomputeEngine } from '../compute/recomputeEngine';
 import { solveMates } from '../mates/solver';
 import { collectRegistryDrivenMates } from '../mates/mechanicalJointRegistry';
+import { collectFreePassiveMates } from '../mates/passiveJoints';
 import { detectInterferences, pairKey } from './detectInterferences';
 import { describeOverlap, formatOverlapMm3, isActionableOverlap, overlapRuleText, INTERPENETRATION_EPSILON_MM3 } from './jointContactCap';
 import { reposedLoweredAssemblyScene } from '../mates/loweredAssemblyScene';
@@ -1342,11 +1343,27 @@ function allArticulatedMatesDriven(
   return jointOrder.length > 0 && jointOrder.every((j) => drivenMates.has(j.mateName));
 }
 
+/**
+ * Drift on a free passive joint (unlimited, unactuated revolute/prismatic in
+ * an assembly with no hold/load requirement — see passiveJoints.ts) is the
+ * joint doing its job: reported as 'info', never as 'broken'.
+ */
+function passiveDriftNote(mate: string, driftDeg: number): CompilerDiagnostic {
+  return makeFailure(
+    'mechanism.drops-on-release',
+    `Mate '${mate}' swung ${driftDeg.toFixed(1)}° from rest in ${DROP_TEST_DURATION_S.toFixed(1)} s under gravity. ` +
+    `It is a free passive joint (no limits, no actuator, no declared load), so this is informational, not a defect. ` +
+    `If it must hold its pose, declare that: limits, arm.mechanicalJoint(...), arm.tendon(...), or a physicalUseCase with loads.`,
+    'info',
+  );
+}
+
 function dropTestJointDriftFailure(
   finalQpos: readonly number[],
   restQpos: readonly number[],
   jointOrder: readonly { mjcfName: string; mateName: string }[],
   drivenMates: ReadonlySet<string>,
+  passiveMates: ReadonlySet<string>,
 ): CompilerDiagnostic | undefined {
   let worstJointIdx = -1;
   let worstJointDriftRad = 0;
@@ -1361,6 +1378,7 @@ function dropTestJointDriftFailure(
   const mate = jointOrder[worstJointIdx]?.mateName ?? `joint#${worstJointIdx}`;
   if (drivenMates.has(mate)) return undefined;
   const driftDeg = (worstJointDriftRad * 180) / Math.PI;
+  if (passiveMates.has(mate)) return passiveDriftNote(mate, driftDeg);
   return makeFailure(
     'mechanism.drops-on-release',
     `Mate '${mate}' drifted ${driftDeg.toFixed(1)}° from rest in ${DROP_TEST_DURATION_S.toFixed(1)} s under gravity ` +
@@ -1371,6 +1389,7 @@ function dropTestJointDriftFailure(
 function dropTestBodyDriftFailure(
   finalXpos: ReadonlyMap<string, readonly [number, number, number]>,
   restXpos: ReadonlyMap<string, readonly [number, number, number]>,
+  allJointsPassive: boolean,
 ): CompilerDiagnostic | undefined {
   let worstBody: string | undefined;
   let worstBodyDriftM = 0;
@@ -1385,6 +1404,14 @@ function dropTestBodyDriftFailure(
   }
   if (worstBodyDriftM <= DROP_TEST_BODY_DRIFT_M || worstBody === undefined) return undefined;
   const driftMm = worstBodyDriftM * 1000;
+  if (allJointsPassive) {
+    // Every DOF is a free passive joint: the body moved because its joint swung.
+    return makeFailure(
+      'mechanism.drops-on-release',
+      `Body '${worstBody}' moved ${driftMm.toFixed(0)} mm in ${DROP_TEST_DURATION_S.toFixed(1)} s under gravity as its free passive joint swung; informational, not a defect.`,
+      'info',
+    );
+  }
   return makeFailure(
     'mechanism.drops-on-release',
     `Body '${worstBody}' translated ${driftMm.toFixed(0)} mm in ${DROP_TEST_DURATION_S.toFixed(1)} s under gravity ` +
@@ -1421,9 +1448,12 @@ async function runDropOnRelease(
       DROP_TEST_DT_S,
     );
     const out: CompilerDiagnostic[] = [];
-    const jointFail = dropTestJointDriftFailure(finalQpos, restQpos, jointOrder, drivenMates);
+    const passiveMates = collectFreePassiveMates(arm);
+    const allJointsPassive = jointOrder.length > 0
+      && jointOrder.every((j) => passiveMates.has(j.mateName) || drivenMates.has(j.mateName));
+    const jointFail = dropTestJointDriftFailure(finalQpos, restQpos, jointOrder, drivenMates, passiveMates);
     if (jointFail !== undefined) out.push(jointFail);
-    const bodyFail = dropTestBodyDriftFailure(finalXpos, restXpos);
+    const bodyFail = dropTestBodyDriftFailure(finalXpos, restXpos, allJointsPassive);
     if (bodyFail !== undefined) out.push(bodyFail);
     return out;
   } catch (e) {
@@ -1536,11 +1566,12 @@ function makeFailure(
     | 'mechanism.rest-interpenetration'
     | 'mechanism.mate-gap',
   message: string,
+  severity: CompilerDiagnostic['severity'] = 'error',
 ): CompilerDiagnostic {
   return {
     target: 'export-occt',
     code,
-    severity: 'error',
+    severity,
     message,
     hint: HINT_TEMPLATES[code].template,
     nextAction: HINT_TEMPLATES[code].nextAction,
