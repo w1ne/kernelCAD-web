@@ -14,11 +14,37 @@ vi.mock('../lib/generateClient', () => ({
 }));
 
 import { useGeneration } from './useGeneration';
+import { clearGenerationAssets, generationIdsForSource } from '../lib/generationAssets';
 
 async function* yieldDone() {
   yield { kind: 'generation', generationId: 'g1', anonId: 'a1' };
   yield { kind: 'done', generationId: 'g1', anonId: 'a1', artifact: { title: 'T', code: 'return box(1,1,1);', parameters: [], suggestions: [] } };
 }
+
+describe('useGeneration generation assets', () => {
+  it("remembers which generation holds the files on a done event's assets", async () => {
+    clearGenerationAssets();
+    const code = "return await lib.fromSTL('./inputs/cccccccccccc.stl');";
+    startGeneration.mockReset();
+    parseSseStream.mockReset();
+    startGeneration.mockResolvedValue({ ok: true, body: {} } as Response);
+    parseSseStream.mockReturnValue((async function* () {
+      yield { kind: 'generation', generationId: 'g7', anonId: 'a1' };
+      yield {
+        kind: 'done', generationId: 'g7', anonId: 'a1',
+        artifact: { title: 'T', code, parameters: [], suggestions: [] },
+        assets: { 'inputs/cccccccccccc.stl': { sha256: 'c'.repeat(64), byteLength: 1, mediaType: 'model/stl', format: 'stl' } },
+      };
+    })());
+    const { result } = renderHook(() => useGeneration());
+    await act(async () => {
+      await result.current.submit('add a stand');
+    });
+    await waitFor(() => expect(result.current.phase.state).toBe('done'));
+    expect(generationIdsForSource(code)).toEqual(['g7']);
+    clearGenerationAssets();
+  });
+});
 
 describe('useGeneration edit mode', () => {
   beforeEach(() => {
@@ -78,6 +104,40 @@ describe('useGeneration edit mode', () => {
       prompt: 'model this simple e-reader',
       referenceImage,
     }), expect.any(AbortSignal));
+  });
+});
+
+describe('useGeneration attachments', () => {
+  beforeEach(() => {
+    startGeneration.mockReset();
+    parseSseStream.mockReset();
+    startGeneration.mockResolvedValue({ ok: true, body: {} } as Response);
+    parseSseStream.mockReturnValue(yieldDone());
+  });
+
+  it('forwards an STL attachment with the edit request', async () => {
+    const { result } = renderHook(() => useGeneration());
+    const attachments: NonNullable<GenerateRequest['attachments']> = [{
+      format: 'stl',
+      fileName: 'cup.stl',
+      dataUrl: 'data:model/stl;base64,AAAA',
+      encoding: 'binary',
+      triangleCount: 12,
+      bounds: { min: [0, 0, 0], max: [80, 80, 95] },
+    }];
+    await act(async () => {
+      await result.current.submit('add a stand', 'return box(1,1,1);', undefined, undefined, attachments);
+    });
+    expect(startGeneration).toHaveBeenCalledWith(
+      expect.objectContaining({ prompt: 'add a stand', currentCode: 'return box(1,1,1);', attachments }),
+      expect.any(AbortSignal),
+    );
+  });
+
+  it('omits the attachments field when there are none', async () => {
+    const { result } = renderHook(() => useGeneration());
+    await act(async () => { await result.current.submit('a cube', undefined, undefined, undefined, []); });
+    expect(Object.keys(startGeneration.mock.calls[0][0])).not.toContain('attachments');
   });
 });
 
@@ -199,7 +259,7 @@ describe('useGeneration signed-out builds', () => {
     startGeneration.mockResolvedValue({ ok: true, body: {} } as Response);
     parseSseStream.mockReturnValue(yieldDone());
     const { result } = renderHook(() => useGeneration());
-    await act(async () => { await result.current.submit('a cube', undefined, undefined, undefined, 'tok'); });
+    await act(async () => { await result.current.submit('a cube', undefined, undefined, undefined, undefined, 'tok'); });
     expect(startGeneration.mock.calls[0]![0]).toMatchObject({ prompt: 'a cube', turnstileToken: 'tok' });
   });
 
@@ -219,5 +279,35 @@ describe('useGeneration signed-out builds', () => {
     const { result } = renderHook(() => useGeneration());
     await act(async () => { await result.current.submit('a cube'); });
     expect(result.current.phase).toMatchObject({ state: 'error', code: 'rate_limited' });
+  });
+});
+
+describe('useGeneration live code', () => {
+  beforeEach(() => {
+    startGeneration.mockReset();
+    parseSseStream.mockReset();
+    startGeneration.mockResolvedValue({ ok: true, body: {} } as Response);
+  });
+
+  it('accumulates code chunks into liveCode, outside the event log, then takes the final script', async () => {
+    let release: () => void = () => {};
+    const gate = new Promise<void>((r) => { release = r; });
+    parseSseStream.mockReturnValue((async function* () {
+      yield { kind: 'generation', generationId: 'g1', anonId: 'a1' };
+      yield { kind: 'code', attempt: 1, delta: 'const a', reset: true };
+      yield { kind: 'code', attempt: 1, delta: ' = 1;' };
+      await gate;
+      yield { kind: 'code', attempt: 2, delta: 'fixed', reset: true };
+      yield { kind: 'done', generationId: 'g1', anonId: 'a1', artifact: { title: 'T', code: 'final();', parameters: [], suggestions: [] } };
+    })());
+    const { result } = renderHook(() => useGeneration());
+    let run: Promise<void> = Promise.resolve();
+    act(() => { run = result.current.submit('a box'); });
+    await waitFor(() => expect(result.current.liveCode).toEqual({ attempt: 1, code: 'const a = 1;', final: false }));
+    expect(result.current.events.some((e) => e.kind === 'code')).toBe(false);
+    expect(result.current.phase.state).toBe('running');
+    release();
+    await act(async () => { await run; });
+    expect(result.current.liveCode).toEqual({ attempt: 2, code: 'final();', final: true });
   });
 });

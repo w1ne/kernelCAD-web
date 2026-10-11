@@ -78,7 +78,7 @@ function useWordsHandoff(): { message: string | null; open: (prompt: string) => 
 
 export function GeneratePage() {
   const agentEnabled = inAppAgentEnabled();
-  const { phase, events, submit } = useGeneration();
+  const { phase, events, liveCode, submit } = useGeneration();
   const { session, loading: sessionLoading } = useOptionalSession();
   const [signInOpen, setSignInOpen] = useState(false);
   const [upgradeBusy, setUpgradeBusy] = useState(false);
@@ -110,7 +110,7 @@ export function GeneratePage() {
       } catch {
         token = undefined;
       }
-      void submit(prompt, undefined, undefined, undefined, token);
+      void submit(prompt, undefined, undefined, undefined, undefined, token);
     },
     [submit],
   );
@@ -208,7 +208,7 @@ export function GeneratePage() {
           sessionEmail={session?.user.email ?? null}
           sessionLoading={sessionLoading}
           phase={phase}
-          events={events}
+          events={events} liveCode={liveCode}
           upgradeBusy={upgradeBusy}
           onUpgrade={handleUpgrade}
           onSignIn={() => setSignInOpen(true)}

@@ -56,6 +56,7 @@ import * as replicad from 'replicad';
 import { getOC } from 'replicad';
 import { OcctBackend } from './occtBackend';
 import { lowerSurfaceSew } from './surfaceSewLowerer';
+import { countStlTriangles, STL_DEFAULT_MAX_TRIANGLES } from '../../../shared/mesh/stlInfo';
 
 /** Why an STL byte payload could not be turned into geometry. */
 export type StlParseFailure = 'parse' | 'empty' | 'too-many-triangles';
@@ -101,7 +102,7 @@ export interface StlImportResult {
  * file fails in microseconds. Callers who genuinely want to wait can raise
  * `maxTriangles`.
  */
-export const DEFAULT_MAX_TRIANGLES = 200_000;
+export const DEFAULT_MAX_TRIANGLES = STL_DEFAULT_MAX_TRIANGLES;
 
 export interface ImportStlOptions {
   /**
@@ -120,27 +121,9 @@ export interface ImportStlOptions {
   maxTriangles?: number;
 }
 
-/**
- * Count triangles without handing the bytes to OCCT.
- *
- * Binary STL is an 80-byte header, a uint32 little-endian triangle count,
- * then 50 bytes per triangle. ASCII STL is counted by `facet` occurrences.
- * The discriminator is the same one replicad uses: a file whose length
- * matches the binary layout exactly is binary, regardless of whether it
- * happens to start with the ASCII marker `solid` (many binary writers put
- * "solid" in the header, which is why a naive prefix sniff is wrong).
- */
-export function countStlTriangles(bytes: Uint8Array): { count: number; binary: boolean } {
-  if (bytes.byteLength >= 84) {
-    const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-    const n = view.getUint32(80, true);
-    if (bytes.byteLength === 84 + n * 50) return { count: n, binary: true };
-  }
-  // ASCII fallback: count "facet" keywords.
-  const text = new TextDecoder().decode(bytes);
-  const m = text.match(/\bfacet\b/g);
-  return { count: m ? m.length : 0, binary: false };
-}
+// Triangle counting lives in shared/mesh/stlInfo.ts so the browser composer
+// refuses exactly what this importer would refuse.
+export { countStlTriangles };
 
 /**
  * Read STL bytes into an OCCT shell via MEMFS.

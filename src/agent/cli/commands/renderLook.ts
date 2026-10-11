@@ -10,6 +10,7 @@
 // is provisioned.
 
 import { ALL_VIEWS, type RenderView } from '../../render/headlessRender';
+import { SHEET_VIEWS } from '../../../shared/render/views';
 import {
   PUBLISH_BACKGROUND_HINT,
   PUBLISH_MAX_SIZE,
@@ -92,7 +93,15 @@ function publishLook(input: RenderInput, publish: PublishStageSpec): RenderLookR
 export function resolveRenderLook(input: RenderInput): RenderLookResolution {
   const resolved = resolvePublishLook(input, 'default');
   if (!resolved.ok) return refuseLook(resolved.reason, input);
-  if (resolved.publish !== undefined) return publishLook(input, resolved.publish);
+  if (resolved.publish !== undefined) {
+    if (input.sheet === true) {
+      return refuse(
+        'render: --sheet is an engineering-review sheet and does not combine with --preset publish.',
+        'Drop --preset publish for the sheet, or use --preset publish --separate for per-view product shots.',
+      );
+    }
+    return publishLook(input, resolved.publish);
+  }
   return {
     ok: true,
     look: {
@@ -100,7 +109,7 @@ export function resolveRenderLook(input: RenderInput): RenderLookResolution {
       hero: false,
       width: input.width ?? DEFAULT_TILE_SIZE,
       height: input.height ?? DEFAULT_TILE_SIZE,
-      views: ALL_VIEWS,
+      views: input.sheet === true ? SHEET_VIEWS : ALL_VIEWS,
       poses: input.poses,
     },
   };

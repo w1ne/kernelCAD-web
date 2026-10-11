@@ -6,6 +6,8 @@ import { Button, cx } from '../../ui';
 import type { GenerateEvent, GenerationPartial } from '../lib/generateClient';
 import { formatElapsed } from '../lib/formatElapsed';
 import { generationSteps, partialSummary, type ProgressStep } from '../lib/generationProgress';
+import type { LiveCode } from '../lib/liveCode';
+import { LiveCodeView } from './LiveCodeView';
 
 function StepIcon({ state }: { readonly state: ProgressStep['state'] }): JSX.Element {
   if (state === 'done') return <Check className="size-4 text-ok" strokeWidth={2.25} aria-hidden="true" />;
@@ -30,13 +32,15 @@ function useElapsed(): number {
 
 export interface GenerationProgressProps {
   readonly events: readonly GenerateEvent[];
+  /** The script as the agent writes it, when the server streams it. */
+  readonly liveCode?: LiveCode | null;
 }
 
 /**
  * The step list for a running hosted-agent build: done, current (with what it
  * is doing) and pending. Mount it when the run starts; the clock counts from then.
  */
-export function GenerationProgress({ events }: GenerationProgressProps): JSX.Element {
+export function GenerationProgress({ events, liveCode = null }: GenerationProgressProps): JSX.Element {
   const steps = generationSteps(events);
   const elapsed = useElapsed();
   const current = steps.find((s) => s.state === 'current');
@@ -69,6 +73,7 @@ export function GenerationProgress({ events }: GenerationProgressProps): JSX.Ele
           </li>
         ))}
       </ol>
+      {liveCode && !liveCode.final && <LiveCodeView live={liveCode} className="-mx-3 mt-3" />}
       <p className="sr-only" role="status" aria-live="polite">
         {current ? `${current.label}${current.detail ? `: ${current.detail}` : ''}` : ''}
       </p>

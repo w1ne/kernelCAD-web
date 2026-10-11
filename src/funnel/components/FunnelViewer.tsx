@@ -34,6 +34,7 @@ import type { MeshDimensionsInfo } from '../../studio/components/viewer/dimensio
 import { FeedbackLauncher } from '../../studio/components/Layout/FeedbackLauncher';
 import { useMarkFix, type MarkFixTarget } from '../markFix/MarkFix';
 import type { FeedbackContext, FeedbackPayload } from '../../studio/components/Layout/feedbackApi';
+import { fetchStoredMeshStatus, revisionOfMeshUrl } from '../lib/storedMeshStatus';
 
 export type FunnelViewerPhase =
   | 'building_geometry'
@@ -360,10 +361,24 @@ async function tryLatestMeshFallback(
   }
 }
 
+/** While the server reports the stored mesh `building`, keep waiting up to
+ *  its hard build deadline (240 s) instead of the blind 90 s. */
+const MESH_BUILDING_BUDGET_MS = 240_000;
+/** Ask the server for the build status at most this often while polling. */
+const MESH_STATUS_EVERY_MS = 8_000;
+
+function apiBaseUrl(): string | undefined {
+  const base = import.meta.env.VITE_API_BASE_URL as string | undefined;
+  return typeof base === 'string' && base.length > 0 ? base : undefined;
+}
+
 async function fetchRevisionMeshWhenReady(meshUrl: string, revision: number | null, signal: AbortSignal) {
   const started = Date.now();
   let delay = 400;
   let triedLatest = false;
+  let budget = MESH_PENDING_BUDGET_MS;
+  let statusAt = 0;
+  const pinned = revisionOfMeshUrl(meshUrl);
   for (;;) {
     try {
       return await fetchRevisionMesh(meshUrl, revision, signal);
@@ -376,7 +391,18 @@ async function fetchRevisionMeshWhenReady(meshUrl: string, revision: number | nu
         const fallback = await tryLatestMeshFallback(meshUrl, revision, signal);
         if (fallback) return fallback;
       }
-      if (Date.now() - started >= MESH_PENDING_BUDGET_MS) throw err;
+      // Ask the server where the build stands. This also starts it when the
+      // artifact is missing and nothing builds it, so the poll cannot wait
+      // on a build that will never come; a failed build ends the wait now.
+      if (pinned && Date.now() - statusAt >= MESH_STATUS_EVERY_MS) {
+        statusAt = Date.now();
+        const status = await fetchStoredMeshStatus(apiBaseUrl(), pinned.slug, pinned.version, { signal });
+        if (status?.status === 'failed') {
+          throw new Error(`The server could not build this model: ${status.error ?? 'unknown error'}`);
+        }
+        if (status?.status === 'building') budget = MESH_BUILDING_BUDGET_MS;
+      }
+      if (Date.now() - started >= budget) throw err;
       await sleep(delay, signal);
       delay = Math.min(delay * 2, 4_000);
     }

@@ -11,6 +11,26 @@ Replicad/OpenCASCADE are the kernel layer. kernelCAD is the agent-first workflow
 layer above the kernel: deterministic CAD source, feature history, diagnostics,
 validation, variants, and human review.
 
+## Showcase
+
+Each model below started from the plain-language prompt shown. An AI agent wrote it through kernelCAD's own authoring loop (CLI / MCP): it wrote `.kcad.ts` source, ran `evaluate`, rendered the seven-view inspection sheet, read the renders, fixed what was wrong, and repeated. None of these is a one-shot generation. Each folder in [`showcase/`](showcase/) holds the parametric source, the turntable GIF (`kernelcad animate --turntable`, publish look), and a short note on what to look at and which checks were run.
+
+| Model | Prompt | Params | Preview |
+|---|---|---|---|
+| [Twisted hex vase](showcase/twisted-hex-vase/) | Hollow shell ~150 mm tall, tapers 70 → 50 mm, hex section twisting 120°, 2 mm wall, closed bottom | `height` `baseDia` `mouthDia` `twistDeg` `wall` | <img src="showcase/twisted-hex-vase/twisted-hex-vase.gif" width="200" alt="Twisted hex vase turntable"> |
+| [Knurled control knob](showcase/knurled-knob/) | Ø40 × 22 mm, diamond-knurled grip, raised pointer, 6 mm D-shaft bore, M3 set-screw hole | `diameter` `height` `knurlDepth` `knurlTwistDeg` `knurlTeeth` `shaftDia` `dFlatDepth` `boreDepth` `skirtHeight` | <img src="showcase/knurled-knob/knurled-knob.gif" width="200" alt="Knurled knob turntable"> |
+| [Honeycomb bracket](showcase/honeycomb-bracket/) | Filleted L-bracket with a generative hex lattice | `thickness` `innerFillet` `cellSize` `web` | <img src="showcase/honeycomb-bracket/honeycomb-bracket.gif" width="200" alt="Honeycomb bracket turntable"> |
+| [NACA 2412 wing](showcase/naca-2412-wing/) | True airfoil from the NACA equations, tapered loft | `semiSpan` `rootChord` `tipChord` `leSweep` `dihedralRise` `washoutDeg` | <img src="showcase/naca-2412-wing/naca-2412-wing.gif" width="200" alt="NACA 2412 wing turntable"> |
+| [Bevel gear drive](showcase/bevel-gear-drive/) | Meshing bevel gear pair at 90° | `gearDeg` `pinionTeeth` `gearTeeth` | <img src="showcase/bevel-gear-drive/bevel-gear-drive.gif" width="200" alt="Bevel gear drive turntable"> |
+| [Centrifugal impeller](showcase/centrifugal-impeller/) | 7 swept backward-curved blades | `bladeCount` `wrapDeg` `backplateThickness` `boreDia` `keyWidth` | <img src="showcase/centrifugal-impeller/centrifugal-impeller.gif" width="200" alt="Centrifugal impeller turntable"> |
+| [Planetary gear stage](showcase/planetary-gear-stage/) | Sun, planets, ring, carrier | `carrierDeg` `sunTeeth` `planetTeeth` `planetCount` | <img src="showcase/planetary-gear-stage/planetary-gear-stage.gif" width="200" alt="Planetary gear stage turntable"> |
+| [9-cylinder radial engine](showcase/radial-engine/) | Round crankcase, nine finned cylinders in a star, domed heads, prop hub | `cylinderCount` `barrelLength` | <img src="showcase/radial-engine/radial-engine.gif" width="200" alt="Radial engine turntable"> |
+
+Some checks go past the picture:
+
+- **Mechanisms that are checked, not just drawn.** The planetary stage and the bevel drive are assemblies with revolute mates, gear ratios coupled from the tooth counts, and declared gear-pair transmissions. kernelCAD's mechanism-truth check (`evaluate_script` → `mechanism: "real"`) turns each mechanism through its limits with the couplings applied and looks for overlapping teeth. `kernelcad validate --include-interference` reports both assemblies clean.
+- **Manufacturing evidence.** The honeycomb bracket declares an FDM print gate. `kernelcad dfm` passes it (thinnest wall 2.0 mm, no unsupported overhang), and `kernelcad export step` writes a B-rep whose holes read back with `kernelcad inspect step`.
+
 ## Philosophy
 
 1.  **Agent-First**: The primary interface is `.kcad.ts`, CLI, and MCP. The UI reviews and steers generated designs.

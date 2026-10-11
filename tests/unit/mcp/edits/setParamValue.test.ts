@@ -130,6 +130,20 @@ describe('parseParamDeclaration (source-text-only param kind reader)', () => {
     });
   });
 
+  it('classifies a hex-colour default as a color param', () => {
+    expect(parseParamDeclaration(`const c = param('BodyColor', '#3366cc', { label: 'Body' });`, 'BodyColor'))
+      .toEqual({ ok: true, declaration: { name: 'BodyColor', kind: 'color' } });
+    expect(parseParamDeclaration(`const c = param('Accent', "#F0A");`, 'Accent'))
+      .toEqual({ ok: true, declaration: { name: 'Accent', kind: 'color' } });
+  });
+
+  it('keeps a hex default with choices a choice, and a non-hex string a string', () => {
+    const choice = parseParamDeclaration(`param('Tint', '#ff0000', { choices: ['#ff0000', '#00ff00'] });`, 'Tint');
+    expect(choice.ok && choice.declaration.kind).toBe('choice');
+    const text = parseParamDeclaration(`param('Name', 'red');`, 'Name');
+    expect(text.ok && text.declaration.kind).toBe('string');
+  });
+
   it('returns kind "unknown" for a non-literal default (variable/expression)', () => {
     const r = parseParamDeclaration(`const h = param('Height', someVar);`, 'Height');
     expect(r).toEqual({ ok: true, declaration: { name: 'Height', kind: 'unknown' } });

@@ -60,6 +60,8 @@ export const TYPE_IMPORTS: ReadonlyArray<{ module: string; names: readonly strin
   { module: 'src/shared/fonts/fontPath', names: ['FontPath'] },
   { module: 'src/kinematic/types', names: ['KinematicFacade'] },
   { module: 'src/shared/intent/dfmSpecRecord', names: ['DfmSpec', 'DfmSpecHandle'] },
+  { module: 'src/modeling/capture/tubeRecords', names: ['TubeOptions', 'TubeSpec'] },
+  { module: 'src/modeling/capture/assemblyTypes', names: ['TubeEnd'] },
   { module: 'src/shared/intent/animationViewRecord', names: ['AnimationViewHandle', 'AnimationViewSpec'] },
   { module: 'src/shared/intent/referenceImageRecord', names: ['ReferenceImageHandle'] },
   { module: 'src/shared/intent/renderEnvironmentRecord', names: ['RenderEnvironmentHandle', 'RenderEnvironmentSpec'] },

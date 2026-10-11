@@ -15,23 +15,39 @@ Apache-2.0's redistribution terms.
 
 ## Simulation meshes
 
-`sim/` holds the Apache-2.0 visual STLs from
-`TheRobotStudio/SO-ARM100` `Simulation/SO100/assets/`. They are in the
-URDF link frame, in metres. `so100-arm.kcad.ts` scales them to millimetres
-and drives the six joints, which the single assembly STEP cannot do.
-The black servo bodies in that script are plain boxes. The upstream motor
-shells are open meshes, and loading them on top of the link shells exhausts
-the geometry heap.
+`sim/` holds `so100.urdf` and the Apache-2.0 visual STLs from
+`TheRobotStudio/SO-ARM100` `Simulation/SO100/` (`so100.urdf` and
+`assets/`), same bytes as upstream `main` at commit `a758567c`. The meshes
+are in the URDF link frame, in metres. `so100-arm.kcad.ts` scales them to
+millimetres, places each one where the URDF puts it with every joint at
+zero, and drives the six joints, which the single assembly STEP cannot do.
 
-| File | Link |
-|------|------|
-| `Base.stl` | base |
-| `Rotation_Pitch.stl` | shoulder |
-| `Upper_Arm.stl` | upper arm |
-| `Lower_Arm.stl` | lower arm |
-| `Wrist_Pitch_Roll.stl` | wrist |
-| `Fixed_Jaw.stl` | gripper |
-| `Moving_Jaw.stl` | jaw |
+The URDF gives the motor visuals no `origin`: each `*_Motor.stl` is an
+STS3215 already seated in its link frame, with the output spline on the
+axis of the joint it drives. The script loads them as they are, so a motor
+needs no placement of its own. They are closed meshes of about 3,000
+triangles each. `STS3215.step` is not used for the arm: one copy
+tessellates to about 134,000 triangles.
+
+One process can build the arm once. A second build in the same process
+runs the geometry heap out, which is why the two arm tests are separate
+files.
+
+| File | Link | Part in `so100-arm.kcad.ts` |
+|------|------|------|
+| `Base.stl` | base | `base` |
+| `Base_Motor.stl` | base | `base-servo` (shoulder pan) |
+| `Rotation_Pitch.stl` | shoulder | `shoulder` |
+| `Rotation_Pitch_Motor.stl` | shoulder | `shoulder-servo` (shoulder lift) |
+| `Upper_Arm.stl` | upper arm | `upper-arm` |
+| `Upper_Arm_Motor.stl` | upper arm | `upper-servo` (elbow) |
+| `Lower_Arm.stl` | lower arm | `lower-arm` |
+| `Lower_Arm_Motor.stl` | lower arm | `lower-servo` (wrist pitch) |
+| `Wrist_Pitch_Roll.stl` | wrist | `wrist` |
+| `Wrist_Pitch_Roll_Motor.stl` | wrist | `wrist-servo` (wrist roll) |
+| `Fixed_Jaw.stl` | gripper | `hand` |
+| `Fixed_Jaw_Motor.stl` | gripper | `hand-servo` (jaw) |
+| `Moving_Jaw.stl` | jaw | `jaw` |
 
 ## Updating
 

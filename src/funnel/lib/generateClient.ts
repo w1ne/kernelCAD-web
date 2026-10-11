@@ -29,6 +29,17 @@ export interface GenerationPartial {
   note: string;
 }
 
+/** A file the delivered code imports (an attached STL), as the server stored
+ *  it: content-addressed, owned by the generation until a project is saved. */
+export interface GenerationAssetEntry {
+  sha256: string;
+  byteLength: number;
+  mediaType: string;
+  format: string;
+}
+/** Project-relative path (`inputs/<sha12>.stl`) → stored file. */
+export type GenerationAssets = Record<string, GenerationAssetEntry>;
+
 export type GenerateEvent =
   | { kind: 'generation'; generationId: string; anonId: string }
   | { kind: 'status'; phase: 'running' | 'tool_calling' }
@@ -38,7 +49,20 @@ export type GenerateEvent =
   | { kind: 'attached'; message: string }
   | { kind: 'tool_call'; name: string; args: unknown }
   | { kind: 'tool_result'; name: string; ok: boolean }
-  | { kind: 'done'; artifact: Artifact; generationId: string; anonId: string; durationMs: number; partial?: GenerationPartial }
+  /** A chunk of the script being written. `reset` starts a new buffer for
+   *  `attempt` (a new attempt always replaces the previous one); otherwise
+   *  `delta` appends to the current buffer. */
+  | { kind: 'code'; attempt: number; delta: string; reset?: boolean }
+  | {
+    kind: 'done';
+    artifact: Artifact;
+    generationId: string;
+    anonId: string;
+    durationMs: number;
+    partial?: GenerationPartial;
+    /** Files `artifact.code` imports that the generation holds (see ./generationAssets.ts). */
+    assets?: GenerationAssets;
+  }
   | { kind: 'error'; code: 'llm_failed' | 'gate_failed' | 'eval_failed' | 'timeout'; message: string; generationId: string };
 
 /** Source-image limits for the Studio photo-reference request. A 4 MiB source
@@ -66,6 +90,22 @@ export interface ReferenceImage {
     valueMm: number;
   };
 }
+
+/** A 3D file the user attached for the agent to import and build around
+ * (`lib.fromSTL`), rather than recreate. The browser has already checked the
+ * size and triangle budget and measured the mesh; the server must re-check the
+ * bytes before materializing them for the run. See ./meshAttachment.ts. */
+export interface StlAttachment {
+  format: 'stl';
+  fileName: string;
+  /** `data:model/stl;base64,…` — binary or ASCII STL bytes. */
+  dataUrl: string;
+  encoding: 'binary' | 'ascii';
+  triangleCount: number;
+  /** Axis-aligned vertex bounds in the file's units (STL is unitless; mm by convention). */
+  bounds: { min: [number, number, number]; max: [number, number, number] };
+}
+export type GenerateAttachment = StlAttachment;
 
 /**
  * Parse a Server-Sent Events stream from POST /api/v1/generate into typed events.
@@ -135,47 +175,66 @@ function parsePartial(v: unknown): GenerationPartial | undefined {
   };
 }
 
-function mapToEvent(name: string, p: Record<string, unknown>): GenerateEvent | null {
-  switch (name) {
-    case 'generation':
-      return { kind: 'generation', generationId: asString(p.generationId), anonId: asString(p.anonId) };
-    case 'status':
-      return { kind: 'status', phase: p.phase as 'running' | 'tool_calling' };
-    case 'progress':
-      return {
-        kind: 'progress',
-        stage: asString(p.stage),
-        message: asString(p.message),
-        ...(typeof p.attempt === 'number' ? { attempt: p.attempt } : {}),
-        elapsedMs: Number(p.elapsedMs ?? 0),
-      };
-    case 'attached':
-      return { kind: 'attached', message: asString(p.message) };
-    case 'tool_call':
-      return { kind: 'tool_call', name: asString(p.name), args: p.args };
-    case 'tool_result':
-      return { kind: 'tool_result', name: asString(p.name), ok: Boolean(p.ok) };
-    case 'done': {
-      const partial = parsePartial(p.partial);
-      return {
-        kind: 'done',
-        artifact: p.artifact as Artifact,
-        generationId: asString(p.generationId),
-        anonId: asString(p.anonId),
-        durationMs: Number(p.durationMs ?? 0),
-        ...(partial ? { partial } : {}),
-      };
+function parseAssets(v: unknown): GenerationAssets | undefined {
+  if (!v || typeof v !== 'object' || Array.isArray(v)) return undefined;
+  const assets: GenerationAssets = {};
+  for (const [path, raw] of Object.entries(v as Record<string, unknown>)) {
+    if (!raw || typeof raw !== 'object') continue;
+    const e = raw as Record<string, unknown>;
+    if (typeof e.sha256 === 'string' && typeof e.byteLength === 'number'
+      && typeof e.mediaType === 'string' && typeof e.format === 'string') {
+      assets[path] = { sha256: e.sha256, byteLength: e.byteLength, mediaType: e.mediaType, format: e.format };
     }
-    case 'error':
-      return {
-        kind: 'error',
-        code: p.code as 'llm_failed' | 'gate_failed' | 'eval_failed' | 'timeout',
-        message: asString(p.message),
-        generationId: asString(p.generationId),
-      };
-    default:
-      return null;
   }
+  return Object.keys(assets).length > 0 ? assets : undefined;
+}
+
+type EventParser = (p: Record<string, unknown>) => GenerateEvent;
+
+/** One parser per SSE event name; a name without one is ignored. */
+const EVENT_PARSERS: Record<string, EventParser> = {
+  generation: (p) => ({ kind: 'generation', generationId: asString(p.generationId), anonId: asString(p.anonId) }),
+  status: (p) => ({ kind: 'status', phase: p.phase as 'running' | 'tool_calling' }),
+  progress: (p) => ({
+    kind: 'progress',
+    stage: asString(p.stage),
+    message: asString(p.message),
+    ...(typeof p.attempt === 'number' ? { attempt: p.attempt } : {}),
+    elapsedMs: Number(p.elapsedMs ?? 0),
+  }),
+  attached: (p) => ({ kind: 'attached', message: asString(p.message) }),
+  tool_call: (p) => ({ kind: 'tool_call', name: asString(p.name), args: p.args }),
+  tool_result: (p) => ({ kind: 'tool_result', name: asString(p.name), ok: Boolean(p.ok) }),
+  code: (p) => ({
+    kind: 'code',
+    attempt: typeof p.attempt === 'number' && Number.isFinite(p.attempt) ? p.attempt : 1,
+    delta: asString(p.delta),
+    ...(p.reset === true ? { reset: true } : {}),
+  }),
+  done: (p) => {
+    const partial = parsePartial(p.partial);
+    const assets = parseAssets(p.assets);
+    return {
+      kind: 'done',
+      artifact: p.artifact as Artifact,
+      generationId: asString(p.generationId),
+      anonId: asString(p.anonId),
+      durationMs: Number(p.durationMs ?? 0),
+      ...(partial ? { partial } : {}),
+      ...(assets ? { assets } : {}),
+    };
+  },
+  error: (p) => ({
+    kind: 'error',
+    code: p.code as 'llm_failed' | 'gate_failed' | 'eval_failed' | 'timeout',
+    message: asString(p.message),
+    generationId: asString(p.generationId),
+  }),
+};
+
+function mapToEvent(name: string, p: Record<string, unknown>): GenerateEvent | null {
+  const parse = Object.hasOwn(EVENT_PARSERS, name) ? EVENT_PARSERS[name] : undefined;
+  return parse ? parse(p) : null;
 }
 
 export interface GenerateRequest {
@@ -190,6 +249,9 @@ export interface GenerateRequest {
   /** A bounded simple-device reference photo plus a real-world scale anchor.
    * The hosted route validates, hashes, and materializes it before authoring. */
   referenceImage?: ReferenceImage;
+  /** Files the agent imports into the model instead of recreating them (one
+   * STL today). Mutually exclusive with `referenceImage` in the composer. */
+  attachments?: GenerateAttachment[];
   /** Cloudflare Turnstile token, sent only for signed-out builds. */
   turnstileToken?: string;
 }

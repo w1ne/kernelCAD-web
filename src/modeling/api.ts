@@ -6,7 +6,7 @@ import { Shape } from './capture/proxy';
 import type { Sketch, PathBuilder } from './capture/sketch';
 import type { SurfaceProxy } from './capture/surfaceProxy';
 import type { Curve3D } from './capture/curveProxy';
-import type { Vec3, PlaneSpec } from '../shared/intent/types';
+import type { Vec3, PlaneSpec, FeatureId } from '../shared/intent/types';
 import type {
   EdgeQuery,
   EdgeSegment,
@@ -24,6 +24,8 @@ import type {
   AnimationViewSpec,
 } from '../shared/intent/animationViewRecord';
 import type { DfmSpec, DfmSpecHandle } from '../shared/intent/dfmSpecRecord';
+import type { TubeSpecMetadata } from '../shared/intent/tubeRecord';
+import type { TubeOptions, TubeSpec } from './capture/tubeRecords';
 import type { RailPoint } from './helix';
 import type { HermiteEndpoint } from '../kernel/geometry/hermiteG2';
 import type { SketchModule } from './sketch/index';
@@ -64,6 +66,8 @@ import { makePartsLib } from './apiPartsLib';
 import { makeNurbsSurfaceMethods, makeCurveMethods, makeSweepMethods } from './apiSurfaceMethods';
 import { makeModuleNamespaces } from './apiModuleNamespaces';
 import { makeCaptureMethods } from './apiCaptureMethods';
+import { makeThreadMethods } from './apiThreadMethods';
+import type { IsoThreadInfo, ThreadedRodOptions } from './apiThreadMethods';
 
 export interface ApiContext {
   session: CaptureSession;
@@ -227,6 +231,35 @@ export interface KernelCadApi {
    * Throws `feature.invalid-args` when the pitch circles cannot meet.
    */
   planetaryToothCompatibility(opts: PlanetaryToothCompatibilityOpts): void;
+  /**
+   * Resolve an ISO metric thread designation. `'M6'` takes the ISO 261
+   * coarse pitch (M1–M64 table); `'M6x0.75'` sets the pitch and works for
+   * any size (`'M70x4'` for a jar neck). Returns the canonical `spec`,
+   * `diameter`, `pitch`, `coarse` / `standard` flags, `pitchDiameter`,
+   * `minorDiameter` (D1, the nut bore), `tapDrill` (D − P) and
+   * `threadDepth`. Pure data — no geometry.
+   */
+  isoThread(spec: string): IsoThreadInfo;
+  /**
+   * A real ISO metric EXTERNAL thread: 60° basic profile, right-hand, axis
+   * +Z from z = 0 to z = `length`, ridge centre crossing +X at every
+   * z = k·pitch (so a `threadedHole` whose entry face sits at a whole number
+   * of pitches mates in phase). Built as ONE screw sweep of the thread's
+   * transverse section, so it is a valid solid that unions, subtracts and
+   * exports STEP. `chamfer: true` adds 45° ends down to the root (one extra
+   * boolean). `cosmetic: true` returns a plain major-diameter cylinder
+   * carrying the thread spec as metadata. `clearance` takes play off the
+   * external thread (FDM fits).
+   */
+  threadedRod(opts: ThreadedRodOptions): Shape;
+  /**
+   * A 3D Bézier curve through its control polygon: 3 points = quadratic,
+   * 4 = cubic (up to 26). Returns a `Curve3D` (same as
+   * `nurbsCurve(points, { degree: points.length - 1 })`), usable as a
+   * `variableSweep` spine or sampled into a sweep rail:
+   * `profile.sweep(bezier(pts).sample(64), { spine: 'smooth' })`.
+   */
+  bezier(points: Vec3[]): Curve3D;
   extrudeRect(w: Editable<number>, h: Editable<number>, height: Editable<number>, opts?: ExtrudeOpts): Shape;
   extrudeCircle(r: Editable<number>, height: Editable<number>, opts?: ExtrudeOpts): Shape;
   extrudePolygon(points: Array<[Editable<number>, Editable<number>]>, depth: Editable<number>, opts?: ExtrudeOpts): Shape;
@@ -248,6 +281,9 @@ export interface KernelCadApi {
     defaultValue: C,
     meta: ParamMetadata & { choices: readonly C[] },
   ): TypedParamRef<C>;
+  /** Colour param: a '#rgb' / '#rrggbb' default (and no `choices`). The value
+   *  is '#rrggbb'; pass the ref straight to `.color()` or `.finish(t, { color })`. */
+  param(name: string, defaultValue: `#${string}`, meta?: ParamMetadata): TypedParamRef<`#${string}`>;
   param(name: string, defaultValue: string, meta?: ParamMetadata): TypedParamRef<string>;
   params<R extends Record<string, number | boolean>>(decl: R): { [K in keyof R]: ParamRef<R[K]> };
 
@@ -585,6 +621,24 @@ export interface KernelCadApi {
   dfmSpec(spec: DfmSpec): DfmSpecHandle;
 
   /**
+   * Bent tube between two ends: straight legs joined by constant-radius
+   * bends, built as one hollow solid in assembly space. `from` / `to` are
+   * `part.port(name)` or `{ point, axis? }`; `via` lists the corner points in
+   * order. `bendRadius` is the centreline radius; `od` defaults to the port
+   * size. Add the returned Shape to the assembly with `asm.part(name, shape)`
+   * and no `at`. Malformed input throws `feature.invalid-args` with a
+   * `tube.*` message prefix.
+   */
+  tube(name: string, opts: TubeOptions): Shape;
+
+  /**
+   * Declare the bending and clearance rules every `tube()` in the script
+   * must meet. Virtual record; malformed input throws `feature.invalid-args`
+   * (an enforcement gate must not be silently disabled).
+   */
+  tubeSpec(spec: TubeSpec): { id: FeatureId; metadata: TubeSpecMetadata };
+
+  /**
    * Mechanism-delivery joint helpers.
    *
    * `joint.clevis({ parentBody, childBody, axis, pivotParent, ... })` builds
@@ -704,6 +758,7 @@ export function createModelingApi(ctx: ApiContext): KernelCadApi {
     ringGear: makeRingGearAlias(() => api),
     internalGear: makeInternalGearAlias(() => api),
     planetaryToothCompatibility: makePlanetaryToothCompatibilityMethod(),
+    ...makeThreadMethods(session, () => api),
     ...makeExtrudeMethods(session),
     assembly(name) {
       return makeAssembly(name, session);
@@ -737,3 +792,4 @@ export type {
   CurveCurveIntersection,
   CurveSurfaceIntersection,
 } from './capture/curveProxy';
+export type { IsoThreadInfo, ThreadedRodOptions } from './apiThreadMethods';

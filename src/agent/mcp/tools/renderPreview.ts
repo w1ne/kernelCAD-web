@@ -30,11 +30,14 @@ import { tmpdir } from 'node:os';
 import { isAbsolute, join, resolve } from 'node:path';
 import {
   headlessRender,
+  compositeSheet,
   ALL_VIEWS,
+  SHEET_VIEWS,
   type HeadlessRenderOpts,
   type HeadlessRenderResult,
   type RenderView,
 } from '../../render/headlessRender';
+import { isRenderView } from '../../../shared/render/views';
 import { resolveRenderBaseUrl, type ResolvedRenderBase } from '../../render/playerServer';
 import {
   buildObjectFilter,
@@ -72,9 +75,14 @@ export interface RenderPreviewInput {
   code?: string;
   /** Path to a .kcad.ts script on disk. Mutually exclusive with code. */
   file?: string;
-  /** Canonical views to render; subset of front/right/top/iso. Default: all
-   *  four. Pass fewer for faster iteration (e.g. ['iso']). */
+  /** Views to render; any of front/back/left/right/top/bottom/iso. Default:
+   *  front/right/top/iso (all seven with `sheet`). Pass fewer for faster
+   *  iteration (e.g. ['iso']). */
   views?: string[];
+  /** Also write `sheet.png`: every rendered view tiled and labelled in one
+   *  image, for a single-look check that nothing is missing from any side.
+   *  With no `views`, renders all seven (adds back/left/bottom). */
+  sheet?: boolean;
   /** Extra arbitrary camera pose "az,el" in degrees (az=0,el=0 is front,
    *  +az rotates CCW around Z, +el lifts the camera). */
   pose?: string;
@@ -133,7 +141,7 @@ export interface RenderPreviewInput {
 }
 
 export interface RenderPreviewImage {
-  /** 'front' | 'right' | 'top' | 'iso' | 'pose <az>,<el>' */
+  /** A RenderView name, 'sheet', 'hero' or 'pose <az>,<el>'. */
   name: string;
   /** Absolute PNG path on the MCP server's filesystem. */
   path: string;
@@ -171,13 +179,25 @@ export interface RenderPreviewOutput {
 export const VIEW_DESCRIPTIONS: Record<RenderView, string> = {
   front:
     'Front elevation — camera on -Y looking at the model; screen right = +X, screen up = +Z.',
+  back:
+    'Rear elevation — camera on +Y looking at the model; screen right = -X, screen up = +Z.',
+  left:
+    'Left side elevation — camera on -X; screen right = -Y, screen up = +Z.',
   right:
     'Right side elevation — camera on +X; screen right = +Y, screen up = +Z.',
+  bottom:
+    'Geometric -Z underside — camera on -Z looking up; screen right = +X, screen up = -Y (the top view mirrored about X).',
   top:
     'Geometric +Z top-down plan — camera on +Z looking down; screen right = +X, screen up = +Y. For imported parts, this is not necessarily the product exterior.',
   iso:
     'Geometric Z-up three-quarter overview — camera in the (+X, -Y, +Z) octant. Product exterior versus underside depends on model orientation.',
 };
+
+/** Name of the labelled all-views image `sheet: true` adds. */
+export const SHEET_IMAGE_NAME = 'sheet';
+const SHEET_DESCRIPTION =
+  'Inspection sheet — every rendered view tiled in one image, each labelled with its view name ' +
+  '(see the per-view images for axis orientation). Check every tile, not just the overview.';
 
 /** Name of the single image a bare `preset: 'publish'` call renders. */
 export const PUBLISH_HERO_NAME = 'hero';
@@ -255,14 +275,14 @@ function resolvePreviewSource(input: RenderPreviewInput, defaultViews: readonly 
   if (input.views === undefined || input.views.length === 0) {
     views = [...defaultViews];
   } else {
-    const invalid = input.views.filter(v => !(ALL_VIEWS as readonly string[]).includes(v));
+    const invalid = input.views.filter(v => !isRenderView(v));
     if (invalid.length > 0) {
       return {
         ok: false,
         result: refusal(
           'cli.invalid-args',
-          `render_preview: unknown view(s): ${invalid.join(', ')}. Valid views: ${ALL_VIEWS.join(', ')}.`,
-          "Pass views as a subset of ['front', 'right', 'top', 'iso'], or omit it for all four.",
+          `render_preview: unknown view(s): ${invalid.join(', ')}. Valid views: ${SHEET_VIEWS.join(', ')}.`,
+          `Pass views as a subset of [${SHEET_VIEWS.map(v => `'${v}'`).join(', ')}], or omit it for the default set.`,
         ),
       };
     }
@@ -455,6 +475,18 @@ async function preparePreviewSession(input: RenderPreviewInput, hasCode: boolean
   return { ok: true, outDir, scriptPath };
 }
 
+/** What a call captures when it names no views: the sheet's seven views,
+ *  the publish hero (no views, one pose), or the canonical four. */
+function resolvePreviewShots(
+  input: RenderPreviewInput,
+  publish: PublishStageSpec | undefined,
+): { hero: boolean; defaultViews: readonly RenderView[] } {
+  if (input.sheet === true) return { hero: false, defaultViews: SHEET_VIEWS };
+  if (publish === undefined) return { hero: false, defaultViews: ALL_VIEWS };
+  const hero = (input.views ?? []).length === 0 && input.pose === undefined;
+  return { hero, defaultViews: [] };
+}
+
 export async function renderPreviewTool(
   input: RenderPreviewInput,
   deps: RenderPreviewDeps = realDeps,
@@ -463,10 +495,8 @@ export async function renderPreviewTool(
   if (!presetPhase.ok) return presetPhase.result;
   const { publish } = presetPhase;
 
-  // A bare publish call renders one hero shot instead of the four
-  // engineering views; explicit views / pose still work under the preset.
-  const hero = publish !== undefined && (input.views ?? []).length === 0 && input.pose === undefined;
-  const source = resolvePreviewSource(input, publish !== undefined ? [] : ALL_VIEWS);
+  const { hero, defaultViews } = resolvePreviewShots(input, publish);
+  const source = resolvePreviewSource(input, defaultViews);
   if (!source.ok) return source.result;
   const { hasCode, views } = source;
 
@@ -682,9 +712,16 @@ async function writePreviewImages(
   result: HeadlessRenderResult,
   stamp: (buf: Buffer) => Promise<Buffer>,
   hero: boolean,
+  sheet?: { width: number; height: number },
 ): Promise<{ images: RenderPreviewImage[] } | { refusal: RenderPreviewOutput }> {
   const images: RenderPreviewImage[] = [];
   try {
+    if (sheet !== undefined && views.some(v => result.pngsByView[v] !== undefined)) {
+      const path = join(outDir, `${SHEET_IMAGE_NAME}.png`);
+      const tiles = Object.fromEntries(views.map(v => [v, result.pngsByView[v]]));
+      await writeFile(path, await stamp(await compositeSheet(tiles, sheet.width, sheet.height)));
+      images.push({ name: SHEET_IMAGE_NAME, path, description: SHEET_DESCRIPTION });
+    }
     for (const view of views) {
       const buf = result.pngsByView[view];
       if (!buf) continue;
@@ -764,7 +801,9 @@ async function renderPreviewWork(args: {
 
   const stamp = async (buf: Buffer): Promise<Buffer> =>
     probe.mechanism === 'broken' ? watermarkBrokenMechanism(buf, probe.failures) : buf;
-  const imagePhase = await writePreviewImages(outDir, views, result, stamp, hero);
+  const imagePhase = await writePreviewImages(
+    outDir, views, result, stamp, hero, input.sheet === true ? { width, height } : undefined,
+  );
   if ('refusal' in imagePhase) return imagePhase.refusal;
   const { images } = imagePhase;
 

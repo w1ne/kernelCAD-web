@@ -21,6 +21,8 @@ interface GenerateHeroProps {
     readonly sessionLoading: boolean;
     readonly phase: GenerationPhase;
     readonly events: GenerationEvents;
+    /** The script as the agent writes it (absent with an older server). */
+    readonly liveCode?: ReturnType<typeof useGeneration>['liveCode'];
     readonly upgradeBusy: boolean;
     readonly onUpgrade: () => void;
     /** Opens the sign-in dialog; the typed prompt is kept. */
@@ -39,11 +41,11 @@ function errorTitle(code: string): string {
     return 'The model did not build';
 }
 
-function GenerateHeroStatus({ phase, events, hasSession, onUpgrade, upgradeBusy, onOpenResult, onRetry }: Pick<
+function GenerateHeroStatus({ phase, events, liveCode, hasSession, onUpgrade, upgradeBusy, onOpenResult, onRetry }: Pick<
     GenerateHeroProps,
-    'phase' | 'events' | 'hasSession' | 'onUpgrade' | 'upgradeBusy' | 'onOpenResult' | 'onRetry'
+    'phase' | 'events' | 'liveCode' | 'hasSession' | 'onUpgrade' | 'upgradeBusy' | 'onOpenResult' | 'onRetry'
 >): JSX.Element | null {
-    if (phase.state === 'running') return <GenerationProgress events={events} />;
+    if (phase.state === 'running') return <GenerationProgress events={events} liveCode={liveCode} />;
     if (phase.state === 'done' && phase.partial) return <PartialResult partial={phase.partial} onOpen={onOpenResult} />;
     if (phase.state !== 'error') return null;
     if (phase.code === 'rate_limited' || phase.code === 'anon_limit') {

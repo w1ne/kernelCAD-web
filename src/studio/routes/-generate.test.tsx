@@ -68,7 +68,7 @@ describe('/generate handoff from the landing page', () => {
     visit('?q=a+bracket&auto=1', 'https://kernelcad.com/');
     const { rerender } = render(<GeneratePage />);
     await waitFor(() => expect(submit).toHaveBeenCalledTimes(1));
-    expect(submit).toHaveBeenCalledWith('a bracket', undefined, undefined, undefined, undefined);
+    expect(submit).toHaveBeenCalledWith('a bracket', undefined, undefined, undefined, undefined, undefined);
     rerender(<GeneratePage />);
     await act(async () => {});
     expect(submit).toHaveBeenCalledTimes(1);
@@ -117,7 +117,7 @@ describe('/generate submit', () => {
     render(<GeneratePage />);
     fireEvent.change(box(), { target: { value: 'a hex bolt' } });
     fireEvent.click(screen.getByRole('button', { name: /Create/ }));
-    await waitFor(() => expect(submit).toHaveBeenCalledWith('a hex bolt', undefined, undefined, undefined, 'tok'));
+    await waitFor(() => expect(submit).toHaveBeenCalledWith('a hex bolt', undefined, undefined, undefined, undefined, 'tok'));
     expect(getTurnstileToken).toHaveBeenCalledWith('site-key');
   });
 
@@ -128,7 +128,7 @@ describe('/generate submit', () => {
     render(<GeneratePage />);
     fireEvent.change(box(), { target: { value: 'a hex bolt' } });
     fireEvent.click(screen.getByRole('button', { name: /Create/ }));
-    await waitFor(() => expect(submit).toHaveBeenCalledWith('a hex bolt', undefined, undefined, undefined, undefined));
+    await waitFor(() => expect(submit).toHaveBeenCalledWith('a hex bolt', undefined, undefined, undefined, undefined, undefined));
   });
 
   it('signed in: no Turnstile, submit unchanged', async () => {

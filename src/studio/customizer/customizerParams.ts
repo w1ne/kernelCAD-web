@@ -8,6 +8,7 @@
 
 import { setParamValue } from '../../modeling/edits/setParamValue';
 import type { ParamType, ParamValue, SerializedParamEntry } from '../../shared/runtime/paramTable';
+import { normalizeColor } from '../../shared/runtime/paramColor';
 import type { GeometryResult } from '../../shared/worker/workerTypes';
 import {
   guessUnit,
@@ -159,6 +160,12 @@ function checkString(param: CustomizerParam, value: ParamValue): ValueCheck {
   return { ok: true, value };
 }
 
+/** A colour: '#rrggbb', '#rgb' or a basic CSS name, returned as '#rrggbb'. */
+function checkColor(_param: CustomizerParam, value: ParamValue): ValueCheck {
+  const color = normalizeColor(value);
+  return color === undefined ? { ok: false, reason: 'not a colour (#rrggbb)' } : { ok: true, value: color };
+}
+
 const VALUE_CHECKS: Record<ParamType, (param: CustomizerParam, value: ParamValue) => ValueCheck> = {
   number: checkNumber,
   boolean: (_param, value) => (typeof value === 'boolean' ? { ok: true, value } : { ok: false, reason: 'not true/false' }),
@@ -166,6 +173,7 @@ const VALUE_CHECKS: Record<ParamType, (param: CustomizerParam, value: ParamValue
     ? { ok: true, value }
     : { ok: false, reason: 'not one of the options' }),
   string: checkString,
+  color: checkColor,
 };
 
 /** Check a typed value against its declaration (type, range, choices, length). */

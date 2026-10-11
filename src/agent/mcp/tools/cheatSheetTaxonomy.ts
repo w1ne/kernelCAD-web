@@ -85,13 +85,13 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
     task: 'Start a shape',
     blurb: 'The first call in any model: a solid primitive, or a 2D profile to extrude.',
     names: [
-      'box', 'cylinder', 'sphere', 'torus', 'spring', 'spurGear', 'internalSpurGear', 'ringGear', 'internalGear', 'planetaryToothCompatibility',
+      'box', 'cylinder', 'sphere', 'torus', 'spring', 'threadedRod', 'isoThread', 'spurGear', 'internalSpurGear', 'ringGear', 'internalGear', 'planetaryToothCompatibility',
       'extrudeRect', 'extrudeCircle', 'extrudePolygon', 'extrudeRoundedRect',
       'sheetMetal', 'sdf',
       'path', 'moveTo', 'lineTo', 'close', 'label', 'circle',
       'tangentArc', 'threePointsArc', 'sagittaArc', 'bulgeArc', 'radiusArc',
       'tangentCircle', 'tangentLine',
-      'smoothSpline', 'spline', 'nurbsSegment', 'hermiteG2',
+      'smoothSpline', 'spline', 'nurbsSegment', 'bezierTo', 'quadraticTo', 'hermiteG2',
       'sectionSketch', 'faceSketch', 'silhouette',
     ],
   },
@@ -103,7 +103,7 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
   {
     task: 'Remove material',
     blurb: 'Cut into a solid: bolt holes, pockets, slots, plain subtraction.',
-    names: ['subtract', 'hole', 'holes', 'cutout'],
+    names: ['subtract', 'hole', 'holes', 'threadedHole', 'cutout'],
   },
   {
     task: 'Combine shapes',
@@ -145,7 +145,7 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
     blurb:
       'NURBS curves and surfaces, plus the evaluators for measuring them before they become solids.',
     names: [
-      'nurbsCurve', 'spline3d', 'hermiteG2', 'curveBridge', 'surfaceIntersection',
+      'nurbsCurve', 'bezier', 'spline3d', 'hermiteG2', 'curveBridge', 'surfaceIntersection',
       'nurbsSurface', 'surfaceFromCurves',
       'surfaceFromBoundary', 'sew', 'thicken', 'toShape', 'trimTo', 'split',
       'projectCurve',
@@ -157,7 +157,7 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
   {
     task: 'Measure & verify',
     blurb: 'Ask the kernel what you actually built, and check it before shipping.',
-    names: ['boundingBox', 'bbox', 'length', 'lower', 'kinematic', 'dfmSpec', 'feaStudy'],
+    names: ['boundingBox', 'bbox', 'length', 'lower', 'kinematic', 'dfmSpec', 'feaStudy', 'tube', 'tubeSpec'],
   },
   {
     task: 'Parametrize',

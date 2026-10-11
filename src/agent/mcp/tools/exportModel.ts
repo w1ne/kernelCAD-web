@@ -6,7 +6,7 @@
 // discoverable via list_api as the single entry "export the model to a file".
 // Replaces the legacy `export_stl` shim (removed in the C2 cull).
 //
-// Format enum: stl | step | dxf | 3mf | glb | svg-drawing | pdf-drawing | urdf | srdf | sdf-gazebo.
+// Format enum: stl | step | dxf | 3mf | glb | svg-drawing | pdf-drawing | urdf | srdf | sdf-gazebo | usd-isaac | bom-csv | bom-json | bend-table.
 // URDF / SDF-Gazebo exports also write companion meshes/<part>.stl files
 // next to output_path (the emitted XML references them by relative path);
 // the written paths are reported in `mesh_files`. A multi-part DXF export
@@ -55,6 +55,8 @@ export interface ExportModelOutput {
   /** Per-part DXF files written next to output_path (`parts/<part>.dxf`) for a
    *  multi-part dxf export with the default `layout: 'per-part'`. */
   part_files?: string[];
+  /** bend-table: the CSV files written (one per tube) inside the `output_path` directory. */
+  table_files?: string[];
   /** svg-drawing / pdf-drawing placement report: `placed` / `overlapped` counts, `byKind`,
    *  the datum reference frame, and every annotation drawn. */
   drawing_report?: DrawingReport;
@@ -85,6 +87,16 @@ async function writeExportPayload(
   meshFiles: string[],
 ): Promise<string | undefined> {
   try {
+    if (result.tables !== undefined) {
+      // bend-table: `finalPath` is a directory holding one CSV per tube.
+      await mkdir(finalPath, { recursive: true });
+      for (const t of result.tables) {
+        const tablePath = resolve(finalPath, t.relPath);
+        await writeFile(tablePath, Buffer.from(t.bytes));
+        meshFiles.push(tablePath);
+      }
+      return undefined;
+    }
     await mkdir(dirname(finalPath), { recursive: true });
     await writeFile(finalPath, Buffer.from(result.bytes));
     // Robot-description exports (URDF / SDF) reference per-link mesh files
@@ -102,13 +114,19 @@ async function writeExportPayload(
   return undefined;
 }
 
+/** Bytes written for the primary output; bend-table has no primary file, so the CSV total. */
+function writtenByteCount(result: ExportResult): number {
+  return result.tables?.reduce((n, t) => n + t.bytes.byteLength, 0) ?? result.bytes.byteLength;
+}
+
 /** Companion files go in `part_files` for a multi-part DXF, `mesh_files`
  *  for robot-description meshes; nothing when none were written. */
 function companionFilesField(
   format: ExportFormat,
   files: string[],
-): Pick<ExportModelOutput, 'mesh_files' | 'part_files'> {
+): Pick<ExportModelOutput, 'mesh_files' | 'part_files' | 'table_files'> {
   if (files.length === 0) return {};
+  if (format === 'bend-table') return { table_files: files };
   return format === 'dxf' ? { part_files: files } : { mesh_files: files };
 }
 
@@ -198,7 +216,7 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
   return {
     ok: errorDiagnostics.length === 0,
     output_path: finalPath,
-    byte_count: result.bytes.byteLength,
+    byte_count: writtenByteCount(result),
     feature_count: result.featureCount,
     format,
     ...companionFilesField(format, meshFiles),

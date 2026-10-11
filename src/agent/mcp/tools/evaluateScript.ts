@@ -9,6 +9,7 @@ import {
   type EvaluateResult,
   type FeatureHealthEntry,
 } from '../../cli/commands/evaluate';
+import { tubesOutput } from '../../../composition/scriptEvaluation';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
 import { clearActiveMcpSession, setActiveMcpSession } from '../activeSession';
@@ -69,6 +70,10 @@ export interface EvaluateScriptOutput {
   /** Dimensions declared with `shape.dimension()`, as the viewer labels them.
    *  Present only on a full evaluation of a script that declares any. */
   dimensions?: NonNullable<EvaluateResult['dimensions']>;
+  /** Tube line report (`lines`: bend table, cut length, clearance, mass, flow;
+   *  `systems`: per-system totals). Present only when the model has tubes.
+   *  The gate's diagnostics are already in `diagnostics`. */
+  tubes?: NonNullable<ReturnType<typeof tubesOutput>>;
   /**
    * Mechanism-truth verdict (T3), present ONLY for a full (non-dry)
    * evaluation of an assembly-built scene with `skipMechanismCheck` unset.
@@ -117,7 +122,7 @@ export async function evaluateScriptTool(
 ): Promise<EvaluateScriptOutput> {
   if (input.dryRun) return evaluateDryRun(input);
 
-  const { evaluation, model, dfmReport } = await evaluateAndBuildScript(input as EvaluateInput);
+  const { evaluation, model, dfmReport, tubeReport } = await evaluateAndBuildScript(input as EvaluateInput);
   // Authoring intent lint (usage triage 2026-10-03): info-only hints naming
   // the API for intent the source states but builds by hand. Agents skip
   // lookup_cookbook, but every agent reads this result.
@@ -131,7 +136,7 @@ export async function evaluateScriptTool(
   // out of the 9 session-dependent tools exactly while iterating on the
   // dfm fix. Genuine build failures (model missing or non-dfm errors)
   // still clear the session — its shapes would be stale or absent.
-  const buildSucceeded = didBuildSucceed(model, dfmReport);
+  const buildSucceeded = didBuildSucceed(model, [dfmReport, tubeReport]);
   refreshActiveSession(model, buildSucceeded);
   // Assembly-built scene: surface the named-part roster so agents can
   // confirm the model carries part identity. Absent for single-shape /
@@ -161,6 +166,7 @@ export async function evaluateScriptTool(
       ? [...baseDiagnostics, ...withNextActions(mechanismFailures)]
       : baseDiagnostics;
   const ok = r.exitCode === 0 && mechanism !== 'broken';
+  const tubes = tubesOutput(tubeReport);
   const reviewHint = hasArticulatedMates(model) ? MATES_REVIEW_HINT : undefined;
 
   return {
@@ -173,6 +179,7 @@ export async function evaluateScriptTool(
     diagnostics: mergedDiagnostics,
     featureHealth: r.featureHealth,
     ...(r.dimensions !== undefined ? { dimensions: r.dimensions } : {}),
+    ...(tubes !== undefined ? { tubes } : {}),
     ...(parts !== undefined ? { parts } : {}),
     ...(mechanism !== undefined ? { mechanism } : {}),
     ...(reviewHint !== undefined ? { reviewHint } : {}),
@@ -200,14 +207,18 @@ function sceneParts(returnValue: unknown): { count: number; names: string[] } | 
     : undefined;
 }
 
-function didBuildSucceed(model: BuildOutcome['model'], dfmReport: BuildOutcome['dfmReport']): boolean {
-  const dfmErrors = new Set(dfmReport?.diagnostics ?? []);
+function didBuildSucceed(
+  model: BuildOutcome['model'],
+  gateReports: ReadonlyArray<{ diagnostics: readonly unknown[] } | undefined>,
+): boolean {
+  // Tube gate errors are verdicts on a model that built, exactly like dfm ones.
+  const gateDiagnostics = new Set<unknown>(gateReports.flatMap(r => r?.diagnostics ?? []));
   // Union-guard errors (union.*) are verdicts on a model that DID build, like
   // dfm gate errors: keep the session and still probe the mechanism so the
   // agent sees every finding at once. `ok` is false via exitCode either way.
   return (
     model !== undefined &&
-    model.diagnostics.every(d => d.severity !== 'error' || dfmErrors.has(d) || d.code.startsWith('union.'))
+    model.diagnostics.every(d => d.severity !== 'error' || gateDiagnostics.has(d) || d.code.startsWith('union.'))
   );
 }
 

@@ -3,7 +3,7 @@
 /**
  * One customizer row per parameter type: a slider with a number field and
  * unit (number), a switch (boolean), a segmented control or a list (choice),
- * and a text field (string). Every row has a readable label and, once its
+ * a text field (string), and a colour swatch plus hex field (color). Every row has a readable label and, once its
  * value leaves the saved default, a reset button.
  */
 import { useId, useState, type JSX, type ReactNode } from 'react';
@@ -254,11 +254,73 @@ function TextRow({ param, value, onChange, onCommit, onReset }: ParamRowProps & 
   );
 }
 
+const FULL_HEX = /^#[0-9a-f]{6}$/i;
+
+/** A native colour picker for picking, and a hex field for typing or pasting
+ *  ('#rgb' and basic CSS names are accepted and stored as '#rrggbb'). */
+function ColorRow({ param, value, onChange, onCommit, onReset }: ParamRowProps & { value: string }): JSX.Element {
+  const labelId = useId();
+  const [draft, setDraft] = useState(value);
+  const [seen, setSeen] = useState(value);
+  if (seen !== value) {
+    setSeen(value);
+    setDraft(value);
+  }
+  const typed = checkParamValue(param, draft);
+  const accept = (text: string) => {
+    const check = checkParamValue(param, text);
+    if (check.ok && check.value !== value) onChange(check.value);
+  };
+  // Short forms (#36c, red) apply on Enter or blur only, so typing #336
+  // on the way to #3366cc does not rewrite the field mid-entry.
+  const commitDraft = () => {
+    accept(draft);
+    onCommit();
+  };
+  return (
+    <RowFrame
+      param={param}
+      labelId={labelId}
+      changed={value !== param.defaultValue}
+      onReset={onReset}
+      control={(
+        <div className="flex shrink-0 items-center gap-1.5">
+          <input
+            type="color"
+            value={value}
+            onChange={(e) => accept(e.target.value)}
+            onBlur={onCommit}
+            aria-labelledby={labelId}
+            data-testid={`customizer-color-${param.name}`}
+            className="h-control-sm w-8 shrink-0 cursor-pointer rounded-control border border-border-strong bg-surface-1 p-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent max-sm:h-touch max-sm:w-touch"
+          />
+          <input
+            type="text"
+            value={draft}
+            spellCheck={false}
+            onChange={(e) => {
+              setDraft(e.target.value);
+              if (FULL_HEX.test(e.target.value.trim())) accept(e.target.value);
+            }}
+            onBlur={commitDraft}
+            onKeyDown={(e) => { if (e.key === 'Enter') commitDraft(); }}
+            aria-label={`${param.label} hex value`}
+            aria-invalid={!typed.ok || undefined}
+            data-testid={`customizer-hex-${param.name}`}
+            className={cx(FIELD, 'w-20 shrink-0 font-mono aria-invalid:border-danger')}
+          />
+        </div>
+      )}
+    />
+  );
+}
+
 export function ParamRow(props: ParamRowProps): JSX.Element | null {
   const { param, value } = props;
   if (param.type === 'number' && typeof value === 'number') return <NumberRow {...props} value={value} />;
   if (param.type === 'boolean' && typeof value === 'boolean') return <BooleanRow {...props} value={value} />;
   if (param.type === 'choice' && typeof value === 'string') return <ChoiceRow {...props} value={value} />;
   if (param.type === 'string' && typeof value === 'string') return <TextRow {...props} value={value} />;
+  if (param.type === 'color' && typeof value === 'string') return <ColorRow {...props} value={value} />;
   return null;
 }

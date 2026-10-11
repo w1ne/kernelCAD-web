@@ -3,7 +3,9 @@
 import { useEffect, useRef, useState, type JSX } from 'react';
 import { Check, ChevronDown, Copy, RotateCcw, Wrench } from 'lucide-react';
 import type { GenerationPhase } from '../../funnel/hooks/useGeneration';
+import { LiveCodeView } from '../../funnel/components/LiveCodeView';
 import type { GenerateEvent } from '../../funnel/lib/generateClient';
+import type { LiveCode } from '../../funnel/lib/liveCode';
 import { Button } from '../../ui/Button';
 import { cx } from '../../ui/cx';
 import { ProgressSteps } from '../../ui/ProgressSteps';
@@ -102,10 +104,13 @@ function RunLog({ events }: { events: readonly GenerateEvent[] }): JSX.Element |
 export function RunProgress({
     phase,
     events,
+    liveCode = null,
     onCancel,
 }: {
     phase: GenerationPhase;
     events: readonly GenerateEvent[];
+    /** The script as the agent writes it; shown while the run is going. */
+    liveCode?: LiveCode | null;
     onCancel: () => void;
 }): JSX.Element | null {
     const running = phase.state === 'running';
@@ -129,6 +134,7 @@ export function RunProgress({
                     {attached}{attached && slow ? ' ' : ''}{slow}
                 </p>
             )}
+            {running && liveCode && <LiveCodeView live={liveCode} />}
             <RunLog events={events} />
         </ProgressSteps>
     );
