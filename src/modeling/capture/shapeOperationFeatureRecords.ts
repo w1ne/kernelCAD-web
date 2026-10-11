@@ -3,7 +3,9 @@
 import type { FeatureMetadata } from '../../shared/intent/featureRecord';
 import type { FeatureId, FeatureKind, FeatureRef, Param } from '../../shared/intent/types';
 import type { FilletContinuity } from '../../shared/intent/filletContinuityRecord';
-import { EDGE_QUERY_KEYS as EDGE_QUERY_KEYS_ARR } from '../../shared/intent/queryKeys';
+import { invalidArgs } from '../../shared/intent/invalidArgs';
+import { parseTopoRef } from '../../kernel/naming/topoRef';
+import { parseQuery } from '../../kernel/naming/parseQuery';
 import { toParam } from '../../shared/runtime/editableHelpers';
 import { isParamRef, type Editable } from '../../shared/runtime/paramRef';
 
@@ -41,6 +43,8 @@ export type ShapeOperationEdgeSelector =
   | ShapeOperationEdgeQuery
   | ShapeOperationEdgeSegment
   | ShapeOperationEdgeSegment[]
+  | string
+  | string[]
   | { face: ShapeOperationFaceSelector | string }
   | ShapeOperationQueryValue
   | undefined;
@@ -77,73 +81,56 @@ export function buildFaceInputRef(
   // Q8 — Query DSL value (kc.q.face(...)). Detect duck-type-shape and
   // serialize as a queryDsl FaceRef so the lowerer dispatches through
   // the Q3 evaluator at consume time.
-  if (isQueryValue(face)) {
-    return {
-      kind: 'face',
-      featureId: baseId,
-      ref: {
-        kind: 'queryDsl',
-        queryAst: face.ast as never,
-        queryTarget: face.target as never,
-        ...(face.lenient ? { lenient: true } : {}),
-      },
-    };
-  }
+  if (isQueryValue(face)) return queryDslFaceRef(baseId, face);
   // `{ face: <something> }` wrapper form
   if (typeof face === 'object' && face !== null && 'face' in face) {
     const faceVal = (face as { face: unknown }).face;
-    if (typeof faceVal === 'string') {
-      if (CANONICAL_FACES.has(faceVal)) {
-        return {
-          kind: 'face',
-          featureId: baseId,
-          ref: { kind: 'canonical', face: faceVal as 'top' },
-        };
-      }
-      return {
-        kind: 'face',
-        featureId: baseId,
-        ref: { kind: 'label', name: faceVal },
-      };
-    }
+    if (typeof faceVal === 'string') return faceRefFromString(baseId, faceVal);
     // Wrapped Query value: { face: kc.q.face(...) }.
-    if (isQueryValue(faceVal)) {
-      return {
-        kind: 'face',
-        featureId: baseId,
-        ref: {
-          kind: 'queryDsl',
-          queryAst: faceVal.ast as never,
-          queryTarget: faceVal.target as never,
-          ...(faceVal.lenient ? { lenient: true } : {}),
-        },
-      };
-    }
+    if (isQueryValue(faceVal)) return queryDslFaceRef(baseId, faceVal);
     return {
       kind: 'face',
       featureId: baseId,
       ref: { kind: 'query', query: faceVal as never },
     };
   }
-  if (typeof face === 'string') {
-    if (CANONICAL_FACES.has(face)) {
-      return {
-        kind: 'face',
-        featureId: baseId,
-        ref: { kind: 'canonical', face: face as 'top' },
-      };
-    }
-    return {
-      kind: 'face',
-      featureId: baseId,
-      ref: { kind: 'label', name: face },
-    };
-  }
+  if (typeof face === 'string') return faceRefFromString(baseId, face);
   // Bare FaceQuery object (no { face: ... } wrapper)
   return {
     kind: 'face',
     featureId: baseId,
     ref: { kind: 'query', query: face as never },
+  };
+}
+
+function queryDslFaceRef(baseId: FeatureId, q: ShapeOperationQueryValue): FeatureRef {
+  return {
+    kind: 'face',
+    featureId: baseId,
+    ref: {
+      kind: 'queryDsl',
+      queryAst: q.ast as never,
+      queryTarget: q.target as never,
+      ...(q.lenient ? { lenient: true } : {}),
+    },
+  };
+}
+
+/** String face selector: an `@kc[...]` / `@kcq[...]` ref, a canonical face
+ *  name, or a face label. */
+function faceRefFromString(baseId: FeatureId, face: string): FeatureRef {
+  if (isRefString(face)) return faceRefFromRefString(baseId, face);
+  if (CANONICAL_FACES.has(face)) {
+    return {
+      kind: 'face',
+      featureId: baseId,
+      ref: { kind: 'canonical', face: face as 'top' },
+    };
+  }
+  return {
+    kind: 'face',
+    featureId: baseId,
+    ref: { kind: 'label', name: face },
   };
 }
 
@@ -193,6 +180,25 @@ export function buildEdgeFeatureRef(
     return buildQueryFeatureRef(baseId, selector);
   }
 
+  // A bare string: an `@kc[...]` / `@kcq[...]` ref, or a canonical face name
+  // / face label (`.fillet(2, 'top')` ≡ `.fillet(2, { face: 'top' })`).
+  // Without this branch the string was spread into an EdgeQuery and failed
+  // with "unknown keys: 0, 1, 2, …".
+  if (typeof selector === 'string') {
+    return edgeFeatureRefFromString(baseId, selector);
+  }
+
+  if (Array.isArray(selector) && selector.length > 0 && selector.every((s) => typeof s === 'string')) {
+    return {
+      key: 'edges',
+      value: {
+        kind: 'edge',
+        featureId: baseId,
+        ref: { kind: 'segments', segmentIds: (selector as string[]).map((s) => edgeSegmentIdFromRef(baseId, s)) },
+      },
+    };
+  }
+
   if (isFaceWrapperSelector(selector)) {
     return { key: 'face', value: buildFaceInputRef(baseId, (selector as { face: ShapeOperationFaceSelector }).face) };
   }
@@ -209,7 +215,7 @@ export function buildEdgeFeatureRef(
   }
 
   if (Array.isArray(selector)) {
-    const segmentIds = selector.map(s => s.id);
+    const segmentIds = (selector as ShapeOperationEdgeSegment[]).map(s => s.id);
     return {
       key: 'edges',
       value: {
@@ -220,28 +226,8 @@ export function buildEdgeFeatureRef(
     };
   }
 
-  if (typeof selector === 'object' && selector !== null) {
-    const keys = Object.keys(selector);
-    if (keys.length > 0 && keys.every(k => EDGE_QUERY_KEYS.has(k))) {
-      return {
-        key: 'edges',
-        value: {
-          kind: 'edge',
-          featureId: baseId,
-          ref: { kind: 'query', query: selector as never },
-        },
-      };
-    }
-    return {
-      key: 'edges',
-      value: {
-        kind: 'edge',
-        featureId: baseId,
-        ref: { kind: 'query', query: selector as never },
-      },
-    };
-  }
-
+  // Any other object is an EdgeQuery; key / value validation happens in
+  // the kernel resolver (normalizeEdgeQuery) so every consumer shares it.
   return {
     key: 'edges',
     value: {
@@ -380,4 +366,107 @@ function isQueryValue(v: unknown): v is ShapeOperationQueryValue {
 }
 
 const CANONICAL_FACES = new Set(['top', 'bottom', 'left', 'right', 'front', 'back']);
-const EDGE_QUERY_KEYS = new Set<string>(EDGE_QUERY_KEYS_ARR);
+
+// ---------------------------------------------------------------------------
+// `@kc[...]` / `@kcq[...]` ref strings as feature selectors.
+// ---------------------------------------------------------------------------
+
+function isRefString(s: string): boolean {
+  return s.startsWith('@kc[') || s.startsWith('@kcq[');
+}
+
+function badRef(ref: string, why: string, hintTag: string, requires: string): never {
+  return invalidArgs({
+    api: 'fillet / chamfer / shell (…, selector)',
+    path: 'selector',
+    gotText: `${JSON.stringify(ref)} — ${why}`,
+    requires,
+    example: ".fillet(1, '@kc[box_1/edge/e3]') or .fillet(1, '@kc[box_1/face/top]')",
+    hintSlug: `invalid-args.selector.${hintTag}`,
+  });
+}
+
+const POSITIONAL_EDGE = /^e\d+$/;
+const POSITIONAL_FACE = /^f\d+$/;
+
+/** Map one `@kc[<owner>/edge/e<N>]` ref (the form list_edges / inspect emit)
+ *  to its positional segment id. Positional ids index the edge list of the
+ *  shape they were listed on, so the ref's owner must be the shape this
+ *  feature is applied to. */
+function edgeSegmentIdFromRef(baseId: FeatureId, ref: string): string {
+  const parsed = parseTopoRef(ref);
+  if ('error' in parsed) {
+    badRef(ref, `malformed @kc[...] ref (${parsed.error}).`, 'bad-ref',
+      "the exact ref string printed by inspect / list_edges, e.g. '@kc[box_1/edge/e3]'");
+  }
+  const name = parsed.segments.length === 1 ? parsed.segments[0] : undefined;
+  if (parsed.kind !== 'edge' || name === undefined || !POSITIONAL_EDGE.test(name)) {
+    badRef(ref, `only positional edge refs '@kc[<feature>/edge/e<N>]' can select edges here (got kind '${parsed.kind}').`,
+      'bad-ref', "an edge ref from inspect({ of: 'edges' }), a face ref / face name (all edges of that face), or an EdgeQuery");
+  }
+  if (parsed.owner !== baseId) {
+    badRef(ref, `edge ids are positional within the shape they were listed on ('${parsed.owner}'), but this feature is applied to '${baseId}'.`,
+      'ref-owner-mismatch', `refs listed on '${baseId}' itself (inspect({ of: 'edges', feature_id: '${baseId}' })), or an EdgeQuery`);
+  }
+  return name;
+}
+
+/** `@kc[...]` / `@kcq[...]` string → face FeatureRef. Face refs resolve
+ *  through the Query evaluator's `fromString` op (lineage-aware: the owner
+ *  may be an upstream feature, the name a canonical face or label). */
+function faceRefFromRefString(baseId: FeatureId, ref: string): FeatureRef {
+  if (ref.startsWith('@kcq[')) {
+    const q = parseQuery(ref);
+    return {
+      kind: 'face',
+      featureId: baseId,
+      ref: { kind: 'queryDsl', queryAst: q.ast as never, queryTarget: q.target as never },
+    };
+  }
+  const parsed = parseTopoRef(ref);
+  if ('error' in parsed) {
+    badRef(ref, `malformed @kc[...] ref (${parsed.error}).`, 'bad-ref',
+      "the exact ref string printed by inspect / list_faces, e.g. '@kc[box_1/face/top]'");
+  }
+  if (parsed.kind !== 'face') {
+    badRef(ref, `expected a face ref, got kind '${parsed.kind}'.`, 'bad-ref',
+      "a face ref '@kc[<feature>/face/<name>]'");
+  }
+  const name = parsed.segments[parsed.segments.length - 1];
+  if (name !== undefined && POSITIONAL_FACE.test(name)) {
+    badRef(ref, `positional face ids ('${name}') are not stable selectors and cannot be resolved by a feature.`,
+      'positional-face-ref', "a canonical/labelled face ref (e.g. '@kc[box_1/face/top]'), a face label, or a FaceQuery such as { near: <centroid from inspect> }");
+  }
+  return {
+    kind: 'face',
+    featureId: baseId,
+    ref: { kind: 'queryDsl', queryAst: { op: 'fromString', ref } as never, queryTarget: 'face' },
+  };
+}
+
+/** Bare-string edge selector → `inputs.edges` (edge refs / @kcq edge
+ *  queries) or `inputs.face` (face refs, canonical names, labels). */
+function edgeFeatureRefFromString(
+  baseId: FeatureId,
+  selector: string,
+): { key: 'face' | 'edges'; value: FeatureRef } {
+  if (selector.startsWith('@kcq[')) {
+    const q = parseQuery(selector);
+    return buildQueryFeatureRef(baseId, q as unknown as ShapeOperationQueryValue);
+  }
+  if (selector.startsWith('@kc[')) {
+    const parsed = parseTopoRef(selector);
+    if (!('error' in parsed) && parsed.kind === 'face') {
+      return { key: 'face', value: faceRefFromRefString(baseId, selector) };
+    }
+    return {
+      key: 'edges',
+      value: {
+        kind: 'edge',
+        featureId: baseId,
+        ref: { kind: 'segment', segmentId: edgeSegmentIdFromRef(baseId, selector) },
+      },
+    };
+  }
+  return { key: 'face', value: buildFaceInputRef(baseId, selector) };
+}
