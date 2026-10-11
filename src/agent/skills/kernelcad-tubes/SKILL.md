@@ -59,10 +59,12 @@ part.connector('out', {
 
 `part.port(name)` returns the port position, axis, size and system for `from` / `to`. It works when the connector has a `{ kind: 'vec3' }` origin and the part is placed with `at`. The position is `at` plus the origin, so `at: [x, 0, 0]` with `x = param('X', 60)` moves the port and the tube end with it.
 
+`part.port(name)` is for passing a port to `tube`. A script cannot read coordinates from it: with a param in `at` the numbers are not resolved yet. To learn where a port is, read `ports` in the evaluation result (see "The port report").
+
 `part.port(name)` does not work in three cases. In each, pass a plain end instead: `{ point: [x, y, z], axis: [x, y, z], part: '<part name>' }`, with the position and axis in assembly space.
 
 - The connector origin is a face reference, or the part is placed with `connect`: the call fails with `tube.port.unresolved`.
-- The part is moved by a mate: the call gives the position before the mate, and the gate reports `tube.port.misaligned` with the port's solved position. Use that position as the `point`.
+- The part is moved by a mate: the call gives the position before the mate, and the gate reports `tube.port.misaligned` with the port's solved position. Use the `origin` and `axis` that `ports` gives for that port (`placedBy: 'mate'`) as the `point` and `axis`.
 - The end is not on a part: leave `part` out.
 
 `part` is the name the part was added under with `asm.part(name, ...)`. It makes that part the owner of the end, exactly as for a port: the fitting zone at that end may touch the part, and the rest of the tube is measured against it. The end must touch the named part: an end more than 0.01 mm away fails `tube.port.misaligned` with the measured gap and gets no fitting zone. A name the assembly does not have fails `tube.end.part-not-found`, which lists the part names. Without `part`, a tube that ends on a part's surface is measured against that part in full and fails `tube.clearance.violated` at 0.00 mm.
@@ -182,10 +184,50 @@ A pair of tubes is reported once, on the tube declared first, so the corner to m
 
 ## The loop
 
-1. Write the ports and a first set of corners on the port axes.
-2. Evaluate: `evaluate_script`, or `kernelcad evaluate <file> --json`.
-3. For each `tube.*` diagnostic, change the argument the table names by at least the stated amount.
-4. Repeat until there are no errors, then read `tubes.lines[].minClearance` to see how much room each line has left (the field is absent for a tube with nothing near it).
+1. Write the parts and their ports, with no tubes yet, and evaluate: `evaluate_script`, or `kernelcad evaluate <file> --json`.
+2. Read `ports`: every port's `origin` and `axis`. Write each tube's first and last corner from them (see "The port report").
+3. Evaluate again. For each `tube.*` diagnostic, change the argument the table names by at least the stated amount.
+4. Repeat until there are no errors, then read `tubes.lines[].minClearance` to see how much room each line has left (the field is absent for a tube with nothing near it), and check in `ports` that every port you meant to connect has the tube in `usedBy`.
+
+## The port report
+
+`evaluate_script` and `kernelcad evaluate <file> --json` (with or without `--envelope`) return a `ports` array whenever the script declares an assembly. It does not need a tube: it is there for a script that only places parts, and when a gate fails. It lists the ports of the assembly the script returns, in the order the parts and connectors were declared. A dry run (`dryRun: true`) builds nothing and has no `ports`.
+
+```json
+"ports": [
+  { "part": "pump", "name": "out-a", "system": "fuel", "od": 12.7, "minStraight": 20,
+    "origin": [80, -110, -200], "axis": [0, 0, 1], "placedBy": "at", "usedBy": ["fuel-a"] }
+]
+```
+
+| Field | Meaning |
+|---|---|
+| `part`, `name` | the part that owns the port and the connector name: `pump.port('out-a')` |
+| `system`, `od`, `minStraight` | as declared on the port; `minStraight` only when the port declares one |
+| `origin` | port position in assembly space, mm, with params resolved and mates solved |
+| `axis` | unit vector pointing out of the part, in assembly space |
+| `placedBy` | `at`: the part is where its `at` puts it, and `part.port(name)` gives this position. `mate`: a mate moved or turned the part after `at`; `origin` and `axis` are the solved ones, and `part.port(name)` still gives the position before the mate |
+| `usedBy` | names of the tubes that end on the port, `[]` when it is free. A plain `{ point }` end counts when it sits within 0.01 mm of `origin` |
+| `unresolved` | why there is no position; `origin`, `axis` and `placedBy` are then left out |
+
+Placing corners from a port:
+
+- First corner of a tube that leaves the port: `origin + L * axis`. `L` is at least `bendRadius + minStraightAtEnd * od` for a 90 degree bend (use the port's `minStraight` in place of `minStraightAtEnd * od` when it is longer).
+- Last corner of a tube that arrives at a port: the same formula with that port's `origin` and `axis`.
+- For `placedBy: 'at'`, end the tube with `part.port(name)`. For `placedBy: 'mate'`, end it with `{ point: origin, axis, part }`.
+- `origin` is a number for this evaluation. If a param moves the part, write the corner from the same param (`[X.add(20), -110, -120]`), or the corner stays behind when the param changes.
+
+`unresolved` is one of:
+
+| Text starts with | Cause |
+|---|---|
+| `no built assembly` | the build failed, or the script does not return the assembly. Fix the errors in `diagnostics`, or return `asm.model()` |
+| `part '<name>' is not in the built assembly` | the part did not make it into the scene |
+| `the connector origin is a face, edge or vertex reference` | give the port a `{ kind: 'vec3' }` origin |
+| `the connector origin is not three finite numbers` | a param or a bad value in the origin. An origin takes plain numbers; move the port by its part's `at` |
+| `the part is placed with connect` | place the part with `at` |
+
+A port that nothing connects to is not an error. Two tubes in one `usedBy` are the two-tubes-from-one-port case and fail `tube.clearance.overlap`.
 
 ## The line report
 
@@ -227,6 +269,7 @@ The export is refused when the build or a tube gate reports an error; fix the ro
 | G-eval | `kernelcad evaluate` exits 0 with no `tube.*` error and no `feature.invalid-args` |
 | G-spec-declared | no `tube.spec.defaulted` warning: the script calls `tubeSpec` |
 | G-lines-present | `tubes.lines` has one entry per tube you meant to route, each with the system you expect |
+| G-ports-connected | every port you meant to connect has its tube in `ports[].usedBy`, and no port has `unresolved` |
 | G-clearance-margin | every `minClearance.mm` is at or above the rule for that pair; a line with no `minClearance` has no neighbour, which is a pass only if you expected none |
 | G-render | a render shows every tube leaving its boss square and passing through no part |
 

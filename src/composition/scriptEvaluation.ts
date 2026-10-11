@@ -34,6 +34,7 @@ import {
   runTubeChecksOnModel,
   type TubeCheckReport,
 } from '../modeling/runtime/tube/runTubeChecks';
+import { portReportOnModel, type PortReportEntry } from '../modeling/runtime/tube/portReport';
 import { detectUnstructuredBodies } from '../modeling/validation/unstructuredBodies';
 import { detectUnionDefects } from '../modeling/validation/unionIntegrity';
 import type { SweepEvaluator } from '../kinematic/sweepTolerance';
@@ -113,6 +114,11 @@ export interface EvaluateAndBuildResult {
    *  opt-in by a spec record. Its diagnostics are already merged into
    *  `evaluation.diagnostics`. */
   tubeReport?: TubeCheckReport;
+  /** Every fluid port of the script's assembly, with its resolved position
+   *  and the tubes that end on it. Present (possibly empty) whenever the
+   *  script declares an assembly, tubes or not, failed build or not; absent
+   *  otherwise. Agents see it as `ports`, beside `tubes`. */
+  portReport?: PortReportEntry[];
 }
 
 /** The agent-facing view of a tube report: lines and system totals only.
@@ -269,6 +275,8 @@ export async function evaluateAndBuildScript(
 
   const gates = await runOptInGates(model, fatal);
 
+  const portReport = portReportOnModel(model);
+
   const fatalAfterGates = model.diagnostics.some(d => d.severity === 'error');
   const dimensions = fatalAfterGates ? [] : declaredDimensionSummaries(model);
   return {
@@ -281,6 +289,7 @@ export async function evaluateAndBuildScript(
     },
     model,
     ...gates,
+    ...(portReport !== undefined ? { portReport } : {}),
   };
 }
 

@@ -26,6 +26,7 @@ import {
   invalidArgsEvaluation,
   isFileReadError,
   tubesOutput,
+  type EvaluateAndBuildResult,
   type EvaluateInput,
   type EvaluateResult,
 } from '../../../composition/scriptEvaluation';
@@ -179,6 +180,8 @@ export interface EvaluateWithEnvelopeResult {
   dimensions?: EvaluateResult['dimensions'];
   /** Tube line report and system totals; absent when the model has no tubes. */
   tubes?: ReturnType<typeof tubesOutput>;
+  /** Every fluid port of the script's assembly; absent when it declares none. */
+  ports?: EvaluateAndBuildResult['portReport'];
 }
 
 /**
@@ -206,15 +209,15 @@ export async function evaluateWithEnvelope(
   const evaluation = withIntentLint(built.evaluation, model?.code ?? input.code);
   const trace = input.trace === true ? traceOfBuiltModel(model, input.file) : undefined;
 
-  const tubes = tubesOutput(built.tubeReport);
-  if (!input.envelope) return evaluationResult(evaluation, trace, tubes);
+  const reports: TubeReports = { tubes: tubesOutput(built.tubeReport), ports: built.portReport };
+  if (!input.envelope) return evaluationResult(evaluation, trace, reports);
 
   // Don't run envelope on a broken script — surface the underlying failure.
   // The `!model` case shouldn't happen for exitCode 0, but be defensive.
-  if (evaluation.exitCode !== 0 || !model) return envelopeResult(evaluation, evaluation.exitCode, tubes);
+  if (evaluation.exitCode !== 0 || !model) return envelopeResult(evaluation, evaluation.exitCode, reports);
 
   const assemblies = Array.from(model.session.assemblies.values()) as Assembly[];
-  if (assemblies.length === 0) return envelopeResult(evaluation, 0, tubes);
+  if (assemblies.length === 0) return envelopeResult(evaluation, 0, reports);
 
   const { envelopeDiagnostics, envelopeSampleCount } = await reviewAssemblies(assemblies, input);
 
@@ -225,7 +228,7 @@ export async function evaluateWithEnvelope(
     diagnostics: evaluation.diagnostics,
     envelopeDiagnostics,
     envelopeSampleCount,
-    ...(tubes !== undefined ? { tubes } : {}),
+    ...tubeReportFields(reports),
     ...(trace !== undefined ? { trace } : {}),
   };
 }
@@ -273,17 +276,28 @@ function envelopeMisuse(input: EvaluateWithEnvelopeInput): EvaluateWithEnvelopeR
   return undefined;
 }
 
+/** The line report and the port report, which travel together on every path. */
+type TubeReports = Pick<EvaluateWithEnvelopeResult, 'tubes' | 'ports'>;
+
+/** `tubes` and `ports` as result fields, each left out when it is absent. */
+function tubeReportFields({ tubes, ports }: TubeReports): TubeReports {
+  return {
+    ...(tubes !== undefined ? { tubes } : {}),
+    ...(ports !== undefined ? { ports } : {}),
+  };
+}
+
 function evaluationResult(
   evaluation: EvaluateResult,
   trace: FeatureTraceEntry[] | undefined,
-  tubes: EvaluateWithEnvelopeResult['tubes'],
+  reports: TubeReports,
 ): EvaluateWithEnvelopeResult {
   return {
     exitCode: evaluation.exitCode,
     featureCount: evaluation.featureCount,
     diagnostics: evaluation.diagnostics,
     ...(evaluation.dimensions !== undefined ? { dimensions: evaluation.dimensions } : {}),
-    ...(tubes !== undefined ? { tubes } : {}),
+    ...tubeReportFields(reports),
     ...(trace !== undefined ? { trace } : {}),
   };
 }
@@ -291,7 +305,7 @@ function evaluationResult(
 function envelopeResult(
   evaluation: EvaluateResult,
   exitCode: number,
-  tubes: EvaluateWithEnvelopeResult['tubes'],
+  reports: TubeReports,
 ): EvaluateWithEnvelopeResult {
   return {
     exitCode,
@@ -299,7 +313,7 @@ function envelopeResult(
     diagnostics: evaluation.diagnostics,
     envelopeDiagnostics: [],
     envelopeSampleCount: 0,
-    ...(tubes !== undefined ? { tubes } : {}),
+    ...tubeReportFields(reports),
   };
 }
 
@@ -387,7 +401,7 @@ function printEvaluateResult(r: EvaluateWithEnvelopeResult, opts: EvaluateCliOpt
       featureCount: r.featureCount,
       diagnostics: r.diagnostics,
       ...(r.dimensions !== undefined ? { dimensions: r.dimensions } : {}),
-      ...(r.tubes !== undefined ? { tubes: r.tubes } : {}),
+      ...tubeReportFields(r),
       ...(r.envelopeDiagnostics !== undefined ? {
         envelopeDiagnostics: r.envelopeDiagnostics,
         envelopeSampleCount: r.envelopeSampleCount,

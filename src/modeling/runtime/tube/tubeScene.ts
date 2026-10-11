@@ -28,9 +28,6 @@ import { angleDeg, mm2, PORT_AXIS_TOL_DEG, xyz2 } from './tubeRules';
 
 type TubeCode = Extract<keyof typeof DIAGNOSTIC_REGISTRY, `tube.${string}`>;
 
-/** A tube end further than this from its port (or captured point) is off it. */
-const PORT_POSITION_TOL_MM = 0.01;
-
 export interface ResolvedTube {
   id: FeatureId;
   name: string;
@@ -147,6 +144,27 @@ export function resolveTube(model: BuiltModel, ctx: TubeSceneContext, record: Fe
   }];
 }
 
+/** A tube end further than this from its port (or captured point) is off it. */
+export const PORT_POSITION_TOL_MM = 0.01;
+
+/** The model's scene part of that name, if the scene has one. */
+export function scenePartOf(ctx: TubeSceneContext, name: string): SceneBackendPart | undefined {
+  return ctx.scene?.parts.find((p) => p.name === name);
+}
+
+/** A point and a direction given in a part's own frame, where they are in the
+ *  solved scene: the part's `at` (read through the param table), then the
+ *  pose the mate solver gave the part. */
+export function partFrameInWorld(
+  model: BuiltModel, stored: AssemblyPartStored, scenePart: SceneBackendPart, local: V3, axis: V3,
+): { origin: V3; axis: V3 } {
+  const at = vec(resolveParams(stored.at, model.session.paramTable));
+  return {
+    origin: scenePart.worldTransform.point(add(at, local)) as V3,
+    axis: unit(scenePart.worldTransform.axisDir(axis) as V3),
+  };
+}
+
 interface WorldPort { label: string; origin: V3; axis: V3 }
 
 /** Where a port is now: the connector on the owning part, carried by the
@@ -155,18 +173,14 @@ interface WorldPort { label: string; origin: V3; axis: V3 }
 function worldPort(model: BuiltModel, ctx: TubeSceneContext, end: TubeEndMeta): WorldPort | undefined {
   if (end.part === undefined || end.connector === undefined) return undefined;
   const stored = ctx.stored.get(end.part);
-  const scenePart = ctx.scene?.parts.find((p) => p.name === end.part);
+  const scenePart = scenePartOf(ctx, end.part);
   const connector = stored?.mateConnectors.find((c) => c.name === end.connector);
   if (stored === undefined || scenePart === undefined || connector === undefined || connector.origin.kind !== 'vec3') {
     return undefined;
   }
-  const at = vec(resolveParams(stored.at, model.session.paramTable));
-  const local = add(at, [...connector.origin.value] as V3);
-  const axis = [...(connector.axis ?? [0, 0, 1])] as V3;
   return {
     label: `${end.part}.${end.connector}`,
-    origin: scenePart.worldTransform.point(local) as V3,
-    axis: unit(scenePart.worldTransform.axisDir(axis) as V3),
+    ...partFrameInWorld(model, stored, scenePart, [...connector.origin.value] as V3, [...(connector.axis ?? [0, 0, 1])] as V3),
   };
 }
 
