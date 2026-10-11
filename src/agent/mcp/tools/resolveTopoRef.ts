@@ -52,6 +52,9 @@ export interface ResolveTopoRefOutput {
   /** Candidate refs when the resolution was ambiguous-after-split or
    *  not-resolvable; up to 3 nearest entries. */
   candidates?: string[];
+  /** Set when the lineage resolver missed and the Query evaluator matched the
+   *  ref to exactly one face instead (e.g. a primitive's canonical faces). */
+  resolvedVia?: 'query-evaluator';
   error?: string;
   errorCode?: string;
   /** Registry hint template surfaced through `KernelError.hint`, mirrored
@@ -105,7 +108,15 @@ export async function resolveTopoRefTool(
     ...(parsed.modifier !== undefined ? { modifier: parsed.modifier } : {}),
   });
 
-  return resolveResultOutput(parsed.kind, canonical, result);
+  const out = resolveResultOutput(parsed.kind, canonical, result);
+  if (out.ok || out.errorCode !== 'feature.face-ref.not-resolvable') return out;
+  // The lineage resolver only sees faces whose lineage carries a snapshot,
+  // which a bare primitive's faces do not — so '@kc[box_1/face/top]', the
+  // exact ref `query` mode 'evaluate' prints for that face, came back
+  // not-resolvable. Retry through the Query evaluator (unique), which reads
+  // the same lineage map by feature + label, before reporting the miss.
+  const viaQuery = await resolveQueryRef(input);
+  return viaQuery.ok ? { ...viaQuery, resolvedVia: 'query-evaluator' } : out;
 }
 
 // Q8 — accept @kcq[...] strings too: the agent often holds a Query DSL

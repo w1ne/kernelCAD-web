@@ -22,11 +22,14 @@ import { RecomputeEngine } from '../../../modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../../modeling/backends/occt/occtLowerer';
 import { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
 import { parseFaceSelector } from '../../../kernel/naming/selectorParser';
+import type { Query } from '../../../kernel/naming/query';
+import { evaluateQueryOnShape, parseQueryInput } from './evaluateQuery';
 
 export interface GetFaceLineageInput {
   file?: string;
   code?: string;
-  feature_id: string;  // 'auto' = the script's last feature
+  /** 'auto' (the default when omitted) = the script's last feature. */
+  feature_id?: string;
   ref: string | FaceRef | EdgeRef;
 }
 
@@ -57,10 +60,19 @@ function parseRefPhase(
 ): { rewriteId: string; slot: string } | { failure: GetFaceLineageOutput } {
   // Parse the ref. String form 'name.slot' → { rewriteId: <feature-with-matching-name>, slot }.
   const parsed = typeof input.ref === 'string'
-    ? parseSelector(input.ref, records)
+    ? parseSelector(input.ref, records) ?? parseRecordIdSelector(input.ref, records)
     : { rewriteId: (input.ref as { rewriteId?: string }).rewriteId ?? '', slot: (input.ref as { slot?: string }).slot ?? '' };
   if (!parsed || !parsed.rewriteId) {
-    return { failure: { ok: false, error: `Unable to parse ref '${String(input.ref)}'.` } };
+    return {
+      failure: {
+        ok: false,
+        error:
+          `Unable to parse ref '${String(input.ref)}'. Pass an @kc[<feature-id>/face/<label>] ref ` +
+          `(e.g. '@kc[box_1/face/top]', as query/list_faces print them), a '<feature-id>.<label>' selector ` +
+          `(e.g. 'box_1.top'), or a named/ordinal selector ('pilot.wall', 'hole1.wall').`,
+        errorCode: 'feature.invalid-args',
+      },
+    };
   }
   return parsed;
 }
@@ -92,14 +104,20 @@ function collectLineageChain(
   // modify based on whether its labelName matches the requested slot.
   if (!map) return { failure: { ok: false, error: 'No historyMap on target shape.' } };
   const chain: FaceLineageStep[] = [];
+  // A primitive's faces carry only rootFeatureId + canonicalName (no
+  // featureId / labelName until a downstream op re-labels them), so match on
+  // either pair — otherwise `box_1.top` walked an empty chain and reported ok.
+  const kindOf = new Map(records.map((r) => [r.id, r.kind]));
   for (const [hash, lineage] of map.entries()) {
-    if (lineage.featureId !== parsed.rewriteId) continue;
+    const owner = lineage.featureId ?? lineage.rootFeatureId;
+    if (owner !== parsed.rewriteId) continue;
+    const slot = lineage.labelName ?? lineage.canonicalName;
     chain.push({
-      featureId: lineage.featureId,
-      featureKind: lineage.featureKind!,
-      op: lineage.labelName === parsed.slot ? 'create' : 'modify',
+      featureId: owner,
+      featureKind: lineage.featureKind ?? (kindOf.get(owner) as FeatureKind),
+      op: slot === parsed.slot ? 'create' : 'modify',
       faceHash: hash,
-      slot: lineage.labelName,
+      slot,
       snapshot: lineage.snapshot,
       snapshotAtCreate: lineage.snapshotAtCreate,
       surfaceType: lineage.surfaceType,
@@ -135,7 +153,7 @@ export async function getFaceLineageTool(input: GetFaceLineageInput): Promise<Ge
   if (!script.ok) return { ok: false, error: script.error, errorCode: script.errorCode };
   const { run } = script;
 
-  const targetId = input.feature_id === 'auto'
+  const targetId = input.feature_id === undefined || input.feature_id === 'auto'
     ? run.records[run.records.length - 1]?.id
     : input.feature_id;
   if (!targetId) return { ok: false, error: 'No features in script.' };
@@ -151,12 +169,21 @@ export async function getFaceLineageTool(input: GetFaceLineageInput): Promise<Ge
   const resolved = await resolveTargetShape(run, targetId);
   if ('failure' in resolved) return resolved.failure;
 
-  const parsed = parseRefPhase(input, run.records);
+  const parsed = isTopologyRefString(input.ref)
+    ? parseTopologyRef(input, targetId, resolved.shape, run.records)
+    : parseRefPhase(input, run.records);
   if ('failure' in parsed) return parsed.failure;
 
   const collected = collectLineageChain(resolved.shape.historyMap, parsed, run.records, resolved.diagnostics);
   if ('failure' in collected) return collected.failure;
 
+  if (collected.chain.length === 0) {
+    return {
+      ok: false,
+      error: `ref '${String(input.ref)}' names feature '${parsed.rewriteId}', which owns no face on '${targetId}' (consumed by a later op, or not a solid feature).`,
+      errorCode: 'feature.face-ref.not-resolvable',
+    };
+  }
   return { ok: true, chain: collected.chain, usedFallback: collected.usedFallback };
 }
 
@@ -188,4 +215,44 @@ function parseSelector(
   // 'collective' form (bare label without a feature qualifier) has no
   // featureId to resolve to; reject so the caller surfaces a useful error.
   return null;
+}
+
+/** `<record-id>.<label>` (e.g. `box_1.top`) — the id form `query` prints in
+ *  its refs, which the named/ordinal selector grammar does not cover. */
+function parseRecordIdSelector(
+  s: string,
+  records: readonly { id: string }[],
+): { rewriteId: string; slot: string } | null {
+  const dot = s.lastIndexOf('.');
+  if (dot <= 0 || dot === s.length - 1) return null;
+  const id = s.slice(0, dot);
+  return records.some((r) => r.id === id) ? { rewriteId: id, slot: s.slice(dot + 1) } : null;
+}
+
+function isTopologyRefString(ref: GetFaceLineageInput['ref']): ref is string {
+  return typeof ref === 'string' && (ref.startsWith('@kc[') || ref.startsWith('@kcq['));
+}
+
+/** An @kc[...] / @kcq[...] ref — the form `query` itself returns — resolved
+ *  to its one face through the Query evaluator ON THE SAME lowered shape
+ *  (face hashes differ between runs), then traced by that face's own lineage
+ *  entry (creating feature + slot). */
+function parseTopologyRef(
+  input: GetFaceLineageInput,
+  targetId: string,
+  shape: OcctBackend,
+  records: RunScriptSuccess['records'],
+): { rewriteId: string; slot: string } | { failure: GetFaceLineageOutput } {
+  const parsedQuery = parseQueryInput(input.ref as string);
+  const r = parsedQuery.ok
+    ? evaluateQueryOnShape((parsedQuery as { query: Query<unknown> }).query, 'unique', shape, targetId, records)
+    : parsedQuery;
+  if (!r.ok) return { failure: { ok: false, error: r.error, ...(r.errorCode !== undefined ? { errorCode: r.errorCode } : {}) } };
+  const lineage = shape.historyMap?.get(r.entities[0].handle as Parameters<HistoryMap['get']>[0]);
+  const owner = lineage?.featureId ?? lineage?.rootFeatureId;
+  const slot = lineage?.labelName ?? lineage?.canonicalName;
+  if (owner === undefined || slot === undefined) {
+    return { failure: { ok: false, error: `ref '${String(input.ref)}' resolved to a face with no recorded lineage.` } };
+  }
+  return { rewriteId: owner, slot };
 }

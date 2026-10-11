@@ -174,18 +174,18 @@ function evalFilterAst(
   switch (ast.op) {
     case 'containsPoint':
       return filterContainsPoint(
-        evalAst(ast.query, scene, lenient, originatingQuery),
+        filterCandidates(ast.query, scene, lenient, originatingQuery),
         ast.point,
       );
     case 'closestTo':
       return filterClosestTo(
-        evalAst(ast.query, scene, lenient, originatingQuery),
+        filterCandidates(ast.query, scene, lenient, originatingQuery),
         ast.point,
         ast.k,
       );
     case 'geometryType':
       return filterGeometryType(
-        evalAst(ast.query, scene, lenient, originatingQuery),
+        filterCandidates(ast.query, scene, lenient, originatingQuery),
         ast.geomType,
         scene,
       );
@@ -200,6 +200,23 @@ function evalFilterAst(
     case 'fromString':
       return resolveFromString(ast.ref, scene, originatingQuery);
   }
+}
+
+/** Candidate set for a spatial/geometric filter. The `{ op: 'nothing' }`
+ *  placeholder the bare factories (and the @kcq[face(geometryType(PLANE))]
+ *  string form) put in `query` means "the surrounding context" — every face
+ *  — exactly as withLabel / withFeatureName already read it. Evaluating it
+ *  literally made `face(geometryType(PLANE))` and `face(closestTo([..]))`
+ *  match nothing on every model. */
+function filterCandidates(
+  sub: QueryAst,
+  scene: QueryScene,
+  lenient: boolean,
+  originatingQuery: Query<unknown>,
+): ResolvedEntity[] {
+  return sub.op === 'nothing'
+    ? collectAllOfKind('face', scene, originatingQuery)
+    : evalAst(sub, scene, lenient, originatingQuery);
 }
 
 // ---------------------------------------------------------------------------
