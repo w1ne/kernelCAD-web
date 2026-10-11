@@ -496,13 +496,13 @@ describe('design_loop MCP tool', () => {
       attempts: [
         {
           id: '01',
-          title: 'Bare unsupported hinge',
+          title: 'Hinge with misaligned connector axes',
           code: `
             const arm = assembly('bare finite hinge');
             arm.part('base', box(20, 20, 10, true))
               .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
             arm.part('link', box(30, 6, 6, true).translate(15, 0, 0))
-              .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+              .connector('axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [1, 0, 0] });
             arm.mate('yaw', 'base.axis', 'link.axis', 'revolute', { limitsDeg: [-20, 20] });
             return arm.model();
           `,
@@ -516,11 +516,11 @@ describe('design_loop MCP tool', () => {
       ok: false,
     });
     expect(result.attempts[0].reviewFacts).toEqual(expect.arrayContaining([
-      expect.objectContaining({ code: 'assembly.joint-topology.unsupported-axis', severity: 'error' }),
+      expect.objectContaining({ code: 'assembly.joint-topology.axis-invalid', severity: 'error' }),
     ]));
-    expect(result.attempts[0].nextActionPrompt).toContain('assembly.joint-topology.unsupported-axis');
-    expect(result.attempts[0].nextActionPrompt).toContain('[error] assembly.joint-topology.unsupported-axis');
-    expect(result.attempts[0].nextActionPrompt).toContain('mechanicalJoint');
+    expect(result.attempts[0].nextActionPrompt).toContain('assembly.joint-topology.axis-invalid');
+    expect(result.attempts[0].nextActionPrompt).toContain('[error] assembly.joint-topology.axis-invalid');
+    expect(result.attempts[0].nextActionPrompt).toContain('align');
   });
 
   it('requires explicit screenshot review before accepting visual-sensitive mechanism attempts', async () => {

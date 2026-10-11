@@ -867,7 +867,11 @@ async function checkDofMismatch(
   arm: Assembly,
   loweredBase: LoweredSceneBase,
 ): Promise<CompilerDiagnostic[]> {
-  const revoluteMates = arm.__mates().filter((m) => m.type === 'revolute');
+  // A coupled (driven) mate never moves on its own: perturbing it alone
+  // turns a meshing gear into a collision. Its motion is exercised through
+  // its source mate's micro-pose, which expandCoupledPoses propagates.
+  const coupledDriven = new Set(arm.__mateCouplings().map((coupling) => coupling.driven));
+  const revoluteMates = arm.__mates().filter((m) => m.type === 'revolute' && !coupledDriven.has(m.name));
   if (revoluteMates.length === 0) return [];
 
   // Same symmetric `solvedModel({ ignore })` silencing the interpenetration
@@ -878,32 +882,11 @@ async function checkDofMismatch(
 
   const out: CompilerDiagnostic[] = [];
   for (const mate of revoluteMates) {
-    // Three micro-poses around 0°.
-    const microPoses = [-DOF_MISMATCH_MICRO_POSE_DEG, 0, DOF_MISMATCH_MICRO_POSE_DEG];
-    const overlapCounts: number[] = [];
-    for (const p of microPoses) {
-      try {
-        const overrides = expandCoupledPoses(
-          arm.__mates(), arm.__mateCouplings(), { [mate.name]: p },
-        );
-        const r = await solveMates(arm, overrides);
-        const sample: SolvedSample = {
-          sample: { name: `${mate.name}:µ${p}`, mateName: mate.name, poses: overrides },
-          transforms: r.poses,
-        };
-        const scene = await lowerSceneForSample(arm, sample, loweredBase);
-        if (scene === undefined) {
-          overlapCounts.push(-1);
-          continue;
-        }
-        const result = detectInterferences(
-          scene, INTERPENETRATION_EPSILON_MM3, ignored,
-        );
-        overlapCounts.push(result.pairs.length);
-      } catch {
-        overlapCounts.push(-1);
-      }
-    }
+    // Micro-poses around 0° that lie inside the declared travel: a lid
+    // resting on its end stop must not be pushed through the stop.
+    const microPoses = microPosesWithinLimits(mate);
+    if (microPoses.length < 2) continue;
+    const overlapCounts = await microPoseOverlapCounts(arm, mate, microPoses, loweredBase, ignored);
 
     // If any micro-pose failed to solve / lower, skip the mate (the
     // failure already surfaces via other criteria / the pose-envelope).
@@ -916,13 +899,63 @@ async function checkDofMismatch(
       out.push(makeFailure(
         'mechanism.dof-mismatch',
         `Mate '${mate.name}' declares a revolute joint but the geometric overlap topology around the axis changes ` +
-        `under a ${DOF_MISMATCH_MICRO_POSE_DEG}° micro-pose (counts at -ε, 0, +ε: ${overlapCounts.join(', ')}). ` +
+        `under a ${DOF_MISMATCH_MICRO_POSE_DEG}° micro-pose (counts at ${microPoses.map(formatMicroPose).join(', ')}: ${overlapCounts.join(', ')}). ` +
         `Re-check the mate axis, the connector frames on both parts, and the mate type.`,
       ));
     }
   }
 
   return out;
+}
+
+/** {-ε, 0, +ε}, minus any excursion outside the mate's declared limitsDeg. */
+function microPosesWithinLimits(mate: MateRecord): number[] {
+  const microPoses = [-DOF_MISMATCH_MICRO_POSE_DEG, 0, DOF_MISMATCH_MICRO_POSE_DEG];
+  const limits = mate.limitsDeg;
+  if (!Array.isArray(limits) || limits.length !== 2 || !limits.every(Number.isFinite)) return microPoses;
+  const [min, max] = limits as readonly [number, number];
+  return microPoses.filter((p) => p >= min - 1e-9 && p <= max + 1e-9);
+}
+
+function formatMicroPose(p: number): string {
+  if (p === 0) return '0';
+  return p < 0 ? '-ε' : '+ε';
+}
+
+/** Interference-pair count at each micro-pose of `mate`; -1 where the pose
+ *  failed to solve or lower. */
+async function microPoseOverlapCounts(
+  arm: Assembly,
+  mate: MateRecord,
+  microPoses: readonly number[],
+  loweredBase: LoweredSceneBase,
+  ignored: ReadonlySet<string>,
+): Promise<number[]> {
+  const overlapCounts: number[] = [];
+  for (const p of microPoses) {
+    try {
+      const overrides = expandCoupledPoses(
+        arm.__mates(), arm.__mateCouplings(), { [mate.name]: p },
+      );
+      const r = await solveMates(arm, overrides);
+      const sample: SolvedSample = {
+        sample: { name: `${mate.name}:µ${p}`, mateName: mate.name, poses: overrides },
+        transforms: r.poses,
+      };
+      const scene = await lowerSceneForSample(arm, sample, loweredBase);
+      if (scene === undefined) {
+        overlapCounts.push(-1);
+        continue;
+      }
+      const result = detectInterferences(
+        scene, INTERPENETRATION_EPSILON_MM3, ignored,
+      );
+      overlapCounts.push(result.pairs.length);
+    } catch {
+      overlapCounts.push(-1);
+    }
+  }
+  return overlapCounts;
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -1344,16 +1377,16 @@ function allArticulatedMatesDriven(
 }
 
 /**
- * Drift on a free passive joint (unlimited, unactuated revolute/prismatic in
- * an assembly with no hold/load requirement — see passiveJoints.ts) is the
+ * Drift on a free passive joint (unactuated revolute/prismatic in an
+ * assembly with no hold/load requirement — see passiveJoints.ts) is the
  * joint doing its job: reported as 'info', never as 'broken'.
  */
 function passiveDriftNote(mate: string, driftDeg: number): CompilerDiagnostic {
   return makeFailure(
     'mechanism.drops-on-release',
     `Mate '${mate}' swung ${driftDeg.toFixed(1)}° from rest in ${DROP_TEST_DURATION_S.toFixed(1)} s under gravity. ` +
-    `It is a free passive joint (no limits, no actuator, no declared load), so this is informational, not a defect. ` +
-    `If it must hold its pose, declare that: limits, arm.mechanicalJoint(...), arm.tendon(...), or a physicalUseCase with loads.`,
+    `It is a free passive joint (no actuator, no declared load; limits are end stops), so this is informational, not a defect. ` +
+    `If it must hold its pose, declare that: arm.mechanicalJoint(...), arm.tendon(...), a mate capacity, or a physicalUseCase with loads.`,
     'info',
   );
 }
@@ -1365,25 +1398,39 @@ function dropTestJointDriftFailure(
   drivenMates: ReadonlySet<string>,
   passiveMates: ReadonlySet<string>,
 ): CompilerDiagnostic | undefined {
-  let worstJointIdx = -1;
-  let worstJointDriftRad = 0;
-  for (let i = 0; i < finalQpos.length && i < restQpos.length; i++) {
-    const drift = Math.abs(finalQpos[i] - restQpos[i]);
-    if (drift > worstJointDriftRad) {
-      worstJointDriftRad = drift;
-      worstJointIdx = i;
-    }
+  // Every joint is judged, not just the worst one: a free passive hinge
+  // swinging 40° must not mask a load-rated hinge sagging 10°. Driven joints
+  // are held by their actuator; passive drift is only an info note, reported
+  // when no joint that must hold has drifted.
+  const mustHold = worstJointDrift(finalQpos, restQpos, jointOrder, (mate) => !drivenMates.has(mate) && !passiveMates.has(mate));
+  if (mustHold !== undefined) {
+    return makeFailure(
+      'mechanism.drops-on-release',
+      `Mate '${mustHold.mate}' drifted ${mustHold.driftDeg.toFixed(1)}° from rest in ${DROP_TEST_DURATION_S.toFixed(1)} s under gravity ` +
+      `(threshold ${(DROP_TEST_JOINT_DRIFT_RAD * 180 / Math.PI).toFixed(0)}°). The mechanism does not hold its declared rest pose without a brake or actuator — add arm.tendon(...) across this joint, or declare it actively driven via arm.mechanicalJoint(...).`,
+    );
   }
-  if (worstJointDriftRad <= DROP_TEST_JOINT_DRIFT_RAD) return undefined;
-  const mate = jointOrder[worstJointIdx]?.mateName ?? `joint#${worstJointIdx}`;
-  if (drivenMates.has(mate)) return undefined;
-  const driftDeg = (worstJointDriftRad * 180) / Math.PI;
-  if (passiveMates.has(mate)) return passiveDriftNote(mate, driftDeg);
-  return makeFailure(
-    'mechanism.drops-on-release',
-    `Mate '${mate}' drifted ${driftDeg.toFixed(1)}° from rest in ${DROP_TEST_DURATION_S.toFixed(1)} s under gravity ` +
-    `(threshold ${(DROP_TEST_JOINT_DRIFT_RAD * 180 / Math.PI).toFixed(0)}°). The mechanism does not hold its declared rest pose without a brake or actuator — add arm.tendon(...) across this joint, or declare it actively driven via arm.mechanicalJoint(...).`,
-  );
+  const passive = worstJointDrift(finalQpos, restQpos, jointOrder, (mate) => passiveMates.has(mate) && !drivenMates.has(mate));
+  return passive === undefined ? undefined : passiveDriftNote(passive.mate, passive.driftDeg);
+}
+
+/** The joint (among those `include` accepts) that drifted most beyond the
+ *  drop-test threshold, or undefined when none did. */
+function worstJointDrift(
+  finalQpos: readonly number[],
+  restQpos: readonly number[],
+  jointOrder: readonly { mjcfName: string; mateName: string }[],
+  include: (mate: string) => boolean,
+): { mate: string; driftDeg: number } | undefined {
+  let worst: { mate: string; driftRad: number } | undefined;
+  for (let i = 0; i < finalQpos.length && i < restQpos.length; i++) {
+    const mate = jointOrder[i]?.mateName ?? `joint#${i}`;
+    if (!include(mate)) continue;
+    const drift = Math.abs(finalQpos[i] - restQpos[i]);
+    if (drift <= DROP_TEST_JOINT_DRIFT_RAD) continue;
+    if (worst === undefined || drift > worst.driftRad) worst = { mate, driftRad: drift };
+  }
+  return worst === undefined ? undefined : { mate: worst.mate, driftDeg: (worst.driftRad * 180) / Math.PI };
 }
 
 function dropTestBodyDriftFailure(

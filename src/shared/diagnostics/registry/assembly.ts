@@ -218,14 +218,14 @@ export const ASSEMBLY_CODES = {
   },
   'assembly.joint-topology.unsupported-axis': {
     hintTemplate:
-      "Declare arm.jointSupport(..., { mate, shaft, supports, output }) for passive hinges, or arm.mechanicalJoint(..., { mate, actuator, shaft, supports, output }) for driven hinges, so the revolute axis has physical support intent.",
+      "Optional (informational): record which parts carry the hinge axis, e.g. arm.jointSupport('hinge-support', { mate: 'hinge', shaft: 'base', supports: ['base'], output: 'lid' }) for a passive hinge, or arm.mechanicalJoint(..., { mate, actuator, shaft, supports, output }) for a driven one. Physical support itself is checked from geometry (assembly.joint-axis.unbound, assembly.mechanical.revolute-unsupported).",
     nextAction: {
       kind: 'rewrite-feature',
-      guidance: 'add jointSupport or mechanicalJoint intent for the revolute axis',
+      guidance: 'optionally add jointSupport or mechanicalJoint intent for the revolute axis',
     },
-    defaultSeverity: 'error',
+    defaultSeverity: 'warn',
     group: 'assembly',
-    description: 'A revolute mate has no joint-support / mechanical-joint intent declaring physical support.',
+    description: 'A revolute mate has no joint-support / mechanical-joint intent declaring which parts carry it (advisory; geometric support is gated separately).',
   },
   'assembly.joint-topology.connector-missing': {
     hintTemplate:

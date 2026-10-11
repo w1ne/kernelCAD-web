@@ -42,6 +42,13 @@ return arm.solvedModel({ hinge: 0 });
 
 const LIMITED_HINGE = FREE_HINGE.replace("'revolute');", "'revolute', { limitsDeg: [-90, 90] });");
 
+// The same hinge with a declared load rating (a mate capacity): something
+// must hold, so gravity drift is a real defect again.
+const RATED_HINGE = FREE_HINGE.replace(
+  "'revolute');",
+  "'revolute', { limitsDeg: [-90, 90], capacity: { envelope: { maxResultantForceN: 50, maxResultantMomentNmm: 500 } } });",
+);
+
 const PI_ENCLOSURE = `
 const asm = assembly('pi-enclosure');
 asm.part('base', box(90, 62, 20).shell(2, { face: 'top' }));
@@ -71,8 +78,17 @@ describe('passive free joint — evaluate_script and review_cad agree', () => {
     expect((rv.diagnostics as Diag[]).some((d) => d.code === 'assembly.connectivity.floating-moving-part')).toBe(false);
   }, 240_000);
 
-  it('the same hinge WITH declared limits still must hold: drift blocks (control)', async () => {
+  it('declared limits are end stops, not a hold requirement: a limited hinge is still passive', async () => {
+    const ev = await evaluateScriptTool({ code: LIMITED_HINGE });
     const rv = await reviewCadTool({ code: LIMITED_HINGE });
+    expect(rv.mechanism).toBe(ev.mechanism);
+    expect(rv.ok).toBe(true);
+    const drift = (rv.mechanismFailures ?? []).filter((d) => d.code === 'mechanism.drops-on-release');
+    expect(drift.every((d) => d.severity === 'info')).toBe(true);
+  }, 240_000);
+
+  it('a hinge with a declared load rating must hold: drift blocks (control)', async () => {
+    const rv = await reviewCadTool({ code: RATED_HINGE });
     expect(rv.ok).toBe(false);
     expect(rv.mechanism).toBe('broken');
     const drift = (rv.mechanismFailures ?? []).find((d) => d.code === 'mechanism.drops-on-release');
@@ -80,7 +96,7 @@ describe('passive free joint — evaluate_script and review_cad agree', () => {
   }, 240_000);
 
   it('review output states each finding once and references it by id', async () => {
-    const rv = await reviewCadTool({ code: LIMITED_HINGE });
+    const rv = await reviewCadTool({ code: RATED_HINGE });
     if (rv.ok) throw new Error('expected a failing review');
     const ids = new Set([
       ...(rv.diagnostics as Diag[]).map((d) => d.id),
