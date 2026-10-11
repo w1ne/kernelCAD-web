@@ -79,8 +79,9 @@ export function isCompleteInlineSpec(spec: Raw): boolean {
 
 /** The declared study as a spec the validator accepts again. */
 function specOf(declared: FeaStudyMetadata): Raw {
-  const { virtual: _virtual, ...rest } = declared;
-  return { ...rest };
+  const rest: Raw = { ...declared };
+  delete rest.virtual;
+  return rest;
 }
 
 /**
