@@ -21,6 +21,12 @@
 - `evaluate_script` and `kernelcad evaluate --json` return a `tubes` report: per tube the bend table (XYZ points and length / rotation / angle rows), cut length, nearest part or tube, mass, bore volume and a pressure-drop estimate; per system the line count, total length and mass.
 - `export bend-table` (CLI and the `export` tool) writes one CSV per tube.
 - Skill `kernelcad-tubes`, cookbook recipes `tube-between-two-ports`, `tube-clearance-between-fluid-lines` and `tube-bend-table-line-report`, and example `examples/tube-routing-engine/` (five lines in three systems around a case and gearbox, with a broken twin that fails the clearance rule).
+- `threadedRod({ spec: 'M6', length })` builds a real ISO metric external thread (60° profile, right-hand) along +Z. It is one helical sweep of the thread's cross-section, so it is a valid solid that unions, subtracts and exports STEP; M6 × 20 builds in about 2.5 s. `chamfer: true` adds 45° ends, `cosmetic: true` returns a plain major-diameter cylinder with the thread recorded, and `clearance` takes play off the thread for printed fits.
+- `isoThread('M6')` returns the ISO 261 pitch (coarse table M1–M64, or an explicit `'M6x0.75'` / `'M70x4'`) with the minor and pitch diameters, tap drill and thread depth.
+- `shape.threadedHole(face, { u, v, spec: 'M6', depth })` drills an ISO tapped hole by designation. It is `hole()` with `thread`: a cosmetic minor-diameter bore by default, the real internal thread with `modeled: true`. A `threadedRod` screws into a modelled one with the set clearance when the hole's entry face is on a whole pitch.
+- `sweep(helix(...), { spine: 'helix', section: 'transverse' })` sweeps a profile drawn across the helix axis by screw motion, a twisted extrusion that turns once per pitch.
+- Bézier curves: `path().bezierTo(c1, c2, end)` and `.quadraticTo(c, end)` add exact cubic and quadratic segments to a profile, and `bezier(points)` returns a 3D Bézier `Curve3D` for spines and sweep rails.
+- Example `examples/threads/threaded-jar-and-lid.kcad.ts`: a 70 mm jar with an M64 × 4 neck thread and a lid with the matching modelled internal thread.
 
 ## Changed
 
