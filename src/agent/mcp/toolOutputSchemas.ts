@@ -152,8 +152,8 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
     type: 'object',
     properties: {
       ok: { type: 'boolean' },
-      base: { type: 'object', additionalProperties: true, description: 'Baseline summary { featureCount, partCount, isAssembly } (success).' },
-      revised: { type: 'object', additionalProperties: true, description: 'Revision summary { featureCount, partCount, isAssembly } (success).' },
+      base: { type: 'object', additionalProperties: true, description: 'Baseline summary { featureCount, partCount, isAssembly, errors? } (success); errors lists error diagnostics that still left geometry to diff.' },
+      revised: { type: 'object', additionalProperties: true, description: 'Revision summary { featureCount, partCount, isAssembly, errors? } (success).' },
       parts: { type: 'object', additionalProperties: true, description: 'Per-part added/removed/renamed/changed/unchanged (success).' },
       interference: { type: 'object', additionalProperties: true, description: 'Total interference-volume delta + per-pair detail (success).' },
       mates: { type: 'object', additionalProperties: true, description: 'Mate-graph changes (success).' },
@@ -791,11 +791,16 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
   run_fea: {
     type: 'object',
     properties: {
-      ok: { type: 'boolean', description: 'False when the study violated its declared minSafetyFactor, a selector did not resolve, or the solver toolchain is missing.' },
+      ok: { type: 'boolean', description: "False when the study violated its declared minSafetyFactor, a selector did not resolve, the solve failed, or solver:'calculix' was required and the toolchain is missing." },
       summary: {
         type: 'object',
         additionalProperties: true,
-        description: 'Solved evidence: maxVonMisesMPa, maxVonMisesAt, maxDisplacementMm, maxDisplacementAt, minSafetyFactor (+ minSafetyFactorRequired), nodeCount/elementCount/meshSizeMm, quality (minSICN, meanSICN, lowQualityCount), maxStressErrorPercent (high-stress region), trust { meshTrusted, reasons }, hotSpots [{ region, maxVonMisesMPa, nodeId, at, safetyFactor }]; the stress values, safety factor and hot spots exclude the support zone next to fixed-face edges (governingField), whose clamp-singular raw peak is reported as peakAtSupportMPa / peakAtSupportAt / peakAtSupportRegion with supportAdjacentNodeCount and supportZoneRadiusMm; appliedForceN / reactionForceN / equilibriumResidual, meshMs / solveMs.',
+        description: "Solved evidence: solver ('calculix' or 'in-process-voxel'), maxVonMisesMPa, maxVonMisesAt, maxDisplacementMm, maxDisplacementAt, minSafetyFactor (+ minSafetyFactorRequired), nodeCount/elementCount/meshSizeMm, quality (minSICN, meanSICN, lowQualityCount), maxStressErrorPercent (high-stress region), trust { meshTrusted, reasons }, hotSpots [{ region, maxVonMisesMPa, nodeId, at, safetyFactor }]; the stress values, safety factor and hot spots exclude the support zone next to fixed-face edges (governingField), whose clamp-singular raw peak is reported as peakAtSupportMPa / peakAtSupportAt / peakAtSupportRegion with supportAdjacentNodeCount and supportZoneRadiusMm; appliedForceN / reactionForceN / equilibriumResidual, meshMs / solveMs.",
+      },
+      toolchain: {
+        type: 'object',
+        additionalProperties: true,
+        description: "{ missing[], hint } — present when solver:'calculix' was required and CalculiX / gmsh are not installed.",
       },
       images: { type: 'array', items: { type: 'string' }, description: 'Absolute PNG paths of the rendered stress heatmap.' },
       legend: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Heatmap colour bands { color, fromMPa, toMPa } — the scale the PNGs are drawn on.' },

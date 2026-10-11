@@ -233,9 +233,11 @@ describe('toolRegistry public contract', () => {
       chain: [{ feature_id: 'box_1', kind: 'box', health: 'healthy' }],
     });
 
-    await expect(callMcpTool('query', { mode: 'nope' })).rejects.toThrow(
-      /Unknown query mode: nope/,
-    );
+    await expect(callMcpTool('query', { mode: 'nope' })).resolves.toMatchObject({
+      ok: false,
+      errorCode: 'cli.invalid-args',
+      error: expect.stringMatching(/unknown mode "nope"/),
+    });
   });
 
   it('wires the moved reference and export handlers through the public dispatcher', async () => {
