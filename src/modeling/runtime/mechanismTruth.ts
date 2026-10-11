@@ -61,6 +61,7 @@ import { collectRegistryDrivenMates } from '../mates/mechanicalJointRegistry';
 import { detectInterferences, pairKey } from './detectInterferences';
 import { jointContactCapMm3, INTERPENETRATION_EPSILON_MM3 } from './jointContactCap';
 import { reposedLoweredAssemblyScene } from '../mates/loweredAssemblyScene';
+import { resolvedPartAt } from '../mates/partFrame';
 import { expandCoupledPoses } from '../mates/coupledPoses';
 import type { NumericPoses } from '../capture/forwardKinematics';
 import { parseConnectorRef, type MateRecord } from '../mates/mate';
@@ -464,9 +465,7 @@ async function checkFastenedInvariant(
   // Local-frame bboxes come from the shared rest scene when it was lowered
   // (one full lower); otherwise `getOrComputeBboxCorners` falls back to the
   // per-part `originalShape.lower()` (a full record-chain lower per part).
-  const localBboxByPart = baseScene === undefined
-    ? undefined
-    : new Map(baseScene.parts.map((p) => [p.name, p.shape.boundingBox()]));
+  const localBboxByPart = baseScene === undefined ? undefined : sourceFrameBboxes(arm, baseScene);
   // Cache local-frame bbox corners per part — we may visit the same part
   // across multiple mates.
   const cornersByPart = new Map<string, readonly Se3Vec3[]>();
@@ -511,6 +510,27 @@ async function checkFastenedInvariant(
     }
   }
 
+  return out;
+}
+
+type Bbox3 = { min: [number, number, number]; max: [number, number, number] };
+
+/** Bounding box of each scene part in the part's own frame. A scene part's
+ *  shape carries its `at`, while the `solveMates` placements the corners are
+ *  moved by place the part's own frame, so each box moves back by `at`. This
+ *  covers every part, not only mated ones (so not `partAtFor`): the box then
+ *  matches the `originalShape.lower()` fallback for every part, and criterion
+ *  1 only reads parts on fastened mates. */
+function sourceFrameBboxes(arm: Assembly, scene: SceneBackend): Map<string, Bbox3> {
+  const table = arm.__session().paramTable;
+  const atByName = new Map(arm.__parts().map((p) => [p.name, p.at]));
+  const out = new Map<string, Bbox3>();
+  for (const p of scene.parts) {
+    const at = resolvedPartAt(atByName.get(p.name), table);
+    const back = (v: readonly number[]): [number, number, number] => [v[0] - at[0], v[1] - at[1], v[2] - at[2]];
+    const bb = p.shape.boundingBox();
+    out.set(p.name, { min: back(bb.min), max: back(bb.max) });
+  }
   return out;
 }
 

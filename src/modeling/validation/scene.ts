@@ -34,14 +34,24 @@ import { KernelError } from '../../shared/intent/kernelError';
 export type SceneDiagnostic = ValidatorDiagnostic | PoseEnvelopeDiagnostic;
 
 /** A single placed part in a Scene. The `shape` is authored in its own
- *  local frame; the `worldTransform` carries the post-FK placement. */
+ *  local frame; the part's `at` and then `worldTransform` place it:
+ *
+ *    world = worldTransform · T(at) · shape
+ *
+ *  with `at` from `assembly.part(name, shape, { at })` (zero when absent; a part placed with `connect` gets the offset `connect` computes). */
 export interface ScenePart {
   /** Assembly-unique name from `assembly.part(name, ...)`. */
   readonly name: string;
-  /** LOCAL-frame shape — untransformed. */
+  /** LOCAL-frame shape: neither the part's `at` nor `worldTransform` is
+   *  applied to it. */
   readonly shape: Shape;
-  /** SE(3) post-FK placement. Identity for kinematic-zero `model()` apart
-   *  from each part's `at` placement (already baked into the lowered shape). */
+  /** SE(3) motion applied after the part's `at` (world = worldTransform ·
+   *  T(at) · shape). Identity for kinematic-zero `model()` and for a part no
+   *  mate places (the first declared part keeps its `at`). For a part a mate
+   *  places in `solvedModel(poses)` it is the mate's placement with `at`
+   *  taken back out, so the part's own `at` does not move it; the built
+   *  scene part carries the same transform. Joints from `arm.revolute` /
+   *  `.prismatic` / `.ball` move the part in the built scene only. */
   readonly worldTransform: Transform;
   /** Role token or hex; resolved from the source shape's metadata. */
   readonly color?: string;

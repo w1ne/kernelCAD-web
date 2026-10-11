@@ -8,6 +8,7 @@ import { parseConnectorRef } from '../mates/mate';
 import { currentValue, toParam } from '../../shared/runtime/editableHelpers';
 import { isParamRef, type Editable } from '../../shared/runtime/paramRef';
 import { Transform } from '../../shared/runtime/se3';
+import { partAtFor, sceneMotion } from '../mates/partFrame';
 import { reviewPoseEnvelope, type PoseEnvelopeDiagnostic } from '../mates/poseEnvelope';
 import { solveMates } from '../mates/solver';
 import { validateAssemblyWithMates, type ValidatorDiagnostic } from '../mates/validator';
@@ -346,6 +347,20 @@ export function buildMateMetadata(state: AssemblyState): import('./captureSessio
   };
 }
 
+/** A capture Scene part's `worldTransform`: the motion on top of `at`, as in
+ *  the lowered scene. `solveMates` gives where a part's own frame sits, so a
+ *  mated part's `at` comes back out; any other part keeps its transform. */
+function scenePartMotion(
+  partName: string,
+  placements: ReadonlyMap<string, Transform> | undefined,
+  atOf: ReturnType<typeof partAtFor>,
+): Transform {
+  const placement = placements?.get(partName);
+  if (placement === undefined) return Transform.identity();
+  const at = atOf(partName);
+  return at === undefined ? placement : sceneMotion(placement, at);
+}
+
 /**
  * Build the capture-time `Scene` returned by `model()` / `solvedModel()`.
  *
@@ -381,12 +396,13 @@ export function makeScene(
   const sceneFeatureId = sceneShape.id;
   const session = state.session;
   const catalogMetadataByShapeId = catalogPartSceneMetadataByShapeId(session);
+  const atOf = partAtFor(state.mates, state.parts, session.paramTable);
   const sceneParts: ScenePart[] = state.parts.map((p: AssemblyPartStored) => {
     const metadata = catalogMetadataByShapeId.get(p.originalShape.id);
     return {
       name: p.name,
       shape: p.originalShape,
-      worldTransform: matePartTransforms?.get(p.name) ?? Transform.identity(),
+      worldTransform: scenePartMotion(p.name, matePartTransforms, atOf),
       ...(metadata === undefined ? {} : { metadata }),
       ...(p.mateConnectors.length > 0 ? { connectors: [...p.mateConnectors] } : {}),
     };
