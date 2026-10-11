@@ -92,6 +92,7 @@ export type ValidatorDiagnosticCode = Extract<
   | 'assembly.pose-envelope.connector-unresolved'
   | 'assembly.mate.limit-missing'
   | 'assembly.connectivity.floating-moving-part'
+  | 'assembly.connectivity.assumed-root'
   | 'assembly.connectivity.no-load-path'
   | 'assembly.joint-topology.missing-limit'
   | 'assembly.joint-topology.unsupported-axis'

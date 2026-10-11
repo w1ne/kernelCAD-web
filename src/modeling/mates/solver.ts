@@ -58,6 +58,7 @@ import { atPlacement, resolvedPartAt } from './partFrame';
 import type { MatePose, MateRecord } from './mate';
 import { parseConnectorRef } from './mate';
 import type { MateType } from './mateTypes';
+import { solverGroundedPart } from './solverRoot';
 
 export type SolveStatus =
   | 'solved'
@@ -387,7 +388,8 @@ function walkResolvedMateTree(
   partByName: ReadonlyMap<string, ResolvedMatePart>,
   numericPoses: NumericPoses,
 ): { worldTByName: Map<string, Transform>; placedNames: Set<string> } {
-  const root = parts[0];
+  const root = solverGroundedPart(parts);
+  if (root === undefined) return { worldTByName: new Map(), placedNames: new Set() };
   const worldTByName = new Map<string, Transform>();
   worldTByName.set(root.name, Transform.identity());
   const queue: string[] = [root.name];
@@ -556,7 +558,7 @@ async function walkSpanningTree(
 
   const queue: string[] = [];
   const visited = new Set<string>();
-  let nextRoot: AssemblyPartStored | undefined = parts[0];
+  let nextRoot: AssemblyPartStored | undefined = solverGroundedPart(parts);
   while (nextRoot !== undefined) {
     worldT.set(nextRoot.name, rest(nextRoot));
     visited.add(nextRoot.name);

@@ -193,7 +193,7 @@ export const ASSEMBLY_CODES = {
     group: 'assembly',
     description: 'An articulated mate (revolute/prismatic/cylindrical/pin_slot) has no declared limits; envelope review cannot verify its travel range.',
   },
-  // Assembly validator — joint-topology / connectivity (4)
+  // Assembly validator — joint-topology / connectivity (5)
   // Surfaced through validateAssemblyWithMates so evaluate_script still
   // reports limits/support/root issues when articulated closed-loop FK
   // returns did-not-converge (topology is independent of Newton).
@@ -207,6 +207,17 @@ export const ASSEMBLY_CODES = {
     defaultSeverity: 'error',
     group: 'assembly',
     description: 'A moving part has no mate-graph path to a stable root.',
+  },
+  'assembly.connectivity.assumed-root': {
+    hintTemplate:
+      "No stable root is declared, so the first part is assumed grounded (the mate solver holds it still). Fine when it is the base; otherwise add the base first or declare physicalUseCase(...).stableParts.",
+    nextAction: {
+      kind: 'rewrite-feature',
+      guidance: 'declare the fixed base via physicalUseCase(...).stableParts, or add it as the first part',
+    },
+    defaultSeverity: 'warn',
+    group: 'assembly',
+    description: 'No stable root declared; the first part is assumed to be the grounded base.',
   },
   'assembly.joint-topology.missing-limit': {
     hintTemplate:

@@ -331,6 +331,7 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     expect(catalogue.has('feature.sheetMetal.fold-invalid')).toBe(true);
     expect(catalogue.has('assembly.mounting-hole.unverified')).toBe(true);
     expect(catalogue.has('assembly.mounting-hole.misaligned')).toBe(true);
+    expect(catalogue.has('assembly.connectivity.assumed-root')).toBe(true);
   });
 
   it('no emit site uses a code outside the catalogue', () => {
