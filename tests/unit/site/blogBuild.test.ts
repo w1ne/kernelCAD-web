@@ -231,18 +231,34 @@ function visibleText(html: string): string {
 // The dimensions post was a hand-written page before the build existed. The
 // fixtures are copies of that page and of the hand-written index, taken before
 // the post moved onto the build. They are the reference: the build must
-// reproduce them, not the other way round.
+// reproduce them, not the other way round, so a change to the page template or
+// the Markdown renderer that a reader would see fails here.
+//
+// To change the post on purpose (its wording, a figure): edit
+// docs/guide/dimensions-measure-drawings.md, then run
+//
+//   UPDATE_BLOG_REFERENCE=1 npx vitest run tests/unit/site/blogBuild.test.ts
+//
+// which writes the new page, and the index built from that one post, over the
+// two fixtures. Read the fixture diff, rebuild site/blog/ (npm run
+// site:build-blog) and commit the three together. Without the variable the
+// fixtures are only read.
 describe('the dimensions post on the blog build', () => {
   const posts = readPosts(REPO_ROOT);
   const dimensions = posts.find((p) => p.slug === 'dimensions-measure-drawings');
-  const referencePost = readFileSync(join(REFERENCE, 'dimensions-measure-drawings.html'), 'utf8');
-  const referenceIndex = readFileSync(join(REFERENCE, 'index.html'), 'utf8');
 
   function built(only: readonly BlogPost[], path: string): string {
     const file = renderBlog(only, { repoRoot: REPO_ROOT }).files.find((f) => f.path === path);
     if (!file) throw new Error(`no output at ${path}`);
     return file.html;
   }
+
+  if (process.env.UPDATE_BLOG_REFERENCE === '1') {
+    writeFileSync(join(REFERENCE, 'dimensions-measure-drawings.html'), built([dimensions!], 'site/blog/dimensions-measure-drawings/index.html'));
+    writeFileSync(join(REFERENCE, 'index.html'), built([dimensions!], 'site/blog/index.html'));
+  }
+  const referencePost = readFileSync(join(REFERENCE, 'dimensions-measure-drawings.html'), 'utf8');
+  const referenceIndex = readFileSync(join(REFERENCE, 'index.html'), 'utf8');
 
   it('is a published guide', () => {
     expect(dimensions?.meta).toMatchObject({ kind: 'guide', status: 'published', date: '2026-10-06' });
@@ -254,7 +270,8 @@ describe('the dimensions post on the blog build', () => {
   });
 
   it('differs from the hand-written page only in the image height the build reads from the PNG', () => {
-    // The page said height="1286"; bracket-drawing-pdf.png is 1819 x 1287.
+    // The page said height="1286"; bracket-drawing-pdf.png is 1819 x 1287. Once
+    // the fixture is updated it says 1287 itself and the replace does nothing.
     const html = built([dimensions!], 'site/blog/dimensions-measure-drawings/index.html');
     expect(html).toBe(referencePost.replace('width="1819" height="1286"', 'width="1819" height="1287"'));
   });
