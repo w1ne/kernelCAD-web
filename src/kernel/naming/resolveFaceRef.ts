@@ -17,7 +17,8 @@
  */
 
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
-import type { FaceRef } from '../../shared/intent/types';
+import type { CanonicalFace, FaceRef } from '../../shared/intent/types';
+import { resolveCanonicalByGeometry } from '../backends/occt/canonicalFaceGeometry';
 import type { OcctBackend } from '../backends/occt/occtBackend';
 import type { FaceHash, HistoryMap } from './evolutionRecord';
 import { findByGeometrySnapshot } from './geometrySnapshotFallback';
@@ -103,6 +104,8 @@ function resolveCanonical(ref: Extract<FaceRef, { kind: 'canonical' }>, ctx: Res
     return { ok: true, faceHash: matches[0] };
   }
   if (matches.length === 0) {
+    const byGeometry = canonicalWithoutNamedLineage(ref.face, ctx);
+    if (byGeometry) return byGeometry;
     return {
       ok: false,
       diagnostic: {
@@ -124,6 +127,39 @@ function resolveCanonical(ref: Extract<FaceRef, { kind: 'canonical' }>, ctx: Res
     `'${ref.face}'`,
     matches,
   );
+}
+
+/**
+ * A shape whose lineage carries NO canonical name at all (a spurGear or other
+ * extruded sketch, a sheet-metal blank, cut only by unnamed or fully-consumed
+ * tools) never had a 'top' to lose — reporting it "removed by an upstream
+ * operation" is false. Resolve the name by the box rule on geometry instead
+ * (the one planar face facing that way at the body's extreme), or say plainly
+ * that the shape has no such canonical face.
+ */
+function canonicalWithoutNamedLineage(face: CanonicalFace, ctx: ResolveContext): ResolveResult | undefined {
+  for (const lineage of ctx.currentShape.historyMap?.values() ?? []) {
+    if (lineage.canonicalName !== undefined) return undefined;
+  }
+  const shape = ctx.currentShape.getReplicadShape();
+  // Nothing left at all (a cut engulfed the body): that face WAS removed.
+  if (shape.faces.length === 0) return undefined;
+  const res = resolveCanonicalByGeometry(shape, face);
+  if (res.kind === 'resolved') {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return { ok: true, faceHash: ((res.face as any).wrapped as any).HashCode(2147483647).toString(16) };
+  }
+  return {
+    ok: false,
+    diagnostic: {
+      target: 'export-occt',
+      code: 'feature.face-ref.not-applicable',
+      featureId: ctx.featureId,
+      severity: 'error',
+      message: `This shape has no canonical face '${face}': it was not built from a box/cylinder primitive, and no single planar face faces that way at its extreme.`,
+      hint: `Select the face by geometry instead, e.g. { byNormal: 'Z', atZ: <height> } for an upward-facing face at a known height, or run list_faces to enumerate the faces.`,
+    },
+  };
 }
 
 function ambiguousDiagnostic(

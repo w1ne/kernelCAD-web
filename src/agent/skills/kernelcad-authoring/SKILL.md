@@ -18,7 +18,7 @@ This file is the core: units, the rules that prevent most failures, which API se
 - `cylinder(h, r)`: axis along Z, centred in X/Y, base at `z = 0`, top at `z = h` (no centred flag).
 - `sphere(r)`: centred on the origin.
 - `path()...close()` builds a Sketch in XY; `.extrude(d)` goes +Z; `.revolve()` turns the (radial X, axial Z) profile about Z.
-- **Return rule**: the script `return`s ONE `Shape`, or one assembly via `assembly(...).model()` / `.solvedModel()`. Only the returned value is exported, probed and measured — "the last thing I created" is not a fallback.
+- **Return rule**: the script `return`s ONE `Shape`, or one assembly via `assembly(...).model()` / `.solvedModel()`. Only the returned value is exported, probed and measured. A script with no `return` still evaluates on the last CREATED shape (often a cutter or helper) and gets the warning `script.no-return` — treat it as a bug and add the `return`.
 
 ## Conventions
 
@@ -43,14 +43,14 @@ Intent words → call this API; do not hand-build it (subtracted cylinders, type
 
 | Intent words | API | Cookbook id |
 |---|---|---|
-| bolt hole, clearance hole, M3–M8 | `holes(face, { positions: [{ u, v }], diameter, depth: 'through' })`; ISO 273 clearance M3 3.4 · M4 4.5 · M5 5.5 · M6 6.6 · M8 9 | clearance-hole-through-plate |
-| thread, tapped, tap drill, M-size into the part | `hole(face, { diameter: <nominal>, depth, thread: { pitch } })` — drills the ISO minor Ø (d − 1.0825·P); coarse P: M3 0.5 · M4 0.7 · M5 0.8 · M6 1 · M8 1.25 | threaded-hole-tap-drill |
-| counterbore, socket head flush | `hole(face, { diameter, depth, counterbore: { diameter, depth } })` (M3 Ø6.5×3.4, M4 Ø8×4.4, M5 Ø10×5.4, M6 Ø11×6.4) | drawing-hole-and-gdt-callouts |
-| countersink, flat head flush | `hole(face, { diameter, depth, countersink: { diameter, angleDeg: 90 } })` | countersunk-flat-head-screw |
+| bolt hole, clearance hole, M3–M8 | `body.holes(face, { positions: [{ u, v }], diameter, depth: 'through' })`; ISO 273 clearance M3 3.4 · M4 4.5 · M5 5.5 · M6 6.6 · M8 9 | clearance-hole-through-plate |
+| thread, tapped, tap drill, M-size into the part | `body.hole(face, { diameter: <nominal>, depth, thread: { pitch } })` — drills the ISO minor Ø (d − 1.0825·P); coarse P: M3 0.5 · M4 0.7 · M5 0.8 · M6 1 · M8 1.25 | threaded-hole-tap-drill |
+| counterbore, socket head flush | `body.hole(face, { diameter, depth, counterbore: { diameter, depth } })` (M3 Ø6.5×3.4, M4 Ø8×4.4, M5 Ø10×5.4, M6 Ø11×6.4) | drawing-hole-and-gdt-callouts |
+| countersink, flat head flush | `body.hole(face, { diameter, depth, countersink: { diameter, angleDeg: 90 } })` | countersunk-flat-head-screw |
 | heat-set insert | blind `hole` at the insert pilot Ø | heat-set-insert-pilot |
 | nut trap, captive nut | `hole` + `cutout(hexPath, { face, depth })` | hex-nut-trap-bolt-clearance |
 | set screw, radial hole, cross hole | `hole({ ofSurfaceType: 'CYLINDER' }, { at: { angleDeg, z }, diameter, depth: 'through', thread })` straight into the round side (`'through'` stops at the bore; `at: [x, y, z]` + optional `axis` for any face / angle); a spot-face flat first is optional | threaded-hole-tap-drill |
-| hole pattern, bolt circle, grid of holes | one `holes(face, { positions })` with computed positions; `patternLinear` / `patternGrid` / `patternCircular` for repeated bodies | clearance-hole-through-plate |
+| hole pattern, bolt circle, grid of holes | one `body.holes(face, { positions })` with computed positions; `patternLinear` / `patternGrid` / `patternCircular` for repeated bodies | clearance-hole-through-plate |
 | slot, D-cut, keyhole, irregular opening | `cutout(path()...close(), { face, depth })` — the profile must stay inside the entry face; a channel open at both ends is a `subtract` with run-out | hex-nut-trap-bolt-clearance |
 | pocket, recess | blind `cutout` or blind `hole` (`depth: n`) | blind-pocket-from-top |
 | enclosure, box, case, hollow, wall thickness | `.shell(wall, { face: 'top' })` on the outer body, or subtract the inner box; lid = second part | enclosure-lid-with-screw-bosses |

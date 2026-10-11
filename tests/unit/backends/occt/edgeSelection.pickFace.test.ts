@@ -47,18 +47,29 @@ describe('pickFace', () => {
     expect(result.error.code).toBe('feature.invalid-args');
   });
 
-  it('returns face-ref-not-resolvable on a transformed primitive', () => {
+  it('resolves a canonical name on a lineage-less transformed primitive by the box rule', () => {
+    // No kind tag, no historyMap: 'top' is the one +Z planar face at max Z.
     const box = OcctBackend.box(20, 20, 20).translate(5, 0, 0);
     const result = pickFace(shellWithFace('box_1', 'top'), box, undefined);
-    if (!('error' in result)) throw new Error('expected error, got face');
-    expect(result.error.code).toBe('feature.face-ref.not-applicable');
+    if ('error' in result) throw new Error(result.error.message);
+    expect(result.center.z).toBeCloseTo(20, 4);
+    expect(result.center.x).toBeCloseTo(15, 4);
   });
 
-  it('returns face-ref-not-resolvable on a non-primitive (boolean result)', () => {
+  it('resolves top on a lineage-less boolean result by the box rule', () => {
     const box = OcctBackend.box(20, 20, 20);
     const cyl = OcctBackend.cylinder(20, 5).translate(10, 10, -1);
     const bool = box.subtract(cyl);
     const result = pickFace(shellWithFace('bool_1', 'top'), bool, undefined);
+    if ('error' in result) throw new Error(result.error.message);
+    expect(result.center.z).toBeCloseTo(20, 4);
+  });
+
+  it('still reports not-applicable when no single planar face faces that way at the extreme', () => {
+    // Two +Z faces share the top plane (a slot splits it): ambiguous.
+    const box = OcctBackend.box(20, 20, 20);
+    const slot = OcctBackend.box(4, 30, 10).translate(8, -5, 15);
+    const result = pickFace(shellWithFace('bool_2', 'top'), box.subtract(slot), undefined);
     if (!('error' in result)) throw new Error('expected error, got face');
     expect(result.error.code).toBe('feature.face-ref.not-applicable');
   });

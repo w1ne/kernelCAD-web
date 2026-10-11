@@ -14,6 +14,7 @@ import {
   type PoseEnvelopeDiagnostic,
 } from '../../../modeling/mates/poseEnvelope';
 import { detectUnstructuredBodies } from '../../../modeling/validation/unstructuredBodies';
+import { detectMissingReturn } from '../../../modeling/validation/missingReturn';
 import { lintAuthoringIntent } from '../../cookbook/intentLint';
 import { kernelErrorToDiagnostic } from '../../../shared/diagnostics/kernelErrorToDiagnostic';
 import { buildFeatureTrace } from '../../repair/trace';
@@ -117,6 +118,7 @@ export async function dryRunScript(input: EvaluateInput): Promise<DryRunScriptRe
   // Plus the authoring intent lint (source text only, info-only).
   const diagnostics = [
     ...detectUnstructuredBodies({ returnValue: run.returnValue, code }),
+    ...detectMissingReturn({ returnValue: run.returnValue, records: run.records }),
     ...lintAuthoringIntent(code),
   ];
 

@@ -19,6 +19,7 @@ import type { ApiContext, KernelCadApi } from '../api';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { ParamTable } from '../../shared/runtime/paramTable';
 import { KernelError } from '../../shared/intent/kernelError';
+import { Shape } from '../capture/proxy';
 import { findTopLevelImport, normalizeUserScript } from '../../shared/runtime/normalizeUserScript';
 import { NO_WRAP_OFFSET, type IsolationOptions, type IsolationResult, type ScriptWrapOffset } from './isolationTypes';
 import { ScriptLocationResolver } from './scriptLocationCapture';
@@ -134,12 +135,16 @@ export async function runScriptCore(input: RunScriptCoreInput): Promise<RunScrip
     kc: api,
   };
 
-  const result = runner(transpiled.code, fileName, apiGlobals, { wrapReturn: true });
-
-  // The script body is wrapped in an async IIFE — returnValue may be a Promise.
-  let returnValue = result.returnValue;
-  if (returnValue && typeof (returnValue as { then?: unknown }).then === 'function') {
-    returnValue = await (returnValue as Promise<unknown>);
+  let returnValue: unknown;
+  try {
+    const result = runner(transpiled.code, fileName, apiGlobals, { wrapReturn: true });
+    // The script body is wrapped in an async IIFE — returnValue may be a Promise.
+    returnValue = result.returnValue;
+    if (returnValue && typeof (returnValue as { then?: unknown }).then === 'function') {
+      returnValue = await (returnValue as Promise<unknown>);
+    }
+  } catch (e) {
+    throw withShapeMethodHint(e);
   }
   return {
     records: session.getRecords(),
@@ -147,4 +152,28 @@ export async function runScriptCore(input: RunScriptCoreInput): Promise<RunScrip
     paramTable: session.paramTable,
     returnValue,
   };
+}
+
+/**
+ * `holes(face, …)` written as a free function dies with a bare
+ * "ReferenceError: holes is not defined". When the undefined name is a Shape
+ * method, say so: it is called on a body (`body.holes(...)`). Any other
+ * error passes through unchanged.
+ */
+function withShapeMethodHint(e: unknown): unknown {
+  const name = (e as { name?: unknown } | null)?.name;
+  const message = e instanceof Error || typeof (e as { message?: unknown })?.message === 'string'
+    ? String((e as { message: unknown }).message)
+    : '';
+  const m = /^(\w+) is not defined$/.exec(message);
+  if (name !== 'ReferenceError' || !m) return e;
+  const method = m[1];
+  const proto = Shape.prototype as unknown as Record<string, unknown>;
+  if (typeof proto[method] !== 'function') return e;
+  return new KernelError(
+    'cli.script-exception',
+    `ReferenceError: ${method} is not defined — ${method} is a Shape method, not a global function.`,
+    undefined,
+    `Call it on the body: \`body.${method}(...)\` (e.g. \`plate = plate.${method}({ byNormal: 'Z' }, { ... })\`), and keep the returned shape.`,
+  );
 }

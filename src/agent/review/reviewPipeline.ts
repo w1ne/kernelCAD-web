@@ -52,6 +52,7 @@ import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import { analyzeContactGraph, type ContactGraphResult } from '../../modeling/runtime/contactGraph';
 import type { BuiltModel } from '../../composition/buildModel';
 import { clearActiveMcpSession, setActiveMcpSession } from '../mcp/activeSession';
+import { partOnlyReview } from './partOnlyReview';
 
 export interface ReviewCadInput {
   file?: string;
@@ -270,20 +271,7 @@ export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCa
   activateReviewSession(model);
 
   const { arm, missingAssemblyMessage } = runSelectAssemblyStage(model, input);
-  if (!arm) {
-    // Defence in depth: evaluation errors (e.g. union.* on an assembly that
-    // is not the selected one) are never dropped here.
-    const evaluationErrors = withNextActions(evaluation.diagnostics.filter((d) => d.severity === 'error'));
-    return {
-      ...clock.report(),
-      ok: false,
-      errorCode: 'review.no-assembly',
-      featureCount: evaluation.featureCount,
-      diagnostics: evaluationErrors,
-      repairContext: await buildRepairContext(undefined, evaluationErrors, undefined, input),
-      suggestedRepairPrompt: `${missingAssemblyMessage} Return arm.model() or arm.solvedModel(...) from a script that calls assembly(...).`,
-    };
-  }
+  if (!arm) return reviewWithoutAssembly(clock.report(), evaluation, model, input, missingAssemblyMessage);
 
   const defaultPoseGeometry = await clock.time('default-pose-geometry', async () => runDefaultPoseGeometryStage(model, input));
   const mechanicalReview = await clock.time('mechanical-review', () => runMechanicalReviewStage(
@@ -728,6 +716,41 @@ async function runFitnessAndRepairStage(input: {
  * script's return value and never lets a kernel failure sink the whole review
  * — geometry is simply reported as undefined in that case.
  */
+/** No assembly selected. A script that captured none is a single part: the
+ *  evaluate stage already ran the part-level checks (build, union guard, DFM
+ *  gates), so report that verdict. A named assembly that does not exist is
+ *  still review.no-assembly. */
+async function reviewWithoutAssembly(
+  timing: ReviewTimingReport,
+  evaluation: { featureCount: number; diagnostics: CompilerDiagnostic[] },
+  model: BuiltModel,
+  input: ReviewCadInput,
+  missingAssemblyMessage: string,
+): Promise<ReviewCadOutput> {
+  if (input.assembly === undefined && model.session.assemblies.size === 0) {
+    const diagnostics = withNextActions(evaluation.diagnostics);
+    return partOnlyReview({
+      timing,
+      featureCount: evaluation.featureCount,
+      diagnostics,
+      repairContext: await buildRepairContext(undefined, diagnostics, undefined, input),
+      geometry: safeAnalyzeContactGraph(model),
+    });
+  }
+  // Defence in depth: evaluation errors (e.g. union.* on an assembly that
+  // is not the selected one) are never dropped here.
+  const evaluationErrors = withNextActions(evaluation.diagnostics.filter((d) => d.severity === 'error'));
+  return {
+    ...timing,
+    ok: false,
+    errorCode: 'review.no-assembly',
+    featureCount: evaluation.featureCount,
+    diagnostics: evaluationErrors,
+    repairContext: await buildRepairContext(undefined, evaluationErrors, undefined, input),
+    suggestedRepairPrompt: `${missingAssemblyMessage} Return arm.model() or arm.solvedModel(...) from a script that calls assembly(...).`,
+  };
+}
+
 function safeAnalyzeContactGraph(model: BuiltModel): ContactGraphResult | undefined {
   try {
     const tail = model.rootShape ?? model.tailShape;

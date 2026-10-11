@@ -9,7 +9,7 @@ import { exportGlbAsync, type ExportGlbOptions } from '../../kernel/backends/occ
 import type { Assembly } from '../../modeling/capture/assembly';
 import { lookupColorFromLineage, lookupMaterialFromLineage } from '../../kernel/backends/occt/lookupSourceColor';
 import { sceneToWorldFrameParts, type WorldFramePart } from '../../kernel/backends/occt/sceneToWorldFrame';
-import { flattenPattern } from '../../kernel/backends/occt/flattenPattern';
+import { flattenPatternWithHoles } from '../../modeling/sheetMetalFlatPattern';
 import { findRootSheetMetalRecord } from '../../modeling/sheetMetal';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import { stampStepOriginatingSystem } from '../../kernel/export/stepHeader';
@@ -526,19 +526,20 @@ function sheetThickness(records: readonly FeatureRecord[], targetId: string): nu
 /** Single-shape DXF path: sheet-metal lineage flattens to a Region; a flat
  *  part exports its outline, `options.section` its cross-section; anything
  *  else emits the non-planar diagnostic. */
-export function exportShapeDxf(
+export async function exportShapeDxf(
   shape: OcctBackend,
   targetId: string,
   exportOptions: ExportInput['options'],
   run: Awaited<ReturnType<typeof runScript>>,
   diagnostics: CompilerDiagnostic[],
   featureCount: number,
-): ExportResult {
+): Promise<ExportResult> {
   const opts =
     (exportOptions as DxfWriterOptions | undefined) ?? { format: 'dxf' };
   // Sheet-metal Shape entry path: if the target Shape's lineage chain
   // roots at a `sheetMetal` record, recover the flat-pattern Region by
-  // walking `flattenPattern(records, targetId)` and ship it through the
+  // walking `flattenPatternWithHoles(records, targetId)` (outline, bend
+  // lines, and the blank's holes / cutouts) and ship it through the
   // polyline writer. This is the same Region that
   // `Shape.flattenPattern()` would produce — recomputed inside the
   // runtime so the user script can return the bent body directly
@@ -550,7 +551,8 @@ export function exportShapeDxf(
     // quickly; an inputs.base cycle would otherwise spin forever.
     for (let i = 0; cur && i <= run.records.length; i++) {
       if (cur.kind === 'sheetMetal') return true;
-      const baseRef = cur.inputs.base;
+      // holes / cutouts made on the blank chain via inputs.target.
+      const baseRef = cur.inputs.base ?? cur.inputs.target;
       if (!baseRef || baseRef.kind !== 'feature') return false;
       cur = byId.get(baseRef.id);
     }
@@ -560,7 +562,7 @@ export function exportShapeDxf(
   const wantsSection = (opts as { section?: unknown }).section !== undefined;
   if (tracesToSheetMetal && !wantsSection) {
     try {
-      const region = flattenPattern(run.records, targetId);
+      const region = await flattenPatternWithHoles(run.records, targetId, undefined, run.paramTable);
       const bytes = exportDxf({ kind: 'region', region }, opts);
       const thicknessMm = sheetThickness(run.records, targetId);
       const sheet = thicknessMm ? { thicknessMm, bendCount: region.bendLines.length } : undefined;

@@ -143,7 +143,7 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     }
   });
 
-  it('catalogue has exactly 348 codes', () => {
+  it('catalogue has exactly 349 codes', () => {
     // 47 baseline (milestone-C diagnostic-vocab spec)
     //  + 23 NURBS Slice B/C/D (Curve3D / variableSweep / surface / G2 / 2D path NURBS)
     //  + 31 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
@@ -320,7 +320,8 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     // + 1 assumed solver root: assembly.connectivity.assumed-root = 346.
     // + 2 sheet-metal fold checks: feature.sheetMetal.crossing-bends,
     //   feature.sheetMetal.fold-invalid = 348.
-    expect(catalogue.size).toBe(348);
+    // + 1 script without a return: script.no-return = 349.
+    expect(catalogue.size).toBe(349);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

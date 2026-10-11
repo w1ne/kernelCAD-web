@@ -74,13 +74,32 @@ describe('validateAssembly', () => {
     expect(floatingDiag?.hint).toContain("arm.mate");
   });
 
-  it('flags every part of a multi-part assembly when none have joints', () => {
+  it('treats a multi-part assembly that declares no joints or mates as independent bodies', () => {
+    // A base + lid print layout: valid as-is, the same policy as
+    // mechanism.orphan-part (zero mates short-circuits to real).
+    nextId = 0;
+    const parts = ['base', 'lid'].map(mkPart);
+    const r = validateAssembly({ records: parts });
+    expect(r.status).toBe('solved');
+    expect(r.diagnostics.filter((d) => d.code === 'assembly.part.floating')).toEqual([]);
+  });
+
+  it('flags every unconnected part once the caller says connectivity is declared', () => {
     nextId = 0;
     const parts = ['base', 'servo', 'horn', 'bracket', 'gripper', 'jaw'].map(mkPart);
-    const r = validateAssembly({ records: parts });
+    const r = validateAssembly({ records: parts, connectivityDeclared: true });
     expect(r.status).toBe('warning');
     const floatingCodes = r.diagnostics.filter((d) => d.code === 'assembly.part.floating');
     expect(floatingCodes.length).toBe(6);
+  });
+
+  it('still flags the one floating part of an assembly that has joints', () => {
+    nextId = 0;
+    const a = mkPart('a');
+    const b = mkPart('b');
+    const loose = mkPart('loose');
+    const r = validateAssembly({ records: [a, b, mkJoint('a-b', a, b), loose] });
+    expect(r.diagnostics.filter((d) => d.code === 'assembly.part.floating').map((d) => d.partName)).toEqual(['loose']);
   });
 
   // Issue #448 — mate edges must reach the record-level validator through
@@ -167,10 +186,9 @@ describe('validateAssembly', () => {
     nextId = 0;
     const lone = mkPart('lone');
     const r = validateAssembly({ records: [lone] });
-    // A single part has no neighbours so it's floating-as-warning.
-    expect(r.status).toBe('warning');
-    expect(r.diagnostics.length).toBe(1);
-    expect(r.diagnostics[0].code).toBe('assembly.part.floating');
+    // A single part declares no connectivity: nothing to flag.
+    expect(r.status).toBe('solved');
+    expect(r.diagnostics).toEqual([]);
   });
 
   it('errors take priority over warnings in status', () => {

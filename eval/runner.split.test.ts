@@ -16,6 +16,9 @@ const hasCli =
 const GOOD_SCRIPT = [
   '```ts',
   'export const bracket = box(40, 20, 5);',
+  // A script must return its part: without this line evaluate warns
+  // script.no-return and the gate oracle (warn = failing) asks for a retry.
+  'return bracket;',
   '```',
 ].join('\n');
 

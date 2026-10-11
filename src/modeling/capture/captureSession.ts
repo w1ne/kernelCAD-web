@@ -29,6 +29,7 @@ import type {
 import { ParamTable, type SerializedParamTable } from '../../shared/runtime/paramTable';
 import type { SoftWarning } from '../../shared/runtime/softWarning';
 import { collectParamRefs } from '../../shared/runtime/resolveParams';
+import { paramRefsToParams } from '../../shared/runtime/editableHelpers';
 import type { Editable } from '../../shared/runtime/paramRef';
 import {
   captureCallSite,
@@ -655,7 +656,9 @@ export class CaptureSession {
       id,
       kind: spec.kind,
       params: spec.params,
-      inputs: spec.inputs,
+      // A numeric param() inside a selector query ({ atZ: h }) becomes a
+      // Param: pre-resolved like every other param, tracked below.
+      inputs: paramRefsToParams(spec.inputs, this.paramTable),
       transforms: [],
       suppressed: false,
       metadata: spec.metadata,
@@ -666,6 +669,7 @@ export class CaptureSession {
     // params + metadata for any Param-shaped object with `paramRef` set.
     const refs = new Set<string>();
     for (const refName of collectParamRefs(r.params)) refs.add(refName);
+    for (const refName of collectParamRefs(r.inputs)) refs.add(refName);
     if (r.metadata !== undefined) {
       for (const refName of collectParamRefs(r.metadata)) refs.add(refName);
     }
@@ -995,6 +999,7 @@ export class CaptureSession {
       for (const record of session.records) {
         const refs = new Set<string>();
         for (const name of collectParamRefs(record.params)) refs.add(name);
+        for (const name of collectParamRefs(record.inputs)) refs.add(name);
         if (record.metadata !== undefined) {
           for (const name of collectParamRefs(record.metadata)) refs.add(name);
         }

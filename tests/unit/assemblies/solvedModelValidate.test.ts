@@ -40,7 +40,10 @@ function makeTriangleArm() {
 describe('Assembly.solvedModel({validate})', () => {
   it('returns scene with warnings[] on validation issues when mode=warn (default)', async () => {
     const { arm, kcad } = makeArm();
-    arm.part('orphan', kcad.box(1, 1, 1)); // no joint, no mate -> floating
+    arm.part('a', kcad.box(1, 1, 1)).connector('p', { type: 'frame', origin: { kind: 'vec3', value: [1, 0, 0] } });
+    arm.part('b', kcad.box(1, 1, 1)).connector('q', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm.mate('ab', 'a.p', 'b.q', 'fastened');
+    arm.part('orphan', kcad.box(1, 1, 1), { at: [5, 0, 0] }); // mated assembly, no mate here -> floating
     const scene = await arm.solvedModel({});
     expect(scene.warnings).toBeDefined();
     expect(scene.warnings.length).toBeGreaterThan(0);

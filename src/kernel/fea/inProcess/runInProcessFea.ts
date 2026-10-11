@@ -65,14 +65,23 @@ export interface InProcessFeaResult {
   ok: boolean;
   summary?: FeaSummary;
   diagnostics: CompilerDiagnostic[];
-  /** Always empty: there is no solver deck to keep (same shape as the
+  /** No solver deck to keep: only the summary JSON (same shape as the
    *  CalculiX path's artifacts so callers need no branch). */
-  artifacts: { geometryPath?: string; inpPath?: string; frdPath?: string; meshPath?: string };
+  artifacts: { geometryPath?: string; inpPath?: string; frdPath?: string; meshPath?: string; summaryPath?: string };
 }
 
-function diag(code: DiagnosticCode, severity: CompilerDiagnostic['severity'], message: string, featureId: string): CompilerDiagnostic {
-  return { target: 'export-occt', code, severity, message, hint: HINT_TEMPLATES[code].template, featureId };
+function diag(code: DiagnosticCode, severity: CompilerDiagnostic['severity'], message: string, featureId: string, hint?: string): CompilerDiagnostic {
+  return { target: 'export-occt', code, severity, message, hint: hint ?? HINT_TEMPLATES[code].template, featureId };
 }
+
+/** fea.mesh.quality-low's catalogue hint talks about tetrahedra and
+ *  CalculiX's error estimate — wrong for this solver. These are the
+ *  in-process voxel equivalents. */
+const VOXEL_TRUST_HINT =
+  'This is the in-process voxel (brick) solver: curved faces, fillets and notches are a staircase, so peak stress there is approximate; displacement and the bending stress of prismatic sections are accurate. ' +
+  'Halve meshSize to tighten the estimate, or install CalculiX + gmsh (see fea_summary) and re-run for a verified tetrahedral result.';
+const VOXEL_EMPTY_HINT =
+  'The voxel grid found no material inside the shape: make sure the study is bound to a closed solid (not a surface or an open shell), and that meshSize is not larger than the part.';
 
 export interface InProcessBrickSize {
   size: number;
@@ -219,7 +228,7 @@ function prepare(
   }
   const base = buildGrid(shape, sizing, solidVolume);
   if (base.model.elementCount === 0) {
-    diagnostics.push(diag('fea.mesh.quality-low', 'error', `feaStudy '${study.name}': the in-process voxel grid caught no solid brick (open or non-solid shape).`, owner));
+    diagnostics.push(diag('fea.mesh.quality-low', 'error', `feaStudy '${study.name}': the in-process voxel grid caught no solid brick (open or non-solid shape).`, owner, VOXEL_EMPTY_HINT));
     return undefined;
   }
   const bb = shape.boundingBox();
@@ -374,6 +383,7 @@ function verdictDiagnostics(study: FeaStudyMetadata, summary: FeaSummary, owner:
       `feaStudy '${study.name}': ${summary.trust.reasons.join('; ')}. Peak von Mises ${summary.maxVonMisesMPa.toFixed(1)} MPa, ` +
         `max displacement ${summary.maxDisplacementMm.toFixed(4)} mm. For a verified result install CalculiX + gmsh (see fea_summary) and re-run.`,
       owner,
+      VOXEL_TRUST_HINT,
     ),
   ];
   if (study.minSafetyFactor !== undefined && summary.minSafetyFactor < study.minSafetyFactor) {
@@ -468,11 +478,12 @@ export async function runInProcessFeaStudy(
   const summary = summarize(study, material, prep, solved);
   diagnostics.push(...verdictDiagnostics(study, summary, owner));
   await mkdir(opts.outDir, { recursive: true });
-  await writeFile(join(opts.outDir, 'fea-summary.json'), JSON.stringify(summary, null, 2), 'utf8');
+  const summaryPath = join(opts.outDir, 'fea-summary.json');
+  await writeFile(summaryPath, JSON.stringify(summary, null, 2), 'utf8');
   return {
     ok: !diagnostics.some(d => d.severity === 'error'),
     summary,
     diagnostics: withNextActions(diagnostics),
-    artifacts: {},
+    artifacts: { summaryPath },
   };
 }

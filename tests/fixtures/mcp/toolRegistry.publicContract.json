@@ -2864,17 +2864,18 @@
       "properties": {
         "query": {
           "type": "string",
-          "description": "Natural-language description of what you want to do (e.g. \"round the rim of a hole\", \"build an L-bracket\")."
+          "description": "Natural-language description of what you want to do (e.g. \"round the rim of a hole\", \"build an L-bracket\"). One of query / id is required."
+        },
+        "id": {
+          "type": "string",
+          "description": "Exact snippet id as the skills cite it (e.g. \"clearance-hole-through-plate\"); returns that snippet. An unknown id is ranked as a query."
         },
         "k": {
           "type": "number",
           "description": "Max snippets to return. Default 3, max 5.",
           "default": 3
         }
-      },
-      "required": [
-        "query"
-      ]
+      }
     },
     "annotations": {
       "readOnlyHint": true,
