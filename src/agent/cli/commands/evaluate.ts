@@ -390,23 +390,30 @@ async function writeTraceOut(
   }
 }
 
+/** The object `kernelcad evaluate --json` prints. Exported so other readers of
+ *  that output (the blog build checks quoted numbers against it) read exactly
+ *  what the CLI prints. */
+export function evaluateJsonOutput(r: EvaluateWithEnvelopeResult): Record<string, unknown> {
+  return {
+    ok: r.exitCode === 0,
+    featureCount: r.featureCount,
+    diagnostics: r.diagnostics,
+    ...(r.dimensions !== undefined ? { dimensions: r.dimensions } : {}),
+    ...tubeReportFields(r),
+    ...(r.envelopeDiagnostics !== undefined ? {
+      envelopeDiagnostics: r.envelopeDiagnostics,
+      envelopeSampleCount: r.envelopeSampleCount,
+    } : {}),
+  };
+}
+
 /** Emit the evaluation result on stdout/stderr — the `--json` envelope or the
  *  human summary. Console text is the CLI's observable output. */
 function printEvaluateResult(r: EvaluateWithEnvelopeResult, opts: EvaluateCliOptions): void {
   const envelopeErrors = (r.envelopeDiagnostics ?? []).filter((d) => d.severity === 'error');
 
   if (opts.json) {
-    console.log(JSON.stringify({
-      ok: r.exitCode === 0,
-      featureCount: r.featureCount,
-      diagnostics: r.diagnostics,
-      ...(r.dimensions !== undefined ? { dimensions: r.dimensions } : {}),
-      ...tubeReportFields(r),
-      ...(r.envelopeDiagnostics !== undefined ? {
-        envelopeDiagnostics: r.envelopeDiagnostics,
-        envelopeSampleCount: r.envelopeSampleCount,
-      } : {}),
-    }, null, 2));
+    console.log(JSON.stringify(evaluateJsonOutput(r), null, 2));
   } else {
     console.log(`Features: ${r.featureCount}`);
     for (const d of r.dimensions ?? []) console.log(`Dimension (${d.kind}): ${d.text}`);

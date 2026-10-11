@@ -1,0 +1,15 @@
+{
+  "//": "Type-checks the Node scripts that build the marketing site (site/scripts), with the settings the CLI is checked with, plus vite/client types because build-pricing.ts renders app components that read import.meta.env. npm run typecheck runs it after tsc -b, so qc:build fails on a type error here. Tests are left out, as in the other configs.",
+  "extends": "./tsconfig.cli.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": ".",
+    "types": ["node", "vite/client"]
+  },
+  "include": [
+    "site/scripts/**/*.ts",
+    "src/shared/types/**/*",
+    "src/kernel/backends/verb/verb-nurbs.d.ts"
+  ],
+  "exclude": ["site/scripts/**/*.test.ts"]
+}
