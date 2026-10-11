@@ -1,0 +1,17 @@
+{
+  "schema": "kernelcad.mech40.results/v1",
+  "suite": "mech40",
+  "note": "pass@1 baseline for eval/mech40/compare.ts. No LLM run has been recorded yet: run eval/mech40/runAgent.ts with an API key, then `npx tsx eval/mech40/compare.ts <results.json> --write-baseline` and commit both files.",
+  "source": null,
+  "date": null,
+  "model": null,
+  "k": null,
+  "skills": null,
+  "summary": {
+    "pass_at_1": null,
+    "pass_at_k": null,
+    "mean_evals_to_success": null,
+    "failure_codes": {}
+  },
+  "tasks": []
+}

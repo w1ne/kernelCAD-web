@@ -1,0 +1,73 @@
+name: mech40-agent-eval
+
+# LLM agent eval over eval/tasks/mech40 (40 mechanical tasks). Runs nightly
+# and on demand; writes eval/results/<date>-<model>.json, uploads it as an
+# artifact, and fails when pass@1 drops more than the threshold below
+# eval/results/baseline.json. Skips cleanly when no API key secret exists.
+
+on:
+  workflow_dispatch:
+    inputs:
+      k:
+        description: Samples per task
+        default: '3'
+      model:
+        description: Model id (default EVAL_MODEL / claude-sonnet-4-6)
+        default: ''
+      tasks:
+        description: Comma-separated task ids (empty = all 40)
+        default: ''
+      threshold:
+        description: Max allowed pass@1 drop vs baseline (0..1)
+        default: '0.05'
+  schedule:
+    - cron: '17 3 * * *'
+
+permissions:
+  contents: read
+
+jobs:
+  mech40:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 180
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.EVAL_ANTHROPIC_API_KEY }}
+    steps:
+      - name: Skip without an API key
+        id: key
+        run: |
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "::notice::EVAL_ANTHROPIC_API_KEY is not set; skipping the mech40 agent eval."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        if: steps.key.outputs.skip == 'false'
+      - uses: actions/setup-node@v4
+        if: steps.key.outputs.skip == 'false'
+        with: { node-version: '22', cache: npm }
+      - name: Install
+        if: steps.key.outputs.skip == 'false'
+        run: npm ci
+      - name: Run the agent over mech40
+        if: steps.key.outputs.skip == 'false'
+        id: run
+        env:
+          K: ${{ inputs.k || '3' }}
+          MODEL: ${{ inputs.model }}
+          TASKS: ${{ inputs.tasks }}
+        run: |
+          args=(--k "$K" --concurrency 2)
+          [ -n "$MODEL" ] && args+=(--model "$MODEL")
+          [ -n "$TASKS" ] && args+=(--tasks "$TASKS")
+          out=$(npx tsx eval/mech40/runAgent.ts "${args[@]}")
+          echo "results=$out" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        if: steps.key.outputs.skip == 'false' && always() && steps.run.outputs.results != ''
+        with:
+          name: mech40-results
+          path: ${{ steps.run.outputs.results }}
+      - name: pass@1 regression gate
+        if: steps.key.outputs.skip == 'false'
+        run: npx tsx eval/mech40/compare.ts "${{ steps.run.outputs.results }}" --threshold "${{ inputs.threshold || '0.05' }}"

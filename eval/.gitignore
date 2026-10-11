@@ -2,6 +2,10 @@
 runs/*
 !runs/golden-*/
 
+# Agent-eval results ARE committed: eval/results/<date>-<model>.json and the
+# pass@1 baseline the regression gate compares against (eval/mech40/compare.ts).
+!results/
+
 # Python bytecode from eval/oracle wrappers
 __pycache__/
 *.pyc
