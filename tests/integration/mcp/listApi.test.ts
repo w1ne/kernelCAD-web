@@ -9,7 +9,8 @@ import { listApiTool, GLOBALS } from '../../../src/agent/mcp/tools/listApi';
 import { SUPPORTED_CONSTRAINT_TYPES } from '../../../src/agent/mcp/tools/constraints';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const AUTHORING_SKILL = readFileSync(resolve(__dirname, '../../../src/agent/skills/kernelcad-authoring/SKILL.md'), 'utf8');
+// The articulated-digit example lives in the workflow reference of the lean authoring skill.
+const AUTHORING_SKILL = readFileSync(resolve(__dirname, '../../../src/agent/skills/kernelcad-authoring/references/workflow.md'), 'utf8');
 const ARTICULATED_DIGIT_EXAMPLE_START = '<!-- ARTICULATED_DIGIT_EXAMPLE:START -->';
 const ARTICULATED_DIGIT_EXAMPLE_END = '<!-- ARTICULATED_DIGIT_EXAMPLE:END -->';
 

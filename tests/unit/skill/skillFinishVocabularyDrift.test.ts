@@ -20,7 +20,8 @@ import { assertEveryNameInSKILL, loadCombinedSkillMd } from './_helpers';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const AUTHORING_SKILL = resolvePath(
   __dirname,
-  '../../../src/agent/skills/kernelcad-authoring/SKILL.md',
+  // The Materials section (and its vocabulary table) moved to a reference file.
+  '../../../src/agent/skills/kernelcad-authoring/references/materials.md',
 );
 
 /** Pull the inline-code tokens the authoring skill lists between the
@@ -30,7 +31,7 @@ function documentedFinishes(): string[] {
   const m = src.match(/<!-- FINISH-VOCABULARY:START -->([\s\S]*?)<!-- FINISH-VOCABULARY:END -->/);
   if (!m) {
     throw new Error(
-      'FINISH-VOCABULARY markers not found in kernelcad-authoring/SKILL.md. ' +
+      'FINISH-VOCABULARY markers not found in kernelcad-authoring/references/materials.md. ' +
         'The finish drift gate needs the vocabulary table wrapped in ' +
         '`<!-- FINISH-VOCABULARY:START -->` / `<!-- FINISH-VOCABULARY:END -->`.',
     );
@@ -54,7 +55,7 @@ describe('finish vocabulary ↔ skill drift', () => {
     expect(
       undocumented,
       `Finishes in FINISHES but missing from the authoring vocabulary table: ${undocumented.join(', ')}. ` +
-        'Add them to the FINISH-VOCABULARY table in kernelcad-authoring/SKILL.md.',
+        'Add them to the FINISH-VOCABULARY table in kernelcad-authoring/references/materials.md.',
     ).toEqual([]);
     expect(
       phantom,

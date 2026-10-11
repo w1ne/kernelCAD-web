@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { walkSkillTree } from '../../../src/agent/cli/lib/walkSkillTree';
+import { skillWithReferences, walkSkillTree } from '../../../src/agent/cli/lib/walkSkillTree';
 
 function fixture(): string {
   const root = mkdtempSync(join(tmpdir(), 'kc-walk-'));
@@ -66,6 +66,23 @@ describe('walkSkillTree', () => {
       const b = walkSkillTree(root).map((e) => e.relPath);
       expect(a).toEqual(b);
       expect(a).toEqual([...a].sort());
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('collects references/*.md beside a SKILL.md, sorted, and no SKILL.md inside them', () => {
+    const root = fixture();
+    try {
+      mkdirSync(join(root, 'top-a', 'references'), { recursive: true });
+      writeFileSync(join(root, 'top-a', 'references', 'b.md'), '# B\n');
+      writeFileSync(join(root, 'top-a', 'references', 'a.md'), '# A\n');
+      writeFileSync(join(root, 'top-a', 'references', 'notes.txt'), 'ignored');
+      const entries = walkSkillTree(root);
+      const a = entries.find((e) => e.relPath === 'top-a/SKILL.md')!;
+      expect(a.references.map((r) => r.relPath)).toEqual(['references/a.md', 'references/b.md']);
+      expect(skillWithReferences(a)).toContain('# A');
+      expect(entries.find((e) => e.relPath === 'top-b/SKILL.md')!.references).toEqual([]);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

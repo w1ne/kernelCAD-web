@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { resolve } from 'node:path';
-import { walkSkillTree } from '../src/agent/cli/lib/walkSkillTree';
+import { skillWithReferences, walkSkillTree } from '../src/agent/cli/lib/walkSkillTree';
 
 const SKILLS_ROOT = resolve('src/agent/skills');
 
@@ -12,6 +12,6 @@ const SKILLS_ROOT = resolve('src/agent/skills');
  */
 export function loadCombinedSkillMd(): string {
   return walkSkillTree(SKILLS_ROOT)
-    .map((entry) => entry.source)
+    .map((entry) => skillWithReferences(entry))
     .join('\n\n---\n\n');
 }
