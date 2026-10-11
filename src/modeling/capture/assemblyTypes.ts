@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { FeatureId, Vec3, Vec3Param, EditableVec3 } from '../../shared/intent/types';
-import type { Connector, ConnectorOriginInput, ConnectorType } from '../mates/connector';
+import type { Connector, ConnectorOriginInput, ConnectorType, FluidPort } from '../mates/connector';
 import type { WrapGeomOptions, WrapGeomRecord } from '../mates/tendon';
 import type { Editable } from '../../shared/runtime/paramRef';
 import type { Shape } from './proxy';
@@ -59,6 +59,23 @@ export interface AssemblyConnectorOpts {
    *  the pivot POINT to be inside solid material. Omit for non-drilled
    *  connectors (the gate then uses its 1 mm point-in-solid tolerance). */
   jointClearanceRadius?: number;
+  /** Fluid port data (tube system, outer diameter, minimum straight run).
+   *  Only valid on `axis` connectors that also give an `axis` pointing out of
+   *  the part; read back with `part.port(name)`. */
+  port?: FluidPort;
+}
+
+/** Where a tube end attaches: the owning part's `at`, the connector origin in
+ *  part-local coordinates and the unit axis pointing out of the part. */
+export interface TubeEnd {
+  base?: Vec3Param;
+  offset: Vec3;
+  axis: Vec3;
+  od?: number;
+  system?: string;
+  minStraight?: number;
+  part?: string;
+  connector?: string;
 }
 
 export interface AssemblyPartRef {
@@ -90,6 +107,10 @@ export interface AssemblyPartRef {
    *  `assembly.wrap-geom.duplicate-name` if the name is already used on
    *  this part, or `feature.invalid-args` on a bad axis / radius. */
   wrapGeom(name: string, opts: WrapGeomOptions): AssemblyPartRef;
+  /** Where the tube end declared by the `axis` connector `name` (registered
+   *  with `port` data) attaches. Throws `tube.port.not-found`,
+   *  `tube.port.not-a-port` or `tube.port.unresolved`. */
+  port(name: string): TubeEnd;
   /** Add another part to the SAME assembly and return its ref — enables fluent
    *  chaining: `assembly.part(a, ...).part(b, ...).part(c, ...)`. Identical to
    *  calling `assembly.part(...)` again on the assembly. */

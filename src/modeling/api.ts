@@ -6,7 +6,7 @@ import { Shape } from './capture/proxy';
 import type { Sketch, PathBuilder } from './capture/sketch';
 import type { SurfaceProxy } from './capture/surfaceProxy';
 import type { Curve3D } from './capture/curveProxy';
-import type { Vec3, PlaneSpec } from '../shared/intent/types';
+import type { Vec3, PlaneSpec, FeatureId } from '../shared/intent/types';
 import type {
   EdgeQuery,
   EdgeSegment,
@@ -24,6 +24,8 @@ import type {
   AnimationViewSpec,
 } from '../shared/intent/animationViewRecord';
 import type { DfmSpec, DfmSpecHandle } from '../shared/intent/dfmSpecRecord';
+import type { TubeSpecMetadata } from '../shared/intent/tubeRecord';
+import type { TubeOptions, TubeSpec } from './capture/tubeRecords';
 import type { RailPoint } from './helix';
 import type { HermiteEndpoint } from '../kernel/geometry/hermiteG2';
 import type { SketchModule } from './sketch/index';
@@ -583,6 +585,24 @@ export interface KernelCadApi {
    * convention as `setRenderEnvironment`).
    */
   dfmSpec(spec: DfmSpec): DfmSpecHandle;
+
+  /**
+   * Bent tube between two ends: straight legs joined by constant-radius
+   * bends, built as one hollow solid in assembly space. `from` / `to` are
+   * `part.port(name)` or `{ point, axis? }`; `via` lists the corner points in
+   * order. `bendRadius` is the centreline radius; `od` defaults to the port
+   * size. Add the returned Shape to the assembly with `asm.part(name, shape)`
+   * and no `at`. Malformed input throws `feature.invalid-args` with a
+   * `tube.*` message prefix.
+   */
+  tube(name: string, opts: TubeOptions): Shape;
+
+  /**
+   * Declare the bending and clearance rules every `tube()` in the script
+   * must meet. Virtual record; malformed input throws `feature.invalid-args`
+   * (an enforcement gate must not be silently disabled).
+   */
+  tubeSpec(spec: TubeSpec): { id: FeatureId; metadata: TubeSpecMetadata };
 
   /**
    * Mechanism-delivery joint helpers.

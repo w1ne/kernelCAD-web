@@ -59,8 +59,9 @@ if (typeof window !== 'undefined' && window.location.pathname.startsWith('/embed
 const SOURCE_FETCH_TIMEOUT_MS = 30_000;
 
 /** No-progress watchdog for the embed page itself (source + viewer). */
-/** Must outlive FunnelViewer MESH_PENDING_BUDGET (90s) so building meshes can land. */
-const EMBED_NO_PROGRESS_TIMEOUT_MS = 100_000;
+/** Must outlive FunnelViewer's wait for a mesh the server reports building
+ *  (MESH_BUILDING_BUDGET_MS, 240 s) so a heavy model can land. */
+const EMBED_NO_PROGRESS_TIMEOUT_MS = 250_000;
 
 function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
   return new Promise<T>((resolve, reject) => {
