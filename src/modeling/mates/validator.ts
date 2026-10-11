@@ -667,10 +667,13 @@ export async function validateAssemblyWithMates(
   //    construction.
   diagnostics.push(...validateJointLoadCapacity(arm, externalLoads));
   diagnostics.push(...validateMountingHoleConsistency(arm));
-  if (solveStatus === 'solved' || solveStatus === 'redundant-ok') {
-    diagnostics.push(...await validateMountingHoleAlignment(arm, solveResult?.poses));
-  }
+  // Gate 2 first: its single scene lowering hands the mounting-hole
+  // alignment check every part's local shape, so that check does not lower
+  // each fastened part again (a full extra recompute on boolean-heavy parts).
   const axisBindingResult = await validateJointAxisBindingWithCache(arm);
+  if (solveStatus === 'solved' || solveStatus === 'redundant-ok') {
+    diagnostics.push(...await validateMountingHoleAlignment(arm, solveResult?.poses, axisBindingResult.localShapes));
+  }
   diagnostics.push(...axisBindingResult.diagnostics);
   diagnostics.push(...await validateJointVisualExposure({
     arm,
