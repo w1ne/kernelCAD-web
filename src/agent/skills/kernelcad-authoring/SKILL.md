@@ -45,7 +45,12 @@ DFM checks walls, overhangs and clearance; it does NOT check whether text,
 logos, slots or other decorations overlap holes, sit off the part, or collide
 with each other. Only the pictures show that. Render
 (`render_preview` / `kernelcad render`) the top, front and iso views and look
-at each one before you report a layout as finished.
+at each one before you report a layout as finished. Before you call a whole
+part done, render the inspection sheet (`render_preview({ file, sheet: true })`
+or `kernelcad render --sheet`): all seven views (iso, front, back, left, right,
+top, bottom), labelled, in one image. A cutout missing on the back or the
+underside only shows there. A model is done when every tile matches the
+request, not when it compiles.
 
 ## Inner loop: render after every visible change
 
@@ -806,6 +811,9 @@ kernelcad parts path/to/script.kcad.ts --json                  # list assembly p
 # visible geometry to the output aspect and the capture is center-cropped,
 # so the default 1024×1024 square tiles frame correctly.
 kernelcad render path/to/script.kcad.ts -o /tmp/out.png
+
+# All seven views (adds back, left, bottom) in one labelled inspection sheet.
+kernelcad render path/to/script.kcad.ts -o /tmp/sheet.png --sheet
 
 # Clip the model with a section plane to expose interiors in headless captures.
 # Keeps the negative-axis side by default; --section-flip keeps the positive side.

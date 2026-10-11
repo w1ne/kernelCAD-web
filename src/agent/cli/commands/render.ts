@@ -5,7 +5,8 @@
 // `kernelcad render <file.kcad.ts>` — multi-view headless renderer.
 //
 // Default: 2×2 composite PNG (front, right, top, iso) saved next to the
-// script. Use `--separate` to emit four individual files.
+// script. Use `--separate` to emit four individual files, or `--sheet` for
+// one labelled sheet of all seven views (adds back, left, bottom).
 //
 // `--preset publish` switches to the studio product shot of render_preview's
 // preset: 'publish' — same option rules (resolvePublishLook, via
@@ -27,12 +28,14 @@ import sharp from 'sharp';
 import {
   headlessRender,
   composite2x2,
+  compositeSheet,
   ALL_VIEWS,
   type HeadlessObjectFilter,
   type HeadlessInspectionChannel,
   type HeadlessRenderResult,
   type RenderView,
 } from '../../render/headlessRender';
+import { SHEET_VIEWS } from '../../../shared/render/views';
 import { resolveRenderBaseUrl } from '../../render/playerServer';
 import { buildModelFromFile } from '../../../composition/buildModel';
 import type { Assembly } from '../../../modeling/capture/assembly';
@@ -45,6 +48,9 @@ export interface RenderInput {
   file: string;
   out?: string;
   separate: boolean;
+  /** Capture all seven views and write one labelled sheet instead of the
+   *  2×2 grid (with `separate`, seven individual files). */
+  sheet?: boolean;
   /** Per-tile size in px. Default 1024×1024, or 1600×1200 under
    *  `--preset publish`. */
   width?: number;
@@ -111,7 +117,7 @@ export interface RenderInspectInput {
 }
 
 const SUPPORTED_INSPECT_CHANNELS = new Set<HeadlessInspectionChannel>(['rgb', 'mask', 'depth', 'normals']);
-const SUPPORTED_INSPECT_VIEWS = new Set<RenderView>(['front', 'right', 'top', 'iso']);
+const SUPPORTED_INSPECT_VIEWS = new Set<RenderView>(SHEET_VIEWS);
 
 /**
  * Build a HeadlessObjectFilter from `--focus` / `--hide` pattern lists.
@@ -286,7 +292,8 @@ function normalizeInspectChannels(values: readonly string[] | undefined): Headle
 }
 
 /**
- * Validate a `--views <list>` value (comma list of `front,right,top,iso`).
+ * Validate a `--views <list>` value (comma list drawn from
+ * `front,back,left,right,top,bottom,iso`).
  * Empty/undefined defaults to all four canonical views, so existing
  * invocations keep capturing the full bundle. Rejects unknown view names
  * before the render surface is provisioned, mirroring `--channels`.
@@ -296,7 +303,7 @@ export function normalizeInspectViews(values: readonly string[] | undefined): Re
   const requested = views.length > 0 ? views : [...ALL_VIEWS];
   const unsupported = requested.filter((view) => !SUPPORTED_INSPECT_VIEWS.has(view as RenderView));
   if (unsupported.length > 0) {
-    throw new Error(`render inspect: unsupported view(s): ${unsupported.join(', ')}. Supported views: front, right, top, iso.`);
+    throw new Error(`render inspect: unsupported view(s): ${unsupported.join(', ')}. Supported views: ${SHEET_VIEWS.join(', ')}.`);
   }
   return [...new Set(requested)] as RenderView[];
 }
@@ -427,7 +434,7 @@ async function writeSeparateRenderViews(
   stamp: (buf: Buffer) => Promise<Buffer>,
 ): Promise<string[]> {
   const written: string[] = [];
-  for (const view of ALL_VIEWS) {
+  for (const view of SHEET_VIEWS) {
     const buf = result.pngsByView[view];
     if (!buf) continue;
     const outPath = input.out
@@ -460,7 +467,9 @@ async function writeCompositeRenderViews(
 ): Promise<string[]> {
   const written: string[] = [];
   const outPath = input.out ?? join(dir, `${stem}.png`);
-  const grid = await composite2x2(result.pngsByView, width, height);
+  const grid = input.sheet === true
+    ? await compositeSheet(result.pngsByView, width, height)
+    : await composite2x2(result.pngsByView, width, height);
   await writeFile(outPath, await stamp(grid));
   written.push(outPath);
   // In composite mode, pose captures still emit as separate files next to
@@ -824,7 +833,7 @@ function configureRenderInspectSubcommand(cmd: Command): void {
       'suppress the kernelCAD version badge in the bottom-right of the captured frame (clean hero artifacts)',
       false,
     )
-    .option('--channels <list>', 'comma-separated inspection channels to emit (rgb, mask, depth, normals)').option('--views <list>', 'comma-separated views to capture (front, right, top, iso; default all four)')
+    .option('--channels <list>', 'comma-separated inspection channels to emit (rgb, mask, depth, normals)').option('--views <list>', 'comma-separated views to capture (front, back, left, right, top, bottom, iso; default front, right, top, iso)')
     .option('--focus <names>', 'show only comma-separated feature ids or assembly part names')
     .option('--hide <names>', 'hide comma-separated feature ids or assembly part names')
     .action(async (file: string, outDir: string, opts: {
@@ -861,6 +870,7 @@ function configureRenderCommandOptions(cmd: Command): void {
     .argument('<file>', 'path to .kcad.ts script')
     .option('-o, --out <path>', 'output PNG path (composite / publish hero) or stem with .png suffix (separate mode)')
     .option('--separate', 'emit four individual PNG files instead of a 2×2 composite', false)
+    .option('--sheet', 'capture all seven views (adds back, left, bottom) into one labelled inspection sheet', false)
     .option('--width <n>', 'per-tile width in pixels (default 1024; 1600 with --preset publish)', (v) => parseInt(v, 10))
     .option('--height <n>', 'per-tile height in pixels (default 1024; 1200 with --preset publish)', (v) => parseInt(v, 10))
     .option(
@@ -905,6 +915,7 @@ function configureRenderCommandOptions(cmd: Command): void {
     .action(async (file: string, opts: {
       out?: string;
       separate: boolean;
+      sheet: boolean;
       width?: number;
       height?: number;
       baseUrl?: string;
@@ -927,6 +938,7 @@ function configureRenderCommandOptions(cmd: Command): void {
         file,
         out: opts.out,
         separate: opts.separate,
+        sheet: opts.sheet,
         width: opts.width,
         height: opts.height,
         baseUrl: opts.baseUrl,

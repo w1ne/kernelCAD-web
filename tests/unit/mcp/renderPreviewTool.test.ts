@@ -98,10 +98,10 @@ describe('render_preview — input validation', () => {
   });
 
   it('refuses unknown views', async () => {
-    const r = await renderPreviewTool({ code: 'return box(1,1,1);', views: ['iso', 'back'] }, makeDeps());
+    const r = await renderPreviewTool({ code: 'return box(1,1,1);', views: ['iso', 'side'] }, makeDeps());
     expect(r.ok).toBe(false);
     expect(r.error).toMatch(/unknown view/);
-    expect(r.error).toMatch(/back/);
+    expect(r.error).toMatch(/side/);
   });
 
   it('refuses a malformed pose', async () => {
@@ -173,6 +173,46 @@ describe('render_preview — happy path (mocked render)', () => {
     trackOutDir(r);
     expect(r.ok).toBe(true);
     expect(r.images.map(i => i.name)).toEqual(['iso']);
+  });
+
+  it('accepts the back, left and bottom views', async () => {
+    const r = await renderPreviewTool({ code: 'return box(1,1,1);', views: ['back', 'left', 'bottom'] }, makeDeps());
+    trackOutDir(r);
+    expect(r.ok).toBe(true);
+    expect(r.images.map(i => i.name)).toEqual(['back', 'left', 'bottom']);
+    expect(r.images[2].description).toBe(VIEW_DESCRIPTIONS.bottom);
+  });
+
+  it('sheet: renders all seven views and writes one labelled sheet image first', async () => {
+    let requested: readonly RenderView[] = [];
+    const r = await renderPreviewTool(
+      { code: 'return box(1,1,1);', sheet: true, width: 640, height: 480 },
+      makeDeps({
+        render: async opts => {
+          requested = opts.views ?? [];
+          return fakeRenderResult(requested);
+        },
+      }),
+    );
+    trackOutDir(r);
+    expect(r.ok).toBe(true);
+    expect(requested).toEqual(['iso', 'front', 'back', 'left', 'right', 'top', 'bottom']);
+    expect(r.images.map(i => i.name)).toEqual(['sheet', ...requested]);
+    const meta = await sharp(await readFile(r.images[0].path)).metadata();
+    // 7 tiles → 4 columns × 2 rows.
+    expect([meta.width, meta.height]).toEqual([4 * 640, 2 * 480]);
+  });
+
+  it('sheet: honours an explicit view subset', async () => {
+    const r = await renderPreviewTool(
+      { code: 'return box(1,1,1);', sheet: true, views: ['front', 'back'], width: 640, height: 480 },
+      makeDeps(),
+    );
+    trackOutDir(r);
+    expect(r.ok).toBe(true);
+    expect(r.images.map(i => i.name)).toEqual(['sheet', 'front', 'back']);
+    const meta = await sharp(await readFile(r.images[0].path)).metadata();
+    expect([meta.width, meta.height]).toEqual([2 * 640, 480]);
   });
 
   it('code mode writes the inline source into the session dir', async () => {
