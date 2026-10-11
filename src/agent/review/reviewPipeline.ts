@@ -270,6 +270,13 @@ export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCa
   activateReviewSession(model);
 
   const { arm, missingAssemblyMessage } = runSelectAssemblyStage(model, input);
+  if (!arm && input.assembly === undefined && model.session.assemblies.size === 0) {
+    // A single part (no assembly at all): the part-level checks already ran
+    // in the evaluate stage (build, union guard, DFM gates, script
+    // advisories). Report that verdict instead of failing the review — the
+    // mechanism / pose stages simply do not apply.
+    return await partOnlyReview(clock.report(), evaluation, model, input);
+  }
   if (!arm) {
     // Defence in depth: evaluation errors (e.g. union.* on an assembly that
     // is not the selected one) are never dropped here.
@@ -728,6 +735,42 @@ async function runFitnessAndRepairStage(input: {
  * script's return value and never lets a kernel failure sink the whole review
  * — geometry is simply reported as undefined in that case.
  */
+/** review_cad on a script that captured no assembly: the evaluate stage's
+ *  part-level verdict (it already passed, or the early return fired), with
+ *  the mechanism stages marked not applicable. */
+async function partOnlyReview(
+  timing: ReviewTimingReport,
+  evaluation: { featureCount: number; diagnostics: CompilerDiagnostic[] },
+  model: BuiltModel,
+  input: ReviewCadInput,
+): Promise<ReviewCadOutput> {
+  const geometry = safeAnalyzeContactGraph(model);
+  const diagnostics = withNextActions(evaluation.diagnostics);
+  return {
+    ...timing,
+    ok: true,
+    featureCount: evaluation.featureCount,
+    diagnostics,
+    assembly: 'part-only',
+    validator: { status: 'solved', diagnostics: [], partCount: 1, jointCount: 0 },
+    fitness: {
+      functional: true,
+      repairMode: 'none',
+      repairDirective:
+        'Single part (no assembly): the part-level checks (build, union guard, DFM gates) passed; mate, pose-envelope and mechanism checks do not apply. Wrap parts in assembly(...).part(...) and add mates when the design has joints.',
+      passedChecks: ['part-only-evaluate'],
+      blockingReasons: [],
+      mechanismSummary: { sampleCount: 0, interferenceCount: 0, trackedConnectorCount: 0 },
+    },
+    repairContext: await buildRepairContext(undefined, diagnostics, undefined, input),
+    rawInterferencePairs: [],
+    interferenceSummary: summarizeInterferencePairs([]),
+    mechanism: 'unverified',
+    mechanismFailures: [],
+    ...(geometry !== undefined ? { geometry } : {}),
+  };
+}
+
 function safeAnalyzeContactGraph(model: BuiltModel): ContactGraphResult | undefined {
   try {
     const tail = model.rootShape ?? model.tailShape;
