@@ -309,19 +309,40 @@ export function mateFk(
   mates: readonly MateRecord[],
   numericPoses: NumericPoses,
 ): Map<FeatureId, Transform> {
-  const worldT = new Map<FeatureId, Transform>();
-  if (parts.length === 0) return worldT;
+  return mateFkWithPlacedParts(parts, mates, numericPoses).transforms;
+}
+
+/** `mateFk`'s transforms, plus the parts a mate edge placed. */
+export interface MateFkResult {
+  readonly transforms: Map<FeatureId, Transform>;
+  /** Parts the walk reached through a mate: every reached part except the
+   *  walk root `parts[0]`. A mate decides where these go, so their own `at`
+   *  does not move them. The root and the parts the walk does not reach
+   *  stay where their `at` puts them. */
+  readonly placedByMate: ReadonlySet<FeatureId>;
+}
+
+/** `mateFk`, also reporting which parts a mate edge placed. */
+export function mateFkWithPlacedParts(
+  parts: readonly ResolvedMatePart[],
+  mates: readonly MateRecord[],
+  numericPoses: NumericPoses,
+): MateFkResult {
+  const transforms = new Map<FeatureId, Transform>();
+  const placedByMate = new Set<FeatureId>();
+  if (parts.length === 0) return { transforms, placedByMate };
 
   const adjacency = buildResolvedMateAdjacency(parts, mates);
   const partByName = new Map(parts.map((p) => [p.name, p]));
-  const worldTByName = walkResolvedMateTree(parts, adjacency, partByName, numericPoses);
+  const { worldTByName, placedNames } = walkResolvedMateTree(parts, adjacency, partByName, numericPoses);
 
   // 3. Re-key the result by FeatureId so callers (and the lowerer) can
   //    intersect it with v0.5 `forwardKinematics`'s map seamlessly.
   for (const p of parts) {
-    worldT.set(p.id, worldTByName.get(p.name)!);
+    transforms.set(p.id, worldTByName.get(p.name)!);
+    if (placedNames.has(p.name)) placedByMate.add(p.id);
   }
-  return worldT;
+  return { transforms, placedByMate };
 }
 
 /** 1. Adjacency: part-name -> array of mate edges. Mirrors `solveMates`'s
@@ -354,18 +375,20 @@ function buildResolvedMateAdjacency(
 }
 
 /** 2. BFS spanning tree from `parts[0]`. Compose child world transform from
- *  parent's via the mate's local SE(3) contribution. */
+ *  parent's via the mate's local SE(3) contribution. `placedNames` holds
+ *  every part a mate edge reached (the root is not one of them). */
 function walkResolvedMateTree(
   parts: readonly ResolvedMatePart[],
   adjacency: ReadonlyMap<string, MateEdge[]>,
   partByName: ReadonlyMap<string, ResolvedMatePart>,
   numericPoses: NumericPoses,
-): Map<string, Transform> {
+): { worldTByName: Map<string, Transform>; placedNames: Set<string> } {
   const root = parts[0];
   const worldTByName = new Map<string, Transform>();
   worldTByName.set(root.name, Transform.identity());
   const queue: string[] = [root.name];
   const visited = new Set<string>([root.name]);
+  const placedNames = new Set<string>();
   const seenMate = new Set<string>();
 
   while (queue.length > 0) {
@@ -376,6 +399,7 @@ function walkResolvedMateTree(
       seenMate.add(edge.mate.name);
       if (visited.has(edge.neighbor)) continue; // loop-closure mate — owned by solveMates
       visited.add(edge.neighbor);
+      placedNames.add(edge.neighbor);
 
       worldTByName.set(
         edge.neighbor,
@@ -390,7 +414,7 @@ function walkResolvedMateTree(
   for (const p of parts) {
     if (!worldTByName.has(p.name)) worldTByName.set(p.name, Transform.identity());
   }
-  return worldTByName;
+  return { worldTByName, placedNames };
 }
 
 /** Compose one child's world transform from the parent's through the parent

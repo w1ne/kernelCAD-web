@@ -16,7 +16,7 @@ import type { Connector } from '../../../mates/connector';
 import type { MateRecord } from '../../../mates/mate';
 import type { MateType } from '../../../mates/mateTypes';
 import { resolvedPartAt } from '../../../mates/partFrame';
-import { mateFk, type ResolvedMatePart } from '../../../mates/solver';
+import { mateFk, mateFkWithPlacedParts, type ResolvedMatePart } from '../../../mates/solver';
 import { resolveTopologyOriginOnBackend } from '../connectorTopology';
 import { built, finished, noShape, type LowerContext, type LowerOutcome } from './context';
 import { normalizeAxis, readVec3Param } from './helpers';
@@ -784,7 +784,8 @@ function applySolvedMateFk(
     type: m.type,
   }));
   const expandedMatePoses = expandCoupledPoses(mates, mateCouplings, matePoses);
-  const mateWorldT = mateFk(resolvedParts, mates, expandedMatePoses);
+  const { transforms: mateWorldT, placedByMate } =
+    mateFkWithPlacedParts(resolvedParts, mates, expandedMatePoses);
   // Merge: mate-derived transforms WIN over joint-derived transforms.
   // Disconnected-from-mates parts retain their joint-FK transform (or
   // identity if no joint either). This is the explicit precedence
@@ -799,10 +800,11 @@ function applySolvedMateFk(
   // the mate graph). Mate participants are exactly the parts whose
   // FeatureId appears in `connectorsByPartId`.
   for (const [partId, mT] of mateWorldT) {
-    if (partId in connectorsByPartId) {
-      warnPlacementIgnoredByMateFk(ctx, partId, records);
-      worldT.set(partId, mT);
-    }
+    if (!(partId in connectorsByPartId)) continue;
+    // Only a part a mate edge placed has its own `at` overridden; the walk
+    // root and the parts the walk does not reach keep theirs.
+    if (placedByMate.has(partId)) warnPlacementIgnoredByMateFk(ctx, partId, records);
+    worldT.set(partId, mT);
   }
   return true;
 }
@@ -846,6 +848,8 @@ function emitPlacementIgnoredByMateFk(
  * is positioned by mate FK, the `at:` is silently dropped — the agent only
  * learns about it 2 reasoning steps later via a Gate 2 axis-mismatch. Emit an
  * info-level diagnostic so the conflict surfaces at the override point.
+ * Call it only for a part a mate edge placed: the walk root and the parts the
+ * walk does not reach keep their `at`.
  */
 function warnPlacementIgnoredByMateFk(
   ctx: LowerContext,
