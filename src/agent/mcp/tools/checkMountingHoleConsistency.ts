@@ -3,10 +3,11 @@
 // src/agent/mcp/tools/checkMountingHoleConsistency.ts
 //
 // MCP tool: wraps the kc.kinematic.checkMountingHoleConsistency facade.
-// Walks every fastened mate in the assembly and flags fastener-side hole
-// diameter mismatches.
+// Walks every fastened mate in the assembly and flags hole pairs no screw
+// can use and fastener holes at a contact face that are not coaxial.
 
-import { evaluateAndBuildScript, type EvaluateInput } from '../../cli/commands/evaluate';
+import type { EvaluateInput } from '../../cli/commands/evaluate';
+import { evaluateForReview } from '../../review/reviewPipeline';
 import type { Assembly } from '../../../modeling/capture/assembly';
 import { checkMountingHoleConsistency } from '../../../kinematic';
 import type {
@@ -32,15 +33,17 @@ export type CheckMountingHoleConsistencyOutput =
   | { ok: false; source: 'local'; error: string; errorCode?: string };
 
 /**
- * `check_mounting_hole_consistency` MCP tool. Returns `ok: true` when every
- * fastener-side mate's bound hole diameters agree; otherwise carries one
- * `kinematic.mounting-hole.diameter-mismatch` (K9) diagnostic per offending
- * mate.
+ * verify({ check: 'mounting-holes' }). Returns `ok: true` unless a fastened
+ * mate's holes cannot take one screw or its contact-face holes are not
+ * coaxial; `mismatches` names both parts / connectors and the reason.
  */
 export async function checkMountingHoleConsistencyTool(
   input: CheckMountingHoleConsistencyInput,
 ): Promise<CheckMountingHoleConsistencyOutput> {
-  const { evaluation, model } = await evaluateAndBuildScript(input);
+  // Evaluate like review_cad (validate gate 'warn'): an error-severity
+  // finding such as a misaligned hole pattern must come back as a
+  // structured mismatch, not as a thrown solvedModel evaluation failure.
+  const { evaluation, model } = await evaluateForReview(input);
   if (evaluation.exitCode !== 0 || !model) {
     return {
       ok: false,
