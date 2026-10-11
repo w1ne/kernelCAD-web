@@ -17,7 +17,7 @@ describe('query dispatcher', () => {
   it.each(['evaluate', 'resolve', 'lineage'] as QueryMode[])(
     "routes mode:'%s' to its handler",
     async (mode) => {
-      const out = await queryTool({ mode, code: 'SRC' });
+      const out = await queryTool({ mode, code: 'SRC', ref: '@kc[a/face/top]' });
       expect(out).toBe(mode);
     },
   );
@@ -37,7 +37,10 @@ describe('query dispatcher', () => {
     expect(arg).not.toHaveProperty('mode');
   });
 
-  it('rejects an unknown mode', async () => {
-    await expect(queryTool({ mode: 'nope' as QueryMode })).rejects.toThrow(/Unknown query mode: nope/);
+  it('answers an unknown mode with a coded result instead of throwing', async () => {
+    const out = (await queryTool({ mode: 'nope' as QueryMode })) as { ok: boolean; errorCode: string; error: string };
+    expect(out.ok).toBe(false);
+    expect(out.errorCode).toBe('cli.invalid-args');
+    expect(out.error).toMatch(/unknown mode "nope"; valid modes are 'evaluate', 'resolve', 'lineage'/);
   });
 });
