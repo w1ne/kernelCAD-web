@@ -17,6 +17,7 @@ import {
   type SideObservation,
 } from '../modeling/mates/mountingHoleConsistency';
 import { validateMountingHoleAlignment } from '../modeling/mates/mountingHoleAlignment';
+import { parseConnectorRef } from '../modeling/mates/mate';
 import type { ValidatorDiagnostic } from '../modeling/mates/validator';
 import {
   DIAGNOSTIC_REGISTRY,
@@ -64,7 +65,7 @@ export async function checkMountingHoleConsistency(
   // connector origin) and a hole-free rigid bond are never mismatches.
   const mismatches: MountingHoleMismatch[] = [
     ...observations.filter((o) => o.verdict === 'mismatch').map(recordMismatch),
-    ...raw.filter((d) => d.code === 'assembly.mounting-hole.misaligned').map(alignmentMismatch),
+    ...raw.filter((d) => d.code === 'assembly.mounting-hole.misaligned').map((d) => alignmentMismatch(arm, d)),
   ];
   return {
     ok: mismatches.length === 0,
@@ -94,11 +95,25 @@ function recordMismatch(observation: FastenedMateHoleObservation): MountingHoleM
   };
 }
 
-function alignmentMismatch(d: ValidatorDiagnostic): MountingHoleMismatch {
+/** A geometric misalignment names the fastened mate; its connector refs
+ *  give each side's connector (the diagnostic carries part names only). */
+function alignmentMismatch(arm: Assembly, d: ValidatorDiagnostic): MountingHoleMismatch {
+  const mate = arm.__mates().find((m) => m.name === d.mateName);
+  const ends = mate === undefined ? [] : [mate.a, mate.b].flatMap((ref) => {
+    try {
+      return [parseConnectorRef(ref)];
+    } catch {
+      return [];
+    }
+  });
+  const sideFor = (partName: string): MountingHoleSideState => ({
+    partName,
+    connectorName: ends.find((end) => end.partName === partName)?.connectorName ?? '(geometric check — no connector)',
+  });
   return {
-    mateName: d.mateName ?? '',
-    sideA: { partName: d.partA ?? '', connectorName: '' },
-    sideB: { partName: d.partB ?? '', connectorName: '' },
+    mateName: d.mateName ?? mate?.name ?? '(unknown mate)',
+    sideA: sideFor(d.partA ?? ends[0]?.partName ?? '(unknown part)'),
+    sideB: sideFor(d.partB ?? ends[1]?.partName ?? '(unknown part)'),
     reason: 'misaligned',
   };
 }

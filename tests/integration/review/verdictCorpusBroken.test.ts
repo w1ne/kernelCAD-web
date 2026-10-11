@@ -53,6 +53,20 @@ const EXPECTATIONS: Record<string, (v: CorpusVerdicts) => void> = {
     expect(blockingCodes(v)).toContain('mechanism.orphan-part');
     expect(v.review.blocking).toContain('mechanism.orphan-part');
   },
+  'bad-09-offset-hole-pattern.kcad.ts': (v) => {
+    // 7.07 mm pattern offset: the hole circles do not overlap, but every
+    // bracket hole opens onto the plate's material with no coaxial partner.
+    expect(v.mountingHoles.mismatches).toEqual([
+      expect.objectContaining({
+        mateName: 'bolted',
+        reason: 'misaligned',
+        sideA: expect.objectContaining({ partName: 'plate', connectorName: 'bolt1' }),
+        sideB: expect.objectContaining({ partName: 'bracket', connectorName: 'bolt1' }),
+      }),
+    ]);
+    expect(blockingCodes(v)).toContain('assembly.mounting-hole.misaligned');
+    expect(v.review.blocking).toContain('assembly.mounting-hole.misaligned');
+  },
 };
 
 describe('verdict corpus — broken variants are caught', () => {

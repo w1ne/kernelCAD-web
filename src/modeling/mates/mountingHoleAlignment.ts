@@ -11,16 +11,28 @@
 // every full cylindrical bore of both fastened parts (BREP concave
 // cylinders, no boolean probes), places them in the solved world frame,
 // and looks at the bores that END on a common plane (the contact face both
-// parts share). Two such bores side by side but not coaxial mean no screw
-// can pass through both — the classic "bolt pattern off by a millimetre"
-// error. Coaxial bores of any diameter pass (clearance over tap drill,
-// bearing bore in a housing seat); bores with no near neighbour pass
-// (vents, a screw into solid plastic). Emits one
-// `assembly.mounting-hole.misaligned` (error) per offending pair.
+// parts share). Two findings mean no screw can pass through both:
+//
+//  - overlapping bores: two bores whose circles overlap on the contact
+//    plane (lateral offset < rA + rB) but are not coaxial;
+//  - an unpartnered interface bore: when BOTH parts have bores ending on
+//    the contact plane, a bore of one part that opens onto the other
+//    part's material (inside the contact footprint) with no coaxial
+//    partner, while the other part has a fastener-sized bore on that plane
+//    — the pattern is offset, however far ("bolt pattern 32x22 on a 30x20
+//    plate", or one shifted by 7 mm).
+//
+// Coaxial bores of any diameter pass (clearance over tap drill, bearing
+// bore in a housing seat); a bore that does not open onto the other part
+// (outside the footprint) passes; a bore of a different size class from
+// every bore on the other side passes (a bearing bore beside the screw
+// holes); bores with no counterpart bores at all pass (vents, a screw into
+// solid plastic). Emits one `assembly.mounting-hole.misaligned` (error) per
+// fastened part pair.
 
 import type { Assembly, AssemblyPartStored } from '../capture/assembly';
 import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
-import { collectFullCylinders, type BoreExtent } from '../../kernel/backends/occt/holeDetection';
+import { collectFullCylinders, probePointInsideMaterial, type BoreExtent } from '../../kernel/backends/occt/holeDetection';
 import { Transform } from '../../shared/runtime/se3';
 import { parseConnectorRef } from './mate';
 import { solveMates } from './solver';
@@ -36,6 +48,12 @@ const PARALLEL_DOT = 0.999;
 /** Parts with more bores than this (perforated panels, grilles) are skipped:
  *  pairing every perforation is not a fastener check. */
 const MAX_BORES_PER_PART = 64;
+/** Two bores are the same fastener size class (clearance vs tap drill,
+ *  M3 3.4 / 2.5, M2 2.4 / 1.6) when the larger diameter is at most this
+ *  multiple of the smaller. */
+const SIZE_CLASS_RATIO = 2;
+/** Probe offset off the contact plane into the other part (mm). */
+const PROBE_OFFSET_MM = 0.2;
 
 interface WorldBore {
   readonly origin: Vec3;
@@ -44,6 +62,14 @@ interface WorldBore {
   readonly diameterMm: number;
   /** World positions of both axial ends of the bore wall. */
   readonly ends: readonly [Vec3, Vec3];
+}
+
+/** True when `point` (world) lies in the part's material. */
+type MaterialProbe = (point: Vec3) => boolean;
+
+interface PartBores {
+  readonly bores: readonly WorldBore[];
+  readonly material: MaterialProbe;
 }
 
 interface FastenedPair {
@@ -67,8 +93,8 @@ export async function validateMountingHoleAlignment(
   const worldPoses = poses ?? await solvedPoses(arm);
   if (worldPoses === undefined) return [];
   const partsByName = new Map(arm.__parts().map((part) => [part.name, part]));
-  const boresByPart = new Map<string, readonly WorldBore[]>();
-  const boresFor = async (name: string): Promise<readonly WorldBore[]> => {
+  const boresByPart = new Map<string, PartBores>();
+  const boresFor = async (name: string): Promise<PartBores> => {
     let bores = boresByPart.get(name);
     if (bores === undefined) {
       bores = await worldBoresOf(partsByName.get(name), worldPoses.get(name) ?? Transform.identity());
@@ -125,18 +151,26 @@ function fastenedPairs(arm: Assembly): FastenedPair[] {
   return out;
 }
 
-async function worldBoresOf(part: AssemblyPartStored | undefined, pose: Transform): Promise<readonly WorldBore[]> {
-  if (part === undefined) return [];
+const NO_BORES: PartBores = { bores: [], material: () => false };
+
+async function worldBoresOf(part: AssemblyPartStored | undefined, pose: Transform): Promise<PartBores> {
+  if (part === undefined) return NO_BORES;
   let bores: BoreExtent[];
+  let backend: OcctBackend;
   try {
-    const backend = await part.originalShape.lower();
-    if (!(backend instanceof OcctBackend)) return [];
+    const lowered = await part.originalShape.lower();
+    if (!(lowered instanceof OcctBackend)) return NO_BORES;
+    backend = lowered;
     bores = collectFullCylinders(backend, 'hole');
   } catch {
-    return [];
+    return NO_BORES;
   }
-  if (bores.length > MAX_BORES_PER_PART) return [];
-  return bores.map((bore) => toWorldBore(bore, pose));
+  if (bores.length > MAX_BORES_PER_PART) return NO_BORES;
+  const toLocal = pose.inverse();
+  return {
+    bores: bores.map((bore) => toWorldBore(bore, pose)),
+    material: (point) => probePointInsideMaterial(backend, toLocal.point(point)),
+  };
 }
 
 function toWorldBore(bore: BoreExtent, pose: Transform): WorldBore {
@@ -160,27 +194,92 @@ interface MisalignedFinding {
   readonly plane: Vec3;
 }
 
+interface FacingPair {
+  readonly a: WorldBore;
+  readonly b: WorldBore;
+  readonly offsetMm: number;
+  readonly plane: Vec3;
+}
+
 /**
- * The first pair of interface bores (one per part, parallel, ending on a
- * shared plane) that sit close enough to be meant for the same screw but
- * are not coaxial — skipping any bore already coaxial with a partner.
+ * The first misaligned interface: two non-coaxial bores whose circles
+ * overlap on a shared plane, else an interface bore on either side that
+ * opens onto the other part's material with no coaxial partner.
  */
-function findMisalignedPair(boresA: readonly WorldBore[], boresB: readonly WorldBore[]): MisalignedFinding | undefined {
-  const facing: Array<{ a: WorldBore; b: WorldBore; offsetMm: number; plane: Vec3 }> = [];
-  for (const a of boresA) {
-    for (const b of boresB) {
+function findMisalignedPair(partA: PartBores, partB: PartBores): MisalignedFinding | undefined {
+  const facing: FacingPair[] = [];
+  for (const a of partA.bores) {
+    for (const b of partB.bores) {
       const plane = sharedEnd(a, b);
       if (plane === undefined) continue;
       facing.push({ a, b, offsetMm: lateralOffset(a, b), plane });
     }
   }
+  if (facing.length === 0) return undefined;
   const aligned = facing.filter((f) => f.offsetMm <= alignToleranceMm(f.a, f.b));
   const alignedA = new Set(aligned.map((f) => f.a));
   const alignedB = new Set(aligned.map((f) => f.b));
-  return facing.find((f) =>
+  const overlapping = facing.find((f) =>
     !alignedA.has(f.a) && !alignedB.has(f.b) &&
     f.offsetMm > alignToleranceMm(f.a, f.b) &&
-    f.offsetMm < f.a.diameterMm + f.b.diameterMm);
+    f.offsetMm < (f.a.diameterMm + f.b.diameterMm) / 2);
+  if (overlapping !== undefined) return overlapping;
+  return findUnpartneredBore(facing, alignedA, partB.material, 'a')
+    ?? findUnpartneredBore(facing, alignedB, partA.material, 'b');
+}
+
+/**
+ * A bore on `side` that ends on a plane shared with same-size-class bores
+ * of the other part, has no coaxial partner, and opens onto the other
+ * part's material there (so it lies inside the contact footprint).
+ */
+function findUnpartneredBore(
+  facing: readonly FacingPair[],
+  alignedOnSide: ReadonlySet<WorldBore>,
+  otherMaterial: MaterialProbe,
+  side: 'a' | 'b',
+): MisalignedFinding | undefined {
+  const probed = new Set<WorldBore>();
+  const candidates = facing
+    .filter((f) => !alignedOnSide.has(f[side]) && sameSizeClass(f.a, f.b))
+    .sort((x, y) => x.offsetMm - y.offsetMm);
+  for (const f of candidates) {
+    const bore = f[side];
+    if (probed.has(bore)) continue;
+    probed.add(bore);
+    const end = endOnPlane(bore, f.plane);
+    if (opensOntoMaterial(end, bore.dir, otherMaterial)) {
+      return f;
+    }
+  }
+  return undefined;
+}
+
+function sameSizeClass(a: WorldBore, b: WorldBore): boolean {
+  const big = Math.max(a.diameterMm, b.diameterMm);
+  const small = Math.min(a.diameterMm, b.diameterMm);
+  return small > 0 && big / small <= SIZE_CLASS_RATIO;
+}
+
+/** The end of `bore` lying on the plane through `plane` normal to its axis. */
+function endOnPlane(bore: WorldBore, plane: Vec3): Vec3 {
+  const [e0, e1] = bore.ends;
+  return Math.abs(dot(sub(e0, plane), bore.dir)) <= Math.abs(dot(sub(e1, plane), bore.dir)) ? e0 : e1;
+}
+
+/** The other part has material just off the contact plane on either side
+ *  of the bore mouth (the side the bore's own part is not on is where the
+ *  other part sits; probing both is order-independent). */
+function opensOntoMaterial(end: Vec3, dir: Vec3, material: MaterialProbe): boolean {
+  for (const sign of [1, -1]) {
+    const p: Vec3 = [
+      end[0] + dir[0] * PROBE_OFFSET_MM * sign,
+      end[1] + dir[1] * PROBE_OFFSET_MM * sign,
+      end[2] + dir[2] * PROBE_OFFSET_MM * sign,
+    ];
+    if (material(p)) return true;
+  }
+  return false;
 }
 
 /** Coaxial within the slack a clearance hole leaves a screw (≥ 0.3 mm). */
