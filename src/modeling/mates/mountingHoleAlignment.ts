@@ -87,6 +87,7 @@ interface FastenedPair {
 export async function validateMountingHoleAlignment(
   arm: Assembly,
   poses?: ReadonlyMap<string, Transform>,
+  loweredParts?: ReadonlyMap<string, OcctBackend>,
 ): Promise<ValidatorDiagnostic[]> {
   const pairs = fastenedPairs(arm);
   if (pairs.length === 0) return [];
@@ -97,7 +98,7 @@ export async function validateMountingHoleAlignment(
   const boresFor = async (name: string): Promise<PartBores> => {
     let bores = boresByPart.get(name);
     if (bores === undefined) {
-      bores = await worldBoresOf(partsByName.get(name), worldPoses.get(name) ?? Transform.identity());
+      bores = await worldBoresOf(partsByName.get(name), worldPoses.get(name) ?? Transform.identity(), loweredParts?.get(name));
       boresByPart.set(name, bores);
     }
     return bores;
@@ -144,12 +145,18 @@ function fastenedPairs(arm: Assembly): FastenedPair[] {
 
 const NO_BORES: PartBores = { bores: [], material: () => false };
 
-async function worldBoresOf(part: AssemblyPartStored | undefined, pose: Transform): Promise<PartBores> {
+/** `prelowered`: the part's local-frame shape from an earlier scene
+ *  lowering, when the caller has one; otherwise the part is lowered here. */
+async function worldBoresOf(
+  part: AssemblyPartStored | undefined,
+  pose: Transform,
+  prelowered?: OcctBackend,
+): Promise<PartBores> {
   if (part === undefined) return NO_BORES;
   let bores: BoreExtent[];
   let backend: OcctBackend;
   try {
-    const lowered = await part.originalShape.lower();
+    const lowered = prelowered ?? await part.originalShape.lower();
     if (!(lowered instanceof OcctBackend)) return NO_BORES;
     backend = lowered;
     bores = collectFullCylinders(backend, 'hole');

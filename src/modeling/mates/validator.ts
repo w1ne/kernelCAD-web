@@ -29,13 +29,13 @@ import type { Assembly } from '../capture/assembly';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { Vec3 } from '../../shared/intent/types';
 import type { DiagnosticCode } from '../../shared/diagnostics/registry';
-import type { InterferencePair } from '../runtime/detectInterferences';
+import { annotateRunningFits, runningFitPairKeys, type InterferencePair } from '../runtime/detectInterferences';
 import { validateJointAxisBindingWithCache } from './jointAxisBinding';
 import { validateJointConventionMix } from './jointConventionMix';
 import { validateJointLoadCapacity } from './jointLoadCapacity';
 import { validateJointVisualExposure } from './jointVisualExposure';
 import { parseConnectorRef } from './mate';
-import { jointContactCapMm3 } from '../runtime/jointContactCap';
+import { isActionableInterference } from '../runtime/jointContactCap';
 import { validateMatePhysicalRealization } from './matePhysicalRealization';
 import { validateMountingHoleConsistency } from './mountingHoleConsistency';
 import { validateMountingHoleAlignment } from './mountingHoleAlignment';
@@ -225,7 +225,10 @@ export function validateAssembly(input: ValidateAssemblyInput): ValidatorResult 
   // Check 3 — interference (promoted from checkInterference). Errors,
   // not warnings, because solid bodies sharing volume is mechanically
   // invalid (vs floating, which is a missing-information warning).
-  diagnostics.push(...collectInterferenceDiagnostics(input.interferencePairs, input.ignore));
+  const pairs = input.interferencePairs === undefined
+    ? undefined
+    : annotateRunningFits(input.interferencePairs, runningFitPairKeysFromRecords(input.records));
+  diagnostics.push(...collectInterferenceDiagnostics(pairs, input.ignore));
 
   const status = resolveValidatorStatus(diagnostics);
 
@@ -334,10 +337,9 @@ function collectInterferenceDiagnostics(
   // no extra interference budget. This replaces the old "every interference
   // pair is an error" behaviour while still failing any real overlap above the
   // tessellation-noise floor.
-  const cap = jointContactCapMm3();
   for (const pair of interferencePairs ?? []) {
     if (isPairIgnored(pair.a, pair.b, ignore)) continue;
-    if (pair.volumeMm3 <= cap) continue;
+    if (!isActionableInterference(pair)) continue;
     diagnostics.push({
       code: 'assembly.interference.overlap',
       severity: 'error',
@@ -423,6 +425,12 @@ function collectMateInfos(records: readonly FeatureRecord[]): MateEdgeInfo[] {
     }
   }
   return out;
+}
+
+/** Part pairs joined by a moving (non-fastened) mate in `records` — the
+ *  pairs whose contact-noise cap scales with part size. */
+export function runningFitPairKeysFromRecords(records: readonly FeatureRecord[]): Set<string> {
+  return runningFitPairKeys(collectMateInfos(records).map((m) => ({ a: m.aPartName, b: m.bPartName, type: m.type })));
 }
 
 /** Undirected part-name edges for the adjacency map. */
@@ -668,10 +676,13 @@ export async function validateAssemblyWithMates(
   //    construction.
   diagnostics.push(...validateJointLoadCapacity(arm, externalLoads));
   diagnostics.push(...validateMountingHoleConsistency(arm));
-  if (solveStatus === 'solved' || solveStatus === 'redundant-ok') {
-    diagnostics.push(...await validateMountingHoleAlignment(arm, solveResult?.poses));
-  }
+  // Gate 2 first: its single scene lowering hands the mounting-hole
+  // alignment check every part's local shape, so that check does not lower
+  // each fastened part again (a full extra recompute on boolean-heavy parts).
   const axisBindingResult = await validateJointAxisBindingWithCache(arm);
+  if (solveStatus === 'solved' || solveStatus === 'redundant-ok') {
+    diagnostics.push(...await validateMountingHoleAlignment(arm, solveResult?.poses, axisBindingResult.localShapes));
+  }
   diagnostics.push(...axisBindingResult.diagnostics);
   diagnostics.push(...await validateJointVisualExposure({
     arm,

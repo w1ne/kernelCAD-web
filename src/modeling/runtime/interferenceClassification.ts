@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { InterferencePair } from './detectInterferences';
-import { jointContactCapMm3 } from './jointContactCap';
+import { jointContactCapMm3, pairContactCapMm3 } from './jointContactCap';
 
 export type InterferenceClassification = 'contact-noise' | 'actionable';
 
@@ -19,11 +19,14 @@ export interface InterferenceSummary {
   readonly pairs: readonly ClassifiedInterferencePair[];
 }
 
+/** Classify each pair against its own cap: `capMm3` (default the uniform
+ *  20 mm³ cap) scaled down for small parts by `pairContactCapMm3`. */
 export function classifyInterferencePairs(
   pairs: readonly InterferencePair[],
-  capMm3 = jointContactCapMm3(),
+  uniformCapMm3 = jointContactCapMm3(),
 ): ClassifiedInterferencePair[] {
   return pairs.map((pair) => {
+    const capMm3 = Math.min(uniformCapMm3, pairContactCapMm3(pair));
     const actionable = pair.volumeMm3 > capMm3;
     return {
       ...pair,

@@ -124,6 +124,10 @@ export interface JointAxisBindingResult {
   readonly worldShapes: ReadonlyMap<string, OcctBackend>;
   /** Per-part SE(3) world transform, same key set as `worldShapes`. */
   readonly worldTransforms: ReadonlyMap<string, Transform>;
+  /** Per-part lowered shape in its LOCAL frame (before the world transform),
+   *  same key set as `worldShapes` — lets later gates (mounting-hole
+   *  alignment) read part geometry without lowering each part again. */
+  readonly localShapes?: ReadonlyMap<string, OcctBackend>;
 }
 
 /**
@@ -190,7 +194,8 @@ export async function validateJointAxisBindingWithCache(
   const worldTransforms = indexWorldTransforms(lowered);
 
   const out = await collectAxisBindingDiagnostics(gatedMates, partsByName, worldTransforms, worldShapes);
-  return { diagnostics: out, worldShapes, worldTransforms };
+  const localShapes = new Map(lowered.parts.map((p) => [p.name, p.shape as OcctBackend] as const));
+  return { diagnostics: out, worldShapes, worldTransforms, localShapes };
 }
 
 function findOrCreateSceneFeatureId(arm: Assembly, session: CaptureSession): FeatureId {

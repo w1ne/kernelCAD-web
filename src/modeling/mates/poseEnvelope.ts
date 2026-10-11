@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { jointContactCapMm3 } from '../runtime/jointContactCap';
+import { isActionableInterference } from '../runtime/jointContactCap';
 import type { Assembly } from '../capture/assembly';
 import type { NumericPoses } from '../capture/forwardKinematics';
 import { createOcctLowerer } from '../backends/occt/occtLowerer';
@@ -11,7 +11,7 @@ import type { Vec3 } from '../../shared/intent/types';
 import type { DiagnosticCode } from '../../shared/diagnostics/registry';
 import { currentValue } from '../../shared/runtime/editableHelpers';
 import type { Editable } from '../../shared/runtime/paramRef';
-import { detectInterferences, type InterferencePair, pairKey } from '../runtime/detectInterferences';
+import { detectInterferences, type InterferencePair, pairKey, runningFitPairKeys } from '../runtime/detectInterferences';
 import { checkClearance, type ClearancePairReport } from '../runtime/dfm/clearance';
 import { expandCoupledPoses } from './coupledPoses';
 import { reposedLoweredAssemblyScene } from './loweredAssemblyScene';
@@ -268,7 +268,10 @@ export async function reviewPoseEnvelope(
   const interferencePairs: Array<InterferencePair & { sampleName: string }> = [];
   const clearancePairs: Array<ClearancePairReport & { sampleName: string }> = [];
   const ignoredPairs = opts.ignoredPairs ?? new Set<string>();
-  const reportInterference = createInterferenceReporter(interferencePairs, diagnostics, ignoredPairs);
+  const runningFits = runningFitPairKeys(arm.__mates().map((m) => ({
+    a: m.a.split('.')[0], b: m.b.split('.')[0], type: m.type,
+  })));
+  const reportInterference = createInterferenceReporter(interferencePairs, diagnostics, ignoredPairs, runningFits);
   const connectorPoses: TrackedConnectorPose[] = [];
   const trackConnectors = resolveTrackedConnectors(opts);
   const unresolvedConnectorRefs = new Set<string>();
@@ -330,16 +333,18 @@ function createInterferenceReporter(
   interferencePairs: Array<InterferencePair & { sampleName: string }>,
   diagnostics: PoseEnvelopeDiagnostic[],
   ignoredPairs: ReadonlySet<string> = new Set(),
+  runningFits: ReadonlySet<string> = new Set(),
 ): (sampleName: string, pair: InterferencePair) => void {
   const reportedInterferences = new Set<string>();
-  return (sampleName: string, pair: InterferencePair): void => {
-    const pairId = pairKey(pair.a, pair.b);
+  return (sampleName: string, raw: InterferencePair): void => {
+    const pairId = pairKey(raw.a, raw.b);
+    const pair = runningFits.has(pairId) ? { ...raw, runningFit: true } : raw;
     if (ignoredPairs.has(pairId)) return;
     // One rule with the validator and interferenceSummary: shared volume at
-    // or below the uniform contact-noise cap is touching / tessellation
+    // or below the contact-noise cap (scaled for running fits) is touching / tessellation
     // noise (reported as non-actionable contact-noise there), never a
     // blocking interference here.
-    if (pair.volumeMm3 <= jointContactCapMm3()) return;
+    if (!isActionableInterference(pair)) return;
     const key = `${sampleName}\u0000${pairId}`;
     if (reportedInterferences.has(key)) return;
     reportedInterferences.add(key);

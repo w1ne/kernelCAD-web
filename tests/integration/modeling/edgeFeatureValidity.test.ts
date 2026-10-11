@@ -15,7 +15,7 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { getOC } from 'replicad';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { buildModel } from '../../../src/modeling/buildModel';
-import { isTopologicallyValid } from '../../../src/kernel/backends/occt/edgeFeatureValidity';
+import { edgeFeatureResultProblem, isTopologicallyValid } from '../../../src/kernel/backends/occt/edgeFeatureValidity';
 import { volumeOf } from '../../../src/kernel/backends/occt/booleanRecovery';
 
 async function build(code: string) {
@@ -82,4 +82,12 @@ describe('fillet / chamfer result validation', () => {
     expect(ok.diagnostics.filter((x) => x.severity === 'error')).toEqual([]);
     expect(ok.tailShape!.volume()).toBeCloseTo(60 * 40 * 5 - 4 * 8 * 5, 0);
   }, 120_000);
+
+  it('a result identical to the input is still reported as unchanged, on any body size', async () => {
+    for (const code of ['return box(40, 40, 10);', 'return box(500, 400, 200);']) {
+      const m = await build(code);
+      const w = (m.tailShape as unknown as { getReplicadShape(): { wrapped: unknown } }).getReplicadShape().wrapped;
+      expect(edgeFeatureResultProblem(w, w, 'decrease')).toMatch(/unchanged/);
+    }
+  }, 60_000);
 });

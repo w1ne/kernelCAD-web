@@ -40,9 +40,9 @@ import {
   type JointTopologyDiagnostic,
 } from '../../modeling/mates/jointTopology';
 import type { ValidatorDiagnostic, ValidatorStatus } from '../../modeling/mates/validator';
-import { validateAssemblyWithMates } from '../../modeling/mates/validator';
+import { runningFitPairKeysFromRecords, validateAssemblyWithMates } from '../../modeling/mates/validator';
 import type { InterferencePair } from '../../modeling/runtime/detectInterferences';
-import { detectInterferences, pairKey } from '../../modeling/runtime/detectInterferences';
+import { annotateRunningFits, detectInterferences, pairKey } from '../../modeling/runtime/detectInterferences';
 import { findDfmSpec } from '../../modeling/runtime/dfm/runDfmChecks';
 import {
   summarizeInterferencePairs,
@@ -800,14 +800,19 @@ function mergeConnectorRefs(
  * continue to surface the real problem.
  */
 function safeDetectDefaultPoseInterferences(
-  model: ReviewScene,
+  model: ReviewScene & { records?: BuiltModel['records'] },
   epsilonMm3?: number,
 ): InterferencePair[] {
   try {
     const tail = model.rootShape ?? model.tailShape;
     if (!tail || !isSceneBackend(tail)) return [];
     const epsilon = epsilonMm3 ?? 0.01;
-    return detectInterferences(tail, epsilon, new Set<string>()).pairs;
+    // Mark pairs joined by a moving mate so the summary, the validator and
+    // the Studio HUD judge them against the same running-fit cap.
+    return annotateRunningFits(
+      detectInterferences(tail, epsilon, new Set<string>()).pairs,
+      runningFitPairKeysFromRecords(model.records ?? []),
+    );
   } catch {
     return [];
   }
