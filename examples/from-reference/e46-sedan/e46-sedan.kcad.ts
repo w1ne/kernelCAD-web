@@ -27,7 +27,7 @@
 //   (5 double-spoke 16" alloys, brake discs behind).
 
 // --- Published dimensions ----------------------------------------------------
-const L = 4471;
+// Overall length 4471 is the extent of the station table (LOWER_ST).
 const WB = 2725;
 const FO = 770; // front overhang (estimate, see PROVENANCE.md)
 const AX: [number, number] = [FO, FO + WB];
@@ -172,7 +172,6 @@ function loftRuns(stations: number[], half: (s: number) => P[], grow = 0, span =
 // Graded stations: fine at the bumpers, ~230 mm along the cabin.
 const LOWER_ST = [0, 8, 20, 40, 70, 110, 160, 230, 320, 430, 560, 710, 880, 1060, 1250, 1450,
   1680, 1910, 2140, 2370, 2600, 2830, 3060, 3290, 3520, 3740, 3920, 4070, 4190, 4290, 4355, 4395, 4425, 4445, 4458, 4466, 4471];
-const NOSE_ST = LOWER_ST.slice(0, 13); // 0 .. 880 (run boundary)
 const NOSE_R = LOWER_ST.slice(0, 10); // 0 .. 430: nose face, lamps, grille
 const MID_ST = LOWER_ST.slice(12, 25); // 880 .. 3520: doors
 const TAIL_ST = LOWER_ST.slice(24); // 3520 .. 4471 (run boundary)
