@@ -21,6 +21,22 @@ export const FEATURE_CODES = {
     group: 'feature',
     description: 'The underlying OCCT kernel call failed at runtime for an op-specific reason.',
   },
+  'feature.boolean.recovered': {
+    hintTemplate:
+      'No action needed: the exact boolean failed on coincident or tangent faces and a fuzzy-boolean retry produced a valid solid. To get an exact boolean, move the operands apart or overlap them clearly instead of making faces touch.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'info',
+    group: 'feature',
+    description: 'The exact OCCT boolean failed or produced an invalid solid; a fuzzy/glue retry (with optional ShapeFix) succeeded.',
+  },
+  'feature.shell.boolean-fallback': {
+    hintTemplate:
+      'No action needed: every shell join mode failed, so the wall was built by offsetting the solid inward and subtracting it, then opening the selected face. Check the wall reads as intended.',
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'info',
+    group: 'feature',
+    description: 'shell() fell back to offset-and-subtract after every BRepOffsetAPI_MakeThickSolid join mode failed.',
+  },
   // Specific retries (2)
   'feature.revolve.crosses-axis': {
     hintTemplate:

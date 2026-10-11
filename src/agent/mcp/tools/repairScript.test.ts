@@ -135,6 +135,12 @@ const CASES: RepairCase[] = [
     expectInNewCode: '.shell(4, { face: \'top\' })',
   },
   {
+    name: 'fillet radius the kernel rejects (probed max-feasible radius)',
+    code: 'return box(40, 30, 10).fillet(5);',
+    code_expected: 'feature.kernel-failed',
+    expectInNewCode: '.fillet(4.98)',
+  },
+  {
     name: 'emboss whose glyphs sit over a hole',
     code: [
       "return box(40, 40, 6).hole('top', { u: 0, v: 0, diameter: 20, depth: 'through' })",

@@ -22,6 +22,7 @@ import type { Face } from 'replicad';
 import { OcctBackend } from './occtBackend';
 import { pickFace } from './edgeSelection';
 import { assertBooleanSucceeded, cutWithHistory, fuseWithHistory, mergeBooleanHistory } from './historyAwareBooleans';
+import { booleanRecoveryDiagnostic } from './booleanRecovery';
 import { resolveFaceQuery } from './edgeQueries';
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
@@ -853,6 +854,8 @@ function runCutAndClassify(
     });
     return { backend: target, diagnostics };
   }
+  const recovered = booleanRecoveryDiagnostic(featureId, 'hole cut', cutResult);
+  if (recovered) diagnostics.push(recovered);
 
   // Wrap the result into an OcctBackend.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

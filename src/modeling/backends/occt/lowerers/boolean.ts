@@ -9,6 +9,7 @@ import {
   intersectWithHistory,
   mergeBooleanHistory,
 } from '../../../../kernel/backends/occt/historyAwareBooleans';
+import { booleanRecoveryDiagnostic } from '../../../../kernel/backends/occt/booleanRecovery';
 import type { FeatureRecord } from '../../../../shared/intent/featureRecord';
 import { intersectionEmptyDiagnostic } from '../additiveNoOp';
 import { subtractiveNoOpDiagnostic } from '../subtractiveNoOp';
@@ -39,6 +40,8 @@ export function lowerBoolean(ctx: LowerContext, r: FeatureRecord): LowerOutcome 
   if (!opFn) throw new Error(`Unknown boolean op: ${op}`);
   for (const c of cutters) {
     const result = opFn(acc, c);
+    const recovered = booleanRecoveryDiagnostic(r.id, `boolean ${op}`, result);
+    if (recovered) ctx.diagnostics.push(recovered);
     const newMap = mergeBooleanHistory(acc.historyMap, c.historyMap, result);
     // Wrap the result TopoDS_Shape back into a Replicad Shape3D using
     // replicad.cast(), which downcasts the raw shape to the correct
