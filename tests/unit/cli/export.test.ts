@@ -271,3 +271,23 @@ describe('export command action-handler validations', () => {
     expect(envelope.diagnostics.some(d => d.code === 'cli.file-write')).toBe(true);
   });
 });
+
+
+describe('CLI G-code statistics', () => {
+  it('preserves statistics in exportScript and the --json command receipt', async () => {
+    const tmp = mkdtempSync(join(tmpdir(), 'kcad-stats-'));
+    const file = join(tmp, 'demo.kcad.ts');
+    writeFileSync(file, 'return box(10,10,10);');
+    const gcodeStats = {estimatedPrintTimeSeconds:30, filamentUsedGrams:1.2};
+    const payload = {bytes:new TextEncoder().encode('G1 X0 E1\n'), diagnostics:[], featureCount:1, gcodeStats};
+    vi.mocked(runAndExport).mockResolvedValueOnce(payload);
+    expect(await exportScript({file, format:'gcode', out:join(tmp,'part.gcode')})).toMatchObject({exitCode:0,gcodeStats});
+    vi.mocked(runAndExport).mockResolvedValueOnce(payload);
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const exit = vi.spyOn(process, 'exit').mockImplementation((() => {}) as never);
+    try {
+      await exportCommand().parseAsync(['gcode', file, '--out', join(tmp,'json.gcode'), '--json'], {from:'user'});
+      expect(JSON.parse(String(log.mock.calls.at(-1)?.[0]))).toMatchObject({ok:true, gcodeStats});
+    } finally { log.mockRestore(); exit.mockRestore(); }
+  });
+});

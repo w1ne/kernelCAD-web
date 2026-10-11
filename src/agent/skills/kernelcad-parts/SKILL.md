@@ -314,3 +314,18 @@ return arm.model();
 | `parts.fetch.checksum-drift`      | Cached bytes still match; remote now reports a different sha256.              | Re-fetch with `--refresh-parts-cache` to opt in to the new bytes.                     |
 | `parts.fetch.api-error`           | Remote returned non-2xx or network failed.                                    | Retry later, check `partsBaseUrl` reachability, or fall back to `source: 'local'`.    |
 | `parts.fetch.remote-disabled`     | A tool needed remote, but no `partsBaseUrl` (arg or env) was set.             | Pass `partsBaseUrl`, set `KERNELCAD_PARTS_BASE_URL`, or stick to bundled ids.         |
+
+### Verify installed catalog screws
+
+For a placed catalog screw use `verify({ check: 'fastener-installation', file,
+fasteners: [{ part: 'screw', against: ['washer', 'plate'], engagementPart: 'nut',
+minEngagementMm: 2, maxProtrusionMm: 1 }] })`. The names are assembly instances,
+not catalog ids. The verifier uses retained hash-bound catalog interfaces and
+actual BREP geometry/world poses. Locally imported catalog sidecars qualify only
+when the imported STEP bytes match the catalog hash and sidecar identity validates.
+
+Flat annular-bearing screws and full open cylindrical bores are supported;
+unsupported heads, manual primitives/metadata, blind or ambiguous bores and failed
+probes are unknown. Empty stations produce `no-coverage`, never a passing audit.
+Measured axial engagement and protrusion meet user-declared geometric limits;
+simplified catalog threads cannot prove thread contact, strength, torque or preload.

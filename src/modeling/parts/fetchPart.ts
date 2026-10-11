@@ -9,7 +9,7 @@
 //   3. Remote     → fetch + verify sha256 + cache
 //   4. Throw `parts.fetch.remote-disabled` when no partsBaseUrl is set.
 
-import { existsSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import type { CaptureSession } from '../capture/captureSession';
 import { fromStepBytes } from './fromSTEP';
@@ -424,9 +424,25 @@ async function importBundledPart(
 ): Promise<FetchPartResult> {
   const bytes = readFileSync(stepPath);
   const shape = await fromStepBytes(ctx, bytes, stepPath);
-  attachManifestConnectorsFromSidecar(ctx, shape, stepPath);
-  attachCatalogPartMetadata(ctx, shape, record);
-  return { shape, record };
+  // Bind local interfaces to the bytes that were actually imported. Legacy
+  // sidecars carry no hash; verify the catalog hash before retaining them.
+  const actualHash = createHash('sha256').update(bytes).digest('hex');
+  let boundRecord: PartRecord = { ...record, connectorManifest: undefined };
+  if (actualHash === record.sha256) {
+    const manifestPath = stepPath.replace(/\.step$/, '.json');
+    try {
+      const manifest = loadConnectorManifest(manifestPath);
+      const declaredHash = (manifest as { geometrySha256?: string }).geometrySha256;
+      const bound = { ...manifest, geometrySha256: declaredHash ?? actualHash };
+      validateManifestAgainstStepBytes(bound, record, bytes);
+      const connectors = attachManifestConnectors(ctx, shape, bound);
+      boundRecord = { ...record, connectors, connectorManifest: bound };
+    } catch {
+      // Import remains usable, but installation checks have unknown coverage.
+    }
+  }
+  attachCatalogPartMetadata(ctx, shape, boundRecord);
+  return { shape, record: boundRecord };
 }
 
 /** (2) Remote tier — opt-in. */
@@ -540,26 +556,6 @@ function attachManifestConnectors(
   }));
   ctx.session.attachAutoConnectors(shape.id, conns);
   return conns.map((connector) => connector.name);
-}
-
-/**
- * Load the per-part `<id>.json` connector manifest sidecar (when present).
- * Local sidecars remain best-effort: a malformed one must not block import.
- */
-function attachManifestConnectorsFromSidecar(
-  ctx: FetchPartCtx,
-  shape: Shape,
-  stepPath: string,
-): void {
-  const manifestPath = stepPath.replace(/\.step$/, '.json');
-  if (!existsSync(manifestPath)) return;
-  try {
-    const manifest = loadConnectorManifest(manifestPath);
-    attachManifestConnectors(ctx, shape, manifest);
-  } catch {
-    // A malformed manifest must not break the import; the lowerer survives
-    // without the manifest's named connectors.
-  }
 }
 
 /**

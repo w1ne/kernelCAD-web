@@ -21,6 +21,8 @@
  * fields and stay permissive (`additionalProperties: true`).
  */
 
+import { VERIFY_OUTPUT_SCHEMA } from './verificationOutputSchema';
+
 /** Same shape as McpToolDefinition['inputSchema'] — a JSON Schema object node. */
 export type JSONSchemaObject = {
   type: 'object';
@@ -273,19 +275,7 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
     additionalProperties: true,
   },
 
-  // Merged dispatcher (selected by `check`): union of 8 verifier outputs. All
-  // carry `ok` and (mostly) `diagnostics`; remaining fields are check-specific.
-  verify: {
-    type: 'object',
-    properties: {
-      ok: { type: 'boolean', description: 'Whether the verification ran and passed its gate.' },
-      diagnostics: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Verifier diagnostics (most checks).' },
-      error: { type: 'string', description: 'Failure message (present on failure).' },
-      errorCode: { type: 'string' },
-    },
-    required: ['ok'],
-    additionalProperties: true,
-  },
+  verify: VERIFY_OUTPUT_SCHEMA,
 
   why_did_this_fail: {
     type: 'object',
@@ -752,6 +742,19 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
       byte_count: { type: 'number', description: "target:'model' — file size in bytes." },
       feature_count: { type: 'number' },
       format: { type: 'string' },
+      gcode_stats: {
+        type: 'object',
+        description: 'G-code only: slicer predictions and generator identity reported by artifact comments; not physical measurements.',
+        properties: {
+          slicer: { type: 'object', properties: { name: { type: 'string', enum: ['OrcaSlicer', 'PrusaSlicer'] }, version: { type: 'string' } }, required: ['name', 'version'], additionalProperties: false },
+          estimatedPrintTimeSeconds: { type: 'number', minimum: 0 },
+          filamentUsedGrams: { type: 'number', minimum: 0 },
+          filamentUsedMeters: { type: 'number', minimum: 0 },
+          layerCount: { type: 'integer', minimum: 0 },
+          maxZMm: { type: 'number', minimum: 0 },
+        },
+        additionalProperties: false,
+      },
       mesh_files: { type: 'array', items: { type: 'string' }, description: 'Per-link mesh files: meshes/<part>.stl for urdf/sdf-gazebo, meshes/<part>.usda mesh layers for usd-isaac.' },
       part_files: { type: 'array', items: { type: 'string' }, description: "Per-part DXF files: parts/<part>.dxf for a multi-part dxf export (layout 'per-part', the default)." },
       written: { type: 'array', items: { type: 'object', additionalProperties: true }, description: "target:'part' — per-part export records." },

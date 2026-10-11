@@ -1,3 +1,4 @@
+import type { GcodeStats } from '../../../kernel/export/gcode/gcodeHeaderParser';
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { Command } from 'commander';
@@ -78,6 +79,8 @@ export interface ExportCliResult {
   drawingReport?: DrawingReport;
   /** `bend-table`: the CSV files written, one per tube, inside the `--out` directory. */
   tableFiles?: string[];
+  /** Predictions reported by the G-code generator. */
+  gcodeStats?: GcodeStats;
 }
 
 /** Parse `--options <json>`: a JSON object, `format` defaulted to the
@@ -533,6 +536,17 @@ async function publishExportOutputs(
   return { ok: true, meshFiles, tableFiles };
 }
 
+/** Only a successful G-code export carries nonempty slicer predictions. */
+function gcodeStatsField(
+  format: ExportFormat,
+  fatal: boolean,
+  result: ExportResult,
+): Pick<ExportCliResult, 'gcodeStats'> {
+  return format === 'gcode' && !fatal && result.gcodeStats !== undefined && Object.keys(result.gcodeStats).length > 0
+    ? { gcodeStats: result.gcodeStats }
+    : {};
+}
+
 export async function exportScript(input: ExportInput): Promise<ExportCliResult> {
   const targets = await prepareExportTargets(input);
   if (!targets.ok) return targets.result;
@@ -587,6 +601,7 @@ export async function exportScript(input: ExportInput): Promise<ExportCliResult>
     ...(meshFiles.length > 0 ? { meshFiles } : {}),
     ...(tableFiles.length > 0 ? { tableFiles } : {}),
     ...(result.drawingReport !== undefined ? { drawingReport: result.drawingReport } : {}),
+    ...gcodeStatsField(input.format, fatal, result),
   };
 }
 
@@ -808,6 +823,7 @@ async function runExportMode(
       out: opts.out,
       ...writtenFilesJson(r),
       ...(r.drawingReport !== undefined ? { drawingReport: r.drawingReport } : {}),
+      ...(r.gcodeStats !== undefined ? { gcodeStats: r.gcodeStats } : {}),
       diagnostics: r.diagnostics,
     }, null, 2));
   } else {
