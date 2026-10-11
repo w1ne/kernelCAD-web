@@ -84,7 +84,7 @@ function expectBox(actual: Box | undefined, expected: Box): void {
 }
 
 const add = (a: V3, b: V3): V3 => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
-const near = (a: V3, b: V3): void => {
+const near = (a: readonly number[], b: readonly number[]): void => {
   for (let i = 0; i < 3; i++) expect(a[i]).toBeCloseTo(b[i], 6);
 };
 
@@ -188,6 +188,35 @@ const boxOf = (lowered: SceneBackend, name: string): Box => {
   return { min: [bb.min[0], bb.min[1], bb.min[2]], max: [bb.max[0], bb.max[1], bb.max[2]] };
 };
 
+/** Where one part must be, worked out by hand: its `at`, its world box, and
+ *  points fixed to it (`local` in the part's own frame, `world` by hand). */
+interface HandPlaced { at: V3; box: Box; points: { local: V3; world: V3 }[] }
+
+/** Check every path that poses the parts against the hand numbers: the built
+ *  scene and the re-posed scene (world box, and `worldTransform.point(at +
+ *  local)`), the capture Scene (`worldTransform.point(at + local)`), and the
+ *  `solveMates` placement (`placement.point(local)`). */
+async function expectEveryPathAt(code: string, expected: Record<string, HandPlaced>): Promise<void> {
+  const { arm, scene, lowered } = await build(code);
+  const solved = await solveMates(arm);
+  const reposed = reposedLoweredAssemblyScene(arm, lowered, solved.poses);
+  expect(reposed).toBeDefined();
+  for (const [name, e] of Object.entries(expected)) {
+    expectBox(boxOf(lowered, name), e.box);
+    expectBox(boxOf(reposed!, name), e.box);
+    const built = lowered.parts.find((p) => p.name === name)!.worldTransform;
+    const again = reposed!.parts.find((p) => p.name === name)!.worldTransform;
+    const capture = scene.part(name).worldTransform;
+    const placement = solved.poses.get(name)!;
+    for (const { local, world } of e.points) {
+      near(built.point(add(e.at, local)), world);
+      near(again.point(add(e.at, local)), world);
+      near(capture.point(add(e.at, local)), world);
+      near(placement.point(local), world);
+    }
+  }
+}
+
 describe('every path agrees with the built scene for a part with `at`', () => {
   beforeAll(async () => { await initOcct(); });
 
@@ -206,6 +235,85 @@ describe('every path agrees with the built scene for a part with `at`', () => {
       }
     });
   }
+
+  it('prismatic: every path puts the parts where the hand numbers say', async () => {
+    // Mount at [100, 0, 0]: seat [4, -3, 5] -> [104, -3, 5]. The slider moves
+    // the valve's base 6 mm up the seat's +Z axis: base -> [104, -3, 11], so a
+    // valve point lands at [104, -3, 11] + (local - [1, 2, -4]).
+    await expectEveryPathAt(
+      script({ entry: 'solvedModel', kind: 'prismatic', mountAt: [100, 0, 0], valveAt: [0, 0, 27] }),
+      {
+        mount: {
+          at: [100, 0, 0],
+          box: { min: [90, -10, -5], max: [110, 10, 5] },
+          points: [{ local: [4, -3, 5], world: [104, -3, 5] }],
+        },
+        valve: {
+          at: [0, 0, 27],
+          box: { min: [97, -8, 11], max: [109, -2, 19] },
+          points: [
+            { local: [1, 2, -4], world: [104, -3, 11] },
+            { local: [6, 3, 4], world: [109, -2, 19] },
+            { local: [-6, -3, -4], world: [97, -8, 11] },
+          ],
+        },
+      },
+    );
+  });
+
+  it('a chain: a child follows a parent that has at and is turned by a hinge', async () => {
+    // mount box(20, 20, 10) at [100, 0, 0]; pin (axis +Z) at local [10, 0, 0]
+    //   -> world [110, 0, 0].
+    // link box(30, 6, 6) at [0, 40, 0], hinged at its pin [-15, 0, 0] and
+    //   turned 90 deg about +Z. Rz90 maps (x, y, z) to (-y, x, z), so a link
+    //   point lands at [110, 0, 0] + Rz90(local + [15, 0, 0]):
+    //   x in [0, 30] -> Y in [0, 30]; y in [-3, 3] -> X in [107, 113].
+    //   Its `end` [15, 0, 3] -> [110, 30, 3].
+    // tip box(4, 4, 10) at [0, 0, 50], fastened by its foot [0, 0, -5] to
+    //   the link's `end`, so a tip point lands at
+    //   [110, 0, 0] + Rz90(local + [30, 0, 8]): z in [-5, 5] -> Z in [3, 13].
+    // If the link's `at` did not cancel inside the link's motion, the tip
+    //   would be off by that `at` turned by the hinge, Rz90 · [0, 40, 0] =
+    //   [-40, 0, 0] (or its opposite); if its own `at` leaked in, by [0, 0, 50].
+    const code = `
+      const arm = assembly('rig');
+      arm.part('mount', box(20, 20, 10, true), { at: [100, 0, 0] })
+         .connector('pin', { type: 'axis', origin: { kind: 'vec3', value: [10, 0, 0] }, axis: [0, 0, 1] });
+      const link = arm.part('link', box(30, 6, 6, true), { at: [0, 40, 0] });
+      link.connector('pin', { type: 'axis', origin: { kind: 'vec3', value: [-15, 0, 0] }, axis: [0, 0, 1] });
+      link.connector('end', { type: 'frame', origin: { kind: 'vec3', value: [15, 0, 3] } });
+      arm.part('tip', box(4, 4, 10, true), { at: [0, 0, 50] })
+         .connector('foot', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, -5] } });
+      arm.mate('swing', 'mount.pin', 'link.pin', 'revolute', { pose: 90 });
+      arm.mate('post', 'link.end', 'tip.foot', 'fastened');
+      return arm.solvedModel({}, { validate: 'off' });
+    `;
+    await expectEveryPathAt(code, {
+      mount: {
+        at: [100, 0, 0],
+        box: { min: [90, -10, -5], max: [110, 10, 5] },
+        points: [{ local: [10, 0, 0], world: [110, 0, 0] }],
+      },
+      link: {
+        at: [0, 40, 0],
+        box: { min: [107, 0, -3], max: [113, 30, 3] },
+        points: [
+          { local: [-15, 0, 0], world: [110, 0, 0] },
+          { local: [15, 0, 3], world: [110, 30, 3] },
+          { local: [15, 3, 3], world: [107, 30, 3] },
+        ],
+      },
+      tip: {
+        at: [0, 0, 50],
+        box: { min: [108, 28, 3], max: [112, 32, 13] },
+        points: [
+          { local: [0, 0, -5], world: [110, 30, 3] },
+          { local: [0, 0, 5], world: [110, 30, 13] },
+          { local: [2, 2, 5], world: [108, 32, 13] },
+        ],
+      },
+    });
+  });
 
   it('a param-driven at is resolved, and the mate still decides after a param edit', async () => {
     const code = `
