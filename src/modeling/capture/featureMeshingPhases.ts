@@ -626,6 +626,9 @@ function walkConstructionClosure(
     closure.add(id);
     const record = recordById.get(id);
     if (record === undefined) continue;
+    // A tube is built from nothing: its inputs name the trunk it branches off,
+    // a tube of its own, not geometry this one was constructed from.
+    if (record.kind === 'tube') continue;
     for (const value of Object.values(record.inputs)) {
       // Follow plain feature refs only. face/edge/vertex refs reference
       // geometry on a feature already covered via base/target.

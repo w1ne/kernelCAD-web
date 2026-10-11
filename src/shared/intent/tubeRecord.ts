@@ -19,6 +19,11 @@ export interface TubeEndMeta {
   axis?: V3;
   minStraight?: number;
   system?: string;
+  /** Set when the end is a tee on another tube: the trunk's name and the
+   *  station on its centreline, mm from the trunk's `from` end. The end's
+   *  corner point is then a placeholder; `tubeGeometry` places it on the
+   *  trunk's resolved path. */
+  branch?: { tube: string; at: Param };
 }
 
 /** Stored at `metadata.tube` on a `tube` record, whose params are
@@ -74,7 +79,8 @@ export function isTubeMetadata(v: unknown): v is TubeMetadata {
 const ev = (p: Vec3Param | undefined): V3 =>
   p === undefined ? [0, 0, 0] : [p.x.evaluated, p.y.evaluated, p.z.evaluated];
 
-/** The corner points in mm: each point's evaluated `base + offset`. */
+/** The corner points in mm: each point's evaluated `base + offset`. A branch
+ *  end is a placeholder here; read a tube's centreline through `tubeGeometry`. */
 export function tubeCornerPoints(meta: TubeMetadata): V3[] {
   return meta.points.map((p) => {
     const b = ev(p.base);

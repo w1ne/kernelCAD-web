@@ -12,7 +12,13 @@
 //     (the end straight the rule for the tube's system requires, or the clearance itself when that
 //     is longer, never more than the end straight the tube has): the fitting zone is contact by design, the rest of
 //     the tube is not exempt. Nothing left after the trim: pair skipped.
-//   - Two tubes are always measured in full, shared port or not.
+//   - Two tubes are always measured in full, shared port or not, with one
+//     exception: a branch against its own trunk. The branch is measured as a
+//     solid rod with the joint zone trimmed off its branch end (the end
+//     straight its rule requires, or the pair's clearance when that is longer,
+//     never more than the end straight it has). The saddle touches the trunk
+//     by design; past the joint zone the branch is held to the normal
+//     clearance against its trunk, and to every other tube and part in full.
 //
 // Resilience. A kernel failure on one tube or one pair (bounding box, the
 // trimmed-rod sweep, the distance, the shared-volume probe) becomes a warn
@@ -51,7 +57,9 @@ type Bbox = { min: [number, number, number]; max: [number, number, number] };
 /** One measurable solid in the world frame. */
 interface Body { name: string; shape: OcctBackend; bbox: Bbox; tube?: ResolvedTube }
 
-interface Pair { tube: TubeBody; other: Body; need: number; side: OcctBackend; lower: number }
+/** `side` is what is measured of `tube`, `otherSide` of `other`: the whole
+ *  solid, or a rod with a fitting or joint zone trimmed off. */
+interface Pair { tube: TubeBody; other: Body; need: number; side: OcctBackend; otherSide: OcctBackend; lower: number }
 
 function pairNeed(spec: TubeRuleSpec, a: string | undefined, b: string | undefined): number {
   const mins = spec.clearance.pairs
@@ -124,9 +132,38 @@ function partPair(t: TubeBody, other: Body, spec: TubeRuleSpec, diagnostics: Com
     const side = tubeSideAgainst(t, other.name, spec);
     if (side === undefined) return [];
     const bbox = side === t.shape ? t.bbox : side.boundingBox();
-    return [{ tube: t, other, need: spec.clearance.default, side, lower: bboxGap(bbox, other.bbox) }];
+    return [{ tube: t, other, need: spec.clearance.default, side, otherSide: other.shape, lower: bboxGap(bbox, other.bbox) }];
   } catch {
     diagnostics.push(kernelFailed(t.tube, 'building the tube without its fitting zone', pairScope(other.name)));
+    return [];
+  }
+}
+
+/** What to measure of `body` against the tube `against`: the whole tube, or,
+ *  when `against` is the trunk of one of its ends, a solid rod with the joint
+ *  zone trimmed off that end. Undefined when the trim leaves nothing. Only a
+ *  branch against its own trunk is trimmed, and only at the branch end. */
+function tubeSideAgainstTube(body: TubeBody, against: ResolvedTube, need: number, spec: TubeRuleSpec): OcctBackend | undefined {
+  const { path, od, meta, placement, joints } = body.tube;
+  const onTrunk = (which: 'from' | 'to'): boolean => joints.some((j) => j.which === which && j.trunkId === against.id);
+  if ((!onTrunk('from') && !onTrunk('to')) || placement === undefined) return body.shape;
+  const rules = effectiveRules(spec, meta.system);
+  const zone = (end: TubeEndMeta): number => Math.max(endStraightNeed(od, end, rules), need);
+  const trimmed = trimPathEnds(path, onTrunk('from') ? zone(meta.from) : 0, onTrunk('to') ? zone(meta.to) : 0);
+  if (trimmed === undefined) return undefined;
+  return tubeSolid(trimmed, od, od).applyTransform(placement);
+}
+
+/** One tube against another. A joint-zone rod is a kernel call: a failure skips this pair only. */
+function tubePair(t: TubeBody, other: TubeBody, spec: TubeRuleSpec, diagnostics: CompilerDiagnostic[]): Pair[] {
+  const need = pairNeed(spec, t.tube.meta.system, other.tube.meta.system);
+  try {
+    const side = tubeSideAgainstTube(t, other.tube, need, spec);
+    const otherSide = tubeSideAgainstTube(other, t.tube, need, spec);
+    if (side === undefined || otherSide === undefined) return [];
+    return [{ tube: t, other, need, side, otherSide, lower: bboxGap(t.bbox, other.bbox) }];
+  } catch {
+    diagnostics.push(kernelFailed(t.tube, 'building the branch without its joint zone', pairScope(other.name)));
     return [];
   }
 }
@@ -135,17 +172,14 @@ function buildPairs(tubes: TubeBody[], obstacles: Body[], spec: TubeRuleSpec, di
   const pairs: Pair[] = [];
   tubes.forEach((t, i) => {
     for (const other of obstacles) pairs.push(...partPair(t, other, spec, diagnostics));
-    for (const other of tubes.slice(i + 1)) {
-      const need = pairNeed(spec, t.tube.meta.system, other.tube.meta.system);
-      pairs.push({ tube: t, other, need, side: t.shape, lower: bboxGap(t.bbox, other.bbox) });
-    }
+    for (const other of tubes.slice(i + 1)) pairs.push(...tubePair(t, other, spec, diagnostics));
   });
   return pairs.sort((a, b) => a.lower - b.lower);
 }
 
 function measure(pair: Pair): BrepClosest | undefined {
   try {
-    return brepExtremaClosest(getOC(), wrappedShape(pair.side), wrappedShape(pair.other.shape));
+    return brepExtremaClosest(getOC(), wrappedShape(pair.side), wrappedShape(pair.otherSide));
   } catch {
     return undefined;
   }
@@ -155,7 +189,7 @@ function measure(pair: Pair): BrepClosest | undefined {
 function contactDiagnostic(pair: Pair, at: V3, onOther: V3): CompilerDiagnostic {
   let volume: number;
   try {
-    volume = pair.side.intersectionVolume(pair.other.shape);
+    volume = pair.side.intersectionVolume(pair.otherSide);
   } catch {
     return kernelFailed(pair.tube.tube, 'the shared-volume probe', pairScope(pair.other.name));
   }

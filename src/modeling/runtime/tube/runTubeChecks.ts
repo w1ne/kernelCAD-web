@@ -8,6 +8,8 @@
 //     read through the param table, as overridden
 //     for the tube's system by the spec's `systems`, with a warning for a
 //     `systems` entry that names a system no tube has,
+//   - for a tube that branches off another tube: that the joint keeps the
+//     trunk's straights, leaves square and is no larger than the trunk,
 //   - that each end still sits on its port after the assembly is solved, that
 //     a part named by a plain end exists and the end touches it, and that no
 //     tube shape is carried by two parts,
@@ -34,6 +36,7 @@ import { pressureDropKPa, TUBE_FLUIDS } from '../../../shared/tube/pressureDrop'
 import type { ParamTable } from '../../../shared/runtime/paramTable';
 import type { V3 } from '../../../shared/tube/tubePath';
 import { tryResolveMaterial } from '../../properties/materialLibrary';
+import { checkBranchRules } from './tubeBranchRules';
 import { checkTubeClearance, systemsPresent, unusedPairWarnings, type NearestClearance } from './tubeClearance';
 import { checkEndParts, checkTubeParts } from './tubeEndParts';
 import {
@@ -70,7 +73,18 @@ export interface TubeLineReport {
   volumeInternalMl: number;
   /** Null when the tube declares no flow. */
   pressureDropKPa: number | null;
+  /** Set when that end is a branch off another tube: the trunk and the
+   *  station on its centreline, mm from the trunk's `from` end. The cut
+   *  length and the end straight of this tube are then measured from the
+   *  trunk wall. */
+  from?: TubeJointReport;
+  to?: TubeJointReport;
+  /** The tubes that branch off this one, by station. Absent when there are none. */
+  branches?: TubeJointReport[];
 }
+
+/** One joint: the other tube's name and the station on the trunk, mm. */
+export interface TubeJointReport { tube: string; at: number }
 
 export interface TubeCheckReport {
   lines: TubeLineReport[];
@@ -159,7 +173,24 @@ function pressureDrop(tube: ResolvedTube): number | null {
   });
 }
 
-function lineReport(tube: ResolvedTube, nearest: NearestClearance | undefined): TubeLineReport {
+/** The joints of a tube: where its own ends branch off a trunk, and the tubes that branch off it. */
+function jointReport(tube: ResolvedTube, tubes: readonly ResolvedTube[]): Pick<TubeLineReport, 'from' | 'to' | 'branches'> {
+  const end = (which: 'from' | 'to'): TubeJointReport | undefined => {
+    const j = tube.joints.find((x) => x.which === which);
+    return j === undefined ? undefined : { tube: j.trunk, at: j.at };
+  };
+  const from = end('from');
+  const to = end('to');
+  const branches = tubes.flatMap((t) => t.joints.filter((j) => j.trunkId === tube.id).map((j) => ({ tube: t.name, at: j.at })))
+    .sort((a, b) => a.at - b.at);
+  return {
+    ...(from !== undefined ? { from } : {}),
+    ...(to !== undefined ? { to } : {}),
+    ...(branches.length > 0 ? { branches } : {}),
+  };
+}
+
+function lineReport(tube: ResolvedTube, nearest: NearestClearance | undefined, tubes: readonly ResolvedTube[]): TubeLineReport {
   const { path, od, wall, meta } = tube;
   const table = bendTableFromPath(path);
   return {
@@ -179,6 +210,7 @@ function lineReport(tube: ResolvedTube, nearest: NearestClearance | undefined): 
     massKg: massKg(tube),
     volumeInternalMl: (Math.PI * (od / 2 - wall) ** 2 * path.cutLength) / 1000,
     pressureDropKPa: pressureDrop(tube),
+    ...jointReport(tube, tubes),
   };
 }
 
@@ -261,6 +293,7 @@ function checkTubes(model: BuiltModel, records: readonly FeatureRecord[]): TubeC
         diagnostics.push(tubeDiagnosticFromMessage(f.code, f.message, t.id));
       }
     });
+    guard(t, 'checking the branch rules', undefined, () => { diagnostics.push(...checkBranchRules(t, tubes, spec)); });
   }
   const tRules = performance.now();
   // One pass per check, each tube on its own, so the diagnostics keep their order: parts, ends, port positions.
@@ -271,7 +304,7 @@ function checkTubes(model: BuiltModel, records: readonly FeatureRecord[]): TubeC
     return ends.tubes[0];
   }));
   for (const t of tubes) {
-    guard(t, 'checking the port positions', undefined, () => { diagnostics.push(...checkPortPositions(model, ctx, [t])); });
+    guard(t, 'checking the port positions', undefined, () => { diagnostics.push(...checkPortPositions(model, ctx, [t], tubes)); });
   }
   const tPorts = performance.now();
   diagnostics.push(...unusedSystemWarnings(tubes, spec), ...unusedPairWarnings(tubes, spec));
@@ -284,7 +317,7 @@ function checkTubes(model: BuiltModel, records: readonly FeatureRecord[]): TubeC
   const tEnd = performance.now();
 
   const lines = tubes.flatMap((t) =>
-    guard<TubeLineReport[]>(t, 'writing the line report', [], () => [lineReport(t, nearest.get(t.name))]));
+    guard<TubeLineReport[]>(t, 'writing the line report', [], () => [lineReport(t, nearest.get(t.name), tubes)]));
   return {
     lines,
     systems: summarise(lines),

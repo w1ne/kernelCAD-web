@@ -19,11 +19,12 @@ import { isSceneBackend, type SceneBackend, type SceneBackendPart } from '../../
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { DIAGNOSTIC_REGISTRY } from '../../../shared/diagnostics/registry';
 import type { FeatureRecord, ShapeTransform } from '../../../shared/intent/featureRecord';
-import { isTubeMetadata, tubeCornerPoints, type TubeEndMeta, type TubeMetadata } from '../../../shared/intent/tubeRecord';
+import { isTubeMetadata, type TubeEndMeta, type TubeMetadata } from '../../../shared/intent/tubeRecord';
 import type { FeatureId, Vec3Param } from '../../../shared/intent/types';
 import { resolveParams } from '../../../shared/runtime/resolveParams';
 import { Transform } from '../../../shared/runtime/se3';
-import { add, buildTubePath, isTubePathError, norm, scale, sub, unit, type TubePath, type V3 } from '../../../shared/tube/tubePath';
+import { isTubeGeometryError, tubeGeometry, type TubeJoint } from '../../../shared/tube/tubeBranch';
+import { add, norm, scale, sub, unit, type TubePath, type V3 } from '../../../shared/tube/tubePath';
 import { angleDeg, mm2, PORT_AXIS_TOL_DEG, xyz2 } from './tubeRules';
 
 type TubeCode = Extract<keyof typeof DIAGNOSTIC_REGISTRY, `tube.${string}`>;
@@ -35,6 +36,9 @@ export interface ResolvedTube {
   od: number;
   wall: number;
   meta: TubeMetadata;
+  /** One per end that is a branch off another tube: where it joins its trunk,
+   *  in the frame the trunk was captured in. */
+  joints: readonly TubeJoint[];
   /** The lowered tube as built (assembly space, record transforms applied);
    *  undefined when lowering failed. */
   shape?: OcctBackend;
@@ -116,17 +120,31 @@ function tubePlacement(
   return carrier.pose.compose(Transform.translation(...carrier.at)).compose(total);
 }
 
+/** A branch end leaves along the square axis of its joint: the path rule then
+ *  names a corner on the axis the branch is built on. */
+function withJointAxes(meta: TubeMetadata, joints: readonly TubeJoint[]): TubeMetadata {
+  let out = meta;
+  for (const j of joints) out = { ...out, [j.which]: { ...out[j.which], axis: j.axis } };
+  return out;
+}
+
 /** Resolve one `tube` record. Params and metadata go through the param table
  *  first: a captured Param that references a script parameter has
- *  `evaluated: 0`. Returns [] when the path cannot be built (the lowerer has
- *  already reported it). */
+ *  `evaluated: 0`. A branch end is placed on its trunk's resolved path.
+ *  Returns [] when the path cannot be built (the lowerer has already
+ *  reported it). */
 export function resolveTube(model: BuiltModel, ctx: TubeSceneContext, record: FeatureRecord): ResolvedTube[] {
   const table = model.session.paramTable;
   const r = resolveParams(record, table);
-  const meta = (r.metadata as { tube?: unknown } | undefined)?.tube;
-  if (!isTubeMetadata(meta)) return [];
-  const path = buildTubePath(tubeCornerPoints(meta), r.params.bendRadius.evaluated);
-  if (isTubePathError(path)) return [];
+  const declared = (r.metadata as { tube?: unknown } | undefined)?.tube;
+  if (!isTubeMetadata(declared)) return [];
+  const geometry = tubeGeometry(r, (id) => {
+    const trunk = model.records.find((x) => x.id === id);
+    return trunk === undefined ? undefined : resolveParams(trunk, table);
+  });
+  if (isTubeGeometryError(geometry)) return [];
+  const { path, joints } = geometry;
+  const meta = withJointAxes(declared, joints);
   const stored = [...ctx.stored.values()].find((p) => p.originalShape.id === record.id);
   const scenePart = stored === undefined ? undefined : ctx.scene?.parts.find((p) => p.name === stored.name);
   const carrier = stored === undefined || scenePart === undefined ? undefined :
@@ -138,6 +156,7 @@ export function resolveTube(model: BuiltModel, ctx: TubeSceneContext, record: Fe
     od: r.params.od.evaluated,
     wall: r.params.wall.evaluated,
     meta,
+    joints,
     shape: model.shapes.get(record.id) as OcctBackend | undefined,
     ...(scenePart !== undefined ? { scenePart } : {}),
     placement: tubePlacement(r.transforms, carrier),
@@ -170,7 +189,10 @@ export function partFrameInWorld(
   };
 }
 
-interface WorldPort { label: string; origin: V3; axis: V3 }
+/** What a tube end sits on: a port of a part, or its joint on a trunk. `on`
+ *  names it in a message, `what` is the noun for its position and `axisOf`
+ *  for its axis; `turned` says what moved when the axis is off. */
+interface WorldPort { on: string; what: string; axisOf: string; turned: string; origin: V3; axis: V3 }
 
 /** Where a port is now: the connector on the owning part, carried by the
  *  part's solved pose. Undefined when the end is a plain point or its part is
@@ -184,8 +206,21 @@ function worldPort(model: BuiltModel, ctx: TubeSceneContext, end: TubeEndMeta): 
     return undefined;
   }
   return {
-    label: `${end.part}.${end.connector}`,
+    on: `port '${end.part}.${end.connector}'`, what: 'port', axisOf: 'port', turned: 'part',
     ...partFrameInWorld(model, stored, scenePart, [...connector.origin.value] as V3, [...(connector.axis ?? [0, 0, 1])] as V3),
+  };
+}
+
+/** Where a branch end's joint is now: on the trunk wall, carried by wherever
+ *  the trunk is. Undefined when the end is not a branch, or the trunk is not
+ *  resolved or has no rigid placement (the trunk's own error says why). */
+function worldJoint(tube: ResolvedTube, which: 'from' | 'to', tubes: readonly ResolvedTube[]): WorldPort | undefined {
+  const joint = tube.joints.find((j) => j.which === which);
+  const placement = joint === undefined ? undefined : tubes.find((t) => t.id === joint.trunkId)?.placement;
+  if (joint === undefined || placement === undefined) return undefined;
+  return {
+    on: `its joint on tube '${joint.trunk}'`, what: 'joint', axisOf: 'branch', turned: 'trunk',
+    origin: placement.point(joint.wall) as V3, axis: unit(placement.axisDir(joint.axis) as V3),
   };
 }
 
@@ -209,21 +244,22 @@ function endPositionText(tube: ResolvedTube, placement: Transform, end: TubeEndS
   }
   const gap = norm(sub(at, port.origin));
   if (gap > PORT_POSITION_TOL_MM) {
-    return `tube '${tube.name}' ${end.which} end is ${mm2(gap)} mm from port '${port.label}'; ` +
-      `the port is at ${xyz2(port.origin)}.`;
+    return `tube '${tube.name}' ${end.which} end is ${mm2(gap)} mm from ${port.on}; ` +
+      `the ${port.what} is at ${xyz2(port.origin)}.`;
   }
   // An end leg already off the captured port axis is reported by the path rules.
   const reported = end.meta.axis !== undefined && angleDeg(end.leaving, end.meta.axis) > PORT_AXIS_TOL_DEG;
   const off = angleDeg(unit(placement.axisDir(end.leaving) as V3), port.axis);
   return reported || off <= PORT_AXIS_TOL_DEG ? undefined :
-    `tube '${tube.name}' leaves port '${port.label}' ${mm2(off)} deg off the port axis; the part turned.`;
+    `tube '${tube.name}' leaves ${port.on} ${mm2(off)} deg off the ${port.axisOf} axis; the ${port.turned} turned.`;
 }
 
-/** Every tube end must still sit on its port, or on its captured point when
- *  it has no port. A mate that moves the port's part, or a tube moved in the
- *  assembly, leaves the end hanging. */
+/** Every tube end must still sit on its port, on its joint when it branches
+ *  off a trunk, or on its captured point when it has neither. A mate that
+ *  moves the port's part, or a tube moved in the assembly, leaves the end
+ *  hanging. `all` are the model's tubes: a joint is where its trunk is. */
 export function checkPortPositions(
-  model: BuiltModel, ctx: TubeSceneContext, tubes: readonly ResolvedTube[],
+  model: BuiltModel, ctx: TubeSceneContext, tubes: readonly ResolvedTube[], all: readonly ResolvedTube[] = tubes,
 ): CompilerDiagnostic[] {
   const out: CompilerDiagnostic[] = [];
   for (const tube of tubes) {
@@ -234,7 +270,9 @@ export function checkPortPositions(
       continue;
     }
     for (const end of endsOf(tube)) {
-      const text = endPositionText(tube, placement, end, worldPort(model, ctx, end.meta));
+      // A branch end whose trunk has no placement is not checked here: the trunk is already reported.
+      if (end.meta.branch !== undefined && worldJoint(tube, end.which, all) === undefined) continue;
+      const text = endPositionText(tube, placement, end, worldJoint(tube, end.which, all) ?? worldPort(model, ctx, end.meta));
       if (text !== undefined) out.push(tubeDiagnostic('tube.port.misaligned', text, tube.id));
     }
   }

@@ -120,6 +120,69 @@
               "type": "array",
               "items": {
                 "type": "object",
+                "properties": {
+                  "from": {
+                    "type": "object",
+                    "properties": {
+                      "tube": {
+                        "type": "string",
+                        "description": "Name of the other tube of the joint."
+                      },
+                      "at": {
+                        "type": "number",
+                        "description": "Station of the tee: mm along the trunk centreline from the trunk's from end."
+                      }
+                    },
+                    "required": [
+                      "tube",
+                      "at"
+                    ],
+                    "additionalProperties": false,
+                    "description": "Set when the from end branches off another tube: the trunk and the station of the tee on it. The cut length and bend table of this tube then start on the trunk wall. Omitted for any other end."
+                  },
+                  "to": {
+                    "type": "object",
+                    "properties": {
+                      "tube": {
+                        "type": "string",
+                        "description": "Name of the other tube of the joint."
+                      },
+                      "at": {
+                        "type": "number",
+                        "description": "Station of the tee: mm along the trunk centreline from the trunk's from end."
+                      }
+                    },
+                    "required": [
+                      "tube",
+                      "at"
+                    ],
+                    "additionalProperties": false,
+                    "description": "Set when the to end branches off another tube: the trunk and the station of the tee on it. Omitted for any other end."
+                  },
+                  "branches": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "tube": {
+                          "type": "string",
+                          "description": "Name of the other tube of the joint."
+                        },
+                        "at": {
+                          "type": "number",
+                          "description": "Station of the tee: mm along the trunk centreline from the trunk's from end."
+                        }
+                      },
+                      "required": [
+                        "tube",
+                        "at"
+                      ],
+                      "additionalProperties": false,
+                      "description": "One tube that branches off this one."
+                    },
+                    "description": "The tubes that branch off this one, by station. Omitted when there are none."
+                  }
+                },
                 "additionalProperties": true
               },
               "description": "One entry per tube: name, system, od, wall, bendRadius, material, cutLength (mm), bends, xyz (bend-table corner points), lra (length/rotation/angle rows), lastStraight, minStraight, minClearance { mm, to, at } (exact nearest part or tube), massKg (null without a known material or density), volumeInternalMl, pressureDropKPa (null without a declared flow)."

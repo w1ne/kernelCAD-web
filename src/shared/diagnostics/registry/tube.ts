@@ -51,7 +51,7 @@ export const TUBE_CODES = {
   },
   'tube.clearance.overlap': {
     hintTemplate:
-      'The tube passes through the named part or tube. Re-route the leg around it.',
+      'The tube passes through the named part or tube. Re-route the leg around it. Two tubes from one port share their first leg: make the second a branch of the first, `from: { tube, at, axis }`.',
     nextAction: { kind: 'fix-arg', field: 'via' },
     defaultSeverity: 'error',
     group: 'tube',
@@ -120,5 +120,37 @@ export const TUBE_CODES = {
     defaultSeverity: 'error',
     group: 'tube',
     description: 'A top-level tubeSpec rule or clearance number resolves to a non-finite or non-positive number (or a bend angle above 180). The default was applied in its place; a clearance pair with such a `min` was left out.',
+  },
+  'tube.branch.not-on-straight': {
+    hintTemplate:
+      'Set `at` on the branch end to a station on a straight leg of the trunk; the message lists the straight ranges, in mm along the trunk centreline from its `from` end. A branch cannot sit on a bend.',
+    nextAction: { kind: 'fix-arg', field: 'at' },
+    defaultSeverity: 'error',
+    group: 'tube',
+    description: 'A branch end names a station that is on a bend of its trunk or beyond the trunk, so the branch has no place to join and is not built.',
+  },
+  'tube.branch.too-close': {
+    hintTemplate:
+      "Move `at` into the range the message gives. A branch keeps the trunk's straight-between-bends length from a bend and the trunk's end straight from either end of the trunk.",
+    nextAction: { kind: 'fix-arg', field: 'at' },
+    defaultSeverity: 'error',
+    group: 'tube',
+    description: "A branch joins its trunk closer to a bend or to an end of the trunk than the trunk's straight rules allow.",
+  },
+  'tube.branch.axis-not-square': {
+    hintTemplate:
+      'Set `axis` on the branch end square to the trunk leg; the message gives the leg direction and the nearest square axis. Only 90 degree tees are built. Put the first corner of the branch on that axis.',
+    nextAction: { kind: 'fix-arg', field: 'axis' },
+    defaultSeverity: 'error',
+    group: 'tube',
+    description: 'The axis of a branch end is not at 90 degrees to the trunk leg it joins.',
+  },
+  'tube.branch.od-too-large': {
+    hintTemplate:
+      'Lower the `od` of the branch to the trunk OD or less, or branch off a larger tube. To join a larger line, make it the trunk and this one the branch.',
+    nextAction: { kind: 'fix-arg', field: 'od' },
+    defaultSeverity: 'error',
+    group: 'tube',
+    description: 'A branch has a larger outer diameter than the trunk it joins.',
   },
 } as const satisfies Record<`tube.${string}`, DiagnosticCodeSpec>;

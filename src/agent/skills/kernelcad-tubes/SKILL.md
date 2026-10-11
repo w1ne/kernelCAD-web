@@ -1,6 +1,6 @@
 ---
 name: kernelcad-tubes
-description: Model bent tubes and fluid lines between ports with tube(name, opts), tubeSpec(rules) and part.port(name), checked for bend radius, straight lengths and clearance, with a bend table per tube. Use when routing a rigid tube or line (hydraulic, fuel, coolant, oil, pneumatic) between two fittings, or when asked for a bend radius check or a bend table.
+description: Model bent tubes and fluid lines between ports with tube(name, opts), tubeSpec(rules) and part.port(name), checked for bend radius, straight lengths and clearance, with a bend table per tube. A tube can branch off another tube at a 90 degree tee. Use when routing a rigid tube or line (hydraulic, fuel, coolant, oil, pneumatic) between two fittings, when one line feeds two places, or when asked for a bend radius check or a bend table.
 ---
 
 # kernelCAD: bent tubes
@@ -37,7 +37,7 @@ return asm.model();
 - You need the tube checked against a bender's rules and against the parts around it.
 - You need a bend table (XYZ corners and length / rotation / angle rows) or a cut length.
 
-Do not use `tube` for a structural tube frame (use profiles and `union`, recipe `welded-tube-frame-tray`), for a hose or any line that is not straight legs and circular bends, or for a tee. Two tubes from one port overlap and fail `tube.clearance.overlap`; a tee needs a fitting part with one port per branch.
+Do not use `tube` for a structural tube frame (use profiles and `union`, recipe `welded-tube-frame-tray`), or for a hose or any line that is not straight legs and circular bends. Two tubes from one port overlap and fail `tube.clearance.overlap`: route one tube from the port and make the second a branch of it (see "Branches").
 
 ## Ports
 
@@ -72,11 +72,57 @@ part.connector('out', {
 
 A plain end carries no size and no system: when neither end is a port, pass `od`, and pass `system` if a clearance pair should apply. `axis` is optional; without it the direction of that end leg is not checked. At both ends the axis points out of the fitting, from the end toward the tube's next corner, so a tube that arrives at its `to` end from below has `axis: [0, 0, -1]` there.
 
+## Branches
+
+A tube can start or end on another tube instead of on a port: a 90 degree tee. The tube it joins is the trunk.
+
+```typescript
+// Trunk: from the block outlet at [50, 50, 100] up to z = 250, then along +X to actuator 1 at [300, 50, 250].
+const trunk = tube('act-supply', { from: block.port('out'), to: act1.port('in'), via: [[50, 50, 250]], wall: 0.9, bendRadius: 40 });
+// Branch: leaves the trunk's second leg at x = 190, straight up, then along -X to actuator 2 at [-200, 50, 400].
+const branch = tube('act-supply-2', {
+  from: { tube: 'act-supply', at: 272.83, axis: [0, 0, 1] },   // 272.83 mm along the trunk centreline from its `from` end
+  to: act2.port('in'),
+  via: [[190, 50, 400]],                                       // on the branch axis: straight above the tee
+  wall: 0.9, bendRadius: 40,
+});
+asm.part('act-supply', trunk);
+asm.part('act-supply-2', branch);
+```
+
+- `tube` is the trunk's name. Declare the trunk before the branch; a name no earlier tube has fails at the call with `tube.branch.trunk-not-found`.
+- `at` is the station of the tee: mm along the trunk centreline from the trunk's `from` end, through its straights and bends. It may be a param.
+- `axis` is the direction the branch leaves the trunk along. It must be square to the trunk leg. Only 90 degree tees are built.
+- Either end may be a branch end, or both. A branch may be the trunk of another branch.
+- A branch end has no size: the tube takes its `od` from the port at its other end, or from `od`. The branch may not be larger than the trunk.
+- The branch takes the trunk's system. A `system` option that names another one fails with `tube.branch.system-mismatch`. When the trunk has no system the branch keeps its own.
+
+Finding `at`. Evaluate with the trunk alone and read its line in `tubes.lines`: each `lra` row is the straight `l` before a bend and the bend angle `a`. The station at the end of bend `k` is the sum, over bends 1 to `k`, of `l + bendRadius * a * pi / 180`. Add the distance along the next straight to the tee. For a 90 degree bend the arc is `bendRadius * 1.5708`. In the example the trunk goes up 110 mm, turns 90 degrees at radius 40 (62.83 mm), and the tee is 100 mm along the second leg: `at = 110 + 62.83 + 100 = 272.83`.
+
+Where the branch starts. The branch centreline starts on the trunk's outer wall, at the trunk centreline point plus half the trunk OD along `axis`. Put the branch's first corner on that line: station point plus `L * axis`. The end straight and the cut length of the branch are measured from the trunk wall. The saddle cut reaches past that point at the sides, by up to half the trunk OD when both tubes are the same size, so cut the stock that much longer.
+
+The joint is worked out from the trunk each time the model is built. A param that moves the trunk, or a param in `at`, moves the tee. The other corners of the branch do not follow by themselves: write them from the same params.
+
+What is built. The branch solid is cut to the trunk's outer wall, so the two solids touch and share no volume. The trunk is not drilled: its solid is the plain tube, and the hole at the tee is not modelled. Mass and bore volume of the trunk are those of the undrilled tube. STEP keeps one solid per tube.
+
+Rules, each checked on the built model:
+
+| Rule | Diagnostic |
+|---|---|
+| `at` lands on a straight of the trunk, not on a bend and not beyond its end | `tube.branch.not-on-straight` |
+| the tee keeps the trunk's `minStraightBetweenBends` straight from a bend of the trunk, and the trunk's end straight from either end of the trunk | `tube.branch.too-close` |
+| `axis` is within 0.5 degrees of square to the trunk leg | `tube.branch.axis-not-square` |
+| the branch OD is at most the trunk OD | `tube.branch.od-too-large` |
+| the branch keeps its own end straight, measured from the trunk wall | `tube.straight.end-too-short` |
+
+Clearance. A branch touches its trunk at the tee. Against its own trunk the branch is measured without its joint zone: the end straight its rule requires, or the clearance for the pair when that is longer, and never more than the end straight it has. Past the joint zone the branch is held to the normal clearance against the trunk, so a branch that turns back to the trunk fails. Against every other tube and every part the branch is measured in full.
+
 ## tube()
 
 ```typescript
 tube(name, {
-  from, to,            // part.port(name) or { point: [x, y, z], axis?: [x, y, z], part?: 'name' }
+  from, to,            // part.port(name), { point: [x, y, z], axis?: [x, y, z], part?: 'name' }
+                       // or { tube: 'trunk name', at: mm, axis: [x, y, z] } (see "Branches")
   via?: [[x, y, z]],   // corner points in order; numbers or params
   od?,                 // mm; defaults to the port size
   wall,                // mm, below od / 2
@@ -150,7 +196,7 @@ Argument errors stop the script at the `tube`, `tubeSpec`, `connector` or `part.
 | Prefix | What to change |
 |---|---|
 | `tube.name.invalid` | Use a unique, non-empty name with no comma, double quote or line break. |
-| `tube.end.invalid` | Pass `part.port(name)` or `{ point, axis?, part? }`: finite coordinates, a finite non-zero `axis`, a non-empty `part` name. |
+| `tube.end.invalid` | Pass `part.port(name)`, `{ point, axis?, part? }` or `{ tube, at, axis }`: finite coordinates, a finite non-zero `axis`, a non-empty `part` or `tube` name, `at` as a number or a param. |
 | `tube.via.invalid` | Pass `via` as an array of `[x, y, z]` corner points. |
 | `tube.od.required` | Pass `od`, or end the tube on a port. |
 | `tube.od.invalid`, `tube.wall.invalid`, `tube.bend-radius.invalid` | Pass a positive number; `wall` below `od / 2`. |
@@ -165,6 +211,8 @@ Argument errors stop the script at the `tube`, `tubeSpec`, `connector` or `part.
 | `tube.port.invalid` | Pass `port: { system, od, minStraight? }` with a non-empty `system` and positive numbers, on a connector with a finite non-zero `axis`. |
 | `tube.port.not-found`, `tube.port.not-a-port` | Register the connector before calling `part.port(name)`, with `port: { system, od }`. |
 | `tube.port.unresolved` | The port has a face reference for an origin. Give it a `{ kind: 'vec3' }` origin, or pass `{ point, axis, part }` for that end. |
+| `tube.branch.trunk-not-found` | Declare the trunk with `tube()` before the branch, and pass the name it was declared with. The message lists the tubes declared so far. |
+| `tube.branch.system-mismatch` | Leave `system` out of the branch: it takes the trunk's system. |
 
 Gate errors come after the build, as `tube.*` diagnostics. The script built, so the report is still there to read:
 
@@ -174,13 +222,17 @@ Gate errors come after the build, as `tube.*` diagnostics. The script built, so 
 | `tube.straight.between-bends-too-short` | Move the two corners of the named leg apart by the shortfall, or lower `bendRadius`. Legs are numbered from 0. |
 | `tube.straight.end-too-short` | Move the first (or last) corner away from the port along the port axis by the shortfall. |
 | `tube.bend.angle-exceeded` | Move the corner so the bend opens up, or add a corner to split it. Bends are numbered from 1. |
-| `tube.port.misaligned` | "off the port axis": put the corner at the point the message gives. "from port" or "from its captured point": the part or the tube moved; route the end to the stated position as `{ point, axis, part }`, and add the tube with no `at`. "from part": the end does not touch the part it names; move the `point` onto the part's surface. |
+| `tube.port.misaligned` | "off the port axis" or "off the branch axis": put the corner at the point the message gives. "from port" or "from its captured point": the part or the tube moved; route the end to the stated position as `{ point, axis, part }`, and add the tube with no `at`. "from part": the end does not touch the part it names; move the `point` onto the part's surface. "from its joint on tube": the trunk or the branch was moved after routing; add both with no `at`. |
 | `tube.clearance.violated` | The message gives the closest point on the tube and the closest point on the other body. Move the corner nearest the first point away from the second by the shortfall (rule minus measured). At 0.00 mm from the part a plain end sits on, add `part` to that end. |
 | `tube.clearance.pair-unused` (warning) | Correct the system name in `clearance.pairs` to one of the systems the message lists, or remove the pair. |
 | `tube.spec.system-rule-invalid` | A param in a `systems` entry now gives a value the rule cannot be, and the top-level rule was applied. Fix the param, or use a plain number. |
 | `tube.spec.rule-invalid` | A param in a top-level rule or clearance number now gives a value it cannot be; the message names the field and the value. The default was applied, and a clearance pair with such a `min` was left out. Fix the param, or use a plain number. |
 | `tube.spec.system-unused` (warning) | Correct the system name in `systems` to one of the systems the message lists, or remove the entry. |
-| `tube.clearance.overlap` | The tube passes through the named part or tube. Route the leg around it. |
+| `tube.clearance.overlap` | The tube passes through the named part or tube. Route the leg around it. Two tubes from one port: make the second a branch, `from: { tube, at, axis }`. |
+| `tube.branch.not-on-straight` | `at` is on a bend of the trunk or beyond its end, and the branch was not built. Set `at` inside one of the straight ranges the message lists. |
+| `tube.branch.too-close` | Move `at` into the range the message gives for that leg. When it says the leg is too short, put the tee on another leg or lengthen that one. |
+| `tube.branch.axis-not-square` | Use the axis the message gives, and put the branch's first corner on it. |
+| `tube.branch.od-too-large` | Lower the branch `od`, or make the larger line the trunk. |
 | `feature.kernel-failed` with a `tube.gate:` message | The gate could not finish a check on the named tube, so that tube is not verified. The message carries the cause; check the tube's ends, its ports and the parts they sit on. |
 | `tube.end.part-not-found` | Set `part` on that end to one of the part names the message lists, or remove it for an end in free space. |
 | `tube.part.duplicate` | The same tube shape was added under two part names and only the first is checked. Declare a second `tube()` for the second line. |
@@ -238,7 +290,7 @@ Placing corners from a port:
 
 When one part fails to build, the assembly is not built and no mate is solved. A port on a part that is placed with `at` and that no mate or joint refers to is still listed with its position (`placedBy: 'at'`), so the routes to the good parts can be checked while the failed part is fixed.
 
-A port that nothing connects to is not an error. Two tubes in one `usedBy` are the two-tubes-from-one-port case and fail `tube.clearance.overlap`.
+A port that nothing connects to is not an error. Two tubes in one `usedBy` are the two-tubes-from-one-port case and fail `tube.clearance.overlap`; make the second tube a branch of the first (see "Branches"). A branch end is not on a port and is in no `usedBy`.
 
 ## The line report
 
@@ -254,10 +306,12 @@ A port that nothing connects to is not an error. Two tubes in one `usedBy` are t
 | `xyz` | bend-table corner points in the tube's own frame: first point at the origin, first leg along +X |
 | `lra` | one row per bend: `l` straight before the bend (mm), `r` rotation of the bend plane from the previous bend (degrees), `a` bend angle (degrees) |
 | `lastStraight`, `minStraight` | straight after the last bend; shortest straight of the tube (mm) |
-| `minClearance` | `{ mm, to, at }`: distance to the nearest part or tube, its name, and the closest point on this tube. Absent when there is nothing around the tube to measure against |
+| `minClearance` | `{ mm, to, at }`: distance to the nearest part or tube, its name, and the closest point on this tube. Between a branch and its own trunk the distance leaves out the joint zone. Absent when there is nothing around the tube to measure against |
 | `massKg` | tube mass, or `null` without a known material or a `density` |
 | `volumeInternalMl` | bore volume |
 | `pressureDropKPa` | estimate for the declared `flow`, or `null` without one |
+| `from`, `to` | `{ tube, at }` when that end is a branch end: the trunk's name and the station on it, mm. Absent for any other end. `cutLength`, `xyz` and `lra` of the tube then start on the trunk wall |
+| `branches` | `[{ tube, at }]`: the tubes that branch off this one, by station. Absent when there are none |
 
 `tubes.systems[]` has one row per system: `system`, `lines`, `cutLength`, `massKg`.
 
@@ -267,7 +321,7 @@ A port that nothing connects to is not an error. Two tubes in one `usedBy` are t
 kernelcad export bend-table line.kcad.ts -o out/bend-tables
 ```
 
-`-o` is a directory. The export writes one CSV per tube, named after the tube: a header with the name, OD, wall, bend radius and cut length, then the XYZ points, then the bend rows and the last straight. From MCP: `export({ format: 'bend-table', output_path: 'out/bend-tables', code })`.
+`-o` is a directory. The export writes one CSV per tube, named after the tube: a header with the name, OD, wall, bend radius and cut length, then the XYZ points, then the bend rows and the last straight. A trunk's file ends with a `branch,at_mm` section, one row per branch with its station. A branch's header has `from_tube` and `from_at_mm` (or `to_tube`, `to_at_mm`) after the cut length. From MCP: `export({ format: 'bend-table', output_path: 'out/bend-tables', code })`.
 
 The export is refused when the build or a tube gate reports an error; fix the route first. A script with no tube gives `export.bend-table.no-tubes`.
 
@@ -281,8 +335,9 @@ The export is refused when the build or a tube gate reports an error; fix the ro
 | G-spec-declared | no `tube.spec.defaulted` warning: the script calls `tubeSpec` |
 | G-lines-present | `tubes.lines` has one entry per tube you meant to route, each with the system you expect |
 | G-ports-connected | every port you meant to connect has its tube in `ports[].usedBy`, and no port has `unresolved` |
+| G-branches-joined | every branch has `from` or `to` with the trunk you meant, and the trunk lists it in `branches` |
 | G-clearance-margin | every `minClearance.mm` is at or above the rule for that pair; a line with no `minClearance` has no neighbour, which is a pass only if you expected none |
-| G-render | a render shows every tube leaving its boss square and passing through no part |
+| G-render | a render shows every tube leaving its boss square and passing through no part, and every branch sitting on its trunk |
 
 ## Related skills
 

@@ -43,6 +43,18 @@ const SOURCE_EDIT: JSONSchemaObject = {
   additionalProperties: true,
 };
 
+/** One tube joint in the line report: the other tube and the station on the trunk. */
+const TUBE_JOINT = (description: string): Record<string, unknown> => ({
+  type: 'object',
+  properties: {
+    tube: { type: 'string', description: 'Name of the other tube of the joint.' },
+    at: { type: 'number', description: "Station of the tee: mm along the trunk centreline from the trunk's from end." },
+  },
+  required: ['tube', 'at'],
+  additionalProperties: false,
+  description,
+});
+
 export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
   evaluate_script: {
     type: 'object',
@@ -84,7 +96,15 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
         properties: {
           lines: {
             type: 'array',
-            items: { type: 'object', additionalProperties: true },
+            items: {
+              type: 'object',
+              properties: {
+                from: TUBE_JOINT('Set when the from end branches off another tube: the trunk and the station of the tee on it. The cut length and bend table of this tube then start on the trunk wall. Omitted for any other end.'),
+                to: TUBE_JOINT('Set when the to end branches off another tube: the trunk and the station of the tee on it. Omitted for any other end.'),
+                branches: { type: 'array', items: TUBE_JOINT('One tube that branches off this one.'), description: 'The tubes that branch off this one, by station. Omitted when there are none.' },
+              },
+              additionalProperties: true,
+            },
             description: 'One entry per tube: name, system, od, wall, bendRadius, material, cutLength (mm), bends, xyz (bend-table corner points), lra (length/rotation/angle rows), lastStraight, minStraight, minClearance { mm, to, at } (exact nearest part or tube), massKg (null without a known material or density), volumeInternalMl, pressureDropKPa (null without a declared flow).',
           },
           systems: {

@@ -163,7 +163,7 @@ function endsOnPort(tube: TubeOnScene, part: string, name: string, origin: V3 | 
   if ([tube.meta.from, tube.meta.to].some((e) => e.part === part && e.connector === name)) return true;
   const placement = tube.resolved?.placement;
   if (origin === undefined || tube.resolved === undefined || placement === undefined) return false;
-  return endsOf(tube.resolved).some((e) => e.meta.connector === undefined &&
+  return endsOf(tube.resolved).some((e) => e.meta.connector === undefined && e.meta.branch === undefined &&
     (e.meta.part === undefined || e.meta.part === part) &&
     norm(sub(placement.point(e.captured) as V3, origin)) <= PORT_POSITION_TOL_MM);
 }

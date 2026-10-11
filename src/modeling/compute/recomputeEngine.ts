@@ -464,7 +464,7 @@ export class RecomputeEngine {
 
     // Lower
     return this.lowerAndEmit(prepared.recordForLower, r, records, byKey, {
-      predecessorsOf, shapes, diagnostics, health, onEvent,
+      predecessorsOf, shapes, diagnostics, health, onEvent, paramTable: opts?.paramTable,
     });
   }
 
@@ -482,11 +482,15 @@ export class RecomputeEngine {
       diagnostics: CompilerDiagnostic[];
       health: Map<FeatureId, 'healthy' | 'warning' | 'error'>;
       onEvent: FeatureEventSink | undefined;
+      paramTable: ParamTable | undefined;
     },
   ): Promise<number> {
-    const { predecessorsOf, shapes, diagnostics, health, onEvent } = ctx;
+    const { predecessorsOf, shapes, diagnostics, health, onEvent, paramTable } = ctx;
+    // `records` are unresolved; a lowerer that reads an upstream record's numbers resolves it through this.
+    const resolveRecord = (rec: FeatureRecord): FeatureRecord =>
+      (paramTable ? resolveParams(rec, paramTable) as FeatureRecord : rec);
     try {
-      const res = await this.lowerer.lower(recordForLower, { byKey, records });
+      const res = await this.lowerer.lower(recordForLower, { byKey, records, resolveRecord });
       diagnostics.push(...res.diagnostics);
       const featureDiags = res.diagnostics;
       if (featureDiags.some((d) => d.severity === 'error')) {

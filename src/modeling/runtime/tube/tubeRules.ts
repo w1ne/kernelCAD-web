@@ -252,8 +252,10 @@ function portAxisRule({ name, path, od, meta, rules }: RuledTube): TubeRuleFindi
     // A corner behind the port, or closer than the end straight, is sent out in front of it.
     const along = Math.max(dot(sub(corner, end), axis), endStraightNeed(od, of, rules));
     const onAxis = add(end, scale(axis, along));
+    // A branch end leaves a joint on its trunk, along the branch axis.
+    const [fitting, axisOf] = of.branch !== undefined ? ['joint', 'branch'] : ['port', 'port'];
     return [finding('tube.port.misaligned',
-      `tube '${name}' leaves its ${which} port ${mm2(off)} deg off the port axis; put the corner at ${xyz2(onAxis)}.`)];
+      `tube '${name}' leaves its ${which} ${fitting} ${mm2(off)} deg off the ${axisOf} axis; put the corner at ${xyz2(onAxis)}.`)];
   });
 }
 
