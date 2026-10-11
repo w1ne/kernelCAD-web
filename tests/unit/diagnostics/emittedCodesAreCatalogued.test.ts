@@ -143,7 +143,7 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     }
   });
 
-  it('catalogue has exactly 349 codes', () => {
+  it('catalogue has exactly 361 codes', () => {
     // 47 baseline (milestone-C diagnostic-vocab spec)
     //  + 23 NURBS Slice B/C/D (Curve3D / variableSweep / surface / G2 / 2D path NURBS)
     //  + 31 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
@@ -321,7 +321,15 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     // + 2 sheet-metal fold checks: feature.sheetMetal.crossing-bends,
     //   feature.sheetMetal.fold-invalid = 348.
     // + 1 script without a return: script.no-return = 349.
-    expect(catalogue.size).toBe(349);
+    // + 8 tube gates: tube.bend.radius-too-small,
+    //   tube.straight.between-bends-too-short, tube.straight.end-too-short,
+    //   tube.bend.angle-exceeded, tube.clearance.violated,
+    //   tube.clearance.overlap, tube.port.misaligned, tube.spec.defaulted = 347.
+    // + 1 bend-table export: export.bend-table.no-tubes = 348.
+    // + 1 tube plain end naming a missing part: tube.end.part-not-found = 349.
+    // + 2 tube gate holes: tube.clearance.pair-unused, tube.part.duplicate = 351.
+    // Both branches combined (339 + 10 + 12) = 361.
+    expect(catalogue.size).toBe(361);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

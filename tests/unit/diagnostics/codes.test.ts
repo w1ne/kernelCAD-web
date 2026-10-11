@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { DIAGNOSTIC_CODES, HINT_TEMPLATES } from '../../../src/shared/diagnostics/registry';
 
 describe('diagnostic catalogue invariants', () => {
-  it('emits exactly 349 codes', () => {
+  it('emits exactly 361 codes', () => {
     // 204 from develop (NURBS analytics, Query DSL, K1-K9 kinematic, assembly/mechanism gates)
     // + 6 parts catalog codes (parts.* — Slice C bundled parts catalog)
     // + 1 feature.emboss-text.boolean-noop (#393 silent no-op guard)
@@ -134,8 +134,16 @@ describe('diagnostic catalogue invariants', () => {
     // + 2 sheet-metal fold checks: feature.sheetMetal.crossing-bends,
     //   feature.sheetMetal.fold-invalid = 348.
     // + 1 script without a return: script.no-return = 349.
-    expect(DIAGNOSTIC_CODES).toHaveLength(349);
-    expect(new Set(DIAGNOSTIC_CODES).size).toBe(349);
+    // + 8 tube gates: tube.bend.radius-too-small,
+    //   tube.straight.between-bends-too-short, tube.straight.end-too-short,
+    //   tube.bend.angle-exceeded, tube.clearance.violated,
+    //   tube.clearance.overlap, tube.port.misaligned, tube.spec.defaulted = 347.
+    // + 1 bend-table export: export.bend-table.no-tubes = 348.
+    // + 1 tube plain end naming a missing part: tube.end.part-not-found = 349.
+    // + 2 tube gate holes: tube.clearance.pair-unused, tube.part.duplicate = 351.
+    // Both branches combined (339 + 10 + 12) = 361.
+    expect(DIAGNOSTIC_CODES).toHaveLength(361);
+    expect(new Set(DIAGNOSTIC_CODES).size).toBe(361);
   });
 
   it('every code has a non-empty hint template', () => {

@@ -75,22 +75,38 @@ describe('traceHybrid', () => {
     expect(client.calls).toHaveLength(1);
   });
 
-  it('omits the LLM call when no named-point features are requested', async () => {
+  it('omits the LLM call when only silhouettes are requested', async () => {
     const stubPolyline: Vec2Normalized[] = [[0, 0], [1, 0], [1, 1]];
     const extractStub = vi.fn(async () => stubPolyline);
     const client = new MockVisionClient([]); // no responses queued
 
-    const features: TraceFeatureRequest[] = [
-      { label: 'outline', kind: 'silhouette' },
-      { label: 'extra', kind: 'curve' },
-    ];
+    const features: TraceFeatureRequest[] = [{ label: 'outline', kind: 'silhouette' }];
     const deps: HybridDeps = { extractSilhouettePolyline: extractStub };
     const out = await traceHybrid(client, bytes, 'image/png', features, undefined, 12, deps);
 
-    expect(out).toHaveLength(2);
+    expect(out).toHaveLength(1);
     expect(out[0].backend).toBe('opencv');
-    expect(out[1].backend).toBe('opencv');
     expect(client.calls).toHaveLength(0);
+  });
+
+  // Prod 2026-10-10: a carriage "roof" curve came back as the whole outline.
+  it('sends curves to the LLM, not the shared opencv silhouette', async () => {
+    const stubPolyline: Vec2Normalized[] = [[0, 0], [1, 0], [1, 1]];
+    const extractStub = vi.fn(async () => stubPolyline);
+    const roof: Vec2Normalized[] = [[0.29, 0.3], [0.5, 0.19], [0.71, 0.3]];
+    const client = new MockVisionClient([
+      JSON.stringify({ features: [{ label: 'roof', kind: 'curve', waypoints: roof, confidence: 0.8 }] }),
+    ]);
+    const features: TraceFeatureRequest[] = [
+      { label: 'outline', kind: 'silhouette' },
+      { label: 'roof', kind: 'curve', region: 'curved roof line' },
+    ];
+    const out = await traceHybrid(client, bytes, 'image/png', features, undefined, 12, {
+      extractSilhouettePolyline: extractStub,
+    });
+    expect(out[0]).toMatchObject({ label: 'outline', backend: 'opencv', waypoints: stubPolyline });
+    expect(out[1]).toMatchObject({ label: 'roof', backend: 'vision-llm', waypoints: roof });
+    expect(client.calls).toHaveLength(1);
   });
 
   it('omits the opencv call when only named-point/bbox features are requested', async () => {

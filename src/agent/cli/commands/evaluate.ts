@@ -26,6 +26,7 @@ import {
   fileReadEvaluation,
   invalidArgsEvaluation,
   isFileReadError,
+  tubesOutput,
   type EvaluateInput,
   type EvaluateResult,
 } from '../../../composition/scriptEvaluation';
@@ -39,6 +40,7 @@ export {
   applyEvaluateDefaults,
   evaluateAndBuildScript,
   evaluateScript,
+  tubesOutput,
   fileReadEvaluation,
   invalidArgsEvaluation,
   isFileReadError,
@@ -177,6 +179,8 @@ export interface EvaluateWithEnvelopeResult {
   trace?: FeatureTraceEntry[];
   /** Dimensions declared with `shape.dimension()`; absent when none. */
   dimensions?: EvaluateResult['dimensions'];
+  /** Tube line report and system totals; absent when the model has no tubes. */
+  tubes?: ReturnType<typeof tubesOutput>;
 }
 
 /**
@@ -204,14 +208,15 @@ export async function evaluateWithEnvelope(
   const evaluation = withIntentLint(built.evaluation, model?.code ?? input.code);
   const trace = input.trace === true ? traceOfBuiltModel(model, input.file) : undefined;
 
-  if (!input.envelope) return evaluationResult(evaluation, trace);
+  const tubes = tubesOutput(built.tubeReport);
+  if (!input.envelope) return evaluationResult(evaluation, trace, tubes);
 
   // Don't run envelope on a broken script — surface the underlying failure.
   // The `!model` case shouldn't happen for exitCode 0, but be defensive.
-  if (evaluation.exitCode !== 0 || !model) return envelopeResult(evaluation, evaluation.exitCode);
+  if (evaluation.exitCode !== 0 || !model) return envelopeResult(evaluation, evaluation.exitCode, tubes);
 
   const assemblies = Array.from(model.session.assemblies.values()) as Assembly[];
-  if (assemblies.length === 0) return envelopeResult(evaluation, 0);
+  if (assemblies.length === 0) return envelopeResult(evaluation, 0, tubes);
 
   const { envelopeDiagnostics, envelopeSampleCount } = await reviewAssemblies(assemblies, input);
 
@@ -222,6 +227,7 @@ export async function evaluateWithEnvelope(
     diagnostics: evaluation.diagnostics,
     envelopeDiagnostics,
     envelopeSampleCount,
+    ...(tubes !== undefined ? { tubes } : {}),
     ...(trace !== undefined ? { trace } : {}),
   };
 }
@@ -272,23 +278,30 @@ function envelopeMisuse(input: EvaluateWithEnvelopeInput): EvaluateWithEnvelopeR
 function evaluationResult(
   evaluation: EvaluateResult,
   trace: FeatureTraceEntry[] | undefined,
+  tubes: EvaluateWithEnvelopeResult['tubes'],
 ): EvaluateWithEnvelopeResult {
   return {
     exitCode: evaluation.exitCode,
     featureCount: evaluation.featureCount,
     diagnostics: evaluation.diagnostics,
     ...(evaluation.dimensions !== undefined ? { dimensions: evaluation.dimensions } : {}),
+    ...(tubes !== undefined ? { tubes } : {}),
     ...(trace !== undefined ? { trace } : {}),
   };
 }
 
-function envelopeResult(evaluation: EvaluateResult, exitCode: number): EvaluateWithEnvelopeResult {
+function envelopeResult(
+  evaluation: EvaluateResult,
+  exitCode: number,
+  tubes: EvaluateWithEnvelopeResult['tubes'],
+): EvaluateWithEnvelopeResult {
   return {
     exitCode,
     featureCount: evaluation.featureCount,
     diagnostics: evaluation.diagnostics,
     envelopeDiagnostics: [],
     envelopeSampleCount: 0,
+    ...(tubes !== undefined ? { tubes } : {}),
   };
 }
 
@@ -376,6 +389,7 @@ function printEvaluateResult(r: EvaluateWithEnvelopeResult, opts: EvaluateCliOpt
       featureCount: r.featureCount,
       diagnostics: r.diagnostics,
       ...(r.dimensions !== undefined ? { dimensions: r.dimensions } : {}),
+      ...(r.tubes !== undefined ? { tubes: r.tubes } : {}),
       ...(r.envelopeDiagnostics !== undefined ? {
         envelopeDiagnostics: r.envelopeDiagnostics,
         envelopeSampleCount: r.envelopeSampleCount,

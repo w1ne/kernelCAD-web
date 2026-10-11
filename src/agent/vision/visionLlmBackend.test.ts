@@ -245,6 +245,36 @@ describe('extractFeaturesViaLLM', () => {
     ]);
   });
 
+  // Prod 2026-10-10: a roof curve failed with "waypoint is not a 2-tuple".
+  it('accepts a curve wrapped in an extra list, [x, y, extra] points and "x, y" strings', async () => {
+    const reqs: TraceFeatureRequest[] = [
+      { label: 'roof', kind: 'curve' },
+      { label: 'brow', kind: 'curve' },
+      { label: 'rail', kind: 'curve' },
+    ];
+    const response = JSON.stringify({
+      features: [
+        { label: 'roof', kind: 'curve', waypoints: [[[0.29, 0.3], [0.5, 0.19], [0.71, 0.3]]] },
+        { label: 'brow', kind: 'curve', waypoints: [[0.1, 0.2, 0.9], [0.4, 0.3, 0.8]] },
+        { label: 'rail', kind: 'curve', waypoints: ['0.1, 0.5', '[0.9,0.5]'] },
+      ],
+    });
+    const out = await extractFeaturesViaLLM(new MockVisionClient([response]), bytes, 'image/png', reqs, undefined, 12);
+    expect(out.map((f) => f.waypoints)).toEqual([
+      [[0.29, 0.3], [0.5, 0.19], [0.71, 0.3]],
+      [[0.1, 0.2], [0.4, 0.3]],
+      [[0.1, 0.5], [0.9, 0.5]],
+    ]);
+  });
+
+  it('names the waypoint it could not read', async () => {
+    const reqs: TraceFeatureRequest[] = [{ label: 'roof', kind: 'curve' }];
+    const bad = JSON.stringify({ features: [{ label: 'roof', kind: 'curve', waypoints: [[0.1, 0.2], 'left'] }] });
+    await expect(
+      extractFeaturesViaLLM(new MockVisionClient([bad, bad]), bytes, 'image/png', reqs, undefined, 12),
+    ).rejects.toThrow(/not a 2-tuple \(got "left"\)/);
+  });
+
   it('still rejects an odd-length flat list and out-of-range values in the new shapes', async () => {
     const reqs: TraceFeatureRequest[] = [{ label: 'wheel', kind: 'bbox' }];
     const odd = JSON.stringify({ features: [{ label: 'wheel', kind: 'bbox', waypoints: [0.1, 0.2, 0.3] }] });

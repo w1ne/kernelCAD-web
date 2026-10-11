@@ -13,7 +13,7 @@
  * who want the code, the inspector and the tools.
  */
 import { createFileRoute } from '@tanstack/react-router';
-import { useCallback, useEffect, useState, type JSX, type ReactNode } from 'react';
+import { useCallback, useEffect, useState, useSyncExternalStore, type JSX, type ReactNode } from 'react';
 import { ArrowLeft, ArrowUpRight, PanelsTopLeft } from 'lucide-react';
 import App, { LiveCodeApplier } from '../App';
 import { AnonProjectBanner, ProjectClaimControl } from './-ProjectClaimControl';
@@ -56,6 +56,7 @@ import {
   studioHref,
 } from './-projectPageModel';
 import { useShareProject } from './-useShareProject';
+import { getStoredBuildError, retryStoredBuild, subscribeMeshNotice } from '../scriptSource';
 import { shareHeadingTitle } from './-shareRevision';
 import type { Session } from '@supabase/supabase-js';
 
@@ -305,7 +306,7 @@ function ModelFirstPage(props: PageProps & {
   return (
     <WorkbenchProvider initialCode={project.current_code} projectName={project.title}>
       <LiveCodeApplier liveCode={props.historical ? undefined : live.liveCode} />
-      <LiveProjectShell {...props} project={project} shared={shared} now={now} />
+      <LiveProjectShell {...props} project={project} shared={shared} now={now} poster={props.pinned ? null : poster} />
     </WorkbenchProvider>
   );
 }
@@ -314,6 +315,9 @@ function LiveProjectShell(props: PageProps & {
   project: ProjectRow;
   now: number;
   shared: Omit<Parameters<typeof ViewerPageShell>[0], 'stage' | 'panel' | 'actionBar'>;
+  /** Stored render shown until the model is on screen; null for a pinned
+   *  historical revision (the render is of the latest one). */
+  poster: string | null;
 }): JSX.Element {
   const { slug, project, live, claim, session } = props;
   const [displayReady, setDisplayReady] = useState(false);
@@ -329,6 +333,9 @@ function LiveProjectShell(props: PageProps & {
       {...props.shared}
       stage={
         <ModelStage
+          // The stored render stays up while the model builds or downloads:
+          // a heavy model must never read as an empty viewport.
+          posterSrc={props.poster}
           posterAlt={`Render of ${project.title}`}
           phase={stage.phase}
           busy={stage.busy}
@@ -381,23 +388,43 @@ function LiveProjectShell(props: PageProps & {
 }
 
 /** Over the stage when the model does not build: what happened and where to
- *  go next. */
+ *  go next. A server-side build failure of the stored mesh says so and offers
+ *  to build it again; a script error points at Studio. */
 function BuildFailure({ slug, error }: { slug: string; error: string | null }): ReactNode {
+  const storedError = useSyncExternalStore(subscribeMeshNotice, getStoredBuildError, getStoredBuildError);
+  const [retrying, setRetrying] = useState(false);
+  const onRetry = useCallback(async () => {
+    setRetrying(true);
+    try {
+      await retryStoredBuild();
+    } finally {
+      window.location.reload();
+    }
+  }, []);
   return (
     <div className="absolute inset-0 grid place-items-center bg-black/40 p-4">
       <div role="alert" className="w-full max-w-sm rounded-panel border border-border bg-surface-1 p-5 text-fg shadow-e2" data-testid="build-failure">
         <h2 className="text-title text-fg">The model did not build</h2>
         <p className="mt-1 text-ui text-fg-2">
-          The saved source has an error, so there is nothing to show yet. Open it in Studio to see the code and the error.
+          {storedError
+            ? 'The server could not build the 3D model for this link. You can ask it to try again, or open the code in Studio.'
+            : 'The saved source has an error, so there is nothing to show yet. Open it in Studio to see the code and the error.'}
         </p>
-        {error && (
-          <p className="mt-3 break-words text-ui text-danger">
-            {plainLine(error)}
+        {(storedError ?? error) && (
+          <p className="mt-3 break-words text-ui text-danger" data-testid="build-failure-error">
+            {plainLine(storedError ?? error ?? '')}
           </p>
         )}
         <div className="mt-4 flex flex-wrap gap-2">
-          <a href={studioHref(slug)} className={buttonClass('primary', 'md')}>Open in Studio</a>
-          <Button variant="secondary" size="md" onClick={() => window.location.reload()}>Reload</Button>
+          {storedError ? (
+            <Button variant="primary" size="md" disabled={retrying} onClick={() => void onRetry()} data-testid="retry-stored-build">
+              {retrying ? 'Retrying…' : 'Try again'}
+            </Button>
+          ) : null}
+          <a href={studioHref(slug)} className={buttonClass(storedError ? 'secondary' : 'primary', 'md')}>Open in Studio</a>
+          {!storedError && (
+            <Button variant="secondary" size="md" onClick={() => window.location.reload()}>Reload</Button>
+          )}
         </div>
       </div>
     </div>

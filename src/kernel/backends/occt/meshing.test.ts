@@ -3,7 +3,14 @@
 import { describe, it, expect, beforeAll, vi } from 'vitest';
 import * as replicad from 'replicad';
 import { initOcct } from './occtBackend';
-import { meshShape, meshFaceToGeometry, COARSE_MESH_OPTIONS, FINE_MESH_OPTIONS } from './meshing';
+import {
+  meshShape,
+  meshFaceToGeometry,
+  displayMeshOptions,
+  COARSE_MESH_OPTIONS,
+  DISPLAY_MAX_DEFLECTION,
+  FINE_MESH_OPTIONS,
+} from './meshing';
 
 /** Total triangle count across all face geometries of a mesh result. */
 function triCount(result: { faces: { indices: ArrayLike<number> }[] }): number {
@@ -12,6 +19,31 @@ function triCount(result: { faces: { indices: ArrayLike<number> }[] }): number {
 
 beforeAll(async () => {
   await initOcct();
+});
+
+describe('displayMeshOptions', () => {
+  it('keeps FINE for parts under ~400 mm', () => {
+    expect(displayMeshOptions(replicad.makeBaseBox(100, 100, 100))).toBe(FINE_MESH_OPTIONS);
+    expect(displayMeshOptions({})).toBe(FINE_MESH_OPTIONS);
+  });
+
+  it('scales the linear deflection with a large part and keeps the angular one', () => {
+    const car = displayMeshOptions(replicad.makeBaseBox(4000, 1800, 1500));
+    expect(car.angularTolerance).toBe(FINE_MESH_OPTIONS.angularTolerance);
+    expect(car.tolerance).toBeGreaterThan(1);
+    expect(car.tolerance).toBeLessThan(1.3);
+    expect(displayMeshOptions(replicad.makeBaseBox(100_000, 1, 1)).tolerance).toBe(DISPLAY_MAX_DEFLECTION);
+  });
+
+  it('meshes a large curved part far coarser than FINE, a small one identically', () => {
+    // Fresh shapes: OCCT keeps a finer triangulation it already has.
+    const fine = meshShape(replicad.makeCylinder(1000, 2000), FINE_MESH_OPTIONS)!;
+    const display = meshShape(replicad.makeCylinder(1000, 2000))!;
+    const tris = (m: NonNullable<ReturnType<typeof meshShape>>) => m.faces.reduce((n, f) => n + f.indices.length / 3, 0);
+    expect(tris(display)).toBeLessThan(tris(fine) / 2);
+    expect(tris(meshShape(replicad.makeCylinder(5, 10))!))
+      .toBe(tris(meshShape(replicad.makeCylinder(5, 10), FINE_MESH_OPTIONS)!));
+  });
 });
 
 describe('meshShape', () => {

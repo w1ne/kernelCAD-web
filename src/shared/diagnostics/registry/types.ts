@@ -28,7 +28,9 @@ export type DiagnosticGroup =
   | 'authoring'
   | 'viewer'
   | 'union'
-  | 'script';
+  | 'script'
+
+  | 'tube';
 
 export type DiagnosticSeverityLevel = 'info' | 'warn' | 'error';
 

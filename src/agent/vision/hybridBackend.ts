@@ -2,12 +2,17 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/agent/vision/hybridBackend.ts
 //
-// Hybrid backend = opencv silhouette + LLM-labeled named points/bboxes. Used
-// when the router sees a uniform-bg image AND any named-point/bbox feature
-// in the request.
+// Hybrid backend = opencv silhouette + LLM-labeled named points/bboxes/curves.
+// Used when the router sees a uniform-bg image AND any named point, bbox or
+// curve in the request.
+//
+// Curves go to the LLM: a curve is PART of the outline (a roof line, a brow),
+// and opencv can only return the whole outer silhouette, so a `curve` feature
+// used to come back as the entire outline (seen on prod 2026-10-10: a
+// carriage "roof" returned the full carriage outline).
 //
 // Caveat: opencv has no way to distinguish multiple silhouette features in
-// one image — every silhouette/curve feature is assigned the *same* polyline.
+// one image — every silhouette feature is assigned the *same* polyline.
 // That's documented in the kernelcad-trace-from-image SKILL.md so the agent
 // doesn't naively request two independent silhouettes from the same photo.
 
@@ -29,8 +34,8 @@ export interface HybridDeps {
 }
 
 /**
- * Trace a uniform-bg image using opencv for silhouettes/curves and the LLM
- * for named points/bboxes. Returns features in the same order as the input
+ * Trace a uniform-bg image using opencv for silhouettes and the LLM for
+ * named points, bboxes and curves. Returns features in the same order as the input
  * `features` array.
  */
 export async function traceHybrid(
@@ -44,11 +49,9 @@ export async function traceHybrid(
 ): Promise<TraceFeatureResult[]> {
   const extract = deps.extractSilhouettePolyline ?? defaultExtractSilhouettePolyline;
 
-  const silhouetteFeatures = features.filter(
-    (f) => f.kind === 'silhouette' || f.kind === 'curve',
-  );
+  const silhouetteFeatures = features.filter((f) => f.kind === 'silhouette');
   const namedFeatures = features.filter(
-    (f) => f.kind === 'point' || f.kind === 'bbox',
+    (f) => f.kind === 'point' || f.kind === 'bbox' || f.kind === 'curve',
   );
 
   let sharedPolyline: Vec2Normalized[] | null = null;

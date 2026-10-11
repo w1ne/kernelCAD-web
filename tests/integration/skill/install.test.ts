@@ -22,7 +22,7 @@ describe.skipIf(SKIP)('skill install (built CLI)', () => {
     expect(content).toMatch(/^---\nname: kernelcad/);
   });
 
-  it('installs all 21 skill subdirectories', () => {
+  it('installs all 22 skill subdirectories', () => {
     const tmp = mkdtempSync(join(tmpdir(), 'kcad-skill-int-'));
     execFileSync('node', [CLI_BIN, 'skill', 'install', tmp], { encoding: 'utf8' });
     const dirs = readdirSync(tmp);
@@ -30,8 +30,9 @@ describe.skipIf(SKIP)('skill install (built CLI)', () => {
     // alias (17 → 16); Slice C adds the `kernelcad-parts` skill (16 → 17);
     // the drawings slice adds `kernelcad-drawings` (17 → 18); the structural
     // FEA, print-loop, and trace-guided repair slices add `kernelcad-fea`,
-    // `kernelcad-print`, and `kernelcad-repair` (18 → 21).
-    expect(dirs.length).toBe(21);
+    // `kernelcad-print`, and `kernelcad-repair` (18 → 21); the tube slice
+    // adds `kernelcad-tubes` (21 → 22).
+    expect(dirs.length).toBe(22);
   });
 
   it('writes combined skill content to an explicit path via skill onefile', () => {

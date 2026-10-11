@@ -31,6 +31,10 @@ import {
   type FeaGateReport,
 } from '../modeling/runtime/fea/runFeaGate';
 import { detectMissingReturn } from '../modeling/validation/missingReturn';
+import {
+  runTubeChecksOnModel,
+  type TubeCheckReport,
+} from '../modeling/runtime/tube/runTubeChecks';
 import { detectUnstructuredBodies } from '../modeling/validation/unstructuredBodies';
 import { detectUnionDefects } from '../modeling/validation/unionIntegrity';
 import type { SweepEvaluator } from '../kinematic/sweepTolerance';
@@ -105,6 +109,17 @@ export interface EvaluateAndBuildResult {
    *  otherwise. Its diagnostics are already merged into
    *  `evaluation.diagnostics`. */
   feaReport?: FeaGateReport;
+  /** Tube gate report when the model has tube records and the build had no
+   *  fatal diagnostics. Undefined otherwise — unlike DFM this gate is not
+   *  opt-in by a spec record. Its diagnostics are already merged into
+   *  `evaluation.diagnostics`. */
+  tubeReport?: TubeCheckReport;
+}
+
+/** The agent-facing view of a tube report: lines and system totals only.
+ *  Diagnostics are already in the evaluation's list and timings are internal. */
+export function tubesOutput(report: TubeCheckReport | undefined): Pick<TubeCheckReport, 'lines' | 'systems'> | undefined {
+  return report === undefined ? undefined : { lines: report.lines, systems: report.systems };
 }
 
 /**
@@ -168,11 +183,14 @@ async function buildModelForInput(
  *
  *  Structural enforcement: same seam, same opt-in shape as the DFM gate.
  *  Only studies that declare `minSafetyFactor` run here — a study without
- *  one is a report you fetch with `run_fea`, not a gate. */
+ *  one is a report you fetch with `run_fea`, not a gate.
+ *
+ *  Tube gate: same seam, but not opt-in by a spec record. It runs whenever
+ *  the model has tube records (a missing `tubeSpec` only earns a warn). */
 async function runOptInGates(
   model: BuiltModel,
   fatal: boolean,
-): Promise<{ dfmReport?: DfmCheckReport; feaReport?: FeaGateReport }> {
+): Promise<{ dfmReport?: DfmCheckReport; feaReport?: FeaGateReport; tubeReport?: TubeCheckReport }> {
   let dfmReport: DfmCheckReport | undefined;
   if (!fatal) {
     dfmReport = await runDfmChecksOnModel(model);
@@ -185,9 +203,16 @@ async function runOptInGates(
     if (feaReport) model.diagnostics.push(...feaReport.diagnostics);
   }
 
+  let tubeReport: TubeCheckReport | undefined;
+  if (!fatal) {
+    tubeReport = await runTubeChecksOnModel(model);
+    if (tubeReport) model.diagnostics.push(...tubeReport.diagnostics);
+  }
+
   return {
     ...(dfmReport !== undefined ? { dfmReport } : {}),
     ...(feaReport !== undefined ? { feaReport } : {}),
+    ...(tubeReport !== undefined ? { tubeReport } : {}),
   };
 }
 

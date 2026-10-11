@@ -43,6 +43,12 @@ describe('decideBackend', () => {
     expect(backend).toBe('hybrid');
   });
 
+  it('routes uniform-bg + a curve to hybrid (a curve is part of the outline)', async () => {
+    const png = await readFile(join(FIXTURE_DIR, 'uniform-bg-square.png'));
+    const features: TraceFeatureRequest[] = [{ label: 'roof', kind: 'curve', region: 'roof line' }];
+    expect(await decideBackend(png, features)).toBe('hybrid');
+  });
+
   it('routes a cluttered photo to vision-llm', async () => {
     const png = await readFile(join(FIXTURE_DIR, 'cluttered-photo.png'));
     const features: TraceFeatureRequest[] = [

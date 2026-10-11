@@ -24,6 +24,7 @@ import {
   rootVisibleFeatures,
   setHostedRevisionHint,
   storedShareMesh,
+  getStoredBuildError,
 } from './scriptSource';
 
 afterEach(() => {
@@ -824,5 +825,62 @@ describe('storedShareMesh', () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch');
     await expect(storedShareMesh('rail()')).resolves.toBeNull();
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  const STATUS_URL = 'https://api.example.com/api/v1/projects/OGm0lP_B/revisions/1/mesh-status';
+  const ARTIFACT_URL = 'https://mesh.kernelcad.com/mesh-artifacts/OGm0lP_B/v1.json';
+
+  function sharePage(): void {
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.example.com');
+    vi.stubGlobal('window', { location: { hostname: 'localhost', pathname: '/p/OGm0lP_B', search: '?version=1' } });
+    setHostedRevisionHint({ slug: 'OGm0lP_B', version: 1, code: 'rail()' });
+  }
+
+  it('waits for a stored mesh the server is still building instead of rebuilding', async () => {
+    vi.useFakeTimers();
+    sharePage();
+    let built = false;
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      const url = String(input);
+      if (url === STATUS_URL) {
+        return { ok: true, json: async () => ({ status: built ? 'ready' : 'building' }) } as Response;
+      }
+      if (url === ARTIFACT_URL && built) return { ok: true, json: async () => stored } as Response;
+      return { ok: false, status: 404, json: async () => null } as Response;
+    });
+
+    const pending = storedShareMesh('rail()');
+    await vi.advanceTimersByTimeAsync(0);
+    expect(getMeshNotice().meshing).toBe(true);
+    built = true;
+    await vi.advanceTimersByTimeAsync(5_000);
+    const payload = await pending;
+
+    expect(payload?.features.map((feature) => feature.featureId)).toEqual(['rail']);
+    expect(getMeshNotice().meshing).toBe(false);
+    expect(fetchMock.mock.calls.some((call) => String(call[0]).includes('/__kernelcad/mesh'))).toBe(false);
+  });
+
+  it('reports a failed server build and lets the caller fall back', async () => {
+    sharePage();
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      if (String(input) === STATUS_URL) {
+        return { ok: true, json: async () => ({ status: 'failed', error: 'worker memory limit' }) } as Response;
+      }
+      return { ok: false, status: 404, json: async () => null } as Response;
+    });
+
+    await expect(storedShareMesh('rail()')).resolves.toBeNull();
+    expect(getStoredBuildError()).toBe('worker memory limit');
+    expect(getMeshNotice().meshing).toBe(false);
+  });
+
+  it('keeps the old behaviour when the server has no mesh-status route', async () => {
+    sharePage();
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async () => (
+      { ok: false, status: 404, json: async () => null } as Response
+    ));
+    await expect(storedShareMesh('rail()')).resolves.toBeNull();
+    expect(fetchMock.mock.calls.filter((call) => String(call[0]) === STATUS_URL)).toHaveLength(1);
   });
 });

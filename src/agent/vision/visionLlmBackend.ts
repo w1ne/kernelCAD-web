@@ -204,24 +204,52 @@ function validateFeatureEntry(
  * - `{ x, y }` objects.
  * Anything else is passed through unchanged and validated as before.
  */
-function normalizeWaypointShape(rawWaypoints: unknown[]): unknown[] {
+function normalizeWaypointShape(input: unknown[]): unknown[] {
+  let rawWaypoints = input;
+  // A polyline wrapped in an extra list: [[[x, y], [x, y], ...]].
+  while (
+    rawWaypoints.length === 1 &&
+    Array.isArray(rawWaypoints[0]) &&
+    (rawWaypoints[0] as unknown[]).length > 0 &&
+    (rawWaypoints[0] as unknown[]).every((v) => Array.isArray(v) || (v && typeof v === 'object'))
+  ) {
+    rawWaypoints = rawWaypoints[0] as unknown[];
+  }
   if (rawWaypoints.length >= 2 && rawWaypoints.length % 2 === 0 && rawWaypoints.every((v) => typeof v === 'number')) {
     const pairs: unknown[] = [];
     for (let i = 0; i < rawWaypoints.length; i += 2) pairs.push([rawWaypoints[i], rawWaypoints[i + 1]]);
     return pairs;
   }
-  return rawWaypoints.map((wp) => {
+  const single = rawWaypoints.length === 1;
+  return rawWaypoints.flatMap((wp): unknown[] => {
     if (wp && typeof wp === 'object' && !Array.isArray(wp) && 'x' in wp && 'y' in wp) {
       const o = wp as { x: unknown; y: unknown };
-      return [o.x, o.y];
+      return [[o.x, o.y]];
     }
-    // A single flat bbox nested one level: [[x1, y1, x2, y2]].
-    return wp;
-  }).flatMap((wp) =>
-    Array.isArray(wp) && wp.length === 4 && wp.every((v) => typeof v === 'number') && rawWaypoints.length === 1
-      ? [[wp[0], wp[1]], [wp[2], wp[3]]]
-      : [wp],
-  );
+    // "x, y" as a string.
+    if (typeof wp === 'string') {
+      const m = /^\s*\[?\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*\]?\s*$/.exec(wp);
+      return m ? [[Number(m[1]), Number(m[2])]] : [wp];
+    }
+    if (Array.isArray(wp) && wp.every((v) => typeof v === 'number')) {
+      // A single flat bbox nested one level: [[x1, y1, x2, y2]].
+      if (single && wp.length === 4) return [[wp[0], wp[1]], [wp[2], wp[3]]];
+      // [x, y, extra] (a confidence or z): keep the point.
+      if (wp.length === 3) return [[wp[0], wp[1]]];
+    }
+    return [wp];
+  });
+}
+
+/** Short printable form of a bad waypoint for the error message. */
+function preview(v: unknown): string {
+  let s: string;
+  try {
+    s = JSON.stringify(v) ?? String(v);
+  } catch {
+    s = String(v);
+  }
+  return s.length > 80 ? `${s.slice(0, 77)}...` : s;
 }
 
 function validateWaypoints(rawWaypoints: unknown[], label: string): Vec2Normalized[] {
@@ -229,7 +257,7 @@ function validateWaypoints(rawWaypoints: unknown[], label: string): Vec2Normaliz
   for (const wp of normalizeWaypointShape(rawWaypoints)) {
     if (!Array.isArray(wp) || wp.length !== 2) {
       throw new Error(
-        `visionLlmBackend: feature "${label}" waypoint is not a 2-tuple`,
+        `visionLlmBackend: feature "${label}" waypoint is not a 2-tuple (got ${preview(wp)})`,
       );
     }
     const x = wp[0];

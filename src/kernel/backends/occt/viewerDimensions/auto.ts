@@ -63,13 +63,27 @@ type OcBox = { IsVoid(): boolean; CornerMin(): OcPnt; CornerMax(): OcPnt; delete
  */
 export const EXACT_BOX_MAX_FACES = 40;
 
-/** Knobs that bound the exact-box pass; both default to unbounded-off. */
+/** Knobs that bound the exact-box pass; all default to unbounded-off. */
 export type OverallOptions = {
   /** Face count above which AddOptimal is skipped. */
   maxExactFaces?: number;
   /** False when under half of the budget remains: skip AddOptimal. */
   exactAffordable?: boolean;
+  /** `performance.now()` after which every remaining part takes the plain
+   *  box: no AddOptimal and no tessellation. */
+  deadline?: number;
 };
+
+/**
+ * Sag of the fallback tessellated box, per mm of the part's diagonal. The
+ * old fallback (`boundingBox({ exact: true })`) re-meshed every part at a
+ * fixed 0.05 mm: a 4 m lofted car body took 33 s and over 1 GB there, longer
+ * than the whole build, and the publish job was killed for memory. Scaled to
+ * the part, the box stays within 0.02 % of its size (under 1 mm on a car,
+ * the 0.05 mm floor on small parts) at a fraction of the cost.
+ */
+export const FALLBACK_BOX_RELATIVE_SAG = 2e-4;
+const FALLBACK_BOX_MIN_SAG = 0.05;
 
 function faceCount(part: WorldFramePart): number {
   try {
@@ -88,10 +102,40 @@ function faceCount(part: WorldFramePart): number {
  * tessellated box when the optimal pass is unavailable.
  */
 function exactBox(part: WorldFramePart, opts: OverallOptions): Box3 {
+  if (opts.deadline !== undefined && performance.now() > opts.deadline) return part.shape.boundingBox();
   if (opts.exactAffordable === false || faceCount(part) > (opts.maxExactFaces ?? EXACT_BOX_MAX_FACES)) {
-    return part.shape.boundingBox({ exact: true });
+    return scaledTessellatedBox(part);
   }
   return optimalBox(part);
+}
+
+/**
+ * Box of the part's tessellation, with the linear deflection scaled to the
+ * part's size ({@link FALLBACK_BOX_RELATIVE_SAG}). Falls back to the plain
+ * (padded) box when the part does not mesh.
+ */
+export function scaledTessellatedBox(part: WorldFramePart): Box3 {
+  const plain = part.shape.boundingBox();
+  const diagonal = Math.hypot(...sub(plain.max as V3, plain.min as V3));
+  const tolerance = Math.max(FALLBACK_BOX_MIN_SAG, diagonal * FALLBACK_BOX_RELATIVE_SAG);
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- replicad wrapper
+    const meshed = (part.shape.getReplicadShape() as any).mesh({ tolerance, angularTolerance: 0.3 }) as { vertices?: ArrayLike<number> };
+    const p = meshed?.vertices;
+    if (!p || p.length < 3) return plain;
+    const min: V3 = [Infinity, Infinity, Infinity];
+    const max: V3 = [-Infinity, -Infinity, -Infinity];
+    for (let i = 0; i + 2 < p.length; i += 3) {
+      for (let k = 0; k < 3; k++) {
+        const v = p[i + k];
+        if (v < min[k]) min[k] = v;
+        if (v > max[k]) max[k] = v;
+      }
+    }
+    return { min, max };
+  } catch {
+    return plain;
+  }
 }
 
 function optimalBox(part: WorldFramePart): Box3 {
@@ -116,7 +160,7 @@ function optimalBox(part: WorldFramePart): Box3 {
   } finally {
     box?.delete();
   }
-  return part.shape.boundingBox({ exact: true });
+  return scaledTessellatedBox(part);
 }
 
 function unionBounds(parts: readonly WorldFramePart[], opts: OverallOptions): Box3 {
