@@ -69,8 +69,10 @@ export const FINISHES: Record<FinishToken, PBRMaterial> = {
   'titanium':          { baseColor: '#9a9186', metalness: 1.0, roughness: 0.45 },
 
   // --- Plastics ---
-  'abs':               { baseColor: '#2a2a2a', metalness: 0.0, roughness: 0.55 },
-  'pla':               { baseColor: '#3a3a3a', metalness: 0.0, roughness: 0.45 },
+  // ABS / PLA default to mid greys, not near-black: a dark default hid every
+  // edge and hole in a default render. Black housings pass { color }.
+  'abs':               { baseColor: '#6b7078', metalness: 0.0, roughness: 0.55 },
+  'pla':               { baseColor: '#7a7f86', metalness: 0.0, roughness: 0.45 },
   'nylon':             { baseColor: '#e8e6e0', metalness: 0.0, roughness: 0.60 },
   'delrin':            { baseColor: '#efefe9', metalness: 0.0, roughness: 0.35 },
   'polycarbonate':     { baseColor: '#dcdce0', metalness: 0.0, roughness: 0.20, clearcoat: 0.3 },
