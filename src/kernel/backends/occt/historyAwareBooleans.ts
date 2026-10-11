@@ -20,6 +20,19 @@
 import { getOC } from 'replicad';
 import type { OcctBackend } from './occtBackend';
 import type { FaceHash, EdgeHash, HistoryMap } from '../../naming/evolutionRecord';
+import {
+  combinedDiagonal,
+  isValidShape,
+  plausibleBooleanVolume,
+  recoveryPlans,
+  rematchSubshapes,
+  shapeFix,
+  volumeOf,
+  type BooleanAttemptPlan,
+  type BooleanStrategy,
+} from './booleanRecovery';
+
+export type { BooleanStrategy } from './booleanRecovery';
 
 export interface BooleanHistoryResult {
   /** The result TopoDS_Shape, ready to wrap in a new OcctBackend. */
@@ -32,6 +45,16 @@ export interface BooleanHistoryResult {
   deletedFaces: Set<FaceHash>;
   /** Input edge hashes that were entirely removed. */
   deletedEdges: Set<EdgeHash>;
+  /** Which attempt produced the result. `exact` is the historical call; any
+   *  other value means the exact boolean failed (or produced an invalid solid)
+   *  and a recovery strategy succeeded. Absent on results built elsewhere. */
+  strategy?: BooleanStrategy;
+  /** Fuzzy value (mm) used by a recovery strategy. */
+  fuzzyValue?: number;
+  /** True when a ShapeFix pass repaired the recovered result. */
+  shapeFixed?: boolean;
+  /** Why the exact attempt was rejected (set only for recovered results). */
+  exactFailure?: string;
 }
 
 /**
@@ -142,7 +165,7 @@ export function assertBooleanSucceeded(builder: BooleanBuilderStatus, op: string
  */
 export const booleanBuildStats = { builds: 0 };
 
-type BooleanOp = 'cut' | 'fuse' | 'intersect';
+export type BooleanOp = 'cut' | 'fuse' | 'intersect';
 
 /** Default-constructed builder per op. The shape-taking constructors
  *  (`BRepAlgoAPI_Fuse_3(a, b, progress)` etc.) already RUN the boolean, so
@@ -157,19 +180,34 @@ function newBuilder(o: any, op: BooleanOp): any {
   }
 }
 
+/** Outcome of one boolean attempt. `fallback` carries a finished-but-invalid
+ *  exact result so it can still be returned when every retry fails (the
+ *  historical behaviour). */
+type AttemptOutcome =
+  | { ok: true; result: BooleanHistoryResult }
+  | { ok: false; error: string; fallback?: BooleanHistoryResult };
+
+const EXACT_PLAN: BooleanAttemptPlan = { strategy: 'exact', fuzzy: 0, glue: false };
+
 /**
  * Run ONE BRepAlgoAPI_* boolean of `body` against every shape in `tools` and
  * return the shape + the history of every input.
  * Core for cutWithHistory/fuseWithHistory/intersectWithHistory/fuseManyWithHistory.
+ *
+ * Recovery ladder (FIX-10): the exact boolean runs first and is returned
+ * as-is when it completes cleanly — no extra cost on the happy path. When it
+ * fails (`IsDone()==false` / `HasErrors()`) or finishes with warnings AND an
+ * invalid solid (the coincident/tangent-face signature), it is retried with a
+ * fuzzy value scaled to the operands (1e-5 × bbox diagonal, bounded), then 10×
+ * that, then (fuse only) fuzzy + glue. A recovered result must pass BRepCheck
+ * — after a ShapeFix pass if needed — and a volume sanity bound. The winning
+ * strategy is recorded on the result for the lowerer to surface.
  */
 function runBooleanWithHistory(
   body: OcctBackend,
   tools: readonly OcctBackend[],
   op: BooleanOp,
 ): BooleanHistoryResult {
-  const oc = getOC();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const o = oc as any;
   // Access the underlying TopoDS_Shape via the public getReplicadShape() accessor,
   // then read the .wrapped property which is the OCCT TopoDS_Shape handle.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -179,30 +217,156 @@ function runBooleanWithHistory(
   if (!bodyShape || toolShapes.length === 0 || toolShapes.some((t) => !t)) {
     throw new Error('historyAwareBooleans: could not access .wrapped on input shape');
   }
+  return booleanShapesWithHistory(bodyShape, toolShapes, op);
+}
+
+/**
+ * {@link runBooleanWithHistory} on raw TopoDS_Shape handles — for kernel
+ * helpers (the shell offset-and-subtract fallback) that work below
+ * OcctBackend. Same recovery ladder, same history semantics.
+ */
+export function booleanShapesWithHistory(
+  bodyShape: unknown,
+  toolShapes: readonly unknown[],
+  op: BooleanOp,
+): BooleanHistoryResult {
+  const oc = getOC();
+  const inputs = [bodyShape, ...toolShapes];
+  const exact = attemptBoolean(oc, op, inputs, EXACT_PLAN, []);
+  if (exact.ok) return exact.result;
+
+  const inputVolumes = inputs.map((s) => volumeOf(oc, s));
+  for (const plan of recoveryPlans(op, combinedDiagonal(oc, inputs))) {
+    const retry = attemptBoolean(oc, op, inputs, plan, inputVolumes);
+    if (retry.ok) return { ...retry.result, exactFailure: exact.error };
+  }
+  if (exact.fallback) return exact.fallback;
+  throw new Error(`${exact.error} Fuzzy-boolean retries (scaled fuzzy value, coarse fuzzy${op === 'fuse' ? ', glue' : ''}) also failed.`);
+}
+
+/** Build one boolean with `plan` and judge its result. */
+function attemptBoolean(
+  oc: ReturnType<typeof getOC>,
+  op: BooleanOp,
+  inputs: readonly unknown[],
+  plan: BooleanAttemptPlan,
+  inputVolumes: readonly number[],
+): AttemptOutcome {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const o = oc as any;
   const progress = new o.Message_ProgressRange_1();
   const args = new o.TopTools_ListOfShape_1();
   const toolList = new o.TopTools_ListOfShape_1();
   const builder = newBuilder(o, op);
   try {
-    args.Append_1(bodyShape);
-    for (const t of toolShapes) toolList.Append_1(t);
+    args.Append_1(inputs[0]);
+    for (const t of inputs.slice(1)) toolList.Append_1(t);
     builder.SetArguments(args);
     builder.SetTools(toolList);
     builder.SetToFillHistory(true);
+    if (plan.fuzzy > 0) builder.SetFuzzyValue(plan.fuzzy);
+    if (plan.glue) builder.SetGlue(o.BOPAlgo_GlueEnum.BOPAlgo_GlueShift);
     booleanBuildStats.builds += 1;
     builder.Build(progress);
     // Verify the boolean actually completed before trusting Shape(): a degenerate
     // op can leave IsDone()==false while Shape() returns the unmodified body.
     assertBooleanSucceeded(builder, op);
     // INTENTIONALLY skip builder.SimplifyResult() to preserve history accuracy.
-    const resultShape = builder.Shape();
-    return { shape: resultShape, ...readBuilderHistory(oc, builder, [bodyShape, ...toolShapes]) };
+    const result: BooleanHistoryResult = {
+      shape: builder.Shape(),
+      ...readBuilderHistory(oc, builder, inputs),
+      strategy: plan.strategy,
+      ...(plan.fuzzy > 0 ? { fuzzyValue: plan.fuzzy } : {}),
+    };
+    return plan.strategy === 'exact'
+      ? judgeExact(oc, builder, op, result)
+      : judgeRecovered(oc, op, result, plan, inputVolumes);
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : `historyAwareBooleans: ${op} boolean threw a kernel exception.` };
   } finally {
     builder.delete();
     toolList.delete();
     args.delete();
     progress.delete();
   }
+}
+
+/** The exact result is trusted unless OCCT raised warnings AND the solid is
+ *  invalid. Validity is checked only when warnings exist so the happy path
+ *  pays no BRepCheck cost. */
+function judgeExact(
+  oc: ReturnType<typeof getOC>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  builder: any,
+  op: BooleanOp,
+  result: BooleanHistoryResult,
+): AttemptOutcome {
+  const warned = typeof builder.HasWarnings === 'function' && builder.HasWarnings();
+  if (!warned || isValidShape(oc, result.shape)) return { ok: true, result };
+  return {
+    ok: false,
+    error: `historyAwareBooleans: ${op} boolean finished with warnings and an invalid solid (coincident or tangent faces).`,
+    fallback: result,
+  };
+}
+
+/** A recovered result must be a valid solid (ShapeFix may repair it) whose
+ *  volume respects the op's bounds. */
+function judgeRecovered(
+  oc: ReturnType<typeof getOC>,
+  op: BooleanOp,
+  result: BooleanHistoryResult,
+  plan: BooleanAttemptPlan,
+  inputVolumes: readonly number[],
+): AttemptOutcome {
+  let candidate = result;
+  if (!isValidShape(oc, candidate.shape)) {
+    const fixed = fixRecoveredResult(oc, candidate, plan.fuzzy);
+    if (!fixed) return { ok: false, error: `${plan.strategy} result invalid after ShapeFix` };
+    candidate = fixed;
+  }
+  if (!plausibleBooleanVolume(op, volumeOf(oc, candidate.shape), inputVolumes)) {
+    return { ok: false, error: `${plan.strategy} result volume implausible` };
+  }
+  return { ok: true, result: candidate };
+}
+
+/** ShapeFix the result and carry the history across: sub-shapes ShapeFix
+ *  rebuilt are re-matched by centre of mass + area/length. */
+function fixRecoveredResult(
+  oc: ReturnType<typeof getOC>,
+  result: BooleanHistoryResult,
+  fuzzy: number,
+): BooleanHistoryResult | undefined {
+  const fixedShape = shapeFix(oc, result.shape, Math.max(fuzzy, 1e-7));
+  if (!fixedShape || !isValidShape(oc, fixedShape)) return undefined;
+  const hashOf = (s: unknown) => shapeHash(oc, s);
+  const tol = Math.max(fuzzy * 10, 1e-6);
+  const faceRemap = rematchSubshapes(oc, result.shape, fixedShape, 'face', hashOf, tol);
+  const edgeRemap = rematchSubshapes(oc, result.shape, fixedShape, 'edge', hashOf, tol);
+  return {
+    ...result,
+    shape: fixedShape,
+    faceHistory: remapHistory(result.faceHistory, faceRemap),
+    edgeHistory: remapHistory(result.edgeHistory, edgeRemap),
+    shapeFixed: true,
+  };
+}
+
+function remapHistory(history: Map<string, string[]>, remap: Map<string, string>): Map<string, string[]> {
+  if (remap.size === 0) return history;
+  const out = new Map<string, string[]>();
+  const children = new Set<string>();
+  for (const [input, kids] of history) {
+    for (const k of kids) children.add(k);
+    out.set(input, kids.map((c) => remap.get(c) ?? c));
+  }
+  // A sub-shape the boolean left untouched has no history entry (identity);
+  // if ShapeFix rebuilt it, record the rename explicitly.
+  for (const [before, after] of remap) {
+    if (!children.has(before) && !out.has(before)) out.set(before, [after]);
+  }
+  return out;
 }
 
 /**

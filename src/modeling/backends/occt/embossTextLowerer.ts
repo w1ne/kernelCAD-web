@@ -35,6 +35,7 @@ import { loadFontViaHost } from '../../../shared/fonts/loadFontHost';
 import { isEmbossTextMetadata, type EmbossTextMetadata } from '../../../shared/intent/embossTextRecord';
 import { HINT_TEMPLATES } from '../../../shared/diagnostics/registry';
 import { cutWithHistory, fuseWithHistory, mergeBooleanHistory } from '../../../kernel/backends/occt/historyAwareBooleans';
+import { booleanRecoveryDiagnostic } from '../../../kernel/backends/occt/booleanRecovery';
 import {
   applyCreatedRefs,
   faceHashOf,
@@ -327,6 +328,8 @@ function runEmbossBoolean(
     });
     return undefined;
   }
+  const recovered = booleanRecoveryDiagnostic(r.id, `embossText ${fuse ? 'fuse' : 'cut'}`, boolResult);
+  if (recovered) diagnostics.push(recovered);
   return boolResult;
 }
 
