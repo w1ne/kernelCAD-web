@@ -85,7 +85,7 @@
     "site:verify-production": "npx tsx scripts/verifyProductionSite.ts",
     "test:watch": "vitest",
     "pretypecheck": "tsr generate",
-    "typecheck": "tsc -b --noEmit",
+    "typecheck": "tsc -b --noEmit && tsc --noEmit -p tsconfig.site.json",
     "typecheck:examples": "tsx scripts/typecheckExamples.ts examples/gallery/turbojet-engine.kcad.ts tests/e2e/fixtures/twisted-blade.kcad.ts",
     "typecheck:examples:all": "tsx scripts/typecheckExamples.ts --all",
     "test:ratchet": "vitest run tests/unit/scripts/qualityRatchet.test.ts tests/unit/scripts/cycleRatchet.test.ts",

@@ -271,7 +271,9 @@ export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
       throw new Error(`entry ${entry.slug}: video not found at ${srcVideo}`);
     }
 
-    if (entry.source === 'studio' && !entry.codeLocal) {
+    // Only a studio entry can lack codeLocal (the schema requires it on a
+    // curated one); testing codeLocal itself lets the type narrow to string.
+    if (!entry.codeLocal) {
       throw new Error(`entry ${entry.slug}: studio gallery entries without codeLocal are not buildable yet`);
     }
 
