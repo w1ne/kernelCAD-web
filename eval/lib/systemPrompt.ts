@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
 /** Pilot-parity skill selection for MUSE/benchmark sweeps. */
@@ -13,25 +13,52 @@ export const SWEEP_SKILLS = [
 
 export const SKILLS_ROOT = resolve('src/agent/skills');
 
-/** Concatenate the SKILL.md files for the given skill dirs (sorted, safe). */
+export interface BuildSystemPromptOptions {
+  /**
+   * Append each skill's `references/*.md` after its SKILL.md (default true).
+   * The lean SKILL.md files point at these for the API surface; an eval agent
+   * has no file tools, so without them it never sees the API reference.
+   */
+  references?: boolean;
+}
+
+/** `<skill>/references/*.md` sources, sorted; empty when the folder is absent. */
+function readReferenceSources(skillDir: string): string[] {
+  const dir = join(skillDir, 'references');
+  if (!existsSync(dir) || !statSync(dir).isDirectory()) return [];
+  return readdirSync(dir)
+    .filter((f) => f.endsWith('.md'))
+    .sort()
+    .map((f) => readFileSync(join(dir, f), 'utf8'));
+}
+
+/**
+ * Concatenate the SKILL.md files for the given skill dirs (sorted, safe),
+ * each followed by its reference files unless `references: false`.
+ */
 export function buildSystemPrompt(
   skillDirs: readonly string[],
   root: string = SKILLS_ROOT,
+  opts: BuildSystemPromptOptions = {},
 ): string {
+  const withRefs = opts.references ?? true;
   const parts: string[] = [];
   for (const name of [...skillDirs].sort()) {
     const path = join(root, name, 'SKILL.md');
     if (!existsSync(path)) {
       throw new Error(`SKILL.md not found for skill '${name}' at ${path}`);
     }
-    parts.push(readFileSync(path, 'utf8'));
+    const refs = withRefs ? readReferenceSources(join(root, name)) : [];
+    parts.push([readFileSync(path, 'utf8'), ...refs].join('\n\n'));
   }
   return parts.join('\n\n---\n\n');
 }
 
 /**
  * Default skill context for `npm run eval` and the mech40 agent eval: the
- * authoring core plus the MCP core. Loading all ~28 SKILL.md files (~0.5 MB)
+ * authoring core plus the MCP core, each with its `references/*.md` (the
+ * lean authoring SKILL.md defers the API surface to references/api.md, and
+ * the eval agent has no tools to open it). Loading all ~28 SKILL.md files (~0.5 MB)
  * buried the authoring rules under specialty material the task never needs;
  * pass `--all-skills` for that old behaviour, or `--skills a,b` to pick.
  */
