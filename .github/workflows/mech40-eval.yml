@@ -20,6 +20,10 @@ on:
       threshold:
         description: Max allowed pass@1 drop vs baseline (0..1)
         default: '0.05'
+      mock:
+        description: Run the reference agent instead of the model (pipeline dry run; no API key needed, no regression gate)
+        type: boolean
+        default: false
   schedule:
     - cron: '17 3 * * *'
 
@@ -35,8 +39,10 @@ jobs:
     steps:
       - name: Skip without an API key
         id: key
+        env:
+          MOCK: ${{ inputs.mock && 'true' || 'false' }}
         run: |
-          if [ -z "$ANTHROPIC_API_KEY" ]; then
+          if [ -z "$ANTHROPIC_API_KEY" ] && [ "$MOCK" != "true" ]; then
             echo "::notice::EVAL_ANTHROPIC_API_KEY is not set; skipping the mech40 agent eval."
             echo "skip=true" >> "$GITHUB_OUTPUT"
           else
@@ -57,11 +63,18 @@ jobs:
           K: ${{ inputs.k || '3' }}
           MODEL: ${{ inputs.model }}
           TASKS: ${{ inputs.tasks }}
+          MOCK: ${{ inputs.mock && 'true' || 'false' }}
+        # The workflow picks the results path and passes it with --out; it
+        # never parses the runner's stdout (OCCT's STEP writer prints
+        # transfer banners there, which corrupted `results=` before).
         run: |
-          args=(--k "$K" --concurrency 2)
+          out="eval/results/ci-${GITHUB_RUN_ID:-local}-mech40.json"
+          args=(--k "$K" --concurrency 2 --out "$out")
           [ -n "$MODEL" ] && args+=(--model "$MODEL")
           [ -n "$TASKS" ] && args+=(--tasks "$TASKS")
-          out=$(npx tsx eval/mech40/runAgent.ts "${args[@]}")
+          [ "$MOCK" = "true" ] && args+=(--mock)
+          npx tsx eval/mech40/runAgent.ts "${args[@]}" > /dev/null
+          test -s "$out"
           echo "results=$out" >> "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@v4
         if: steps.key.outputs.skip == 'false' && always() && steps.run.outputs.results != ''
@@ -69,5 +82,5 @@ jobs:
           name: mech40-results
           path: ${{ steps.run.outputs.results }}
       - name: pass@1 regression gate
-        if: steps.key.outputs.skip == 'false'
+        if: steps.key.outputs.skip == 'false' && !inputs.mock
         run: npx tsx eval/mech40/compare.ts "${{ steps.run.outputs.results }}" --threshold "${{ inputs.threshold || '0.05' }}"

@@ -14,6 +14,10 @@
 // expert solution, so the whole pipeline (agent loop, in-process gate,
 // harness, metrics, results file) runs end to end and pass@1 should be 1.
 // Mock results go to eval/runs/ (gitignored) unless --out is given.
+//
+// stdout carries exactly one line, the results path; everything else (logs,
+// OCCT's STEP-writer banners) goes to stderr. CI passes --out and reads the
+// path it chose rather than parsing stdout.
 
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -189,7 +193,27 @@ function defaultOut(cfg: CliConfig, now: Date): string {
   return cfg.mock ? resolve('eval/runs', `_mock-mech40-${name}`) : resolve('eval/results', name);
 }
 
-async function main(): Promise<void> {
+/**
+ * Run `fn` with everything written to stdout sent to stderr instead, and hand
+ * it the real stdout writer. OCCT's STEP writer prints transfer banners
+ * ("Statistics on Transfer (Write)", "Step File Name : blob.step ... Write
+ * Done") through Emscripten's print → console.log → process.stdout; callers
+ * that capture the runner's stdout (the results path) must see only that.
+ */
+export async function withStdoutToStderr<T>(fn: (stdout: (line: string) => void) => Promise<T>): Promise<T> {
+  const realWrite = process.stdout.write;
+  const stdout = (line: string): void => {
+    realWrite.call(process.stdout, `${line}\n`);
+  };
+  process.stdout.write = process.stderr.write.bind(process.stderr) as typeof process.stdout.write;
+  try {
+    return await fn(stdout);
+  } finally {
+    process.stdout.write = realWrite;
+  }
+}
+
+async function main(stdout: (line: string) => void): Promise<void> {
   const args = process.argv.slice(2);
   const cfg = parseCli(args);
   const selection = parseSkillSelection(args);
@@ -197,11 +221,13 @@ async function main(): Promise<void> {
     throw new Error('ANTHROPIC_API_KEY is required (or pass --mock to run the reference agent).');
   }
   const now = new Date();
+  const skillMd = loadSkillSelection(selection, loadCombinedSkillMd);
+  console.error(`[mech40] skills: ${describeSkillSelection(selection)} (${skillMd.length} chars)`);
   const results = await runMech40(
     {
       ...cfg,
       skills: describeSkillSelection(selection),
-      skillMd: loadSkillSelection(selection, loadCombinedSkillMd),
+      skillMd,
       runRoot: resolve('eval/runs', `mech40-${now.toISOString().replace(/[:.]/g, '-')}`),
     },
     {
@@ -216,12 +242,14 @@ async function main(): Promise<void> {
   const s = results.summary;
   console.error(`\nmech40 ${results.model}: pass@1 ${s.pass_at_1}, pass@${results.k} ${s.pass_at_k}, `
     + `mean evals-to-success ${s.mean_evals_to_success ?? '—'} (${s.tasks} tasks × ${results.k})`);
-  console.log(out);
+  // The only line on stdout: the results path (CI passes --out and does not
+  // need it, but local callers do `out=$(... runAgent.ts)`).
+  stdout(out);
 }
 
 const isEntrypoint = process.argv[1] !== undefined && import.meta.url === new URL(`file://${process.argv[1]}`).href;
 if (isEntrypoint) {
-  main().catch((err) => {
+  withStdoutToStderr(main).catch((err) => {
     console.error(err instanceof Error ? err.message : err);
     process.exit(1);
   });
