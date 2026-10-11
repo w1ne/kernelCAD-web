@@ -4,8 +4,16 @@ import { ArrowUp, Mic, Paperclip, Square, X } from 'lucide-react';
 import {
     isReferenceImageMimeType,
     MAX_REFERENCE_IMAGE_BYTES,
+    type GenerateAttachment,
     type GenerateRequest,
+    type StlAttachment,
 } from '../funnel/lib/generateClient';
+import {
+    isStlFileName,
+    MAX_STL_ATTACHMENT_BYTES,
+    meshAttachmentPromptNote,
+    stlAttachmentFromBytes,
+} from '../funnel/lib/meshAttachment';
 
 interface Recognition {
     lang: string;
@@ -29,11 +37,18 @@ interface PhotoAttachment {
     dataUrl: string;
     mimeType: NonNullable<GenerateRequest['referenceImage']>['mimeType'];
 }
-type Attachment = TextAttachment | PhotoAttachment;
+/** An STL the agent imports with lib.fromSTL; sent as bytes, described in the prompt. */
+interface MeshFileAttachment { kind: 'mesh'; name: string; attachment: StlAttachment }
+type Attachment = TextAttachment | PhotoAttachment | MeshFileAttachment;
+type ComposerSubmit = (
+    prompt: string,
+    referenceImage?: GenerateRequest['referenceImage'],
+    attachments?: GenerateAttachment[],
+) => void;
 // Leave room for Studio's selected-feature context in the 64,000 character API budget.
 const MAX_PROMPT = 63_000;
 const MAX_TEXT_FILES = 5;
-const ACCEPT = '.txt,.md,.csv,.json,.svg,.ts,.js,.py,.scad,.step,.stp';
+const ACCEPT = '.txt,.md,.csv,.json,.svg,.ts,.js,.py,.scad,.step,.stp,.stl';
 const buttonClass = 'focus-ring inline-flex h-control-md items-center justify-center gap-1.5 rounded-control px-2 text-ui text-fg-2 transition-colors duration-80 hover:bg-surface-3 hover:text-fg disabled:opacity-40 disabled:cursor-not-allowed max-md:h-touch max-md:min-w-touch';
 
 function readDataUrl(file: File): Promise<string> {
@@ -52,14 +67,30 @@ function readDataUrl(file: File): Promise<string> {
     });
 }
 
+/** Check the size before reading, then measure the mesh (triangle budget, bounds). */
+async function readStlAttachment(file: File): Promise<MeshFileAttachment> {
+    if (file.size > MAX_STL_ATTACHMENT_BYTES) throw new Error(`${file.name} is too large. STL files must be 10 MiB or smaller.`);
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    return { kind: 'mesh', name: file.name, attachment: stlAttachmentFromBytes(file.name, bytes) };
+}
+
 async function attachmentsFrom(current: Attachment[], selected: File[]): Promise<Attachment[]> {
     const added: Attachment[] = [];
     let textCount = current.filter(file => file.kind === 'text').length;
     let photoCount = current.filter(file => file.kind === 'image').length;
+    let meshCount = current.filter(file => file.kind === 'mesh').length;
     let textBytes = current.reduce((sum, file) => sum + (file.kind === 'text' ? file.content.length : 0), 0);
     for (const file of selected) {
         const mimeType = file.type;
+        if (isStlFileName(file.name)) {
+            if (meshCount >= 1) throw new Error('One STL per build.');
+            if (photoCount >= 1) throw new Error('Attach a photo or an STL, not both.');
+            added.push(await readStlAttachment(file));
+            meshCount += 1;
+            continue;
+        }
         if (isReferenceImageMimeType(mimeType)) {
+            if (meshCount >= 1) throw new Error('Attach a photo or an STL, not both.');
             if (photoCount >= 1) throw new Error('One photo per build.');
             if (file.size === 0) throw new Error(`${file.name} is empty. Choose a photo with visible device details.`);
             if (file.size > MAX_REFERENCE_IMAGE_BYTES) throw new Error('Photos must be 4 MiB or smaller.');
@@ -68,7 +99,7 @@ async function attachmentsFrom(current: Attachment[], selected: File[]): Promise
             continue;
         }
         if (!ACCEPT.split(',').some(ext => file.name.toLowerCase().endsWith(ext))) {
-            throw new Error('Choose text, code, SVG, or STEP files, or one PNG/JPEG/WebP photo.');
+            throw new Error('Choose text, code, SVG, STEP or STL files, or one PNG/JPEG/WebP photo.');
         }
         if (textCount >= MAX_TEXT_FILES) throw new Error(`Include up to ${MAX_TEXT_FILES} text files.`);
         if (file.size > 60_000) throw new Error(`${file.name} is too large. Include files under 60 KB.`);
@@ -137,23 +168,24 @@ function submitComposer({ disabled, reading, listening, value, files, setError, 
     value: string;
     files: Attachment[];
     setError: (error: string) => void;
-    onSubmit: (prompt: string, referenceImage?: GenerateRequest['referenceImage']) => void;
+    onSubmit: ComposerSubmit;
 }): boolean {
     if (disabled || reading || listening || !value.trim()) return false;
     const photo = files.find((file): file is PhotoAttachment => file.kind === 'image');
+    const meshes = files.filter((file): file is MeshFileAttachment => file.kind === 'mesh').map(file => file.attachment);
     const prompt = [
         value.trim(),
+        ...meshes.map(meshAttachmentPromptNote),
         ...files
             .filter((file): file is TextAttachment => file.kind === 'text')
             .map(file => `Included file: ${file.name}\n${file.content}\nEnd of file: ${file.name}`),
     ].join('\n\n');
     if (prompt.length > MAX_PROMPT) { setError('Your message and files are too long. Shorten the message or remove a file.'); return false; }
     setError('');
-    if (photo) {
-        onSubmit(prompt, { dataUrl: photo.dataUrl, fileName: photo.name, mimeType: photo.mimeType });
-    } else {
-        onSubmit(prompt);
-    }
+    const referenceImage = photo ? { dataUrl: photo.dataUrl, fileName: photo.name, mimeType: photo.mimeType } : undefined;
+    if (meshes.length > 0) onSubmit(prompt, referenceImage, meshes);
+    else if (referenceImage) onSubmit(prompt, referenceImage);
+    else onSubmit(prompt);
     return true;
 }
 
@@ -200,7 +232,7 @@ export function AgentComposer({
 }: {
     value: string;
     onChange: (value: string) => void;
-    onSubmit: (prompt: string, referenceImage?: GenerateRequest['referenceImage']) => void;
+    onSubmit: ComposerSubmit;
     disabled?: boolean;
     submitLabel?: string;
     onPhotoChange?: (hasPhoto: boolean) => void;

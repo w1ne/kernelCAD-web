@@ -6,6 +6,7 @@ import App from '../App';
 import { SignInButton } from '../../funnel/components/SignInButton';
 import { useOptionalSession } from '../../funnel/hooks/useSession';
 import { fetchGeneration, saveProject, type GenerationRow } from '../../funnel/lib/apiClient';
+import { generationIdsForSource, importedAssetPaths, rememberGenerationAssets } from '../../funnel/lib/generationAssets';
 import { PageState, type PageStateAction } from '../components/Shared/PageState';
 import { useBoundedLoad, type LoadState } from './-useProjectLiveUpdates';
 
@@ -106,6 +107,9 @@ function AnonGenPage() {
   if (!valid || !gen || gen.status !== 'done' || !gen.code) {
     return <GenerationPageState valid={valid} gen={gen} loadState={loadState} err={err} onRetry={retry} />;
   }
+  // The files this code imports (an attached STL) are held by this generation
+  // until it is saved. Set during render: the first mesh request needs it.
+  rememberGenerationAssets(gen.id, importedAssetPaths(gen.code));
 
   async function handleSave() {
     if (!session) {
@@ -117,6 +121,7 @@ function AnonGenPage() {
     try {
       const result = await saveProject({
         generationId: gen.id,
+        assetGenerationIds: generationIdsForSource(gen.code),
         anonId: gen.anon_id ?? undefined,
         title: gen.prompt.slice(0, 60),
         code: gen.code,

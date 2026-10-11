@@ -45,7 +45,9 @@ DFM checks walls, overhangs and clearance; it does NOT check whether text,
 logos, slots or other decorations overlap holes, sit off the part, or collide
 with each other. Only the pictures show that. Render
 (`render_preview` / `kernelcad render`) the top, front and iso views and look
-at each one before you report a layout as finished.
+at each one before you report a layout as finished. For a whole part, check
+the seven-view sheet (`render_preview({ file, sheet: true })`): done means
+every tile matches the request, not that it compiles.
 
 ## Inner loop: render after every visible change
 
@@ -228,6 +230,8 @@ param<T extends number | boolean>(name: string, defaultValue: T, opts?: {
 // ParamRef arithmetic uses methods, never JS operators (`+ - * /` throw):
 //   const w = param('w', 60), t = param('t', 2);
 //   box(w.add(5), w.subtract(t).multiply(2), w.divide(4)); // also .negate()
+// Hex default ('#rrggbb') = colour param with a picker; pass the ref to
+// .color(c) / .finish(t, { color: c }): param('BodyColor', '#3366cc')
 
 params({ width: 60, addCablePort: true }): {
   width: ParamRef<number>;
@@ -269,6 +273,14 @@ assembly(name?: string): Assembly;
 // Editable<number>; the rail remembers them, so a sweep along it follows param
 // changes and sweep(rail, { spine: 'helix' }) can build the exact helix.
 helix({ radius, pitch, turns, axis?, pointsPerTurn?, startAngle? }): [number, number, number][];
+
+// ISO metric threads (see "Threads" below). isoThread('M6') -> { spec: 'M6x1',
+// diameter, pitch, minorDiameter, tapDrill, ... }; 'M6x0.75' / 'M70x4' set the pitch.
+isoThread(spec: string): IsoThreadInfo;
+// Real external thread along +Z, z = 0..length, ONE sweep (M6 x 20 ~2-3 s).
+threadedRod({ spec, length, chamfer?: boolean | number, cosmetic?: boolean, clearance? }): Shape;
+// 3D Bezier curve (3 points = quadratic, 4 = cubic) -> Curve3D.
+bezier(points: [number, number, number][]): Curve3D;
 
 // Edge selection — lowers the shape lazily (awaitable).
 // selectEdges returns a ShapeList: still an EdgeSegment[] (fillet/chamfer accept
@@ -576,6 +588,7 @@ Contracts worth knowing:
 const holeAt = (x: number, y: number) => ({ edge: { ofCurveType: 'CIRCLE' as const, near: [x, y, 6] as [number, number, number] } });
 const plate = box(60, 40, 6)
   .holes('top', { positions: [{ u: -15, v: 0 }, { u: 15, v: 0 }], diameter: 5, depth: 'through' })
+  .threadedHole('top', { u: 0, v: 12, spec: 'M5', depth: 8 }) // ISO tapped hole by designation; modeled: true cuts the thread
   .dimension({ kind: 'linear', from: holeAt(15, 20), to: holeAt(45, 20), label: 'hole spacing' }); // "hole spacing 30"
 ```
 
@@ -611,7 +624,10 @@ A `Sketch` is produced by `path()...close()`. All Sketch methods return a `Shape
 //   extent below the pitch and off the axis, or lowering fails with
 //   feature.invalid-args. frenet / transitionMode do nothing here.
 // frenet: true rotates the profile with the rail curvature.
-.sweep(rail: [number, number, number][], opts?: { frenet?: boolean; transitionMode?: 'right' | 'transformed' | 'round'; spine?: 'polyline' | 'smooth' | 'helix' }): Shape
+// section: 'transverse' (spine 'helix' only): the profile is the cross-section
+//   PERPENDICULAR to the axis, sketch origin on the axis — a twisted extrusion that
+//   turns once per pitch (how threadedRod builds a whole rod without a boolean).
+.sweep(rail: [number, number, number][], opts?: { frenet?: boolean; transitionMode?: 'right' | 'transformed' | 'round'; spine?: 'polyline' | 'smooth' | 'helix'; section?: 'axial' | 'transverse' }): Shape
 
 // Loft through one or more additional sections to produce a 3D solid.
 // Use for nozzles (round-to-square), wings, fairings, transition pieces,
@@ -673,6 +689,8 @@ const blade = root.loft(tip, {
 .smoothSpline(x: Editable<number>, y: Editable<number>): PathBuilder  // C1-smooth single-segment spline to (x, y); inherits start tangent.
 .spline(points: Array<[Editable<number>, Editable<number>]>, opts?: { tension?: Editable<number> }): PathBuilder    // (Slice D) N-waypoint B-spline interpolation through every point. See kernelcad-nurbs.
 .nurbsSegment(controlPoints: Array<[Editable<number>, Editable<number>]>, opts?: { degree?: number; weights?: number[]; knots?: number[] }): PathBuilder  // (Slice D) Explicit B-spline control polygon — controlPoints[0] must match current pen. See kernelcad-nurbs.
+.bezierTo(c1: [Editable<number>, Editable<number>], c2: [Editable<number>, Editable<number>], end: [Editable<number>, Editable<number>]): PathBuilder  // Exact cubic Bezier (SVG C) from the pen.
+.quadraticTo(c: [Editable<number>, Editable<number>], end: [Editable<number>, Editable<number>]): PathBuilder  // Exact quadratic Bezier (SVG Q) from the pen.
 .hermiteG2(a: HermiteEndpoint2D, b: HermiteEndpoint2D): PathBuilder  // (Slice D) 2D quintic-Hermite G2 transition. See kernelcad-nurbs.
 .tangentCircle(entities: TangentEntity2D[], opts?: { radius?: Editable<number>; near?: [Editable<number>, Editable<number>] }): Sketch  // Circle TANGENT to other geometry. 2 entities + opts.radius = sketch-fillet; 3 entities, no radius = through-three. Terminal, like circle().
 .tangentLine(a: TangentEntity2D, b: TangentEntity2D, opts?: { near?: [Editable<number>, Editable<number>] }): PathBuilder  // Segment along the line tangent to two circles — the belt/pulley move. Both entities must be circles.
@@ -730,6 +748,16 @@ Entity and selection recovery:
 - If a constraint reports the wrong entity count, check the type arity: most types use 2 entities; `RADIUS` uses 1, `ANGLE` uses 1 or 2, and `SYMMETRIC` uses 3.
 - If `DISTANCE`, `RADIUS`, or `ANGLE` reports a missing value, add a numeric `value`.
 - If the type is unsupported, call `inspect({ of: 'constraints' })` or `lookup_api({})` and choose one of the supported types above.
+
+## Threads
+
+ISO metric threads.
+
+- Designations: `'M6'` = coarse pitch from the ISO 261 table (M1–M64); `'M6x0.75'` sets the pitch and works for any size (`'M70x4'` jar neck). `isoThread(spec)` returns the numbers (pitch, minor/pitch diameter, tap drill) for callouts and clearance holes.
+- External thread: `threadedRod({ spec, length })` — real 60° profile along +Z from z = 0, one helical sweep, valid solid, STEP-exportable. `chamfer: true` for 45° ends (one more boolean), `cosmetic: true` for an instant major-diameter cylinder with the spec in metadata, `clearance` (≤ pitch/10) for printed fits. Union a head for a bolt; union onto a body for a neck.
+- Internal thread: `body.threadedHole(face, { u, v, spec, depth })` — same frame and refs as `hole`. Default cosmetic (minor-diameter bore + recorded thread, fast); `modeled: true` cuts the real thread (seconds), with `clearance` (≤ pitch/8) of play.
+- Mating in phase: the rod's ridge crosses +X at every z = k·pitch and a modelled hole's groove crosses its face u-axis at the entry face, so put the hole's entry face on a whole pitch of the rod (e.g. lift the nut by k·P). Verify with `verify({ check: 'dfm' })` / interference — a cosmetic hole on a modelled rod reports interfering, as it should.
+- Example: `examples/threads/threaded-jar-and-lid.kcad.ts` (M64 × 4 neck + tapped lid).
 
 ## Labels — naming faces at creation time
 
@@ -806,6 +834,9 @@ kernelcad parts path/to/script.kcad.ts --json                  # list assembly p
 # visible geometry to the output aspect and the capture is center-cropped,
 # so the default 1024×1024 square tiles frame correctly.
 kernelcad render path/to/script.kcad.ts -o /tmp/out.png
+
+# All seven views (adds back, left, bottom) in one labelled inspection sheet.
+kernelcad render path/to/script.kcad.ts -o /tmp/sheet.png --sheet
 
 # Clip the model with a section plane to expose interiors in headless captures.
 # Keeps the negative-axis side by default; --section-flip keeps the positive side.

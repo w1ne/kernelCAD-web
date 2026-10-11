@@ -143,12 +143,12 @@ export async function updateModelParams(
 function validateParamEdits(session: CaptureSession, edits: ParamUpdateEdit[]): void {
   for (const edit of edits) {
     const entry = session.paramTable.get(edit.name);
-    // 'choice' and 'string' params are both JS strings — only 'number' and
+    // 'choice', 'string' and 'color' params are all JS strings — only 'number' and
     // 'boolean' map 1:1 to their JS typeof. Full validation (choice
     // membership, maxLength, numeric bounds) happens in `paramTable.set`
     // below; this is a fast pre-check so a bad edit throws before any
     // re-lower work starts.
-    const expectedJsType = entry.type === 'choice' || entry.type === 'string' ? 'string' : entry.type;
+    const expectedJsType = entry.type === 'number' || entry.type === 'boolean' ? entry.type : 'string';
     if (typeof edit.value !== expectedJsType) {
       throw new KernelError(
         'feature.invalid-args',
