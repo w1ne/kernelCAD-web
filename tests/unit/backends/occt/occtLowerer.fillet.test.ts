@@ -41,7 +41,7 @@ describe('OcctLowerer fillet', () => {
     expect(v).toBeGreaterThan(7900); // top-face fillet removes much less than all-edges
   });
 
-  it('emits face-ref-not-resolvable for fillet on a transformed primitive', async () => {
+  it('fillets the top of a lineage-less transformed primitive (box rule)', async () => {
     const base = OcctBackend.box(20, 20, 20).translate(5, 0, 0);
     const r: FeatureRecord = {
       id: 'fillet_3', kind: 'fillet',
@@ -54,8 +54,9 @@ describe('OcctLowerer fillet', () => {
     };
     const result = await new OcctLowerer().lower(r, { byKey: { base } });
     const errs = result.diagnostics.filter(d => d.severity === 'error');
-    expect(errs).toHaveLength(1);
-    expect(errs[0].code).toBe('feature.face-ref.not-applicable');
+    expect(errs).toHaveLength(0);
+    expect(result.shape.volume()).toBeLessThan(8000);
+    expect(result.shape.volume()).toBeGreaterThan(7900);
   });
 
   it('emits short-edges-skipped when radius exceeds half the edge length', async () => {
