@@ -52,6 +52,16 @@ describe('parseSseStream', () => {
     });
   });
 
+  it('carries the files the delivered code imports, dropping malformed entries', async () => {
+    const entry = { sha256: 'c'.repeat(64), byteLength: 684, mediaType: 'model/stl', format: 'stl' };
+    const [done] = await collect(block('done', {
+      artifact: { title: 'T', code: 'c', parameters: [], suggestions: [] }, generationId: 'g', anonId: 'a', durationMs: 1,
+      assets: { 'inputs/cccccccccccc.stl': entry, 'bad.stl': { sha256: 1 } },
+    }));
+    expect(done).toMatchObject({ kind: 'done', assets: { 'inputs/cccccccccccc.stl': entry } });
+    expect((done as { assets: Record<string, unknown> }).assets).not.toHaveProperty('bad.stl');
+  });
+
   it('a normal done event has no partial flag', async () => {
     const [done] = await collect(block('done', {
       artifact: { title: 'T', code: 'c', parameters: [], suggestions: [] }, generationId: 'g', anonId: 'a', durationMs: 1,

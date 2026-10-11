@@ -14,11 +14,37 @@ vi.mock('../lib/generateClient', () => ({
 }));
 
 import { useGeneration } from './useGeneration';
+import { clearGenerationAssets, generationIdsForSource } from '../lib/generationAssets';
 
 async function* yieldDone() {
   yield { kind: 'generation', generationId: 'g1', anonId: 'a1' };
   yield { kind: 'done', generationId: 'g1', anonId: 'a1', artifact: { title: 'T', code: 'return box(1,1,1);', parameters: [], suggestions: [] } };
 }
+
+describe('useGeneration generation assets', () => {
+  it("remembers which generation holds the files on a done event's assets", async () => {
+    clearGenerationAssets();
+    const code = "return await lib.fromSTL('./inputs/cccccccccccc.stl');";
+    startGeneration.mockReset();
+    parseSseStream.mockReset();
+    startGeneration.mockResolvedValue({ ok: true, body: {} } as Response);
+    parseSseStream.mockReturnValue((async function* () {
+      yield { kind: 'generation', generationId: 'g7', anonId: 'a1' };
+      yield {
+        kind: 'done', generationId: 'g7', anonId: 'a1',
+        artifact: { title: 'T', code, parameters: [], suggestions: [] },
+        assets: { 'inputs/cccccccccccc.stl': { sha256: 'c'.repeat(64), byteLength: 1, mediaType: 'model/stl', format: 'stl' } },
+      };
+    })());
+    const { result } = renderHook(() => useGeneration());
+    await act(async () => {
+      await result.current.submit('add a stand');
+    });
+    await waitFor(() => expect(result.current.phase.state).toBe('done'));
+    expect(generationIdsForSource(code)).toEqual(['g7']);
+    clearGenerationAssets();
+  });
+});
 
 describe('useGeneration edit mode', () => {
   beforeEach(() => {

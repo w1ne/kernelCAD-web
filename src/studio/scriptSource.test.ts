@@ -5,13 +5,18 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 // S1: scriptSource now routes through the apiBase helper, which calls
 // supabase.auth.getSession(). Stub the Supabase client so the test stays
 // behavior-equivalent to today (unsigned-in → relative URL path).
+const { getSessionMock } = vi.hoisted(() => ({
+  getSessionMock: vi.fn(async () => ({ data: { session: null as { access_token: string } | null } })),
+}));
 vi.mock('../funnel/lib/supabaseClient', () => ({
+  isAuthConfigured: () => true,
   getSupabase: () => ({
-    auth: { getSession: async () => ({ data: { session: null } }) },
+    auth: { getSession: getSessionMock },
   }),
 }));
 
 import { defaultCode } from '../shared/worker/geometryEngine';
+import { clearGenerationAssets, rememberGenerationAssets } from '../funnel/lib/generationAssets';
 import {
   clearStoredMeshCache,
   loadGalleryScriptSource,
@@ -201,6 +206,38 @@ describe('param overrides (stateless re-run path)', () => {
       method: 'POST',
       body: JSON.stringify({ source: 'return box(w,1,1);', params: { w: 7 } }),
     }));
+  });
+
+  it('names the generation holding an imported file, with the caller token', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.example.com');
+    rememberGenerationAssets('gen-1', ['inputs/0123456789ab.stl']);
+    getSessionMock.mockResolvedValueOnce({ data: { session: { access_token: 'tok' } } });
+    const payload = { features: [], featureRecords: [], bounds: { min: [0, 0, 0], max: [1, 1, 1] } };
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({ ok: true, json: async () => payload } as Response);
+    const source = "return await lib.fromSTL('./inputs/0123456789ab.stl');";
+
+    await meshSourceHosted(source, { w: 1 });
+
+    expect(fetchMock).toHaveBeenCalledWith('https://api.example.com/__kernelcad/mesh', expect.objectContaining({
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer tok' },
+      body: JSON.stringify({ source, params: { w: 1 }, generationIds: ['gen-1'] }),
+    }));
+    clearGenerationAssets();
+  });
+
+  it('sends no generation ids or token for code without generation files', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.example.com');
+    rememberGenerationAssets('gen-1', ['inputs/0123456789ab.stl']);
+    getSessionMock.mockClear();
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({ ok: true, json: async () => ({ features: [] }) } as Response);
+
+    await meshSourceHosted("return await lib.fromSTL('./inputs/ffffffffffff.stl');", { w: 1 });
+
+    const init = fetchMock.mock.calls[0]![1] as RequestInit;
+    expect(init.headers).toEqual({ 'Content-Type': 'application/json' });
+    expect(JSON.parse(init.body as string)).not.toHaveProperty('generationIds');
+    expect(getSessionMock).not.toHaveBeenCalled();
+    clearGenerationAssets();
   });
 
   it('meshes /p projects by slug so hosted complementary files are available', async () => {

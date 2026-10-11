@@ -83,6 +83,9 @@ export type ProjectPrivacy = 'public_unlisted' | 'public_featured' | 'private';
 
 export interface SaveProjectInput {
   generationId?: string;
+  /** Generations whose files (an attached STL) `code` imports; the server
+   *  copies them into the project for their owner. See ./generationAssets.ts. */
+  assetGenerationIds?: string[];
   anonId?: string;
   title: string;
   code: string;

@@ -29,6 +29,17 @@ export interface GenerationPartial {
   note: string;
 }
 
+/** A file the delivered code imports (an attached STL), as the server stored
+ *  it: content-addressed, owned by the generation until a project is saved. */
+export interface GenerationAssetEntry {
+  sha256: string;
+  byteLength: number;
+  mediaType: string;
+  format: string;
+}
+/** Project-relative path (`inputs/<sha12>.stl`) → stored file. */
+export type GenerationAssets = Record<string, GenerationAssetEntry>;
+
 export type GenerateEvent =
   | { kind: 'generation'; generationId: string; anonId: string }
   | { kind: 'status'; phase: 'running' | 'tool_calling' }
@@ -42,7 +53,16 @@ export type GenerateEvent =
    *  `attempt` (a new attempt always replaces the previous one); otherwise
    *  `delta` appends to the current buffer. */
   | { kind: 'code'; attempt: number; delta: string; reset?: boolean }
-  | { kind: 'done'; artifact: Artifact; generationId: string; anonId: string; durationMs: number; partial?: GenerationPartial }
+  | {
+    kind: 'done';
+    artifact: Artifact;
+    generationId: string;
+    anonId: string;
+    durationMs: number;
+    partial?: GenerationPartial;
+    /** Files `artifact.code` imports that the generation holds (see ./generationAssets.ts). */
+    assets?: GenerationAssets;
+  }
   | { kind: 'error'; code: 'llm_failed' | 'gate_failed' | 'eval_failed' | 'timeout'; message: string; generationId: string };
 
 /** Source-image limits for the Studio photo-reference request. A 4 MiB source
@@ -155,6 +175,20 @@ function parsePartial(v: unknown): GenerationPartial | undefined {
   };
 }
 
+function parseAssets(v: unknown): GenerationAssets | undefined {
+  if (!v || typeof v !== 'object' || Array.isArray(v)) return undefined;
+  const assets: GenerationAssets = {};
+  for (const [path, raw] of Object.entries(v as Record<string, unknown>)) {
+    if (!raw || typeof raw !== 'object') continue;
+    const e = raw as Record<string, unknown>;
+    if (typeof e.sha256 === 'string' && typeof e.byteLength === 'number'
+      && typeof e.mediaType === 'string' && typeof e.format === 'string') {
+      assets[path] = { sha256: e.sha256, byteLength: e.byteLength, mediaType: e.mediaType, format: e.format };
+    }
+  }
+  return Object.keys(assets).length > 0 ? assets : undefined;
+}
+
 type EventParser = (p: Record<string, unknown>) => GenerateEvent;
 
 /** One parser per SSE event name; a name without one is ignored. */
@@ -179,6 +213,7 @@ const EVENT_PARSERS: Record<string, EventParser> = {
   }),
   done: (p) => {
     const partial = parsePartial(p.partial);
+    const assets = parseAssets(p.assets);
     return {
       kind: 'done',
       artifact: p.artifact as Artifact,
@@ -186,6 +221,7 @@ const EVENT_PARSERS: Record<string, EventParser> = {
       anonId: asString(p.anonId),
       durationMs: Number(p.durationMs ?? 0),
       ...(partial ? { partial } : {}),
+      ...(assets ? { assets } : {}),
     };
   },
   error: (p) => ({

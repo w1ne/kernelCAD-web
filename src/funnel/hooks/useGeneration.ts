@@ -10,6 +10,7 @@ import {
   type GenerationPartial,
 } from '../lib/generateClient';
 import { reduceLiveCode, type LiveCode } from '../lib/liveCode';
+import { rememberGenerationAssets } from '../lib/generationAssets';
 
 /** Codes emitted by the client when generation fails outside the server's
  *  own error stream. Server-relayed `error` events carry their own codes
@@ -72,6 +73,8 @@ async function consumeGenerationStream(
         setPhase({ state: 'error', code: 'missing_generation_id', message: 'Generation completed but no ID was returned.' });
         return false;
       }
+      // Before the phase change: the preview's mesh request names this run.
+      if (e.assets) rememberGenerationAssets(finalId, Object.keys(e.assets));
       setPhase({
         state: 'done',
         generationId: finalId,
