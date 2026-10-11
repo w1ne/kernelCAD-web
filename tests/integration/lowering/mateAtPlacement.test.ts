@@ -27,6 +27,8 @@ import type { Scene } from '../../../src/modeling/validation/scene';
 import { solveMates } from '../../../src/modeling/mates/solver';
 import { resolvedPartAt, sceneMotion } from '../../../src/modeling/mates/partFrame';
 import { reposedLoweredAssemblyScene } from '../../../src/modeling/mates/loweredAssemblyScene';
+import { meshFeaturesPerFeature } from '../../../src/modeling/capture/featureMeshing';
+import { checkMechanismTruth } from '../../../src/modeling/runtime/mechanismTruth';
 import type { Transform } from '../../../src/shared/runtime/se3';
 
 type V3 = [number, number, number];
@@ -372,5 +374,87 @@ describe('every path agrees with the built scene for a part with `at`', () => {
     expect(valve.min[0]).toBeCloseTo(10, 6);
     expect(valve.max[0]).toBeCloseTo(22, 6);
     expect(scene.warnings.filter((w) => w.code === 'assembly.joint-axis.unbound')).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Two more places move points declared on a part's source shape against
+// scene transforms of shapes that carry `at`: tendon anchors (tendon
+// meshing) and the bbox corners of the fastened-drift check.
+
+/** Centre of each end ring of a line tendon's tube: the face holds 16
+ *  vertices around the `from` anchor, then 16 around the `to` anchor. */
+function tendonEnds(vertices: ArrayLike<number>): { from: V3; to: V3 } {
+  const ring = (first: number): V3 => {
+    const c: V3 = [0, 0, 0];
+    for (let i = first; i < first + 16; i++) {
+      for (let k = 0; k < 3; k++) c[k] += vertices[i * 3 + k] / 16;
+    }
+    return c;
+  };
+  return { from: ring(0), to: ring(16) };
+}
+
+describe('tendon anchors and fastened-drift boxes of mated parts with `at`', () => {
+  beforeAll(async () => { await initOcct(); });
+
+  it('a tendon between mated parts with at is anchored on their connectors', async () => {
+    // The mount (first part) keeps its `at` [100, 0, 0]: hook [-10, 0, 0]
+    // -> [90, 0, 0]. The valve is hinged 90 deg about +X at the seat
+    // [104, -3, 5]; Rx90 maps (x, y, z) to (x, -z, y), so its eye [6, 0, 0]
+    // -> [104, -3, 5] + Rx90([6, 0, 0] - [1, 2, -4]) = [104, -3, 5] + [5, -4, -2]
+    // = [109, -7, 3]. Anchors that missed the `at` would sit at [-10, 0, 0]
+    // and [109, 20, 3].
+    const code = `
+      const arm = assembly('rig');
+      const mount = arm.part('mount', box(20, 20, 10, true), { at: [100, 0, 0] });
+      mount.connector('seat', { type: 'axis', origin: { kind: 'vec3', value: [4, -3, 5] }, axis: [1, 0, 0] });
+      mount.connector('hook', { type: 'axis', origin: { kind: 'vec3', value: [-10, 0, 0] }, axis: [0, 0, 1] });
+      const valve = arm.part('valve', box(12, 6, 8, true), { at: [0, 0, 27] });
+      valve.connector('base', { type: 'axis', origin: { kind: 'vec3', value: [1, 2, -4] }, axis: [1, 0, 0] });
+      valve.connector('eye', { type: 'axis', origin: { kind: 'vec3', value: [6, 0, 0] }, axis: [0, 0, 1] });
+      arm.mate('m', 'mount.seat', 'valve.base', 'revolute', { pose: 90 });
+      arm.tendon('spring', { from: 'mount.hook', to: 'valve.eye', restLengthMm: 30, stiffnessNmm: 0.5 });
+      return arm.solvedModel({}, { validate: 'off' });
+    `;
+    const { records, paramTable, session } = await runScript({ code, fileName: 'mate-at-tendon.kcad.ts' });
+    const { features } = await meshFeaturesPerFeature(records, paramTable, session);
+    const tendon = features.find((f) => f.assemblyPartName === '__tendon__spring');
+    expect(tendon).toBeDefined();
+    const { from, to } = tendonEnds(tendon!.faces[0].vertices);
+    // Float32 vertex buffer: compare to 1e-3 mm.
+    for (let k = 0; k < 3; k++) {
+      expect(from[k]).toBeCloseTo([90, 0, 0][k], 3);
+      expect(to[k]).toBeCloseTo([109, -7, 3][k], 3);
+    }
+  });
+
+  it('the fastened-drift check measures a mated part with at in its own frame', async () => {
+    // lid: box(12, 6, 8) spans [0, 12] x [0, 6] x [0, 8] in its own frame and
+    // has `at` [0, 0, 27]. It is hinged to the mount about +X through its pin
+    // [0, 0, 0] and also fastened to the mount, which the hinge breaks: at
+    // 90 deg a lid point c moves from [10, 0, 0] + c to [10, 0, 0] + Rx90(c),
+    // a drift of |Rx90(c) - c| = sqrt(2 (cy^2 + cz^2)). The worst corner is
+    // [0, 6, 8], index 3 in x -> y -> z order: sqrt(200) = 14.14 mm. Corners
+    // that kept the `at` (z in [27, 35]) would give 50.22 mm.
+    const code = `
+      const arm = assembly('rig');
+      const mount = arm.part('mount', box(20, 20, 10, true));
+      mount.connector('pin', { type: 'axis', origin: { kind: 'vec3', value: [10, 0, 0] }, axis: [1, 0, 0] });
+      mount.connector('pad', { type: 'frame', origin: { kind: 'vec3', value: [10, 0, 0] } });
+      const lid = arm.part('lid', box(12, 6, 8), { at: [0, 0, 27] });
+      lid.connector('pin', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [1, 0, 0] });
+      lid.connector('pad', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+      arm.mate('hinge', 'mount.pin', 'lid.pin', 'revolute', { limitsDeg: [0, 90] });
+      arm.mate('weld', 'mount.pad', 'lid.pad', 'fastened');
+      return arm.solvedModel({}, { validate: 'off' });
+    `;
+    const { arm } = await build(code);
+    // A zero budget skips the BREP sweep; the drift check still reads its
+    // boxes from the lowered rest scene.
+    const result = await checkMechanismTruth(arm, { sweepBudget: 0 });
+    const drift = result.failures.filter((f) => f.code === 'mechanism.disconnect');
+    expect(drift).toHaveLength(1);
+    expect(drift[0].message).toContain("at pose sample 'hinge:90' part 'lid' bbox-corner #3 drifts 14.14 mm");
   });
 });
