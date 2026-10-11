@@ -59,6 +59,7 @@ export function fcfLineCandidates(
   kind: string,
   toSheet: (p: V3, view: DrawingViewName) => Pt2,
   wide = false,
+  extraOffset = 0,
 ): Array<{ render: () => Rendered; penalty: number }> {
   const a = toSheet(line.a, line.view);
   const b = toSheet(line.b, line.view);
@@ -75,7 +76,7 @@ export function fcfLineCandidates(
       (wide ? FAR_STEMS : STEMS).forEach(stem => {
         out.push({
           penalty: stem + fi * 3 + ai * 4,
-          render: () => fcfRendered(tip, normalAngle + da, cells, stem, kind),
+          render: () => fcfRendered(tip, normalAngle + da, cells, stem + extraOffset, kind),
         });
       });
     });
@@ -92,6 +93,7 @@ export function noteCandidates(
   view: DrawingViewName,
   outwardAngle: (p: Pt2, view: DrawingViewName) => number,
   wide = false,
+  extraOffset = 0,
 ): Array<{ render: () => Rendered; penalty: number }> {
   const out: Array<{ render: () => Rendered; penalty: number }> = [];
   // Spread the anchor choice: a handful of distinct targets, most outward first.
@@ -107,7 +109,7 @@ export function noteCandidates(
         out.push({
           penalty: stem + ai * 4 + ri,
           render: () => leaderCallout(
-            tip, angle, stem, label, [],
+            tip, angle, stem + extraOffset, label, [],
             `<g class="dim note" data-kc-auto="${kind}" fill="none" stroke="#000" stroke-width="0.18">`,
             true,
           ),

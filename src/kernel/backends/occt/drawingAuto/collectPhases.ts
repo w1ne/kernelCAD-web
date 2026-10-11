@@ -13,10 +13,11 @@ import type { Box, Seg } from '../drawingObstacles';
 import type { AutoDrawingInput } from './contracts';
 import { POSITION_ZONE } from './iso2768';
 import { CHAR_W, TEXT_H, textBox } from './placement';
-import { commit, dimensionSides, holeKey, holeLabel, toSheet } from './renderContext';
+import { beginAnnotation, commit, dimensionSides, holeKey, holeLabel, toSheet } from './renderContext';
 import type { HoleGroup, LinearItem, RenderCtx } from './renderContext';
 import { STANDARD_VIEWS, viewAlong } from './views';
 import { cross, dot, len, sub } from './vectors';
+import { annotationId, invalidReview } from '../draftingReview';
 
 export function buildObstacles(
   input: AutoDrawingInput,
@@ -109,7 +110,7 @@ function holePositionItemsForView(
   ctx: RenderCtx,
   view: DrawingViewName,
   holes: HoleComposite[],
-  bb: { min: readonly number[] },
+  bb: { min: readonly number[]; max: readonly number[] },
 ): LinearItem[] {
   const linear: LinearItem[] = [];
   const b = viewBasis(view);
@@ -120,22 +121,42 @@ function holePositionItemsForView(
     const sides = dimensionSides(ctx.input.projection)[view];
     const side = screen === 'x' ? sides.horizontal : sides.vertical;
     const box = ctx.views[view].placement.box;
-    for (const c of coords) {
+    const center = (bb.min[axisIdx] + bb.max[axisIdx]) / 2;
+    const symmetry = ctx.opts.dimensioningStyle === 'symmetry' && holes.every(h => holes.some(other =>
+      holeKey(h) === holeKey(other) && h.entry.every((c, i) => Math.abs(other.entry[i] - (i === axisIdx ? 2 * center - c : c)) < 0.01)));
+    const sorted = [...coords].sort((a, b) => Math.abs(a - ref) - Math.abs(b - ref));
+    const measured = symmetry ? sorted.filter(c => c > center + 0.01) : sorted;
+    if (symmetry) addCenterCue(ctx, view, screen, center, holes[0].entry, axisIdx);
+    let previous = ref;
+    for (const c of measured) {
+      const start = symmetry ? center : ctx.opts.dimensioningStyle === 'chain' ? previous : ref;
+      previous = c;
       const hole = holes.find(h => Math.abs(h.entry[axisIdx] - c) < 0.01)!;
-      const to = toSheet(ctx, hole.entry, view);
-      // Reference point: on the datum plane at the hole's in-view position,
-      // pushed to the view outline nearest the dimension line.
-      const refPoint: V3 = [...hole.entry] as V3;
-      refPoint[axisIdx] = ref;
-      const from = toSheet(ctx, refPoint, view);
+      const modelTo: V3 = [...hole.entry];
+      const modelFrom: V3 = [...hole.entry];
+      modelFrom[axisIdx] = start;
+      const to = toSheet(ctx, modelTo, view);
+      const from = toSheet(ctx, modelFrom, view);
       const fromPt: Pt2 = holeDimensionFromPoint(from, screen, side, box);
       linear.push({
-        kind: 'hole-position', view, side, from: fromPt, to,
-        label: formatDimValue(Math.abs(c - ref)), order: Math.abs(c - ref),
+        id: annotationId('hole-position', `${view}:${axisIdx}:${start}:${c}:${symmetry ? 'symmetry' : ctx.opts.dimensioningStyle}`),
+        kind: 'hole-position', view, side, from: fromPt, to, modelFrom, modelTo,
+        label: `${symmetry ? '2× ' : ''}${formatDimValue(Math.abs(c - start))}`, order: Math.abs(c - start),
       });
     }
   }
   return linear;
+}
+
+function addCenterCue(ctx: RenderCtx, view: DrawingViewName, screen: 'x' | 'y', center: number, point: V3, axis: number): void {
+  const model: V3 = [...point];
+  model[axis] = center;
+  const p = toSheet(ctx, model, view);
+  const box = ctx.views[view].placement.box;
+  const line = screen === 'x'
+    ? `x1="${p[0]}" y1="${box.y - 3}" x2="${p[0]}" y2="${box.y + box.h + 3}"`
+    : `x1="${box.x - 3}" y1="${p[1]}" x2="${box.x + box.w + 3}" y2="${p[1]}"`;
+  ctx.svg.push(`<line data-kc-centerline="${view}:${axis}" ${line} stroke="#000" stroke-width="0.13" stroke-dasharray="6 1 1 1"/>`);
 }
 
 function holeAxisIndex(b: { x: readonly number[]; y: readonly number[] }, screen: 'x' | 'y'): number {
@@ -182,13 +203,19 @@ export function collectLinearDimensions(ctx: RenderCtx): LinearItem[] {
     const fx = fh === 'left' ? f.x : f.x + f.w;
     const tx = td === 'left' ? t.x : t.x + t.w;
     linear.push(
-      { kind: 'overall', view: 'front', side: fw, from: [f.x, fy], to: [f.x + f.w, fy], label: formatDimValue(bb.max[0] - bb.min[0]), order: Infinity },
-      { kind: 'overall', view: 'front', side: fh, from: [fx, f.y], to: [fx, f.y + f.h], label: formatDimValue(bb.max[2] - bb.min[2]), order: Infinity },
-      { kind: 'overall', view: 'top', side: td, from: [tx, t.y], to: [tx, t.y + t.h], label: formatDimValue(bb.max[1] - bb.min[1]), order: Infinity },
+      { id: annotationId('overall', 'x'), modelFrom: [...bb.min] as V3, modelTo: [bb.max[0], bb.min[1], bb.min[2]], kind: 'overall', view: 'front', side: fw, from: [f.x, fy], to: [f.x + f.w, fy], label: formatDimValue(bb.max[0] - bb.min[0]), order: Infinity },
+      { id: annotationId('overall', 'z'), modelFrom: [...bb.min] as V3, modelTo: [bb.min[0], bb.min[1], bb.max[2]], kind: 'overall', view: 'front', side: fh, from: [fx, f.y], to: [fx, f.y + f.h], label: formatDimValue(bb.max[2] - bb.min[2]), order: Infinity },
+      { id: annotationId('overall', 'y'), modelFrom: [...bb.min] as V3, modelTo: [bb.min[0], bb.max[1], bb.min[2]], kind: 'overall', view: 'top', side: td, from: [tx, t.y], to: [tx, t.y + t.h], label: formatDimValue(bb.max[1] - bb.min[1]), order: Infinity },
     );
   }
   const buckets = new Map<string, LinearItem[]>();
+  const reviews = new Map<string, NonNullable<ReturnType<typeof beginAnnotation>>>();
   for (const item of linear) {
+    const review = beginAnnotation(ctx, item.id, item.kind, item.view, item.label);
+    if (!review) continue;
+    reviews.set(item.id, review);
+    if (review.view !== item.view) reprojectLinear(ctx, item, review.view);
+    item.label = review.text;
     const k = `${item.view}:${item.side}`;
     buckets.set(k, [...(buckets.get(k) ?? []), item]);
   }
@@ -199,7 +226,8 @@ export function collectLinearDimensions(ctx: RenderCtx): LinearItem[] {
       const reserve = item.side === 'bottom'
         ? ctx.input.bottomReserve[item.view]
         : item.side === 'right' ? ctx.input.rightReserve[item.view] : 0;
-      const dist = (reserve > 0 ? reserve + DIM_STEP : DIM_BASE) + i * DIM_STEP;
+      const review = reviews.get(item.id)!;
+      const dist = (reserve > 0 ? reserve + DIM_STEP : DIM_BASE) + i * DIM_STEP + review.offset;
       const horizontal = item.side === 'top' || item.side === 'bottom';
       const linePos = item.side === 'top' ? box.y - dist
         : item.side === 'bottom' ? box.y + box.h + dist
@@ -222,10 +250,28 @@ export function collectLinearDimensions(ctx: RenderCtx): LinearItem[] {
       const segments: Seg[] = horizontal
         ? [[item.from[0], linePos, item.to[0], linePos], [item.from[0], item.from[1], item.from[0], linePos], [item.to[0], item.to[1], item.to[0], linePos]]
         : [[linePos, item.from[1], linePos, item.to[1]], [item.from[0], item.from[1], linePos, item.from[1]], [item.to[0], item.to[1], linePos, item.to[1]]];
-      commit(ctx, item.kind, item.view, item.label, { svg: dimSvg, boxes, segments }, true);
+      commit(ctx, item.kind, item.view, item.label, { svg: dimSvg, boxes, segments }, true, review);
     });
   }
   return linear;
+}
+
+function reprojectLinear(ctx: RenderCtx, item: LinearItem, view: DrawingViewName): void {
+  const delta = sub(item.modelTo, item.modelFrom);
+  const length = len(delta);
+  const basis = viewBasis(view);
+  const dx = Math.abs(dot(delta, basis.x)), dy = Math.abs(dot(delta, basis.y));
+  if (Math.abs(Math.max(dx, dy) - length) > 0.01) invalidReview(`annotation ${item.id}: view ${view} does not show this measurement at true length`);
+  const screen = dx >= dy ? 'x' : 'y';
+  const sides = dimensionSides(ctx.input.projection)[view];
+  item.view = view;
+  item.side = screen === 'x' ? sides.horizontal : sides.vertical;
+  if (item.id.endsWith('%3Asymmetry')) {
+    const axis = delta.findIndex(c => Math.abs(c) > 0.01);
+    addCenterCue(ctx, view, screen, item.modelFrom[axis], item.modelFrom, axis);
+  }
+  item.from = holeDimensionFromPoint(toSheet(ctx, item.modelFrom, view), screen, item.side, ctx.views[view].placement.box);
+  item.to = toSheet(ctx, item.modelTo, view);
 }
 
 const CAPTIONS: Record<DrawingViewName, string> = { front: 'FRONT', top: 'TOP', left: 'LEFT', iso: 'ISOMETRIC' };

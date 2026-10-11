@@ -70,7 +70,7 @@ Pass via `options` (MCP) — all optional:
 
 ## Annotations — dimensioning what you actually care about
 
-The automatic dimensions can only ever state the overall bounding box. `annotations` is how you say *dimension THIS hole*. **Supplying any annotation replaces the bounding-box dimensions** — a sheet carrying both would double-dimension the outline.
+Without `autoAnnotate`, the default dimensions state the overall bounding box. `autoAnnotate: true` derives feature callouts and positions from the B-rep. `annotations` lets you select exact features and declare the dimensions you need. Supplying authored annotations replaces the default bounding-box dimensions; automatic annotations can be requested separately.
 
 Every entry shares four optional fields: `view` (`front` default, or `top` / `left` / `iso`), `text` (override the computed label), and `offset` (extra sheet-millimetres pushing the annotation further from the geometry). The rest is per `kind`:
 
@@ -143,7 +143,7 @@ An annotation whose query matches **zero** edges/faces, matches **more than one*
 }
 ```
 
-- `plane`: `'xy'` (cuts along Z), `'xz'` (cuts along Y), `'yz'` (cuts along X) — position defaults to the bounding-box midpoint on that axis — or `{ origin: [x,y,z], normal: [nx,ny,nz] }` for an explicit position. **Only axis-aligned normals are supported** (within ~2.5° of ±X/±Y/±Z); an oblique plane fails with `feature.invalid-args` rather than being approximated.
+- `plane`: `'xy'` (cuts along Z), `'xz'` (cuts along Y), `'yz'` (cuts along X) — position defaults to the bounding-box midpoint on that axis — or `{ origin: [x,y,z], normal: [nx,ny,nz] }` for an explicit position. Any non-zero normal is supported; oblique cuts get an auxiliary view looking straight at the cut.
 - The kept half is the far-from-viewer side (the ASME convention — remove the near material, look straight at the cut). The section view reuses the standard camera for that axis (`'top'` for an `'xy'` cut, `'front'` for `'xz'`, `'left'` for `'yz'`), so it renders through the same HLR pipeline (visible/hidden/tangent styling) as every other view.
 - The true cut cross-section — the face(s) that land exactly on the cutting plane — is filled with a 45° hatch pattern (`fill="url(#kc-section-hatch)"`). A hole the plane slices through renders correctly as a hole in the hatch (outer + inner wire, `fill-rule="evenodd"`), not a solid disk.
 - A cutting-plane indicator (dashed line, arrows, the section letter at both ends) is drawn on the "parent" view where the plane appears edge-on (`'front'` for an `'xy'`/`'yz'` cut, `'top'` for an `'xz'` cut).
@@ -169,15 +169,30 @@ and the export warns `drawing.style.architectural-suggested`. Pass
 - Units: millimetres, or feet-inches (to 1/4") when the model's overall size and wall height are whole feet / inches. Force with `plan.units: 'metric' | 'imperial'`. The scale is the largest architectural scale that fits (1:20 … 1:2000, or 1/2" … 1/32" = 1'-0"); `sheet: 'auto'` picks the smallest sheet that holds 1:100 (1/8" = 1'-0").
 - A scale bar, a north arrow (`plan.northDeg`, clockwise from sheet up) and a title block (title, scale, units, sheet, date, revision) complete the sheet. The mechanical-only keys (`annotations`, `sections`, `autoAnnotate`, `exploded`, `balloons`, `partsList`) do not apply.
 
+## Drafting profiles and annotation review
+
+Both drawing formats accept `draftingProfile: 'general' | 'machining' | 'sheet-metal'`, or a JSON profile with `id`, `name`, and optional `sheet`, `projection`, `dimensioningStyle`, `tolerance`, and `notes`. Omitted custom settings default to A4, third angle, and baseline. Explicit export settings take precedence. Named presets supply drafting preferences, not a certified process or approved engineering tolerance; the existing automatic tolerance defaults still apply unless you set them.
+
+`autoAnnotate.dimensioningStyle` selects `baseline`, `chain`, or `symmetry`. Baseline locations share a datum origin; chain locations measure consecutive positions; symmetry dimensions verified mirrored positions from a center cue and falls back to baseline for asymmetric layouts. Explicit `autoAnnotate.datums: [{ label, face }]` overrides heuristic automatic datum selection. Script declarations such as `shape.datum('A', { atZ: 0 })` and `shape.tolerance({ type: 'flatness', value: 0.1, face: { atZ: 0 } })` capture design intent rather than guessing it from geometry.
+
+The export result carries `drawing_report.annotations` with deterministic `id`, `source`, `kind`, `view`, `text`, and overlap status. SVG annotation groups expose `data-kc-annotation-id`. Apply edits with:
+
+```json
+{ "annotationOverrides": { "<id from drawing_report>": { "suppress": false, "text": "4 × Ø9 THRU", "view": "top", "offset": 8 } } }
+```
+
+`offset` is extra nonnegative sheet millimetres, not an X/Y translation. A primary-label edit preserves its attached feature-control frame and declared dimensional tolerance suffix. The report's optional `primaryText` separates the editable label from that suffix. Datum and standalone tolerance/frame text must be changed in the source declaration. A measurement view override must preserve the original dimension or included angle; foreshortened views fail. Suppressed rows remain in the report, excluded from visible and overlap totals. IDs do not depend on placement order; geometry changes can invalidate them and missing IDs produce `drawing.annotation.override-missing`. Authored annotations can set an explicit `id`.
+
+Studio opens drawing review from Export → Drawing PDF: preview the SVG, inspect the annotation list, keep/hide a row, edit permitted labels, change its view/offset, select or save a profile, and export the PDF using those same settings. Choices are browser-local and tied to the exact source; a source change omits stale annotation and datum overrides. See [the worked drafting examples](../../../../docs/guide/drafting-review.md) and `examples/drafting-review/` for runnable models, generated sheets and reproduction instructions.
+
 ## Current limits
 
 - Per-view scale overrides are not available — every view, including section cells, shares one drawing scale (a section cell may use a SMALLER local scale than the main views if it wouldn't otherwise fit the reserved band, but never a larger one).
-- GD&T (`datum`/`fcf`) and the `hole`/`fillet`/`chamfer` callouts are authored through `options.annotations`, the same surface as every other dimension — there is no `Shape.datum()` / `Shape.tolerance()` capture-graph method. Adding a capture-graph method for that is out of scope. Use `options.annotations`.
+- GD&T intent can be declared with `Shape.datum()` / `Shape.tolerance()` or authored through `options.annotations`. Automatic datum selection is a geometry heuristic; review it against the intended setup and assembly interfaces.
 - `chamfer`'s leg `size` is author-supplied — not recoverable from a bare edge query without feature history.
-- Section planes must be axis-aligned; an oblique `{ origin, normal }` fails loudly rather than being approximated (see "Section views" above).
 - Exploded isometric + balloons: pass `exploded` plus `balloons` / `partsList`. A script that is not an `assembly()` fails explode with `render.explode.no-assembly`; balloons without a BOM warn `drawing.balloons.bom-unavailable`. Balloon and table labels share the existing overlap check.
 - `drawing.annotation.overlap` is a REAL, non-fatal check: after rendering, every axis-aligned `<text>` label's approximate bounding box (rotated labels — the vertical `linear` dimension — are skipped, not estimated) is compared pairwise across DIFFERENT annotations. An overlapping pair does not fail the export (a crowded callout is still more useful than a silently dropped one); it emits one `warn` diagnostic naming every overlapping pair. Use `offset`, a different `view`, or reorder the array to separate them. The shared leader-rotation stacking (every leader-based kind — `radius`/`diameter`/`note`/`hole`/`fillet`/`chamfer`/`datum`/`fcf`) already fans successive callouts on the same view apart, which covers the common case; the overlap check is the backstop for when it isn't enough.
-- Dimensions are authored or bounding-box; they do NOT auto-update from `param()` values.
+- Re-export after changing parameters: dimensions and resolved feature anchors are derived from the new geometry. Reviewed IDs that no longer match need another review.
 - Hidden tangent edges are intentionally omitted (noise, no contour information).
 - Partially overlapping collinear duplicates are kept; only exactly coincident segments deduplicate.
 
@@ -190,4 +205,4 @@ check it. See `kernelcad-from-reference` § Engineering drawing PDF.
 
 ## Verify before shipping
 
-Render the SVG to PNG and look at it (e.g. `google-chrome --headless --screenshot=sheet.png file://…/drawing.svg`). Check: hidden bores dashed where expected, tangent fillet lines thin, views aligned, dimensions match the model's bbox, title block populated. A drawing with a wrong or unreadable view is not done even if the export succeeded.
+Rasterize the SVG to PNG and inspect it. For browser checks, first attach to an existing Chrome/Chromium session and reuse its profile. Check hidden bores, tangent fillet lines, view alignment, dimensions, sections and title block. Read `drawing_report` and diagnostics, and resolve overlaps before release. A successful export alone does not establish engineering or manufacturing acceptance.

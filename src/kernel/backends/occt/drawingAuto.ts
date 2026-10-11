@@ -130,10 +130,10 @@ function normaliseDatums(raw: AutoAnnotateOptions): DrawingDatumDecl[] {
 
 export function normaliseAutoAnnotate(raw: boolean | AutoAnnotateOptions | undefined): NormalisedOptions {
   if (raw === undefined || raw === false) {
-    return { enabled: false, tolerance: 'ISO2768-m', include: new Set(), datums: [] };
+    return { enabled: false, tolerance: 'ISO2768-m', include: new Set(), datums: [], dimensioningStyle: 'baseline' };
   }
   if (raw === true) {
-    return { enabled: true, tolerance: 'ISO2768-m', include: new Set(AUTO_ANNOTATE_KINDS), datums: [] };
+    return { enabled: true, tolerance: 'ISO2768-m', include: new Set(AUTO_ANNOTATE_KINDS), datums: [], dimensioningStyle: 'baseline' };
   }
   if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
     invalid('', `must be true or an options object; got ${JSON.stringify(raw)}`);
@@ -141,7 +141,9 @@ export function normaliseAutoAnnotate(raw: boolean | AutoAnnotateOptions | undef
   const tolerance = normaliseTolerance(raw);
   const include = normaliseInclude(raw);
   const datums = normaliseDatums(raw);
-  return { enabled: true, tolerance, include, datums };
+  const dimensioningStyle = raw.dimensioningStyle ?? 'baseline';
+  if (!['baseline', 'chain', 'symmetry'].includes(dimensioningStyle)) invalid('.dimensioningStyle', 'must be baseline | chain | symmetry');
+  return { enabled: true, tolerance, include, datums, dimensioningStyle };
 }
 
 // ---------------------------------------------------------------------------

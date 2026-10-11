@@ -29,6 +29,13 @@ describe('projectService', () => {
         expect(project.lastUpdated).toBeDefined();
     });
 
+    it('retains drafting review choices when a project reloads', () => {
+        const drafting = { sourceFingerprint: 'source-1', draftingProfile: 'machining' as const,
+            dimensioningStyle: 'baseline' as const, annotationOverrides: { 'auto:hole:1': { suppress: true, offset: 4 } } };
+        projectService.saveProject('drafting', { ...projectService.createProject(mockCode, mockViewState), drafting });
+        expect(projectService.getProject('drafting')?.drafting).toEqual(drafting);
+    });
+
     it('manages multiple projects via index', () => {
         const id1 = 'id1';
         const proj1 = projectService.createProject(mockCode, mockViewState, 'Project 1');

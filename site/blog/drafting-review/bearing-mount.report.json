@@ -1,0 +1,390 @@
+{
+  "svg": {
+    "placed": 16,
+    "overlapped": 0,
+    "suppressed": 0,
+    "byKind": {
+      "hole-position": 6,
+      "overall": 3,
+      "hole": 2,
+      "datum": 3,
+      "flatness": 1,
+      "fillet": 1,
+      "general-tolerance": 1
+    },
+    "datums": [
+      {
+        "label": "A",
+        "source": "declared",
+        "normal": [
+          0,
+          0,
+          -1
+        ],
+        "point": [
+          60,
+          40,
+          0
+        ]
+      },
+      {
+        "label": "B",
+        "source": "declared",
+        "normal": [
+          0,
+          -1,
+          0
+        ],
+        "point": [
+          60,
+          0,
+          6
+        ]
+      },
+      {
+        "label": "C",
+        "source": "declared",
+        "normal": [
+          -1,
+          0,
+          0
+        ],
+        "point": [
+          0,
+          40,
+          6
+        ]
+      }
+    ],
+    "annotations": [
+      {
+        "id": "auto:hole-position:top%3A0%3A0%3A14.000000000000007%3Abaseline",
+        "source": "auto",
+        "kind": "hole-position",
+        "view": "top",
+        "text": "14",
+        "overlapped": false
+      },
+      {
+        "id": "auto:hole-position:top%3A0%3A0%3A106%3Abaseline",
+        "source": "auto",
+        "kind": "hole-position",
+        "view": "top",
+        "text": "106",
+        "overlapped": false
+      },
+      {
+        "id": "auto:hole-position:top%3A1%3A0%3A14%3Abaseline",
+        "source": "auto",
+        "kind": "hole-position",
+        "view": "top",
+        "text": "14",
+        "overlapped": false
+      },
+      {
+        "id": "auto:hole-position:top%3A1%3A0%3A66%3Abaseline",
+        "source": "auto",
+        "kind": "hole-position",
+        "view": "top",
+        "text": "66",
+        "overlapped": false
+      },
+      {
+        "id": "auto:overall:y",
+        "source": "auto",
+        "kind": "overall",
+        "view": "top",
+        "text": "80",
+        "overlapped": false
+      },
+      {
+        "id": "auto:hole-position:front%3A0%3A0%3A60%3Abaseline",
+        "source": "auto",
+        "kind": "hole-position",
+        "view": "front",
+        "text": "60",
+        "overlapped": false
+      },
+      {
+        "id": "auto:overall:x",
+        "source": "auto",
+        "kind": "overall",
+        "view": "front",
+        "text": "120",
+        "overlapped": false
+      },
+      {
+        "id": "auto:hole-position:front%3A2%3A0%3A39%3Abaseline",
+        "source": "auto",
+        "kind": "hole-position",
+        "view": "front",
+        "text": "39",
+        "overlapped": false
+      },
+      {
+        "id": "auto:overall:z",
+        "source": "auto",
+        "kind": "overall",
+        "view": "front",
+        "text": "66",
+        "overlapped": false
+      },
+      {
+        "id": "auto:hole:0%2C0%2C1000%7C9%7CT%7C15%7C5.01%7C-%7C-%3A106%2C14%2C12%3B106%2C66%2C12%3B14.000000000000007%2C14%2C12%3B14.000000000000007%2C66%2C12",
+        "source": "auto",
+        "kind": "hole",
+        "view": "top",
+        "text": "4× ⌀9 THRU ⌴⌀15 ▾ 5 | ⌖ ⌀0.1 A B C",
+        "overlapped": false,
+        "originalText": "4× ⌀9 THRU ⌴⌀15 ▾ 5.01 | ⌖ ⌀0.1 A B C"
+      },
+      {
+        "id": "auto:hole:0%2C1000%2C0%7C32%7CT%7C44%7C8.01%7C-%7C-%3A60%2C22%2C39",
+        "source": "auto",
+        "kind": "hole",
+        "view": "front",
+        "text": "⌀32 THRU ⌴⌀44 ▾ 8 | ⌖ ⌀0.1 A B C",
+        "overlapped": false,
+        "originalText": "⌀32 THRU ⌴⌀44 ▾ 8.01 | ⌖ ⌀0.1 A B C"
+      },
+      {
+        "id": "auto:datum:A",
+        "source": "auto",
+        "kind": "datum",
+        "view": "front",
+        "text": "datum A",
+        "overlapped": false
+      },
+      {
+        "id": "auto:datum:B",
+        "source": "auto",
+        "kind": "datum",
+        "view": "top",
+        "text": "datum B",
+        "overlapped": false
+      },
+      {
+        "id": "auto:datum:C",
+        "source": "auto",
+        "kind": "datum",
+        "view": "top",
+        "text": "datum C",
+        "overlapped": false
+      },
+      {
+        "id": "auto:flatness:A",
+        "source": "auto",
+        "kind": "flatness",
+        "view": "front",
+        "text": "⏥ 0.1",
+        "overlapped": false
+      },
+      {
+        "id": "auto:fillet:top%7C6%3A1.7573593128807143%2C1.7573593128807135%2C6%3B1.7573593128807143%2C78.24264068711929%2C6%3B118.24264068711929%2C1.7573593128807143%2C6%3B118.24264068711929%2C78.24264068711929%2C6",
+        "source": "auto",
+        "kind": "fillet",
+        "view": "top",
+        "text": "4× R6",
+        "overlapped": false
+      }
+    ],
+    "generalTolerance": "ISO 2768-mK",
+    "draftingProfile": "tutorial-machining"
+  },
+  "pdf": {
+    "placed": 16,
+    "overlapped": 0,
+    "suppressed": 0,
+    "byKind": {
+      "hole-position": 6,
+      "overall": 3,
+      "hole": 2,
+      "datum": 3,
+      "flatness": 1,
+      "fillet": 1,
+      "general-tolerance": 1
+    },
+    "datums": [
+      {
+        "label": "A",
+        "source": "declared",
+        "normal": [
+          0,
+          0,
+          -1
+        ],
+        "point": [
+          60,
+          40,
+          0
+        ]
+      },
+      {
+        "label": "B",
+        "source": "declared",
+        "normal": [
+          0,
+          -1,
+          0
+        ],
+        "point": [
+          60,
+          0,
+          6
+        ]
+      },
+      {
+        "label": "C",
+        "source": "declared",
+        "normal": [
+          -1,
+          0,
+          0
+        ],
+        "point": [
+          0,
+          40,
+          6
+        ]
+      }
+    ],
+    "annotations": [
+      {
+        "id": "auto:hole-position:top%3A0%3A0%3A14.000000000000007%3Abaseline",
+        "source": "auto",
+        "kind": "hole-position",
+        "view": "top",
+        "text": "14",
+        "overlapped": false
+      },
+      {
+        "id": "auto:hole-position:top%3A0%3A0%3A106%3Abaseline",
+        "source": "auto",
+        "kind": "hole-position",
+        "view": "top",
+        "text": "106",
+        "overlapped": false
+      },
+      {
+        "id": "auto:hole-position:top%3A1%3A0%3A14%3Abaseline",
+        "source": "auto",
+        "kind": "hole-position",
+        "view": "top",
+        "text": "14",
+        "overlapped": false
+      },
+      {
+        "id": "auto:hole-position:top%3A1%3A0%3A66%3Abaseline",
+        "source": "auto",
+        "kind": "hole-position",
+        "view": "top",
+        "text": "66",
+        "overlapped": false
+      },
+      {
+        "id": "auto:overall:y",
+        "source": "auto",
+        "kind": "overall",
+        "view": "top",
+        "text": "80",
+        "overlapped": false
+      },
+      {
+        "id": "auto:hole-position:front%3A0%3A0%3A60%3Abaseline",
+        "source": "auto",
+        "kind": "hole-position",
+        "view": "front",
+        "text": "60",
+        "overlapped": false
+      },
+      {
+        "id": "auto:overall:x",
+        "source": "auto",
+        "kind": "overall",
+        "view": "front",
+        "text": "120",
+        "overlapped": false
+      },
+      {
+        "id": "auto:hole-position:front%3A2%3A0%3A39%3Abaseline",
+        "source": "auto",
+        "kind": "hole-position",
+        "view": "front",
+        "text": "39",
+        "overlapped": false
+      },
+      {
+        "id": "auto:overall:z",
+        "source": "auto",
+        "kind": "overall",
+        "view": "front",
+        "text": "66",
+        "overlapped": false
+      },
+      {
+        "id": "auto:hole:0%2C0%2C1000%7C9%7CT%7C15%7C5.01%7C-%7C-%3A106%2C14%2C12%3B106%2C66%2C12%3B14.000000000000007%2C14%2C12%3B14.000000000000007%2C66%2C12",
+        "source": "auto",
+        "kind": "hole",
+        "view": "top",
+        "text": "4× ⌀9 THRU ⌴⌀15 ▾ 5 | ⌖ ⌀0.1 A B C",
+        "overlapped": false,
+        "originalText": "4× ⌀9 THRU ⌴⌀15 ▾ 5.01 | ⌖ ⌀0.1 A B C"
+      },
+      {
+        "id": "auto:hole:0%2C1000%2C0%7C32%7CT%7C44%7C8.01%7C-%7C-%3A60%2C22%2C39",
+        "source": "auto",
+        "kind": "hole",
+        "view": "front",
+        "text": "⌀32 THRU ⌴⌀44 ▾ 8 | ⌖ ⌀0.1 A B C",
+        "overlapped": false,
+        "originalText": "⌀32 THRU ⌴⌀44 ▾ 8.01 | ⌖ ⌀0.1 A B C"
+      },
+      {
+        "id": "auto:datum:A",
+        "source": "auto",
+        "kind": "datum",
+        "view": "front",
+        "text": "datum A",
+        "overlapped": false
+      },
+      {
+        "id": "auto:datum:B",
+        "source": "auto",
+        "kind": "datum",
+        "view": "top",
+        "text": "datum B",
+        "overlapped": false
+      },
+      {
+        "id": "auto:datum:C",
+        "source": "auto",
+        "kind": "datum",
+        "view": "top",
+        "text": "datum C",
+        "overlapped": false
+      },
+      {
+        "id": "auto:flatness:A",
+        "source": "auto",
+        "kind": "flatness",
+        "view": "front",
+        "text": "⏥ 0.1",
+        "overlapped": false
+      },
+      {
+        "id": "auto:fillet:top%7C6%3A1.7573593128807143%2C1.7573593128807135%2C6%3B1.7573593128807143%2C78.24264068711929%2C6%3B118.24264068711929%2C1.7573593128807143%2C6%3B118.24264068711929%2C78.24264068711929%2C6",
+        "source": "auto",
+        "kind": "fillet",
+        "view": "top",
+        "text": "4× R6",
+        "overlapped": false
+      }
+    ],
+    "generalTolerance": "ISO 2768-mK",
+    "draftingProfile": "tutorial-machining"
+  },
+  "diagnostics": {
+    "svg": [],
+    "pdf": []
+  }
+}

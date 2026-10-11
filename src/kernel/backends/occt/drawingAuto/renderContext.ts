@@ -16,9 +16,12 @@ import type { Datum } from './datums';
 import type { AutoAnnotateKind, NormalisedOptions } from './options';
 import type { Rendered } from './placement';
 import { STANDARD_VIEWS } from './views';
+import { escAttr } from '../drawingAnnotations';
+import type { DrawingAnnotationOverride } from '../../../../shared/intent/drafting';
 import type { EdgeLine } from './views';
 
 export interface LinearItem {
+  id: string;
   kind: 'hole-position' | 'overall';
   view: DrawingViewName;
   side: 'top' | 'bottom' | 'left' | 'right';
@@ -26,9 +29,14 @@ export interface LinearItem {
   to: Pt2;
   label: string;
   order: number;
+  modelFrom: V3;
+  modelTo: V3;
 }
 
 export interface PlacedItem {
+  id: string;
+  originalText?: string;
+  offset?: number;
   kind: string;
   view: DrawingViewName;
   text: string;
@@ -143,12 +151,47 @@ export function commit(
   text: string,
   r: Rendered,
   linear = false,
+  review: AnnotationReview,
 ): void {
   const owner = ctx.ownerSeq++;
   for (const s of r.segments) ctx.obstacles.addSegment(s, owner);
   for (const b of r.boxes) ctx.obstacles.addBox(b, owner);
-  ctx.placed.push({ kind, view, text, svg: r.svg, boxes: r.boxes, leaders: linear ? [] : r.segments, owner });
+  const svg = r.svg.replace(/^(<g\b[^>]*)(>)/, `$1 data-kc-annotation-id="${escAttr(review.id)}"$2`);
+  ctx.placed.push({ id: review.id, ...(review.originalText !== undefined ? { originalText: review.originalText } : {}),
+    ...(review.offset ? { offset: review.offset } : {}), kind, view, text, svg, boxes: r.boxes, leaders: linear ? [] : r.segments, owner });
   ctx.byKind[kind] = (ctx.byKind[kind] ?? 0) + 1;
+}
+
+export interface AnnotationReview {
+  id: string;
+  view: DrawingViewName;
+  text: string;
+  offset: number;
+  originalText?: string;
+}
+
+/** Keep a hole's attached feature-control frame when its primary label is edited. */
+function reviewedLabel(kind: string, text: string, edited: string | undefined): string {
+  if (edited === undefined) return text;
+  return kind === 'hole' && text.includes(' | ')
+    ? edited + text.slice(text.indexOf(' | ')) : edited;
+}
+
+function recordSuppressedAnnotation(ctx: RenderCtx, kind: string, review: AnnotationReview): void {
+  ctx.annotations.push({ id: review.id, source: 'auto', kind, view: review.view, text: review.text, overlapped: false, suppressed: true,
+    ...(review.originalText !== undefined ? { originalText: review.originalText } : {}), ...(review.offset ? { offset: review.offset } : {}) });
+}
+
+/** Review before placement: suppressed annotations never become obstacles. */
+export function beginAnnotation(ctx: RenderCtx, id: string, kind: string, view: DrawingViewName, text: string): AnnotationReview | null {
+  const o: DrawingAnnotationOverride | undefined = ctx.input.annotationOverrides?.[id];
+  const review: AnnotationReview = { id, view: o?.view ?? view, text: reviewedLabel(kind, text, o?.text), offset: o?.offset ?? 0,
+    ...(o?.text !== undefined ? { originalText: text } : {}) };
+  if (o?.suppress) {
+    recordSuppressedAnnotation(ctx, kind, review);
+    return null;
+  }
+  return review;
 }
 
 // A label enclosed by a view's outline (geometry on all four sides) reads

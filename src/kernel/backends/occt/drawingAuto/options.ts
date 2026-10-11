@@ -3,6 +3,7 @@
 // src/kernel/backends/occt/drawingAuto/options.ts
 
 import type { DrawingDatumDecl } from '../../../../shared/intent/drawingGdtRecord';
+import type { DimensioningStyle } from '../../../../shared/intent/drafting';
 
 export type Iso2768Class = 'ISO2768-f' | 'ISO2768-m' | 'ISO2768-c';
 
@@ -27,10 +28,13 @@ export interface AutoAnnotateOptions {
   datums?: 'auto' | readonly DrawingDatumDecl[];
   /** Which annotation families to emit; default all. */
   include?: readonly AutoAnnotateKind[];
+  /** Baseline (default), successive chain, or verified center symmetry. */
+  dimensioningStyle?: DimensioningStyle;
 }
 export interface NormalisedOptions {
   enabled: boolean;
   tolerance: Iso2768Class;
   include: Set<AutoAnnotateKind>;
   datums: DrawingDatumDecl[];
+  dimensioningStyle: DimensioningStyle;
 }

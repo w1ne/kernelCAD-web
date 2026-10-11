@@ -4,6 +4,13 @@
 import type { DiagnosticCodeSpec } from './types';
 
 export const DRAWING_CODES = {
+  'drawing.annotation.override-missing': {
+    hintTemplate: 'An annotation override ID no longer exists in this drawing. Review the current drawing report and remove or replace the stale ID.',
+    nextAction: { kind: 'fix-arg', field: 'options.annotationOverrides' },
+    defaultSeverity: 'warn',
+    group: 'drawing',
+    description: 'An annotation override refers to a missing or changed drawing feature.',
+  },
   // Drawings — GD&T + section-view annotation kinds (4). 'hole' / 'fillet' /
   // 'chamfer' reuse 'feature.selection.no-match' (same failure shape as the
   // existing radius/diameter/angular kinds); these four are for the parts of

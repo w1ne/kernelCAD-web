@@ -58,8 +58,8 @@ export interface ExportModelOutput {
   part_files?: string[];
   /** bend-table: the CSV files written (one per tube) inside the `output_path` directory. */
   table_files?: string[];
-  /** svg-drawing / pdf-drawing placement report: `placed` / `overlapped` counts, `byKind`,
-   *  the datum reference frame, and every annotation drawn. */
+  /** svg-drawing / pdf-drawing placement report: visible `placed` / `overlapped`
+   *  and suppressed counts, datum frame, profile, stable review IDs and labels. */
   drawing_report?: DrawingReport;
   /** 3mf with options.infill: band table, saving estimate, FEA peaks, PNGs. */
   infill?: StressInfillReport & { images: StressInfillImages };

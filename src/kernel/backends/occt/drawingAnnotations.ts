@@ -31,6 +31,7 @@
 
 import type { Edge } from 'replicad';
 import { KernelError } from '../../../shared/intent/kernelError';
+import { invalidArgs } from '../../../shared/intent/invalidArgs';
 import type { Vec3 } from '../../../shared/intent/types';
 import type { EdgeQuery, FaceQuery } from '../../../shared/intent/queryTypes';
 import type { WorldFramePart } from './sceneToWorldFrame';
@@ -94,7 +95,7 @@ export type { GdtType, GdtModifier } from '../../../shared/intent/drawingGdtReco
 import type { GdtType, GdtModifier } from '../../../shared/intent/drawingGdtRecord';
 
 export type DrawingAnnotation =
-  | {
+  { /** Stable authored identifier; geometry signature is used when absent. */ id?: string } & ( {
       kind: 'linear';
       from: DrawingAnchor;
       to: DrawingAnchor;
@@ -192,7 +193,7 @@ export type DrawingAnnotation =
       modifier?: GdtModifier;
       view?: DrawingViewName;
       offset?: number;
-    };
+    });
 
 // ---------------------------------------------------------------------------
 // Placement constants (all SHEET millimetres — never multiplied by the scale)
@@ -411,6 +412,10 @@ const round3 = (n: number): string => {
 export interface AnnotationRenderInput {
   parts: readonly WorldFramePart[];
   annotations: readonly DrawingAnnotation[];
+  /** IDs whose view was changed by a review override; reject collapsed spans. */
+  reviewedViewIds?: ReadonlyMap<number, { id: string; originalView: DrawingViewName }>;
+  /** Text review edits keep engineering tolerance suffixes intact. */
+  reviewedTextIds?: ReadonlySet<number>;
   placements: Record<DrawingViewName, ViewPlacement>;
   scale: number;
 }
@@ -506,6 +511,9 @@ export function detectLabelOverlaps(svgByIndex: readonly string[]): Array<readon
 }
 
 interface AnnotationRenderContext {
+  reviewedViewId?: string;
+  reviewedOriginalView?: DrawingViewName;
+  reviewedText?: boolean;
   parts: readonly WorldFramePart[];
   view: DrawingViewName;
   placement: ViewPlacement;
@@ -544,6 +552,23 @@ function linearAnnotationSvg(
   const measured = horizontal
     ? Math.abs(m1[0] - m0[0])
     : Math.abs(m1[1] - m0[1]);
+  if (ctx.reviewedViewId !== undefined && measured < 1e-8) {
+    invalidArgs({ api: `Drawing annotation ${ctx.reviewedViewId}`, path: 'view', got: view,
+      requires: `a view that preserves the linear measurement; view ${view} collapses this linear measurement`,
+      example: `{ annotationOverrides: { ${JSON.stringify(ctx.reviewedViewId)}: { view: ${JSON.stringify(ctx.reviewedOriginalView)} } } }`,
+      hint: 'Choose a view where the two anchors project to distinct points, or remove this view override.' });
+  }
+  if (ctx.reviewedOriginalView !== undefined) {
+    const original0 = projectPointForDrawing(model0, ctx.reviewedOriginalView);
+    const original1 = projectPointForDrawing(model1, ctx.reviewedOriginalView);
+    const intended = Math.max(Math.abs(original1[0] - original0[0]), Math.abs(original1[1] - original0[1]));
+    if (Math.abs(intended - measured) > Math.max(1e-6, intended * 1e-9)) {
+      invalidArgs({ api: `Drawing annotation ${ctx.reviewedViewId}`, path: 'view', got: view,
+        requires: `a view that preserves the original dominant-axis measurement; view ${view} changes the intended linear measurement from ${formatDimValue(intended)} to ${formatDimValue(measured)}`,
+        example: `{ annotationOverrides: { ${JSON.stringify(ctx.reviewedViewId)}: { view: ${JSON.stringify(ctx.reviewedOriginalView)} } } }`,
+        hint: 'Choose a view that preserves the original dominant-axis measurement, or remove this view override.' });
+    }
+  }
   const side = horizontal ? 'bottom' : 'right';
   const dist = DIM_BASE + nextIndex(view, side) * DIM_STEP + extra;
   const box = placement.box;
@@ -567,7 +592,7 @@ function linearAnnotationSvg(
   } else {
     rightReserve[view] = Math.max(rightReserve[view], dist);
   }
-  if (a.tol !== undefined && !a.text) {
+  if (a.tol !== undefined && (!a.text || ctx.reviewedText)) {
     dim.label = `${dim.label}${tolText(a.tol)}`;
   }
   return dimensionToSvg(dim);
@@ -603,6 +628,31 @@ function angularAnnotationSvg(
   const { parts, view, placement, scale, role, extra, nextIndex } = ctx;
   const eA = oneEdge(parts, a.from, `${role}.from`);
   const eB = oneEdge(parts, a.to, `${role}.to`);
+  const geometry = projectedAngularGeometry(eA, eB, view, role);
+  if (ctx.reviewedOriginalView !== undefined) {
+    const original = projectedAngularGeometry(eA, eB, ctx.reviewedOriginalView, role);
+    if (Math.abs(Math.abs(original.sweep) - Math.abs(geometry.sweep)) > 1e-8) {
+      invalidArgs({ api: `Drawing annotation ${ctx.reviewedViewId}`, path: 'view', got: view,
+        requires: `a view that preserves the original included angle; view ${view} changes the intended included angle from ${formatDimValue(Math.abs(original.sweep) * 180 / Math.PI)}° to ${formatDimValue(Math.abs(geometry.sweep) * 180 / Math.PI)}°`,
+        example: `{ annotationOverrides: { ${JSON.stringify(ctx.reviewedViewId)}: { view: ${JSON.stringify(ctx.reviewedOriginalView)} } } }`,
+        hint: 'Choose a view that preserves the original included angle, or remove this view override.' });
+    }
+  }
+  const apexSheet: Pt2 = [
+    placement.tx + geometry.apex[0] * scale,
+    placement.ty - geometry.apex[1] * scale,
+  ];
+  const idx = nextIndex(view, 'arc');
+  return angularDimensionToSvg({
+    apex: apexSheet,
+    startAngle: geometry.startAngle,
+    endAngle: geometry.endAngle,
+    radius: ANGULAR_RADIUS + idx * DIM_STEP + extra,
+    label: dimLabel(a, `${formatDimValue(Math.abs(geometry.sweep) * 180 / Math.PI)}°`),
+  });
+}
+
+function projectedAngularGeometry(eA: Edge, eB: Edge, view: DrawingViewName, role: string) {
   const ray = (e: Edge) => {
     const s = e.startPoint;
     const t = e.endPoint;
@@ -620,10 +670,6 @@ function angularAnnotationSvg(
   // survives the scale change exactly like every other anchor.
   const t = ((B.p[0] - A.p[0]) * B.d[1] - (B.p[1] - A.p[1]) * B.d[0]) / det;
   const apex2: Pt2 = [A.p[0] + A.d[0] * t, A.p[1] + A.d[1] * t];
-  const apexSheet: Pt2 = [
-    placement.tx + apex2[0] * scale,
-    placement.ty - apex2[1] * scale,
-  ];
   // Point each direction AWAY from the apex, toward its edge's far end,
   // so the arc lands inside the physical corner rather than opposite it.
   const away = (r: { p: readonly [number, number]; d: readonly [number, number] }) => {
@@ -642,14 +688,7 @@ function angularAnnotationSvg(
   while (sweep <= -Math.PI) sweep += 2 * Math.PI;
   while (sweep > Math.PI) sweep -= 2 * Math.PI;
   a1 = a0 + sweep;
-  const idx = nextIndex(view, 'arc');
-  return angularDimensionToSvg({
-    apex: apexSheet,
-    startAngle: a0,
-    endAngle: a1,
-    radius: ANGULAR_RADIUS + idx * DIM_STEP + extra,
-    label: dimLabel(a, `${formatDimValue(Math.abs(sweep) * 180 / Math.PI)}°`),
-  });
+  return { apex: apex2, startAngle: a0, endAngle: a1, sweep };
 }
 
 /** One leader note anchored at an explicit point / query. */
@@ -845,6 +884,8 @@ export function renderAnnotations(input: AnnotationRenderInput): AnnotationRende
     const extra = a.offset ?? 0;
 
     const ctx: AnnotationRenderContext = {
+      ...(input.reviewedViewIds?.has(i) ? { reviewedViewId: input.reviewedViewIds.get(i)!.id, reviewedOriginalView: input.reviewedViewIds.get(i)!.originalView } : {}),
+      ...(input.reviewedTextIds?.has(i) ? { reviewedText: true } : {}),
       parts,
       view,
       placement,

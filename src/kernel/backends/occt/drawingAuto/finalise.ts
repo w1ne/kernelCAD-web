@@ -39,7 +39,8 @@ export function finalise(ctx: RenderCtx): AutoDrawingResult {
       overlapped++;
       crowded.push(`${item.kind} '${item.text}' (${item.view})`);
     }
-    annotations.push({ kind: item.kind, view: item.view, text: item.text, overlapped: hit });
+    annotations.push({ id: item.id, source: 'auto', kind: item.kind, view: item.view, text: item.text, overlapped: hit,
+      ...(item.originalText !== undefined ? { originalText: item.originalText } : {}), ...(item.offset ? { offset: item.offset } : {}) });
     svg.push(item.svg);
   }
   if (crowded.length > 0) {
@@ -68,6 +69,7 @@ export function finalise(ctx: RenderCtx): AutoDrawingResult {
     report: {
       placed: placed.length - overlapped,
       overlapped,
+      suppressed: annotations.filter(a => a.suppressed).length,
       byKind,
       datums: ['A', 'B', 'C', ...[...datums.keys()].filter(l => !['A', 'B', 'C'].includes(l)).sort()]
         .filter(l => datums.has(l))

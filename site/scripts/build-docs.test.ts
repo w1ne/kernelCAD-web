@@ -23,6 +23,15 @@ const byFile = new Map(rendered.map((p) => [p.file, p.html]));
 
 describe('build-docs', () => {
 
+  it('makes worked drawing sheets and their editable source discoverable from export docs', () => {
+    const page = pages.find((p) => p.task === 'Import & export')!;
+    const html = byFile.get(`docs/${page.slug}.html`)!;
+    expect(html).toContain('/blog/drafting-review/');
+    expect(html).toContain('/blog/drafting-review/mounting-plate-baseline.png');
+    expect(html).toContain('/blog/drafting-review/mounting-plate-baseline.pdf');
+    expect(html).toContain('/blog/drafting-review/mounting-plate.kcad.ts');
+  });
+
   it('emits an index plus one page per taxonomy group', () => {
     expect(byFile.has('docs/index.html')).toBe(true);
     for (const group of CHEAT_SHEET_TAXONOMY) {
