@@ -52,10 +52,57 @@ describe('parseSseStream', () => {
     });
   });
 
+  it('carries the files the delivered code imports, dropping malformed entries', async () => {
+    const entry = { sha256: 'c'.repeat(64), byteLength: 684, mediaType: 'model/stl', format: 'stl' };
+    const [done] = await collect(block('done', {
+      artifact: { title: 'T', code: 'c', parameters: [], suggestions: [] }, generationId: 'g', anonId: 'a', durationMs: 1,
+      assets: { 'inputs/cccccccccccc.stl': entry, 'bad.stl': { sha256: 1 } },
+    }));
+    expect(done).toMatchObject({ kind: 'done', assets: { 'inputs/cccccccccccc.stl': entry } });
+    expect((done as { assets: Record<string, unknown> }).assets).not.toHaveProperty('bad.stl');
+  });
+
   it('a normal done event has no partial flag', async () => {
     const [done] = await collect(block('done', {
       artifact: { title: 'T', code: 'c', parameters: [], suggestions: [] }, generationId: 'g', anonId: 'a', durationMs: 1,
     }));
     expect(done).not.toHaveProperty('partial');
+  });
+
+  it('parses code events, keeping reset only when the server sets it', async () => {
+    const events = await collect(
+      block('code', { attempt: 1, delta: '', reset: true })
+        + block('code', { attempt: 1, delta: 'const a = 1;\n' })
+        + block('code', { attempt: 2, delta: 'x', reset: false }),
+    );
+    expect(events).toEqual([
+      { kind: 'code', attempt: 1, delta: '', reset: true },
+      { kind: 'code', attempt: 1, delta: 'const a = 1;\n' },
+      { kind: 'code', attempt: 2, delta: 'x' },
+    ]);
+  });
+
+  it('reassembles code events split across chunk boundaries, mid-character too', async () => {
+    const text = block('code', { attempt: 1, delta: 'return box(20, 20, 20); // 20 mm ⌀\n', reset: true })
+      + block('mystery', { anything: true })
+      + block('code', { attempt: 1, delta: 'é' });
+    const bytes = new TextEncoder().encode(text);
+    // Cut the bytes into 7-byte chunks: boundaries land inside the event
+    // name, the JSON, the blank-line separator and the multi-byte characters.
+    const chunks: Uint8Array[] = [];
+    for (let i = 0; i < bytes.length; i += 7) chunks.push(bytes.slice(i, i + 7));
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        for (const c of chunks) controller.enqueue(c);
+        controller.close();
+      },
+    });
+    const out: GenerateEvent[] = [];
+    for await (const e of parseSseStream(stream)) out.push(e);
+    // The unknown `mystery` event is dropped.
+    expect(out).toEqual([
+      { kind: 'code', attempt: 1, delta: 'return box(20, 20, 20); // 20 mm ⌀\n', reset: true },
+      { kind: 'code', attempt: 1, delta: 'é' },
+    ]);
   });
 });

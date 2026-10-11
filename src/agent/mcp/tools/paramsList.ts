@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { getActiveMcpSession } from '../activeSession';
 import { runMcpScript } from '../runMcpScript';
-import type { ParamEntry } from '../../../shared/runtime/paramTable';
+import type { ParamEntry, ParamType } from '../../../shared/runtime/paramTable';
 
 export interface ParamsListInput {
   /** Optional — when given, evaluates this file/code fresh (same as every
@@ -18,7 +18,7 @@ export interface ParamsListInput {
 
 export interface ParamsListEntry {
   name: string;
-  type: 'number' | 'boolean' | 'choice' | 'string';
+  type: ParamType;
   value: number | boolean | string;
   defaultValue: number | boolean | string;
   min?: number;

@@ -136,6 +136,24 @@ describe('ParamsTab', () => {
         expect(updateParam).toHaveBeenCalledExactlyOnceWith([{ name: 'Label', value: 'HELLO' }]);
     });
 
+    it('renders a colour picker for color params and commits the picked colour on blur', () => {
+        const table = new ParamTable();
+        table.declare('BodyColor', 'color', '#36C');
+        const updateParam = vi.fn().mockResolvedValue(undefined);
+        mockUseRecomputeResult.mockReturnValue({ ...withTable(table), updateParam });
+
+        render(<ParamsTab />);
+
+        const input = screen.getByTestId('param-color-BodyColor') as HTMLInputElement;
+        expect(input.type).toBe('color');
+        expect(input.value).toBe('#3366cc');
+        expect(screen.getByLabelText('BodyColor value')).toBe(input);
+
+        fireEvent.change(input, { target: { value: '#ff8800' } });
+        fireEvent.blur(input);
+        expect(updateParam).toHaveBeenCalledExactlyOnceWith([{ name: 'BodyColor', value: '#ff8800' }]);
+    });
+
     it('keeps joint-bound params visible in the Params tab', () => {
         const table = new ParamTable();
         table.declare('heightAdjustMm', 'number', 0, { min: 0, max: 6.12 });

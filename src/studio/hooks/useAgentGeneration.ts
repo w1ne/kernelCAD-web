@@ -16,12 +16,14 @@ export interface GenerationReviewSnapshot {
 }
 
 type ReferenceImage = GenerateRequest['referenceImage'];
+type Attachments = GenerateRequest['attachments'];
 
 /** A follow-up the user sent while a run was busy. */
 export interface QueuedPrompt {
     readonly id: number;
     readonly text: string;
     readonly referenceImage?: ReferenceImage;
+    readonly attachments?: Attachments;
 }
 
 interface UseAgentGenerationArgs {
@@ -37,9 +39,11 @@ interface UseAgentGenerationArgs {
 type Submit = ReturnType<typeof useGeneration>['submit'];
 
 /** Start a run: edit mode with the current model, or a fresh generation for an empty editor. */
-function dispatchRun(submit: Submit, text: string, fromCode: string, photoReference?: ReferenceImage): void {
+function dispatchRun(submit: Submit, text: string, fromCode: string, photoReference?: ReferenceImage, attachments?: Attachments): void {
     const code = fromCode.trim() ? fromCode : undefined;
-    if (photoReference) {
+    if (attachments?.length) {
+        void submit(text, code, undefined, photoReference, attachments);
+    } else if (photoReference) {
         void submit(text, code, undefined, photoReference);
     } else if (code !== undefined) {
         void submit(text, code);
@@ -52,9 +56,14 @@ function dispatchRun(submit: Submit, text: string, fromCode: string, photoRefere
 function useFollowUpQueue() {
     const [queue, setQueue] = useState<readonly QueuedPrompt[]>([]);
     const nextId = useRef(1);
-    const enqueue = useCallback((text: string, referenceImage?: ReferenceImage) => {
+    const enqueue = useCallback((text: string, referenceImage?: ReferenceImage, attachments?: Attachments) => {
         const id = nextId.current++;
-        setQueue((current) => [...current, { id, text, ...(referenceImage ? { referenceImage } : {}) }]);
+        setQueue((current) => [...current, {
+            id,
+            text,
+            ...(referenceImage ? { referenceImage } : {}),
+            ...(attachments?.length ? { attachments } : {}),
+        }]);
     }, []);
     const removeQueued = useCallback((id: number) => {
         setQueue((current) => current.filter((item) => item.id !== id));
@@ -88,6 +97,7 @@ export function useAgentGeneration({
     const [baseline, setBaseline] = useState('');
     const [reviewSnapshot, setReviewSnapshot] = useState<GenerationReviewSnapshot | null>(null);
     const [lastReferenceImage, setLastReferenceImage] = useState<ReferenceImage>(undefined);
+    const [lastAttachments, setLastAttachments] = useState<Attachments>(undefined);
     const { queue, enqueue, removeQueued } = useFollowUpQueue();
 
     const agentBusy = phase.state === 'running';
@@ -98,21 +108,23 @@ export function useAgentGeneration({
         text: string,
         snapshot: GenerationReviewSnapshot,
         photoReference?: ReferenceImage,
+        attachments?: Attachments,
     ) => {
         // Edit mode: hand the agent the current model so it iterates instead of
         // replacing. Empty editor → fresh generation.
         setBaseline(snapshot.fromCode);
         setReviewSnapshot(snapshot);
         setLastReferenceImage(photoReference);
-        dispatchRun(submit, text, snapshot.fromCode, photoReference);
+        setLastAttachments(attachments);
+        dispatchRun(submit, text, snapshot.fromCode, photoReference, attachments);
     };
 
-    const onSubmit = (message?: string, referenceImage?: ReferenceImage) => {
+    const onSubmit = (message?: string, referenceImage?: ReferenceImage, attachments?: Attachments) => {
         const trimmed = (message ?? prompt).trim();
         if (!trimmed || conceptBusy) return;
         if (agentBusy) {
             // A follow-up: it runs after this run's change is reviewed.
-            enqueue(trimmed, referenceImage);
+            enqueue(trimmed, referenceImage, attachments);
             return;
         }
         const matchesDraftedRepair =
@@ -136,7 +148,7 @@ export function useAgentGeneration({
             promptText: trimmed,
             selectedFeatureId: runTargetId,
             repairWorkflow: repairWorkflowForRun,
-        }, referenceImage);
+        }, referenceImage, attachments);
     };
 
     /** Send the last request again, on the model as it is now. */
@@ -145,7 +157,7 @@ export function useAgentGeneration({
         runAgent(scopedPrompt(reviewSnapshot.promptText, reviewSnapshot.selectedFeatureId), {
             ...reviewSnapshot,
             fromCode: currentCode,
-        }, lastReferenceImage);
+        }, lastReferenceImage, lastAttachments);
     };
 
     /** Send the last request back with the error, so the agent fixes its script. */
@@ -156,7 +168,7 @@ export function useAgentGeneration({
             ...reviewSnapshot,
             fromCode: currentCode,
             promptText: text,
-        }, lastReferenceImage);
+        }, lastReferenceImage, lastAttachments);
     };
 
     /** Start the oldest queued follow-up now. */
@@ -164,7 +176,7 @@ export function useAgentGeneration({
         const next = queue[0];
         if (!next || busy) return;
         removeQueued(next.id);
-        onSubmit(next.text, next.referenceImage);
+        onSubmit(next.text, next.referenceImage, next.attachments);
     };
 
     return {

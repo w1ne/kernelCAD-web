@@ -62,7 +62,11 @@ export function GenerateForm({
     busy: boolean;
     conceptBusy: boolean;
     previewPhase: PreviewPhase;
-    onSubmit: (message: string, referenceImage?: GenerateRequest['referenceImage']) => void;
+    onSubmit: (
+        message: string,
+        referenceImage?: GenerateRequest['referenceImage'],
+        attachments?: GenerateRequest['attachments'],
+    ) => void;
     onConcept: () => void;
     /** A run is going: the composer stays open and queues follow-ups. */
     agentBusy?: boolean;

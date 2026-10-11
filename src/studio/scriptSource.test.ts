@@ -5,13 +5,18 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 // S1: scriptSource now routes through the apiBase helper, which calls
 // supabase.auth.getSession(). Stub the Supabase client so the test stays
 // behavior-equivalent to today (unsigned-in → relative URL path).
+const { getSessionMock } = vi.hoisted(() => ({
+  getSessionMock: vi.fn(async () => ({ data: { session: null as { access_token: string } | null } })),
+}));
 vi.mock('../funnel/lib/supabaseClient', () => ({
+  isAuthConfigured: () => true,
   getSupabase: () => ({
-    auth: { getSession: async () => ({ data: { session: null } }) },
+    auth: { getSession: getSessionMock },
   }),
 }));
 
 import { defaultCode } from '../shared/worker/geometryEngine';
+import { clearGenerationAssets, rememberGenerationAssets } from '../funnel/lib/generationAssets';
 import {
   clearStoredMeshCache,
   loadGalleryScriptSource,
@@ -24,6 +29,7 @@ import {
   rootVisibleFeatures,
   setHostedRevisionHint,
   storedShareMesh,
+  getStoredBuildError,
 } from './scriptSource';
 
 afterEach(() => {
@@ -201,6 +207,38 @@ describe('param overrides (stateless re-run path)', () => {
       method: 'POST',
       body: JSON.stringify({ source: 'return box(w,1,1);', params: { w: 7 } }),
     }));
+  });
+
+  it('names the generation holding an imported file, with the caller token', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.example.com');
+    rememberGenerationAssets('gen-1', ['inputs/0123456789ab.stl']);
+    getSessionMock.mockResolvedValueOnce({ data: { session: { access_token: 'tok' } } });
+    const payload = { features: [], featureRecords: [], bounds: { min: [0, 0, 0], max: [1, 1, 1] } };
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({ ok: true, json: async () => payload } as Response);
+    const source = "return await lib.fromSTL('./inputs/0123456789ab.stl');";
+
+    await meshSourceHosted(source, { w: 1 });
+
+    expect(fetchMock).toHaveBeenCalledWith('https://api.example.com/__kernelcad/mesh', expect.objectContaining({
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer tok' },
+      body: JSON.stringify({ source, params: { w: 1 }, generationIds: ['gen-1'] }),
+    }));
+    clearGenerationAssets();
+  });
+
+  it('sends no generation ids or token for code without generation files', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.example.com');
+    rememberGenerationAssets('gen-1', ['inputs/0123456789ab.stl']);
+    getSessionMock.mockClear();
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({ ok: true, json: async () => ({ features: [] }) } as Response);
+
+    await meshSourceHosted("return await lib.fromSTL('./inputs/ffffffffffff.stl');", { w: 1 });
+
+    const init = fetchMock.mock.calls[0]![1] as RequestInit;
+    expect(init.headers).toEqual({ 'Content-Type': 'application/json' });
+    expect(JSON.parse(init.body as string)).not.toHaveProperty('generationIds');
+    expect(getSessionMock).not.toHaveBeenCalled();
+    clearGenerationAssets();
   });
 
   it('meshes /p projects by slug so hosted complementary files are available', async () => {
@@ -824,5 +862,62 @@ describe('storedShareMesh', () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch');
     await expect(storedShareMesh('rail()')).resolves.toBeNull();
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  const STATUS_URL = 'https://api.example.com/api/v1/projects/OGm0lP_B/revisions/1/mesh-status';
+  const ARTIFACT_URL = 'https://mesh.kernelcad.com/mesh-artifacts/OGm0lP_B/v1.json';
+
+  function sharePage(): void {
+    vi.stubEnv('VITE_API_BASE_URL', 'https://api.example.com');
+    vi.stubGlobal('window', { location: { hostname: 'localhost', pathname: '/p/OGm0lP_B', search: '?version=1' } });
+    setHostedRevisionHint({ slug: 'OGm0lP_B', version: 1, code: 'rail()' });
+  }
+
+  it('waits for a stored mesh the server is still building instead of rebuilding', async () => {
+    vi.useFakeTimers();
+    sharePage();
+    let built = false;
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      const url = String(input);
+      if (url === STATUS_URL) {
+        return { ok: true, json: async () => ({ status: built ? 'ready' : 'building' }) } as Response;
+      }
+      if (url === ARTIFACT_URL && built) return { ok: true, json: async () => stored } as Response;
+      return { ok: false, status: 404, json: async () => null } as Response;
+    });
+
+    const pending = storedShareMesh('rail()');
+    await vi.advanceTimersByTimeAsync(0);
+    expect(getMeshNotice().meshing).toBe(true);
+    built = true;
+    await vi.advanceTimersByTimeAsync(5_000);
+    const payload = await pending;
+
+    expect(payload?.features.map((feature) => feature.featureId)).toEqual(['rail']);
+    expect(getMeshNotice().meshing).toBe(false);
+    expect(fetchMock.mock.calls.some((call) => String(call[0]).includes('/__kernelcad/mesh'))).toBe(false);
+  });
+
+  it('reports a failed server build and lets the caller fall back', async () => {
+    sharePage();
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      if (String(input) === STATUS_URL) {
+        return { ok: true, json: async () => ({ status: 'failed', error: 'worker memory limit' }) } as Response;
+      }
+      return { ok: false, status: 404, json: async () => null } as Response;
+    });
+
+    await expect(storedShareMesh('rail()')).resolves.toBeNull();
+    expect(getStoredBuildError()).toBe('worker memory limit');
+    expect(getMeshNotice().meshing).toBe(false);
+  });
+
+  it('keeps the old behaviour when the server has no mesh-status route', async () => {
+    sharePage();
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async () => (
+      { ok: false, status: 404, json: async () => null } as Response
+    ));
+    await expect(storedShareMesh('rail()')).resolves.toBeNull();
+    expect(fetchMock.mock.calls.filter((call) => String(call[0]) === STATUS_URL)).toHaveLength(1);
   });
 });

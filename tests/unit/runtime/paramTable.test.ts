@@ -229,3 +229,27 @@ describe('ParamTable.serialize / deserialize round-trip', () => {
     expect(t.size()).toBe(0);
   });
 });
+
+describe('ParamTable color params', () => {
+  it('normalises the default and every set value to lowercase #rrggbb', () => {
+    const t = new ParamTable();
+    const entry = t.declare('BodyColor', 'color', '#ABC');
+    expect(entry.value).toBe('#aabbcc');
+    expect(entry.defaultValue).toBe('#aabbcc');
+    expect(t.set('BodyColor', 'Navy').value).toBe('#000080');
+    expect(t.set('BodyColor', '#FF8800').value).toBe('#ff8800');
+  });
+
+  it('rejects text that is not a colour (type-mismatch hint)', () => {
+    const t = new ParamTable();
+    t.declare('BodyColor', 'color', '#3366cc');
+    try {
+      t.set('BodyColor', 'blurple');
+      expect.unreachable('expected a throw');
+    } catch (e) {
+      expect(isKernelError(e) && e.code).toBe('feature.invalid-args');
+      expect(isKernelError(e) && e.hint).toMatch(/type-mismatch/);
+    }
+    expect(() => t.set('BodyColor', 5)).toThrow();
+  });
+});

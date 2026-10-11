@@ -379,9 +379,14 @@ export function fitCameraToBounds(
   let camDir: [number, number, number];
   let up: [number, number, number] = [0, 0, 1];
   switch (view) {
-    case 'front': camDir = [0, -1, 0]; break;
-    case 'right': camDir = [1, 0, 0]; break;
-    case 'top':   camDir = [0, 0, 1]; up = [0, 1, 0]; break;
+    case 'front':  camDir = [0, -1, 0]; break;
+    case 'back':   camDir = [0, 1, 0]; break;
+    case 'right':  camDir = [1, 0, 0]; break;
+    case 'left':   camDir = [-1, 0, 0]; break;
+    case 'top':    camDir = [0, 0, 1]; up = [0, 1, 0]; break;
+    // Looking up from below with -Y up keeps screen right = +X, so the
+    // bottom tile reads as the top tile mirrored about the X axis.
+    case 'bottom': camDir = [0, 0, -1]; up = [0, -1, 0]; break;
     case 'iso':
     case 'demo':
     default:
@@ -392,7 +397,7 @@ export function fitCameraToBounds(
     bounds,
     target: center,
     camDir,
-    worldUp: view === 'top' ? [0, 1, 0] : [0, 0, 1],
+    worldUp: up,
     fovYDeg: camera.fov,
     canvasAspect: camera.aspect,
     outputAspect,

@@ -9,6 +9,8 @@ import {
   type GenerateRequest,
   type GenerationPartial,
 } from '../lib/generateClient';
+import { reduceLiveCode, type LiveCode } from '../lib/liveCode';
+import { rememberGenerationAssets } from '../lib/generationAssets';
 
 /** Codes emitted by the client when generation fails outside the server's
  *  own error stream. Server-relayed `error` events carry their own codes
@@ -47,11 +49,19 @@ async function consumeGenerationStream(
   body: ReadableStream<Uint8Array>,
   setEvents: Dispatch<SetStateAction<GenerateEvent[]>>,
   setPhase: Dispatch<SetStateAction<GenerationPhase>>,
+  setLiveCode: Dispatch<SetStateAction<LiveCode | null>>,
 ): Promise<boolean> {
   let generationId = '';
   let anonId = '';
   for await (const e of parseSseStream(body)) {
+    // Code chunks only grow the live script; they stay out of the event log
+    // (a run streams hundreds of them) and do not move the phase.
+    if (e.kind === 'code') {
+      setLiveCode(prev => reduceLiveCode(prev, e));
+      continue;
+    }
     setEvents(prev => [...prev, e]);
+    if (e.kind === 'done') setLiveCode(prev => reduceLiveCode(prev, e));
     if (e.kind === 'generation') {
       if (e.generationId) generationId = e.generationId;
       if (e.anonId) anonId = e.anonId;
@@ -63,6 +73,8 @@ async function consumeGenerationStream(
         setPhase({ state: 'error', code: 'missing_generation_id', message: 'Generation completed but no ID was returned.' });
         return false;
       }
+      // Before the phase change: the preview's mesh request names this run.
+      if (e.assets) rememberGenerationAssets(finalId, Object.keys(e.assets));
       setPhase({
         state: 'done',
         generationId: finalId,
@@ -125,6 +137,8 @@ async function openGenerationStream(
 export function useGeneration() {
   const [phase, setPhase] = useState<GenerationPhase>({ state: 'idle' });
   const [events, setEvents] = useState<GenerateEvent[]>([]);
+  // The script as the agent writes it (server `code` events), then the final one.
+  const [liveCode, setLiveCode] = useState<LiveCode | null>(null);
   // The in-flight request. `cancel()` aborts it; a new `submit()` replaces it.
   const controllerRef = useRef<AbortController | null>(null);
 
@@ -133,22 +147,28 @@ export function useGeneration() {
     currentCode?: string,
     mesh?: GenerateRequest['mesh'],
     referenceImage?: GenerateRequest['referenceImage'],
+    attachments?: GenerateRequest['attachments'],
   ) => {
     controllerRef.current?.abort();
     const controller = new AbortController();
     controllerRef.current = controller;
     setEvents([]);
+    setLiveCode(null);
     setPhase({
       state: 'running',
       lastEvent: { kind: 'status', phase: 'running' },
     });
 
-    const body = await openGenerationStream({ prompt, currentCode, mesh, referenceImage }, controller.signal, setPhase);
+    const body = await openGenerationStream(
+      { prompt, currentCode, mesh, referenceImage, ...(attachments?.length ? { attachments } : {}) },
+      controller.signal,
+      setPhase,
+    );
     if (!body) return;
 
     let exhausted: boolean;
     try {
-      exhausted = await consumeGenerationStream(body, setEvents, setPhase);
+      exhausted = await consumeGenerationStream(body, setEvents, setPhase, setLiveCode);
     } catch (err) {
       if (controller.signal.aborted) return;
       const message = err instanceof Error ? err.message : String(err);
@@ -181,5 +201,5 @@ export function useGeneration() {
       : prev);
   }, []);
 
-  return { phase, events, submit, cancel };
+  return { phase, events, liveCode, submit, cancel };
 }

@@ -95,7 +95,7 @@ const setParamToolEntry: ToolRegistryEntry = {
       properties: {
         code: { type: 'string', description: 'The .kcad.ts source code.' },
         param_name: { type: 'string', description: 'The string literal name of the param (first arg to param()).' },
-        new_value: { description: 'The new default value: number for numeric params, boolean for boolean params, or string for choice/string params (must be one of the declared choices for a choice param).' },
+        new_value: { description: 'The new default value: number for numeric params, boolean for boolean params, or string for choice/string/color params (must be one of the declared choices for a choice param; a color param — one whose default is a hex literal — takes \'#rrggbb\', \'#rgb\' or a basic CSS colour name and is written back as \'#rrggbb\').' },
       },
       required: ['code', 'param_name', 'new_value'],
     },

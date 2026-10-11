@@ -9,7 +9,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { Face, Shape3D } from 'replicad';
 import { binaryStl } from '../../../kernel/fea/heatmap';
-import { meshShape } from '../../../kernel/backends/occt/meshing';
+import { FINE_MESH_OPTIONS, meshShape } from '../../../kernel/backends/occt/meshing';
 import type { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
 import {
   continuityClassColor,
@@ -116,7 +116,8 @@ export async function buildSurfaceQualityOverlay(args: {
   const overlayDir = join(args.outDir, 'overlay');
   await mkdir(overlayDir, { recursive: true });
   const shape = loaded.shape.getReplicadShape();
-  const mesh = meshShape(shape);
+  // Analysis overlay: keep the fixed fine deflection, not the display scaling.
+  const mesh = meshShape(shape, FINE_MESH_OPTIONS);
   if (!mesh || mesh.faces.length === 0) {
     return { ok: false, error: 'Overlay: the shape produced no mesh faces.', errorCode: 'feature.kernel-failed' };
   }

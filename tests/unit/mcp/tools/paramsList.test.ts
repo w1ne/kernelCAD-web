@@ -3,6 +3,7 @@ import { initOcct } from '../../../../src/kernel/backends/occt/occtBackend';
 import { clearActiveMcpSession } from '../../../../src/agent/mcp/activeSession';
 import { evaluateScriptTool } from '../../../../src/agent/mcp/tools/evaluateScript';
 import { paramsListTool } from '../../../../src/agent/mcp/tools/paramsList';
+import { runMcpScript } from '../../../../src/agent/mcp/runMcpScript';
 
 describe('paramsListTool', () => {
   beforeAll(async () => { await initOcct(); });
@@ -108,5 +109,27 @@ describe('paramsListTool', () => {
   it('{ code } still returns [] on a genuinely empty active session when no file/code is given', async () => {
     const result = await paramsListTool({});
     expect(result.params).toEqual([]);
+  });
+  it('lists a hex-default param as a normalised color param and colours parts with it', async () => {
+    const code = `
+      const body = param('BodyColor', '#36C', { description: 'shell colour' });
+      const trim = param('TrimColor', '#ff8800');
+      const shell = box(40, 30, 10).color(body);
+      const lid = box(40, 30, 2).translate(0, 0, 10).finish('abs', { color: trim });
+      return shell.union(lid);
+    `;
+    expect((await evaluateScriptTool({ code })).ok).toBe(true);
+    const result = await paramsListTool({});
+    expect(result.params).toEqual([
+      { name: 'BodyColor', type: 'color', value: '#3366cc', defaultValue: '#3366cc', description: 'shell colour' },
+      { name: 'TrimColor', type: 'color', value: '#ff8800', defaultValue: '#ff8800' },
+    ]);
+
+    const run = await runMcpScript({ code });
+    expect(run.ok).toBe(true);
+    if (!run.ok) return;
+    const metadata = run.run.records.map(r => r.metadata as { color?: unknown; material?: { baseColor?: unknown } } | undefined);
+    expect(metadata.some(m => m?.color === '#3366cc')).toBe(true);
+    expect(metadata.some(m => m?.material?.baseColor === '#ff8800')).toBe(true);
   });
 });

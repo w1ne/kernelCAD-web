@@ -2,12 +2,14 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { parseMeshArtifact } from '../funnel/meshArtifact';
 import { dedupeCoincidentParts } from './storedMeshDedupe';
+import { fetchStoredMeshStatus } from '../funnel/lib/storedMeshStatus';
 import {
   findGallerySourceUrl,
   findGallerySourceUrlForScriptPath,
   galleryPrecomputedMeshUrl,
 } from './gallerySource';
 import { apiCall, rewritePath } from './api/apiBase';
+import { bearerAuthHeader, generationIdsForSource } from '../funnel/lib/generationAssets';
 import type { SerializedParamTable } from '../shared/runtime/paramTable';
 import type { ScriptReviewSummary } from './context/GeometryContext';
 import type { FeatureMeshSerialized } from '../modeling/capture/featureMeshSerialize';
@@ -116,6 +118,17 @@ export function subscribeMeshNotice(listener: () => void): () => void {
   return () => { meshNoticeListeners.delete(listener); };
 }
 export function getMeshNotice(): MeshNotice { return meshNotice; }
+
+// Why the server could not build this revision's stored mesh, when it said
+// so (`mesh-status` answered `failed`). Null otherwise. Shares the notice
+// listeners, so one subscription covers both.
+let storedBuildError: string | null = null;
+function setStoredBuildError(next: string | null): void {
+  if (next === storedBuildError) return;
+  storedBuildError = next;
+  meshNoticeListeners.forEach((l) => l());
+}
+export function getStoredBuildError(): string | null { return storedBuildError; }
 
 export function rootVisibleFeatures(
   payload: Pick<BackendMeshPayload, 'features' | 'rootFeatureIds'>,
@@ -342,16 +355,20 @@ function isBridgePayload(value: unknown): value is BackendMeshPayload {
  *  code — an edit, a live agent update, a restore, or a `preferSource`
  *  rewrite with param values baked in — is sent as `source` together with the
  *  project, so the server meshes that source against the project's asset
- *  manifest and relative imports still resolve. Off a project page: source. */
+ *  manifest and relative imports still resolve. Off a project page: source.
+ *  Unsaved generated code that imports a generation's file (an attached STL)
+ *  also names those generations; the server serves the file to their owner. */
 function hostedMeshBody(source: string, paramOverrides: ParamOverrides | undefined, preferSource?: boolean) {
   const project = currentHostedProject();
   const projectRef = project
     ? { projectSlug: project.slug, ...(project.version ? { projectVersion: project.version } : {}) }
     : null;
   const storedRevision = !!projectRef && !preferSource && isPinnedRevisionSource(source);
+  const generationIds = storedRevision ? [] : generationIdsForSource(source);
   return {
     ...(storedRevision ? projectRef : { source, ...(projectRef ?? {}) }),
     ...(hasOverrides(paramOverrides) ? { params: paramOverrides } : {}),
+    ...(generationIds.length > 0 ? { generationIds } : {}),
   };
 }
 
@@ -363,6 +380,9 @@ function meshErrorMessage(status: number, payload: { error?: unknown; code?: unk
     const path = typeof payload?.path === 'string' && payload.path ? `"${payload.path}"` : 'a file';
     return `This model imports ${path}, which is not in the project's files. `
       + 'Add the file to the project or remove the import.';
+  }
+  if (status === 401 && payload?.error === 'generation_assets_require_auth') {
+    return 'This model imports a file you attached to the agent. Sign in to see it.';
   }
   return payload && typeof payload.error === 'string' ? payload.error : `HTTP ${status}`;
 }
@@ -386,11 +406,13 @@ function pendingWaitMs(response: Response, payload: { retryAfterMs?: unknown } |
 /** `POST {base}/__kernelcad/mesh`; throws the server's error message. A 504
  *  `mesh.pending` is retried (the build keeps running server-side). */
 async function meshOnServer(base: string, body: ReturnType<typeof hostedMeshBody>): Promise<BackendMeshPayload> {
+  // Only a request for generation files needs the caller's identity.
+  const auth = body.generationIds ? await bearerAuthHeader() : {};
   try {
     for (let attempt = 0; ; attempt++) {
       const response = await fetch(`${base}/__kernelcad/mesh`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...auth },
         body: JSON.stringify(body),
       });
       const payload = await response.json().catch(() => null);
@@ -414,8 +436,10 @@ async function meshOnServer(base: string, body: ReturnType<typeof hostedMeshBody
 /** Public CDN holding the meshes stored at publish time. */
 const MESH_CDN_BASE = import.meta.env.VITE_MESH_CDN_BASE ?? 'https://mesh.kernelcad.com';
 
-/** A hung CDN read must not leave the viewer on "Building…" forever. */
-const ARTIFACT_FETCH_MS = 8_000;
+/** A hung CDN read must not leave the viewer on "Building…" forever. Long
+ *  enough for a multi-megabyte car on a phone connection: an abort here
+ *  falls back to a full server rebuild, which is far slower. */
+const ARTIFACT_FETCH_MS = 25_000;
 
 const storedMeshCache = new Map<string, Promise<BackendMeshPayload | null>>();
 
@@ -491,6 +515,60 @@ async function readStoredMesh(url: string, expected: number | null): Promise<Bac
   return prepareStoredPayload(payload, expected);
 }
 
+/** Longest a share page waits for the server to finish building the stored
+ *  mesh (its hard deadline is 240 s) before it rebuilds the model itself. */
+const STORED_BUILD_WAIT_MS = 240_000;
+const STORED_BUILD_POLL_MIN_MS = 2_000;
+const STORED_BUILD_POLL_MAX_MS = 6_000;
+
+/**
+ * The stored mesh for this share revision is not on the CDN yet. Ask the
+ * server where it stands (which also starts the build when nothing runs it)
+ * and poll until it lands. Returns the payload when it does; null when the
+ * build failed, the server cannot tell, or the wait ran out, so the caller
+ * falls back to rebuilding the model.
+ */
+async function awaitStoredBuild(base: string): Promise<BackendMeshPayload | null> {
+  const project = currentHostedProject();
+  if (!project?.version || !base) return null;
+  const deadline = Date.now() + STORED_BUILD_WAIT_MS;
+  let delay = STORED_BUILD_POLL_MIN_MS;
+  try {
+    for (;;) {
+      const status = await fetchStoredMeshStatus(base, project.slug, project.version);
+      if (!status || status.status === 'missing') return null;
+      if (status.status === 'failed') {
+        setStoredBuildError(status.error ?? 'The server could not build this model.');
+        return null;
+      }
+      if (status.status === 'ready') {
+        clearStoredMeshCache();
+        const payload = await storedRevisionMesh(base);
+        if (payload) return payload;
+      }
+      if (Date.now() + delay > deadline) return null;
+      setMeshNotice({ meshing: true });
+      await new Promise((resolve) => setTimeout(resolve, delay));
+      delay = Math.min(delay * 1.5, STORED_BUILD_POLL_MAX_MS);
+    }
+  } finally {
+    setMeshNotice({ meshing: false });
+  }
+}
+
+/** Ask the server to build this share revision's stored mesh again after it
+ *  failed. Resolves true when the server accepted (the build is running or
+ *  already done). */
+export async function retryStoredBuild(): Promise<boolean> {
+  const project = currentHostedProject();
+  const base = typeof import.meta.env.VITE_API_BASE_URL === 'string' ? import.meta.env.VITE_API_BASE_URL : '';
+  if (!project?.version || !base) return false;
+  const status = await fetchStoredMeshStatus(base, project.slug, project.version, { retry: true });
+  if (!status || status.status === 'failed') return false;
+  setStoredBuildError(null);
+  return true;
+}
+
 /** The mesh stored when this `/p/<slug>` revision was published.
  *  Unpinned pages use `latest.json`. Reads the CDN before the API redirect:
  *  that redirect runs on the mesh server and answers 503 under load. */
@@ -517,8 +595,11 @@ const NO_HOSTED_BACKEND = 'No precomputed mesh for this edit, and no compute bac
 export async function storedShareMesh(source: string): Promise<BackendMeshPayload | null> {
   if (!currentHostedProject() || !isPinnedRevisionSource(source)) return null;
   const base = typeof import.meta.env.VITE_API_BASE_URL === 'string' ? import.meta.env.VITE_API_BASE_URL : '';
-  const stored = await storedRevisionMesh(base);
+  // Not on the CDN yet: the server is (or will now be) building it. Waiting
+  // for that artifact is much faster than rebuilding the whole model here.
+  const stored = await storedRevisionMesh(base) ?? await awaitStoredBuild(base);
   if (!stored) return null;
+  setStoredBuildError(null);
   setMeshNotice({ meshing: false, approximate: false });
   return stored;
 }

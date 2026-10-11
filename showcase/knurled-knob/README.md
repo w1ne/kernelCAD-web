@@ -1,0 +1,5 @@
+# Knurled control knob
+
+> Knurled control knob: Ø40 × 22 mm, diamond-knurled grip, raised pointer mark on top, 6 mm D-shaft bore, M3 set-screw hole through the side.
+
+The diamond knurl is made the way a knurling tool rolls one: the same ring of V-teeth is extruded twice, once twisted left and once twisted right, and the two are intersected. Each set of helical grooves cuts across the other's ridges. Look for the pyramids on the grip, the plain skirt underneath, and the white pointer insert on the chamfered top. The pointer is lined up with the flat of the blind 6 mm D-bore. The M3 set-screw hole goes through the skirt into that flat. It is cut as a plain Ø2.5 mm tap-drill hole, because `hole()` needs a planar face and the skirt is round, so the thread itself is not recorded as a feature (`evaluate` reports this as info). Params: `diameter`, `height`, `skirtHeight`, `knurlDepth`, `knurlTwistDeg`, `shaftDia`, `dFlatDepth`, `boreDepth`, and `knurlTeeth` (a choice). Checked with `kernelcad evaluate` (clean), the 7-view sheet, and the MCP `evaluate_script` interference check across the two parts (none). Source: [`knurled-knob.kcad.ts`](knurled-knob.kcad.ts).

@@ -13,9 +13,11 @@ vi.mock('../../../src/agent/render/headlessRender', () => {
   const ALL_VIEWS = ['front', 'right', 'top', 'iso'] as const;
   const mockHeadlessRender = vi.fn();
   const composite2x2 = vi.fn().mockResolvedValue(Buffer.alloc(0));
+  const compositeSheet = vi.fn().mockResolvedValue(Buffer.alloc(0));
   return {
     headlessRender: mockHeadlessRender,
     composite2x2,
+    compositeSheet,
     ALL_VIEWS,
     DEFAULT_RENDER_BASE_URL: 'http://localhost:5173',
   };
@@ -23,7 +25,7 @@ vi.mock('../../../src/agent/render/headlessRender', () => {
 
 // Import after mock registration.
 import { renderInspectBundle, renderScript, renderCommand, parseSectionFlag } from '../../../src/agent/cli/commands/render';
-import { headlessRender } from '../../../src/agent/render/headlessRender';
+import { headlessRender, composite2x2, compositeSheet } from '../../../src/agent/render/headlessRender';
 
 const mockHeadlessRender = headlessRender as ReturnType<typeof vi.fn>;
 
@@ -80,6 +82,8 @@ describe('render command', () => {
   beforeEach(() => {
     mockHeadlessRender.mockReset();
     mockHeadlessRender.mockResolvedValue(makeMockResult());
+    vi.mocked(composite2x2).mockClear();
+    vi.mocked(compositeSheet).mockClear();
     tmp = mkdtempSync(join(tmpdir(), 'kcad-render-test-'));
     scriptPath = join(tmp, 'demo.kcad.ts');
     // File must exist for resolve() to work; headlessRender is mocked so content
@@ -331,7 +335,7 @@ describe('render command', () => {
     const views = inspect?.options.find((o) => o.long === '--views');
     expect(views).toBeDefined();
     expect(views?.description).toBe(
-      'comma-separated views to capture (front, right, top, iso; default all four)',
+      'comma-separated views to capture (front, back, left, right, top, bottom, iso; default front, right, top, iso)',
     );
     // The top-level render command must not grow an identically-named flag.
     expect(cmd.options.find((o) => o.long === '--views')).toBeUndefined();
@@ -395,7 +399,7 @@ describe('render command', () => {
       height: 480,
       baseUrl: 'http://localhost:5173',
       hideReferenceImages: false,
-      views: ['iso', 'back'],
+      views: ['iso', 'side'],
     });
 
     expect(result.exitCode).toBe(1);
@@ -436,6 +440,41 @@ describe('render command', () => {
     expect(inspect).toBeDefined();
     expect(inspect?.options.find((o) => o.long === '--section')).toBeUndefined();
     expect(inspect?.options.find((o) => o.long === '--section-flip')).toBeUndefined();
+  });
+
+  it('--sheet captures all seven views and writes one sheet instead of the 2×2 grid', async () => {
+    const result = await renderScript({
+      file: scriptPath,
+      out: join(tmp, 'out.png'),
+      separate: false,
+      sheet: true,
+      width: 512,
+      height: 512,
+      baseUrl: 'http://localhost:5173',
+      hideReferenceImages: false,
+    });
+
+    expect(result.exitCode).toBe(0);
+    expect(result.outputPaths).toEqual([join(tmp, 'out.png')]);
+    expect(mockHeadlessRender.mock.calls[0][0]).toMatchObject({
+      views: ['iso', 'front', 'back', 'left', 'right', 'top', 'bottom'],
+    });
+    expect(compositeSheet).toHaveBeenCalledOnce();
+    expect(composite2x2).not.toHaveBeenCalled();
+  });
+
+  it('--sheet refuses --preset publish before rendering', async () => {
+    const result = await renderScript({
+      file: scriptPath,
+      separate: false,
+      sheet: true,
+      preset: 'publish',
+      baseUrl: 'http://localhost:5173',
+      hideReferenceImages: false,
+    });
+
+    expect(result.exitCode).toBe(1);
+    expect(mockHeadlessRender).not.toHaveBeenCalled();
   });
 
   it('threads a valid --section through to headlessRender opts', async () => {

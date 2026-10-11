@@ -45,6 +45,15 @@ beforeEach(() => {
 });
 
 describe('ParamChips', () => {
+    it('shows a swatch next to a colour param value', () => {
+        const t = new ParamTable();
+        t.declare('BodyColor', 'color', '#3366cc');
+        mockResult.current = { ...emptyResult(), paramTable: t };
+        render(<ParamChips />);
+        expect(screen.getByTestId('param-chip-BodyColor').textContent).toContain('#3366cc');
+        expect(screen.getByTestId('param-chip-swatch-BodyColor').style.backgroundColor).toBeTruthy();
+    });
+
     it('renders nothing when paramTable is null', () => {
         mockResult.current = { ...emptyResult(), paramTable: null };
         const { container } = render(<ParamChips />);

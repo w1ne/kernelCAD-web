@@ -7,6 +7,8 @@
 // parameter defaults without importing the agent layer; the MCP `set_param`
 // tool is the agent-side caller.
 
+import { isColorParamDefault } from '../../shared/runtime/paramColor';
+
 export interface SetParamValueResult {
   ok: boolean;
   new_code?: string;
@@ -184,7 +186,7 @@ function quoteSingle(text: string): string {
   return `'${escaped}'`;
 }
 
-export type DeclaredParamKind = 'number' | 'boolean' | 'choice' | 'string' | 'unknown';
+export type DeclaredParamKind = 'number' | 'boolean' | 'choice' | 'string' | 'color' | 'unknown';
 
 export interface ParamDeclaration {
   name: string;
@@ -245,6 +247,11 @@ export function parseParamDeclaration(code: string, paramName: string): ParsePar
   // runtime (see `KernelCadApi.param` overloads in `modeling/api.ts`).
   if (declaration.kind === 'string' && declaration.choices !== undefined) {
     declaration.kind = 'choice';
+  }
+  // A hex-colour default ('#rgb' / '#rrggbb') without `choices` is a colour
+  // param — the same rule `param()` applies (shared/runtime/paramColor.ts).
+  if (declaration.kind === 'string' && isColorParamDefault(defaultLiteral.slice(1, -1), declaration)) {
+    declaration.kind = 'color';
   }
 
   return { ok: true, declaration };

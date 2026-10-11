@@ -168,6 +168,8 @@ const LOG_LINE: { [K in GenerateEvent['kind']]: (e: EventOf<K>) => LogLine | nul
     attached: (e) => ({ text: e.message || 'Joined a run already in progress', tone: 'info' }),
     tool_call: (e) => ({ text: `→ ${e.name}`, tone: 'info' }),
     tool_result: (e) => ({ text: `${e.ok ? '✓' : '✗'} ${e.name}`, tone: e.ok ? 'ok' : 'retry' }),
+    // Script chunks show in the live code view, not one log line per chunk.
+    code: () => null,
     done: (e) => ({ time: formatElapsed(e.durationMs), text: e.partial ? 'Done, not verified' : 'Done', tone: 'ok' }),
     error: (e) => ({ text: `Error (${e.code}): ${e.message}`, tone: 'error' }),
 };
