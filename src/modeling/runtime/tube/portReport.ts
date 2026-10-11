@@ -38,9 +38,10 @@ export interface PortReportEntry {
   origin?: V3;
   /** Unit axis pointing out of the part, assembly space. Absent when `unresolved` is set. */
   axis?: V3;
-  /** `at`: the part is where its `at` puts it. `mate`: a mate moved or turned
-   *  the part after `at`, and `origin` / `axis` are the solved ones. */
-  placedBy?: 'at' | 'mate';
+  /** `at`: the part is where its `at` puts it. `connect`: the part is where
+   *  its `connect` puts it. `mate`: the solve moved or turned the part after
+   *  that, and `origin` / `axis` are the solved ones. */
+  placedBy?: 'at' | 'connect' | 'mate';
   /** Names of the tubes that end on the port; empty when it is free. */
   usedBy: string[];
   /** Why the position is missing. Absent when `origin` is given. */
@@ -79,12 +80,15 @@ function placeInScene(model: BuiltModel, ctx: TubeSceneContext, stored: Assembly
   if (scenePart === undefined) return { unresolved: `part '${stored.name}' is not in the built assembly` };
   const local = localFrame(connector);
   if ('unresolved' in local) return local;
-  if (stored.connectParentId !== undefined) return { unresolved: 'the part is placed with connect, not with at' };
+  // A part placed with `connect` has an `at` like any other: capture works it
+  // out from the two connectors, the built shape carries it, and the solve's
+  // pose goes on top. So one formula covers both, and only the label differs.
   const world = partFrameInWorld(model, stored, scenePart, local.origin, local.axis);
+  const unmoved = stored.connectParentId !== undefined ? 'connect' : 'at';
   return {
     origin: tidy(world.origin),
     axis: tidy(world.axis),
-    placedBy: isIdentity(scenePart.worldTransform) ? 'at' : 'mate',
+    placedBy: isIdentity(scenePart.worldTransform) ? unmoved : 'mate',
   };
 }
 

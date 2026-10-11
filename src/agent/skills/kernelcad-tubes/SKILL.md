@@ -58,13 +58,13 @@ part.connector('out', {
 - The origin takes three plain numbers. A param in it fails with `feature.invalid-args`. To move a port with a param, build the part in its own frame and put the param in the part's `at`.
 - Model the boss as part of the part that owns the port (`body.union(boss)`), with the port at the boss face. The tube touches the boss by design, and only the part that owns the port is excused for that contact. A boss added as a separate assembly part is a clearance violation at 0 mm.
 
-`part.port(name)` returns the port position, axis, size and system for `from` / `to`. It works when the connector has a `{ kind: 'vec3' }` origin and the part is placed with `at`. The position is `at` plus the origin, so `at: [x, 0, 0]` with `x = param('X', 60)` moves the port and the tube end with it.
+`part.port(name)` returns the port position, axis, size and system for `from` / `to`. It works when the connector has a `{ kind: 'vec3' }` origin, on a part placed with `at` or with `connect`. The position is `at` plus the origin, so `at: [x, 0, 0]` with `x = param('X', 60)` moves the port and the tube end with it. For a part placed with `connect`, `at` is the position `connect` works out from the two connectors, so a param that moves the parent moves the port too.
 
 `part.port(name)` is for passing a port to `tube`. A script cannot read coordinates from it: with a param in `at` the numbers are not resolved yet. To learn where a port is, read `ports` in the evaluation result (see "The port report").
 
 `part.port(name)` does not work in three cases. In each, pass a plain end instead: `{ point: [x, y, z], axis: [x, y, z], part: '<part name>' }`, with the position and axis in assembly space.
 
-- The connector origin is a face reference, or the part is placed with `connect`: the call fails with `tube.port.unresolved`.
+- The connector origin is a face reference: the call fails with `tube.port.unresolved`.
 - The part is moved by a mate: the call gives the position before the mate, and the gate reports `tube.port.misaligned` with the port's solved position. Use the `origin` and `axis` that `ports` gives for that port (`placedBy: 'mate'`) as the `point` and `axis`.
 - The end is not on a part: leave `part` out.
 
@@ -163,7 +163,7 @@ Argument errors stop the script at the `tube`, `tubeSpec`, `connector` or `part.
 | `tube.port.axis-required` | `port` data is only allowed on a connector with `type: 'axis'` and an `axis`. |
 | `tube.port.invalid` | Pass `port: { system, od, minStraight? }` with a non-empty `system` and positive numbers, on a connector with a finite non-zero `axis`. |
 | `tube.port.not-found`, `tube.port.not-a-port` | Register the connector before calling `part.port(name)`, with `port: { system, od }`. |
-| `tube.port.unresolved` | Pass `{ point, axis, part }` for that end. |
+| `tube.port.unresolved` | The port has a face reference for an origin. Give it a `{ kind: 'vec3' }` origin, or pass `{ point, axis, part }` for that end. |
 
 Gate errors come after the build, as `tube.*` diagnostics. The script built, so the report is still there to read:
 
@@ -209,9 +209,11 @@ A pair of tubes is reported once, on the tube declared first, so the corner to m
 | `system`, `od`, `minStraight` | as declared on the port; `minStraight` only when the port declares one |
 | `origin` | port position in assembly space, mm, with params resolved and mates solved |
 | `axis` | unit vector pointing out of the part, in assembly space |
-| `placedBy` | `at`: the part is where its `at` puts it, and `part.port(name)` gives this position. `mate`: a mate moved or turned the part after `at`; `origin` and `axis` are the solved ones, and `part.port(name)` still gives the position before the mate |
+| `placedBy` | `at`: the part is where its `at` puts it, and `part.port(name)` gives this position. `connect`: the part is where its `connect` puts it, and `part.port(name)` gives this position. `mate`: a mate moved or turned the part after that; `origin` and `axis` are the solved ones, and `part.port(name)` still gives the position before the mate |
 | `usedBy` | names of the tubes that end on the port, `[]` when it is free. A plain `{ point }` end counts when it sits within 0.01 mm of `origin` |
 | `unresolved` | why there is no position; `origin`, `axis` and `placedBy` are then left out |
+
+`connect` places a part once, from the two connectors as declared. It does not follow a mate: when a mate moves the parent, the part placed with `connect` stays where it was. `ports` gives where each one is.
 
 A mate's transform is applied on top of `at`. A part that is both placed with `at` and moved by a mate lands at `at` plus the mate's offset, not where either one alone would put it. Read `ports` for the real position.
 
@@ -219,7 +221,7 @@ Placing corners from a port:
 
 - First corner of a tube that leaves the port: `origin + L * axis`. `L` is at least `bendRadius + minStraightAtEnd * od` for a 90 degree bend (use the port's `minStraight` in place of `minStraightAtEnd * od` when it is longer).
 - Last corner of a tube that arrives at a port: the same formula with that port's `origin` and `axis`.
-- For `placedBy: 'at'`, end the tube with `part.port(name)`. For `placedBy: 'mate'`, end it with `{ point: origin, axis, part }`.
+- For `placedBy: 'at'` or `'connect'`, end the tube with `part.port(name)`. For `placedBy: 'mate'`, end it with `{ point: origin, axis, part }`.
 - `origin` is a number for this evaluation. If a param moves the part, write the corner from the same param (`[X.add(20), -110, -120]`), or the corner stays behind when the param changes.
 
 `unresolved` is one of:
@@ -231,7 +233,6 @@ Placing corners from a port:
 | `the assembly was not built ..., so the solve did not run` | another part failed, and this part is positioned by a mate or placed with `connect`. Fix the failed part named in the text |
 | `part '<name>' is not in the built assembly` | the part did not make it into the scene |
 | `the connector origin is a face, edge or vertex reference` | give the port a `{ kind: 'vec3' }` origin |
-| `the part is placed with connect` | place the part with `at` |
 
 When one part fails to build, the assembly is not built and no mate is solved. A port on a part that is placed with `at` and that no mate refers to is still listed with its position (`placedBy: 'at'`), so the routes to the good parts can be checked while the failed part is fixed.
 

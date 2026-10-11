@@ -9,6 +9,9 @@ import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { evaluateAndBuildScript } from '../../../src/composition/scriptEvaluation';
 import { buildModel } from '../../../src/modeling/buildModel';
 import { portReportOnModel, type PortReportEntry } from '../../../src/modeling/runtime/tube/portReport';
+import { tubeSceneContext } from '../../../src/modeling/runtime/tube/tubeScene';
+import { transformScenePart } from '../../../src/modeling/runtime/dfm/clearance';
+import { TOOL_OUTPUT_SCHEMAS } from '../../../src/agent/mcp/toolOutputSchemas';
 
 beforeAll(async () => { await initOcct(); }, 120_000);
 
@@ -282,4 +285,105 @@ asm.part('a', box(20, 20, 20), { at: [0, 0, 0] })${topPort(20)};
 return box(10, 10, 10);`);
     expect(report.map((p) => p.unresolved)).toEqual(['no built assembly: the build failed, or the script does not return this assembly']);
   }, 120_000);
+});
+
+/** The report next to the built scene: `box(part)` is the part's bounding box where the scene puts it. */
+async function builtScene(code: string): Promise<{ report: PortReportEntry[]; box: (part: string) => Box; errors: string[] }> {
+  const model = await buildModel({ fileName: 'ports.kcad.ts', code });
+  const scene = tubeSceneContext(model).scene!;
+  const box = (part: string): Box => transformScenePart(scene.parts.find((p) => p.name === part)!, []).bbox as Box;
+  const built = await evaluateAndBuildScript({ code });
+  const errors = built.evaluation.diagnostics.filter((d) => d.severity === 'error').map((d) => d.message);
+  return { report: portReportOnModel(model)!, box, errors };
+}
+
+describe('ports on a part placed with connect', () => {
+  /** A cap seated on the body's pad with `connect`, with a port on top of the cap. */
+  const capOnBody = (rest: string, x = 50) => `
+const X = param('X', ${x});
+const asm = assembly('rig');
+const body = asm.part('body', box(40, 40, 40), { at: [X, -30, 5], connectors: { pad: { origin: [25, 15, 40], axis: [0, 0, 1] } } });
+const cap = asm.part('cap', box(20, 20, 20), { connectors: { foot: { origin: [10, 10, 0], axis: [0, 0, 1] } }, connect: { connector: 'foot', to: body.connector('pad') } })${topPort(20)};
+tubeSpec({});
+${rest}`;
+  const LINE = `
+asm.part('line', tube('line', { from: cap.port('out'), to: { point: [X.add(25), -15, 200] }, wall: 0.7, bendRadius: 18 }));`;
+
+  it('reports the port where the built scene has the part, placedBy connect', async () => {
+    const { report, box } = await builtScene(capOnBody('return asm.model();'));
+    // The cap's foot [10, 10, 0] sits on the pad at [50 + 25, -30 + 15, 5 + 40]; the port is 20 above the foot.
+    expect(report).toEqual([{ part: 'cap', name: 'out', system: 'oil', od: 6,
+      origin: [75, -15, 65], axis: [0, 0, 1], placedBy: 'connect', usedBy: [] }]);
+    expect(report[0].origin).toEqual(topOf(box('cap')));
+    expect(box('cap').min[2]).toBe(box('body').max[2]);
+  }, 120_000);
+
+  it('a param on the parent moves the port, and the scene agrees', async () => {
+    const { report, box } = await builtScene(capOnBody('return asm.model();', 130));
+    expect(report[0]).toMatchObject({ origin: [155, -15, 65], placedBy: 'connect' });
+    expect(report[0].origin).toEqual(topOf(box('cap')));
+  }, 120_000);
+
+  it('reports what the scene has when a mate moves the parent', async () => {
+    const { report, box } = await builtScene(`
+const asm = assembly('rig');
+const base = asm.part('base', box(100, 100, 10), { at: [0, 0, 0] })
+  .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [70, 60, 10] } });
+const body = asm.part('body', box(40, 40, 40), { at: [0, 0, 0], connectors: { pad: { origin: [20, 20, 40], axis: [0, 0, 1] } } })
+  .connector('seat', { type: 'frame', origin: { kind: 'vec3', value: [20, 20, 0] } })${topPort(40)};
+asm.part('cap', box(20, 20, 20), { connectors: { foot: { origin: [10, 10, 0], axis: [0, 0, 1] } }, connect: { connector: 'foot', to: body.connector('pad') } })${topPort(20)};
+asm.mate('seat-on-mount', 'body.seat', 'base.mount', 'fastened');
+return asm.solvedModel({});`);
+    expect(report.map((p) => [p.part, p.placedBy])).toEqual([['body', 'mate'], ['cap', 'connect']]);
+    // Whatever the solve does with the pair, each port is on top of its own built part.
+    expect(report[0].origin).toEqual(topOf(box('body')));
+    expect(report[1].origin).toEqual(topOf(box('cap')));
+    // Today the solve moves the body to the mount and leaves the cap where connect put it at capture.
+    expect(report.map((p) => p.origin)).toEqual([[70, 60, 50], [20, 20, 60]]);
+  }, 120_000);
+
+  it('a mate on the connect part itself reports placedBy mate, at the solved position', async () => {
+    const { report, box } = await builtScene(`
+const asm = assembly('rig');
+const base = asm.part('base', box(100, 100, 10), { at: [0, 0, 0], connectors: { pad: { origin: [10, 10, 10], axis: [0, 0, 1] } } })
+  .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [70, 60, 10] } });
+asm.part('cap', box(20, 20, 20), { connectors: { foot: { origin: [10, 10, 0], axis: [0, 0, 1] } }, connect: { connector: 'foot', to: base.connector('pad') } })
+  .connector('seat', { type: 'frame', origin: { kind: 'vec3', value: [10, 10, 0] } })${topPort(20)};
+asm.mate('seat-on-mount', 'cap.seat', 'base.mount', 'fastened');
+return asm.solvedModel({});`);
+    expect(report).toHaveLength(1);
+    expect(report[0].placedBy).toBe('mate');
+    expect(report[0].origin).toEqual(topOf(box('cap')));
+  }, 120_000);
+
+  it('part.port() on the connect part ends a tube on the port: the gate passes and usedBy lists it', async () => {
+    for (const x of [50, 130]) {
+      const { report, box, errors } = await builtScene(capOnBody(`${LINE}\nreturn asm.model();`, x));
+      expect(errors).toEqual([]);
+      expect(report[0]).toMatchObject({ origin: [x + 25, -15, 65], placedBy: 'connect', usedBy: ['line'] });
+      // The tube starts on top of the cap as built: its lowest point is the cap's top face, on the port.
+      expect(box('line').min[2]).toBeCloseTo(box('cap').max[2], 6);
+      expect((box('line').min[0] + box('line').max[0]) / 2).toBeCloseTo(report[0].origin![0], 6);
+    }
+  }, 120_000);
+
+  it('a tube on a connect port that the solve moves away is reported, like any other port', async () => {
+    const { report, errors } = await builtScene(`
+const asm = assembly('rig');
+const base = asm.part('base', box(100, 100, 10), { at: [0, 0, 0], connectors: { pad: { origin: [10, 10, 10], axis: [0, 0, 1] } } })
+  .connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [70, 60, 10] } });
+const cap = asm.part('cap', box(20, 20, 20), { connectors: { foot: { origin: [10, 10, 0], axis: [0, 0, 1] } }, connect: { connector: 'foot', to: base.connector('pad') } })
+  .connector('seat', { type: 'frame', origin: { kind: 'vec3', value: [10, 10, 0] } })${topPort(20)};
+asm.mate('seat-on-mount', 'cap.seat', 'base.mount', 'fastened');
+tubeSpec({});
+asm.part('line', tube('line', { from: cap.port('out'), to: { point: [10, 10, 200] }, wall: 0.7, bendRadius: 18 }));
+return asm.solvedModel({});`);
+    expect(report[0].placedBy).toBe('mate');
+    expect(errors.filter((m) => m.startsWith('tube.port.misaligned'))).toEqual([
+      expect.stringMatching(/^tube\.port\.misaligned: tube 'line' from end is \d+\.\d\d mm from port 'cap\.out'; the port is at \[/)]);
+  }, 120_000);
+
+  it('the output schema allows placedBy connect', () => {
+    expect(TOOL_OUTPUT_SCHEMAS.evaluate_script.properties.ports.items.properties.placedBy.enum).toEqual(['at', 'connect', 'mate']);
+  });
 });

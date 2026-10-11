@@ -182,6 +182,7 @@
                 "type": "string",
                 "enum": [
                   "at",
+                  "connect",
                   "mate"
                 ],
                 "description": "'at': the part is where its at puts it. 'mate': a mate moved or turned the part after at; origin and axis are the solved ones, and part.port(name) still gives the position before the mate. Omitted when unresolved is set."

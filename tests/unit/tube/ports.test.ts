@@ -106,7 +106,7 @@ describe('part.port()', () => {
       axis: axis as [number, number, number], port: { system: 'oil', od: 6 } })).toThrowError(/^tube\.port\.invalid:/);
   });
 
-  it('port() on a part placed with connect throws tube.port.unresolved', () => {
+  it('port() on a part placed with connect gives the port on the placement connect worked out', () => {
     const { api } = makeApi();
     const asm = api.assembly('rig');
     const base = asm.part('base', api.box(20, 20, 8), { at: [0, 0, 0],
@@ -116,7 +116,11 @@ describe('part.port()', () => {
       connect: { connector: 'root', to: base.connector('mount') },
     }).connector('out', { type: 'axis', origin: { kind: 'vec3', value: [20, 20, 40] }, axis: [0, 0, 1],
       port: { system: 'oil', od: 6 } });
-    expect(() => pump.port('out')).toThrowError(/^tube\.port\.unresolved:/);
+    const end = pump.port('out');
+    // connect puts the pump's root [0, 0, 0] on the mount at [10, 0, 8]: that is the part's at.
+    expect(end.base).toBe(pump.at);
+    expect([pump.at.x.evaluated, pump.at.y.evaluated, pump.at.z.evaluated]).toEqual([10, 0, 8]);
+    expect(end).toMatchObject({ offset: [20, 20, 40], axis: [0, 0, 1], od: 6, system: 'oil', part: 'pump', connector: 'out' });
   });
 });
 

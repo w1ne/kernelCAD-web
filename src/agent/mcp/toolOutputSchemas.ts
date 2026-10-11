@@ -109,7 +109,7 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
             minStraight: { type: 'number', description: 'Straight a tube must keep leaving the port, mm. Omitted when the port declares none.' },
             origin: { type: 'array', items: { type: 'number' }, description: 'Port position [x, y, z] in assembly space, mm, with params and mates resolved. Omitted when unresolved is set.' },
             axis: { type: 'array', items: { type: 'number' }, description: 'Unit axis [x, y, z] pointing out of the part, assembly space. Omitted when unresolved is set.' },
-            placedBy: { type: 'string', enum: ['at', 'mate'], description: "'at': the part is where its at puts it. 'mate': a mate moved or turned the part after at; origin and axis are the solved ones, and part.port(name) still gives the position before the mate. Omitted when unresolved is set." },
+            placedBy: { type: 'string', enum: ['at', 'connect', 'mate'], description: "'at': the part is where its at puts it. 'mate': a mate moved or turned the part after at; origin and axis are the solved ones, and part.port(name) still gives the position before the mate. Omitted when unresolved is set." },
             usedBy: { type: 'array', items: { type: 'string' }, description: 'Names of the tubes that end on the port; empty when the port is free.' },
             unresolved: { type: 'string', description: 'Why the position is missing: the build failed or the script does not return the assembly, the part is not in the built assembly, the connector origin is a topology reference or not numeric, or the part is placed with connect. Omitted when origin is given.' },
           },
