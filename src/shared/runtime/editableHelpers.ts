@@ -183,3 +183,50 @@ export function toBoolParam(value: Editable<boolean>): Param {
     evaluated: value ? 1 : 0,
   };
 }
+
+/**
+ * Deep-replace every numeric ParamRef inside a plain-data selector (an
+ * EdgeQuery / FaceQuery in a record's `inputs`, e.g. `{ atZ: h }` or
+ * `{ within: { min: [0, pw.divide(2), 0], ... } }`) with a Param, so the
+ * recompute pre-resolve refreshes it on set_param and the kernel query
+ * normaliser reads `evaluated`. With a ParamTable the Param starts at the
+ * current value (lowering paths without a table still see the default).
+ * Only plain objects and arrays are walked; anything else passes through.
+ */
+export function paramRefsToParams<T>(node: T, table?: ParamTable): T {
+  return walkParamRefs(node, table, 0) as T;
+}
+
+function isPlainObject(v: object): boolean {
+  const proto = Object.getPrototypeOf(v) as { constructor?: { name?: string } } | null;
+  return proto === null || Object.getPrototypeOf(proto) === null || proto.constructor?.name === 'Object';
+}
+
+function walkParamRefs(node: unknown, table: ParamTable | undefined, depth: number): unknown {
+  if (depth > 16 || node === null || typeof node !== 'object') return node;
+  if (isParamRef(node) && !isTypedParamRef(node)) {
+    const p = toParam(node as Editable<number>, 'mm');
+    if (table === undefined || p.paramRef === undefined) return p;
+    try {
+      const expr: ParamRefExpr = typeof p.paramRef === 'string' ? { kind: 'param', name: p.paramRef } : p.paramRef;
+      return { ...p, evaluated: resolveExpr(expr, table) };
+    } catch {
+      return p;
+    }
+  }
+  if (Array.isArray(node)) {
+    const out = node.map((v) => walkParamRefs(v, table, depth + 1));
+    return out.some((v, i) => v !== node[i]) ? out : node;
+  }
+  // Scripts run in a vm context: their object literals carry THAT realm's
+  // Object.prototype, so test for "a plain object" by shape, not identity.
+  if (!isPlainObject(node)) return node;
+  const obj = node as Record<string, unknown>;
+  let changed = false;
+  const out: Record<string, unknown> = {};
+  for (const k of Object.keys(obj)) {
+    out[k] = walkParamRefs(obj[k], table, depth + 1);
+    if (out[k] !== obj[k]) changed = true;
+  }
+  return changed ? out : node;
+}
