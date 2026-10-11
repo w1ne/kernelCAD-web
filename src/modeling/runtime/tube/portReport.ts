@@ -98,8 +98,9 @@ function placeInScene(model: BuiltModel, ctx: TubeSceneContext, stored: Assembly
 interface UnbuiltAssembly {
   /** Names of the parts whose own shape did not build. */
   failed: ReadonlySet<string>;
-  /** Names of the parts a mate or a joint refers to. */
-  solved: ReadonlySet<string>;
+  /** The parts the solve positions, by name: what refers to each. A part with
+   *  both reads `mate`, as the mate's pose is the one a built scene keeps. */
+  solved: ReadonlyMap<string, 'mate' | 'joint'>;
 }
 
 const SCENE_KINDS: readonly string[] = ['assemblyModel', 'solvedAssembly'];
@@ -116,7 +117,8 @@ function unbuiltAssembly(model: BuiltModel, assembly: Assembly): UnbuiltAssembly
   const jointed = assembly.__joints().flatMap((j) => [j.parentPartId, j.childPartId]).flatMap((id) => nameOf.get(id) ?? []);
   return {
     failed: new Set(parts.filter((p) => model.shapes.get(p.id) === undefined).map((p) => p.name)),
-    solved: new Set([...mated, ...jointed]),
+    solved: new Map<string, 'mate' | 'joint'>([
+      ...jointed.map((n) => [n, 'joint'] as const), ...mated.map((n) => [n, 'mate'] as const)]),
   };
 }
 
@@ -131,7 +133,8 @@ function placeWithoutScene(model: BuiltModel, unbuilt: UnbuiltAssembly, stored: 
   const why = failed.length === 0 ? '' : ` (part${failed.length > 1 ? 's' : ''} ${failed.join(', ')} failed to build)`;
   const notSolved = `the assembly was not built${why}, so the solve did not run; part '${stored.name}'`;
   if (stored.connectParentId !== undefined) return { unresolved: `${notSolved} is placed with connect` };
-  if (unbuilt.solved.has(stored.name)) return { unresolved: `${notSolved} is positioned by a mate` };
+  const by = unbuilt.solved.get(stored.name);
+  if (by !== undefined) return { unresolved: `${notSolved} is positioned by a ${by}` };
   return { origin: tidy(add(partAt(model, stored), local.origin)), axis: tidy(unit(local.axis)), placedBy: 'at' };
 }
 

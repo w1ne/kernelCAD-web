@@ -230,13 +230,13 @@ Placing corners from a port:
 
 | Text starts with | Cause |
 |---|---|
-| `no built assembly` | the script does not build this assembly. Return `asm.model()` or `asm.solvedModel(...)` |
+| `no built assembly` | the script does not build this assembly: it never calls `asm.model()` or `asm.solvedModel(...)`, or it throws before reaching that call. Fix the error in `diagnostics`, or return `asm.model()` |
 | `part '<name>' failed to build` | the part's own shape has an error. Fix it in `diagnostics`; the port is where it was declared once the part builds |
-| `the assembly was not built ..., so the solve did not run` | another part failed, and this part is positioned by a mate or placed with `connect`. Fix the failed part named in the text |
+| `the assembly was not built ..., so the solve did not run` | another part failed, and this part is positioned by a mate or a joint, or placed with `connect`. Fix the failed part named in the text |
 | `part '<name>' is not in the built assembly` | the part did not make it into the scene |
 | `the connector origin is a face, edge or vertex reference` | give the port a `{ kind: 'vec3' }` origin |
 
-When one part fails to build, the assembly is not built and no mate is solved. A port on a part that is placed with `at` and that no mate refers to is still listed with its position (`placedBy: 'at'`), so the routes to the good parts can be checked while the failed part is fixed.
+When one part fails to build, the assembly is not built and no mate is solved. A port on a part that is placed with `at` and that no mate or joint refers to is still listed with its position (`placedBy: 'at'`), so the routes to the good parts can be checked while the failed part is fixed.
 
 A port that nothing connects to is not an error. Two tubes in one `usedBy` are the two-tubes-from-one-port case and fail `tube.clearance.overlap`.
 

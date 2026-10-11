@@ -185,7 +185,7 @@
                   "connect",
                   "mate"
                 ],
-                "description": "'at': the part is where its at puts it. 'mate': a mate moved or turned the part after at; origin and axis are the solved ones, and part.port(name) still gives the position before the mate. Omitted when unresolved is set."
+                "description": "'at': the part is where its at puts it. 'connect': the part is where its connect puts it. For both, part.port(name) gives this position. 'mate': a mate or joint moved or turned the part after that; origin and axis are the solved ones, and part.port(name) still gives the position before the solve. Omitted when unresolved is set."
               },
               "usedBy": {
                 "type": "array",
@@ -196,7 +196,7 @@
               },
               "unresolved": {
                 "type": "string",
-                "description": "Why the position is missing: the build failed or the script does not return the assembly, the part is not in the built assembly, the connector origin is a topology reference or not numeric, or the part is placed with connect. Omitted when origin is given."
+                "description": "Why the position is missing: the script does not build the assembly, the part failed to build, another part failed so the solve did not run and this part is positioned by a mate, a joint or connect, the part is not in the built assembly, or the connector origin is a topology reference or not numeric. Omitted when origin is given."
               }
             },
             "required": [

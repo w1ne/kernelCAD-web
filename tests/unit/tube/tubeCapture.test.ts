@@ -304,6 +304,27 @@ describe('tubeSpec()', () => {
     expect(() => api.tubeSpec(spec(api.param('P', value)) as never)).toThrowError(message);
   });
 
+  it.each([
+    ['minBendRadiusFactor', (p: unknown) => ({ minBendRadiusFactor: p })],
+    ['maxBendAngle', (p: unknown) => ({ maxBendAngle: p })],
+    ['clearance.default', (p: unknown) => ({ clearance: { default: p } })],
+    ['clearance.pairs[0].min', (p: unknown) => ({ clearance: { pairs: [{ a: 'x', b: 'y', min: p }] } })],
+    ['systems.oil.minStraightAtEnd', (p: unknown) => ({ systems: { oil: { minStraightAtEnd: p } } })],
+  ])('a param in %s that is not a number, or cannot be evaluated, fails as a tubeSpec argument error', (field, spec) => {
+    const { api } = makeApi();
+    const caught = (run: () => unknown): { code?: string; message: string } => {
+      try { run(); } catch (e) { return e as { code?: string; message: string }; }
+      throw new Error('did not throw');
+    };
+    const text = caught(() => api.tubeSpec(spec(api.param('S', 'steel')) as never));
+    expect(text.code).toBe('feature.invalid-args');
+    expect(text.message.startsWith(`tubeSpec: ${field} — got a param that cannot be read as a number (`), text.message).toBe(true);
+    const zero = api.param('Z', 0);
+    const divided = caught(() => api.tubeSpec(spec(api.param('N', 6).divide(zero)) as never));
+    expect(divided.code).toBe('feature.invalid-args');
+    expect(divided.message.startsWith(`tubeSpec: ${field} — got a param that cannot be read as a number (division by zero`), divided.message).toBe(true);
+  });
+
   it('stores a systems entry as params and leaves it out when none is declared', () => {
     const { api } = makeApi();
     expect('systems' in api.tubeSpec({}).metadata).toBe(false);

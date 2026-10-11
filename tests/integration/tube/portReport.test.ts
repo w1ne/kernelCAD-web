@@ -278,6 +278,31 @@ return asm.solvedModel({});`);
     expect(report.every((p) => (p.origin === undefined) === (p.placedBy === undefined))).toBe(true);
   }, 120_000);
 
+  it('a part a joint positions stays unresolved, and the reason says joint', async () => {
+    const rig = (bad: string) => `
+const asm = assembly('rig');
+const base = asm.part('base', box(40, 40, 10), { at: [0, 0, 0] })${topPort(10)};
+const arm = asm.part('arm', box(20, 20, 20), { at: [50, 0, 0] })${topPort(20)};
+asm.part('free', box(20, 20, 20), { at: [300, 0, 0] })${topPort(20)};
+${bad}
+asm.revolute('hinge', base, arm, { axis: [0, 0, 1], origin: [0, 0, 0] });
+return asm.solvedModel({ hinge: 90 });`;
+    const { report } = await builtParts(rig(`asm.part('bad', ${BROKEN}, { at: [100, 0, 0] })${topPort(20)};`));
+    const notSolved = "the assembly was not built (part 'bad' failed to build), so the solve did not run";
+    expect(report.map((p) => [p.part, p.origin ?? p.unresolved])).toEqual([
+      ['base', `${notSolved}; part 'base' is positioned by a joint`],
+      ['arm', `${notSolved}; part 'arm' is positioned by a joint`],
+      ['free', [310, 10, 20]],
+      ['bad', "part 'bad' failed to build"],
+    ]);
+    // With every part good the joint does move the arm: at + local would have been wrong for it.
+    const built = await builtScene(rig(''));
+    const arm = built.report.find((p) => p.part === 'arm')!;
+    expect(arm.placedBy).toBe('mate');
+    expect(arm.origin).not.toEqual([60, 10, 20]);
+    expect(built.report.find((p) => p.part === 'free')!.origin).toEqual([310, 10, 20]);
+  }, 120_000);
+
   it('an assembly the script never builds keeps the old reason, failed part or not', async () => {
     const { report } = await builtParts(`
 const asm = assembly('rig');

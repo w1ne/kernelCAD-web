@@ -101,8 +101,9 @@ function invalidSystemRule({ system, key, value, applied }: InvalidSystemRule): 
     `tubeSpec systems '${system}' ${key} resolves to ${value}; it must be ${ruleMust(key)}. The top-level value ${applied} was applied.`);
 }
 
-function invalidRule({ rule, value, must, applied }: InvalidRule): CompilerDiagnostic {
-  return tubeDiagnostic('tube.spec.rule-invalid', `tubeSpec ${rule} resolves to ${value}; it must be ${must}. ${applied}`);
+function invalidRule({ rule, value, error, must, applied }: InvalidRule): CompilerDiagnostic {
+  const got = error !== undefined ? `cannot be evaluated (${error})` : `resolves to ${value}`;
+  return tubeDiagnostic('tube.spec.rule-invalid', `tubeSpec ${rule} ${got}; it must be ${must}. ${applied}`);
 }
 
 /** Top-level values first: a `systems` message quotes the top-level value that was applied. */

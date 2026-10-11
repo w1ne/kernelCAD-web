@@ -261,6 +261,25 @@ describe('resolveTubeSpec', () => {
       clearance: { default: 6, pairs: [{ a: 'fuel', b: 'oil', min: 12 }] }, systems: { oil: {} } });
   });
 
+  it('an expression that cannot be evaluated falls back like any other bad value, and names the rule', () => {
+    const table = new ParamTable();
+    table.declare('Z', 'number', 0);
+    const overZero = (unit = 'unitless') => ({ expression: '(6 / Z)', unit, evaluated: 0,
+      paramRef: { kind: 'binop', op: '/', left: { kind: 'lit', value: 6 }, right: { kind: 'param', name: 'Z' } } }) as never;
+    const r = resolveTubeSpec({ ...spec, virtual: true, minBendRadiusFactor: overZero(),
+      clearance: { default: overZero('mm'), pairs: [{ a: 'fuel', b: 'bleed', min: overZero('mm') }] },
+      systems: { oil: { minStraightAtEnd: overZero() } } }, table);
+    const why = 'division by zero in ParamRef expression';
+    expect(r.invalidRules).toEqual([
+      { rule: 'minBendRadiusFactor', value: Number.NaN, error: why, must: 'a positive finite number', applied: 'The default 3 was applied.' },
+      { rule: 'clearance.default', value: Number.NaN, error: why, must: 'a positive finite number', applied: 'The default 6 was applied.' },
+      { rule: "clearance.pairs[0].min ('fuel' / 'bleed')", value: Number.NaN, error: why, must: 'a positive finite number',
+        applied: 'The pair was left out, so clearance.default applies to it.' },
+    ]);
+    expect(r.invalid).toEqual([{ system: 'oil', key: 'minStraightAtEnd', value: Number.NaN, applied: 2.5 }]);
+    expect(r.spec).toMatchObject({ minBendRadiusFactor: 3, clearance: { default: 6, pairs: [] }, systems: { oil: {} } });
+  });
+
   it('drops an override that resolves to a number the rule cannot be, and reports it', () => {
     const r = resolveTubeSpec({ ...spec, virtual: true, clearance: { default: 6, pairs: [] },
       systems: {

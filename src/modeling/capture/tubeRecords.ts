@@ -339,10 +339,25 @@ const kindOf = (key: TubeRuleKey): RuleKind => (key === 'maxBendAngle' ? 'angle'
 function ruleParam(field: string, kind: RuleKind, v: unknown, table: ParamTable): Param {
   const requires = kind === 'angle' ? 'a number in (0, 180] degrees' : 'a positive finite number';
   if (!isParamRef(v) && typeof v !== 'number') badSpec(field, json(v), requires);
-  const p = toParam(v as Editable<number>, RULE_UNIT[kind]);
-  const value = paramValue(p, table);
+  const { p, value } = readRuleParam(field, v as Editable<number>, RULE_UNIT[kind], requires, table);
   if (!isPositive(value) || (kind === 'angle' && value > 180)) badSpec(field, json(value), requires);
   return p;
+}
+
+/** The Param and its current value. A param that is not a number (a string
+ *  or choice param) or an expression that cannot be evaluated (division by
+ *  zero) throws inside the param helpers: report it as a tubeSpec argument
+ *  error on the field, like every other bad value. */
+function readRuleParam(
+  field: string, v: Editable<number>, unit: Param['unit'], requires: string, table: ParamTable,
+): { p: Param; value: number } {
+  try {
+    const p = toParam(v, unit);
+    return { p, value: paramValue(p, table) };
+  } catch (e) {
+    const why = e instanceof Error ? e.message : String(e);
+    return badSpec(field, `a param that cannot be read as a number (${why})`, requires);
+  }
 }
 
 /** A top-level number as stored: a plain number stays the number it was (the

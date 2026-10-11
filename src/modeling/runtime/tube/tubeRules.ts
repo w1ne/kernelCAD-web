@@ -36,8 +36,9 @@ export interface InvalidSystemRule { system: string; key: TubeRuleKey; value: nu
 
 /** A top-level rule or clearance number that resolved to a number it cannot
  *  be. `rule` is the field as the script writes it; `applied` is the sentence
- *  saying what the gate used in its place. */
-export interface InvalidRule { rule: string; value: number; must: string; applied: string }
+ *  saying what the gate used in its place. `error` is set, and `value` is
+ *  NaN, when the expression could not be evaluated at all. */
+export interface InvalidRule { rule: string; value: number; error?: string; must: string; applied: string }
 
 const isUsableRule = (key: TubeRuleKey, v: number): boolean =>
   Number.isFinite(v) && v > 0 && (key !== 'maxBendAngle' || v <= 180);
@@ -45,56 +46,72 @@ const isUsableRule = (key: TubeRuleKey, v: number): boolean =>
 const POSITIVE = 'a positive finite number';
 export const ruleMust = (key: TubeRuleKey): string => (key === 'maxBendAngle' ? 'a number in (0, 180] degrees' : POSITIVE);
 
-const numberOf = (v: TubeRuleValue): number => (typeof v === 'number' ? v : v.evaluated);
+interface Read { value: number; error?: string }
+
+/** One captured value at the param table's current values. An expression
+ *  that cannot be evaluated (division by zero) reads as NaN with the reason,
+ *  so it falls back like any other value the rule cannot be. */
+function readValue(v: TubeRuleValue, table: ParamTable): Read {
+  if (typeof v === 'number') return { value: v };
+  try {
+    return { value: resolveParams(v, table).evaluated };
+  } catch (e) {
+    return { value: Number.NaN, error: e instanceof Error ? e.message : String(e) };
+  }
+}
+
+const invalidRule = (rule: string, read: Read, must: string, applied: string): InvalidRule =>
+  ({ rule, value: read.value, ...(read.error !== undefined ? { error: read.error } : {}), must, applied });
 
 /** The spec's clearance numbers. A default that is not usable falls back to
  *  the built-in default; a pair whose `min` is not usable is left out, so the
  *  default clearance applies to that pair. */
-function resolveClearance(clearance: TubeSpecMetadata['clearance'], invalid: InvalidRule[]): TubeRuleSpec['clearance'] {
+function resolveClearance(
+  clearance: TubeSpecMetadata['clearance'], table: ParamTable, invalid: InvalidRule[],
+): TubeRuleSpec['clearance'] {
+  const usable = (v: number): boolean => Number.isFinite(v) && v > 0;
   const fallback = TUBE_SPEC_DEFAULTS.clearance.default;
-  let def = numberOf(clearance.default);
-  if (!(Number.isFinite(def) && def > 0)) {
-    invalid.push({ rule: 'clearance.default', value: def, must: POSITIVE, applied: `The default ${fallback} was applied.` });
-    def = fallback;
-  }
+  const def = readValue(clearance.default, table);
+  if (!usable(def.value)) invalid.push(invalidRule('clearance.default', def, POSITIVE, `The default ${fallback} was applied.`));
   const pairs = clearance.pairs.flatMap((p, i) => {
-    const min = numberOf(p.min);
-    if (Number.isFinite(min) && min > 0) return [{ a: p.a, b: p.b, min }];
-    invalid.push({ rule: `clearance.pairs[${i}].min ('${p.a}' / '${p.b}')`, value: min, must: POSITIVE,
-      applied: 'The pair was left out, so clearance.default applies to it.' });
+    const min = readValue(p.min, table);
+    if (usable(min.value)) return [{ a: p.a, b: p.b, min: min.value }];
+    invalid.push(invalidRule(`clearance.pairs[${i}].min ('${p.a}' / '${p.b}')`, min, POSITIVE,
+      'The pair was left out, so clearance.default applies to it.'));
     return [];
   });
-  return { default: def, pairs };
+  return { default: usable(def.value) ? def.value : fallback, pairs };
 }
 
 /** The captured spec with every param read through the param table (a
  *  captured Param that references a script parameter has `evaluated: 0`).
  *  Capture checks every value, but a param can change afterwards. A value
- *  that is no longer usable is replaced and listed for the gate to report:
- *  a top-level rule by its default (`invalidRules`), a `systems` value by the
- *  top-level rule (`invalid`). */
+ *  that is no longer usable, or can no longer be evaluated, is replaced and
+ *  listed for the gate to report: a top-level rule by its default
+ *  (`invalidRules`), a `systems` value by the top-level rule (`invalid`).
+ *  Each value is read on its own, so one bad expression does not take the
+ *  rest of the spec with it. */
 export function resolveTubeSpec(
   meta: TubeSpecMetadata, table: ParamTable,
 ): { spec: TubeRuleSpec; invalid: InvalidSystemRule[]; invalidRules: InvalidRule[] } {
-  const { systems, clearance, ...rules } = resolveParams(meta, table);
   const invalid: InvalidSystemRule[] = [];
   const invalidRules: InvalidRule[] = [];
   const top = {} as TubeRuleNumbers;
   for (const key of TUBE_RULE_KEYS) {
-    const value = numberOf(rules[key]);
-    top[key] = isUsableRule(key, value) ? value : TUBE_SPEC_DEFAULTS[key];
-    if (!isUsableRule(key, value)) {
-      invalidRules.push({ rule: key, value, must: ruleMust(key), applied: `The default ${TUBE_SPEC_DEFAULTS[key]} was applied.` });
-    }
+    const read = readValue(meta[key], table);
+    const ok = isUsableRule(key, read.value);
+    top[key] = ok ? read.value : TUBE_SPEC_DEFAULTS[key];
+    if (!ok) invalidRules.push(invalidRule(key, read, ruleMust(key), `The default ${TUBE_SPEC_DEFAULTS[key]} was applied.`));
   }
-  const spec: TubeRuleSpec = { ...top, clearance: resolveClearance(clearance, invalidRules) };
-  if (systems === undefined) return { spec, invalid, invalidRules };
+  const spec: TubeRuleSpec = { ...top, clearance: resolveClearance(meta.clearance, table, invalidRules) };
+  if (meta.systems === undefined) return { spec, invalid, invalidRules };
   const resolved: NonNullable<TubeRuleSpec['systems']> = {};
-  for (const [system, entry] of Object.entries(systems)) {
+  for (const [system, entry] of Object.entries(meta.systems)) {
     const overrides: Partial<TubeRuleNumbers> = {};
     for (const key of TUBE_RULE_KEYS) {
-      const value = entry[key]?.evaluated;
-      if (value === undefined) continue;
+      const captured = entry[key];
+      if (captured === undefined) continue;
+      const { value } = readValue(captured, table);
       if (isUsableRule(key, value)) overrides[key] = value;
       else invalid.push({ system, key, value, applied: top[key] });
     }

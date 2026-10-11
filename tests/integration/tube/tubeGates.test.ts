@@ -822,4 +822,38 @@ return asm.model();`, 'E', [2.5, 1]);
     expect(bad.diagnostics[0].nextAction).toEqual(DIAGNOSTIC_REGISTRY['tube.spec.rule-invalid'].nextAction);
     expect(bad.lines).toHaveLength(1);
   }, 120_000);
+
+  it('a bad pair min and a bad maxBendAngle are reported too; the pair is left out and the angle default applies', async () => {
+    const code = HEAD + `
+const P = param('P', 10);
+tubeSpec({ maxBendAngle: P.multiply(12), clearance: { pairs: [{ a: 'fuel', b: 'bleed', min: P }] } });
+const a = tube('fuel-1', { from: block.port('p1'), to: { point: [20, 150, 120] }, via: [[20, 20, 120]], wall: 1, bendRadius: 30 });
+const b = tube('bleed-1', { from: block.port('p2'), to: { point: [100, 20, 200] }, via: [[100, 20, 20]], wall: 1, bendRadius: 30 });
+asm.part('fuel-1', a); asm.part('bleed-1', b);
+return asm.model();`;
+    const [ok, bad] = await atValues(code, 'P', [10, -5]);
+    expect(ok.diagnostics).toEqual([]);
+    // No rule finding follows: 180 deg and the 6 mm default clearance are what the two 90 degree lines are held to.
+    expect(bad.diagnostics.map((d) => [d.severity, d.message])).toEqual([
+      ['error', 'tube.spec.rule-invalid: tubeSpec maxBendAngle resolves to -60; it must be a number in (0, 180] degrees. The default 180 was applied.'],
+      ['error', "tube.spec.rule-invalid: tubeSpec clearance.pairs[0].min ('fuel' / 'bleed') resolves to -5; it must be a positive finite number. " +
+        'The pair was left out, so clearance.default applies to it.'],
+    ]);
+    expect(bad.lines.map((l) => l.name)).toEqual(['fuel-1', 'bleed-1']);
+  }, 180_000);
+
+  it('a spec expression that divides by zero after capture names the rule, falls back, and the lines are still reported', async () => {
+    const code = twoBends('{ minBendRadiusFactor: N.divide(D), clearance: { default: N.multiply(2).divide(D) } }')
+      .replace('tubeSpec(', "const N = param('N', 3);\nconst D = param('D', 1);\ntubeSpec(");
+    const [ok, bad] = await atValues(code, 'D', [1, 0]);
+    expect(ok.diagnostics).toEqual([]);
+    expect(bad.diagnostics.map((d) => [d.severity, d.message])).toEqual([
+      ['error', 'tube.spec.rule-invalid: tubeSpec minBendRadiusFactor cannot be evaluated (division by zero in ParamRef expression); ' +
+        'it must be a positive finite number. The default 3 was applied.'],
+      ['error', 'tube.spec.rule-invalid: tubeSpec clearance.default cannot be evaluated (division by zero in ParamRef expression); ' +
+        'it must be a positive finite number. The default 6 was applied.'],
+    ]);
+    expect(bad.lines).toHaveLength(1);
+    expect(bad.lines[0].minClearance).toBeDefined();
+  }, 120_000);
 });
