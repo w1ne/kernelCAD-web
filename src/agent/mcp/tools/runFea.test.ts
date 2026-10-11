@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, it, expect } from 'vitest';
 import { runFeaTool } from './runFea';
+import { RUN_FEA_EXAMPLE } from './runFeaArgs';
 
 describe('run_fea MCP tool (characterisation)', () => {
   it('returns the script-load failure verbatim when neither file nor code is given', async () => {
@@ -15,7 +16,8 @@ describe('run_fea MCP tool (characterisation)', () => {
     expect(await runFeaTool({ code: 'const b = box(10, 10, 10);\nreturn b;' })).toEqual({
       ok: false,
       error:
-        'The script declares no feaStudy. Add shape.feaStudy({ material, fixed, loads }) to the part you want analysed.',
+        'The script declares no feaStudy. Either add shape.feaStudy({ material, fixed, loads }) to the part you want analysed, ' +
+        `or pass the study on the call: ${RUN_FEA_EXAMPLE}.`,
       errorCode: 'feature.invalid-args',
     });
   });

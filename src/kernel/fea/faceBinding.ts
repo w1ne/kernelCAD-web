@@ -20,6 +20,8 @@ import { measureArea, type Face } from 'replicad';
 import { resolveFaceQuery } from '../backends/occt/edgeQueries';
 import type { OcctBackend } from '../backends/occt/occtBackend';
 import { formatTopoRef, parseTopoRef, resolveTopoRef } from '../naming';
+import { parseAnyTopologyInput } from '../naming/parseAnyTopologyInput';
+import { evaluate } from '../naming/queryEvaluator';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { FaceQuery } from '../../shared/intent/queryTypes';
 import type { FeaFaceSelector } from '../../shared/intent/feaStudyRecord';
@@ -69,6 +71,32 @@ function describe(face: Face, ref: string): FaceDescriptor {
   return { centroid: [c.x, c.y, c.z], area: areaOf(face), ref };
 }
 
+/** A bare face label ('bottom', 'top', 'wall'): read as withLabel. */
+const BARE_LABEL = /^[A-Za-z_][\w-]*$/;
+
+/** Resolve a ref / Query string through the Query evaluator. */
+function resolveByQuery(
+  shape: OcctBackend,
+  allFaces: readonly Face[],
+  selector: string,
+  query: string,
+  ctx: { owner: string; records?: readonly FeatureRecord[] },
+): ResolveSelectorResult {
+  try {
+    const hits = evaluate(parseAnyTopologyInput(query), {
+      backend: shape,
+      featureId: ctx.owner,
+      ...(ctx.records !== undefined ? { records: ctx.records } : {}),
+    });
+    const hashes = new Set(hits.map(h => h.handle));
+    const faces = allFaces.filter(f => hashes.has(faceHashOf(f)));
+    if (faces.length === 0) return { ok: false, faces: [], error: `${selector} matched no face on the shape.` };
+    return { ok: true, faces: faces.map(f => describe(f, selector)) };
+  } catch (e) {
+    return { ok: false, faces: [], error: `${selector} did not resolve: ${(e as Error).message}` };
+  }
+}
+
 export interface ResolveSelectorResult {
   ok: boolean;
   faces: FaceDescriptor[];
@@ -92,6 +120,7 @@ export function resolveSelector(
   const allFaces = (shape.getReplicadShape() as unknown as { faces: Face[] }).faces;
 
   if (typeof selector === 'string') {
+    if (BARE_LABEL.test(selector)) return resolveByQuery(shape, allFaces, selector, `@kcq[face(withLabel("${selector}"))]`, ctx);
     const parsed = parseTopoRef(selector);
     if ('error' in parsed) {
       return { ok: false, faces: [], error: `could not parse topology ref '${selector}': ${parsed.error}` };
@@ -102,7 +131,11 @@ export function resolveSelector(
       ...(ctx.records !== undefined ? { records: ctx.records } : {}),
     });
     if (r.kind !== 'ok') {
-      return { ok: false, faces: [], error: `${selector} did not resolve: ${r.message}` };
+      // The lineage resolver skips faces with no snapshot — every face of a
+      // plain primitive — so '@kc[box_1/face/bottom]' missed on a box. The
+      // Query evaluator reads the same lineage by feature + label.
+      const viaQuery = resolveByQuery(shape, allFaces, selector, selector, ctx);
+      return viaQuery.ok ? viaQuery : { ok: false, faces: [], error: `${selector} did not resolve: ${r.message}` };
     }
     const match = allFaces.find(f => faceHashOf(f) === r.entityHash);
     if (match === undefined) {
