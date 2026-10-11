@@ -255,7 +255,7 @@ export const ASSEMBLY_CODES = {
     description: 'A physical-use-case load part has no mate-graph path to the use-case stable roots.',
   },
 
-  // Assembly validator — v0.7 kinematic-grounding gates (3)
+  // Assembly validator — v0.7 kinematic-grounding gates
   'assembly.mounting-hole.mismatch': {
     hintTemplate:
       "Make the hole features on the two bound faces compatible: same kind (clearance ↔ threaded), same nominal diameter, same depth. Use inspect({ of: 'face-labels' }) to inspect available holes. This is an authoring-time signal; the merge gate is mechanism.disconnect which fires under motion at validate-time.",
@@ -263,6 +263,22 @@ export const ASSEMBLY_CODES = {
     defaultSeverity: 'info',
     group: 'assembly',
     description: 'A fastened mate binds two faces whose hole features are incompatible (kind/diameter/depth mismatch).',
+  },
+  'assembly.mounting-hole.unverified': {
+    hintTemplate:
+      "Informational: the hole-record gate could not resolve which face this fastened-mate connector binds (a vec3 origin or a non-face-center query), so hole diameters were not compared by record. The geometric hole-alignment check still covers the mate. To compare hole() / holes() diameters as well, bind the connector with origin: { kind: 'topology', query: { kind: 'face-center', name: 'top' } }.",
+    nextAction: { kind: 'fix-arg', field: 'connectorOrigin' },
+    defaultSeverity: 'info',
+    group: 'assembly',
+    description: 'A fastened-mate side could not be bound to a face, so the hole-record compatibility check did not run for it (never a mismatch).',
+  },
+  'assembly.mounting-hole.misaligned': {
+    hintTemplate:
+      "Line the fastener holes up: the hole pattern on one part must sit coaxially over the pattern on the other (same pitch and offset). Move the hole positions (hole/holes u, v) on one part, or move the part so the patterns coincide; inspect({ of: 'step' }) or inspect({ of: 'assembly' }) shows hole positions.",
+    nextAction: { kind: 'fix-arg', field: 'holeFeatures' },
+    defaultSeverity: 'error',
+    group: 'assembly',
+    description: 'Two fastened parts each have a hole opening at their shared contact face next to each other but not coaxial, so no screw can pass through both.',
   },
   'assembly.joint-axis.unbound': {
     hintTemplate:

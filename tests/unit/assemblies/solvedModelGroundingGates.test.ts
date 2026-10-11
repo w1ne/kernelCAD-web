@@ -34,7 +34,7 @@ describe('Assembly.solvedModel({validate:"error"}) — kinematic grounding hard-
 
   it('surfaces mounting-hole diameter mismatch (Gate 1) as an info diagnostic — no throw under validate=error', async () => {
     // Two parts joined by a fastened mate with topology-bound face-center
-    // origins; the holes are Ø5 vs Ø6 — Gate 1 emits
+    // origins; the holes are Ø5 vs Ø12 (no one screw size fits both) — Gate 1 emits
     // `assembly.mounting-hole.mismatch`. Demoted to 'info' under the
     // physics-grounded loop (P3, 2026-06-01): the hard-gate no longer
     // flips on this code; the merge gate is mechanism.disconnect which
@@ -44,7 +44,7 @@ describe('Assembly.solvedModel({validate:"error"}) — kinematic grounding hard-
     // `validate: 'warn'` does surface the info diagnostic.
     const { arm, kcad } = makeArm();
     const a = kcad.box(20, 20, 5).hole('top', { u: 0, v: 0, diameter: 5, depth: 'through' });
-    const b = kcad.box(20, 20, 5).hole('bottom', { u: 0, v: 0, diameter: 6, depth: 'through' });
+    const b = kcad.box(20, 20, 5).hole('bottom', { u: 0, v: 0, diameter: 12, depth: 'through' });
     arm
       .part('a', a, { at: [0, 0, 0] })
       .connector('h', { type: 'frame', origin: { kind: 'topology', query: { kind: 'face-center', name: 'top' } } });
@@ -63,7 +63,7 @@ describe('Assembly.solvedModel({validate:"error"}) — kinematic grounding hard-
     //     test doesn't model. Rebuild the same fixture.
     const { arm: arm2, kcad: kcad2 } = makeArm();
     const a2 = kcad2.box(20, 20, 5).hole('top', { u: 0, v: 0, diameter: 5, depth: 'through' });
-    const b2 = kcad2.box(20, 20, 5).hole('bottom', { u: 0, v: 0, diameter: 6, depth: 'through' });
+    const b2 = kcad2.box(20, 20, 5).hole('bottom', { u: 0, v: 0, diameter: 12, depth: 'through' });
     arm2
       .part('a', a2, { at: [0, 0, 0] })
       .connector('h', { type: 'frame', origin: { kind: 'topology', query: { kind: 'face-center', name: 'top' } } });
@@ -148,7 +148,7 @@ describe('Assembly.solvedModel({validate:"error"}) — kinematic grounding hard-
     const { arm, kcad } = makeArm();
     // Gate 1: fastened mate between two parts with mismatching hole diameters.
     const a = kcad.box(20, 20, 5).hole('top', { u: 0, v: 0, diameter: 5, depth: 'through' });
-    const b = kcad.box(20, 20, 5).hole('bottom', { u: 0, v: 0, diameter: 6, depth: 'through' });
+    const b = kcad.box(20, 20, 5).hole('bottom', { u: 0, v: 0, diameter: 12, depth: 'through' });
     arm
       .part('fixA', a)
       .connector('h', { type: 'frame', origin: { kind: 'topology', query: { kind: 'face-center', name: 'top' } } });
@@ -199,7 +199,7 @@ describe('Assembly.solvedModel({validate:"error"}) — kinematic grounding hard-
     // assembly.ts `mode === 'off'` branch).
     const { arm, kcad } = makeArm();
     const a = kcad.box(20, 20, 5).hole('top', { u: 0, v: 0, diameter: 5, depth: 'through' });
-    const b = kcad.box(20, 20, 5).hole('bottom', { u: 0, v: 0, diameter: 6, depth: 'through' });
+    const b = kcad.box(20, 20, 5).hole('bottom', { u: 0, v: 0, diameter: 12, depth: 'through' });
     arm
       .part('fixA', a)
       .connector('h', { type: 'frame', origin: { kind: 'topology', query: { kind: 'face-center', name: 'top' } } });

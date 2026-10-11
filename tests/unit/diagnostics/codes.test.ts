@@ -144,6 +144,8 @@ describe('diagnostic catalogue invariants', () => {
     expect(DIAGNOSTIC_CODES).toContain('feature.shell.boolean-fallback');
     expect(DIAGNOSTIC_CODES).toContain('feature.sheetMetal.crossing-bends');
     expect(DIAGNOSTIC_CODES).toContain('feature.sheetMetal.fold-invalid');
+    expect(DIAGNOSTIC_CODES).toContain('assembly.mounting-hole.unverified');
+    expect(DIAGNOSTIC_CODES).toContain('assembly.mounting-hole.misaligned');
   });
 
   it('every code has a non-empty hint template', () => {
