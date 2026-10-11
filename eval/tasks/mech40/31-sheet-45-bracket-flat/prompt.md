@@ -10,4 +10,4 @@ origin, 80 mm along X, before bending.
 
 The checker measures: that it is built as sheet metal (2 mm, K 0.4), one 45°
 upward bend with R2, the flat pattern (80 × 30 blank, bend line at x = 40),
-and a STEP export.
+the folded envelope and volume, and a STEP export.
