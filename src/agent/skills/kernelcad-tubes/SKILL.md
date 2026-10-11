@@ -95,7 +95,7 @@ asm.part('act-supply-2', branch);
 - `axis` is the direction the branch leaves the trunk along. It must be square to the trunk leg. Only 90 degree tees are built.
 - Either end may be a branch end, or both. A branch may be the trunk of another branch.
 - A branch end has no size: the tube takes its `od` from the port at its other end, or from `od`. The branch may not be larger than the trunk.
-- The branch takes the trunk's system. A `system` option that names another one fails with `tube.branch.system-mismatch`. When the trunk has no system the branch keeps its own.
+- The branch takes the trunk's system: a line does not change system. A `system` option, or a port at the branch's other end, that names another system fails with `tube.branch.system-mismatch`. When the trunk has no system the branch takes its system the way any tube does.
 
 Finding `at`. Evaluate with the trunk alone and read its line in `tubes.lines`: each `lra` row is the straight `l` before a bend and the bend angle `a`. The station at the end of bend `k` is the sum, over bends 1 to `k`, of `l + bendRadius * a * pi / 180`. Add the distance along the next straight to the tee. For a 90 degree bend the arc is `bendRadius * 1.5708`. In the example the trunk goes up 110 mm, turns 90 degrees at radius 40 (62.83 mm), and the tee is 100 mm along the second leg: `at = 110 + 62.83 + 100 = 272.83`.
 
@@ -212,7 +212,7 @@ Argument errors stop the script at the `tube`, `tubeSpec`, `connector` or `part.
 | `tube.port.not-found`, `tube.port.not-a-port` | Register the connector before calling `part.port(name)`, with `port: { system, od }`. |
 | `tube.port.unresolved` | The port has a face reference for an origin. Give it a `{ kind: 'vec3' }` origin, or pass `{ point, axis, part }` for that end. |
 | `tube.branch.trunk-not-found` | Declare the trunk with `tube()` before the branch, and pass the name it was declared with. The message lists the tubes declared so far. |
-| `tube.branch.system-mismatch` | Leave `system` out of the branch: it takes the trunk's system. |
+| `tube.branch.system-mismatch` | Leave `system` out of the branch and end it on a port of the trunk's system. A line of another system needs its own trunk. |
 
 Gate errors come after the build, as `tube.*` diagnostics. The script built, so the report is still there to read:
 
@@ -222,7 +222,7 @@ Gate errors come after the build, as `tube.*` diagnostics. The script built, so 
 | `tube.straight.between-bends-too-short` | Move the two corners of the named leg apart by the shortfall, or lower `bendRadius`. Legs are numbered from 0. |
 | `tube.straight.end-too-short` | Move the first (or last) corner away from the port along the port axis by the shortfall. |
 | `tube.bend.angle-exceeded` | Move the corner so the bend opens up, or add a corner to split it. Bends are numbered from 1. |
-| `tube.port.misaligned` | "off the port axis" or "off the branch axis": put the corner at the point the message gives. "from port" or "from its captured point": the part or the tube moved; route the end to the stated position as `{ point, axis, part }`, and add the tube with no `at`. "from part": the end does not touch the part it names; move the `point` onto the part's surface. "from its joint on tube": the trunk or the branch was moved after routing; add both with no `at`. |
+| `tube.port.misaligned` | "off the port axis" or "off the branch axis": put the corner where the message says. "from port" or "from its captured point": the part or the tube moved; route the end to the stated position as `{ point, axis, part }`, and add the tube with no `at`. "from part": the end does not touch the part it names; move the `point` onto the part's surface. "from its joint on tube": the trunk or the branch was moved after routing; add both with no `at`. |
 | `tube.clearance.violated` | The message gives the closest point on the tube and the closest point on the other body. Move the corner nearest the first point away from the second by the shortfall (rule minus measured). At 0.00 mm from the part a plain end sits on, add `part` to that end. |
 | `tube.clearance.pair-unused` (warning) | Correct the system name in `clearance.pairs` to one of the systems the message lists, or remove the pair. |
 | `tube.spec.system-rule-invalid` | A param in a `systems` entry now gives a value the rule cannot be, and the top-level rule was applied. Fix the param, or use a plain number. |

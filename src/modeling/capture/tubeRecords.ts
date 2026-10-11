@@ -17,6 +17,7 @@ import { invalidArgs } from '../../shared/intent/invalidArgs';
 import {
   TUBE_RULE_KEYS,
   TUBE_SPEC_DEFAULTS,
+  tubeCornerPoints,
   type TubeEndMeta,
   type TubeMetadata,
   type TubeRuleKey,
@@ -319,37 +320,59 @@ function validateDensity(density: TubeOptions['density']): void {
     hint: 'Pass the tube material density in kg/m^3, for example density: 7850, or name a material instead.' });
 }
 
-/** The path must fit at the current param values. A branch end is placed on
- *  its trunk as the lowerer will place it; a station that cannot be placed is
- *  left to the lowerer, which reports it against the values of every build. */
+/** The corner points as captured, read through the param table: the ends,
+ *  the via corners and the part positions. A branch end is a zero placeholder
+ *  here; its joint is computed from the trunk, which was checked when it was
+ *  captured. */
+function capturedCorners(record: FeatureRecord): V3[] {
+  return tubeCornerPoints((record.metadata as unknown as { tube: TubeMetadata }).tube);
+}
+
+/** The path must fit at the current param values. Every captured corner must
+ *  be a finite point first: the path maths drops a corner it cannot use, which
+ *  would build the tube along another route with no diagnostic. A branch end
+ *  is placed on its trunk as the lowerer will place it; a station that cannot
+ *  be placed is left to the lowerer, which reports it against the values of
+ *  every build. */
 function checkPath(name: string, record: FeatureRecord, tubes: readonly FeatureRecord[], table: ParamTable): void {
   const resolved = (r: FeatureRecord): FeatureRecord => resolveParams(r, table);
-  const geometry = tubeGeometry(resolved(record), (id) => {
-    const trunk = tubes.find((r) => r.id === id);
-    return trunk === undefined ? undefined : resolved(trunk);
-  });
-  if (!isTubeGeometryError(geometry)) {
-    if (geometry.path.points.every((p) => p.every(isFiniteNum))) return;
+  const own = resolved(record);
+  if (!capturedCorners(own).every((p) => p.every(isFiniteNum))) {
     fail({ reason: 'end.invalid', path: `tube '${name}' corner points`, gotText: 'a non-finite coordinate (NaN or Infinity)',
       requires: 'finite [x, y, z] for the ends, the via corners and the part positions',
       hint: 'Check the end points, the via corners and the part positions for NaN or Infinity.' });
   }
-  if (isBranchFault(geometry)) return;
+  const geometry = tubeGeometry(own, (id) => {
+    const trunk = tubes.find((r) => r.id === id);
+    return trunk === undefined ? undefined : resolved(trunk);
+  });
+  if (!isTubeGeometryError(geometry) || isBranchFault(geometry)) return;
   invalidArgs({ ...tubePathErrorArgs(name, geometry),
     hint: 'Move a corner, lower bendRadius, or add a via corner so every leg is long enough for the bends at its ends.' });
 }
 
-/** A branch takes its trunk's system: a `system` option that names another one is refused. */
-function branchSystem(opts: TubeOptions, ends: readonly ResolvedEnd[]): string | undefined {
-  const trunks = ends.filter((e) => e.meta.branch !== undefined && e.meta.system !== undefined);
-  const systems = [...new Set(trunks.map((e) => e.meta.system as string))];
-  const declared = opts.system !== undefined ? [opts.system, ...systems] : systems;
-  if (new Set(declared).size > 1) {
-    const of = trunks.map((e) => `trunk '${e.meta.branch!.tube}' is '${e.meta.system}'`).join(', ');
-    fail({ reason: 'branch.system-mismatch', path: 'system',
-      gotText: opts.system !== undefined ? `'${opts.system}', but ${of}` : `two trunks of different systems: ${of}`,
-      requires: "the trunk's system, or no system option",
-      hint: "Leave system out: a branch takes its trunk's system. A line of another system needs its own trunk." });
+const SYSTEM_HINT = "A branch carries its trunk's fluid: leave system out, and end the branch on a port of the trunk's system. " +
+  'A line of another system needs its own trunk.';
+
+/** The system of a tube with a branch end: its trunk's. A line must not change
+ *  system without saying so, so a `system` option or a port at the other end
+ *  that names another system is refused, as are two trunks of different
+ *  systems. Undefined when no trunk has a system: the tube then takes the
+ *  system the way any tube does. */
+function branchSystem(opts: TubeOptions, ends: ReadonlyArray<[TubeEndName, ResolvedEnd]>): string | undefined {
+  const trunks = ends.filter(([, e]) => e.meta.branch !== undefined && e.meta.system !== undefined).map(([, e]) => e.meta);
+  const systems = [...new Set(trunks.map((m) => m.system as string))];
+  if (systems.length === 0) return undefined;
+  const of = trunks.map((m) => `trunk '${m.branch!.tube}' is '${m.system}'`).join(', ');
+  const mismatch = (path: string, gotText: string): never => fail({ reason: 'branch.system-mismatch', path, gotText,
+    requires: "the trunk's system: no system option, and ports of that system", hint: SYSTEM_HINT });
+  if (systems.length > 1) mismatch('system', `two trunks of different systems: ${of}`);
+  if (opts.system !== undefined && opts.system !== systems[0]) mismatch('system', `'${opts.system}', but ${of}`);
+  for (const [which, e] of ends) {
+    const port = e.meta.connector !== undefined && e.meta.branch === undefined ? e.meta : undefined;
+    if (port?.system !== undefined && port.system !== systems[0]) {
+      mismatch(which, `port '${port.part}.${port.connector}' of system '${port.system}', but ${of}`);
+    }
   }
   return systems[0];
 }
@@ -357,7 +380,7 @@ function branchSystem(opts: TubeOptions, ends: readonly ResolvedEnd[]): string |
 function buildTubeMetadata(
   name: string, opts: TubeOptions, from: ResolvedEnd, to: ResolvedEnd, via: Array<{ offset: Vec3Param }>,
 ): TubeMetadata {
-  const system = branchSystem(opts, [from, to]) ?? opts.system ?? from.meta.system ?? to.meta.system;
+  const system = branchSystem(opts, [['from', from], ['to', to]]) ?? opts.system ?? from.meta.system ?? to.meta.system;
   return {
     name,
     points: [from.point, ...via, to.point],

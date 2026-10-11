@@ -182,6 +182,18 @@ describe('tube()', () => {
       .toThrowError(prefixRe('tube.end.invalid'));
   });
 
+  // A corner the path maths cannot use must be refused, not dropped: a dropped
+  // corner builds and reports the tube along another route with no diagnostic.
+  it.each([
+    ['a NaN coordinate', [50, Number.NaN, 0]],
+    ['two coordinates', [50, 30]],
+    ['an infinite coordinate', [Number.POSITIVE_INFINITY, 0, 50]],
+  ])('tube.end.invalid for a via corner with %s', (_label, corner) => {
+    const { api } = makeApi();
+    expect(() => api.tube('t', { from: { point: [0, 0, 0] }, to: { point: [100, 0, 0] }, via: [corner as V3], ...free }))
+      .toThrowError(/^tube\.end\.invalid: tube 't' corner points — got a non-finite coordinate \(NaN or Infinity\); requires finite \[x, y, z\] for the ends, the via corners and the part positions\./);
+  });
+
   it.each([
     ['an empty string', ''],
     ['a number', 5],

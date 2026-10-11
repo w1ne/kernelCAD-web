@@ -16,6 +16,8 @@ import { brepExtremaClosest, wrappedShape } from '../../../src/modeling/runtime/
 import { runTubeChecksOnModel, type TubeCheckReport } from '../../../src/modeling/runtime/tube/runTubeChecks';
 import { resolveTube, tubeSceneContext } from '../../../src/modeling/runtime/tube/tubeScene';
 import { createOcctLowerer } from '../../../src/modeling/backends/occt/occtLowerer';
+import { meshFeaturesPerFeature, selectTerminalFeatures } from '../../../src/modeling/capture/featureMeshing';
+import { selectTerminalSerializedFeatures } from '../../../src/funnel/meshArtifact';
 import { RecomputeEngine } from '../../../src/modeling/compute/recomputeEngine';
 import { evaluateScriptTool } from '../../../src/agent/mcp/tools/evaluateScript';
 import { exportModelTool } from '../../../src/agent/mcp/tools/exportModel';
@@ -256,17 +258,52 @@ return asm.model();
     expect(errors(r)).toEqual([]);
   }, 120_000);
 
-  it('a branch is not exempt against a tube that is not its trunk', async () => {
-    // A second line 10 mm centre to centre beside the branch's first leg.
+  it('a branch is not exempt against a tube that is not its trunk, inside its joint zone', async () => {
+    // b (od 6) rises from the trunk wall at z = 6.35; its joint zone is 2.5 x 6 = 15 mm, up to z = 21.35.
+    // c (od 6) crosses b inside that zone, along Y at x = 110, z = 15.5: 4.00 mm from b, 6.15 mm from the trunk.
+    // Were the zone left out against c as well, b would measure 6.12 mm from c and pass.
     const r = await run(STRAIGHT + `
 const b = tube('b', { from: { tube: 'trunk', at: 100, axis: [0, 0, 1] }, to: { point: [100, 0, 200] }, od: 6, wall: 0.9, bendRadius: 40 });
 asm.part('b', b);
-const c = tube('c', { from: { point: [100, 10, 20] }, to: { point: [100, 10, 200] }, od: 6, wall: 0.9, bendRadius: 40 });
+const c = tube('c', { from: { point: [110, -100, 15.5] }, to: { point: [110, 100, 15.5] }, od: 6, wall: 0.9, bendRadius: 40 });
 asm.part('c', c);
 return asm.model();
 `);
     expect(errorCodes(r)).toEqual(['tube.clearance.violated']);
-    expect(messages(r, 'tube.clearance.violated')[0]).toContain("tube 'b' is 4.00 mm from 'c'");
+    expect(messages(r, 'tube.clearance.violated')).toEqual([expect.stringContaining("tube 'b' is 4.00 mm from 'c'; the rule needs 6.00 mm.")]);
+    expect(line(r, 'c').minClearance).toMatchObject({ to: 'b', mm: expect.closeTo(4, 6) });
+  }, 120_000);
+});
+
+describe('tube branch: meshes', () => {
+  // No assembly: the script returns the branch, as the bend-table recipe returns its tube.
+  const BARE = `
+tubeSpec({});
+const trunk = tube('trunk', { from: { point: [0, 0, 0] }, to: { point: [400, 0, 0] }, od: 12.7, wall: 0.9, bendRadius: 40 }).color('#2f6fb5');
+const b = tube('b', { from: { tube: 'trunk', at: 100, axis: [0, 0, 1] }, to: { point: [100, 0, 200] }, od: 9.525, wall: 0.9, bendRadius: 40 }).color('#d9822b');
+return b;
+`;
+
+  it('a trunk with no assembly is still drawn: render, render_preview and the mesh artifact keep it', async () => {
+    const model = await build(BARE);
+    expect(model.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+    const [trunk, branch] = model.records.filter((r) => r.kind === 'tube').map((r) => r.id);
+    const meshed = await meshFeaturesPerFeature(model.records, model.session.paramTable, model.session);
+    expect(meshed.features.map((f) => f.featureId)).toEqual(expect.arrayContaining([trunk, branch]));
+    // The viewer hides every mesh another mesh lists as a predecessor (showOnlyTailFeatures, called by
+    // `kernelcad render` and render_preview); the server and the mesh artifact draw the same terminal set.
+    const hidden = new Set(meshed.features.flatMap((f) => f.predecessors));
+    expect(hidden.has(trunk)).toBe(false);
+    expect(selectTerminalFeatures(meshed.features).map((f) => f.featureId)).toEqual(expect.arrayContaining([trunk, branch]));
+    const serialized = meshed.features as unknown as Parameters<typeof selectTerminalSerializedFeatures>[0];
+    expect(selectTerminalSerializedFeatures(serialized).map((f) => f.featureId)).toEqual(expect.arrayContaining([trunk, branch]));
+  }, 120_000);
+
+  it('a coloured trunk under a coloured branch gives no colour-shadowing warning', async () => {
+    const model = await build(BARE);
+    const meshed = await meshFeaturesPerFeature(model.records, model.session.paramTable, model.session);
+    expect(meshed.colorShadowingWarnings).toEqual([]);
+    expect(meshed.materialShadowingWarnings).toEqual([]);
   }, 120_000);
 });
 

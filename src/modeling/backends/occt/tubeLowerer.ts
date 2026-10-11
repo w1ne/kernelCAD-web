@@ -3,8 +3,8 @@
 import * as replicad from 'replicad';
 import { getOC } from 'replicad';
 import { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
-import { branchSweepPath, type TubeGeometry, type TubeJoint } from '../../../shared/tube/tubeBranch';
-import { isTubePathError, scale, sub, type TubePath, type V3 } from '../../../shared/tube/tubePath';
+import type { TubeJoint } from '../../../shared/tube/tubeBranch';
+import { scale, sub, type TubePath, type V3 } from '../../../shared/tube/tubePath';
 
 /** Sweep one disc of radius `r` along the path wire. Exact lines and arcs,
  *  so the solid's length is the bend table's cut length. */
@@ -44,17 +44,14 @@ function trunkCutter(joint: TubeJoint, branchOd: number): OcctBackend {
 }
 
 /**
- * A tube with its branch ends cut to the trunk. The tube is swept from the
- * trunk centreline and the trunk's outer cylinder is cut away, so the end is
- * a saddle that sits on the trunk wall: the two solids touch and share no
- * volume. The trunk itself is not cut. A tube with no branch end is the plain
- * swept tube.
+ * A tube with its branch ends cut to the trunk. `sweep` is the centreline run
+ * on to the trunk centreline at each joint (`branchSweepPath`); the tube is
+ * swept along it and the trunk's outer cylinder is cut away at each joint, so
+ * the end is a saddle that sits on the trunk wall: the two solids touch and
+ * share no volume. The trunk itself is not cut.
  */
-export function tubeSolidOnTrunks(geometry: TubeGeometry, od: number, wall: number): OcctBackend {
-  if (geometry.joints.length === 0) return tubeSolid(geometry.path, od, wall);
-  const sweep = branchSweepPath(geometry);
-  if (isTubePathError(sweep)) throw new Error(`tube: the branch end cannot be run on to the trunk centreline (${sweep.kind}).`);
+export function tubeSolidOnTrunks(sweep: TubePath, joints: readonly TubeJoint[], od: number, wall: number): OcctBackend {
   let solid = tubeSolid(sweep, od, wall);
-  for (const joint of geometry.joints) solid = solid.subtract(trunkCutter(joint, od));
+  for (const joint of joints) solid = solid.subtract(trunkCutter(joint, od));
   return solid;
 }

@@ -12,6 +12,7 @@ import { computeConstructionClosure } from '../../../src/modeling/capture/featur
 import { lowerTube } from '../../../src/modeling/backends/occt/lowerers/tube';
 import type { LowerContext } from '../../../src/modeling/backends/occt/lowerers/context';
 import type { CompilerDiagnostic } from '../../../src/shared/diagnostics/diagnostic';
+import { DIAGNOSTIC_REGISTRY } from '../../../src/shared/diagnostics/registry';
 import type { FeatureRecord } from '../../../src/shared/intent/featureRecord';
 import type { TubeMetadata } from '../../../src/shared/intent/tubeRecord';
 import { resolveParams } from '../../../src/shared/runtime/resolveParams';
@@ -189,6 +190,56 @@ describe('tube() with a branch end', () => {
     const { session, api } = trunkRig();
     api.tube('b', { from: { tube: 'trunk', at: 900, axis: [0, 0, 1] }, ...BRANCH });
     expect(tubes(session)).toHaveLength(2);
+  });
+});
+
+describe('the system of a branch', () => {
+  /** A part with a port of `system` at [100, 0, 150], facing down: a branch from the trunk at 100 runs straight up to it. */
+  function portRig(system: string) {
+    const rig = trunkRig();
+    const tank = rig.api.assembly('rig').part('tank', rig.api.box(20, 20, 20), { at: [90, -10, 150] })
+      .connector('in', { type: 'axis', origin: { kind: 'vec3', value: [10, 10, 0] }, axis: [0, 0, -1], port: { system, od: 12.7 } });
+    return { ...rig, tank };
+  }
+
+  it('a port of another system at the far end is refused, naming the port and the trunk', () => {
+    const { api, tank } = portRig('fuel');
+    expect(() => api.tube('b', { from: { tube: 'trunk', at: 100, axis: [0, 0, 1] }, to: tank.port('in'), wall: 0.9, bendRadius: 40 }))
+      .toThrow(/^tube\.branch\.system-mismatch: to — got port 'tank\.in' of system 'fuel', but trunk 'trunk' is 'act';/);
+  });
+
+  it('a port of the trunk system at the far end is fine', () => {
+    const { session, api, tank } = portRig('act');
+    api.tube('b', { from: { tube: 'trunk', at: 100, axis: [0, 0, 1] }, to: tank.port('in'), wall: 0.9, bendRadius: 40 });
+    expect(metaOf(tubes(session)[1]).system).toBe('act');
+  });
+
+  it('with a trunk of no system, the branch takes the system of its port', () => {
+    const { session, api } = makeApi();
+    api.tube('trunk', { from: { point: [0, 0, 0] }, to: { point: [400, 0, 0] }, od: 12.7, wall: 0.9, bendRadius: 40 });
+    const tank = api.assembly('rig').part('tank', api.box(20, 20, 20), { at: [90, -10, 150] })
+      .connector('in', { type: 'axis', origin: { kind: 'vec3', value: [10, 10, 0] }, axis: [0, 0, -1], port: { system: 'fuel', od: 12.7 } });
+    api.tube('b', { from: { tube: 'trunk', at: 100, axis: [0, 0, 1] }, to: tank.port('in'), wall: 0.9, bendRadius: 40 });
+    expect(metaOf(tubes(session)[1]).system).toBe('fuel');
+  });
+});
+
+describe('a branch whose first corner is off the branch axis', () => {
+  it('reports tube.port.misaligned when the tube cannot be run on to the trunk centreline, without throwing', () => {
+    const { session, api } = trunkRig();
+    // From the wall at [100, 0, 6.35] the route is legal; run on to [100, 0, 0] its first bend no longer fits.
+    api.tube('b', { from: { tube: 'trunk', at: 100, axis: [0, 0, 1] }, via: [[110, 0, 6.35]], to: { point: [110, 0, -5.65] },
+      od: 6, wall: 0.9, bendRadius: 8 });
+    const diagnostics: CompilerDiagnostic[] = [];
+    const ctx = { diagnostics, allRecords: session.getRecords() } as unknown as LowerContext;
+    const out = lowerTube(ctx, tubes(session)[1]);
+    expect(out.done).toBe(true);
+    expect(diagnostics).toHaveLength(1);
+    expect(diagnostics[0]).toMatchObject({ code: 'tube.port.misaligned', severity: 'error', featureId: tubes(session)[1].id,
+      hint: DIAGNOSTIC_REGISTRY['tube.port.misaligned'].hintTemplate });
+    expect(diagnostics[0].message).toBe(
+      "tube.port.misaligned: tube 'b' from end leaves its joint on tube 'trunk' off the branch axis, so it cannot be cut " +
+      'to the trunk wall; put the first corner on the line from [100.00, 0.00, 6.35] along [0.00, 0.00, 1.00].');
   });
 });
 

@@ -130,6 +130,7 @@ const MAX_CHAIN = 64;
 
 const DEG = 180 / Math.PI;
 const f2 = (n: number): string => n.toFixed(2);
+const xyz = (p: readonly number[]): string => `[${p.map(f2).join(', ')}]`;
 
 function jointOn(
   which: TubeEndName, end: TubeEndMeta, trunkId: FeatureId, trunk: FeatureRecord, trunkPath: TubePath,
@@ -218,8 +219,23 @@ export function branchFaultDiagnostic(name: string, fault: BranchFault): { code:
   }
   if (fault.reason === 'axis-along-trunk') {
     return { code: 'tube.branch.axis-not-square',
-      text: `${end}: its axis runs along tube '${fault.trunk}', whose leg there runs along [${fault.legDir.map(f2).join(', ')}]; ` +
+      text: `${end}: its axis runs along tube '${fault.trunk}', whose leg there runs along ${xyz(fault.legDir)}; ` +
         'a branch leaves at 90 deg to the trunk.' };
   }
   return undefined;
+}
+
+/** The joints whose branch end cannot be run on to the trunk centreline: the
+ *  first (or last) leg leaves the joint off the branch axis enough to change
+ *  the bend after it. When no single joint fails on its own, all of them. */
+export function offAxisJoints(geometry: TubeGeometry): TubeJoint[] {
+  const failing = geometry.joints.filter((j) => isTubePathError(branchSweepPath({ ...geometry, joints: [j] })));
+  return failing.length > 0 ? failing : [...geometry.joints];
+}
+
+/** The `tube.port.misaligned` text for a branch end that cannot be cut to its trunk. */
+export function offAxisJointText(name: string, joint: TubeJoint): string {
+  const corner = joint.which === 'from' ? 'first' : 'last';
+  return `tube '${name}' ${joint.which} end leaves its joint on tube '${joint.trunk}' off the branch axis, so it cannot be cut ` +
+    `to the trunk wall; put the ${corner} corner on the line from ${xyz(joint.wall)} along ${xyz(joint.axis)}.`;
 }

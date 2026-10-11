@@ -6,10 +6,11 @@ import { invalidArgsText, type InvalidArgsSpec } from '../../../../shared/intent
 import { isTubeMetadata } from '../../../../shared/intent/tubeRecord';
 import type { FeatureId } from '../../../../shared/intent/types';
 import {
-  branchFaultDiagnostic, isBranchFault, isTubeGeometryError, tubeGeometry, type BranchFault,
+  branchFaultDiagnostic, branchSweepPath, isBranchFault, isTubeGeometryError, offAxisJoints, offAxisJointText,
+  tubeGeometry, type BranchFault, type TubeGeometry,
 } from '../../../../shared/tube/tubeBranch';
-import { tubePathErrorArgs } from '../../../../shared/tube/tubePath';
-import { tubeSolidOnTrunks } from '../tubeLowerer';
+import { isTubePathError, tubePathErrorArgs } from '../../../../shared/tube/tubePath';
+import { tubeSolid, tubeSolidOnTrunks } from '../tubeLowerer';
 import { built, noShape, type LowerContext, type LowerOutcome } from './context';
 
 const HINT = 'Fix the tube() arguments named in the message, then re-evaluate.';
@@ -45,6 +46,20 @@ function branchFault(ctx: LowerContext, r: FeatureRecord, name: string, fault: B
   return noShape();
 }
 
+/** A branch end whose first (or last) leg leaves the joint so far off the
+ *  branch axis that the tube cannot be run on to the trunk centreline and cut:
+ *  the end is off its joint's axis, reported as for a port. */
+function offBranchAxis(ctx: LowerContext, r: FeatureRecord, name: string, geometry: TubeGeometry): LowerOutcome {
+  const entry = DIAGNOSTIC_REGISTRY['tube.port.misaligned'];
+  for (const joint of offAxisJoints(geometry)) {
+    ctx.diagnostics.push({
+      target: 'export-occt', code: 'tube.port.misaligned', featureId: r.id, severity: entry.defaultSeverity,
+      message: `tube.port.misaligned: ${offAxisJointText(name, joint)}`, hint: entry.hintTemplate, nextAction: entry.nextAction,
+    });
+  }
+  return noShape();
+}
+
 export function lowerTube(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
   const meta = (r.metadata as { tube?: unknown } | undefined)?.tube;
   const fail = (spec: InvalidArgsSpec): LowerOutcome => {
@@ -67,5 +82,10 @@ export function lowerTube(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
   if (isTubeGeometryError(geometry)) {
     return isBranchFault(geometry) ? branchFault(ctx, r, meta.name, geometry) : fail(tubePathErrorArgs(meta.name, geometry));
   }
-  return built(tubeSolidOnTrunks(geometry, r.params.od.evaluated, r.params.wall.evaluated));
+  const od = r.params.od.evaluated;
+  const wall = r.params.wall.evaluated;
+  if (geometry.joints.length === 0) return built(tubeSolid(geometry.path, od, wall));
+  const sweep = branchSweepPath(geometry);
+  if (isTubePathError(sweep)) return offBranchAxis(ctx, r, meta.name, geometry);
+  return built(tubeSolidOnTrunks(sweep, geometry.joints, od, wall));
 }
