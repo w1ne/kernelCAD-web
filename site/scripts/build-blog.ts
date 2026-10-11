@@ -344,8 +344,8 @@ export function pngSize(file: string): { width: number; height: number } | null 
   }
 }
 
-/** Absolute path of an output, refusing anything outside site/blog/. */
-function blogTarget(repoRoot: string, repoPath: string): string {
+/** Absolute path of an output, refusing anything outside site/blog/. Every write goes through it. */
+export function blogTarget(repoRoot: string, repoPath: string): string {
   if (!repoPath.startsWith(`${BLOG_DIR}/`) || repoPath.split('/').includes('..')) {
     throw new Error(`refusing to write ${repoPath}: the blog build writes only under ${BLOG_DIR}/`);
   }
@@ -384,40 +384,54 @@ const NO_EVALUATOR: Evaluator = {
   code: () => Promise.reject(new Error('no post needs an evaluation')),
 };
 
-/** Runs every check on what was built; returns the failures and a line per page. */
-async function checkBuild(build: BlogBuild): Promise<{ failures: CheckFailure[]; summary: string[] }> {
+/** Makes the evaluator the checks use; the default runs `evaluate --json` in this process. */
+export type EvaluatorFactory = (repoRoot: string) => Promise<Evaluator>;
+
+const loadEvaluator: EvaluatorFactory = async (repoRoot) => (await import('./blogEvaluator')).createEvaluator(repoRoot);
+
+/**
+ * Every check on what was built, orphaned pages included; returns the
+ * failures and a line per page. The evaluator is made only when a post needs it.
+ */
+export async function checkBuild(
+  build: BlogBuild,
+  repoRoot: string,
+  makeEvaluator: EvaluatorFactory = loadEvaluator,
+): Promise<{ failures: CheckFailure[]; summary: string[] }> {
   const published = build.posts.filter((r) => r.post.meta.status === 'published').map((r) => r.post.slug);
-  const failures = checkOrphanPages(REPO_ROOT, published);
-  const evaluator = build.posts.some(needsEvaluator)
-    ? (await import('./blogEvaluator')).createEvaluator(REPO_ROOT)
-    : NO_EVALUATOR;
+  const failures = checkOrphanPages(repoRoot, published);
+  const evaluator = build.posts.some(needsEvaluator) ? await makeEvaluator(repoRoot) : NO_EVALUATOR;
   const summary: string[] = [];
   for (const rendered of build.posts) {
-    const report = await checkPost(rendered, evaluator, REPO_ROOT);
+    const report = await checkPost(rendered, evaluator, repoRoot);
     failures.push(...report.failures);
     summary.push(`  ${rendered.path}: ${report.kcadBlocks} kcad block(s) evaluated, ${report.quotes} quoted value(s) match`);
   }
   return { failures, summary };
 }
 
-async function main(args: readonly string[]): Promise<number> {
+/**
+ * The command: write the pages, run the checks, and only when every check has
+ * passed build the media files. Returns the exit code: 1 when a check failed.
+ */
+export async function main(args: readonly string[], repoRoot: string = REPO_ROOT): Promise<number> {
   const unknown = args.filter((arg) => arg !== '--drafts');
   if (unknown.length > 0) throw new Error(`unknown argument ${unknown.join(' ')}; the only option is --drafts`);
   const drafts = args.includes('--drafts');
 
-  const build = renderBlog(readPosts(REPO_ROOT), { repoRoot: REPO_ROOT, drafts });
+  const build = renderBlog(readPosts(repoRoot), { repoRoot, drafts });
   // Previews are rebuilt from nothing each time, and removed when not asked for.
-  rmSync(path.join(REPO_ROOT, DRAFTS_DIR), { recursive: true, force: true });
-  writeOutputs(REPO_ROOT, build.files);
+  rmSync(path.join(repoRoot, DRAFTS_DIR), { recursive: true, force: true });
+  writeOutputs(repoRoot, build.files);
 
-  const { failures, summary } = await checkBuild(build);
+  const { failures, summary } = await checkBuild(build, repoRoot);
   if (failures.length > 0) {
     for (const failure of failures) console.error(`${failure.file}:${failure.line}: ${failure.message}`);
     console.error(`build-blog: ${failures.length} check(s) failed`);
     return 1;
   }
   // The heavy part, once every check has passed.
-  const assets = await buildAssets(REPO_ROOT, build.assets);
+  const assets = await buildAssets(repoRoot, build.assets);
   const previews = build.posts.filter((r) => r.post.meta.status === 'draft').length;
   console.log([...summary, ...assets].join('\n'));
   console.log(`✓ ${BLOG_DIR}: ${build.posts.length - previews} published post(s), the index${drafts ? `, ${previews} draft preview(s)` : ''}`);
