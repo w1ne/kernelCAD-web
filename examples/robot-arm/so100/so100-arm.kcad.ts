@@ -1,6 +1,7 @@
-// The kernelcad.com hero. Link meshes are the Apache-2.0 SO-ARM100
-// visuals. Joint angles are params on a mate chain, so the arm reaches
-// without re-importing the meshes on every frame.
+// The kernelcad.com hero. Link and motor meshes are the Apache-2.0 SO-ARM100
+// simulation visuals. Every mesh is placed where so100.urdf puts it with all
+// joints at zero, so the six params are the URDF joint angles and the mate
+// chain reaches without re-importing the meshes on every frame.
 
 const PRINT = '#f0c43a';
 
@@ -12,121 +13,167 @@ const roll = param('rollDeg', 0, { min: -180, max: 180, description: 'Wrist roll
 const jaw = param('jawDeg', 0, { min: -11, max: 110, description: 'Gripper opening' });
 
 type Vec3 = [number, number, number];
-type Joint = { xyz: Vec3; rpy: Vec3; axis: Vec3; q: ReturnType<typeof param> };
+type Mat3 = [Vec3, Vec3, Vec3];
+type Frame = { rot: Mat3; at: Vec3 };
+type Shape = { rotate: (axis: Vec3, deg: number) => Shape; translate: (x: number, y: number, z: number) => Shape };
 
-const shoulderPan: Joint = { xyz: [0, -45.2, 16.5], rpy: [90, 0, 0], axis: [0, 1, 0], q: pan };
-const shoulderLift: Joint = { xyz: [0, 102.5, 30.6], rpy: [-103.132, 0, 0], axis: [1, 0, 0], q: lift };
-const elbowFlex: Joint = { xyz: [0, 112.57, 28], rpy: [90, 0, 0], axis: [1, 0, 0], q: elbow };
-const wristFlex: Joint = { xyz: [0, 5.2, 134.9], rpy: [-57.296, 0, 0], axis: [1, 0, 0], q: wrist };
-const wristRoll: Joint = { xyz: [0, -60.1, 0], rpy: [0, 90, 0], axis: [0, 1, 0], q: roll };
-const gripper: Joint = { xyz: [-20.2, -24.4, 0], rpy: [0, 180, 0], axis: [0, 0, 1], q: jaw };
+const RAD = 180 / Math.PI;
+const WORLD: Frame = { rot: [[1, 0, 0], [0, 1, 0], [0, 0, 1]], at: [0, 0, 0] };
 
-function rotX(v: Vec3, deg: number): Vec3 {
-  const a = (deg * Math.PI) / 180;
-  const c = Math.cos(a);
-  const s = Math.sin(a);
-  return [v[0], v[1] * c - v[2] * s, v[1] * s + v[2] * c];
+function mul(a: Mat3, b: Mat3): Mat3 {
+  const cell = (r: number, c: number) => a[r][0] * b[0][c] + a[r][1] * b[1][c] + a[r][2] * b[2][c];
+  return [0, 1, 2].map((r) => [cell(r, 0), cell(r, 1), cell(r, 2)]) as Mat3;
 }
 
-function rotY(v: Vec3, deg: number): Vec3 {
-  const a = (deg * Math.PI) / 180;
-  const c = Math.cos(a);
-  const s = Math.sin(a);
-  return [v[0] * c + v[2] * s, v[1], -v[0] * s + v[2] * c];
+function turn(m: Mat3, v: Vec3): Vec3 {
+  return m.map((row) => row[0] * v[0] + row[1] * v[1] + row[2] * v[2]) as Vec3;
 }
 
-function rotZ(v: Vec3, deg: number): Vec3 {
-  const a = (deg * Math.PI) / 180;
-  const c = Math.cos(a);
-  const s = Math.sin(a);
-  return [v[0] * c - v[1] * s, v[0] * s + v[1] * c, v[2]];
+function about(axis: 0 | 1 | 2, deg: number): Mat3 {
+  const c = Math.cos(deg / RAD);
+  const s = Math.sin(deg / RAD);
+  if (axis === 0) return [[1, 0, 0], [0, c, -s], [0, s, c]];
+  if (axis === 1) return [[c, 0, s], [0, 1, 0], [-s, 0, c]];
+  return [[c, -s, 0], [s, c, 0], [0, 0, 1]];
 }
 
-function spun(j: Joint | null, v: Vec3): Vec3 {
-  if (!j) return v;
-  return rotZ(rotY(rotX(v, j.rpy[0]), j.rpy[1]), j.rpy[2]);
+// URDF rpy: roll about X, then pitch about Y, then yaw about Z.
+function rpyMatrix(rpy: Vec3): Mat3 {
+  return mul(about(2, rpy[2]), mul(about(1, rpy[1]), about(0, rpy[0])));
 }
 
-function axisInParent(j: Joint): Vec3 {
-  return spun(j, j.axis);
+function toWorld(frame: Frame, v: Vec3): Vec3 {
+  const r = turn(frame.rot, v);
+  return [frame.at[0] + r[0], frame.at[1] + r[1], frame.at[2] + r[2]];
 }
 
-function bake(shape: { rotate: (axis: Vec3, deg: number) => typeof shape }, j: Joint) {
-  return shape.rotate([1, 0, 0], j.rpy[0]).rotate([0, 1, 0], j.rpy[1]).rotate([0, 0, 1], j.rpy[2]);
+// One rotation that equals the frame's matrix, for shape.rotate().
+function axisAngle(m: Mat3): { axis: Vec3; deg: number } {
+  const cos = Math.min(1, Math.max(-1, (m[0][0] + m[1][1] + m[2][2] - 1) / 2));
+  const angle = Math.acos(cos);
+  if (angle < 1e-9) return { axis: [0, 0, 1], deg: 0 };
+  let axis: Vec3 = [m[2][1] - m[1][2], m[0][2] - m[2][0], m[1][0] - m[0][1]];
+  if (Math.PI - angle < 1e-6) {
+    // Half turn: the difference above vanishes, read the axis off the diagonal.
+    const x = Math.sqrt(Math.max(0, (m[0][0] + 1) / 2));
+    const y = Math.sqrt(Math.max(0, (m[1][1] + 1) / 2));
+    const z = Math.sqrt(Math.max(0, (m[2][2] + 1) / 2));
+    axis = x >= y && x >= z
+      ? [x, m[0][1] / (2 * x), m[0][2] / (2 * x)]
+      : y >= z ? [m[0][1] / (2 * y), y, m[1][2] / (2 * y)] : [m[0][2] / (2 * z), m[1][2] / (2 * z), z];
+  }
+  const len = Math.hypot(axis[0], axis[1], axis[2]);
+  return { axis: [axis[0] / len, axis[1] / len, axis[2] / len], deg: angle * RAD };
 }
+
+function place<T extends Shape>(shape: T, frame: Frame): T {
+  const { axis, deg } = axisAngle(frame.rot);
+  const turned = deg === 0 ? shape : shape.rotate(axis, deg);
+  return turned.translate(frame.at[0], frame.at[1], frame.at[2]) as T;
+}
+
+// so100.urdf, in millimetres and degrees. `xyz`/`rpy` are the joint origin
+// in the parent link frame, `axis` is in the child link frame. `shaftTip`
+// (the motor's output spline, where the child link bolts on) and
+// `motorCenter` are read off the parent link's *_Motor.stl, parent frame.
+type Joint = {
+  name: string;
+  parent: string;
+  child: string;
+  mesh: string;
+  xyz: Vec3;
+  rpy: Vec3;
+  axis: Vec3;
+  motor: string;
+  servo: string;
+  shaftTip: Vec3;
+  motorCenter: Vec3;
+  q: ReturnType<typeof param>;
+  limitsDeg: [number, number];
+};
+
+const joints: Joint[] = [
+  {
+    name: 'pan', parent: 'base', child: 'shoulder', mesh: 'Rotation_Pitch',
+    xyz: [0, -45.2, 16.5], rpy: [90, 0, 0], axis: [0, 1, 0],
+    motor: 'Base_Motor', servo: 'base-servo', shaftTip: [0, -45.2, 66.3], motorCenter: [0, -32.7, 46.5],
+    q: pan, limitsDeg: [-110, 110],
+  },
+  {
+    name: 'lift', parent: 'shoulder', child: 'upper-arm', mesh: 'Upper_Arm',
+    xyz: [0, 102.5, 30.6], rpy: [-1.8 * RAD, 0, 0], axis: [1, 0, 0],
+    motor: 'Rotation_Pitch_Motor', servo: 'shoulder-servo', shaftTip: [-19.8, 102.5, 30.6], motorCenter: [0, 90, 30.6],
+    q: lift, limitsDeg: [0, 200],
+  },
+  {
+    name: 'elbow', parent: 'upper-arm', child: 'lower-arm', mesh: 'Lower_Arm',
+    xyz: [0, 112.57, 28], rpy: [90, 0, 0], axis: [1, 0, 0],
+    motor: 'Upper_Arm_Motor', servo: 'upper-servo', shaftTip: [-19.8, 112.57, 28], motorCenter: [0, 112.57, 15.5],
+    q: elbow, limitsDeg: [-180, 0],
+  },
+  {
+    name: 'wrist', parent: 'lower-arm', child: 'wrist', mesh: 'Wrist_Pitch_Roll',
+    xyz: [0, 5.2, 134.9], rpy: [-1 * RAD, 0, 0], axis: [1, 0, 0],
+    motor: 'Lower_Arm_Motor', servo: 'lower-servo', shaftTip: [-19.8, 5.2, 134.9], motorCenter: [0, 5.2, 122.4],
+    q: wrist, limitsDeg: [-140, 65],
+  },
+  {
+    name: 'roll', parent: 'wrist', child: 'hand', mesh: 'Fixed_Jaw',
+    xyz: [0, -60.1, 0], rpy: [0, 90, 0], axis: [0, 1, 0],
+    motor: 'Wrist_Pitch_Roll_Motor', servo: 'wrist-servo', shaftTip: [0, -62.6, 0], motorCenter: [-12.5, -42.8, 0],
+    q: roll, limitsDeg: [-180, 180],
+  },
+  {
+    name: 'jaw', parent: 'hand', child: 'jaw', mesh: 'Moving_Jaw',
+    xyz: [-20.2, -24.4, 0], rpy: [0, 180, 0], axis: [0, 0, 1],
+    motor: 'Fixed_Jaw_Motor', servo: 'hand-servo', shaftTip: [-20.2, -24.4, 20.3], motorCenter: [-7.7, -24.4, 0.5],
+    q: jaw, limitsDeg: [-11, 110],
+  },
+];
 
 const arm = assembly('so100-arm');
+const frames: Record<string, Frame> = { base: WORLD };
 
-async function printed(name: string, file: string, incoming: Joint | null, parentBake: Joint | null) {
-  const raw = await lib.fromSTL(`parts/sim/${file}`, { allowOpen: true });
-  const shaped = incoming ? bake(raw.scale(1000), incoming) : raw.scale(1000);
-  const part = arm.part(name, shaped.color(PRINT));
-  if (incoming) {
-    part.connector('in', {
-      type: 'axis',
-      origin: { kind: 'vec3', value: [0, 0, 0] },
-      axis: spun(parentBake, axisInParent(incoming)),
-    });
-  }
-  return part;
+async function mesh(file: string, frame: Frame, allowOpen: boolean) {
+  const raw = await lib.fromSTL(`parts/sim/${file}.stl`, allowOpen ? { allowOpen: true } : {});
+  return place(raw.scale(1000), frame);
 }
 
-function hinge(part: { connector: (name: string, spec: unknown) => unknown }, name: string, bakeBy: Joint | null, joint: Joint) {
-  part.connector(name, {
-    type: 'axis',
-    origin: { kind: 'vec3', value: spun(bakeBy, joint.xyz) },
-    axis: spun(bakeBy, axisInParent(joint)),
-  });
+// Links first, so the base is the grounded part.
+const links: Record<string, ReturnType<typeof arm.part>> = {
+  base: arm.part('base', (await mesh('Base', WORLD, true)).color(PRINT)),
+};
+for (const joint of joints) {
+  const parent = frames[joint.parent];
+  const frame: Frame = { rot: mul(parent.rot, rpyMatrix(joint.rpy)), at: toWorld(parent, joint.xyz) };
+  frames[joint.child] = frame;
+  links[joint.child] = arm.part(joint.child, (await mesh(joint.mesh, frame, true)).color(PRINT));
 }
 
-function servo(
-  link: { connector: (name: string, spec: unknown) => unknown },
-  linkName: string,
-  name: string,
-  center: Vec3,
-  size: Vec3,
-  incoming: Joint | null,
-) {
-  const body = box(size[0], size[1], size[2], true).translate(center[0], center[1], center[2]).color('servo');
-  const shaped = incoming ? bake(body, incoming) : body;
-  const part = arm.part(name, shaped);
-  // Mount at the motor center, in the baked frame. The link uses the same
-  // point, so the fastened mate does not slide the box off the motor.
-  const at = spun(incoming, center);
-  const origin = { kind: 'vec3' as const, value: [at[0], at[1], at[2]] as Vec3 };
-  part.connector('mount', { type: 'frame', origin });
-  link.connector('servo', { type: 'frame', origin: { kind: 'vec3', value: [at[0], at[1], at[2]] } });
-  arm.mate(`${name}-fix`, `${linkName}.servo`, `${name}.mount`, 'fastened');
+// Each motor is bolted into its parent link and turns the child link on its
+// output shaft: link -> motor is fastened, motor shaft -> child is the joint.
+const skipClash: [string, string][] = [];
+for (const joint of joints) {
+  const parent = frames[joint.parent];
+  const servoName = joint.servo;
+  const servo = arm.part(servoName, (await mesh(joint.motor, parent, false)).color('servo'));
+
+  const seat = { kind: 'vec3' as const, value: toWorld(parent, joint.motorCenter) };
+  links[joint.parent].connector('servo', { type: 'frame', origin: seat });
+  servo.connector('mount', { type: 'frame', origin: seat });
+  arm.mate(`${servoName}-fix`, `${joint.parent}.servo`, `${servoName}.mount`, 'fastened');
+
+  const shaft = {
+    type: 'axis' as const,
+    origin: { kind: 'vec3' as const, value: toWorld(parent, joint.shaftTip) },
+    axis: turn(frames[joint.child].rot, joint.axis),
+  };
+  servo.connector('shaft', shaft);
+  links[joint.child].connector('in', shaft);
+  arm.mate(joint.name, `${servoName}.shaft`, `${joint.child}.in`, 'revolute', { pose: joint.q, limitsDeg: joint.limitsDeg });
+
+  skipClash.push([joint.parent, joint.child], [joint.parent, servoName], [servoName, joint.child]);
 }
-
-const base = await printed('base', 'Base.stl', null, null);
-const shoulder = await printed('shoulder', 'Rotation_Pitch.stl', shoulderPan, null);
-const upper = await printed('upper-arm', 'Upper_Arm.stl', shoulderLift, shoulderPan);
-const lower = await printed('lower-arm', 'Lower_Arm.stl', elbowFlex, shoulderLift);
-const wristLink = await printed('wrist', 'Wrist_Pitch_Roll.stl', wristFlex, elbowFlex);
-const hand = await printed('hand', 'Fixed_Jaw.stl', wristRoll, wristFlex);
-await printed('jaw', 'Moving_Jaw.stl', gripper, wristRoll);
-
-hinge(base, 'pan', null, shoulderPan);
-hinge(shoulder, 'lift', shoulderPan, shoulderLift);
-hinge(upper, 'elbow', shoulderLift, elbowFlex);
-hinge(lower, 'wrist', elbowFlex, wristFlex);
-hinge(wristLink, 'roll', wristFlex, wristRoll);
-hinge(hand, 'jaw', wristRoll, gripper);
-
-arm.mate('pan', 'base.pan', 'shoulder.in', 'revolute', { pose: pan, limitsDeg: [-110, 110] });
-arm.mate('lift', 'shoulder.lift', 'upper-arm.in', 'revolute', { pose: lift, limitsDeg: [0, 200] });
-arm.mate('elbow', 'upper-arm.elbow', 'lower-arm.in', 'revolute', { pose: elbow, limitsDeg: [-180, 0] });
-arm.mate('wrist', 'lower-arm.wrist', 'wrist.in', 'revolute', { pose: wrist, limitsDeg: [-140, 65] });
-arm.mate('roll', 'wrist.roll', 'hand.in', 'revolute', { pose: roll, limitsDeg: [-180, 180] });
-arm.mate('jaw', 'hand.jaw', 'jaw.in', 'revolute', { pose: jaw, limitsDeg: [-11, 110] });
-
-servo(base, 'base', 'base-servo', [0, -32.7, 46.5], [25, 46, 40], null);
-servo(shoulder, 'shoulder', 'shoulder-servo', [0, 90, 30.6], [40, 46, 25], shoulderPan);
-servo(upper, 'upper-arm', 'upper-servo', [0, 112.6, 15.5], [40, 25, 46], shoulderLift);
-servo(lower, 'lower-arm', 'lower-servo', [0, 5.2, 122.4], [40, 25, 46], elbowFlex);
-servo(wristLink, 'wrist', 'wrist-servo', [-12.5, -42.8, 0], [46, 40, 25], wristFlex);
-servo(hand, 'hand', 'hand-servo', [-7.7, -24.4, 0.5], [46, 25, 40], wristRoll);
 
 animationView({
   name: 'reach',
@@ -139,22 +186,22 @@ animationView({
       { atMs: 8000, value: -25, ease: 'easeInOut' },
     ] },
     { param: 'liftDeg', keys: [
-      { atMs: 0, value: 105 },
-      { atMs: 2500, value: 140, ease: 'easeInOut' },
-      { atMs: 5200, value: 90, ease: 'easeInOut' },
-      { atMs: 8000, value: 105, ease: 'easeInOut' },
+      { atMs: 0, value: 70 },
+      { atMs: 2500, value: 105, ease: 'easeInOut' },
+      { atMs: 5200, value: 80, ease: 'easeInOut' },
+      { atMs: 8000, value: 70, ease: 'easeInOut' },
     ] },
     { param: 'elbowDeg', keys: [
-      { atMs: 0, value: -95 },
-      { atMs: 2500, value: -60, ease: 'easeInOut' },
-      { atMs: 5200, value: -125, ease: 'easeInOut' },
-      { atMs: 8000, value: -95, ease: 'easeInOut' },
+      { atMs: 0, value: -70 },
+      { atMs: 2500, value: -65, ease: 'easeInOut' },
+      { atMs: 5200, value: -105, ease: 'easeInOut' },
+      { atMs: 8000, value: -70, ease: 'easeInOut' },
     ] },
     { param: 'wristDeg', keys: [
-      { atMs: 0, value: 5 },
-      { atMs: 2500, value: -40, ease: 'easeInOut' },
-      { atMs: 5200, value: 35, ease: 'easeInOut' },
-      { atMs: 8000, value: 5, ease: 'easeInOut' },
+      { atMs: 0, value: 10 },
+      { atMs: 2500, value: -20, ease: 'easeInOut' },
+      { atMs: 5200, value: 25, ease: 'easeInOut' },
+      { atMs: 8000, value: 10, ease: 'easeInOut' },
     ] },
     { param: 'rollDeg', keys: [
       { atMs: 0, value: 0 },
@@ -172,19 +219,4 @@ animationView({
   ],
 });
 
-return arm.solvedModel({}, {
-  ignore: [
-    ['base', 'shoulder'],
-    ['shoulder', 'upper-arm'],
-    ['upper-arm', 'lower-arm'],
-    ['lower-arm', 'wrist'],
-    ['wrist', 'hand'],
-    ['hand', 'jaw'],
-    ['base', 'base-servo'],
-    ['shoulder', 'shoulder-servo'],
-    ['upper-arm', 'upper-servo'],
-    ['lower-arm', 'lower-servo'],
-    ['wrist', 'wrist-servo'],
-    ['hand', 'hand-servo'],
-  ],
-});
+return arm.solvedModel({}, { ignore: skipClash });
