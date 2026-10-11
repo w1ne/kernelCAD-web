@@ -8,7 +8,7 @@ model: examples/tube-routing-engine/engine-lines.kcad.ts
 note: Draft for Andrii to rewrite and approve before it is published. Every number in it is checked against kernelcad evaluate --json of the example and its broken twin; preview and check it with npm run site:build-blog -- --drafts. The Studio link opens the example only for a signed-in user; swap it for a public link before publishing.
 ---
 
-The fluid lines on an engine are rigid tubes that a shop bends from straight stock. Each one needs a bend table and has to stay clear of the parts and the other lines. This how-to routes such lines with `tube()` and checks them with `tubeSpec()`, following `examples/tube-routing-engine/engine-lines.kcad.ts`. That example routes 5 tubes in 3 fluid systems around a case and a gearbox.
+The fluid lines on an engine are rigid tubes that a shop bends from straight stock. Each one needs a bend table and has to stay clear of the parts and the other lines. You route each line with `tube()` and set the rules it must meet with `tubeSpec()`. The example `examples/tube-routing-engine/engine-lines.kcad.ts` routes 5 tubes in 3 fluid systems around a case and a gearbox.
 <!-- check: tubes.lines.length = 5 -->
 <!-- check: tubes.systems.length = 3 -->
 
@@ -84,8 +84,9 @@ Evaluate the example with the CLI:
 kernelcad evaluate examples/tube-routing-engine/engine-lines.kcad.ts --json
 ```
 
-It prints `"ok": true` and a `tubes` object. `tubes.lines` has an entry for each tube. Next to the bend table and the cut length it holds `minClearance`, the distance to the nearest part or tube. `hyd-b` is 306.45 mm long, and its nearest neighbour is `fuel-b`, 17.75 mm away. That is more than the pair rule asks for.
+It prints `"ok": true` and a `tubes` object. `tubes.lines` has an entry for each tube. Next to the bend table and the cut length it holds `minClearance`, the distance to the nearest part or tube. `hyd-b` is 306.45 mm long, and its nearest neighbour is `fuel-b`, 17.75 mm away. The rule for a fuel line next to a hydraulic line needs 12.00 mm.
 <!-- check: ok = true -->
+<!-- check examples/tube-routing-engine/engine-lines-broken.kcad.ts: diagnostics[code=tube.clearance.violated].message contains needs 12.00 mm -->
 <!-- check: tubes.lines[name=hyd-b].cutLength = 306.45 -->
 <!-- check: tubes.lines[name=hyd-b].minClearance.to = fuel-b -->
 <!-- check: tubes.lines[name=hyd-b].minClearance.mm = 17.75 -->
@@ -160,7 +161,7 @@ kernelcad export step examples/tube-routing-engine/engine-lines.kcad.ts -o out/e
 
 ## Limits
 
-- You place the corners. The kernel checks a route; it does not search for one.
+- You place the corners. There is no automatic path search.
 - A tube is straight legs joined by bends of one radius, so a hose is outside what `tube()` builds.
 - A branch joins its trunk at a right angle only.
 
