@@ -60,7 +60,10 @@ function lintModule(moduleSlug: string): string[] {
     if (existsSync(metaPath)) {
       try {
         const meta = JSON.parse(readFileSync(metaPath, 'utf8'));
-        for (const err of validateDemoMeta(meta, moduleSlug)) {
+        // proof.ref is relative to the task dir, or to the repo root.
+        const proofRefExists = (ref: string): boolean =>
+          existsSync(resolve(taskDir, ref)) || existsSync(resolve(DEMOS_ROOT, '../..', ref));
+        for (const err of validateDemoMeta(meta, moduleSlug, { proofRefExists })) {
           errors.push(`${moduleSlug}/${taskName}: ${err}`);
         }
       } catch (e) {
