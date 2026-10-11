@@ -11,6 +11,7 @@ import type { FeatureRecord } from '../shared/intent/featureRecord';
 import type { FeatureId } from '../shared/intent/types';
 import type { Region } from '../shared/intent/region';
 import type { ShapeBackend } from '../kernel/backends/backend';
+import type { ParamTable } from '../shared/runtime/paramTable';
 import { initOcct, OcctBackend } from '../kernel/backends/occt/occtBackend';
 import { flatBlankRecordId, flattenPattern } from '../kernel/backends/occt/flattenPattern';
 import { flatBlankInnerLoops } from '../kernel/backends/occt/flatBlankLoops';
@@ -27,13 +28,15 @@ export async function flattenPatternWithHoles(
   records: readonly FeatureRecord[],
   terminalId?: string,
   lowered?: ReadonlyMap<FeatureId, ShapeBackend>,
+  paramTable?: ParamTable,
 ): Promise<Region> {
   const blankId = flatBlankRecordId(records, terminalId);
   let blank = lowered?.get(blankId);
   if (!blank) {
     await initOcct();
     const upTo = records.findIndex((r) => r.id === blankId);
-    const run = await new RecomputeEngine(new OcctLowerer()).run(records.slice(0, upTo + 1));
+    const run = await new RecomputeEngine(new OcctLowerer())
+      .run(records.slice(0, upTo + 1), paramTable ? { paramTable } : undefined);
     blank = run.shapes.get(blankId);
   }
   const holes = blank instanceof OcctBackend ? flatBlankInnerLoops(blank) : [];

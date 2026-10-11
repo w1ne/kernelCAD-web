@@ -562,7 +562,7 @@ export async function exportShapeDxf(
   const wantsSection = (opts as { section?: unknown }).section !== undefined;
   if (tracesToSheetMetal && !wantsSection) {
     try {
-      const region = await flattenPatternWithHoles(run.records, targetId);
+      const region = await flattenPatternWithHoles(run.records, targetId, undefined, run.paramTable);
       const bytes = exportDxf({ kind: 'region', region }, opts);
       const thicknessMm = sheetThickness(run.records, targetId);
       const sheet = thicknessMm ? { thicknessMm, bendCount: region.bendLines.length } : undefined;

@@ -76,8 +76,9 @@ export async function flattenPatternTool(input: FlattenPatternInput): Promise<Fl
   // sketch needs the OCCT module loaded.
   await initOcct();
   let records;
+  let paramTable;
   try {
-    ({ records } = await runScript({ code, fileName: input.file ?? 'inline.kcad.ts' }));
+    ({ records, paramTable } = await runScript({ code, fileName: input.file ?? 'inline.kcad.ts' }));
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     return {
@@ -92,9 +93,9 @@ export async function flattenPatternTool(input: FlattenPatternInput): Promise<Fl
     };
   }
   const engine = new RecomputeEngine(new OcctLowerer());
-  const r = await engine.run(records);
+  const r = await engine.run(records, { paramTable });
   try {
-    const region = await flattenPatternWithHoles(records, input.featureId, r.shapes);
+    const region = await flattenPatternWithHoles(records, input.featureId, r.shapes, paramTable);
     return {
       ok: true,
       region: {
