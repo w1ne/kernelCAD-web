@@ -4,7 +4,7 @@ import { hasThreads, hole, mechHarness, sizeNear, threadMinor, volumeIn } from '
 
 const m3 = threadMinor(3, 0.5);
 
-// π·10²·25 − π·2.5²·12.5 − π·4²·12.5 − set screws and spot faces ≈ 6 900 mm³.
+// π·10²·25 − π·2.5²·12.5 − π·4²·12.5 − set screws (± optional spot faces) ≈ 6 900 mm³.
 export default mechHarness({
   checks({ part, build }) {
     const p = part();

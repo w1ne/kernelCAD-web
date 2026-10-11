@@ -49,7 +49,7 @@ Intent words → call this API; do not hand-build it (subtracted cylinders, type
 | countersink, flat head flush | `hole(face, { diameter, depth, countersink: { diameter, angleDeg: 90 } })` | countersunk-flat-head-screw |
 | heat-set insert | blind `hole` at the insert pilot Ø | heat-set-insert-pilot |
 | nut trap, captive nut | `hole` + `cutout(hexPath, { face, depth })` | hex-nut-trap-bolt-clearance |
-| set screw, radial hole, cross hole | `hole('front' \| 'right', { u, v, ... })` on a side face (or on a flat cut first) | threaded-hole-tap-drill |
+| set screw, radial hole, cross hole | `hole({ ofSurfaceType: 'CYLINDER' }, { at: { angleDeg, z }, diameter, depth: 'through', thread })` straight into the round side (`'through'` stops at the bore; `at: [x, y, z]` + optional `axis` for any face / angle); a spot-face flat first is optional | threaded-hole-tap-drill |
 | hole pattern, bolt circle, grid of holes | one `holes(face, { positions })` with computed positions; `patternLinear` / `patternGrid` / `patternCircular` for repeated bodies | clearance-hole-through-plate |
 | slot, D-cut, keyhole, irregular opening | `cutout(path()...close(), { face, depth })` — the profile must stay inside the entry face; a channel open at both ends is a `subtract` with run-out | hex-nut-trap-bolt-clearance |
 | pocket, recess | blind `cutout` or blind `hole` (`depth: n`) | blind-pocket-from-top |

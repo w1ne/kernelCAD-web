@@ -7,7 +7,6 @@ const boreR = 3.1;
 const flatX = 1.5;
 const boreDepth = 12;
 const screwZ = 5;
-const spot = 0.5;
 
 // D profile: chord at x = flatX, round on the -X side.
 const y = Math.sqrt(boreR * boreR - flatX * flatX);
@@ -16,7 +15,7 @@ const dProfile = path().moveTo(flatX, -y).lineTo(flatX, y).threePointsArc(flatX,
 return cylinder(H, R)
   // 'bottom' face frame: u = +X, v = +Y from the face centre.
   .cutout(dProfile, { face: 'bottom', depth: boreDepth })
-  .subtract(box(2, 6, 6, true).translate(-(R - spot + 1), 0, screwZ))
-  .hole({ byNormal: '-X', atX: -(R - spot) }, {
-    u: 0, v: 0, diameter: 3, depth: R - spot - boreR + 0.5, thread: { pitch: 0.5 }, name: 'setScrew',
+  // M3 set screw from -X (180°) on the round side, through into the D-bore.
+  .hole({ ofSurfaceType: 'CYLINDER' }, {
+    at: { angleDeg: 180, z: screwZ }, diameter: 3, depth: 'through', thread: { pitch: 0.5 }, name: 'setScrew',
   });
