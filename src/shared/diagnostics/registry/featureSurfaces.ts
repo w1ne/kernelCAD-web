@@ -79,6 +79,14 @@ export const FEATURE_SURFACES_CODES = {
     group: 'feature',
     description: 'nurbsCurve was authored with closed=true but the first and last control points are not coincident.',
   },
+  'feature.curve3d.closed-seam-kink': {
+    hintTemplate:
+      'A closed nurbsCurve without knots is closed by repeating its first control point, which makes a clamped curve: smooth only if the first and last legs of the control net are collinear. They are not, so the seam is a sharp corner (C0). For a smooth loop use spline3d(points, { closed: true }) (it builds a tangent-matched net), make the first and last legs of the net collinear, or pass an explicit periodic knot vector. Ignore this if the corner is intended.',
+    nextAction: { kind: 'fix-arg', field: 'controlPoints' },
+    defaultSeverity: 'warn',
+    group: 'feature',
+    description: 'A closed nurbsCurve built without explicit knots has non-parallel end tangents, so its seam is a C0 corner rather than a smooth join.',
+  },
   // V slice — Curve3D analytics (JS-side computed-query layer).
   'feature.curve3d.analytics.degenerate-arclength': {
     hintTemplate:
@@ -180,6 +188,14 @@ export const FEATURE_SURFACES_CODES = {
     defaultSeverity: 'error',
     group: 'feature',
     description: 'variableSweep received an empty/unclosed profile sketch.',
+  },
+  'feature.variable-sweep.closed-seam-section-dropped': {
+    hintTemplate:
+      'On a closed spine t=0 and t=1 are the same station, so the sweep keeps the t=0 profile and ignores the t=1 one; yours differ, so the shape you passed at t=1 is not in the result. Make the t=1 profile the same as the t=0 profile (the ring closes on it), or put the varying profile at an interior station.',
+    nextAction: { kind: 'fix-arg', field: 'sections' },
+    defaultSeverity: 'warn',
+    group: 'feature',
+    description: 'A variableSweep on a closed spine dropped its t=1 section, which differs from the t=0 section the ring closes on.',
   },
   'feature.variable-sweep.frenet-degenerate': {
     hintTemplate:

@@ -38,7 +38,7 @@ import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic'
 import { loadMeshScene, renderMeshViews } from '../../render/meshScenesRender';
 import { resolveRootId } from '../../../composition/buildModel';
 import type { FeaStudyMetadata } from '../../../shared/intent/feaStudyRecord';
-import { inlineFeaStudy, RUN_FEA_EXAMPLE } from './runFeaArgs';
+import { inlineFeaStudy, inlineSpec, isCompleteInlineSpec, RUN_FEA_EXAMPLE } from './runFeaArgs';
 
 export interface RunFeaInput {
   /** Path to a `.kcad.ts` script declaring at least one `feaStudy`. */
@@ -113,16 +113,47 @@ function inlineStudyOn(run: RunScriptResult, metadata: FeaStudyMetadata): FeaStu
   return { ok: true, run, study: { recordId: '__inline__', shapeId, metadata } };
 }
 
+/** The declared study the call names (or the last one), or an error output. */
+function pickDeclaredStudy(input: RunFeaInput, studies: FoundFeaStudy[]): FoundFeaStudy | RunFeaOutput {
+  const study = selectFeaStudy(studies, typeof input.study === 'string' ? input.study : undefined);
+  if (study !== undefined) return study;
+  return {
+    ok: false,
+    error: `No feaStudy named '${input.study}'. Declared studies: ${studies.map(s => s.metadata.name).join(', ')}.`,
+    errorCode: 'feature.invalid-args',
+  };
+}
+
+/**
+ * Which study runs: a COMPLETE inline study (material + fixed + loads) is a
+ * standalone study on the returned shape; PARTIAL inline fields
+ * (`run_fea({ file, material: 'steel' })`) override the script's declared
+ * study on that study's own shape; no inline fields run the declared study.
+ */
 async function resolveFeaStudy(input: RunFeaInput): Promise<FeaStudyResolution> {
-  const inline = inlineFeaStudy(input as unknown as Record<string, unknown>);
-  if (inline.kind === 'error') return { ok: false, output: { ok: false, error: inline.error, errorCode: inline.errorCode } };
+  const raw = input as unknown as Record<string, unknown>;
+  const spec = inlineSpec(raw);
+  const complete = spec !== undefined && isCompleteInlineSpec(spec);
+  if (complete) {
+    const inline = inlineFeaStudy(raw);
+    if (inline.kind === 'error') return { ok: false, output: { ok: false, error: inline.error, errorCode: inline.errorCode } };
+  }
   const script = await runMcpScript(input);
   if (!script.ok) return { ok: false, output: script };
   const { run } = script;
-  if (inline.kind === 'ok') return inlineStudyOn(run, inline.metadata);
+  if (complete) {
+    const inline = inlineFeaStudy(raw);
+    if (inline.kind === 'ok') return inlineStudyOn(run, inline.metadata);
+  }
 
   const studies = findFeaStudies(run.records);
   if (studies.length === 0) {
+    if (spec !== undefined) {
+      // Partial fields and nothing to merge them onto: the validator says
+      // which fields are missing.
+      const inline = inlineFeaStudy(raw);
+      if (inline.kind === 'error') return { ok: false, output: { ok: false, error: inline.error, errorCode: inline.errorCode } };
+    }
     return {
       ok: false,
       output: {
@@ -134,19 +165,13 @@ async function resolveFeaStudy(input: RunFeaInput): Promise<FeaStudyResolution> 
       },
     };
   }
-  const study = selectFeaStudy(studies, typeof input.study === 'string' ? input.study : undefined);
-  if (study === undefined) {
-    return {
-      ok: false,
-      output: {
-        ok: false,
-        error: `No feaStudy named '${input.study}'. Declared studies: ${studies.map(s => s.metadata.name).join(', ')}.`,
-        errorCode: 'feature.invalid-args',
-      },
-    };
-  }
-
-  return { ok: true, run, study };
+  const picked = pickDeclaredStudy(input, studies);
+  if (!('metadata' in picked)) return { ok: false, output: picked };
+  if (spec === undefined) return { ok: true, run, study: picked };
+  const merged = inlineFeaStudy(raw, picked.metadata);
+  if (merged.kind === 'error') return { ok: false, output: { ok: false, error: merged.error, errorCode: merged.errorCode } };
+  if (merged.kind === 'none') return { ok: true, run, study: picked };
+  return { ok: true, run, study: { ...picked, metadata: merged.metadata } };
 }
 
 type LoweredStudyShape = { ok: false; output: RunFeaOutput } | { ok: true; shape: OcctBackend };

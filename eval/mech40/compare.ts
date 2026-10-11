@@ -7,7 +7,9 @@
 //       [--baseline eval/results/baseline.json] [--threshold 0.05] [--write-baseline]
 //
 // Exit 1 when pass@1 dropped by more than the threshold (absolute, default
-// 0.05 = 5 points) against the baseline. A baseline with no pass@1 recorded
+// 0.05 = 5 points) against the baseline, over the tasks both runs scored.
+// Exit 2 when the runs are not comparable (model / k / skills differ, or no
+// shared task). Infra-error samples are excluded from pass@ on both sides. A baseline with no pass@1 recorded
 // passes with a notice; `--write-baseline` copies the run's summary into it.
 
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -52,7 +54,9 @@ function main(): void {
   }
   const verdict = compareToBaseline(current, readJson(baselinePath), threshold);
   for (const line of verdict.lines) console.log(line);
-  process.exit(verdict.ok ? 0 : 1);
+  const infra = current.summary.infra_errors ?? 0;
+  if (infra > 0) console.log(`note: ${infra} sample(s) hit eval.infra-error and were left out of pass@ (not scored as failures)`);
+  process.exit(verdict.ok ? 0 : verdict.refused ? 2 : 1);
 }
 
 const isEntrypoint = process.argv[1] !== undefined && import.meta.url === new URL(`file://${process.argv[1]}`).href;

@@ -62,6 +62,8 @@ export interface VoxelSolveInput {
 
 export interface VoxelSolveResult {
   converged: boolean;
+  /** Stopped by the wall-clock budget (not by divergence or the iteration cap). */
+  timedOut: boolean;
   iterations: number;
   relResidual: number;
   /** Nodal displacement, xyz triples, mm. */
@@ -132,7 +134,7 @@ function conjugateGradient(
   f: Float64Array,
   free: Uint8Array,
   opts: { tolerance: number; deadline: number },
-): { x: Float64Array; converged: boolean; iterations: number; relResidual: number } {
+): { x: Float64Array; converged: boolean; timedOut: boolean; iterations: number; relResidual: number } {
   const size = f.length;
   const minv = inverseDiagonal(model, ke, free);
   const s: CgState = {
@@ -152,8 +154,9 @@ function conjugateGradient(
     const alpha = rz / dot(s.p, s.q);
     for (let i = 0; i < size; i++) { s.x[i] += alpha * s.p[i]; s.r[i] -= alpha * s.q[i]; }
     const rel = Math.sqrt(dot(s.r, s.r)) / fNorm;
-    if (rel < opts.tolerance) return { x: s.x, converged: true, iterations: it, relResidual: rel };
-    if (!Number.isFinite(rel) || Date.now() > opts.deadline) return { x: s.x, converged: false, iterations: it, relResidual: rel };
+    if (rel < opts.tolerance) return { x: s.x, converged: true, timedOut: false, iterations: it, relResidual: rel };
+    if (!Number.isFinite(rel)) return { x: s.x, converged: false, timedOut: false, iterations: it, relResidual: rel };
+    if (Date.now() > opts.deadline) return { x: s.x, converged: false, timedOut: true, iterations: it, relResidual: rel };
     for (let i = 0; i < size; i++) s.z[i] = minv[i] * s.r[i];
     const rzNew = dot(s.r, s.z);
     const beta = rzNew / rz;
@@ -161,7 +164,7 @@ function conjugateGradient(
     for (let i = 0; i < size; i++) s.p[i] = s.z[i] + beta * s.p[i];
   }
   const rel = Math.sqrt(dot(s.r, s.r)) / fNorm;
-  return { x: s.x, converged: false, iterations: maxIter, relResidual: rel };
+  return { x: s.x, converged: false, timedOut: false, iterations: maxIter, relResidual: rel };
 }
 
 /** Nodal von Mises: corner stresses of each brick, averaged per node. */
@@ -208,6 +211,7 @@ export function solveVoxelModel(input: VoxelSolveInput): VoxelSolveResult {
   for (const n of input.fixedNodes) for (let d = 0; d < 3; d++) reaction[d] += ku[3 * n + d] - input.force[3 * n + d];
   return {
     converged: cg.converged,
+    timedOut: cg.timedOut,
     iterations: cg.iterations,
     relResidual: cg.relResidual,
     u: cg.x,

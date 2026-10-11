@@ -3,7 +3,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
-  fullAuthoringSkill, lookupAuthoringSkill, parseAuthoringSkill, parseWithReferences,
+  fullAuthoringSkill, INDEX_CHAR_BUDGET, LOOKUP_AUTHORING_SKILL_DESCRIPTION, lookupAuthoringSkill, parseAuthoringSkill, parseWithReferences,
 } from './authoringSkillLookup';
 import { AUTHORING_REFERENCES } from './authoringReferences.gen';
 import { readReferenceFiles, renderReferencesModule, GENERATED_PATH } from '../../../scripts/buildAuthoringReferences';
@@ -23,10 +23,13 @@ describe('lookupAuthoringSkill', () => {
     expect(AUTHORING_REFERENCES.map((r) => r.file)).toContain('references/api.md');
   });
 
-  it('no args: quick-start + index under 16k chars', () => {
+  it('no args: quick-start + index under the budget the tool description quotes', () => {
     const r = lookupAuthoringSkill(SKILL);
     expect(r.mode).toBe('index');
-    expect(r.text.length).toBeLessThan(16_000);
+    expect(r.text.length).toBeLessThan(INDEX_CHAR_BUDGET);
+    const quoted = /under (\d+)k chars/.exec(LOOKUP_AUTHORING_SKILL_DESCRIPTION);
+    expect(quoted?.[1]).toBeDefined();
+    expect(r.text.length).toBeLessThan(Number(quoted![1]) * 1000);
     expect(r.text).toContain('## Coordinate System');
     expect(r.text).toContain('## Conventions');
     expect(r.text).toContain('## Before you finish');

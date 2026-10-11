@@ -9,6 +9,7 @@ import { computeDihedralPublic } from '../../../../kernel/backends/occt/edgeQuer
 import { pickEdges } from '../../../../kernel/backends/occt/edgeSelection';
 import {
   chamferWithHistory,
+  discardOcctShape,
   filletWithHistory,
   mergeEdgeFeatureHistory,
   type EdgeRefForFilleting,
@@ -626,7 +627,7 @@ const PROBE_ITERATIONS = 8;
 
 function filletBuilds(base: OcctBackend, edges: EdgeRefForFilleting[], radius: number, continuity: 'G1' | 'G2'): boolean {
   try {
-    filletWithHistory(base, edges, radius, continuity);
+    discardOcctShape(filletWithHistory(base, edges, radius, continuity).shape);
     return true;
   } catch {
     return false;
@@ -635,7 +636,7 @@ function filletBuilds(base: OcctBackend, edges: EdgeRefForFilleting[], radius: n
 
 function chamferBuilds(base: OcctBackend, edges: EdgeRefForFilleting[], distance: number): boolean {
   try {
-    chamferWithHistory(base, edges, distance);
+    discardOcctShape(chamferWithHistory(base, edges, distance).shape);
     return true;
   } catch {
     return false;

@@ -25,7 +25,7 @@ export const RUN_FEA_EXAMPLE =
 
 export type InlineStudyResult =
   | { kind: 'none' }
-  | { kind: 'ok'; metadata: FeaStudyMetadata }
+  | { kind: 'ok'; metadata: FeaStudyMetadata; merged?: true }
   | { kind: 'error'; error: string; errorCode: 'feature.invalid-args' };
 
 type Raw = Record<string, unknown>;
@@ -51,7 +51,7 @@ function firstDefined(raw: Raw, keys: readonly string[]): unknown {
 }
 
 /** The inline spec, from `study: {...}` or from top-level fields. */
-function inlineSpec(input: Raw): Raw | undefined {
+export function inlineSpec(input: Raw): Raw | undefined {
   const fromStudy = typeof input.study === 'object' && input.study !== null ? (input.study as Raw) : undefined;
   const src = fromStudy ?? input;
   const material = src.material;
@@ -71,22 +71,42 @@ function inlineSpec(input: Raw): Raw | undefined {
   return spec;
 }
 
+/** material + fixed + loads all given: a standalone study for the returned
+ *  shape. Anything less is a set of overrides for the script's own study. */
+export function isCompleteInlineSpec(spec: Raw): boolean {
+  return spec.material !== undefined && spec.fixed !== undefined && spec.loads !== undefined;
+}
+
+/** The declared study as a spec the validator accepts again. */
+function specOf(declared: FeaStudyMetadata): Raw {
+  const rest: Raw = { ...declared };
+  delete rest.virtual;
+  return rest;
+}
+
 /**
  * Validate the inline study, if the call carries one. Errors are the
  * validator's own messages ("feaStudy: loads[0].force must be three finite
  * numbers ...") plus the example call.
+ *
+ * With `declared` (the script's own study) and an INCOMPLETE inline spec —
+ * `run_fea({ file, material: 'steel' })` — the inline fields are overrides
+ * merged onto the declared study (`merged: true`) rather than a whole study
+ * that fails validation for the fields it left out.
  */
-export function inlineFeaStudy(input: Raw): InlineStudyResult {
+export function inlineFeaStudy(input: Raw, declared?: FeaStudyMetadata): InlineStudyResult {
   const spec = inlineSpec(input);
   if (spec === undefined) return { kind: 'none' };
+  const merge = declared !== undefined && !isCompleteInlineSpec(spec);
+  const full = merge ? { ...specOf(declared), ...spec } : spec;
   try {
-    const built = buildFeaStudyFeatureSpec(spec as unknown as FeaStudySpec, { kind: 'feature', id: '__inline__' });
-    return { kind: 'ok', metadata: built.metadata as unknown as FeaStudyMetadata };
+    const built = buildFeaStudyFeatureSpec(full as unknown as FeaStudySpec, { kind: 'feature', id: '__inline__' });
+    return { kind: 'ok', metadata: built.metadata as unknown as FeaStudyMetadata, ...(merge ? { merged: true } : {}) };
   } catch (e) {
     const message = isKernelError(e) || e instanceof Error ? e.message : String(e);
     return {
       kind: 'error',
-      error: `run_fea inline study: ${message} Example: ${RUN_FEA_EXAMPLE}.`,
+      error: `run_fea inline study${merge ? ` (merged onto the script's study '${declared.name}')` : ''}: ${message} Example: ${RUN_FEA_EXAMPLE}.`,
       errorCode: 'feature.invalid-args',
     };
   }
