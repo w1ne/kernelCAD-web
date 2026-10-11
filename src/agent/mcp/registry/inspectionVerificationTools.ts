@@ -134,7 +134,7 @@ const verifyToolEntry: ToolRegistryEntry = {
         seed: { type: 'object', description: "check:'reachable' — numeric IK seed pose (joint name -> deg/mm)." },
         loads: { type: 'object', description: "check:'load-capacity' — partName -> { force?: [Fx,Fy,Fz] N, torque?: [Tx,Ty,Tz] N*m }." },
         materials: { type: 'object', description: "check:'load-capacity' — partName -> material declaration." },
-        mode: { type: 'string', enum: ['stub', 'beam', 'fea'], description: "check:'load-capacity' — 'beam' (default), 'stub', or 'fea' (solve the script's feaStudy; needs the CalculiX + gmsh toolchain)." },
+        mode: { type: 'string', enum: ['stub', 'beam', 'fea'], description: "check:'load-capacity' — 'beam' (default), 'stub', or 'fea' (solve the script's feaStudy: CalculiX + gmsh when installed, else the in-process voxel estimate)." },
         safety_factor_threshold: { type: 'number', description: "check:'load-capacity' — pass/fail safety-factor floor (default 1.5; mode 'fea': the study's minSafetyFactor when declared)." },
         study: { type: 'string', description: "check:'load-capacity' mode:'fea' — feaStudy name (default: the last declared one)." },
         mesh_size: { type: 'number', description: "check:'load-capacity' mode:'fea' — element size override, mm." },

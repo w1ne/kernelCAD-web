@@ -137,25 +137,25 @@
   },
   {
     "name": "diff_scripts",
-    "description": "Use this when you need to see exactly what changed between two script versions. Structured geometric delta between two versions of a kernelCAD script — a baseline ({ baseFile } or { baseCode }) and a revision ({ file } or { code }). Returns agent-readable JSON: per-part added/removed/renamed/changed (volume mm³ + exact bbox deltas, numbers matching inspect({ of: 'part-stats' })), total interference-volume delta with per-pair detail, mate-graph changes (added/removed/changed mates incl. type, connectors, pose, limits), and param changes (value/min/max). Single-shape scripts diff as one \"(root)\" pseudo-part. Use after editing a script to verify exactly what changed physically before re-rendering. Read-only — never touches the active session.",
+    "description": "Use this when you need to see exactly what changed between two script versions. Structured geometric delta between two versions of a kernelCAD script — a baseline ({ baseFile } or { baseCode }) and a revision ({ file } or { code }). Returns agent-readable JSON: per-part added/removed/renamed/changed (volume mm³ + exact bbox deltas, numbers matching inspect({ of: 'part-stats' })), total interference-volume delta with per-pair detail, mate-graph changes (added/removed/changed mates incl. type, connectors, pose, limits), and param changes (value/min/max). Single-shape scripts diff as one \"(root)\" pseudo-part; a `return [a, b]` multi-body script diffs per body as \"body[0]\", \"body[1]\". An error that still leaves geometry (e.g. a skipped fillet) is listed under base/revised.errors beside the diff. Use after editing a script to verify exactly what changed physically before re-rendering. On a hosted server pass both versions inline: { baseCode: 'return box(10, 10, 10);', code: 'return box(10, 10, 12);' } (base_code/old_code/before and revised_code/new_code/after are accepted as aliases). Read-only — never touches the active session.",
     "inputSchema": {
       "type": "object",
       "properties": {
         "baseFile": {
           "type": "string",
-          "description": "Baseline script — path to a .kcad.ts file."
+          "description": "Baseline (before) script — path to a .kcad.ts file. Local servers only."
         },
         "baseCode": {
           "type": "string",
-          "description": "Baseline script — inline source."
+          "description": "Baseline (before) script — inline source. One of baseFile / baseCode is required."
         },
         "file": {
           "type": "string",
-          "description": "Revised script — path to a .kcad.ts file."
+          "description": "Revised (after) script — path to a .kcad.ts file. Local servers only."
         },
         "code": {
           "type": "string",
-          "description": "Revised script — inline source."
+          "description": "Revised (after) script — inline source. One of file / code is required."
         }
       }
     },
@@ -173,12 +173,12 @@
         "base": {
           "type": "object",
           "additionalProperties": true,
-          "description": "Baseline summary { featureCount, partCount, isAssembly } (success)."
+          "description": "Baseline summary { featureCount, partCount, isAssembly, errors? } (success); errors lists error diagnostics that still left geometry to diff."
         },
         "revised": {
           "type": "object",
           "additionalProperties": true,
-          "description": "Revision summary { featureCount, partCount, isAssembly } (success)."
+          "description": "Revision summary { featureCount, partCount, isAssembly, errors? } (success)."
         },
         "parts": {
           "type": "object",
@@ -579,7 +579,7 @@
             "beam",
             "fea"
           ],
-          "description": "check:'load-capacity' — 'beam' (default), 'stub', or 'fea' (solve the script's feaStudy; needs the CalculiX + gmsh toolchain)."
+          "description": "check:'load-capacity' — 'beam' (default), 'stub', or 'fea' (solve the script's feaStudy: CalculiX + gmsh when installed, else the in-process voxel estimate)."
         },
         "safety_factor_threshold": {
           "type": "number",
@@ -1790,17 +1790,33 @@
   },
   {
     "name": "add_variable_sweep",
-    "description": "Use this when you need an organic swept solid whose cross-section changes along its length — a tapering body, horn, bottle, fairing, or duct — authored as a variable-section sweep along a spine. Insert a `variableSweep(spine, sections, opts?)` declaration into the user's .kcad.ts immediately before the last top-level return. The result is a Shape — chain `.translate(...)`, `.union(...)`, etc. via `add_feature`. `spine_binding` references an existing variable (Curve3D / Sketch / Vec3[]) in the source; each `sections[i].profile_binding` references an existing Sketch. Sections must be strictly increasing in `t` and span [0, 1]; first t=0, last t=1. Orientation is not exposed by this MCP tool until runtime orientation support is wired. Validates every binding exists in the source via regex before inserting (fast structured error vs capture-time stack). Returns the modified code + diagnostics. Side-effect-free.",
+    "description": "Use this when you need an organic swept solid whose cross-section changes along its length — a tapering body, horn, bottle, handle, ring band, fairing, or duct — authored as a variable-section sweep along a spine. Inserts `variableSweep(spine, sections, opts?)` into the .kcad.ts `code` immediately before the last top-level return (an empty `code` starts a new script that returns the sweep). Spine: EITHER `spine_points` ([[x,y,z], ...] in mm, interpolated with spline3d; `spine_closed: true` closes the loop for a ring) OR `spine_binding` (an existing Curve3D / Sketch / Vec3[] variable). Each section: `t` in [0, 1] plus a profile — inline `radius` (circle) or `width` + `height` (rectangle), or `profile_binding` (an existing Sketch); profiles are centred on the spine and turned to face along it. Sections are strictly increasing in t, first t=0, last t=1 (omit t on every section to space them evenly). On a closed spine t=1 is the seam and reuses the t=0 profile. Example: { code, spine_points: [[0,0,0],[0,10,30],[0,0,60]], sections: [{ t: 0, radius: 8 }, { t: 0.5, radius: 10 }, { t: 1, radius: 4 }] }. Returns the modified code, diagnostics from re-evaluating it, and `sweep` { volumeMm3, bbox } measured from the built solid (ok:false when the sweep built nothing). The result is a Shape binding: return it, or chain `.union(...)` etc. via add_feature. Orientation is not exposed by this MCP tool until runtime orientation support is wired. Side-effect-free.",
     "inputSchema": {
       "type": "object",
       "properties": {
         "code": {
           "type": "string",
-          "description": "The .kcad.ts source code."
+          "description": "The .kcad.ts source code (\"\" for a new script)."
+        },
+        "spine_points": {
+          "type": "array",
+          "description": "Inline spine: at least 2 [x, y, z] points in mm, interpolated with spline3d. Use this OR spine_binding.",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "minItems": 3,
+            "maxItems": 3
+          }
+        },
+        "spine_closed": {
+          "type": "boolean",
+          "description": "With spine_points: close the spline into a loop (ring band, loop handle)."
         },
         "spine_binding": {
           "type": "string",
-          "description": "Existing variable name for a Curve3D / Sketch / Vec3[] declared earlier in the source."
+          "description": "Existing variable name for a Curve3D / Sketch / Vec3[] declared earlier in the source. Use this OR spine_points."
         },
         "sections": {
           "type": "array",
@@ -1812,15 +1828,23 @@
                 "type": "number",
                 "description": "Spine parameter in [0, 1]."
               },
+              "radius": {
+                "type": "number",
+                "description": "Inline circular profile radius, mm."
+              },
+              "width": {
+                "type": "number",
+                "description": "Inline rectangular profile width, mm (with height)."
+              },
+              "height": {
+                "type": "number",
+                "description": "Inline rectangular profile height, mm (with width)."
+              },
               "profile_binding": {
                 "type": "string",
-                "description": "Existing Sketch variable name for this section."
+                "description": "Existing Sketch variable name for this section (instead of radius / width+height)."
               }
-            },
-            "required": [
-              "t",
-              "profile_binding"
-            ]
+            }
           }
         },
         "closed": {
@@ -1843,7 +1867,6 @@
       },
       "required": [
         "code",
-        "spine_binding",
         "sections"
       ]
     },
@@ -2423,7 +2446,7 @@
   },
   {
     "name": "query",
-    "description": "Use this when you need to resolve or inspect topology against a script's lowered geometry. Selected by `mode` (default 'evaluate'):\n- 'evaluate' — inspect a Query (@kc[...] ref, @kcq[...] DSL, or { ast }); returns matched entities. Pass expect:'unique' to assert exactly-one.\n- 'resolve' — resolve a single @kc[...] / @kcq[...] ref to one entity ({ ref }).\n- 'lineage' — walk the HistoryMap for a named face ref ({ feature_id, ref }).\nAll params except `mode` are forwarded verbatim.",
+    "description": "Use this when you need to resolve or inspect topology against a script's lowered geometry. Pass the script as `code` (inline; works on a hosted server) or `file`. Selected by `mode` (default 'evaluate'):\n- 'evaluate' — list the faces a Query matches ({ query }). Pass expect:'unique' to assert exactly-one.\n- 'resolve' — resolve one ref to one face ({ ref }).\n- 'lineage' — the creating/modifying history of a face ({ ref }; feature_id defaults to the last feature).\nQuery forms (faces only; edge/vertex kinds return query.unsupported-entity-type):\n- a bare face label: 'top', 'bottom', 'left', 'right', 'front', 'back', or a hole/cutout slot like 'wall'.\n- @kc[<feature-id>/face/<label>] — feature ids are the ones refs print, e.g. '@kc[box_1/face/top]', '@kc[hole_1/face/wall]'.\n- @kcq[face(<filter>, ...)] — filters AND together: createdBy(\"box_1\"), withLabel(\"top\"), geometryType(PLANE|CYLINDER|CONE|SPHERE|TORUS|BSPLINE_SURFACE), closestTo([x,y,z]) or closestTo([x,y,z], k), containsPoint([x,y,z]); combine with union(a, b), intersection(a, b), subtraction(a, b). Example: '@kcq[face(geometryType(CYLINDER), closestTo([0,0,10]))]'.\nEach matched face comes back with its canonical @kc ref, centroid, normal and area.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -2445,11 +2468,11 @@
           "description": "Inline kernelCAD script source."
         },
         "query": {
-          "description": "mode:'evaluate' — Query input: @kc[...] / @kcq[...] string or { ast } object."
+          "description": "mode:'evaluate' — Query: a bare face label ('top'), an @kc[<feature-id>/face/<label>] ref, an @kcq[face(...)] expression, or { ast }."
         },
         "ref": {
           "type": "string",
-          "description": "mode:'resolve'|'lineage' — topology ref string."
+          "description": "mode:'resolve'|'lineage' — one face: '@kc[box_1/face/top]', '@kcq[...]', or '<feature-id>.<label>' (lineage)."
         },
         "expect": {
           "type": "string",
@@ -5365,7 +5388,7 @@
   },
   {
     "name": "run_fea",
-    "description": "Use this when you need to know whether a part will hold a load. Runs the linear-static structural study a script declares with `shape.feaStudy({ material, fixed, loads, meshSize?, minSafetyFactor? })`: meshes the solid with quadratic tetrahedra, solves it with CalculiX, and returns evidence — peak von Mises stress (MPa), peak displacement (mm), the minimum safety factor against the material yield (taken away from the clamp-singular edges of the fixed faces; the raw clamp-edge peak is reported separately as peakAtSupportMPa), per-region hot spots named by @kc[...] face ref, mesh-quality trust flags, an equilibrium residual, and stress-heatmap PNG paths.\nRequires the external solver toolchain (CalculiX `ccx` plus the gmsh Python module). When it is absent the call fails with `fea.solver.unavailable` and the exact install command — never a silent pass.\nPass { file | code }, optional `study` (defaults to the last declared study), `output_dir` (keeps the .inp/.frd deck for reproduction), `mesh_size` (mm, overrides the study for this run), and `heatmaps: false` for a fast numbers-only run.\nMesh refinement is automatic: when the stress is untrusted only because the solver's error estimate is high, it re-solves once at 0.75x the element size (when the predicted element count fits the element budget) and returns that pass, with summary.refinement listing each pass's mesh size, element count and peak stress and why it stopped. `refine: false` solves once at mesh_size.",
+    "description": "Use this when you need to know whether a part will hold a load. Runs a linear-static structural study and returns evidence — peak von Mises stress (MPa), peak displacement (mm), the minimum safety factor against the material yield (taken away from the clamp-singular edges of the fixed faces; the raw clamp-edge peak is reported separately as peakAtSupportMPa), per-region hot spots named by @kc[...] face ref, mesh trust flags, an equilibrium residual, and (CalculiX only) stress-heatmap PNG paths.\nThe study is EITHER declared in the script with `shape.feaStudy({ material, fixed, loads, meshSize?, minSafetyFactor? })` OR passed on the call against the shape the script returns: { code: 'return box(100, 20, 10);', material: 'aluminum-6061', fixed: { atX: 0 }, loads: [{ faces: { atX: 100 }, force: [0, 0, -200] }] }. Faces are a FaceQuery ({ atX | atY | atZ, byNormal: 'Z', near: [x,y,z], ... }), a face label ('top', 'bottom', 'left', 'right', 'front', 'back') or an @kc[...] ref. Force is the TOTAL [Fx, Fy, Fz] in N on those faces (a scalar force + direction is accepted). Materials: mild-steel, aluminum-6061, pla, petg, abs, nylon (aliases steel, aluminum), or { E, nu, yield } in MPa.\nSolver (`solver`, default 'auto'): CalculiX + gmsh quadratic tets when that toolchain is installed; otherwise the built-in in-process voxel solver (8-node incompatible-mode bricks), which needs nothing installed and is marked summary.solver 'in-process-voxel' with trust.meshTrusted false — an estimate (accurate for prismatic bending, approximate at curved faces and notches), never a verified pass. solver: 'calculix' fails up front with fea.solver.unavailable and the install command when the toolchain is absent.\nAlso: `study` (a declared study name; default the last), `output_dir` (keeps the deck / summary JSON), `mesh_size` (mm, overrides the study for this run), `heatmaps: false` for a numbers-only run. CalculiX mesh refinement is automatic: when the stress is untrusted only because the solver's error estimate is high, it re-solves once at 0.75x the element size (inside the element budget), with summary.refinement listing each pass. `refine: false` solves once.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -5379,7 +5402,33 @@
         },
         "study": {
           "type": "string",
-          "description": "Name of the study to run; defaults to the last declared one."
+          "description": "Name of the declared study to run; defaults to the last declared one."
+        },
+        "material": {
+          "description": "Inline study: material grade name (e.g. 'aluminum-6061') or { E, nu, yield } in MPa."
+        },
+        "fixed": {
+          "description": "Inline study: faces held fixed — a FaceQuery like { atX: 0 }, a face label like 'bottom', or an @kc[...] ref."
+        },
+        "loads": {
+          "type": "array",
+          "description": "Inline study: loads, each { faces, force: [Fx, Fy, Fz] } — total force in N on those faces.",
+          "items": {
+            "type": "object"
+          }
+        },
+        "min_safety_factor": {
+          "type": "number",
+          "description": "Inline study: required minimum safety factor; below it the call fails with fea.safety-factor.below-min."
+        },
+        "solver": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "calculix",
+            "in-process"
+          ],
+          "description": "'auto' (default): CalculiX when installed, else in-process. 'calculix': require it. 'in-process': always the built-in voxel solver."
         },
         "output_dir": {
           "type": "string",
@@ -5417,12 +5466,17 @@
       "properties": {
         "ok": {
           "type": "boolean",
-          "description": "False when the study violated its declared minSafetyFactor, a selector did not resolve, or the solver toolchain is missing."
+          "description": "False when the study violated its declared minSafetyFactor, a selector did not resolve, the solve failed, or solver:'calculix' was required and the toolchain is missing."
         },
         "summary": {
           "type": "object",
           "additionalProperties": true,
-          "description": "Solved evidence: maxVonMisesMPa, maxVonMisesAt, maxDisplacementMm, maxDisplacementAt, minSafetyFactor (+ minSafetyFactorRequired), nodeCount/elementCount/meshSizeMm, quality (minSICN, meanSICN, lowQualityCount), maxStressErrorPercent (high-stress region), trust { meshTrusted, reasons }, hotSpots [{ region, maxVonMisesMPa, nodeId, at, safetyFactor }]; the stress values, safety factor and hot spots exclude the support zone next to fixed-face edges (governingField), whose clamp-singular raw peak is reported as peakAtSupportMPa / peakAtSupportAt / peakAtSupportRegion with supportAdjacentNodeCount and supportZoneRadiusMm; appliedForceN / reactionForceN / equilibriumResidual, meshMs / solveMs."
+          "description": "Solved evidence: solver ('calculix' or 'in-process-voxel'), maxVonMisesMPa, maxVonMisesAt, maxDisplacementMm, maxDisplacementAt, minSafetyFactor (+ minSafetyFactorRequired), nodeCount/elementCount/meshSizeMm, quality (minSICN, meanSICN, lowQualityCount), maxStressErrorPercent (high-stress region), trust { meshTrusted, reasons }, hotSpots [{ region, maxVonMisesMPa, nodeId, at, safetyFactor }]; the stress values, safety factor and hot spots exclude the support zone next to fixed-face edges (governingField), whose clamp-singular raw peak is reported as peakAtSupportMPa / peakAtSupportAt / peakAtSupportRegion with supportAdjacentNodeCount and supportZoneRadiusMm; appliedForceN / reactionForceN / equilibriumResidual, meshMs / solveMs."
+        },
+        "toolchain": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "{ missing[], hint } — present when solver:'calculix' was required and CalculiX / gmsh are not installed."
         },
         "images": {
           "type": "array",
@@ -5471,7 +5525,7 @@
   },
   {
     "name": "fea_summary",
-    "description": "Use this when you need a structural check's context without paying for a solve. Read-only: returns the stored summary of a previous run_fea (pass the same `output_dir`), whether the CalculiX + gmsh toolchain is available on this machine (with the install command when it is not), and the FEA material table with real E / Poisson / yield numbers so a grade is chosen against data rather than from memory. Never meshes, solves, or writes.",
+    "description": "Use this when you need a structural check's context without paying for a solve. Read-only: returns the stored summary of a previous run_fea (pass the same `output_dir`), whether the CalculiX + gmsh toolchain is available on this machine (with the install command when it is not; run_fea then uses its in-process voxel solver — toolchain.default_solver says which), and the FEA material table with real E / Poisson / yield numbers so a grade is chosen against data rather than from memory. Never meshes, solves, or writes.",
     "inputSchema": {
       "type": "object",
       "properties": {
