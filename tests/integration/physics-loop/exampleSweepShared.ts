@@ -79,6 +79,11 @@ export const EXEMPT_UNVERIFIED: ReadonlySet<string> = new Set([
   'examples/gallery/meta-glasses-experiments/silhouette-wayfarer.kcad.ts',
   'examples/gallery/meta-glasses-experiments/words-to-geometry-wayfarer.kcad.ts',
   'examples/patterns/servo-vented-plate.kcad.ts',
+  // Gallery car study: 60 named display parts (body, glass, lamp skins,
+  // wheels) with no mates. Its conformal skins sit on the body surface by
+  // design, and one evaluate takes ~10 min, so the live interference sweep
+  // exceeds the 20-minute CI shard budget without testing a mechanism.
+  'examples/from-reference/e46-sedan/e46-sedan.kcad.ts',
   // Comparison board: five robot-hand candidate models shown side by side,
   // each drawn as display pieces (floating labels, gapped finger segments,
   // ghost overlays). Genuinely multi-body: every piece is its own named part
