@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { emptyIn, fit, hole, limitsCover, mateBetween, mechHarness, near, overlap } from '../../../mech40/checks';
+import { clearAcrossPoses, emptyIn, fit, hole, limitsCover, mateBetween, mechHarness, near, overlap, travelPoses } from '../../../mech40/checks';
 
 export default mechHarness({
   parts: ['leafA', 'leafB'],
-  checks({ part, build }) {
+  async checks({ part, build }) {
     const a = part('leafA');
     const b = part('leafB');
     // World frame from leaf B (plate x 0..40): its min corner is (0, -3, 0) when modelled as asked.
@@ -13,6 +13,9 @@ export default mechHarness({
     const gapEmpty = (lo: [number, number, number], hi: [number, number, number]) =>
       emptyIn(a.shape, w(lo), w(hi)) && emptyIn(b.shape, w(lo), w(hi));
     const hinge = mateBetween(build, 'revolute', 'leafA', 'leafB');
+    // The leaves must stay clear through the whole fold, not just flat.
+    const swingsClear = hinge !== undefined && await clearAcrossPoses(
+      build, travelPoses(hinge).map((deg) => ({ [hinge.name]: deg })), [['leafA', 'leafB']]);
     return {
       'leaf A 44 × 28 × 6 (pin proud), leaf B 40 × 28 × 6': near(a.size[0], 44) && near(a.size[1], 28) && near(a.size[2], 6)
         && near(b.size[0], 40) && near(b.size[1], 28) && near(b.size[2], 6),
@@ -25,6 +28,7 @@ export default mechHarness({
         && gapEmpty([16, -0.1, 4.02], [24, 0.1, 4.18]),
       'revolute mate between the leaves, 180° of travel': limitsCover(hinge, 180),
       'leaves do not overlap': overlap(a.shape, b.shape) < 1e-6,
+      'leaves stay clear across the travel (both limits and mid)': swingsClear,
     };
   },
 });

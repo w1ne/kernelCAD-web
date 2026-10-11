@@ -51,7 +51,7 @@ describe('flattenPattern — single-bend roundtrip', () => {
     expect(region.bendLines.length).toBe(2);
   });
 
-  it('three-bend chain throws feature.flattenPattern.multi-bend-unsupported', async () => {
+  it('three-bend chain flattens: every bend line in flat-blank coordinates', async () => {
     const { records } = await runScript({
       code: `
         const s = path().moveTo(0, 0).lineTo(150, 0).lineTo(150, 60).lineTo(0, 60).close();
@@ -65,13 +65,40 @@ describe('flattenPattern — single-bend roundtrip', () => {
     });
     const engine = new RecomputeEngine(new OcctLowerer());
     await engine.run(records);
-    expect(() => flattenPattern(records))
-      .toThrow();
-    try {
-      flattenPattern(records);
-    } catch (e) {
-      expect((e as { code?: string }).code).toBe('feature.flattenPattern.multi-bend-unsupported');
-    }
+    const region = flattenPattern(records);
+    expect(region.bendLines.map((l) => l.start[0])).toEqual([40, 80, 120]);
+    const xs = region.outer.map((p) => p[0]);
+    expect(Math.max(...xs) - Math.min(...xs)).toBeCloseTo(150, 6);
+  });
+
+  it('a C-channel with lips (3 bends, lip on a folded flange) flattens to the 120 x 40 blank', async () => {
+    const { records } = await runScript({
+      code: `
+        const s = path().moveTo(0, 0).lineTo(120, 0).lineTo(120, 40).lineTo(0, 40).close();
+        return sheetMetal(s, { thickness: 1.5, kFactor: 0.4 })
+          .bend({ atX: 20 }, 90, 2).bend({ atX: 100 }, 90, 2).bend({ atX: 10 }, 90, 2);
+      `,
+      fileName: 'test.kcad.ts',
+    });
+    await new RecomputeEngine(new OcctLowerer()).run(records);
+    const region = flattenPattern(records);
+    expect(region.bendLines.map((l) => l.start[0])).toEqual([20, 100, 10]);
+    const xs = region.outer.map((p) => p[0]);
+    const ys = region.outer.map((p) => p[1]);
+    expect([Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)]).toEqual([120, 40]);
+  });
+
+  it('a chain whose fold failed has no flat pattern', async () => {
+    const { records } = await runScript({
+      code: `
+        const s = path().moveTo(0, 0).lineTo(100, 0).lineTo(100, 40).lineTo(0, 40).close();
+        return sheetMetal(s, { thickness: 1.5, kFactor: 0.4 })
+          .bend({ atX: 30 }, 90, 2).bend({ atX: 70 }, 90, 2).bend({ atX: 22 }, 90, 2).bend({ atX: 78 }, 90, 2);
+      `,
+      fileName: 'test.kcad.ts',
+    });
+    await new RecomputeEngine(new OcctLowerer()).run(records);
+    expect(() => flattenPattern(records)).toThrow(/bendRecord/);
   });
 
   it('round-trips a folded U-channel: flat length = flange lengths + bend allowances', async () => {

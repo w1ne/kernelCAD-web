@@ -20,6 +20,17 @@
 //
 // The OCCT lowerer consumes `FoldStep` to split the current body at the zone
 // planes, revolve the zone section into the bend arc and move the flange.
+//
+// The split is local: only the flat CELL holding the bend line (the strip
+// between the neighbouring earlier bend zones, as one rigid piece of the
+// folded body) is cut at the zone planes. Every other flange and arc moves
+// or stays as a whole, so a lip folded on one flange cannot slice an
+// unrelated flange that happens to cross the same world plane.
+//
+// Bend lines span the whole blank, so an { atX } and an { atY } bend always
+// cross. That only folds if the blank has corner relief there: no material
+// where the two bends' zone-plus-moving sides meet. The planner reports the
+// flat regions the lowerer must find empty (`reliefChecks`).
 
 export type Vec3 = [number, number, number];
 type Mat3 = [number, number, number, number, number, number, number, number, number];
@@ -64,6 +75,27 @@ export interface FoldStep {
   angleRad: number;
   /** World transform the moving flange receives (translate by -BA·e, then rotate). */
   flangeTransform: Rigid;
+  /** The flat cell the bend line lies in (one rigid piece of the folded body). */
+  cell: FlatCell;
+  /** Flat corner regions that must hold no material (crossing earlier bends). */
+  reliefChecks: ReliefCheck[];
+}
+
+/** An axis-aligned flat-blank rectangle (bottom surface z0, full thickness)
+ *  and the world transform of the rigid piece of the folded body it lies in. */
+export interface FlatCell {
+  min: [number, number];
+  max: [number, number];
+  transform: Rigid;
+}
+
+/** A flat region where a crossing earlier bend and this bend overlap: it
+ *  must be empty (corner relief) or the fold would tear the corner. */
+export interface ReliefCheck {
+  /** The earlier, crossing bend. */
+  crossing: FlatBend;
+  /** Regions to probe for material, each with the transform it lies under. */
+  regions: FlatCell[];
 }
 
 const I3: Mat3 = [1, 0, 0, 0, 1, 0, 0, 0, 1];
@@ -179,6 +211,107 @@ function worldTransformAt(
   return W;
 }
 
+/** Index of the flat coordinate a bend line of this orientation is constant in. */
+function uIndex(orient: FlatBend['orient']): 0 | 1 {
+  return orient === 'x' ? 0 : 1;
+}
+
+/** Flat range [lo, hi] along `axis` of one side of an earlier bend (its zone
+ *  excluded): the side holding `at`, clipped to the blank. */
+function sideRange(
+  prior: FoldStep,
+  towardMoving: boolean,
+  blank: FlatBlank,
+): [number, number] {
+  const i = uIndex(prior.bend.orient);
+  const half = prior.bendAllowance / 2;
+  const plusIsMoving = prior.side === 1;
+  const plus = towardMoving === plusIsMoving;
+  return plus ? [prior.bend.at + half, blank.max[i]] : [blank.min[i], prior.bend.at - half];
+}
+
+/** The rigid flat cell holding bend `bend`'s line, bounded by earlier
+ *  parallel bend zones across it and by earlier crossing bends' fixed side
+ *  along it. */
+function cellOf(bend: FlatBend, halfZone: number, blank: FlatBlank, prior: readonly FoldStep[]): { min: [number, number]; max: [number, number] } {
+  const min: [number, number] = [blank.min[0], blank.min[1]];
+  const max: [number, number] = [blank.max[0], blank.max[1]];
+  const u = uIndex(bend.orient);
+  let boundedByBend = false;
+  for (const step of prior) {
+    const j = uIndex(step.bend.orient);
+    const half = step.bendAllowance / 2;
+    if (j === u) {
+      boundedByBend = true;
+      if (step.bend.at < bend.at) min[u] = Math.max(min[u], step.bend.at + half);
+      else max[u] = Math.min(max[u], step.bend.at - half);
+    } else {
+      const [lo, hi] = sideRange(step, false, blank);
+      min[j] = Math.max(min[j], lo);
+      max[j] = Math.min(max[j], hi);
+    }
+  }
+  // A line off the blank is reported by the lowerer ("does not cross the
+  // sheet"); here only an earlier parallel zone can be in the way.
+  const onBlank = bend.at > blank.min[u] && bend.at < blank.max[u];
+  if (boundedByBend && onBlank && (bend.at - halfZone < min[u] - 1e-9 || bend.at + halfZone > max[u] + 1e-9)) {
+    throw new FoldPlanError(
+      `bend at ${bend.orient} = ${bend.at} and an earlier bend overlap: bend zones (the bend allowance strip across each line) may not overlap.`,
+    );
+  }
+  return { min, max };
+}
+
+/** Corner regions of each crossing earlier bend that this bend would fold
+ *  through: (this bend's zone + moving side) x (that bend's zone / moving side). */
+function reliefChecksOf(
+  bend: FlatBend,
+  side: 1 | -1,
+  halfZone: number,
+  blank: FlatBlank,
+  prior: readonly { step: FoldStep; frame: FlatFrame }[],
+): ReliefCheck[] {
+  const u = uIndex(bend.orient);
+  const mine: [number, number] = side === 1 ? [bend.at - halfZone, blank.max[u]] : [blank.min[u], bend.at + halfZone];
+  const out: ReliefCheck[] = [];
+  for (const { step } of prior) {
+    const j = uIndex(step.bend.orient);
+    if (j === u) continue;
+    const half = step.bendAllowance / 2;
+    const moving = sideRange(step, true, blank);
+    const zone: [number, number] = [step.bend.at - half, step.bend.at + half];
+    // The zone strip's material is revolved from the fixed side's section,
+    // so the section just inside the fixed side stands for the arc.
+    const sectionAt = step.side === 1 ? zone[0] : zone[1];
+    const sliver: [number, number] = step.side === 1 ? [sectionAt - 0.05, sectionAt] : [sectionAt, sectionAt + 0.05];
+    const box = (along: [number, number]): { min: [number, number]; max: [number, number] } => {
+      const min: [number, number] = [0, 0];
+      const max: [number, number] = [0, 0];
+      min[u] = mine[0]; max[u] = mine[1];
+      min[j] = along[0]; max[j] = along[1];
+      return { min, max };
+    };
+    const regions: FlatCell[] = [];
+    for (const along of [moving, sliver]) {
+      const r = box(along);
+      if (r.max[0] - r.min[0] <= 1e-9 || r.max[1] - r.min[1] <= 1e-9) continue;
+      const centre: Vec3 = [(r.min[0] + r.max[0]) / 2, (r.min[1] + r.max[1]) / 2, blank.z0];
+      regions.push({ ...r, transform: transformAt(centre, prior) });
+    }
+    out.push({ crossing: step.bend, regions });
+  }
+  return out;
+}
+
+/** World transform of the flat point `point`, given the earlier steps. */
+function transformAt(point: Vec3, prior: readonly { step: FoldStep; frame: FlatFrame }[]): Rigid {
+  let W = IDENTITY;
+  for (const { step, frame } of prior) {
+    if (dot(sub(point, frame.line), frame.e) > 0) W = compose(step.flangeTransform, W);
+  }
+  return W;
+}
+
 /** World-space fold steps for a chain of bends, in application order. */
 export function planFold(bends: readonly FlatBend[], blank: FlatBlank): FoldStep[] {
   const done: { step: FoldStep; frame: FlatFrame }[] = [];
@@ -187,7 +320,11 @@ export function planFold(bends: readonly FlatBend[], blank: FlatBlank): FoldStep
     const side = movingSide(bend, blank);
     const frame = flatFrame(bend, side, blank);
     const BA = bendAllowanceOf(bend, blank);
-    const W = worldTransformAt(frame.mid, bend.orient, BA / 2, done);
+    const priorSteps = done.map((x) => x.step);
+    const box = cellOf(bend, BA / 2, blank, priorSteps);
+    const centre: Vec3 = [(box.min[0] + box.max[0]) / 2, (box.min[1] + box.max[1]) / 2, blank.z0];
+    if (bend.orient === 'x') centre[0] = bend.at; else centre[1] = bend.at;
+    const W = worldTransformAt(centre, bend.orient, BA / 2, done);
     const e = applyDir(W, frame.e);
     const n = applyDir(W, nFlat);
     const d = applyDir(W, frame.d);
@@ -198,8 +335,10 @@ export function planFold(bends: readonly FlatBend[], blank: FlatBlank): FoldStep
     const center = add(zoneStart, scale(n, offset));
     const axis = unit(cross(e, n));
     const flangeTransform = compose(rotationAbout(center, axis, angleRad), translation(scale(e, -BA)));
+    const cell: FlatCell = { min: box.min, max: box.max, transform: W };
+    const reliefChecks = reliefChecksOf(bend, side, BA / 2, blank, done);
     done.push({
-      step: { bend, side, bendAllowance: BA, zoneStart, zoneEnd, e, n, d, center, axis, angleRad, flangeTransform },
+      step: { bend, side, bendAllowance: BA, zoneStart, zoneEnd, e, n, d, center, axis, angleRad, flangeTransform, cell, reliefChecks },
       frame,
     });
   }

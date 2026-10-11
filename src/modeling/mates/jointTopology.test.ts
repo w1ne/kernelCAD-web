@@ -30,6 +30,7 @@ function armLike(overrides: {
     __mechanicalJointIntents: () => overrides.mechanicalJointIntents ?? [],
     __jointSupportIntents: () => overrides.jointSupportIntents ?? [],
     __tendons: () => [],
+    __mateCouplings: () => [],
   } as unknown as Assembly;
 }
 
@@ -406,25 +407,65 @@ describe('reviewJointTopology', () => {
     });
   });
 
-  it('grounds parts[0] when nothing is declared stable only for a purely passive mechanism', () => {
-    const build = (actuated: boolean) => {
+  it('grounds the part the mate solver grounds when nothing is declared stable, and names it', () => {
+    const build = (opts: { actuated: boolean; disconnectLink?: boolean }) => {
       const { arm, kcad } = makeApi();
       arm.part('link1', kcad.box(20, 4, 4))
         .connector('elbow', { type: 'axis', origin: { kind: 'vec3', value: [20, 0, 0] }, axis: [0, 0, 1] });
       arm.part('link2', kcad.box(20, 4, 4).translate(20, 0, 0))
-        .connector('elbow', { type: 'axis', origin: { kind: 'vec3', value: [20, 0, 0] }, axis: [0, 0, 1] });
+        .connector('elbow', { type: 'axis', origin: { kind: 'vec3', value: [20, 0, 0] }, axis: [0, 0, 1] })
+        .connector('wrist', { type: 'axis', origin: { kind: 'vec3', value: [40, 0, 0] }, axis: [0, 0, 1] });
+      arm.part('link3', kcad.box(20, 4, 4).translate(40, 0, 0))
+        .connector('wrist', { type: 'axis', origin: { kind: 'vec3', value: [40, 0, 0] }, axis: [0, 0, 1] });
       arm.part('motor', kcad.box(4, 4, 4).translate(16, 0, 4));
-      arm.mate('elbow', 'link1.elbow', 'link2.elbow', 'revolute', { limitsDeg: [-90, 90] });
-      if (actuated) {
+      if (!opts.disconnectLink) arm.mate('elbow', 'link1.elbow', 'link2.elbow', 'revolute', { limitsDeg: [-90, 90] });
+      arm.mate('wrist', 'link2.wrist', 'link3.wrist', 'revolute', { limitsDeg: [-90, 90] });
+      if (opts.actuated && !opts.disconnectLink) {
         arm.mechanicalJoint('elbow-drive', { mate: 'elbow', actuator: 'motor', shaft: 'link1', supports: ['link1'], output: 'link2' });
       }
       return arm;
     };
-    // Passive hinge: the first part is the ground, as the solver treats it.
-    expect(codesOf(build(false))).not.toContain('assembly.connectivity.floating-moving-part');
-    // Actuated arm with no declared stable part: parts[0] is itself a moving
-    // link, so it must not be assumed grounded.
-    expect(codesOf(build(true))).toContain('assembly.connectivity.floating-moving-part');
+    for (const actuated of [false, true]) {
+      const diagnostics = reviewJointTopology(build({ actuated })).diagnostics;
+      expect(diagnostics.map((d) => d.code)).not.toContain('assembly.connectivity.floating-moving-part');
+      const assumed = diagnostics.find((d) => d.code === 'assembly.connectivity.assumed-root');
+      expect(assumed?.severity).toBe('warning');
+      expect(assumed?.stableParts).toEqual(['link1']);
+      expect(assumed?.message).toContain("'link1'");
+    }
+    // A moving chain that never reaches parts[0] still floats, and the hint
+    // names the assumed root instead of an empty list.
+    const floating = reviewJointTopology(build({ actuated: true, disconnectLink: true })).diagnostics
+      .filter((d) => d.code === 'assembly.connectivity.floating-moving-part');
+    expect(floating.map((d) => d.partName).sort()).toEqual(['link2', 'link3']);
+    for (const d of floating) {
+      expect(d.hint).toContain('(link1)');
+      expect(d.hint).not.toMatch(/\(\s*\)/);
+    }
+  });
+
+  it('does not warn about an assumed root when a stable part is declared or nothing moves', () => {
+    const { arm, kcad } = makeApi();
+    arm.part('plate', kcad.box(10, 10, 2)).connector('top', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 2] } });
+    arm.part('cap', kcad.box(10, 10, 2)).connector('bottom', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+    arm.mate('bolt', 'plate.top', 'cap.bottom', 'fastened');
+    expect(codesOf(arm)).not.toContain('assembly.connectivity.assumed-root');
+  });
+
+  it('a coupled driven mate inherits finite travel from a limited source mate', () => {
+    const { arm, kcad } = makeApi();
+    arm.part('base', kcad.box(20, 20, 4))
+      .connector('a', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 4] }, axis: [0, 0, 1] })
+      .connector('b', { type: 'axis', origin: { kind: 'vec3', value: [10, 0, 4] }, axis: [0, 0, 1] });
+    arm.part('gear1', kcad.box(4, 4, 4)).connector('a', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+    arm.part('gear2', kcad.box(4, 4, 4)).connector('b', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+    arm.part('motor', kcad.box(4, 4, 4));
+    arm.mate('drive', 'base.a', 'gear1.a', 'revolute', { limitsDeg: [0, 90] });
+    arm.mate('follow', 'base.b', 'gear2.b', 'revolute');
+    arm.coupleMates('follow', { source: 'drive', ratio: -1 });
+    arm.mechanicalJoint('follow-drive', { mate: 'follow', actuator: 'motor', shaft: 'base', supports: ['base'], output: 'gear2' });
+    const limitFindings = reviewJointTopology(arm).diagnostics.filter((d) => d.code === 'assembly.joint-topology.missing-limit');
+    expect(limitFindings).toEqual([]);
   });
 
   it('recognises base-frame as a stable root fallback for open-chain mechanisms', () => {
@@ -471,6 +512,7 @@ describe('reviewJointTopology', () => {
     it('an unlimited, unactuated, unloaded hinge: limit/support findings are warnings and nothing floats', () => {
       const diagnostics = reviewJointTopology(plainHinge()).diagnostics;
       expect(diagnostics.map((d) => d.code).sort()).toEqual([
+        'assembly.connectivity.assumed-root',
         'assembly.joint-topology.missing-limit',
         'assembly.joint-topology.unsupported-axis',
       ]);
