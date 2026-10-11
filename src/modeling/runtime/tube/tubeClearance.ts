@@ -9,7 +9,7 @@
 //     system, so tube-to-part pairs use the default.
 //   - A tube against the part that owns one of its ports is measured as a
 //     solid rod of the path with the fitting zone at that port trimmed off
-//     (the end straight the rule requires, or the clearance itself when that
+//     (the end straight the rule for the tube's system requires, or the clearance itself when that
 //     is longer, never more than the end straight the tube has): the fitting zone is contact by design, the rest of
 //     the tube is not exempt. Nothing left after the trim: pair skipped.
 //   - Two tubes are always measured in full, shared port or not.
@@ -33,7 +33,7 @@ import { trimPathEnds, type V3 } from '../../../shared/tube/tubePath';
 import { tubeSolid } from '../../backends/occt/tubeLowerer';
 import { brepExtremaClosest, wrappedShape, type BrepClosest } from '../brepDistance';
 import { bboxGap, transformScenePart } from '../dfm/clearance';
-import { endStraightNeed, mm2, xyz2, type TubeRuleSpec } from './tubeRules';
+import { effectiveRules, endStraightNeed, mm2, xyz2, type TubeRuleSpec } from './tubeRules';
 import { tubeDiagnostic, type ResolvedTube, type TubeSceneContext } from './tubeScene';
 
 export interface NearestClearance { mm: number; to: string; at: V3 }
@@ -110,7 +110,8 @@ function tubeSideAgainst(body: TubeBody, partName: string, spec: TubeRuleSpec): 
   if ((!ownsFrom && !ownsTo) || placement === undefined) return body.shape;
   // The zone is at least the clearance the part is held to: a rule wider than
   // the end straight must not fail the tube against the part it is plugged into.
-  const zone = (end: TubeEndMeta): number => Math.max(endStraightNeed(od, end, spec), spec.clearance.default);
+  const rules = effectiveRules(spec, meta.system);
+  const zone = (end: TubeEndMeta): number => Math.max(endStraightNeed(od, end, rules), spec.clearance.default);
   const trimmed = trimPathEnds(path, ownsFrom ? zone(meta.from) : 0, ownsTo ? zone(meta.to) : 0);
   if (trimmed === undefined) return undefined;
   return tubeSolid(trimmed, od, od).applyTransform(placement);
@@ -178,19 +179,25 @@ function classify(pair: Pair, m: BrepClosest): CompilerDiagnostic | undefined {
   return undefined;
 }
 
+/** The systems the tubes have, as a sentence for a warning about a name none of them has. */
+export function systemsPresent(tubes: readonly ResolvedTube[]): { names: string[]; text: string } {
+  const names = [...new Set(tubes.flatMap((t) => t.meta.system ?? []))].sort();
+  const text = names.length > 0 ? `Systems in this script: ${names.map((s) => `'${s}'`).join(', ')}.` :
+    'No tube in this script has a system.';
+  return { names, text };
+}
+
 /** A clearance pair naming a system no tube has never applies: most often a
  *  misspelt system. A warning, because a shared rule set may list pairs a
  *  script does not use. */
 export function unusedPairWarnings(tubes: readonly ResolvedTube[], spec: TubeRuleSpec): CompilerDiagnostic[] {
-  const present = [...new Set(tubes.flatMap((t) => t.meta.system ?? []))].sort();
-  const listed = present.length > 0 ? `Systems in this script: ${present.map((s) => `'${s}'`).join(', ')}.` :
-    'No tube in this script has a system.';
+  const present = systemsPresent(tubes);
   return spec.clearance.pairs.flatMap((p) => {
-    const missing = [...new Set([p.a, p.b])].filter((s) => !present.includes(s));
+    const missing = [...new Set([p.a, p.b])].filter((s) => !present.names.includes(s));
     if (missing.length === 0) return [];
     return [tubeDiagnostic('tube.clearance.pair-unused',
       `clearance pair '${p.a}' / '${p.b}' (${mm2(p.min)} mm) applies to no tubes: ` +
-      `no tube has system ${missing.map((s) => `'${s}'`).join(' or ')}. ${listed}`)];
+      `no tube has system ${missing.map((s) => `'${s}'`).join(' or ')}. ${present.text}`)];
   });
 }
 

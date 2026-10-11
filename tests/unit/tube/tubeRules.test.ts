@@ -5,7 +5,9 @@
 // and at the ends, bend angle, end leg on the port axis.
 
 import { describe, it, expect } from 'vitest';
-import { checkTubeRules, type TubeRuleFinding } from '../../../src/modeling/runtime/tube/tubeRules';
+import {
+  checkTubeRules, effectiveRules, endStraightNeed, type TubeRuleFinding, type TubeRuleSpec,
+} from '../../../src/modeling/runtime/tube/tubeRules';
 import { TUBE_SPEC_DEFAULTS, type TubeMetadata } from '../../../src/shared/intent/tubeRecord';
 import { buildTubePath, type TubePath, type V3 } from '../../../src/shared/tube/tubePath';
 import { DIAGNOSTIC_REGISTRY } from '../../../src/shared/diagnostics/registry';
@@ -111,5 +113,93 @@ describe('checkTubeRules', () => {
     const f = checkTubeRules({ name: 't', od: 10, spec, meta: meta({ to: { axis: [0.6, -0.8, 0] } }), path: path(pts, 30) });
     expect(f.map((x) => x.message)).toEqual([
       "tube.port.misaligned: tube 't' leaves its to port 36.87 deg off the port axis; put the corner at [148.00, 36.00, 0.00]."]);
+  });
+});
+
+describe('per-system rules', () => {
+  /** One 1.5 x OD factor for the large hot-gas duct; every other system keeps 3 x OD. */
+  const bySystem: TubeRuleSpec = { ...spec, systems: { 'hot-gas': { minBendRadiusFactor: 1.5, minStraightAtEnd: 1 } } };
+  const duct: V3[] = [[0, 0, 0], [600, 0, 0], [600, 600, 0]];
+
+  it('effectiveRules overlays the system entry on the top level', () => {
+    expect(effectiveRules(bySystem, 'hot-gas')).toEqual({
+      minBendRadiusFactor: 1.5, minStraightBetweenBends: 2, minStraightAtEnd: 1, maxBendAngle: 180,
+      system: 'hot-gas', overridden: ['minBendRadiusFactor', 'minStraightAtEnd'] });
+    const plain = { minBendRadiusFactor: 3, minStraightBetweenBends: 2, minStraightAtEnd: 2.5, maxBendAngle: 180, overridden: [] };
+    expect(effectiveRules(bySystem, 'fuel')).toEqual(plain);
+    expect(effectiveRules(bySystem, undefined)).toEqual(plain);
+    expect(effectiveRules(spec, 'hot-gas')).toEqual(plain);
+  });
+
+  it('a system name that is an Object.prototype key is not an override', () => {
+    expect(effectiveRules(bySystem, 'constructor').overridden).toEqual([]);
+    expect(effectiveRules(bySystem, 'toString').minBendRadiusFactor).toBe(3);
+  });
+
+  it('a large duct in the overridden system passes at 1.5 x OD while a small fuel line at 1.5 x OD fails', () => {
+    expect(checkTubeRules({ name: 'duct', od: 114.3, spec: bySystem, meta: meta({ system: 'hot-gas' }),
+      path: path(duct, 171.45) })).toEqual([]);
+    const f = checkTubeRules({ name: 'sense', od: 6.35, spec: bySystem, meta: meta({ system: 'fuel' }),
+      path: path(elbow, 9.525) });
+    expect(f.map((x) => x.message)).toEqual([
+      "tube.bend.radius-too-small: tube 'sense' bends at 9.53 mm; the rule needs 19.05 mm (3 x OD 6.35)."]);
+  });
+
+  it('the message names the override value and its system', () => {
+    const f = checkTubeRules({ name: 'duct', od: 114.3, spec: bySystem, meta: meta({ system: 'hot-gas' }),
+      path: path(duct, 150) });
+    expect(f.map((x) => x.message)).toEqual([
+      "tube.bend.radius-too-small: tube 'duct' bends at 150.00 mm; the rule needs 171.45 mm " +
+      "(1.5 x OD 114.30, system 'hot-gas')."]);
+  });
+
+  it('a tube whose system has no override gets the same findings as with no systems at all', () => {
+    const cases: Array<{ pts: V3[]; r: number; m: TubeMetadata }> = [
+      { pts: elbow, r: 25, m: meta({ system: 'fuel' }) },
+      { pts: [[0, 0, 0], [100, 0, 0], [100, 75, 0], [200, 75, 0]], r: 30, m: meta({ system: 'fuel' }) },
+      { pts: [[0, 0, 0], [60, 0, 0], [60, 100, 0]], r: 30, m: meta({ system: 'fuel', from: { minStraight: 40 } }) },
+      { pts: [[0, 0, 0], [0, 0, -80], [100, 0, -80]], r: 30, m: meta({ from: { axis: [0, 0, 1] } }) },
+    ];
+    for (const c of cases) {
+      const before = checkTubeRules({ name: 't', od: 10, spec, meta: c.m, path: path(c.pts, c.r) });
+      expect(before.length).toBeGreaterThan(0);
+      expect(checkTubeRules({ name: 't', od: 10, spec: bySystem, meta: c.m, path: path(c.pts, c.r) })).toEqual(before);
+    }
+  });
+
+  it('the end-straight override applies to the end rule and to the misaligned fix point', () => {
+    const p = path([[0, 0, 0], [45, 0, 0], [45, 100, 0]], 30);   // first straight 15 mm; 2.5 x OD is 25, 1 x OD is 10
+    expect(codes(checkTubeRules({ name: 't', od: 10, spec: bySystem, meta: meta({ system: 'fuel' }), path: p })))
+      .toEqual(['tube.straight.end-too-short']);
+    expect(checkTubeRules({ name: 't', od: 10, spec: bySystem, meta: meta({ system: 'hot-gas' }), path: p })).toEqual([]);
+    expect(endStraightNeed(10, {}, effectiveRules(bySystem, 'hot-gas'))).toBe(10);
+    expect(endStraightNeed(10, { minStraight: 40 }, effectiveRules(bySystem, 'hot-gas'))).toBe(40);
+    const f = checkTubeRules({ name: 't', od: 10, spec: bySystem, meta: meta({ system: 'hot-gas', from: { axis: [0, 0, 1] } }),
+      path: path([[0, 0, 0], [0, 0, -80], [100, 0, -80]], 30) });
+    expect(f.find((x) => x.code === 'tube.port.misaligned')!.message).toContain('put the corner at [0.00, 0.00, 10.00].');
+  });
+
+  it('straight and angle messages name the override', () => {
+    const strict: TubeRuleSpec = { ...spec,
+      systems: { oil: { minStraightBetweenBends: 4, minStraightAtEnd: 5, maxBendAngle: 90 } } };
+    const between = checkTubeRules({ name: 't', od: 10, spec: strict, meta: meta({ system: 'oil' }),
+      path: path([[0, 0, 0], [100, 0, 0], [100, 90, 0], [200, 90, 0]], 30) });   // middle straight 30 mm, rule 40
+    expect(between.map((x) => x.message)).toEqual([
+      "tube.straight.between-bends-too-short: tube 't' leg 1 has 30.00 mm straight between bends; " +
+      "the rule needs 40.00 mm (4 x OD 10.00, system 'oil')."]);
+    const end = checkTubeRules({ name: 't', od: 10, spec: strict, meta: meta({ system: 'oil' }),
+      path: path([[0, 0, 0], [70, 0, 0], [70, 200, 0]], 30) });   // first straight 40 mm, rule 50
+    expect(end.map((x) => x.message)).toEqual([
+      "tube.straight.end-too-short: tube 't' has 40.00 mm straight at its from end; " +
+      "the rule needs 50.00 mm (5 x OD 10.00, system 'oil')."]);
+    // The port's own minimum is longer than the override: the message is the port's, with no system.
+    const port = checkTubeRules({ name: 't', od: 10, spec: strict, meta: meta({ system: 'oil', from: { minStraight: 60 } }),
+      path: path([[0, 0, 0], [70, 0, 0], [70, 200, 0]], 30) });
+    expect(port.map((x) => x.message)).toEqual([
+      "tube.straight.end-too-short: tube 't' has 40.00 mm straight at its from end; the rule needs 60.00 mm."]);
+    const angle = checkTubeRules({ name: 't', od: 10, spec: strict, meta: meta({ system: 'oil' }),
+      path: path([[0, 0, 0], [200, 0, 0], [80, 160, 0]], 30) });
+    expect(angle.map((x) => x.message)).toEqual([
+      "tube.bend.angle-exceeded: tube 't' bend 1 is 126.87 deg; the limit is 90.00 deg (system 'oil')."]);
   });
 });

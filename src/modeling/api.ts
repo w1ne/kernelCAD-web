@@ -599,8 +599,9 @@ export interface KernelCadApi {
 
   /**
    * Declare the bending and clearance rules every `tube()` in the script
-   * must meet. Virtual record; malformed input throws `feature.invalid-args`
-   * (an enforcement gate must not be silently disabled).
+   * must meet. `systems` overrides the bend and straight rules for the tubes
+   * of one fluid system. Virtual record; malformed input throws
+   * `feature.invalid-args` (an enforcement gate must not be silently disabled).
    */
   tubeSpec(spec: TubeSpec): { id: FeatureId; metadata: TubeSpecMetadata };
 

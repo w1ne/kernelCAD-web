@@ -106,12 +106,36 @@ tube(name, {
 | `maxBendAngle` | 180 | no bend turns through more than this many degrees | `tube.bend.angle-exceeded` |
 | `clearance.default` | 6 | mm between a tube and any part or other tube | `tube.clearance.violated`, `tube.clearance.overlap` |
 | `clearance.pairs` | none | `[{ a, b, min }]`: mm between a tube of system `a` and a tube of system `b`, in either order. It replaces the default for that pair, so it may be lower as well as higher; when several pairs match, the largest `min` applies | `tube.clearance.violated`, `tube.clearance.pair-unused` |
+| `systems` | none | `{ '<system>': { ...rules } }`: any of the four rule numbers above, for the tubes of that system only | the diagnostic of the rule, `tube.spec.system-unused` |
 
 - Without `tubeSpec` the defaults apply and the result carries a `tube.spec.defaulted` warning. Declare `tubeSpec({})` to accept the defaults without the warning.
 - `tubeSpec` rejects unknown keys, so a misspelt rule fails instead of being ignored.
+- A tube's system is its own `system`, else the system of the port it ends on.
 - Clearance is measured surface to surface on the solids, in the solved assembly. Against the part that owns one of the tube's ends, a fitting zone at that end is left out of the measurement and the rest of the tube is measured. The zone is the end straight the rule requires, or `clearance.default` when that is longer, and never more than the end straight the tube has.
 - A pair whose `a` or `b` is the system of no tube applies to nothing. It gives a `tube.clearance.pair-unused` warning that lists the systems present; the usual cause is a misspelt system name.
 - A straight is what is left of a leg after the bends at its ends. A 90 degree bend uses `bendRadius` of each leg it joins, so a leg between two 90 degree bends needs `2 * bendRadius + minStraightBetweenBends * od`, and an end leg needs `bendRadius + minStraightAtEnd * od`. Size the legs from these before writing corners.
+
+### Rules per system
+
+One factor rarely fits every line. A 114.3 mm duct bent at 3 x OD needs a 343 mm radius; lowering the factor for the whole script lets a 6.35 mm line kink. Put the exception in `systems`:
+
+```typescript
+tubeSpec({
+  minBendRadiusFactor: 3,
+  minStraightAtEnd: 2.5,
+  systems: {
+    'hot-gas': { minBendRadiusFactor: 1.5, minStraightAtEnd: 1 },   // formed elbows on the large ducts
+  },
+  clearance: { default: 6 },
+});
+```
+
+- An entry may set `minBendRadiusFactor`, `minStraightBetweenBends`, `minStraightAtEnd` and `maxBendAngle`. A rule it leaves out comes from the top level. Any other key fails; clearance between systems stays in `clearance.pairs`.
+- The entry applies to every tube whose system has that name. Tubes of other systems, and tubes with no system, are checked exactly as without `systems`.
+- The end-straight override also sets the fitting zone left out of clearance at the tube's ends, and the point `tube.port.misaligned` suggests.
+- A value in an entry may be a param. The top-level rule numbers are plain numbers.
+- When a rule from an entry fails, the message names the value and the system: `the rule needs 171.45 mm (1.5 x OD 114.30, system 'hot-gas')`.
+- An entry whose system no tube has gives a `tube.spec.system-unused` warning that lists the systems present.
 
 ## Reading the diagnostics
 
@@ -142,13 +166,14 @@ Gate errors come after the build, as `tube.*` diagnostics. The script built, so 
 
 | Code | What to change |
 |---|---|
-| `tube.bend.radius-too-small` | Raise `bendRadius` to the stated value. |
+| `tube.bend.radius-too-small` | Raise `bendRadius` to the stated value. If that radius does not fit and the shop can form the bend, lower the factor for that system in `systems`. |
 | `tube.straight.between-bends-too-short` | Move the two corners of the named leg apart by the shortfall, or lower `bendRadius`. Legs are numbered from 0. |
 | `tube.straight.end-too-short` | Move the first (or last) corner away from the port along the port axis by the shortfall. |
 | `tube.bend.angle-exceeded` | Move the corner so the bend opens up, or add a corner to split it. Bends are numbered from 1. |
 | `tube.port.misaligned` | "off the port axis": put the corner at the point the message gives. "from port" or "from its captured point": the part or the tube moved; route the end to the stated position as `{ point, axis, part }`, and add the tube with no `at`. "from part": the end does not touch the part it names; move the `point` onto the part's surface. |
 | `tube.clearance.violated` | The message gives the closest point on the tube and the closest point on the other body. Move the corner nearest the first point away from the second by the shortfall (rule minus measured). At 0.00 mm from the part a plain end sits on, add `part` to that end. |
 | `tube.clearance.pair-unused` (warning) | Correct the system name in `clearance.pairs` to one of the systems the message lists, or remove the pair. |
+| `tube.spec.system-unused` (warning) | Correct the system name in `systems` to one of the systems the message lists, or remove the entry. |
 | `tube.clearance.overlap` | The tube passes through the named part or tube. Route the leg around it. |
 | `tube.end.part-not-found` | Set `part` on that end to one of the part names the message lists, or remove it for an end in free space. |
 | `tube.part.duplicate` | The same tube shape was added under two part names and only the first is checked. Declare a second `tube()` for the second line. |

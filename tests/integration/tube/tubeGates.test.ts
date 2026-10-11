@@ -615,3 +615,71 @@ return asm.model();`);
       .toBe("tube.port.misaligned: tube 'fuel-1' from end is 5.00 mm from port 'block.p1'; the port is at [20.00, 20.00, 40.00].");
   });
 });
+
+describe('tube gates: per-system rules', () => {
+  /** A 114.3 mm hot-gas duct bent at 1.5 x OD and a 6.35 mm fuel line bent at 1.5 x OD, 400 mm apart. */
+  const twoSizes = (specArgs: string) => `
+const asm = assembly('rig');
+tubeSpec(${specArgs});
+const duct = tube('duct', { from: { point: [0, 0, 0], axis: [1, 0, 0] }, to: { point: [600, 600, 0], axis: [0, -1, 0] },
+  via: [[600, 0, 0]], od: 114.3, wall: 1.6, bendRadius: 171.45, system: 'hot-gas' });
+const sense = tube('sense', { from: { point: [0, 0, 400], axis: [1, 0, 0] }, to: { point: [100, 100, 400], axis: [0, -1, 0] },
+  via: [[100, 0, 400]], od: 6.35, wall: 0.71, bendRadius: 9.525, system: 'fuel' });
+asm.part('duct', duct); asm.part('sense', sense);
+return asm.model();`;
+
+  it('one factor cannot fit both sizes; a hot-gas override passes the duct and still fails the small line', async () => {
+    const strict = await run(twoSizes('{}'));
+    expect(messages(strict, 'tube.bend.radius-too-small')).toEqual([
+      "tube.bend.radius-too-small: tube 'duct' bends at 171.45 mm; the rule needs 342.90 mm (3 x OD 114.30).",
+      "tube.bend.radius-too-small: tube 'sense' bends at 9.53 mm; the rule needs 19.05 mm (3 x OD 6.35)."]);
+    const loose = await run(twoSizes('{ minBendRadiusFactor: 1.5 }'));
+    expect(loose.diagnostics).toEqual([]);   // the small line is let through with the duct
+    const bySystem = await run(twoSizes("{ systems: { 'hot-gas': { minBendRadiusFactor: 1.5 } } }"));
+    expect(bySystem.diagnostics.map((d) => d.message)).toEqual([
+      "tube.bend.radius-too-small: tube 'sense' bends at 9.53 mm; the rule needs 19.05 mm (3 x OD 6.35)."]);
+  }, 120_000);
+
+  it('a param in an override is read at its current value', async () => {
+    const src = (k: number) => twoSizes(`{ systems: { 'hot-gas': { minBendRadiusFactor: param('K', ${k}) } } }`);
+    expect(messages(await run(src(1.5)), 'tube.bend.radius-too-small')).toEqual([
+      expect.stringContaining("tube 'sense'")]);
+    expect(messages(await run(src(2)), 'tube.bend.radius-too-small')).toEqual([
+      "tube.bend.radius-too-small: tube 'duct' bends at 171.45 mm; the rule needs 228.60 mm (2 x OD 114.30, system 'hot-gas').",
+      expect.stringContaining("tube 'sense'")]);
+  }, 120_000);
+
+  it('a systems entry no tube uses warns and names the systems present', async () => {
+    const r = await run(twoSizes("{ minBendRadiusFactor: 1.5, systems: { 'hot-gass': { minBendRadiusFactor: 1 }, fuel: {} } }"));
+    expect(r.diagnostics.map((d) => [d.severity, d.message])).toEqual([['warn',
+      "tube.spec.system-unused: the tubeSpec rules for system 'hot-gass' apply to no tubes: no tube has system 'hot-gass'. " +
+      "Systems in this script: 'fuel', 'hot-gas'."]]);
+    expect(r.diagnostics[0].nextAction).toEqual(DIAGNOSTIC_REGISTRY['tube.spec.system-unused'].nextAction);
+  }, 120_000);
+
+  it('the end-straight override sets the fitting zone left out of clearance', async () => {
+    // The block carries a tower beside its port: 3 mm from the tube surface, up to 18 mm above the port face.
+    const src = (specArgs: string) => `
+const asm = assembly('rig');
+const block = asm.part('block', box(40, 40, 40).union(box(12, 40, 18).translate(28, 0, 40)), { at: [0, 0, 0] })
+  .connector('p1', { type: 'axis', origin: { kind: 'vec3', value: [20, 20, 40] }, axis: [0, 0, 1], port: { system: 'fuel', od: 10 } });
+tubeSpec(${specArgs});
+const a = tube('a', { from: block.port('p1'), to: { point: [20, 20, 240] }, wall: 1, bendRadius: 30 });
+asm.part('a', a);
+return asm.model();`;
+    // 2.5 x OD: the first 25 mm is the fitting zone, which clears the tower top by 7 mm.
+    const wide = await run(src('{}'));
+    expect(errors(wide)).toEqual([]);
+    expect(wide.lines[0].minClearance).toMatchObject({ to: 'block', mm: expect.closeTo(Math.hypot(3, 7), 6) });
+    // 1 x OD for fuel: the zone is 10 mm, so the tube beside the tower is measured.
+    const narrow = await run(src('{ systems: { fuel: { minStraightAtEnd: 1 } } }'));
+    expect(messages(narrow, 'tube.clearance.violated')).toEqual([
+      expect.stringContaining("tube 'a' is 3.00 mm from 'block'; the rule needs 6.00 mm.")]);
+    // And the other way: a short top-level rule, lengthened for fuel.
+    const back = await run(src('{ minStraightAtEnd: 1, systems: { fuel: { minStraightAtEnd: 2.5 } } }'));
+    expect(errors(back)).toEqual([]);
+    // An override for another system changes nothing for this tube.
+    const other = await run(src('{ minStraightAtEnd: 1, systems: { oil: { minStraightAtEnd: 2.5 } } }'));
+    expect(messages(other, 'tube.clearance.violated')).toHaveLength(1);
+  }, 180_000);
+});

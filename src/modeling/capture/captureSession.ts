@@ -543,7 +543,7 @@ export class CaptureSession {
   /** Capture the tube rule set. Virtual; malformed input throws (an
    *  enforcement gate must not be silently disabled). */
   addTubeSpec(spec: TubeSpec): FeatureId {
-    return this.register(buildTubeSpecFeatureSpec(spec)).id;
+    return this.register(buildTubeSpecFeatureSpec(spec, this.paramTable)).id;
   }
 
   /**

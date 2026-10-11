@@ -235,7 +235,7 @@ describe('tubeSpec()', () => {
 
   it.each([
     [{ minBendRadius: 3 },
-      /^tubeSpec: minBendRadius — got a field tubeSpec does not have; requires one of minBendRadiusFactor, minStraightBetweenBends, minStraightAtEnd, maxBendAngle, clearance\./],
+      /^tubeSpec: minBendRadius — got a field tubeSpec does not have; requires one of minBendRadiusFactor, minStraightBetweenBends, minStraightAtEnd, maxBendAngle, clearance, systems\./],
     [{ maxBendAngle: 90, clearence: { default: 10 } },
       /^tubeSpec: clearence — got a field tubeSpec does not have; requires one of minBendRadiusFactor, /],
     [{ clearance: { defualt: 10 } },
@@ -264,6 +264,56 @@ describe('tubeSpec()', () => {
     let hint = '';
     try { api.tubeSpec({ maxBendAngle: 200 }); } catch (e) { hint = (e as { hint: string }).hint; }
     expect(hint).toBe('invalid-args.tube-spec.maxBendAngle — fix the field; tubeSpec is an enforcement gate, malformed declarations fail the build rather than silently disabling checks.');
+  });
+
+  it('stores a systems entry as params and leaves it out when none is declared', () => {
+    const { api } = makeApi();
+    expect('systems' in api.tubeSpec({}).metadata).toBe(false);
+    const { metadata } = api.tubeSpec({ systems: { 'hot-gas': { minBendRadiusFactor: 1.5, maxBendAngle: 120 }, idle: {} } });
+    expect(metadata.minBendRadiusFactor).toBe(3);
+    expect(metadata.systems).toEqual({
+      'hot-gas': {
+        minBendRadiusFactor: { expression: '1.5', unit: 'unitless', evaluated: 1.5 },
+        maxBendAngle: { expression: '120', unit: 'deg', evaluated: 120 },
+      },
+      idle: {},
+    });
+  });
+
+  it('a systems value may be a param, validated at its current value', () => {
+    const { session, api } = makeApi();
+    const k = api.param('K', 1.5);
+    const { id, metadata } = api.tubeSpec({ systems: { 'hot-gas': { minBendRadiusFactor: k, minStraightAtEnd: k.multiply(2) } } });
+    expect(metadata.systems!['hot-gas'].minBendRadiusFactor).toMatchObject({ paramRef: 'K', unit: 'unitless' });
+    expect((session.getRecords().find((r) => r.id === id)!.metadata as { paramRefs?: string[] }).paramRefs).toEqual(['K']);
+    const zero = api.param('Z', 0);
+    expect(() => api.tubeSpec({ systems: { 'hot-gas': { minBendRadiusFactor: zero } } })).toThrowError(
+      /^tubeSpec: systems\.hot-gas\.minBendRadiusFactor — got 0; requires a positive finite number\./);
+    const wide = api.param('A', 200);
+    expect(() => api.tubeSpec({ systems: { 'hot-gas': { maxBendAngle: wide } } })).toThrowError(
+      /^tubeSpec: systems\.hot-gas\.maxBendAngle — got 200; requires a number in \(0, 180\] degrees\./);
+  });
+
+  it.each([
+    [{ systems: { 'hot-gas': { minBendRadius: 1.5 } } },
+      /^tubeSpec: systems\.hot-gas\.minBendRadius — got a field tubeSpec does not have; requires one of systems\.hot-gas\.minBendRadiusFactor, systems\.hot-gas\.minStraightBetweenBends, systems\.hot-gas\.minStraightAtEnd, systems\.hot-gas\.maxBendAngle\./],
+    [{ systems: { 'hot-gas': { clearance: { default: 3 } } } },
+      /^tubeSpec: systems\.hot-gas\.clearance — got a field a systems entry does not have; requires clearance between systems in clearance\.pairs, and one of systems\.hot-gas\.minBendRadiusFactor, /],
+    [{ systems: { 'hot-gas': { minBendRadiusFactor: -1 } } },
+      /^tubeSpec: systems\.hot-gas\.minBendRadiusFactor — got -1; requires a positive finite number\./],
+    [{ systems: { 'hot-gas': { minStraightAtEnd: '1' } } },
+      /^tubeSpec: systems\.hot-gas\.minStraightAtEnd — got "1"; requires a positive finite number\./],
+    [{ systems: { 'hot-gas': { maxBendAngle: 181 } } },
+      /^tubeSpec: systems\.hot-gas\.maxBendAngle — got 181; requires a number in \(0, 180\] degrees\./],
+    [{ systems: { 'hot-gas': 1.5 } },
+      /^tubeSpec: systems\.hot-gas — got 1\.5; requires an object with any of minBendRadiusFactor, minStraightBetweenBends, minStraightAtEnd, maxBendAngle\./],
+    [{ systems: { '': { maxBendAngle: 90 } } },
+      /^tubeSpec: systems — got an entry with an empty name; requires a non-empty system name for every entry\./],
+    [{ systems: ['hot-gas'] },
+      /^tubeSpec: systems — got \["hot-gas"\]; requires an object keyed by system name, like \{ 'hot-gas': \{ minBendRadiusFactor: 1\.5 \} \}\./],
+  ])('throws on the malformed systems entry in %j', (spec, message) => {
+    const { api } = makeApi();
+    expect(() => api.tubeSpec(spec as never)).toThrowError(message);
   });
 
   it('records a virtual tubeSpec feature', () => {

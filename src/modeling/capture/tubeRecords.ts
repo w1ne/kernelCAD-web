@@ -8,13 +8,16 @@
 
 import type { EditableVec3, Param, Vec3, Vec3Param } from '../../shared/intent/types';
 import type { Editable } from '../../shared/runtime/paramRef';
-import { toVec3Param, paramValue, resolveVec3Param } from '../../shared/runtime/editableHelpers';
+import { isParamRef } from '../../shared/runtime/paramRef';
+import { toParam, toVec3Param, paramValue, resolveVec3Param } from '../../shared/runtime/editableHelpers';
 import type { ParamTable } from '../../shared/runtime/paramTable';
 import { invalidArgs } from '../../shared/intent/invalidArgs';
 import {
+  TUBE_RULE_KEYS,
   TUBE_SPEC_DEFAULTS,
   type TubeEndMeta,
   type TubeMetadata,
+  type TubeRuleKey,
   type TubeSpecMetadata,
 } from '../../shared/intent/tubeRecord';
 import { buildTubePath, isTubePathError, tubePathErrorArgs, type V3 } from '../../shared/tube/tubePath';
@@ -51,7 +54,12 @@ export interface TubeSpec {
   minStraightAtEnd?: number;
   maxBendAngle?: number;
   clearance?: { default?: number; pairs?: Array<{ a: string; b: string; min: number }> };
+  /** Rule overrides for the tubes of one system; a rule left out falls back
+   *  to the top level. Clearance between systems stays in `clearance.pairs`. */
+  systems?: Record<string, TubeSystemRules>;
 }
+
+export type TubeSystemRules = Partial<Record<TubeRuleKey, Editable<number>>>;
 
 const OD_MATCH_TOL_MM = 1e-6;
 
@@ -343,7 +351,7 @@ function clearancePair(i: number, p: unknown): { a: string; b: string; min: numb
   return { a: pair.a as string, b: pair.b as string, min };
 }
 
-const SPEC_FIELDS = ['minBendRadiusFactor', 'minStraightBetweenBends', 'minStraightAtEnd', 'maxBendAngle', 'clearance'];
+const SPEC_FIELDS = [...TUBE_RULE_KEYS, 'clearance', 'systems'];
 const CLEARANCE_FIELDS = ['default', 'pairs'];
 
 /** A misspelt rule would be dropped and its default enforced instead: refuse it. */
@@ -371,11 +379,55 @@ function clearanceField(v: unknown): TubeSpecMetadata['clearance'] {
   };
 }
 
-export function buildTubeSpecFeatureSpec(spec: TubeSpec): AuthoringFeatureSpec {
+/** One override value: a number or a param, checked at its current value. */
+function systemRule(field: string, key: TubeRuleKey, v: unknown, table: ParamTable): Param {
+  const isAngle = key === 'maxBendAngle';
+  const requires = isAngle ? 'a number in (0, 180] degrees' : 'a positive finite number';
+  if (!isParamRef(v) && typeof v !== 'number') badSpec(field, json(v), requires);
+  const p = toParam(v as Editable<number>, isAngle ? 'deg' : 'unitless');
+  const value = paramValue(p, table);
+  if (!isPositive(value) || (isAngle && value > 180)) badSpec(field, json(value), requires);
+  return p;
+}
+
+function systemEntry(name: string, entry: unknown, table: ParamTable): Partial<Record<TubeRuleKey, Param>> {
+  const prefix = `systems.${name}.`;
+  const fields = TUBE_RULE_KEYS.map((k) => prefix + k).join(', ');
+  if (typeof entry !== 'object' || entry === null || Array.isArray(entry)) {
+    badSpec(`systems.${name}`, json(entry), `an object with any of ${TUBE_RULE_KEYS.join(', ')}`);
+  }
+  if ('clearance' in entry) {
+    badSpec(`${prefix}clearance`, 'a field a systems entry does not have',
+      `clearance between systems in clearance.pairs, and one of ${fields}`);
+  }
+  rejectUnknownKeys(entry, TUBE_RULE_KEYS, prefix);
+  const rules = entry as Partial<Record<TubeRuleKey, unknown>>;
+  const out: Partial<Record<TubeRuleKey, Param>> = {};
+  for (const key of TUBE_RULE_KEYS) {
+    if (rules[key] !== undefined) out[key] = systemRule(prefix + key, key, rules[key], table);
+  }
+  return out;
+}
+
+function systemsField(v: unknown, table: ParamTable): TubeSpecMetadata['systems'] {
+  if (v === undefined) return undefined;
+  if (typeof v !== 'object' || v === null || Array.isArray(v)) {
+    badSpec('systems', json(v), "an object keyed by system name, like { 'hot-gas': { minBendRadiusFactor: 1.5 } }");
+  }
+  const out: NonNullable<TubeSpecMetadata['systems']> = {};
+  for (const [name, entry] of Object.entries(v)) {
+    if (name.length === 0) badSpec('systems', 'an entry with an empty name', 'a non-empty system name for every entry');
+    out[name] = systemEntry(name, entry, table);
+  }
+  return out;
+}
+
+export function buildTubeSpecFeatureSpec(spec: TubeSpec, table: ParamTable): AuthoringFeatureSpec {
   if (typeof spec !== 'object' || spec === null || Array.isArray(spec)) {
     badSpec('spec', json(spec), 'an object like { minBendRadiusFactor?, clearance? }');
   }
   rejectUnknownKeys(spec, SPEC_FIELDS, '');
+  const systems = systemsField(spec.systems, table);
   const metadata: TubeSpecMetadata = {
     virtual: true,
     minBendRadiusFactor: positiveField('minBendRadiusFactor', spec.minBendRadiusFactor, TUBE_SPEC_DEFAULTS.minBendRadiusFactor),
@@ -383,6 +435,7 @@ export function buildTubeSpecFeatureSpec(spec: TubeSpec): AuthoringFeatureSpec {
     minStraightAtEnd: positiveField('minStraightAtEnd', spec.minStraightAtEnd, TUBE_SPEC_DEFAULTS.minStraightAtEnd),
     maxBendAngle: bendAngleField(spec.maxBendAngle),
     clearance: clearanceField(spec.clearance),
+    ...(systems !== undefined ? { systems } : {}),
   };
   return { kind: 'tubeSpec', params: {}, inputs: {}, metadata: metadata as unknown as Record<string, unknown> };
 }

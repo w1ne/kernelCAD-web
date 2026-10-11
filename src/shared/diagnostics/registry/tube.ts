@@ -97,4 +97,12 @@ export const TUBE_CODES = {
     group: 'tube',
     description: 'One tube shape is added to the assembly under more than one part name; only the first is checked.',
   },
+  'tube.spec.system-unused': {
+    hintTemplate:
+      'Check the spelling of the system name in `systems` against the `system` of the ports and tubes; the message lists the systems present. Remove the entry if the script has no such line.',
+    nextAction: { kind: 'fix-arg', field: 'tubeSpec' },
+    defaultSeverity: 'warn',
+    group: 'tube',
+    description: 'A tubeSpec systems entry names a fluid system that no tube in the script has, so its rule overrides apply to nothing.',
+  },
 } as const satisfies Record<`tube.${string}`, DiagnosticCodeSpec>;

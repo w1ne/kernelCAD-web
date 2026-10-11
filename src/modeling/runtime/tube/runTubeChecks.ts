@@ -4,7 +4,9 @@
 // Tube gate orchestrator. For every `tube` record of a built model:
 //
 //   - the bend and straight rules of the model's LAST `tubeSpec({...})`
-//     (or the defaults, with a `tube.spec.defaulted` warning),
+//     (or the defaults, with a `tube.spec.defaulted` warning), as overridden
+//     for the tube's system by the spec's `systems`, with a warning for a
+//     `systems` entry that names a system no tube has,
 //   - that each end still sits on its port after the assembly is solved, that
 //     a part named by a plain end exists and the end touches it, and that no
 //     tube shape is carried by two parts,
@@ -24,11 +26,12 @@ import type { FeatureRecord } from '../../../shared/intent/featureRecord';
 import { TUBE_SPEC_DEFAULTS, type TubeSpecMetadata } from '../../../shared/intent/tubeRecord';
 import { bendTableFromPath, type LraRow } from '../../../shared/tube/bendTable';
 import { pressureDropKPa, TUBE_FLUIDS } from '../../../shared/tube/pressureDrop';
+import type { ParamTable } from '../../../shared/runtime/paramTable';
 import type { V3 } from '../../../shared/tube/tubePath';
 import { tryResolveMaterial } from '../../properties/materialLibrary';
-import { checkTubeClearance, unusedPairWarnings, type NearestClearance } from './tubeClearance';
+import { checkTubeClearance, systemsPresent, unusedPairWarnings, type NearestClearance } from './tubeClearance';
 import { checkEndParts, checkTubeParts } from './tubeEndParts';
-import { checkTubeRules, type TubeRuleSpec } from './tubeRules';
+import { checkTubeRules, resolveTubeSpec, type TubeRuleSpec } from './tubeRules';
 import {
   checkPortPositions, resolveTube, tubeDiagnostic, tubeDiagnosticFromMessage, tubeSceneContext, type ResolvedTube,
 } from './tubeScene';
@@ -72,14 +75,25 @@ export interface TubeCheckReport {
   timings: Record<string, number>;
 }
 
-/** The tubeSpec governing a record list: the LAST `tubeSpec` record wins. */
-export function findTubeSpec(records: readonly FeatureRecord[]): TubeRuleSpec | undefined {
+/** The tubeSpec governing a record list, with its params resolved: the LAST
+ *  `tubeSpec` record wins. */
+export function findTubeSpec(records: readonly FeatureRecord[], table: ParamTable): TubeRuleSpec | undefined {
   for (let i = records.length - 1; i >= 0; i--) {
     if (records[i].kind === 'tubeSpec' && !records[i].suppressed) {
-      return records[i].metadata as unknown as TubeSpecMetadata;
+      return resolveTubeSpec(records[i].metadata as unknown as TubeSpecMetadata, table);
     }
   }
   return undefined;
+}
+
+/** A `systems` entry naming a system no tube has overrides nothing: most
+ *  often a misspelt system. A warning, because a shared rule set may carry
+ *  entries a script does not use. */
+function unusedSystemWarnings(tubes: readonly ResolvedTube[], spec: TubeRuleSpec): CompilerDiagnostic[] {
+  const present = systemsPresent(tubes);
+  return Object.keys(spec.systems ?? {}).filter((name) => !present.names.includes(name)).map((name) =>
+    tubeDiagnostic('tube.spec.system-unused',
+      `the tubeSpec rules for system '${name}' apply to no tubes: no tube has system '${name}'. ${present.text}`));
 }
 
 /** kg/m^3 from the tube's own density, else its named material; undefined
@@ -166,7 +180,7 @@ export async function runTubeChecksOnModel(model: BuiltModel): Promise<TubeCheck
   const records = model.records.filter((r) => r.kind === 'tube' && !r.suppressed);
   if (records.length === 0) return undefined;
   const t0 = performance.now();
-  const declared = findTubeSpec(model.records);
+  const declared = findTubeSpec(model.records, model.session.paramTable);
   const spec: TubeRuleSpec = declared ?? TUBE_SPEC_DEFAULTS;
   const diagnostics: CompilerDiagnostic[] = declared !== undefined ? [] : [tubeDiagnostic('tube.spec.defaulted',
     `no tubeSpec declared; the default rules were applied to ${records.length} tube(s).`)];
@@ -182,7 +196,7 @@ export async function runTubeChecksOnModel(model: BuiltModel): Promise<TubeCheck
   const ends = checkEndParts(ctx, tubes);
   diagnostics.push(...checkTubeParts(ctx, tubes), ...ends.diagnostics, ...checkPortPositions(model, ctx, tubes));
   const tPorts = performance.now();
-  diagnostics.push(...unusedPairWarnings(tubes, spec));
+  diagnostics.push(...unusedSystemWarnings(tubes, spec), ...unusedPairWarnings(tubes, spec));
   const nearest = checkTubeClearance(ends.tubes, ctx, spec, diagnostics);
   const tEnd = performance.now();
 
