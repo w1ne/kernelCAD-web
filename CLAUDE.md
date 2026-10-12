@@ -12,9 +12,15 @@ comparisons private; retain source, verification and truthful demo provenance.
 
 Before deploying anything, read `docs/DEPLOY.md`. Short version: one trunk
 (`develop`, no `main`); the Studio (`src/`) auto-deploys to app.kernelcad.com on
-push to `develop`; the marketing site (`site/`, kernelcad.com) ships ONLY via a
-manual `gh workflow run deploy-kernelcad-com.yml -R w1ne/kernelCAD-server -f
-web_ref=develop`; a `v*` tag is a full npm release, not a per-surface deploy.
+push to `develop`; eligible pushes to `develop` also trigger the private
+marketing deploy for kernelcad.com, including `docs/guide/**` blog sources and
+`docs/demos/**` media. The listed top-level prose files and unrelated docs-only
+changes do not trigger it. Manual
+`gh workflow run deploy-kernelcad-com.yml -R w1ne/kernelCAD-server -f
+web_ref=develop` remains available as an override. Blog drafts still require
+editorial approval before publication. Verify the actual deploy and live URLs;
+upload success does not prove the separate cache purge passed. A `v*` tag is a
+full npm release, not a per-surface deploy.
 Don't guess the deploy path — match the changed surface to the runbook.
 
 ## CAD authoring discipline

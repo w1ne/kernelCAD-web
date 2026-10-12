@@ -21,21 +21,32 @@ There is one trunk: **`develop`** (the GitHub default branch). There is no `main
 
 ## kernelcad.com — marketing site + gallery
 
-The marketing site source lives here under `site/`, but it is **not deployed from
-this repo**. It is deployed by a manual operator workflow in the private
+The marketing site source lives here under `site/`. The public
+`deploy-marketing.yml` workflow dispatches the deployment workflow in the private
 **`kernelCAD-server`** repo: `deploy-kernelcad-com.yml`.
 
-- Trigger: **`workflow_dispatch` only** (plus a self-trigger when that workflow
-  file itself changes). Content changes under `site/` do **not** auto-deploy.
+- Trigger: **eligible pushes to `develop`** automatically dispatch the private
+  workflow. This includes changes under `site/`, `docs/guide/` (blog sources),
+  `docs/demos/` (hero and blog media), and other build inputs. The listed
+  top-level prose files (`README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `LICENSE`,
+  `RELEASE_NOTES.md`),
+  unrelated `docs/`, `doc/` and `archive/` changes alone are excluded.
+- Manual `workflow_dispatch` remains available in either repo; the private
+  workflow also self-triggers when its own workflow file changes on `main`.
 - What it does: checks out `kernelCAD-web` at `web_ref` (default `develop`), runs
   `npm run site:build` (which runs `build-demo` + `build-gallery`), deploys the
-  built `site/` to the marketing Cloudflare Pages project, then **purges the
-  kernelcad.com edge cache** (the custom domain caches per-slug assets for hours).
+  built `site/` to the marketing Cloudflare Pages project, then **attempts to
+  purge the kernelcad.com edge cache** (the custom domain caches per-slug assets
+  for hours). The purge step can fail while the workflow still reports success;
+  inspect its result separately and verify the custom domain after upload.
 
-To deploy the current `develop` to kernelcad.com:
+Only approved posts should be marked published. Normal builds omit drafts;
+changing the deployment trigger does not approve a draft for publication.
+
+To manually redeploy the current `develop` to kernelcad.com:
 
 ```bash
-# after your site/ change is merged to develop
+# optional override after the change is merged to develop
 gh workflow run deploy-kernelcad-com.yml -R w1ne/kernelCAD-server -f web_ref=develop
 # watch it:
 gh run watch -R w1ne/kernelCAD-server "$(gh run list -R w1ne/kernelCAD-server -w deploy-kernelcad-com.yml -L1 --json databaseId --jq '.[0].databaseId')"
@@ -45,7 +56,10 @@ gh run watch -R w1ne/kernelCAD-server "$(gh run list -R w1ne/kernelCAD-server -w
 than `develop`. Operator-side detail (Pages project name, secrets) is documented
 in `kernelCAD-server/docs/deploy-*.md` and kept private on purpose.
 
-Verify after deploy (edge cache can lag if the purge step is skipped):
+Verify the actual private deploy's checked-out web commit and upload result,
+then its cache-purge step and the live custom domain. A successful dispatch in
+this repo does not prove the private deploy finished. Edge cache can lag if
+the purge is skipped or fails, including HTTP 401 authentication failures.
 
 ```bash
 curl -s https://kernelcad.com/gallery.json | jq -r '.generatedAt'   # should be recent
@@ -66,5 +80,5 @@ site without releasing packages, use the per-surface paths above.
 ## Quick answers
 
 - **Changed the Studio (`src/`)** → merge to `develop`; it auto-deploys to app.kernelcad.com.
-- **Changed the landing/gallery (`site/`)** → merge to `develop`, then `gh workflow run deploy-kernelcad-com.yml -R w1ne/kernelCAD-server -f web_ref=develop`.
+- **Changed marketing build inputs (`site/`, `docs/guide/`, `docs/demos/`)** → merge to `develop`; the private marketing deploy is dispatched automatically. Check that deploy and the live URLs; use manual dispatch when a redeploy is needed.
 - **Want to release packages** → cut a `v*` tag (mind Demo discipline for `v0.X.0`).
