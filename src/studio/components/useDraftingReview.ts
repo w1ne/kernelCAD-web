@@ -61,8 +61,12 @@ function useDrawingPreview(code: string, options: StudioDrawingOptions, setError
   const [requestId, setRequestId] = useState(0);
   const [previewRequestId, setPreviewRequestId] = useState<number | null>(null);
   const [jobRevision, setJobRevision] = useState<number | null>(null);
-  const [previewScope, setPreviewScope] = useState<string | null>(null);
+  const [previewScopeRevision, setPreviewScopeRevision] = useState<number | null>(null);
   const scope = JSON.stringify([code, criteria]);
+  // Source/criteria edits invalidate decision prompts even when values revert.
+  // Decision-only edits leave this epoch intact so records can be batched.
+  const [scopeEpoch, setScopeEpoch] = useState({ key: scope, revision: 0 });
+  if (scopeEpoch.key !== scope) setScopeEpoch({ key: scope, revision: scopeEpoch.revision + 1 });
   const controller = useRef<AbortController | null>(null);
   const generation = useRef(0);
   const currentKey = JSON.stringify({ code, options });
@@ -82,11 +86,11 @@ function useDrawingPreview(code: string, options: StudioDrawingOptions, setError
     try {
       const result = await previewDrawingViaServer(code, options, { signal: abort.signal });
       if (id !== generation.current || abort.signal.aborted) return;
-      setPreview(result); setPreviewRevision(epoch.revision); setPreviewRequestId(id); setPreviewScope(scope);
+      setPreview(result); setPreviewRevision(epoch.revision); setPreviewRequestId(id); setPreviewScopeRevision(scopeEpoch.revision);
     } catch (err) { if (id === generation.current && !isExportAbort(err)) setError(exportErrorText(err).message); }
     finally { if (id === generation.current) setJobRevision(null); }
   };
-  return { preview, previewUrl, current, busy, generatePreview, revision: `${epoch.revision}:${requestId}`, matchesCriteria: previewScope === scope };
+  return { preview, previewUrl, current, busy, generatePreview, revision: `${epoch.revision}:${requestId}`, matchesCriteria: scopeEpoch.key === scope && previewScopeRevision === scopeEpoch.revision };
 }
 
 function useProfileEditor(state: ReturnType<typeof useChoices>, setError: (error: string | null) => void) {
