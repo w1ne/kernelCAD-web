@@ -3,6 +3,22 @@ import { buildModel, buildModelFromFile, updateModelParams } from '../../../src/
 import type { OcctBackend } from '../../../src/kernel/backends/occt/occtBackend';
 
 describe('buildModel', () => {
+  it('mirror preserves its source when the source is reused by a later union', async () => {
+    const model = await buildModel({
+      fileName: 'mirror-source-reuse.kcad.ts',
+      code: `
+        const half = box(10, 10, 10, true).translate(10, 0, 0);
+        const symmetric = half.mirror('yz');
+        return half.union(symmetric);
+      `,
+    });
+    expect(model.diagnostics.filter(d => d.severity === 'error')).toEqual([]);
+    const source = model.session.cachedShapes.get(model.records[0].id) as OcctBackend;
+    expect(source.boundingBox().min[0]).toBeCloseTo(5);
+    expect(source.volume()).toBeCloseTo(1000);
+    expect((model.tailShape as OcctBackend).volume()).toBeCloseTo(2000);
+  });
+
   it.each(['union', 'subtract', 'intersect'])('%s with no cutters owns its transformed backend independently', async (op) => {
     let model = await buildModel({
       fileName: 'independent-motion.kcad.ts',
