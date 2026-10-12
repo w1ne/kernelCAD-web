@@ -17,7 +17,7 @@ const EXAMPLE_PATH = 'examples/robot-arm/so100/so100-arm.kcad.ts';
 // shards' 600 s per-example budget, so this file runs the same live
 // runValidateCli check under its own cap.
 describe('SO-100 arm rest-pose contact', () => {
-  it(`${EXAMPLE_PATH} passes the physics-grounded loop`, async () => {
+  it('examples/robot-arm/so100/so100-arm.kcad.ts passes the physics-grounded loop', async () => {
     const result = await runValidateCli({
       file: EXAMPLE_PATH,
       json: true,
@@ -31,16 +31,17 @@ describe('SO-100 arm rest-pose contact', () => {
     expect(['real', 'unverified']).toContain(result.mechanism);
   }, 1_500_000);
 
-  it('fails the unseated vendor base and pan servo, naming the pair', async () => {
-    // The vendor sim meshes as shipped share ~21 mm³ (exact manifold
-    // boolean: 23.8 mm³), over the 20 mm³ cap. `ignore` must not hide it.
+  it('fails the base with its pan servo sunk 3 mm into the floor, naming the pair', async () => {
+    // The vendor meshes seated as shipped share a sub-0.3 mm contact skin,
+    // which the gate passes. Drop the servo 3 mm into the base floor and it
+    // must fail, and `ignore` must not hide it.
     const dir = `${process.cwd()}/examples/robot-arm/so100/parts/sim`;
     const code = `
       const arm = assembly('pair');
       const a = arm.part('base', (await lib.fromSTL('${dir}/Base.stl', { allowOpen: true })).scale(1000));
       const b = arm.part('base-servo', (await lib.fromSTL('${dir}/Base_Motor.stl')).scale(1000));
       a.connector('s', { type: 'frame', origin: { kind: 'vec3', value: [0, -32.7, 46.5] } });
-      b.connector('s', { type: 'frame', origin: { kind: 'vec3', value: [0, -32.7, 46.5] } });
+      b.connector('s', { type: 'frame', origin: { kind: 'vec3', value: [0, -32.7, 49.5] } });
       arm.mate('fix', 'base.s', 'base-servo.s', 'fastened');
       return arm.solvedModel({}, { ignore: [['base', 'base-servo']] });
     `;
