@@ -11,7 +11,24 @@ Replicad/OpenCASCADE are the kernel layer. kernelCAD is the agent-first workflow
 layer above the kernel: deterministic CAD source, feature history, diagnostics,
 validation, variants, and human review.
 
-## Install for your coding agent
+## Install
+
+### Already in ChatGPT and Claude: no install
+
+kernelCAD runs as a connected app in **ChatGPT** (Apps SDK, with the Studio
+viewer and paint review inside the chat) and in **Claude / claude.ai** (custom
+connector). Add it from the chat settings and sign in:
+
+- ChatGPT: [connect guide](https://app.kernelcad.com/connect?client=chatgpt) or [ChatGPT → Settings → Connectors](https://chatgpt.com/#settings/Connectors)
+- Claude: [connect guide](https://app.kernelcad.com/connect?client=claude) or [claude.ai → Settings → Connectors](https://claude.ai/settings/connectors), URL `https://mcp.kernelcad.com/mcp`
+
+**One account everywhere.** The coding-agent plugins below use the same hosted
+server (`https://mcp.kernelcad.com/mcp`) and the same kernelCAD sign-in. A model
+saved from Claude Code, Codex, Cursor, Gemini or Grok opens at the same Studio
+share link (`/p/<slug>`) you see in ChatGPT or Claude. Sign in with the same
+account in each client.
+
+### Coding agents: one command
 
 One command connects your agent to the hosted kernelCAD MCP server
 (`https://mcp.kernelcad.com/mcp`) and adds the kernelCAD skills. Nothing runs
