@@ -53,6 +53,7 @@ declare const window: {
     forceFullOpacity: () => void;
     showOnlyTailFeatures: () => void;
     setRenderView: (view: string) => void;
+    setRenderPose: (azDeg: number, elDeg: number) => void;
     applyObjectVisibilityFilter: (filter: HeadlessObjectFilter) => unknown;
     setPublishStage: (spec: { background: string; shadow: boolean } | null) => void;
   };
@@ -500,6 +501,12 @@ async function renderFramePhase(params: {
         (filter) => window.__demoPlayer!.applyObjectVisibilityFilter(filter),
         opts.objectFilter,
       );
+    }
+    // Mesh reloads fit the camera again; restore the requested pose on every frame.
+    if (opts.cameraPose !== undefined) {
+      await page.evaluate((pose) => window.__demoPlayer!.setRenderPose(pose.azDeg, pose.elDeg), opts.cameraPose);
+    } else {
+      await page.evaluate(() => window.__demoPlayer!.setRenderView('iso'));
     }
     await page.evaluate(() => window.__demoPlayer!.forceFullOpacity());
     // Tick the AnimationEngine so Three.js renders the updated scene.

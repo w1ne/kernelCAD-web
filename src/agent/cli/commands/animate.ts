@@ -77,6 +77,8 @@ export interface AnimateCliInput extends TurntableCliFields {
   frames?: string;
   /** Override the animationView record's fps (`--fps <n>`). */
   fps?: number;
+  /** Arbitrary camera azimuth/elevation in degrees, matching render --pose. */
+  pose?: string;
   /** Skip the animation-pose interference verification (`--no-verify`). */
   skipVerify?: boolean;
   /** Additionally verify at every n-th frame time of the fps schedule
@@ -285,7 +287,16 @@ export async function runAnimate(input: AnimateCliInput): Promise<AnimateCliResu
     if (!(started instanceof Promise)) return usageRefusal(started.message, started.hint, safeFps(input.fps));
     result = await started;
   } else {
-    result = await captureAnimation(captureAnimationOptsFor(input, objectFilter));
+    const cameraPose = input.pose === undefined ? undefined : (() => {
+      const components = input.pose!.split(',');
+      const degrees = components.map(value => value.trim() === '' ? NaN : Number(value));
+      if (degrees.length !== 2 || !degrees.every(Number.isFinite)) return null;
+      return { azDeg: degrees[0], elDeg: degrees[1] };
+    })();
+    if (cameraPose === null) {
+      return usageRefusal('animate: --pose must be two finite degrees: az,el.', 'Pass e.g. --pose 30,60.', safeFps(input.fps));
+    }
+    result = await captureAnimation({ ...captureAnimationOptsFor(input, objectFilter), ...(cameraPose ? { cameraPose } : {}) });
   }
 
   if (result.ok && result.outPath !== undefined) {
@@ -324,6 +335,7 @@ export function animateCommand(): Command {
       'PNG-sequence mode: write frame-0000.png, frame-0001.png, ... into <dir> and skip ffmpeg entirely (mutually exclusive with the out positional)',
     )
     .option('--fps <n>', "override the animationView record's fps", (v) => Number(v))
+    .option('--pose <az,el>', 'arbitrary camera azimuth/elevation in degrees (default iso)')
     .option('--no-verify', 'skip the animation-pose interference verification')
     .option(
       '--verify-every <n>',
@@ -364,6 +376,7 @@ Turntable examples:
     .action(async (file: string, out: string | undefined, opts: {
       frames?: string;
       fps?: number;
+      pose?: string;
       /** Commander negation: `--no-verify` sets this false; default true. */
       verify: boolean;
       verifyEvery?: number;
@@ -383,6 +396,7 @@ Turntable examples:
         ...(out !== undefined ? { out } : {}),
         ...(opts.frames !== undefined ? { frames: opts.frames } : {}),
         ...(opts.fps !== undefined ? { fps: opts.fps } : {}),
+        ...(opts.pose !== undefined ? { pose: opts.pose } : {}),
         ...(opts.verify === false ? { skipVerify: true } : {}),
         ...(opts.verifyEvery !== undefined ? { verifyEvery: opts.verifyEvery } : {}),
         ...(opts.focus !== undefined ? { focus: [opts.focus] } : {}),
