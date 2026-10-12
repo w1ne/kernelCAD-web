@@ -94,5 +94,6 @@ export const LOWERERS: Partial<Record<FeatureKind, KindLowerer>> = {
   drawingDatum: lowerVirtualRecord,
   drawingTolerance: lowerVirtualRecord,
   drawingDimension: lowerVirtualRecord,
+  drawingReview: lowerVirtualRecord,
   tubeSpec: lowerVirtualRecord,
 };

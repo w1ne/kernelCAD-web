@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light" />
+  <meta name="description" content="Declare the measurements a fixture plate must show, find a missing callout, and export a reviewed drawing." />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Dimension the interfaces that matter" />
+  <meta property="og:description" content="Declare the measurements a fixture plate must show, find a missing callout, and export a reviewed drawing." />
+  <meta property="og:image" content="https://kernelcad.com/blog/functional-drafting/plate-complete.png" />
+  <meta property="og:url" content="https://kernelcad.com/blog/functional-drafting/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Dimension the interfaces that matter" />
+  <meta name="twitter:description" content="Declare the measurements a fixture plate must show, find a missing callout, and export a reviewed drawing." />
+  <meta name="twitter:image" content="https://kernelcad.com/blog/functional-drafting/plate-complete.png" />
+  <link rel="canonical" href="https://kernelcad.com/blog/functional-drafting/" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,500;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/style.css" />
+  <title>Dimension the interfaces that matter</title>
+  <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "e5f5f4c6464f456d8f5376411e77f545"}'></script>
+  <style>
+    .legal { max-width: 760px; margin: 0 auto; padding: 1rem 0 4rem; }
+    .legal h1 { font-family: 'Source Serif 4', serif; font-size: 2.2rem; line-height: 1.2; margin: 1.5rem 0 0.25rem; }
+    .legal .effective { color: var(--ink-faint, #8a8475); font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; margin-bottom: 2rem; }
+    .legal h2 { font-family: 'Source Serif 4', serif; font-size: 1.35rem; margin: 2.2rem 0 0.5rem; }
+    .legal p, .legal li { font-family: 'Inter', sans-serif; line-height: 1.65; color: var(--ink-soft, #3a3a3a); }
+    .legal ul { padding-left: 1.25rem; }
+    .legal code { font-family: 'JetBrains Mono', monospace; font-size: 0.88em; }
+    .legal a { color: var(--blueprint, #2f6df0); }
+    .legal strong { color: var(--ink, #1a1a1a); }
+    .legal .lede { font-size: 1.1rem; color: var(--ink); }
+    .legal figure { margin: 1.5rem 0; }
+    .legal figure img { display: block; width: 100%; height: auto; border: 1px solid var(--rule); border-radius: 6px; background: var(--paper); }
+    .legal figcaption { font-family: 'Inter', sans-serif; font-size: 0.85rem; color: var(--ink-faint); margin-top: 0.5rem; }
+    .legal pre { background: var(--code-bg); color: var(--code-text); border-radius: 6px; padding: 16px 18px; overflow-x: auto; margin: 1.25rem 0; }
+    .legal pre code { font-size: 0.85rem; line-height: 1.6; color: inherit; }
+    .legal p code, .legal li code { background: var(--vellum-soft); padding: 1px 5px; border-radius: 3px; }
+    .post-list { list-style: none; padding: 0; margin: 2rem 0; }
+    .post-list li { padding: 1.25rem 0; border-top: 1px solid var(--rule); }
+    .post-list li:last-child { border-bottom: 1px solid var(--rule); }
+    .post-list a.post-title { font-family: 'Source Serif 4', serif; font-size: 1.4rem; text-decoration: none; }
+    .post-list a.post-title:hover { text-decoration: underline; }
+    .post-list .effective { margin: 0.25rem 0 0.5rem; }
+    .post-list p { margin: 0; }
+    .legal figure video { display: block; width: 100%; height: auto; border: 1px solid var(--rule); border-radius: 6px; background: var(--paper); }
+  </style>
+</head>
+<body>
+  <div class="page-wrap">
+    <nav class="nav">
+      <a class="nav-mark" href="/">
+        <svg class="k" viewBox="0 0 84 84" fill="none" aria-label="kernelCAD">
+          <path d="M 14,12 L 26,12 L 26,34 Q 26,36 27.5,34.5 L 46,12 L 60,12 L 36,40 Q 35,42 36,44 L 60,72 L 46,72 L 27.5,49.5 Q 26,48 26,50 L 26,72 L 14,72 Z" fill="currentColor"/>
+        </svg>
+        <span>kernel<span class="cad">CAD</span></span>
+      </a>
+      <div class="nav-links">
+        <a href="/blog/">blog</a>
+        <a class="app-link" href="https://app.kernelcad.com">app ↗</a>
+        <a href="https://github.com/w1ne/kernelCAD-web">github</a>
+        <a href="https://www.npmjs.com/package/kernelcad">npm</a>
+        <a href="https://x.com/kernelcad">@kernelcad</a>
+      </div>
+    </nav>
+
+    <main class="legal">
+      <article>
+      <p class="effective"><a href="/blog/">Blog</a> · <time datetime="2026-10-12">2026-10-12</time> · Andrii Shylenko</p>
+      <h1>Dimension the interfaces that matter</h1>
+
+      <p class="lede">A drawing can look finished while omitting the distance that makes two parts line up. kernelCAD lets the source declare the measured callouts that matter to a particular interface, then checks whether those callouts survived the final drawing layout and review edits.</p>
+      <figure>
+        <video src="video.mp4" controls playsinline preload="metadata"></video>
+      </figure>
+
+      <h2>Start with a concrete interface</h2>
+      <p>This illustrative fixture plate uses 100 × 70 × 12 mm stock with R6 corners. Four Ø9 through-holes sit at (12, 12), (88, 12), (12, 58), and (88, 58) mm. A Ø30 through-bore sits at (50, 35). The brief asks the drawing to expose the 76 mm X pitch, 46 mm Y pitch, mounting-hole diameter and central opening. Ø9 is an illustrative M8 clearance choice; no catalog fastener fit or load acceptance is claimed.</p>
+      <p>The plan intentionally treats stock width as a reference requirement. It is absent from this sheet and remains advisory. Manufacturing details beyond those four critical measurements are outside the declared scope.</p>
+      <figure>
+        <img src="plate-complete.png" alt="Fixture plate drawing with the X and Y pitches and two measured diameters" width="1680" height="1188" loading="lazy" />
+        <figcaption>Four declared critical measurements are covered. Stock width is an omitted reference, so this is an interface review rather than a complete manufacturing specification.</figcaption>
+      </figure>
+
+      <h2>Attach measurements to the model</h2>
+      <p><a href="/blog/functional-drafting/fixture-plate.kcad.ts">Download the full editable source</a>. Paste it into the current Studio editor and run it. The file uses fixed geometry constants so the brief stays explicit; it makes no claim that these selectors follow arbitrary parameter edits.</p>
+      <p>The hole-centre anchors select actual circular edges. A circular edge anchor resolves to its centre for the linear measurement. The source gives the dimension a stable ID and a descriptive label; the exporter computes the number.</p>
+      <pre><code>const holeCentre = (x, y) =&gt; ({
+  edge: { ofCurveType: 'CIRCLE', near: [x, y, 12] },
+});
+
+.dimension({
+  id: 'pitch-x', kind: 'linear',
+  from: holeCentre(12, 12), to: holeCentre(88, 12),
+  label: 'X pitch',
+})</code></pre>
+      <p>The corresponding requirement names the exact final annotation ID, its measurable kind, its engineering role and the reason it must be present. <code>featureId</code> explains the intended interface; it is not a topology selector.</p>
+      <pre><code>.drawingReview({
+  id: 'plate',
+  requirements: [{
+    id: 'pitch-x', featureId: 'mountingHoles',
+    annotationId: 'authored:pitch-x', expectedKind: 'linear',
+    role: 'critical',
+    reason: 'Locate fixture holes across X so the mating pattern can be checked.',
+  }],
+  decisions: [],
+})</code></pre>
+      <p>This fragment shows one requirement. The full source declares four critical measurements and the reference stock-width requirement. Plans follow the shape through later modeling operations without adding geometry. Additional export <code>reviewPlans</code> append to the source plans; an empty option list does not erase them.</p>
+
+      <h2>Catch a missing or hidden callout</h2>
+      <p><a href="/blog/functional-drafting/fixture-plate-missing.kcad.ts">The missing-callout source</a> keeps the solid and declared plan but omits the X-pitch dimension. It produces <code>missing</code> and 3/4 critical coverage. The geometry evidence independently verifies that both source variants have the same exact bounding box and volume.</p>
+      <figure>
+        <img src="plate-missing.png" alt="Fixture plate drawing deliberately missing its X-pitch callout" width="1680" height="1188" loading="lazy" />
+        <figcaption>The holes are still modeled. Their required X-pitch callout is missing, so the review is incomplete.</figcaption>
+      </figure>
+      <p>Hiding the existing <code>authored:pitch-x</code> row produces <code>hidden</code> instead. A crowded critical label, kind mismatch or manual numerical-text replacement also blocks critical coverage. A free-text note cannot substitute for a measured dimension, even if it uses the same ID. A descriptive source label such as “X pitch” keeps its computed 76 mm value.</p>
+      <figure>
+        <img src="studio-hidden.png" alt="Studio functional drawing review after hiding the X-pitch annotation" width="1152" height="1060" loading="lazy" />
+        <figcaption>Actual local Studio preview: 3/4 critical covered. The hidden requirement blocks Mark reviewed and Export reviewed PDF.</figcaption>
+      </figure>
+
+      <h2>Review the actual sheet in Studio</h2>
+      <p>Open <strong>Export → Drawing settings</strong>, then <strong>Generate preview</strong>. In <strong>Functional drawing review</strong>, inspect the critical coverage count. Click a requirement to select its exact callout; the row shows the reason, feature name, status and annotation ID.</p>
+      <p>For this focused tutorial, use <strong>Annotations</strong> to hide the automatic heuristic rows outside the interface brief. The capture receipt records their report IDs and reasons. Select the authored rows and set <strong>Annotation view</strong> to <strong>top</strong>. Give the mounting diameter 4 mm and the central bore 20 mm of <strong>Extra offset (sheet mm)</strong> so the labels clear the geometry. These edits preserve the computed measurements.</p>
+      <p>Click the X-pitch requirement, tick <strong>Hide annotation</strong>, and <strong>Refresh preview</strong>. The count falls to 3/4. <strong>Download PDF</strong> remains available for an ordinary incomplete drawing. Restore the row and refresh again. With 4/4 covered and no unresolved decisions, click <strong>Mark reviewed</strong>, then <strong>Export reviewed PDF</strong>. The video shows these actual local actions and downloaded PDF bytes.</p>
+      <figure>
+        <img src="studio-complete.png" alt="Studio complete fixture-plate review with the reviewed PDF action" width="1152" height="1060" loading="lazy" />
+        <figcaption>Coverage applies to this refreshed preview and its exact source and settings. A source or settings edit invalidates the reviewed state.</figcaption>
+      </figure>
+      <p>The exporter evaluates the final rendered rows. <code>requireCompleteReview: true</code> refuses incomplete or undeclared SVG/PDF exports before emitting bytes. Ordinary exports retain the incomplete report and warning. A successful export checks the declared plan; it does not establish physical fit, manufacturing acceptance, tolerance approval or load capacity. Undeclared physical criteria stay outside the report.</p>
+      <p>The recorded Studio sheet prints <strong>ISO2768-mK</strong> in its general-tolerances cell as an inherited exporter default. The tutorial does not select or approve that default as engineering acceptance. The authored-only generator sheets omit it. Review completeness does not approve a printed tolerance label.</p>
+
+      <h2>Reproduce and inspect the evidence</h2>
+      <p>Use the current Studio or this repository source checkout with Node 22 and installed dependencies. This functionality has not been established in the latest published npm package; the commands below build this checkout's CLI.</p>
+      <pre><code>npm run build:cli
+npx tsx examples/functional-drafting/run.ts</code></pre>
+      <p>The generator validates one connected B-rep solid, exact 100 × 70 × 12 bounding box, 72,093.239802 mm³ volume, and all five bore diameters/positions separately from drawing review. It checks printable SVG/PDF report equality, missing/hidden warnings and strict refusals, and a real strict PDF for the complete case. Fixed date and revision keep the drawing inputs reviewable. Each named case runs in a fresh OCCT process to bound kernel lifetime.</p>
+      <p><a href="/blog/functional-drafting/plate-complete.svg">Complete SVG</a> · <a href="/blog/functional-drafting/plate-complete.pdf">Complete PDF</a> · <a href="/blog/functional-drafting/plate-complete.strict.pdf">Strict complete PDF</a> · <a href="/blog/functional-drafting/plate-complete.options.json">Export settings</a> · <a href="/blog/functional-drafting/plate-complete.report.json">Complete report</a></p>
+      <p><a href="/blog/functional-drafting/plate-missing.svg">Missing SVG</a> · <a href="/blog/functional-drafting/plate-missing.pdf">Missing PDF</a> · <a href="/blog/functional-drafting/plate-missing.report.json">Missing report</a> · <a href="/blog/functional-drafting/plate-missing.options.json">Missing settings</a></p>
+      <p><a href="/blog/functional-drafting/plate-hidden.svg">Hidden SVG</a> · <a href="/blog/functional-drafting/plate-hidden.pdf">Hidden PDF</a> · <a href="/blog/functional-drafting/plate-hidden.report.json">Hidden report</a> · <a href="/blog/functional-drafting/plate-hidden.options.json">Hidden settings</a> · <a href="/blog/functional-drafting/fixture-plate.geometry.json">Geometry checks</a> · <a href="/blog/functional-drafting/manifest.json">SHA-256 manifest</a></p>
+      <p><a href="/blog/functional-drafting/reviewed-plate.pdf">Actual Studio reviewed PDF</a> · <a href="/blog/functional-drafting/studio-evidence.json">Studio request settings and reports</a> · <a href="/blog/functional-drafting/studio-receipt.json">Capture receipt</a></p>
+      <p>The downloadable generated sheets use a minimal authored-only layout. Studio also offers automatic annotations; the captured workflow explicitly hides those extra rows and retains its separate UI settings and HTTP evidence. Both demonstrate the same declared interface, with their actual layouts preserved. Continue with <a href="/blog/drawing-decisions/">recording engineering decisions</a> when a measured dimension alone cannot settle the intent.</p>
+      </article>
+    </main>
+
+    <footer class="footer">
+      <div>kernelCAD · MIT</div>
+      <div class="footer-links">
+        <a href="/terms.html">terms</a>
+        <a href="/privacy.html">privacy</a>
+        <a href="https://github.com/w1ne/kernelCAD-web">github</a>
+        <a href="https://www.npmjs.com/package/kernelcad">npm</a>
+        <a href="https://x.com/kernelcad">x</a>
+        <a href="https://app.kernelcad.com">app</a>
+      </div>
+    </footer>
+    <div class="footer-stack" style="border-top: 1px solid var(--stroke, rgba(255,255,255,0.08)); padding: 14px 0 28px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; color: var(--mute, #888); font-size: 0.78rem;">
+      <span style="opacity: 0.7;">part of the engineer stack</span>
+      <nav style="display: flex; gap: 18px;">
+        <a href="https://labwired.com" style="color: inherit;">LabWired</a>
+        <a href="https://kernelcad.com" style="color: inherit;">kernelCAD</a>
+        <a href="https://koamtachi.com" style="color: inherit;">koamtachi</a>
+        <a href="https://shylenko.com" style="color: inherit;">shylenko.com</a>
+      </nav>
+    </div>
+  </div>
+</body>
+</html>

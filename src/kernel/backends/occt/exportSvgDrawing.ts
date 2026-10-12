@@ -27,6 +27,8 @@
 // landing on the same 2D arc) are deduplicated visible-first, so a segment
 // never renders twice and never renders dashed underneath a solid copy.
 
+import { evaluateDrawingReview, validateDrawingReviewOptions, invalidDrawingReview } from '../../../shared/intent/drawingReview';
+import type { DrawingReviewOptions } from '../../../shared/intent/drawingReview';
 import { makeCompound, type AnyShape } from 'replicad';
 import type { WorldFramePart } from './sceneToWorldFrame';
 import type { ArchitecturalPlanOptions } from './drawingArchitectural';
@@ -111,7 +113,7 @@ export interface DrawingTitleBlock {
   revision?: string;
 }
 
-export interface SvgDrawingOptions {
+export interface SvgDrawingOptions extends DrawingReviewOptions {
   format: 'svg-drawing';
   /** Runtime preview uses the printable PDF sheet/title/material defaults. */
   pdfSheet?: boolean;
@@ -313,6 +315,8 @@ export function renderSvgDrawing(
   options: SvgDrawingOptions,
 ): SvgDrawingResult {
   options = applyDraftingProfile(options);
+  const reviewPlans = validateDrawingReviewOptions(options, options.declarations?.reviewPlans);
+  options = { ...options, reviewPlans };
   const diagnosticsOut: CompilerDiagnostic[] = [];
   if (parts.length === 0) {
     throw new Error('svg-drawing export requires at least one part.');
@@ -396,7 +400,7 @@ export function renderSvgDrawing(
   const usesHatchPattern = pass.sectionStage.usesHatchPattern;
   const dimBodies = pass.autoStage.dimBodies;
   const bottomReserve = pass.autoStage.bottomReserve;
-  const report = pass.autoStage.report;
+  const report = pass.autoStage.report ?? (reviewPlans.length ? { placed: 0, overlapped: 0, byKind: {}, datums: [], annotations: [] } : undefined);
   finalizeDrawingReview(report, options, diagnosticsOut);
   const generalTolerance = pass.autoStage.generalTolerance;
 
@@ -433,7 +437,14 @@ export function renderSvgDrawing(
 
 /** Complete review metadata after selecting the final placement pass. */
 function finalizeDrawingReview(report: DrawingReport | undefined, options: SvgDrawingOptions, diagnosticsOut: CompilerDiagnostic[]): void {
+  const review = evaluateDrawingReview(options.reviewPlans ?? [], report?.annotations ?? [], options.decisionResolutions);
+  if (options.requireCompleteReview && review.status !== 'complete') invalidDrawingReview('requireCompleteReview', `a complete declared review; current status is ${review.status}`);
+  if (review.status === 'incomplete') diagnosticsOut.push({ target: 'export-occt', code: 'drawing.review.incomplete', severity: 'warn',
+    message: 'Declared drawing review is incomplete: required geometric callouts or engineering decisions remain unresolved.',
+    hint: 'Inspect report.review requirements and decisions; coverage is not fit, tolerance or manufacturing certification.',
+    nextAction: NEXT_ACTIONS['drawing.review.incomplete'] });
   if (report) {
+    report.review = review;
     report.suppressed = report.annotations.filter(a => a.suppressed).length;
     const profile = resolveDraftingProfile(options.draftingProfile);
     if (profile) report.draftingProfile = profile.id;
@@ -686,8 +697,14 @@ function authoredPrimaryLabel(ctx: AuthoredReportContext, i: number): string {
   return drawingAnnotationText(renderAnnotations({ parts: ctx.parts, annotations: [{ ...a, tol: undefined } as DrawingAnnotation], placements: ctx.layout.views, scale: ctx.scale }).svg[0]);
 }
 
+function authoredMeasuredTextOverride(a: DrawingAnnotation): boolean {
+  return ['linear', 'diameter', 'radius', 'angular'].includes(a.kind) && 'text' in a && a.text !== undefined;
+}
+
 function authoredOriginalLabel(ctx: AuthoredReportContext, i: number): string {
   const a = ctx.original[i];
+  if (authoredMeasuredTextOverride(a)) return drawingAnnotationText(renderAnnotations({ parts: ctx.parts,
+    annotations: [{ ...a, text: undefined } as DrawingAnnotation], placements: ctx.layout.views, scale: ctx.scale }).svg[0]);
   if ('text' in a && a.text !== undefined) return a.text;
   if (!ctx.options.annotationOverrides?.[ctx.ids[i]]?.text && !ctx.options.annotationOverrides?.[ctx.ids[i]]?.suppress) return ctx.labels.get(i) ?? a.kind;
   return drawingAnnotationText(renderAnnotations({ parts: ctx.parts, annotations: [a], placements: ctx.layout.views, scale: ctx.scale }).svg[0]);
@@ -696,7 +713,7 @@ function authoredOriginalLabel(ctx: AuthoredReportContext, i: number): string {
 function authoredReportOverrideFields(ctx: AuthoredReportContext, i: number) {
   const o = ctx.options.annotationOverrides?.[ctx.ids[i]];
   return { ...(o?.suppress ? { suppressed: true } : {}),
-    ...(o?.text !== undefined ? { originalText: authoredOriginalLabel(ctx, i) } : {}),
+    ...(o?.text !== undefined || authoredMeasuredTextOverride(ctx.original[i]) ? { originalText: authoredOriginalLabel(ctx, i) } : {}),
     ...(o?.offset !== undefined ? { offset: o.offset } : {}) };
 }
 

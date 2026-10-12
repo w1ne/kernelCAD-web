@@ -1,0 +1,232 @@
+{
+  "svg": {
+    "placed": 4,
+    "overlapped": 0,
+    "byKind": {
+      "linear": 2,
+      "diameter": 2
+    },
+    "datums": [],
+    "annotations": [
+      {
+        "id": "authored:pitch-x",
+        "source": "authored",
+        "kind": "linear",
+        "view": "top",
+        "text": "X pitch 76",
+        "overlapped": false
+      },
+      {
+        "id": "authored:pitch-y",
+        "source": "authored",
+        "kind": "linear",
+        "view": "top",
+        "text": "Y pitch 46",
+        "overlapped": false
+      },
+      {
+        "id": "authored:mounting-diameter",
+        "source": "authored",
+        "kind": "diameter",
+        "view": "top",
+        "text": "Mounting holes ⌀9",
+        "overlapped": false,
+        "offset": 4
+      },
+      {
+        "id": "authored:bore-diameter",
+        "source": "authored",
+        "kind": "diameter",
+        "view": "top",
+        "text": "Centre bore ⌀30",
+        "overlapped": false,
+        "offset": 20
+      }
+    ],
+    "review": {
+      "status": "complete",
+      "requirements": [
+        {
+          "featureId": "mountingHoles",
+          "annotationId": "authored:pitch-x",
+          "expectedKind": "linear",
+          "role": "critical",
+          "reason": "Locate fixture holes across X so the mating pattern can be checked.",
+          "planId": "plate",
+          "requirementId": "pitch-x",
+          "status": "covered"
+        },
+        {
+          "featureId": "mountingHoles",
+          "annotationId": "authored:pitch-y",
+          "expectedKind": "linear",
+          "role": "critical",
+          "reason": "Locate the second hole row across Y.",
+          "planId": "plate",
+          "requirementId": "pitch-y",
+          "status": "covered"
+        },
+        {
+          "featureId": "mountingHoles",
+          "annotationId": "authored:mounting-diameter",
+          "expectedKind": "diameter",
+          "role": "critical",
+          "reason": "Expose the illustrative 9 mm mounting-hole diameter.",
+          "planId": "plate",
+          "requirementId": "mounting-diameter",
+          "status": "covered"
+        },
+        {
+          "featureId": "centreBore",
+          "annotationId": "authored:bore-diameter",
+          "expectedKind": "diameter",
+          "role": "critical",
+          "reason": "Expose the central interface opening.",
+          "planId": "plate",
+          "requirementId": "bore-diameter",
+          "status": "covered"
+        },
+        {
+          "featureId": "stock",
+          "annotationId": "authored:stock-width",
+          "expectedKind": "linear",
+          "role": "reference",
+          "reason": "Overall stock width is advisory in this interface-only plan.",
+          "planId": "plate",
+          "requirementId": "stock-width",
+          "status": "missing"
+        }
+      ],
+      "decisions": [],
+      "criticalCount": 4,
+      "coveredCriticalCount": 4,
+      "decisionCount": 0,
+      "unresolvedDecisionCount": 0
+    },
+    "suppressed": 0
+  },
+  "pdf": {
+    "placed": 4,
+    "overlapped": 0,
+    "byKind": {
+      "linear": 2,
+      "diameter": 2
+    },
+    "datums": [],
+    "annotations": [
+      {
+        "id": "authored:pitch-x",
+        "source": "authored",
+        "kind": "linear",
+        "view": "top",
+        "text": "X pitch 76",
+        "overlapped": false
+      },
+      {
+        "id": "authored:pitch-y",
+        "source": "authored",
+        "kind": "linear",
+        "view": "top",
+        "text": "Y pitch 46",
+        "overlapped": false
+      },
+      {
+        "id": "authored:mounting-diameter",
+        "source": "authored",
+        "kind": "diameter",
+        "view": "top",
+        "text": "Mounting holes ⌀9",
+        "overlapped": false,
+        "offset": 4
+      },
+      {
+        "id": "authored:bore-diameter",
+        "source": "authored",
+        "kind": "diameter",
+        "view": "top",
+        "text": "Centre bore ⌀30",
+        "overlapped": false,
+        "offset": 20
+      }
+    ],
+    "review": {
+      "status": "complete",
+      "requirements": [
+        {
+          "featureId": "mountingHoles",
+          "annotationId": "authored:pitch-x",
+          "expectedKind": "linear",
+          "role": "critical",
+          "reason": "Locate fixture holes across X so the mating pattern can be checked.",
+          "planId": "plate",
+          "requirementId": "pitch-x",
+          "status": "covered"
+        },
+        {
+          "featureId": "mountingHoles",
+          "annotationId": "authored:pitch-y",
+          "expectedKind": "linear",
+          "role": "critical",
+          "reason": "Locate the second hole row across Y.",
+          "planId": "plate",
+          "requirementId": "pitch-y",
+          "status": "covered"
+        },
+        {
+          "featureId": "mountingHoles",
+          "annotationId": "authored:mounting-diameter",
+          "expectedKind": "diameter",
+          "role": "critical",
+          "reason": "Expose the illustrative 9 mm mounting-hole diameter.",
+          "planId": "plate",
+          "requirementId": "mounting-diameter",
+          "status": "covered"
+        },
+        {
+          "featureId": "centreBore",
+          "annotationId": "authored:bore-diameter",
+          "expectedKind": "diameter",
+          "role": "critical",
+          "reason": "Expose the central interface opening.",
+          "planId": "plate",
+          "requirementId": "bore-diameter",
+          "status": "covered"
+        },
+        {
+          "featureId": "stock",
+          "annotationId": "authored:stock-width",
+          "expectedKind": "linear",
+          "role": "reference",
+          "reason": "Overall stock width is advisory in this interface-only plan.",
+          "planId": "plate",
+          "requirementId": "stock-width",
+          "status": "missing"
+        }
+      ],
+      "decisions": [],
+      "criticalCount": 4,
+      "coveredCriticalCount": 4,
+      "decisionCount": 0,
+      "unresolvedDecisionCount": 0
+    },
+    "suppressed": 0
+  },
+  "diagnostics": {
+    "svg": [],
+    "pdf": []
+  },
+  "strict": [
+    {
+      "format": "svg-drawing",
+      "bytes": 29327,
+      "sha256": "67bdf827554f24867b5dfe29b057a1a461704b426a190dd551c6a5a324daea61",
+      "status": "emitted"
+    },
+    {
+      "format": "pdf-drawing",
+      "bytes": 10765,
+      "sha256": "74795e4468e4b013492aa91016976e18c96b2699e7df5bf802bc6c011bed3404",
+      "status": "emitted"
+    }
+  ]
+}

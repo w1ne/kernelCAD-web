@@ -33,7 +33,8 @@ describe('exportViaServer', () => {
     const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ svg: '<svg/>', drawingReport, diagnostics: [] }), headers: new Headers() });
     vi.stubGlobal('fetch', fetchMock);
     Object.defineProperty(window, 'location', { configurable: true, value: { pathname: '/', search: '', hostname: 'localhost' } });
-    const options = { draftingProfile: 'machining' as const, annotationOverrides: { 'hole:1': { offset: 5 } } };
+    const options = { draftingProfile: 'machining' as const, annotationOverrides: { 'hole:1': { offset: 5 } },
+      decisionResolutions: { 'bearing%3Amount:fit%3Achoice': { note: 'Clearance fit', provenance: 'Drawing revision A' } } };
     const { previewDrawingViaServer } = await import('./exportViaServer');
     expect(await previewDrawingViaServer('return box(1,1,1);', options)).toEqual({ svg: '<svg/>', drawingReport, diagnostics: [] });
     expect(fetchMock).toHaveBeenCalledWith('/__kernelcad/export?format=svg-drawing&review=1', expect.objectContaining({ body: JSON.stringify({ source: 'return box(1,1,1);', options: { ...options, format: 'svg-drawing' } }) }));
@@ -42,8 +43,10 @@ describe('exportViaServer', () => {
     const fetchMock = vi.fn().mockResolvedValue({ ok: true, blob: async () => new Blob(['PDF']), headers: new Headers() });
     vi.stubGlobal('fetch', fetchMock);
     Object.defineProperty(window, 'location', { configurable: true, value: { pathname: '/', search: '', hostname: 'localhost' } });
-    await exportViaServer('pdf-drawing', 'return box(1,1,1);', { drawingOptions: { draftingProfile: 'sheet-metal' } });
-    expect(JSON.parse(fetchMock.mock.calls[0]![1].body)).toEqual({ source: 'return box(1,1,1);', options: { draftingProfile: 'sheet-metal', format: 'pdf-drawing' } });
+    const options = { draftingProfile: 'sheet-metal' as const, requireCompleteReview: true,
+      decisionResolutions: { 'bearing%3Amount:fit%3Achoice': { note: 'Clearance fit', provenance: 'Drawing revision A' } } };
+    await exportViaServer('pdf-drawing', 'return box(1,1,1);', { drawingOptions: options });
+    expect(JSON.parse(fetchMock.mock.calls[0]![1].body)).toEqual({ source: 'return box(1,1,1);', options: { ...options, format: 'pdf-drawing' } });
   });
   it('POSTs editor source for free-form scripts', async () => {
     const fetchMock = vi.fn().mockResolvedValue({

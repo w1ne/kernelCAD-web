@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import type { DrawingReview } from '../../../../shared/intent/drawingReview';
 // src/kernel/backends/occt/drawingAuto/contracts.ts
 
 import type { OcctBackend } from '../occtBackend';
@@ -27,6 +28,7 @@ export interface DrawingReportAnnotation {
 }
 
 export interface DrawingReport {
+  review?: DrawingReview;
   /** Annotations rendered clear of geometry, other labels and the frame. */
   placed: number;
   /** Annotations rendered but still colliding with something. */

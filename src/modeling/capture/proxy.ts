@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import type { DrawingReviewPlan } from '../../shared/intent/drawingReview';
 import type { FeatureId, PatternSpec, PlaneSpec, FeatureRef, EditableVec3 } from '../../shared/intent/types';
 import { isValidScaleSpec, isValidPlaneSpec, isValidEditableVec3, formatScalarForError } from '../../shared/intent/types';
 import { KernelError } from '../../shared/intent/kernelError';
@@ -325,6 +326,12 @@ export class Shape {
    */
   dimension(spec: DrawingDimensionSpec): Shape {
     this.session.addDrawingDimension(spec, { kind: 'feature', id: this.id });
+    return this;
+  }
+
+  /** Declare required callouts and engineering decisions, without changing geometry. */
+  drawingReview(plan: DrawingReviewPlan): Shape {
+    this.session.addDrawingReview(plan, { kind: 'feature', id: this.id });
     return this;
   }
 

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import type { DrawingReviewOptions } from '../../shared/intent/drawingReview';
 import { runScript } from '../../composition/runScript';
 import { RecomputeEngine } from '../../modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../modeling/backends/occt/occtLowerer';
@@ -8,6 +9,7 @@ import { encodeBinaryStl } from '../../kernel/backends/occt/exportStlBinary';
 import { verifyWatertight, type WatertightReport } from '../../kernel/backends/occt/meshHeal';
 import type { DrawingAnnotation } from '../../kernel/backends/occt/drawingAnnotations';
 import type { DraftingProfile, DraftingProfileId, DrawingAnnotationOverride } from '../../shared/intent/drafting';
+export type { DrawingReviewPlan, DrawingReview, DrawingDecisionResolution, DrawingReviewOptions } from '../../shared/intent/drawingReview';
 export type { DraftingProfile, DraftingProfileId, DrawingAnnotationOverride, DimensioningStyle } from '../../shared/intent/drafting';
 import type { DrawingSectionSpec } from '../../kernel/backends/occt/drawingSections';
 import type { ArchitecturalPlanOptions } from '../../kernel/backends/occt/drawingArchitectural';
@@ -102,7 +104,7 @@ export type ExportOptions =
       infill?: StressInfillExportOptions;
     }
   | { format: 'glb'; axis?: 'y-up' | 'z-up'; draco?: false }
-  | {
+  | (DrawingReviewOptions & {
       format: 'svg-drawing';
       /** Printable review preview with PDF sheet and title-block defaults. */
       pdfSheet?: boolean;
@@ -128,7 +130,7 @@ export type ExportOptions =
       /** 'architectural' draws a floor plan instead of the part sheet. */
       style?: DrawingStyle;
       plan?: ArchitecturalPlanOptions;
-    }
+    })
   | PdfDrawingOptions
   | { format: 'urdf' }
   | { format: 'srdf' }
@@ -160,7 +162,7 @@ export type ExportOptions =
  * GD&T, sections, parts list) on a standard sheet with a full title block,
  * written as a vector PDF. Title-block text fields print `—` when unset.
  */
-export interface PdfDrawingOptions {
+export interface PdfDrawingOptions extends DrawingReviewOptions {
   format: 'pdf-drawing';
   draftingProfile?: DraftingProfileId | DraftingProfile;
   annotationOverrides?: Readonly<Record<string, DrawingAnnotationOverride>>;

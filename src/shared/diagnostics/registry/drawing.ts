@@ -4,6 +4,12 @@
 import type { DiagnosticCodeSpec } from './types';
 
 export const DRAWING_CODES = {
+  'drawing.review.incomplete': {
+    hintTemplate: 'Inspect report.review requirements and decisions. Declared callout coverage does not certify manufacturing intent.',
+    nextAction: { kind: 'fix-arg', field: 'options.reviewPlans' },
+    defaultSeverity: 'warn', group: 'drawing',
+    description: 'A declared drawing review has failed critical coverage or unresolved engineering decisions.',
+  },
   'drawing.annotation.override-missing': {
     hintTemplate: 'An annotation override ID no longer exists in this drawing. Review the current drawing report and remove or replace the stale ID.',
     nextAction: { kind: 'fix-arg', field: 'options.annotationOverrides' },

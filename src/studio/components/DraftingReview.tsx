@@ -6,6 +6,7 @@ import { useFocusTrap } from '../../ui/useFocusTrap';
 import { ExportStatus } from './Shared/ExportStatus';
 import { useDraftingReview, type DraftingReviewProps, type DraftingReviewState } from './useDraftingReview';
 import { DrawingPreviewPane, ProfileControls, AnnotationControls } from './DraftingReviewPanels';
+import { FunctionalDrawingReviewPanel } from './FunctionalDrawingReviewPanel';
 import { BUTTON } from './draftingReviewStyles';
 
 export type { DraftingReviewProps };
@@ -16,6 +17,10 @@ function ReviewFooter({ state }: { state: DraftingReviewState }) {
     {error && <p role="alert" className="w-full text-ui text-danger">{error}</p>}
     <button type="button" className={BUTTON} disabled={busy || task.state.running !== null} onClick={() => void generatePreview()}>{busy ? 'Generating preview…' : preview ? 'Refresh preview' : 'Generate preview'}</button>
     <button type="button" className={`${BUTTON} ml-auto`} disabled={busy || task.state.running !== null} onClick={() => void exportPdf()}>Download PDF</button>
+    {state.functional.declared && <>
+      <button type="button" className={BUTTON} disabled={!state.functional.canMark} onClick={state.functional.markReviewed}>{state.functional.reviewed ? 'Reviewed' : 'Mark reviewed'}</button>
+      <button type="button" className={BUTTON} disabled={!state.functional.reviewed} onClick={() => void state.exportReviewedPdf()}>Export reviewed PDF</button>
+    </>}
     <ExportStatus task={task} testId="drafting-export-status" />
   </footer>;
 }
@@ -40,6 +45,7 @@ export function DraftingReview(props: DraftingReviewProps) {
           <DrawingPreviewPane state={state} />
           <div className="flex flex-col gap-3 border-l border-border p-4 text-ui">
             <ProfileControls state={state.profiles} />
+            <FunctionalDrawingReviewPanel state={state} />
             <AnnotationControls state={state.annotations} />
           </div>
         </div>

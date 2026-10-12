@@ -1,0 +1,103 @@
+{
+  "command": "npx tsx examples/functional-drafting/run.ts",
+  "date": "2026-10-12",
+  "revision": "EXAMPLE",
+  "sourceCheckoutRequired": true,
+  "files": [
+    {
+      "path": "bearing-pending.options.json",
+      "bytes": 1085,
+      "sha256": "99f3181ec9fbbf8bb44c7671c6d197a38c8d21e52657e3fbb185354f5c467a4e"
+    },
+    {
+      "path": "bearing-pending.pdf",
+      "bytes": 14436,
+      "sha256": "c1636c95232390036370f757cfa71c539c488cfd29727b216ae40caf3c7774c4"
+    },
+    {
+      "path": "bearing-pending.png",
+      "bytes": 104026,
+      "sha256": "944e06417d4baa6525f274c7a316bfc2b4dac68a456ce27a38e30a80bafbb945"
+    },
+    {
+      "path": "bearing-pending.report.json",
+      "bytes": 5738,
+      "sha256": "597f90d7d0195c3bc800e168638df150fe70b2a2de3479c77b57fe15db1c3b63"
+    },
+    {
+      "path": "bearing-pending.svg",
+      "bytes": 39564,
+      "sha256": "2af2815d3baae3591f3a6648fa3a5429a28a93e5d5710937eb30cad3204015fe"
+    },
+    {
+      "path": "bearing-resolved.options.json",
+      "bytes": 1733,
+      "sha256": "2028c2c10f8a6ca5c46bbda787d5b954aaaffaee9adf7692ba43fb4f9f530bd4"
+    },
+    {
+      "path": "bearing-resolved.pdf",
+      "bytes": 14436,
+      "sha256": "c1636c95232390036370f757cfa71c539c488cfd29727b216ae40caf3c7774c4"
+    },
+    {
+      "path": "bearing-resolved.png",
+      "bytes": 104026,
+      "sha256": "944e06417d4baa6525f274c7a316bfc2b4dac68a456ce27a38e30a80bafbb945"
+    },
+    {
+      "path": "bearing-resolved.report.json",
+      "bytes": 4684,
+      "sha256": "8ddaf6874a610015660065933ff852f5d2ea9d596d7b8014acfeb92ccf40c02f"
+    },
+    {
+      "path": "bearing-resolved.strict.pdf",
+      "bytes": 14436,
+      "sha256": "c1636c95232390036370f757cfa71c539c488cfd29727b216ae40caf3c7774c4"
+    },
+    {
+      "path": "bearing-resolved.svg",
+      "bytes": 39564,
+      "sha256": "2af2815d3baae3591f3a6648fa3a5429a28a93e5d5710937eb30cad3204015fe"
+    },
+    {
+      "path": "bearing-seat.geometry.json",
+      "bytes": 2231,
+      "sha256": "1cf31c503614399e4e68cbb3bc2ba1f570e8cacc692e00f7d278947f99f7e570"
+    },
+    {
+      "path": "bearing-seat.kcad.ts",
+      "bytes": 1627,
+      "sha256": "6a981d83a762a54e77ad9156ef86999220b2d84ba9e134bc6c978c1b51c87a1d"
+    },
+    {
+      "path": "reviewed-bearing.pdf",
+      "bytes": 13946,
+      "sha256": "1d06fd1ca68039425d5ebe5f2fae4c0df2f9589388f2abc6a2eff878dab7c604"
+    },
+    {
+      "path": "studio-evidence.json",
+      "bytes": 33146,
+      "sha256": "37b17fd124d59db845a160994f11d18be030adfd4f1f31fd26f8d8ed28a24cee"
+    },
+    {
+      "path": "studio-pending.png",
+      "bytes": 101581,
+      "sha256": "4395b46a8039a28fe1c8c72b9355eb1a19b2273f01873c023aab500e7d083526"
+    },
+    {
+      "path": "studio-receipt.json",
+      "bytes": 47750,
+      "sha256": "0952b94ce10d1e85a9002552a2a5187b9fb5919a230ad3021a79425654dd34cd"
+    },
+    {
+      "path": "studio-resolved.png",
+      "bytes": 103556,
+      "sha256": "2c90467b33da1a2b4e6f72f67f3259701e391be7d89b91efeb10f702df7b8299"
+    }
+  ],
+  "limits": [
+    "Local Studio demonstration; no deployment or physical acceptance claim.",
+    "Studio prints inherited ISO2768-mK exporter default; it was not chosen or approved as engineering acceptance."
+  ],
+  "packetizeCommand": "node docs/demos/functional-drafting/packetize.mjs"
+}

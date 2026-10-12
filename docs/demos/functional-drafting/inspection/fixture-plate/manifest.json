@@ -1,0 +1,277 @@
+{
+  "source": "examples/functional-drafting/fixture-plate.kcad.ts",
+  "sourceSha256": "4dfee3e2a0be357040ec1cdfbfcb647b171cccceeeb24ce00f919bfe3fde76cd",
+  "command": "npx tsx docs/demos/functional-drafting/inspect.ts fixture-plate",
+  "baseUrl": "http://127.0.0.1:5248",
+  "backendSha": null,
+  "existingChrome": "Chrome/149.0.7827.53",
+  "ownedTarget": "6B9483843763A8A1B40ECE62FFB2F81C",
+  "channels": [
+    "rgb",
+    "mask",
+    "depth",
+    "normals"
+  ],
+  "views": [
+    "iso",
+    "front",
+    "top",
+    "left"
+  ],
+  "size": {
+    "width": 800,
+    "height": 800
+  },
+  "bounds": {
+    "min": [
+      -8.881784197001252e-16,
+      -8.881784197001252e-16,
+      0
+    ],
+    "max": [
+      100,
+      70,
+      12
+    ]
+  },
+  "maskObjects": [
+    {
+      "featureId": "drawingDimension_1",
+      "names": [
+        "drawingDimension_1",
+        "drawingDimension"
+      ],
+      "color": "#000001",
+      "rgb": [
+        0,
+        0,
+        1
+      ],
+      "visibleIndex": 0
+    },
+    {
+      "featureId": "drawingDimension_2",
+      "names": [
+        "drawingDimension_2",
+        "drawingDimension"
+      ],
+      "color": "#000002",
+      "rgb": [
+        0,
+        0,
+        2
+      ],
+      "visibleIndex": 1
+    },
+    {
+      "featureId": "drawingDimension_3",
+      "names": [
+        "drawingDimension_3",
+        "drawingDimension"
+      ],
+      "color": "#000003",
+      "rgb": [
+        0,
+        0,
+        3
+      ],
+      "visibleIndex": 2
+    },
+    {
+      "featureId": "drawingDimension_4",
+      "names": [
+        "drawingDimension_4",
+        "drawingDimension"
+      ],
+      "color": "#000004",
+      "rgb": [
+        0,
+        0,
+        4
+      ],
+      "visibleIndex": 3
+    },
+    {
+      "featureId": "drawingReview_1",
+      "names": [
+        "drawingReview_1",
+        "drawingReview"
+      ],
+      "color": "#000005",
+      "rgb": [
+        0,
+        0,
+        5
+      ],
+      "visibleIndex": 4
+    },
+    {
+      "featureId": "hole_1",
+      "names": [
+        "hole_1",
+        "centreBore",
+        "hole"
+      ],
+      "color": "#000006",
+      "rgb": [
+        0,
+        0,
+        6
+      ],
+      "visibleIndex": 5
+    }
+  ],
+  "channelMetadata": {
+    "iso": {
+      "depth": {
+        "encoding": "linear-camera-depth-rgba8",
+        "units": "mm",
+        "near": 1.6453182028890967,
+        "far": 3290.6364057781934,
+        "background": "rgba(0,0,0,0)",
+        "meaning": "nearest visible model surface after the active object filter, measured along the camera view direction and normalized from near to far"
+      },
+      "normals": {
+        "encoding": "view-space-normal-rgb8",
+        "mapping": "rgb = round((normal_view * 0.5 + 0.5) * 255)",
+        "background": "rgba(0,0,0,0)",
+        "meaning": "visible model-surface normal in the camera coordinate frame after the active object filter"
+      }
+    },
+    "front": {
+      "depth": {
+        "encoding": "linear-camera-depth-rgba8",
+        "units": "mm",
+        "near": 1.617462120245875,
+        "far": 3234.92424049175,
+        "background": "rgba(0,0,0,0)",
+        "meaning": "nearest visible model surface after the active object filter, measured along the camera view direction and normalized from near to far"
+      },
+      "normals": {
+        "encoding": "view-space-normal-rgb8",
+        "mapping": "rgb = round((normal_view * 0.5 + 0.5) * 255)",
+        "background": "rgba(0,0,0,0)",
+        "meaning": "visible model-surface normal in the camera coordinate frame after the active object filter"
+      }
+    },
+    "top": {
+      "depth": {
+        "encoding": "linear-camera-depth-rgba8",
+        "units": "mm",
+        "near": 1.327462120245875,
+        "far": 2654.92424049175,
+        "background": "rgba(0,0,0,0)",
+        "meaning": "nearest visible model surface after the active object filter, measured along the camera view direction and normalized from near to far"
+      },
+      "normals": {
+        "encoding": "view-space-normal-rgb8",
+        "mapping": "rgb = round((normal_view * 0.5 + 0.5) * 255)",
+        "background": "rgba(0,0,0,0)",
+        "meaning": "visible model-surface normal in the camera coordinate frame after the active object filter"
+      }
+    },
+    "left": {
+      "depth": {
+        "encoding": "linear-camera-depth-rgba8",
+        "units": "mm",
+        "near": 1.3872234841721127,
+        "far": 2774.4469683442253,
+        "background": "rgba(0,0,0,0)",
+        "meaning": "nearest visible model surface after the active object filter, measured along the camera view direction and normalized from near to far"
+      },
+      "normals": {
+        "encoding": "view-space-normal-rgb8",
+        "mapping": "rgb = round((normal_view * 0.5 + 0.5) * 255)",
+        "background": "rgba(0,0,0,0)",
+        "meaning": "visible model-surface normal in the camera coordinate frame after the active object filter"
+      }
+    }
+  },
+  "artifacts": [
+    {
+      "path": "iso.rgb.png",
+      "bytes": 43079,
+      "sha256": "551176bd4f894aa6f0974ca9501784a868c58b07f558a4bfc42bc330116b6aae"
+    },
+    {
+      "path": "iso.mask.png",
+      "bytes": 7898,
+      "sha256": "9b9a87aa3322ed61683567aa264da3c983ebf237d6ba82c2067120ff97eef1a4"
+    },
+    {
+      "path": "iso.depth.png",
+      "bytes": 194775,
+      "sha256": "6a9b3e0135ccff9f614f0b5acd4b6191fa071e68068c8d93d59faf78e68d7509"
+    },
+    {
+      "path": "iso.normals.png",
+      "bytes": 24469,
+      "sha256": "79156539da61a4c4d66600a42407c7768bb40eedadd9f95ec040ceefda913f73"
+    },
+    {
+      "path": "front.rgb.png",
+      "bytes": 6345,
+      "sha256": "b0092a18cba70817f8ba414bc33e6dbd287e199d55d576a815610812ab7097fc"
+    },
+    {
+      "path": "front.mask.png",
+      "bytes": 5245,
+      "sha256": "ea9b2e60b56c9839db38114983f7de5ef711a3ff057f3108ea5c8e9b54db754b"
+    },
+    {
+      "path": "front.depth.png",
+      "bytes": 3454,
+      "sha256": "895e121983cc72a241fdd699a4a953aec472bc37015bd4071ce9b865e8dbc8ba"
+    },
+    {
+      "path": "front.normals.png",
+      "bytes": 3478,
+      "sha256": "7bd4886751de71e1d810d64c9fa0351e28ce6341202810009e452c04573c69d0"
+    },
+    {
+      "path": "top.rgb.png",
+      "bytes": 42989,
+      "sha256": "09fa5444ad1fcc9a39b47359e46fb71977941628bc2af1f5f1b609c1a261b7d4"
+    },
+    {
+      "path": "top.mask.png",
+      "bytes": 8040,
+      "sha256": "6ee0377a849b40b7056322b58c0d5ec53b2cd660fdadb9d528a997e0cc83859d"
+    },
+    {
+      "path": "top.depth.png",
+      "bytes": 67809,
+      "sha256": "fdf6f9088a5df4756cfe49e558fe9a76e7158ba4c7696b017b2ae3efcaa97ec7"
+    },
+    {
+      "path": "top.normals.png",
+      "bytes": 29940,
+      "sha256": "8bdb73cb602a056bc86547cd7352311f0377572fef233247e4cafb8cc6d0bb21"
+    },
+    {
+      "path": "left.rgb.png",
+      "bytes": 8331,
+      "sha256": "9e761f5adfc0148c24bc05325d5953ade3e6b86718f4d5ca30cc18b5bc3fb7de"
+    },
+    {
+      "path": "left.mask.png",
+      "bytes": 5344,
+      "sha256": "e5baa25693534b837aede6cb47759324fd10f3e166383f464a6dbfb9550f10fb"
+    },
+    {
+      "path": "left.depth.png",
+      "bytes": 3664,
+      "sha256": "111d1eae88497b53bd208fa6350cc82bc33ff8e92e61925c99d83542341dac45"
+    },
+    {
+      "path": "left.normals.png",
+      "bytes": 3759,
+      "sha256": "e9612a22b2f3974452efe47a5efe7a0c1bf514b6dfd60fdbe58eb8e2b067132b"
+    }
+  ],
+  "limits": [
+    "Local deterministic CAD inspection; no physical acceptance.",
+    "Canonical channels use existing browser attachment; CLI launch path intentionally unused.",
+    "Top RGB has identical flat color on horizontal roof/base; depth distinguishes the pedestal elevation."
+  ]
+}

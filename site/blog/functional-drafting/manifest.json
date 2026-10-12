@@ -1,0 +1,143 @@
+{
+  "command": "npx tsx examples/functional-drafting/run.ts",
+  "date": "2026-10-12",
+  "revision": "EXAMPLE",
+  "sourceCheckoutRequired": true,
+  "files": [
+    {
+      "path": "fixture-plate-missing.geometry.json",
+      "bytes": 1910,
+      "sha256": "a4e7e8624a31dda9d88d6c5e299090538b174b6dfd6ed76d6524abb58265b74f"
+    },
+    {
+      "path": "fixture-plate-missing.kcad.ts",
+      "bytes": 2123,
+      "sha256": "f864f7c6c7d7a5bfa7c640551e61156b409e3ccb19af12f9d41dc33e544a7b3b"
+    },
+    {
+      "path": "fixture-plate.geometry.json",
+      "bytes": 2012,
+      "sha256": "e79f3590d8d5429d2e3d6716d7732fe79799b72710b022d0f9edb57af1ce5ded"
+    },
+    {
+      "path": "fixture-plate.kcad.ts",
+      "bytes": 2164,
+      "sha256": "4dfee3e2a0be357040ec1cdfbfcb647b171cccceeeb24ce00f919bfe3fde76cd"
+    },
+    {
+      "path": "ordinary-hidden.pdf",
+      "bytes": 10266,
+      "sha256": "3c906977e3429cc62603d919302a1781b1d2425407104f70573dfad1719d5b59"
+    },
+    {
+      "path": "plate-complete.options.json",
+      "bytes": 1543,
+      "sha256": "56efa709763bd684ce52d2e80d2028ac59f6c40281a9620f3a91dd2823f18ae3"
+    },
+    {
+      "path": "plate-complete.pdf",
+      "bytes": 10765,
+      "sha256": "74795e4468e4b013492aa91016976e18c96b2699e7df5bf802bc6c011bed3404"
+    },
+    {
+      "path": "plate-complete.png",
+      "bytes": 75386,
+      "sha256": "a523b565c3c5e0642669e6f608be4a2e2d247b0880fd5e820ab0221c083ca0a7"
+    },
+    {
+      "path": "plate-complete.report.json",
+      "bytes": 6414,
+      "sha256": "62ef7a8d706e71cb587c3b00ddbcef8149337e4a3fd65e69e2dc1aee2b1d29cd"
+    },
+    {
+      "path": "plate-complete.strict.pdf",
+      "bytes": 10765,
+      "sha256": "74795e4468e4b013492aa91016976e18c96b2699e7df5bf802bc6c011bed3404"
+    },
+    {
+      "path": "plate-complete.svg",
+      "bytes": 29327,
+      "sha256": "67bdf827554f24867b5dfe29b057a1a461704b426a190dd551c6a5a324daea61"
+    },
+    {
+      "path": "plate-hidden.options.json",
+      "bytes": 1595,
+      "sha256": "582a62d6c5c5c91e256fdab34183cf586c0623a822401a0949df109f99fd7f2c"
+    },
+    {
+      "path": "plate-hidden.pdf",
+      "bytes": 10680,
+      "sha256": "d57d3dd84414a8ab99dc7e7d57fd30e6c77c093585fe93bfba45202866e0c7d5"
+    },
+    {
+      "path": "plate-hidden.png",
+      "bytes": 73533,
+      "sha256": "5c709969b430794e11e6a237b6518a96d98adcfb2943f25dc5c0b5567c34b418"
+    },
+    {
+      "path": "plate-hidden.report.json",
+      "bytes": 8092,
+      "sha256": "e1e3debd1fccd9d5f3f467f8f883fe4aca77dfb4a2ce87cd0a256333e317c28c"
+    },
+    {
+      "path": "plate-hidden.svg",
+      "bytes": 28748,
+      "sha256": "8503590de738d41885a95eab4345176d8b97b3208c479a2fb1caca7d768402ad"
+    },
+    {
+      "path": "plate-missing.options.json",
+      "bytes": 1425,
+      "sha256": "038f40e6b6e089aee25767c33f9b4c40ec585a79b5d2ab2cd5626c18991e482d"
+    },
+    {
+      "path": "plate-missing.pdf",
+      "bytes": 10680,
+      "sha256": "d57d3dd84414a8ab99dc7e7d57fd30e6c77c093585fe93bfba45202866e0c7d5"
+    },
+    {
+      "path": "plate-missing.png",
+      "bytes": 73533,
+      "sha256": "5c709969b430794e11e6a237b6518a96d98adcfb2943f25dc5c0b5567c34b418"
+    },
+    {
+      "path": "plate-missing.report.json",
+      "bytes": 7662,
+      "sha256": "2c228e70137ea54205300f8adaa79143d5e8bc416f1264b65c7a9ec16c2defb2"
+    },
+    {
+      "path": "plate-missing.svg",
+      "bytes": 28748,
+      "sha256": "8503590de738d41885a95eab4345176d8b97b3208c479a2fb1caca7d768402ad"
+    },
+    {
+      "path": "reviewed-plate.pdf",
+      "bytes": 10345,
+      "sha256": "bcfd31bb8758c8851822cc8ead0f6769b6f18e3625450092ea1dab8246ec5a7e"
+    },
+    {
+      "path": "studio-complete.png",
+      "bytes": 101137,
+      "sha256": "895697e103be125dc15234ff34a817cec2d59c05415943c68ac4d9e5b98caaf1"
+    },
+    {
+      "path": "studio-evidence.json",
+      "bytes": 49267,
+      "sha256": "0e73a368d459d19a6ee00a9bec94c90a268c6d93b433cd217a84bfcadce5ff76"
+    },
+    {
+      "path": "studio-hidden.png",
+      "bytes": 106508,
+      "sha256": "7a51daadf8629ce094a2b99a6d4bc232c0da1f4e6ddd05039b6bad16c72f2d65"
+    },
+    {
+      "path": "studio-receipt.json",
+      "bytes": 64433,
+      "sha256": "0b7153899fb917f6b603fd114b1a78879fca492a18517b5735c220e2f3a4cccf"
+    }
+  ],
+  "limits": [
+    "Local Studio demonstration; no deployment or physical acceptance claim.",
+    "Studio prints inherited ISO2768-mK exporter default; it was not chosen or approved as engineering acceptance."
+  ],
+  "packetizeCommand": "node docs/demos/functional-drafting/packetize.mjs"
+}

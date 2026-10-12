@@ -1,0 +1,180 @@
+{
+  "svg": {
+    "placed": 2,
+    "overlapped": 0,
+    "byKind": {
+      "diameter": 2
+    },
+    "datums": [],
+    "annotations": [
+      {
+        "id": "authored:seat-diameter",
+        "source": "authored",
+        "kind": "diameter",
+        "view": "front",
+        "text": "Seat ⌀44",
+        "overlapped": false
+      },
+      {
+        "id": "authored:throat-diameter",
+        "source": "authored",
+        "kind": "diameter",
+        "view": "front",
+        "text": "Throat ⌀32",
+        "overlapped": false,
+        "offset": 20
+      }
+    ],
+    "review": {
+      "status": "incomplete",
+      "requirements": [
+        {
+          "featureId": "bearingSeat",
+          "annotationId": "authored:seat-diameter",
+          "expectedKind": "diameter",
+          "role": "critical",
+          "reason": "Show the diameter of the illustrative insert seat.",
+          "planId": "bearing-mount",
+          "requirementId": "seat-diameter",
+          "status": "covered"
+        },
+        {
+          "featureId": "bearingSeat",
+          "annotationId": "authored:throat-diameter",
+          "expectedKind": "diameter",
+          "role": "critical",
+          "reason": "Show the opening behind the seat independently.",
+          "planId": "bearing-mount",
+          "requirementId": "throat-diameter",
+          "status": "covered"
+        }
+      ],
+      "decisions": [
+        {
+          "kind": "fit",
+          "featureId": "bearingSeat",
+          "prompt": "Will the illustrative insert be removable or press-retained?",
+          "planId": "bearing-mount",
+          "decisionId": "insert-retention",
+          "key": "bearing-mount:insert-retention"
+        }
+      ],
+      "criticalCount": 2,
+      "coveredCriticalCount": 2,
+      "decisionCount": 1,
+      "unresolvedDecisionCount": 1
+    },
+    "suppressed": 0
+  },
+  "pdf": {
+    "placed": 2,
+    "overlapped": 0,
+    "byKind": {
+      "diameter": 2
+    },
+    "datums": [],
+    "annotations": [
+      {
+        "id": "authored:seat-diameter",
+        "source": "authored",
+        "kind": "diameter",
+        "view": "front",
+        "text": "Seat ⌀44",
+        "overlapped": false
+      },
+      {
+        "id": "authored:throat-diameter",
+        "source": "authored",
+        "kind": "diameter",
+        "view": "front",
+        "text": "Throat ⌀32",
+        "overlapped": false,
+        "offset": 20
+      }
+    ],
+    "review": {
+      "status": "incomplete",
+      "requirements": [
+        {
+          "featureId": "bearingSeat",
+          "annotationId": "authored:seat-diameter",
+          "expectedKind": "diameter",
+          "role": "critical",
+          "reason": "Show the diameter of the illustrative insert seat.",
+          "planId": "bearing-mount",
+          "requirementId": "seat-diameter",
+          "status": "covered"
+        },
+        {
+          "featureId": "bearingSeat",
+          "annotationId": "authored:throat-diameter",
+          "expectedKind": "diameter",
+          "role": "critical",
+          "reason": "Show the opening behind the seat independently.",
+          "planId": "bearing-mount",
+          "requirementId": "throat-diameter",
+          "status": "covered"
+        }
+      ],
+      "decisions": [
+        {
+          "kind": "fit",
+          "featureId": "bearingSeat",
+          "prompt": "Will the illustrative insert be removable or press-retained?",
+          "planId": "bearing-mount",
+          "decisionId": "insert-retention",
+          "key": "bearing-mount:insert-retention"
+        }
+      ],
+      "criticalCount": 2,
+      "coveredCriticalCount": 2,
+      "decisionCount": 1,
+      "unresolvedDecisionCount": 1
+    },
+    "suppressed": 0
+  },
+  "diagnostics": {
+    "svg": [
+      {
+        "target": "export-occt",
+        "code": "drawing.review.incomplete",
+        "severity": "warn",
+        "message": "Declared drawing review is incomplete: required geometric callouts or engineering decisions remain unresolved.",
+        "hint": "Inspect report.review requirements and decisions; coverage is not fit, tolerance or manufacturing certification.",
+        "nextAction": {
+          "kind": "fix-arg",
+          "field": "options.reviewPlans"
+        }
+      }
+    ],
+    "pdf": [
+      {
+        "target": "export-occt",
+        "code": "drawing.review.incomplete",
+        "severity": "warn",
+        "message": "Declared drawing review is incomplete: required geometric callouts or engineering decisions remain unresolved.",
+        "hint": "Inspect report.review requirements and decisions; coverage is not fit, tolerance or manufacturing certification.",
+        "nextAction": {
+          "kind": "fix-arg",
+          "field": "options.reviewPlans"
+        }
+      }
+    ]
+  },
+  "strict": [
+    {
+      "format": "svg-drawing",
+      "bytes": 0,
+      "status": "refused",
+      "code": "feature.invalid-args",
+      "message": "KernelError: drawingReview: requireCompleteReview — got undefined; requires a complete declared review; current status is incomplete. Example: { id: \"mount\", requirements: [{ id: \"width\", featureId: \"plate\", annotationId: \"authored:width\", expectedKind: \"linear\", role: \"critical\", reason: \"Mount interface\" }], decisions: [] }"
+    },
+    {
+      "format": "pdf-drawing",
+      "bytes": 0,
+      "status": "refused",
+      "code": "feature.invalid-args",
+      "message": "KernelError: drawingReview: requireCompleteReview — got undefined; requires a complete declared review; current status is incomplete. Example: { id: \"mount\", requirements: [{ id: \"width\", featureId: \"plate\", annotationId: \"authored:width\", expectedKind: \"linear\", role: \"critical\", reason: \"Mount interface\" }], decisions: [] }"
+    }
+  ]
+}

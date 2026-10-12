@@ -11,6 +11,7 @@
 // datum pins that letter to that face and a declared tolerance replaces the
 // automatic tolerance of the same type on the same feature.
 
+import type { DrawingReviewPlan } from './drawingReview';
 import type { EdgeQuery, FaceQuery } from './queryTypes';
 
 /** The GD&T characteristics the drawing surface supports. */
@@ -87,10 +88,10 @@ export type DimensionAnchor =
   | { face: FaceQuery };
 
 /** `shape.dimension({...})` argument. */
-export type DrawingDimensionSpec =
+export type DrawingDimensionSpec = { id?: string } & (
   | { kind: 'linear'; from: DimensionAnchor; to: DimensionAnchor; label?: string }
   | { kind: 'diameter' | 'radius'; edge: EdgeQuery; label?: string }
-  | { kind: 'angular'; from: EdgeQuery; to: EdgeQuery; label?: string };
+  | { kind: 'angular'; from: EdgeQuery; to: EdgeQuery; label?: string });
 
 /** Metadata stored on a `drawingDimension` record. */
 export type DrawingDimensionMetadata = DrawingDimensionSpec & { virtual: true };
@@ -101,4 +102,5 @@ export interface DrawingDeclarations {
   tolerances: DrawingToleranceDecl[];
   /** Declared dimensions, in capture order. */
   dimensions: DrawingDimensionSpec[];
+  reviewPlans?: DrawingReviewPlan[];
 }
