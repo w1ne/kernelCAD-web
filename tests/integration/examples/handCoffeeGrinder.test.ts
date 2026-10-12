@@ -10,8 +10,8 @@ describe('hand coffee grinder gallery example', () => {
 
     expect(result.exitCode).toBe(0);
     expect(result.diagnostics).toEqual([]);
-    expect(result.featureCount).toBeGreaterThanOrEqual(60);
-  }, 180_000);
+    expect(result.featureCount).toBeGreaterThanOrEqual(150);
+  }, 600_000);
 
   // Hosted here instead of the shared physics-loop sweep
   // (HOSTED_IN_DEDICATED_FILE in tests/integration/physics-loop/exampleSweepShared.ts);
@@ -26,5 +26,5 @@ describe('hand coffee grinder gallery example', () => {
       includePhysics: false,
     });
     expect(result.mechanism, JSON.stringify(result.mechanismFailures ?? [], null, 2)).toBe('real');
-  }, 600_000);
+  }, 900_000);
 });

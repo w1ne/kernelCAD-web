@@ -556,9 +556,9 @@ const shaftPart = grinder.part('drive-shaft', shaft);
 bottomBearingPart.connector('drive-axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
 shaftPart.connector('drive-axis', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
 grinder.mate('drive', 'bottom-bearing.drive-axis', 'drive-shaft.drive-axis', 'revolute', { limitsDeg: [-180, 180] });
-fixed(shaftPart, 'inner-conical-burr', innerBurr);
+const innerBurrPart = fixed(shaftPart, 'inner-conical-burr', innerBurr);
 fixed(shaftPart, 'grind-adjust-nut', nut);
-fixed(shaftPart, 'preload-spring', spring);
+fixed(innerBurrPart, 'preload-spring', spring); // seats on the burr hub
 fixed(shaftPart, 'spring-washer', springWasher);
 fixed(shaftPart, 'circlip-lower', lowerCirclip);
 fixed(shaftPart, 'circlip-top', topCirclip);
