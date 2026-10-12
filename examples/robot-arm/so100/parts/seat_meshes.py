@@ -14,10 +14,9 @@ material with exact manifold booleans and writes the result to
                axis over the joint's full URDF travel, so the link clears
                the servo housing and output spline at every angle.
 
-Each cut removes the convex hull of each piece of shared material (for a
-curved sliver such as the bearing ring, the tool clipped to that hull), a
-few mm³ more than the overlap itself. Coplanar facets are folded back at
-1 µm.
+A pocket is cut by the neighbouring servo's own surface. A clearance is a
+groove of revolution about the joint axis: an annular sector just holding
+each piece of shared material, like the relief a printed link has.
 
 The same is done link on link where the arm touches itself: the shoulder
 clears the base bearing over the pan travel, and the upper arm clears the
@@ -78,11 +77,45 @@ def to_trimesh(m):
     return trimesh.Trimesh(np.asarray(mesh.vert_properties)[:, :3], np.asarray(mesh.tri_verts), process=False)
 
 
+def sector_cutter(piece, axis, margin=5e-5):
+    """Annular sector about `axis` (through the link-frame origin, which is
+    the joint origin) that just contains `piece`. Revolute clearance is a
+    groove of revolution, the shape a real printed relief has."""
+    axis = np.asarray(axis, float)
+    axis = axis / np.linalg.norm(axis)
+    # Frame with Z on the joint axis.
+    helper = np.array([1.0, 0, 0]) if abs(axis[0]) < 0.9 else np.array([0, 1.0, 0])
+    ex = np.cross(helper, axis)
+    ex /= np.linalg.norm(ex)
+    ey = np.cross(axis, ex)
+    v = np.asarray(piece.to_mesh().vert_properties)[:, :3]
+    x, y, z = v @ ex, v @ ey, v @ axis
+    r = np.hypot(x, y)
+    theta = np.degrees(np.arctan2(y, x))
+    # Smallest arc holding every vertex angle.
+    order = np.sort(theta)
+    gaps = np.diff(np.concatenate([order, order[:1] + 360]))
+    k = int(np.argmax(gaps))
+    start = order[(k + 1) % len(order)]
+    span = 360 - gaps[k]
+    pad = np.degrees(margin / max(r.min(), 1e-4)) + 0.5
+    rect = m3.CrossSection.square([r.max() - r.min() + 2 * margin, z.max() - z.min() + 2 * margin]) \
+        .translate([max(r.min() - margin, 0), z.min() - margin])
+    if span + 2 * pad >= 359:
+        ring = m3.Manifold.revolve(rect, 192)
+    else:
+        ring = m3.Manifold.revolve(rect, max(8, int((span + 2 * pad) / 2)), span + 2 * pad)
+        ring = ring.rotate([0, 0, start - pad])
+    frame = np.eye(4)
+    frame[:3, 0], frame[:3, 1], frame[:3, 2] = ex, ey, axis
+    return ring.transform(frame[:3, :])
+
+
 def main():
     os.makedirs(DST, exist_ok=True)
     tools = {}
     for name, servo in OWN_SERVO.items():
-        tools.setdefault(name, []).append(('pocket', manifold(load(servo))))
+        tools.setdefault(name, []).append(('pocket', manifold(load(servo)), None))
     for child, _parent, servo, xyz, rpy, axis, (lo, hi) in JOINTS:
         joint = euler_matrix(*rpy, 'sxyz')
         joint[:3, 3] = xyz
@@ -92,7 +125,7 @@ def main():
         for q in np.arange(lo, hi + 1e-9, np.radians(STEP_DEG)).tolist() + [hi]:
             copy = manifold(servo_mesh, rotation_matrix(-q, axis) @ inv_joint)
             sweep = copy if sweep is None else sweep + copy
-        tools.setdefault(child, []).append(('clearance', sweep))
+        tools.setdefault(child, []).append(('clearance', sweep, axis))
     # Link on link. The shoulder turns on the base's pan bearing ring, and
     # at the lift lower limit (the folded rest pose, all joints zero) the
     # upper arm rests on the base. Both touch, neither may share volume.
@@ -104,45 +137,42 @@ def main():
     for q in np.arange(lo, hi + 1e-9, np.radians(STEP_DEG)).tolist() + [hi]:
         copy = manifold(base, rotation_matrix(-q, JOINTS[0][5]) @ np.linalg.inv(pan_joint))
         ring = copy if ring is None else ring + copy
-    tools['Rotation_Pitch'].append(('base bearing clearance', ring))
+    tools['Rotation_Pitch'].append(('base bearing clearance', ring, JOINTS[0][5]))
     lift_joint = euler_matrix(*JOINTS[1][4], 'sxyz')
     lift_joint[:3, 3] = JOINTS[1][3]
-    tools['Upper_Arm'].append(('folded rest on base', manifold(base, np.linalg.inv(pan_joint @ lift_joint))))
+    tools['Upper_Arm'].append(('folded rest on base', manifold(base, np.linalg.inv(pan_joint @ lift_joint)), None))
     for name in ['Base', 'Rotation_Pitch', 'Upper_Arm', 'Lower_Arm', 'Wrist_Pitch_Roll', 'Fixed_Jaw', 'Moving_Jaw']:
         if name in SKIP:
             print(f'{name}: kept as vendor mesh (non-manifold seams)')
             continue
-        # Some vendor links are several shells glued face to face; fuse them
-        # so the export has no coincident duplicate vertices.
-        link = m3.Manifold.batch_boolean(manifold(load(name)).decompose(), m3.OpType.Add)
+        link = manifold(load(name))
         before = link.volume()
-        for kind, tool in tools.get(name, []):
+        for kind, tool, axis in tools.get(name, []):
             shared = link ^ tool
             if shared.volume() <= 1e-12:
                 print(f'{name}: {kind} nothing to remove')
                 continue
-            # Cut by the convex hull of each piece of shared material, not
-            # by the tool: a swept servo is a union of ~100 copies and would
-            # leave tens of thousands of sliver facets behind.
-            hulls = [piece.hull() for piece in shared.decompose() if piece.volume() > 1e-12]
-            cut = link - m3.Manifold.batch_boolean(hulls, m3.OpType.Add)
-            if link.volume() - cut.volume() > 2 * shared.volume() + 5e-9:
-                # A curved sliver (a bearing ring) has a hull far bigger
-                # than itself: cut each piece by the tool clipped to it.
-                cut = link - (tool ^ m3.Manifold.batch_boolean(
-                    [h.refine(1) for h in hulls], m3.OpType.Add))
+            if axis is None:
+                # A fixed neighbour: its own facets are the pocket wall.
+                cutter = tool
+            else:
+                # A swept servo is a union of ~100 copies; cutting by it
+                # leaves thousands of slivers. Cut a clean groove of
+                # revolution around each piece of shared material instead.
+                cutter = m3.Manifold.batch_boolean(
+                    [sector_cutter(p, axis) for p in shared.decompose() if p.volume() > 1e-12], m3.OpType.Add)
+            cut = link - cutter
             print(f'{name}: {kind} shares {shared.volume() * 1e9:.1f} mm³, '
                   f'cut removes {(link.volume() - cut.volume()) * 1e9:.1f} mm³')
             link = cut
-        # Booleans re-split coplanar facets; fold them back (1 µm). A larger
-        # tolerance leaves long slivers that OCCT sewing opens up.
-        link = link.simplify(1e-6)
+        # Fold the facets the booleans re-split back together (10 µm,
+        # below the vendor tessellation's own chordal error).
+        link = link.simplify(1e-5)
         out = to_trimesh(link)
         path = os.path.join(DST, name + '.stl')
         out.export(path)
         # The written file must reload as a closed manifold solid.
-        back = trimesh.load(path, process=False)
-        manifold(back)
+        manifold(trimesh.load(path, process=False))
         print(f'{name}: {before * 1e9:.0f} -> {link.volume() * 1e9:.0f} mm³, {len(out.faces)} triangles')
 
 
