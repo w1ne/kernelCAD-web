@@ -89,6 +89,7 @@ declare const window: {
     forceFullOpacity: () => void;
     showOnlyTailFeatures: () => void;
     setRenderView: (view: string) => void;
+    setRenderPose: (azDeg: number, elDeg: number) => void;
     applyObjectVisibilityFilter: (filter: HeadlessObjectFilter) => unknown;
   };
 };
@@ -103,6 +104,8 @@ export interface CaptureAnimationOpts {
   framesDir?: string;
   /** Override the animationView record's fps. */
   fps?: number;
+  /** Arbitrary camera pose; omitted preserves the existing iso view. */
+  cameraPose?: { azDeg: number; elDeg: number };
   /** Progress sink for long captures (build done, schedule, verify, page
    *  ready, every 10th frame, encode done, total). Default: no-op. The
    *  script wrapper passes one that writes timestamped lines to stderr. */
@@ -525,7 +528,6 @@ export async function captureAnimation(
     await page.evaluate(() => window.__demoPlayer!.advance(2000));
     await page.evaluate(() => window.__demoPlayer!.forceFullOpacity());
     await page.evaluate(() => window.__demoPlayer!.showOnlyTailFeatures());
-    await page.evaluate(() => window.__demoPlayer!.setRenderView('iso'));
 
     // 7. Frame loop with per-frame failure containment. THREE failure
     //    classes, each naming the right subsystem and fault side:
@@ -578,6 +580,13 @@ export async function captureAnimation(
             (filter) => window.__demoPlayer!.applyObjectVisibilityFilter(filter),
             opts.objectFilter,
           );
+        }
+        // Mesh reloads fit the camera again. Restore the requested view after
+        // every reload/filter so frame zero and all later screenshots use it.
+        if (opts.cameraPose !== undefined) {
+          await page.evaluate((pose) => window.__demoPlayer!.setRenderPose(pose.azDeg, pose.elDeg), opts.cameraPose);
+        } else {
+          await page.evaluate(() => window.__demoPlayer!.setRenderView('iso'));
         }
         await page.evaluate(() => window.__demoPlayer!.forceFullOpacity());
         // Tick the AnimationEngine so Three.js renders the updated scene.
