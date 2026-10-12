@@ -147,8 +147,8 @@
     },
     {
       "path": "capture.mjs",
-      "bytes": 13213,
-      "sha256": "024578982b3ccc156c2c3c2c1877cf3c7c34df3ba7f96fccae4f3d24849de3f7"
+      "bytes": 13238,
+      "sha256": "de9c744a15cf24dee7affe69b0dd7b2a1dcff81de1c526bdb24cedce7de6f7db"
     },
     {
       "path": "cdp.mjs",
@@ -342,13 +342,13 @@
     },
     {
       "path": "lifecycle.mjs",
-      "bytes": 3138,
-      "sha256": "a13ba1d94b58aed6645da21f033e481ea51929281dc1b2b04d2fe7c3625e6ed1"
+      "bytes": 3449,
+      "sha256": "ddc8a5e3cc9cc7cb8e5ceac824199b8367c4f418865850585ae9b3ae4dacb8d7"
     },
     {
       "path": "lifecycle.test.mjs",
-      "bytes": 3902,
-      "sha256": "50d8ec105576e5ee7fc689f3387f94517083383754cbdfa94a357fb73f1c2a31"
+      "bytes": 5580,
+      "sha256": "0fb5c2b658d25ffa58bf97ed958b8e0ede97da5d2ef3577d1e4cb8b4f3d4cf9f"
     },
     {
       "path": "packetize.mjs",

@@ -1,7 +1,7 @@
 // Actual UI workflows; connect to existing Chrome only. Own tab and local project.
 // BASE_URL/CDP_URL/BACKEND_SHA/OUTPUT optional; no launched browser or cloud write.
 import { attach, domPage } from './cdp.mjs';
-import { captureLifecycle, abortable, restoreTemporaryProject, sourceRequestsMatch } from './lifecycle.mjs';
+import { captureLifecycle, abortable, restoreCaptureProject, sourceRequestsMatch } from './lifecycle.mjs';
 import { mkdir, readFile, writeFile, rm } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { resolve } from 'node:path';
@@ -43,12 +43,12 @@ const lifecycle=captureLifecycle({
  cleanup:async()=>{
   recording=false;await connectionAttempt?.catch(()=>{});await recorder?.catch(()=>{});
   if(cleanupPage) {
-    receipt.projectCleanup=await cleanupPage.evaluate(restoreTemporaryProject,ownedId).catch(()=>false);
+    await restoreCaptureProject(cleanupPage,ownedId,receipt);
     receipt.transport=await cleanupPage.evaluate(()=>window.__functional?.requests??[]).catch(()=>[]);
     receipt.transport=receipt.transport.map(row=>{if(row.sourceShaInput){row.sourceSha256=createHash('sha256').update(row.sourceShaInput).digest('hex');delete row.sourceShaInput;}return row;});
     if(receipt.success && !sourceRequestsMatch(receipt.transport,receipt.exportSourceSha256)){receipt.success=false;receipt.error='Export transport source did not match captured source';process.exitCode=1;}
     const svgs=await cleanupPage.evaluate(()=>window.__functional?.svgs??[]).catch(()=>[]);for(let i=0;i<svgs.length;i++)await writeFile(resolve(out,`preview-${i}.svg`),svgs[i]);
-  }
+  } else {receipt.projectStateCreated=false;receipt.projectCleanup=true;}
  },
  save:async()=>{receipt.finishedAt=new Date().toISOString();await writeFile(resolve(out,'receipt.json'),JSON.stringify(receipt,null,2)+'\n');},
  close:async()=>{if(cleanupPage){await cleanupPage.close();receipt.ownedTabClosed=true;}},

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { captureLifecycle, sourceRequestsMatch } from './lifecycle.mjs';
+import { captureLifecycle, sourceRequestsMatch, restoreCaptureProject, restoreTemporaryProject } from './lifecycle.mjs';
 import { attach } from './cdp.mjs';
 const never=()=>new Promise(()=>{});
 for(const failure of ['deadline','interrupt','recorder'])test(`${failure} restores state and persists receipt before closing`,async()=>{
@@ -30,3 +30,17 @@ test('cleanup failure still saves a receipt and closes without any attached page
 });
 
 test('a stalled cleanup is bounded and still persists and closes',async()=>{const events=[];const life=captureLifecycle({timeoutMs:1000,cleanupMs:10,cleanup:never,save:async()=>events.push('receipt'),close:async()=>events.push('close')});await assert.rejects(life.run(async()=>{}),/cleanup deadline/);assert.deepEqual(events,['receipt','close','receipt']);});
+
+test('an export POST without a source hash cannot pass binding',()=>{assert.equal(sourceRequestsMatch([{method:'POST',sourceSha256:'same'},{method:'POST'}],'same'),false);});
+test('completed capture with failed project restoration fails but still saves and closes',async()=>{
+ const receipt={success:true};let exitCode=0;const saved=[],events=[];
+ const life=captureLifecycle({onFailure:error=>{receipt.success=false;receipt.error=error.message;exitCode=1;},cleanup:()=>restoreCaptureProject({evaluate:async()=>{throw Error('Restoration denied');}},'owned',receipt),save:async()=>{saved.push({...receipt});events.push('save');},close:async()=>events.push('close')});
+ await assert.rejects(life.run(async()=>{}),/Restoration denied/);
+ assert.equal(exitCode,1);assert.equal(receipt.projectCleanup,false);assert.equal(saved[0].success,false);assert.deepEqual(events,['save','close','save']);
+});
+test('a page that never initialized temporary state needs no restoration',async()=>{
+ const previous=globalThis.window;globalThis.window={};
+ try{assert.equal(restoreTemporaryProject('never-created'),null);const receipt={success:true};await restoreCaptureProject({evaluate:async()=>null},'never-created',receipt);assert.equal(receipt.projectCleanup,true);assert.equal(receipt.projectStateCreated,false);assert.equal(receipt.success,true);}finally{globalThis.window=previous;}
+});
+
+test('a negative restoration result is rejected explicitly',async()=>{const receipt={success:true};await assert.rejects(restoreCaptureProject({evaluate:async()=>false},'owned',receipt),/restoration failed/);assert.equal(receipt.projectCleanup,false);});

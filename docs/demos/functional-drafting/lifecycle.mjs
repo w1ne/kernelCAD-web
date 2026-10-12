@@ -28,7 +28,7 @@ export function captureLifecycle({timeoutMs=240000,cleanupMs=30000,cleanup,save,
 }
 // This function is also evaluated in the browser. It removes only owned project keys.
 export function restoreTemporaryProject(id) {
- const p=window.__functionalPrevious;if(!p)return false;
+ const p=window.__functionalPrevious;if(!p)return null;
  let index=JSON.parse(localStorage.getItem('kernelcad_project_index')??'[]');index=index.filter(x=>x.id!==id);
  if(JSON.stringify(index)===JSON.stringify(JSON.parse(p.index??'[]'))){p.index===null?localStorage.removeItem('kernelcad_project_index'):localStorage.setItem('kernelcad_project_index',p.index);}else localStorage.setItem('kernelcad_project_index',JSON.stringify(index));
  for(const key of Object.keys(localStorage))if(key.includes(id))localStorage.removeItem(key);
@@ -39,6 +39,14 @@ export function restoreTemporaryProject(id) {
 
 // Poll/download GETs have no source; retain them without treating them as source POSTs.
 export function sourceRequestsMatch(rows, expected) {
- const posts=rows.filter(row=>row.method==='POST' && row.sourceSha256);
+ const posts=rows.filter(row=>row.method==='POST');
  return posts.length>0 && posts.every(row=>row.sourceSha256===expected);
+}
+
+export async function restoreCaptureProject(page, id, receipt) {
+ receipt.projectCleanup=false;
+ const restored=await page.evaluate(restoreTemporaryProject,id);
+ receipt.projectStateCreated=restored!==null;
+ if(restored!==true && restored!==null)throw Error('Temporary project restoration failed');
+ receipt.projectCleanup=true;
 }
