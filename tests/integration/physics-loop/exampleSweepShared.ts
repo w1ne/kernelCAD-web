@@ -202,7 +202,7 @@ export const HOSTED_IN_DEDICATED_FILE: ReadonlyMap<string, DedicatedExampleCover
   [
     'examples/gallery/hand-coffee-grinder.kcad.ts',
     {
-      testFile: 'tests/integration/examples/handCoffeeGrinder.test.ts',
+      testFile: 'tests/integration/examples/handCoffeeGrinder.validate.test.ts',
       coverage: 'run-validate-cli',
     },
   ],
