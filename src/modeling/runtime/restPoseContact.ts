@@ -16,8 +16,10 @@
 //      through it cross that mesh an odd number of times. The vote keeps a
 //      vendor mesh with a few open seams from reading as solid air (or
 //      solid everywhere). Shared volume above `REST_PENETRATION_CAP_MM3`
-//      (the uniform 20 mm³ contact-noise cap the pose sweep uses) is an
-//      error. Coincident faces, a pin in a clearance bore, and a part
+//      (the uniform 20 mm³ contact-noise cap the pose sweep uses) AND
+//      thicker than `REST_PENETRATION_DEPTH_MM` (0.3 mm) somewhere is an
+//      error. Thickness is the exact overlap of the two meshes' inside
+//      intervals along each axis ray, minimum over the three axes. Coincident faces, a pin in a clearance bore, and a part
 //      sitting in a pocket all share ~0 volume and pass.
 //
 //      This is mesh-based on purpose. OCCT booleans on polyhedral solids
@@ -49,6 +51,14 @@ export const REST_PENETRATION_CAP_MM3 = JOINT_CONTACT_NOISE_MM3;
 /** Largest rest-pose gap (mm) between the two parts of a mate. */
 export const REST_MATE_CONTACT_TOLERANCE_MM = JOINT_MESH_GAP_TOLERANCE_MM;
 
+/**
+ * Shared material thinner than this (mm) everywhere is a contact sliver,
+ * not a collision: tessellated coincident faces, a thread or gear-tooth
+ * flank in modelled contact, a press-fit skin. 0.3 mm is about one FDM
+ * line width and above the 0.05 mm analysis-mesh deflection on both sides.
+ */
+export const REST_PENETRATION_DEPTH_MM = 0.3;
+
 /** Voxel edge bounds (mm) and the grid size cap per pair. */
 const MIN_CELL_MM = 0.25;
 const MAX_CELLS_PER_PAIR = 96 * 96 * 96;
@@ -64,6 +74,8 @@ export interface RestPenetration {
   readonly a: string;
   readonly b: string;
   readonly volumeMm3: number;
+  /** Largest local thickness of the shared region (mm). */
+  readonly thicknessMm: number;
   /** World-space centre of the shared region. */
   readonly at: [number, number, number];
   /** Voxel edge used for the integral (mm). */
@@ -112,6 +124,7 @@ function castAxis(
   cell: number,
   dims: [number, number, number],
   votes: Uint8Array,
+  bounds?: { lo: Float32Array; hi: Float32Array },
 ): void {
   const u = ((k + 1) % 3) as 0 | 1 | 2;
   const v = ((k + 2) % 3) as 0 | 1 | 2;
@@ -163,7 +176,14 @@ function castAxis(
       for (let s = 0; s < nk; s++) {
         const pk = origin[k] + (s + 0.5) * cell;
         while (h < list.length && list[h] < pk) h++;
-        if ((h & 1) === 1) votes[i * stride[u] + j * stride[v] + s * stride[k]]++;
+        if ((h & 1) === 1) {
+          const idx = i * stride[u] + j * stride[v] + s * stride[k];
+          votes[idx]++;
+          if (bounds !== undefined) {
+            bounds.lo[idx] = list[h - 1];
+            bounds.hi[idx] = h < list.length ? list[h] : Infinity;
+          }
+        }
       }
     }
   }
@@ -173,24 +193,39 @@ function castAxis(
 export function meshOverlapVolume(
   a: WorldMesh,
   b: WorldMesh,
-): { volumeMm3: number; at: [number, number, number]; cellMm: number } {
+): { volumeMm3: number; thicknessMm: number; at: [number, number, number]; cellMm: number } {
   const lo: [number, number, number] = [0, 0, 0];
   const ext: [number, number, number] = [0, 0, 0];
   for (let k = 0; k < 3; k++) {
     lo[k] = Math.max(a.min[k], b.min[k]);
     ext[k] = Math.min(a.max[k], b.max[k]) - lo[k];
-    if (ext[k] <= 0) return { volumeMm3: 0, at: lo, cellMm: 0 };
+    if (ext[k] <= 0) return { volumeMm3: 0, thicknessMm: 0, at: lo, cellMm: 0 };
   }
   const cell = Math.max(MIN_CELL_MM, Math.cbrt((ext[0] * ext[1] * ext[2]) / MAX_CELLS_PER_PAIR));
   const dims = ext.map((e) => Math.max(1, Math.ceil(e / cell))) as [number, number, number];
   const total = dims[0] * dims[1] * dims[2];
   const votesA = new Uint8Array(total);
   const votesB = new Uint8Array(total);
+  // Local thickness of the shared region at each grid point: along each
+  // axis the exact overlap of the two inside-intervals through it (from
+  // the ray hits, not the voxels), minimum over the three axes. A thin
+  // contact sliver (thread flank, tooth flank, coincident tessellated
+  // faces) is thin along the axis closest to its normal however long it is.
+  const thick = new Float32Array(total).fill(Infinity);
+  const bA = { lo: new Float32Array(total), hi: new Float32Array(total) };
+  const bB = { lo: new Float32Array(total), hi: new Float32Array(total) };
   for (const k of [0, 1, 2] as const) {
-    castAxis(a, k, lo, cell, dims, votesA);
-    castAxis(b, k, lo, cell, dims, votesB);
+    bA.lo.fill(NaN); bB.lo.fill(NaN);
+    castAxis(a, k, lo, cell, dims, votesA, bA);
+    castAxis(b, k, lo, cell, dims, votesB, bB);
+    for (let idx = 0; idx < total; idx++) {
+      if (Number.isNaN(bA.lo[idx]) || Number.isNaN(bB.lo[idx])) continue;
+      const t = Math.min(bA.hi[idx], bB.hi[idx]) - Math.max(bA.lo[idx], bB.lo[idx]);
+      if (t < thick[idx]) thick[idx] = t;
+    }
   }
   let count = 0;
+  let depth = 0;
   const sum = [0, 0, 0];
   for (let x = 0; x < dims[0]; x++) {
     for (let y = 0; y < dims[1]; y++) {
@@ -198,6 +233,7 @@ export function meshOverlapVolume(
         const idx = x * dims[1] * dims[2] + y * dims[2] + z;
         if (votesA[idx] >= 2 && votesB[idx] >= 2) {
           count++;
+          if (Number.isFinite(thick[idx]) && thick[idx] > depth) depth = thick[idx];
           sum[0] += x; sum[1] += y; sum[2] += z;
         }
       }
@@ -206,7 +242,7 @@ export function meshOverlapVolume(
   const at: [number, number, number] = count === 0
     ? lo
     : [0, 1, 2].map((k) => lo[k] + (sum[k] / count + 0.5) * cell) as [number, number, number];
-  return { volumeMm3: count * cell * cell * cell, at, cellMm: cell };
+  return { volumeMm3: count * cell * cell * cell, thicknessMm: depth, at, cellMm: cell };
 }
 
 function boxesOverlap(a: WorldMesh, b: WorldMesh): boolean {
@@ -233,7 +269,7 @@ export function restPosePenetrations(
       const B = meshes[j];
       if (!boxesOverlap(A.mesh, B.mesh)) continue;
       const r = meshOverlapVolume(A.mesh, B.mesh);
-      if (r.volumeMm3 > capMm3) out.push({ a: A.name, b: B.name, ...r });
+      if (r.volumeMm3 > capMm3 && r.thicknessMm > REST_PENETRATION_DEPTH_MM) out.push({ a: A.name, b: B.name, ...r });
     }
   }
   return out;

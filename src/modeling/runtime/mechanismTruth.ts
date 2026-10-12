@@ -69,6 +69,7 @@ import { checkOrphanParts } from './mechanismOrphan';
 import {
   REST_MATE_CONTACT_TOLERANCE_MM,
   REST_PENETRATION_CAP_MM3,
+  REST_PENETRATION_DEPTH_MM,
   restPoseMateGaps,
   restPosePenetrations,
 } from './restPoseContact';
@@ -670,7 +671,7 @@ function checkRestPoseContact(arm: Assembly, scene: SceneBackend): CompilerDiagn
     out.push(makeFailure(
       'mechanism.rest-interpenetration',
       `Parts '${p.a}' and '${p.b}' interpenetrate by ${p.volumeMm3.toFixed(1)} mm³ at the rest pose ` +
-      `(cap ${REST_PENETRATION_CAP_MM3} mm³, shared region centred near [${at}] mm, ` +
+      `(${p.thicknessMm.toFixed(2)} mm thick; caps ${REST_PENETRATION_CAP_MM3} mm³ and ${REST_PENETRATION_DEPTH_MM} mm; shared region centred near [${at}] mm, ` +
       `${p.cellMm.toFixed(2)} mm voxels). Seated parts share faces, not volume.`,
     ));
   }

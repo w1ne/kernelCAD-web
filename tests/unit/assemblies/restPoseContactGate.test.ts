@@ -32,6 +32,22 @@ describe('rest-pose contact gate', () => {
     expect(meshOverlapVolume(a, touching).volumeMm3).toBe(0);
   });
 
+  it('passes a wide contact sliver thinner than 0.3 mm, fails a 0.6 mm one', async () => {
+    for (const [sink, broken] of [[0.2, false], [0.6, true]] as const) {
+      const kcad = kcadApi();
+      const arm = kcad.assembly(`sliver-${sink}`);
+      // 60 × 60 mm plates: 0.2 mm sink = 720 mm³ of skin, far over the
+      // volume cap, but only a contact sliver.
+      arm.part('lower', kcad.box(60, 60, 5))
+        .connector('m', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 5] } });
+      arm.part('upper', kcad.box(60, 60, 5).translate(0, 0, 5 - sink))
+        .connector('m', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 5] } });
+      arm.mate('fix', 'lower.m', 'upper.m', 'fastened');
+      const r = await checkMechanismTruth(arm, { sweepBudget: 0 });
+      expect(codes(r).includes('mechanism.rest-interpenetration')).toBe(broken);
+    }
+  });
+
   it('fails a mated link that passes through its parent, naming the pair, with the sweep skipped', async () => {
     const kcad = kcadApi();
     const arm = kcad.assembly('colliding-elbow');
