@@ -1074,7 +1074,15 @@ async function lowerAssemblySceneForPose(
   arm: Assembly,
   sample: SolvedSample,
 ): Promise<SceneBackend | undefined> {
-  const scene = await arm.solvedModel(sample.sample.poses, { validate: 'off' });
+  // The `solvedAssembly` lowerer needs a pose for every non-fixed v0.5
+  // joint (`arm.revolute(...)`); samples only name the mates they move, so
+  // stamp the rest at zero, as checkSweptCollision does.
+  const jointDefaults: Record<string, number | [number, number, number]> = {};
+  for (const j of arm.__joints()) {
+    if (j.kind === 'fixed') continue;
+    jointDefaults[j.name] = j.kind === 'ball' ? [0, 0, 0] : 0;
+  }
+  const scene = await arm.solvedModel({ ...jointDefaults, ...sample.sample.poses }, { validate: 'off' });
   const engine = new RecomputeEngine(createOcctLowerer(arm.__session()));
   const result = await engine.run(arm.__session().getRecords(), {
     paramTable: arm.__session().paramTable,
