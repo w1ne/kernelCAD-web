@@ -136,8 +136,14 @@ const joints: Joint[] = [
 const arm = assembly('so100-arm');
 const frames: Record<string, Frame> = { base: WORLD };
 
+// Printed links come from parts/sim-seated/: the vendor meshes with the
+// servo pockets and joint clearances cut exactly (parts/seat_meshes.py),
+// so no two solids share volume. Lower_Arm and the servos are vendor bytes.
+const SEATED = new Set(['Base', 'Rotation_Pitch', 'Upper_Arm', 'Wrist_Pitch_Roll', 'Fixed_Jaw', 'Moving_Jaw']);
+
 async function mesh(file: string, frame: Frame, allowOpen: boolean) {
-  const raw = await lib.fromSTL(`parts/sim/${file}.stl`, allowOpen ? { allowOpen: true } : {});
+  const dir = SEATED.has(file) ? 'sim-seated' : 'sim';
+  const raw = await lib.fromSTL(`parts/${dir}/${file}.stl`, allowOpen ? { allowOpen: true } : {});
   return place(raw.scale(1000), frame);
 }
 
@@ -221,4 +227,8 @@ animationView({
   ],
 });
 
+// `ignore` only silences the BREP boolean interference probe, which reads
+// polyhedral solids sewn from STL wrongly (base vs pan servo: 10,857 mm³
+// reported, 21 mm³ real). The mechanism gate's rest-pose contact check
+// measures every pair on the meshes and does not honour this list.
 return arm.solvedModel({}, { ignore: skipClash });

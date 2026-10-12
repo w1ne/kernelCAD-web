@@ -66,6 +66,12 @@ import { expandCoupledPoses } from '../mates/coupledPoses';
 import type { NumericPoses } from '../capture/forwardKinematics';
 import { parseConnectorRef, type MateRecord } from '../mates/mate';
 import { checkOrphanParts } from './mechanismOrphan';
+import {
+  REST_MATE_CONTACT_TOLERANCE_MM,
+  REST_PENETRATION_CAP_MM3,
+  restPoseMateGaps,
+  restPosePenetrations,
+} from './restPoseContact';
 import { assemblyToMjcf } from './mjcfExport';
 import { loadMujocoSession } from './mujocoSession';
 import {
@@ -342,6 +348,17 @@ export async function checkMechanismTruth(
   // an unverified sweep. P8 slice; closes the visual-mesh-gap hole MJCF
   // cannot see.
   failures.push(...(await checkJointMeshContinuityCriterion(arm, solved, loweredBase)));
+
+  // Criterion 9 (rest-pose contact) — the drawing as it paints must be
+  // physically consistent: no two solids share volume, and the two parts
+  // of every mate touch. Mesh-based and independent of the sweep budget,
+  // so a heavy assembly cannot pass as 'unverified' with links passing
+  // through each other. See `./restPoseContact`.
+  // Only mechanisms: a mate-less multi-part scene is independent bodies
+  // (a display layout, a car body with its glass), not a mechanism.
+  if (loweredBase.scene !== undefined && arm.__mates().length > 0) {
+    failures.push(...checkRestPoseContact(arm, loweredBase.scene));
+  }
 
   if (sweepSkipped) {
     // LOUD skip (T3): the over-budget skip used to emit ONLY a console.warn
@@ -640,6 +657,31 @@ async function getOrComputeBboxCorners(
   } catch {
     return undefined;
   }
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Criterion 9 — mechanism.rest-interpenetration / mechanism.mate-gap
+// ─────────────────────────────────────────────────────────────────────────
+
+function checkRestPoseContact(arm: Assembly, scene: SceneBackend): CompilerDiagnostic[] {
+  const out: CompilerDiagnostic[] = [];
+  for (const p of restPosePenetrations(scene)) {
+    const at = p.at.map((v) => v.toFixed(1)).join(', ');
+    out.push(makeFailure(
+      'mechanism.rest-interpenetration',
+      `Parts '${p.a}' and '${p.b}' interpenetrate by ${p.volumeMm3.toFixed(1)} mm³ at the rest pose ` +
+      `(cap ${REST_PENETRATION_CAP_MM3} mm³, shared region centred near [${at}] mm, ` +
+      `${p.cellMm.toFixed(2)} mm voxels). Seated parts share faces, not volume.`,
+    ));
+  }
+  for (const g of restPoseMateGaps(arm, scene)) {
+    out.push(makeFailure(
+      'mechanism.mate-gap',
+      `Mate '${g.mateName}': parts '${g.a}' and '${g.b}' are ${g.gapMm.toFixed(2)} mm apart at the rest pose ` +
+      `(tolerance ${REST_MATE_CONTACT_TOLERANCE_MM} mm). The mate is declared but the parts do not touch.`,
+    ));
+  }
+  return out;
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -1411,7 +1453,9 @@ function makeFailure(
     | 'mechanism.unstable-under-gravity'
     | 'mechanism.drops-on-release'
     | 'mechanism.joint-mesh-gap'
-    | 'mechanism.tendon-body-intersect',
+    | 'mechanism.tendon-body-intersect'
+    | 'mechanism.rest-interpenetration'
+    | 'mechanism.mate-gap',
   message: string,
 ): CompilerDiagnostic {
   return {

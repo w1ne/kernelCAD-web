@@ -112,4 +112,24 @@ export const MECHANISM_CODES = {
     group: 'mechanism',
     description: 'A balance tendon\'s routed polyline passes through the solid interior of a part that is neither one of its anchor parts nor a wrap-geom rail it routes around, at some sampled pose. Means the spring would visibly cut through structure.',
   },
+  // Rest-pose contact gate (`src/modeling/runtime/restPoseContact.ts`).
+  // Runs on every mechanism even when the pose sweep is over budget, so
+  // an assembly whose solids pass through each other as drawn, or whose
+  // mated parts never touch, is 'broken' rather than 'unverified'.
+  'mechanism.rest-interpenetration': {
+    hintTemplate:
+      "Two parts share solid volume at the rest pose, beyond the 20 mm³ contact-noise cap. Mated parts are not exempt: a seated joint is coincident faces or a pin in a clearance bore, both ~0 shared volume. Pocket the housing around the part it holds, shorten or move the overlapping feature, or re-place the part on its mate. solvedModel({ ignore }) does not silence this check.",
+    nextAction: { kind: 'fix-arg', field: 'partGeometry' },
+    defaultSeverity: 'error',
+    group: 'mechanism',
+    description: 'At the rest pose, two parts (mated, adjacent or unrelated) overlap by more than the uniform contact-noise volume cap, measured on their analysis meshes. Runs even when the articulated pose sweep is skipped for budget.',
+  },
+  'mechanism.mate-gap': {
+    hintTemplate:
+      "The two parts of a mate do not touch at the rest pose: their closest surfaces are farther apart than the 1 mm contact tolerance. Grow the geometry so the parts seat on each other (shaft into the link, flange onto the face), or move the part so the mate connectors sit on real contact surfaces.",
+    nextAction: { kind: 'fix-arg', field: 'partGeometry' },
+    defaultSeverity: 'error',
+    group: 'mechanism',
+    description: 'At the rest pose the two parts joined by a mate are separated by more than the contact tolerance — the joint is declared but nothing physically seats one part on the other.',
+  },
 } as const satisfies Record<`mechanism.${string}`, DiagnosticCodeSpec>;

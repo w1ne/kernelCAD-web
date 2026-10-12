@@ -259,6 +259,8 @@ const LEGACY_CODE_ORDER = [
   'mechanism.unstable-under-gravity',
   'mechanism.drops-on-release',
   'mechanism.tendon-body-intersect',
+  'mechanism.rest-interpenetration',
+  'mechanism.mate-gap',
   'assembly.visual.review-check-failed',
   'assembly.visual.review-evidence-weak',
   'assembly.visual.review-incomplete',
