@@ -68,6 +68,9 @@ const crankDeg = param('crankDeg', 0, {
   max: 180,
   description: 'Crank / shaft rotation (deg).',
 });
+const cutaway = param('cutaway', false, {
+  description: 'Half-section: remove the front half (y < 0) of the housing, burr ring and bearings as real solid cuts, so the shaft, both bearings and the burr gap show.',
+});
 const explode = param('explode', 0, {
   min: 0,
   max: 1,
@@ -94,11 +97,15 @@ const WALL = 2.5;              // body tube wall (6061 tube, CNC turned)
 const CH = 0.6;                // default edge chamfer
 
 // --- Palette (finish tokens + tints) -----------------------------------------
-const ALU = '#c3c8cd';
+const ALU = '#b7bcc2'; // bead-blasted clear-anodised 6061 (matte, not mirror)
 const ANOD = '#25282c';
 const WALNUT = '#5a3a22';
 
 // --- Helpers -------------------------------------------------------------------
+// Real solid half-section (opaque cut faces), unlike a render clipping plane.
+function cut<T extends ReturnType<typeof box>>(shape: T): T {
+  return (cutaway.value ? shape.subtract(box(400, 200, 700).translate(-200, -200, -100)) : shape) as T;
+}
 type E = Editable<number>;
 const plus = (x: E, d: number): E => (typeof x === 'number' ? x + d : x.add(d));
 /** Solid disc r x h from z0 (revolved, so it reads as a turned land, not a drilled hole). */
@@ -168,7 +175,7 @@ function ballBearing(z0: E) {
   const nBalls = Math.max(6, Math.floor((2 * Math.PI * rp) / (rBall * 2 * 1.45)));
   const balls = sphere(rBall).translate(rp, 0, 0).translate(0, 0, zMid).patternCircular({ count: nBalls, axis: [0, 0, 1] });
   const cage = ring(rp - rBall * 0.3, rp + rBall * 0.3, plus(zMid, -rBall * 0.35), plus(zMid, rBall * 0.35), 0.05);
-  return inner.union(outer).union(balls.union(cage)).finish('steel');
+  return cut(inner.union(outer).union(balls.union(cage))).finish('steel');
 }
 
 // --- Derived stations ----------------------------------------------------------
@@ -183,7 +190,7 @@ const burrH = 22;
 const drop = grindSetting.negate();
 
 // --- Catch cup: spigot slips into the body bore; chamfers meet as a V seam ----
-const cup = revolvePts([
+const cup = cut(revolvePts([
   [0, 0],
   [R.subtract(1.5), 0],
   [R, 1.5],
@@ -197,6 +204,7 @@ const cup = revolvePts([
   [Ri.subtract(4.2), 3],
   [0, 3],
 ])
+  )
   .finish('anodized-black')
   .translate(0, 0, ex(-140));
 
@@ -223,7 +231,7 @@ for (let i = 1; i < knurlGroovePts.length; i++) {
   grooves = grooves.union(revolvePts([[R.subtract(0.1), zg], [R.add(1), plus(zg, -1.1)], [R.add(1), plus(zg, 1.1)]]));
 }
 knurl = knurl.subtract(grooves);
-const bodyTube = revolvePts([
+const bodyTube = cut(revolvePts([
   [Ri, zCupTop],
   [R.subtract(CH), zCupTop],
   [R, zCupTop + CH],
@@ -239,7 +247,8 @@ const bodyTube = revolvePts([
   [Ri, zTop.subtract(0.5)],
 ])
   .union(knurl)
-  .finish('aluminium-brushed', { color: ALU })
+  )
+  .finish('anodized', { color: ALU })
   .translate(ex(-85), 0, 0);
 
 // --- Lower bearing carrier: hub + 3 spokes + rim; grounds fall between spokes ---
@@ -266,19 +275,21 @@ const spoke = extrudePolygon(
   ],
   W - 1,
 ).translate(0, 0, carrierZ0 + 1);
-const lowerCarrier = carrierHub
+const lowerCarrier = cut(carrierHub
   .union(carrierRim)
   .union(spoke.patternCircular({ count: 3, axis: [0, 0, 1] }))
+  )
   .finish('anodized', { color: '#3a3f46' })
   .translate(0, 0, ex(-55));
 
 // Detent click ring under the carrier hub: 12 V notches the nut ridges click into.
-const clickRing = ring(rShaft + 0.6, rShaft + 5.5, carrierZ0 - 1, carrierZ0, 0.2)
+const clickRing = cut(ring(rShaft + 0.6, rShaft + 5.5, carrierZ0 - 1, carrierZ0, 0.2)
   .subtract(
     box(1.4, 4.4, 0.9, true)
       .rotate([1, 0, 0], 0)
       .translate(rShaft + 3.2, 0, carrierZ0 - 1)
       .patternCircular({ count: 12, axis: [0, 0, 1] }),
+  )
   )
   .finish('stainless')
   .translate(0, 0, ex(-75));
@@ -296,10 +307,11 @@ const outerBurrBlank = revolvePts([
   [Rb.multiply(0.82), zBurr + burrH - 0.8],
 ]);
 const outerCutter = extrudePolygon(toothStar(24, Rb.add(1.3), Rb.multiply(0.6), 0.32), burrH + 2, { twistAngle: -24 }).translate(0, 0, zBurr - 1);
-const outerBurr = outerBurrBlank.subtract(outerCutter).finish('steel', { color: '#9aa3ab' }).translate(0, 0, ex(40));
+const outerBurr = cut(outerBurrBlank.subtract(outerCutter))
+  .finish('steel', { color: '#9aa3ab' }).translate(0, 0, ex(40));
 
 // --- Lid: bean-loading cap that carries the TOP bearing --------------------------
-const lid = revolvePts([
+const lid = cut(revolvePts([
   [rBrgOut, zTop.subtract(W + 1)],
   [rBrgOut + 2.6, zTop.subtract(W + 1)],
   [rBrgOut + 3.2, zTop.subtract(W + 0.4)],
@@ -319,6 +331,7 @@ const lid = revolvePts([
   [rBrgOut - 1.2, zTop],
   [rBrgOut, zTop],
 ])
+  )
   .finish('anodized-black')
   .translate(0, 0, ex(150));
 const topBearing = ballBearing(zTop.subtract(W)).translate(0, 0, ex(125));
@@ -468,7 +481,7 @@ const crankArm = armHub
   .union(armBar)
   .subtract(hexPrism(zArm, hexLen, hexCircR + FIT_HEX_SLIP))
   .subtract(disc(2.6, armT).translate(crankLength, 0, zArm.add(hexLen - 1 - armT)))
-  .finish('aluminium', { color: '#d4d8dc' })
+  .finish('anodized', { color: '#cfd3d7' })
   .translate(0, 0, drop.add(ex(185)));
 const zArmTop = zArm.add(hexLen - 1);
 const screw = revolvePts([
