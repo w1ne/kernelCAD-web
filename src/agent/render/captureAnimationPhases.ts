@@ -239,7 +239,7 @@ export async function verifyPosesPhase(
     v = await verifyAnimation(
       model,
       metadata.tracks,
-      sampleTimesMs !== undefined ? { sampleTimesMs } : {},
+      { sampleTimesMs, onProgress },
     );
   } catch (e) {
     return {
