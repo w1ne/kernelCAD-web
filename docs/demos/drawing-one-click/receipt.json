@@ -1,0 +1,79 @@
+{
+  "checkedAt": "2026-10-12T08:34:19.526Z",
+  "environment": "LOCAL Studio with hosted mesh and export API; bounded localhost proxy for API CORS; actual UI recording; illustrative model",
+  "url": "http://127.0.0.1:5248/p/12HP6xje?version=2&view=studio",
+  "cdpPort": 9444,
+  "viewport": {
+    "width": 1440,
+    "height": 1100
+  },
+  "samples": [
+    1.64,
+    3.268,
+    4.55,
+    6.52,
+    7.975,
+    9.808,
+    11.454,
+    12.978,
+    14.632,
+    15.946,
+    17.251,
+    18.788,
+    20.544,
+    22.068,
+    23.577,
+    25.299,
+    26.948,
+    28.695,
+    30.392,
+    32.264,
+    34.445,
+    36.863
+  ],
+  "stages": [
+    {
+      "name": "01-export",
+      "seconds": 0.001,
+      "text": "Drawing review \u2014 mounting plate\nModel page\nPUBLIC BY LINK\n\u25cf LIVE\nRemix\nReport\nShare\nExport STL\nSign in\nXY\nXZ\nYZ\nXY\nYZ\nXZ\nX\nY\nZ\nOrder \u00b7 $22\nCode\nChecks\nExport\nScene\n\nDownload geometry or a dimensioned drawing.\n\nSTL\nMesh; printable / preview\nSTEP\nBREP; CAD interchange\nDXF\nPlanar profile; laser / waterjet\n3MF\nSlicer mesh with per-part colors\nGLB\nWeb / AR viewer; PBR materials\nDrawing (PDF)\nDimensioned A3 engineering drawing\nDrawing settings\nReady\nNo diagnostics\n1 body\n0 selected\ninterferences: 0\nShaded + edges\nSplit\nv0.17.0\n-\nTanStack Router"
+    },
+    {
+      "name": "02-downloaded",
+      "seconds": 7.625,
+      "text": "Drawing review \u2014 mounting plate\nModel page\nPUBLIC BY LINK\n\u25cf LIVE\nRemix\nReport\nShare\nExport STL\nSign in\nXY\nXZ\nYZ\nXY\nYZ\nXZ\nX\nY\nZ\nOrder \u00b7 $22\nCode\nChecks\nExport\nScene\n\nDownload geometry or a dimensioned drawing.\n\nSTL\nMesh; printable / preview\nSTEP\nBREP; CAD interchange\nDXF\nPlanar profile; laser / waterjet\n3MF\nSlicer mesh with per-part colors\nGLB\nWeb / AR viewer; PBR materials\nDrawing (PDF)\nDimensioned A3 engineering drawing\nDrawing settings\nReady\nNo diagnostics\n1 body\n0 selected\ninterferences: 0\nShaded + edges\nSplit\nv0.17.0\n-\nTanStack Router"
+    },
+    {
+      "name": "03-settings",
+      "seconds": 11.48,
+      "text": "Drawing settings\n\nOptional preview \u2014 download anytime\n\nGenerate the sheet to review dimensions and callouts.\n\nDrafting profile\nGeneral review\nMachining\nSheet metal\nDimension style\nBaseline from datums\nChain between features\nSymmetry and pitch\nProfile settings and datums\nProfile name\nSave profile\n\nReview dimensions and datum selection before release.\n\nAnnotations\nGenerate preview\nDownload PDF"
+    },
+    {
+      "name": "04-preview",
+      "seconds": 16.755,
+      "text": "Drawing settings\n\nPreview up to date\n\n18 placed \u00b7 0 crowded \u00b7 0 hidden\n\nDrafting profile\nGeneral review\nMachining\nSheet metal\nDimension style\nBaseline from datums\nChain between features\nSymmetry and pitch\nProfile settings and datums\nProfile name\nSave profile\n\nReview dimensions and datum selection before release.\n\nAnnotations\n12\ntop \u00b7 auto\n50\ntop \u00b7 auto\n88\ntop \u00b7 auto\n12\ntop \u00b7 auto\n35\ntop \u00b7 auto\n58\ntop \u00b7 auto\n70\ntop \u00b7 auto\n100\nfront \u00b7 auto\n12\nfront \u00b7 auto\n4\u00d7 \u23009 THRU | \u2316 \u23000.2 A B C\ntop \u00b7 auto\n\u230030 THRU | \u2316 \u23000.1 A B C\ntop \u00b7 auto\ndatum A\nfront \u00b7 auto\ndatum B\ntop \u00b7 auto\ndatum C\ntop \u00b7 auto\n\u23e5 0.4\nfront \u00b7 auto\n4\u00d7 R6\ntop \u00b7 auto\n2\u00d7 0.5 \u00d7 45\u00b0\nleft \u00b7 auto\n2\u00d7 0.5 \u00d7 45\u00b0\nfront \u00b7 auto\nRefresh preview\nDownload PDF"
+    },
+    {
+      "name": "05-edited",
+      "seconds": 23.11,
+      "text": "Drawing settings\n\nPreview up to date\n\n18 placed \u00b7 0 crowded \u00b7 0 hidden\n\nDrafting profile\nGeneral review\nMachining\nSheet metal\nDimension style\nBaseline from datums\nChain between features\nSymmetry and pitch\nProfile settings and datums\nProfile name\nSave profile\n\nReview dimensions and datum selection before release.\n\nAnnotations\n12\ntop \u00b7 auto\n50\ntop \u00b7 auto\n88\ntop \u00b7 auto\n12\ntop \u00b7 auto\n35\ntop \u00b7 auto\n58\ntop \u00b7 auto\n70\ntop \u00b7 auto\n100\nfront \u00b7 auto\n12\nfront \u00b7 auto\n4 \u00d7 \u00d89 THRU \u2014 M8 CLEARANCE | \u2316 \u23000.2 A B C\ntop \u00b7 auto\n\u230030 THRU | \u2316 \u23000.1 A B C\ntop \u00b7 auto\ndatum A\nfront \u00b7 auto\ndatum B\ntop \u00b7 auto\ndatum C\ntop \u00b7 auto\n\u23e5 0.4\nfront \u00b7 auto\n4\u00d7 R6\ntop \u00b7 auto\n2\u00d7 0.5 \u00d7 45\u00b0\nleft \u00b7 auto\n2\u00d7 0.5 \u00d7 45\u00b0\nfront \u00b7 auto\n Hide annotation\nAnnotation text\nAnnotation view\nfront\ntop\nleft\niso\nExtra offset (sheet mm)\nReset annotation\nRefresh preview\nDownload PDF"
+    },
+    {
+      "name": "06-downloaded",
+      "seconds": 31.189,
+      "text": "Drawing settings\n\nPreview up to date\n\n18 placed \u00b7 0 crowded \u00b7 0 hidden\n\nDrafting profile\nGeneral review\nMachining\nSheet metal\nDimension style\nBaseline from datums\nChain between features\nSymmetry and pitch\nProfile settings and datums\nProfile name\nSave profile\n\nReview dimensions and datum selection before release.\n\nAnnotations\n12\ntop \u00b7 auto\n50\ntop \u00b7 auto\n88\ntop \u00b7 auto\n12\ntop \u00b7 auto\n35\ntop \u00b7 auto\n58\ntop \u00b7 auto\n70\ntop \u00b7 auto\n100\nfront \u00b7 auto\n12\nfront \u00b7 auto\n4 \u00d7 \u00d89 THRU \u2014 M8 CLEARANCE | \u2316 \u23000.2 A B C\ntop \u00b7 auto\n\u230030 THRU | \u2316 \u23000.1 A B C\ntop \u00b7 auto\ndatum A\nfront \u00b7 auto\ndatum B\ntop \u00b7 auto\ndatum C\ntop \u00b7 auto\n\u23e5 0.4\nfront \u00b7 auto\n4\u00d7 R6\ntop \u00b7 auto\n2\u00d7 0.5 \u00d7 45\u00b0\nleft \u00b7 auto\n2\u00d7 0.5 \u00d7 45\u00b0\nfront \u00b7 auto\n Hide annotation\nAnnotation text\nAnnotation view\nfront\ntop\nleft\niso\nExtra offset (sheet mm)\nReset annotation\nRefresh preview\nDownload PDF"
+    }
+  ],
+  "pdf": [
+    {
+      "name": "one-click-drawing.pdf",
+      "bytes": 12550,
+      "sha256": "e489233745088a9b5f7135103235c269897b27146896fcb41075b08ba6561f1b"
+    },
+    {
+      "name": "edited-drawing.pdf",
+      "bytes": 12566,
+      "sha256": "f280872ff9276b13b82e54fb82586e05104e195098e3cc8718495177d8aafefb"
+    }
+  ],
+  "ownedTarget": "565E409433E84D1CD25A00373A964D15"
+}
