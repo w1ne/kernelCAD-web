@@ -60,7 +60,7 @@ export const MECHANISM_CODES = {
   // — "could not verify the pose sweep" is not "broken".
   'mechanism.unverified-budget-exceeded': {
     hintTemplate:
-      "The articulated collision/pose sweep was skipped because its estimated work exceeded the budget, so the mechanism is not certified collision-free across its travel. Rest-pose joint-mesh continuity still ran: a link that does not meet its body fails as mechanism.joint-mesh-gap. Verify a tractable subset of the assembly, reduce the part/pose count, or pass a larger sweepBudget to force a full sweep.",
+      "The articulated collision/pose sweep was skipped because its estimated work exceeded the budget, so the mechanism is 'unverified' (NOT certified collision-free). Verify a tractable subset of the assembly, reduce the part/pose count, or pass a larger sweepBudget to force a full sweep. The cheap criteria (orphan-part, fastened-rigidity) still ran.",
     nextAction: { kind: 'inspect-message' },
     defaultSeverity: 'warn',
     group: 'mechanism',
@@ -68,7 +68,7 @@ export const MECHANISM_CODES = {
   },
   'mechanism.joint-mesh-gap': {
     hintTemplate:
-      'Extend the parent body geometry so its OCCT solid reaches the joint origin at rest pose. Most commonly: increase the height of the column / boss that hosts the joint, or move the part-local connector origin onto an actual face/edge of the body. A pivot deliberately in open space (annular rim seat, spindle riding in the bore of a fastened block) passes when the mated rigid groups maintain bearing contact within tolerance near the joint axis. A fingertip pinch or a box grazing the next link far from that axis does not count.',
+      'Extend the parent body geometry so its OCCT solid reaches the joint origin at rest pose. Most commonly: increase the height of the column / boss that hosts the joint, or move the part-local connector origin onto an actual face/edge of the body. A pivot deliberately in open space (annular rim seat, spindle riding in the bore of a fastened block) passes when the mated rigid groups maintain bearing contact within tolerance somewhere away from the axis.',
     nextAction: { kind: 'fix-arg', field: 'partGeometry' },
     defaultSeverity: 'error',
     group: 'mechanism',
