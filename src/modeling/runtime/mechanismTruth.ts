@@ -671,8 +671,8 @@ function checkRestPoseContact(arm: Assembly, scene: SceneBackend): CompilerDiagn
     out.push(makeFailure(
       'mechanism.rest-interpenetration',
       `Parts '${p.a}' and '${p.b}' interpenetrate by ${p.volumeMm3.toFixed(1)} mm³ at the rest pose ` +
-      `(${p.thicknessMm.toFixed(2)} mm thick; caps ${REST_PENETRATION_CAP_MM3} mm³ and ${REST_PENETRATION_DEPTH_MM} mm; shared region centred near [${at}] mm, ` +
-      `${p.cellMm.toFixed(2)} mm voxels). Seated parts share faces, not volume.`,
+      `(${Number.isFinite(p.thicknessMm) ? `${p.thicknessMm.toFixed(2)} mm thick` : 'BREP boolean, open tessellation'}; caps ${REST_PENETRATION_CAP_MM3} mm³ and ${REST_PENETRATION_DEPTH_MM} mm; shared region centred near [${at}] mm, ` +
+      `${p.cellMm > 0 ? `${p.cellMm.toFixed(2)} mm voxels` : 'no voxels'}). Seated parts share faces, not volume.`,
     ));
   }
   for (const g of restPoseMateGaps(arm, scene)) {

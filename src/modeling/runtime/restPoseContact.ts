@@ -64,6 +64,8 @@ const MIN_CELL_MM = 0.25;
 const MAX_CELLS_PER_PAIR = 96 * 96 * 96;
 
 export interface WorldMesh {
+  /** Mesh volume agrees with the BREP volume (the tessellation is closed). */
+  readonly closed: boolean;
   readonly positions: Float64Array;
   readonly indices: Uint32Array;
   readonly min: [number, number, number];
@@ -109,7 +111,26 @@ export function worldMesh(shape: OcctBackend, worldTransform: Transform): WorldM
       if (p[k] > max[k]) max[k] = p[k];
     }
   }
-  return { positions, indices: mesh.indices, min, max };
+  // Divergence-theorem volume of the triangles against the BREP volume. A
+  // face the mesher dropped (complex toothed faces sometimes do) leaves a
+  // hole that ray parity would read as solid; such a part is measured with
+  // the BREP boolean instead.
+  let six = 0;
+  const I = mesh.indices;
+  for (let t = 0; t < I.length; t += 3) {
+    const a = 3 * I[t], b = 3 * I[t + 1], c = 3 * I[t + 2];
+    six += positions[a] * (positions[b + 1] * positions[c + 2] - positions[b + 2] * positions[c + 1])
+      - positions[a + 1] * (positions[b] * positions[c + 2] - positions[b + 2] * positions[c])
+      + positions[a + 2] * (positions[b] * positions[c + 1] - positions[b + 1] * positions[c]);
+  }
+  let brep = NaN;
+  try {
+    brep = shape.volume();
+  } catch {
+    // keep NaN: treated as not closed
+  }
+  const closed = Number.isFinite(brep) && Math.abs(Math.abs(six / 6) - Math.abs(brep)) <= 0.005 * Math.abs(brep) + 1;
+  return { closed, positions, indices: mesh.indices, min, max };
 }
 
 /**
@@ -252,15 +273,33 @@ function boxesOverlap(a: WorldMesh, b: WorldMesh): boolean {
   return true;
 }
 
+/** BREP common volume, for a part whose tessellation is not closed. No
+ *  thickness is available, so the overlap counts as thick. */
+function brepOverlap(
+  a: SceneBackend['parts'][number],
+  b: SceneBackend['parts'][number],
+  ma: WorldMesh,
+  mb: WorldMesh,
+): { volumeMm3: number; thicknessMm: number; at: [number, number, number]; cellMm: number } {
+  const at = [0, 1, 2].map((k) => (Math.max(ma.min[k], mb.min[k]) + Math.min(ma.max[k], mb.max[k])) / 2) as [number, number, number];
+  try {
+    const wa = (a.shape as OcctBackend).clone().applyTransform(a.worldTransform);
+    const wb = (b.shape as OcctBackend).clone().applyTransform(b.worldTransform);
+    return { volumeMm3: wa.intersectionVolume(wb), thicknessMm: Infinity, at, cellMm: 0 };
+  } catch {
+    return { volumeMm3: 0, thicknessMm: 0, at, cellMm: 0 };
+  }
+}
+
 /** Every part pair sharing more than `capMm3` of volume at rest. */
 export function restPosePenetrations(
   scene: SceneBackend,
   capMm3: number = REST_PENETRATION_CAP_MM3,
 ): RestPenetration[] {
-  const meshes: { name: string; mesh: WorldMesh }[] = [];
+  const meshes: { name: string; mesh: WorldMesh; part: SceneBackend['parts'][number] }[] = [];
   for (const p of scene.parts) {
     const mesh = worldMesh(p.shape as OcctBackend, p.worldTransform);
-    if (mesh !== undefined) meshes.push({ name: p.name, mesh });
+    if (mesh !== undefined) meshes.push({ name: p.name, mesh, part: p });
   }
   const out: RestPenetration[] = [];
   for (let i = 0; i < meshes.length; i++) {
@@ -268,7 +307,9 @@ export function restPosePenetrations(
       const A = meshes[i];
       const B = meshes[j];
       if (!boxesOverlap(A.mesh, B.mesh)) continue;
-      const r = meshOverlapVolume(A.mesh, B.mesh);
+      const r = A.mesh.closed && B.mesh.closed
+        ? meshOverlapVolume(A.mesh, B.mesh)
+        : brepOverlap(A.part, B.part, A.mesh, B.mesh);
       if (r.volumeMm3 > capMm3 && r.thicknessMm > REST_PENETRATION_DEPTH_MM) out.push({ a: A.name, b: B.name, ...r });
     }
   }

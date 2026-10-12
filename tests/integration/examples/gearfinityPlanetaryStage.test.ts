@@ -68,9 +68,10 @@ describe('Gearfinity-inspired planetary stage gallery example', () => {
         'planet-1-orbit-spin',
         'planet-2-orbit-spin',
         'planet-3-orbit-spin',
-        'fan-output-spin',
       ]),
     );
+    // The fan rides the output shaft (fastened), not a joint to the ring.
+    expect(scene.mates?.find((mate) => mate.name === 'fan-on-output-shaft')?.type).toBe('fastened');
     expect(scene.part('output-fan-wheel').connectors?.some((connector) => connector.name === 'blade-tip')).toBe(true);
   }, 300_000);
 
