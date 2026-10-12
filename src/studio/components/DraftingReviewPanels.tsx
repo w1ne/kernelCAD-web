@@ -4,9 +4,10 @@ import type { DraftingReviewState } from './useDraftingReview';
 import { BUTTON, INPUT } from './draftingReviewStyles';
 
 export function DrawingPreviewPane({ state }: { state: DraftingReviewState }) {
-  const { stale, drawing: { preview, previewUrl }, annotations: { missing } } = state;
+  const { stale, resetSourceChoices, drawing: { preview, previewUrl }, annotations: { missing } } = state;
   return <div className="flex min-h-[260px] flex-col gap-3 bg-surface-2 p-3">
-    {stale && <p role="status" className="text-ui text-warn">Source changed. Saved annotation and datum overrides were withheld; review the new drawing.</p>}
+    {stale && <div className="flex flex-col gap-2"><p role="status" className="text-ui text-warn">Source changed. Saved annotation, datum and decision overrides were withheld; review the new drawing.</p>
+      <button type="button" className={`${BUTTON} self-start`} onClick={resetSourceChoices}>Reset source-bound choices</button></div>}
     {missing.length > 0 && <p role="status" className="text-ui text-warn">Overrides no longer match: {missing.join(', ')}. Reset those overrides before release.</p>}
     {previewUrl ? <img src={previewUrl} alt="Engineering drawing preview" className="w-full bg-white" />
       : <p className="my-auto text-center text-ui text-fg-3">Generate the sheet to review dimensions and callouts.</p>}

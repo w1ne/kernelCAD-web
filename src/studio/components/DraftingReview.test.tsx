@@ -18,6 +18,19 @@ beforeEach(() => {
 afterEach(() => { cleanup(); vi.clearAllMocks(); vi.unstubAllGlobals(); });
 
 describe('drafting review', () => {
+  it('blocks advanced reviewed export for incomplete authoritative coverage while ordinary PDF works', async () => {
+    vi.mocked(exporter.previewDrawingViaServer).mockResolvedValueOnce({ svg: '<svg/>', diagnostics: [], drawingReport: { ...report,
+      review: { status: 'incomplete', requirements: [], decisions: [], criticalCount: 2, coveredCriticalCount: 1, decisionCount: 0, unresolvedDecisionCount: 0 } } });
+    render(<DraftingReview code="model" onChange={() => {}} onClose={() => {}} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Generate preview' }));
+    await screen.findByText('1/2 critical covered · 0 unresolved decisions');
+    expect((screen.getByRole('button', { name: 'Mark reviewed' }) as HTMLButtonElement).disabled).toBe(true);
+    expect((screen.getByRole('button', { name: 'Export reviewed PDF' }) as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(screen.getByRole('button', { name: 'Download PDF' }));
+    await waitFor(() => expect(exporter.downloadBlob).toHaveBeenCalledOnce());
+    expect(vi.mocked(exporter.exportViaServer).mock.calls[0][2]?.drawingOptions).not.toHaveProperty('requireCompleteReview');
+  });
+
   it('edits an authored dimension primary label without copying its tolerance suffix', async () => {
     vi.mocked(exporter.previewDrawingViaServer).mockResolvedValueOnce({ svg: '<svg/>', diagnostics: [], drawingReport: { ...report,
       annotations: [{ ...report.annotations[0], id: 'declared:width', source: 'authored', kind: 'linear', text: '80 +0.1/−0.1', primaryText: '80' }] } });
