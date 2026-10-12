@@ -98,7 +98,6 @@ const CH = 0.6;                // default edge chamfer
 
 // --- Palette (finish tokens + tints) -----------------------------------------
 const ALU = '#b7bcc2'; // bead-blasted clear-anodised 6061 (matte, not mirror)
-const ANOD = '#25282c';
 const WALNUT = '#5a3a22';
 
 // --- Helpers -------------------------------------------------------------------
