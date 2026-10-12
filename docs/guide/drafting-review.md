@@ -11,7 +11,7 @@ Click **Drawing (PDF)** to download your drawing. Want a different layout or lab
 
 [Open the mounting plate in Studio](https://app.kernelcad.com/p/12HP6xje?version=2&view=studio), or use your own part. In the right-hand **Export** tab, click **Drawing (PDF)**. Your PDF downloads directly.
 
-![Studio Drawing settings with the mounting plate preview and dimension-style selector](../../site/blog/drafting-review/studio-preview.png "Optional settings: the sheet and its controls, side by side.")
+![Studio Drawing settings with the mounting plate preview and dimension-style selector](../../site/blog/drafting-review/studio-settings-preview.png "Optional settings: the sheet and its controls, side by side.")
 
 ## 2. Choose a style
 
@@ -29,7 +29,7 @@ In **Drawing settings**, click **Generate preview**. Use **Dimension style**, th
 
 Click a label in **Annotations**. Edit **Annotation text**, use **Extra offset (sheet mm)** to give it more room, or tick **Hide annotation**. Click **Refresh preview** to see the change.
 
-![Drawing settings after editing the hole label and setting its extra offset to 8 mm](../../site/blog/drafting-review/studio-edited.png "The hole label has been edited and moved away from the part.")
+![Drawing settings after editing the hole label and setting its extra offset to 8 mm](../../site/blog/drafting-review/studio-settings-edited.png "The hole label has been edited and moved away from the part.")
 
 ## 4. Download your changes
 
@@ -39,4 +39,4 @@ Want the same paper size and style next time? Enter a **Profile name** and click
 
 Using an AI assistant? Ask: “Export this mounting plate as a PDF drawing with baseline dimensions.” Your assistant returns a PDF download link through MCP.
 
-[Watch the Studio walkthrough](/blog/drafting-review/walkthrough.mp4). The video and Studio screenshots show a local walkthrough. These example parts have not been manufactured or tested.
+[Watch the Studio walkthrough](/blog/drafting-review/one-click.mp4). The video and Studio screenshots show a local walkthrough. These example parts have not been manufactured or tested.

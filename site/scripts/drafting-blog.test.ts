@@ -20,8 +20,8 @@ describe('drafting guide in the shared blog pipeline', () => {
     for (const name of ['mounting-plate.kcad.ts', 'bearing-mount.kcad.ts']) {
       expect(readFileSync(resolve(`site/blog/drafting-review/${name}`), 'utf8')).toBe(readFileSync(resolve(`examples/drafting-review/${name}`), 'utf8'));
     }
-    expect(html).toContain('studio-preview.png');
-    expect(html).toContain('studio-edited.png');
+    expect(html).toContain('studio-settings-preview.png');
+    expect(html).toContain('studio-settings-edited.png');
     expect(html).toContain('Generate preview');
     expect(html).toContain('Refresh preview');
     expect(html).toContain('Download PDF');
@@ -34,8 +34,8 @@ describe('drafting guide in the shared blog pipeline', () => {
     expect(html).toContain('Drawing settings');
     expect(html).not.toMatch(/<link rel="preload"[^>]+\.png/);
     expect(html).not.toContain('<video');
-    expect(html).toContain('href="/blog/drafting-review/walkthrough.mp4"');
-    expect(readFileSync(resolve('site/blog/drafting-review/walkthrough.mp4'))).toEqual(readFileSync(resolve('docs/demos/drawing-one-click/demo.mp4')));
+    expect(html).toContain('href="/blog/drafting-review/one-click.mp4"');
+    expect(readFileSync(resolve('site/blog/drafting-review/one-click.mp4'))).toEqual(readFileSync(resolve('docs/demos/drawing-one-click/demo.mp4')));
     expect(build.posts[0].images).toHaveLength(5);
     expect(build.posts[0].images.every((image) => image.inRepo && image.underSite)).toBe(true);
     const index = build.files.find((file) => file.path === 'site/blog/index.html')!.html;
