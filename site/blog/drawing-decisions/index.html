@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light" />
+  <meta name="description" content="Record the intent and provenance of an illustrative bearing-seat decision, refresh its review, and export the measured result." />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Keep engineering decisions beside the drawing" />
+  <meta property="og:description" content="Record the intent and provenance of an illustrative bearing-seat decision, refresh its review, and export the measured result." />
+  <meta property="og:image" content="https://kernelcad.com/blog/drawing-decisions/bearing-pending.png" />
+  <meta property="og:url" content="https://kernelcad.com/blog/drawing-decisions/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Keep engineering decisions beside the drawing" />
+  <meta name="twitter:description" content="Record the intent and provenance of an illustrative bearing-seat decision, refresh its review, and export the measured result." />
+  <meta name="twitter:image" content="https://kernelcad.com/blog/drawing-decisions/bearing-pending.png" />
+  <link rel="canonical" href="https://kernelcad.com/blog/drawing-decisions/" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,500;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/style.css" />
+  <title>Keep engineering decisions beside the drawing</title>
+  <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "e5f5f4c6464f456d8f5376411e77f545"}'></script>
+  <style>
+    .legal { max-width: 760px; margin: 0 auto; padding: 1rem 0 4rem; }
+    .legal h1 { font-family: 'Source Serif 4', serif; font-size: 2.2rem; line-height: 1.2; margin: 1.5rem 0 0.25rem; }
+    .legal .effective { color: var(--ink-faint, #8a8475); font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; margin-bottom: 2rem; }
+    .legal h2 { font-family: 'Source Serif 4', serif; font-size: 1.35rem; margin: 2.2rem 0 0.5rem; }
+    .legal p, .legal li { font-family: 'Inter', sans-serif; line-height: 1.65; color: var(--ink-soft, #3a3a3a); }
+    .legal ul { padding-left: 1.25rem; }
+    .legal code { font-family: 'JetBrains Mono', monospace; font-size: 0.88em; }
+    .legal a { color: var(--blueprint, #2f6df0); }
+    .legal strong { color: var(--ink, #1a1a1a); }
+    .legal .lede { font-size: 1.1rem; color: var(--ink); }
+    .legal figure { margin: 1.5rem 0; }
+    .legal figure img { display: block; width: 100%; height: auto; border: 1px solid var(--rule); border-radius: 6px; background: var(--paper); }
+    .legal figcaption { font-family: 'Inter', sans-serif; font-size: 0.85rem; color: var(--ink-faint); margin-top: 0.5rem; }
+    .legal pre { background: var(--code-bg); color: var(--code-text); border-radius: 6px; padding: 16px 18px; overflow-x: auto; margin: 1.25rem 0; }
+    .legal pre code { font-size: 0.85rem; line-height: 1.6; color: inherit; }
+    .legal p code, .legal li code { background: var(--vellum-soft); padding: 1px 5px; border-radius: 3px; }
+    .post-list { list-style: none; padding: 0; margin: 2rem 0; }
+    .post-list li { padding: 1.25rem 0; border-top: 1px solid var(--rule); }
+    .post-list li:last-child { border-bottom: 1px solid var(--rule); }
+    .post-list a.post-title { font-family: 'Source Serif 4', serif; font-size: 1.4rem; text-decoration: none; }
+    .post-list a.post-title:hover { text-decoration: underline; }
+    .post-list .effective { margin: 0.25rem 0 0.5rem; }
+    .post-list p { margin: 0; }
+    .legal figure video { display: block; width: 100%; height: auto; border: 1px solid var(--rule); border-radius: 6px; background: var(--paper); }
+  </style>
+</head>
+<body>
+  <div class="page-wrap">
+    <nav class="nav">
+      <a class="nav-mark" href="/">
+        <svg class="k" viewBox="0 0 84 84" fill="none" aria-label="kernelCAD">
+          <path d="M 14,12 L 26,12 L 26,34 Q 26,36 27.5,34.5 L 46,12 L 60,12 L 36,40 Q 35,42 36,44 L 60,72 L 46,72 L 27.5,49.5 Q 26,48 26,50 L 26,72 L 14,72 Z" fill="currentColor"/>
+        </svg>
+        <span>kernel<span class="cad">CAD</span></span>
+      </a>
+      <div class="nav-links">
+        <a href="/blog/">blog</a>
+        <a class="app-link" href="https://app.kernelcad.com">app ↗</a>
+        <a href="https://github.com/w1ne/kernelCAD-web">github</a>
+        <a href="https://www.npmjs.com/package/kernelcad">npm</a>
+        <a href="https://x.com/kernelcad">@kernelcad</a>
+      </div>
+    </nav>
+
+    <main class="legal">
+      <article>
+      <p class="effective"><a href="/blog/">Blog</a> · <time datetime="2026-10-12">2026-10-12</time> · Andrii Shylenko</p>
+      <h1>Keep engineering decisions beside the drawing</h1>
+
+      <p class="lede">A measured bore diameter does not explain whether an insert should slide out for servicing or stay retained in its seat. kernelCAD drawing plans can keep that unresolved decision visible until a reviewer records both the intended choice and where it came from.</p>
+      <figure>
+        <video src="video.mp4" controls playsinline preload="metadata"></video>
+      </figure>
+
+      <h2>A seat with an open question</h2>
+      <p>This illustrative mount has a 120 × 80 × 12 mm base with R6 corners, four Ø9 mounting holes and Ø15 × 5 mm nominal counterbores. A 56 × 36 × 54 mm pedestal starts at (32, 22, 12). Its horizontal axis lies at Z = 39 mm. A nominal Ø44 × 8 mm seat opens at the front, with a Ø32 throat through the pedestal's 36 mm depth.</p>
+      <p>There is no purchased bearing or catalog fit in this exercise. The brief requires the measured Ø44 seat, measured Ø32 throat and a recorded answer to one question: “Will the illustrative insert be removable or press-retained?” It does not specify a production insert, numerical clearance, retention hardware, tolerance or GD&amp;T.</p>
+      <figure>
+        <img src="bearing-pending.png" alt="Bearing-mount drawing with separate measured Ø44 seat and Ø32 throat callouts" width="1680" height="1188" loading="lazy" />
+        <figcaption>Both measurements are present. The pending drawing is still incomplete because the retention decision has no recorded resolution.</figcaption>
+      </figure>
+
+      <h2>Select the seat, not its neighbour</h2>
+      <p><a href="/blog/drawing-decisions/bearing-seat.kcad.ts">Download the complete editable source</a> and run it in the current Studio. The source reuses the tutorial geometry and removes its unrelated datum/tolerance declarations to keep the review exercise focused.</p>
+      <p>The concentric bore contains several circular edges. A nearby point alone can select the throat depending on edge orientation. Restricting the seat query to the actual front entry plane makes the intent explicit. The exported computed label is independently checked as Ø44; the throat is checked as Ø32.</p>
+      <pre><code>.dimension({
+  id: 'seat-diameter', kind: 'diameter',
+  edge: {
+    ofCurveType: 'CIRCLE', atY: 22, tolerance: 0.001,
+    near: [82, 22, 39],
+  },
+  label: 'Seat',
+})</code></pre>
+      <p><code>tolerance: 0.001</code> here is a query-selection tolerance, not a manufacturing tolerance. The selector constrains the front plane. It does not change the solid, prescribe a fit class or claim that all parameter edits preserve the selector.</p>
+
+      <h2>Declare the question in the source</h2>
+      <p>The full source plan has two critical diameter requirements and this decision:</p>
+      <pre><code>.drawingReview({
+  id: 'bearing-mount',
+  requirements: [/* exact authored seat/throat IDs in the full source */],
+  decisions: [{
+    id: 'insert-retention', kind: 'fit', featureId: 'bearingSeat',
+    prompt: 'Will the illustrative insert be removable or press-retained?',
+  }],
+})</code></pre>
+      <p>The initial report shows 2/2 critical callouts covered and one unresolved decision. Review completeness requires both coverage and a resolution for every declared decision. Decision records have a note and provenance; both must be nonempty. A record is an explanation of engineering intent, not an automatic engineering conclusion.</p>
+      <figure>
+        <img src="studio-pending.png" alt="Studio showing two covered dimensions and one unresolved bearing-seat decision" width="1152" height="1060" loading="lazy" />
+        <figcaption>Actual local Studio report: geometry alone cannot answer the declared retention question.</figcaption>
+      </figure>
+
+      <h2>Record, refresh, review and export</h2>
+      <p>Open <strong>Export → Drawing settings</strong>, then <strong>Generate preview</strong>. For this tutorial sheet, hide automatic annotation rows outside the declared scope. The captured receipt identifies the real report rows and why they were hidden. Select the throat requirement and give its <strong>Extra offset (sheet mm)</strong> 20 mm to separate the two concentric-diameter labels.</p>
+      <p>In <strong>Functional drawing review</strong>, fill <strong>Decision note</strong> with:</p>
+      <p>“Illustrative insert intended to be removable. Numerical clearance and retention hardware remain outside this exercise.”</p>
+      <p>Fill <strong>Decision provenance</strong> with:</p>
+      <p>“Tutorial design brief, 2026-10-12; no catalog or physical fit verification.”</p>
+      <p>Click <strong>Record decision</strong>. An edited draft alone does not resolve the decision. Recording it changes the options, so the preview needs another <strong>Refresh preview</strong>. The new report shows 2/2 critical covered and zero unresolved decisions. Inspect the sheet, click <strong>Mark reviewed</strong>, then <strong>Export reviewed PDF</strong>.</p>
+      <figure>
+        <img src="studio-resolved.png" alt="Studio after recording the illustrative removable-insert intent and refreshing the drawing" width="1152" height="1060" loading="lazy" />
+        <figcaption>The recorded note and provenance resolve the declared question. The two measured diameters and solid remain unchanged.</figcaption>
+      </figure>
+      <p>Changing source or drafting criteria invalidates the current preview and withholds stale source-bound choices. <strong>Reset source-bound choices</strong> clears those choices for the new source. <strong>Clear decision records</strong> removes stored resolutions; <strong>Clear missing decisions</strong> removes records whose declared keys no longer exist. Draft edits also reset the human review mark. Refresh and review the current result before strict export.</p>
+
+      <h2>Use the same record through the export API</h2>
+      <p>Decision overrides use a key formed by encoding each ID separately and joining them with a colon. In this example it is <code>bearing-mount:insert-retention</code>; the shared <code>drawingDecisionKey(planId, decisionId)</code> helper produces it without namespace collisions.</p>
+      <pre><code>{
+  decisionResolutions: {
+    'bearing-mount:insert-retention': {
+      note: 'Illustrative insert intended to be removable. Numerical clearance and retention hardware remain outside this exercise.',
+      provenance: 'Tutorial design brief, 2026-10-12; no catalog or physical fit verification.',
+    },
+  },
+  requireCompleteReview: true,
+}</code></pre>
+      <p>Pending ordinary SVG/PDF exports retain the incomplete report and warning. Pending strict exports refuse bytes. Resolved strict exports emit actual PDF bytes when the measured critical labels also pass. The record does not cut material, create a tolerance, add GD&amp;T or certify a numerical fit. Producing a production fit would require a separately chosen component and specification in the source, followed by appropriate engineering and physical acceptance.</p>
+      <p>The recorded Studio sheet prints <strong>ISO2768-mK</strong> in its general-tolerances cell as an inherited exporter default. The tutorial does not select or approve that default as engineering acceptance. The authored-only generator sheets omit it. Review completeness does not approve a printed tolerance label.</p>
+
+      <h2>Reproduce the two outcomes</h2>
+      <p>Use the current Studio or a source checkout with Node 22 and installed dependencies:</p>
+      <pre><code>npm run build:cli
+npx tsx examples/functional-drafting/run.ts</code></pre>
+      <p>No release tag was cut for this walkthrough; do not assume the latest npm package contains these methods. The generator verifies one valid connected solid, exact 120 × 80 × 66 mm bounding box, analytical volume and real bore/counterbore dimensions before checking review status. The hole recognizer measures 8.01 mm seat depth and 5.01 mm mounting counterbore depths because the boolean cutters include a 0.01 mm allowance. This exercise leaves those noncritical depth callouts out of the minimal sheet and never replaces a critical computed number with typed text.</p>
+      <p>Pending and resolved options use the same source geometry. Their drawing reports match between printable SVG and PDF. The PNG drawings show the same front-seat rings and throat; only the recorded review decision changes. This proves the declared example scope, not manufacturing completeness or physical acceptance.</p>
+      <p><a href="/blog/drawing-decisions/bearing-pending.svg">Pending SVG</a> · <a href="/blog/drawing-decisions/bearing-pending.pdf">Pending PDF</a> · <a href="/blog/drawing-decisions/bearing-pending.options.json">Pending settings</a> · <a href="/blog/drawing-decisions/bearing-pending.report.json">Pending report</a></p>
+      <p><a href="/blog/drawing-decisions/bearing-resolved.svg">Resolved SVG</a> · <a href="/blog/drawing-decisions/bearing-resolved.pdf">Resolved PDF</a> · <a href="/blog/drawing-decisions/bearing-resolved.strict.pdf">Strict resolved PDF</a> · <a href="/blog/drawing-decisions/bearing-resolved.options.json">Resolved settings</a> · <a href="/blog/drawing-decisions/bearing-resolved.report.json">Resolved report</a> · <a href="/blog/drawing-decisions/bearing-seat.geometry.json">Geometry evidence</a> · <a href="/blog/drawing-decisions/manifest.json">SHA-256 manifest</a></p>
+      <p><a href="/blog/drawing-decisions/reviewed-bearing.pdf">Actual Studio reviewed PDF</a> · <a href="/blog/drawing-decisions/studio-evidence.json">Studio request settings and reports</a> · <a href="/blog/drawing-decisions/studio-receipt.json">Capture receipt</a></p>
+      <p>The generated downloadable sheets use a minimal authored-only layout; the Studio capture retains its actual automatic-row suppression settings and HTTP/PDF evidence separately. For missing or hidden callouts, follow <a href="/blog/functional-drafting/">the fixture-plate walkthrough</a>. The existing <a href="/blog/drafting-review/">one-click drawing download</a> remains available when no declared review is needed.</p>
+      </article>
+    </main>
+
+    <footer class="footer">
+      <div>kernelCAD · MIT</div>
+      <div class="footer-links">
+        <a href="/terms.html">terms</a>
+        <a href="/privacy.html">privacy</a>
+        <a href="https://github.com/w1ne/kernelCAD-web">github</a>
+        <a href="https://www.npmjs.com/package/kernelcad">npm</a>
+        <a href="https://x.com/kernelcad">x</a>
+        <a href="https://app.kernelcad.com">app</a>
+      </div>
+    </footer>
+    <div class="footer-stack" style="border-top: 1px solid var(--stroke, rgba(255,255,255,0.08)); padding: 14px 0 28px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; color: var(--mute, #888); font-size: 0.78rem;">
+      <span style="opacity: 0.7;">part of the engineer stack</span>
+      <nav style="display: flex; gap: 18px;">
+        <a href="https://labwired.com" style="color: inherit;">LabWired</a>
+        <a href="https://kernelcad.com" style="color: inherit;">kernelCAD</a>
+        <a href="https://koamtachi.com" style="color: inherit;">koamtachi</a>
+        <a href="https://shylenko.com" style="color: inherit;">shylenko.com</a>
+      </nav>
+    </div>
+  </div>
+</body>
+</html>

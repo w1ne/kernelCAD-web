@@ -1,0 +1,123 @@
+{
+  "sourceSha256": "4dfee3e2a0be357040ec1cdfbfcb647b171cccceeeb24ce00f919bfe3fde76cd",
+  "brepValid": true,
+  "connectedSolidCount": 1,
+  "boundingBox": {
+    "min": [
+      -8.881784197001252e-16,
+      -8.881784197001252e-16,
+      0
+    ],
+    "max": [
+      100,
+      70,
+      12
+    ]
+  },
+  "volumeMm3": 72093.23980236909,
+  "expectedVolumeMm3": 72093.23980236906,
+  "holes": [
+    {
+      "entry": [
+        88,
+        12,
+        12
+      ],
+      "axis": [
+        0,
+        0,
+        -1
+      ],
+      "diameter": 9,
+      "through": true
+    },
+    {
+      "entry": [
+        12,
+        12,
+        12
+      ],
+      "axis": [
+        0,
+        0,
+        -1
+      ],
+      "diameter": 9,
+      "through": true
+    },
+    {
+      "entry": [
+        88,
+        58,
+        12
+      ],
+      "axis": [
+        0,
+        0,
+        -1
+      ],
+      "diameter": 9,
+      "through": true
+    },
+    {
+      "entry": [
+        50,
+        35,
+        12
+      ],
+      "axis": [
+        0,
+        0,
+        -1
+      ],
+      "diameter": 30,
+      "through": true
+    },
+    {
+      "entry": [
+        12,
+        58,
+        12
+      ],
+      "axis": [
+        0,
+        0,
+        -1
+      ],
+      "diameter": 9,
+      "through": true
+    }
+  ],
+  "evaluation": {
+    "exitCode": 0,
+    "featureCount": 9,
+    "diagnostics": [],
+    "featureHealth": [],
+    "dimensions": [
+      {
+        "text": "X pitch 76",
+        "kind": "linear",
+        "source": "declared"
+      },
+      {
+        "text": "Y pitch 46",
+        "kind": "linear",
+        "source": "declared"
+      },
+      {
+        "text": "Mounting holes Ø9",
+        "kind": "diameter",
+        "source": "declared"
+      },
+      {
+        "text": "Centre bore Ø30",
+        "kind": "diameter",
+        "source": "declared"
+      }
+    ]
+  },
+  "limits": [
+    "Geometric checks only; no fit, tolerance, manufacture or load acceptance.",
+    "Counterbore measurement includes the source API boolean cutter allowance."
+  ]
+}

@@ -1,0 +1,162 @@
+{
+  "svg": {
+    "placed": 2,
+    "overlapped": 0,
+    "byKind": {
+      "diameter": 2
+    },
+    "datums": [],
+    "annotations": [
+      {
+        "id": "authored:seat-diameter",
+        "source": "authored",
+        "kind": "diameter",
+        "view": "front",
+        "text": "Seat ⌀44",
+        "overlapped": false
+      },
+      {
+        "id": "authored:throat-diameter",
+        "source": "authored",
+        "kind": "diameter",
+        "view": "front",
+        "text": "Throat ⌀32",
+        "overlapped": false,
+        "offset": 20
+      }
+    ],
+    "review": {
+      "status": "complete",
+      "requirements": [
+        {
+          "featureId": "bearingSeat",
+          "annotationId": "authored:seat-diameter",
+          "expectedKind": "diameter",
+          "role": "critical",
+          "reason": "Show the diameter of the illustrative insert seat.",
+          "planId": "bearing-mount",
+          "requirementId": "seat-diameter",
+          "status": "covered"
+        },
+        {
+          "featureId": "bearingSeat",
+          "annotationId": "authored:throat-diameter",
+          "expectedKind": "diameter",
+          "role": "critical",
+          "reason": "Show the opening behind the seat independently.",
+          "planId": "bearing-mount",
+          "requirementId": "throat-diameter",
+          "status": "covered"
+        }
+      ],
+      "decisions": [
+        {
+          "kind": "fit",
+          "featureId": "bearingSeat",
+          "prompt": "Will the illustrative insert be removable or press-retained?",
+          "planId": "bearing-mount",
+          "decisionId": "insert-retention",
+          "key": "bearing-mount:insert-retention",
+          "resolution": {
+            "note": "Illustrative insert intended to be removable. Numerical clearance and retention hardware remain outside this exercise.",
+            "provenance": "Tutorial design brief, 2026-10-12; no catalog or physical fit verification."
+          }
+        }
+      ],
+      "criticalCount": 2,
+      "coveredCriticalCount": 2,
+      "decisionCount": 1,
+      "unresolvedDecisionCount": 0
+    },
+    "suppressed": 0
+  },
+  "pdf": {
+    "placed": 2,
+    "overlapped": 0,
+    "byKind": {
+      "diameter": 2
+    },
+    "datums": [],
+    "annotations": [
+      {
+        "id": "authored:seat-diameter",
+        "source": "authored",
+        "kind": "diameter",
+        "view": "front",
+        "text": "Seat ⌀44",
+        "overlapped": false
+      },
+      {
+        "id": "authored:throat-diameter",
+        "source": "authored",
+        "kind": "diameter",
+        "view": "front",
+        "text": "Throat ⌀32",
+        "overlapped": false,
+        "offset": 20
+      }
+    ],
+    "review": {
+      "status": "complete",
+      "requirements": [
+        {
+          "featureId": "bearingSeat",
+          "annotationId": "authored:seat-diameter",
+          "expectedKind": "diameter",
+          "role": "critical",
+          "reason": "Show the diameter of the illustrative insert seat.",
+          "planId": "bearing-mount",
+          "requirementId": "seat-diameter",
+          "status": "covered"
+        },
+        {
+          "featureId": "bearingSeat",
+          "annotationId": "authored:throat-diameter",
+          "expectedKind": "diameter",
+          "role": "critical",
+          "reason": "Show the opening behind the seat independently.",
+          "planId": "bearing-mount",
+          "requirementId": "throat-diameter",
+          "status": "covered"
+        }
+      ],
+      "decisions": [
+        {
+          "kind": "fit",
+          "featureId": "bearingSeat",
+          "prompt": "Will the illustrative insert be removable or press-retained?",
+          "planId": "bearing-mount",
+          "decisionId": "insert-retention",
+          "key": "bearing-mount:insert-retention",
+          "resolution": {
+            "note": "Illustrative insert intended to be removable. Numerical clearance and retention hardware remain outside this exercise.",
+            "provenance": "Tutorial design brief, 2026-10-12; no catalog or physical fit verification."
+          }
+        }
+      ],
+      "criticalCount": 2,
+      "coveredCriticalCount": 2,
+      "decisionCount": 1,
+      "unresolvedDecisionCount": 0
+    },
+    "suppressed": 0
+  },
+  "diagnostics": {
+    "svg": [],
+    "pdf": []
+  },
+  "strict": [
+    {
+      "format": "svg-drawing",
+      "bytes": 39564,
+      "sha256": "2af2815d3baae3591f3a6648fa3a5429a28a93e5d5710937eb30cad3204015fe",
+      "status": "emitted"
+    },
+    {
+      "format": "pdf-drawing",
+      "bytes": 14436,
+      "sha256": "c1636c95232390036370f757cfa71c539c488cfd29727b216ae40caf3c7774c4",
+      "status": "emitted"
+    }
+  ]
+}

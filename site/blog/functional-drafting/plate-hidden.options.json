@@ -1,0 +1,67 @@
+{
+  "svg": {
+    "sheet": "a3",
+    "projection": "third",
+    "date": "2026-10-12",
+    "modelName": "Functional drawing example",
+    "autoAnnotate": false,
+    "title": "Illustrative functional drawing",
+    "partName": "EXAMPLE",
+    "material": "Unspecified - illustration",
+    "revision": "EXAMPLE",
+    "annotationOverrides": {
+      "authored:pitch-x": {
+        "view": "top",
+        "suppress": true
+      },
+      "authored:pitch-y": {
+        "view": "top"
+      },
+      "authored:mounting-diameter": {
+        "view": "top",
+        "offset": 4
+      },
+      "authored:bore-diameter": {
+        "view": "top",
+        "offset": 20
+      }
+    },
+    "format": "svg-drawing",
+    "pdfSheet": true,
+    "titleBlock": {
+      "title": "Illustrative functional drawing",
+      "partName": "EXAMPLE",
+      "material": "Unspecified - illustration",
+      "revision": "EXAMPLE"
+    }
+  },
+  "pdf": {
+    "sheet": "a3",
+    "projection": "third",
+    "date": "2026-10-12",
+    "modelName": "Functional drawing example",
+    "autoAnnotate": false,
+    "title": "Illustrative functional drawing",
+    "partName": "EXAMPLE",
+    "material": "Unspecified - illustration",
+    "revision": "EXAMPLE",
+    "annotationOverrides": {
+      "authored:pitch-x": {
+        "view": "top",
+        "suppress": true
+      },
+      "authored:pitch-y": {
+        "view": "top"
+      },
+      "authored:mounting-diameter": {
+        "view": "top",
+        "offset": 4
+      },
+      "authored:bore-diameter": {
+        "view": "top",
+        "offset": 20
+      }
+    },
+    "format": "pdf-drawing"
+  }
+}

@@ -1,0 +1,1483 @@
+{
+  "startedAt": "2026-10-12T12:38:43.174Z",
+  "environment": "LOCAL Studio source checkout; illustrative geometry; actual UI and unmodified HTTP responses",
+  "baseUrl": "http://127.0.0.1:5248",
+  "backendSha": null,
+  "sourceName": "fixture-plate.kcad.ts",
+  "sourceSha256": "4dfee3e2a0be357040ec1cdfbfcb647b171cccceeeb24ce00f919bfe3fde76cd",
+  "ownedId": "functional-demo-plate-1791808723174",
+  "stages": [
+    {
+      "name": "01-complete",
+      "caption": "Four critical callouts are measured and covered; missing reference stock width is advisory.",
+      "seconds": 10.897,
+      "text": "Drawing settings\n\nPreview up to date\n\n19 placed · 1 crowded · 0 hidden\n\nsvg-drawing: 1 automatic annotation(s) could not be placed clear of geometry, other labels or the sheet frame: hole-position '50' (top).\n\nDrafting profile\nGeneral review\nMachining\nSheet metal\nDimension style\nBaseline from datums\nChain between features\nSymmetry and pitch\nProfile settings and datums\nProfile name\nSave profile\n\nReview dimensions and datum selection before release.\n\nFunctional drawing review\n\n4/4 critical covered · 0 unresolved decisions\n\nLocate fixture holes across X so the mating pattern can be checked.\nmountingHoles · critical · covered\nauthored:pitch-x\nLocate the second hole row across Y.\nmountingHoles · critical · covered\nauthored:pitch-y\nExpose the illustrative 9 mm mounting-hole diameter.\nmountingHoles · critical · covered\nauthored:mounting-diameter\nExpose the central interface opening.\ncentreBore · critical · covered\nauthored:bore-diameter\nOverall stock width is advisory in this interface-only plan.\nstock · reference · missing\nauthored:stock-width\nAnnotations\nX pitch 76\ntop · authored\nY pitch 46\ntop · authored\nMounting holes ⌀9\ntop · authored\nCentre bore ⌀30\ntop · authored\n12\ntop · auto\n50\ntop · auto · crowded\n88\ntop · auto\n12\ntop · auto\n35\ntop · auto\n58\ntop · auto\n70\ntop · auto\n100\nfront · auto\n12\nfront · auto\n4× ⌀9 THRU | ⌖ ⌀0.1 A B C\ntop · auto\n⌀30 THRU | ⌖ ⌀0.1 A B C\ntop · auto\ndatum A\nfront · auto\ndatum B\nleft · auto\ndatum C\ntop · auto\n⏥ 0.4\nfront · auto\n4× R6\ntop · auto\n Hide annotation\nAnnotation text\nAnnotation view\nfront\ntop\nleft\niso\nExtra offset (sheet mm)\nReset annotation\nRefresh preview\nDownload PDF\nMark reviewed\nExport reviewed PDF"
+    },
+    {
+      "name": "02-hidden",
+      "caption": "Hide X pitch: the solid remains identical, but 3/4 critical coverage blocks reviewed export.",
+      "seconds": 15.714,
+      "text": "Drawing settings\n\nPreview up to date\n\n18 placed · 1 crowded · 1 hidden\n\nsvg-drawing: 1 automatic annotation(s) could not be placed clear of geometry, other labels or the sheet frame: hole-position '50' (top).\n\nDeclared drawing review is incomplete: required geometric callouts or engineering decisions remain unresolved.\n\nDrafting profile\nGeneral review\nMachining\nSheet metal\nDimension style\nBaseline from datums\nChain between features\nSymmetry and pitch\nProfile settings and datums\nProfile name\nSave profile\n\nReview dimensions and datum selection before release.\n\nFunctional drawing review\n\n3/4 critical covered · 0 unresolved decisions\n\nLocate fixture holes across X so the mating pattern can be checked.\nmountingHoles · critical · hidden\nauthored:pitch-x\nLocate the second hole row across Y.\nmountingHoles · critical · covered\nauthored:pitch-y\nExpose the illustrative 9 mm mounting-hole diameter.\nmountingHoles · critical · covered\nauthored:mounting-diameter\nExpose the central interface opening.\ncentreBore · critical · covered\nauthored:bore-diameter\nOverall stock width is advisory in this interface-only plan.\nstock · reference · missing\nauthored:stock-width\nAnnotations\nX pitch 76 (hidden)\ntop · authored\nY pitch 46\ntop · authored\nMounting holes ⌀9\ntop · authored\nCentre bore ⌀30\ntop · authored\n12\ntop · auto\n50\ntop · auto · crowded\n88\ntop · auto\n12\ntop · auto\n35\ntop · auto\n58\ntop · auto\n70\ntop · auto\n100\nfront · auto\n12\nfront · auto\n4× ⌀9 THRU | ⌖ ⌀0.1 A B C\ntop · auto\n⌀30 THRU | ⌖ ⌀0.1 A B C\ntop · auto\ndatum A\nfront · auto\ndatum B\ntop · auto\ndatum C\nfront · auto\n⏥ 0.4\nfront · auto\n4× R6\ntop · auto\n Hide annotation\nAnnotation text\nAnnotation view\nfront\ntop\nleft\niso\nExtra offset (sheet mm)\nReset annotation\nRefresh preview\nDownload PDF\nMark reviewed\nExport reviewed PDF"
+    },
+    {
+      "name": "03-ordinary",
+      "caption": "An ordinary PDF remains available with an incomplete report.",
+      "seconds": 19.76,
+      "text": "Drawing settings\n\nPreview up to date\n\n18 placed · 1 crowded · 1 hidden\n\nsvg-drawing: 1 automatic annotation(s) could not be placed clear of geometry, other labels or the sheet frame: hole-position '50' (top).\n\nDeclared drawing review is incomplete: required geometric callouts or engineering decisions remain unresolved.\n\nDrafting profile\nGeneral review\nMachining\nSheet metal\nDimension style\nBaseline from datums\nChain between features\nSymmetry and pitch\nProfile settings and datums\nProfile name\nSave profile\n\nReview dimensions and datum selection before release.\n\nFunctional drawing review\n\n3/4 critical covered · 0 unresolved decisions\n\nLocate fixture holes across X so the mating pattern can be checked.\nmountingHoles · critical · hidden\nauthored:pitch-x\nLocate the second hole row across Y.\nmountingHoles · critical · covered\nauthored:pitch-y\nExpose the illustrative 9 mm mounting-hole diameter.\nmountingHoles · critical · covered\nauthored:mounting-diameter\nExpose the central interface opening.\ncentreBore · critical · covered\nauthored:bore-diameter\nOverall stock width is advisory in this interface-only plan.\nstock · reference · missing\nauthored:stock-width\nAnnotations\nX pitch 76 (hidden)\ntop · authored\nY pitch 46\ntop · authored\nMounting holes ⌀9\ntop · authored\nCentre bore ⌀30\ntop · authored\n12\ntop · auto\n50\ntop · auto · crowded\n88\ntop · auto\n12\ntop · auto\n35\ntop · auto\n58\ntop · auto\n70\ntop · auto\n100\nfront · auto\n12\nfront · auto\n4× ⌀9 THRU | ⌖ ⌀0.1 A B C\ntop · auto\n⌀30 THRU | ⌖ ⌀0.1 A B C\ntop · auto\ndatum A\nfront · auto\ndatum B\ntop · auto\ndatum C\nfront · auto\n⏥ 0.4\nfront · auto\n4× R6\ntop · auto\n Hide annotation\nAnnotation text\nAnnotation view\nfront\ntop\nleft\niso\nExtra offset (sheet mm)\nReset annotation\nRefresh preview\nDownload PDF\nMark reviewed\nExport reviewed PDF"
+    },
+    {
+      "name": "04-reviewed",
+      "caption": "Restore X pitch, refresh the real sheet, then mark this preview reviewed.",
+      "seconds": 23.935,
+      "text": "Drawing settings\n\nPreview up to date\n\n19 placed · 1 crowded · 0 hidden\n\nsvg-drawing: 1 automatic annotation(s) could not be placed clear of geometry, other labels or the sheet frame: hole-position '50' (top).\n\nDrafting profile\nGeneral review\nMachining\nSheet metal\nDimension style\nBaseline from datums\nChain between features\nSymmetry and pitch\nProfile settings and datums\nProfile name\nSave profile\n\nReview dimensions and datum selection before release.\n\nFunctional drawing review\n\n4/4 critical covered · 0 unresolved decisions\n\nLocate fixture holes across X so the mating pattern can be checked.\nmountingHoles · critical · covered\nauthored:pitch-x\nLocate the second hole row across Y.\nmountingHoles · critical · covered\nauthored:pitch-y\nExpose the illustrative 9 mm mounting-hole diameter.\nmountingHoles · critical · covered\nauthored:mounting-diameter\nExpose the central interface opening.\ncentreBore · critical · covered\nauthored:bore-diameter\nOverall stock width is advisory in this interface-only plan.\nstock · reference · missing\nauthored:stock-width\nAnnotations\nX pitch 76\ntop · authored\nY pitch 46\ntop · authored\nMounting holes ⌀9\ntop · authored\nCentre bore ⌀30\ntop · authored\n12\ntop · auto\n50\ntop · auto · crowded\n88\ntop · auto\n12\ntop · auto\n35\ntop · auto\n58\ntop · auto\n70\ntop · auto\n100\nfront · auto\n12\nfront · auto\n4× ⌀9 THRU | ⌖ ⌀0.1 A B C\ntop · auto\n⌀30 THRU | ⌖ ⌀0.1 A B C\ntop · auto\ndatum A\nfront · auto\ndatum B\nleft · auto\ndatum C\ntop · auto\n⏥ 0.4\nfront · auto\n4× R6\ntop · auto\n Hide annotation\nAnnotation text\nAnnotation view\nfront\ntop\nleft\niso\nExtra offset (sheet mm)\nReset annotation\nRefresh preview\nDownload PDF\nReviewed\nExport reviewed PDF"
+    }
+  ],
+  "samples": [
+    9.204,
+    10.186,
+    11.31,
+    12.489,
+    13.521,
+    14.781,
+    16.022,
+    16.931,
+    17.748,
+    19.001,
+    20.091,
+    20.919,
+    21.803,
+    22.873,
+    24.013,
+    25.06,
+    26.228,
+    27.545,
+    28.478,
+    29.458,
+    30.502,
+    31.692,
+    32.642,
+    33.569,
+    34.766,
+    35.917,
+    36.981,
+    38.03,
+    39.259,
+    40.247,
+    41.449,
+    42.506,
+    43.453,
+    44.563,
+    45.524,
+    46.536,
+    47.732,
+    48.586,
+    49.553,
+    50.625,
+    51.665,
+    52.826,
+    54.034,
+    55.047,
+    56.206,
+    57.284,
+    58.25,
+    59.019,
+    60.034,
+    60.85,
+    62.053,
+    63.21,
+    64.293,
+    65.391,
+    66.276,
+    67.29,
+    68.117,
+    69.258,
+    70.451,
+    71.235,
+    72.153,
+    73.094,
+    74.213,
+    75.178,
+    76.424,
+    77.441
+  ],
+  "browser": "Chrome/149.0.7827.53",
+  "ownedTarget": "9CEEB8468D13B4D94DF9166214C30C11",
+  "pdfs": [
+    {
+      "name": "ordinary-hidden.pdf",
+      "bytes": 11682,
+      "sha256": "d2ee06f2559ca18f685a72016e3099f5a8dd17f34fad9f7445e632a685bc9eea"
+    }
+  ],
+  "success": false,
+  "error": "DOM wait timed out (() => window.__functional.pdfs.length>0)()",
+  "transport": [
+    {
+      "at": "2026-10-12T12:38:51.122Z",
+      "url": "http://127.0.0.1:5248/__kernelcad/export?format=svg-drawing&review=1",
+      "status": 200,
+      "format": "svg-drawing",
+      "options": {
+        "draftingProfile": "general",
+        "autoAnnotate": {
+          "dimensioningStyle": "baseline"
+        },
+        "annotationOverrides": {},
+        "date": "2026-10-12",
+        "format": "svg-drawing"
+      },
+      "drawingReport": {
+        "placed": 20,
+        "overlapped": 0,
+        "byKind": {
+          "linear": 2,
+          "diameter": 2,
+          "hole-position": 6,
+          "overall": 3,
+          "hole": 2,
+          "datum": 3,
+          "flatness": 1,
+          "fillet": 1,
+          "general-tolerance": 1
+        },
+        "datums": [
+          {
+            "label": "A",
+            "source": "auto",
+            "normal": [
+              0,
+              0,
+              -1
+            ],
+            "point": [
+              50,
+              35,
+              0
+            ]
+          },
+          {
+            "label": "B",
+            "source": "auto",
+            "normal": [
+              0,
+              -1,
+              0
+            ],
+            "point": [
+              50,
+              0,
+              6
+            ]
+          },
+          {
+            "label": "C",
+            "source": "auto",
+            "normal": [
+              -1,
+              0,
+              0
+            ],
+            "point": [
+              0,
+              35,
+              6
+            ]
+          }
+        ],
+        "annotations": [
+          {
+            "id": "authored:pitch-x",
+            "source": "authored",
+            "kind": "linear",
+            "view": "front",
+            "text": "X pitch 76",
+            "overlapped": false
+          },
+          {
+            "id": "authored:pitch-y",
+            "source": "authored",
+            "kind": "linear",
+            "view": "top",
+            "text": "Y pitch 46",
+            "overlapped": false
+          },
+          {
+            "id": "authored:mounting-diameter",
+            "source": "authored",
+            "kind": "diameter",
+            "view": "top",
+            "text": "Mounting holes ⌀9",
+            "overlapped": false
+          },
+          {
+            "id": "authored:bore-diameter",
+            "source": "authored",
+            "kind": "diameter",
+            "view": "top",
+            "text": "Centre bore ⌀30",
+            "overlapped": false
+          },
+          {
+            "id": "auto:hole-position:top%3A0%3A0%3A12%3Abaseline",
+            "source": "auto",
+            "kind": "hole-position",
+            "view": "top",
+            "text": "12",
+            "overlapped": false
+          },
+          {
+            "id": "auto:hole-position:top%3A0%3A0%3A50%3Abaseline",
+            "source": "auto",
+            "kind": "hole-position",
+            "view": "top",
+            "text": "50",
+            "overlapped": false
+          },
+          {
+            "id": "auto:hole-position:top%3A0%3A0%3A88%3Abaseline",
+            "source": "auto",
+            "kind": "hole-position",
+            "view": "top",
+            "text": "88",
+            "overlapped": false
+          },
+          {
+            "id": "auto:hole-position:top%3A1%3A0%3A12%3Abaseline",
+            "source": "auto",
+            "kind": "hole-position",
+            "view": "top",
+            "text": "12",
+            "overlapped": false
+          },
+          {
+            "id": "auto:hole-position:top%3A1%3A0%3A35%3Abaseline",
+            "source": "auto",
+            "kind": "hole-position",
+            "view": "top",
+            "text": "35",
+            "overlapped": false
+          },
+          {
+            "id": "auto:hole-position:top%3A1%3A0%3A58%3Abaseline",
+            "source": "auto",
+            "kind": "hole-position",
+            "view": "top",
+            "text": "58",
+            "overlapped": false
+          },
+          {
+            "id": "auto:overall:y",
+            "source": "auto",
+            "kind": "overall",
+            "view": "top",
+            "text": "70",
+            "overlapped": false
+          },
+          {
+            "id": "auto:overall:x",
+            "source": "auto",
+            "kind": "overall",
+            "view": "front",
+            "text": "100",
+            "overlapped": false
+          },
+          {
+            "id": "auto:overall:z",
+            "source": "auto",
+            "kind": "overall",
+            "view": "front",
+            "text": "12",
+            "overlapped": false
+          },
+          {
+            "id": "auto:hole:0%2C0%2C1000%7C9%7CT%7C-%7C-%7C-%7C-%3A12%2C12%2C12%3B12%2C58%2C12%3B88%2C12%2C12%3B88%2C58%2C12",
+            "source": "auto",
+            "kind": "hole",
+            "view": "top",
+            "text": "4× ⌀9 THRU | ⌖ ⌀0.1 A B C",
+            "overlapped": false
+          },
+          {
+            "id": "auto:hole:0%2C0%2C1000%7C30%7CT%7C-%7C-%7C-%7C-%3A50%2C35%2C12",
+            "source": "auto",
+            "kind": "hole",
+            "view": "top",
+            "text": "⌀30 THRU | ⌖ ⌀0.1 A B C",
+            "overlapped": false
+          },
+          {
+            "id": "auto:datum:A",
+            "source": "auto",
+            "kind": "datum",
+            "view": "front",
+            "text": "datum A",
+            "overlapped": false
+          },
+          {
+            "id": "auto:datum:B",
+            "source": "auto",
+            "kind": "datum",
+            "view": "top",
+            "text": "datum B",
+            "overlapped": false
+          },
+          {
+            "id": "auto:datum:C",
+            "source": "auto",
+            "kind": "datum",
+            "view": "top",
+            "text": "datum C",
+            "overlapped": false
+          },
+          {
+            "id": "auto:flatness:A",
+            "source": "auto",
+            "kind": "flatness",
+            "view": "left",
+            "text": "⏥ 0.4",
+            "overlapped": false
+          },
+          {
+            "id": "auto:fillet:top%7C6%3A1.7573593128807143%2C1.7573593128807135%2C6%3B1.7573593128807143%2C68.24264068711929%2C6%3B98.24264068711929%2C1.7573593128807143%2C6%3B98.24264068711929%2C68.24264068711929%2C6",
+            "source": "auto",
+            "kind": "fillet",
+            "view": "top",
+            "text": "4× R6",
+            "overlapped": false
+          }
+        ],
+        "generalTolerance": "ISO 2768-mK",
+        "review": {
+          "status": "complete",
+          "requirements": [
+            {
+              "featureId": "mountingHoles",
+              "annotationId": "authored:pitch-x",
+              "expectedKind": "linear",
+              "role": "critical",
+              "reason": "Locate fixture holes across X so the mating pattern can be checked.",
+              "planId": "plate",
+              "requirementId": "pitch-x",
+              "status": "covered"
+            },
+            {
+              "featureId": "mountingHoles",
+              "annotationId": "authored:pitch-y",
+              "expectedKind": "linear",
+              "role": "critical",
+              "reason": "Locate the second hole row across Y.",
+              "planId": "plate",
+              "requirementId": "pitch-y",
+              "status": "covered"
+            },
+            {
+              "featureId": "mountingHoles",
+              "annotationId": "authored:mounting-diameter",
+              "expectedKind": "diameter",
+              "role": "critical",
+              "reason": "Expose the illustrative 9 mm mounting-hole diameter.",
+              "planId": "plate",
+              "requirementId": "mounting-diameter",
+              "status": "covered"
+            },
+            {
+              "featureId": "centreBore",
+              "annotationId": "authored:bore-diameter",
+              "expectedKind": "diameter",
+              "role": "critical",
+              "reason": "Expose the central interface opening.",
+              "planId": "plate",
+              "requirementId": "bore-diameter",
+              "status": "covered"
+            },
+            {
+              "featureId": "stock",
+              "annotationId": "authored:stock-width",
+              "expectedKind": "linear",
+              "role": "reference",
+              "reason": "Overall stock width is advisory in this interface-only plan.",
+              "planId": "plate",
+              "requirementId": "stock-width",
+              "status": "missing"
+            }
+          ],
+          "decisions": [],
+          "criticalCount": 4,
+          "coveredCriticalCount": 4,
+          "decisionCount": 0,
+          "unresolvedDecisionCount": 0
+        },
+        "suppressed": 0,
+        "draftingProfile": "general"
+      },
+      "diagnostics": []
+    },
+    {
+      "at": "2026-10-12T12:38:52.623Z",
+      "url": "http://127.0.0.1:5248/__kernelcad/export?format=svg-drawing&review=1",
+      "status": 200,
+      "format": "svg-drawing",
+      "options": {
+        "draftingProfile": "general",
+        "autoAnnotate": {
+          "dimensioningStyle": "baseline"
+        },
+        "annotationOverrides": {
+          "authored:pitch-x": {
+            "view": "top"
+          },
+          "authored:pitch-y": {
+            "view": "top"
+          },
+          "authored:mounting-diameter": {
+            "view": "top",
+            "offset": 4
+          },
+          "authored:bore-diameter": {
+            "view": "top",
+            "offset": 20
+          }
+        },
+        "date": "2026-10-12",
+        "format": "svg-drawing"
+      },
+      "drawingReport": {
+        "placed": 19,
+        "overlapped": 1,
+        "byKind": {
+          "linear": 2,
+          "diameter": 2,
+          "hole-position": 6,
+          "overall": 3,
+          "hole": 2,
+          "datum": 3,
+          "flatness": 1,
+          "fillet": 1,
+          "general-tolerance": 1
+        },
+        "datums": [
+          {
+            "label": "A",
+            "source": "auto",
+            "normal": [
+              0,
+              0,
+              -1
+            ],
+            "point": [
+              50,
+              35,
+              0
+            ]
+          },
+          {
+            "label": "B",
+            "source": "auto",
+            "normal": [
+              0,
+              -1,
+              0
+            ],
+            "point": [
+              50,
+              0,
+              6
+            ]
+          },
+          {
+            "label": "C",
+            "source": "auto",
+            "normal": [
+              -1,
+              0,
+              0
+            ],
+            "point": [
+              0,
+              35,
+              6
+            ]
+          }
+        ],
+        "annotations": [
+          {
+            "id": "authored:pitch-x",
+            "source": "authored",
+            "kind": "linear",
+            "view": "top",
+            "text": "X pitch 76",
+            "overlapped": false
+          },
+          {
+            "id": "authored:pitch-y",
+            "source": "authored",
+            "kind": "linear",
+            "view": "top",
+            "text": "Y pitch 46",
+            "overlapped": false
+          },
+          {
+            "id": "authored:mounting-diameter",
+            "source": "authored",
+            "kind": "diameter",
+            "view": "top",
+            "text": "Mounting holes ⌀9",
+            "overlapped": false,
+            "offset": 4
+          },
+          {
+            "id": "authored:bore-diameter",
+            "source": "authored",
+            "kind": "diameter",
+            "view": "top",
+            "text": "Centre bore ⌀30",
+            "overlapped": false,
+            "offset": 20
+          },
+          {
+            "id": "auto:hole-position:top%3A0%3A0%3A12%3Abaseline",
+            "source": "auto",
+            "kind": "hole-position",
+            "view": "top",
+            "text": "12",
+            "overlapped": false
+          },
+          {
+            "id": "auto:hole-position:top%3A0%3A0%3A50%3Abaseline",
+            "source": "auto",
+            "kind": "hole-position",
+            "view": "top",
+            "text": "50",
+            "overlapped": true
+          },
+          {
+            "id": "auto:hole-position:top%3A0%3A0%3A88%3Abaseline",
+            "source": "auto",
+            "kind": "hole-position",
+            "view": "top",
+            "text": "88",
+            "overlapped": false
+          },
+          {
+            "id": "auto:hole-position:top%3A1%3A0%3A12%3Abaseline",
+            "source": "auto",
+            "kind": "hole-position",
+            "view": "top",
+            "text": "12",
+            "overlapped": false
+          },
+          {
+            "id": "auto:hole-position:top%3A1%3A0%3A35%3Abaseline",
+            "source": "auto",
+            "kind": "hole-position",
+            "view": "top",
+            "text": "35",
+            "overlapped": false
+          },
+          {
+            "id": "auto:hole-position:top%3A1%3A0%3A58%3Abaseline",
+            "source": "auto",
+            "kind": "hole-position",
+            "view": "top",
+            "text": "58",
+            "overlapped": false
+          },
+          {
+            "id": "auto:overall:y",
+            "source": "auto",
+            "kind": "overall",
+            "view": "top",
+            "text": "70",
+            "overlapped": false
+          },
+          {
+            "id": "auto:overall:x",
+            "source": "auto",
+            "kind": "overall",
+            "view": "front",
+            "text": "100",
+            "overlapped": false
+          },
+          {
+            "id": "auto:overall:z",
+            "source": "auto",
+            "kind": "overall",
+            "view": "front",
+            "text": "12",
+            "overlapped": false
+          },
+          {
+            "id": "auto:hole:0%2C0%2C1000%7C9%7CT%7C-%7C-%7C-%7C-%3A12%2C12%2C12%3B12%2C58%2C12%3B88%2C12%2C12%3B88%2C58%2C12",
+            "source": "auto",
+            "kind": "hole",
+            "view": "top",
+            "text": "4× ⌀9 THRU | ⌖ ⌀0.1 A B C",
+            "overlapped": false
+          },
+          {
+            "id": "auto:hole:0%2C0%2C1000%7C30%7CT%7C-%7C-%7C-%7C-%3A50%2C35%2C12",
+            "source": "auto",
+            "kind": "hole",
+            "view": "top",
+            "text": "⌀30 THRU | ⌖ ⌀0.1 A B C",
+            "overlapped": false
+          },
+          {
+            "id": "auto:datum:A",
+            "source": "auto",
+            "kind": "datum",
+            "view": "front",
+            "text": "datum A",
+            "overlapped": false
+          },
+          {
+            "id": "auto:datum:B",
+            "source": "auto",
+            "kind": "datum",
+            "view": "left",
+            "text": "datum B",
+            "overlapped": false
+          },
+          {
+            "id": "auto:datum:C",
+            "source": "auto",
+            "kind": "datum",
+            "view": "top",
+            "text": "datum C",
+            "overlapped": false
+          },
+          {
+            "id": "auto:flatness:A",
+            "source": "auto",
+            "kind": "flatness",
+            "view": "front",
+            "text": "⏥ 0.4",
+            "overlapped": false
+          },
+          {
+            "id": "auto:fillet:top%7C6%3A1.7573593128807143%2C1.7573593128807135%2C6%3B1.7573593128807143%2C68.24264068711929%2C6%3B98.24264068711929%2C1.7573593128807143%2C6%3B98.24264068711929%2C68.24264068711929%2C6",
+            "source": "auto",
+            "kind": "fillet",
+            "view": "top",
+            "text": "4× R6",
+            "overlapped": false
+          }
+        ],
+        "generalTolerance": "ISO 2768-mK",
+        "review": {
+          "status": "complete",
+          "requirements": [
+            {
+              "featureId": "mountingHoles",
+              "annotationId": "authored:pitch-x",
+              "expectedKind": "linear",
+              "role": "critical",
+              "reason": "Locate fixture holes across X so the mating pattern can be checked.",
+              "planId": "plate",
+              "requirementId": "pitch-x",
+              "status": "covered"
+            },
+            {
+              "featureId": "mountingHoles",
+              "annotationId": "authored:pitch-y",
+              "expectedKind": "linear",
+              "role": "critical",
+              "reason": "Locate the second hole row across Y.",
+              "planId": "plate",
+              "requirementId": "pitch-y",
+              "status": "covered"
+            },
+            {
+              "featureId": "mountingHoles",
+              "annotationId": "authored:mounting-diameter",
+              "expectedKind": "diameter",
+              "role": "critical",
+              "reason": "Expose the illustrative 9 mm mounting-hole diameter.",
+              "planId": "plate",
+              "requirementId": "mounting-diameter",
+              "status": "covered"
+            },
+            {
+              "featureId": "centreBore",
+              "annotationId": "authored:bore-diameter",
+              "expectedKind": "diameter",
+              "role": "critical",
+              "reason": "Expose the central interface opening.",
+              "planId": "plate",
+              "requirementId": "bore-diameter",
+              "status": "covered"
+            },
+            {
+              "featureId": "stock",
+              "annotationId": "authored:stock-width",
+              "expectedKind": "linear",
+              "role": "reference",
+              "reason": "Overall stock width is advisory in this interface-only plan.",
+              "planId": "plate",
+              "requirementId": "stock-width",
+              "status": "missing"
+            }
+          ],
+          "decisions": [],
+          "criticalCount": 4,
+          "coveredCriticalCount": 4,
+          "decisionCount": 0,
+          "unresolvedDecisionCount": 0
+        },
+        "suppressed": 0,
+        "draftingProfile": "general"
+      },
+      "diagnostics": [
+        {
+          "target": "export-occt",
+          "code": "drawing.annotation.overlap",
+          "severity": "warn",
+          "message": "svg-drawing: 1 automatic annotation(s) could not be placed clear of geometry, other labels or the sheet frame: hole-position '50' (top).",
+          "hint": "Use a larger sheet (options.sheet, e.g. a3 or a2), narrow options.autoAnnotate.include, or dimension the crowded features with options.annotations.",
+          "nextAction": {
+            "kind": "rewrite-feature",
+            "guidance": "reorder annotations, change view, or add offset to separate overlapping callouts"
+          }
+        }
+      ]
+    },
+    {
+      "at": "2026-10-12T12:38:58.180Z",
+      "url": "http://127.0.0.1:5248/__kernelcad/export?format=svg-drawing&review=1",
+      "status": 200,
+      "format": "svg-drawing",
+      "options": {
+        "draftingProfile": "general",
+        "autoAnnotate": {
+          "dimensioningStyle": "baseline"
+        },
+        "annotationOverrides": {
+          "authored:pitch-x": {
+            "suppress": true,
+            "view": "top"
+          },
+          "authored:pitch-y": {
+            "view": "top"
+          },
+          "authored:mounting-diameter": {
+            "view": "top",
+            "offset": 4
+          },
+          "authored:bore-diameter": {
+            "view": "top",
+            "offset": 20
+          }
+        },
+        "date": "2026-10-12",
+        "format": "svg-drawing"
+      },
+      "drawingReport": {
+        "placed": 18,
+        "overlapped": 1,
+        "byKind": {
+          "linear": 1,
+          "diameter": 2,
+          "hole-position": 6,
+          "overall": 3,
+          "hole": 2,
+          "datum": 3,
+          "flatness": 1,
+          "fillet": 1,
+          "general-tolerance": 1
+        },
+        "datums": [
+          {
+            "label": "A",
+            "source": "auto",
+            "normal": [
+              0,
+              0,
+              -1
+            ],
+            "point": [
+              50,
+              35,
+              0
+            ]
+          },
+          {
+            "label": "B",
+            "source": "auto",
+            "normal": [
+              0,
+              -1,
+              0
+            ],
+            "point": [
+              50,
+              0,
+              6
+            ]
+          },
+          {
+            "label": "C",
+            "source": "auto",
+            "normal": [
+              -1,
+              0,
+              0
+            ],
+            "point": [
+              0,
+              35,
+              6
+            ]
+          }
+        ],
+        "annotations": [
+          {
+            "id": "authored:pitch-x",
+            "source": "authored",
+            "kind": "linear",
+            "view": "top",
+            "text": "X pitch 76",
+            "overlapped": false,
+            "suppressed": true
+          },
+          {
+            "id": "authored:pitch-y",
+            "source": "authored",
+            "kind": "linear",
+            "view": "top",
+            "text": "Y pitch 46",
+            "overlapped": false
+          },
+          {
+            "id": "authored:mounting-diameter",
+            "source": "authored",
+            "kind": "diameter",
+            "view": "top",
+            "text": "Mounting holes ⌀9",
+            "overlapped": false,
+            "offset": 4
+          },
+          {
+            "id": "authored:bore-diameter",
+            "source": "authored",
+            "kind": "diameter",
+            "view": "top",
+            "text": "Centre bore ⌀30",
+            "overlapped": false,
+            "offset": 20
+          },
+          {
+            "id": "auto:hole-position:top%3A0%3A0%3A12%3Abaseline",
+            "source": "auto",
+            "kind": "hole-position",
+            "view": "top",
+            "text": "12",
+            "overlapped": false
+          },
+          {
+            "id": "auto:hole-position:top%3A0%3A0%3A50%3Abaseline",
+            "source": "auto",
+            "kind": "hole-position",
+            "view": "top",
+            "text": "50",
+            "overlapped": true
+          },
+          {
+            "id": "auto:hole-position:top%3A0%3A0%3A88%3Abaseline",
+            "source": "auto",
+            "kind": "hole-position",
+            "view": "top",
+            "text": "88",
+            "overlapped": false
+          },
+          {
+            "id": "auto:hole-position:top%3A1%3A0%3A12%3Abaseline",
+            "source": "auto",
+            "kind": "hole-position",
+            "view": "top",
+            "text": "12",
+            "overlapped": false
+          },
+          {
+            "id": "auto:hole-position:top%3A1%3A0%3A35%3Abaseline",
+            "source": "auto",
+            "kind": "hole-position",
+            "view": "top",
+            "text": "35",
+            "overlapped": false
+          },
+          {
+            "id": "auto:hole-position:top%3A1%3A0%3A58%3Abaseline",
+            "source": "auto",
+            "kind": "hole-position",
+            "view": "top",
+            "text": "58",
+            "overlapped": false
+          },
+          {
+            "id": "auto:overall:y",
+            "source": "auto",
+            "kind": "overall",
+            "view": "top",
+            "text": "70",
+            "overlapped": false
+          },
+          {
+            "id": "auto:overall:x",
+            "source": "auto",
+            "kind": "overall",
+            "view": "front",
+            "text": "100",
+            "overlapped": false
+          },
+          {
+            "id": "auto:overall:z",
+            "source": "auto",
+            "kind": "overall",
+            "view": "front",
+            "text": "12",
+            "overlapped": false
+          },
+          {
+            "id": "auto:hole:0%2C0%2C1000%7C9%7CT%7C-%7C-%7C-%7C-%3A12%2C12%2C12%3B12%2C58%2C12%3B88%2C12%2C12%3B88%2C58%2C12",
+            "source": "auto",
+            "kind": "hole",
+            "view": "top",
+            "text": "4× ⌀9 THRU | ⌖ ⌀0.1 A B C",
+            "overlapped": false
+          },
+          {
+            "id": "auto:hole:0%2C0%2C1000%7C30%7CT%7C-%7C-%7C-%7C-%3A50%2C35%2C12",
+            "source": "auto",
+            "kind": "hole",
+            "view": "top",
+            "text": "⌀30 THRU | ⌖ ⌀0.1 A B C",
+            "overlapped": false
+          },
+          {
+            "id": "auto:datum:A",
+            "source": "auto",
+            "kind": "datum",
+            "view": "front",
+            "text": "datum A",
+            "overlapped": false
+          },
+          {
+            "id": "auto:datum:B",
+            "source": "auto",
+            "kind": "datum",
+            "view": "top",
+            "text": "datum B",
+            "overlapped": false
+          },
+          {
+            "id": "auto:datum:C",
+            "source": "auto",
+            "kind": "datum",
+            "view": "front",
+            "text": "datum C",
+            "overlapped": false
+          },
+          {
+            "id": "auto:flatness:A",
+            "source": "auto",
+            "kind": "flatness",
+            "view": "front",
+            "text": "⏥ 0.4",
+            "overlapped": false
+          },
+          {
+            "id": "auto:fillet:top%7C6%3A1.7573593128807143%2C1.7573593128807135%2C6%3B1.7573593128807143%2C68.24264068711929%2C6%3B98.24264068711929%2C1.7573593128807143%2C6%3B98.24264068711929%2C68.24264068711929%2C6",
+            "source": "auto",
+            "kind": "fillet",
+            "view": "top",
+            "text": "4× R6",
+            "overlapped": false
+          }
+        ],
+        "generalTolerance": "ISO 2768-mK",
+        "review": {
+          "status": "incomplete",
+          "requirements": [
+            {
+              "featureId": "mountingHoles",
+              "annotationId": "authored:pitch-x",
+              "expectedKind": "linear",
+              "role": "critical",
+              "reason": "Locate fixture holes across X so the mating pattern can be checked.",
+              "planId": "plate",
+              "requirementId": "pitch-x",
+              "status": "hidden"
+            },
+            {
+              "featureId": "mountingHoles",
+              "annotationId": "authored:pitch-y",
+              "expectedKind": "linear",
+              "role": "critical",
+              "reason": "Locate the second hole row across Y.",
+              "planId": "plate",
+              "requirementId": "pitch-y",
+              "status": "covered"
+            },
+            {
+              "featureId": "mountingHoles",
+              "annotationId": "authored:mounting-diameter",
+              "expectedKind": "diameter",
+              "role": "critical",
+              "reason": "Expose the illustrative 9 mm mounting-hole diameter.",
+              "planId": "plate",
+              "requirementId": "mounting-diameter",
+              "status": "covered"
+            },
+            {
+              "featureId": "centreBore",
+              "annotationId": "authored:bore-diameter",
+              "expectedKind": "diameter",
+              "role": "critical",
+              "reason": "Expose the central interface opening.",
+              "planId": "plate",
+              "requirementId": "bore-diameter",
+              "status": "covered"
+            },
+            {
+              "featureId": "stock",
+              "annotationId": "authored:stock-width",
+              "expectedKind": "linear",
+              "role": "reference",
+              "reason": "Overall stock width is advisory in this interface-only plan.",
+              "planId": "plate",
+              "requirementId": "stock-width",
+              "status": "missing"
+            }
+          ],
+          "decisions": [],
+          "criticalCount": 4,
+          "coveredCriticalCount": 3,
+          "decisionCount": 0,
+          "unresolvedDecisionCount": 0
+        },
+        "suppressed": 1,
+        "draftingProfile": "general"
+      },
+      "diagnostics": [
+        {
+          "target": "export-occt",
+          "code": "drawing.annotation.overlap",
+          "severity": "warn",
+          "message": "svg-drawing: 1 automatic annotation(s) could not be placed clear of geometry, other labels or the sheet frame: hole-position '50' (top).",
+          "hint": "Use a larger sheet (options.sheet, e.g. a3 or a2), narrow options.autoAnnotate.include, or dimension the crowded features with options.annotations.",
+          "nextAction": {
+            "kind": "rewrite-feature",
+            "guidance": "reorder annotations, change view, or add offset to separate overlapping callouts"
+          }
+        },
+        {
+          "target": "export-occt",
+          "code": "drawing.review.incomplete",
+          "severity": "warn",
+          "message": "Declared drawing review is incomplete: required geometric callouts or engineering decisions remain unresolved.",
+          "hint": "Inspect report.review requirements and decisions; coverage is not fit, tolerance or manufacturing certification.",
+          "nextAction": {
+            "kind": "fix-arg",
+            "field": "options.reviewPlans"
+          }
+        }
+      ]
+    },
+    {
+      "at": "2026-10-12T12:39:02.617Z",
+      "url": "http://127.0.0.1:5248/__kernelcad/export?format=pdf-drawing&async=1",
+      "status": 200,
+      "format": "pdf-drawing",
+      "options": {
+        "draftingProfile": "general",
+        "autoAnnotate": {
+          "dimensioningStyle": "baseline"
+        },
+        "annotationOverrides": {
+          "authored:pitch-x": {
+            "suppress": true,
+            "view": "top"
+          },
+          "authored:pitch-y": {
+            "view": "top"
+          },
+          "authored:mounting-diameter": {
+            "view": "top",
+            "offset": 4
+          },
+          "authored:bore-diameter": {
+            "view": "top",
+            "offset": 20
+          }
+        },
+        "date": "2026-10-12",
+        "format": "pdf-drawing"
+      }
+    },
+    {
+      "at": "2026-10-12T12:39:06.685Z",
+      "url": "http://127.0.0.1:5248/__kernelcad/export?format=svg-drawing&review=1",
+      "status": 200,
+      "format": "svg-drawing",
+      "options": {
+        "draftingProfile": "general",
+        "autoAnnotate": {
+          "dimensioningStyle": "baseline"
+        },
+        "annotationOverrides": {
+          "authored:pitch-x": {
+            "suppress": false,
+            "view": "top"
+          },
+          "authored:pitch-y": {
+            "view": "top"
+          },
+          "authored:mounting-diameter": {
+            "view": "top",
+            "offset": 4
+          },
+          "authored:bore-diameter": {
+            "view": "top",
+            "offset": 20
+          }
+        },
+        "date": "2026-10-12",
+        "format": "svg-drawing"
+      },
+      "drawingReport": {
+        "placed": 19,
+        "overlapped": 1,
+        "byKind": {
+          "linear": 2,
+          "diameter": 2,
+          "hole-position": 6,
+          "overall": 3,
+          "hole": 2,
+          "datum": 3,
+          "flatness": 1,
+          "fillet": 1,
+          "general-tolerance": 1
+        },
+        "datums": [
+          {
+            "label": "A",
+            "source": "auto",
+            "normal": [
+              0,
+              0,
+              -1
+            ],
+            "point": [
+              50,
+              35,
+              0
+            ]
+          },
+          {
+            "label": "B",
+            "source": "auto",
+            "normal": [
+              0,
+              -1,
+              0
+            ],
+            "point": [
+              50,
+              0,
+              6
+            ]
+          },
+          {
+            "label": "C",
+            "source": "auto",
+            "normal": [
+              -1,
+              0,
+              0
+            ],
+            "point": [
+              0,
+              35,
+              6
+            ]
+          }
+        ],
+        "annotations": [
+          {
+            "id": "authored:pitch-x",
+            "source": "authored",
+            "kind": "linear",
+            "view": "top",
+            "text": "X pitch 76",
+            "overlapped": false
+          },
+          {
+            "id": "authored:pitch-y",
+            "source": "authored",
+            "kind": "linear",
+            "view": "top",
+            "text": "Y pitch 46",
+            "overlapped": false
+          },
+          {
+            "id": "authored:mounting-diameter",
+            "source": "authored",
+            "kind": "diameter",
+            "view": "top",
+            "text": "Mounting holes ⌀9",
+            "overlapped": false,
+            "offset": 4
+          },
+          {
+            "id": "authored:bore-diameter",
+            "source": "authored",
+            "kind": "diameter",
+            "view": "top",
+            "text": "Centre bore ⌀30",
+            "overlapped": false,
+            "offset": 20
+          },
+          {
+            "id": "auto:hole-position:top%3A0%3A0%3A12%3Abaseline",
+            "source": "auto",
+            "kind": "hole-position",
+            "view": "top",
+            "text": "12",
+            "overlapped": false
+          },
+          {
+            "id": "auto:hole-position:top%3A0%3A0%3A50%3Abaseline",
+            "source": "auto",
+            "kind": "hole-position",
+            "view": "top",
+            "text": "50",
+            "overlapped": true
+          },
+          {
+            "id": "auto:hole-position:top%3A0%3A0%3A88%3Abaseline",
+            "source": "auto",
+            "kind": "hole-position",
+            "view": "top",
+            "text": "88",
+            "overlapped": false
+          },
+          {
+            "id": "auto:hole-position:top%3A1%3A0%3A12%3Abaseline",
+            "source": "auto",
+            "kind": "hole-position",
+            "view": "top",
+            "text": "12",
+            "overlapped": false
+          },
+          {
+            "id": "auto:hole-position:top%3A1%3A0%3A35%3Abaseline",
+            "source": "auto",
+            "kind": "hole-position",
+            "view": "top",
+            "text": "35",
+            "overlapped": false
+          },
+          {
+            "id": "auto:hole-position:top%3A1%3A0%3A58%3Abaseline",
+            "source": "auto",
+            "kind": "hole-position",
+            "view": "top",
+            "text": "58",
+            "overlapped": false
+          },
+          {
+            "id": "auto:overall:y",
+            "source": "auto",
+            "kind": "overall",
+            "view": "top",
+            "text": "70",
+            "overlapped": false
+          },
+          {
+            "id": "auto:overall:x",
+            "source": "auto",
+            "kind": "overall",
+            "view": "front",
+            "text": "100",
+            "overlapped": false
+          },
+          {
+            "id": "auto:overall:z",
+            "source": "auto",
+            "kind": "overall",
+            "view": "front",
+            "text": "12",
+            "overlapped": false
+          },
+          {
+            "id": "auto:hole:0%2C0%2C1000%7C9%7CT%7C-%7C-%7C-%7C-%3A12%2C12%2C12%3B12%2C58%2C12%3B88%2C12%2C12%3B88%2C58%2C12",
+            "source": "auto",
+            "kind": "hole",
+            "view": "top",
+            "text": "4× ⌀9 THRU | ⌖ ⌀0.1 A B C",
+            "overlapped": false
+          },
+          {
+            "id": "auto:hole:0%2C0%2C1000%7C30%7CT%7C-%7C-%7C-%7C-%3A50%2C35%2C12",
+            "source": "auto",
+            "kind": "hole",
+            "view": "top",
+            "text": "⌀30 THRU | ⌖ ⌀0.1 A B C",
+            "overlapped": false
+          },
+          {
+            "id": "auto:datum:A",
+            "source": "auto",
+            "kind": "datum",
+            "view": "front",
+            "text": "datum A",
+            "overlapped": false
+          },
+          {
+            "id": "auto:datum:B",
+            "source": "auto",
+            "kind": "datum",
+            "view": "left",
+            "text": "datum B",
+            "overlapped": false
+          },
+          {
+            "id": "auto:datum:C",
+            "source": "auto",
+            "kind": "datum",
+            "view": "top",
+            "text": "datum C",
+            "overlapped": false
+          },
+          {
+            "id": "auto:flatness:A",
+            "source": "auto",
+            "kind": "flatness",
+            "view": "front",
+            "text": "⏥ 0.4",
+            "overlapped": false
+          },
+          {
+            "id": "auto:fillet:top%7C6%3A1.7573593128807143%2C1.7573593128807135%2C6%3B1.7573593128807143%2C68.24264068711929%2C6%3B98.24264068711929%2C1.7573593128807143%2C6%3B98.24264068711929%2C68.24264068711929%2C6",
+            "source": "auto",
+            "kind": "fillet",
+            "view": "top",
+            "text": "4× R6",
+            "overlapped": false
+          }
+        ],
+        "generalTolerance": "ISO 2768-mK",
+        "review": {
+          "status": "complete",
+          "requirements": [
+            {
+              "featureId": "mountingHoles",
+              "annotationId": "authored:pitch-x",
+              "expectedKind": "linear",
+              "role": "critical",
+              "reason": "Locate fixture holes across X so the mating pattern can be checked.",
+              "planId": "plate",
+              "requirementId": "pitch-x",
+              "status": "covered"
+            },
+            {
+              "featureId": "mountingHoles",
+              "annotationId": "authored:pitch-y",
+              "expectedKind": "linear",
+              "role": "critical",
+              "reason": "Locate the second hole row across Y.",
+              "planId": "plate",
+              "requirementId": "pitch-y",
+              "status": "covered"
+            },
+            {
+              "featureId": "mountingHoles",
+              "annotationId": "authored:mounting-diameter",
+              "expectedKind": "diameter",
+              "role": "critical",
+              "reason": "Expose the illustrative 9 mm mounting-hole diameter.",
+              "planId": "plate",
+              "requirementId": "mounting-diameter",
+              "status": "covered"
+            },
+            {
+              "featureId": "centreBore",
+              "annotationId": "authored:bore-diameter",
+              "expectedKind": "diameter",
+              "role": "critical",
+              "reason": "Expose the central interface opening.",
+              "planId": "plate",
+              "requirementId": "bore-diameter",
+              "status": "covered"
+            },
+            {
+              "featureId": "stock",
+              "annotationId": "authored:stock-width",
+              "expectedKind": "linear",
+              "role": "reference",
+              "reason": "Overall stock width is advisory in this interface-only plan.",
+              "planId": "plate",
+              "requirementId": "stock-width",
+              "status": "missing"
+            }
+          ],
+          "decisions": [],
+          "criticalCount": 4,
+          "coveredCriticalCount": 4,
+          "decisionCount": 0,
+          "unresolvedDecisionCount": 0
+        },
+        "suppressed": 0,
+        "draftingProfile": "general"
+      },
+      "diagnostics": [
+        {
+          "target": "export-occt",
+          "code": "drawing.annotation.overlap",
+          "severity": "warn",
+          "message": "svg-drawing: 1 automatic annotation(s) could not be placed clear of geometry, other labels or the sheet frame: hole-position '50' (top).",
+          "hint": "Use a larger sheet (options.sheet, e.g. a3 or a2), narrow options.autoAnnotate.include, or dimension the crowded features with options.annotations.",
+          "nextAction": {
+            "kind": "rewrite-feature",
+            "guidance": "reorder annotations, change view, or add offset to separate overlapping callouts"
+          }
+        }
+      ]
+    },
+    {
+      "at": "2026-10-12T12:39:10.043Z",
+      "url": "http://127.0.0.1:5248/__kernelcad/export?format=pdf-drawing&async=1",
+      "status": 500,
+      "format": "pdf-drawing",
+      "options": {
+        "draftingProfile": "general",
+        "autoAnnotate": {
+          "dimensioningStyle": "baseline"
+        },
+        "annotationOverrides": {
+          "authored:pitch-x": {
+            "suppress": false,
+            "view": "top"
+          },
+          "authored:pitch-y": {
+            "view": "top"
+          },
+          "authored:mounting-diameter": {
+            "view": "top",
+            "offset": 4
+          },
+          "authored:bore-diameter": {
+            "view": "top",
+            "offset": 20
+          }
+        },
+        "date": "2026-10-12",
+        "requireCompleteReview": true,
+        "format": "pdf-drawing"
+      }
+    }
+  ],
+  "projectCleanup": true,
+  "ownedTabClosed": true,
+  "finishedAt": "2026-10-12T12:40:01.098Z"
+}
