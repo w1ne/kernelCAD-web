@@ -22,6 +22,7 @@
 
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
 import type { OcctBackend } from '../../kernel/backends/occt/occtBackend';
+import type { Vec3 } from '../../shared/intent/types';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 
 /** A single (part_a, part_b) pair whose intersection has non-trivial volume. */
@@ -52,8 +53,15 @@ export function detectInterferences(
   // translate / rotate mutate-and-destroy the source OCCT handle, so we
   // never touch the originals.
   const transformed = scene.parts.map((p) => {
-    const clone = (p.shape as OcctBackend).clone().applyTransform(p.worldTransform);
-    return { name: p.name, shape: clone, bbox: clone.boundingBox() };
+    const clone = (p.shape as OcctBackend)
+      .clone()
+      .applyTransform(p.worldTransform);
+    return {
+      name: p.name,
+      shape: clone,
+      bbox: clone.boundingBox(),
+      frameBounds: new Map<number, Bounds>(),
+    };
   });
 
   const pairs: InterferencePair[] = [];
@@ -66,6 +74,43 @@ export function detectInterferences(
       if (ignored.has(key)) continue;
       if (!bboxesOverlap(a.bbox, b.bbox)) continue;
       comparisons++;
+      // A rigid-frame box overlap bounds the true intersection volume from
+      // above. Native padded boxes are conservative; mesh bounds are not.
+      // Alternate frames cheaply separate oblique contact planes before an
+      // expensive BREP common. No geometry or caller threshold is changed.
+      let boundedBelowThreshold = false;
+      for (let frame = 0; frame < BOUND_FRAMES.length; frame++) {
+        try {
+          const boundsFor = (part: typeof a): Bounds => {
+            const cached = part.frameBounds.get(frame);
+            if (cached) return cached;
+            const basis = BOUND_FRAMES[frame];
+            let bounds: Bounds;
+            if (basis === null) bounds = paddedBounds(part.shape);
+            else {
+              const rotated = part.shape
+                .clone()
+                .rotate(basis.axis, basis.degrees);
+              try {
+                bounds = paddedBounds(rotated);
+              } finally {
+                rotated.getReplicadShape().delete();
+              }
+            }
+            part.frameBounds.set(frame, bounds);
+            return bounds;
+          };
+          const upper = overlapVolumeUpperBound(boundsFor(a), boundsFor(b));
+          if (Number.isFinite(upper) && upper <= epsilonMm3) {
+            boundedBelowThreshold = true;
+            break;
+          }
+        } catch {
+          // An unavailable enclosure is no proof: retain the native Boolean.
+          break;
+        }
+      }
+      if (boundedBelowThreshold) continue;
       // Boolean intersect can throw on degenerate inputs; treat as "no
       // detectable clash" rather than aborting the whole sweep.
       let inter: OcctBackend;
@@ -99,8 +144,47 @@ function bboxesOverlap(
   b: { min: [number, number, number]; max: [number, number, number] },
 ): boolean {
   return (
-    a.min[0] <= b.max[0] && a.max[0] >= b.min[0] &&
-    a.min[1] <= b.max[1] && a.max[1] >= b.min[1] &&
-    a.min[2] <= b.max[2] && a.max[2] >= b.min[2]
+    a.min[0] <= b.max[0] &&
+    a.max[0] >= b.min[0] &&
+    a.min[1] <= b.max[1] &&
+    a.max[1] >= b.min[1] &&
+    a.min[2] <= b.max[2] &&
+    a.max[2] >= b.min[2]
+  );
+}
+
+interface Bounds {
+  min: Vec3;
+  max: Vec3;
+}
+const BOUND_FRAMES: readonly ({ axis: Vec3; degrees: number } | null)[] = [
+  null,
+  ...[-45, 45].flatMap((degrees) =>
+    (
+      [
+        [1, 0, 0],
+        [0, 1, 0],
+        [0, 0, 1],
+      ] as Vec3[]
+    ).map((axis) => ({ axis, degrees })),
+  ),
+];
+
+function paddedBounds(shape: OcctBackend): Bounds {
+  // Preserve Bnd_Box tolerance padding; boundingBox() removes that gap,
+  // and boundingBox({ exact: true }) uses non-conservative tessellation.
+  const [min, max] = shape.getReplicadShape().boundingBox.bounds;
+  return { min: [...min] as Vec3, max: [...max] as Vec3 };
+}
+
+function overlapVolumeUpperBound(a: Bounds, b: Bounds): number {
+  return [0, 1, 2].reduce(
+    (volume, axis) =>
+      volume *
+      Math.max(
+        0,
+        Math.min(a.max[axis], b.max[axis]) - Math.max(a.min[axis], b.min[axis]),
+      ),
+    1,
   );
 }
