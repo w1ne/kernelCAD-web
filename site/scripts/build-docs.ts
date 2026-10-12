@@ -250,6 +250,13 @@ function renderPage(
       </section>`
     : '';
 
+  const routingExample = page.task === 'Measure & verify'
+    ? `      <section class="docs-example">
+        <h2 class="docs-h2">Worked tube routing example</h2>
+        <p class="docs-caption">Read <a href="/blog/tubes-how-to/">the five-line tube guide</a>, then inspect <a href="/blog/rocket-engine-routing/">23 authored engine routes, clearances and a deliberate collision</a>.</p>
+      </section>`
+    : '';
+
   const body = `    <main class="docs-main">
       <p class="docs-crumb"><a href="/docs/">docs</a> / ${escapeHtml(page.task)}</p>
       <h1 class="docs-title">${escapeHtml(page.task)}</h1>
@@ -257,6 +264,7 @@ function renderPage(
 ${renderExample(page, highlighted, model)}
 ${note}
 ${drawingExample}
+${routingExample}
       <h2 class="docs-h2">Calls</h2>
 ${renderEntries(page)}
     </main>

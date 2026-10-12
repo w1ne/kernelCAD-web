@@ -17,6 +17,9 @@ import {
 import { extractPoster } from '../../scripts/lib/extractPoster';
 import { isVideoMostlyBlack } from '../../scripts/lib/blackFrameCheck';
 import { exportGlb } from '../../scripts/lib/exportGlb';
+import { assertCompleteBridgeGeometry } from './completeBridge';
+import { compactBridgeFeature, encodeBridgePayload } from './compactBridge';
+import { copyMeshoptDecoder, MESHOPT_DECODER_URL } from '../../scripts/lib/meshoptAssets';
 import { optimizeGlb } from '../../scripts/lib/optimizeGlb';
 import { loadScriptFeatures } from '../../src/modeling/runtime/scriptLoader';
 import { meshFeaturesPerFeature } from '../../src/modeling/capture/featureMeshing';
@@ -129,11 +132,12 @@ const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..
  * validator (floating parts, orphans, mate validity) which carries the
  * part/mate attribution SceneTab routes to severity dots. Skips the
  * pose-envelope / interference sweep, which is too slow for a build step and
- * cannot be interrupted on the single OCCT thread. Non-fatal: any failure
+ * cannot be interrupted on the single OCCT thread. The default path is non-fatal: any failure
  * yields a passing summary so the deploy never stalls and the Studio still
- * shows the real feature tree.
+ * shows the real feature tree. Selected compact bridges require a real review
+ * and propagate errors rather than writing a substitute passing summary.
  */
-async function reviewFromLoadedSession(session: CaptureSession): Promise<Record<string, unknown>> {
+async function reviewFromLoadedSession(session: CaptureSession, strict = false): Promise<Record<string, unknown>> {
   try {
     const arm = [...session.assemblies.values()][0] as Assembly | undefined;
     if (!arm) return { ok: true, diagnostics: [] };
@@ -154,6 +158,7 @@ async function reviewFromLoadedSession(session: CaptureSession): Promise<Record<
     const ok = !validator.diagnostics.some((d) => d.severity === 'error');
     return { ok, diagnostics };
   } catch (err) {
+    if (strict) throw err;
     console.warn(
       `build-gallery: validity skipped — ${err instanceof Error ? err.message : String(err)}`,
     );
@@ -231,6 +236,50 @@ export async function fetchCommunityGallery(
   }
   // Featured first; otherwise keep the API's newest-first order.
   return cards.sort((a, b) => Number(b.featured) - Number(a.featured));
+}
+
+async function precomputeGalleryBridge(entry: GalleryEntry, srcScript: string, meshOutDir: string): Promise<void> {
+  try {
+    const sourceText = readFileSync(srcScript, 'utf8');
+    const sha = createHash('sha256').update(sourceText, 'utf8').digest('hex');
+    const loaded = await loadScriptFeatures(srcScript);
+    const meshing = await meshFeaturesPerFeature(
+      loaded.features.map((f) => f.record),
+      loaded.paramTable,
+      loaded.session as unknown as Parameters<typeof meshFeaturesPerFeature>[2],
+    );
+    if (entry.compactBridge) assertCompleteBridgeGeometry(loaded.features.map(f => f.record), meshing, loaded.session, `entry ${entry.slug}`);
+    if (meshing.failedFeatureIds.length > 0) {
+      if (entry.compactBridge) throw new Error(`entry ${entry.slug}: complete bridge required; failed features ${meshing.failedFeatureIds.join(", ")}`);
+      console.warn(
+        `build-gallery: ${entry.slug} precompute skipped — ${meshing.failedFeatureIds.length} feature(s) failed to mesh: ${meshing.failedFeatureIds.join(', ')}`,
+      );
+    } else {
+      // Bake the deterministic structural review so the hosted Studio
+      // shows the real adaptive feature tree (validity non-null) instead
+      // of the legacy code-history fallback, and the Validity tab reflects
+      // actual diagnostics. Reuses the loaded assembly — no re-evaluate.
+      const review = await reviewFromLoadedSession(loaded.session, entry.compactBridge);
+      const bridgePayload = {
+        source: sourceText,
+        features: meshing.features.map(f => {
+          const serialized = serializeForBridge(f);
+          return entry.compactBridge ? compactBridgeFeature(serialized) : serialized;
+        }),
+        featureRecords: loaded.features.map((f) => f.record),
+        bounds: meshing.bounds,
+        params: loaded.paramTable.serialize(),
+        review,
+      };
+      writeFileSync(path.join(meshOutDir, `${sha}.json`), encodeBridgePayload(bridgePayload));
+    }
+  } catch (err) {
+    if (entry.compactBridge) throw err;
+    console.warn(
+      `build-gallery: ${entry.slug} precompute skipped — ${err instanceof Error ? err.message : String(err)}`,
+    );
+  }
+
 }
 
 export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
@@ -321,12 +370,13 @@ export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
       }
       copyFileSync(srcModel, rawGlb);
     } else {
-      await exportGlb({ scriptPath: srcScript, outPath: rawGlb });
+      await exportGlb({ scriptPath: srcScript, outPath: rawGlb, previewMesh: entry.previewMesh });
     }
     await optimizeGlb(rawGlb, dstModel, {
       repoRoot: REPO_ROOT,
       label: `entry ${entry.slug}`,
       maxBytes: GLB_SIZE_HARD_CAP,
+      meshopt: entry.meshopt,
       // Gallery entries range from single-body models to 95-body assemblies, so a
       // fixed material floor would reject valid simple models. The invariant that
       // matters is that optimization does not FLATTEN whatever colours exist.
@@ -339,45 +389,7 @@ export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
     // sha256 of the exact source bytes served at source.kcad.ts — the same
     // digest the browser computes via Web Crypto in scriptSource.meshSourceHosted.
     if (entry.source === 'curated') {
-      // Non-fatal: a model that fails to precompute simply won't have a static
-      // mesh file. The hosted Studio then falls back to its backend (or shows
-      // a clear error for that one model) — far better than failing the entire
-      // marketing deploy over one bad source. exportGlb above already gates on
-      // the source meshing, so this rarely triggers.
-      try {
-        const sourceText = readFileSync(srcScript, 'utf8');
-        const sha = createHash('sha256').update(sourceText, 'utf8').digest('hex');
-        const loaded = await loadScriptFeatures(srcScript);
-        const meshing = await meshFeaturesPerFeature(
-          loaded.features.map((f) => f.record),
-          loaded.paramTable,
-          loaded.session as unknown as Parameters<typeof meshFeaturesPerFeature>[2],
-        );
-        if (meshing.failedFeatureIds.length > 0) {
-          console.warn(
-            `build-gallery: ${entry.slug} precompute skipped — ${meshing.failedFeatureIds.length} feature(s) failed to mesh: ${meshing.failedFeatureIds.join(', ')}`,
-          );
-        } else {
-          // Bake the deterministic structural review so the hosted Studio
-          // shows the real adaptive feature tree (validity non-null) instead
-          // of the legacy code-history fallback, and the Validity tab reflects
-          // actual diagnostics. Reuses the loaded assembly — no re-evaluate.
-          const review = await reviewFromLoadedSession(loaded.session);
-          const bridgePayload = {
-            source: sourceText,
-            features: meshing.features.map(serializeForBridge),
-            featureRecords: loaded.features.map((f) => f.record),
-            bounds: meshing.bounds,
-            params: loaded.paramTable.serialize(),
-            review,
-          };
-          writeFileSync(path.join(meshOutDir, `${sha}.json`), JSON.stringify(bridgePayload));
-        }
-      } catch (err) {
-        console.warn(
-          `build-gallery: ${entry.slug} precompute skipped — ${err instanceof Error ? err.message : String(err)}`,
-        );
-      }
+      await precomputeGalleryBridge(entry, srcScript, meshOutDir);
 
       // Precompute the animation timeline (per-part world transforms per frame)
       // for entries that declare an animationView. Keyed by the SAME sha256 of
@@ -403,8 +415,8 @@ export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
 
     writeFileSync(dstPrompt, entry.prompt + '\n');
 
-    const { video, modelLocal, codeLocal, mechanismReview, ...rest } = entry;
-    void video; void modelLocal; void codeLocal; void mechanismReview;
+    const { video, modelLocal, codeLocal, mechanismReview, previewMesh, compactBridge, ...rest } = entry;
+    void video; void modelLocal; void codeLocal; void mechanismReview; void previewMesh; void compactBridge;
     published.push({
       ...rest,
       videoUrl: `/gallery/${entry.slug}/video.mp4`,
@@ -421,7 +433,9 @@ export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
     ? await fetchCommunityGallery(opts.communityApi, opts.publicDir)
     : [];
 
-  const out = { generatedAt: new Date().toISOString(), entries: published, community };
+  const packed = parsed.entries.some(entry => entry.meshopt);
+  if (packed) copyMeshoptDecoder(opts.publicDir);
+  const out = { ...(packed ? {meshoptDecoderUrl: MESHOPT_DECODER_URL} : {}), generatedAt: new Date().toISOString(), entries: published, community };
   writeFileSync(path.join(opts.publicDir, 'gallery.json'), JSON.stringify(out, null, 2));
 }
 

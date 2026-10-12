@@ -19,9 +19,9 @@ const build = renderBlog(readPosts(REPO_ROOT), { repoRoot: REPO_ROOT, drafts: tr
 const evaluator = createEvaluator(REPO_ROOT);
 
 describe('docs/guide posts against the real model output', () => {
-  it.each(build.posts.map((rendered) => [rendered.post.file, rendered] as const))(
-    '%s passes every check',
-    async (_file, rendered) => {
+  for (const rendered of build.posts) it(
+    `${rendered.post.file} passes every check`,
+    async () => {
       const report = await checkPost(rendered, evaluator, REPO_ROOT);
       expect(report.failures).toEqual([]);
       // Every kcad block was evaluated and every check comment matched, so
@@ -30,12 +30,12 @@ describe('docs/guide posts against the real model output', () => {
       expect(report.kcadBlocks).toBe(blocks.filter((b) => b.kind === 'code' && b.lang === 'kcad').length);
       expect(report.quotes).toBe(blocks.filter((b) => b.kind === 'check').length);
     },
-    120_000,
+    rendered.post.slug === 'rocket-engine-routing' ? 240_000 : 120_000,
   );
 
-  it('covers the published post and the draft', () => {
+  it('covers both published tube articles', () => {
     const slugs = build.posts.map((r) => `${r.post.slug} (${r.post.meta.status})`);
-    expect(slugs).toEqual(expect.arrayContaining(['dimensions-measure-drawings (published)', 'tubes-how-to (draft)']));
+    expect(slugs).toEqual(expect.arrayContaining(['dimensions-measure-drawings (published)', 'tubes-how-to (published)', 'rocket-engine-routing (published)']));
   });
 
   it('leaves no page in site/blog that no published guide builds', () => {

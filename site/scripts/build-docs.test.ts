@@ -21,6 +21,16 @@ const rendered = await renderDocsSite();
 const pages = buildDocsPages();
 const byFile = new Map(rendered.map((p) => [p.file, p.html]));
 
+it('links the tube guide and full rocket example from Measure & verify only', () => {
+  const page = pages.find((p) => p.task === 'Measure & verify')!;
+  const html = byFile.get(`docs/${page.slug}.html`)!;
+  expect(html).toContain('/blog/tubes-how-to/');
+  expect(html).toContain('/blog/rocket-engine-routing/');
+  for (const other of pages.filter((p) => p.task !== page.task)) {
+    expect(byFile.get(`docs/${other.slug}.html`)).not.toContain('/blog/rocket-engine-routing/');
+  }
+});
+
 describe('build-docs', () => {
 
   it('makes worked drawing sheets and their editable source discoverable from export docs', () => {

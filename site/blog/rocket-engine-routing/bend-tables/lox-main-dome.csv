@@ -1,0 +1,12 @@
+name,lox-main-dome
+od_mm,114.3
+wall_mm,1.65
+bend_radius_mm,343
+cut_length_mm,80.000
+
+point,x_mm,y_mm,z_mm
+1,0.000,0.000,0.000
+2,80.000,0.000,0.000
+
+bend,l_mm,r_deg,a_deg
+last_straight_mm,80.000

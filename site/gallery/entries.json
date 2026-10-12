@@ -28,8 +28,39 @@
       "appUrl": null
     },
     {
+      "slug": "rocket-engine-routing",
+      "title": "Rocket-engine rigid tube routing",
+      "author": {
+        "handle": "kernelcad",
+        "url": "https://kernelcad.com"
+      },
+      "version": "v0.17.0",
+      "prompt": "Authored routing brief: connect named ports on a generic gas-generator engine with 23 hollow rigid tubes across LOX, fuel, hot-gas, igniter and pneumatic systems. Set explicit route points, bend radii and service clearances; inspect the deliberate igniter/pilot-line crossing and restore the passing route. Illustrative geometry only, with no pressure, thermal, propulsion or manufacturing acceptance.",
+      "source": "curated",
+      "video": "../../docs/demos/rocket-engine-routing/demo.mp4",
+      "codeLocal": "../../examples/rocket-engine-lines/engine-routed.kcad.ts",
+      "code": "https://github.com/w1ne/kernelCAD-web/blob/develop/examples/rocket-engine-lines/engine-routed.kcad.ts",
+      "tags": [
+        "tube-routing",
+        "ports",
+        "assembly",
+        "rigid-tubes",
+        "authored-example"
+      ],
+      "featured": true,
+      "createdAt": "2026-10-12",
+      "appUrl": "https://app.kernelcad.com/studio?gallery=rocket-engine-routing",
+      "previewMesh": {
+        "tolerance": 2.5,
+        "angularTolerance": 0.85
+      },
+      "meshopt": true,
+      "compactBridge": true,
+      "modelOrientation": "0deg -90deg 0deg"
+    },
+    {
       "slug": "make-no-mistakes-keycap",
-      "title": "MAKE NO MISTAKES — 2.0u Keycap",
+      "title": "MAKE NO MISTAKES \u2014 2.0u Keycap",
       "author": {
         "handle": "w1ne",
         "url": "https://github.com/w1ne"
@@ -115,7 +146,7 @@
         "url": "https://x.com/kernelcad"
       },
       "version": "v0.12.0",
-      "prompt": "Design a compact countertop spice dispenser in a Ø88 × 110 mm mug format that doses a measured ~0.5 ml on demand. Use a six-chamber drum that indexes one chamber pitch over a single metering station, plus a separate pocket metering disc that fills, swings to an enclosed drop chute, dwells, and returns. Keep the dose path enclosed, the electronics bay isolated, and deliver the full dispense cycle as a looping cutaway animation with collision-free motion.",
+      "prompt": "Design a compact countertop spice dispenser in a \u00d888 \u00d7 110 mm mug format that doses a measured ~0.5 ml on demand. Use a six-chamber drum that indexes one chamber pitch over a single metering station, plus a separate pocket metering disc that fills, swings to an enclosed drop chute, dwells, and returns. Keep the dose path enclosed, the electronics bay isolated, and deliver the full dispense cycle as a looping cutaway animation with collision-free motion.",
       "source": "curated",
       "video": "../../docs/demos/v0.12/spice-dispenser-carousel/demo.mp4",
       "codeLocal": "../../examples/spice-dispenser-carousel.kcad.ts",

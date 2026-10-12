@@ -178,3 +178,17 @@ describe('static gallery landing page', () => {
     expect(footer).toContain('<a href="/gallery">gallery</a>');
   });
 });
+
+it('sets the optional gallery decoder before viewers or module initialization', () => {
+  const html=readFileSync(path.resolve(__dirname,'../site/index.html'),'utf8');
+  const configure=html.indexOf('if (g.meshoptDecoderUrl)');
+  expect(configure).toBeGreaterThan(-1);
+  expect(configure).toBeLessThan(html.indexOf('renderCuratedCards(grid, curated'));
+  expect(html).toContain('self.ModelViewerElement');
+  expect(html).toContain('meshoptDecoderLocation: g.meshoptDecoderUrl');
+});
+
+it('sets orientation only for a selected gallery entry',()=>{
+  const html=readFileSync(path.resolve(__dirname,'../site/index.html'),'utf8');
+  expect(html).toContain("if (entry.modelOrientation) viewer.setAttribute('orientation', entry.modelOrientation)");
+});

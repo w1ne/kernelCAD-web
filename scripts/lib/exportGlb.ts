@@ -16,11 +16,15 @@ import { pbrFromMetadata, type OcctBackend } from '../../src/kernel/backends/occ
 import { loadScriptFeatures } from '../../src/modeling/runtime/scriptLoader';
 import { meshFeaturesPerFeature, type FeatureMesh } from '../../src/modeling/capture/featureMeshing';
 import type { PBRMaterial } from '../../src/shared/intent/material';
+import type { MeshOptions } from '../../src/kernel/backends/occt/meshing';
+import { previewFeatureMeshes, validatePreviewMesh } from './previewMeshes';
 import { resolveColor } from '../../src/shared/render/palette';
 
 export interface ExportGlbOptions {
   scriptPath: string;
   outPath: string;
+  /** Selected web tile only; default native export/Studio quality is unchanged. */
+  previewMesh?: MeshOptions;
 }
 
 const DEFAULT_MATERIAL = { color: 0xb0b0b0, metalness: 0.2, roughness: 0.6 };
@@ -73,7 +77,7 @@ function addSingleMesh(
   scene.add(new Mesh(welded, makeMaterial(color, material)));
 }
 
-function addFeatureMesh(scene: ThreeScene, fm: FeatureMesh): void {
+function addFeatureMesh(scene: ThreeScene, fm: FeatureMesh, named = false): void {
   if (fm.virtual) return;
   const totalVerts = fm.faces.reduce((s, f) => s + f.vertices.length, 0);
   if (totalVerts === 0) return;
@@ -94,27 +98,12 @@ function addFeatureMesh(scene: ThreeScene, fm: FeatureMesh): void {
     iOff += face.indices.length;
   }
   addSingleMesh(scene, positions, normals, indices, fm.color, fm.material);
+  if (named && fm.displayName) scene.children[scene.children.length - 1].name = fm.displayName;
 }
 
-export async function exportGlb(opts: ExportGlbOptions): Promise<void> {
-  if (!existsSync(opts.scriptPath)) {
-    throw new Error(`script not found: ${opts.scriptPath}`);
-  }
+type BuiltModel = NonNullable<Awaited<ReturnType<typeof evaluateAndBuildScript>>['model']>;
 
-  const { evaluation, model } = await evaluateAndBuildScript({ file: opts.scriptPath });
-  if (evaluation.exitCode !== 0 || !model) {
-    const diags = (evaluation.diagnostics ?? [])
-      .filter((d) => d.severity === 'error')
-      .map((d) => `[${d.code ?? 'error'}] ${d.message}`)
-      .join('\n  ');
-    throw new Error(
-      `evaluation failed for ${opts.scriptPath} (exitCode=${evaluation.exitCode}, has model=${!!model})` +
-        (diags ? `\n  ${diags}` : ''),
-    );
-  }
-
-  const scene = new ThreeScene();
-
+async function addNativeModel(scene: ThreeScene, model: BuiltModel, scriptPath: string): Promise<void> {
   // Two paths:
   //   1. Single-shape script — tailShape is an OcctBackend exposing getMesh().
   //   2. Assembly script — tailShape is the assembly's own backend (no getMesh).
@@ -135,7 +124,7 @@ export async function exportGlb(opts: ExportGlbOptions): Promise<void> {
       material,
     );
   } else {
-    const loaded = await loadScriptFeatures(opts.scriptPath);
+    const loaded = await loadScriptFeatures(scriptPath);
     const meshing = await meshFeaturesPerFeature(
       loaded.features.map((f) => f.record),
       loaded.paramTable,
@@ -150,6 +139,34 @@ export async function exportGlb(opts: ExportGlbOptions): Promise<void> {
     if (scene.children.length === 0) {
       throw new Error('exportGlb: assembly produced no non-virtual feature meshes');
     }
+  }
+
+}
+
+export async function exportGlb(opts: ExportGlbOptions): Promise<void> {
+  if (opts.previewMesh) validatePreviewMesh(opts.previewMesh);
+  if (!existsSync(opts.scriptPath)) {
+    throw new Error(`script not found: ${opts.scriptPath}`);
+  }
+
+  const { evaluation, model } = await evaluateAndBuildScript({ file: opts.scriptPath });
+  if (evaluation.exitCode !== 0 || !model) {
+    const diags = (evaluation.diagnostics ?? [])
+      .filter((d) => d.severity === 'error')
+      .map((d) => `[${d.code ?? 'error'}] ${d.message}`)
+      .join('\n  ');
+    throw new Error(
+      `evaluation failed for ${opts.scriptPath} (exitCode=${evaluation.exitCode}, has model=${!!model})` +
+        (diags ? `\n  ${diags}` : ''),
+    );
+  }
+
+  const scene = new ThreeScene();
+
+  if (opts.previewMesh) {
+    for (const fm of previewFeatureMeshes(model.tailShape, model.session, opts.previewMesh)) addFeatureMesh(scene, fm, true);
+  } else {
+    await addNativeModel(scene, model, opts.scriptPath);
   }
 
   const exporter = new GLTFExporter();
