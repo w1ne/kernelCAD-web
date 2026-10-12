@@ -145,54 +145,72 @@ const base = arm.part(
 );
 base.connector('yaw', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 48] }, axis: [0, 0, 1] });
 
+// Yaw stage: a hub that sits on the base's r15 boss face with a bore over
+// the r8 pivot pin, a deck, and a clevis of two bored cheeks for the tilt
+// axle. The tilt servo stands on its own plate outboard of the +Y cheek.
+const cheekY = 21;
+const cheekT = 7;
+const cheekOuterY = cheekY + cheekT / 2; // 24.5
+const axleR = 4.2;
+const axleBoreR = axleR + 0.15; // running clearance
+const servoY = cheekOuterY + 0.5 + 9; // 18 mm deep body, 0.5 mm off the cheek
+const servoZ = 20 + 14; // 28 mm tall body standing on the deck-level plate
 const yawStage = arm.part(
   'yaw-stage',
-  cylinder(32, 14).translate(0, 0, -1)
-    .union(roundPlate(18, 54, 3, 8, 0, 0, 30))
-    .union(roundPlate(20, 7, 2, 32, 0, 21, 14))
-    .union(roundPlate(20, 7, 2, 32, 0, -21, 14))
-    .union(roundPlate(12, 8, 2, 40, 0, 21, 6))
-    .union(roundPlate(12, 8, 2, 40, 0, -21, 6))
-    .union(roundPlate(32, 22, 3, 8, -16, 34, 24))
-    .union(cylinder(16, 5).rotate([1, 0, 0], 90).translate(0, 8, tiltZ - 48))
+  cylinder(12.6, 14).translate(0, 0, -0.6)
+    .subtract(cylinder(1.2, 8.2).translate(0, 0, -0.7))
+    .union(roundPlate(18, 54, 3, 8, 0, 0, 12))
+    .union(roundPlate(20, cheekT, 2, 26, 0, cheekY, 20))
+    .union(roundPlate(20, cheekT, 2, 26, 0, -cheekY, 20))
+    .subtract(cylinder(60, axleBoreR, 32).rotate([1, 0, 0], 90).translate(0, 30, tiltZ - 48))
+    .union(roundPlate(32, 22, 3, 8, -16, cheekOuterY + 0.5 + 11, 12))
     .finish('anodized', { color: '#8aa0ad' }),
   { material: 'aluminum-6061' },
 );
 yawStage.connector('yaw', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
-yawStage.connector('tilt', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, tiltZ - 48] }, axis: [0, 1, 0] });
-yawStage.connector('tilt-servo-mount', { type: 'frame', origin: { kind: 'vec3', value: [-14, 32, tiltZ - 48] } });
+// The tilt pivot is declared on the +Y cheek, where the axle runs in its bore.
+yawStage.connector('tilt', {
+  type: 'axis', origin: { kind: 'vec3', value: [0, cheekY, tiltZ - 48] }, axis: [0, 1, 0],
+  jointClearanceRadius: axleBoreR,
+});
+yawStage.connector('tilt-servo-mount', { type: 'frame', origin: { kind: 'vec3', value: [-14, servoY, servoZ] } });
 
 const tiltServo = arm.part(
   'tilt-servo',
-  servoBody(26, 18, 28).translate(-14, 32, tiltZ - 48).finish('abs', { color: '#243140' }),
+  servoBody(26, 18, 28).translate(-14, servoY, servoZ).finish('abs', { color: '#243140' }),
   { material: 'nylon' },
 );
-tiltServo.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [-14, 32, tiltZ - 48] } });
+tiltServo.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [-14, servoY, servoZ] } });
 
+// Tilt head: the axle spans the clevis cheek to cheek, two hubs sit inside
+// the cheeks, and the post carries a socket the service tube plugs into.
+const tubeAt: [number, number, number] = [48, 0, 10];
+const tubePlaced = tubeSolid.translate(tubeAt[0], tubeAt[1], tubeAt[2]);
 const tiltHead = arm.part(
   'tilt-head',
   // Tube starts at x = 3, inside the r 4.2 tilt axle (from x = 10 the axle
   // and hubs floated off it: union.disconnected); its far end is unchanged.
   cylinder(headLen - 11, 6.2).rotate([0, 1, 0], 90).translate(3, 0, 0)
-    .union(cylinder(92, 4.2).rotate([1, 0, 0], 90).translate(0, 46, 0))
-    .union(cylinder(8, 8).rotate([1, 0, 0], 90).translate(0, 16, 0))
-    .union(cylinder(8, 8).rotate([1, 0, 0], 90).translate(0, -10, 0))
+    .union(cylinder(2 * cheekOuterY, axleR).rotate([1, 0, 0], 90).translate(0, cheekOuterY, 0))
+    .union(cylinder(8, 8).rotate([1, 0, 0], 90).translate(0, 17, 0))
+    .union(cylinder(8, 8).rotate([1, 0, 0], 90).translate(0, -9, 0))
     .union(cylinder(20, 11).rotate([0, 1, 0], 90).translate(headLen - 8, 0, -5))
     .union(cylinder(3, 13).rotate([0, 1, 0], 90).translate(headLen + 6, 0, -5))
     .subtract(cylinder(6, 6).rotate([0, 1, 0], 90).translate(headLen + 8, 0, -5))
     .union(cylinder(14, 5.2).translate(46, 0, 0))
+    .subtract(tubePlaced)
     .finish('anodized', { color: '#d5dde3' }),
   { material: 'aluminum-6061' },
 );
-tiltHead.connector('tilt', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 1, 0] });
-tiltHead.connector('tube-mount', { type: 'frame', origin: { kind: 'vec3', value: [48, 0, 10] } });
+tiltHead.connector('tilt', { type: 'axis', origin: { kind: 'vec3', value: [0, cheekY, 0] }, axis: [0, 1, 0] });
+tiltHead.connector('tube-mount', { type: 'frame', origin: { kind: 'vec3', value: tubeAt } });
 
 const serviceTube = arm.part(
   'service-tube',
-  tubeSolid.translate(48, 0, 10).finish('abs', { color: '#e07a3d' }),
+  tubePlaced.finish('abs', { color: '#e07a3d' }),
   { material: 'nylon' },
 );
-serviceTube.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [48, 0, 10] } });
+serviceTube.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: tubeAt } });
 
 arm.mate('base-yaw', 'base-frame.yaw', 'yaw-stage.yaw', 'revolute', { pose: yawDeg, limitsDeg: [-70, 70] });
 arm.mate('tilt-pitch', 'yaw-stage.tilt', 'tilt-head.tilt', 'revolute', { pose: tiltDeg, limitsDeg: [-10, 35] });
