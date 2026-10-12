@@ -104,7 +104,7 @@ export function ExportTab(): JSX.Element {
             </ul>
 
             <button type="button" disabled={pending !== null} onClick={() => setReviewOpen(true)}
-                className="text-left text-xs text-gray-400 underline hover:text-gray-200 disabled:opacity-50">
+                className="text-left text-xs text-fg-3 underline hover:text-fg disabled:opacity-50">
                 Drawing settings
             </button>
 
