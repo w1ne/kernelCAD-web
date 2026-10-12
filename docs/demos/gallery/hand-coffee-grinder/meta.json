@@ -1,0 +1,11 @@
+{
+  "taskId": "hand-coffee-grinder",
+  "module": "gallery",
+  "capturedAt": "2026-10-12T18:23:04.897Z",
+  "durationMs": 28000,
+  "truncated": false,
+  "gitSha": "2fac386360b85dacd4f317af4e48de35ab71c9d1",
+  "heroArtifact": "hand-coffee-grinder",
+  "catalogSource": "memorable-builds-policy/gallery",
+  "overrideApprovedBy": null
+}

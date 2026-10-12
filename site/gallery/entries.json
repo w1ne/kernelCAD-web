@@ -1,6 +1,33 @@
 {
   "entries": [
     {
+      "slug": "hand-coffee-grinder",
+      "title": "Dual-Bearing Hand Coffee Grinder",
+      "author": {
+        "handle": "w1ne",
+        "url": "https://github.com/w1ne"
+      },
+      "version": "v0.17",
+      "prompt": "Build a premium manual hand coffee grinder as a parametric kernelCAD assembly whose design point is burr concentricity: the drive shaft runs in two deep-groove ball bearings (608), one in the lid above the burrs and one in a three-spoke carrier below them, so the conical inner burr cannot wobble inside the ring burr. Include a knurled anodised-aluminium body tube, black catch cup and lid, a helical conical inner burr inside a helical ring burr, a preload spring with washer and circlips, a threaded brass grind-adjust nut with detent clicks, a hex-drive crank arm with a retaining screw and a walnut knob on a shoulder pin. Expose body diameter, body length, burr diameter, bearing size, grind setting, crank length, crank angle, a cutaway half-section and an exploded-view factor as params, with real slide/slip/thread fits.",
+      "source": "curated",
+      "video": "../../docs/demos/gallery/hand-coffee-grinder/demo.mp4",
+      "codeLocal": "../../examples/gallery/hand-coffee-grinder.kcad.ts",
+      "code": "https://github.com/w1ne/kernelCAD-web/blob/develop/examples/gallery/hand-coffee-grinder.kcad.ts",
+      "tags": [
+        "assembly",
+        "ball-bearings",
+        "conical-burr",
+        "helical-teeth",
+        "threads",
+        "parametric",
+        "cutaway",
+        "exploded-view"
+      ],
+      "featured": false,
+      "createdAt": "2026-10-12",
+      "appUrl": null
+    },
+    {
       "slug": "rocket-engine-routing",
       "title": "Rocket-engine rigid tube routing",
       "author": {

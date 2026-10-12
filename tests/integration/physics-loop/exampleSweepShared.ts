@@ -200,6 +200,13 @@ export const HOSTED_IN_DEDICATED_FILE: ReadonlyMap<string, DedicatedExampleCover
     },
   ],
   [
+    'examples/gallery/hand-coffee-grinder.kcad.ts',
+    {
+      testFile: 'tests/integration/examples/handCoffeeGrinder.validate.test.ts',
+      coverage: 'run-validate-cli',
+    },
+  ],
+  [
     'examples/community/open-source-ring.kcad.ts',
     {
       testFile: 'tests/integration/examples/openSourceRing.test.ts',
