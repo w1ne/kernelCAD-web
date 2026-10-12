@@ -697,8 +697,14 @@ function authoredPrimaryLabel(ctx: AuthoredReportContext, i: number): string {
   return drawingAnnotationText(renderAnnotations({ parts: ctx.parts, annotations: [{ ...a, tol: undefined } as DrawingAnnotation], placements: ctx.layout.views, scale: ctx.scale }).svg[0]);
 }
 
+function authoredMeasuredTextOverride(a: DrawingAnnotation): boolean {
+  return ['linear', 'diameter', 'radius', 'angular'].includes(a.kind) && 'text' in a && a.text !== undefined;
+}
+
 function authoredOriginalLabel(ctx: AuthoredReportContext, i: number): string {
   const a = ctx.original[i];
+  if (authoredMeasuredTextOverride(a)) return drawingAnnotationText(renderAnnotations({ parts: ctx.parts,
+    annotations: [{ ...a, text: undefined } as DrawingAnnotation], placements: ctx.layout.views, scale: ctx.scale }).svg[0]);
   if ('text' in a && a.text !== undefined) return a.text;
   if (!ctx.options.annotationOverrides?.[ctx.ids[i]]?.text && !ctx.options.annotationOverrides?.[ctx.ids[i]]?.suppress) return ctx.labels.get(i) ?? a.kind;
   return drawingAnnotationText(renderAnnotations({ parts: ctx.parts, annotations: [a], placements: ctx.layout.views, scale: ctx.scale }).svg[0]);
@@ -707,7 +713,7 @@ function authoredOriginalLabel(ctx: AuthoredReportContext, i: number): string {
 function authoredReportOverrideFields(ctx: AuthoredReportContext, i: number) {
   const o = ctx.options.annotationOverrides?.[ctx.ids[i]];
   return { ...(o?.suppress ? { suppressed: true } : {}),
-    ...(o?.text !== undefined ? { originalText: authoredOriginalLabel(ctx, i) } : {}),
+    ...(o?.text !== undefined || authoredMeasuredTextOverride(ctx.original[i]) ? { originalText: authoredOriginalLabel(ctx, i) } : {}),
     ...(o?.offset !== undefined ? { offset: o.offset } : {}) };
 }
 

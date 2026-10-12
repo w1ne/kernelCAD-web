@@ -33,6 +33,40 @@ describe('functional review exports', () => {
       await expect(svg({...extra,requireCompleteReview:true})).rejects.toThrow(/complete|incomplete/);
     }
   });
+  it.each([
+    {kind:'linear',geometry:'box(80,50,10)',annotation:{from:[0,0,10],to:[80,0,10],view:'front'},computed:'80'},
+    {kind:'diameter',geometry:'cylinder(10,6)',annotation:{edge:{ofCurveType:'CIRCLE',atZ:10},view:'top'},computed:'⌀12'},
+    {kind:'radius',geometry:'cylinder(10,6)',annotation:{edge:{ofCurveType:'CIRCLE',atZ:10},view:'top'},computed:'R6'},
+    {kind:'angular',geometry:'box(80,50,10)',annotation:{view:'front',
+      from:{ofCurveType:'LINE',within:{xMin:1,xMax:79,yMin:-0.5,yMax:0.5,zMin:-0.5,zMax:0.5}},
+      to:{ofCurveType:'LINE',within:{xMin:-0.5,xMax:0.5,yMin:-0.5,yMax:0.5,zMin:1,zMax:9}}},computed:'90°'},
+  ])('rejects arbitrary direct authored $kind text as critical coverage', async ({kind,geometry,annotation,computed}) => {
+    const reviewPlan = {...plan,requirements:[{...plan.requirements[0],expectedKind:kind}]};
+    const dim = {id:'width',kind,...annotation};
+    const source = `return ${geometry}.dimension(${JSON.stringify(dim)}).drawingReview(${JSON.stringify(reviewPlan)});`;
+    const extra = {annotations:[{...dim,text:'WRONG VALUE 999'}]};
+    const ordinary = await svg(extra,source);
+    expect(ordinary.drawingReport?.review).toMatchObject({status:'incomplete',requirements:[{status:'label-overridden'}]});
+    expect(ordinary.drawingReport?.annotations[0]).toMatchObject({text:'WRONG VALUE 999',originalText:computed});
+    expect(ordinary.bytes.length).toBeGreaterThan(0);
+    await expect(svg({...extra,requireCompleteReview:true},source)).rejects.toThrow(/incomplete/);
+    const baseline = await svg({annotations:[dim],requireCompleteReview:true},source);
+    expect(baseline.drawingReport?.review.status).toBe('complete');
+  });
+  it('returns equal incomplete printable SVG/PDF reports for direct label replacements', async () => {
+    const annotations = [{id:'width',kind:'linear' as const,from:[0,0,10] as const,to:[80,0,10] as const,text:'WRONG VALUE 999'}];
+    const preview = await svg({annotations,pdfSheet:true});
+    const pdf = await runAndExport({code,fileName:'functional.kcad.ts',format:'pdf-drawing',options:{...options,format:'pdf-drawing',annotations}});
+    expect(preview.drawingReport).toEqual(pdf.drawingReport);
+    expect(pdf.drawingReport?.review.status).toBe('incomplete');
+    await expect(runAndExport({code,fileName:'functional.kcad.ts',format:'pdf-drawing',options:{...options,format:'pdf-drawing',annotations,requireCompleteReview:true}})).rejects.toThrow(/incomplete/);
+  });
+  it('accepts source dimension name prefixes with their computed value', async () => {
+    const source = code.replace("to:[80,0,10]", "to:[80,0,10],label:'Interface width'");
+    const result = await svg({requireCompleteReview:true},source);
+    expect(result.drawingReport?.annotations[0].text).toBe('Interface width 80');
+    expect(result.drawingReport?.review.status).toBe('complete');
+  });
   it('creates a missing coverage report with no authored or automatic annotations', async () => {
     const result = await svg({}, `return box(80,50,10).drawingReview(${JSON.stringify(plan)});`);
     expect(result.drawingReport?.review).toMatchObject({status:'incomplete',requirements:[{status:'missing'}]});
