@@ -11,6 +11,7 @@ import { ExportStatus } from '../components/Shared/ExportStatus';
 import type { JSX } from 'react';
 import { DraftingReview } from '../components/DraftingReview';
 import { useDraftingPreferences } from '../hooks/useDraftingPreferences';
+import { draftingOptionsForSource } from '../draftingSettings';
 
 // Studio Export tab. Slice 1.4 + Slice A export-trio.
 //
@@ -43,10 +44,12 @@ export function ExportTab(): JSX.Element {
     const hasPlanar = hasPlanarSource(geometries);
 
     const handleExport = useCallback((format: ExportFormat) => {
-        if (format === 'pdf-drawing') { setReviewOpen(true); return; }
         const label = FORMATS.find((f) => f.id === format)?.label ?? format.toUpperCase();
-        void start(label, (options) => exportViaServer(format, code, options), downloadBlob);
-    }, [code, start]);
+        void start(label, (options) => exportViaServer(format, code, {
+            ...options,
+            ...(format === 'pdf-drawing' ? { drawingOptions: draftingOptionsForSource(drafting.settings, code) } : {}),
+        }), downloadBlob);
+    }, [code, start, drafting.settings]);
 
     if (geometries.length === 0) {
         return (
@@ -62,7 +65,7 @@ export function ExportTab(): JSX.Element {
     return (
         <div className="flex flex-col gap-2 p-3" data-testid="export-tab">
             <p className="text-[11px] text-gray-500">
-                Download geometry or review a dimensioned drawing.
+                Download geometry or a dimensioned drawing.
             </p>
 
             <ul className="flex flex-col gap-2">
@@ -99,6 +102,11 @@ export function ExportTab(): JSX.Element {
                     );
                 })}
             </ul>
+
+            <button type="button" disabled={pending !== null} onClick={() => setReviewOpen(true)}
+                className="text-left text-xs text-gray-400 underline hover:text-gray-200 disabled:opacity-50">
+                Drawing settings
+            </button>
 
             <ExportStatus task={task} testId="export-tab-status" />
             {reviewOpen && <DraftingReview key={code} code={code} settings={drafting.settings} onChange={drafting.save} onClose={() => setReviewOpen(false)} />}

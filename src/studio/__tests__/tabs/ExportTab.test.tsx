@@ -34,6 +34,7 @@ vi.mock('../../../funnel/lib/supabaseClient', () => ({
 }));
 
 beforeEach(() => {
+    localStorage.clear();
     recompute = {
         features: [],
         geometries: [],
@@ -45,7 +46,7 @@ beforeEach(() => {
     mockCode.code = 'return box(10, 10, 10);';
     Object.defineProperty(window, 'location', {
         configurable: true,
-        value: { ...window.location, search: '?script=examples/foo.kcad.ts' },
+        value: { ...window.location, pathname: '/', hostname: 'localhost', search: '?script=examples/foo.kcad.ts' },
     });
 });
 
@@ -55,13 +56,55 @@ afterEach(() => {
 });
 
 describe('ExportTab', () => {
-    it('opens a drawing review before exporting a PDF', async () => {
+    it('downloads a drawing PDF with one click and no review dialog', async () => {
         recompute = { ...recompute, geometries: [{ faces: [] }] };
+        const fetchMock = vi.fn().mockResolvedValue(new Response('%PDF-1.4', {
+            headers: { 'content-type': 'application/pdf', 'content-disposition': 'attachment; filename="drawing.pdf"' },
+        }));
+        vi.stubGlobal('fetch', fetchMock);
+        const download = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
         const { ExportTab } = await import('../../tabs/ExportTab');
         render(<ExportTab />);
         fireEvent.click(screen.getByTestId('export-pdf-drawing'));
-        expect(screen.getByRole('dialog', { name: 'Drawing review' })).toBeDefined();
-        expect(screen.getByRole('button', { name: 'Generate preview' })).toBeDefined();
+        await waitFor(() => expect(download).toHaveBeenCalledOnce());
+        expect(fetchMock).toHaveBeenCalledOnce();
+        expect(fetchMock.mock.calls[0][0]).toContain('format=pdf-drawing');
+        expect(screen.queryByRole('dialog')).toBeNull();
+    });
+    it('opens optional drawing settings without starting an export', async () => {
+        recompute = { ...recompute, geometries: [{ faces: [] }] };
+        const fetchMock = vi.fn();
+        vi.stubGlobal('fetch', fetchMock);
+        const { ExportTab } = await import('../../tabs/ExportTab');
+        render(<ExportTab />);
+        fireEvent.click(screen.getByRole('button', { name: 'Drawing settings' }));
+        expect(screen.getByRole('dialog', { name: 'Drawing settings' })).toBeDefined();
+        expect(fetchMock).not.toHaveBeenCalled();
+    });
+    it.each([true, false])('exports saved drawing choices and filters source-bound edits (source matches: %s)', async (matches) => {
+        recompute = { ...recompute, geometries: [{ faces: [] }] };
+        Object.defineProperty(window, 'location', { configurable: true,
+            value: { ...window.location, pathname: '/p/drawing-test', search: '?version=2' } });
+        const annotationOverrides = { 'hole:1': { text: 'M8 CLEARANCE', offset: 8 } };
+        const datums = [{ label: 'A', face: { byNormal: '-Z' } }];
+        localStorage.setItem('kernelcad.drafting.project:drawing-test@2', JSON.stringify({
+            sourceFingerprint: matches ? mockCode.code : 'previous source', draftingProfile: 'machining',
+            dimensioningStyle: 'chain', annotationOverrides, datums,
+        }));
+        const fetchMock = vi.fn().mockResolvedValue(new Response('%PDF-1.4', { headers: { 'content-type': 'application/pdf' } }));
+        vi.stubGlobal('fetch', fetchMock);
+        const download = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+        const { ExportTab } = await import('../../tabs/ExportTab');
+        render(<ExportTab />);
+        fireEvent.click(screen.getByTestId('export-pdf-drawing'));
+        await waitFor(() => expect(download).toHaveBeenCalledOnce());
+        expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({
+            source: mockCode.code, projectSlug: 'drawing-test', projectVersion: 2,
+            options: { format: 'pdf-drawing', draftingProfile: 'machining',
+                autoAnnotate: { dimensioningStyle: 'chain', ...(matches ? { datums } : {}) },
+                ...(matches ? { annotationOverrides } : {}),
+            },
+        });
     });
     it('renders the empty state when no geometries are present', async () => {
         const { ExportTab } = await import('../../tabs/ExportTab');

@@ -50,12 +50,13 @@ describe('drafting review', () => {
     fireEvent.change(screen.getByLabelText('Extra offset (sheet mm)'), { target: { value: '-4' } });
     expect(changed).not.toHaveBeenCalled();
   });
-  it('does not mark a preview reviewed when the annotation report is absent', async () => {
+  it('allows PDF download even when the optional preview report is absent', async () => {
     vi.mocked(exporter.previewDrawingViaServer).mockResolvedValueOnce({ svg: '<svg/>', diagnostics: [] });
     render(<DraftingReview code="model" onChange={() => {}} onClose={() => {}} />);
     fireEvent.click(screen.getByRole('button', { name: 'Generate preview' }));
     await screen.findByRole('img', { name: 'Engineering drawing preview' });
-    expect((screen.getByRole('button', { name: 'Mark reviewed' }) as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(screen.getByRole('button', { name: 'Download PDF' }));
+    await waitFor(() => expect(exporter.downloadBlob).toHaveBeenCalledOnce());
     expect(screen.getByText(/No annotation report/)).toBeDefined();
   });
   it('keeps engineering declarations from receiving arbitrary primary-label edits', async () => {
@@ -66,19 +67,34 @@ describe('drafting review', () => {
     fireEvent.click(await screen.findByRole('button', { name: /^A front/ }));
     expect((screen.getByLabelText('Annotation text') as HTMLInputElement).disabled).toBe(true);
   });
-  it('requires a preview review and sends annotation edits to preview and PDF', async () => {
+  it('downloads a PDF without generating or marking a preview', async () => {
+    render(<DraftingReview code="model" onChange={() => {}} onClose={() => {}} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Download PDF' }));
+    await waitFor(() => expect(exporter.downloadBlob).toHaveBeenCalledOnce());
+    expect(exporter.previewDrawingViaServer).not.toHaveBeenCalled();
+    expect(screen.queryByRole('button', { name: 'Mark reviewed' })).toBeNull();
+  });
+  it('prevents overlapping preview and PDF jobs', async () => {
+    let finishPreview!: (value: exporter.DrawingPreviewResult) => void;
+    vi.mocked(exporter.previewDrawingViaServer).mockImplementationOnce(() => new Promise(resolve => { finishPreview = resolve; }));
+    render(<DraftingReview code="model" onChange={() => {}} onClose={() => {}} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Generate preview' }));
+    expect((screen.getByRole('button', { name: 'Download PDF' }) as HTMLButtonElement).disabled).toBe(true);
+    finishPreview({ svg: '<svg/>', drawingReport: report, diagnostics: [] });
+    await waitFor(() => expect((screen.getByRole('button', { name: 'Download PDF' }) as HTMLButtonElement).disabled).toBe(false));
+    vi.mocked(exporter.exportViaServer).mockImplementationOnce(() => new Promise(() => {}));
+    fireEvent.click(screen.getByRole('button', { name: 'Download PDF' }));
+    expect((screen.getByRole('button', { name: 'Refresh preview' }) as HTMLButtonElement).disabled).toBe(true);
+  });
+  it('exports the latest annotation edits without requiring a refreshed preview', async () => {
     const changed = vi.fn();
     render(<DraftingReview code="model" onChange={changed} onClose={() => {}} />);
-    expect((screen.getByRole('button', { name: 'Export reviewed PDF' }) as HTMLButtonElement).disabled).toBe(true);
     fireEvent.click(screen.getByRole('button', { name: 'Generate preview' }));
     await screen.findByRole('button', { name: /⌀5 THRU/ });
     fireEvent.click(screen.getByRole('button', { name: /⌀5 THRU/ }));
     fireEvent.change(screen.getByLabelText('Annotation text'), { target: { value: '⌀5 REAM' } });
     fireEvent.change(screen.getByLabelText('Extra offset (sheet mm)'), { target: { value: '8' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Refresh preview' }));
-    await waitFor(() => expect(exporter.previewDrawingViaServer).toHaveBeenLastCalledWith('model', expect.objectContaining({ annotationOverrides: { 'hole:1': { text: '⌀5 REAM', offset: 8 } } }), expect.anything()));
-    fireEvent.click(await screen.findByRole('button', { name: 'Mark reviewed' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Export reviewed PDF' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Download PDF' }));
     await waitFor(() => expect(exporter.exportViaServer).toHaveBeenCalledWith('pdf-drawing', 'model', expect.objectContaining({ drawingOptions: expect.objectContaining({ annotationOverrides: { 'hole:1': { text: '⌀5 REAM', offset: 8 } } }) })));
     expect(changed).toHaveBeenCalledWith(expect.objectContaining({ sourceFingerprint: 'model' }));
   });

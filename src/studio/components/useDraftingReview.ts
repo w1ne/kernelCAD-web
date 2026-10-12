@@ -48,22 +48,19 @@ function useChoices(code: string, settings: DraftingSettings | undefined, onChan
 function useDrawingPreview(code: string, options: StudioDrawingOptions, setError: (error: string | null) => void) {
   const [preview, setPreview] = useState<DrawingPreviewResult | null>(null);
   const [previewKey, setPreviewKey] = useState<string | null>(null);
-  const [reviewedKey, setReviewedKey] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const controller = useRef<AbortController | null>(null);
   const generation = useRef(0);
   const currentKey = JSON.stringify({ code, options });
   const current = previewKey === currentKey;
-  const reviewed = current && reviewedKey === currentKey;
   const previewUrl = useMemo(() => preview ? URL.createObjectURL(new Blob([preview.svg], { type: 'image/svg+xml' })) : null, [preview]);
   useEffect(() => () => { if (previewUrl) URL.revokeObjectURL(previewUrl); }, [previewUrl]);
   useEffect(() => () => { generation.current++; controller.current?.abort(); }, []);
-  const clearReview = () => setReviewedKey(null);
   const generatePreview = async () => {
     controller.current?.abort();
     const abort = new AbortController(); controller.current = abort;
     const id = ++generation.current;
-    setBusy(true); setError(null); clearReview();
+    setBusy(true); setError(null);
     try {
       const result = await previewDrawingViaServer(code, options, { signal: abort.signal });
       if (id !== generation.current || abort.signal.aborted) return;
@@ -71,7 +68,7 @@ function useDrawingPreview(code: string, options: StudioDrawingOptions, setError
     } catch (err) { if (id === generation.current && !isExportAbort(err)) setError(exportErrorText(err).message); }
     finally { if (id === generation.current) setBusy(false); }
   };
-  return { preview, previewUrl, current, reviewed, busy, generatePreview, clearReview, markReviewed: () => setReviewedKey(currentKey) };
+  return { preview, previewUrl, current, busy, generatePreview };
 }
 
 function useProfileEditor(state: ReturnType<typeof useChoices>, setError: (error: string | null) => void) {
@@ -127,7 +124,7 @@ export function useDraftingReview({ code, settings, onChange }: DraftingReviewPr
   const [error, setError] = useState<string | null>(null);
   const choiceState = useChoices(code, settings, onChange);
   const drawing = useDrawingPreview(code, choiceState.options, setError);
-  const update = (next: DraftingSettings) => { drawing.clearReview(); choiceState.update(next); };
+  const update = choiceState.update;
   const editProfile = (patch: Partial<DraftingProfile>) => update({ ...choiceState.choices, draftingProfile: { ...choiceState.profile, ...patch } });
   const editable = { ...choiceState, update, editProfile };
   const profiles = useProfileEditor(editable, setError);

@@ -78,12 +78,12 @@ Explicit export settings override profile defaults. Profiles are preferences. Th
 
 ## Review the sheet in Studio
 
-In Studio, open the inspector's **Export** tab and choose **Drawing (PDF)** to open Drawing review. Start with **Generate preview** so the annotation list and sheet come from the same export. The header's Export menu and the command palette export directly using the saved project drafting preferences; use the inspector dialog to edit and review those choices first.
+In Studio, open the inspector's **Export** tab and choose **Drawing (PDF)** to download directly using the saved project drafting preferences. Open **Drawing settings** for optional edits. **Generate preview** loads the annotation list and sheet from the same exporter. The header's Export menu and the command palette also download directly.
 
 1. Choose a drafting profile and dimension style. Under **Profile settings and datums**, adjust sheet size, first/third-angle projection and the general-tolerance class. Datum face queries are JSON; **Apply datums** validates them. A declared datum in source remains the source of design intent.
 2. Select a row in **Annotations**. **Hide annotation** controls whether it appears; **Annotation text** edits its primary label; **Annotation view** moves it to front, top, left or iso; **Extra offset (sheet mm)** adds space to the dimension line or leader. Datum and tolerance symbols have no editable text field: change their declarations. **Reset annotation** removes that row's edits.
 3. Press **Refresh preview** after an edit. The placed, crowded and hidden counts are review aids. Inspect the full sheet, including hidden lines and tolerance frames. Saving a preference does not mean the drawing is reviewed.
-4. When the current preview is acceptable, press **Mark reviewed**, then **Export reviewed PDF**. Changing source, profile or annotations invalidates that review; generate and review the current preview again.
+4. Click **Download PDF** to export the current settings. Previewing is optional; changing settings makes an existing preview stale until refreshed. **Drawing (PDF)** in the Export tab downloads directly, with **Drawing settings** available separately.
 5. To reuse your preferences, enter a **Profile name** and press **Save profile**. Saved profiles live in this browser. They can carry sheet, projection, style, tolerance preference and human review notes; they do not carry another part's annotation edits.
 
 Annotation edits and datum overrides are bound to the exact source fingerprint. After a source change, the dialog withholds those saved overrides and asks for a new review. If a geometry or style change removes an annotation ID, the dialog lists the missing overrides; **Clear missing overrides** removes them. Do not assume a reviewed old sheet describes the edited part.
