@@ -31,7 +31,12 @@ const expectedTauNm = STEEL_DENSITY * volumeM3 * G * (LENGTH_MM / 2) * 1e-3;
 
 function buildArm(actuatorTorqueNm: number) {
   const arm = assembly(`static-hold-smoke-${actuatorTorqueNm}`);
-  const wall = arm.part('wall', box(40, 40, 40, true));
+  // A clevis: the beam root swings in a slot 0.5 mm wider than the beam each
+  // side, so the two never share volume through the +/-90 deg travel.
+  const wall = arm.part(
+    'wall',
+    box(40, 40, 40, true).subtract(box(26, WIDTH_MM + 1, 40, true).translate(7, 0, 0)),
+  );
   const beam = arm.part(
     'beam',
     box(LENGTH_MM, WIDTH_MM, HEIGHT_MM, true).translate(LENGTH_MM / 2, 0, 0),
