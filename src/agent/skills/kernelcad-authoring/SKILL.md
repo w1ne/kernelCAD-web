@@ -887,6 +887,11 @@ kernelcad animate path/to/script.kcad.ts /tmp/spin.gif --turntable --width 640 -
 kernelcad mcp
 ```
 
+For static renders and turntables, set `PW_CDP_URL` to an already-running
+Chrome's CDP endpoint after verifying it is available. The capture uses that
+browser's existing context and closes its own tab on completion. An explicit
+attachment failure is reported; it does not launch a second browser.
+
 ## Animation timelines (animationView)
 
 `animationView({...})` declares a kinematic-motion timeline that

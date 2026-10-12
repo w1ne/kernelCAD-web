@@ -2,6 +2,7 @@ import { describe, it, expect, afterEach } from 'vitest';
 import { mkdtempSync, rmSync, readFileSync, existsSync, copyFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { createHash } from 'node:crypto';
 import { buildGallery, communityApiFromEnv, fetchCommunityGallery } from './build-gallery';
 
 describe('buildGallery', () => {
@@ -50,6 +51,40 @@ describe('buildGallery', () => {
     // GLB has glTF magic bytes
     const glb = readFileSync(path.join(publicDir, 'gallery/fixture-build/model.glb'));
     expect(glb.subarray(0, 4).toString('utf8')).toBe('glTF');
+  });
+
+  it('builds selected packed assets with decoder and complete compact native bridge', {timeout:60000}, async () => {
+    tmp=mkdtempSync(path.join(tmpdir(),'gallery-packed-'));
+    const fixtures=path.resolve(__dirname,'../../tests/fixtures/gallery');
+    const entry=JSON.parse(readFileSync(path.join(fixtures,'entries-fixture.json'),'utf8')).entries[0];
+    entry.codeLocal=path.join(fixtures,'simple-box.kcad.ts');
+    entry.video=path.join(fixtures,'short-clip.mp4'); entry.meshopt=true;entry.compactBridge=true;
+    const entriesPath=path.join(tmp,'entries.json'),publicDir=path.join(tmp,'public');
+    writeFileSync(entriesPath,JSON.stringify({entries:[entry]}));
+    await buildGallery({entriesPath,publicDir});
+    const gallery=JSON.parse(readFileSync(path.join(publicDir,'gallery.json'),'utf8'));
+    expect(gallery.meshoptDecoderUrl).toBe('/vendor/meshopt/meshopt_decoder.js');
+    expect(gallery.entries[0].meshopt).toBe(true);
+    expect(gallery.entries[0]).not.toHaveProperty('compactBridge');
+    expect(existsSync(path.join(publicDir,'vendor/meshopt/LICENSE.md'))).toBe(true);
+    const source=readFileSync(entry.codeLocal,'utf8');
+    const sha=createHash('sha256').update(source).digest('hex');
+    const bridge=JSON.parse(readFileSync(path.join(publicDir,'gallery/_mesh',sha+'.json'),'utf8'));
+    expect(bridge.source).toBe(source);
+    expect(bridge.featureRecords.length).toBeGreaterThan(0);
+    expect(bridge.features.length).toBeGreaterThan(0);
+    expect(bridge).toHaveProperty('params');expect(bridge).toHaveProperty('review');expect(bridge).toHaveProperty('bounds');
+  });
+
+  it('fails a selected compact bridge when source precomputation fails', {timeout:60000}, async () => {
+    tmp=mkdtempSync(path.join(tmpdir(),'gallery-strict-'));
+    const fixtures=path.resolve(__dirname,'../../tests/fixtures/gallery');
+    const entry=JSON.parse(readFileSync(path.join(fixtures,'entries-fixture.json'),'utf8')).entries[0];
+    const script=path.join(tmp,'bad.kcad.ts');writeFileSync(script,"throw new Error('source invalid');");
+    entry.codeLocal=script;entry.video=path.join(fixtures,'short-clip.mp4');entry.compactBridge=true;
+    entry.modelLocal=path.resolve(__dirname,'../../examples/gallery/make-no-mistakes-keycap/model.glb');
+    const entriesPath=path.join(tmp,'entries.json');writeFileSync(entriesPath,JSON.stringify({entries:[entry]}));
+    await expect(buildGallery({entriesPath,publicDir:path.join(tmp,'public')})).rejects.toThrow();
   });
 
   it('publishes a prebuilt project GLB without evaluating its STEP-backed source', { timeout: 60000 }, async () => {

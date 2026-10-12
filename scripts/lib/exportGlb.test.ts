@@ -5,6 +5,7 @@ import { mkdtempSync, rmSync, existsSync, statSync, readFileSync, writeFileSync 
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { exportGlb } from './exportGlb';
+import { NodeIO } from '@gltf-transform/core';
 
 const FIXTURE = path.resolve(__dirname, '../../tests/fixtures/gallery/simple-box.kcad.ts');
 
@@ -76,6 +77,28 @@ return box(10, 10, 10, true).material({
       .map(material => material.pbrMetallicRoughness?.baseColorFactor)
       .filter((color): color is number[] => Array.isArray(color));
     expect(colors.some(color => color[0] > 0.9 && color[1] > 0.65 && color[2] < 0.05)).toBe(true);
+  });
+
+  it('meshes an explicit preview with all part names, world positions, normals and colors', {timeout:30000}, async () => {
+    tmp = mkdtempSync(path.join(tmpdir(), 'glb-preview-'));
+    const script = path.join(tmp,'parts.kcad.ts'), out=path.join(tmp,'preview.glb');
+    writeFileSync(script, `const a=assembly('preview');
+a.part('red',box(10,10,10).color('#ff0000'),{at:[30,0,0]});
+a.part('blue',box(10,10,10).color('#0000ff'),{at:[0,40,0]});
+return a.model();`);
+    await exportGlb({scriptPath:script,outPath:out,previewMesh:{tolerance:2.5,angularTolerance:.85}});
+    const doc=await new NodeIO().read(out);
+    expect(doc.getRoot().listNodes().map(n=>n.getName())).toEqual(['red','blue']);
+    const meshes=doc.getRoot().listMeshes(); expect(meshes).toHaveLength(2);
+    const red=meshes[0].listPrimitives()[0], blue=meshes[1].listPrimitives()[0];
+    expect(red.getAttribute('POSITION')!.getMin([])[0]).toBe(30);
+    expect(blue.getAttribute('POSITION')!.getMin([])[1]).toBe(40);
+    expect(red.getMaterial()!.getBaseColorFactor()).toEqual([1,0,0,1]);
+    expect(blue.getMaterial()!.getBaseColorFactor()).toEqual([0,0,1,1]);
+    expect(red.getAttribute('NORMAL')!.getCount()).toBe(red.getAttribute('POSITION')!.getCount());
+  });
+  it.each([0,-1,NaN,Infinity])('rejects invalid preview tolerance %s before evaluation', async tolerance => {
+    await expect(exportGlb({scriptPath:FIXTURE,outPath:'/tmp/unused.glb',previewMesh:{tolerance,angularTolerance:.8}})).rejects.toThrow(/preview.*positive|preview.*finite/);
   });
 
   it('rejects when the script file does not exist', async () => {

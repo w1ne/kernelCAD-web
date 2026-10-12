@@ -44,6 +44,10 @@
 
 ## Fixed
 
+- STEP, STL (including per-part STL), DXF, 3MF and G-code exports now check the same tube routing rules and clearance as evaluation before writing fabrication output. Tube errors return no bytes and leave previous output untouched; warnings allow export. GLB and rendering remain available for inspection.
+
+- Static renders and turntables honor `PW_CDP_URL`, reuse the selected Chrome context, and refuse to launch another browser if that explicit attachment fails. Capture-tab cleanup and CDP disconnection are bounded.
+
 - A mated part placed with `at` lands where the mate puts it. The mate used to work out its motion as if the part sat at the origin, so the `at` was added on top: a valve with `at: [0, 0, 27]` fastened to a mount ended 27 mm off it (turned with the joint for a hinge), and a part mated to a root placed with `at` did not follow that root. Now a mated part's own `at` does not move it, and the root keeps its `at`. The built scene, exports, the capture-time `Scene`, the pose-envelope and mechanism checks and the joint-axis gates all agree, and a param-driven `at` is read at its current value. The `assembly.placement-ignored-by-mate-fk` note now names only parts a mate places; the root, and mated parts the mate walk from the first declared part does not reach, keep their `at` and are not flagged. Models with no mates, or with `at` zero on every mated part, are unchanged.
 - `trace_from_image` reads more of the waypoint shapes vision models return: a curve wrapped in an extra list, `[x, y, extra]` points and `"x, y"` strings. When a waypoint still can't be read, the error now shows it.
 - `trace_from_image` traces a `curve` feature (a roof line, a brow) with the vision model instead of returning the whole outer silhouette. Only `silhouette` still uses the opencv contour.

@@ -36,6 +36,8 @@ export interface BlogFrontMatter {
   readonly status: BlogStatus;
   /** Repository path of the model the post is about. */
   readonly model?: string;
+  /** Opt-in web buffer packing, with full native fine tessellation. */
+  readonly modelCompression?: 'meshopt';
   /** Repository path of the post's video. */
   readonly video?: string;
   /** For the people reviewing a draft. Never rendered on a published page. */
@@ -53,7 +55,7 @@ export interface ParsedGuide {
 }
 
 const REQUIRED = ['title', 'summary', 'date', 'kind'] as const;
-const OPTIONAL = ['status', 'model', 'video', 'note'] as const;
+const OPTIONAL = ['status', 'model', 'modelCompression', 'video', 'note'] as const;
 const ALLOWED: readonly string[] = [...REQUIRED, ...OPTIONAL];
 
 /** A front matter problem, with the file and (when there is one) the field. */
@@ -156,8 +158,10 @@ function validate(file: string, raw: Record<string, unknown>): BlogFrontMatter {
     ...optional('model', repoPath('model', text('model'))),
     ...optional('video', repoPath('video', text('video'))),
     ...optional('note', text('note')),
+    ...('modelCompression' in raw ? {modelCompression: oneOf('modelCompression', ['meshopt'] as const)} : {}),
   };
 
+  if (meta.modelCompression && !meta.model) throw new FrontMatterError(file, 'modelCompression', 'modelCompression requires model');
   if (meta.kind === 'use-case' && meta.status === 'published') {
     for (const field of ['model', 'video'] as const) {
       if (meta[field] === undefined) {

@@ -1,0 +1,110 @@
+{
+  "source": "demo.mp4",
+  "note": "These are decoded final H264 film frames; native PNG input hashes are recorded separately in capture receipts.",
+  "frames": [
+    {
+      "path": "review-frames/shot-01.png",
+      "decodedVideoFrame": 36,
+      "timeSeconds": 1.5,
+      "sha256": "942fb2652f7d9c900d4085b04d1f8fc5b5f63babfbc6260326c72969cdf8bf40",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "path": "review-frames/shot-02.png",
+      "decodedVideoFrame": 132,
+      "timeSeconds": 5.5,
+      "sha256": "a692d9aed7aea2eb52d1ccd1c847337ede22417c809d94e687630caabff7c8b7",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "path": "review-frames/shot-03.png",
+      "decodedVideoFrame": 228,
+      "timeSeconds": 9.5,
+      "sha256": "10d87df376d4151628ea2c49b24585a57ace00092d47be9a65eb02c9d9be5f7d",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "path": "review-frames/shot-04.png",
+      "decodedVideoFrame": 300,
+      "timeSeconds": 12.5,
+      "sha256": "d80f4a111852a83d3064fed425c3ce48c06dc17f2513c9aa69c21d7baab2ee6b",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "path": "review-frames/shot-05.png",
+      "decodedVideoFrame": 360,
+      "timeSeconds": 15.0,
+      "sha256": "9ccd88011804a63b3af1eabebfaa8373a06a7f6022b4c58a561653885e4de7c2",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "path": "review-frames/shot-06.png",
+      "decodedVideoFrame": 408,
+      "timeSeconds": 17.0,
+      "sha256": "985cf5da8abb2f760497ac49144da5b78ab69649164a72a1a02c4b47cd3c51fa",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "path": "review-frames/shot-07.png",
+      "decodedVideoFrame": 480,
+      "timeSeconds": 20.0,
+      "sha256": "635b4c443299df50e14bec384a02b9fcbd9c54665ce2a54ac3a8993f6098d62a",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "path": "review-frames/shot-08.png",
+      "decodedVideoFrame": 600,
+      "timeSeconds": 25.0,
+      "sha256": "235aeef03a93cb7dd013d4985a7e0f0452dd15e8ac7fcf1a938f2cdd6cddada7",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "path": "review-frames/orbit-000.png",
+      "decodedVideoFrame": 672,
+      "timeSeconds": 28.0,
+      "sha256": "9c99f4a807e92fb606e380d69e9febb524b02c8e3ff07bd4dee4996932f90a44",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "path": "review-frames/orbit-096.png",
+      "decodedVideoFrame": 768,
+      "timeSeconds": 32.0,
+      "sha256": "99ff81058487df4c1d854019ea5d7f715ac8b570e16a5e3e0121c89459c5fbfa",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "path": "review-frames/orbit-192.png",
+      "decodedVideoFrame": 864,
+      "timeSeconds": 36.0,
+      "sha256": "872694b44e7e0b11d7e38e898e6fb0a2a847d7d879d9a74ed78f443e83795cc8",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "path": "review-frames/orbit-288.png",
+      "decodedVideoFrame": 960,
+      "timeSeconds": 40.0,
+      "sha256": "de43be2b8b8be150862a7ab7e71a7aa6283f2c76f07fb8db04bd120fdf71fd00",
+      "width": 1920,
+      "height": 1080
+    },
+    {
+      "path": "review-frames/orbit-383.png",
+      "decodedVideoFrame": 1079,
+      "timeSeconds": 44.958333333333336,
+      "sha256": "054889ab3d2c1af4366d7e01bcea8e319a9dc3deb50a074d5670963f9cb65341",
+      "width": 1920,
+      "height": 1080
+    }
+  ]
+}

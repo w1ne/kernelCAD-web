@@ -26,6 +26,11 @@ function errorOf(text: string): FrontMatterError {
 }
 
 describe('parseGuide', () => {
+  it('accepts opt-in meshopt only when a model is present', () => {
+    expect(parseGuide(FILE,source([...BASE,'model: examples/a.kcad.ts','modelCompression: meshopt']))!.meta.modelCompression).toBe('meshopt');
+    for(const lines of [['modelCompression: meshopt'],['model: examples/a.kcad.ts','modelCompression: draco']])
+      expect(()=>parseGuide(FILE,source([...BASE,...lines]))).toThrow(/modelCompression/);
+  });
   it('reads the required fields, the body and the line the body starts on', () => {
     const parsed = parseGuide(FILE, source(BASE));
     expect(parsed).not.toBeNull();

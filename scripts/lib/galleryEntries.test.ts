@@ -69,6 +69,21 @@ describe('parseGalleryEntries', () => {
     expect(() => parseGalleryEntries({ entries: [entry] })).toThrow(/studio.*appUrl/i);
   });
 
+  it('validates an optional selected model orientation as exactly three finite degree angles', () => {
+    expect(parseGalleryEntries({entries:[{...validEntry,modelOrientation:'0deg -90deg 0deg'}]}).entries[0].modelOrientation).toBe('0deg -90deg 0deg');
+    for(const modelOrientation of ['0deg 0deg','0deg 0deg 0deg 0deg','0rad -90deg 0deg','0deg Infinitydeg 0deg','0deg 1e400deg 0deg'])
+      expect(()=>parseGalleryEntries({entries:[{...validEntry,modelOrientation}]})).toThrow();
+    expect(parseGalleryEntries({entries:[validEntry]}).entries[0]).not.toHaveProperty('modelOrientation');
+  });
+
+  it('retains only explicit validated asset options', () => {
+    const options={previewMesh:{tolerance:2.5,angularTolerance:.85},meshopt:true,compactBridge:true};
+    expect(parseGalleryEntries({entries:[{...validEntry,...options}]}).entries[0]).toMatchObject(options);
+    expect(parseGalleryEntries({entries:[validEntry]}).entries[0]).not.toHaveProperty('meshopt');
+    for(const previewMesh of [{tolerance:0,angularTolerance:.8},{tolerance:1,angularTolerance:Infinity}])
+      expect(()=>parseGalleryEntries({entries:[{...validEntry,previewMesh}]})).toThrow();
+  });
+
   it('rejects entries missing required slug', () => {
     const bad = { ...validEntry } as Partial<typeof validEntry>;
     delete bad.slug;

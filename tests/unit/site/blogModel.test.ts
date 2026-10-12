@@ -52,3 +52,16 @@ describe('turnZUpToYUp', () => {
     expect(turn.listChildren()[0].getTranslation()).toEqual([1, 2, 3]);
   });
 });
+
+import { postMedia } from '../../../site/scripts/blogPage';
+import { copyMeshoptDecoder, MESHOPT_DECODER_URL } from '../../../scripts/lib/meshoptAssets';
+import { readFileSync } from 'node:fs';
+it('configures the same-origin decoder before compressed model-viewer upgrade and copies its MIT license', () => {
+  const html = postMedia({model:'examples/a.kcad.ts',modelCompression:'meshopt'}).lines.join('\n');
+  expect(html).toContain(MESHOPT_DECODER_URL);
+  expect(html.indexOf('self.ModelViewerElement')).toBeLessThan(html.indexOf('type="module"'));
+  expect(postMedia({model:'examples/a.kcad.ts'}).lines.join('\n')).not.toContain('meshoptDecoderLocation');
+  copyMeshoptDecoder(dir);
+  expect(readFileSync(join(dir,'vendor/meshopt/meshopt_decoder.js'),'utf8')).toContain('MeshoptDecoder');
+  expect(readFileSync(join(dir,'vendor/meshopt/LICENSE.md'),'utf8')).toContain('MIT');
+});
