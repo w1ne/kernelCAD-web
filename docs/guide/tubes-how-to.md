@@ -1,11 +1,10 @@
 ---
 title: Routing bent tubes between ports
 summary: How to route rigid lines between ports with tube() and tubeSpec(), and read the bend table and clearances the kernel reports.
-date: 2026-10-11
+date: 2026-10-12
 kind: guide
-status: draft
+status: published
 model: examples/tube-routing-engine/engine-lines.kcad.ts
-note: Draft for Andrii to rewrite and approve before it is published. Every number in it is checked against kernelcad evaluate --json of the example and its broken twin; preview and check it with npm run site:build-blog -- --drafts. The Studio link opens the example only for a signed-in user; swap it for a public link before publishing.
 ---
 
 The fluid lines on an engine are rigid tubes that a shop bends from straight stock. Each one needs a bend table and has to stay clear of the parts and the other lines. You route each line with `tube()` and set the rules it must meet with `tubeSpec()`. The example `examples/tube-routing-engine/engine-lines.kcad.ts` routes 5 tubes in 3 fluid systems around a case and a gearbox.
@@ -78,10 +77,19 @@ A tube keeps `default` mm from every part and from the other tubes. A pair repla
 
 ## Reading the report
 
-Evaluate the example with the CLI:
+Use a source checkout on `develop` with Node 22 for the commands below. These commands use the current `develop` source checkout; an older package installation may behave differently. Run the commands from the repository root, which contains the exact example files:
 
 ```bash
-kernelcad evaluate examples/tube-routing-engine/engine-lines.kcad.ts --json
+git clone --branch develop https://github.com/w1ne/kernelCAD-web.git
+cd kernelCAD-web
+npm ci --ignore-scripts
+npm run build:cli
+```
+
+Evaluate the example with that CLI:
+
+```bash
+node dist/cli/index.js evaluate examples/tube-routing-engine/engine-lines.kcad.ts --json
 ```
 
 It prints `"ok": true` and a `tubes` object. `tubes.lines` has an entry for each tube. Next to the bend table and the cut length it holds `minClearance`, the distance to the nearest part or tube. `hyd-b` is 306.45 mm long, and its nearest neighbour is `fuel-b`, 17.75 mm away. The rule for a fuel line next to a hydraulic line needs 12.00 mm.
@@ -128,7 +136,7 @@ via: [[manifoldX.add(20), -190, hydRunZ], [act2X, -190, hydRunZ]],
 `kernelcad export bend-table` writes one CSV per tube, named after the tube:
 
 ```bash
-kernelcad export bend-table examples/tube-routing-engine/engine-lines.kcad.ts -o out/bend-tables
+node dist/cli/index.js export bend-table examples/tube-routing-engine/engine-lines.kcad.ts -o out/bend-tables
 ```
 
 This is `hyd-b.csv`. The points are in the tube's own frame, with the first point at the origin and the first leg along +X. A bend row gives the straight before the bend, the rotation of the bend plane from the previous bend, and the bend angle:
@@ -153,10 +161,12 @@ last_straight_mm,46.400
 ```
 <!-- check: tubes.lines[name=hyd-b].bendTableCsv = block -->
 
-The export refuses a script that fails a tube rule, so the broken twin gives no tables. `kernelcad export step` writes the whole assembly as one STEP file, with each tube as its own solid:
+The bend-table export refuses a script that fails a tube rule, so the broken twin gives no tables. STEP, STL (including per-part STL), DXF, 3MF and G-code also run the tube gate before writing fabrication output: a tube error gives no new file and leaves any previous output untouched. Tube warnings still allow export. GLB and rendering remain available to inspect a failing route. These checks cover the declared tube rules and clearance, not pressure or structural acceptance.
+
+`kernelcad export step` writes a passing assembly as one STEP file, with each tube as its own solid:
 
 ```bash
-kernelcad export step examples/tube-routing-engine/engine-lines.kcad.ts -o out/engine-lines.step
+node dist/cli/index.js export step examples/tube-routing-engine/engine-lines.kcad.ts -o out/engine-lines.step
 ```
 
 ## Limits
@@ -167,4 +177,6 @@ kernelcad export step examples/tube-routing-engine/engine-lines.kcad.ts -o out/e
 
 ## Open the example
 
-[Open the example in Studio](https://app.kernelcad.com/studio?script=examples/tube-routing-engine/engine-lines.kcad.ts), or read [the source on GitHub](https://github.com/w1ne/kernelCAD-web/blob/develop/examples/tube-routing-engine/engine-lines.kcad.ts). The `kernelcad-tubes` skill lists every rule and diagnostic.
+[Download the five-line working source](/blog/tubes-how-to/engine-lines.kcad.ts) and [its broken twin](/blog/tubes-how-to/engine-lines-broken.kcad.ts), or read [the working source on GitHub](https://github.com/w1ne/kernelCAD-web/blob/develop/examples/tube-routing-engine/engine-lines.kcad.ts). The native viewer above shows this five-line fixture. The `kernelcad-tubes` skill lists the rules and diagnostics.
+
+For the larger worked assembly, read [Routing 23 lines on a rocket-engine example](/blog/rocket-engine-routing/) and [open that full 23-line model in public Studio](https://app.kernelcad.com/studio?gallery=rocket-engine-routing). That Studio entry is the rocket assembly; the five-line fixture remains available through its exact downloads and CLI commands.

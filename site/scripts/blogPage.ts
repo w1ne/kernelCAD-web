@@ -5,6 +5,7 @@
 // the hand-written blog pages had before the build existed, kept byte for
 // byte, so moving the first post onto the build changed nothing a reader sees.
 
+import { MESHOPT_DECODER_URL } from '../../scripts/lib/meshoptAssets';
 import { escapeAttr, escapeText } from './blogMarkdown';
 
 export const SITE_ORIGIN = 'https://kernelcad.com';
@@ -28,7 +29,7 @@ const MEDIA_STYLE = {
  * The video and the 3D view of the model, shown right after the lede, with the
  * CSS lines the page needs for them. Empty for a post with neither.
  */
-export function postMedia(media: { readonly video?: string; readonly model?: string }): { lines: string[]; style: string[] } {
+export function postMedia(media: { readonly video?: string; readonly model?: string; readonly modelCompression?: 'meshopt' }): { lines: string[]; style: string[] } {
   const lines: string[] = [];
   const style: string[] = [];
   if (media.video !== undefined) {
@@ -41,6 +42,7 @@ export function postMedia(media: { readonly video?: string; readonly model?: str
       `        <model-viewer src="${POST_MODEL_FILE}" alt="${escapeAttr(`The model built from ${media.model}`)}" camera-controls auto-rotate rotation-per-second="12deg" interaction-prompt="none" touch-action="pan-y" loading="lazy"></model-viewer>`,
       `        <figcaption>The model, built from <code>${escapeText(media.model)}</code>. Drag to turn it.</figcaption>`,
       '      </figure>',
+      ...(media.modelCompression === 'meshopt' ? [`      <script>self.ModelViewerElement = { ...(self.ModelViewerElement || {}), meshoptDecoderLocation: '${MESHOPT_DECODER_URL}' };</script>`] : []),
       `      <script type="module" src="${MODEL_VIEWER_SRC}"></script>`,
     );
     style.push(MEDIA_STYLE.model);

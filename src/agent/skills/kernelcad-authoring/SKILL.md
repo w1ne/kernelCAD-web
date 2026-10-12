@@ -5,9 +5,9 @@ description: kernelCAD model authoring API — primitives, transforms, booleans,
 
 # kernelCAD — authoring
 
-Author or modify kernelCAD models in TypeScript. Scripts live in `.kcad.ts` files; the kernelCAD CLI (`kernelcad evaluate <file>` and `kernelcad export stl|step|dxf|3mf|glb <file> -o <out>`) runs them.
+Write or edit `.kcad.ts` TypeScript models; run `kernelcad evaluate <file>` or `kernelcad export stl|step|dxf|3mf|glb <file> -o <out>`.
 
-`.kcad.ts` scripts are single files: top-level `import`/`require` is refused with `feature.invalid-args` — define helpers in the same file.
+Single-file scripts refuse top-level `import`/`require` with `feature.invalid-args`; define helpers in the same file.
 
 ## Agent authoring loop
 
@@ -887,6 +887,11 @@ kernelcad animate path/to/script.kcad.ts /tmp/spin.gif --turntable --width 640 -
 kernelcad mcp
 ```
 
+For static renders and turntables, set `PW_CDP_URL` to an already-running
+Chrome's CDP endpoint after verifying it is available. The capture uses that
+browser's existing context and closes its own tab on completion. An explicit
+attachment failure is reported; it does not launch a second browser.
+
 ## Animation timelines (animationView)
 
 `animationView({...})` declares a kinematic-motion timeline that
@@ -1093,7 +1098,7 @@ When you need a canonical pattern, call MCP tool `lookup_cookbook(query, k?)` to
 - Never use JS arithmetic on a `param()` result — `param('w', 18) + 4` coerces the branded ParamRef and throws `feature.invalid-args`. Build derived dimensions with the ParamRef methods: `.add(n)`, `.subtract(n)`, `.multiply(n)`, `.divide(n)`, `.negate()` — e.g. `w.add(4)`; they re-evaluate when the param changes.
 - Prefer `hole` / `holes` / `cutout` over `subtract(cylinder)` (see the table below): they emit named refs (`'wall'`, `'floor'`, `'wall-back'`, `'counterbore-*'`, `'countersink-cone'`) that `.fillet()` / `.shell()` can address.
 - Apply transforms AFTER edge/face features when face refs matter.
-- Always `return` a single shape from the top of the script. Only the returned shape is exported, probed and measured; "the last thing I created" is NOT a fallback. If a probe reports the same bbox no matter what you edit, check what the script returns.
+- Always `return` one shape at script top level. Only it is exported, probed and measured; the last created shape is NOT a fallback. If edits leave a probe's bbox unchanged, check the returned shape.
 - Symmetric parts: `.mirror(plane)` (source + reflection); `.reflect(plane)` gives the reflection only.
 - In booleans, prefer ≥0.1 mm of overlap (unions) or offset (cuts) over exact tangency or coincident faces.
 - Helical features: rail from `helix(...)`. Threads, worms, helical grooves: sweep with `spine: 'helix'`. Round-wire coils and springs: `spine: 'smooth'` (the default polyline spine is not watertight). Internal threads: `hole({ thread })`, not a sweep.

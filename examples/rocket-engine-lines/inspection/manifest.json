@@ -1,0 +1,7711 @@
+{
+  "sourceSha": "27c81dd319b0e520678b3f139512a19371cec4564e257c03820a3c0334377673",
+  "source": "/home/andrii/projects/kernelCAD-web-worktrees/tube-routing/examples/rocket-engine-lines/engine-routed.kcad.ts",
+  "meshCache": "/tmp/rocket-final-mesh.json.gz",
+  "meshSha": "60ebec092863a8d99b51f5a84649149d65660e2c849a332ae8b7ce24efe04922",
+  "node": "v22.23.2",
+  "adapterSha": "71f3f14222a32d3d055caf8088275f594d3dfeb2ccaadcf22b66f85081443e5e",
+  "at": "2026-10-12T16:32:58.715Z",
+  "browser": {
+    "cdp": "http://127.0.0.1:9444",
+    "ownedTarget": "DFAE34B6AD0C086C95D3D16732D3910A"
+  },
+  "stage": {
+    "background": "#f4f6f8",
+    "shadow": true
+  },
+  "views": [
+    {
+      "view": "front",
+      "rgb": "front-rgb.png",
+      "mask": "front-mask.png",
+      "depth": "front-depth.png",
+      "normals": "front-normals.png",
+      "objects": [
+        {
+          "featureId": "tubeSpec_1",
+          "names": [
+            "tubeSpec_1",
+            "tubeSpec"
+          ],
+          "color": "#000001",
+          "rgb": [
+            0,
+            0,
+            1
+          ],
+          "visibleIndex": 0
+        },
+        {
+          "featureId": "assemblyModel_1__chamber",
+          "names": [
+            "assemblyModel_1__chamber",
+            "chamber",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000002",
+          "rgb": [
+            0,
+            0,
+            2
+          ],
+          "visibleIndex": 1
+        },
+        {
+          "featureId": "assemblyModel_1__coolant-manifold",
+          "names": [
+            "assemblyModel_1__coolant-manifold",
+            "coolant-manifold",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000003",
+          "rgb": [
+            0,
+            0,
+            3
+          ],
+          "visibleIndex": 2
+        },
+        {
+          "featureId": "assemblyModel_1__injector-dome",
+          "names": [
+            "assemblyModel_1__injector-dome",
+            "injector-dome",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000004",
+          "rgb": [
+            0,
+            0,
+            4
+          ],
+          "visibleIndex": 3
+        },
+        {
+          "featureId": "assemblyModel_1__gimbal-mount",
+          "names": [
+            "assemblyModel_1__gimbal-mount",
+            "gimbal-mount",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000005",
+          "rgb": [
+            0,
+            0,
+            5
+          ],
+          "visibleIndex": 4
+        },
+        {
+          "featureId": "assemblyModel_1__thrust-frame",
+          "names": [
+            "assemblyModel_1__thrust-frame",
+            "thrust-frame",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000006",
+          "rgb": [
+            0,
+            0,
+            6
+          ],
+          "visibleIndex": 5
+        },
+        {
+          "featureId": "assemblyModel_1__turbopump",
+          "names": [
+            "assemblyModel_1__turbopump",
+            "turbopump",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000007",
+          "rgb": [
+            0,
+            0,
+            7
+          ],
+          "visibleIndex": 6
+        },
+        {
+          "featureId": "assemblyModel_1__turbine-exhaust-collar",
+          "names": [
+            "assemblyModel_1__turbine-exhaust-collar",
+            "turbine-exhaust-collar",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000008",
+          "rgb": [
+            0,
+            0,
+            8
+          ],
+          "visibleIndex": 7
+        },
+        {
+          "featureId": "assemblyModel_1__gas-generator",
+          "names": [
+            "assemblyModel_1__gas-generator",
+            "gas-generator",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000009",
+          "rgb": [
+            0,
+            0,
+            9
+          ],
+          "visibleIndex": 8
+        },
+        {
+          "featureId": "assemblyModel_1__pump-mount",
+          "names": [
+            "assemblyModel_1__pump-mount",
+            "pump-mount",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00000a",
+          "rgb": [
+            0,
+            0,
+            10
+          ],
+          "visibleIndex": 9
+        },
+        {
+          "featureId": "assemblyModel_1__main-lox-valve",
+          "names": [
+            "assemblyModel_1__main-lox-valve",
+            "main-lox-valve",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00000b",
+          "rgb": [
+            0,
+            0,
+            11
+          ],
+          "visibleIndex": 10
+        },
+        {
+          "featureId": "assemblyModel_1__main-fuel-valve",
+          "names": [
+            "assemblyModel_1__main-fuel-valve",
+            "main-fuel-valve",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00000c",
+          "rgb": [
+            0,
+            0,
+            12
+          ],
+          "visibleIndex": 11
+        },
+        {
+          "featureId": "assemblyModel_1__gg-valve",
+          "names": [
+            "assemblyModel_1__gg-valve",
+            "gg-valve",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00000d",
+          "rgb": [
+            0,
+            0,
+            13
+          ],
+          "visibleIndex": 12
+        },
+        {
+          "featureId": "assemblyModel_1__tvc-actuator-1",
+          "names": [
+            "assemblyModel_1__tvc-actuator-1",
+            "tvc-actuator-1",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00000e",
+          "rgb": [
+            0,
+            0,
+            14
+          ],
+          "visibleIndex": 13
+        },
+        {
+          "featureId": "assemblyModel_1__tvc-actuator-2",
+          "names": [
+            "assemblyModel_1__tvc-actuator-2",
+            "tvc-actuator-2",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00000f",
+          "rgb": [
+            0,
+            0,
+            15
+          ],
+          "visibleIndex": 14
+        },
+        {
+          "featureId": "assemblyModel_1__igniter-cartridge",
+          "names": [
+            "assemblyModel_1__igniter-cartridge",
+            "igniter-cartridge",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000010",
+          "rgb": [
+            0,
+            0,
+            16
+          ],
+          "visibleIndex": 15
+        },
+        {
+          "featureId": "assemblyModel_1__helium-bottle",
+          "names": [
+            "assemblyModel_1__helium-bottle",
+            "helium-bottle",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000011",
+          "rgb": [
+            0,
+            0,
+            17
+          ],
+          "visibleIndex": 16
+        },
+        {
+          "featureId": "assemblyModel_1__pneumatic-block",
+          "names": [
+            "assemblyModel_1__pneumatic-block",
+            "pneumatic-block",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000012",
+          "rgb": [
+            0,
+            0,
+            18
+          ],
+          "visibleIndex": 17
+        },
+        {
+          "featureId": "assemblyModel_1__main-valve-support",
+          "names": [
+            "assemblyModel_1__main-valve-support",
+            "main-valve-support",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000013",
+          "rgb": [
+            0,
+            0,
+            19
+          ],
+          "visibleIndex": 18
+        },
+        {
+          "featureId": "assemblyModel_1__generator-valve-support",
+          "names": [
+            "assemblyModel_1__generator-valve-support",
+            "generator-valve-support",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000014",
+          "rgb": [
+            0,
+            0,
+            20
+          ],
+          "visibleIndex": 19
+        },
+        {
+          "featureId": "assemblyModel_1__lox-pump-main",
+          "names": [
+            "assemblyModel_1__lox-pump-main",
+            "lox-pump-main",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000015",
+          "rgb": [
+            0,
+            0,
+            21
+          ],
+          "visibleIndex": 20
+        },
+        {
+          "featureId": "assemblyModel_1__lox-main-dome",
+          "names": [
+            "assemblyModel_1__lox-main-dome",
+            "lox-main-dome",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000016",
+          "rgb": [
+            0,
+            0,
+            22
+          ],
+          "visibleIndex": 21
+        },
+        {
+          "featureId": "assemblyModel_1__lox-pump-gg",
+          "names": [
+            "assemblyModel_1__lox-pump-gg",
+            "lox-pump-gg",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000017",
+          "rgb": [
+            0,
+            0,
+            23
+          ],
+          "visibleIndex": 22
+        },
+        {
+          "featureId": "assemblyModel_1__lox-gg-generator",
+          "names": [
+            "assemblyModel_1__lox-gg-generator",
+            "lox-gg-generator",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000018",
+          "rgb": [
+            0,
+            0,
+            24
+          ],
+          "visibleIndex": 23
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-pump-main",
+          "names": [
+            "assemblyModel_1__fuel-pump-main",
+            "fuel-pump-main",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000019",
+          "rgb": [
+            0,
+            0,
+            25
+          ],
+          "visibleIndex": 24
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-main-manifold",
+          "names": [
+            "assemblyModel_1__fuel-main-manifold",
+            "fuel-main-manifold",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00001a",
+          "rgb": [
+            0,
+            0,
+            26
+          ],
+          "visibleIndex": 25
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-coolant-dome",
+          "names": [
+            "assemblyModel_1__fuel-coolant-dome",
+            "fuel-coolant-dome",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00001b",
+          "rgb": [
+            0,
+            0,
+            27
+          ],
+          "visibleIndex": 26
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-pump-gg",
+          "names": [
+            "assemblyModel_1__fuel-pump-gg",
+            "fuel-pump-gg",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00001c",
+          "rgb": [
+            0,
+            0,
+            28
+          ],
+          "visibleIndex": 27
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-gg-generator",
+          "names": [
+            "assemblyModel_1__fuel-gg-generator",
+            "fuel-gg-generator",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00001d",
+          "rgb": [
+            0,
+            0,
+            29
+          ],
+          "visibleIndex": 28
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-act1-supply",
+          "names": [
+            "assemblyModel_1__fuel-act1-supply",
+            "fuel-act1-supply",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00001e",
+          "rgb": [
+            0,
+            0,
+            30
+          ],
+          "visibleIndex": 29
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-act1-return",
+          "names": [
+            "assemblyModel_1__fuel-act1-return",
+            "fuel-act1-return",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00001f",
+          "rgb": [
+            0,
+            0,
+            31
+          ],
+          "visibleIndex": 30
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-act2-supply",
+          "names": [
+            "assemblyModel_1__fuel-act2-supply",
+            "fuel-act2-supply",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000020",
+          "rgb": [
+            0,
+            0,
+            32
+          ],
+          "visibleIndex": 31
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-act2-return",
+          "names": [
+            "assemblyModel_1__fuel-act2-return",
+            "fuel-act2-return",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000021",
+          "rgb": [
+            0,
+            0,
+            33
+          ],
+          "visibleIndex": 32
+        },
+        {
+          "featureId": "assemblyModel_1__hotgas-generator-turbine",
+          "names": [
+            "assemblyModel_1__hotgas-generator-turbine",
+            "hotgas-generator-turbine",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000022",
+          "rgb": [
+            0,
+            0,
+            34
+          ],
+          "visibleIndex": 33
+        },
+        {
+          "featureId": "assemblyModel_1__hotgas-exhaust",
+          "names": [
+            "assemblyModel_1__hotgas-exhaust",
+            "hotgas-exhaust",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000023",
+          "rgb": [
+            0,
+            0,
+            35
+          ],
+          "visibleIndex": 34
+        },
+        {
+          "featureId": "assemblyModel_1__igniter-chamber",
+          "names": [
+            "assemblyModel_1__igniter-chamber",
+            "igniter-chamber",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000024",
+          "rgb": [
+            0,
+            0,
+            36
+          ],
+          "visibleIndex": 35
+        },
+        {
+          "featureId": "assemblyModel_1__igniter-generator",
+          "names": [
+            "assemblyModel_1__igniter-generator",
+            "igniter-generator",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000025",
+          "rgb": [
+            0,
+            0,
+            37
+          ],
+          "visibleIndex": 36
+        },
+        {
+          "featureId": "assemblyModel_1__pneumatic-helium-block",
+          "names": [
+            "assemblyModel_1__pneumatic-helium-block",
+            "pneumatic-helium-block",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000026",
+          "rgb": [
+            0,
+            0,
+            38
+          ],
+          "visibleIndex": 37
+        },
+        {
+          "featureId": "assemblyModel_1__pneumatic-main-lox",
+          "names": [
+            "assemblyModel_1__pneumatic-main-lox",
+            "pneumatic-main-lox",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000027",
+          "rgb": [
+            0,
+            0,
+            39
+          ],
+          "visibleIndex": 38
+        },
+        {
+          "featureId": "assemblyModel_1__pneumatic-main-fuel",
+          "names": [
+            "assemblyModel_1__pneumatic-main-fuel",
+            "pneumatic-main-fuel",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000028",
+          "rgb": [
+            0,
+            0,
+            40
+          ],
+          "visibleIndex": 39
+        },
+        {
+          "featureId": "assemblyModel_1__pneumatic-gg-valve",
+          "names": [
+            "assemblyModel_1__pneumatic-gg-valve",
+            "pneumatic-gg-valve",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000029",
+          "rgb": [
+            0,
+            0,
+            41
+          ],
+          "visibleIndex": 40
+        },
+        {
+          "featureId": "assemblyModel_1__pneumatic-purge-dome",
+          "names": [
+            "assemblyModel_1__pneumatic-purge-dome",
+            "pneumatic-purge-dome",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00002a",
+          "rgb": [
+            0,
+            0,
+            42
+          ],
+          "visibleIndex": 41
+        },
+        {
+          "featureId": "assemblyModel_1__pneumatic-purge-generator",
+          "names": [
+            "assemblyModel_1__pneumatic-purge-generator",
+            "pneumatic-purge-generator",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00002b",
+          "rgb": [
+            0,
+            0,
+            43
+          ],
+          "visibleIndex": 42
+        }
+      ],
+      "metadata": {
+        "depth": {
+          "encoding": "linear-camera-depth-rgba8",
+          "units": "mm",
+          "near": 34.448617319861654,
+          "far": 68897.2346397233,
+          "background": "rgba(0,0,0,0)",
+          "meaning": "nearest visible model surface after the active object filter, measured along the camera view direction and normalized from near to far"
+        },
+        "normals": {
+          "encoding": "view-space-normal-rgb8",
+          "mapping": "rgb = round((normal_view * 0.5 + 0.5) * 255)",
+          "background": "rgba(0,0,0,0)",
+          "meaning": "visible model-surface normal in the camera coordinate frame after the active object filter"
+        }
+      },
+      "scene": {
+        "childCount": 50,
+        "meshCount": 1562,
+        "cameraPos": [
+          0,
+          -3444.861731986165,
+          0
+        ],
+        "cameraLookingAt": [
+          0,
+          -3443.861731986165,
+          -2.220446049250313e-16
+        ],
+        "sampleOpacities": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "samplePolygonOffsets": [
+          {
+            "enabled": true,
+            "factor": 1,
+            "units": 1
+          },
+          {
+            "enabled": true,
+            "factor": 1,
+            "units": 1
+          },
+          {
+            "enabled": true,
+            "factor": 1,
+            "units": 1
+          },
+          {
+            "enabled": true,
+            "factor": 1,
+            "units": 1
+          },
+          {
+            "enabled": true,
+            "factor": 1,
+            "units": 1
+          }
+        ],
+        "kcadGroupMatrices": [
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "view": "right",
+      "rgb": "right-rgb.png",
+      "mask": "right-mask.png",
+      "depth": "right-depth.png",
+      "normals": "right-normals.png",
+      "objects": [
+        {
+          "featureId": "tubeSpec_1",
+          "names": [
+            "tubeSpec_1",
+            "tubeSpec"
+          ],
+          "color": "#000001",
+          "rgb": [
+            0,
+            0,
+            1
+          ],
+          "visibleIndex": 0
+        },
+        {
+          "featureId": "assemblyModel_1__chamber",
+          "names": [
+            "assemblyModel_1__chamber",
+            "chamber",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000002",
+          "rgb": [
+            0,
+            0,
+            2
+          ],
+          "visibleIndex": 1
+        },
+        {
+          "featureId": "assemblyModel_1__coolant-manifold",
+          "names": [
+            "assemblyModel_1__coolant-manifold",
+            "coolant-manifold",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000003",
+          "rgb": [
+            0,
+            0,
+            3
+          ],
+          "visibleIndex": 2
+        },
+        {
+          "featureId": "assemblyModel_1__injector-dome",
+          "names": [
+            "assemblyModel_1__injector-dome",
+            "injector-dome",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000004",
+          "rgb": [
+            0,
+            0,
+            4
+          ],
+          "visibleIndex": 3
+        },
+        {
+          "featureId": "assemblyModel_1__gimbal-mount",
+          "names": [
+            "assemblyModel_1__gimbal-mount",
+            "gimbal-mount",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000005",
+          "rgb": [
+            0,
+            0,
+            5
+          ],
+          "visibleIndex": 4
+        },
+        {
+          "featureId": "assemblyModel_1__thrust-frame",
+          "names": [
+            "assemblyModel_1__thrust-frame",
+            "thrust-frame",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000006",
+          "rgb": [
+            0,
+            0,
+            6
+          ],
+          "visibleIndex": 5
+        },
+        {
+          "featureId": "assemblyModel_1__turbopump",
+          "names": [
+            "assemblyModel_1__turbopump",
+            "turbopump",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000007",
+          "rgb": [
+            0,
+            0,
+            7
+          ],
+          "visibleIndex": 6
+        },
+        {
+          "featureId": "assemblyModel_1__turbine-exhaust-collar",
+          "names": [
+            "assemblyModel_1__turbine-exhaust-collar",
+            "turbine-exhaust-collar",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000008",
+          "rgb": [
+            0,
+            0,
+            8
+          ],
+          "visibleIndex": 7
+        },
+        {
+          "featureId": "assemblyModel_1__gas-generator",
+          "names": [
+            "assemblyModel_1__gas-generator",
+            "gas-generator",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000009",
+          "rgb": [
+            0,
+            0,
+            9
+          ],
+          "visibleIndex": 8
+        },
+        {
+          "featureId": "assemblyModel_1__pump-mount",
+          "names": [
+            "assemblyModel_1__pump-mount",
+            "pump-mount",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00000a",
+          "rgb": [
+            0,
+            0,
+            10
+          ],
+          "visibleIndex": 9
+        },
+        {
+          "featureId": "assemblyModel_1__main-lox-valve",
+          "names": [
+            "assemblyModel_1__main-lox-valve",
+            "main-lox-valve",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00000b",
+          "rgb": [
+            0,
+            0,
+            11
+          ],
+          "visibleIndex": 10
+        },
+        {
+          "featureId": "assemblyModel_1__main-fuel-valve",
+          "names": [
+            "assemblyModel_1__main-fuel-valve",
+            "main-fuel-valve",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00000c",
+          "rgb": [
+            0,
+            0,
+            12
+          ],
+          "visibleIndex": 11
+        },
+        {
+          "featureId": "assemblyModel_1__gg-valve",
+          "names": [
+            "assemblyModel_1__gg-valve",
+            "gg-valve",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00000d",
+          "rgb": [
+            0,
+            0,
+            13
+          ],
+          "visibleIndex": 12
+        },
+        {
+          "featureId": "assemblyModel_1__tvc-actuator-1",
+          "names": [
+            "assemblyModel_1__tvc-actuator-1",
+            "tvc-actuator-1",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00000e",
+          "rgb": [
+            0,
+            0,
+            14
+          ],
+          "visibleIndex": 13
+        },
+        {
+          "featureId": "assemblyModel_1__tvc-actuator-2",
+          "names": [
+            "assemblyModel_1__tvc-actuator-2",
+            "tvc-actuator-2",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00000f",
+          "rgb": [
+            0,
+            0,
+            15
+          ],
+          "visibleIndex": 14
+        },
+        {
+          "featureId": "assemblyModel_1__igniter-cartridge",
+          "names": [
+            "assemblyModel_1__igniter-cartridge",
+            "igniter-cartridge",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000010",
+          "rgb": [
+            0,
+            0,
+            16
+          ],
+          "visibleIndex": 15
+        },
+        {
+          "featureId": "assemblyModel_1__helium-bottle",
+          "names": [
+            "assemblyModel_1__helium-bottle",
+            "helium-bottle",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000011",
+          "rgb": [
+            0,
+            0,
+            17
+          ],
+          "visibleIndex": 16
+        },
+        {
+          "featureId": "assemblyModel_1__pneumatic-block",
+          "names": [
+            "assemblyModel_1__pneumatic-block",
+            "pneumatic-block",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000012",
+          "rgb": [
+            0,
+            0,
+            18
+          ],
+          "visibleIndex": 17
+        },
+        {
+          "featureId": "assemblyModel_1__main-valve-support",
+          "names": [
+            "assemblyModel_1__main-valve-support",
+            "main-valve-support",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000013",
+          "rgb": [
+            0,
+            0,
+            19
+          ],
+          "visibleIndex": 18
+        },
+        {
+          "featureId": "assemblyModel_1__generator-valve-support",
+          "names": [
+            "assemblyModel_1__generator-valve-support",
+            "generator-valve-support",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000014",
+          "rgb": [
+            0,
+            0,
+            20
+          ],
+          "visibleIndex": 19
+        },
+        {
+          "featureId": "assemblyModel_1__lox-pump-main",
+          "names": [
+            "assemblyModel_1__lox-pump-main",
+            "lox-pump-main",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000015",
+          "rgb": [
+            0,
+            0,
+            21
+          ],
+          "visibleIndex": 20
+        },
+        {
+          "featureId": "assemblyModel_1__lox-main-dome",
+          "names": [
+            "assemblyModel_1__lox-main-dome",
+            "lox-main-dome",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000016",
+          "rgb": [
+            0,
+            0,
+            22
+          ],
+          "visibleIndex": 21
+        },
+        {
+          "featureId": "assemblyModel_1__lox-pump-gg",
+          "names": [
+            "assemblyModel_1__lox-pump-gg",
+            "lox-pump-gg",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000017",
+          "rgb": [
+            0,
+            0,
+            23
+          ],
+          "visibleIndex": 22
+        },
+        {
+          "featureId": "assemblyModel_1__lox-gg-generator",
+          "names": [
+            "assemblyModel_1__lox-gg-generator",
+            "lox-gg-generator",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000018",
+          "rgb": [
+            0,
+            0,
+            24
+          ],
+          "visibleIndex": 23
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-pump-main",
+          "names": [
+            "assemblyModel_1__fuel-pump-main",
+            "fuel-pump-main",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000019",
+          "rgb": [
+            0,
+            0,
+            25
+          ],
+          "visibleIndex": 24
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-main-manifold",
+          "names": [
+            "assemblyModel_1__fuel-main-manifold",
+            "fuel-main-manifold",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00001a",
+          "rgb": [
+            0,
+            0,
+            26
+          ],
+          "visibleIndex": 25
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-coolant-dome",
+          "names": [
+            "assemblyModel_1__fuel-coolant-dome",
+            "fuel-coolant-dome",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00001b",
+          "rgb": [
+            0,
+            0,
+            27
+          ],
+          "visibleIndex": 26
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-pump-gg",
+          "names": [
+            "assemblyModel_1__fuel-pump-gg",
+            "fuel-pump-gg",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00001c",
+          "rgb": [
+            0,
+            0,
+            28
+          ],
+          "visibleIndex": 27
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-gg-generator",
+          "names": [
+            "assemblyModel_1__fuel-gg-generator",
+            "fuel-gg-generator",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00001d",
+          "rgb": [
+            0,
+            0,
+            29
+          ],
+          "visibleIndex": 28
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-act1-supply",
+          "names": [
+            "assemblyModel_1__fuel-act1-supply",
+            "fuel-act1-supply",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00001e",
+          "rgb": [
+            0,
+            0,
+            30
+          ],
+          "visibleIndex": 29
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-act1-return",
+          "names": [
+            "assemblyModel_1__fuel-act1-return",
+            "fuel-act1-return",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00001f",
+          "rgb": [
+            0,
+            0,
+            31
+          ],
+          "visibleIndex": 30
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-act2-supply",
+          "names": [
+            "assemblyModel_1__fuel-act2-supply",
+            "fuel-act2-supply",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000020",
+          "rgb": [
+            0,
+            0,
+            32
+          ],
+          "visibleIndex": 31
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-act2-return",
+          "names": [
+            "assemblyModel_1__fuel-act2-return",
+            "fuel-act2-return",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000021",
+          "rgb": [
+            0,
+            0,
+            33
+          ],
+          "visibleIndex": 32
+        },
+        {
+          "featureId": "assemblyModel_1__hotgas-generator-turbine",
+          "names": [
+            "assemblyModel_1__hotgas-generator-turbine",
+            "hotgas-generator-turbine",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000022",
+          "rgb": [
+            0,
+            0,
+            34
+          ],
+          "visibleIndex": 33
+        },
+        {
+          "featureId": "assemblyModel_1__hotgas-exhaust",
+          "names": [
+            "assemblyModel_1__hotgas-exhaust",
+            "hotgas-exhaust",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000023",
+          "rgb": [
+            0,
+            0,
+            35
+          ],
+          "visibleIndex": 34
+        },
+        {
+          "featureId": "assemblyModel_1__igniter-chamber",
+          "names": [
+            "assemblyModel_1__igniter-chamber",
+            "igniter-chamber",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000024",
+          "rgb": [
+            0,
+            0,
+            36
+          ],
+          "visibleIndex": 35
+        },
+        {
+          "featureId": "assemblyModel_1__igniter-generator",
+          "names": [
+            "assemblyModel_1__igniter-generator",
+            "igniter-generator",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000025",
+          "rgb": [
+            0,
+            0,
+            37
+          ],
+          "visibleIndex": 36
+        },
+        {
+          "featureId": "assemblyModel_1__pneumatic-helium-block",
+          "names": [
+            "assemblyModel_1__pneumatic-helium-block",
+            "pneumatic-helium-block",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000026",
+          "rgb": [
+            0,
+            0,
+            38
+          ],
+          "visibleIndex": 37
+        },
+        {
+          "featureId": "assemblyModel_1__pneumatic-main-lox",
+          "names": [
+            "assemblyModel_1__pneumatic-main-lox",
+            "pneumatic-main-lox",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000027",
+          "rgb": [
+            0,
+            0,
+            39
+          ],
+          "visibleIndex": 38
+        },
+        {
+          "featureId": "assemblyModel_1__pneumatic-main-fuel",
+          "names": [
+            "assemblyModel_1__pneumatic-main-fuel",
+            "pneumatic-main-fuel",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000028",
+          "rgb": [
+            0,
+            0,
+            40
+          ],
+          "visibleIndex": 39
+        },
+        {
+          "featureId": "assemblyModel_1__pneumatic-gg-valve",
+          "names": [
+            "assemblyModel_1__pneumatic-gg-valve",
+            "pneumatic-gg-valve",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000029",
+          "rgb": [
+            0,
+            0,
+            41
+          ],
+          "visibleIndex": 40
+        },
+        {
+          "featureId": "assemblyModel_1__pneumatic-purge-dome",
+          "names": [
+            "assemblyModel_1__pneumatic-purge-dome",
+            "pneumatic-purge-dome",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00002a",
+          "rgb": [
+            0,
+            0,
+            42
+          ],
+          "visibleIndex": 41
+        },
+        {
+          "featureId": "assemblyModel_1__pneumatic-purge-generator",
+          "names": [
+            "assemblyModel_1__pneumatic-purge-generator",
+            "pneumatic-purge-generator",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00002b",
+          "rgb": [
+            0,
+            0,
+            43
+          ],
+          "visibleIndex": 42
+        }
+      ],
+      "metadata": {
+        "depth": {
+          "encoding": "linear-camera-depth-rgba8",
+          "units": "mm",
+          "near": 36.89051398734212,
+          "far": 73781.02797468424,
+          "background": "rgba(0,0,0,0)",
+          "meaning": "nearest visible model surface after the active object filter, measured along the camera view direction and normalized from near to far"
+        },
+        "normals": {
+          "encoding": "view-space-normal-rgb8",
+          "mapping": "rgb = round((normal_view * 0.5 + 0.5) * 255)",
+          "background": "rgba(0,0,0,0)",
+          "meaning": "visible model-surface normal in the camera coordinate frame after the active object filter"
+        }
+      },
+      "scene": {
+        "childCount": 50,
+        "meshCount": 1562,
+        "cameraPos": [
+          3689.051398734212,
+          0,
+          0
+        ],
+        "cameraLookingAt": [
+          3688.051398734212,
+          0,
+          0
+        ],
+        "sampleOpacities": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "samplePolygonOffsets": [
+          {
+            "enabled": true,
+            "factor": 1,
+            "units": 1
+          },
+          {
+            "enabled": true,
+            "factor": 1,
+            "units": 1
+          },
+          {
+            "enabled": true,
+            "factor": 1,
+            "units": 1
+          },
+          {
+            "enabled": true,
+            "factor": 1,
+            "units": 1
+          },
+          {
+            "enabled": true,
+            "factor": 1,
+            "units": 1
+          }
+        ],
+        "kcadGroupMatrices": [
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "view": "top",
+      "rgb": "top-rgb.png",
+      "mask": "top-mask.png",
+      "depth": "top-depth.png",
+      "normals": "top-normals.png",
+      "objects": [
+        {
+          "featureId": "tubeSpec_1",
+          "names": [
+            "tubeSpec_1",
+            "tubeSpec"
+          ],
+          "color": "#000001",
+          "rgb": [
+            0,
+            0,
+            1
+          ],
+          "visibleIndex": 0
+        },
+        {
+          "featureId": "assemblyModel_1__chamber",
+          "names": [
+            "assemblyModel_1__chamber",
+            "chamber",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000002",
+          "rgb": [
+            0,
+            0,
+            2
+          ],
+          "visibleIndex": 1
+        },
+        {
+          "featureId": "assemblyModel_1__coolant-manifold",
+          "names": [
+            "assemblyModel_1__coolant-manifold",
+            "coolant-manifold",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000003",
+          "rgb": [
+            0,
+            0,
+            3
+          ],
+          "visibleIndex": 2
+        },
+        {
+          "featureId": "assemblyModel_1__injector-dome",
+          "names": [
+            "assemblyModel_1__injector-dome",
+            "injector-dome",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000004",
+          "rgb": [
+            0,
+            0,
+            4
+          ],
+          "visibleIndex": 3
+        },
+        {
+          "featureId": "assemblyModel_1__gimbal-mount",
+          "names": [
+            "assemblyModel_1__gimbal-mount",
+            "gimbal-mount",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000005",
+          "rgb": [
+            0,
+            0,
+            5
+          ],
+          "visibleIndex": 4
+        },
+        {
+          "featureId": "assemblyModel_1__thrust-frame",
+          "names": [
+            "assemblyModel_1__thrust-frame",
+            "thrust-frame",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000006",
+          "rgb": [
+            0,
+            0,
+            6
+          ],
+          "visibleIndex": 5
+        },
+        {
+          "featureId": "assemblyModel_1__turbopump",
+          "names": [
+            "assemblyModel_1__turbopump",
+            "turbopump",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000007",
+          "rgb": [
+            0,
+            0,
+            7
+          ],
+          "visibleIndex": 6
+        },
+        {
+          "featureId": "assemblyModel_1__turbine-exhaust-collar",
+          "names": [
+            "assemblyModel_1__turbine-exhaust-collar",
+            "turbine-exhaust-collar",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000008",
+          "rgb": [
+            0,
+            0,
+            8
+          ],
+          "visibleIndex": 7
+        },
+        {
+          "featureId": "assemblyModel_1__gas-generator",
+          "names": [
+            "assemblyModel_1__gas-generator",
+            "gas-generator",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000009",
+          "rgb": [
+            0,
+            0,
+            9
+          ],
+          "visibleIndex": 8
+        },
+        {
+          "featureId": "assemblyModel_1__pump-mount",
+          "names": [
+            "assemblyModel_1__pump-mount",
+            "pump-mount",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00000a",
+          "rgb": [
+            0,
+            0,
+            10
+          ],
+          "visibleIndex": 9
+        },
+        {
+          "featureId": "assemblyModel_1__main-lox-valve",
+          "names": [
+            "assemblyModel_1__main-lox-valve",
+            "main-lox-valve",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00000b",
+          "rgb": [
+            0,
+            0,
+            11
+          ],
+          "visibleIndex": 10
+        },
+        {
+          "featureId": "assemblyModel_1__main-fuel-valve",
+          "names": [
+            "assemblyModel_1__main-fuel-valve",
+            "main-fuel-valve",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00000c",
+          "rgb": [
+            0,
+            0,
+            12
+          ],
+          "visibleIndex": 11
+        },
+        {
+          "featureId": "assemblyModel_1__gg-valve",
+          "names": [
+            "assemblyModel_1__gg-valve",
+            "gg-valve",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00000d",
+          "rgb": [
+            0,
+            0,
+            13
+          ],
+          "visibleIndex": 12
+        },
+        {
+          "featureId": "assemblyModel_1__tvc-actuator-1",
+          "names": [
+            "assemblyModel_1__tvc-actuator-1",
+            "tvc-actuator-1",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00000e",
+          "rgb": [
+            0,
+            0,
+            14
+          ],
+          "visibleIndex": 13
+        },
+        {
+          "featureId": "assemblyModel_1__tvc-actuator-2",
+          "names": [
+            "assemblyModel_1__tvc-actuator-2",
+            "tvc-actuator-2",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00000f",
+          "rgb": [
+            0,
+            0,
+            15
+          ],
+          "visibleIndex": 14
+        },
+        {
+          "featureId": "assemblyModel_1__igniter-cartridge",
+          "names": [
+            "assemblyModel_1__igniter-cartridge",
+            "igniter-cartridge",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000010",
+          "rgb": [
+            0,
+            0,
+            16
+          ],
+          "visibleIndex": 15
+        },
+        {
+          "featureId": "assemblyModel_1__helium-bottle",
+          "names": [
+            "assemblyModel_1__helium-bottle",
+            "helium-bottle",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000011",
+          "rgb": [
+            0,
+            0,
+            17
+          ],
+          "visibleIndex": 16
+        },
+        {
+          "featureId": "assemblyModel_1__pneumatic-block",
+          "names": [
+            "assemblyModel_1__pneumatic-block",
+            "pneumatic-block",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000012",
+          "rgb": [
+            0,
+            0,
+            18
+          ],
+          "visibleIndex": 17
+        },
+        {
+          "featureId": "assemblyModel_1__main-valve-support",
+          "names": [
+            "assemblyModel_1__main-valve-support",
+            "main-valve-support",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000013",
+          "rgb": [
+            0,
+            0,
+            19
+          ],
+          "visibleIndex": 18
+        },
+        {
+          "featureId": "assemblyModel_1__generator-valve-support",
+          "names": [
+            "assemblyModel_1__generator-valve-support",
+            "generator-valve-support",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000014",
+          "rgb": [
+            0,
+            0,
+            20
+          ],
+          "visibleIndex": 19
+        },
+        {
+          "featureId": "assemblyModel_1__lox-pump-main",
+          "names": [
+            "assemblyModel_1__lox-pump-main",
+            "lox-pump-main",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000015",
+          "rgb": [
+            0,
+            0,
+            21
+          ],
+          "visibleIndex": 20
+        },
+        {
+          "featureId": "assemblyModel_1__lox-main-dome",
+          "names": [
+            "assemblyModel_1__lox-main-dome",
+            "lox-main-dome",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000016",
+          "rgb": [
+            0,
+            0,
+            22
+          ],
+          "visibleIndex": 21
+        },
+        {
+          "featureId": "assemblyModel_1__lox-pump-gg",
+          "names": [
+            "assemblyModel_1__lox-pump-gg",
+            "lox-pump-gg",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000017",
+          "rgb": [
+            0,
+            0,
+            23
+          ],
+          "visibleIndex": 22
+        },
+        {
+          "featureId": "assemblyModel_1__lox-gg-generator",
+          "names": [
+            "assemblyModel_1__lox-gg-generator",
+            "lox-gg-generator",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000018",
+          "rgb": [
+            0,
+            0,
+            24
+          ],
+          "visibleIndex": 23
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-pump-main",
+          "names": [
+            "assemblyModel_1__fuel-pump-main",
+            "fuel-pump-main",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000019",
+          "rgb": [
+            0,
+            0,
+            25
+          ],
+          "visibleIndex": 24
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-main-manifold",
+          "names": [
+            "assemblyModel_1__fuel-main-manifold",
+            "fuel-main-manifold",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00001a",
+          "rgb": [
+            0,
+            0,
+            26
+          ],
+          "visibleIndex": 25
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-coolant-dome",
+          "names": [
+            "assemblyModel_1__fuel-coolant-dome",
+            "fuel-coolant-dome",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00001b",
+          "rgb": [
+            0,
+            0,
+            27
+          ],
+          "visibleIndex": 26
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-pump-gg",
+          "names": [
+            "assemblyModel_1__fuel-pump-gg",
+            "fuel-pump-gg",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00001c",
+          "rgb": [
+            0,
+            0,
+            28
+          ],
+          "visibleIndex": 27
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-gg-generator",
+          "names": [
+            "assemblyModel_1__fuel-gg-generator",
+            "fuel-gg-generator",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00001d",
+          "rgb": [
+            0,
+            0,
+            29
+          ],
+          "visibleIndex": 28
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-act1-supply",
+          "names": [
+            "assemblyModel_1__fuel-act1-supply",
+            "fuel-act1-supply",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00001e",
+          "rgb": [
+            0,
+            0,
+            30
+          ],
+          "visibleIndex": 29
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-act1-return",
+          "names": [
+            "assemblyModel_1__fuel-act1-return",
+            "fuel-act1-return",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00001f",
+          "rgb": [
+            0,
+            0,
+            31
+          ],
+          "visibleIndex": 30
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-act2-supply",
+          "names": [
+            "assemblyModel_1__fuel-act2-supply",
+            "fuel-act2-supply",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000020",
+          "rgb": [
+            0,
+            0,
+            32
+          ],
+          "visibleIndex": 31
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-act2-return",
+          "names": [
+            "assemblyModel_1__fuel-act2-return",
+            "fuel-act2-return",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000021",
+          "rgb": [
+            0,
+            0,
+            33
+          ],
+          "visibleIndex": 32
+        },
+        {
+          "featureId": "assemblyModel_1__hotgas-generator-turbine",
+          "names": [
+            "assemblyModel_1__hotgas-generator-turbine",
+            "hotgas-generator-turbine",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000022",
+          "rgb": [
+            0,
+            0,
+            34
+          ],
+          "visibleIndex": 33
+        },
+        {
+          "featureId": "assemblyModel_1__hotgas-exhaust",
+          "names": [
+            "assemblyModel_1__hotgas-exhaust",
+            "hotgas-exhaust",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000023",
+          "rgb": [
+            0,
+            0,
+            35
+          ],
+          "visibleIndex": 34
+        },
+        {
+          "featureId": "assemblyModel_1__igniter-chamber",
+          "names": [
+            "assemblyModel_1__igniter-chamber",
+            "igniter-chamber",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000024",
+          "rgb": [
+            0,
+            0,
+            36
+          ],
+          "visibleIndex": 35
+        },
+        {
+          "featureId": "assemblyModel_1__igniter-generator",
+          "names": [
+            "assemblyModel_1__igniter-generator",
+            "igniter-generator",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000025",
+          "rgb": [
+            0,
+            0,
+            37
+          ],
+          "visibleIndex": 36
+        },
+        {
+          "featureId": "assemblyModel_1__pneumatic-helium-block",
+          "names": [
+            "assemblyModel_1__pneumatic-helium-block",
+            "pneumatic-helium-block",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000026",
+          "rgb": [
+            0,
+            0,
+            38
+          ],
+          "visibleIndex": 37
+        },
+        {
+          "featureId": "assemblyModel_1__pneumatic-main-lox",
+          "names": [
+            "assemblyModel_1__pneumatic-main-lox",
+            "pneumatic-main-lox",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000027",
+          "rgb": [
+            0,
+            0,
+            39
+          ],
+          "visibleIndex": 38
+        },
+        {
+          "featureId": "assemblyModel_1__pneumatic-main-fuel",
+          "names": [
+            "assemblyModel_1__pneumatic-main-fuel",
+            "pneumatic-main-fuel",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000028",
+          "rgb": [
+            0,
+            0,
+            40
+          ],
+          "visibleIndex": 39
+        },
+        {
+          "featureId": "assemblyModel_1__pneumatic-gg-valve",
+          "names": [
+            "assemblyModel_1__pneumatic-gg-valve",
+            "pneumatic-gg-valve",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000029",
+          "rgb": [
+            0,
+            0,
+            41
+          ],
+          "visibleIndex": 40
+        },
+        {
+          "featureId": "assemblyModel_1__pneumatic-purge-dome",
+          "names": [
+            "assemblyModel_1__pneumatic-purge-dome",
+            "pneumatic-purge-dome",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00002a",
+          "rgb": [
+            0,
+            0,
+            42
+          ],
+          "visibleIndex": 41
+        },
+        {
+          "featureId": "assemblyModel_1__pneumatic-purge-generator",
+          "names": [
+            "assemblyModel_1__pneumatic-purge-generator",
+            "pneumatic-purge-generator",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00002b",
+          "rgb": [
+            0,
+            0,
+            43
+          ],
+          "visibleIndex": 42
+        }
+      ],
+      "metadata": {
+        "depth": {
+          "encoding": "linear-camera-depth-rgba8",
+          "units": "mm",
+          "near": 26.640889874344463,
+          "far": 53281.779748688925,
+          "background": "rgba(0,0,0,0)",
+          "meaning": "nearest visible model surface after the active object filter, measured along the camera view direction and normalized from near to far"
+        },
+        "normals": {
+          "encoding": "view-space-normal-rgb8",
+          "mapping": "rgb = round((normal_view * 0.5 + 0.5) * 255)",
+          "background": "rgba(0,0,0,0)",
+          "meaning": "visible model-surface normal in the camera coordinate frame after the active object filter"
+        }
+      },
+      "scene": {
+        "childCount": 50,
+        "meshCount": 1562,
+        "cameraPos": [
+          0,
+          0,
+          2664.088987434446
+        ],
+        "cameraLookingAt": [
+          0,
+          0,
+          2663.088987434446
+        ],
+        "sampleOpacities": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "samplePolygonOffsets": [
+          {
+            "enabled": true,
+            "factor": 1,
+            "units": 1
+          },
+          {
+            "enabled": true,
+            "factor": 1,
+            "units": 1
+          },
+          {
+            "enabled": true,
+            "factor": 1,
+            "units": 1
+          },
+          {
+            "enabled": true,
+            "factor": 1,
+            "units": 1
+          },
+          {
+            "enabled": true,
+            "factor": 1,
+            "units": 1
+          }
+        ],
+        "kcadGroupMatrices": [
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "view": "bottom",
+      "rgb": "bottom-rgb.png",
+      "mask": "bottom-mask.png",
+      "depth": "bottom-depth.png",
+      "normals": "bottom-normals.png",
+      "objects": [
+        {
+          "featureId": "tubeSpec_1",
+          "names": [
+            "tubeSpec_1",
+            "tubeSpec"
+          ],
+          "color": "#000001",
+          "rgb": [
+            0,
+            0,
+            1
+          ],
+          "visibleIndex": 0
+        },
+        {
+          "featureId": "assemblyModel_1__chamber",
+          "names": [
+            "assemblyModel_1__chamber",
+            "chamber",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000002",
+          "rgb": [
+            0,
+            0,
+            2
+          ],
+          "visibleIndex": 1
+        },
+        {
+          "featureId": "assemblyModel_1__coolant-manifold",
+          "names": [
+            "assemblyModel_1__coolant-manifold",
+            "coolant-manifold",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000003",
+          "rgb": [
+            0,
+            0,
+            3
+          ],
+          "visibleIndex": 2
+        },
+        {
+          "featureId": "assemblyModel_1__injector-dome",
+          "names": [
+            "assemblyModel_1__injector-dome",
+            "injector-dome",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000004",
+          "rgb": [
+            0,
+            0,
+            4
+          ],
+          "visibleIndex": 3
+        },
+        {
+          "featureId": "assemblyModel_1__gimbal-mount",
+          "names": [
+            "assemblyModel_1__gimbal-mount",
+            "gimbal-mount",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000005",
+          "rgb": [
+            0,
+            0,
+            5
+          ],
+          "visibleIndex": 4
+        },
+        {
+          "featureId": "assemblyModel_1__thrust-frame",
+          "names": [
+            "assemblyModel_1__thrust-frame",
+            "thrust-frame",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000006",
+          "rgb": [
+            0,
+            0,
+            6
+          ],
+          "visibleIndex": 5
+        },
+        {
+          "featureId": "assemblyModel_1__turbopump",
+          "names": [
+            "assemblyModel_1__turbopump",
+            "turbopump",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000007",
+          "rgb": [
+            0,
+            0,
+            7
+          ],
+          "visibleIndex": 6
+        },
+        {
+          "featureId": "assemblyModel_1__turbine-exhaust-collar",
+          "names": [
+            "assemblyModel_1__turbine-exhaust-collar",
+            "turbine-exhaust-collar",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000008",
+          "rgb": [
+            0,
+            0,
+            8
+          ],
+          "visibleIndex": 7
+        },
+        {
+          "featureId": "assemblyModel_1__gas-generator",
+          "names": [
+            "assemblyModel_1__gas-generator",
+            "gas-generator",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000009",
+          "rgb": [
+            0,
+            0,
+            9
+          ],
+          "visibleIndex": 8
+        },
+        {
+          "featureId": "assemblyModel_1__pump-mount",
+          "names": [
+            "assemblyModel_1__pump-mount",
+            "pump-mount",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00000a",
+          "rgb": [
+            0,
+            0,
+            10
+          ],
+          "visibleIndex": 9
+        },
+        {
+          "featureId": "assemblyModel_1__main-lox-valve",
+          "names": [
+            "assemblyModel_1__main-lox-valve",
+            "main-lox-valve",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00000b",
+          "rgb": [
+            0,
+            0,
+            11
+          ],
+          "visibleIndex": 10
+        },
+        {
+          "featureId": "assemblyModel_1__main-fuel-valve",
+          "names": [
+            "assemblyModel_1__main-fuel-valve",
+            "main-fuel-valve",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00000c",
+          "rgb": [
+            0,
+            0,
+            12
+          ],
+          "visibleIndex": 11
+        },
+        {
+          "featureId": "assemblyModel_1__gg-valve",
+          "names": [
+            "assemblyModel_1__gg-valve",
+            "gg-valve",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00000d",
+          "rgb": [
+            0,
+            0,
+            13
+          ],
+          "visibleIndex": 12
+        },
+        {
+          "featureId": "assemblyModel_1__tvc-actuator-1",
+          "names": [
+            "assemblyModel_1__tvc-actuator-1",
+            "tvc-actuator-1",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00000e",
+          "rgb": [
+            0,
+            0,
+            14
+          ],
+          "visibleIndex": 13
+        },
+        {
+          "featureId": "assemblyModel_1__tvc-actuator-2",
+          "names": [
+            "assemblyModel_1__tvc-actuator-2",
+            "tvc-actuator-2",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00000f",
+          "rgb": [
+            0,
+            0,
+            15
+          ],
+          "visibleIndex": 14
+        },
+        {
+          "featureId": "assemblyModel_1__igniter-cartridge",
+          "names": [
+            "assemblyModel_1__igniter-cartridge",
+            "igniter-cartridge",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000010",
+          "rgb": [
+            0,
+            0,
+            16
+          ],
+          "visibleIndex": 15
+        },
+        {
+          "featureId": "assemblyModel_1__helium-bottle",
+          "names": [
+            "assemblyModel_1__helium-bottle",
+            "helium-bottle",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000011",
+          "rgb": [
+            0,
+            0,
+            17
+          ],
+          "visibleIndex": 16
+        },
+        {
+          "featureId": "assemblyModel_1__pneumatic-block",
+          "names": [
+            "assemblyModel_1__pneumatic-block",
+            "pneumatic-block",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000012",
+          "rgb": [
+            0,
+            0,
+            18
+          ],
+          "visibleIndex": 17
+        },
+        {
+          "featureId": "assemblyModel_1__main-valve-support",
+          "names": [
+            "assemblyModel_1__main-valve-support",
+            "main-valve-support",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000013",
+          "rgb": [
+            0,
+            0,
+            19
+          ],
+          "visibleIndex": 18
+        },
+        {
+          "featureId": "assemblyModel_1__generator-valve-support",
+          "names": [
+            "assemblyModel_1__generator-valve-support",
+            "generator-valve-support",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000014",
+          "rgb": [
+            0,
+            0,
+            20
+          ],
+          "visibleIndex": 19
+        },
+        {
+          "featureId": "assemblyModel_1__lox-pump-main",
+          "names": [
+            "assemblyModel_1__lox-pump-main",
+            "lox-pump-main",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000015",
+          "rgb": [
+            0,
+            0,
+            21
+          ],
+          "visibleIndex": 20
+        },
+        {
+          "featureId": "assemblyModel_1__lox-main-dome",
+          "names": [
+            "assemblyModel_1__lox-main-dome",
+            "lox-main-dome",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000016",
+          "rgb": [
+            0,
+            0,
+            22
+          ],
+          "visibleIndex": 21
+        },
+        {
+          "featureId": "assemblyModel_1__lox-pump-gg",
+          "names": [
+            "assemblyModel_1__lox-pump-gg",
+            "lox-pump-gg",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000017",
+          "rgb": [
+            0,
+            0,
+            23
+          ],
+          "visibleIndex": 22
+        },
+        {
+          "featureId": "assemblyModel_1__lox-gg-generator",
+          "names": [
+            "assemblyModel_1__lox-gg-generator",
+            "lox-gg-generator",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000018",
+          "rgb": [
+            0,
+            0,
+            24
+          ],
+          "visibleIndex": 23
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-pump-main",
+          "names": [
+            "assemblyModel_1__fuel-pump-main",
+            "fuel-pump-main",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000019",
+          "rgb": [
+            0,
+            0,
+            25
+          ],
+          "visibleIndex": 24
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-main-manifold",
+          "names": [
+            "assemblyModel_1__fuel-main-manifold",
+            "fuel-main-manifold",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00001a",
+          "rgb": [
+            0,
+            0,
+            26
+          ],
+          "visibleIndex": 25
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-coolant-dome",
+          "names": [
+            "assemblyModel_1__fuel-coolant-dome",
+            "fuel-coolant-dome",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00001b",
+          "rgb": [
+            0,
+            0,
+            27
+          ],
+          "visibleIndex": 26
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-pump-gg",
+          "names": [
+            "assemblyModel_1__fuel-pump-gg",
+            "fuel-pump-gg",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00001c",
+          "rgb": [
+            0,
+            0,
+            28
+          ],
+          "visibleIndex": 27
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-gg-generator",
+          "names": [
+            "assemblyModel_1__fuel-gg-generator",
+            "fuel-gg-generator",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00001d",
+          "rgb": [
+            0,
+            0,
+            29
+          ],
+          "visibleIndex": 28
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-act1-supply",
+          "names": [
+            "assemblyModel_1__fuel-act1-supply",
+            "fuel-act1-supply",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00001e",
+          "rgb": [
+            0,
+            0,
+            30
+          ],
+          "visibleIndex": 29
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-act1-return",
+          "names": [
+            "assemblyModel_1__fuel-act1-return",
+            "fuel-act1-return",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00001f",
+          "rgb": [
+            0,
+            0,
+            31
+          ],
+          "visibleIndex": 30
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-act2-supply",
+          "names": [
+            "assemblyModel_1__fuel-act2-supply",
+            "fuel-act2-supply",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000020",
+          "rgb": [
+            0,
+            0,
+            32
+          ],
+          "visibleIndex": 31
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-act2-return",
+          "names": [
+            "assemblyModel_1__fuel-act2-return",
+            "fuel-act2-return",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000021",
+          "rgb": [
+            0,
+            0,
+            33
+          ],
+          "visibleIndex": 32
+        },
+        {
+          "featureId": "assemblyModel_1__hotgas-generator-turbine",
+          "names": [
+            "assemblyModel_1__hotgas-generator-turbine",
+            "hotgas-generator-turbine",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000022",
+          "rgb": [
+            0,
+            0,
+            34
+          ],
+          "visibleIndex": 33
+        },
+        {
+          "featureId": "assemblyModel_1__hotgas-exhaust",
+          "names": [
+            "assemblyModel_1__hotgas-exhaust",
+            "hotgas-exhaust",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000023",
+          "rgb": [
+            0,
+            0,
+            35
+          ],
+          "visibleIndex": 34
+        },
+        {
+          "featureId": "assemblyModel_1__igniter-chamber",
+          "names": [
+            "assemblyModel_1__igniter-chamber",
+            "igniter-chamber",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000024",
+          "rgb": [
+            0,
+            0,
+            36
+          ],
+          "visibleIndex": 35
+        },
+        {
+          "featureId": "assemblyModel_1__igniter-generator",
+          "names": [
+            "assemblyModel_1__igniter-generator",
+            "igniter-generator",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000025",
+          "rgb": [
+            0,
+            0,
+            37
+          ],
+          "visibleIndex": 36
+        },
+        {
+          "featureId": "assemblyModel_1__pneumatic-helium-block",
+          "names": [
+            "assemblyModel_1__pneumatic-helium-block",
+            "pneumatic-helium-block",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000026",
+          "rgb": [
+            0,
+            0,
+            38
+          ],
+          "visibleIndex": 37
+        },
+        {
+          "featureId": "assemblyModel_1__pneumatic-main-lox",
+          "names": [
+            "assemblyModel_1__pneumatic-main-lox",
+            "pneumatic-main-lox",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000027",
+          "rgb": [
+            0,
+            0,
+            39
+          ],
+          "visibleIndex": 38
+        },
+        {
+          "featureId": "assemblyModel_1__pneumatic-main-fuel",
+          "names": [
+            "assemblyModel_1__pneumatic-main-fuel",
+            "pneumatic-main-fuel",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000028",
+          "rgb": [
+            0,
+            0,
+            40
+          ],
+          "visibleIndex": 39
+        },
+        {
+          "featureId": "assemblyModel_1__pneumatic-gg-valve",
+          "names": [
+            "assemblyModel_1__pneumatic-gg-valve",
+            "pneumatic-gg-valve",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000029",
+          "rgb": [
+            0,
+            0,
+            41
+          ],
+          "visibleIndex": 40
+        },
+        {
+          "featureId": "assemblyModel_1__pneumatic-purge-dome",
+          "names": [
+            "assemblyModel_1__pneumatic-purge-dome",
+            "pneumatic-purge-dome",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00002a",
+          "rgb": [
+            0,
+            0,
+            42
+          ],
+          "visibleIndex": 41
+        },
+        {
+          "featureId": "assemblyModel_1__pneumatic-purge-generator",
+          "names": [
+            "assemblyModel_1__pneumatic-purge-generator",
+            "pneumatic-purge-generator",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00002b",
+          "rgb": [
+            0,
+            0,
+            43
+          ],
+          "visibleIndex": 42
+        }
+      ],
+      "metadata": {
+        "depth": {
+          "encoding": "linear-camera-depth-rgba8",
+          "units": "mm",
+          "near": 26.640889874344463,
+          "far": 53281.779748688925,
+          "background": "rgba(0,0,0,0)",
+          "meaning": "nearest visible model surface after the active object filter, measured along the camera view direction and normalized from near to far"
+        },
+        "normals": {
+          "encoding": "view-space-normal-rgb8",
+          "mapping": "rgb = round((normal_view * 0.5 + 0.5) * 255)",
+          "background": "rgba(0,0,0,0)",
+          "meaning": "visible model-surface normal in the camera coordinate frame after the active object filter"
+        }
+      },
+      "scene": {
+        "childCount": 50,
+        "meshCount": 1562,
+        "cameraPos": [
+          0,
+          0,
+          -2664.088987434446
+        ],
+        "cameraLookingAt": [
+          0,
+          0,
+          -2663.088987434446
+        ],
+        "sampleOpacities": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "samplePolygonOffsets": [
+          {
+            "enabled": true,
+            "factor": 1,
+            "units": 1
+          },
+          {
+            "enabled": true,
+            "factor": 1,
+            "units": 1
+          },
+          {
+            "enabled": true,
+            "factor": 1,
+            "units": 1
+          },
+          {
+            "enabled": true,
+            "factor": 1,
+            "units": 1
+          },
+          {
+            "enabled": true,
+            "factor": 1,
+            "units": 1
+          }
+        ],
+        "kcadGroupMatrices": [
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "view": "iso",
+      "rgb": "iso-rgb.png",
+      "mask": "iso-mask.png",
+      "depth": "iso-depth.png",
+      "normals": "iso-normals.png",
+      "objects": [
+        {
+          "featureId": "tubeSpec_1",
+          "names": [
+            "tubeSpec_1",
+            "tubeSpec"
+          ],
+          "color": "#000001",
+          "rgb": [
+            0,
+            0,
+            1
+          ],
+          "visibleIndex": 0
+        },
+        {
+          "featureId": "assemblyModel_1__chamber",
+          "names": [
+            "assemblyModel_1__chamber",
+            "chamber",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000002",
+          "rgb": [
+            0,
+            0,
+            2
+          ],
+          "visibleIndex": 1
+        },
+        {
+          "featureId": "assemblyModel_1__coolant-manifold",
+          "names": [
+            "assemblyModel_1__coolant-manifold",
+            "coolant-manifold",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000003",
+          "rgb": [
+            0,
+            0,
+            3
+          ],
+          "visibleIndex": 2
+        },
+        {
+          "featureId": "assemblyModel_1__injector-dome",
+          "names": [
+            "assemblyModel_1__injector-dome",
+            "injector-dome",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000004",
+          "rgb": [
+            0,
+            0,
+            4
+          ],
+          "visibleIndex": 3
+        },
+        {
+          "featureId": "assemblyModel_1__gimbal-mount",
+          "names": [
+            "assemblyModel_1__gimbal-mount",
+            "gimbal-mount",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000005",
+          "rgb": [
+            0,
+            0,
+            5
+          ],
+          "visibleIndex": 4
+        },
+        {
+          "featureId": "assemblyModel_1__thrust-frame",
+          "names": [
+            "assemblyModel_1__thrust-frame",
+            "thrust-frame",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000006",
+          "rgb": [
+            0,
+            0,
+            6
+          ],
+          "visibleIndex": 5
+        },
+        {
+          "featureId": "assemblyModel_1__turbopump",
+          "names": [
+            "assemblyModel_1__turbopump",
+            "turbopump",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000007",
+          "rgb": [
+            0,
+            0,
+            7
+          ],
+          "visibleIndex": 6
+        },
+        {
+          "featureId": "assemblyModel_1__turbine-exhaust-collar",
+          "names": [
+            "assemblyModel_1__turbine-exhaust-collar",
+            "turbine-exhaust-collar",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000008",
+          "rgb": [
+            0,
+            0,
+            8
+          ],
+          "visibleIndex": 7
+        },
+        {
+          "featureId": "assemblyModel_1__gas-generator",
+          "names": [
+            "assemblyModel_1__gas-generator",
+            "gas-generator",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000009",
+          "rgb": [
+            0,
+            0,
+            9
+          ],
+          "visibleIndex": 8
+        },
+        {
+          "featureId": "assemblyModel_1__pump-mount",
+          "names": [
+            "assemblyModel_1__pump-mount",
+            "pump-mount",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00000a",
+          "rgb": [
+            0,
+            0,
+            10
+          ],
+          "visibleIndex": 9
+        },
+        {
+          "featureId": "assemblyModel_1__main-lox-valve",
+          "names": [
+            "assemblyModel_1__main-lox-valve",
+            "main-lox-valve",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00000b",
+          "rgb": [
+            0,
+            0,
+            11
+          ],
+          "visibleIndex": 10
+        },
+        {
+          "featureId": "assemblyModel_1__main-fuel-valve",
+          "names": [
+            "assemblyModel_1__main-fuel-valve",
+            "main-fuel-valve",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00000c",
+          "rgb": [
+            0,
+            0,
+            12
+          ],
+          "visibleIndex": 11
+        },
+        {
+          "featureId": "assemblyModel_1__gg-valve",
+          "names": [
+            "assemblyModel_1__gg-valve",
+            "gg-valve",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00000d",
+          "rgb": [
+            0,
+            0,
+            13
+          ],
+          "visibleIndex": 12
+        },
+        {
+          "featureId": "assemblyModel_1__tvc-actuator-1",
+          "names": [
+            "assemblyModel_1__tvc-actuator-1",
+            "tvc-actuator-1",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00000e",
+          "rgb": [
+            0,
+            0,
+            14
+          ],
+          "visibleIndex": 13
+        },
+        {
+          "featureId": "assemblyModel_1__tvc-actuator-2",
+          "names": [
+            "assemblyModel_1__tvc-actuator-2",
+            "tvc-actuator-2",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00000f",
+          "rgb": [
+            0,
+            0,
+            15
+          ],
+          "visibleIndex": 14
+        },
+        {
+          "featureId": "assemblyModel_1__igniter-cartridge",
+          "names": [
+            "assemblyModel_1__igniter-cartridge",
+            "igniter-cartridge",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000010",
+          "rgb": [
+            0,
+            0,
+            16
+          ],
+          "visibleIndex": 15
+        },
+        {
+          "featureId": "assemblyModel_1__helium-bottle",
+          "names": [
+            "assemblyModel_1__helium-bottle",
+            "helium-bottle",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000011",
+          "rgb": [
+            0,
+            0,
+            17
+          ],
+          "visibleIndex": 16
+        },
+        {
+          "featureId": "assemblyModel_1__pneumatic-block",
+          "names": [
+            "assemblyModel_1__pneumatic-block",
+            "pneumatic-block",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000012",
+          "rgb": [
+            0,
+            0,
+            18
+          ],
+          "visibleIndex": 17
+        },
+        {
+          "featureId": "assemblyModel_1__main-valve-support",
+          "names": [
+            "assemblyModel_1__main-valve-support",
+            "main-valve-support",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000013",
+          "rgb": [
+            0,
+            0,
+            19
+          ],
+          "visibleIndex": 18
+        },
+        {
+          "featureId": "assemblyModel_1__generator-valve-support",
+          "names": [
+            "assemblyModel_1__generator-valve-support",
+            "generator-valve-support",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000014",
+          "rgb": [
+            0,
+            0,
+            20
+          ],
+          "visibleIndex": 19
+        },
+        {
+          "featureId": "assemblyModel_1__lox-pump-main",
+          "names": [
+            "assemblyModel_1__lox-pump-main",
+            "lox-pump-main",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000015",
+          "rgb": [
+            0,
+            0,
+            21
+          ],
+          "visibleIndex": 20
+        },
+        {
+          "featureId": "assemblyModel_1__lox-main-dome",
+          "names": [
+            "assemblyModel_1__lox-main-dome",
+            "lox-main-dome",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000016",
+          "rgb": [
+            0,
+            0,
+            22
+          ],
+          "visibleIndex": 21
+        },
+        {
+          "featureId": "assemblyModel_1__lox-pump-gg",
+          "names": [
+            "assemblyModel_1__lox-pump-gg",
+            "lox-pump-gg",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000017",
+          "rgb": [
+            0,
+            0,
+            23
+          ],
+          "visibleIndex": 22
+        },
+        {
+          "featureId": "assemblyModel_1__lox-gg-generator",
+          "names": [
+            "assemblyModel_1__lox-gg-generator",
+            "lox-gg-generator",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000018",
+          "rgb": [
+            0,
+            0,
+            24
+          ],
+          "visibleIndex": 23
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-pump-main",
+          "names": [
+            "assemblyModel_1__fuel-pump-main",
+            "fuel-pump-main",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000019",
+          "rgb": [
+            0,
+            0,
+            25
+          ],
+          "visibleIndex": 24
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-main-manifold",
+          "names": [
+            "assemblyModel_1__fuel-main-manifold",
+            "fuel-main-manifold",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00001a",
+          "rgb": [
+            0,
+            0,
+            26
+          ],
+          "visibleIndex": 25
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-coolant-dome",
+          "names": [
+            "assemblyModel_1__fuel-coolant-dome",
+            "fuel-coolant-dome",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00001b",
+          "rgb": [
+            0,
+            0,
+            27
+          ],
+          "visibleIndex": 26
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-pump-gg",
+          "names": [
+            "assemblyModel_1__fuel-pump-gg",
+            "fuel-pump-gg",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00001c",
+          "rgb": [
+            0,
+            0,
+            28
+          ],
+          "visibleIndex": 27
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-gg-generator",
+          "names": [
+            "assemblyModel_1__fuel-gg-generator",
+            "fuel-gg-generator",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00001d",
+          "rgb": [
+            0,
+            0,
+            29
+          ],
+          "visibleIndex": 28
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-act1-supply",
+          "names": [
+            "assemblyModel_1__fuel-act1-supply",
+            "fuel-act1-supply",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00001e",
+          "rgb": [
+            0,
+            0,
+            30
+          ],
+          "visibleIndex": 29
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-act1-return",
+          "names": [
+            "assemblyModel_1__fuel-act1-return",
+            "fuel-act1-return",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00001f",
+          "rgb": [
+            0,
+            0,
+            31
+          ],
+          "visibleIndex": 30
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-act2-supply",
+          "names": [
+            "assemblyModel_1__fuel-act2-supply",
+            "fuel-act2-supply",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000020",
+          "rgb": [
+            0,
+            0,
+            32
+          ],
+          "visibleIndex": 31
+        },
+        {
+          "featureId": "assemblyModel_1__fuel-act2-return",
+          "names": [
+            "assemblyModel_1__fuel-act2-return",
+            "fuel-act2-return",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000021",
+          "rgb": [
+            0,
+            0,
+            33
+          ],
+          "visibleIndex": 32
+        },
+        {
+          "featureId": "assemblyModel_1__hotgas-generator-turbine",
+          "names": [
+            "assemblyModel_1__hotgas-generator-turbine",
+            "hotgas-generator-turbine",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000022",
+          "rgb": [
+            0,
+            0,
+            34
+          ],
+          "visibleIndex": 33
+        },
+        {
+          "featureId": "assemblyModel_1__hotgas-exhaust",
+          "names": [
+            "assemblyModel_1__hotgas-exhaust",
+            "hotgas-exhaust",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000023",
+          "rgb": [
+            0,
+            0,
+            35
+          ],
+          "visibleIndex": 34
+        },
+        {
+          "featureId": "assemblyModel_1__igniter-chamber",
+          "names": [
+            "assemblyModel_1__igniter-chamber",
+            "igniter-chamber",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000024",
+          "rgb": [
+            0,
+            0,
+            36
+          ],
+          "visibleIndex": 35
+        },
+        {
+          "featureId": "assemblyModel_1__igniter-generator",
+          "names": [
+            "assemblyModel_1__igniter-generator",
+            "igniter-generator",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000025",
+          "rgb": [
+            0,
+            0,
+            37
+          ],
+          "visibleIndex": 36
+        },
+        {
+          "featureId": "assemblyModel_1__pneumatic-helium-block",
+          "names": [
+            "assemblyModel_1__pneumatic-helium-block",
+            "pneumatic-helium-block",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000026",
+          "rgb": [
+            0,
+            0,
+            38
+          ],
+          "visibleIndex": 37
+        },
+        {
+          "featureId": "assemblyModel_1__pneumatic-main-lox",
+          "names": [
+            "assemblyModel_1__pneumatic-main-lox",
+            "pneumatic-main-lox",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000027",
+          "rgb": [
+            0,
+            0,
+            39
+          ],
+          "visibleIndex": 38
+        },
+        {
+          "featureId": "assemblyModel_1__pneumatic-main-fuel",
+          "names": [
+            "assemblyModel_1__pneumatic-main-fuel",
+            "pneumatic-main-fuel",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000028",
+          "rgb": [
+            0,
+            0,
+            40
+          ],
+          "visibleIndex": 39
+        },
+        {
+          "featureId": "assemblyModel_1__pneumatic-gg-valve",
+          "names": [
+            "assemblyModel_1__pneumatic-gg-valve",
+            "pneumatic-gg-valve",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#000029",
+          "rgb": [
+            0,
+            0,
+            41
+          ],
+          "visibleIndex": 40
+        },
+        {
+          "featureId": "assemblyModel_1__pneumatic-purge-dome",
+          "names": [
+            "assemblyModel_1__pneumatic-purge-dome",
+            "pneumatic-purge-dome",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00002a",
+          "rgb": [
+            0,
+            0,
+            42
+          ],
+          "visibleIndex": 41
+        },
+        {
+          "featureId": "assemblyModel_1__pneumatic-purge-generator",
+          "names": [
+            "assemblyModel_1__pneumatic-purge-generator",
+            "pneumatic-purge-generator",
+            "assemblyModel_1",
+            "assemblyModel"
+          ],
+          "color": "#00002b",
+          "rgb": [
+            0,
+            0,
+            43
+          ],
+          "visibleIndex": 42
+        }
+      ],
+      "metadata": {
+        "depth": {
+          "encoding": "linear-camera-depth-rgba8",
+          "units": "mm",
+          "near": 41.330660642786036,
+          "far": 82661.32128557206,
+          "background": "rgba(0,0,0,0)",
+          "meaning": "nearest visible model surface after the active object filter, measured along the camera view direction and normalized from near to far"
+        },
+        "normals": {
+          "encoding": "view-space-normal-rgb8",
+          "mapping": "rgb = round((normal_view * 0.5 + 0.5) * 255)",
+          "background": "rgba(0,0,0,0)",
+          "meaning": "visible model-surface normal in the camera coordinate frame after the active object filter"
+        }
+      },
+      "scene": {
+        "childCount": 50,
+        "meshCount": 1562,
+        "cameraPos": [
+          2608.6621177641155,
+          -2608.6621177641155,
+          1863.3300841172254
+        ],
+        "cameraLookingAt": [
+          2608.0309490198483,
+          -2608.0309490198483,
+          1862.8792492998916
+        ],
+        "sampleOpacities": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "samplePolygonOffsets": [
+          {
+            "enabled": true,
+            "factor": 1,
+            "units": 1
+          },
+          {
+            "enabled": true,
+            "factor": 1,
+            "units": 1
+          },
+          {
+            "enabled": true,
+            "factor": 1,
+            "units": 1
+          },
+          {
+            "enabled": true,
+            "factor": 1,
+            "units": 1
+          },
+          {
+            "enabled": true,
+            "factor": 1,
+            "units": 1
+          }
+        ],
+        "kcadGroupMatrices": [
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ],
+          [
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            -317.7860107421875,
+            3.416961669921875,
+            143.4210205078125,
+            1
+          ]
+        ]
+      }
+    }
+  ],
+  "playerBuild": {
+    "buildLog": "/home/andrii/claude-closeout-2026-10-11/rocket-player-build.log",
+    "bundle": [
+      {
+        "name": "index-qkriGjsP.js",
+        "sha256": "903e84f2d55cc74ebc1f0f43a7cd136cd1f4082a0374d2e6212625b84945887a"
+      }
+    ],
+    "staleBottomReplaced": true
+  },
+  "verifiedFinalSource": {
+    "sourceSha": "b992ce2bc4068d422e3a652487a665514643ff72caf8a8891da5d5a8a7747bc4",
+    "geometrySha": "d07024cf0899964f48696a05af836c7556e97e35e881e1785d254790a85498bd",
+    "completeSerializedMeshesAndBoundsIdentical": true,
+    "verificationAt": "2026-10-12T16:51:37.740Z",
+    "proof": "final-source-equivalence.json"
+  }
+}

@@ -65,7 +65,8 @@ describe('kernelCAD agent authoring operating rules', () => {
     expect(indexHtml).toMatch(/Edit your design/);
     expect(indexHtml).toMatch(/Check your model/);
     expect(indexHtml).not.toMatch(/capability-name">Words to Geometry/);
-    expect(gallery.entries[0].tags).toContain('words-to-geometry');
-    expect(gallery.entries[1].tags).toContain('words-to-geometry');
+    for (const slug of ['make-no-mistakes-keycap', 'royal-pop-pocket-watch']) {
+      expect(gallery.entries.find((entry: { slug: string }) => entry.slug === slug)?.tags).toContain('words-to-geometry');
+    }
   });
 });

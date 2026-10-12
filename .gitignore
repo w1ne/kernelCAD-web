@@ -110,3 +110,6 @@ site/blog/*/video.mp4
 # and run outputs / submission zips. Never committed.
 eval/benchmarks/cadgenbench/.cache/
 eval/benchmarks/cadgenbench/runs/
+
+# Generator-owned same-origin decoder and license (copied by selected web asset builds).
+/site/public/vendor/meshopt/

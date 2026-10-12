@@ -195,6 +195,8 @@ export interface DemoPlayerPageOpts {
    *  back to a fresh `chromium.launch` when the attach fails (the animation
    *  capture path). When unset, always launch a fresh headless chromium. */
   cdpUrl?: string;
+  /** Refuse a fresh-browser fallback when the caller explicitly selected CDP. */
+  requireCdpAttachment?: boolean;
   gotoTimeoutMs?: number;
   /** Timeout for the `window.__demoPlayer` readiness wait. */
   readyTimeoutMs?: number;
@@ -258,27 +260,27 @@ export async function openDemoPlayerPage(opts: DemoPlayerPageOpts): Promise<Demo
     // doesn't leak a 1920×1080 tab. Fresh-launch path skips this:
     // browser.close() tears the whole headless process down.
     if (attachedOverCdp && page) {
-      await page.close().catch(() => undefined);
+      await withTimeout(page.close().catch(() => undefined), 3000, () => undefined);
     }
     if (!browser) return;
-    await Promise.race([
-      browser.close(),
-      new Promise<void>((r) => setTimeout(r, 3000).unref()),
-    ]).catch(() => undefined);
+    await withTimeout(browser.close().catch(() => undefined), 3000, () => undefined);
   };
   try {
     let context;
     if (opts.cdpUrl !== undefined) {
       try {
         browser = await chromium.connectOverCDP(opts.cdpUrl);
+        attachedOverCdp = true;
         // Reuse the first existing context (a fresh Playwright-launched
         // chromium would always create a new one; CDP-attached chromes
         // already have one).
         const contexts = browser.contexts();
         context = contexts[0] ?? (await browser.newContext({ viewport: opts.viewport }));
-        attachedOverCdp = true;
-      } catch {
+      } catch (error) {
+        if (opts.requireCdpAttachment) throw error;
+        await closeHandle();
         browser = undefined;
+        attachedOverCdp = false;
       }
     }
     if (!browser) {
@@ -546,6 +548,10 @@ export async function openRenderPage(
   }
   const pageHandle = await openDemoPlayerPage({
     baseUrl,
+    ...(process.env.PW_CDP_URL ? {
+      cdpUrl: process.env.PW_CDP_URL,
+      requireCdpAttachment: true,
+    } : {}),
     // DemoPlayer's headless ViewerPane is currently fixed at 1920×1080.
     // Capturing a smaller viewport clips the top-left of that canvas and
     // produces false visual-review evidence. Capture the full pane, then

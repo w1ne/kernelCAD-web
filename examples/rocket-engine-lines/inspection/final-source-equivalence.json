@@ -1,0 +1,12 @@
+{
+  "at": "2026-10-12T16:51:37.740Z",
+  "previousSourceSha": "27c81dd319b0e520678b3f139512a19371cec4564e257c03820a3c0334377673",
+  "sourceSha": "b992ce2bc4068d422e3a652487a665514643ff72caf8a8891da5d5a8a7747bc4",
+  "oldGeometrySha": "d07024cf0899964f48696a05af836c7556e97e35e881e1785d254790a85498bd",
+  "newGeometrySha": "d07024cf0899964f48696a05af836c7556e97e35e881e1785d254790a85498bd",
+  "identicalSerializedGeometry": true,
+  "meshingMs": 55994,
+  "serializedCount": 43,
+  "originalCache": "native inspection cache captured from previousSourceSha",
+  "finalCache": "native video cache meshed from sourceSha"
+}

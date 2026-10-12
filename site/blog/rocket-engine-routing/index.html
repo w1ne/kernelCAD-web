@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light" />
+  <meta name="description" content="Follow named ports, authored bends and service clearances through a full assembly, then reproduce an igniter-line collision and repair it." />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Routing 23 lines on a rocket-engine example" />
+  <meta property="og:description" content="Follow named ports, authored bends and service clearances through a full assembly, then reproduce an igniter-line collision and repair it." />
+  <meta property="og:image" content="https://kernelcad.com/og-image.png" />
+  <meta property="og:url" content="https://kernelcad.com/blog/rocket-engine-routing/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Routing 23 lines on a rocket-engine example" />
+  <meta name="twitter:description" content="Follow named ports, authored bends and service clearances through a full assembly, then reproduce an igniter-line collision and repair it." />
+  <meta name="twitter:image" content="https://kernelcad.com/og-image.png" />
+  <link rel="canonical" href="https://kernelcad.com/blog/rocket-engine-routing/" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,500;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/style.css" />
+  <title>Routing 23 lines on a rocket-engine example</title>
+  <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "e5f5f4c6464f456d8f5376411e77f545"}'></script>
+  <style>
+    .legal { max-width: 760px; margin: 0 auto; padding: 1rem 0 4rem; }
+    .legal h1 { font-family: 'Source Serif 4', serif; font-size: 2.2rem; line-height: 1.2; margin: 1.5rem 0 0.25rem; }
+    .legal .effective { color: var(--ink-faint, #8a8475); font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; margin-bottom: 2rem; }
+    .legal h2 { font-family: 'Source Serif 4', serif; font-size: 1.35rem; margin: 2.2rem 0 0.5rem; }
+    .legal p, .legal li { font-family: 'Inter', sans-serif; line-height: 1.65; color: var(--ink-soft, #3a3a3a); }
+    .legal ul { padding-left: 1.25rem; }
+    .legal code { font-family: 'JetBrains Mono', monospace; font-size: 0.88em; }
+    .legal a { color: var(--blueprint, #2f6df0); }
+    .legal strong { color: var(--ink, #1a1a1a); }
+    .legal .lede { font-size: 1.1rem; color: var(--ink); }
+    .legal figure { margin: 1.5rem 0; }
+    .legal figure img { display: block; width: 100%; height: auto; border: 1px solid var(--rule); border-radius: 6px; background: var(--paper); }
+    .legal figcaption { font-family: 'Inter', sans-serif; font-size: 0.85rem; color: var(--ink-faint); margin-top: 0.5rem; }
+    .legal pre { background: var(--code-bg); color: var(--code-text); border-radius: 6px; padding: 16px 18px; overflow-x: auto; margin: 1.25rem 0; }
+    .legal pre code { font-size: 0.85rem; line-height: 1.6; color: inherit; }
+    .legal p code, .legal li code { background: var(--vellum-soft); padding: 1px 5px; border-radius: 3px; }
+    .post-list { list-style: none; padding: 0; margin: 2rem 0; }
+    .post-list li { padding: 1.25rem 0; border-top: 1px solid var(--rule); }
+    .post-list li:last-child { border-bottom: 1px solid var(--rule); }
+    .post-list a.post-title { font-family: 'Source Serif 4', serif; font-size: 1.4rem; text-decoration: none; }
+    .post-list a.post-title:hover { text-decoration: underline; }
+    .post-list .effective { margin: 0.25rem 0 0.5rem; }
+    .post-list p { margin: 0; }
+    .legal figure video { display: block; width: 100%; height: auto; border: 1px solid var(--rule); border-radius: 6px; background: var(--paper); }
+    .legal model-viewer { display: block; width: 100%; height: 440px; border: 1px solid var(--rule); border-radius: 6px; background: var(--paper); }
+  </style>
+</head>
+<body>
+  <div class="page-wrap">
+    <nav class="nav">
+      <a class="nav-mark" href="/">
+        <svg class="k" viewBox="0 0 84 84" fill="none" aria-label="kernelCAD">
+          <path d="M 14,12 L 26,12 L 26,34 Q 26,36 27.5,34.5 L 46,12 L 60,12 L 36,40 Q 35,42 36,44 L 60,72 L 46,72 L 27.5,49.5 Q 26,48 26,50 L 26,72 L 14,72 Z" fill="currentColor"/>
+        </svg>
+        <span>kernel<span class="cad">CAD</span></span>
+      </a>
+      <div class="nav-links">
+        <a href="/blog/">blog</a>
+        <a class="app-link" href="https://app.kernelcad.com">app ↗</a>
+        <a href="https://github.com/w1ne/kernelCAD-web">github</a>
+        <a href="https://www.npmjs.com/package/kernelcad">npm</a>
+        <a href="https://x.com/kernelcad">@kernelcad</a>
+      </div>
+    </nav>
+
+    <main class="legal">
+      <article>
+      <p class="effective"><a href="/blog/">Blog</a> · <time datetime="2026-10-12">2026-10-12</time> · Andrii Shylenko</p>
+      <h1>Routing 23 lines on a rocket-engine example</h1>
+
+      <p class="lede">An engine assembly makes the routing problem visible: large propellant feeds share space with a hot-gas duct, actuator circuits, two igniter feeds and small pneumatic services. This generic gas-generator engine example connects those services with 23 hollow rigid tubes. Each route is authored in the source; the kernel builds the bends, reports the cut lengths and checks the declared clearances.</p>
+      <figure>
+        <video src="video.mp4" controls playsinline preload="metadata"></video>
+      </figure>
+      <figure>
+        <model-viewer src="model.glb" alt="The model built from examples/rocket-engine-lines/engine-routed.kcad.ts" camera-controls auto-rotate rotation-per-second="12deg" interaction-prompt="none" touch-action="pan-y" loading="lazy"></model-viewer>
+        <figcaption>The model, built from <code>examples/rocket-engine-lines/engine-routed.kcad.ts</code>. Drag to turn it.</figcaption>
+      </figure>
+      <script>self.ModelViewerElement = { ...(self.ModelViewerElement || {}), meshoptDecoderLocation: '/vendor/meshopt/meshopt_decoder.js' };</script>
+      <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer/dist/model-viewer.min.js"></script>
+      <p><a href="https://app.kernelcad.com/studio?gallery=rocket-engine-routing">Open the full editable example in public Studio</a>, <a href="/blog/rocket-engine-routing/engine-routed.kcad.ts">download the working source</a>, or start with <a href="/blog/tubes-how-to/">the smaller five-line tube guide</a>. The silent 45-second video above follows the fluid services in close-up, then orbits the complete native model. <a href="/blog/rocket-engine-routing/video.mp4">Download the film separately</a>.</p>
+
+      <h2>What is connected</h2>
+      <p>The 5 systems contain 4 LOX lines, 9 fuel lines, 2 hot-gas lines, 2 igniter lines and 6 pneumatic lines. Fuel includes four actuator supply/return runs as well as the main and gas-generator feeds. Pneumatic services include the helium feed, three valve pilots and two purges.</p>
+      <p>There are 46 named ports. Of these, 45 are used once; the turbine outlet directly meets the exhaust collar as a bolted interface, so the model has no zero-length tube there. The collar's outlet starts the exhaust duct, which ends at an explicitly authored free aft outlet beside the bell. The downloadable STEP keeps 19 hardware parts and 23 tubes as 42 separate connected B-rep solids. The complete source records 441 features.</p>
+      <p>The hardware is generic authored display geometry. The bell, valve bodies, bosses and supports make the route interfaces visible; they are not catalog components or certified engine hardware.</p>
+
+      <h2>Name the port and keep its frame explicit</h2>
+      <p>The engine axis is Z. Forward, toward the vehicle, is +Z; aft, toward the nozzle exit, is -Z. The throat plane is Z = 0 and the turbopump side is +X. Tube OD and fluid system live on each named axis connector. Its origin is in the part's own frame, while the part's <code>at</code> places it in assembly space.</p>
+      <p>The cartridge has separate outlets for the chamber and the gas generator. The full source's connector declarations are:</p>
+      <pre><code>const cartridge = asm.part('igniter-cartridge', cartridgeShape(), { at: [CARTRIDGE_XY[0], CARTRIDGE_XY[1], cartridgeStation] })
+  .connector('out-chamber', axisPort([-16, 0, 178], [0, 0, 1], 'igniter', OD_IGNITER))
+  .connector('out-gg', axisPort([16, 0, 178], [0, 0, 1], 'igniter', OD_IGNITER));</code></pre>
+      <p>At the default cartridge station, <code>out-chamber</code> is [159, -330, 368] and <code>out-gg</code> is [191, -330, 368]. Both point along [0, 0, 1], so each route starts along +Z. The report lists these positions in assembly space; the tube resolves the named port rather than copying a coordinate into its end.</p>
+
+      <h2>Author the route points and bend radius</h2>
+      <p><code>tube()</code> connects its resolved ends through the supplied <code>via</code> points. It rounds the corners at the selected centreline radius. It does not search for a route or add corners. The first and last legs must follow the port axes. The local <code>line()</code> helper calls <code>tube()</code> and adds the resulting hollow shape to the assembly without another placement transform; its route already uses assembly coordinates.</p>
+      <p>This is the complete routing call for the generator igniter line. Its intermediate points follow cartridge elevation and pump station through explicit expressions:</p>
+      <pre><code>line('igniter-generator', 'igniter', cartridge.port('out-gg'), gasGenerator.port('igniter'), [
+  [191, -330, cartridgeStation.add(igniterRunRise)], [191, -590, cartridgeStation.add(igniterRunRise)],
+  [pumpOffset.add(150), -590, cartridgeStation.add(igniterRunRise)],
+  [pumpOffset.add(150), -590, pumpStation.subtract(215)],
+], 0.71, 20);</code></pre>
+      <p>The wall is 0.71 mm, the centreline bend radius is 20 mm, and the report contains 4 bends with a cut length of 1195.66 mm. A cut length follows the rounded centreline, including its arc lengths; it is not the sum of the unrounded corner-to-corner distances.</p>
+
+      <h2>Set service rules, then evaluate</h2>
+      <p>The example sets 6 mm default surface clearance, including same-system lines and ordinary housings. LOX and fuel lines require 12 mm separation. Hot-gas lines require 25 mm separation from the other four fluid systems. That pair rule does not impose 25 mm on every housing. The source declares:</p>
+      <pre><code>tubeSpec({
+  minBendRadiusFactor: 3, minStraightBetweenBends: 2, minStraightAtEnd: 2.5,
+  systems: {
+    lox: { minBendRadiusFactor: 3 }, fuel: { minBendRadiusFactor: 3 },
+    'hot-gas': { minBendRadiusFactor: 1.5, minStraightAtEnd: 1 },
+    igniter: { minBendRadiusFactor: 3 }, pneumatic: { minBendRadiusFactor: 3 },
+  },
+  clearance: { default: 6, pairs: [
+    { a: 'lox', b: 'fuel', min: 12 },
+    { a: 'hot-gas', b: 'lox', min: 25 },
+    { a: 'hot-gas', b: 'fuel', min: 25 },
+    { a: 'hot-gas', b: 'igniter', min: 25 },
+    { a: 'hot-gas', b: 'pneumatic', min: 25 },
+  ] },
+});</code></pre>
+      <p>For cold lines, the minimum bend radius is 3 OD, the straight between bends is 2 OD, and each end straight is 2.5 OD. Hot-gas ducts use 1.5 OD radius and 1 OD end straights; the between-bend rule remains 2 OD. A direct unbent straight has no bend tangencies to accommodate and is exempt from these bend-related straight minima. Several short aligned main feeds therefore remain legitimate straight links in this illustrative rule set.</p>
+      <p>The working native report says <code>ok: true</code>. It has no error or warning diagnostics, and retains one informational <code>authoring.prefer-api.hole-by-cylinder</code> diagnostic about the hardware's hole authoring. The separate assembly structural review retains 42 <code>assembly.part.floating</code> warnings: every part is placed by authored <code>at</code> values, with no mates. Passing tube rules does not remove that structural limitation.</p>
+
+      <h2>Make one crossing, then repair it</h2>
+      <p><a href="/blog/rocket-engine-routing/engine-routed-twin.kcad.ts">The broken twin</a> changes only <code>IgniterRunRise</code> from 268 to 308 mm. This raises the generator igniter run into the pneumatic valve pilot line. Its parameter declaration is:</p>
+      <pre><code>const igniterRunRise = param('IgniterRunRise', 308, { unit: 'mm', description: 'igniter generator run elevation above cartridge base; 308 deliberately crosses a pilot line' });</code></pre>
+      <p>The broken report says <code>ok: false</code>. It contains one error, <code>tube.clearance.overlap</code>, plus the same informational hole-authoring diagnostic. The actual error is:</p>
+      <pre><code>tube.clearance.overlap: tube 'igniter-generator' passes through 'pneumatic-gg-valve' (14.09 mm^3 shared).</code></pre>
+      <p>Restore <code>IgniterRunRise</code> to 268 mm, as in the working download, and evaluate again. This is the repaired declaration:</p>
+      <pre><code>const igniterRunRise = param('IgniterRunRise', 268, { unit: 'mm', description: 'igniter generator run elevation above cartridge base; 308 deliberately crosses a pilot line' });</code></pre>
+      <p>You can also change <code>CartridgeStation</code> from 190 to 180 mm in the working source. Both cartridge outlets and the dependent route points follow that parameter. The verified moved-case report gives outlet positions [159, -330, 358] and [191, -330, 358], still along +Z, and the tube check remains passing. <a href="/blog/rocket-engine-routing/cartridge-180.report.json">Download that evaluation report</a>. This demonstrates the authored parameter dependency; it does not promise that arbitrary parameter edits will stay clear.</p>
+
+      <h2>Full line inventory</h2>
+      <p>All dimensions below are mm. OD is the outer diameter, wall is the nominal wall thickness, radius is the centreline bend radius, and cut is the rounded centreline length. Zero bends means a direct straight; the configured radius still appears in its report. Each row has a matching CSV below.</p>
+      <pre><code>Line                       System      OD      Wall  Radius Bends Cut mm
+lox-pump-main              lox         114.3   1.65  343    0     65.00
+lox-main-dome              lox         114.3   1.65  343    0     80.00
+lox-pump-gg                lox         25.4    1.24  80     0     80.00
+lox-gg-generator           lox         25.4    1.24  80     0     345.00
+fuel-pump-main             fuel        88.9    1.65  270    0     70.00
+fuel-main-manifold         fuel        88.9    1.65  270    0     1170.00
+fuel-coolant-dome          fuel        88.9    1.65  270    0     72.00
+fuel-pump-gg               fuel        19.05   1.24  60     0     80.00
+fuel-gg-generator          fuel        19.05   1.24  60     0     85.00
+fuel-act1-supply           fuel        12.7    0.89  40     3     860.35
+fuel-act1-return           fuel        12.7    0.89  40     3     740.73
+fuel-act2-supply           fuel        12.7    0.89  40     3     2104.35
+fuel-act2-return           fuel        12.7    0.89  40     3     1864.73
+hotgas-generator-turbine   hot-gas     101.6   1.65  155    0     65.00
+hotgas-exhaust             hot-gas     203.2   2     305    1     1227.83
+igniter-chamber            igniter     6.35    0.71  20     3     318.43
+igniter-generator          igniter     6.35    0.71  20     4     1195.66
+pneumatic-helium-block     pneumatic   9.525   0.89  30     4     861.50
+pneumatic-main-lox         pneumatic   6.35    0.71  20     4     1178.66
+pneumatic-main-fuel        pneumatic   6.35    0.71  20     5     3224.08
+pneumatic-gg-valve         pneumatic   6.35    0.71  20     5     1570.08
+pneumatic-purge-dome       pneumatic   6.35    0.71  20     5     715.97
+pneumatic-purge-generator  pneumatic   6.35    0.71  20     5     2220.08</code></pre>
+      <ul>
+        <li><a href="/blog/rocket-engine-routing/bend-tables/lox-pump-main.csv">lox-pump-main.csv</a></li>
+        <li><a href="/blog/rocket-engine-routing/bend-tables/lox-main-dome.csv">lox-main-dome.csv</a></li>
+        <li><a href="/blog/rocket-engine-routing/bend-tables/lox-pump-gg.csv">lox-pump-gg.csv</a></li>
+        <li><a href="/blog/rocket-engine-routing/bend-tables/lox-gg-generator.csv">lox-gg-generator.csv</a></li>
+        <li><a href="/blog/rocket-engine-routing/bend-tables/fuel-pump-main.csv">fuel-pump-main.csv</a></li>
+        <li><a href="/blog/rocket-engine-routing/bend-tables/fuel-main-manifold.csv">fuel-main-manifold.csv</a></li>
+        <li><a href="/blog/rocket-engine-routing/bend-tables/fuel-coolant-dome.csv">fuel-coolant-dome.csv</a></li>
+        <li><a href="/blog/rocket-engine-routing/bend-tables/fuel-pump-gg.csv">fuel-pump-gg.csv</a></li>
+        <li><a href="/blog/rocket-engine-routing/bend-tables/fuel-gg-generator.csv">fuel-gg-generator.csv</a></li>
+        <li><a href="/blog/rocket-engine-routing/bend-tables/fuel-act1-supply.csv">fuel-act1-supply.csv</a></li>
+        <li><a href="/blog/rocket-engine-routing/bend-tables/fuel-act1-return.csv">fuel-act1-return.csv</a></li>
+        <li><a href="/blog/rocket-engine-routing/bend-tables/fuel-act2-supply.csv">fuel-act2-supply.csv</a></li>
+        <li><a href="/blog/rocket-engine-routing/bend-tables/fuel-act2-return.csv">fuel-act2-return.csv</a></li>
+        <li><a href="/blog/rocket-engine-routing/bend-tables/hotgas-generator-turbine.csv">hotgas-generator-turbine.csv</a></li>
+        <li><a href="/blog/rocket-engine-routing/bend-tables/hotgas-exhaust.csv">hotgas-exhaust.csv</a></li>
+        <li><a href="/blog/rocket-engine-routing/bend-tables/igniter-chamber.csv">igniter-chamber.csv</a></li>
+        <li><a href="/blog/rocket-engine-routing/bend-tables/igniter-generator.csv">igniter-generator.csv</a></li>
+        <li><a href="/blog/rocket-engine-routing/bend-tables/pneumatic-helium-block.csv">pneumatic-helium-block.csv</a></li>
+        <li><a href="/blog/rocket-engine-routing/bend-tables/pneumatic-main-lox.csv">pneumatic-main-lox.csv</a></li>
+        <li><a href="/blog/rocket-engine-routing/bend-tables/pneumatic-main-fuel.csv">pneumatic-main-fuel.csv</a></li>
+        <li><a href="/blog/rocket-engine-routing/bend-tables/pneumatic-gg-valve.csv">pneumatic-gg-valve.csv</a></li>
+        <li><a href="/blog/rocket-engine-routing/bend-tables/pneumatic-purge-dome.csv">pneumatic-purge-dome.csv</a></li>
+        <li><a href="/blog/rocket-engine-routing/bend-tables/pneumatic-purge-generator.csv">pneumatic-purge-generator.csv</a></li>
+      </ul>
+      <p>The CSVs contain tube-local XYZ points, with the first point at the origin and first leg along +X, plus L/R/A bend rows: straight length before a bend, bend-plane rotation and bend angle. These downloads use the existing kernel <code>formatBendTableCsv</code> formatter on the verified native evaluation JSON. <a href="/blog/rocket-engine-routing/bend-tables/manifest.json">CSV provenance and hashes</a>.</p>
+
+      <h2>Reproduce the checks and exports</h2>
+      <p>Use Node 22 and a source checkout of <code>develop</code>, then run from the repository root. These commands use the current <code>develop</code> source checkout; an older package installation may behave differently.</p>
+      <pre><code>git clone --branch develop https://github.com/w1ne/kernelCAD-web.git
+cd kernelCAD-web
+npm ci --ignore-scripts
+npm run build:cli
+node dist/cli/index.js evaluate examples/rocket-engine-lines/engine-routed.kcad.ts --json
+node dist/cli/index.js evaluate examples/rocket-engine-lines/engine-routed-twin.kcad.ts --json
+node dist/cli/index.js export bend-table examples/rocket-engine-lines/engine-routed.kcad.ts -o out/rocket-bends
+node dist/cli/index.js export step examples/rocket-engine-lines/engine-routed.kcad.ts -o out/rocket.step</code></pre>
+      <p>The broken evaluation exits unsuccessfully by design; continue with the working source for exports. If using the ZIP instead of the repository example files, extract it into <code>site/blog/rocket-engine-routing/</code> in that checkout and replace <code>examples/rocket-engine-lines/</code> in these commands with that directory.</p>
+      <p>Bend-table export refuses a tube-rule error. The newer guard also refuses STEP, STL, per-part STL, DXF, 3MF and G-code fabrication exports before writing bytes, leaving an existing output untouched. Tube warnings still allow export. GLB and rendering remain available to inspect a failing route. Use the source checkout built above to reproduce these export checks.</p>
+      <p><a href="/blog/rocket-engine-routing/engine-routed.report.json">Working native JSON</a> · <a href="/blog/rocket-engine-routing/engine-routed-twin.report.json">Broken native JSON</a> · <a href="/blog/rocket-engine-routing/engine-routed.step">Verified 42-solid STEP</a> · <a href="/blog/rocket-engine-routing/native-verification.json">Native verification summary</a></p>
+      <p><a href="/blog/rocket-engine-routing/engine-routed.kcad.ts">Working source</a> · <a href="/blog/rocket-engine-routing/engine-routed-twin.kcad.ts">Broken source</a> · <a href="/blog/rocket-engine-routing/engine-bare.kcad.ts">Original port-bearing hardware source</a> · <a href="https://github.com/w1ne/kernelCAD-web/blob/develop/examples/rocket-engine-lines/engine-routed.kcad.ts">Full source on GitHub</a></p>
+      <p><a href="/blog/rocket-engine-routing/rocket-engine-routing.zip">Download the source, reports, 23 CSVs and STEP together</a> · <a href="/blog/rocket-engine-routing/README.txt">Bundle instructions</a> · <a href="/blog/rocket-engine-routing/manifest.json">SHA-256 manifest</a>. The bounded ZIP excludes the movie and viewer caches. The manifest binds the downloads to their exact input source and STEP bytes:</p>
+      <pre><code>source SHA-256: b992ce2bc4068d422e3a652487a665514643ff72caf8a8891da5d5a8a7747bc4
+STEP SHA-256:   fc4b51683bb7a7db227742a217692d4fd10c9fdd824d46c114abb548220006ee</code></pre>
+
+      <h2>What this example establishes</h2>
+      <p>The model establishes named endpoints, hollow routed geometry, the declared bend/clearance checks, a reproducible crossing and repair, moved endpoint dependencies and separate STEP solids. Broad native assembly interference checked 42 parts with 181 candidate comparisons and found no overlapping pairs at its 0.01 mm³ threshold. That interference check and the tube rules are geometric checks with defined scope.</p>
+      <p>Reported masses use nominal <code>mild-steel</code> geometry. <code>pressureDropKPa</code> is null for these lines; no hydraulic pressure-drop result is claimed. The long control runs are unclamped. Display supports show contact but have no fastening or load proof. The assembly has no mates and retains its floating-part warnings.</p>
+      <p>Pressure containment, combustion, thrust, thermal expansion, flow, loads, physical fit, tolerances, tooling access and manufacturing acceptance remain unverified. The routes are authored rigid tubes, with no automatic path search, flexible-hose solution, catalog fitting selection or automatic route growth. Change the source, rerun its checks, and review the actual interfaces before treating the geometry as a physical design.</p>
+      </article>
+    </main>
+
+    <footer class="footer">
+      <div>kernelCAD · MIT</div>
+      <div class="footer-links">
+        <a href="/terms.html">terms</a>
+        <a href="/privacy.html">privacy</a>
+        <a href="https://github.com/w1ne/kernelCAD-web">github</a>
+        <a href="https://www.npmjs.com/package/kernelcad">npm</a>
+        <a href="https://x.com/kernelcad">x</a>
+        <a href="https://app.kernelcad.com">app</a>
+      </div>
+    </footer>
+    <div class="footer-stack" style="border-top: 1px solid var(--stroke, rgba(255,255,255,0.08)); padding: 14px 0 28px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; color: var(--mute, #888); font-size: 0.78rem;">
+      <span style="opacity: 0.7;">part of the engineer stack</span>
+      <nav style="display: flex; gap: 18px;">
+        <a href="https://labwired.com" style="color: inherit;">LabWired</a>
+        <a href="https://kernelcad.com" style="color: inherit;">kernelCAD</a>
+        <a href="https://koamtachi.com" style="color: inherit;">koamtachi</a>
+        <a href="https://shylenko.com" style="color: inherit;">shylenko.com</a>
+      </nav>
+    </div>
+  </div>
+</body>
+</html>

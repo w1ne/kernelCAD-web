@@ -48,6 +48,7 @@ import { exportPdfDrawing, exportSvgDrawing } from './exportDrawing';
 import { withOcctPoisonRecovery } from '../../kernel/backends/occt/occtBackend';
 import { fileSafePartName } from './safeOutputPath';
 import { exportBendTable } from './exportBendTable';
+import { tubeExportDiagnostics } from './exportTubeChecks';
 import { invalidArgsText } from '../../shared/intent/invalidArgs';
 import {
   buildStressInfillExport,
@@ -383,6 +384,7 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
   const r = await engine.run(run.records, { paramTable: run.paramTable });
 
   const featureCount = run.records.length;
+  r.diagnostics = await tubeExportDiagnostics(format, run, r);
 
   const fatal = r.diagnostics.filter(d => d.severity === 'error');
   if (fatal.length > 0) {
@@ -498,12 +500,14 @@ interface WorldFrameSceneResult {
  */
 export async function resolveWorldFrameScene(
   input: { code: string; fileName: string; scriptDir?: string },
+  fabricationFormat?: ExportFormat,
 ): Promise<WorldFrameSceneResult> {
   const { code, fileName, scriptDir } = input;
   const run = await runScript({ code, fileName, scriptDir });
   const engine = new RecomputeEngine(createOcctLowerer(run.session));
   const r = await engine.run(run.records, { paramTable: run.paramTable });
   const featureCount = run.records.length;
+  r.diagnostics = await tubeExportDiagnostics(fabricationFormat, run, r);
   const fatal = r.diagnostics.filter(d => d.severity === 'error');
   if (fatal.length > 0) return { featureCount, diagnostics: r.diagnostics };
 
@@ -549,7 +553,7 @@ export async function resolveWorldFrameScene(
  */
 export async function runAndExportParts(input: ExportPartsInput): Promise<ExportPartsResult> {
   return withOcctPoisonRecovery(async () => {
-  const resolved = await resolveWorldFrameScene(input);
+  const resolved = await resolveWorldFrameScene(input, 'stl');
   const { featureCount } = resolved;
   if (!resolved.parts) {
     return { parts: [], featureCount, diagnostics: resolved.diagnostics };

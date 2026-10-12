@@ -333,6 +333,7 @@
       // No poster: the release posters are video frames with mixed backgrounds.
       // The model renders on the uniform card stage instead.
       viewer.setAttribute('alt', entry.title);
+      if (entry.modelOrientation) viewer.setAttribute('orientation', entry.modelOrientation);
       if (!orbit.faceForward && !prefersReducedMotion) {
         viewer.setAttribute('auto-rotate', '');
         viewer.setAttribute('auto-rotate-delay', '0');
@@ -537,6 +538,9 @@
         if (community.length === 0 && curated.length === 0) {
           section.hidden = true;
           return;
+        }
+        if (g.meshoptDecoderUrl) {
+          self.ModelViewerElement = { ...(self.ModelViewerElement || {}), meshoptDecoderLocation: g.meshoptDecoderUrl };
         }
         const galleryCacheKey = g.generatedAt;
         grid.textContent = '';

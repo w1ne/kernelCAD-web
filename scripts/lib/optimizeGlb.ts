@@ -38,6 +38,9 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { NodeIO } from '@gltf-transform/core';
+import { ALL_EXTENSIONS, EXTMeshoptCompression } from '@gltf-transform/extensions';
+import { MeshoptEncoder, MeshoptDecoder } from 'meshoptimizer';
+import { assertPackedGeometry } from './meshoptGeometry';
 
 /** Retained at the gltf-transform default. Tuning it does nothing on OCCT
  *  per-face meshes (see the measurement table above) — kept explicit rather than
@@ -70,7 +73,7 @@ export function gltfTransformBin(repoRoot: string): string {
  *  what palette merging would destroy. Deduplicating identical materials is a
  *  win, not a regression, so gate on the colour set instead. */
 export async function countDistinctColors(glbPath: string): Promise<number> {
-  const io = new NodeIO();
+  const io = await webGlbIO();
   const doc = await io.read(glbPath);
   const seen = new Set<string>();
   for (const m of doc.getRoot().listMaterials()) {
@@ -82,12 +85,66 @@ export async function countDistinctColors(glbPath: string): Promise<number> {
 /** Raw material-object count. Retained for diagnostics only — do NOT gate on it;
  *  see countDistinctColors for why. */
 export async function countMaterials(glbPath: string): Promise<number> {
-  const io = new NodeIO();
+  const io = await webGlbIO();
   const doc = await io.read(glbPath);
   return doc.getRoot().listMaterials().length;
 }
 
+/** All supported extensions are registered so read/write retains native PBR data.
+ * Unknown optional extensions would otherwise be silently discarded by NodeIO. */
+export async function webGlbIO(): Promise<NodeIO> {
+  await Promise.all([MeshoptEncoder.ready, MeshoptDecoder.ready]);
+  return new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies({
+    'meshopt.encoder': MeshoptEncoder, 'meshopt.decoder': MeshoptDecoder,
+  });
+}
+
+function rejectUnknownExtensions(value: unknown, supported: ReadonlySet<string>): void {
+  if (!value || typeof value !== 'object') return;
+  if (Array.isArray(value)) {
+    for (const child of value) rejectUnknownExtensions(child, supported);
+    return;
+  }
+  const record = value as Record<string, unknown>;
+  if (record.extensions && typeof record.extensions === 'object') {
+    for (const name of Object.keys(record.extensions)) {
+      if (!supported.has(name)) throw new Error(`unsupported GLB extension: ${name}`);
+    }
+  }
+  // Extras and extension payloads are arbitrary application data, not glTF
+  // schema objects. Preserve them; do not mistake their keys for extensions.
+  for (const [key, child] of Object.entries(record)) {
+    if (key !== 'extras' && key !== 'extensions') rejectUnknownExtensions(child, supported);
+  }
+}
+
+export async function readWebGlb(file: string) {
+  const io = await webGlbIO();
+  const json = await io.readAsJSON(file);
+  const supported = new Set(ALL_EXTENSIONS.map(extension => extension.EXTENSION_NAME));
+  for (const name of json.json.extensionsUsed ?? []) {
+    if (!supported.has(name)) throw new Error(`unsupported GLB extension: ${name}`);
+  }
+  rejectUnknownExtensions(json.json, supported);
+  return io.readJSON(json);
+}
+
+/** Pack original attribute buffers without quantize/reorder/filter transforms.
+ * QUANTIZE is the extension encoder mode name, NOT a quantization transform.
+ * Float32 bytes survive exactly. TRIANGLES may cyclically rotate index triplets;
+ * the same oriented triangles and winding survive, not identical index bytes. */
+export async function packMeshoptGlb(input: string, output: string): Promise<void> {
+  const doc = await readWebGlb(input);
+  doc.createExtension(EXTMeshoptCompression).setRequired(true).setEncoderOptions({
+    method: EXTMeshoptCompression.EncoderMethod.QUANTIZE,
+  });
+  await (await webGlbIO()).write(output, doc);
+  assertPackedGeometry(doc, await readWebGlb(output));
+}
+
 export interface OptimizeOptions {
+  /** Optional buffer packing, after the unchanged native optimization passes. */
+  meshopt?: boolean;
   /** Repo root, used to locate the gltf-transform binary. */
   repoRoot: string;
   /** Passed through to gltf-transform; see DEFAULT_SIMPLIFY_ERROR. */
@@ -127,6 +184,7 @@ export async function optimizeGlb(
 ): Promise<OptimizeResult> {
   const label = opts.label ?? outPath;
   const bin = gltfTransformBin(opts.repoRoot);
+  if (opts.meshopt) await readWebGlb(inPath);
   const before = opts.preserveMaterials ? await countDistinctColors(inPath) : 0;
 
   execFileSync(
@@ -146,6 +204,8 @@ export async function optimizeGlb(
     ],
     { stdio: ['ignore', 'pipe', 'pipe'], timeout: opts.timeoutMs ?? 120_000 },
   );
+
+  if (opts.meshopt) await packMeshoptGlb(outPath, outPath);
 
   const bytes = statSync(outPath).size;
   if (opts.maxBytes && bytes >= opts.maxBytes) {
