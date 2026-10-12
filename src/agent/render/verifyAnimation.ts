@@ -91,6 +91,9 @@ export interface VerifyAnimationOpts {
    *  emits its own single trailing relower) set this so verification does not
    *  flood SSE subscribers with one relower per sampled pose. */
   silent?: boolean;
+  /** Best-effort progress before each potentially expensive kernel phase.
+   * Observer errors are ignored so logging cannot alter verification. */
+  onProgress?: (message: string) => void;
 }
 
 function diag(code: DiagnosticCode, message: string, hint: string): CompilerDiagnostic {
@@ -137,6 +140,9 @@ export async function verifyAnimation(
   const diagnostics: CompilerDiagnostic[] = [];
   const collisions: AnimationCollision[] = [];
   const cap = jointContactCapMm3();
+  const progress = (message: string) => {
+    try { opts.onProgress?.(message); } catch { /* Observers cannot change the verdict or restoration. */ }
+  };
 
   const ignored = modelIgnorePairs(model);
   for (const key of opts.ignorePairs ?? []) ignored.add(key);
@@ -162,7 +168,9 @@ export async function verifyAnimation(
 
   let posesSampled = 0;
   let poseFailures = 0;
-  for (const tMs of sampleTimes) {
+  for (const [index, tMs] of sampleTimes.entries()) {
+    const label = `verify pose ${index + 1}/${sampleTimes.length} tMs=${tMs}`;
+    progress(`${label}: solve`);
     const edits: ParamUpdateEdit[] = tracks.map((track) => ({
       name: track.param,
       value: sampleTrackAt(track, tMs),
@@ -182,11 +190,16 @@ export async function verifyAnimation(
         `verifyAnimation: the pose at tMs=${tMs} failed to solve/lower: ${errMsg(e)}`,
         'Fix the underlying solve error in the message, or adjust the animationView keyframes to avoid the failing pose.',
       ));
+      progress(`${label}: solve failed`);
       continue;
     }
     posesSampled += 1;
-    if (!isSceneBackend(lowered)) continue; // single-body model: nothing to clash
+    if (!isSceneBackend(lowered)) {
+      progress(`${label}: done`);
+      continue; // single-body model: nothing to clash
+    }
     anyPoseResolvedScene = true;
+    progress(`${label}: interference`);
     const result = detectInterferences(lowered, INTERPENETRATION_EPSILON_MM3, ignored);
     for (const pair of result.pairs) {
       // Mechanism-gate classification: at or below the cap is touching /
@@ -200,6 +213,7 @@ export async function verifyAnimation(
         `Adjust the keyframes so the pose at tMs=${tMs} keeps '${pair.a}' and '${pair.b}' clear, or reshape / add clearance to the colliding geometry.`,
       ));
     }
+    progress(`${label}: done`);
   }
 
   // Gate hole: the script declared an assembly, yet not one sampled pose
@@ -221,8 +235,10 @@ export async function verifyAnimation(
   // Restore the pre-verification param values — the capture frame loop or
   // later consumers reuse the model and must see it unchanged.
   if (originals.length > 0) {
+    progress('verify: restoring params');
     try {
       await updateModelParams(model, originals, { silent: opts.silent });
+      progress('verify: params restored');
     } catch (e) {
       poseFailures += 1;
       diagnostics.push(diag(
@@ -230,6 +246,7 @@ export async function verifyAnimation(
         `verifyAnimation: restoring the pre-verification param values failed: ${errMsg(e)}`,
         'The model session may be in an inconsistent pose; rebuild the model before reusing it.',
       ));
+      progress('verify: param restore failed');
     }
   }
 

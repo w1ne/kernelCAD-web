@@ -445,7 +445,7 @@ describe('captureAnimation', () => {
     expect(result.ok).toBe(true);
     // Assert SUBSEQUENCE (order), not exact strings: each pattern must match
     // at a strictly later message index than the previous one.
-    const patterns = [/build done/, /frames scheduled @ /, /page ready/, /^frame \d+\/\d+/, /^total \d+ms/];
+    const patterns = [/build done/, /frames scheduled @ /, /verify pose 1\/\d+ tMs=0: solve/, /verify pose 1\/\d+ tMs=0: done/, /verify: params restored/, /page ready/, /^frame \d+\/\d+/, /^total \d+ms/];
     let from = 0;
     for (const p of patterns) {
       const idx = messages.findIndex((m, i) => i >= from && p.test(m));
