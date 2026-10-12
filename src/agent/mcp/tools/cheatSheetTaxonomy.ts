@@ -171,11 +171,11 @@ export const CHEAT_SHEET_TAXONOMY: readonly CheatSheetGroup[] = [
   },
   {
     task: 'Annotate & present',
-    blurb: 'Adjust a model\'s appearance without changing its geometry: text, color, lighting, camera, motion, drawing GD&T.',
+    blurb: 'Present a model and declare drawing intent without changing its geometry: text, color, lighting, camera, motion, drawing GD&T, and review requirements.',
     names: [
       'sketch', 'fontPath', 'embossText', 'color', 'finish', 'material', 'wrapTexture',
       'referenceImage', 'setRenderEnvironment', 'setCameraTarget', 'setCameraDistance',
-      'animationView', 'datum', 'tolerance', 'dimension',
+      'animationView', 'datum', 'tolerance', 'dimension', 'drawingReview',
     ],
   },
 ];

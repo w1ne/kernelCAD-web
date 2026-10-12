@@ -20,7 +20,7 @@ description of any entry, call `lookup_api(query)`.
 | [Measure & verify](#measure--verify) | Ask the kernel what you actually built, and check it before shipping. |
 | [Parametrize](#parametrize) | Declare editable dimensions and do arithmetic on them (JS operators throw on a ParamRef). |
 | [Import & export](#import--export) | Bring in vendor geometry, and write models back out. |
-| [Annotate & present](#annotate--present) | Adjust a model's appearance without changing its geometry: text, color, lighting, camera, motion, drawing GD&T. |
+| [Annotate & present](#annotate--present) | Present a model and declare drawing intent without changing its geometry: text, color, lighting, camera, motion, drawing GD&T, and review requirements. |
 
 ## Start a shape
 
@@ -259,7 +259,7 @@ Bring in vendor geometry, and write models back out.
 
 ## Annotate & present
 
-Adjust a model's appearance without changing its geometry: text, color, lighting, camera, motion, drawing GD&T.
+Present a model and declare drawing intent without changing its geometry: text, color, lighting, camera, motion, drawing GD&T, and review requirements.
 
 | Call | What it does |
 |---|---|
@@ -277,4 +277,5 @@ Adjust a model's appearance without changing its geometry: text, color, lighting
 | `animationView(spec: { param: string; from: number; to: number; durationMs: number; fps?: number } \| { name?: string; tracks: Array<{ param: string; keys: Array<{ atMs: number; value: number; ease?: "linear" \| "step" \| "easeIn" \| "easeOut" \| "easeInOut" }> }>; fps?: number }) => AnimationViewHandle` | Declare an animation timeline for offline kinematic-motion MP4 capture. |
 | `Shape.datum(label: string, face: FaceQuery) => Shape` | Declare datum `label` (one or two capitals, not I/O/Q) on the face `face` resolves to, for `svg-drawing` sheets. |
 | `Shape.tolerance(spec: { type: 'position' \| 'flatness' \| 'perpendicularity' \| 'parallelism' \| 'concentricity' \| 'cylindricity'; value: number; face?: FaceQuery; edge?: EdgeQuery; datums?: string[]; modifier?: '⌀' \| 'M' \| 'S' }) => Shape` | Declare a geometric tolerance (feature control frame) on exactly one of `face` / `edge`, for `svg-drawing` sheets. |
-| `Shape.dimension(spec: { kind: 'linear'; from: Vec3 \| { edge: EdgeQuery } \| { face: FaceQuery }; to: Vec3 \| { edge: EdgeQuery } \| { face: FaceQuery }; label?: string } \| { kind: 'diameter' \| 'radius'; edge: EdgeQuery; label?: string } \| { kind: 'angular'; from: EdgeQuery; to: EdgeQuery; label?: string }) => Shape` | Declare a dimension to show on the 3D viewer model and on drawings. |
+| `Shape.dimension(spec: { id?: string } & ({ kind: 'linear'; from: Vec3 \| { edge: EdgeQuery } \| { face: FaceQuery }; to: Vec3 \| { edge: EdgeQuery } \| { face: FaceQuery }; label?: string } \| { kind: 'diameter' \| 'radius'; edge: EdgeQuery; label?: string } \| { kind: 'angular'; from: EdgeQuery; to: EdgeQuery; label?: string })) => Shape` | Declare a dimension to show on the 3D viewer model and on drawings. |
+| `Shape.drawingReview(plan: DrawingReviewPlan) => Shape` | Declare required geometric callouts and engineering decisions for this shape and downstream exports. |
