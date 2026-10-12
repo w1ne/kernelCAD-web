@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import { validateDrawingReviewPlan } from '../../shared/intent/drawingReview';
 import type { FeatureKind, FeatureId, FeatureRef, Param } from '../../shared/intent/types';
 import {
   FDM_DEFAULTS,
@@ -705,6 +706,7 @@ export function buildDrawingDimensionFeatureSpec(
   } else if (!isQueryObject(s.edge)) {
     invalidGdt('dimension', 'edge', 'must be an EdgeQuery naming a circular edge');
   }
+  if (s.id !== undefined && (typeof s.id !== 'string' || !s.id.trim())) invalidGdt('dimension', 'id', 'must be a nonempty string');
   if (s.label !== undefined && typeof s.label !== 'string') {
     invalidGdt('dimension', 'label', 'must be a string');
   }
@@ -715,6 +717,12 @@ export function buildDrawingDimensionFeatureSpec(
     inputs: { shape: shapeRef },
     metadata: metadata as unknown as Record<string, unknown>,
   };
+}
+
+/** Virtual functional drawing contract bound to a shape. */
+export function buildDrawingReviewFeatureSpec(plan: unknown, shapeRef: FeatureRef): AuthoringFeatureSpec {
+  return { kind: 'drawingReview', params: {}, inputs: { shape: shapeRef },
+    metadata: { virtual: true, plan: validateDrawingReviewPlan(plan) } };
 }
 
 function validateToleranceTarget(

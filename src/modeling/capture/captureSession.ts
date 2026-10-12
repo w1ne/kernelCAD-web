@@ -51,6 +51,7 @@ import {
   buildDrawingDatumFeatureSpec,
   buildDrawingToleranceFeatureSpec,
   buildDrawingDimensionFeatureSpec,
+  buildDrawingReviewFeatureSpec,
   buildEmbossTextFeatureSpec,
   buildProjectCurveFeatureSpec,
   type Curve3DCaptureArgs,
@@ -588,6 +589,11 @@ export class CaptureSession {
   addDrawingDimension(spec: unknown, shapeRef: FeatureRef): FeatureId {
     const r = this.register(buildDrawingDimensionFeatureSpec(spec, shapeRef));
     return r.id;
+  }
+
+  /** Virtual source declaration; contributes no geometry. */
+  addDrawingReview(plan: unknown, shapeRef: FeatureRef): FeatureId {
+    return this.register(buildDrawingReviewFeatureSpec(plan, shapeRef)).id;
   }
 
   getSurfaceRecords(): readonly SurfaceRecord[] {

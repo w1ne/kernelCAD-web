@@ -9,6 +9,7 @@
 // the drawing of the final body, while a declaration on an unrelated body that
 // never reaches the export does not.
 
+import { validateDrawingReviewPlan } from '../../shared/intent/drawingReview';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type {
   DrawingDatumMetadata,
@@ -42,12 +43,14 @@ export function collectDrawingDeclarations(
   targetId: string,
 ): DrawingDeclarations {
   const upstream = upstreamIds(records, targetId);
-  const out: DrawingDeclarations = { datums: [], tolerances: [], dimensions: [] };
+  const out: DrawingDeclarations = { datums: [], tolerances: [], dimensions: [], reviewPlans: [] };
   for (const r of records) {
-    if (r.kind !== 'drawingDatum' && r.kind !== 'drawingTolerance' && r.kind !== 'drawingDimension') continue;
+    if (!['drawingDatum', 'drawingTolerance', 'drawingDimension', 'drawingReview'].includes(r.kind)) continue;
     const ref = r.inputs?.shape;
     if (ref === undefined || ref.kind !== 'feature' || !upstream.has(ref.id)) continue;
-    if (r.kind === 'drawingDimension') {
+    if (r.kind === 'drawingReview') {
+      out.reviewPlans!.push(validateDrawingReviewPlan(r.metadata?.plan));
+    } else if (r.kind === 'drawingDimension') {
       const dim: Partial<DrawingDimensionMetadata> = { ...(r.metadata as unknown as DrawingDimensionMetadata) };
       delete dim.virtual;
       out.dimensions.push(dim as DrawingDimensionSpec);

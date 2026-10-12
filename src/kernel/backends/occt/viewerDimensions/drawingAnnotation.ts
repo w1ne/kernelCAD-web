@@ -75,9 +75,9 @@ export function declaredDrawingAnnotation(
   index = 0,
 ): DrawingAnnotation {
   try {
-    return annotationFor(parts, d, `dimensions[${index}]`);
+    return { ...annotationFor(parts, d, `dimensions[${index}]`), ...(d.id !== undefined ? { id: d.id } : {}) };
   } catch {
-    const prefix = d.label !== undefined ? { prefix: d.label } : {};
+    const prefix = { ...(d.label !== undefined ? { prefix: d.label } : {}), ...(d.id !== undefined ? { id: d.id } : {}) };
     if (d.kind === 'linear') return { kind: 'linear', from: d.from as never, to: d.to as never, ...prefix };
     if (d.kind === 'angular') return { kind: 'angular', from: d.from, to: d.to, ...prefix };
     return { kind: d.kind, edge: d.edge, ...prefix };

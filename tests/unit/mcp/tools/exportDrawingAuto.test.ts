@@ -66,6 +66,26 @@ describe('export svg-drawing with autoAnnotate through callMcpTool', () => {
   });
 });
 
+describe('functional review public transport', () => {
+  it('forwards declared plans and decision resolutions through CLI and MCP', async () => {
+    const code = 'return box(80,50,10).dimension({id:"width",kind:"linear",from:[0,0,10],to:[80,0,10]});';
+    const reviewPlans = [{ id: 'mount', requirements: [{ id: 'w', featureId: 'plate', annotationId: 'authored:width', expectedKind: 'linear', role: 'critical', reason: 'Interface' }], decisions: [{ id: 'fit', kind: 'fit', featureId: 'plate', prompt: 'Choose' }] }];
+    const parsed = parseExportOptionsFlag(JSON.stringify({reviewPlans,decisionResolutions:{'mount:fit':{note:'Example clearance',provenance:'Engineering brief'}},requireCompleteReview:true}), 'pdf-drawing');
+    if (!parsed.ok) throw new Error('options parse failed');
+    const options = parsed.options;
+    const file = join(dir, 'functional.kcad.ts');
+    writeFileSync(file, code);
+    const cli = await exportScript({file,format:'pdf-drawing',out:join(dir,'functional-cli.pdf'),options});
+    expect(cli.exitCode).toBe(0);
+    expect(cli.drawingReport?.review).toMatchObject({status:'complete',decisionCount:1,unresolvedDecisionCount:0});
+    const mcp = await callMcpTool('export',{target:'model',code,format:'pdf-drawing',output_path:join(dir,'functional-mcp.pdf'),options}) as {ok:boolean;drawing_report?:unknown};
+    expect(mcp.ok).toBe(true);
+    expect(mcp.drawing_report).toEqual(cli.drawingReport);
+    const failed = await callMcpTool('export',{target:'model',code,format:'pdf-drawing',output_path:join(dir,'functional-unreviewed.pdf'),options:{format:'pdf-drawing',reviewPlans,requireCompleteReview:true}}) as {ok:boolean};
+    expect(failed.ok).toBe(false);
+  });
+});
+
 describe('kernelcad export svg-drawing --options', () => {
   it('parses the flag into an options bag with the positional format', () => {
     expect(parseExportOptionsFlag('{"autoAnnotate":true}', 'svg-drawing'))

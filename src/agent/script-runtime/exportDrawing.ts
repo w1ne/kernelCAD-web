@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import { validateDrawingReviewOptions } from '../../shared/intent/drawingReview';
 import { runScript } from '../../composition/runScript';
 import { renderSvgDrawing, type SvgDrawingOptions } from '../../kernel/backends/occt/exportSvgDrawing';
 import { applyDraftingProfile } from '../../kernel/backends/occt/draftingReview';
@@ -101,6 +102,9 @@ function pdfSheetOptions(pdf: PdfDrawingOptions, material: string | undefined): 
       modelName: pdf.modelName,
       draftingProfile: pdf.draftingProfile,
       annotationOverrides: pdf.annotationOverrides,
+      reviewPlans: pdf.reviewPlans,
+      decisionResolutions: pdf.decisionResolutions,
+      requireCompleteReview: pdf.requireCompleteReview,
       annotations: pdf.annotations,
       sections: pdf.sections,
       exploded: pdf.exploded as SvgDrawingOptions['exploded'],
@@ -141,7 +145,9 @@ async function renderDrawingSheet(
   const drawingParts = drawingPartsForBackend(lowered);
   const styleError = drawingStyleError(opts.style);
   if (styleError !== undefined) return { bytes: new Uint8Array(), featureCount, diagnostics: [...diagnostics, styleError] };
+  const captured = collectDrawingDeclarations(run.records, targetId);
   if (opts.style === 'architectural') {
+    validateArchitecturalReview(opts, captured);
     const plan = renderArchitecturalPlan(drawingParts, {
       ...definedOnly({
         sheet: opts.sheet,
@@ -168,7 +174,6 @@ async function renderDrawingSheet(
 
   // GD&T declared on the feature graph (shape.datum / shape.tolerance) for
   // this target or anything feeding it.
-  const captured = collectDrawingDeclarations(run.records, targetId);
   const declarations = mergeDrawingDeclarations(opts, captured);
   const annotations = effectiveAnnotations(opts, captured, drawingParts);
   const rendered = renderSvgDrawing(drawingParts, {
@@ -188,6 +193,10 @@ async function renderDrawingSheet(
     ],
     ...(rendered.report === undefined ? {} : { drawingReport: rendered.report }),
   };
+}
+
+function validateArchitecturalReview(opts: SvgDrawingOptions, captured: ReturnType<typeof collectDrawingDeclarations>): void {
+  validateDrawingReviewOptions(opts, [...(captured.reviewPlans ?? []), ...(opts.declarations?.reviewPlans ?? [])]);
 }
 
 function drawingStyleError(style: unknown): CompilerDiagnostic | undefined {
@@ -248,6 +257,7 @@ function mergeDrawingDeclarations(
     datums: [...(opts.declarations?.datums ?? []), ...captured.datums],
     tolerances: [...(opts.declarations?.tolerances ?? []), ...captured.tolerances],
     dimensions: [...(opts.declarations?.dimensions ?? []), ...captured.dimensions],
+    reviewPlans: [...(opts.declarations?.reviewPlans ?? []), ...(captured.reviewPlans ?? [])],
   };
 }
 

@@ -68,6 +68,41 @@ Pass via `options` (MCP) — all optional:
 { "options": { "format": "svg-drawing", "sheet": "a3", "modelName": "Clamp body", "date": "2026-06-10" } }
 ```
 
+## Declared functional review
+
+Declare `.dimension({ id: 'width', kind: 'linear', from: [0,0,0], to: [80,0,0] })`
+and `.drawingReview({ id: 'mount', requirements: [{ id: 'width', featureId: 'plate interface',
+annotationId: 'authored:width', expectedKind: 'linear', role: 'critical', reason: 'Mating width' }], decisions: [] })`
+on the source shape. Plans follow that shape into downstream exports and add no geometry.
+`featureId` describes engineering intent; it is not a topology reference.
+
+Mechanical SVG/PDF options support `reviewPlans` (additional plans, merged with source plans),
+`decisionResolutions` and `requireCompleteReview`. A plan needs nonempty `id`, both arrays,
+and at least one requirement or decision. Unknown fields and duplicate IDs reject.
+Each requirement targets an exact authored ID and measurable kind: `linear`, `diameter`,
+`radius` or `angular`. Notes, datum symbols and automatic rows cannot satisfy it.
+
+`drawing_report.review` / runtime `drawingReport.review` contains `status`, `requirements`,
+`decisions`, `criticalCount`, `coveredCriticalCount`, `decisionCount` and `unresolvedDecisionCount`.
+Requirements include plan/requirement IDs, feature, reason, annotation ID, expected kind, role
+and `missing`, `ambiguous`, `kind-mismatch`, `hidden`, `crowded`, `label-overridden` or `covered`
+status. Failed reference requirements are advisories. Failed critical requirements and every
+unresolved decision block `complete`; no plan means `not-declared`.
+
+Decisions declare `{ id, kind: 'datum'|'fit'|'tolerance'|'dimension'|'other', featureId, prompt,
+resolution?: { note, provenance } }`. To override a source decision resolution, use
+`decisionResolutions: { [drawingDecisionKey(planId, decisionId)]: { note, provenance } }`;
+the key is `encodeURIComponent(planId) + ':' + encodeURIComponent(decisionId)`.
+Both resolution strings must be nonempty; unknown keys and malformed overrides reject.
+A resolution records intent/provenance only; it does not create geometry or GD&T.
+
+Review evaluates final rendered rows after suppression and layout. A manual critical text
+replacement blocks coverage; restore the computed label or revise the source declaration.
+`requireCompleteReview: true` refuses incomplete and undeclared exports. Ordinary exports
+remain available with truthful incomplete reports/warnings. Printable SVG (`pdfSheet: true`)
+and PDF use the same review report. Architectural style rejects supplied review contracts.
+Declared geometric callout coverage does not certify physical fit, tolerances or manufacture.
+
 ## Annotations — dimensioning what you actually care about
 
 Without `autoAnnotate`, the default dimensions state the overall bounding box. `autoAnnotate: true` derives feature callouts and positions from the B-rep. `annotations` lets you select exact features and declare the dimensions you need. Supplying authored annotations replaces the default bounding-box dimensions; automatic annotations can be requested separately.

@@ -16,7 +16,7 @@ describe('local drawing export bridge', () => {
     const handler = handlers.get('/__kernelcad/export')!;
     const drawingReport = { placed: 1, overlapped: 0, suppressed: 0, annotations: [] };
     run.mockResolvedValue({ bytes: new TextEncoder().encode('<svg/>'), drawingReport, diagnostics: [], featureCount: 1 });
-    const options = { format: 'svg-drawing', draftingProfile: 'machining', annotationOverrides: { hole: { suppress: true } } };
+    const options = { reviewPlans: [{id:'fit',requirements:[],decisions:[{id:'bore',kind:'fit',featureId:'bearing bore',prompt:'Choose fit'}]}], decisionResolutions:{'fit:bore':{note:'Clearance',provenance:'Design brief'}}, requireCompleteReview:true, format: 'svg-drawing', draftingProfile: 'machining', annotationOverrides: { hole: { suppress: true } } };
     const response = () => ({ statusCode: 0, setHeader: vi.fn(), end: vi.fn() });
     const req = Readable.from([Buffer.from(JSON.stringify({ source: 'model', options }))]);
     Object.assign(req, { method: 'POST', url: '?format=svg-drawing&review=1' });
@@ -30,6 +30,7 @@ describe('local drawing export bridge', () => {
     const pdfRes = response();
     await handler(pdfReq, pdfRes);
     expect(pdfRes.statusCode).toBe(200);
+    expect(run).toHaveBeenLastCalledWith(expect.objectContaining({options:{...options,format:'pdf-drawing'}}));
     expect(pdfRes.setHeader).toHaveBeenCalledWith('content-type', 'application/pdf');
     expect(pdfRes.setHeader).toHaveBeenCalledWith('content-disposition', 'attachment; filename="studio-export.kcad.pdf"');
   });
