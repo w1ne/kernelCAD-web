@@ -12,7 +12,7 @@
 
 **Files:** new `src/shared/intent/drawingReview.ts` and focused validation/evaluation modules/tests; `drawingGdtRecord.ts`; capture `proxy.ts`, `captureSession.ts`, `authoringFeatureRecords.ts`; feature-kind/virtual-lowerer definitions; `runtime/drawingDeclarations.ts`; `viewerDimensions/drawingAnnotation.ts`; SVG/PDF option contracts; `drawingAuto/contracts.ts`; `exportSvgDrawing.ts`; `script-runtime/exportDrawing.ts`.
 
-- [ ] Add failing tests for a missing declared bore callout, including source-only capture.
+- [x] Add failing tests for a missing declared bore callout, including source-only capture.
 
 ```ts
 const plan = { id: 'plate', requirements: [{ id: 'bore-size', featureId: 'centreBore',
@@ -21,10 +21,10 @@ const plan = { id: 'plate', requirements: [{ id: 'bore-size', featureId: 'centre
 // A report with no matching annotation must be incomplete, even with zero overlaps.
 ```
 
-- [ ] Implement the contract from the design with strict structural validation, namespaced decision keys, source/option plan merging and exact-ID coverage over final rows. Use `label-overridden` for critical computed-label replacement. Keep each module focused to preserve the quality ratchet.
-- [ ] Add the virtual shape declaration and validated optional dimension IDs, retain them through conversion, and collect only plans upstream of the exported target.
-- [ ] Forward `reviewPlans`, `decisionResolutions`, `requireCompleteReview` through printable SVG/PDF conversion. Evaluate after final layout/suppression. Gate strict exports on a declared complete report; ordinary exports retain the report and actionable diagnostics.
-- [ ] Exercise the actual source declaration:
+- [x] Implement the contract from the design with strict structural validation, namespaced decision keys, source/option plan merging and exact-ID coverage over final rows. Use `label-overridden` for critical computed-label replacement. Keep each module focused to preserve the quality ratchet.
+- [x] Add the virtual shape declaration and validated optional dimension IDs, retain them through conversion, and collect only plans upstream of the exported target.
+- [x] Forward `reviewPlans`, `decisionResolutions`, `requireCompleteReview` through printable SVG/PDF conversion. Evaluate after final layout/suppression. Gate strict exports on a declared complete report; ordinary exports retain the report and actionable diagnostics.
+- [x] Exercise the actual source declaration:
 
 ```ts
 return box(100, 70, 12)
@@ -35,28 +35,28 @@ return box(100, 70, 12)
     reason: 'Communicate the nominal interface size.' }], decisions: [] });
 ```
 
-- [ ] Run targeted Vitest coverage for the new shared module, capture, runtime collection and drawing exports; include SVG/PDF equality and source-only transport fixtures. Run applicable typechecks. Record actual command outputs, then commit Task1.
-- [ ] Specification review, address findings, then code-quality review and address findings before the next implementation task.
+- [x] Run targeted Vitest coverage for the new shared module, capture, runtime collection and drawing exports; include SVG/PDF equality and source-only transport fixtures. Run applicable typechecks. Record actual command outputs, then commit Task1.
+- [x] Specification review, address findings, then code-quality review and address findings before the next implementation task.
 
 ## Task 2: Source-bound Studio decision review
 
 **Files:** new `src/studio/components/FunctionalDrawingReviewPanel.tsx`, `useFunctionalDrawingReview.ts` and tests; existing `useDraftingReview.ts`, `DraftingReview.tsx`, `DraftingReviewPanels.tsx`; authoring/Studio drafting settings, persistence and transport tests.
 
-- [ ] Add failing UI tests for an incomplete declared report blocking advanced review while ordinary Download PDF still works. Use authoritative fixture rows, not text-derived expectations.
-- [ ] Add the compact report panel, requirement-to-annotation selection and note/provenance decision editor. Persist source-bound resolutions; keep them outside saved profile presets. Reset confirmations when engineering criteria change.
-- [ ] Include effective decisions in preview options. Gate Mark reviewed and reviewed PDF on current complete declared report/no stale overrides. The reviewed request sets `requireCompleteReview: true`; normal PDF requests omit it. Defend event handlers as well as disabled buttons.
-- [ ] Run focused Studio/settings/persistence/transport suites, including source/profile/datums/strategy invalidation, change-then-revert and late-response cases. Keep current one-click regressions green. Record outputs and commit Task2.
-- [ ] Specification review, corrections, then quality review and corrections.
+- [x] Add failing UI tests for an incomplete declared report blocking advanced review while ordinary Download PDF still works. Use authoritative fixture rows, not text-derived expectations.
+- [x] Add the compact report panel, requirement-to-annotation selection and note/provenance decision editor. Persist source-bound resolutions; keep them outside saved profile presets. Reset confirmations when engineering criteria change.
+- [x] Include effective decisions in preview options. Gate Mark reviewed and reviewed PDF on current complete declared report/no stale overrides. The reviewed request sets `requireCompleteReview: true`; normal PDF requests omit it. Defend event handlers as well as disabled buttons.
+- [x] Run focused Studio/settings/persistence/transport suites, including source/profile/datums/strategy invalidation, change-then-revert and late-response cases. Keep current one-click regressions green. Record outputs and commit Task2.
+- [x] Specification review, corrections, then quality review and corrections.
 
 ## Task 3: Proper examples, two articles and actual MP4 demos
 
 **Files:** `examples/functional-drafting/` named sources, generator and README; `docs/guide/functional-drafting.md`, `docs/guide/drawing-decisions.md`; `docs/demos/functional-drafting/` evidence/metadata; blog builder discoveries and generated `site/blog/` targets.
 
-- [ ] Read bundled CAD entry/authoring/drawing skills. Reuse source geometry and author stable dimensions against actual edges/points; record the illustrative brief and required scope. Do not claim catalog fits or load acceptance.
-- [ ] Generate passing, missing/hidden and unresolved/resolved cases through the actual export API, with fixed date/revision. Assert one connected valid solid and expected dimensions/hole geometry separately from report assertions. Save source, options, SVG/PDF, PNG/report and hashes.
-- [ ] Write two native articles with problem, source declaration, annotated outcomes, review actions, limits and downloadable artifacts. Keep existing one-click article intact. Use the established frontmatter/build/discovery patterns.
-- [ ] Capture actual coverage and decision workflows in the existing browser (inspect/attach first, fixed lifetime/idle timeout). Retain meaningful HTTP/report evidence and screenshots; produce two readable short MP4s with FFmpeg. Inspect representative frames and video metadata, decode the files and verify the resulting PDF. Stop owned helpers/tabs and preserve Chrome.
-- [ ] Build named blog targets using `npm run site:build-blog`. Run blog/content/link checks; inspect desktop/mobile pages and video playback locally. Commit Task3, then specification and quality review.
+- [x] Read bundled CAD entry/authoring/drawing skills. Reuse source geometry and author stable dimensions against actual edges/points; record the illustrative brief and required scope. Do not claim catalog fits or load acceptance.
+- [x] Generate passing, missing/hidden and unresolved/resolved cases through the actual export API, with fixed date/revision. Assert one connected valid solid and expected dimensions/hole geometry separately from report assertions. Save source, options, SVG/PDF, PNG/report and hashes.
+- [x] Write two native articles with problem, source declaration, annotated outcomes, review actions, limits and downloadable artifacts. Keep existing one-click article intact. Use the established frontmatter/build/discovery patterns.
+- [x] Capture actual coverage and decision workflows in the existing browser (inspect/attach first, fixed lifetime/idle timeout). Retain meaningful HTTP/report evidence and screenshots; produce two readable short MP4s with FFmpeg. Inspect representative frames and video metadata, decode the files and verify the resulting PDF. Stop owned helpers/tabs and preserve Chrome.
+- [x] Build named blog targets using `npm run site:build-blog`. Run blog/content/link checks; inspect desktop/mobile pages and video playback locally. Commit Task3, then specification and quality review.
 
 ## Task 4: Integration, protected merge and real publication
 
