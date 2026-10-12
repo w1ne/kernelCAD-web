@@ -25,15 +25,20 @@ name: Deploy kernelcad.com (on merge to develop)
 on:
   push:
     branches: [develop]
-    paths-ignore:
-      - 'README.md'
-      - 'CONTRIBUTING.md'
-      - 'CHANGELOG.md'
-      - 'LICENSE'
-      - 'RELEASE_NOTES.md'
-      - 'docs/**'
-      - 'doc/**'
-      - 'archive/**'
+    # The blog reads docs/guide/; the hero and blog videos read docs/demos/.
+    # Ordered paths let these build inputs override the general prose exclusion.
+    paths:
+      - '**'
+      - '!README.md'
+      - '!CONTRIBUTING.md'
+      - '!CHANGELOG.md'
+      - '!LICENSE'
+      - '!RELEASE_NOTES.md'
+      - '!docs/**'
+      - 'docs/guide/**'
+      - 'docs/demos/**'
+      - '!doc/**'
+      - '!archive/**'
   workflow_dispatch:
 
 concurrency:

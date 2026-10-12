@@ -3,15 +3,15 @@ name: CI
 # Push path-filters and the PR `changes` job (below) skip CI on truly content-only changes (top-level README/LICENSE/
 # CHANGELOG, plus docs/ which is human-written prose). Anything that COULD
 # affect runtime — src/, tests/, scripts/, eval/, site/, package*.json,
-# tsconfig*.json, .github/workflows/ — still triggers CI. docs/guide/ is the
-# exception inside docs/: its pages are blog sources that site:build publishes
-# and the blog tests check, so a change there runs CI like code.
+# tsconfig*.json, .github/workflows/ — still triggers CI. docs/guide/ and
+# docs/demos/ are exceptions inside docs/: site:build consumes their blog
+# sources, hero packet and videos, so changes there run CI like code.
 on:
   push:
     branches:
       - master
     # `paths` with `!` patterns, not `paths-ignore`: only `paths` can take
-    # docs/guide/** back in after excluding docs/**. The last matching pattern wins.
+    # the marketing inputs back in after excluding docs/**. The last match wins.
     paths:
       - '**'
       - '!README.md'
@@ -21,6 +21,7 @@ on:
       - '!RELEASE_NOTES.md'
       - '!docs/**'
       - 'docs/guide/**'
+      - 'docs/demos/**'
       - '!doc/**'
       - '!archive/**'
   pull_request:
@@ -49,9 +50,9 @@ jobs:
   # This lives INSIDE ci.yml (not a path filter) so the required check names
   # always report: a skipped job reports success, and there is only ever one
   # run per name, so a code-touching PR can never be green-lit by a stand-in.
-  # Keep the case-list in sync with the push `paths` filter above. docs/guide/*
-  # comes first and counts as code (blog sources), so publishing or editing a
-  # post in a Markdown-only PR still runs lint, build and the blog tests.
+  # Keep the case-list in sync with the push `paths` filter above. Blog sources
+  # and demo packets come first and count as build inputs, so content-only PRs
+  # affecting the marketing build still run lint, build and the blog tests.
   changes:
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -75,7 +76,7 @@ jobs:
               docs_only=true
               while IFS= read -r f; do
                 case "$f" in
-                  docs/guide/*) echo "blog source: $f"; docs_only=false ;;
+                  docs/guide/*|docs/demos/*) echo "marketing input: $f"; docs_only=false ;;
                   README.md|CONTRIBUTING.md|CHANGELOG.md|LICENSE|RELEASE_NOTES.md|docs/*|doc/*|archive/*) ;;
                   *) echo "non-docs file: $f"; docs_only=false ;;
                 esac
