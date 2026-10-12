@@ -1,0 +1,20 @@
+{
+  "name": "kernelcad",
+  "interface": {
+    "displayName": "kernelCAD"
+  },
+  "plugins": [
+    {
+      "name": "kernelcad",
+      "source": {
+        "source": "local",
+        "path": "./plugins/kernelcad"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

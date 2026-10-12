@@ -1,0 +1,45 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "kernelcad",
+  "version": "0.17.0",
+  "description": "Agent-first CAD over the hosted kernelCAD MCP: editable .kcad.ts source, design_loop review, cookbooks, Studio viewer and STEP/STL/3MF export. No local OpenCASCADE install.",
+  "author": {
+    "name": "kernelCAD",
+    "url": "https://kernelcad.com"
+  },
+  "homepage": "https://kernelcad.com",
+  "repository": "https://github.com/w1ne/kernelCAD-web",
+  "license": "MIT",
+  "keywords": [
+    "cad",
+    "mcp",
+    "step",
+    "stl",
+    "3mf",
+    "opencascade",
+    "skills"
+  ],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "kernelCAD",
+        "shortDescription": "Design and review CAD models",
+        "longDescription": "Agent-first CAD over the hosted kernelCAD MCP: editable .kcad.ts source, design_loop review, cookbooks, Studio viewer and STEP/STL/3MF export. No local OpenCASCADE install.",
+        "developerName": "kernelCAD",
+        "category": "Creativity",
+        "capabilities": [
+          "Read",
+          "Write"
+        ],
+        "websiteURL": "https://kernelcad.com",
+        "supportURL": "https://github.com/w1ne/kernelCAD-web/issues/new",
+        "defaultPrompt": [
+          "Design a 3D-printable phone stand with kernelCAD and open it in Studio.",
+          "Find a kernelCAD cookbook for a NEMA 17 motor plate and build it.",
+          "Export my bracket as STEP and 3MF."
+        ],
+        "brandColor": "#2563EB"
+      }
+    }
+  }
+}

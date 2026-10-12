@@ -1,0 +1,36 @@
+{
+  "name": "kernelcad",
+  "owner": {
+    "name": "kernelCAD",
+    "url": "https://kernelcad.com"
+  },
+  "metadata": {
+    "description": "Design and review CAD models",
+    "version": "0.17.0"
+  },
+  "plugins": [
+    {
+      "name": "kernelcad",
+      "source": "./plugins/kernelcad",
+      "description": "Agent-first CAD over the hosted kernelCAD MCP: editable .kcad.ts source, design_loop review, cookbooks, Studio viewer and STEP/STL/3MF export. No local OpenCASCADE install.",
+      "version": "0.17.0",
+      "author": {
+        "name": "kernelCAD",
+        "url": "https://kernelcad.com"
+      },
+      "homepage": "https://kernelcad.com",
+      "repository": "https://github.com/w1ne/kernelCAD-web",
+      "license": "MIT",
+      "keywords": [
+        "cad",
+        "mcp",
+        "step",
+        "stl",
+        "3mf",
+        "opencascade",
+        "skills"
+      ],
+      "category": "productivity"
+    }
+  ]
+}
