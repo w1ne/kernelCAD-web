@@ -107,7 +107,7 @@ function filletedRail(pts: number[][], R: number, arcSamples: number) {
 }
 
 // Local waypoints: first segment +Z (profile in XY); rotateY(-90) maps onto tilt-head +X.
-const tubeWaypoints = [[0, 0, 0], [0, 0, 36], [0, -14, 36], [12, -14, 36]];
+const tubeWaypoints = [[0, 0, 0], [0, 0, 28.8], [0, -14, 28.8], [12, -14, 28.8]];
 const sampled = filletedRail(tubeWaypoints, bendR, 10);
 const rail: number[][] = [sampled[0]];
 for (let i = 1; i < sampled.length; i += 1) {
@@ -145,8 +145,8 @@ const base = arm.part(
 );
 base.connector('yaw', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 48] }, axis: [0, 0, 1] });
 
-// Yaw stage: a hub that sits on the base's r15 boss face with a bore over
-// the r8 pivot pin, a deck, and a clevis of two bored cheeks for the tilt
+// Yaw stage: a hub that bears on the top face of the base's r8 pivot boss
+// (z 48.4), a deck, and a clevis of two bored cheeks for the tilt
 // axle. The tilt servo stands on its own plate outboard of the +Y cheek.
 const cheekY = 21;
 const cheekT = 7;
@@ -157,8 +157,7 @@ const servoY = cheekOuterY + 0.5 + 9; // 18 mm deep body, 0.5 mm off the cheek
 const servoZ = 20 + 14; // 28 mm tall body standing on the deck-level plate
 const yawStage = arm.part(
   'yaw-stage',
-  cylinder(12.6, 14).translate(0, 0, -0.6)
-    .subtract(cylinder(1.2, 8.2).translate(0, 0, -0.7))
+  cylinder(11.6, 14).translate(0, 0, 0.4)
     .union(roundPlate(18, 54, 3, 8, 0, 0, 12))
     .union(roundPlate(20, cheekT, 2, 26, 0, cheekY, 20))
     .union(roundPlate(20, cheekT, 2, 26, 0, -cheekY, 20))
@@ -183,8 +182,9 @@ const tiltServo = arm.part(
 tiltServo.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [-14, servoY, servoZ] } });
 
 // Tilt head: the axle spans the clevis cheek to cheek, two hubs sit inside
-// the cheeks, and the post carries a socket the service tube plugs into.
-const tubeAt: [number, number, number] = [48, 0, 10];
+// the cheeks, and the service tube is butted onto the post's -X face
+// (post r5.2 at x 46: face at x 40.8).
+const tubeAt: [number, number, number] = [40.8, 0, 10];
 const tubePlaced = tubeSolid.translate(tubeAt[0], tubeAt[1], tubeAt[2]);
 const tiltHead = arm.part(
   'tilt-head',
@@ -198,7 +198,6 @@ const tiltHead = arm.part(
     .union(cylinder(3, 13).rotate([0, 1, 0], 90).translate(headLen + 6, 0, -5))
     .subtract(cylinder(6, 6).rotate([0, 1, 0], 90).translate(headLen + 8, 0, -5))
     .union(cylinder(14, 5.2).translate(46, 0, 0))
-    .subtract(tubePlaced)
     .finish('anodized', { color: '#d5dde3' }),
   { material: 'aluminum-6061' },
 );
