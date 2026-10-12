@@ -27,7 +27,6 @@ import { dirname, resolve } from 'node:path';
 import { initOcct } from '../../../kernel/backends/occt/occtBackend';
 import type { Assembly } from '../../../modeling/capture/assembly';
 import type { CaptureSession } from '../../../modeling/capture/captureSession';
-import { buildModelFromFile } from '../../../composition/buildModel';
 import { runScript } from '../../../composition/runScript';
 import { lowerScriptScene } from '../../script-runtime/checkInterference';
 import {
@@ -127,8 +126,10 @@ export async function runValidateCli(input: ValidateCliInput): Promise<ValidateC
     interferencePairs,
   });
 
+  // Reuse the session the script already built: re-running the file would
+  // hold every imported mesh twice (the SO-100 arm exhausts the kernel heap).
   const physicalDiagnostics = input.physical
-    ? await reviewPhysicalAssemblies(absPath)
+    ? await reviewPhysicalAssemblies(Array.from(run.session.assemblies.values()) as Assembly[])
     : [];
 
   // Physics-loop probe — P1 surface convergence. Gated on
@@ -245,9 +246,7 @@ async function runMechanismProbe(
   }
 }
 
-async function reviewPhysicalAssemblies(absPath: string): Promise<MechanicalPlausibilityDiagnostic[]> {
-  const model = await buildModelFromFile({ file: absPath });
-  const assemblies = Array.from(model.session.assemblies.values()) as Assembly[];
+async function reviewPhysicalAssemblies(assemblies: readonly Assembly[]): Promise<MechanicalPlausibilityDiagnostic[]> {
   const diagnostics: MechanicalPlausibilityDiagnostic[] = [];
   for (const arm of assemblies) {
     const review = await reviewMechanicalPlausibility(arm);

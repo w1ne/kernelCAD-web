@@ -174,7 +174,7 @@ describe('SO-100 arm matches the upstream URDF', () => {
     let code = readFileSync(EXAMPLE_PATH, 'utf8');
     for (const [name, value] of Object.entries(POSE_DEG)) {
       const before = code;
-      code = code.replace(new RegExp(`param\\('${name}', 0,`), `param('${name}', ${value},`);
+      code = code.replace(new RegExp(`param\\('${name}', -?[\\d.]+,`), `param('${name}', ${value},`);
       expect(code, `default of ${name} rewritten`).not.toBe(before);
     }
     const file = resolve(EXAMPLE_PATH);
