@@ -1,6 +1,7 @@
 // Actual UI workflows; connect to existing Chrome only. Own tab and local project.
 // BASE_URL/CDP_URL/BACKEND_SHA/OUTPUT optional; no launched browser or cloud write.
 import { attach, domPage } from './cdp.mjs';
+import { captureLifecycle, abortable, restoreTemporaryProject, sourceRequestsMatch } from './lifecycle.mjs';
 import { mkdir, readFile, writeFile, rm } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { resolve } from 'node:path';
@@ -15,8 +16,7 @@ const code = await readFile(resolve(root, 'examples/functional-drafting', source
 const ownedId = `functional-demo-${kind}-${Date.now()}`;
 const out = resolve(output, kind); await rm(resolve(out,'frames'),{recursive:true,force:true}); await mkdir(resolve(out, 'frames'), { recursive:true });
 const receipt = { startedAt:new Date().toISOString(), environment:'LOCAL Studio source checkout; illustrative geometry; actual UI and unmodified HTTP responses', baseUrl, backendSha:process.env.BACKEND_SHA ?? null, sourceName, sourceSha256:createHash('sha256').update(code).digest('hex'), exportSourceSha256:createHash('sha256').update(code.trim()).digest('hex'), sourceNormalization:'Studio exportRequest trims leading/trailing whitespace', ownedId, stages:[], samples:[] };
-let browser, page, recording = false, recorder; const started = Date.now();
-const deadline = setTimeout(() => { recording=false; page?.close().finally(() => process.exit(124)); }, 240000); deadline.unref();
+let page, cleanupPage, connectionAttempt, recording = false, recorder; const started = Date.now();
 const sleep = ms => new Promise(r => setTimeout(r,ms));
 const button = name => page.getByRole('button', { name, exact:true });
 async function stage(name, caption) {
@@ -37,10 +37,29 @@ async function savePdf(name) {
   (receipt.pdfs??=[]).push({name,bytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex')});
 }
 async function gateDisabled() { if(!await button('Export reviewed PDF').isDisabled()) throw Error('Reviewed PDF gate should be disabled'); }
-try {
+const lifecycle=captureLifecycle({
+ listenSignals:true,
+ onFailure:error=>{recording=false;receipt.success=false;receipt.error??=error.message;process.exitCode??=error.exitCode??1;},
+ cleanup:async()=>{
+  recording=false;await connectionAttempt?.catch(()=>{});await recorder?.catch(()=>{});
+  if(cleanupPage) {
+    receipt.projectCleanup=await cleanupPage.evaluate(restoreTemporaryProject,ownedId).catch(()=>false);
+    receipt.transport=await cleanupPage.evaluate(()=>window.__functional?.requests??[]).catch(()=>[]);
+    receipt.transport=receipt.transport.map(row=>{if(row.sourceShaInput){row.sourceSha256=createHash('sha256').update(row.sourceShaInput).digest('hex');delete row.sourceShaInput;}return row;});
+    if(receipt.success && !sourceRequestsMatch(receipt.transport,receipt.exportSourceSha256)){receipt.success=false;receipt.error='Export transport source did not match captured source';process.exitCode=1;}
+    const svgs=await cleanupPage.evaluate(()=>window.__functional?.svgs??[]).catch(()=>[]);for(let i=0;i<svgs.length;i++)await writeFile(resolve(out,`preview-${i}.svg`),svgs[i]);
+  }
+ },
+ save:async()=>{receipt.finishedAt=new Date().toISOString();await writeFile(resolve(out,'receipt.json'),JSON.stringify(receipt,null,2)+'\n');},
+ close:async()=>{if(cleanupPage){await cleanupPage.close();receipt.ownedTabClosed=true;}},
+});
+await lifecycle.run(async()=>{
   // Preflight attachment must succeed; this helper has no launch fallback.
   const version = await (await fetch(cdpUrl+'/json/version',{signal:AbortSignal.timeout(3000)})).json(); receipt.browser=version.Browser;
-  const connection=await attach(cdpUrl); receipt.ownedTarget=connection.targetId; browser={close:async()=>{}}; page=domPage(connection); await connection.send('Page.enable'); page.setDefaultTimeout(10000); await page.setViewportSize({width:1440,height:1100});
+  connectionAttempt=attach(cdpUrl,{signal:lifecycle.signal}).then(connection=>{cleanupPage=domPage(connection);receipt.ownedTarget=connection.targetId;return connection;});
+  const connection=await connectionAttempt;
+  const guarded={...connection,send:(...args)=>{lifecycle.signal.throwIfAborted();return abortable(connection.send(...args),lifecycle.signal);},evaluate:expression=>{lifecycle.signal.throwIfAborted();return abortable(connection.evaluate(expression),lifecycle.signal);}};
+  page=domPage(guarded); await guarded.send('Page.enable'); page.setDefaultTimeout(10000); await page.setViewportSize({width:1440,height:1100});
   await page.addInitScript(({origin,id,code})=>{
     if(location.origin!==origin)return;
     const previous={last:localStorage.getItem('kernelcad_last_project_id'),legacy:localStorage.getItem('kernelcad_current_project'),index:localStorage.getItem('kernelcad_project_index')}; window.__functionalPrevious=previous;
@@ -49,13 +68,13 @@ try {
     localStorage.setItem('kernelcad_project_'+id,JSON.stringify({version:'1.1',name:'Functional drawing demo (temporary)',code,lastUpdated:now,viewState:{viewMode:'code',viewMode3D:'shadedWithEdges',sidePanelVisible:true,showSketches:true}}));
     localStorage.setItem('kernelcad_project_index',JSON.stringify([...index,{id,name:'Functional drawing demo (temporary)',lastUpdated:now}])); localStorage.setItem('kernelcad_last_project_id',id);
     window.__functional={requests:[],pdfs:[],svgs:[]}; const original=window.fetch.bind(window);
-    window.fetch=async(...args)=>{const response=await original(...args);const raw=typeof args[0]==='string'?args[0]:args[0]?.url??String(args[0]);if(raw.includes('/__kernelcad/export')){const u=new URL(raw,location.href);let body;try{body=JSON.parse(args[1]?.body??'{}');}catch{}const row={at:new Date().toISOString(),url:u.href,status:response.status,format:u.searchParams.get('format'),options:body?.options,sourceShaInput:body?.source??body?.code};window.__functional.requests.push(row);if(!response.ok)row.failureBody=await response.clone().text();if(u.searchParams.get('review')==='1'){const data=await response.clone().json();row.drawingReport=data.drawingReport;row.diagnostics=data.diagnostics;row.error=data.error;if(data.svg)window.__functional.svgs.push(data.svg);}}return response;};
+    window.fetch=async(...args)=>{const response=await original(...args);const raw=typeof args[0]==='string'?args[0]:args[0]?.url??String(args[0]);if(raw.includes('/__kernelcad/export')){const u=new URL(raw,location.href);let body;try{body=JSON.parse(args[1]?.body??'{}');}catch{}const row={at:new Date().toISOString(),url:u.href,status:response.status,method:(args[1]?.method??args[0]?.method??'GET').toUpperCase(),format:u.searchParams.get('format'),options:body?.options,sourceShaInput:body?.source??body?.code};window.__functional.requests.push(row);if(!response.ok)row.failureBody=await response.clone().text();if(u.searchParams.get('review')==='1'){const data=await response.clone().json();row.drawingReport=data.drawingReport;row.diagnostics=data.diagnostics;row.error=data.error;if(data.svg)window.__functional.svgs.push(data.svg);}}return response;};
     const create=URL.createObjectURL.bind(URL);URL.createObjectURL=b=>{if(b.type.startsWith('application/pdf'))window.__functional.pdfs.push(b);return create(b);};
   },{origin:new URL(baseUrl).origin,id:ownedId,code});
   await page.goto(baseUrl+'/studio',{waitUntil:'domcontentloaded',timeout:30000});
   await button('Export').waitFor({timeout:50000}); await button('Export').click(); await button('Drawing settings').click();
   await preview(true);
-  recorder=(async()=>{recording=true;let n=0;while(recording){const begin=Date.now();const image=await page.locator('[role=dialog]').screenshot({type:'jpeg',quality:88});await writeFile(resolve(out,'frames',String(n++).padStart(5,'0')+'.jpg'),image);receipt.samples.push((Date.now()-started)/1000);await sleep(Math.max(0,500-(Date.now()-begin)));}})();
+  recorder=lifecycle.observe((async()=>{recording=true;let n=0;while(recording){const begin=Date.now();const image=await page.locator('[role=dialog]').screenshot({type:'jpeg',quality:88});await writeFile(resolve(out,'frames',String(n++).padStart(5,'0')+'.jpg'),image);receipt.samples.push((Date.now()-started)/1000);await sleep(Math.max(0,500-(Date.now()-begin)));}})());
   // Suppress actual report-derived automatic rows for this narrowly declared
   // tutorial sheet. No numerical label edits and no mocked review response.
   const initialRows=await page.evaluate(()=>window.__functional.requests.filter(r=>r.drawingReport).at(-1).drawingReport.annotations);
@@ -103,17 +122,5 @@ try {
     await button('Mark reviewed').click(); await button('Export reviewed PDF').click(); await savePdf('reviewed-bearing.pdf');
     await stage('05-exported','Reviewed PDF exports; the note does not change the solid or certify a production fit.');
   }
-  recording=false;await recorder;receipt.success=true;
-} catch(error) {recording=false;receipt.success=false;receipt.error=error.message;console.error(error);await page?.screenshot({path:resolve(out,'failure.png')}).catch(()=>{});process.exitCode=1;}
-finally {
-  recording=false;await recorder?.catch(()=>{});
-  if(page) {
-    receipt.transport=await page.evaluate(()=>window.__functional?.requests??[]).catch(()=>[]);
-    receipt.transport=receipt.transport.map(row=>{if(row.sourceShaInput){row.sourceSha256=createHash('sha256').update(row.sourceShaInput).digest('hex');delete row.sourceShaInput;}return row;});
-    if(receipt.success && !receipt.transport.every(row=>row.sourceSha256===receipt.exportSourceSha256)){receipt.success=false;receipt.error='Export transport source did not match captured source';process.exitCode=1;}
-    const svgs=await page.evaluate(()=>window.__functional?.svgs??[]).catch(()=>[]);for(let i=0;i<svgs.length;i++)await writeFile(resolve(out,`preview-${i}.svg`),svgs[i]);
-    receipt.projectCleanup=await page.evaluate(id=>{const p=window.__functionalPrevious;if(!p)return false;let index=JSON.parse(localStorage.getItem('kernelcad_project_index')??'[]');index=index.filter(x=>x.id!==id);if(JSON.stringify(index)===JSON.stringify(JSON.parse(p.index??'[]'))){p.index===null?localStorage.removeItem('kernelcad_project_index'):localStorage.setItem('kernelcad_project_index',p.index);}else localStorage.setItem('kernelcad_project_index',JSON.stringify(index));for(const key of Object.keys(localStorage))if(key.includes(id))localStorage.removeItem(key);if(localStorage.getItem('kernelcad_last_project_id')===id){p.last===null?localStorage.removeItem('kernelcad_last_project_id'):localStorage.setItem('kernelcad_last_project_id',p.last);}if(p.legacy!==null&&!localStorage.getItem('kernelcad_current_project'))localStorage.setItem('kernelcad_current_project',p.legacy);return true;},ownedId).catch(()=>false);
-    await page.close();receipt.ownedTabClosed=true;
-  }
-  await browser?.close();clearTimeout(deadline);receipt.finishedAt=new Date().toISOString();await writeFile(resolve(out,'receipt.json'),JSON.stringify(receipt,null,2)+'\n');
-}
+  recording=false;await recorder;lifecycle.signal.throwIfAborted();receipt.success=true;
+}).catch(error=>console.error(error));

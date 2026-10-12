@@ -17,7 +17,7 @@ if (!['fixture-plate', 'bearing-seat'].includes(name)) throw Error('Expected a n
 const source = resolve(root, 'examples/functional-drafting', name+'.kcad.ts');
 const out = resolve(here, 'inspection', name); await mkdir(out, { recursive:true });
 let c: Awaited<ReturnType<typeof attach>>;
-const deadline = setTimeout(()=>{void c?.close().finally(()=>process.exit(124));},120000); deadline.unref();
+const deadline = setTimeout(()=>{void Promise.resolve(c?.close()).finally(()=>process.exit(124));},120000); deadline.unref();
 const artifacts: Array<Record<string, unknown>> = [];
 const views = ['iso','front','top','left'] as const;
 const size = {width:800,height:800};

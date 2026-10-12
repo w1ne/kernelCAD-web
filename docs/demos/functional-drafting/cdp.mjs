@@ -1,18 +1,30 @@
 // Attach only to existing Chrome. Every command has a 10-second idle timeout.
-export async function attach(cdpUrl) {
-  const version=await(await fetch(cdpUrl+'/json/version',{signal:AbortSignal.timeout(3000)})).json();
+export async function attach(cdpUrl,{signal}={}) {
+  signal?.throwIfAborted();
+  const version=await(await fetch(cdpUrl+'/json/version',{signal:signal?AbortSignal.any([signal,AbortSignal.timeout(3000)]):AbortSignal.timeout(3000)})).json();
   const ws=new WebSocket(version.webSocketDebuggerUrl);
-  await new Promise((r,j)=>{const timer=setTimeout(()=>j(Error('CDP attach timeout')),10000);ws.onopen=()=>{clearTimeout(timer);r();};ws.onerror=j;});
+  let ownedTarget, call;
+  try {
+  await new Promise((r,j)=>{const timer=setTimeout(()=>j(Error('CDP attach timeout')),10000);ws.onopen=()=>{clearTimeout(timer);r();};ws.onerror=error=>{clearTimeout(timer);j(error);};});
   let seq=0;const pending=new Map();
   ws.onmessage=e=>{const m=JSON.parse(e.data);const p=pending.get(m.id);if(p){clearTimeout(p.timer);pending.delete(m.id);m.error?p.reject(Error(JSON.stringify(m.error))):p.resolve(m.result);}};
-  const call=(method,params={},sessionId)=>new Promise((resolve,reject)=>{const id=++seq;const timer=setTimeout(()=>{pending.delete(id);reject(Error('CDP idle timeout '+method));},10000);pending.set(id,{resolve,reject,timer});ws.send(JSON.stringify({id,method,params,...sessionId?{sessionId}:{}}));});
+  call=(method,params={},sessionId)=>new Promise((resolve,reject)=>{const id=++seq;const timer=setTimeout(()=>{pending.delete(id);reject(Error('CDP idle timeout '+method));},10000);pending.set(id,{resolve,reject,timer});try{ws.send(JSON.stringify({id,method,params,...sessionId?{sessionId}:{}}));}catch(error){clearTimeout(timer);pending.delete(id);reject(error);}});
+  signal?.throwIfAborted();
   const {targetInfos}=await call('Target.getTargets');
-  const {targetId}=await call('Target.createTarget',{url:'about:blank',browserContextId:targetInfos.find(t=>t.type==='page')?.browserContextId});
+  signal?.throwIfAborted();
+  const target=await call('Target.createTarget',{url:'about:blank',browserContextId:targetInfos.find(t=>t.type==='page')?.browserContextId});
+  const targetId=target.targetId;ownedTarget=targetId;
+  signal?.throwIfAborted();
   const {sessionId}=await call('Target.attachToTarget',{targetId,flatten:true});
+  signal?.throwIfAborted();
   const send=(method,params)=>call(method,params,sessionId);
   const evaluate=async expression=>{const r=await send('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true});if(r.exceptionDetails)throw Error(JSON.stringify(r.exceptionDetails));return r.result.value;};
   const close=async()=>{await call('Target.closeTarget',{targetId}).catch(()=>{});ws.close();};
   return {send,evaluate,close,targetId,browser:version.Browser};
+  } catch(error) {
+    if(ownedTarget)await call('Target.closeTarget',{targetId:ownedTarget}).catch(()=>{});
+    ws.close();throw error;
+  }
 }
 // Small DOM driver over the same owned tab; actions target actual native controls.
 export function domPage(c) {

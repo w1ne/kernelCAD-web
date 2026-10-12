@@ -7,8 +7,8 @@
   "files": [
     {
       "path": "README.md",
-      "bytes": 5299,
-      "sha256": "07d096c5dc9e249b9263d286ada8d827c4603b3b8f5cbb18a229e8d2c44bcfe0"
+      "bytes": 6066,
+      "sha256": "1fc18c5600d9a6c0100e1d7cd34ed3f6d93e01b1973e389d9a6f496bec6a2897"
     },
     {
       "path": "article-readback/drawing-decisions-desktop-video.png",
@@ -147,13 +147,18 @@
     },
     {
       "path": "capture.mjs",
-      "bytes": 13423,
-      "sha256": "a4d011921b0f726b1fa7c2e359ee88bf3e05d5401942cff935dffa490f7a505f"
+      "bytes": 13213,
+      "sha256": "024578982b3ccc156c2c3c2c1877cf3c7c34df3ba7f96fccae4f3d24849de3f7"
     },
     {
       "path": "cdp.mjs",
-      "bytes": 5023,
-      "sha256": "a4752a7307ffcf7bc1411b47a36afb4ea20e4053c53f4afb5e2693cc799386f3"
+      "bytes": 5562,
+      "sha256": "e9836ef3a1b1737acbf6ca38422d480260eda6d48fd96c80ec6dce6d55015fec"
+    },
+    {
+      "path": "cleanup-proof.json",
+      "bytes": 1447,
+      "sha256": "46a399e0e5c2bab776882ada0bda17c0b0c186e0afadb9efc07973db94c46ab8"
     },
     {
       "path": "diagnostics/plate-first-attempt.json",
@@ -172,8 +177,8 @@
     },
     {
       "path": "inspect.ts",
-      "bytes": 4621,
-      "sha256": "b4c2d6ce5e62023942c79676fe76d05c48ab1564389569e1ffd6c27163f501da"
+      "bytes": 4638,
+      "sha256": "2d60e01f6900ce6e64fc58592162e68c7c72916b98618de98125219d9589350f"
     },
     {
       "path": "inspection/bearing-seat/front.depth.png",
@@ -336,6 +341,16 @@
       "sha256": "09fa5444ad1fcc9a39b47359e46fb71977941628bc2af1f5f1b609c1a261b7d4"
     },
     {
+      "path": "lifecycle.mjs",
+      "bytes": 3138,
+      "sha256": "a13ba1d94b58aed6645da21f033e481ea51929281dc1b2b04d2fe7c3625e6ed1"
+    },
+    {
+      "path": "lifecycle.test.mjs",
+      "bytes": 3902,
+      "sha256": "50d8ec105576e5ee7fc689f3387f94517083383754cbdfa94a357fb73f1c2a31"
+    },
+    {
       "path": "packetize.mjs",
       "bytes": 2257,
       "sha256": "8a69bfbb9350e91e391ed0493d0201ac31b3db06e120a9c26844f415d6cefff6"
@@ -449,6 +464,11 @@
       "path": "readback.mjs",
       "bytes": 4015,
       "sha256": "3c3a2bb037750f941b82d94e19d5252d693f431fa3ba3806ee03620e0c38f897"
+    },
+    {
+      "path": "timeout-proof.mjs",
+      "bytes": 3598,
+      "sha256": "5295cd0ab6e60e2e5987f592a0735e83dd564d7c4ca2f8c655bda6e24e597c0e"
     }
   ]
 }
