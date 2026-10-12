@@ -259,6 +259,63 @@ interface LoweredSceneBase {
  * (the criteria are vacuously satisfied; this preserves backward compat
  * for non-assembly scripts).
  */
+/** Rest-pose criteria (1, 7, 9). They run whatever the sweep budget:
+ *  one lowered rest scene, shared through `loweredBase` with the sweep. */
+async function checkRestCriteria(
+  arm: Assembly,
+  solved: SolvedSample[],
+  loweredBase: LoweredSceneBase,
+): Promise<CompilerDiagnostic[]> {
+  const out: CompilerDiagnostic[] = [];
+  // One lowered rest scene is shared by criterion 1 (local bbox corners),
+  // criterion 7 (joint-mesh continuity), and — when the sweep runs — the
+  // per-pose detection (re-posed via `solveMates` transforms) plus
+  // criterion 8. `Shape.lower()` re-runs the ENTIRE record chain, so the
+  // old per-fastened-part bbox lowering was O(parts) full-assembly lowers.
+  // The rest lower always runs: criterion 7 needs it even when the pose
+  // sweep is over budget. That is one lower, not the Cartesian sweep.
+  const restSample = solved.find((s) => s.sample.name === 'rest');
+  if (restSample !== undefined) {
+    await lowerSceneForSample(arm, restSample, loweredBase);
+  }
+  if (loweredBase.scene === undefined && arm.__mates().length > 0) {
+    // A failed lower used to skip criterion 7 and leave the verdict
+    // 'unverified'. That is a pass for a disconnected body. If the
+    // bodies cannot be measured, the chain is not certified connected.
+    out.push(makeFailure(
+      'mechanism.joint-mesh-gap',
+      'Rest-pose body continuity could not be measured because the assembly did not lower. A link that cannot be shown to meet its joint is not an unverified mechanism.',
+    ));
+  }
+
+  // Criterion 1 (mechanism.disconnect) — fastened-mate invariant. Reads the
+  // part local bboxes from the shared rest scene when available; falls back
+  // to per-part `originalShape.lower()` only when that scene is missing.
+  out.push(...(await checkFastenedInvariant(arm, solved, loweredBase.scene)));
+
+  // Criterion 7 (mechanism.joint-mesh-gap) — at REST pose, every joint
+  // pivot must lie inside both its parent and child body meshes, or the
+  // two rigid groups must bear on each other. This is the "connected to
+  // a body" gate. It does not honor `solvedModel({ ignore })` and it runs
+  // even when the pose sweep is skipped: a floating claw is a defect, not
+  // an unverified sweep. P8 slice; closes the visual-mesh-gap hole MJCF
+  // cannot see.
+  out.push(...(await checkJointMeshContinuityCriterion(arm, solved, loweredBase)));
+
+  // Criterion 9 (rest-pose contact) — the drawing as it paints must be
+  // physically consistent: no two solids share volume, and the two parts
+  // of every mate touch. Mesh-based and independent of the sweep budget,
+  // so a heavy assembly cannot pass as 'unverified' with links passing
+  // through each other. See `./restPoseContact`.
+  // Only mechanisms: a mate-less multi-part scene is independent bodies
+  // (a display layout, a car body with its glass), not a mechanism.
+  if (loweredBase.scene !== undefined && arm.__mates().length > 0) {
+    out.push(...checkRestPoseContact(arm, loweredBase.scene));
+  }
+
+  return out;
+}
+
 export async function checkMechanismTruth(
   arm: Assembly,
   opts: MechanismTruthOptions = {},
@@ -314,52 +371,8 @@ export async function checkMechanismTruth(
   const sweepWork = estimateSweepWork(arm, solved.length);
   const sweepSkipped = sweepWork > sweepBudget;
 
-  // One lowered rest scene is shared by criterion 1 (local bbox corners),
-  // criterion 7 (joint-mesh continuity), and — when the sweep runs — the
-  // per-pose detection (re-posed via `solveMates` transforms) plus
-  // criterion 8. `Shape.lower()` re-runs the ENTIRE record chain, so the
-  // old per-fastened-part bbox lowering was O(parts) full-assembly lowers.
-  // The rest lower always runs: criterion 7 needs it even when the pose
-  // sweep is over budget. That is one lower, not the Cartesian sweep.
   const loweredBase: LoweredSceneBase = {};
-  const restSample = solved.find((s) => s.sample.name === 'rest');
-  if (restSample !== undefined) {
-    await lowerSceneForSample(arm, restSample, loweredBase);
-  }
-  if (loweredBase.scene === undefined && arm.__mates().length > 0) {
-    // A failed lower used to skip criterion 7 and leave the verdict
-    // 'unverified'. That is a pass for a disconnected body. If the
-    // bodies cannot be measured, the chain is not certified connected.
-    failures.push(makeFailure(
-      'mechanism.joint-mesh-gap',
-      'Rest-pose body continuity could not be measured because the assembly did not lower. A link that cannot be shown to meet its joint is not an unverified mechanism.',
-    ));
-  }
-
-  // Criterion 1 (mechanism.disconnect) — fastened-mate invariant. Reads the
-  // part local bboxes from the shared rest scene when available; falls back
-  // to per-part `originalShape.lower()` only when that scene is missing.
-  failures.push(...(await checkFastenedInvariant(arm, solved, loweredBase.scene)));
-
-  // Criterion 7 (mechanism.joint-mesh-gap) — at REST pose, every joint
-  // pivot must lie inside both its parent and child body meshes, or the
-  // two rigid groups must bear on each other. This is the "connected to
-  // a body" gate. It does not honor `solvedModel({ ignore })` and it runs
-  // even when the pose sweep is skipped: a floating claw is a defect, not
-  // an unverified sweep. P8 slice; closes the visual-mesh-gap hole MJCF
-  // cannot see.
-  failures.push(...(await checkJointMeshContinuityCriterion(arm, solved, loweredBase)));
-
-  // Criterion 9 (rest-pose contact) — the drawing as it paints must be
-  // physically consistent: no two solids share volume, and the two parts
-  // of every mate touch. Mesh-based and independent of the sweep budget,
-  // so a heavy assembly cannot pass as 'unverified' with links passing
-  // through each other. See `./restPoseContact`.
-  // Only mechanisms: a mate-less multi-part scene is independent bodies
-  // (a display layout, a car body with its glass), not a mechanism.
-  if (loweredBase.scene !== undefined && arm.__mates().length > 0) {
-    failures.push(...checkRestPoseContact(arm, loweredBase.scene));
-  }
+  failures.push(...(await checkRestCriteria(arm, solved, loweredBase)));
 
   if (sweepSkipped) {
     // LOUD skip (T3): the over-budget skip used to emit ONLY a console.warn

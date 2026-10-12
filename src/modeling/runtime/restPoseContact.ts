@@ -138,6 +138,77 @@ export function worldMesh(shape: OcctBackend, worldTransform: Transform): WorldM
  * which grid points along it have odd crossing parity. `votes[idx]` is
  * incremented for each inside verdict.
  */
+type RayGrid = {
+  readonly u: 0 | 1 | 2;
+  readonly v: 0 | 1 | 2;
+  readonly k: 0 | 1 | 2;
+  readonly nu: number;
+  readonly nv: number;
+  readonly origin: [number, number, number];
+  readonly cell: number;
+  // A tiny irrational nudge keeps rays off shared edges and vertices.
+  readonly ju: number;
+  readonly jv: number;
+};
+
+function cellRange(lo: number, hi: number, origin: number, jitter: number, cell: number, n: number): [number, number] {
+  return [
+    Math.max(0, Math.ceil((lo - origin - jitter) / cell - 0.5)),
+    Math.min(n - 1, Math.floor((hi - origin - jitter) / cell - 0.5)),
+  ];
+}
+
+// Records where the axis-k rays through the grid columns cross one triangle.
+function rasterTriangle(g: RayGrid, P: Float64Array, a: number, b: number, c: number, hits: number[][]): void {
+  const { u, v, k } = g;
+  const au = P[a + u], av = P[a + v], ak = P[a + k];
+  const bu = P[b + u], bv = P[b + v], bk = P[b + k];
+  const cu = P[c + u], cv = P[c + v], ck = P[c + k];
+  const [i0, i1] = cellRange(Math.min(au, bu, cu), Math.max(au, bu, cu), g.origin[u], g.ju, g.cell, g.nu);
+  const [j0, j1] = cellRange(Math.min(av, bv, cv), Math.max(av, bv, cv), g.origin[v], g.jv, g.cell, g.nv);
+  if (i0 > i1 || j0 > j1) return;
+  const det = (bu - au) * (cv - av) - (cu - au) * (bv - av);
+  if (Math.abs(det) < 1e-12) return;
+  for (let i = i0; i <= i1; i++) {
+    const pu = g.origin[u] + (i + 0.5) * g.cell + g.ju;
+    for (let j = j0; j <= j1; j++) {
+      const pv = g.origin[v] + (j + 0.5) * g.cell + g.jv;
+      const w1 = ((bu - pu) * (cv - pv) - (cu - pu) * (bv - pv)) / det;
+      const w2 = ((cu - pu) * (av - pv) - (au - pu) * (cv - pv)) / det;
+      const w3 = 1 - w1 - w2;
+      if (w1 < 0 || w2 < 0 || w3 < 0) continue;
+      (hits[i * g.nv + j] ??= []).push(w1 * ak + w2 * bk + w3 * ck);
+    }
+  }
+}
+
+// Walks one sorted ray: every cell centre after an odd number of crossings
+// is inside; it gets a vote and, when asked, its inside-interval bounds.
+function voteColumn(
+  list: number[],
+  base: number,
+  strideK: number,
+  nk: number,
+  originK: number,
+  cell: number,
+  votes: Uint8Array,
+  bounds?: { lo: Float32Array; hi: Float32Array },
+): void {
+  list.sort((x, y) => x - y);
+  let h = 0;
+  for (let s = 0; s < nk; s++) {
+    const pk = originK + (s + 0.5) * cell;
+    while (h < list.length && list[h] < pk) h++;
+    if ((h & 1) === 0) continue;
+    const idx = base + s * strideK;
+    votes[idx]++;
+    if (bounds !== undefined) {
+      bounds.lo[idx] = list[h - 1];
+      bounds.hi[idx] = h < list.length ? list[h] : Infinity;
+    }
+  }
+}
+
 function castAxis(
   mesh: WorldMesh,
   k: 0 | 1 | 2,
@@ -149,68 +220,82 @@ function castAxis(
 ): void {
   const u = ((k + 1) % 3) as 0 | 1 | 2;
   const v = ((k + 2) % 3) as 0 | 1 | 2;
-  const nu = dims[u];
-  const nv = dims[v];
-  const hits: number[][] = new Array(nu * nv);
-  // A tiny irrational nudge keeps rays off shared edges and vertices.
-  const ju = cell * 0.00137;
-  const jv = cell * 0.00211;
-  const P = mesh.positions;
+  const g: RayGrid = { u, v, k, nu: dims[u], nv: dims[v], origin, cell, ju: cell * 0.00137, jv: cell * 0.00211 };
+  const hits: number[][] = new Array(g.nu * g.nv);
   const I = mesh.indices;
   for (let t = 0; t < I.length; t += 3) {
-    const a = 3 * I[t];
-    const b = 3 * I[t + 1];
-    const c = 3 * I[t + 2];
-    const au = P[a + u], av = P[a + v], ak = P[a + k];
-    const bu = P[b + u], bv = P[b + v], bk = P[b + k];
-    const cu = P[c + u], cv = P[c + v], ck = P[c + k];
-    const lo = Math.min(au, bu, cu), hi = Math.max(au, bu, cu);
-    const lov = Math.min(av, bv, cv), hiv = Math.max(av, bv, cv);
-    const i0 = Math.max(0, Math.ceil((lo - origin[u] - ju) / cell - 0.5));
-    const i1 = Math.min(nu - 1, Math.floor((hi - origin[u] - ju) / cell - 0.5));
-    const j0 = Math.max(0, Math.ceil((lov - origin[v] - jv) / cell - 0.5));
-    const j1 = Math.min(nv - 1, Math.floor((hiv - origin[v] - jv) / cell - 0.5));
-    if (i0 > i1 || j0 > j1) continue;
-    const det = (bu - au) * (cv - av) - (cu - au) * (bv - av);
-    if (Math.abs(det) < 1e-12) continue;
-    for (let i = i0; i <= i1; i++) {
-      const pu = origin[u] + (i + 0.5) * cell + ju;
-      for (let j = j0; j <= j1; j++) {
-        const pv = origin[v] + (j + 0.5) * cell + jv;
-        const w1 = ((bu - pu) * (cv - pv) - (cu - pu) * (bv - pv)) / det;
-        const w2 = ((cu - pu) * (av - pv) - (au - pu) * (cv - pv)) / det;
-        const w3 = 1 - w1 - w2;
-        if (w1 < 0 || w2 < 0 || w3 < 0) continue;
-        const col = i * nv + j;
-        (hits[col] ??= []).push(w1 * ak + w2 * bk + w3 * ck);
-      }
-    }
+    rasterTriangle(g, mesh.positions, 3 * I[t], 3 * I[t + 1], 3 * I[t + 2], hits);
   }
-  const nk = dims[k];
   const stride: [number, number, number] = [dims[1] * dims[2], dims[2], 1];
-  for (let i = 0; i < nu; i++) {
-    for (let j = 0; j < nv; j++) {
-      const list = hits[i * nv + j];
+  for (let i = 0; i < g.nu; i++) {
+    for (let j = 0; j < g.nv; j++) {
+      const list = hits[i * g.nv + j];
       if (list === undefined) continue;
-      list.sort((x, y) => x - y);
-      let h = 0;
-      for (let s = 0; s < nk; s++) {
-        const pk = origin[k] + (s + 0.5) * cell;
-        while (h < list.length && list[h] < pk) h++;
-        if ((h & 1) === 1) {
-          const idx = i * stride[u] + j * stride[v] + s * stride[k];
-          votes[idx]++;
-          if (bounds !== undefined) {
-            bounds.lo[idx] = list[h - 1];
-            bounds.hi[idx] = h < list.length ? list[h] : Infinity;
-          }
-        }
-      }
+      voteColumn(list, i * stride[u] + j * stride[v], stride[k], dims[k], origin[k], cell, votes, bounds);
     }
   }
 }
 
 /** Shared volume of two closed (or nearly closed) world meshes, in mm³. */
+// Local thickness of the shared region at each grid point: along each
+// axis the exact overlap of the two inside-intervals through it (from the
+// ray hits, not the voxels), minimum over the three axes. A thin contact
+// sliver (thread flank, tooth flank, coincident tessellated faces) is thin
+// along the axis closest to its normal however long it is.
+function sharedThickness(
+  a: WorldMesh,
+  b: WorldMesh,
+  lo: [number, number, number],
+  cell: number,
+  dims: [number, number, number],
+  votesA: Uint8Array,
+  votesB: Uint8Array,
+): Float32Array {
+  const total = votesA.length;
+  const thick = new Float32Array(total).fill(Infinity);
+  const bA = { lo: new Float32Array(total), hi: new Float32Array(total) };
+  const bB = { lo: new Float32Array(total), hi: new Float32Array(total) };
+  for (const k of [0, 1, 2] as const) {
+    bA.lo.fill(NaN); bB.lo.fill(NaN);
+    castAxis(a, k, lo, cell, dims, votesA, bA);
+    castAxis(b, k, lo, cell, dims, votesB, bB);
+    for (let idx = 0; idx < total; idx++) {
+      if (Number.isNaN(bA.lo[idx]) || Number.isNaN(bB.lo[idx])) continue;
+      const t = Math.min(bA.hi[idx], bB.hi[idx]) - Math.max(bA.lo[idx], bB.lo[idx]);
+      if (t < thick[idx]) thick[idx] = t;
+    }
+  }
+  return thick;
+}
+
+// Counts grid points inside both meshes (2-of-3 votes each), their deepest
+// thickness and their centroid.
+function tallyShared(
+  votesA: Uint8Array,
+  votesB: Uint8Array,
+  thick: Float32Array,
+  dims: [number, number, number],
+  lo: [number, number, number],
+  cell: number,
+): { count: number; depth: number; at: [number, number, number] } {
+  let count = 0;
+  let depth = 0;
+  const sum = [0, 0, 0];
+  const plane = dims[1] * dims[2];
+  for (let idx = 0; idx < votesA.length; idx++) {
+    if (votesA[idx] < 2 || votesB[idx] < 2) continue;
+    count++;
+    if (Number.isFinite(thick[idx]) && thick[idx] > depth) depth = thick[idx];
+    sum[0] += Math.floor(idx / plane);
+    sum[1] += Math.floor(idx / dims[2]) % dims[1];
+    sum[2] += idx % dims[2];
+  }
+  const at: [number, number, number] = count === 0
+    ? lo
+    : [0, 1, 2].map((k) => lo[k] + (sum[k] / count + 0.5) * cell) as [number, number, number];
+  return { count, depth, at };
+}
+
 export function meshOverlapVolume(
   a: WorldMesh,
   b: WorldMesh,
@@ -227,42 +312,8 @@ export function meshOverlapVolume(
   const total = dims[0] * dims[1] * dims[2];
   const votesA = new Uint8Array(total);
   const votesB = new Uint8Array(total);
-  // Local thickness of the shared region at each grid point: along each
-  // axis the exact overlap of the two inside-intervals through it (from
-  // the ray hits, not the voxels), minimum over the three axes. A thin
-  // contact sliver (thread flank, tooth flank, coincident tessellated
-  // faces) is thin along the axis closest to its normal however long it is.
-  const thick = new Float32Array(total).fill(Infinity);
-  const bA = { lo: new Float32Array(total), hi: new Float32Array(total) };
-  const bB = { lo: new Float32Array(total), hi: new Float32Array(total) };
-  for (const k of [0, 1, 2] as const) {
-    bA.lo.fill(NaN); bB.lo.fill(NaN);
-    castAxis(a, k, lo, cell, dims, votesA, bA);
-    castAxis(b, k, lo, cell, dims, votesB, bB);
-    for (let idx = 0; idx < total; idx++) {
-      if (Number.isNaN(bA.lo[idx]) || Number.isNaN(bB.lo[idx])) continue;
-      const t = Math.min(bA.hi[idx], bB.hi[idx]) - Math.max(bA.lo[idx], bB.lo[idx]);
-      if (t < thick[idx]) thick[idx] = t;
-    }
-  }
-  let count = 0;
-  let depth = 0;
-  const sum = [0, 0, 0];
-  for (let x = 0; x < dims[0]; x++) {
-    for (let y = 0; y < dims[1]; y++) {
-      for (let z = 0; z < dims[2]; z++) {
-        const idx = x * dims[1] * dims[2] + y * dims[2] + z;
-        if (votesA[idx] >= 2 && votesB[idx] >= 2) {
-          count++;
-          if (Number.isFinite(thick[idx]) && thick[idx] > depth) depth = thick[idx];
-          sum[0] += x; sum[1] += y; sum[2] += z;
-        }
-      }
-    }
-  }
-  const at: [number, number, number] = count === 0
-    ? lo
-    : [0, 1, 2].map((k) => lo[k] + (sum[k] / count + 0.5) * cell) as [number, number, number];
+  const thick = sharedThickness(a, b, lo, cell, dims, votesA, votesB);
+  const { count, depth, at } = tallyShared(votesA, votesB, thick, dims, lo, cell);
   return { volumeMm3: count * cell * cell * cell, thicknessMm: depth, at, cellMm: cell };
 }
 

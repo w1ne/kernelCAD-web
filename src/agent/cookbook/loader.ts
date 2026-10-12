@@ -41,7 +41,7 @@ export function loadSnippets(rootDir = 'cookbook/snippets', tagsPath = 'cookbook
   return snippets;
 }
 
-function parseSnippet(raw: string, filepath: string, allowedTags: Set<string>): Snippet {
+function parseFrontmatter(raw: string, filepath: string): { fm: Partial<Snippet>; body: string } {
   const m = FRONTMATTER_RE.exec(raw);
   if (!m) {
     throw new Error(`${filepath}: missing or malformed frontmatter (expected leading '---' fences)`);
@@ -50,7 +50,10 @@ function parseSnippet(raw: string, filepath: string, allowedTags: Set<string>): 
   if (!fm || typeof fm !== 'object') {
     throw new Error(`${filepath}: frontmatter did not parse as a YAML object`);
   }
+  return { fm, body: m[2] };
+}
 
+function validateFrontmatter(fm: Partial<Snippet>, filepath: string, allowedTags: Set<string>): void {
   const required = ['id', 'title', 'tags', 'keywords', 'when_to_use'] as const;
   for (const field of required) {
     if (fm[field] === undefined) {
@@ -75,9 +78,10 @@ function parseSnippet(raw: string, filepath: string, allowedTags: Set<string>): 
   if (!Array.isArray(fm.keywords) || fm.keywords.length < 1) {
     throw new Error(`${filepath}: 'keywords' must be a non-empty array`);
   }
+}
 
-  // Body validation — exactly one fenced typescript block in the post-frontmatter text.
-  const body = m[2];
+// Body validation — exactly one fenced typescript block in the post-frontmatter text.
+function extractCodeFence(body: string, filepath: string): string {
   const matches = [...body.matchAll(FENCE_RE)];
   if (matches.length === 0) {
     throw new Error(`${filepath}: body has no \`\`\`typescript code fence`);
@@ -85,24 +89,33 @@ function parseSnippet(raw: string, filepath: string, allowedTags: Set<string>): 
   if (matches.length > 1) {
     throw new Error(`${filepath}: exactly one code fence required, found ${matches.length}`);
   }
+  return matches[0][1].trim();
+}
 
-  const example = typeof fm.example === 'string' ? fm.example.trim() : undefined;
-  if (example !== undefined) {
-    if (example.length === 0 || example.startsWith('/') || example.includes('..') || !example.endsWith('.kcad.ts')) {
-      throw new Error(`${filepath}: example must be a repo-relative .kcad.ts path`);
-    }
-    if (!existsSync(example)) {
-      throw new Error(`${filepath}: example file not found: ${example}`);
-    }
+function validateExample(raw: unknown, filepath: string): string | undefined {
+  const example = typeof raw === 'string' ? raw.trim() : undefined;
+  if (example === undefined) return undefined;
+  if (example.length === 0 || example.startsWith('/') || example.includes('..') || !example.endsWith('.kcad.ts')) {
+    throw new Error(`${filepath}: example must be a repo-relative .kcad.ts path`);
   }
+  if (!existsSync(example)) {
+    throw new Error(`${filepath}: example file not found: ${example}`);
+  }
+  return example;
+}
 
+function parseSnippet(raw: string, filepath: string, allowedTags: Set<string>): Snippet {
+  const { fm, body } = parseFrontmatter(raw, filepath);
+  validateFrontmatter(fm, filepath, allowedTags);
+  const code = extractCodeFence(body, filepath);
+  const example = validateExample(fm.example, filepath);
   return {
     id: fm.id as string,
     title: fm.title as string,
     tags: fm.tags as string[],
     keywords: fm.keywords as string[],
     when_to_use: fm.when_to_use as string,
-    body: matches[0][1].trim(),
+    body: code,
     filepath,
     ...(example !== undefined ? { example } : {}),
   };

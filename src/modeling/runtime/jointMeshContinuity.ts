@@ -358,46 +358,21 @@ function measureMateBearingGap(
   childPartName: string,
   axis: BearingAxis | undefined,
 ): { bearingGapMm?: number; bearingOffAxisRadialMm?: number } | undefined {
-  const pair = [
-    [parentPartName, childPartName],
-  ] as const;
-
-  let best: number | undefined;
-  let offAxisRadial: number | undefined;
-  for (const [aName, bName] of pair) {
-    const a = sceneByPartName.get(aName);
-    if (a === undefined) continue;
-    const b = sceneByPartName.get(bName);
-    if (b === undefined) continue;
-    {
-      const contact = measureBodyToBodyContact(
-        a.shape as OcctBackend,
-        a.worldTransform,
-        b.shape as OcctBackend,
-        b.worldTransform,
-      );
-      if (contact === undefined) continue;
-      if (axis !== undefined) {
-        const radial = Math.max(
-          radialDistanceMm(contact.pointA, axis),
-          radialDistanceMm(contact.pointB, axis),
-        );
-        if (radial > JOINT_BEARING_AXIS_RADIUS_MM) {
-          if (offAxisRadial === undefined || radial < offAxisRadial) offAxisRadial = radial;
-          continue;
-        }
-      }
-      if (best === undefined || contact.distanceMm < best) best = contact.distanceMm;
-      if (best <= JOINT_MESH_GAP_TOLERANCE_MM) {
-        return { bearingGapMm: best };
-      }
-    }
+  const a = sceneByPartName.get(parentPartName);
+  const b = sceneByPartName.get(childPartName);
+  if (a === undefined || b === undefined) return undefined;
+  const contact = measureBodyToBodyContact(
+    a.shape as OcctBackend,
+    a.worldTransform,
+    b.shape as OcctBackend,
+    b.worldTransform,
+  );
+  if (contact === undefined) return undefined;
+  if (axis !== undefined) {
+    const radial = Math.max(radialDistanceMm(contact.pointA, axis), radialDistanceMm(contact.pointB, axis));
+    if (radial > JOINT_BEARING_AXIS_RADIUS_MM) return { bearingOffAxisRadialMm: radial };
   }
-  if (best === undefined && offAxisRadial === undefined) return undefined;
-  return {
-    ...(best !== undefined ? { bearingGapMm: best } : {}),
-    ...(offAxisRadial !== undefined ? { bearingOffAxisRadialMm: offAxisRadial } : {}),
-  };
+  return { bearingGapMm: contact.distanceMm };
 }
 
 function radialDistanceMm(
