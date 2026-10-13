@@ -155,7 +155,9 @@ kernelcad export stl bracket.kcad.ts -o bracket.stl
 ```
 
 That's it. For agents: `kernelcad mcp` runs an MCP server with dynamic model
-introspection tools. See `SKILL.md` (bundled with the install) for the full API
+introspection tools. Object tool responses include `structuredContent` alongside
+the serialized JSON text so MCP clients can validate advertised output schemas.
+See `SKILL.md` (bundled with the install) for the full API
 surface and authoring guide.
 
 ## Use with Claude Desktop
