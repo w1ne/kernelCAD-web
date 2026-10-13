@@ -46,6 +46,8 @@ export interface ScriptReviewSummary {
     /** Set by the dev review endpoint's `live=1` short-circuit: interference
      *  channel only, no validator pass. Never a verdict. */
     live?: boolean;
+    /** MCP replaced the entire source/model; old verdicts no longer apply. */
+    sourceReplaced?: true;
     suggestedRepairPrompt?: string;
     /**
      * Raw pairwise interference results at the script's current/default pose,
@@ -212,7 +214,7 @@ export function overlayLiveReview(
     previous: ScriptReviewSummary | null,
     live: ScriptReviewSummary,
 ): ScriptReviewSummary {
-    if (!previous) return live;
+    if (!previous || live.sourceReplaced) return live;
     const liveDiagnostics = live.diagnostics ?? [];
     if (live.livePhysicalUseCaseReview === true) {
         return mergePhysicalUseCaseReview(previous, live, liveDiagnostics);

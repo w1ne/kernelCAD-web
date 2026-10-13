@@ -77,6 +77,18 @@ Use before freehand authoring on production / industry prompts. Prefer `design_l
 
 Mate authoring reminder: **`arm.mate(name, a, b, type)`** (4-arg). Retired 3-arg `{ kind }` form is wrong — see `kernelcad-parts` / `kernelcad-assemblies`.
 
+### Local live Studio link
+
+A full local `evaluate_script` returns `viewerUrl` from the first built model.
+Open it once and reuse it: full evaluations and source-edit MCP results update
+the same source, feature history and geometry. This is a loopback link owned by
+the MCP process, not a published project or share URL. Dry runs do not update it;
+genuine build failures retain the last built view. Built models with DFM gate
+failures remain viewable. If provisioning fails, `viewerError` is separate from
+CAD diagnostics; source-checkout users should run `npm run build:mcp-viewer`.
+The viewer's build diagnostics do not replace `review_cad`. Hosted/`--cloud`
+results retain the gateway's own URL behavior.
+
 ### Source edit operations
 
 All edit tools return the modified source plus diagnostics. Re-run `kernelcad evaluate` on the returned source before committing.

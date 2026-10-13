@@ -13,6 +13,7 @@ import { tubesOutput } from '../../../composition/scriptEvaluation';
 import type { PortReportEntry } from '../../../modeling/runtime/tube/portReport';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
+import { updateMcpViewer } from '../liveViewer';
 import { clearActiveMcpSession, getActiveMcpSession, setActiveMcpSession } from '../activeSession';
 import { summarizeScene, unavailableSceneSummary, type SceneSummary } from '../../script-runtime/sceneSummary';
 import { Scene } from '../../../modeling/validation/scene';
@@ -45,6 +46,10 @@ export interface EvaluateScriptInput {
 }
 
 export interface EvaluateScriptOutput {
+  /** Loopback Studio link, stable across full builds in this MCP process. */
+  viewerUrl?: string;
+  /** Viewer provisioning failed; the CAD build result is still valid. */
+  viewerError?: string;
   step?: StepEvidence;
   sceneSummary: SceneSummary;
   ok: boolean;
@@ -114,6 +119,10 @@ export const MATES_REVIEW_HINT =
   'joint-support intents, pose-envelope overlap at declared mate limits, or gravity drop / static hold. ' +
   'Run review_cad for pose-envelope + gravity checks before calling the mechanism done.';
 
+async function publishBuiltViewer(model: BuildOutcome['model'], buildSucceeded: boolean) {
+  return buildSucceeded && model ? updateMcpViewer(model) : {};
+}
+
 /**
  * MCP `evaluate_script` tool — runs a kernelCAD script and reports
  * pass/fail + feature count + diagnostics, plus a `parts` summary
@@ -127,6 +136,7 @@ export const MATES_REVIEW_HINT =
  * produce lowered shapes, so the active MCP session is left untouched —
  * session-dependent tools keep whatever full evaluation ran last.
  *
+ * Full builds update a process-local Studio viewer; no files are written.
  * Full evaluations retain step snapshot artifacts in a temporary directory.
  */
 export async function evaluateScriptTool(
@@ -181,12 +191,14 @@ export async function evaluateScriptTool(
   const ok = r.exitCode === 0 && mechanism !== 'broken';
   const tubes = tubesOutput(tubeReport);
   const reviewHint = hasArticulatedMates(model) ? MATES_REVIEW_HINT : undefined;
+  const viewer = await publishBuiltViewer(model, buildSucceeded);
 
   const after = captureEvaluatedStep(model, buildSucceeded);
   const step = await createStepEvidence(before, after, ok, r.featureHealth);
 
   return {
     ok,
+    ...viewer,
     step,
     sceneSummary: buildSceneSummary(model, buildSucceeded),
     featureCount: r.featureCount,
