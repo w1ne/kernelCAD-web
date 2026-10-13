@@ -8,7 +8,7 @@ Architecture: a static marketing-site llms.txt links the existing hosted connect
 - Add site/llms.txt, discovery links, and plain-text cache headers. Document the prompt and package skill provenance.
 - Replace the CLI skill copy with a focused generator that recursively copies assets and stamps SKILL.md metadata.version, rebuilding the destination to avoid stale skills.
 - Run focused MCP/CLI/skill tests, CLI build, real npm tarball checks, typecheck and lint.
-- Verify the real SDK discovery call; include structuredContent for object tool responses so clients can validate the already-advertised output schema. Add a failing SDK roundtrip regression test first.
+- Keep the stdio structuredContent transport fix and SDK roundtrip regression test outside this self-install PR; they require a separate feature branch and PR.
 - Keep the handoff to Markdown; no demo media, evidence JSON or capture helpers are included in this PR.
 - Review diff; commit, push current feature branch and open a develop PR with “Do not merge without Andrii”. Do not deploy or merge. Verify live llms.txt after a later approved marketing deployment.
 
