@@ -10,6 +10,8 @@ import {
   type FeatureHealthEntry,
 } from '../../cli/commands/evaluate';
 import { tubesOutput } from '../../../composition/scriptEvaluation';
+import { KernelUnavailableError, resolveKernel } from '../../../modeling/backends/kernelRegistry';
+import type { KernelId } from '../../../shared/types/backendTarget';
 import type { PortReportEntry } from '../../../modeling/runtime/tube/portReport';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
@@ -39,6 +41,10 @@ export interface EvaluateScriptInput {
    * scripts (which have no mechanism to verify).
    */
   skipMechanismCheck?: boolean;
+  /** Solid-modeling kernel. Omitted = 'occt' (the only kernel available
+   *  today). Any other value returns ok:false with a
+   *  `recompute.kernel.unavailable` diagnostic, on dry and full runs alike. */
+  kernel?: KernelId;
 }
 
 export interface EvaluateScriptOutput {
@@ -127,6 +133,16 @@ export const MATES_REVIEW_HINT =
 export async function evaluateScriptTool(
   input: EvaluateScriptInput,
 ): Promise<EvaluateScriptOutput> {
+  if (input.kernel !== undefined) {
+    try {
+      resolveKernel(input.kernel);
+    } catch (e) {
+      if (e instanceof KernelUnavailableError) {
+        return { ok: false, featureCount: 0, diagnostics: [e.diagnostic], featureHealth: [] };
+      }
+      throw e;
+    }
+  }
   if (input.dryRun) return evaluateDryRun(input);
 
   const { evaluation, model, dfmReport, tubeReport, portReport } = await evaluateAndBuildScript(input as EvaluateInput);

@@ -17,6 +17,14 @@
           "type": "boolean",
           "description": "Fast validation only: skip solid build, DFM gates, and meshing. Does not set or clear the active session."
         },
+        "kernel": {
+          "type": "string",
+          "enum": [
+            "occt",
+            "smlib"
+          ],
+          "description": "Solid-modeling kernel. Default 'occt' (OpenCascade), the only kernel available today; 'smlib' is reserved and currently returns ok:false with recompute.kernel.unavailable."
+        },
         "skipMechanismCheck": {
           "type": "boolean",
           "description": "Opt out of the default mechanism-truth gate. By default a full evaluation of an assembly-built scene runs checkMechanismTruth and returns a `mechanism` verdict (real/broken/unverified); a broken mechanism makes ok:false. Set true to skip the sweep entirely (no `mechanism` field, no cost). Ignored for dryRun and non-assembly scripts."
@@ -6859,6 +6867,14 @@
           "type": "boolean",
           "description": "Default false. When true, after a green full (non-dryRun) evaluate, call open_in_studio on the same script (hosted MCP).",
           "default": false
+        },
+        "kernel": {
+          "type": "string",
+          "enum": [
+            "occt",
+            "smlib"
+          ],
+          "description": "Solid-modeling kernel forwarded to evaluate_script. Default 'occt'; 'smlib' is reserved and currently fails with recompute.kernel.unavailable."
         },
         "dryRun": {
           "type": "boolean",

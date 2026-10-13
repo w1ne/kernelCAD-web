@@ -21,6 +21,8 @@ import {
 } from '../shared/diagnostics/fileReadError';
 import { kernelErrorToDiagnostic } from '../shared/diagnostics/kernelErrorToDiagnostic';
 import { buildModel, buildModelFromFile, type BuiltModel } from '../modeling/buildModel';
+import { KernelUnavailableError } from '../modeling/backends/kernelRegistry';
+import type { KernelId } from '../shared/types/backendTarget';
 import type { ScriptApiFactory } from '../modeling/runtime/runScriptCore';
 import {
   runDfmChecksOnModel,
@@ -48,6 +50,9 @@ export interface EvaluateInput {
   /** Absolute directory to resolve relative imports/assets against when
    *  evaluating an inline `code` string. Unused on the `file` path. */
   scriptDir?: string;
+  /** Solid-modeling kernel (default 'occt'). An unavailable kernel yields a
+   *  `recompute.kernel.unavailable` diagnostic instead of a build. */
+  kernel?: KernelId;
 }
 
 export interface EvaluateOptions {
@@ -161,14 +166,23 @@ async function buildModelForInput(
             code: input.code,
             fileName: input.file ?? '<inline>',
             ...(input.scriptDir !== undefined ? { scriptDir: input.scriptDir } : {}),
+            ...(input.kernel !== undefined ? { kernel: input.kernel } : {}),
           },
           { apiFactory },
         )
-      : await buildModelFromFile({ file: input.file! }, { apiFactory });
+      : await buildModelFromFile(
+          { file: input.file!, ...(input.kernel !== undefined ? { kernel: input.kernel } : {}) },
+          { apiFactory },
+        );
     return { model };
   } catch (e) {
     if (isFileReadError(e)) {
       return { evaluation: fileReadEvaluation(e) };
+    }
+    if (e instanceof KernelUnavailableError) {
+      return {
+        evaluation: { exitCode: 1, featureCount: 0, diagnostics: [e.diagnostic], featureHealth: [] },
+      };
     }
     const diag = kernelErrorToDiagnostic(e);
     return {

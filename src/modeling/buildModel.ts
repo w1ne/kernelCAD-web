@@ -4,7 +4,8 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { ShapeBackend } from '../kernel/backends/backend';
 import { initOcct } from '../kernel/backends/occt/occtBackend';
-import { createOcctLowerer } from './backends/occt/occtLowerer';
+import { createLowerer, resolveKernel } from './backends/kernelRegistry';
+import type { KernelId } from '../shared/types/backendTarget';
 import { RecomputeEngine } from './compute/recomputeEngine';
 import type { CompilerDiagnostic } from '../shared/diagnostics/diagnostic';
 import type { FeatureRecord } from '../shared/intent/featureRecord';
@@ -27,10 +28,16 @@ export interface BuildModelInput {
   /** Absolute directory of the source script. Threaded so `lib.fromSTEP`
    *  resolves relative paths under the calling .kcad.ts file. */
   scriptDir?: string;
+  /** Solid-modeling kernel to build on. Omitted = DEFAULT_KERNEL ('occt').
+   *  A kernel that is not available in this build (today: 'smlib') throws
+   *  KernelUnavailableError before any work is done. */
+  kernel?: KernelId;
 }
 
 export interface BuildModelFromFileInput {
   file: string;
+  /** See BuildModelInput.kernel. */
+  kernel?: KernelId;
 }
 
 export interface BuiltModel {
@@ -88,12 +95,13 @@ export async function buildModel(
   input: BuildModelInput,
   opts?: RunScriptFacadeOptions,
 ): Promise<BuiltModel> {
+  const kernel = resolveKernel(input.kernel);
   await initOcct();
   const run = await runScript(input, opts);
   const session = run.session;
   // Slice 2E: attach a per-session engine so `params.update` reuses it and
   // `onRelower` subscriptions added after the initial build still fire.
-  const engine = new RecomputeEngine(createOcctLowerer(session));
+  const engine = new RecomputeEngine(createLowerer(kernel, session));
   session.setEngine(engine);
   const warningsBefore = session.warnings.length;
   const pending = session.snapshotFullLower(new Map());
@@ -135,6 +143,7 @@ export async function rebuildModelIncremental(
   input: BuildModelInput,
   opts?: RunScriptFacadeOptions,
 ): Promise<BuiltModel> {
+  const kernel = resolveKernel(input.kernel);
   await initOcct();
 
   // 1. Capture the new script. Capture is cheap (JS execution); the expensive
@@ -180,7 +189,7 @@ export async function rebuildModelIncremental(
     seedShapes.set(id, cached);
   }
 
-  const engine = new RecomputeEngine(createOcctLowerer(session));
+  const engine = new RecomputeEngine(createLowerer(kernel, session));
   session.setEngine(engine);
   const warningsBefore = session.warnings.length;
   const result = await engine.run(run.records, {
@@ -236,10 +245,14 @@ export async function buildModelFromFile(
   input: BuildModelFromFileInput,
   opts?: RunScriptFacadeOptions,
 ): Promise<BuiltModel> {
+  resolveKernel(input.kernel);
   const fileName = resolve(input.file);
   const code = await readFile(fileName, 'utf8');
   const { dirname } = await import('node:path');
-  return buildModel({ code, fileName, scriptDir: dirname(fileName) }, opts);
+  return buildModel(
+    { code, fileName, scriptDir: dirname(fileName), ...(input.kernel !== undefined ? { kernel: input.kernel } : {}) },
+    opts,
+  );
 }
 
 /**
