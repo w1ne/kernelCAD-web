@@ -9,7 +9,7 @@ Architecture: a static marketing-site llms.txt links the existing hosted connect
 - Replace the CLI skill copy with a focused generator that recursively copies assets and stamps SKILL.md metadata.version, rebuilding the destination to avoid stale skills.
 - Run focused MCP/CLI/skill tests, CLI build, real npm tarball checks, typecheck and lint.
 - Verify the real SDK discovery call; include structuredContent for object tool responses so clients can validate the already-advertised output schema. Add a failing SDK roundtrip regression test first.
-- Record and inspect a short MP4 of actual local discovery, sandbox install configuration, and packaged version verification. Label it local validation; do not imply deployment or hardware acceptance.
+- Keep the handoff to Markdown; no demo media, evidence JSON or capture helpers are included in this PR.
 - Review diff; commit, push current feature branch and open a develop PR with “Do not merge without Andrii”. Do not deploy or merge. Verify live llms.txt after a later approved marketing deployment.
 
 Chosen over new installer logic: existing host CLI and JSON installers already handle installation; adding another installer would duplicate them. Chosen over hand-written skill versions: build-time stamping follows every package bump automatically.
