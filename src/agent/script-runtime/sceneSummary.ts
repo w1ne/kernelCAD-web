@@ -41,8 +41,9 @@ function summarizeShape(shape: ShapeBackend): SceneSummary {
   }) : null;
   return {
     valid: raw && faceCount !== null ? measure(() => {
+      if (faceCount === 0) return false;
       const analyzer = new (getOC().BRepCheck_Analyzer)(raw.wrapped, true, false);
-      try { return faceCount > 0 && analyzer.IsValid_2(); }
+      try { return analyzer.IsValid_2(); }
       finally { analyzer.delete(); }
     }) : null,
     volume: measure(() => finite(shape.volume())),

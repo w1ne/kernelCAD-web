@@ -103,6 +103,29 @@ describe('MCP build scene summary', () => {
       expect(root.volume()).toBeCloseTo(6000);
     } finally { enumeration.mockRestore(); root.dispose(); }
   });
+  it('rejects zero-face shapes without invoking emptiness or validity checks', async () => {
+    const model = await buildModel({code:'return box(10,20,30);',fileName:'test.kcad.ts'});
+    const root = model.rootShape as OcctBackend;
+    const raw = root.getReplicadShape();
+    const enumeration = vi.spyOn(raw,'faces','get').mockReturnValue([]);
+    const emptiness = vi.spyOn(root,'isEmpty').mockImplementation(() => {
+      throw new Error('isEmpty must not enumerate unmanaged faces');
+    });
+    const volume = vi.spyOn(root,'volume').mockReturnValue(0);
+    const bounds = vi.spyOn(root,'boundingBox').mockReturnValue({min:[0,0,0],max:[0,0,0]});
+    const wrapped = vi.spyOn(raw,'wrapped','get');
+    try {
+      const summary = summarizeScene(root);
+      expect(summary.faceCount).toBe(0);
+      expect(summary.valid).toBe(false);
+      expect(enumeration).toHaveBeenCalledTimes(1);
+      expect(emptiness).not.toHaveBeenCalled();
+      expect(wrapped).not.toHaveBeenCalled();
+    } finally {
+      enumeration.mockRestore(); emptiness.mockRestore(); wrapped.mockRestore();
+      volume.mockRestore(); bounds.mockRestore(); root.dispose();
+    }
+  });
   it('includes the rebuilt summary in source edit results', async () => {
     const out = await addFeatureTool({code:'return box(10,20,30);',feature_code:'const helper = box(1,1,1);'});
     expect(out.sceneSummary?.volume).toBeCloseTo(6000);
