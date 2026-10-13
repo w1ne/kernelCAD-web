@@ -194,7 +194,7 @@ run `npm run build:mcp-viewer` first. If the bundle cannot be served, the build
 result includes `viewerError` separately from its CAD diagnostics. Hosted MCP
 and `--cloud` continue to use the gateway's Studio/project URLs.
 
-[Local viewer workflow demo and verification](docs/demos/mcp-viewer-link/README.md).
+[Local viewer workflow](docs/demos/mcp-viewer-link/README.md).
 
 
 For hosted workflows, sign in at [the existing connection guide](https://app.kernelcad.com/connect?client=claude).
