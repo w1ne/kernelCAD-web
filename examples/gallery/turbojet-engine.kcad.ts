@@ -620,8 +620,22 @@ function fixed(parent: PartRef, name: string, shape: PartShape): PartRef {
 
 // Task 10 staging arrays consumed by position: casingHalves = [lower, upper],
 // bearingHousings = [front, rear].
-const [casingLower, casingUpper] = casingHalves;
 const [bearingFront, bearingRear] = bearingHousings;
+
+// Seats. Every embed below is a real fit, so the host carries the pocket the
+// guest sits in and the two share faces, not volume: the casing halves get
+// the circumferential grooves that hold the stator/NGV bands, the bearing
+// rims and the mount plates; each disc rim gets its blade-root slots; the
+// spinner is bored for the shaft nose; the can snouts are drilled for the
+// injector lines.
+const casingSeatTools = [...statorBands, ...ngvBands, bearingFront, bearingRear, ...mounts];
+const casingSeats = casingSeatTools.slice(1).reduce((acc, tool) => acc.union(tool), casingSeatTools[0]);
+const casingLower = casingHalves[0].subtract(casingSeats);
+const casingUpper = casingHalves[1].subtract(casingSeats);
+const slottedRotorDiscs = rotorDiscs.map((disc, i) => disc.subtract(rotorRows[i]));
+const slottedTurbineDiscs = turbineDiscs.map((disc, i) => disc.subtract(turbineRows[i]));
+const boredNoseCone = noseCone.subtract(shaftShape);
+const drilledCombustorCans = combustorCans.subtract(fuelManifold);
 
 // Ground: lower casing half + its half of the convergent nozzle.
 const ground = engine.part('casing-lower-half', casingLower.union(nozzleLower));
@@ -645,7 +659,7 @@ fixed(ground, 'ngv-2', ngvRows[1].union(ngvBands[1]));
 // touch. Task 10 staging array mounts = [front crown (+y), rear crown (-y)]:
 // the front mount embeds in the upper half's barrel, so it hangs off
 // casing-upper-half, not the ground lower half.
-fixed(ground, 'bearing-front', bearingFront);
+const bearingFrontPart = fixed(ground, 'bearing-front', bearingFront);
 fixed(ground, 'bearing-rear', bearingRear.union(exhaustCone)); // Task 12 merge 2
 fixed(casingUpperPart, 'mount-front', mounts[0]);
 fixed(ground, 'mount-rear', mounts[1]);
@@ -654,24 +668,28 @@ fixed(ground, 'mount-rear', mounts[1]);
 // snouts — each mate partner is material-connected (line-to-line contacts).
 const combustorOuterPart = fixed(ground, 'combustor-outer', combustorOuterCasing);
 const combustorLinerPart = fixed(combustorOuterPart, 'combustor-liner', combustorLiner);
-const combustorCansPart = fixed(combustorLinerPart, 'combustor-cans', combustorCans);
+const combustorCansPart = fixed(combustorLinerPart, 'combustor-cans', drilledCombustorCans);
 fixed(combustorCansPart, 'fuel-manifold', fuelManifold);
 
-// The single revolute: casing lower half <-> shaft on the engine axis (world
-// origin, +Z). `concealed` because the spool bearing lives inside the
-// assembled casing; +/-180 keeps the display pose a full turn.
+// The single revolute: the shaft's front land turns in the front bearing
+// housing (fastened to the lower casing half) on the engine axis, +Z. The
+// hub bore (r31 over the r30 land) is the joint's running clearance.
+// `concealed` because the spool bearing lives inside the assembled casing;
+// +/-180 keeps the display pose a full turn.
 const shaft = engine.part('shaft', shaftShape);
-ground.connector('spool-axis', {
+const spoolAt = BEARING_FRONT_Z + BEARING_HUB_T / 2;
+bearingFrontPart.connector('spool-axis', {
   type: 'axis',
-  origin: { kind: 'vec3', value: [0, 0, 0] },
+  origin: { kind: 'vec3', value: [0, 0, spoolAt] },
   axis: [0, 0, 1],
+  jointClearanceRadius: BEARING_BORE_R,
 });
 shaft.connector('spool-axis', {
   type: 'axis',
-  origin: { kind: 'vec3', value: [0, 0, 0] },
+  origin: { kind: 'vec3', value: [0, 0, spoolAt] },
   axis: [0, 0, 1],
 });
-engine.mate('spool', 'casing-lower-half.spool-axis', 'shaft.spool-axis', 'revolute', {
+engine.mate('spool', 'bearing-front.spool-axis', 'shaft.spool-axis', 'revolute', {
   limitsDeg: [-180, 180],
   exposure: 'concealed',
 });
@@ -679,29 +697,27 @@ engine.mate('spool', 'casing-lower-half.spool-axis', 'shaft.spool-axis', 'revolu
 // Rotor stack. Discs are fastened to the shaft (each rides its drum collar);
 // blade rows are fastened to the disc they root into, not to the shaft —
 // the root embed is the real joint, and the shaft never reaches blade radii.
-fixed(shaft, 'nose-cone', noseCone);
+fixed(shaft, 'nose-cone', boredNoseCone);
 for (let i = 0; i < rotorDiscs.length; i++) {
-  const discPart = fixed(shaft, `compressor-disc-${i + 1}`, rotorDiscs[i]);
+  const discPart = fixed(shaft, `compressor-disc-${i + 1}`, slottedRotorDiscs[i]);
   fixed(discPart, `compressor-blades-${i + 1}`, rotorRows[i]);
 }
-const turbineDisc1 = fixed(shaft, 'turbine-disc-1', turbineDiscs[0]);
-const turbineDisc2 = fixed(shaft, 'turbine-disc-2', turbineDiscs[1]);
+const turbineDisc1 = fixed(shaft, 'turbine-disc-1', slottedTurbineDiscs[0]);
+const turbineDisc2 = fixed(shaft, 'turbine-disc-2', slottedTurbineDiscs[1]);
 fixed(turbineDisc1, 'turbine-blade-1', turbineRows[0]);
 fixed(turbineDisc2, 'turbine-blade-2', turbineRows[1]);
 
-// Intended contacts (the Task 13 table): design-intent embeds whose shared
-// volume exceeds the 20 mm^3 clash cap. `ignore` silences only the validator
-// diagnostic stream — the raw detector still measures every pair. Reasons:
-//   - stator/NGV band rims embed 7 mm into the 211 mm casing bore (both halves);
-//   - bearing rims embed 3 mm into the casing bore (both halves);
-//   - mount plates embed 5 mm into the casing barrel (front -> upper half,
-//     rear -> lower half);
-//   - rotor blade roots embed 2 mm into their disc rims;
-//   - the spinner base swallows the shaft nose;
-//   - injector lines bury 5 mm into the can snouts.
-// The stepped-drum/disc and combustor-chain contacts are line-to-line (zero
-// shared volume), so they need no ignore entry and stay visible to the raw
-// detector.
+// Seated contacts (the Task 13 table). Each guest now sits in a pocket cut
+// in its host (see "Seats" above), so the pairs share faces, not volume, and
+// the rest-pose contact gate measures them like any other pair; it does not
+// read this list. `ignore` only keeps the tessellation-level BREP clash probe
+// from re-reporting the line-to-line seat faces of:
+//   - stator/NGV bands in their casing grooves (both halves);
+//   - bearing rims in their casing grooves (both halves);
+//   - mount plates in their barrel pockets;
+//   - rotor blade roots in their disc-rim slots;
+//   - the shaft nose in the spinner bore;
+//   - injector lines in the drilled can snouts.
 const casingBoreParts = [...statorUnitNames, 'ngv-1', 'ngv-2', 'bearing-front', 'bearing-rear'];
 const intendedContacts: Array<readonly [string, string]> = [
   ...casingBoreParts.flatMap((name): Array<readonly [string, string]> => [

@@ -50,8 +50,26 @@ export function brepExtremaClosest(oc: any, shapeA: any, shapeB: any): BrepClose
     if (!ok || !dist.IsDone() || dist.NbSolution() < 1) return undefined;
     const a = dist.PointOnShape1(1);
     const b = dist.PointOnShape2(1);
-    return { distance: dist.Value(), onA: [a.X(), a.Y(), a.Z()], onB: [b.X(), b.Y(), b.Z()] };
+    try {
+      return { distance: dist.Value(), onA: [a.X(), a.Y(), a.Z()], onB: [b.X(), b.Y(), b.Z()] };
+    } finally {
+      a.delete?.();
+      b.delete?.();
+    }
   } finally {
     dist.delete?.();
   }
+}
+
+/** Closest-point pair, in the shape the joint-continuity gate reads. */
+export function brepExtremaContact(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  oc: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  shapeA: any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  shapeB: any,
+): { distanceMm: number; pointA: readonly [number, number, number]; pointB: readonly [number, number, number] } | undefined {
+  const c = brepExtremaClosest(oc, shapeA, shapeB);
+  return c && { distanceMm: c.distance, pointA: c.onA, pointB: c.onB };
 }

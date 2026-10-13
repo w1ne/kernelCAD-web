@@ -10,7 +10,9 @@ const lift = param('liftDeg', 0, { min: 0, max: 200, description: 'Shoulder pitc
 const elbow = param('elbowDeg', 0, { min: -180, max: 0, description: 'Elbow pitch' });
 const wrist = param('wristDeg', 0, { min: -140, max: 65, description: 'Wrist pitch' });
 const roll = param('rollDeg', 0, { min: -180, max: 180, description: 'Wrist roll' });
-const jaw = param('jawDeg', 0, { min: -11, max: 110, description: 'Gripper opening' });
+// -11° is the closed stop: the moving finger meets the fixed jaw.
+// 0° leaves the pincer open; the reach animation still drives jawDeg.
+const jaw = param('jawDeg', -11, { min: -11, max: 110, description: 'Gripper opening' });
 
 type Vec3 = [number, number, number];
 type Mat3 = [Vec3, Vec3, Vec3];
@@ -134,8 +136,14 @@ const joints: Joint[] = [
 const arm = assembly('so100-arm');
 const frames: Record<string, Frame> = { base: WORLD };
 
+// Printed links come from parts/sim-seated/: the vendor meshes with the
+// servo pockets and joint clearances cut exactly (parts/seat_meshes.py),
+// so no two solids share volume. Lower_Arm and the servos are vendor bytes.
+const SEATED = new Set(['Base', 'Rotation_Pitch', 'Upper_Arm', 'Wrist_Pitch_Roll', 'Fixed_Jaw', 'Moving_Jaw']);
+
 async function mesh(file: string, frame: Frame, allowOpen: boolean) {
-  const raw = await lib.fromSTL(`parts/sim/${file}.stl`, allowOpen ? { allowOpen: true } : {});
+  const dir = SEATED.has(file) ? 'sim-seated' : 'sim';
+  const raw = await lib.fromSTL(`parts/${dir}/${file}.stl`, allowOpen ? { allowOpen: true } : {});
   return place(raw.scale(1000), frame);
 }
 
@@ -219,4 +227,8 @@ animationView({
   ],
 });
 
+// `ignore` only silences the BREP boolean interference probe, which reads
+// polyhedral solids sewn from STL wrongly (base vs pan servo: 10,857 mm³
+// reported, 21 mm³ real). The mechanism gate's rest-pose contact check
+// measures every pair on the meshes and does not honour this list.
 return arm.solvedModel({}, { ignore: skipClash });
