@@ -17,7 +17,7 @@
 
 import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { lookup } from 'node:dns/promises';
-import { isIP } from 'node:net';
+import { BlockList, isIP } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { evaluateAndBuildScript } from '../../cli/commands/evaluate';
@@ -27,6 +27,7 @@ import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic'
 /** Hard cap on imported file size. */
 export const IMPORT_MAX_BYTES = 50 * 1024 * 1024;
 const FETCH_TIMEOUT_MS = 30_000;
+const MB = IMPORT_MAX_BYTES / 1024 / 1024;
 const NAME_RE = /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/;
 
 export interface OpenAiFileRef {
@@ -70,21 +71,22 @@ function fail(error: string, diagnostics: CompilerDiagnostic[] = []): ImportStep
   return { ok: false, diagnostics, error };
 }
 
-/** True for loopback, private, link-local, CGNAT and unspecified addresses. */
+const BLOCKED = new BlockList();
+for (const [net, prefix] of [
+  ['0.0.0.0', 8], ['10.0.0.0', 8], ['100.64.0.0', 10], ['127.0.0.0', 8], ['169.254.0.0', 16],
+  ['172.16.0.0', 12], ['192.168.0.0', 16], ['224.0.0.0', 3],
+] as const) BLOCKED.addSubnet(net, prefix, 'ipv4');
+for (const [net, prefix] of [['::', 128], ['::1', 128], ['fc00::', 7], ['fe80::', 10], ['ff00::', 8]] as const) {
+  BLOCKED.addSubnet(net, prefix, 'ipv6');
+}
+
+/** True for loopback, private, link-local, CGNAT, multicast and unspecified addresses (and non-IPs). */
 export function isPrivateAddress(ip: string): boolean {
   const v = isIP(ip);
-  if (v === 4) {
-    const [a, b] = ip.split('.').map(Number);
-    return a === 10 || a === 127 || a === 0 || (a === 169 && b === 254) || (a === 172 && b >= 16 && b <= 31)
-      || (a === 192 && b === 168) || (a === 100 && b >= 64 && b <= 127) || a >= 224;
-  }
-  if (v === 6) {
-    const s = ip.toLowerCase();
-    if (s.startsWith('::ffff:')) return isPrivateAddress(s.slice(7));
-    return s === '::' || s === '::1' || s.startsWith('fc') || s.startsWith('fd') || s.startsWith('fe8')
-      || s.startsWith('fe9') || s.startsWith('fea') || s.startsWith('feb');
-  }
-  return true;
+  if (v === 0) return true;
+  const mapped = /^::ffff:(\d+\.\d+\.\d+\.\d+)$/i.exec(ip);
+  if (mapped !== null) return isPrivateAddress(mapped[1]);
+  return BLOCKED.check(ip, v === 4 ? 'ipv4' : 'ipv6');
 }
 
 /** https only, no credentials, and the host must not resolve to a private address. */
@@ -133,9 +135,9 @@ async function fetchBytes(url: string): Promise<Uint8Array | string> {
   }
   if (!res.ok) return `download failed: HTTP ${res.status}.`;
   const declared = Number(res.headers.get('content-length') ?? '0');
-  if (declared > IMPORT_MAX_BYTES) return `file is larger than ${IMPORT_MAX_BYTES / 1024 / 1024} MB.`;
+  if (declared > IMPORT_MAX_BYTES) return `file is larger than ${MB} MB.`;
   const buf = new Uint8Array(await res.arrayBuffer());
-  if (buf.byteLength > IMPORT_MAX_BYTES) return `file is larger than ${IMPORT_MAX_BYTES / 1024 / 1024} MB.`;
+  if (buf.byteLength > IMPORT_MAX_BYTES) return `file is larger than ${MB} MB.`;
   return buf;
 }
 
@@ -167,66 +169,81 @@ export function starterScript(fileBase: string, format: 'step' | 'stl', allowOpe
   ].join('\n');
 }
 
-export async function importStepTool(input: ImportStepInput): Promise<ImportStepOutput> {
+function validateInput(input: ImportStepInput): string | undefined {
   const sources = [input.url, input.upload, input.content_base64].filter(s => s !== undefined);
-  if (sources.length !== 1) return fail('Provide exactly one of url, upload or content_base64.');
-  const name = input.name ?? 'imported';
-  if (!NAME_RE.test(name)) return fail('name must be 1-64 characters of letters, digits, ".", "_" or "-".');
-  if (input.format !== undefined && input.format !== 'step' && input.format !== 'stl') return fail("format must be 'step' or 'stl'.");
+  if (sources.length !== 1) return 'Provide exactly one of url, upload or content_base64.';
+  if (!NAME_RE.test(input.name ?? 'imported')) return 'name must be 1-64 characters of letters, digits, ".", "_" or "-".';
+  if (input.format !== undefined && input.format !== 'step' && input.format !== 'stl') return "format must be 'step' or 'stl'.";
+  return undefined;
+}
 
-  let bytes: Uint8Array;
-  let fileName = input.file_name;
+function decodeBase64(text: unknown): Uint8Array | string {
+  if (typeof text !== 'string' || !/^[A-Za-z0-9+/=\s]+$/.test(text)) return 'content_base64 must be base64 text.';
+  if (text.length > (IMPORT_MAX_BYTES * 4) / 3 + 4) return `file is larger than ${MB} MB.`;
+  return new Uint8Array(Buffer.from(text, 'base64'));
+}
+
+/** The file bytes and the best-known file name, or an error message. */
+async function readSource(input: ImportStepInput): Promise<{ bytes: Uint8Array; fileName?: string } | string> {
   if (input.content_base64 !== undefined) {
-    if (typeof input.content_base64 !== 'string' || !/^[A-Za-z0-9+/=\s]+$/.test(input.content_base64)) {
-      return fail('content_base64 must be base64 text.');
-    }
-    if (input.content_base64.length > (IMPORT_MAX_BYTES * 4) / 3 + 4) return fail(`file is larger than ${IMPORT_MAX_BYTES / 1024 / 1024} MB.`);
-    bytes = new Uint8Array(Buffer.from(input.content_base64, 'base64'));
-  } else {
-    const url = input.url ?? input.upload?.download_url;
-    if (typeof url !== 'string' || url.length === 0) return fail('upload.download_url is required.');
-    fileName ??= input.upload?.file_name ?? new URL(url, 'https://x/').pathname.split('/').pop();
-    const got = await fetchBytes(url);
-    if (typeof got === 'string') return fail(got);
-    bytes = got;
+    const bytes = decodeBase64(input.content_base64);
+    return typeof bytes === 'string' ? bytes : { bytes, fileName: input.file_name };
   }
-  if (bytes.byteLength === 0) return fail('the file is empty.');
+  const url = input.url ?? input.upload?.download_url;
+  if (typeof url !== 'string' || url.length === 0) return 'upload.download_url is required.';
+  const fileName = input.file_name ?? input.upload?.file_name ?? new URL(url, 'https://x/').pathname.split('/').pop();
+  const bytes = await fetchBytes(url);
+  return typeof bytes === 'string' ? bytes : { bytes, fileName };
+}
 
-  const format = input.format ?? detectFormat(bytes, fileName);
-  if (format === undefined) return fail('could not tell whether the file is STEP or STL; pass format.');
+async function prepareDir(outputDir: string | undefined): Promise<{ dir: string } | string> {
+  if (outputDir === undefined) return { dir: await mkdtemp(join(tmpdir(), 'kernelcad-import-')) };
+  const check = validateOutputPath(outputDir);
+  if (!check.ok || check.resolved === undefined) return check.error ?? `Refusing to write to ${outputDir}.`;
+  const dir = resolve(check.resolved);
+  await mkdir(dir, { recursive: true });
+  return { dir };
+}
 
-  let dir: string;
-  if (input.output_dir !== undefined) {
-    const check = validateOutputPath(input.output_dir);
-    if (!check.ok || check.resolved === undefined) return fail(check.error ?? `Refusing to write to ${input.output_dir}.`);
-    dir = resolve(check.resolved);
-    await mkdir(dir, { recursive: true });
-  } else {
-    dir = await mkdtemp(join(tmpdir(), 'kernelcad-import-'));
-  }
+type Written = Required<Pick<ImportStepOutput, 'format' | 'model_path' | 'script_path' | 'code' | 'byte_count'>>;
 
-  const fileBase = `${name}.${format}`;
-  const model_path = join(dir, fileBase);
-  const script_path = join(dir, `${name}.kcad.ts`);
-  const code = starterScript(fileBase, format, input.allow_open === true);
-  await writeFile(model_path, bytes);
-  await writeFile(script_path, code);
-
-  const built = await evaluateAndBuildScript({ file: script_path });
+/** Evaluate the starter script and report the body's bounding box. */
+async function evaluateImport(written: Written): Promise<ImportStepOutput> {
+  const built = await evaluateAndBuildScript({ file: written.script_path });
   const diagnostics = built.evaluation.diagnostics;
   const shape = built.model?.rootShape ?? built.model?.tailShape;
   if (built.evaluation.exitCode !== 0 || shape === undefined) {
-    return {
-      ok: false, format, model_path, script_path, code, byte_count: bytes.byteLength, diagnostics,
-      error: diagnostics.find(d => d.severity === 'error')?.message ?? 'the imported file did not produce a solid.',
-    };
+    const error = diagnostics.find(d => d.severity === 'error')?.message ?? 'the imported file did not produce a solid.';
+    return { ok: false, ...written, diagnostics, error };
   }
   const bb = shape.boundingBox();
   const min = [...bb.min] as [number, number, number];
   const max = [...bb.max] as [number, number, number];
-  return {
-    ok: true, format, model_path, script_path, code, byte_count: bytes.byteLength,
-    bbox: { min, max, size: [max[0] - min[0], max[1] - min[1], max[2] - min[2]] },
-    diagnostics,
+  const size: [number, number, number] = [max[0] - min[0], max[1] - min[1], max[2] - min[2]];
+  return { ok: true, ...written, bbox: { min, max, size }, diagnostics };
+}
+
+export async function importStepTool(input: ImportStepInput): Promise<ImportStepOutput> {
+  const invalid = validateInput(input);
+  if (invalid !== undefined) return fail(invalid);
+  const source = await readSource(input);
+  if (typeof source === 'string') return fail(source);
+  if (source.bytes.byteLength === 0) return fail('the file is empty.');
+  const format = input.format ?? detectFormat(source.bytes, source.fileName);
+  if (format === undefined) return fail('could not tell whether the file is STEP or STL; pass format.');
+  const target = await prepareDir(input.output_dir);
+  if (typeof target === 'string') return fail(target);
+
+  const name = input.name ?? 'imported';
+  const fileBase = `${name}.${format}`;
+  const written: Written = {
+    format,
+    model_path: join(target.dir, fileBase),
+    script_path: join(target.dir, `${name}.kcad.ts`),
+    code: starterScript(fileBase, format, input.allow_open === true),
+    byte_count: source.bytes.byteLength,
   };
+  await writeFile(written.model_path, source.bytes);
+  await writeFile(written.script_path, written.code);
+  return evaluateImport(written);
 }

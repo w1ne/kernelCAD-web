@@ -22,6 +22,7 @@
  */
 
 import { VERIFY_OUTPUT_SCHEMA } from './verificationOutputSchema';
+import { IMPORT_OUTPUT_SCHEMAS } from './registry/importTools.outputSchemas';
 
 /** Same shape as McpToolDefinition['inputSchema'] — a JSON Schema object node. */
 export type JSONSchemaObject = {
@@ -857,20 +858,5 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
     required: ['ok', 'toolchain', 'materials', 'material_names'],
     additionalProperties: true,
   },
-  import_step: {
-    type: 'object',
-    properties: {
-      ok: { type: 'boolean' },
-      format: { type: 'string', enum: ['step', 'stl'] },
-      model_path: { type: 'string', description: 'The imported file on disk.' },
-      script_path: { type: 'string', description: 'Starter .kcad.ts whose base body is the imported file; pass as { file } to other tools.' },
-      code: { type: 'string', description: 'Source of the starter script.' },
-      byte_count: { type: 'number' },
-      bbox: { type: 'object', additionalProperties: true, description: '{ min, max, size } in mm.' },
-      diagnostics: { type: 'array', items: { type: 'object', additionalProperties: true } },
-      error: { type: 'string' },
-    },
-    required: ['ok', 'diagnostics'],
-    additionalProperties: true,
-  },
+  ...IMPORT_OUTPUT_SCHEMAS,
 };
