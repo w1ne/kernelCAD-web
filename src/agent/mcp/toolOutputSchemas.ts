@@ -57,7 +57,16 @@ const TUBE_JOINT = (description: string): Record<string, unknown> => ({
   description,
 });
 
+const SELECTION: JSONSchemaObject = {
+  type: 'object', properties: {
+    ok: { type: 'boolean' }, selection: { anyOf: [{ type: 'null' }, { type: 'object', additionalProperties: true }] },
+    revision: { type: 'integer' }, modelGeneration: { type: 'integer' }, error: { type: 'string' },
+  }, required: ['ok'], additionalProperties: true,
+};
+
 export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
+  get_selection: SELECTION,
+  set_selection: SELECTION,
   evaluate_script: {
     type: 'object',
     properties: {

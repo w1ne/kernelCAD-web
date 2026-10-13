@@ -79,6 +79,8 @@ const EXPECTED_TOOL_NAMES = [
   'drawing_to_cad',
   'mesh_to_features',
   'execute_cookbook',
+  'get_selection',
+  'set_selection',
 ] as const;
 
 const PUBLIC_CONTRACT_FIXTURE = new URL(
@@ -336,8 +338,10 @@ describe('toolRegistry public contract', () => {
       'drawing_to_cad',
       'mesh_to_features',
       'execute_cookbook',
+      'get_selection',
+      'set_selection',
     ]);
-    expect(TOOL_REGISTRY).toHaveLength(48);
+    expect(TOOL_REGISTRY).toHaveLength(50);
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {

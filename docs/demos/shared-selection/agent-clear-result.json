@@ -1,0 +1,9 @@
+{
+  "action": "clear",
+  "result": {
+    "ok": true,
+    "selection": null,
+    "revision": 4,
+    "modelGeneration": 0
+  }
+}
