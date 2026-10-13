@@ -27,6 +27,7 @@ import { sketchAssemblyToolEntries } from './registry/sketchAssemblyTools';
 import { mechanismSimToolEntries } from './registry/mechanismSimTools';
 import { meshReconstructToolEntries } from './registry/meshReconstructTools';
 import { cookbookExecutionToolEntries } from './registry/cookbookExecutionTools';
+import { importToolEntries } from './registry/importTools';
 
 const EXPECTED_TOOL_NAMES = [
   'evaluate_script',
@@ -79,6 +80,7 @@ const EXPECTED_TOOL_NAMES = [
   'drawing_to_cad',
   'mesh_to_features',
   'execute_cookbook',
+  'import_step',
 ] as const;
 
 const PUBLIC_CONTRACT_FIXTURE = new URL(
@@ -336,8 +338,15 @@ describe('toolRegistry public contract', () => {
       'drawing_to_cad',
       'mesh_to_features',
       'execute_cookbook',
+      'import_step',
     ]);
-    expect(TOOL_REGISTRY).toHaveLength(48);
+    expect(TOOL_REGISTRY).toHaveLength(49);
+  });
+
+  it('composes the user-file import family at the registry tail, with ChatGPT file params', () => {
+    expect(importToolEntries.map(entry => entry.definition.name)).toEqual(['import_step']);
+    expect(TOOL_REGISTRY.slice(48, 49)).toEqual(importToolEntries);
+    expect(getToolDefinition('import_step')?._meta).toEqual({ 'openai/fileParams': ['upload'] });
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {

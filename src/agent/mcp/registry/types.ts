@@ -20,6 +20,9 @@ export interface McpToolDefinition {
   /** MCP structured-output schema (JSON Schema for the tool's return value).
    *  Merged from TOOL_OUTPUT_SCHEMAS at build time. */
   outputSchema?: JSONSchemaObject;
+  /** Client-specific descriptor metadata, passed through on tools/list
+   *  (e.g. `openai/fileParams` naming the inputs ChatGPT fills with uploads). */
+  _meta?: Record<string, unknown>;
 }
 
 export type ToolHandler = (input: Record<string, unknown>) => Promise<unknown>;
