@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { mkdtempSync, rmSync, readFileSync, existsSync } from 'node:fs';
+import { mkdtempSync, rmSync, readFileSync, existsSync, writeFileSync, symlinkSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { unzipSync } from 'fflate';
@@ -59,6 +59,55 @@ describe('fab_pack', () => {
     expect((await fabPackTool({ code: 'return box(1,1,1);', output_dir: join(dir, 'x'), name: '../evil' })).ok).toBe(false);
     expect((await fabPackTool({ code: 'return box(1,1,1);', output_dir: '/tmp/../etc' })).ok).toBe(false);
     expect((await fabPackTool({ code: 'return box(1,1,1);', output_dir: join(dir, 'x'), formats: ['obj' as never] })).ok).toBe(false);
+  });
+
+  it('refuses symlinked manifest, README, zip and BOM destinations without touching the target', async () => {
+    for (const victim of ['manifest.json', 'README.txt', 'part-fab-pack.zip', 'part.bom.csv']) {
+      const out = join(dir, `sym-${victim}`);
+      mkdirSync(out, { recursive: true });
+      const target = join(dir, `target-${victim}`);
+      writeFileSync(target, 'precious');
+      symlinkSync(target, join(out, victim));
+      const r = await fabPackTool({ code: 'return box(10, 10, 2);', output_dir: out, formats: ['step', 'bom-csv'] });
+      expect(r.ok).toBe(false);
+      expect(JSON.stringify(r)).toMatch(/symbolic link/);
+      expect(readFileSync(target, 'utf8')).toBe('precious');
+    }
+  }, 120000);
+
+  it('does not turn a failed build into a successful BOM', async () => {
+    const r = await fabPackTool({
+      code: 'dfmSpec({ minWall: 5 });\nreturn box(10, 10, 1);', output_dir: join(dir, 'badbom'), formats: ['bom-csv'],
+    });
+    expect(r.ok).toBe(false);
+    expect(r.files[0].ok).toBe(false);
+    expect(r.diagnostics.some(d => d.severity === 'error')).toBe(true);
+  }, 120000);
+
+  it('ships every per-part DXF of a multi-part model in the zip and manifest', async () => {
+    const out = join(dir, 'cutlist');
+    const code = `const a = assembly('cut');
+a.part('left', box(20, 20, 3));
+a.part('right', box(10, 10, 3).translate(40, 0, 0));
+return a.model();`;
+    const r = await fabPackTool({ code, output_dir: out, formats: ['dxf'] });
+    expect(r.files[0].ok).toBe(true);
+    expect(r.files[0].part_files?.length).toBe(2);
+    const zip = unzipSync(new Uint8Array(readFileSync(r.zip_path!)));
+    expect(Object.keys(zip).filter(k => k.startsWith('parts/')).sort()).toEqual(['parts/left.dxf', 'parts/right.dxf']);
+    const manifest = JSON.parse(readFileSync(join(out, 'manifest.json'), 'utf8'));
+    expect(manifest.files[0].part_files.sort()).toEqual(['parts/left.dxf', 'parts/right.dxf']);
+  }, 120000);
+
+  it('rejects inherited property names as formats and returns structured errors for filesystem failures', async () => {
+    for (const f of ['toString', 'constructor', '__proto__', 'hasOwnProperty']) {
+      expect((await fabPackTool({ code: 'return box(1,1,1);', output_dir: join(dir, 'y'), formats: [f as never] })).ok).toBe(false);
+    }
+    const file = join(dir, 'not-a-dir');
+    writeFileSync(file, 'x');
+    const r = await fabPackTool({ code: 'return box(1,1,1);', output_dir: file });
+    expect(r.ok).toBe(false);
+    expect(r.error).toMatch(/Cannot create/);
   });
 
   it('only lists https links and the upload file is one the pack wrote', () => {

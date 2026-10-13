@@ -12,12 +12,13 @@
 // gets a price. kernelCAD does NOT call any vendor API and does not upload
 // anything: the user opens the link and uploads the named file themselves.
 
-import { readFile, writeFile, mkdir } from 'node:fs/promises';
-import { basename, join, resolve } from 'node:path';
+import { readFile, mkdir, lstat } from 'node:fs/promises';
+import { basename, dirname, join, relative, resolve } from 'node:path';
 import { zipSync, strToU8 } from 'fflate';
 import { exportModelTool, type ExportModelOutput } from './exportModel';
 import type { ExportFormat } from '../../script-runtime/export';
 import { validateOutputPath } from '../../script-runtime/safeOutputPath';
+import { checkWritableDestination, safeWriteFile } from '../../script-runtime/safeWriteFile';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { bomToCsv } from '../../script-runtime/bom';
 import { evaluateAndBuildScript } from '../../cli/commands/evaluate';
@@ -81,6 +82,8 @@ export interface FabPackInput {
 export interface FabPackFile {
   format: FabPackFormat;
   path?: string;
+  /** Companion files the export wrote next to `path` (per-part DXFs under parts/). */
+  part_files?: string[];
   byte_count?: number;
   ok: boolean;
   error?: string;
@@ -131,31 +134,37 @@ export function quoteLinksFor(written: readonly FabPackFile[], processes?: reado
     });
 }
 
-/** bom-csv needs an assembly; a single-shape script still gets a one-row
- *  BOM (same columns as export bom-csv) so every pack carries one. */
+/** True when an export failed only because bom-csv needs an assembly. */
+function isNoAssemblyRefusal(r: ExportModelOutput): boolean {
+  return (r.diagnostics ?? []).some(d => d.code === 'export.no-shape' && /assembly\.model\(\)/.test(d.message));
+}
+
+/** bom-csv needs an assembly; a single-shape script that builds cleanly still
+ *  gets a one-row BOM (same columns as export bom-csv). A script that fails
+ *  to build keeps its failure and its diagnostics. */
 async function singlePartBom(input: FabPackInput, name: string, out: string): Promise<ExportModelOutput | undefined> {
-  try {
-    const { model } = await evaluateAndBuildScript({ file: input.file, code: input.code });
-    const shape = model?.rootShape ?? model?.tailShape;
-    if (shape === undefined) return undefined;
-    const bb = shape.boundingBox();
-    const csv = bomToCsv([{
-      item: 1, name, quantity: 1, kind: 'fabricated', material: null, density: null,
-      massGPerUnit: null, massGTotal: null,
-      bboxMm: { min: [...bb.min] as [number, number, number], max: [...bb.max] as [number, number, number] },
-      instancePaths: [name],
-    }]);
-    await writeFile(out, csv);
-    return { ok: true, output_path: out, byte_count: Buffer.byteLength(csv), format: 'bom-csv' };
-  } catch {
-    return undefined;
+  const { evaluation, model } = await evaluateAndBuildScript({ file: input.file, code: input.code });
+  if (evaluation.exitCode !== 0 || evaluation.diagnostics.some(d => d.severity === 'error')) {
+    return { ok: false, error: 'The script did not build, so no BOM was written.', diagnostics: evaluation.diagnostics };
   }
+  const shape = model?.rootShape ?? model?.tailShape;
+  if (shape === undefined) return undefined;
+  const bb = shape.boundingBox();
+  const csv = bomToCsv([{
+    item: 1, name, quantity: 1, kind: 'fabricated', material: null, density: null,
+    massGPerUnit: null, massGTotal: null,
+    bboxMm: { min: [...bb.min] as [number, number, number], max: [...bb.max] as [number, number, number] },
+    instancePaths: [name],
+  }]);
+  const err = await safeWriteFile(out, csv);
+  if (err !== undefined) return { ok: false, error: err, diagnostics: evaluation.diagnostics };
+  return { ok: true, output_path: out, byte_count: Buffer.byteLength(csv), format: 'bom-csv', diagnostics: evaluation.diagnostics };
 }
 
 const PROCESSES: readonly FabProcess[] = ['3d-print', 'cnc', 'sheet-cut'];
 
 function isFormatList(v: unknown): v is FabPackFormat[] {
-  return Array.isArray(v) && v.length > 0 && v.every(f => typeof f === 'string' && f in EXT);
+  return Array.isArray(v) && v.length > 0 && v.every(f => typeof f === 'string' && Object.hasOwn(EXT, f));
 }
 
 function isProcessList(v: unknown): v is FabProcess[] {
@@ -178,20 +187,39 @@ function validateInput(input: FabPackInput): { dir: string } | string {
   return { dir: resolve(dirCheck.resolved) };
 }
 
+/** Refuse a destination (or, for DXF, its parts/ directory) that is protected or a symlink. */
+async function destinationError(format: FabPackFormat, out: string): Promise<string | undefined> {
+  const bad = await checkWritableDestination(out);
+  if (bad !== undefined || format !== 'dxf') return bad;
+  try {
+    if ((await lstat(join(dirname(out), 'parts'))).isSymbolicLink()) return `Refusing to write under ${join(dirname(out), 'parts')}: it is a symbolic link.`;
+  } catch {
+    // no parts/ yet: the export creates it
+  }
+  return undefined;
+}
+
 /** Export one pack file through the export tool (single-shape BOM fallback included). */
 async function exportOne(input: FabPackInput, format: FabPackFormat, out: string, name: string): Promise<ExportModelOutput> {
+  const bad = await destinationError(format, out);
+  if (bad !== undefined) return { ok: false, error: bad };
   let r: ExportModelOutput;
   try {
     r = await exportModelTool({ file: input.file, code: input.code, output_path: out, format: format as ExportFormat });
   } catch (e) {
-    r = { ok: false, error: e instanceof Error ? e.message : String(e) };
+    return { ok: false, error: e instanceof Error ? e.message : String(e) };
   }
-  if (!r.ok && format === 'bom-csv') return (await singlePartBom(input, name, out)) ?? r;
+  if (!r.ok && format === 'bom-csv' && isNoAssemblyRefusal(r)) return (await singlePartBom(input, name, out)) ?? r;
   return r;
 }
 
 function packFile(format: FabPackFormat, out: string, r: ExportModelOutput): FabPackFile {
-  if (r.ok) return { format, ok: true, path: r.output_path ?? out, byte_count: r.byte_count };
+  if (r.ok) {
+    return {
+      format, ok: true, path: r.output_path ?? out, byte_count: r.byte_count,
+      ...(r.part_files !== undefined && r.part_files.length > 0 ? { part_files: [...r.part_files] } : {}),
+    };
+  }
   const error = r.error ?? r.diagnostics?.find(d => d.severity === 'error')?.message ?? 'export failed';
   return { format, ok: false, error };
 }
@@ -211,22 +239,35 @@ function packReadme(name: string, files: readonly FabPackFile[], links: readonly
   ].join('\n');
 }
 
-/** Write manifest.json, README.txt and the zip; returns the zip path. */
-async function writePack(dir: string, name: string, files: readonly FabPackFile[], links: readonly FabQuoteLink[]): Promise<string> {
+/** Zip entry name for a written file: its path relative to the pack dir (parts/<x>.dxf), else its basename. */
+function entryName(dir: string, path: string): string {
+  const rel = relative(dir, path);
+  return rel.startsWith('..') || rel === '' ? basename(path) : rel.split('\\').join('/');
+}
+
+/** Write manifest.json, README.txt and the zip (symlink-safe); returns the zip path or an error. */
+async function writePack(dir: string, name: string, files: readonly FabPackFile[], links: readonly FabQuoteLink[]): Promise<{ zip: string } | string> {
   const manifest = JSON.stringify({
     name,
     created: new Date().toISOString(),
-    files: files.map(f => ({ format: f.format, file: f.path !== undefined ? basename(f.path) : undefined, ok: f.ok, error: f.error })),
+    files: files.map(f => ({
+      format: f.format, file: f.path !== undefined ? basename(f.path) : undefined, ok: f.ok, error: f.error,
+      ...(f.part_files !== undefined ? { part_files: f.part_files.map(p => entryName(dir, p)) } : {}),
+    })),
     quote_links: links.map(q => ({ service: q.service, url: q.url, upload_file: q.upload_file })),
   }, null, 2) + '\n';
   const readme = packReadme(name, files, links);
-  await writeFile(join(dir, 'manifest.json'), manifest);
-  await writeFile(join(dir, 'README.txt'), readme);
   const entries: Record<string, Uint8Array> = { 'manifest.json': strToU8(manifest), 'README.txt': strToU8(readme) };
-  for (const f of files) if (f.ok && f.path !== undefined) entries[basename(f.path)] = new Uint8Array(await readFile(f.path));
-  const zipPath = join(dir, `${name}-fab-pack.zip`);
-  await writeFile(zipPath, zipSync(entries));
-  return zipPath;
+  for (const f of files) {
+    if (!f.ok || f.path === undefined) continue;
+    for (const p of [f.path, ...(f.part_files ?? [])]) entries[entryName(dir, p)] = new Uint8Array(await readFile(p));
+  }
+  const zip = join(dir, `${name}-fab-pack.zip`);
+  for (const [path, data] of [[join(dir, 'manifest.json'), manifest], [join(dir, 'README.txt'), readme], [zip, zipSync(entries)]] as const) {
+    const err = await safeWriteFile(path, data);
+    if (err !== undefined) return err;
+  }
+  return { zip };
 }
 
 export async function fabPackTool(input: FabPackInput): Promise<FabPackOutput> {
@@ -234,7 +275,11 @@ export async function fabPackTool(input: FabPackInput): Promise<FabPackOutput> {
   if (typeof checked === 'string') return fail(checked);
   const { dir } = checked;
   const name = input.name ?? 'part';
-  await mkdir(dir, { recursive: true });
+  try {
+    await mkdir(dir, { recursive: true });
+  } catch (e) {
+    return fail(`Cannot create ${dir}: ${e instanceof Error ? e.message : String(e)}`);
+  }
 
   const files: FabPackFile[] = [];
   const diagnostics: CompilerDiagnostic[] = [];
@@ -249,7 +294,16 @@ export async function fabPackTool(input: FabPackInput): Promise<FabPackOutput> {
   if (!files.some(f => f.ok)) {
     return { ok: false, output_dir: dir, files, quote_links: [], note: NOTE, diagnostics, error: 'No file of the pack could be exported.' };
   }
-  const zip_path = await writePack(dir, name, files, quote_links);
+  let packed: { zip: string } | string;
+  try {
+    packed = await writePack(dir, name, files, quote_links);
+  } catch (e) {
+    packed = `Packaging failed: ${e instanceof Error ? e.message : String(e)}`;
+  }
+  if (typeof packed === 'string') {
+    return { ok: false, output_dir: dir, files, quote_links, note: NOTE, diagnostics, error: packed };
+  }
+  const zip_path = packed.zip;
   const failed = files.filter(f => !f.ok).map(f => f.format);
   const disclosure = referralDisclosure(quote_links);
   return {
