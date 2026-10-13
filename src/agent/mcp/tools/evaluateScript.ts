@@ -13,11 +13,14 @@ import { tubesOutput } from '../../../composition/scriptEvaluation';
 import type { PortReportEntry } from '../../../modeling/runtime/tube/portReport';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
-import { clearActiveMcpSession, setActiveMcpSession } from '../activeSession';
 import { updateMcpViewer } from '../liveViewer';
+import { clearActiveMcpSession, getActiveMcpSession, setActiveMcpSession } from '../activeSession';
+import { summarizeScene, unavailableSceneSummary, type SceneSummary } from '../../script-runtime/sceneSummary';
 import { Scene } from '../../../modeling/validation/scene';
 import type { Assembly } from '../../../modeling/capture/assembly';
 import { probeAssemblies } from '../../../modeling/runtime/mechanismProbe';
+
+import { captureStepState, createStepEvidence, type StepEvidence } from './stepEvidence';
 
 export interface EvaluateScriptInput {
   file?: string;
@@ -47,6 +50,8 @@ export interface EvaluateScriptOutput {
   viewerUrl?: string;
   /** Viewer provisioning failed; the CAD build result is still valid. */
   viewerError?: string;
+  step?: StepEvidence;
+  sceneSummary: SceneSummary;
   ok: boolean;
   featureCount: number;
   diagnostics: CompilerDiagnostic[];
@@ -132,12 +137,14 @@ async function publishBuiltViewer(model: BuildOutcome['model'], buildSucceeded: 
  * session-dependent tools keep whatever full evaluation ran last.
  *
  * Full builds update a process-local Studio viewer; no files are written.
+ * Full evaluations retain step snapshot artifacts in a temporary directory.
  */
 export async function evaluateScriptTool(
   input: EvaluateScriptInput,
 ): Promise<EvaluateScriptOutput> {
   if (input.dryRun) return evaluateDryRun(input);
 
+  const before = capturePreviousStep();
   const { evaluation, model, dfmReport, tubeReport, portReport } = await evaluateAndBuildScript(input as EvaluateInput);
   // Authoring intent lint (usage triage 2026-10-03): info-only hints naming
   // the API for intent the source states but builds by hand. Agents skip
@@ -186,9 +193,14 @@ export async function evaluateScriptTool(
   const reviewHint = hasArticulatedMates(model) ? MATES_REVIEW_HINT : undefined;
   const viewer = await publishBuiltViewer(model, buildSucceeded);
 
+  const after = captureEvaluatedStep(model, buildSucceeded);
+  const step = await createStepEvidence(before, after, ok, r.featureHealth);
+
   return {
     ok,
     ...viewer,
+    step,
+    sceneSummary: buildSceneSummary(model, buildSucceeded),
     featureCount: r.featureCount,
     // Idempotent re-enrichment guard. evaluateAndBuildScript already
     // populates nextAction on every return path; this wrap is a no-op
@@ -207,12 +219,31 @@ export async function evaluateScriptTool(
 
 type BuildOutcome = Awaited<ReturnType<typeof evaluateAndBuildScript>>;
 
+function capturePreviousStep(): ReturnType<typeof captureStepState> {
+  const active = getActiveMcpSession();
+  if (!active || active.stepEvidenceSupported === false) return undefined;
+  return captureStepState(active.rootShape ?? active.tailShape);
+}
+
+function captureEvaluatedStep(model: BuildOutcome['model'], buildSucceeded: boolean): ReturnType<typeof captureStepState> {
+  if (!buildSucceeded || !model || Array.isArray(model.returnValue)) return undefined;
+  return captureStepState(model.rootShape ?? model.tailShape);
+}
+
+
+/** A policy-gate failure may still have usable geometry; a failed build does not. */
+function buildSceneSummary(model: BuildOutcome['model'], buildSucceeded: boolean): SceneSummary {
+  if (!buildSucceeded) return unavailableSceneSummary();
+  return summarizeScene(model?.rootShape ?? model?.tailShape);
+}
+
 async function evaluateDryRun(input: EvaluateScriptInput): Promise<EvaluateScriptOutput> {
   const { evaluation: r, returnValue } = await dryRunScript(input as EvaluateInput);
   const parts = sceneParts(returnValue);
   return {
     ok: r.exitCode === 0,
     dryRun: true,
+    sceneSummary: unavailableSceneSummary(),
     featureCount: r.featureCount,
     diagnostics: withNextActions(r.diagnostics),
     featureHealth: r.featureHealth,
@@ -244,6 +275,7 @@ function didBuildSucceed(
 function refreshActiveSession(model: BuildOutcome['model'], buildSucceeded: boolean): void {
   if (buildSucceeded && model !== undefined) {
     setActiveMcpSession({
+      stepEvidenceSupported: !Array.isArray(model.returnValue),
       session: model.session,
       tailId: model.tailId,
       tailShape: model.tailShape,

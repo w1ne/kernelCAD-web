@@ -94,7 +94,7 @@ function currentSceneBounds(ctx: DemoPlayerSceneContext): THREE.Box3 {
   return bbox;
 }
 
-function setRenderView(deps: DemoPlayerApiDeps, view: RenderView, outputAspect?: number): void {
+function setRenderView(deps: DemoPlayerApiDeps, view: RenderView, outputAspect?: number, frameBounds?: { min: [number, number, number]; max: [number, number, number] }): void {
   const ctx = requireScene(deps);
   // A build-phase nudge tween interpolates the camera on every advance();
   // cancel it so this explicit fit is not overridden on the next frame.
@@ -103,7 +103,12 @@ function setRenderView(deps: DemoPlayerApiDeps, view: RenderView, outputAspect?:
   // already centered at origin; just re-aim the camera). Recompute
   // aggregate bounds from current scene contents to tolerate scenes loaded
   // without explicit fit.
-  const bbox = currentSceneBounds(ctx);
+  // Explicit comparison bounds are in script coordinates; loaded mesh groups
+  // have been recentered, so translate the shared frame by the same offset.
+  const offset = new THREE.Vector3(...deps.centroidOffsetRef.current);
+  const bbox = frameBounds
+    ? new THREE.Box3(new THREE.Vector3(...frameBounds.min).sub(offset), new THREE.Vector3(...frameBounds.max).sub(offset))
+    : currentSceneBounds(ctx);
   if (bbox.isEmpty()) return;
   const minV = bbox.min, maxV = bbox.max;
   fitCameraToBounds(
@@ -942,7 +947,7 @@ export function createDemoPlayerWindowApi(deps: DemoPlayerApiDeps): DemoPlayerWi
     setTitleCard: (spec) => deps.setTitleCard(spec),
     advance: (dtMs) => advance(deps, dtMs),
     setVersion: (v) => deps.setVersion(v),
-    setRenderView: (view, outputAspect) => setRenderView(deps, view, outputAspect),
+    setRenderView: (view, outputAspect, frameBounds) => setRenderView(deps, view, outputAspect, frameBounds),
     setRenderPose: (azDeg, elDeg, outputAspect) => setRenderPose(deps, azDeg, elDeg, outputAspect),
     forceFullOpacity: () => forceFullOpacity(deps),
     showOnlyTailFeatures: () => showOnlyTailFeatures(deps),

@@ -25,7 +25,12 @@
       ],
       "featured": false,
       "createdAt": "2026-10-12",
-      "appUrl": null
+      "appUrl": "https://app.kernelcad.com/studio?gallery=hand-coffee-grinder",
+      "previewMesh": {
+        "tolerance": 4,
+        "angularTolerance": 1.0
+      },
+      "meshopt": true
     },
     {
       "slug": "rocket-engine-routing",

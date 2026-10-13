@@ -216,6 +216,13 @@ export class CaptureSession {
    *  once per part; each call used to re-run the whole chain (seconds per
    *  call on boolean-heavy parts). */
   lastFullLower?: FullLowerSnapshot;
+  /** A full lower taken while the script ran (the solvedModel joint-axis
+   *  gate lowers every record), kept only when it was clean: every record
+   *  healthy, no diagnostics, no soft warnings. `buildModel` seeds its own
+   *  full lower from it, so a mated assembly is not lowered twice back to
+   *  back. Clean only, because a seeded record emits no diagnostics or
+   *  warnings: a dirty run must be lowered again to report them. */
+  cleanScriptLower?: FullLowerSnapshot;
 
   /** Snapshot the state a full lower depends on, paired with its shapes. */
   snapshotFullLower(shapes: ReadonlyMap<string, ShapeBackend>): FullLowerSnapshot {
@@ -245,9 +252,8 @@ export class CaptureSession {
   /** Every still-valid shape of `lastFullLower` (the unchanged record
    *  prefix), for seeding a RecomputeEngine run so only appended records
    *  (e.g. a `solvedModel` pose scene) are lowered. */
-  reusableLoweredPrefix(): Map<string, ShapeBackend> {
+  reusableLoweredPrefix(snap: FullLowerSnapshot | undefined = this.lastFullLower): Map<string, ShapeBackend> {
     const seed = new Map<string, ShapeBackend>();
-    const snap = this.lastFullLower;
     if (snap === undefined || snap.inputsKey !== this.fullLowerInputsKey()) return seed;
     const n = Math.min(snap.ids.length, this.records.length);
     for (let i = 0; i < n; i += 1) {

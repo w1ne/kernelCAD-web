@@ -1,7 +1,8 @@
 import esbuild from 'esbuild';
-import { copyFileSync, mkdirSync, readdirSync, statSync } from 'node:fs';
+import { copyFileSync, mkdirSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { copyPackageSkills } from './lib/packageSkills.mjs';
 
 function copyDir(src, dst) {
   mkdirSync(dst, { recursive: true });
@@ -50,7 +51,8 @@ await esbuild.build({
 });
 
 copyFileSync('node_modules/replicad-opencascadejs/src/replicad_single.wasm', 'dist/cli/replicad_single.wasm');
-copyDir('src/agent/skills', 'dist/cli/skills');
+const { version } = JSON.parse(readFileSync('package.json', 'utf8'));
+copyPackageSkills('src/agent/skills', 'dist/cli/skills', version);
 // Bundling relocates profiles.ts beside index.js; its material files must follow it.
 copyDir('src/kernel/export/gcode/profiles', 'dist/cli/profiles');
 mkdirSync('dist/cli/fonts', { recursive: true });
