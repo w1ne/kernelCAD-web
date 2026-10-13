@@ -10,5 +10,5 @@
 - [x] Implement `src/agent/script-runtime/sceneSummary.ts`, wire full and dry evaluation and propagate through source edits. Use existing backend accessors and dispose temporary world-frame clones.
 - [x] Carry summaries from export and preview build phases without rebuilding scripts; update output schemas and MCP authoring documentation.
 - [x] Run MCP tests, `npm run typecheck`, CLI typecheck and `npm run lint`. Review diff for scope and kernel/UI exclusions.
-- [x] Record actual local MCP calls, create and inspect a readable MP4 evidence bundle; label local validation clearly.
-- [ ] Commit, push the current feature branch and open a PR against develop with tests, demo link, no UI layout change and “Do not merge without Andrii”. Do not merge or deploy.
+- [x] Validate actual local MCP calls; generated media, evidence and recording helpers removed during PR review.
+- [ ] Commit, push the current feature branch and open a PR against develop with tests, no UI layout change and “Do not merge without Andrii”. Do not merge or deploy.
