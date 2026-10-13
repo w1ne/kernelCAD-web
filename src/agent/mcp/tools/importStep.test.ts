@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, it, expect, beforeAll, afterAll, afterEach, vi } from 'vitest';
-import { mkdtempSync, rmSync, readFileSync, writeFileSync, symlinkSync, mkdirSync } from 'node:fs';
+import { mkdtempSync, rmSync, readFileSync, writeFileSync, symlinkSync, mkdirSync, chmodSync, linkSync } from 'node:fs';
 import { EventEmitter } from 'node:events';
 import { PassThrough } from 'node:stream';
 import type { IncomingMessage, ClientRequest } from 'node:http';
@@ -173,6 +173,27 @@ describe('import_step', () => {
     mkdirSync(join(out, 'imported.step'), { recursive: true });
     expect((await importStepTool({ content_base64: stepBytes.toString('base64'), output_dir: out })).error).toMatch(/not a regular file/);
   });
+
+  it('a failed write never deletes or truncates files that already existed', async () => {
+    const out = join(dir, 'readonly');
+    mkdirSync(out, { recursive: true });
+    writeFileSync(join(out, 'imported.kcad.ts'), 'existing script');
+    chmodSync(out, 0o555);
+    try {
+      const r = await importStepTool({ content_base64: stepBytes.toString('base64'), output_dir: out });
+      expect(r.ok).toBe(false);
+      expect(readFileSync(join(out, 'imported.kcad.ts'), 'utf8')).toBe('existing script');
+    } finally {
+      chmodSync(out, 0o755);
+    }
+    const linked = join(dir, 'hardlinked');
+    mkdirSync(linked, { recursive: true });
+    writeFileSync(join(dir, 'hl-victim'), 'precious');
+    linkSync(join(dir, 'hl-victim'), join(linked, 'imported.step'));
+    const r2 = await importStepTool({ content_base64: stepBytes.toString('base64'), output_dir: linked });
+    expect(r2.ok).toBe(true);
+    expect(readFileSync(join(dir, 'hl-victim'), 'utf8')).toBe('precious');
+  }, 60000);
 
   it('rejects unsafe or ambiguous input', async () => {
     expect((await importStepTool({})).error).toMatch(/exactly one/);

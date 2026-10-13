@@ -15,12 +15,12 @@
 // `lib.fromSTL`) into output_dir, evaluates it, and returns the script path,
 // its code and the body's bounding box so the agent can keep modelling on it.
 
-import { mkdir, mkdtemp, rm } from 'node:fs/promises';
+import { mkdir, mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { evaluateAndBuildScript } from '../../cli/commands/evaluate';
 import { validateOutputPath } from '../../script-runtime/safeOutputPath';
-import { checkWritableDestination, safeWriteFile } from '../../script-runtime/safeWriteFile';
+import { checkWritableDestination, removeIfCreated, safeWriteFileDetailed } from '../../script-runtime/safeWriteFile';
 import { fetchPublicBytes, parseFetchUrl, resolvePinned } from './importStepFetch';
 
 export { isPrivateAddress } from './importStepFetch';
@@ -185,9 +185,15 @@ async function writeImport(written: Written, bytes: Uint8Array): Promise<string 
     const bad = await checkWritableDestination(p);
     if (bad !== undefined) return bad;
   }
-  const err = (await safeWriteFile(written.model_path, bytes)) ?? (await safeWriteFile(written.script_path, written.code));
-  if (err !== undefined) await Promise.all([written.model_path, written.script_path].map(p => rm(p, { force: true }).catch(() => undefined)));
-  return err;
+  const model = await safeWriteFileDetailed(written.model_path, bytes);
+  if (model.error !== undefined) return model.error;
+  const script = await safeWriteFileDetailed(written.script_path, written.code);
+  if (script.error !== undefined) {
+    // Undo only what this run created; never touch files that already existed.
+    await removeIfCreated(model);
+    return script.error;
+  }
+  return undefined;
 }
 
 async function runImport(input: ImportStepInput): Promise<ImportStepOutput> {
