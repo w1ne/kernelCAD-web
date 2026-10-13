@@ -30,6 +30,11 @@ When you have `kernelcad mcp` available, use the MCP tools for dynamic introspec
 - `inspect({ of: 'face-labels', file? code?, feature_id? })` — canonical face names resolvable on a feature
 - `query({ mode: 'lineage', file? code?, feature_id, ref })` — walk the HistoryMap chain that produced a named face/edge ref; returns `{ chain, usedFallback }`.
 
+### Shared local Studio selection
+
+- `get_selection({ studio_url, session })` — read the user's clicked face/edge in the same local Studio session. The Studio URL is a local HTTP origin; acquire `session` from `GET /__kernelcad/session?script=<path>` for the script open in Studio. Returns `selection` (or null), `revision`, and `modelGeneration`. A pick has `{ shapeIndex, kind: 'face' | 'edge', id, featureId }`. For “make this edge r2”, read the pick, inspect the current shape/edges, then author the edit. Indices are mesh-local; `featureId` is source provenance, not a stable topology-ref owner. Do not manufacture an `@kc[...]` ref from these fields.
+- `set_selection({ studio_url, session, model_generation, selection })` — replace the same viewer selection, or clear with `selection: null`. Pass the model generation from the latest `get_selection` response. Studio updates its existing highlight on the next sync cycle. Rebuilds clear picks and reject writes from an earlier generation; read again after a conflict. These tools change selection only, not geometry, and currently support local Studio sessions, not hosted sessions.
+
 ### Diagnostics
 
 - `why_did_this_fail({ file? code?, feature_id?, diagnostic? })` — walk the upstream chain of a failing feature; returns each upstream feature's id/kind/health/diagnostics in topological order (per-code hints already inline on every diagnostic). Use when `code` is `recompute.input.missing` to find the root cause. Also returns `trace` (every feature joined to its call site, AST node range, inputs and dependents), `repairRegion` (the only lines an edit may touch), and ordered `candidates` with real patches — or `candidateStatus: 'no-automatic-candidate'` when no mechanical fix exists.

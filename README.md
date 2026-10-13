@@ -210,6 +210,10 @@ for complete input/output schemas and behavior annotations, or search the
 [design guide](https://kernelcad.com/docs/design-guide) for existing recipes and
 cited, dated manufacturing catalog snapshots.
 
+For local Studio, [`get_selection` and `set_selection`](docs/guide/shared-selection.md)
+share face/edge picks with your MCP agent. Open the same script in Studio and
+use its session token; picks expire on model rebuild.
+
 ## Contributing
 
 Web app + dev workflow (clone the repo, `npm install`, `npm run dev`) for contributors who want to hack on the kernel or the visual debugger:
