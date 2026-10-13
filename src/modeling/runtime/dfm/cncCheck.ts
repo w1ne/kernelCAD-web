@@ -69,9 +69,14 @@ const PARALLEL_COS = 0.98;
 /** Without BREP face ids, normals this far apart count as a sharp edge
  *  (tessellated curves bend less per facet). */
 const SHARP_DIHEDRAL_DEG = 60;
-/** With BREP face ids, an edge between two DIFFERENT faces is sharp unless the
- *  faces meet tangentially (fillet blends): any crease above this angle. */
-const TANGENT_DEG = 5;
+/** With BREP face ids, a crease between two DIFFERENT faces is a radius-0
+ *  corner (always tighter than any tool radius) unless one face is curved and
+ *  the crease is just its tessellation meeting a tangent neighbour. Creases
+ *  above this numeric floor are judged that way, not by a fixed angle. */
+const CREASE_EPS_DEG = 0.05;
+/** A crease must exceed this multiple of the curved face's own facet step to
+ *  count as a real corner rather than tangent-blend tessellation. */
+const FACET_STEP_FACTOR = 1.5;
 const WELD = 1e-4;
 const MAX_REPORTED = 10;
 
@@ -166,8 +171,9 @@ export function findUndercuts(
  *
  * With `faceOfTri` (the BREP face of every triangle, as from faceTaggedMeshOf)
  * an edge inside one face is tessellation and is skipped, and an edge between
- * two faces is sharp whenever they are not tangent, so obtuse corners (e.g.
- * 150°) are caught. Without it, a fixed 60° normal-angle cutoff is used.
+ * two faces is a radius-0 corner (sharper than any tool radius) whenever it
+ * is a real crease rather than a curved face's tessellation, so near-straight
+ * corners (e.g. 177°) are caught. Without it, a fixed 60° normal-angle cutoff is used.
  */
 export function findSharpInternalCorners(
   mesh: DfmMesh,
@@ -190,7 +196,20 @@ export function findSharpInternalCorners(
       edges.set(ek, e);
     }
   });
-  const cosSharp = Math.cos(((faceOfTri !== undefined ? TANGENT_DEG : SHARP_DIHEDRAL_DEG) * Math.PI) / 180);
+  const cosSharp = Math.cos(((faceOfTri !== undefined ? CREASE_EPS_DEG : SHARP_DIHEDRAL_DEG) * Math.PI) / 180);
+  // Per BREP face: largest normal step between adjacent facets of that face
+  // (0 for planes). A crease no larger than that is a tangent blend whose
+  // radius is the face's own (checked against the tool by findTightFillets).
+  const faceStep = new Map<number, number>();
+  if (faceOfTri !== undefined) {
+    for (const e of edges.values()) {
+      if (e.tris.length !== 2) continue;
+      const f = faceOfTri[e.tris[0]];
+      if (f !== faceOfTri[e.tris[1]]) continue;
+      const ang = Math.acos(Math.min(1, Math.max(-1, dot(tris[e.tris[0]].n, tris[e.tris[1]].n))));
+      if (ang > (faceStep.get(f) ?? 0)) faceStep.set(f, ang);
+    }
+  }
   const found: CncSharpCorner[] = [];
   for (const e of edges.values()) {
     if (e.tris.length !== 2) continue;
@@ -201,7 +220,12 @@ export function findSharpInternalCorners(
     if (axis === undefined) continue;
     if (faceOfTri !== undefined && faceOfTri[e.tris[0]] === faceOfTri[e.tris[1]]) continue;
     const [t1, t2] = [tris[e.tris[0]], tris[e.tris[1]]];
-    if (dot(t1.n, t2.n) > cosSharp) continue; // smooth or tessellated curve
+    const nd = dot(t1.n, t2.n);
+    if (nd > cosSharp) continue; // smooth or tessellated curve
+    if (faceOfTri !== undefined) {
+      const step = Math.max(faceStep.get(faceOfTri[e.tris[0]]) ?? 0, faceStep.get(faceOfTri[e.tris[1]]) ?? 0);
+      if (Math.acos(Math.min(1, Math.max(-1, nd))) <= FACET_STEP_FACTOR * step) continue; // tangent blend
+    }
     // Concave: each triangle's centroid sits on the outward side of the other's plane.
     if (dot(t2.n, sub(t1.c, e.a)) <= 1e-6) continue;
     found.push({

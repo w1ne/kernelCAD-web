@@ -94,6 +94,14 @@ describe('dfm_review', () => {
     expect(status(r, 'cnc.internal-corner-radius')).toBe('fail');
   }, 60000);
 
+  it('catches an obtuse (177°) sharp internal corner', async () => {
+    const code = 'return extrudePolygon([[0, 0], [40, 0], [40, 10], [20, 10], [0, 10 + 20 * Math.tan(Math.PI / 60)]], 10);';
+    const r = await dfmReviewTool({ code, processes: ['cnc'] });
+    expect(r.cnc![0].result.sharpInternalCorners).toHaveLength(1);
+    expect(r.cnc![0].result.sharpInternalCorners[0].location[0]).toBeCloseTo(20, 3);
+    expect(status(r, 'cnc.internal-corner-radius')).toBe('fail');
+  }, 60000);
+
   it('rejects a non-string build_direction with a diagnostic instead of throwing', async () => {
     const r = await dfmReviewTool({ code: 'return box(1, 1, 1);', build_direction: 123 as never });
     expect(r.ok).toBe(false);

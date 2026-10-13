@@ -12,4 +12,3 @@ export const SCENE_SUMMARY_SCHEMA = {
   required: ['valid', 'volume', 'faceCount', 'size'],
   additionalProperties: false,
 };
-
