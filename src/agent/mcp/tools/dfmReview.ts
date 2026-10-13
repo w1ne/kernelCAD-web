@@ -79,6 +79,7 @@ export interface DfmReviewOutput {
   fdm?: { part: string; result: FdmPartReport }[];
   cnc?: { part: string; result: CncPartReport }[];
   diagnostics: CompilerDiagnostic[];
+  error?: string;
 }
 
 const r1 = (n: number): number => Math.round(n * 10) / 10;
@@ -128,7 +129,9 @@ function printerError(input: DfmReviewInput): DfmReviewOutput | undefined {
 
 function parseBuildDirection(input: DfmReviewInput): Vec3 | undefined | DfmReviewOutput {
   if (input.build_direction === undefined) return undefined;
-  return axisVector(input.build_direction) ?? invalid('build_direction', input.build_direction, "an axis token like '+z' or '-x'");
+  const token: unknown = input.build_direction;
+  if (typeof token !== 'string') return invalid('build_direction', token, "an axis token like '+z' or '-x'");
+  return axisVector(token) ?? invalid('build_direction', input.build_direction, "an axis token like '+z' or '-x'");
 }
 
 function parseApproachAxes(input: DfmReviewInput): Vec3[] | DfmReviewOutput {
@@ -180,37 +183,70 @@ interface PartReview {
   diagnostics: CompilerDiagnostic[];
   fdm?: FdmPartReport;
   cnc?: CncPartReport;
+  /** Processes whose analysis threw for this part. */
+  failed: DfmProcess[];
 }
 
-function reviewPart(part: ResolvedPart, opts: ReviewOptions, fdmSettings: DfmFdmMetadata): PartReview {
-  const out: PartReview = { checks: [], diagnostics: [] };
+interface PartGeometry {
+  shape: OcctBackend;
+  mesh: ReturnType<typeof meshShapeForExport>;
+  bvh: TriangleBvh;
+}
+
+function errorText(e: unknown): string {
+  return e instanceof Error ? e.message : String(e);
+}
+
+function recordFailure(out: PartReview, part: string, process: DfmProcess, e: unknown): void {
+  out.failed.push(process);
+  out.diagnostics.push({
+    target: 'export-occt', code: 'feature.kernel-failed', severity: 'error',
+    message: `dfm_review: the ${process} analysis of part '${part}' failed (${errorText(e)}); its checks were not run.`,
+    hint: 'The OCCT kernel could not analyse this part; check it for degenerate geometry with evaluate_script.',
+  });
+  out.checks.push({
+    id: `${process}.analysis`, process, part, status: 'fail',
+    summary: `The ${process} analysis could not run on this part, so it is not reviewed.`,
+  });
+}
+
+function runFdm(part: ResolvedPart, g: PartGeometry, settings: DfmFdmMetadata, out: PartReview): void {
+  const r = checkFdmPrintability(g.shape, {
+    settings, part: part.name, refOwner: part.refOwner, mesh: g.mesh, bvh: g.bvh,
+    toWorld: p => part.worldTransform.point(p),
+  });
+  out.fdm = r.report;
+  out.diagnostics.push(...r.diagnostics);
+  out.checks.push(...fdmChecks(part.name, r.report));
+}
+
+function runCnc(part: ResolvedPart, g: PartGeometry, settings: CncSettings, out: PartReview): void {
+  out.cnc = checkCncMachinability(g.shape, g.mesh, settings, g.bvh);
+  out.checks.push(...cncChecks(part.name, out.cnc));
+}
+
+/** Each requested process runs in its own try, so one failure never skips the other. */
+export function reviewPart(part: ResolvedPart, opts: ReviewOptions, fdmSettings: DfmFdmMetadata): PartReview {
+  const out: PartReview = { checks: [], diagnostics: [], failed: [] };
+  let g: PartGeometry;
   try {
     const shape = part.shape as OcctBackend;
     const mesh = meshShapeForExport(shape.getReplicadShape());
-    const bvh = new TriangleBvh(mesh);
-    if (opts.processes.includes('fdm')) {
-      const r = checkFdmPrintability(shape, {
-        settings: fdmSettings, part: part.name, refOwner: part.refOwner, mesh, bvh,
-        toWorld: p => part.worldTransform.point(p),
-      });
-      out.fdm = r.report;
-      out.diagnostics.push(...r.diagnostics);
-      out.checks.push(...fdmChecks(part.name, r.report));
-    }
-    if (opts.processes.includes('cnc')) {
-      out.cnc = checkCncMachinability(shape, mesh, opts.cnc, bvh);
-      out.checks.push(...cncChecks(part.name, out.cnc));
-    }
+    g = { shape, mesh, bvh: new TriangleBvh(mesh) };
   } catch (e) {
-    out.diagnostics.push({
-      target: 'export-occt', code: 'feature.kernel-failed', severity: 'warn',
-      message: `dfm_review: checking part '${part.name}' failed (${e instanceof Error ? e.message : String(e)}).`,
-      hint: 'The OCCT kernel could not analyse this part; check it for degenerate geometry with evaluate_script.',
-    });
-    out.checks.push({
-      id: 'review.kernel', process: opts.processes[0], part: part.name, status: 'warn',
-      summary: 'The kernel could not analyse this part; results are incomplete.',
-    });
+    for (const p of opts.processes) recordFailure(out, part.name, p, e);
+    return out;
+  }
+  const runners: Record<DfmProcess, () => void> = {
+    fdm: () => runFdm(part, g, fdmSettings, out),
+    cnc: () => runCnc(part, g, opts.cnc, out),
+  };
+  for (const p of opts.processes) {
+    try {
+      runners[p]();
+    } catch (e) {
+      recordFailure(out, part.name, p, e);
+    }
   }
   return out;
 }
@@ -221,7 +257,9 @@ export async function dfmReviewTool(input: DfmReviewInput): Promise<DfmReviewOut
   const { processes } = opts;
   let built;
   try {
-    built = await evaluateAndBuildScript({ file: input.file, code: input.code });
+    // The review applies its own (call-time) settings, so the script's dfmSpec
+    // gate must not veto or pollute it: build without that gate.
+    built = await evaluateAndBuildScript({ file: input.file, code: input.code }, { skipDfmGate: true });
   } catch (e) {
     return { ok: false, verdict: 'fail', processes, checks: [], diagnostics: [kernelErrorToDiagnostic(e)] };
   }
@@ -237,9 +275,12 @@ export async function dfmReviewTool(input: DfmReviewInput): Promise<DfmReviewOut
   const checks = reviews.flatMap(r => r.review.checks);
   const fdm = reviews.flatMap(r => (r.review.fdm !== undefined ? [{ part: r.part, result: r.review.fdm }] : []));
   const cnc = reviews.flatMap(r => (r.review.cnc !== undefined ? [{ part: r.part, result: r.review.cnc }] : []));
+  const incomplete = reviews.some(r => r.review.failed.length > 0);
   return {
-    ok: true,
-    verdict: checks.some(c => c.status === 'fail') ? 'fail' : 'pass',
+    // An analysis that could not run is not a review: never ok, never pass.
+    ok: !incomplete,
+    verdict: incomplete || checks.some(c => c.status === 'fail') ? 'fail' : 'pass',
+    ...(incomplete ? { error: 'Part of the analysis failed; see the *.analysis checks and diagnostics.' } : {}),
     processes,
     checks,
     ...(fdm.length > 0 ? { fdm } : {}),

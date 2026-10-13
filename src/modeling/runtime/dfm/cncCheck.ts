@@ -26,6 +26,7 @@ import {
   MIN_ANGULAR_COVERAGE_RAD,
 } from '../../../kernel/backends/occt/holeDetection';
 import { TriangleBvh, type DfmMesh } from './meshBvh';
+import { faceTaggedMeshOf } from './fdmCheck';
 
 export type Vec3 = [number, number, number];
 
@@ -65,7 +66,12 @@ export interface CncPartReport {
 
 const NORMAL_EPS = 1e-3;
 const PARALLEL_COS = 0.98;
+/** Without BREP face ids, normals this far apart count as a sharp edge
+ *  (tessellated curves bend less per facet). */
 const SHARP_DIHEDRAL_DEG = 60;
+/** With BREP face ids, an edge between two DIFFERENT faces is sharp unless the
+ *  faces meet tangentially (fillet blends): any crease above this angle. */
+const TANGENT_DEG = 5;
 const WELD = 1e-4;
 const MAX_REPORTED = 10;
 
@@ -155,8 +161,19 @@ export function findUndercuts(
   return { areaMm2: area, samples: unreachable.slice(0, 5).map(t => t.c) };
 }
 
-/** Sharp concave edges parallel to an approach axis (internal corners of radius 0). */
-export function findSharpInternalCorners(mesh: DfmMesh, axes: readonly Vec3[]): CncSharpCorner[] {
+/**
+ * Sharp concave edges parallel to an approach axis (internal corners of radius 0).
+ *
+ * With `faceOfTri` (the BREP face of every triangle, as from faceTaggedMeshOf)
+ * an edge inside one face is tessellation and is skipped, and an edge between
+ * two faces is sharp whenever they are not tangent, so obtuse corners (e.g.
+ * 150°) are caught. Without it, a fixed 60° normal-angle cutoff is used.
+ */
+export function findSharpInternalCorners(
+  mesh: DfmMesh,
+  axes: readonly Vec3[],
+  faceOfTri?: ArrayLike<number>,
+): CncSharpCorner[] {
   const tris = trianglesOf(mesh);
   const key = (p: Vec3): string => p.map(x => Math.round(x / WELD)).join(',');
   const edges = new Map<string, { a: Vec3; b: Vec3; tris: number[] }>();
@@ -173,7 +190,7 @@ export function findSharpInternalCorners(mesh: DfmMesh, axes: readonly Vec3[]): 
       edges.set(ek, e);
     }
   });
-  const cosSharp = Math.cos((SHARP_DIHEDRAL_DEG * Math.PI) / 180);
+  const cosSharp = Math.cos(((faceOfTri !== undefined ? TANGENT_DEG : SHARP_DIHEDRAL_DEG) * Math.PI) / 180);
   const found: CncSharpCorner[] = [];
   for (const e of edges.values()) {
     if (e.tris.length !== 2) continue;
@@ -182,6 +199,7 @@ export function findSharpInternalCorners(mesh: DfmMesh, axes: readonly Vec3[]): 
     if (l < 1e-6) continue;
     const axis = axes.find(a => Math.abs(dot(d, a)) / l > PARALLEL_COS);
     if (axis === undefined) continue;
+    if (faceOfTri !== undefined && faceOfTri[e.tris[0]] === faceOfTri[e.tris[1]]) continue;
     const [t1, t2] = [tris[e.tris[0]], tris[e.tris[1]]];
     if (dot(t1.n, t2.n) > cosSharp) continue; // smooth or tessellated curve
     // Concave: each triangle's centroid sits on the outward side of the other's plane.
@@ -236,10 +254,12 @@ export function checkCncMachinability(
   settings: CncSettings,
   bvh?: TriangleBvh,
 ): CncPartReport {
+  const tagged = faceTaggedMeshOf(shape, 'cnc');
+  const faceMesh: DfmMesh = { vertices: Array.from(tagged.vertices), triangles: Array.from(tagged.triangles) };
   return {
     settings,
     undercut: findUndercuts(mesh, settings.approachAxes, bvh),
-    sharpInternalCorners: findSharpInternalCorners(mesh, settings.approachAxes).slice(0, MAX_REPORTED),
+    sharpInternalCorners: findSharpInternalCorners(faceMesh, settings.approachAxes, tagged.faceOfTri).slice(0, MAX_REPORTED),
     tightFillets: findTightFillets(shape, settings.approachAxes, settings.toolDiameterMm / 2).slice(0, MAX_REPORTED),
   };
 }

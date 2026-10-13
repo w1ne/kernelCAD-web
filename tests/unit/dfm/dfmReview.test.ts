@@ -75,6 +75,31 @@ describe('dfm_review', () => {
     expect(status(r, 'fdm.bed-fit')).toBe('fail');
   }, 60000);
 
+  it('applies call options over a script-declared dfmSpec instead of failing on its gate', async () => {
+    const code = `dfmSpec({ process: 'fdm' });\n${TEE}`;
+    const cnc = await dfmReviewTool({ code, processes: ['cnc'], approach_axes: ['+z', '-z'] });
+    expect(cnc.ok).toBe(true);
+    expect(cnc.verdict).toBe('pass');
+    expect(cnc.diagnostics.filter(d => d.code.startsWith('dfm.fdm'))).toEqual([]);
+    const fdm = await dfmReviewTool({ code, processes: ['fdm'], max_overhang_deg: 90 });
+    expect(fdm.ok).toBe(true);
+    expect(status(fdm, 'fdm.overhangs')).toBe('pass');
+  }, 60000);
+
+  it('catches an obtuse (150°) sharp internal corner', async () => {
+    const code = 'return extrudePolygon([[0, 0], [40, 0], [40, 10], [20, 10], [0, 10 + 20 * Math.tan(Math.PI / 6)]], 10);';
+    const r = await dfmReviewTool({ code, processes: ['cnc'] });
+    expect(r.cnc![0].result.sharpInternalCorners).toHaveLength(1);
+    expect(r.cnc![0].result.sharpInternalCorners[0].location[0]).toBeCloseTo(20, 3);
+    expect(status(r, 'cnc.internal-corner-radius')).toBe('fail');
+  }, 60000);
+
+  it('rejects a non-string build_direction with a diagnostic instead of throwing', async () => {
+    const r = await dfmReviewTool({ code: 'return box(1, 1, 1);', build_direction: 123 as never });
+    expect(r.ok).toBe(false);
+    expect(r.diagnostics[0].code).toBe('cli.invalid-args');
+  });
+
   it('rejects bad options before evaluating', async () => {
     for (const bad of [
       { processes: ['sla'] }, { nozzle_mm: -1 }, { approach_axes: ['up'] }, { printer: 'nope' }, { max_overhang_deg: 120 },
@@ -98,6 +123,21 @@ describe('cncCheck helpers', () => {
     expect(axisVector('-x')).toEqual([-1, 0, 0]);
     expect(axisVector('z')).toBeUndefined();
   });
+
+  it('with BREP face ids, skips creases inside one face (tessellation)', async () => {
+    // A square pocket's sharp walls are 4 corners with face ids; claiming every
+    // triangle is one face must drop them all.
+    const { meshShapeForExport } = await import('../../../src/kernel/backends/occt/occtBackend');
+    const { faceTaggedMeshOf } = await import('../../../src/modeling/runtime/dfm/fdmCheck');
+    const { buildModel } = await import('../../../src/modeling/buildModel');
+    const model = await buildModel({ fileName: 'p.kcad.ts', code: POCKET });
+    const shape = (model.rootShape ?? model.tailShape) as never as { getReplicadShape(): never };
+    meshShapeForExport(shape.getReplicadShape()); // stamps the per-face triangulation
+    const tagged = faceTaggedMeshOf(shape as never, 'p');
+    const mesh = { vertices: Array.from(tagged.vertices), triangles: Array.from(tagged.triangles) };
+    expect(findSharpInternalCorners(mesh, [[0, 0, 1]], tagged.faceOfTri)).toHaveLength(4);
+    expect(findSharpInternalCorners(mesh, [[0, 0, 1]], new Array(tagged.faceOfTri.length).fill(0))).toEqual([]);
+  }, 60000);
 
   it('ignores convex box edges', () => {
     // Unit cube, outward winding.
