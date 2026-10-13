@@ -3,6 +3,20 @@
 import { selectionResultSchema, type SharedSelection } from '../../shared/selection/sharedSelection';
 import type { SelectionCodeStore } from './selectionCodeStore';
 
+function applySelectionToViewer(
+    store: SelectionCodeStore,
+    next: SharedSelection,
+    applyFace: (selection: { shapeIndex: number; faceId: number } | null) => void,
+): void {
+    const current = store.getSnapshot().link;
+    const currentSelection = current ? { ...current.pick, featureId: current.featureId } : null;
+    if (JSON.stringify(currentSelection) === JSON.stringify(next)) return;
+    if (next) {
+        store.linkFromGeometry({ shapeIndex: next.shapeIndex, kind: next.kind, id: next.id }, next.featureId, null);
+    } else store.clearLink();
+    applyFace(next?.kind === 'face' ? { shapeIndex: next.shapeIndex, faceId: next.id } : null);
+}
+
 /** One request at a time; a click during a read wins over that read. */
 export function attachSharedSelection(
     store: SelectionCodeStore,
@@ -41,15 +55,8 @@ export function attachSharedSelection(
                     if (!result.ok || generation !== started || (pending && !writing)) return;
                     if (writing) pending = false;
                 }
-                const current = store.getSnapshot().link;
-                const currentSelection = current ? { ...current.pick, featureId: current.featureId } : null;
-                if (JSON.stringify(currentSelection) === JSON.stringify(result.selection)) return;
                 applying = true;
-                const next = result.selection;
-                if (next) {
-                    store.linkFromGeometry({ shapeIndex: next.shapeIndex, kind: next.kind, id: next.id }, next.featureId, null);
-                } else store.clearLink();
-                applyFace(next?.kind === 'face' ? { shapeIndex: next.shapeIndex, faceId: next.id } : null);
+                applySelectionToViewer(store, result.selection, applyFace);
             } catch {
                 // Leave failed writes pending for retry; disconnected Studio does not erase a click.
             } finally {

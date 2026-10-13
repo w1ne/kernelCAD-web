@@ -34,4 +34,4 @@ This implementation is for local HTTP Studio origins (localhost, 127.0.0.1,
 ::1). Hosted route registration and owner authorization live in the separate
 server repository and are not deployed by this change.
 
-[Local demonstration bundle](../demos/shared-selection/README.md).
+[Shared selection handoff](../demos/shared-selection/README.md).

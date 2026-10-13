@@ -6,7 +6,7 @@ Scope: two tools, get_selection and set_selection, addressing an explicit local 
 2. Add validated single-pick session state and GET/POST endpoint, mount in Vite.
 3. Add MCP tools, annotations/output schemas and append registry contract.
 4. Synchronize the viewer store bidirectionally with serialized polling and writes.
-5. Update usage documentation, record local demonstration and verification.
+5. Update usage documentation and the MCP companion skill; verify locally.
 6. Run relevant suites, typecheck and lint; review diff; commit, push feature branch and create PR.
 
 Existing Studio already has a face/edge code-link selection store; reuse it rather than duplicate picking.
