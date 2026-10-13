@@ -180,10 +180,21 @@ export async function validateJointAxisBindingWithCache(
   const session = arm.__session();
   const sceneFeatureId = findOrCreateSceneFeatureId(arm, session);
   const engine = new RecomputeEngine(createOcctLowerer(session));
+  const pending = session.snapshotFullLower(new Map());
+  let warnings = 0;
   const recompute = await engine.run(session.getRecords(), {
     paramTable: session.paramTable,
     gatedFeatureNames: session.gatedFeatureNames,
+    warningSink: () => { warnings += 1; },
   });
+  // buildModel lowers the same records again right after the script returns.
+  // Hand it this lower when it was clean (see CaptureSession.cleanScriptLower):
+  // a 2-stage planetary gearbox spent half its build here and kept two full
+  // shape sets alive in the OCCT heap.
+  const clean = warnings === 0
+    && recompute.diagnostics.length === 0
+    && [...recompute.health.values()].every((h) => h === 'healthy');
+  session.cleanScriptLower = clean ? { ...pending, shapes: recompute.shapes } : undefined;
   const lowered = recompute.shapes.get(sceneFeatureId);
   if (!lowered || !isSceneBackend(lowered)) {
     return { diagnostics: [], worldShapes: new Map(), worldTransforms: new Map() };
