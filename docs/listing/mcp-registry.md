@@ -7,8 +7,8 @@ Registry: https://registry.modelcontextprotocol.io. Quickstart: https://github.c
 Rules this file follows:
 - `name` `com.kernelcad/kernelcad` matches `mcpName` in package.json, which the registry requires for the npm package.
 - `description` is 91 characters. The registry rejects anything over 100 (`422 expected length <= 100`).
-- With a `com.kernelcad/*` namespace, the remote URLs have to be on kernelcad.com or one of its subdomains. `mcp.kernelcad.com` qualifies.
-- The registry proves you own the domain with a DNS TXT record or an HTTP `/.well-known` file on kernelcad.com.
+- A `com.kernelcad/*` namespace needs proof that you own kernelcad.com, by a DNS TXT record or an HTTP `/.well-known` file. That proof covers the namespace only. The remote URL doesn't have to be on the same domain, although `mcp.kernelcad.com` is.
+- The npm package entry passes `packageArguments: [{type: positional, value: mcp}]`, so a client launching it runs `npx kernelcad mcp` (the stdio server) and not the general CLI.
 
 ## Publish
 ```bash
@@ -16,7 +16,7 @@ Rules this file follows:
 cp docs/listing/server.json server.json        # bump both versions to the released one
 mcp-publisher login dns --domain kernelcad.com --private-key <key>   # or: login http
 mcp-publisher publish
-curl "https://registry.modelcontextprotocol.io/v0/servers?search=com.kernelcad/kernelcad"
+curl "https://registry.modelcontextprotocol.io/v0.1/servers?search=com.kernelcad/kernelcad"
 ```
 
 Note that the MCP Registry doesn't make kernelCAD show up inside Claude or ChatGPT. Those directories are separate (see the other files).

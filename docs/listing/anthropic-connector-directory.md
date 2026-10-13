@@ -22,7 +22,7 @@ The plugin bundle (`plugins/kernelcad`) is a separate submission. Submit the rem
 **Tagline:** CAD in Claude: STEP, STL and drawings, no install
 
 **Description:**
-> Design real, editable CAD parts by describing them. kernelCAD builds parametric models on an OpenCASCADE B-rep kernel and shows them in 3D in the conversation. It checks every build automatically for interference, watertightness and manufacturability (FDM printing and CNC). Export STEP, STL, 3MF, GLB, DXF and dimensioned PDF drawings, or bring in your own STEP/STL file to build on. No install and no account needed to try. Sign in to save projects and share them in Studio.
+> Design real, editable CAD parts by describing them. kernelCAD builds parametric models on an OpenCASCADE B-rep kernel and shows them in 3D in the conversation. It checks assemblies for interference and exported meshes for watertightness, enforces any manufacturing rules a script declares, and reviews printability (FDM) and machinability (CNC) when you ask. Export STEP, STL, 3MF, GLB, DXF and dimensioned PDF drawings, or bring in your own STEP/STL file to build on. No install and no account needed to try. Sign in to save projects and share them in Studio.
 
 **Example prompts:**
 - "Design a wall bracket for a 25 mm pipe, 4 mm thick, two M5 screw holes."
@@ -30,4 +30,3 @@ The plugin bundle (`plugins/kernelcad`) is a separate submission. Submit the rem
 - "Export a STEP and a PDF drawing with dimensions."
 - "Here's a link to my STEP file. Cut a 20 × 10 mm slot in the top face."
 
-**Why it's different:** Fusion's connector needs a desktop Fusion install with a document open, and Onshape's needs an Onshape subscription. kernelCAD runs fully hosted and works anonymously.
