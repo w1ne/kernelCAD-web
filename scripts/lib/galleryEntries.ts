@@ -18,6 +18,15 @@ const galleryEntryBaseSchema = z.object({
   version: z.string().regex(/^v\d+\.\d+(\.\d+)?$/),
   prompt: z.string().min(1),
   video: z.string().min(1),
+  modelOrientation: z.string().trim().refine(orientation => {
+    const angles = orientation.split(/\s+/);
+    return angles.length === 3 && angles.every(angle =>
+      /^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?deg$/i.test(angle) &&
+      Number.isFinite(Number(angle.slice(0, -3))));
+  }, 'modelOrientation must contain exactly three finite deg angles').optional(),
+  previewMesh: z.object({tolerance: z.number().finite().positive(), angularTolerance: z.number().finite().positive()}).strict().optional(),
+  meshopt: z.boolean().optional(),
+  compactBridge: z.boolean().optional(),
   modelLocal: z.string().min(1).nullable().default(null),
   code: z.string().url(),
   tags: z.array(z.string()).default([]),
@@ -122,6 +131,7 @@ export function parseGalleryEntries(input: unknown): GalleryEntriesFile {
   for (const e of parsed.entries) {
     if (slugs.has(e.slug)) throw new Error(`duplicate slug: ${e.slug}`);
     slugs.add(e.slug);
+    if (e.previewMesh && e.modelLocal) throw new Error(`entry ${e.slug}: previewMesh cannot be applied to modelLocal`);
     if (e.featured) {
       const key = quarterKey(e.createdAt);
       const existing = featuredByQuarter.get(key);

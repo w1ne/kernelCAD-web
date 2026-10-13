@@ -1,122 +1,60 @@
-// LeRobot SO-ARM-100 reference hero.
+// SO-ARM100 gripper: the follower arm's end effector on its own.
 //
-// Composes a 2-DOF gripper subassembly from real vendor STEP files and
-// locally-authored mounting brackets. Demonstrates the v0.5 authoring
-// rule + the new MVP assembly validator:
+// Three real parts, in the so100.urdf gripper frame (millimetres):
+//   - hand:       Fixed_Jaw, the printed fixed finger and servo cradle;
+//   - hand-servo: Fixed_Jaw_Motor, the Feetech STS3215 bolted in the cradle;
+//   - jaw:        Moving_Jaw, the printed moving finger on the servo spline.
+// Meshes are the Apache-2.0 vendor simulation visuals. The two printed parts
+// come from parts/sim-seated/ (servo pocket and swept spline clearance cut
+// exactly, see parts/seat_meshes.py), so the solids touch and never overlap.
 //
-//   - Vendor catalog components (Feetech STS3215 servos, SO-100 jaw and
-//     output horn) imported via `lib.fromSTEP(path)`. Geometric fidelity
-//     matches the real part. No re-modelling.
-//
-//   - Scene-specific custom geometry (the base plate and the two-servo
-//     connecting bracket) authored with `box(...)`. These are the printed
-//     parts an SO-100 builder fabricates themselves.
-//
-//   - Every part participates in the mate graph via `arm.mate(..., 'fastened')`,
-//     so `kernelcad validate` sees the assembly as
-//     a connected mechanism — not just a bag of parts at random positions.
-//     This is what makes the assembly REAL: it has declared topology, not
-//     just spatial coincidence.
-//
-// The full preassembled `parts/SO100_Assembly.step` is also bundled —
-// agents can `lib.fromSTEP('parts/SO100_Assembly.step')` for the full
-// 5-DOF follower arm in a single line when they want it.
+// The servo is fastened in the cradle; the moving jaw turns on the servo
+// output (URDF joint `gripper`, axis local Z). -11° is the closed stop.
 
-// Finishes read as the real build: black ABS servo housings, a machined
-// aluminium output horn, and the jaw and bracket in white printed PLA.
-const PRINTED = '#ddd7cb';
-const servo1 = (await lib.fromSTEP('parts/STS3215.step')).finish('abs', { color: '#222529' });
-const servo2 = (await lib.fromSTEP('parts/STS3215.step')).finish('abs', { color: '#222529' });
-const horn   = (await lib.fromSTEP('parts/Passive_Horn.step')).finish('aluminium');
-const jaw    = (await lib.fromSTEP('parts/Moving_Jaw.step')).finish('pla', { color: PRINTED });
-
-// STS3215 local bbox: 45×25×40 mm, body roughly centered on its origin.
-// Z constants below are stacked offsets up the assembly axis.
-
-// Engineered base: rounded-rect plate with 4 corner feet, fillets, and a
-// machined-aluminium look. Demonstrates that custom plates can be visually
-// substantial even when authored purely from primitives.
-const PLATE_W = 140, PLATE_D = 110, PLATE_H = 8;
-const FOOT_R = 6, FOOT_H = 4;
-const FOOT_OFFSET_X = PLATE_W / 2 - 12;
-const FOOT_OFFSET_Y = PLATE_D / 2 - 12;
-const basePlateRaw = extrudeRoundedRect(PLATE_W, PLATE_D, 12, PLATE_H);
-const foot = (sx: number, sy: number): Shape =>
-  cylinder(FOOT_H, FOOT_R).translate(sx * FOOT_OFFSET_X, sy * FOOT_OFFSET_Y, -FOOT_H);
-const basePlate = basePlateRaw
-  .fillet(1.5)
-  .union(foot(-1, -1), foot(1, -1), foot(-1, 1), foot(1, 1))
-  .translate(0, 0, -PLATE_H / 2)
-  .finish('anodized', { color: '#2c313a' });
-
-// STS3215 mounting flange sits 4 mm above the plate (typical M3 washer
-// + bolt-head clearance). Z offset = 19.4 (half body) + 4 (clearance).
-const SERVO1_Z = 19.4 + 4;
-// Measured STEP extents (mm). The STS3215 output is not on the body centre:
-// the horn boss and its M3 bolt circle are at local (12.5, 0), and the boss
-// face is local Z = 20.2. The jaw's matching bolt circle is local (0, 0, -24)
-// and the finger runs along local -Y. Putting the jaw on (0, 0) leaves the
-// fork beside the horn.
-const SERVO_SHAFT_Z = 20.2;
-const SERVO_HORN_X = 12.5;
-const SERVO_HALF_X = 22.7;
-const HORN_THICK = 3.1;
-const BRACKET_THICK = 4;
-const JAW_MOUNT_Z = -24;
-const servo1Placed = servo1.translate(0, 0, SERVO1_Z);
-const hornPlaced = horn.translate(0, 0, SERVO1_Z + SERVO_SHAFT_Z);
-
-const bracket = extrudeRoundedRect(50, 60, 8, 4)
-  .fillet(0.8)
-  .translate(0, 0, SERVO1_Z + SERVO_SHAFT_Z + HORN_THICK)
-  .finish('pla', { color: PRINTED });
-
-// Shaft (local +Z) points +X. The body stands on the bracket.
-const servoZ2 = SERVO1_Z + SERVO_SHAFT_Z + HORN_THICK + BRACKET_THICK + SERVO_HALF_X;
-const servo2Placed = servo2
-  .rotate([0, 1, 0], 90)
-  .translate(0, 0, servoZ2);
-
-// Y+90 turns servo local +X into world -Z, so the horn (local x = 12.5)
-// sits 12.5 mm below the body centre. The jaw bolt circle lands on that horn.
-const jawPlaced = jaw
-  .rotate([0, 1, 0], 90)
-  .rotate([1, 0, 0], -90)
-  .translate(SERVO_SHAFT_Z - JAW_MOUNT_Z, 0, servoZ2 - SERVO_HORN_X);
+const PRINT = '#f0c43a';
+const jawDeg = param('jawDeg', -11, { min: -11, max: 110, description: 'Gripper opening' });
 
 const arm = assembly('so100-gripper');
-const basePart    = arm.part('base-plate',     basePlate);
-const shoulderSrv = arm.part('shoulder-servo', servo1Placed);
-const hornPart    = arm.part('output-horn',    hornPlaced);
-const bracketPart = arm.part('link-bracket',   bracket);
-const gripperSrv  = arm.part('gripper-servo',  servo2Placed);
-const jawPart     = arm.part('gripper-jaw',    jawPlaced);
 
-// Declared topology: shoulder-servo bolts to base-plate, horn fastens to
-// the shoulder-servo's shaft (fixed, posed at zero rotation for the hero),
-// bracket fastens to the horn, gripper-servo bolts to the bracket, jaw
-// fastens to the gripper-servo's output (fixed at the hero pose). Switch
-// to `revolute` when the demo needs articulation.
-// G0 (2026-05-31): legacy `arm.fixed(...)` was removed. Declare each
-// fastener as a `arm.mate(..., 'fastened')` between named frame connectors
-// on the two coupled parts. Each part gets a single frame connector at its
-// local origin (parts are already placed via `at:` so the world frame is
-// what we want for the fastened-mate alignment).
-basePart.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
-shoulderSrv.connector('mount-from-base', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
-shoulderSrv.connector('mount-to-horn', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
-hornPart.connector('mount-from-shoulder', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
-hornPart.connector('mount-to-bracket', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
-bracketPart.connector('mount-from-horn', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
-bracketPart.connector('mount-to-gripper', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
-gripperSrv.connector('mount-from-bracket', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
-gripperSrv.connector('mount-to-jaw', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
-jawPart.connector('mount-from-gripper', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+const load = async (dir: string, file: string) => (await lib.fromSTL(`parts/${dir}/${file}.stl`)).scale(1000);
 
-arm.mate('base-shoulder-bolts', 'base-plate.mount', 'shoulder-servo.mount-from-base', 'fastened');
-arm.mate('shoulder-horn-coupling', 'shoulder-servo.mount-to-horn', 'output-horn.mount-from-shoulder', 'fastened');
-arm.mate('horn-bracket-bolts', 'output-horn.mount-to-bracket', 'link-bracket.mount-from-horn', 'fastened');
-arm.mate('bracket-gripper-bolts', 'link-bracket.mount-to-gripper', 'gripper-servo.mount-from-bracket', 'fastened');
-arm.mate('gripper-jaw-coupling', 'gripper-servo.mount-to-jaw', 'gripper-jaw.mount-from-gripper', 'fastened');
+// URDF joint `gripper`: xyz (-20.2, -24.4, 0) mm, rpy (0, 180°, 0).
+const hand = arm.part('hand', (await load('sim-seated', 'Fixed_Jaw')).color(PRINT));
+const servo = arm.part('hand-servo', (await load('sim', 'Fixed_Jaw_Motor')).color('servo'));
+const jaw = arm.part(
+  'jaw',
+  (await load('sim-seated', 'Moving_Jaw')).rotate([0, 1, 0], 180).translate(-20.2, -24.4, 0).color(PRINT),
+);
 
-return arm.solvedModel({});
+// The servo body centre sits in the cradle; the output spline tip is on the
+// joint axis, where the moving jaw's hub bolts on.
+const seat = { kind: 'vec3' as const, value: [-7.7, -24.4, 0.5] as [number, number, number] };
+hand.connector('servo', { type: 'frame', origin: seat });
+servo.connector('mount', { type: 'frame', origin: seat });
+arm.mate('servo-fix', 'hand.servo', 'hand-servo.mount', 'fastened');
+
+const shaft = {
+  type: 'axis' as const,
+  origin: { kind: 'vec3' as const, value: [-20.2, -24.4, 20.3] as [number, number, number] },
+  // Child axis +Z turned by the 180° about Y: world -Z.
+  axis: [0, 0, -1] as [number, number, number],
+};
+servo.connector('shaft', shaft);
+jaw.connector('in', shaft);
+arm.mate('jaw', 'hand-servo.shaft', 'jaw.in', 'revolute', { pose: jawDeg, limitsDeg: [-11, 110] });
+
+animationView({
+  name: 'grip',
+  fps: 24,
+  tracks: [
+    { param: 'jawDeg', keys: [
+      { atMs: 0, value: -11 },
+      { atMs: 1500, value: 90, ease: 'easeInOut' },
+      { atMs: 3000, value: -11, ease: 'easeInOut' },
+    ] },
+  ],
+});
+
+// `ignore` only silences the BREP boolean probe, which misreads solids sewn
+// from STL. The mechanism gate's rest-pose mesh check still measures them.
+return arm.solvedModel({}, { ignore: [['hand', 'hand-servo'], ['hand-servo', 'jaw'], ['hand', 'jaw']] });

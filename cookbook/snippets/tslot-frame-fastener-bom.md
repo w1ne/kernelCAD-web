@@ -78,14 +78,17 @@ function yCyl(r, y0, len, x, z) {
 }
 
 let gusset = box(42, 3.2, 20).translate(-8, 10, 60);
-gusset = gusset.union(box(10, 8, 10).translate(4, 13.2, 66));
+// Stiffening boss between the two screw heads (heads span x ±4.8 about
+// x = 0 and x = 22), so neither head sits inside it.
+gusset = gusset.union(box(10, 8, 10).translate(6, 13.2, 66));
 gusset = gusset.subtract(yCyl(2.8, 8, 10, 0, 72));
 gusset = gusset.subtract(yCyl(2.8, 8, 10, 22, 72));
 gusset = gusset.finish('anodized', { color: '#5d6d78' });
 
 function capScrew(x: number, z: number) {
-  const head = yCyl(4.8, 13.1, 3.1, x, z);
-  const socket = yCyl(2.1, 14.4, 1.8, x, z);
+  // Head seats on the gusset face (y = 13.2), not 0.1 mm into it.
+  const head = yCyl(4.8, 13.2, 3.1, x, z);
+  const socket = yCyl(2.1, 14.5, 1.8, x, z);
   const shank = yCyl(2.25, 6, 7.2, x, z);
   return head.union(shank).subtract(socket).finish('steel');
 }

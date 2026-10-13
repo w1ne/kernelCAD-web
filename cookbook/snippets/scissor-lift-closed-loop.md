@@ -43,8 +43,16 @@ const linkT = 8;
 const sideY = 28;
 const railY = 38;
 const baseZ = 10;
-// Representative mid-pose height for the visual X-pattern (not closed-loop synced).
-const stageH = 100;
+// The fused X-pattern is drawn at the rest pose (platformZ = 110): the
+// upper bar ends bear on the deck underside (z = 110), they do not pierce
+// it. A bar end's top edge sits linkT/2·cos(angle) above its centreline,
+// so solve the centreline height for that contact (a few iterations).
+const restDeckZ = 110;
+let stageH = 100;
+for (let i = 0; i < 8; i++) {
+  const angle = Math.asin(Math.min(1, stageH / linkLen));
+  stageH = restDeckZ - baseZ - (linkT / 2) * Math.cos(angle);
+}
 const halfSpan = Math.sqrt(Math.max(400, linkLen * linkLen - stageH * stageH)) / 2;
 const deckZ = baseZ + stageH;
 

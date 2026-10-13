@@ -202,6 +202,7 @@ export interface RenderedPost {
 /** A file a page shows that the build makes: the model as GLB, or the video copied. */
 export interface AssetJob {
   readonly kind: 'glb' | 'copy';
+  readonly modelCompression?: 'meshopt';
   /** Repository path of the source: the model script or the video. */
   readonly from: string;
   /** Repository path of the output, next to the page. */
@@ -281,7 +282,7 @@ function renderPost(
   const assets: AssetJob[] = [
     ...ctx.copies,
     ...(post.meta.video === undefined ? [] : [{ kind: 'copy' as const, from: post.meta.video, to: `${outDir}${POST_VIDEO_FILE}` }]),
-    ...(post.meta.model === undefined ? [] : [{ kind: 'glb' as const, from: post.meta.model, to: `${outDir}${POST_MODEL_FILE}` }]),
+    ...(post.meta.model === undefined ? [] : [{ kind: 'glb' as const, ...(post.meta.modelCompression ? {modelCompression: post.meta.modelCompression} : {}), from: post.meta.model, to: `${outDir}${POST_MODEL_FILE}` }]),
   ];
   const firstImage = ctx.images.find((image) => image.underSite);
   const html = pageShell(
@@ -405,7 +406,7 @@ async function buildAssets(repoRoot: string, jobs: readonly AssetJob[]): Promise
       copyFileSync(path.join(repoRoot, job.from), target);
     } else {
       const { buildPostGlb } = await import('./blogModel');
-      await buildPostGlb(repoRoot, path.join(repoRoot, job.from), target, job.to);
+      await buildPostGlb(repoRoot, path.join(repoRoot, job.from), target, job.to, job.modelCompression);
     }
     built.push(`  ${job.to}: ${statSync(target).size.toLocaleString('en')} bytes from ${job.from}`);
   }

@@ -1,0 +1,337 @@
+{
+  "createdAt": "2026-10-12T17:11:09Z",
+  "artifact": "demo.mp4",
+  "videoSha256": "0006b393b1f38a2dd9e25309b604e7a381649fdf6adb16d2d56b7bc4b6a0d937",
+  "bytes": 8862935,
+  "source": "examples/rocket-engine-lines/engine-routed.kcad.ts",
+  "sourceSha256": "b992ce2bc4068d422e3a652487a665514643ff72caf8a8891da5d5a8a7747bc4",
+  "meshCacheSha256": "faf47e4be63e4038745d635985b32cf044b0f82c04c06aa577600282fded7970",
+  "meshCacheSourceSha256": "b992ce2bc4068d422e3a652487a665514643ff72caf8a8891da5d5a8a7747bc4",
+  "nativeParts": 42,
+  "hardwareParts": 19,
+  "tubes": 23,
+  "nativePlayerFiles": [
+    {
+      "path": "assets/index-qkriGjsP.js",
+      "bytes": 771074,
+      "sha256": "903e84f2d55cc74ebc1f0f43a7cd136cd1f4082a0374d2e6212625b84945887a"
+    },
+    {
+      "path": "hdri/CREDITS.md",
+      "bytes": 768,
+      "sha256": "510b327f59cdf4adb3cd14a94e7b2348c68ccad92452449ef65dcd501f845c1b"
+    },
+    {
+      "path": "hdri/brown_photostudio_02_1k.hdr",
+      "bytes": 1648130,
+      "sha256": "469abc5e6035b6c450bae8adbb448f8d1fa7c51d9e384e501516c28352c91b58"
+    },
+    {
+      "path": "hdri/kloofendal_43d_clear_puresky_1k.hdr",
+      "bytes": 1184531,
+      "sha256": "de7ba9d0b070470dbb70d0144294c8708068df353537b26ab59c394707e84377"
+    },
+    {
+      "path": "hdri/photo_studio_01_1k.hdr",
+      "bytes": 1597273,
+      "sha256": "95d36db188b90eabfd103c4cb4ca628c465befd14bb3544c992021e8a9acc9cd"
+    },
+    {
+      "path": "hdri/studio_country_hall_1k.hdr",
+      "bytes": 1684515,
+      "sha256": "3e5b7ed89e94b0d5ab5c2e5fd8012a9c89503f10a5690e35481553b0dc802026"
+    },
+    {
+      "path": "hdri/studio_small_03_1k.hdr",
+      "bytes": 1686299,
+      "sha256": "30933d55e45f0795daf49f3cbefbe0e5ebcb821ee04fb0a2818c02ffc3938817"
+    },
+    {
+      "path": "index.html",
+      "bytes": 990,
+      "sha256": "22592f3e1aa383c8fa0bc0c17c6c219eddcbd27619dc3902547c9a86bccddad8"
+    }
+  ],
+  "captureAdapterSha256": "71f3f14222a32d3d055caf8088275f594d3dfeb2ccaadcf22b66f85081443e5e",
+  "captureReceipts": [
+    "capture-stills.json",
+    "capture-refine.json",
+    "capture-orbit-0-192.json",
+    "capture-orbit-192-384.json"
+  ],
+  "browserPolicy": {
+    "attachedExistingChrome": true,
+    "newBrowserLaunched": false,
+    "ownedTabsClosed": true,
+    "maxSessionLifetimeMs": 900000,
+    "idleTimeoutMs": 60000
+  },
+  "stage": {
+    "background": "#f4f6f8",
+    "shadow": true
+  },
+  "editing": {
+    "introSeconds": 28,
+    "nativeMasterSize": [
+      3840,
+      2160
+    ],
+    "introMasterCount": 8,
+    "push": "Center crop from zoom1.000 to1.028 for each still shot; no synthetic geometry or model motion in these pushes.",
+    "transitions": "Straight cuts at3,8,11,14,16,18,22,28 seconds. Whole service groups appear cumulatively.",
+    "orbitSeconds": 16,
+    "nativeOrbitFrameCount": 384,
+    "orbitAzimuthStartDeg": 30,
+    "orbitAzimuthEndDeg": 390,
+    "orbitElevationDeg": 12,
+    "orbitDistanceMm": 5560.258099498831,
+    "orbitMargin": 1.15,
+    "orbitUniquePngHashes": 383,
+    "holdSeconds": 1,
+    "holdInputFrames": 24,
+    "encoder": "ffmpeg libx264, presetmedium, CRF18, yuv420p,24fps; concatstreamcopy; faststart",
+    "encodingScriptSha256": "4a7728a1f6451e12c7746003cb49f1d9afa040a8c9e53b7f31cf5908a3730f55",
+    "introEncodingScriptSha256": "bf906f2b1092f7a09c234a4ab15c5a3db517d3d5ec196587b54d0e05cc3ac38f",
+    "reviewedIntroPreviewSha256": "ccceef9afcdd33f299bd19509cee8f0ccad0a686bdfab6cb35fd38e364f9a4f9",
+    "introSegments": [
+      {
+        "name": "01-hardware",
+        "frames": 72,
+        "sha256": "a7c2b7f35111581cbedae0cf3fd4e12fc3d4523351f2315354bea43ee3fcf427"
+      },
+      {
+        "name": "02-lox",
+        "frames": 120,
+        "sha256": "342d8c3311eefe7ef6a85bda7b28133a1b6aad38c40b68f23eeb13aa61b72a20"
+      },
+      {
+        "name": "03-fuel-pump",
+        "frames": 72,
+        "sha256": "c42abc3cfa431e8b46ca9a83fb35a731544eb798034a9a3ef3e035455178a1bc"
+      },
+      {
+        "name": "04-fuel-complete",
+        "frames": 72,
+        "sha256": "4e96eb1ab4042ba5dde8bea44c221ca7e8b5d18f684e197adbac9cbe42e0a83d"
+      },
+      {
+        "name": "05-hotgas-feed",
+        "frames": 48,
+        "sha256": "c8d5c4a8d99bdb79e41694e94cab2eb5e61715f11a7075b750f8f6cb7ae65608"
+      },
+      {
+        "name": "06-hotgas-aft",
+        "frames": 48,
+        "sha256": "8cad47a8ebd4ea1fec0a485bfb5518152e80060ee9704ef2dad86547f17f8239"
+      },
+      {
+        "name": "07-igniter",
+        "frames": 96,
+        "sha256": "24605b86942e877011fe39322ca46b74ec2a1a1ecace58d81d6fdecf8dea8994"
+      },
+      {
+        "name": "08-pneumatic",
+        "frames": 144,
+        "sha256": "ada8ff63767a94da56dc70eed7b3d196ab8d09335d2e40c922d6b7d51c1dc414"
+      }
+    ],
+    "audioAdded": false,
+    "overlayTextAdded": false,
+    "orbitWrapNote": "384 captured camera frames include the identical start/end view to close a full360degree turn;383 unique native PNGs. The following24input frames hold that final view."
+  },
+  "verification": {
+    "probe": {
+      "streams": [
+        {
+          "index": 0,
+          "codec_name": "h264",
+          "codec_long_name": "H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10",
+          "profile": "High",
+          "codec_type": "video",
+          "codec_tag_string": "avc1",
+          "codec_tag": "0x31637661",
+          "width": 1920,
+          "height": 1080,
+          "coded_width": 1920,
+          "coded_height": 1088,
+          "closed_captions": 0,
+          "film_grain": 0,
+          "has_b_frames": 2,
+          "pix_fmt": "yuv420p",
+          "level": 40,
+          "chroma_location": "left",
+          "field_order": "progressive",
+          "refs": 4,
+          "is_avc": "true",
+          "nal_length_size": "4",
+          "id": "0x1",
+          "r_frame_rate": "24/1",
+          "avg_frame_rate": "24/1",
+          "time_base": "1/12288",
+          "start_pts": 0,
+          "start_time": "0.000000",
+          "duration_ts": 552960,
+          "duration": "45.000000",
+          "bit_rate": "1573161",
+          "bits_per_raw_sample": "8",
+          "nb_frames": "1080",
+          "nb_read_frames": "1080",
+          "extradata_size": 47,
+          "disposition": {
+            "default": 1,
+            "dub": 0,
+            "original": 0,
+            "comment": 0,
+            "lyrics": 0,
+            "karaoke": 0,
+            "forced": 0,
+            "hearing_impaired": 0,
+            "visual_impaired": 0,
+            "clean_effects": 0,
+            "attached_pic": 0,
+            "timed_thumbnails": 0,
+            "non_diegetic": 0,
+            "captions": 0,
+            "descriptions": 0,
+            "metadata": 0,
+            "dependent": 0,
+            "still_image": 0
+          },
+          "tags": {
+            "language": "und",
+            "handler_name": "VideoHandler",
+            "vendor_id": "[0][0][0][0]",
+            "encoder": "Lavc60.31.102 libx264"
+          }
+        }
+      ],
+      "format": {
+        "filename": "/home/andrii/projects/kernelCAD-web-worktrees/tube-routing/docs/demos/rocket-engine-routing/demo.mp4",
+        "nb_streams": 1,
+        "nb_programs": 0,
+        "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+        "format_long_name": "QuickTime / MOV",
+        "start_time": "0.000000",
+        "duration": "45.000000",
+        "size": "8862935",
+        "bit_rate": "1575632",
+        "probe_score": 100,
+        "tags": {
+          "major_brand": "isom",
+          "minor_version": "512",
+          "compatible_brands": "isomiso2avc1mp41",
+          "encoder": "Lavf60.16.100"
+        }
+      }
+    },
+    "decodedFrameCount": 1080,
+    "fullDecodeExitCode": 0,
+    "fullDecodeErrors": "",
+    "blackDetectionExitCode": 0,
+    "blackIntervals": [],
+    "blackDetectionPixelThreshold": 0.1,
+    "blackDetectionPictureThreshold": 0.98,
+    "faststartAtoms": [
+      {
+        "type": "ftyp",
+        "offset": 0,
+        "bytes": 32
+      },
+      {
+        "type": "moov",
+        "offset": 32,
+        "bytes": 13856
+      },
+      {
+        "type": "free",
+        "offset": 13888,
+        "bytes": 8
+      },
+      {
+        "type": "mdat",
+        "offset": 13896,
+        "bytes": 8849039
+      }
+    ],
+    "staticAssetLimitBytes": 26214400,
+    "belowStaticAssetLimit": true,
+    "selfReview": "Personally inspected all eight native master shots, eight decoded opening shots, and five orbit views near the start, quarter, half, three-quarter and complete turn. Corrected an occluded initial igniter view before encoding. Native scene only; no titles, captions, UI, watermark, voice, audio or music.",
+    "linearNativeOrbitSequence": true,
+    "browserCleanup": {
+      "at": "2026-10-12T17:12:43.149Z",
+      "ownedCaptureTargetIds": [
+        "383259E91D105E4EA1696E9905162AC3",
+        "17B92DD0AD572357FB69900F98926C76",
+        "6E8D39B11AC2696600DF542842AE3499",
+        "2B37DCF933177E1E2DB51FAC22FAF24E"
+      ],
+      "ownedCaptureTargetsRemaining": 0,
+      "existingBrowserPid": 4147939,
+      "existingBrowserStillRunning": true,
+      "browser": "Chrome/149.0.7827.53",
+      "remainingTargetCount": 5
+    },
+    "personalFinalDecodedReview": "PASS: all13finaldecodedframes viewed, including eight service shots and five orbit views. Full-fit silhouette has margin; macros crop peripheral hardware intentionally; igniter cartridge and both endpoints visible; no baked text/UI/watermark."
+  },
+  "limits": "Illustrative CAD routing/rendering; no propulsion, thermal, pressure, manufacture or physical acceptance claimed.",
+  "sourceBaseRevision": "29118fc6303ee721efd73750f2d513194f75e064",
+  "tools": {
+    "ffmpeg": "ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers",
+    "ffprobe": "ffprobe version 6.1.1-3ubuntu5 Copyright (c) 2007-2023 the FFmpeg developers",
+    "node": "v22.23.2"
+  },
+  "decodedReviewManifest": "review-frames/manifest.json",
+  "decodedReviewManifestSha256": "f33c6901caaa826a754d8ddbaa5b7a18ee39d89a978645586a04b96c2c2735fe",
+  "auditScripts": [
+    {
+      "file": "rocket-film-capture-initial.mts",
+      "bytes": 7309,
+      "sha256": "f046b52df800aa1acae04794b2c70707fa32ad33deb68cf36c80e9378087fcee"
+    },
+    {
+      "file": "rocket-film-capture.mts",
+      "bytes": 7366,
+      "sha256": "76e81b7c5b21727440a01d435db48a9a434dcd34ea9f74b0c16735b0137252e5"
+    },
+    {
+      "file": "rocket-film-encode-intro.py",
+      "bytes": 1367,
+      "sha256": "bf906f2b1092f7a09c234a4ab15c5a3db517d3d5ec196587b54d0e05cc3ac38f"
+    },
+    {
+      "file": "rocket-film-encode.py",
+      "bytes": 1424,
+      "sha256": "4a7728a1f6451e12c7746003cb49f1d9afa040a8c9e53b7f31cf5908a3730f55"
+    },
+    {
+      "file": "rocket-film-verify.py",
+      "bytes": 5938,
+      "sha256": "b52c8a07c817790aeb31390bfc0981c28a643907d5ebae491e6fc20fbdf82853"
+    },
+    {
+      "file": "rocket-film-final-review.py",
+      "bytes": 1346,
+      "sha256": "57440596724bb42a0db74932c576a0f79ddba9181f25b966299b2a49533236d5"
+    },
+    {
+      "file": "rocket-film-review.mjs",
+      "bytes": 573,
+      "sha256": "df44ffaceddd07b2db16a89bf5e5a7fd049bf567d15b711154d11604bff7133a"
+    },
+    {
+      "file": "rocket-film-orbit-review.mjs",
+      "bytes": 577,
+      "sha256": "8745fbe76e0910adc21e1f081aeeef9f74d929bb2550d3879c605af45977f3b6"
+    },
+    {
+      "file": "rocket-film-closeout.mjs",
+      "bytes": 2541,
+      "sha256": "77e567ccd4581e93754ddcc7485e3a6317abbdd1c832ac5ce01b9bbc448aa032"
+    },
+    {
+      "file": "rocket-direct-cdp.mjs",
+      "bytes": 6283,
+      "sha256": "71f3f14222a32d3d055caf8088275f594d3dfeb2ccaadcf22b66f85081443e5e"
+    }
+  ]
+}

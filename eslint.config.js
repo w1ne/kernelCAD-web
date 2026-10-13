@@ -26,6 +26,20 @@ export default defineConfig([
       globals: globals.browser,
     },
   },
+  {
+    files: [
+      'examples/rocket-engine-lines/engine-bare.kcad.ts',
+      'site/blog/rocket-engine-routing/engine-bare.kcad.ts',
+    ],
+    // Preserve the original comparison source: these asm.part handles are
+    // intentionally retained for the routed variant; creating each part is
+    // the assembly side effect. Other unused variables still fail this rule.
+    rules: {
+      '@typescript-eslint/no-unused-vars': ['error', {
+        varsIgnorePattern: '^(chamber|manifold|dome|gimbal|frame|turbopump|collar|gasGenerator|pumpMount|mainLoxValve|mainFuelValve|ggValve|actuators|cartridge|bottle)$',
+      }],
+    },
+  },
   // Layering: shared -> kernel -> modeling -> kinematic -> composition -> agent -> studio.
   // Imports may only point down. Mapped dirs: shared, kernel, modeling, kinematic,
   // composition, agent. Unmapped for now (no layering rule applied): authoring, docs,

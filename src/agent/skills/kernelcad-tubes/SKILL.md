@@ -332,6 +332,8 @@ From MCP: `export({ format: 'bend-table', output_path: 'out/bend-tables', code }
 
 The export is refused when the build or a tube gate reports an error; fix the route first. A script with no tube gives `export.bend-table.no-tubes`.
 
+STEP, STL (including per-part STL), DXF, 3MF and G-code run the same tube gate before serializing fabrication output. A tube error returns no bytes or new files; warnings allow export. STL `--no-verify` only disables the mesh watertight check and cannot bypass the tube gate. GLB and rendering remain available for inspection. A passing tube gate proves the declared routing rules and measured clearance, not pressure or structural acceptance.
+
 `inspect({ of: 'bend-table' })` is the sheet-metal bend table, not this one.
 
 ## Verification gates

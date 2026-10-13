@@ -1,17 +1,19 @@
 // tests/unit/assemblies/mechanismSweepBudget.test.ts
 //
 // Issue #348: the BREP-lowering mechanism-truth criteria (2 interpenetration,
-// 3 dof-mismatch, 7 joint-mesh-gap, 8 tendon-body-intersect) lower the whole
-// assembly once per pose sample. On a dense mechanism (e.g. the 24-part
-// Gearfinity planetary stage) that Cartesian cost times the CLI out past
-// 5 minutes. `checkMechanismTruth` now estimates the sweep work up front
-// (deterministically, from the assembly graph — no lowering, no wall-clock)
-// and SKIPS the sweep when it exceeds `BREP_SWEEP_BUDGET`, degrading the
-// verdict to `'unverified'` instead of grinding.
+// 3 dof-mismatch, 8 tendon-body-intersect) lower the whole assembly once
+// per pose sample. On a dense mechanism (e.g. the 24-part Gearfinity
+// planetary stage) that Cartesian cost times the CLI out past 5 minutes.
+// `checkMechanismTruth` estimates the sweep work up front (deterministically,
+// from the assembly graph — no wall-clock) and SKIPS that sweep when it
+// exceeds `BREP_SWEEP_BUDGET`, degrading the verdict to `'unverified'`
+// instead of grinding. Rest-pose joint-mesh continuity (criterion 7) is
+// not part of the sweep: a floating link is `'broken'` even at budget 0.
 //
 // This file pins that gate with a tiny hand-rolled hinge so the behaviour is
 // covered without paying the multi-minute heavy-assembly cost:
-//   - sweepBudget: 0      → over budget → sweep skipped → 'unverified', no failures
+//   - sweepBudget: 0 on a meeting hinge → sweep skipped → 'unverified'
+//   - sweepBudget: 0 on a floating link → joint-mesh-gap → 'broken'
 //   - sweepBudget: 1e9    → under budget → sweep runs → NOT 'unverified'
 
 import { describe, it, expect } from 'vitest';
@@ -53,6 +55,9 @@ describe('checkMechanismTruth — BREP-sweep budget gate (issue #348)', () => {
     // the work estimate, the budget, and the part count.
     const result = await checkMechanismTruth(arm, { sweepBudget: 0 });
     expect(result.mechanism).toBe('unverified');
+    // The hinge faces meet, so the rest-pose body check that still runs
+    // under a skipped sweep must not invent a gap.
+    expect(result.failures.filter((d) => d.code === 'mechanism.joint-mesh-gap')).toEqual([]);
     const budgetDiags = result.failures.filter(
       (d) => d.code === 'mechanism.unverified-budget-exceeded',
     );
@@ -77,6 +82,26 @@ describe('checkMechanismTruth — BREP-sweep budget gate (issue #348)', () => {
       expect(effectiveSweepBudget(Infinity)).toBe(Infinity);
       expect(effectiveSweepBudget(0)).toBe(0);
     });
+  });
+
+  it('fails a floating link as broken even when the pose sweep is over budget', async () => {
+    // The check that used to be skipped with the sweep: a child whose
+    // mesh never meets the parent must not come back 'unverified'.
+    const session = new CaptureSession();
+    const kcad = createModelingApi({ session });
+    const arm = kcad.assembly('floating-claw');
+    arm.part('wrist', kcad.box(20, 20, 10, true).translate(0, 0, -5))
+      .connector('jaw', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 5] }, axis: [0, 1, 0] });
+    arm.part('claw', kcad.box(20, 20, 20, true).translate(0, 0, 13))
+      .connector('in', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 1, 0] });
+    arm.mate('jaw', 'wrist.jaw', 'claw.in', 'revolute', { pose: 0, limitsDeg: [-45, 45] });
+    const result = await checkMechanismTruth(arm, { sweepBudget: 0 });
+    expect(result.mechanism).toBe('broken');
+    const gaps = result.failures.filter((d) => d.code === 'mechanism.joint-mesh-gap');
+    expect(gaps.length).toBeGreaterThanOrEqual(1);
+    expect(gaps.some((d) => d.severity === 'error')).toBe(true);
+    // The skipped sweep is still reported, and it does not hide the gap.
+    expect(result.failures.some((d) => d.code === 'mechanism.unverified-budget-exceeded')).toBe(true);
   });
 
   it('runs the full sweep (verdict is real or broken, never unverified) under a generous budget', async () => {

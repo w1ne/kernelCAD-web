@@ -5,9 +5,9 @@ description: kernelCAD model authoring API — primitives, transforms, booleans,
 
 # kernelCAD — authoring
 
-Author or modify kernelCAD models in TypeScript. Scripts live in `.kcad.ts` files; the kernelCAD CLI (`kernelcad evaluate <file>` and `kernelcad export stl|step|dxf|3mf|glb <file> -o <out>`) runs them.
+Write or edit `.kcad.ts` TypeScript models; run `kernelcad evaluate <file>` or `kernelcad export stl|step|dxf|3mf|glb <file> -o <out>`.
 
-`.kcad.ts` scripts are single files: top-level `import`/`require` is refused with `feature.invalid-args` — define helpers in the same file.
+Single-file scripts refuse top-level `import`/`require` with `feature.invalid-args`; define helpers in the same file.
 
 ## Agent authoring loop
 
@@ -887,6 +887,11 @@ kernelcad animate path/to/script.kcad.ts /tmp/spin.gif --turntable --width 640 -
 kernelcad mcp
 ```
 
+For static renders and turntables, set `PW_CDP_URL` to an already-running
+Chrome's CDP endpoint after verifying it is available. The capture uses that
+browser's existing context and closes its own tab on completion. An explicit
+attachment failure is reported; it does not launch a second browser.
+
 ## Animation timelines (animationView)
 
 `animationView({...})` declares a kinematic-motion timeline that
@@ -1064,6 +1069,7 @@ When you need a canonical pattern, call MCP tool `lookup_cookbook(query, k?)` to
 | shaft-and-bearing-cylindrical-mate | Prompt asks for a shaft in a bearing, bearing seat with shaft, or rotating shaft on a deep-groove ball bearing. Prefer catalog `lib.fetchPart('shaft-d8-l50')` + `lib.standard.bearing608()` when the parts catalog is available; this snippet uses BREP stand-ins so evaluate stays offline/CI-green. Mate with the 4-arg form `arm.mate(name, 'shaft.axis', 'bearing.inner-bore', 'cylindrical')` — do not Boolean-union them into one solid. |
 | sheet-metal-l-bracket-bend | Prompt asks for a folded sheet-metal L-bracket, U-channel, flange, or service panel from a flat blank. Use `sheetMetal(profile, { thickness, kFactor })` then `.bend(...)` — not a solid union of two plates — when fabrication intent is sheet + folds. After evaluate/lower, recover the blank with `flattenPattern()` (MCP `flatten_pattern` / inspect bend-table) for laser/CNC. |
 | slicer-ready-3mf | You want a model to open in a desktop slicer ready to print — every assembly member a named object with its colour and material, either packed on the bed at Z=0 without overlap or kept together as one multi-colour object (an inlay), each colour on its own filament slot — instead of a bare STL or already-sliced G-code. |
+| so-arm100 | The prompt asks for the real SO-ARM100 / SO-100 follower arm, the kernelcad.com hero arm, or a gripper with the vendor moving jaw — not a tube-and-clevis sketch. execute_cookbook({ id: 'so-arm100' }) evaluates examples/robot-arm/so100/so100-arm.kcad.ts (Apache-2.0 link STLs, the Moving_Jaw STEP solid, and the passive horn on the wrist). One-liner: kernelcad evaluate examples/robot-arm/so100/so100-arm.kcad.ts. Do not redraw it as floating cylinders or the primitive 4-DOF cookbook arm. |
 | static-hold-actuator-torque-check | A revolute or prismatic joint drives a downstream mass against gravity (a robot arm shoulder, a lift stage) and you need to know whether the declared actuator torque/force is sufficient — not just whether the mechanism is collision-free. Declare actuator: { torqueNm } (revolute) or actuator: { forceN } (prismatic) on the joint, then call kinematic.checkStaticHold(arm, opts). Real mass properties come from the part's geometry + declared density/material; the worst pose across the joint's declared range is reported alongside the margin. Fires assembly.joint.static-hold.exceeded when the actuator is undersized, assembly.joint.static-hold.margin-low when it clears but under the requested safety margin. |
 | stress-graded-infill-fdm | A 3D print carries a load and the user wants it strong where it matters and light everywhere else. Declare the load case with shape.feaStudy({ material, fixed, loads }) — fix the mounting holes, load the face the force acts on, force in TOTAL newtons — then export a 3MF with options.infill { fromFea: '<study name>' \| true }. The export solves the study, splits the volume into stress bands relative to yield (default < 15 % -> 10 %, 15-40 % -> 25 %, > 40 % -> 60 % gyroid; override with infill.bands [{ name, fromYield, densityPercent }]) and writes one modifier volume per dense band with its own infill density (Orca/Bambu format by default; options.slicer 'prusa' writes PrusaSlicer's format). The result carries infill { bands (volume % per band), saving (filament + time vs uniform infill at the high density), fea (peak stress, safety factor), images { heatmap, bands, cutaway } }. Requires the LOCAL CalculiX + gmsh toolchain (check with fea_summary({})); without it the export fails with fea.solver.unavailable and writes nothing. The two slicer formats are not interchangeable: pick the slicer the file opens in. The FEA treats the print as solid, so the safety factor is an upper bound. |
 | subtract-then-fillet-rim | You want a parametric plate, drill a through-hole, and round the rim where the hole meets the top face. |
@@ -1093,7 +1099,7 @@ When you need a canonical pattern, call MCP tool `lookup_cookbook(query, k?)` to
 - Never use JS arithmetic on a `param()` result — `param('w', 18) + 4` coerces the branded ParamRef and throws `feature.invalid-args`. Build derived dimensions with the ParamRef methods: `.add(n)`, `.subtract(n)`, `.multiply(n)`, `.divide(n)`, `.negate()` — e.g. `w.add(4)`; they re-evaluate when the param changes.
 - Prefer `hole` / `holes` / `cutout` over `subtract(cylinder)` (see the table below): they emit named refs (`'wall'`, `'floor'`, `'wall-back'`, `'counterbore-*'`, `'countersink-cone'`) that `.fillet()` / `.shell()` can address.
 - Apply transforms AFTER edge/face features when face refs matter.
-- Always `return` a single shape from the top of the script. Only the returned shape is exported, probed and measured; "the last thing I created" is NOT a fallback. If a probe reports the same bbox no matter what you edit, check what the script returns.
+- Always `return` one shape at script top level. Only it is exported, probed and measured; the last created shape is NOT a fallback. If edits leave a probe's bbox unchanged, check the returned shape.
 - Symmetric parts: `.mirror(plane)` (source + reflection); `.reflect(plane)` gives the reflection only.
 - In booleans, prefer ≥0.1 mm of overlap (unions) or offset (cuts) over exact tangency or coincident faces.
 - Helical features: rail from `helix(...)`. Threads, worms, helical grooves: sweep with `spine: 'helix'`. Round-wire coils and springs: `spine: 'smooth'` (the default polyline spine is not watertight). Internal threads: `hole({ thread })`, not a sweep.

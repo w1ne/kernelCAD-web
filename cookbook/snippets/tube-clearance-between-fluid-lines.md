@@ -57,3 +57,5 @@ asm.part('fuel-1', fuel.color('#d9822b'));
 asm.part('hyd-1', hyd.color('#2f6fb5'));
 return asm.model();
 ```
+
+STEP, STL (including per-part STL), DXF, 3MF and G-code refuse fabrication output when the tube clearance gate reports an error. Use GLB or rendering to inspect a failing route, then fix the source and reevaluate.

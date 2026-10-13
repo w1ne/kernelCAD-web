@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light" />
+  <meta name="description" content="How to route rigid lines between ports with tube() and tubeSpec(), and read the bend table and clearances the kernel reports." />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Routing bent tubes between ports" />
+  <meta property="og:description" content="How to route rigid lines between ports with tube() and tubeSpec(), and read the bend table and clearances the kernel reports." />
+  <meta property="og:image" content="https://kernelcad.com/og-image.png" />
+  <meta property="og:url" content="https://kernelcad.com/blog/tubes-how-to/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Routing bent tubes between ports" />
+  <meta name="twitter:description" content="How to route rigid lines between ports with tube() and tubeSpec(), and read the bend table and clearances the kernel reports." />
+  <meta name="twitter:image" content="https://kernelcad.com/og-image.png" />
+  <link rel="canonical" href="https://kernelcad.com/blog/tubes-how-to/" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,500;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/style.css" />
+  <title>Routing bent tubes between ports</title>
+  <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "e5f5f4c6464f456d8f5376411e77f545"}'></script>
+  <style>
+    .legal { max-width: 760px; margin: 0 auto; padding: 1rem 0 4rem; }
+    .legal h1 { font-family: 'Source Serif 4', serif; font-size: 2.2rem; line-height: 1.2; margin: 1.5rem 0 0.25rem; }
+    .legal .effective { color: var(--ink-faint, #8a8475); font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; margin-bottom: 2rem; }
+    .legal h2 { font-family: 'Source Serif 4', serif; font-size: 1.35rem; margin: 2.2rem 0 0.5rem; }
+    .legal p, .legal li { font-family: 'Inter', sans-serif; line-height: 1.65; color: var(--ink-soft, #3a3a3a); }
+    .legal ul { padding-left: 1.25rem; }
+    .legal code { font-family: 'JetBrains Mono', monospace; font-size: 0.88em; }
+    .legal a { color: var(--blueprint, #2f6df0); }
+    .legal strong { color: var(--ink, #1a1a1a); }
+    .legal .lede { font-size: 1.1rem; color: var(--ink); }
+    .legal figure { margin: 1.5rem 0; }
+    .legal figure img { display: block; width: 100%; height: auto; border: 1px solid var(--rule); border-radius: 6px; background: var(--paper); }
+    .legal figcaption { font-family: 'Inter', sans-serif; font-size: 0.85rem; color: var(--ink-faint); margin-top: 0.5rem; }
+    .legal pre { background: var(--code-bg); color: var(--code-text); border-radius: 6px; padding: 16px 18px; overflow-x: auto; margin: 1.25rem 0; }
+    .legal pre code { font-size: 0.85rem; line-height: 1.6; color: inherit; }
+    .legal p code, .legal li code { background: var(--vellum-soft); padding: 1px 5px; border-radius: 3px; }
+    .post-list { list-style: none; padding: 0; margin: 2rem 0; }
+    .post-list li { padding: 1.25rem 0; border-top: 1px solid var(--rule); }
+    .post-list li:last-child { border-bottom: 1px solid var(--rule); }
+    .post-list a.post-title { font-family: 'Source Serif 4', serif; font-size: 1.4rem; text-decoration: none; }
+    .post-list a.post-title:hover { text-decoration: underline; }
+    .post-list .effective { margin: 0.25rem 0 0.5rem; }
+    .post-list p { margin: 0; }
+    .legal model-viewer { display: block; width: 100%; height: 440px; border: 1px solid var(--rule); border-radius: 6px; background: var(--paper); }
+  </style>
+</head>
+<body>
+  <div class="page-wrap">
+    <nav class="nav">
+      <a class="nav-mark" href="/">
+        <svg class="k" viewBox="0 0 84 84" fill="none" aria-label="kernelCAD">
+          <path d="M 14,12 L 26,12 L 26,34 Q 26,36 27.5,34.5 L 46,12 L 60,12 L 36,40 Q 35,42 36,44 L 60,72 L 46,72 L 27.5,49.5 Q 26,48 26,50 L 26,72 L 14,72 Z" fill="currentColor"/>
+        </svg>
+        <span>kernel<span class="cad">CAD</span></span>
+      </a>
+      <div class="nav-links">
+        <a href="/blog/">blog</a>
+        <a class="app-link" href="https://app.kernelcad.com">app ↗</a>
+        <a href="https://github.com/w1ne/kernelCAD-web">github</a>
+        <a href="https://www.npmjs.com/package/kernelcad">npm</a>
+        <a href="https://x.com/kernelcad">@kernelcad</a>
+      </div>
+    </nav>
+
+    <main class="legal">
+      <article>
+      <p class="effective"><a href="/blog/">Blog</a> · <time datetime="2026-10-12">2026-10-12</time> · Andrii Shylenko</p>
+      <h1>Routing bent tubes between ports</h1>
+
+      <p class="lede">The fluid lines on an engine are rigid tubes that a shop bends from straight stock. Each one needs a bend table and has to stay clear of the parts and the other lines. You route each line with <code>tube()</code> and set the rules it must meet with <code>tubeSpec()</code>. The example <code>examples/tube-routing-engine/engine-lines.kcad.ts</code> routes 5 tubes in 3 fluid systems around a case and a gearbox.</p>
+      <figure>
+        <model-viewer src="model.glb" alt="The model built from examples/tube-routing-engine/engine-lines.kcad.ts" camera-controls auto-rotate rotation-per-second="12deg" interaction-prompt="none" touch-action="pan-y" loading="lazy"></model-viewer>
+        <figcaption>The model, built from <code>examples/tube-routing-engine/engine-lines.kcad.ts</code>. Drag to turn it.</figcaption>
+      </figure>
+      <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer/dist/model-viewer.min.js"></script>
+
+      <h2>Ports</h2>
+      <p>A tube ends on ports. A port is an axis connector with <code>port</code> data: the fluid system and the tube OD it takes. The fuel pump in the example has two outlets on top. Its shape is cut down here; the ports are the example's:</p>
+      <pre><code>const pumpX = param('PumpX', 60, { unit: 'mm', description: 'fuel pump station along the case axis' });
+
+const asm = assembly('pump');
+const pumpShape = cylinder(90, 38).rotateX(-90).translate(0, -90, 0)
+  .union(cylinder(50, 11).translate(0, -42, 0), cylinder(50, 11).translate(0, -67, 0));
+asm.part('pump', pumpShape, { at: [pumpX, -130, -282] })
+  .connector('out-a', { type: 'axis', origin: { kind: 'vec3', value: [0, -42, 50] }, axis: [0, 0, 1], port: { system: 'fuel', od: 12.7 } })
+  .connector('out-b', { type: 'axis', origin: { kind: 'vec3', value: [0, -67, 50] }, axis: [0, 0, 1], port: { system: 'fuel', od: 12.7 } });
+
+return asm.model();</code></pre>
+      <p>The connector <code>origin</code> is in the part's own frame and <code>at</code> moves the part, so a port sits at <code>at</code> plus <code>origin</code>. <code>kernelcad evaluate --json</code> lists every port in <code>ports</code>, in assembly space: <code>out-a</code> is at [60, -172, -232] and <code>out-b</code> at [60, -197, -232], both pointing up. A tube that ends on a port takes its OD and its system from it.</p>
+
+      <h2>One tube</h2>
+      <p><code>tube()</code> takes two ends and the corner points between them. The kernel runs straight legs from end to corner to end and rounds each corner with <code>bendRadius</code>, the centreline radius. It adds no corners of its own, so the first corner must lie on the axis of the <code>from</code> port and the last one on the axis of the <code>to</code> port. Here both corners are at the height of the fuel run, straight above the pump outlet and straight below the inlet of the fuel block:</p>
+      <pre><code>const pumpX = param('PumpX', 60, { unit: 'mm' });
+const fuelBlockX = param('FuelBlockX', 235, { unit: 'mm' });
+const fuelRunZ = param('FuelRunZ', -140, { unit: 'mm' });
+
+const asm = assembly('fuel-line');
+const pump = asm.part('pump', cylinder(90, 38).rotateX(-90).translate(0, -90, 0).union(cylinder(50, 11).translate(0, -42, 0)), { at: [pumpX, -130, -282] })
+  .connector('out-a', { type: 'axis', origin: { kind: 'vec3', value: [0, -42, 50] }, axis: [0, 0, 1], port: { system: 'fuel', od: 12.7 } });
+const block = asm.part('fuel-block', box(60, 50, 38).translate(-30, -210, -50).union(cylinder(15, 11).translate(0, -172, -65)), { at: [fuelBlockX, 0, 0] })
+  .connector('in-a', { type: 'axis', origin: { kind: 'vec3', value: [0, -172, -65] }, axis: [0, 0, -1], port: { system: 'fuel', od: 12.7 } });
+
+tubeSpec({ clearance: { default: 6 } });
+const line = tube('fuel-a', {
+  from: pump.port('out-a'),
+  to: block.port('in-a'),
+  via: [[pumpX, -172, fuelRunZ], [fuelBlockX, -172, fuelRunZ]],
+  wall: 0.89,
+  bendRadius: 38.1,
+});
+asm.part('fuel-a', line);
+
+return asm.model();</code></pre>
+      <p>The tube goes into the assembly with <code>asm.part(name, tube)</code> and no <code>at</code>, because its points are already in assembly space. In the example this line is <code>fuel-a</code>, with 2 bends and 309.29 mm along the centreline.</p>
+
+      <h2>The rules</h2>
+      <p><code>tubeSpec()</code> declares the rules every tube in the script must meet. Its defaults set the smallest bend radius and the shortest straights as multiples of the tube OD, and the largest bend angle. The example keeps those and sets the clearance:</p>
+      <pre><code>tubeSpec({ clearance: { default: 6, pairs: [{ a: 'fuel', b: 'hydraulic', min: 12 }] } });</code></pre>
+      <p>A tube keeps <code>default</code> mm from every part and from the other tubes. A pair replaces that distance for two systems, so a fuel line and a hydraulic line keep <code>min</code> mm apart. A tube that breaks a rule fails the evaluation with an error that names the tube and the measured value.</p>
+
+      <h2>Reading the report</h2>
+      <p>Use a source checkout on <code>develop</code> with Node 22 for the commands below. These commands use the current <code>develop</code> source checkout; an older package installation may behave differently. Run the commands from the repository root, which contains the exact example files:</p>
+      <pre><code>git clone --branch develop https://github.com/w1ne/kernelCAD-web.git
+cd kernelCAD-web
+npm ci --ignore-scripts
+npm run build:cli</code></pre>
+      <p>Evaluate the example with that CLI:</p>
+      <pre><code>node dist/cli/index.js evaluate examples/tube-routing-engine/engine-lines.kcad.ts --json</code></pre>
+      <p>It prints <code>"ok": true</code> and a <code>tubes</code> object. <code>tubes.lines</code> has an entry for each tube. Next to the bend table and the cut length it holds <code>minClearance</code>, the distance to the nearest part or tube. <code>hyd-b</code> is 306.45 mm long, and its nearest neighbour is <code>fuel-b</code>, 17.75 mm away. The rule for a fuel line next to a hydraulic line needs 12.00 mm.</p>
+      <p><code>tubes.systems</code> adds up the lines of each system: the 2 hydraulic lines come to 522.90 mm.</p>
+
+      <h2>A clearance failure</h2>
+      <p><code>examples/tube-routing-engine/engine-lines-broken.kcad.ts</code> is the same script with the second corner of <code>hyd-b</code> moved down, toward the fuel lines that run under it:</p>
+      <pre><code>via: [[manifoldX.add(20), -190, hydRunZ], [act2X, -190, hydRunZ.add(-8)]],</code></pre>
+      <p>Evaluating it prints <code>"ok": false</code> and 1 diagnostic:</p>
+      <pre><code>tube.clearance.violated: tube 'fuel-b' is 11.24 mm from 'hyd-b'; the rule needs 12.00 mm. Closest point on the tube: [101.40, -195.01, -133.97]; on 'hyd-b': [101.40, -191.49, -123.29].</code></pre>
+      <p>A pair of tubes is reported once, on the tube declared first, so the message names <code>fuel-b</code> although the corner that moved belongs to <code>hyd-b</code>. The hint that comes with it reads: Move the nearest corner away from the named part or tube by at least the stated shortfall.</p>
+      <p>The fix is to put the corner back at the height of the run, as <code>engine-lines.kcad.ts</code> has it:</p>
+      <pre><code>via: [[manifoldX.add(20), -190, hydRunZ], [act2X, -190, hydRunZ]],</code></pre>
+
+      <h2>Bend tables and STEP</h2>
+      <p><code>kernelcad export bend-table</code> writes one CSV per tube, named after the tube:</p>
+      <pre><code>node dist/cli/index.js export bend-table examples/tube-routing-engine/engine-lines.kcad.ts -o out/bend-tables</code></pre>
+      <p>This is <code>hyd-b.csv</code>. The points are in the tube's own frame, with the first point at the origin and the first leg along +X. A bend row gives the straight before the bend, the rotation of the bend plane from the previous bend, and the bend angle:</p>
+      <pre><code>name,hyd-b
+od_mm,9.525
+wall_mm,0.89
+bend_radius_mm,28.6
+cut_length_mm,306.450
+
+point,x_mm,y_mm,z_mm
+1,0.000,0.000,0.000
+2,66.000,0.000,0.000
+3,66.000,190.000,0.000
+4,141.000,190.000,0.000
+
+bend,l_mm,r_deg,a_deg
+1,37.400,0.000,90.000
+2,132.800,180.000,90.000
+last_straight_mm,46.400</code></pre>
+      <p>The bend-table export refuses a script that fails a tube rule, so the broken twin gives no tables. STEP, STL (including per-part STL), DXF, 3MF and G-code also run the tube gate before writing fabrication output: a tube error gives no new file and leaves any previous output untouched. Tube warnings still allow export. GLB and rendering remain available to inspect a failing route. These checks cover the declared tube rules and clearance, not pressure or structural acceptance.</p>
+      <p><code>kernelcad export step</code> writes a passing assembly as one STEP file, with each tube as its own solid:</p>
+      <pre><code>node dist/cli/index.js export step examples/tube-routing-engine/engine-lines.kcad.ts -o out/engine-lines.step</code></pre>
+
+      <h2>Limits</h2>
+      <ul>
+        <li>You place the corners. There is no automatic path search.</li>
+        <li>A tube is straight legs joined by bends of one radius, so a hose is outside what <code>tube()</code> builds.</li>
+        <li>A branch joins its trunk at a right angle only.</li>
+      </ul>
+
+      <h2>Open the example</h2>
+      <p><a href="/blog/tubes-how-to/engine-lines.kcad.ts">Download the five-line working source</a> and <a href="/blog/tubes-how-to/engine-lines-broken.kcad.ts">its broken twin</a>, or read <a href="https://github.com/w1ne/kernelCAD-web/blob/develop/examples/tube-routing-engine/engine-lines.kcad.ts">the working source on GitHub</a>. The native viewer above shows this five-line fixture. The <code>kernelcad-tubes</code> skill lists the rules and diagnostics.</p>
+      <p>For the larger worked assembly, read <a href="/blog/rocket-engine-routing/">Routing 23 lines on a rocket-engine example</a> and <a href="https://app.kernelcad.com/studio?gallery=rocket-engine-routing">open that full 23-line model in public Studio</a>. That Studio entry is the rocket assembly; the five-line fixture remains available through its exact downloads and CLI commands.</p>
+      </article>
+    </main>
+
+    <footer class="footer">
+      <div>kernelCAD · MIT</div>
+      <div class="footer-links">
+        <a href="/terms.html">terms</a>
+        <a href="/privacy.html">privacy</a>
+        <a href="https://github.com/w1ne/kernelCAD-web">github</a>
+        <a href="https://www.npmjs.com/package/kernelcad">npm</a>
+        <a href="https://x.com/kernelcad">x</a>
+        <a href="https://app.kernelcad.com">app</a>
+      </div>
+    </footer>
+    <div class="footer-stack" style="border-top: 1px solid var(--stroke, rgba(255,255,255,0.08)); padding: 14px 0 28px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; color: var(--mute, #888); font-size: 0.78rem;">
+      <span style="opacity: 0.7;">part of the engineer stack</span>
+      <nav style="display: flex; gap: 18px;">
+        <a href="https://labwired.com" style="color: inherit;">LabWired</a>
+        <a href="https://kernelcad.com" style="color: inherit;">kernelCAD</a>
+        <a href="https://koamtachi.com" style="color: inherit;">koamtachi</a>
+        <a href="https://shylenko.com" style="color: inherit;">shylenko.com</a>
+      </nav>
+    </div>
+  </div>
+</body>
+</html>

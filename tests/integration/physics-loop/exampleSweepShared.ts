@@ -199,6 +199,23 @@ export const HOSTED_IN_DEDICATED_FILE: ReadonlyMap<string, DedicatedExampleCover
       coverage: 'run-validate-cli',
     },
   ],
+  // The SO-100 hero loads thirteen STL solids; its validate run is over the
+  // shards' 600 s per-example cap, so its dedicated file runs it under a
+  // longer one.
+  [
+    'examples/robot-arm/so100/so100-arm.kcad.ts',
+    {
+      testFile: 'tests/integration/examples/so100ArmRestContact.test.ts',
+      coverage: 'run-validate-cli',
+    },
+  ],
+  [
+    'examples/gallery/hand-coffee-grinder.kcad.ts',
+    {
+      testFile: 'tests/integration/examples/handCoffeeGrinder.validate.test.ts',
+      coverage: 'run-validate-cli',
+    },
+  ],
   [
     'examples/community/open-source-ring.kcad.ts',
     {

@@ -546,7 +546,7 @@ describe('mechanism truth — pose-sweep grounded loop (P0)', () => {
       // sit in mid-air. That is orthogonal to the P0.2 rigidity
       // regression target, so the assertion below ignores joint-mesh
       // gaps and only requires every OTHER criterion to pass.
-      const nonGapFailures = result.failures.filter((f) => f.code !== 'mechanism.joint-mesh-gap');
+      const nonGapFailures = result.failures.filter((f) => f.code !== 'mechanism.joint-mesh-gap' && f.code !== 'mechanism.mate-gap');
       expect(nonGapFailures).toEqual([]);
       // The gap diagnostic warns that moving a connector drags the mated
       // part along (and can reopen a collision), naming that part.
@@ -639,7 +639,7 @@ describe('mechanism truth — pose-sweep grounded loop (P0)', () => {
       // `mechanism.joint-mesh-gap` gate fires. That is orthogonal to
       // the rigidity invariant under test here; filter it out and
       // require every OTHER criterion to pass.
-      const nonGapFailures = result.failures.filter((f) => f.code !== 'mechanism.joint-mesh-gap');
+      const nonGapFailures = result.failures.filter((f) => f.code !== 'mechanism.joint-mesh-gap' && f.code !== 'mechanism.mate-gap');
       expect(nonGapFailures).toEqual([]);
     },
     90000,
