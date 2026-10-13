@@ -166,6 +166,49 @@ export function findUndercuts(
   return { areaMm2: area, samples: unreachable.slice(0, 5).map(t => t.c) };
 }
 
+type MeshEdge = { a: Vec3; b: Vec3; tris: number[] };
+
+function meshEdges(tris: Tri[]): Map<string, MeshEdge> {
+  const key = (p: Vec3): string => p.map(x => Math.round(x / WELD)).join(',');
+  const edges = new Map<string, MeshEdge>();
+  tris.forEach((t, i) => {
+    if (t.area === 0) return;
+    for (let k = 0; k < 3; k++) {
+      const a = t.v[k];
+      const b = t.v[(k + 1) % 3];
+      const ka = key(a);
+      const kb = key(b);
+      const ek = ka < kb ? `${ka}|${kb}` : `${kb}|${ka}`;
+      const e = edges.get(ek) ?? { a, b, tris: [] };
+      e.tris.push(i);
+      edges.set(ek, e);
+    }
+  });
+  return edges;
+}
+
+const angleOf = (cos: number): number => Math.acos(Math.min(1, Math.max(-1, cos)));
+
+/** Per BREP face: largest normal step between adjacent facets of that face
+ *  (0 for planes). A crease no larger than that is a tangent blend whose
+ *  radius is the face's own (checked against the tool by findTightFillets). */
+function faceFacetSteps(edges: Map<string, MeshEdge>, tris: Tri[], faceOfTri: ArrayLike<number>): Map<number, number> {
+  const steps = new Map<number, number>();
+  for (const e of edges.values()) {
+    if (e.tris.length !== 2) continue;
+    const f = faceOfTri[e.tris[0]];
+    if (f !== faceOfTri[e.tris[1]]) continue;
+    const ang = angleOf(dot(tris[e.tris[0]].n, tris[e.tris[1]].n));
+    if (ang > (steps.get(f) ?? 0)) steps.set(f, ang);
+  }
+  return steps;
+}
+
+function isTangentBlend(normalDot: number, steps: Map<number, number>, f1: number, f2: number): boolean {
+  const step = Math.max(steps.get(f1) ?? 0, steps.get(f2) ?? 0);
+  return angleOf(normalDot) <= FACET_STEP_FACTOR * step;
+}
+
 /**
  * Sharp concave edges parallel to an approach axis (internal corners of radius 0).
  *
@@ -181,35 +224,9 @@ export function findSharpInternalCorners(
   faceOfTri?: ArrayLike<number>,
 ): CncSharpCorner[] {
   const tris = trianglesOf(mesh);
-  const key = (p: Vec3): string => p.map(x => Math.round(x / WELD)).join(',');
-  const edges = new Map<string, { a: Vec3; b: Vec3; tris: number[] }>();
-  tris.forEach((t, i) => {
-    if (t.area === 0) return;
-    for (let k = 0; k < 3; k++) {
-      const a = t.v[k];
-      const b = t.v[(k + 1) % 3];
-      const ka = key(a);
-      const kb = key(b);
-      const ek = ka < kb ? `${ka}|${kb}` : `${kb}|${ka}`;
-      const e = edges.get(ek) ?? { a, b, tris: [] };
-      e.tris.push(i);
-      edges.set(ek, e);
-    }
-  });
+  const edges = meshEdges(tris);
   const cosSharp = Math.cos(((faceOfTri !== undefined ? CREASE_EPS_DEG : SHARP_DIHEDRAL_DEG) * Math.PI) / 180);
-  // Per BREP face: largest normal step between adjacent facets of that face
-  // (0 for planes). A crease no larger than that is a tangent blend whose
-  // radius is the face's own (checked against the tool by findTightFillets).
-  const faceStep = new Map<number, number>();
-  if (faceOfTri !== undefined) {
-    for (const e of edges.values()) {
-      if (e.tris.length !== 2) continue;
-      const f = faceOfTri[e.tris[0]];
-      if (f !== faceOfTri[e.tris[1]]) continue;
-      const ang = Math.acos(Math.min(1, Math.max(-1, dot(tris[e.tris[0]].n, tris[e.tris[1]].n))));
-      if (ang > (faceStep.get(f) ?? 0)) faceStep.set(f, ang);
-    }
-  }
+  const faceStep = faceOfTri !== undefined ? faceFacetSteps(edges, tris, faceOfTri) : undefined;
   const found: CncSharpCorner[] = [];
   for (const e of edges.values()) {
     if (e.tris.length !== 2) continue;
@@ -222,10 +239,7 @@ export function findSharpInternalCorners(
     const [t1, t2] = [tris[e.tris[0]], tris[e.tris[1]]];
     const nd = dot(t1.n, t2.n);
     if (nd > cosSharp) continue; // smooth or tessellated curve
-    if (faceOfTri !== undefined) {
-      const step = Math.max(faceStep.get(faceOfTri[e.tris[0]]) ?? 0, faceStep.get(faceOfTri[e.tris[1]]) ?? 0);
-      if (Math.acos(Math.min(1, Math.max(-1, nd))) <= FACET_STEP_FACTOR * step) continue; // tangent blend
-    }
+    if (faceOfTri !== undefined && faceStep !== undefined && isTangentBlend(nd, faceStep, faceOfTri[e.tris[0]], faceOfTri[e.tris[1]])) continue;
     // Concave: each triangle's centroid sits on the outward side of the other's plane.
     if (dot(t2.n, sub(t1.c, e.a)) <= 1e-6) continue;
     found.push({
