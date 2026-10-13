@@ -8,7 +8,7 @@
 
 import { addVariableSweep } from '../edits/addVariableSweep';
 import type { AddVariableSweepInput } from '../edits/addVariableSweep';
-import { evaluateScriptTool } from './evaluateScript';
+import { evaluateScriptTool, type EvaluateScriptOutput } from './evaluateScript';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 
 export type { AddVariableSweepInput };
@@ -16,6 +16,7 @@ export type { AddVariableSweepInput };
 export interface AddVariableSweepOutput {
   ok: boolean;
   new_code?: string;
+  step?: EvaluateScriptOutput['step'];
   diagnostics?: CompilerDiagnostic[];
   error?: string;
 }
@@ -29,6 +30,7 @@ export async function addVariableSweepTool(input: AddVariableSweepInput): Promis
   return {
     ok: evalResult.ok,
     new_code: edit.new_code,
+    step: evalResult.step,
     diagnostics: evalResult.diagnostics,
   };
 }

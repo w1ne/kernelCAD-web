@@ -8,7 +8,7 @@
 
 import { invalidArgsText } from '../../../shared/intent/invalidArgs';
 import { addFeature } from '../edits/addFeature';
-import { evaluateScriptTool } from './evaluateScript';
+import { evaluateScriptTool, type EvaluateScriptOutput } from './evaluateScript';
 import { validateLinear, validateCircular, validateGridAxis } from '../../../shared/intent/patternValidation';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 
@@ -30,6 +30,7 @@ export interface AddPatternFeatureInput {
 export interface AddPatternFeatureOutput {
   ok: boolean;
   new_code?: string;
+  step?: EvaluateScriptOutput['step'];
   diagnostics?: CompilerDiagnostic[];
   error?: string;
   errorCode?: 'feature.pattern.count-out-of-range' | 'feature.invalid-args';
@@ -145,5 +146,5 @@ export async function addPatternFeatureTool(
   const edit = addFeature(input.code, feature_code);
   if (!edit.ok || !edit.new_code) return { ok: false, error: edit.error };
   const evalResult = await evaluateScriptTool({ code: edit.new_code });
-  return { ok: evalResult.ok, new_code: edit.new_code, diagnostics: evalResult.diagnostics };
+  return { ok: evalResult.ok, new_code: edit.new_code, step: evalResult.step, diagnostics: evalResult.diagnostics };
 }

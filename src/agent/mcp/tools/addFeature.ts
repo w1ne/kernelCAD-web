@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/mcp/tools/addFeature.ts
 import { addFeature } from '../edits/addFeature';
-import { evaluateScriptTool } from './evaluateScript';
+import { evaluateScriptTool, type EvaluateScriptOutput } from './evaluateScript';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 
 export interface AddFeatureInput {
@@ -13,6 +13,7 @@ export interface AddFeatureInput {
 export interface AddFeatureOutput {
   ok: boolean;
   new_code?: string;
+  step?: EvaluateScriptOutput['step'];
   diagnostics?: CompilerDiagnostic[];
   error?: string;
 }
@@ -26,6 +27,7 @@ export async function addFeatureTool(input: AddFeatureInput): Promise<AddFeature
   return {
     ok: evalResult.ok,
     new_code: edit.new_code,
+    step: evalResult.step,
     diagnostics: evalResult.diagnostics,
   };
 }

@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // src/mcp/tools/removeFeature.ts
 import { removeFeature } from '../edits/removeFeature';
-import { evaluateScriptTool } from './evaluateScript';
+import { evaluateScriptTool, type EvaluateScriptOutput } from './evaluateScript';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 
 export interface RemoveFeatureInput {
@@ -13,6 +13,7 @@ export interface RemoveFeatureInput {
 export interface RemoveFeatureOutput {
   ok: boolean;
   new_code?: string;
+  step?: EvaluateScriptOutput['step'];
   diagnostics?: CompilerDiagnostic[];
   error?: string;
 }
@@ -28,6 +29,7 @@ export async function removeFeatureTool(
   return {
     ok: evalResult.ok,
     new_code: edit.new_code,
+    step: evalResult.step,
     diagnostics: evalResult.diagnostics,
   };
 }

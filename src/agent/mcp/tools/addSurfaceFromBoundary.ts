@@ -9,7 +9,7 @@
 
 import { addSurfaceFromBoundary } from '../edits/addSurfaceFromBoundary';
 import type { AddSurfaceFromBoundaryInput } from '../edits/addSurfaceFromBoundary';
-import { evaluateScriptTool } from './evaluateScript';
+import { evaluateScriptTool, type EvaluateScriptOutput } from './evaluateScript';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 
 export type { AddSurfaceFromBoundaryInput };
@@ -17,6 +17,7 @@ export type { AddSurfaceFromBoundaryInput };
 export interface AddSurfaceFromBoundaryOutput {
   ok: boolean;
   new_code?: string;
+  step?: EvaluateScriptOutput['step'];
   diagnostics?: CompilerDiagnostic[];
   error?: string;
 }
@@ -32,6 +33,7 @@ export async function addSurfaceFromBoundaryTool(
   return {
     ok: evalResult.ok,
     new_code: edit.new_code,
+    step: evalResult.step,
     diagnostics: evalResult.diagnostics,
   };
 }

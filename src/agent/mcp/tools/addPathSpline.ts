@@ -8,7 +8,7 @@
 
 import { addPathSpline } from '../edits/addPathSpline';
 import type { AddPathSplineInput } from '../edits/addPathSpline';
-import { evaluateScriptTool } from './evaluateScript';
+import { evaluateScriptTool, type EvaluateScriptOutput } from './evaluateScript';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 
 export type { AddPathSplineInput };
@@ -16,6 +16,7 @@ export type { AddPathSplineInput };
 export interface AddPathSplineOutput {
   ok: boolean;
   new_code?: string;
+  step?: EvaluateScriptOutput['step'];
   diagnostics?: CompilerDiagnostic[];
   error?: string;
 }
@@ -29,6 +30,7 @@ export async function addPathSplineTool(input: AddPathSplineInput): Promise<AddP
   return {
     ok: evalResult.ok,
     new_code: edit.new_code,
+    step: evalResult.step,
     diagnostics: evalResult.diagnostics,
   };
 }

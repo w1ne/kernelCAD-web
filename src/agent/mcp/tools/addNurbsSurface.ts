@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { addNurbsSurface } from '../edits/addNurbsSurface';
 import type { AddNurbsSurfaceInput } from '../edits/addNurbsSurface';
-import { evaluateScriptTool } from './evaluateScript';
+import { evaluateScriptTool, type EvaluateScriptOutput } from './evaluateScript';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 
 export type { AddNurbsSurfaceInput };
@@ -10,6 +10,7 @@ export type { AddNurbsSurfaceInput };
 export interface AddNurbsSurfaceOutput {
   ok: boolean;
   new_code?: string;
+  step?: EvaluateScriptOutput['step'];
   diagnostics?: CompilerDiagnostic[];
   error?: string;
 }
@@ -35,6 +36,7 @@ export async function addNurbsSurfaceTool(input: AddNurbsSurfaceInput): Promise<
   return {
     ok: evalResult.ok,
     new_code: edit.new_code,
+    step: evalResult.step,
     diagnostics: evalResult.diagnostics,
   };
 }

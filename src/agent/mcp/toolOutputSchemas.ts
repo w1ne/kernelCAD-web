@@ -36,6 +36,7 @@ const SOURCE_EDIT: JSONSchemaObject = {
   type: 'object',
   properties: {
     ok: { type: 'boolean', description: 'Whether the edit applied and re-evaluated cleanly.' },
+    step: { type: 'object', additionalProperties: true, description: 'Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs.' },
     new_code: { type: 'string', description: 'Modified .kcad.ts source (present on success). Caller persists it.' },
     binding_name: { type: 'string', description: 'JS const name bound to the new construct (when one was created).' },
     diagnostics: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Diagnostics from re-evaluating the modified source.' },
@@ -62,6 +63,7 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
     type: 'object',
     properties: {
       ok: { type: 'boolean', description: 'Whether the script compiled and lowered cleanly.' },
+      step: { type: 'object', additionalProperties: true, description: 'Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs.' },
       featureCount: { type: 'number', description: 'Number of features captured by the script.' },
       diagnostics: { type: 'array', items: { type: 'object', additionalProperties: true } },
       dryRun: { type: 'boolean', description: 'True when the result came from a fast dry run.' },

@@ -37,7 +37,7 @@ declare const window: {
       width: number;
       height: number;
     }) => HeadlessInspectionCapture;
-    setRenderView: (view: RenderView, outputAspect?: number) => void;
+    setRenderView: (view: RenderView, outputAspect?: number, frameBounds?: { min: [number, number, number]; max: [number, number, number] }) => void;
     setRenderPose: (azDeg: number, elDeg: number, outputAspect?: number) => void;
     setReferenceImagesVisible: (visible: boolean) => void;
     setRenderEnvironment: (spec: unknown) => Promise<void>;
@@ -104,6 +104,8 @@ export interface HeadlessInspectionCapture {
 
 export interface HeadlessRenderOpts {
   scriptPath: string;
+  /** Shared fit bounds for pixel-aligned before/after captures. */
+  frameBounds?: HeadlessRenderResult['bounds'];
   viewportWidth: number;
   viewportHeight: number;
   /** Subset of views to capture; defaults to all four. */
@@ -563,7 +565,7 @@ export async function openRenderPage(
     const page = pageHandle.page;
 
     // 3. Load meshes + skip the fade-in animation.
-    await loadFeatureMeshesIntoPage(page, serialized, meshing.bounds);
+    await loadFeatureMeshesIntoPage(page, serialized, opts.frameBounds ?? meshing.bounds);
     await page.evaluate(() => window.__demoPlayer!.forceFullOpacity());
     // Hide intermediate construction-debris feature groups so engineering
     // captures show only the final shape — not stacked cutter boxes, sketch
@@ -627,8 +629,8 @@ async function captureViews(
   let maskObjects: HeadlessMaskObject[] | undefined;
   for (const view of views) {
     await page.evaluate(
-      ({ v, a }) => window.__demoPlayer!.setRenderView(v, a),
-      { v: view, a: outputAspect },
+      ({ v, a, b }) => window.__demoPlayer!.setRenderView(v, a, b),
+      { v: view, a: outputAspect, b: opts.frameBounds },
     );
     if (captureRgb) {
       pngsByView[view] = opts.publish

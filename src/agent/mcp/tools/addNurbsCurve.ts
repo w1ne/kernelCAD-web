@@ -8,7 +8,7 @@
 
 import { addNurbsCurve } from '../edits/addNurbsCurve';
 import type { AddNurbsCurveInput } from '../edits/addNurbsCurve';
-import { evaluateScriptTool } from './evaluateScript';
+import { evaluateScriptTool, type EvaluateScriptOutput } from './evaluateScript';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 
 export type { AddNurbsCurveInput };
@@ -16,6 +16,7 @@ export type { AddNurbsCurveInput };
 export interface AddNurbsCurveOutput {
   ok: boolean;
   new_code?: string;
+  step?: EvaluateScriptOutput['step'];
   diagnostics?: CompilerDiagnostic[];
   error?: string;
 }
@@ -29,6 +30,7 @@ export async function addNurbsCurveTool(input: AddNurbsCurveInput): Promise<AddN
   return {
     ok: evalResult.ok,
     new_code: edit.new_code,
+    step: evalResult.step,
     diagnostics: evalResult.diagnostics,
   };
 }

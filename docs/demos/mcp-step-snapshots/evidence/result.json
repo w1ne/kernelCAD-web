@@ -1,0 +1,113 @@
+{
+  "provenance": "Local validation: real kernel builds, existing Chrome extension adapter; not deployed or hardware accepted.",
+  "before": {
+    "ok": true,
+    "step": {
+      "validity": {
+        "status": "valid",
+        "checks": [
+          "build",
+          "feature-health",
+          "finite-geometry"
+        ],
+        "volume": 48000
+      },
+      "snapshots": {
+        "status": "unavailable",
+        "frame": {
+          "view": "iso",
+          "width": 512,
+          "height": 512,
+          "bounds": {
+            "min": [
+              0,
+              0,
+              0
+            ],
+            "max": [
+              60,
+              40,
+              20
+            ]
+          }
+        },
+        "error": "Step snapshots require an existing browser attachment (PW_CDP_URL)."
+      }
+    },
+    "featureCount": 1,
+    "diagnostics": [],
+    "featureHealth": []
+  },
+  "after": {
+    "ok": true,
+    "step": {
+      "validity": {
+        "status": "valid",
+        "checks": [
+          "build",
+          "feature-health",
+          "finite-geometry"
+        ],
+        "volume": 69738.05328941536
+      },
+      "snapshots": {
+        "status": "unavailable",
+        "frame": {
+          "view": "iso",
+          "width": 512,
+          "height": 512,
+          "bounds": {
+            "min": [
+              0,
+              0,
+              0
+            ],
+            "max": [
+              90,
+              40,
+              20
+            ]
+          }
+        },
+        "error": "Step snapshots require an existing browser attachment (PW_CDP_URL)."
+      }
+    },
+    "featureCount": 2,
+    "diagnostics": [],
+    "featureHealth": []
+  },
+  "step": {
+    "validity": {
+      "status": "valid",
+      "checks": [
+        "build",
+        "feature-health",
+        "finite-geometry"
+      ],
+      "volume": 69738.05328941536
+    },
+    "snapshots": {
+      "status": "captured",
+      "frame": {
+        "view": "iso",
+        "width": 512,
+        "height": 512,
+        "bounds": {
+          "min": [
+            0,
+            0,
+            0
+          ],
+          "max": [
+            90,
+            40,
+            20
+          ]
+        }
+      },
+      "before": "before.png",
+      "after": "after.png",
+      "out_dir": "."
+    }
+  }
+}

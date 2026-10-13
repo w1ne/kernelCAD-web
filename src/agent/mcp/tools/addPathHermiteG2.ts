@@ -8,7 +8,7 @@
 
 import { addPathHermiteG2 } from '../edits/addPathHermiteG2';
 import type { AddPathHermiteG2Input } from '../edits/addPathHermiteG2';
-import { evaluateScriptTool } from './evaluateScript';
+import { evaluateScriptTool, type EvaluateScriptOutput } from './evaluateScript';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 
 export type { AddPathHermiteG2Input };
@@ -16,6 +16,7 @@ export type { AddPathHermiteG2Input };
 export interface AddPathHermiteG2Output {
   ok: boolean;
   new_code?: string;
+  step?: EvaluateScriptOutput['step'];
   diagnostics?: CompilerDiagnostic[];
   error?: string;
 }
@@ -29,6 +30,7 @@ export async function addPathHermiteG2Tool(input: AddPathHermiteG2Input): Promis
   return {
     ok: evalResult.ok,
     new_code: edit.new_code,
+    step: evalResult.step,
     diagnostics: evalResult.diagnostics,
   };
 }

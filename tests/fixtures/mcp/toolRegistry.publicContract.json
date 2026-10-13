@@ -1,7 +1,7 @@
 [
   {
     "name": "evaluate_script",
-    "description": "Use this when you need to run a script and check it compiles. Run a kernelCAD .kcad.ts script and report pass/fail + feature count + diagnostics. When the scene is assembly-built (assembly().part(...) → .model()/.solvedModel()), also returns a parts summary { count, names } AND runs the mechanism-truth gate by default: the `mechanism` field reports real/broken/unverified and a broken mechanism (disconnected components / mechanism.orphan-part, self-collision, fastened drift, dof-mismatch) makes ok:false with the failures in diagnostics — a mechanism (any mate, joint, transmission or .solvedModel()) needs every part linked by connectors + mates/joints (axis+revolute for shafts/hinges/gears; frame+fastened for rigid; or arm.revolute/.prismatic/.ball/.fixed). A plain multi-part assembly with no mates (base + lid, print layout) is independent bodies and passes. Pass { skipMechanismCheck: true } to opt out (e.g. a deliberately free part next to a mechanism). Every union() is checked too (no opt-out): union.disconnected (the union is several separate solids — a floating operand) and union.member-overlap (two operands that each carry their own .finish()/.material(), the same one, share > 1 mm³ — cut members to fit, e.g. a cross tube between rails is span minus two rail widths) make ok:false. Pass either { file: \"<path>\" } or { code: \"<inline source>\" }. Set { dryRun: true } for fast validation while iterating: transpile + capture + capture-light checks without building solids, DFM gates, or meshing — milliseconds instead of seconds (100x+ on boolean/fillet-heavy scripts). A dry run catches script throws, capture-time API misuse, and assembly validity-gate failures, but NOT lowering failures or dfmSpec diagnostics; it leaves the active session untouched, so finish with a full (non-dry) evaluate_script before using session-dependent tools. To show a measurement in the 3D viewer (e.g. hole spacing), declare it in the script with shape.dimension({ kind: \"linear\", from, to, label }); a full evaluate lists them as dimensions: [{ text, kind, source }], and a shared /p link with ?dims=1 forces them on.",
+    "description": "Use this when you need to run a script and check it compiles. Full evaluations return step evidence: build validity, volume and before/after local PNG paths in one shared iso frame. Snapshots require PW_CDP_URL for an existing browser; unavailable captures report an explicit error. Run a kernelCAD .kcad.ts script and report pass/fail + feature count + diagnostics. When the scene is assembly-built (assembly().part(...) → .model()/.solvedModel()), also returns a parts summary { count, names } AND runs the mechanism-truth gate by default: the `mechanism` field reports real/broken/unverified and a broken mechanism (disconnected components / mechanism.orphan-part, self-collision, fastened drift, dof-mismatch) makes ok:false with the failures in diagnostics — a mechanism (any mate, joint, transmission or .solvedModel()) needs every part linked by connectors + mates/joints (axis+revolute for shafts/hinges/gears; frame+fastened for rigid; or arm.revolute/.prismatic/.ball/.fixed). A plain multi-part assembly with no mates (base + lid, print layout) is independent bodies and passes. Pass { skipMechanismCheck: true } to opt out (e.g. a deliberately free part next to a mechanism). Every union() is checked too (no opt-out): union.disconnected (the union is several separate solids — a floating operand) and union.member-overlap (two operands that each carry their own .finish()/.material(), the same one, share > 1 mm³ — cut members to fit, e.g. a cross tube between rails is span minus two rail widths) make ok:false. Pass either { file: \"<path>\" } or { code: \"<inline source>\" }. Set { dryRun: true } for fast validation while iterating: transpile + capture + capture-light checks without building solids, DFM gates, or meshing — milliseconds instead of seconds (100x+ on boolean/fillet-heavy scripts). A dry run catches script throws, capture-time API misuse, and assembly validity-gate failures, but NOT lowering failures or dfmSpec diagnostics; it leaves the active session untouched, so finish with a full (non-dry) evaluate_script before using session-dependent tools. To show a measurement in the 3D viewer (e.g. hole spacing), declare it in the script with shape.dimension({ kind: \"linear\", from, to, label }); a full evaluate lists them as dimensions: [{ text, kind, source }], and a shared /p link with ?dims=1 forces them on.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -34,6 +34,11 @@
         "ok": {
           "type": "boolean",
           "description": "Whether the script compiled and lowered cleanly."
+        },
+        "step": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
         },
         "featureCount": {
           "type": "number",
@@ -1202,6 +1207,11 @@
           "type": "boolean",
           "description": "Whether the edit applied and re-evaluated cleanly."
         },
+        "step": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
+        },
         "new_code": {
           "type": "string",
           "description": "Modified .kcad.ts source (present on success). Caller persists it."
@@ -1260,6 +1270,11 @@
         "ok": {
           "type": "boolean",
           "description": "Whether the edit applied and re-evaluated cleanly."
+        },
+        "step": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
         },
         "new_code": {
           "type": "string",
@@ -1508,6 +1523,11 @@
           "type": "boolean",
           "description": "Whether the edit applied and re-evaluated cleanly."
         },
+        "step": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
+        },
         "new_code": {
           "type": "string",
           "description": "Modified .kcad.ts source (present on success). Caller persists it."
@@ -1711,6 +1731,11 @@
         "ok": {
           "type": "boolean",
           "description": "Whether the edit applied and re-evaluated cleanly."
+        },
+        "step": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
         },
         "new_code": {
           "type": "string",
@@ -1963,6 +1988,11 @@
         "ok": {
           "type": "boolean",
           "description": "Whether the edit applied and re-evaluated cleanly."
+        },
+        "step": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
         },
         "new_code": {
           "type": "string",
@@ -2238,6 +2268,11 @@
           "type": "boolean",
           "description": "Whether the edit applied and re-evaluated cleanly."
         },
+        "step": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
+        },
         "new_code": {
           "type": "string",
           "description": "Modified .kcad.ts source (present on success). Caller persists it."
@@ -2376,6 +2411,11 @@
           "type": "boolean",
           "description": "Whether the edit applied and re-evaluated cleanly."
         },
+        "step": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
+        },
         "new_code": {
           "type": "string",
           "description": "Modified .kcad.ts source (present on success). Caller persists it."
@@ -2483,6 +2523,11 @@
         "ok": {
           "type": "boolean",
           "description": "Whether the edit applied and re-evaluated cleanly."
+        },
+        "step": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
         },
         "new_code": {
           "type": "string",
@@ -2714,6 +2759,11 @@
           "type": "boolean",
           "description": "Whether the edit applied and re-evaluated cleanly."
         },
+        "step": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
+        },
         "new_code": {
           "type": "string",
           "description": "Modified .kcad.ts source (present on success). Caller persists it."
@@ -2772,6 +2822,11 @@
         "ok": {
           "type": "boolean",
           "description": "Whether the edit applied and re-evaluated cleanly."
+        },
+        "step": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
         },
         "new_code": {
           "type": "string",
@@ -3126,7 +3181,6 @@
         "options": {
           "type": "object",
           "description": "target:'model' — optional per-format options bag. Discriminator options.format must equal top-level format. dxf: { layers?, unit?: \"mm\"|\"cm\"|\"in\", tolerance?, section?: { axis: \"x\"|\"y\"|\"z\", at: mm }, layout?: \"per-part\"|\"sheet\" }. 3mf: { printUnit?: \"mm\"|\"cm\"|\"in\", embedSource?, arrange?: \"none\"|\"plate\"|\"assembled\", orient?: boolean, slicer?: \"generic\"|\"bambu\"|\"orca\"|\"prusa\", printer?: printer profile id, one of \"generic-fdm\"|\"bambu-a1-mini\"|\"bambu-a1\"|\"bambu-p1s\"|\"bambu-p1p\"|\"bambu-x1c\"|\"bambu-x1e\"|\"bambu-h2d\"|\"bambu-h2s\"|\"prusa-mini-plus\"|\"prusa-mk4s\"|\"prusa-core-one\"|\"prusa-xl\"|\"creality-ender-3-v3\"|\"creality-k1\"|\"creality-k1-max\"|\"creality-k2-plus\"|\"elegoo-neptune-4-pro\"|\"anycubic-kobra-3\"|\"voron-2.4-250\"|\"voron-2.4-300\"|\"voron-2.4-350\"|\"ultimaker-s5\" (default \"generic-fdm\"; sets the bed for arrange and the slicer default; an unknown id is refused with the valid list; CLI: kernelcad print printers) }; parts that do not fit the bed are still written and reported as warn diagnostics export.3mf.plate-overflow / export.3mf.exceeds-bed, whose hint names the smallest profiles the layout fits on. gcode: { printer?: printer profile id, layerHeight?: mm, infill?: percent, supports?: boolean, material?: string }; requires a locally installed OrcaSlicer. Returns slicer predictions as gcode_stats; does not start a printer. glb: { axis?: \"y-up\"|\"z-up\", draco?: false }. svg-drawing: { sheet?: \"a4\"|\"a3\" (or any pdf-drawing sheet), projection?, titleBlock?: { title?, partName?, material?, revision? }, modelName?, date?, annotations?, exploded?: { factor, mode? }, balloons?, partsList?, sections?, autoAnnotate? }. svg-drawing annotations is an array of authored dimensions/notes, each { kind: \"linear\"|\"radius\"|\"diameter\"|\"angular\"|\"note\", view?: \"front\"|\"top\"|\"left\"|\"iso\", text?, offset? } plus kind-specific geometry: linear { from, to }, radius/diameter { edge: EdgeQuery }, angular { from: EdgeQuery, to: EdgeQuery }, note { at, text }. from/to/at anchors are an [x,y,z] model point, { edge: EdgeQuery } or { face: FaceQuery }. Supplying any annotation REPLACES the automatic bounding-box dimensions; an annotation whose query resolves to zero or multiple matches fails the export rather than being dropped. svg-drawing sections is an array of { plane: \"xy\"|\"xz\"|\"yz\"|{ origin, normal }, label } (any non-zero normal). svg-drawing autoAnnotate is true or { tolerance?: \"ISO2768-f\"|\"ISO2768-m\"|\"ISO2768-c\", datums?: \"auto\"|[{ label, face: FaceQuery }], include?: [\"datums\"|\"flatness\"|\"holes\"|\"hole-positions\"|\"overall\"|\"fillets\"|\"chamfers\"|\"general-tolerance\"], dimensioningStyle?: \"baseline\"|\"chain\"|\"symmetry\" }; datums and tolerances declared in the script with shape.datum() / shape.tolerance() override the automatic ones. pdf-drawing: { sheet?: \"a4\"|\"a3\"|\"a2\"|\"a1\"|\"a0\"|\"ansi-a\"|\"ansi-b\"|\"ansi-c\"|\"ansi-d\"|\"ansi-e\"|\"auto\"|\"auto-ansi\" (default \"a3\"), projection?: \"third\"|\"first\", title?, partName?, material?, revision?, date? (default today), modelName?, annotations?, sections?, exploded?, balloons?, partsList?, autoAnnotate? (default true unless annotations are given) } — the svg-drawing keys mean the same. Mechanical SVG/PDF also accept draftingProfile?: \"general\"|\"machining\"|\"sheet-metal\" or { id, name, sheet, projection, dimensioningStyle, tolerance?, notes? }, with explicit options overriding profile defaults. Functional drawing review: shape.drawingReview(plan) source declarations merge with reviewPlans?: additional plans; decisionResolutions?: { [encodeURIComponent(planId)+\":\"+encodeURIComponent(decisionId)]: { note, provenance } }. drawing_report.review reports declared geometric-callout coverage and unresolved engineering decisions. requireCompleteReview?: true rejects incomplete/not-declared mechanical reviews before export; architectural style rejects review contracts. Coverage is not engineering certification. annotationOverrides?: { [drawing_report.annotations[i].id]: { suppress?, text?, view?, offset? } }; offset is extra nonnegative sheet mm. Text edits primary labels while preserving attached FCFs; datum/standalone FCF text is changed in its declaration instead. Suppressed rows remain in the report but not visible counts. Missing IDs warn after geometry edits. Authored annotations can set id for stable review identity. svg-drawing and pdf-drawing also take style?: \"mechanical\" (default, the part sheet) | \"architectural\" (a floor plan for a building or room model: section about 1 m above the floor with filled cut walls, wall / opening chain dimensions and overall sizes, room labels with net area, scale bar, north arrow; millimetres, or feet-inches when the model is in whole feet / inches) and plan?: { units?: \"metric\"|\"imperial\", cutHeight?: mm above the floor, rooms?: [{ name, at: [x, y] }], northDeg?: degrees clockwise from sheet up }. A building-sized model drawn in the default style gets a drawing.style.architectural-suggested warning."
-
         },
         "part": {
           "type": "string",
@@ -3869,6 +3923,11 @@
           "type": "boolean",
           "description": "Whether the edit applied and re-evaluated cleanly."
         },
+        "step": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
+        },
         "new_code": {
           "type": "string",
           "description": "Modified .kcad.ts source (present on success). Caller persists it."
@@ -4032,6 +4091,11 @@
         "ok": {
           "type": "boolean",
           "description": "Whether the edit applied and re-evaluated cleanly."
+        },
+        "step": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
         },
         "new_code": {
           "type": "string",
@@ -4271,6 +4335,11 @@
           "type": "boolean",
           "description": "Whether the edit applied and re-evaluated cleanly."
         },
+        "step": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
+        },
         "new_code": {
           "type": "string",
           "description": "Modified .kcad.ts source (present on success). Caller persists it."
@@ -4352,6 +4421,11 @@
           "type": "boolean",
           "description": "Whether the edit applied and re-evaluated cleanly."
         },
+        "step": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
+        },
         "new_code": {
           "type": "string",
           "description": "Modified .kcad.ts source (present on success). Caller persists it."
@@ -4426,6 +4500,11 @@
         "ok": {
           "type": "boolean",
           "description": "Whether the edit applied and re-evaluated cleanly."
+        },
+        "step": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
         },
         "new_code": {
           "type": "string",

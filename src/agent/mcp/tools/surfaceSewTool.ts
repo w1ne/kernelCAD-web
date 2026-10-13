@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { surfaceSewEdit } from '../edits/surfaceSew';
 import type { SurfaceSewInput } from '../edits/surfaceSew';
-import { evaluateScriptTool } from './evaluateScript';
+import { evaluateScriptTool, type EvaluateScriptOutput } from './evaluateScript';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 
 export type { SurfaceSewInput };
@@ -10,6 +10,7 @@ export type { SurfaceSewInput };
 export interface SurfaceSewOutput {
   ok: boolean;
   new_code?: string;
+  step?: EvaluateScriptOutput['step'];
   diagnostics?: CompilerDiagnostic[];
   error?: string;
 }
@@ -30,6 +31,7 @@ export async function surfaceSewTool(input: SurfaceSewInput): Promise<SurfaceSew
   return {
     ok: true,
     new_code: edit.new_code,
+    step: evalResult.step,
     diagnostics: evalResult.diagnostics,
   };
 }

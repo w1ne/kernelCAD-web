@@ -8,7 +8,7 @@
 
 import { addHermiteG2 } from '../edits/addHermiteG2';
 import type { AddHermiteG2Input } from '../edits/addHermiteG2';
-import { evaluateScriptTool } from './evaluateScript';
+import { evaluateScriptTool, type EvaluateScriptOutput } from './evaluateScript';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 
 export type { AddHermiteG2Input };
@@ -16,6 +16,7 @@ export type { AddHermiteG2Input };
 export interface AddHermiteG2Output {
   ok: boolean;
   new_code?: string;
+  step?: EvaluateScriptOutput['step'];
   diagnostics?: CompilerDiagnostic[];
   error?: string;
 }
@@ -29,6 +30,7 @@ export async function addHermiteG2Tool(input: AddHermiteG2Input): Promise<AddHer
   return {
     ok: evalResult.ok,
     new_code: edit.new_code,
+    step: evalResult.step,
     diagnostics: evalResult.diagnostics,
   };
 }

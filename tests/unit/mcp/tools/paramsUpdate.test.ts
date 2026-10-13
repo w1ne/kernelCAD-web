@@ -28,6 +28,8 @@ describe('paramsUpdateTool', () => {
     expect(result.relowered.some(id => id.startsWith('hole_'))).toBe(true);
     expect(result.skipped.some(id => id.startsWith('box_'))).toBe(true);
     expect(result.warnings).toEqual([]);
+    expect(result.step?.validity.status).toBe('valid');
+    expect(result.step?.validity.volume).toBeCloseTo(result.shape.volume);
 
     const list = await paramsListTool({});
     expect(list.params.find(p => p.name === 'boltDia')?.value).toBe(10);

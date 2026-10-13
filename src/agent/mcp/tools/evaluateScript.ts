@@ -13,10 +13,12 @@ import { tubesOutput } from '../../../composition/scriptEvaluation';
 import type { PortReportEntry } from '../../../modeling/runtime/tube/portReport';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
-import { clearActiveMcpSession, setActiveMcpSession } from '../activeSession';
+import { clearActiveMcpSession, getActiveMcpSession, setActiveMcpSession } from '../activeSession';
 import { Scene } from '../../../modeling/validation/scene';
 import type { Assembly } from '../../../modeling/capture/assembly';
 import { probeAssemblies } from '../../../modeling/runtime/mechanismProbe';
+
+import { captureStepState, createStepEvidence, type StepEvidence } from './stepEvidence';
 
 export interface EvaluateScriptInput {
   file?: string;
@@ -42,6 +44,7 @@ export interface EvaluateScriptInput {
 }
 
 export interface EvaluateScriptOutput {
+  step?: StepEvidence;
   ok: boolean;
   featureCount: number;
   diagnostics: CompilerDiagnostic[];
@@ -129,6 +132,8 @@ export async function evaluateScriptTool(
 ): Promise<EvaluateScriptOutput> {
   if (input.dryRun) return evaluateDryRun(input);
 
+  const active = getActiveMcpSession();
+  const before = active?.stepEvidenceSupported === false ? undefined : captureStepState(active?.rootShape ?? active?.tailShape);
   const { evaluation, model, dfmReport, tubeReport, portReport } = await evaluateAndBuildScript(input as EvaluateInput);
   // Authoring intent lint (usage triage 2026-10-03): info-only hints naming
   // the API for intent the source states but builds by hand. Agents skip
@@ -176,8 +181,12 @@ export async function evaluateScriptTool(
   const tubes = tubesOutput(tubeReport);
   const reviewHint = hasArticulatedMates(model) ? MATES_REVIEW_HINT : undefined;
 
+  const after = buildSucceeded && !Array.isArray(model?.returnValue) ? captureStepState(model?.rootShape ?? model?.tailShape) : undefined;
+  const step = await createStepEvidence(before, after, ok, r.featureHealth);
+
   return {
     ok,
+    step,
     featureCount: r.featureCount,
     // Idempotent re-enrichment guard. evaluateAndBuildScript already
     // populates nextAction on every return path; this wrap is a no-op
@@ -233,6 +242,7 @@ function didBuildSucceed(
 function refreshActiveSession(model: BuildOutcome['model'], buildSucceeded: boolean): void {
   if (buildSucceeded && model !== undefined) {
     setActiveMcpSession({
+      stepEvidenceSupported: !Array.isArray(model.returnValue),
       session: model.session,
       tailId: model.tailId,
       tailShape: model.tailShape,
