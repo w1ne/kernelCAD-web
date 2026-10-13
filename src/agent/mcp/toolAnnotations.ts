@@ -124,4 +124,6 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   // disk, so it is neither read-only nor sandbox-local.
   run_fea: WRITES_FILE,
   fea_summary: READ,
+  // Evaluates the script in-process and reports; writes nothing.
+  dfm_review: READ,
 };

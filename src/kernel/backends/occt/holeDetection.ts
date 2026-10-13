@@ -253,6 +253,16 @@ export function collectFullCylinders(backend: OcctBackend, kind: 'hole' | 'pin')
 }
 
 /**
+ * Every merged co-axial CONCAVE cylinder cluster with its angular coverage,
+ * including partial ones (fillets, rounded pocket corners). Coverage below
+ * `MIN_ANGULAR_COVERAGE_RAD` marks a partial cylinder. Cheap — no boolean
+ * probes. Used by the CNC internal-corner-radius check (dfm_review).
+ */
+export function collectConcaveCylinderClusters(backend: OcctBackend): BoreExtent[] {
+  return resolveBoreCandidates(collectConcaveCylindricalFaces(backend, 'concave'));
+}
+
+/**
  * Detect cylindrical holes (blind and through bores) on a BREP solid.
  *
  * Returns one entry per merged co-axial bore. Convex cylinders (bosses)
