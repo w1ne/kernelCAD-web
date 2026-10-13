@@ -28,6 +28,10 @@ saved from Claude Code, Codex, Cursor, Gemini or Grok opens at the same Studio
 share link (`/p/<slug>`) you see in ChatGPT or Claude. Sign in with the same
 account in each client.
 
+Ask your agent: **“look at kernelcad.com and install the mcp”**.
+[Agent-readable installation instructions](https://kernelcad.com/llms.txt) cover
+hosted setup, local npm setup, and connection verification.
+
 ### Coding agents: one command
 
 One command connects your agent to the hosted kernelCAD MCP server
