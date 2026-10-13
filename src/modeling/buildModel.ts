@@ -97,7 +97,13 @@ export async function buildModel(
   session.setEngine(engine);
   const warningsBefore = session.warnings.length;
   const pending = session.snapshotFullLower(new Map());
+  // Reuse the clean full lower the script already ran (the solvedModel gate),
+  // for the record prefix that is still valid. Dropped either way: it must not
+  // outlive this build.
+  const seedShapes = session.reusableLoweredPrefix(session.cleanScriptLower);
+  session.cleanScriptLower = undefined;
   const result = await engine.run(run.records, {
+    ...(seedShapes.size > 0 ? { seedShapes } : {}),
     paramTable: session.paramTable,
     warningSink: warning => session.warnings.push(warning),
     warningPhase: 'build',
