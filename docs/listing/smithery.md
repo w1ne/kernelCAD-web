@@ -21,7 +21,7 @@ kernelCAD is hosted parametric CAD for agents. Describe a part and get an editab
 `.kcad.ts` model on an OpenCASCADE B-rep kernel, shown in 3D in the chat.
 
 - **Formats:** STEP, STL, 3MF, GLB, DXF, PDF/SVG engineering drawings, BOM. Import your own STEP/STL.
-- **Automatic checks:** interference, watertight meshes, DFM review for FDM and CNC, optional FEA.
+- **Checks:** interference and watertight meshes; declared manufacturing rules, on-demand DFM review for FDM and CNC, optional FEA.
 - **Fab handoff:** a fab pack zip plus links to JLC3DP, PCBWay, Xometry, SendCutSend and Craftcloud quote pages.
 
 Remote: `https://mcp.kernelcad.com/mcp` · Local: `npx -y kernelcad mcp`

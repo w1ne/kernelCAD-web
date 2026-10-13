@@ -29,4 +29,3 @@ The plugin bundle (`plugins/kernelcad`) is a separate submission. Submit the rem
 - "Check this part for 3D printing and for CNC with a 6 mm end mill."
 - "Export a STEP and a PDF drawing with dimensions."
 - "Here's a link to my STEP file. Cut a 20 × 10 mm slot in the top face."
-
