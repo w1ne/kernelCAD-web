@@ -15,18 +15,19 @@
 // `lib.fromSTL`) into output_dir, evaluates it, and returns the script path,
 // its code and the body's bounding box so the agent can keep modelling on it.
 
-import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
-import { lookup } from 'node:dns/promises';
-import { BlockList, isIP } from 'node:net';
+import { mkdir, mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { evaluateAndBuildScript } from '../../cli/commands/evaluate';
 import { validateOutputPath } from '../../script-runtime/safeOutputPath';
+import { checkWritableDestination, safeWriteFile } from '../../script-runtime/safeWriteFile';
+import { fetchPublicBytes, parseFetchUrl, resolvePinned } from './importStepFetch';
+
+export { isPrivateAddress } from './importStepFetch';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 
 /** Hard cap on imported file size. */
 export const IMPORT_MAX_BYTES = 50 * 1024 * 1024;
-const FETCH_TIMEOUT_MS = 30_000;
 const MB = IMPORT_MAX_BYTES / 1024 / 1024;
 const NAME_RE = /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/;
 
@@ -71,74 +72,16 @@ function fail(error: string, diagnostics: CompilerDiagnostic[] = []): ImportStep
   return { ok: false, diagnostics, error };
 }
 
-const BLOCKED = new BlockList();
-for (const [net, prefix] of [
-  ['0.0.0.0', 8], ['10.0.0.0', 8], ['100.64.0.0', 10], ['127.0.0.0', 8], ['169.254.0.0', 16],
-  ['172.16.0.0', 12], ['192.168.0.0', 16], ['224.0.0.0', 3],
-] as const) BLOCKED.addSubnet(net, prefix, 'ipv4');
-for (const [net, prefix] of [['::', 128], ['::1', 128], ['fc00::', 7], ['fe80::', 10], ['ff00::', 8]] as const) {
-  BLOCKED.addSubnet(net, prefix, 'ipv6');
-}
-
-/** True for loopback, private, link-local, CGNAT, multicast and unspecified addresses (and non-IPs). */
-export function isPrivateAddress(ip: string): boolean {
-  const v = isIP(ip);
-  if (v === 0) return true;
-  const mapped = /^::ffff:(\d+\.\d+\.\d+\.\d+)$/i.exec(ip);
-  if (mapped !== null) return isPrivateAddress(mapped[1]);
-  return BLOCKED.check(ip, v === 4 ? 'ipv4' : 'ipv6');
-}
-
-/** https only, no credentials, and the host must not resolve to a private address. */
+/** https only, no credentials, and the host must resolve only to public addresses. */
 export async function checkFetchUrl(raw: string): Promise<string | undefined> {
-  let u: URL;
+  const u = parseFetchUrl(raw);
+  if (typeof u === 'string') return u;
   try {
-    u = new URL(raw);
-  } catch {
-    return 'url is not a valid URL.';
-  }
-  if (u.protocol !== 'https:') return 'url must use https.';
-  if (u.username !== '' || u.password !== '') return 'url must not carry credentials.';
-  const host = u.hostname.replace(/^\[|\]$/g, '');
-  if (host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.internal')) return 'url host is not public.';
-  let addrs: string[];
-  try {
-    addrs = isIP(host) ? [host] : (await lookup(host, { all: true })).map(a => a.address);
-  } catch {
-    return `cannot resolve host '${host}'.`;
-  }
-  if (addrs.length === 0 || addrs.some(isPrivateAddress)) return 'url host is not public.';
-  return undefined;
-}
-
-async function fetchBytes(url: string): Promise<Uint8Array | string> {
-  const bad = await checkFetchUrl(url);
-  if (bad !== undefined) return bad;
-  let res: Response;
-  try {
-    // redirect: 'manual' so a public URL cannot bounce the fetch to a private host.
-    res = await fetch(url, { redirect: 'manual', signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
+    await resolvePinned(u);
   } catch (e) {
-    return `download failed: ${e instanceof Error ? e.message : String(e)}`;
+    return (e as Error).message;
   }
-  if (res.status >= 300 && res.status < 400) {
-    const loc = res.headers.get('location');
-    if (loc === null) return `download failed: HTTP ${res.status} without a location.`;
-    const next = new URL(loc, url).toString();
-    const badNext = await checkFetchUrl(next);
-    if (badNext !== undefined) return `redirect refused: ${badNext}`;
-    try {
-      res = await fetch(next, { redirect: 'error', signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
-    } catch (e) {
-      return `download failed: ${e instanceof Error ? e.message : String(e)}`;
-    }
-  }
-  if (!res.ok) return `download failed: HTTP ${res.status}.`;
-  const declared = Number(res.headers.get('content-length') ?? '0');
-  if (declared > IMPORT_MAX_BYTES) return `file is larger than ${MB} MB.`;
-  const buf = new Uint8Array(await res.arrayBuffer());
-  if (buf.byteLength > IMPORT_MAX_BYTES) return `file is larger than ${MB} MB.`;
-  return buf;
+  return undefined;
 }
 
 /** STEP by its ISO-10303-21 header, else STL (binary size match or ASCII 'solid'), else the extension. */
@@ -179,8 +122,10 @@ function validateInput(input: ImportStepInput): string | undefined {
 
 function decodeBase64(text: unknown): Uint8Array | string {
   if (typeof text !== 'string' || !/^[A-Za-z0-9+/=\s]+$/.test(text)) return 'content_base64 must be base64 text.';
-  if (text.length > (IMPORT_MAX_BYTES * 4) / 3 + 4) return `file is larger than ${MB} MB.`;
-  return new Uint8Array(Buffer.from(text, 'base64'));
+  if (text.length > Math.ceil(IMPORT_MAX_BYTES / 3) * 4 + 1024) return `file is larger than ${MB} MB.`;
+  const bytes = new Uint8Array(Buffer.from(text, 'base64'));
+  if (bytes.byteLength > IMPORT_MAX_BYTES) return `file is larger than ${MB} MB.`;
+  return bytes;
 }
 
 /** The file bytes and the best-known file name, or an error message. */
@@ -191,8 +136,10 @@ async function readSource(input: ImportStepInput): Promise<{ bytes: Uint8Array; 
   }
   const url = input.url ?? input.upload?.download_url;
   if (typeof url !== 'string' || url.length === 0) return 'upload.download_url is required.';
-  const fileName = input.file_name ?? input.upload?.file_name ?? new URL(url, 'https://x/').pathname.split('/').pop();
-  const bytes = await fetchBytes(url);
+  const parsed = parseFetchUrl(url);
+  if (typeof parsed === 'string') return parsed;
+  const fileName = input.file_name ?? input.upload?.file_name ?? parsed.pathname.split('/').pop();
+  const bytes = await fetchPublicBytes(url, IMPORT_MAX_BYTES);
   return typeof bytes === 'string' ? bytes : { bytes, fileName };
 }
 
@@ -201,7 +148,11 @@ async function prepareDir(outputDir: string | undefined): Promise<{ dir: string 
   const check = validateOutputPath(outputDir);
   if (!check.ok || check.resolved === undefined) return check.error ?? `Refusing to write to ${outputDir}.`;
   const dir = resolve(check.resolved);
-  await mkdir(dir, { recursive: true });
+  try {
+    await mkdir(dir, { recursive: true });
+  } catch (e) {
+    return `Cannot create ${dir}: ${e instanceof Error ? e.message : String(e)}`;
+  }
   return { dir };
 }
 
@@ -209,7 +160,12 @@ type Written = Required<Pick<ImportStepOutput, 'format' | 'model_path' | 'script
 
 /** Evaluate the starter script and report the body's bounding box. */
 async function evaluateImport(written: Written): Promise<ImportStepOutput> {
-  const built = await evaluateAndBuildScript({ file: written.script_path });
+  let built: Awaited<ReturnType<typeof evaluateAndBuildScript>>;
+  try {
+    built = await evaluateAndBuildScript({ file: written.script_path });
+  } catch (e) {
+    return { ok: false, ...written, diagnostics: [], error: `evaluation failed: ${e instanceof Error ? e.message : String(e)}` };
+  }
   const diagnostics = built.evaluation.diagnostics;
   const shape = built.model?.rootShape ?? built.model?.tailShape;
   if (built.evaluation.exitCode !== 0 || shape === undefined) {
@@ -223,7 +179,18 @@ async function evaluateImport(written: Written): Promise<ImportStepOutput> {
   return { ok: true, ...written, bbox: { min, max, size }, diagnostics };
 }
 
-export async function importStepTool(input: ImportStepInput): Promise<ImportStepOutput> {
+/** Write the model and starter script; refuses symlinked or existing non-file destinations. */
+async function writeImport(written: Written, bytes: Uint8Array): Promise<string | undefined> {
+  for (const p of [written.model_path, written.script_path]) {
+    const bad = await checkWritableDestination(p);
+    if (bad !== undefined) return bad;
+  }
+  const err = (await safeWriteFile(written.model_path, bytes)) ?? (await safeWriteFile(written.script_path, written.code));
+  if (err !== undefined) await Promise.all([written.model_path, written.script_path].map(p => rm(p, { force: true }).catch(() => undefined)));
+  return err;
+}
+
+async function runImport(input: ImportStepInput): Promise<ImportStepOutput> {
   const invalid = validateInput(input);
   if (invalid !== undefined) return fail(invalid);
   const source = await readSource(input);
@@ -243,7 +210,15 @@ export async function importStepTool(input: ImportStepInput): Promise<ImportStep
     code: starterScript(fileBase, format, input.allow_open === true),
     byte_count: source.bytes.byteLength,
   };
-  await writeFile(written.model_path, source.bytes);
-  await writeFile(written.script_path, written.code);
+  const writeErr = await writeImport(written, source.bytes);
+  if (writeErr !== undefined) return fail(writeErr);
   return evaluateImport(written);
+}
+
+export async function importStepTool(input: ImportStepInput): Promise<ImportStepOutput> {
+  try {
+    return await runImport(input);
+  } catch (e) {
+    return fail(`import failed: ${e instanceof Error ? e.message : String(e)}`);
+  }
 }
