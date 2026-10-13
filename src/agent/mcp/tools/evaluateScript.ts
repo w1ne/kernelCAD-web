@@ -114,6 +114,10 @@ export const MATES_REVIEW_HINT =
   'joint-support intents, pose-envelope overlap at declared mate limits, or gravity drop / static hold. ' +
   'Run review_cad for pose-envelope + gravity checks before calling the mechanism done.';
 
+async function publishBuiltViewer(model: BuildOutcome['model'], buildSucceeded: boolean) {
+  return buildSucceeded && model ? updateMcpViewer(model) : {};
+}
+
 /**
  * MCP `evaluate_script` tool — runs a kernelCAD script and reports
  * pass/fail + feature count + diagnostics, plus a `parts` summary
@@ -180,7 +184,7 @@ export async function evaluateScriptTool(
   const ok = r.exitCode === 0 && mechanism !== 'broken';
   const tubes = tubesOutput(tubeReport);
   const reviewHint = hasArticulatedMates(model) ? MATES_REVIEW_HINT : undefined;
-  const viewer = buildSucceeded && model ? await updateMcpViewer(model) : {};
+  const viewer = await publishBuiltViewer(model, buildSucceeded);
 
   return {
     ok,
