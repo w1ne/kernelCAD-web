@@ -107,8 +107,9 @@ export interface DemoPlayerWindow {
    *  capture. Caller should `forceFullOpacity()` first so faded-in meshes
    *  appear at full visibility. `outputAspect` (optional) is the aspect of
    *  the centered region cropped out of the canvas for the output tile —
-   *  the fit guarantees the geometry sits inside that region. */
-  setRenderView(view: RenderView, outputAspect?: number): void;
+   *  the fit guarantees the geometry sits inside that region. `frameBounds`
+   *  pins the final fit to shared script-coordinate bounds for comparisons. */
+  setRenderView(view: RenderView, outputAspect?: number, frameBounds?: { min: [number, number, number]; max: [number, number, number] }): void;
   /** Snap camera to an arbitrary az/el pose (degrees). az=0 looks down -Y
    *  (front view); az increases CCW around +Z (top-down); el increases looking
    *  up (positive el = camera above the horizon). Used by `kernelcad render

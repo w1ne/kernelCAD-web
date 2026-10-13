@@ -70,6 +70,7 @@ function kernelCadMeshEndpoint(): Plugin {
   // `.kcad.ts` live-edit bridge) can reach the pool too.
   type PoolBundle = {
     pool: import('./src/server/sessionPool').SessionPool;
+    selectionHandler: (req: import('http').IncomingMessage, res: import('http').ServerResponse) => Promise<void>;
     sessionHandler: (req: import('http').IncomingMessage, res: import('http').ServerResponse) => Promise<void>;
     eventsHandler: (req: import('http').IncomingMessage, res: import('http').ServerResponse) => Promise<void>;
     paramsHandler: (req: import('http').IncomingMessage, res: import('http').ServerResponse) => Promise<void>;
@@ -135,6 +136,7 @@ function kernelCadMeshEndpoint(): Plugin {
             const [
               { createSessionPool },
               { createSessionEndpoint },
+              { createSelectionEndpoint },
               { createEventsEndpoint },
               { createParamsEndpoint },
               { createTransformsEndpoint },
@@ -143,6 +145,7 @@ function kernelCadMeshEndpoint(): Plugin {
             ] = await Promise.all([
               import('./src/server/sessionPool'),
               import('./src/server/middleware/sessionEndpoint'),
+              import('./src/server/middleware/selectionEndpoint'),
               import('./src/server/middleware/eventsEndpoint'),
               import('./src/server/middleware/paramsEndpoint'),
               import('./src/server/middleware/transformsEndpoint'),
@@ -167,6 +170,7 @@ function kernelCadMeshEndpoint(): Plugin {
             interval.unref?.();
             return {
               pool,
+              selectionHandler: createSelectionEndpoint({ pool }),
               sessionHandler: createSessionEndpoint({ pool, resolveScript: resolveExampleScript }),
               eventsHandler: createEventsEndpoint({ pool, heartbeatMs: 15_000 }),
               paramsHandler: createParamsEndpoint({ pool }),
@@ -189,6 +193,10 @@ function kernelCadMeshEndpoint(): Plugin {
         await handler(req, res);
       });
 
+      server.middlewares.use('/__kernelcad/selection', async (req, res) => {
+        const bundle = await getPoolBundle();
+        await bundle.selectionHandler(req, res);
+      });
       server.middlewares.use('/__kernelcad/session', async (req, res) => {
         const bundle = await getPoolBundle();
         await bundle.sessionHandler(req, res);

@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import type { SceneSummary } from '../../script-runtime/sceneSummary';
 // src/mcp/tools/setParamValue.ts
 import { setParamValue, parseParamDeclaration, type ParamDeclaration } from '../../../modeling/edits/setParamValue';
-import { evaluateScriptTool } from './evaluateScript';
+import { evaluateScriptTool, type EvaluateScriptOutput } from './evaluateScript';
 import { evaluateAndBuildScript } from '../../cli/commands/evaluate';
 import { isKernelError } from '../../../shared/intent/kernelError';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
@@ -17,7 +18,9 @@ export interface SetParamValueInput {
 export interface SetParamValueOutput {
   ok: boolean;
   new_code?: string;
+  step?: EvaluateScriptOutput['step'];
   diagnostics?: CompilerDiagnostic[];
+  sceneSummary?: SceneSummary;
   error?: string;
 }
 
@@ -63,6 +66,8 @@ export async function setParamValueTool(
   return {
     ok: evalResult.ok,
     new_code: edit.new_code,
+    step: evalResult.step,
+    sceneSummary: evalResult.sceneSummary,
     diagnostics: evalResult.diagnostics,
   };
 }

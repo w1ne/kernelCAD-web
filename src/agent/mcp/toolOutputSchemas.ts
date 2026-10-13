@@ -21,48 +21,26 @@
  * fields and stay permissive (`additionalProperties: true`).
  */
 
+import { SCENE_SUMMARY_SCHEMA } from './sceneSummarySchema';
+export { SCENE_SUMMARY_SCHEMA } from './sceneSummarySchema';
 import { VERIFY_OUTPUT_SCHEMA } from './verificationOutputSchema';
+import { MESH_RECONSTRUCT_OUTPUT_SCHEMAS } from './registry/meshReconstructTools.outputSchemas';
 import { FABRICATION_OUTPUT_SCHEMAS } from './registry/fabricationTools.outputSchemas';
 
-/** Same shape as McpToolDefinition['inputSchema'] — a JSON Schema object node. */
-export type JSONSchemaObject = {
-  type: 'object';
-  properties: Record<string, unknown>;
-  required?: string[];
-  additionalProperties?: boolean;
-};
-
-/** Standard source-edit envelope: returns modified code + re-eval diagnostics. */
-const SOURCE_EDIT: JSONSchemaObject = {
-  type: 'object',
-  properties: {
-    ok: { type: 'boolean', description: 'Whether the edit applied and re-evaluated cleanly.' },
-    new_code: { type: 'string', description: 'Modified .kcad.ts source (present on success). Caller persists it.' },
-    binding_name: { type: 'string', description: 'JS const name bound to the new construct (when one was created).' },
-    diagnostics: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Diagnostics from re-evaluating the modified source.' },
-    error: { type: 'string', description: 'Failure message (present when ok is false).' },
-  },
-  required: ['ok'],
-  additionalProperties: true,
-};
-
-/** One tube joint in the line report: the other tube and the station on the trunk. */
-const TUBE_JOINT = (description: string): Record<string, unknown> => ({
-  type: 'object',
-  properties: {
-    tube: { type: 'string', description: 'Name of the other tube of the joint.' },
-    at: { type: 'number', description: "Station of the tee: mm along the trunk centreline from the trunk's from end." },
-  },
-  required: ['tube', 'at'],
-  additionalProperties: false,
-  description,
-});
+export type { JSONSchemaObject } from './toolOutputSchemaParts';
+import { SELECTION, SOURCE_EDIT, TUBE_JOINT, type JSONSchemaObject } from './toolOutputSchemaParts';
 
 export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
+  get_selection: SELECTION,
+  set_selection: SELECTION,
   evaluate_script: {
     type: 'object',
     properties: {
+      sceneSummary: SCENE_SUMMARY_SCHEMA,
       ok: { type: 'boolean', description: 'Whether the script compiled and lowered cleanly.' },
+      viewerUrl: { type: 'string', description: 'Live loopback Studio URL; reused on later full builds in the same local MCP process.' },
+      viewerError: { type: 'string', description: 'Viewer provisioning error; separate from the CAD build result.' },
+      step: { type: 'object', additionalProperties: true, description: 'Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs.' },
       featureCount: { type: 'number', description: 'Number of features captured by the script.' },
       diagnostics: { type: 'array', items: { type: 'object', additionalProperties: true } },
       dryRun: { type: 'boolean', description: 'True when the result came from a fast dry run.' },
@@ -144,7 +122,7 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
       mechanism: { type: 'string', enum: ['real', 'broken', 'unverified'], description: "Mechanism-truth verdict for an assembly-built scene (default-on; omitted for dryRun, non-assembly, or skipMechanismCheck:true). 'broken' makes ok:false; 'unverified' keeps ok and surfaces a loud budget diagnostic." },
       reviewHint: { type: 'string', description: 'Present only when a captured assembly declares articulated (non-fastened) mates: the default mechanism check is shallow (no joint-support intents, pose-envelope overlap at declared limits, or gravity drop) — run review_cad for pose-envelope + gravity checks.' },
     },
-    required: ['ok', 'featureCount', 'diagnostics'],
+    required: ['ok', 'featureCount', 'diagnostics', 'sceneSummary'],
     additionalProperties: true,
   },
 
@@ -215,52 +193,8 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
     additionalProperties: true,
   },
 
-  mesh_to_features: {
-    type: 'object',
-    properties: {
-      ok: { type: 'boolean' },
-      script: { type: 'string', description: 'The emitted, evaluable .kcad.ts source (success).' },
-      ledger: {
-        type: 'object',
-        additionalProperties: true,
-        description: 'AssumptionLedger { facts, unresolvedCount }; dimension fact ids equal the param names (success).',
-      },
-      fidelity: {
-        type: 'object',
-        properties: {
-          maxDeviationMm: { type: 'number', description: 'Two-sided discrete Hausdorff distance, mesh vs reconstruction.' },
-          rmsMm: { type: 'number', description: 'RMS of the sampled point-to-surface distances.' },
-          volumeIoU: { type: 'number', description: 'Volume intersection-over-union by column ray casting.' },
-          verdict: {
-            type: 'string',
-            enum: ['faithful', 'approximate', 'failed'],
-            description: 'faithful = IoU and deviation within thresholds, watertight mesh, nothing unmatched; approximate = IoU >= 0.85.',
-          },
-          thresholds: { type: 'object', additionalProperties: true, description: '{ minIoU, maxDeviationMm, approximateIoU } actually applied.' },
-          pass: { type: 'number', description: 'Refinement pass whose script is returned.' },
-        },
-        required: ['maxDeviationMm', 'rmsMm', 'volumeIoU', 'verdict'],
-        additionalProperties: true,
-        description: 'Measured fidelity of the returned script (success).',
-      },
-      unmatchedRegions: {
-        type: 'array',
-        items: { type: 'object', additionalProperties: true },
-        description: 'Surface regions no emitted feature represents: { kind, reason, areaMm2, triangleCount, centroid, bbox }.',
-      },
-      features: { type: 'object', additionalProperties: true, description: 'Body kind, hole groups, cutouts, boolean remainders, params (success).' },
-      mesh: { type: 'object', additionalProperties: true, description: 'Clean-up and watertightness report for the input mesh.' },
-      reconstructedHoles: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Holes the B-rep hole detector finds on the reconstruction.' },
-      passes: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Per-pass tolerances and measured fidelity.' },
-      notRepresented: { type: 'array', items: { type: 'string' } },
-      written: { type: 'object', additionalProperties: true, description: '{ script, ledger } paths when out was given.' },
-      error: { type: 'string', description: 'Failure message (failure).' },
-      errorCode: { type: 'string' },
-      diagnostics: { type: 'array', items: { type: 'object', additionalProperties: true } },
-    },
-    required: ['ok'],
-    additionalProperties: true,
-  },
+  ...MESH_RECONSTRUCT_OUTPUT_SCHEMAS,
+
 
   // Merged dispatcher (selected by `of`): union of ~18 reader outputs. All
   // variants carry `ok`; remaining fields are subject-specific (parts, mates,
@@ -311,8 +245,8 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
       applied: { type: 'string', description: 'Candidate id that was accepted.' },
       new_code: { type: 'string', description: 'Repaired .kcad.ts source (present when a patch applied). Caller persists it.' },
       diff: { type: 'string', description: 'Unified diff of the accepted patch (dry run: every candidate patch).' },
-      before: { type: 'object', additionalProperties: true, description: 'Pre-repair { ok, featureHealth, diagnostics }.' },
-      after: { type: 'object', additionalProperties: true, description: 'Post-repair { ok, featureHealth, diagnostics }.' },
+      before: { type: 'object', properties: { sceneSummary: SCENE_SUMMARY_SCHEMA }, additionalProperties: true, description: 'Pre-repair { ok, featureHealth, diagnostics }.' },
+      after: { type: 'object', properties: { sceneSummary: SCENE_SUMMARY_SCHEMA }, additionalProperties: true, description: 'Post-repair { ok, featureHealth, diagnostics }.' },
       diagnostics: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'tool.repair.* diagnostics when repair could not complete.' },
       error: { type: 'string' },
       errorCode: { type: 'string' },
@@ -738,6 +672,7 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
   export: {
     type: 'object',
     properties: {
+      sceneSummary: SCENE_SUMMARY_SCHEMA,
       ok: { type: 'boolean' },
       output_path: { type: 'string', description: "target:'model' — written file path." },
       byte_count: { type: 'number', description: "target:'model' — file size in bytes." },
@@ -804,6 +739,7 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
   render_preview: {
     type: 'object',
     properties: {
+      sceneSummary: SCENE_SUMMARY_SCHEMA,
       ok: { type: 'boolean', description: 'Whether the preview rendered.' },
       images: {
         type: 'array',

@@ -80,11 +80,17 @@ const EXPECTED_TOOL_NAMES = [
   'drawing_to_cad',
   'mesh_to_features',
   'execute_cookbook',
+  'get_selection',
+  'set_selection',
   'fab_pack',
 ] as const;
 
 const PUBLIC_CONTRACT_FIXTURE = new URL(
   '../../../tests/fixtures/mcp/toolRegistry.publicContract.json',
+  import.meta.url,
+);
+const SCENE_SUMMARY_FIXTURE = new URL(
+  '../../../tests/fixtures/mcp/sceneSummary.schema.json',
   import.meta.url,
 );
 const TOOL_REGISTRY_SOURCE = new URL('./toolRegistry.ts', import.meta.url);
@@ -120,7 +126,13 @@ describe('toolRegistry public contract', () => {
   });
 
   it('keeps merged public tool metadata stable', () => {
-    const fixture = JSON.parse(readFileSync(PUBLIC_CONTRACT_FIXTURE, 'utf8'));
+    // Resolve only this fixture's local reference; production schemas stay inline.
+    const sceneSummary = JSON.parse(readFileSync(SCENE_SUMMARY_FIXTURE, 'utf8'));
+    const fixture = JSON.parse(readFileSync(PUBLIC_CONTRACT_FIXTURE, 'utf8'), (_key, value: unknown) => {
+      if (value !== null && typeof value === 'object'
+        && '$ref' in value && value.$ref === './sceneSummary.schema.json') return sceneSummary;
+      return value;
+    });
     expect(serializedPublicTools()).toEqual(fixture);
   });
 
@@ -338,14 +350,16 @@ describe('toolRegistry public contract', () => {
       'drawing_to_cad',
       'mesh_to_features',
       'execute_cookbook',
+      'get_selection',
+      'set_selection',
       'fab_pack',
     ]);
-    expect(TOOL_REGISTRY).toHaveLength(49);
+    expect(TOOL_REGISTRY).toHaveLength(51);
   });
 
   it('composes the fabrication handoff family at the registry tail', () => {
     expect(fabricationToolEntries.map(entry => entry.definition.name)).toEqual(['fab_pack']);
-    expect(TOOL_REGISTRY.slice(48, 49)).toEqual(fabricationToolEntries);
+    expect(TOOL_REGISTRY.slice(50, 51)).toEqual(fabricationToolEntries);
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {

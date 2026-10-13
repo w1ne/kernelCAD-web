@@ -19,6 +19,7 @@ import {
   readCloudResource,
   type CloudMcpOptions,
 } from './cloudClient';
+import { closeMcpViewer } from './liveViewer';
 import { recordToolCall, maybeShowFirstRunNotice, flushTelemetry } from '../../shared/telemetry';
 
 const requireFromHere = createRequire(import.meta.url);
@@ -74,6 +75,10 @@ export function createMcpServer(options: McpServerOptions = {}): Server {
       recordToolCall({ toolName: name, mode, outcome: 'ok', durationMs: Date.now() - startedAt, sessionId: SESSION_ID });
       return {
         content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }],
+        // Current MCP clients validate advertised outputSchema against this field.
+        ...(result !== null && typeof result === 'object' && !Array.isArray(result)
+          ? { structuredContent: result as Record<string, unknown> }
+          : {}),
       };
     } catch (err) {
       recordToolCall({ toolName: name, mode, outcome: 'error', durationMs: Date.now() - startedAt, sessionId: SESSION_ID });
@@ -98,6 +103,7 @@ export function createMcpServer(options: McpServerOptions = {}): Server {
     }));
   }
 
+  if (!options.cloud) server.onclose = () => { void closeMcpViewer(); };
   return server;
 }
 

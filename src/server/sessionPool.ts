@@ -63,6 +63,7 @@
  * dev path runs unlocked exactly as before.
  */
 
+import type { SharedSelection } from '../shared/selection/sharedSelection';
 import { randomUUID } from 'node:crypto';
 import { resolve } from 'node:path';
 import type { BuiltModel } from '../composition/buildModel';
@@ -82,6 +83,9 @@ export interface SessionPoolEntry {
   readonly ownerId?: string;
   /** Swapped in place by `rebuildByScript` — always read, never cache. */
   model: BuiltModel;
+  selection: SharedSelection;
+  selectionRevision: number;
+  selectionModelGeneration: number;
   /** Wall-clock ms (Date.now()) of the most recent access. */
   lastAccessAt: number;
   /** Entry-level relower hub. Stable across `rebuildByScript` model swaps —
@@ -215,6 +219,9 @@ async function getOrCreateEntry(
     key,
     ownerId,
     model,
+    selection: null,
+    selectionRevision: 0,
+    selectionModelGeneration: 0,
     lastAccessAt: Date.now(),
     onRelower(cb) {
       listeners.add(cb);
@@ -284,6 +291,12 @@ export function createSessionPool(opts: SessionPoolOptions): SessionPool {
   function fanout(token: string, affectedIds: string[]): void {
     const ints = internals.get(token);
     if (!ints) return;
+    const entry = byToken.get(token);
+    if (entry) {
+      entry.selection = null;
+      entry.selectionRevision += 1;
+      entry.selectionModelGeneration += 1;
+    }
     for (const cb of ints.listeners) cb(affectedIds);
   }
 
