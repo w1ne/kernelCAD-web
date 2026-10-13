@@ -17,6 +17,7 @@ import {
   inspectionVerificationRepairToolEntries,
 } from './registry/inspectionVerificationTools';
 import { printToolEntries } from './registry/printTools';
+import { fabricationToolEntries } from './registry/fabricationTools';
 import { referenceExportToolEntries } from './registry/referenceExportTools';
 import { referenceLedgerToolEntries } from './registry/referenceLedgerTools';
 import { reviewPipelineToolEntries } from './registry/reviewPipelineTools';
@@ -85,6 +86,8 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...meshReconstructToolEntries,
   // Appended at the tail: cookbook one-shot execute for ChatGPT industry demos.
   ...cookbookExecutionToolEntries,
+  // Appended at the tail: fabrication handoff (fab pack + quote links).
+  ...fabricationToolEntries,
 ];
 
 /** Merge the central MCP metadata maps onto a definition: behavioral hints

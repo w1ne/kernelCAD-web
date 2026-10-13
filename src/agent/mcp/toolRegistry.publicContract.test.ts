@@ -27,6 +27,7 @@ import { sketchAssemblyToolEntries } from './registry/sketchAssemblyTools';
 import { mechanismSimToolEntries } from './registry/mechanismSimTools';
 import { meshReconstructToolEntries } from './registry/meshReconstructTools';
 import { cookbookExecutionToolEntries } from './registry/cookbookExecutionTools';
+import { fabricationToolEntries } from './registry/fabricationTools';
 
 const EXPECTED_TOOL_NAMES = [
   'evaluate_script',
@@ -79,6 +80,7 @@ const EXPECTED_TOOL_NAMES = [
   'drawing_to_cad',
   'mesh_to_features',
   'execute_cookbook',
+  'fab_pack',
 ] as const;
 
 const PUBLIC_CONTRACT_FIXTURE = new URL(
@@ -336,8 +338,14 @@ describe('toolRegistry public contract', () => {
       'drawing_to_cad',
       'mesh_to_features',
       'execute_cookbook',
+      'fab_pack',
     ]);
-    expect(TOOL_REGISTRY).toHaveLength(48);
+    expect(TOOL_REGISTRY).toHaveLength(49);
+  });
+
+  it('composes the fabrication handoff family at the registry tail', () => {
+    expect(fabricationToolEntries.map(entry => entry.definition.name)).toEqual(['fab_pack']);
+    expect(TOOL_REGISTRY.slice(48, 49)).toEqual(fabricationToolEntries);
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {

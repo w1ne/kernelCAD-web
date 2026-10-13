@@ -116,6 +116,8 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   // Evaluates a cookbook snippet; with openInStudio:true it publishes the
   // result as a Studio project, which is a user-visible write.
   execute_cookbook: WRITES_FILE,
+  // Writes the pack files + zip locally; never contacts a vendor.
+  fab_pack: WRITES_FILE,
 
   // Renders the model to PNG views on the local filesystem — does not change the
   // design, but writes image files (same class as capture_animation).

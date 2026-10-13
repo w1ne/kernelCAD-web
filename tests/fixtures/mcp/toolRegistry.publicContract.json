@@ -3126,7 +3126,6 @@
         "options": {
           "type": "object",
           "description": "target:'model' — optional per-format options bag. Discriminator options.format must equal top-level format. dxf: { layers?, unit?: \"mm\"|\"cm\"|\"in\", tolerance?, section?: { axis: \"x\"|\"y\"|\"z\", at: mm }, layout?: \"per-part\"|\"sheet\" }. 3mf: { printUnit?: \"mm\"|\"cm\"|\"in\", embedSource?, arrange?: \"none\"|\"plate\"|\"assembled\", orient?: boolean, slicer?: \"generic\"|\"bambu\"|\"orca\"|\"prusa\", printer?: printer profile id, one of \"generic-fdm\"|\"bambu-a1-mini\"|\"bambu-a1\"|\"bambu-p1s\"|\"bambu-p1p\"|\"bambu-x1c\"|\"bambu-x1e\"|\"bambu-h2d\"|\"bambu-h2s\"|\"prusa-mini-plus\"|\"prusa-mk4s\"|\"prusa-core-one\"|\"prusa-xl\"|\"creality-ender-3-v3\"|\"creality-k1\"|\"creality-k1-max\"|\"creality-k2-plus\"|\"elegoo-neptune-4-pro\"|\"anycubic-kobra-3\"|\"voron-2.4-250\"|\"voron-2.4-300\"|\"voron-2.4-350\"|\"ultimaker-s5\" (default \"generic-fdm\"; sets the bed for arrange and the slicer default; an unknown id is refused with the valid list; CLI: kernelcad print printers) }; parts that do not fit the bed are still written and reported as warn diagnostics export.3mf.plate-overflow / export.3mf.exceeds-bed, whose hint names the smallest profiles the layout fits on. gcode: { printer?: printer profile id, layerHeight?: mm, infill?: percent, supports?: boolean, material?: string }; requires a locally installed OrcaSlicer. Returns slicer predictions as gcode_stats; does not start a printer. glb: { axis?: \"y-up\"|\"z-up\", draco?: false }. svg-drawing: { sheet?: \"a4\"|\"a3\" (or any pdf-drawing sheet), projection?, titleBlock?: { title?, partName?, material?, revision? }, modelName?, date?, annotations?, exploded?: { factor, mode? }, balloons?, partsList?, sections?, autoAnnotate? }. svg-drawing annotations is an array of authored dimensions/notes, each { kind: \"linear\"|\"radius\"|\"diameter\"|\"angular\"|\"note\", view?: \"front\"|\"top\"|\"left\"|\"iso\", text?, offset? } plus kind-specific geometry: linear { from, to }, radius/diameter { edge: EdgeQuery }, angular { from: EdgeQuery, to: EdgeQuery }, note { at, text }. from/to/at anchors are an [x,y,z] model point, { edge: EdgeQuery } or { face: FaceQuery }. Supplying any annotation REPLACES the automatic bounding-box dimensions; an annotation whose query resolves to zero or multiple matches fails the export rather than being dropped. svg-drawing sections is an array of { plane: \"xy\"|\"xz\"|\"yz\"|{ origin, normal }, label } (any non-zero normal). svg-drawing autoAnnotate is true or { tolerance?: \"ISO2768-f\"|\"ISO2768-m\"|\"ISO2768-c\", datums?: \"auto\"|[{ label, face: FaceQuery }], include?: [\"datums\"|\"flatness\"|\"holes\"|\"hole-positions\"|\"overall\"|\"fillets\"|\"chamfers\"|\"general-tolerance\"], dimensioningStyle?: \"baseline\"|\"chain\"|\"symmetry\" }; datums and tolerances declared in the script with shape.datum() / shape.tolerance() override the automatic ones. pdf-drawing: { sheet?: \"a4\"|\"a3\"|\"a2\"|\"a1\"|\"a0\"|\"ansi-a\"|\"ansi-b\"|\"ansi-c\"|\"ansi-d\"|\"ansi-e\"|\"auto\"|\"auto-ansi\" (default \"a3\"), projection?: \"third\"|\"first\", title?, partName?, material?, revision?, date? (default today), modelName?, annotations?, sections?, exploded?, balloons?, partsList?, autoAnnotate? (default true unless annotations are given) } — the svg-drawing keys mean the same. Mechanical SVG/PDF also accept draftingProfile?: \"general\"|\"machining\"|\"sheet-metal\" or { id, name, sheet, projection, dimensioningStyle, tolerance?, notes? }, with explicit options overriding profile defaults. Functional drawing review: shape.drawingReview(plan) source declarations merge with reviewPlans?: additional plans; decisionResolutions?: { [encodeURIComponent(planId)+\":\"+encodeURIComponent(decisionId)]: { note, provenance } }. drawing_report.review reports declared geometric-callout coverage and unresolved engineering decisions. requireCompleteReview?: true rejects incomplete/not-declared mechanical reviews before export; architectural style rejects review contracts. Coverage is not engineering certification. annotationOverrides?: { [drawing_report.annotations[i].id]: { suppress?, text?, view?, offset? } }; offset is extra nonnegative sheet mm. Text edits primary labels while preserving attached FCFs; datum/standalone FCF text is changed in its declaration instead. Suppressed rows remain in the report but not visible counts. Missing IDs warn after geometry edits. Authored annotations can set id for stable review identity. svg-drawing and pdf-drawing also take style?: \"mechanical\" (default, the part sheet) | \"architectural\" (a floor plan for a building or room model: section about 1 m above the floor with filled cut walls, wall / opening chain dimensions and overall sizes, room labels with net area, scale bar, north arrow; millimetres, or feet-inches when the model is in whole feet / inches) and plan?: { units?: \"metric\"|\"imperial\", cutHeight?: mm above the floor, rooms?: [{ name, at: [x, y] }], northDeg?: degrees clockwise from sheet up }. A building-sized model drawn in the default style gets a drawing.style.architectural-suggested warning."
-
         },
         "part": {
           "type": "string",
@@ -6919,6 +6918,117 @@
       "required": [
         "ok",
         "executionId"
+      ],
+      "additionalProperties": true
+    }
+  },
+  {
+    "name": "fab_pack",
+    "description": "Use this when the user wants to get a part made: packages the fabrication files into one directory plus a zip, and returns links to public instant-quote pages. Pass { file | code } and output_dir; optional name (default 'part'), formats (default step, stl, 3mf, pdf-drawing, bom-csv; add 'dxf' for flat or sheet parts), and processes ('3d-print' | 'cnc' | 'sheet-cut') to filter the links. Each file is written by the export tool, so its gates apply; a format that fails is reported in files[] and the rest still ship. Also writes manifest.json and README.txt. quote_links lists JLC3DP, JLCCNC, PCBWay, Xometry, SendCutSend and Craftcloud with the pack file to upload to each. These are plain web pages: nothing is uploaded or ordered. The user opens the link and uploads the file. Run dfm_review first if you have not.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "file": {
+          "type": "string",
+          "description": "Path to a .kcad.ts script file."
+        },
+        "code": {
+          "type": "string",
+          "description": "Inline kernelCAD script source."
+        },
+        "output_dir": {
+          "type": "string",
+          "description": "Directory to write the pack into (created if missing)."
+        },
+        "name": {
+          "type": "string",
+          "description": "Base file name (letters, digits, '.', '_', '-'). Default 'part'."
+        },
+        "formats": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "step",
+              "stl",
+              "3mf",
+              "pdf-drawing",
+              "bom-csv",
+              "dxf"
+            ]
+          },
+          "description": "Files to include. Default step, stl, 3mf, pdf-drawing, bom-csv."
+        },
+        "processes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "3d-print",
+              "cnc",
+              "sheet-cut"
+            ]
+          },
+          "description": "Only return quote links for these processes. Default: all."
+        }
+      },
+      "required": [
+        "output_dir"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "openWorldHint": true
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean",
+          "description": "True when every requested file was exported."
+        },
+        "output_dir": {
+          "type": "string"
+        },
+        "zip_path": {
+          "type": "string",
+          "description": "Zip holding every written file, manifest.json and README.txt."
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "description": "{ format, ok, path?, byte_count?, error? } per requested format."
+        },
+        "quote_links": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "description": "{ service, processes, url, accepts, upload_file? }: public instant-quote pages; nothing is uploaded."
+        },
+        "note": {
+          "type": "string"
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "error": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "files",
+        "quote_links"
       ],
       "additionalProperties": true
     }
