@@ -11,7 +11,7 @@ const evaluateScriptToolEntry: ToolRegistryEntry = {
     description:
       'Use this when you need to run a script and check it compiles. ' +
       'Full evaluations return step evidence: build validity, volume and before/after local PNG paths in one shared iso frame. Snapshots require PW_CDP_URL for an existing browser; unavailable captures report an explicit error. ' +
-      'Run a kernelCAD .kcad.ts script and report pass/fail + feature count + diagnostics. ' +
+      'Run a kernelCAD .kcad.ts script and report pass/fail + feature count + diagnostics + sceneSummary (BREP validity, volume in mm³, face count, bounding size in mm). ' +
       'When the scene is assembly-built (assembly().part(...) → .model()/.solvedModel()), ' +
       'also returns a parts summary { count, names } AND runs the mechanism-truth gate by ' +
       'default: the `mechanism` field reports real/broken/unverified and a broken mechanism ' +

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import type { SceneSummary } from '../../script-runtime/sceneSummary';
 // src/mcp/tools/addPatternFeature.ts
 //
 // Typed AST-edit MCP tool — composes a Shape.patternLinear / .patternCircular /
@@ -32,6 +33,7 @@ export interface AddPatternFeatureOutput {
   new_code?: string;
   step?: EvaluateScriptOutput['step'];
   diagnostics?: CompilerDiagnostic[];
+  sceneSummary?: SceneSummary;
   error?: string;
   errorCode?: 'feature.pattern.count-out-of-range' | 'feature.invalid-args';
 }
@@ -146,5 +148,11 @@ export async function addPatternFeatureTool(
   const edit = addFeature(input.code, feature_code);
   if (!edit.ok || !edit.new_code) return { ok: false, error: edit.error };
   const evalResult = await evaluateScriptTool({ code: edit.new_code });
-  return { ok: evalResult.ok, new_code: edit.new_code, step: evalResult.step, diagnostics: evalResult.diagnostics };
+  return {
+    ok: evalResult.ok,
+    new_code: edit.new_code,
+    step: evalResult.step,
+    sceneSummary: evalResult.sceneSummary,
+    diagnostics: evalResult.diagnostics,
+  };
 }

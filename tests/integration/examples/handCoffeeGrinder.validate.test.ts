@@ -20,5 +20,5 @@ describe('hand coffee grinder gallery example (validate)', () => {
       includePhysics: false,
     });
     expect(result.mechanism, JSON.stringify(result.mechanismFailures ?? [], null, 2)).toBe('real');
-  }, 900_000);
+  }, 1_080_000); // ~950 s observed on CI runners; stays under the 20 min shard timeout
 });

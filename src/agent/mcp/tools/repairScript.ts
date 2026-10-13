@@ -24,6 +24,7 @@ import type {
   RepairCandidate,
   RepairRegion,
 } from '../../repair/types';
+import type { SceneSummary } from '../../script-runtime/sceneSummary';
 import { evaluateScriptTool } from './evaluateScript';
 import type { FeatureHealthEntry } from '../../cli/commands/evaluate';
 
@@ -43,6 +44,7 @@ export interface RepairScriptInput {
 }
 
 export interface RepairHealthSnapshot {
+  sceneSummary: SceneSummary;
   ok: boolean;
   featureHealth: FeatureHealthEntry[];
   diagnostics: CompilerDiagnostic[];
@@ -268,6 +270,7 @@ async function snapshot(code: string): Promise<RepairHealthSnapshot> {
   const result = await evaluateScriptTool({ code, skipMechanismCheck: true });
   return {
     ok: result.ok,
+    sceneSummary: result.sceneSummary,
     featureHealth: result.featureHealth,
     diagnostics: result.diagnostics,
   };

@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import type { ShapeBackend } from '../../kernel/backends/backend';
+import { resolveRootId } from '../../composition/buildModel';
 // src/render/headlessRender.ts
 //
 // Headless multi-view PNG renderer. Powers `kernelcad render`. Reuses the
@@ -103,6 +105,8 @@ export interface HeadlessInspectionCapture {
 }
 
 export interface HeadlessRenderOpts {
+  /** Observe the already-lowered returned root before rendering. */
+  onBuild?: (root: ShapeBackend | undefined) => void;
   scriptPath: string;
   /** Shared fit bounds for pixel-aligned before/after captures. */
   frameBounds?: HeadlessRenderResult['bounds'];
@@ -489,6 +493,8 @@ export async function meshForHeadlessRender(opts: HeadlessRenderOpts): Promise<{
       `headlessRender: ${meshing.failedFeatureIds.length} feature(s) failed to compile: ${meshing.failedFeatureIds.join(', ')}`,
     );
   }
+  const rootId = resolveRootId(loaded.returnValue, loaded.features.at(-1)?.id);
+  opts.onBuild?.(rootId ? meshing.shapes?.get(rootId) : undefined);
   const serialized = meshing.features.map(serializeForBridge);
   return { meshing, serialized };
 }

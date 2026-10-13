@@ -14,6 +14,7 @@ import type { PortReportEntry } from '../../../modeling/runtime/tube/portReport'
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
 import { clearActiveMcpSession, getActiveMcpSession, setActiveMcpSession } from '../activeSession';
+import { summarizeScene, unavailableSceneSummary, type SceneSummary } from '../../script-runtime/sceneSummary';
 import { Scene } from '../../../modeling/validation/scene';
 import type { Assembly } from '../../../modeling/capture/assembly';
 import { probeAssemblies } from '../../../modeling/runtime/mechanismProbe';
@@ -45,6 +46,7 @@ export interface EvaluateScriptInput {
 
 export interface EvaluateScriptOutput {
   step?: StepEvidence;
+  sceneSummary: SceneSummary;
   ok: boolean;
   featureCount: number;
   diagnostics: CompilerDiagnostic[];
@@ -186,6 +188,7 @@ export async function evaluateScriptTool(
   return {
     ok,
     step,
+    sceneSummary: buildSceneSummary(model, buildSucceeded),
     featureCount: r.featureCount,
     // Idempotent re-enrichment guard. evaluateAndBuildScript already
     // populates nextAction on every return path; this wrap is a no-op
@@ -216,12 +219,19 @@ function captureEvaluatedStep(model: BuildOutcome['model'], buildSucceeded: bool
 }
 
 
+/** A policy-gate failure may still have usable geometry; a failed build does not. */
+function buildSceneSummary(model: BuildOutcome['model'], buildSucceeded: boolean): SceneSummary {
+  if (!buildSucceeded) return unavailableSceneSummary();
+  return summarizeScene(model?.rootShape ?? model?.tailShape);
+}
+
 async function evaluateDryRun(input: EvaluateScriptInput): Promise<EvaluateScriptOutput> {
   const { evaluation: r, returnValue } = await dryRunScript(input as EvaluateInput);
   const parts = sceneParts(returnValue);
   return {
     ok: r.exitCode === 0,
     dryRun: true,
+    sceneSummary: unavailableSceneSummary(),
     featureCount: r.featureCount,
     diagnostics: withNextActions(r.diagnostics),
     featureHealth: r.featureHealth,

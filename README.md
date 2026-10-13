@@ -28,6 +28,10 @@ saved from Claude Code, Codex, Cursor, Gemini or Grok opens at the same Studio
 share link (`/p/<slug>`) you see in ChatGPT or Claude. Sign in with the same
 account in each client.
 
+Ask your agent: **“look at kernelcad.com and install the mcp”**.
+[Agent-readable installation instructions](https://kernelcad.com/llms.txt) cover
+hosted setup, local npm setup, and connection verification.
+
 ### Coding agents: one command
 
 One command connects your agent to the hosted kernelCAD MCP server
@@ -155,7 +159,9 @@ kernelcad export stl bracket.kcad.ts -o bracket.stl
 ```
 
 That's it. For agents: `kernelcad mcp` runs an MCP server with dynamic model
-introspection tools. See `SKILL.md` (bundled with the install) for the full API
+introspection tools. Object tool responses include `structuredContent` alongside
+the serialized JSON text so MCP clients can validate advertised output schemas.
+See `SKILL.md` (bundled with the install) for the full API
 surface and authoring guide.
 
 ## Use with Claude Desktop

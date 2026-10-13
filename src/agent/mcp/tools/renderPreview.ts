@@ -25,6 +25,7 @@
 // filesystem. Local stdio clients (Claude Code, Cursor, ...) read them
 // directly; HOSTED clients (remote MCP) should use `open_in_studio` instead.
 
+import { summarizeScene, unavailableSceneSummary, type SceneSummary } from '../../script-runtime/sceneSummary';
 import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { isAbsolute, join, resolve } from 'node:path';
@@ -150,6 +151,7 @@ export interface RenderPreviewImage {
 }
 
 export interface RenderPreviewOutput {
+  sceneSummary?: SceneSummary;
   ok: boolean;
   images: RenderPreviewImage[];
   /** Directory holding the PNGs (session temp dir unless out_dir given). */
@@ -669,10 +671,12 @@ async function runHeadlessRenderPhase(
     explode?: ParsedExplode;
     publish?: PublishStageSpec;
   },
-): Promise<{ result: HeadlessRenderResult; renderSource: ResolvedRenderBase['source'] } | { refusal: RenderPreviewOutput }> {
+): Promise<{ result: HeadlessRenderResult; renderSource: ResolvedRenderBase['source']; sceneSummary: SceneSummary } | { refusal: RenderPreviewOutput }> {
   let result: HeadlessRenderResult;
+  let sceneSummary = unavailableSceneSummary();
   try {
     result = await deps.render({
+      onBuild: root => { sceneSummary = summarizeScene(root); },
       scriptPath: opts.renderScriptPath,
       viewportWidth: opts.width,
       viewportHeight: opts.height,
@@ -691,18 +695,21 @@ async function runHeadlessRenderPhase(
     const message = e instanceof Error ? e.message : String(e);
     const isModelFault = /failed to compile/.test(message);
     return {
-      refusal: refusal(
-        isModelFault ? 'cli.script-exception' : 'cli.export-exception',
-        `render_preview: ${message}`,
-        isModelFault
-          ? 'Run evaluate_script on the same source to get per-feature diagnostics, fix the script, then re-render.'
-          : 'Ensure playwright chromium is installed (npx playwright install chromium) and retry; pass base_url to use a running studio dev server instead.',
-      ),
+      refusal: {
+        sceneSummary,
+        ...refusal(
+          isModelFault ? 'cli.script-exception' : 'cli.export-exception',
+          `render_preview: ${message}`,
+          isModelFault
+            ? 'Run evaluate_script on the same source to get per-feature diagnostics, fix the script, then re-render.'
+            : 'Ensure playwright chromium is installed (npx playwright install chromium) and retry; pass base_url to use a running studio dev server instead.',
+        ),
+      },
     };
   } finally {
     await base.close().catch(() => undefined);
   }
-  return { result, renderSource: base.source };
+  return { result, renderSource: base.source, sceneSummary };
 }
 
 // Write tiles; broken mechanisms get the same RGB watermark as the CLI.
@@ -797,14 +804,14 @@ async function renderPreviewWork(args: {
     publish,
   });
   if ('refusal' in renderPhase) return renderPhase.refusal;
-  const { result, renderSource } = renderPhase;
+  const { result, renderSource, sceneSummary } = renderPhase;
 
   const stamp = async (buf: Buffer): Promise<Buffer> =>
     probe.mechanism === 'broken' ? watermarkBrokenMechanism(buf, probe.failures) : buf;
   const imagePhase = await writePreviewImages(
     outDir, views, result, stamp, hero, input.sheet === true ? { width, height } : undefined,
   );
-  if ('refusal' in imagePhase) return imagePhase.refusal;
+  if ('refusal' in imagePhase) return { ...imagePhase.refusal, sceneSummary };
   const { images } = imagePhase;
 
   return {
@@ -812,6 +819,7 @@ async function renderPreviewWork(args: {
     images,
     out_dir: outDir,
     bounds: result.bounds,
+    sceneSummary,
     mechanism: probe.mechanism,
     ...(probe.mechanism === 'broken' ? { mechanism_failure_codes: failureCodes } : {}),
     render_source: renderSource,

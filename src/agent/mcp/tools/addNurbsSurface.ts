@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import type { SceneSummary } from '../../script-runtime/sceneSummary';
 import { addNurbsSurface } from '../edits/addNurbsSurface';
 import type { AddNurbsSurfaceInput } from '../edits/addNurbsSurface';
 import { evaluateScriptTool, type EvaluateScriptOutput } from './evaluateScript';
@@ -12,6 +13,7 @@ export interface AddNurbsSurfaceOutput {
   new_code?: string;
   step?: EvaluateScriptOutput['step'];
   diagnostics?: CompilerDiagnostic[];
+  sceneSummary?: SceneSummary;
   error?: string;
 }
 
@@ -37,6 +39,7 @@ export async function addNurbsSurfaceTool(input: AddNurbsSurfaceInput): Promise<
     ok: evalResult.ok,
     new_code: edit.new_code,
     step: evalResult.step,
+    sceneSummary: evalResult.sceneSummary,
     diagnostics: evalResult.diagnostics,
   };
 }

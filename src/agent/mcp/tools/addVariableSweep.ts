@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import type { SceneSummary } from '../../script-runtime/sceneSummary';
 // src/agent/mcp/tools/addVariableSweep.ts
 //
 // MCP tool wrapper for `add_variable_sweep`. Inserts a `variableSweep(...)`
@@ -18,6 +19,7 @@ export interface AddVariableSweepOutput {
   new_code?: string;
   step?: EvaluateScriptOutput['step'];
   diagnostics?: CompilerDiagnostic[];
+  sceneSummary?: SceneSummary;
   error?: string;
 }
 
@@ -31,6 +33,7 @@ export async function addVariableSweepTool(input: AddVariableSweepInput): Promis
     ok: evalResult.ok,
     new_code: edit.new_code,
     step: evalResult.step,
+    sceneSummary: evalResult.sceneSummary,
     diagnostics: evalResult.diagnostics,
   };
 }

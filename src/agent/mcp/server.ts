@@ -74,6 +74,10 @@ export function createMcpServer(options: McpServerOptions = {}): Server {
       recordToolCall({ toolName: name, mode, outcome: 'ok', durationMs: Date.now() - startedAt, sessionId: SESSION_ID });
       return {
         content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }],
+        // Current MCP clients validate advertised outputSchema against this field.
+        ...(result !== null && typeof result === 'object' && !Array.isArray(result)
+          ? { structuredContent: result as Record<string, unknown> }
+          : {}),
       };
     } catch (err) {
       recordToolCall({ toolName: name, mode, outcome: 'error', durationMs: Date.now() - startedAt, sessionId: SESSION_ID });

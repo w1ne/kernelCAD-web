@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import type { SceneSummary } from '../../script-runtime/sceneSummary';
 // src/agent/mcp/tools/embossText.ts
 //
 // W3 MCP tool: AST-edit a `<shape>.embossText({...})` chained call into a
@@ -17,6 +18,7 @@ export interface EmbossTextOutput {
   new_code?: string;
   step?: EvaluateScriptOutput['step'];
   diagnostics?: CompilerDiagnostic[];
+  sceneSummary?: SceneSummary;
   error?: string;
 }
 
@@ -30,6 +32,7 @@ export async function embossTextTool(input: EmbossTextInput): Promise<EmbossText
     ok: evalResult.ok,
     new_code: edit.new_code,
     step: evalResult.step,
+    sceneSummary: evalResult.sceneSummary,
     diagnostics: evalResult.diagnostics,
   };
 }
