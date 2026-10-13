@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import type { SceneSummary } from '../../script-runtime/sceneSummary';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
-import { evaluateScriptTool } from './evaluateScript';
+import { evaluateScriptTool, type EvaluateScriptOutput } from './evaluateScript';
 
 /**
  * The edit was spliced and re-evaluated. `ok` reflects that evaluation, NOT
@@ -12,7 +13,9 @@ import { evaluateScriptTool } from './evaluateScript';
 export interface SourceEditToolEvaluated {
   ok: boolean;
   new_code: string;
+  step?: EvaluateScriptOutput['step'];
   diagnostics: CompilerDiagnostic[];
+  sceneSummary: SceneSummary;
   binding_name?: string;
 }
 
@@ -40,6 +43,8 @@ export async function evaluateSourceEdit(
   return {
     ok: evalResult.ok,
     new_code: edit.new_code,
+    step: evalResult.step,
+    sceneSummary: evalResult.sceneSummary,
     diagnostics: evalResult.diagnostics,
     ...(edit.binding_name !== undefined ? { binding_name: edit.binding_name } : {}),
   };

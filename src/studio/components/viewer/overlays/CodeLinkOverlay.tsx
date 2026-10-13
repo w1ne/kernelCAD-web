@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import { useSharedSelection } from "../../../selectionCode/useSharedSelection";
 import { useEffect, useMemo } from "react";
 import type { GeometryResult } from "../../../../shared/worker/geometryEngine";
 import type { FeatureRecord } from "../../../../shared/intent/featureRecord";
@@ -66,7 +67,8 @@ const NO_FEATURES: readonly FeatureRecord[] = [];
  */
 export function CodeLinkOverlay({ geometries, itemNames }: { geometries: GeometryResult[]; itemNames: (string | null)[] }) {
     const { link, codeHighlight } = useSelectionCodeState();
-    const { featureRecords, hiddenIds } = useWorkbench();
+    const { featureRecords, hiddenIds, sessionToken, setSelectedFace } = useWorkbench();
+    useSharedSelection(sessionToken, setSelectedFace);
     const features = featureRecords ?? NO_FEATURES;
     const targets = useMemo(
         () => (codeHighlight ? highlightTargets(codeHighlight, features) : null),

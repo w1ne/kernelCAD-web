@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import { getMcpViewerResult } from './liveViewer';
+import { selectionToolEntries } from './registry/selectionTools';
 import { TOOL_ANNOTATIONS } from './toolAnnotations';
 import { TOOL_OUTPUT_SCHEMAS } from './toolOutputSchemas';
 import { catalogToolEntries } from './registry/catalogTools';
@@ -86,6 +88,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...meshReconstructToolEntries,
   // Appended at the tail: cookbook one-shot execute for ChatGPT industry demos.
   ...cookbookExecutionToolEntries,
+  ...selectionToolEntries,
   // Appended at the tail: import the user's own STEP/STL as a base body.
   ...importToolEntries,
 ];
@@ -131,7 +134,14 @@ export const TOOLS = TOOL_REGISTRY.map(entry => withMetadata(entry.definition));
 export async function callMcpTool(name: string, input: Record<string, unknown>): Promise<unknown> {
   const handler = toolHandlers.get(name);
   if (!handler) throw new Error(`Unknown tool: ${name}`);
-  return handler(input);
+  const previousViewer = getMcpViewerResult();
+  const result = await handler(input);
+  const viewer = getMcpViewerResult();
+  // Source-edit tools often return a trimmed evaluate result. Preserve the
+  // live link whenever this call built a replacement model.
+  return viewer !== previousViewer && result && typeof result === 'object' && !Array.isArray(result)
+    ? { ...result, ...viewer }
+    : result;
 }
 
 /**

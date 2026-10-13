@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import type { SceneSummary } from '../../script-runtime/sceneSummary';
 // src/agent/mcp/tools/addPathHermiteG2.ts
 //
 // MCP tool wrapper for `add_path_hermite_g2`. Injects `.hermiteG2(a, b)` into
@@ -8,7 +9,7 @@
 
 import { addPathHermiteG2 } from '../edits/addPathHermiteG2';
 import type { AddPathHermiteG2Input } from '../edits/addPathHermiteG2';
-import { evaluateScriptTool } from './evaluateScript';
+import { evaluateScriptTool, type EvaluateScriptOutput } from './evaluateScript';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 
 export type { AddPathHermiteG2Input };
@@ -16,7 +17,9 @@ export type { AddPathHermiteG2Input };
 export interface AddPathHermiteG2Output {
   ok: boolean;
   new_code?: string;
+  step?: EvaluateScriptOutput['step'];
   diagnostics?: CompilerDiagnostic[];
+  sceneSummary?: SceneSummary;
   error?: string;
 }
 
@@ -29,6 +32,8 @@ export async function addPathHermiteG2Tool(input: AddPathHermiteG2Input): Promis
   return {
     ok: evalResult.ok,
     new_code: edit.new_code,
+    step: evalResult.step,
+    sceneSummary: evalResult.sceneSummary,
     diagnostics: evalResult.diagnostics,
   };
 }

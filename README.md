@@ -28,6 +28,10 @@ saved from Claude Code, Codex, Cursor, Gemini or Grok opens at the same Studio
 share link (`/p/<slug>`) you see in ChatGPT or Claude. Sign in with the same
 account in each client.
 
+Ask your agent: **“look at kernelcad.com and install the mcp”**.
+[Agent-readable installation instructions](https://kernelcad.com/llms.txt) cover
+hosted setup, local npm setup, and connection verification.
+
 ### Coding agents: one command
 
 One command connects your agent to the hosted kernelCAD MCP server
@@ -155,7 +159,9 @@ kernelcad export stl bracket.kcad.ts -o bracket.stl
 ```
 
 That's it. For agents: `kernelcad mcp` runs an MCP server with dynamic model
-introspection tools. See `SKILL.md` (bundled with the install) for the full API
+introspection tools. Object tool responses include `structuredContent` alongside
+the serialized JSON text so MCP clients can validate advertised output schemas.
+See `SKILL.md` (bundled with the install) for the full API
 surface and authoring guide.
 
 ## Use with Claude Desktop
@@ -181,6 +187,22 @@ kernelCAD runs as an MCP server, so Claude Desktop can drive it locally. After
 Restart Claude Desktop. The kernelCAD MCP tools (`review_cad`, model
 introspection, export helpers, etc.) appear in the tools list.
 
+The first full local `evaluate_script` build returns `viewerUrl`. Open it in
+Studio once: later full builds and source-edit tool calls replace the source,
+history, and geometry behind that same session link. The viewer is served on
+`127.0.0.1` by the MCP process and lasts until that process closes; it is not a
+public share link. Dry runs leave it unchanged. A build failure keeps the last
+built model visible; a successfully built model with DFM failures remains
+viewable. Build diagnostics shown there are not a full CAD/physics review.
+
+Published packages include the Studio bundle. When running MCP from a checkout,
+run `npm run build:mcp-viewer` first. If the bundle cannot be served, the build
+result includes `viewerError` separately from its CAD diagnostics. Hosted MCP
+and `--cloud` continue to use the gateway's Studio/project URLs.
+
+[Local viewer workflow](docs/demos/mcp-viewer-link/README.md).
+
+
 For hosted workflows, sign in at [the existing connection guide](https://app.kernelcad.com/connect?client=claude).
 It gives the current connector and OAuth steps for your client. The hosted tool
 set depends on authentication, your selected profile, and server-native tools;
@@ -203,6 +225,10 @@ Browse the generated [local MCP tool reference](https://kernelcad.com/docs/mcp-t
 for complete input/output schemas and behavior annotations, or search the
 [design guide](https://kernelcad.com/docs/design-guide) for existing recipes and
 cited, dated manufacturing catalog snapshots.
+
+For local Studio, [`get_selection` and `set_selection`](docs/guide/shared-selection.md)
+share face/edge picks with your MCP agent. Open the same script in Studio and
+use its session token; picks expire on model rebuild.
 
 ## Contributing
 

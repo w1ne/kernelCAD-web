@@ -49,6 +49,8 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   // Read / compute / analysis — no mutation. evaluate_script loads imported
   // geometry from https:// and asset URLs (lib.fromSTEP etc.) and inspect can
   // read the remote parts catalog, so both are open-world.
+  get_selection: READ_REMOTE,
+  set_selection: AUTHOR_REMOTE,
   evaluate_script: READ_REMOTE,
   diff_scripts: READ,
   inspect: READ_REMOTE,

@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import type { SceneSummary } from '../../script-runtime/sceneSummary';
 import { surfaceTrimEdit } from '../edits/surfaceTrim';
 import type { SurfaceTrimInput } from '../edits/surfaceTrim';
-import { evaluateScriptTool } from './evaluateScript';
+import { evaluateScriptTool, type EvaluateScriptOutput } from './evaluateScript';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 
 export type { SurfaceTrimInput };
@@ -10,7 +11,9 @@ export type { SurfaceTrimInput };
 export interface SurfaceTrimOutput {
   ok: boolean;
   new_code?: string;
+  step?: EvaluateScriptOutput['step'];
   diagnostics?: CompilerDiagnostic[];
+  sceneSummary?: SceneSummary;
   error?: string;
 }
 
@@ -30,6 +33,8 @@ export async function surfaceTrimTool(input: SurfaceTrimInput): Promise<SurfaceT
   return {
     ok: true,
     new_code: edit.new_code,
+    step: evalResult.step,
+    sceneSummary: evalResult.sceneSummary,
     diagnostics: evalResult.diagnostics,
   };
 }

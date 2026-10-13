@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import { subscribeMcpSource } from './mcpSourceBridge';
 import { loadStudioScriptSource } from './scriptSource';
 import {
     diskScriptSource,
@@ -28,6 +29,7 @@ interface BridgeState {
     activeScript: string | null;
     setCodeRef: CodeSetter | null;
     getCodeRef: (() => string) | null;
+    stopMcpSource?: () => void;
 }
 
 const hotData = import.meta.hot?.data as { liveScriptBridge?: BridgeState } | undefined;
@@ -49,6 +51,8 @@ export function registerLiveScriptTarget(
     setCode: CodeSetter,
     getCode?: () => string,
 ): void {
+    state.stopMcpSource?.();
+    state.stopMcpSource = subscribeMcpSource(script, setCode);
     state.activeScript = script.replace(/^\.\//, '');
     state.setCodeRef = setCode;
     state.getCodeRef = getCode ?? null;
@@ -59,6 +63,8 @@ export function unregisterLiveScriptTarget(setCode: CodeSetter): void {
     // (e.g. React StrictMode double-mount) must not be torn down by the
     // earlier mount's cleanup.
     if (state.setCodeRef !== setCode) return;
+    state.stopMcpSource?.();
+    state.stopMcpSource = undefined;
     state.activeScript = null;
     state.setCodeRef = null;
     state.getCodeRef = null;
