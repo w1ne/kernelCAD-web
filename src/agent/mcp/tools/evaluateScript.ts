@@ -133,16 +133,8 @@ export const MATES_REVIEW_HINT =
 export async function evaluateScriptTool(
   input: EvaluateScriptInput,
 ): Promise<EvaluateScriptOutput> {
-  if (input.kernel !== undefined) {
-    try {
-      resolveKernel(input.kernel);
-    } catch (e) {
-      if (e instanceof KernelUnavailableError) {
-        return { ok: false, featureCount: 0, diagnostics: [e.diagnostic], featureHealth: [] };
-      }
-      throw e;
-    }
-  }
+  const kernelRejection = rejectUnavailableKernel(input.kernel);
+  if (kernelRejection) return kernelRejection;
   if (input.dryRun) return evaluateDryRun(input);
 
   const { evaluation, model, dfmReport, tubeReport, portReport } = await evaluateAndBuildScript(input as EvaluateInput);
@@ -208,6 +200,18 @@ export async function evaluateScriptTool(
     ...(mechanism !== undefined ? { mechanism } : {}),
     ...(reviewHint !== undefined ? { reviewHint } : {}),
   };
+}
+
+/** ok:false envelope when `kernel` names a kernel this build cannot run. */
+function rejectUnavailableKernel(kernel: unknown): EvaluateScriptOutput | undefined {
+  if (kernel === undefined) return undefined;
+  try {
+    resolveKernel(kernel);
+    return undefined;
+  } catch (e) {
+    if (!(e instanceof KernelUnavailableError)) throw e;
+    return { ok: false, featureCount: 0, diagnostics: [e.diagnostic], featureHealth: [] };
+  }
 }
 
 type BuildOutcome = Awaited<ReturnType<typeof evaluateAndBuildScript>>;
