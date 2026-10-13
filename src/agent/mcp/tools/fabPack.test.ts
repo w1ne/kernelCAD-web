@@ -99,6 +99,23 @@ return a.model();`;
     expect(manifest.files[0].part_files.sort()).toEqual(['parts/left.dxf', 'parts/right.dxf']);
   }, 120000);
 
+  it('refuses a symlinked companion parts/left.dxf without overwriting its target', async () => {
+    const out = join(dir, 'sym-part');
+    mkdirSync(join(out, 'parts'), { recursive: true });
+    const target = join(dir, 'target-left.dxf');
+    writeFileSync(target, 'precious');
+    symlinkSync(target, join(out, 'parts', 'left.dxf'));
+    const code = `const a = assembly('cut');
+a.part('left', box(20, 20, 3));
+a.part('right', box(10, 10, 3).translate(40, 0, 0));
+return a.model();`;
+    const r = await fabPackTool({ code, output_dir: out, formats: ['dxf'] });
+    expect(r.ok).toBe(false);
+    expect(r.files[0].ok).toBe(false);
+    expect(JSON.stringify(r)).toMatch(/symbolic link/);
+    expect(readFileSync(target, 'utf8')).toBe('precious');
+  }, 120000);
+
   it('rejects inherited property names as formats and returns structured errors for filesystem failures', async () => {
     for (const f of ['toString', 'constructor', '__proto__', 'hasOwnProperty']) {
       expect((await fabPackTool({ code: 'return box(1,1,1);', output_dir: join(dir, 'y'), formats: [f as never] })).ok).toBe(false);
