@@ -1,0 +1,65 @@
+{
+  "capturedAt": "2026-10-13T12:09:11.606Z",
+  "provenance": "actual local command output replay",
+  "packageVersion": "0.17.0",
+  "skillCount": 29,
+  "slides": [
+    {
+      "title": "1 / Discover installation instructions",
+      "lines": [
+        "$ fetch local site /llms.txt",
+        "HTTP 200 | text/plain; charset=utf-8",
+        "# kernelCAD",
+        "",
+        "Hosted MCP: https://mcp.kernelcad.com/mcp",
+        "Claude Code, Codex, Cursor, VS Code + local npm instructions",
+        "Prompt: look at kernelcad.com and install the mcp"
+      ]
+    },
+    {
+      "title": "2 / Write sandbox host configuration",
+      "lines": [
+        "$ kernelcad install --cursor --config-dir <sandbox>",
+        "Wrote kernelCAD MCP entry to /Users/andrii/worktrees/kcw-cc-llms-selfinstall/.superpowers/mcp-self-install-demo/cursor/mcp.json. Restart Cursor to load kernelCAD tools.",
+        "",
+        "Result: one kernelcad MCP entry",
+        "User host configuration was not edited.",
+        "Configuration written; connection checked separately below."
+      ]
+    },
+    {
+      "title": "3 / Verify skills from the npm tarball",
+      "lines": [
+        "$ npm pack --ignore-scripts",
+        "$ <packed CLI> skill install <sandbox skills>",
+        "package.json version: 0.17.0",
+        "Installed SKILL.md files: 29",
+        "Every metadata.version: 0.17.0",
+        "",
+        "PASS: package and installed skill versions match"
+      ]
+    },
+    {
+      "title": "4 / Verify the packaged MCP connection",
+      "lines": [
+        "$ MCP initialize -> tools/list -> lookup_api({})",
+        "Server: kernelcad 0.17.0",
+        "Advertised tools: 48",
+        "lookup_api: success (1 content block)",
+        "",
+        "PASS: connected; skill version matches MCP server version",
+        "Local validation only. No deployment or CAD/hardware acceptance."
+      ]
+    }
+  ],
+  "invocation": "npm run build:cli && node docs/demos/mcp-self-install/capture.mjs",
+  "settings": {
+    "resolution": "1440x810",
+    "frameRate": 30,
+    "secondsPerSlide": 5,
+    "codec": "libx264",
+    "crf": 20
+  },
+  "deployed": false,
+  "hardwareAcceptance": false
+}

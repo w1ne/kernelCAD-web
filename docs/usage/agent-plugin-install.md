@@ -1,5 +1,16 @@
 # One-line install for coding agents
 
+Tell your agent: **“look at kernelcad.com and install the mcp”**. The homepage
+links [llms.txt](https://kernelcad.com/llms.txt), which gives supported host setup
+and a read-only connection check.
+
+For local npm use, pick one published `kernelcad` version and use it for both
+the MCP server and `kernelcad skill install`. The package bundles
+`dist/cli/skills/kernelcad/SKILL.md` and the specialty tree; each packaged
+`SKILL.md` has `metadata.version` stamped from `package.json.version` during
+`build:cli` / `prepack`. Source skills are not manually versioned. Hosted
+plugins follow the hosted service rather than a local npm version.
+
 kernelCAD ships as a plugin for Claude Code, Codex, Cursor, Gemini CLI and Grok
 Build. Every manifest points at the hosted MCP server
 `https://mcp.kernelcad.com/mcp` (streamable HTTP). The server works anonymously
