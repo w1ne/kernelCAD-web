@@ -10,10 +10,15 @@ import { walkSkillTree } from '../lib/walkSkillTree';
 const here = dirname(fileURLToPath(import.meta.url));
 
 function skillRoot(): string {
-  const dev = join(here, '..', '..', 'skills');
-  if (existsSync(dev) && statSync(dev).isDirectory()) return dev;
+  // Prefer the tree bundled next to the built CLI (dist/cli/skills). The
+  // dev fallback (src/agent/cli/commands -> src/agent/skills) must only be
+  // consulted when no bundled tree exists: from dist/cli, `../../skills`
+  // resolves to the repo-root `skills` symlink, which points at the agent
+  // plugin's small skill subset, not the full CLI skill tree.
   const bundled = join(here, 'skills');
   if (existsSync(bundled) && statSync(bundled).isDirectory()) return bundled;
+  const dev = join(here, '..', '..', 'skills');
+  if (existsSync(dev) && statSync(dev).isDirectory()) return dev;
   throw new Error(`kernelcad skill tree not found near ${here}`);
 }
 

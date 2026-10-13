@@ -1,0 +1,49 @@
+{
+  "$comment": "Single source of truth for the one-line agent plugin install. Edit this file, then run `node scripts/agentPlugin/buildManifests.mjs` to regenerate every platform manifest. Copy this file + the script to package another product (see docs/usage/agent-plugin-install.md).",
+  "name": "kernelcad",
+  "marketplaceName": "kernelcad",
+  "displayName": "kernelCAD",
+  "repo": "w1ne/kernelCAD-web",
+  "versionFrom": "package.json",
+  "description": "Agent-first CAD over the hosted kernelCAD MCP: editable .kcad.ts source, design_loop review, cookbooks, Studio viewer and STEP/STL/3MF export. No local OpenCASCADE install.",
+  "shortDescription": "Design and review CAD models",
+  "author": {
+    "name": "kernelCAD",
+    "url": "https://kernelcad.com"
+  },
+  "homepage": "https://kernelcad.com",
+  "docsUrl": "https://kernelcad.com/docs",
+  "supportUrl": "https://github.com/w1ne/kernelCAD-web/issues/new",
+  "license": "MIT",
+  "keywords": [
+    "cad",
+    "mcp",
+    "step",
+    "stl",
+    "3mf",
+    "opencascade",
+    "skills"
+  ],
+  "category": "Productivity",
+  "codexCategory": "Creativity",
+  "brandColor": "#2563EB",
+  "defaultPrompts": [
+    "Design a 3D-printable phone stand with kernelCAD and open it in Studio.",
+    "Find a kernelCAD cookbook for a NEMA 17 motor plate and build it.",
+    "Export my bracket as STEP and 3MF."
+  ],
+  "mcp": {
+    "serverName": "kernelcad",
+    "url": "https://mcp.kernelcad.com/mcp",
+    "auth": "mixed"
+  },
+  "skillsDir": "./skills/",
+  "geminiContextFile": "plugins/kernelcad/GEMINI.md",
+  "pluginDir": "plugins/kernelcad",
+  "skills": [
+    "kernelcad-design-loop",
+    "kernelcad-cookbooks",
+    "kernelcad-studio-paint",
+    "kernelcad-export"
+  ]
+}

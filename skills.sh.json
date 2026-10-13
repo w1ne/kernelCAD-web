@@ -1,0 +1,16 @@
+{
+  "$schema": "https://skills.sh/schemas/skills.sh.schema.json",
+  "notGrouped": "bottom",
+  "groupings": [
+    {
+      "title": "kernelCAD",
+      "description": "Design and review CAD models",
+      "skills": [
+        "kernelcad-design-loop",
+        "kernelcad-cookbooks",
+        "kernelcad-studio-paint",
+        "kernelcad-export"
+      ]
+    }
+  ]
+}

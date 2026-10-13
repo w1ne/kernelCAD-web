@@ -11,6 +11,45 @@ Replicad/OpenCASCADE are the kernel layer. kernelCAD is the agent-first workflow
 layer above the kernel: deterministic CAD source, feature history, diagnostics,
 validation, variants, and human review.
 
+## Install
+
+### Already in ChatGPT and Claude: no install
+
+kernelCAD runs as a connected app in **ChatGPT** (Apps SDK, with the Studio
+viewer and paint review inside the chat) and in **Claude / claude.ai** (custom
+connector). Add it from the chat settings and sign in:
+
+- ChatGPT: [connect guide](https://app.kernelcad.com/connect?client=chatgpt) or [ChatGPT → Settings → Connectors](https://chatgpt.com/#settings/Connectors)
+- Claude: [connect guide](https://app.kernelcad.com/connect?client=claude) or [claude.ai → Settings → Connectors](https://claude.ai/settings/connectors), URL `https://mcp.kernelcad.com/mcp`
+
+**One account everywhere.** The coding-agent plugins below use the same hosted
+server (`https://mcp.kernelcad.com/mcp`) and the same kernelCAD sign-in. A model
+saved from Claude Code, Codex, Cursor, Gemini or Grok opens at the same Studio
+share link (`/p/<slug>`) you see in ChatGPT or Claude. Sign in with the same
+account in each client.
+
+### Coding agents: one command
+
+One command connects your agent to the hosted kernelCAD MCP server
+(`https://mcp.kernelcad.com/mcp`) and adds the kernelCAD skills. Nothing runs
+locally and no OpenCASCADE install is needed. Anonymous use works; sign in
+through your client's OAuth prompt for account features.
+
+| Agent | One-liner |
+|---|---|
+| Claude Code | `claude plugin install kernelcad --marketplace w1ne/kernelCAD-web` |
+| Codex | `codex plugin marketplace add w1ne/kernelCAD-web && codex plugin add kernelcad@kernelcad` |
+| Cursor | [Add kernelCAD MCP to Cursor](cursor://anysphere.cursor-deeplink/mcp/install?name=kernelcad&config=eyJ1cmwiOiJodHRwczovL21jcC5rZXJuZWxjYWQuY29tL21jcCJ9) (MCP only) |
+| Gemini CLI | `gemini extensions install https://github.com/w1ne/kernelCAD-web --consent --auto-update` |
+| Grok Build | `grok plugin marketplace add w1ne/kernelCAD-web && grok plugin install kernelcad --trust` |
+| VS Code / Copilot | `code --add-mcp '{"name":"kernelcad","type":"http","url":"https://mcp.kernelcad.com/mcp"}'` |
+| Skills only (any agent) | `npx skills add w1ne/kernelCAD-web` |
+
+Inside Claude Code you can also type `/plugin marketplace add w1ne/kernelCAD-web`
+then `/plugin install kernelcad@kernelcad`. Restart the app after installing.
+Claude Desktop, ChatGPT, Windsurf, Cline, Zed, Continue, update, uninstall and the Cursor skills install are in
+[docs/usage/agent-plugin-install.md](docs/usage/agent-plugin-install.md).
+
 ## Showcase
 
 Each model below started from the plain-language prompt shown. An AI agent wrote it through kernelCAD's own authoring loop (CLI / MCP): it wrote `.kcad.ts` source, ran `evaluate`, rendered the seven-view inspection sheet, read the renders, fixed what was wrong, and repeated. None of these is a one-shot generation. Each folder in [`showcase/`](showcase/) holds the parametric source, the turntable GIF (`kernelcad animate --turntable`, publish look), and a short note on what to look at and which checks were run.
