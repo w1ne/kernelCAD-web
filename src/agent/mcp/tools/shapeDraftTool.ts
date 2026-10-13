@@ -3,7 +3,7 @@
 import type { SceneSummary } from '../../script-runtime/sceneSummary';
 import { shapeDraftEdit } from '../edits/shapeDraft';
 import type { ShapeDraftInput } from '../edits/shapeDraft';
-import { evaluateScriptTool } from './evaluateScript';
+import { evaluateScriptTool, type EvaluateScriptOutput } from './evaluateScript';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 
 export type { ShapeDraftInput };
@@ -11,6 +11,7 @@ export type { ShapeDraftInput };
 export interface ShapeDraftOutput {
   ok: boolean;
   new_code?: string;
+  step?: EvaluateScriptOutput['step'];
   diagnostics?: CompilerDiagnostic[];
   sceneSummary?: SceneSummary;
   error?: string;
@@ -32,6 +33,7 @@ export async function shapeDraftTool(input: ShapeDraftInput): Promise<ShapeDraft
   return {
     ok: true,
     new_code: edit.new_code,
+    step: evalResult.step,
     sceneSummary: evalResult.sceneSummary,
     diagnostics: evalResult.diagnostics,
   };

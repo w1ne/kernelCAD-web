@@ -8,7 +8,7 @@ import type { SceneSummary } from '../../script-runtime/sceneSummary';
 // then re-evaluates the modified script and returns diagnostics.
 
 import { addFeature } from '../edits/addFeature';
-import { evaluateScriptTool } from './evaluateScript';
+import { evaluateScriptTool, type EvaluateScriptOutput } from './evaluateScript';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 
 export interface AddSketchTextInput {
@@ -34,6 +34,7 @@ export interface AddSketchTextInput {
 export interface AddSketchTextOutput {
   ok: boolean;
   new_code?: string;
+  step?: EvaluateScriptOutput['step'];
   diagnostics?: CompilerDiagnostic[];
   sceneSummary?: SceneSummary;
   error?: string;
@@ -68,6 +69,7 @@ export async function addSketchTextTool(input: AddSketchTextInput): Promise<AddS
   return {
     ok: evalResult.ok,
     new_code: edit.new_code,
+    step: evalResult.step,
     sceneSummary: evalResult.sceneSummary,
     diagnostics: evalResult.diagnostics,
   };

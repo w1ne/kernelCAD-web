@@ -8,7 +8,7 @@ import type { SceneSummary } from '../../script-runtime/sceneSummary';
 // the modified script and returns diagnostics.
 
 import { addEmbossText, type AddEmbossTextInput } from '../edits/embossText';
-import { evaluateScriptTool } from './evaluateScript';
+import { evaluateScriptTool, type EvaluateScriptOutput } from './evaluateScript';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 
 export type EmbossTextInput = AddEmbossTextInput;
@@ -16,6 +16,7 @@ export type EmbossTextInput = AddEmbossTextInput;
 export interface EmbossTextOutput {
   ok: boolean;
   new_code?: string;
+  step?: EvaluateScriptOutput['step'];
   diagnostics?: CompilerDiagnostic[];
   sceneSummary?: SceneSummary;
   error?: string;
@@ -30,6 +31,7 @@ export async function embossTextTool(input: EmbossTextInput): Promise<EmbossText
   return {
     ok: evalResult.ok,
     new_code: edit.new_code,
+    step: evalResult.step,
     sceneSummary: evalResult.sceneSummary,
     diagnostics: evalResult.diagnostics,
   };

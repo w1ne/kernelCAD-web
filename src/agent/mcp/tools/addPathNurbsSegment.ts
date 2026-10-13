@@ -9,7 +9,7 @@ import type { SceneSummary } from '../../script-runtime/sceneSummary';
 
 import { addPathNurbsSegment } from '../edits/addPathNurbsSegment';
 import type { AddPathNurbsSegmentInput } from '../edits/addPathNurbsSegment';
-import { evaluateScriptTool } from './evaluateScript';
+import { evaluateScriptTool, type EvaluateScriptOutput } from './evaluateScript';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 
 export type { AddPathNurbsSegmentInput };
@@ -17,6 +17,7 @@ export type { AddPathNurbsSegmentInput };
 export interface AddPathNurbsSegmentOutput {
   ok: boolean;
   new_code?: string;
+  step?: EvaluateScriptOutput['step'];
   diagnostics?: CompilerDiagnostic[];
   sceneSummary?: SceneSummary;
   error?: string;
@@ -31,6 +32,7 @@ export async function addPathNurbsSegmentTool(input: AddPathNurbsSegmentInput): 
   return {
     ok: evalResult.ok,
     new_code: edit.new_code,
+    step: evalResult.step,
     sceneSummary: evalResult.sceneSummary,
     diagnostics: evalResult.diagnostics,
   };

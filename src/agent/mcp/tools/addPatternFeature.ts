@@ -9,7 +9,7 @@ import type { SceneSummary } from '../../script-runtime/sceneSummary';
 
 import { invalidArgsText } from '../../../shared/intent/invalidArgs';
 import { addFeature } from '../edits/addFeature';
-import { evaluateScriptTool } from './evaluateScript';
+import { evaluateScriptTool, type EvaluateScriptOutput } from './evaluateScript';
 import { validateLinear, validateCircular, validateGridAxis } from '../../../shared/intent/patternValidation';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 
@@ -31,6 +31,7 @@ export interface AddPatternFeatureInput {
 export interface AddPatternFeatureOutput {
   ok: boolean;
   new_code?: string;
+  step?: EvaluateScriptOutput['step'];
   diagnostics?: CompilerDiagnostic[];
   sceneSummary?: SceneSummary;
   error?: string;
@@ -150,6 +151,7 @@ export async function addPatternFeatureTool(
   return {
     ok: evalResult.ok,
     new_code: edit.new_code,
+    step: evalResult.step,
     sceneSummary: evalResult.sceneSummary,
     diagnostics: evalResult.diagnostics,
   };

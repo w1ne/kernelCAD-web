@@ -3,7 +3,7 @@
 import type { SceneSummary } from '../../script-runtime/sceneSummary';
 // src/mcp/tools/removeFeature.ts
 import { removeFeature } from '../edits/removeFeature';
-import { evaluateScriptTool } from './evaluateScript';
+import { evaluateScriptTool, type EvaluateScriptOutput } from './evaluateScript';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 
 export interface RemoveFeatureInput {
@@ -14,6 +14,7 @@ export interface RemoveFeatureInput {
 export interface RemoveFeatureOutput {
   ok: boolean;
   new_code?: string;
+  step?: EvaluateScriptOutput['step'];
   diagnostics?: CompilerDiagnostic[];
   sceneSummary?: SceneSummary;
   error?: string;
@@ -30,6 +31,7 @@ export async function removeFeatureTool(
   return {
     ok: evalResult.ok,
     new_code: edit.new_code,
+    step: evalResult.step,
     sceneSummary: evalResult.sceneSummary,
     diagnostics: evalResult.diagnostics,
   };

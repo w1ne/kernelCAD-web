@@ -13,11 +13,13 @@ import { tubesOutput } from '../../../composition/scriptEvaluation';
 import type { PortReportEntry } from '../../../modeling/runtime/tube/portReport';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
-import { clearActiveMcpSession, setActiveMcpSession } from '../activeSession';
+import { clearActiveMcpSession, getActiveMcpSession, setActiveMcpSession } from '../activeSession';
 import { summarizeScene, unavailableSceneSummary, type SceneSummary } from '../../script-runtime/sceneSummary';
 import { Scene } from '../../../modeling/validation/scene';
 import type { Assembly } from '../../../modeling/capture/assembly';
 import { probeAssemblies } from '../../../modeling/runtime/mechanismProbe';
+
+import { captureStepState, createStepEvidence, type StepEvidence } from './stepEvidence';
 
 export interface EvaluateScriptInput {
   file?: string;
@@ -43,6 +45,7 @@ export interface EvaluateScriptInput {
 }
 
 export interface EvaluateScriptOutput {
+  step?: StepEvidence;
   sceneSummary: SceneSummary;
   ok: boolean;
   featureCount: number;
@@ -124,13 +127,14 @@ export const MATES_REVIEW_HINT =
  * produce lowered shapes, so the active MCP session is left untouched —
  * session-dependent tools keep whatever full evaluation ran last.
  *
- * No side effects — does not write to disk.
+ * Full evaluations retain step snapshot artifacts in a temporary directory.
  */
 export async function evaluateScriptTool(
   input: EvaluateScriptInput,
 ): Promise<EvaluateScriptOutput> {
   if (input.dryRun) return evaluateDryRun(input);
 
+  const before = capturePreviousStep();
   const { evaluation, model, dfmReport, tubeReport, portReport } = await evaluateAndBuildScript(input as EvaluateInput);
   // Authoring intent lint (usage triage 2026-10-03): info-only hints naming
   // the API for intent the source states but builds by hand. Agents skip
@@ -178,8 +182,12 @@ export async function evaluateScriptTool(
   const tubes = tubesOutput(tubeReport);
   const reviewHint = hasArticulatedMates(model) ? MATES_REVIEW_HINT : undefined;
 
+  const after = captureEvaluatedStep(model, buildSucceeded);
+  const step = await createStepEvidence(before, after, ok, r.featureHealth);
+
   return {
     ok,
+    step,
     sceneSummary: buildSceneSummary(model, buildSucceeded),
     featureCount: r.featureCount,
     // Idempotent re-enrichment guard. evaluateAndBuildScript already
@@ -198,6 +206,18 @@ export async function evaluateScriptTool(
 }
 
 type BuildOutcome = Awaited<ReturnType<typeof evaluateAndBuildScript>>;
+
+function capturePreviousStep(): ReturnType<typeof captureStepState> {
+  const active = getActiveMcpSession();
+  if (!active || active.stepEvidenceSupported === false) return undefined;
+  return captureStepState(active.rootShape ?? active.tailShape);
+}
+
+function captureEvaluatedStep(model: BuildOutcome['model'], buildSucceeded: boolean): ReturnType<typeof captureStepState> {
+  if (!buildSucceeded || !model || Array.isArray(model.returnValue)) return undefined;
+  return captureStepState(model.rootShape ?? model.tailShape);
+}
+
 
 /** A policy-gate failure may still have usable geometry; a failed build does not. */
 function buildSceneSummary(model: BuildOutcome['model'], buildSucceeded: boolean): SceneSummary {
@@ -243,6 +263,7 @@ function didBuildSucceed(
 function refreshActiveSession(model: BuildOutcome['model'], buildSucceeded: boolean): void {
   if (buildSucceeded && model !== undefined) {
     setActiveMcpSession({
+      stepEvidenceSupported: !Array.isArray(model.returnValue),
       session: model.session,
       tailId: model.tailId,
       tailShape: model.tailShape,

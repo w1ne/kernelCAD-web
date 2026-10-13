@@ -10,6 +10,8 @@ export interface ScriptSourceInput {
 }
 
 export interface ActiveMcpSession {
+  /** Array returns have no single root geometry for step evidence. */
+  stepEvidenceSupported?: boolean;
   session: CaptureSession;
   tailId?: string;
   tailShape?: ShapeBackend;
@@ -40,6 +42,7 @@ export async function establishActiveMcpSession(input: ScriptSourceInput): Promi
     ? await buildModel({ code: input.code, fileName: input.file ?? '<inline>' })
     : await buildModelFromFile({ file: input.file! });
   activeSession = {
+    stepEvidenceSupported: !Array.isArray(model.returnValue),
     session: model.session,
     tailId: model.tailId,
     tailShape: model.tailShape,
