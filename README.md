@@ -181,6 +181,22 @@ kernelCAD runs as an MCP server, so Claude Desktop can drive it locally. After
 Restart Claude Desktop. The kernelCAD MCP tools (`review_cad`, model
 introspection, export helpers, etc.) appear in the tools list.
 
+The first full local `evaluate_script` build returns `viewerUrl`. Open it in
+Studio once: later full builds and source-edit tool calls replace the source,
+history, and geometry behind that same session link. The viewer is served on
+`127.0.0.1` by the MCP process and lasts until that process closes; it is not a
+public share link. Dry runs leave it unchanged. A build failure keeps the last
+built model visible; a successfully built model with DFM failures remains
+viewable. Build diagnostics shown there are not a full CAD/physics review.
+
+Published packages include the Studio bundle. When running MCP from a checkout,
+run `npm run build:mcp-viewer` first. If the bundle cannot be served, the build
+result includes `viewerError` separately from its CAD diagnostics. Hosted MCP
+and `--cloud` continue to use the gateway's Studio/project URLs.
+
+[Local viewer workflow demo and verification](docs/demos/mcp-viewer-link/README.md).
+
+
 For hosted workflows, sign in at [the existing connection guide](https://app.kernelcad.com/connect?client=claude).
 It gives the current connector and OAuth steps for your client. The hosted tool
 set depends on authentication, your selected profile, and server-native tools;

@@ -19,6 +19,7 @@ import {
   readCloudResource,
   type CloudMcpOptions,
 } from './cloudClient';
+import { closeMcpViewer } from './liveViewer';
 import { recordToolCall, maybeShowFirstRunNotice, flushTelemetry } from '../../shared/telemetry';
 
 const requireFromHere = createRequire(import.meta.url);
@@ -98,6 +99,7 @@ export function createMcpServer(options: McpServerOptions = {}): Server {
     }));
   }
 
+  if (!options.cloud) server.onclose = () => { void closeMcpViewer(); };
   return server;
 }
 

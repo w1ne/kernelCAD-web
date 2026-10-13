@@ -1,0 +1,48 @@
+{
+  "width": 1280,
+  "height": 720,
+  "fps": 24,
+  "durationSeconds": 8,
+  "kind": "actual-mcp-result-and-mesh-replay",
+  "ffmpeg": [
+    "-y",
+    "-loop",
+    "1",
+    "-t",
+    "4",
+    "-i",
+    "/Users/andrii/worktrees/kcw-cc-viewer-link/docs/demos/mcp-viewer-link/first.png",
+    "-loop",
+    "1",
+    "-t",
+    "4",
+    "-i",
+    "/Users/andrii/worktrees/kcw-cc-viewer-link/docs/demos/mcp-viewer-link/second.png",
+    "-filter_complex",
+    "[0:v][1:v]concat=n=2:v=1:a=0[v]",
+    "-map",
+    "[v]",
+    "-t",
+    "8",
+    "-r",
+    "24",
+    "-c:v",
+    "libx264",
+    "-crf",
+    "20",
+    "-pix_fmt",
+    "yuv420p",
+    "-movflags",
+    "+faststart",
+    "/Users/andrii/worktrees/kcw-cc-viewer-link/docs/demos/mcp-viewer-link/demo.mp4"
+  ],
+  "sameUrl": true,
+  "volumesMm3": [
+    6000,
+    12000
+  ],
+  "capturedAt": [
+    "2026-10-13T12:21:56.438Z",
+    "2026-10-13T12:22:36.656Z"
+  ]
+}

@@ -42,6 +42,7 @@ vi.mock('../../context/WorkbenchContext', () => ({
 vi.mock('@monaco-editor/react', () => ({
     __esModule: true,
     default: function MonacoEditorMock(props: {
+        options?: { readOnly?: boolean };
         value?: string;
         defaultValue?: string;
         onChange?: (value: string | undefined) => void;
@@ -59,11 +60,13 @@ vi.mock('@monaco-editor/react', () => ({
             if (!onMount) return;
             const editor = {
                 getModel: () => ({
+                    setValue: (text: string) => { fake.text = text; fake.onChange?.(text); },
                     getLineContent: () => '',
                     getFullModelRange: () => ({ startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 1 }),
                 }),
                 getValue: () => fake.text,
                 executeEdits: (_source: string, edits: { text: string }[]) => {
+                    if (props.options?.readOnly) return;
                     fake.text = edits[0].text;
                     fake.onChange?.(fake.text);
                 },
@@ -84,10 +87,13 @@ vi.mock('@monaco-editor/react', () => ({
     },
 }));
 
+import * as scriptSource from '../../scriptSource';
 import { CodeTab } from '../../tabs/CodeTab';
 
 afterEach(() => {
     cleanup();
+    vi.restoreAllMocks();
+    window.history.replaceState({}, '', '/');
     workbench.code = 'return 1;';
     workbench.setCode.mockReset();
     fake.text = '';
@@ -95,6 +101,14 @@ afterEach(() => {
 });
 
 describe('CodeTab typing', () => {
+    it('refreshes read-only MCP source when the live model changes', () => {
+        vi.spyOn(scriptSource, 'devMeshAvailable').mockReturnValue(false);
+        window.history.replaceState({}, '', '/?script=token&mcp=1');
+        const { rerender } = render(<CodeTab />);
+        workbench.code = 'return 2;';
+        rerender(<CodeTab />);
+        expect(fake.text).toBe('return 2;');
+    });
     it('keeps keystrokes typed before the workbench echoes an earlier edit', () => {
         const { rerender } = render(<CodeTab />);
         expect(fake.text).toBe('return 1;');

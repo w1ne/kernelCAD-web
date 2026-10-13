@@ -14,6 +14,7 @@ import type { PortReportEntry } from '../../../modeling/runtime/tube/portReport'
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
 import { clearActiveMcpSession, setActiveMcpSession } from '../activeSession';
+import { updateMcpViewer } from '../liveViewer';
 import { Scene } from '../../../modeling/validation/scene';
 import type { Assembly } from '../../../modeling/capture/assembly';
 import { probeAssemblies } from '../../../modeling/runtime/mechanismProbe';
@@ -42,6 +43,10 @@ export interface EvaluateScriptInput {
 }
 
 export interface EvaluateScriptOutput {
+  /** Loopback Studio link, stable across full builds in this MCP process. */
+  viewerUrl?: string;
+  /** Viewer provisioning failed; the CAD build result is still valid. */
+  viewerError?: string;
   ok: boolean;
   featureCount: number;
   diagnostics: CompilerDiagnostic[];
@@ -122,7 +127,7 @@ export const MATES_REVIEW_HINT =
  * produce lowered shapes, so the active MCP session is left untouched —
  * session-dependent tools keep whatever full evaluation ran last.
  *
- * No side effects — does not write to disk.
+ * Full builds update a process-local Studio viewer; no files are written.
  */
 export async function evaluateScriptTool(
   input: EvaluateScriptInput,
@@ -175,9 +180,11 @@ export async function evaluateScriptTool(
   const ok = r.exitCode === 0 && mechanism !== 'broken';
   const tubes = tubesOutput(tubeReport);
   const reviewHint = hasArticulatedMates(model) ? MATES_REVIEW_HINT : undefined;
+  const viewer = buildSucceeded && model ? await updateMcpViewer(model) : {};
 
   return {
     ok,
+    ...viewer,
     featureCount: r.featureCount,
     // Idempotent re-enrichment guard. evaluateAndBuildScript already
     // populates nextAction on every return path; this wrap is a no-op

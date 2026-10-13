@@ -37,7 +37,8 @@
     "README.md",
     "LICENSE",
     "assets/parts/**",
-    "assets/parts-seed/**"
+    "assets/parts-seed/**",
+    "dist/mcp-viewer"
   ],
   "scripts": {
     "dev": "vite",
@@ -60,8 +61,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "release": "npx tsx scripts/release.ts",
-    "prepack": "npm run build:cli && npm run build:studio && npm run build:player",
-    "prepare": "git config core.hooksPath .githooks || true; npm run build:studio && npm run build:player",
+    "prepack": "npm run build:cli && npm run build:studio && npm run build:player && npm run build:mcp-viewer",
+    "prepare": "git config core.hooksPath .githooks || true; npm run build:studio && npm run build:player && npm run build:mcp-viewer",
     "generate:parts": "npx tsx scripts/generateSeedCatalog.ts assets/parts",
     "prepublishOnly": "npm run generate:parts",
     "pretest": "npm run generate:parts",
@@ -106,7 +107,8 @@
     "portfolio:validate": "npm test -- tests/integration/portfolio/portfolioBundle.test.ts tests/unit/portfolio/portfolioMeta.test.ts",
     "portfolio:capture": "npx tsx scripts/capturePortfolioEntry.ts",
     "site:build-docs": "npx tsx site/scripts/prebake-docs-models.ts && npx tsx site/scripts/build-docs.ts && vite build --config vite.docs-island.config.ts && npx tsx site/scripts/verify-docs-bundle.ts",
-    "docs:site": "npm run site:build-docs"
+    "docs:site": "npm run site:build-docs",
+    "build:mcp-viewer": "vite build --config vite.mcp-viewer.config.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.92.0",

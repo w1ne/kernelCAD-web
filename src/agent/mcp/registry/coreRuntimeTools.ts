@@ -10,6 +10,7 @@ const evaluateScriptToolEntry: ToolRegistryEntry = {
     name: 'evaluate_script',
     description:
       'Use this when you need to run a script and check it compiles. ' +
+      'Full local builds return viewerUrl: a live Studio link reused and updated on later full builds in the same MCP process. ' +
       'Run a kernelCAD .kcad.ts script and report pass/fail + feature count + diagnostics. ' +
       'When the scene is assembly-built (assembly().part(...) → .model()/.solvedModel()), ' +
       'also returns a parts summary { count, names } AND runs the mechanism-truth gate by ' +

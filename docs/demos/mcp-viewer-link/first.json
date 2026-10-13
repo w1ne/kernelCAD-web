@@ -1,0 +1,680 @@
+{
+  "capturedAt": "2026-10-13T12:21:56.438Z",
+  "name": "evaluate_script",
+  "args": {
+    "code": "// Local MCP viewer demonstration: a width change must replace the model\n// behind one Studio link. Millimetres; not a production-part claim.\nconst width = param('width', 20, { min: 10, max: 60 });\nreturn box(width, 30, 10);\n"
+  },
+  "result": {
+    "ok": true,
+    "viewerUrl": "http://127.0.0.1:52878/?script=f050af83-08a8-4f3d-b4a8-30d3c05b4080&mcp=1",
+    "featureCount": 1,
+    "diagnostics": [],
+    "featureHealth": []
+  },
+  "source": {
+    "source": "// Local MCP viewer demonstration: a width change must replace the model\n// behind one Studio link. Millimetres; not a production-part claim.\nconst width = param('width', 20, { min: 10, max: 60 });\nreturn box(width, 30, 10);\n"
+  },
+  "mesh": {
+    "source": "// Local MCP viewer demonstration: a width change must replace the model\n// behind one Studio link. Millimetres; not a production-part claim.\nconst width = param('width', 20, { min: 10, max: 60 });\nreturn box(width, 30, 10);\n",
+    "features": [
+      {
+        "featureId": "box_1",
+        "featureKind": "box",
+        "predecessors": [],
+        "faces": [
+          {
+            "vertices": [
+              0,
+              30,
+              0,
+              0,
+              30,
+              10,
+              20,
+              30,
+              10,
+              20,
+              30,
+              0
+            ],
+            "indices": [
+              3,
+              0,
+              1,
+              3,
+              1,
+              2
+            ],
+            "normals": [
+              0,
+              1,
+              0,
+              0,
+              1,
+              0,
+              0,
+              1,
+              0,
+              0,
+              1,
+              0
+            ],
+            "uv": [
+              0,
+              0,
+              0,
+              1,
+              1,
+              1,
+              1,
+              0
+            ],
+            "faceId": 0,
+            "plane": {
+              "origin": [
+                10,
+                30,
+                5
+              ],
+              "normal": [
+                0,
+                1,
+                0
+              ],
+              "xDir": [
+                -1,
+                0,
+                0
+              ],
+              "yDir": [
+                0,
+                0,
+                1
+              ]
+            }
+          },
+          {
+            "vertices": [
+              20,
+              30,
+              0,
+              20,
+              30,
+              10,
+              20,
+              0,
+              10,
+              20,
+              0,
+              0
+            ],
+            "indices": [
+              3,
+              0,
+              1,
+              3,
+              1,
+              2
+            ],
+            "normals": [
+              1,
+              0,
+              0,
+              1,
+              0,
+              0,
+              1,
+              0,
+              0,
+              1,
+              0,
+              0
+            ],
+            "uv": [
+              1,
+              0,
+              1,
+              1,
+              0,
+              1,
+              0,
+              0
+            ],
+            "faceId": 1,
+            "plane": {
+              "origin": [
+                20,
+                15,
+                5
+              ],
+              "normal": [
+                1,
+                0,
+                0
+              ],
+              "xDir": [
+                0,
+                1,
+                0
+              ],
+              "yDir": [
+                0,
+                0,
+                1
+              ]
+            }
+          },
+          {
+            "vertices": [
+              20,
+              0,
+              0,
+              20,
+              0,
+              10,
+              0,
+              0,
+              10,
+              0,
+              0,
+              0
+            ],
+            "indices": [
+              3,
+              0,
+              1,
+              3,
+              1,
+              2
+            ],
+            "normals": [
+              0,
+              -1,
+              0,
+              0,
+              -1,
+              0,
+              0,
+              -1,
+              0,
+              0,
+              -1,
+              0
+            ],
+            "uv": [
+              1,
+              0,
+              1,
+              1,
+              0,
+              1,
+              0,
+              0
+            ],
+            "faceId": 2,
+            "plane": {
+              "origin": [
+                10,
+                0,
+                5
+              ],
+              "normal": [
+                0,
+                -1,
+                0
+              ],
+              "xDir": [
+                1,
+                0,
+                0
+              ],
+              "yDir": [
+                0,
+                0,
+                1
+              ]
+            }
+          },
+          {
+            "vertices": [
+              0,
+              0,
+              0,
+              0,
+              0,
+              10,
+              0,
+              30,
+              10,
+              0,
+              30,
+              0
+            ],
+            "indices": [
+              3,
+              0,
+              1,
+              3,
+              1,
+              2
+            ],
+            "normals": [
+              -1,
+              0,
+              0,
+              -1,
+              0,
+              0,
+              -1,
+              0,
+              0,
+              -1,
+              0,
+              0
+            ],
+            "uv": [
+              0,
+              0,
+              0,
+              1,
+              1,
+              1,
+              1,
+              0
+            ],
+            "faceId": 3,
+            "plane": {
+              "origin": [
+                0,
+                15,
+                5
+              ],
+              "normal": [
+                -1,
+                0,
+                0
+              ],
+              "xDir": [
+                0,
+                -1,
+                0
+              ],
+              "yDir": [
+                0,
+                0,
+                1
+              ]
+            }
+          },
+          {
+            "vertices": [
+              0,
+              30,
+              0,
+              20,
+              30,
+              0,
+              20,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "indices": [
+              0,
+              1,
+              2,
+              0,
+              2,
+              3
+            ],
+            "normals": [
+              0,
+              0,
+              -1,
+              0,
+              0,
+              -1,
+              0,
+              0,
+              -1,
+              0,
+              0,
+              -1
+            ],
+            "uv": [
+              0,
+              1,
+              1,
+              1,
+              1,
+              0,
+              0,
+              0
+            ],
+            "faceId": 4,
+            "plane": {
+              "origin": [
+                10,
+                15,
+                0
+              ],
+              "normal": [
+                0,
+                0,
+                -1
+              ],
+              "xDir": [
+                1,
+                0,
+                0
+              ],
+              "yDir": [
+                0,
+                -1,
+                0
+              ]
+            }
+          },
+          {
+            "vertices": [
+              0,
+              30,
+              10,
+              20,
+              30,
+              10,
+              20,
+              0,
+              10,
+              0,
+              0,
+              10
+            ],
+            "indices": [
+              1,
+              0,
+              2,
+              2,
+              0,
+              3
+            ],
+            "normals": [
+              0,
+              0,
+              1,
+              0,
+              0,
+              1,
+              0,
+              0,
+              1,
+              0,
+              0,
+              1
+            ],
+            "uv": [
+              0,
+              1,
+              1,
+              1,
+              1,
+              0,
+              0,
+              0
+            ],
+            "faceId": 5,
+            "plane": {
+              "origin": [
+                10,
+                15,
+                10
+              ],
+              "normal": [
+                0,
+                0,
+                1
+              ],
+              "xDir": [
+                1,
+                0,
+                0
+              ],
+              "yDir": [
+                0,
+                1,
+                0
+              ]
+            }
+          }
+        ],
+        "volume": 6000,
+        "edges": [
+          0,
+          30,
+          0,
+          0,
+          30,
+          10,
+          20,
+          30,
+          0,
+          20,
+          30,
+          10,
+          0,
+          30,
+          0,
+          20,
+          30,
+          0,
+          0,
+          30,
+          10,
+          20,
+          30,
+          10,
+          20,
+          0,
+          0,
+          20,
+          0,
+          10,
+          20,
+          30,
+          0,
+          20,
+          0,
+          0,
+          20,
+          30,
+          10,
+          20,
+          0,
+          10,
+          0,
+          0,
+          0,
+          0,
+          0,
+          10,
+          20,
+          0,
+          0,
+          0,
+          0,
+          0,
+          20,
+          0,
+          10,
+          0,
+          0,
+          10,
+          0,
+          0,
+          0,
+          0,
+          30,
+          0,
+          0,
+          0,
+          10,
+          0,
+          30,
+          10
+        ],
+        "edgeRanges": [
+          0,
+          2,
+          2,
+          2,
+          4,
+          2,
+          6,
+          2,
+          8,
+          2,
+          10,
+          2,
+          12,
+          2,
+          14,
+          2,
+          16,
+          2,
+          18,
+          2,
+          20,
+          2,
+          22,
+          2
+        ],
+        "displayName": "box_1",
+        "filterNames": [
+          "box_1",
+          "box"
+        ]
+      }
+    ],
+    "featureRecords": [
+      {
+        "id": "box_1",
+        "kind": "box",
+        "params": {
+          "x": {
+            "expression": "{$param:width}",
+            "unit": "mm",
+            "evaluated": 0,
+            "paramRef": "width"
+          },
+          "y": {
+            "expression": "30",
+            "unit": "mm",
+            "evaluated": 30
+          },
+          "z": {
+            "expression": "10",
+            "unit": "mm",
+            "evaluated": 10
+          },
+          "centered": {
+            "expression": "0",
+            "unit": "unitless",
+            "evaluated": 0
+          }
+        },
+        "inputs": {},
+        "transforms": [],
+        "suppressed": false,
+        "metadata": {
+          "paramRefs": [
+            "width"
+          ]
+        },
+        "scriptLocation": {
+          "file": "<inline>",
+          "line": 4,
+          "column": 8
+        }
+      }
+    ],
+    "bounds": {
+      "min": [
+        0,
+        0,
+        0
+      ],
+      "max": [
+        20,
+        30,
+        10
+      ]
+    },
+    "params": {
+      "width": {
+        "name": "width",
+        "type": "number",
+        "value": 20,
+        "defaultValue": 20,
+        "meta": {
+          "min": 10,
+          "max": 60
+        }
+      }
+    },
+    "rootFeatureIds": [
+      "box_1"
+    ],
+    "dimensions": [
+      {
+        "kind": "linear",
+        "a": [
+          0,
+          0,
+          0
+        ],
+        "b": [
+          20,
+          0,
+          0
+        ],
+        "text": "20",
+        "id": "auto:overall:model:0",
+        "source": "auto"
+      },
+      {
+        "kind": "linear",
+        "a": [
+          20,
+          0,
+          0
+        ],
+        "b": [
+          20,
+          30,
+          0
+        ],
+        "text": "30",
+        "id": "auto:overall:model:1",
+        "source": "auto"
+      },
+      {
+        "kind": "linear",
+        "a": [
+          20,
+          0,
+          0
+        ],
+        "b": [
+          20,
+          0,
+          10
+        ],
+        "text": "10",
+        "id": "auto:overall:model:2",
+        "source": "auto"
+      }
+    ]
+  }
+}

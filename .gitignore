@@ -113,3 +113,6 @@ eval/benchmarks/cadgenbench/runs/
 
 # Generator-owned same-origin decoder and license (copied by selected web asset builds).
 /site/public/vendor/meshopt/
+
+# Private workflow comparisons (never published).
+/kernelCAD-private/
