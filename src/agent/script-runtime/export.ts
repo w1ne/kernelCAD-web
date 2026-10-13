@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import type { ShapeBackend } from '../../kernel/backends/backend';
+import { resolveRootId } from '../../composition/buildModel';
 import type { DrawingReviewOptions } from '../../shared/intent/drawingReview';
 import { runScript } from '../../composition/runScript';
 import { RecomputeEngine } from '../../modeling/compute/recomputeEngine';
@@ -212,6 +214,8 @@ export interface DxfLayerSpec {
 }
 
 export interface ExportInput {
+  /** Observe already-lowered scene geometry; does not rebuild. */
+  onBuild?: (root: ShapeBackend | undefined) => void;
   code: string;
   fileName: string;
   format: ExportFormat;
@@ -365,6 +369,19 @@ async function exportShapeOrInfill(
   return out.bytes.length > 0 ? { ...out, infillReport: infill.report } : out;
 }
 
+/** Notify an observer using the existing build, never a partial failed root. */
+function notifySceneBuild(
+  input: Pick<ExportInput, 'onBuild'>,
+  run: Awaited<ReturnType<typeof runScript>>,
+  result: Awaited<ReturnType<RecomputeEngine['run']>>,
+): void {
+  if (!input.onBuild) return;
+  const rootId = resolveRootId(run.returnValue, run.records.at(-1)?.id);
+  const root = result.diagnostics.some(d => d.severity === 'error')
+    ? undefined : rootId ? result.shapes.get(rootId) : undefined;
+  input.onBuild(root);
+}
+
 export async function runAndExport(input: ExportInput): Promise<ExportResult> {
   // Text derived from the tube report, not a solid: no occt recompute needed.
   if (input.format === 'bend-table') return exportBendTable(input);
@@ -383,6 +400,7 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
   const engine = new RecomputeEngine(createOcctLowerer(run.session));
   const r = await engine.run(run.records, { paramTable: run.paramTable });
 
+  notifySceneBuild(input, run, r);
   const featureCount = run.records.length;
   r.diagnostics = await tubeExportDiagnostics(format, run, r);
 
@@ -469,6 +487,7 @@ export interface PartStlExport {
 }
 
 export interface ExportPartsInput {
+  onBuild?: (root: ShapeBackend | undefined) => void;
   code: string;
   fileName: string;
   scriptDir?: string;
@@ -499,13 +518,14 @@ interface WorldFrameSceneResult {
  * (a Scene). Shared prelude for `runAndExportParts` and `listPartStats`.
  */
 export async function resolveWorldFrameScene(
-  input: { code: string; fileName: string; scriptDir?: string },
+  input: { code: string; fileName: string; scriptDir?: string; onBuild?: (root: ShapeBackend | undefined) => void },
   fabricationFormat?: ExportFormat,
 ): Promise<WorldFrameSceneResult> {
   const { code, fileName, scriptDir } = input;
   const run = await runScript({ code, fileName, scriptDir });
   const engine = new RecomputeEngine(createOcctLowerer(run.session));
   const r = await engine.run(run.records, { paramTable: run.paramTable });
+  notifySceneBuild(input, run, r);
   const featureCount = run.records.length;
   r.diagnostics = await tubeExportDiagnostics(fabricationFormat, run, r);
   const fatal = r.diagnostics.filter(d => d.severity === 'error');

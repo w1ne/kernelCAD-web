@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import type { SceneSummary } from '../../script-runtime/sceneSummary';
 import { shapeDraftEdit } from '../edits/shapeDraft';
 import type { ShapeDraftInput } from '../edits/shapeDraft';
 import { evaluateScriptTool } from './evaluateScript';
@@ -11,6 +12,7 @@ export interface ShapeDraftOutput {
   ok: boolean;
   new_code?: string;
   diagnostics?: CompilerDiagnostic[];
+  sceneSummary?: SceneSummary;
   error?: string;
 }
 
@@ -30,6 +32,7 @@ export async function shapeDraftTool(input: ShapeDraftInput): Promise<ShapeDraft
   return {
     ok: true,
     new_code: edit.new_code,
+    sceneSummary: evalResult.sceneSummary,
     diagnostics: evalResult.diagnostics,
   };
 }

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import type { SceneSummary } from '../../script-runtime/sceneSummary';
 // src/agent/mcp/tools/addPathNurbsSegment.ts
 //
 // MCP tool wrapper for `add_path_nurbs_segment`. Injects `.nurbsSegment([...])`
@@ -17,6 +18,7 @@ export interface AddPathNurbsSegmentOutput {
   ok: boolean;
   new_code?: string;
   diagnostics?: CompilerDiagnostic[];
+  sceneSummary?: SceneSummary;
   error?: string;
 }
 
@@ -29,6 +31,7 @@ export async function addPathNurbsSegmentTool(input: AddPathNurbsSegmentInput): 
   return {
     ok: evalResult.ok,
     new_code: edit.new_code,
+    sceneSummary: evalResult.sceneSummary,
     diagnostics: evalResult.diagnostics,
   };
 }

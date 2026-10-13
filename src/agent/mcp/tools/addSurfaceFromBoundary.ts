@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import type { SceneSummary } from '../../script-runtime/sceneSummary';
 // src/agent/mcp/tools/addSurfaceFromBoundary.ts
 //
 // MCP tool wrapper for `add_surface_from_boundary`. Inserts a
@@ -18,6 +19,7 @@ export interface AddSurfaceFromBoundaryOutput {
   ok: boolean;
   new_code?: string;
   diagnostics?: CompilerDiagnostic[];
+  sceneSummary?: SceneSummary;
   error?: string;
 }
 
@@ -32,6 +34,7 @@ export async function addSurfaceFromBoundaryTool(
   return {
     ok: evalResult.ok,
     new_code: edit.new_code,
+    sceneSummary: evalResult.sceneSummary,
     diagnostics: evalResult.diagnostics,
   };
 }
