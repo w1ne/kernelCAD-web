@@ -180,7 +180,7 @@ export async function evaluateScriptTool(
 
   return {
     ok,
-    sceneSummary: buildSucceeded ? summarizeScene(model?.rootShape ?? model?.tailShape) : unavailableSceneSummary(),
+    sceneSummary: buildSceneSummary(model, buildSucceeded),
     featureCount: r.featureCount,
     // Idempotent re-enrichment guard. evaluateAndBuildScript already
     // populates nextAction on every return path; this wrap is a no-op
@@ -198,6 +198,12 @@ export async function evaluateScriptTool(
 }
 
 type BuildOutcome = Awaited<ReturnType<typeof evaluateAndBuildScript>>;
+
+/** A policy-gate failure may still have usable geometry; a failed build does not. */
+function buildSceneSummary(model: BuildOutcome['model'], buildSucceeded: boolean): SceneSummary {
+  if (!buildSucceeded) return unavailableSceneSummary();
+  return summarizeScene(model?.rootShape ?? model?.tailShape);
+}
 
 async function evaluateDryRun(input: EvaluateScriptInput): Promise<EvaluateScriptOutput> {
   const { evaluation: r, returnValue } = await dryRunScript(input as EvaluateInput);

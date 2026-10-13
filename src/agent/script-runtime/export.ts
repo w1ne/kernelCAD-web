@@ -369,6 +369,19 @@ async function exportShapeOrInfill(
   return out.bytes.length > 0 ? { ...out, infillReport: infill.report } : out;
 }
 
+/** Notify an observer using the existing build, never a partial failed root. */
+function notifySceneBuild(
+  input: Pick<ExportInput, 'onBuild'>,
+  run: Awaited<ReturnType<typeof runScript>>,
+  result: Awaited<ReturnType<RecomputeEngine['run']>>,
+): void {
+  if (!input.onBuild) return;
+  const rootId = resolveRootId(run.returnValue, run.records.at(-1)?.id);
+  const root = result.diagnostics.some(d => d.severity === 'error')
+    ? undefined : rootId ? result.shapes.get(rootId) : undefined;
+  input.onBuild(root);
+}
+
 export async function runAndExport(input: ExportInput): Promise<ExportResult> {
   // Text derived from the tube report, not a solid: no occt recompute needed.
   if (input.format === 'bend-table') return exportBendTable(input);
@@ -387,8 +400,7 @@ export async function runAndExport(input: ExportInput): Promise<ExportResult> {
   const engine = new RecomputeEngine(createOcctLowerer(run.session));
   const r = await engine.run(run.records, { paramTable: run.paramTable });
 
-  const rootId = resolveRootId(run.returnValue, run.records.at(-1)?.id);
-  input.onBuild?.(r.diagnostics.some(d => d.severity === 'error') ? undefined : rootId ? r.shapes.get(rootId) : undefined);
+  notifySceneBuild(input, run, r);
   const featureCount = run.records.length;
   r.diagnostics = await tubeExportDiagnostics(format, run, r);
 
@@ -513,8 +525,7 @@ export async function resolveWorldFrameScene(
   const run = await runScript({ code, fileName, scriptDir });
   const engine = new RecomputeEngine(createOcctLowerer(run.session));
   const r = await engine.run(run.records, { paramTable: run.paramTable });
-  const rootId = resolveRootId(run.returnValue, run.records.at(-1)?.id);
-  input.onBuild?.(r.diagnostics.some(d => d.severity === 'error') ? undefined : rootId ? r.shapes.get(rootId) : undefined);
+  notifySceneBuild(input, run, r);
   const featureCount = run.records.length;
   r.diagnostics = await tubeExportDiagnostics(fabricationFormat, run, r);
   const fatal = r.diagnostics.filter(d => d.severity === 'error');
