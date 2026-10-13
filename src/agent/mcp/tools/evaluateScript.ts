@@ -125,15 +125,14 @@ export const MATES_REVIEW_HINT =
  * produce lowered shapes, so the active MCP session is left untouched —
  * session-dependent tools keep whatever full evaluation ran last.
  *
- * No side effects — does not write to disk.
+ * Full evaluations retain step snapshot artifacts in a temporary directory.
  */
 export async function evaluateScriptTool(
   input: EvaluateScriptInput,
 ): Promise<EvaluateScriptOutput> {
   if (input.dryRun) return evaluateDryRun(input);
 
-  const active = getActiveMcpSession();
-  const before = active?.stepEvidenceSupported === false ? undefined : captureStepState(active?.rootShape ?? active?.tailShape);
+  const before = capturePreviousStep();
   const { evaluation, model, dfmReport, tubeReport, portReport } = await evaluateAndBuildScript(input as EvaluateInput);
   // Authoring intent lint (usage triage 2026-10-03): info-only hints naming
   // the API for intent the source states but builds by hand. Agents skip
@@ -181,7 +180,7 @@ export async function evaluateScriptTool(
   const tubes = tubesOutput(tubeReport);
   const reviewHint = hasArticulatedMates(model) ? MATES_REVIEW_HINT : undefined;
 
-  const after = buildSucceeded && !Array.isArray(model?.returnValue) ? captureStepState(model?.rootShape ?? model?.tailShape) : undefined;
+  const after = captureEvaluatedStep(model, buildSucceeded);
   const step = await createStepEvidence(before, after, ok, r.featureHealth);
 
   return {
@@ -204,6 +203,18 @@ export async function evaluateScriptTool(
 }
 
 type BuildOutcome = Awaited<ReturnType<typeof evaluateAndBuildScript>>;
+
+function capturePreviousStep(): ReturnType<typeof captureStepState> {
+  const active = getActiveMcpSession();
+  if (!active || active.stepEvidenceSupported === false) return undefined;
+  return captureStepState(active.rootShape ?? active.tailShape);
+}
+
+function captureEvaluatedStep(model: BuildOutcome['model'], buildSucceeded: boolean): ReturnType<typeof captureStepState> {
+  if (!buildSucceeded || !model || Array.isArray(model.returnValue)) return undefined;
+  return captureStepState(model.rootShape ?? model.tailShape);
+}
+
 
 async function evaluateDryRun(input: EvaluateScriptInput): Promise<EvaluateScriptOutput> {
   const { evaluation: r, returnValue } = await dryRunScript(input as EvaluateInput);
