@@ -22,6 +22,7 @@
  */
 
 import { VERIFY_OUTPUT_SCHEMA } from './verificationOutputSchema';
+import { FABRICATION_OUTPUT_SCHEMAS } from './registry/fabricationTools.outputSchemas';
 
 /** Same shape as McpToolDefinition['inputSchema'] — a JSON Schema object node. */
 export type JSONSchemaObject = {
@@ -857,19 +858,5 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
     required: ['ok', 'toolchain', 'materials', 'material_names'],
     additionalProperties: true,
   },
-  fab_pack: {
-    type: 'object',
-    properties: {
-      ok: { type: 'boolean', description: 'True when every requested file was exported.' },
-      output_dir: { type: 'string' },
-      zip_path: { type: 'string', description: 'Zip holding every written file, manifest.json and README.txt.' },
-      files: { type: 'array', items: { type: 'object', additionalProperties: true }, description: '{ format, ok, path?, byte_count?, error? } per requested format.' },
-      quote_links: { type: 'array', items: { type: 'object', additionalProperties: true }, description: '{ service, processes, url, accepts, upload_file? }: public instant-quote pages; nothing is uploaded.' },
-      note: { type: 'string' },
-      diagnostics: { type: 'array', items: { type: 'object', additionalProperties: true } },
-      error: { type: 'string' },
-    },
-    required: ['ok', 'files', 'quote_links'],
-    additionalProperties: true,
-  },
+  ...FABRICATION_OUTPUT_SCHEMAS,
 };
