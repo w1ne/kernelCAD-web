@@ -40,6 +40,7 @@ describe('fab_pack', () => {
     expect(r.quote_links).toHaveLength(FAB_SERVICES.length);
     const jlc = r.quote_links.find(q => q.service.startsWith('JLC3DP'))!;
     expect(jlc.url).toBe('https://jlc3dp.com/3d-printing-quote');
+    expect(r.referral_disclosure).toBeUndefined();
     expect(jlc.upload_file).toBe('bracket.stl');
     expect(r.quote_links.find(q => q.service === 'SendCutSend')!.upload_file).toBe('bracket.step');
   }, 120000);

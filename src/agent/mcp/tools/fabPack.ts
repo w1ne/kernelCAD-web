@@ -21,6 +21,7 @@ import { validateOutputPath } from '../../script-runtime/safeOutputPath';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { bomToCsv } from '../../script-runtime/bom';
 import { evaluateAndBuildScript } from '../../cli/commands/evaluate';
+import { buildVendorLink, referralDisclosure } from '../../../shared/links/referral';
 
 export type FabPackFormat = 'step' | 'stl' | '3mf' | 'pdf-drawing' | 'bom-csv' | 'dxf';
 export type FabProcess = '3d-print' | 'cnc' | 'sheet-cut';
@@ -40,16 +41,29 @@ export interface FabService {
   accepts: FabPackFormat[];
 }
 
+interface FabServiceEntry extends Omit<FabService, 'url'> {
+  /** Quote page as host + path. Outbound URLs are only ever built through
+   *  buildVendorLink (referral.ts), the single vendor-URL emitter. */
+  host: string;
+  path: string;
+}
+
 /** Public quote pages, checked reachable 2026-10-13. Plain web pages only. */
-export const FAB_SERVICES: readonly FabService[] = [
-  { service: 'JLC3DP (JLCPCB 3D printing)', processes: ['3d-print'], url: 'https://jlc3dp.com/3d-printing-quote', accepts: ['stl', 'step', '3mf'] },
-  { service: 'JLCCNC (JLCPCB CNC machining)', processes: ['cnc'], url: 'https://jlccnc.com/cnc-machining-quote', accepts: ['step'] },
-  { service: 'PCBWay 3D printing', processes: ['3d-print'], url: 'https://www.pcbway.com/rapid-prototyping/3D-Printing/', accepts: ['stl', 'step'] },
-  { service: 'PCBWay CNC / sheet metal', processes: ['cnc', 'sheet-cut'], url: 'https://www.pcbway.com/rapid-prototyping/manufacture/', accepts: ['step', 'dxf', 'pdf-drawing'] },
-  { service: 'Xometry', processes: ['cnc', '3d-print', 'sheet-cut'], url: 'https://www.xometry.com/quoting/home/', accepts: ['step', 'stl', 'dxf', 'pdf-drawing'] },
-  { service: 'SendCutSend', processes: ['sheet-cut'], url: 'https://app.sendcutsend.com/', accepts: ['dxf', 'step'] },
-  { service: 'Craftcloud', processes: ['3d-print'], url: 'https://craftcloud3d.com/', accepts: ['stl', '3mf'] },
+const FAB_SERVICE_ENTRIES: readonly FabServiceEntry[] = [
+  { service: 'JLC3DP (JLCPCB 3D printing)', processes: ['3d-print'], host: 'jlc3dp.com', path: '/3d-printing-quote', accepts: ['stl', 'step', '3mf'] },
+  { service: 'JLCCNC (JLCPCB CNC machining)', processes: ['cnc'], host: 'jlccnc.com', path: '/cnc-machining-quote', accepts: ['step'] },
+  { service: 'PCBWay 3D printing', processes: ['3d-print'], host: 'www.pcbway.com', path: '/rapid-prototyping/3D-Printing/', accepts: ['stl', 'step'] },
+  { service: 'PCBWay CNC / sheet metal', processes: ['cnc', 'sheet-cut'], host: 'www.pcbway.com', path: '/rapid-prototyping/manufacture/', accepts: ['step', 'dxf', 'pdf-drawing'] },
+  { service: 'Xometry', processes: ['cnc', '3d-print', 'sheet-cut'], host: 'www.xometry.com', path: '/quoting/home/', accepts: ['step', 'stl', 'dxf', 'pdf-drawing'] },
+  { service: 'SendCutSend', processes: ['sheet-cut'], host: 'app.sendcutsend.com', path: '/', accepts: ['dxf', 'step'] },
+  { service: 'Craftcloud', processes: ['3d-print'], host: 'craftcloud3d.com', path: '/', accepts: ['stl', '3mf'] },
 ];
+
+/** The quote-service table with clean (untagged) https URLs. */
+export const FAB_SERVICES: readonly FabService[] = FAB_SERVICE_ENTRIES.map(({ host, path, ...rest }) => ({
+  ...rest,
+  url: new URL(path, `https://${host}`).toString(),
+}));
 
 export interface FabPackInput {
   file?: string;
@@ -75,6 +89,8 @@ export interface FabPackFile {
 export interface FabQuoteLink extends FabService {
   /** Which pack file to upload there (first accepted format that was written). */
   upload_file?: string;
+  /** True when the URL carries a kernelCAD referral tag. */
+  referral: boolean;
 }
 
 export interface FabPackOutput {
@@ -85,6 +101,8 @@ export interface FabPackOutput {
   quote_links: FabQuoteLink[];
   /** Plain note for the user: links are upload pages, nothing was sent. */
   note: string;
+  /** Present when any quote link carries a referral tag. */
+  referral_disclosure?: string;
   diagnostics: CompilerDiagnostic[];
   error?: string;
 }
@@ -105,7 +123,11 @@ export function quoteLinksFor(written: readonly FabPackFile[], processes?: reado
     .filter(s => processes === undefined || s.processes.some(p => processes.includes(p)))
     .map(s => {
       const fmt = s.accepts.find(a => byFormat.has(a));
-      return { ...s, processes: [...s.processes], accepts: [...s.accepts], ...(fmt !== undefined ? { upload_file: basename(byFormat.get(fmt)!) } : {}) };
+      const link = buildVendorLink(s.url, { surface: 'export' });
+      return {
+        ...s, url: link.url, referral: link.referral, processes: [...s.processes], accepts: [...s.accepts],
+        ...(fmt !== undefined ? { upload_file: basename(byFormat.get(fmt)!) } : {}),
+      };
     });
 }
 
@@ -210,6 +232,7 @@ export async function fabPackTool(input: FabPackInput): Promise<FabPackOutput> {
     files,
     quote_links,
     note: NOTE,
+    ...(referralDisclosure(quote_links) !== undefined ? { referral_disclosure: referralDisclosure(quote_links) } : {}),
     diagnostics,
     ...(files.some(f => !f.ok) ? { error: `Some files could not be exported: ${files.filter(f => !f.ok).map(f => f.format).join(', ')}.` } : {}),
   };
