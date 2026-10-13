@@ -8,6 +8,7 @@
 // All logic lives in the shared script-runtime `runAndExportParts` — this
 // layer only loads the source, validates destinations, and writes files.
 
+import { summarizeScene, unavailableSceneSummary, type SceneSummary } from '../../script-runtime/sceneSummary';
 import { writeFile, mkdir } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { initOcct } from '../../../kernel/backends/occt/occtBackend';
@@ -43,6 +44,7 @@ export interface WrittenPartFile {
 
 export interface ExportPartOutput {
   ok: boolean;
+  sceneSummary?: SceneSummary;
   written?: WrittenPartFile[];
   diagnostics?: CompilerDiagnostic[];
   error?: string;
@@ -123,8 +125,10 @@ export async function exportPartTool(input: ExportPartInput): Promise<ExportPart
   await initOcct();
 
   let result;
+  let sceneSummary = unavailableSceneSummary();
   try {
     result = await runAndExportParts({
+      onBuild: root => { sceneSummary = summarizeScene(root); },
       code: source.code,
       fileName: source.fileName,
       scriptDir: input.file !== undefined ? dirname(resolve(input.file)) : undefined,
@@ -132,26 +136,27 @@ export async function exportPartTool(input: ExportPartInput): Promise<ExportPart
     });
   } catch (e) {
     return {
-      ok: false,
+      ok: false, sceneSummary,
       error: `Export failed: ${e instanceof Error ? e.message : String(e)}`,
     };
   }
 
   const errorDiagnostics = result.diagnostics.filter(d => d.severity === 'error');
   if (errorDiagnostics.length > 0) {
-    return { ok: false, diagnostics: withNextActions(result.diagnostics) };
+    return { ok: false, sceneSummary, diagnostics: withNextActions(result.diagnostics) };
   }
 
   const written: WrittenPartFile[] = [];
   const diagnostics: CompilerDiagnostic[] = [...result.diagnostics];
   const writeError = await writeExportedParts(result.parts, input, allParts, written, diagnostics);
   if (writeError !== undefined) {
-    return { ok: false, written, error: writeError };
+    return { ok: false, sceneSummary, written, error: writeError };
   }
 
   const gateFailed = !input.no_verify && written.some(w => !w.watertight);
   return {
     ok: !gateFailed,
+    sceneSummary,
     written,
     diagnostics: withNextActions(diagnostics),
   };

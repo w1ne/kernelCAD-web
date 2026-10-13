@@ -1,0 +1,66 @@
+[
+  {
+    "tool": "evaluate_script",
+    "input": {
+      "code": "return box(40,30,10);"
+    },
+    "result": {
+      "ok": true,
+      "sceneSummary": {
+        "valid": true,
+        "volume": 12000,
+        "faceCount": 6,
+        "size": [
+          40,
+          30,
+          10
+        ]
+      },
+      "featureCount": 1,
+      "diagnostics": [],
+      "featureHealth": []
+    }
+  },
+  {
+    "tool": "evaluate_script",
+    "input": {
+      "code": "return box(40,30,10).subtract(cylinder(20,5).translate(20,15,0));"
+    },
+    "result": {
+      "ok": true,
+      "sceneSummary": {
+        "valid": true,
+        "volume": 11214.601836602551,
+        "faceCount": 7,
+        "size": [
+          40,
+          30,
+          10
+        ]
+      },
+      "featureCount": 3,
+      "diagnostics": [],
+      "featureHealth": []
+    }
+  },
+  {
+    "tool": "evaluate_script",
+    "input": {
+      "code": "return box(40,30,10);",
+      "dryRun": true
+    },
+    "result": {
+      "ok": true,
+      "dryRun": true,
+      "sceneSummary": {
+        "valid": null,
+        "volume": null,
+        "faceCount": null,
+        "size": null
+      },
+      "featureCount": 1,
+      "diagnostics": [],
+      "featureHealth": []
+    }
+  }
+]

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import type { SceneSummary } from '../../script-runtime/sceneSummary';
 // src/mcp/tools/addFeature.ts
 import { addFeature } from '../edits/addFeature';
 import { evaluateScriptTool } from './evaluateScript';
@@ -14,6 +15,7 @@ export interface AddFeatureOutput {
   ok: boolean;
   new_code?: string;
   diagnostics?: CompilerDiagnostic[];
+  sceneSummary?: SceneSummary;
   error?: string;
 }
 
@@ -26,6 +28,7 @@ export async function addFeatureTool(input: AddFeatureInput): Promise<AddFeature
   return {
     ok: evalResult.ok,
     new_code: edit.new_code,
+    sceneSummary: evalResult.sceneSummary,
     diagnostics: evalResult.diagnostics,
   };
 }

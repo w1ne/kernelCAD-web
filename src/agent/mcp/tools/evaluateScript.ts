@@ -14,6 +14,7 @@ import type { PortReportEntry } from '../../../modeling/runtime/tube/portReport'
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
 import { clearActiveMcpSession, setActiveMcpSession } from '../activeSession';
+import { summarizeScene, unavailableSceneSummary, type SceneSummary } from '../../script-runtime/sceneSummary';
 import { Scene } from '../../../modeling/validation/scene';
 import type { Assembly } from '../../../modeling/capture/assembly';
 import { probeAssemblies } from '../../../modeling/runtime/mechanismProbe';
@@ -42,6 +43,7 @@ export interface EvaluateScriptInput {
 }
 
 export interface EvaluateScriptOutput {
+  sceneSummary: SceneSummary;
   ok: boolean;
   featureCount: number;
   diagnostics: CompilerDiagnostic[];
@@ -178,6 +180,7 @@ export async function evaluateScriptTool(
 
   return {
     ok,
+    sceneSummary: buildSucceeded ? summarizeScene(model?.rootShape ?? model?.tailShape) : unavailableSceneSummary(),
     featureCount: r.featureCount,
     // Idempotent re-enrichment guard. evaluateAndBuildScript already
     // populates nextAction on every return path; this wrap is a no-op
@@ -202,6 +205,7 @@ async function evaluateDryRun(input: EvaluateScriptInput): Promise<EvaluateScrip
   return {
     ok: r.exitCode === 0,
     dryRun: true,
+    sceneSummary: unavailableSceneSummary(),
     featureCount: r.featureCount,
     diagnostics: withNextActions(r.diagnostics),
     featureHealth: r.featureHealth,

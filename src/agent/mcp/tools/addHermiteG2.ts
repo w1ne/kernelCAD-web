@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import type { SceneSummary } from '../../script-runtime/sceneSummary';
 // src/agent/mcp/tools/addHermiteG2.ts
 //
 // MCP tool wrapper for `add_hermite_g2`. Inserts a `hermiteG2(...)` binding
@@ -17,6 +18,7 @@ export interface AddHermiteG2Output {
   ok: boolean;
   new_code?: string;
   diagnostics?: CompilerDiagnostic[];
+  sceneSummary?: SceneSummary;
   error?: string;
 }
 
@@ -29,6 +31,7 @@ export async function addHermiteG2Tool(input: AddHermiteG2Input): Promise<AddHer
   return {
     ok: evalResult.ok,
     new_code: edit.new_code,
+    sceneSummary: evalResult.sceneSummary,
     diagnostics: evalResult.diagnostics,
   };
 }

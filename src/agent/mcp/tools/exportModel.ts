@@ -12,6 +12,7 @@
 // the written paths are reported in `mesh_files`. A multi-part DXF export
 // writes parts/<part>.dxf the same way, reported in `part_files`.
 
+import { summarizeScene, unavailableSceneSummary, type SceneSummary } from '../../script-runtime/sceneSummary';
 import { writeFile, mkdir } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { initOcct } from '../../../kernel/backends/occt/occtBackend';
@@ -44,6 +45,7 @@ export interface ExportModelInput {
 
 export interface ExportModelOutput {
   ok: boolean;
+  sceneSummary?: SceneSummary;
   output_path?: string;
   byte_count?: number;
   /** Total features in the script, not the count contributing to the exported shape. */
@@ -184,8 +186,10 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
   effectiveOptions = withInfillOutDir(format, effectiveOptions, output_path);
 
   let result;
+  let sceneSummary = unavailableSceneSummary();
   try {
     result = await runAndExport({
+      onBuild: root => { sceneSummary = summarizeScene(root); },
       code: source.code,
       fileName: source.fileName,
       format,
@@ -195,7 +199,7 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
     });
   } catch (e) {
     return {
-      ok: false,
+      ok: false, sceneSummary,
       error: `Export failed: ${e instanceof Error ? e.message : String(e)}`,
     };
   }
@@ -207,7 +211,7 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
   const errorDiagnostics = result.diagnostics.filter(d => d.severity === 'error');
   if (errorDiagnostics.length > 0 && result.bytes.length === 0) {
     return {
-      ok: false,
+      ok: false, sceneSummary,
       diagnostics: withNextActions(result.diagnostics),
       feature_count: result.featureCount,
       format,
@@ -216,14 +220,14 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
 
   const pathCheck = validateOutputPath(output_path);
   if (!pathCheck.ok) {
-    return { ok: false, error: pathCheck.error };
+    return { ok: false, sceneSummary, error: pathCheck.error };
   }
   const finalPath = pathCheck.resolved!;
 
   const meshFiles: string[] = [];
   const writeError = await writeExportPayload(finalPath, result, meshFiles);
   if (writeError !== undefined) {
-    return { ok: false, error: writeError };
+    return { ok: false, sceneSummary, error: writeError };
   }
 
   const diagnostics = [...result.diagnostics];
@@ -231,6 +235,7 @@ export async function exportModelTool(input: ExportModelInput): Promise<ExportMo
 
   return {
     ok: errorDiagnostics.length === 0,
+    sceneSummary,
     output_path: finalPath,
     byte_count: writtenByteCount(result),
     feature_count: result.featureCount,
