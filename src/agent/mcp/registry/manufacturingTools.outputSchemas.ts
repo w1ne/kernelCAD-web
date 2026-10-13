@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-// Output schema for the dfm_review family, spread into TOOL_OUTPUT_SCHEMAS.
+// Output schema for the dfm_review family, merged with the core schemas in toolRegistry.ts.
 import type { JSONSchemaObject } from '../toolOutputSchemas';
 
 export const MANUFACTURING_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {

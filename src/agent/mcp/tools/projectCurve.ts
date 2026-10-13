@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import type { SceneSummary } from '../../script-runtime/sceneSummary';
 // src/agent/mcp/tools/projectCurve.ts
 //
 // W3 MCP tool: AST-edit a `<shape>.projectCurve({...})` chained call into a
@@ -7,7 +8,7 @@
 // engraved or raised logo on a curved face.
 
 import { addProjectCurve, type AddProjectCurveInput } from '../edits/projectCurve';
-import { evaluateScriptTool } from './evaluateScript';
+import { evaluateScriptTool, type EvaluateScriptOutput } from './evaluateScript';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 
 export type ProjectCurveInput = AddProjectCurveInput;
@@ -15,7 +16,9 @@ export type ProjectCurveInput = AddProjectCurveInput;
 export interface ProjectCurveOutput {
   ok: boolean;
   new_code?: string;
+  step?: EvaluateScriptOutput['step'];
   diagnostics?: CompilerDiagnostic[];
+  sceneSummary?: SceneSummary;
   error?: string;
 }
 
@@ -28,6 +31,8 @@ export async function projectCurveTool(input: ProjectCurveInput): Promise<Projec
   return {
     ok: evalResult.ok,
     new_code: edit.new_code,
+    step: evalResult.step,
+    sceneSummary: evalResult.sceneSummary,
     diagnostics: evalResult.diagnostics,
   };
 }

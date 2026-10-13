@@ -1,7 +1,7 @@
 [
   {
     "name": "evaluate_script",
-    "description": "Use this when you need to run a script and check it compiles. Run a kernelCAD .kcad.ts script and report pass/fail + feature count + diagnostics. When the scene is assembly-built (assembly().part(...) → .model()/.solvedModel()), also returns a parts summary { count, names } AND runs the mechanism-truth gate by default: the `mechanism` field reports real/broken/unverified and a broken mechanism (disconnected components / mechanism.orphan-part, self-collision, fastened drift, dof-mismatch) makes ok:false with the failures in diagnostics — a mechanism (any mate, joint, transmission or .solvedModel()) needs every part linked by connectors + mates/joints (axis+revolute for shafts/hinges/gears; frame+fastened for rigid; or arm.revolute/.prismatic/.ball/.fixed). A plain multi-part assembly with no mates (base + lid, print layout) is independent bodies and passes. Pass { skipMechanismCheck: true } to opt out (e.g. a deliberately free part next to a mechanism). Every union() is checked too (no opt-out): union.disconnected (the union is several separate solids — a floating operand) and union.member-overlap (two operands that each carry their own .finish()/.material(), the same one, share > 1 mm³ — cut members to fit, e.g. a cross tube between rails is span minus two rail widths) make ok:false. Pass either { file: \"<path>\" } or { code: \"<inline source>\" }. Set { dryRun: true } for fast validation while iterating: transpile + capture + capture-light checks without building solids, DFM gates, or meshing — milliseconds instead of seconds (100x+ on boolean/fillet-heavy scripts). A dry run catches script throws, capture-time API misuse, and assembly validity-gate failures, but NOT lowering failures or dfmSpec diagnostics; it leaves the active session untouched, so finish with a full (non-dry) evaluate_script before using session-dependent tools. To show a measurement in the 3D viewer (e.g. hole spacing), declare it in the script with shape.dimension({ kind: \"linear\", from, to, label }); a full evaluate lists them as dimensions: [{ text, kind, source }], and a shared /p link with ?dims=1 forces them on.",
+    "description": "Use this when you need to run a script and check it compiles. Full evaluations return step evidence: build validity, volume and before/after local PNG paths in one shared iso frame. Snapshots require PW_CDP_URL for an existing browser; unavailable captures report an explicit error. Run a kernelCAD .kcad.ts script and report pass/fail + feature count + diagnostics + sceneSummary (BREP validity, volume in mm³, face count, bounding size in mm). When the scene is assembly-built (assembly().part(...) → .model()/.solvedModel()), also returns a parts summary { count, names } AND runs the mechanism-truth gate by default: the `mechanism` field reports real/broken/unverified and a broken mechanism (disconnected components / mechanism.orphan-part, self-collision, fastened drift, dof-mismatch) makes ok:false with the failures in diagnostics — a mechanism (any mate, joint, transmission or .solvedModel()) needs every part linked by connectors + mates/joints (axis+revolute for shafts/hinges/gears; frame+fastened for rigid; or arm.revolute/.prismatic/.ball/.fixed). A plain multi-part assembly with no mates (base + lid, print layout) is independent bodies and passes. Pass { skipMechanismCheck: true } to opt out (e.g. a deliberately free part next to a mechanism). Every union() is checked too (no opt-out): union.disconnected (the union is several separate solids — a floating operand) and union.member-overlap (two operands that each carry their own .finish()/.material(), the same one, share > 1 mm³ — cut members to fit, e.g. a cross tube between rails is span minus two rail widths) make ok:false. Pass either { file: \"<path>\" } or { code: \"<inline source>\" }. Set { dryRun: true } for fast validation while iterating: transpile + capture + capture-light checks without building solids, DFM gates, or meshing — milliseconds instead of seconds (100x+ on boolean/fillet-heavy scripts). A dry run catches script throws, capture-time API misuse, and assembly validity-gate failures, but NOT lowering failures or dfmSpec diagnostics; it leaves the active session untouched, so finish with a full (non-dry) evaluate_script before using session-dependent tools. To show a measurement in the 3D viewer (e.g. hole spacing), declare it in the script with shape.dimension({ kind: \"linear\", from, to, label }); a full evaluate lists them as dimensions: [{ text, kind, source }], and a shared /p link with ?dims=1 forces them on.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -31,9 +31,59 @@
     "outputSchema": {
       "type": "object",
       "properties": {
+        "sceneSummary": {
+          "type": "object",
+          "properties": {
+            "valid": {
+              "type": [
+                "boolean",
+                "null"
+              ],
+              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
+            },
+            "volume": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "Volume in mm³; assembly parts summed, including overlaps."
+            },
+            "faceCount": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "BREP faces, summed per assembly part; not mesh triangles."
+            },
+            "size": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3,
+              "description": "Conservative world AABB size [x,y,z] in mm."
+            }
+          },
+          "required": [
+            "valid",
+            "volume",
+            "faceCount",
+            "size"
+          ],
+          "additionalProperties": false
+        },
         "ok": {
           "type": "boolean",
           "description": "Whether the script compiled and lowered cleanly."
+        },
+        "step": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
         },
         "featureCount": {
           "type": "number",
@@ -290,7 +340,8 @@
       "required": [
         "ok",
         "featureCount",
-        "diagnostics"
+        "diagnostics",
+        "sceneSummary"
       ],
       "additionalProperties": true
     }
@@ -1202,6 +1253,56 @@
           "type": "boolean",
           "description": "Whether the edit applied and re-evaluated cleanly."
         },
+        "step": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
+        },
+        "sceneSummary": {
+          "type": "object",
+          "properties": {
+            "valid": {
+              "type": [
+                "boolean",
+                "null"
+              ],
+              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
+            },
+            "volume": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "Volume in mm³; assembly parts summed, including overlaps."
+            },
+            "faceCount": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "BREP faces, summed per assembly part; not mesh triangles."
+            },
+            "size": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3,
+              "description": "Conservative world AABB size [x,y,z] in mm."
+            }
+          },
+          "required": [
+            "valid",
+            "volume",
+            "faceCount",
+            "size"
+          ],
+          "additionalProperties": false
+        },
         "new_code": {
           "type": "string",
           "description": "Modified .kcad.ts source (present on success). Caller persists it."
@@ -1260,6 +1361,56 @@
         "ok": {
           "type": "boolean",
           "description": "Whether the edit applied and re-evaluated cleanly."
+        },
+        "step": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
+        },
+        "sceneSummary": {
+          "type": "object",
+          "properties": {
+            "valid": {
+              "type": [
+                "boolean",
+                "null"
+              ],
+              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
+            },
+            "volume": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "Volume in mm³; assembly parts summed, including overlaps."
+            },
+            "faceCount": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "BREP faces, summed per assembly part; not mesh triangles."
+            },
+            "size": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3,
+              "description": "Conservative world AABB size [x,y,z] in mm."
+            }
+          },
+          "required": [
+            "valid",
+            "volume",
+            "faceCount",
+            "size"
+          ],
+          "additionalProperties": false
         },
         "new_code": {
           "type": "string",
@@ -1508,6 +1659,56 @@
           "type": "boolean",
           "description": "Whether the edit applied and re-evaluated cleanly."
         },
+        "step": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
+        },
+        "sceneSummary": {
+          "type": "object",
+          "properties": {
+            "valid": {
+              "type": [
+                "boolean",
+                "null"
+              ],
+              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
+            },
+            "volume": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "Volume in mm³; assembly parts summed, including overlaps."
+            },
+            "faceCount": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "BREP faces, summed per assembly part; not mesh triangles."
+            },
+            "size": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3,
+              "description": "Conservative world AABB size [x,y,z] in mm."
+            }
+          },
+          "required": [
+            "valid",
+            "volume",
+            "faceCount",
+            "size"
+          ],
+          "additionalProperties": false
+        },
         "new_code": {
           "type": "string",
           "description": "Modified .kcad.ts source (present on success). Caller persists it."
@@ -1711,6 +1912,56 @@
         "ok": {
           "type": "boolean",
           "description": "Whether the edit applied and re-evaluated cleanly."
+        },
+        "step": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
+        },
+        "sceneSummary": {
+          "type": "object",
+          "properties": {
+            "valid": {
+              "type": [
+                "boolean",
+                "null"
+              ],
+              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
+            },
+            "volume": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "Volume in mm³; assembly parts summed, including overlaps."
+            },
+            "faceCount": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "BREP faces, summed per assembly part; not mesh triangles."
+            },
+            "size": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3,
+              "description": "Conservative world AABB size [x,y,z] in mm."
+            }
+          },
+          "required": [
+            "valid",
+            "volume",
+            "faceCount",
+            "size"
+          ],
+          "additionalProperties": false
         },
         "new_code": {
           "type": "string",
@@ -1963,6 +2214,56 @@
         "ok": {
           "type": "boolean",
           "description": "Whether the edit applied and re-evaluated cleanly."
+        },
+        "step": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
+        },
+        "sceneSummary": {
+          "type": "object",
+          "properties": {
+            "valid": {
+              "type": [
+                "boolean",
+                "null"
+              ],
+              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
+            },
+            "volume": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "Volume in mm³; assembly parts summed, including overlaps."
+            },
+            "faceCount": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "BREP faces, summed per assembly part; not mesh triangles."
+            },
+            "size": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3,
+              "description": "Conservative world AABB size [x,y,z] in mm."
+            }
+          },
+          "required": [
+            "valid",
+            "volume",
+            "faceCount",
+            "size"
+          ],
+          "additionalProperties": false
         },
         "new_code": {
           "type": "string",
@@ -2238,6 +2539,56 @@
           "type": "boolean",
           "description": "Whether the edit applied and re-evaluated cleanly."
         },
+        "step": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
+        },
+        "sceneSummary": {
+          "type": "object",
+          "properties": {
+            "valid": {
+              "type": [
+                "boolean",
+                "null"
+              ],
+              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
+            },
+            "volume": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "Volume in mm³; assembly parts summed, including overlaps."
+            },
+            "faceCount": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "BREP faces, summed per assembly part; not mesh triangles."
+            },
+            "size": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3,
+              "description": "Conservative world AABB size [x,y,z] in mm."
+            }
+          },
+          "required": [
+            "valid",
+            "volume",
+            "faceCount",
+            "size"
+          ],
+          "additionalProperties": false
+        },
         "new_code": {
           "type": "string",
           "description": "Modified .kcad.ts source (present on success). Caller persists it."
@@ -2376,6 +2727,56 @@
           "type": "boolean",
           "description": "Whether the edit applied and re-evaluated cleanly."
         },
+        "step": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
+        },
+        "sceneSummary": {
+          "type": "object",
+          "properties": {
+            "valid": {
+              "type": [
+                "boolean",
+                "null"
+              ],
+              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
+            },
+            "volume": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "Volume in mm³; assembly parts summed, including overlaps."
+            },
+            "faceCount": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "BREP faces, summed per assembly part; not mesh triangles."
+            },
+            "size": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3,
+              "description": "Conservative world AABB size [x,y,z] in mm."
+            }
+          },
+          "required": [
+            "valid",
+            "volume",
+            "faceCount",
+            "size"
+          ],
+          "additionalProperties": false
+        },
         "new_code": {
           "type": "string",
           "description": "Modified .kcad.ts source (present on success). Caller persists it."
@@ -2483,6 +2884,56 @@
         "ok": {
           "type": "boolean",
           "description": "Whether the edit applied and re-evaluated cleanly."
+        },
+        "step": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
+        },
+        "sceneSummary": {
+          "type": "object",
+          "properties": {
+            "valid": {
+              "type": [
+                "boolean",
+                "null"
+              ],
+              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
+            },
+            "volume": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "Volume in mm³; assembly parts summed, including overlaps."
+            },
+            "faceCount": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "BREP faces, summed per assembly part; not mesh triangles."
+            },
+            "size": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3,
+              "description": "Conservative world AABB size [x,y,z] in mm."
+            }
+          },
+          "required": [
+            "valid",
+            "volume",
+            "faceCount",
+            "size"
+          ],
+          "additionalProperties": false
         },
         "new_code": {
           "type": "string",
@@ -2714,6 +3165,56 @@
           "type": "boolean",
           "description": "Whether the edit applied and re-evaluated cleanly."
         },
+        "step": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
+        },
+        "sceneSummary": {
+          "type": "object",
+          "properties": {
+            "valid": {
+              "type": [
+                "boolean",
+                "null"
+              ],
+              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
+            },
+            "volume": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "Volume in mm³; assembly parts summed, including overlaps."
+            },
+            "faceCount": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "BREP faces, summed per assembly part; not mesh triangles."
+            },
+            "size": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3,
+              "description": "Conservative world AABB size [x,y,z] in mm."
+            }
+          },
+          "required": [
+            "valid",
+            "volume",
+            "faceCount",
+            "size"
+          ],
+          "additionalProperties": false
+        },
         "new_code": {
           "type": "string",
           "description": "Modified .kcad.ts source (present on success). Caller persists it."
@@ -2772,6 +3273,56 @@
         "ok": {
           "type": "boolean",
           "description": "Whether the edit applied and re-evaluated cleanly."
+        },
+        "step": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
+        },
+        "sceneSummary": {
+          "type": "object",
+          "properties": {
+            "valid": {
+              "type": [
+                "boolean",
+                "null"
+              ],
+              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
+            },
+            "volume": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "Volume in mm³; assembly parts summed, including overlaps."
+            },
+            "faceCount": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "BREP faces, summed per assembly part; not mesh triangles."
+            },
+            "size": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3,
+              "description": "Conservative world AABB size [x,y,z] in mm."
+            }
+          },
+          "required": [
+            "valid",
+            "volume",
+            "faceCount",
+            "size"
+          ],
+          "additionalProperties": false
         },
         "new_code": {
           "type": "string",
@@ -3153,6 +3704,51 @@
     "outputSchema": {
       "type": "object",
       "properties": {
+        "sceneSummary": {
+          "type": "object",
+          "properties": {
+            "valid": {
+              "type": [
+                "boolean",
+                "null"
+              ],
+              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
+            },
+            "volume": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "Volume in mm³; assembly parts summed, including overlaps."
+            },
+            "faceCount": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "BREP faces, summed per assembly part; not mesh triangles."
+            },
+            "size": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3,
+              "description": "Conservative world AABB size [x,y,z] in mm."
+            }
+          },
+          "required": [
+            "valid",
+            "volume",
+            "faceCount",
+            "size"
+          ],
+          "additionalProperties": false
+        },
         "ok": {
           "type": "boolean"
         },
@@ -3868,6 +4464,56 @@
           "type": "boolean",
           "description": "Whether the edit applied and re-evaluated cleanly."
         },
+        "step": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
+        },
+        "sceneSummary": {
+          "type": "object",
+          "properties": {
+            "valid": {
+              "type": [
+                "boolean",
+                "null"
+              ],
+              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
+            },
+            "volume": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "Volume in mm³; assembly parts summed, including overlaps."
+            },
+            "faceCount": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "BREP faces, summed per assembly part; not mesh triangles."
+            },
+            "size": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3,
+              "description": "Conservative world AABB size [x,y,z] in mm."
+            }
+          },
+          "required": [
+            "valid",
+            "volume",
+            "faceCount",
+            "size"
+          ],
+          "additionalProperties": false
+        },
         "new_code": {
           "type": "string",
           "description": "Modified .kcad.ts source (present on success). Caller persists it."
@@ -4031,6 +4677,56 @@
         "ok": {
           "type": "boolean",
           "description": "Whether the edit applied and re-evaluated cleanly."
+        },
+        "step": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
+        },
+        "sceneSummary": {
+          "type": "object",
+          "properties": {
+            "valid": {
+              "type": [
+                "boolean",
+                "null"
+              ],
+              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
+            },
+            "volume": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "Volume in mm³; assembly parts summed, including overlaps."
+            },
+            "faceCount": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "BREP faces, summed per assembly part; not mesh triangles."
+            },
+            "size": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3,
+              "description": "Conservative world AABB size [x,y,z] in mm."
+            }
+          },
+          "required": [
+            "valid",
+            "volume",
+            "faceCount",
+            "size"
+          ],
+          "additionalProperties": false
         },
         "new_code": {
           "type": "string",
@@ -4270,6 +4966,56 @@
           "type": "boolean",
           "description": "Whether the edit applied and re-evaluated cleanly."
         },
+        "step": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
+        },
+        "sceneSummary": {
+          "type": "object",
+          "properties": {
+            "valid": {
+              "type": [
+                "boolean",
+                "null"
+              ],
+              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
+            },
+            "volume": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "Volume in mm³; assembly parts summed, including overlaps."
+            },
+            "faceCount": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "BREP faces, summed per assembly part; not mesh triangles."
+            },
+            "size": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3,
+              "description": "Conservative world AABB size [x,y,z] in mm."
+            }
+          },
+          "required": [
+            "valid",
+            "volume",
+            "faceCount",
+            "size"
+          ],
+          "additionalProperties": false
+        },
         "new_code": {
           "type": "string",
           "description": "Modified .kcad.ts source (present on success). Caller persists it."
@@ -4351,6 +5097,56 @@
           "type": "boolean",
           "description": "Whether the edit applied and re-evaluated cleanly."
         },
+        "step": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
+        },
+        "sceneSummary": {
+          "type": "object",
+          "properties": {
+            "valid": {
+              "type": [
+                "boolean",
+                "null"
+              ],
+              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
+            },
+            "volume": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "Volume in mm³; assembly parts summed, including overlaps."
+            },
+            "faceCount": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "BREP faces, summed per assembly part; not mesh triangles."
+            },
+            "size": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3,
+              "description": "Conservative world AABB size [x,y,z] in mm."
+            }
+          },
+          "required": [
+            "valid",
+            "volume",
+            "faceCount",
+            "size"
+          ],
+          "additionalProperties": false
+        },
         "new_code": {
           "type": "string",
           "description": "Modified .kcad.ts source (present on success). Caller persists it."
@@ -4425,6 +5221,56 @@
         "ok": {
           "type": "boolean",
           "description": "Whether the edit applied and re-evaluated cleanly."
+        },
+        "step": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs."
+        },
+        "sceneSummary": {
+          "type": "object",
+          "properties": {
+            "valid": {
+              "type": [
+                "boolean",
+                "null"
+              ],
+              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
+            },
+            "volume": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "Volume in mm³; assembly parts summed, including overlaps."
+            },
+            "faceCount": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "BREP faces, summed per assembly part; not mesh triangles."
+            },
+            "size": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3,
+              "description": "Conservative world AABB size [x,y,z] in mm."
+            }
+          },
+          "required": [
+            "valid",
+            "volume",
+            "faceCount",
+            "size"
+          ],
+          "additionalProperties": false
         },
         "new_code": {
           "type": "string",
@@ -5658,6 +6504,51 @@
     "outputSchema": {
       "type": "object",
       "properties": {
+        "sceneSummary": {
+          "type": "object",
+          "properties": {
+            "valid": {
+              "type": [
+                "boolean",
+                "null"
+              ],
+              "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
+            },
+            "volume": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "description": "Volume in mm³; assembly parts summed, including overlaps."
+            },
+            "faceCount": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "description": "BREP faces, summed per assembly part; not mesh triangles."
+            },
+            "size": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3,
+              "description": "Conservative world AABB size [x,y,z] in mm."
+            }
+          },
+          "required": [
+            "valid",
+            "volume",
+            "faceCount",
+            "size"
+          ],
+          "additionalProperties": false
+        },
         "ok": {
           "type": "boolean",
           "description": "Whether the preview rendered."
@@ -6196,11 +7087,105 @@
         },
         "before": {
           "type": "object",
+          "properties": {
+            "sceneSummary": {
+              "type": "object",
+              "properties": {
+                "valid": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ],
+                  "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
+                },
+                "volume": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "description": "Volume in mm³; assembly parts summed, including overlaps."
+                },
+                "faceCount": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "description": "BREP faces, summed per assembly part; not mesh triangles."
+                },
+                "size": {
+                  "type": [
+                    "array",
+                    "null"
+                  ],
+                  "items": {
+                    "type": "number"
+                  },
+                  "minItems": 3,
+                  "maxItems": 3,
+                  "description": "Conservative world AABB size [x,y,z] in mm."
+                }
+              },
+              "required": [
+                "valid",
+                "volume",
+                "faceCount",
+                "size"
+              ],
+              "additionalProperties": false
+            }
+          },
           "additionalProperties": true,
           "description": "Pre-repair { ok, featureHealth, diagnostics }."
         },
         "after": {
           "type": "object",
+          "properties": {
+            "sceneSummary": {
+              "type": "object",
+              "properties": {
+                "valid": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ],
+                  "description": "BREP validity, independent of DFM/mechanism/tool success; null if unchecked."
+                },
+                "volume": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "description": "Volume in mm³; assembly parts summed, including overlaps."
+                },
+                "faceCount": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "description": "BREP faces, summed per assembly part; not mesh triangles."
+                },
+                "size": {
+                  "type": [
+                    "array",
+                    "null"
+                  ],
+                  "items": {
+                    "type": "number"
+                  },
+                  "minItems": 3,
+                  "maxItems": 3,
+                  "description": "Conservative world AABB size [x,y,z] in mm."
+                }
+              },
+              "required": [
+                "valid",
+                "volume",
+                "faceCount",
+                "size"
+              ],
+              "additionalProperties": false
+            }
+          },
           "additionalProperties": true,
           "description": "Post-repair { ok, featureHealth, diagnostics }."
         },
@@ -6918,6 +7903,170 @@
       "required": [
         "ok",
         "executionId"
+      ],
+      "additionalProperties": true
+    }
+  },
+  {
+    "name": "get_selection",
+    "description": "Use this when you need to read the human/agent selection in a local Studio session. Returns one clicked face or edge (or null), with mesh-local shapeIndex/kind/id and creating featureId. Use for “this edge”; indices expire on rebuild. featureId is provenance, not the owner of a stable topology ref. Inspect the current shape before authoring a fillet. Requires a running local Studio opened on the same script; hosted sessions are not supported.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "studio_url": {
+          "type": "string",
+          "description": "Local Studio HTTP origin, e.g. http://localhost:5173."
+        },
+        "session": {
+          "type": "string",
+          "description": "Studio sessionToken from GET /__kernelcad/session?script=<path>. Use the same script as the viewer."
+        }
+      },
+      "required": [
+        "studio_url",
+        "session"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": true
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "selection": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "additionalProperties": true
+            }
+          ]
+        },
+        "revision": {
+          "type": "integer"
+        },
+        "modelGeneration": {
+          "type": "integer"
+        },
+        "error": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": true
+    }
+  },
+  {
+    "name": "set_selection",
+    "description": "Use this when you need to replace the shared local Studio face/edge selection, or clear it with selection:null. The viewer highlights the pick on its next sync (300 ms). Does not edit geometry. Pass model_generation from get_selection. Use indices from the current viewer mesh/get_selection; they expire on rebuild. Requires a local Studio session.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "studio_url": {
+          "type": "string",
+          "description": "Local Studio HTTP origin, e.g. http://localhost:5173."
+        },
+        "session": {
+          "type": "string",
+          "description": "Studio sessionToken from GET /__kernelcad/session?script=<path>. Use the same script as the viewer."
+        },
+        "model_generation": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "modelGeneration from get_selection; rejects picks from a prior mesh."
+        },
+        "selection": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "shapeIndex": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "face",
+                    "edge"
+                  ]
+                },
+                "id": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "featureId": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "shapeIndex",
+                "kind",
+                "id",
+                "featureId"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        }
+      },
+      "required": [
+        "studio_url",
+        "session",
+        "model_generation",
+        "selection"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "openWorldHint": true
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "selection": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "additionalProperties": true
+            }
+          ]
+        },
+        "revision": {
+          "type": "integer"
+        },
+        "modelGeneration": {
+          "type": "integer"
+        },
+        "error": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
       ],
       "additionalProperties": true
     }

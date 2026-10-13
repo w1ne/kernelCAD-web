@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import { selectionToolEntries } from './registry/selectionTools';
 import { TOOL_ANNOTATIONS } from './toolAnnotations';
 import { TOOL_OUTPUT_SCHEMAS } from './toolOutputSchemas';
 import { catalogToolEntries } from './registry/catalogTools';
@@ -86,6 +87,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...meshReconstructToolEntries,
   // Appended at the tail: cookbook one-shot execute for ChatGPT industry demos.
   ...cookbookExecutionToolEntries,
+  ...selectionToolEntries,
   // Appended at the tail: manufacturability review (FDM + CNC).
   ...manufacturingToolEntries,
 ];

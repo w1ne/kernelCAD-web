@@ -5,6 +5,8 @@ import { isKernelError } from '../../../shared/intent/kernelError';
 import type { SoftWarning } from '../../../shared/runtime/softWarning';
 import { getActiveMcpSession, setActiveMcpSession } from '../activeSession';
 
+import { captureStepState, createStepEvidence, type StepEvidence } from './stepEvidence';
+
 export interface ParamsUpdateInput {
   edits: Array<{ name: string; value: number | boolean }>;
 }
@@ -19,6 +21,7 @@ export interface SerializedShapePreview {
 export type ParamsUpdateOutput =
   | {
       ok: true;
+      step: StepEvidence;
       shape: SerializedShapePreview;
       relowered: string[];
       skipped: string[];
@@ -26,6 +29,7 @@ export type ParamsUpdateOutput =
     }
   | {
       ok: false;
+      step?: StepEvidence;
       error: string;
       errorCode?: string;
       errorHint?: string;
@@ -42,6 +46,7 @@ export async function paramsUpdateTool(input: ParamsUpdateInput): Promise<Params
     };
   }
 
+  const before = active.stepEvidenceSupported === false ? undefined : captureStepState(active.rootShape ?? active.tailShape);
   try {
     const result = await active.session.params.update(input.edits);
     const tailId = active.session.getRecords().at(-1)?.id ?? active.tailId ?? '<unknown>';
@@ -50,6 +55,7 @@ export async function paramsUpdateTool(input: ParamsUpdateInput): Promise<Params
     // repopulated.
     const rootId = active.rootId;
     setActiveMcpSession({
+      stepEvidenceSupported: active.stepEvidenceSupported,
       session: active.session,
       tailId,
       tailShape: result.shape,
@@ -58,6 +64,7 @@ export async function paramsUpdateTool(input: ParamsUpdateInput): Promise<Params
     });
     return {
       ok: true,
+      step: await createStepEvidence(before, active.stepEvidenceSupported === false ? undefined : captureStepState(getActiveMcpSession()?.rootShape ?? result.shape), true, []),
       shape: serializeShapePreview(result.shape, tailId),
       relowered: result.relowered,
       skipped: result.skipped,
@@ -66,6 +73,7 @@ export async function paramsUpdateTool(input: ParamsUpdateInput): Promise<Params
   } catch (e) {
     return {
       ok: false,
+      step: await createStepEvidence(before, undefined, false, []),
       error: e instanceof Error ? e.message : String(e),
       errorCode: isKernelError(e) ? e.code : undefined,
       errorHint: isKernelError(e) ? e.hint : undefined,
