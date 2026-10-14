@@ -1,0 +1,21 @@
+{
+  "decodedDurationSeconds" : 20,
+  "decodedNominalFrameRate" : 15.000000953674316,
+  "decodedSamplesSeconds" : [
+    1,
+    6,
+    11,
+    16
+  ],
+  "decodedSize" : [
+    1280,
+    720
+  ],
+  "durationSeconds" : 20,
+  "encoder" : "macOS AVFoundation system H.264",
+  "fps" : 15,
+  "frames" : 300,
+  "height" : 720,
+  "provenance" : "replay of actual local verify requests\/results from results.json; no deployed or hardware claims",
+  "width" : 1280
+}

@@ -1,0 +1,43 @@
+{
+  "checkedAt": "2026-10-14T12:16:16.127Z",
+  "checks": [
+    {
+      "command": "npx tsc --noEmit -p tsconfig.app.json",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "npx tsc --noEmit -p tsconfig.cli.json",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "npx eslint src/modeling/runtime/geometryQuality.ts src/modeling/runtime/geometryQualityTypes.ts src/modeling/runtime/geometrySymmetry.ts src/modeling/runtime/dfm/meshBvh.ts src/modeling/runtime/dfm/meshClosestPoint.ts src/agent/mcp/tools/checkGeometryQuality.ts src/agent/mcp/tools/checkGeometryQuality.test.ts src/agent/mcp/tools/verify.ts src/agent/mcp/tools/verify.test.ts src/agent/mcp/registry/inspectionVerificationTools.ts src/agent/mcp/verificationOutputSchema.ts tests/unit/mcp/toolRegistrySchema.test.ts tests/unit/dfm/geometrySymmetry.test.ts tests/unit/dfm/meshBvhClosestPoint.test.ts docs/demos/geometry-quality/run.ts",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "vitest": {
+    "command": "npx vitest run tests/unit/dfm src/agent/mcp/tools/checkGeometryQuality.test.ts src/agent/mcp/tools/verify.test.ts src/agent/mcp/tools/checkFastenerInstallation.test.ts src/agent/mcp/tools/getMassProperties.test.ts src/agent/mcp/toolRegistry.publicContract.test.ts src/agent/mcp/toolNameConsistency.test.ts src/agent/mcp/server.test.ts tests/unit/mcp/toolRegistrySchema.test.ts tests/unit/mcp/server.test.ts tests/unit/mcp/runMcpScript.test.ts tests/unit/skill/skillToolCountDrift.test.ts tests/integration/mcp/dfmCheck.test.ts tests/integration/mcp/dfmPreflight.test.ts tests/integration/mcp/dfmPreflightDxfInput.test.ts",
+    "exitCode": 0,
+    "filesPassed": 22,
+    "testsPassed": 243,
+    "log": "tests.txt"
+  },
+  "demo": {
+    "command": "npx tsx docs/demos/geometry-quality/run.ts && swift docs/demos/geometry-quality/render.swift",
+    "requestsVerified": 3,
+    "videoEvidence": "video-verification.json",
+    "inspectedDecodedFrames": [
+      1,
+      6,
+      11,
+      16
+    ]
+  },
+  "review": "independent reviewer verified explicit BREP degeneracy fix; no blocking findings",
+  "deployment": "not deployed; branch push only; live guide verification follows integration deployment"
+}

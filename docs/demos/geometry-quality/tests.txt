@@ -1,0 +1,41 @@
+
+ RUN  v4.0.18 /Users/andrii/worktrees/kcw-chk-2
+
+ ✓ tests/unit/dfm/clearance.test.ts (10 tests) 481ms
+stdout | tests/unit/dfm/voidTopology.test.ts > analyzeVoids — OCCT export meshes > counts 3 mouths on a T-shaped tunnel (timing reference)
+analyzeVoids on cube-with-tunnel: 104 ms (voxelMm 0.4)
+
+ ✓ src/agent/mcp/tools/getMassProperties.test.ts (17 tests) 387ms
+ ✓ tests/unit/dfm/runDfmChecks.test.ts (20 tests) 1221ms
+ ✓ tests/integration/mcp/dfmPreflight.test.ts (8 tests) 875ms
+stdout | tests/unit/dfm/minWall.test.ts > checkMinWall — synthetic meshes > subsamples deterministically above 150k triangles (timing reference)
+checkMinWall on 302496 tris: 551 ms, 100832 rays
+
+ ✓ tests/unit/dfm/minWall.test.ts (13 tests) 1551ms
+     ✓ subsamples deterministically above 150k triangles (timing reference)  996ms
+ ✓ tests/unit/dfm/voidTopology.test.ts (14 tests) 1878ms
+ ✓ tests/unit/dfm/geometrySymmetry.test.ts (8 tests) 15ms
+ ✓ tests/unit/dfm/meshBvh.test.ts (10 tests) 246ms
+ ✓ tests/unit/mcp/runMcpScript.test.ts (5 tests) 177ms
+ ✓ tests/unit/dfm/meshBvhClosestPoint.test.ts (7 tests) 8ms
+ ✓ src/agent/mcp/tools/verify.test.ts (17 tests) 7ms
+ ✓ src/agent/mcp/tools/checkFastenerInstallation.test.ts (4 tests) 197ms
+ ✓ src/agent/mcp/toolRegistry.publicContract.test.ts (30 tests) 292ms
+ ✓ tests/integration/mcp/dfmPreflightDxfInput.test.ts (3 tests) 6ms
+ ✓ src/agent/mcp/tools/checkGeometryQuality.test.ts (21 tests) 2679ms
+     ✓ reports sphere pole parameterization edges separately from physical short edges  1974ms
+ ✓ tests/integration/mcp/dfmCheck.test.ts (7 tests) 451ms
+ ✓ src/agent/mcp/server.test.ts (5 tests) 8ms
+ ✓ src/agent/mcp/toolNameConsistency.test.ts (9 tests) 779ms
+     ✓ no code dispatches a retired tool name via callMcpTool / getToolDefinition  609ms
+ ✓ tests/unit/mcp/server.test.ts (1 test) 3ms
+ ✓ tests/unit/skill/skillToolCountDrift.test.ts (1 test) 4ms
+ ✓ tests/unit/mcp/toolRegistrySchema.test.ts (8 tests) 2ms
+ ✓ tests/unit/dfm/fdmPrintability.test.ts (25 tests) 3938ms
+     ✓ treats a small bottom-edge fillet as first-layer, a large one as unsupported  1845ms
+     ✓ does not recommend a rotation that only shuffles tessellation noise (sphere)  898ms
+
+ Test Files  22 passed (22)
+      Tests  243 passed (243)
+   Start at  14:14:03
+   Duration  5.58s (transform 10.18s, setup 561ms, import 27.13s, tests 15.21s, environment 2ms)
