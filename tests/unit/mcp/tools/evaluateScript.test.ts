@@ -34,6 +34,14 @@ describe('evaluateScriptTool', () => {
     expect(result.diagnostics[0].code).toBe('cli.invalid-args');
   });
 
+  it('rejects an unavailable kernel with a neutral scene summary', async () => {
+    const result = await evaluateScriptTool({ code: `return box(10, 10, 10);`, kernel: 'unsupported' as never });
+    expect(result.ok).toBe(false);
+    expect(result.diagnostics[0].code).toBe('recompute.kernel.unavailable');
+    expect(result.sceneSummary).toEqual({ valid: null, volume: null, faceCount: null, size: null });
+    expect(getActiveMcpSession()).toBeUndefined();
+  });
+
   it('handles fillet from v0.2-alpha (round-trip kernel surface)', async () => {
     const result = await evaluateScriptTool({
       code: `return box(20, 20, 20).fillet(2);`,
