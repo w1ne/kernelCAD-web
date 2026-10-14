@@ -3,6 +3,7 @@
 import { TriangleBvh, type DfmMesh } from './dfm/meshBvh';
 import { bboxGap } from './dfm/clearance';
 import { trianglesCollideAlong, type Triangle } from './assemblyPathSweep';
+import { classifySolidPoint } from './assemblyPathContainment';
 import type { Vec3 } from '../../shared/intent/types';
 export interface AssemblyPathPart {
     name: string;
@@ -64,8 +65,9 @@ function candidates(options: AssemblyPathOptions): Vec3[] {
     }
     return out;
 }
-function prepare(part: AssemblyPathPart): Prepared {
+function prepare(part: AssemblyPathPart, consumeWork: (amount?: number) => void): Prepared {
     const { vertices: v, triangles: t } = part.mesh;
+    consumeWork(v.length + t.length);
     if (!v.length || v.length % 3 || !v.every(Number.isFinite) || !t.length || t.length % 3 || !t.every(i => Number.isInteger(i) && i >= 0 && i < v.length / 3))
         throw new Error(`Invalid mesh for '${part.name}'.`);
     const vertex = (i: number): Vec3 => [v[3 * i], v[3 * i + 1], v[3 * i + 2]];
@@ -100,8 +102,9 @@ function prepare(part: AssemblyPathPart): Prepared {
     }
     if ([...edgeCounts.values()].some(n => n !== 2) || [...edgeDirections.values()].some(n => n !== 0))
         throw new Error(`Mesh for '${part.name}' must be closed and manifold.`);
+    consumeWork(triangles.length * 4);
     assertSolidComponents(part.name, triangles, neighbors);
-    const bvh = new TriangleBvh(part.mesh);
+    const bvh = new TriangleBvh(part.mesh, consumeWork);
     if (bvh.triangleCount !== triangles.length)
         throw new Error(`Degenerate mesh for '${part.name}'.`);
     const bbox: Bounds = { min: [Infinity, Infinity, Infinity], max: [-Infinity, -Infinity, -Infinity] };
@@ -145,48 +148,54 @@ function travel(box: Bounds, assembly: Bounds, dir: Vec3): number {
 function swept(box: Bounds, dir: Vec3, distance: number): Bounds {
     return { min: box.min.map((x, i) => x + Math.min(0, dir[i] * distance)) as Vec3, max: box.max.map((x, i) => x + Math.max(0, dir[i] * distance)) as Vec3 };
 }
-function strictlyInside(point: Vec3, bvh: TriangleBvh): boolean {
-    if (!bvh.pointInside(point))
+function strictlyInside(point: Vec3, part: Prepared, consumeWork: () => void): boolean {
+    consumeWork();
+    if (point.some((x, i) => x < part.bbox.min[i] || x > part.bbox.max[i]))
         return false;
-    // BVH parity intentionally has no boundary classification. A vertex on
-    // a face/edge is contact, not pre-existing solid overlap. Probe all axes
-    // so a face parallel to one ray cannot hide the zero-distance hit.
-    for (const axis of CARDINAL) {
-        const hit = bvh.raycast(point, axis, { tMin: -1e-8 });
-        if (hit && Math.abs(hit.t) < 1e-8)
-            return false;
-    }
-    return true;
+    const classification = classifySolidPoint(point, part.triangles, consumeWork);
+    if (classification === 'unknown')
+        throw new Error(`Assembly path containment for '${part.name}' is numerically ambiguous; no clear result is available.`);
+    return classification === 'inside';
 }
-function contained(a: Prepared, b: Prepared): boolean {
-    // Test both operands to catch either solid completely inside the other.
-    return a.triangles.some(t => strictlyInside(t[0], b.bvh)) || b.triangles.some(t => strictlyInside(t[0], a.bvh));
+function contained(a: Prepared, b: Prepared, consumeWork: () => void): boolean {
+    // Classify each vertex once, rather than repeating shared triangle corners.
+    const inOther = (part: Prepared, other: Prepared): boolean => {
+        for (let i = 0; i < part.mesh.vertices.length; i += 3) {
+            const v = part.mesh.vertices;
+            if (strictlyInside([v[i], v[i + 1], v[i + 2]], other, consumeWork))
+                return true;
+        }
+        return false;
+    };
+    return inOther(a, b) || inOther(b, a);
 }
 /** Pure checker for already world-space, closed meshes. No input mutation. */
 export function checkAssemblyPathMeshes(parts: AssemblyPathPart[], options: AssemblyPathOptions = {}): AssemblyPathReport {
     const dirs = candidates(options);
     if (!parts.length || parts.length > 128 || parts.some(p => !p.name) || new Set(parts.map(p => p.name)).size !== parts.length)
         throw new Error('Assembly requires 1–128 uniquely named parts.');
-    const prepared = parts.map(prepare);
-    let probes = 0;
+    let work = 0;
+    const consumeWork = (amount = 1): void => {
+        work += amount;
+        if (work > 2000000)
+            throw new Error('Assembly path total work budget exceeded; simplify meshes or split the assembly.');
+    };
+    const prepared = parts.map(part => prepare(part, consumeWork));
     const overlaps = new Map<string, boolean>();
     const blocked = (a: Prepared, b: Prepared, dir: Vec3, distance: number): boolean => {
+        consumeWork();
         if (bboxGap(swept(a.bbox, dir, distance), b.bbox) > 0)
             return false;
         const key = [a.name, b.name].sort().join('\t');
         if (!overlaps.has(key))
-            overlaps.set(key, bboxGap(a.bbox, b.bbox) === 0 && contained(a, b));
+            overlaps.set(key, bboxGap(a.bbox, b.bbox) === 0 && contained(a, b, consumeWork));
         if (overlaps.get(key))
             return true;
         for (let i = 0; i < a.triangles.length; i++) {
             const sweptBounds = swept(a.triangleBounds[i], dir, distance);
-            for (let j = 0; j < b.triangles.length; j++) {
-                // Reuse the interference/DFM AABB lower bound before SAT.
-                // Curved meshes have many triangles whose sweep cannot meet.
-                if (bboxGap(sweptBounds, b.triangleBounds[j]) > 0)
-                    continue;
-                if (++probes > 2000000)
-                    throw new Error('Assembly path triangle-pair budget exceeded; simplify meshes or split the assembly.');
+            consumeWork();
+            for (const j of b.bvh.overlappingTriangles(sweptBounds, consumeWork)) {
+                consumeWork();
                 if (trianglesCollideAlong(a.triangles[i], b.triangles[j], dir, distance))
                     return true;
             }
@@ -209,7 +218,14 @@ export function checkAssemblyPathMeshes(parts: AssemblyPathPart[], options: Asse
         let remaining = [...prepared];
         result.removalOrder = [];
         while (remaining.length) {
-            const free = remaining.map(p => report(p, remaining)).find(p => p.removable);
+            let free: AssemblyPathPartReport | undefined;
+            for (const part of remaining) {
+                const candidate = report(part, remaining);
+                if (candidate.removable) {
+                    free = candidate;
+                    break;
+                }
+            }
             if (!free)
                 break;
             result.removalOrder.push({ part: free.part, direction: free.validDirections[0] });
