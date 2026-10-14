@@ -484,6 +484,14 @@ Contracts worth knowing:
 
 ### Shape methods (chainable)
 
+Transforms mutate the shared `Shape` handle, including geometry already passed
+to `assembly.part`. `const other = shape` does not make a copy: translating either
+name moves the same source for every part that uses it. For repeated parts, keep
+the prototype unmodified and use separate `assembly.part(name, prototype, { at })`
+placements with connectors and mates, or call a geometry factory for each part.
+Check world-frame spacing after reuse changes. The authoring `Shape` API has no
+`.clone()` method; backend clone methods are not script methods.
+
 ```typescript
 // Transforms (mutate-then-return-this; chain freely):
 .translate(x: Editable<number>, y: Editable<number>, z: Editable<number>): Shape

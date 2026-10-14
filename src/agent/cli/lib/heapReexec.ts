@@ -155,7 +155,7 @@ export function maybeReexecWithLargerHeap(
 
   const child = spawnSync(
     process.execPath,
-    [`--max-old-space-size=${decision.targetMb}`, scriptPath, ...argv.slice(2)],
+    [`--max-old-space-size=${decision.targetMb}`, ...process.execArgv, scriptPath, ...argv.slice(2)],
     {
       stdio: 'inherit',
       env: { ...env, [HEAP_REEXEC_MARKER_ENV]: '1' },
