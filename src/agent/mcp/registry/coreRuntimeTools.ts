@@ -48,6 +48,13 @@ const evaluateScriptToolEntry: ToolRegistryEntry = {
             'Fast validation only: skip solid build, DFM gates, and meshing. ' +
             'Does not set or clear the active session.',
         },
+        kernel: {
+          type: 'string',
+          enum: ['occt', 'smlib'],
+          description:
+            "Solid-modeling kernel. Default 'occt' (OpenCascade), the only kernel available today; " +
+            "'smlib' is reserved and currently returns ok:false with recompute.kernel.unavailable.",
+        },
         skipMechanismCheck: {
           type: 'boolean',
           description:

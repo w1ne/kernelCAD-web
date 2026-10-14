@@ -16,11 +16,14 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { search, type Snippet } from '../../cookbook/index';
 import { evaluateScriptTool, type EvaluateScriptOutput } from './evaluateScript';
+import type { KernelId } from '../../../shared/types/backendTarget';
 import { getCookbookSnippets } from './lookupCookbook';
 
 export type ExecuteCookbookStage = 'resolve' | 'evaluate' | 'open_in_studio';
 
 export interface ExecuteCookbookInput {
+  /** Solid-modeling kernel forwarded to evaluate_script (default 'occt'). */
+  kernel?: KernelId;
   /** Cookbook snippet id (e.g. gt2-timing-belt-drive). */
   id?: string;
   /** When id is omitted: BM25 pick top hit (same ranking as lookup_cookbook). */
@@ -238,6 +241,7 @@ export async function executeCookbookTool(
   const executionId = newExecutionId();
   const wantStudio = input.openInStudio === true;
   const dryRun = input.dryRun === true;
+  const kernelArg = input.kernel !== undefined ? { kernel: input.kernel } : {};
 
   const resolved = resolveSnippet(input);
   if (!resolved.ok) {
@@ -255,8 +259,8 @@ export async function executeCookbookTool(
   try {
     evaluate = await evaluateScriptTool(
       snippet.example
-        ? { file: resolve(snippet.example), dryRun: dryRun || undefined }
-        : { code, dryRun: dryRun || undefined },
+        ? { file: resolve(snippet.example), dryRun: dryRun || undefined, ...kernelArg }
+        : { code, dryRun: dryRun || undefined, ...kernelArg },
     );
   } catch (err) {
     return fail(executionId, 'evaluate', err instanceof Error ? err.message : String(err), {
