@@ -141,67 +141,79 @@ export class SmlibLowerer implements FeatureLowerer {
     if (r.kind === 'cylinder') return own(own(sm.Cylinder(p('r'),p('h'))).translate([0,0,p('h')/2]));
     if (r.kind === 'sphere') return own(sm.Sphere(p('r')));
     if (r.kind === 'importedStep') return read(reference);
-    if (r.kind === 'extrude') {
-      const kind = r.params.profileKind.expression.replace(/'/g, '');
-      if (kind === 'polygon') return own(sm.extrude(sm.Polygon(...this.polygon(r)),p('depth')));
-      if (kind === 'rect') return own(sm.extrude(sm.Rectangle(p('w'),p('h')),p('height')));
-      if (kind === 'circle') return own(sm.extrude(sm.Circle(p('r')),p('height')));
-      if (kind === 'sketch') {
-        const ref = r.inputs.sketch;
-        const sketch = inputs.records?.find(s => ref?.kind === 'feature' && s.id === ref.id);
-        return own(sm.extrude(this.sketch(sm, sketch?.metadata?.commands as SketchCommand[]),p('depth')));
-      }
-      throw new GuardError('UNSUPPORTED_PROFILE', `Profile ${kind} uses OCCT`);
-    }
+    if (r.kind === 'extrude') return this.buildExtrude(sm,r,inputs,own);
     const base = inputs.byKey.base;
     if (!base) throw new GuardError('MISSING_INPUT', 'Missing base solid');
-    if (r.kind === 'boolean') {
-      let acc = await read(base);
-      let occtAcc = base;
-      const op = r.params.op.expression.replace(/'/g, '');
-      const cutters = Object.entries(inputs.byKey).filter(([k]) => k.startsWith('cutter_')).sort(([a],[b]) => a.localeCompare(b));
-      for (const [,tool] of cutters) {
-        const nativeTool = await read(tool);
-        if (op === 'difference') {
-          // Independent OCCT solid intersection certifies material overlap.
-          // AABBs and SMLib's own intersection never certify this guard.
-          const intersection = occtAcc.intersect(tool);
-          let overlap: number;
-          try { overlap = intersection.volume(); } finally { intersection.dispose?.(); }
-          const next = own(acc.cut(nativeTool));
-          cutNoOp(nativeMeasures(acc).volume,nativeMeasures(next).volume,overlap);
-          acc = next;
-          const nextOcct = occtAcc.subtract(tool);
-          occtOwned.push(nextOcct);
-          occtAcc = nextOcct;
-        } else if (op === 'union') acc = own(acc.fuse(nativeTool));
-        else if (op === 'intersection') acc = own(acc.intersect(nativeTool));
-        else throw new GuardError('UNSUPPORTED_BOOLEAN', op);
-      }
-      return acc;
-    }
-    if (r.kind === 'fillet') {
-      if (r.metadata?.variable || (r.metadata?.continuity && r.metadata.continuity !== 'G1')) throw new GuardError('UNSUPPORTED_FILLET', 'Variable/G2 fillets use OCCT');
-      if (!(base instanceof OcctBackend)) throw new GuardError('UNSUPPORTED_FILLET', 'Missing OCCT selection source');
-      const selected = pickEdges(r,base,inputs.records);
-      if ('error' in selected) throw new GuardError('EDGE_SELECTION', selected.error.message);
-      const part = await read(base);
-      const edges = part.edges();
-      // Require a unique geometric correspondence, never select by unstable
-      // edge index after STEP reconstruction. Ambiguous matches fall back.
-      const native: Edge[] = selected.map(edge => {
-        const [lo,hi] = edge.boundingBox.bounds;
-        const matches = edges.filter(e => {
-          const b=e.bbox();
-          return [b.min.x,b.min.y,b.min.z,b.max.x,b.max.y,b.max.z].every((v,i) => Math.abs(v-[...lo,...hi][i]) < 1e-5);
-        });
-        if (matches.length !== 1) throw new GuardError('EDGE_SELECTION', 'No unique STEP edge correspondence');
-        return matches[0];
-      });
-      if (!native.length) throw new GuardError('EDGE_SELECTION', 'Empty fillet selection');
-      return own(part.fillet(native,p('radius')));
-    }
+    if (r.kind === 'boolean') return this.buildBoolean(r,inputs,base,read,own,occtOwned);
+    if (r.kind === 'fillet') return this.buildFillet(r,inputs,base,read,own);
     throw new GuardError('UNSUPPORTED_FEATURE', r.kind);
+  }
+
+  private buildExtrude(sm: Smlib, r: FeatureRecord, inputs: ResolvedInputs,
+    own: (part: Part | Shell) => Part): Part {
+    const p = (name: string) => r.params[name].evaluated;
+    const kind = r.params.profileKind.expression.replace(/'/g, '');
+    if (kind === 'polygon') return own(sm.extrude(sm.Polygon(...this.polygon(r)),p('depth')));
+    if (kind === 'rect') return own(sm.extrude(sm.Rectangle(p('w'),p('h')),p('height')));
+    if (kind === 'circle') return own(sm.extrude(sm.Circle(p('r')),p('height')));
+    if (kind === 'sketch') {
+      const ref = r.inputs.sketch;
+      const sketch = inputs.records?.find(s => ref?.kind === 'feature' && s.id === ref.id);
+      return own(sm.extrude(this.sketch(sm, sketch?.metadata?.commands as SketchCommand[]),p('depth')));
+    }
+    throw new GuardError('UNSUPPORTED_PROFILE', `Profile ${kind} uses OCCT`);
+  }
+
+  private async buildBoolean(r: FeatureRecord, inputs: ResolvedInputs, base: ShapeBackend,
+    read: (shape: ShapeBackend) => Promise<Part>, own: (part: Part | Shell) => Part,
+    occtOwned: ShapeBackend[]): Promise<Part> {
+    let acc = await read(base);
+    let occtAcc = base;
+    const op = r.params.op.expression.replace(/'/g, '');
+    const cutters = Object.entries(inputs.byKey).filter(([k]) => k.startsWith('cutter_')).sort(([a],[b]) => a.localeCompare(b));
+    for (const [,tool] of cutters) {
+      const nativeTool = await read(tool);
+      if (op === 'difference') {
+        // Independent OCCT solid intersection certifies material overlap.
+        // AABBs and SMLib's own intersection never certify this guard.
+        const intersection = occtAcc.intersect(tool);
+        let overlap: number;
+        try { overlap = intersection.volume(); } finally { intersection.dispose?.(); }
+        const next = own(acc.cut(nativeTool));
+        cutNoOp(nativeMeasures(acc).volume,nativeMeasures(next).volume,overlap);
+        acc = next;
+        const nextOcct = occtAcc.subtract(tool);
+        occtOwned.push(nextOcct);
+        occtAcc = nextOcct;
+      } else if (op === 'union') acc = own(acc.fuse(nativeTool));
+      else if (op === 'intersection') acc = own(acc.intersect(nativeTool));
+      else throw new GuardError('UNSUPPORTED_BOOLEAN', op);
+    }
+    return acc;
+  }
+
+  private async buildFillet(r: FeatureRecord, inputs: ResolvedInputs, base: ShapeBackend,
+    read: (shape: ShapeBackend) => Promise<Part>, own: (part: Part | Shell) => Part): Promise<Part> {
+    const p = (name: string) => r.params[name].evaluated;
+    if (r.metadata?.variable || (r.metadata?.continuity && r.metadata.continuity !== 'G1')) throw new GuardError('UNSUPPORTED_FILLET', 'Variable/G2 fillets use OCCT');
+    if (!(base instanceof OcctBackend)) throw new GuardError('UNSUPPORTED_FILLET', 'Missing OCCT selection source');
+    const selected = pickEdges(r,base,inputs.records);
+    if ('error' in selected) throw new GuardError('EDGE_SELECTION', selected.error.message);
+    const part = await read(base);
+    const edges = part.edges();
+    // Require a unique geometric correspondence, never select by unstable
+    // edge index after STEP reconstruction. Ambiguous matches fall back.
+    const native: Edge[] = selected.map(edge => {
+      const [lo,hi] = edge.boundingBox.bounds;
+      const matches = edges.filter(e => {
+        const b=e.bbox();
+        return [b.min.x,b.min.y,b.min.z,b.max.x,b.max.y,b.max.z].every((v,i) => Math.abs(v-[...lo,...hi][i]) < 1e-5);
+      });
+      if (matches.length !== 1) throw new GuardError('EDGE_SELECTION', 'No unique STEP edge correspondence');
+      return matches[0];
+    });
+    if (!native.length) throw new GuardError('EDGE_SELECTION', 'Empty fillet selection');
+    return own(part.fillet(native,p('radius')));
   }
 
   private sketch(sm: Smlib, commands: SketchCommand[]): ReturnType<Smlib['makeFace']> {
