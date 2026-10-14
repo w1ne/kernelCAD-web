@@ -11,6 +11,7 @@ import { checkLoadCapacityTool } from './checkLoadCapacity';
 import { checkStaticHoldTool } from './checkStaticHold';
 import { checkBodyLikenessTool } from './checkBodyLikeness';
 import { checkFastenerInstallationTool } from './checkFastenerInstallation';
+import { checkHoleFastenerCoverageTool } from './checkHoleFastenerCoverage';
 
 /** The verification kind. Each value maps 1:1 to a dedicated verifier. */
 export type VerifyCheck =
@@ -24,7 +25,8 @@ export type VerifyCheck =
   | 'load-capacity'
   | 'static-hold'
   | 'body-likeness'
-  | 'fastener-installation';
+  | 'fastener-installation'
+  | 'hole-fastener-coverage';
 
 export interface VerifyInput {
   check: VerifyCheck;
@@ -72,6 +74,8 @@ export function verifyTool(input: VerifyInput): Promise<unknown> {
       return checkLoadCapacityTool(rest as Parameters<typeof checkLoadCapacityTool>[0]);
     case 'static-hold':
       return checkStaticHoldTool(rest as unknown as Parameters<typeof checkStaticHoldTool>[0]);
+    case 'hole-fastener-coverage':
+      return checkHoleFastenerCoverageTool(rest as unknown as Parameters<typeof checkHoleFastenerCoverageTool>[0]);
     case 'fastener-installation':
       return checkFastenerInstallationTool(rest as unknown as Parameters<typeof checkFastenerInstallationTool>[0]);
     case 'body-likeness':
@@ -82,7 +86,7 @@ export function verifyTool(input: VerifyInput): Promise<unknown> {
       return Promise.reject(
         new Error(
           `Unknown verify check: ${String(check)}. Valid: assembly, urdf, dfm, ` +
-            `dfm-preflight, swept-collision, reachable, mounting-holes, load-capacity, static-hold, body-likeness, fastener-installation.`,
+            `dfm-preflight, swept-collision, reachable, mounting-holes, load-capacity, static-hold, body-likeness, fastener-installation, hole-fastener-coverage.`,
         ),
       );
   }

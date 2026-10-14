@@ -603,7 +603,7 @@
   },
   {
     "name": "verify",
-    "description": "Use this when you need to check a design against a rule set. One verifier, selected by `check`:\n- 'assembly' — mate-aware assembly validator on the active session (run evaluate_script first).\n- 'urdf' — structural validity of a .urdf file ({ urdf_path }).\n- 'dfm' — print-readiness gates declared by dfmSpec() ({ file | code }).\n- 'dfm-preflight' — sheet-metal flat pattern vs a job-shop's ordering rules ({ vendor, material, thicknessIn|thicknessMm, ... }). Returns the vendor's catalog source pages as `sources`; when `disclosure` is present, show it with those links.\n- 'swept-collision' — sweep declared joint range(s) and report colliding poses.\n- 'reachable' — inverse-kinematics reachability for an end-effector ({ tip_link, target_position, ... }).\n- 'fastener-installation' — measured explicit catalog-screw installation stations on lowered assembly BREP ({ file | code, fasteners:[{ part, against, engagementPart?, minEngagementMm?, maxProtrusionMm? }], toleranceMm?, angleToleranceDeg? }). Reports annular bearing gap, bore axis/diameter/overlap and receiver geometric engagement/protrusion. Unknown or zero coverage cannot pass. Simplified threads do not certify torque, preload or strength.\n- 'mounting-holes' — fastened mates expose matching hole diameters on both sides.\n- 'load-capacity' — will it hold? Closed-form Euler-Bernoulli beam check ({ loads, materials, ... }), or mode:'fea' to solve the script's feaStudy (quadratic-tet FEA, CalculiX) — both return { ok, safetyFactor, elements[{ partName, stressPa, yieldPa, safetyFactor }], failures[], diagnostics }; fea adds the threshold, the stress regions as @kc[...] faces with their location, and fea { peakStressPa, maxDisplacementMm, meshTrusted, peakAtSupportPa, refinement }; it refines the mesh automatically until the stress is trusted (refine: false for one solve).\n- 'static-hold' — gravitational holding torque/force at a sampled pose grid vs each actuated joint's declared actuator capacity ({ joint?, pose?, gravity?, min_torque_margin_pct?, range_samples? }).\n- 'body-likeness' — publish gate for organic/car bodies: cheap AABB↔wheel checks plus required agent still verdicts (side-body-over-wheels, side-cabin-aft, rear-haunch, ortho-proportions-vs-reference). Pass { body_bbox | code/file+body_feature_id, wheels?, cabin_bbox?, still_verdicts?, require_stills? }. Full CV silhouette matching is NOT implemented — agents must inspect ortho PNGs/Studio and supply still_verdicts before claiming success.\nAll params except `check` are check-specific and forwarded verbatim; each check fails closed on its own missing required params.",
+    "description": "Use this when you need to check a design against a rule set. One verifier, selected by `check`:\n- 'assembly' — mate-aware assembly validator on the active session (run evaluate_script first).\n- 'urdf' — structural validity of a .urdf file ({ urdf_path }).\n- 'dfm' — print-readiness gates declared by dfmSpec() ({ file | code }).\n- 'dfm-preflight' — sheet-metal flat pattern vs a job-shop's ordering rules ({ vendor, material, thicknessIn|thicknessMm, ... }). Returns the vendor's catalog source pages as `sources`; when `disclosure` is present, show it with those links.\n- 'swept-collision' — sweep declared joint range(s) and report colliding poses.\n- 'reachable' — inverse-kinematics reachability for an end-effector ({ tip_link, target_position, ... }).\n- 'fastener-installation' — measured explicit catalog-screw installation stations on lowered assembly BREP ({ file | code, fasteners:[{ part, against, engagementPart?, minEngagementMm?, maxProtrusionMm? }], toleranceMm?, angleToleranceDeg? }). Reports annular bearing gap, bore axis/diameter/overlap and receiver geometric engagement/protrusion. Unknown or zero coverage cannot pass. Simplified threads do not certify torque, preload or strength.\n- 'mounting-holes' — fastened mates expose matching hole diameters on both sides.\n- 'load-capacity' — will it hold? Closed-form Euler-Bernoulli beam check ({ loads, materials, ... }), or mode:'fea' to solve the script's feaStudy (quadratic-tet FEA, CalculiX) — both return { ok, safetyFactor, elements[{ partName, stressPa, yieldPa, safetyFactor }], failures[], diagnostics }; fea adds the threshold, the stress regions as @kc[...] faces with their location, and fea { peakStressPa, maxDisplacementMm, meshTrusted, peakAtSupportPa, refinement }; it refines the mesh automatically until the stress is trusted (refine: false for one solve).\n- 'static-hold' — gravitational holding torque/force at a sampled pose grid vs each actuated joint's declared actuator capacity ({ joint?, pose?, gravity?, min_torque_margin_pct?, range_samples? }).\n- 'body-likeness' — publish gate for organic/car bodies: cheap AABB↔wheel checks plus required agent still verdicts (side-body-over-wheels, side-cabin-aft, rear-haunch, ortho-proportions-vs-reference). Pass { body_bbox | code/file+body_feature_id, wheels?, cabin_bbox?, still_verdicts?, require_stills? }. Full CV silhouette matching is NOT implemented — agents must inspect ortho PNGs/Studio and supply still_verdicts before claiming success.\n- 'hole-fastener-coverage' — inventory every detected cylindrical hole in the returned model or named assembly; match placed catalog screws/inserts, accept holeReasons { 'part/hole-N': 'written reason' }, and flag unexplained holes or catalog size mismatches. holeFits explicitly declares 'tap' pilots (otherwise catalog clearance); local modeled coverage, not hardware acceptance.\nAll params except `check` are check-specific and forwarded verbatim; each check fails closed on its own missing required params.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -620,7 +620,8 @@
             "load-capacity",
             "static-hold",
             "body-likeness",
-            "fastener-installation"
+            "fastener-installation",
+            "hole-fastener-coverage"
           ],
           "description": "Which verification to run."
         },
@@ -635,6 +636,25 @@
         "assembly": {
           "type": "string",
           "description": "Assembly name; defaults to the first captured assembly."
+        },
+        "holeReasons": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "check:'hole-fastener-coverage' — current report hole id -> written reason (e.g. cable pass-through). Blank reasons and stale selectors fail."
+        },
+        "holeFits": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "enum": [
+              "clearance",
+              "tap"
+            ]
+          },
+          "description": "check:'hole-fastener-coverage' — hole id -> declared pilot/clearance intent; default catalog clearance (catalog receivers use nominal threaded bores)."
         },
         "fasteners": {
           "type": "array",
@@ -679,13 +699,13 @@
         "toleranceMm": {
           "type": "number",
           "minimum": 0,
-          "description": "check:'fastener-installation' — linear tolerance, default .05 mm."
+          "description": "check:'fastener-installation'|'hole-fastener-coverage' — linear tolerance, default .05 mm."
         },
         "angleToleranceDeg": {
           "type": "number",
           "minimum": 0,
           "maximum": 90,
-          "description": "check:'fastener-installation' — axis tilt tolerance, default 1 degree."
+          "description": "check:'fastener-installation'|'hole-fastener-coverage' — axis tilt tolerance, default 1 degree."
         },
         "urdf_path": {
           "type": "string",
@@ -907,7 +927,7 @@
         },
         "source": {
           "type": "string",
-          "description": "fastener-installation: local geometry evidence."
+          "description": "fastener-installation/hole-fastener-coverage: local geometry evidence."
         },
         "assembly": {
           "type": [
@@ -918,40 +938,171 @@
         },
         "status": {
           "type": "string",
-          "description": "fastener-installation: pass, fail, partial, or no-coverage; partial/zero coverage cannot pass."
+          "description": "fastener-installation/hole-fastener-coverage: pass, fail, partial, or no-coverage; partial/zero coverage cannot pass."
         },
         "counts": {
           "type": "object",
-          "properties": {
-            "requested": {
-              "type": "integer",
-              "minimum": 0
+          "anyOf": [
+            {
+              "properties": {
+                "requested": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "measured": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "passed": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "failed": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "unknown": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "requested",
+                "measured",
+                "passed",
+                "failed",
+                "unknown"
+              ],
+              "additionalProperties": false
             },
-            "measured": {
-              "type": "integer",
-              "minimum": 0
-            },
-            "passed": {
-              "type": "integer",
-              "minimum": 0
-            },
-            "failed": {
-              "type": "integer",
-              "minimum": 0
-            },
-            "unknown": {
-              "type": "integer",
-              "minimum": 0
+            {
+              "properties": {
+                "holes": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "matched": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "explained": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "failed": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "unknown": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "holes",
+                "matched",
+                "explained",
+                "failed",
+                "unknown"
+              ],
+              "additionalProperties": false
             }
+          ]
+        },
+        "holes": {
+          "type": "array",
+          "description": "Every detected cylindrical bore, including catalog hardware bores.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "part": {
+                "type": "string"
+              },
+              "location": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "minItems": 3,
+                "maxItems": 3
+              },
+              "diameterMm": {
+                "type": "number"
+              },
+              "depthMm": {
+                "type": "number"
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "matched",
+                  "explained",
+                  "fail",
+                  "unknown"
+                ]
+              },
+              "message": {
+                "type": "string"
+              },
+              "reason": {
+                "type": "string"
+              },
+              "fastener": {
+                "type": "object",
+                "properties": {
+                  "part": {
+                    "type": "string"
+                  },
+                  "catalogId": {
+                    "type": "string"
+                  },
+                  "size": {
+                    "type": "string"
+                  },
+                  "expectedDiameterMm": {
+                    "type": "number"
+                  },
+                  "fit": {
+                    "type": "string",
+                    "enum": [
+                      "clearance",
+                      "tap",
+                      "insert",
+                      "thread"
+                    ]
+                  }
+                },
+                "required": [
+                  "part",
+                  "catalogId",
+                  "size",
+                  "expectedDiameterMm",
+                  "fit"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "id",
+              "part",
+              "location",
+              "diameterMm",
+              "depthMm",
+              "status",
+              "message"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "uncertainties": {
+          "type": "array",
+          "items": {
+            "type": "string"
           },
-          "required": [
-            "requested",
-            "measured",
-            "passed",
-            "failed",
-            "unknown"
-          ],
-          "additionalProperties": false
+          "description": "Unsupported or heuristic geometry prevents a coverage pass."
         },
         "stations": {
           "type": "array",

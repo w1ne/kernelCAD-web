@@ -101,18 +101,21 @@ const verifyToolEntry: ToolRegistryEntry = {
       "- 'load-capacity' — will it hold? Closed-form Euler-Bernoulli beam check ({ loads, materials, ... }), or mode:'fea' to solve the script's feaStudy (quadratic-tet FEA, CalculiX) — both return { ok, safetyFactor, elements[{ partName, stressPa, yieldPa, safetyFactor }], failures[], diagnostics }; fea adds the threshold, the stress regions as @kc[...] faces with their location, and fea { peakStressPa, maxDisplacementMm, meshTrusted, peakAtSupportPa, refinement }; it refines the mesh automatically until the stress is trusted (refine: false for one solve).\n" +
       "- 'static-hold' — gravitational holding torque/force at a sampled pose grid vs each actuated joint's declared actuator capacity ({ joint?, pose?, gravity?, min_torque_margin_pct?, range_samples? }).\n" +
       "- 'body-likeness' — publish gate for organic/car bodies: cheap AABB↔wheel checks plus required agent still verdicts (side-body-over-wheels, side-cabin-aft, rear-haunch, ortho-proportions-vs-reference). Pass { body_bbox | code/file+body_feature_id, wheels?, cabin_bbox?, still_verdicts?, require_stills? }. Full CV silhouette matching is NOT implemented — agents must inspect ortho PNGs/Studio and supply still_verdicts before claiming success.\n" +
+      "- 'hole-fastener-coverage' — inventory every detected cylindrical hole in the returned model or named assembly; match placed catalog screws/inserts, accept holeReasons { 'part/hole-N': 'written reason' }, and flag unexplained holes or catalog size mismatches. holeFits explicitly declares 'tap' pilots (otherwise catalog clearance); local modeled coverage, not hardware acceptance.\n" +
       'All params except `check` are check-specific and forwarded verbatim; each check fails closed on its own missing required params.',
     inputSchema: {
       type: 'object',
       properties: {
         check: {
           type: 'string',
-          enum: ['assembly', 'urdf', 'dfm', 'dfm-preflight', 'swept-collision', 'reachable', 'mounting-holes', 'load-capacity', 'static-hold', 'body-likeness', 'fastener-installation'],
+          enum: ['assembly', 'urdf', 'dfm', 'dfm-preflight', 'swept-collision', 'reachable', 'mounting-holes', 'load-capacity', 'static-hold', 'body-likeness', 'fastener-installation', 'hole-fastener-coverage'],
           description: 'Which verification to run.',
         },
         file: { type: 'string', description: 'Path to a .kcad.ts script (assembly/dfm/dfm-preflight/swept-collision/reachable/mounting-holes/load-capacity/static-hold).' },
         code: { type: 'string', description: 'Inline kernelCAD script source (same checks as `file`).' },
         assembly: { type: 'string', description: 'Assembly name; defaults to the first captured assembly.' },
+        holeReasons: { type: 'object', additionalProperties: { type: 'string', minLength: 1 }, description: "check:'hole-fastener-coverage' — current report hole id -> written reason (e.g. cable pass-through). Blank reasons and stale selectors fail." },
+        holeFits: { type: 'object', additionalProperties: { type: 'string', enum: ['clearance', 'tap'] }, description: "check:'hole-fastener-coverage' — hole id -> declared pilot/clearance intent; default catalog clearance (catalog receivers use nominal threaded bores)." },
         fasteners: {
           type: 'array', description: "check:'fastener-installation' — explicit named stations; empty means no coverage.",
           items: { type: 'object', additionalProperties: false, properties: {
@@ -123,8 +126,8 @@ const verifyToolEntry: ToolRegistryEntry = {
             maxProtrusionMm: { type: 'number', minimum: 0 },
           }, required: ['part', 'against'] },
         },
-        toleranceMm: { type: 'number', minimum: 0, description: "check:'fastener-installation' — linear tolerance, default .05 mm." },
-        angleToleranceDeg: { type: 'number', minimum: 0, maximum: 90, description: "check:'fastener-installation' — axis tilt tolerance, default 1 degree." },
+        toleranceMm: { type: 'number', minimum: 0, description: "check:'fastener-installation'|'hole-fastener-coverage' — linear tolerance, default .05 mm." },
+        angleToleranceDeg: { type: 'number', minimum: 0, maximum: 90, description: "check:'fastener-installation'|'hole-fastener-coverage' — axis tilt tolerance, default 1 degree." },
         urdf_path: { type: 'string', description: "check:'urdf' — path to the .urdf file." },
         dxf: { type: 'string', description: "check:'dfm-preflight' — path to a DXF file." },
         featureId: { type: 'string', description: "check:'dfm-preflight' — FeatureId to scope to." },

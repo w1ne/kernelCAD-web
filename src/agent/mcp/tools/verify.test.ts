@@ -15,6 +15,7 @@ vi.mock('./checkMountingHoleConsistency', () => ({ checkMountingHoleConsistencyT
 vi.mock('./checkLoadCapacity', () => ({ checkLoadCapacityTool: vi.fn(async () => 'load') }));
 vi.mock('./checkStaticHold', () => ({ checkStaticHoldTool: vi.fn(async () => 'static-hold') }));
 vi.mock('./checkFastenerInstallation', () => ({ checkFastenerInstallationTool: vi.fn(async () => 'fastener-installation') }));
+vi.mock('./checkHoleFastenerCoverage', () => ({ checkHoleFastenerCoverageTool: vi.fn(async () => 'hole-fastener-coverage') }));
 vi.mock('./checkBodyLikeness', () => ({ checkBodyLikenessTool: vi.fn(async () => 'body-likeness') }));
 
 import { verifyTool, type VerifyCheck } from './verify';
@@ -29,6 +30,7 @@ import { checkLoadCapacityTool } from './checkLoadCapacity';
 import { checkStaticHoldTool } from './checkStaticHold';
 import { checkBodyLikenessTool } from './checkBodyLikeness';
 import { checkFastenerInstallationTool } from './checkFastenerInstallation';
+import { checkHoleFastenerCoverageTool } from './checkHoleFastenerCoverage';
 
 const ROUTES: Array<[VerifyCheck, ReturnType<typeof vi.fn>, string]> = [
   ['assembly', validateAssemblyTool as never, 'assembly'],
@@ -41,6 +43,7 @@ const ROUTES: Array<[VerifyCheck, ReturnType<typeof vi.fn>, string]> = [
   ['load-capacity', checkLoadCapacityTool as never, 'load'],
   ['static-hold', checkStaticHoldTool as never, 'static-hold'],
   ['fastener-installation', checkFastenerInstallationTool as never, 'fastener-installation'],
+  ['hole-fastener-coverage', checkHoleFastenerCoverageTool as never, 'hole-fastener-coverage'],
   ['body-likeness', checkBodyLikenessTool as never, 'body-likeness'],
 ];
 
@@ -64,6 +67,12 @@ describe('verify dispatcher', () => {
     const params = { code: 'SRC', fasteners: [{ part: 'screw', against: ['plate'], engagementPart: 'nut', minEngagementMm: 2, maxProtrusionMm: 1 }], toleranceMm: .02, angleToleranceDeg: .5 };
     await verifyTool({ check: 'fastener-installation', ...params });
     expect(checkFastenerInstallationTool).toHaveBeenCalledWith(params);
+  });
+
+  it('forwards hole reasons and fit declarations unchanged', async () => {
+    const params = { code: 'SRC', holeReasons: { 'plate/hole-5': 'vent' }, holeFits: { 'plate/hole-1': 'tap' }, toleranceMm: .02 };
+    await verifyTool({ check: 'hole-fastener-coverage', ...params });
+    expect(checkHoleFastenerCoverageTool).toHaveBeenCalledWith(params);
   });
 
   it('throws an actionable error on an unknown check', async () => {

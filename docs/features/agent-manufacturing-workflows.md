@@ -95,3 +95,66 @@ prove thread contact, torque, preload, pull-out strength or physical acceptance.
 The [manufacturing evidence bundle](../../site/public/demos/agent-workflows/fastener-evidence.zip)
 retains faulty/repaired sources, audit JSON, repaired STEP and SVG drawing together.
 Prepare the catalog with the command above before evaluating a downloaded source.
+
+## Account for every detected hole
+
+`verify({ check: "hole-fastener-coverage", file | code, assembly? })` inventories
+all detected cylindrical bores in the returned model (or the explicitly named
+assembly), including catalog hardware bores. It matches catalog screw/insert
+placements using world-space axis alignment and positive shaft overlap. Each
+`holes[]` entry reports its id, part, world location, diameter, depth and either
+`fastener: { part, catalogId, size, expectedDiameterMm, fit }`, a written `reason`,
+or `status: "fail", message: "unexplained hole"`. A matched size mismatch fails
+even if a reason is supplied.
+
+Run the [four-hole plate example](../../examples/hole-fastener-coverage/four-hole-plate.kcad.ts):
+
+```json
+{
+  "check": "hole-fastener-coverage",
+  "file": "examples/hole-fastener-coverage/four-hole-plate.kcad.ts"
+}
+```
+
+Four Ø3.2 holes with four placed M3 screws pass. Change `extraHole` to `true`:
+the extra Ø4 hole fails. Read its id from the current report, then supply the
+intent explicitly in the check arguments:
+
+```json
+{
+  "check": "hole-fastener-coverage",
+  "file": "examples/hole-fastener-coverage/four-hole-plate.kcad.ts",
+  "holeReasons": { "plate/hole-3": "cable pass-through" }
+}
+```
+
+The example's center hole is `plate/hole-3`. Ids are `part/hole-N`, ordered by
+local bore origin, then diameter/depth. They survive rigid placement, but can
+change after geometry edits: always read the latest inventory. Blank reasons,
+unknown selectors and invalid tolerances are rejected. The modeling API does
+not expose a per-detected-bore reason annotation, so `holeReasons` is the
+caller-supplied script/spec reason map.
+
+Clearance fit uses a catalog `clearanceDiameterMm` when supplied, otherwise the
+matching catalog flat-washer inner diameter, within `toleranceMm` (default
+0.05 mm). Declare a tap pilot with `holeFits: { "plate/hole-1": "tap" }`:
+the catalog thread designation is resolved through kernelCAD's existing ISO
+thread table (M3 pilot Ø2.5). This is manufacturing intent, not verification of
+thread contact. Catalog washers use their own inner diameter and thread size; catalog
+nut/insert internal receivers use their nominal thread
+bore and require the same screw thread designation, regardless of caller
+`holeFits` declarations. A screw through an insert is disambiguated by bore
+size: the plate matches the insert outer diameter and the insert bore matches
+the screw. Inserts match their catalog
+outer diameter; manufacturer-specific heat-setting pilot allowances are not
+inferred. Supported placement families are socket/button/countersunk screws
+and heat-set inserts from the existing catalog; other hardware is not assumed
+to cover a hole. Hardware bores themselves still need a screw or written reason.
+
+`source: "local"` means modeled geometry validation. Heuristic, partial or
+unsupported geometry cannot pass; `uncertainties[]` explains incomplete
+inventory/matching, and zero holes reports `no-coverage`. Noncylindrical openings
+are outside the detector's scope. Use `fastener-installation` separately for
+seating and engagement. Neither check establishes torque, strength or physical
+hardware acceptance. This change requires no UI layout work; public deployment
+and live-page verification follow integration into `develop`.

@@ -53,22 +53,23 @@ function validateOptions(options: FastenerInstallationOptions): void {
   const seen = new Set<string>();
   for (const s of options.fasteners) validateStation(s,seen);
 }
-interface ScrewFrame { origin: Vec3; axis: Vec3; length: number; diameter: number; catalogId: string; world: OcctBackend }
+export interface ScrewFrame { origin: Vec3; axis: Vec3; length: number; diameter: number; catalogId: string; world: OcctBackend }
 function sceneOf(model: BuiltModel, assembly?: string): SceneBackend | undefined {
   const candidates = [model.rootShape, ...[...model.shapes.values()].reverse()];
   return candidates.find(s => isSceneBackend(s) && (assembly === undefined || s.assemblyName === assembly)) as SceneBackend | undefined;
 }
 interface ScrewInterfaces { bearingOrigin: Vec3; tipOrigin: Vec3; length: number; diameter: number; catalogId: string }
-function screwInterfaces(record: FeatureRecord): ScrewInterfaces | undefined {
+function screwInterfaces(record: FeatureRecord, families: readonly string[]): ScrewInterfaces | undefined {
   const catalog = record.metadata?.catalogPart;
-  if (record.kind !== 'importedStep' || !catalog || !['socket-head-cap-screw','button-head-cap-screw'].includes(catalog.family)) return undefined;
+  if (record.kind !== 'importedStep' || !catalog || !families.includes(catalog.family)) return undefined;
   const manifest = catalog.connectorManifest;
   if (!manifest) return undefined;
   validateHashBoundConnectorManifest(manifest, { partId: catalog.id, family: catalog.family, geometrySha256: catalog.sha256 });
-  const bearing = manifest.connectors.find(c => c.name === 'head-bearing');
-  const tip = manifest.connectors.find(c => c.name === 'thread-tip');
+  const insert = catalog.family === 'heat-set-insert';
+  const bearing = manifest.connectors.find(c => c.name === (insert || catalog.family === 'flat-head-countersunk' ? 'mating-face' : 'head-bearing'));
+  const tip = manifest.connectors.find(c => c.name === (insert ? 'top-face' : 'thread-tip'));
   const length = Number(catalog.attributes.lengthMm);
-  const diameter = Number(catalog.attributes.shankDiameterMm ?? String(catalog.attributes.thread).slice(1));
+  const diameter = Number(insert ? catalog.attributes.outerDiameterMm : catalog.attributes.shankDiameterMm ?? String(catalog.attributes.thread).slice(1));
   if (bearing?.type !== 'frame' || !tip || !(length > 0) || !(diameter > 0)) return undefined;
   return { bearingOrigin: bearing.origin, tipOrigin: tip.origin, length, diameter, catalogId: catalog.id };
 }
@@ -82,14 +83,14 @@ function recordPlacement(model: BuiltModel, record: FeatureRecord): Transform | 
   }
   return placement;
 }
-function screwOf(model: BuiltModel, scene: SceneBackend, name: string): ScrewFrame | undefined {
+export function catalogFastenerOf(model: BuiltModel, scene: SceneBackend, name: string, families: readonly string[] = ['socket-head-cap-screw', 'button-head-cap-screw']): ScrewFrame | undefined {
   const arm = (model.session.assemblies as Map<string, Assembly>).get(scene.assemblyName);
   const stored = arm?.__parts().find(p => p.name === name);
   const placed = scene.parts.find(p => p.name === name);
   if (!stored || !placed || !(placed.shape instanceof OcctBackend)) return undefined;
   const record = model.records.find(r => r.id === stored.originalShape.id);
   if (!record) return undefined;
-  const interfaces = screwInterfaces(record);
+  const interfaces = screwInterfaces(record,families);
   if (!interfaces) return undefined;
   let placement = recordPlacement(model,record);
   if (!placement) return undefined;
@@ -144,7 +145,7 @@ function boreFor(shape: OcctBackend, screw: ScrewFrame, tolerance: number): Cyli
 /** Maximum shank radial envelope over the actual bore interval. The screw
  * can accumulate tilt before it reaches a distant receiver; bore depth alone
  * therefore cannot bound its offset. Plane crossings are clipped to the shaft. */
-function radialEnvelopeExcess(hole: CylindricalHole, screw: ScrewFrame): number {
+export function radialEnvelopeExcess(hole: CylindricalHole, screw: ScrewFrame): number {
   const cosine = dot(screw.axis,hole.axisDirection);
   if (Math.abs(cosine)<1e-9) return Infinity;
   const start = hole.axisOrigin;
@@ -160,10 +161,8 @@ function radialEnvelopeExcess(hole: CylindricalHole, screw: ScrewFrame): number 
   return Math.max(...offsets)+sectionExcess;
 }
 interface BoreInterval { min: number; max: number; hole: CylindricalHole }
-function boreMetrics(part: string, shape: OcctBackend, screw: ScrewFrame, tol: number, angleTol: number): { metrics: InstallationMetric[]; interval?: BoreInterval } {
-  const names = ['coaxial-offset','axis-tilt','bore-diameter','axial-overlap'];
-  const hole = boreFor(shape,screw,tol);
-  if (!hole) return { metrics: names.map(n => unknown(n,part,'Missing, ambiguous, breached or non-through BREP bore.')) };
+/** Shared world-space bore/shaft matching used by installation and coverage. */
+export function measureBoreAlignment(hole: CylindricalHole, screw: ScrewFrame): { offset: number; tilt: number; overlap: number; min: number; max: number } {
   const d = sub(screw.origin,hole.axisOrigin);
   const offset = norm(sub(d,scale(hole.axisDirection,dot(d,hole.axisDirection))));
   const tilt = Math.acos(Math.min(1,Math.abs(dot(screw.axis,hole.axisDirection))))*180/Math.PI;
@@ -171,6 +170,13 @@ function boreMetrics(part: string, shape: OcctBackend, screw: ScrewFrame, tol: n
   const last = dot(sub(add(hole.axisOrigin,scale(hole.axisDirection,hole.depthMm)),screw.origin),screw.axis);
   const min = Math.min(first,last), max = Math.max(first,last);
   const overlap = Math.max(0,Math.min(screw.length,max)-Math.max(0,min));
+  return { offset, tilt, overlap, min, max };
+}
+function boreMetrics(part: string, shape: OcctBackend, screw: ScrewFrame, tol: number, angleTol: number): { metrics: InstallationMetric[]; interval?: BoreInterval } {
+  const names = ['coaxial-offset','axis-tilt','bore-diameter','axial-overlap'];
+  const hole = boreFor(shape,screw,tol);
+  if (!hole) return { metrics: names.map(n => unknown(n,part,'Missing, ambiguous, breached or non-through BREP bore.')) };
+  const { offset, tilt, overlap, min, max } = measureBoreAlignment(hole,screw);
   // Tilt/offset and clearance together must leave the entire shank envelope
   // inside the bore; individually small errors can still clip a wall.
   const maxOffset = radialEnvelopeExcess(hole,screw);
@@ -226,7 +232,7 @@ function receiverMetrics(station: FastenerStation, interval: BoreInterval | unde
 function stationReport(model: BuiltModel, scene: SceneBackend | undefined, station: FastenerStation, tol: number, angleTol: number): FastenerStationReport {
   let metrics: InstallationMetric[] = []; let catalogId: string | null = null;
   try {
-    const screw = scene && screwOf(model,scene,station.part);
+    const screw = scene && catalogFastenerOf(model,scene,station.part);
     if (!screw) metrics = [unknown('catalog-geometry',station.part,'Missing lowered scene screw, supported head or hash-bound imported catalog interfaces.')];
     else {
       catalogId = screw.catalogId;
