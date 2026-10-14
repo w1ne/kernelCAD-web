@@ -17,6 +17,12 @@ import type { BuiltModel } from '../../../src/modeling/buildModel';
 const ROOT = resolve(__dirname, '../../..');
 const EXAMPLES = ['examples/bracket-with-hole.kcad.ts', 'examples/section-gasket.kcad.ts'];
 
+function withoutSnapshotTempDir<T extends { step?: { snapshots?: { out_dir?: string } } }>(result: T): T {
+  if (!result.step?.snapshots) return result;
+  const { out_dir: _outDir, ...snapshots } = result.step.snapshots;
+  return { ...result, step: { ...result.step, snapshots } };
+}
+
 function fingerprint(model: BuiltModel) {
   const shapes = [...model.shapes.entries()].map(([id, s]) => {
     if (isSceneBackend(s)) return [id, 'scene'];
@@ -58,7 +64,7 @@ describe('kernel selection', () => {
     const file = resolve(ROOT, EXAMPLES[0]);
     const dflt = await evaluateScriptTool({ file });
     const occt = await evaluateScriptTool({ file, kernel: 'occt' });
-    expect(occt).toEqual(dflt);
+    expect(withoutSnapshotTempDir(occt)).toEqual(withoutSnapshotTempDir(dflt));
     expect(dflt.ok).toBe(true);
 
     for (const dryRun of [false, true]) {
