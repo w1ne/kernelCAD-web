@@ -15,6 +15,7 @@ vi.mock('./checkMountingHoleConsistency', () => ({ checkMountingHoleConsistencyT
 vi.mock('./checkLoadCapacity', () => ({ checkLoadCapacityTool: vi.fn(async () => 'load') }));
 vi.mock('./checkStaticHold', () => ({ checkStaticHoldTool: vi.fn(async () => 'static-hold') }));
 vi.mock('./checkFastenerInstallation', () => ({ checkFastenerInstallationTool: vi.fn(async () => 'fastener-installation') }));
+vi.mock('./checkEdgeRadius', () => ({ checkEdgeRadiusTool: vi.fn(async () => 'edge-radius') }));
 vi.mock('./checkBodyLikeness', () => ({ checkBodyLikenessTool: vi.fn(async () => 'body-likeness') }));
 
 import { verifyTool, type VerifyCheck } from './verify';
@@ -27,6 +28,7 @@ import { checkReachableTool } from './checkReachable';
 import { checkMountingHoleConsistencyTool } from './checkMountingHoleConsistency';
 import { checkLoadCapacityTool } from './checkLoadCapacity';
 import { checkStaticHoldTool } from './checkStaticHold';
+import { checkEdgeRadiusTool } from './checkEdgeRadius';
 import { checkBodyLikenessTool } from './checkBodyLikeness';
 import { checkFastenerInstallationTool } from './checkFastenerInstallation';
 
@@ -41,6 +43,7 @@ const ROUTES: Array<[VerifyCheck, ReturnType<typeof vi.fn>, string]> = [
   ['load-capacity', checkLoadCapacityTool as never, 'load'],
   ['static-hold', checkStaticHoldTool as never, 'static-hold'],
   ['fastener-installation', checkFastenerInstallationTool as never, 'fastener-installation'],
+  ['edge-radius', checkEdgeRadiusTool as never, 'edge-radius'],
   ['body-likeness', checkBodyLikenessTool as never, 'body-likeness'],
 ];
 

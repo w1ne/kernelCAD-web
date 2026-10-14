@@ -664,7 +664,7 @@
   },
   {
     "name": "verify",
-    "description": "Use this when you need to check a design against a rule set. One verifier, selected by `check`:\n- 'assembly' — mate-aware assembly validator on the active session (run evaluate_script first).\n- 'urdf' — structural validity of a .urdf file ({ urdf_path }).\n- 'dfm' — print-readiness gates declared by dfmSpec() ({ file | code }).\n- 'dfm-preflight' — sheet-metal flat pattern vs a job-shop's ordering rules ({ vendor, material, thicknessIn|thicknessMm, ... }). Returns the vendor's catalog source pages as `sources`; when `disclosure` is present, show it with those links.\n- 'swept-collision' — sweep declared joint range(s) and report colliding poses.\n- 'reachable' — inverse-kinematics reachability for an end-effector ({ tip_link, target_position, ... }).\n- 'fastener-installation' — measured explicit catalog-screw installation stations on lowered assembly BREP ({ file | code, fasteners:[{ part, against, engagementPart?, minEngagementMm?, maxProtrusionMm? }], toleranceMm?, angleToleranceDeg? }). Reports annular bearing gap, bore axis/diameter/overlap and receiver geometric engagement/protrusion. Unknown or zero coverage cannot pass. Simplified threads do not certify torque, preload or strength.\n- 'mounting-holes' — fastened mates expose matching hole diameters on both sides.\n- 'load-capacity' — will it hold? Closed-form Euler-Bernoulli beam check ({ loads, materials, ... }), or mode:'fea' to solve the script's feaStudy (quadratic-tet FEA, CalculiX) — both return { ok, safetyFactor, elements[{ partName, stressPa, yieldPa, safetyFactor }], failures[], diagnostics }; fea adds the threshold, the stress regions as @kc[...] faces with their location, and fea { peakStressPa, maxDisplacementMm, meshTrusted, peakAtSupportPa, refinement }; it refines the mesh automatically until the stress is trusted (refine: false for one solve).\n- 'static-hold' — gravitational holding torque/force at a sampled pose grid vs each actuated joint's declared actuator capacity ({ joint?, pose?, gravity?, min_torque_margin_pct?, range_samples? }).\n- 'body-likeness' — publish gate for organic/car bodies: cheap AABB↔wheel checks plus required agent still verdicts (side-body-over-wheels, side-cabin-aft, rear-haunch, ortho-proportions-vs-reference). Pass { body_bbox | code/file+body_feature_id, wheels?, cabin_bbox?, still_verdicts?, require_stills? }. Full CV silhouette matching is NOT implemented — agents must inspect ortho PNGs/Studio and supply still_verdicts before claiming success.\nAll params except `check` are check-specific and forwarded verbatim; each check fails closed on its own missing required params.",
+    "description": "Use this when you need to check a design against a rule set. One verifier, selected by `check`:\n- 'assembly' — mate-aware assembly validator on the active session (run evaluate_script first).\n- 'urdf' — structural validity of a .urdf file ({ urdf_path }).\n- 'dfm' — print-readiness gates declared by dfmSpec() ({ file | code }).\n- 'dfm-preflight' — sheet-metal flat pattern vs a job-shop's ordering rules ({ vendor, material, thicknessIn|thicknessMm, ... }). Returns the vendor's catalog source pages as `sources`; when `disclosure` is present, show it with those links.\n- 'swept-collision' — sweep declared joint range(s) and report colliding poses.\n- 'reachable' — inverse-kinematics reachability for an end-effector ({ tip_link, target_position, ... }).\n- 'fastener-installation' — measured explicit catalog-screw installation stations on lowered assembly BREP ({ file | code, fasteners:[{ part, against, engagementPart?, minEngagementMm?, maxProtrusionMm? }], toleranceMm?, angleToleranceDeg? }). Reports annular bearing gap, bore axis/diameter/overlap and receiver geometric engagement/protrusion. Unknown or zero coverage cannot pass. Simplified threads do not certify torque, preload or strength.\n- 'mounting-holes' — fastened mates expose matching hole diameters on both sides.\n- 'load-capacity' — will it hold? Closed-form Euler-Bernoulli beam check ({ loads, materials, ... }), or mode:'fea' to solve the script's feaStudy (quadratic-tet FEA, CalculiX) — both return { ok, safetyFactor, elements[{ partName, stressPa, yieldPa, safetyFactor }], failures[], diagnostics }; fea adds the threshold, the stress regions as @kc[...] faces with their location, and fea { peakStressPa, maxDisplacementMm, meshTrusted, peakAtSupportPa, refinement }; it refines the mesh automatically until the stress is trusted (refine: false for one solve).\n- 'static-hold' — gravitational holding torque/force at a sampled pose grid vs each actuated joint's declared actuator capacity ({ joint?, pose?, gravity?, min_torque_margin_pct?, range_samples? }).\n- 'body-likeness' — publish gate for organic/car bodies: cheap AABB↔wheel checks plus required agent still verdicts (side-body-over-wheels, side-cabin-aft, rear-haunch, ortho-proportions-vs-reference). Pass { body_bbox | code/file+body_feature_id, wheels?, cabin_bbox?, still_verdicts?, require_stills? }. Full CV silhouette matching is NOT implemented — agents must inspect ortho PNGs/Studio and supply still_verdicts before claiming success.\n- 'edge-radius' — general edge-break specification on final BREP ({ file | code, min_radius_mm?, max_radius_mm?, require_edge_break?: 'external'|'internal'|'all', feature_id?, assembly?, parts?, edges?, faces? }). Reports sharp convex/concave edges, analytic cylindrical/toroidal fillet radii and spherical junctions, and heuristic planar chamfer strips. Radius bounds apply only to fillets; selectors/points are part-local. Unknown/empty coverage cannot pass.\nAll params except `check` are check-specific and forwarded verbatim; each check fails closed on its own missing required params.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -681,13 +681,14 @@
             "load-capacity",
             "static-hold",
             "body-likeness",
-            "fastener-installation"
+            "fastener-installation",
+            "edge-radius"
           ],
           "description": "Which verification to run."
         },
         "file": {
           "type": "string",
-          "description": "Path to a .kcad.ts script (assembly/dfm/dfm-preflight/swept-collision/reachable/mounting-holes/load-capacity/static-hold)."
+          "description": "Path to a .kcad.ts script (assembly/dfm/dfm-preflight/swept-collision/reachable/mounting-holes/load-capacity/static-hold/edge-radius)."
         },
         "code": {
           "type": "string",
@@ -696,6 +697,45 @@
         "assembly": {
           "type": "string",
           "description": "Assembly name; defaults to the first captured assembly."
+        },
+        "min_radius_mm": {
+          "type": "number",
+          "minimum": 0,
+          "description": "check:'edge-radius' — minimum fillet radius in mm (does not imply sharp-edge prohibition)."
+        },
+        "max_radius_mm": {
+          "type": "number",
+          "minimum": 0,
+          "description": "check:'edge-radius' — maximum fillet radius in mm; must be >= min_radius_mm."
+        },
+        "require_edge_break": {
+          "type": "string",
+          "enum": [
+            "external",
+            "internal",
+            "all"
+          ],
+          "description": "check:'edge-radius' — prohibit sharp convex/external, concave/internal, or all edges."
+        },
+        "feature_id": {
+          "type": "string",
+          "description": "check:'edge-radius' — lowered feature; default the returned model."
+        },
+        "parts": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "check:'edge-radius' — explicit assembly part names (default all)."
+        },
+        "edges": {
+          "description": "check:'edge-radius' — EdgeQuery or @kc[...] edge ref(s); intersected with faces. Query near sorts, it does not filter."
+        },
+        "faces": {
+          "description": "check:'edge-radius' — FaceQuery or @kc[...] face ref(s); includes incident edges and fillets on selected faces."
         },
         "fasteners": {
           "type": "array",
@@ -962,13 +1002,210 @@
     "outputSchema": {
       "type": "object",
       "properties": {
+        "checkedEdges": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "edge-radius: selected nondegenerate, nonseam edges."
+        },
+        "checkedFillets": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "edge-radius: analytic fillet face patches, including spherical junctions."
+        },
+        "bodies": {
+          "type": "array",
+          "description": "edge-radius: one local BREP report per solid of each selected part, plus retained unsupported topology.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "part": {
+                "type": "string"
+              },
+              "bodyIndex": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "edges": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "ref": {
+                      "type": "string"
+                    },
+                    "edgeIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "faceIndices": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "minimum": 0
+                      }
+                    },
+                    "faceRefs": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "sharp",
+                        "smooth",
+                        "filleted",
+                        "chamfered",
+                        "unknown",
+                        "seam",
+                        "degenerate"
+                      ]
+                    },
+                    "side": {
+                      "type": "string",
+                      "enum": [
+                        "external",
+                        "internal",
+                        "unknown"
+                      ]
+                    },
+                    "point": {
+                      "type": "array",
+                      "items": {
+                        "type": "number"
+                      },
+                      "minItems": 3,
+                      "maxItems": 3
+                    }
+                  },
+                  "required": [
+                    "ref",
+                    "edgeIndex",
+                    "faceIndices",
+                    "faceRefs",
+                    "kind",
+                    "side",
+                    "point"
+                  ]
+                }
+              },
+              "breaks": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "ref": {
+                      "type": "string"
+                    },
+                    "faceIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "edgeIndices": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "minimum": 0
+                      }
+                    },
+                    "edgeRefs": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "fillet",
+                        "chamfer"
+                      ]
+                    },
+                    "surfaceType": {
+                      "type": "string"
+                    },
+                    "radiusMm": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "description": "Fillet radius in mm; null for planar chamfer strips."
+                    }
+                  },
+                  "required": [
+                    "ref",
+                    "faceIndex",
+                    "edgeIndices",
+                    "edgeRefs",
+                    "kind",
+                    "surfaceType",
+                    "radiusMm"
+                  ]
+                }
+              },
+              "violations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "rule": {
+                      "type": "string",
+                      "enum": [
+                        "min-radius",
+                        "max-radius",
+                        "required-edge-break"
+                      ]
+                    },
+                    "ref": {
+                      "type": "string"
+                    },
+                    "measuredMm": {
+                      "type": "number"
+                    },
+                    "limitMm": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "rule",
+                    "ref",
+                    "measuredMm",
+                    "limitMm"
+                  ]
+                }
+              },
+              "unknownRefs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "part",
+              "bodyIndex",
+              "edges",
+              "breaks",
+              "violations",
+              "unknownRefs"
+            ]
+          }
+        },
         "ok": {
           "type": "boolean",
           "description": "Whether the verification ran and passed its gate."
         },
         "source": {
           "type": "string",
-          "description": "fastener-installation: local geometry evidence."
+          "description": "fastener-installation/edge-radius: local geometry evidence."
         },
         "assembly": {
           "type": [
@@ -979,7 +1216,7 @@
         },
         "status": {
           "type": "string",
-          "description": "fastener-installation: pass, fail, partial, or no-coverage; partial/zero coverage cannot pass."
+          "description": "fastener-installation/edge-radius: pass, fail, partial, or no-coverage; partial/zero coverage cannot pass."
         },
         "counts": {
           "type": "object",

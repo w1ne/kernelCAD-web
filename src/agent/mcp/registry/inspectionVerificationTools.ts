@@ -101,18 +101,26 @@ const verifyToolEntry: ToolRegistryEntry = {
       "- 'load-capacity' — will it hold? Closed-form Euler-Bernoulli beam check ({ loads, materials, ... }), or mode:'fea' to solve the script's feaStudy (quadratic-tet FEA, CalculiX) — both return { ok, safetyFactor, elements[{ partName, stressPa, yieldPa, safetyFactor }], failures[], diagnostics }; fea adds the threshold, the stress regions as @kc[...] faces with their location, and fea { peakStressPa, maxDisplacementMm, meshTrusted, peakAtSupportPa, refinement }; it refines the mesh automatically until the stress is trusted (refine: false for one solve).\n" +
       "- 'static-hold' — gravitational holding torque/force at a sampled pose grid vs each actuated joint's declared actuator capacity ({ joint?, pose?, gravity?, min_torque_margin_pct?, range_samples? }).\n" +
       "- 'body-likeness' — publish gate for organic/car bodies: cheap AABB↔wheel checks plus required agent still verdicts (side-body-over-wheels, side-cabin-aft, rear-haunch, ortho-proportions-vs-reference). Pass { body_bbox | code/file+body_feature_id, wheels?, cabin_bbox?, still_verdicts?, require_stills? }. Full CV silhouette matching is NOT implemented — agents must inspect ortho PNGs/Studio and supply still_verdicts before claiming success.\n" +
+      "- 'edge-radius' — general edge-break specification on final BREP ({ file | code, min_radius_mm?, max_radius_mm?, require_edge_break?: 'external'|'internal'|'all', feature_id?, assembly?, parts?, edges?, faces? }). Reports sharp convex/concave edges, analytic cylindrical/toroidal fillet radii and spherical junctions, and heuristic planar chamfer strips. Radius bounds apply only to fillets; selectors/points are part-local. Unknown/empty coverage cannot pass.\n" +
       'All params except `check` are check-specific and forwarded verbatim; each check fails closed on its own missing required params.',
     inputSchema: {
       type: 'object',
       properties: {
         check: {
           type: 'string',
-          enum: ['assembly', 'urdf', 'dfm', 'dfm-preflight', 'swept-collision', 'reachable', 'mounting-holes', 'load-capacity', 'static-hold', 'body-likeness', 'fastener-installation'],
+          enum: ['assembly', 'urdf', 'dfm', 'dfm-preflight', 'swept-collision', 'reachable', 'mounting-holes', 'load-capacity', 'static-hold', 'body-likeness', 'fastener-installation', 'edge-radius'],
           description: 'Which verification to run.',
         },
-        file: { type: 'string', description: 'Path to a .kcad.ts script (assembly/dfm/dfm-preflight/swept-collision/reachable/mounting-holes/load-capacity/static-hold).' },
+        file: { type: 'string', description: 'Path to a .kcad.ts script (assembly/dfm/dfm-preflight/swept-collision/reachable/mounting-holes/load-capacity/static-hold/edge-radius).' },
         code: { type: 'string', description: 'Inline kernelCAD script source (same checks as `file`).' },
         assembly: { type: 'string', description: 'Assembly name; defaults to the first captured assembly.' },
+        min_radius_mm: { type: 'number', minimum: 0, description: "check:'edge-radius' — minimum fillet radius in mm (does not imply sharp-edge prohibition)." },
+        max_radius_mm: { type: 'number', minimum: 0, description: "check:'edge-radius' — maximum fillet radius in mm; must be >= min_radius_mm." },
+        require_edge_break: { type: 'string', enum: ['external', 'internal', 'all'], description: "check:'edge-radius' — prohibit sharp convex/external, concave/internal, or all edges." },
+        feature_id: { type: 'string', description: "check:'edge-radius' — lowered feature; default the returned model." },
+        parts: { type: 'array', minItems: 1, uniqueItems: true, items: { type: 'string', minLength: 1 }, description: "check:'edge-radius' — explicit assembly part names (default all)." },
+        edges: { description: "check:'edge-radius' — EdgeQuery or @kc[...] edge ref(s); intersected with faces. Query near sorts, it does not filter." },
+        faces: { description: "check:'edge-radius' — FaceQuery or @kc[...] face ref(s); includes incident edges and fillets on selected faces." },
         fasteners: {
           type: 'array', description: "check:'fastener-installation' — explicit named stations; empty means no coverage.",
           items: { type: 'object', additionalProperties: false, properties: {
