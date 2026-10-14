@@ -100,6 +100,7 @@ function pdfSheetOptions(pdf: PdfDrawingOptions, material: string | undefined): 
     titleBlock: definedOnly({ title: pdf.title, partName: pdf.partName, material, revision: pdf.revision }),
     ...definedOnly({
       modelName: pdf.modelName,
+      views: pdf.views,
       draftingProfile: pdf.draftingProfile,
       annotationOverrides: pdf.annotationOverrides,
       reviewPlans: pdf.reviewPlans,

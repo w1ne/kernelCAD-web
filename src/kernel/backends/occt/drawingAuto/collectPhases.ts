@@ -33,6 +33,7 @@ export function buildObstacles(
     y1: sheet.h - margin - sheet.titleBlock.h - 1,
   });
   for (const name of [...STANDARD_VIEWS, 'iso'] as DrawingViewName[]) {
+    if (input.visibleViews && !input.visibleViews.includes(name)) continue;
     const { placement, polylines } = views[name];
     for (const pl of polylines) {
       for (let k = 0; k + 1 < pl.length; k++) {
@@ -113,6 +114,7 @@ function holePositionItemsForView(
   bb: { min: readonly number[]; max: readonly number[] },
 ): LinearItem[] {
   const linear: LinearItem[] = [];
+  if (ctx.input.visibleViews && !ctx.input.visibleViews.includes(view)) return linear;
   const b = viewBasis(view);
   for (const screen of ['x', 'y'] as const) {
     const axisIdx = holeAxisIndex(b, screen);
@@ -278,6 +280,7 @@ const CAPTIONS: Record<DrawingViewName, string> = { front: 'FRONT', top: 'TOP', 
 
 export function addViewCaptions(ctx: RenderCtx): void {
   for (const name of [...STANDARD_VIEWS, 'iso'] as DrawingViewName[]) {
+    if (ctx.input.visibleViews && !ctx.input.visibleViews.includes(name)) continue;
     const box = ctx.views[name].placement.box;
     ctx.obstacles.addBox(
       textBox(box.x + box.w / 2, box.y + box.h + 5 + ctx.bottomReserve[name], 2.6, 'middle', CAPTIONS[name]),

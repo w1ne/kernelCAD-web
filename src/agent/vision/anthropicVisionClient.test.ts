@@ -36,6 +36,13 @@ function makeSdkStub(responseText: string) {
 }
 
 describe('AnthropicVisionClient', () => {
+  it('passes the trace timeout to the Anthropic HTTP request', async () => {
+    const {sdk}=makeSdkStub('outline');
+    process.env.ANTHROPIC_API_KEY='test-key';
+    const client=defaultVisionClient({sdkOverride:sdk,timeoutMs:120000});
+    await client.generate({prompt:'outline',imageBytes:new Uint8Array([1]),mediaType:'image/png'});
+    expect(sdk.messages.create).toHaveBeenCalledWith(expect.any(Object),{timeout:120000});
+  });
   const originalEnv = { ...process.env };
 
   beforeEach(() => {

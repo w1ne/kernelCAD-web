@@ -11,6 +11,7 @@ const evaluateScriptToolEntry: ToolRegistryEntry = {
     description:
       'Use this when you need to run a script and check it compiles. ' +
       'Full local builds return viewerUrl: a live Studio link reused and updated on later full builds in the same MCP process. ' +
+      'Hosted builds return viewerMode: hosted and viewerHint pointing to open_in_studio; they do not start a loopback viewer. ' +
       'Full evaluations return step evidence: build validity, volume and before/after local PNG paths in one shared iso frame. Snapshots require PW_CDP_URL for an existing browser; unavailable captures report an explicit error. ' +
       'Run a kernelCAD .kcad.ts script and report pass/fail + feature count + diagnostics + sceneSummary (BREP validity, volume in mm³, face count, bounding size in mm). ' +
       'When the scene is assembly-built (assembly().part(...) → .model()/.solvedModel()), ' +
@@ -46,6 +47,13 @@ const evaluateScriptToolEntry: ToolRegistryEntry = {
           description:
             'Fast validation only: skip solid build, DFM gates, and meshing. ' +
             'Does not set or clear the active session.',
+        },
+        kernel: {
+          type: 'string',
+          enum: ['occt', 'smlib'],
+          description:
+            "Solid-modeling kernel. Default 'occt' (OpenCascade), the only kernel available today; " +
+            "'smlib' is reserved and currently returns ok:false with recompute.kernel.unavailable.",
         },
         skipMechanismCheck: {
           type: 'boolean',

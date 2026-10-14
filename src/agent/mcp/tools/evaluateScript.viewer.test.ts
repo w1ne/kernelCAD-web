@@ -63,4 +63,19 @@ describe('evaluate_script live viewer', () => {
     expect(result.viewerError).toContain('build:mcp-viewer');
     vi.stubEnv('KERNELCAD_VIEWER_DIST', dist);
   });
+  it('uses hosted Studio instead of provisioning a loopback viewer in hosted mode', async () => {
+    await closeMcpViewer();
+    vi.stubEnv('KERNELCAD_MCP_MODE', 'hosted');
+    vi.stubEnv('KERNELCAD_VIEWER_DIST', '/missing-viewer-assets');
+    try {
+      const result = await evaluateScriptTool({ code: 'return box(10, 10, 10);' });
+      expect(result.ok).toBe(true);
+      expect(result.viewerUrl).toBeUndefined();
+      expect(result.viewerError).toBeUndefined();
+      expect(result).toMatchObject({ viewerMode: 'hosted', viewerHint: expect.stringContaining('open_in_studio') });
+    } finally {
+      vi.stubEnv('KERNELCAD_MCP_MODE', 'local');
+      vi.stubEnv('KERNELCAD_VIEWER_DIST', dist);
+    }
+  });
 });

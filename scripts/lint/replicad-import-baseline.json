@@ -1,0 +1,25 @@
+{
+  "_comment": "Files that imported replicad / replicad-opencascadejs directly outside the OCCT backend folders when the kernel registry landed (PR feat/kernel-registry). The @typescript-eslint/no-restricted-imports warning is off for exactly these files. Ratchet: only remove entries (move the code behind ShapeBackend / the OCCT backend); tests/unit/architecture/replicadImportBaseline.test.ts fails on stale entries or growth.",
+  "files": [
+    "src/agent/mcp/tools/inspectContinuity.ts",
+    "src/agent/mcp/tools/inspectCurvature.ts",
+    "src/agent/mcp/tools/listFaces.ts",
+    "src/agent/mcp/tools/meshToFeatures.ts",
+    "src/agent/mcp/tools/surfaceQualityOverlay.ts",
+    "src/kernel/backends/verb/curveBridge.ts",
+    "src/kernel/fea/faceBinding.ts",
+    "src/kernel/import/inspectStep.ts",
+    "src/kernel/properties/massProperties.ts",
+    "src/modeling/HeadlessKernel.ts",
+    "src/modeling/parts/stepParseCache.ts",
+    "src/modeling/runtime/dfm/clearance.ts",
+    "src/modeling/runtime/dfm/fdmCheck.ts",
+    "src/modeling/runtime/fastenerInstallation.ts",
+    "src/modeling/runtime/jointMeshContinuity.ts",
+    "src/modeling/runtime/tube/tubeClearance.ts",
+    "src/modeling/runtime/tube/tubeEndParts.ts",
+    "src/modeling/validation/unionIntegrity.ts",
+    "src/shared/fonts/index.ts",
+    "src/shared/worker/geometryHelpers.ts"
+  ]
+}

@@ -34,6 +34,12 @@ export const cookbookExecutionToolEntries: ToolRegistryEntry[] = [
               'Default false. When true, after a green full (non-dryRun) evaluate, call open_in_studio on the same script (hosted MCP).',
             default: false,
           },
+          kernel: {
+            type: 'string',
+            enum: ['occt', 'smlib'],
+            description:
+              "Solid-modeling kernel forwarded to evaluate_script. Default 'occt'; 'smlib' is reserved and currently fails with recompute.kernel.unavailable.",
+          },
           dryRun: {
             type: 'boolean',
             description:

@@ -21,4 +21,13 @@ export const RECOMPUTE_CODES = {
     group: 'recompute',
     description: 'The lowering pass raised an unhandled exception while compiling intent to the backend.',
   },
+  // Kernel selection (1)
+  'recompute.kernel.unavailable': {
+    hintTemplate:
+      "The requested kernel is not available in this build. Omit `kernel` or pass kernel: 'occt'.",
+    nextAction: { kind: 'fix-arg', field: 'kernel' },
+    defaultSeverity: 'error',
+    group: 'recompute',
+    description: 'A model or tool call selected a solid-modeling kernel that is not wired in this build (e.g. smlib before its backend ships).',
+  },
 } as const satisfies Record<`recompute.${string}`, DiagnosticCodeSpec>;

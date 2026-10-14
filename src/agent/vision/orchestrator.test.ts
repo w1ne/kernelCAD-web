@@ -14,6 +14,36 @@ const FIXTURE_DIR = join(__dirname, '../../..', 'tests/fixtures/vision');
 const UNIFORM_FILE_URL = `file://${join(FIXTURE_DIR, 'uniform-bg-square.png')}`;
 
 describe('traceFromImage orchestrator', () => {
+  it.each(['auto', 'hybrid'] as const)('honours a component silhouette region with backend %s', async backend => {
+    const extract = vi.fn(async (): Promise<Vec2Normalized[]> => [[0, 0], [1, 1]]);
+    const component: Vec2Normalized[] = [[0.1, 0.2], [0.3, 0.2], [0.2, 0.5]];
+    const generate = vi.fn(async (_req: { prompt: string }) => ({
+      text: JSON.stringify({ features: [{ label: 'horse', kind: 'silhouette', waypoints: component, confidence: 0.7 }] }),
+      tokensIn: 10, tokensOut: 10,
+    }));
+    const out = await traceFromImage({
+      imageUrl: UNIFORM_FILE_URL, backend,
+      features: [{ label: 'horse', kind: 'silhouette', region: 'left horse only' }],
+    }, { extractSilhouettePolyline: extract, visionClient: { generate } });
+    expect(out.ok).toBe(true);
+    expect(out.features[0].waypoints).toEqual(component);
+    expect(out.features[0].backend).toBe('vision-llm');
+    expect(extract).not.toHaveBeenCalled();
+    expect(generate.mock.calls[0][0].prompt).toContain('left horse only');
+  });
+
+  it('refuses opencv for a semantic region instead of reporting a whole-image success', async () => {
+    const extract = vi.fn(async (): Promise<Vec2Normalized[]> => [[0, 0], [1, 1]]);
+    const out = await traceFromImage({
+      imageUrl: UNIFORM_FILE_URL, backend: 'opencv',
+      features: [{ label: 'horse', kind: 'silhouette', region: 'left horse only' }],
+    }, { extractSilhouettePolyline: extract });
+    expect(out.ok).toBe(false);
+    expect(out.features).toEqual([]);
+    expect(out.diagnostics[0].message).toContain('vision-llm');
+    expect(extract).not.toHaveBeenCalled();
+  });
+
   it('returns invalid-image-url diagnostic when imageUrl is missing', async () => {
     const out = await traceFromImage({} as TraceFromImageInput);
     expect(out.ok).toBe(false);

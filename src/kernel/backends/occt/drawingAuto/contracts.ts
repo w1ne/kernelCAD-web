@@ -43,6 +43,7 @@ export interface DrawingReport {
 }
 
 export interface AutoDrawingInput {
+  visibleViews?: readonly DrawingViewName[];
   parts: readonly WorldFramePart[];
   compound: OcctBackend;
   autoAnnotate: boolean | AutoAnnotateOptions | undefined;

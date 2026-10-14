@@ -13,9 +13,9 @@
 //   the parser that consumes it. The matching skill MD instructs WHEN to call
 //   `trace_from_image`, not HOW the prompt is built.
 // - **One retry on malformed JSON, then throw.** Cost-bounded — never loops.
-// - **Truncate, don't reject, when the LLM overshoots maxWaypointsPerFeature.**
-//   The agent capped this for a reason; preserving the prefix gives a usable
-//   polyline even if the model ignored the cap.
+// - **Reduce the whole contour when the LLM overshoots the waypoint cap.**
+//   Keeping only a prefix cuts away the remaining object boundary and turns
+//   closed outlines into partial arcs. Keep the full traversal and endpoints.
 // - **Out-of-range coords are a hard fail** — if the model returns
 //   `[1.4, 0.2]` we cannot silently clamp because the agent has no way to know
 //   what part of the image fell off the edge. Surface the error.
@@ -283,11 +283,11 @@ function validateWaypoints(rawWaypoints: unknown[], label: string): Vec2Normaliz
   return validatedWaypoints;
 }
 
-function truncateWaypoints(waypoints: Vec2Normalized[], maxWaypointsPerFeature: number): Vec2Normalized[] {
-  // Truncate (don't reject) when LLM overshoots the cap. Preserve prefix.
-  return waypoints.length > maxWaypointsPerFeature
-    ? waypoints.slice(0, maxWaypointsPerFeature)
-    : waypoints;
+function reduceWaypoints(waypoints: Vec2Normalized[], maxWaypointsPerFeature: number): Vec2Normalized[] {
+  if (waypoints.length <= maxWaypointsPerFeature) return waypoints;
+  if (maxWaypointsPerFeature === 1) return [waypoints[0]];
+  return Array.from({ length: maxWaypointsPerFeature }, (_, i) =>
+    waypoints[Math.round(i * (waypoints.length - 1) / (maxWaypointsPerFeature - 1))]);
 }
 
 /** @internal — exported for the test seam. */
@@ -307,7 +307,7 @@ export function parseAndValidate(
   const out: TraceFeatureResult[] = [];
   for (const rf of rawFeatures) {
     const entry = validateFeatureEntry(rf, requestedByLabel);
-    const waypoints = truncateWaypoints(
+    const waypoints = reduceWaypoints(
       validateWaypoints(entry.rawWaypoints, entry.label),
       maxWaypointsPerFeature,
     );
