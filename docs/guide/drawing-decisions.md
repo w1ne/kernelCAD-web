@@ -3,6 +3,8 @@ title: Keep engineering decisions beside the drawing
 summary: Record the intent and provenance of an illustrative bearing-seat decision, refresh its review, and export the measured result.
 date: 2026-10-12
 kind: guide
+status: draft
+note: Unpublished 2026-10-14 at the author's request.
 video: docs/demos/functional-drafting/bearing/demo.mp4
 ---
 
@@ -14,7 +16,7 @@ This illustrative mount has a 120 × 80 × 12 mm base with R6 corners, four Ø9 
 
 There is no purchased bearing or catalog fit in this exercise. The brief requires the measured Ø44 seat, measured Ø32 throat and a recorded answer to one question: “Will the illustrative insert be removable or press-retained?” It does not specify a production insert, numerical clearance, retention hardware, tolerance or GD&T.
 
-![Bearing-mount drawing with separate measured Ø44 seat and Ø32 throat callouts](../../site/blog/drawing-decisions/bearing-pending.png "Both measurements are present. The pending drawing is still incomplete because the retention decision has no recorded resolution.")
+![Bearing-mount drawing with separate measured Ø44 seat and Ø32 throat callouts](../blog-drafts/drawing-decisions/bearing-pending.png "Both measurements are present. The pending drawing is still incomplete because the retention decision has no recorded resolution.")
 
 ## Select the seat, not its neighbour
 
@@ -52,7 +54,7 @@ The full source plan has two critical diameter requirements and this decision:
 
 The initial report shows 2/2 critical callouts covered and one unresolved decision. Review completeness requires both coverage and a resolution for every declared decision. Decision records have a note and provenance; both must be nonempty. A record is an explanation of engineering intent, not an automatic engineering conclusion.
 
-![Studio showing two covered dimensions and one unresolved bearing-seat decision](../../site/blog/drawing-decisions/studio-pending.png "Actual local Studio report: geometry alone cannot answer the declared retention question.")
+![Studio showing two covered dimensions and one unresolved bearing-seat decision](../blog-drafts/drawing-decisions/studio-pending.png "Actual local Studio report: geometry alone cannot answer the declared retention question.")
 
 ## Record, refresh, review and export
 
@@ -68,7 +70,7 @@ Fill **Decision provenance** with:
 
 Click **Record decision**. An edited draft alone does not resolve the decision. Recording it changes the options, so the preview needs another **Refresh preview**. The new report shows 2/2 critical covered and zero unresolved decisions. Inspect the sheet, click **Mark reviewed**, then **Export reviewed PDF**.
 
-![Studio after recording the illustrative removable-insert intent and refreshing the drawing](../../site/blog/drawing-decisions/studio-resolved.png "The recorded note and provenance resolve the declared question. The two measured diameters and solid remain unchanged.")
+![Studio after recording the illustrative removable-insert intent and refreshing the drawing](../blog-drafts/drawing-decisions/studio-resolved.png "The recorded note and provenance resolve the declared question. The two measured diameters and solid remain unchanged.")
 
 Changing source or drafting criteria invalidates the current preview and withholds stale source-bound choices. **Reset source-bound choices** clears those choices for the new source. **Clear decision records** removes stored resolutions; **Clear missing decisions** removes records whose declared keys no longer exist. Draft edits also reset the human review mark. Refresh and review the current result before strict export.
 
