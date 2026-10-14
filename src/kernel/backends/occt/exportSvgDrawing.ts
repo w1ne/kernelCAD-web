@@ -41,6 +41,7 @@ import {
   SHEETS,
   SHEET_SERIES,
   computeSheetLayout,
+  computeFrontSheetLayout,
   dedupPolylineClasses,
   shiftOrthographicViews,
   dimensionToSvg,
@@ -115,6 +116,8 @@ export interface DrawingTitleBlock {
 
 export interface SvgDrawingOptions extends DrawingReviewOptions {
   format: 'svg-drawing';
+  /** Single front elevation, or the complete default four-view sheet. */
+  views?: readonly DrawingViewName[];
   /** Runtime preview uses the printable PDF sheet/title/material defaults. */
   pdfSheet?: boolean;
   draftingProfile?: DraftingProfileId | DraftingProfile;
@@ -314,7 +317,18 @@ export function renderSvgDrawing(
   parts: WorldFramePart[],
   options: SvgDrawingOptions,
 ): SvgDrawingResult {
+  const frontOnly = options.views?.length === 1 && options.views[0] === 'front';
+  if (options.views && !frontOnly &&
+    !(options.views.length === 4 && new Set(options.views).size === 4 && options.views.every(v => VIEW_NAMES.includes(v)))) {
+    throw new Error('Drawing views must be ["front"] or the complete front/top/left/iso set.');
+  }
+  if (frontOnly && options.annotations?.some(a => a.view !== undefined && a.view !== 'front')) {
+    throw new Error('Front-only drawings require annotations on the front view.');
+  }
   options = applyDraftingProfile(options);
+  if (frontOnly && (options.balloons === true || options.exploded !== undefined || options.explodedParts !== undefined)) {
+    throw new Error('Balloons and exploded overlays require an isometric view.');
+  }
   const reviewPlans = validateDrawingReviewOptions(options, options.declarations?.reviewPlans);
   options = { ...options, reviewPlans };
   const diagnosticsOut: CompilerDiagnostic[] = [];
@@ -345,7 +359,7 @@ export function renderSvgDrawing(
   // the drawn sheet (frame, title block, parts list).
   const { sheet, page, size: sheetSize } = resolveSheet(options, viewBoxes, projection, hasSections);
 
-  const gridLayout = computeSheetLayout(viewBoxes, sheet, projection);
+  const gridLayout = frontOnly ? computeFrontSheetLayout(viewBoxes.front, sheet) : computeSheetLayout(viewBoxes, sheet, projection);
   const s = gridLayout.scale;
 
   // Dimensions, sections and automatic annotation all hang off the view
@@ -404,7 +418,7 @@ export function renderSvgDrawing(
   finalizeDrawingReview(report, options, diagnosticsOut);
   const generalTolerance = pass.autoStage.generalTolerance;
 
-  const viewGroups = renderViewGroups(styled, layout, bottomReserve, s, explodedShape);
+  const viewGroups = renderViewGroups(styled, layout, bottomReserve, s, explodedShape, frontOnly ? ['front'] : VIEW_NAMES);
 
   const explodeSvg = renderExplodeOverlays({
     options,
@@ -494,7 +508,9 @@ function resolveSheet(
   const series = SHEET_SERIES[requested === 'auto' ? 'iso' : 'ansi'];
   for (const size of series) {
     const r = resolve(size);
-    if (computeSheetLayout(boxes, r.sheet, projection).scale >= 1) return r;
+    const frontOnly = options.views?.length === 1 && options.views[0] === 'front';
+    const layout = frontOnly ? computeFrontSheetLayout(boxes.front, r.sheet) : computeSheetLayout(boxes, r.sheet, projection);
+    if (layout.scale >= 1) return r;
   }
   return resolve(series[series.length - 1]!);
 }
@@ -615,7 +631,7 @@ function renderDimensionStage(
       { kind: 'vertical', from: [f.x, f.y], to: [f.x, f.y + f.h], linePos: f.x - DIM_BASE, label: formatDimValue(dims.h) },
       { kind: 'vertical', from: [t.x + t.w, t.y], to: [t.x + t.w, t.y + t.h], linePos: t.x + t.w + DIM_BASE, label: formatDimValue(dims.d) },
     ];
-    dimBodies = firstAngleDims.map(d => dimensionToSvg(d));
+    dimBodies = (options.views?.length === 1 ? firstAngleDims.slice(0, 2) : firstAngleDims).map(d => dimensionToSvg(d));
     bottomReserve = { front: 0, top: 0, left: 0, iso: 0 };
   } else {
     const dimSpecs: LinearDimension[] = [
@@ -641,7 +657,7 @@ function renderDimensionStage(
         label: formatDimValue(dims.d),
       },
     ];
-    dimBodies = dimSpecs.map(d => dimensionToSvg(d));
+    dimBodies = (options.views?.length === 1 ? dimSpecs.slice(0, 2) : dimSpecs).map(d => dimensionToSvg(d));
     // Only the front view carries a bottom-stacked (width) dimension.
     bottomReserve = { front: DIM_BASE, top: 0, left: 0, iso: 0 };
   }
@@ -673,6 +689,9 @@ function renderAuthoredDimensionStage(parts: WorldFramePart[], options: SvgDrawi
   const original = options.annotations ?? [];
   const ids = authoredAnnotationIds(original);
   const authored = original.map((a, i) => reviewedAuthoredAnnotation(a, ids[i], options));
+  if (options.views && authored.some(a => !options.views!.includes(a.view ?? 'front'))) {
+    throw new Error('An authored annotation override targets a hidden view; use the front view for a front-only drawing.');
+  }
   const visible = authored.flatMap((a, i) => options.annotationOverrides?.[ids[i]]?.suppress ? [] : [{ a, i }]);
   const rendered = renderAnnotations({ parts, annotations: visible.map(({ a }) => a),
     reviewedViewIds: new Map(visible.flatMap(({ i }, index) =>
@@ -814,6 +833,7 @@ function renderAutoStage(input: {
       ? (parts[0].shape as OcctBackend)
       : new OcctBackend(shape as import('replicad').Shape3D);
     const auto = renderAutoDrawing({
+      visibleViews: options.views,
       parts,
       compound: compoundBackend,
       autoAnnotate: options.autoAnnotate,
@@ -899,8 +919,9 @@ function renderViewGroups(
   bottomReserve: Record<DrawingViewName, number>,
   s: number,
   explodedShape: AnyShape | undefined,
+  names: readonly DrawingViewName[] = VIEW_NAMES,
 ): string[] {
-  return VIEW_NAMES.map(name => {
+  return names.map(name => {
     const v = styled[name];
     const p = layout.views[name];
     // A view carrying dimensions underneath must push its caption below the

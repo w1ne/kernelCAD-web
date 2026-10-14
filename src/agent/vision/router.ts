@@ -24,6 +24,11 @@ import type { TraceBackend, TraceFeatureRequest } from './types';
 /** Corner-color stddev under this value counts as a uniform background. */
 export const UNIFORM_BG_THRESHOLD = 8;
 
+export function needsComponentSilhouetteLabels(features: TraceFeatureRequest[]): boolean {
+  const silhouettes = features.filter(f => f.kind === 'silhouette');
+  return silhouettes.length > 1 || silhouettes.some(f => Boolean(f.region?.trim()));
+}
+
 /**
  * Decide which backend should handle a `trace_from_image` request.
  *
@@ -34,6 +39,11 @@ export async function decideBackend(
   imageBytes: Buffer,
   features: TraceFeatureRequest[],
 ): Promise<Exclude<TraceBackend, 'auto'>> {
+  // Contour extraction sees the whole image and cannot interpret a semantic
+  // region or distinguish separate component silhouettes on a drawing sheet.
+  if (needsComponentSilhouetteLabels(features)) {
+    return 'vision-llm';
+  }
   const stddev = await cornerColorStdDev(imageBytes);
   const uniformBg = stddev < UNIFORM_BG_THRESHOLD;
 

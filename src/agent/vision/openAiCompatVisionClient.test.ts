@@ -96,6 +96,30 @@ describe('defaultVisionClient selection', () => {
     process.env.KERNELCAD_VISION_API_KEY = 'k';
     expect(() => defaultVisionClient()).toThrow(/no vision model is configured/);
   });
+
+  it.each(['env', 'override'])('uses the %s trace budget for the vision HTTP request', async source => {
+    vi.useFakeTimers();
+    try {
+      process.env.KERNELCAD_VISION_BASE_URL = 'https://x.test';
+      process.env.KERNELCAD_VISION_API_KEY = 'k';
+      process.env.KERNELCAD_VISION_MODEL = 'Qwen/VL';
+      if(source==='env') process.env.KERNELCAD_TRACE_BACKEND_TIMEOUT_MS = '120000';
+      else delete process.env.KERNELCAD_TRACE_BACKEND_TIMEOUT_MS;
+      let signal: AbortSignal | undefined;
+      const fetchOverride: FetchLike = async (_url, init) => {
+        signal = init.signal;
+        await new Promise(resolve => setTimeout(resolve, 70_000));
+        return { ok: true, status: 200, text: async () => '', json: async () => ({ choices: [{ message: { content: 'component' } }] }) };
+      };
+      const pending = defaultVisionClient({ fetchOverride, ...(source==='override'?{timeoutMs:120000}:{}) }).generate(req);
+      await vi.advanceTimersByTimeAsync(60_001);
+      expect(signal?.aborted).toBe(false);
+      await vi.advanceTimersByTimeAsync(10_000);
+      expect((await pending).text).toBe('component');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });
 
 describe('trace_from_image with named features and no Anthropic key', () => {

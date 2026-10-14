@@ -311,7 +311,7 @@ describe('extractFeaturesViaLLM', () => {
     ).rejects.toThrow(/range|0.*1|bounds/i);
   });
 
-  it('truncates waypoints to maxWaypointsPerFeature', async () => {
+  it('reduces the complete contour to maxWaypointsPerFeature', async () => {
     const tooMany = Array.from({ length: 20 }, (_, i) => [i / 20, i / 20]);
     const response = JSON.stringify({
       features: [
@@ -341,9 +341,18 @@ describe('extractFeaturesViaLLM', () => {
     );
 
     expect(out[0].waypoints).toHaveLength(8);
-    // Truncation should preserve the prefix.
+    // Reducing a contour must keep its full traversal, not just its prefix.
     expect(out[0].waypoints[0]).toEqual([0, 0]);
-    expect(out[0].waypoints[7]).toEqual([7 / 20, 7 / 20]);
+    expect(out[0].waypoints[7][0]).toBeGreaterThan(0.8);
+  });
+
+  it('preserves an open curve end when reducing its waypoint count', async () => {
+    const points = Array.from({ length: 20 }, (_, i) => [i / 20, 0.5]);
+    const client = new MockVisionClient([JSON.stringify({ features: [{ label: 'roof', kind: 'curve', waypoints: points, confidence: 0.7 }] })]);
+    const out = await extractFeaturesViaLLM(client, bytes, 'image/png', [{ label: 'roof', kind: 'curve' }], undefined, 8);
+    expect(out[0].waypoints).toHaveLength(8);
+    expect(out[0].waypoints[0]).toEqual(points[0]);
+    expect(out[0].waypoints.at(-1)).toEqual(points.at(-1));
   });
 
   it('clamps confidence to [0, 1] and defaults to 0.5 when missing', async () => {
