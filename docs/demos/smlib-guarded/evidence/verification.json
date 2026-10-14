@@ -1,0 +1,29 @@
+{
+  "date": "2026-10-14",
+  "implementationRevision": "f9bb076e7f8c3e602188196409f8b61f20f45dc1",
+  "tsc-b": "passed",
+  "lint": {
+    "errors": 0,
+    "warnings": 29,
+    "newWarnings": 0
+  },
+  "modifiedAreaCiTests": {
+    "files": 57,
+    "testsPassed": 465
+  },
+  "newSmlibTestsPassed": 39,
+  "prototypeRecordedChecks": {
+    "bad": 7,
+    "healthy": 20
+  },
+  "cliBuild": "passed",
+  "qcBuild": "passed; all 94 cookbook bodies evaluate",
+  "defaultOcctFingerprintTests": "passed",
+  "pristineNpmTarballComparison": "all 74 packaged files identical to evaluated install",
+  "appBundle": "unchanged node:path dirname failure reproduced with original #937 registry",
+  "lazyBundle": "86-byte runtime dynamically imports separate SMLib/WASM chunk",
+  "deployed": false,
+  "hardwareAccepted": false,
+  "diskFreeGiB": 14,
+  "sourceReview": "important findings repaired; second source review no remaining important findings"
+}
