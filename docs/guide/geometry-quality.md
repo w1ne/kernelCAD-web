@@ -65,4 +65,6 @@ symmetry tolerance. Local geometry checks do not certify manufacturing,
 structural loads or hardware acceptance. This opt-in check does not replace
 script-declared DFM gates.
 
-[Runnable synthetic examples, actual results and MP4 replay](../demos/geometry-quality/README.md).
+Focused synthetic geometry tests cover tiny steps, short edges, symmetric and
+asymmetric brackets, rotated bodies and sphere pole edges in
+`src/agent/mcp/tools/checkGeometryQuality.test.ts`.
