@@ -32,6 +32,7 @@ import type { DrawingReviewOptions } from '../../../shared/intent/drawingReview'
 import { makeCompound, type AnyShape } from 'replicad';
 import type { WorldFramePart } from './sceneToWorldFrame';
 import type { ArchitecturalPlanOptions } from './drawingArchitectural';
+import { DRAWING_VIEW_NAMES as VIEW_NAMES, isFrontOnlyDrawing, selectedDrawingLayout, validateDrawingViewSelection } from './drawingViewSelection';
 import { OcctBackend } from './occtBackend';
 import {
   makeDrawingCamera,
@@ -40,8 +41,6 @@ import {
 import {
   SHEETS,
   SHEET_SERIES,
-  computeSheetLayout,
-  computeFrontSheetLayout,
   dedupPolylineClasses,
   shiftOrthographicViews,
   dimensionToSvg,
@@ -212,7 +211,6 @@ export interface StyledDrawingView {
 
 type StyledView = StyledDrawingView;
 
-const VIEW_NAMES: readonly DrawingViewName[] = ['front', 'top', 'left', 'iso'];
 
 /** Height of the band reserved below the standard view grid for sections. */
 const SECTION_BAND_H = 70;
@@ -317,18 +315,8 @@ export function renderSvgDrawing(
   parts: WorldFramePart[],
   options: SvgDrawingOptions,
 ): SvgDrawingResult {
-  const frontOnly = options.views?.length === 1 && options.views[0] === 'front';
-  if (options.views && !frontOnly &&
-    !(options.views.length === 4 && new Set(options.views).size === 4 && options.views.every(v => VIEW_NAMES.includes(v)))) {
-    throw new Error('Drawing views must be ["front"] or the complete front/top/left/iso set.');
-  }
-  if (frontOnly && options.annotations?.some(a => a.view !== undefined && a.view !== 'front')) {
-    throw new Error('Front-only drawings require annotations on the front view.');
-  }
   options = applyDraftingProfile(options);
-  if (frontOnly && (options.balloons === true || options.exploded !== undefined || options.explodedParts !== undefined)) {
-    throw new Error('Balloons and exploded overlays require an isometric view.');
-  }
+  const frontOnly = validateDrawingViewSelection(options);
   const reviewPlans = validateDrawingReviewOptions(options, options.declarations?.reviewPlans);
   options = { ...options, reviewPlans };
   const diagnosticsOut: CompilerDiagnostic[] = [];
@@ -359,7 +347,7 @@ export function renderSvgDrawing(
   // the drawn sheet (frame, title block, parts list).
   const { sheet, page, size: sheetSize } = resolveSheet(options, viewBoxes, projection, hasSections);
 
-  const gridLayout = frontOnly ? computeFrontSheetLayout(viewBoxes.front, sheet) : computeSheetLayout(viewBoxes, sheet, projection);
+  const gridLayout = selectedDrawingLayout(frontOnly, viewBoxes, sheet, projection);
   const s = gridLayout.scale;
 
   // Dimensions, sections and automatic annotation all hang off the view
@@ -508,8 +496,8 @@ function resolveSheet(
   const series = SHEET_SERIES[requested === 'auto' ? 'iso' : 'ansi'];
   for (const size of series) {
     const r = resolve(size);
-    const frontOnly = options.views?.length === 1 && options.views[0] === 'front';
-    const layout = frontOnly ? computeFrontSheetLayout(boxes.front, r.sheet) : computeSheetLayout(boxes, r.sheet, projection);
+    const frontOnly = isFrontOnlyDrawing(options.views);
+    const layout = selectedDrawingLayout(frontOnly, boxes, r.sheet, projection);
     if (layout.scale >= 1) return r;
   }
   return resolve(series[series.length - 1]!);
