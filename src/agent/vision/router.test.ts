@@ -15,6 +15,21 @@ import type { TraceFeatureRequest } from './types';
 const FIXTURE_DIR = join(__dirname, '../../..', 'tests/fixtures/vision');
 
 describe('decideBackend', () => {
+  it('uses vision for a region-scoped silhouette instead of tracing the whole sheet', async () => {
+    const png = await readFile(join(FIXTURE_DIR, 'uniform-bg-square.png'));
+    expect(await decideBackend(png, [
+      { label: 'horse', kind: 'silhouette', region: 'horse on the left only' },
+    ])).toBe('vision-llm');
+  });
+
+  it('uses vision for separate silhouettes instead of assigning a shared outline', async () => {
+    const png = await readFile(join(FIXTURE_DIR, 'uniform-bg-square.png'));
+    expect(await decideBackend(png, [
+      { label: 'horse', kind: 'silhouette' },
+      { label: 'cabin', kind: 'silhouette' },
+    ])).toBe('vision-llm');
+  });
+
   it('routes uniform-bg + silhouette-only to opencv', async () => {
     const png = await readFile(join(FIXTURE_DIR, 'uniform-bg-square.png'));
     const features: TraceFeatureRequest[] = [

@@ -32,7 +32,7 @@ export interface AnthropicSdkLike {
       model: string;
       max_tokens: number;
       messages: Array<{ role: 'user'; content: unknown[] }>;
-    }) => Promise<{
+    }, options?: { timeout: number }) => Promise<{
       content: Array<{ type: string; text?: string }>;
       usage: { input_tokens: number; output_tokens: number };
     }>;
@@ -56,6 +56,7 @@ export interface VisionResponse {
 export interface AnthropicVisionClientOptions {
   apiKey: string;
   model?: string;
+  timeoutMs?: number;
   /** Test seam — bypasses the real SDK constructor. */
   sdkOverride?: AnthropicSdkLike;
 }
@@ -64,9 +65,11 @@ export interface AnthropicVisionClientOptions {
 export class AnthropicVisionClient {
   private readonly sdk: AnthropicSdkLike;
   private readonly model: string;
+  private readonly timeoutMs: number | undefined;
 
   constructor(opts: AnthropicVisionClientOptions) {
     this.model = opts.model ?? DEFAULT_MODEL;
+    this.timeoutMs = opts.timeoutMs;
     this.sdk = opts.sdkOverride ?? (new Anthropic({ apiKey: opts.apiKey }) as unknown as AnthropicSdkLike);
   }
 
@@ -91,7 +94,7 @@ export class AnthropicVisionClient {
           ],
         },
       ],
-    });
+    }, this.timeoutMs === undefined ? undefined : { timeout: this.timeoutMs });
 
     const text = resp.content
       .filter((b) => b.type === 'text')
@@ -106,6 +109,8 @@ export class AnthropicVisionClient {
 }
 
 export interface DefaultVisionClientOptions {
+  /** Per-call backend budget; takes precedence over the environment. */
+  timeoutMs?: number;
   /** Override the SDK for tests; the API-key + model env-var resolution still runs. */
   sdkOverride?: AnthropicSdkLike;
   /** Override fetch for the OpenAI-compatible client (tests). */
@@ -131,16 +136,21 @@ export interface VisionLlmClientLike {
  * through a kernelCAD service.
  */
 export function defaultVisionClient(opts: DefaultVisionClientOptions = {}): VisionLlmClientLike {
+  const configured = opts.timeoutMs ?? Number(process.env.KERNELCAD_TRACE_BACKEND_TIMEOUT_MS);
+  const timeout = Number.isFinite(configured) && configured > 0 ? { timeoutMs: configured } : {};
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (apiKey && apiKey.length > 0) {
     const model = process.env.KERNELCAD_VISION_MODEL ?? DEFAULT_MODEL;
-    return new AnthropicVisionClient({ apiKey, model, sdkOverride: opts.sdkOverride });
+    return new AnthropicVisionClient({ apiKey, model, sdkOverride: opts.sdkOverride, ...timeout });
   }
   const baseUrl = process.env.KERNELCAD_VISION_BASE_URL;
   const compatKey = process.env.KERNELCAD_VISION_API_KEY;
   const compatModel = process.env.KERNELCAD_VISION_MODEL;
   if (baseUrl && compatKey && compatModel) {
-    return new OpenAiCompatVisionClient({ baseUrl, apiKey: compatKey, model: compatModel, fetchOverride: opts.fetchOverride });
+    return new OpenAiCompatVisionClient({
+      baseUrl, apiKey: compatKey, model: compatModel, fetchOverride: opts.fetchOverride,
+      ...timeout,
+    });
   }
   throw new Error(
     'defaultVisionClient: no vision model is configured. Set ANTHROPIC_API_KEY, or ' +

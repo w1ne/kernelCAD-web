@@ -57,6 +57,15 @@ Each `.part(...)` adds to the same assembly (identical to calling `arm.part(...)
 
 ## Assembly intent API
 
+Connector origins use an explicit vector record:
+`origin: { kind: 'vec3', value: [x, y, z] }`, or a supported topology reference.
+Do not pass a bare `[x, y, z]` to `part.connector(...)`; the runtime rejects it.
+Place physical mate datums on actual contacting geometry. A shared origin in
+empty space does not establish a physical connection and triggers mesh-gap
+diagnostics. A shallow front-elevation drawing is not a validated physical
+assembly: label that representation explicitly and distinguish geometry
+evaluation from mechanism acceptance.
+
 ```typescript
 const arm = assembly('two-link arm');
 const base = arm.part('base', box(30, 30, 8), {

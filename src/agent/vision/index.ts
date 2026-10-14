@@ -24,7 +24,7 @@ import { HINT_TEMPLATES, NEXT_ACTIONS } from '../../shared/diagnostics/registry'
 import { extractFeaturesViaLLM, type VisionLlmClient } from './visionLlmBackend';
 import { traceHybrid } from './hybridBackend';
 import { extractSilhouettePolyline as defaultExtractSilhouettePolyline } from './opencvBackend';
-import { decideBackend } from './router';
+import { decideBackend, needsComponentSilhouetteLabels } from './router';
 import { buildLedger, hasOpenMissingFact, type AssumptionLedger } from './ledger';
 export {
   buildLedger,
@@ -227,6 +227,12 @@ async function resolveTraceBackend(
   imageBytes: Buffer,
   features: TraceFeatureRequest[],
 ): Promise<Exclude<TraceBackend, 'auto'>> {
+  if (needsComponentSilhouetteLabels(features)) {
+    if (input.backend === 'opencv') {
+      throw new Error('opencv cannot isolate semantic regions or separate component silhouettes. Use backend: "vision-llm" or "auto", or crop the image to one component first.');
+    }
+    return 'vision-llm';
+  }
   if (input.backend === undefined || input.backend === 'auto') {
     return decideBackend(imageBytes, features);
   }
@@ -268,7 +274,7 @@ async function dispatchTraceBackend(
       break;
     }
     case 'vision-llm': {
-      const client = opts.visionClient ?? defaultVisionClient();
+      const client = opts.visionClient ?? defaultVisionClient({ timeoutMs: opts.backendTimeoutMs ?? backendTimeoutMs() });
       const imageU8 = new Uint8Array(
         imageBytes.buffer,
         imageBytes.byteOffset,
@@ -285,7 +291,7 @@ async function dispatchTraceBackend(
       break;
     }
     case 'hybrid': {
-      const client = opts.visionClient ?? defaultVisionClient();
+      const client = opts.visionClient ?? defaultVisionClient({ timeoutMs: opts.backendTimeoutMs ?? backendTimeoutMs() });
       results = await traceHybrid(
         client,
         imageBytes,
