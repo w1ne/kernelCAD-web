@@ -6,44 +6,38 @@ import { useEffect, useRef } from "react";
 import { HoverManager, type HoverResult } from "../../../features-ui/interaction/HoverManager";
 import { SnapManager, type SnapResult } from "../../../features-ui/interaction/SnapManager";
 import { filterClippedIntersections } from "../clipFilter";
+import { pointerIsOver } from "./pointerOver";
 
 interface InteractionHandlerProps {
     setHovered: (h: HoverResult | null) => void;
     setSnap: (s: SnapResult | null) => void;
-    /** Pre-select only while a mouse is over the canvas. The pointer starts
-     *  at the canvas centre and a touch leaves it where the finger lifted, so
-     *  without this a viewer that is only being looked at (the embed) shows
-     *  a hover highlight nobody asked for. */
-    mouseHoverOnly?: boolean;
 }
 
-/** Whether a mouse is over `el` right now (touch and pen never hover). */
-function useMouseOver(el: HTMLElement, enabled: boolean) {
+function usePointerOver(el: HTMLElement) {
     const over = useRef(false);
     useEffect(() => {
-        if (!enabled) return undefined;
-        const update = (e: PointerEvent) => { over.current = e.type !== 'pointerleave' && e.pointerType === 'mouse'; };
-        const events = ['pointerenter', 'pointermove', 'pointerdown', 'pointerleave'] as const;
+        const update = (e: PointerEvent) => { over.current = pointerIsOver(over.current, e); };
+        const events = ['pointerenter', 'pointermove', 'pointerdown', 'pointerup', 'pointercancel', 'pointerleave'] as const;
         for (const type of events) el.addEventListener(type, update);
         return () => {
             for (const type of events) el.removeEventListener(type, update);
         };
-    }, [el, enabled]);
+    }, [el]);
     return over;
 }
 
-export function InteractionHandler({ setHovered, setSnap, mouseHoverOnly = false }: InteractionHandlerProps) {
+export function InteractionHandler({ setHovered, setSnap }: InteractionHandlerProps) {
     const { camera, scene, raycaster, pointer, gl } = useThree();
     const lastCheckTime = useRef(0);
     const lastPointer = useRef(new THREE.Vector2(0, 0));
-    const mouseOver = useMouseOver(gl.domElement, mouseHoverOnly);
+    const pointerOver = usePointerOver(gl.domElement);
     const cleared = useRef(false);
 
     useFrame((state) => {
         const now = state.clock.elapsedTime;
         if (now - lastCheckTime.current < 0.05) return;
         lastCheckTime.current = now;
-        if (mouseHoverOnly && !mouseOver.current) {
+        if (!pointerOver.current) {
             if (!cleared.current) {
                 cleared.current = true;
                 setHovered(null);

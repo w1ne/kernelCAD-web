@@ -4,6 +4,7 @@ import { useMemo, type ReactNode } from 'react';
 import { ChevronDown, Loader2 } from 'lucide-react';
 import { useWorkbench } from '../../context/WorkbenchContext';
 import { useStudioChrome } from '../../context/StudioChromeContext';
+import { useSourceTitle } from '../../sourceTitle';
 import { COMPACT_HEADER_QUERY, useIsNarrow } from '../../hooks/useIsNarrow';
 import { useRegisterCommands, type Command } from '../../hooks/useCommandRegistry';
 import { downloadBlob, exportViaServer, type StudioExportFormat } from '../../exportViaServer';
@@ -199,8 +200,11 @@ export function Header() {
     const { isComputing, code, commandManager, setActiveDialog } = useWorkbench();
     const history = useHeaderHistory();
     const { activeProject } = history;
+    // A `?gallery=` route shows the example it opened, not the stored project.
+    const sourceTitle = useSourceTitle();
+    const documentName = sourceTitle ?? activeProject?.name;
     const narrow = useIsNarrow(COMPACT_HEADER_QUERY);
-    const actions = useHeaderFileActions(code, activeProject?.name);
+    const actions = useHeaderFileActions(code, documentName);
     const modified = !viewerMode && activeProject != null && code !== activeProject.code;
 
     const editControls = (
@@ -220,11 +224,11 @@ export function Header() {
                 {/* A route that names the document itself (e.g. /p/:slug) keeps the
                     phone header for its own title. */}
                 <ProjectSwitcher
-                    name={activeProject?.name || 'Untitled Project'}
+                    name={documentName || 'Untitled Project'}
                     hideName={narrow && !!headerLeft}
                     onOpen={() => setActiveDialog('projectManager')}
                 />
-                {activeProject && !viewerMode && !narrow && <SaveState modified={modified} />}
+                {activeProject && !sourceTitle && !viewerMode && !narrow && <SaveState modified={modified} />}
                 {headerLeft && (
                     <>
                         <div className="h-5 w-px shrink-0 bg-border" />

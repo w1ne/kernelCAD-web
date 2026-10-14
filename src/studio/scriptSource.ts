@@ -4,7 +4,7 @@ import { parseMeshArtifact } from '../funnel/meshArtifact';
 import { dedupeCoincidentParts } from './storedMeshDedupe';
 import { fetchStoredMeshStatus } from '../funnel/lib/storedMeshStatus';
 import {
-  findGallerySourceUrl,
+  findGallerySource,
   findGallerySourceUrlForScriptPath,
   galleryPrecomputedMeshUrl,
 } from './gallerySource';
@@ -62,10 +62,15 @@ export async function loadStudioScriptSource(script: string): Promise<string> {
 }
 
 export async function loadGalleryScriptSource(slug: string): Promise<string> {
-  const sourceUrl = await findGallerySourceUrl(slug);
+  return (await loadGalleryEntry(slug)).source;
+}
+
+/** A curated gallery entry's source and its display title (null if untitled). */
+export async function loadGalleryEntry(slug: string): Promise<{ source: string; title: string | null }> {
+  const { sourceUrl, title } = await findGallerySource(slug);
   const response = await fetch(sourceUrl);
   if (!response.ok) throw new Error(`Failed to load gallery source: ${response.status}`);
-  return response.text();
+  return { source: await response.text(), title };
 }
 
 /** The `?script=` path Studio was opened with, or null outside the browser /

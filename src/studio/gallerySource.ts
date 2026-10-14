@@ -4,6 +4,7 @@ export interface GalleryManifestEntry {
   slug: string;
   sourceUrl: string | null;
   scriptPath?: string | null;
+  title?: string | null;
 }
 
 const MARKETING_GALLERY_ORIGIN = 'https://kernelcad.com';
@@ -54,6 +55,11 @@ function resolveGalleryAssetUrl(sourceUrl: string, manifestUrl: string): string 
 }
 
 export async function findGallerySourceUrl(slug: string): Promise<string> {
+  return (await findGallerySource(slug)).sourceUrl;
+}
+
+/** Source URL and display title of the curated gallery entry `slug`. */
+export async function findGallerySource(slug: string): Promise<{ sourceUrl: string; title: string | null }> {
   const manifestUrl = galleryManifestUrl();
   const response = await fetch(manifestUrl);
   if (!response.ok) throw new Error(`Failed to load gallery manifest: ${response.status}`);
@@ -66,7 +72,8 @@ export async function findGallerySourceUrl(slug: string): Promise<string> {
   if (!entry) throw new Error(`Gallery entry not found: ${slug}`);
   if (!entry.sourceUrl) throw new Error(`Gallery entry has no source: ${slug}`);
 
-  return resolveGalleryAssetUrl(entry.sourceUrl, manifestUrl);
+  const title = typeof entry.title === 'string' && entry.title.trim() ? entry.title.trim() : null;
+  return { sourceUrl: resolveGalleryAssetUrl(entry.sourceUrl, manifestUrl), title };
 }
 
 export async function findGallerySourceUrlForScriptPath(scriptPath: string): Promise<string | null> {
