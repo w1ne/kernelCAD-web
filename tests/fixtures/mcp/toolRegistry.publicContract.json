@@ -664,7 +664,7 @@
   },
   {
     "name": "verify",
-    "description": "Use this when you need to check a design against a rule set. One verifier, selected by `check`:\n- 'assembly' — mate-aware assembly validator on the active session (run evaluate_script first).\n- 'urdf' — structural validity of a .urdf file ({ urdf_path }).\n- 'dfm' — print-readiness gates declared by dfmSpec() ({ file | code }).\n- 'dfm-preflight' — sheet-metal flat pattern vs a job-shop's ordering rules ({ vendor, material, thicknessIn|thicknessMm, ... }). Returns the vendor's catalog source pages as `sources`; when `disclosure` is present, show it with those links.\n- 'swept-collision' — sweep declared joint range(s) and report colliding poses.\n- 'reachable' — inverse-kinematics reachability for an end-effector ({ tip_link, target_position, ... }).\n- 'fastener-installation' — measured explicit catalog-screw installation stations on lowered assembly BREP ({ file | code, fasteners:[{ part, against, engagementPart?, minEngagementMm?, maxProtrusionMm? }], toleranceMm?, angleToleranceDeg? }). Reports annular bearing gap, bore axis/diameter/overlap and receiver geometric engagement/protrusion. Unknown or zero coverage cannot pass. Simplified threads do not certify torque, preload or strength.\n- 'mounting-holes' — fastened mates expose matching hole diameters on both sides.\n- 'load-capacity' — will it hold? Closed-form Euler-Bernoulli beam check ({ loads, materials, ... }), or mode:'fea' to solve the script's feaStudy (quadratic-tet FEA, CalculiX) — both return { ok, safetyFactor, elements[{ partName, stressPa, yieldPa, safetyFactor }], failures[], diagnostics }; fea adds the threshold, the stress regions as @kc[...] faces with their location, and fea { peakStressPa, maxDisplacementMm, meshTrusted, peakAtSupportPa, refinement }; it refines the mesh automatically until the stress is trusted (refine: false for one solve).\n- 'static-hold' — gravitational holding torque/force at a sampled pose grid vs each actuated joint's declared actuator capacity ({ joint?, pose?, gravity?, min_torque_margin_pct?, range_samples? }).\n- 'body-likeness' — publish gate for organic/car bodies: cheap AABB↔wheel checks plus required agent still verdicts (side-body-over-wheels, side-cabin-aft, rear-haunch, ortho-proportions-vs-reference). Pass { body_bbox | code/file+body_feature_id, wheels?, cabin_bbox?, still_verdicts?, require_stills? }. Full CV silhouette matching is NOT implemented — agents must inspect ortho PNGs/Studio and supply still_verdicts before claiming success.\nAll params except `check` are check-specific and forwarded verbatim; each check fails closed on its own missing required params.",
+    "description": "Use this when you need to check a design against a rule set. One verifier, selected by `check`:\n- 'assembly' — mate-aware assembly validator on the active session (run evaluate_script first).\n- 'urdf' — structural validity of a .urdf file ({ urdf_path }).\n- 'dfm' — print-readiness gates declared by dfmSpec() ({ file | code }).\n- 'dfm-preflight' — sheet-metal flat pattern vs a job-shop's ordering rules ({ vendor, material, thicknessIn|thicknessMm, ... }). Returns the vendor's catalog source pages as `sources`; when `disclosure` is present, show it with those links.\n- 'assembly-path' — continuous straight-line removal of each assembly part along ±X/±Y/±Z and optional world-space directions. Returns valid directions and blocking parts; disassemblyOrder runs a deterministic greedy removal pass. Watertight mesh approximation, conservative contact, no rotation/mate/hardware certification.\n- 'swept-collision' — sweep declared joint range(s) and report colliding poses.\n- 'reachable' — inverse-kinematics reachability for an end-effector ({ tip_link, target_position, ... }).\n- 'fastener-installation' — measured explicit catalog-screw installation stations on lowered assembly BREP ({ file | code, fasteners:[{ part, against, engagementPart?, minEngagementMm?, maxProtrusionMm? }], toleranceMm?, angleToleranceDeg? }). Reports annular bearing gap, bore axis/diameter/overlap and receiver geometric engagement/protrusion. Unknown or zero coverage cannot pass. Simplified threads do not certify torque, preload or strength.\n- 'mounting-holes' — fastened mates expose matching hole diameters on both sides.\n- 'load-capacity' — will it hold? Closed-form Euler-Bernoulli beam check ({ loads, materials, ... }), or mode:'fea' to solve the script's feaStudy (quadratic-tet FEA, CalculiX) — both return { ok, safetyFactor, elements[{ partName, stressPa, yieldPa, safetyFactor }], failures[], diagnostics }; fea adds the threshold, the stress regions as @kc[...] faces with their location, and fea { peakStressPa, maxDisplacementMm, meshTrusted, peakAtSupportPa, refinement }; it refines the mesh automatically until the stress is trusted (refine: false for one solve).\n- 'static-hold' — gravitational holding torque/force at a sampled pose grid vs each actuated joint's declared actuator capacity ({ joint?, pose?, gravity?, min_torque_margin_pct?, range_samples? }).\n- 'body-likeness' — publish gate for organic/car bodies: cheap AABB↔wheel checks plus required agent still verdicts (side-body-over-wheels, side-cabin-aft, rear-haunch, ortho-proportions-vs-reference). Pass { body_bbox | code/file+body_feature_id, wheels?, cabin_bbox?, still_verdicts?, require_stills? }. Full CV silhouette matching is NOT implemented — agents must inspect ortho PNGs/Studio and supply still_verdicts before claiming success.\nAll params except `check` are check-specific and forwarded verbatim; each check fails closed on its own missing required params.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -681,7 +681,8 @@
             "load-capacity",
             "static-hold",
             "body-likeness",
-            "fastener-installation"
+            "fastener-installation",
+            "assembly-path"
           ],
           "description": "Which verification to run."
         },
@@ -789,6 +790,23 @@
         "refreshCatalog": {
           "type": "boolean",
           "description": "check:'dfm-preflight' — force vendor catalog refresh."
+        },
+        "directions": {
+          "type": "array",
+          "maxItems": 64,
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "minItems": 3,
+            "maxItems": 3
+          },
+          "description": "check:'assembly-path' — additional nonzero world-space removal vectors; normalized and deduplicated."
+        },
+        "disassemblyOrder": {
+          "type": "boolean",
+          "description": "check:'assembly-path' — iteratively remove freed parts and return removalOrder or stuckParts."
         },
         "joint": {
           "type": "string",
@@ -969,6 +987,33 @@
         "source": {
           "type": "string",
           "description": "fastener-installation: local geometry evidence."
+        },
+        "basis": {
+          "type": "string",
+          "description": "assembly-path: continuous-triangle-mesh."
+        },
+        "parts": {
+          "type": "array",
+          "description": "assembly-path: initial per-part removable, validDirections and directions with distanceMm, clear and blockingParts.",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "removalOrder": {
+          "type": "array",
+          "description": "assembly-path: deterministic greedy steps, each with part and direction.",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "stuckParts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "assembly-path: remaining parts when no straight removal is available."
         },
         "assembly": {
           "type": [

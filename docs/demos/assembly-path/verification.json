@@ -1,0 +1,95 @@
+{
+  "sourceSha256": "d00a64a54a8a02b6dfa2672555f039d5c8d8fe83351fdcab989750abc71d9a47",
+  "invocation": "npx tsx docs/demos/assembly-path/generate.ts",
+  "settings": {
+    "resolution": "1280x720",
+    "fps": 24,
+    "secondsPerCard": 4,
+    "codec": "mpeg4",
+    "synthetic": true,
+    "basis": "actual local verify output"
+  },
+  "expectations": "blind peg +Z only; captured stuck peg/housing; separate lid order lid,peg,housing",
+  "probe": {
+    "streams": [
+      {
+        "index": 0,
+        "codec_name": "mpeg4",
+        "codec_long_name": "MPEG-4 part 2",
+        "profile": "Simple Profile",
+        "codec_type": "video",
+        "codec_tag_string": "mp4v",
+        "codec_tag": "0x7634706d",
+        "mime_codec_string": "mp4v.20",
+        "width": 1280,
+        "height": 720,
+        "coded_width": 1280,
+        "coded_height": 720,
+        "has_b_frames": 0,
+        "sample_aspect_ratio": "1:1",
+        "display_aspect_ratio": "16:9",
+        "pix_fmt": "yuv420p",
+        "level": 1,
+        "chroma_location": "left",
+        "quarter_sample": "false",
+        "divx_packed": "false",
+        "id": "0x1",
+        "r_frame_rate": "24/1",
+        "avg_frame_rate": "24/1",
+        "time_base": "1/12288",
+        "start_pts": 0,
+        "start_time": "0.000000",
+        "duration_ts": 147456,
+        "duration": "12.000000",
+        "bit_rate": "1902064",
+        "nb_frames": "288",
+        "extradata_size": 47,
+        "disposition": {
+          "default": 1,
+          "dub": 0,
+          "original": 0,
+          "comment": 0,
+          "lyrics": 0,
+          "karaoke": 0,
+          "forced": 0,
+          "hearing_impaired": 0,
+          "visual_impaired": 0,
+          "clean_effects": 0,
+          "attached_pic": 0,
+          "timed_thumbnails": 0,
+          "non_diegetic": 0,
+          "captions": 0,
+          "descriptions": 0,
+          "metadata": 0,
+          "dependent": 0,
+          "still_image": 0,
+          "multilayer": 0
+        },
+        "tags": {
+          "language": "und",
+          "handler_name": "VideoHandler",
+          "encoder": "Lavc62.28.100 mpeg4"
+        }
+      }
+    ],
+    "format": {
+      "filename": "docs/demos/assembly-path/demo.mp4",
+      "nb_streams": 1,
+      "nb_programs": 0,
+      "nb_stream_groups": 0,
+      "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+      "format_long_name": "QuickTime / MOV",
+      "start_time": "0.000000",
+      "duration": "12.000000",
+      "size": "2855269",
+      "bit_rate": "1903512",
+      "probe_score": 100,
+      "tags": {
+        "major_brand": "isom",
+        "minor_version": "512",
+        "compatible_brands": "isomiso2mp41",
+        "encoder": "Lavf62.12.100"
+      }
+    }
+  }
+}

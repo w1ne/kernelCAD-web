@@ -1,0 +1,5 @@
+# Assembly path check
+Add `verify({check:'assembly-path', file|code, assembly?, directions?, disassemblyOrder?})`.
+Use transformed scene geometry and exported watertight triangle meshes. Six world cardinal axes always participate; explicit finite nonzero vectors are normalized and deduplicated. No inferred axes in this version.
+A continuous separating-axis triangle translation test covers the entire travel until the moving AABB clears the assembly AABB. Mesh BVH point-in-solid detects initial containment. Contact is conservative; a contact occurring only at t=0 while departing is ignored by the surface sweep. Report basis/limitations explicitly. Invalid, unsupported, malformed or excessive geometry fails closed.
+Report initial per-part removable flag, valid directions and blocking part names per direction. Optional deterministic greedy pass removes one freed part and recomputes remaining candidates, returning an order with directions or a stuck set. No scene mutation, rotations, joint constraints, hardware certification or UI changes.
