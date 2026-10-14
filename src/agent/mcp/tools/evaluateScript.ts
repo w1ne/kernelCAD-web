@@ -13,7 +13,7 @@ import { tubesOutput } from '../../../composition/scriptEvaluation';
 import type { PortReportEntry } from '../../../modeling/runtime/tube/portReport';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
-import { updateMcpViewer } from '../liveViewer';
+import { updateMcpViewer, type McpViewerResult } from '../liveViewer';
 import { clearActiveMcpSession, getActiveMcpSession, setActiveMcpSession } from '../activeSession';
 import { summarizeScene, unavailableSceneSummary, type SceneSummary } from '../../script-runtime/sceneSummary';
 import { Scene } from '../../../modeling/validation/scene';
@@ -45,7 +45,7 @@ export interface EvaluateScriptInput {
   skipMechanismCheck?: boolean;
 }
 
-export interface EvaluateScriptOutput {
+export interface EvaluateScriptOutput extends McpViewerResult {
   /** Loopback Studio link, stable across full builds in this MCP process. */
   viewerUrl?: string;
   /** Viewer provisioning failed; the CAD build result is still valid. */

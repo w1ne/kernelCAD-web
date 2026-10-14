@@ -4,6 +4,10 @@ import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { ShapeBackend } from '../../../kernel/backends/backend';
+import { isSceneBackend, type SceneBackend } from '../../../kernel/backends/sceneBackend';
+import { sceneToWorldFrameParts } from '../../../kernel/backends/occt/sceneToWorldFrame';
+import { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
+import { makeCompound, type Shape3D } from 'replicad';
 import { headlessRender } from '../../render/headlessRender';
 import { resolveRenderBaseUrl } from '../../render/playerServer';
 
@@ -17,9 +21,10 @@ export interface StepEvidence {
 }
 
 /** Copy the previous geometry before another evaluation can replace the session. */
-export function captureStepState(shape: ShapeBackend | undefined): StepState | undefined {
+export function captureStepState(shape: ShapeBackend | SceneBackend | undefined): StepState | undefined {
   if (!shape) return undefined;
   try {
+    if (isSceneBackend(shape)) return captureSceneState(shape);
     const bounds = shape.boundingBox();
     const state: StepState = { bounds: { min: [...bounds.min], max: [...bounds.max] }, volume: shape.volume() };
     try { state.brep = shape.exportBREP?.().slice(); }
@@ -28,6 +33,30 @@ export function captureStepState(shape: ShapeBackend | undefined): StepState | u
   } catch (error) {
     return { bounds: { min: [NaN, NaN, NaN], max: [NaN, NaN, NaN] }, volume: NaN, error: String(error) };
   }
+}
+
+/** Capture all bodies without fusing them or consuming the active scene. */
+function captureSceneState(scene: SceneBackend): StepState {
+  const parts = sceneToWorldFrameParts(scene);
+  try {
+    const boxes = parts.map(part => part.shape.boundingBox());
+    const state: StepState = {
+      bounds: {
+        min: [0, 1, 2].map(i => Math.min(...boxes.map(box => box.min[i]))) as Bounds['min'],
+        max: [0, 1, 2].map(i => Math.max(...boxes.map(box => box.max[i]))) as Bounds['max'],
+      },
+      volume: parts.reduce((sum, part) => sum + part.shape.volume(), 0),
+    };
+    let compound: OcctBackend | undefined;
+    try {
+      // makeCompound consumes its inputs; keep our world-frame copies alive
+      // until their own finally cleanup, and never consume the active scene.
+      compound = new OcctBackend(makeCompound(parts.map(part => part.shape.getReplicadShape().clone())) as Shape3D);
+      state.brep = compound.exportBREP();
+    } catch (error) { state.error = String(error); }
+    finally { compound?.dispose(); }
+    return state;
+  } finally { for (const part of parts) part.shape.dispose(); }
 }
 
 export type StepRenderer = (scriptPath: string, frame: StepFrame) => Promise<Buffer>;
