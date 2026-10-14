@@ -922,7 +922,7 @@ interface MeshFeatureEventContext {
   readonly meshBounds: MeshBoundsAccumulator;
   readonly failedFeatureIds: FeatureId[];
   readonly constructionClosure: ReadonlySet<FeatureId>;
-  readonly cachedAssemblyPartMeshes?: Map<FeatureId, Map<string, { faces: FaceGeometry[]; volume?: number; edges?: Float32Array }>>;
+  readonly cachedAssemblyPartMeshes?: Map<FeatureId, Map<string, { shape: ShapeBackend; faces: FaceGeometry[]; volume?: number; edges?: Float32Array }>>;
   readonly explodeOffsets?: ReadonlyMap<string, readonly [number, number, number]>;
   readonly assembliesIn?: ReadonlyMap<string, unknown>;
   readonly recordById: ReadonlyMap<FeatureId, FeatureRecord>;

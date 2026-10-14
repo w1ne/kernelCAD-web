@@ -50,7 +50,7 @@ describe('conservative interference bounds', () => {
 
   it('uses the supplied threshold for a small positive overlap', async () => {
     const scene = await boxes(45, -0.01, 'Y');
-    const spy = vi.spyOn(OcctBackend.prototype, 'intersect');
+    const spy = vi.spyOn(OcctBackend.prototype, 'intersectionVolume');
     try {
       expect(detectInterferences(scene, 20, new Set()).pairs).toEqual([]);
       expect(spy.mock.calls.length).toBe(0);
@@ -68,7 +68,7 @@ describe('conservative interference bounds', () => {
       .mockImplementation(() => {
         throw new Error('unavailable bounds');
       });
-    const intersect = vi.spyOn(OcctBackend.prototype, 'intersect');
+    const intersect = vi.spyOn(OcctBackend.prototype, 'intersectionVolume');
     try {
       const result = detectInterferences(scene, 20, new Set());
       expect(intersect.mock.calls.length).toBe(1);
@@ -80,7 +80,7 @@ describe('conservative interference bounds', () => {
   });
   it('retains a real above-threshold overlap', async () => {
     const scene = await boxes(45, -1, 'Y');
-    const spy = vi.spyOn(OcctBackend.prototype, 'intersect');
+    const spy = vi.spyOn(OcctBackend.prototype, 'intersectionVolume');
     try {
       const result = detectInterferences(scene, 20, new Set());
       expect(spy).toHaveBeenCalledTimes(1);

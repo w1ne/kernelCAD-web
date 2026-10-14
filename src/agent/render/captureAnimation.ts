@@ -59,7 +59,6 @@ import { sampleTracks } from '../../modeling/animation/animationSampler';
 import { openDemoPlayerPage, type DemoPlayerPageHandle, type HeadlessObjectFilter } from './headlessRender';
 import { resolveRenderBaseUrl, type ResolvedRenderBase } from './playerServer';
 import {
-import {
   bootstrapPagePhase,
   buildErrorsGate,
   buildModelPhase,

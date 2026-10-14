@@ -137,7 +137,7 @@ export interface SceneFanoutCtx {
   emitFeature: (mesh: FeatureMesh) => void;
   bounds: MeshBoundsAccumulator;
   failedFeatureIds: FeatureId[];
-  cachedAssemblyPartMeshes?: Map<FeatureId, Map<string, { faces: FaceGeometry[]; volume?: number; edges?: Float32Array }>>;
+  cachedAssemblyPartMeshes?: Map<FeatureId, Map<string, { shape: ShapeBackend; faces: FaceGeometry[]; volume?: number; edges?: Float32Array; link?: PartLinkData }>>;
   explodeOffsets?: ReadonlyMap<string, readonly [number, number, number]>;
   assembliesIn?: ReadonlyMap<string, unknown>;
   recordById: ReadonlyMap<FeatureId, FeatureRecord>;
@@ -224,7 +224,7 @@ export function emitSceneBackendFanout(
 
 /** Selection ↔ code link data of one part mesh (see `featureOwnership.ts`). */
 type PartLinkData = FeatureOwnership & { edgeRanges?: number[] };
-type CachedScenePartMesh = { faces: FaceGeometry[]; volume?: number; edges?: Float32Array; link?: PartLinkData };
+type CachedScenePartMesh = { shape: ShapeBackend; faces: FaceGeometry[]; volume?: number; edges?: Float32Array; link?: PartLinkData };
 type ScenePartMeshCache = Map<string, CachedScenePartMesh>;
 
 interface ResolvedScenePartMesh {
@@ -274,7 +274,7 @@ function resolveScenePartMesh(
   // only `part.worldTransform` has refreshed. Reuse cached triangle
   // data so we skip the expensive `meshShape()` call per part.
   const cachedPart = partCache?.get(part.name);
-  if (cachedPart) {
+  if (cachedPart?.shape === part.shape) {
     return {
       faces: cachedPart.faces,
       volume: cachedPart.volume,
@@ -307,7 +307,7 @@ function resolveScenePartMesh(
       nextCache = new Map();
       ctx.cachedAssemblyPartMeshes.set(featureId, nextCache);
     }
-    nextCache.set(part.name, { faces, ...(volume !== undefined ? { volume } : {}), ...(edges ? { edges } : {}), link });
+    nextCache.set(part.name, { shape: part.shape, faces, ...(volume !== undefined ? { volume } : {}), ...(edges ? { edges } : {}), link });
   }
   return { faces, volume, edges, link, fromCache: false, partCache: nextCache };
 }
