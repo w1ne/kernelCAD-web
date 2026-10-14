@@ -233,7 +233,13 @@ function rejectUnavailableKernel(kernel: unknown): EvaluateScriptOutput | undefi
     return undefined;
   } catch (e) {
     if (!(e instanceof KernelUnavailableError)) throw e;
-    return { ok: false, featureCount: 0, diagnostics: [e.diagnostic], featureHealth: [] };
+    return {
+      ok: false,
+      sceneSummary: unavailableSceneSummary(),
+      featureCount: 0,
+      diagnostics: [e.diagnostic],
+      featureHealth: [],
+    };
   }
 }
 
