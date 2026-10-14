@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { RulerDimensionLine } from 'lucide-react';
+import { CORNER_BELOW_TOP, CORNER_TOP } from '../cornerControls';
 
 export const LEGACY_DIMENSIONS_HINT = 'Detailed dimensions appear after the model is republished.';
 
@@ -17,8 +18,9 @@ export function DimensionsButton({ on, onToggle, legacy }: { on: boolean; onTogg
                 aria-pressed={on}
                 title={on ? 'Hide dimensions' : 'Show dimensions'}
                 onClick={onToggle}
+                style={CORNER_TOP}
                 className={
-                    'absolute left-14 top-3 z-20 flex h-9 w-9 items-center justify-center rounded-md border shadow-lg backdrop-blur transition focus:outline-none focus:ring-2 focus:ring-accent ' +
+                    'absolute left-14 z-20 flex h-9 w-9 items-center justify-center rounded-md border shadow-lg backdrop-blur transition focus:outline-none focus:ring-2 focus:ring-accent ' +
                     (on
                         ? 'border-warn bg-warn text-on-accent'
                         : 'border-border bg-surface-1 text-fg hover:bg-surface-2')
@@ -29,7 +31,8 @@ export function DimensionsButton({ on, onToggle, legacy }: { on: boolean; onTogg
             {on && legacy ? (
                 <p
                     data-testid="dimensions-legacy-hint"
-                    className="pointer-events-none absolute left-3 top-14 z-20 rounded-md bg-surface-1 px-2 py-1 text-2xs text-fg-2 shadow"
+                    style={CORNER_BELOW_TOP}
+                    className="pointer-events-none absolute left-3 z-20 rounded-md bg-surface-1 px-2 py-1 text-2xs text-fg-2 shadow"
                 >
                     {LEGACY_DIMENSIONS_HINT}
                 </p>
