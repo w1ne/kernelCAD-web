@@ -18,6 +18,8 @@ export const SOURCE_EDIT: JSONSchemaObject = {
     ok: { type: 'boolean', description: 'Whether the edit applied and re-evaluated cleanly.' },
     viewerUrl: { type: 'string', description: 'Same live Studio link when this edit built a replacement model.' },
     viewerError: { type: 'string', description: 'Viewer provisioning error, independent of edit diagnostics.' },
+    viewerMode: { type: 'string', enum: ['hosted'], description: 'Hosted mode uses open_in_studio instead of a process-local viewer.' },
+    viewerHint: { type: 'string', description: 'How to view the built model in hosted Studio.' },
     step: { type: 'object', additionalProperties: true, description: 'Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs.' },
     sceneSummary: SCENE_SUMMARY_SCHEMA,
     new_code: { type: 'string', description: 'Modified .kcad.ts source (present on success). Caller persists it.' },

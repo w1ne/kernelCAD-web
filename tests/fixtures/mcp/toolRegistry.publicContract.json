@@ -1,7 +1,7 @@
 [
   {
     "name": "evaluate_script",
-    "description": "Use this when you need to run a script and check it compiles. Full local builds return viewerUrl: a live Studio link reused and updated on later full builds in the same MCP process. Full evaluations return step evidence: build validity, volume and before/after local PNG paths in one shared iso frame. Snapshots require PW_CDP_URL for an existing browser; unavailable captures report an explicit error. Run a kernelCAD .kcad.ts script and report pass/fail + feature count + diagnostics + sceneSummary (BREP validity, volume in mm³, face count, bounding size in mm). When the scene is assembly-built (assembly().part(...) → .model()/.solvedModel()), also returns a parts summary { count, names } AND runs the mechanism-truth gate by default: the `mechanism` field reports real/broken/unverified and a broken mechanism (disconnected components / mechanism.orphan-part, self-collision, fastened drift, dof-mismatch) makes ok:false with the failures in diagnostics — a mechanism (any mate, joint, transmission or .solvedModel()) needs every part linked by connectors + mates/joints (axis+revolute for shafts/hinges/gears; frame+fastened for rigid; or arm.revolute/.prismatic/.ball/.fixed). A plain multi-part assembly with no mates (base + lid, print layout) is independent bodies and passes. Pass { skipMechanismCheck: true } to opt out (e.g. a deliberately free part next to a mechanism). Every union() is checked too (no opt-out): union.disconnected (the union is several separate solids — a floating operand) and union.member-overlap (two operands that each carry their own .finish()/.material(), the same one, share > 1 mm³ — cut members to fit, e.g. a cross tube between rails is span minus two rail widths) make ok:false. Pass either { file: \"<path>\" } or { code: \"<inline source>\" }. Set { dryRun: true } for fast validation while iterating: transpile + capture + capture-light checks without building solids, DFM gates, or meshing — milliseconds instead of seconds (100x+ on boolean/fillet-heavy scripts). A dry run catches script throws, capture-time API misuse, and assembly validity-gate failures, but NOT lowering failures or dfmSpec diagnostics; it leaves the active session untouched, so finish with a full (non-dry) evaluate_script before using session-dependent tools. To show a measurement in the 3D viewer (e.g. hole spacing), declare it in the script with shape.dimension({ kind: \"linear\", from, to, label }); a full evaluate lists them as dimensions: [{ text, kind, source }], and a shared /p link with ?dims=1 forces them on.",
+    "description": "Use this when you need to run a script and check it compiles. Full local builds return viewerUrl: a live Studio link reused and updated on later full builds in the same MCP process. Hosted builds return viewerMode: hosted and viewerHint pointing to open_in_studio; they do not start a loopback viewer. Full evaluations return step evidence: build validity, volume and before/after local PNG paths in one shared iso frame. Snapshots require PW_CDP_URL for an existing browser; unavailable captures report an explicit error. Run a kernelCAD .kcad.ts script and report pass/fail + feature count + diagnostics + sceneSummary (BREP validity, volume in mm³, face count, bounding size in mm). When the scene is assembly-built (assembly().part(...) → .model()/.solvedModel()), also returns a parts summary { count, names } AND runs the mechanism-truth gate by default: the `mechanism` field reports real/broken/unverified and a broken mechanism (disconnected components / mechanism.orphan-part, self-collision, fastened drift, dof-mismatch) makes ok:false with the failures in diagnostics — a mechanism (any mate, joint, transmission or .solvedModel()) needs every part linked by connectors + mates/joints (axis+revolute for shafts/hinges/gears; frame+fastened for rigid; or arm.revolute/.prismatic/.ball/.fixed). A plain multi-part assembly with no mates (base + lid, print layout) is independent bodies and passes. Pass { skipMechanismCheck: true } to opt out (e.g. a deliberately free part next to a mechanism). Every union() is checked too (no opt-out): union.disconnected (the union is several separate solids — a floating operand) and union.member-overlap (two operands that each carry their own .finish()/.material(), the same one, share > 1 mm³ — cut members to fit, e.g. a cross tube between rails is span minus two rail widths) make ok:false. Pass either { file: \"<path>\" } or { code: \"<inline source>\" }. Set { dryRun: true } for fast validation while iterating: transpile + capture + capture-light checks without building solids, DFM gates, or meshing — milliseconds instead of seconds (100x+ on boolean/fillet-heavy scripts). A dry run catches script throws, capture-time API misuse, and assembly validity-gate failures, but NOT lowering failures or dfmSpec diagnostics; it leaves the active session untouched, so finish with a full (non-dry) evaluate_script before using session-dependent tools. To show a measurement in the 3D viewer (e.g. hole spacing), declare it in the script with shape.dimension({ kind: \"linear\", from, to, label }); a full evaluate lists them as dimensions: [{ text, kind, source }], and a shared /p link with ?dims=1 forces them on.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -301,6 +301,17 @@
         "reviewHint": {
           "type": "string",
           "description": "Present only when a captured assembly declares articulated (non-fastened) mates: the default mechanism check is shallow (no joint-support intents, pose-envelope overlap at declared limits, or gravity drop) — run review_cad for pose-envelope + gravity checks."
+        },
+        "viewerMode": {
+          "type": "string",
+          "enum": [
+            "hosted"
+          ],
+          "description": "Hosted mode uses open_in_studio instead of a process-local viewer."
+        },
+        "viewerHint": {
+          "type": "string",
+          "description": "How to view the built model in hosted Studio."
         }
       },
       "required": [
@@ -1254,6 +1265,17 @@
         "error": {
           "type": "string",
           "description": "Failure message (present when ok is false)."
+        },
+        "viewerMode": {
+          "type": "string",
+          "enum": [
+            "hosted"
+          ],
+          "description": "Hosted mode uses open_in_studio instead of a process-local viewer."
+        },
+        "viewerHint": {
+          "type": "string",
+          "description": "How to view the built model in hosted Studio."
         }
       },
       "required": [
@@ -1329,6 +1351,17 @@
         "error": {
           "type": "string",
           "description": "Failure message (present when ok is false)."
+        },
+        "viewerMode": {
+          "type": "string",
+          "enum": [
+            "hosted"
+          ],
+          "description": "Hosted mode uses open_in_studio instead of a process-local viewer."
+        },
+        "viewerHint": {
+          "type": "string",
+          "description": "How to view the built model in hosted Studio."
         }
       },
       "required": [
@@ -1592,6 +1625,17 @@
         "error": {
           "type": "string",
           "description": "Failure message (present when ok is false)."
+        },
+        "viewerMode": {
+          "type": "string",
+          "enum": [
+            "hosted"
+          ],
+          "description": "Hosted mode uses open_in_studio instead of a process-local viewer."
+        },
+        "viewerHint": {
+          "type": "string",
+          "description": "How to view the built model in hosted Studio."
         }
       },
       "required": [
@@ -1812,6 +1856,17 @@
         "error": {
           "type": "string",
           "description": "Failure message (present when ok is false)."
+        },
+        "viewerMode": {
+          "type": "string",
+          "enum": [
+            "hosted"
+          ],
+          "description": "Hosted mode uses open_in_studio instead of a process-local viewer."
+        },
+        "viewerHint": {
+          "type": "string",
+          "description": "How to view the built model in hosted Studio."
         }
       },
       "required": [
@@ -2080,6 +2135,17 @@
         "error": {
           "type": "string",
           "description": "Failure message (present when ok is false)."
+        },
+        "viewerMode": {
+          "type": "string",
+          "enum": [
+            "hosted"
+          ],
+          "description": "Hosted mode uses open_in_studio instead of a process-local viewer."
+        },
+        "viewerHint": {
+          "type": "string",
+          "description": "How to view the built model in hosted Studio."
         }
       },
       "required": [
@@ -2370,6 +2436,17 @@
         "error": {
           "type": "string",
           "description": "Failure message (present when ok is false)."
+        },
+        "viewerMode": {
+          "type": "string",
+          "enum": [
+            "hosted"
+          ],
+          "description": "Hosted mode uses open_in_studio instead of a process-local viewer."
+        },
+        "viewerHint": {
+          "type": "string",
+          "description": "How to view the built model in hosted Studio."
         }
       },
       "required": [
@@ -2524,6 +2601,17 @@
         "error": {
           "type": "string",
           "description": "Failure message (present when ok is false)."
+        },
+        "viewerMode": {
+          "type": "string",
+          "enum": [
+            "hosted"
+          ],
+          "description": "Hosted mode uses open_in_studio instead of a process-local viewer."
+        },
+        "viewerHint": {
+          "type": "string",
+          "description": "How to view the built model in hosted Studio."
         }
       },
       "required": [
@@ -2648,6 +2736,17 @@
         "error": {
           "type": "string",
           "description": "Failure message (present when ok is false)."
+        },
+        "viewerMode": {
+          "type": "string",
+          "enum": [
+            "hosted"
+          ],
+          "description": "Hosted mode uses open_in_studio instead of a process-local viewer."
+        },
+        "viewerHint": {
+          "type": "string",
+          "description": "How to view the built model in hosted Studio."
         }
       },
       "required": [
@@ -2894,6 +2993,17 @@
         "error": {
           "type": "string",
           "description": "Failure message (present when ok is false)."
+        },
+        "viewerMode": {
+          "type": "string",
+          "enum": [
+            "hosted"
+          ],
+          "description": "Hosted mode uses open_in_studio instead of a process-local viewer."
+        },
+        "viewerHint": {
+          "type": "string",
+          "description": "How to view the built model in hosted Studio."
         }
       },
       "required": [
@@ -2969,6 +3079,17 @@
         "error": {
           "type": "string",
           "description": "Failure message (present when ok is false)."
+        },
+        "viewerMode": {
+          "type": "string",
+          "enum": [
+            "hosted"
+          ],
+          "description": "Hosted mode uses open_in_studio instead of a process-local viewer."
+        },
+        "viewerHint": {
+          "type": "string",
+          "description": "How to view the built model in hosted Studio."
         }
       },
       "required": [
@@ -4083,6 +4204,17 @@
         "error": {
           "type": "string",
           "description": "Failure message (present when ok is false)."
+        },
+        "viewerMode": {
+          "type": "string",
+          "enum": [
+            "hosted"
+          ],
+          "description": "Hosted mode uses open_in_studio instead of a process-local viewer."
+        },
+        "viewerHint": {
+          "type": "string",
+          "description": "How to view the built model in hosted Studio."
         }
       },
       "required": [
@@ -4263,6 +4395,17 @@
         "error": {
           "type": "string",
           "description": "Failure message (present when ok is false)."
+        },
+        "viewerMode": {
+          "type": "string",
+          "enum": [
+            "hosted"
+          ],
+          "description": "Hosted mode uses open_in_studio instead of a process-local viewer."
+        },
+        "viewerHint": {
+          "type": "string",
+          "description": "How to view the built model in hosted Studio."
         }
       },
       "required": [
@@ -4517,6 +4660,17 @@
         "error": {
           "type": "string",
           "description": "Failure message (present when ok is false)."
+        },
+        "viewerMode": {
+          "type": "string",
+          "enum": [
+            "hosted"
+          ],
+          "description": "Hosted mode uses open_in_studio instead of a process-local viewer."
+        },
+        "viewerHint": {
+          "type": "string",
+          "description": "How to view the built model in hosted Studio."
         }
       },
       "required": [
@@ -4614,6 +4768,17 @@
         "error": {
           "type": "string",
           "description": "Failure message (present when ok is false)."
+        },
+        "viewerMode": {
+          "type": "string",
+          "enum": [
+            "hosted"
+          ],
+          "description": "Hosted mode uses open_in_studio instead of a process-local viewer."
+        },
+        "viewerHint": {
+          "type": "string",
+          "description": "How to view the built model in hosted Studio."
         }
       },
       "required": [
@@ -4705,6 +4870,17 @@
         "error": {
           "type": "string",
           "description": "Failure message (present when ok is false)."
+        },
+        "viewerMode": {
+          "type": "string",
+          "enum": [
+            "hosted"
+          ],
+          "description": "Hosted mode uses open_in_studio instead of a process-local viewer."
+        },
+        "viewerHint": {
+          "type": "string",
+          "description": "How to view the built model in hosted Studio."
         }
       },
       "required": [

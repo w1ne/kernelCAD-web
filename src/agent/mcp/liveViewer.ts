@@ -174,12 +174,22 @@ export function createLiveViewer(options: ViewerOptions = {}) {
   };
 }
 
-let lastViewerResult: { viewerUrl?: string; viewerError?: string } | undefined;
+export interface McpViewerResult {
+  viewerUrl?: string;
+  viewerError?: string;
+  viewerMode?: 'hosted';
+  viewerHint?: string;
+}
+let lastViewerResult: McpViewerResult | undefined;
 /** Identity changes on every full build, even though viewerUrl remains stable. */
 export function getMcpViewerResult() { return lastViewerResult; }
 
 let viewer: ReturnType<typeof createLiveViewer> | undefined;
-export async function updateMcpViewer(model: BuiltModel): Promise<{ viewerUrl?: string; viewerError?: string }> {
+export async function updateMcpViewer(model: BuiltModel): Promise<McpViewerResult> {
+  if (process.env.KERNELCAD_MCP_MODE === 'hosted') {
+    lastViewerResult = { viewerMode: 'hosted', viewerHint: 'Use open_in_studio to view this model in hosted Studio.' };
+    return lastViewerResult;
+  }
   try {
     viewer ??= createLiveViewer();
     lastViewerResult = { viewerUrl: await viewer.update(model) };
