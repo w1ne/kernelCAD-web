@@ -230,6 +230,9 @@ For local Studio, [`get_selection` and `set_selection`](docs/guide/shared-select
 share face/edge picks with your MCP agent. Open the same script in Studio and
 use its session token; picks expire on model rebuild.
 
+For opt-in kernel selection and fallback diagnostics, see the
+[experimental guarded SMLib kernel guide](docs/smlib-kernel.md).
+
 ## Contributing
 
 Web app + dev workflow (clone the repo, `npm install`, `npm run dev`) for contributors who want to hack on the kernel or the visual debugger:

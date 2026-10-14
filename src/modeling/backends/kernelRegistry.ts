@@ -22,6 +22,7 @@ import {
   type KernelId,
 } from '../../shared/types/backendTarget';
 import { createOcctLowerer } from './occt/occtLowerer';
+import { createSmlibLowerer } from './smlib/smlibLowerer';
 
 /** Session state a lowerer is pre-wired with (same shape createOcctLowerer takes). */
 export interface LowererSession {
@@ -34,6 +35,7 @@ export type LowererFactory = (session?: LowererSession) => FeatureLowerer;
 
 const FACTORIES: Partial<Record<KernelId, LowererFactory>> = {
   occt: session => createOcctLowerer(session),
+  smlib: session => createSmlibLowerer(session),
 };
 
 /** Kernels that can actually build in this build (subset of KERNEL_IDS). */

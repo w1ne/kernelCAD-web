@@ -143,7 +143,7 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     }
   });
 
-  it('catalogue registers the sketch part-detection code', () => {
+  it('catalogue registers current codes including the SMLib fallback code', () => {
     // 47 baseline (milestone-C diagnostic-vocab spec)
     //  + 23 NURBS Slice B/C/D (Curve3D / variableSweep / surface / G2 / 2D path NURBS)
     //  + 31 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
@@ -333,6 +333,7 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     expect(catalogue.has('assembly.mounting-hole.misaligned')).toBe(true);
     expect(catalogue.has('assembly.connectivity.assumed-root')).toBe(true);
     expect(catalogue.has('script.no-return')).toBe(true);
+    expect(catalogue.has('recompute.kernel.guard-fallback')).toBe(true);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

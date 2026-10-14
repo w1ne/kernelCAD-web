@@ -52,28 +52,31 @@ describe('kernel registry', () => {
     expect(lowerer.scriptDir).toBe('/tmp/x');
   });
 
-  it('only occt is available today', () => {
-    expect(availableKernels()).toEqual(['occt']);
+  it('occt and opt-in smlib are registered', () => {
+    expect(availableKernels()).toEqual(['occt', 'smlib']);
   });
 
-  it('smlib fails with a typed kernel-unavailable error, no fallback', () => {
-    let caught: unknown;
+  it('a disabled smlib factory fails with a typed unavailable error', () => {
+    const restore = __setKernelFactoryForTest('smlib', undefined);
     try {
-      createLowerer('smlib');
-    } catch (e) {
-      caught = e;
-    }
-    expect(caught).toBeInstanceOf(KernelUnavailableError);
-    const err = caught as KernelUnavailableError;
-    expect(err.code).toBe('recompute.kernel.unavailable');
-    expect(err.requested).toBe('smlib');
-    expect(err.diagnostic).toMatchObject({
-      code: 'recompute.kernel.unavailable',
-      severity: 'error',
-      target: 'export-smlib',
-      nextAction: { kind: 'fix-arg', field: 'kernel' },
-    });
-    expect(err.message).toMatch(/Kernel 'smlib' is not available/);
+      let caught: unknown;
+      try {
+        createLowerer('smlib');
+      } catch (e) {
+        caught = e;
+      }
+      expect(caught).toBeInstanceOf(KernelUnavailableError);
+      const err = caught as KernelUnavailableError;
+      expect(err.code).toBe('recompute.kernel.unavailable');
+      expect(err.requested).toBe('smlib');
+      expect(err.diagnostic).toMatchObject({
+        code: 'recompute.kernel.unavailable',
+        severity: 'error',
+        target: 'export-smlib',
+        nextAction: { kind: 'fix-arg', field: 'kernel' },
+      });
+      expect(err.message).toMatch(/Kernel 'smlib' is not available/);
+    } finally { restore(); }
   });
 
   it('rejects unknown kernels with the same error', () => {
@@ -92,7 +95,7 @@ describe('kernel registry', () => {
     } finally {
       restore();
     }
-    expect(availableKernels()).toEqual(['occt']);
+    expect(availableKernels()).toEqual(['occt', 'smlib']);
   });
 
   it('registers the diagnostic code', () => {
@@ -112,13 +115,13 @@ describe('HeadlessKernel kernel option', () => {
 });
 
 describe('kernel capabilities list', () => {
-  it('occt features are exactly the OCCT lowerer dispatch table; smlib is empty', () => {
+  it('hybrid smlib exposes the OCCT fallback feature set', () => {
     const caps = buildKernelCapabilities();
     expect(caps.defaultKernel).toBe('occt');
     expect(caps.kernels.occt.available).toBe(true);
     expect(caps.kernels.occt.features).toEqual([...new OcctLowerer().supports].sort());
     expect(caps.kernels.occt.features.length).toBeGreaterThan(10);
-    expect(caps.kernels.smlib).toEqual({ available: false, target: 'export-smlib', features: [] });
+    expect(caps.kernels.smlib).toEqual({ available: true, target: 'export-smlib', features: caps.kernels.occt.features });
   });
 
   it('the checked-in generated file is up to date (run `npm run kernel:capabilities`)', () => {

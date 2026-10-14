@@ -30,6 +30,17 @@ import {
   isOcctOutOfMemory,
 } from '../backends/occt/occtException';
 
+/** Browser-safe interchange entry point for guarded kernels. Caller owns the result. */
+export async function importStepShape(bytes: Uint8Array): Promise<OcctBackend> {
+  await initOcct();
+  const imported = await replicad.importSTEP(new Blob([new Uint8Array(bytes)]));
+  if (!imported || typeof (imported as { meshShape?: unknown }).meshShape !== 'function') {
+    imported?.delete();
+    throw new Error('STEP import contained no 3D shape');
+  }
+  return new OcctBackend(imported as replicad.Shape3D);
+}
+
 export interface StepSolidReport {
   /** Stable index in TopExp_Explorer traversal order. */
   index: number;
