@@ -3,6 +3,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   EMBED_CANVAS_BG,
+  EMBED_SMALL_GIZMO,
   embedCustomize,
   embedPosterUrl,
   embedPresentationMode,
@@ -184,5 +185,15 @@ describe('ensureUsableStorage', () => {
     const before = win.localStorage;
     expect(ensureUsableStorage(win)).toEqual([]);
     expect(win.localStorage).toBe(before);
+  });
+});
+
+describe('EMBED_SMALL_GIZMO', () => {
+  // A phone chat card is under 480 px wide: the view cube (axis arrows and
+  // face planes) used to be hidden there, leaving no way to turn the view.
+  it('shrinks the view cube in small frames and never hides it', () => {
+    expect(EMBED_SMALL_GIZMO).not.toMatch(/:hidden\b/);
+    expect(EMBED_SMALL_GIZMO).toContain('max-[479px]:[&_[data-testid=view-gizmo]]:scale-[0.7]');
+    expect(EMBED_SMALL_GIZMO).toContain('[@media(max-height:359px)]:[&_[data-testid=view-gizmo]]:scale-[0.7]');
   });
 });

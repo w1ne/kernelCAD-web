@@ -183,3 +183,8 @@ export function ensureUsableStorage(win: Window = window): string[] {
   }
   return replaced;
 }
+
+/** Small frames (narrow or short) get a 0.7x view cube pinned to its corner. */
+export const EMBED_SMALL_GIZMO =
+  'max-[479px]:[&_[data-testid=view-gizmo]]:origin-bottom-right max-[479px]:[&_[data-testid=view-gizmo]]:scale-[0.7] '
+  + '[@media(max-height:359px)]:[&_[data-testid=view-gizmo]]:origin-bottom-right [@media(max-height:359px)]:[&_[data-testid=view-gizmo]]:scale-[0.7]';

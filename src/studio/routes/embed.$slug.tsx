@@ -37,6 +37,7 @@ import { EmbedAttributionBar, MadeWithKernelcad } from '../components/MadeWithKe
 import { StudioModelCustomizer } from '../customizer/StudioModelCustomizer';
 import {
   EMBED_CANVAS_BG,
+  EMBED_SMALL_GIZMO,
   embedCustomize,
   embedPosterUrl,
   embedPresentationMode,
@@ -522,8 +523,10 @@ function EmbedFrame(props: {
       data-embed-theme={props.theme}
       aria-busy={loading && !modelShown}
     >
-      {/* The view cube is 144 px: in a small frame it covers the model. */}
-      <div className="relative min-h-0 flex-1 max-[479px]:[&_[data-testid=view-gizmo]]:hidden [@media(max-height:359px)]:[&_[data-testid=view-gizmo]]:hidden">
+      {/* The view cube is 144 px: in a small frame (a phone chat card) it is
+          shrunk into the corner, never hidden. It is the only way to turn the
+          view to a face there. */}
+      <div className={`relative min-h-0 flex-1 ${EMBED_SMALL_GIZMO}`}>
         {props.children}
         <EmbedCover visible={!modelShown} poster={showPoster ? poster : null} />
         {props.statusMessage ? (
