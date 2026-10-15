@@ -27,6 +27,15 @@ export interface ApplySurfaceBlendOutput {
 }
 
 const IDENTIFIER = /^[A-Za-z_$][\w$]*$/;
+function nextSurfaceBlendBinding(code: string): string {
+  const taken = new Set<string>();
+  for (const match of code.matchAll(/\bconst\s+(_surface_blend(?:_\d+)?)\b/g)) taken.add(match[1]!);
+  if (!taken.has('_surface_blend')) return '_surface_blend';
+  let i = 2;
+  while (taken.has(`_surface_blend_${i}`)) i += 1;
+  return `_surface_blend_${i}`;
+}
+
 
 export async function applySurfaceBlendTool(input: ApplySurfaceBlendInput): Promise<ApplySurfaceBlendOutput> {
   const operation = input.operation ?? 'fillet';
@@ -47,7 +56,8 @@ export async function applySurfaceBlendTool(input: ApplySurfaceBlendInput): Prom
   const selectorCode = input.selector === undefined ? '' : `, ${JSON.stringify(input.selector)}`;
   const optsCode = operation === 'fillet' && input.continuity ? `, { continuity: ${JSON.stringify(input.continuity)} }` : '';
   const amount = operation === 'fillet' ? input.radius : input.distance;
-  const featureCode = `const _surface_blend = ${input.shape_binding}.${operation}(${amount}${selectorCode}${optsCode});`;
+  const blendBinding = nextSurfaceBlendBinding(input.code);
+  const featureCode = `const ${blendBinding} = ${input.shape_binding}.${operation}(${amount}${selectorCode}${optsCode});`;
   const edit = addFeature(input.code, featureCode);
   if (!edit.ok || !edit.new_code) return { ok: false, error: edit.error };
   const evaluated = await evaluateScriptTool({ code: edit.new_code });
