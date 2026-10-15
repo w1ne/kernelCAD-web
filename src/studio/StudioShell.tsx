@@ -300,6 +300,7 @@ function renderStudioFooter(props: {
                 interferences={interferenceCount}
                 interferenceSummary={recompute.interferenceSummary}
                 recomputeMs={workbench.recomputeMs}
+                mechanismSummary={workbench.scriptReview?.mechanismSummary}
             />
 
             {renderProjectManager(workbench)}

@@ -24,6 +24,9 @@ const evaluateScriptToolEntry: ToolRegistryEntry = {
       'arm.revolute/.prismatic/.ball/.fixed). A plain multi-part assembly with no mates (base + lid, ' +
       'print layout) is independent bodies and passes. Pass { skipMechanismCheck: true } to opt out ' +
       '(e.g. a deliberately free part next to a mechanism). ' +
+      'An animation or drive on a fastened joint (mechanism.motion-on-fixed-joint) is broken: animate a revolute/prismatic mate pose. ' +
+      'For a model with moving joints or motion intent, `mechanismSummary.statement` is one plain line: ' +
+      '"Motion checked: ..." names what ran; "Motion not checked: ..." is NOT a pass — never call that mechanism working. ' +
       'Every union() is checked too (no opt-out): union.disconnected (the union is several ' +
       'separate solids — a floating operand) and union.member-overlap (two operands that each ' +
       'carry their own .finish()/.material(), the same one, share > 1 mm³ — cut members to fit, e.g. a cross ' +

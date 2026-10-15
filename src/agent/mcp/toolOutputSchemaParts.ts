@@ -49,3 +49,29 @@ export const SELECTION: JSONSchemaObject = {
     revision: { type: 'integer' }, modelGeneration: { type: 'integer' }, error: { type: 'string' },
   }, required: ['ok'], additionalProperties: true,
 };
+
+/** Plain mechanism verdict (`summarizeMechanism`) shared by evaluate_script and review_cad. */
+export const MECHANISM_SUMMARY: Record<string, unknown> = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['verdict', 'statement', 'checked', 'skipped', 'failures'],
+  description:
+    "Plain verdict for a model with moving joints or motion intent (animation, drive, transmission); absent for a static model. " +
+    "Read `statement`: 'Motion checked' names what ran, 'Motion not checked' names what was skipped (NOT a pass), 'Mechanism broken' names the joint.",
+  properties: {
+    verdict: { type: 'string', enum: ['real', 'broken', 'unverified'] },
+    statement: { type: 'string', description: 'One line. Quote it instead of calling the mechanism working.' },
+    checked: { type: 'array', items: { type: 'string' }, description: "What ran and held (verdict 'real')." },
+    skipped: { type: 'array', items: { type: 'string' }, description: "What did not run and why (verdict 'unverified')." },
+    failures: {
+      type: 'array',
+      description: "Error failures (verdict 'broken'); `joint` names the mate and `part` the part when known.",
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['code', 'reason'],
+        properties: { code: { type: 'string' }, reason: { type: 'string' }, joint: { type: 'string' }, part: { type: 'string' } },
+      },
+    },
+  },
+};
