@@ -162,7 +162,7 @@ export function Tooltip({
                             <span className="font-medium">{label}</span>
                             {shortcut && shortcut.length > 0 && <Kbd keys={shortcut} />}
                         </span>
-                        {description && <span className="block text-2xs text-fg-2">{description}</span>}
+                        {description && <span className="block whitespace-pre-line text-2xs text-fg-2">{description}</span>}
                     </div>,
                     document.body,
                 )}

@@ -15,11 +15,14 @@
 
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import type { Assembly } from '../capture/assembly';
-import { checkMechanismTruth, type MechanismTruthOptions } from './mechanismTruth';
+import { checkMechanismTruth, type MechanismCoverage, type MechanismTruthOptions } from './mechanismTruth';
+import { mergeCoverage } from './mechanismVerdict';
 
 export interface MechanismProbeResult {
   readonly mechanism: 'real' | 'broken' | 'unverified';
   readonly failures: CompilerDiagnostic[];
+  /** Summed scope of the per-assembly runs (see `summarizeMechanism`). */
+  readonly coverage?: MechanismCoverage;
 }
 
 /**
@@ -39,14 +42,18 @@ export async function probeAssemblies(
   let anyBroken = false;
   let anyUnverified = false;
   const aggregated: CompilerDiagnostic[] = [];
+  const coverages: Array<MechanismCoverage | undefined> = [];
   for (const arm of assemblies) {
     const verdict = await checkMechanismTruth(arm, opts);
     if (verdict.mechanism === 'broken') anyBroken = true;
     else if (verdict.mechanism === 'unverified') anyUnverified = true;
     aggregated.push(...verdict.failures);
+    coverages.push(verdict.coverage);
   }
+  const coverage = mergeCoverage(coverages);
   return {
     mechanism: anyBroken ? 'broken' : anyUnverified ? 'unverified' : 'real',
     failures: aggregated,
+    ...(coverage !== undefined ? { coverage } : {}),
   };
 }

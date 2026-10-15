@@ -66,6 +66,7 @@ import { expandCoupledPoses } from '../mates/coupledPoses';
 import type { NumericPoses } from '../capture/forwardKinematics';
 import { parseConnectorRef, type MateRecord } from '../mates/mate';
 import { checkOrphanParts } from './mechanismOrphan';
+import { checkMotionIntent } from './motionIntent';
 import {
   REST_MATE_CONTACT_TOLERANCE_MM,
   restPoseMateGaps,
@@ -180,6 +181,23 @@ const DOF_MISMATCH_MICRO_POSE_DEG = 0.5;
 export interface MechanismTruthResult {
   readonly mechanism: 'real' | 'broken' | 'unverified';
   readonly failures: readonly CompilerDiagnostic[];
+  /** What the probe actually checked, so a 'real' verdict is never read as
+   *  more than it is. Absent on the empty-assembly short-circuit. */
+  readonly coverage?: MechanismCoverage;
+}
+
+/** Scope of one mechanism-truth run. */
+export interface MechanismCoverage {
+  /** Pose samples that solved (rest + each articulated joint at its limits). */
+  readonly poses: number;
+  /** Articulated (non-fastened) mates swept one at a time. */
+  readonly joints: number;
+  /** Fastened mates whose rigidity was checked at every pose. */
+  readonly fastened: number;
+  /** False when the BREP pose sweep (collision / dof / tendon) was skipped. */
+  readonly sweep: boolean;
+  /** True when gravity hold + drop-on-release (MuJoCo) ran. */
+  readonly physics: boolean;
 }
 
 /**
@@ -333,6 +351,10 @@ export async function checkMechanismTruth(
   // mode at once, per spec §"don't bail on first failure."
   failures.push(...checkOrphanParts(arm));
 
+  // Motion intent vs joint type — capture-only, no BREP. An animation or a
+  // drive on a fastened joint is 'broken' whatever the sweep finds.
+  failures.push(...checkMotionIntent(arm));
+
   // Pose sampling: rest + per-articulated-mate single-joint sweep.
   const samples = buildPoseSamples(arm);
 
@@ -352,8 +374,11 @@ export async function checkMechanismTruth(
     }
   }
 
+  const joints = arm.__mates().filter((m) => m.type !== 'fastened').length;
+  const fastened = arm.__mates().length - joints;
   if (solved.length === 0) {
-    return { mechanism: failures.length === 0 ? 'real' : 'broken', failures };
+    const coverage = { poses: 0, joints, fastened, sweep: false, physics: false };
+    return { mechanism: failures.length === 0 ? 'real' : 'broken', failures, coverage };
   }
 
   // BREP-sweep budget gate (issue #348). Criteria 2/3/8 each lower the
@@ -426,7 +451,8 @@ export async function checkMechanismTruth(
   const hasDefinitiveFailure = failures.some((d) => d.severity === 'error');
   const mechanism: 'real' | 'broken' | 'unverified' =
     hasDefinitiveFailure ? 'broken' : sweepSkipped ? 'unverified' : 'real';
-  return { mechanism, failures };
+  const coverage = { poses: solved.length, joints, fastened, sweep: !sweepSkipped, physics: opts.physicsCheck === true };
+  return { mechanism, failures, coverage };
 }
 
 /**

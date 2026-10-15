@@ -38,6 +38,24 @@ describe('live MCP Studio viewer', () => {
     expect((await (await fetch(mesh)).json()).source).toBe('second');
   });
 
+  it('serves the evaluate_script mechanism verdict on the review endpoint', async () => {
+    const viewer = await fixture();
+    const failure = {
+      target: 'export-occt' as const, code: 'mechanism.motion-on-fixed-joint' as const, severity: 'error' as const,
+      message: "Param 'a' is animated and turns part 'link', but 'shoulder' is fastened.", hint: 'h', mateName: 'shoulder',
+    };
+    const summary = { verdict: 'broken' as const, statement: 'Mechanism broken: x', checked: [], skipped: [], failures: [{ code: failure.code, reason: failure.message, joint: 'shoulder' }] };
+    const link = await viewer.update({ code: 'x', diagnostics: [] } as unknown as BuiltModel, { mechanism: 'broken', mechanismFailures: [failure], mechanismSummary: summary });
+    const session = await (await fetch(endpoint(link, 'session'))).json();
+    const review = endpoint(link, 'review');
+    review.searchParams.set('session', session.sessionToken);
+    const body = await (await fetch(review)).json();
+    expect(body.ok).toBe(false);
+    expect(body.mechanism).toBe('broken');
+    expect(body.mechanismSummary).toEqual(summary);
+    expect(body.diagnostics.map((d: { mateName?: string }) => d.mateName)).toEqual(['shoulder']);
+  });
+
   it('notifies an already-open viewer and a reconnect of the current model', async () => {
     const viewer = await fixture();
     const link = await viewer.update(model('first'));

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540">
+<rect width="960" height="540" fill="#14202b"/>
+<rect x="58" y="58" width="844" height="424" rx="22" fill="#1d303d" stroke="#55c2a3" stroke-width="3"/>
+<text x="92" y="139" fill="#55c2a3" font-family="Arial" font-size="24" font-weight="bold">KERNELCAD · IMPORT HANDOFF</text>
+<text x="92" y="204" fill="white" font-family="Arial" font-size="35" font-weight="bold">Local workflow validation</text>
+<text x="92" y="269" fill="#d8e1e7" font-family="Arial" font-size="23">Handoff records → bbox placeholder parts + named anchors</text>
+<text x="92" y="316" fill="#d8e1e7" font-family="Arial" font-size="23">Known endpoints → fixed mate intent; wires are not routed</text>
+<text x="92" y="363" fill="#d8e1e7" font-family="Arial" font-size="23">Cutout hints remain descriptive metadata</text>
+<text x="92" y="426" fill="#9eafb9" font-family="Arial" font-size="18">Tests + capture dry-run validate the generated script · no deployment or hardware claim</text>
+</svg>
