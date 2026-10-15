@@ -73,6 +73,7 @@ import {
   restPoseMateGaps,
   restPosePenetrations,
 } from './restPoseContact';
+import type { RestMateGap } from './restPoseContact';
 import { assemblyToMjcf } from './mjcfExport';
 import { loadMujocoSession } from './mujocoSession';
 import {
@@ -688,14 +689,28 @@ function checkRestPoseContact(arm: Assembly, scene: SceneBackend): CompilerDiagn
       `${p.cellMm > 0 ? `${p.cellMm.toFixed(2)} mm voxels` : 'no voxels'}). Seated parts share faces, not volume.`,
     ));
   }
-  for (const g of restPoseMateGaps(arm, scene)) {
-    out.push(makeFailure(
-      'mechanism.mate-gap',
-      `Mate '${g.mateName}': parts '${g.a}' and '${g.b}' are ${g.gapMm.toFixed(2)} mm apart at the rest pose ` +
-      `(tolerance ${REST_MATE_CONTACT_TOLERANCE_MM} mm). The mate is declared but the parts do not touch.`,
-    ));
-  }
+  out.push(...restPoseMateGaps(arm, scene).map(mateGapFailure));
   return out;
+}
+
+function mateGapFailure(g: RestMateGap): CompilerDiagnostic {
+  return makeFailure(
+    'mechanism.mate-gap',
+    `Mate '${g.mateName}': parts '${g.a}' and '${g.b}' are ${g.gapMm.toFixed(2)} mm apart at the rest pose ` +
+    `(tolerance ${REST_MATE_CONTACT_TOLERANCE_MM} mm). The mate is declared but the parts do not touch.`,
+  );
+}
+
+/**
+ * The cheap part of criterion 9 for surfaces that skip the full mechanism
+ * probe (default `kernelcad validate`, a review_cad without the pose
+ * envelope): every FASTENED mate's two parts must touch at rest. A fastened
+ * mate has no motion to sweep, so a gap is a defect on every surface, never
+ * an "unverified" mechanism. Same measurement and message as the full probe.
+ */
+export function checkFastenedMateContact(arm: Assembly, scene: SceneBackend): CompilerDiagnostic[] {
+  return restPoseMateGaps(arm, scene, REST_MATE_CONTACT_TOLERANCE_MM, (m) => m.type === 'fastened')
+    .map(mateGapFailure);
 }
 
 // ─────────────────────────────────────────────────────────────────────────

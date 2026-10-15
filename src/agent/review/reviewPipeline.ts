@@ -18,7 +18,7 @@ import {
   reviewMechanicalPlausibility,
   type MechanicalPlausibilityDiagnostic,
 } from '../../modeling/mates/mechanicalPlausibility';
-import { checkMechanismTruth } from '../../modeling/runtime/mechanismTruth';
+import { checkFastenedMateContact, checkMechanismTruth } from '../../modeling/runtime/mechanismTruth';
 import {
   reviewMechanicalIntent,
   type MechanicalIntentDiagnostic,
@@ -355,8 +355,8 @@ async function runBudgetedStages(
     ? await clock.time('physical-use-case', () => runPhysicalUseCaseStage(arm, input, poseEnvelope))
     : await runPhysicalUseCaseStage(arm, { requirePhysicalUseCase: input.requirePhysicalUseCase }, undefined);
   const { mechanism, mechanismFailures } = clock.admit('mechanism-truth')
-    ? await clock.time('mechanism-truth', () => runMechanismTruthStage(arm, input))
-    : { mechanism: 'unverified' as MechanismVerdict, mechanismFailures: [] as readonly CompilerDiagnostic[] };
+    ? await clock.time('mechanism-truth', () => runMechanismTruthStage(arm, model, input))
+    : fastenedMateContactStage(arm, model);
   return { poseEnvelope, physicalUseCases, mechanism, mechanismFailures };
 }
 
@@ -576,8 +576,28 @@ function collectReviewDiagnostics(
   ];
 }
 
+/**
+ * The mate-contact floor every review keeps when the full mechanism probe
+ * does not run (cheap flags, or the time budget is spent): each fastened
+ * mate's parts must touch in the script's own scene. A gap is 'broken'.
+ */
+function fastenedMateContactStage(
+  arm: Assembly,
+  model: BuiltModel,
+): { mechanism: MechanismVerdict; mechanismFailures: readonly CompilerDiagnostic[] } {
+  try {
+    const scene = model.rootShape ?? model.tailShape;
+    if (!scene || !isSceneBackend(scene)) return { mechanism: 'unverified', mechanismFailures: [] };
+    const failures = checkFastenedMateContact(arm, scene);
+    return { mechanism: failures.length > 0 ? 'broken' : 'unverified', mechanismFailures: failures };
+  } catch {
+    return { mechanism: 'unverified', mechanismFailures: [] };
+  }
+}
+
 async function runMechanismTruthStage(
   arm: Assembly,
+  model: BuiltModel,
   input: Pick<ReviewCadInput, 'includeInterference' | 'includePoseEnvelope' | 'includePhysics'>,
 ): Promise<{ mechanism: MechanismVerdict; mechanismFailures: readonly CompilerDiagnostic[] }> {
   // Physics-loop probe (P1 surface convergence). Same gating shape as
@@ -593,9 +613,7 @@ async function runMechanismTruthStage(
     input.includeInterference !== undefined
       ? input.includeInterference
       : input.includePoseEnvelope !== false;
-  if (!wantMechanism) {
-    return { mechanism: 'unverified', mechanismFailures: [] };
-  }
+  if (!wantMechanism) return fastenedMateContactStage(arm, model);
 
   // Physics opt-in mirrors interference opt-in by default. The Studio
   // recompute layer can override by passing `includePhysics: false`

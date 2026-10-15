@@ -39,7 +39,7 @@ import {
   reviewMechanicalPlausibility,
   type MechanicalPlausibilityDiagnostic,
 } from '../../../modeling/mates/mechanicalPlausibility';
-import { checkMechanismTruth } from '../../../modeling/runtime/mechanismTruth';
+import { checkFastenedMateContact, checkMechanismTruth } from '../../../modeling/runtime/mechanismTruth';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 
 export interface ValidateCliInput {
@@ -143,9 +143,13 @@ export async function runValidateCli(input: ValidateCliInput): Promise<ValidateC
   // Default is ON whenever --include-interference is on (the physics
   // gate is in the same "heavy validate" tier as interference); the
   // explicit --no-include-physics opts back out.
+  //
+  // The cheap default path still checks that every fastened mate's parts
+  // touch at rest: a fastened gap has no motion to sweep, so it is broken on
+  // every surface (DRAW-01 negative control: a 2.5 mm ear-nut gap passed).
   const mechanismProbe = input.includeInterference
     ? await runMechanismProbe(run.session, { physicsCheck: input.includePhysics })
-    : { mechanism: 'unverified' as const, failures: [] };
+    : await runFastenedMateContact(run);
 
   if (input.json) {
     console.log(JSON.stringify({
@@ -244,6 +248,23 @@ async function runMechanismProbe(
     // dominate the exit code, but log a hint so the user sees something.
     return { mechanism: 'unverified', failures: [] };
   }
+}
+
+/** Default-path mate contact: one rest-pose lower, then the fastened-mate
+ *  gap check of every captured assembly. 'broken' on any gap, otherwise
+ *  'unverified' (the pose sweep did not run). */
+async function runFastenedMateContact(
+  run: Awaited<ReturnType<typeof runScript>>,
+): Promise<{ mechanism: 'broken' | 'unverified'; failures: CompilerDiagnostic[] }> {
+  const assemblies = Array.from(run.session.assemblies.values()) as Assembly[];
+  if (!assemblies.some((arm) => arm.__mates().some((m) => m.type === 'fastened'))) {
+    return { mechanism: 'unverified', failures: [] };
+  }
+  const lowered = await lowerScriptScene(run);
+  if (lowered.scene === undefined) return { mechanism: 'unverified', failures: [] };
+  const scene = lowered.scene;
+  const failures = assemblies.flatMap((arm) => checkFastenedMateContact(arm, scene));
+  return { mechanism: failures.length > 0 ? 'broken' : 'unverified', failures };
 }
 
 async function reviewPhysicalAssemblies(assemblies: readonly Assembly[]): Promise<MechanicalPlausibilityDiagnostic[]> {
