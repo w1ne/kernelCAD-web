@@ -155,6 +155,7 @@ const NON_TOOL_ALLOWLIST = new Set<string>([
   'not_checked',
   'from_pos_mm',
   'to_pos_mm',
+  'assembly_order',
 ]);
 
 export interface ToolNameHit {

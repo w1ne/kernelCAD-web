@@ -27,6 +27,7 @@ import { rayPickToolEntries } from './registry/rayPickTools';
 import { nurbsToolEntries } from './registry/nurbsTools';
 import { wireRoutingToolEntries } from './registry/wireRoutingTools';
 import { handoffToolEntries } from './registry/handoffTools';
+import { explodeViewToolEntries } from './registry/explodeViewTools';
 import { partModelToolEntries } from './registry/partModelTools';
 import { referenceExportToolEntries } from './registry/referenceExportTools';
 import { referenceLedgerToolEntries } from './registry/referenceLedgerTools';
@@ -110,6 +111,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...wireRoutingToolEntries,
   ...handoffToolEntries,
   ...meshBooleanToolEntries,
+  ...explodeViewToolEntries,
   ...partModelToolEntries,
 ];
 
