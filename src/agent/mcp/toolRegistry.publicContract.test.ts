@@ -34,6 +34,7 @@ import { nurbsToolEntries } from './registry/nurbsTools';
 import { bomToolEntries } from './registry/bomTools';
 import { rayPickToolEntries } from './registry/rayPickTools';
 import { handoffToolEntries } from './registry/handoffTools';
+import { surfaceBlendToolEntries } from './registry/surfaceBlendTools';
 import { pointCloudToolEntries } from './registry/pointCloudTools';
 import { wireRoutingToolEntries } from './registry/wireRoutingTools';
 import { meshBooleanToolEntries } from './registry/meshBooleanTools';
@@ -102,6 +103,7 @@ const EXPECTED_TOOL_NAMES = [
   'import_handoff',
   'mesh_boolean',
   'explode_view',
+  'apply_surface_blend',
   'write_bom',
 ] as const;
 
@@ -387,9 +389,10 @@ describe('toolRegistry public contract', () => {
       'import_handoff',
       'mesh_boolean',
       'explode_view',
+      'apply_surface_blend',
       'write_bom',
     ]);
-    expect(TOOL_REGISTRY).toHaveLength(61);
+    expect(TOOL_REGISTRY).toHaveLength(62);
   });
 
   it('composes the user-file import family at the registry tail, with ChatGPT file params', () => {
@@ -424,8 +427,7 @@ describe('toolRegistry public contract', () => {
       .resolves.toMatchObject({ normal: [0, 0, 1], rms: 0 });
   });
 
-
-  it('appends the wire routing tool after the point-cloud family', () => {
+  it('composes the wire routing tool after the point-cloud family', () => {
     expect(wireRoutingToolEntries.map(entry => entry.definition.name)).toEqual(['route_wires']);
     expect(TOOL_REGISTRY.slice(56, 57)).toEqual(wireRoutingToolEntries);
   });
@@ -453,7 +455,11 @@ describe('toolRegistry public contract', () => {
   it('appends the exploded-view planner after the mesh boolean tool', () => {
     expect(explodeViewToolEntries.map(entry => entry.definition.name)).toEqual(['explode_view']);
     expect(TOOL_REGISTRY.slice(59, 60)).toEqual(explodeViewToolEntries);
-    expect(TOOL_REGISTRY[58]?.definition.name).toBe('mesh_boolean');
+    expect(TOOL_REGISTRY[59]?.definition.name).toBe('explode_view');
+  });
+
+  it('appends the surface blend authoring tool at the registry tail', () => {
+    expect(TOOL_REGISTRY.slice(60, 61)).toEqual(surfaceBlendToolEntries);
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {

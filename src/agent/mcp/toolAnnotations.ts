@@ -81,6 +81,7 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   set_param: AUTHOR,
   sweep_tolerance: READ,
   add_feature: AUTHOR,
+  apply_surface_blend: AUTHOR,
   add_surface: AUTHOR,
   add_curve: AUTHOR,
   add_path_segment: AUTHOR,
