@@ -8,7 +8,7 @@ import {
   fontPath,
   __resetFontStateForTests,
 } from '../../../src/shared/fonts/index';
-import { mkdirSync, copyFileSync } from 'node:fs';
+import { mkdirSync, copyFileSync, rmSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import * as nodeFontLoader from '../../../src/shared/fonts/nodeLoader';
@@ -38,6 +38,20 @@ describe('fonts: resolver + bundle loader', () => {
     await expect(resolveAndLoadFont('unknown-family', undefined))
       .rejects
       .toMatchObject({ code: 'sketch.text.font-not-found' });
+  });
+
+  it('font: fontPath(...) reuses an already registered family instead of re-loading (#961)', async () => {
+    const src = resolve(__dirname, '../../../src/shared/fonts/LiberationSans-Regular.ttf');
+    const tmp = resolve(tmpdir(), 'kcad-fonts-cache-test', 'CachedFamily961.ttf');
+    mkdirSync(dirname(tmp), { recursive: true });
+    copyFileSync(src, tmp);
+    expect((await resolveAndLoadFont(fontPath(tmp), undefined)).fontFamily).toBe('CachedFamily961');
+    const registered = replicad.getFont('CachedFamily961');
+    expect(registered).toBeDefined();
+    // The file is gone: a second call can only succeed from the cache.
+    rmSync(tmp);
+    expect((await resolveAndLoadFont(fontPath(tmp), undefined)).fontFamily).toBe('CachedFamily961');
+    expect(replicad.getFont('CachedFamily961')).toBe(registered);
   });
 
   it('font: fontPath(<abs path>) loads + registers under basename', async () => {
