@@ -339,7 +339,9 @@ function brepOverlap(
     const m = wa.intersectionMetrics(wb);
     return { volumeMm3: m.volumeMm3, thicknessMm: overlapThicknessMm(m.volumeMm3, m.areaMm2), at, cellMm: 0 };
   } catch {
-    return { volumeMm3: 0, thicknessMm: 0, at, cellMm: 0 };
+    // Unmeasured: volume 0 here is "no BREP evidence", never "no overlap" —
+    // the mesh path keeps its own result when the boolean fails.
+    return { volumeMm3: NaN, thicknessMm: NaN, at, cellMm: 0 };
   }
 }
 
@@ -361,7 +363,16 @@ export function restPosePenetrations(scene: SceneBackend): RestPenetration[] {
         ? meshOverlapVolume(A.mesh, B.mesh)
         : brepOverlap(A.part, B.part, A.mesh, B.mesh);
       const contactThicknessMm = onMesh ? REST_PENETRATION_DEPTH_MM : CONTACT_THICKNESS_MM;
-      if (isActionableOverlap(r, contactThicknessMm)) out.push({ a: A.name, b: B.name, ...r, contactThicknessMm });
+      if (!isActionableOverlap(r, contactThicknessMm)) continue;
+      // A real overlap shows in both measurements. The voxel integral of two
+      // tessellations reads a few mm³ where curved analytic faces only
+      // touch; the exact BREP common then reads ~0 and wins. (On STL-sewn
+      // solids the BREP common over-reads, so the mesh value still stands.)
+      if (onMesh) {
+        const exact = brepOverlap(A.part, B.part, A.mesh, B.mesh);
+        if (Number.isFinite(exact.volumeMm3) && !isActionableOverlap(exact)) continue;
+      }
+      out.push({ a: A.name, b: B.name, ...r, contactThicknessMm });
     }
   }
   return out;

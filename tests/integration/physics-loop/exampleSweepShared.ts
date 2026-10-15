@@ -90,6 +90,10 @@ export const EXEMPT_UNVERIFIED: ReadonlySet<string> = new Set([
   // with no mates, and overlays deliberately overlap the hands they annotate.
   // It is a picture, not a mechanism.
   'examples/robot-hand/workflow-candidates-comparison.kcad.ts',
+  // Deliberately broken twin: its igniter run crosses the GG-valve pilot
+  // line (tube.clearance.overlap, and the two tubes interpenetrate).
+  // tests/integration/examples/rocketEngineRouted.test.ts pins the failure.
+  'examples/rocket-engine-lines/engine-routed-twin.kcad.ts',
   // Deliberately broken single-part repair fixtures. They exist to FAIL
   // evaluation so the trace-guided repair walkthrough has something real to
   // fix; tests/integration/examples/repairExamples.test.ts pins that each one

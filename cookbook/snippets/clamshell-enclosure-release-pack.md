@@ -108,7 +108,9 @@ const neck = cylinder(18, 4.6).alongAxis([1, 0, 0]).translate(3.2, 0, 0);
 let lidShell = extrudeRoundedRect(64, 68, 11, 20).translate(50, 0, -8);
 lidShell = lidShell.subtract(extrudeRoundedRect(50, 54, 7, 16).translate(52, 0, -6));
 lidShell = lidShell.subtract(extrudeRoundedRect(36, 28, 4, 2.2).translate(50, 0, 9.0));
-const screwXY = [[26, 24], [74, 24], [26, -24], [74, -24]] as const;
+// Inside the lip's inner corners: at (26, 24) a 6.9 mm head cut 0.56 mm
+// into the lip wall.
+const screwXY = [[28, 22], [72, 22], [28, -22], [72, -22]] as const;
 // Lid screw clearances as real hole features, counterbored from the top face.
 // The lid is centred on (50, 0), so u = x - 50 and v = y.
 lidShell = lidShell.holes({ byNormal: 'Z', atX: 50, atY: 0, atZ: 12 }, {
