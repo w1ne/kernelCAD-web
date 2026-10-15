@@ -1,0 +1,10 @@
+{
+  "command": "python3 docs/demos/apply-surface-blend/make_demo.py",
+  "source": "demo.ts invocation and result.json from actual handler evaluation",
+  "duration_seconds": 5,
+  "full_decode_exit": 0,
+  "limits": [
+    "Local source-checkout evidence only",
+    "No deployment or hardware acceptance claim"
+  ]
+}
