@@ -148,6 +148,8 @@ const NON_TOOL_ALLOWLIST = new Set<string>([
   // subcommand, which DO resolve — these are input fields, not calls).
   'dry_run',
   'access_code',
+  // Field names documented in kernelcad-mcp SKILL.md (not tool names).
+  'model_generation',
 ]);
 
 export interface ToolNameHit {

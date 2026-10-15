@@ -1,0 +1,48 @@
+{
+  "ok": true,
+  "feature_id": "box_1",
+  "shape_index": 0,
+  "hit_basis": "per-face tessellation",
+  "hits": [
+    {
+      "face_id": 3,
+      "point": [
+        0,
+        5,
+        5
+      ],
+      "distance": 5,
+      "normal": [
+        -1,
+        0,
+        0
+      ],
+      "selection": {
+        "shapeIndex": 0,
+        "kind": "face",
+        "id": 3,
+        "featureId": "box_1"
+      }
+    },
+    {
+      "face_id": 1,
+      "point": [
+        10,
+        5,
+        5
+      ],
+      "distance": 15,
+      "normal": [
+        1,
+        0,
+        0
+      ],
+      "selection": {
+        "shapeIndex": 0,
+        "kind": "face",
+        "id": 1,
+        "featureId": "box_1"
+      }
+    }
+  ]
+}
