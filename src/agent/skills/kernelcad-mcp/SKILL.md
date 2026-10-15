@@ -27,6 +27,7 @@ When you have `kernelcad mcp` available, use the MCP tools for dynamic introspec
 - `inspect({ of: 'face-edges', file? code?, feature_id?, face_name })` — boundary edges of a face (centroid, length, isClosed)
 - `inspect({ of: 'edges', file? code?, feature_id? })` — enumerate all edges (index, centroid, length, isClosed)
 - `inspect({ of: 'faces', file? code?, feature_id? })` — enumerate all faces with area and centroid
+- `inspect_nurbs({ file? code?, feature_id? })` — read captured NURBS data from a `nurbsCurve`/`spline3d` feature: degree, knots and multiplicities, poles, weights, parameter range, `rational` (weights not all equal), `uniformWeights` (all equal), and `hasNonUnitWeights` (any differs from 1). This reports authored curve data, not post-operation B-rep edge/face extraction; surfaces and blends are not supported.
 - `inspect({ of: 'face-labels', file? code?, feature_id? })` — canonical face names resolvable on a feature
 - `query({ mode: 'lineage', file? code?, feature_id, ref })` — walk the HistoryMap chain that produced a named face/edge ref; returns `{ chain, usedFallback }`.
 
@@ -463,6 +464,10 @@ See `cookbook/snippets/Q-S6-inspect-first-build-after.kcad.ts`.
 - `kernelcad-repair` — the bounded repair loop on top of `why_did_this_fail` + `repair_script`, for when an evaluation failed.
 
 ### G-code export receipts
+
+### NURBS inspection
+
+`inspect_nurbs({ file|code, feature_id? })` reads authored NURBS curve data captured from a `nurbsCurve`/`spline3d` feature, including degree, knots, multiplicities, poles, weights, and parameter range. It does not extract exact B-rep edge or face NURBS surfaces.
 
 ### Ray picking
 
