@@ -17,8 +17,7 @@ export async function resolveAndLoadFont(
   _scriptDir: string | undefined,
 ): Promise<{ fontFamily: string }> {
   if (hasHostFs()) {
-    const loaderPath = './nodeLoader';
-    const { resolveAndLoadFont: loadOnHost } = await import(loaderPath);
+    const { resolveAndLoadFont: loadOnHost } = await import('./nodeLoader');
     return loadOnHost(font, _scriptDir);
   }
   if (font === undefined || (typeof font === 'string' && font.endsWith('.ttf'))) {
@@ -45,8 +44,7 @@ export async function resolveAndLoadFont(
 /** Browser runtimes cannot load the bundled TTF from disk. */
 export async function ensureBundledFontLoaded(): Promise<void> {
   if (hasHostFs()) {
-    const loaderPath = './nodeLoader';
-    const { ensureBundledFontLoaded: loadOnHost } = await import(loaderPath);
+    const { ensureBundledFontLoaded: loadOnHost } = await import('./nodeLoader');
     return loadOnHost();
   }
   throw new KernelError(

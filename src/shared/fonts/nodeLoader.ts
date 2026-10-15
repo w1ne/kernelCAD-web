@@ -2,9 +2,11 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 // Node-only bundled-font loader and script-relative path resolver.
 
-import { readFileSync } from 'node:fs';
-import { basename, extname, isAbsolute, resolve, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+// Namespace imports: browser bundlers stub node:* builtins as empty modules,
+// and a named import from that stub is a build error.
+import * as nodeFs from 'node:fs';
+import * as nodePath from 'node:path';
+import * as nodeUrl from 'node:url';
 import { loadFont, getFont } from 'replicad';
 import { KernelError } from '../intent/kernelError';
 import type { DiagnosticCode } from '../diagnostics/registry';
@@ -16,11 +18,11 @@ function bundledFontFilePath(): string {
   const here =
     typeof __dirname !== 'undefined'
       ? __dirname
-      : dirname(fileURLToPath(import.meta.url));
-  const dev = resolve(here, 'LiberationSans-Regular.ttf');
-  const bundle = resolve(here, 'fonts', 'LiberationSans-Regular.ttf');
+      : nodePath.dirname(nodeUrl.fileURLToPath(import.meta.url));
+  const dev = nodePath.resolve(here, 'LiberationSans-Regular.ttf');
+  const bundle = nodePath.resolve(here, 'fonts', 'LiberationSans-Regular.ttf');
   try {
-    readFileSync(dev);
+    nodeFs.readFileSync(dev);
     return dev;
   } catch {
     return bundle;
@@ -30,7 +32,7 @@ function bundledFontFilePath(): string {
 export async function ensureBundledFontLoaded(): Promise<void> {
   if (bundledLoadPromise) return bundledLoadPromise;
   const pending = (async () => {
-    const buf = readFileSync(bundledFontFilePath());
+    const buf = nodeFs.readFileSync(bundledFontFilePath());
     await loadFont(
       buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength),
       'default',
@@ -55,11 +57,11 @@ export async function resolveAndLoadFont(
   }
 
   if (isFontPath(font)) {
-    const abs = isAbsolute(font)
+    const abs = nodePath.isAbsolute(font)
       ? font
-      : resolve(scriptDir ?? process.cwd(), font);
-    const base = basename(abs, extname(abs));
-    const buf = readFileSync(abs);
+      : nodePath.resolve(scriptDir ?? process.cwd(), font);
+    const base = nodePath.basename(abs, nodePath.extname(abs));
+    const buf = nodeFs.readFileSync(abs);
     await loadFont(
       buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength),
       base,

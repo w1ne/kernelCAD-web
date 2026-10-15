@@ -27,9 +27,8 @@ export async function loadFontViaHost(
         'Run this script through the kernelCAD CLI or MCP server to render text.',
     );
   }
-  // Keep the specifier opaque to browser bundlers: this branch is only taken
-  // when the host filesystem capability is present.
-  const loaderPath = './nodeLoader';
-  const { resolveAndLoadFont } = await import(loaderPath);
+  // Only taken when the host filesystem capability is present; nodeLoader uses
+  // namespace node:* imports so browser bundles still build.
+  const { resolveAndLoadFont } = await import('./nodeLoader');
   return resolveAndLoadFont(font, scriptDir);
 }
