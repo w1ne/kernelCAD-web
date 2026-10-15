@@ -30,12 +30,28 @@ export interface InspectAssemblyInput {
 export interface InspectAssemblyPartSummary {
   name: string;
   bbox: Bbox;
+  /** Canonical engineering material explicitly assigned with assembly.part(..., { material }). */
+  material?: string;
+  /** Number of disconnected mesh components in this part. Components are informational only;
+   * they are not stable, independently addressable material cells. */
+  componentCount?: number;
   connectorCount: number;
   connectors: InspectAssemblyConnectorSummary[];
   disconnected?: {
     componentCount: number;
     largestComponentTriangleCount: number;
     maxComponentGapMm: number;
+  };
+}
+
+/** Keep the assembly material inventory serialization independent of kernel objects. */
+export function summarizePartMaterial(part: Pick<AssemblyPartStored, 'name' | 'material'>): {
+  name: string;
+  material?: string;
+} {
+  return {
+    name: part.name,
+    ...(part.material !== undefined ? { material: part.material } : {}),
   };
 }
 
@@ -193,8 +209,9 @@ async function summarizePart(
   const bbox = lowered.boundingBox();
   const connectors = part.mateConnectors.map((c) => summarizeConnector(part.name, c, lowered));
   return {
-    name: part.name,
+    ...summarizePartMaterial(part),
     bbox,
+    ...(disconnected !== undefined ? { componentCount: disconnected.componentCount } : {}),
     connectorCount: part.mateConnectors.length,
     connectors,
     ...(disconnected === undefined ? {} : {
