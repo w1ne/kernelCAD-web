@@ -18,7 +18,7 @@ import { applyEnvironment } from '../../../shared/render/environment';
 import { buildMaterialFromPBR, disposeMaterialDeep, DEFAULT_MESH_COLOR } from './buildMaterialFromPBR';
 import { buildReferenceImagePlane } from './buildReferenceImagePlane';
 import { fitDistanceForBounds } from './cameraFit';
-import { disposeMeshResources } from './demoPlayerGeometry';
+import { buildIndexedDisplayMesh, disposeMeshResources } from './demoPlayerGeometry';
 import { applyPublishStage, capturePublishFrame, isStageHelper } from './publishStage';
 import {
   KCAD_FEATURE_GROUP_KEY,
@@ -651,6 +651,7 @@ function buildGeometryGroup(ser: FeatureMeshSerialized): THREE.Group {
   if (fm.assemblyPartName !== undefined) group.userData.assemblyPartName = fm.assemblyPartName;
   group.visible = true;
   const pbrForFaces = resolveFacePbr(fm);
+  if (fm.mesh) group.add(buildIndexedDisplayMesh(fm.featureId, fm.mesh, buildMaterialFromPBR(pbrForFaces)));
   for (const face of fm.faces) {
     // Per-face material override (Shape.material({ face: '<label>', ... }))
     // takes precedence over the shape-level default. Unmatched faces fall

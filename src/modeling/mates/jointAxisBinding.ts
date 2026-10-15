@@ -56,7 +56,8 @@
 
 import { initOcct } from '../../kernel/backends/occt/occtBackend';
 import { createOcctLowerer } from '../backends/occt/occtLowerer';
-import type { OcctBackend } from '../../kernel/backends/occt/occtBackend';
+import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
+import type { ShapeBackend } from '../../kernel/backends/backend';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
 import type { Assembly, AssemblyPartStored } from '../capture/assembly';
@@ -122,7 +123,7 @@ export interface JointAxisBindingResult {
    * fast path), or when the recompute did not produce a SceneBackend (the
    * defensive fall-through inside the implementation).
    */
-  readonly worldShapes: ReadonlyMap<string, OcctBackend>;
+  readonly worldShapes: ReadonlyMap<string, ShapeBackend>;
   /** Per-part placement of the part's own frame, same key set as
    *  `worldShapes`: lifts connector origins and axes, as declared, to world.
    *  For a mated part it is the scene `worldTransform` with `at` put back
@@ -226,10 +227,12 @@ function findOrCreateSceneFeatureId(arm: Assembly, session: CaptureSession): Fea
 // Apply each part's world transform once up-front (clone first — replicad
 // translate/rotate mutate-and-destroy the source OCCT handle, same lifecycle
 // hazard documented in `detectInterferences`).
-function buildWorldShapes(lowered: SceneBackend): Map<string, OcctBackend> {
-  const worldShapes = new Map<string, OcctBackend>();
+function buildWorldShapes(lowered: SceneBackend): Map<string, import('../../kernel/backends/backend').ShapeBackend> {
+  const worldShapes = new Map<string, import('../../kernel/backends/backend').ShapeBackend>();
   for (const p of lowered.parts) {
-    worldShapes.set(p.name, (p.shape as OcctBackend).clone().applyTransform(p.worldTransform));
+    worldShapes.set(p.name, p.shape instanceof OcctBackend
+      ? p.shape.clone().applyTransform(p.worldTransform)
+      : (p.shape as import('../../kernel/backends/meshBackend').MeshBackend).transform(p.worldTransform));
   }
   return worldShapes;
 }
@@ -261,7 +264,7 @@ async function collectAxisBindingDiagnostics(
   gatedMates: readonly MateRecord[],
   partsByName: ReadonlyMap<string, AssemblyPartStored>,
   worldTransforms: ReadonlyMap<string, Transform>,
-  worldShapes: ReadonlyMap<string, OcctBackend>,
+  worldShapes: ReadonlyMap<string, ShapeBackend>,
 ): Promise<ValidatorDiagnostic[]> {
   const out: ValidatorDiagnostic[] = [];
   for (const mate of gatedMates) {
@@ -336,13 +339,14 @@ async function resolveLocalOrigin(part: AssemblyPartStored, connector: Connector
  * line within `EPSILON_MM`.
  */
 // TODO(v0.7.x): replace AABB+plane with OCCT line-vs-shape primitive for curved-surface exactness.
-function axisIntersectsShape(origin: Vec3, direction: Vec3, shape: OcctBackend): boolean {
+function axisIntersectsShape(origin: Vec3, direction: Vec3, shape: ShapeBackend): boolean {
   // AABB pre-filter — slab algorithm in mm space. Pad by EPSILON_MM so that
   // a line that just kisses the body's bounding plane is admitted.
   const bb = shape.boundingBox();
   if (!lineIntersectsAabb(origin, direction, bb.min, bb.max, EPSILON_MM)) {
     return false;
   }
+  if (!(shape instanceof OcctBackend)) return true;
   // Per-face plane-intersection test. Replicad's `Face[]` accessor yields
   // the faces of the WORLD-transformed shape directly (applyTransform was
   // already applied by the caller). For each face we treat it as a plane

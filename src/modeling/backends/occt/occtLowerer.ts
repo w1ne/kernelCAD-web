@@ -14,6 +14,8 @@ import { LOWERERS } from './lowerers/index';
 import { applyVariableEdgeFeature } from './lowerers/edgeFeatures';
 import { normalizeAxis } from './lowerers/helpers';
 import { finishLowering } from './lowerers/transforms';
+import { MeshBackend } from '../../../kernel/backends/meshBackend';
+import { invalidArgsText } from '../../../shared/intent/invalidArgs';
 
 // `normalizeAxis` and `applyVariableEdgeFeature` moved into lowerers/;
 // re-exported here so the public import path stays
@@ -112,6 +114,25 @@ export class OcctLowerer implements FeatureLowerer {
 
   async lower(r: FeatureRecord, inputs: ResolvedInputs): Promise<LowerResult> {
     const ctx = this.contextFor(inputs);
+    if (requiresBrepInput(r.kind) && Object.values(inputs.byKey).some((shape) => shape instanceof MeshBackend)) {
+      return {
+        shape: undefined as unknown as ShapeBackend,
+        diagnostics: [{
+          target: ctx.target,
+          code: 'feature.invalid-args',
+          featureId: r.id,
+          severity: 'error',
+          ...invalidArgsText({
+            api: `${r.kind}(...)`,
+            path: 'inputs',
+            gotText: 'a display mesh body (lib.meshFromSTL)',
+            requires: 'BRep geometry; display mesh bodies do not expose solid topology',
+            example: "lib.fromSTL('part.stl') — the BRep import — when a solid operation is needed",
+            hint: 'Convert the display mesh to a BRep explicitly before using this solid operation, e.g. import it with lib.fromSTL instead of lib.meshFromSTL.',
+          }),
+        }],
+      };
+    }
     const lowerKind = LOWERERS[r.kind];
     if (lowerKind === undefined) {
       return {
@@ -130,4 +151,12 @@ export class OcctLowerer implements FeatureLowerer {
     }
     return finishLowering(ctx, r, await lowerKind(ctx, r));
   }
+}
+
+const MESH_COMPATIBLE_INPUT_KINDS = new Set<FeatureKind>([
+  'assemblyPart', 'assemblyJoint', 'assemblyConnect', 'assemblyModel', 'solvedAssembly', 'assemblyExport',
+]);
+
+function requiresBrepInput(kind: FeatureKind): boolean {
+  return !MESH_COMPATIBLE_INPUT_KINDS.has(kind);
 }
