@@ -26,7 +26,8 @@ function isCodeParsable(code: string): boolean {
 }
 
 import { useProject, isEphemeralProjectId } from './context/ProjectContext';
-import { loadGalleryScriptSource, loadStudioScriptSource } from './scriptSource';
+import { loadGalleryEntry, loadStudioScriptSource } from './scriptSource';
+import { setSourceTitle } from './sourceTitle';
 import { registerLiveScriptTarget, unregisterLiveScriptTarget } from './liveScriptBridge';
 import { noteDiskScriptSource, useLinkedScriptAutosave } from './linkedScriptAutosave';
 import type { KernelCADProject, ViewState } from '../authoring/projectService';
@@ -162,13 +163,15 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
 
     let cancelled = false;
     const sourcePromise = galleryParam
-      ? loadGalleryScriptSource(galleryParam)
-      : loadStudioScriptSource(scriptParam as string);
+      ? loadGalleryEntry(galleryParam)
+      : loadStudioScriptSource(scriptParam as string).then(source => ({ source, title: null }));
 
     sourcePromise
-      .then((source) => {
+      .then(({ source, title }) => {
         if (cancelled) return;
         if (scriptParam && !galleryParam) noteDiskScriptSource(scriptParam, source);
+        // The example, not the stored active project, is what is open.
+        setSourceTitle(title);
         setCode(source);
         setViewMode('code');
         setSourceLoadError(null);
@@ -184,6 +187,7 @@ function AppContent({ isDevLab }: { isDevLab: boolean }) {
 
     return () => {
       cancelled = true;
+      setSourceTitle(null);
     };
   }, [galleryParam, scriptParam, setCode, setViewMode, sourceRouteKey]);
 

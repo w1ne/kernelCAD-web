@@ -10,10 +10,12 @@ import {
   type FeatureHealthEntry,
 } from '../../cli/commands/evaluate';
 import { tubesOutput } from '../../../composition/scriptEvaluation';
+import { KernelUnavailableError, resolveKernel } from '../../../modeling/backends/kernelRegistry';
+import type { KernelId } from '../../../shared/types/backendTarget';
 import type { PortReportEntry } from '../../../modeling/runtime/tube/portReport';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
-import { updateMcpViewer } from '../liveViewer';
+import { updateMcpViewer, type McpViewerResult } from '../liveViewer';
 import { clearActiveMcpSession, getActiveMcpSession, setActiveMcpSession } from '../activeSession';
 import { summarizeScene, unavailableSceneSummary, type SceneSummary } from '../../script-runtime/sceneSummary';
 import { Scene } from '../../../modeling/validation/scene';
@@ -43,9 +45,13 @@ export interface EvaluateScriptInput {
    * scripts (which have no mechanism to verify).
    */
   skipMechanismCheck?: boolean;
+  /** Solid-modeling kernel. Omitted = 'occt' (the only kernel available
+   *  today). Any other value returns ok:false with a
+   *  `recompute.kernel.unavailable` diagnostic, on dry and full runs alike. */
+  kernel?: KernelId;
 }
 
-export interface EvaluateScriptOutput {
+export interface EvaluateScriptOutput extends McpViewerResult {
   /** Loopback Studio link, stable across full builds in this MCP process. */
   viewerUrl?: string;
   /** Viewer provisioning failed; the CAD build result is still valid. */
@@ -142,6 +148,8 @@ async function publishBuiltViewer(model: BuildOutcome['model'], buildSucceeded: 
 export async function evaluateScriptTool(
   input: EvaluateScriptInput,
 ): Promise<EvaluateScriptOutput> {
+  const kernelRejection = rejectUnavailableKernel(input.kernel);
+  if (kernelRejection) return kernelRejection;
   if (input.dryRun) return evaluateDryRun(input);
 
   const before = capturePreviousStep();
@@ -215,6 +223,24 @@ export async function evaluateScriptTool(
     ...(mechanism !== undefined ? { mechanism } : {}),
     ...(reviewHint !== undefined ? { reviewHint } : {}),
   };
+}
+
+/** ok:false envelope when `kernel` names a kernel this build cannot run. */
+function rejectUnavailableKernel(kernel: unknown): EvaluateScriptOutput | undefined {
+  if (kernel === undefined) return undefined;
+  try {
+    resolveKernel(kernel);
+    return undefined;
+  } catch (e) {
+    if (!(e instanceof KernelUnavailableError)) throw e;
+    return {
+      ok: false,
+      sceneSummary: unavailableSceneSummary(),
+      featureCount: 0,
+      diagnostics: [e.diagnostic],
+      featureHealth: [],
+    };
+  }
 }
 
 type BuildOutcome = Awaited<ReturnType<typeof evaluateAndBuildScript>>;

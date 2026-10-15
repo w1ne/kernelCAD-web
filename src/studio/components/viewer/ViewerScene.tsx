@@ -129,7 +129,6 @@ export function ViewerScene({
                 setHoveredItem={setHoveredItem}
                 snapPoint={snapPoint}
                 setSnapPoint={setSnapPoint}
-                mouseHoverOnly={publish}
             />
 
             <GroundGrid
@@ -215,7 +214,6 @@ function SceneOverlays({
     setHoveredItem,
     snapPoint,
     setSnapPoint,
-    mouseHoverOnly,
 }: Pick<
     ViewerSceneProps,
     | 'geometries'
@@ -225,10 +223,10 @@ function SceneOverlays({
     | 'setHoveredItem'
     | 'snapPoint'
     | 'setSnapPoint'
-> & { mouseHoverOnly: boolean }) {
+>) {
     return (
         <>
-            <InteractionHandler setHovered={setHoveredItem} setSnap={setSnapPoint} mouseHoverOnly={mouseHoverOnly} />
+            <InteractionHandler setHovered={setHoveredItem} setSnap={setSnapPoint} />
             <HighlightOverlay hovered={hoveredItem} geometries={geometries} />
             <SnapIndicator snap={snapPoint} />
             <SelectionOutline geometries={geometries} itemNames={itemNames} selectedItemIds={selectedItemIds} />

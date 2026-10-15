@@ -118,6 +118,8 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   // Evaluates a cookbook snippet; with openInStudio:true it publishes the
   // result as a Studio project, which is a user-visible write.
   execute_cookbook: WRITES_FILE,
+  // Downloads a user-supplied file (open world) and writes it plus a starter script.
+  import_step: AUTHOR_REMOTE,
   // Writes the pack files + zip locally; never contacts a vendor.
   fab_pack: WRITES_FILE,
 

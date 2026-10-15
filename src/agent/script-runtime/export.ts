@@ -20,7 +20,7 @@ import type {
   DrawingReport,
 } from '../../kernel/backends/occt/exportSvgDrawing';
 import type { GcodeStats } from '../../kernel/export/gcode/gcodeHeaderParser';
-import type { DrawingSheetSize, ProjectionAngle } from '../../kernel/backends/occt/drawingLayout';
+import type { DrawingSheetSize, ProjectionAngle, DrawingViewName } from '../../kernel/backends/occt/drawingLayout';
 export type { DrawingSheetSize, ProjectionAngle } from '../../kernel/backends/occt/drawingLayout';
 export type { DrawingAnnotation, DrawingAnchor } from '../../kernel/backends/occt/drawingAnnotations';
 export type { DrawingSectionSpec, SectionPlane } from '../../kernel/backends/occt/drawingSections';
@@ -167,6 +167,7 @@ export type ExportOptions =
  */
 export interface PdfDrawingOptions extends DrawingReviewOptions {
   format: 'pdf-drawing';
+  views?: readonly DrawingViewName[];
   draftingProfile?: DraftingProfileId | DraftingProfile;
   annotationOverrides?: Readonly<Record<string, DrawingAnnotationOverride>>;
   /** Landscape sheet size; default `a3`. `'auto'` / `'auto-ansi'` pick the

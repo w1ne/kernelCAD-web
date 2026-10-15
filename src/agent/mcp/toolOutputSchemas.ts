@@ -25,6 +25,7 @@ import { SCENE_SUMMARY_SCHEMA } from './sceneSummarySchema';
 export { SCENE_SUMMARY_SCHEMA } from './sceneSummarySchema';
 import { VERIFY_OUTPUT_SCHEMA } from './verificationOutputSchema';
 import { MESH_RECONSTRUCT_OUTPUT_SCHEMAS } from './registry/meshReconstructTools.outputSchemas';
+import { IMPORT_OUTPUT_SCHEMAS } from './registry/importTools.outputSchemas';
 import { FABRICATION_OUTPUT_SCHEMAS } from './registry/fabricationTools.outputSchemas';
 
 export type { JSONSchemaObject } from './toolOutputSchemaParts';
@@ -40,6 +41,8 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
       ok: { type: 'boolean', description: 'Whether the script compiled and lowered cleanly.' },
       viewerUrl: { type: 'string', description: 'Live loopback Studio URL; reused on later full builds in the same local MCP process.' },
       viewerError: { type: 'string', description: 'Viewer provisioning error; separate from the CAD build result.' },
+      viewerMode: { type: 'string', enum: ['hosted'], description: 'Hosted mode uses open_in_studio instead of a process-local viewer.' },
+      viewerHint: { type: 'string', description: 'How to view the built model in hosted Studio.' },
       step: { type: 'object', additionalProperties: true, description: 'Per-step build validity, volume and paired local PNG paths with a shared iso frame; unavailable snapshots report an error. Not a topology certificate. Omitted on dry runs.' },
       featureCount: { type: 'number', description: 'Number of features captured by the script.' },
       diagnostics: { type: 'array', items: { type: 'object', additionalProperties: true } },
@@ -794,5 +797,6 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
     required: ['ok', 'toolchain', 'materials', 'material_names'],
     additionalProperties: true,
   },
+  ...IMPORT_OUTPUT_SCHEMAS,
   ...FABRICATION_OUTPUT_SCHEMAS,
 };

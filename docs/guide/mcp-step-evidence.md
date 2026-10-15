@@ -1,6 +1,6 @@
 # Modeling step evidence
 
-A full local MCP `evaluate_script` result includes `step`. Source-edit tools that
+A full MCP `evaluate_script` result includes `step`. Source-edit tools that
 re-evaluate a script forward the same field. Dry runs omit it because they do not
 build geometry.
 
@@ -12,6 +12,9 @@ build geometry.
   only `after`; subsequent evaluations compare the previous active root shape
   to the new root shape. A failed build clears that baseline. Array returns are explicitly unverified
   because their tail feature does not represent all returned geometry.
+- Assembly evidence measures every part in world coordinates. Volume sums the
+  parts, including overlaps; the immutable BREP snapshot preserves separate
+  bodies rather than fusing them. Capturing evidence leaves the active scene usable.
 - `snapshots.frame` records the shared iso view, 512×512 image size, and union
   bounds in mm. Both images use the same camera fit and rendering settings, so
   unchanged geometry stays pixel-aligned even when model extents change.
@@ -28,3 +31,9 @@ replay scripts, PNGs, and `frame.json`.
 For a numeric comparison, subtract the volume in consecutive results. For a
 visual comparison, read both PNGs with the recorded frame. Refrain from calling a
 step visually verified until its images have been inspected.
+
+Local full evaluations also return a reusable loopback Studio `viewerUrl`.
+Hosted servers set `KERNELCAD_MCP_MODE=hosted`: evaluation returns
+`viewerMode: "hosted"` and a `viewerHint` directing clients to `open_in_studio`.
+They do not start a loopback viewer. A missing browser attachment can make
+snapshots unavailable while geometry validity remains valid.

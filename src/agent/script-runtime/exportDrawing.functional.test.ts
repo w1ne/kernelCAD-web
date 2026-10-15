@@ -4,6 +4,7 @@ import { initOcct } from '../../kernel/backends/occt/occtBackend';
 import { runAndExport } from './export';
 import { declaredDrawingAnnotation } from '../../kernel/backends/occt/viewerDimensions/drawingAnnotation';
 import { drawingDecisionKey } from '../../shared/intent/drawingReview';
+import { unzlibSync } from 'fflate';
 
 beforeAll(initOcct);
 const plan = { id: 'mount', requirements: [{ id: 'width', featureId: 'plate interface', annotationId: 'authored:width', expectedKind: 'linear', role: 'critical', reason: 'Mating width' }], decisions: [] };
@@ -13,6 +14,15 @@ const options = { format: 'svg-drawing' as const, date: '2026-10-12', autoAnnota
 function svg(extra = {}, source = code) { return runAndExport({ code: source, fileName: 'functional.kcad.ts', format: 'svg-drawing', options: { ...options, ...extra } }); }
 
 describe('functional review exports', () => {
+  it('preserves the front-only selection through PDF conversion', async () => {
+    const result=await runAndExport({code:'return box(500,30,313);',fileName:'front.kcad.ts',format:'pdf-drawing',
+      options:{format:'pdf-drawing',views:['front'],autoAnnotate:false}});
+    const pdf=Buffer.from(result.bytes).toString('latin1');
+    const streams=[...pdf.matchAll(/stream\n([\s\S]*?)\nendstream/g)].map(m=>Buffer.from(unzlibSync(Buffer.from(m[1],'latin1'))).toString('latin1')).join('\n');
+    const textHex=(s:string)=>`<${Buffer.from(s).toString('hex')}>`;
+    expect(streams).toContain(textHex('FRONT'));
+    for(const caption of ['TOP','LEFT','ISOMETRIC']) expect(streams).not.toContain(textHex(caption));
+  });
   it('preserves stable IDs in unresolved conversion fallbacks for every kind', () => {
     for (const d of [{ id: 'linear', kind: 'linear', from: {edge:{}}, to:[1,0,0] }, { id: 'angular', kind: 'angular', from:{},to:{} }, { id:'diameter',kind:'diameter',edge:{} }, {id:'radius',kind:'radius',edge:{}}]) {
       expect(declaredDrawingAnnotation([], d as never)).toHaveProperty('id', d.id);
