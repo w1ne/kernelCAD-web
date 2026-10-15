@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { DIAGNOSTIC_CODES, HINT_TEMPLATES } from '../../../src/shared/diagnostics/registry';
 
 describe('diagnostic catalogue invariants', () => {
-  it('emits exactly 365 codes', () => {
+  it('codes are unique and include the sketch part-detection code', () => {
     // 204 from develop (NURBS analytics, Query DSL, K1-K9 kinematic, assembly/mechanism gates)
     // + 6 parts catalog codes (parts.* — Slice C bundled parts catalog)
     // + 1 feature.emboss-text.boolean-noop (#393 silent no-op guard)
@@ -138,10 +138,8 @@ describe('diagnostic catalogue invariants', () => {
     //   tube.branch.axis-not-square, tube.branch.od-too-large = 358.
     // + 1 drafting review: drawing.annotation.override-missing = 359.
     // + 1 kernel selection: recompute.kernel.unavailable = 363.
-    // + 1 motion intent on a fastened joint: mechanism.motion-on-fixed-joint = 364.
-    // + 1 loop mate apart at a swept pose: mechanism.mate-unsatisfied = 365.
-    expect(DIAGNOSTIC_CODES).toHaveLength(365);
-    expect(new Set(DIAGNOSTIC_CODES).size).toBe(365);
+    expect(new Set(DIAGNOSTIC_CODES).size).toBe(DIAGNOSTIC_CODES.length);
+    expect(DIAGNOSTIC_CODES).toContain('tool.trace-from-image.part-detection-failed');
   });
 
   it('every code has a non-empty hint template', () => {

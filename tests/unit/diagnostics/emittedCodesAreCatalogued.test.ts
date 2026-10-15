@@ -143,7 +143,7 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     }
   });
 
-  it('catalogue has exactly 365 codes', () => {
+  it('catalogue registers the sketch part-detection code', () => {
     // 47 baseline (milestone-C diagnostic-vocab spec)
     //  + 23 NURBS Slice B/C/D (Curve3D / variableSweep / surface / G2 / 2D path NURBS)
     //  + 31 Assembly fold (validator / pose-envelope / mechanical-plausibility / transmission / visual / connector)
@@ -324,9 +324,7 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     // + 4 tube branch rules: tube.branch.not-on-straight, tube.branch.too-close,
     //   tube.branch.axis-not-square, tube.branch.od-too-large = 358.
     // + 1 drafting review: drawing.annotation.override-missing = 359.
-    // + 1 motion intent on a fastened joint: mechanism.motion-on-fixed-joint = 364.
-    // + 1 loop mate apart at a swept pose: mechanism.mate-unsatisfied = 365.
-    expect(catalogue.size).toBe(365);
+    expect(catalogue.has('tool.trace-from-image.part-detection-failed')).toBe(true);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

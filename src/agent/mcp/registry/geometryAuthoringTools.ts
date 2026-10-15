@@ -328,8 +328,8 @@ export const geometryAuthoringToolEntries: ToolRegistryEntry[] = [
     definition: {
       name: 'trace_from_image',
       description:
-        "Use this when you need to trace features from a reference photo into waypoints. " +
-        "Trace pixel-space features from a reference photo into normalized [0..1] waypoints the agent can map to mm via a known scale anchor and feed to path().spline / path().nurbsSegment. Three backends are dispatched behind the scenes: `opencv` (deterministic; uniform-bg silhouette only), `vision-llm` (vision model; named points/cluttered backgrounds; needs ANTHROPIC_API_KEY or an OpenAI-compatible vision endpoint configured on the server), and `hybrid` (opencv silhouette + LLM-labeled named points). Default backend is `auto` — the tool picks based on the image's corner-color stddev. Accuracy honesty: opencv contour is geometrically exact; vision-LLM is typically 5–10% off on dense landmarks. Per-feature `confidence` is reported. Vision-LLM spend is billed to whoever configured the vision model. Pair with the `kernelcad-trace-from-image` skill for the conversion-to-mm pipeline.",
+        "Use this when you need to trace a reference image into normalized waypoints, or turn sketch labels into a catalog-aware draft BOM. " +
+        "Trace pixel-space features from a reference photo into normalized [0..1] waypoints the agent can map to mm via a known scale anchor and feed to path().spline / path().nurbsSegment. Set `detectParts: true` to request labeled component boxes, confidence, bundled-catalog candidates and unmatched labels; the BOM is a draft for review. Three backends are dispatched behind the scenes: `opencv` (deterministic; uniform-bg silhouette only), `vision-llm` (vision model; named points/cluttered backgrounds; needs a configured vision endpoint), and `hybrid` (opencv silhouette + LLM-labeled named points). Default backend is `auto`. Per-feature confidence is reported. Pair with the `kernelcad-trace-from-image` skill for the conversion-to-mm pipeline.",
       inputSchema: {
         type: 'object',
         properties: {
@@ -340,6 +340,10 @@ export const geometryAuthoringToolEntries: ToolRegistryEntry[] = [
           hint: {
             type: 'string',
             description: 'Optional free-text hint forwarded to vision-LLM backends (e.g. "a pair of eyewear; trace the upper brow only").',
+          },
+          detectParts: {
+            type: 'boolean',
+            description: 'Optional: use the configured vision model to detect labeled component boxes and return detectedParts plus a draftBom, normalized to the traced outline frame.',
           },
           features: {
             type: 'array',
