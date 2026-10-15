@@ -1,17 +1,17 @@
-// RoboParty ROBOTO 01 (RP1) 24-DoF kinematic scaffold. This is not registered
-// as a gallery entry because RP1_description meshes are unlicensed for
-// redistribution and the joint-marker-only render is not a truthful hero.
-// URDF link meshes are intentionally NOT committed: RP1_description contains no
-// license file. Once RoboParty clarifies mesh redistribution terms, vendor each
-// STL locally (< 50 MB/import) and replace the marked placeholderShape() call
-// with lib.fromSTL('./meshes/<link>.STL').scale(1000).
-//
-// Sources: https://github.com/Roboparty/RP1_description (URDF commit 84529a5)
-// https://github.com/Roboparty/rp1_hardware (CERN-OHL-W-2.0; hardware attribution)
+// RoboParty ROBOTO 01 (RP1), authored from the official 24-DoF URDF.
+// The 25 derived URDF visual STLs are bundled under roboto-01/meshes; see its NOTICE and MESH-SOURCES.txt.
+// Each mesh uses the URDF visual origin (identity); link frames are placed at
+// the accumulated URDF joint origins, matching the parent/child chain.
+// Source: https://github.com/Roboparty/RP1_description @ 84529a55649b5c9796d49093c266208c879f9f29
+// Hardware license attribution per Andrii's decision: CERN-OHL-W-2.0 from
+// https://github.com/Roboparty/rp1_hardware. See the adjacent NOTICE.
 // Hub: https://roboparty.com/documents/roboto-01
 // URDF SI translations are converted m -> mm; joint limits rad -> degrees.
 
-const alloy = '#b8c0c8';
+const shellWhite = '#f2f3f4';
+const graphite = '#34383d';
+const anodized = '#a8b3bd';
+const rubber = '#202326';
 // Editable joint controls are declared below from the 24-DoF URDF.
 const left_hip_pitchDeg = param('left_hip_pitchDeg', 0, { min: -163.865929, max: 163.865929, description: 'left_hip_pitch_joint URDF angle (degrees)' });
 const left_hip_rollDeg = param('left_hip_rollDeg', 0, { min: -42.398877, max: 148.969027, description: 'left_hip_roll_joint URDF angle (degrees)' });
@@ -68,23 +68,62 @@ const joints: Joint[] = [
 ];
 
 const rp1 = assembly('roboto-01-rp1');
-// TODO(mesh licence): once redistribution terms are clarified, replace the
-// deliberately non-physical reference markers with the upstream STL link mesh
-// for each joint segment via lib.fromSTL(localPath).scale(1000).
-function jointMarker() { return cylinder(6, 3).finish('aluminium-brushed', { color: alloy }); }
 
+type Mat3 = [V3, V3, V3];
+type Frame = { rot: Mat3; at: V3 };
+const IDENTITY: Mat3 = [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
+const WORLD: Frame = { rot: IDENTITY, at: [0, 0, 0] };
+const frames: Record<string, Frame> = { base_link: WORLD };
+function mul(a: Mat3, b: Mat3): Mat3 {
+  const cell = (r: number, c: number) => a[r][0] * b[0][c] + a[r][1] * b[1][c] + a[r][2] * b[2][c];
+  return [0, 1, 2].map((r) => [cell(r, 0), cell(r, 1), cell(r, 2)]) as Mat3;
+}
+function turn(m: Mat3, v: V3): V3 {
+  return m.map((row) => row[0] * v[0] + row[1] * v[1] + row[2] * v[2]) as V3;
+}
+function about(axis: 0 | 1 | 2, deg: number): Mat3 {
+  const a = deg * Math.PI / 180, c = Math.cos(a), s = Math.sin(a);
+  if (axis === 0) return [[1, 0, 0], [0, c, -s], [0, s, c]];
+  if (axis === 1) return [[c, 0, s], [0, 1, 0], [-s, 0, c]];
+  return [[c, -s, 0], [s, c, 0], [0, 0, 1]];
+}
+function rpyMatrix(rpy: V3): Mat3 { return mul(about(2, rpy[2]), mul(about(1, rpy[1]), about(0, rpy[0]))); }
+function toWorld(frame: Frame, v: V3): V3 {
+  const r = turn(frame.rot, v);
+  return [frame.at[0] + r[0], frame.at[1] + r[1], frame.at[2] + r[2]];
+}
+function axisAngle(m: Mat3): { axis: V3; deg: number } {
+  const cos = Math.min(1, Math.max(-1, (m[0][0] + m[1][1] + m[2][2] - 1) / 2));
+  const angle = Math.acos(cos);
+  if (angle < 1e-9) return { axis: [0, 0, 1], deg: 0 };
+  const axis: V3 = [m[2][1] - m[1][2], m[0][2] - m[2][0], m[1][0] - m[0][1]];
+  const len = Math.hypot(...axis);
+  return { axis: axis.map((v) => v / len) as V3, deg: angle * 180 / Math.PI };
+}
+const paintFor = (name: string) => name.includes('ankle_roll') ? rubber
+  : name.includes('hip') || name.includes('shoulder') || name.includes('elbow') || name.includes('ankle_pitch') ? anodized
+  : name.includes('waist') ? graphite
+  : name.includes('knee') || name.includes('wrist') ? graphite : shellWhite;
+const loadLink = async (name: string, frame: Frame) => {
+  const mesh = (await lib.fromSTL(`./roboto-01/meshes/${name}.STL`, { allowOpen: true, maxTriangles: 500000 })).scale(1000).color(paintFor(name));
+  // URDF visual origins are zero; place the visual at its accumulated link frame.
+  const { axis, deg } = axisAngle(frame.rot);
+  const turned = deg === 0 ? mesh : mesh.rotate(axis, deg);
+  return turned.translate(frame.at[0], frame.at[1], frame.at[2]);
+};
 const refs: Record<string, ReturnType<typeof rp1.part>> = {
-  base_link: rp1.part('base_link', jointMarker(), { material: 'aluminum-6061' }),
+  base_link: rp1.part('base_link', await loadLink('base_link', frames.base_link)),
 };
 for (const j of joints) {
-  refs[j.child] = rp1.part(j.child, jointMarker(), { material: 'abs' });
+  const parentFrame = frames[j.parent];
+  const childFrame: Frame = { rot: mul(parentFrame.rot, rpyMatrix([0, 0, 0])), at: toWorld(parentFrame, j.xyz) };
+  frames[j.child] = childFrame;
+  refs[j.child] = rp1.part(j.child, await loadLink(j.child, childFrame));
+  // The child frame is anchored at the parent joint origin: the parent
+  // connector uses URDF xyz; child connector is local zero.
   refs[j.parent].connector(j.name + '_parent', { type: 'axis', origin: { kind: 'vec3', value: j.xyz }, axis: j.axis });
   refs[j.child].connector(j.name + '_child', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: j.axis });
   rp1.mate(j.name, j.parent + '.' + j.name + '_parent', j.child + '.' + j.name + '_child', 'revolute', { pose: j.pose, limitsDeg: j.limitsDeg, exposure: 'concealed' });
 }
 
-return rp1.solvedModel({
-  left_hip_pitch_joint: -20, left_hip_roll_joint: -10, left_knee_joint: -65, left_ankle_pitch_joint: 25,
-  right_hip_pitch_joint: -20, right_hip_roll_joint: 10, right_knee_joint: 65, right_ankle_pitch_joint: -25,
-  left_shoulder_pitch_joint: 0, right_shoulder_pitch_joint: 0, left_elbow_joint: -70, right_elbow_joint: 70,
-});
+return rp1.solvedModel({});

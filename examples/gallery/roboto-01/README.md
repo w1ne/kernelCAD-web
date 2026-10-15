@@ -1,35 +1,30 @@
-# RoboParty ROBOTO 01 (RP1) — 24-DoF kinematic scaffold
+# RoboParty ROBOTO 01 (RP1) — 24-DoF kinematic assembly
 
-This kernelCAD assembly follows RoboParty's official `rp1_24dof.urdf`: 25
-named links and 24 revolute joints across the biped legs, waist and two arms.
-Joint origins are converted from metres to millimetres; URDF axes are preserved
-and limits are converted from radians to degrees. Every joint has an editable
-parameter bounded by the published URDF limits.
+This kernelCAD assembly follows RoboParty's `urdf/rp1_24dof.urdf`: 25 named
+links and 24 revolute joints across the biped legs, waist and two arms. The 25
+URDF-referenced visual STLs are bundled in `meshes/` as quadric-decimated
+derivatives capped at 2,500 faces per link; each import is below the 50 MB
+per-import limit (about 3 MB total). `MESH-SOURCES.txt` records source and
+bundled hashes, and `tools/decimate_meshes.py` reproduces the conversion. URDF visual origins are identity, and
+each link mesh is placed at its accumulated URDF link frame. The source STLs
+sew as open shells, so imports explicitly allow open meshes for visualization;
+volume and boolean behavior are therefore not asserted. Joint translations
+are converted from metres to millimetres, axes are preserved, and radians are
+converted to degrees. Joint pose parameters default to zero and remain editable
+within the published limits.
 
-## Source and licensing
-
-- Description source: [RP1_description](https://github.com/Roboparty/RP1_description),
-  `urdf/rp1_24dof.urdf`, pinned at commit `84529a5`.
-- Hardware attribution: RoboParty [RP1_hardware](https://github.com/Roboparty/rp1_hardware),
-  licensed under CERN-OHL-W-2.0.
-- Project hub: [ROBOTO 01](https://roboparty.com/documents/roboto-01).
-
-`RP1_description` has no license file at the pinned revision. Its URDF-linked
-STLs are not redistributed here. kernelCAD `lib.fromSTL` reads local paths, not
-raw GitHub URLs. Until mesh redistribution terms are clarified, the current
-viewport uses small joint datum markers only; those markers are not RP1 mesh
-geometry and do not represent or validate the robot's physical body, fit, or
-behavior. The source marks where licensed local `lib.fromSTL(...).scale(1000)`
-imports can replace the markers later. Hardware license attribution does not
-imply that the separately hosted description meshes share that license.
+Per Andrii's decision, the RoboParty hardware visuals are attributed to
+RoboParty and covered by CERN-OHL-W-2.0, following the `rp1_hardware` source.
+See [NOTICE](NOTICE) for the pinned description commit, source links, license
+text and scope. No Parasolid, SLDASM or STEP archives are included.
 
 ## Run
 
 ```bash
 npx tsx src/agent/cli/index.ts evaluate examples/gallery/roboto-01.kcad.ts
 npx tsx src/agent/cli/index.ts validate examples/gallery/roboto-01.kcad.ts --no-include-physics
-npx tsx src/agent/cli/index.ts render examples/gallery/roboto-01.kcad.ts --pose 30,18 -o /tmp/roboto-01.png
+npx tsx src/agent/cli/index.ts render examples/gallery/roboto-01.kcad.ts --pose 30,18 -o examples/gallery/roboto-01/hero.png
 ```
 
-An evaluation or replay validates only this local kinematic CAD scaffold. It is
-not a full robot simulation, deployed behavior, or hardware acceptance.
+Evaluation and rendering establish local model behavior only. They are not a
+full robot simulation, deployed behavior, or hardware acceptance.
