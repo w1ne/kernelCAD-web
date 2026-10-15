@@ -97,9 +97,14 @@ export class TriangleBvh {
   // it was pushed.
   private readonly traversalTStack = new Float64Array(128);
 
-  constructor(mesh: DfmMesh) {
+  private readonly consumeBuildWork: (amount?: number) => void;
+
+  constructor(mesh: DfmMesh, consumeWork?: (amount?: number) => void) {
+    this.consumeBuildWork = consumeWork ?? ((): void => {});
     const { vertices, triangles } = mesh;
     const numTris = (triangles.length / 3) | 0;
+    // Packing, centroid generation and the initial ordering are linear.
+    consumeWork?.(numTris * 3);
 
     // Pack non-degenerate triangles.
     const triVerts = new Float64Array(numTris * 9);
@@ -178,6 +183,7 @@ export class TriangleBvh {
     let cMinX = Infinity, cMinY = Infinity, cMinZ = Infinity;
     let cMaxX = -Infinity, cMaxY = -Infinity, cMaxZ = -Infinity;
     for (let k = lo; k < hi; k++) {
+      this.consumeBuildWork();
       const s = this.triOrder[k];
       const o = s * 9;
       for (let v = 0; v < 9; v += 3) {
@@ -197,6 +203,7 @@ export class TriangleBvh {
   /** Allocate and fill the subtree over triOrder[lo, hi). Returns the node
    *  index. Recursive at build time only (depth ~ log2(n / leafSize)). */
   private buildNode(lo: number, hi: number, centroids: Float64Array): number {
+    this.consumeBuildWork();
     const node = this.nodeCount++;
     const b = this.bounds;
     const bo = node * 6;
@@ -227,7 +234,10 @@ export class TriangleBvh {
    *  is in sorted position by centroid[axis]. O(n) expected per call. */
   private selectNth(lo: number, hi: number, nth: number, axis: number, centroids: Float64Array): void {
     const order = this.triOrder;
-    const key = (k: number): number => centroids[3 * order[k] + axis];
+    const key = (k: number): number => {
+      this.consumeBuildWork();
+      return centroids[3 * order[k] + axis];
+    };
     let left = lo;
     let right = hi - 1;
     while (left < right) {
@@ -445,6 +455,39 @@ export class TriangleBvh {
     }
     hits.sort((a, b) => a.t - b.t);
     return hits;
+  }
+
+  /** Visit triangles intersecting an AABB, using the existing spatial tree.
+   * Charge every visited node and leaf triangle, including rejected bounds.
+   * Yield lazily so a collision caller can stop at its first blocker. */
+  *overlappingTriangles(
+    query: { min: Vec3; max: Vec3 }, consumeWork: () => void,
+  ): Generator<number> {
+    if (this.triangleCount === 0) return;
+    const stack = [0];
+    while (stack.length) {
+      consumeWork();
+      const node = stack.pop()!, offset = node * 6;
+      let overlaps = true;
+      for (let axis = 0; axis < 3; axis++) {
+        if (this.bounds[offset + axis] > query.max[axis] || this.bounds[offset + axis + 3] < query.min[axis]) overlaps = false;
+      }
+      if (!overlaps) continue;
+      if (this.count[node] === 0) {
+        stack.push(node + 1, this.rightChild[node]);
+        continue;
+      }
+      for (let k = this.start[node]; k < this.start[node] + this.count[node]; k++) {
+        consumeWork();
+        const slot = this.triOrder[k], base = slot * 9;
+        let intersects = true;
+        for (let axis = 0; axis < 3; axis++) {
+          const a = this.triVerts[base + axis], b = this.triVerts[base + 3 + axis], c = this.triVerts[base + 6 + axis];
+          if (Math.min(a,b,c) > query.max[axis] || Math.max(a,b,c) < query.min[axis]) intersects = false;
+        }
+        if (intersects) yield this.srcIndex[slot];
+      }
+    }
   }
 
   /** Nearest point on any indexed triangle, pruned by point/AABB distance.

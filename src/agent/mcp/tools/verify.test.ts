@@ -5,6 +5,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 // Mock all eight verifiers — this is a routing layer, so we test that `check`
 // selects the right handler and forwards the remaining params, not the
 // verifiers' own (unchanged) behavior.
+vi.mock('./checkAssemblyPath', () => ({ checkAssemblyPathTool: vi.fn(async () => 'assembly-path') }));
 vi.mock('./validateAssembly', () => ({ validateAssemblyTool: vi.fn(async () => 'assembly') }));
 vi.mock('./validateUrdf', () => ({ validateUrdfTool: vi.fn(async () => 'urdf') }));
 vi.mock('./dfmCheck', () => ({ dfmCheckTool: vi.fn(async () => 'dfm') }));
@@ -18,6 +19,7 @@ vi.mock('./checkFastenerInstallation', () => ({ checkFastenerInstallationTool: v
 vi.mock('./checkBodyLikeness', () => ({ checkBodyLikenessTool: vi.fn(async () => 'body-likeness') }));
 vi.mock('./checkGeometryQuality', () => ({ checkGeometryQualityTool: vi.fn(async () => 'geometry-quality') }));
 
+import { checkAssemblyPathTool } from './checkAssemblyPath';
 import { verifyTool, type VerifyCheck } from './verify';
 import { validateAssemblyTool } from './validateAssembly';
 import { validateUrdfTool } from './validateUrdf';
@@ -33,6 +35,7 @@ import { checkFastenerInstallationTool } from './checkFastenerInstallation';
 import { checkGeometryQualityTool } from './checkGeometryQuality';
 
 const ROUTES: Array<[VerifyCheck, ReturnType<typeof vi.fn>, string]> = [
+  ['assembly-path', checkAssemblyPathTool as never, 'assembly-path'],
   ['assembly', validateAssemblyTool as never, 'assembly'],
   ['urdf', validateUrdfTool as never, 'urdf'],
   ['dfm', dfmCheckTool as never, 'dfm'],

@@ -7,7 +7,7 @@ export const VERIFY_OUTPUT_SCHEMA = {
   type: 'object' as const,
   properties: {
     ok: { type: 'boolean', description: 'Whether the verification ran and passed its gate.' },
-    source: { type: 'string', description: "fastener-installation/geometry-quality: local geometry evidence." },
+    source: { type: 'string', description: "fastener-installation/geometry-quality/assembly-path: local geometry evidence." },
     featureId: { type: 'string', description: 'geometry-quality: measured body feature.' },
     frame: { type: 'string', description: 'geometry-quality: model coordinate frame for all locations.' },
     thresholds: { type: 'object', additionalProperties: true, description: 'geometry-quality: effective area/length thresholds and total surface area.' },
@@ -15,6 +15,10 @@ export const VERIFY_OUTPUT_SCHEMA = {
     shortEdges: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'geometry-quality: rebuild-scoped edge id/index, lengthMm, parametric midpoint location.' },
     degenerateEdges: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'geometry-quality: explicit BREP degenerated pole/parameterization edges, ids and locations; excluded from the physical short-edge gate.' },
     symmetry: { type: 'object', additionalProperties: true, description: 'geometry-quality: sampled-mesh-reflection; planes with passed, maxDeviationMm, rmsDeviationMm, sampleCount and worst-point witnesses, matchingPlanes, toleranceMm and meshDeflectionMm.' },
+    basis: { type: 'string', description: 'assembly-path: continuous-triangle-mesh.' },
+    parts: { type: 'array', description: 'assembly-path: initial per-part removable, validDirections and directions with distanceMm, clear and blockingParts.', items: { type: 'object', additionalProperties: true } },
+    removalOrder: { type: 'array', description: 'assembly-path: deterministic greedy steps, each with part and direction.', items: { type: 'object', additionalProperties: true } },
+    stuckParts: { type: 'array', items: { type: 'string' }, description: 'assembly-path: remaining parts when no straight removal is available.' },
     assembly: { type: ['string', 'null'], description: 'Audited lowered assembly.' },
     status: { type: 'string', description: 'fastener-installation: pass, fail, partial, or no-coverage; partial/zero coverage cannot pass.' },
     counts: {

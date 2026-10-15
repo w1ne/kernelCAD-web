@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import { checkAssemblyPathTool } from './checkAssemblyPath';
 import { validateAssemblyTool } from './validateAssembly';
 import { validateUrdfTool } from './validateUrdf';
 import { dfmCheckTool } from './dfmCheck';
@@ -15,6 +16,7 @@ import { checkGeometryQualityTool } from './checkGeometryQuality';
 
 /** The verification kind. Each value maps 1:1 to a dedicated verifier. */
 export type VerifyCheck =
+  | 'assembly-path'
   | 'assembly'
   | 'urdf'
   | 'dfm'
@@ -54,6 +56,8 @@ export function verifyTool(input: VerifyInput): Promise<unknown> {
   switch (check) {
     case 'geometry-quality':
       return checkGeometryQualityTool(rest as Parameters<typeof checkGeometryQualityTool>[0]);
+    case 'assembly-path':
+      return checkAssemblyPathTool(rest as Parameters<typeof checkAssemblyPathTool>[0]);
     case 'assembly':
       return validateAssemblyTool(rest as unknown as Parameters<typeof validateAssemblyTool>[0]);
     case 'urdf':
@@ -86,7 +90,7 @@ export function verifyTool(input: VerifyInput): Promise<unknown> {
       return Promise.reject(
         new Error(
           `Unknown verify check: ${String(check)}. Valid: assembly, urdf, dfm, ` +
-            `dfm-preflight, swept-collision, reachable, mounting-holes, load-capacity, static-hold, body-likeness, fastener-installation, geometry-quality.`,
+            `dfm-preflight, swept-collision, reachable, mounting-holes, load-capacity, static-hold, body-likeness, fastener-installation, geometry-quality, assembly-path.`,
         ),
       );
   }
