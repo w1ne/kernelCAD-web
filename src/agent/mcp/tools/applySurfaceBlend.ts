@@ -55,12 +55,7 @@ function surfaceBlendSelectorInvalid(selector: ApplySurfaceBlendInput['selector'
   return !(selector && typeof selector === 'object' && typeof selector.face === 'string');
 }
 
-function nextSurfaceBlendBindingInput['selector']): boolean {
-  if (selector === undefined || typeof selector === 'string') return false;
-  return !(selector && typeof selector === 'object' && typeof selector.face === 'string');
-}
-
-function nextSurfaceBlendBindingfunction nextSurfaceBlendBinding(code: string): string {
+function nextSurfaceBlendBinding(code: string): string {
   const taken = new Set<string>();
   for (const match of code.matchAll(/\bconst\s+(_surface_blend(?:_\d+)?)\b/g)) taken.add(match[1]!);
   if (!taken.has('_surface_blend')) return '_surface_blend';
@@ -68,7 +63,6 @@ function nextSurfaceBlendBindingfunction nextSurfaceBlendBinding(code: string): 
   while (taken.has(`_surface_blend_${i}`)) i += 1;
   return `_surface_blend_${i}`;
 }
-
 
 export async function applySurfaceBlendTool(input: ApplySurfaceBlendInput): Promise<ApplySurfaceBlendOutput> {
   const validated = validateSurfaceBlendInput(input);

@@ -9461,6 +9461,134 @@
     }
   },
   {
+    "name": "route_wires",
+    "description": "Use this when you need a first-pass orthogonal pin-to-pin wire route estimate and clearance check. Accepts a LabWired handoff or explicit wire positions in millimetres, returns path length and bend count, and reports collisions against part bounding boxes. Wires whose endpoint positions are null are reported as unresolved. Read-only analysis; it does not create or certify a physical harness.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "wires": {
+          "type": "array",
+          "description": "Wire records with from_pos_mm and to_pos_mm as 3D millimetre coordinates.",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "handoff": {
+          "type": "object",
+          "description": "LabWired handoff schema labwired-kernelcad-handoff/0.1 with parts, pins and wires.",
+          "additionalProperties": true
+        },
+        "obstacles": {
+          "type": "array",
+          "description": "Axis-aligned obstacle volumes in world millimetres.",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "board_surface_z_mm": {
+          "type": "number",
+          "description": "Known world Z of the LabWired board surface. Required to reconcile 2D endpoint coordinates and XY-only part placements for complete clearance analysis."
+        },
+        "clearance_mm": {
+          "type": "number",
+          "description": "Minimum obstacle clearance, default 1 mm."
+        },
+        "bend_radius_mm": {
+          "type": "number",
+          "description": "Requested minimum bend radius, default 2 mm."
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "routes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "route_found": {
+                "type": "boolean"
+              },
+              "route_failure": {
+                "type": "string"
+              },
+              "length_mm": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "bend_count": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "points_mm": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                }
+              },
+              "collisions": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "clearance_violations": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "additionalProperties": true
+          }
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "unresolved_wire_count": {
+          "type": "integer"
+        },
+        "clearance_mm": {
+          "type": "number"
+        },
+        "requested_bend_radius_mm": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "ok",
+        "routes",
+        "warnings",
+        "unresolved_wire_count"
+      ],
+      "additionalProperties": true
+    }
+  },
+  {
     "name": "apply_surface_blend",
     "description": "Use this when you need to author and evaluate a fillet or chamfer on a kernelCAD Shape. Inserts Shape.fillet(radius, selector, { continuity: G1|G2 }) or Shape.chamfer(distance, selector) through the existing public API and returns the patched source plus evaluation diagnostics. Selectors accept EdgeSelector syntax, including canonical edge refs/query strings or { face: canonical name, face label, or face query }. G2 continuity applies to fillets; chamfer uses the existing chamfer API. This authors the operation and does not extract blend-surface NURBS poles; that still requires kernel surface extraction.",
     "inputSchema": {

@@ -843,4 +843,12 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
   ...FABRICATION_OUTPUT_SCHEMAS,
   ...MANUFACTURING_OUTPUT_SCHEMAS,
   ...NURBS_OUTPUT_SCHEMAS,
+  route_wires: {
+    type: 'object',
+    properties: {
+      ok: { type: 'boolean' }, routes: { type: 'array', items: { type: 'object', properties: { id: { type: 'string' }, route_found: { type: 'boolean' }, route_failure: { type: 'string' }, length_mm: { type: ['number', 'null'] }, bend_count: { type: ['integer', 'null'] }, points_mm: { type: 'array', items: { type: 'array', items: { type: 'number' } } }, collisions: { type: 'array', items: { type: 'string' } }, clearance_violations: { type: 'array', items: { type: 'string' } } }, additionalProperties: true } },
+      warnings: { type: 'array', items: { type: 'string' } },
+      unresolved_wire_count: { type: 'integer' }, clearance_mm: { type: 'number' }, requested_bend_radius_mm: { type: 'number' },
+    }, required: ['ok', 'routes', 'warnings', 'unresolved_wire_count'], additionalProperties: true,
+  },
 };

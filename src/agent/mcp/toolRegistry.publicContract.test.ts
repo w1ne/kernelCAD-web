@@ -33,6 +33,7 @@ import { manufacturingToolEntries } from './registry/manufacturingTools';
 import { nurbsToolEntries } from './registry/nurbsTools';
 import { surfaceBlendToolEntries } from './registry/surfaceBlendTools';
 import { pointCloudToolEntries } from './registry/pointCloudTools';
+import { wireRoutingToolEntries } from './registry/wireRoutingTools';
 
 const EXPECTED_TOOL_NAMES = [
   'evaluate_script',
@@ -93,6 +94,7 @@ const EXPECTED_TOOL_NAMES = [
   'ray_pick',
   'inspect_nurbs',
   'fit_plane',
+  'route_wires',
   'apply_surface_blend',
 ] as const;
 
@@ -369,9 +371,10 @@ describe('toolRegistry public contract', () => {
       'ray_pick',
       'inspect_nurbs',
       'fit_plane',
+      'route_wires',
       'apply_surface_blend',
     ]);
-    expect(TOOL_REGISTRY).toHaveLength(57);
+    expect(TOOL_REGISTRY).toHaveLength(58);
   });
 
   it('composes the user-file import family at the registry tail, with ChatGPT file params', () => {
@@ -391,14 +394,14 @@ describe('toolRegistry public contract', () => {
     expect(TOOL_REGISTRY.slice(53, 54).map(entry => entry.definition.name)).toEqual(['ray_pick']);
     expect(nurbsToolEntries.map(entry => entry.definition.name)).toEqual(['inspect_nurbs']);
     expect(TOOL_REGISTRY.slice(54, 55)).toEqual(nurbsToolEntries);
-    expect(TOOL_REGISTRY.slice(55, 55 + pointCloudToolEntries.length)).toEqual(pointCloudToolEntries);
+    expect(TOOL_REGISTRY.slice(55, 56)).toEqual(pointCloudToolEntries);
   });
 
   it('composes ray picking at the registry tail', () => {
     expect(TOOL_REGISTRY.slice(53, 54).map(entry => entry.definition.name)).toEqual(['ray_pick']);
   });
-  it('composes the point-cloud analysis family at the registry tail', () => {
-    expect(TOOL_REGISTRY.slice(-(pointCloudToolEntries.length + surfaceBlendToolEntries.length), -surfaceBlendToolEntries.length)).toEqual(pointCloudToolEntries);
+  it('composes the point-cloud analysis family before wire routing', () => {
+    expect(TOOL_REGISTRY.slice(55, 56)).toEqual(pointCloudToolEntries);
   });
 
   it('dispatches plane fitting through the MCP registry', async () => {
@@ -406,7 +409,12 @@ describe('toolRegistry public contract', () => {
       .resolves.toMatchObject({ normal: [0, 0, 1], rms: 0 });
   });
 
-  it('appends the surface blend authoring tool after the NURBS inspection family', () => {
+  it('composes the wire routing tool after the point-cloud family', () => {
+    expect(wireRoutingToolEntries.map(entry => entry.definition.name)).toEqual(['route_wires']);
+    expect(TOOL_REGISTRY.slice(56, 57)).toEqual(wireRoutingToolEntries);
+  });
+
+  it('appends the surface blend authoring tool at the registry tail', () => {
     expect(TOOL_REGISTRY.slice(-surfaceBlendToolEntries.length)).toEqual(surfaceBlendToolEntries);
   });
 
