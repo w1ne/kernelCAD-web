@@ -36,6 +36,7 @@ describe('PAGES_WORKER CORS', () => {
     items: [
       { id: 'nucleo64-board', name: 'ST Nucleo-64', category: 'Electronics', family: 'STM32', tags: ['nucleo'], glbUrl: 'https://example.invalid/glb/nucleo64-board.glb' },
       { id: 'held-part', name: 'Held', category: 'X', family: 'Y', tags: ['legal-hold'] },
+      { id: 'sg90-servo', name: 'SG90', category: 'motor', family: 'micro-servo', tags: ['sg90'], aliases: ['sg90-micro-servo'] },
     ],
   };
 
@@ -68,6 +69,14 @@ describe('PAGES_WORKER CORS', () => {
   it('preserves glbUrl on the detail record a 3D client needs', async () => {
     const res = await call('/v1/parts/nucleo64-board');
     expect((await res.json()).glbUrl).toBe('https://example.invalid/glb/nucleo64-board.glb');
+  });
+
+  it('resolves a deprecated alias id to its canonical record, without a second search hit', async () => {
+    const res = await call('/v1/parts/sg90-micro-servo');
+    expect(res.status).toBe(200);
+    expect((await res.json()).id).toBe('sg90-servo');
+    const search = await call('/v1/parts?q=sg90');
+    expect((await search.json()).items.map((i: { id: string }) => i.id)).toEqual(['sg90-servo']);
   });
 
   it('keeps filtering legal-hold out of search results', async () => {

@@ -533,7 +533,7 @@ Check world-frame spacing after reuse changes. The authoring `Shape` API has no
 .seatOnFloor(opts?: { center?: boolean }): Promise<Shape>
 //
 //   // Place a fetched servo so its CENTER lands at (20, 0, 0):
-//   const servo = await lib.fetchPart('servo/sg90');
+//   const servo = await lib.fetchPart('sg90-servo');
 //   (await servo.recenter()).translate(20, 0, 0);
 //   // Stand a part upright on the build plate:
 //   (await bracket.seatOnFloor());

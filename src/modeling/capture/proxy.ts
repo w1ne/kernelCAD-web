@@ -1272,7 +1272,7 @@ export class Shape {
    * `translate` transform, so it composes with prior transforms and returns
    * the same Shape for continued chaining:
    *
-   *   const part = (await lib.fetchPart('servo/sg90'));
+   *   const part = (await lib.fetchPart('sg90-servo'));
    *   (await part.recenter()).translate(20, 0, 0);  // center now at (20,0,0)
    *
    * @param opts.x/y/z  Recenter only the named axes (default: all three).

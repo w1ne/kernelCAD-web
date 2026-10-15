@@ -25,7 +25,8 @@ export const PAGES_WORKER = `// SPDX-License-Identifier: MIT
 //   GET /v1/parts?q=&category=&family=&standard=&tag=&licenseClass=&pageSize=
 //        faceted search. Tokens/facets AND-combine. ?includeLegalHold=1 to
 //        include legal-hold (share-alike, pending sign-off) records.
-//   GET /v1/parts/{id}      detail (never filtered — explicit fetch)
+//   GET /v1/parts/{id}      detail (never filtered — explicit fetch; a
+//                           deprecated alias id returns its canonical record)
 //   GET /v1/categories      [{ category, count }] for browsing
 //   GET /v1/families?category=   [{ family, category, count }] for browsing
 //
@@ -93,7 +94,8 @@ export default {
 
     const id = m[1] ? m[1].replace(/\\.json$/, '') : '';
     if (id) {
-      const rec = items.find((r) => r.id === id);
+      // An exact id wins; a deprecated alias resolves to its canonical record.
+      const rec = items.find((r) => r.id === id) || items.find((r) => (r.aliases || []).includes(id));
       return rec ? json(rec) : fail('not found', 404);
     }
 

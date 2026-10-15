@@ -13,6 +13,15 @@ const upstreamRepo = 'https://github.com/FreeCAD/FreeCAD-library';
 const upstreamDir = 'Electrical Parts/Servos/SG-90';
 const attribution = 'Juan Fenoy, FreeCAD community parts library; CC-BY-SA-4.0. Translated to shaft-centered coordinates by kernelCAD contributors.';
 const referenceStatus = 'community reference; exact Modulshop variant unverified';
+/** Electrical and harness facts from the Luxor Parts 87897 SG90 data sheet.
+ * The imported STEP has no cable, so these are attributes and not connectors. */
+const SG90_ELECTRICAL = {
+  mpn: 'SG90',
+  pinout: 'GND brown, V+ red, PWM orange',
+  wireGround: 'brown', wireVplus: 'red', wirePwm: 'orange',
+  harnessConnector: 'JR/Futaba/GWS 3-pin', harnessPitchMm: 2.54, harnessLengthMm: 250,
+  harnessSource: 'https://www.kjell.com/globalassets/mediaassets/701916_87897_datasheet_en.pdf',
+} as const;
 const axis = (name: string, origin: [number, number, number]): ConnectorEntry => ({ name, type: 'axis', origin, axis: [0, 0, 1] });
 const face = (name: string, origin: [number, number, number], normal: [number, number, number]): ConnectorEntry => ({ name, type: 'frame', origin, normal });
 
@@ -39,8 +48,10 @@ export const SG90_PARTS: Sg90Part[] = [
     ],
     record: {
       id: 'sg90-servo', name: 'SG90 9g micro servo (community reference)', family: 'micro-servo', category: 'motor',
-      tags: ['sg90', 'SG-90', 'servo', 'motor', 'community-reference'],
-      attributes: { referenceStatus, bodyWidthMm: 11.8, bodyLengthMm: 22.5, bodyHeightMm: 22.7, overallHeightMm: 29.9, mountHoleDiameterMm: 2, earThicknessMm: 2.5, mountHoleSpacingMm: 27.2 },
+      tags: ['sg90', 'SG-90', 'servo', 'motor', 'community-reference', 'micro-servo', 'pwm', 'actuator'],
+      attributes: { referenceStatus, bodyWidthMm: 11.8, bodyLengthMm: 22.5, bodyHeightMm: 22.7, overallHeightMm: 29.9, mountHoleDiameterMm: 2, earThicknessMm: 2.5, mountHoleSpacingMm: 27.2, ...SG90_ELECTRICAL },
+      // The old electronics-catalog id. It resolves here so old scripts keep working.
+      aliases: ['sg90-micro-servo'],
       connectors: ['shaft-output', 'ear-mount-low', 'ear-mount-high'],
       license: 'CC-BY-SA-4.0', attribution, licenseClass: 'share-alike', redistribution: 'mirror',
       upstream: { repo: upstreamRepo, commit: SG90_UPSTREAM_COMMIT, path: `${upstreamDir}/Servo-sg90.step` },

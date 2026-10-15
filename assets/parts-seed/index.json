@@ -65,7 +65,10 @@
         "SG-90",
         "servo",
         "motor",
-        "community-reference"
+        "community-reference",
+        "micro-servo",
+        "pwm",
+        "actuator"
       ],
       "attributes": {
         "referenceStatus": "community reference; exact Modulshop variant unverified",
@@ -75,7 +78,16 @@
         "overallHeightMm": 29.9,
         "mountHoleDiameterMm": 2,
         "earThicknessMm": 2.5,
-        "mountHoleSpacingMm": 27.2
+        "mountHoleSpacingMm": 27.2,
+        "pinout": "GND brown, V+ red, PWM orange",
+        "wireGround": "brown",
+        "wireVplus": "red",
+        "wirePwm": "orange",
+        "harnessConnector": "JR/Futaba/GWS 3-pin",
+        "harnessPitchMm": 2.54,
+        "harnessLengthMm": 250,
+        "harnessSource": "https://www.kjell.com/globalassets/mediaassets/701916_87897_datasheet_en.pdf",
+        "mpn": "SG90"
       },
       "connectors": [
         "shaft-output",
@@ -92,7 +104,10 @@
         "path": "Electrical Parts/Servos/SG-90/Servo-sg90.step"
       },
       "source": "local-catalog",
-      "sha256": "958da61d109d565255a9c36c444283abd7dfddd9d43cbee99e02c639d0d07ec3"
+      "sha256": "958da61d109d565255a9c36c444283abd7dfddd9d43cbee99e02c639d0d07ec3",
+      "aliases": [
+        "sg90-micro-servo"
+      ]
     },
     {
       "id": "sg90-horn-single-arm",
