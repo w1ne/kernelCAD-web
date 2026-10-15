@@ -31,6 +31,7 @@
         "hole",
         "holes",
         "importedBrep",
+        "importedMesh",
         "importedStep",
         "importedStl",
         "loft",

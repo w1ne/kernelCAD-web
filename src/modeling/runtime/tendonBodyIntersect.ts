@@ -30,7 +30,7 @@
 
 import type { Assembly } from '../capture/assembly';
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
-import type { OcctBackend } from '../../kernel/backends/occt/occtBackend';
+import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import type { Transform } from '../../shared/runtime/se3';
 import { parseConnectorRef } from '../mates/mate';
 import { measureGapToBody } from './jointMeshContinuity';
@@ -149,6 +149,7 @@ function piercesForTendon(
       if (dist(pt, a.world) < ANCHOR_MARGIN_MM || dist(pt, b.world) < ANCHOR_MARGIN_MM) continue;
       for (const sp of sample.scene.parts) {
         if (excluded.has(sp.name) || fired.has(sp.name)) continue;
+        if (!(sp.shape instanceof OcctBackend)) continue;
         const gap = measureGapToBody(sp.shape as OcctBackend, sp.worldTransform, pt);
         if (gap !== undefined && gap < TENDON_BODY_CLEARANCE_MM) {
           out.push({ tendonName: t.name, partName: sp.name, pointWorld: pt, gapMm: gap });

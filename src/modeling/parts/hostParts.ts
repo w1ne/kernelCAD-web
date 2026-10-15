@@ -58,6 +58,15 @@ export async function fromSTLViaHost(
   return fromSTL(ctx, path, opts);
 }
 
+export async function meshFromSTLViaHost(
+  ctx: HostPartsCtx,
+  path: string,
+): Promise<Shape> {
+  requireHostFs('lib.meshFromSTL()');
+  const { meshFromSTL } = await import('./fromMeshFormats');
+  return meshFromSTL(ctx, path);
+}
+
 export async function fromDXFViaHost(
   ctx: HostPartsCtx,
   path: string,

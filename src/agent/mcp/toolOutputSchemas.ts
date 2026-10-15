@@ -25,10 +25,12 @@ import { SCENE_SUMMARY_SCHEMA } from './sceneSummarySchema';
 export { SCENE_SUMMARY_SCHEMA } from './sceneSummarySchema';
 import { VERIFY_OUTPUT_SCHEMA } from './verificationOutputSchema';
 import { MESH_RECONSTRUCT_OUTPUT_SCHEMAS } from './registry/meshReconstructTools.outputSchemas';
+import { MESH_BOOLEAN_OUTPUT_SCHEMAS } from './registry/meshBooleanTools.outputSchemas';
 import { IMPORT_OUTPUT_SCHEMAS } from './registry/importTools.outputSchemas';
 import { FABRICATION_OUTPUT_SCHEMAS } from './registry/fabricationTools.outputSchemas';
 import { MANUFACTURING_OUTPUT_SCHEMAS } from './registry/manufacturingTools.outputSchemas';
 import { NURBS_OUTPUT_SCHEMAS } from './registry/nurbsTools.outputSchemas';
+import { BOM_OUTPUT_SCHEMAS } from './registry/bomTools.outputSchemas';
 
 export type { JSONSchemaObject } from './toolOutputSchemaParts';
 import { MECHANISM_SUMMARY, SELECTION, SOURCE_EDIT, TUBE_JOINT, type JSONSchemaObject } from './toolOutputSchemaParts';
@@ -211,6 +213,7 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
   },
 
   ...MESH_RECONSTRUCT_OUTPUT_SCHEMAS,
+  ...MESH_BOOLEAN_OUTPUT_SCHEMAS,
 
 
   // Merged dispatcher (selected by `of`): union of ~18 reader outputs. All
@@ -834,6 +837,7 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
   ...FABRICATION_OUTPUT_SCHEMAS,
   ...MANUFACTURING_OUTPUT_SCHEMAS,
   ...NURBS_OUTPUT_SCHEMAS,
+  ...BOM_OUTPUT_SCHEMAS,
   route_wires: {
     type: 'object',
     properties: {
@@ -842,17 +846,6 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
       unresolved_wire_count: { type: 'integer' }, clearance_mm: { type: 'number' }, requested_bend_radius_mm: { type: 'number' },
     }, required: ['ok', 'routes', 'warnings', 'unresolved_wire_count'], additionalProperties: true,
     },
-  write_bom: {
-    type: 'object',
-    properties: {
-      ok: { type: 'boolean' }, destination: { type: 'string', enum: ['csv'] },
-      rows: { type: 'array', items: { type: 'object', additionalProperties: true } },
-      headers: { type: 'array', items: { type: 'string' } },
-      sheets_rows: { type: 'array', items: { type: 'array', items: { type: ['string', 'number'] } } },
-      csv: { type: 'string' }, path: { type: 'string' }, error: { type: 'string' },
-    },
-    required: ['ok', 'destination', 'rows', 'headers', 'sheets_rows', 'csv'], additionalProperties: true,
-  },
   import_handoff: {
     type: 'object', properties: {
       ok: { type: 'boolean' }, device: { type: 'string' }, part_count: { type: 'number' }, wire_mate_count: { type: 'number' },
@@ -860,5 +853,8 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
       script: { type: 'string', description: 'Evaluable .kcad.ts assembly script with bbox placeholder parts and named anchors.' },
       warnings: { type: 'array', items: { type: 'string' } }, error: { type: 'string' },
     }, required: ['ok', 'warnings'], additionalProperties: true,
+  },
+  inspect_assembly: {
+    type: 'object', properties: { ok: { type: 'boolean' } }, required: ['ok'], additionalProperties: true,
   },
 };
