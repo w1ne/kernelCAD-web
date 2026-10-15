@@ -12,6 +12,7 @@ import { currentValue } from '../../shared/runtime/editableHelpers';
 import type { Editable } from '../../shared/runtime/paramRef';
 import { detectInterferences, type InterferencePair, pairKey } from '../runtime/detectInterferences';
 import { checkClearance, type ClearancePairReport } from '../runtime/dfm/clearance';
+import { describeOverlap, isActionableOverlap } from '../runtime/jointContactCap';
 import { expandCoupledPoses } from './coupledPoses';
 import { reposedLoweredAssemblyScene } from './loweredAssemblyScene';
 import {
@@ -332,6 +333,7 @@ function createInterferenceReporter(
 ): (sampleName: string, pair: InterferencePair) => void {
   const reportedInterferences = new Set<string>();
   return (sampleName: string, pair: InterferencePair): void => {
+    if (!isActionableOverlap(pair)) return;
     const pairId = pairKey(pair.a, pair.b);
     if (ignoredPairs.has(pairId)) return;
     const key = `${sampleName}\u0000${pairId}`;
@@ -346,7 +348,7 @@ function createInterferenceReporter(
       partA: pair.a,
       partB: pair.b,
       volumeMm3: pair.volumeMm3,
-      message: `Pose-envelope sample '${sampleName}' makes parts '${pair.a}' and '${pair.b}' overlap by ${pair.volumeMm3.toFixed(2)} mm³.`,
+      message: `Pose-envelope sample '${sampleName}' makes parts '${pair.a}' and '${pair.b}' overlap by ${describeOverlap(pair)}.`,
       hint: `invalid-args.assembly.pose-envelope-interference — add clearance, reduce mate travel, or move the connector/mount geometry so the swept pose stays collision-free.`,
     });
   };

@@ -17,7 +17,7 @@ import { useWorkbench } from '../context/WorkbenchContext';
 import { hasNonemptyGeometry } from '../components/viewer/hasNonemptyGeometry';
 import { downloadBlob, exportViaServer } from '../exportViaServer';
 import { exportProgressText, useExportTask, type ExportTaskState } from '../hooks/useExportTask';
-import { jointContactCapMm3 } from '../../modeling/runtime/jointContactCap';
+import { isActionableOverlap } from '../../modeling/runtime/jointContactCap';
 import { StudioModelCustomizer } from '../customizer/StudioModelCustomizer';
 import { plainLine } from '../plainLine';
 import {
@@ -210,7 +210,7 @@ export function useModelCheck(): { check: ModelCheck | null; size: string | null
   return useMemo(() => {
     const hasGeometry = hasNonemptyGeometry(geometries);
     const interferences = scriptReview?.interferenceSummary?.actionableCount
-      ?? (scriptReview?.rawInterferencePairs ?? []).filter((pair) => pair.volumeMm3 > jointContactCapMm3()).length;
+      ?? (scriptReview?.rawInterferencePairs ?? []).filter((pair) => isActionableOverlap(pair)).length;
     return {
       check: modelCheck({ error: error ?? null, hasGeometry, review: scriptReview ?? null, interferences }),
       size: hasGeometry ? modelSizeLabel(geometries, featureRecords ?? []) : null,

@@ -6,16 +6,16 @@
 //   - colliding-sweep.kcad.ts — the arm sweeps through a post at the
 //     keyframe-midpoint pose (~45°, tMs=500) but is clear at both keys.
 //
-// GATE INTEGRITY: the volume threshold assertions import the mechanism-
-// validity gate's shared constant (`jointContactCapMm3`) — never a literal —
-// so the test can't drift from the gate it mirrors.
+// GATE INTEGRITY: the collision assertions call the mechanism-validity
+// gate's shared rule (`isActionableOverlap`) — never a literal — so the test
+// can't drift from the gate it mirrors.
 
 import { describe, it, expect } from 'vitest';
 import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { buildModelFromFile } from '../../../src/modeling/buildModel';
-import { jointContactCapMm3 } from '../../../src/modeling/runtime/jointContactCap';
+import { isActionableOverlap } from '../../../src/modeling/runtime/jointContactCap';
 import { keyframeSampleSet } from '../../../src/modeling/animation/animationSampler';
 import { verifyAnimation } from '../../../src/modeling/animation/verifyAnimation';
 import type { BuiltModel } from '../../../src/modeling/buildModel';
@@ -99,7 +99,6 @@ describe('verifyAnimation', () => {
   it('colliding fixture: mid-travel collision reported, rest pose clean, params restored', async () => {
     const { model, tracks, durationMs } = await buildWithTracks(COLLIDING_FIXTURE);
     const before = paramSnapshot(model);
-    const cap = jointContactCapMm3();
 
     const result = await verifyAnimation(model, tracks);
 
@@ -111,8 +110,8 @@ describe('verifyAnimation', () => {
       // the end key — the deliberate design of the fixture.
       expect(c.tMs).toBeGreaterThan(0);
       expect(c.tMs).toBeLessThan(durationMs);
-      // GATE INTEGRITY: threshold from the shared mechanism-gate constant.
-      expect(c.volumeMm3).toBeGreaterThan(cap);
+      // GATE INTEGRITY: classified by the shared mechanism-gate rule.
+      expect(isActionableOverlap(c)).toBe(true);
       expect([c.a, c.b].sort()).toEqual(['arm', 'base']);
     }
     // NO false collision at the rest pose.
