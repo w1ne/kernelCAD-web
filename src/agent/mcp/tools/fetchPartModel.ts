@@ -172,6 +172,7 @@ function glbBounds(bytes: Uint8Array): number[] | undefined {
 
 type ResolvedCatalogModel = {
   path?: string; url?: string; expectedHash?: string; source?: string; license?: string; attribution?: string;
+  redistribution?: string;
 };
 
 type CatalogGlbRecord = {
@@ -199,23 +200,21 @@ async function resolveCatalogFallback(input: FetchPartModelInput): Promise<Resol
   const records = input.catalog_id ? found.results.filter(record => record.id === input.catalog_id) : found.results;
   if (records.length !== 1) return fail(records.length ? 'Catalog lookup is ambiguous; pass catalog_id.' : 'No catalog model found for this part.', records.length ? 'model.lookup-ambiguous' : 'model_not_found', input.ref);
   const record = records[0];
-  if (record.redistribution === 'fetch-only') return fail(`Catalog part '${record.id}' is fetch-only; use fetch_part's user-driven download flow.`, 'model.fetch-only', input.ref);
   if (!record.glbUrl) return fail(`Catalog part '${record.id}' has no GLB model.`, 'model_not_found', input.ref);
   const expectedHash = resolveCatalogGlbHash(input, record);
   if (typeof expectedHash !== 'string') return expectedHash;
-  return { url: record.glbUrl, expectedHash, source: record.source, license: record.license, attribution: record.attribution };
+  return { url: record.glbUrl, expectedHash, source: record.source, license: record.license, attribution: record.attribution, redistribution: record.redistribution };
 }
 
 async function resolveFetchedCatalogModel(input: FetchPartModelInput, fetched: FetchPartOutput): Promise<ResolvedCatalogModel | FetchPartModelOutput> {
   if (fetched.ok && 'record' in fetched) {
-    if (fetched.record.redistribution === 'fetch-only') return fail(`Catalog part '${fetched.record.id}' is fetch-only; use fetch_part's user-driven download flow.`, 'model.fetch-only', input.ref);
     if (fetched.record.attributes.geometryKind === 'mesh') {
       if (!fetched.record.glbUrl) return fail(`Catalog part '${fetched.record.id}' is mesh geometry without a GLB model URL.`, 'model_not_found', input.ref);
       const expectedHash = resolveCatalogGlbHash(input, fetched.record);
       if (typeof expectedHash !== 'string') return expectedHash;
-      return { url: fetched.record.glbUrl, expectedHash, source: fetched.record.source, license: fetched.record.license, attribution: fetched.record.attribution };
+      return { url: fetched.record.glbUrl, expectedHash, source: fetched.record.source, license: fetched.record.license, attribution: fetched.record.attribution, redistribution: fetched.record.redistribution };
     }
-    return { path: fetched.cachePath || undefined, expectedHash: fetched.sha256, source: fetched.record.source, license: fetched.record.license, attribution: fetched.record.attribution };
+    return { path: fetched.cachePath || undefined, expectedHash: fetched.sha256, source: fetched.record.source, license: fetched.record.license, attribution: fetched.record.attribution, redistribution: fetched.record.redistribution };
   }
   if (fetched.ok && fetched.kind === 'link_out') return fail(`Catalog lookup requires a user-driven vendor download: ${fetched.instruction}`, 'model.link-out-required', input.ref);
   const code = 'errorCode' in fetched ? fetched.errorCode : undefined;
@@ -250,6 +249,9 @@ async function resolveModelSource(input: FetchPartModelInput): Promise<ModelSour
   try { resolved = await resolveCatalogModel(input); }
   catch (error) { return fail(error instanceof Error ? error.message : String(error), 'model.lookup-failed', input.ref); }
   if ('ok' in resolved) return resolved;
+  if (resolved.redistribution === 'fetch-only' && (!resolved.source || !resolved.license || !resolved.expectedHash || !SHA256_RE.test(resolved.expectedHash))) {
+    return fail('Fetch-only catalog models require provenance and a valid asset SHA-256 digest.', 'model.fetch-only-provenance-required', input.ref);
+  }
   const expectedHash = input.expected_sha256 ?? resolved.expectedHash;
   if (!expectedHash || !SHA256_RE.test(expectedHash)) return fail('Catalog model is missing a valid SHA-256 digest.', 'model.catalog-hash-missing', input.ref);
   return { ...resolved, expectedHash };

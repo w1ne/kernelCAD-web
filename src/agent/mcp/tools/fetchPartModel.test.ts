@@ -386,7 +386,7 @@ describe('fetch_part_model', () => {
     expect(findPart).not.toHaveBeenCalled();
   });
 
-  it('preserves fetch_part link-out and fetch-only behavior instead of directly downloading catalog URLs', async () => {
+  it('preserves link-out behavior and allows evidenced fetch-only catalog models', async () => {
     const findPart = vi.fn(async () => ({
       ok: true as const,
       results: [{ id: 'exact-id', name: 'Exact catalog record', category: 'electronics', family: 'board', tags: [], attributes: {}, sha256: 'a'.repeat(64), source: 'remote' as const, license: 'vendor terms', connectors: [], glbUrl: 'https://vendor.example/model.glb', redistribution: 'fetch-only' as const }],
@@ -402,9 +402,26 @@ describe('fetch_part_model', () => {
 
     const noBrepFetch = vi.fn(async () => ({ ok: false as const, error: 'GLB-only record', errorCode: 'parts.fetch.geometry-not-brep', errorHint: '' }));
     setFetchPartModelDepsForTest({ fetchPart: noBrepFetch as unknown as typeof import('./fetchPart').fetchPartTool, findPart: findPart as unknown as typeof import('./findPart').findPartTool });
-    const fetchOnly = await fetchPartModelTool({ catalog_id: 'exact-id' });
-    expect(fetchOnly).toMatchObject({ ok: false, errorCode: 'model.fetch-only' });
-    expect(findPart).toHaveBeenCalledTimes(1);
+    const glb = glbWithBox([0.03, 0.02, 0.01]);
+    const glbHash = createHash('sha256').update(glb).digest('hex');
+    const evidencedFetchOnly = vi.fn(async () => ({
+      ok: true as const,
+      record: { id: 'exact-id', name: 'Exact catalog record', category: 'electronics', family: 'board', tags: [], attributes: { geometryKind: 'mesh', glbSha256: glbHash }, sha256: 'a'.repeat(64), source: 'remote' as const, license: 'vendor terms', connectors: [], glbUrl: 'https://vendor.example/model.glb', redistribution: 'fetch-only' as const },
+      cachePath: '', sha256: 'a'.repeat(64), source: 'remote' as const,
+    }));
+    const fetchOnlyRecord = vi.fn(async () => ({
+      ok: true as const,
+      results: [{ id: 'exact-id', name: 'Exact catalog record', category: 'electronics', family: 'board', tags: [], attributes: { glbSha256: glbHash }, sha256: 'a'.repeat(64), source: 'remote' as const, license: 'vendor terms', connectors: [], glbUrl: 'https://vendor.example/model.glb', redistribution: 'fetch-only' as const }],
+      totalMatches: 1, source: 'remote' as const, remoteEnabled: true,
+    }));
+    setFetchPartModelDepsForTest({
+      fetchPart: evidencedFetchOnly as unknown as typeof import('./fetchPart').fetchPartTool,
+      findPart: fetchOnlyRecord as unknown as typeof import('./findPart').findPartTool,
+      fetchBytes: vi.fn(async () => glb) as unknown as typeof import('./importStepFetch').fetchPublicBytes,
+    });
+    const fetched = await fetchPartModelTool({ catalog_id: 'exact-id', bbox_mm: [30, 20, 10] });
+    expect(fetched).toMatchObject({ ok: true, format: 'glb', sha256: glbHash, attribution: { source: 'remote', license: 'vendor terms', url: 'https://vendor.example/model.glb' } });
+    expect(evidencedFetchOnly).toHaveBeenCalledTimes(1);
 
     const stepUrlRecord = vi.fn(async () => ({
       ok: true as const,
@@ -419,7 +436,7 @@ describe('fetch_part_model', () => {
     expect(stepUrlRecord).toHaveBeenCalledTimes(1);
   });
 
-  it('does not download a fetch-only GLB from catalog fallback after geometry-not-brep', async () => {
+  it('requires provenance and a valid asset digest before fetching a fetch-only catalog model', async () => {
     const fetchPart = vi.fn(async () => ({ ok: false as const, error: 'GLB-only record', errorCode: 'parts.fetch.geometry-not-brep', errorHint: '' }));
     const findPart = vi.fn(async () => ({
       ok: true as const,
@@ -429,7 +446,7 @@ describe('fetch_part_model', () => {
     const fetchBytes = vi.fn();
     setFetchPartModelDepsForTest({ fetchPart: fetchPart as unknown as typeof import('./fetchPart').fetchPartTool, findPart: findPart as unknown as typeof import('./findPart').findPartTool, fetchBytes: fetchBytes as unknown as typeof import('./importStepFetch').fetchPublicBytes });
     const result = await fetchPartModelTool({ catalog_id: 'fetch-only-glb' });
-    expect(result).toMatchObject({ ok: false, errorCode: 'model.fetch-only' });
+    expect(result).toMatchObject({ ok: false, errorCode: 'model.catalog-glb-hash-required' });
     expect(fetchBytes).not.toHaveBeenCalled();
   });
 
