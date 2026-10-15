@@ -4,6 +4,18 @@ import { describe, expect, it } from 'vitest';
 import { inspectNurbsTool } from '../../../src/agent/mcp/tools/inspectNurbs';
 
 describe('inspect_nurbs', () => {
+  it.each([
+    { weights: '[2,2,2]', rational: false, uniformWeights: true, hasNonUnitWeights: true },
+    { weights: '[1,1,1]', rational: false, uniformWeights: true, hasNonUnitWeights: false },
+    { weights: '[1,2,1]', rational: true, uniformWeights: false, hasNonUnitWeights: true },
+  ])('reports OCCT rational semantics and weight flags for $weights', async ({ weights, rational, uniformWeights, hasNonUnitWeights }) => {
+    const result = await inspectNurbsTool({ code: `
+      const curve = nurbsCurve([[0,0,0],[1,1,0],[2,0,0]], { degree: 2, weights: ${weights} });
+      return curve;
+    ` });
+    expect(result).toMatchObject({ ok: true, rational, uniformWeights, hasNonUnitWeights });
+  });
+
   it('returns the captured rational curve definition with distinct knots and multiplicities', async () => {
     const result = await inspectNurbsTool({ code: `
       const curve = nurbsCurve([[0,0,0],[1,1,0],[2,0,0]], {

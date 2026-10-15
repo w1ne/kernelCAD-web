@@ -16,7 +16,9 @@ function decomposeKnots(flat: number[]): { knots: number[]; multiplicities: numb
   return { knots, multiplicities };
 }
 
-/** Read the NURBS definition captured by a kernelCAD `nurbsCurve` feature. */
+/** Read captured NURBS data. `rational` follows OCCT IsRational semantics;
+ * `uniformWeights` tracks equal weights; `hasNonUnitWeights` tracks literal
+ * weights even when a common scale cancels. */
 export async function inspectNurbsTool(input: InspectNurbsInput) {
   const script = await runMcpScript(input);
   if (!script.ok) return { ok: false, error: script.error, errorCode: script.errorCode };
@@ -35,6 +37,10 @@ export async function inspectNurbsTool(input: InspectNurbsInput) {
   const { knots, multiplicities } = decomposeKnots(flat);
   const domain = flat.length ? [flat[data.degree]!, flat[data.controlPoints.length]!] : [0, 1];
   const weights = data.weights ?? data.controlPoints.map(() => 1);
+  // A common scale on every weight cancels from the homogeneous quotient.
+  const rational = weights.some(weight => weight !== weights[0]);
+  const uniformWeights = weights.every(weight => weight === weights[0]);
+  const hasNonUnitWeights = weights.some(weight => weight !== 1);
   return {
     ok: true,
     feature_id: target.id,
@@ -45,7 +51,9 @@ export async function inspectNurbsTool(input: InspectNurbsInput) {
     multiplicities,
     poles: data.controlPoints,
     weights,
-    rational: data.weights !== undefined && data.weights.some(weight => weight !== data.weights![0]),
+    rational,
+    uniformWeights,
+    hasNonUnitWeights,
     parameter_range: domain,
     closed: data.closed ?? false,
     limitations: ['Reads the captured authored NURBS definition; it does not extract the exact post-operation B-rep edge curve. Surface records, geometry-picked edges/faces, and blends are not included.'],
