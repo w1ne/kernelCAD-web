@@ -1012,7 +1012,7 @@ function linkFieldsOf(
 }
 
 /** Display-only mesh bodies skip OCCT meshing: emit their indexed buffer directly. */
-function emitDisplayMeshFeature(event: FeatureEvent, shape: MeshBackend, ctx: MeshFeatureEventContext): void {
+function emitDisplayMeshFeature(event: CompiledEvent, shape: MeshBackend, ctx: MeshFeatureEventContext): void {
   const runtimeMesh = shape.getMesh();
   const positions = runtimeMesh.positions;
   const faces: FaceGeometry[] = [];
