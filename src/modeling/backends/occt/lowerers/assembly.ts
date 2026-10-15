@@ -195,7 +195,7 @@ function resolveMateParts(
       resolvedParts.push({ id: partId, name: partName, connectors: [] });
       continue;
     }
-    const partBackend = partEntries[i][1] as OcctBackend;
+    const partBackend = partEntries[i][1];
     const at = loweredPartAt(ctx, partRec);
     const resolvedConnectors: Connector[] = [];
     for (const c of rawConnectors) {
@@ -204,6 +204,7 @@ function resolveMateParts(
         continue;
       }
       try {
+        if (!(partBackend instanceof OcctBackend)) throw new Error('Display mesh bodies do not provide topology for connector queries; use numeric connector origins.');
         const value = resolveTopologyOriginOnBackend(partBackend, c.origin.query, {
           records,
           consumerId: partId,

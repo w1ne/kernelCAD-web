@@ -651,7 +651,7 @@ export async function validateAssemblyWithMates(
   diagnostics.push(...axisBindingResult.diagnostics);
   diagnostics.push(...await validateJointVisualExposure({
     arm,
-    loweredShapes: axisBindingResult.worldShapes,
+    loweredShapes: new Map([...axisBindingResult.worldShapes].filter((entry): entry is [string, import('../../kernel/backends/occt/occtBackend').OcctBackend] => entry[1].constructor.name === 'OcctBackend')),
     worldTransforms: axisBindingResult.worldTransforms,
   }));
 
@@ -665,7 +665,7 @@ export async function validateAssemblyWithMates(
   if (interferencePairs !== undefined) {
     diagnostics.push(...await validateMatePhysicalRealization(
       arm,
-      axisBindingResult.worldShapes,
+      new Map([...axisBindingResult.worldShapes].filter((entry): entry is [string, import('../../kernel/backends/occt/occtBackend').OcctBackend] => entry[1].constructor.name === 'OcctBackend')),
       axisBindingResult.worldTransforms,
     ));
   }
