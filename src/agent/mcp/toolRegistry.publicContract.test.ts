@@ -31,6 +31,7 @@ import { importToolEntries } from './registry/importTools';
 import { fabricationToolEntries } from './registry/fabricationTools';
 import { manufacturingToolEntries } from './registry/manufacturingTools';
 import { nurbsToolEntries } from './registry/nurbsTools';
+import { surfaceBlendToolEntries } from './registry/surfaceBlendTools';
 import { pointCloudToolEntries } from './registry/pointCloudTools';
 
 const EXPECTED_TOOL_NAMES = [
@@ -390,14 +391,14 @@ describe('toolRegistry public contract', () => {
     expect(TOOL_REGISTRY.slice(53, 54).map(entry => entry.definition.name)).toEqual(['ray_pick']);
     expect(nurbsToolEntries.map(entry => entry.definition.name)).toEqual(['inspect_nurbs']);
     expect(TOOL_REGISTRY.slice(54, 55)).toEqual(nurbsToolEntries);
-    expect(TOOL_REGISTRY.slice(55)).toEqual(pointCloudToolEntries);
+    expect(TOOL_REGISTRY.slice(55, 55 + pointCloudToolEntries.length)).toEqual(pointCloudToolEntries);
   });
 
   it('composes ray picking at the registry tail', () => {
     expect(TOOL_REGISTRY.slice(53, 54).map(entry => entry.definition.name)).toEqual(['ray_pick']);
   });
   it('composes the point-cloud analysis family at the registry tail', () => {
-    expect(TOOL_REGISTRY.slice(-pointCloudToolEntries.length)).toEqual(pointCloudToolEntries);
+    expect(TOOL_REGISTRY.slice(-(pointCloudToolEntries.length + surfaceBlendToolEntries.length), -surfaceBlendToolEntries.length)).toEqual(pointCloudToolEntries);
   });
 
   it('dispatches plane fitting through the MCP registry', async () => {
@@ -406,7 +407,7 @@ describe('toolRegistry public contract', () => {
   });
 
   it('appends the surface blend authoring tool after the NURBS inspection family', () => {
-    expect(TOOL_REGISTRY.slice(55, 56).map(entry => entry.definition.name)).toEqual(['apply_surface_blend']);
+    expect(TOOL_REGISTRY.slice(-surfaceBlendToolEntries.length)).toEqual(surfaceBlendToolEntries);
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {
