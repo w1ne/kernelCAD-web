@@ -853,4 +853,12 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
     },
     required: ['ok', 'destination', 'rows', 'headers', 'sheets_rows', 'csv'], additionalProperties: true,
   },
+  import_handoff: {
+    type: 'object', properties: {
+      ok: { type: 'boolean' }, device: { type: 'string' }, part_count: { type: 'number' }, wire_mate_count: { type: 'number' },
+      cutout_hints: { type: 'array', items: { type: 'object', additionalProperties: true, description: 'Connector-face cutout hints { ref, feature, face?, cutout_mm }; descriptive input dimensions, not applied wall cuts.' } },
+      script: { type: 'string', description: 'Evaluable .kcad.ts assembly script with bbox placeholder parts and named anchors.' },
+      warnings: { type: 'array', items: { type: 'string' } }, error: { type: 'string' },
+    }, required: ['ok', 'warnings'], additionalProperties: true,
+  },
 };

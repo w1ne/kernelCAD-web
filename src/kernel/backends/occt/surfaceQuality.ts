@@ -71,6 +71,11 @@ export interface SurfaceProps {
   normal: Vec3;
   gaussian: number;
   mean: number;
+  /** Signed normal curvature along the surface V parameter (1/mm). */
+  normalCurvatureV: number;
+  /** Unit parameter directions, reusable for analytic blend rail recognition. */
+  tangentU: Vec3;
+  tangentV: Vec3;
 }
 
 function hashOf(shape: { HashCode: (n: number) => number }): string {
@@ -191,7 +196,7 @@ export function evalSurfaceProps(face: Face, u: number, v: number): SurfaceProps
     } catch {
       // seam / pole — keep the parametric normal
     }
-    return { point, normal: n, gaussian, mean };
+    return { point, normal: n, gaussian, mean, normalCurvatureV: dot(Svv, n) / G, tangentU: normalize(Su), tangentV: normalize(Sv) };
   } catch {
     return null;
   } finally {

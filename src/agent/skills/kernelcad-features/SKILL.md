@@ -5,6 +5,8 @@ description: Edge and face features — fillet, chamfer, shell, face refs throug
 
 # kernelCAD — edge and face features
 
+For a general edge-break or radius specification, use `verify({ check: 'edge-radius', file, min_radius_mm?, max_radius_mm?, require_edge_break?: 'external'|'internal'|'all', edges?, faces? })`. It inspects final BREP, reports per-face fillet radii and sharp edges, and treats planar chamfer strips heuristically without claiming a radius. See `docs/guide/edge-radius-check.md`.
+
 ## Face refs through operations
 
 Canonical face refs (`{ face: 'top' }`, etc.) work transparently across transforms (`.translate`, `.rotate`, `.scale`, `.reflect`, `.mirror`) and unambiguous booleans (`.subtract`, `.union`, `.intersect`). The kernel walks each face's lineage back to its originating primitive and forward through history.
