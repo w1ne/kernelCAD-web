@@ -9,6 +9,7 @@ import {
   fromSTEPViaHost,
   fromBREPViaHost,
   fromSTLViaHost,
+  meshFromSTLViaHost,
   findPartViaHost,
   fetchPartViaHost,
   standardPartsViaHost,
@@ -24,6 +25,7 @@ export function makePartsLib(ctx: ApiContext): Pick<KernelCadApi, 'lib'> {
       fromBREP: (path) => fromBREPViaHost({ session, scriptDir: ctx.scriptDir }, path),
       fromSTL: (path, opts) =>
         fromSTLViaHost({ session, scriptDir: ctx.scriptDir }, path, opts ?? {}),
+      meshFromSTL: (path) => meshFromSTLViaHost({ session, scriptDir: ctx.scriptDir }, path),
       fromDXF: (path, opts) =>
         fromDXFViaHost({ session, scriptDir: ctx.scriptDir }, path, opts ?? {}),
       fromSVG: (path, opts) =>

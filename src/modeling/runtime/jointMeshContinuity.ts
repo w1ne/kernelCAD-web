@@ -246,6 +246,7 @@ function buildSideRow(
   scenePart: SceneBackend['parts'][number],
   connector: MateConnector,
 ): JointMeshGapResult | undefined {
+  if (!(scenePart.shape instanceof OcctBackendClass)) return undefined;
   const gap = measureGapToBody(scenePart.shape as OcctBackend, scenePart.worldTransform, pivotWorld);
   if (gap === undefined) return undefined;
   return {
@@ -361,6 +362,7 @@ function measureMateBearingGap(
   const a = sceneByPartName.get(parentPartName);
   const b = sceneByPartName.get(childPartName);
   if (a === undefined || b === undefined) return undefined;
+  if (!(a.shape instanceof OcctBackendClass) || !(b.shape instanceof OcctBackendClass)) return undefined;
   const contact = measureBodyToBodyContact(
     a.shape as OcctBackend,
     a.worldTransform,
@@ -470,7 +472,11 @@ export function measureBodyToBodyGap(
     const worldB = localShapeB.clone().applyTransform(worldTransformB);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const oc = getOC() as any;
-    return brepExtremaDistance(oc, wrappedShape(worldA), wrappedShape(worldB));
+    const d = brepExtremaDistance(oc, wrappedShape(worldA), wrappedShape(worldB));
+    // Boundary distance is not body distance: a solid nested inside another
+    // is a boundary-distance away from it but shares volume, so it touches.
+    if (d !== undefined && d > 0 && worldA.intersectionVolume(worldB) > 0) return 0;
+    return d;
   } catch {
     return undefined;
   }

@@ -1,0 +1,410 @@
+{
+  "ok": false,
+  "routes": [
+    {
+      "id": "handoff-wire-15",
+      "from": {
+        "ref": "M3",
+        "pin": "PWM",
+        "pos_mm": [
+          59.22,
+          21.42
+        ]
+      },
+      "to": {
+        "ref": "A1",
+        "pin": "GPIO4",
+        "pos_mm": [
+          52.07,
+          23.44
+        ]
+      },
+      "color": "yellow",
+      "diameter_mm": 0.40489187450565084,
+      "points_mm": [
+        [
+          59.22,
+          21.42,
+          0
+        ],
+        [
+          52.07,
+          23.44,
+          0
+        ]
+      ],
+      "length_mm": 7.429865409278958,
+      "bend_count": 0,
+      "requested_bend_radius_mm": 2,
+      "collisions": [
+        "M3"
+      ]
+    },
+    {
+      "id": "handoff-wire-16",
+      "from": {
+        "ref": "M3",
+        "pin": "VCC",
+        "pos_mm": [
+          61.76,
+          21.42
+        ]
+      },
+      "to": {
+        "ref": "A1",
+        "pin": "5V",
+        "pos_mm": [
+          26.63,
+          8.2
+        ]
+      },
+      "color": "red",
+      "diameter_mm": 0.40489187450565084,
+      "points_mm": [
+        [
+          61.76,
+          21.42,
+          0
+        ],
+        [
+          26.63,
+          8.2,
+          0
+        ]
+      ],
+      "length_mm": 37.5351208869773,
+      "bend_count": 0,
+      "requested_bend_radius_mm": 2,
+      "collisions": [
+        "A3",
+        "M3"
+      ]
+    },
+    {
+      "id": "handoff-wire-17",
+      "from": {
+        "ref": "A1",
+        "pin": "3V3",
+        "pos_mm": [
+          26.63,
+          53.92
+        ]
+      },
+      "to": {
+        "ref": "A2",
+        "pin": "VDD",
+        "pos_mm": [
+          6.5,
+          47.97
+        ]
+      },
+      "color": "red",
+      "diameter_mm": 0.40489187450565084,
+      "points_mm": [
+        [
+          26.63,
+          53.92,
+          0
+        ],
+        [
+          6.5,
+          47.97,
+          0
+        ]
+      ],
+      "length_mm": 20.99093613920065,
+      "bend_count": 0,
+      "requested_bend_radius_mm": 2,
+      "collisions": [
+        "A1"
+      ]
+    },
+    {
+      "id": "handoff-wire-18",
+      "from": {
+        "ref": "A1",
+        "pin": "3V3",
+        "pos_mm": [
+          26.63,
+          53.92
+        ]
+      },
+      "to": {
+        "ref": "A3",
+        "pin": "VDD",
+        "pos_mm": [
+          9.28,
+          15.01
+        ]
+      },
+      "color": "red",
+      "diameter_mm": 0.40489187450565084,
+      "points_mm": [
+        [
+          26.63,
+          53.92,
+          0
+        ],
+        [
+          9.28,
+          15.01,
+          0
+        ]
+      ],
+      "length_mm": 42.602941213019555,
+      "bend_count": 0,
+      "requested_bend_radius_mm": 2,
+      "collisions": [
+        "A1",
+        "A3"
+      ]
+    },
+    {
+      "id": "handoff-wire-19",
+      "from": {
+        "ref": "A1",
+        "pin": "GPIO13",
+        "pos_mm": [
+          26.63,
+          18.36
+        ]
+      },
+      "to": {
+        "ref": "A2",
+        "pin": "EN",
+        "pos_mm": [
+          3.97,
+          35.27
+        ]
+      },
+      "color": "yellow",
+      "diameter_mm": 0.40489187450565084,
+      "points_mm": [
+        [
+          26.63,
+          18.36,
+          0
+        ],
+        [
+          3.97,
+          35.27,
+          0
+        ]
+      ],
+      "length_mm": 28.27408177112035,
+      "bend_count": 0,
+      "requested_bend_radius_mm": 2,
+      "collisions": [
+        "A2",
+        "A3"
+      ]
+    },
+    {
+      "id": "handoff-wire-20",
+      "from": {
+        "ref": "A1",
+        "pin": "GPIO13",
+        "pos_mm": [
+          26.63,
+          18.36
+        ]
+      },
+      "to": {
+        "ref": "A3",
+        "pin": "EN",
+        "pos_mm": [
+          21.98,
+          12.47
+        ]
+      },
+      "color": "yellow",
+      "diameter_mm": 0.40489187450565084,
+      "points_mm": [
+        [
+          26.63,
+          18.36,
+          0
+        ],
+        [
+          21.98,
+          12.47,
+          0
+        ]
+      ],
+      "length_mm": 7.504305430884324,
+      "bend_count": 0,
+      "requested_bend_radius_mm": 2,
+      "collisions": [
+        "A3"
+      ]
+    },
+    {
+      "id": "handoff-wire-21",
+      "from": {
+        "ref": "A1",
+        "pin": "GPIO14",
+        "pos_mm": [
+          26.63,
+          25.98
+        ]
+      },
+      "to": {
+        "ref": "A3",
+        "pin": "STEP",
+        "pos_mm": [
+          21.98,
+          27.71
+        ]
+      },
+      "color": "yellow",
+      "diameter_mm": 0.40489187450565084,
+      "points_mm": [
+        [
+          26.63,
+          25.98,
+          0
+        ],
+        [
+          21.98,
+          27.71,
+          0
+        ]
+      ],
+      "length_mm": 4.961390934002277,
+      "bend_count": 0,
+      "requested_bend_radius_mm": 2,
+      "collisions": []
+    },
+    {
+      "id": "handoff-wire-22",
+      "from": {
+        "ref": "A1",
+        "pin": "GPIO25",
+        "pos_mm": [
+          26.63,
+          33.6
+        ]
+      },
+      "to": {
+        "ref": "A2",
+        "pin": "DIR",
+        "pos_mm": [
+          21.75,
+          35.27
+        ]
+      },
+      "color": "yellow",
+      "diameter_mm": 0.40489187450565084,
+      "points_mm": [
+        [
+          26.63,
+          33.6,
+          0
+        ],
+        [
+          21.75,
+          35.27,
+          0
+        ]
+      ],
+      "length_mm": 5.157838694647206,
+      "bend_count": 0,
+      "requested_bend_radius_mm": 2,
+      "collisions": []
+    },
+    {
+      "id": "handoff-wire-23",
+      "from": {
+        "ref": "A1",
+        "pin": "GPIO26",
+        "pos_mm": [
+          26.63,
+          31.06
+        ]
+      },
+      "to": {
+        "ref": "A2",
+        "pin": "STEP",
+        "pos_mm": [
+          19.2,
+          35.27
+        ]
+      },
+      "color": "yellow",
+      "diameter_mm": 0.40489187450565084,
+      "points_mm": [
+        [
+          26.63,
+          31.06,
+          0
+        ],
+        [
+          19.2,
+          35.27,
+          0
+        ]
+      ],
+      "length_mm": 8.539847773818924,
+      "bend_count": 0,
+      "requested_bend_radius_mm": 2,
+      "collisions": []
+    },
+    {
+      "id": "handoff-wire-24",
+      "from": {
+        "ref": "A1",
+        "pin": "GPIO27",
+        "pos_mm": [
+          26.63,
+          28.52
+        ]
+      },
+      "to": {
+        "ref": "A3",
+        "pin": "DIR",
+        "pos_mm": [
+          21.98,
+          30.25
+        ]
+      },
+      "color": "yellow",
+      "diameter_mm": 0.40489187450565084,
+      "points_mm": [
+        [
+          26.63,
+          28.52,
+          0
+        ],
+        [
+          21.98,
+          30.25,
+          0
+        ]
+      ],
+      "length_mm": 4.961390934002277,
+      "bend_count": 0,
+      "requested_bend_radius_mm": 2,
+      "collisions": []
+    }
+  ],
+  "warnings": [
+    "Wire handoff-wire-1 (J1.- → M3.GND) has no endpoint positions; route omitted.",
+    "Wire handoff-wire-2 (J1.- → A1.GND) has no endpoint positions; route omitted.",
+    "Wire handoff-wire-3 (J1.- → A2.GND) has no endpoint positions; route omitted.",
+    "Wire handoff-wire-4 (J1.- → A3.GND) has no endpoint positions; route omitted.",
+    "Wire handoff-wire-5 (J1.+ → A2.VMOT) has no endpoint positions; route omitted.",
+    "Wire handoff-wire-6 (J1.+ → A3.VMOT) has no endpoint positions; route omitted.",
+    "Wire handoff-wire-7 (M1.1A → A2.1A) has no endpoint positions; route omitted.",
+    "Wire handoff-wire-8 (M1.1B → A2.1B) has no endpoint positions; route omitted.",
+    "Wire handoff-wire-9 (M1.2A → A2.2A) has no endpoint positions; route omitted.",
+    "Wire handoff-wire-10 (M1.2B → A2.2B) has no endpoint positions; route omitted.",
+    "Wire handoff-wire-11 (M2.1A → A3.1A) has no endpoint positions; route omitted.",
+    "Wire handoff-wire-12 (M2.1B → A3.1B) has no endpoint positions; route omitted.",
+    "Wire handoff-wire-13 (M2.2A → A3.2A) has no endpoint positions; route omitted.",
+    "Wire handoff-wire-14 (M2.2B → A3.2B) has no endpoint positions; route omitted."
+  ],
+  "unresolved_wire_count": 14,
+  "clearance_mm": 1,
+  "requested_bend_radius_mm": 2,
+  "obstacles_used": 4
+}

@@ -17,6 +17,7 @@ import type { CameraTargetMetadata } from '../../shared/intent/cameraTargetRecor
 import type { ShapeBackend } from '../../kernel/backends/backend';
 import type { SceneBackend, SceneBackendPart } from '../../kernel/backends/sceneBackend';
 import { OcctBackend, pbrFromMetadata } from '../../kernel/backends/occt/occtBackend';
+import { MeshBackend } from '../../kernel/backends/meshBackend';
 import { meshShape } from '../../kernel/backends/occt/meshing';
 import { resolveFaceLabelToFace } from '../../kernel/backends/occt/edgeSelection';
 import { faceHashOf } from '../../kernel/backends/occt/createdRefs';
@@ -55,6 +56,16 @@ export function accumulateMeshBounds(
   }
 }
 
+/** Fold an indexed render mesh into the aggregate AABB without creating per-face objects. */
+export function accumulateIndexedMeshBounds(bounds: MeshBoundsAccumulator, positions: Float32Array): void {
+  for (let i = 0; i < positions.length; i += 3) {
+    const x = positions[i]!, y = positions[i + 1]!, z = positions[i + 2]!;
+    bounds.minX = Math.min(bounds.minX, x); bounds.maxX = Math.max(bounds.maxX, x);
+    bounds.minY = Math.min(bounds.minY, y); bounds.maxY = Math.max(bounds.maxY, y);
+    bounds.minZ = Math.min(bounds.minZ, z); bounds.maxZ = Math.max(bounds.maxZ, z);
+  }
+}
+
 
 // Per-face material resolution. For each label in materialByLabel,
 // resolve label → Face via the same machinery the edge-feature
@@ -75,6 +86,7 @@ export function resolvePerFaceMaterialOverrides(
   // Walk shape.faces ONCE and hash every face so resolution is O(F + L)
   // not O(F * L). The replicad shape.faces iteration order matches
   // meshShape's faceId assignment (see meshing.ts:meshShape).
+  if (base instanceof MeshBackend) return {};
   const replicadFaces = (base.getReplicadShape() as unknown as { faces: unknown[] }).faces;
   const faceIdByHash = new Map<string, number>();
   replicadFaces.forEach((f, idx) => {
@@ -162,6 +174,7 @@ export interface SceneFanoutCtx {
    *  record), for per-face ownership of part meshes. */
   ownerIdOfShape?: (shape: ShapeBackend) => FeatureId | undefined;
   recordOrder?: ReadonlyMap<FeatureId, number>;
+  accumulateIndexedMeshBounds?: (bounds: MeshBoundsAccumulator, positions: Float32Array) => void;
 }
 
 // SceneBackend (assembly multi-body) → fan out one FeatureMesh per
@@ -191,8 +204,15 @@ export function emitSceneBackendFanout(
     emittedPartCount += 1;
     // Aggregate bounds from FK-transformed vertices while keeping the
     // emitted mesh local for viewport-side transforms.
-    const transformed = transformFeatureMesh(local, worldT);
-    accumulateMeshBounds(bounds, transformed.faces);
+    if (local.mesh) {
+      ctx.accumulateIndexedMeshBounds?.(bounds, local.mesh.positions);
+      const bb = transformedIndexedMeshBounds(local.mesh.positions, worldT);
+      bounds.minX = Math.min(bounds.minX, bb.min[0]); bounds.minY = Math.min(bounds.minY, bb.min[1]); bounds.minZ = Math.min(bounds.minZ, bb.min[2]);
+      bounds.maxX = Math.max(bounds.maxX, bb.max[0]); bounds.maxY = Math.max(bounds.maxY, bb.max[1]); bounds.maxZ = Math.max(bounds.maxZ, bb.max[2]);
+    } else {
+      const transformed = transformFeatureMesh(local, worldT);
+      accumulateMeshBounds(bounds, transformed.faces);
+    }
   }
   // Escalate an all-parts-skipped assembly to a hard failure. When the
   // assembly declared at least one part but NONE produced a mesh, the
@@ -222,6 +242,21 @@ export function emitSceneBackendFanout(
   }
 }
 
+function transformedIndexedMeshBounds(positions: Float32Array, transform: Transform): { min: [number, number, number]; max: [number, number, number] } {
+  const d = transform.decomposeToTranslateAndRotate();
+  const axis = d.rotateAxis, len = Math.hypot(axis[0], axis[1], axis[2]) || 1;
+  const x = axis[0] / len, y = axis[1] / len, z = axis[2] / len;
+  const c = Math.cos(d.rotateDeg * Math.PI / 180), s = Math.sin(d.rotateDeg * Math.PI / 180);
+  const min: [number, number, number] = [Infinity, Infinity, Infinity], max: [number, number, number] = [-Infinity, -Infinity, -Infinity];
+  for (let i = 0; i < positions.length; i += 3) {
+    const px = positions[i]!, py = positions[i + 1]!, pz = positions[i + 2]!;
+    const dot = x * px + y * py + z * pz;
+    const q: [number, number, number] = [px * c + (y * pz - z * py) * s + x * dot * (1 - c) + d.translate[0], py * c + (z * px - x * pz) * s + y * dot * (1 - c) + d.translate[1], pz * c + (x * py - y * px) * s + z * dot * (1 - c) + d.translate[2]];
+    for (let a = 0; a < 3; a++) { min[a] = Math.min(min[a], q[a]); max[a] = Math.max(max[a], q[a]); }
+  }
+  return { min, max };
+}
+
 /** Selection ↔ code link data of one part mesh (see `featureOwnership.ts`). */
 type PartLinkData = FeatureOwnership & { edgeRanges?: number[] };
 type CachedScenePartMesh = { shape: ShapeBackend; faces: FaceGeometry[]; volume?: number; edges?: Float32Array; link?: PartLinkData };
@@ -229,6 +264,7 @@ type ScenePartMeshCache = Map<string, CachedScenePartMesh>;
 
 interface ResolvedScenePartMesh {
   faces: FaceGeometry[];
+  mesh?: { positions: Float32Array; normals: Float32Array; indices: Uint32Array };
   volume: number | undefined;
   edges: Float32Array | undefined;
   link: PartLinkData;
@@ -284,6 +320,10 @@ function resolveScenePartMesh(
       partCache,
     };
   }
+  if (isDisplayMeshBackend(part.shape)) {
+    const mesh = part.shape.getMesh();
+    return { faces: [], mesh, volume: undefined, edges: undefined, link: {}, fromCache: false, partCache };
+  }
   const rawShape = ctx.extractRawShape(part.shape);
   const meshed = meshShape(rawShape);
   if (!meshed) {
@@ -312,6 +352,16 @@ function resolveScenePartMesh(
   return { faces, volume, edges, link, fromCache: false, partCache: nextCache };
 }
 
+function isDisplayMeshBackend(
+  shape: ShapeBackend,
+): shape is ShapeBackend & { getMesh: () => { positions: Float32Array; normals: Float32Array; indices: Uint32Array } } {
+  const candidate = shape as ShapeBackend & { positions?: unknown; indices?: unknown; getMesh?: unknown };
+  return candidate.target === 'export-occt'
+    && candidate.positions instanceof Float32Array
+    && candidate.indices instanceof Uint32Array
+    && typeof candidate.getMesh === 'function';
+}
+
 /** Build + emit one assembly part's FeatureMesh; returns the local mesh and
  *  its world transform for the caller's bounds accumulation. */
 function emitScenePartMesh(
@@ -327,6 +377,7 @@ function emitScenePartMesh(
     predecessors: [featureId],
     // op intentionally omitted (no boolean op for assembly parts)
     faces: resolved.faces,
+    ...(resolved.mesh ? { mesh: resolved.mesh } : {}),
     ...(resolved.volume !== undefined ? { volume: resolved.volume } : {}),
     ...(resolved.edges ? { edges: resolved.edges } : {}),
     ...resolved.link,

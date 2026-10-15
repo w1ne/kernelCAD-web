@@ -162,8 +162,11 @@ export const AUTHORED_ELECTRONIC_PACKAGE_SPECS: readonly AuthoredElectronicPacka
 export interface RequiredAuthoredCatalogComponentSpec {
   readonly id: string;
   readonly family: string;
+  /** The manifest `kcad_source` (authored) or `seed_source` (committed seed STEP). */
   readonly source: string;
   readonly connectors: readonly RequiredAuthoredCatalogConnectorSpec[];
+  /** Deprecated ids the published record must keep resolving. */
+  readonly aliases?: readonly string[];
 }
 
 export interface RequiredAuthoredCatalogConnectorSpec {
@@ -186,14 +189,17 @@ export const REQUIRED_AUTHORED_CATALOG_COMPONENT_SPECS: readonly RequiredAuthore
     ].map((name) => ({ name, type: 'frame' as const })),
   },
   {
-    id: 'sg90-micro-servo',
+    // The one SG90 entry. It replaced the old `sg90-micro-servo` envelope,
+    // which stays a deprecated alias so old projects keep resolving.
+    id: 'sg90-servo',
     family: 'micro-servo',
-    source: 'scripts/parts/authored/sg90-micro-servo.kcad.ts',
+    source: 'assets/parts-seed/micro-servo/sg90-servo.step',
     connectors: [
-      { name: 'ground-contact', type: 'frame' },
-      { name: 'vplus-contact', type: 'frame' },
-      { name: 'pwm-contact', type: 'frame' },
+      { name: 'shaft-output', type: 'axis' },
+      { name: 'ear-mount-low', type: 'frame' },
+      { name: 'ear-mount-high', type: 'frame' },
     ],
+    aliases: ['sg90-micro-servo'],
   },
 ];
 
@@ -201,6 +207,7 @@ interface ManifestPart {
   readonly id: string;
   readonly family?: string;
   readonly kcad_source?: string;
+  readonly seed_source?: string;
   readonly attributes?: Readonly<Record<string, string | number>>;
 }
 
@@ -211,6 +218,7 @@ interface CatalogRecordLike {
   readonly stepUrl?: unknown;
   readonly sha256?: unknown;
   readonly connectorManifest?: unknown;
+  readonly aliases?: unknown;
 }
 
 interface CatalogIndexLike {
@@ -329,10 +337,12 @@ function verifyRequiredComponentManifest(
     errors.push(`${spec.id}: missing from electronics manifest`);
     return;
   }
-  if (part.family !== spec.family) {
+  // A seed-backed entry takes its family from the seed record (checked on the
+  // published record below), so the manifest may omit it.
+  if (part.family !== spec.family && !(part.seed_source !== undefined && part.family === undefined)) {
     errors.push(`${spec.id}: manifest family is not '${spec.family}'`);
   }
-  if (part.kcad_source !== spec.source) {
+  if ((part.seed_source ?? part.kcad_source) !== spec.source) {
     errors.push(`${spec.id}: must declare authored source '${spec.source}'`);
   }
 }
@@ -588,6 +598,11 @@ function verifyRequiredComponentRecord(
   if (record.id !== spec.id) errors.push(`${spec.id}: detail record id is incorrect`);
   if (record.family !== spec.family) {
     errors.push(`${spec.id}: detail record family is not '${spec.family}'`);
+  }
+  for (const alias of spec.aliases ?? []) {
+    if (!Array.isArray(record.aliases) || !record.aliases.includes(alias)) {
+      errors.push(`${spec.id}: detail record lost deprecated alias '${alias}'`);
+    }
   }
 
   const stepPath = join(catalogDir, 'step', `${spec.id}.step`);

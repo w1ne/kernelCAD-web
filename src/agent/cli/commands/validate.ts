@@ -39,7 +39,10 @@ import {
   reviewMechanicalPlausibility,
   type MechanicalPlausibilityDiagnostic,
 } from '../../../modeling/mates/mechanicalPlausibility';
-import { checkMechanismTruth } from '../../../modeling/runtime/mechanismTruth';
+import { checkFastenedMateContact, type MechanismCoverage } from '../../../modeling/runtime/mechanismTruth';
+import { probeAssemblies } from '../../../modeling/runtime/mechanismProbe';
+import { captureMotionFailures } from '../../../modeling/runtime/motionLimits';
+import { needsMechanismVerdict, summarizeMechanism, type MechanismVerdictSummary } from '../../../modeling/runtime/mechanismVerdict';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 
 export interface ValidateCliInput {
@@ -143,9 +146,13 @@ export async function runValidateCli(input: ValidateCliInput): Promise<ValidateC
   // Default is ON whenever --include-interference is on (the physics
   // gate is in the same "heavy validate" tier as interference); the
   // explicit --no-include-physics opts back out.
+  //
+  // The cheap default path still checks that every fastened mate's parts
+  // touch at rest: a fastened gap has no motion to sweep, so it is broken on
+  // every surface (DRAW-01 negative control: a 2.5 mm ear-nut gap passed).
   const mechanismProbe = input.includeInterference
     ? await runMechanismProbe(run.session, { physicsCheck: input.includePhysics })
-    : { mechanism: 'unverified' as const, failures: [] };
+    : await runFastenedMateContact(run);
 
   if (input.json) {
     console.log(JSON.stringify({
@@ -159,8 +166,7 @@ export async function runValidateCli(input: ValidateCliInput): Promise<ValidateC
       diagnostics: result.diagnostics,
       physicalDiagnostics,
       kernelDiagnostics,
-      mechanism: mechanismProbe.mechanism,
-      mechanismFailures: mechanismProbe.failures,
+      ...mechanismJson(mechanismProbe),
     }, null, 2));
   } else {
     renderHuman(result, physicalDiagnostics, mechanismProbe);
@@ -213,37 +219,58 @@ function modelIgnorePairs(session: CaptureSession): Set<string> {
 async function runMechanismProbe(
   session: CaptureSession,
   opts: { physicsCheck: boolean },
-): Promise<{
-  mechanism: 'real' | 'broken' | 'unverified';
-  failures: CompilerDiagnostic[];
-}> {
+): Promise<MechanismProbe> {
   try {
     const assemblies = Array.from(session.assemblies.values()) as Assembly[];
-    if (assemblies.length === 0) {
-      return { mechanism: 'unverified', failures: [] };
-    }
-    const aggregated: CompilerDiagnostic[] = [];
-    // Verdict precedence across assemblies: broken > unverified > real.
-    // A skipped BREP sweep (issue #348) surfaces as 'unverified' and must
-    // not be silently upgraded to 'real'.
-    let anyBroken = false;
-    let anyUnverified = false;
-    for (const arm of assemblies) {
-      const verdict = await checkMechanismTruth(arm, { physicsCheck: opts.physicsCheck });
-      if (verdict.mechanism === 'broken') anyBroken = true;
-      else if (verdict.mechanism === 'unverified') anyUnverified = true;
-      aggregated.push(...verdict.failures);
-    }
-    return {
-      mechanism: anyBroken ? 'broken' : anyUnverified ? 'unverified' : 'real',
-      failures: aggregated,
-    };
+    // Verdict precedence across assemblies (broken > unverified > real)
+    // lives in the shared probe, same as evaluate_script.
+    const probe = await probeAssemblies(assemblies, { physicsCheck: opts.physicsCheck });
+    return withSummary(assemblies, { ...probe, failures: [...probe.failures] });
   } catch {
     // A probe-side throw is a separate failure mode from "the mechanism
     // is broken" — surface as unverified so legacy diagnostics still
     // dominate the exit code, but log a hint so the user sees something.
     return { mechanism: 'unverified', failures: [] };
   }
+}
+
+interface MechanismProbe {
+  mechanism: 'real' | 'broken' | 'unverified';
+  failures: CompilerDiagnostic[];
+  coverage?: MechanismCoverage;
+  summary?: MechanismVerdictSummary;
+}
+
+function mechanismJson(probe: MechanismProbe): Record<string, unknown> {
+  return {
+    mechanism: probe.mechanism,
+    mechanismFailures: probe.failures,
+    ...(probe.summary !== undefined ? { mechanismSummary: probe.summary } : {}),
+  };
+}
+
+function withSummary(assemblies: readonly Assembly[], probe: MechanismProbe, notRunReason?: string): MechanismProbe {
+  if (!needsMechanismVerdict(assemblies)) return probe;
+  return { ...probe, summary: summarizeMechanism({ ...probe, ...(notRunReason !== undefined ? { notRunReason } : {}) }) };
+}
+
+/** Default-path mate contact: one rest-pose lower, then the fastened-mate
+ *  gap check of every captured assembly, plus the capture-only motion-intent
+ *  check. 'broken' on any failure, otherwise 'unverified' (the pose sweep did
+ *  not run). */
+async function runFastenedMateContact(
+  run: Awaited<ReturnType<typeof runScript>>,
+): Promise<MechanismProbe> {
+  const assemblies = Array.from(run.session.assemblies.values()) as Assembly[];
+  const notRun = 'the pose sweep did not run (pass --include-interference)';
+  const motion: CompilerDiagnostic[] = assemblies.flatMap((arm) => captureMotionFailures(arm));
+  const verdict = (failures: CompilerDiagnostic[]): MechanismProbe =>
+    withSummary(assemblies, { mechanism: failures.length > 0 ? 'broken' : 'unverified', failures }, notRun);
+  if (!assemblies.some((arm) => arm.__mates().some((m) => m.type === 'fastened'))) return verdict(motion);
+  const lowered = await lowerScriptScene(run);
+  if (lowered.scene === undefined) return verdict(motion);
+  const scene = lowered.scene;
+  return verdict([...motion, ...assemblies.flatMap((arm) => checkFastenedMateContact(arm, scene))]);
 }
 
 async function reviewPhysicalAssemblies(assemblies: readonly Assembly[]): Promise<MechanicalPlausibilityDiagnostic[]> {
@@ -291,13 +318,14 @@ function renderDiagnosticLines(
 function renderHuman(
   result: ValidatorResult,
   physicalDiagnostics: readonly MechanicalPlausibilityDiagnostic[],
-  mechanismProbe: { mechanism: 'real' | 'broken' | 'unverified'; failures: readonly CompilerDiagnostic[] },
+  mechanismProbe: MechanismProbe,
 ): void {
   // Physics-loop banner FIRST — broken mechanisms invalidate any
   // downstream "clean" reading from the legacy validator. The agent
   // sees the merge gate first, then the advisory diagnostics that
   // help them repair the build.
   renderMechanismBanner(mechanismProbe);
+  if (mechanismProbe.summary !== undefined) console.log(`${mechanismProbe.summary.statement}\n`);
 
   const errs = result.diagnostics.filter((d) => d.severity === 'error');
   const warns = result.diagnostics.filter((d) => d.severity === 'warning');

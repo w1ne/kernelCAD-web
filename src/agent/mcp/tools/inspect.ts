@@ -23,6 +23,7 @@ import { inspectBomTool } from './inspectBom';
 import { inspectSectionTool } from './inspectSection';
 import { inspectContinuityTool } from './inspectContinuity';
 import { inspectCurvatureTool } from './inspectCurvature';
+import { inspectMultiMaterialTool } from './inspectMultiMaterial';
 
 /** The introspection subject. Each value maps 1:1 to a dedicated reader. */
 export type InspectOf =
@@ -48,7 +49,8 @@ export type InspectOf =
   | 'bom'
   | 'section'
   | 'continuity'
-  | 'curvature';
+  | 'curvature'
+  | 'multi-material';
 
 export interface InspectInput {
   of: InspectOf;
@@ -102,6 +104,8 @@ export function inspectTool(input: InspectInput): Promise<unknown> {
       return listFacesTool(rest as unknown as Parameters<typeof listFacesTool>[0]);
     case 'face-labels':
       return listFaceLabelsTool(rest as unknown as Parameters<typeof listFaceLabelsTool>[0]);
+    case 'multi-material':
+      return inspectMultiMaterialTool(rest as unknown as Parameters<typeof inspectMultiMaterialTool>[0]);
     default:
       return dispatchSecondaryInspect(of, rest);
   }
@@ -137,7 +141,7 @@ function dispatchSecondaryInspect(of: InspectOf, rest: Record<string, unknown>):
           `Unknown inspect subject: ${String(of)}. Valid: assembly, robot, step, shape, mass, ` +
             `features, assemblies, topology, edges, face-edges, faces, face-labels, mates, ` +
             `constraints, part-stats, bend-table, params, part-categories, part-families, bom, section, ` +
-            `continuity, curvature.`,
+        `continuity, curvature, multi-material.`,
         ),
       );
   }

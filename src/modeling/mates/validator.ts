@@ -25,17 +25,19 @@
 // which calls `solveMates(arm)` (see `./solver.ts`) and translates the
 // `SolveStatus` into mate-aware diagnostic codes.
 
+import { movingDofs, unlimitedDofs } from './mateLimits';
 import type { Assembly } from '../capture/assembly';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { Vec3 } from '../../shared/intent/types';
 import type { DiagnosticCode } from '../../shared/diagnostics/registry';
 import type { InterferencePair } from '../runtime/detectInterferences';
+import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { validateJointAxisBindingWithCache } from './jointAxisBinding';
 import { validateJointConventionMix } from './jointConventionMix';
 import { validateJointLoadCapacity } from './jointLoadCapacity';
 import { validateJointVisualExposure } from './jointVisualExposure';
 import { parseConnectorRef } from './mate';
-import { jointContactCapMm3 } from '../runtime/jointContactCap';
+import { describeOverlap, isActionableOverlap } from '../runtime/jointContactCap';
 import { validateMatePhysicalRealization } from './matePhysicalRealization';
 import { validateMountingHoleConsistency } from './mountingHoleConsistency';
 import type { ConnectorWorkspace, PoseEnvelopeReviewResult } from './poseEnvelope';
@@ -297,7 +299,7 @@ function collectOrphanDiagnostics(
   return diagnostics;
 }
 
-/** Check 3 — interference above the absolute noise cap, minus ignored pairs. */
+/** Check 3 — real overlaps (`isActionableOverlap`), minus ignored pairs. */
 function collectInterferenceDiagnostics(
   interferencePairs: readonly InterferencePair[] | undefined,
   ignore: ReadonlyArray<readonly [string, string]> | undefined,
@@ -309,22 +311,19 @@ function collectInterferenceDiagnostics(
   // only to the diagnostic emission below; the raw `interferencePairs` the
   // caller passed in remain untouched so HUD-style consumers can still read
   // them via the unfiltered detection output.
-  // ABSOLUTE-volume classification (shared with mechanism-truth criterion 2 via
-  // `jointContactCap`): a SINGLE uniform noise threshold (20 mm³) applies to
-  // every pair, adjacent or not (decision #1 of the 2026-06-03 redesign). A
-  // correctly-modeled clevis joint drills the pin clearance bore through both
-  // knuckles, so the pin floats in air with ~0 shared volume — adjacency earns
-  // no extra interference budget. This replaces the old "every interference
-  // pair is an error" behaviour while still failing any real overlap above the
-  // tessellation-noise floor.
-  const cap = jointContactCapMm3();
+  // One rule for every interference consumer (`isActionableOverlap` in
+  // `jointContactCap`): face contact (a sliver thinner than
+  // CONTACT_THICKNESS_MM) passes; any thicker overlap above the 0.01 mm³
+  // floor is an error, for every pair, adjacent or not. A correctly-modeled
+  // clevis joint drills the pin clearance bore through both knuckles, so the
+  // pin floats in air with ~0 shared volume.
   for (const pair of interferencePairs ?? []) {
     if (isPairIgnored(pair.a, pair.b, ignore)) continue;
-    if (pair.volumeMm3 <= cap) continue;
+    if (!isActionableOverlap(pair)) continue;
     diagnostics.push({
       code: 'assembly.interference.overlap',
       severity: 'error',
-      message: `Parts '${pair.a}' and '${pair.b}' overlap by ${pair.volumeMm3.toFixed(2)} mm³.`,
+      message: `Parts '${pair.a}' and '${pair.b}' overlap by ${describeOverlap(pair)}.`,
       hint: `invalid-args.assembly.interference — translate one part along its mating direction, or add a coupling part (washer / spacer / bracket) to clear the overlap. Pass { ignore: [['${pair.a}', '${pair.b}']] } to assembly.solvedModel(...) if the contact is intentional.`,
       partA: pair.a,
       partB: pair.b,
@@ -654,7 +653,7 @@ export async function validateAssemblyWithMates(
   diagnostics.push(...axisBindingResult.diagnostics);
   diagnostics.push(...await validateJointVisualExposure({
     arm,
-    loweredShapes: axisBindingResult.worldShapes,
+    loweredShapes: new Map([...axisBindingResult.worldShapes].filter((entry): entry is [string, OcctBackend] => entry[1] instanceof OcctBackend)),
     worldTransforms: axisBindingResult.worldTransforms,
   }));
 
@@ -668,7 +667,7 @@ export async function validateAssemblyWithMates(
   if (interferencePairs !== undefined) {
     diagnostics.push(...await validateMatePhysicalRealization(
       arm,
-      axisBindingResult.worldShapes,
+      new Map([...axisBindingResult.worldShapes].filter((entry): entry is [string, OcctBackend] => entry[1] instanceof OcctBackend)),
       axisBindingResult.worldTransforms,
     ));
   }
@@ -859,8 +858,10 @@ function emitMissingLimitWarnings(
   mates: ReturnType<Assembly['__mates']>,
 ): void {
   for (const mate of mates) {
-    if (mate.type === 'fastened' || mate.type === 'planar' || mate.type === 'ball') continue;
-    if (mate.limitsDeg !== undefined || mate.limitsMm !== undefined) continue;
+    // Warn only when no moving DOF is limited; a partly limited mate is
+    // reported per DOF by the mechanism verdict (`unlimitedDofs`).
+    const dofs = movingDofs(mate.type);
+    if (dofs.length === 0 || unlimitedDofs(mate).length < dofs.length) continue;
     diagnostics.push({
       code: 'assembly.mate.limit-missing',
       severity: 'warning',

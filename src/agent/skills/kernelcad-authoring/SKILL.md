@@ -185,7 +185,8 @@ Use `lib.fromSTEP(...)` for off-the-shelf components whenever physical fit matte
 - Before placing a vendor STEP, run `kernelcad inspect step <file.step>` (or the `inspect({ of: 'step' })` MCP tool) to read the solid tree, per-solid exact bbox + volume, and detected cylindrical holes (axis, diameter, depth, blind/through) — find mounting-hole positions and verify the part-local frame from exact geometry instead of measuring renders.
 - Build modeled brackets, mounts, clearances, cable paths, and keepouts around the imported part rather than approximating the part with generic boxes/cylinders.
 - Placeholder geometry is acceptable for early blockouts, but final review must label it as a placeholder or replace it with catalog geometry.
-- Format choice when the vendor offers several: STEP (`lib.fromSTEP`) is the default and the most portable. Native `.brep` (`lib.fromBREP`) is lossless and the fastest to load. Use it to round-trip kernelCAD geometry. Use STEP to interchange with other CAD systems. Reach for `.stl` (`lib.fromSTL`) only when nothing better exists: it is a triangle mesh, so you keep bbox/volume/booleans but lose analytic surfaces, which means no reliable fillet/chamfer on curved edges, no canonical face refs, and no hole detection. If a mostly prismatic part is STL/OBJ/3MF-only and you need editable geometry (mounting holes, params), run `mesh_to_features` (CLI `kernelcad reconstruct`): it emits a feature-tree script and measures it against the mesh — use it when the verdict is faithful, otherwise model the interface yourself from the reported regions rather than trusting facet normals.
+- Format choice when the vendor offers several: STEP (`lib.fromSTEP`) is the default and the most portable. Native `.brep` (`lib.fromBREP`) is lossless and the fastest to load. Use it to round-trip kernelCAD geometry. Use STEP to interchange with other CAD systems. Reach for `.stl` (`lib.fromSTL`) only when nothing better exists: it is a triangle mesh, so you keep bbox/volume/booleans but lose analytic surfaces, which means no reliable fillet/chamfer on curved edges, no canonical face refs, and no hole detection. If a mostly prismatic part is STL/OBJ/3MF-only and you need editable geometry (mounting holes, params), run `mesh_to_features` (CLI `kernelcad reconstruct`): it emits a feature-tree script and measures it against the mesh — use it when the verdict is faithful, otherwise model the interface yourself from the reported regions rather than trusting facet normals. Use  when the complete source triangle detail must display quickly: it is a render-only body that supports rigid transforms, assembly placement, color and finish, but no booleans, volume, face queries or solid exports. Conversion to BRep is not automatic.
+- For full-detail visualization of large STL assets, use `lib.meshFromSTL(path)`. It avoids BRep sewing and preserves every triangle; the result supports rigid transforms, assembly placement, color and finish, but not booleans, volume, topology queries or solid export.
 
 > For off-the-shelf fasteners, bearings, motors, headers, and connectors, prefer the bundled parts catalog: load the `kernelcad-parts` skill. The catalog exposes `lib.findPart`, `lib.fetchPart`, and a typed `lib.standard.*` namespace, plus four MCP tools for discovery. Bundled parts ship with pre-defined connector frames so they participate in mates without any `partRef.connector(...)` boilerplate.
 
@@ -321,6 +322,15 @@ lib.fromSTL(path: string, opts?: {
   allowOpen?: boolean;    // accept a non-watertight mesh as an open shell
   maxTriangles?: number;  // cost cap (default 200000; import is ~0.45 ms/triangle)
 }): Promise<Shape>;
+
+// Full-detail, display-only mesh import. This skips BRep sewing and does not simplify.
+// Rigid transforms, assembly placement and finish/color are supported; solid
+// operations and topology queries are not.
+lib.meshFromSTL(path: string): Promise<Shape>;
+
+// Full-detail, display-only STL import (no BRep sewing or simplification).
+// Rigid transforms, assembly placement, finish and color are supported.
+lib.meshFromSTL(path: string): Promise<Shape>;
 
 // Reference-image overlay — virtual node (no solid). The renderer draws
 // the image on the chosen plane for tracing or design review. Path resolved
@@ -533,7 +543,7 @@ Check world-frame spacing after reuse changes. The authoring `Shape` API has no
 .seatOnFloor(opts?: { center?: boolean }): Promise<Shape>
 //
 //   // Place a fetched servo so its CENTER lands at (20, 0, 0):
-//   const servo = await lib.fetchPart('servo/sg90');
+//   const servo = await lib.fetchPart('sg90-servo');
 //   (await servo.recenter()).translate(20, 0, 0);
 //   // Stand a part upright on the build plate:
 //   (await bracket.seatOnFloor());
@@ -968,8 +978,8 @@ studio dev server** (`npm run dev`; honors `VITE_PORT` / `PW_CDP_URL`).
 capture verifies the sampled poses for part interference at every keyframe time
 plus each segment midpoint (`--verify-every <n>` additionally samples every
 n-th frame time of the fps schedule). `verified: true` means verification ran
-AND every sampled pose was collision-free using the mechanism-validity 20 mm³
-threshold (touching ≠ interference; declared `solvedModel({ ignore })` pairs are
+AND every sampled pose was collision-free using the mechanism-validity interference rule (overlap > 0.01 mm³ and thicker than 0.01 mm; thinner is face contact)
+(touching ≠ interference; declared `solvedModel({ ignore })` pairs are
 honored). Each collision is a `{ tMs, a, b, volumeMm3 }` row with an
 `animation.collision` diagnostic naming the pair and time. `--no-verify` skips
 the gate and sets `verified: false` (`verify_skipped` on the MCP envelope) — do
@@ -1041,6 +1051,7 @@ When you need a canonical pattern, call MCP tool `lookup_cookbook(query, k?)` to
 | heat-set-insert-pilot | A printed part takes brass heat-set (melt-in) threaded inserts. Cut the pilot with `hole()` / `holes()` (blind, insert length + 1 mm deep, with a small countersink lead-in), sized from the insert maker's table — not the screw's tap drill and not a subtracted cylinder. Keep >= 1.6 mm of wall around the pilot. |
 | hermite-g2-blend | You have a pair of existing NURBS curves whose tangents and curvatures match at the join point and you want a G2-continuous compound spine (so a downstream variableSweep does not kink at the join). Author the flanks via nurbsCurve, then drop a hermiteG2 between them with matching endpoint tangents and curvatures. |
 | hex-nut-trap-bolt-clearance | A printed or machined part needs a captive hex nut under a bolt. Cut the through clearance hole with `hole()` and the hexagonal pocket with `cutout(hexPath, { face: 'bottom', depth })`, sized from the nut's across-flats (AF) + 2 x clearance and nut height + clearance. Do not subtract a cylinder or a hand-placed prism. |
+| holeless-board-cradle | A rectangular development board has no mounting holes and needs removable edge retention. Creates a perimeter floor frame with an open pin field, two longitudinal edge rails with inward lips and supported overhanging catches, clearance below the board for header pins, and a through-opening at one selected connector face. Set `connectorOffsetMm` to slide the opening along that edge (`0` keeps it centered); the board layout rotates with the selected face. All dimensions are millimetres; the cradle bottom is at Z=0 so it can sit on an enclosure floor. Confirm connector and component keep-outs against the real board before manufacture. |
 | involute-spur-gear-pair | You need a meshing involute spur gear pair (module, tooth counts, 20° pressure angle, face width, bore, backlash). Use the `spurGear(...)` primitive: it generates true involute flanks, a trochoid root fillet and correct undercut as ONE manifold solid. Center distance is m(z1+z2)/2. |
 | iso-metric-bolt-and-nut | You need an ISO metric hex bolt threaded into its hex nut (M3–M12) whose pitch, hex across-flats, and head height come from a params table. The bolt thread is a real 60° V profile swept with sweep(helix(...), { spine: 'helix' }); the nut's internal thread is the thread option of its bore (pitch, modeled, play), seated in phase so the two parts never interfere. A cosmetic thread (modeled: false) keeps only the minor-diameter bore for speed. |
 | loft-body-shell-from-profiles | Stylized / mechanism-demo shell ONLY — recognizable printable boxy loft from polyline stations (toy car, boat hull demo, fuselage blockout). NOT for berlinetta / sports-car / organic automotive likeness. For organic car bodies use automotive-body-envelope instead (lookup_cookbook("automotive body envelope")). |
@@ -1366,6 +1377,13 @@ overrides a `.color()` hue at render time. `.finish()` and `.material()` write
 the same slot, so on one leaf it is last-write-wins between them. To TINT a
 finish, pass `{ color }` to `.finish()` — do not layer `.color()` under it, the
 hue would be shadowed.
+
+Use `inspect({ of: 'multi-material', file })` to find explicit material leaves
+whose attribution is shadowed by an attributed boolean descendant. It returns
+record ids and an assembly-part rewrite template. This is an advisory source
+analysis: it does not preserve per-face attribution through a fused static
+mesh. For a static multi-material render today, retain the differently
+materialled operands as separate `assemblyPart`s and verify their placements.
 
 **Critical rule:** apply `.finish()` / `.material()` to leaf parts BEFORE they
 enter a boolean. A call on a post-union root is a no-op — the kernel cannot

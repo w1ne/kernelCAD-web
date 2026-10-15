@@ -1,0 +1,150 @@
+{
+  "schemaVersion": 1,
+  "partId": "sg90-horn-single-arm",
+  "family": "servo-horn",
+  "geometrySha256": "febd0a8c4c4dae99aaf532cae87a21b13953c250dfd3b660755308520905b5bf",
+  "connectors": [
+    {
+      "name": "horn-face",
+      "type": "frame",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ]
+    },
+    {
+      "name": "spline-socket",
+      "type": "frame",
+      "origin": [
+        0,
+        0,
+        5
+      ],
+      "normal": [
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "name": "shaft-axis",
+      "type": "axis",
+      "origin": [
+        0,
+        0,
+        0
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "name": "mount-hole-5",
+      "type": "axis",
+      "origin": [
+        5,
+        0,
+        0
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "name": "mount-hole-7",
+      "type": "axis",
+      "origin": [
+        7,
+        0,
+        0
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "name": "mount-hole-9",
+      "type": "axis",
+      "origin": [
+        9,
+        0,
+        0
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "name": "mount-hole-11",
+      "type": "axis",
+      "origin": [
+        11,
+        0,
+        0
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "name": "mount-hole-13",
+      "type": "axis",
+      "origin": [
+        13,
+        0,
+        0
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "name": "mount-hole-15",
+      "type": "axis",
+      "origin": [
+        15,
+        0,
+        0
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "name": "mount-hole-17",
+      "type": "axis",
+      "origin": [
+        17,
+        0,
+        0
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ]
+    }
+  ],
+  "license": "CC-BY-SA-4.0",
+  "attribution": "Juan Fenoy, FreeCAD community parts library; CC-BY-SA-4.0. Translated to shaft-centered coordinates by kernelCAD contributors."
+}

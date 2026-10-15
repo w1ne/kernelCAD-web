@@ -37,6 +37,9 @@ export interface StandardParts {
   bearing623(): Promise<Shape>;
   bearing688(): Promise<Shape>;
   bearing6800(): Promise<Shape>;
+  /** Community reference geometry, CC-BY-SA-4.0; exact supplier fit unverified. */
+  sg90(): Promise<Shape>;
+  sg90HornSingleArm(): Promise<Shape>;
   nema17(): Promise<Shape>;
   nema23(): Promise<Shape>;
   pinHeader254(args: {
@@ -69,6 +72,8 @@ export function createStandardParts(ctx: FetchPartCtx): StandardParts {
     bearing623: () => fetch('bearing-623'),
     bearing688: () => fetch('bearing-688'),
     bearing6800: () => fetch('bearing-6800'),
+    sg90: () => fetch('sg90-servo'),
+    sg90HornSingleArm: () => fetch('sg90-horn-single-arm'),
     nema17: () => fetch('nema-17'),
     nema23: () => fetch('nema-23'),
     pinHeader254: ({ pins, angle }) =>

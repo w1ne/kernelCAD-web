@@ -6,9 +6,10 @@
 // and one connector-manifest sidecar per record into <outDir>/<family>/,
 // plus a top-level index.json and a sha256 manifest.
 //
-// All geometry comes from kernelCAD's OcctBackend primitives so the bundled
-// tier carries no third-party licensing obligations.
+// Primitive families are MIT. Imported community families retain their own
+// geometry licenses and provenance (see assets/reference-parts).
 
+import { sg90Families } from './sg90Catalog';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
@@ -962,6 +963,7 @@ export const SEED_FAMILIES: SeedFamily[] = [
   stepperMotor(),
   pinHeader(),
   jstXh(),
+  ...sg90Families(),
 ];
 
 export async function generateSeedCatalog(

@@ -150,7 +150,7 @@ describe('Checks tab', () => {
             result(validity([]), {
                 rawInterferencePairs: [
                     { a: 'gear', b: 'shaft', volumeMm3: 312.4 },
-                    { a: 'pin', b: 'arm', volumeMm3: 2 },
+                    { a: 'pin', b: 'arm', volumeMm3: 2, thicknessMm: 0.001 },
                 ],
                 interferenceSummary: { rawCount: 2, contactNoiseCount: 1, actionableCount: 1, capMm3: 20 },
             }),

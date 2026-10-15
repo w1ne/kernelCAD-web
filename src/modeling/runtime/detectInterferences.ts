@@ -21,9 +21,10 @@
 // instead of inferring overlap visually from a render.
 
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
-import type { OcctBackend } from '../../kernel/backends/occt/occtBackend';
+import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import type { Vec3 } from '../../shared/intent/types';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
+import { overlapThicknessMm } from './jointContactCap';
 
 /** A single (part_a, part_b) pair whose intersection has non-trivial volume. */
 export interface InterferencePair {
@@ -31,6 +32,9 @@ export interface InterferencePair {
   readonly b: string;
   /** Intersection volume in mm³. Always > epsilon. */
   readonly volumeMm3: number;
+  /** Mean thickness (mm) of the shared region, 2·V/A of the common solid.
+   *  Tells face contact from a real overlap (`isActionableOverlap`). */
+  readonly thicknessMm?: number;
 }
 
 export interface CheckInterferenceResult {
@@ -38,6 +42,9 @@ export interface CheckInterferenceResult {
   readonly partCount: number;
   readonly comparisonCount: number;
   readonly diagnostics: CompilerDiagnostic[];
+  /** Mesh-involving pairs were not checked because exact intersection requires BRep. */
+  readonly uncheckedPairs: Array<{ readonly a: string; readonly b: string; readonly reason: 'display-mesh' }>;
+  readonly partial: boolean;
 }
 
 /** The subset of a transformed part the candidate pass reads: its name (for
@@ -96,13 +103,21 @@ function transformKey(t: SceneBackend['parts'][number]['worldTransform']): strin
  * validator, pose envelope, mechanism sweep all re-pose the SAME lowered
  * part BREPs. Weakly keyed, so it lives exactly as long as the shapes.
  */
-const intersectionVolumeMemo = new WeakMap<object, WeakMap<object, Map<string, number>>>();
+interface OverlapMetrics { volumeMm3: number; thicknessMm?: number }
 
-function memoGet(a: object, b: object, key: string): number | undefined {
+const intersectionVolumeMemo = new WeakMap<object, WeakMap<object, Map<string, OverlapMetrics>>>();
+
+function measureOverlap(a: OcctBackend, b: OcctBackend): OverlapMetrics {
+  if (typeof a.intersectionMetrics !== 'function') return { volumeMm3: a.intersectionVolume(b) };
+  const m = a.intersectionMetrics(b);
+  return { volumeMm3: m.volumeMm3, thicknessMm: overlapThicknessMm(m.volumeMm3, m.areaMm2) };
+}
+
+function memoGet(a: object, b: object, key: string): OverlapMetrics | undefined {
   return intersectionVolumeMemo.get(a)?.get(b)?.get(key);
 }
 
-function memoSet(a: object, b: object, key: string, vol: number): void {
+function memoSet(a: object, b: object, key: string, vol: OverlapMetrics): void {
   let inner = intersectionVolumeMemo.get(a);
   if (inner === undefined) {
     inner = new WeakMap();
@@ -116,6 +131,24 @@ function memoSet(a: object, b: object, key: string, vol: number): void {
   byPose.set(key, vol);
 }
 
+/** Pairs involving a non-BRep (display mesh) part: exact intersection needs
+ *  BRep, so these are reported as unchecked instead of silently skipped. */
+function listDisplayMeshPairs(
+  parts: ReadonlyArray<{ readonly name: string; readonly shape: unknown }>,
+): CheckInterferenceResult['uncheckedPairs'] {
+  const pairs: CheckInterferenceResult['uncheckedPairs'] = [];
+  for (let i = 0; i < parts.length; i++) {
+    for (let j = i + 1; j < parts.length; j++) {
+      const a = parts[i]!;
+      const b = parts[j]!;
+      if (!(a.shape instanceof OcctBackend) || !(b.shape instanceof OcctBackend)) {
+        pairs.push({ a: a.name, b: b.name, reason: 'display-mesh' });
+      }
+    }
+  }
+  return pairs;
+}
+
 export function detectInterferences(
   scene: SceneBackend,
   epsilonMm3: number,
@@ -126,7 +159,8 @@ export function detectInterferences(
   // pattern the STEP exporter uses (`exportSceneToSTEPAsync`) — replicad's
   // translate / rotate mutate-and-destroy the source OCCT handle, so we
   // never touch the originals.
-  const transformed = scene.parts.map((p) => {
+  const uncheckedPairs = listDisplayMeshPairs(scene.parts);
+  const transformed = scene.parts.filter((p) => p.shape instanceof OcctBackend).map((p) => {
     const clone = (p.shape as OcctBackend).clone().applyTransform(p.worldTransform);
     return {
       name: p.name,
@@ -173,10 +207,10 @@ export function detectInterferences(
     if (boundedBelowThreshold) continue;
 
     const memoKey = `${a.poseKey}|${b.poseKey}`;
-    let vol: number | undefined = memoGet(a.source, b.source, memoKey);
+    let vol: OverlapMetrics | undefined = memoGet(a.source, b.source, memoKey);
     try {
       if (vol === undefined) {
-        vol = a.shape.intersectionVolume(b.shape);
+        vol = measureOverlap(a.shape, b.shape);
         memoSet(a.source, b.source, memoKey, vol);
       }
     } catch (e) {
@@ -187,13 +221,20 @@ export function detectInterferences(
       });
       continue;
     }
-    if (vol > epsilonMm3) pairs.push({ a: a.name, b: b.name, volumeMm3: vol });
+    if (vol.volumeMm3 > epsilonMm3) {
+      pairs.push({
+        a: a.name, b: b.name, volumeMm3: vol.volumeMm3,
+        ...(vol.thicknessMm !== undefined && Number.isFinite(vol.thicknessMm) ? { thicknessMm: vol.thicknessMm } : {}),
+      });
+    }
   }
   return {
     pairs,
     partCount: transformed.length,
     comparisonCount: candidates.length,
     diagnostics,
+    uncheckedPairs,
+    partial: uncheckedPairs.length > 0,
   };
 }
 

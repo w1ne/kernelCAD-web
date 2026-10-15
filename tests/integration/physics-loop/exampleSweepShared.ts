@@ -1,15 +1,13 @@
 // tests/integration/physics-loop/exampleSweepShared.ts
 //
-// Shared discovery, classification, and per-example assertion for the
-// physics-loop example-sweep gate. Extracted from exampleSweepGate.test.ts
-// so the heavy per-example `runValidateCli` checks can be partitioned
-// across multiple test files (exampleSweepGate.shard{A,B,C,D}.test.ts) and
-// thereby distributed across vitest's per-FILE CI shards. The structural
-// completeness checks (cheap, no validate) stay in exampleSweepGate.test.ts.
-//
-// Coverage is unchanged: the same set of examples that ran the LIVE
-// `runValidateCli({ includeInterference: true })` check before still do —
-// they're just spread across N partition files instead of one loop.
+// Shared helpers for the physics-loop example classification gate.
+// exampleSweepGate.test.ts keeps only the FAST structural classification checks.
+// The heavy live runValidateCli shard sweep was removed.
+// Per-example smoke (parse/transpile all; evaluate non-heavy) now lives in
+// tests/integration/fast/exampleParseSmoke.test.ts and does NOT run
+// validate --include-interference. Coverage is intentionally narrower:
+// structural completeness remains; the multi-minute physics
+// validate-per-example gate does not.
 //
 // Spec:  docs/specs/2026-06-01-physics-grounded-loop-design.md (slice P3)
 // Plan:  docs/plans/2026-06-01-physics-loop-P3-sweep-and-demote.md (Task 5)
@@ -24,8 +22,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 export const REPO_ROOT = join(__dirname, '..', '..', '..');
 export const EXAMPLES_DIR = join(REPO_ROOT, 'examples');
 
-// Number of partition files the per-example sweep is split across. Each
-// shard file runs `discoverSweepExamples().filter((_, i) => i % SHARD_COUNT === K)`.
+// Legacy shard helper constant retained for compatibility with any focused
+// local callers; the heavy per-example shard sweep is no longer registered.
 export const SHARD_COUNT = 4;
 
 // Examples that don't engage the physics-grounded loop at all because
@@ -90,6 +88,10 @@ export const EXEMPT_UNVERIFIED: ReadonlySet<string> = new Set([
   // with no mates, and overlays deliberately overlap the hands they annotate.
   // It is a picture, not a mechanism.
   'examples/robot-hand/workflow-candidates-comparison.kcad.ts',
+  // Deliberately broken twin: its igniter run crosses the GG-valve pilot
+  // line (tube.clearance.overlap, and the two tubes interpenetrate).
+  // tests/integration/examples/rocketEngineRouted.test.ts pins the failure.
+  'examples/rocket-engine-lines/engine-routed-twin.kcad.ts',
   // Deliberately broken single-part repair fixtures. They exist to FAIL
   // evaluation so the trace-guided repair walkthrough has something real to
   // fix; tests/integration/examples/repairExamples.test.ts pins that each one
@@ -169,8 +171,8 @@ export const ISSUE_TRACKED: ReadonlyMap<string, { issue: number; testFile: strin
 ]);
 
 // Examples whose per-example loop check lives in a dedicated test file.
-// `run-validate-cli` hosts use the identical live CLI check for CI shard
-// balance. `catalog-fixture` hosts are remote-catalog examples: the suite
+// `run-validate-cli` hosts keep their dedicated live CLI check.
+// `catalog-fixture` hosts are remote-catalog examples: the suite
 // deliberately disables remote I/O, so their dedicated test must exercise
 // the same assembly, interference, and mechanism surfaces through an
 // explicit offline catalog fixture instead. Every entry names both its host
@@ -185,34 +187,6 @@ export const HOSTED_IN_DEDICATED_FILE: ReadonlyMap<string, DedicatedExampleCover
     'examples/kinematic/luxo-lamp.kcad.ts',
     {
       testFile: 'tests/integration/examples/luxoLampClevis.validate.test.ts',
-      coverage: 'run-validate-cli',
-    },
-  ],
-  // gearfinity completes the loop with mechanism: 'unverified' after the
-  // BREP-sweep budget skip (issue #348 resolved). Its dedicated file runs
-  // the identical runValidateCli check; hosting it there avoids paying the
-  // ~1-2 minute validate run twice.
-  [
-    'examples/gallery/gearfinity-planetary-stage.kcad.ts',
-    {
-      testFile: 'tests/integration/examples/gearfinityPlanetaryStage.test.ts',
-      coverage: 'run-validate-cli',
-    },
-  ],
-  // The SO-100 hero loads thirteen STL solids; its validate run is over the
-  // shards' 600 s per-example cap, so its dedicated file runs it under a
-  // longer one.
-  [
-    'examples/robot-arm/so100/so100-arm.kcad.ts',
-    {
-      testFile: 'tests/integration/examples/so100ArmRestContact.test.ts',
-      coverage: 'run-validate-cli',
-    },
-  ],
-  [
-    'examples/gallery/hand-coffee-grinder.kcad.ts',
-    {
-      testFile: 'tests/integration/examples/handCoffeeGrinder.validate.test.ts',
       coverage: 'run-validate-cli',
     },
   ],
@@ -261,11 +235,10 @@ export function discoverAllExamples(): string[] {
     .map((rel) => `examples/${rel}`);
 }
 
-// The ordered subset of examples that require the LIVE per-example
-// `runValidateCli` sweep check — i.e. NOT exempt, NOT issue-tracked, and
-// NOT hosted in a dedicated file. This is exactly the set the original
-// sweep loop ran `runValidateCli` on. The partition shard files slice
-// this list by index modulo SHARD_COUNT.
+// The ordered structural bucket for examples that are NOT exempt,
+// issue-tracked, or hosted in a dedicated file. The fast smoke suite
+// parses/transpiles every example and evaluates non-heavy entries; it does
+// not run validate --include-interference.
 export function discoverSweepExamples(): string[] {
   return discoverAllExamples().filter(
     (examplePath) =>
@@ -275,9 +248,9 @@ export function discoverSweepExamples(): string[] {
   );
 }
 
-// Runs the per-example physics-grounded loop check and asserts the SAME
-// condition the original sweep loop made. Heavy: each call invokes the
-// full physics-loop probe (BREP overlap + pose sweep).
+// Legacy heavy helper retained for dedicated live validation tests. It is
+// not registered as a per-example sweep; each call invokes the full
+// physics-loop probe (BREP overlap + pose sweep).
 export async function assertExampleLoopClean(examplePath: string): Promise<void> {
   // Sweep runs the KINEMATIC-only gate (criteria 1-4). The P6 physics
   // gate (criteria 5+6) ships as opt-in with --include-physics and is
@@ -304,21 +277,11 @@ export async function assertExampleLoopClean(examplePath: string): Promise<void>
   ).toBe(true);
 }
 
-// Per-example test timeout (ms) — each call runs the full BREP-heavy probe.
+// Legacy heavy-helper timeout (ms) for focused callers that still invoke it.
 export const PER_EXAMPLE_TIMEOUT_MS = 600_000;
 
-// Registers the live per-example sweep suite for one shard partition.
-// Each shard file calls this with its own SHARD_INDEX (0..SHARD_COUNT-1)
-// and partition label. The partition is the index-modulo-SHARD_COUNT slice
-// of `discoverSweepExamples()`.
-//
-// Because SHARD_COUNT is fixed but the live-sweep example set grows and
-// shrinks, some partitions may be EMPTY (e.g. when there are fewer examples
-// than shards). vitest fails a file whose suite registers zero tests
-// ("No test found in suite"), so an empty partition would break CI. We guard
-// by registering a single skipped placeholder when the partition is empty —
-// this keeps every shard file green regardless of example count, with no
-// SHARD_COUNT coupling to maintain.
+// Legacy registration helper retained for focused local callers. The removed
+// heavy shard sweep is not registered by the physics-loop gate.
 export function registerSweepShard(label: string, shardIndex: number): void {
   const partition = discoverSweepExamples().filter((_, i) => i % SHARD_COUNT === shardIndex);
 

@@ -1,7 +1,7 @@
 [
   {
     "name": "evaluate_script",
-    "description": "Use this when you need to run a script and check it compiles. Full local builds return viewerUrl: a live Studio link reused and updated on later full builds in the same MCP process. Hosted builds return viewerMode: hosted and viewerHint pointing to open_in_studio; they do not start a loopback viewer. Full evaluations return step evidence: build validity, volume and before/after local PNG paths in one shared iso frame. Snapshots require PW_CDP_URL for an existing browser; unavailable captures report an explicit error. Run a kernelCAD .kcad.ts script and report pass/fail + feature count + diagnostics + sceneSummary (BREP validity, volume in mm\u00b3, face count, bounding size in mm). When the scene is assembly-built (assembly().part(...) \u2192 .model()/.solvedModel()), also returns a parts summary { count, names } AND runs the mechanism-truth gate by default: the `mechanism` field reports real/broken/unverified and a broken mechanism (disconnected components / mechanism.orphan-part, self-collision, fastened drift, dof-mismatch) makes ok:false with the failures in diagnostics \u2014 a mechanism (any mate, joint, transmission or .solvedModel()) needs every part linked by connectors + mates/joints (axis+revolute for shafts/hinges/gears; frame+fastened for rigid; or arm.revolute/.prismatic/.ball/.fixed). A plain multi-part assembly with no mates (base + lid, print layout) is independent bodies and passes. Pass { skipMechanismCheck: true } to opt out (e.g. a deliberately free part next to a mechanism). Every union() is checked too (no opt-out): union.disconnected (the union is several separate solids \u2014 a floating operand) and union.member-overlap (two operands that each carry their own .finish()/.material(), the same one, share > 1 mm\u00b3 \u2014 cut members to fit, e.g. a cross tube between rails is span minus two rail widths) make ok:false. Pass either { file: \"<path>\" } or { code: \"<inline source>\" }. Set { dryRun: true } for fast validation while iterating: transpile + capture + capture-light checks without building solids, DFM gates, or meshing \u2014 milliseconds instead of seconds (100x+ on boolean/fillet-heavy scripts). A dry run catches script throws, capture-time API misuse, and assembly validity-gate failures, but NOT lowering failures or dfmSpec diagnostics; it leaves the active session untouched, so finish with a full (non-dry) evaluate_script before using session-dependent tools. To show a measurement in the 3D viewer (e.g. hole spacing), declare it in the script with shape.dimension({ kind: \"linear\", from, to, label }); a full evaluate lists them as dimensions: [{ text, kind, source }], and a shared /p link with ?dims=1 forces them on.",
+    "description": "Use this when you need to run a script and check it compiles. Full local builds return viewerUrl: a live Studio link reused and updated on later full builds in the same MCP process. Hosted builds return viewerMode: hosted and viewerHint pointing to open_in_studio; they do not start a loopback viewer. Full evaluations return step evidence: build validity, volume and before/after local PNG paths in one shared iso frame. Snapshots require PW_CDP_URL for an existing browser; unavailable captures report an explicit error. Run a kernelCAD .kcad.ts script and report pass/fail + feature count + diagnostics + sceneSummary (BREP validity, volume in mm\u00b3, face count, bounding size in mm). When the scene is assembly-built (assembly().part(...) \u2192 .model()/.solvedModel()), also returns a parts summary { count, names } AND runs the mechanism-truth gate by default: the `mechanism` field reports real/broken/unverified and a broken mechanism (disconnected components / mechanism.orphan-part, self-collision, fastened drift, dof-mismatch) makes ok:false with the failures in diagnostics \u2014 a mechanism (any mate, joint, transmission or .solvedModel()) needs every part linked by connectors + mates/joints (axis+revolute for shafts/hinges/gears; frame+fastened for rigid; or arm.revolute/.prismatic/.ball/.fixed). A plain multi-part assembly with no mates (base + lid, print layout) is independent bodies and passes. Pass { skipMechanismCheck: true } to opt out (e.g. a deliberately free part next to a mechanism). An animation or drive on a fastened joint (mechanism.motion-on-fixed-joint) is broken: animate a revolute/prismatic mate pose. For a model with moving joints or motion intent, `mechanismSummary.statement` is one plain line: \"Motion checked: ...\" names what ran; \"Motion not checked: ...\" is NOT a pass \u2014 never call that mechanism working. Every union() is checked too (no opt-out): union.disconnected (the union is several separate solids \u2014 a floating operand) and union.member-overlap (two operands that each carry their own .finish()/.material(), the same one, share > 1 mm\u00b3 \u2014 cut members to fit, e.g. a cross tube between rails is span minus two rail widths) make ok:false. Pass either { file: \"<path>\" } or { code: \"<inline source>\" }. Set { dryRun: true } for fast validation while iterating: transpile + capture + capture-light checks without building solids, DFM gates, or meshing \u2014 milliseconds instead of seconds (100x+ on boolean/fillet-heavy scripts). A dry run catches script throws, capture-time API misuse, and assembly validity-gate failures, but NOT lowering failures or dfmSpec diagnostics; it leaves the active session untouched, so finish with a full (non-dry) evaluate_script before using session-dependent tools. To show a measurement in the 3D viewer (e.g. hole spacing), declare it in the script with shape.dimension({ kind: \"linear\", from, to, label }); a full evaluate lists them as dimensions: [{ text, kind, source }], and a shared /p link with ?dims=1 forces them on.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -359,6 +359,82 @@
           ],
           "description": "Mechanism-truth verdict for an assembly-built scene (default-on; omitted for dryRun, non-assembly, or skipMechanismCheck:true). 'broken' makes ok:false; 'unverified' keeps ok and surfaces a loud budget diagnostic."
         },
+        "mechanismSummary": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "verdict",
+            "maxLevel",
+            "statement",
+            "checked",
+            "skipped",
+            "failures"
+          ],
+          "description": "Plain verdict for a model with moving joints or motion intent (animation, drive, transmission); absent for a static model. Read `statement`: 'Motion checked' names what ran, 'Motion not checked' names what was skipped (NOT a pass), 'Mechanism broken' names the joint.",
+          "properties": {
+            "verdict": {
+              "type": "string",
+              "enum": [
+                "real",
+                "broken",
+                "unverified"
+              ]
+            },
+            "maxLevel": {
+              "type": "string",
+              "enum": [
+                "ok",
+                "warning",
+                "error"
+              ],
+              "description": "One status level: 'error' when broken, 'warning' when not checked, 'ok' when checked."
+            },
+            "statement": {
+              "type": "string",
+              "description": "One line. Quote it instead of calling the mechanism working."
+            },
+            "checked": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "What ran and held (verdict 'real')."
+            },
+            "skipped": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "What did not run and why. On 'real', the moving joint DOFs with no limits (range not checked)."
+            },
+            "failures": {
+              "type": "array",
+              "description": "Error failures (verdict 'broken'); `joint` names the mate and `part` the part when known.",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "code",
+                  "reason"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "type": "string"
+                  },
+                  "joint": {
+                    "type": "string"
+                  },
+                  "part": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
         "reviewHint": {
           "type": "string",
           "description": "Present only when a captured assembly declares articulated (non-fastened) mates: the default mechanism check is shallow (no joint-support intents, pose-envelope overlap at declared limits, or gravity drop) \u2014 run review_cad for pose-envelope + gravity checks."
@@ -470,7 +546,7 @@
   },
   {
     "name": "inspect",
-    "description": "Use this when you need to read facts about a model. One reader, selected by `of`:\n- 'assembly' \u2014 physical assembly inventory (parts, bboxes, connectors, mates, disconnected solids).\n- 'robot' \u2014 URDF/SDFormat export preview (links, joints, planning groups, end-effectors, issues).\n- 'step' \u2014 inspect an imported STEP file: solid tree, exact bbox/volume, cylindrical holes (breached bores flagged partial; holeDetection: 'exact' | 'heuristic').\n- 'shape' \u2014 volume / surfaceArea / bbox for one feature ({ feature_id? }).\n- 'mass' \u2014 mass, centre of mass, centroidal inertia tensor (inertia6 + 3x3 inertiaMatrix), principalMoments/principalAxes, symmetry flags, and optionally the radius of gyration about an arbitrary axis ({ feature_id?, density?, gyration_axis? }); density in kg/m^3, defaults to 1000 (water).\n- 'features' \u2014 features captured by the script (kind, id, params, transforms, suppression).\n- 'assemblies' \u2014 assembly intent (assemblies, parts, connectors, joints).\n- 'topology' \u2014 canonical face names + edge count for a feature ({ feature_id? }).\n- 'edges' \u2014 edges of a shape with optional EdgeQuery ({ feature_id?, query? }); returns @kc[...] refs.\n- 'face-edges' \u2014 boundary edges of a named canonical face ({ feature_id?, face_name }).\n- 'faces' \u2014 faces of a shape with optional FaceQuery ({ feature_id?, query? }); returns @kc[...] refs.\n- 'face-labels' \u2014 user-applied labels visible in the script.\n- 'mates' \u2014 mates captured by the script.\n- 'constraints' \u2014 sketch constraints captured by the script.\n- 'part-stats' \u2014 bundled parts-catalog statistics.\n- 'bend-table' \u2014 sheet-metal bend table for a flattened pattern.\n- 'params' \u2014 declared model parameters.\n- 'part-categories' \u2014 top-level part-catalog categories available in the bundled (and configured remote) catalog.\n- 'part-families' \u2014 part families within a category ({ category? }); count + exemplar ids per family.\n- 'bom' \u2014 bill of materials ({ assembly? }): one row per distinct part (grouped by geometry/catalog identity, not name) with real instance quantity, kind ('fabricated'|'purchased'), material, density, per-unit and total mass, bbox, a fabrication process hint, catalog provenance for purchased parts, and totals; `bom.*` diagnostics flag rows with no density source or missing catalog vendor info instead of guessing.\n- 'section' \u2014 numeric cross-section probe of a shape: area, perimeter, loop/hole counts, 2D bbox at a plane ({ feature_id?, plane | at+axis, stack?: { from, to, count, axis? } }). `stack` scans evenly spaced slices and returns `minAreaIndex`/`minAreaPosition` \u2014 use it to find the neck/thinnest cross-section along an axis.\n- 'continuity' \u2014 G0/G1/G2 classification of shared edges ({ feature_id?, edges? }); position gap, normal jump, curvature difference, worst-sample XYZ.\n- 'curvature' \u2014 per-face Gaussian and mean curvature min/max/mean, inflections, spikes ({ feature_id?, faces?, spike_factor? }).\nAll params except `of` are subject-specific and forwarded verbatim. Most subjects accept { file | code }.",
+    "description": "Use this when you need to read facts about a model. One reader, selected by `of`:\n- 'assembly' \u2014 physical assembly inventory (parts, bboxes, connectors, mates, disconnected solids).\n- 'robot' \u2014 URDF/SDFormat export preview (links, joints, planning groups, end-effectors, issues).\n- 'step' \u2014 inspect an imported STEP file: solid tree, exact bbox/volume, cylindrical holes (breached bores flagged partial; holeDetection: 'exact' | 'heuristic').\n- 'shape' \u2014 volume / surfaceArea / bbox for one feature ({ feature_id? }).\n- 'mass' \u2014 mass, centre of mass, centroidal inertia tensor (inertia6 + 3x3 inertiaMatrix), principalMoments/principalAxes, symmetry flags, and optionally the radius of gyration about an arbitrary axis ({ feature_id?, density?, gyration_axis? }); density in kg/m^3, defaults to 1000 (water).\n- 'features' \u2014 features captured by the script (kind, id, params, transforms, suppression).\n- 'assemblies' \u2014 assembly intent (assemblies, parts, connectors, joints).\n- 'topology' \u2014 canonical face names + edge count for a feature ({ feature_id? }).\n- 'edges' \u2014 edges of a shape with optional EdgeQuery ({ feature_id?, query? }); returns @kc[...] refs.\n- 'face-edges' \u2014 boundary edges of a named canonical face ({ feature_id?, face_name }).\n- 'faces' \u2014 faces of a shape with optional FaceQuery ({ feature_id?, query? }); returns @kc[...] refs.\n- 'face-labels' \u2014 user-applied labels visible in the script.\n- 'mates' \u2014 mates captured by the script.\n- 'constraints' \u2014 sketch constraints captured by the script.\n- 'part-stats' \u2014 bundled parts-catalog statistics.\n- 'bend-table' \u2014 sheet-metal bend table for a flattened pattern.\n- 'params' \u2014 declared model parameters.\n- 'part-categories' \u2014 top-level part-catalog categories available in the bundled (and configured remote) catalog.\n- 'part-families' \u2014 part families within a category ({ category? }); count + exemplar ids per family.\n- 'bom' \u2014 bill of materials ({ assembly? }): one row per distinct part (grouped by geometry/catalog identity, not name) with real instance quantity, kind ('fabricated'|'purchased'), material, density, per-unit and total mass, bbox, a fabrication process hint, catalog provenance for purchased parts, and totals; `bom.*` diagnostics flag rows with no density source or missing catalog vendor info instead of guessing.\n- 'section' \u2014 numeric cross-section probe of a shape: area, perimeter, loop/hole counts, 2D bbox at a plane ({ feature_id?, plane | at+axis, stack?: { from, to, count, axis? } }). `stack` scans evenly spaced slices and returns `minAreaIndex`/`minAreaPosition` \u2014 use it to find the neck/thinnest cross-section along an axis.\n- 'continuity' \u2014 G0/G1/G2 classification of shared edges ({ feature_id?, edges? }); position gap, normal jump, curvature difference, worst-sample XYZ.\n- 'curvature' \u2014 per-face Gaussian and mean curvature min/max/mean, inflections, spikes ({ feature_id?, faces?, spike_factor? }).\n- 'multi-material' \u2014 explicit material leaves shadowed by later attributed boolean descendants, with assembly-part rewrite templates; analyzes capture records and does not change mesh attribution.\nAll params except `of` are subject-specific and forwarded verbatim. Most subjects accept { file | code }.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -499,7 +575,8 @@
             "bom",
             "section",
             "continuity",
-            "curvature"
+            "curvature",
+            "multi-material"
           ],
           "description": "Which facts to read."
         },
@@ -664,7 +741,7 @@
   },
   {
     "name": "verify",
-    "description": "Use this when you need to check a design against a rule set. One verifier, selected by `check`:\n- 'assembly' \u2014 mate-aware assembly validator on the active session (run evaluate_script first).\n- 'urdf' \u2014 structural validity of a .urdf file ({ urdf_path }).\n- 'dfm' \u2014 print-readiness gates declared by dfmSpec() ({ file | code }).\n- 'dfm-preflight' \u2014 sheet-metal flat pattern vs a job-shop's ordering rules ({ vendor, material, thicknessIn|thicknessMm, ... }). Returns the vendor's catalog source pages as `sources`; when `disclosure` is present, show it with those links.\n- 'assembly-path' \u2014 continuous straight-line removal of each assembly part along \u00b1X/\u00b1Y/\u00b1Z and optional world-space directions. Returns valid directions and blocking parts; disassemblyOrder runs a deterministic greedy removal pass. Watertight mesh approximation, conservative contact, no rotation/mate/hardware certification.\n- 'swept-collision' \u2014 sweep declared joint range(s) and report colliding poses.\n- 'reachable' \u2014 inverse-kinematics reachability for an end-effector ({ tip_link, target_position, ... }).\n- 'geometry-quality' \u2014 one solid body's BREP tiny faces and short edges (ids, locations, mm\u00b2/mm), plus sampled mirror symmetry about centroid XY/YZ/XZ and principal inertia planes ({ file | code, feature_id?, tiny_face_area_mm2?, tiny_face_relative?, short_edge_length_mm?, symmetry_tolerance_mm?, mesh_deflection_mm?, asserted_plane?: { origin, normal } }). Relative area is a fraction of total surface area; thresholds are ORed. Candidate planes are discovery; only an asserted plane gates symmetry. Approximate sampled tessellation, not exact BREP proof.\n- 'fastener-installation' \u2014 measured explicit catalog-screw installation stations on lowered assembly BREP ({ file | code, fasteners:[{ part, against, engagementPart?, minEngagementMm?, maxProtrusionMm? }], toleranceMm?, angleToleranceDeg? }). Reports annular bearing gap, bore axis/diameter/overlap and receiver geometric engagement/protrusion. Unknown or zero coverage cannot pass. Simplified threads do not certify torque, preload or strength.\n- 'mounting-holes' \u2014 fastened mates expose matching hole diameters on both sides.\n- 'load-capacity' \u2014 will it hold? Closed-form Euler-Bernoulli beam check ({ loads, materials, ... }), or mode:'fea' to solve the script's feaStudy (quadratic-tet FEA, CalculiX) \u2014 both return { ok, safetyFactor, elements[{ partName, stressPa, yieldPa, safetyFactor }], failures[], diagnostics }; fea adds the threshold, the stress regions as @kc[...] faces with their location, and fea { peakStressPa, maxDisplacementMm, meshTrusted, peakAtSupportPa, refinement }; it refines the mesh automatically until the stress is trusted (refine: false for one solve).\n- 'static-hold' \u2014 gravitational holding torque/force at a sampled pose grid vs each actuated joint's declared actuator capacity ({ joint?, pose?, gravity?, min_torque_margin_pct?, range_samples? }).\n- 'body-likeness' \u2014 publish gate for organic/car bodies: cheap AABB\u2194wheel checks plus required agent still verdicts (side-body-over-wheels, side-cabin-aft, rear-haunch, ortho-proportions-vs-reference). Pass { body_bbox | code/file+body_feature_id, wheels?, cabin_bbox?, still_verdicts?, require_stills? }. Full CV silhouette matching is NOT implemented \u2014 agents must inspect ortho PNGs/Studio and supply still_verdicts before claiming success.\nAll params except `check` are check-specific and forwarded verbatim; each check fails closed on its own missing required params.",
+    "description": "Use this when you need to check a design against a rule set. One verifier, selected by `check`:\n- 'assembly' \u2014 mate-aware assembly validator on the active session (run evaluate_script first).\n- 'urdf' \u2014 structural validity of a .urdf file ({ urdf_path }).\n- 'dfm' \u2014 print-readiness gates declared by dfmSpec() ({ file | code }).\n- 'dfm-preflight' \u2014 sheet-metal flat pattern vs a job-shop's ordering rules ({ vendor, material, thicknessIn|thicknessMm, ... }). Returns the vendor's catalog source pages as `sources`; when `disclosure` is present, show it with those links.\n- 'assembly-path' \u2014 continuous straight-line removal of each assembly part along \u00b1X/\u00b1Y/\u00b1Z and optional world-space directions. Returns valid directions and blocking parts; disassemblyOrder runs a deterministic greedy removal pass. Watertight mesh approximation, conservative contact, no rotation/mate/hardware certification.\n- 'swept-collision' \u2014 sweep declared joint range(s) and report colliding poses.\n- 'reachable' \u2014 inverse-kinematics reachability for an end-effector ({ tip_link, target_position, ... }).\n- 'geometry-quality' \u2014 one solid body's BREP tiny faces and short edges (ids, locations, mm\u00b2/mm), plus sampled mirror symmetry about centroid XY/YZ/XZ and principal inertia planes ({ file | code, feature_id?, tiny_face_area_mm2?, tiny_face_relative?, short_edge_length_mm?, symmetry_tolerance_mm?, mesh_deflection_mm?, asserted_plane?: { origin, normal } }). Relative area is a fraction of total surface area; thresholds are ORed. Candidate planes are discovery; only an asserted plane gates symmetry. Approximate sampled tessellation, not exact BREP proof.\n- 'fastener-installation' \u2014 measured explicit catalog-screw installation stations on lowered assembly BREP ({ file | code, fasteners:[{ part, against, engagementPart?, minEngagementMm?, maxProtrusionMm? }], toleranceMm?, angleToleranceDeg? }). Reports annular bearing gap, bore axis/diameter/overlap and receiver geometric engagement/protrusion. Unknown or zero coverage cannot pass. Simplified threads do not certify torque, preload or strength.\n- 'mounting-holes' \u2014 fastened mates expose matching hole diameters on both sides.\n- 'load-capacity' \u2014 will it hold? Closed-form Euler-Bernoulli beam check ({ loads, materials, ... }), or mode:'fea' to solve the script's feaStudy (quadratic-tet FEA, CalculiX) \u2014 both return { ok, safetyFactor, elements[{ partName, stressPa, yieldPa, safetyFactor }], failures[], diagnostics }; fea adds the threshold, the stress regions as @kc[...] faces with their location, and fea { peakStressPa, maxDisplacementMm, meshTrusted, peakAtSupportPa, refinement }; it refines the mesh automatically until the stress is trusted (refine: false for one solve).\n- 'static-hold' \u2014 gravitational holding torque/force at a sampled pose grid vs each actuated joint's declared actuator capacity ({ joint?, pose?, gravity?, min_torque_margin_pct?, range_samples? }).\n- 'body-likeness' \u2014 publish gate for organic/car bodies: cheap AABB\u2194wheel checks plus required agent still verdicts (side-body-over-wheels, side-cabin-aft, rear-haunch, ortho-proportions-vs-reference). Pass { body_bbox | code/file+body_feature_id, wheels?, cabin_bbox?, still_verdicts?, require_stills? }. Full CV silhouette matching is NOT implemented \u2014 agents must inspect ortho PNGs/Studio and supply still_verdicts before claiming success.\n- 'edge-radius' \u2014 general edge-break specification on final BREP ({ file | code, min_radius_mm?, max_radius_mm?, require_edge_break?: 'external'|'internal'|'all', feature_id?, assembly?, parts?, edges?, faces? }). Reports sharp convex/concave edges, analytic cylindrical/toroidal fillet radii and spherical junctions, and heuristic planar chamfer strips. Radius bounds apply only to fillets; selectors/points are part-local. Unknown/empty coverage cannot pass.\nAll params except `check` are check-specific and forwarded verbatim; each check fails closed on its own missing required params.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -683,13 +760,14 @@
             "body-likeness",
             "fastener-installation",
             "geometry-quality",
-            "assembly-path"
+            "assembly-path",
+            "edge-radius"
           ],
           "description": "Which verification to run."
         },
         "file": {
           "type": "string",
-          "description": "Path to a .kcad.ts script (assembly/dfm/dfm-preflight/swept-collision/reachable/mounting-holes/load-capacity/static-hold/geometry-quality)."
+          "description": "Path to a .kcad.ts script (assembly/dfm/dfm-preflight/swept-collision/reachable/mounting-holes/load-capacity/static-hold/geometry-quality/edge-radius)."
         },
         "code": {
           "type": "string",
@@ -697,7 +775,7 @@
         },
         "feature_id": {
           "type": "string",
-          "description": "check:'geometry-quality' \u2014 body feature to measure; defaults to script return."
+          "description": "check:'geometry-quality' \u2014 body feature to measure; defaults to script return. check:'edge-radius' \u2014 lowered feature; default the returned model."
         },
         "tiny_face_area_mm2": {
           "type": "number",
@@ -759,6 +837,41 @@
         "assembly": {
           "type": "string",
           "description": "Assembly name; defaults to the first captured assembly."
+        },
+        "min_radius_mm": {
+          "type": "number",
+          "minimum": 0,
+          "description": "check:'edge-radius' \u2014 minimum fillet radius in mm (does not imply sharp-edge prohibition)."
+        },
+        "max_radius_mm": {
+          "type": "number",
+          "minimum": 0,
+          "description": "check:'edge-radius' \u2014 maximum fillet radius in mm; must be >= min_radius_mm."
+        },
+        "require_edge_break": {
+          "type": "string",
+          "enum": [
+            "external",
+            "internal",
+            "all"
+          ],
+          "description": "check:'edge-radius' \u2014 prohibit sharp convex/external, concave/internal, or all edges."
+        },
+        "parts": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "check:'edge-radius' \u2014 explicit assembly part names (default all)."
+        },
+        "edges": {
+          "description": "check:'edge-radius' \u2014 EdgeQuery or @kc[...] edge ref(s); intersected with faces. Query near sorts, it does not filter."
+        },
+        "faces": {
+          "description": "check:'edge-radius' \u2014 FaceQuery or @kc[...] face ref(s); includes incident edges and fillets on selected faces."
         },
         "fasteners": {
           "type": "array",
@@ -1042,13 +1155,210 @@
     "outputSchema": {
       "type": "object",
       "properties": {
+        "checkedEdges": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "edge-radius: selected nondegenerate, nonseam edges."
+        },
+        "checkedFillets": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "edge-radius: analytic fillet face patches, including spherical junctions."
+        },
+        "bodies": {
+          "type": "array",
+          "description": "edge-radius: one local BREP report per solid of each selected part, plus retained unsupported topology.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "part": {
+                "type": "string"
+              },
+              "bodyIndex": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "edges": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "ref": {
+                      "type": "string"
+                    },
+                    "edgeIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "faceIndices": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "minimum": 0
+                      }
+                    },
+                    "faceRefs": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "sharp",
+                        "smooth",
+                        "filleted",
+                        "chamfered",
+                        "unknown",
+                        "seam",
+                        "degenerate"
+                      ]
+                    },
+                    "side": {
+                      "type": "string",
+                      "enum": [
+                        "external",
+                        "internal",
+                        "unknown"
+                      ]
+                    },
+                    "point": {
+                      "type": "array",
+                      "items": {
+                        "type": "number"
+                      },
+                      "minItems": 3,
+                      "maxItems": 3
+                    }
+                  },
+                  "required": [
+                    "ref",
+                    "edgeIndex",
+                    "faceIndices",
+                    "faceRefs",
+                    "kind",
+                    "side",
+                    "point"
+                  ]
+                }
+              },
+              "breaks": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "ref": {
+                      "type": "string"
+                    },
+                    "faceIndex": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "edgeIndices": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer",
+                        "minimum": 0
+                      }
+                    },
+                    "edgeRefs": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "fillet",
+                        "chamfer"
+                      ]
+                    },
+                    "surfaceType": {
+                      "type": "string"
+                    },
+                    "radiusMm": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "description": "Fillet radius in mm; null for planar chamfer strips."
+                    }
+                  },
+                  "required": [
+                    "ref",
+                    "faceIndex",
+                    "edgeIndices",
+                    "edgeRefs",
+                    "kind",
+                    "surfaceType",
+                    "radiusMm"
+                  ]
+                }
+              },
+              "violations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "rule": {
+                      "type": "string",
+                      "enum": [
+                        "min-radius",
+                        "max-radius",
+                        "required-edge-break"
+                      ]
+                    },
+                    "ref": {
+                      "type": "string"
+                    },
+                    "measuredMm": {
+                      "type": "number"
+                    },
+                    "limitMm": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "rule",
+                    "ref",
+                    "measuredMm",
+                    "limitMm"
+                  ]
+                }
+              },
+              "unknownRefs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "part",
+              "bodyIndex",
+              "edges",
+              "breaks",
+              "violations",
+              "unknownRefs"
+            ]
+          }
+        },
         "ok": {
           "type": "boolean",
           "description": "Whether the verification ran and passed its gate."
         },
         "source": {
           "type": "string",
-          "description": "fastener-installation/geometry-quality/assembly-path: local geometry evidence."
+          "description": "fastener-installation/geometry-quality/assembly-path/edge-radius: local geometry evidence."
         },
         "featureId": {
           "type": "string",
@@ -1128,7 +1438,7 @@
         },
         "status": {
           "type": "string",
-          "description": "fastener-installation: pass, fail, partial, or no-coverage; partial/zero coverage cannot pass."
+          "description": "fastener-installation/edge-radius: pass, fail, partial, or no-coverage; partial/zero coverage cannot pass."
         },
         "counts": {
           "anyOf": [
@@ -2587,7 +2897,7 @@
   },
   {
     "name": "trace_from_image",
-    "description": "Use this when you need to trace features from a reference photo into waypoints. Trace pixel-space features from a reference photo into normalized [0..1] waypoints the agent can map to mm via a known scale anchor and feed to path().spline / path().nurbsSegment. Three backends are dispatched behind the scenes: `opencv` (deterministic; uniform-bg silhouette only), `vision-llm` (vision model; named points/cluttered backgrounds; needs ANTHROPIC_API_KEY or an OpenAI-compatible vision endpoint configured on the server), and `hybrid` (opencv silhouette + LLM-labeled named points). Default backend is `auto` \u2014 the tool picks based on the image's corner-color stddev. Accuracy honesty: opencv contour is geometrically exact; vision-LLM is typically 5\u201310% off on dense landmarks. Per-feature `confidence` is reported. Vision-LLM spend is billed to whoever configured the vision model. Pair with the `kernelcad-trace-from-image` skill for the conversion-to-mm pipeline.",
+    "description": "Use this when you need to trace a reference image into normalized waypoints, or turn sketch labels into a catalog-aware draft BOM. Trace pixel-space features from a reference photo into normalized [0..1] waypoints the agent can map to mm via a known scale anchor and feed to path().spline / path().nurbsSegment. Set `detectParts: true` to request labeled component boxes, confidence, bundled-catalog candidates and unmatched labels; the BOM is a draft for review. Three backends are dispatched behind the scenes: `opencv` (deterministic; uniform-bg silhouette only), `vision-llm` (vision model; named points/cluttered backgrounds; needs a configured vision endpoint), and `hybrid` (opencv silhouette + LLM-labeled named points). Default backend is `auto`. Per-feature confidence is reported. Pair with the `kernelcad-trace-from-image` skill for the conversion-to-mm pipeline.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -2598,6 +2908,10 @@
         "hint": {
           "type": "string",
           "description": "Optional free-text hint forwarded to vision-LLM backends (e.g. \"a pair of eyewear; trace the upper brow only\")."
+        },
+        "detectParts": {
+          "type": "boolean",
+          "description": "Optional: use the configured vision model to detect labeled component boxes and return detectedParts plus a draftBom, normalized to the traced outline frame."
         },
         "features": {
           "type": "array",
@@ -2749,6 +3063,39 @@
           "type": "object",
           "additionalProperties": true,
           "description": "Assumption ledger: { facts, scale?, unresolvedCount } classifying every fact as visible/inferred/assumed/missing."
+        },
+        "detectedParts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "description": "Optional labeled component detections: name, quantity, outline-frame position/bbox and confidence."
+        },
+        "draftBom": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "description": "Optional unverified BOM draft grouped by detected part name."
+        },
+        "unmatchedLabels": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "description": "Detected labels without a sufficiently strong bundled-catalog match."
+        },
+        "partDetectionFrame": {
+          "type": "string",
+          "enum": [
+            "outline",
+            "image",
+            "mixed"
+          ],
+          "description": "Coordinate frame used by all detected boxes, or mixed when some boxes fall outside the silhouette and retain image coordinates."
         }
       },
       "required": [
@@ -6192,6 +6539,82 @@
             "additionalProperties": true
           }
         },
+        "mechanismSummary": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "verdict",
+            "maxLevel",
+            "statement",
+            "checked",
+            "skipped",
+            "failures"
+          ],
+          "description": "Plain verdict for a model with moving joints or motion intent (animation, drive, transmission); absent for a static model. Read `statement`: 'Motion checked' names what ran, 'Motion not checked' names what was skipped (NOT a pass), 'Mechanism broken' names the joint.",
+          "properties": {
+            "verdict": {
+              "type": "string",
+              "enum": [
+                "real",
+                "broken",
+                "unverified"
+              ]
+            },
+            "maxLevel": {
+              "type": "string",
+              "enum": [
+                "ok",
+                "warning",
+                "error"
+              ],
+              "description": "One status level: 'error' when broken, 'warning' when not checked, 'ok' when checked."
+            },
+            "statement": {
+              "type": "string",
+              "description": "One line. Quote it instead of calling the mechanism working."
+            },
+            "checked": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "What ran and held (verdict 'real')."
+            },
+            "skipped": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "What did not run and why. On 'real', the moving joint DOFs with no limits (range not checked)."
+            },
+            "failures": {
+              "type": "array",
+              "description": "Error failures (verdict 'broken'); `joint` names the mate and `part` the part when known.",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "code",
+                  "reason"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "type": "string"
+                  },
+                  "joint": {
+                    "type": "string"
+                  },
+                  "part": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
         "suggestedRepairPrompt": {
           "type": "string",
           "description": "Structured repair prompt (failure / repair path)."
@@ -8402,7 +8825,7 @@
   },
   {
     "name": "get_selection",
-    "description": "Use this when you need to read the human/agent selection in a local Studio session. Returns one clicked face or edge (or null), with mesh-local shapeIndex/kind/id and creating featureId. Use for \u201cthis edge\u201d; indices expire on rebuild. featureId is provenance, not the owner of a stable topology ref. Inspect the current shape before authoring a fillet. Requires a running local Studio opened on the same script; hosted sessions are not supported.",
+    "description": "Use this when you need to read the human/agent selection in a local Studio session. Returns one clicked face or edge (or null), with current-generation mesh-local shapeIndex/kind/id and creating featureId. During a rebuild selection is null with \u201cselection pending rebuild\u201d until Studio uniquely verifies the face; ambiguous or deleted faces are cleared. Inspect the current shape before authoring a fillet. Requires a running local Studio opened on the same script; hosted sessions are not supported.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -8460,7 +8883,7 @@
   },
   {
     "name": "set_selection",
-    "description": "Use this when you need to replace the shared local Studio face/edge selection, or clear it with selection:null. The viewer highlights the pick on its next sync (300 ms). Does not edit geometry. Pass model_generation from get_selection. Use indices from the current viewer mesh/get_selection; they expire on rebuild. Requires a local Studio session.",
+    "description": "Use this when you need to replace the shared local Studio face/edge selection, or clear it with selection:null. The viewer highlights the pick on its next sync (300 ms). Does not edit geometry. Pass model_generation from get_selection; writes from an older generation are rejected. Use only current shape indices. Requires a local Studio session.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -9204,6 +9627,641 @@
           "type": "string"
         },
         "hint": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": true
+    }
+  },
+  {
+    "name": "fit_plane",
+    "description": "Use this when you need to fit an orthogonal least-squares plane to XYZ point-cloud data. Returns centroid, deterministic unit normal, signed point residuals, RMS residual and maximum absolute residual. Accepts points already parsed by the caller from scan data or mesh vertices. Computes parameters only; it does not create a surface body. Requires at least three non-collinear finite points.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "points": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 100000,
+          "items": {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "items": {
+              "type": "number"
+            }
+          },
+          "description": "Point cloud as [x, y, z] coordinate triples in model units."
+        }
+      },
+      "required": [
+        "points"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean",
+          "description": "Present and true when a plane fit succeeds; false when input validation or fitting fails."
+        },
+        "centroid": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "description": "Least-squares plane centroid [x, y, z]."
+        },
+        "normal": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "description": "Deterministic unit plane normal [x, y, z]."
+        },
+        "residuals": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "description": "Signed orthogonal distances in input order."
+        },
+        "rms": {
+          "type": "number",
+          "description": "Root mean square orthogonal residual."
+        },
+        "maxAbsResidual": {
+          "type": "number",
+          "description": "Maximum absolute orthogonal residual."
+        },
+        "error": {
+          "type": "string",
+          "description": "Failure message; present when ok is false."
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": true
+    }
+  },
+  {
+    "name": "route_wires",
+    "description": "Use this when you need a first-pass orthogonal pin-to-pin wire route estimate and clearance check. Accepts a LabWired handoff or explicit wire positions in millimetres, returns path length and bend count, and reports collisions against part bounding boxes. Wires whose endpoint positions are null are reported as unresolved. Read-only analysis; it does not create or certify a physical harness.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "wires": {
+          "type": "array",
+          "description": "Wire records with from_pos_mm and to_pos_mm as 3D millimetre coordinates.",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "handoff": {
+          "type": "object",
+          "description": "LabWired handoff schema labwired-kernelcad-handoff/0.1 with parts, pins and wires.",
+          "additionalProperties": true
+        },
+        "obstacles": {
+          "type": "array",
+          "description": "Axis-aligned obstacle volumes in world millimetres.",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "board_surface_z_mm": {
+          "type": "number",
+          "description": "Known world Z of the LabWired board surface. Required to reconcile 2D endpoint coordinates and XY-only part placements for complete clearance analysis."
+        },
+        "clearance_mm": {
+          "type": "number",
+          "description": "Minimum obstacle clearance, default 1 mm."
+        },
+        "bend_radius_mm": {
+          "type": "number",
+          "description": "Requested minimum bend radius, default 2 mm."
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "routes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "route_found": {
+                "type": "boolean"
+              },
+              "route_failure": {
+                "type": "string"
+              },
+              "length_mm": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "bend_count": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "points_mm": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                }
+              },
+              "collisions": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "clearance_violations": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "additionalProperties": true
+          }
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "unresolved_wire_count": {
+          "type": "integer"
+        },
+        "clearance_mm": {
+          "type": "number"
+        },
+        "requested_bend_radius_mm": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "ok",
+        "routes",
+        "warnings",
+        "unresolved_wire_count"
+      ],
+      "additionalProperties": true
+    }
+  },
+  {
+    "name": "import_handoff",
+    "description": "Use this when you need to place parts from a LabWired handoff.json into a KernelCAD assembly. Pass the parsed handoff object using schema labwired-kernelcad-handoff/0.1. The tool validates the handoff and returns an evaluable assembly script with corner-anchored bbox placeholder solids, origin/bbox-face/mounting-hole/pin anchors, endpoint connectivity mates for wires whose two endpoint positions are known, and structured cutout_hints from connector faces. These mates express connectivity intent only; no wire geometry or routing is generated. It does not cut enclosure walls or fetch STEP/GLB assets. position_mm locates the bbox lower corner; bbox.center is derived. Null, estimated, proposed, and other non-exact geometry is reported as warnings and omitted or placed at zero as appropriate.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "handoff": {
+          "type": "object",
+          "description": "Parsed handoff.json object using labwired-kernelcad-handoff/0.1."
+        }
+      },
+      "required": [
+        "handoff"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "openWorldHint": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "device": {
+          "type": "string"
+        },
+        "part_count": {
+          "type": "number"
+        },
+        "wire_mate_count": {
+          "type": "number"
+        },
+        "cutout_hints": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Connector-face cutout hints { ref, feature, face?, cutout_mm }; descriptive input dimensions, not applied wall cuts."
+          }
+        },
+        "script": {
+          "type": "string",
+          "description": "Evaluable .kcad.ts assembly script with bbox placeholder parts and named anchors."
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "error": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "warnings"
+      ],
+      "additionalProperties": true
+    }
+  },
+  {
+    "name": "mesh_boolean",
+    "description": "Use this when the user wants to union, subtract, or intersect two imported triangle mesh solids (STL, OBJ, or 3MF). Supports union, subtract (A minus B) and intersect. Pass each operand as { file } on the MCP server or { data } with base64 mesh bytes; formats are detected or may be specified. Returns volume in mm\u00b3, triangle count and a binary STL as data_base64; pass that payload to import_step to continue modeling. Inputs must be closed, consistently oriented 2-manifold meshes. Open, non-manifold, or invalid meshes return an error. This computes mesh geometry and does not create an editable B-rep feature tree.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "operation": {
+          "type": "string",
+          "enum": [
+            "union",
+            "subtract",
+            "intersect"
+          ]
+        },
+        "a": {
+          "type": "object",
+          "description": "First mesh: { file } or { data } base64, optional format stl|obj|3mf."
+        },
+        "b": {
+          "type": "object",
+          "description": "Second mesh: { file } or { data } base64, optional format stl|obj|3mf."
+        },
+        "toleranceMm": {
+          "type": "number",
+          "description": "Vertex weld tolerance in mm. Default 0.000001."
+        },
+        "maxTriangles": {
+          "type": "integer",
+          "description": "Maximum triangles per input and output. Default and maximum 100000."
+        }
+      },
+      "required": [
+        "operation",
+        "a",
+        "b"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "openWorldHint": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "operation": {
+          "type": "string",
+          "enum": [
+            "union",
+            "subtract",
+            "intersect"
+          ]
+        },
+        "volumeMm3": {
+          "type": "number",
+          "description": "Output mesh volume in cubic millimetres."
+        },
+        "triangleCount": {
+          "type": "number"
+        },
+        "format": {
+          "type": "string",
+          "enum": [
+            "stl"
+          ]
+        },
+        "data_base64": {
+          "type": "string",
+          "description": "Binary STL payload; can be passed to import_step as content_base64."
+        },
+        "error": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": true
+    }
+  },
+  {
+    "name": "explode_view",
+    "description": "Use this when you need an ordered exploded-view plan for an assembly. Supply parts as {name,center:[x,y,z],size:[x,y,z]} in mm, or a LabWired handoff containing parts with ref, position_mm.value and physical.bbox_mm (also accepts bbox_mm.value). Optional explicit assembly_order takes precedence over handoff assembly_order / assembly.order. Missing order falls back to input part order; parts lacking usable placement or bbox and unlisted/unknown order refs are reported. Choose mode axis (default) or radial; axis follows the requested direction, radial moves parts away from the assembly centroid. The result includes ready-to-paste param_declarations, animation_tracks and reverse_animation_tracks for animationView(), part_transforms for existing shapes, and script_fragment. cameraPlan gives framing guidance.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "parts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "center": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "minItems": 3,
+                "maxItems": 3
+              },
+              "size": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "minItems": 3,
+                "maxItems": 3
+              }
+            },
+            "required": [
+              "name",
+              "center",
+              "size"
+            ],
+            "additionalProperties": false
+          },
+          "description": "Named assembly parts and measured bbox centers/sizes in mm. Optional when handoff is supplied."
+        },
+        "assembly_order": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "handoff": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Optional handoff metadata. Assembly order lookup supports assembly_order or assembly.order."
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "axis",
+            "radial"
+          ],
+          "description": "Explode direction strategy; default axis."
+        },
+        "axis": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3,
+          "description": "Assembly direction; default +Z."
+        },
+        "spacing": {
+          "type": "number",
+          "description": "Positive spacing scale; default 1.25."
+        },
+        "duration_ms": {
+          "type": "integer",
+          "description": "Timeline duration from 500 to 60000 ms; default 3000."
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "order": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "durationMs": {
+          "type": "number"
+        },
+        "tracks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "reverseTracks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "cameraPlan": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Suggested target and camera distance for assembled/exploded capture framing; camera keyframes are guidance and are not consumed by animationView."
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "playback": {
+          "type": "string"
+        },
+        "param_declarations": {
+          "type": "string",
+          "description": "Ready-to-paste param() calls that declare every animation track parameter with its initial value."
+        },
+        "script_fragment": {
+          "type": "string",
+          "description": "Ready-to-paste declarations and forward animationView() call."
+        },
+        "animation_tracks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "reverse_animation_tracks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "part_transforms": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "description": "Per-part expressions to apply to existing shapes before assembly.part()."
+        }
+      },
+      "required": [
+        "ok",
+        "order",
+        "durationMs",
+        "tracks",
+        "reverseTracks",
+        "warnings",
+        "cameraPlan"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "apply_surface_blend",
+    "description": "Use this when you need to author and evaluate a fillet or chamfer on a kernelCAD Shape. Inserts Shape.fillet(radius, selector, { continuity: G1|G2 }) or Shape.chamfer(distance, selector) through the existing public API and returns the patched source plus evaluation diagnostics. Selectors accept EdgeSelector syntax, including canonical edge refs/query strings or { face: canonical name, face label, or face query }. G2 continuity applies to fillets; chamfer uses the existing chamfer API. This authors the operation and does not extract blend-surface NURBS poles; that still requires kernel surface extraction.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "Inline .kcad.ts source."
+        },
+        "shape_binding": {
+          "type": "string",
+          "description": "Existing Shape variable name to blend."
+        },
+        "operation": {
+          "type": "string",
+          "enum": [
+            "fillet",
+            "chamfer"
+          ],
+          "description": "Operation; defaults to 'fillet'."
+        },
+        "radius": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Fillet radius in mm; required for operation:'fillet'."
+        },
+        "distance": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Chamfer distance in mm; required for operation:'chamfer'."
+        },
+        "selector": {
+          "description": "Optional EdgeSelector: a canonical @kc[...] edge ref/query string or { face: canonical face name, face label, or FaceQuery descriptor }. Omit to select all sharp edges.",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "face": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "face"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "continuity": {
+          "type": "string",
+          "enum": [
+            "G1",
+            "G2"
+          ],
+          "description": "Fillet continuity passed to the existing public API; defaults to G1. Chamfer ignores this field."
+        }
+      },
+      "required": [
+        "code",
+        "shape_binding"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "openWorldHint": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "new_code": {
+          "type": "string"
+        },
+        "operation": {
+          "type": "string",
+          "enum": [
+            "fillet",
+            "chamfer"
+          ]
+        },
+        "selector": {
+          "description": "Selector supplied for the authored blend, when present."
+        },
+        "step": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "sceneSummary": {
+          "$ref": "./sceneSummary.schema.json"
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "error": {
           "type": "string"
         }
       },

@@ -3,6 +3,7 @@
 import type { GeometryResult } from '../../../shared/worker/geometryEngine';
 import { rehydrateFromBridge, type FeatureMeshSerialized } from '../../../modeling/capture/featureMeshSerialize';
 import type { FeatureRecord } from '../../../shared/intent/featureRecord';
+import type { MechanismVerdictSummary } from '../../../modeling/runtime/mechanismVerdict';
 
 export type ExecutionStatus = 'success' | 'error' | 'stale';
 
@@ -61,6 +62,7 @@ export interface ScriptReviewSummary {
         a: string;
         b: string;
         volumeMm3: number;
+        thicknessMm?: number | null;
     }>;
     interferenceSummary?: {
         rawCount: number;
@@ -92,6 +94,9 @@ export interface ScriptReviewSummary {
         message?: string;
         hint?: string;
     }>;
+    /** Plain mechanism verdict (`summarizeMechanism`), present only for a
+     *  model with moving joints or motion intent. Drives the motion badge. */
+    mechanismSummary?: MechanismVerdictSummary;
     livePhysicalUseCaseReview?: boolean;
 }
 
@@ -240,6 +245,7 @@ export function featureMeshesToGeometries(features: FeatureMeshSerialized[]): Ge
         const mesh = rehydrateFromBridge(feature);
         return {
             faces: mesh.faces,
+            ...(mesh.mesh ? { mesh: mesh.mesh } : {}),
             volume: mesh.volume,
             edges: mesh.edges,
             color: mesh.color,

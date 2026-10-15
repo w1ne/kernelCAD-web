@@ -15,10 +15,11 @@
 //      counting as inside a mesh when at least two of the three axis rays
 //      through it cross that mesh an odd number of times. The vote keeps a
 //      vendor mesh with a few open seams from reading as solid air (or
-//      solid everywhere). Shared volume above `REST_PENETRATION_CAP_MM3`
-//      (the uniform 20 mm³ contact-noise cap the pose sweep uses) AND
-//      thicker than `REST_PENETRATION_DEPTH_MM` (0.3 mm) somewhere is an
-//      error. Thickness is the exact overlap of the two meshes' inside
+//      solid everywhere). The shared rule `isActionableOverlap` decides:
+//      shared volume above 0.01 mm³ AND thicker than
+//      `REST_PENETRATION_DEPTH_MM` (0.3 mm, the voxel/mesh noise floor)
+//      somewhere is an error. Thinner overlaps on BREP parts are still
+//      caught exactly by the default-pose BREP check (validator). Thickness is the exact overlap of the two meshes' inside
 //      intervals along each axis ray, minimum over the three axes. Coincident faces, a pin in a clearance bore, and a part
 //      sitting in a pocket all share ~0 volume and pass.
 //
@@ -39,14 +40,11 @@
 
 import type { Assembly } from '../capture/assembly';
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
-import type { OcctBackend } from '../../kernel/backends/occt/occtBackend';
+import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import type { Transform } from '../../shared/runtime/se3';
-import { parseConnectorRef } from '../mates/mate';
-import { JOINT_CONTACT_NOISE_MM3 } from './jointContactCap';
+import { parseConnectorRef, type MateRecord } from '../mates/mate';
+import { CONTACT_THICKNESS_MM, isActionableOverlap, overlapThicknessMm } from './jointContactCap';
 import { JOINT_MESH_GAP_TOLERANCE_MM, measureBodyToBodyGap } from './jointMeshContinuity';
-
-/** Shared volume (mm³) above which two parts interpenetrate at rest. */
-export const REST_PENETRATION_CAP_MM3 = JOINT_CONTACT_NOISE_MM3;
 
 /** Largest rest-pose gap (mm) between the two parts of a mate. */
 export const REST_MATE_CONTACT_TOLERANCE_MM = JOINT_MESH_GAP_TOLERANCE_MM;
@@ -82,6 +80,8 @@ export interface RestPenetration {
   readonly at: [number, number, number];
   /** Voxel edge used for the integral (mm). */
   readonly cellMm: number;
+  /** Thickness (mm) at or below which this measurement counts as contact. */
+  readonly contactThicknessMm: number;
 }
 
 export interface RestMateGap {
@@ -324,8 +324,8 @@ function boxesOverlap(a: WorldMesh, b: WorldMesh): boolean {
   return true;
 }
 
-/** BREP common volume, for a part whose tessellation is not closed. No
- *  thickness is available, so the overlap counts as thick. */
+/** BREP common volume and mean thickness (2·V/A), for a part whose
+ *  tessellation is not closed. */
 function brepOverlap(
   a: SceneBackend['parts'][number],
   b: SceneBackend['parts'][number],
@@ -333,22 +333,28 @@ function brepOverlap(
   mb: WorldMesh,
 ): { volumeMm3: number; thicknessMm: number; at: [number, number, number]; cellMm: number } {
   const at = [0, 1, 2].map((k) => (Math.max(ma.min[k], mb.min[k]) + Math.min(ma.max[k], mb.max[k])) / 2) as [number, number, number];
+  if (!(a.shape instanceof OcctBackend) || !(b.shape instanceof OcctBackend)) {
+    return { volumeMm3: NaN, thicknessMm: NaN, at, cellMm: 0 };
+  }
   try {
     const wa = (a.shape as OcctBackend).clone().applyTransform(a.worldTransform);
     const wb = (b.shape as OcctBackend).clone().applyTransform(b.worldTransform);
-    return { volumeMm3: wa.intersectionVolume(wb), thicknessMm: Infinity, at, cellMm: 0 };
+    const m = wa.intersectionMetrics(wb);
+    return { volumeMm3: m.volumeMm3, thicknessMm: overlapThicknessMm(m.volumeMm3, m.areaMm2), at, cellMm: 0 };
   } catch {
-    return { volumeMm3: 0, thicknessMm: 0, at, cellMm: 0 };
+    // Unmeasured: volume 0 here is "no BREP evidence", never "no overlap" —
+    // the mesh path keeps its own result when the boolean fails.
+    return { volumeMm3: NaN, thicknessMm: NaN, at, cellMm: 0 };
   }
 }
 
-/** Every part pair sharing more than `capMm3` of volume at rest. */
-export function restPosePenetrations(
-  scene: SceneBackend,
-  capMm3: number = REST_PENETRATION_CAP_MM3,
-): RestPenetration[] {
+/** Every part pair that really overlaps at rest (`isActionableOverlap`). */
+export function restPosePenetrations(scene: SceneBackend): RestPenetration[] {
   const meshes: { name: string; mesh: WorldMesh; part: SceneBackend['parts'][number] }[] = [];
   for (const p of scene.parts) {
+    // Exact/closed-solid validation does not currently classify display-only
+    // triangle soups. Leave those pairs unchecked while retaining BRep checks.
+    if (!(p.shape instanceof OcctBackend)) continue;
     const mesh = worldMesh(p.shape as OcctBackend, p.worldTransform);
     if (mesh !== undefined) meshes.push({ name: p.name, mesh, part: p });
   }
@@ -358,10 +364,21 @@ export function restPosePenetrations(
       const A = meshes[i];
       const B = meshes[j];
       if (!boxesOverlap(A.mesh, B.mesh)) continue;
-      const r = A.mesh.closed && B.mesh.closed
+      const onMesh = A.mesh.closed && B.mesh.closed;
+      const r = onMesh
         ? meshOverlapVolume(A.mesh, B.mesh)
         : brepOverlap(A.part, B.part, A.mesh, B.mesh);
-      if (r.volumeMm3 > capMm3 && r.thicknessMm > REST_PENETRATION_DEPTH_MM) out.push({ a: A.name, b: B.name, ...r });
+      const contactThicknessMm = onMesh ? REST_PENETRATION_DEPTH_MM : CONTACT_THICKNESS_MM;
+      if (!isActionableOverlap(r, contactThicknessMm)) continue;
+      // A real overlap shows in both measurements. The voxel integral of two
+      // tessellations reads a few mm³ where curved analytic faces only
+      // touch; the exact BREP common then reads ~0 and wins. (On STL-sewn
+      // solids the BREP common over-reads, so the mesh value still stands.)
+      if (onMesh) {
+        const exact = brepOverlap(A.part, B.part, A.mesh, B.mesh);
+        if (Number.isFinite(exact.volumeMm3) && !isActionableOverlap(exact)) continue;
+      }
+      out.push({ a: A.name, b: B.name, ...r, contactThicknessMm });
     }
   }
   return out;
@@ -372,11 +389,13 @@ export function restPoseMateGaps(
   arm: Assembly,
   scene: SceneBackend,
   toleranceMm: number = REST_MATE_CONTACT_TOLERANCE_MM,
+  includeMate: (mate: MateRecord) => boolean = () => true,
 ): RestMateGap[] {
   const byName = new Map(scene.parts.map((p) => [p.name, p]));
   const out: RestMateGap[] = [];
   const seen = new Map<string, number | undefined>();
   for (const mate of arm.__mates()) {
+    if (!includeMate(mate)) continue;
     let a: string;
     let b: string;
     try {
@@ -389,6 +408,7 @@ export function restPoseMateGaps(
     const pa = byName.get(a);
     const pb = byName.get(b);
     if (pa === undefined || pb === undefined) continue;
+    if (!(pa.shape instanceof OcctBackend) || !(pb.shape instanceof OcctBackend)) continue;
     const key = a < b ? `${a}\u0000${b}` : `${b}\u0000${a}`;
     if (!seen.has(key)) {
       seen.set(key, measureBodyToBodyGap(

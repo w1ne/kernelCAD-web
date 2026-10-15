@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { getMcpViewerResult } from './liveViewer';
 import { selectionToolEntries } from './registry/selectionTools';
+import { pointCloudToolEntries } from './registry/pointCloudTools';
 import { TOOL_ANNOTATIONS } from './toolAnnotations';
 import { TOOL_OUTPUT_SCHEMAS } from './toolOutputSchemas';
 import { catalogToolEntries } from './registry/catalogTools';
@@ -24,12 +25,17 @@ import { fabricationToolEntries } from './registry/fabricationTools';
 import { manufacturingToolEntries } from './registry/manufacturingTools';
 import { rayPickToolEntries } from './registry/rayPickTools';
 import { nurbsToolEntries } from './registry/nurbsTools';
+import { surfaceBlendToolEntries } from './registry/surfaceBlendTools';
+import { wireRoutingToolEntries } from './registry/wireRoutingTools';
+import { handoffToolEntries } from './registry/handoffTools';
+import { explodeViewToolEntries } from './registry/explodeViewTools';
 import { referenceExportToolEntries } from './registry/referenceExportTools';
 import { referenceLedgerToolEntries } from './registry/referenceLedgerTools';
 import { reviewPipelineToolEntries } from './registry/reviewPipelineTools';
 import { sketchAssemblyToolEntries } from './registry/sketchAssemblyTools';
 import { mechanismSimToolEntries } from './registry/mechanismSimTools';
 import { meshReconstructToolEntries } from './registry/meshReconstructTools';
+import { meshBooleanToolEntries } from './registry/meshBooleanTools';
 import { cookbookExecutionToolEntries } from './registry/cookbookExecutionTools';
 import type { McpToolDefinition, ToolRegistryEntry } from './registry/types';
 export { runClosedLoop } from '../loop/closedLoop.js';
@@ -101,6 +107,12 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...manufacturingToolEntries,
   ...rayPickToolEntries,
   ...nurbsToolEntries,
+  ...pointCloudToolEntries,
+  ...wireRoutingToolEntries,
+  ...handoffToolEntries,
+  ...meshBooleanToolEntries,
+  ...explodeViewToolEntries,
+  ...surfaceBlendToolEntries,
 ];
 
 /** Merge the central MCP metadata maps onto a definition: behavioral hints

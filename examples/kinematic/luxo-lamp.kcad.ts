@@ -41,7 +41,9 @@
 // Upper bounds shrunk slightly from prior P9 values to keep the
 // physical pose envelope tight enough that the kinematic
 // interference checks still pass at every sampled pose.
-const shoulderDeg = param('shoulderDeg', 60,  { min:  -5, max: 100 });
+// Shoulder stops at 96°: at 100° the lower arm cuts 0.23 mm into the base
+// column (1.4 mm³).
+const shoulderDeg = param('shoulderDeg', 60,  { min:  -5, max: 96 });
 const elbowDeg    = param('elbowDeg',   -90,  { min:  -95, max:   0 });
 const wristDeg    = param('wristDeg',   -45,  { min:  -50, max:   0 });
 
@@ -356,7 +358,7 @@ const shoulder = joint.clevis({
   axis: [0, -1, 0],
   pivotParent: [0, 0, COLUMN_TOP_Z],
   pivotChild: [0, 0, 0],
-  limitsDeg: [-5, 100],
+  limitsDeg: [-5, 96],
   liftPivot: true,
   style: clevisStyle,
 });
@@ -537,7 +539,7 @@ void headPart;
 
 arm.mate('shoulder', 'base.shoulderAxis', 'lower-arm.shoulderAxis', 'revolute', {
   pose: shoulderDeg,
-  limitsDeg: [-5, 100],
+  limitsDeg: [-5, 96],
 });
 
 arm.mate('elbow', 'lower-arm.elbowAxis', 'upper-arm.elbowAxis', 'revolute', {
