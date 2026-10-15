@@ -466,6 +466,17 @@ See `cookbook/snippets/Q-S6-inspect-first-build-after.kcad.ts`.
 
 ## Related skills
 
+### `mesh_boolean`
+
+Use this when the user wants to union, subtract, or intersect two imported
+triangle mesh solids. Each operand accepts a server-side `{ file }` path or
+base64 `{ data }`, with STL, OBJ, and 3MF supported. The result includes its
+volume in mm³, triangle count, and a binary STL payload; pass the payload to the
+import tool as base64 content to reopen it as a mesh body. Inputs must be
+closed, consistently oriented 2-manifold meshes. Open or non-manifold input
+returns an error. The result remains faceted and has no editable B-rep face or
+edge references.
+
 - `kernelcad-authoring` — the API surface MCP operates on.
 - `kernelcad-params` — `set_param({ code, param_name, new_value })` is the source-edit path for symbolic parameters.
 - `kernelcad-features` — face-ref queries and add-feature edits route through MCP.
