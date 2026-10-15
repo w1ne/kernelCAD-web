@@ -89,10 +89,10 @@ export class TriangleBvh {
   // it was pushed.
   private readonly traversalTStack = new Float64Array(128);
 
-  private readonly consumeBuildWork?: (amount?: number) => void;
+  private readonly consumeBuildWork: (amount?: number) => void;
 
   constructor(mesh: DfmMesh, consumeWork?: (amount?: number) => void) {
-    this.consumeBuildWork = consumeWork;
+    this.consumeBuildWork = consumeWork ?? ((): void => {});
     const { vertices, triangles } = mesh;
     const numTris = (triangles.length / 3) | 0;
     // Packing, centroid generation and the initial ordering are linear.
@@ -175,7 +175,7 @@ export class TriangleBvh {
     let cMinX = Infinity, cMinY = Infinity, cMinZ = Infinity;
     let cMaxX = -Infinity, cMaxY = -Infinity, cMaxZ = -Infinity;
     for (let k = lo; k < hi; k++) {
-      this.consumeBuildWork?.();
+      this.consumeBuildWork();
       const s = this.triOrder[k];
       const o = s * 9;
       for (let v = 0; v < 9; v += 3) {
@@ -195,7 +195,7 @@ export class TriangleBvh {
   /** Allocate and fill the subtree over triOrder[lo, hi). Returns the node
    *  index. Recursive at build time only (depth ~ log2(n / leafSize)). */
   private buildNode(lo: number, hi: number, centroids: Float64Array): number {
-    this.consumeBuildWork?.();
+    this.consumeBuildWork();
     const node = this.nodeCount++;
     const b = this.bounds;
     const bo = node * 6;
@@ -227,7 +227,7 @@ export class TriangleBvh {
   private selectNth(lo: number, hi: number, nth: number, axis: number, centroids: Float64Array): void {
     const order = this.triOrder;
     const key = (k: number): number => {
-      this.consumeBuildWork?.();
+      this.consumeBuildWork();
       return centroids[3 * order[k] + axis];
     };
     let left = lo;

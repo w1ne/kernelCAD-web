@@ -65,11 +65,16 @@ function candidates(options: AssemblyPathOptions): Vec3[] {
     }
     return out;
 }
-function prepare(part: AssemblyPathPart, consumeWork: (amount?: number) => void): Prepared {
+function assertValidMeshArrays(part: AssemblyPathPart): void {
     const { vertices: v, triangles: t } = part.mesh;
-    consumeWork(v.length + t.length);
-    if (!v.length || v.length % 3 || !v.every(Number.isFinite) || !t.length || t.length % 3 || !t.every(i => Number.isInteger(i) && i >= 0 && i < v.length / 3))
+    const validVertices = v.length > 0 && v.length % 3 === 0 && v.every(Number.isFinite);
+    const validIndices = t.length > 0 && t.length % 3 === 0 && t.every(i => Number.isInteger(i) && i >= 0 && i < v.length / 3);
+    if (!validVertices || !validIndices)
         throw new Error(`Invalid mesh for '${part.name}'.`);
+}
+/** Build triangles and face adjacency, rejecting degenerate, duplicate, open or non-manifold input. */
+function buildTopology(part: AssemblyPathPart): { triangles: Triangle[]; neighbors: number[][] } {
+    const { vertices: v, triangles: t } = part.mesh;
     const vertex = (i: number): Vec3 => [v[3 * i], v[3 * i + 1], v[3 * i + 2]];
     const triangles: Triangle[] = [];
     const edgeCounts = new Map<string, number>();
@@ -85,8 +90,7 @@ function prepare(part: AssemblyPathPart, consumeWork: (amount?: number) => void)
         if (faces.has(faceKey))
             throw new Error(`Duplicate mesh face for '${part.name}'.`);
         faces.add(faceKey);
-        const triangle = ids.map(vertex) as unknown as Triangle;
-        triangles.push(triangle);
+        triangles.push(ids.map(vertex) as unknown as Triangle);
         for (let j = 0; j < 3; j++) {
             const a = ids[j], b = ids[(j + 1) % 3], key = a < b ? `${a}:${b}` : `${b}:${a}`;
             edgeCounts.set(key, (edgeCounts.get(key) ?? 0) + 1);
@@ -102,6 +106,13 @@ function prepare(part: AssemblyPathPart, consumeWork: (amount?: number) => void)
     }
     if ([...edgeCounts.values()].some(n => n !== 2) || [...edgeDirections.values()].some(n => n !== 0))
         throw new Error(`Mesh for '${part.name}' must be closed and manifold.`);
+    return { triangles, neighbors };
+}
+function prepare(part: AssemblyPathPart, consumeWork: (amount?: number) => void): Prepared {
+    const { vertices: v, triangles: t } = part.mesh;
+    consumeWork(v.length + t.length);
+    assertValidMeshArrays(part);
+    const { triangles, neighbors } = buildTopology(part);
     consumeWork(triangles.length * 4);
     assertSolidComponents(part.name, triangles, neighbors);
     const bvh = new TriangleBvh(part.mesh, consumeWork);

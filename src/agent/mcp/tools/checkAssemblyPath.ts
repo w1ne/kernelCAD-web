@@ -13,6 +13,20 @@ export type CheckAssemblyPathOutput = AssemblyPathReport | {
     error: string;
     errorCode?: string;
 };
+/** Pick the one assembly scene the caller means from a built model. */
+function selectAssemblyScene(candidates: unknown[], assembly: string | undefined): SceneBackend {
+    const selected = new Map<string, SceneBackend>();
+    for (const scene of candidates.filter((shape): shape is SceneBackend => isSceneBackend(shape)))
+        if (!selected.has(scene.assemblyName))
+            selected.set(scene.assemblyName, scene);
+    const unique = [...selected.values()];
+    if (assembly === undefined && unique.length !== 1)
+        throw new Error('assembly-path requires exactly one assembly, or an explicit assembly name.');
+    const scene = assembly === undefined ? unique[0] : unique.find(s => s.assemblyName === assembly);
+    if (!scene)
+        throw new Error(`Assembly '${assembly}' not found.`);
+    return scene;
+}
 /** Script-aware entrypoint for verify({ check: 'assembly-path' }). */
 export async function checkAssemblyPathTool(input: CheckAssemblyPathInput): Promise<CheckAssemblyPathOutput> {
     try {
@@ -21,18 +35,7 @@ export async function checkAssemblyPathTool(input: CheckAssemblyPathInput): Prom
         const { evaluation, model } = await evaluateAndBuildScript(input);
         if (evaluation.exitCode !== 0 || !model)
             return { ok: false, source: 'local', error: evaluation.diagnostics[0]?.message ?? 'Script evaluation failed.', errorCode: evaluation.diagnostics[0]?.code };
-        const candidates: unknown[] = [model.rootShape, ...[...model.shapes.values()].reverse()];
-        const scenes = candidates.filter((shape): shape is SceneBackend => isSceneBackend(shape));
-        const selected = new Map<string, SceneBackend>();
-        for (const scene of scenes)
-            if (!selected.has(scene.assemblyName))
-                selected.set(scene.assemblyName, scene);
-        const unique = [...selected.values()];
-        if (input.assembly === undefined && unique.length !== 1)
-            throw new Error('assembly-path requires exactly one assembly, or an explicit assembly name.');
-        const scene = input.assembly === undefined ? unique[0] : unique.find(s => s.assemblyName === input.assembly);
-        if (!scene)
-            throw new Error(`Assembly '${input.assembly}' not found.`);
+        const scene = selectAssemblyScene([model.rootShape, ...[...model.shapes.values()].reverse()], input.assembly);
         return checkAssemblyPathScene(scene, input);
     }
     catch (error) {
