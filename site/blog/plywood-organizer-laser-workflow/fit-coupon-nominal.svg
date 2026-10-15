@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="150mm" height="90mm" viewBox="0 0 150 90">
+<title>Nominal uncompensated plywood profiles — digital example</title>
+<g id="cut-nominal" fill="none" stroke="#000" stroke-width="0.1"><polygon points="5,5 15,5 15,25 20.8,25 20.8,5 39,5 39,25 45,25 45,5 63,5 63,25 69.2,25 69.2,5 87,5 87,25 93.4,25 93.4,5 111,5 111,25 117.6,25 117.6,5 145,5 145,55 5,55"/><rect x="5" y="65" width="20" height="20"/></g>
+<g id="labels-do-not-cut" fill="#245b80" font-family="sans-serif" font-size="3.6"><text x="14" y="34">5.80</text><text x="38" y="34">6.00</text><text x="62" y="34">6.20</text><text x="86" y="34">6.40</text><text x="110" y="34">6.60</text><text x="8" y="44">Slot width mm — sample range, test same-sheet strip</text><text x="30" y="77">20 × 20 mm kerf test square</text></g>
+</svg>
