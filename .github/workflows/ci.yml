@@ -133,11 +133,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: changes
     if: needs.changes.outputs.docs_only != 'true'
-    # 20 gives headroom for the shard that draws the heavy physics
-    # example-sweep tests (a single example can run ~6 min) so a legitimately
-    # slow run is never cancelled mid-test. Setup itself is now near-instant
-    # (ffmpeg preinstalled; apt fallback bounded) so this is pure test headroom.
-    timeout-minutes: 20
+    # Slow example-sweep tests were replaced by fast smoke tests, so each
+    # shard now has a 10-minute budget.
+    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:

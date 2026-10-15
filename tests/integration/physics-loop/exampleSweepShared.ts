@@ -188,34 +188,6 @@ export const HOSTED_IN_DEDICATED_FILE: ReadonlyMap<string, DedicatedExampleCover
       coverage: 'run-validate-cli',
     },
   ],
-  // gearfinity completes the loop with mechanism: 'unverified' after the
-  // BREP-sweep budget skip (issue #348 resolved). Its dedicated file runs
-  // the identical runValidateCli check; hosting it there avoids paying the
-  // ~1-2 minute validate run twice.
-  [
-    'examples/gallery/gearfinity-planetary-stage.kcad.ts',
-    {
-      testFile: 'tests/integration/examples/gearfinityPlanetaryStage.test.ts',
-      coverage: 'run-validate-cli',
-    },
-  ],
-  // The SO-100 hero loads thirteen STL solids; its validate run is over the
-  // shards' 600 s per-example cap, so its dedicated file runs it under a
-  // longer one.
-  [
-    'examples/robot-arm/so100/so100-arm.kcad.ts',
-    {
-      testFile: 'tests/integration/examples/so100ArmRestContact.test.ts',
-      coverage: 'run-validate-cli',
-    },
-  ],
-  [
-    'examples/gallery/hand-coffee-grinder.kcad.ts',
-    {
-      testFile: 'tests/integration/examples/handCoffeeGrinder.validate.test.ts',
-      coverage: 'run-validate-cli',
-    },
-  ],
   [
     'examples/community/open-source-ring.kcad.ts',
     {
