@@ -1,0 +1,190 @@
+{
+  "ok": true,
+  "destination": "csv",
+  "rows": [
+    {
+      "ref": "A1",
+      "qty": 1,
+      "part": "esp32",
+      "mpn": "ESP32-DevKitC-32E",
+      "source": "LabWired:esp32",
+      "unit_price": "",
+      "notes": "estimated"
+    },
+    {
+      "ref": "A2",
+      "qty": 1,
+      "part": "a4988",
+      "mpn": "Pololu 1182 (A4988 carrier)",
+      "source": "LabWired:a4988",
+      "unit_price": "",
+      "notes": "estimated"
+    },
+    {
+      "ref": "A3",
+      "qty": 1,
+      "part": "a4988",
+      "mpn": "Pololu 1182 (A4988 carrier)",
+      "source": "LabWired:a4988",
+      "unit_price": "",
+      "notes": "estimated"
+    },
+    {
+      "ref": "M1",
+      "qty": 1,
+      "part": "NEMA 17 stepper motor",
+      "mpn": "17HS4401",
+      "source": "LabWired:nema17; KernelCAD:KernelCAD catalog",
+      "unit_price": 12.5,
+      "notes": "estimated"
+    },
+    {
+      "ref": "M2",
+      "qty": 1,
+      "part": "nema17",
+      "mpn": "17HS4401",
+      "source": "LabWired:nema17",
+      "unit_price": "",
+      "notes": "estimated"
+    },
+    {
+      "ref": "M3",
+      "qty": 1,
+      "part": "servo",
+      "mpn": "TowerPro SG90",
+      "source": "LabWired:servo",
+      "unit_price": "",
+      "notes": "estimated"
+    },
+    {
+      "ref": "J1",
+      "qty": 1,
+      "part": "dc-barrel-jack",
+      "mpn": "",
+      "source": "LabWired:dc-barrel-jack",
+      "unit_price": "",
+      "notes": "missing"
+    },
+    {
+      "ref": "",
+      "qty": 1,
+      "part": "M3 heat-set insert",
+      "mpn": "M3-HSI",
+      "source": "KernelCAD:KernelCAD catalog",
+      "unit_price": 0.08,
+      "notes": "Catalog addition"
+    },
+    {
+      "ref": "",
+      "qty": 1,
+      "part": "M3 × 8 mm screw",
+      "mpn": "ISO 7380 M3x8",
+      "source": "KernelCAD:KernelCAD catalog",
+      "unit_price": 0.03,
+      "notes": "Catalog addition"
+    }
+  ],
+  "csv": "ref,qty,part,MPN,source,unit price,notes\nA1,1,esp32,ESP32-DevKitC-32E,LabWired:esp32,,estimated\nA2,1,a4988,Pololu 1182 (A4988 carrier),LabWired:a4988,,estimated\nA3,1,a4988,Pololu 1182 (A4988 carrier),LabWired:a4988,,estimated\nM1,1,NEMA 17 stepper motor,17HS4401,LabWired:nema17; KernelCAD:KernelCAD catalog,12.5,estimated\nM2,1,nema17,17HS4401,LabWired:nema17,,estimated\nM3,1,servo,TowerPro SG90,LabWired:servo,,estimated\nJ1,1,dc-barrel-jack,,LabWired:dc-barrel-jack,,missing\n,1,M3 heat-set insert,M3-HSI,KernelCAD:KernelCAD catalog,0.08,Catalog addition\n,1,M3 × 8 mm screw,ISO 7380 M3x8,KernelCAD:KernelCAD catalog,0.03,Catalog addition\n",
+  "headers": [
+    "ref",
+    "qty",
+    "part",
+    "MPN",
+    "source",
+    "unit price",
+    "notes"
+  ],
+  "sheets_rows": [
+    [
+      "ref",
+      "qty",
+      "part",
+      "MPN",
+      "source",
+      "unit price",
+      "notes"
+    ],
+    [
+      "A1",
+      1,
+      "esp32",
+      "ESP32-DevKitC-32E",
+      "LabWired:esp32",
+      "",
+      "estimated"
+    ],
+    [
+      "A2",
+      1,
+      "a4988",
+      "Pololu 1182 (A4988 carrier)",
+      "LabWired:a4988",
+      "",
+      "estimated"
+    ],
+    [
+      "A3",
+      1,
+      "a4988",
+      "Pololu 1182 (A4988 carrier)",
+      "LabWired:a4988",
+      "",
+      "estimated"
+    ],
+    [
+      "M1",
+      1,
+      "NEMA 17 stepper motor",
+      "17HS4401",
+      "LabWired:nema17; KernelCAD:KernelCAD catalog",
+      12.5,
+      "estimated"
+    ],
+    [
+      "M2",
+      1,
+      "nema17",
+      "17HS4401",
+      "LabWired:nema17",
+      "",
+      "estimated"
+    ],
+    [
+      "M3",
+      1,
+      "servo",
+      "TowerPro SG90",
+      "LabWired:servo",
+      "",
+      "estimated"
+    ],
+    [
+      "J1",
+      1,
+      "dc-barrel-jack",
+      "",
+      "LabWired:dc-barrel-jack",
+      "",
+      "missing"
+    ],
+    [
+      "",
+      1,
+      "M3 heat-set insert",
+      "M3-HSI",
+      "KernelCAD:KernelCAD catalog",
+      0.08,
+      "Catalog addition"
+    ],
+    [
+      "",
+      1,
+      "M3 × 8 mm screw",
+      "ISO 7380 M3x8",
+      "KernelCAD:KernelCAD catalog",
+      0.03,
+      "Catalog addition"
+    ]
+  ],
+  "path": "/Users/andrii/worktrees/kcw-ar-5/docs/demos/sheets-bom/bom.csv"
+}

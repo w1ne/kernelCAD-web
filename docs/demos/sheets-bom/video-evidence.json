@@ -1,0 +1,8 @@
+{
+  "kind": "local validation walkthrough",
+  "workflow": "supplied LabWired handoff -> injected sample catalog data -> write_bom CSV fallback",
+  "sheets_connected": false,
+  "prices_are": "illustrative test inputs, not a vendor quote",
+  "physical_build": false,
+  "animation_or_deployed_behavior": false
+}

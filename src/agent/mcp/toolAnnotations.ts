@@ -143,4 +143,6 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   // Parses a provided handoff and returns a proposed authoring script.
   import_handoff: AUTHOR,
   inspect_assembly: READ,
+  // Writes a BOM CSV locally and returns Sheets-ready rows; never contacts a spreadsheet.
+  write_bom: WRITES_FILE,
 };

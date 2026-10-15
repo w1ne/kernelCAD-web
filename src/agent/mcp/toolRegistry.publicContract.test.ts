@@ -31,6 +31,8 @@ import { importToolEntries } from './registry/importTools';
 import { fabricationToolEntries } from './registry/fabricationTools';
 import { manufacturingToolEntries } from './registry/manufacturingTools';
 import { nurbsToolEntries } from './registry/nurbsTools';
+import { bomToolEntries } from './registry/bomTools';
+import { rayPickToolEntries } from './registry/rayPickTools';
 import { handoffToolEntries } from './registry/handoffTools';
 import { surfaceBlendToolEntries } from './registry/surfaceBlendTools';
 import { pointCloudToolEntries } from './registry/pointCloudTools';
@@ -105,6 +107,7 @@ const EXPECTED_TOOL_NAMES = [
   'explode_view',
   'apply_surface_blend',
   'fetch_part_model',
+  'write_bom',
 ] as const;
 
 const PUBLIC_CONTRACT_FIXTURE = new URL(
@@ -391,8 +394,9 @@ describe('toolRegistry public contract', () => {
       'explode_view',
       'apply_surface_blend',
       'fetch_part_model',
+      'write_bom',
     ]);
-    expect(TOOL_REGISTRY).toHaveLength(62);
+    expect(TOOL_REGISTRY).toHaveLength(63);
   });
 
   it('composes the user-file import family at the registry tail, with ChatGPT file params', () => {
@@ -442,6 +446,14 @@ describe('toolRegistry public contract', () => {
     expect(TOOL_REGISTRY.slice(57, 58)).toEqual(handoffToolEntries);
     expect(handoffToolEntries[0].definition.description).toMatch(/^Use this when /);
   });
+  it('composes ray picking at the registry tail', () => {
+    expect(rayPickToolEntries.map(entry => entry.definition.name)).toEqual(['ray_pick']);
+    expect(TOOL_REGISTRY.slice(53, 54)).toEqual(rayPickToolEntries);
+  });
+  it('composes the BOM writer at the registry tail', () => {
+    expect(bomToolEntries.map(entry => entry.definition.name)).toEqual(['write_bom']);
+    expect(TOOL_REGISTRY.slice(-bomToolEntries.length)).toEqual(bomToolEntries);
+  });
 
   it('appends the mesh boolean tool after the handoff importer', async () => {
     expect(meshBooleanToolEntries.map(entry => entry.definition.name)).toEqual(['mesh_boolean']);
@@ -461,7 +473,7 @@ describe('toolRegistry public contract', () => {
 
   it('appends the handoff model fetcher after all existing tool families', () => {
     expect(partModelToolEntries.map(entry => entry.definition.name)).toEqual(['fetch_part_model']);
-    expect(TOOL_REGISTRY.slice(-partModelToolEntries.length)).toEqual(partModelToolEntries);
+    expect(TOOL_REGISTRY.slice(61, 62)).toEqual(partModelToolEntries);
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {

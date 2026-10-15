@@ -33,6 +33,7 @@ import { NURBS_OUTPUT_SCHEMAS } from './registry/nurbsTools.outputSchemas';
 import { EXPLODE_VIEW_OUTPUT_SCHEMAS } from './registry/explodeViewTools.outputSchemas';
 import { SURFACE_BLEND_OUTPUT_SCHEMAS } from './registry/surfaceBlendTools.outputSchemas';
 import { PART_MODEL_OUTPUT_SCHEMAS } from './registry/partModelTools.outputSchemas';
+import { BOM_OUTPUT_SCHEMAS } from './registry/bomTools.outputSchemas';
 
 export type { JSONSchemaObject } from './toolOutputSchemaParts';
 import { MECHANISM_SUMMARY, SELECTION, SOURCE_EDIT, TUBE_JOINT, type JSONSchemaObject } from './toolOutputSchemaParts';
@@ -841,6 +842,7 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
   ...NURBS_OUTPUT_SCHEMAS,
   ...SURFACE_BLEND_OUTPUT_SCHEMAS,
   ...PART_MODEL_OUTPUT_SCHEMAS,
+  ...BOM_OUTPUT_SCHEMAS,
   route_wires: {
     type: 'object',
     properties: {
@@ -848,7 +850,7 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
       warnings: { type: 'array', items: { type: 'string' } },
       unresolved_wire_count: { type: 'integer' }, clearance_mm: { type: 'number' }, requested_bend_radius_mm: { type: 'number' },
     }, required: ['ok', 'routes', 'warnings', 'unresolved_wire_count'], additionalProperties: true,
-  },
+    },
   import_handoff: {
     type: 'object', properties: {
       ok: { type: 'boolean' }, device: { type: 'string' }, part_count: { type: 'number' }, wire_mate_count: { type: 'number' },
