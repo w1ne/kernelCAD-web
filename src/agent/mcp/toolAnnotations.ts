@@ -136,4 +136,6 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   inspect_nurbs: READ,
   fit_plane: READ,
   route_wires: READ,
+  // Parses a provided handoff and returns a proposed authoring script.
+  import_handoff: AUTHOR,
 };
