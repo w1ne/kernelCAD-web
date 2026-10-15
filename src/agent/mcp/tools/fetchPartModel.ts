@@ -239,12 +239,14 @@ function validateModelInput(input: FetchPartModelInput): number | FetchPartModel
 
 type ModelSource = ResolvedCatalogModel & { expectedHash?: string };
 
+function resolveExplicitModelSource(input: FetchPartModelInput & { url: string }): ModelSource | FetchPartModelOutput {
+  if (!input.expected_sha256 || !SHA256_RE.test(input.expected_sha256)) return fail('A valid expected_sha256 is required with an explicit URL.', 'model.hash-required', input.ref);
+  if (!input.source || !input.license) return fail('source and license are required for an explicit model URL.', 'model.provenance-required', input.ref);
+  return { url: input.url, expectedHash: input.expected_sha256, source: input.source, license: input.license, attribution: input.attribution };
+}
+
 async function resolveModelSource(input: FetchPartModelInput): Promise<ModelSource | FetchPartModelOutput> {
-  if (input.url) {
-    if (!input.expected_sha256 || !SHA256_RE.test(input.expected_sha256)) return fail('A valid expected_sha256 is required with an explicit URL.', 'model.hash-required', input.ref);
-    if (!input.source || !input.license) return fail('source and license are required for an explicit model URL.', 'model.provenance-required', input.ref);
-    return { url: input.url, expectedHash: input.expected_sha256, source: input.source, license: input.license, attribution: input.attribution };
-  }
+  if (input.url) return resolveExplicitModelSource({ ...input, url: input.url });
   let resolved: ResolvedCatalogModel | FetchPartModelOutput;
   try { resolved = await resolveCatalogModel(input); }
   catch (error) { return fail(error instanceof Error ? error.message : String(error), 'model.lookup-failed', input.ref); }

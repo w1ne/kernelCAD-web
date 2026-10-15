@@ -33,6 +33,7 @@ import { manufacturingToolEntries } from './registry/manufacturingTools';
 import { nurbsToolEntries } from './registry/nurbsTools';
 import { pointCloudToolEntries } from './registry/pointCloudTools';
 import { partModelToolEntries } from './registry/partModelTools';
+import { partModelToolEntries } from './registry/partModelTools';
 import { rayPickToolEntries } from './registry/rayPickTools';
 
 const EXPECTED_TOOL_NAMES = [
@@ -93,8 +94,8 @@ const EXPECTED_TOOL_NAMES = [
   'dfm_review',
   'ray_pick',
   'inspect_nurbs',
-  'fit_plane',
-  'fetch_part_model',
+      'fit_plane',
+      'fetch_part_model',
 ] as const;
 
 const PUBLIC_CONTRACT_FIXTURE = new URL(
@@ -392,14 +393,18 @@ describe('toolRegistry public contract', () => {
     expect(TOOL_REGISTRY.slice(53, 54).map(entry => entry.definition.name)).toEqual(['ray_pick']);
     expect(nurbsToolEntries.map(entry => entry.definition.name)).toEqual(['inspect_nurbs']);
     expect(TOOL_REGISTRY.slice(54, 55)).toEqual(nurbsToolEntries);
-    expect(TOOL_REGISTRY.slice(55)).toEqual(pointCloudToolEntries);
+    expect(TOOL_REGISTRY.slice(55, 56)).toEqual(pointCloudToolEntries);
   });
 
   it('composes ray picking at the registry tail', () => {
     expect(TOOL_REGISTRY.slice(53, 54).map(entry => entry.definition.name)).toEqual(['ray_pick']);
   });
-  it('composes the point-cloud analysis family at the registry tail', () => {
-    expect(TOOL_REGISTRY.slice(-pointCloudToolEntries.length)).toEqual(pointCloudToolEntries);
+  it('composes the point-cloud analysis family before the part-model family', () => {
+    expect(TOOL_REGISTRY.slice(55, 56)).toEqual(pointCloudToolEntries);
+  });
+  it('composes the part-model family at the registry tail', () => {
+    expect(partModelToolEntries.map(entry => entry.definition.name)).toEqual(['fetch_part_model']);
+    expect(TOOL_REGISTRY.slice(-partModelToolEntries.length)).toEqual(partModelToolEntries);
   });
 
   it('dispatches plane fitting through the MCP registry', async () => {

@@ -466,12 +466,17 @@ describe('fetch_part_model', () => {
       findPart: findPart as unknown as typeof import('./findPart').findPartTool,
       fetchBytes: vi.fn(async () => fixtureStep) as unknown as typeof import('./importStepFetch').fetchPublicBytes,
     });
+    // The shared handoff fixture names the J1 stand-in STEP URL but pins no digest or licence;
+    // the caller pins them (KiCad Packages3D is CC-BY-SA-4.0).
+    const pinned: Record<string, { expected_sha256: string; license: string }> = {
+      J1: { expected_sha256: 'b7ce6d1a3c3c351ebf2fe143053b8de575da2270a7d3a1b5d08eec4caad5d4df', license: 'CC-BY-SA-4.0' },
+    };
     const results = await Promise.all(handoff.parts.map(part => fetchPartModelTool({
       ref: part.ref,
       ...(part.physical.step_url ? { url: part.physical.step_url } : {}),
-      ...(part.physical.expected_sha256 ? { expected_sha256: part.physical.expected_sha256 } : {}),
+      ...((part.physical.expected_sha256 ?? pinned[part.ref]?.expected_sha256) ? { expected_sha256: part.physical.expected_sha256 ?? pinned[part.ref]?.expected_sha256 } : {}),
       ...(part.physical.source ? { source: part.physical.source } : {}),
-      ...(part.physical.license ? { license: part.physical.license } : {}),
+      ...((part.physical.license ?? pinned[part.ref]?.license) ? { license: part.physical.license ?? pinned[part.ref]?.license } : {}),
       ...(part.catalog_id ? { catalog_id: part.catalog_id } : {}),
       ...(part.mpn?.value ? { mpn: part.mpn.value } : {}),
       ...(part.physical.bbox_mm ? { bbox_mm: part.physical.bbox_mm } : {}),
@@ -479,7 +484,7 @@ describe('fetch_part_model', () => {
     expect(fetchPart).toHaveBeenCalledTimes(handoff.parts.length - handoff.parts.filter(part => part.physical.step_url).length);
     expect(findPart).not.toHaveBeenCalled();
     expect(results.filter(result => result.ref !== 'J1').every(result => !result.ok)).toBe(true);
-    expect(results.find(result => result.ref === 'J1')).toMatchObject({ ok: true, format: 'step', sha256: 'b7ce6d1a3c3c351ebf2fe143053b8de575da2270a7d3a1b5d08eec4caad5d4df', attribution: { source: expect.stringContaining('KiCad Packages3D'), license: 'CC-BY-SA-4.0' } });
+    expect(results.find(result => result.ref === 'J1')).toMatchObject({ ok: true, format: 'step', sha256: 'b7ce6d1a3c3c351ebf2fe143053b8de575da2270a7d3a1b5d08eec4caad5d4df', attribution: { source: expect.stringContaining('KiCad Connector_BarrelJack'), license: 'CC-BY-SA-4.0' } });
     expect(results.filter(result => result.ref !== 'J1').every(result => result.errorCode === 'parts.not-found')).toBe(true);
     expect(results.map(result => result.ref)).toEqual(handoff.parts.map(part => part.ref));
   });
