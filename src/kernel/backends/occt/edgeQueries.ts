@@ -13,7 +13,7 @@
 //     (label translates to probe-point query in occtLowerer.ts)
 
 import type { Edge, Face } from 'replicad';
-import { measureArea } from 'replicad';
+import { makeVertex, measureArea, measureDistanceBetween } from 'replicad';
 import type { OcctBackend } from './occtBackend';
 import { KernelError } from '../../../shared/intent/kernelError';
 import type { Vec3 } from '../../../shared/intent/types';
@@ -216,6 +216,145 @@ export function isSameEdge(a: Edge, b: Edge): boolean {
   const eq = (p: { x: number; y: number; z: number }, q: { x: number; y: number; z: number }) =>
     Math.abs(p.x - q.x) < 1e-6 && Math.abs(p.y - q.y) < 1e-6 && Math.abs(p.z - q.z) < 1e-6;
   return (eq(af, bf) && eq(al, bl)) || (eq(af, bl) && eq(al, bf));
+}
+
+/** Unit vector, or null for a zero-length input. */
+function unitVec(v: Vec3): Vec3 | null {
+  const len = Math.hypot(v[0], v[1], v[2]);
+  return len > 1e-12 ? [v[0] / len, v[1] / len, v[2] / len] : null;
+}
+
+function crossVec(a: Vec3, b: Vec3): Vec3 {
+  return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+}
+
+/** Unit outward normal of `face` at `p`, or null at a parametric singularity.
+ *  `p` is passed as a tuple: replicad reads a plain { x, y, z } object as the
+ *  origin. */
+function unitNormalAtPoint(face: Face, p: Vec3): Vec3 | null {
+  try {
+    const n = face.normalAt(p);
+    return unitVec([n.x, n.y, n.z]);
+  } catch {
+    return null;
+  }
+}
+
+/** Distance from a point to a (trimmed) face, via BRepExtrema. */
+function distanceToFace(face: Face, p: Vec3): number {
+  const v = makeVertex(p);
+  try {
+    return measureDistanceBetween(face, v);
+  } finally {
+    (v as unknown as { delete?: () => void }).delete?.();
+  }
+}
+
+/**
+ * Dihedral of `edge` with normals evaluated ON the edge (mid-parameter
+ * point, passed as a tuple: replicad reads a plain { x, y, z } object as the
+ * origin, which is what `computeDihedral` does for selectors). `angleDeg` is
+ * the interior angle (180 = G1-smooth). `convex` is true / false, or null
+ * when undecidable (seam, tangent). Null overall for a boundary edge or
+ * normals that cannot be evaluated. `opts.convexity: false` skips the
+ * (costlier) convexity classification and reports `convex: null`.
+ *
+ * Convexity steps off the edge INTO one adjacent face along the in-surface
+ * normal to the edge and asks which side of the other face's tangent plane
+ * the step lands on (convex iff it goes below). The in-face side is picked by
+ * measuring which of ±step lies on the trimmed face, so holed / non-convex
+ * faces (a pocket rim on a plate top) are classified correctly. Used by the
+ * fillet / chamfer lowering (smooth-edge filter, expected volume change);
+ * selector convexity (`computeDihedral`) is unchanged.
+ */
+export function edgeDihedralOnEdge(
+  shape: { faces: Face[] },
+  edge: Edge,
+  opts: { convexity?: boolean } = {},
+): { angleDeg: number; convex: boolean | null } | null {
+  const adjacent = twoAdjacentFaces(shape, edge);
+  if (!adjacent) return null;
+  const frame = edgeFrameAt(edge);
+  if (!frame) return null;
+  const nA = unitNormalAtPoint(adjacent[0], frame.p);
+  const nB = unitNormalAtPoint(adjacent[1], frame.p);
+  if (!nA || !nB) return null;
+  const cosAng = nA[0] * nB[0] + nA[1] * nB[1] + nA[2] * nB[2];
+  const angleDeg = 180 - (Math.acos(Math.max(-1, Math.min(1, cosAng))) * 180) / Math.PI;
+  const convex = opts.convexity === false ? null : convexityAcross(adjacent[0], edge, frame, nA, nB);
+  return { angleDeg, convex };
+}
+
+/** Local convexity of `edge` (see {@link edgeDihedralOnEdge}). */
+export function edgeConvexity(shape: { faces: Face[] }, edge: Edge): boolean | null {
+  return edgeDihedralOnEdge(shape, edge)?.convex ?? null;
+}
+
+function convexityAcross(faceA: Face, edge: Edge, frame: { p: Vec3; t: Vec3 }, nA: Vec3, nB: Vec3): boolean | null {
+  const inward = stepIntoFace(faceA, edge, frame, nA);
+  if (!inward) return null;
+  const d = inward[0] * nB[0] + inward[1] * nB[1] + inward[2] * nB[2];
+  if (Math.abs(d) < 1e-9) return null; // tangent (G1)
+  return d < 0;
+}
+
+/** {@link isSameEdge} plus the mid-parameter point: the two halves of a
+ *  split circle share both endpoints but are different edges. */
+function isSameEdgeOnCurve(a: Edge, b: Edge): boolean {
+  if (!isSameEdge(a, b)) return false;
+  try {
+    const pa = a.pointAt(0.5);
+    const pb = b.pointAt(0.5);
+    return Math.abs(pa.x - pb.x) < 1e-6 && Math.abs(pa.y - pb.y) < 1e-6 && Math.abs(pa.z - pb.z) < 1e-6;
+  } catch {
+    return true;
+  }
+}
+
+/** The two faces whose boundary contains `edge`, or null (boundary edge). */
+function twoAdjacentFaces(shape: { faces: Face[] }, edge: Edge): [Face, Face] | null {
+  const adjacent: Face[] = [];
+  for (const face of shape.faces) {
+    const faceEdges = (face as unknown as { edges?: Edge[] }).edges ?? [];
+    if (faceEdges.some(we => isSameEdgeOnCurve(we, edge))) {
+      adjacent.push(face);
+      if (adjacent.length === 2) return [adjacent[0], adjacent[1]];
+    }
+  }
+  return null;
+}
+
+/** A point on the edge at mid-parameter and the unit tangent there. */
+function edgeFrameAt(edge: Edge): { p: Vec3; t: Vec3 } | null {
+  try {
+    const pt = edge.pointAt(0.5);
+    const tv = edge.tangentAt(0.5);
+    const t = unitVec([tv.x, tv.y, tv.z]);
+    return t ? { p: [pt.x, pt.y, pt.z], t } : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Unit in-surface direction from the edge INTO `face` (normal `n`), picked
+ *  by measuring which of ±step lies on the trimmed face; null on a seam. */
+function stepIntoFace(face: Face, edge: Edge, frame: { p: Vec3; t: Vec3 }, n: Vec3): Vec3 | null {
+  const side = unitVec(crossVec(n, frame.t));
+  if (!side) return null;
+  let len = 1;
+  try { len = edge.length; } catch { /* keep default */ }
+  const eps = Math.min(Math.max(len * 1e-3, 1e-4), 1e-2);
+  const { p } = frame;
+  const plus: Vec3 = [p[0] + side[0] * eps, p[1] + side[1] * eps, p[2] + side[2] * eps];
+  const minus: Vec3 = [p[0] - side[0] * eps, p[1] - side[1] * eps, p[2] - side[2] * eps];
+  try {
+    const onFace = eps * 0.25;
+    if (distanceToFace(face, plus) > onFace) return [-side[0], -side[1], -side[2]];
+    if (distanceToFace(face, minus) > onFace) return side;
+    return null; // both sides on the face: a seam
+  } catch {
+    return null;
+  }
 }
 
 /**
