@@ -18,7 +18,9 @@ import {
   reviewMechanicalPlausibility,
   type MechanicalPlausibilityDiagnostic,
 } from '../../modeling/mates/mechanicalPlausibility';
-import { checkFastenedMateContact, checkMechanismTruth } from '../../modeling/runtime/mechanismTruth';
+import { checkFastenedMateContact, checkMechanismTruth, type MechanismCoverage } from '../../modeling/runtime/mechanismTruth';
+import { checkMotionIntent } from '../../modeling/runtime/motionIntent';
+import { needsMechanismVerdict, summarizeMechanism, type MechanismVerdictSummary } from '../../modeling/runtime/mechanismVerdict';
 import {
   reviewMechanicalIntent,
   type MechanicalIntentDiagnostic,
@@ -167,6 +169,9 @@ export type ReviewCadOutput = ReviewTimingReport & (
       /** Structured failure list when `mechanism === 'broken'`. Empty
        *  otherwise. */
       mechanismFailures: readonly CompilerDiagnostic[];
+      /** Plain verdict for a model with moving joints or motion intent;
+       *  absent for a static assembly. See `summarizeMechanism`. */
+      mechanismSummary?: MechanismVerdictSummary;
       /** Deterministic geometric contact graph of the returned scene:
        *  distinct connected bodies and floating/disconnected parts. Drives
        *  the design-loop's floating-geometry gate. Undefined when the scene
@@ -211,6 +216,7 @@ export type ReviewCadOutput = ReviewTimingReport & (
        *  where no assembly reached the probe. */
       mechanism?: MechanismVerdict;
       mechanismFailures?: readonly CompilerDiagnostic[];
+      mechanismSummary?: MechanismVerdictSummary;
       /** Deterministic geometric contact graph (see the `ok: true` variant).
        *  Present whenever a scene was built, even when `ok: false`. */
       geometry?: ContactGraphResult;
@@ -291,7 +297,7 @@ export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCa
     defaultPoseGeometry.rawInterferencePairs,
     defaultPoseGeometry.wantInterference,
   ));
-  const { poseEnvelope, physicalUseCases, mechanism, mechanismFailures } =
+  const { poseEnvelope, physicalUseCases, mechanism, mechanismFailures, summary } =
     await runBudgetedStages(clock, arm, model, input, mechanicalReview.includePoseEnvelope);
   const diagnostics = collectReviewDiagnostics(evaluation, mechanicalReview, physicalUseCases, poseEnvelope);
 
@@ -329,6 +335,7 @@ export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCa
     interferenceSummary: defaultPoseGeometry.interferenceSummary,
     mechanism,
     mechanismFailures,
+    ...summary,
     ...(defaultPoseGeometry.geometry !== undefined ? { geometry: defaultPoseGeometry.geometry } : {}),
   };
   return ok && !unionGuardOnly
@@ -354,10 +361,14 @@ async function runBudgetedStages(
   const physicalUseCases = clock.admit('physical-use-case')
     ? await clock.time('physical-use-case', () => runPhysicalUseCaseStage(arm, input, poseEnvelope))
     : await runPhysicalUseCaseStage(arm, { requirePhysicalUseCase: input.requirePhysicalUseCase }, undefined);
-  const { mechanism, mechanismFailures } = clock.admit('mechanism-truth')
+  const stage = clock.admit('mechanism-truth')
     ? await clock.time('mechanism-truth', () => runMechanismTruthStage(arm, model, input))
     : fastenedMateContactStage(arm, model);
-  return { poseEnvelope, physicalUseCases, mechanism, mechanismFailures };
+  const { mechanism, mechanismFailures } = stage;
+  const summary = needsMechanismVerdict([arm])
+    ? { mechanismSummary: summarizeMechanism({ ...stage, failures: mechanismFailures }) }
+    : {};
+  return { poseEnvelope, physicalUseCases, mechanism, mechanismFailures, summary };
 }
 
 /** Per-stage wall clock against the review's time budget. */
@@ -584,22 +595,33 @@ function collectReviewDiagnostics(
 function fastenedMateContactStage(
   arm: Assembly,
   model: BuiltModel,
-): { mechanism: MechanismVerdict; mechanismFailures: readonly CompilerDiagnostic[] } {
+): MechanismStageResult {
+  const notRunReason = 'the pose sweep did not run in this review (includeInterference was off, or the review time budget was spent)';
+  // Motion intent vs joint type is capture-only, so even the cheap path
+  // reports an animation or drive on a fastened joint.
+  const motion = checkMotionIntent(arm);
   try {
     const scene = model.rootShape ?? model.tailShape;
-    if (!scene || !isSceneBackend(scene)) return { mechanism: 'unverified', mechanismFailures: [] };
-    const failures = checkFastenedMateContact(arm, scene);
-    return { mechanism: failures.length > 0 ? 'broken' : 'unverified', mechanismFailures: failures };
+    const contact = scene && isSceneBackend(scene) ? checkFastenedMateContact(arm, scene) : [];
+    const failures = [...motion, ...contact];
+    return { mechanism: failures.length > 0 ? 'broken' : 'unverified', mechanismFailures: failures, notRunReason };
   } catch {
-    return { mechanism: 'unverified', mechanismFailures: [] };
+    return { mechanism: motion.length > 0 ? 'broken' : 'unverified', mechanismFailures: motion, notRunReason };
   }
+}
+
+interface MechanismStageResult {
+  mechanism: MechanismVerdict;
+  mechanismFailures: readonly CompilerDiagnostic[];
+  coverage?: MechanismCoverage;
+  notRunReason?: string;
 }
 
 async function runMechanismTruthStage(
   arm: Assembly,
   model: BuiltModel,
   input: Pick<ReviewCadInput, 'includeInterference' | 'includePoseEnvelope' | 'includePhysics'>,
-): Promise<{ mechanism: MechanismVerdict; mechanismFailures: readonly CompilerDiagnostic[] }> {
+): Promise<MechanismStageResult> {
   // Physics-loop probe (P1 surface convergence). Same gating shape as
   // wantInterference above — opt-out only when the caller explicitly
   // disables heavy work (includePoseEnvelope: false defaults the
@@ -629,12 +651,13 @@ async function runMechanismTruthStage(
     return {
       mechanism: verdict.mechanism,
       mechanismFailures: verdict.failures,
+      ...(verdict.coverage !== undefined ? { coverage: verdict.coverage } : {}),
     };
   } catch {
     // Probe-side throw — surface as unverified so the legacy review
     // path still produces actionable output; the CLI handles the same
     // case symmetrically.
-    return { mechanism: 'unverified', mechanismFailures: [] };
+    return { mechanism: 'unverified', mechanismFailures: [], notRunReason: 'the mechanism probe failed to run' };
   }
 }
 

@@ -1,0 +1,212 @@
+{
+  "ok": true,
+  "features": [
+    {
+      "label": "silhouette",
+      "kind": "silhouette",
+      "waypoints": [
+        [
+          0.12,
+          0.1
+        ],
+        [
+          0.88,
+          0.1
+        ],
+        [
+          0.88,
+          0.9
+        ],
+        [
+          0.12,
+          0.9
+        ]
+      ],
+      "confidence": 1,
+      "backend": "opencv"
+    }
+  ],
+  "imageDims": [
+    960,
+    540
+  ],
+  "diagnostics": [],
+  "ledger": {
+    "facts": [],
+    "unresolvedCount": 1
+  },
+  "detectedParts": [
+    {
+      "name": "ESP32-DevKitC-32E",
+      "quantity": 1,
+      "confidence": 0.91,
+      "bbox": [
+        0.23684210526315788,
+        0.24999999999999997,
+        0.47368421052631576,
+        0.44999999999999996
+      ],
+      "position": [
+        0.35526315789473684,
+        0.35
+      ]
+    },
+    {
+      "name": "Pololu 1182 (A4988 carrier)",
+      "quantity": 2,
+      "confidence": 0.84,
+      "bbox": [
+        0.5263157894736842,
+        0.24999999999999997,
+        0.6842105263157895,
+        0.37500000000000006
+      ],
+      "position": [
+        0.6052631578947368,
+        0.3125
+      ]
+    },
+    {
+      "name": "17HS4401",
+      "quantity": 2,
+      "confidence": 0.88,
+      "bbox": [
+        0.23684210526315788,
+        0.5750000000000001,
+        0.5263157894736842,
+        0.7749999999999999
+      ],
+      "position": [
+        0.381578947368421,
+        0.675
+      ],
+      "catalogMatch": {
+        "id": "nema17",
+        "name": "NEMA 17 stepper motor",
+        "confidence": 1
+      },
+      "matchedCatalogId": "nema17"
+    },
+    {
+      "name": "TowerPro SG90",
+      "quantity": 1,
+      "confidence": 0.78,
+      "bbox": [
+        0.5789473684210527,
+        0.5750000000000001,
+        0.736842105263158,
+        0.7749999999999999
+      ],
+      "position": [
+        0.6578947368421053,
+        0.675
+      ]
+    },
+    {
+      "name": "dc-barrel-jack",
+      "quantity": 1,
+      "confidence": 0.72,
+      "bbox": [
+        0.763157894736842,
+        0.24999999999999997,
+        0.9473684210526315,
+        0.43749999999999994
+      ],
+      "position": [
+        0.8552631578947367,
+        0.34374999999999994
+      ],
+      "catalogMatch": {
+        "id": "dc-barrel-jack",
+        "name": "DC barrel jack",
+        "confidence": 1
+      },
+      "matchedCatalogId": "dc-barrel-jack"
+    },
+    {
+      "name": "mystery sensor",
+      "quantity": 1,
+      "confidence": 0.62,
+      "bbox": [
+        0,
+        0.7499999999999999,
+        0.10526315789473686,
+        0.875
+      ],
+      "position": [
+        0.05263157894736843,
+        0.8125
+      ]
+    }
+  ],
+  "draftBom": [
+    {
+      "partName": "ESP32-DevKitC-32E",
+      "qty": 1,
+      "confidence": 0.91
+    },
+    {
+      "partName": "Pololu 1182 (A4988 carrier)",
+      "qty": 2,
+      "confidence": 0.84
+    },
+    {
+      "partName": "17HS4401",
+      "qty": 2,
+      "confidence": 0.88,
+      "catalogMatch": {
+        "id": "nema17",
+        "name": "NEMA 17 stepper motor",
+        "confidence": 1
+      },
+      "matchedCatalogId": "nema17"
+    },
+    {
+      "partName": "TowerPro SG90",
+      "qty": 1,
+      "confidence": 0.78
+    },
+    {
+      "partName": "dc-barrel-jack",
+      "qty": 1,
+      "confidence": 0.72,
+      "catalogMatch": {
+        "id": "dc-barrel-jack",
+        "name": "DC barrel jack",
+        "confidence": 1
+      },
+      "matchedCatalogId": "dc-barrel-jack"
+    },
+    {
+      "partName": "mystery sensor",
+      "qty": 1,
+      "confidence": 0.62
+    }
+  ],
+  "unmatchedLabels": [
+    {
+      "label": "ESP32-DevKitC-32E",
+      "quantity": 1,
+      "confidence": 0.91,
+      "reason": "no-bundled-catalog-match"
+    },
+    {
+      "label": "Pololu 1182 (A4988 carrier)",
+      "quantity": 2,
+      "confidence": 0.84,
+      "reason": "no-bundled-catalog-match"
+    },
+    {
+      "label": "TowerPro SG90",
+      "quantity": 1,
+      "confidence": 0.78,
+      "reason": "no-bundled-catalog-match"
+    },
+    {
+      "label": "mystery sensor",
+      "quantity": 1,
+      "confidence": 0.62,
+      "reason": "no-bundled-catalog-match"
+    }
+  ]
+}

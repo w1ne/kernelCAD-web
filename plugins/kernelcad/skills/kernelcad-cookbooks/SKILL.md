@@ -17,4 +17,4 @@ Useful ids: `multi-feature-machined-housing`, `nema-motor-mounting-plate`,
 `multi-body-mechanism-real-proportions`, `multi-dof-robot-arm-4axis`,
 `planetary-gearbox-shop-release`, `gt2-shop-release-actuator`,
 `clamshell-enclosure-release-pack`, `tslot-frame-fastener-bom`,
-`scissor-lift-closed-loop`.
+`scissor-lift-closed-loop`, `holeless-board-cradle` (no-hole development board rail and connector opening).
