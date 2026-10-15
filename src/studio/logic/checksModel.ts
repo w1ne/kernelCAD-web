@@ -7,7 +7,7 @@
 // the same numbers.
 
 import type { ValidatorDiagnostic } from '../../modeling/mates/validator';
-import { jointContactCapMm3 } from '../../modeling/runtime/jointContactCap';
+import { isActionableOverlap } from '../../modeling/runtime/jointContactCap';
 import type { StudioRecomputeResult } from '../types';
 
 export type CheckSeverity = ValidatorDiagnostic['severity'];
@@ -90,13 +90,12 @@ export interface InterferenceFinding {
 export function actionableInterferences(
     result: Pick<StudioRecomputeResult, 'rawInterferencePairs' | 'interferenceSummary' | 'validity'>,
 ): InterferenceFinding[] {
-    const cap = result.interferenceSummary?.capMm3 ?? jointContactCapMm3();
     const reported = new Set<string>();
     for (const d of result.validity?.diagnostics ?? []) {
         if (d.partA && d.partB) reported.add(pairKey(d.partA, d.partB));
     }
     return (result.rawInterferencePairs ?? [])
-        .filter((p) => p.volumeMm3 > cap && !reported.has(pairKey(p.a, p.b)))
+        .filter((p) => isActionableOverlap(p) && !reported.has(pairKey(p.a, p.b)))
         .sort((x, y) => y.volumeMm3 - x.volumeMm3);
 }
 

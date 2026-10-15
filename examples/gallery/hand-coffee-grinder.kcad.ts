@@ -374,7 +374,7 @@ const hexCircR = rShaft * 0.98;
 const shaft = shaftCore
   .union(shaftThread)
   .subtract(circlipGroove(zCollar + 1))
-  .subtract(circlipGroove(zTop.add(0.3)))
+  .subtract(circlipGroove(zTop.add(0.55)))
   .union(hexPrism(zHexBot, hexLen, hexCircR))
   .subtract(disc(1.7, 10, zHexBot.add(hexLen - 10)))
   .finish('stainless')
@@ -393,7 +393,8 @@ function circlip(z: E) {
   ).finish('anodized-black');
 }
 const lowerCirclip = circlip(zCollar + 1.05).translate(0, 0, drop.add(ex(105)));
-const topCirclip = circlip(zTop.add(0.35)).translate(0, 0, drop.add(ex(165)));
+// Seated on the top bearing (its top face is zTop + 0.6), not 0.25 mm in it.
+const topCirclip = circlip(zTop.add(0.6)).translate(0, 0, drop.add(ex(165)));
 const springWasher = ring(rShaft + 0.1, rShaft + 4.5, zCollar, zCollar + 1.05, 0.2).finish('stainless').translate(0, 0, drop.add(ex(95)));
 
 // --- Conical inner burr: fine-grind skirt + helical feed teeth ------------------

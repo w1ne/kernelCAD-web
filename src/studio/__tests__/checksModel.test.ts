@@ -51,12 +51,12 @@ describe('groupChecks', () => {
 });
 
 describe('actionableInterferences', () => {
-    it('keeps pairs above the cap that no validator diagnostic reports, largest first', () => {
+    it('keeps real overlaps that no validator diagnostic reports, largest first', () => {
         const pairs = actionableInterferences({
             ...base,
             interferenceSummary: { rawCount: 4, contactNoiseCount: 1, actionableCount: 3, capMm3: 20 },
             rawInterferencePairs: [
-                { a: 'pin', b: 'arm', volumeMm3: 5 },
+                { a: 'pin', b: 'arm', volumeMm3: 5, thicknessMm: 0.001 },
                 { a: 'lid', b: 'box', volumeMm3: 40 },
                 { a: 'gear', b: 'shaft', volumeMm3: 300 },
                 { a: 'b', b: 'a', volumeMm3: 90 },

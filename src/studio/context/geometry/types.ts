@@ -61,6 +61,7 @@ export interface ScriptReviewSummary {
         a: string;
         b: string;
         volumeMm3: number;
+        thicknessMm?: number | null;
     }>;
     interferenceSummary?: {
         rawCount: number;

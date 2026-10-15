@@ -968,8 +968,8 @@ studio dev server** (`npm run dev`; honors `VITE_PORT` / `PW_CDP_URL`).
 capture verifies the sampled poses for part interference at every keyframe time
 plus each segment midpoint (`--verify-every <n>` additionally samples every
 n-th frame time of the fps schedule). `verified: true` means verification ran
-AND every sampled pose was collision-free using the mechanism-validity 20 mm³
-threshold (touching ≠ interference; declared `solvedModel({ ignore })` pairs are
+AND every sampled pose was collision-free using the mechanism-validity interference rule (overlap > 0.01 mm³ and thicker than 0.01 mm; thinner is face contact)
+(touching ≠ interference; declared `solvedModel({ ignore })` pairs are
 honored). Each collision is a `{ tMs, a, b, volumeMm3 }` row with an
 `animation.collision` diagnostic naming the pair and time. `--no-verify` skips
 the gate and sets `verified: false` (`verify_skipped` on the MCP envelope) — do

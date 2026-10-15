@@ -18,6 +18,10 @@ const DEG = Math.PI / 180;
 
 function deg2rad(d: number): number { return d * DEG; }
 
+/** Rotation angle (rad) at or below which a decomposed rotation is identity:
+ *  far below any modelled motion, above rounding of a composed chain (~1e-15). */
+const IDENTITY_ROTATION_RAD = 1e-12;
+
 export class Transform {
   private readonly m: Float64Array;  // 16 elements, column-major
 
@@ -196,18 +200,20 @@ export class Transform {
       qy = (r12 + r21) / s;
       qz = 0.25 * s;
     }
-    // Quaternion -> axis-angle.
-    const angleRad = 2 * Math.acos(Math.min(1, Math.max(-1, qw)));
-    const sinHalf = Math.sqrt(1 - qw * qw);
-    let rotateAxis: Vec3;
-    let rotateDeg = angleRad / DEG;
-    if (sinHalf < 1e-9) {
+    // Quaternion -> axis-angle. The angle comes from atan2 of the vector
+    // part's norm against qw, never from sqrt(1 - qw²): near identity qw
+    // rounds to 1 ± 1 ulp, which gave a NaN or a non-zero sinHalf with a
+    // zero vector part (a zero-length axis that OCCT rejects). Near 180°
+    // the non-trace Shoemake branches keep the vector part accurate.
+    if (qw < 0) { qw = -qw; qx = -qx; qy = -qy; qz = -qz; }
+    const vecNorm = Math.hypot(qx, qy, qz);
+    const angleRad = 2 * Math.atan2(vecNorm, qw);
+    if (!(angleRad > IDENTITY_ROTATION_RAD)) {
       // Identity rotation (or numerical noise).
-      rotateAxis = [0, 0, 1];
-      rotateDeg = 0;
-    } else {
-      rotateAxis = [qx / sinHalf, qy / sinHalf, qz / sinHalf];
+      return { translate, rotateAxis: [0, 0, 1], rotateDeg: 0 };
     }
+    const rotateAxis: Vec3 = [qx / vecNorm, qy / vecNorm, qz / vecNorm];
+    const rotateDeg = angleRad / DEG;
     return { translate, rotateAxis, rotateDeg };
   }
 
