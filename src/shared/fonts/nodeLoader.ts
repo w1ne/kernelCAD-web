@@ -10,7 +10,7 @@ import { KernelError } from '../intent/kernelError';
 import type { DiagnosticCode } from '../diagnostics/registry';
 import { isFontPath, type FontPath } from './fontPath';
 
-let bundledLoaded = false;
+let bundledLoadPromise: Promise<void> | undefined;
 
 function bundledFontFilePath(): string {
   const here =
@@ -28,13 +28,21 @@ function bundledFontFilePath(): string {
 }
 
 export async function ensureBundledFontLoaded(): Promise<void> {
-  if (bundledLoaded) return;
-  const buf = readFileSync(bundledFontFilePath());
-  await loadFont(
-    buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength),
-    'default',
-  );
-  bundledLoaded = true;
+  if (bundledLoadPromise) return bundledLoadPromise;
+  const pending = (async () => {
+    const buf = readFileSync(bundledFontFilePath());
+    await loadFont(
+      buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength),
+      'default',
+    );
+  })();
+  bundledLoadPromise = pending;
+  try {
+    await pending;
+  } catch (error) {
+    if (bundledLoadPromise === pending) bundledLoadPromise = undefined;
+    throw error;
+  }
 }
 
 export async function resolveAndLoadFont(
@@ -51,7 +59,6 @@ export async function resolveAndLoadFont(
       ? font
       : resolve(scriptDir ?? process.cwd(), font);
     const base = basename(abs, extname(abs));
-    if (getFont(base)) return { fontFamily: base };
     const buf = readFileSync(abs);
     await loadFont(
       buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength),
@@ -72,5 +79,9 @@ export async function resolveAndLoadFont(
 }
 
 export function __resetFontStateForTests(): void {
-  bundledLoaded = false;
+  bundledLoadPromise = undefined;
+}
+
+export function __getBundledFontLoadPromiseForTests(): Promise<void> | undefined {
+  return bundledLoadPromise;
 }

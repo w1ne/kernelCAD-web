@@ -1,5 +1,6 @@
 // src/lib/fonts/index.test.ts
 import { describe, it, expect, beforeAll, beforeEach } from 'vitest';
+import * as replicad from 'replicad';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import {
   ensureBundledFontLoaded,
@@ -10,10 +11,22 @@ import {
 import { mkdirSync, copyFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
+import * as nodeFontLoader from '../../../src/shared/fonts/nodeLoader';
 
 describe('fonts: resolver + bundle loader', () => {
   beforeAll(async () => { await initOcct(); });
   beforeEach(() => { __resetFontStateForTests(); });
+
+  it('concurrent first calls wait for the same bundled font registration', async () => {
+    __resetFontStateForTests();
+    const first = nodeFontLoader.ensureBundledFontLoaded();
+    const inFlight = nodeFontLoader.__getBundledFontLoadPromiseForTests();
+    const second = nodeFontLoader.ensureBundledFontLoaded();
+    const sharedInFlight = nodeFontLoader.__getBundledFontLoadPromiseForTests();
+    expect(sharedInFlight).toBe(inFlight);
+    await Promise.all([first, second]);
+    expect(replicad.getFont('default')).toBeDefined();
+  });
 
   it('ensureBundledFontLoaded() registers the bundled font under "default"', async () => {
     await ensureBundledFontLoaded();
