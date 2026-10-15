@@ -92,6 +92,7 @@ const EXPECTED_TOOL_NAMES = [
   'ray_pick',
   'inspect_nurbs',
   'fit_plane',
+  'apply_surface_blend',
 ] as const;
 
 const PUBLIC_CONTRACT_FIXTURE = new URL(
@@ -367,8 +368,9 @@ describe('toolRegistry public contract', () => {
       'ray_pick',
       'inspect_nurbs',
       'fit_plane',
+      'apply_surface_blend',
     ]);
-    expect(TOOL_REGISTRY).toHaveLength(56);
+    expect(TOOL_REGISTRY).toHaveLength(57);
   });
 
   it('composes the user-file import family at the registry tail, with ChatGPT file params', () => {
@@ -401,6 +403,10 @@ describe('toolRegistry public contract', () => {
   it('dispatches plane fitting through the MCP registry', async () => {
     await expect(callMcpTool('fit_plane', { points: [[0, 0, 0], [1, 0, 0], [0, 1, 0]] }))
       .resolves.toMatchObject({ normal: [0, 0, 1], rms: 0 });
+  });
+
+  it('appends the surface blend authoring tool after the NURBS inspection family', () => {
+    expect(TOOL_REGISTRY.slice(55, 56).map(entry => entry.definition.name)).toEqual(['apply_surface_blend']);
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {

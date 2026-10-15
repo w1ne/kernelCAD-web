@@ -25,6 +25,7 @@ import { fabricationToolEntries } from './registry/fabricationTools';
 import { manufacturingToolEntries } from './registry/manufacturingTools';
 import { rayPickToolEntries } from './registry/rayPickTools';
 import { nurbsToolEntries } from './registry/nurbsTools';
+import { surfaceBlendToolEntries } from './registry/surfaceBlendTools';
 import { referenceExportToolEntries } from './registry/referenceExportTools';
 import { referenceLedgerToolEntries } from './registry/referenceLedgerTools';
 import { reviewPipelineToolEntries } from './registry/reviewPipelineTools';
@@ -103,6 +104,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...rayPickToolEntries,
   ...nurbsToolEntries,
   ...pointCloudToolEntries,
+  ...surfaceBlendToolEntries,
 ];
 
 /** Merge the central MCP metadata maps onto a definition: behavioral hints

@@ -142,6 +142,15 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
     required: ['ok', 'featureCount', 'diagnostics', 'sceneSummary'],
     additionalProperties: true,
   },
+  apply_surface_blend: {
+    type: 'object',
+    properties: {
+      ok: { type: 'boolean' }, new_code: { type: 'string' }, operation: { type: 'string', enum: ['fillet', 'chamfer'] },
+      selector: { description: 'Selector supplied for the authored blend, when present.' },
+      step: { type: 'object', additionalProperties: true }, sceneSummary: SCENE_SUMMARY_SCHEMA,
+      diagnostics: { type: 'array', items: { type: 'object', additionalProperties: true } }, error: { type: 'string' },
+    }, required: ['ok'], additionalProperties: true,
+  },
 
   diff_scripts: {
     type: 'object',
