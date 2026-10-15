@@ -130,9 +130,9 @@ export interface FromSTLOptions {
 
 /** Fast display-only STL import. Preserves every triangle without building BRep topology. */
 export async function meshFromSTL(ctx: FromFileContext, path: string): Promise<Shape> {
-  requirePath(path, 'fromSTL', '.stl');
+  requirePath(path, 'meshFromSTL', '.stl');
   const absPath = resolveScriptRelativePath(ctx.scriptDir, path);
-  const buf = await readOrThrow(absPath, path, 'fromSTL');
+  const buf = await readOrThrow(absPath, path, 'meshFromSTL');
   if (buf.byteLength > IMPORT_MAX_BYTES) {
     throw new KernelError(
       'feature.invalid-args',
