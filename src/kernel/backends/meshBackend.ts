@@ -17,6 +17,7 @@ export class MeshBackend implements ShapeBackend {
     this.indices = indices;
     this.normals = computeNormals(positions, indices);
   }
+  clone(): MeshBackend { return new MeshBackend(this.positions, this.indices); }
 
   private unsupported(operation: string): never {
     throw new Error(`Display mesh bodies do not support ${operation}; convert to BRep explicitly when solid operations are needed.`);
