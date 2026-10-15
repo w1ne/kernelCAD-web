@@ -16,6 +16,12 @@ describe('mesh interchange writers', () => {
     expect(text).toContain('f 1 2 3');
   });
 
+  it('sanitizes comment markers in OBJ object names', () => {
+    const text = new TextDecoder().decode(exportMeshObj([{ name: 'plate#v2', mesh: triangle }]));
+    expect(text).toContain('o plate_v2');
+    expect(text).not.toContain('o plate#v2');
+  });
+
   it('writes parseable USDA mesh topology and declares millimeter Z-up units', () => {
     const text = new TextDecoder().decode(exportMeshUsd([{ name: 'Plate', mesh: triangle }]));
     expect(text).toMatch(/^#usda 1\.0/);

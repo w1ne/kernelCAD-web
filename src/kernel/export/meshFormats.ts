@@ -71,7 +71,7 @@ function number(value: number): string {
 }
 
 function objName(name: string): string {
-  return name.trim().replace(/[\r\n]/g, ' ').replace(/\s+/g, '_') || 'Mesh';
+  return name.trim().replace(/[\r\n]/g, ' ').replace(/\s+/g, '_').replace(/#/g, '_') || 'Mesh';
 }
 
 function usdName(name: string): string {
