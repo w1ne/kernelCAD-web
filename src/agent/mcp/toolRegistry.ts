@@ -29,6 +29,7 @@ import { surfaceBlendToolEntries } from './registry/surfaceBlendTools';
 import { wireRoutingToolEntries } from './registry/wireRoutingTools';
 import { handoffToolEntries } from './registry/handoffTools';
 import { explodeViewToolEntries } from './registry/explodeViewTools';
+import { partModelToolEntries } from './registry/partModelTools';
 import { bomToolEntries } from './registry/bomTools';
 import { referenceExportToolEntries } from './registry/referenceExportTools';
 import { referenceLedgerToolEntries } from './registry/referenceLedgerTools';
@@ -114,6 +115,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...meshBooleanToolEntries,
   ...explodeViewToolEntries,
   ...surfaceBlendToolEntries,
+  ...partModelToolEntries,
   ...bomToolEntries,
 ];
 
