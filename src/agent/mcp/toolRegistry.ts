@@ -30,6 +30,7 @@ import { reviewPipelineToolEntries } from './registry/reviewPipelineTools';
 import { sketchAssemblyToolEntries } from './registry/sketchAssemblyTools';
 import { mechanismSimToolEntries } from './registry/mechanismSimTools';
 import { meshReconstructToolEntries } from './registry/meshReconstructTools';
+import { meshBooleanToolEntries } from './registry/meshBooleanTools';
 import { cookbookExecutionToolEntries } from './registry/cookbookExecutionTools';
 import type { McpToolDefinition, ToolRegistryEntry } from './registry/types';
 export { runClosedLoop } from '../loop/closedLoop.js';
@@ -101,6 +102,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...manufacturingToolEntries,
   ...rayPickToolEntries,
   ...nurbsToolEntries,
+  ...meshBooleanToolEntries,
 ];
 
 /** Merge the central MCP metadata maps onto a definition: behavioral hints

@@ -31,6 +31,8 @@ import { importToolEntries } from './registry/importTools';
 import { fabricationToolEntries } from './registry/fabricationTools';
 import { manufacturingToolEntries } from './registry/manufacturingTools';
 import { nurbsToolEntries } from './registry/nurbsTools';
+import { rayPickToolEntries } from './registry/rayPickTools';
+import { meshBooleanToolEntries } from './registry/meshBooleanTools';
 
 const EXPECTED_TOOL_NAMES = [
   'evaluate_script',
@@ -90,6 +92,7 @@ const EXPECTED_TOOL_NAMES = [
   'dfm_review',
   'ray_pick',
   'inspect_nurbs',
+  'mesh_boolean',
 ] as const;
 
 const PUBLIC_CONTRACT_FIXTURE = new URL(
@@ -364,8 +367,9 @@ describe('toolRegistry public contract', () => {
       'dfm_review',
       'ray_pick',
       'inspect_nurbs',
+      'mesh_boolean',
     ]);
-    expect(TOOL_REGISTRY).toHaveLength(55);
+    expect(TOOL_REGISTRY).toHaveLength(56);
   });
 
   it('composes the user-file import family at the registry tail, with ChatGPT file params', () => {
@@ -385,6 +389,13 @@ describe('toolRegistry public contract', () => {
     expect(TOOL_REGISTRY.slice(53, 54).map(entry => entry.definition.name)).toEqual(['ray_pick']);
     expect(nurbsToolEntries.map(entry => entry.definition.name)).toEqual(['inspect_nurbs']);
     expect(TOOL_REGISTRY.slice(54, 55)).toEqual(nurbsToolEntries);
+    expect(TOOL_REGISTRY.slice(53, 54)).toEqual(rayPickToolEntries);
+  });
+
+  it('appends the mesh boolean tool after the existing registry families', async () => {
+    expect(meshBooleanToolEntries.map(entry => entry.definition.name)).toEqual(['mesh_boolean']);
+    expect(TOOL_REGISTRY.slice(55, 56)).toEqual(meshBooleanToolEntries);
+    await expect(callMcpTool('mesh_boolean', { operation: 'bad' })).resolves.toMatchObject({ ok: false });
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {

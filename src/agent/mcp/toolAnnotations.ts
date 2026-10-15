@@ -71,6 +71,7 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   diff_geometry: READ_MAY_WRITE_ARTIFACTS,
   // Reads a mesh; writes the emitted script + ledger only when { out } is given.
   mesh_to_features: READ_MAY_WRITE_ARTIFACTS,
+  mesh_boolean: AUTHOR,
 
   // Read — but may fetch from a remote parts catalog (KERNELCAD_PARTS_BASE_URL).
   find_part: READ_REMOTE,
@@ -134,4 +135,5 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   dfm_review: READ,
   ray_pick: READ,
   inspect_nurbs: READ,
+  inspect_assembly: READ,
 };
