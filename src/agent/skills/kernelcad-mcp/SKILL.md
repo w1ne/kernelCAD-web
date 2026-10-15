@@ -464,6 +464,10 @@ See `cookbook/snippets/Q-S6-inspect-first-build-after.kcad.ts`.
 
 ### G-code export receipts
 
+### NURBS inspection
+
+`inspect_nurbs({ file|code, feature_id? })` reads authored NURBS curve data captured from a `nurbsCurve`/`spline3d` feature, including degree, knots, multiplicities, poles, weights, and parameter range. It does not extract exact B-rep edge or face NURBS surfaces.
+
 ### Ray picking
 
 `ray_pick({ file|code, origin, direction, studio_url, session, feature_id? })`

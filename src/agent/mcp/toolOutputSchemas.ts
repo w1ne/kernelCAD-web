@@ -28,6 +28,7 @@ import { MESH_RECONSTRUCT_OUTPUT_SCHEMAS } from './registry/meshReconstructTools
 import { IMPORT_OUTPUT_SCHEMAS } from './registry/importTools.outputSchemas';
 import { FABRICATION_OUTPUT_SCHEMAS } from './registry/fabricationTools.outputSchemas';
 import { MANUFACTURING_OUTPUT_SCHEMAS } from './registry/manufacturingTools.outputSchemas';
+import { NURBS_OUTPUT_SCHEMAS } from './registry/nurbsTools.outputSchemas';
 
 export type { JSONSchemaObject } from './toolOutputSchemaParts';
 import { SELECTION, SOURCE_EDIT, TUBE_JOINT, type JSONSchemaObject } from './toolOutputSchemaParts';
@@ -812,4 +813,5 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
   ...IMPORT_OUTPUT_SCHEMAS,
   ...FABRICATION_OUTPUT_SCHEMAS,
   ...MANUFACTURING_OUTPUT_SCHEMAS,
+  ...NURBS_OUTPUT_SCHEMAS,
 };

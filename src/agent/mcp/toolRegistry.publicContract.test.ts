@@ -30,6 +30,7 @@ import { cookbookExecutionToolEntries } from './registry/cookbookExecutionTools'
 import { importToolEntries } from './registry/importTools';
 import { fabricationToolEntries } from './registry/fabricationTools';
 import { manufacturingToolEntries } from './registry/manufacturingTools';
+import { nurbsToolEntries } from './registry/nurbsTools';
 
 const EXPECTED_TOOL_NAMES = [
   'evaluate_script',
@@ -88,6 +89,7 @@ const EXPECTED_TOOL_NAMES = [
   'fab_pack',
   'dfm_review',
   'ray_pick',
+  'inspect_nurbs',
 ] as const;
 
 const PUBLIC_CONTRACT_FIXTURE = new URL(
@@ -361,8 +363,9 @@ describe('toolRegistry public contract', () => {
       'fab_pack',
       'dfm_review',
       'ray_pick',
+      'inspect_nurbs',
     ]);
-    expect(TOOL_REGISTRY).toHaveLength(54);
+    expect(TOOL_REGISTRY).toHaveLength(55);
   });
 
   it('composes the user-file import family at the registry tail, with ChatGPT file params', () => {
@@ -378,8 +381,10 @@ describe('toolRegistry public contract', () => {
     expect(manufacturingToolEntries.map(entry => entry.definition.name)).toEqual(['dfm_review']);
     expect(TOOL_REGISTRY.slice(52, 53)).toEqual(manufacturingToolEntries);
   });
-  it('composes ray picking at the registry tail', () => {
-    expect(TOOL_REGISTRY.at(-1)?.definition.name).toBe('ray_pick');
+  it('composes ray picking before the NURBS inspection family at the registry tail', () => {
+    expect(TOOL_REGISTRY.slice(53, 54).map(entry => entry.definition.name)).toEqual(['ray_pick']);
+    expect(nurbsToolEntries.map(entry => entry.definition.name)).toEqual(['inspect_nurbs']);
+    expect(TOOL_REGISTRY.slice(54, 55)).toEqual(nurbsToolEntries);
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {

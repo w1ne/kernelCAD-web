@@ -133,4 +133,5 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   // Evaluates the script in-process and reports; writes nothing.
   dfm_review: READ,
   ray_pick: READ,
+  inspect_nurbs: READ,
 };
