@@ -1,6 +1,6 @@
 ROBOTO 01 (RP1) mesh attribution and license notice
 
-Copyright RoboParty. The 25 STL visual meshes in this directory are derived from the RoboParty
+Copyright RoboParty. The 25 STL visual meshes in this directory are the original full-detail files from the RoboParty
 RP1_description repository, specifically urdf/rp1_24dof.urdf and its referenced
 meshes, pinned at commit
 84529a55649b5c9796d49093c266208c879f9f29:

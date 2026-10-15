@@ -1,5 +1,5 @@
 // RoboParty ROBOTO 01 (RP1), authored from the official 24-DoF URDF.
-// The 25 derived URDF visual STLs are bundled under roboto-01/meshes; see its NOTICE and MESH-SOURCES.txt.
+// The 25 full-detail URDF visual STLs are bundled under roboto-01/meshes; see its NOTICE and MESH-SOURCES.txt.
 // Each mesh uses the URDF visual origin (identity); link frames are placed at
 // the accumulated URDF joint origins, matching the parent/child chain.
 // Source: https://github.com/Roboparty/RP1_description @ 84529a55649b5c9796d49093c266208c879f9f29
@@ -88,6 +88,17 @@ function about(axis: 0 | 1 | 2, deg: number): Mat3 {
   return [[c, -s, 0], [s, c, 0], [0, 0, 1]];
 }
 function rpyMatrix(rpy: V3): Mat3 { return mul(about(2, rpy[2]), mul(about(1, rpy[1]), about(0, rpy[0]))); }
+function axisTurn(axis: V3, deg: number): Mat3 {
+  const len = Math.hypot(axis[0], axis[1], axis[2]);
+  if (len === 0 || deg === 0) return IDENTITY;
+  const [x, y, z] = axis.map((v) => v / len) as V3;
+  const a = deg * Math.PI / 180, c = Math.cos(a), s = Math.sin(a), t = 1 - c;
+  return [
+    [t*x*x+c, t*x*y-s*z, t*x*z+s*y],
+    [t*x*y+s*z, t*y*y+c, t*y*z-s*x],
+    [t*x*z-s*y, t*y*z+s*x, t*z*z+c],
+  ];
+}
 function toWorld(frame: Frame, v: V3): V3 {
   const r = turn(frame.rot, v);
   return [frame.at[0] + r[0], frame.at[1] + r[1], frame.at[2] + r[2]];
@@ -116,7 +127,10 @@ const refs: Record<string, ReturnType<typeof rp1.part>> = {
 };
 for (const j of joints) {
   const parentFrame = frames[j.parent];
-  const childFrame: Frame = { rot: mul(parentFrame.rot, rpyMatrix([0, 0, 0])), at: toWorld(parentFrame, j.xyz) };
+  const childFrame: Frame = {
+    rot: mul(parentFrame.rot, mul(rpyMatrix([0, 0, 0]), axisTurn(j.axis, typeof j.pose === 'number' ? j.pose : 0))),
+    at: toWorld(parentFrame, j.xyz),
+  };
   frames[j.child] = childFrame;
   refs[j.child] = rp1.part(j.child, await loadLink(j.child, childFrame));
   // The child frame is anchored at the parent joint origin: the parent

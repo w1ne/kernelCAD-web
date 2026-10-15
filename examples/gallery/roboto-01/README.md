@@ -1,11 +1,11 @@
 # RoboParty ROBOTO 01 (RP1) — 24-DoF kinematic assembly
 
 This kernelCAD assembly follows RoboParty's `urdf/rp1_24dof.urdf`: 25 named
-links and 24 revolute joints across the biped legs, waist and two arms. The 25
-URDF-referenced visual STLs are bundled in `meshes/` as quadric-decimated
-derivatives capped at 2,500 faces per link; each import is below the 50 MB
-per-import limit (about 3 MB total). `MESH-SOURCES.txt` records source and
-bundled hashes, and `tools/decimate_meshes.py` reproduces the conversion. URDF visual origins are identity, and
+links and 24 revolute joints across the biped legs, waist and two arms. The 25 URDF-referenced visual STLs are bundled in `meshes/` as byte-for-byte
+copies of the full-detail upstream files. Each of the 25 imported files is below the 50 MiB per-import limit
+(`IMPORT_MAX_BYTES`); they total 65,154,800 bytes (62.1 MiB). The upstream
+mesh directory has 31 files totaling 82,935,004 bytes (79.1 MiB). `MESH-SOURCES.txt` records source and bundled hashes. URDF visual
+origins are identity, and
 each link mesh is placed at its accumulated URDF link frame. The source STLs
 sew as open shells, so imports explicitly allow open meshes for visualization;
 volume and boolean behavior are therefore not asserted. Joint translations
