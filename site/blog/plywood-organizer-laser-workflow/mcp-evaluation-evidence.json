@@ -1,0 +1,66 @@
+{
+  "ok": true,
+  "viewerMode": "hosted",
+  "viewerHint": "Use open_in_studio to view this model in hosted Studio.",
+  "step": {
+    "validity": {
+      "status": "valid",
+      "checks": [
+        "build",
+        "feature-health",
+        "finite-geometry"
+      ],
+      "volume": 256800
+    },
+    "snapshots": {
+      "status": "unavailable",
+      "frame": {
+        "view": "iso",
+        "width": 512,
+        "height": 512,
+        "bounds": {
+          "min": [
+            0,
+            0,
+            0
+          ],
+          "max": [
+            150,
+            100,
+            46
+          ]
+        }
+      },
+      "out_dir": "/tmp/kernelcad-step-S4zAW7",
+      "error": "Step snapshots require an existing browser attachment (PW_CDP_URL)."
+    }
+  },
+  "sceneSummary": {
+    "valid": true,
+    "volume": 256800,
+    "faceCount": 50,
+    "size": [
+      150,
+      100,
+      46
+    ]
+  },
+  "featureCount": 19,
+  "diagnostics": [],
+  "featureHealth": [],
+  "ports": [],
+  "parts": {
+    "count": 7,
+    "names": [
+      "base",
+      "front",
+      "back",
+      "left",
+      "right",
+      "long-divider",
+      "short-divider"
+    ]
+  },
+  "mechanism": "real",
+  "serverBuild": "0.1.0+a7ae337f7498@2026-10-14T23:20:40.540Z"
+}
