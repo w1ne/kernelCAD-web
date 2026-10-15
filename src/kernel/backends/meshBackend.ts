@@ -83,75 +83,100 @@ function computeNormals(p: Float32Array, ix: Uint32Array): Float32Array {
 /** Pure STL decoder. STL repeats vertices per triangle; exact-bit welding builds the display index. */
 export function decodeStlMesh(bytes: Uint8Array): { positions: Float32Array; indices: Uint32Array } {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-  const binaryCount = bytes.byteLength >= 84 ? view.getUint32(80, true) : 0;
-  const binaryFits = bytes.byteLength >= 84 && 84 + binaryCount * 50 <= bytes.byteLength;
+  const binaryCount = binaryStlTriangleCount(bytes, view);
+  if (binaryCount !== undefined) {
+    const builder = new IndexedMeshBuilder(binaryCount);
+    for (let i = 0, o = 84; i < binaryCount; i++, o += 50) {
+      for (let j = 0; j < 3; j++) {
+        const at = o + 12 + j * 12;
+        builder.addVertex(view.getFloat32(at, true), view.getFloat32(at + 4, true), view.getFloat32(at + 8, true));
+      }
+    }
+    return builder.finish();
+  }
+  return decodeAsciiStlMesh(new TextDecoder().decode(bytes));
+}
+
+/** Triangle count when `bytes` is a well-formed binary STL; undefined for ASCII. */
+function binaryStlTriangleCount(bytes: Uint8Array, view: DataView): number | undefined {
+  if (bytes.byteLength < 84) return undefined;
+  const count = view.getUint32(80, true);
+  if (84 + count * 50 > bytes.byteLength) return undefined;
   const header = new TextDecoder().decode(bytes.subarray(0, Math.min(bytes.length, 512)));
   const ascii = /^solid\s/i.test(header) && /\bfacet\s+normal\b/i.test(header);
-  const isBinary = binaryFits && !ascii;
-  let triangleCount: number;
-  let text = '';
-  let vertexPattern: RegExp;
-  if (isBinary) {
-    triangleCount = binaryCount;
-  } else {
-    text = new TextDecoder().decode(bytes);
-    if (!/^solid\s/i.test(text) || !/\bfacet\s+normal\b/i.test(text)) {
-      throw new Error('Malformed STL: expected a valid binary record stream or ASCII solid with facets.');
-    }
-    vertexPattern = /\bvertex\s+([-+\d.eE]+)\s+([-+\d.eE]+)\s+([-+\d.eE]+)/gi;
-    const vertices = text.match(/\bvertex\s+/gi)?.length ?? 0;
-    if (vertices === 0 || vertices % 3 !== 0) throw new Error('Malformed ASCII STL: facets must contain exactly three vertices.');
-    triangleCount = vertices / 3;
+  return ascii ? undefined : count;
+}
+
+function decodeAsciiStlMesh(text: string): { positions: Float32Array; indices: Uint32Array } {
+  if (!/^solid\s/i.test(text) || !/\bfacet\s+normal\b/i.test(text)) {
+    throw new Error('Malformed STL: expected a valid binary record stream or ASCII solid with facets.');
+  }
+  const vertices = text.match(/\bvertex\s+/gi)?.length ?? 0;
+  if (vertices === 0 || vertices % 3 !== 0) throw new Error('Malformed ASCII STL: facets must contain exactly three vertices.');
+  const triangleCount = vertices / 3;
+  const builder = new IndexedMeshBuilder(triangleCount);
+  const vertexPattern = /\bvertex\s+([-+\d.eE]+)\s+([-+\d.eE]+)\s+([-+\d.eE]+)/gi;
+  let match: RegExpExecArray | null;
+  let seen = 0;
+  while ((match = vertexPattern.exec(text)) !== null) {
+    builder.addVertex(Number(match[1]), Number(match[2]), Number(match[3]));
+    seen++;
+  }
+  if (seen !== triangleCount * 3) throw new Error('Malformed ASCII STL: could not decode all facet vertices.');
+  return builder.finish();
+}
+
+/** Welds STL triangle-soup vertices into indexed buffers. Numeric hash chains
+ *  avoid allocating a string key or JS array per STL vertex. Collisions are
+ *  resolved against the stored Float32 coordinates. */
+class IndexedMeshBuilder {
+  private readonly positions: Float32Array;
+  private readonly indices: Uint32Array;
+  private readonly hashHeads = new Map<number, number>();
+  private readonly chainNext: Int32Array;
+  private positionCount = 0;
+  private indexCount = 0;
+
+  constructor(triangleCount: number) {
+    this.positions = new Float32Array(triangleCount * 9);
+    this.indices = new Uint32Array(triangleCount * 3);
+    this.chainNext = new Int32Array(triangleCount * 3);
   }
 
-  const positions = new Float32Array(triangleCount * 9);
-  const indices = new Uint32Array(triangleCount * 3);
-  // Numeric hash chains avoid allocating a string key or JS array per STL
-  // vertex. Collisions are resolved against the stored Float32 coordinates.
-  const hashHeads = new Map<number, number>();
-  const chainNext = new Int32Array(triangleCount * 3);
-  let positionCount = 0;
-  let indexCount = 0;
-  const addVertex = (x: number, y: number, z: number): void => {
+  addVertex(x: number, y: number, z: number): void {
     if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(z)) {
       throw new Error('STL contains non-finite vertex coordinates.');
     }
     const fx = Math.fround(x), fy = Math.fround(y), fz = Math.fround(z);
     const hash = coordinateHash(fx, fy, fz);
-    let index = hashHeads.get(hash);
+    const existing = this.find(hash, fx, fy, fz);
+    if (existing !== undefined) {
+      this.indices[this.indexCount++] = existing;
+      return;
+    }
+    const index = this.positionCount++;
+    const offset = index * 3;
+    this.positions[offset] = fx; this.positions[offset + 1] = fy; this.positions[offset + 2] = fz;
+    this.chainNext[index] = this.hashHeads.get(hash) ?? -1;
+    this.hashHeads.set(hash, index);
+    this.indices[this.indexCount++] = index;
+  }
+
+  private find(hash: number, fx: number, fy: number, fz: number): number | undefined {
+    let index = this.hashHeads.get(hash);
     while (index !== undefined) {
       const offset = index * 3;
-      if (positions[offset] === fx && positions[offset + 1] === fy && positions[offset + 2] === fz) {
-        indices[indexCount++] = index;
-        return;
-      }
-      index = chainNext[index]! < 0 ? undefined : chainNext[index]!;
+      const p = this.positions;
+      if (p[offset] === fx && p[offset + 1] === fy && p[offset + 2] === fz) return index;
+      const next = this.chainNext[index]!;
+      index = next < 0 ? undefined : next;
     }
-    index = positionCount++;
-    const offset = index * 3;
-    positions[offset] = fx; positions[offset + 1] = fy; positions[offset + 2] = fz;
-    chainNext[index] = hashHeads.get(hash) ?? -1;
-    hashHeads.set(hash, index);
-    indices[indexCount++] = index;
-  };
-
-  if (isBinary) {
-    for (let i = 0, o = 84; i < triangleCount; i++, o += 50) {
-      for (let j = 0; j < 3; j++) {
-        const at = o + 12 + j * 12;
-        addVertex(view.getFloat32(at, true), view.getFloat32(at + 4, true), view.getFloat32(at + 8, true));
-      }
-    }
-  } else {
-    let match: RegExpExecArray | null;
-    let seen = 0;
-    while ((match = vertexPattern!.exec(text)) !== null) {
-      addVertex(Number(match[1]), Number(match[2]), Number(match[3]));
-      seen++;
-    }
-    if (seen !== triangleCount * 3) throw new Error('Malformed ASCII STL: could not decode all facet vertices.');
+    return undefined;
   }
-  return { positions: positions.slice(0, positionCount * 3), indices };
+
+  finish(): { positions: Float32Array; indices: Uint32Array } {
+    return { positions: this.positions.slice(0, this.positionCount * 3), indices: this.indices };
+  }
 }
 
 const hashScratch = new ArrayBuffer(12);

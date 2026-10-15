@@ -131,6 +131,24 @@ function memoSet(a: object, b: object, key: string, vol: OverlapMetrics): void {
   byPose.set(key, vol);
 }
 
+/** Pairs involving a non-BRep (display mesh) part: exact intersection needs
+ *  BRep, so these are reported as unchecked instead of silently skipped. */
+function listDisplayMeshPairs(
+  parts: ReadonlyArray<{ readonly name: string; readonly shape: unknown }>,
+): CheckInterferenceResult['uncheckedPairs'] {
+  const pairs: CheckInterferenceResult['uncheckedPairs'] = [];
+  for (let i = 0; i < parts.length; i++) {
+    for (let j = i + 1; j < parts.length; j++) {
+      const a = parts[i]!;
+      const b = parts[j]!;
+      if (!(a.shape instanceof OcctBackend) || !(b.shape instanceof OcctBackend)) {
+        pairs.push({ a: a.name, b: b.name, reason: 'display-mesh' });
+      }
+    }
+  }
+  return pairs;
+}
+
 export function detectInterferences(
   scene: SceneBackend,
   epsilonMm3: number,
@@ -141,16 +159,7 @@ export function detectInterferences(
   // pattern the STEP exporter uses (`exportSceneToSTEPAsync`) — replicad's
   // translate / rotate mutate-and-destroy the source OCCT handle, so we
   // never touch the originals.
-  const uncheckedPairs: CheckInterferenceResult['uncheckedPairs'] = [];
-  for (let i = 0; i < scene.parts.length; i++) {
-    for (let j = i + 1; j < scene.parts.length; j++) {
-      const a = scene.parts[i]!;
-      const b = scene.parts[j]!;
-      if (!(a.shape instanceof OcctBackend) || !(b.shape instanceof OcctBackend)) {
-        uncheckedPairs.push({ a: a.name, b: b.name, reason: 'display-mesh' });
-      }
-    }
-  }
+  const uncheckedPairs = listDisplayMeshPairs(scene.parts);
   const transformed = scene.parts.filter((p) => p.shape instanceof OcctBackend).map((p) => {
     const clone = (p.shape as OcctBackend).clone().applyTransform(p.worldTransform);
     return {

@@ -12,6 +12,27 @@ export type { RenderView };
 
 export const KCAD_FEATURE_GROUP_KEY = 'kCadFeatureGroup';
 
+/** Display-only mesh body (lib.meshFromSTL): one indexed BufferGeometry, no
+ *  per-face split. Starts transparent so the reveal animation fades it in. */
+export function buildIndexedDisplayMesh(
+  featureId: string,
+  indexed: { positions: ArrayLike<number>; normals: ArrayLike<number>; indices: ArrayLike<number> },
+  material: THREE.Material,
+): THREE.Mesh {
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(indexed.positions), 3));
+  geometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(indexed.normals), 3));
+  geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(indexed.indices), 1));
+  geometry.computeBoundingSphere();
+  material.transparent = true;
+  material.opacity = 0;
+  material.side = THREE.DoubleSide;
+  (material as THREE.MeshPhysicalMaterial).flatShading = false;
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.name = `${featureId}-indexed-mesh`;
+  return mesh;
+}
+
 export interface DemoPlayerObjectFilter {
   mode: 'focus' | 'hide';
   patterns: string[];

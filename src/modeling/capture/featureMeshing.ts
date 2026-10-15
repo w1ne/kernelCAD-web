@@ -1011,6 +1011,32 @@ function linkFieldsOf(
   };
 }
 
+/** Display-only mesh bodies skip OCCT meshing: emit their indexed buffer directly. */
+function emitDisplayMeshFeature(event: FeatureEvent, shape: MeshBackend, ctx: MeshFeatureEventContext): void {
+  const runtimeMesh = shape.getMesh();
+  const positions = runtimeMesh.positions;
+  const faces: FaceGeometry[] = [];
+  const color = ctx.colorByFeatureId.get(event.featureId);
+  const material = ctx.materialByFeatureId.get(event.featureId);
+  const emitted: FeatureMesh = {
+    featureId: event.featureId,
+    featureKind: event.featureKind,
+    predecessors: meshPredecessors(event),
+    faces,
+    mesh: runtimeMesh,
+    ...meshIdentityFields({
+      featureId: event.featureId,
+      featureKind: event.featureKind,
+      sourceMetadataName: metadataNameOf(ctx.recordById.get(event.featureId)),
+    }),
+    ...(color ? { color } : {}),
+    ...(material ? { material } : {}),
+  };
+  ctx.emitFeature(emitted);
+  ctx.cachedFeatureMeshes?.set(event.featureId, emitted);
+  accumulateIndexedMeshBounds(ctx.meshBounds, positions);
+}
+
 function handleMeshFeatureEvent(event: FeatureEvent, ctx: MeshFeatureEventContext): void {
   if (event.kind === 'feature.failed') {
     ctx.failedFeatureIds.push(event.featureId);
@@ -1060,28 +1086,7 @@ function handleMeshFeatureEvent(event: FeatureEvent, ctx: MeshFeatureEventContex
     return;
   }
   if (event.shape instanceof MeshBackend) {
-    const runtimeMesh = event.shape.getMesh();
-    const positions = runtimeMesh.positions;
-    const faces: FaceGeometry[] = [];
-    const color = ctx.colorByFeatureId.get(event.featureId);
-    const material = ctx.materialByFeatureId.get(event.featureId);
-    const emitted: FeatureMesh = {
-      featureId: event.featureId,
-      featureKind: event.featureKind,
-      predecessors: meshPredecessors(event),
-      faces,
-      mesh: runtimeMesh,
-      ...meshIdentityFields({
-        featureId: event.featureId,
-        featureKind: event.featureKind,
-        sourceMetadataName: metadataNameOf(ctx.recordById.get(event.featureId)),
-      }),
-      ...(color ? { color } : {}),
-      ...(material ? { material } : {}),
-    };
-    ctx.emitFeature(emitted);
-    ctx.cachedFeatureMeshes?.set(event.featureId, emitted);
-    accumulateIndexedMeshBounds(ctx.meshBounds, positions);
+    emitDisplayMeshFeature(event, event.shape, ctx);
     return;
   }
   const rawShape = extractRawShape(event.shape);

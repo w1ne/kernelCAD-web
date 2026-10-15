@@ -101,6 +101,13 @@ function bufferGeometryFromIndexed(mesh: NonNullable<GeometryResult['mesh']>): T
     return geometry;
 }
 
+/** Owned BufferGeometry for a display-only indexed mesh; disposed on change/unmount. */
+function useIndexedMeshGeometry(mesh: GeometryResult['mesh']): THREE.BufferGeometry | null {
+    const indexed = useMemo(() => (mesh ? bufferGeometryFromIndexed(mesh) : null), [mesh]);
+    useEffect(() => () => indexed?.dispose(), [indexed]);
+    return indexed;
+}
+
 export function FaceSelectionOverlay({ face, isSelected }: { face?: FaceGeometry, isSelected: boolean }) {
     const geometry = useMemo(() => {
         if (!face) return null;
@@ -160,11 +167,7 @@ export function ConsolidatedShape({
 
     const { setContextMenu } = useUI();
 
-    const indexedMesh = useMemo(() => {
-        if (!geometry.mesh) return null;
-        return bufferGeometryFromIndexed(geometry.mesh);
-    }, [geometry.mesh]);
-    useEffect(() => () => indexedMesh?.dispose(), [indexedMesh]);
+    const indexedMesh = useIndexedMeshGeometry(geometry.mesh);
     const { geometry: mergedGeometry, faceMap } = useConsolidatedGeometry(geometry.faces);
     const displayGeometry = indexedMesh ?? mergedGeometry;
     const transformMatrix = useMemo(() => matrixFromGeometryTransform(geometry), [geometry]);

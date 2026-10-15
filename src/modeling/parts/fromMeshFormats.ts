@@ -24,6 +24,7 @@ import { importStlBytes, StlParseError } from '../../kernel/backends/occt/import
 import { Shape } from '../capture/proxy';
 import { MeshBackend, decodeStlMesh } from '../../kernel/backends/meshBackend';
 import { KernelError } from '../../shared/intent/kernelError';
+import { invalidArgs } from '../../shared/intent/invalidArgs';
 import type { FromSTEPContext } from './fromSTEP';
 
 const IMPORT_MAX_BYTES = 50 * 1024 * 1024;
@@ -134,12 +135,14 @@ export async function meshFromSTL(ctx: FromFileContext, path: string): Promise<S
   const absPath = resolveScriptRelativePath(ctx.scriptDir, path);
   const buf = await readOrThrow(absPath, path, 'meshFromSTL');
   if (buf.byteLength > IMPORT_MAX_BYTES) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `lib.meshFromSTL: ${absPath} is ${buf.byteLength} bytes; the per-file limit is 50 MiB.`,
-      undefined,
-      'invalid-args.lib.meshFromSTL.file-too-large — provide an STL file no larger than 50 MiB.',
-    );
+    invalidArgs({
+      api: 'lib.meshFromSTL(path)',
+      path: 'path',
+      gotText: `${absPath} (${buf.byteLength} bytes)`,
+      requires: 'an STL file no larger than 50 MiB (the per-file limit is 50 MiB)',
+      example: "lib.meshFromSTL('./parts/bracket.stl')",
+      hintSlug: 'invalid-args.lib.meshFromSTL.file-too-large',
+    });
   }
   let mesh: ReturnType<typeof decodeStlMesh>;
   try { mesh = decodeStlMesh(buf); }

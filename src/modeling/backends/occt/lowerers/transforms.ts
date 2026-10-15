@@ -16,6 +16,17 @@ import { absurdGeometryDiagnostic } from '../featureSanity';
  * lowering; terminal outcomes (virtual records, SceneBackends, error fallbacks)
  * never reach it.
  */
+/** Rigid/scale transforms on a display-only mesh body (no face history). */
+function applyMeshTransform(shape: MeshBackend, t: FeatureRecord['transforms'][number]): ShapeBackend {
+  switch (t.op) {
+    case 'translate': return shape.translate(t.vec.x.evaluated, t.vec.y.evaluated, t.vec.z.evaluated);
+    case 'rotateAxis': return shape.rotate([t.axis.x.evaluated, t.axis.y.evaluated, t.axis.z.evaluated], t.degrees.evaluated, t.pivot ? [t.pivot.x.evaluated, t.pivot.y.evaluated, t.pivot.z.evaluated] : undefined);
+    case 'scale': return shape.scale([t.sx, t.sy, t.sz]);
+    case 'reflect': throw new Error('Display mesh bodies do not support reflect; convert to BRep explicitly when solid operations are needed.');
+  }
+  return shape;
+}
+
 export function applyTransforms(
   ctx: LowerContext,
   input: ShapeBackend,
@@ -24,12 +35,7 @@ export function applyTransforms(
   let shape = input;
   for (const t of r.transforms) {
     if (shape instanceof MeshBackend) {
-      switch (t.op) {
-        case 'translate': shape = shape.translate(t.vec.x.evaluated, t.vec.y.evaluated, t.vec.z.evaluated); break;
-        case 'rotateAxis': shape = shape.rotate([t.axis.x.evaluated, t.axis.y.evaluated, t.axis.z.evaluated], t.degrees.evaluated, t.pivot ? [t.pivot.x.evaluated, t.pivot.y.evaluated, t.pivot.z.evaluated] : undefined); break;
-        case 'scale': shape = shape.scale([t.sx, t.sy, t.sz]); break;
-        case 'reflect': throw new Error('Display mesh bodies do not support reflect; convert to BRep explicitly when solid operations are needed.');
-      }
+      shape = applyMeshTransform(shape, t);
       continue;
     }
     const inputBackend = shape as OcctBackend;

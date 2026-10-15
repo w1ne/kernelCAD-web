@@ -15,6 +15,7 @@ import { applyVariableEdgeFeature } from './lowerers/edgeFeatures';
 import { normalizeAxis } from './lowerers/helpers';
 import { finishLowering } from './lowerers/transforms';
 import { MeshBackend } from '../../../kernel/backends/meshBackend';
+import { invalidArgsText } from '../../../shared/intent/invalidArgs';
 
 // `normalizeAxis` and `applyVariableEdgeFeature` moved into lowerers/;
 // re-exported here so the public import path stays
@@ -121,8 +122,14 @@ export class OcctLowerer implements FeatureLowerer {
           code: 'feature.invalid-args',
           featureId: r.id,
           severity: 'error',
-          message: `Feature '${r.kind}' requires BRep geometry; display mesh bodies do not expose solid topology.`,
-          hint: 'Convert the display mesh to a BRep explicitly before using this solid operation.',
+          ...invalidArgsText({
+            api: `${r.kind}(...)`,
+            path: 'inputs',
+            gotText: 'a display mesh body (lib.meshFromSTL)',
+            requires: 'BRep geometry; display mesh bodies do not expose solid topology',
+            example: "lib.fromSTL('part.stl') — the BRep import — when a solid operation is needed",
+            hint: 'Convert the display mesh to a BRep explicitly before using this solid operation, e.g. import it with lib.fromSTL instead of lib.meshFromSTL.',
+          }),
         }],
       };
     }

@@ -83,6 +83,16 @@ function copyLinkFields(m: LinkFields): LinkFields {
   };
 }
 
+function serializeIndexedMesh(mesh: FeatureMesh['mesh']): Pick<FeatureMeshSerialized, 'mesh'> {
+  if (!mesh) return {};
+  return { mesh: { positions: Array.from(mesh.positions), normals: Array.from(mesh.normals), indices: Array.from(mesh.indices) } };
+}
+
+function rehydrateIndexedMesh(mesh: FeatureMeshSerialized['mesh']): Pick<FeatureMesh, 'mesh'> {
+  if (!mesh) return {};
+  return { mesh: { positions: new Float32Array(mesh.positions), normals: new Float32Array(mesh.normals), indices: new Uint32Array(mesh.indices) } };
+}
+
 export function serializeForBridge(m: FeatureMesh): FeatureMeshSerialized {
   return {
     featureId: m.featureId,
@@ -98,7 +108,7 @@ export function serializeForBridge(m: FeatureMesh): FeatureMeshSerialized {
       plane: f.plane,
       cylinder: f.cylinder,
     })),
-    ...(m.mesh ? { mesh: { positions: Array.from(m.mesh.positions), normals: Array.from(m.mesh.normals), indices: Array.from(m.mesh.indices) } } : {}),
+    ...serializeIndexedMesh(m.mesh),
     volume: m.volume,
     edges: m.edges ? Array.from(m.edges) : undefined,
     ...(m.color !== undefined ? { color: m.color } : {}),
@@ -133,7 +143,7 @@ export function rehydrateFromBridge(s: FeatureMeshSerialized): FeatureMesh {
       plane: f.plane,
       cylinder: f.cylinder,
     })),
-    ...(s.mesh ? { mesh: { positions: new Float32Array(s.mesh.positions), normals: new Float32Array(s.mesh.normals), indices: new Uint32Array(s.mesh.indices) } } : {}),
+    ...rehydrateIndexedMesh(s.mesh),
     volume: s.volume,
     edges: s.edges ? new Float32Array(s.edges) : undefined,
     ...(s.color !== undefined ? { color: s.color } : {}),
