@@ -9212,5 +9212,82 @@
       ],
       "additionalProperties": true
     }
+  },
+  {
+    "name": "fit_plane",
+    "description": "Use this when you need to fit an orthogonal least-squares plane to XYZ point-cloud data. Returns centroid, deterministic unit normal, signed point residuals, RMS residual and maximum absolute residual. Accepts points already parsed by the caller from scan data or mesh vertices. Computes parameters only; it does not create a surface body. Requires at least three non-collinear finite points.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "points": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 100000,
+          "items": {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "items": {
+              "type": "number"
+            }
+          },
+          "description": "Point cloud as [x, y, z] coordinate triples in model units."
+        }
+      },
+      "required": [
+        "points"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean",
+          "description": "Present and true when a plane fit succeeds; false when input validation or fitting fails."
+        },
+        "centroid": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "description": "Least-squares plane centroid [x, y, z]."
+        },
+        "normal": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "description": "Deterministic unit plane normal [x, y, z]."
+        },
+        "residuals": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "description": "Signed orthogonal distances in input order."
+        },
+        "rms": {
+          "type": "number",
+          "description": "Root mean square orthogonal residual."
+        },
+        "maxAbsResidual": {
+          "type": "number",
+          "description": "Maximum absolute orthogonal residual."
+        },
+        "error": {
+          "type": "string",
+          "description": "Failure message; present when ok is false."
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": true
+    }
   }
 ]

@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { getMcpViewerResult } from './liveViewer';
 import { selectionToolEntries } from './registry/selectionTools';
+import { pointCloudToolEntries } from './registry/pointCloudTools';
 import { TOOL_ANNOTATIONS } from './toolAnnotations';
 import { TOOL_OUTPUT_SCHEMAS } from './toolOutputSchemas';
 import { catalogToolEntries } from './registry/catalogTools';
@@ -101,6 +102,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...manufacturingToolEntries,
   ...rayPickToolEntries,
   ...nurbsToolEntries,
+  ...pointCloudToolEntries,
 ];
 
 /** Merge the central MCP metadata maps onto a definition: behavioral hints
