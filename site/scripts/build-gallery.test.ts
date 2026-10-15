@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 import { mkdtempSync, rmSync, readFileSync, existsSync, copyFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -8,7 +8,92 @@ import { buildGallery, communityApiFromEnv, fetchCommunityGallery } from './buil
 describe('buildGallery', () => {
   let tmp: string;
   afterEach(() => {
+    vi.doUnmock('../../scripts/lib/extractPoster');
+    vi.doUnmock('../../scripts/lib/blackFrameCheck');
+    vi.doUnmock('../../scripts/lib/exportGlb');
+    vi.doUnmock('../../scripts/lib/optimizeGlb');
+    vi.doUnmock('../../src/modeling/runtime/scriptLoader');
+    vi.doUnmock('../../src/modeling/capture/featureMeshing');
+    vi.doUnmock('../../src/modeling/capture/featureMeshSerialize');
+    vi.doUnmock('../../src/agent/cli/commands/evaluate');
+    vi.doUnmock('../../src/modeling/animation/bakeAnimationTimeline');
+    vi.resetModules();
     if (tmp) rmSync(tmp, { recursive: true, force: true });
+  });
+
+  async function runMockedAnimationBuild(source: string, bridgeFails = false) {
+    const fixturesRoot = path.resolve(__dirname, '../../tests/fixtures/gallery');
+    const entriesDir = path.join(tmp, 'mocked-gallery');
+    const publicDir = path.join(tmp, 'mocked-public');
+    mkdirSync(entriesDir, { recursive: true });
+    copyFileSync(path.join(fixturesRoot, 'short-clip.mp4'), path.join(entriesDir, 'short-clip.mp4'));
+    const scriptPath = path.join(entriesDir, 'entry.kcad.ts');
+    writeFileSync(scriptPath, source);
+    writeFileSync(path.join(entriesDir, 'entries.json'), JSON.stringify({ entries: [{
+      slug: 'mocked-entry', title: 'Mocked entry', author: { handle: 'k', url: 'https://example.com' },
+      version: 'v1.0', prompt: 'test', source: 'curated', video: 'short-clip.mp4', codeLocal: 'entry.kcad.ts',
+      code: 'https://github.com/w1ne/kernelCAD-web', tags: [], featured: false, createdAt: '2026-01-01', appUrl: null,
+    }] }));
+
+    const evaluateAndBuildScript = vi.fn(async () => ({
+      evaluation: { exitCode: 0 },
+      model: { mocked: true },
+    }));
+    const bakeAnimationTimeline = vi.fn(async () => ({ frames: 3, parts: [{ name: 'part' }] }));
+    vi.doMock('../../scripts/lib/extractPoster', () => ({ extractPoster: async () => writeFileSync(path.join(publicDir, 'gallery/mocked-entry/poster.jpg'), 'poster') }));
+    vi.doMock('../../scripts/lib/blackFrameCheck', () => ({ isVideoMostlyBlack: async () => false }));
+    vi.doMock('../../scripts/lib/exportGlb', () => ({ exportGlb: async ({ outPath }: { outPath: string }) => writeFileSync(outPath, 'raw') }));
+    vi.doMock('../../scripts/lib/optimizeGlb', () => ({ optimizeGlb: async (_src: string, dst: string) => writeFileSync(dst, 'glb') }));
+    vi.doMock('../../src/modeling/runtime/scriptLoader', () => ({
+      loadScriptFeatures: bridgeFails
+        ? async () => { throw new Error('mock bridge precompute failure'); }
+        : async () => ({
+          features: source.includes('animationView(')
+            ? [{ record: { kind: 'animationView' } }]
+            : [],
+          paramTable: { serialize: () => ({}) }, session: { assemblies: new Map() },
+        }),
+    }));
+    vi.doMock('../../src/modeling/capture/featureMeshing', () => ({ meshFeaturesPerFeature: async () => ({
+      failedFeatureIds: [], features: [], bounds: {},
+    }) }));
+    vi.doMock('../../src/modeling/capture/featureMeshSerialize', () => ({ serializeForBridge: (feature: unknown) => feature }));
+    vi.doMock('../../src/agent/cli/commands/evaluate', () => ({ evaluateAndBuildScript }));
+    vi.doMock('../../src/modeling/animation/bakeAnimationTimeline', () => ({
+      bakeAnimationTimeline,
+      selectAnimationMetadata: () => ({ durationMs: 100 }),
+    }));
+    const { buildGallery: buildGalleryWithMocks } = await import('./build-gallery');
+    await buildGalleryWithMocks({ entriesPath: path.join(entriesDir, 'entries.json'), publicDir });
+    return { evaluateAndBuildScript, bakeAnimationTimeline, publicDir, source };
+  }
+
+  it('does not evaluate a static entry for animation metadata', async () => {
+    tmp = mkdtempSync(path.join(tmpdir(), 'gallery-static-animation-'));
+    const result = await runMockedAnimationBuild('return box(1, 1, 1);');
+    expect(result.evaluateAndBuildScript).not.toHaveBeenCalled();
+    expect(result.bakeAnimationTimeline).not.toHaveBeenCalled();
+    const sha = createHash('sha256').update(result.source, 'utf8').digest('hex');
+    expect(existsSync(path.join(result.publicDir, 'gallery/_anim', `${sha}.json`))).toBe(false);
+  });
+
+  it('bakes an animation detected from the precomputed feature record', async () => {
+    tmp = mkdtempSync(path.join(tmpdir(), 'gallery-record-animation-'));
+    const result = await runMockedAnimationBuild('animationView({ durationMs: 100 });');
+    expect(result.evaluateAndBuildScript).toHaveBeenCalledTimes(1);
+    expect(result.bakeAnimationTimeline).toHaveBeenCalledTimes(1);
+    const sha = createHash('sha256').update(result.source, 'utf8').digest('hex');
+    expect(JSON.parse(readFileSync(path.join(result.publicDir, 'gallery/_anim', `${sha}.json`), 'utf8')))
+      .toEqual({ frames: 3, parts: [{ name: 'part' }] });
+  });
+
+  it('uses the source animationView check when bridge precompute fails', async () => {
+    tmp = mkdtempSync(path.join(tmpdir(), 'gallery-fallback-animation-'));
+    const result = await runMockedAnimationBuild('animationView({ durationMs: 100 });', true);
+    expect(result.evaluateAndBuildScript).toHaveBeenCalledTimes(1);
+    expect(result.bakeAnimationTimeline).toHaveBeenCalledTimes(1);
+    const sha = createHash('sha256').update(result.source, 'utf8').digest('hex');
+    expect(existsSync(path.join(result.publicDir, 'gallery/_anim', `${sha}.json`))).toBe(true);
   });
 
   it('emits gallery.json + per-slug assets (video, poster, GLB, prompt) from a valid entries file', { timeout: 60000 }, async () => {
