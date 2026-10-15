@@ -110,7 +110,6 @@ describe('examples evaluate through the kernel', () => {
     const heavy = new Set(HEAVY.keys());
     const exempt = new Set(EVALUATION_EXEMPT.keys());
     const expectedFailure = new Set(EXPECTED_FAILURE.keys());
-    const evaluated = new Set([...discovered].filter(file => !heavy.has(file) && !exempt.has(file)));
     expect(discovered.size).toBeGreaterThan(0);
     for (const key of heavy) {
       expect(exempt.has(key), `${key} is both heavy and exempt`).toBe(false);
@@ -122,10 +121,12 @@ describe('examples evaluate through the kernel', () => {
     for (const key of [...heavy, ...exempt, ...expectedFailure]) {
       expect(discovered.has(key), `${key} classification refers to no discovered example`).toBe(true);
     }
-    // Every discovered file outside HEAVY and EVALUATION_EXEMPT gets an evaluate it() below by default.
-    for (const file of discovered) expect(heavy.has(file) || exempt.has(file) || evaluated.has(file), `${file} is not classified`).toBe(true);
+    const evaluationExamples = examples.filter(file => !HEAVY.has(relativeExample(file)) && !EVALUATION_EXEMPT.has(relativeExample(file)));
+    const evaluated = new Set(evaluationExamples.map(relativeExample));
+    expect(discovered.size).toBe(heavy.size + exempt.size + evaluated.size);
   });
 
+  // Every discovered example, including HEAVY and EVALUATION_EXEMPT entries, gets parse+transpile coverage.
   for (const file of examples) {
     const displayFile = relativeExample(file);
     const source = readFileSync(file, 'utf8');
