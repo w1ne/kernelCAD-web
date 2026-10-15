@@ -51,6 +51,10 @@ describe('buildGallery', () => {
     // GLB has glTF magic bytes
     const glb = readFileSync(path.join(publicDir, 'gallery/fixture-build/model.glb'));
     expect(glb.subarray(0, 4).toString('utf8')).toBe('glTF');
+
+    const source = readFileSync(path.join(entriesDir, 'simple-box.kcad.ts'), 'utf8');
+    const sha = createHash('sha256').update(source, 'utf8').digest('hex');
+    expect(existsSync(path.join(publicDir, 'gallery/_anim', `${sha}.json`))).toBe(false);
   });
 
   it('builds selected packed assets with decoder and complete compact native bridge', {timeout:60000}, async () => {
