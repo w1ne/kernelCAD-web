@@ -9,6 +9,14 @@ function findTool(name: string) {
 }
 
 describe('toolRegistry pose-envelope schema options', () => {
+  it('publishes geometry-quality thresholds, body selection and asserted plane', () => {
+    const def = findTool('verify');
+    const props = def.inputSchema.properties;
+    expect(props.check).toMatchObject({ enum: expect.arrayContaining(['geometry-quality']) });
+    for (const name of ['feature_id', 'tiny_face_area_mm2', 'tiny_face_relative', 'short_edge_length_mm', 'symmetry_tolerance_mm', 'mesh_deflection_mm']) expect(props).toHaveProperty(name);
+    expect(props.asserted_plane).toMatchObject({ type: 'object', required: ['origin','normal'] });
+    expect(def.description).toContain('sampled');
+  });
   it('review_cad schema declares samplesPerMate as integer with minimum 1', () => {
     const def = findTool('review_cad');
     const prop = def.inputSchema.properties.samplesPerMate as {

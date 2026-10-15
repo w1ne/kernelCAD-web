@@ -96,6 +96,7 @@ const verifyToolEntry: ToolRegistryEntry = {
       "- 'dfm-preflight' — sheet-metal flat pattern vs a job-shop's ordering rules ({ vendor, material, thicknessIn|thicknessMm, ... }). Returns the vendor's catalog source pages as `sources`; when `disclosure` is present, show it with those links.\n" +
       "- 'swept-collision' — sweep declared joint range(s) and report colliding poses.\n" +
       "- 'reachable' — inverse-kinematics reachability for an end-effector ({ tip_link, target_position, ... }).\n" +
+      "- 'geometry-quality' — one solid body's BREP tiny faces and short edges (ids, locations, mm²/mm), plus sampled mirror symmetry about centroid XY/YZ/XZ and principal inertia planes ({ file | code, feature_id?, tiny_face_area_mm2?, tiny_face_relative?, short_edge_length_mm?, symmetry_tolerance_mm?, mesh_deflection_mm?, asserted_plane?: { origin, normal } }). Relative area is a fraction of total surface area; thresholds are ORed. Candidate planes are discovery; only an asserted plane gates symmetry. Approximate sampled tessellation, not exact BREP proof.\n" +
       "- 'fastener-installation' — measured explicit catalog-screw installation stations on lowered assembly BREP ({ file | code, fasteners:[{ part, against, engagementPart?, minEngagementMm?, maxProtrusionMm? }], toleranceMm?, angleToleranceDeg? }). Reports annular bearing gap, bore axis/diameter/overlap and receiver geometric engagement/protrusion. Unknown or zero coverage cannot pass. Simplified threads do not certify torque, preload or strength.\n" +
       "- 'mounting-holes' — fastened mates expose matching hole diameters on both sides.\n" +
       "- 'load-capacity' — will it hold? Closed-form Euler-Bernoulli beam check ({ loads, materials, ... }), or mode:'fea' to solve the script's feaStudy (quadratic-tet FEA, CalculiX) — both return { ok, safetyFactor, elements[{ partName, stressPa, yieldPa, safetyFactor }], failures[], diagnostics }; fea adds the threshold, the stress regions as @kc[...] faces with their location, and fea { peakStressPa, maxDisplacementMm, meshTrusted, peakAtSupportPa, refinement }; it refines the mesh automatically until the stress is trusted (refine: false for one solve).\n" +
@@ -107,11 +108,25 @@ const verifyToolEntry: ToolRegistryEntry = {
       properties: {
         check: {
           type: 'string',
-          enum: ['assembly', 'urdf', 'dfm', 'dfm-preflight', 'swept-collision', 'reachable', 'mounting-holes', 'load-capacity', 'static-hold', 'body-likeness', 'fastener-installation'],
+          enum: ['assembly', 'urdf', 'dfm', 'dfm-preflight', 'swept-collision', 'reachable', 'mounting-holes', 'load-capacity', 'static-hold', 'body-likeness', 'fastener-installation', 'geometry-quality'],
           description: 'Which verification to run.',
         },
-        file: { type: 'string', description: 'Path to a .kcad.ts script (assembly/dfm/dfm-preflight/swept-collision/reachable/mounting-holes/load-capacity/static-hold).' },
+        file: { type: 'string', description: 'Path to a .kcad.ts script (assembly/dfm/dfm-preflight/swept-collision/reachable/mounting-holes/load-capacity/static-hold/geometry-quality).' },
         code: { type: 'string', description: 'Inline kernelCAD script source (same checks as `file`).' },
+        feature_id: { type: 'string', description: "check:'geometry-quality' — body feature to measure; defaults to script return." },
+        tiny_face_area_mm2: { type: 'number', minimum: 0, default: 0.01, description: "check:'geometry-quality' — flag faces strictly below this absolute area; zero disables." },
+        tiny_face_relative: { type: 'number', minimum: 0, maximum: 1, default: 0, description: "check:'geometry-quality' — fraction of total BREP surface area, ORed with absolute threshold." },
+        short_edge_length_mm: { type: 'number', minimum: 0, default: 0.1, description: "check:'geometry-quality' — flag edges strictly below this length; zero disables." },
+        symmetry_tolerance_mm: { type: 'number', minimum: 0.000001, default: 0.05, description: "check:'geometry-quality' — maximum sampled mirror-to-mesh distance, mm." },
+        mesh_deflection_mm: { type: 'number', minimum: 0.0000001, description: "check:'geometry-quality' — absolute mesh deflection, defaults to tolerance/4; must be <= tolerance/2." },
+        asserted_plane: {
+          type: 'object', additionalProperties: false, required: ['origin','normal'],
+          description: "check:'geometry-quality' — optional required mirror plane in model coordinates; normal is normalized and must be nonzero.",
+          properties: {
+            origin: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 },
+            normal: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 },
+          },
+        },
         assembly: { type: 'string', description: 'Assembly name; defaults to the first captured assembly.' },
         fasteners: {
           type: 'array', description: "check:'fastener-installation' — explicit named stations; empty means no coverage.",
