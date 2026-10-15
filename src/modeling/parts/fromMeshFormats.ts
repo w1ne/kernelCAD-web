@@ -26,6 +26,8 @@ import { MeshBackend, decodeStlMesh } from '../../kernel/backends/meshBackend';
 import { KernelError } from '../../shared/intent/kernelError';
 import type { FromSTEPContext } from './fromSTEP';
 
+const IMPORT_MAX_BYTES = 50 * 1024 * 1024;
+
 /** Shared context shape with `lib.fromSTEP`. */
 export type FromFileContext = FromSTEPContext;
 
@@ -131,6 +133,14 @@ export async function meshFromSTL(ctx: FromFileContext, path: string): Promise<S
   requirePath(path, 'fromSTL', '.stl');
   const absPath = resolveScriptRelativePath(ctx.scriptDir, path);
   const buf = await readOrThrow(absPath, path, 'fromSTL');
+  if (buf.byteLength > IMPORT_MAX_BYTES) {
+    throw new KernelError(
+      'feature.invalid-args',
+      `lib.meshFromSTL: ${absPath} is ${buf.byteLength} bytes; the per-file limit is 50 MiB.`,
+      undefined,
+      'invalid-args.lib.meshFromSTL.file-too-large — provide an STL file no larger than 50 MiB.',
+    );
+  }
   let mesh: ReturnType<typeof decodeStlMesh>;
   try { mesh = decodeStlMesh(buf); }
   catch (e) { throw new KernelError('feature.kernel-failed', `lib.meshFromSTL: ${absPath} — ${e instanceof Error ? e.message : String(e)}`, undefined, 'kernel-failed.lib.meshFromSTL.parse — provide a readable ASCII or binary STL.'); }

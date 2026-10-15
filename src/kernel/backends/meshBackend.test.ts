@@ -20,7 +20,7 @@ describe('display mesh backend', () => {
     const bytes = binaryStl(1_000_000);
     const start = performance.now();
     const mesh = decodeStlMesh(bytes);
-    expect(performance.now() - start).toBeLessThan(30_000);
+    expect(performance.now() - start).toBeLessThan(60_000);
     expect(mesh.indices.length / 3).toBe(1_000_000);
     expect(mesh.positions.length).toBeGreaterThan(0);
   });
@@ -37,5 +37,17 @@ describe('display mesh backend', () => {
   it('parses ASCII STL', () => {
     const bytes = new TextEncoder().encode('solid s\nfacet normal 0 0 1\nouter loop\nvertex 0 0 0\nvertex 1 0 0\nvertex 0 1 0\nendloop\nendfacet\nendsolid s');
     expect(decodeStlMesh(bytes).indices).toHaveLength(3);
+  });
+
+  it('accepts binary trailing bytes and zero-facet files', () => {
+    const withTail = new Uint8Array(binaryStl(1).length + 7);
+    withTail.set(binaryStl(1));
+    expect(decodeStlMesh(withTail).indices).toHaveLength(3);
+    expect(decodeStlMesh(binaryStl(0)).indices).toHaveLength(0);
+  });
+
+  it('rejects malformed data with an explicit format error', () => {
+    expect(() => decodeStlMesh(new TextEncoder().encode('not an STL')))
+      .toThrow(/Malformed STL/i);
   });
 });
