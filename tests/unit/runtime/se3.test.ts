@@ -118,6 +118,61 @@ describe('Transform', () => {
     near(d.rotateAxis, [0, 0, 1], 1e-6);
   });
 
+  describe('decomposeToTranslateAndRotate near identity and near 180deg', () => {
+    function expectUnitAxisRoundTrip(t: Transform, eps = 1e-9): ReturnType<Transform['decomposeToTranslateAndRotate']> {
+      const d = t.decomposeToTranslateAndRotate();
+      expect(d.rotateAxis.every(Number.isFinite)).toBe(true);
+      expect(Math.hypot(...d.rotateAxis)).toBeCloseTo(1, 12);
+      expect(Number.isFinite(d.rotateDeg)).toBe(true);
+      const back = Transform.translation(...d.translate).compose(Transform.rotationAxisAngleDeg(d.rotateAxis, d.rotateDeg));
+      for (const p of [[1, 0, 0], [0, 1, 0], [0, 0, 1], [3, -4, 5]] as Vec3[]) near(back.point(p), t.point(p), eps);
+      return d;
+    }
+    // R · S · S⁻¹ · R⁻¹: identity up to 1 ulp. These two exact chains broke
+    // the old quaternion extraction (DRAW-01 robot, t = 12.00-12.08 s).
+    const s: Vec3 = [0.2, 0.9, -0.4];
+    const roundTrip = (deg: number) => Transform.rotationAxisAngleDeg([1, 0, 0], deg)
+      .compose(Transform.rotationAxisAngleDeg(s, 17.3)).compose(Transform.rotationAxisAngleDeg(s, -17.3))
+      .compose(Transform.rotationAxisAngleDeg([1, 0, 0], -deg));
+
+    it('exact identity gives zero rotation about the default axis', () => {
+      const d = expectUnitAxisRoundTrip(Transform.identity());
+      expect(d.rotateDeg).toBe(0);
+      expect(d.rotateAxis).toEqual([0, 0, 1]);
+    });
+
+    it('identity within 1 ulp (diagonal > 1) gives zero rotation, not a NaN axis', () => {
+      const d = expectUnitAxisRoundTrip(roundTrip(134.20000000000067));
+      expect(d.rotateDeg).toBe(0);
+      expect(d.rotateAxis).toEqual([0, 0, 1]);
+    });
+
+    it('identity within 1 ulp (diagonal < 1) gives zero rotation, not a zero-length axis', () => {
+      const d = expectUnitAxisRoundTrip(roundTrip(97.2));
+      expect(d.rotateDeg).toBe(0);
+    });
+
+    it('a 1e-9 rad rotation keeps a unit axis', () => {
+      expectUnitAxisRoundTrip(Transform.rotationAxisAngleDeg([0, 1, 0], 1e-9 / (Math.PI / 180)));
+    });
+
+    it('a small angle keeps its axis and angle', () => {
+      const d = expectUnitAxisRoundTrip(Transform.translation(1, 2, 3).compose(Transform.rotationAxisAngleDeg([1, 2, 2], 1e-4)));
+      expect(d.rotateDeg).toBeCloseTo(1e-4, 12);
+      near(d.rotateAxis, [1 / 3, 2 / 3, 2 / 3], 1e-6);
+    });
+
+    it('angles near pi keep a unit axis about any direction', () => {
+      for (const axis of [[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 1, 0], [1, -2, 3]] as Vec3[]) {
+        for (const deg of [180, 180 - 1e-7, 179.999, 180 + 1e-7]) {
+          const d = expectUnitAxisRoundTrip(Transform.rotationAxisAngleDeg(axis, deg));
+          expect(d.rotateDeg).toBeGreaterThan(179.99);
+          expect(d.rotateDeg).toBeLessThanOrEqual(180);
+        }
+      }
+    });
+  });
+
   it('eulerXYZDeg(0,0,0) is identity', () => {
     const t = Transform.eulerXYZDeg(0, 0, 0);
     near(t.point([1, 2, 3]), [1, 2, 3]);

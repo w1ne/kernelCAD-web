@@ -111,6 +111,41 @@ export interface TraceFromImageInput {
    * without an explicit override via `resolve_assumptions`.
    */
   validate?: 'warn' | 'error';
+  /** Ask the vision backend to detect labeled component boxes and draft a BOM. */
+  detectParts?: boolean;
+}
+
+/** A labeled component box normalized to the traced outline's bounding frame. */
+export interface DetectedTracePart {
+  name: string;
+  quantity: number;
+  /** Box center in `coordinateFrame` [0..1] coordinates. */
+  position: Vec2Normalized;
+  /** [xmin, ymin, xmax, ymax] in `coordinateFrame` [0..1] coordinates. */
+  bbox: [number, number, number, number];
+  confidence: number;
+  /** Best bundled-catalog candidate, when one is available offline. */
+  catalogMatch?: { id: string; name: string; confidence: number };
+  matchedCatalogId?: string;
+  /** Per-detection frame; outside-outline detections retain their image coordinates. */
+  coordinateFrame: 'outline' | 'image';
+  /** True when a traced silhouette exists but this box is not fully inside it. */
+  outsideOutline?: boolean;
+}
+
+export interface DraftBomItem {
+  partName: string;
+  qty: number;
+  confidence: number;
+  catalogMatch?: { id: string; name: string; confidence: number };
+  matchedCatalogId?: string;
+}
+
+export interface UnmatchedTraceLabel {
+  label: string;
+  quantity: number;
+  confidence: number;
+  reason: 'no-bundled-catalog-match';
 }
 
 /** Output of the top-level orchestrator (and the MCP tool). */
@@ -130,6 +165,14 @@ export interface TraceFromImageOutput {
    * whether a scale anchor / priors were supplied. See `./ledger.ts`.
    */
   ledger: AssumptionLedger;
+  /** Present when detectParts was requested, including an empty result. */
+  detectedParts?: DetectedTracePart[];
+  /** Draft grouping of detected labels; requires human/catalog verification. */
+  draftBom?: DraftBomItem[];
+  /** Labels without a sufficiently strong bundled-catalog match. */
+  unmatchedLabels?: UnmatchedTraceLabel[];
+  /** Coordinate frame used for detected part boxes: silhouette bounds or full image. */
+  partDetectionFrame?: 'outline' | 'image' | 'mixed';
 }
 
 /**

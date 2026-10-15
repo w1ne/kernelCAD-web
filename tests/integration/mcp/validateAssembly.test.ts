@@ -20,7 +20,7 @@ describe('validate_assembly MCP tool', () => {
       code: `
         const arm = assembly('rig');
         arm.part('a', box(1, 1, 1))
-          .connector('p', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
+          .connector('p', { type: 'frame', origin: { kind: 'vec3', value: [1, 0, 0] } });
         arm.part('b', box(1, 1, 1))
           .connector('q', { type: 'frame', origin: { kind: 'vec3', value: [0, 0, 0] } });
         arm.mate('m1', 'a.p', 'b.q', 'fastened');

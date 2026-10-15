@@ -36,7 +36,11 @@ const MODULE = 1.75;
 // Backlash: each flank is thinned by this much at the pitch circle.
 const FLANK_BACKLASH_MM = 0.05;
 const PRESSURE_ANGLE_DEG = 20;
-const ADDENDUM = MODULE * 1.0;        // 1.75
+// Stub teeth (0.6 module addendum): a full 1.0 module tip on the 18-tooth
+// planet reaches below the 24-tooth sun's base circle and cuts into its
+// non-involute root flank (5.7 mm³ per mesh, 0.15 mm deep; 10 mm³ at the
+// ring). Shorter teeth keep every tip on the involute.
+const ADDENDUM = MODULE * 0.6;        // 1.05
 const DEDENDUM = MODULE * 1.25;       // 2.19
 
 const SUN_PITCH_R = (Z_SUN * MODULE) / 2;          // 21.0
@@ -507,8 +511,10 @@ const fanHubShape = cylinder(FAN_HUB_H, FAN_HUB_R, 48)
   .translate(0, 0, FAN_HUB_Z)
   .color('#d4a635')
   .union(
-    cylinder(1.8, FAN_HUB_R + 0.6, 48)
-      .translate(0, 0, FAN_HUB_Z + FAN_HUB_H - 1.8)
+    // 0.8 mm lip: the pitched blades reach 1.6 mm above the hub middle,
+    // so a taller lip would cut into their roots.
+    cylinder(0.8, FAN_HUB_R + 0.6, 48)
+      .translate(0, 0, FAN_HUB_Z + FAN_HUB_H - 0.8)
       .color('#e8c14a'),
   );
 const fan = stage.part('output-fan-wheel', fanHubShape);
@@ -535,11 +541,11 @@ for (let i = 0; i < FAN_BLADE_COUNT; i += 1) {
   const bladeShape = box(FAN_BLADE_LEN, FAN_BLADE_WIDTH, FAN_BLADE_THICK)
     .translate(0, -FAN_BLADE_WIDTH / 2, -FAN_BLADE_THICK / 2)
     .rotate([1, 0, 0], FAN_BLADE_PITCH_DEG)
-    .translate(FAN_HUB_R - 0.5, 0, FAN_MID_Z)
+    .translate(FAN_HUB_R, 0, FAN_MID_Z)
     .rotate([0, 0, 1], deg)
     .color('#d96a3b');
   const blade = stage.part(bladeName, bladeShape);
-  const seat = polar(FAN_HUB_R - 0.5, deg, FAN_MID_Z);
+  const seat = polar(FAN_HUB_R, deg, FAN_MID_Z);
   fan.connector(`blade-${i + 1}-seat`, frame(seat));
   blade.connector('hub-root', frame(seat));
   stage.mate(

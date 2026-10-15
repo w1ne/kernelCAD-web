@@ -11,6 +11,7 @@ import SceneBrowser from '../components/SceneBrowser';
 import { useWorkbench } from '../context/WorkbenchContext';
 import { useGeometry } from '../context/GeometryContext';
 import { extractHistoryItems } from '../../shared/codeGeneration/codeAnalysis';
+import { brokenRowReasons } from '../components/motion/motionBadgeModel';
 
 /**
  * Adaptive scene tree for the Studio shell. Reads feature records + validity
@@ -79,6 +80,21 @@ function highestSeverityForRow(
     return best;
 }
 
+/** Row severity, with a broken-mechanism reason forcing 'error'. */
+function rowSeverity(
+    rowId: string,
+    diagnostics: readonly ValidatorDiagnostic[],
+    broken: ReadonlyMap<string, string>,
+): ValidatorDiagnostic['severity'] | null {
+    return broken.has(rowId) ? 'error' : highestSeverityForRow(rowId, diagnostics);
+}
+
+/** Row tooltip: the name, plus why the mechanism is broken there. */
+function rowTitle(label: string, rowId: string, broken: ReadonlyMap<string, string>): string {
+    const reason = broken.get(rowId);
+    return reason ? `${label}: ${reason}` : label;
+}
+
 function severityDotClasses(severity: ValidatorDiagnostic['severity'] | null): string {
     switch (severity) {
         case 'error':
@@ -102,6 +118,7 @@ interface SceneTabPartsPanelProps {
     readonly hiddenIds: readonly string[];
     readonly selectedFeatureId: string | null;
     readonly diagnostics: readonly ValidatorDiagnostic[];
+    readonly broken: ReadonlyMap<string, string>;
     readonly selectFeature: (id: string) => void;
     readonly toggleVisibility?: (id: string) => void;
 }
@@ -114,6 +131,7 @@ function SceneTabPartsPanel({
     hiddenIds,
     selectedFeatureId,
     diagnostics,
+    broken,
     selectFeature,
     toggleVisibility,
 }: SceneTabPartsPanelProps): JSX.Element {
@@ -139,7 +157,7 @@ function SceneTabPartsPanel({
                 {partNames.map((partName) => {
                     const isHidden = hiddenIds.includes(partName);
                     const isSelected = selectedFeatureId === partName;
-                    const severity = highestSeverityForRow(partName, diagnostics);
+                    const severity = rowSeverity(partName, diagnostics, broken);
                     return (
                         <li key={partName}>
                             <div
@@ -151,7 +169,7 @@ function SceneTabPartsPanel({
                                     className={`inline-block h-2 w-2 rounded-full shrink-0 ${severityDotClasses(severity)}`}
                                     aria-label={severityAriaLabel(severity)}
                                 />
-                                <span className={`truncate flex-1 ${isHidden ? 'text-gray-600 italic' : ''}`} title={partName}>
+                                <span className={`truncate flex-1 ${isHidden ? 'text-gray-600 italic' : ''}`} title={rowTitle(partName, partName, broken)}>
                                     {partName}
                                 </span>
                                 <button
@@ -175,6 +193,7 @@ function SceneTabPartsPanel({
 interface SceneTabFeatureRowsProps {
     readonly rows: readonly SceneTabRow[];
     readonly diagnostics: readonly ValidatorDiagnostic[];
+    readonly broken: ReadonlyMap<string, string>;
     readonly selectedFeatureId: string | null;
     readonly selectFeature: (id: string) => void;
 }
@@ -183,6 +202,7 @@ interface SceneTabFeatureRowsProps {
 function SceneTabFeatureRows({
     rows,
     diagnostics,
+    broken,
     selectedFeatureId,
     selectFeature,
 }: SceneTabFeatureRowsProps): JSX.Element {
@@ -193,7 +213,7 @@ function SceneTabFeatureRows({
                 data-testid="scene-tab-rows"
             >
                 {rows.map((row) => {
-                    const severity = highestSeverityForRow(row.rowId, diagnostics);
+                    const severity = rowSeverity(row.rowId, diagnostics, broken);
                     const isSelected = selectedFeatureId === row.rowId;
                     return (
                         <li key={row.rowId}>
@@ -213,7 +233,7 @@ function SceneTabFeatureRows({
                                     aria-label={severityAriaLabel(severity)}
                                     data-testid={`scene-row-dot-${row.rowId}`}
                                 />
-                                <span className="truncate flex-1" title={row.label}>
+                                <span className="truncate flex-1" title={rowTitle(row.label, row.rowId, broken)}>
                                     {row.label}
                                 </span>
                                 <span className="text-2xs text-gray-500 shrink-0 font-mono">
@@ -255,6 +275,8 @@ export function SceneTab(): JSX.Element {
     }, [geometries]);
 
     const rows = useMemo(() => buildRows(features), [features]);
+    const mechanismSummary = workbench.scriptReview?.mechanismSummary;
+    const broken = useMemo(() => brokenRowReasons(mechanismSummary), [mechanismSummary]);
     const adaptiveActive = validity !== null && rows.length > 0;
 
     // All hooks must run before any early return (Rules of Hooks) — compute the
@@ -272,6 +294,7 @@ export function SceneTab(): JSX.Element {
                 hiddenIds={workbench.hiddenIds ?? []}
                 selectedFeatureId={selectedFeatureId}
                 diagnostics={validity?.diagnostics ?? []}
+                broken={broken}
                 selectFeature={selectFeature}
                 toggleVisibility={workbench.toggleVisibility}
             />
@@ -300,6 +323,7 @@ export function SceneTab(): JSX.Element {
         <SceneTabFeatureRows
             rows={rows}
             diagnostics={validity!.diagnostics}
+            broken={broken}
             selectedFeatureId={selectedFeatureId}
             selectFeature={selectFeature}
         />

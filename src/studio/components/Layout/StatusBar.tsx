@@ -4,6 +4,8 @@ import { AlertTriangle, CheckCircle2, Loader2, MousePointer2 } from 'lucide-reac
 import type { StudioLayoutMode } from '../../../shared/types/layout';
 import type { ViewMode3D } from '../../../shared/types/viewMode';
 import { plainLine } from '../../plainLine';
+import type { MechanismVerdictSummary } from '../../../modeling/runtime/mechanismVerdict';
+import { MotionBadge } from '../motion/MotionBadge';
 
 interface StatusBarProps {
     isComputing: boolean;
@@ -23,6 +25,8 @@ interface StatusBarProps {
         capMm3: number;
     } | null;
     recomputeMs?: number;
+    /** Mechanism verdict of the loaded model; no badge for a static model. */
+    mechanismSummary?: MechanismVerdictSummary | null;
 }
 
 function formatViewMode(mode: ViewMode3D): string {
@@ -76,6 +80,7 @@ export function StatusBar({
     interferences,
     interferenceSummary,
     recomputeMs,
+    mechanismSummary,
 }: StatusBarProps) {
     const bodyLabel = geometryCount === 1 ? '1 body' : `${geometryCount} bodies`;
     const selectionLabel = selectedCount === 1 ? '1 selected' : `${selectedCount} selected`;
@@ -110,6 +115,7 @@ export function StatusBar({
                 <StateDiagnostics error={error} />
             </div>
             <div className="flex items-center gap-3 shrink-0 ml-auto">
+                <MotionBadge summary={mechanismSummary} />
                 <span>{bodyLabel}</span>
                 <span className="inline-flex items-center gap-1">
                     <MousePointer2 size={12} />

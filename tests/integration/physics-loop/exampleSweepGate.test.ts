@@ -1,32 +1,22 @@
-// Physics-loop example-sweep gate — STRUCTURAL completeness checks.
+// Physics-loop example-sweep gate — FAST structural classification checks only.
 //
 // Spec:  docs/specs/2026-06-01-physics-grounded-loop-design.md (slice P3)
 // Plan:  docs/plans/2026-06-01-physics-loop-P3-sweep-and-demote.md (Task 5)
 //
-// P3's job is to leave the repo in a state where every example under
-// `examples/**/*.kcad.ts` is either:
-//   (a) loop-clean — `validate --include-interference` reports
-//       `mechanism === 'real'` (or `'unverified'` when the script has
-//       no mates / hits a probe error that's a kernel rough-edge, not a
-//       broken mechanism), OR
-//   (b) loop-broken — but with a tracked GitHub issue cited in the
-//       corresponding integration test file's `it.skip(...)` description.
-//
-// This file holds the FAST structural completeness checks (no validate):
+// This file keeps only the FAST structural classification checks (no validate):
 //   - every discovered example is classified into exactly one bucket
 //     (EXEMPT_UNVERIFIED / ISSUE_TRACKED / HOSTED_IN_DEDICATED_FILE /
-//     live-sweep), so a future PR that adds a broken example without
+//     fast-smoke path), so a future PR that adds an unclassified example without
 //     filing an issue AND citing it in a test fails this gate at CI time;
 //   - every ISSUE_TRACKED entry has its citing `it.skip(...issues/N)`;
 //   - every HOSTED_IN_DEDICATED_FILE delegation actually runs the check.
 //
-// The HEAVY per-example `runValidateCli({ includeInterference: true })`
-// sweep no longer runs here. It was the merge-gate wall-clock floor:
-// ~370s sequentially in one file, pinning a single vitest CI shard. It is
-// now partitioned across `exampleSweepGate.shard{A,B,C,D}.test.ts`, which
-// vitest distributes across its per-FILE CI shards. Coverage is IDENTICAL:
-// the same examples that ran the live check before still do — see
-// `discoverSweepExamples()` in exampleSweepShared.ts.
+// The heavy live `runValidateCli({ includeInterference: true })` shard sweep
+// was removed. Per-example smoke (parse/transpile all examples; evaluate
+// non-heavy examples) lives in tests/integration/fast/exampleParseSmoke.test.ts
+// and does NOT run validate --include-interference. Coverage is intentionally
+// narrower: structural completeness remains; the multi-minute physics
+// validate-per-example gate does not.
 
 import { describe, it, expect } from 'vitest';
 import { readFileSync, existsSync } from 'node:fs';
@@ -127,11 +117,10 @@ describe('Every example under examples/**/*.kcad.ts is classified (structural co
 
   it('every discovered example is classified into exactly one bucket (no silent un-tracked example)', () => {
     // Structural completeness: each example is EITHER exempt, issue-tracked,
-    // hosted in a dedicated file, OR in the live sweep set. The union of the
+    // hosted in a dedicated file, OR in the default fast smoke path. The union of the
     // four buckets must equal the full discovered universe, with no overlaps.
-    // This is what makes the live-check distribution across shard files safe:
-    // anything not exempt/tracked/hosted MUST land in discoverSweepExamples()
-    // and therefore in exactly one shard partition.
+    // Anything not exempt/tracked/hosted is covered by the fast smoke evaluate
+    // path (or its parse-only heavy classification), not live physics validation.
     const sweep = new Set(discoverSweepExamples());
     for (const examplePath of examples) {
       const buckets = [
@@ -143,7 +132,7 @@ describe('Every example under examples/**/*.kcad.ts is classified (structural co
       expect(
         buckets.length,
         `${examplePath} must be classified into exactly one bucket ` +
-          `(exempt / issue-tracked / hosted / live-sweep), got ${buckets.length}`,
+          `(exempt / issue-tracked / hosted / fast-smoke), got ${buckets.length}`,
       ).toBe(1);
     }
   });

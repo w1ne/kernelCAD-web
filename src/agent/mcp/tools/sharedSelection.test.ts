@@ -14,8 +14,30 @@ describe('selection MCP transport', () => {
     await sharedSelectionTool('POST', { ...input, selection });
     expect(fetcher.mock.calls[1]).toEqual([
       expect.objectContaining({ pathname: '/__kernelcad/selection', search: '?session=token' }),
-      expect.objectContaining({ method: 'POST', body: JSON.stringify({ selection, model_generation: 0 }), redirect: 'error', signal: expect.any(AbortSignal) }),
+      expect.objectContaining({ method: 'POST', body: JSON.stringify({ selection, model_generation: 0, face_signature: null }), redirect: 'error', signal: expect.any(AbortSignal) }),
     ]);
+  });
+  it('lets the locked selection endpoint capture an agent-set face signature', async () => {
+    const face = { shapeIndex: 0, kind: 'face' as const, id: 4, featureId: 'extrude_1' };
+    const mesh = { features: [{ featureId: 'extrude_1', faces: [{ faceId: 4,
+      vertices: [0,0,0,1,0,0,0,1,0], indices: [0,1,2], normals: [0,0,1,0,0,1,0,0,1], plane: { origin: [0,0,0], normal: [0,0,1] } }] }] };
+    const fetcher = vi.fn(async () => new Response(JSON.stringify({ ok: true, selection: face, revision: 1, modelGeneration: 0 })));
+    vi.stubGlobal('fetch', fetcher);
+    const result = await sharedSelectionTool('POST', { studio_url: 'http://localhost:5173', session: 'token', model_generation: 0, selection: face });
+    expect(result).toMatchObject({ ok: true, selection: face });
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    expect(String(fetcher.mock.calls[0]![0])).toContain('/__kernelcad/selection');
+    const body = JSON.parse((fetcher.mock.calls[0]![1] as RequestInit).body as string);
+    expect(body.face_signature).toBeNull();
+  });
+  it('does not sign a face when the requested generation is already stale', async () => {
+    const fetcher = vi.fn(async () => new Response(JSON.stringify({ ok: true, selection: null, revision: 2, modelGeneration: 1 })));
+    vi.stubGlobal('fetch', fetcher);
+    const result = await sharedSelectionTool('POST', { studio_url: 'http://localhost:5173', session: 'token', model_generation: 0,
+      selection: { shapeIndex: 0, kind: 'face', id: 4, featureId: 'extrude_1' } });
+    expect(result).toMatchObject({ ok: true, modelGeneration: 1 });
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    expect(String(fetcher.mock.calls[0]![0])).toContain('/__kernelcad/selection');
   });
   it('rejects non-local URLs and malformed picks before fetching', async () => {
     const fetcher = vi.fn();

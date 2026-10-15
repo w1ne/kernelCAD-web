@@ -7,6 +7,17 @@ import { readFile } from 'node:fs/promises';
 import { extname, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { BuiltModel } from '../../composition/buildModel';
+import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
+import type { MechanismVerdictSummary } from '../../modeling/runtime/mechanismVerdict';
+
+/** Mechanism verdict from the evaluate_script run that built the model. The
+ *  viewer serves it on `/__kernelcad/review` so Studio shows the badge and
+ *  marks the failing joint; it never re-runs a check. */
+export interface McpViewerReview {
+  mechanism?: 'real' | 'broken' | 'unverified';
+  mechanismFailures?: readonly CompilerDiagnostic[];
+  mechanismSummary?: MechanismVerdictSummary;
+}
 
 interface ViewerOptions {
   dist?: string;
@@ -48,6 +59,7 @@ const MIME: Record<string, string> = {
 const UPDATE_FRAME = 'event: relower\ndata: {"affectedIds":[]}\n\nevent: source-changed\ndata: {}\n\n';
 interface ViewerState {
   model?: BuiltModel;
+  review?: McpViewerReview;
   mesh?: Promise<unknown>;
   clients: Set<ServerResponse>;
 }
@@ -88,12 +100,25 @@ async function serveViewerApi(req: IncomingMessage, res: ServerResponse, request
     case '/__kernelcad/source': json(res, 200, { source: model.code ?? '' }); return;
     case '/__kernelcad/session': json(res, 200, { sessionToken: token }); return;
     case '/__kernelcad/mesh': json(res, 200, await cachedMesh(state, model, meshModel)); return;
-    case '/__kernelcad/review':
-      // Build diagnostics, not a claim of a full CAD/physics review.
-      json(res, 200, { ok: !model.diagnostics?.some(d => d.severity === 'error'), diagnostics: model.diagnostics ?? [], live: true, sourceReplaced: true }); return;
+    case '/__kernelcad/review': json(res, 200, viewerReview(model, state.review)); return;
     case '/__kernelcad/events': subscribeViewer(req, res, state.clients); return;
     default: json(res, 404, { error: 'unsupported viewer endpoint' }); return;
   }
+}
+
+/** Build diagnostics plus the evaluate_script mechanism verdict, not a claim
+ *  of a full CAD/physics review. */
+function viewerReview(model: BuiltModel, review: McpViewerReview | undefined): Record<string, unknown> {
+  const failures = review?.mechanismFailures ?? [];
+  const diagnostics = [...(model.diagnostics ?? []), ...failures];
+  return {
+    ok: !diagnostics.some(d => d.severity === 'error'),
+    diagnostics,
+    live: true,
+    sourceReplaced: true,
+    ...(review?.mechanism !== undefined ? { mechanism: review.mechanism, mechanismFailures: failures } : {}),
+    ...(review?.mechanismSummary !== undefined ? { mechanismSummary: review.mechanismSummary } : {}),
+  };
 }
 
 async function serveViewerAsset(res: ServerResponse, request: URL, root: string): Promise<void> {
@@ -153,10 +178,11 @@ export function createLiveViewer(options: ViewerOptions = {}) {
   }
 
   return {
-    async update(next: BuiltModel): Promise<string> {
+    async update(next: BuiltModel, review?: McpViewerReview): Promise<string> {
       starting ??= start().catch(error => { starting = undefined; throw error; });
       const link = await starting;
       state.model = next;
+      state.review = review;
       state.mesh = undefined;
       for (const client of state.clients) client.write(UPDATE_FRAME);
       return link;
@@ -169,6 +195,7 @@ export function createLiveViewer(options: ViewerOptions = {}) {
       server = undefined;
       starting = undefined;
       state.model = undefined;
+      state.review = undefined;
       state.mesh = undefined;
     },
   };
@@ -185,14 +212,14 @@ let lastViewerResult: McpViewerResult | undefined;
 export function getMcpViewerResult() { return lastViewerResult; }
 
 let viewer: ReturnType<typeof createLiveViewer> | undefined;
-export async function updateMcpViewer(model: BuiltModel): Promise<McpViewerResult> {
+export async function updateMcpViewer(model: BuiltModel, review?: McpViewerReview): Promise<McpViewerResult> {
   if (process.env.KERNELCAD_MCP_MODE === 'hosted') {
     lastViewerResult = { viewerMode: 'hosted', viewerHint: 'Use open_in_studio to view this model in hosted Studio.' };
     return lastViewerResult;
   }
   try {
     viewer ??= createLiveViewer();
-    lastViewerResult = { viewerUrl: await viewer.update(model) };
+    lastViewerResult = { viewerUrl: await viewer.update(model, review) };
     return lastViewerResult;
   } catch (error) {
     lastViewerResult = { viewerError: error instanceof Error ? error.message : String(error) };
