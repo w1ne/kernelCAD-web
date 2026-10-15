@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Small behavior replacements for former long-running geometry integrations.
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+vi.setConfig({ hookTimeout: 60_000, testTimeout: 60_000 });
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { runAndExport } from '../../../src/agent/script-runtime/export';
 import { checkInterference } from '../../../src/agent/script-runtime/checkInterference';

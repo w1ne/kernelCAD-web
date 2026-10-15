@@ -45,6 +45,5 @@ export default defineConfig({
         },
         // Hard budget: 60 s per test and per hook.
         testTimeout: 60000,
-        hookTimeout: 60000,
     },
 });

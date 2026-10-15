@@ -4,7 +4,8 @@
 import { readFileSync, globSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+vi.setConfig({ hookTimeout: 60_000, testTimeout: 60_000 });
 import ts from 'typescript';
 import { evaluateScript } from '../../../src/agent/cli/commands/evaluate';
 
@@ -106,14 +107,23 @@ describe('examples evaluate through the kernel', () => {
 
   it('classifies every discovered example and keeps classification keys current', () => {
     const discovered = new Set(examples.map(relativeExample));
-    const evaluated = new Set([...discovered].filter(file => !HEAVY.has(file) && !EVALUATION_EXEMPT.has(file)));
-    const classified = new Set([...evaluated, ...HEAVY.keys(), ...EVALUATION_EXEMPT.keys()]);
-    for (const file of discovered) {
-      expect(classified.has(file), `${file} must be evaluated or explicitly excluded`).toBe(true);
+    const heavy = new Set(HEAVY.keys());
+    const exempt = new Set(EVALUATION_EXEMPT.keys());
+    const expectedFailure = new Set(EXPECTED_FAILURE.keys());
+    const evaluated = new Set([...discovered].filter(file => !heavy.has(file) && !exempt.has(file)));
+    expect(discovered.size).toBeGreaterThan(0);
+    for (const key of heavy) {
+      expect(exempt.has(key), `${key} is both heavy and exempt`).toBe(false);
+      expect(expectedFailure.has(key), `${key} is both heavy and expected to fail`).toBe(false);
     }
-    for (const file of [...HEAVY.keys(), ...EVALUATION_EXEMPT.keys(), ...EXPECTED_FAILURE.keys()]) {
-      expect(discovered.has(file), `${file} classification refers to no discovered example`).toBe(true);
+    for (const key of exempt) {
+      expect(expectedFailure.has(key), `${key} is both exempt and expected to fail`).toBe(false);
     }
+    for (const key of [...heavy, ...exempt, ...expectedFailure]) {
+      expect(discovered.has(key), `${key} classification refers to no discovered example`).toBe(true);
+    }
+    // Every discovered file outside HEAVY and EVALUATION_EXEMPT gets an evaluate it() below by default.
+    for (const file of discovered) expect(heavy.has(file) || exempt.has(file) || evaluated.has(file), `${file} is not classified`).toBe(true);
   });
 
   for (const file of examples) {
@@ -122,8 +132,11 @@ describe('examples evaluate through the kernel', () => {
     it(`${displayFile} parses and transpiles`, () => {
       expect(sourceDiagnostics(file, source), displayFile).toEqual([]);
     });
+  }
 
-    if (HEAVY.has(displayFile) || EVALUATION_EXEMPT.has(displayFile)) continue;
+  const evaluationExamples = examples.filter(file => !HEAVY.has(relativeExample(file)) && !EVALUATION_EXEMPT.has(relativeExample(file)));
+  for (const file of evaluationExamples) {
+    const displayFile = relativeExample(file);
     it(`${displayFile} ${EXPECTED_FAILURE.has(displayFile) ? 'fails at its expected diagnostic' : 'evaluates cleanly'}`, async () => {
       const result = await evaluateScript({ file });
       const expectedFailure = EXPECTED_FAILURE.get(displayFile);

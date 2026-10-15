@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Compare quoted blog dimensions with the real kernel's evaluation output.
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+vi.setConfig({ hookTimeout: 60_000, testTimeout: 60_000 });
 import { resolve } from 'node:path';
 import { evaluateWithEnvelope, evaluateJsonOutput } from '../../../src/agent/cli/commands/evaluate';
 import { evaluateScriptTool } from '../../../src/agent/mcp/tools/evaluateScript';

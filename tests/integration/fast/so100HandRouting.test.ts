@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Fast checks for the seated SO-100 source data, hand rejection gates, and tube clearance refusal.
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+vi.setConfig({ hookTimeout: 60_000, testTimeout: 60_000 });
 import { readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -16,7 +17,6 @@ import { readFile } from 'node:fs/promises';
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 const SO100 = join(REPO_ROOT, 'examples/robot-arm/so100/so100-arm.kcad.ts');
 const URDF = join(REPO_ROOT, 'examples/robot-arm/so100/parts/sim/so100.urdf');
-const HAND = join(REPO_ROOT, 'tests/fixtures/robot-hand/rejected-five-finger-kinematic-hand.kcad.ts');
 const nums = (s: string) => (s.includes(',') ? s.split(',') : s.trim().split(/\s+/)).map((x) => { const m=/^\s*(-?[\d.]+)\s*\*\s*RAD\s*$/.exec(x); return m ? Number(m[1])*180/Math.PI : Number(x); });
 
 type V = [number, number, number];
@@ -93,10 +93,14 @@ describe('SO-100, hand rejection, and routed STEP gate', () => {
 
   it('rejects a hand no-op cut through the interference certification gate', async () => {
     await initOcct();
-    const handSource=readFileSync(HAND,'utf8');
-    expect(handSource).toContain('palm-root');
-    const code='const palm=box(10,10,2); const missedCutter=box(2,2,2).translate(100,100,100); return palm.subtract(missedCutter);';
-    const r=await checkInterference({code,fileName:HAND});
+    const code=`const hand=assembly('tiny-noop-hand');
+      const palm=box(24,18,4);
+      const missedCutter=box(3,3,3).translate(80,80,80);
+      hand.part('palm',palm);
+      hand.part('finger',box(3,12,3).translate(13,0,0));
+      palm.subtract(missedCutter);
+      return hand.model();`;
+    const r=await checkInterference({code,fileName:join(REPO_ROOT,'tiny-noop-hand.kcad.ts')});
     expect(r.diagnostics).toEqual(expect.arrayContaining([expect.objectContaining({code:'feature.subtractive-noop',severity:'error'})]));
   },4_500);
 
