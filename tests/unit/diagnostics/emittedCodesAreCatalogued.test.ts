@@ -325,6 +325,8 @@ describe('every diagnostic code emitted in src/ is in the catalogue', () => {
     //   tube.branch.axis-not-square, tube.branch.od-too-large = 358.
     // + 1 drafting review: drawing.annotation.override-missing = 359.
     expect(catalogue.has('tool.trace-from-image.part-detection-failed')).toBe(true);
+    expect(catalogue.has('feature.boolean.recovered')).toBe(true);
+    expect(catalogue.has('feature.shell.boolean-fallback')).toBe(true);
   });
 
   it('no emit site uses a code outside the catalogue', () => {

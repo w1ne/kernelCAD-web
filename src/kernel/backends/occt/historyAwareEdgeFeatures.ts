@@ -19,6 +19,8 @@ import { getOC } from 'replicad';
 import type { OcctBackend } from './occtBackend';
 import type { FaceHash, EdgeHash, HistoryMap } from '../../naming/evolutionRecord';
 import type { FilletContinuity } from '../../../shared/intent/filletContinuityRecord';
+import { shellByOffsetSubtract } from './shellOffsetFallback';
+import { isValidShape } from './booleanRecovery';
 
 export interface EdgeFeatureHistoryResult {
   /** The result TopoDS_Shape, ready to wrap in a new OcctBackend. */
@@ -31,6 +33,9 @@ export interface EdgeFeatureHistoryResult {
   deletedFaces: Set<FaceHash>;
   /** Input edge hashes that were entirely removed. */
   deletedEdges: Set<EdgeHash>;
+  /** shell only: `offset-subtract` when every thick-solid join mode failed
+   *  and the offset-and-subtract fallback built the wall. */
+  strategy?: 'thick-solid' | 'offset-subtract';
 }
 
 export interface EdgeRefForFilleting {
@@ -262,6 +267,16 @@ export function chamferWithHistory(
   }
 }
 
+/** Free a TopoDS_Shape handle nobody will reference (a rejected attempt or
+ *  a probe result). Never call it on a shape that is returned. */
+export function discardOcctShape(shape: unknown): void {
+  try {
+    (shape as { delete?: () => void } | undefined)?.delete?.();
+  } catch {
+    // already freed, or the heap is poisoned: nothing to release
+  }
+}
+
 /**
  * Create a shelled (hollow) version of `body` by removing `facesToRemove` and
  * offsetting all remaining faces inward by `thickness`. Captures face/edge
@@ -288,6 +303,7 @@ export function shellWithHistory(
   // Build the TopTools_ListOfShape of faces to remove by enumerating body faces
   // and matching by hash.
   const facesToRemoveList = new oc.TopTools_ListOfShape_1();
+  const removedFaces: unknown[] = [];
   const hashSet = new Set(facesToRemove.map(f => f.hash));
   const faceExplorer = new oc.TopExp_Explorer_2(
     bodyShape,
@@ -300,6 +316,7 @@ export function shellWithHistory(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (hashSet.has((f as any).HashCode(HASH_UPPER).toString(16))) {
         facesToRemoveList.Append_1(f);
+        removedFaces.push(f);
       }
       faceExplorer.Next();
     }
@@ -328,7 +345,13 @@ export function shellWithHistory(
       const { builder, progress } = built;
       try {
         const resultShape = builder.Shape();
-        if (!plausibleShellVolume(shapeVolume(oc, resultShape), bodyVolume, thickness)) continue;
+        // MakeThickSolid can report IsDone with a solid BRepCheck rejects
+        // (cylinder(30, 20).fillet(4).shell(1.5, top): bad wire at the
+        // blend seam). An invalid solid is a failed join mode, not a result.
+        if (!plausibleShellVolume(shapeVolume(oc, resultShape), bodyVolume, thickness) || !isValidShape(oc, resultShape)) {
+          discardOcctShape(resultShape);
+          continue;
+        }
 
         const faceHistory = new Map<FaceHash, FaceHash[]>();
         const edgeHistory = new Map<EdgeHash, EdgeHash[]>();
@@ -338,15 +361,19 @@ export function shellWithHistory(
         enumerateAndRecord(oc, bodyShape, oc.TopAbs_ShapeEnum.TopAbs_FACE, builder, faceHistory, deletedFaces);
         enumerateAndRecord(oc, bodyShape, oc.TopAbs_ShapeEnum.TopAbs_EDGE, builder, edgeHistory, deletedEdges);
 
-        return { shape: resultShape, faceHistory, edgeHistory, deletedFaces, deletedEdges };
+        return { shape: resultShape, faceHistory, edgeHistory, deletedFaces, deletedEdges, strategy: 'thick-solid' };
       } finally {
         builder.delete();
         progress.delete();
       }
     }
+    // Every join mode failed: hollow by offset-and-subtract instead.
+    const fallback = shellByOffsetSubtract(bodyShape, removedFaces, thickness);
+    if (fallback) return { ...fallback, strategy: 'offset-subtract' };
     throw new Error(
       `shellWithHistory: BRepOffsetAPI_MakeThickSolid failed (thickness ${thickness}); ` +
-        'arc join, arc join with intersection, and intersection join all failed to close the offset',
+        'arc join, arc join with intersection, and intersection join all failed to close the offset, ' +
+        'and the offset-and-subtract fallback could not build a valid wall',
     );
   } finally {
     facesToRemoveList.delete();
