@@ -31,7 +31,7 @@ import { MANUFACTURING_OUTPUT_SCHEMAS } from './registry/manufacturingTools.outp
 import { NURBS_OUTPUT_SCHEMAS } from './registry/nurbsTools.outputSchemas';
 
 export type { JSONSchemaObject } from './toolOutputSchemaParts';
-import { SELECTION, SOURCE_EDIT, TUBE_JOINT, type JSONSchemaObject } from './toolOutputSchemaParts';
+import { MECHANISM_SUMMARY, SELECTION, SOURCE_EDIT, TUBE_JOINT, type JSONSchemaObject } from './toolOutputSchemaParts';
 
 export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
   get_selection: SELECTION,
@@ -136,6 +136,7 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
         description: 'Every fluid port (a connector with port data) of the assembly the script returns. Present, possibly empty, whenever the script declares an assembly and builds a model, with or without tubes; omitted otherwise and for dryRun.',
       },
       mechanism: { type: 'string', enum: ['real', 'broken', 'unverified'], description: "Mechanism-truth verdict for an assembly-built scene (default-on; omitted for dryRun, non-assembly, or skipMechanismCheck:true). 'broken' makes ok:false; 'unverified' keeps ok and surfaces a loud budget diagnostic." },
+      mechanismSummary: MECHANISM_SUMMARY,
       reviewHint: { type: 'string', description: 'Present only when a captured assembly declares articulated (non-fastened) mates: the default mechanism check is shallow (no joint-support intents, pose-envelope overlap at declared limits, or gravity drop) — run review_cad for pose-envelope + gravity checks.' },
     },
     required: ['ok', 'featureCount', 'diagnostics', 'sceneSummary'],
@@ -615,6 +616,7 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
       },
       mechanism: { type: 'string' },
       mechanismFailures: { type: 'array', items: { type: 'object', additionalProperties: true } },
+      mechanismSummary: MECHANISM_SUMMARY,
       suggestedRepairPrompt: { type: 'string', description: 'Structured repair prompt (failure / repair path).' },
     },
     required: ['ok', 'featureCount', 'diagnostics'],
