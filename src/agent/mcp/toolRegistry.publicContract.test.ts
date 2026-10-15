@@ -32,6 +32,7 @@ import { fabricationToolEntries } from './registry/fabricationTools';
 import { manufacturingToolEntries } from './registry/manufacturingTools';
 import { nurbsToolEntries } from './registry/nurbsTools';
 import { pointCloudToolEntries } from './registry/pointCloudTools';
+import { wireRoutingToolEntries } from './registry/wireRoutingTools';
 import { explodeViewToolEntries } from './registry/explodeViewTools';
 
 const EXPECTED_TOOL_NAMES = [
@@ -93,6 +94,7 @@ const EXPECTED_TOOL_NAMES = [
   'ray_pick',
   'inspect_nurbs',
   'fit_plane',
+  'route_wires',
   'explode_view',
 ] as const;
 
@@ -368,10 +370,11 @@ describe('toolRegistry public contract', () => {
       'dfm_review',
       'ray_pick',
       'inspect_nurbs',
-  'fit_plane',
-  'explode_view',
+      'fit_plane',
+      'route_wires',
+      'explode_view',
     ]);
-    expect(TOOL_REGISTRY).toHaveLength(57);
+    expect(TOOL_REGISTRY).toHaveLength(58);
   });
 
   it('composes the user-file import family at the registry tail, with ChatGPT file params', () => {
@@ -391,14 +394,14 @@ describe('toolRegistry public contract', () => {
     expect(TOOL_REGISTRY.slice(53, 54).map(entry => entry.definition.name)).toEqual(['ray_pick']);
     expect(nurbsToolEntries.map(entry => entry.definition.name)).toEqual(['inspect_nurbs']);
     expect(TOOL_REGISTRY.slice(54, 55)).toEqual(nurbsToolEntries);
-    expect(TOOL_REGISTRY.slice(55)).toEqual(pointCloudToolEntries);
+    expect(TOOL_REGISTRY.slice(55, 56)).toEqual(pointCloudToolEntries);
   });
 
   it('composes ray picking at the registry tail', () => {
     expect(TOOL_REGISTRY.slice(53, 54).map(entry => entry.definition.name)).toEqual(['ray_pick']);
   });
-  it('composes the point-cloud analysis family at the registry tail', () => {
-    expect(TOOL_REGISTRY.slice(-pointCloudToolEntries.length)).toEqual(pointCloudToolEntries);
+  it('composes the point-cloud analysis family before wire routing', () => {
+    expect(TOOL_REGISTRY.slice(55, 56)).toEqual(pointCloudToolEntries);
   });
 
   it('dispatches plane fitting through the MCP registry', async () => {
@@ -406,18 +409,15 @@ describe('toolRegistry public contract', () => {
       .resolves.toMatchObject({ normal: [0, 0, 1], rms: 0 });
   });
 
-  it('keeps ray picking and NURBS inspection before the branch-local exploded-view family', () => {
-    expect(TOOL_REGISTRY.at(-3)?.definition.name).toBe('ray_pick');
-    expect(TOOL_REGISTRY.at(-2)).toEqual(nurbsToolEntries[0]);
-    expect(TOOL_REGISTRY.at(-1)).toEqual(explodeViewToolEntries[0]);
+
+  it('appends the wire routing tool after the point-cloud family', () => {
+    expect(wireRoutingToolEntries.map(entry => entry.definition.name)).toEqual(['route_wires']);
+    expect(TOOL_REGISTRY.slice(56, 57)).toEqual(wireRoutingToolEntries);
   });
 
-  it('composes ray picking at the registry tail', () => {
-    expect(TOOL_REGISTRY.at(-3)?.definition.name).toBe('ray_pick');
-  });
-
-  it('appends the exploded-view planner after existing tool families', () => {
+  it('appends the exploded-view planner after the wire routing tool', () => {
     expect(explodeViewToolEntries.map(entry => entry.definition.name)).toEqual(['explode_view']);
+    expect(TOOL_REGISTRY.slice(57, 58)).toEqual(explodeViewToolEntries);
     expect(TOOL_REGISTRY.at(-1)?.definition.name).toBe('explode_view');
   });
 

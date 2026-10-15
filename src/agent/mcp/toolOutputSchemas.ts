@@ -302,6 +302,10 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
       imageDims: { type: 'array', items: { type: 'number' }, description: 'Pixel dimensions [width, height] of the source image.' },
       diagnostics: { type: 'array', items: { type: 'object', additionalProperties: true } },
       ledger: { type: 'object', additionalProperties: true, description: 'Assumption ledger: { facts, scale?, unresolvedCount } classifying every fact as visible/inferred/assumed/missing.' },
+      detectedParts: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Optional labeled component detections: name, quantity, outline-frame position/bbox and confidence.' },
+      draftBom: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Optional unverified BOM draft grouped by detected part name.' },
+      unmatchedLabels: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Detected labels without a sufficiently strong bundled-catalog match.' },
+      partDetectionFrame: { type: 'string', enum: ['outline', 'image', 'mixed'], description: 'Coordinate frame used by all detected boxes, or mixed when some boxes fall outside the silhouette and retain image coordinates.' },
     },
     required: ['ok', 'features', 'imageDims', 'diagnostics', 'ledger'],
     additionalProperties: true,
@@ -830,6 +834,14 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
   ...FABRICATION_OUTPUT_SCHEMAS,
   ...MANUFACTURING_OUTPUT_SCHEMAS,
   ...NURBS_OUTPUT_SCHEMAS,
+  route_wires: {
+    type: 'object',
+    properties: {
+      ok: { type: 'boolean' }, routes: { type: 'array', items: { type: 'object', properties: { id: { type: 'string' }, route_found: { type: 'boolean' }, route_failure: { type: 'string' }, length_mm: { type: ['number', 'null'] }, bend_count: { type: ['integer', 'null'] }, points_mm: { type: 'array', items: { type: 'array', items: { type: 'number' } } }, collisions: { type: 'array', items: { type: 'string' } }, clearance_violations: { type: 'array', items: { type: 'string' } } }, additionalProperties: true } },
+      warnings: { type: 'array', items: { type: 'string' } },
+      unresolved_wire_count: { type: 'integer' }, clearance_mm: { type: 'number' }, requested_bend_radius_mm: { type: 'number' },
+    }, required: ['ok', 'routes', 'warnings', 'unresolved_wire_count'], additionalProperties: true,
+  },
   explode_view: {
     type: 'object', properties: {
       ok: { type: 'boolean' },

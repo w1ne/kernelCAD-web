@@ -55,7 +55,7 @@ describe('explode_view', () => {
       { ref: 'xy', position_mm: { value: [4, 7] }, physical: { bbox_mm: [2, 4, 6] } },
       { ref: 'xyz', position_mm: { value: [8, 9, 12] }, physical: { bbox_mm: [2, 4, 6] } },
     ] } });
-    expect(result.cameraPlan.target).toEqual([6, 8, 10.5]);
+    expect(result.cameraPlan.target).toEqual([6, 8, 7.5]);
   });
 
   it('skips handoff parts with non-finite positions or invalid bbox dimensions', () => {

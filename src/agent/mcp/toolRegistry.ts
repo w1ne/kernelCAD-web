@@ -25,6 +25,7 @@ import { fabricationToolEntries } from './registry/fabricationTools';
 import { manufacturingToolEntries } from './registry/manufacturingTools';
 import { rayPickToolEntries } from './registry/rayPickTools';
 import { nurbsToolEntries } from './registry/nurbsTools';
+import { wireRoutingToolEntries } from './registry/wireRoutingTools';
 import { explodeViewToolEntries } from './registry/explodeViewTools';
 import { referenceExportToolEntries } from './registry/referenceExportTools';
 import { referenceLedgerToolEntries } from './registry/referenceLedgerTools';
@@ -104,6 +105,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...rayPickToolEntries,
   ...nurbsToolEntries,
   ...pointCloudToolEntries,
+  ...wireRoutingToolEntries,
   ...explodeViewToolEntries,
 ];
 
