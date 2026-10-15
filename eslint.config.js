@@ -4,6 +4,14 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
+import { readFileSync } from 'node:fs'
+
+// Kernel seam (see src/modeling/backends/kernelRegistry.ts): replicad is the
+// OCCT kernel's binding and should only be imported inside the OCCT backend
+// folders. Files that already did so are baselined; the list may only shrink.
+const replicadImportBaseline = JSON.parse(
+  readFileSync(new URL('./scripts/lint/replicad-import-baseline.json', import.meta.url), 'utf8'),
+).files
 
 // A layer is reached either by climbing out of the current directory
 // (`../kinematic`, `../../kinematic/x`) or through an absolute `src/<layer>` path.
@@ -83,6 +91,25 @@ export default defineConfig([
       }))],
     },
   })),
+  // Uses the typescript-eslint rule (not core no-restricted-imports) so it
+  // stacks with the layering config above instead of replacing it.
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: [
+      'src/modeling/backends/occt/**',
+      'src/kernel/backends/occt/**',
+      '**/*.test.{ts,tsx}',
+      ...replicadImportBaseline,
+    ],
+    rules: {
+      '@typescript-eslint/no-restricted-imports': ['warn', {
+        paths: ['replicad', 'replicad-opencascadejs'].map((name) => ({
+          name,
+          message: `Import ${name} only inside src/{modeling,kernel}/backends/occt/. Elsewhere go through ShapeBackend / the kernel registry (src/modeling/backends/kernelRegistry.ts) so a second kernel can slot in.`,
+        })),
+      }],
+    },
+  },
   // 11 px (text-2xs) is the smallest step of the type scale in src/index.css.
   // Raw colours in src/studio are held by the ratchet in
   // tests/unit/architecture/studioRawColours.test.ts.

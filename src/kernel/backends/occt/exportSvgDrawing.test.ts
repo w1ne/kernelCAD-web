@@ -10,7 +10,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import * as replicad from 'replicad';
 import { initOcct, OcctBackend } from './occtBackend';
-import { exportSvgDrawing } from './exportSvgDrawing';
+import { exportSvgDrawing, renderSvgDrawing } from './exportSvgDrawing';
 
 const decode = (bytes: Uint8Array): string => new TextDecoder().decode(bytes);
 
@@ -33,6 +33,56 @@ const countPaths = (s: string): number => (s.match(/<path /g) ?? []).length;
 describe('exportSvgDrawing', () => {
   beforeAll(async () => {
     await initOcct();
+  });
+
+  it('exports only the requested front elevation with width and height dimensions', () => {
+    const part = { name: 'elevation', shape: OcctBackend.box(500, 30, 313) };
+    const svg = decode(exportSvgDrawing([part], { format: 'svg-drawing', sheet: 'a3', views: ['front'] }));
+    expect(svg).toContain('id="view-front"');
+    for (const name of ['top', 'left', 'iso']) expect(svg).not.toContain(`id="view-${name}"`);
+    expect(svg).toContain('>500</text>');
+    expect(svg).toContain('>313</text>');
+    expect(svg).not.toContain('>30</text>');
+    expect((svg.match(/class="dim"/g) ?? []).length).toBe(2);
+    expect(svg).toContain('>1:2</text>');
+  });
+
+  it('rejects isometric overlays on a front-only sheet', () => {
+    const parts = [{ name: 'box', shape: OcctBackend.box(40, 30, 20) }];
+    for (const overlay of [{ balloons: true }, { exploded: { factor: 2, mode: 'radial' as const } }, { explodedParts: parts }]) {
+      expect(() => renderSvgDrawing(parts, {
+        format: 'svg-drawing', views: ['front'], ...overlay,
+        bomRows: [{ item: 1, name: 'box', instancePaths: ['box'], quantity: 1 }],
+      })).toThrow(/isometric view/);
+    }
+  });
+
+  it('keeps automatic annotations on the visible front view', () => {
+    const r = renderSvgDrawing([{ name: 'elevation', shape: OcctBackend.box(500,30,313) }],
+      { format: 'svg-drawing', sheet: 'a3', views: ['front'], autoAnnotate: { include: ['overall'] } });
+    expect(r.report?.annotations.filter(a=>a.kind==='overall')).toHaveLength(2);
+    expect(r.report?.annotations.every(a=>a.view==='front')).toBe(true);
+    expect(decode(r.bytes)).not.toContain('>30</text>');
+  });
+
+  it('chooses an automatic sheet for the selected elevation at full scale', () => {
+    const svg=decode(exportSvgDrawing([{name:'block',shape:OcctBackend.box(200,10,100)}],{format:'svg-drawing',views:['front'],sheet:'auto'}));
+    expect(svg).toContain('viewBox="0 0 297 210"');
+    expect(svg).toContain('>1:1</text>');
+  });
+
+  it('rejects an authored dimension override assigned to a hidden view', () => {
+    expect(()=>exportSvgDrawing([{name:'block',shape:OcctBackend.box(80,50,10)}],{
+      format:'svg-drawing',views:['front'],annotations:[{id:'d',kind:'linear',from:[0,0,0],to:[80,0,0]}],
+      annotationOverrides:{'authored:d':{view:'top'}},
+    })).toThrow(/front|hidden|absent/);
+  });
+
+  it('omits symmetry centre cues for hidden views', () => {
+    let shape=OcctBackend.box(80,50,10);
+    for(const x of [10,70]) for(const y of [10,40]) shape=shape.subtract(OcctBackend.cylinder(12,3).translate(x,y,-1));
+    const svg=decode(exportSvgDrawing([{name:'plate',shape}],{format:'svg-drawing',views:['front'],autoAnnotate:{dimensioningStyle:'symmetry'}}));
+    expect(svg).not.toContain('data-kc-centerline="top:');
   });
 
   it('emits a plain box as a complete third-angle sheet with zero hidden lines', () => {

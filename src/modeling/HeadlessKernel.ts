@@ -30,6 +30,15 @@ export async function initHeadless() {
 import type { HeadlessContext } from './features/types';
 import { CodeAnalyzer } from '../shared/codeGeneration/CodeAnalyzer';
 import type { CodeGenerationContext } from '../shared/codeGeneration/index';
+import type { KernelId } from '../shared/types/backendTarget';
+import { KernelUnavailableError, resolveKernel } from './backends/kernelRegistry';
+
+export interface HeadlessKernelOptions {
+    /** Kernel to execute on. Omitted = 'occt'. HeadlessKernel runs raw
+     *  replicad scripts, so only OCCT is meaningful here; any other kernel
+     *  throws KernelUnavailableError from the constructor. */
+    kernel?: KernelId;
+}
 
 export interface ExecutionResult {
     shape?: unknown; // Replicad shape
@@ -41,8 +50,12 @@ export class HeadlessKernel implements HeadlessContext {
     private context: { replicad: typeof replicad; console: Record<string, unknown> };
     private analyzer: CodeAnalyzer;
     code: string = "";
+    readonly kernel: KernelId;
 
-    constructor() {
+    constructor(options: HeadlessKernelOptions = {}) {
+        const kernel = resolveKernel(options.kernel);
+        if (kernel !== 'occt') throw new KernelUnavailableError(kernel);
+        this.kernel = kernel;
         this.context = {
             replicad,
             console: {

@@ -61,7 +61,7 @@ const MARKER_OWNER = 'kernelcad-studio';
 /** The Monaco surface the source sync below needs. */
 interface SourceEditorLike {
     getValue(): string;
-    getModel(): { getFullModelRange(): EditorEdit['range'] } | null;
+    getModel(): { getFullModelRange(): EditorEdit['range']; setValue(text: string): void } | null;
     executeEdits(source: string, edits: EditorEdit[]): void;
     pushUndoStop(): void;
 }
@@ -73,7 +73,7 @@ interface SourceEditorLike {
  * so it may be older than the editor text; writing it back would drop
  * those keystrokes.
  */
-function applyWorkbenchCode(editor: SourceEditorLike, code: string, pending: string[]): void {
+function applyWorkbenchCode(editor: SourceEditorLike, code: string, pending: string[], readOnly = false): void {
     const echoAt = pending.indexOf(code);
     if (echoAt !== -1) {
         pending.splice(0, echoAt + 1);
@@ -82,6 +82,9 @@ function applyWorkbenchCode(editor: SourceEditorLike, code: string, pending: str
     pending.length = 0;
     const model = editor.getModel();
     if (!model || editor.getValue() === code) return;
+    // Monaco rejects executeEdits while read-only; a remote source replacement
+    // must update the model directly without enabling editor input.
+    if (readOnly) { model.setValue(code); return; }
     editor.executeEdits('', [{ range: model.getFullModelRange(), text: code, forceMoveMarkers: true }]);
     editor.pushUndoStop();
 }
@@ -157,7 +160,7 @@ export function CodeTab(): JSX.Element {
         editorRef.current = editor as EditorLike;
         monacoRef.current = monaco as MonacoNamespaceLike;
         // The workbench code can change between the first render and mount.
-        applyWorkbenchCode(editor as SourceEditorLike, indexInputRef.current.code, pendingEchoesRef.current);
+        applyWorkbenchCode(editor as SourceEditorLike, indexInputRef.current.code, pendingEchoesRef.current, readOnlyScript);
         syncRef.current?.dispose();
         syncRef.current = attachCodeGeometrySync(editor as SyncEditorLike, {
             store: selectionCodeStore,
@@ -175,7 +178,7 @@ export function CodeTab(): JSX.Element {
         e.onMouseDown?.(() => {
             userDrivenRef.current = true;
         });
-    }, [attachTypeCheck]);
+    }, [attachTypeCheck, readOnlyScript]);
 
     useEffect(() => () => {
         syncRef.current?.dispose();
@@ -188,8 +191,8 @@ export function CodeTab(): JSX.Element {
     useEffect(() => {
         const editor = editorRef.current as unknown as SourceEditorLike | null;
         if (!editor) return;
-        applyWorkbenchCode(editor, workbench.code ?? '', pendingEchoesRef.current);
-    }, [workbench.code]);
+        applyWorkbenchCode(editor, workbench.code ?? '', pendingEchoesRef.current, readOnlyScript);
+    }, [workbench.code, readOnlyScript]);
 
     // A re-evaluation can move feature call sites; re-apply the link.
     useEffect(() => {

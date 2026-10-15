@@ -82,6 +82,7 @@ vi.mock('./StudioShell', () => ({
 }));
 
 import App from './App';
+import { getSourceTitle } from './sourceTitle';
 
 const gallerySource = 'export default box(1, 1, 1);';
 let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
@@ -122,7 +123,7 @@ describe('App gallery source route', () => {
           json: async () => ({
             entries: [
               { slug: 'other-build', sourceUrl: '/gallery/other-build/source.kcad.ts' },
-              { slug: 'fixture-build', sourceUrl: '/gallery/fixture-build/source.kcad.ts' },
+              { slug: 'fixture-build', title: 'Fixture Build', sourceUrl: '/gallery/fixture-build/source.kcad.ts' },
             ],
           }),
         };
@@ -134,11 +135,13 @@ describe('App gallery source route', () => {
       };
     }) as unknown as typeof fetch);
 
-    render(<App />);
+    const view = render(<App />);
 
     await flushSourceLoad();
 
     expect(screen.getByTestId('workbench-code').textContent).toBe(gallerySource);
+    // The Header names the example, not the stored "Untitled Project".
+    expect(getSourceTitle()).toBe('Fixture Build');
     expect(screen.getByTestId('workbench-code').textContent).not.toBe(mocks.localProjectCode);
 
     await act(async () => {
@@ -146,6 +149,8 @@ describe('App gallery source route', () => {
     });
 
     expect(mocks.saveActiveProject).not.toHaveBeenCalled();
+    view.unmount();
+    expect(getSourceTitle()).toBeNull();
   });
 
   it('shows a visible error instead of the Studio shell when gallery source loading fails', async () => {

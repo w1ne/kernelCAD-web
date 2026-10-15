@@ -4,7 +4,7 @@
 // The toolbar that floats over the top of the viewport: Run, Validate,
 // Section, Mark for agent, the camera and the display options. It replaces
 // the second chrome row, so the model gets that height back.
-import { useMemo, type JSX } from 'react';
+import { useLayoutEffect, useMemo, useRef, type JSX } from 'react';
 import {
     Box, Check, Circle, Eye, Grid3x3, Image as ImageIcon, LayoutGrid, Maximize, Moon, PenLine, Play, Scissors,
     ShieldCheck, Sparkles, Sun, SquareDashed,
@@ -21,6 +21,7 @@ import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { viewTargetRequests } from './hooks/studioNavigation';
 import { useIsNarrow } from './hooks/useIsNarrow';
 import { OrderButton } from './OrderButton';
+import { CORNER_INSET_VAR } from './components/viewer/cornerControls';
 
 const ICON = { className: 'size-4', strokeWidth: 1.75 } as const;
 
@@ -120,8 +121,9 @@ function viewOptionEntries(display: ViewportDisplay): MenuEntry[] {
     return entries;
 }
 
+/** Hidden on phones, where the toolbar needs every pixel to stay one row. */
 function Divider(): JSX.Element {
-    return <span aria-hidden="true" className="mx-0.5 h-5 w-px shrink-0 bg-border" />;
+    return <span aria-hidden="true" className="mx-0.5 h-5 w-px shrink-0 bg-border max-md:hidden" />;
 }
 
 function RunControl({ onRun, runNeeded, size }: {
@@ -205,6 +207,36 @@ function OptionalToggles(props: ViewportToolbarProps): JSX.Element {
     );
 }
 
+/** Width of the top-left control cluster (Measure + Dimensions, left-3..left-14+w-9). */
+const CORNER_CONTROLS_RIGHT_PX = 104;
+
+/** Publish the toolbar's footprint so corner controls never sit under it.
+ *  The inset is 0 when the toolbar does not reach the corner (wide viewport). */
+function useCornerInset() {
+    const ref = useRef<HTMLDivElement | null>(null);
+    useLayoutEffect(() => {
+        const bar = ref.current;
+        const host = bar?.parentElement;
+        if (!bar || !host) return undefined;
+        const update = () => {
+            const b = bar.getBoundingClientRect();
+            const h = host.getBoundingClientRect();
+            const overlaps = b.left - h.left < CORNER_CONTROLS_RIGHT_PX;
+            host.style.setProperty(CORNER_INSET_VAR, overlaps ? `${Math.ceil(b.bottom - h.top)}px` : '0px');
+        };
+        update();
+        if (typeof ResizeObserver !== 'function') return () => host.style.removeProperty(CORNER_INSET_VAR);
+        const observer = new ResizeObserver(update);
+        observer.observe(bar);
+        observer.observe(host);
+        return () => {
+            observer.disconnect();
+            host.style.removeProperty(CORNER_INSET_VAR);
+        };
+    }, []);
+    return ref;
+}
+
 export function ViewportToolbar(props: ViewportToolbarProps): JSX.Element {
     const {
         onRun, onValidate, runNeeded = false, markingMode, onToggleMarkingMode, sectionMode, onToggleSectionMode,
@@ -214,16 +246,19 @@ export function ViewportToolbar(props: ViewportToolbarProps): JSX.Element {
     const narrow = useIsNarrow();
     const size = narrow ? 'touch' : 'sm';
     useRunShortcut(onRun);
+    const ref = useCornerInset();
 
     return (
         <div
+            ref={ref}
             role="toolbar"
             aria-label="Model tools"
             data-testid="studio-toolbar"
             data-theme="dark"
             // Above the marking overlay (z 1000): "Mark for agent" must stay
-            // clickable to save the mark and leave marking mode.
-            className="pointer-events-auto absolute left-1/2 top-3 z-[1001] flex max-w-[calc(100%-1.5rem)] -translate-x-1/2 items-center gap-0.5 rounded-panel border border-border bg-surface-1/95 p-1 shadow-e1 backdrop-blur-sm"
+            // clickable to save the mark and leave marking mode. It wraps
+            // rather than spill past a phone screen or a narrow split pane.
+            className="pointer-events-auto absolute left-1/2 top-3 z-[1001] flex w-max max-w-[calc(100%-1.5rem)] -translate-x-1/2 flex-wrap items-center justify-center gap-0.5 max-md:gap-0 rounded-panel border border-border bg-surface-1/95 p-1 shadow-e1 backdrop-blur-sm"
         >
             <RunControl onRun={onRun} runNeeded={runNeeded} size={size} />
             <IconButton
@@ -259,7 +294,7 @@ export function ViewportToolbar(props: ViewportToolbarProps): JSX.Element {
                 data-testid="toolbar-mark"
             />
             <Divider />
-            <OrderButton size={size} />
+            <OrderButton size={size} compact={narrow} />
             <IconButton
                 label="Fit model in view"
                 icon={<Maximize {...ICON} />}

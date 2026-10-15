@@ -53,7 +53,15 @@ kernelcad export svg-drawing bracket.kcad.ts -o out/bracket-drawing.svg
 
 Pass via `options` (MCP) — all optional:
 
+If `options` is supplied, its `format` must equal the top-level `format`:
+`{ format: 'svg-drawing', options: { format: 'svg-drawing', sheet: 'a3' } }`.
+Omitting `options.format` fails with `export.options-format-mismatch`.
+Inspect the exported artifact rather than assuming an unknown option was
+honoured. In particular, confirm the actual view count for a front-view-only
+request; the default sheet contains four views.
+
 - `sheet`: `'a4'` (default, 297×210 landscape), `'a3'` (420×297), or any `pdf-drawing` size (`'a2'` … `'ansi-e'`, `'auto'`).
+- `views: ['front']`: a single centred front elevation with width/height dimensions. Omit `views` for the default four-view sheet. Author front-view annotations explicitly for feature dimensions. A front-only drawing rejects annotations assigned to absent views and isometric-only balloons or exploded overlays.
 - `projection`: `'third'` (default) or `'first'` — see "PDF sheet for the shop".
 - `titleBlock`: `{ title?, partName?, material?, revision? }` — switches to the full title block the PDF sheet uses.
 - `modelName`: title-block name; defaults to the script's file name.

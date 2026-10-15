@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="328mm" height="226mm" viewBox="0 0 328 226">
+<title>Nominal uncompensated plywood profiles — digital example</title>
+<g id="cut-nominal" fill="none" stroke="#000" stroke-width="0.1"><polygon id="base" points="8,8 158,8 158,108 8,108"/><polygon id="front" points="170,8 320,8 320,48 170,48"/><polygon id="back" points="170,62 320,62 320,102 170,102"/><polygon id="left" points="8,122 96,122 96,162 8,162"/><polygon id="right" points="110,122 198,122 198,162 110,162"/><polygon id="long-divider" points="8,176 73.7,176 73.7,196 79.9,196 79.9,176 145.6,176 145.6,216 8,216"/><polygon id="short-divider" points="170,176 257.6,176 257.6,216 216.9,216 216.9,196 210.7,196 210.7,216 170,216"/></g>
+<g id="labels-do-not-cut" fill="#245b80" font-family="sans-serif" font-size="3.6"><text x="11" y="15">base: 150 × 100 mm</text><text x="173" y="15">front: 150 × 40 mm</text><text x="173" y="69">back: 150 × 40 mm</text><text x="11" y="129">left: 88 × 40 mm</text><text x="113" y="129">right: 88 × 40 mm</text><text x="11" y="183">long-divider: 137.6 × 40 mm</text><text x="173" y="183">short-divider: 87.6 × 40 mm</text></g>
+</svg>

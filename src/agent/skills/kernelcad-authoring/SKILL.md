@@ -484,6 +484,14 @@ Contracts worth knowing:
 
 ### Shape methods (chainable)
 
+Transforms mutate the shared `Shape` handle, including geometry already passed
+to `assembly.part`. `const other = shape` does not make a copy: translating either
+name moves the same source for every part that uses it. For repeated parts, keep
+the prototype unmodified and use separate `assembly.part(name, prototype, { at })`
+placements with connectors and mates, or call a geometry factory for each part.
+Check world-frame spacing after reuse changes. The authoring `Shape` API has no
+`.clone()` method; backend clone methods are not script methods.
+
 ```typescript
 // Transforms (mutate-then-return-this; chain freely):
 .translate(x: Editable<number>, y: Editable<number>, z: Editable<number>): Shape
@@ -689,7 +697,7 @@ const blade = root.loft(tip, {
 .bulgeArc(x: Editable<number>, y: Editable<number>, bulge: Editable<number>): PathBuilder      // Arc by chord + DXF bulge factor (tan(angle/4)).
 .radiusArc(x: Editable<number>, y: Editable<number>, radius: Editable<number>): PathBuilder    // Arc by chord + explicit radius; sign chooses side.
 .smoothSpline(x: Editable<number>, y: Editable<number>): PathBuilder  // C1-smooth single-segment spline to (x, y); inherits start tangent.
-.spline(points: Array<[Editable<number>, Editable<number>]>, opts?: { tension?: Editable<number> }): PathBuilder    // (Slice D) N-waypoint B-spline interpolation through every point. See kernelcad-nurbs.
+.spline(points: Array<[Editable<number>, Editable<number>]>, opts?: { tension?: Editable<number> }): PathBuilder    // Include current pen position as points[0]. Verify the resulting bounds: dense sharp turns can overshoot; use bounded piecewise Bezier curves for dimension-controlled silhouettes. See kernelcad-nurbs.
 .nurbsSegment(controlPoints: Array<[Editable<number>, Editable<number>]>, opts?: { degree?: number; weights?: number[]; knots?: number[] }): PathBuilder  // (Slice D) Explicit B-spline control polygon — controlPoints[0] must match current pen. See kernelcad-nurbs.
 .bezierTo(c1: [Editable<number>, Editable<number>], c2: [Editable<number>, Editable<number>], end: [Editable<number>, Editable<number>]): PathBuilder  // Exact cubic Bezier (SVG C) from the pen.
 .quadraticTo(c: [Editable<number>, Editable<number>], end: [Editable<number>, Editable<number>]): PathBuilder  // Exact quadratic Bezier (SVG Q) from the pen.
@@ -1509,6 +1517,16 @@ Rules:
   whole-shape `.material()`). Apply per-face materials AFTER all booleans.
 
 ## Reference images
+
+Use `drawing_to_cad` for vector engineering PDFs; use `trace_from_image` for
+PNG/JPEG references or scanned drawings. A PNG embedded in a PDF remains a
+raster image. When revised dimensions come from a spreadsheet or brief, they
+control the geometry. If component proportions differ in the reference,
+build dimensioned components separately rather than scaling the whole sheet.
+Scope organic traces to a component, inspect the returned outline over the
+source, and reject contours spanning other components even with confidence 1.
+An aborted trace or empty feature list is a failed extraction: investigate,
+repair and rerun before claiming the reference workflow works.
 
 `referenceImage(path, opts)` places a reference photo as a plane overlay in the
 Studio viewport. Display only, and the

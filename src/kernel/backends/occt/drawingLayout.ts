@@ -238,6 +238,23 @@ export interface SheetLayout {
   views: Record<DrawingViewName, ViewPlacement>;
 }
 
+/** One elevation centred in the usable sheet, with room for dimensions. */
+export function computeFrontSheetLayout(front: ViewBox2, sheet: SheetSpec): SheetLayout {
+  const usableW = sheet.w - 2 * sheet.margin - 24;
+  const usableH = sheet.h - 2 * sheet.margin - sheet.titleBlock.h - 30;
+  const scale = pickDrawingScale(Math.min(usableW / front.w, usableH / front.h));
+  const w = front.w * scale, h = front.h * scale;
+  const x = sheet.margin + (usableW - w) / 2;
+  const y = sheet.margin + (usableH - h) / 2;
+  const placement: ViewPlacement = {
+    tx: x - front.x * scale, ty: y + h + front.y * scale,
+    box: { x, y, w, h },
+  };
+  return { scale, scaleText: scaleLabel(scale), views: {
+    front: placement, top: placement, left: placement, iso: placement,
+  } };
+}
+
 /** Vertical band under the front view reserved for the width dimension. */
 const DIM_BAND = 12;
 

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import { getMcpViewerResult } from './liveViewer';
 import { selectionToolEntries } from './registry/selectionTools';
 import { TOOL_ANNOTATIONS } from './toolAnnotations';
 import { TOOL_OUTPUT_SCHEMAS } from './toolOutputSchemas';
@@ -18,6 +19,8 @@ import {
   inspectionVerificationRepairToolEntries,
 } from './registry/inspectionVerificationTools';
 import { printToolEntries } from './registry/printTools';
+import { importToolEntries } from './registry/importTools';
+import { fabricationToolEntries } from './registry/fabricationTools';
 import { manufacturingToolEntries } from './registry/manufacturingTools';
 import { referenceExportToolEntries } from './registry/referenceExportTools';
 import { referenceLedgerToolEntries } from './registry/referenceLedgerTools';
@@ -88,6 +91,10 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   // Appended at the tail: cookbook one-shot execute for ChatGPT industry demos.
   ...cookbookExecutionToolEntries,
   ...selectionToolEntries,
+  // Appended at the tail: import the user's own STEP/STL as a base body.
+  ...importToolEntries,
+  // Appended at the tail: fabrication handoff (fab pack + quote links).
+  ...fabricationToolEntries,
   // Appended at the tail: manufacturability review (FDM + CNC).
   ...manufacturingToolEntries,
 ];
@@ -133,7 +140,14 @@ export const TOOLS = TOOL_REGISTRY.map(entry => withMetadata(entry.definition));
 export async function callMcpTool(name: string, input: Record<string, unknown>): Promise<unknown> {
   const handler = toolHandlers.get(name);
   if (!handler) throw new Error(`Unknown tool: ${name}`);
-  return handler(input);
+  const previousViewer = getMcpViewerResult();
+  const result = await handler(input);
+  const viewer = getMcpViewerResult();
+  // Source-edit tools often return a trimmed evaluate result. Preserve the
+  // live link whenever this call built a replacement model.
+  return viewer !== previousViewer && result && typeof result === 'object' && !Array.isArray(result)
+    ? { ...result, ...viewer }
+    : result;
 }
 
 /**

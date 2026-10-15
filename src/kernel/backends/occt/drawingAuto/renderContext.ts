@@ -187,6 +187,7 @@ export function beginAnnotation(ctx: RenderCtx, id: string, kind: string, view: 
   const o: DrawingAnnotationOverride | undefined = ctx.input.annotationOverrides?.[id];
   const review: AnnotationReview = { id, view: o?.view ?? view, text: reviewedLabel(kind, text, o?.text), offset: o?.offset ?? 0,
     ...(o?.text !== undefined ? { originalText: text } : {}) };
+  if (ctx.input.visibleViews && !ctx.input.visibleViews.includes(review.view)) return null;
   if (o?.suppress) {
     recordSuppressedAnnotation(ctx, kind, review);
     return null;
@@ -200,6 +201,7 @@ function isEnclosed(ctx: RenderCtx, b: Box): boolean {
   const cx = (b.x0 + b.x1) / 2;
   const cy = (b.y0 + b.y1) / 2;
   for (const name of [...STANDARD_VIEWS, 'iso'] as DrawingViewName[]) {
+    if (ctx.input.visibleViews && !ctx.input.visibleViews.includes(name)) continue;
     const vb = ctx.views[name].placement.box;
     if (cx < vb.x || cx > vb.x + vb.w || cy < vb.y || cy > vb.y + vb.h) continue;
     const rays: Seg[] = [

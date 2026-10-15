@@ -50,6 +50,34 @@ Iteration mode: visual > scored > spec+photo (R1-R6 empirical).
 
 ## Engineering drawing PDF
 
+## Raster drawing with a separate dimension specification
+
+For PNG/JPEG drawings or raster-only PDF pages, use `trace_from_image` for
+component curves and `kernelcad-authoring` for dimensioned geometry.
+`drawing_to_cad` reads vector PDF paths and text; wrapping a PNG in a PDF
+does not make it a vector drawing.
+
+When a spreadsheet or brief supplies revised dimensions, those dimensions
+control the model. If the reference has inconsistent component proportions,
+do not apply one scale anchor to the entire sheet. Build boxes, cabin shells,
+wheels and repeated details from named dimension parameters. Extract organic
+outlines separately with explicit component regions, fit each to its own
+specified dimensions, and record any remaining inferred shape or placement.
+
+Before accepting a trace, plot its waypoints over the source and check that
+they describe the requested component. A successful response, confidence 1,
+or a confirmed ledger fact does not prove the contour is the correct object.
+Reject outlines spanning other components or drawing annotations. If a vision
+call aborts, preserve the input and diagnostic, investigate the backend, and
+rerun it after repair. Do not substitute a whole-sheet contour and label the
+component reconstructed.
+
+For a front-view-only request, produce that view first, check its dimension
+datums and component counts against the specification, inspect the exported
+drawing visually, and list inferred dimensions for review before other views.
+
+## Vector PDF import
+
 `drawing_to_cad({ path, out })` (or `{ pdfBase64 }` against a hosted server)
 turns a vector drawing page into a `.kcad.ts` plus `<stem>.ledger.json`. It is
 deterministic: no vision model, the linework and dimension text are read out of

@@ -803,7 +803,7 @@ export async function meshFeaturesPerFeature(
     | Map<FeatureId, FeatureMesh>
     | undefined;
   const cachedAssemblyPartMeshes = session?.cachedAssemblyPartMeshes as
-    | Map<FeatureId, Map<string, { faces: FaceGeometry[]; volume?: number; edges?: Float32Array }>>
+    | Map<FeatureId, Map<string, { shape: ShapeBackend; faces: FaceGeometry[]; volume?: number; edges?: Float32Array }>>
     | undefined;
   const cachedShapesIn = session?.cachedShapes;
   const assembliesIn = session?.assemblies;
@@ -922,7 +922,7 @@ interface MeshFeatureEventContext {
   readonly meshBounds: MeshBoundsAccumulator;
   readonly failedFeatureIds: FeatureId[];
   readonly constructionClosure: ReadonlySet<FeatureId>;
-  readonly cachedAssemblyPartMeshes?: Map<FeatureId, Map<string, { faces: FaceGeometry[]; volume?: number; edges?: Float32Array }>>;
+  readonly cachedAssemblyPartMeshes?: Map<FeatureId, Map<string, { shape: ShapeBackend; faces: FaceGeometry[]; volume?: number; edges?: Float32Array }>>;
   readonly explodeOffsets?: ReadonlyMap<string, readonly [number, number, number]>;
   readonly assembliesIn?: ReadonlyMap<string, unknown>;
   readonly recordById: ReadonlyMap<FeatureId, FeatureRecord>;

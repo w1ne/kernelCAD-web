@@ -27,6 +27,8 @@ import { sketchAssemblyToolEntries } from './registry/sketchAssemblyTools';
 import { mechanismSimToolEntries } from './registry/mechanismSimTools';
 import { meshReconstructToolEntries } from './registry/meshReconstructTools';
 import { cookbookExecutionToolEntries } from './registry/cookbookExecutionTools';
+import { importToolEntries } from './registry/importTools';
+import { fabricationToolEntries } from './registry/fabricationTools';
 import { manufacturingToolEntries } from './registry/manufacturingTools';
 
 const EXPECTED_TOOL_NAMES = [
@@ -82,6 +84,8 @@ const EXPECTED_TOOL_NAMES = [
   'execute_cookbook',
   'get_selection',
   'set_selection',
+  'import_step',
+  'fab_pack',
   'dfm_review',
 ] as const;
 
@@ -352,14 +356,25 @@ describe('toolRegistry public contract', () => {
       'execute_cookbook',
       'get_selection',
       'set_selection',
+      'import_step',
+      'fab_pack',
       'dfm_review',
     ]);
-    expect(TOOL_REGISTRY).toHaveLength(51);
+    expect(TOOL_REGISTRY).toHaveLength(53);
   });
 
+  it('composes the user-file import family at the registry tail, with ChatGPT file params', () => {
+    expect(importToolEntries.map(entry => entry.definition.name)).toEqual(['import_step']);
+    expect(TOOL_REGISTRY.slice(50, 51)).toEqual(importToolEntries);
+    expect(getToolDefinition('import_step')?._meta).toEqual({ 'openai/fileParams': ['upload'] });
+  });
+  it('composes the fabrication handoff family at the registry tail', () => {
+    expect(fabricationToolEntries.map(entry => entry.definition.name)).toEqual(['fab_pack']);
+    expect(TOOL_REGISTRY.slice(51, 52)).toEqual(fabricationToolEntries);
+  });
   it('composes the manufacturability review family at the registry tail', () => {
     expect(manufacturingToolEntries.map(entry => entry.definition.name)).toEqual(['dfm_review']);
-    expect(TOOL_REGISTRY.slice(50, 51)).toEqual(manufacturingToolEntries);
+    expect(TOOL_REGISTRY.slice(52, 53)).toEqual(manufacturingToolEntries);
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {

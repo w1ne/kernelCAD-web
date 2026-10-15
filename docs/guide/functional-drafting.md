@@ -3,6 +3,8 @@ title: Dimension the interfaces that matter
 summary: Declare the measurements a fixture plate must show, find a missing callout, and export a reviewed drawing.
 date: 2026-10-12
 kind: guide
+status: draft
+note: Unpublished 2026-10-14 at the author's request.
 video: docs/demos/functional-drafting/plate/demo.mp4
 ---
 
@@ -14,7 +16,7 @@ This illustrative fixture plate uses 100 × 70 × 12 mm stock with R6 corners. F
 
 The plan intentionally treats stock width as a reference requirement. It is absent from this sheet and remains advisory. Manufacturing details beyond those four critical measurements are outside the declared scope.
 
-![Fixture plate drawing with the X and Y pitches and two measured diameters](../../site/blog/functional-drafting/plate-complete.png "Four declared critical measurements are covered. Stock width is an omitted reference, so this is an interface review rather than a complete manufacturing specification.")
+![Fixture plate drawing with the X and Y pitches and two measured diameters](../blog-drafts/functional-drafting/plate-complete.png "Four declared critical measurements are covered. Stock width is an omitted reference, so this is an interface review rather than a complete manufacturing specification.")
 
 ## Attach measurements to the model
 
@@ -55,11 +57,11 @@ This fragment shows one requirement. The full source declares four critical meas
 
 [The missing-callout source](/blog/functional-drafting/fixture-plate-missing.kcad.ts) keeps the solid and declared plan but omits the X-pitch dimension. It produces `missing` and 3/4 critical coverage. The geometry evidence independently verifies that both source variants have the same exact bounding box and volume.
 
-![Fixture plate drawing deliberately missing its X-pitch callout](../../site/blog/functional-drafting/plate-missing.png "The holes are still modeled. Their required X-pitch callout is missing, so the review is incomplete.")
+![Fixture plate drawing deliberately missing its X-pitch callout](../blog-drafts/functional-drafting/plate-missing.png "The holes are still modeled. Their required X-pitch callout is missing, so the review is incomplete.")
 
 Hiding the existing `authored:pitch-x` row produces `hidden` instead. A crowded critical label, kind mismatch or manual numerical-text replacement also blocks critical coverage. A free-text note cannot substitute for a measured dimension, even if it uses the same ID. A descriptive source label such as “X pitch” keeps its computed 76 mm value.
 
-![Studio functional drawing review after hiding the X-pitch annotation](../../site/blog/functional-drafting/studio-hidden.png "Actual local Studio preview: 3/4 critical covered. The hidden requirement blocks Mark reviewed and Export reviewed PDF.")
+![Studio functional drawing review after hiding the X-pitch annotation](../blog-drafts/functional-drafting/studio-hidden.png "Actual local Studio preview: 3/4 critical covered. The hidden requirement blocks Mark reviewed and Export reviewed PDF.")
 
 ## Review the actual sheet in Studio
 
@@ -69,7 +71,7 @@ For this focused tutorial, use **Annotations** to hide the automatic heuristic r
 
 Click the X-pitch requirement, tick **Hide annotation**, and **Refresh preview**. The count falls to 3/4. **Download PDF** remains available for an ordinary incomplete drawing. Restore the row and refresh again. With 4/4 covered and no unresolved decisions, click **Mark reviewed**, then **Export reviewed PDF**. The video shows these actual local actions and downloaded PDF bytes.
 
-![Studio complete fixture-plate review with the reviewed PDF action](../../site/blog/functional-drafting/studio-complete.png "Coverage applies to this refreshed preview and its exact source and settings. A source or settings edit invalidates the reviewed state.")
+![Studio complete fixture-plate review with the reviewed PDF action](../blog-drafts/functional-drafting/studio-complete.png "Coverage applies to this refreshed preview and its exact source and settings. A source or settings edit invalidates the reviewed state.")
 
 The exporter evaluates the final rendered rows. `requireCompleteReview: true` refuses incomplete or undeclared SVG/PDF exports before emitting bytes. Ordinary exports retain the incomplete report and warning. A successful export checks the declared plan; it does not establish physical fit, manufacturing acceptance, tolerance approval or load capacity. Undeclared physical criteria stay outside the report.
 

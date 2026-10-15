@@ -10,9 +10,23 @@ beforeAll(async () => { await initOcct(); });
 beforeEach(() => clearActiveMcpSession());
 it('returns step validity and honest snapshot availability for a full evaluation', async () => {
   const out = await evaluateScriptTool({ code: 'return box(10, 10, 10);' });
-  expect(out.step?.validity.status).toBe('valid');
+  expect(out.step?.validity.status, JSON.stringify(out.step)).toBe('valid');
   expect(out.step?.validity.volume).toBeCloseTo(1000);
   expect(out.step?.snapshots.status).toBeDefined();
+});
+it('measures every assembly part without treating the scene as a single shape', async () => {
+  const out = await evaluateScriptTool({ code: `
+    const a = assembly('step evidence');
+    a.part('body', box(10, 10, 10));
+    a.part('cover', box(5, 5, 5).translate(30, 0, 0));
+    return a.model();
+  `, skipMechanismCheck: true });
+  expect(out.ok).toBe(true);
+  expect(out.parts?.count).toBe(2);
+  expect(out.step?.validity.status, JSON.stringify(out.step)).toBe('valid');
+  expect(out.step?.validity.volume).toBeCloseTo(1125);
+  expect(out.step?.snapshots.error).not.toMatch(/boundingBox is not a function/);
+  expect(out.sceneSummary.size).toEqual([35, 10, 10]);
 });
 it('omits geometry evidence for dry runs', async () => {
   const out = await evaluateScriptTool({ code: 'return box(10, 10, 10);', dryRun: true });

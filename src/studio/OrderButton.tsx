@@ -176,7 +176,9 @@ function OrderPopover({ flow }: { flow: ReturnType<typeof useOrderFlow> }): JSX.
     );
 }
 
-export function OrderButton({ size = 'sm' }: { size?: IconButtonSize }): JSX.Element {
+/** `compact` (phone toolbar): the bag icon alone, or icon + price once the
+ *  price is known, so the floating toolbar fits one row on a phone. */
+export function OrderButton({ size = 'sm', compact = false }: { size?: IconButtonSize; compact?: boolean }): JSX.Element {
     const { code } = useCode();
     const flow = useOrderFlow(code);
     const { open, phase, start, close } = flow;
@@ -198,21 +200,37 @@ export function OrderButton({ size = 'sm' }: { size?: IconButtonSize }): JSX.Ele
         };
     }, [open, close]);
 
+    const orderIcon = phase === 'asking' ? <Loader2 {...ICON} className="size-4 animate-spin" /> : <ShoppingBag {...ICON} />;
+
     return (
         <div ref={rootRef} className="relative">
-            {/* A text button so the real price is on the toolbar, not only in a tooltip. */}
-            <Button
-                variant="secondary"
-                size={size === 'sm' ? 'sm' : 'md'}
-                aria-pressed={open}
-                aria-label={priceCents === null ? 'Order' : `Order, ${formatDollars(priceCents)}`}
-                title="Get a price and order this part"
-                leadingIcon={phase === 'asking' ? <Loader2 {...ICON} className="size-4 animate-spin" /> : <ShoppingBag {...ICON} />}
-                onClick={open ? close : start}
-                data-testid="toolbar-order"
-            >
-                {priceCents === null ? 'Order' : `Order · ${formatDollars(priceCents)}`}
-            </Button>
+            {compact && priceCents === null ? (
+                <IconButton
+                    variant="secondary"
+                    size={size}
+                    label="Order"
+                    description="Get a price and order this part"
+                    tooltipSide="bottom"
+                    pressed={open}
+                    icon={orderIcon}
+                    onClick={open ? close : start}
+                    data-testid="toolbar-order"
+                />
+            ) : (
+                /* A text button so the real price is on the toolbar, not only in a tooltip. */
+                <Button
+                    variant="secondary"
+                    size={size === 'sm' ? 'sm' : 'md'}
+                    aria-pressed={open}
+                    aria-label={priceCents === null ? 'Order' : `Order, ${formatDollars(priceCents)}`}
+                    title="Get a price and order this part"
+                    leadingIcon={orderIcon}
+                    onClick={open ? close : start}
+                    data-testid="toolbar-order"
+                >
+                    {priceCents === null ? 'Order' : compact ? formatDollars(priceCents) : `Order · ${formatDollars(priceCents)}`}
+                </Button>
+            )}
             {open && <OrderPopover flow={flow} />}
         </div>
     );

@@ -73,6 +73,13 @@ test('Mark in a host chat: drag on the model paints, background drag orbits, not
     const frame = await hostAsWidget(page, baseURL, size, ['edit-request', 'marks-context']);
     await expect(frame.locator('[data-embed-phase="model_displayed"]')).toBeVisible({ timeout: 45_000 });
     await expect(frame.getByTestId('measure-toggle')).toBeVisible();
+    // The view cube (axis arrows + faces) stays in a phone card, shrunk.
+    const gizmo = frame.getByTestId('view-gizmo');
+    await expect(gizmo).toBeVisible();
+    await expect(frame.getByTestId('view-axis-arrows')).toBeVisible();
+    const gizmoBox = await gizmo.boundingBox();
+    expect(gizmoBox && gizmoBox.width).toBeGreaterThan(80);
+    expect(gizmoBox && gizmoBox.width).toBeLessThan(120);
 
     const toggle = frame.getByTestId('mark-toggle');
     await toggle.click();

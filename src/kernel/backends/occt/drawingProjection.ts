@@ -156,14 +156,17 @@ export function projectShapeForDrawing(
   const oc = getOC();
   const r = GCWithScope();
 
-  const algo = r(new oc.HLRBRep_Algo_1());
+  // The OCCT handle owns this reference-counted algorithm. Registering both
+  // the raw algorithm and its handle for deletion frees it twice when GC runs.
+  const algo = new oc.HLRBRep_Algo_1();
+  const algoHandle = r(new oc.Handle_HLRBRep_Algo_2(algo));
   algo.Add_2(shape.wrapped, 0);
   const projector = r(new oc.HLRAlgo_Projector_2(camera.wrapped));
   algo.Projector_1(projector);
   algo.Update();
   algo.Hide_1();
   const hlrToShape = r(
-    new oc.HLRBRep_HLRToShape(r(new oc.Handle_HLRBRep_Algo_2(algo))),
+    new oc.HLRBRep_HLRToShape(algoHandle),
   );
 
   // Discretize every edge of one HLR output compound into 2D polylines.

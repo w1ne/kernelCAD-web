@@ -6,12 +6,34 @@ import { initOcct, OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import type { ShapeBackend } from '../../kernel/backends/backend';
 import { runScript } from '../runtime/runScript';
 import { meshFeaturesPerFeature } from './featureMeshing';
+import { buildModel, updateModelParams } from '../buildModel';
 
 beforeAll(async () => {
   await initOcct();
 });
 
 describe('meshFeaturesPerFeature', () => {
+  it('refreshes cached assembly-part triangles when a parameter changes local geometry', async () => {
+    const model = await buildModel({ fileName: 'animated-assembly.kcad.ts', code: `
+      const x = param('x', 0);
+      const demo = assembly('animated');
+      demo.part('moving', box(10, 10, 10).translate(x, 0, 0));
+      return demo.model();
+    ` });
+    const initial = await meshFeaturesPerFeature(model.records, model.session.paramTable, model.session);
+    await updateModelParams(model, [{ name: 'x', value: 40 }]);
+    const moved = await meshFeaturesPerFeature(model.records, model.session.paramTable, model.session);
+    const first = initial.features.find(f => f.featureId.endsWith('__moving'))!;
+    const next = moved.features.find(f => f.featureId.endsWith('__moving'))!;
+    expect(next.faces).not.toBe(first.faces);
+    expect(next.faces.every(face => face.uv !== undefined)).toBe(true);
+    const minX = (faces: typeof first.faces) => Math.min(...faces.flatMap(face =>
+      Array.from(face.vertices).filter((_, index) => index % 3 === 0)));
+    expect(minX(next.faces) - minX(first.faces)).toBeCloseTo(40, 5);
+    expect(moved.bounds.min[0] - initial.bounds.min[0]).toBeCloseTo(40, 5);
+    const repeated = await meshFeaturesPerFeature(model.records, model.session.paramTable, model.session);
+    expect(repeated.features.find(f => f.featureId.endsWith('__moving'))!.faces).toBe(next.faces);
+  });
   it('returns one entry per feature in dependency order', async () => {
     const code = `
       const plate = box(50, 50, 8);

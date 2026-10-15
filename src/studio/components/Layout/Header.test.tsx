@@ -6,6 +6,7 @@ import { render, screen, cleanup, fireEvent, waitFor } from '@testing-library/re
 import { Header } from './Header';
 import { WorkbenchProvider } from '../../context/WorkbenchContext';
 import * as exportViaServerMod from '../../exportViaServer';
+import { setSourceTitle } from '../../sourceTitle';
 
 vi.mock('../../exportViaServer', async (importOriginal) => ({
   ...await importOriginal<typeof import('../../exportViaServer')>(),
@@ -97,6 +98,23 @@ describe('Header', () => {
     );
     // Default project name from ProjectContext
     expect(screen.getByText('Untitled Project')).toBeDefined();
+  });
+
+  it('names an opened gallery example by its title, not the stored project, and drops "Saved"', () => {
+    setSourceTitle('Dual-Bearing Hand Coffee Grinder');
+    try {
+      render(
+        <WorkbenchProvider>
+          <Header />
+        </WorkbenchProvider>,
+      );
+      expect(screen.getByText('Dual-Bearing Hand Coffee Grinder')).toBeDefined();
+      expect(screen.queryByText('Untitled Project')).toBeNull();
+      expect(screen.queryByText('Saved')).toBeNull();
+      expect(screen.queryByText('Unsaved')).toBeNull();
+    } finally {
+      setSourceTitle(null);
+    }
   });
 
   it('names a funnel project by its title, not "Generated"', () => {

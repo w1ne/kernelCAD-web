@@ -84,7 +84,8 @@ the same labels can flow into kernelCAD constant names (`const bridge_top
 **Backend hint.** Leave `backend` unset; let the router pick. The router
 falls through to:
 
-- `'opencv'` — uniform background + `silhouette` features only.
+- `'opencv'` — uniform background + one whole-image `silhouette`, without a semantic `region`.
+- `'vision-llm'` — a silhouette with a semantic `region`, or multiple separately named silhouettes, even on a uniform background. Whole-image contours cannot distinguish the horse from the carriage on a drawing sheet. An explicit `hybrid` request also uses vision for these silhouettes; an explicit `opencv` request fails with guidance to use vision or crop the input.
 - `'hybrid'` — uniform background + any `point`/`bbox`/`curve` feature (curves
   are part of the outline, e.g. a roof line, so the LLM picks them out; opencv
   only returns the whole silhouette).
@@ -120,6 +121,19 @@ Start at 12 (the default), adjust on the second call if the curve looks too
 chunky or too noisy.
 
 ### Step 3 — Sanity-check the response
+
+First require `ok: true` and no error diagnostics. Plot the returned outline
+over the reference and confirm it contains only the requested component.
+On a multi-component drawing, reject a horse trace that includes the carriage
+or box even if confidence is 1. Region-scoped silhouettes require vision or
+an input cropped to that one component; whole-image contours cannot interpret
+semantic regions. Preserve backend-abort diagnostics and repair the backend
+before rerunning. Do not treat an empty feature list as a completed trace.
+
+When a separate specification revises component dimensions, convert and fit
+each component independently. Do not establish a global scale from obsolete
+dimensions printed on the sheet. Keep the specified dimensions as named CAD
+parameters and record inferred contours and placement separately.
 
 Each returned feature has `{ label, kind, waypoints, confidence, backend }`.
 Before converting to mm:

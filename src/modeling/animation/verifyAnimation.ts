@@ -91,6 +91,8 @@ export interface VerifyAnimationOpts {
    *  emits its own single trailing relower) set this so verification does not
    *  flood SSE subscribers with one relower per sampled pose. */
   silent?: boolean;
+  /** Best-effort progress before each potentially expensive kernel phase. */
+  onProgress?: (message: string) => void;
 }
 
 function diag(code: DiagnosticCode, message: string, hint: string): CompilerDiagnostic {
@@ -137,6 +139,9 @@ export async function verifyAnimation(
   const diagnostics: CompilerDiagnostic[] = [];
   const collisions: AnimationCollision[] = [];
   const cap = jointContactCapMm3();
+  const progress = (message: string) => {
+    try { opts.onProgress?.(message); } catch { /* Observers cannot alter verification. */ }
+  };
 
   const ignored = modelIgnorePairs(model);
   for (const key of opts.ignorePairs ?? []) ignored.add(key);
@@ -156,17 +161,25 @@ export async function verifyAnimation(
 
   let posesSampled = 0;
   let poseFailures = 0;
-  for (const tMs of sampleTimes) {
+  for (const [index, tMs] of sampleTimes.entries()) {
+    const label = `verify pose ${index + 1}/${sampleTimes.length} tMs=${tMs}`;
+    progress(`${label}: solve`);
     const outcome = await lowerPoseAtTime(model, tracks, tMs, opts.silent);
     if ('failure' in outcome) {
       poseFailures += 1;
       diagnostics.push(outcome.failure);
+      progress(`${label}: solve failed`);
       continue;
     }
     posesSampled += 1;
-    if (!isSceneBackend(outcome.lowered)) continue; // single-body model: nothing to clash
+    if (!isSceneBackend(outcome.lowered)) {
+      progress(`${label}: done`);
+      continue; // single-body model: nothing to clash
+    }
     anyPoseResolvedScene = true;
+    progress(`${label}: interference`);
     collectPoseCollisions(tMs, outcome.lowered, ignored, cap, collisions, diagnostics);
+    progress(`${label}: done`);
   }
 
   // Gate hole: the script declared an assembly, yet not one sampled pose
@@ -183,7 +196,9 @@ export async function verifyAnimation(
 
   // Restore the pre-verification param values — the capture frame loop or
   // later consumers reuse the model and must see it unchanged.
+  if (originals.length > 0) progress('verify: restoring params');
   const restoreIssue = await restoreAnimatedParamValues(model, originals, opts.silent);
+  if (originals.length > 0) progress(restoreIssue === undefined ? 'verify: params restored' : 'verify: param restore failed');
   if (restoreIssue !== undefined) {
     poseFailures += 1;
     diagnostics.push(restoreIssue);
