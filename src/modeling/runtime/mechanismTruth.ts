@@ -66,7 +66,9 @@ import { expandCoupledPoses } from '../mates/coupledPoses';
 import type { NumericPoses } from '../capture/forwardKinematics';
 import { parseConnectorRef, type MateRecord } from '../mates/mate';
 import { checkOrphanParts } from './mechanismOrphan';
-import { checkMotionIntent } from './motionIntent';
+import { checkMotionIntent, hasMotionIntent } from './motionIntent';
+import { checkMotionLimits } from './motionLimits';
+import { checkMateClosure, type ClosureSample } from './mateClosure';
 import {
   REST_MATE_CONTACT_TOLERANCE_MM,
   restPoseMateGaps,
@@ -198,6 +200,12 @@ export interface MechanismCoverage {
   readonly sweep: boolean;
   /** True when gravity hold + drop-on-release (MuJoCo) ran. */
   readonly physics: boolean;
+  /** Animated joints whose animation keys were checked against their limits. */
+  readonly limitsChecked: number;
+  /** True when every mate's connector gap was measured at every solved pose. */
+  readonly matesChecked: boolean;
+  /** Moving DOFs nobody limited: "joint 'x' offset has no limits, range not checked". */
+  readonly skipped: readonly string[];
 }
 
 /**
@@ -354,6 +362,11 @@ export async function checkMechanismTruth(
   // Motion intent vs joint type — capture-only, no BREP. An animation or a
   // drive on a fastened joint is 'broken' whatever the sweep finds.
   failures.push(...checkMotionIntent(arm));
+  // Joint ranges along the animation (capture-only). Only a model that
+  // claims to move gets range notes; a static one stays quiet.
+  const moving = hasMotionIntent(arm);
+  const limits = moving ? checkMotionLimits(arm) : { failures: [], skipped: [], checked: 0 };
+  failures.push(...limits.failures);
 
   // Pose sampling: rest + per-articulated-mate single-joint sweep.
   const samples = buildPoseSamples(arm);
@@ -362,10 +375,12 @@ export async function checkMechanismTruth(
   // edge list and per-part transforms are everything criteria 1 + 4 need;
   // criteria 2 + 3 will lazily lower BREP per-sample below.
   const solved: SolvedSample[] = [];
+  const closure: ClosureSample[] = [];
   for (const sample of samples) {
     try {
       const r = await solveMates(arm, sample.poses);
       solved.push({ sample, transforms: r.poses });
+      closure.push({ name: sample.name, status: r.status, ...(r.loopResiduals ? { loopResiduals: r.loopResiduals } : {}) });
     } catch {
       // A solver throw at a sampled pose is itself a mechanism failure,
       // but it's already surfaced by the pose-envelope review path. Skip
@@ -374,10 +389,16 @@ export async function checkMechanismTruth(
     }
   }
 
+  // Per-mate satisfaction at every solved pose (loop mates; tree mates are
+  // placed by the FK walk). Moving models only: a static rigid loop keeps
+  // its existing validator surface.
+  if (moving) failures.push(...checkMateClosure(closure));
+
   const joints = arm.__mates().filter((m) => m.type !== 'fastened').length;
   const fastened = arm.__mates().length - joints;
+  const scope = { fastened, limitsChecked: limits.checked, matesChecked: moving && solved.length > 0, skipped: limits.skipped };
   if (solved.length === 0) {
-    const coverage = { poses: 0, joints, fastened, sweep: false, physics: false };
+    const coverage = { poses: 0, joints, ...scope, sweep: false, physics: false };
     return { mechanism: failures.length === 0 ? 'real' : 'broken', failures, coverage };
   }
 
@@ -451,7 +472,7 @@ export async function checkMechanismTruth(
   const hasDefinitiveFailure = failures.some((d) => d.severity === 'error');
   const mechanism: 'real' | 'broken' | 'unverified' =
     hasDefinitiveFailure ? 'broken' : sweepSkipped ? 'unverified' : 'real';
-  const coverage = { poses: solved.length, joints, fastened, sweep: !sweepSkipped, physics: opts.physicsCheck === true };
+  const coverage = { poses: solved.length, joints, ...scope, sweep: !sweepSkipped, physics: opts.physicsCheck === true };
   return { mechanism, failures, coverage };
 }
 

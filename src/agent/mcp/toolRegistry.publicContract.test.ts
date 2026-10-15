@@ -34,6 +34,7 @@ import { nurbsToolEntries } from './registry/nurbsTools';
 import { handoffToolEntries } from './registry/handoffTools';
 import { pointCloudToolEntries } from './registry/pointCloudTools';
 import { wireRoutingToolEntries } from './registry/wireRoutingTools';
+import { meshBooleanToolEntries } from './registry/meshBooleanTools';
 import { explodeViewToolEntries } from './registry/explodeViewTools';
 
 const EXPECTED_TOOL_NAMES = [
@@ -97,6 +98,7 @@ const EXPECTED_TOOL_NAMES = [
   'fit_plane',
   'route_wires',
   'import_handoff',
+  'mesh_boolean',
   'explode_view',
 ] as const;
 
@@ -380,9 +382,10 @@ describe('toolRegistry public contract', () => {
       'fit_plane',
       'route_wires',
       'import_handoff',
+      'mesh_boolean',
       'explode_view',
     ]);
-    expect(TOOL_REGISTRY).toHaveLength(59);
+    expect(TOOL_REGISTRY).toHaveLength(60);
   });
 
   it('composes the user-file import family at the registry tail, with ChatGPT file params', () => {
@@ -429,9 +432,15 @@ describe('toolRegistry public contract', () => {
     expect(handoffToolEntries[0].definition.description).toMatch(/^Use this when /);
   });
 
-  it('appends the exploded-view planner after the handoff importer', () => {
+  it('appends the mesh boolean tool after the handoff importer', async () => {
+    expect(meshBooleanToolEntries.map(entry => entry.definition.name)).toEqual(['mesh_boolean']);
+    expect(TOOL_REGISTRY.slice(58, 59)).toEqual(meshBooleanToolEntries);
+    await expect(callMcpTool('mesh_boolean', { operation: 'bad' })).resolves.toMatchObject({ ok: false });
+  });
+
+  it('appends the exploded-view planner after the mesh boolean tool', () => {
     expect(explodeViewToolEntries.map(entry => entry.definition.name)).toEqual(['explode_view']);
-    expect(TOOL_REGISTRY.slice(58, 59)).toEqual(explodeViewToolEntries);
+    expect(TOOL_REGISTRY.slice(59, 60)).toEqual(explodeViewToolEntries);
     expect(TOOL_REGISTRY.at(-1)?.definition.name).toBe('explode_view');
   });
 

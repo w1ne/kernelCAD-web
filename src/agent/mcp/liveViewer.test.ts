@@ -44,7 +44,7 @@ describe('live MCP Studio viewer', () => {
       target: 'export-occt' as const, code: 'mechanism.motion-on-fixed-joint' as const, severity: 'error' as const,
       message: "Param 'a' is animated and turns part 'link', but 'shoulder' is fastened.", hint: 'h', mateName: 'shoulder',
     };
-    const summary = { verdict: 'broken' as const, statement: 'Mechanism broken: x', checked: [], skipped: [], failures: [{ code: failure.code, reason: failure.message, joint: 'shoulder' }] };
+    const summary = { verdict: 'broken' as const, maxLevel: 'error' as const, statement: 'Mechanism broken: x', checked: [], skipped: [], failures: [{ code: failure.code, reason: failure.message, joint: 'shoulder' }] };
     const link = await viewer.update({ code: 'x', diagnostics: [] } as unknown as BuiltModel, { mechanism: 'broken', mechanismFailures: [failure], mechanismSummary: summary });
     const session = await (await fetch(endpoint(link, 'session'))).json();
     const review = endpoint(link, 'review');

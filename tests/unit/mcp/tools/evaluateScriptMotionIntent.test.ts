@@ -77,6 +77,39 @@ describe('evaluate_script motion intent', () => {
     expect(out.mechanismSummary?.statement).toMatch(/^Motion not checked: skipMechanismCheck/);
   }, 120_000);
 
+  it('fails an animation that drives a joint past its limits, and states what a real run checked', async () => {
+    const past = await evaluateScriptTool({ code: model('revolute').replace('from: -20, to: 20', 'from: -20, to: 30').replace('min: -20, max: 20', 'min: -40, max: 40') });
+    const d = past.diagnostics.find((x) => x.code === 'kinematic.pose.out-of-limits' && x.severity === 'error');
+    expect(d?.message).toMatch(/param 'shoulderDeg' to 30 .* joint 'shoulder' at 30°, outside its limits \[-20, 20\]°/);
+    expect(past.mechanismSummary).toMatchObject({ verdict: 'broken', maxLevel: 'error' });
+
+    const inside = await evaluateScriptTool({ code: model('revolute') });
+    expect(inside.mechanismSummary).toMatchObject({ verdict: 'real', maxLevel: 'ok' });
+    expect(inside.mechanismSummary!.statement).toMatch(/animation within limits on 1 joint, all mates satisfied, no collisions/);
+  }, 120_000);
+
+  it('names the mate of an over-constrained loop on a model that animates', async () => {
+    const code = `
+const h = param('heightMm', 10, { min: 5, max: 20 });
+const arm = assembly('tri');
+const a = arm.part('a', box(10, 10, h));
+const b = arm.part('b', box(10, 10, 10).translate(10, 0, 0));
+const c = arm.part('c', box(10, 10, 10).translate(0, 10, 0));
+a.connector('ab', { type: 'frame', origin: { kind: 'vec3', value: [10, 5, 5] } }); b.connector('ab', { type: 'frame', origin: { kind: 'vec3', value: [10, 5, 5] } });
+b.connector('bc', { type: 'frame', origin: { kind: 'vec3', value: [10, 10, 5] } }); c.connector('bc', { type: 'frame', origin: { kind: 'vec3', value: [10, 10, 5] } });
+c.connector('ca', { type: 'frame', origin: { kind: 'vec3', value: [5, 10, 5] } }); a.connector('ca', { type: 'frame', origin: { kind: 'vec3', value: [7, 10, 5] } });
+arm.mate('ab', 'a.ab', 'b.ab', 'fastened');
+arm.mate('bc', 'b.bc', 'c.bc', 'fastened');
+arm.mate('ca', 'c.ca', 'a.ca', 'fastened');
+animationView({ param: 'heightMm', from: 5, to: 20, durationMs: 1000 });
+return arm.model();`;
+    const out = await evaluateScriptTool({ code });
+    expect(out.mechanism).toBe('broken');
+    const f = out.mechanismSummary?.failures.find((x) => x.code === 'assembly.mate.over-constrained');
+    expect(f?.joint).toBeDefined();
+    expect(f?.reason).toMatch(/^Mate '\w+' contradicts the other mates in its closed loop/);
+  }, 120_000);
+
   it('declares mechanismSummary in the MCP output schema', () => {
     expect(TOOL_OUTPUT_SCHEMAS.evaluate_script.properties.mechanismSummary).toBeDefined();
     expect(TOOL_OUTPUT_SCHEMAS.review_cad.properties.mechanismSummary).toBeDefined();
