@@ -13,6 +13,10 @@ Load when `kernelcad mcp` is available and you need to inspect or edit a live mo
 
 When you have `kernelcad mcp` available, use the MCP tools for dynamic introspection rather than re-running the CLI. The MCP server exposes the current tool registry, including:
 
+### Point-cloud analysis
+
+- `fit_plane({ points })` — fit an orthogonal least-squares plane to at least three non-collinear XYZ triples (up to 100,000). Returns the centroid, deterministic unit normal, signed orthogonal residual per point, RMS residual and maximum absolute residual. Pass points parsed by the caller from a scan or mesh; this tool estimates parameters only and does not parse files or create a surface body.
+
 ### Evaluation and introspection
 
 - `evaluate_script({ file? code?, dryRun? })` — pass/fail + featureCount + diagnostics + `sceneSummary` (`valid`, `volume` in mm³, BREP `faceCount`, conservative world bounding `size: [x,y,z]` in mm); plus a `parts` summary `{ count, names }` when the scene is assembly-built (absent for single-shape / non-assembly scripts). `dryRun: true` is the fast iteration mode: transpile + capture + capture-light checks without building solids, DFM gates, or meshing — milliseconds instead of seconds. A dry run catches script throws, capture-time API misuse, and assembly validity-gate failures, but NOT lowering failures (failed booleans, oversized fillets) or `dfmSpec` diagnostics, and it leaves the active session untouched — finish with a full `evaluate_script` before using session-dependent tools. A model with moving joints or motion intent (an animation track, `mechanicalJoint`, transmission) also gets `mechanismSummary` — `{ verdict, statement, checked, skipped, failures }`. Quote `statement`: `Motion checked` says what ran, `Motion not checked` is not a pass (say it was not checked), `Mechanism broken` names the joint. An animated param or drive on a `fastened` joint fails as `mechanism.motion-on-fixed-joint`: make that joint revolute/prismatic and pass the param as its `pose`; never turn a fastened part by rotating its geometry. Studio shows the same verdict as a badge; saving is never blocked by it.
