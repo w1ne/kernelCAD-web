@@ -31,9 +31,7 @@ export async function inspectMultiMaterialTool(
   const recordById = new Map(records.map((record) => [record.id, record]));
   const children = new Map<string, string[]>();
   for (const record of records) {
-    if (isSubtract(record)) continue;
-    for (const ref of Object.values(record.inputs)) {
-      if (ref.kind !== 'feature') continue;
+    for (const ref of ancestryInputs(record)) {
       const list = children.get(ref.id) ?? [];
       list.push(record.id);
       children.set(ref.id, list);
@@ -45,6 +43,7 @@ export async function inspectMultiMaterialTool(
   for (const leaf of explicit) {
     const head = findMaterialHead(leaf.id, children, recordById, new Set(explicit.map((r) => r.id)));
     if (!head || JSON.stringify(leaf.metadata?.material) === JSON.stringify(head.metadata?.material)) continue;
+    const leafIdLiteral = JSON.stringify(leaf.id);
     shadowedLeaves.push({
       leafFeatureId: leaf.id,
       leafFeatureKind: leaf.kind,
@@ -52,7 +51,7 @@ export async function inspectMultiMaterialTool(
       shadowingFeatureKind: head.kind,
       leafMaterial: leaf.metadata?.material,
       headMaterial: head.metadata?.material,
-      rewrite: `const arm = assembly('multi-material');\narm.part('${leaf.id}', ${leaf.id}); // preserve this operand's material\n// Keep the remaining fused body as its own arm.part(...) and return arm.model().`,
+      rewrite: `const arm = assembly('multi-material');\narm.part(${leafIdLiteral}, /* operand with id ${leaf.id.replace(/\*\//g, '')} */); // preserve this operand's material\n// Keep the remaining fused body as its own arm.part(...) and return arm.model().`,
     });
   }
   return {
@@ -66,8 +65,30 @@ export async function inspectMultiMaterialTool(
   };
 }
 
-function isSubtract(record: FeatureRecord): boolean {
-  return record.kind === 'boolean' && record.params.op?.expression.includes('difference') === true;
+/** Feature refs that should propagate material-shadow ancestry. */
+function ancestryInputs(record: FeatureRecord): Array<{ kind: string; id: string }> {
+  const refs = Object.entries(record.inputs)
+    .filter(([, ref]) => ref.kind === 'feature')
+    .map(([key, ref]) => ({ key, id: ref.id, kind: ref.kind }));
+  if (record.kind !== 'boolean') {
+    return refs.map(({ id, kind }) => ({ id, kind }));
+  }
+  const op = booleanOp(record);
+  // Union keeps every operand (all contribute solid). Difference/intersection
+  // only keep the base solid; cutter/tool branches are not material ancestry.
+  if (op === 'union') {
+    return refs.map(({ id, kind }) => ({ id, kind }));
+  }
+  const base = refs.find((r) => r.key === 'base' || r.key === 'a' || r.key === 'target');
+  return base ? [{ id: base.id, kind: base.kind }] : [];
+}
+
+function booleanOp(record: FeatureRecord): 'union' | 'difference' | 'intersection' | 'other' {
+  const expr = record.params.op?.expression ?? '';
+  if (expr.includes('union')) return 'union';
+  if (expr.includes('difference') || expr.includes('subtract')) return 'difference';
+  if (expr.includes('intersection')) return 'intersection';
+  return 'other';
 }
 
 function findMaterialHead(
