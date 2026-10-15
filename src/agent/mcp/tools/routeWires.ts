@@ -95,13 +95,7 @@ function pathIntersectsObstacle(points: WireVec3[], obstacle: WireObstacle, endp
   return points.some((point, index) => {
     if (index === 0) return false;
     const from = points[index - 1];
-    // The owner box may contain a pin. Permit only the contiguous segment
-    // leaving/entering that endpoint; any later re-entry remains detectable.
-    if (endpointOwners.has(obstacle.id) && ((start !== undefined && samePoint(from, start)) || (end !== undefined && samePoint(point, end)))) {
-      const other = start !== undefined && samePoint(from, start) ? point : from;
-      if (pointInAabb(other, obstacle.min_mm, obstacle.max_mm)) return false;
-      return false;
-    }
+    if (start !== undefined && end !== undefined && endpointOwnerAccess(from, point, obstacle, start, end, endpointOwners)) return false;
     return segmentIntersectsAabb(from, point, obstacle.min_mm, obstacle.max_mm);
   });
 }
@@ -270,7 +264,12 @@ function endpointOwnerAccess(a: WireVec3, b: WireVec3, obstacle: WireObstacle, s
   if (!endpointOwners.has(obstacle.id)) return false;
   const startsInside = pointInAabb(start, obstacle.min_mm, obstacle.max_mm);
   const endsInside = pointInAabb(end, obstacle.min_mm, obstacle.max_mm);
-  return startsInside && (samePoint(a, start) || samePoint(b, start)) || endsInside && (samePoint(a, end) || samePoint(b, end));
+  const startsAtEndpoint = samePoint(a, start) || samePoint(b, start);
+  const endsAtEndpoint = samePoint(a, end) || samePoint(b, end);
+  // Only the endpoint-adjacent segment that actually exits the owner box is
+  // exempt. A segment that continues inside the box must still be blocked.
+  return startsInside && startsAtEndpoint && !pointInAabb(samePoint(a, start) ? b : a, obstacle.min_mm, obstacle.max_mm)
+    || endsInside && endsAtEndpoint && !pointInAabb(samePoint(a, end) ? b : a, obstacle.min_mm, obstacle.max_mm);
 }
 function addVisibilityEdge(graph: VisibilityGraph, a: string, b: string, distance: number): void {
   graph.get(a)?.push({ key: b, distance });

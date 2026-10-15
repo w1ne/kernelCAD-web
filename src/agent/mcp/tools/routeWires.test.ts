@@ -137,6 +137,19 @@ describe('routeWires', () => {
     expect(result.routes[0].clearance_violations).not.toContain('U1');
   });
 
+  it('routes between pins in one owner by exiting and re-entering its box', () => {
+    const result = routeWires({
+      wires: [{ from: { ref: 'U1', pin: '1' }, to: { ref: 'U1', pin: '2' }, from_pos_mm: [0, 0, 0], to_pos_mm: [1, 0, 0] }],
+      obstacles: [{ id: 'U1', min_mm: [-2, -2, -2], max_mm: [2, 2, 2] }],
+      clearance_mm: 0,
+    });
+    expect(result.routes[0].route_found).toBe(true);
+    expect(result.routes[0].length_mm).toBeGreaterThan(1);
+    expect(result.routes[0].points_mm.some(point => point.some((coordinate, axis) => coordinate < [-2, -2, -2][axis] || coordinate > [2, 2, 2][axis]))).toBe(true);
+    expect(result.routes[0].collisions).toEqual([]);
+    expect(result.routes[0].clearance_violations).toEqual([]);
+  });
+
   it('routes around an endpoint owner after granting endpoint access', () => {
     const handoff = {
       schema: 'labwired-kernelcad-handoff/0.1',
