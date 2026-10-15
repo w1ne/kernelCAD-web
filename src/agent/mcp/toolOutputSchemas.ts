@@ -29,6 +29,7 @@ import { IMPORT_OUTPUT_SCHEMAS } from './registry/importTools.outputSchemas';
 import { FABRICATION_OUTPUT_SCHEMAS } from './registry/fabricationTools.outputSchemas';
 import { MANUFACTURING_OUTPUT_SCHEMAS } from './registry/manufacturingTools.outputSchemas';
 import { NURBS_OUTPUT_SCHEMAS } from './registry/nurbsTools.outputSchemas';
+import { EXPLODE_VIEW_OUTPUT_SCHEMAS } from './registry/explodeViewTools.outputSchemas';
 
 export type { JSONSchemaObject } from './toolOutputSchemaParts';
 import { MECHANISM_SUMMARY, SELECTION, SOURCE_EDIT, TUBE_JOINT, type JSONSchemaObject } from './toolOutputSchemaParts';
@@ -842,21 +843,13 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
       unresolved_wire_count: { type: 'integer' }, clearance_mm: { type: 'number' }, requested_bend_radius_mm: { type: 'number' },
     }, required: ['ok', 'routes', 'warnings', 'unresolved_wire_count'], additionalProperties: true,
   },
-  explode_view: {
+  import_handoff: {
     type: 'object', properties: {
-      ok: { type: 'boolean' },
-      order: { type: 'array', items: { type: 'string' } },
-      durationMs: { type: 'number' },
-      tracks: { type: 'array', items: { type: 'object', additionalProperties: true } },
-      reverseTracks: { type: 'array', items: { type: 'object', additionalProperties: true } },
-      param_declarations: { type: 'string', description: 'Ready-to-paste param() calls that declare every animation track parameter with its initial value.' },
-      script_fragment: { type: 'string', description: 'Ready-to-paste declarations and forward animationView() call.' },
-      animation_tracks: { type: 'array', items: { type: 'object', additionalProperties: true } },
-      reverse_animation_tracks: { type: 'array', items: { type: 'object', additionalProperties: true } },
-      part_transforms: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Per-part expressions to apply to existing shapes before assembly.part().' },
-      cameraPlan: { type: 'object', additionalProperties: true, description: 'Suggested target and camera distance for assembled/exploded capture framing; camera keyframes are guidance and are not consumed by animationView.' },
-      warnings: { type: 'array', items: { type: 'string' } },
-      playback: { type: 'string' },
-    }, required: ['ok', 'order', 'durationMs', 'tracks', 'reverseTracks', 'warnings', 'cameraPlan'], additionalProperties: false,
+      ok: { type: 'boolean' }, device: { type: 'string' }, part_count: { type: 'number' }, wire_mate_count: { type: 'number' },
+      cutout_hints: { type: 'array', items: { type: 'object', additionalProperties: true, description: 'Connector-face cutout hints { ref, feature, face?, cutout_mm }; descriptive input dimensions, not applied wall cuts.' } },
+      script: { type: 'string', description: 'Evaluable .kcad.ts assembly script with bbox placeholder parts and named anchors.' },
+      warnings: { type: 'array', items: { type: 'string' } }, error: { type: 'string' },
+    }, required: ['ok', 'warnings'], additionalProperties: true,
   },
+  ...EXPLODE_VIEW_OUTPUT_SCHEMAS,
 };

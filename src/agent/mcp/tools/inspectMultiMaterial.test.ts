@@ -22,8 +22,25 @@ describe('inspect multi-material analysis', () => {
     const result = await inspectMultiMaterialTool({ code: 'const result = body.union(insert);' });
     expect(result.shadowedLeaves).toHaveLength(1);
     expect(result.shadowedLeaves[0]).toMatchObject({ leafFeatureId: 'insert', shadowingFeatureId: 'fuse' });
-    expect(result.shadowedLeaves[0].rewrite).toContain("arm.part('insert', insert)");
+    expect(result.shadowedLeaves[0].rewrite).toContain('arm.part("insert"');
     expect(result.limitations[0]).toContain('does not attribute faces');
+  });
+
+
+  it('does not follow intersection cutter/tool branches as material ancestry', async () => {
+    vi.mocked(runMcpScript).mockResolvedValue({
+      ok: true,
+      fileName: '<inline>',
+      run: {
+        records: [
+          record('base', 'box', {}, { material: { baseColor: '#111111' } }),
+          record('tool', 'box', {}, { material: { baseColor: '#ff00ff' } }),
+          record('keep', 'boolean', { a: { kind: 'feature', id: 'base' }, b: { kind: 'feature', id: 'tool' } }, { material: { baseColor: '#111111' } }, 'intersection'),
+        ],
+      } as never,
+    });
+    const result = await inspectMultiMaterialTool({ code: 'result' });
+    expect(result.shadowedLeaves).toEqual([]);
   });
 
   it('does not flag same-material union operands or subtract cutters', async () => {
