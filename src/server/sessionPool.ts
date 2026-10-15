@@ -63,7 +63,7 @@
  * dev path runs unlocked exactly as before.
  */
 
-import type { SharedSelection } from '../shared/selection/sharedSelection';
+import type { FaceSignature, SharedSelection } from '../shared/selection/sharedSelection';
 import { randomUUID } from 'node:crypto';
 import { resolve } from 'node:path';
 import type { BuiltModel } from '../composition/buildModel';
@@ -84,6 +84,8 @@ export interface SessionPoolEntry {
   /** Swapped in place by `rebuildByScript` — always read, never cache. */
   model: BuiltModel;
   selection: SharedSelection;
+  selectionFaceSignature: FaceSignature | null;
+  selectionPendingSignature: FaceSignature | null;
   selectionRevision: number;
   selectionModelGeneration: number;
   /** Wall-clock ms (Date.now()) of the most recent access. */
@@ -174,6 +176,20 @@ interface EntryInternals {
   rebuildQueued: boolean;
 }
 
+function removeSessionEntry(
+  token: string,
+  byToken: Map<string, SessionPoolEntry>,
+  byKey: Map<string, string>,
+  internals: Map<string, EntryInternals>,
+): void {
+  const entry = byToken.get(token);
+  if (!entry) return;
+  internals.get(token)?.detachEngine?.();
+  internals.delete(token);
+  byToken.delete(token);
+  if (byKey.get(entry.key) === token) byKey.delete(entry.key);
+}
+
 interface PoolContext {
   readonly byToken: Map<string, SessionPoolEntry>;
   readonly byKey: Map<string, string>;
@@ -220,6 +236,8 @@ async function getOrCreateEntry(
     ownerId,
     model,
     selection: null,
+    selectionFaceSignature: null,
+    selectionPendingSignature: null,
     selectionRevision: 0,
     selectionModelGeneration: 0,
     lastAccessAt: Date.now(),
@@ -293,7 +311,16 @@ export function createSessionPool(opts: SessionPoolOptions): SessionPool {
     if (!ints) return;
     const entry = byToken.get(token);
     if (entry) {
+      const fullRebuild = affectedIds.length === 0;
+      const pendingSignature = entry.selectionPendingSignature;
+      // Engine relower events can invalidate mesh-local ids. Only the
+      // synthetic empty-id notification emitted after a successful full
+      // model swap has a new mesh available for remapping.
+      entry.selectionPendingSignature = fullRebuild && entry.selection?.kind === 'face'
+        ? entry.selectionFaceSignature
+        : pendingSignature;
       entry.selection = null;
+      entry.selectionFaceSignature = null;
       entry.selectionRevision += 1;
       entry.selectionModelGeneration += 1;
     }
@@ -312,17 +339,7 @@ export function createSessionPool(opts: SessionPoolOptions): SessionPool {
   }
 
   function drop(token: string): void {
-    const entry = byToken.get(token);
-    if (!entry) return;
-    internals.get(token)?.detachEngine?.();
-    internals.delete(token);
-    byToken.delete(token);
-    // Only drop the reverse index if it still points at this token —
-    // a subsequent `getOrCreate` for the same key may have already
-    // re-registered the key under a different token.
-    if (byKey.get(entry.key) === token) {
-      byKey.delete(entry.key);
-    }
+    removeSessionEntry(token, byToken, byKey, internals);
   }
 
   /** Evict the single least-recently-accessed entry. Used as the `maxEntries`
@@ -345,8 +362,12 @@ export function createSessionPool(opts: SessionPoolOptions): SessionPool {
     entry.model = model;
     touch(entry);
     wireEngine(entry);
+    // This code runs only after a successful model build and swap. Keep the
+    // old signature private to Studio's remap handshake, and withhold every
+    // old mesh-local id from agent reads until it verifies a unique match.
     // Synthetic relower: the whole model may have changed, so signal with an
     // empty affected set — subscribers re-fetch mesh + review wholesale.
+    // fanout advances the selection generation and captures the signature.
     fanout(entry.token, []);
   }
 
