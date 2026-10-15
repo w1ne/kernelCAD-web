@@ -67,9 +67,9 @@ export async function inspectMultiMaterialTool(
 
 /** Feature refs that should propagate material-shadow ancestry. */
 function ancestryInputs(record: FeatureRecord): Array<{ kind: string; id: string }> {
-  const refs = Object.entries(record.inputs)
-    .filter(([, ref]) => ref.kind === 'feature')
-    .map(([key, ref]) => ({ key, id: ref.id, kind: ref.kind }));
+  const refs = Object.entries(record.inputs).flatMap(([key, ref]) =>
+    ref.kind === 'feature' ? [{ key, id: ref.id, kind: ref.kind }] : [],
+  );
   if (record.kind !== 'boolean') {
     return refs.map(({ id, kind }) => ({ id, kind }));
   }
