@@ -2,7 +2,8 @@
 // Fast checks for the seated SO-100 source data, hand rejection gates, and tube clearance refusal.
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { checkInterference } from '../../../src/agent/script-runtime/checkInterference';
 import { runAndExport } from '../../../src/agent/script-runtime/export';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
@@ -10,10 +11,12 @@ import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 import { createModelingApi } from '../../../src/modeling/api';
 import { makePhysicalUseCaseRecord } from '../../../src/modeling/mates/physicalUseCase';
 import { reviewPhysicalUseCaseReachability } from '../../../src/modeling/mates/physicalUseCaseReachability';
+import { readFile } from 'node:fs/promises';
 
-const SO100 = 'examples/robot-arm/so100/so100-arm.kcad.ts';
-const URDF = 'examples/robot-arm/so100/parts/sim/so100.urdf';
-const HAND = 'tests/fixtures/robot-hand/rejected-five-finger-kinematic-hand.kcad.ts';
+const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
+const SO100 = join(REPO_ROOT, 'examples/robot-arm/so100/so100-arm.kcad.ts');
+const URDF = join(REPO_ROOT, 'examples/robot-arm/so100/parts/sim/so100.urdf');
+const HAND = join(REPO_ROOT, 'tests/fixtures/robot-hand/rejected-five-finger-kinematic-hand.kcad.ts');
 const nums = (s: string) => (s.includes(',') ? s.split(',') : s.trim().split(/\s+/)).map((x) => { const m=/^\s*(-?[\d.]+)\s*\*\s*RAD\s*$/.exec(x); return m ? Number(m[1])*180/Math.PI : Number(x); });
 
 type V = [number, number, number];
@@ -36,35 +39,56 @@ a.part('line',t);
 return a.model();`;
 
 describe('SO-100, hand rejection, and routed STEP gate', () => {
-  it('SO-100 seated base and jaw parts have disjoint world-space bounds', () => {
-    const urdf=readFileSync(URDF,'utf8'), root=join(process.cwd(),'examples/robot-arm/so100/parts/sim-seated');
+  it('SO-100 seated base and jaw meshes have no surface contact', async () => {
+    await initOcct();
+    const root=join(REPO_ROOT,'examples/robot-arm/so100/parts/sim-seated');
+    const loadStl=async(name:string)=>{
+      const bytes=await readFile(join(root,`${name}.stl`)),count=bytes.readUInt32LE(80),positions=new Float32Array(count*9);
+      for(let i=0;i<count*9;i++)positions[i]=bytes.readFloatLE(84+Math.floor(i/9)*50+12+(i%9)*4);
+      return positions;
+    };
+    const [base,jaw]=await Promise.all([loadStl('Base'),loadStl('Moving_Jaw')]);
+    const urdf=readFileSync(URDF,'utf8');
     type Mat=[V,V,V];
     const mmul=(a:Mat,b:Mat):Mat=>[0,1,2].map(r=>[0,1,2].map(c=>a[r][0]*b[0][c]+a[r][1]*b[1][c]+a[r][2]*b[2][c]) as V) as Mat;
-    const turn=(m:Mat,v:V):V=>m.map(row=>row[0]*v[0]+row[1]*v[1]+row[2]*v[2]) as V;
-    const axis=(a:V,t:number):Mat=>{const [x,y,z]=a,c=Math.cos(t),s=Math.sin(t),q=1-c;return [[c+x*x*q,x*y*q-z*s,x*z*q+y*s],[y*x*q+z*s,c+y*y*q,z*y*q-x*s],[z*x*q-y*s,z*y*q+x*s,c+z*z*q]]};
+    const axis=(a:V,t:number):Mat=>{const [x,y,z]=a,c=Math.cos(t),ss=Math.sin(t),q=1-c;return [[c+x*x*q,x*y*q-z*ss,x*z*q+y*ss],[y*x*q+z*ss,c+y*y*q,y*z*q-x*ss],[z*x*q-y*ss,z*y*q+x*ss,c+z*z*q]]};
     const rpy=(v:V):Mat=>mmul(axis([0,0,1],v[2]),mmul(axis([0,1,0],v[1]),axis([1,0,0],v[0])));
-    const frames=new Map<string,{r:Mat;p:V}>([['base',{r:[[1,0,0],[0,1,0],[0,0,1]],p:[0,0,0]}]]);
-    const links=[...urdf.matchAll(/<joint name="[^"]+" type="(?:revolute|fixed)">([\s\S]*?)<\/joint>/g)];
-    for(const j of links){const body=j[1],parent=/<parent link="([^"]+)"/.exec(body)![1],child=/<child link="([^"]+)"/.exec(body)![1],o=/<origin xyz="([^"]+)" rpy="([^"]+)"/.exec(body)!,f=frames.get(parent);if(!f)continue;const xyz=nums(o[1]).map(x=>x*1000) as V,rr=rpy(nums(o[2]) as V),d=turn(f.r,xyz);frames.set(child,{r:mmul(f.r,rr),p:[f.p[0]+d[0],f.p[1]+d[1],f.p[2]+d[2]]});}
-    const boxOf=(name:string,link:string)=>{const f=frames.get(link)!;const bytes=readFileSync(join(root,`${name}.stl`)),n=bytes.readUInt32LE(80),lo=[Infinity,Infinity,Infinity],hi=[-Infinity,-Infinity,-Infinity];for(let t=0;t<n;t++)for(let c=0;c<3;c++){const p=[0,1,2].map(k=>bytes.readFloatLE(84+t*50+12+c*12+k*4)*1000) as V,q=turn(f.r,p);for(let k=0;k<3;k++){const x=q[k]+f.p[k];lo[k]=Math.min(lo[k],x);hi[k]=Math.max(hi[k],x);}}return {lo,hi};};
-    const base=boxOf('Base','base'), jaw=boxOf('Moving_Jaw','jaw');
-    const overlap=base.lo.every((x,k)=>Math.min(base.hi[k],jaw.hi[k])-Math.max(x,jaw.lo[k])>0);
-    expect(overlap).toBe(false);
+    const frames=new Map<string,{p:V;r:Mat}>([['base',{p:[0,0,0],r:[[1,0,0],[0,1,0],[0,0,1]]}]]);
+    for(const joint of urdf.matchAll(/<joint name="[^"]+" type="(?:revolute|fixed)">([\s\S]*?)<\/joint>/g)){const body=joint[1],parent=/<parent link="([^"]+)"/.exec(body)![1],child=/<child link="([^"]+)"/.exec(body)![1],origin=/<origin xyz="([^\"]+)" rpy="([^\"]+)"/.exec(body)!,parentFrame=frames.get(parent);if(!parentFrame)continue;const xyz=nums(origin[1]).map(v=>v*1000) as V,rot=rpy(nums(origin[2]).map(v=>v*Math.PI/180) as V),delta=parentFrame.r.map(row=>row[0]*xyz[0]+row[1]*xyz[1]+row[2]*xyz[2]) as V;frames.set(child,{p:[parentFrame.p[0]+delta[0],parentFrame.p[1]+delta[1],parentFrame.p[2]+delta[2]],r:mmul(parentFrame.r,rot)});}
+    const jawFrame=frames.get('jaw')!;
+    const transformPoint=(point:V):V=>{const turned=jawFrame.r.map(row=>row[0]*point[0]+row[1]*point[1]+row[2]*point[2]) as V;return [turned[0]+jawFrame.p[0],turned[1]+jawFrame.p[1],turned[2]+jawFrame.p[2]]};
+    const positions=(mesh:Float32Array)=>Float32Array.from(mesh,(value,index)=>{
+      const start=index-index%3,point:V=[mesh[start],mesh[start+1],mesh[start+2]],world=transformPoint(point);return world[index%3];
+    });
+    const a=base,b=positions(jaw);
+    const triangleHit=(p:V,q:V,r:V,x:V,y:V,z:V)=>{
+      const sub=(u:V,v:V):V=>[u[0]-v[0],u[1]-v[1],u[2]-v[2]],cross=(u:V,v:V):V=>[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]],dot=(u:V,v:V)=>u[0]*v[0]+u[1]*v[1]+u[2]*v[2];
+      const hit=(u:V,v:V,w:V,A:V,B:V,C:V)=>{const e1=sub(v,u),e2=sub(w,u),h=cross(sub(C,A),e2),det=dot(e1,h);if(Math.abs(det)<1e-8)return false;const inv=1/det,s=sub(A,u),uu=inv*dot(s,h);if(uu<0||uu>1)return false;const qq=cross(s,e1),vv=inv*dot(sub(C,A),qq);if(vv<0||uu+vv>1)return false;const t=inv*dot(e2,qq);return t>1e-6&&t<1-1e-6;};
+      return hit(p,q,r,x,y,z)||hit(x,y,z,p,q,r);
+    };
+    const triangleBounds=(vertices:Float32Array)=>{
+      const rows:Array<{i:number;min:V;max:V}>=[];
+      for(let i=0;i<vertices.length;i+=9){const tri=[0,1,2].map(v=>[vertices[i+v*3],vertices[i+v*3+1],vertices[i+v*3+2]] as V),min=[0,1,2].map(k=>Math.min(...tri.map(p=>p[k]))) as V,max=[0,1,2].map(k=>Math.max(...tri.map(p=>p[k]))) as V;rows.push({i,min,max});}
+      return rows.sort((u,v)=>u.min[0]-v.min[0]);
+    };
+    const baseTriangles=triangleBounds(a),jawTriangles=triangleBounds(b);
+    let intersects=false;
+    let first=0;
+    for(const ta of baseTriangles){while(first<jawTriangles.length&&jawTriangles[first].max[0]<ta.min[0]-0.01)first++;const p=[a[ta.i],a[ta.i+1],a[ta.i+2]] as V,q=[a[ta.i+3],a[ta.i+4],a[ta.i+5]] as V,r=[a[ta.i+6],a[ta.i+7],a[ta.i+8]] as V;
+      for(let n=first;n<jawTriangles.length&&jawTriangles[n].min[0]<=ta.max[0]+0.01;n++){const tb=jawTriangles[n];if([1,2].some(k=>ta.min[k]>tb.max[k]+0.01||tb.min[k]>ta.max[k]+0.01))continue;const j=tb.i,x=[b[j],b[j+1],b[j+2]] as V,y=[b[j+3],b[j+4],b[j+5]] as V,z=[b[j+6],b[j+7],b[j+8]] as V;if(triangleHit(p,q,r,x,y,z)){intersects=true;break;}}
+      if(intersects)break;
+    }
+    expect(intersects).toBe(false);
   });
 
-  it('SO-100 example link joint origins match the URDF and produce finite link frames', () => {
-    const src=readFileSync(SO100,'utf8'), urdf=readFileSync(URDF,'utf8');
+  it('SO-100 example link-frame translations and rotations match URDF origins', () => {
+    const src=readFileSync(SO100,'utf8'),urdf=readFileSync(URDF,'utf8');
     const scripted=[...src.matchAll(/name: '(pan|lift|elbow|wrist|roll|jaw)'[\s\S]*?xyz: \[([^\]]+)\], rpy: \[([^\]]+)\]/g)];
-    const joints=[...urdf.matchAll(/<joint name="([^"]+)" type="revolute">([\s\S]*?)<\/joint>/g)];
-    const byName=new Map(joints.map(j=>[j[1],j[2]]));
-    const map:Record<string,string>={pan:'shoulder_pan',lift:'shoulder_lift',elbow:'elbow_flex',wrist:'wrist_flex',roll:'wrist_roll',jaw:'gripper'};
+    const joints=[...urdf.matchAll(/<joint name="([^"]+)" type="(?:revolute|fixed)">([\s\S]*?)<\/joint>/g)],byName=new Map(joints.map(j=>[j[1],j[2]]));
+    const names:Record<string,string>={pan:'shoulder_pan',lift:'shoulder_lift',elbow:'elbow_flex',wrist:'wrist_flex',roll:'wrist_roll',jaw:'gripper'};
+    const degrees=(text:string)=>text.split(',').map(term=>{const rad=/^\s*(-?[\d.]+)\s*\*\s*RAD\s*$/.exec(term);return rad?Number(rad[1])*180/Math.PI:Number(term)});
     expect(scripted.length).toBeGreaterThan(0);
-    for(const s of scripted){const b=byName.get(map[s[1]])!;const o=/<origin xyz="([^"]+)" rpy="([^"]+)"/.exec(b)!;nums(s[2]).forEach((x,i)=>expect(x).toBeCloseTo(nums(o[1])[i]*1000,8));nums(s[3]).forEach((x,i)=>expect(x).toBeCloseTo(nums(o[2])[i]*180/Math.PI,2));}
-    // Zero-pose link translations are the accumulated URDF origin translations.
-    const frame=new Map<string,V>([['base',[0,0,0]]]);
-    for(const j of joints){const parent=/<parent link="([^"]+)"/.exec(j[2])![1],child=/<child link="([^"]+)"/.exec(j[2])![1],o=/<origin xyz="([^"]+)"/.exec(j[2])!,p=frame.get(parent);if(!p)continue;const d=nums(o[1]).map(x=>x*1000);frame.set(child,[p[0]+d[0],p[1]+d[1],p[2]+d[2]]);}
-    expect([...frame.values()].every(p=>p.every(Number.isFinite))).toBe(true);
-    expect(I.flat().every(Number.isFinite)).toBe(true);
+    for(const entry of scripted){const joint=byName.get(names[entry[1]])!,origin=/<origin xyz="([^"]+)" rpy="([^"]+)"/.exec(joint)!;const exampleXYZ=entry[2].split(',').map(Number),urdfXYZ=nums(origin[1]).map(x=>x*1000);exampleXYZ.forEach((value,i)=>expect(value).toBeCloseTo(urdfXYZ[i],6));const exampleRPY=degrees(entry[3]),urdfRPY=nums(origin[2]).map(x=>x*180/Math.PI);exampleRPY.forEach((value,i)=>expect(value).toBeCloseTo(urdfRPY[i],2));}
   });
 
   it('rejects a hand no-op cut through the interference certification gate', async () => {

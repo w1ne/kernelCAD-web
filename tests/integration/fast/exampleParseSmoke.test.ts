@@ -2,11 +2,16 @@
 // Every example must parse and transpile. Most also run through the kernel's
 // real evaluateScript entry point; expected negative fixtures must fail there.
 import { readFileSync, globSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import ts from 'typescript';
 import { evaluateScript } from '../../../src/agent/cli/commands/evaluate';
 
-const examples = globSync('examples/**/*.kcad.ts').sort();
+const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
+const EXAMPLES_ROOT = resolve(REPO_ROOT, 'examples');
+const examples = globSync('**/*.kcad.ts', { cwd: EXAMPLES_ROOT }).map(file => resolve(EXAMPLES_ROOT, file)).sort();
+const relativeExample = (file: string) => `examples/${file.slice(EXAMPLES_ROOT.length + 1)}`;
 
 // These authored models exceed the 4.5 s budget in local corpus measurement.
 // Reasons: imported mesh assemblies (e46, hatchback, robots, grinder), very
@@ -95,23 +100,28 @@ function sourceDiagnostics(file: string, source: string): readonly ts.Diagnostic
 }
 
 describe('examples evaluate through the kernel', () => {
+  it('discovers example files from the repository examples directory', () => {
+    expect(examples.length).toBeGreaterThan(0);
+  });
+
   for (const file of examples) {
+    const displayFile = relativeExample(file);
     const source = readFileSync(file, 'utf8');
-    it(`${file} parses and transpiles`, () => {
-      expect(sourceDiagnostics(file, source), file).toEqual([]);
+    it(`${displayFile} parses and transpiles`, () => {
+      expect(sourceDiagnostics(file, source), displayFile).toEqual([]);
     });
 
-    if (HEAVY.has(file) || EVALUATION_EXEMPT.has(file)) continue;
-    it(`${file} ${EXPECTED_FAILURE.has(file) ? 'fails at its expected diagnostic' : 'evaluates cleanly'}`, async () => {
+    if (HEAVY.has(displayFile) || EVALUATION_EXEMPT.has(displayFile)) continue;
+    it(`${displayFile} ${EXPECTED_FAILURE.has(displayFile) ? 'fails at its expected diagnostic' : 'evaluates cleanly'}`, async () => {
       const result = await evaluateScript({ file });
-      const expectedFailure = EXPECTED_FAILURE.get(file);
+      const expectedFailure = EXPECTED_FAILURE.get(displayFile);
       if (expectedFailure) {
-        expect(result.exitCode, `${file} unexpectedly evaluates cleanly`).not.toBe(0);
-        expect(result.diagnostics, `${file} did not report ${expectedFailure.code}`).toEqual(expect.arrayContaining([
+        expect(result.exitCode, `${displayFile} unexpectedly evaluates cleanly`).not.toBe(0);
+        expect(result.diagnostics, `${displayFile} did not report ${expectedFailure.code}`).toEqual(expect.arrayContaining([
           expect.objectContaining({ code: expectedFailure.code, message: expect.stringContaining(expectedFailure.message) }),
         ]));
       } else {
-        expect(result.exitCode, `${file}: ${JSON.stringify(result.diagnostics)}`).toBe(0);
+        expect(result.exitCode, `${displayFile}: ${JSON.stringify(result.diagnostics)}`).toBe(0);
       }
     }, 4_500);
   }
