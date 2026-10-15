@@ -388,7 +388,7 @@ function buildAssemblyModelSceneParts(
     const materialName = partMaterialName(partRec);
     return {
       name: partName,
-      shape: partShape as OcctBackend,
+      shape: partShape,
       worldTransform: worldT.get(partId) ?? Transform.identity(),
       ...(color !== undefined ? { color } : {}),
       ...(material !== undefined ? { material } : {}),
@@ -578,7 +578,7 @@ export function lowerSolvedAssembly(ctx: LowerContext, r: FeatureRecord): LowerO
     const materialName = partMaterialName(partRec);
     return {
       name: partName,
-      shape: partShape as OcctBackend,
+      shape: partShape,
       worldTransform: T,
       ...(color !== undefined ? { color } : {}),
       ...(material !== undefined ? { material } : {}),
