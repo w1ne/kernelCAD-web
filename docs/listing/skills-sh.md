@@ -16,6 +16,6 @@ npx skills add w1ne/kernelCAD-web
 | kernelcad-design-loop | Build a part, review it and fix it until every check is green. |
 | kernelcad-cookbooks | Start from proven recipes: brackets, enclosures, gears, mechanisms. |
 | kernelcad-studio-paint | Mark up the 3D view and turn the marks into edits. |
-| kernelcad-export | STEP, STL, 3MF, GLB, DXF and dimensioned PDF drawings, ready for fab. |
+| kernelcad-export | STEP, STL, 3MF, GLB, OBJ, USD, DXF and dimensioned PDF drawings, ready for fab. |
 
 Once `dfm_review` / `fab_pack` / `import_step` ship, add a line about them to the export skill.

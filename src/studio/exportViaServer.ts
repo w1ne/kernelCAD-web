@@ -12,7 +12,7 @@ import type { StudioDrawingOptions } from './draftingSettings';
 import type { DrawingReport } from '../kernel/backends/occt/drawingAuto/contracts';
 import type { CompilerDiagnostic } from '../shared/diagnostics/diagnostic';
 
-export type StudioExportFormat = 'stl' | 'step' | 'dxf' | '3mf' | 'glb' | 'pdf-drawing';
+export type StudioExportFormat = 'stl' | 'step' | 'dxf' | '3mf' | 'glb' | 'obj' | 'usd' | 'pdf-drawing';
 
 /** File extension of a format's download (`pdf-drawing` is a `.pdf`). */
 export function exportFileExtension(format: StudioExportFormat): string {

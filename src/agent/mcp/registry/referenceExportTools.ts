@@ -52,7 +52,7 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
         "options.infill { fromFea: '<study>' | true, bands?, pattern? } = stress-graded FDM infill (requires the local CalculiX + gmsh toolchain; without it the export fails with fea.solver.unavailable): " +
         "solves the feaStudy and writes modifier volumes, each with its own infill density (Orca/Bambu format by default; options.slicer 'prusa' writes PrusaSlicer's format instead, since the two are not interchangeable); the result carries infill { bands, saving, images }), " +
         'gcode (installed OrcaSlicer output; preserves G-code and returns optional gcode_stats with header generator identity and slicer-predicted time/material), ' +
-        'glb (web-viewer / AR with PBR materials), ' +
+        'glb (web-viewer / AR with PBR materials), obj (Wavefront indexed triangle mesh), usd (ASCII USDA triangle mesh in millimeter, Z-up coordinates; multi-part scenes emit one named mesh per part), ' +
         'svg-drawing (third-angle engineering-drawing sheet: front/top/left + isometric views, hidden edges dashed, tangent edges thin, ' +
         'overall bounding-box dimensions, title block; assemblies are drawn with inter-part occlusion; pass options.annotations to dimension specific features instead of the bounding box; ' +
         'pass options.exploded { factor, mode } to explode the isometric cell, options.balloons to number parts from the BOM, and options.partsList for an item/name/qty/material table above the title block). ' +
@@ -93,7 +93,7 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
           output_path: { type: 'string', description: "Destination path (a directory for format 'bend-table'). target:'model' — the export file (required). target:'part' — single-part .stl path." },
           format: {
             type: 'string',
-            enum: ['stl', 'step', 'dxf', '3mf', 'glb', 'svg-drawing', 'pdf-drawing', 'urdf', 'srdf', 'sdf-gazebo', 'usd-isaac', 'bom-csv', 'bom-json', 'bend-table', 'gcode'],
+            enum: ['stl', 'step', 'dxf', '3mf', 'glb', 'obj', 'usd', 'svg-drawing', 'pdf-drawing', 'urdf', 'srdf', 'sdf-gazebo', 'usd-isaac', 'bom-csv', 'bom-json', 'bend-table', 'gcode'],
             description: "target:'model' — output file format (required for that target).",
           },
           feature_id: { type: 'string', description: "target:'model' — optional FeatureId to export; defaults to last." },
@@ -104,7 +104,7 @@ export const referenceExportToolEntries: ToolRegistryEntry[] = [
               'dxf: { layers?, unit?: "mm"|"cm"|"in", tolerance?, section?: { axis: "x"|"y"|"z", at: mm }, layout?: "per-part"|"sheet" }. ' +
               '3mf: { printUnit?: "mm"|"cm"|"in", embedSource?, arrange?: "none"|"plate"|"assembled", orient?: boolean, slicer?: "generic"|"bambu"|"orca"|"prusa", printer?: printer profile id, one of ' + PRINTER_PROFILE_IDS.map(id => `"${id}"`).join('|') + ' (default "generic-fdm"; sets the bed for arrange and the slicer default; an unknown id is refused with the valid list; CLI: kernelcad print printers) }; parts that do not fit the bed are still written and reported as warn diagnostics export.3mf.plate-overflow / export.3mf.exceeds-bed, whose hint names the smallest profiles the layout fits on. ' +
               'gcode: { printer?: printer profile id, layerHeight?: mm, infill?: percent, supports?: boolean, material?: string }; requires a locally installed OrcaSlicer. Returns slicer predictions as gcode_stats; does not start a printer. ' +
-              'glb: { axis?: "y-up"|"z-up", draco?: false }. ' +
+              'glb: { axis?: "y-up"|"z-up", draco?: false }. obj and usd are mesh exports with no extra options; usd writes ASCII USDA (millimeter, Z-up). ' +
               'svg-drawing: { views?: ["front"], sheet?: "a4"|"a3" (or any pdf-drawing sheet), projection?, titleBlock?: { title?, partName?, material?, revision? }, modelName?, date?, annotations?, exploded?: { factor, mode? }, balloons?, partsList?, sections?, autoAnnotate? }. ' +
               'views:["front"] produces a centred front-only elevation for SVG or PDF; omit views for four views. Front-only sheets require front annotations and reject isometric balloons/exploded overlays. ' +
               'svg-drawing annotations is an array of authored dimensions/notes, each '

@@ -104,6 +104,8 @@ describe('exportViaServer', () => {
     expect((await exportViaServer('pdf-drawing', 'return box(1,1,1);')).downloadName).toBe('kernelcad-drawing.pdf');
     expect(exportFileExtension('pdf-drawing')).toBe('pdf');
     expect(exportFileExtension('glb')).toBe('glb');
+    expect(exportFileExtension('obj')).toBe('obj');
+    expect(exportFileExtension('usd')).toBe('usd');
   });
 
   it('POSTs projectSlug + source on /p/<slug> so lib.fromSTEP assets materialize', async () => {
