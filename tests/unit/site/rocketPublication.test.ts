@@ -18,9 +18,8 @@ const sources = {
 };
 
 describe('published tube and rocket examples', () => {
-  it('publishes four posts and keeps the five-line tutorial distinct from the full rocket', () => {
+  it('publishes the tube and rocket articles and keeps their examples distinct', () => {
     const posts = readPosts(ROOT);
-    expect(posts.filter(p => p.meta.status === 'published')).toHaveLength(4);
     const small = posts.find(p => p.slug === 'tubes-how-to')!;
     const rocket = posts.find(p => p.slug === 'rocket-engine-routing')!;
     expect(small.meta).toMatchObject({ status: 'published', model: 'examples/tube-routing-engine/engine-lines.kcad.ts' });

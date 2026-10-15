@@ -60,6 +60,9 @@ Each `.part(...)` adds to the same assembly (identical to calling `arm.part(...)
 Connector origins use an explicit vector record:
 `origin: { kind: 'vec3', value: [x, y, z] }`, or a supported topology reference.
 Do not pass a bare `[x, y, z]` to `part.connector(...)`; the runtime rejects it.
+For `arm.mate`, register typed connectors with `partRef.connector(name, opts)`.
+The legacy `part(..., { connectors, connect })` options belong to the legacy
+connection API and do not register mate-style connector names.
 Place physical mate datums on actual contacting geometry. A shared origin in
 empty space does not establish a physical connection and triggers mesh-gap
 diagnostics. A shallow front-elevation drawing is not a validated physical
@@ -68,13 +71,13 @@ evaluation from mechanism acceptance.
 
 ```typescript
 const arm = assembly('two-link arm');
-const base = arm.part('base', box(30, 30, 8), {
-  at: [0, 0, 0],
-  connectors: { shoulder: { origin: [15, 15, 8], axis: [0, 0, 1] } },
+const base = arm.part('base', box(30, 30, 8));
+base.connector('shoulder', {
+  type: 'axis', origin: { kind: 'vec3', value: [15, 15, 8] }, axis: [0, 0, 1],
 });
-const link = arm.part('link', box(80, 12, 8), {
-  connectors: { root: { origin: [0, 6, 4], axis: [0, 0, 1] } },
-  connect: { connector: 'root', to: base.connector('shoulder') },
+const link = arm.part('link', box(80, 12, 8), { at: [15, 9, 8] });
+link.connector('root', {
+  type: 'axis', origin: { kind: 'vec3', value: [0, 6, 0] }, axis: [0, 0, 1],
 });
 
 arm.mate('shoulder', 'base.shoulder', 'link.root', 'revolute', { limitsDeg: [-90, 90] });
@@ -120,6 +123,7 @@ Exploded views reuse that same assembly: `render_preview({ explode: { factor, mo
 interface Assembly {
   part(name: string, shape: Shape, opts?: {
     at?: [number, number, number];
+    /** Legacy connection API only; arm.mate uses typed partRef.connector instead. */
     connectors?: Record<string, { origin: [number, number, number]; axis?: [number, number, number] }>;
     connect?: { connector: string; to: AssemblyConnectorRef; name?: string };
     /** Named material grade: seeds the density default AND a default finish.

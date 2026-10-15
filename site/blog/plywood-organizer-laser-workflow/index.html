@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light" />
+  <meta name="description" content="Model seven flat panels, check their assembly, and prepare a fit coupon before cutting the organizer." />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="From a plywood organizer model to a laser cutting test" />
+  <meta property="og:description" content="Model seven flat panels, check their assembly, and prepare a fit coupon before cutting the organizer." />
+  <meta property="og:image" content="https://kernelcad.com/blog/plywood-organizer-laser-workflow/render-iso.png" />
+  <meta property="og:url" content="https://kernelcad.com/blog/plywood-organizer-laser-workflow/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="From a plywood organizer model to a laser cutting test" />
+  <meta name="twitter:description" content="Model seven flat panels, check their assembly, and prepare a fit coupon before cutting the organizer." />
+  <meta name="twitter:image" content="https://kernelcad.com/blog/plywood-organizer-laser-workflow/render-iso.png" />
+  <link rel="canonical" href="https://kernelcad.com/blog/plywood-organizer-laser-workflow/" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,500;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/style.css" />
+  <title>From a plywood organizer model to a laser cutting test</title>
+  <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "e5f5f4c6464f456d8f5376411e77f545"}'></script>
+  <style>
+    .legal { max-width: 760px; margin: 0 auto; padding: 1rem 0 4rem; }
+    .legal h1 { font-family: 'Source Serif 4', serif; font-size: 2.2rem; line-height: 1.2; margin: 1.5rem 0 0.25rem; }
+    .legal .effective { color: var(--ink-faint, #8a8475); font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; margin-bottom: 2rem; }
+    .legal h2 { font-family: 'Source Serif 4', serif; font-size: 1.35rem; margin: 2.2rem 0 0.5rem; }
+    .legal p, .legal li { font-family: 'Inter', sans-serif; line-height: 1.65; color: var(--ink-soft, #3a3a3a); }
+    .legal ul { padding-left: 1.25rem; }
+    .legal code { font-family: 'JetBrains Mono', monospace; font-size: 0.88em; }
+    .legal a { color: var(--blueprint, #2f6df0); }
+    .legal strong { color: var(--ink, #1a1a1a); }
+    .legal .lede { font-size: 1.1rem; color: var(--ink); }
+    .legal figure { margin: 1.5rem 0; }
+    .legal figure img { display: block; width: 100%; height: auto; border: 1px solid var(--rule); border-radius: 6px; background: var(--paper); }
+    .legal figcaption { font-family: 'Inter', sans-serif; font-size: 0.85rem; color: var(--ink-faint); margin-top: 0.5rem; }
+    .legal pre { background: var(--code-bg); color: var(--code-text); border-radius: 6px; padding: 16px 18px; overflow-x: auto; margin: 1.25rem 0; }
+    .legal pre code { font-size: 0.85rem; line-height: 1.6; color: inherit; }
+    .legal p code, .legal li code { background: var(--vellum-soft); padding: 1px 5px; border-radius: 3px; }
+    .post-list { list-style: none; padding: 0; margin: 2rem 0; }
+    .post-list li { padding: 1.25rem 0; border-top: 1px solid var(--rule); }
+    .post-list li:last-child { border-bottom: 1px solid var(--rule); }
+    .post-list a.post-title { font-family: 'Source Serif 4', serif; font-size: 1.4rem; text-decoration: none; }
+    .post-list a.post-title:hover { text-decoration: underline; }
+    .post-list .effective { margin: 0.25rem 0 0.5rem; }
+    .post-list p { margin: 0; }
+    .legal figure video { display: block; width: 100%; height: auto; border: 1px solid var(--rule); border-radius: 6px; background: var(--paper); }
+    .legal model-viewer { display: block; width: 100%; height: 440px; border: 1px solid var(--rule); border-radius: 6px; background: var(--paper); }
+  </style>
+</head>
+<body>
+  <div class="page-wrap">
+    <nav class="nav">
+      <a class="nav-mark" href="/">
+        <svg class="k" viewBox="0 0 84 84" fill="none" aria-label="kernelCAD">
+          <path d="M 14,12 L 26,12 L 26,34 Q 26,36 27.5,34.5 L 46,12 L 60,12 L 36,40 Q 35,42 36,44 L 60,72 L 46,72 L 27.5,49.5 Q 26,48 26,50 L 26,72 L 14,72 Z" fill="currentColor"/>
+        </svg>
+        <span>kernel<span class="cad">CAD</span></span>
+      </a>
+      <div class="nav-links">
+        <a href="/blog/">blog</a>
+        <a class="app-link" href="https://app.kernelcad.com">app ↗</a>
+        <a href="https://github.com/w1ne/kernelCAD-web">github</a>
+        <a href="https://www.npmjs.com/package/kernelcad">npm</a>
+        <a href="https://x.com/kernelcad">@kernelcad</a>
+      </div>
+    </nav>
+
+    <main class="legal">
+      <article>
+      <p class="effective"><a href="/blog/">Blog</a> · <time datetime="2026-10-15">2026-10-15</time> · Andrii Shylenko</p>
+      <h1>From a plywood organizer model to a laser cutting test</h1>
+
+      <p class="lede">This original desk organizer example uses kernelCAD to model seven plywood panels, check how they fit together, and prepare outlines for a laser cutting test. The digital checks are complete. The physical cutting and dry fit are still pending.</p>
+      <figure>
+        <video src="video.mp4" controls playsinline preload="metadata"></video>
+      </figure>
+      <figure>
+        <model-viewer src="model.glb" alt="The model built from examples/plywood-organizer/organizer.kcad.ts" camera-controls auto-rotate rotation-per-second="12deg" interaction-prompt="none" touch-action="pan-y" loading="lazy"></model-viewer>
+        <figcaption>The model, built from <code>examples/plywood-organizer/organizer.kcad.ts</code>. Drag to turn it.</figcaption>
+      </figure>
+      <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer/dist/model-viewer.min.js"></script>
+      <p>The video combines actual hosted MCP renders with cutting diagrams generated from the model source. It is an annotated still sequence, not a screen recording or a physical cutting demonstration. Its <a href="/blog/plywood-organizer-laser-workflow/video-evidence.json">evidence file</a> records the source hash and video provenance.</p>
+      <figure>
+        <img src="render-iso.png" alt="Original organizer in isometric view" width="1280" height="720" loading="lazy" />
+        <figcaption>Actual hosted MCP render. This is a digital model, not a photograph of a cut object.</figcaption>
+      </figure>
+
+      <h2>1. Measure the sheet</h2>
+      <p>Measure the plywood at several points. Record the thickness range and confirm that the material is suitable for your laser. <a href="https://www.troteclaser.com/en/laserable-materials/laser-cutting-plywood">Trotec's guidance</a> recommends plywood intended for laser processing.</p>
+      <p>This example assumes 6.00 mm stock. That is a sample value, not a measured sheet thickness. The assembled organizer is 150 × 100 × 46 mm. Its base is 6 mm thick, and the walls and dividers are 40 mm high.</p>
+      <p>The laser model and usable bed area are still unknown. Power, speed, air assist and number of passes must be tested on the actual machine and sheet. This example supplies no tested machine settings.</p>
+
+      <h2>2. Model separate panels</h2>
+      <p>The assembly has seven named parts: base, front, back, left, right, long-divider and short-divider. The outer walls use plain butt joints, which need adhesive and a square assembly setup.</p>
+      <p>The dividers cross in a half-lap joint. One notch opens from the top, the other from the bottom. Each is 20 mm deep. The sample notch width is 6.20 mm: 0.20 mm total clearance around the assumed stock. Each divider also has 0.20 mm clearance at both ends.</p>
+      <pre><code>const thickness = 6;
+const slotClearance = 0.20;
+const slotWidth = thickness + slotClearance;</code></pre>
+      <p>These are sample clearances. Choose the final fit with a coupon. The model's fixed connections describe the review position; the dividers can remain removable in the real organizer.</p>
+      <p>Download the <a href="/blog/plywood-organizer-laser-workflow/organizer.kcad.ts">editable source</a>. Change the source when a dimension changes, then regenerate the affected outputs.</p>
+
+      <h2>3. Evaluate and inspect through MCP</h2>
+      <p>The agent ran <code>evaluate_script({ code: source })</code> on the full source and used <code>render_preview</code> for the isometric and top images below.</p>
+      <p>The hosted evaluation returned seven parts, 19 features and no diagnostics. It reported valid native geometry, a volume of 256,800 mm³ and bounds of 150 × 100 × 46 mm. An independent native check tested all 21 panel pairs and found no positive-volume overlaps above 0.000001 mm³. Touching faces, such as walls resting on the base, are intentional.</p>
+      <p>Download the <a href="/blog/plywood-organizer-laser-workflow/mcp-evaluation-evidence.json">MCP receipt</a> and <a href="/blog/plywood-organizer-laser-workflow/geometry-evidence.json">native evidence</a>. These checks establish digital geometry, not physical fit or glue strength.</p>
+      <figure>
+        <img src="render-top.png" alt="Original organizer from above" width="1280" height="720" loading="lazy" />
+        <figcaption>Actual hosted MCP top view: crossed dividers form four compartments.</figcaption>
+      </figure>
+
+      <h2>4. Prepare cutting outlines</h2>
+      <p>The generator reads the model constants and produces seven closed contours at 1:1 scale. Download the <a href="/blog/plywood-organizer-laser-workflow/organizer-nominal.svg">panel SVG</a>, <a href="/blog/plywood-organizer-laser-workflow/generate-cut-layout.py">generator</a> and <a href="/blog/plywood-organizer-laser-workflow/cut-layout-evidence.json">contour receipt</a>.</p>
+      <p>These outlines have no kerf compensation. In the laser software, enable only the cut layer, check for duplicate lines and confirm that the base measures 150 × 100 mm. Keep the label layer disabled for cutting. Arrange the panels within the actual bed area.</p>
+      <figure>
+        <img src="organizer-nominal.png" alt="Seven nominal cutting profiles" width="1312" height="904" loading="lazy" />
+        <figcaption>Separate panel contours and a non-cut label layer. This arrangement still needs a bed-area check.</figcaption>
+      </figure>
+
+      <h2>5. Cut a fit coupon first</h2>
+      <p>The <a href="/blog/plywood-organizer-laser-workflow/fit-coupon-nominal.svg">coupon SVG</a> has slots from 5.80 to 6.60 mm. Adjust this range for the measured stock, then test with a strip from the same sheet. Record the selected slot, fit and machine settings.</p>
+      <p>Cut the 20 mm square and measure both the piece and its opening to estimate kerf. An uncompensated internal opening usually grows with kerf; an external piece shrinks. Taper and char also affect fit. Apply compensation once and check the result with the coupon.</p>
+      <figure>
+        <img src="fit-coupon-nominal.png" alt="Fit coupon" width="1200" height="720" loading="lazy" />
+        <figcaption>Sample slot widths and a kerf test square. No physical coupon has been cut yet.</figcaption>
+      </figure>
+
+      <h2>6. Dry fit and assemble</h2>
+      <p>Update the fit, regenerate the contours and cut the panels with tested settings. Dry fit the dividers before gluing the tray. Check that the tray is square, the bottom is flat and the divider tops align with the walls.</p>
+      <p>Physical measurements, cutting results and assembly photos remain pending.</p>
+
+      <h2>Reproduce the digital checks</h2>
+      <p>In a repository checkout with dependencies installed, run:</p>
+      <pre><code>npx tsx examples/plywood-organizer/verify.mts
+python3 examples/plywood-organizer/generate-cut-layout.py</code></pre>
+      <p>The <a href="/blog/plywood-organizer-laser-workflow/verify.mts">native verifier</a> writes fresh geometry evidence. Put it beside the model in the example directory; it needs the repository source. The generator writes fresh panel and coupon SVGs.</p>
+      </article>
+    </main>
+
+    <footer class="footer">
+      <div>kernelCAD · MIT</div>
+      <div class="footer-links">
+        <a href="/terms.html">terms</a>
+        <a href="/privacy.html">privacy</a>
+        <a href="https://github.com/w1ne/kernelCAD-web">github</a>
+        <a href="https://www.npmjs.com/package/kernelcad">npm</a>
+        <a href="https://x.com/kernelcad">x</a>
+        <a href="https://app.kernelcad.com">app</a>
+      </div>
+    </footer>
+    <div class="footer-stack" style="border-top: 1px solid var(--stroke, rgba(255,255,255,0.08)); padding: 14px 0 28px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; color: var(--mute, #888); font-size: 0.78rem;">
+      <span style="opacity: 0.7;">part of the engineer stack</span>
+      <nav style="display: flex; gap: 18px;">
+        <a href="https://labwired.com" style="color: inherit;">LabWired</a>
+        <a href="https://kernelcad.com" style="color: inherit;">kernelCAD</a>
+        <a href="https://koamtachi.com" style="color: inherit;">koamtachi</a>
+        <a href="https://shylenko.com" style="color: inherit;">shylenko.com</a>
+      </nav>
+    </div>
+  </div>
+</body>
+</html>
