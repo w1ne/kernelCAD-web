@@ -17,6 +17,7 @@ import type { CameraTargetMetadata } from '../../shared/intent/cameraTargetRecor
 import type { ShapeBackend } from '../../kernel/backends/backend';
 import type { SceneBackend, SceneBackendPart } from '../../kernel/backends/sceneBackend';
 import { OcctBackend, pbrFromMetadata } from '../../kernel/backends/occt/occtBackend';
+import { MeshBackend } from '../../kernel/backends/meshBackend';
 import { meshShape } from '../../kernel/backends/occt/meshing';
 import { resolveFaceLabelToFace } from '../../kernel/backends/occt/edgeSelection';
 import { faceHashOf } from '../../kernel/backends/occt/createdRefs';
@@ -85,7 +86,7 @@ export function resolvePerFaceMaterialOverrides(
   // Walk shape.faces ONCE and hash every face so resolution is O(F + L)
   // not O(F * L). The replicad shape.faces iteration order matches
   // meshShape's faceId assignment (see meshing.ts:meshShape).
-  if (base.constructor.name === 'MeshBackend') return {};
+  if (base instanceof MeshBackend) return {};
   const replicadFaces = (base.getReplicadShape() as unknown as { faces: unknown[] }).faces;
   const faceIdByHash = new Map<string, number>();
   replicadFaces.forEach((f, idx) => {

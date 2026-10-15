@@ -30,6 +30,7 @@ import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { Vec3 } from '../../shared/intent/types';
 import type { DiagnosticCode } from '../../shared/diagnostics/registry';
 import type { InterferencePair } from '../runtime/detectInterferences';
+import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { validateJointAxisBindingWithCache } from './jointAxisBinding';
 import { validateJointConventionMix } from './jointConventionMix';
 import { validateJointLoadCapacity } from './jointLoadCapacity';
@@ -651,7 +652,7 @@ export async function validateAssemblyWithMates(
   diagnostics.push(...axisBindingResult.diagnostics);
   diagnostics.push(...await validateJointVisualExposure({
     arm,
-    loweredShapes: new Map([...axisBindingResult.worldShapes].filter((entry): entry is [string, import('../../kernel/backends/occt/occtBackend').OcctBackend] => entry[1].constructor.name === 'OcctBackend')),
+    loweredShapes: new Map([...axisBindingResult.worldShapes].filter((entry): entry is [string, OcctBackend] => entry[1] instanceof OcctBackend)),
     worldTransforms: axisBindingResult.worldTransforms,
   }));
 
@@ -665,7 +666,7 @@ export async function validateAssemblyWithMates(
   if (interferencePairs !== undefined) {
     diagnostics.push(...await validateMatePhysicalRealization(
       arm,
-      new Map([...axisBindingResult.worldShapes].filter((entry): entry is [string, import('../../kernel/backends/occt/occtBackend').OcctBackend] => entry[1].constructor.name === 'OcctBackend')),
+      new Map([...axisBindingResult.worldShapes].filter((entry): entry is [string, OcctBackend] => entry[1] instanceof OcctBackend)),
       axisBindingResult.worldTransforms,
     ));
   }

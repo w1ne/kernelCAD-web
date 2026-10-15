@@ -4,6 +4,7 @@ import type { DrawingReviewPlan } from '../../shared/intent/drawingReview';
 import type { FeatureId, PatternSpec, PlaneSpec, FeatureRef, EditableVec3 } from '../../shared/intent/types';
 import { isValidScaleSpec, isValidPlaneSpec, isValidEditableVec3, formatScalarForError } from '../../shared/intent/types';
 import { KernelError } from '../../shared/intent/kernelError';
+import { MeshBackend } from '../../kernel/backends/meshBackend';
 import { invalidArgs } from '../../shared/intent/invalidArgs';
 import type { ShapeTransform } from '../../shared/intent/featureRecord';
 import type { CaptureSession } from './captureSession';
@@ -1342,8 +1343,8 @@ export class Shape {
     const { OcctBackend, initOcct } = await import('../../kernel/backends/occt/occtBackend');
     // Reuse the session's last full lower when nothing it depends on changed.
     const reused = this.session.reusableLoweredShape(this.id);
-    if (reused?.constructor.name === 'MeshBackend') {
-      this._loweredMeshBackend = reused as import('../../kernel/backends/meshBackend').MeshBackend;
+    if (reused instanceof MeshBackend) {
+      this._loweredMeshBackend = reused;
       this._loweredAtRecordCount = records.length;
       this._loweredAtTransformCount = transformCount;
       throw new Error('Shape.lower(): display mesh body has no BRep backend; solid operations are unavailable.');
