@@ -134,4 +134,6 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   dfm_review: READ,
   ray_pick: READ,
   inspect_nurbs: READ,
+  // Parses a provided handoff and returns a proposed authoring script.
+  import_handoff: AUTHOR,
 };
