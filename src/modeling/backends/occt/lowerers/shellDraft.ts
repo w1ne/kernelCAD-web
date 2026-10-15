@@ -10,6 +10,7 @@ import {
   mergeEdgeFeatureHistory,
   shellWithHistory,
 } from '../../../../kernel/backends/occt/historyAwareEdgeFeatures';
+import type { CompilerDiagnostic } from '../../../../shared/diagnostics/diagnostic';
 import type { FeatureRecord } from '../../../../shared/intent/featureRecord';
 import type { FaceRef } from '../../../../shared/intent/types';
 import { built, finished, type LowerContext, type LowerOutcome } from './context';
@@ -61,36 +62,98 @@ export function lowerShell(ctx: LowerContext, r: FeatureRecord): LowerOutcome {
     return finished(base);
   }
   drainResolvedWarnings(r, ctx.diagnostics);
+  // Convert replicad Face → { hash: FaceHash } by hashing the
+  // underlying TopoDS_Face handle.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const faceHash = ((faceResult as any).wrapped ?? (faceResult as any)._wrapped ?? faceResult as any).HashCode(2147483647).toString(16);
+  const faces = [{ hash: faceHash }];
   try {
-    // Convert replicad Face → { hash: FaceHash } by hashing the
-    // underlying TopoDS_Face handle.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const faceHash = ((faceResult as any).wrapped ?? (faceResult as any)._wrapped ?? faceResult as any).HashCode(2147483647).toString(16);
-    const shellResult = shellWithHistory(base, [{ hash: faceHash }], thickness);
+    const shellResult = shellWithHistory(base, faces, thickness);
     const newMap = mergeEdgeFeatureHistory(base.historyMap, shellResult);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const wrapped = replicad.cast(shellResult.shape as any) as replicad.Shape3D;
     shape = new OcctBackend(wrapped, undefined, newMap);
+    if (shellResult.strategy === 'offset-subtract') {
+      ctx.diagnostics.push(shellFallbackDiagnostic(r.id, thickness));
+    }
   } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
-    ctx.diagnostics.push({
-      target: 'export-occt',
-      code: 'feature.kernel-failed',
-      featureId: r.id,
-      severity: 'error',
-      message:
-        `OCCT shell failed: ${msg}. The wall offset could not be closed. Two usual causes: the wall is ` +
-        `thicker than the thinnest part of the body, or curved faces meet at sharp (non-tangent) edges — ` +
-        `a multi-station variableSweep, a ruled loft, or a union of stacked lofts.`,
-      hint:
-        'Try a thinner wall or a different open face. If the body is built from stations or stacked lofts, ' +
-        'hollow it with a boolean instead of shell(): build the same body again from profiles inset by the ' +
-        'wall thickness, starting one wall above the base and running past the open top, then ' +
-        '`outer.subtract(inner)`. Cookbook: twisted-tapered-thin-wall-vase.',
-    });
+    const msg = e instanceof Error ? e.message : 'non-Error C++ exception during Build';
+    ctx.diagnostics.push(shellFailureDiagnostic(r.id, msg, thickness, (t) => shellBuilds(base, faces, t)));
     return finished(base);
   }
   return built(shape);
+}
+
+function shellBuilds(base: OcctBackend, faces: { hash: string }[], thickness: number): boolean {
+  try {
+    shellWithHistory(base, faces, thickness);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function shellFallbackDiagnostic(featureId: string, thickness: number): CompilerDiagnostic {
+  return {
+    target: 'export-occt',
+    code: 'feature.shell.boolean-fallback',
+    featureId,
+    severity: 'info',
+    message:
+      `shell(${thickness}): every BRepOffsetAPI_MakeThickSolid join mode failed, so the ${thickness} mm wall was ` +
+      'built by offsetting the closed solid inward and subtracting it, then cutting the selected face open.',
+    hint: 'No action needed — the result is a valid hollow with the requested wall; check the rim at the open face reads as intended.',
+    details: { strategy: 'offset-subtract', thickness },
+  };
+}
+
+/** Thinner walls tried (as fractions of the requested one) before a retry is
+ *  suggested. Only a wall that actually builds is ever suggested. */
+const SHELL_RETRY_FRACTIONS = [0.5, 0.25] as const;
+
+/**
+ * `feature.kernel-failed` for shell(). The retry suggestion is VERIFIED: each
+ * candidate wall is built before it is offered; when none builds, the hint
+ * says so and points at the boolean hollow instead of a guess.
+ */
+export function shellFailureDiagnostic(
+  featureId: string,
+  kernelMessage: string,
+  thickness: number,
+  tryThickness: (t: number) => boolean,
+): CompilerDiagnostic {
+  const tried: number[] = [];
+  let verified: number | undefined;
+  for (const f of SHELL_RETRY_FRACTIONS) {
+    const t = Number((thickness * f).toPrecision(3));
+    tried.push(t);
+    if (tryThickness(t)) {
+      verified = t;
+      break;
+    }
+  }
+  const booleanAlt =
+    'If the body is built from stations or stacked lofts, hollow it with a boolean instead of shell(): build the same ' +
+    'body again from profiles inset by the wall thickness, starting one wall above the base and running past the open ' +
+    'top, then `outer.subtract(inner)`. Cookbook: twisted-tapered-thin-wall-vase.';
+  const message =
+    `OCCT shell failed: ${kernelMessage}. The wall offset could not be closed. Two usual causes: the wall is ` +
+    `thicker than the thinnest part of the body, or curved faces meet at sharp (non-tangent) edges — ` +
+    `a multi-station variableSweep, a ruled loft, or a union of stacked lofts.`;
+  if (verified !== undefined) {
+    return {
+      target: 'export-occt', code: 'feature.kernel-failed', featureId, severity: 'error', message,
+      hint: `A ${verified} mm wall builds on this body, verified by a kernel probe. Use a ${verified} mm wall or a different open face. ${booleanAlt}`,
+      nextAction: { kind: 'retry-with-smaller-param', param: 'thickness', factor: Number((verified / thickness).toFixed(4)) },
+      details: { requestedThickness: thickness, verifiedThickness: verified },
+    };
+  }
+  return {
+    target: 'export-occt', code: 'feature.kernel-failed', featureId, severity: 'error', message,
+    hint: `Thinner walls do not help here: ${tried.join(' mm and ')} mm also fail, verified by a kernel probe. Try a different open face. ${booleanAlt}`,
+    nextAction: { kind: 'rewrite-feature', guidance: 'hollow with outer.subtract(inner) or open a different face; thinner walls were verified to fail too' },
+    details: { requestedThickness: thickness, triedThicknesses: tried.join(',') },
+  };
 }
 
 /**

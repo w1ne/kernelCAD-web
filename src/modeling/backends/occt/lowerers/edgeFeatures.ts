@@ -18,6 +18,7 @@ import type { FeatureRecord } from '../../../../shared/intent/featureRecord';
 import type { FeatureId, FeatureRef } from '../../../../shared/intent/types';
 import { built, finished, type LowerContext, type LowerOutcome } from './context';
 import { drainResolvedWarnings, filterEdgesByMinLength } from './helpers';
+import { probeMaxFeasible } from './feasibilityProbe';
 
 // ---------------------------------------------------------------------------
 // Shared helper: variable-radius fillet / variable-distance chamfer
@@ -454,14 +455,11 @@ function applyFilletWithHistory(
       }
       // Edge-based or default selection: OCCT genuinely rejected. Emit a
       // clean diagnostic without leaking the raw pointer.
-      ctx.diagnostics.push({
-        target: 'export-occt',
-        code: 'feature.kernel-failed',
-        featureId: r.id,
-        severity: 'error',
-        message: 'OCCT fillet failed (non-Error C++ exception during Build)',
-        hint: 'OCCT could not apply that fillet — try a smaller radius, a different edge selection, or check whether the target edges are already G1-smooth.',
-      });
+      ctx.diagnostics.push(edgeFeatureFailureDiagnostic({
+        kind: 'fillet', featureId: r.id, requested: radius, edgeCount: edgeRefs.length,
+        kernelMessage: 'non-Error C++ exception during Build',
+        tryValue: (v) => filletBuilds(base, edgeRefs, v, filletContinuity),
+      }));
       return finished(base);
     }
     const msg = e.message;
@@ -480,14 +478,11 @@ function applyFilletWithHistory(
       });
       return finished(base);
     }
-    ctx.diagnostics.push({
-      target: 'export-occt',
-      code: 'feature.kernel-failed',
-      featureId: r.id,
-      severity: 'error',
-      message: `OCCT fillet failed: ${msg}`,
-      hint: 'OCCT could not apply that fillet — try a smaller radius (typically less than half of the smallest face dimension).',
-    });
+    ctx.diagnostics.push(edgeFeatureFailureDiagnostic({
+      kind: 'fillet', featureId: r.id, requested: radius, edgeCount: edgeRefs.length,
+      kernelMessage: msg,
+      tryValue: (v) => filletBuilds(base, edgeRefs, v, filletContinuity),
+    }));
     return finished(base);
   }
 }
@@ -601,30 +596,96 @@ export function lowerChamfer(ctx: LowerContext, r: FeatureRecord): LowerOutcome 
     return built(shape);
   }
   const edgesForChamfer = chamferFilter.kept;
+  const edgeRefs = toFilletEdgeRefs(edgesForChamfer);
   try {
-    // Convert replicad Edge[] → EdgeRefForFilleting[] by hashing each
-    // edge's underlying TopoDS_Edge handle.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const edgeRefs: EdgeRefForFilleting[] = edgesForChamfer.map((e: any) => ({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      hash: ((e.wrapped ?? e._wrapped ?? e) as any).HashCode(2147483647).toString(16),
-    }));
     const chamferResult = chamferWithHistory(base, edgeRefs, distance);
     const newMap = mergeEdgeFeatureHistory(base.historyMap, chamferResult);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const wrapped = replicad.cast(chamferResult.shape as any) as replicad.Shape3D;
     shape = new OcctBackend(wrapped, undefined, newMap);
   } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
-    ctx.diagnostics.push({
-      target: 'export-occt',
-      code: 'feature.kernel-failed',
-      featureId: r.id,
-      severity: 'error',
-      message: `OCCT chamfer failed: ${msg}`,
-      hint: 'OCCT could not apply that chamfer — try a smaller distance (typically less than half of the smallest face dimension).',
-    });
+    // A raw WASM exception pointer (a bare integer) is meaningless to the
+    // reader — never echo it.
+    const msg = e instanceof Error ? e.message : 'non-Error C++ exception during Build';
+    ctx.diagnostics.push(edgeFeatureFailureDiagnostic({
+      kind: 'chamfer', featureId: r.id, requested: distance, edgeCount: edgeRefs.length,
+      kernelMessage: msg,
+      tryValue: (v) => chamferBuilds(base, edgeRefs, v),
+    }));
     return finished(base);
   }
   return built(shape);
+}
+
+// ---------------------------------------------------------------------------
+// Failure diagnosis: max-feasible-value probe (FIX-10)
+// ---------------------------------------------------------------------------
+
+/** Kernel bisection steps for the probe: resolves the value to requested/256. */
+const PROBE_ITERATIONS = 8;
+
+function filletBuilds(base: OcctBackend, edges: EdgeRefForFilleting[], radius: number, continuity: 'G1' | 'G2'): boolean {
+  try {
+    filletWithHistory(base, edges, radius, continuity);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function chamferBuilds(base: OcctBackend, edges: EdgeRefForFilleting[], distance: number): boolean {
+  try {
+    chamferWithHistory(base, edges, distance);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+interface EdgeFeatureFailure {
+  kind: 'fillet' | 'chamfer';
+  featureId: FeatureId;
+  requested: number;
+  edgeCount: number;
+  kernelMessage: string;
+  tryValue: (value: number) => boolean;
+}
+
+const fmtMm = (v: number): string => String(Number(v.toPrecision(4)));
+
+/**
+ * `feature.kernel-failed` for a constant fillet/chamfer, with the largest
+ * value that verifiably builds on the same edges (bisection against the
+ * kernel). The value is reported, never applied.
+ */
+export function edgeFeatureFailureDiagnostic(f: EdgeFeatureFailure): CompilerDiagnostic {
+  const param = f.kind === 'fillet' ? 'radius' : 'distance';
+  const { maxFeasible, attempts } = probeMaxFeasible(f.requested, f.tryValue, PROBE_ITERATIONS);
+  const edgesText = `${f.edgeCount === 1 ? 'this edge' : `these ${f.edgeCount} edges`}`;
+  const base: CompilerDiagnostic = {
+    target: 'export-occt',
+    code: 'feature.kernel-failed',
+    featureId: f.featureId,
+    severity: 'error',
+    message: `OCCT ${f.kind} failed (${param} ${fmtMm(f.requested)} mm): ${f.kernelMessage}`,
+    hint: '',
+  };
+  if (maxFeasible === undefined) {
+    const floor = f.requested / 2 ** PROBE_ITERATIONS;
+    return {
+      ...base,
+      message: `${base.message}. No ${param} down to ${fmtMm(floor)} mm builds on ${edgesText}.`,
+      hint: `No ${f.kind} ${param} works on ${edgesText} (probed down to ${fmtMm(floor)} mm) — the edge selection itself cannot be ${f.kind === 'fillet' ? 'blended' : 'bevelled'}. Select different edges, or check they are not already tangent-continuous.`,
+      nextAction: { kind: 'rewrite-feature', guidance: `change the ${f.kind} edge selection; no ${param} builds on it` },
+      details: { requestedValue: f.requested, probeAttempts: attempts, maxFeasibleValue: 0 },
+    };
+  }
+  const key = f.kind === 'fillet' ? 'maxFeasibleRadius' : 'maxFeasibleDistance';
+  return {
+    ...base,
+    message: `${base.message}. The largest ${param} that builds on ${edgesText} is ${fmtMm(maxFeasible)} mm.`,
+    hint: `The largest ${param} that works on ${edgesText} is ${fmtMm(maxFeasible)} mm, verified by a kernel probe. Use a ${param} of ${fmtMm(maxFeasible)} mm or less, or split the selection so the tight edges get a smaller ${param}.`,
+    nextAction: { kind: 'retry-with-smaller-param', param, factor: Number((maxFeasible / f.requested).toFixed(4)) },
+    details: { requestedValue: f.requested, maxFeasibleValue: maxFeasible, [key]: maxFeasible, probeAttempts: attempts },
+  };
 }

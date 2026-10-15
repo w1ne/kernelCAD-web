@@ -11,12 +11,20 @@
 // patch that quietly changes the design.
 
 import * as ts from 'typescript';
-import type { CompilerDiagnostic, DiagnosticCode } from '../../shared/diagnostics/diagnostic';
+import type { DiagnosticCode } from '../../shared/diagnostics/diagnostic';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
-import type { ShapeBackend } from '../../kernel/backends/backend';
 import type { Vec3 } from '../../shared/intent/types';
 import { patchFromCharEdit, patchFromCharEdits } from './applyPatch';
 import type { CharRange, ScriptSpanIndex } from './scriptSpans';
+import {
+  callOf,
+  formatNumber,
+  inputShape,
+  isNumericLiteralText,
+  round,
+  type CandidateContext,
+} from './candidateHelpers';
+import { shrinkOversizedKernelParam } from './kernelFailedCandidates';
 import type { RepairCandidate, RepairPatch } from './types';
 import {
   bboxOf,
@@ -27,17 +35,7 @@ import {
   minEdgeLengthOf,
 } from './geometryFacts';
 
-export interface CandidateContext {
-  diagnostic: CompilerDiagnostic;
-  diagnosticId: string;
-  /** The feature the diagnostic is attributed to. */
-  record: FeatureRecord;
-  recordsById: ReadonlyMap<string, FeatureRecord>;
-  spans: ScriptSpanIndex;
-  /** Lowered shapes from the evaluation that produced the diagnostic. The
-   *  failing feature itself is usually absent; its inputs are present. */
-  shapes: ReadonlyMap<string, ShapeBackend>;
-}
+export type { CandidateContext } from './candidateHelpers';
 
 type CandidateGenerator = (ctx: CandidateContext) => RepairCandidate[];
 
@@ -765,53 +763,7 @@ function shrinkDraftAngle(ctx: CandidateContext): RepairCandidate[] {
   return candidates;
 }
 
-// --- feature.kernel-failed (shell thickness) ---------------------------------
-
-/**
- * OCCT `kernel-failed` is the catch-all. The one derivation we can make
- * without guessing intent: a shell whose wall is thicker than half the
- * thinnest bbox dimension. Same ladder as the fillet/chamfer shrink.
- */
-function shrinkOversizedKernelParam(ctx: CandidateContext): RepairCandidate[] {
-  const { record, spans } = ctx;
-  if (record.kind !== 'shell') return [];
-  const current = record.params.thickness?.evaluated;
-  if (typeof current !== 'number') return [];
-  const baseShape = inputShape(ctx, 'base');
-  const parentBbox = bboxOf(baseShape);
-  if (parentBbox === undefined) return [];
-  const thinnest = Math.min(...bboxSize(parentBbox));
-  if (!(thinnest > 0)) return [];
-  const ceiling = thinnest / 2;
-
-  const call = callOf(ctx);
-  const chars = call === undefined ? undefined : spans.argumentChars(call, 0);
-  if (chars === undefined) return [];
-  if (!isNumericLiteralText(spans.text.slice(chars.start, chars.end))) return [];
-
-  const candidates: RepairCandidate[] = [];
-  for (const fraction of [0.4, 0.25, 0.1]) {
-    const value = round(thinnest * fraction, 3);
-    if (value <= 0 || value >= current || value >= ceiling) continue;
-    const patch = patchFromCharEdit(spans, chars, formatNumber(value));
-    if (patch === undefined) continue;
-    candidates.push({
-      id: `${record.id}:shrink-thickness:${value}`,
-      diagnosticId: ctx.diagnosticId,
-      code: ctx.diagnostic.code,
-      featureId: record.id,
-      summary: `Reduce shell thickness from ${formatNumber(current)} mm to ${formatNumber(value)} mm.`,
-      predictedEffect: 'the wall fits inside the solid and the shell lowers',
-      patch,
-      evidence: {
-        thinnestDimensionMm: round(thinnest, 4),
-        maxFeasibleThicknessMm: round(ceiling, 4),
-        currentThicknessMm: round(current, 4),
-      },
-    });
-  }
-  return candidates;
-}
+// --- feature.kernel-failed: see kernelFailedCandidates.ts ---------------------
 
 // --- feature.emboss-text.boolean-noop ----------------------------------------
 
@@ -860,11 +812,6 @@ function recentreEmbossAnchor(ctx: CandidateContext): RepairCandidate[] {
 
 // --- shared helpers -----------------------------------------------------------
 
-function callOf(ctx: CandidateContext): ts.CallExpression | undefined {
-  const location = ctx.record.scriptLocation;
-  if (location === undefined) return undefined;
-  return ctx.spans.callNodeAt(location);
-}
 
 function calleeName(call: ts.CallExpression): string {
   const expr = call.expression;
@@ -893,11 +840,6 @@ function outermostCall(call: ts.CallExpression): ts.CallExpression {
   return ts.isCallExpression(current) ? current : call;
 }
 
-function inputShape(ctx: CandidateContext, key: string): ShapeBackend | undefined {
-  const ref = ctx.record.inputs[key];
-  if (ref === undefined || ref.kind !== 'feature') return undefined;
-  return ctx.shapes.get(ref.id);
-}
 
 /** Look for an option key in any object-literal argument of the call — edge
  *  selectors and feature options ride in different argument slots per API. */
@@ -936,22 +878,12 @@ function buildAnchorEdits(
   return edits;
 }
 
-function isNumericLiteralText(text: string): boolean {
-  return /^-?\d+(\.\d+)?$/.test(text.trim());
-}
 
-function formatNumber(value: number): string {
-  return Number.isInteger(value) ? String(value) : String(value);
-}
 
 function formatVec(vec: Vec3 | number[]): string {
   return `(${vec.map(n => formatNumber(round(n, 4))).join(', ')})`;
 }
 
-function round(value: number, digits: number): number {
-  const factor = 10 ** digits;
-  return Math.round(value * factor) / factor;
-}
 
 function clamp(value: number, low: number, high: number): number {
   return Math.min(high, Math.max(low, value));
