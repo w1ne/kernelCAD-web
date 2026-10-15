@@ -91,7 +91,7 @@ function matchedIndices<T extends Edge | Face>(all: T[], selection: unknown, ref
   const matches = resolve();
   return new Set(all.flatMap((entity,i) => matches.some(m => m.isSame(entity)) ? [i] : []));
 }
-function bodyReports(target: Target, options: EdgeRadiusOptions): EdgeRadiusBodyReport[] {
+function bodyReports(target: Target, options: EdgeRadiusOptions, resolvedFaceRefs: Set<string>): EdgeRadiusBodyReport[] {
   if (!(target.shape instanceof OcctBackend)) return [{ part: target.owner, bodyIndex: 0, edges: [], breaks: [], violations: [], unknownRefs: [`${target.owner}:unsupported-backend`] }];
   const shape = target.shape;
   const allFaces = shape.getReplicadShape().faces, allEdges = shape.getReplicadShape().edges;
@@ -110,6 +110,9 @@ function bodyReports(target: Target, options: EdgeRadiusOptions): EdgeRadiusBody
     }
     return resolveFaceQuery(shape, query);
   });
+  // A selected face resolves by existing on this shape, even when no selected
+  // edge touches it (e.g. combined with an edges filter elsewhere).
+  selectedFaces.forEach(i => resolvedFaceRefs.add(faceRefs[i]));
   const measured = inspectEdgeBreaks(shape);
   const selected = measured.edges.filter(e => selectedEdges.has(e.edgeIndex) && (e.faceIndices.some(f => selectedFaces.has(f)) || (e.faceIndices.length === 0 && options.faces === undefined)));
   const breaks = measured.breaks.filter(b => selectedFaces.has(b.faceIndex) && (options.edges === undefined || b.edgeIndices.some(e => selectedEdges.has(e))));
@@ -152,10 +155,11 @@ function bodyReports(target: Target, options: EdgeRadiusOptions): EdgeRadiusBody
 /** General edge-break spec on final BREP. Coordinates and selectors are part-local. */
 export function checkEdgeRadius(model: BuiltModel, options: EdgeRadiusOptions): EdgeRadiusReport {
   validateEdgeRadiusOptions(options);
-  const bodies = targetsOf(model,options).flatMap(t => bodyReports(t,options));
+  const resolvedFaceRefs = new Set<string>();
+  const bodies = targetsOf(model,options).flatMap(t => bodyReports(t,options,resolvedFaceRefs));
   for (const [selection, matched] of [
     [options.edges, bodies.flatMap(b => b.edges.map(e => e.ref))],
-    [options.faces, bodies.flatMap(b => [...b.breaks.map(f => f.ref), ...b.edges.flatMap(e => e.faceRefs)])],
+    [options.faces, [...resolvedFaceRefs, ...bodies.flatMap(b => [...b.breaks.map(f => f.ref), ...b.edges.flatMap(e => e.faceRefs)])]],
   ] as const) {
     const unresolved = refsOf(selection)?.filter(r => !matched.includes(r)) ?? [];
     if (unresolved.length && bodies[0]) bodies[0].unknownRefs.push(...unresolved);

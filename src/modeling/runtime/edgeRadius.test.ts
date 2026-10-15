@@ -44,6 +44,18 @@ describe('edge radius specification', () => {
     const ref = unfiltered.bodies[0].edges[0].ref;
     expect(checkEdgeRadius(sharp, { require_edge_break: 'all', edges: ref }).bodies[0].violations).toHaveLength(1);
   });
+  it('a selected face with no incident selected edge still resolves (not unknown)', async () => {
+    const sharp = await build('return box(20,30,10);');
+    const all = checkEdgeRadius(sharp, { require_edge_break: 'all' }).bodies[0].edges;
+    const edge = all[0];
+    const loneFace = [...new Set(all.flatMap(e => e.faceRefs))].find(f => !edge.faceRefs.includes(f))!;
+    const r = checkEdgeRadius(sharp, { require_edge_break: 'all', edges: edge.ref, faces: [edge.faceRefs[0], loneFace] });
+    expect(r.bodies.flatMap(b => b.unknownRefs)).not.toContain(loneFace);
+    expect(r.status).toBe('fail'); // the selected sharp edge is still a violation, not 'partial'
+    expect(r.bodies[0].violations).toHaveLength(1);
+    const bogus = checkEdgeRadius(sharp, { require_edge_break: 'all', faces: [edge.faceRefs[0], 'nope:face:zz'] });
+    expect(bogus.bodies.flatMap(b => b.unknownRefs)).toContain('nope:face:zz');
+  });
   it('empty selections and missing targets cannot pass', async () => {
     const model = await build(round);
     expect(checkEdgeRadius(model, { min_radius_mm: 1, edges: [] })).toMatchObject({ ok: false, status: 'no-coverage' });
