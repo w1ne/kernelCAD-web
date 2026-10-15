@@ -262,6 +262,14 @@ function timelineLookRefusal(input: AnimateCliInput): AnimateCliResult | null {
   return null;
 }
 
+/** Parse `--pose az,el` (degrees). Undefined when absent, null when malformed. */
+function parseCameraPose(pose: string | undefined): { azDeg: number; elDeg: number } | null | undefined {
+  if (pose === undefined) return undefined;
+  const degrees = pose.split(',').map(value => value.trim() === '' ? NaN : Number(value));
+  if (degrees.length !== 2 || !degrees.every(Number.isFinite)) return null;
+  return { azDeg: degrees[0], elDeg: degrees[1] };
+}
+
 export async function runAnimate(input: AnimateCliInput): Promise<AnimateCliResult> {
   const refusal = refuseAnimateUsage(input);
   if (refusal !== null) return refusal;
@@ -287,12 +295,7 @@ export async function runAnimate(input: AnimateCliInput): Promise<AnimateCliResu
     if (!(started instanceof Promise)) return usageRefusal(started.message, started.hint, safeFps(input.fps));
     result = await started;
   } else {
-    const cameraPose = input.pose === undefined ? undefined : (() => {
-      const components = input.pose!.split(',');
-      const degrees = components.map(value => value.trim() === '' ? NaN : Number(value));
-      if (degrees.length !== 2 || !degrees.every(Number.isFinite)) return null;
-      return { azDeg: degrees[0], elDeg: degrees[1] };
-    })();
+    const cameraPose = parseCameraPose(input.pose);
     if (cameraPose === null) {
       return usageRefusal('animate: --pose must be two finite degrees: az,el.', 'Pass e.g. --pose 30,60.', safeFps(input.fps));
     }
@@ -320,6 +323,15 @@ export async function runAnimate(input: AnimateCliInput): Promise<AnimateCliResu
   // 'environment'; the discriminant stays on the --json envelope for fault
   // attribution).
   return { exitCode: 2, result };
+}
+
+/** Optional frame-schedule and camera fields of the CLI options. */
+function frameAndCameraInput(opts: { frames?: string; fps?: number; pose?: string }): Pick<AnimateCliInput, 'frames' | 'fps' | 'pose'> {
+  return {
+    ...(opts.frames !== undefined ? { frames: opts.frames } : {}),
+    ...(opts.fps !== undefined ? { fps: opts.fps } : {}),
+    ...(opts.pose !== undefined ? { pose: opts.pose } : {}),
+  };
 }
 
 export function animateCommand(): Command {
@@ -394,9 +406,7 @@ Turntable examples:
       const r = await runAnimate({
         file,
         ...(out !== undefined ? { out } : {}),
-        ...(opts.frames !== undefined ? { frames: opts.frames } : {}),
-        ...(opts.fps !== undefined ? { fps: opts.fps } : {}),
-        ...(opts.pose !== undefined ? { pose: opts.pose } : {}),
+        ...frameAndCameraInput(opts),
         ...(opts.verify === false ? { skipVerify: true } : {}),
         ...(opts.verifyEvery !== undefined ? { verifyEvery: opts.verifyEvery } : {}),
         ...(opts.focus !== undefined ? { focus: [opts.focus] } : {}),
