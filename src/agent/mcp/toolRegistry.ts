@@ -20,6 +20,7 @@ import {
 } from './registry/inspectionVerificationTools';
 import { printToolEntries } from './registry/printTools';
 import { importToolEntries } from './registry/importTools';
+import { fabricationToolEntries } from './registry/fabricationTools';
 import { referenceExportToolEntries } from './registry/referenceExportTools';
 import { referenceLedgerToolEntries } from './registry/referenceLedgerTools';
 import { reviewPipelineToolEntries } from './registry/reviewPipelineTools';
@@ -91,6 +92,8 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...selectionToolEntries,
   // Appended at the tail: import the user's own STEP/STL as a base body.
   ...importToolEntries,
+  // Appended at the tail: fabrication handoff (fab pack + quote links).
+  ...fabricationToolEntries,
 ];
 
 /** Merge the central MCP metadata maps onto a definition: behavioral hints
