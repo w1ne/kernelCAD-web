@@ -104,6 +104,18 @@ describe('examples evaluate through the kernel', () => {
     expect(examples.length).toBeGreaterThan(0);
   });
 
+  it('classifies every discovered example and keeps classification keys current', () => {
+    const discovered = new Set(examples.map(relativeExample));
+    const evaluated = new Set([...discovered].filter(file => !HEAVY.has(file) && !EVALUATION_EXEMPT.has(file)));
+    const classified = new Set([...evaluated, ...HEAVY.keys(), ...EVALUATION_EXEMPT.keys()]);
+    for (const file of discovered) {
+      expect(classified.has(file), `${file} must be evaluated or explicitly excluded`).toBe(true);
+    }
+    for (const file of [...HEAVY.keys(), ...EVALUATION_EXEMPT.keys(), ...EXPECTED_FAILURE.keys()]) {
+      expect(discovered.has(file), `${file} classification refers to no discovered example`).toBe(true);
+    }
+  });
+
   for (const file of examples) {
     const displayFile = relativeExample(file);
     const source = readFileSync(file, 'utf8');
