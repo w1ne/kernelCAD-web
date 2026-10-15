@@ -380,7 +380,7 @@ function checkPartVoids(
 
 // --- Resolution helpers -----------------------------------------------------
 
-interface ResolvedPart {
+export interface ResolvedPart {
   name: string;
   /** LOCAL-frame shape (the SceneBackend convention). */
   shape: ShapeBackend;
@@ -397,7 +397,7 @@ interface ResolvedPart {
 /** Resolve the model's parts: the LAST record whose lowered shape is a
  *  SceneBackend wins; single-shape scripts fall back to
  *  `rootShape ?? tailShape` as one pseudo-part 'shape'. */
-function resolveParts(model: BuiltModel): { scene?: SceneBackend; parts: ResolvedPart[] } {
+export function resolveParts(model: BuiltModel): { scene?: SceneBackend; parts: ResolvedPart[] } {
   for (let i = model.records.length - 1; i >= 0; i--) {
     const s = model.shapes.get(model.records[i].id);
     if (isSceneBackend(s)) {

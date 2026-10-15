@@ -10,16 +10,32 @@ export const VERIFY_OUTPUT_SCHEMA = {
   properties: {
     ...EDGE_RADIUS_OUTPUT_PROPERTIES,
     ok: { type: 'boolean', description: 'Whether the verification ran and passed its gate.' },
-    source: { type: 'string', description: "fastener-installation/edge-radius: local geometry evidence." },
+    source: { type: 'string', description: "fastener-installation/geometry-quality/assembly-path/edge-radius: local geometry evidence." },
+    featureId: { type: 'string', description: 'geometry-quality: measured body feature.' },
+    frame: { type: 'string', description: 'geometry-quality: model coordinate frame for all locations.' },
+    thresholds: { type: 'object', additionalProperties: true, description: 'geometry-quality: effective area/length thresholds and total surface area.' },
+    tinyFaces: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'geometry-quality: rebuild-scoped face id/index, areaMm2, location.' },
+    shortEdges: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'geometry-quality: rebuild-scoped edge id/index, lengthMm, parametric midpoint location.' },
+    degenerateEdges: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'geometry-quality: explicit BREP degenerated pole/parameterization edges, ids and locations; excluded from the physical short-edge gate.' },
+    symmetry: { type: 'object', additionalProperties: true, description: 'geometry-quality: sampled-mesh-reflection; planes with passed, maxDeviationMm, rmsDeviationMm, sampleCount and worst-point witnesses, matchingPlanes, toleranceMm and meshDeflectionMm.' },
+    basis: { type: 'string', description: 'assembly-path: continuous-triangle-mesh.' },
+    parts: { type: 'array', description: 'assembly-path: initial per-part removable, validDirections and directions with distanceMm, clear and blockingParts.', items: { type: 'object', additionalProperties: true } },
+    removalOrder: { type: 'array', description: 'assembly-path: deterministic greedy steps, each with part and direction.', items: { type: 'object', additionalProperties: true } },
+    stuckParts: { type: 'array', items: { type: 'string' }, description: 'assembly-path: remaining parts when no straight removal is available.' },
     assembly: { type: ['string', 'null'], description: 'Audited lowered assembly.' },
     status: { type: 'string', description: 'fastener-installation/edge-radius: pass, fail, partial, or no-coverage; partial/zero coverage cannot pass.' },
     counts: {
-      type: 'object',
-      properties: {
-        requested: { type: 'integer', minimum: 0 }, measured: { type: 'integer', minimum: 0 },
-        passed: { type: 'integer', minimum: 0 }, failed: { type: 'integer', minimum: 0 }, unknown: { type: 'integer', minimum: 0 },
-      },
-      required: ['requested', 'measured', 'passed', 'failed', 'unknown'], additionalProperties: false,
+      anyOf: [{
+        type: 'object',
+        properties: {
+          requested: { type: 'integer', minimum: 0 }, measured: { type: 'integer', minimum: 0 },
+          passed: { type: 'integer', minimum: 0 }, failed: { type: 'integer', minimum: 0 }, unknown: { type: 'integer', minimum: 0 },
+        },
+        required: ['requested', 'measured', 'passed', 'failed', 'unknown'], additionalProperties: false,
+      }, {
+        type: 'object', properties: { faces: { type: 'integer', minimum: 0 }, edges: { type: 'integer', minimum: 0 } },
+        required: ['faces', 'edges'], additionalProperties: false,
+      }],
     },
     stations: {
       type: 'array', description: 'Explicit fastener-installation stations only; no whole-assembly certification.',

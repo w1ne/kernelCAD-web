@@ -94,8 +94,10 @@ const verifyToolEntry: ToolRegistryEntry = {
       "- 'urdf' — structural validity of a .urdf file ({ urdf_path }).\n" +
       "- 'dfm' — print-readiness gates declared by dfmSpec() ({ file | code }).\n" +
       "- 'dfm-preflight' — sheet-metal flat pattern vs a job-shop's ordering rules ({ vendor, material, thicknessIn|thicknessMm, ... }). Returns the vendor's catalog source pages as `sources`; when `disclosure` is present, show it with those links.\n" +
+      "- 'assembly-path' — continuous straight-line removal of each assembly part along ±X/±Y/±Z and optional world-space directions. Returns valid directions and blocking parts; disassemblyOrder runs a deterministic greedy removal pass. Watertight mesh approximation, conservative contact, no rotation/mate/hardware certification.\n" +
       "- 'swept-collision' — sweep declared joint range(s) and report colliding poses.\n" +
       "- 'reachable' — inverse-kinematics reachability for an end-effector ({ tip_link, target_position, ... }).\n" +
+      "- 'geometry-quality' — one solid body's BREP tiny faces and short edges (ids, locations, mm²/mm), plus sampled mirror symmetry about centroid XY/YZ/XZ and principal inertia planes ({ file | code, feature_id?, tiny_face_area_mm2?, tiny_face_relative?, short_edge_length_mm?, symmetry_tolerance_mm?, mesh_deflection_mm?, asserted_plane?: { origin, normal } }). Relative area is a fraction of total surface area; thresholds are ORed. Candidate planes are discovery; only an asserted plane gates symmetry. Approximate sampled tessellation, not exact BREP proof.\n" +
       "- 'fastener-installation' — measured explicit catalog-screw installation stations on lowered assembly BREP ({ file | code, fasteners:[{ part, against, engagementPart?, minEngagementMm?, maxProtrusionMm? }], toleranceMm?, angleToleranceDeg? }). Reports annular bearing gap, bore axis/diameter/overlap and receiver geometric engagement/protrusion. Unknown or zero coverage cannot pass. Simplified threads do not certify torque, preload or strength.\n" +
       "- 'mounting-holes' — fastened mates expose matching hole diameters on both sides.\n" +
       "- 'load-capacity' — will it hold? Closed-form Euler-Bernoulli beam check ({ loads, materials, ... }), or mode:'fea' to solve the script's feaStudy (quadratic-tet FEA, CalculiX) — both return { ok, safetyFactor, elements[{ partName, stressPa, yieldPa, safetyFactor }], failures[], diagnostics }; fea adds the threshold, the stress regions as @kc[...] faces with their location, and fea { peakStressPa, maxDisplacementMm, meshTrusted, peakAtSupportPa, refinement }; it refines the mesh automatically until the stress is trusted (refine: false for one solve).\n" +
@@ -108,16 +110,29 @@ const verifyToolEntry: ToolRegistryEntry = {
       properties: {
         check: {
           type: 'string',
-          enum: ['assembly', 'urdf', 'dfm', 'dfm-preflight', 'swept-collision', 'reachable', 'mounting-holes', 'load-capacity', 'static-hold', 'body-likeness', 'fastener-installation', 'edge-radius'],
+          enum: ['assembly', 'urdf', 'dfm', 'dfm-preflight', 'swept-collision', 'reachable', 'mounting-holes', 'load-capacity', 'static-hold', 'body-likeness', 'fastener-installation', 'geometry-quality', 'assembly-path', 'edge-radius'],
           description: 'Which verification to run.',
         },
-        file: { type: 'string', description: 'Path to a .kcad.ts script (assembly/dfm/dfm-preflight/swept-collision/reachable/mounting-holes/load-capacity/static-hold/edge-radius).' },
+        file: { type: 'string', description: 'Path to a .kcad.ts script (assembly/dfm/dfm-preflight/swept-collision/reachable/mounting-holes/load-capacity/static-hold/geometry-quality/edge-radius).' },
         code: { type: 'string', description: 'Inline kernelCAD script source (same checks as `file`).' },
+        feature_id: { type: 'string', description: "check:'geometry-quality' — body feature to measure; defaults to script return. check:'edge-radius' — lowered feature; default the returned model." },
+        tiny_face_area_mm2: { type: 'number', minimum: 0, default: 0.01, description: "check:'geometry-quality' — flag faces strictly below this absolute area; zero disables." },
+        tiny_face_relative: { type: 'number', minimum: 0, maximum: 1, default: 0, description: "check:'geometry-quality' — fraction of total BREP surface area, ORed with absolute threshold." },
+        short_edge_length_mm: { type: 'number', minimum: 0, default: 0.1, description: "check:'geometry-quality' — flag edges strictly below this length; zero disables." },
+        symmetry_tolerance_mm: { type: 'number', minimum: 0.000001, default: 0.05, description: "check:'geometry-quality' — maximum sampled mirror-to-mesh distance, mm." },
+        mesh_deflection_mm: { type: 'number', minimum: 0.0000001, description: "check:'geometry-quality' — absolute mesh deflection, defaults to tolerance/4; must be <= tolerance/2." },
+        asserted_plane: {
+          type: 'object', additionalProperties: false, required: ['origin','normal'],
+          description: "check:'geometry-quality' — optional required mirror plane in model coordinates; normal is normalized and must be nonzero.",
+          properties: {
+            origin: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 },
+            normal: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 },
+          },
+        },
         assembly: { type: 'string', description: 'Assembly name; defaults to the first captured assembly.' },
         min_radius_mm: { type: 'number', minimum: 0, description: "check:'edge-radius' — minimum fillet radius in mm (does not imply sharp-edge prohibition)." },
         max_radius_mm: { type: 'number', minimum: 0, description: "check:'edge-radius' — maximum fillet radius in mm; must be >= min_radius_mm." },
         require_edge_break: { type: 'string', enum: ['external', 'internal', 'all'], description: "check:'edge-radius' — prohibit sharp convex/external, concave/internal, or all edges." },
-        feature_id: { type: 'string', description: "check:'edge-radius' — lowered feature; default the returned model." },
         parts: { type: 'array', minItems: 1, uniqueItems: true, items: { type: 'string', minLength: 1 }, description: "check:'edge-radius' — explicit assembly part names (default all)." },
         edges: { description: "check:'edge-radius' — EdgeQuery or @kc[...] edge ref(s); intersected with faces. Query near sorts, it does not filter." },
         faces: { description: "check:'edge-radius' — FaceQuery or @kc[...] face ref(s); includes incident edges and fillets on selected faces." },
@@ -142,6 +157,8 @@ const verifyToolEntry: ToolRegistryEntry = {
         thicknessMm: { type: 'number', description: "check:'dfm-preflight' — material thickness in millimeters." },
         service: { type: 'string', enum: ['laser', 'cnc-router', 'waterjet', 'bending'], description: "check:'dfm-preflight' — service." },
         refreshCatalog: { type: 'boolean', description: "check:'dfm-preflight' — force vendor catalog refresh." },
+        directions: { type: 'array', maxItems: 64, items: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 }, description: "check:'assembly-path' — additional nonzero world-space removal vectors; normalized and deduplicated." },
+        disassemblyOrder: { type: 'boolean', description: "check:'assembly-path' — iteratively remove freed parts and return removalOrder or stuckParts." },
         joint: { type: 'string', description: "check:'swept-collision' — joint to sweep; omit to sweep every declared joint. check:'static-hold' — joint to evaluate; omit to evaluate every joint with a declared actuator." },
         range: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3, description: "check:'swept-collision' — [lower, upper, step] in joint-native units." },
         collision_tolerance_mm3: { type: 'number', description: "check:'swept-collision' — BREP intersection volume tolerance (mm^3)." },

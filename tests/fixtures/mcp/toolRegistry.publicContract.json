@@ -664,7 +664,7 @@
   },
   {
     "name": "verify",
-    "description": "Use this when you need to check a design against a rule set. One verifier, selected by `check`:\n- 'assembly' — mate-aware assembly validator on the active session (run evaluate_script first).\n- 'urdf' — structural validity of a .urdf file ({ urdf_path }).\n- 'dfm' — print-readiness gates declared by dfmSpec() ({ file | code }).\n- 'dfm-preflight' — sheet-metal flat pattern vs a job-shop's ordering rules ({ vendor, material, thicknessIn|thicknessMm, ... }). Returns the vendor's catalog source pages as `sources`; when `disclosure` is present, show it with those links.\n- 'swept-collision' — sweep declared joint range(s) and report colliding poses.\n- 'reachable' — inverse-kinematics reachability for an end-effector ({ tip_link, target_position, ... }).\n- 'fastener-installation' — measured explicit catalog-screw installation stations on lowered assembly BREP ({ file | code, fasteners:[{ part, against, engagementPart?, minEngagementMm?, maxProtrusionMm? }], toleranceMm?, angleToleranceDeg? }). Reports annular bearing gap, bore axis/diameter/overlap and receiver geometric engagement/protrusion. Unknown or zero coverage cannot pass. Simplified threads do not certify torque, preload or strength.\n- 'mounting-holes' — fastened mates expose matching hole diameters on both sides.\n- 'load-capacity' — will it hold? Closed-form Euler-Bernoulli beam check ({ loads, materials, ... }), or mode:'fea' to solve the script's feaStudy (quadratic-tet FEA, CalculiX) — both return { ok, safetyFactor, elements[{ partName, stressPa, yieldPa, safetyFactor }], failures[], diagnostics }; fea adds the threshold, the stress regions as @kc[...] faces with their location, and fea { peakStressPa, maxDisplacementMm, meshTrusted, peakAtSupportPa, refinement }; it refines the mesh automatically until the stress is trusted (refine: false for one solve).\n- 'static-hold' — gravitational holding torque/force at a sampled pose grid vs each actuated joint's declared actuator capacity ({ joint?, pose?, gravity?, min_torque_margin_pct?, range_samples? }).\n- 'body-likeness' — publish gate for organic/car bodies: cheap AABB↔wheel checks plus required agent still verdicts (side-body-over-wheels, side-cabin-aft, rear-haunch, ortho-proportions-vs-reference). Pass { body_bbox | code/file+body_feature_id, wheels?, cabin_bbox?, still_verdicts?, require_stills? }. Full CV silhouette matching is NOT implemented — agents must inspect ortho PNGs/Studio and supply still_verdicts before claiming success.\n- 'edge-radius' — general edge-break specification on final BREP ({ file | code, min_radius_mm?, max_radius_mm?, require_edge_break?: 'external'|'internal'|'all', feature_id?, assembly?, parts?, edges?, faces? }). Reports sharp convex/concave edges, analytic cylindrical/toroidal fillet radii and spherical junctions, and heuristic planar chamfer strips. Radius bounds apply only to fillets; selectors/points are part-local. Unknown/empty coverage cannot pass.\nAll params except `check` are check-specific and forwarded verbatim; each check fails closed on its own missing required params.",
+    "description": "Use this when you need to check a design against a rule set. One verifier, selected by `check`:\n- 'assembly' — mate-aware assembly validator on the active session (run evaluate_script first).\n- 'urdf' — structural validity of a .urdf file ({ urdf_path }).\n- 'dfm' — print-readiness gates declared by dfmSpec() ({ file | code }).\n- 'dfm-preflight' — sheet-metal flat pattern vs a job-shop's ordering rules ({ vendor, material, thicknessIn|thicknessMm, ... }). Returns the vendor's catalog source pages as `sources`; when `disclosure` is present, show it with those links.\n- 'assembly-path' — continuous straight-line removal of each assembly part along ±X/±Y/±Z and optional world-space directions. Returns valid directions and blocking parts; disassemblyOrder runs a deterministic greedy removal pass. Watertight mesh approximation, conservative contact, no rotation/mate/hardware certification.\n- 'swept-collision' — sweep declared joint range(s) and report colliding poses.\n- 'reachable' — inverse-kinematics reachability for an end-effector ({ tip_link, target_position, ... }).\n- 'geometry-quality' — one solid body's BREP tiny faces and short edges (ids, locations, mm²/mm), plus sampled mirror symmetry about centroid XY/YZ/XZ and principal inertia planes ({ file | code, feature_id?, tiny_face_area_mm2?, tiny_face_relative?, short_edge_length_mm?, symmetry_tolerance_mm?, mesh_deflection_mm?, asserted_plane?: { origin, normal } }). Relative area is a fraction of total surface area; thresholds are ORed. Candidate planes are discovery; only an asserted plane gates symmetry. Approximate sampled tessellation, not exact BREP proof.\n- 'fastener-installation' — measured explicit catalog-screw installation stations on lowered assembly BREP ({ file | code, fasteners:[{ part, against, engagementPart?, minEngagementMm?, maxProtrusionMm? }], toleranceMm?, angleToleranceDeg? }). Reports annular bearing gap, bore axis/diameter/overlap and receiver geometric engagement/protrusion. Unknown or zero coverage cannot pass. Simplified threads do not certify torque, preload or strength.\n- 'mounting-holes' — fastened mates expose matching hole diameters on both sides.\n- 'load-capacity' — will it hold? Closed-form Euler-Bernoulli beam check ({ loads, materials, ... }), or mode:'fea' to solve the script's feaStudy (quadratic-tet FEA, CalculiX) — both return { ok, safetyFactor, elements[{ partName, stressPa, yieldPa, safetyFactor }], failures[], diagnostics }; fea adds the threshold, the stress regions as @kc[...] faces with their location, and fea { peakStressPa, maxDisplacementMm, meshTrusted, peakAtSupportPa, refinement }; it refines the mesh automatically until the stress is trusted (refine: false for one solve).\n- 'static-hold' — gravitational holding torque/force at a sampled pose grid vs each actuated joint's declared actuator capacity ({ joint?, pose?, gravity?, min_torque_margin_pct?, range_samples? }).\n- 'body-likeness' — publish gate for organic/car bodies: cheap AABB↔wheel checks plus required agent still verdicts (side-body-over-wheels, side-cabin-aft, rear-haunch, ortho-proportions-vs-reference). Pass { body_bbox | code/file+body_feature_id, wheels?, cabin_bbox?, still_verdicts?, require_stills? }. Full CV silhouette matching is NOT implemented — agents must inspect ortho PNGs/Studio and supply still_verdicts before claiming success.\n- 'edge-radius' — general edge-break specification on final BREP ({ file | code, min_radius_mm?, max_radius_mm?, require_edge_break?: 'external'|'internal'|'all', feature_id?, assembly?, parts?, edges?, faces? }). Reports sharp convex/concave edges, analytic cylindrical/toroidal fillet radii and spherical junctions, and heuristic planar chamfer strips. Radius bounds apply only to fillets; selectors/points are part-local. Unknown/empty coverage cannot pass.\nAll params except `check` are check-specific and forwarded verbatim; each check fails closed on its own missing required params.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -682,17 +682,80 @@
             "static-hold",
             "body-likeness",
             "fastener-installation",
+            "geometry-quality",
+            "assembly-path",
             "edge-radius"
           ],
           "description": "Which verification to run."
         },
         "file": {
           "type": "string",
-          "description": "Path to a .kcad.ts script (assembly/dfm/dfm-preflight/swept-collision/reachable/mounting-holes/load-capacity/static-hold/edge-radius)."
+          "description": "Path to a .kcad.ts script (assembly/dfm/dfm-preflight/swept-collision/reachable/mounting-holes/load-capacity/static-hold/geometry-quality/edge-radius)."
         },
         "code": {
           "type": "string",
           "description": "Inline kernelCAD script source (same checks as `file`)."
+        },
+        "feature_id": {
+          "type": "string",
+          "description": "check:'geometry-quality' — body feature to measure; defaults to script return. check:'edge-radius' — lowered feature; default the returned model."
+        },
+        "tiny_face_area_mm2": {
+          "type": "number",
+          "minimum": 0,
+          "default": 0.01,
+          "description": "check:'geometry-quality' — flag faces strictly below this absolute area; zero disables."
+        },
+        "tiny_face_relative": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0,
+          "description": "check:'geometry-quality' — fraction of total BREP surface area, ORed with absolute threshold."
+        },
+        "short_edge_length_mm": {
+          "type": "number",
+          "minimum": 0,
+          "default": 0.1,
+          "description": "check:'geometry-quality' — flag edges strictly below this length; zero disables."
+        },
+        "symmetry_tolerance_mm": {
+          "type": "number",
+          "minimum": 1e-06,
+          "default": 0.05,
+          "description": "check:'geometry-quality' — maximum sampled mirror-to-mesh distance, mm."
+        },
+        "mesh_deflection_mm": {
+          "type": "number",
+          "minimum": 1e-07,
+          "description": "check:'geometry-quality' — absolute mesh deflection, defaults to tolerance/4; must be <= tolerance/2."
+        },
+        "asserted_plane": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "origin",
+            "normal"
+          ],
+          "description": "check:'geometry-quality' — optional required mirror plane in model coordinates; normal is normalized and must be nonzero.",
+          "properties": {
+            "origin": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3
+            },
+            "normal": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 3,
+              "maxItems": 3
+            }
+          }
         },
         "assembly": {
           "type": "string",
@@ -716,10 +779,6 @@
             "all"
           ],
           "description": "check:'edge-radius' — prohibit sharp convex/external, concave/internal, or all edges."
-        },
-        "feature_id": {
-          "type": "string",
-          "description": "check:'edge-radius' — lowered feature; default the returned model."
         },
         "parts": {
           "type": "array",
@@ -829,6 +888,23 @@
         "refreshCatalog": {
           "type": "boolean",
           "description": "check:'dfm-preflight' — force vendor catalog refresh."
+        },
+        "directions": {
+          "type": "array",
+          "maxItems": 64,
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "minItems": 3,
+            "maxItems": 3
+          },
+          "description": "check:'assembly-path' — additional nonzero world-space removal vectors; normalized and deduplicated."
+        },
+        "disassemblyOrder": {
+          "type": "boolean",
+          "description": "check:'assembly-path' — iteratively remove freed parts and return removalOrder or stuckParts."
         },
         "joint": {
           "type": "string",
@@ -1205,7 +1281,76 @@
         },
         "source": {
           "type": "string",
-          "description": "fastener-installation/edge-radius: local geometry evidence."
+          "description": "fastener-installation/geometry-quality/assembly-path/edge-radius: local geometry evidence."
+        },
+        "featureId": {
+          "type": "string",
+          "description": "geometry-quality: measured body feature."
+        },
+        "frame": {
+          "type": "string",
+          "description": "geometry-quality: model coordinate frame for all locations."
+        },
+        "thresholds": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "geometry-quality: effective area/length thresholds and total surface area."
+        },
+        "tinyFaces": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "description": "geometry-quality: rebuild-scoped face id/index, areaMm2, location."
+        },
+        "shortEdges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "description": "geometry-quality: rebuild-scoped edge id/index, lengthMm, parametric midpoint location."
+        },
+        "degenerateEdges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "description": "geometry-quality: explicit BREP degenerated pole/parameterization edges, ids and locations; excluded from the physical short-edge gate."
+        },
+        "symmetry": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "geometry-quality: sampled-mesh-reflection; planes with passed, maxDeviationMm, rmsDeviationMm, sampleCount and worst-point witnesses, matchingPlanes, toleranceMm and meshDeflectionMm."
+        },
+        "basis": {
+          "type": "string",
+          "description": "assembly-path: continuous-triangle-mesh."
+        },
+        "parts": {
+          "type": "array",
+          "description": "assembly-path: initial per-part removable, validDirections and directions with distanceMm, clear and blockingParts.",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "removalOrder": {
+          "type": "array",
+          "description": "assembly-path: deterministic greedy steps, each with part and direction.",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "stuckParts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "assembly-path: remaining parts when no straight removal is available."
         },
         "assembly": {
           "type": [
@@ -1219,37 +1364,59 @@
           "description": "fastener-installation/edge-radius: pass, fail, partial, or no-coverage; partial/zero coverage cannot pass."
         },
         "counts": {
-          "type": "object",
-          "properties": {
-            "requested": {
-              "type": "integer",
-              "minimum": 0
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "requested": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "measured": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "passed": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "failed": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "unknown": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "requested",
+                "measured",
+                "passed",
+                "failed",
+                "unknown"
+              ],
+              "additionalProperties": false
             },
-            "measured": {
-              "type": "integer",
-              "minimum": 0
-            },
-            "passed": {
-              "type": "integer",
-              "minimum": 0
-            },
-            "failed": {
-              "type": "integer",
-              "minimum": 0
-            },
-            "unknown": {
-              "type": "integer",
-              "minimum": 0
+            {
+              "type": "object",
+              "properties": {
+                "faces": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "edges": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "faces",
+                "edges"
+              ],
+              "additionalProperties": false
             }
-          },
-          "required": [
-            "requested",
-            "measured",
-            "passed",
-            "failed",
-            "unknown"
-          ],
-          "additionalProperties": false
+          ]
         },
         "stations": {
           "type": "array",
@@ -8747,6 +8914,286 @@
       },
       "required": [
         "ok",
+        "diagnostics"
+      ],
+      "additionalProperties": true
+    }
+  },
+  {
+    "name": "fab_pack",
+    "description": "Use this when the user wants to get a part made: packages the fabrication files into one directory plus a zip, and returns links to public instant-quote pages. Pass { file | code } and output_dir; optional name (default 'part'), formats (default step, stl, 3mf, pdf-drawing, bom-csv; add 'dxf' for flat or sheet parts), and processes ('3d-print' | 'cnc' | 'sheet-cut') to filter the links. Each file is written by the export tool, so its gates apply; a format that fails is reported in files[] and the rest still ship. Also writes manifest.json and README.txt. quote_links lists JLC3DP, JLCCNC, PCBWay, Xometry, SendCutSend and Craftcloud with the pack file to upload to each. These are plain web pages: nothing is uploaded or ordered. The user opens the link and uploads the file. Run dfm_review first if you have not.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "file": {
+          "type": "string",
+          "description": "Path to a .kcad.ts script file."
+        },
+        "code": {
+          "type": "string",
+          "description": "Inline kernelCAD script source."
+        },
+        "output_dir": {
+          "type": "string",
+          "description": "Directory to write the pack into (created if missing)."
+        },
+        "name": {
+          "type": "string",
+          "description": "Base file name (letters, digits, '.', '_', '-'). Default 'part'."
+        },
+        "formats": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "step",
+              "stl",
+              "3mf",
+              "pdf-drawing",
+              "bom-csv",
+              "dxf"
+            ]
+          },
+          "description": "Files to include. Default step, stl, 3mf, pdf-drawing, bom-csv."
+        },
+        "processes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "3d-print",
+              "cnc",
+              "sheet-cut"
+            ]
+          },
+          "description": "Only return quote links for these processes. Default: all."
+        }
+      },
+      "required": [
+        "output_dir"
+      ]
+    },
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "openWorldHint": true
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean",
+          "description": "True when every requested file was exported."
+        },
+        "output_dir": {
+          "type": "string"
+        },
+        "zip_path": {
+          "type": "string",
+          "description": "Zip holding every written file, manifest.json and README.txt."
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "description": "{ format, ok, path?, byte_count?, error? } per requested format."
+        },
+        "quote_links": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "description": "{ service, processes, url, accepts, upload_file? }: public instant-quote pages; nothing is uploaded."
+        },
+        "note": {
+          "type": "string"
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "error": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ok",
+        "files",
+        "quote_links"
+      ],
+      "additionalProperties": true
+    }
+  },
+  {
+    "name": "dfm_review",
+    "description": "Use this when you need a manufacturability (DFM) report before printing or machining a part: returns a pass/fail checklist, no dfmSpec(...) needed. Pass { file | code } and optional processes (default ['fdm', 'cnc']). FDM 3D printing checks: fdm.overhangs (unsupported overhang steeper than max_overhang_deg, default 45° from vertical), fdm.bridging (bridges over max_bridge_mm, default 10), fdm.min-wall (walls under 2 × nozzle_mm, default 0.4 mm nozzle), fdm.min-hole (holes under 5 × nozzle), fdm.min-pin (warn), fdm.bed-fit (printer profile bed, default generic-fdm), fdm.bed-contact (warn). CNC 3-axis milling checks: cnc.undercuts (surface unreachable from approach_axes, default ['+z']; list several axes for several setups) and cnc.internal-corner-radius (sharp internal corners and fillets smaller than the end-mill radius, tool_diameter_mm default 6). Returns { ok, verdict: 'pass'|'fail', checks: [{ id, process, part, status: 'pass'|'fail'|'warn', summary, value?, limit? }], fdm?, cnc?, diagnostics }. Settings from the script's dfmSpec({ process: 'fdm' }) are used as defaults; call options win. For the script-declared gates (clearance, voids, channels) use verify({ check: 'dfm' }).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "file": {
+          "type": "string",
+          "description": "Path to a .kcad.ts script file."
+        },
+        "code": {
+          "type": "string",
+          "description": "Inline kernelCAD script source."
+        },
+        "processes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "fdm",
+              "cnc"
+            ]
+          },
+          "description": "Processes to review. Default ['fdm', 'cnc']."
+        },
+        "nozzle_mm": {
+          "type": "number",
+          "description": "FDM nozzle diameter, mm. Default 0.4."
+        },
+        "max_overhang_deg": {
+          "type": "number",
+          "description": "FDM steepest printable overhang, degrees from vertical (0 = wall, 90 = flat ceiling). Default 45."
+        },
+        "max_bridge_mm": {
+          "type": "number",
+          "description": "FDM longest unsupported bridge, mm. Default 10."
+        },
+        "printer": {
+          "type": "string",
+          "enum": [
+            "generic-fdm",
+            "bambu-a1-mini",
+            "bambu-a1",
+            "bambu-p1s",
+            "bambu-p1p",
+            "bambu-x1c",
+            "bambu-x1e",
+            "bambu-h2d",
+            "bambu-h2s",
+            "prusa-mini-plus",
+            "prusa-mk4s",
+            "prusa-core-one",
+            "prusa-xl",
+            "creality-ender-3-v3",
+            "creality-k1",
+            "creality-k1-max",
+            "creality-k2-plus",
+            "elegoo-neptune-4-pro",
+            "anycubic-kobra-3",
+            "voron-2.4-250",
+            "voron-2.4-300",
+            "voron-2.4-350",
+            "ultimaker-s5"
+          ],
+          "description": "FDM printer profile id for the bed-fit check. Default 'generic-fdm'."
+        },
+        "build_direction": {
+          "type": "string",
+          "enum": [
+            "+x",
+            "-x",
+            "+y",
+            "-y",
+            "+z",
+            "-z"
+          ],
+          "description": "FDM part-local axis pointing up from the bed. Default '+z'."
+        },
+        "tool_diameter_mm": {
+          "type": "number",
+          "description": "CNC end-mill diameter, mm. Default 6."
+        },
+        "approach_axes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "+x",
+              "-x",
+              "+y",
+              "-y",
+              "+z",
+              "-z"
+            ]
+          },
+          "description": "CNC tool approach directions, one per setup (the tool comes from that side). Default ['+z']."
+        },
+        "max_undercut_area_mm2": {
+          "type": "number",
+          "description": "CNC unreachable area tolerated before cnc.undercuts fails, mm². Default 1."
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "verdict": {
+          "type": "string",
+          "enum": [
+            "pass",
+            "fail"
+          ],
+          "description": "'fail' when any check fails; warnings do not fail the review."
+        },
+        "processes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "description": "Pass/fail checklist: { id (fdm.overhangs | fdm.bridging | fdm.min-wall | fdm.min-hole | fdm.min-pin | fdm.bed-fit | fdm.bed-contact | cnc.undercuts | cnc.internal-corner-radius), process, part, status: 'pass'|'fail'|'warn', summary, value?, limit? }."
+        },
+        "fdm": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "description": "Per-part FDM engine report (part-local coordinates)."
+        },
+        "cnc": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "description": "Per-part CNC engine report (part-local coordinates)."
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "verdict",
+        "checks",
         "diagnostics"
       ],
       "additionalProperties": true

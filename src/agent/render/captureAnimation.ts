@@ -86,6 +86,8 @@ export interface CaptureAnimationOpts {
   framesDir?: string;
   /** Override the animationView record's fps. */
   fps?: number;
+  /** Arbitrary camera pose; omitted preserves the existing iso view. */
+  cameraPose?: { azDeg: number; elDeg: number };
   /** Progress sink for long captures (build done, schedule, verify, page
    *  ready, every 10th frame, encode done, total). Default: no-op. The
    *  script wrapper passes one that writes timestamped lines to stderr. */

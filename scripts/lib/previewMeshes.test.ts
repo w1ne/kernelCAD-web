@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Transform } from '../../src/shared/runtime/se3';
 import type { CaptureSession } from '../../src/modeling/capture/captureSession';

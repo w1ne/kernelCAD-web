@@ -120,6 +120,8 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   execute_cookbook: WRITES_FILE,
   // Downloads a user-supplied file (open world) and writes it plus a starter script.
   import_step: AUTHOR_REMOTE,
+  // Writes the pack files + zip locally; never contacts a vendor.
+  fab_pack: WRITES_FILE,
 
   // Renders the model to PNG views on the local filesystem — does not change the
   // design, but writes image files (same class as capture_animation).
@@ -128,4 +130,6 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   // disk, so it is neither read-only nor sandbox-local.
   run_fea: WRITES_FILE,
   fea_summary: READ,
+  // Evaluates the script in-process and reports; writes nothing.
+  dfm_review: READ,
 };

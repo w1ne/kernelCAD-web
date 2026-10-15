@@ -5,6 +5,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 // Mock all eight verifiers — this is a routing layer, so we test that `check`
 // selects the right handler and forwards the remaining params, not the
 // verifiers' own (unchanged) behavior.
+vi.mock('./checkAssemblyPath', () => ({ checkAssemblyPathTool: vi.fn(async () => 'assembly-path') }));
 vi.mock('./validateAssembly', () => ({ validateAssemblyTool: vi.fn(async () => 'assembly') }));
 vi.mock('./validateUrdf', () => ({ validateUrdfTool: vi.fn(async () => 'urdf') }));
 vi.mock('./dfmCheck', () => ({ dfmCheckTool: vi.fn(async () => 'dfm') }));
@@ -17,7 +18,9 @@ vi.mock('./checkStaticHold', () => ({ checkStaticHoldTool: vi.fn(async () => 'st
 vi.mock('./checkFastenerInstallation', () => ({ checkFastenerInstallationTool: vi.fn(async () => 'fastener-installation') }));
 vi.mock('./checkEdgeRadius', () => ({ checkEdgeRadiusTool: vi.fn(async () => 'edge-radius') }));
 vi.mock('./checkBodyLikeness', () => ({ checkBodyLikenessTool: vi.fn(async () => 'body-likeness') }));
+vi.mock('./checkGeometryQuality', () => ({ checkGeometryQualityTool: vi.fn(async () => 'geometry-quality') }));
 
+import { checkAssemblyPathTool } from './checkAssemblyPath';
 import { verifyTool, type VerifyCheck } from './verify';
 import { validateAssemblyTool } from './validateAssembly';
 import { validateUrdfTool } from './validateUrdf';
@@ -31,8 +34,10 @@ import { checkStaticHoldTool } from './checkStaticHold';
 import { checkEdgeRadiusTool } from './checkEdgeRadius';
 import { checkBodyLikenessTool } from './checkBodyLikeness';
 import { checkFastenerInstallationTool } from './checkFastenerInstallation';
+import { checkGeometryQualityTool } from './checkGeometryQuality';
 
 const ROUTES: Array<[VerifyCheck, ReturnType<typeof vi.fn>, string]> = [
+  ['assembly-path', checkAssemblyPathTool as never, 'assembly-path'],
   ['assembly', validateAssemblyTool as never, 'assembly'],
   ['urdf', validateUrdfTool as never, 'urdf'],
   ['dfm', dfmCheckTool as never, 'dfm'],
@@ -45,6 +50,7 @@ const ROUTES: Array<[VerifyCheck, ReturnType<typeof vi.fn>, string]> = [
   ['fastener-installation', checkFastenerInstallationTool as never, 'fastener-installation'],
   ['edge-radius', checkEdgeRadiusTool as never, 'edge-radius'],
   ['body-likeness', checkBodyLikenessTool as never, 'body-likeness'],
+  ['geometry-quality', checkGeometryQualityTool as never, 'geometry-quality'],
 ];
 
 describe('verify dispatcher', () => {
@@ -67,6 +73,13 @@ describe('verify dispatcher', () => {
     const params = { code: 'SRC', fasteners: [{ part: 'screw', against: ['plate'], engagementPart: 'nut', minEngagementMm: 2, maxProtrusionMm: 1 }], toleranceMm: .02, angleToleranceDeg: .5 };
     await verifyTool({ check: 'fastener-installation', ...params });
     expect(checkFastenerInstallationTool).toHaveBeenCalledWith(params);
+  });
+
+  it('forwards body thresholds and asserted symmetry plane unchanged', async () => {
+    const params = { file: 'part.kcad.ts', feature_id: 'body', tiny_face_relative: 0.001, asserted_plane: { origin: [0,0,0], normal: [1,0,0] } };
+    await verifyTool({ check: 'geometry-quality', ...params });
+    expect(checkGeometryQualityTool).toHaveBeenCalledWith(params);
+    expect(checkFastenerInstallationTool).not.toHaveBeenCalled();
   });
 
   it('throws an actionable error on an unknown check', async () => {

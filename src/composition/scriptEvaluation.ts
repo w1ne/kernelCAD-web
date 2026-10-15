@@ -60,6 +60,9 @@ export interface EvaluateOptions {
    *  factory (`createScriptApi` + `defaultSweepEvaluator`), so a script that
    *  calls `kc.kinematic.sweepTolerance` works on every evaluate path. */
   apiFactory?: ScriptApiFactory;
+  /** Skip the script-declared dfmSpec(...) gate. For callers (dfm_review)
+   *  that run their own manufacturability analysis with call-time settings. */
+  skipDfmGate?: boolean;
 }
 
 export interface FeatureHealthEntry {
@@ -209,9 +212,10 @@ async function buildModelForInput(
 async function runOptInGates(
   model: BuiltModel,
   fatal: boolean,
+  skipDfmGate = false,
 ): Promise<{ dfmReport?: DfmCheckReport; feaReport?: FeaGateReport; tubeReport?: TubeCheckReport }> {
   let dfmReport: DfmCheckReport | undefined;
-  if (!fatal) {
+  if (!fatal && !skipDfmGate) {
     dfmReport = await runDfmChecksOnModel(model);
     if (dfmReport) model.diagnostics.push(...dfmReport.diagnostics);
   }
@@ -304,7 +308,7 @@ export async function evaluateAndBuildScript(
     );
   }
 
-  const gates = await runOptInGates(model, fatal);
+  const gates = await runOptInGates(model, fatal, opts?.skipDfmGate === true);
 
   const portReport = portReportOrWarning(model);
 

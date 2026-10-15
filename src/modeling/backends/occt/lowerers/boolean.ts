@@ -26,7 +26,6 @@ export function lowerBoolean(ctx: LowerContext, r: FeatureRecord): LowerOutcome 
   // For a difference, capture the base volume so we can flag a no-op cut
   // (cutter missed the body) below — the kernel otherwise returns the
   // unchanged solid as a success.
-  const volumeBeforeCut = op === 'difference' ? acc.volume() : null;
   const cutters = Object.entries(ctx.inputs.byKey)
     .filter(([k]) => k.startsWith('cutter_'))
     .sort(([a], [b]) => a.localeCompare(b))
@@ -37,6 +36,11 @@ export function lowerBoolean(ctx: LowerContext, r: FeatureRecord): LowerOutcome 
     op === 'intersection' ? intersectWithHistory :
     null;
   if (!opFn) throw new Error(`Unknown boolean op: ${op}`);
+  // With no cutters there is nothing that could have missed the body.
+  const volumeBeforeCut = op === 'difference' && cutters.length > 0 ? acc.volume() : null;
+  // A zero-cutter boolean must not hand out its cached input: a later
+  // transform consumes the OCCT handle and breaks the source on reuse.
+  if (cutters.length === 0) acc = acc.clone();
   for (const c of cutters) {
     const result = opFn(acc, c);
     const newMap = mergeBooleanHistory(acc.historyMap, c.historyMap, result);

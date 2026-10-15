@@ -22,6 +22,7 @@
 
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
 import type { OcctBackend } from '../../kernel/backends/occt/occtBackend';
+import type { Vec3 } from '../../shared/intent/types';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 
 /** A single (part_a, part_b) pair whose intersection has non-trivial volume. */
@@ -133,6 +134,7 @@ export function detectInterferences(
       bbox: clone.boundingBox(),
       source: p.shape as object,
       poseKey: transformKey(p.worldTransform),
+      frameBounds: new Map<number, Bounds>(),
     };
   });
 
@@ -141,9 +143,35 @@ export function detectInterferences(
   for (const [i, j] of candidates) {
     const a = transformed[i];
     const b = transformed[j];
-    // Volume-only common: no face-unification pass, which on B-spline-heavy
-    // parts (threads) can run for minutes. A probe OCCT cannot complete is
-    // reported, not read as "no clash".
+    // Conservative rigid-frame bounds prove some candidates cannot exceed the threshold.
+    let boundedBelowThreshold = false;
+    for (let frame = 0; frame < BOUND_FRAMES.length; frame++) {
+      try {
+        const boundsFor = (part: typeof a): Bounds => {
+          const cached = part.frameBounds.get(frame);
+          if (cached) return cached;
+          const basis = BOUND_FRAMES[frame];
+          let bounds: Bounds;
+          if (basis === null) bounds = paddedBounds(part.shape);
+          else {
+            const rotated = part.shape.clone().rotate(basis.axis, basis.degrees);
+            try { bounds = paddedBounds(rotated); }
+            finally { rotated.getReplicadShape().delete(); }
+          }
+          part.frameBounds.set(frame, bounds);
+          return bounds;
+        };
+        const upper = overlapVolumeUpperBound(boundsFor(a), boundsFor(b));
+        if (Number.isFinite(upper) && upper <= epsilonMm3) {
+          boundedBelowThreshold = true;
+          break;
+        }
+      } catch {
+        break;
+      }
+    }
+    if (boundedBelowThreshold) continue;
+
     const memoKey = `${a.poseKey}|${b.poseKey}`;
     let vol: number | undefined = memoGet(a.source, b.source, memoKey);
     try {
@@ -153,17 +181,13 @@ export function detectInterferences(
       }
     } catch (e) {
       diagnostics.push({
-        target: 'export-occt',
-        code: 'feature.kernel-failed',
-        severity: 'warn',
+        target: 'export-occt', code: 'feature.kernel-failed', severity: 'warn',
         message: `interference probe failed on pair (${a.name}, ${b.name}): ${e instanceof Error ? e.message : String(e)}; overlap not measured.`,
         hint: 'Check both parts for degenerate geometry with evaluate_script, or add the pair to the ignore list if its clearance is established another way.',
       });
       continue;
     }
-    if (vol > epsilonMm3) {
-      pairs.push({ a: a.name, b: b.name, volumeMm3: vol });
-    }
+    if (vol > epsilonMm3) pairs.push({ a: a.name, b: b.name, volumeMm3: vol });
   }
   return {
     pairs,
@@ -183,8 +207,47 @@ function bboxesOverlap(
   b: { min: [number, number, number]; max: [number, number, number] },
 ): boolean {
   return (
-    a.min[0] <= b.max[0] && a.max[0] >= b.min[0] &&
-    a.min[1] <= b.max[1] && a.max[1] >= b.min[1] &&
-    a.min[2] <= b.max[2] && a.max[2] >= b.min[2]
+    a.min[0] <= b.max[0] &&
+    a.max[0] >= b.min[0] &&
+    a.min[1] <= b.max[1] &&
+    a.max[1] >= b.min[1] &&
+    a.min[2] <= b.max[2] &&
+    a.max[2] >= b.min[2]
+  );
+}
+
+interface Bounds {
+  min: Vec3;
+  max: Vec3;
+}
+const BOUND_FRAMES: readonly ({ axis: Vec3; degrees: number } | null)[] = [
+  null,
+  ...[-45, 45].flatMap((degrees) =>
+    (
+      [
+        [1, 0, 0],
+        [0, 1, 0],
+        [0, 0, 1],
+      ] as Vec3[]
+    ).map((axis) => ({ axis, degrees })),
+  ),
+];
+
+function paddedBounds(shape: OcctBackend): Bounds {
+  // Preserve Bnd_Box tolerance padding; boundingBox() removes that gap,
+  // and boundingBox({ exact: true }) uses non-conservative tessellation.
+  const [min, max] = shape.getReplicadShape().boundingBox.bounds;
+  return { min: [...min] as Vec3, max: [...max] as Vec3 };
+}
+
+function overlapVolumeUpperBound(a: Bounds, b: Bounds): number {
+  return [0, 1, 2].reduce(
+    (volume, axis) =>
+      volume *
+      Math.max(
+        0,
+        Math.min(a.max[axis], b.max[axis]) - Math.max(a.min[axis], b.min[axis]),
+      ),
+    1,
   );
 }
