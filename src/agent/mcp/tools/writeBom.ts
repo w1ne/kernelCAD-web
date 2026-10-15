@@ -250,16 +250,7 @@ async function writeCsv(csv: string, requestedPath?: string, overwrite = false):
     }
   }
   await mkdir(path.dirname(finalPath), { recursive: true });
-  if (overwrite) {
-    const temporaryPath = `${finalPath}.${randomUUID()}.tmp`;
-    try {
-      await writeFile(temporaryPath, csv, { encoding: 'utf8', flag: 'wx' });
-      await rename(temporaryPath, finalPath);
-    } finally {
-      await rm(temporaryPath, { force: true });
-    }
-    return finalPath;
-  }
+  // Always use the symlink-/swap-safe writer, including overwrite mode.
   const result = await safeWriteFileDetailed(finalPath, csv);
   if (result.error) throw new Error(result.error);
   return finalPath;
