@@ -27,17 +27,10 @@ export interface ApplySurfaceBlendOutput {
 }
 
 const IDENTIFIER = /^[A-Za-z_$][\w$]*$/;
-function nextSurfaceBlendBinding(code: string): string {
-  const taken = new Set<string>();
-  for (const match of code.matchAll(/\bconst\s+(_surface_blend(?:_\d+)?)\b/g)) taken.add(match[1]!);
-  if (!taken.has('_surface_blend')) return '_surface_blend';
-  let i = 2;
-  while (taken.has(`_surface_blend_${i}`)) i += 1;
-  return `_surface_blend_${i}`;
-}
 
-
-export async function applySurfaceBlendTool(input: ApplySurfaceBlendInput): Promise<ApplySurfaceBlendOutput> {
+function validateSurfaceBlendInput(input: ApplySurfaceBlendInput):
+  | { ok: true; operation: 'fillet' | 'chamfer'; amount: number }
+  | { ok: false; error: string } {
   const operation = input.operation ?? 'fillet';
   if (!IDENTIFIER.test(input.shape_binding)) return { ok: false, error: 'shape_binding must be a JavaScript identifier.' };
   if (operation === 'fillet' && !(typeof input.radius === 'number' && Number.isFinite(input.radius) && input.radius > 0)) {
@@ -53,9 +46,26 @@ export async function applySurfaceBlendTool(input: ApplySurfaceBlendInput): Prom
       && !(input.selector && typeof input.selector === 'object' && typeof input.selector.face === 'string')) {
     return { ok: false, error: 'selector must be an edge selector string or { face: nameOrQuery }.' };
   }
+  const amount = operation === 'fillet' ? input.radius! : input.distance!;
+  return { ok: true, operation, amount };
+}
+
+function nextSurfaceBlendBinding(code: string): string {
+  const taken = new Set<string>();
+  for (const match of code.matchAll(/\bconst\s+(_surface_blend(?:_\d+)?)\b/g)) taken.add(match[1]!);
+  if (!taken.has('_surface_blend')) return '_surface_blend';
+  let i = 2;
+  while (taken.has(`_surface_blend_${i}`)) i += 1;
+  return `_surface_blend_${i}`;
+}
+
+
+export async function applySurfaceBlendTool(input: ApplySurfaceBlendInput): Promise<ApplySurfaceBlendOutput> {
+  const validated = validateSurfaceBlendInput(input);
+  if (!validated.ok) return validated;
+  const { operation, amount } = validated;
   const selectorCode = input.selector === undefined ? '' : `, ${JSON.stringify(input.selector)}`;
   const optsCode = operation === 'fillet' && input.continuity ? `, { continuity: ${JSON.stringify(input.continuity)} }` : '';
-  const amount = operation === 'fillet' ? input.radius : input.distance;
   const blendBinding = nextSurfaceBlendBinding(input.code);
   const featureCode = `const ${blendBinding} = ${input.shape_binding}.${operation}(${amount}${selectorCode}${optsCode});`;
   const edit = addFeature(input.code, featureCode);
