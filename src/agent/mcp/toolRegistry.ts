@@ -21,6 +21,7 @@ import {
 import { printToolEntries } from './registry/printTools';
 import { importToolEntries } from './registry/importTools';
 import { fabricationToolEntries } from './registry/fabricationTools';
+import { manufacturingToolEntries } from './registry/manufacturingTools';
 import { referenceExportToolEntries } from './registry/referenceExportTools';
 import { referenceLedgerToolEntries } from './registry/referenceLedgerTools';
 import { reviewPipelineToolEntries } from './registry/reviewPipelineTools';
@@ -94,6 +95,8 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...importToolEntries,
   // Appended at the tail: fabrication handoff (fab pack + quote links).
   ...fabricationToolEntries,
+  // Appended at the tail: manufacturability review (FDM + CNC).
+  ...manufacturingToolEntries,
 ];
 
 /** Merge the central MCP metadata maps onto a definition: behavioral hints

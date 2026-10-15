@@ -8796,5 +8796,174 @@
       ],
       "additionalProperties": true
     }
+  },
+  {
+    "name": "dfm_review",
+    "description": "Use this when you need a manufacturability (DFM) report before printing or machining a part: returns a pass/fail checklist, no dfmSpec(...) needed. Pass { file | code } and optional processes (default ['fdm', 'cnc']). FDM 3D printing checks: fdm.overhangs (unsupported overhang steeper than max_overhang_deg, default 45° from vertical), fdm.bridging (bridges over max_bridge_mm, default 10), fdm.min-wall (walls under 2 × nozzle_mm, default 0.4 mm nozzle), fdm.min-hole (holes under 5 × nozzle), fdm.min-pin (warn), fdm.bed-fit (printer profile bed, default generic-fdm), fdm.bed-contact (warn). CNC 3-axis milling checks: cnc.undercuts (surface unreachable from approach_axes, default ['+z']; list several axes for several setups) and cnc.internal-corner-radius (sharp internal corners and fillets smaller than the end-mill radius, tool_diameter_mm default 6). Returns { ok, verdict: 'pass'|'fail', checks: [{ id, process, part, status: 'pass'|'fail'|'warn', summary, value?, limit? }], fdm?, cnc?, diagnostics }. Settings from the script's dfmSpec({ process: 'fdm' }) are used as defaults; call options win. For the script-declared gates (clearance, voids, channels) use verify({ check: 'dfm' }).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "file": {
+          "type": "string",
+          "description": "Path to a .kcad.ts script file."
+        },
+        "code": {
+          "type": "string",
+          "description": "Inline kernelCAD script source."
+        },
+        "processes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "fdm",
+              "cnc"
+            ]
+          },
+          "description": "Processes to review. Default ['fdm', 'cnc']."
+        },
+        "nozzle_mm": {
+          "type": "number",
+          "description": "FDM nozzle diameter, mm. Default 0.4."
+        },
+        "max_overhang_deg": {
+          "type": "number",
+          "description": "FDM steepest printable overhang, degrees from vertical (0 = wall, 90 = flat ceiling). Default 45."
+        },
+        "max_bridge_mm": {
+          "type": "number",
+          "description": "FDM longest unsupported bridge, mm. Default 10."
+        },
+        "printer": {
+          "type": "string",
+          "enum": [
+            "generic-fdm",
+            "bambu-a1-mini",
+            "bambu-a1",
+            "bambu-p1s",
+            "bambu-p1p",
+            "bambu-x1c",
+            "bambu-x1e",
+            "bambu-h2d",
+            "bambu-h2s",
+            "prusa-mini-plus",
+            "prusa-mk4s",
+            "prusa-core-one",
+            "prusa-xl",
+            "creality-ender-3-v3",
+            "creality-k1",
+            "creality-k1-max",
+            "creality-k2-plus",
+            "elegoo-neptune-4-pro",
+            "anycubic-kobra-3",
+            "voron-2.4-250",
+            "voron-2.4-300",
+            "voron-2.4-350",
+            "ultimaker-s5"
+          ],
+          "description": "FDM printer profile id for the bed-fit check. Default 'generic-fdm'."
+        },
+        "build_direction": {
+          "type": "string",
+          "enum": [
+            "+x",
+            "-x",
+            "+y",
+            "-y",
+            "+z",
+            "-z"
+          ],
+          "description": "FDM part-local axis pointing up from the bed. Default '+z'."
+        },
+        "tool_diameter_mm": {
+          "type": "number",
+          "description": "CNC end-mill diameter, mm. Default 6."
+        },
+        "approach_axes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "+x",
+              "-x",
+              "+y",
+              "-y",
+              "+z",
+              "-z"
+            ]
+          },
+          "description": "CNC tool approach directions, one per setup (the tool comes from that side). Default ['+z']."
+        },
+        "max_undercut_area_mm2": {
+          "type": "number",
+          "description": "CNC unreachable area tolerated before cnc.undercuts fails, mm². Default 1."
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "verdict": {
+          "type": "string",
+          "enum": [
+            "pass",
+            "fail"
+          ],
+          "description": "'fail' when any check fails; warnings do not fail the review."
+        },
+        "processes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "description": "Pass/fail checklist: { id (fdm.overhangs | fdm.bridging | fdm.min-wall | fdm.min-hole | fdm.min-pin | fdm.bed-fit | fdm.bed-contact | cnc.undercuts | cnc.internal-corner-radius), process, part, status: 'pass'|'fail'|'warn', summary, value?, limit? }."
+        },
+        "fdm": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "description": "Per-part FDM engine report (part-local coordinates)."
+        },
+        "cnc": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "description": "Per-part CNC engine report (part-local coordinates)."
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "required": [
+        "ok",
+        "verdict",
+        "checks",
+        "diagnostics"
+      ],
+      "additionalProperties": true
+    }
   }
 ]
