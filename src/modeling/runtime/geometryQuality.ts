@@ -7,28 +7,44 @@ import type { Vec3 } from '../../shared/intent/types';
 import { checkMeshSymmetry } from './geometrySymmetry';
 import { resolveGeometryQualityOptions, type GeometryQualityOptions, type GeometryQualityReport } from './geometryQualityTypes';
 
-/** Read-only quality screen of one solid using existing BREP/meshing APIs. */
-export function checkGeometryQuality(shape: ShapeBackend, featureId: string, input: GeometryQualityOptions = {}): GeometryQualityReport {
-  const options = resolveGeometryQualityOptions(input);
-  if (!(shape instanceof OcctBackend)) throw new Error('Geometry quality requires one OCCT body; select a body feature_id for assemblies.');
+type FaceInfo = { id: string; index: number; areaMm2: number; location: Vec3 };
+type EdgeInfo = { id: string; index: number; lengthMm: number; location: Vec3 };
+type Brep = ReturnType<OcctBackend['getReplicadShape']>;
+
+function countTopology(brep: Brep): { faces: number; edges: number } {
+  const faces = brep.faces, edges = brep.edges;
+  const counts = { faces: faces.length, edges: edges.length };
+  faces.forEach(f => f.delete());
+  edges.forEach(e => e.delete());
+  return counts;
+}
+
+/** The target must be exactly one solid and nothing else: a compound with one
+ *  solid plus loose faces, shells or wires is rejected rather than measured. */
+function assertSingleSolid(shape: OcctBackend, brep: Brep): void {
   const solids = shape.solidComponents();
   try {
     if (solids.length !== 1) throw new Error('Geometry quality requires exactly one solid body.');
+    const whole = countTopology(brep);
+    const solid = countTopology(solids[0].getReplicadShape());
+    if (whole.faces !== solid.faces || whole.edges !== solid.edges) {
+      throw new Error('Geometry quality requires exactly one solid body with no loose faces, shells or wires.');
+    }
   } finally {
     solids.forEach(s => s.dispose?.());
   }
-  const brep = shape.getReplicadShape();
+}
+
+function measureTopology(brep: Brep): { faceInfo: FaceInfo[]; edgeInfo: EdgeInfo[]; degenerateEdges: GeometryQualityReport['degenerateEdges'] } {
   const faces = brep.faces;
   const edges = brep.edges;
-  let faceInfo: { id: string; index: number; areaMm2: number; location: Vec3 }[];
-  let edgeInfo: { id: string; index: number; lengthMm: number; location: Vec3 }[];
   const degenerateEdges: GeometryQualityReport['degenerateEdges'] = [];
   try {
-    faceInfo = faces.map((face, index) => {
+    const faceInfo = faces.map((face, index) => {
       const areaMm2 = measureArea(face), c = face.center;
-      return { id: `f${index}`, index, areaMm2, location: [c.x,c.y,c.z] };
+      return { id: `f${index}`, index, areaMm2, location: [c.x,c.y,c.z] as Vec3 };
     });
-    edgeInfo = edges.flatMap((edge, index) => {
+    const edgeInfo = edges.flatMap((edge, index) => {
       // Read an existing topology flag, never infer degeneracy from tiny length.
       if (getOC().BRep_Tool.Degenerated(edge.wrapped)) {
         const box = edge.boundingBox;
@@ -39,16 +55,32 @@ export function checkGeometryQuality(shape: ShapeBackend, featureId: string, inp
       const c = edge.pointAt(0.5);
       return [{ id: `e${index}`, index, lengthMm: edge.length, location: [c.x,c.y,c.z] as Vec3 }];
     });
+    return { faceInfo, edgeInfo, degenerateEdges };
   } finally {
     faces.forEach(f => f.delete());
     edges.forEach(e => e.delete());
   }
-  if (faceInfo.length === 0 || edgeInfo.length === 0
-    || faceInfo.some(f => !Number.isFinite(f.areaMm2) || f.areaMm2 <= 0 || !f.location.every(Number.isFinite))
-    || edgeInfo.some(e => !Number.isFinite(e.lengthMm) || e.lengthMm < 0 || !e.location.every(Number.isFinite))
-    || degenerateEdges.some(e => !e.location.every(Number.isFinite))) {
+}
+
+function assertValidMeasurements(m: ReturnType<typeof measureTopology>): void {
+  const finite = (v: Vec3) => v.every(Number.isFinite);
+  const badFace = m.faceInfo.some(f => !Number.isFinite(f.areaMm2) || f.areaMm2 <= 0 || !finite(f.location));
+  const badEdge = m.edgeInfo.some(e => !Number.isFinite(e.lengthMm) || e.lengthMm < 0 || !finite(e.location));
+  const badDegenerate = m.degenerateEdges.some(e => !finite(e.location));
+  if (m.faceInfo.length === 0 || m.edgeInfo.length === 0 || badFace || badEdge || badDegenerate) {
     throw new Error('Incomplete or invalid BREP face/edge measurements.');
   }
+}
+
+/** Read-only quality screen of one solid using existing BREP/meshing APIs. */
+export function checkGeometryQuality(shape: ShapeBackend, featureId: string, input: GeometryQualityOptions = {}): GeometryQualityReport {
+  const options = resolveGeometryQualityOptions(input);
+  if (!(shape instanceof OcctBackend)) throw new Error('Geometry quality requires one OCCT body; select a body feature_id for assemblies.');
+  const brep = shape.getReplicadShape();
+  assertSingleSolid(shape, brep);
+  const measured = measureTopology(brep);
+  assertValidMeasurements(measured);
+  const { faceInfo, edgeInfo, degenerateEdges } = measured;
   const surfaceAreaMm2 = faceInfo.reduce((sum,f) => sum+f.areaMm2, 0);
   const tinyFaceAreaMm2 = Math.max(options.tinyFaceAreaMm2, options.tinyFaceRelative * surfaceAreaMm2);
   if (!Number.isFinite(tinyFaceAreaMm2) || !Number.isFinite(surfaceAreaMm2)) throw new Error('Nonfinite BREP area threshold.');

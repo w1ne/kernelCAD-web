@@ -26,6 +26,19 @@ describe('geometry-quality BREP and sampled mirror checks', () => {
     }
     // Replicad makeCompound consumes its input wrappers; the backend owns the result.
   });
+  it('rejects one solid accompanied by a loose face or wire, even with topology thresholds disabled', async () => {
+    await initOcct();
+    const extras = [
+      () => makePolygon([[20,0,0],[30,0,0],[30,10,0],[20,10,0]]),
+      () => makePolygon([[20,0,0],[30,0,0],[30,10,0],[20,10,0]]).outerWire(),
+    ];
+    for (const extra of extras) {
+      const compound = makeCompound([makeBox([0,0,0],[10,10,10]), extra() as unknown as Shape3D]);
+      const shape = new OcctBackend(compound as Shape3D);
+      try { expect(() => checkGeometryQuality(shape, 'synthetic', { tiny_face_area_mm2: 0, short_edge_length_mm: 0 })).toThrow(/no loose faces, shells or wires/); }
+      finally { shape.dispose(); }
+    }
+  });
   it('reports sphere pole parameterization edges separately from physical short edges', async () => {
     const r = await measured({ code: 'return sphere(10);' });
     expect(r.ok).toBe(true);
