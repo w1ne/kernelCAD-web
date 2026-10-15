@@ -1,0 +1,26 @@
+{
+  "invocation": {
+    "shape_binding": "body",
+    "operation": "fillet",
+    "radius": 2,
+    "selector": {
+      "face": "top"
+    },
+    "continuity": "G2"
+  },
+  "ok": true,
+  "operation": "fillet",
+  "new_code": "const body = box(20, 20, 20);\nconst _surface_blend = body.fillet(2, {\"face\":\"top\"}, { continuity: \"G2\" });\nreturn body;",
+  "sceneSummary": {
+    "valid": true,
+    "volume": 7998.318530717957,
+    "faceCount": 8,
+    "size": [
+      20,
+      20,
+      20
+    ]
+  },
+  "diagnostics": [],
+  "provenance": "Values from passing applySurfaceBlend.test.ts local evaluation. Direct demo.ts invocation was blocked: tsx could not create its IPC socket under the workspace sandbox."
+}

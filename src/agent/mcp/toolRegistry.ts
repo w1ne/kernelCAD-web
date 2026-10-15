@@ -25,6 +25,7 @@ import { fabricationToolEntries } from './registry/fabricationTools';
 import { manufacturingToolEntries } from './registry/manufacturingTools';
 import { rayPickToolEntries } from './registry/rayPickTools';
 import { nurbsToolEntries } from './registry/nurbsTools';
+import { surfaceBlendToolEntries } from './registry/surfaceBlendTools';
 import { wireRoutingToolEntries } from './registry/wireRoutingTools';
 import { handoffToolEntries } from './registry/handoffTools';
 import { explodeViewToolEntries } from './registry/explodeViewTools';
@@ -112,6 +113,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...handoffToolEntries,
   ...meshBooleanToolEntries,
   ...explodeViewToolEntries,
+  ...surfaceBlendToolEntries,
   ...partModelToolEntries,
 ];
 

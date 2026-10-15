@@ -32,6 +32,7 @@ import { fabricationToolEntries } from './registry/fabricationTools';
 import { manufacturingToolEntries } from './registry/manufacturingTools';
 import { nurbsToolEntries } from './registry/nurbsTools';
 import { handoffToolEntries } from './registry/handoffTools';
+import { surfaceBlendToolEntries } from './registry/surfaceBlendTools';
 import { pointCloudToolEntries } from './registry/pointCloudTools';
 import { partModelToolEntries } from './registry/partModelTools';
 import { rayPickToolEntries } from './registry/rayPickTools';
@@ -102,6 +103,7 @@ const EXPECTED_TOOL_NAMES = [
   'import_handoff',
   'mesh_boolean',
   'explode_view',
+  'apply_surface_blend',
   'fetch_part_model',
 ] as const;
 
@@ -387,9 +389,10 @@ describe('toolRegistry public contract', () => {
       'import_handoff',
       'mesh_boolean',
       'explode_view',
+      'apply_surface_blend',
       'fetch_part_model',
     ]);
-    expect(TOOL_REGISTRY).toHaveLength(61);
+    expect(TOOL_REGISTRY).toHaveLength(62);
   });
 
   it('composes the user-file import family at the registry tail, with ChatGPT file params', () => {
@@ -449,6 +452,11 @@ describe('toolRegistry public contract', () => {
   it('appends the exploded-view planner after the mesh boolean tool', () => {
     expect(explodeViewToolEntries.map(entry => entry.definition.name)).toEqual(['explode_view']);
     expect(TOOL_REGISTRY.slice(59, 60)).toEqual(explodeViewToolEntries);
+    expect(TOOL_REGISTRY[59]?.definition.name).toBe('explode_view');
+  });
+
+  it('appends the surface blend authoring tool before the part-model fetcher', () => {
+    expect(TOOL_REGISTRY.slice(60, 61)).toEqual(surfaceBlendToolEntries);
   });
 
   it('appends the handoff model fetcher after all existing tool families', () => {
