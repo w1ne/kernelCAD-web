@@ -47,6 +47,41 @@ function paramSnapshot(model: BuiltModel): Record<string, number | boolean> {
 }
 
 describe('verifyAnimation', () => {
+  it('reports the active pose before solving and restores params after progress', async () => {
+    const { model, tracks } = await buildWithTracks(CLEAN_FIXTURE);
+    const before = paramSnapshot(model);
+    const events: Array<{ message: string; params: Record<string, number | boolean> }> = [];
+    const result = await verifyAnimation(model, tracks, {
+      sampleTimesMs: [800],
+      onProgress: (message: string) => events.push({ message, params: paramSnapshot(model) }),
+    });
+    expect(result.ok).toBe(true);
+    expect(events.map((event) => event.message)).toEqual([
+      'verify pose 1/1 tMs=800: solve',
+      'verify pose 1/1 tMs=800: interference',
+      'verify pose 1/1 tMs=800: done',
+      'verify: restoring params',
+      'verify: params restored',
+    ]);
+    expect(events[0].params).toEqual(before);
+    expect(events[1].params.armDeg).toBe(90);
+    expect(events[4].params).toEqual(before);
+  }, 120_000);
+
+  it('a failing progress observer does not change verification or param restoration', async () => {
+    const { model, tracks } = await buildWithTracks(CLEAN_FIXTURE);
+    const before = paramSnapshot(model);
+    let calls = 0;
+    const result = await verifyAnimation(model, tracks, {
+      sampleTimesMs: [800],
+      onProgress: () => { calls += 1; throw new Error('observer unavailable'); },
+    });
+    expect(calls).toBeGreaterThan(0);
+    expect(result.ok).toBe(true);
+    expect(result.posesSampled).toBe(1);
+    expect(paramSnapshot(model)).toEqual(before);
+  }, 120_000);
+
   it('mechanism-clean fixture: ok, every keyframe-set pose sampled, params restored', async () => {
     const { model, tracks } = await buildWithTracks(CLEAN_FIXTURE);
     const before = paramSnapshot(model);

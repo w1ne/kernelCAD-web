@@ -27,6 +27,14 @@
 // in directly.
 
 import type { Vec3 } from '../../../shared/intent/types';
+import { closestPointOnTriangle, distanceSquared } from './meshClosestPoint';
+
+export interface BvhClosestPoint {
+  point: Vec3;
+  distance: number;
+  /** Index in the original mesh, including skipped degenerate triangles. */
+  triIndex: number;
+}
 
 /** Indexed triangle soup, same shape as `meshShapeForExport`'s return:
  *  `vertices` is a flat xyz array, `triangles` holds vertex indices in
@@ -480,6 +488,51 @@ export class TriangleBvh {
         if (intersects) yield this.srcIndex[slot];
       }
     }
+  }
+
+  /** Nearest point on any indexed triangle, pruned by point/AABB distance.
+   * Empty/degenerate trees have no closest point. Ties use original index. */
+  closestPoint(point: Vec3): BvhClosestPoint | null {
+    if (!point.every(Number.isFinite)) throw new Error('Closest-point query must be finite.');
+    if (this.triangleCount === 0) return null;
+    let best2 = Infinity;
+    let best: BvhClosestPoint | null = null;
+    const stack = this.traversalStack;
+    let sp = 0;
+    stack[sp++] = 0;
+    while (sp > 0) {
+      const node = stack[--sp];
+      if (this.nodeDistanceSquared(node, point) > best2) continue;
+      if (this.count[node] > 0) {
+        const end = this.start[node] + this.count[node];
+        for (let k = this.start[node]; k < end; k++) {
+          const s = this.triOrder[k], o = s * 9, v = this.triVerts;
+          const closest = closestPointOnTriangle(point,
+            [v[o],v[o+1],v[o+2]], [v[o+3],v[o+4],v[o+5]], [v[o+6],v[o+7],v[o+8]]);
+          const d2 = distanceSquared(point, closest);
+          if (d2 < best2 || (d2 === best2 && this.srcIndex[s] < best!.triIndex)) {
+            best2 = d2;
+            best = { point: closest, distance: Math.sqrt(d2), triIndex: this.srcIndex[s] };
+          }
+        }
+      } else {
+        const left = node + 1, right = this.rightChild[node];
+        const dl = this.nodeDistanceSquared(left, point), dr = this.nodeDistanceSquared(right, point);
+        const near = dl <= dr ? left : right, far = dl <= dr ? right : left;
+        if (Math.max(dl, dr) <= best2) stack[sp++] = far;
+        if (Math.min(dl, dr) <= best2) stack[sp++] = near;
+      }
+    }
+    return best;
+  }
+
+  private nodeDistanceSquared(node: number, point: Vec3): number {
+    let d2 = 0;
+    for (let axis = 0; axis < 3; axis++) {
+      const delta = Math.max(this.bounds[6*node+axis] - point[axis], 0, point[axis] - this.bounds[6*node+axis+3]);
+      d2 += delta * delta;
+    }
+    return d2;
   }
 
   /** Ray-parity inside test: odd number of surface crossings along the

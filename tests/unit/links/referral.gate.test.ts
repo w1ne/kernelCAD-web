@@ -119,6 +119,16 @@ describe('referral gate: data-driven emit points go through the builder', () => 
     expect(outcome.disclosure).toBeUndefined();
   });
 
+  it("fab_pack quote links (surface 'export')", async () => {
+    const { quoteLinksFor } = await import('../../../src/agent/mcp/tools/fabPack');
+    const links = quoteLinksFor([]);
+    const scs = links.find(l => l.service === 'SendCutSend')!;
+    expect(new URL(scs.url).searchParams.get('ref')).toBe('gate-scs');
+    expect(new URL(scs.url).searchParams.get('utm_medium')).toBe('export');
+    expect(scs.referral).toBe(true);
+    expect(links.find(l => l.service === 'Xometry')!.referral).toBe(false);
+  });
+
   it("dfm-preflight catalog sources (surface 'shopcheck')", async () => {
     const { initOcct } = await import('../../../src/kernel/backends/occt/occtBackend');
     await initOcct();

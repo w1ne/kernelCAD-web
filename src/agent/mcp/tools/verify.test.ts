@@ -17,6 +17,7 @@ vi.mock('./checkLoadCapacity', () => ({ checkLoadCapacityTool: vi.fn(async () =>
 vi.mock('./checkStaticHold', () => ({ checkStaticHoldTool: vi.fn(async () => 'static-hold') }));
 vi.mock('./checkFastenerInstallation', () => ({ checkFastenerInstallationTool: vi.fn(async () => 'fastener-installation') }));
 vi.mock('./checkBodyLikeness', () => ({ checkBodyLikenessTool: vi.fn(async () => 'body-likeness') }));
+vi.mock('./checkGeometryQuality', () => ({ checkGeometryQualityTool: vi.fn(async () => 'geometry-quality') }));
 
 import { checkAssemblyPathTool } from './checkAssemblyPath';
 import { verifyTool, type VerifyCheck } from './verify';
@@ -31,6 +32,7 @@ import { checkLoadCapacityTool } from './checkLoadCapacity';
 import { checkStaticHoldTool } from './checkStaticHold';
 import { checkBodyLikenessTool } from './checkBodyLikeness';
 import { checkFastenerInstallationTool } from './checkFastenerInstallation';
+import { checkGeometryQualityTool } from './checkGeometryQuality';
 
 const ROUTES: Array<[VerifyCheck, ReturnType<typeof vi.fn>, string]> = [
   ['assembly-path', checkAssemblyPathTool as never, 'assembly-path'],
@@ -45,6 +47,7 @@ const ROUTES: Array<[VerifyCheck, ReturnType<typeof vi.fn>, string]> = [
   ['static-hold', checkStaticHoldTool as never, 'static-hold'],
   ['fastener-installation', checkFastenerInstallationTool as never, 'fastener-installation'],
   ['body-likeness', checkBodyLikenessTool as never, 'body-likeness'],
+  ['geometry-quality', checkGeometryQualityTool as never, 'geometry-quality'],
 ];
 
 describe('verify dispatcher', () => {
@@ -67,6 +70,13 @@ describe('verify dispatcher', () => {
     const params = { code: 'SRC', fasteners: [{ part: 'screw', against: ['plate'], engagementPart: 'nut', minEngagementMm: 2, maxProtrusionMm: 1 }], toleranceMm: .02, angleToleranceDeg: .5 };
     await verifyTool({ check: 'fastener-installation', ...params });
     expect(checkFastenerInstallationTool).toHaveBeenCalledWith(params);
+  });
+
+  it('forwards body thresholds and asserted symmetry plane unchanged', async () => {
+    const params = { file: 'part.kcad.ts', feature_id: 'body', tiny_face_relative: 0.001, asserted_plane: { origin: [0,0,0], normal: [1,0,0] } };
+    await verifyTool({ check: 'geometry-quality', ...params });
+    expect(checkGeometryQualityTool).toHaveBeenCalledWith(params);
+    expect(checkFastenerInstallationTool).not.toHaveBeenCalled();
   });
 
   it('throws an actionable error on an unknown check', async () => {

@@ -28,6 +28,7 @@ import { mechanismSimToolEntries } from './registry/mechanismSimTools';
 import { meshReconstructToolEntries } from './registry/meshReconstructTools';
 import { cookbookExecutionToolEntries } from './registry/cookbookExecutionTools';
 import { importToolEntries } from './registry/importTools';
+import { fabricationToolEntries } from './registry/fabricationTools';
 
 const EXPECTED_TOOL_NAMES = [
   'evaluate_script',
@@ -83,6 +84,7 @@ const EXPECTED_TOOL_NAMES = [
   'get_selection',
   'set_selection',
   'import_step',
+  'fab_pack',
 ] as const;
 
 const PUBLIC_CONTRACT_FIXTURE = new URL(
@@ -353,14 +355,19 @@ describe('toolRegistry public contract', () => {
       'get_selection',
       'set_selection',
       'import_step',
+      'fab_pack',
     ]);
-    expect(TOOL_REGISTRY).toHaveLength(51);
+    expect(TOOL_REGISTRY).toHaveLength(52);
   });
 
   it('composes the user-file import family at the registry tail, with ChatGPT file params', () => {
     expect(importToolEntries.map(entry => entry.definition.name)).toEqual(['import_step']);
     expect(TOOL_REGISTRY.slice(50, 51)).toEqual(importToolEntries);
     expect(getToolDefinition('import_step')?._meta).toEqual({ 'openai/fileParams': ['upload'] });
+  });
+  it('composes the fabrication handoff family at the registry tail', () => {
+    expect(fabricationToolEntries.map(entry => entry.definition.name)).toEqual(['fab_pack']);
+    expect(TOOL_REGISTRY.slice(51, 52)).toEqual(fabricationToolEntries);
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {

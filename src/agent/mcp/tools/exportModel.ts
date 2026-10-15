@@ -12,6 +12,7 @@
 // the written paths are reported in `mesh_files`. A multi-part DXF export
 // writes parts/<part>.dxf the same way, reported in `part_files`.
 
+import { safeWriteFile } from '../../script-runtime/safeWriteFile';
 import { summarizeScene, unavailableSceneSummary, type SceneSummary } from '../../script-runtime/sceneSummary';
 import { writeFile, mkdir } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
@@ -110,7 +111,11 @@ async function writeExportPayload(
     for (const m of result.meshes ?? []) {
       const meshPath = resolve(dirname(finalPath), m.relPath);
       await mkdir(dirname(meshPath), { recursive: true });
-      await writeFile(meshPath, Buffer.from(m.bytes));
+      // Companion files (multi-part DXF parts/, URDF meshes) land in
+      // subdirectories the caller did not name: refuse symlinks and
+      // protected paths per file.
+      const bad = await safeWriteFile(meshPath, Buffer.from(m.bytes));
+      if (bad !== undefined) return bad;
       meshFiles.push(meshPath);
     }
   } catch (e) {

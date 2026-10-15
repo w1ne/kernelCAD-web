@@ -5,9 +5,53 @@ import {
   rebuildModelIncremental,
   updateModelParams,
 } from '../../../src/modeling/buildModel';
+import type { OcctBackend } from '../../../src/kernel/backends/occt/occtBackend';
 import * as occtLowererModule from '../../../src/modeling/backends/occt/occtLowerer';
 
 describe('buildModel', () => {
+  it('mirror preserves its source when the source is reused by a later union', async () => {
+    const model = await buildModel({
+      fileName: 'mirror-source-reuse.kcad.ts',
+      code: `
+        const half = box(10, 10, 10, true).translate(10, 0, 0);
+        const symmetric = half.mirror('yz');
+        return half.union(symmetric);
+      `,
+    });
+    expect(model.diagnostics.filter(d => d.severity === 'error')).toEqual([]);
+    const source = model.session.cachedShapes.get(model.records[0].id) as OcctBackend;
+    expect(source.boundingBox().min[0]).toBeCloseTo(5);
+    expect(source.volume()).toBeCloseTo(1000);
+    expect((model.tailShape as OcctBackend).volume()).toBeCloseTo(2000);
+  });
+
+  it.each(['union', 'subtract', 'intersect'])('%s with no cutters owns its transformed backend independently', async (op) => {
+    let model = await buildModel({
+      fileName: 'independent-motion.kcad.ts',
+      code: `
+        const shift = param('shift', 0, { min: 0, max: 10 });
+        const base = box(10, 10, 10, true);
+        return base.${op}().translate(shift, 0, 0);
+      `,
+    });
+    expect(model.diagnostics.filter(d => d.severity === 'error')).toEqual([]);
+    const base = model.session.cachedShapes.get(model.records[0].id) as OcctBackend;
+    const originalBounds = base.boundingBox();
+    expect(originalBounds.min[0]).toBeCloseTo(-5);
+    expect(model.tailShape).not.toBe(base);
+    for (const value of [10, 0, 5]) {
+      const update = await updateModelParams(model, [{ name: 'shift', value }]);
+      model = update.model;
+      expect(update.result.skipped).toContain(model.records[0].id);
+      expect(model.session.cachedShapes.get(model.records[0].id)).toBe(base);
+      expect(base.boundingBox()).toEqual(originalBounds);
+      const moved = model.tailShape as OcctBackend;
+      expect(moved.boundingBox().min[0]).toBeCloseTo(value - 5);
+      expect(moved.volume()).toBeCloseTo(1000);
+      expect(model.diagnostics.filter(d => d.severity === 'error')).toEqual([]);
+    }
+  });
+
   it('builds source into a session, records, shapes, tail shape, and cache', async () => {
     const model = await buildModel({
       fileName: 'plate.kcad.ts',

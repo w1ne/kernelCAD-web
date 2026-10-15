@@ -26,6 +26,7 @@ export { SCENE_SUMMARY_SCHEMA } from './sceneSummarySchema';
 import { VERIFY_OUTPUT_SCHEMA } from './verificationOutputSchema';
 import { MESH_RECONSTRUCT_OUTPUT_SCHEMAS } from './registry/meshReconstructTools.outputSchemas';
 import { IMPORT_OUTPUT_SCHEMAS } from './registry/importTools.outputSchemas';
+import { FABRICATION_OUTPUT_SCHEMAS } from './registry/fabricationTools.outputSchemas';
 
 export type { JSONSchemaObject } from './toolOutputSchemaParts';
 import { SELECTION, SOURCE_EDIT, TUBE_JOINT, type JSONSchemaObject } from './toolOutputSchemaParts';
@@ -797,4 +798,5 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
     additionalProperties: true,
   },
   ...IMPORT_OUTPUT_SCHEMAS,
+  ...FABRICATION_OUTPUT_SCHEMAS,
 };

@@ -45,7 +45,7 @@ describe('selected complete bridge geometry',()=>{
       emitFeature:mesh=>f.result.features.push(mesh),
       bounds:{minX:Infinity,minY:Infinity,minZ:Infinity,maxX:-Infinity,maxY:-Infinity,maxZ:-Infinity},
       failedFeatureIds:f.result.failedFeatureIds,
-      cachedAssemblyPartMeshes:new Map([['assembly',new Map([['good',{faces:[face(0),face(1)]}]])]]),
+      cachedAssemblyPartMeshes:new Map([['assembly',new Map([['good',{shape:scene.parts.find(part=>part.name==='good')!.shape,faces:[face(0),face(1)]}]])]]),
       assembliesIn:f.session.assemblies,collectTendonMeshes:()=>[],attachPlanarUVs:()=>{},
       extractRawShape:()=>null,meshIdentityFields:()=>({}),metadataNameOf:()=>undefined,recordById:new Map(),
     });
