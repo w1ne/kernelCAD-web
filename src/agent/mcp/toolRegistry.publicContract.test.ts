@@ -34,6 +34,7 @@ import { nurbsToolEntries } from './registry/nurbsTools';
 import { handoffToolEntries } from './registry/handoffTools';
 import { pointCloudToolEntries } from './registry/pointCloudTools';
 import { wireRoutingToolEntries } from './registry/wireRoutingTools';
+import { meshBooleanToolEntries } from './registry/meshBooleanTools';
 
 const EXPECTED_TOOL_NAMES = [
   'evaluate_script',
@@ -96,6 +97,7 @@ const EXPECTED_TOOL_NAMES = [
   'fit_plane',
   'route_wires',
   'import_handoff',
+  'mesh_boolean',
 ] as const;
 
 const PUBLIC_CONTRACT_FIXTURE = new URL(
@@ -378,8 +380,9 @@ describe('toolRegistry public contract', () => {
       'fit_plane',
       'route_wires',
       'import_handoff',
+      'mesh_boolean',
     ]);
-    expect(TOOL_REGISTRY).toHaveLength(58);
+    expect(TOOL_REGISTRY).toHaveLength(59);
   });
 
   it('composes the user-file import family at the registry tail, with ChatGPT file params', () => {
@@ -422,8 +425,14 @@ describe('toolRegistry public contract', () => {
 
   it('appends the handoff importer after the wire routing tool', () => {
     expect(handoffToolEntries.map(entry => entry.definition.name)).toEqual(['import_handoff']);
-    expect(TOOL_REGISTRY.slice(-handoffToolEntries.length)).toEqual(handoffToolEntries);
+    expect(TOOL_REGISTRY.slice(57, 58)).toEqual(handoffToolEntries);
     expect(handoffToolEntries[0].definition.description).toMatch(/^Use this when /);
+  });
+
+  it('appends the mesh boolean tool after the handoff importer', async () => {
+    expect(meshBooleanToolEntries.map(entry => entry.definition.name)).toEqual(['mesh_boolean']);
+    expect(TOOL_REGISTRY.slice(-meshBooleanToolEntries.length)).toEqual(meshBooleanToolEntries);
+    await expect(callMcpTool('mesh_boolean', { operation: 'bad' })).resolves.toMatchObject({ ok: false });
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {

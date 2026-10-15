@@ -25,6 +25,7 @@ import { SCENE_SUMMARY_SCHEMA } from './sceneSummarySchema';
 export { SCENE_SUMMARY_SCHEMA } from './sceneSummarySchema';
 import { VERIFY_OUTPUT_SCHEMA } from './verificationOutputSchema';
 import { MESH_RECONSTRUCT_OUTPUT_SCHEMAS } from './registry/meshReconstructTools.outputSchemas';
+import { MESH_BOOLEAN_OUTPUT_SCHEMAS } from './registry/meshBooleanTools.outputSchemas';
 import { IMPORT_OUTPUT_SCHEMAS } from './registry/importTools.outputSchemas';
 import { FABRICATION_OUTPUT_SCHEMAS } from './registry/fabricationTools.outputSchemas';
 import { MANUFACTURING_OUTPUT_SCHEMAS } from './registry/manufacturingTools.outputSchemas';
@@ -211,6 +212,7 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
   },
 
   ...MESH_RECONSTRUCT_OUTPUT_SCHEMAS,
+  ...MESH_BOOLEAN_OUTPUT_SCHEMAS,
 
 
   // Merged dispatcher (selected by `of`): union of ~18 reader outputs. All
@@ -849,5 +851,8 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
       script: { type: 'string', description: 'Evaluable .kcad.ts assembly script with bbox placeholder parts and named anchors.' },
       warnings: { type: 'array', items: { type: 'string' } }, error: { type: 'string' },
     }, required: ['ok', 'warnings'], additionalProperties: true,
+  },
+  inspect_assembly: {
+    type: 'object', properties: { ok: { type: 'boolean' } }, required: ['ok'], additionalProperties: true,
   },
 };
