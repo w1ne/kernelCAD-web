@@ -33,6 +33,8 @@ describe('sessionPool.rebuildByScript', () => {
         const pool = createSessionPool({ build, ttlMs: 60_000 });
 
         const entry = await pool.getOrCreate('/repo/examples/part.kcad.ts');
+        entry.selection = { shapeIndex: 0, kind: 'face', id: 3, featureId: 'feat' };
+        entry.selectionFaceSignature = { owner: 'feat', surface: 'plane', area: 1, centroid: [0, 0, 0], normal: [0, 0, 1], bounds: [0, 0, 0, 1, 1, 0] };
         const seen: string[][] = [];
         entry.onRelower((ids) => seen.push(ids));
 
@@ -41,6 +43,9 @@ describe('sessionPool.rebuildByScript', () => {
         expect(rebuilt).toBe(true);
         expect(build).toHaveBeenCalledTimes(2);
         expect(pool.get(entry.token)?.model).toBe(modelB);
+        expect(entry.selection).toBeNull();
+        expect(entry.selectionPendingSignature).toEqual({ owner: 'feat', surface: 'plane', area: 1, centroid: [0, 0, 0], normal: [0, 0, 1], bounds: [0, 0, 0, 1, 1, 0] });
+        expect(entry.selectionModelGeneration).toBe(1);
         expect(seen).toEqual([[]]); // one synthetic relower, empty affected set
     });
 
@@ -61,6 +66,41 @@ describe('sessionPool.rebuildByScript', () => {
         modelA.emit(['stale']);
 
         expect(seen).toEqual([['feat_1'], [], ['feat_2']]);
+    });
+
+    it('clears picks on an in-place relower without starting a remap', async () => {
+        const model = fakeModel('a');
+        const pool = createSessionPool({ build: vi.fn().mockResolvedValue(model), ttlMs: 60_000 });
+        const entry = await pool.getOrCreate('/repo/examples/part.kcad.ts');
+        entry.selection = { shapeIndex: 0, kind: 'face', id: 3, featureId: 'feat' };
+        entry.selectionFaceSignature = { owner: 'feat', surface: 'plane', area: 1, centroid: [0, 0, 0], normal: [0, 0, 1], bounds: [0, 0, 0, 1, 1, 0] };
+
+        model.emit(['feat']);
+
+        expect(entry.selection).toBeNull();
+        expect(entry.selectionFaceSignature).toBeNull();
+        expect(entry.selectionPendingSignature).toBeNull();
+        expect(entry.selectionModelGeneration).toBe(1);
+    });
+
+    it('preserves a pending face remap signature through an in-place relower', async () => {
+        const modelA = fakeModel('a');
+        const modelB = fakeModel('b');
+        const build = vi.fn().mockResolvedValueOnce(modelA).mockResolvedValueOnce(modelB);
+        const pool = createSessionPool({ build, ttlMs: 60_000 });
+        const entry = await pool.getOrCreate('/repo/examples/part.kcad.ts');
+        const signature = { owner: 'feat', surface: 'plane', area: 1, centroid: [0, 0, 0] as [number, number, number], normal: [0, 0, 1] as [number, number, number], bounds: [0, 0, 0, 1, 1, 0] as [number, number, number, number, number, number] };
+        entry.selection = { shapeIndex: 0, kind: 'face', id: 3, featureId: 'feat' };
+        entry.selectionFaceSignature = signature;
+
+        await pool.rebuildByScript('/repo/examples/part.kcad.ts');
+        expect(entry.selectionPendingSignature).toEqual(signature);
+        modelB.emit(['feat']);
+
+        expect(entry.selection).toBeNull();
+        expect(entry.selectionFaceSignature).toBeNull();
+        expect(entry.selectionPendingSignature).toEqual(signature);
+        expect(entry.selectionModelGeneration).toBe(2);
     });
 
     it('returns false when no session matches the file', async () => {
