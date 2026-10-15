@@ -67,8 +67,8 @@ const NO_FEATURES: readonly FeatureRecord[] = [];
  */
 export function CodeLinkOverlay({ geometries, itemNames }: { geometries: GeometryResult[]; itemNames: (string | null)[] }) {
     const { link, codeHighlight } = useSelectionCodeState();
-    const { featureRecords, hiddenIds, sessionToken, setSelectedFace } = useWorkbench();
-    useSharedSelection(sessionToken, setSelectedFace);
+    const { featureRecords, hiddenIds, sessionToken, setSelectedFace, lastSuccessfulRevision } = useWorkbench();
+    useSharedSelection(sessionToken, setSelectedFace, geometries, lastSuccessfulRevision);
     const features = featureRecords ?? NO_FEATURES;
     const targets = useMemo(
         () => (codeHighlight ? highlightTargets(codeHighlight, features) : null),

@@ -15,12 +15,18 @@ import type { KernelId } from '../../../shared/types/backendTarget';
 import type { PortReportEntry } from '../../../modeling/runtime/tube/portReport';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
-import { updateMcpViewer, type McpViewerResult } from '../liveViewer';
+import { updateMcpViewer, type McpViewerResult, type McpViewerReview } from '../liveViewer';
 import { clearActiveMcpSession, getActiveMcpSession, setActiveMcpSession } from '../activeSession';
 import { summarizeScene, unavailableSceneSummary, type SceneSummary } from '../../script-runtime/sceneSummary';
 import { Scene } from '../../../modeling/validation/scene';
 import type { Assembly } from '../../../modeling/capture/assembly';
 import { probeAssemblies } from '../../../modeling/runtime/mechanismProbe';
+import type { MechanismCoverage } from '../../../modeling/runtime/mechanismTruth';
+import {
+  needsMechanismVerdict,
+  summarizeMechanism,
+  type MechanismVerdictSummary,
+} from '../../../modeling/runtime/mechanismVerdict';
 
 import { captureStepState, createStepEvidence, type StepEvidence } from './stepEvidence';
 
@@ -111,6 +117,14 @@ export interface EvaluateScriptOutput extends McpViewerResult {
    */
   mechanism?: 'real' | 'broken' | 'unverified';
   /**
+   * Plain verdict, present when the assembly has moving joints or motion
+   * intent (an animation track, a mechanicalJoint drive, a transmission).
+   * Absent for a static assembly. `statement` is one line: "Motion checked:
+   * ..." names what ran, "Motion not checked: ..." names what was skipped
+   * (it is NOT a pass), "Mechanism broken: ..." names the joint.
+   */
+  mechanismSummary?: MechanismVerdictSummary;
+  /**
    * Present ONLY when a captured assembly declares articulated mates (any
    * mate other than `fastened`). The default mechanism gate above is a
    * shallow probe; this names what it does not check and points at
@@ -125,8 +139,8 @@ export const MATES_REVIEW_HINT =
   'joint-support intents, pose-envelope overlap at declared mate limits, or gravity drop / static hold. ' +
   'Run review_cad for pose-envelope + gravity checks before calling the mechanism done.';
 
-async function publishBuiltViewer(model: BuildOutcome['model'], buildSucceeded: boolean) {
-  return buildSucceeded && model ? updateMcpViewer(model) : {};
+async function publishBuiltViewer(model: BuildOutcome['model'], buildSucceeded: boolean, review: McpViewerReview) {
+  return buildSucceeded && model ? updateMcpViewer(model, review) : {};
 }
 
 /**
@@ -184,7 +198,8 @@ export async function evaluateScriptTool(
   // NOTE: this is the agent-facing surface ONLY. The RecomputeEngine
   // recompute path (Studio's per-keystroke lower) deliberately does NOT run
   // this sweep and is untouched here.
-  const { mechanism, mechanismFailures } = await probeSceneMechanism(model, buildSucceeded, input.skipMechanismCheck);
+  const { mechanism, mechanismFailures, coverage } = await probeSceneMechanism(model, buildSucceeded, input.skipMechanismCheck);
+  const mechanismSummary = sceneMechanismSummary(model, buildSucceeded, { mechanism, mechanismFailures, coverage });
 
   // Merge mechanism diagnostics into the surfaced list (de-duped against
   // what's already there by reference). Derive `ok` honestly: a 'broken'
@@ -199,7 +214,7 @@ export async function evaluateScriptTool(
   const ok = r.exitCode === 0 && mechanism !== 'broken';
   const tubes = tubesOutput(tubeReport);
   const reviewHint = hasArticulatedMates(model) ? MATES_REVIEW_HINT : undefined;
-  const viewer = await publishBuiltViewer(model, buildSucceeded);
+  const viewer = await publishBuiltViewer(model, buildSucceeded, { mechanism, mechanismFailures, mechanismSummary });
 
   const after = captureEvaluatedStep(model, buildSucceeded);
   const step = await createStepEvidence(before, after, ok, r.featureHealth);
@@ -220,8 +235,19 @@ export async function evaluateScriptTool(
     ...(tubes !== undefined ? { tubes } : {}),
     ...(portReport !== undefined ? { ports: portReport } : {}),
     ...(parts !== undefined ? { parts } : {}),
-    ...(mechanism !== undefined ? { mechanism } : {}),
+    ...mechanismFields(mechanism, mechanismSummary),
     ...(reviewHint !== undefined ? { reviewHint } : {}),
+  };
+}
+
+/** The verdict fields, each present only when set. */
+function mechanismFields(
+  mechanism: SceneMechanism['mechanism'],
+  mechanismSummary: MechanismVerdictSummary | undefined,
+): Pick<EvaluateScriptOutput, 'mechanism' | 'mechanismSummary'> {
+  return {
+    ...(mechanism !== undefined ? { mechanism } : {}),
+    ...(mechanismSummary !== undefined ? { mechanismSummary } : {}),
   };
 }
 
@@ -319,20 +345,40 @@ function hasArticulatedMates(model: BuildOutcome['model']): boolean {
   return assemblies.some((a) => a.__mates().some((m) => m.type !== 'fastened'));
 }
 
+interface SceneMechanism {
+  mechanism?: 'real' | 'broken' | 'unverified';
+  mechanismFailures: CompilerDiagnostic[];
+  coverage?: MechanismCoverage;
+}
+
 async function probeSceneMechanism(
   model: BuildOutcome['model'],
   buildSucceeded: boolean,
   skipMechanismCheck: boolean | undefined,
-): Promise<{ mechanism?: 'real' | 'broken' | 'unverified'; mechanismFailures: CompilerDiagnostic[] }> {
-  let mechanism: 'real' | 'broken' | 'unverified' | undefined;
-  const mechanismFailures: CompilerDiagnostic[] = [];
-  if (buildSucceeded && model !== undefined && skipMechanismCheck !== true) {
-    const assemblies = Array.from(model.session.assemblies.values()) as Assembly[];
-    if (assemblies.length > 0) {
-      const probe = await probeAssemblies(assemblies);
-      mechanism = probe.mechanism;
-      mechanismFailures.push(...probe.failures);
-    }
+): Promise<SceneMechanism> {
+  if (!buildSucceeded || model === undefined || skipMechanismCheck === true) return { mechanismFailures: [] };
+  const assemblies = Array.from(model.session.assemblies.values()) as Assembly[];
+  if (assemblies.length === 0) return { mechanismFailures: [] };
+  const probe = await probeAssemblies(assemblies);
+  return {
+    mechanism: probe.mechanism,
+    mechanismFailures: [...probe.failures],
+    ...(probe.coverage !== undefined ? { coverage: probe.coverage } : {}),
+  };
+}
+
+/** The plain verdict, only for a model that claims to move. An opted-out
+ *  probe on such a model reads "Motion not checked", never a silent pass. */
+function sceneMechanismSummary(
+  model: BuildOutcome['model'],
+  buildSucceeded: boolean,
+  probe: SceneMechanism,
+): MechanismVerdictSummary | undefined {
+  if (!buildSucceeded || model === undefined) return undefined;
+  const assemblies = Array.from(model.session.assemblies.values()) as Assembly[];
+  if (!needsMechanismVerdict(assemblies)) return undefined;
+  if (probe.mechanism === undefined) {
+    return summarizeMechanism({ mechanism: 'unverified', failures: [], notRunReason: 'skipMechanismCheck was set, so no mechanism check ran' });
   }
-  return { mechanism, mechanismFailures };
+  return summarizeMechanism({ mechanism: probe.mechanism, failures: probe.mechanismFailures, coverage: probe.coverage });
 }

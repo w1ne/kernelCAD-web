@@ -1,0 +1,43 @@
+{
+  "feature": "K6 holeless board cradle cookbook",
+  "date": "2026-10-15",
+  "recipe": "examples/cookbook/holeless-board-cradle.kcad.ts",
+  "handoffFixture": "tests/fixtures/argon/handoff-drawbot.json",
+  "video": {
+    "file": "demo.mp4",
+    "command": "python3 docs/demos/k6-holeless-board-cradle/make-demo.py",
+    "settings": "1280x720; 24 fps; 3 x 4 second cards; H.264 libx264; no audio",
+    "sourceFrames": [
+      "frames/01-lookup.png",
+      "frames/02-execute.png",
+      "frames/03-fit-reference.png"
+    ],
+    "sha256": "b9cd23b96fce6904f7fc99bfc416bd304a1a2a112601c5ae50aef5a85214b20c"
+  },
+  "local": {
+    "testCommand": "npx vitest run --configLoader runner tests/integration/examples/holelessBoardCradleCookbook.test.ts src/agent/mcp/toolNameConsistency.test.ts tests/unit/skill/skillToolCountDrift.test.ts src/agent/mcp/toolRegistry.publicContract.test.ts",
+    "testResult": "47 passed",
+    "typecheckCommand": "npx tsc --noEmit -p .",
+    "typecheckResult": "passed",
+    "lintCommand": "npx eslint examples/cookbook/holeless-board-cradle.kcad.ts tests/integration/examples/holelessBoardCradleCookbook.test.ts",
+    "lintResult": "passed"
+  },
+  "renderPreview": {
+    "source": "examples/cookbook/holeless-board-cradle.kcad.ts",
+    "view": "iso",
+    "autosave": false,
+    "valid": true,
+    "diagnostics": 0,
+    "boundsMm": [
+      59.5,
+      33,
+      15.1
+    ],
+    "renderSource": "kernelCAD static-player"
+  },
+  "limits": [
+    "Local geometry evaluation is not deployed behavior.",
+    "Board fit and component keep-outs are not hardware-verified.",
+    "Clip flexibility and print performance are not simulated or accepted."
+  ]
+}
