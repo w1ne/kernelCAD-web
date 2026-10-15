@@ -36,9 +36,8 @@ function mapHandoffPart(part: HandoffPart, skipped: string[]): ExplodePartInput[
   const center = part.position_mm?.value;
   const size = part.bbox_mm?.value ?? part.physical?.bbox_mm;
   const bboxSize = size!.slice(0, 3) as [number, number, number];
-  // LabWired's 2D board placements are measured on the board's top plane.
-  // Treat that point as the bbox footprint center and lift the bbox center
-  // by half its height; preserve explicit 3D positions as already centered.
+  // LabWired's 2D board placements are measured on the board's top plane, so
+  // infer the bbox center from half its height only when no Z was provided.
   const centerZ = center[2] ?? bboxSize[2] / 2;
   return [{ name: part.ref, center: [center[0]!, center[1]!, centerZ], size: bboxSize }];
 }

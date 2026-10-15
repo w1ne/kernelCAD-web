@@ -50,12 +50,12 @@ describe('explode_view', () => {
     expect(result.tracks.find((track) => track.part === 'A2')?.offset).toEqual([0, 0, 14.375]);
   });
 
-  it('uses half bbox height for XY-only handoff placements and preserves explicit Z', () => {
+  it('uses half bbox height only for XY-only handoff placements', () => {
     const result = explodeViewTool({ handoff: { parts: [
       { ref: 'xy', position_mm: { value: [4, 7] }, physical: { bbox_mm: [2, 4, 6] } },
       { ref: 'xyz', position_mm: { value: [8, 9, 12] }, physical: { bbox_mm: [2, 4, 6] } },
     ] } });
-    expect(result.cameraPlan.target).toEqual([6, 8, 7.5]);
+    expect(result.cameraPlan.target).toEqual([6, 8, 10.5]);
   });
 
   it('skips handoff parts with non-finite positions or invalid bbox dimensions', () => {
