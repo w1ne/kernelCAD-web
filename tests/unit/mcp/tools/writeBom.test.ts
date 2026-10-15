@@ -109,7 +109,7 @@ describe('write_bom', () => {
     } finally { await rm(dir, { recursive: true, force: true }); }
   });
 
-  it('replaces a symlink itself without changing its target when overwrite is enabled', async () => {
+  it('refuses to overwrite through a symlink destination', async () => {
     const dir = await mkdtemp(path.join(os.tmpdir(), 'kc-bom-symlink-'));
     try {
       const targetPath = path.join(dir, 'important.txt');
@@ -117,9 +117,8 @@ describe('write_bom', () => {
       await writeFile(targetPath, 'preserve target');
       await symlink(targetPath, outputPath);
       const result = await writeBomTool({ handoff, output_path: outputPath, overwrite: true });
-      expect(result).toMatchObject({ ok: true, path: outputPath });
+      expect(result).toMatchObject({ ok: false, error: expect.stringMatching(/symlink|Refusing|not a regular file/i) });
       expect(await readFile(targetPath, 'utf8')).toBe('preserve target');
-      expect(await readFile(outputPath, 'utf8')).toBe(result.csv);
     } finally { await rm(dir, { recursive: true, force: true }); }
   });
 
