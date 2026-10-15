@@ -1,0 +1,134 @@
+{
+  "checkedAt": "2026-10-14T23:45:24.165Z",
+  "sourceSha256": "78bcbcf127b77a28d8a266f83d0a14711dcfcdca8ce6a0a8f3f263b511002d45",
+  "nativeKernel": "OCCT via evaluateAndBuildScript",
+  "envelopeMm": [
+    150,
+    100,
+    46
+  ],
+  "partCount": 7,
+  "pairsChecked": 21,
+  "positiveVolumeOverlaps": [],
+  "parts": [
+    {
+      "name": "base",
+      "bounds": {
+        "min": [
+          0,
+          0,
+          0
+        ],
+        "max": [
+          150,
+          100,
+          6
+        ]
+      },
+      "volumeMm3": 90000
+    },
+    {
+      "name": "front",
+      "bounds": {
+        "min": [
+          0,
+          0,
+          6
+        ],
+        "max": [
+          150,
+          6,
+          46
+        ]
+      },
+      "volumeMm3": 36000
+    },
+    {
+      "name": "back",
+      "bounds": {
+        "min": [
+          0,
+          94,
+          6
+        ],
+        "max": [
+          150,
+          100,
+          46
+        ]
+      },
+      "volumeMm3": 36000
+    },
+    {
+      "name": "left",
+      "bounds": {
+        "min": [
+          0,
+          6,
+          6
+        ],
+        "max": [
+          6,
+          94,
+          46
+        ]
+      },
+      "volumeMm3": 21120
+    },
+    {
+      "name": "right",
+      "bounds": {
+        "min": [
+          144,
+          6,
+          6
+        ],
+        "max": [
+          150,
+          94,
+          46
+        ]
+      },
+      "volumeMm3": 21120
+    },
+    {
+      "name": "long-divider",
+      "bounds": {
+        "min": [
+          6.199999999999989,
+          47,
+          6
+        ],
+        "max": [
+          143.79999999999998,
+          53,
+          46
+        ]
+      },
+      "volumeMm3": 32279.999999999996
+    },
+    {
+      "name": "short-divider",
+      "bounds": {
+        "min": [
+          72,
+          6.2,
+          6
+        ],
+        "max": [
+          78,
+          93.8,
+          46
+        ]
+      },
+      "volumeMm3": 20280
+    }
+  ],
+  "fit": {
+    "illustrativeThicknessMm": 6,
+    "uncompensatedSlotWidthMm": 6.2,
+    "endClearanceMm": 0.2,
+    "halfLapDepthMm": 20
+  },
+  "scope": "Native static geometry and nominal envelope; no physical stock measurement, laser kerf, adhesive strength, physical cutting or assembled fit verified."
+}
