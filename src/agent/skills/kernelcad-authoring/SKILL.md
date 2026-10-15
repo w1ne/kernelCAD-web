@@ -1367,6 +1367,13 @@ the same slot, so on one leaf it is last-write-wins between them. To TINT a
 finish, pass `{ color }` to `.finish()` — do not layer `.color()` under it, the
 hue would be shadowed.
 
+Use `inspect({ of: 'multi-material', file })` to find explicit material leaves
+whose attribution is shadowed by an attributed boolean descendant. It returns
+record ids and an assembly-part rewrite template. This is an advisory source
+analysis: it does not preserve per-face attribution through a fused static
+mesh. For a static multi-material render today, retain the differently
+materialled operands as separate `assemblyPart`s and verify their placements.
+
 **Critical rule:** apply `.finish()` / `.material()` to leaf parts BEFORE they
 enter a boolean. A call on a post-union root is a no-op — the kernel cannot
 retroactively assign material to the input leaves of a boolean.
