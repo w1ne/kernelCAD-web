@@ -150,6 +150,8 @@ const NON_TOOL_ALLOWLIST = new Set<string>([
   'access_code',
   // Field names documented in kernelcad-mcp SKILL.md (not tool names).
   'model_generation',
+  'bbox_mm',
+  'not_checked',
 ]);
 
 export interface ToolNameHit {

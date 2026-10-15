@@ -32,6 +32,8 @@ import { fabricationToolEntries } from './registry/fabricationTools';
 import { manufacturingToolEntries } from './registry/manufacturingTools';
 import { nurbsToolEntries } from './registry/nurbsTools';
 import { pointCloudToolEntries } from './registry/pointCloudTools';
+import { partModelToolEntries } from './registry/partModelTools';
+import { rayPickToolEntries } from './registry/rayPickTools';
 
 const EXPECTED_TOOL_NAMES = [
   'evaluate_script',
@@ -92,6 +94,7 @@ const EXPECTED_TOOL_NAMES = [
   'ray_pick',
   'inspect_nurbs',
   'fit_plane',
+  'fetch_part_model',
 ] as const;
 
 const PUBLIC_CONTRACT_FIXTURE = new URL(
@@ -366,9 +369,10 @@ describe('toolRegistry public contract', () => {
       'dfm_review',
       'ray_pick',
       'inspect_nurbs',
-      'fit_plane',
+  'fit_plane',
+  'fetch_part_model',
     ]);
-    expect(TOOL_REGISTRY).toHaveLength(56);
+    expect(TOOL_REGISTRY).toHaveLength(57);
   });
 
   it('composes the user-file import family at the registry tail, with ChatGPT file params', () => {
@@ -384,7 +388,7 @@ describe('toolRegistry public contract', () => {
     expect(manufacturingToolEntries.map(entry => entry.definition.name)).toEqual(['dfm_review']);
     expect(TOOL_REGISTRY.slice(52, 53)).toEqual(manufacturingToolEntries);
   });
-  it('composes ray picking before the NURBS inspection family at the registry tail', () => {
+  it('composes ray picking before NURBS inspection at the registry tail', () => {
     expect(TOOL_REGISTRY.slice(53, 54).map(entry => entry.definition.name)).toEqual(['ray_pick']);
     expect(nurbsToolEntries.map(entry => entry.definition.name)).toEqual(['inspect_nurbs']);
     expect(TOOL_REGISTRY.slice(54, 55)).toEqual(nurbsToolEntries);
@@ -401,6 +405,16 @@ describe('toolRegistry public contract', () => {
   it('dispatches plane fitting through the MCP registry', async () => {
     await expect(callMcpTool('fit_plane', { points: [[0, 0, 0], [1, 0, 0], [0, 1, 0]] }))
       .resolves.toMatchObject({ normal: [0, 0, 1], rms: 0 });
+  });
+
+  it('composes ray picking from the ray-pick registry module', () => {
+    expect(rayPickToolEntries.map(entry => entry.definition.name)).toEqual(['ray_pick']);
+    expect(TOOL_REGISTRY.slice(53, 54)).toEqual(rayPickToolEntries);
+  });
+
+  it('appends the handoff model fetcher after all existing tool families', () => {
+    expect(partModelToolEntries.map(entry => entry.definition.name)).toEqual(['fetch_part_model']);
+    expect(TOOL_REGISTRY.slice(-1)).toEqual(partModelToolEntries);
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {
