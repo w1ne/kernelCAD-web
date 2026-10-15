@@ -15,7 +15,7 @@ const ROOT = resolve(__dirname, '../../..');
 const BASELINE = JSON.parse(
   readFileSync(join(ROOT, 'scripts/lint/replicad-import-baseline.json'), 'utf8'),
 ) as { files: string[] };
-const MAX_BASELINE = 20;
+const MAX_BASELINE = 19;
 const DIRECT_IMPORT = /\bfrom\s+['"]replicad(?:-opencascadejs)?['"]/;
 const OCCT_DIRS = /^src\/(modeling|kernel)\/backends\/occt\//;
 

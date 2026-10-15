@@ -19,7 +19,6 @@
     "src/modeling/runtime/tube/tubeClearance.ts",
     "src/modeling/runtime/tube/tubeEndParts.ts",
     "src/modeling/validation/unionIntegrity.ts",
-    "src/shared/fonts/index.ts",
     "src/shared/worker/geometryHelpers.ts"
   ]
 }
