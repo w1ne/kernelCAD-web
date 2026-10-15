@@ -36,6 +36,7 @@ import { surfaceBlendToolEntries } from './registry/surfaceBlendTools';
 import { pointCloudToolEntries } from './registry/pointCloudTools';
 import { wireRoutingToolEntries } from './registry/wireRoutingTools';
 import { meshBooleanToolEntries } from './registry/meshBooleanTools';
+import { explodeViewToolEntries } from './registry/explodeViewTools';
 
 const EXPECTED_TOOL_NAMES = [
   'evaluate_script',
@@ -99,6 +100,7 @@ const EXPECTED_TOOL_NAMES = [
   'route_wires',
   'import_handoff',
   'mesh_boolean',
+  'explode_view',
   'apply_surface_blend',
 ] as const;
 
@@ -383,9 +385,10 @@ describe('toolRegistry public contract', () => {
       'route_wires',
       'import_handoff',
       'mesh_boolean',
+      'explode_view',
       'apply_surface_blend',
     ]);
-    expect(TOOL_REGISTRY).toHaveLength(60);
+    expect(TOOL_REGISTRY).toHaveLength(61);
   });
 
   it('composes the user-file import family at the registry tail, with ChatGPT file params', () => {
@@ -435,6 +438,12 @@ describe('toolRegistry public contract', () => {
     expect(meshBooleanToolEntries.map(entry => entry.definition.name)).toEqual(['mesh_boolean']);
     expect(TOOL_REGISTRY.slice(58, 59)).toEqual(meshBooleanToolEntries);
     await expect(callMcpTool('mesh_boolean', { operation: 'bad' })).resolves.toMatchObject({ ok: false });
+  });
+
+  it('appends the exploded-view planner after the mesh boolean tool', () => {
+    expect(explodeViewToolEntries.map(entry => entry.definition.name)).toEqual(['explode_view']);
+    expect(TOOL_REGISTRY.slice(59, 60)).toEqual(explodeViewToolEntries);
+    expect(TOOL_REGISTRY[59]?.definition.name).toBe('explode_view');
   });
 
   it('appends the surface blend authoring tool at the registry tail', () => {
