@@ -12,8 +12,8 @@
 // gets a price. kernelCAD does NOT call any vendor API and does not upload
 // anything: the user opens the link and uploads the named file themselves.
 
-import { readFile, mkdir, lstat } from 'node:fs/promises';
-import { basename, dirname, join, relative, resolve } from 'node:path';
+import { readFile, mkdir, lstat, realpath } from 'node:fs/promises';
+import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { zipSync, strToU8 } from 'fflate';
 import { exportModelTool, type ExportModelOutput } from './exportModel';
 import type { ExportFormat } from '../../script-runtime/export';
@@ -245,6 +245,24 @@ function entryName(dir: string, path: string): string {
   return rel.startsWith('..') || rel === '' ? basename(path) : rel.split('\\').join('/');
 }
 
+/** Read one exported file for the zip only if it is a regular file (not a
+ *  symlink) whose real path lies inside the pack directory; anything else
+ *  could pull arbitrary local files into the archive. */
+async function readPackEntry(dir: string, path: string): Promise<Uint8Array | string> {
+  let st;
+  try {
+    st = await lstat(path);
+  } catch (e) {
+    return `Cannot read ${path}: ${e instanceof Error ? e.message : String(e)}`;
+  }
+  if (st.isSymbolicLink()) return `Refusing to pack ${path}: it is a symbolic link.`;
+  if (!st.isFile()) return `Refusing to pack ${path}: not a regular file.`;
+  const [realDir, realPath] = await Promise.all([realpath(dir), realpath(path)]);
+  const rel = relative(realDir, realPath);
+  if (rel === '' || rel.startsWith('..') || isAbsolute(rel)) return `Refusing to pack ${path}: it is outside the pack directory ${dir}.`;
+  return new Uint8Array(await readFile(realPath));
+}
+
 /** Write manifest.json, README.txt and the zip (symlink-safe); returns the zip path or an error. */
 async function writePack(dir: string, name: string, files: readonly FabPackFile[], links: readonly FabQuoteLink[]): Promise<{ zip: string } | string> {
   const manifest = JSON.stringify({
@@ -260,7 +278,11 @@ async function writePack(dir: string, name: string, files: readonly FabPackFile[
   const entries: Record<string, Uint8Array> = { 'manifest.json': strToU8(manifest), 'README.txt': strToU8(readme) };
   for (const f of files) {
     if (!f.ok || f.path === undefined) continue;
-    for (const p of [f.path, ...(f.part_files ?? [])]) entries[entryName(dir, p)] = new Uint8Array(await readFile(p));
+    for (const p of [f.path, ...(f.part_files ?? [])]) {
+      const data = await readPackEntry(dir, p);
+      if (typeof data === 'string') return data;
+      entries[entryName(dir, p)] = data;
+    }
   }
   const zip = join(dir, `${name}-fab-pack.zip`);
   for (const [path, data] of [[join(dir, 'manifest.json'), manifest], [join(dir, 'README.txt'), readme], [zip, zipSync(entries)]] as const) {
