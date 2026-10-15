@@ -15,6 +15,7 @@ import type { Assembly } from '../../../src/modeling/capture/assembly';
 
 const GAP = 'tests/fixtures/mate-contact/fastened-gap.kcad.ts';
 const FLUSH = 'tests/fixtures/mate-contact/fastened-flush.kcad.ts';
+const NESTED = 'tests/fixtures/mate-contact/fastened-nested.kcad.ts';
 
 function mateGapCodes(diags: ReadonlyArray<{ code?: string }> | undefined): string[] {
   return (diags ?? []).map((d) => d.code ?? '').filter((c) => c === 'mechanism.mate-gap');
@@ -36,6 +37,11 @@ describe('fastened mate contact', () => {
   it('default validate passes a flush fastened mate', async () => {
     const r = await validate(FLUSH, false);
     expect(r.exitCode).toBe(0);
+    expect(mateGapCodes(r.mechanismFailures)).toEqual([]);
+  }, 120_000);
+
+  it('a part buried in its mate counts as touching (no false gap)', async () => {
+    const r = await validate(NESTED, false);
     expect(mateGapCodes(r.mechanismFailures)).toEqual([]);
   }, 120_000);
 

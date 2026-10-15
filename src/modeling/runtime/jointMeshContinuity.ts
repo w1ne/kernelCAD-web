@@ -470,7 +470,11 @@ export function measureBodyToBodyGap(
     const worldB = localShapeB.clone().applyTransform(worldTransformB);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const oc = getOC() as any;
-    return brepExtremaDistance(oc, wrappedShape(worldA), wrappedShape(worldB));
+    const d = brepExtremaDistance(oc, wrappedShape(worldA), wrappedShape(worldB));
+    // Boundary distance is not body distance: a solid nested inside another
+    // is a boundary-distance away from it but shares volume, so it touches.
+    if (d !== undefined && d > 0 && worldA.intersectionVolume(worldB) > 0) return 0;
+    return d;
   } catch {
     return undefined;
   }
