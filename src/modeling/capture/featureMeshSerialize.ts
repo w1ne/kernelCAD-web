@@ -28,6 +28,7 @@ export interface FeatureMeshSerialized {
   predecessors: string[];
   op?: 'subtract' | 'union' | 'intersect';
   faces: FaceGeometrySerialized[];
+  mesh?: { positions: number[]; normals: number[]; indices: number[] };
   volume?: number;
   edges?: number[];
   /** Legacy color attribute (ColorToken or `#rrggbb` hex). Renderer resolves via
@@ -82,6 +83,16 @@ function copyLinkFields(m: LinkFields): LinkFields {
   };
 }
 
+function serializeIndexedMesh(mesh: FeatureMesh['mesh']): Pick<FeatureMeshSerialized, 'mesh'> {
+  if (!mesh) return {};
+  return { mesh: { positions: Array.from(mesh.positions), normals: Array.from(mesh.normals), indices: Array.from(mesh.indices) } };
+}
+
+function rehydrateIndexedMesh(mesh: FeatureMeshSerialized['mesh']): Pick<FeatureMesh, 'mesh'> {
+  if (!mesh) return {};
+  return { mesh: { positions: new Float32Array(mesh.positions), normals: new Float32Array(mesh.normals), indices: new Uint32Array(mesh.indices) } };
+}
+
 export function serializeForBridge(m: FeatureMesh): FeatureMeshSerialized {
   return {
     featureId: m.featureId,
@@ -97,6 +108,7 @@ export function serializeForBridge(m: FeatureMesh): FeatureMeshSerialized {
       plane: f.plane,
       cylinder: f.cylinder,
     })),
+    ...serializeIndexedMesh(m.mesh),
     volume: m.volume,
     edges: m.edges ? Array.from(m.edges) : undefined,
     ...(m.color !== undefined ? { color: m.color } : {}),
@@ -131,6 +143,7 @@ export function rehydrateFromBridge(s: FeatureMeshSerialized): FeatureMesh {
       plane: f.plane,
       cylinder: f.cylinder,
     })),
+    ...rehydrateIndexedMesh(s.mesh),
     volume: s.volume,
     edges: s.edges ? new Float32Array(s.edges) : undefined,
     ...(s.color !== undefined ? { color: s.color } : {}),

@@ -13,12 +13,12 @@ import {
   type McpToolDefinition,
 } from './toolRegistry';
 import { catalogToolEntries } from './registry/catalogTools';
-import { coreRuntimeToolEntries } from './registry/coreRuntimeTools';
+import { coreRuntimeParameterToolEntries, coreRuntimePreludeToolEntries } from './registry/coreRuntimeTools';
 import { geometryAuthoringToolEntries } from './registry/geometryAuthoringTools';
 import { feaToolEntries } from './registry/feaTools';
 import { drawingImportToolEntries } from './registry/drawingImportTools';
 import { geometryDiffToolEntries } from './registry/geometryDiffTools';
-import { inspectionVerificationToolEntries } from './registry/inspectionVerificationTools';
+import { inspectionVerificationPreludeToolEntries, inspectionVerificationQueryToolEntries, inspectionVerificationRepairToolEntries } from './registry/inspectionVerificationTools';
 import { printToolEntries } from './registry/printTools';
 import { referenceExportToolEntries } from './registry/referenceExportTools';
 import { referenceLedgerToolEntries } from './registry/referenceLedgerTools';
@@ -31,10 +31,12 @@ import { importToolEntries } from './registry/importTools';
 import { fabricationToolEntries } from './registry/fabricationTools';
 import { manufacturingToolEntries } from './registry/manufacturingTools';
 import { nurbsToolEntries } from './registry/nurbsTools';
+import { handoffToolEntries } from './registry/handoffTools';
 import { pointCloudToolEntries } from './registry/pointCloudTools';
 import { partModelToolEntries } from './registry/partModelTools';
 import { rayPickToolEntries } from './registry/rayPickTools';
 import { wireRoutingToolEntries } from './registry/wireRoutingTools';
+import { meshBooleanToolEntries } from './registry/meshBooleanTools';
 
 const EXPECTED_TOOL_NAMES = [
   'evaluate_script',
@@ -96,6 +98,8 @@ const EXPECTED_TOOL_NAMES = [
   'inspect_nurbs',
   'fit_plane',
   'route_wires',
+  'import_handoff',
+  'mesh_boolean',
   'fetch_part_model',
 ] as const;
 
@@ -155,19 +159,24 @@ describe('toolRegistry public contract', () => {
   });
 
   it('composes core runtime tools from the core runtime registry module', () => {
-    const names = coreRuntimeToolEntries.map(entry => entry.definition.name);
+    const names = [...coreRuntimePreludeToolEntries, ...coreRuntimeParameterToolEntries].map(entry => entry.definition.name);
 
     expect(names).toEqual(['evaluate_script', 'diff_scripts', 'set_param']);
-    expect([TOOL_REGISTRY[0], TOOL_REGISTRY[1], TOOL_REGISTRY[5]]).toEqual(coreRuntimeToolEntries);
+    expect(TOOL_REGISTRY.slice(0, 2)).toEqual(coreRuntimePreludeToolEntries);
+    expect(TOOL_REGISTRY[5]).toEqual(coreRuntimeParameterToolEntries[0]);
   });
 
   it('composes inspection and verification tools from the inspection verification registry module', () => {
-    const names = inspectionVerificationToolEntries.map(entry => entry.definition.name);
+    const names = [
+      ...inspectionVerificationPreludeToolEntries,
+      ...inspectionVerificationQueryToolEntries,
+      ...inspectionVerificationRepairToolEntries,
+    ].map(entry => entry.definition.name);
 
     expect(names).toEqual(['inspect', 'verify', 'why_did_this_fail', 'query', 'repair_script']);
-    expect([
-      TOOL_REGISTRY[2], TOOL_REGISTRY[3], TOOL_REGISTRY[4], TOOL_REGISTRY[16], TOOL_REGISTRY[42],
-    ]).toEqual(inspectionVerificationToolEntries);
+    expect(TOOL_REGISTRY.slice(2, 5)).toEqual(inspectionVerificationPreludeToolEntries);
+    expect(TOOL_REGISTRY[16]).toEqual(inspectionVerificationQueryToolEntries[0]);
+    expect(TOOL_REGISTRY[42]).toEqual(inspectionVerificationRepairToolEntries[0]);
   });
 
   it('composes reference and export tools from the reference export registry module', () => {
@@ -373,9 +382,11 @@ describe('toolRegistry public contract', () => {
       'inspect_nurbs',
       'fit_plane',
       'route_wires',
+      'import_handoff',
+      'mesh_boolean',
       'fetch_part_model',
     ]);
-    expect(TOOL_REGISTRY).toHaveLength(58);
+    expect(TOOL_REGISTRY).toHaveLength(60);
   });
 
   it('composes the user-file import family at the registry tail, with ChatGPT file params', () => {
@@ -418,6 +429,18 @@ describe('toolRegistry public contract', () => {
   it('appends the wire routing tool after the point-cloud family', () => {
     expect(wireRoutingToolEntries.map(entry => entry.definition.name)).toEqual(['route_wires']);
     expect(TOOL_REGISTRY.slice(56, 57)).toEqual(wireRoutingToolEntries);
+  });
+
+  it('appends the handoff importer after the wire routing tool', () => {
+    expect(handoffToolEntries.map(entry => entry.definition.name)).toEqual(['import_handoff']);
+    expect(TOOL_REGISTRY.slice(57, 58)).toEqual(handoffToolEntries);
+    expect(handoffToolEntries[0].definition.description).toMatch(/^Use this when /);
+  });
+
+  it('appends the mesh boolean tool after the handoff importer', async () => {
+    expect(meshBooleanToolEntries.map(entry => entry.definition.name)).toEqual(['mesh_boolean']);
+    expect(TOOL_REGISTRY.slice(58, 59)).toEqual(meshBooleanToolEntries);
+    await expect(callMcpTool('mesh_boolean', { operation: 'bad' })).resolves.toMatchObject({ ok: false });
   });
 
   it('appends the handoff model fetcher after all existing tool families', () => {

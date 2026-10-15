@@ -749,6 +749,11 @@ export class CaptureSession {
   }
 
   boolean(op: 'union' | 'difference' | 'intersection', base: Shape, cutters: Shape[]): Shape {
+    for (const shape of [base, ...cutters]) {
+      if (shape.id && this.records.find(r => r.id === shape.id)?.kind === 'importedMesh') {
+        throw new Error(`Display mesh bodies do not support ${op} booleans; convert to BRep explicitly when solid operations are needed.`);
+      }
+    }
     // Validate all input shapes belong to this session.
     if (!this.records.some(r => r.id === base.id)) {
       throw new Error(`boolean: base shape '${base.id}' is not from this CaptureSession`);

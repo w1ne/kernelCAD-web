@@ -85,11 +85,27 @@ export function GhostShape({
     const transformMatrix = useMemo(() => matrixFromGeometryTransform(geometry), [geometry]);
     return (
         <group matrix={transformMatrix} matrixAutoUpdate={transformMatrix ? false : undefined}>
+            {geometry.mesh && <mesh geometry={bufferGeometryFromIndexed(geometry.mesh)} />}
             {geometry.faces.map((face) => (
                 <GhostFaceMesh key={face.faceId} face={face} />
             ))}
         </group>
     );
+}
+
+function bufferGeometryFromIndexed(mesh: NonNullable<GeometryResult['mesh']>): THREE.BufferGeometry {
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(mesh.positions, 3));
+    geometry.setAttribute('normal', new THREE.BufferAttribute(mesh.normals, 3));
+    geometry.setIndex(new THREE.BufferAttribute(mesh.indices, 1));
+    return geometry;
+}
+
+/** Owned BufferGeometry for a display-only indexed mesh; disposed on change/unmount. */
+function useIndexedMeshGeometry(mesh: GeometryResult['mesh']): THREE.BufferGeometry | null {
+    const indexed = useMemo(() => (mesh ? bufferGeometryFromIndexed(mesh) : null), [mesh]);
+    useEffect(() => () => indexed?.dispose(), [indexed]);
+    return indexed;
 }
 
 export function FaceSelectionOverlay({ face, isSelected }: { face?: FaceGeometry, isSelected: boolean }) {
@@ -151,7 +167,9 @@ export function ConsolidatedShape({
 
     const { setContextMenu } = useUI();
 
+    const indexedMesh = useIndexedMeshGeometry(geometry.mesh);
     const { geometry: mergedGeometry, faceMap } = useConsolidatedGeometry(geometry.faces);
+    const displayGeometry = indexedMesh ?? mergedGeometry;
     const transformMatrix = useMemo(() => matrixFromGeometryTransform(geometry), [geometry]);
 
     const edgesGeo = useMemo(() => {
@@ -160,9 +178,9 @@ export function ConsolidatedShape({
             geo.setAttribute('position', new THREE.BufferAttribute(geometry.edges, 3));
             return geo;
         }
-        if (!mergedGeometry) return null;
-        return new THREE.EdgesGeometry(mergedGeometry, 15);
-    }, [mergedGeometry, geometry.edges]);
+        if (!displayGeometry) return null;
+        return new THREE.EdgesGeometry(displayGeometry, 15);
+    }, [displayGeometry, geometry.edges]);
 
     useEffect(() => {
         return () => { edgesGeo?.dispose(); };
@@ -209,13 +227,13 @@ export function ConsolidatedShape({
     );
     const meshRef = usePinnedRoomEnvironment(material);
 
-    if (!mergedGeometry) return null;
+    if (!displayGeometry) return null;
 
     return (
         <group matrix={transformMatrix} matrixAutoUpdate={transformMatrix ? false : undefined}>
             <mesh
                 ref={meshRef}
-                geometry={mergedGeometry}
+                geometry={displayGeometry}
                 material={material}
                 onClick={handleClick}
                 userData={{ type: 'FACE', id: 'consolidated', shapeIndex, faceMap, ownerId: name }}

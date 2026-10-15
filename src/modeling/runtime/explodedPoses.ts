@@ -9,7 +9,8 @@ import type { Assembly, AssemblyPartStored } from '../capture/assembly';
 import { parseConnectorRef } from '../mates/mate';
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
-import type { OcctBackend } from '../../kernel/backends/occt/occtBackend';
+import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
+import { MeshBackend } from '../../kernel/backends/meshBackend';
 import { Transform, type Vec3 } from '../../shared/runtime/se3';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { detectInterferences } from './detectInterferences';
@@ -86,14 +87,21 @@ interface PartGeom {
 }
 
 function partGeometry(scene: SceneBackend): PartGeom[] {
-  return scene.parts.map((p) => {
-    const world = (p.shape as OcctBackend).clone().applyTransform(p.worldTransform);
-    const bb = world.boundingBox({ exact: true });
-    return {
+  return scene.parts.flatMap((p) => {
+    let bb;
+    if (p.shape instanceof OcctBackend) {
+      const world = p.shape.clone().applyTransform(p.worldTransform);
+      bb = world.boundingBox({ exact: true });
+    } else if (p.shape instanceof MeshBackend) {
+      bb = p.shape.transform(p.worldTransform).boundingBox();
+    } else {
+      return [];
+    }
+    return [{
       name: p.name,
       centroid: centroidOf(bb.min, bb.max),
       size: [bb.max[0] - bb.min[0], bb.max[1] - bb.min[1], bb.max[2] - bb.min[2]],
-    };
+    }];
   });
 }
 

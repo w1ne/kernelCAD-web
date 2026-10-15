@@ -64,7 +64,7 @@ function paramNamesOf(value: unknown): Set<string> {
   return out;
 }
 
-function sessionRecords(arm: Assembly): readonly FeatureRecord[] {
+export function sessionRecords(arm: Assembly): readonly FeatureRecord[] {
   return arm.__session().getRecords();
 }
 
@@ -91,15 +91,17 @@ export function hasMotionIntent(arm: Assembly): boolean {
   return animatedParams(sessionRecords(arm)).size > 0;
 }
 
-interface PoseDriver {
+export interface PoseDriver {
   readonly name: string;
   /** Mate type, or the joint kind for body-tree joints. */
   readonly type: string;
+  /** The pose as authored: a ParamRef, a Param blob or a number. */
+  readonly pose: unknown;
 }
 
 /** Every mate / joint pose that takes a param, keyed by param name, across
  *  all assemblies in the session (a sub-assembly may own the moving joint). */
-function poseDrivers(arm: Assembly): Map<string, PoseDriver[]> {
+export function poseDrivers(arm: Assembly): Map<string, PoseDriver[]> {
   const drivers = new Map<string, PoseDriver[]>();
   const add = (param: string, d: PoseDriver) => {
     const list = drivers.get(param) ?? [];
@@ -111,7 +113,7 @@ function poseDrivers(arm: Assembly): Map<string, PoseDriver[]> {
   for (const a of assemblies) {
     for (const m of a.__mates()) {
       typeByName.set(m.name, m.type);
-      for (const p of paramNamesOf(m.pose)) add(p, { name: m.name, type: m.type });
+      for (const p of paramNamesOf(m.pose)) add(p, { name: m.name, type: m.type, pose: m.pose });
     }
     for (const j of a.__joints()) typeByName.set(j.name, j.kind);
   }
@@ -119,7 +121,7 @@ function poseDrivers(arm: Assembly): Map<string, PoseDriver[]> {
     if (r.kind !== 'solvedAssembly') continue;
     const poses = (r.metadata as { poses?: Record<string, unknown> } | undefined)?.poses ?? {};
     for (const [name, pose] of Object.entries(poses)) {
-      for (const p of paramNamesOf(pose)) add(p, { name, type: typeByName.get(name) ?? 'unknown' });
+      for (const p of paramNamesOf(pose)) add(p, { name, type: typeByName.get(name) ?? 'unknown', pose });
     }
   }
   return drivers;

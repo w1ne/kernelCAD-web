@@ -25,11 +25,13 @@
 // which calls `solveMates(arm)` (see `./solver.ts`) and translates the
 // `SolveStatus` into mate-aware diagnostic codes.
 
+import { movingDofs, unlimitedDofs } from './mateLimits';
 import type { Assembly } from '../capture/assembly';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { Vec3 } from '../../shared/intent/types';
 import type { DiagnosticCode } from '../../shared/diagnostics/registry';
 import type { InterferencePair } from '../runtime/detectInterferences';
+import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { validateJointAxisBindingWithCache } from './jointAxisBinding';
 import { validateJointConventionMix } from './jointConventionMix';
 import { validateJointLoadCapacity } from './jointLoadCapacity';
@@ -651,7 +653,7 @@ export async function validateAssemblyWithMates(
   diagnostics.push(...axisBindingResult.diagnostics);
   diagnostics.push(...await validateJointVisualExposure({
     arm,
-    loweredShapes: axisBindingResult.worldShapes,
+    loweredShapes: new Map([...axisBindingResult.worldShapes].filter((entry): entry is [string, OcctBackend] => entry[1] instanceof OcctBackend)),
     worldTransforms: axisBindingResult.worldTransforms,
   }));
 
@@ -665,7 +667,7 @@ export async function validateAssemblyWithMates(
   if (interferencePairs !== undefined) {
     diagnostics.push(...await validateMatePhysicalRealization(
       arm,
-      axisBindingResult.worldShapes,
+      new Map([...axisBindingResult.worldShapes].filter((entry): entry is [string, OcctBackend] => entry[1] instanceof OcctBackend)),
       axisBindingResult.worldTransforms,
     ));
   }
@@ -856,8 +858,10 @@ function emitMissingLimitWarnings(
   mates: ReturnType<Assembly['__mates']>,
 ): void {
   for (const mate of mates) {
-    if (mate.type === 'fastened' || mate.type === 'planar' || mate.type === 'ball') continue;
-    if (mate.limitsDeg !== undefined || mate.limitsMm !== undefined) continue;
+    // Warn only when no moving DOF is limited; a partly limited mate is
+    // reported per DOF by the mechanism verdict (`unlimitedDofs`).
+    const dofs = movingDofs(mate.type);
+    if (dofs.length === 0 || unlimitedDofs(mate).length < dofs.length) continue;
     diagnostics.push({
       code: 'assembly.mate.limit-missing',
       severity: 'warning',

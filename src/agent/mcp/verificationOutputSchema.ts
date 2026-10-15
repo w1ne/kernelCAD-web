@@ -1,13 +1,16 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 
+import { EDGE_RADIUS_OUTPUT_PROPERTIES } from './edgeRadiusOutputSchema';
+
 // Merged dispatcher (selected by `check`): union of verifier outputs. All
 // carry `ok` and (mostly) `diagnostics`; remaining fields are check-specific.
 export const VERIFY_OUTPUT_SCHEMA = {
   type: 'object' as const,
   properties: {
+    ...EDGE_RADIUS_OUTPUT_PROPERTIES,
     ok: { type: 'boolean', description: 'Whether the verification ran and passed its gate.' },
-    source: { type: 'string', description: "fastener-installation/geometry-quality/assembly-path: local geometry evidence." },
+    source: { type: 'string', description: "fastener-installation/geometry-quality/assembly-path/edge-radius: local geometry evidence." },
     featureId: { type: 'string', description: 'geometry-quality: measured body feature.' },
     frame: { type: 'string', description: 'geometry-quality: model coordinate frame for all locations.' },
     thresholds: { type: 'object', additionalProperties: true, description: 'geometry-quality: effective area/length thresholds and total surface area.' },
@@ -20,7 +23,7 @@ export const VERIFY_OUTPUT_SCHEMA = {
     removalOrder: { type: 'array', description: 'assembly-path: deterministic greedy steps, each with part and direction.', items: { type: 'object', additionalProperties: true } },
     stuckParts: { type: 'array', items: { type: 'string' }, description: 'assembly-path: remaining parts when no straight removal is available.' },
     assembly: { type: ['string', 'null'], description: 'Audited lowered assembly.' },
-    status: { type: 'string', description: 'fastener-installation: pass, fail, partial, or no-coverage; partial/zero coverage cannot pass.' },
+    status: { type: 'string', description: 'fastener-installation/edge-radius: pass, fail, partial, or no-coverage; partial/zero coverage cannot pass.' },
     counts: {
       anyOf: [{
         type: 'object',
