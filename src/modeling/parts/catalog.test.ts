@@ -120,4 +120,22 @@ describe('bundled SG90 discovery', () => {
       expect(found.stepPath).toMatch(/\.step$/);
     }
   });
+
+  it('has one SG90 servo entry; the old sg90-micro-servo id is an alias of it', () => {
+    const cat = loadCatalog();
+    const servos = queryCatalog(cat, 'SG90', { limit: 50 }).filter(r => r.family === 'micro-servo');
+    expect(servos.map(r => r.id)).toEqual(['sg90-servo']);
+    expect(queryCatalog(cat, 'SG90', { limit: 50 }).map(r => r.id).sort()).toEqual(['sg90-horn-single-arm', 'sg90-servo']);
+    expect(cat.records.some(r => r.id === 'sg90-micro-servo')).toBe(false);
+
+    const alias = resolveById(cat, 'sg90-micro-servo')!;
+    const canonical = resolveById(cat, 'sg90-servo')!;
+    expect(alias.record.id).toBe('sg90-servo');
+    expect(alias.stepPath).toBe(canonical.stepPath);
+    expect(existsSync(alias.stepPath)).toBe(true);
+    // The electrical facts of the old electronics entry live on the one record.
+    expect(alias.record.attributes).toMatchObject({
+      mpn: 'SG90', wireGround: 'brown', wireVplus: 'red', wirePwm: 'orange', harnessPitchMm: 2.54, harnessLengthMm: 250,
+    });
+  });
 });

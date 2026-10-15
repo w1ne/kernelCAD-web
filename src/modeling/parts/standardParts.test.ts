@@ -60,4 +60,20 @@ describe('SG90 community reference shortcuts', () => {
       expect.objectContaining({ name: 'mount-hole-17', origin: [17, 0, 0], axis: [0, 0, 1] }),
     ]));
   }, 120000);
+
+  it('still resolves the deprecated sg90-micro-servo id to the one SG90 entry', async () => {
+    const prev = process.env.KERNELCAD_PARTS_BASE_URL;
+    process.env.KERNELCAD_PARTS_BASE_URL = 'off'; // must resolve locally, never on the network
+    try {
+      const session = new CaptureSession();
+      const api = createModelingApi({ session });
+      const motor = await api.lib.fetchPart('sg90-micro-servo');
+      expect(session.catalogConnectors.get(motor.id)).toEqual(expect.arrayContaining([
+        expect.objectContaining({ name: 'shaft-output', origin: [0, 0, 29.9], axis: [0, 0, 1] }),
+      ]));
+    } finally {
+      if (prev === undefined) delete process.env.KERNELCAD_PARTS_BASE_URL;
+      else process.env.KERNELCAD_PARTS_BASE_URL = prev;
+    }
+  }, 120000);
 });

@@ -52,7 +52,15 @@ const horn = await lib.standard.sg90HornSingleArm();
 ```
 
 The same ids are available through `find_part` (query `SG90`) and `fetch_part`
-(`sg90-servo` or `sg90-horn-single-arm`). They are in the committed seed as well
+(`sg90-servo` or `sg90-horn-single-arm`).
+
+`sg90-servo` is the only SG90 servo entry. The old electronics-catalog id
+`sg90-micro-servo` (a 32 × 12.4 × 26.7 mm envelope with harness-contact
+proxies) is a deprecated alias: `fetch_part`/`lib.fetchPart('sg90-micro-servo')`
+and the remote `/v1/parts/sg90-micro-servo` return this record. Its harness
+facts (GND brown, V+ red, PWM orange, 2.54 mm JR/Futaba/GWS 3-pin, 250 mm) are
+attributes on this record. The imported STEP has no cable, so there are no
+`ground-contact`/`vplus-contact`/`pwm-contact` connectors. They are in the committed seed as well
 as the full generated catalog, so no remote download is needed. The hosted MCP
 will gain these entries only after a normal release/deployment of this change.
 See `examples/parts/sg90-reference.kcad.ts` for a local inspection assembly.

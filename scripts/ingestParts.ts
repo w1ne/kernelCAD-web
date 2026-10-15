@@ -62,6 +62,8 @@ export interface IngestSidecar {
   attributes?: Record<string, number | string>;
   license?: string;
   attribution?: string;
+  /** Deprecated ids that the catalog worker resolves to this record. */
+  aliases?: string[];
   /** Raw authoring-sidecar data; validated only after catalog identity is derived. */
   connectorManifest?: unknown;
 }
@@ -108,6 +110,8 @@ export interface CatalogRecord {
   connectors: { name: string; origin: [number, number, number]; axis: [number, number, number] }[];
   /** Authored interfaces bound to the exact emitted STEP bytes. */
   connectorManifest?: HashBoundConnectorManifest;
+  /** Deprecated ids. `/v1/parts/{alias}` returns this record; search does not list them. */
+  aliases?: string[];
 }
 
 export interface IngestOpts {
@@ -357,6 +361,7 @@ export async function ingestStepFile(
     ...(connectorManifest === undefined ? {} : { connectorManifest }),
   };
   if (meta.standard) record.standard = meta.standard;
+  if (meta.aliases && meta.aliases.length > 0) record.aliases = [...meta.aliases];
   const attribution = meta.attribution ?? opts.attribution;
   if (attribution) record.attribution = attribution;
 
