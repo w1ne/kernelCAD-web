@@ -32,6 +32,7 @@ import { fabricationToolEntries } from './registry/fabricationTools';
 import { manufacturingToolEntries } from './registry/manufacturingTools';
 import { nurbsToolEntries } from './registry/nurbsTools';
 import { pointCloudToolEntries } from './registry/pointCloudTools';
+import { explodeViewToolEntries } from './registry/explodeViewTools';
 
 const EXPECTED_TOOL_NAMES = [
   'evaluate_script',
@@ -92,6 +93,7 @@ const EXPECTED_TOOL_NAMES = [
   'ray_pick',
   'inspect_nurbs',
   'fit_plane',
+  'explode_view',
 ] as const;
 
 const PUBLIC_CONTRACT_FIXTURE = new URL(
@@ -366,9 +368,10 @@ describe('toolRegistry public contract', () => {
       'dfm_review',
       'ray_pick',
       'inspect_nurbs',
-      'fit_plane',
+  'fit_plane',
+  'explode_view',
     ]);
-    expect(TOOL_REGISTRY).toHaveLength(56);
+    expect(TOOL_REGISTRY).toHaveLength(57);
   });
 
   it('composes the user-file import family at the registry tail, with ChatGPT file params', () => {
@@ -401,6 +404,21 @@ describe('toolRegistry public contract', () => {
   it('dispatches plane fitting through the MCP registry', async () => {
     await expect(callMcpTool('fit_plane', { points: [[0, 0, 0], [1, 0, 0], [0, 1, 0]] }))
       .resolves.toMatchObject({ normal: [0, 0, 1], rms: 0 });
+  });
+
+  it('keeps ray picking and NURBS inspection before the branch-local exploded-view family', () => {
+    expect(TOOL_REGISTRY.at(-3)?.definition.name).toBe('ray_pick');
+    expect(TOOL_REGISTRY.at(-2)).toEqual(nurbsToolEntries[0]);
+    expect(TOOL_REGISTRY.at(-1)).toEqual(explodeViewToolEntries[0]);
+  });
+
+  it('composes ray picking at the registry tail', () => {
+    expect(TOOL_REGISTRY.at(-3)?.definition.name).toBe('ray_pick');
+  });
+
+  it('appends the exploded-view planner after existing tool families', () => {
+    expect(explodeViewToolEntries.map(entry => entry.definition.name)).toEqual(['explode_view']);
+    expect(TOOL_REGISTRY.at(-1)?.definition.name).toBe('explode_view');
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {
