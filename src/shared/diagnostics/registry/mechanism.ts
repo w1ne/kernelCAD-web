@@ -69,6 +69,17 @@ export const MECHANISM_CODES = {
     group: 'mechanism',
     description: 'The model declares motion (an animationView track that changes a param, a mechanicalJoint drive or a transmission) on a joint that is fastened, or an animated param moves a fastened part only through its geometry while no articulated joint takes that param as its pose.',
   },
+  // Per-mate satisfaction along the sweep (`mateClosure.ts`). A loop that
+  // does not close at rest keeps the solver's own codes; this one is for a
+  // loop that closes at rest and comes apart when a joint moves.
+  'mechanism.mate-unsatisfied': {
+    hintTemplate:
+      "A loop-closing mate comes apart when a joint moves: the joint cannot move on its own. Couple the joints that must move together (arm.coupleMates), or cut the loop into an open chain so each joint is free, and keep the mate connectors on the shared axis.",
+    nextAction: { kind: 'fix-arg', field: 'mateConnectorOrigin' },
+    defaultSeverity: 'error',
+    group: 'mechanism',
+    description: "At a swept pose a loop-closing mate's two connector origins sit more than 0.01 mm apart although they meet at rest: the declared motion breaks the mate.",
+  },
   'mechanism.unverified-budget-exceeded': {
     hintTemplate:
       "The articulated collision/pose sweep was skipped because its estimated work exceeded the budget, so the mechanism is 'unverified' (NOT certified collision-free). Verify a tractable subset of the assembly, reduce the part/pose count, or pass a larger sweepBudget to force a full sweep. The cheap criteria (orphan-part, fastened-rigidity) still ran.",

@@ -364,6 +364,7 @@
           "additionalProperties": false,
           "required": [
             "verdict",
+            "maxLevel",
             "statement",
             "checked",
             "skipped",
@@ -378,6 +379,15 @@
                 "broken",
                 "unverified"
               ]
+            },
+            "maxLevel": {
+              "type": "string",
+              "enum": [
+                "ok",
+                "warning",
+                "error"
+              ],
+              "description": "One status level: 'error' when broken, 'warning' when not checked, 'ok' when checked."
             },
             "statement": {
               "type": "string",
@@ -395,7 +405,7 @@
               "items": {
                 "type": "string"
               },
-              "description": "What did not run and why (verdict 'unverified')."
+              "description": "What did not run and why. On 'real', the moving joint DOFs with no limits (range not checked)."
             },
             "failures": {
               "type": "array",
@@ -6534,6 +6544,7 @@
           "additionalProperties": false,
           "required": [
             "verdict",
+            "maxLevel",
             "statement",
             "checked",
             "skipped",
@@ -6548,6 +6559,15 @@
                 "broken",
                 "unverified"
               ]
+            },
+            "maxLevel": {
+              "type": "string",
+              "enum": [
+                "ok",
+                "warning",
+                "error"
+              ],
+              "description": "One status level: 'error' when broken, 'warning' when not checked, 'ok' when checked."
             },
             "statement": {
               "type": "string",
@@ -6565,7 +6585,7 @@
               "items": {
                 "type": "string"
               },
-              "description": "What did not run and why (verdict 'unverified')."
+              "description": "What did not run and why. On 'real', the moving joint DOFs with no limits (range not checked)."
             },
             "failures": {
               "type": "array",

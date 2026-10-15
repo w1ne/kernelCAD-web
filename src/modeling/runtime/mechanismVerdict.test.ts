@@ -4,14 +4,22 @@ import { describe, expect, it } from 'vitest';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { summarizeMechanism } from './mechanismVerdict';
 
-const coverage = { poses: 7, joints: 3, fastened: 2, sweep: true, physics: false };
+const coverage = { poses: 7, joints: 3, fastened: 2, sweep: true, physics: false, limitsChecked: 2, matesChecked: true, skipped: [] as string[] };
 
 describe('summarizeMechanism', () => {
   it('states what a real verdict checked and what it did not', () => {
     const s = summarizeMechanism({ mechanism: 'real', failures: [], coverage });
     expect(s.statement).toBe(
-      'Motion checked: 7 poses across 3 joints (each joint at its limits), no collisions, fastened parts stay rigid. Gravity not checked.',
+      'Motion checked: 7 poses across 3 joints (each joint at its limits), animation within limits on 2 joints, all mates satisfied, no collisions, fastened parts stay rigid. Gravity not checked.',
     );
+    expect(s.maxLevel).toBe('ok');
+  });
+
+  it('keeps a real verdict ok but names the joint ranges it could not check', () => {
+    const skipped = ["joint 'slide' offset has no limits, range not checked", "joint 'elbow' rotation has no limits, range not checked"];
+    const s = summarizeMechanism({ mechanism: 'real', failures: [], coverage: { ...coverage, skipped } });
+    expect(s).toMatchObject({ verdict: 'real', maxLevel: 'ok', skipped });
+    expect(s.statement).toMatch(/Not checked: joint 'slide' offset has no limits, range not checked \(\+1 more\)\. Gravity not checked\.$/);
   });
 
   it('never reads unverified as a pass and says why', () => {
@@ -21,6 +29,7 @@ describe('summarizeMechanism', () => {
     } as CompilerDiagnostic;
     const s = summarizeMechanism({ mechanism: 'unverified', failures: [budget], coverage: { ...coverage, sweep: false } });
     expect(s.verdict).toBe('unverified');
+    expect(s.maxLevel).toBe('warning');
     expect(s.statement).toMatch(/^Motion not checked: collision sweep .* work 600 is over the budget 300\. Do not call this mechanism working\.$/);
     expect(s.checked).toEqual([]);
   });
@@ -33,5 +42,6 @@ describe('summarizeMechanism', () => {
     const s = summarizeMechanism({ mechanism: 'broken', failures: [d] });
     expect(s.statement).toBe("Mechanism broken: Joint drive 'shoulder-drive' turns joint 'shoulder', but 'shoulder' is fastened.");
     expect(s.failures).toEqual([{ code: d.code, reason: d.message, joint: 'shoulder' }]);
+    expect(s.maxLevel).toBe('error');
   });
 });

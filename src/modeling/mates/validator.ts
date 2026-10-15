@@ -25,6 +25,7 @@
 // which calls `solveMates(arm)` (see `./solver.ts`) and translates the
 // `SolveStatus` into mate-aware diagnostic codes.
 
+import { movingDofs, unlimitedDofs } from './mateLimits';
 import type { Assembly } from '../capture/assembly';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { Vec3 } from '../../shared/intent/types';
@@ -856,8 +857,10 @@ function emitMissingLimitWarnings(
   mates: ReturnType<Assembly['__mates']>,
 ): void {
   for (const mate of mates) {
-    if (mate.type === 'fastened' || mate.type === 'planar' || mate.type === 'ball') continue;
-    if (mate.limitsDeg !== undefined || mate.limitsMm !== undefined) continue;
+    // Warn only when no moving DOF is limited; a partly limited mate is
+    // reported per DOF by the mechanism verdict (`unlimitedDofs`).
+    const dofs = movingDofs(mate.type);
+    if (dofs.length === 0 || unlimitedDofs(mate).length < dofs.length) continue;
     diagnostics.push({
       code: 'assembly.mate.limit-missing',
       severity: 'warning',
