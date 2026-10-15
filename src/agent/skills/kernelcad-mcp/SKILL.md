@@ -462,6 +462,15 @@ See `cookbook/snippets/Q-S6-inspect-first-build-after.kcad.ts`.
 
 ### G-code export receipts
 
+### Ray picking
+
+`ray_pick({ file|code, origin, direction, feature_id? })` casts a ray in model
+units (mm), normalizes its nonzero direction, and returns the first hit on each
+face, nearest first. Hits include point, distance, mesh normal and a
+selection-compatible `{ shapeIndex, kind: 'face', id, featureId }`. Intersections
+use the viewer's per-face tessellation; points and normals on curved faces are
+approximations at that mesh resolution. Empty intersections return `hits: []`.
+
 `export({ target: "model", format: "gcode", file, output_path, options })`
 uses an installed OrcaSlicer CLI. Successful exports include optional
 `gcode_stats` with header generator identity, estimated time, filament grams

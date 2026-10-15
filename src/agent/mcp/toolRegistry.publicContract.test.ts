@@ -87,6 +87,7 @@ const EXPECTED_TOOL_NAMES = [
   'import_step',
   'fab_pack',
   'dfm_review',
+  'ray_pick',
 ] as const;
 
 const PUBLIC_CONTRACT_FIXTURE = new URL(
@@ -359,8 +360,9 @@ describe('toolRegistry public contract', () => {
       'import_step',
       'fab_pack',
       'dfm_review',
+      'ray_pick',
     ]);
-    expect(TOOL_REGISTRY).toHaveLength(53);
+    expect(TOOL_REGISTRY).toHaveLength(54);
   });
 
   it('composes the user-file import family at the registry tail, with ChatGPT file params', () => {
@@ -375,6 +377,9 @@ describe('toolRegistry public contract', () => {
   it('composes the manufacturability review family at the registry tail', () => {
     expect(manufacturingToolEntries.map(entry => entry.definition.name)).toEqual(['dfm_review']);
     expect(TOOL_REGISTRY.slice(52, 53)).toEqual(manufacturingToolEntries);
+  });
+  it('composes ray picking at the registry tail', () => {
+    expect(TOOL_REGISTRY.at(-1)?.definition.name).toBe('ray_pick');
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {

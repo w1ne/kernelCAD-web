@@ -132,4 +132,5 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   fea_summary: READ,
   // Evaluates the script in-process and reports; writes nothing.
   dfm_review: READ,
+  ray_pick: READ,
 };
