@@ -651,6 +651,21 @@ function buildGeometryGroup(ser: FeatureMeshSerialized): THREE.Group {
   if (fm.assemblyPartName !== undefined) group.userData.assemblyPartName = fm.assemblyPartName;
   group.visible = true;
   const pbrForFaces = resolveFacePbr(fm);
+  if (fm.mesh) {
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(fm.mesh.positions), 3));
+    geometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(fm.mesh.normals), 3));
+    geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(fm.mesh.indices), 1));
+    geometry.computeBoundingSphere();
+    const material = buildMaterialFromPBR(pbrForFaces);
+    material.transparent = true;
+    material.opacity = 0;
+    (material as THREE.MeshPhysicalMaterial).side = THREE.DoubleSide;
+    (material as THREE.MeshPhysicalMaterial).flatShading = false;
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.name = `${fm.featureId}-indexed-mesh`;
+    group.add(mesh);
+  }
   for (const face of fm.faces) {
     // Per-face material override (Shape.material({ face: '<label>', ... }))
     // takes precedence over the shape-level default. Unmatched faces fall
