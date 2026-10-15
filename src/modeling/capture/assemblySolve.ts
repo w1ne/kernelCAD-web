@@ -450,6 +450,7 @@ async function computeInterferencesForGate(
   const { createOcctLowerer } = await import('../backends/occt/occtLowerer');
   const { initOcct } = await import('../../kernel/backends/occt/occtBackend');
   const { isSceneBackend } = await import('../../kernel/backends/sceneBackend');
+  const { MeshBackend } = await import('../../kernel/backends/meshBackend');
   const { detectInterferences } = await import('../runtime/detectInterferences');
 
   await initOcct();
@@ -467,6 +468,10 @@ async function computeInterferencesForGate(
   if (!lowered || !isSceneBackend(lowered)) {
     return [];
   }
+
+  // Exact interference requires solid intersection volume, unavailable on
+  // display meshes. Their placement still flows through scene bounds/rendering.
+  if (lowered.parts.some((p) => p.shape instanceof MeshBackend)) return [];
 
   const result = detectInterferences(lowered, 0.01, new Set<string>());
   return result.pairs;
