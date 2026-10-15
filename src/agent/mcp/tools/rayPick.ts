@@ -4,10 +4,11 @@ import { z } from 'zod';
 import { meshFeaturesPerFeature, selectTerminalFeatures } from '../../../modeling/capture/featureMeshing';
 import { resolveRootId } from '../../../composition/buildModel';
 import type { FaceGeometry } from '../../../shared/worker/workerTypes';
+import { sharedSelectionTool } from './sharedSelection';
 import { runMcpScript } from '../runMcpScript';
 
 const vec3 = z.tuple([z.number().finite(), z.number().finite(), z.number().finite()]);
-const inputSchema = z.object({ file: z.string().min(1).optional(), code: z.string().min(1).optional(), feature_id: z.string().min(1).optional(), origin: vec3, direction: vec3 })
+const inputSchema = z.object({ file: z.string().min(1).optional(), code: z.string().min(1).optional(), feature_id: z.string().min(1).optional(), studio_url: z.string().url(), session: z.string().min(1), origin: vec3, direction: vec3 })
   .refine(v => (v.file !== undefined) !== (v.code !== undefined), { message: 'Provide exactly one of file or code.' })
   .refine(v => Math.hypot(...v.direction) > 0, { message: 'direction must be nonzero.' });
 
@@ -69,6 +70,27 @@ export async function rayPickTool(raw: Record<string, unknown>) {
   if (index < 0) return { ok: false, error: `Feature '${targetId}' is not displayed as a terminal model shape, so it has no current selection shapeIndex.` };
   const dirLength = Math.hypot(...input.direction);
   const direction = input.direction.map(value => value / dirLength) as V3;
+  const session = await sharedSelectionTool('GET', { studio_url: input.studio_url, session: input.session });
+  if (!session.ok || !('modelGeneration' in session)) {
+    return { ok: false, error: `Could not read current Studio selection generation: ${'error' in session ? session.error : 'invalid session response'}` };
+  }
   const hits = rayPickFaces(terminals[index]!.faces, input.origin, direction);
-  return { ok: true, feature_id: targetId, shape_index: index, hit_basis: 'per-face tessellation', hits: hits.map(hit => ({ ...hit, selection: { shapeIndex: index, kind: 'face' as const, id: hit.face_id, featureId: targetId } })) };
+  return {
+    ok: true,
+    feature_id: targetId,
+    shape_index: index,
+    studio_url: input.studio_url,
+    session: input.session,
+    model_generation: session.modelGeneration,
+    hit_basis: 'per-face tessellation',
+    hits: hits.map(hit => {
+      const selection = { shapeIndex: index, kind: 'face' as const, id: hit.face_id, featureId: targetId };
+      return {
+        ...hit,
+        model_generation: session.modelGeneration,
+        selection,
+        set_selection: { studio_url: input.studio_url, session: input.session, model_generation: session.modelGeneration, selection },
+      };
+    }),
+  };
 }

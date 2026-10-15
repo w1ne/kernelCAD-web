@@ -8968,7 +8968,7 @@
   },
   {
     "name": "ray_pick",
-    "description": "Cast a ray through the returned model or feature and report the first hit on each face, nearest first. Inputs are model units (mm); direction is normalized. Each hit includes point, distance, outward mesh normal, and a face selection { shapeIndex, kind, id, featureId } compatible with the selection tools. Intersections are computed against the viewer per-face tessellation, so curved-surface points and normals are mesh approximations.",
+    "description": "Use this when you need the faces a ray hits in a local Studio model, nearest first, with points, distances, and normals. Inputs are model units (mm); direction is normalized. Requires the local Studio URL and session token for the same script, reads the current model generation, and returns a set_selection argument object with every hit. feature_id must identify a displayed terminal shape; intermediates have no current viewer shapeIndex. Intersections use the viewer per-face tessellation, so curved-surface points and normals are mesh approximations.",
     "inputSchema": {
       "type": "object",
       "properties": {
@@ -8982,7 +8982,16 @@
         },
         "feature_id": {
           "type": "string",
-          "description": "Feature to ray-pick; defaults to the returned feature."
+          "description": "Displayed terminal feature to ray-pick; defaults to the returned feature. Intermediate features are not available as current viewer selections."
+        },
+        "studio_url": {
+          "type": "string",
+          "description": "Local Studio HTTP origin, e.g. http://localhost:5173."
+        },
+        "session": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Studio sessionToken for this script, from GET /__kernelcad/session?script=<path>."
         },
         "origin": {
           "type": "array",
@@ -9005,7 +9014,9 @@
       },
       "required": [
         "origin",
-        "direction"
+        "direction",
+        "studio_url",
+        "session"
       ],
       "allOf": [
         {
@@ -9051,6 +9062,15 @@
         "shape_index": {
           "type": "integer"
         },
+        "studio_url": {
+          "type": "string"
+        },
+        "session": {
+          "type": "string"
+        },
+        "model_generation": {
+          "type": "integer"
+        },
         "hit_basis": {
           "type": "string",
           "enum": [
@@ -9062,7 +9082,7 @@
           "items": {
             "type": "object",
             "additionalProperties": true,
-            "description": "face_id, point, distance, normal, and selection compatible with get_selection/set_selection."
+            "description": "face_id, point, distance, normal, model_generation, selection, and set_selection arguments ready to pass directly to set_selection."
           }
         },
         "error": {

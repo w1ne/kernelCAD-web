@@ -39,8 +39,9 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
     type: 'object',
     properties: {
       ok: { type: 'boolean' }, feature_id: { type: 'string' }, shape_index: { type: 'integer' },
+      studio_url: { type: 'string' }, session: { type: 'string' }, model_generation: { type: 'integer' },
       hit_basis: { type: 'string', enum: ['per-face tessellation'] },
-      hits: { type: 'array', items: { type: 'object', additionalProperties: true, description: 'face_id, point, distance, normal, and selection compatible with get_selection/set_selection.' } },
+      hits: { type: 'array', items: { type: 'object', additionalProperties: true, description: 'face_id, point, distance, normal, model_generation, selection, and set_selection arguments ready to pass directly to set_selection.' } },
       error: { type: 'string' },
     },
     required: ['ok'], additionalProperties: true,

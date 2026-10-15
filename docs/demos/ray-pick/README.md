@@ -1,8 +1,10 @@
 # `ray_pick` demonstration bundle
 
 This bundle records a local invocation of the `ray_pick` MCP handler on a 10 mm
-box. The returned hit distances, face IDs, points, and normals are shown in the
-MP4 and retained in `result.json`; `demo.ts` is the invocation and SVG source.
+box. The model evaluation and ray hits are real local computations; the Studio
+selection session is a local fixture supplying `model_generation: 7`. The
+returned hit distances, face IDs, points, and normals are shown in the MP4 and
+retained in `result.json`; `demo.ts` is the invocation and SVG source.
 View the [five-second demonstration](demo.mp4).
 
 ## Reproduce
