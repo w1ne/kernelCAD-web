@@ -30,6 +30,7 @@ import { IMPORT_OUTPUT_SCHEMAS } from './registry/importTools.outputSchemas';
 import { FABRICATION_OUTPUT_SCHEMAS } from './registry/fabricationTools.outputSchemas';
 import { MANUFACTURING_OUTPUT_SCHEMAS } from './registry/manufacturingTools.outputSchemas';
 import { NURBS_OUTPUT_SCHEMAS } from './registry/nurbsTools.outputSchemas';
+import { EXPLODE_VIEW_OUTPUT_SCHEMAS } from './registry/explodeViewTools.outputSchemas';
 
 export type { JSONSchemaObject } from './toolOutputSchemaParts';
 import { MECHANISM_SUMMARY, SELECTION, SOURCE_EDIT, TUBE_JOINT, type JSONSchemaObject } from './toolOutputSchemaParts';
@@ -855,4 +856,5 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
   inspect_assembly: {
     type: 'object', properties: { ok: { type: 'boolean' } }, required: ['ok'], additionalProperties: true,
   },
+  ...EXPLODE_VIEW_OUTPUT_SCHEMAS,
 };
