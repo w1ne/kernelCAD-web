@@ -136,4 +136,5 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   ray_pick: READ,
   inspect_nurbs: READ,
   fit_plane: READ,
+  route_wires: READ,
 };

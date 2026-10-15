@@ -152,6 +152,8 @@ const NON_TOOL_ALLOWLIST = new Set<string>([
   'model_generation',
   'bbox_mm',
   'not_checked',
+  'from_pos_mm',
+  'to_pos_mm',
 ]);
 
 export interface ToolNameHit {

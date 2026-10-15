@@ -33,8 +33,8 @@ import { manufacturingToolEntries } from './registry/manufacturingTools';
 import { nurbsToolEntries } from './registry/nurbsTools';
 import { pointCloudToolEntries } from './registry/pointCloudTools';
 import { partModelToolEntries } from './registry/partModelTools';
-import { partModelToolEntries } from './registry/partModelTools';
 import { rayPickToolEntries } from './registry/rayPickTools';
+import { wireRoutingToolEntries } from './registry/wireRoutingTools';
 
 const EXPECTED_TOOL_NAMES = [
   'evaluate_script',
@@ -94,8 +94,9 @@ const EXPECTED_TOOL_NAMES = [
   'dfm_review',
   'ray_pick',
   'inspect_nurbs',
-      'fit_plane',
-      'fetch_part_model',
+  'fit_plane',
+  'route_wires',
+  'fetch_part_model',
 ] as const;
 
 const PUBLIC_CONTRACT_FIXTURE = new URL(
@@ -370,10 +371,11 @@ describe('toolRegistry public contract', () => {
       'dfm_review',
       'ray_pick',
       'inspect_nurbs',
-  'fit_plane',
-  'fetch_part_model',
+      'fit_plane',
+      'route_wires',
+      'fetch_part_model',
     ]);
-    expect(TOOL_REGISTRY).toHaveLength(57);
+    expect(TOOL_REGISTRY).toHaveLength(58);
   });
 
   it('composes the user-file import family at the registry tail, with ChatGPT file params', () => {
@@ -399,12 +401,8 @@ describe('toolRegistry public contract', () => {
   it('composes ray picking at the registry tail', () => {
     expect(TOOL_REGISTRY.slice(53, 54).map(entry => entry.definition.name)).toEqual(['ray_pick']);
   });
-  it('composes the point-cloud analysis family before the part-model family', () => {
+  it('composes the point-cloud analysis family before wire routing', () => {
     expect(TOOL_REGISTRY.slice(55, 56)).toEqual(pointCloudToolEntries);
-  });
-  it('composes the part-model family at the registry tail', () => {
-    expect(partModelToolEntries.map(entry => entry.definition.name)).toEqual(['fetch_part_model']);
-    expect(TOOL_REGISTRY.slice(-partModelToolEntries.length)).toEqual(partModelToolEntries);
   });
 
   it('dispatches plane fitting through the MCP registry', async () => {
@@ -417,9 +415,14 @@ describe('toolRegistry public contract', () => {
     expect(TOOL_REGISTRY.slice(53, 54)).toEqual(rayPickToolEntries);
   });
 
+  it('appends the wire routing tool after the point-cloud family', () => {
+    expect(wireRoutingToolEntries.map(entry => entry.definition.name)).toEqual(['route_wires']);
+    expect(TOOL_REGISTRY.slice(56, 57)).toEqual(wireRoutingToolEntries);
+  });
+
   it('appends the handoff model fetcher after all existing tool families', () => {
     expect(partModelToolEntries.map(entry => entry.definition.name)).toEqual(['fetch_part_model']);
-    expect(TOOL_REGISTRY.slice(-1)).toEqual(partModelToolEntries);
+    expect(TOOL_REGISTRY.slice(-partModelToolEntries.length)).toEqual(partModelToolEntries);
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {
