@@ -9989,6 +9989,175 @@
     }
   },
   {
+    "name": "explode_view",
+    "description": "Use this when you need an ordered exploded-view plan for an assembly. Supply parts as {name,center:[x,y,z],size:[x,y,z]} in mm, or a LabWired handoff containing parts with ref, position_mm.value and physical.bbox_mm (also accepts bbox_mm.value). Optional explicit assembly_order takes precedence over handoff assembly_order / assembly.order. Missing order falls back to input part order; parts lacking usable placement or bbox and unlisted/unknown order refs are reported. Choose mode axis (default) or radial; axis follows the requested direction, radial moves parts away from the assembly centroid. The result includes ready-to-paste param_declarations, animation_tracks and reverse_animation_tracks for animationView(), part_transforms for existing shapes, and script_fragment. cameraPlan gives framing guidance.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "parts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "center": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "minItems": 3,
+                "maxItems": 3
+              },
+              "size": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "minItems": 3,
+                "maxItems": 3
+              }
+            },
+            "required": [
+              "name",
+              "center",
+              "size"
+            ],
+            "additionalProperties": false
+          },
+          "description": "Named assembly parts and measured bbox centers/sizes in mm. Optional when handoff is supplied."
+        },
+        "assembly_order": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "handoff": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Optional handoff metadata. Assembly order lookup supports assembly_order or assembly.order."
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "axis",
+            "radial"
+          ],
+          "description": "Explode direction strategy; default axis."
+        },
+        "axis": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 3,
+          "maxItems": 3,
+          "description": "Assembly direction; default +Z."
+        },
+        "spacing": {
+          "type": "number",
+          "description": "Positive spacing scale; default 1.25."
+        },
+        "duration_ms": {
+          "type": "integer",
+          "description": "Timeline duration from 500 to 60000 ms; default 3000."
+        }
+      }
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "openWorldHint": false
+    },
+    "outputSchema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "type": "boolean"
+        },
+        "order": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "durationMs": {
+          "type": "number"
+        },
+        "tracks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "reverseTracks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "cameraPlan": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Suggested target and camera distance for assembled/exploded capture framing; camera keyframes are guidance and are not consumed by animationView."
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "playback": {
+          "type": "string"
+        },
+        "param_declarations": {
+          "type": "string",
+          "description": "Ready-to-paste param() calls that declare every animation track parameter with its initial value."
+        },
+        "script_fragment": {
+          "type": "string",
+          "description": "Ready-to-paste declarations and forward animationView() call."
+        },
+        "animation_tracks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "reverse_animation_tracks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "part_transforms": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "description": "Per-part expressions to apply to existing shapes before assembly.part()."
+        }
+      },
+      "required": [
+        "ok",
+        "order",
+        "durationMs",
+        "tracks",
+        "reverseTracks",
+        "warnings",
+        "cameraPlan"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
     "name": "write_bom",
     "description": "Use this when you need to merge a LabWired handoff BOM with optional KernelCAD catalog parts, MPNs and pricing, then write CSV or retrieve Sheets-ready rows. Pass exactly one of handoff, handoff_json or handoff_path. This tool only writes a CSV locally; it makes no Google API calls. Returns headers, tabular rows, CSV contents and the CSV path.",
     "inputSchema": {

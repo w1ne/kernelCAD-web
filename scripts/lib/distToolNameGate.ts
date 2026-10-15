@@ -153,6 +153,7 @@ const NON_TOOL_ALLOWLIST = new Set<string>([
   'cutout_hints',
   'from_pos_mm',
   'to_pos_mm',
+  'assembly_order',
   'sheets_rows',
 ]);
 
