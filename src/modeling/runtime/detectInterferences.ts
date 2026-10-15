@@ -21,8 +21,7 @@
 // instead of inferring overlap visually from a render.
 
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
-import type { OcctBackend } from '../../kernel/backends/occt/occtBackend';
-import { MeshBackend } from '../../kernel/backends/meshBackend';
+import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import type { Vec3 } from '../../shared/intent/types';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { overlapThicknessMm } from './jointContactCap';
@@ -147,12 +146,12 @@ export function detectInterferences(
     for (let j = i + 1; j < scene.parts.length; j++) {
       const a = scene.parts[i]!;
       const b = scene.parts[j]!;
-      if (a.shape instanceof MeshBackend || b.shape instanceof MeshBackend) {
+      if (!(a.shape instanceof OcctBackend) || !(b.shape instanceof OcctBackend)) {
         uncheckedPairs.push({ a: a.name, b: b.name, reason: 'display-mesh' });
       }
     }
   }
-  const transformed = scene.parts.filter((p) => !(p.shape instanceof MeshBackend)).map((p) => {
+  const transformed = scene.parts.filter((p) => p.shape instanceof OcctBackend).map((p) => {
     const clone = (p.shape as OcctBackend).clone().applyTransform(p.worldTransform);
     return {
       name: p.name,
