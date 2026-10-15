@@ -61,6 +61,9 @@ export async function resolveAndLoadFont(
       ? font
       : nodePath.resolve(scriptDir ?? process.cwd(), font);
     const base = nodePath.basename(abs, nodePath.extname(abs));
+    // Already registered under this family: reuse it instead of re-reading
+    // and re-registering the file on every call.
+    if (getFont(base)) return { fontFamily: base };
     const buf = nodeFs.readFileSync(abs);
     await loadFont(
       buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength),
