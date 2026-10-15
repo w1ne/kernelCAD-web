@@ -150,6 +150,8 @@ const NON_TOOL_ALLOWLIST = new Set<string>([
   'access_code',
   // Field names documented in kernelcad-mcp SKILL.md (not tool names).
   'model_generation',
+  'from_pos_mm',
+  'to_pos_mm',
   'sheets_rows',
 ]);
 

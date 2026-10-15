@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { getMcpViewerResult } from './liveViewer';
 import { selectionToolEntries } from './registry/selectionTools';
+import { pointCloudToolEntries } from './registry/pointCloudTools';
 import { TOOL_ANNOTATIONS } from './toolAnnotations';
 import { TOOL_OUTPUT_SCHEMAS } from './toolOutputSchemas';
 import { catalogToolEntries } from './registry/catalogTools';
@@ -24,6 +25,7 @@ import { fabricationToolEntries } from './registry/fabricationTools';
 import { manufacturingToolEntries } from './registry/manufacturingTools';
 import { rayPickToolEntries } from './registry/rayPickTools';
 import { nurbsToolEntries } from './registry/nurbsTools';
+import { wireRoutingToolEntries } from './registry/wireRoutingTools';
 import { bomToolEntries } from './registry/bomTools';
 import { referenceExportToolEntries } from './registry/referenceExportTools';
 import { referenceLedgerToolEntries } from './registry/referenceLedgerTools';
@@ -102,6 +104,8 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...manufacturingToolEntries,
   ...rayPickToolEntries,
   ...nurbsToolEntries,
+  ...pointCloudToolEntries,
+  ...wireRoutingToolEntries,
   ...bomToolEntries,
 ];
 

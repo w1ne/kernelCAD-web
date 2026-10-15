@@ -58,6 +58,17 @@ export const MECHANISM_CODES = {
   // evidence (work estimate, budget, part count) so an agent can react
   // instead of mistaking it for a clean 'real'. Non-fatal (severity 'warn')
   // — "could not verify the pose sweep" is not "broken".
+  // Motion intent vs joint type (capture-only, `motionIntent.ts`). Separate
+  // from the solver / over-constraint / collision codes: the joints are
+  // consistent, they are just the wrong kind for the motion the model claims.
+  'mechanism.motion-on-fixed-joint': {
+    hintTemplate:
+      "The model animates or drives a joint that is fastened, so the motion is not real. Make that joint revolute (or prismatic) and pass the animated param as its pose: arm.mate(name, 'a.conn', 'b.conn', 'revolute', { pose: angleParam, limitsDeg: [min, max] }). Do not move a fastened part by rotating or translating its geometry with the param.",
+    nextAction: { kind: 'fix-arg', field: 'mateType' },
+    defaultSeverity: 'error',
+    group: 'mechanism',
+    description: 'The model declares motion (an animationView track that changes a param, a mechanicalJoint drive or a transmission) on a joint that is fastened, or an animated param moves a fastened part only through its geometry while no articulated joint takes that param as its pose.',
+  },
   'mechanism.unverified-budget-exceeded': {
     hintTemplate:
       "The articulated collision/pose sweep was skipped because its estimated work exceeded the budget, so the mechanism is 'unverified' (NOT certified collision-free). Verify a tractable subset of the assembly, reduce the part/pose count, or pass a larger sweepBudget to force a full sweep. The cheap criteria (orphan-part, fastened-rigidity) still ran.",

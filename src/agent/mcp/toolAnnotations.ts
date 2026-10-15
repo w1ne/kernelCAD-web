@@ -134,6 +134,8 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   dfm_review: READ,
   ray_pick: READ,
   inspect_nurbs: READ,
+  fit_plane: READ,
+  route_wires: READ,
   // Writes a BOM CSV locally and returns Sheets-ready rows; never contacts a spreadsheet.
   write_bom: WRITES_FILE,
 };
