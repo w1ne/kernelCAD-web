@@ -19,7 +19,7 @@ import {
   type MechanicalPlausibilityDiagnostic,
 } from '../../modeling/mates/mechanicalPlausibility';
 import { checkFastenedMateContact, checkMechanismTruth, type MechanismCoverage } from '../../modeling/runtime/mechanismTruth';
-import { checkMotionIntent } from '../../modeling/runtime/motionIntent';
+import { captureMotionFailures } from '../../modeling/runtime/motionLimits';
 import { needsMechanismVerdict, summarizeMechanism, type MechanismVerdictSummary } from '../../modeling/runtime/mechanismVerdict';
 import {
   reviewMechanicalIntent,
@@ -599,7 +599,7 @@ function fastenedMateContactStage(
   const notRunReason = 'the pose sweep did not run in this review (includeInterference was off, or the review time budget was spent)';
   // Motion intent vs joint type is capture-only, so even the cheap path
   // reports an animation or drive on a fastened joint.
-  const motion = checkMotionIntent(arm);
+  const motion = captureMotionFailures(arm);
   try {
     const scene = model.rootShape ?? model.tailShape;
     const contact = scene && isSceneBackend(scene) ? checkFastenedMateContact(arm, scene) : [];
