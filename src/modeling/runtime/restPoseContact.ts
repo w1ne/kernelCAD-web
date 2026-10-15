@@ -42,7 +42,7 @@ import type { Assembly } from '../capture/assembly';
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
 import type { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import type { Transform } from '../../shared/runtime/se3';
-import { parseConnectorRef } from '../mates/mate';
+import { parseConnectorRef, type MateRecord } from '../mates/mate';
 import { CONTACT_THICKNESS_MM, isActionableOverlap, overlapThicknessMm } from './jointContactCap';
 import { JOINT_MESH_GAP_TOLERANCE_MM, measureBodyToBodyGap } from './jointMeshContinuity';
 
@@ -383,11 +383,13 @@ export function restPoseMateGaps(
   arm: Assembly,
   scene: SceneBackend,
   toleranceMm: number = REST_MATE_CONTACT_TOLERANCE_MM,
+  includeMate: (mate: MateRecord) => boolean = () => true,
 ): RestMateGap[] {
   const byName = new Map(scene.parts.map((p) => [p.name, p]));
   const out: RestMateGap[] = [];
   const seen = new Map<string, number | undefined>();
   for (const mate of arm.__mates()) {
+    if (!includeMate(mate)) continue;
     let a: string;
     let b: string;
     try {
