@@ -36,7 +36,7 @@ export function lowerAssemblyPart(ctx: LowerContext, r: FeatureRecord): LowerOut
     });
     return noShape();
   }
-  shape = base.clone();
+  shape = base instanceof OcctBackend ? base.clone() : (base as import('../../../../kernel/backends/meshBackend').MeshBackend).clone();
   const at = (r.metadata as { at?: Vec3Param } | undefined)?.at;
   if (at !== undefined) {
     const [tx, ty, tz] = readVec3Param(at);
@@ -67,7 +67,7 @@ export function lowerAssemblyJoint(ctx: LowerContext, r: FeatureRecord): LowerOu
   if (jointMeta?.axis !== undefined) {
     normalizeAxis(jointMeta.axis);
   }
-  const shape: ShapeBackend = partA.clone();
+  const shape: ShapeBackend = partA instanceof OcctBackend ? partA.clone() : (partA as import('../../../../kernel/backends/meshBackend').MeshBackend).clone();
   return built(shape);
 }
 
@@ -85,7 +85,7 @@ export function lowerAssemblyConnect(ctx: LowerContext, r: FeatureRecord): Lower
     });
     return noShape();
   }
-  const shape: ShapeBackend = partA.clone();
+  const shape: ShapeBackend = partA instanceof OcctBackend ? partA.clone() : (partA as import('../../../../kernel/backends/meshBackend').MeshBackend).clone();
   return built(shape);
 }
 
@@ -195,7 +195,7 @@ function resolveMateParts(
       resolvedParts.push({ id: partId, name: partName, connectors: [] });
       continue;
     }
-    const partBackend = partEntries[i][1] as OcctBackend;
+    const partBackend = partEntries[i][1];
     const at = loweredPartAt(ctx, partRec);
     const resolvedConnectors: Connector[] = [];
     for (const c of rawConnectors) {
@@ -204,6 +204,7 @@ function resolveMateParts(
         continue;
       }
       try {
+        if (!(partBackend instanceof OcctBackend)) throw new Error('Display mesh bodies do not provide topology for connector queries; use numeric connector origins.');
         const value = resolveTopologyOriginOnBackend(partBackend, c.origin.query, {
           records,
           consumerId: partId,
@@ -387,7 +388,7 @@ function buildAssemblyModelSceneParts(
     const materialName = partMaterialName(partRec);
     return {
       name: partName,
-      shape: partShape as OcctBackend,
+      shape: partShape,
       worldTransform: worldT.get(partId) ?? Transform.identity(),
       ...(color !== undefined ? { color } : {}),
       ...(material !== undefined ? { material } : {}),
@@ -577,7 +578,7 @@ export function lowerSolvedAssembly(ctx: LowerContext, r: FeatureRecord): LowerO
     const materialName = partMaterialName(partRec);
     return {
       name: partName,
-      shape: partShape as OcctBackend,
+      shape: partShape,
       worldTransform: T,
       ...(color !== undefined ? { color } : {}),
       ...(material !== undefined ? { material } : {}),
@@ -932,10 +933,15 @@ export function lowerAssemblyExport(ctx: LowerContext, r: FeatureRecord): LowerO
   // with a non-identity worldTransform. Identity transforms early-return
   // `this` from applyTransform, which is why the yaw=0 path historically
   // worked but ball-joint poses broke.
-  const transformed: OcctBackend[] = sceneBackend.parts.map((p: SceneBackendPart) =>
-    (p.shape as OcctBackend).clone().applyTransform(p.worldTransform),
+  const transformed: ShapeBackend[] = sceneBackend.parts.map((p: SceneBackendPart) =>
+    p.shape instanceof OcctBackend
+      ? p.shape.clone().applyTransform(p.worldTransform)
+      : (p.shape as import('../../../../kernel/backends/meshBackend').MeshBackend).transform(p.worldTransform),
   );
   if (op === 'compound') {
+    if (transformed.some((b) => !(b instanceof OcctBackend))) {
+      throw new Error('Scene.toCompound() cannot combine display mesh bodies into a BRep compound; keep the scene as a render mesh.');
+    }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const replicadShapes = transformed.map((b) => (b as OcctBackend).getReplicadShape() as any);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -945,7 +951,10 @@ export function lowerAssemblyExport(ctx: LowerContext, r: FeatureRecord): LowerO
   }
   // op === 'union': fold-fuse from the first part. Mirrors the
   // pre-Task-4 union loop, just consumed from a SceneBackend instead.
-  let fused: OcctBackend = transformed[0];
+  if (transformed.some((b) => !(b instanceof OcctBackend))) {
+    throw new Error('Scene.toUnion() does not support display mesh bodies; convert to BRep explicitly when solid operations are needed.');
+  }
+  let fused: OcctBackend = transformed[0] as OcctBackend;
   for (let i = 1; i < transformed.length; i++) {
     fused = fused.union(transformed[i]) as OcctBackend;
   }

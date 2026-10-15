@@ -11,6 +11,7 @@ import { brokenRowReasons, motionBadgeModel } from './motionBadgeModel';
 
 const REAL: MechanismVerdictSummary = {
     verdict: 'real',
+    maxLevel: 'ok',
     statement: 'Motion checked: 7 poses across 3 joints (each joint at its limits), no collisions. Gravity not checked.',
     checked: ['7 poses across 3 joints (each joint at its limits)', 'no collisions'],
     skipped: [],
@@ -18,6 +19,7 @@ const REAL: MechanismVerdictSummary = {
 };
 const UNVERIFIED: MechanismVerdictSummary = {
     verdict: 'unverified',
+    maxLevel: 'warning',
     statement: 'Motion not checked: collision sweep across the joint travel skipped: work 600 is over the budget 300. Do not call this mechanism working.',
     checked: [],
     skipped: ['collision sweep across the joint travel skipped: work 600 is over the budget 300'],
@@ -25,6 +27,7 @@ const UNVERIFIED: MechanismVerdictSummary = {
 };
 const BROKEN: MechanismVerdictSummary = {
     verdict: 'broken',
+    maxLevel: 'error',
     statement: "Mechanism broken: Param 'shoulderDeg' is animated and turns part 'link' ...",
     checked: [],
     skipped: [],
@@ -46,6 +49,8 @@ describe('motionBadgeModel', () => {
 
     it('says what ran, what was skipped, or which joint fails, once each', () => {
         expect(motionBadgeModel(REAL)).toMatchObject({ statement: REAL.statement, lines: [] });
+        expect(motionBadgeModel({ ...REAL, skipped: ["joint 'a' offset has no limits, range not checked", "joint 'b' rotation has no limits, range not checked"] })!.lines)
+            .toEqual(["Also not checked: joint 'b' rotation has no limits, range not checked"]);
         expect(motionBadgeModel(UNVERIFIED)!.statement).toMatch(/^Motion not checked: collision sweep/);
         expect(motionBadgeModel({ ...UNVERIFIED, skipped: ['a', 'b'] })!.lines).toEqual(['Also skipped: b']);
         expect(motionBadgeModel(BROKEN)).toMatchObject({ statement: 'Mechanism broken: 1 failure' });

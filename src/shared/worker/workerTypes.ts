@@ -81,6 +81,7 @@ export const FaceGeometrySchema = z.object({
 
 export const GeometryResultSchema = z.object({
     faces: z.array(FaceGeometrySchema),
+    mesh: z.object({ positions: Float32ArraySchema, normals: Float32ArraySchema, indices: Uint32ArraySchema }).optional(),
     volume: z.number().optional(),
     edges: Float32ArraySchema.optional(),
     color: z.string().optional(),
@@ -140,6 +141,7 @@ export interface FaceGeometry {
 
 export interface GeometryResult {
     faces: FaceGeometry[];
+    mesh?: { positions: Float32Array; normals: Float32Array; indices: Uint32Array };
     volume?: number;
     edges?: Float32Array;
     color?: string;

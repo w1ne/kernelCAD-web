@@ -468,6 +468,8 @@ async function computeInterferencesForGate(
     return [];
   }
 
+  // Mesh-involving pairs are reported as unchecked by detectInterferences;
+  // BRep-BRep pairs are still checked in mixed assemblies.
   const result = detectInterferences(lowered, 0.01, new Set<string>());
   return result.pairs;
 }

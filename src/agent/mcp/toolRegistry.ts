@@ -27,6 +27,7 @@ import { rayPickToolEntries } from './registry/rayPickTools';
 import { nurbsToolEntries } from './registry/nurbsTools';
 import { surfaceBlendToolEntries } from './registry/surfaceBlendTools';
 import { wireRoutingToolEntries } from './registry/wireRoutingTools';
+import { handoffToolEntries } from './registry/handoffTools';
 import { referenceExportToolEntries } from './registry/referenceExportTools';
 import { referenceLedgerToolEntries } from './registry/referenceLedgerTools';
 import { reviewPipelineToolEntries } from './registry/reviewPipelineTools';
@@ -106,6 +107,7 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...nurbsToolEntries,
   ...pointCloudToolEntries,
   ...wireRoutingToolEntries,
+  ...handoffToolEntries,
   ...surfaceBlendToolEntries,
 ];
 

@@ -26,6 +26,7 @@ import { CaptureSession } from '../../../src/modeling/capture/captureSession';
 import { KernelError } from '../../../src/shared/intent/kernelError';
 import { RecomputeEngine } from '../../../src/modeling/compute/recomputeEngine';
 import { OcctLowerer } from '../../../src/modeling/backends/occt/occtLowerer';
+import { meshFeaturesPerFeature } from '../../../src/modeling/capture/featureMeshing';
 
 let dir: string;
 
@@ -324,6 +325,23 @@ describe('lib.fromBREP / lib.fromSTL agent-facing surface', () => {
       (session.importedGeometry.get(shape.id) as OcctBackend).volume(),
     ).toBeCloseTo(6000, 6);
   }, 60_000);
+
+  it('captures and lowers a display mesh without BRep conversion', async () => {
+    const path = join(dir, 'display.stl');
+    writeFileSync(path, await makeBox().exportSTLAsync());
+    const session = new CaptureSession();
+    const api = createModelingApi({ session, scriptDir: dir });
+    const shape = await api.lib.meshFromSTL('display.stl');
+    expect(session.getRecords()[0].kind).toBe('importedMesh');
+    const lowerer = new OcctLowerer();
+    lowerer.importedGeometry = session.importedGeometry;
+    const result = await new RecomputeEngine(lowerer).run(session.getRecords(), { paramTable: session.paramTable });
+    const lowered = result.shapes.get(shape.id)!;
+    expect(lowered.getMesh().indices).toHaveLength(36);
+    expect(() => shape.union(shape)).toThrow(/display mesh bodies do not support/i);
+    const moved = await meshFeaturesPerFeature(session.getRecords(), session.paramTable, session, { onFeature: () => {} });
+    expect(moved.features.find(f => f.featureId === shape.id)?.mesh?.indices).toHaveLength(36);
+  });
 
   it('refuses a non-watertight STL by default, and accepts it with allowOpen', async () => {
     const path = join(dir, 'open.stl');
