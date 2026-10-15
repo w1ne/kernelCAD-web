@@ -22,6 +22,7 @@
 
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
 import type { OcctBackend } from '../../kernel/backends/occt/occtBackend';
+import { MeshBackend } from '../../kernel/backends/meshBackend';
 import type { Vec3 } from '../../shared/intent/types';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { overlapThicknessMm } from './jointContactCap';
@@ -42,6 +43,9 @@ export interface CheckInterferenceResult {
   readonly partCount: number;
   readonly comparisonCount: number;
   readonly diagnostics: CompilerDiagnostic[];
+  /** Mesh-involving pairs were not checked because exact intersection requires BRep. */
+  readonly uncheckedPairs: Array<{ readonly a: string; readonly b: string; readonly reason: 'display-mesh' }>;
+  readonly partial: boolean;
 }
 
 /** The subset of a transformed part the candidate pass reads: its name (for
@@ -138,7 +142,17 @@ export function detectInterferences(
   // pattern the STEP exporter uses (`exportSceneToSTEPAsync`) — replicad's
   // translate / rotate mutate-and-destroy the source OCCT handle, so we
   // never touch the originals.
-  const transformed = scene.parts.map((p) => {
+  const uncheckedPairs: CheckInterferenceResult['uncheckedPairs'] = [];
+  for (let i = 0; i < scene.parts.length; i++) {
+    for (let j = i + 1; j < scene.parts.length; j++) {
+      const a = scene.parts[i]!;
+      const b = scene.parts[j]!;
+      if (a.shape instanceof MeshBackend || b.shape instanceof MeshBackend) {
+        uncheckedPairs.push({ a: a.name, b: b.name, reason: 'display-mesh' });
+      }
+    }
+  }
+  const transformed = scene.parts.filter((p) => !(p.shape instanceof MeshBackend)).map((p) => {
     const clone = (p.shape as OcctBackend).clone().applyTransform(p.worldTransform);
     return {
       name: p.name,
@@ -211,6 +225,8 @@ export function detectInterferences(
     partCount: transformed.length,
     comparisonCount: candidates.length,
     diagnostics,
+    uncheckedPairs,
+    partial: uncheckedPairs.length > 0,
   };
 }
 
