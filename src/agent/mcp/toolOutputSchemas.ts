@@ -32,6 +32,7 @@ import { MANUFACTURING_OUTPUT_SCHEMAS } from './registry/manufacturingTools.outp
 import { NURBS_OUTPUT_SCHEMAS } from './registry/nurbsTools.outputSchemas';
 import { EXPLODE_VIEW_OUTPUT_SCHEMAS } from './registry/explodeViewTools.outputSchemas';
 import { SURFACE_BLEND_OUTPUT_SCHEMAS } from './registry/surfaceBlendTools.outputSchemas';
+import { PART_MODEL_OUTPUT_SCHEMAS } from './registry/partModelTools.outputSchemas';
 
 export type { JSONSchemaObject } from './toolOutputSchemaParts';
 import { MECHANISM_SUMMARY, SELECTION, SOURCE_EDIT, TUBE_JOINT, type JSONSchemaObject } from './toolOutputSchemaParts';
@@ -839,6 +840,7 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
   ...MANUFACTURING_OUTPUT_SCHEMAS,
   ...NURBS_OUTPUT_SCHEMAS,
   ...SURFACE_BLEND_OUTPUT_SCHEMAS,
+  ...PART_MODEL_OUTPUT_SCHEMAS,
   route_wires: {
     type: 'object',
     properties: {

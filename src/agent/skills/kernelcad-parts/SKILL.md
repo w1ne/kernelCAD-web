@@ -37,6 +37,17 @@ use the typed `lib.standard.*` shortcuts.
 
 ### Fetch-by-URL (parts not in the catalog)
 
+For one handoff part, use
+`fetch_part_model({ url, expected_sha256, ref?, bbox_mm? })` for a direct asset,
+or `{ catalog_id }` / `{ mpn }` to resolve through `fetch_part` and `find_part`.
+Explicit URLs require a 64-character expected SHA-256 and source/license
+provenance. The tool caches URL-fetched assets by content digest and compares
+STEP bounds, or GLB POSITION accessor bounds when present, dimension-by-
+dimension with `bbox_mm` (default relative tolerance 25%). A GLB without usable
+accessor bounds reports `not_checked`; missing or ambiguous catalog results are
+returned with a specific `errorCode`. This resolves a model asset but does not
+place it or perform a fit check.
+
 `fetch_part { url }` pulls geometry on demand from an **allowlisted** host
 (GitHub/GitLab raw + release-asset hosts and the kernelCAD parts host) — it is
 cached locally, never re-hosted (`redistribution: 'fetch-only'`):

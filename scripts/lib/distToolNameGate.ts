@@ -151,6 +151,8 @@ const NON_TOOL_ALLOWLIST = new Set<string>([
   // Field names documented in kernelcad-mcp SKILL.md (not tool names).
   'model_generation',
   'cutout_hints',
+  'bbox_mm',
+  'not_checked',
   'from_pos_mm',
   'to_pos_mm',
   'assembly_order',

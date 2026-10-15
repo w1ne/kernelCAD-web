@@ -76,6 +76,7 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   // Read — but may fetch from a remote parts catalog (KERNELCAD_PARTS_BASE_URL).
   find_part: READ_REMOTE,
   fetch_part: READ_REMOTE,
+  fetch_part_model: READ_REMOTE,
 
   // Authoring — return modified source (side-effect-free, additive).
   set_param: AUTHOR,
