@@ -32,6 +32,7 @@ import { fabricationToolEntries } from './registry/fabricationTools';
 import { manufacturingToolEntries } from './registry/manufacturingTools';
 import { nurbsToolEntries } from './registry/nurbsTools';
 import { pointCloudToolEntries } from './registry/pointCloudTools';
+import { wireRoutingToolEntries } from './registry/wireRoutingTools';
 
 const EXPECTED_TOOL_NAMES = [
   'evaluate_script',
@@ -92,6 +93,7 @@ const EXPECTED_TOOL_NAMES = [
   'ray_pick',
   'inspect_nurbs',
   'fit_plane',
+  'route_wires',
 ] as const;
 
 const PUBLIC_CONTRACT_FIXTURE = new URL(
@@ -366,9 +368,8 @@ describe('toolRegistry public contract', () => {
       'dfm_review',
       'ray_pick',
       'inspect_nurbs',
-      'fit_plane',
-    ]);
-    expect(TOOL_REGISTRY).toHaveLength(56);
+  'fit_plane',
+  'route_wires',
   });
 
   it('composes the user-file import family at the registry tail, with ChatGPT file params', () => {
@@ -401,6 +402,16 @@ describe('toolRegistry public contract', () => {
   it('dispatches plane fitting through the MCP registry', async () => {
     await expect(callMcpTool('fit_plane', { points: [[0, 0, 0], [1, 0, 0], [0, 1, 0]] }))
       .resolves.toMatchObject({ normal: [0, 0, 1], rms: 0 });
+  });
+
+  it('appends the wire routing tool family after NURBS inspection', () => {
+    expect(wireRoutingToolEntries.map(entry => entry.definition.name)).toEqual(['route_wires']);
+    expect(TOOL_REGISTRY.slice(55, 56)).toEqual(wireRoutingToolEntries);
+    expect(TOOL_REGISTRY.slice(-2).map(entry => entry.definition.name)).toEqual(['inspect_nurbs', 'route_wires']);
+  });
+
+  it('composes ray picking immediately before the wire-routing tail', () => {
+    expect(TOOL_REGISTRY.slice(-3, -2).map(entry => entry.definition.name)).toEqual(['ray_pick']);
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {
