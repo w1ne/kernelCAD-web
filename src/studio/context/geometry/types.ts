@@ -241,6 +241,7 @@ export function featureMeshesToGeometries(features: FeatureMeshSerialized[]): Ge
         const mesh = rehydrateFromBridge(feature);
         return {
             faces: mesh.faces,
+            ...(mesh.mesh ? { mesh: mesh.mesh } : {}),
             volume: mesh.volume,
             edges: mesh.edges,
             color: mesh.color,

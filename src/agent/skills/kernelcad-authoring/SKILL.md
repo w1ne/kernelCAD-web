@@ -185,7 +185,8 @@ Use `lib.fromSTEP(...)` for off-the-shelf components whenever physical fit matte
 - Before placing a vendor STEP, run `kernelcad inspect step <file.step>` (or the `inspect({ of: 'step' })` MCP tool) to read the solid tree, per-solid exact bbox + volume, and detected cylindrical holes (axis, diameter, depth, blind/through) — find mounting-hole positions and verify the part-local frame from exact geometry instead of measuring renders.
 - Build modeled brackets, mounts, clearances, cable paths, and keepouts around the imported part rather than approximating the part with generic boxes/cylinders.
 - Placeholder geometry is acceptable for early blockouts, but final review must label it as a placeholder or replace it with catalog geometry.
-- Format choice when the vendor offers several: STEP (`lib.fromSTEP`) is the default and the most portable. Native `.brep` (`lib.fromBREP`) is lossless and the fastest to load. Use it to round-trip kernelCAD geometry. Use STEP to interchange with other CAD systems. Reach for `.stl` (`lib.fromSTL`) only when nothing better exists: it is a triangle mesh, so you keep bbox/volume/booleans but lose analytic surfaces, which means no reliable fillet/chamfer on curved edges, no canonical face refs, and no hole detection. If a mostly prismatic part is STL/OBJ/3MF-only and you need editable geometry (mounting holes, params), run `mesh_to_features` (CLI `kernelcad reconstruct`): it emits a feature-tree script and measures it against the mesh — use it when the verdict is faithful, otherwise model the interface yourself from the reported regions rather than trusting facet normals.
+- Format choice when the vendor offers several: STEP (`lib.fromSTEP`) is the default and the most portable. Native `.brep` (`lib.fromBREP`) is lossless and the fastest to load. Use it to round-trip kernelCAD geometry. Use STEP to interchange with other CAD systems. Reach for `.stl` (`lib.fromSTL`) only when nothing better exists: it is a triangle mesh, so you keep bbox/volume/booleans but lose analytic surfaces, which means no reliable fillet/chamfer on curved edges, no canonical face refs, and no hole detection. If a mostly prismatic part is STL/OBJ/3MF-only and you need editable geometry (mounting holes, params), run `mesh_to_features` (CLI `kernelcad reconstruct`): it emits a feature-tree script and measures it against the mesh — use it when the verdict is faithful, otherwise model the interface yourself from the reported regions rather than trusting facet normals. Use  when the complete source triangle detail must display quickly: it is a render-only body that supports rigid transforms, assembly placement, color and finish, but no booleans, volume, face queries or solid exports. Conversion to BRep is not automatic.
+- For full-detail visualization of large STL assets, use `lib.meshFromSTL(path)`. It avoids BRep sewing and preserves every triangle; the result supports rigid transforms, assembly placement, color and finish, but not booleans, volume, topology queries or solid export.
 
 > For off-the-shelf fasteners, bearings, motors, headers, and connectors, prefer the bundled parts catalog: load the `kernelcad-parts` skill. The catalog exposes `lib.findPart`, `lib.fetchPart`, and a typed `lib.standard.*` namespace, plus four MCP tools for discovery. Bundled parts ship with pre-defined connector frames so they participate in mates without any `partRef.connector(...)` boilerplate.
 
@@ -321,6 +322,15 @@ lib.fromSTL(path: string, opts?: {
   allowOpen?: boolean;    // accept a non-watertight mesh as an open shell
   maxTriangles?: number;  // cost cap (default 200000; import is ~0.45 ms/triangle)
 }): Promise<Shape>;
+
+// Full-detail, display-only mesh import. This skips BRep sewing and does not simplify.
+// Rigid transforms, assembly placement and finish/color are supported; solid
+// operations and topology queries are not.
+lib.meshFromSTL(path: string): Promise<Shape>;
+
+// Full-detail, display-only STL import (no BRep sewing or simplification).
+// Rigid transforms, assembly placement, finish and color are supported.
+lib.meshFromSTL(path: string): Promise<Shape>;
 
 // Reference-image overlay — virtual node (no solid). The renderer draws
 // the image on the chosen plane for tracing or design review. Path resolved

@@ -22,6 +22,7 @@ import { OcctBackend, initOcct } from '../../kernel/backends/occt/occtBackend';
 import { importBrepBytes, BrepParseError } from '../../kernel/backends/occt/importBrep';
 import { importStlBytes, StlParseError } from '../../kernel/backends/occt/importStl';
 import { Shape } from '../capture/proxy';
+import { MeshBackend, decodeStlMesh } from '../../kernel/backends/meshBackend';
 import { KernelError } from '../../shared/intent/kernelError';
 import type { FromSTEPContext } from './fromSTEP';
 
@@ -123,6 +124,19 @@ export interface FromSTLOptions {
   allowOpen?: boolean;
   /** Raise the triangle-count budget. See DEFAULT_MAX_TRIANGLES. */
   maxTriangles?: number;
+}
+
+/** Fast display-only STL import. Preserves every triangle without building BRep topology. */
+export async function meshFromSTL(ctx: FromFileContext, path: string): Promise<Shape> {
+  requirePath(path, 'fromSTL', '.stl');
+  const absPath = resolveScriptRelativePath(ctx.scriptDir, path);
+  const buf = await readOrThrow(absPath, path, 'fromSTL');
+  let mesh: ReturnType<typeof decodeStlMesh>;
+  try { mesh = decodeStlMesh(buf); }
+  catch (e) { throw new KernelError('feature.kernel-failed', `lib.meshFromSTL: ${absPath} — ${e instanceof Error ? e.message : String(e)}`, undefined, 'kernel-failed.lib.meshFromSTL.parse — provide a readable ASCII or binary STL.'); }
+  const shape = ctx.session.createShape({ kind: 'importedMesh', params: {}, inputs: {}, metadata: { sourcePath: absPath, geometryKind: 'display-mesh', triangleCount: mesh.indices.length / 3 } });
+  ctx.session.importedGeometry.set(shape.id, new MeshBackend(mesh.positions, mesh.indices));
+  return shape;
 }
 
 /**

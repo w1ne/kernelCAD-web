@@ -55,6 +55,16 @@ export function accumulateMeshBounds(
   }
 }
 
+/** Fold an indexed render mesh into the aggregate AABB without creating per-face objects. */
+export function accumulateIndexedMeshBounds(bounds: MeshBoundsAccumulator, positions: Float32Array): void {
+  for (let i = 0; i < positions.length; i += 3) {
+    const x = positions[i]!, y = positions[i + 1]!, z = positions[i + 2]!;
+    bounds.minX = Math.min(bounds.minX, x); bounds.maxX = Math.max(bounds.maxX, x);
+    bounds.minY = Math.min(bounds.minY, y); bounds.maxY = Math.max(bounds.maxY, y);
+    bounds.minZ = Math.min(bounds.minZ, z); bounds.maxZ = Math.max(bounds.maxZ, z);
+  }
+}
+
 
 // Per-face material resolution. For each label in materialByLabel,
 // resolve label → Face via the same machinery the edge-feature
@@ -75,6 +85,7 @@ export function resolvePerFaceMaterialOverrides(
   // Walk shape.faces ONCE and hash every face so resolution is O(F + L)
   // not O(F * L). The replicad shape.faces iteration order matches
   // meshShape's faceId assignment (see meshing.ts:meshShape).
+  if (base.constructor.name === 'MeshBackend') return {};
   const replicadFaces = (base.getReplicadShape() as unknown as { faces: unknown[] }).faces;
   const faceIdByHash = new Map<string, number>();
   replicadFaces.forEach((f, idx) => {

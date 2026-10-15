@@ -17,12 +17,14 @@ import { OcctBackend, initOcct } from '../../kernel/backends/occt/occtBackend';
 import { RecomputeEngine } from '../compute/recomputeEngine';
 import { meshShape } from '../../kernel/backends/occt/meshing';
 import { isSceneBackend } from '../../kernel/backends/sceneBackend';
+import { MeshBackend } from '../../kernel/backends/meshBackend';
 import { generatePlanarUVs } from './planarUv';
 import { computeFeatureOwnership } from './featureOwnership';
 import { helixPolylineRouted } from '../mates/helixPolyline';
 import { partAtFor } from '../mates/partFrame';
 import {
   accumulateMeshBounds,
+  accumulateIndexedMeshBounds,
   buildMeshBounds,
   collectFeatureStyling,
   collectShadowingWarnings,
@@ -79,6 +81,8 @@ export interface FeatureMesh {
   predecessors: FeatureId[];
   op?: 'subtract' | 'union' | 'intersect';
   faces: FaceGeometry[];
+  /** Direct indexed display buffer for display-only mesh bodies. */
+  mesh?: { positions: Float32Array; normals: Float32Array; indices: Uint32Array };
   volume?: number;
   edges?: Float32Array;
   /** Color attribute carried from FeatureRecord.metadata.color (a ColorToken
@@ -819,7 +823,6 @@ export async function meshFeaturesPerFeature(
   );
 
   const linkState = newLinkState(records, seedShapes);
-
   await engine.run(records, {
     paramTable,
     ...(seedShapes !== undefined && seedShapes.size > 0 ? { seedShapes } : {}),
@@ -1053,6 +1056,31 @@ function handleMeshFeatureEvent(event: FeatureEvent, ctx: MeshFeatureEventContex
       },
       recordOrder: ctx.recordOrder,
     });
+    return;
+  }
+  if (event.shape instanceof MeshBackend) {
+    const runtimeMesh = event.shape.getMesh();
+    const positions = runtimeMesh.positions;
+    const faces: FaceGeometry[] = [];
+    const color = ctx.colorByFeatureId.get(event.featureId);
+    const material = ctx.materialByFeatureId.get(event.featureId);
+    const emitted: FeatureMesh = {
+      featureId: event.featureId,
+      featureKind: event.featureKind,
+      predecessors: meshPredecessors(event),
+      faces,
+      mesh: runtimeMesh,
+      ...meshIdentityFields({
+        featureId: event.featureId,
+        featureKind: event.featureKind,
+        sourceMetadataName: metadataNameOf(ctx.recordById.get(event.featureId)),
+      }),
+      ...(color ? { color } : {}),
+      ...(material ? { material } : {}),
+    };
+    ctx.emitFeature(emitted);
+    ctx.cachedFeatureMeshes?.set(event.featureId, emitted);
+    accumulateIndexedMeshBounds(ctx.meshBounds, positions);
     return;
   }
   const rawShape = extractRawShape(event.shape);

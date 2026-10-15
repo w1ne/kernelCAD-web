@@ -95,6 +95,8 @@ export interface PartsLib {
    * A non-watertight mesh is refused unless `opts.allowOpen` is set.
    */
   fromSTL(path: string, opts?: FromSTLOptions): Promise<Shape>;
+  /** Import full-detail STL triangles as a display-only body, without BRep sewing. */
+  meshFromSTL(path: string): Promise<Shape>;
   /**
    * Import a 2D DXF drawing as closed profiles.
    *
