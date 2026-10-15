@@ -43,9 +43,9 @@ export function motionBadgeModel(summary: MechanismVerdictSummary | null | undef
     return {
         tone: 'ok',
         label: 'Motion checked',
-        // The statement already lists every check that ran.
+        // The statement lists every check that ran and the first range not checked.
         statement: summary.statement,
-        lines: [],
+        lines: summary.skipped.slice(1).map((s) => `Also not checked: ${s}`),
     };
 }
 
