@@ -1055,6 +1055,7 @@ function handleMeshFeatureEvent(event: FeatureEvent, ctx: MeshFeatureEventContex
         return undefined;
       },
       recordOrder: ctx.recordOrder,
+      accumulateIndexedMeshBounds,
     });
     return;
   }
