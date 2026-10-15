@@ -364,6 +364,7 @@
           "additionalProperties": false,
           "required": [
             "verdict",
+            "maxLevel",
             "statement",
             "checked",
             "skipped",
@@ -378,6 +379,15 @@
                 "broken",
                 "unverified"
               ]
+            },
+            "maxLevel": {
+              "type": "string",
+              "enum": [
+                "ok",
+                "warning",
+                "error"
+              ],
+              "description": "One status level: 'error' when broken, 'warning' when not checked, 'ok' when checked."
             },
             "statement": {
               "type": "string",
@@ -395,7 +405,7 @@
               "items": {
                 "type": "string"
               },
-              "description": "What did not run and why (verdict 'unverified')."
+              "description": "What did not run and why. On 'real', the moving joint DOFs with no limits (range not checked)."
             },
             "failures": {
               "type": "array",
@@ -6263,6 +6273,7 @@
           "additionalProperties": false,
           "required": [
             "verdict",
+            "maxLevel",
             "statement",
             "checked",
             "skipped",
@@ -6277,6 +6288,15 @@
                 "broken",
                 "unverified"
               ]
+            },
+            "maxLevel": {
+              "type": "string",
+              "enum": [
+                "ok",
+                "warning",
+                "error"
+              ],
+              "description": "One status level: 'error' when broken, 'warning' when not checked, 'ok' when checked."
             },
             "statement": {
               "type": "string",
@@ -6294,7 +6314,7 @@
               "items": {
                 "type": "string"
               },
-              "description": "What did not run and why (verdict 'unverified')."
+              "description": "What did not run and why. On 'real', the moving joint DOFs with no limits (range not checked)."
             },
             "failures": {
               "type": "array",
@@ -8534,7 +8554,7 @@
   },
   {
     "name": "get_selection",
-    "description": "Use this when you need to read the human/agent selection in a local Studio session. Returns one clicked face or edge (or null), with current-generation mesh-local shapeIndex/kind/id and creating featureId. During a rebuild selection is null with “selection pending rebuild” until Studio uniquely verifies the face; ambiguous or deleted faces are cleared. Inspect the current shape before authoring a fillet. Requires a running local Studio opened on the same script; hosted sessions are not supported.",
+    "description": "Use this when you need to read the human/agent selection in a local Studio session. Returns one clicked face or edge (or null), with current-generation mesh-local shapeIndex/kind/id and creating featureId. During a rebuild selection is null with \u201cselection pending rebuild\u201d until Studio uniquely verifies the face; ambiguous or deleted faces are cleared. Inspect the current shape before authoring a fillet. Requires a running local Studio opened on the same script; hosted sessions are not supported.",
     "inputSchema": {
       "type": "object",
       "properties": {
