@@ -41,6 +41,7 @@ import type { FeatureKind } from '../../../shared/intent/types';
 import { HelicalSweepArgsError, polygonWireXY, sweepProfileAlongHelix } from './helicalSweep';
 import { isoInternalGrooveProfile, isoMinorRadius, profileHalfExtent } from './isoThread';
 import { faceFrameOrigin } from './faceFrame';
+import { firstExitDepth } from './holeExitDepth';
 import {
   findEntryMisses,
   findUncutBores,
@@ -127,6 +128,27 @@ function resolveEntry(
   const axisIntoBody = neg(normalOutward);
   const { uBasis, vBasis } = buildUvBasis(normalOutward);
   return { face, centroid, normalOutward, axisIntoBody, uBasis, vBasis };
+}
+
+/**
+ * `through` depth for the bore at (u, v): cast along the drill axis from the
+ * hole's own entry point and take the first exit. The face-centroid
+ * back-face search below is only the fallback (e.g. the position sits over an
+ * existing opening): comparing back faces to the ENTRY-FACE centroid broke for
+ * off-centre holes once a fillet split or shrank the back face.
+ */
+function throughDepthAt(
+  target: OcctBackend,
+  entry: ResolvedEntry,
+  u: number,
+  v: number,
+  boreDiameter: number,
+  featureId: string,
+): number | { error: CompilerDiagnostic } {
+  const at = add(entry.centroid, add(scale(entry.uBasis, u), scale(entry.vBasis, v)));
+  const exit = firstExitDepth(target, at, entry.axisIntoBody);
+  if (exit !== undefined) return exit;
+  return deriveThroughDepth(target, entry, boreDiameter, featureId);
 }
 
 /** Compute the world-space distance from `entryPoint` along `axisIntoBody`
@@ -545,7 +567,7 @@ export function lowerHole(
 
   let throughDepth = 0;
   if (through) {
-    const td = deriveThroughDepth(target, entry, diameter, feature.id);
+    const td = throughDepthAt(target, entry, u, v, diameter, feature.id);
     if (typeof td !== 'number') {
       diagnostics.push(td.error);
       return { backend: target, diagnostics };
@@ -697,18 +719,25 @@ function resolveHoleGeometryParams(feature: FeatureRecord): HoleGeometryParams {
   return { thread, nominalDiameter, diameter, through, numericDepth, counterbore, countersink };
 }
 
-/** Through-bore depth, derived once for the whole batch. A non-through hole
- *  needs none (depth 0). Returns the failing diagnostic instead of pushing it. */
-function resolveBatchThroughDepth(
+/** Through-bore depth per position (each cast from its own entry point). A
+ *  non-through batch needs none (depth 0). Returns the failing diagnostic
+ *  instead of pushing it. */
+function resolveBatchThroughDepths(
   target: OcctBackend,
   entry: ResolvedEntry,
+  positions: readonly HolePosition[],
   through: boolean,
   diameter: number,
   featureId: string,
-): { throughDepth: number } | { error: CompilerDiagnostic } {
-  if (!through) return { throughDepth: 0 };
-  const td = deriveThroughDepth(target, entry, diameter, featureId);
-  return typeof td === 'number' ? { throughDepth: td } : { error: td.error };
+): { throughDepths: number[] } | { error: CompilerDiagnostic } {
+  if (!through) return { throughDepths: positions.map(() => 0) };
+  const throughDepths: number[] = [];
+  for (const p of positions) {
+    const td = throughDepthAt(target, entry, p.u, p.v, diameter, featureId);
+    if (typeof td !== 'number') return { error: td.error };
+    throughDepths.push(td);
+  }
+  return { throughDepths };
 }
 
 /** Build N tools, fuse into one compound for a single boolean cut. */
@@ -716,15 +745,15 @@ function buildBatchTools(
   entry: ResolvedEntry,
   positions: readonly HolePosition[],
   params: HoleGeometryParams,
-  throughDepth: number,
+  throughDepths: readonly number[],
   featureId: string,
 ): { tools: replicad.Shape3D[]; bores: BoreFrame[] } | { error: CompilerDiagnostic } {
   const tools: replicad.Shape3D[] = [];
   const bores: BoreFrame[] = [];
   try {
-    for (const p of positions) {
+    for (const [i, p] of positions.entries()) {
       const built = buildOneTool(
-        entry, p.u, p.v, params.diameter, params.numericDepth, params.through, throughDepth,
+        entry, p.u, p.v, params.diameter, params.numericDepth, params.through, throughDepths[i],
         params.counterbore, params.countersink,
         params.thread ? { params: params.thread, nominalDiameter: params.nominalDiameter } : undefined,
       );
@@ -772,13 +801,13 @@ export function lowerHoles(
 
   const params = resolveHoleGeometryParams(feature);
 
-  const depthRes = resolveBatchThroughDepth(target, entry, params.through, params.diameter, feature.id);
+  const depthRes = resolveBatchThroughDepths(target, entry, positions, params.through, params.diameter, feature.id);
   if ('error' in depthRes) {
     diagnostics.push(depthRes.error);
     return { backend: target, diagnostics };
   }
 
-  const built = buildBatchTools(entry, positions, params, depthRes.throughDepth, feature.id);
+  const built = buildBatchTools(entry, positions, params, depthRes.throughDepths, feature.id);
   if ('error' in built) {
     diagnostics.push(built.error);
     return { backend: target, diagnostics };

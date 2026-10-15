@@ -152,22 +152,24 @@ describe('holeLowerer — error paths', () => {
     ]).toContain(errs[0].code);
   });
 
-  it('emits feature.hole.no-target-face when through-drilling an entry face with no body along the bore axis', async () => {
+  it("drills 'through' from an off-centre face of an L-extrusion (was a false no-target-face)", async () => {
     // L-shape extrusion (CCW): the bottom arm spans x∈[0,40], y∈[0,10]; the
     // vertical leg spans x∈[0,10], y∈[0,40]. Drilling from a +X-normal face
-    // (selected via byNormal) sets the bore axis at -X. The only -X face is
-    // the left side at x=0 with center (0, 20, 2.5). Whichever +X face is
-    // matched first (centroid at y=5 or y=25), the perpendicular offset to
-    // (0, 20, 2.5) is well beyond bore-radius + 1 mm, so the
-    // deriveThroughDepth heuristic finds no eligible back face and must
-    // emit feature.hole.no-target-face.
+    // sets the bore axis at -X. The old heuristic compared the only -X face
+    // (x=0, centre y=20) to the ENTRY-FACE centroid and rejected it; the
+    // through depth is now cast along the axis from the hole itself, which
+    // runs through material to x = 0 either way.
     const code = `
       const base = extrudePolygon([[0,0],[40,0],[40,10],[10,10],[10,40],[0,40]], 5);
       return base.hole({ byNormal: 'X' }, { u: 0, v: 0, diameter: 4, depth: 'through' });
     `;
-    const { diagnostics } = await lowerScript(code);
+    const { diagnostics, shape } = await lowerScript(code);
     const errs = (diagnostics as { severity: string; code: string }[]).filter(d => d.severity === 'error');
-    expect(errs.length).toBeGreaterThan(0);
-    expect(errs[0].code).toBe('feature.hole.no-target-face');
+    expect(errs).toEqual([]);
+    const full = 40 * 10 * 5 + 10 * 30 * 5;
+    const removed = full - (shape as { volume(): number }).volume();
+    const bore = (len: number) => Math.PI * 4 * len;
+    // Entry at x=40 (bore 40 long) or at x=10 (bore 10 long), whichever face matched.
+    expect([bore(40), bore(10)].some((v) => Math.abs(v - removed) < 0.5)).toBe(true);
   });
 });
