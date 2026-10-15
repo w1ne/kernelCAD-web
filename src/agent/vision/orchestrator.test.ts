@@ -7,13 +7,201 @@
 
 import { describe, expect, it, vi } from 'vitest';
 import { join } from 'node:path';
+import { readFile } from 'node:fs/promises';
 import { traceFromImage } from './index';
-import type { TraceFromImageInput, Vec2Normalized } from './types';
+import { findCatalogMatch, groupDraftBom, partsInOutlineFrame, type RawDetectedPart } from './visionLlmBackend';
+import type { DetectedTracePart, TraceFeatureResult, TraceFromImageInput, Vec2Normalized } from './types';
+import type { PartRecord } from '../../shared/parts/types';
 
 const FIXTURE_DIR = join(__dirname, '../../..', 'tests/fixtures/vision');
 const UNIFORM_FILE_URL = `file://${join(FIXTURE_DIR, 'uniform-bg-square.png')}`;
 
 describe('traceFromImage orchestrator', () => {
+  it('matches an MPN label against every bundled candidate, including candidate attributes', () => {
+    const record = (id: string, name: string, attributes: PartRecord['attributes'] = {}): PartRecord => ({
+      id, name, category: 'motor', family: 'stepper-motor', tags: [], attributes,
+      sha256: '0'.repeat(64), source: 'local-catalog', license: 'MIT', connectors: [],
+    });
+    const match = findCatalogMatch('17HS4401', [
+      record('unrelated-board', 'Controller board'),
+      record('nema17-stepper', 'NEMA 17 stepper motor', { mpn: '17HS4401' }),
+    ]);
+    expect(match).toMatchObject({ id: 'nema17-stepper', name: 'NEMA 17 stepper motor', confidence: 1 });
+  });
+
+  it.each(['voltage', 'mpn'])('does not treat an attribute key (%s) as a catalog identity', (label) => {
+    const record: PartRecord = {
+      id: 'unrelated-sensor', name: 'Ambient sensor', category: 'sensor', family: 'environmental', tags: [],
+      attributes: { voltage: 3.3, mpn: 'SEN-204' }, sha256: '0'.repeat(64), source: 'local-catalog', license: 'MIT', connectors: [],
+    };
+    expect(findCatalogMatch(label, [record])).toBeUndefined();
+  });
+
+  it('ranks an exact MPN alias above a fuzzy name-token match', () => {
+    const record = (id: string, name: string, attributes: PartRecord['attributes'] = {}): PartRecord => ({
+      id, name, category: 'motor', family: 'stepper-motor', tags: [], attributes,
+      sha256: '0'.repeat(64), source: 'local-catalog', license: 'MIT', connectors: [],
+    });
+    const match = findCatalogMatch('17HS4401 Stepper', [
+      record('stepper-generic', 'Stepper 17HS4401'),
+      record('nema17-motor', 'NEMA 17 stepper motor', { mpn: '17HS4401 Stepper' }),
+    ]);
+    expect(match).toMatchObject({ id: 'nema17-motor', confidence: 1 });
+  });
+
+  it('does not assign a catalog identity from a label that is only a substring of an alias', () => {
+    const record: PartRecord = {
+      id: 'esp32-devkitc-32e', name: 'ESP32 DevKitC-32E', category: 'controller', family: 'microcontroller',
+      tags: ['ESP32 DevKit'], attributes: {}, sha256: '0'.repeat(64), source: 'local-catalog', license: 'MIT', connectors: [],
+    };
+    expect(findCatalogMatch('ESP32 DevKitC', [record])).toBeUndefined();
+  });
+
+  it('preserves image-frame boxes that fall partly outside the traced outline', () => {
+    const outside: RawDetectedPart = { name: 'outside part', quantity: 1, bbox: [0.9, 0.3, 1, 0.5], confidence: 0.8 };
+    const silhouette: TraceFeatureResult = {
+      label: 'silhouette', kind: 'silhouette', waypoints: [[0.2, 0.2], [0.8, 0.2], [0.8, 0.8], [0.2, 0.8]], confidence: 1, backend: 'opencv',
+    };
+    const result = partsInOutlineFrame([outside], [silhouette]);
+    expect(result.detectedParts[0]).toMatchObject({
+      bbox: outside.bbox,
+      position: [0.95, 0.4],
+      coordinateFrame: 'image',
+      outsideOutline: true,
+    });
+    expect(result.partDetectionFrame).toBe('image');
+  });
+
+  it('keeps boxes in a concave silhouette cutout in image coordinates', () => {
+    const silhouette: TraceFeatureResult = {
+      label: 'silhouette', kind: 'silhouette',
+      waypoints: [[0.1, 0.1], [0.9, 0.1], [0.9, 0.9], [0.6, 0.9], [0.6, 0.4], [0.4, 0.4], [0.4, 0.9], [0.1, 0.9]],
+      confidence: 1, backend: 'opencv',
+    };
+    const cutout: RawDetectedPart = { name: 'part', quantity: 1, bbox: [0.46, 0.6, 0.54, 0.7], confidence: 0.8 };
+    expect(partsInOutlineFrame([cutout], [silhouette]).detectedParts[0]).toMatchObject({
+      bbox: cutout.bbox, coordinateFrame: 'image', outsideOutline: true,
+    });
+  });
+
+  it('does not match a generic attribute value as a catalog identity', () => {
+    const record: PartRecord = {
+      id: 'unrelated-sensor', name: 'Ambient sensor', category: 'sensor', family: 'environmental', tags: [],
+      attributes: { voltage: 3.3 }, sha256: '0'.repeat(64), source: 'local-catalog', license: 'MIT', connectors: [],
+    };
+    expect(findCatalogMatch('3.3', [record])).toBeUndefined();
+  });
+
+  it('groups catalog-matched name variants into one BOM row and leaves unmatched labels distinct', () => {
+    const match = { id: 'esp32-devkitc', name: 'ESP32 DevKitC', confidence: 1 };
+    const detection = (name: string, quantity: number, matchedCatalogId?: string): DetectedTracePart => ({
+      name, quantity, position: [0.5, 0.5], bbox: [0.4, 0.4, 0.6, 0.6], confidence: 0.8,
+      coordinateFrame: 'outline',
+      ...(matchedCatalogId ? { catalogMatch: match, matchedCatalogId } : {}),
+    });
+    const bom = groupDraftBom([
+      detection('ESP32', 1, 'esp32-devkitc'),
+      detection('ESP32-DevKitC-32E', 1, 'esp32-devkitc'),
+      detection('mystery sensor', 1),
+      detection('unrecognized module', 2),
+    ]);
+    expect(bom).toHaveLength(3);
+    expect(bom[0]).toMatchObject({ partName: 'ESP32 DevKitC', qty: 2, matchedCatalogId: 'esp32-devkitc' });
+    expect(bom.slice(1).map((row) => row.partName)).toEqual(['mystery sensor', 'unrecognized module']);
+  });
+
+  it('optionally detects labeled parts, maps boxes to the traced outline, and drafts a BOM', async () => {
+    const response = JSON.parse(await readFile(join(FIXTURE_DIR, 'argon-grow-parts-response.json'), 'utf8')) as { parts: unknown[] };
+    const handoff = JSON.parse(await readFile(join(__dirname, '../../../tests/fixtures/argon/handoff-drawbot.json'), 'utf8')) as { schema: string; parts: Array<{ ref: string; catalog_id: string }> };
+    expect(handoff.schema).toBe('labwired-kernelcad-handoff/0.1');
+    expect(handoff.parts.length).toBeGreaterThan(0);
+    const generate = vi.fn(async () => ({ text: JSON.stringify(response), tokensIn: 10, tokensOut: 10 }));
+    const outline: Vec2Normalized[] = [[0.2, 0.2], [0.8, 0.2], [0.8, 0.8], [0.2, 0.8]];
+    const out = await traceFromImage({ imageUrl: UNIFORM_FILE_URL, backend: 'opencv', detectParts: true }, {
+      extractSilhouettePolyline: vi.fn(async () => outline),
+      visionClient: { generate },
+    });
+    expect(out.ok).toBe(true);
+    expect(out.features[0].waypoints).toEqual(outline);
+    expect(out.detectedParts).toHaveLength(6);
+    expect(out.detectedParts?.[0]).toMatchObject({ name: 'ESP32-DevKitC-32E', quantity: 1 });
+    expect(out.detectedParts?.[0].bbox[0]).toBeCloseTo(1 / 6);
+    expect(out.detectedParts?.[0].bbox[2]).toBeCloseTo(0.4666666667);
+    expect(out.detectedParts?.[0].position[0]).toBeCloseTo(0.3166666667);
+    expect(out.detectedParts?.[0].position[1]).toBeCloseTo(0.3);
+    expect(out.draftBom?.some((item) => item.partName === '17HS4401' && item.qty === 2)).toBe(true);
+    expect(out.unmatchedLabels).toContainEqual({ label: 'mystery sensor', quantity: 1, confidence: 0.62, reason: 'no-bundled-catalog-match' });
+    expect(generate).toHaveBeenCalledTimes(1);
+    expect(generate.mock.calls[0][0].prompt).toMatch(/detect labeled component/i);
+  });
+
+  it('keeps the outline when the optional part detector response is invalid', async () => {
+    const out = await traceFromImage({ imageUrl: UNIFORM_FILE_URL, backend: 'opencv', detectParts: true }, {
+      extractSilhouettePolyline: vi.fn(async () => [[0.2, 0.2], [0.8, 0.8]]),
+      visionClient: { generate: vi.fn(async () => ({ text: '{bad json', tokensIn: 0, tokensOut: 0 })) },
+    });
+    expect(out.ok).toBe(true);
+    expect(out.features).toHaveLength(1);
+    expect(out.detectedParts).toEqual([]);
+    expect(out.draftBom).toEqual([]);
+    expect(out.unmatchedLabels).toEqual([]);
+    expect(out.diagnostics.some((d) => d.code === 'tool.trace-from-image.part-detection-failed')).toBe(true);
+  });
+
+  it('bounds the optional part detection request with the backend timeout', async () => {
+    const out = await traceFromImage({ imageUrl: UNIFORM_FILE_URL, backend: 'opencv', detectParts: true }, {
+      backendTimeoutMs: 10,
+      extractSilhouettePolyline: vi.fn(async () => [[0.2, 0.2], [0.8, 0.8]]),
+      visionClient: { generate: vi.fn(() => new Promise(() => {})) },
+    });
+    expect(out.ok).toBe(true);
+    expect(out.features).toHaveLength(1);
+    expect(out.detectedParts).toEqual([]);
+    expect(out.diagnostics.some((d) => d.code === 'tool.trace-from-image.part-detection-failed' && d.message.includes('10ms'))).toBe(true);
+  });
+
+  it('shares the backend timeout budget between tracing and optional detection', async () => {
+    const originalNow = Date.now;
+    let now = originalNow();
+    vi.spyOn(Date, 'now').mockImplementation(() => now);
+    const generate = vi.fn(async (req: { prompt: string }) => {
+      if (req.prompt.includes('detect labeled component')) return new Promise<{ text: string; tokensIn: number; tokensOut: number }>(() => {});
+      now += 35;
+      return { text: '{"features":[{"label":"outline","kind":"silhouette","waypoints":[[0,0],[1,0],[1,1]],"confidence":1]}', tokensIn: 0, tokensOut: 0 };
+    });
+    try {
+      const output = await traceFromImage({ imageUrl: UNIFORM_FILE_URL, backend: 'vision-llm', detectParts: true, features: [{ label: 'outline', kind: 'silhouette' }] }, {
+        backendTimeoutMs: 50, visionClient: { generate },
+      });
+      expect(output.ok).toBe(false);
+      expect(output.features).toEqual([]);
+      expect(output.diagnostics.some((d) => d.code === 'tool.trace-from-image.backend-failed')).toBe(true);
+      expect(generate).toHaveBeenCalledTimes(2);
+    } finally { vi.restoreAllMocks(); }
+  });
+
+  it('reports image coordinates when part detection has no traced silhouette', async () => {
+    const response = JSON.parse(await readFile(join(FIXTURE_DIR, 'argon-grow-parts-response.json'), 'utf8')) as { parts: unknown[] };
+    let call = 0;
+    const out = await traceFromImage({
+      imageUrl: UNIFORM_FILE_URL,
+      backend: 'vision-llm',
+      detectParts: true,
+      features: [{ label: 'marker', kind: 'point' }],
+    }, {
+      visionClient: { generate: vi.fn(async () => {
+        call += 1;
+        return call === 1
+          ? { text: JSON.stringify({ features: [{ label: 'marker', kind: 'point', waypoints: [[0.5, 0.5]], confidence: 0.9 }] }), tokensIn: 0, tokensOut: 0 }
+          : { text: JSON.stringify(response), tokensIn: 0, tokensOut: 0 };
+      }) },
+    });
+    expect(out.ok).toBe(true);
+    expect(out.features.some((feature) => feature.kind === 'silhouette')).toBe(false);
+    expect(out.partDetectionFrame).toBe('image');
+    expect(out.detectedParts?.[0].bbox).toEqual([0.3, 0.3, 0.48, 0.46]);
+  });
+
   it.each(['auto', 'hybrid'] as const)('honours a component silhouette region with backend %s', async backend => {
     const extract = vi.fn(async (): Promise<Vec2Normalized[]> => [[0, 0], [1, 1]]);
     const component: Vec2Normalized[] = [[0.1, 0.2], [0.3, 0.2], [0.2, 0.5]];
