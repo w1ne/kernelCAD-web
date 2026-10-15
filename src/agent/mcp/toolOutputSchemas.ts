@@ -814,4 +814,15 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
   ...FABRICATION_OUTPUT_SCHEMAS,
   ...MANUFACTURING_OUTPUT_SCHEMAS,
   ...NURBS_OUTPUT_SCHEMAS,
+  write_bom: {
+    type: 'object',
+    properties: {
+      ok: { type: 'boolean' }, destination: { type: 'string', enum: ['csv'] },
+      rows: { type: 'array', items: { type: 'object', additionalProperties: true } },
+      headers: { type: 'array', items: { type: 'string' } },
+      sheets_rows: { type: 'array', items: { type: 'array', items: { type: ['string', 'number'] } } },
+      csv: { type: 'string' }, path: { type: 'string' }, error: { type: 'string' },
+    },
+    required: ['ok', 'destination', 'rows', 'headers', 'sheets_rows', 'csv'], additionalProperties: true,
+  },
 };

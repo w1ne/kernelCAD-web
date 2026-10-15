@@ -1,0 +1,1450 @@
+{
+ "schema": "labwired-kernelcad-handoff/0.1",
+ "units": "mm",
+ "frame": {
+  "handedness": "right",
+  "origin": "bottom-left corner of the board outline, top surface",
+  "x": "right",
+  "y": "up (away from the viewer)",
+  "z": "out of the top surface"
+ },
+ "board_outline": {
+  "size_mm": [
+   70.5,
+   62
+  ],
+  "status": "layout"
+ },
+ "parts": [
+  {
+   "ref": "A1",
+   "catalog_id": "esp32",
+   "mpn": {
+    "value": "ESP32-DevKitC-32E",
+    "status": "estimated",
+    "source": "Espressif ESP32-DevKitC V4 user guide board dimensions; height judged from the WROOM-32E can plus headers. The board has no mounting holes."
+   },
+   "footprint": "labwired:ESP32_DevKitC_V4",
+   "position_mm": {
+    "value": [
+     26.63,
+     53.92
+    ],
+    "status": "layout"
+   },
+   "rotation_deg": {
+    "value": 0,
+    "status": "layout"
+   },
+   "side": "top",
+   "pins": [
+    {
+     "name": "3V3",
+     "pad": "1",
+     "pos_mm": [
+      26.63,
+      53.92
+     ]
+    },
+    {
+     "name": "GPIO36",
+     "pad": "3",
+     "pos_mm": [
+      26.63,
+      48.84
+     ]
+    },
+    {
+     "name": "GPIO39",
+     "pad": "4",
+     "pos_mm": [
+      26.63,
+      46.3
+     ]
+    },
+    {
+     "name": "GPIO34",
+     "pad": "5",
+     "pos_mm": [
+      26.63,
+      43.76
+     ]
+    },
+    {
+     "name": "GPIO35",
+     "pad": "6",
+     "pos_mm": [
+      26.63,
+      41.22
+     ]
+    },
+    {
+     "name": "GPIO32",
+     "pad": "7",
+     "pos_mm": [
+      26.63,
+      38.68
+     ]
+    },
+    {
+     "name": "GPIO33",
+     "pad": "8",
+     "pos_mm": [
+      26.63,
+      36.14
+     ]
+    },
+    {
+     "name": "GPIO25",
+     "pad": "9",
+     "pos_mm": [
+      26.63,
+      33.6
+     ]
+    },
+    {
+     "name": "GPIO26",
+     "pad": "10",
+     "pos_mm": [
+      26.63,
+      31.06
+     ]
+    },
+    {
+     "name": "GPIO27",
+     "pad": "11",
+     "pos_mm": [
+      26.63,
+      28.52
+     ]
+    },
+    {
+     "name": "GPIO14",
+     "pad": "12",
+     "pos_mm": [
+      26.63,
+      25.98
+     ]
+    },
+    {
+     "name": "GPIO12",
+     "pad": "13",
+     "pos_mm": [
+      26.63,
+      23.44
+     ]
+    },
+    {
+     "name": "GND",
+     "pad": "14",
+     "pos_mm": [
+      26.63,
+      20.9
+     ]
+    },
+    {
+     "name": "GPIO13",
+     "pad": "15",
+     "pos_mm": [
+      26.63,
+      18.36
+     ]
+    },
+    {
+     "name": "5V",
+     "pad": "19",
+     "pos_mm": [
+      26.63,
+      8.2
+     ]
+    },
+    {
+     "name": "GPIO15",
+     "pad": "23",
+     "pos_mm": [
+      52.07,
+      15.82
+     ]
+    },
+    {
+     "name": "GPIO2",
+     "pad": "24",
+     "pos_mm": [
+      52.07,
+      18.36
+     ]
+    },
+    {
+     "name": "GPIO0",
+     "pad": "25",
+     "pos_mm": [
+      52.07,
+      20.9
+     ]
+    },
+    {
+     "name": "GPIO4",
+     "pad": "26",
+     "pos_mm": [
+      52.07,
+      23.44
+     ]
+    },
+    {
+     "name": "GPIO16",
+     "pad": "27",
+     "pos_mm": [
+      52.07,
+      25.98
+     ]
+    },
+    {
+     "name": "GPIO17",
+     "pad": "28",
+     "pos_mm": [
+      52.07,
+      28.52
+     ]
+    },
+    {
+     "name": "GPIO5",
+     "pad": "29",
+     "pos_mm": [
+      52.07,
+      31.06
+     ]
+    },
+    {
+     "name": "GPIO18",
+     "pad": "30",
+     "pos_mm": [
+      52.07,
+      33.6
+     ]
+    },
+    {
+     "name": "GPIO19",
+     "pad": "31",
+     "pos_mm": [
+      52.07,
+      36.14
+     ]
+    },
+    {
+     "name": "GPIO21",
+     "pad": "33",
+     "pos_mm": [
+      52.07,
+      41.22
+     ]
+    },
+    {
+     "name": "GPIO3",
+     "pad": "34",
+     "pos_mm": [
+      52.07,
+      43.76
+     ]
+    },
+    {
+     "name": "GPIO1",
+     "pad": "35",
+     "pos_mm": [
+      52.07,
+      46.3
+     ]
+    },
+    {
+     "name": "GPIO22",
+     "pad": "36",
+     "pos_mm": [
+      52.07,
+      48.84
+     ]
+    },
+    {
+     "name": "GPIO23",
+     "pad": "37",
+     "pos_mm": [
+      52.07,
+      51.38
+     ]
+    }
+   ],
+   "physical": {
+    "bbox_mm": [
+     54.4,
+     27.9,
+     10
+    ],
+    "mounting_holes": [],
+    "connector_faces": [
+     {
+      "feature": "usb_micro_b",
+      "face": "-X",
+      "cutout_mm": [
+       8,
+       4
+      ]
+     }
+    ],
+    "step_url": null,
+    "status": "estimated",
+    "source": "Espressif ESP32-DevKitC V4 user guide board dimensions; height judged from the WROOM-32E can plus headers. The board has no mounting holes."
+   }
+  },
+  {
+   "ref": "A2",
+   "catalog_id": "a4988",
+   "mpn": {
+    "value": "Pololu 1182 (A4988 carrier)",
+    "status": "estimated",
+    "source": "Pololu 1182 product page (0.6 x 0.8 in); height judged from the carrier with soldered headers. The motor itself is not a catalog part."
+   },
+   "footprint": "Module:Pololu_Breakout-16_15.2x20.3mm",
+   "position_mm": {
+    "value": [
+     3.97,
+     35.27
+    ],
+    "status": "layout"
+   },
+   "rotation_deg": {
+    "value": 90,
+    "status": "layout"
+   },
+   "side": "top",
+   "pins": [
+    {
+     "name": "EN",
+     "pad": "1",
+     "pos_mm": [
+      3.97,
+      35.27
+     ]
+    },
+    {
+     "name": "MS1",
+     "pad": "2",
+     "pos_mm": [
+      6.5,
+      35.27
+     ]
+    },
+    {
+     "name": "MS2",
+     "pad": "3",
+     "pos_mm": [
+      9.05,
+      35.27
+     ]
+    },
+    {
+     "name": "MS3",
+     "pad": "4",
+     "pos_mm": [
+      11.59,
+      35.27
+     ]
+    },
+    {
+     "name": "RESET",
+     "pad": "5",
+     "pos_mm": [
+      14.13,
+      35.27
+     ]
+    },
+    {
+     "name": "SLEEP",
+     "pad": "6",
+     "pos_mm": [
+      16.67,
+      35.27
+     ]
+    },
+    {
+     "name": "STEP",
+     "pad": "7",
+     "pos_mm": [
+      19.2,
+      35.27
+     ]
+    },
+    {
+     "name": "DIR",
+     "pad": "8",
+     "pos_mm": [
+      21.75,
+      35.27
+     ]
+    },
+    {
+     "name": "VMOT",
+     "pad": "9",
+     "pos_mm": [
+      21.75,
+      47.97
+     ]
+    },
+    {
+     "name": "GND",
+     "pad": "10",
+     "pos_mm": [
+      19.2,
+      47.97
+     ]
+    },
+    {
+     "name": "2B",
+     "pad": "11",
+     "pos_mm": [
+      16.67,
+      47.97
+     ]
+    },
+    {
+     "name": "2A",
+     "pad": "12",
+     "pos_mm": [
+      14.13,
+      47.97
+     ]
+    },
+    {
+     "name": "1A",
+     "pad": "13",
+     "pos_mm": [
+      11.59,
+      47.97
+     ]
+    },
+    {
+     "name": "1B",
+     "pad": "14",
+     "pos_mm": [
+      9.05,
+      47.97
+     ]
+    },
+    {
+     "name": "VDD",
+     "pad": "15",
+     "pos_mm": [
+      6.5,
+      47.97
+     ]
+    }
+   ],
+   "physical": {
+    "bbox_mm": [
+     15.2,
+     20.3,
+     13
+    ],
+    "mounting_holes": [],
+    "connector_faces": [],
+    "step_url": null,
+    "status": "estimated",
+    "source": "Pololu 1182 product page (0.6 x 0.8 in); height judged from the carrier with soldered headers. The motor itself is not a catalog part."
+   }
+  },
+  {
+   "ref": "A3",
+   "catalog_id": "a4988",
+   "mpn": {
+    "value": "Pololu 1182 (A4988 carrier)",
+    "status": "estimated",
+    "source": "Pololu 1182 product page (0.6 x 0.8 in); height judged from the carrier with soldered headers. The motor itself is not a catalog part."
+   },
+   "footprint": "Module:Pololu_Breakout-16_15.2x20.3mm",
+   "position_mm": {
+    "value": [
+     21.98,
+     12.47
+    ],
+    "status": "layout"
+   },
+   "rotation_deg": {
+    "value": 180,
+    "status": "layout"
+   },
+   "side": "top",
+   "pins": [
+    {
+     "name": "EN",
+     "pad": "1",
+     "pos_mm": [
+      21.98,
+      12.47
+     ]
+    },
+    {
+     "name": "MS1",
+     "pad": "2",
+     "pos_mm": [
+      21.98,
+      15.01
+     ]
+    },
+    {
+     "name": "MS2",
+     "pad": "3",
+     "pos_mm": [
+      21.98,
+      17.55
+     ]
+    },
+    {
+     "name": "MS3",
+     "pad": "4",
+     "pos_mm": [
+      21.98,
+      20.09
+     ]
+    },
+    {
+     "name": "RESET",
+     "pad": "5",
+     "pos_mm": [
+      21.98,
+      22.63
+     ]
+    },
+    {
+     "name": "SLEEP",
+     "pad": "6",
+     "pos_mm": [
+      21.98,
+      25.17
+     ]
+    },
+    {
+     "name": "STEP",
+     "pad": "7",
+     "pos_mm": [
+      21.98,
+      27.71
+     ]
+    },
+    {
+     "name": "DIR",
+     "pad": "8",
+     "pos_mm": [
+      21.98,
+      30.25
+     ]
+    },
+    {
+     "name": "VMOT",
+     "pad": "9",
+     "pos_mm": [
+      9.28,
+      30.25
+     ]
+    },
+    {
+     "name": "GND",
+     "pad": "10",
+     "pos_mm": [
+      9.28,
+      27.71
+     ]
+    },
+    {
+     "name": "2B",
+     "pad": "11",
+     "pos_mm": [
+      9.28,
+      25.17
+     ]
+    },
+    {
+     "name": "2A",
+     "pad": "12",
+     "pos_mm": [
+      9.28,
+      22.63
+     ]
+    },
+    {
+     "name": "1A",
+     "pad": "13",
+     "pos_mm": [
+      9.28,
+      20.09
+     ]
+    },
+    {
+     "name": "1B",
+     "pad": "14",
+     "pos_mm": [
+      9.28,
+      17.55
+     ]
+    },
+    {
+     "name": "VDD",
+     "pad": "15",
+     "pos_mm": [
+      9.28,
+      15.01
+     ]
+    }
+   ],
+   "physical": {
+    "bbox_mm": [
+     15.2,
+     20.3,
+     13
+    ],
+    "mounting_holes": [],
+    "connector_faces": [],
+    "step_url": null,
+    "status": "estimated",
+    "source": "Pololu 1182 product page (0.6 x 0.8 in); height judged from the carrier with soldered headers. The motor itself is not a catalog part."
+   }
+  },
+  {
+   "ref": "M1",
+   "catalog_id": "nema17",
+   "mpn": {
+    "value": "17HS4401",
+    "status": "estimated",
+    "source": "NEMA 17 frame standard (42.3 mm square, 31 mm M3 hole pitch, 22 mm boss); 40 mm body length per 17HS4401 listings. Visual/netlist only: no motor model, the A4988/DRV8825 STEP/DIR twin counts the steps."
+   },
+   "footprint": null,
+   "position_mm": null,
+   "rotation_deg": null,
+   "side": null,
+   "pins": [],
+   "physical": {
+    "bbox_mm": [
+     42.3,
+     42.3,
+     40
+    ],
+    "mounting_holes": [
+     {
+      "x": 5.65,
+      "y": 5.65,
+      "d": 3
+     },
+     {
+      "x": 36.65,
+      "y": 5.65,
+      "d": 3
+     },
+     {
+      "x": 5.65,
+      "y": 36.65,
+      "d": 3
+     },
+     {
+      "x": 36.65,
+      "y": 36.65,
+      "d": 3
+     }
+    ],
+    "connector_faces": [
+     {
+      "feature": "shaft_5mm",
+      "face": "+Z",
+      "cutout_mm": [
+       22
+      ]
+     },
+     {
+      "feature": "motor_cable",
+      "face": "-Y"
+     }
+    ],
+    "step_url": null,
+    "status": "estimated",
+    "source": "NEMA 17 frame standard (42.3 mm square, 31 mm M3 hole pitch, 22 mm boss); 40 mm body length per 17HS4401 listings. Visual/netlist only: no motor model, the A4988/DRV8825 STEP/DIR twin counts the steps."
+   }
+  },
+  {
+   "ref": "M2",
+   "catalog_id": "nema17",
+   "mpn": {
+    "value": "17HS4401",
+    "status": "estimated",
+    "source": "NEMA 17 frame standard (42.3 mm square, 31 mm M3 hole pitch, 22 mm boss); 40 mm body length per 17HS4401 listings. Visual/netlist only: no motor model, the A4988/DRV8825 STEP/DIR twin counts the steps."
+   },
+   "footprint": null,
+   "position_mm": null,
+   "rotation_deg": null,
+   "side": null,
+   "pins": [],
+   "physical": {
+    "bbox_mm": [
+     42.3,
+     42.3,
+     40
+    ],
+    "mounting_holes": [
+     {
+      "x": 5.65,
+      "y": 5.65,
+      "d": 3
+     },
+     {
+      "x": 36.65,
+      "y": 5.65,
+      "d": 3
+     },
+     {
+      "x": 5.65,
+      "y": 36.65,
+      "d": 3
+     },
+     {
+      "x": 36.65,
+      "y": 36.65,
+      "d": 3
+     }
+    ],
+    "connector_faces": [
+     {
+      "feature": "shaft_5mm",
+      "face": "+Z",
+      "cutout_mm": [
+       22
+      ]
+     },
+     {
+      "feature": "motor_cable",
+      "face": "-Y"
+     }
+    ],
+    "step_url": null,
+    "status": "estimated",
+    "source": "NEMA 17 frame standard (42.3 mm square, 31 mm M3 hole pitch, 22 mm boss); 40 mm body length per 17HS4401 listings. Visual/netlist only: no motor model, the A4988/DRV8825 STEP/DIR twin counts the steps."
+   }
+  },
+  {
+   "ref": "M3",
+   "catalog_id": "servo",
+   "mpn": {
+    "value": "TowerPro SG90",
+    "status": "estimated",
+    "source": "TowerPro SG90 datasheet drawing (22.2 x 11.8 x 31 mm body, 32.2 mm across the tabs); holes and height judged from it."
+   },
+   "footprint": "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical",
+   "position_mm": {
+    "value": [
+     59.22,
+     21.42
+    ],
+    "status": "layout"
+   },
+   "rotation_deg": {
+    "value": 90,
+    "status": "layout"
+   },
+   "side": "top",
+   "pins": [
+    {
+     "name": "PWM",
+     "pad": "1",
+     "pos_mm": [
+      59.22,
+      21.42
+     ]
+    },
+    {
+     "name": "VCC",
+     "pad": "2",
+     "pos_mm": [
+      61.76,
+      21.42
+     ]
+    },
+    {
+     "name": "GND",
+     "pad": "3",
+     "pos_mm": [
+      64.3,
+      21.42
+     ]
+    }
+   ],
+   "physical": {
+    "bbox_mm": [
+     32.2,
+     12.2,
+     29
+    ],
+    "mounting_holes": [
+     {
+      "x": 2.3,
+      "y": 6.1,
+      "d": 2
+     },
+     {
+      "x": 29.9,
+      "y": 6.1,
+      "d": 2
+     }
+    ],
+    "connector_faces": [
+     {
+      "feature": "output_shaft",
+      "face": "+Z"
+     }
+    ],
+    "step_url": null,
+    "status": "estimated",
+    "source": "TowerPro SG90 datasheet drawing (22.2 x 11.8 x 31 mm body, 32.2 mm across the tabs); holes and height judged from it."
+   }
+  },
+  {
+   "ref": "J1",
+   "catalog_id": "dc-barrel-jack",
+   "mpn": {
+    "value": null,
+    "status": "missing"
+   },
+   "footprint": null,
+   "position_mm": null,
+   "rotation_deg": null,
+   "side": null,
+   "pins": [],
+   "physical": {
+    "bbox_mm": null,
+    "mounting_holes": [],
+    "connector_faces": [
+     {
+      "feature": "dc_jack_5.5x2.1",
+      "face": "-X"
+     }
+    ],
+    "step_url": "https://gitlab.com/kicad/libraries/kicad-packages3D/-/raw/master/Connector_BarrelJack.3dshapes/BarrelJack_Horizontal.step",
+    "status": "estimated",
+    "source": "STEP is KiCad Connector_BarrelJack:BarrelJack_Horizontal (URL checked, HTTP 200, ISO-10303-21), a generic stand-in; size and panel cut-out depend on the jack fitted and are left unset. Visual/netlist only: no supply model, the rail is not simulated."
+   }
+  }
+ ],
+ "wires": [
+  {
+   "net": "GND",
+   "from": {
+    "ref": "J1",
+    "pin": "-",
+    "pos_mm": null
+   },
+   "to": {
+    "ref": "M3",
+    "pin": "GND",
+    "pos_mm": [
+     64.3,
+     21.42
+    ]
+   },
+   "gauge_awg": {
+    "value": 26,
+    "status": "proposed"
+   },
+   "color": {
+    "value": "black",
+    "status": "proposed"
+   }
+  },
+  {
+   "net": "GND",
+   "from": {
+    "ref": "J1",
+    "pin": "-",
+    "pos_mm": null
+   },
+   "to": {
+    "ref": "A1",
+    "pin": "GND",
+    "pos_mm": [
+     26.63,
+     20.9
+    ]
+   },
+   "gauge_awg": {
+    "value": 26,
+    "status": "proposed"
+   },
+   "color": {
+    "value": "black",
+    "status": "proposed"
+   }
+  },
+  {
+   "net": "GND",
+   "from": {
+    "ref": "J1",
+    "pin": "-",
+    "pos_mm": null
+   },
+   "to": {
+    "ref": "A2",
+    "pin": "GND",
+    "pos_mm": [
+     19.2,
+     47.97
+    ]
+   },
+   "gauge_awg": {
+    "value": 26,
+    "status": "proposed"
+   },
+   "color": {
+    "value": "black",
+    "status": "proposed"
+   }
+  },
+  {
+   "net": "GND",
+   "from": {
+    "ref": "J1",
+    "pin": "-",
+    "pos_mm": null
+   },
+   "to": {
+    "ref": "A3",
+    "pin": "GND",
+    "pos_mm": [
+     9.28,
+     27.71
+    ]
+   },
+   "gauge_awg": {
+    "value": 26,
+    "status": "proposed"
+   },
+   "color": {
+    "value": "black",
+    "status": "proposed"
+   }
+  },
+  {
+   "net": "+",
+   "from": {
+    "ref": "J1",
+    "pin": "+",
+    "pos_mm": null
+   },
+   "to": {
+    "ref": "A2",
+    "pin": "VMOT",
+    "pos_mm": [
+     21.75,
+     47.97
+    ]
+   },
+   "gauge_awg": {
+    "value": 26,
+    "status": "proposed"
+   },
+   "color": {
+    "value": "red",
+    "status": "proposed"
+   }
+  },
+  {
+   "net": "+",
+   "from": {
+    "ref": "J1",
+    "pin": "+",
+    "pos_mm": null
+   },
+   "to": {
+    "ref": "A3",
+    "pin": "VMOT",
+    "pos_mm": [
+     9.28,
+     30.25
+    ]
+   },
+   "gauge_awg": {
+    "value": 26,
+    "status": "proposed"
+   },
+   "color": {
+    "value": "red",
+    "status": "proposed"
+   }
+  },
+  {
+   "net": "N$3",
+   "from": {
+    "ref": "M1",
+    "pin": "1A",
+    "pos_mm": null
+   },
+   "to": {
+    "ref": "A2",
+    "pin": "1A",
+    "pos_mm": [
+     11.59,
+     47.97
+    ]
+   },
+   "gauge_awg": {
+    "value": 26,
+    "status": "proposed"
+   },
+   "color": {
+    "value": "yellow",
+    "status": "proposed"
+   }
+  },
+  {
+   "net": "N$4",
+   "from": {
+    "ref": "M1",
+    "pin": "1B",
+    "pos_mm": null
+   },
+   "to": {
+    "ref": "A2",
+    "pin": "1B",
+    "pos_mm": [
+     9.05,
+     47.97
+    ]
+   },
+   "gauge_awg": {
+    "value": 26,
+    "status": "proposed"
+   },
+   "color": {
+    "value": "yellow",
+    "status": "proposed"
+   }
+  },
+  {
+   "net": "N$5",
+   "from": {
+    "ref": "M1",
+    "pin": "2A",
+    "pos_mm": null
+   },
+   "to": {
+    "ref": "A2",
+    "pin": "2A",
+    "pos_mm": [
+     14.13,
+     47.97
+    ]
+   },
+   "gauge_awg": {
+    "value": 26,
+    "status": "proposed"
+   },
+   "color": {
+    "value": "yellow",
+    "status": "proposed"
+   }
+  },
+  {
+   "net": "N$6",
+   "from": {
+    "ref": "M1",
+    "pin": "2B",
+    "pos_mm": null
+   },
+   "to": {
+    "ref": "A2",
+    "pin": "2B",
+    "pos_mm": [
+     16.67,
+     47.97
+    ]
+   },
+   "gauge_awg": {
+    "value": 26,
+    "status": "proposed"
+   },
+   "color": {
+    "value": "yellow",
+    "status": "proposed"
+   }
+  },
+  {
+   "net": "N$7",
+   "from": {
+    "ref": "M2",
+    "pin": "1A",
+    "pos_mm": null
+   },
+   "to": {
+    "ref": "A3",
+    "pin": "1A",
+    "pos_mm": [
+     9.28,
+     20.09
+    ]
+   },
+   "gauge_awg": {
+    "value": 26,
+    "status": "proposed"
+   },
+   "color": {
+    "value": "yellow",
+    "status": "proposed"
+   }
+  },
+  {
+   "net": "N$8",
+   "from": {
+    "ref": "M2",
+    "pin": "1B",
+    "pos_mm": null
+   },
+   "to": {
+    "ref": "A3",
+    "pin": "1B",
+    "pos_mm": [
+     9.28,
+     17.55
+    ]
+   },
+   "gauge_awg": {
+    "value": 26,
+    "status": "proposed"
+   },
+   "color": {
+    "value": "yellow",
+    "status": "proposed"
+   }
+  },
+  {
+   "net": "N$9",
+   "from": {
+    "ref": "M2",
+    "pin": "2A",
+    "pos_mm": null
+   },
+   "to": {
+    "ref": "A3",
+    "pin": "2A",
+    "pos_mm": [
+     9.28,
+     22.63
+    ]
+   },
+   "gauge_awg": {
+    "value": 26,
+    "status": "proposed"
+   },
+   "color": {
+    "value": "yellow",
+    "status": "proposed"
+   }
+  },
+  {
+   "net": "N$10",
+   "from": {
+    "ref": "M2",
+    "pin": "2B",
+    "pos_mm": null
+   },
+   "to": {
+    "ref": "A3",
+    "pin": "2B",
+    "pos_mm": [
+     9.28,
+     25.17
+    ]
+   },
+   "gauge_awg": {
+    "value": 26,
+    "status": "proposed"
+   },
+   "color": {
+    "value": "yellow",
+    "status": "proposed"
+   }
+  },
+  {
+   "net": "GPIO4",
+   "from": {
+    "ref": "M3",
+    "pin": "PWM",
+    "pos_mm": [
+     59.22,
+     21.42
+    ]
+   },
+   "to": {
+    "ref": "A1",
+    "pin": "GPIO4",
+    "pos_mm": [
+     52.07,
+     23.44
+    ]
+   },
+   "gauge_awg": {
+    "value": 26,
+    "status": "proposed"
+   },
+   "color": {
+    "value": "yellow",
+    "status": "proposed"
+   }
+  },
+  {
+   "net": "+5V",
+   "from": {
+    "ref": "M3",
+    "pin": "VCC",
+    "pos_mm": [
+     61.76,
+     21.42
+    ]
+   },
+   "to": {
+    "ref": "A1",
+    "pin": "5V",
+    "pos_mm": [
+     26.63,
+     8.2
+    ]
+   },
+   "gauge_awg": {
+    "value": 26,
+    "status": "proposed"
+   },
+   "color": {
+    "value": "red",
+    "status": "proposed"
+   }
+  },
+  {
+   "net": "+3V3",
+   "from": {
+    "ref": "A1",
+    "pin": "3V3",
+    "pos_mm": [
+     26.63,
+     53.92
+    ]
+   },
+   "to": {
+    "ref": "A2",
+    "pin": "VDD",
+    "pos_mm": [
+     6.5,
+     47.97
+    ]
+   },
+   "gauge_awg": {
+    "value": 26,
+    "status": "proposed"
+   },
+   "color": {
+    "value": "red",
+    "status": "proposed"
+   }
+  },
+  {
+   "net": "+3V3",
+   "from": {
+    "ref": "A1",
+    "pin": "3V3",
+    "pos_mm": [
+     26.63,
+     53.92
+    ]
+   },
+   "to": {
+    "ref": "A3",
+    "pin": "VDD",
+    "pos_mm": [
+     9.28,
+     15.01
+    ]
+   },
+   "gauge_awg": {
+    "value": 26,
+    "status": "proposed"
+   },
+   "color": {
+    "value": "red",
+    "status": "proposed"
+   }
+  },
+  {
+   "net": "GPIO13",
+   "from": {
+    "ref": "A1",
+    "pin": "GPIO13",
+    "pos_mm": [
+     26.63,
+     18.36
+    ]
+   },
+   "to": {
+    "ref": "A2",
+    "pin": "EN",
+    "pos_mm": [
+     3.97,
+     35.27
+    ]
+   },
+   "gauge_awg": {
+    "value": 26,
+    "status": "proposed"
+   },
+   "color": {
+    "value": "yellow",
+    "status": "proposed"
+   }
+  },
+  {
+   "net": "GPIO13",
+   "from": {
+    "ref": "A1",
+    "pin": "GPIO13",
+    "pos_mm": [
+     26.63,
+     18.36
+    ]
+   },
+   "to": {
+    "ref": "A3",
+    "pin": "EN",
+    "pos_mm": [
+     21.98,
+     12.47
+    ]
+   },
+   "gauge_awg": {
+    "value": 26,
+    "status": "proposed"
+   },
+   "color": {
+    "value": "yellow",
+    "status": "proposed"
+   }
+  },
+  {
+   "net": "GPIO14",
+   "from": {
+    "ref": "A1",
+    "pin": "GPIO14",
+    "pos_mm": [
+     26.63,
+     25.98
+    ]
+   },
+   "to": {
+    "ref": "A3",
+    "pin": "STEP",
+    "pos_mm": [
+     21.98,
+     27.71
+    ]
+   },
+   "gauge_awg": {
+    "value": 26,
+    "status": "proposed"
+   },
+   "color": {
+    "value": "yellow",
+    "status": "proposed"
+   }
+  },
+  {
+   "net": "GPIO25",
+   "from": {
+    "ref": "A1",
+    "pin": "GPIO25",
+    "pos_mm": [
+     26.63,
+     33.6
+    ]
+   },
+   "to": {
+    "ref": "A2",
+    "pin": "DIR",
+    "pos_mm": [
+     21.75,
+     35.27
+    ]
+   },
+   "gauge_awg": {
+    "value": 26,
+    "status": "proposed"
+   },
+   "color": {
+    "value": "yellow",
+    "status": "proposed"
+   }
+  },
+  {
+   "net": "GPIO26",
+   "from": {
+    "ref": "A1",
+    "pin": "GPIO26",
+    "pos_mm": [
+     26.63,
+     31.06
+    ]
+   },
+   "to": {
+    "ref": "A2",
+    "pin": "STEP",
+    "pos_mm": [
+     19.2,
+     35.27
+    ]
+   },
+   "gauge_awg": {
+    "value": 26,
+    "status": "proposed"
+   },
+   "color": {
+    "value": "yellow",
+    "status": "proposed"
+   }
+  },
+  {
+   "net": "GPIO27",
+   "from": {
+    "ref": "A1",
+    "pin": "GPIO27",
+    "pos_mm": [
+     26.63,
+     28.52
+    ]
+   },
+   "to": {
+    "ref": "A3",
+    "pin": "DIR",
+    "pos_mm": [
+     21.98,
+     30.25
+    ]
+   },
+   "gauge_awg": {
+    "value": 26,
+    "status": "proposed"
+   },
+   "color": {
+    "value": "yellow",
+    "status": "proposed"
+   }
+  }
+ ],
+ "simulation": {
+  "share_url": null,
+  "status": "local_pass_hosted_pending",
+  "local": "labwired test 14/14 + twin/check.py 11/11 (sim-observed STEP/DIR/servo edges), core 7672b730",
+  "note": "set only from a Verified, share-only ?share= build"
+ },
+ "device": "drawbot (polargraph): ESP32 DevKitC, 2x A4988, 2x NEMA17, SG90 pen lift, 12 V DC jack (confirmed by Andrii 2026-10-15)",
+ "generated_by": {
+  "tool": "labwired_export format=kernelcad",
+  "pr": "w1ne/labwired#2544 @ b85e6ae4b (open, unmerged)",
+  "diagram": "/workspace/drawbot/emit/diagram.ts"
+ },
+ "off_board_note": "M1/M2 (nema17) and J1 (dc-barrel-jack) have no footprint: position_mm and pin positions are null by design; KernelCAD places them in the frame. Their physical data is catalog, estimated."
+}

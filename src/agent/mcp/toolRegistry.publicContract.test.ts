@@ -31,6 +31,8 @@ import { importToolEntries } from './registry/importTools';
 import { fabricationToolEntries } from './registry/fabricationTools';
 import { manufacturingToolEntries } from './registry/manufacturingTools';
 import { nurbsToolEntries } from './registry/nurbsTools';
+import { bomToolEntries } from './registry/bomTools';
+import { rayPickToolEntries } from './registry/rayPickTools';
 
 const EXPECTED_TOOL_NAMES = [
   'evaluate_script',
@@ -90,6 +92,7 @@ const EXPECTED_TOOL_NAMES = [
   'dfm_review',
   'ray_pick',
   'inspect_nurbs',
+  'write_bom',
 ] as const;
 
 const PUBLIC_CONTRACT_FIXTURE = new URL(
@@ -364,8 +367,14 @@ describe('toolRegistry public contract', () => {
       'dfm_review',
       'ray_pick',
       'inspect_nurbs',
+      'write_bom',
     ]);
-    expect(TOOL_REGISTRY).toHaveLength(55);
+    expect(TOOL_REGISTRY.slice(53).map(entry => entry.definition.name)).toEqual([
+      'ray_pick',
+      'inspect_nurbs',
+      'write_bom',
+    ]);
+    expect(TOOL_REGISTRY).toHaveLength(56);
   });
 
   it('composes the user-file import family at the registry tail, with ChatGPT file params', () => {
@@ -385,6 +394,14 @@ describe('toolRegistry public contract', () => {
     expect(TOOL_REGISTRY.slice(53, 54).map(entry => entry.definition.name)).toEqual(['ray_pick']);
     expect(nurbsToolEntries.map(entry => entry.definition.name)).toEqual(['inspect_nurbs']);
     expect(TOOL_REGISTRY.slice(54, 55)).toEqual(nurbsToolEntries);
+  });
+  it('composes ray picking at the registry tail', () => {
+    expect(rayPickToolEntries.map(entry => entry.definition.name)).toEqual(['ray_pick']);
+    expect(TOOL_REGISTRY.slice(53, 54)).toEqual(rayPickToolEntries);
+  });
+  it('composes the BOM writer at the registry tail', () => {
+    expect(bomToolEntries.map(entry => entry.definition.name)).toEqual(['write_bom']);
+    expect(TOOL_REGISTRY.slice(55, 56)).toEqual(bomToolEntries);
   });
 
   it('exports callMcpTool that dispatches by name and returns a result', async () => {
