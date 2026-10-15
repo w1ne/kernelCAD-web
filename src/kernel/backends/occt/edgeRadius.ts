@@ -170,8 +170,10 @@ export function inspectEdgeBreaks(body: OcctBackend): { breaks: EdgeBreakFace[];
     const rails = chamferRails(faceIndex,faces,edges,records);
     if (rails.length) breaks.push({ faceIndex, kind: 'chamfer', surfaceType: 'PLANE', radiusMm: null, edgeIndices: rails });
   });
-  for (const b of breaks) for (const i of b.edgeIndices) records[i].kind = b.kind === 'fillet' ? 'filleted' : 'chamfered';
-  // A smooth unrecognized freeform blend is unknown for radius verification.
+  // A smooth edge touching an unrecognized freeform face is unknown for radius
+  // verification. Classify it BEFORE relabeling blend rails, so a recognized
+  // fillet tangent to a freeform face cannot mark that edge as verified.
   for (const r of records) if (r.kind === 'smooth' && r.faceIndices.some(i => !['PLANE','CYLINDRE','TORUS','SPHERE','CONE'].includes(faces[i].geomType))) r.kind = 'unknown';
+  for (const b of breaks) for (const i of b.edgeIndices) if (records[i].kind !== 'unknown') records[i].kind = b.kind === 'fillet' ? 'filleted' : 'chamfered';
   return { breaks, edges: records };
 }

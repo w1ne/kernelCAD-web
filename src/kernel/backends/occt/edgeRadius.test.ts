@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { beforeAll, describe, expect, it } from 'vitest';
+import { draw, type Shape3D } from 'replicad';
 import { initOcct, OcctBackend } from './occtBackend';
 import { inspectEdgeBreaks } from './edgeRadius';
 import { resolveEdgeQuery } from './edgeQueries';
@@ -15,6 +16,21 @@ describe('BREP edge breaks', () => {
     expect(r.breaks.filter(f => f.kind === 'fillet').length).toBeGreaterThanOrEqual(12);
     expect(r.breaks.every(f => f.radiusMm === 2)).toBe(true);
     expect(r.edges.filter(e => e.kind === 'sharp')).toHaveLength(0);
+  });
+  it('keeps a fillet rail tangent to a freeform face unknown, not filleted (#954 review)', () => {
+    // Profile: line, R5 tangent arc, then a smooth spline continuing the arc's tangent.
+    const solid = draw([0, 0]).lineTo([10, 0]).tangentArcTo([15, 5]).smoothSplineTo([20, 15]).lineTo([0, 15]).close()
+      .sketchOnPlane().extrude(5) as Shape3D;
+    const body = new OcctBackend(solid);
+    const faces = body.getReplicadShape().faces.map(f => f.geomType);
+    const r = inspectEdgeBreaks(body);
+    const fillet = r.breaks.find(b => b.kind === 'fillet' && b.surfaceType === 'CYLINDRE');
+    expect(fillet?.radiusMm).toBeCloseTo(5, 9);
+    const rails = r.edges.filter(e => e.faceIndices.includes(fillet!.faceIndex) && e.kind !== 'sharp');
+    const freeformRail = rails.filter(e => e.faceIndices.some(i => faces[i] === 'EXTRUSION_SURFACE'));
+    expect(freeformRail).toHaveLength(1);
+    expect(freeformRail[0].kind).toBe('unknown');
+    expect(rails.filter(e => e.kind === 'filleted')).toHaveLength(1); // the plane-side rail
   });
   it('classifies twelve sharp external box edges', () => {
     const r = inspectEdgeBreaks(box());
