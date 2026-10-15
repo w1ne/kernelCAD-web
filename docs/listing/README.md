@@ -18,7 +18,7 @@ Already listed: Glama (https://glama.ai/mcp/connectors/com.kernelcad/kernelcad) 
 **Already in ChatGPT and Claude. No install.** kernelCAD is a hosted MCP server. You can connect it and design straight away, with nothing to download, no CAD licence and no local Python.
 
 - **No account needed to try.** The hosted server takes anonymous calls. Signing in (OAuth) only adds saved projects and Studio share links.
-- **Real CAD files.** Export STEP, STL, 3MF, GLB and DXF, plus engineering drawings as PDF or SVG with dimensions, hole callouts and a title block. You can also import your own STEP or STL.
+- **Real CAD files.** Export STEP, STL, 3MF, GLB, OBJ, USD and DXF, plus engineering drawings as PDF or SVG with dimensions, hole callouts and a title block. You can also import your own STEP or STL.
 - **In-chat 3D.** The model renders inline in the chat, so you can review and mark it up without leaving the conversation.
 - **Checks as you go.** Assemblies get interference and collision gates. Exported meshes are checked for watertightness. Manufacturing rules that a script declares with `dfmSpec` are enforced on every build. An on-demand DFM review covers FDM printing and CNC (overhangs, wall thickness, hole size, bridges, bed fit, undercuts, corner radius vs tool), and FEA is available too. Say that these checks flag likely problems. Never say that a build passing proves the part can be manufactured.
 - **Editable source.** Each model is a plain `.kcad.ts` script on an OpenCASCADE B-rep kernel. It's parametric and diffable, not a frozen mesh.

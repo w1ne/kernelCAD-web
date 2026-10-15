@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { runScript } from '../../composition/runScript';
-import { exportSceneToSTEPAsync, type OcctBackend } from '../../kernel/backends/occt/occtBackend';
+import { exportSceneToSTEPAsync, meshShapeForExport, type OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { exportDxf, type DxfWriterOptions } from '../../kernel/backends/occt/exportDxf';
 import { exportSceneDxf, exportShapeDxfProfile } from './exportDxfProfiles';
 import { export3mfWithReportAsync, type Export3mfOptions } from '../../kernel/backends/occt/export3mf';
 import { exportGlbAsync, type ExportGlbOptions } from '../../kernel/backends/occt/exportGlb';
+import { exportMeshObj, exportMeshUsd, type NamedMesh } from '../../kernel/export/meshFormats';
 import type { Assembly } from '../../modeling/capture/assembly';
 import { lookupColorFromLineage, lookupMaterialFromLineage } from '../../kernel/backends/occt/lookupSourceColor';
 import { sceneToWorldFrameParts, type WorldFramePart } from '../../kernel/backends/occt/sceneToWorldFrame';
@@ -330,7 +331,7 @@ export function resolveExportTarget(
   return { targetId };
 }
 
-/** Scene-aware export dispatch: STEP/3MF/GLB keep per-part identity; STL and
+/** Scene-aware export dispatch: STEP/3MF/GLB/OBJ/USD keep per-part identity; STL and
  *  gcode auto-fuse. Returns `undefined` for formats that fall through to the
  *  single-shape path (urdf/srdf/sdf-gazebo). */
 export async function exportSceneBackend(
@@ -355,6 +356,13 @@ export async function exportSceneBackend(
   }
   if (format === 'glb') {
     return exportSceneGlb(input, scene, targetId, diagnostics, featureCount);
+  }
+  if (format === 'obj' || format === 'usd') {
+    const parts = sceneToWorldFrameParts(scene).map(part => ({
+      name: part.name,
+      mesh: meshShapeForExport(part.shape.getReplicadShape()),
+    }));
+    return { bytes: format === 'obj' ? exportMeshObj(parts) : exportMeshUsd(parts), featureCount, diagnostics };
   }
   if (format === 'stl' || format === 'gcode') {
     return exportSceneFusedMesh(input, format, scene, targetId, run, diagnostics, featureCount);
@@ -647,10 +655,24 @@ export async function exportSingleShape(
       return exportSingle3mf(input, shape, targetId, diagnostics, featureCount);
     case 'glb':
       return exportSingleGlb(input, shape, targetId, scriptDir, run, diagnostics, featureCount);
+    case 'obj':
+      return exportSingleMeshText(shape, 'obj', diagnostics, featureCount);
+    case 'usd':
+      return exportSingleMeshText(shape, 'usd', diagnostics, featureCount);
   }
   // URDF / SRDF / SDF-Gazebo are dispatched in the early Assembly-aware
   // branch above, before targetId resolution. Unreachable here.
   return { bytes: new Uint8Array(), featureCount, diagnostics };
+}
+
+function exportSingleMeshText(
+  shape: OcctBackend,
+  format: 'obj' | 'usd',
+  diagnostics: CompilerDiagnostic[],
+  featureCount: number,
+): ExportResult {
+  const parts: NamedMesh[] = [{ name: 'part', mesh: meshShapeForExport(shape.getReplicadShape()) }];
+  return { bytes: format === 'obj' ? exportMeshObj(parts) : exportMeshUsd(parts), featureCount, diagnostics };
 }
 
 async function exportSingleStl(
