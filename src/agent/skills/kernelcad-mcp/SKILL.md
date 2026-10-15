@@ -61,6 +61,7 @@ Use before freehand authoring on production / industry prompts. Prefer `design_l
 |------------------|-------------|-------|
 | Machined housing (walls, pockets, bosses, fillets, bearing bore) | `multi-feature-machined-housing` | Params + manufacturing intent; not stacked boxes |
 | NEMA motor mounting plate | `nema-motor-mounting-plate` | Prefer `lib.standard.nema17()`; snippet uses BREP stand-in for CI |
+| Hole-less development board cradle / rail with connector access | `holeless-board-cradle` | Parametric edge rails and snap catches; verify fit and flex against the actual PCB before printing |
 | Multi-body mechanism + joints + animation | `multi-body-mechanism-real-proportions` | Proven pin **MLl-f0Uq@1**; CDN mesh+anim |
 | Scissor-lift / scissor-jack table | `scissor-lift-closed-loop` | Closed-loop FK unsupported — open-chain prismatic + mid-pose X-links |
 | 4-DOF / multi-axis production robot arm | `multi-dof-robot-arm-4axis` | Bridged yokes, yaw clearance, mechanicalJoint chain, reach anim |
