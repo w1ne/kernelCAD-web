@@ -155,6 +155,9 @@ const axleR = 4.2;
 const axleBoreR = axleR + 0.15; // running clearance
 const servoY = cheekOuterY + 0.5 + 9; // 18 mm deep body, 0.5 mm off the cheek
 const servoZ = 20 + 14; // 28 mm tall body standing on the deck-level plate
+// Output boss (r 5.5) clears the cheek's -X edge (x = -10): at x = -14 it cut
+// 1.5 mm into the cheek.
+const servoX = -16;
 const yawStage = arm.part(
   'yaw-stage',
   cylinder(11.6, 14).translate(0, 0, 0.4)
@@ -172,14 +175,14 @@ yawStage.connector('tilt', {
   type: 'axis', origin: { kind: 'vec3', value: [0, cheekY, tiltZ - 48] }, axis: [0, 1, 0],
   jointClearanceRadius: axleBoreR,
 });
-yawStage.connector('tilt-servo-mount', { type: 'frame', origin: { kind: 'vec3', value: [-14, servoY, servoZ] } });
+yawStage.connector('tilt-servo-mount', { type: 'frame', origin: { kind: 'vec3', value: [servoX, servoY, servoZ] } });
 
 const tiltServo = arm.part(
   'tilt-servo',
-  servoBody(26, 18, 28).translate(-14, servoY, servoZ).finish('abs', { color: '#243140' }),
+  servoBody(26, 18, 28).translate(servoX, servoY, servoZ).finish('abs', { color: '#243140' }),
   { material: 'nylon' },
 );
-tiltServo.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [-14, servoY, servoZ] } });
+tiltServo.connector('mount', { type: 'frame', origin: { kind: 'vec3', value: [servoX, servoY, servoZ] } });
 
 // Tilt head: the axle spans the clevis cheek to cheek, two hubs sit inside
 // the cheeks, and the service tube is butted onto the post's -X face

@@ -17,7 +17,7 @@ import { useWorkbench } from '../context/WorkbenchContext';
 import { hasNonemptyGeometry } from '../components/viewer/hasNonemptyGeometry';
 import { downloadBlob, exportViaServer } from '../exportViaServer';
 import { exportProgressText, useExportTask, type ExportTaskState } from '../hooks/useExportTask';
-import { jointContactCapMm3 } from '../../modeling/runtime/jointContactCap';
+import { isActionableOverlap } from '../../modeling/runtime/jointContactCap';
 import { StudioModelCustomizer } from '../customizer/StudioModelCustomizer';
 import { plainLine } from '../plainLine';
 import {
@@ -32,6 +32,7 @@ import { KeepThisModel } from './-ProjectClaimControl';
 import { ProjectViewerActions } from './-ProjectViewerActions';
 import { ServerRevisionList } from './-ServerRevisionHistory';
 import { ResumePrompt } from './-ResumePrompt';
+import { MotionBadge } from '../components/motion/MotionBadge';
 import {
   FORMAT_HINTS,
   configuredSource,
@@ -210,7 +211,7 @@ export function useModelCheck(): { check: ModelCheck | null; size: string | null
   return useMemo(() => {
     const hasGeometry = hasNonemptyGeometry(geometries);
     const interferences = scriptReview?.interferenceSummary?.actionableCount
-      ?? (scriptReview?.rawInterferencePairs ?? []).filter((pair) => pair.volumeMm3 > jointContactCapMm3()).length;
+      ?? (scriptReview?.rawInterferencePairs ?? []).filter((pair) => isActionableOverlap(pair)).length;
     return {
       check: modelCheck({ error: error ?? null, hasGeometry, review: scriptReview ?? null, interferences }),
       size: hasGeometry ? modelSizeLabel(geometries, featureRecords ?? []) : null,
@@ -230,6 +231,7 @@ function Summary({ project, ownership, now }: {
   now: number;
 }): JSX.Element {
   const { check, size } = useModelCheck();
+  const { scriptReview } = useWorkbench();
   const updated = relativeTime(project.updated_at, now);
   const meta = [ownerLabel(ownership), updated, `r${project.version}`].filter(Boolean).join(' · ');
   return (
@@ -240,6 +242,7 @@ function Summary({ project, ownership, now }: {
         {check ? (
           <>
             <Badge tone={CHECK_TONE[check.tone]} icon={checkIcon(check.tone)}>{check.label}</Badge>
+            <MotionBadge summary={scriptReview?.mechanismSummary} side="bottom" />
             <span className="min-w-0 text-ui text-fg-2">{check.detail}</span>
           </>
         ) : (

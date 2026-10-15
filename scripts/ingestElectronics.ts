@@ -20,7 +20,7 @@
 // inspect electronics alone.
 
 import { mkdtempSync, writeFileSync, mkdirSync, readFileSync, existsSync, copyFileSync } from 'node:fs';
-import { join, resolve, dirname } from 'node:path';
+import { basename, join, resolve, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
 import { execFileSync } from 'node:child_process';
 import { unzipSync } from 'fflate';
@@ -56,9 +56,18 @@ function extractStepFromZip(buf: Buffer): Buffer | null {
 
 interface ManifestPart {
   id: string;
-  name: string;
-  family: string;
-  mpn: string;
+  /** Required unless `seed_source` is set (the seed record supplies it). */
+  name?: string;
+  /** Required unless `seed_source` is set (the seed record supplies it). */
+  family?: string;
+  /** Required unless `seed_source` is set. */
+  mpn?: string;
+  /** Path (relative to repo root) to a committed seed STEP, e.g.
+   *  `assets/parts-seed/micro-servo/sg90-servo.step`. The bundled seed record
+   *  in `<seed dir>/index.json` and its `<id>.json` connector sidecar supply
+   *  every other field, so the bundled and remote catalogs share one entry.
+   *  Takes priority over `kcad_source`, `url` and `model`. */
+  seed_source?: string;
   /** Path appended to the manifest baseModelUrl. Ignored if `url` or `kcad_source` is set. */
   model?: string;
   /** Full model URL (overrides baseModelUrl + model) — for parts from a
@@ -146,7 +155,14 @@ export async function ingestElectronics(
     let buf: Buffer;
     let connectorManifest: ConnectorManifest | undefined;
 
-    if (part.kcad_source) {
+    if (part.seed_source) {
+      // Committed seed part: copy the bytes, its record and its interfaces.
+      const seed = readSeedPart(repoRoot, part);
+      writeFileSync(join(src, `${part.id}.step`), seed.step);
+      writeFileSync(join(src, `${part.id}.meta.json`), JSON.stringify(seed.meta, null, 2));
+      ok++;
+      continue;
+    } else if (part.kcad_source) {
       // Authored model: compile the .kcad.ts script to STEP using the kernelCAD CLI.
       const scriptPath = resolve(repoRoot, part.kcad_source);
       const stepOut = join(src, `${part.id}.step`);
@@ -156,7 +172,7 @@ export async function ingestElectronics(
         // (there is no `-f` flag). Capture stderr into the warning on failure.
         execFileSync(
           process.execPath,
-          authoredExportArgs(cliPath, scriptPath, stepOut, manifestOut, part),
+          authoredExportArgs(cliPath, scriptPath, stepOut, manifestOut, { id: part.id, family: part.family ?? '' }),
           { stdio: ['ignore', 'pipe', 'pipe'], timeout: 120_000 },
         );
       } catch (e) {
@@ -261,6 +277,77 @@ export async function ingestElectronics(
   return records;
 }
 
+interface SeedRecordLike {
+  id: string;
+  name: string;
+  category: string;
+  family: string;
+  standard?: string;
+  tags: string[];
+  attributes: Record<string, number | string>;
+  license: string;
+  attribution?: string;
+  aliases?: string[];
+}
+
+/** Read a committed seed part (STEP + index record + connector sidecar) and
+ *  turn it into an ingest sidecar. Any missing piece stops the release. */
+export function readSeedPart(
+  repoRoot: string,
+  part: Pick<ManifestPart, 'id' | 'seed_source'>,
+): { step: Buffer; meta: Record<string, unknown> } {
+  const stepPath = resolve(repoRoot, part.seed_source!);
+  const seedDir = dirname(dirname(stepPath));
+  const fail = (what: string, cause?: unknown) => {
+    throw new AuthoredManifestError(
+      `ingestElectronics: seed part '${part.id}' ${what}`,
+      cause === undefined ? undefined : { cause },
+    );
+  };
+  if (!existsSync(stepPath)) fail(`has no STEP at ${part.seed_source}`);
+  const step = readFileSync(stepPath);
+  if (!step.subarray(0, 64).toString('latin1').includes('ISO-10303-21')) fail('seed file is not a STEP file');
+  let record: SeedRecordLike | undefined;
+  try {
+    const index = JSON.parse(readFileSync(join(seedDir, 'index.json'), 'utf8')) as { records?: SeedRecordLike[] };
+    record = index.records?.find((r) => r.id === part.id);
+  } catch (e) {
+    fail('has an unreadable seed index', e);
+  }
+  if (record === undefined) return fail(`is not in ${join(seedDir, 'index.json')}`);
+  if (basename(stepPath) !== `${part.id}.step` || basename(dirname(stepPath)) !== record.family) {
+    fail(`seed_source must be <seed dir>/${record.family}/${part.id}.step`);
+  }
+  let connectorManifest: ConnectorManifest | undefined;
+  try {
+    const sidecar = loadConnectorManifest(stepPath.replace(/\.step$/, '.json'));
+    connectorManifest = {
+      schemaVersion: sidecar.schemaVersion,
+      partId: sidecar.partId,
+      family: sidecar.family,
+      connectors: sidecar.connectors,
+    };
+  } catch (e) {
+    fail('has no valid connector sidecar', e);
+  }
+  return {
+    step,
+    meta: {
+      id: record.id,
+      name: record.name,
+      category: record.category,
+      family: record.family,
+      ...(record.standard === undefined ? {} : { standard: record.standard }),
+      tags: record.tags,
+      attributes: record.attributes,
+      license: record.license,
+      ...(record.attribution === undefined ? {} : { attribution: record.attribution }),
+      ...(record.aliases === undefined ? {} : { aliases: record.aliases }),
+      connectorManifest,
+    },
+  };
+}
+
 /** Copy a freshly-ingested catalog (step/ + v1/parts/) into `outDir` and rewrite
  *  the discovery index + sha manifest as the UNION of what was already there and
  *  the new records (new records win on id collision). */
@@ -299,9 +386,11 @@ function mergeCatalog(fromDir: string, outDir: string, fresh: CatalogRecord[]): 
   for (const r of fresh) sha[r.id] = r.sha256;
   writeFileSync(shaPath, JSON.stringify(sha, null, 2));
 
-  // Serving shim: copy if the target doesn't already have one.
+  // Serving shim: always take the fresh one. The mechanical base is cached on
+  // its own ingest code, so its copy can predate a worker change (for example
+  // alias resolution).
   const worker = join(outDir, '_worker.js');
-  if (!existsSync(worker) && existsSync(join(fromDir, '_worker.js'))) {
+  if (existsSync(join(fromDir, '_worker.js'))) {
     copyFileSync(join(fromDir, '_worker.js'), worker);
   }
   console.log(`merged ${fresh.length} records into ${outDir} (catalog now ${merged.length} parts)`);

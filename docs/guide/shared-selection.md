@@ -25,8 +25,11 @@ next 300 ms sync cycle. Pass `selection: null` to clear. These tools change
 selection only; they do not modify CAD geometry.
 
 Selections belong to one pooled session. Separate scripts have separate
-selections. Successful model rebuilds clear the selection and reject writes from prior generations; failed rebuilds
-keep the current model and pick. Studio retries interrupted selection writes
+selections. After a successful rebuild Studio withholds a selected face from agent tools, then
+matches its generating feature and geometric signature against the new mesh.
+Only a unique match is republished at the new model generation; deleted or
+ambiguous faces are cleared. Writes from prior generations are rejected.
+Failed rebuilds keep the current model and pick. Studio retries interrupted selection writes
 and preserves clicks made during an in-flight read. Closing Studio stops its
 polling; session eviction yields a tool error rather than a stale selection.
 

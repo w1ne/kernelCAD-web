@@ -103,6 +103,12 @@ export interface PartRecord {
   redistribution?: RedistributionMode;
   /** Provenance for ingested (mirrored) parts. */
   upstream?: UpstreamProvenance;
+  /**
+   * Deprecated ids that resolve to this record. An exact-id lookup of an alias
+   * returns this record, so old scripts keep working after two catalog
+   * entries merge into one. Search does not list aliases as separate results.
+   */
+  aliases?: string[];
 }
 
 /**

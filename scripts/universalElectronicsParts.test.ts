@@ -6,9 +6,10 @@ import { describe, expect, it } from 'vitest';
 
 type CatalogPart = {
   id: string;
-  name: string;
-  family: string;
+  name?: string;
+  family?: string;
   kcad_source?: string;
+  seed_source?: string;
   license?: string;
   attribution?: string;
 };
@@ -17,7 +18,6 @@ const repoRoot = resolve(__dirname, '..');
 const manifestPath = resolve(repoRoot, 'scripts/electronics-parts.json');
 const authoredDirectory = resolve(repoRoot, 'scripts/parts/authored');
 const a4988Path = resolve(authoredDirectory, 'a4988-stepstick-carrier.kcad.ts');
-const sg90Path = resolve(authoredDirectory, 'sg90-micro-servo.kcad.ts');
 const a4988ContactNames = [
   'en-contact', 'ms1-contact', 'ms2-contact', 'ms3-contact',
   'reset-contact', 'sleep-contact', 'step-contact', 'dir-contact',
@@ -62,34 +62,9 @@ describe('universal authored electronics', () => {
     for (const forbidden of forbiddenInterfaceNames) expect(a4988).not.toContain(forbidden);
   });
 
-  it('models the SG90 datasheet envelope and canonical plug-contact proxies', () => {
-    const sg90 = source(sg90Path);
-
-    expect(sg90).toContain('https://www.kjell.com/globalassets/mediaassets/701916_87897_datasheet_en.pdf');
-    expect(sg90).toContain('const ENVELOPE_X = 32.0;');
-    expect(sg90).toContain('const ENVELOPE_Y = 12.4;');
-    expect(sg90).toContain('const ENVELOPE_Z = 26.7;');
-    expect(sg90).toContain('const CABLE_LENGTH = 250.0;');
-    expect(sg90).toContain('canonical straightened harness pose');
-    expect(sg90).toContain('const leadRef = asm.part');
-    for (const contact of ['ground', 'vplus', 'pwm']) {
-      expect(sg90).toContain(`name: '${contact}'`);
-    }
-    expect(sg90).toMatch(/leadRef\.connector\(\s*`\$\{lead\.name\}-contact`/);
-    expect(sg90).toContain('value: [CABLE_CONTACT_X, lead.y, CABLE_Z]');
-    expect(sg90).toContain('plug-contact proxy');
-    expect(sg90).toContain('canonical catalog pose');
-    expect(sg90).not.toContain('nominal bare 28-AWG');
-    expect(sg90).not.toContain('output-axis-envelope');
-    expect(sg90).not.toMatch(/type:\s*'axis'/);
-    expect(sg90).not.toContain('OUTPUT_X');
-    expect(sg90).not.toContain('cableStrainRelief');
-    for (const forbidden of forbiddenInterfaceNames) expect(sg90).not.toContain(forbidden);
-  });
-
   it('registers both components as standalone catalog parts with source attribution', () => {
     const a4988 = catalogPart('a4988-stepstick-carrier');
-    const sg90 = catalogPart('sg90-micro-servo');
+    const sg90 = catalogPart('sg90-servo');
 
     expect(a4988).toMatchObject({
       name: 'A4988 StepStick carrier (Pololu #2128 Black Edition)',
@@ -98,12 +73,15 @@ describe('universal authored electronics', () => {
       license: 'MIT',
     });
     expect(a4988.attribution).toContain('pololu.com/product/2128');
-    expect(sg90).toMatchObject({
-      name: 'SG90 micro servo (Luxor Parts 87897)',
-      family: 'micro-servo',
-      kcad_source: 'scripts/parts/authored/sg90-micro-servo.kcad.ts',
-      license: 'MIT',
+    // SG90 has one catalog entry: the committed seed STEP. The old authored
+    // envelope is gone; its id is an alias on the seed record.
+    expect(sg90).toEqual({
+      id: 'sg90-servo',
+      seed_source: 'assets/parts-seed/micro-servo/sg90-servo.step',
     });
-    expect(sg90.attribution).toContain('701916_87897_datasheet_en.pdf');
+    expect(existsSync(resolve(repoRoot, sg90.seed_source!))).toBe(true);
+    expect(existsSync(resolve(authoredDirectory, 'sg90-micro-servo.kcad.ts'))).toBe(false);
+    const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as { parts: CatalogPart[] };
+    expect(manifest.parts.filter((part) => /sg90/i.test(part.id))).toHaveLength(1);
   });
 });

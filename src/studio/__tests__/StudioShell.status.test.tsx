@@ -9,7 +9,7 @@ let workbenchReady = true;
 let workbenchError: string | null = null;
 let workbenchGeometries: unknown[] = [];
 let agentRailOpen = false;
-let recomputeRawPairs: Array<{ a: string; b: string; volumeMm3: number }> = [];
+let recomputeRawPairs: Array<{ a: string; b: string; volumeMm3: number; thicknessMm?: number }> = [];
 let recomputeInterferenceSummary: {
     rawCount: number;
     contactNoiseCount: number;
@@ -181,16 +181,16 @@ describe('StudioShell status plumbing', () => {
         expect(rail.compareDocumentPosition(viewport) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     });
 
-    it('HUD interference count excludes contact-noise pairs below the mechanism cap', () => {
-        // Simulate a jointed mechanism: raw detection still reports tiny
-        // adjacent-joint contacts, but the footer should only count actionable
-        // interferences above the same 20 mm3 cap used by validator/mechanism
-        // truth. The raw pairs remain available to the Params tab.
+    it('HUD interference count excludes face-contact pairs', () => {
+        // Simulate a jointed mechanism: raw detection still reports face-
+        // contact slivers at the joints, but the footer counts only overlaps
+        // the shared rule (isActionableOverlap) calls real, small ones too.
+        // The raw pairs remain available to the Params tab.
         recomputeRawPairs = [
-            { a: 'base', b: 'lower-arm', volumeMm3: 12 },
-            { a: 'lower-arm', b: 'upper-arm', volumeMm3: 14 },
-            { a: 'upper-arm', b: 'lamp-head', volumeMm3: 8 },
-            { a: 'servo', b: 'palm', volumeMm3: 22 },
+            { a: 'base', b: 'lower-arm', volumeMm3: 12, thicknessMm: 0.002 },
+            { a: 'lower-arm', b: 'upper-arm', volumeMm3: 14, thicknessMm: 0.004 },
+            { a: 'upper-arm', b: 'lamp-head', volumeMm3: 0.005 },
+            { a: 'servo', b: 'palm', volumeMm3: 8, thicknessMm: 0.4 },
         ];
         recomputeValidity = { diagnostics: [] };
 

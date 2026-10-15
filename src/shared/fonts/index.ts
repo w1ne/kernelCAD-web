@@ -1,91 +1,36 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-// src/lib/fonts/index.ts
 //
-// Bundled-font loader + script-relative font path resolver. Owns the
-// "default" family registration in replicad's font registry. The OCCT
-// text lowerer calls `resolveAndLoadFont(...)` before `replicad.drawText`.
+// Browser-safe fonts entry point. Keep filesystem access in nodeLoader.ts;
+// host-only callers reach that implementation through loadFontHost.ts.
 
-import { readFileSync } from 'node:fs';
-import { basename, extname, isAbsolute, resolve, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { loadFont, getFont } from 'replicad';
 import { KernelError } from '../intent/kernelError';
 import type { DiagnosticCode } from '../diagnostics/registry';
+import type { FontPath } from './fontPath';
+import { hasHostFs } from '../runtime/hostFs';
 
-// The `FontPath` brand lives in the pure sibling module so consumers that only
-// need the type (the modeling API surface) don't drag `node:fs` in with it.
-// Re-exported here so every existing import site keeps working unchanged.
 export { fontPath, isFontPath, type FontPath } from './fontPath';
-import { isFontPath, type FontPath } from './fontPath';
 
-let bundledLoaded = false;
-
-/** Locate the bundled font file on disk in both dev (source tree) and
- *  prod (CLI bundle) contexts. */
-function bundledFontFilePath(): string {
-  // __dirname points at `<repo>/src/lib/fonts` in dev (transpiled at runtime
-  // by tsx / Vitest). In the CLI bundle, this file is concatenated into
-  // `dist/cli/index.js` — esbuild's banner sets `__dirname` to `dist/cli/`,
-  // and the build:cli step copies the TTF into `dist/cli/fonts/`.
-  // Try the dev path first (sibling file in source); fall back to the bundle
-  // path (`<here>/fonts/...`).
-  const here =
-    typeof __dirname !== 'undefined'
-      ? __dirname
-      : dirname(fileURLToPath(import.meta.url));
-  const dev = resolve(here, 'LiberationSans-Regular.ttf');
-  const bundle = resolve(here, 'fonts', 'LiberationSans-Regular.ttf');
-  try {
-    readFileSync(dev);
-    return dev;
-  } catch {
-    return bundle;
-  }
-}
-
-export async function ensureBundledFontLoaded(): Promise<void> {
-  if (bundledLoaded) return;
-  const buf = readFileSync(bundledFontFilePath());
-  // Replicad's loadFont accepts `ArrayBuffer | string`. Provide ArrayBuffer
-  // so we don't need a writable filesystem in the CLI sandbox.
-  await loadFont(
-    buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength),
-    'default',
-  );
-  bundledLoaded = true;
-}
-
+/** Browser-safe validation for a font family already registered by the host. */
 export async function resolveAndLoadFont(
   font: string | FontPath | undefined,
-  scriptDir: string | undefined,
+  _scriptDir: string | undefined,
 ): Promise<{ fontFamily: string }> {
-  // Default: bundled font.
-  if (font === undefined) {
-    await ensureBundledFontLoaded();
-    return { fontFamily: 'default' };
+  if (hasHostFs()) {
+    const { resolveAndLoadFont: loadOnHost } = await import('./nodeLoader');
+    return loadOnHost(font, _scriptDir);
   }
-
-  // Path-shaped input (.ttf) — load + register under basename.
-  if (isFontPath(font)) {
-    const abs = isAbsolute(font)
-      ? font
-      : resolve(scriptDir ?? process.cwd(), font);
-    const base = basename(abs, extname(abs));
-    if (getFont(base)) {
-      return { fontFamily: base };
-    }
-    const buf = readFileSync(abs);
-    await loadFont(
-      buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength),
-      base,
+  if (font === undefined || (typeof font === 'string' && font.endsWith('.ttf'))) {
+    throw new KernelError(
+      'cli.host-fs-unavailable',
+      'Text features load font files from disk, which the browser runtime cannot do. ' +
+        'Run this script through the kernelCAD CLI or MCP server to render text.',
     );
-    return { fontFamily: base };
   }
 
-  // Logical name — must already be registered.
-  const existing = getFont(font);
-  if (!existing) {
+  // Dynamic import keeps the browser module graph free of node:* imports.
+  const { getFont } = await import('replicad');
+  if (!getFont(font)) {
     throw new KernelError(
       'sketch.text.font-not-found' as DiagnosticCode,
       `Font '${font}' is not registered.`,
@@ -96,7 +41,18 @@ export async function resolveAndLoadFont(
   return { fontFamily: font };
 }
 
-/** Test-only: clear bundled-loaded flag so each test starts from a clean slate. */
-export function __resetFontStateForTests(): void {
-  bundledLoaded = false;
+/** Browser runtimes cannot load the bundled TTF from disk. */
+export async function ensureBundledFontLoaded(): Promise<void> {
+  if (hasHostFs()) {
+    const { ensureBundledFontLoaded: loadOnHost } = await import('./nodeLoader');
+    return loadOnHost();
+  }
+  throw new KernelError(
+    'cli.host-fs-unavailable',
+    'Text features load font files from disk, which the browser runtime cannot do. ' +
+      'Run this script through the kernelCAD CLI or MCP server to render text.',
+  );
 }
+
+/** Test compatibility helper; there is no browser-side loaded font state. */
+export function __resetFontStateForTests(): void {}

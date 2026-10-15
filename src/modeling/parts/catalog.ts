@@ -113,10 +113,13 @@ export function resolveById(
       stepPath: string;
     }
   | undefined {
-  const record = cat.records.find((r) => r.id === id);
+  // An exact id wins. A deprecated alias resolves to its canonical record.
+  const record =
+    cat.records.find((r) => r.id === id) ??
+    cat.records.find((r) => r.aliases?.includes(id));
   if (!record) return undefined;
-  const stepDir = cat.stepDirById.get(id) ?? cat.dir;
-  const stepPath = join(stepDir, record.family, `${id}.step`);
+  const stepDir = cat.stepDirById.get(record.id) ?? cat.dir;
+  const stepPath = join(stepDir, record.family, `${record.id}.step`);
   return { record, stepPath };
 }
 

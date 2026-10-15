@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "partId": "sg90-servo",
+  "family": "micro-servo",
+  "geometrySha256": "958da61d109d565255a9c36c444283abd7dfddd9d43cbee99e02c639d0d07ec3",
+  "connectors": [
+    {
+      "name": "shaft-output",
+      "type": "axis",
+      "origin": [
+        0,
+        0,
+        29.9
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "name": "ear-mount-low",
+      "type": "frame",
+      "origin": [
+        0,
+        -18.95,
+        15.9
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ]
+    },
+    {
+      "name": "ear-mount-high",
+      "type": "frame",
+      "origin": [
+        0,
+        8.25,
+        15.9
+      ],
+      "normal": [
+        0,
+        0,
+        -1
+      ]
+    }
+  ],
+  "license": "CC-BY-SA-4.0",
+  "attribution": "Juan Fenoy, FreeCAD community parts library; CC-BY-SA-4.0. Translated to shaft-centered coordinates by kernelCAD contributors."
+}

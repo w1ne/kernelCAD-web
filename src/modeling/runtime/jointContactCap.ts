@@ -20,7 +20,15 @@
 //     pin-in-tongue shared volume is ~0 — there is no longer any intended
 //     bulk overlap at a revolute joint, so there is no per-mate-type carve-out.
 //
-// Decision #1 (locked): a SINGLE absolute noise threshold applies UNIFORMLY to
+// 2026-10-15: the 20 mm³ "contact-noise" volume cap is gone. On small parts
+// (3 mm plywood, M2 screws) 10 mm³ is a real collision: the DRAW-01 drawing
+// robot had a pencil 0.54 mm deep in its arm (10.0 mm³), a deck 0.41 mm deep
+// in its cradle (8.5 mm³) and a 0.044 mm³ tie overlap, all reported clean.
+// Touching is now told apart by GEOMETRY: coincident faces give a common
+// solid of ~0 volume or a sliver thinner than CONTACT_THICKNESS_MM. Any
+// thicker shared region above the volume floor is an interference.
+//
+// Decision #1 (locked): a SINGLE rule applies UNIFORMLY to
 // every pair, regardless of the mate type joining them. Adjacency does NOT
 // excuse a real overlap (Onshape: a mate between parts does not auto-classify
 // their interference as acceptable; ISO 286: a running fit has ~0 solid
@@ -30,32 +38,65 @@
 
 /**
  * Absolute "any overlap at all" floor (mm³). Shared volume at or below this is
- * not even counted as an overlap — it is BREP boolean / tessellation roundoff,
- * below the resolution of the interference detector.
+ * not even counted as an overlap — it is BREP boolean roundoff, below the
+ * resolution of the interference detector.
  */
 export const INTERPENETRATION_EPSILON_MM3 = 0.01;
 
 /**
- * The single uniform contact-noise threshold (mm³). Shared volume in the band
- * (`INTERPENETRATION_EPSILON_MM3`, `JOINT_CONTACT_NOISE_MM3`] is treated as
- * coincident-face touching / coarse-mesh tessellation slivers (ISO-grounded:
- * a clearance-fit joint tolerates ~20 mm³ of tessellation noise on arm-class
- * hardware). Anything STRICTLY ABOVE 20 mm³ is a real interference and marks
- * the mechanism broken — for ALL pairs, adjacent or not (decision #1). Tighten
- * to ~5 mm³ with fine tessellation; target is 0.
+ * Mean thickness (mm) at or below which a shared region is face contact, not
+ * an overlap: coincident faces, tessellation slivers on seated parts. Mean
+ * thickness of the BREP common solid is 2·V/A (V its volume, A its boundary
+ * area) — exact for a thin slab of any orientation.
  */
-export const JOINT_CONTACT_NOISE_MM3 = 20;
+export const CONTACT_THICKNESS_MM = 0.01;
+
+/** Mean thickness (mm) of a shared region of volume V and boundary area A. */
+export function overlapThicknessMm(volumeMm3: number, areaMm2: number): number {
+  return areaMm2 > 0 ? (2 * volumeMm3) / areaMm2 : Infinity;
+}
+
+/** An overlap as measured: volume, and mean thickness when known. */
+export interface MeasuredOverlap {
+  readonly volumeMm3: number;
+  /** Mean thickness (mm). Absent / null / non-finite = unknown. */
+  readonly thicknessMm?: number | null;
+}
 
 /**
- * The absolute shared-volume cap (mm³) below which an overlap between two parts
- * is touching / tessellation noise rather than a real interference. The cap is
- * UNIFORM across all pairs regardless of the mate type joining them (decision
- * #1: no per-mate-type carve-out; a revolute joint is a clearance fit with ~0
- * overlap, not a bulk-contact one). Exposed as a function (rather than the bare
- * `JOINT_CONTACT_NOISE_MM3` constant) so the interference classifiers in
- * `mechanismTruth.ts` (criterion 2) and `validator.ts` share one definition of
- * the threshold.
+ * THE interference rule. Every consumer (validator, review summary, pose
+ * envelope, mechanism-truth sweep, animation verify, rest-pose check, Studio)
+ * calls this, so no path hides an overlap another path reports.
+ *
+ * An overlap is real when its volume exceeds INTERPENETRATION_EPSILON_MM3 and
+ * it is NOT a contact sliver (mean thickness ≤ `contactThicknessMm`). Unknown
+ * thickness counts as real: a small volume alone never excuses an overlap.
+ * `contactThicknessMm` is raised only by a measurement with a coarser noise
+ * floor (the rest-pose mesh voxel integral).
  */
-export function jointContactCapMm3(): number {
-  return JOINT_CONTACT_NOISE_MM3;
+export function isActionableOverlap(
+  overlap: MeasuredOverlap,
+  contactThicknessMm: number = CONTACT_THICKNESS_MM,
+): boolean {
+  if (!(overlap.volumeMm3 > INTERPENETRATION_EPSILON_MM3)) return false;
+  const t = overlap.thicknessMm;
+  if (typeof t !== 'number' || Number.isNaN(t)) return true;
+  return t > contactThicknessMm;
+}
+
+/** Human-readable statement of the rule, for diagnostics. */
+export function overlapRuleText(contactThicknessMm: number = CONTACT_THICKNESS_MM): string {
+  return `overlap > ${INTERPENETRATION_EPSILON_MM3} mm³ and thicker than ${contactThicknessMm} mm (thinner = face contact)`;
+}
+
+/** Overlap volume (mm³) with enough digits that 0.044 never prints as 0.0. */
+export function formatOverlapMm3(volumeMm3: number): string {
+  return volumeMm3 >= 1 ? volumeMm3.toFixed(2) : volumeMm3.toPrecision(2);
+}
+
+/** "1.43 mm³ (0.21 mm thick)" — volume, plus mean thickness when known. */
+export function describeOverlap(overlap: MeasuredOverlap): string {
+  const t = overlap.thicknessMm;
+  const thick = typeof t === 'number' && Number.isFinite(t) ? ` (${t.toPrecision(2)} mm thick)` : '';
+  return `${formatOverlapMm3(overlap.volumeMm3)} mm³${thick}`;
 }

@@ -14,9 +14,9 @@
 // `modeling/runtime/jointContactCap` (do not re-derive):
 //   - detection epsilon `INTERPENETRATION_EPSILON_MM3` (0.01 mm³) — below
 //     this an intersection is boolean/tessellation roundoff, not an overlap;
-//   - classification cap `jointContactCapMm3()` (20 mm³) — shared volume at
-//     or below the cap is coincident-face touching / tessellation noise
-//     (touching ≠ interference); strictly above it is a real collision.
+//   - classification `isActionableOverlap` — a shared region thinner than
+//     `CONTACT_THICKNESS_MM` is coincident-face touching (touching ≠
+//     interference); any thicker overlap above the epsilon is a collision.
 //
 // Ignore-pairs: the model's own `solvedModel({ ignore: [...] })` lists are
 // REACHABLE from a BuiltModel via `model.session.assemblies` →
@@ -46,7 +46,9 @@ import {
 } from '../runtime/detectInterferences';
 import {
   INTERPENETRATION_EPSILON_MM3,
-  jointContactCapMm3,
+  describeOverlap,
+  isActionableOverlap,
+  overlapRuleText,
 } from '../runtime/jointContactCap';
 import { isSceneBackend, type SceneBackend } from '../../kernel/backends/sceneBackend';
 import type { CompilerDiagnostic, DiagnosticCode } from '../../shared/diagnostics/diagnostic';
@@ -60,7 +62,7 @@ export interface AnimationCollision {
   tMs: number;
   a: string;
   b: string;
-  /** Shared volume in mm³ — always strictly above `jointContactCapMm3()`. */
+  /** Shared volume in mm³ of an overlap `isActionableOverlap` accepts. */
   volumeMm3: number;
 }
 
@@ -138,7 +140,6 @@ export async function verifyAnimation(
   const sampleTimes = opts.sampleTimesMs ?? keyframeSampleSet(tracks);
   const diagnostics: CompilerDiagnostic[] = [];
   const collisions: AnimationCollision[] = [];
-  const cap = jointContactCapMm3();
   const progress = (message: string) => {
     try { opts.onProgress?.(message); } catch { /* Observers cannot alter verification. */ }
   };
@@ -178,7 +179,7 @@ export async function verifyAnimation(
     }
     anyPoseResolvedScene = true;
     progress(`${label}: interference`);
-    collectPoseCollisions(tMs, outcome.lowered, ignored, cap, collisions, diagnostics);
+    collectPoseCollisions(tMs, outcome.lowered, ignored, collisions, diagnostics);
     progress(`${label}: done`);
   }
 
@@ -249,20 +250,18 @@ function collectPoseCollisions(
   tMs: number,
   lowered: SceneBackend,
   ignored: ReadonlySet<string>,
-  cap: number,
   collisions: AnimationCollision[],
   diagnostics: CompilerDiagnostic[],
 ): void {
   const result = detectInterferences(lowered, INTERPENETRATION_EPSILON_MM3, ignored);
   for (const pair of result.pairs) {
-    // Mechanism-gate classification: at or below the cap is touching /
-    // tessellation noise, NOT an interference.
-    if (pair.volumeMm3 <= cap) continue;
+    // Mechanism-gate classification: face contact is not an interference.
+    if (!isActionableOverlap(pair)) continue;
     collisions.push({ tMs, a: pair.a, b: pair.b, volumeMm3: pair.volumeMm3 });
     diagnostics.push(diag(
       'animation.collision',
       `verifyAnimation: parts '${pair.a}' and '${pair.b}' collide at tMs=${tMs} of the animation timeline — ` +
-        `shared volume ${pair.volumeMm3.toFixed(2)} mm³ exceeds the ${cap} mm³ interference threshold.`,
+        `shared volume ${describeOverlap(pair)} (rule: ${overlapRuleText()}).`,
       `Adjust the keyframes so the pose at tMs=${tMs} keeps '${pair.a}' and '${pair.b}' clear, or reshape / add clearance to the colliding geometry.`,
     ));
   }

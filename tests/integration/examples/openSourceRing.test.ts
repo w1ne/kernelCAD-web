@@ -234,7 +234,7 @@ describe('Open Source Ring reference assembly', () => {
         partCount: 11,
       });
       expect(fixture.validation.diagnostics).toEqual([]);
-      expect(fixture.mechanism).toEqual({ mechanism: 'real', failures: [] });
+      expect(fixture.mechanism).toMatchObject({ mechanism: 'real', failures: [] });
     });
   });
 });

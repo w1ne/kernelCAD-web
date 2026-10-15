@@ -50,7 +50,7 @@ describe('buildStudioCommands', () => {
 
     it('lists every export format and disables what cannot run', () => {
         const ids = buildStudioCommands(state(), actions()).filter((c) => c.section === 'Export').map((c) => c.id);
-        expect(ids).toEqual(['export.stl', 'export.step', 'export.dxf', 'export.3mf', 'export.glb', 'export.pdf-drawing']);
+        expect(ids).toEqual(['export.stl', 'export.step', 'export.dxf', 'export.3mf', 'export.glb', 'export.obj', 'export.usd', 'export.pdf-drawing']);
 
         const noPlanar = buildStudioCommands(state({ hasPlanarGeometry: false }), actions());
         expect(byId(noPlanar, 'export.dxf')?.disabled).toBe(true);

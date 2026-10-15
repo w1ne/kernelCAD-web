@@ -238,11 +238,13 @@ export async function fetchCommunityGallery(
   return cards.sort((a, b) => Number(b.featured) - Number(a.featured));
 }
 
-async function precomputeGalleryBridge(entry: GalleryEntry, srcScript: string, meshOutDir: string): Promise<void> {
+async function precomputeGalleryBridge(entry: GalleryEntry, srcScript: string, meshOutDir: string): Promise<boolean> {
+  let declaresAnimation = false;
   try {
     const sourceText = readFileSync(srcScript, 'utf8');
     const sha = createHash('sha256').update(sourceText, 'utf8').digest('hex');
     const loaded = await loadScriptFeatures(srcScript);
+    declaresAnimation = loaded.features.some((feature) => feature.record.kind === 'animationView');
     const meshing = await meshFeaturesPerFeature(
       loaded.features.map((f) => f.record),
       loaded.paramTable,
@@ -278,8 +280,9 @@ async function precomputeGalleryBridge(entry: GalleryEntry, srcScript: string, m
     console.warn(
       `build-gallery: ${entry.slug} precompute skipped — ${err instanceof Error ? err.message : String(err)}`,
     );
+    return false;
   }
-
+  return declaresAnimation;
 }
 
 export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
@@ -312,6 +315,8 @@ export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
   const published: PublishedEntry[] = [];
 
   for (const entry of parsed.entries) {
+    const entryStartedAt = Date.now();
+    console.log(`build-gallery: ${entry.slug} started`);
     const slugDir = path.join(galleryOutDir, entry.slug);
     mkdirSync(slugDir, { recursive: true });
 
@@ -362,6 +367,7 @@ export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
     // Mesh at full resolution, then decimate down to the web budget. Shared with
     // the catalog board pipeline (scripts/lib/optimizeGlb.ts) so both surfaces
     // ship GLBs built the same way — the flags there are load-bearing.
+    const glbExportStartedAt = Date.now();
     const rawGlb = path.join(slugDir, 'model.raw.glb');
     if (entry.modelLocal) {
       const srcModel = path.resolve(entriesDir, entry.modelLocal);
@@ -372,6 +378,8 @@ export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
     } else {
       await exportGlb({ scriptPath: srcScript, outPath: rawGlb, previewMesh: entry.previewMesh });
     }
+    console.log(`build-gallery: ${entry.slug} glb export ${((Date.now() - glbExportStartedAt) / 1000).toFixed(1)}s`);
+    const glbOptimizeStartedAt = Date.now();
     await optimizeGlb(rawGlb, dstModel, {
       repoRoot: REPO_ROOT,
       label: `entry ${entry.slug}`,
@@ -383,13 +391,18 @@ export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
       preserveMaterials: true,
     });
     rmSync(rawGlb, { force: true });
+    console.log(`build-gallery: ${entry.slug} glb optimization ${((Date.now() - glbOptimizeStartedAt) / 1000).toFixed(1)}s`);
 
     // Precompute the mesh bridge payload for curated entries so the hosted
     // Studio renders the initial view from a static file. Keyed by the
     // sha256 of the exact source bytes served at source.kcad.ts — the same
     // digest the browser computes via Web Crypto in scriptSource.meshSourceHosted.
     if (entry.source === 'curated') {
-      await precomputeGalleryBridge(entry, srcScript, meshOutDir);
+      const bridgeStartedAt = Date.now();
+      const bridgeDeclaresAnimation = await precomputeGalleryBridge(entry, srcScript, meshOutDir);
+      console.log(`build-gallery: ${entry.slug} bridge precompute ${((Date.now() - bridgeStartedAt) / 1000).toFixed(1)}s`);
+      const sourceText = readFileSync(srcScript, 'utf8');
+      const declaresAnimation = bridgeDeclaresAnimation || /\banimationView\s*\(/.test(sourceText);
 
       // Precompute the animation timeline (per-part world transforms per frame)
       // for entries that declare an animationView. Keyed by the SAME sha256 of
@@ -397,19 +410,25 @@ export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
       // from a full `evaluateAndBuildScript` model (the baker re-solves mate
       // poses per frame). Non-fatal: a non-animated or unbakeable model simply
       // has no `_anim` file and plays static.
+      const animStartedAt = Date.now();
       try {
-        const sourceText = readFileSync(srcScript, 'utf8');
-        const sha = createHash('sha256').update(sourceText, 'utf8').digest('hex');
-        const { evaluation, model } = await evaluateAndBuildScript({ file: srcScript });
-        if (evaluation.exitCode === 0 && model && selectAnimationMetadata(model)) {
-          const baked = await bakeAnimationTimeline(model);
-          writeFileSync(path.join(animOutDir, `${sha}.json`), JSON.stringify(baked));
-          console.log(`build-gallery: ${entry.slug} animation baked (${baked.frames} frames, ${baked.parts.length} parts)`);
+        if (!declaresAnimation) {
+          console.log(`build-gallery: ${entry.slug} animation skipped (no animationView)`);
+        } else {
+          const sha = createHash('sha256').update(sourceText, 'utf8').digest('hex');
+          const { evaluation, model } = await evaluateAndBuildScript({ file: srcScript });
+          if (evaluation.exitCode === 0 && model && selectAnimationMetadata(model)) {
+            const baked = await bakeAnimationTimeline(model);
+            writeFileSync(path.join(animOutDir, `${sha}.json`), JSON.stringify(baked));
+            console.log(`build-gallery: ${entry.slug} animation baked (${baked.frames} frames, ${baked.parts.length} parts)`);
+          }
         }
       } catch (err) {
         console.warn(
           `build-gallery: ${entry.slug} animation bake skipped — ${err instanceof Error ? err.message : String(err)}`,
         );
+      } finally {
+        console.log(`build-gallery: ${entry.slug} anim phase ${((Date.now() - animStartedAt) / 1000).toFixed(1)}s`);
       }
     }
 
@@ -427,6 +446,7 @@ export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
       scriptPath,
       studioUrl,
     });
+    console.log(`build-gallery: ${entry.slug} complete ${((Date.now() - entryStartedAt) / 1000).toFixed(1)}s`);
   }
 
   const community = opts.communityApi

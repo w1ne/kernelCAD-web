@@ -28,7 +28,7 @@ import type { StagedEdit } from './store/shellStore';
 import { useRecomputeResult } from './hooks/useRecomputeResult';
 import { useStudioChrome } from './context/StudioChromeContext';
 import { useUI } from './context/UIContext';
-import { jointContactCapMm3 } from '../modeling/runtime/jointContactCap';
+import { isActionableOverlap } from '../modeling/runtime/jointContactCap';
 import { useViewportToggles } from './hooks/useViewportToggles';
 import { useUndoRedoShortcuts } from './hooks/useUndoRedoShortcuts';
 import { NARROW_QUERY, useIsNarrow } from './hooks/useIsNarrow';
@@ -52,7 +52,7 @@ function resolveEmbedFlags(embed: EmbedFlags): { showHeader: boolean; enableAgen
 function resolveInterferenceCount(recompute: ReturnType<typeof useRecomputeResult>): number {
     return recompute.interferenceSummary?.actionableCount
         ?? (recompute.rawInterferencePairs ?? [])
-            .filter((pair) => pair.volumeMm3 > jointContactCapMm3())
+            .filter((pair) => isActionableOverlap(pair))
             .length;
 }
 
@@ -300,6 +300,7 @@ function renderStudioFooter(props: {
                 interferences={interferenceCount}
                 interferenceSummary={recompute.interferenceSummary}
                 recomputeMs={workbench.recomputeMs}
+                mechanismSummary={workbench.scriptReview?.mechanismSummary}
             />
 
             {renderProjectManager(workbench)}

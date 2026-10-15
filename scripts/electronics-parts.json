@@ -749,20 +749,8 @@
       "attribution": "kernelCAD authored mechanical model; dimensions and pinout from Pololu #2128: https://www.pololu.com/product/2128, https://www.pololu.com/file/0J1081/a4988-stepper-motor-driver-carrier-black-edition-dimension-diagram.pdf, and https://www.pololu.com/file/0J1225/a4988-stepper-motor-driver-carrier-black-edition.step"
     },
     {
-      "id": "sg90-micro-servo",
-      "name": "SG90 micro servo (Luxor Parts 87897)",
-      "family": "micro-servo",
-      "mpn": "Luxor Parts 87897 (SG90)",
-      "kcad_source": "scripts/parts/authored/sg90-micro-servo.kcad.ts",
-      "tags": [
-        "servo",
-        "micro-servo",
-        "sg90",
-        "pwm",
-        "actuator"
-      ],
-      "license": "MIT",
-      "attribution": "kernelCAD authored conservative mechanical envelope and canonical harness-contact proxies; dimensions and cable convention from Luxor Parts 87897 data sheet (which does not establish a shaft or mounting datum): https://www.kjell.com/globalassets/mediaassets/701916_87897_datasheet_en.pdf"
+      "id": "sg90-servo",
+      "seed_source": "assets/parts-seed/micro-servo/sg90-servo.step"
     },
     {
       "id": "nrf54l15-qfn48",

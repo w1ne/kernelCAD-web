@@ -43,3 +43,37 @@ describe('lib.standard.* typed wrappers', () => {
     expect(m).toBeDefined();
   });
 });
+
+describe('SG90 community reference shortcuts', () => {
+  it('fetches genuine local motor and horn with authored connectors and provenance', async () => {
+    const session = new CaptureSession();
+    const api = createModelingApi({ session });
+    const motor = await api.lib.standard.sg90();
+    const horn = await api.lib.standard.sg90HornSingleArm();
+    expect(session.catalogConnectors.get(motor.id)).toEqual(expect.arrayContaining([
+      expect.objectContaining({ name: 'shaft-output', origin: [0, 0, 29.9], axis: [0, 0, 1] }),
+      expect.objectContaining({ name: 'ear-mount-low', origin: [0, -18.95, 15.9], normal: [0, 0, -1] }),
+      expect.objectContaining({ name: 'ear-mount-high', origin: [0, 8.25, 15.9], normal: [0, 0, -1] }),
+    ]));
+    expect(session.catalogConnectors.get(horn.id)).toEqual(expect.arrayContaining([
+      expect.objectContaining({ name: 'spline-socket', origin: [0, 0, 5], normal: [0, 0, 1] }),
+      expect.objectContaining({ name: 'mount-hole-17', origin: [17, 0, 0], axis: [0, 0, 1] }),
+    ]));
+  }, 120000);
+
+  it('still resolves the deprecated sg90-micro-servo id to the one SG90 entry', async () => {
+    const prev = process.env.KERNELCAD_PARTS_BASE_URL;
+    process.env.KERNELCAD_PARTS_BASE_URL = 'off'; // must resolve locally, never on the network
+    try {
+      const session = new CaptureSession();
+      const api = createModelingApi({ session });
+      const motor = await api.lib.fetchPart('sg90-micro-servo');
+      expect(session.catalogConnectors.get(motor.id)).toEqual(expect.arrayContaining([
+        expect.objectContaining({ name: 'shaft-output', origin: [0, 0, 29.9], axis: [0, 0, 1] }),
+      ]));
+    } finally {
+      if (prev === undefined) delete process.env.KERNELCAD_PARTS_BASE_URL;
+      else process.env.KERNELCAD_PARTS_BASE_URL = prev;
+    }
+  }, 120000);
+});

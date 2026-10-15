@@ -153,7 +153,7 @@ what you are validating:
   the MP4/frames. Use it to confirm a particular authored MOTION (several joints
   moving on a shared timeline) stays clear and to produce the motion artifact.
 
-Both reuse the mechanism-validity 20 mm³ interference threshold and honor
+Both reuse the mechanism-validity interference rule (overlap > 0.01 mm³ and thicker than 0.01 mm; thinner is face contact) and honor
 declared `solvedModel({ ignore })` pairs, so a pose clean under one is judged by
 the same rule under the other. Range-based proves the joint's envelope is safe;
 timeline-based proves the choreographed cycle is safe and renders it.

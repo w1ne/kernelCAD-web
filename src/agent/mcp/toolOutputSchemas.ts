@@ -28,13 +28,25 @@ import { MESH_RECONSTRUCT_OUTPUT_SCHEMAS } from './registry/meshReconstructTools
 import { IMPORT_OUTPUT_SCHEMAS } from './registry/importTools.outputSchemas';
 import { FABRICATION_OUTPUT_SCHEMAS } from './registry/fabricationTools.outputSchemas';
 import { MANUFACTURING_OUTPUT_SCHEMAS } from './registry/manufacturingTools.outputSchemas';
+import { NURBS_OUTPUT_SCHEMAS } from './registry/nurbsTools.outputSchemas';
 
 export type { JSONSchemaObject } from './toolOutputSchemaParts';
-import { SELECTION, SOURCE_EDIT, TUBE_JOINT, type JSONSchemaObject } from './toolOutputSchemaParts';
+import { MECHANISM_SUMMARY, SELECTION, SOURCE_EDIT, TUBE_JOINT, type JSONSchemaObject } from './toolOutputSchemaParts';
 
 export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
   get_selection: SELECTION,
   set_selection: SELECTION,
+  ray_pick: {
+    type: 'object',
+    properties: {
+      ok: { type: 'boolean' }, feature_id: { type: 'string' }, shape_index: { type: 'integer' },
+      studio_url: { type: 'string' }, session: { type: 'string' }, model_generation: { type: 'integer' },
+      hit_basis: { type: 'string', enum: ['per-face tessellation'] },
+      hits: { type: 'array', items: { type: 'object', additionalProperties: true, description: 'face_id, point, distance, normal, model_generation, selection, and set_selection arguments ready to pass directly to set_selection.' } },
+      error: { type: 'string' },
+    },
+    required: ['ok'], additionalProperties: true,
+  },
   evaluate_script: {
     type: 'object',
     properties: {
@@ -124,6 +136,7 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
         description: 'Every fluid port (a connector with port data) of the assembly the script returns. Present, possibly empty, whenever the script declares an assembly and builds a model, with or without tubes; omitted otherwise and for dryRun.',
       },
       mechanism: { type: 'string', enum: ['real', 'broken', 'unverified'], description: "Mechanism-truth verdict for an assembly-built scene (default-on; omitted for dryRun, non-assembly, or skipMechanismCheck:true). 'broken' makes ok:false; 'unverified' keeps ok and surfaces a loud budget diagnostic." },
+      mechanismSummary: MECHANISM_SUMMARY,
       reviewHint: { type: 'string', description: 'Present only when a captured assembly declares articulated (non-fastened) mates: the default mechanism check is shallow (no joint-support intents, pose-envelope overlap at declared limits, or gravity drop) — run review_cad for pose-envelope + gravity checks.' },
     },
     required: ['ok', 'featureCount', 'diagnostics', 'sceneSummary'],
@@ -289,6 +302,10 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
       imageDims: { type: 'array', items: { type: 'number' }, description: 'Pixel dimensions [width, height] of the source image.' },
       diagnostics: { type: 'array', items: { type: 'object', additionalProperties: true } },
       ledger: { type: 'object', additionalProperties: true, description: 'Assumption ledger: { facts, scale?, unresolvedCount } classifying every fact as visible/inferred/assumed/missing.' },
+      detectedParts: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Optional labeled component detections: name, quantity, outline-frame position/bbox and confidence.' },
+      draftBom: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Optional unverified BOM draft grouped by detected part name.' },
+      unmatchedLabels: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Detected labels without a sufficiently strong bundled-catalog match.' },
+      partDetectionFrame: { type: 'string', enum: ['outline', 'image', 'mixed'], description: 'Coordinate frame used by all detected boxes, or mixed when some boxes fall outside the silhouette and retain image coordinates.' },
     },
     required: ['ok', 'features', 'imageDims', 'diagnostics', 'ledger'],
     additionalProperties: true,
@@ -603,6 +620,7 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
       },
       mechanism: { type: 'string' },
       mechanismFailures: { type: 'array', items: { type: 'object', additionalProperties: true } },
+      mechanismSummary: MECHANISM_SUMMARY,
       suggestedRepairPrompt: { type: 'string', description: 'Structured repair prompt (failure / repair path).' },
     },
     required: ['ok', 'featureCount', 'diagnostics'],
@@ -798,7 +816,30 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
     required: ['ok', 'toolchain', 'materials', 'material_names'],
     additionalProperties: true,
   },
+  fit_plane: {
+    type: 'object',
+    properties: {
+      ok: { type: 'boolean', description: 'Present and true when a plane fit succeeds; false when input validation or fitting fails.' },
+      centroid: { type: 'array', items: { type: 'number' }, description: 'Least-squares plane centroid [x, y, z].' },
+      normal: { type: 'array', items: { type: 'number' }, description: 'Deterministic unit plane normal [x, y, z].' },
+      residuals: { type: 'array', items: { type: 'number' }, description: 'Signed orthogonal distances in input order.' },
+      rms: { type: 'number', description: 'Root mean square orthogonal residual.' },
+      maxAbsResidual: { type: 'number', description: 'Maximum absolute orthogonal residual.' },
+      error: { type: 'string', description: 'Failure message; present when ok is false.' },
+    },
+    required: ['ok'],
+    additionalProperties: true,
+  },
   ...IMPORT_OUTPUT_SCHEMAS,
   ...FABRICATION_OUTPUT_SCHEMAS,
   ...MANUFACTURING_OUTPUT_SCHEMAS,
+  ...NURBS_OUTPUT_SCHEMAS,
+  route_wires: {
+    type: 'object',
+    properties: {
+      ok: { type: 'boolean' }, routes: { type: 'array', items: { type: 'object', properties: { id: { type: 'string' }, route_found: { type: 'boolean' }, route_failure: { type: 'string' }, length_mm: { type: ['number', 'null'] }, bend_count: { type: ['integer', 'null'] }, points_mm: { type: 'array', items: { type: 'array', items: { type: 'number' } } }, collisions: { type: 'array', items: { type: 'string' } }, clearance_violations: { type: 'array', items: { type: 'string' } } }, additionalProperties: true } },
+      warnings: { type: 'array', items: { type: 'string' } },
+      unresolved_wire_count: { type: 'integer' }, clearance_mm: { type: 'number' }, requested_bend_radius_mm: { type: 'number' },
+    }, required: ['ok', 'routes', 'warnings', 'unresolved_wire_count'], additionalProperties: true,
+  },
 };

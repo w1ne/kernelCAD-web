@@ -7,8 +7,8 @@ import viteConfig from '../../../vite.config';
 import { reviewCadTool } from '../../../src/agent/mcp/tools/reviewCad';
 
 const livePairs = [
-  { a: 'raw-a', b: 'raw-b', volumeMm3: 1 },
-  { a: 'real-a', b: 'real-b', volumeMm3: 30 },
+  { a: 'raw-a', b: 'raw-b', volumeMm3: 1, thicknessMm: 0.001 },
+  { a: 'real-a', b: 'real-b', volumeMm3: 30, thicknessMm: 0.5 },
 ];
 
 vi.mock('../../../src/agent/mcp/tools/reviewCad', () => ({
@@ -172,7 +172,8 @@ describe('Vite /__kernelcad/review live endpoint', () => {
       rawCount: 2,
       contactNoiseCount: 1,
       actionableCount: 1,
-      capMm3: 20,
+      capMm3: 0.01,
+      contactThicknessMm: 0.01,
     });
   });
 

@@ -6,7 +6,7 @@
 // discoverable via list_api as the single entry "export the model to a file".
 // Replaces the legacy `export_stl` shim (removed in the C2 cull).
 //
-// Format enum: stl | step | dxf | 3mf | glb | svg-drawing | pdf-drawing | urdf | srdf | sdf-gazebo | usd-isaac | bom-csv | bom-json | bend-table.
+// Format enum: stl | step | dxf | 3mf | glb | obj | usd | svg-drawing | pdf-drawing | urdf | srdf | sdf-gazebo | usd-isaac | bom-csv | bom-json | bend-table.
 // URDF / SDF-Gazebo exports also write companion meshes/<part>.stl files
 // next to output_path (the emitted XML references them by relative path);
 // the written paths are reported in `mesh_files`. A multi-part DXF export

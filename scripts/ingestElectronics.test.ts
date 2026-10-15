@@ -250,3 +250,34 @@ describe('ingestElectronics', () => {
     expect(mocks.ingestDirectory).not.toHaveBeenCalled();
   });
 });
+
+describe('seed-backed electronics entries', () => {
+  it('publishes the committed SG90 seed with its record, interfaces and deprecated alias', async () => {
+    const { readSeedPart } = await import('./ingestElectronics');
+    const repoRoot = join(__dirname, '..');
+    const seed = readSeedPart(repoRoot, {
+      id: 'sg90-servo',
+      seed_source: 'assets/parts-seed/micro-servo/sg90-servo.step',
+    });
+    expect(seed.step.subarray(0, 64).toString('latin1')).toContain('ISO-10303-21');
+    expect(seed.meta).toMatchObject({
+      id: 'sg90-servo',
+      family: 'micro-servo',
+      license: 'CC-BY-SA-4.0',
+      aliases: ['sg90-micro-servo'],
+      attributes: { mpn: 'SG90', pinout: 'GND brown, V+ red, PWM orange' },
+      connectorManifest: { partId: 'sg90-servo', family: 'micro-servo' },
+    });
+    const names = (seed.meta.connectorManifest as { connectors: { name: string }[] }).connectors.map((c) => c.name);
+    expect(names).toEqual(['shaft-output', 'ear-mount-low', 'ear-mount-high']);
+  });
+
+  it('stops the release when a seed entry points at a missing record', async () => {
+    const { readSeedPart } = await import('./ingestElectronics');
+    const repoRoot = join(__dirname, '..');
+    expect(() => readSeedPart(repoRoot, {
+      id: 'sg90-micro-servo',
+      seed_source: 'assets/parts-seed/micro-servo/sg90-servo.step',
+    })).toThrow(/seed part 'sg90-micro-servo'/);
+  });
+});

@@ -65,7 +65,7 @@ export { stlNotWatertightDiagnostic } from './exportDiagnostics';
 export type { GcodeStats } from '../../kernel/export/gcode/gcodeHeaderParser';
 
 export type ExportFormat =
-  | 'stl' | 'step' | 'dxf' | '3mf' | 'glb' | 'svg-drawing' | 'pdf-drawing'
+  | 'stl' | 'step' | 'dxf' | '3mf' | 'glb' | 'obj' | 'usd' | 'svg-drawing' | 'pdf-drawing'
   | 'urdf' | 'srdf' | 'sdf-gazebo' | 'gcode' | 'usd-isaac'
   | 'bom-csv' | 'bom-json' | 'bend-table';
 
@@ -107,6 +107,8 @@ export type ExportOptions =
       infill?: StressInfillExportOptions;
     }
   | { format: 'glb'; axis?: 'y-up' | 'z-up'; draco?: false }
+  | { format: 'obj' }
+  | { format: 'usd' }
   | (DrawingReviewOptions & {
       format: 'svg-drawing';
       /** Printable review preview with PDF sheet and title-block defaults. */

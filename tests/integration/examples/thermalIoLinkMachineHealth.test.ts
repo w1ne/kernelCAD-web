@@ -219,7 +219,7 @@ describe('Thermal IO-Link machine-health reference assembly', () => {
         partCount: 11,
       });
       expect(fixture.validation.diagnostics).toEqual([]);
-      expect(fixture.mechanism).toEqual({ mechanism: 'real', failures: [] });
+      expect(fixture.mechanism).toMatchObject({ mechanism: 'real', failures: [] });
     });
   });
 });

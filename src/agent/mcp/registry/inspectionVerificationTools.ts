@@ -35,13 +35,14 @@ const inspectToolEntry: ToolRegistryEntry = {
       "- 'section' — numeric cross-section probe of a shape: area, perimeter, loop/hole counts, 2D bbox at a plane ({ feature_id?, plane | at+axis, stack?: { from, to, count, axis? } }). `stack` scans evenly spaced slices and returns `minAreaIndex`/`minAreaPosition` — use it to find the neck/thinnest cross-section along an axis.\n" +
       "- 'continuity' — G0/G1/G2 classification of shared edges ({ feature_id?, edges? }); position gap, normal jump, curvature difference, worst-sample XYZ.\n" +
       "- 'curvature' — per-face Gaussian and mean curvature min/max/mean, inflections, spikes ({ feature_id?, faces?, spike_factor? }).\n" +
+      "- 'multi-material' — explicit material leaves shadowed by later attributed boolean descendants, with assembly-part rewrite templates; analyzes capture records and does not change mesh attribution.\n" +
       'All params except `of` are subject-specific and forwarded verbatim. Most subjects accept { file | code }.',
     inputSchema: {
       type: 'object',
       properties: {
         of: {
           type: 'string',
-          enum: ['assembly', 'robot', 'step', 'shape', 'mass', 'features', 'assemblies', 'topology', 'edges', 'face-edges', 'faces', 'face-labels', 'mates', 'constraints', 'part-stats', 'bend-table', 'params', 'part-categories', 'part-families', 'bom', 'section', 'continuity', 'curvature'],
+          enum: ['assembly', 'robot', 'step', 'shape', 'mass', 'features', 'assemblies', 'topology', 'edges', 'face-edges', 'faces', 'face-labels', 'mates', 'constraints', 'part-stats', 'bend-table', 'params', 'part-categories', 'part-families', 'bom', 'section', 'continuity', 'curvature', 'multi-material'],
           description: 'Which facts to read.',
         },
         file: { type: 'string', description: 'Path to a .kcad.ts script file.' },

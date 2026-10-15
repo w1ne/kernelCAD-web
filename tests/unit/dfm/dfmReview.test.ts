@@ -43,6 +43,27 @@ describe('dfm_review', () => {
     expect(status(two, 'cnc.undercuts')).toBe('pass');
   }, 60000);
 
+  // #944 post-merge: side/bottom features under the DEFAULT +z axis and with side setups.
+  // A face facing away from every allowed approach is a real 3-axis undercut; a face that
+  // some allowed axis reaches (sides via +x/-x, bottom via -z) must not be counted.
+  it.each([
+    ['vertical side walls and open side slot', 'return box(40,30,10).subtract(box(10,30,5).translate(15,0,5));', ['+z'], 0],
+    ['side step (walls parallel to +z)', 'return box(40,30,10).union(box(20,30,10).translate(0,0,10));', ['+z'], 0],
+    ['bottom face on the fixture plane', 'return box(40,30,10);', ['+z'], 0],
+    ['bottom pocket from +z only', 'return box(40,40,10).subtract(box(20,20,5).translate(10,10,0));', ['+z'], 800],
+    ['bottom pocket with a flipped -z setup', 'return box(40,40,10).subtract(box(20,20,5).translate(10,10,0));', ['+z', '-z'], 0],
+    ['raised plate on legs from +z only', 'return box(40,40,5).translate(0,0,5).union(box(5,5,5)).union(box(5,5,5).translate(35,35,0));', ['+z'], 1650],
+    ['raised plate on legs reached from the sides', 'return box(40,40,5).translate(0,0,5).union(box(5,5,5)).union(box(5,5,5).translate(35,35,0));', ['+z', '+x', '-x'], 0],
+    ['horizontal side bore from +z only', 'return box(30,20,20).subtract(cylinder(40,4).rotate([0,1,0],90).translate(-5,10,10));', ['+z'], 'fail'],
+    ['horizontal side bore reached along +x', 'return box(30,20,20).subtract(cylinder(40,4).rotate([0,1,0],90).translate(-5,10,10));', ['+z', '+x', '-x'], 0],
+  ] as const)('undercuts: %s', async (_name, code, axes, expected) => {
+    const r = await dfmReviewTool({ code, processes: ['cnc'], approach_axes: [...axes] });
+    const area = r.cnc![0].result.undercut.areaMm2;
+    if (expected === 'fail') expect(area).toBeGreaterThan(1);
+    else if (expected === 0) { expect(area).toBe(0); expect(status(r, 'cnc.undercuts')).toBe('pass'); }
+    else expect(area).toBeCloseTo(expected, 0);
+  }, 60000);
+
   it('flags the sharp internal corners of a square pocket against the tool radius', async () => {
     const r = await dfmReviewTool({ code: POCKET, processes: ['cnc'] });
     expect(status(r, 'cnc.undercuts')).toBe('pass');

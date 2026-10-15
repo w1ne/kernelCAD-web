@@ -70,6 +70,7 @@ function makeCatalogFixture(): string {
       byteSize: step.length,
       license: 'MIT',
       connectors: [],
+      ...(spec.aliases === undefined ? {} : { aliases: [...spec.aliases] }),
       connectorManifest: {
         schemaVersion: 1,
         partId: spec.id,
@@ -198,10 +199,10 @@ describe('verifyAuthoredElectronicsCatalog', () => {
     ).rejects.toThrow(new RegExp(`${missing.id}.*STEP artifact`, 'i'));
   });
 
-  it('fails before deploy when SG90 exports an unsupported output axis', async () => {
+  it('fails before deploy when SG90 exports an unexpected interface', async () => {
     const catalogDir = makeCatalogFixture();
     const spec = REQUIRED_AUTHORED_CATALOG_COMPONENT_SPECS.find(
-      (candidate) => candidate.id === 'sg90-micro-servo',
+      (candidate) => candidate.id === 'sg90-servo',
     )!;
     const detailPath = join(catalogDir, 'v1', 'parts', `${spec.id}.json`);
     const detail = JSON.parse(readFileSync(detailPath, 'utf8')) as {
@@ -220,25 +221,37 @@ describe('verifyAuthoredElectronicsCatalog', () => {
     ).rejects.toThrow(/output-axis-envelope.*unexpected/i);
   });
 
-  it('fails before deploy when an SG90 electrical contact is not a frame', async () => {
+  it('fails before deploy when an SG90 ear mount is not a frame', async () => {
     const catalogDir = makeCatalogFixture();
     const spec = REQUIRED_AUTHORED_CATALOG_COMPONENT_SPECS.find(
-      (candidate) => candidate.id === 'sg90-micro-servo',
+      (candidate) => candidate.id === 'sg90-servo',
     )!;
     const detailPath = join(catalogDir, 'v1', 'parts', `${spec.id}.json`);
     const detail = JSON.parse(readFileSync(detailPath, 'utf8')) as {
       connectorManifest: { connectors: Array<Record<string, unknown>> };
     };
-    const pwmContact = detail.connectorManifest.connectors.find(
-      (connector) => connector.name === 'pwm-contact',
+    const earMount = detail.connectorManifest.connectors.find(
+      (connector) => connector.name === 'ear-mount-low',
     )!;
-    pwmContact.type = 'axis';
-    pwmContact.axis = [0, 0, 1];
-    delete pwmContact.normal;
+    earMount.type = 'axis';
+    earMount.axis = [0, 0, 1];
+    delete earMount.normal;
     writeFileSync(detailPath, JSON.stringify(detail));
 
     await expect(
       verifyAuthoredElectronicsCatalog({ catalogDir, manifestPath }),
-    ).rejects.toThrow(/pwm-contact.*axis.*frame/i);
+    ).rejects.toThrow(/ear-mount-low.*axis.*frame/i);
+  });
+
+  it('fails before deploy when SG90 loses its deprecated sg90-micro-servo alias', async () => {
+    const catalogDir = makeCatalogFixture();
+    const detailPath = join(catalogDir, 'v1', 'parts', 'sg90-servo.json');
+    const detail = JSON.parse(readFileSync(detailPath, 'utf8')) as { aliases?: string[] };
+    delete detail.aliases;
+    writeFileSync(detailPath, JSON.stringify(detail));
+
+    await expect(
+      verifyAuthoredElectronicsCatalog({ catalogDir, manifestPath }),
+    ).rejects.toThrow(/sg90-servo.*alias 'sg90-micro-servo'/);
   });
 });
