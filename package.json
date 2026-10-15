@@ -37,6 +37,7 @@
     "README.md",
     "LICENSE",
     "assets/parts/**",
+    "assets/reference-parts/**",
     "assets/parts-seed/**",
     "dist/mcp-viewer"
   ],
