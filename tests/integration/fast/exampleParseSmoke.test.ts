@@ -15,11 +15,14 @@ const examples = globSync('examples/**/*.kcad.ts').sort();
 // checks still run for every one so malformed source cannot hide here.
 const HEAVY: ReadonlyMap<string, string> = new Map([
   ['examples/cookbook-parity/gt2-timing-belt-drive.kcad.ts', 'detailed timing-belt sweeps'],
+  ['examples/cookbook-parity/gridfinity-bin.kcad.ts', '0.8 s local evaluate; bin booleans approach the per-test budget'],
+  ['examples/cookbook/wayfarer-temple-ray-ban.kcad.ts', '1.0 s local detailed temple model evaluation'],
   ['examples/cookbook-parity/iso-metric-bolt-and-nut.kcad.ts', 'detailed helical thread geometry'],
   ['examples/from-reference/e46-sedan/e46-sedan.kcad.ts', 'large imported/conformal car assembly'],
   ['examples/from-reference/hatchback/hatchback.kcad.ts', 'large detailed car assembly'],
   ['examples/gallery/gearfinity-planetary-stage.kcad.ts', 'detailed planetary gear geometry'],
   ['examples/gallery/hand-coffee-grinder.kcad.ts', 'complex multi-part grinder assembly'],
+  ['examples/gallery/meta-glasses-experiments/words-to-geometry-wayfarer.kcad.ts', '0.8 s local optical-frame feature chain'],
   ['examples/gallery/make-no-mistakes-keycap/model.kcad.ts', 'detailed keycap model'],
   ['examples/gallery/turbojet-engine.kcad.ts', 'detailed multi-part turbine geometry'],
   ['examples/robot-arm/compact-supported-arm.kcad.ts', 'mesh-heavy robot assembly'],
@@ -28,26 +31,28 @@ const HEAVY: ReadonlyMap<string, string> = new Map([
   ['examples/robot-arm/so100/so100.kcad.ts', '13 imported STL solids'],
   ['examples/robot-hand/functional-clevis-robot-hand.kcad.ts', 'detailed articulated hand geometry'],
   ['examples/robot-hand/generic-articulated-digit.kcad.ts', 'detailed articulated digit geometry'],
+  ['examples/robot-hand/workflow-candidates-comparison.kcad.ts', '0.8 s local multi-candidate comparison board'],
   ['examples/rocket-engine-lines/engine-bare.kcad.ts', 'full engine assembly and tube clearance'],
   ['examples/rocket-engine-lines/engine-routed-twin.kcad.ts', 'full engine assembly and tube clearance'],
   ['examples/rocket-engine-lines/engine-routed.kcad.ts', 'full engine assembly and tube clearance'],
   ['examples/spice-dispenser-carousel.kcad.ts', 'complex carousel and swept geometry'],
   ['examples/threads/threaded-jar-and-lid.kcad.ts', 'detailed helical thread geometry'],
   ['examples/tube-routing-engine/engine-lines-branch.kcad.ts', 'branch tube routing and clearance'],
+  ['examples/tube-routing-engine/engine-lines-broken.kcad.ts', '2.0 s local five-line routing gate; tiny routed regression asserts the intended clearance failure and STEP refusal'],
+  ['examples/tube-routing-engine/engine-lines.kcad.ts', '2.0 s local five-line routing and clearance evaluation'],
 ]);
 
 // These intentionally exercise a failing evaluate path. Pin the failure so
 // they cannot silently become malformed or stop reaching the expected gate.
-const EXPECTED_FAILURE: ReadonlySet<string> = new Set([
-  'examples/repair/cutter-misses-body.kcad.ts',
-  'examples/repair/draft-angle-degenerate.kcad.ts',
-  'examples/repair/emboss-over-hole.kcad.ts',
-  'examples/repair/hole-misses-plate.kcad.ts',
-  'examples/repair/oversized-fillet.kcad.ts',
-  'examples/repair/revolve-crosses-axis.kcad.ts',
-  'examples/repair/shell-too-thick.kcad.ts',
-  'examples/repair/tangency-radius-too-small.kcad.ts',
-  'examples/tube-routing-engine/engine-lines-broken.kcad.ts',
+const EXPECTED_FAILURE: ReadonlyMap<string, { code: string; message: string }> = new Map([
+  ['examples/repair/cutter-misses-body.kcad.ts', { code: 'feature.subtractive-noop', message: 'did not intersect the body' }],
+  ['examples/repair/draft-angle-degenerate.kcad.ts', { code: 'feature.draft.failed', message: 'draft' }],
+  ['examples/repair/emboss-over-hole.kcad.ts', { code: 'feature.emboss-text.boolean-noop', message: 'glyph tool did not intersect the body' }],
+  ['examples/repair/hole-misses-plate.kcad.ts', { code: 'feature.hole.cut-missing', message: 'hole' }],
+  ['examples/repair/oversized-fillet.kcad.ts', { code: 'feature.edge-feature.short-edges-skipped', message: 'all' }],
+  ['examples/repair/revolve-crosses-axis.kcad.ts', { code: 'feature.revolve.crosses-axis', message: 'axis' }],
+  ['examples/repair/shell-too-thick.kcad.ts', { code: 'feature.kernel-failed', message: 'shell' }],
+  ['examples/repair/tangency-radius-too-small.kcad.ts', { code: 'sketch.tangency.no-solution', message: 'tangent' }],
 ]);
 
 // Explicit source/evaluation exclusions with a reason. These files still get
@@ -97,10 +102,14 @@ describe('examples evaluate through the kernel', () => {
     });
 
     if (HEAVY.has(file) || EVALUATION_EXEMPT.has(file)) continue;
-    it(`${file} ${EXPECTED_FAILURE.has(file) ? 'fails evaluation as intended' : 'evaluates cleanly'}`, async () => {
+    it(`${file} ${EXPECTED_FAILURE.has(file) ? 'fails at its expected diagnostic' : 'evaluates cleanly'}`, async () => {
       const result = await evaluateScript({ file });
-      if (EXPECTED_FAILURE.has(file)) {
+      const expectedFailure = EXPECTED_FAILURE.get(file);
+      if (expectedFailure) {
         expect(result.exitCode, `${file} unexpectedly evaluates cleanly`).not.toBe(0);
+        expect(result.diagnostics, `${file} did not report ${expectedFailure.code}`).toEqual(expect.arrayContaining([
+          expect.objectContaining({ code: expectedFailure.code, message: expect.stringContaining(expectedFailure.message) }),
+        ]));
       } else {
         expect(result.exitCode, `${file}: ${JSON.stringify(result.diagnostics)}`).toBe(0);
       }
