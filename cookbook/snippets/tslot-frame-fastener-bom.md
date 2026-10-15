@@ -82,7 +82,9 @@ let gusset = box(42, 3.2, 20).translate(-8, 10, 60);
 // x = 0 and x = 22), so neither head sits inside it.
 gusset = gusset.union(box(10, 8, 10).translate(6, 13.2, 66));
 gusset = gusset.subtract(yCyl(2.8, 8, 10, 0, 72));
-gusset = gusset.subtract(yCyl(2.8, 8, 10, 22, 72));
+// Screw 2 enters the rail's slot (rail axis z = 70): centred on it, not
+// 2 mm off where its shank cut the slot lip.
+gusset = gusset.subtract(yCyl(2.8, 8, 10, 22, 70));
 gusset = gusset.finish('anodized', { color: '#5d6d78' });
 
 function capScrew(x: number, z: number) {
@@ -98,7 +100,7 @@ const up = arm.part('upright', upright.finish('aluminium-brushed'), { material: 
 const rl = arm.part('rail', rail.finish('aluminium-brushed'), { material: 'aluminum-6061' });
 const gu = arm.part('gusset', gusset, { material: 'aluminum-6061' });
 const s1 = arm.part('screw-1', capScrew(0, 72), { material: 'mild-steel' });
-const s2 = arm.part('screw-2', capScrew(22, 72), { material: 'mild-steel' });
+const s2 = arm.part('screw-2', capScrew(22, 70), { material: 'mild-steel' });
 
 const corner = [10, 0, 70] as [number, number, number];
 up.connector('end', { type: 'frame', origin: { kind: 'vec3', value: corner } });
@@ -106,9 +108,9 @@ rl.connector('end', { type: 'frame', origin: { kind: 'vec3', value: corner } });
 gu.connector('face', { type: 'frame', origin: { kind: 'vec3', value: [0, 10, 72] } });
 up.connector('gusset', { type: 'frame', origin: { kind: 'vec3', value: [0, 10, 72] } });
 s1.connector('head', { type: 'frame', origin: { kind: 'vec3', value: [0, 13, 72] } });
-s2.connector('head', { type: 'frame', origin: { kind: 'vec3', value: [22, 13, 72] } });
+s2.connector('head', { type: 'frame', origin: { kind: 'vec3', value: [22, 13, 70] } });
 gu.connector('screw-1', { type: 'frame', origin: { kind: 'vec3', value: [0, 13, 72] } });
-gu.connector('screw-2', { type: 'frame', origin: { kind: 'vec3', value: [22, 13, 72] } });
+gu.connector('screw-2', { type: 'frame', origin: { kind: 'vec3', value: [22, 13, 70] } });
 
 arm.mate('corner', 'rail.end', 'upright.end', 'fastened');
 arm.mate('gusset', 'gusset.face', 'upright.gusset', 'fastened');

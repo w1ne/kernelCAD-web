@@ -59,7 +59,7 @@ import { RecomputeEngine } from '../compute/recomputeEngine';
 import { solveMates } from '../mates/solver';
 import { collectRegistryDrivenMates } from '../mates/mechanicalJointRegistry';
 import { detectInterferences, pairKey } from './detectInterferences';
-import { jointContactCapMm3, INTERPENETRATION_EPSILON_MM3 } from './jointContactCap';
+import { describeOverlap, formatOverlapMm3, isActionableOverlap, overlapRuleText, INTERPENETRATION_EPSILON_MM3 } from './jointContactCap';
 import { reposedLoweredAssemblyScene } from '../mates/loweredAssemblyScene';
 import { resolvedPartAt } from '../mates/partFrame';
 import { expandCoupledPoses } from '../mates/coupledPoses';
@@ -68,8 +68,6 @@ import { parseConnectorRef, type MateRecord } from '../mates/mate';
 import { checkOrphanParts } from './mechanismOrphan';
 import {
   REST_MATE_CONTACT_TOLERANCE_MM,
-  REST_PENETRATION_CAP_MM3,
-  REST_PENETRATION_DEPTH_MM,
   restPoseMateGaps,
   restPosePenetrations,
 } from './restPoseContact';
@@ -684,8 +682,8 @@ function checkRestPoseContact(arm: Assembly, scene: SceneBackend): CompilerDiagn
     const at = p.at.map((v) => v.toFixed(1)).join(', ');
     out.push(makeFailure(
       'mechanism.rest-interpenetration',
-      `Parts '${p.a}' and '${p.b}' interpenetrate by ${p.volumeMm3.toFixed(1)} mm³ at the rest pose ` +
-      `(${Number.isFinite(p.thicknessMm) ? `${p.thicknessMm.toFixed(2)} mm thick` : 'BREP boolean, open tessellation'}; caps ${REST_PENETRATION_CAP_MM3} mm³ and ${REST_PENETRATION_DEPTH_MM} mm; shared region centred near [${at}] mm, ` +
+      `Parts '${p.a}' and '${p.b}' interpenetrate by ${formatOverlapMm3(p.volumeMm3)} mm³ at the rest pose ` +
+      `(${Number.isFinite(p.thicknessMm) ? `${p.thicknessMm.toFixed(2)} mm thick` : 'thickness unknown'}; rule: ${overlapRuleText(p.contactThicknessMm)}; shared region centred near [${at}] mm, ` +
       `${p.cellMm > 0 ? `${p.cellMm.toFixed(2)} mm voxels` : 'no voxels'}). Seated parts share faces, not volume.`,
     ));
   }
@@ -719,11 +717,10 @@ export function checkFastenedMateContact(arm: Assembly, scene: SceneBackend): Co
 
 /**
  * For each sampled pose, lower the assembly + run `detectInterferences`.
- * Classify every overlap pair by a SINGLE absolute noise threshold
- * (`JOINT_CONTACT_NOISE_MM3`, 20 mm³) applied UNIFORMLY regardless of the
- * mate type joining the pair (decision #1 of the 2026-06-03 redesign):
- * shared volume ≤ 20 mm³ is touching / tessellation noise → pass; > 20 mm³
- * is a real interference → `mechanism: broken`, for ALL pairs.
+ * Classify every overlap pair by the shared rule `isActionableOverlap`,
+ * UNIFORMLY regardless of the mate type joining the pair (decision #1):
+ * face contact (a sliver ≤ 0.01 mm thick) passes; any thicker overlap above
+ * 0.01 mm³ is a real interference → `mechanism: broken`, for ALL pairs.
  *
  * Adjacency does NOT excuse a real overlap. A correctly-modeled rotating
  * joint is a clearance fit (ISO 286): the clevis primitive drills the pin
@@ -766,20 +763,18 @@ async function checkInterpenetration(
     for (const pair of result.pairs) {
       const key = pairKey(pair.a, pair.b);
       const mateType = matedPairs.get(key);
-      // ABSOLUTE-volume gate (replaces the old 5 %-of-bbox fraction). A SINGLE
-      // uniform noise threshold (20 mm³) applies to every pair, adjacent or
-      // not (decision #1) — a correct clearance-fit joint has ~0 overlap, so
-      // adjacency earns no extra budget.
-      const cap = jointContactCapMm3();
-      if (pair.volumeMm3 <= cap) continue;
+      // The shared interference rule (`isActionableOverlap`) applies to every
+      // pair, adjacent or not (decision #1) — a correct clearance-fit joint has
+      // ~0 overlap, so adjacency earns no extra budget.
+      if (!isActionableOverlap(pair)) continue;
 
       const relation = mateType === undefined
         ? `are NOT joined by a mate that would explain the contact`
         : `overlap far more than the ${mateType} joint's clearance-fit contact ` +
-          `(noise threshold ${cap} mm³ — a drilled clearance bore has ~0 overlap)`;
+          `(rule: ${overlapRuleText()} — a drilled clearance bore has ~0 overlap)`;
       out.push(makeFailure(
         'mechanism.interpenetration',
-        `Parts '${pair.a}' and '${pair.b}' interpenetrate by ${pair.volumeMm3.toFixed(2)} mm³ at pose sample '${s.sample.name}' — ` +
+        `Parts '${pair.a}' and '${pair.b}' interpenetrate by ${describeOverlap(pair)} at pose sample '${s.sample.name}' — ` +
         `they ${relation}. A correctly-modeled joint is a clearance fit (ISO 286) with ~0 shared solid volume. ` +
         `Add clearance, reduce mate travel, move the geometry so the swept pose stays collision-free, ` +
         `or pass { ignore: [['${pair.a}', '${pair.b}']] } to solvedModel(...) if this overlap is genuinely intended.`,

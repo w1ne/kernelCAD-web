@@ -85,6 +85,7 @@ export interface StudioRecomputeResult {
         readonly a: string;
         readonly b: string;
         readonly volumeMm3: number;
+        readonly thicknessMm?: number | null;
     }>;
     readonly interferenceSummary: {
         readonly rawCount: number;

@@ -1035,6 +1035,15 @@ export class OcctBackend implements ShapeBackend {
    *   not read as "no overlap".
    */
   intersectionVolume(other: OcctBackend): number {
+    return this.intersectionMetrics(other).volumeMm3;
+  }
+
+  /**
+   * Volume (mm³) and boundary area (mm²) of the common solid of two shapes.
+   * The area gives the shared region's mean thickness (2·V/A), which tells
+   * coincident-face contact apart from a real overlap of any volume.
+   */
+  intersectionMetrics(other: OcctBackend): { volumeMm3: number; areaMm2: number } {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const oc = getOC() as any;
     const progress = new oc.Message_ProgressRange_1();
@@ -1052,11 +1061,16 @@ export class OcctBackend implements ShapeBackend {
       if (!common.IsDone() || common.HasErrors()) {
         throw new Error('OcctBackend.intersectionVolume: the common boolean reported a failure.');
       }
+      const shape = common.Shape();
       const props = new oc.GProp_GProps_1();
-      oc.BRepGProp.VolumeProperties_1(common.Shape(), props, false, false, false);
-      const volume = Math.abs(props.Mass());
+      oc.BRepGProp.VolumeProperties_1(shape, props, false, false, false);
+      const volumeMm3 = Math.abs(props.Mass());
       props.delete();
-      return volume;
+      const surface = new oc.GProp_GProps_1();
+      oc.BRepGProp.SurfaceProperties_1(shape, surface, false, false);
+      const areaMm2 = Math.abs(surface.Mass());
+      surface.delete();
+      return { volumeMm3, areaMm2 };
     } finally {
       common.delete(); args.delete(); tools.delete(); progress.delete();
     }
