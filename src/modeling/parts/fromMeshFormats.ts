@@ -31,7 +31,7 @@ const IMPORT_MAX_BYTES = 50 * 1024 * 1024;
 /** Shared context shape with `lib.fromSTEP`. */
 export type FromFileContext = FromSTEPContext;
 
-function requirePath(path: string, fn: 'fromBREP' | 'fromSTL', ext: string): void {
+function requirePath(path: string, fn: 'fromBREP' | 'fromSTL' | 'meshFromSTL', ext: string): void {
   if (typeof path !== 'string' || path.length === 0) {
     throw new KernelError(
       'feature.invalid-args',
@@ -45,7 +45,7 @@ function requirePath(path: string, fn: 'fromBREP' | 'fromSTL', ext: string): voi
 async function readOrThrow(
   absPath: string,
   path: string,
-  fn: 'fromBREP' | 'fromSTL',
+  fn: 'fromBREP' | 'fromSTL' | 'meshFromSTL',
 ): Promise<Buffer> {
   try {
     return await readFile(absPath);
