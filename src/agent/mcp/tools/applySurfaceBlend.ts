@@ -32,25 +32,35 @@ function validateSurfaceBlendInput(input: ApplySurfaceBlendInput):
   | { ok: true; operation: 'fillet' | 'chamfer'; amount: number }
   | { ok: false; error: string } {
   const operation = input.operation ?? 'fillet';
+  const amountError = surfaceBlendAmountError(operation, input);
   if (!IDENTIFIER.test(input.shape_binding)) return { ok: false, error: 'shape_binding must be a JavaScript identifier.' };
-  if (operation === 'fillet' && !(typeof input.radius === 'number' && Number.isFinite(input.radius) && input.radius > 0)) {
-    return { ok: false, error: 'fillet requires a positive finite radius.' };
-  }
-  if (operation === 'chamfer' && !(typeof input.distance === 'number' && Number.isFinite(input.distance) && input.distance > 0)) {
-    return { ok: false, error: 'chamfer requires a positive finite distance.' };
-  }
+  if (amountError) return { ok: false, error: amountError };
   if (input.continuity !== undefined && input.continuity !== 'G1' && input.continuity !== 'G2') {
     return { ok: false, error: "continuity must be 'G1' or 'G2'." };
   }
-  if (input.selector !== undefined && typeof input.selector !== 'string'
-      && !(input.selector && typeof input.selector === 'object' && typeof input.selector.face === 'string')) {
+  if (surfaceBlendSelectorInvalid(input.selector)) {
     return { ok: false, error: 'selector must be an edge selector string or { face: nameOrQuery }.' };
   }
-  const amount = operation === 'fillet' ? input.radius! : input.distance!;
-  return { ok: true, operation, amount };
+  return { ok: true, operation, amount: operation === 'fillet' ? input.radius! : input.distance! };
 }
 
-function nextSurfaceBlendBinding(code: string): string {
+function surfaceBlendAmountError(operation: 'fillet' | 'chamfer', input: ApplySurfaceBlendInput): string | undefined {
+  const value = operation === 'fillet' ? input.radius : input.distance;
+  if (typeof value === 'number' && Number.isFinite(value) && value > 0) return undefined;
+  return operation === 'fillet' ? 'fillet requires a positive finite radius.' : 'chamfer requires a positive finite distance.';
+}
+
+function surfaceBlendSelectorInvalid(selector: ApplySurfaceBlendInput['selector']): boolean {
+  if (selector === undefined || typeof selector === 'string') return false;
+  return !(selector && typeof selector === 'object' && typeof selector.face === 'string');
+}
+
+function nextSurfaceBlendBindingInput['selector']): boolean {
+  if (selector === undefined || typeof selector === 'string') return false;
+  return !(selector && typeof selector === 'object' && typeof selector.face === 'string');
+}
+
+function nextSurfaceBlendBindingfunction nextSurfaceBlendBinding(code: string): string {
   const taken = new Set<string>();
   for (const match of code.matchAll(/\bconst\s+(_surface_blend(?:_\d+)?)\b/g)) taken.add(match[1]!);
   if (!taken.has('_surface_blend')) return '_surface_blend';
