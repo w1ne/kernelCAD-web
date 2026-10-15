@@ -319,8 +319,8 @@ function resolveScenePartMesh(
       partCache,
     };
   }
-  if (part.shape.constructor.name === 'MeshBackend') {
-    const mesh = (part.shape as import('../../kernel/backends/meshBackend').MeshBackend).getMesh();
+  if (isDisplayMeshBackend(part.shape)) {
+    const mesh = part.shape.getMesh();
     return { faces: [], mesh, volume: undefined, edges: undefined, link: {}, fromCache: false, partCache };
   }
   const rawShape = ctx.extractRawShape(part.shape);
@@ -349,6 +349,16 @@ function resolveScenePartMesh(
     nextCache.set(part.name, { shape: part.shape, faces, ...(volume !== undefined ? { volume } : {}), ...(edges ? { edges } : {}), link });
   }
   return { faces, volume, edges, link, fromCache: false, partCache: nextCache };
+}
+
+function isDisplayMeshBackend(
+  shape: ShapeBackend,
+): shape is ShapeBackend & { getMesh: () => { positions: Float32Array; normals: Float32Array; indices: Uint32Array } } {
+  const candidate = shape as ShapeBackend & { positions?: unknown; indices?: unknown; getMesh?: unknown };
+  return candidate.target === 'export-occt'
+    && candidate.positions instanceof Float32Array
+    && candidate.indices instanceof Uint32Array
+    && typeof candidate.getMesh === 'function';
 }
 
 /** Build + emit one assembly part's FeatureMesh; returns the local mesh and
