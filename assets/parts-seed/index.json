@@ -54,6 +54,95 @@
       ],
       "sha256": "f21ff5110e21407976611e7f1e79e1b66beca5a4fb27800029f995e528983934",
       "source": "local-catalog"
+    },
+    {
+      "id": "sg90-servo",
+      "name": "SG90 9g micro servo (community reference)",
+      "family": "micro-servo",
+      "category": "motor",
+      "tags": [
+        "sg90",
+        "SG-90",
+        "servo",
+        "motor",
+        "community-reference"
+      ],
+      "attributes": {
+        "referenceStatus": "community reference; exact Modulshop variant unverified",
+        "bodyWidthMm": 11.8,
+        "bodyLengthMm": 22.5,
+        "bodyHeightMm": 22.7,
+        "overallHeightMm": 29.9,
+        "mountHoleDiameterMm": 2,
+        "earThicknessMm": 2.5,
+        "mountHoleSpacingMm": 27.2
+      },
+      "connectors": [
+        "shaft-output",
+        "ear-mount-low",
+        "ear-mount-high"
+      ],
+      "license": "CC-BY-SA-4.0",
+      "attribution": "Juan Fenoy, FreeCAD community parts library; CC-BY-SA-4.0. Translated to shaft-centered coordinates by kernelCAD contributors.",
+      "licenseClass": "share-alike",
+      "redistribution": "mirror",
+      "upstream": {
+        "repo": "https://github.com/FreeCAD/FreeCAD-library",
+        "commit": "f5ca01cdcaa2f69b9295a6382719c2d90628780c",
+        "path": "Electrical Parts/Servos/SG-90/Servo-sg90.step"
+      },
+      "source": "local-catalog",
+      "sha256": "958da61d109d565255a9c36c444283abd7dfddd9d43cbee99e02c639d0d07ec3"
+    },
+    {
+      "id": "sg90-horn-single-arm",
+      "name": "SG90 single arm horn (community reference)",
+      "family": "servo-horn",
+      "category": "mechanical",
+      "tags": [
+        "sg90",
+        "SG-90",
+        "servo",
+        "horn",
+        "community-reference"
+      ],
+      "attributes": {
+        "referenceStatus": "community reference; exact Modulshop variant unverified",
+        "faceplateThicknessMm": 2,
+        "mountHoleDiameterMm": 1.4,
+        "mountHolePitchMm": 2,
+        "firstHoleOffsetMm": 5,
+        "lastHoleOffsetMm": 17,
+        "coreHoleDiameterMm": 2,
+        "recessDiameterMm": 5,
+        "socketDiameterMm": 6,
+        "overallHeightMm": 5,
+        "socketExtensionMm": 3,
+        "socketOpeningZMm": 5
+      },
+      "connectors": [
+        "horn-face",
+        "spline-socket",
+        "shaft-axis",
+        "mount-hole-5",
+        "mount-hole-7",
+        "mount-hole-9",
+        "mount-hole-11",
+        "mount-hole-13",
+        "mount-hole-15",
+        "mount-hole-17"
+      ],
+      "license": "CC-BY-SA-4.0",
+      "attribution": "Juan Fenoy, FreeCAD community parts library; CC-BY-SA-4.0. Translated to shaft-centered coordinates by kernelCAD contributors.",
+      "licenseClass": "share-alike",
+      "redistribution": "mirror",
+      "upstream": {
+        "repo": "https://github.com/FreeCAD/FreeCAD-library",
+        "commit": "f5ca01cdcaa2f69b9295a6382719c2d90628780c",
+        "path": "Electrical Parts/Servos/SG-90/SG90-1-arm-horn.step"
+      },
+      "source": "local-catalog",
+      "sha256": "febd0a8c4c4dae99aaf532cae87a21b13953c250dfd3b660755308520905b5bf"
     }
   ]
 }

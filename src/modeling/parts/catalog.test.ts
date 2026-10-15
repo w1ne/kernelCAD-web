@@ -108,3 +108,16 @@ describe('committed seed catalog fallback', () => {
     expect(r!.stepPath).toMatch(/iso-4762-m2x4\.step$/);
   });
 });
+
+describe('bundled SG90 discovery', () => {
+  it('finds the community reference body and horn by SG90 query and exact id', () => {
+    const cat = loadCatalog();
+    expect(queryCatalog(cat, 'SG90').map(r => r.id)).toEqual(expect.arrayContaining(['sg90-servo', 'sg90-horn-single-arm']));
+    for (const id of ['sg90-servo', 'sg90-horn-single-arm']) {
+      const found = resolveById(cat, id)!;
+      expect(found.record.licenseClass).toBe('share-alike');
+      expect(found.record.license).toBe('CC-BY-SA-4.0');
+      expect(found.stepPath).toMatch(/\.step$/);
+    }
+  });
+});
