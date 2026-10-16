@@ -5,7 +5,9 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { loadSnippets, type Snippet } from '../src/agent/cookbook/index';
 import { rewriteMarkedSection } from './lib/rewriteMarkedSection';
 
-const SKILL_PATH = 'src/agent/skills/kernelcad-authoring/SKILL.md';
+// The cookbook index moved out of the lean SKILL.md into a reference file;
+// `npm run cookbook:build` re-embeds it via scripts/buildAuthoringReferences.ts.
+const SKILL_PATH = 'src/agent/skills/kernelcad-authoring/references/cookbook-index.md';
 const START_MARKER = '<!-- COOKBOOK:START -->';
 const END_MARKER = '<!-- COOKBOOK:END -->';
 

@@ -7,8 +7,16 @@
 // Returns deterministic, sort-stable entries so generator output is
 // reproducible across machines.
 
-import { readdirSync, readFileSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { dirname, join, relative } from 'node:path';
+
+/** A progressive-disclosure file a skill links to: `<skill>/references/*.md`. */
+export interface SkillReference {
+  absPath: string;
+  /** Path relative to the skill's own directory, e.g. `references/api.md`. */
+  relPath: string;
+  source: string;
+}
 
 export interface SkillEntry {
   /** Absolute path to the SKILL.md file. */
@@ -21,6 +29,8 @@ export interface SkillEntry {
   body: string;
   /** Raw file source (frontmatter + body). */
   source: string;
+  /** `references/*.md` beside the SKILL.md (sorted); empty when there are none. */
+  references: SkillReference[];
 }
 
 export function walkSkillTree(root: string): SkillEntry[] {
@@ -53,7 +63,25 @@ function parseEntry(root: string, absPath: string): SkillEntry {
     frontmatter: fm,
     body,
     source,
+    references: readReferences(dirname(absPath)),
   };
+}
+
+function readReferences(skillDir: string): SkillReference[] {
+  const dir = join(skillDir, 'references');
+  if (!existsSync(dir) || !statSync(dir).isDirectory()) return [];
+  return readdirSync(dir)
+    .filter((name) => name.endsWith('.md'))
+    .sort()
+    .map((name) => {
+      const absPath = join(dir, name);
+      return { absPath, relPath: `references/${name}`, source: readFileSync(absPath, 'utf8') };
+    });
+}
+
+/** SKILL.md source followed by its reference files: the whole skill as one text. */
+export function skillWithReferences(entry: SkillEntry): string {
+  return [entry.source, ...entry.references.map((r) => r.source)].join('\n\n');
 }
 
 function parseFrontmatter(source: string, absPath: string): { name: string; description: string } {

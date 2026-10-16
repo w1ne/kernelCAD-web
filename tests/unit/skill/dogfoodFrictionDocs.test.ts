@@ -7,17 +7,15 @@
 //   - ParamRef arithmetic uses .add/.subtract/.multiply/.divide/.negate.
 //   - "check your work": render top/front/iso before calling a layout done.
 
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { buildModel } from '../../../src/modeling/buildModel';
 import { initOcct } from '../../../src/kernel/backends/occt/occtBackend';
 import { GLOBALS } from '../../../src/agent/mcp/tools/listApi';
 
-const AUTHORING_SKILL = readFileSync(
-  resolve(__dirname, '../../../src/agent/skills/kernelcad-authoring/SKILL.md'),
-  'utf8',
-);
+import { loadSkillDocs } from './_helpers';
+
+// SKILL.md plus its references/*.md: the lean SKILL.md links the detail.
+const AUTHORING_SKILL = loadSkillDocs('kernelcad-authoring');
 
 function globalEntry(name: string): string {
   const e = GLOBALS.find((g) => g.name === name);

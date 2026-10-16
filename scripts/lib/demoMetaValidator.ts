@@ -10,12 +10,27 @@ import {
   isCatalogSlug,
   GENERIC_PRIMITIVE_DENYLIST,
   GRANDFATHERED_VERSIONS,
+  isProofRequiredVersion,
+  PROOF_KINDS,
 } from './memorableBuildsCatalog';
 
 const REQUIRED_PRE_EXISTING = ['gitSha', 'capturedAt', 'taskId'] as const;
 const REQUIRED_NEW = ['heroArtifact', 'catalogSource', 'overrideApprovedBy'] as const;
 
-export function validateDemoMeta(meta: Record<string, unknown>, version: string): string[] {
+export interface DemoMetaValidationOptions {
+  /**
+   * Whether `proof.ref` names an existing file. The validator stays pure:
+   * scripts/lint-demos.ts passes a filesystem check rooted at the demo dir;
+   * without it the ref is only checked to be non-empty.
+   */
+  proofRefExists?: (ref: string) => boolean;
+}
+
+export function validateDemoMeta(
+  meta: Record<string, unknown>,
+  version: string,
+  opts: DemoMetaValidationOptions = {},
+): string[] {
   const errors: string[] = [];
 
   for (const k of REQUIRED_PRE_EXISTING) {
@@ -57,5 +72,28 @@ export function validateDemoMeta(meta: Record<string, unknown>, version: string)
     errors.push(`heroArtifact '${heroArtifact}' does not match catalog for ${version} and no overrideApprovedBy is set`);
   }
 
+  if (isProofRequiredVersion(version)) errors.push(...validateProof(meta.proof, opts.proofRefExists));
+
+  return errors;
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+// `proof` = { userJob, kind, ref }: the real job the hero solves, and the
+// evidence (verify report path, or print/fabrication photo path) that it works.
+function validateProof(proof: unknown, refExists?: (ref: string) => boolean): string[] {
+  if (proof === null || typeof proof !== 'object') {
+    return ["meta.json missing 'proof' ({ userJob, kind, ref }) required from this version"];
+  }
+  const { userJob, kind, ref } = proof as Record<string, unknown>;
+  const errors: string[] = [];
+  if (!isNonEmptyString(userJob)) errors.push("proof.userJob must describe the user job the hero solves");
+  if (!(PROOF_KINDS as readonly unknown[]).includes(kind)) {
+    errors.push(`proof.kind must be one of ${PROOF_KINDS.join(', ')}`);
+  }
+  if (!isNonEmptyString(ref)) errors.push('proof.ref must point at the verify report or photo');
+  else if (refExists !== undefined && !refExists(ref)) errors.push(`proof.ref '${ref}' does not exist`);
   return errors;
 }

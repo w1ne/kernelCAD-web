@@ -6,6 +6,7 @@ import type { AgentClient, TranscriptEvent, TaskResult, HarnessResult, EvaluateR
 import { extractScript, computeScore, renderTranscript } from './lib';
 import { evaluateScript } from './oracle/kernelcad-client';
 import { runClosedLoop, type LoopMessage } from '../src/agent/loop/closedLoop.js';
+import type { GateRunner } from '../src/agent/loop/types.js';
 import { createWebGateRunner } from './loop/webGateRunner.js';
 import { buildRepairPrompt } from '../src/agent/loop/repairPrompt';
 import type { CookbookInjection } from './cookbook-injector';
@@ -82,6 +83,8 @@ export interface GenerateCaseArgs {
   maxTokens?: number;
   /** Sent on every call when candidates <= 1 (sweep protocol temperature). */
   temperature?: number;
+  /** Gate suite run after each attempt. Default: the CLI oracle (createWebGateRunner). */
+  gateRunner?: GateRunner;
 }
 
 export interface GenerateCaseResult {
@@ -125,7 +128,7 @@ export async function generateCase(args: GenerateCaseArgs): Promise<GenerateCase
 
   const loopResult = await runClosedLoop({
     prompt,
-    gateRunner: createWebGateRunner(),
+    gateRunner: args.gateRunner ?? createWebGateRunner(),
     extractScript,
     buildRepairPrompt,
     maxAttempts: args.maxAttempts ?? MAX_ATTEMPTS,

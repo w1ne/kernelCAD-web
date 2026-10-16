@@ -13,12 +13,13 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { SHAPE_METHODS } from '../../../src/agent/mcp/tools/listApi';
+import { loadSkillDocs } from './_helpers';
 
 const read = (p: string) => readFileSync(resolve(__dirname, '../../..', p), 'utf8');
 
 describe('dogfood friction docs (round 3)', () => {
   it('authoring skill says evaluate_script mechanism checks are shallow and names review_cad', () => {
-    const skill = read('src/agent/skills/kernelcad-authoring/SKILL.md');
+    const skill = loadSkillDocs('kernelcad-authoring'); // SKILL.md + references/*.md
     expect(skill).toContain('`evaluate_script` on a model with mates runs only a shallow mechanism check.');
     expect(skill).toContain('run `review_cad` for the pose-envelope + gravity checks');
   });
