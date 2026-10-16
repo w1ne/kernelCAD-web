@@ -1,14 +1,10 @@
-# Adam-level quality bar (ChatGPT MCP path)
+# Quality bar (ChatGPT MCP path)
 
-Competitor baseline: Adam (YC) — LLM → CadQuery/OpenSCAD → parametric solids.
-Strong on mechanical brackets/housings; weak on organic surfacing and complex
-assemblies that fail to compile. KernelCAD already has the stronger kernel
-(OCCT BREP, NURBS, joints, STEP, CDN mesh/anim). This bar is about the **agent
-path + gates + cookbooks**, not missing solids.
+This bar is about the **agent path + gates + cookbooks**, not missing solids.
 
 ## Bar (must hold for ChatGPT MCP)
 
-### 1. Mechanical mid-complexity (STRICTER than Adam fail cases)
+### 1. Mechanical mid-complexity (stricter than stacked-primitive output)
 
 Examples: bearing housing, gearbox-ish multi-feature enclosure.
 

@@ -2,13 +2,13 @@
 
 Registry: https://registry.modelcontextprotocol.io. Quickstart: https://github.com/modelcontextprotocol/registry/blob/main/docs/modelcontextprotocol-io/quickstart.mdx
 
-[server.json](server.json) in this folder is the proposed replacement for the stale root `server.json` (0.13.0).
+[server.json](server.json) in this folder is the registry copy. The root `server.json` matches it (0.17.0, remote only).
 
 Rules this file follows:
 - `name` `com.kernelcad/kernelcad` matches `mcpName` in package.json, which the registry requires for the npm package.
 - `description` is 91 characters. The registry rejects anything over 100 (`422 expected length <= 100`).
 - A `com.kernelcad/*` namespace needs proof that you own kernelcad.com, by a DNS TXT record or an HTTP `/.well-known` file. That proof covers the namespace only. The remote URL doesn't have to be on the same domain, although `mcp.kernelcad.com` is.
-- The npm package entry passes `packageArguments: [{type: positional, value: mcp}]`, so a client launching it runs `npx kernelcad mcp` (the stdio server) and not the general CLI.
+- The npm package entry is left out until 0.17.0 is published. When you add it back, pass `packageArguments: [{type: positional, value: mcp}]` so a client runs `npx kernelcad mcp` (the stdio server) and not the general CLI.
 
 ## Publish
 ```bash

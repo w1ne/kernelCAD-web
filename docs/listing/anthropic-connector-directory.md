@@ -7,12 +7,12 @@ The plugin bundle (`plugins/kernelcad`) is a separate submission. Submit the rem
 ## Requirements checklist
 - [x] Remote and HTTPS: `https://mcp.kernelcad.com/mcp`
 - [x] No auth needed for public use; OAuth 2.0 with DCR for accounts
-- [ ] Every tool has a **`title`** and `readOnlyHint` / `destructiveHint`. Annotations exist, but titles are missing in this repo (see README blockers).
+- [x] Every tool has a **`title`** and `readOnlyHint` / `destructiveHint`. Checked on the live server on 2026-10-16: all 73 tools carry titles and annotations.
 - [x] Privacy policy: https://kernelcad.com/privacy
 - [x] Public docs: https://kernelcad.com/docs/
 - [ ] Every tool tested in MCP Inspector and as a custom connector in Claude (the *Test & launch* step asks you to confirm)
 - [ ] Test credentials for a fully set-up account
-- [ ] Icon (square PNG) and support contact
+- [x] Square PNG icon: `plugins/kernelcad/assets/logo.png` (512×512). Support contact: the GitHub issues page.
 - [ ] Allowed link URIs: kernelcad.com, plus the quote-service origins used by `fab_pack` (jlc3dp.com, jlccnc.com, pcbway.com, xometry.com, app.sendcutsend.com, craftcloud3d.com), if the widget opens links
 
 ## Listing copy

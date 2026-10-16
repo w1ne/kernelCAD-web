@@ -9,22 +9,6 @@
   },
   "websiteUrl": "https://kernelcad.com/",
   "version": "0.17.0",
-  "packages": [
-    {
-      "registryType": "npm",
-      "identifier": "kernelcad",
-      "version": "0.17.0",
-      "transport": {
-        "type": "stdio"
-      },
-      "packageArguments": [
-        {
-          "type": "positional",
-          "value": "mcp"
-        }
-      ]
-    }
-  ],
   "remotes": [
     {
       "type": "streamable-http",
