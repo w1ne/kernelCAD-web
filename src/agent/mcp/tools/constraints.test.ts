@@ -3,7 +3,7 @@
 //
 // Post-condition trust gate: solve_sketch must report whether the constraint
 // solve actually converged below tolerance, and must NOT report ok:true when
-// the aggregate residual never settled (e.g. a contradictory constraint set).
+// the worst constraint violation never settled (e.g. a contradictory constraint set).
 import { describe, it, expect } from 'vitest';
 import { solveSketchTool } from './constraints';
 import type { Constraint, SketchEntity } from '../../../modeling/constraints/types';
@@ -54,14 +54,13 @@ describe('solve_sketch — converged reflects solver convergence', () => {
     }
   });
 
-  // Regression: the convergence verdict must NOT be the per-iteration early-out
-  // threshold (1e-4). The per-constraint residuals are heterogeneous (distance²,
-  // distance, cross/dot products), so a FULLY-satisfied sketch can settle to a
-  // small non-zero aggregate. The rocket-keychain fixture lands on its exact
-  // target coordinates with residual ≈ 0.018 — above the 1e-4 early-out but far
-  // below the contradictory plateau (~10). It must report converged/ok:true; a
-  // 1e-4 verdict would be a false negative as bad as the silent ok:true.
-  it('reports converged:true for a satisfiable sketch whose heterogeneous residual exceeds the early-out', async () => {
+  // Regression: the convergence verdict must tolerate a NEARLY-consistent
+  // over-constrained sketch. The rocket-keychain fixture mirrors a fin edge
+  // (implied angle -31.9734 deg) yet also demands -32 deg: a 4.6e-4 rad conflict.
+  // That is a usable sketch and must report converged/ok:true; the conflict
+  // stays visible as a small non-zero residual, far below a genuine
+  // contradiction (the DISTANCE 10 vs 20 case above leaves ~10).
+  it('reports converged:true for a nearly-consistent over-constrained sketch', async () => {
     const r = await solveSketchTool({
       entities: cloneRocketConstraintEntities(),
       constraints: cloneRocketConstraintList(),
@@ -69,7 +68,7 @@ describe('solve_sketch — converged reflects solver convergence', () => {
     expect(r.ok).toBe(true);
     if (r.ok) {
       expect(r.converged).toBe(true);
-      // The point: residual is ABOVE the 1e-4 early-out yet the sketch is solved.
+      // The conflict is real (not solved to numerical zero) but within tolerance.
       expect(r.residual).toBeGreaterThan(CONSTRAINT_RESIDUAL_TOL);
       expect(r.residual).toBeLessThan(SKETCH_CONVERGENCE_RESIDUAL_TOL);
       const rightShoulder = r.entities.find(e => e.id === 'right_shoulder');

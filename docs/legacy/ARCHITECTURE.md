@@ -95,7 +95,7 @@ Wraps the Replicad Sketcher API to handle edge cases robustly:
 
 ### 9. Parametric Engine (`src/lib/constraints/solver.ts`)
 A dedicated 2D constraint solver that enforces geometric relationships between sketch entities.
-- **Iterative Solver**: Uses an iterative relaxation method to satisfy constraints (Coincident, Parallel, Tangent, etc.).
+- **Newton Solver**: Solves all constraints (Coincident, Parallel, Tangent, etc.) together as one least-squares problem with a damped Gauss-Newton (Levenberg-Marquardt) iteration over normalised residuals and a sparse Jacobian. It reports the worst remaining violation and, from the Jacobian rank, the remaining degrees of freedom.
 - **Entities**: Works on `Points`, `Lines`, and `Circles`. complex constraints are broken down into point-level operations.
 - **Integration**: The `ConstraintSolver` class takes a `SolverState` (entities + constraints) and modifies entity coordinates in-place to minimize error.
 

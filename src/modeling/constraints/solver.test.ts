@@ -307,3 +307,165 @@ describe('ConstraintSolver', () => {
         expect(distanceToLine(skinCenter, leftShoulder, nose)).toBeCloseTo(10, 1);
     });
 });
+
+// Deterministic jitter in [-1, 1] so the "drawn roughly right" starting points are reproducible.
+function makeNoise(seed: number): () => number {
+    let state = seed;
+    return () => {
+        state = (state * 1664525 + 1013904223) >>> 0;
+        return (state / 2 ** 32) * 2 - 1;
+    };
+}
+
+function polygonState(n: number, edge: number, jitter: number, scale = 1): { state: SolverState; worstEdgeError: () => number } {
+    const noise = makeNoise(12345);
+    const radius = edge / (2 * Math.sin(Math.PI / n));
+    const entities = new Map<string, SketchEntity>();
+    for (let i = 0; i < n; i++) {
+        const angle = (2 * Math.PI * i) / n;
+        entities.set(`p${i}`, {
+            id: `p${i}`, type: 'POINT',
+            x: (radius * Math.cos(angle) + noise() * edge * jitter) * scale,
+            y: (radius * Math.sin(angle) + noise() * edge * jitter) * scale,
+            fixed: i === 0,
+        });
+    }
+    const constraints = Array.from({ length: n }, (_, i) => ({
+        id: `d${i}`, type: 'DISTANCE' as const, entities: [`p${i}`, `p${(i + 1) % n}`], value: edge * scale,
+    }));
+    const worstEdgeError = () => {
+        let worst = 0;
+        for (let i = 0; i < n; i++) {
+            const a = asPoint(entities.get(`p${i}`));
+            const b = asPoint(entities.get(`p${(i + 1) % n}`));
+            worst = Math.max(worst, Math.abs(Math.hypot(b.x - a.x, b.y - a.y) - edge * scale));
+        }
+        return worst;
+    };
+    return { state: { entities, constraints }, worstEdgeError };
+}
+
+describe('ConstraintSolver — long chains and closed loops', () => {
+    // The old one-constraint-at-a-time relaxation moved a correction only a link or
+    // two per pass, so 100 passes left these loops with edges 0.02 to 0.09 off.
+    it.each([12, 50, 200])('closes a %i-vertex loop of equal edges drawn roughly right', (n) => {
+        const { state, worstEdgeError } = polygonState(n, 10, 0.15);
+        const result = new ConstraintSolver().solve(state);
+
+        expect(result.converged).toBe(true);
+        expect(result.iterations).toBeLessThan(30);
+        expect(worstEdgeError()).toBeLessThan(1e-6);
+        // Independent of the solver's own report.
+        expect(result.residual).toBeLessThan(1e-6);
+    });
+
+    it('does not depend on the sketch size (millimetres to metres)', () => {
+        for (const scale of [1e-3, 1, 1e3]) {
+            const { state, worstEdgeError } = polygonState(50, 10, 0.15, scale);
+            const result = new ConstraintSolver().solve(state);
+            expect(result.converged).toBe(true);
+            expect(worstEdgeError() / scale).toBeLessThan(1e-6);
+        }
+    });
+
+    it('fully constrains a rectangle subdivided along its sides', () => {
+        const k = 25, width = 100, height = 60;
+        const entities = new Map<string, SketchEntity>();
+        const noise = makeNoise(777);
+        const side: string[][] = [[], [], [], []];
+        const place = (list: string[], id: string, x: number, y: number, fixed = false) => {
+            entities.set(id, { id, type: 'POINT', x: x + noise() * 0.4, y: y + noise() * 0.4, fixed });
+            list.push(id);
+        };
+        const s = width / k, t = height / k;
+        for (let i = 0; i < k; i++) place(side[0], `b${i}`, i * s, 0, i === 0);
+        for (let i = 0; i < k; i++) place(side[1], `r${i}`, width, i * t);
+        for (let i = 0; i < k; i++) place(side[2], `t${i}`, width - i * s, height);
+        for (let i = 0; i < k; i++) place(side[3], `l${i}`, 0, height - i * t);
+        const corners = ['r0', 't0', 'l0', 'b0'];
+        const constraints: SolverState['constraints'] = [];
+        side.forEach((ids, sideIndex) => {
+            const path = [...ids, corners[sideIndex]];
+            const horizontal = sideIndex % 2 === 0;
+            for (let i = 0; i < path.length - 1; i++) {
+                constraints.push({ id: `c${constraints.length}`, type: horizontal ? 'HORIZONTAL' : 'VERTICAL', entities: [path[i], path[i + 1]] });
+                constraints.push({ id: `c${constraints.length}`, type: 'DISTANCE', entities: [path[i], path[i + 1]], value: horizontal ? s : t });
+            }
+        });
+
+        const result = new ConstraintSolver().solve({ entities, constraints });
+
+        expect(result.converged).toBe(true);
+        expect(result.residual).toBeLessThan(1e-8);
+        expect(result.degreesOfFreedom).toBe(0);
+        // The anchor b0 is fixed where it was drawn, so the rectangle lands relative to it.
+        const anchor = asPoint(entities.get('b0'));
+        const far = asPoint(entities.get('t0'));
+        expect(far.x - anchor.x).toBeCloseTo(width, 6);
+        expect(far.y - anchor.y).toBeCloseTo(height, 6);
+    });
+});
+
+describe('ConstraintSolver — result reporting', () => {
+    it('reports the remaining degrees of freedom', () => {
+        const entities = new Map<string, SketchEntity>([
+            ['a', { id: 'a', type: 'POINT', x: 0, y: 0, fixed: true }],
+            ['b', { id: 'b', type: 'POINT', x: 8, y: 1, fixed: false }],
+        ]);
+        const result = new ConstraintSolver().solve({
+            entities,
+            constraints: [{ id: 'd', type: 'DISTANCE', entities: ['a', 'b'], value: 10 }],
+        });
+
+        expect(result.converged).toBe(true);
+        // b can still swing round a: 2 coordinates, 1 equation.
+        expect(result.degreesOfFreedom).toBe(1);
+        expect(result.dependentEquations).toBe(0);
+    });
+
+    it('flags a dependent equation, and rejects a genuine contradiction', () => {
+        const mk = () => new Map<string, SketchEntity>([
+            ['a', { id: 'a', type: 'POINT', x: 0, y: 0, fixed: true }],
+            ['b', { id: 'b', type: 'POINT', x: 10, y: 0, fixed: false }],
+        ]);
+        const consistent = new ConstraintSolver().solve({
+            entities: mk(),
+            constraints: [
+                { id: 'd1', type: 'DISTANCE', entities: ['a', 'b'], value: 10 },
+                { id: 'd2', type: 'DISTANCE', entities: ['a', 'b'], value: 10 },
+            ],
+        });
+        expect(consistent.converged).toBe(true);
+        expect(consistent.dependentEquations).toBe(1);
+
+        const contradictory = new ConstraintSolver().solve({
+            entities: mk(),
+            constraints: [
+                { id: 'd1', type: 'DISTANCE', entities: ['a', 'b'], value: 10 },
+                { id: 'd2', type: 'DISTANCE', entities: ['a', 'b'], value: 20 },
+            ],
+        });
+        expect(contradictory.converged).toBe(false);
+        expect(contradictory.residual).toBeGreaterThan(1);
+    });
+
+    it('moves coincident points off each other instead of dividing by zero', () => {
+        const entities = new Map<string, SketchEntity>([
+            ['a', { id: 'a', type: 'POINT', x: 3, y: 3, fixed: true }],
+            ['b', { id: 'b', type: 'POINT', x: 3, y: 3, fixed: false }],
+        ]);
+        const result = new ConstraintSolver().solve({
+            entities,
+            constraints: [{ id: 'd', type: 'DISTANCE', entities: ['a', 'b'], value: 5 }],
+        });
+        const b = asPoint(entities.get('b'));
+        expect(Number.isFinite(b.x) && Number.isFinite(b.y)).toBe(true);
+        expect(result.converged).toBe(true);
+        expect(Math.hypot(b.x - 3, b.y - 3)).toBeCloseTo(5, 6);
+    });
+
+    it('reports an empty constraint set as trivially converged', () => {
+        const result = new ConstraintSolver().solve({ entities: new Map(), constraints: [] });
+        expect(result).toMatchObject({ converged: true, residual: 0, iterations: 0 });
+    });
+});

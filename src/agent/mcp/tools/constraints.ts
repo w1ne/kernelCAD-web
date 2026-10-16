@@ -43,9 +43,9 @@ export interface SolveSketchInput {
 export type SolveSketchOutput =
   | {
     ok: true;
-    /** The solve converged: aggregate residual fell below tolerance. */
+    /** The solve converged: the worst constraint violation fell below tolerance. */
     converged: true;
-    /** Final aggregate residual on the converged solve. */
+    /** Largest remaining constraint violation on the converged solve. */
     residual: number;
     entities: SketchEntity[];
     constraints: Constraint[];
@@ -56,7 +56,7 @@ export type SolveSketchOutput =
      *  constrained set); undefined when validation rejected the input
      *  before the solver ran. */
     converged?: boolean;
-    /** Final aggregate residual when the solver ran; undefined when
+    /** Largest remaining constraint violation when the solver ran; undefined when
      *  validation rejected the input first. */
     residual?: number;
     errors: string[];
@@ -112,7 +112,7 @@ export async function solveSketchTool(input: SolveSketchInput = {}): Promise<Sol
       converged: false,
       residual: result.residual,
       errors: [
-        `Constraint solve did not converge: aggregate residual ${result.residual.toFixed(4)} after ${result.iterations} iterations (tolerance ${SKETCH_CONVERGENCE_RESIDUAL_TOL}). The constraint set is likely contradictory or over-constrained — remove or relax a conflicting constraint, or unfix an entity so the solver has a degree of freedom to satisfy it.`,
+        `Constraint solve did not converge: the worst remaining constraint violation is ${result.residual.toFixed(4)} after ${result.iterations} iterations (tolerance ${SKETCH_CONVERGENCE_RESIDUAL_TOL}).${result.dependentEquations ? ` ${result.dependentEquations} constraint equation(s) depend on the others.` : ''} The constraint set is likely contradictory or over-constrained — remove or relax a conflicting constraint, or unfix an entity so the solver has a degree of freedom to satisfy it. If the sketch is satisfiable, it may also start too far from a solution: move the points closer to where they should end up and solve again.`,
       ],
       entities: solvedEntities,
       constraints,

@@ -1,810 +1,211 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import type { Constraint, Point, SketchEntity, SolverState, Line, Circle } from "./types";
-// import type { EntityType } from "./types";
+import type { SolverState } from "./types";
+import {
+    compileConstraints, dot, evaluateJacobian, evaluateResiduals, maxAbs, type Program,
+} from "./residualProgram";
+import {
+    assembleNormalEquations, buildSkyline, factorSkyline, jacobianRank, skylineDiagonal, solveSkyline,
+    type Skyline,
+} from "./normalEquations";
 
-/** Per-iteration EARLY-OUT threshold: the relaxation loop stops once the
- *  aggregate residual drops this low (the solve has settled). This is an
- *  optimization to avoid running the full iteration cap, NOT the convergence
- *  verdict — see `SKETCH_CONVERGENCE_RESIDUAL_TOL`. */
-export const CONSTRAINT_RESIDUAL_TOL = 0.0001;
+/** Newton stop criterion: the solve is finished once the largest scalar
+ *  residual is below this. */
+export const CONSTRAINT_RESIDUAL_TOL = 1e-10;
 
-/** Aggregate-residual tolerance for the CONVERGENCE VERDICT (`converged`).
+/** Tolerance for the CONVERGENCE VERDICT (`converged`), applied to the largest
+ *  scalar residual (`residual`).
  *
- *  Deliberately looser than the early-out. The per-constraint residuals this
- *  relaxation solver sums are HETEROGENEOUS and unnormalized — coincident
- *  returns distance² (mm²), distance returns mm, tangent/perpendicular return
- *  cross/dot products that scale with the operand line lengths. So a sketch
- *  whose geometry is fully satisfied still carries a small non-zero aggregate
- *  (e.g. the rocket-keychain fixture settles to its exact target coordinates
- *  with residual ≈ 0.018, dominated by a geometrically-negligible tangent
- *  term). A `1e-4` verdict would mis-report that perfectly-solved sketch as
- *  non-converged — a false negative as bad as the silent-`ok:true` this gate
- *  set out to kill, just in the other direction.
- *
- *  Known data points bracket the threshold with wide margin: a satisfiable
- *  sketch lands at ≈ 0 – 0.02; a genuinely contradictory set (two fixed
- *  points 10 apart demanding a DISTANCE of 20) plateaus at ≈ 10. `0.5` sits
- *  ~25× above the satisfied case and ~20× below the contradictory one.
- *
- *  This is a coarse heuristic on a heterogeneous metric; robust per-constraint
- *  (type-normalized) convergence + DOF analysis is deferred (the engine has no
- *  Jacobian/DOF accounting). It is biased to avoid FALSE NEGATIVES on real
- *  sketches while still catching gross contradictions. */
-export const SKETCH_CONVERGENCE_RESIDUAL_TOL = 0.5;
+ *  Every scalar residual the solver builds is either a length (sketch units) or
+ *  a dimensionless angle quantity (radians, sin, cos), so one absolute
+ *  tolerance is meaningful for all of them. It is an engineering tolerance, not
+ *  a numerical one: a satisfiable system lands ~7 orders of magnitude below it
+ *  (Newton converges quadratically), a contradictory one plateaus far above it,
+ *  and only an over-constrained set that is *nearly* consistent sits in
+ *  between. The rocket-keychain fixture is one: its mirrored fin implies an
+ *  angle of -31.9734 deg while the sketch also demands -32 deg, a 4.6e-4 rad
+ *  conflict. That is a usable sketch, so it must not be rejected; the conflict
+ *  is still visible in `residual` and `dependentEquations`. */
+export const SKETCH_CONVERGENCE_RESIDUAL_TOL = 1e-3;
 
 export interface ConstraintSolveResult {
-    /** True when the aggregate residual settled below
-     *  `SKETCH_CONVERGENCE_RESIDUAL_TOL` within the iteration cap. False means
-     *  the constraints could not be satisfied (contradictory / over-
-     *  constrained / stalled at a high residual). */
+    /** True when the largest scalar residual fell below
+     *  `SKETCH_CONVERGENCE_RESIDUAL_TOL`. False means the constraints could not
+     *  be satisfied (contradictory / over-constrained / stalled). */
     converged: boolean;
-    /** The aggregate residual on the final iteration (sum of per-constraint
-     *  error magnitudes). 0 when there are no constraints. */
+    /** Largest remaining scalar residual (worst constraint violation). Lengths
+     *  are in sketch units; angular quantities are dimensionless. 0 when there
+     *  are no constraints. */
     residual: number;
-    /** Number of iterations actually run before convergence or the cap. */
+    /** Number of Newton iterations (Jacobian evaluations) actually run. */
     iterations: number;
+    /** Free variables the constraints leave undetermined at the solution
+     *  (variables minus Jacobian rank). 0 means the sketch is fully
+     *  constrained. Undefined when the system is too large to analyse. */
+    degreesOfFreedom?: number;
+    /** Scalar equations that are linearly dependent on the others (equations
+     *  minus Jacobian rank): redundant if consistent, conflicting otherwise.
+     *  Undefined when the system is too large to analyse. */
+    dependentEquations?: number;
 }
 
+const MAX_ITERATIONS = 200;
+const MAX_DAMPING_RETRIES = 40;
+const MAX_DAMPING = 1e14;
+const MIN_DAMPING = 1e-15;
+/** Smallest pivot ratio at which an undamped Gauss-Newton step is trusted. */
+const WELL_CONDITIONED = 1e-6;
+
+/** Current iterate of the minimisation. */
+interface Iterate {
+    X: Float64Array;
+    r: Float64Array;
+    /** 0.5 * |r|^2 */
+    cost: number;
+    /** Levenberg-Marquardt damping, relative to the size of J^T J. */
+    lambda: number;
+}
+
+/** Buffers reused across iterations. */
+interface Workspace {
+    prog: Program;
+    sky: Skyline;
+    nVars: number;
+    g: Float64Array;
+    step: Float64Array;
+    trial: Float64Array;
+    trialR: Float64Array;
+    scratch: Float64Array;
+}
+
+function createWorkspace(prog: Program): Workspace {
+    const nVars = prog.x0.length;
+    return {
+        prog,
+        sky: buildSkyline(prog),
+        nVars,
+        g: new Float64Array(nVars),
+        step: new Float64Array(nVars),
+        trial: new Float64Array(nVars),
+        trialR: new Float64Array(prog.residualCount),
+        scratch: new Float64Array(prog.constraints.reduce((acc, c) => Math.max(acc, c.n), 1)),
+    };
+}
+
+/** Factor J^T J + damping into the skyline, restoring it from `pristine` first.
+ *  Returns the conditioning estimate (see factorSkyline). */
+function factorDamped(w: Workspace, pristine: Float64Array[], damping: number): number {
+    for (let i = 0; i < w.nVars; i++) {
+        const d = i - w.sky.first[i];
+        w.sky.rows[i].set(pristine[i]);
+        // A variable no residual depends on has an all-zero row and column and a
+        // zero gradient: pin its diagonal so it stays put without making A singular.
+        if (pristine[i][d] === 0) w.sky.rows[i][d] = 1;
+        else w.sky.rows[i][d] += damping;
+    }
+    return factorSkyline(w.sky);
+}
+
+/** Solve for the step with the factored system and accept it if it lowers the cost. */
+function acceptIfBetter(w: Workspace, it: Iterate): boolean {
+    for (let i = 0; i < w.nVars; i++) w.step[i] = -w.g[i];
+    solveSkyline(w.sky, w.step);
+    for (let i = 0; i < w.nVars; i++) w.trial[i] = it.X[i] + w.step[i];
+    evaluateResiduals(w.prog, w.trial, w.trialR, w.scratch);
+    const trialCost = 0.5 * dot(w.trialR, w.trialR);
+    if (!Number.isFinite(trialCost) || trialCost >= it.cost) return false;
+    it.X = Float64Array.from(w.trial);
+    it.r = Float64Array.from(w.trialR);
+    it.cost = trialCost;
+    return true;
+}
+
+/** One Levenberg-Marquardt iteration. Returns false when no step lowers the cost. */
+function levenbergMarquardtStep(w: Workspace, it: Iterate): boolean {
+    evaluateJacobian(w.prog, it.X, it.r, w.scratch);
+    assembleNormalEquations(w.prog, w.sky, it.r, w.g);
+    // One shared damping value (scaled to the system) rather than per-variable
+    // Marquardt scaling: with per-variable scaling a variable the constraints
+    // barely touch is almost free to move, so finite-difference noise in its
+    // near-zero Jacobian column turns into a huge step. Shared damping gives
+    // the minimum-movement (minimum-norm) step for under-constrained sketches.
+    let trace = 0;
+    for (let i = 0; i < w.nVars; i++) trace += skylineDiagonal(w.sky, i);
+    const scale = Math.max(trace / w.nVars, 1e-12);
+    const pristine = w.sky.rows.map(row => Float64Array.from(row));
+
+    for (let attempt = 0; attempt < MAX_DAMPING_RETRIES; attempt++) {
+        // Attempt 0 is a pure Gauss-Newton step, taken only when the system is
+        // well conditioned: it lands exactly on linear constraints and converges
+        // quadratically on the rest. Anything rank-deficient (under-constrained)
+        // falls through to the damped, minimum-movement step.
+        const undamped = attempt === 0;
+        const conditioning = factorDamped(w, pristine, undamped ? 0 : it.lambda * scale);
+        if (conditioning > (undamped ? WELL_CONDITIONED : 0) && acceptIfBetter(w, it)) {
+            it.lambda = Math.max(it.lambda / 4, MIN_DAMPING);
+            return true;
+        }
+        if (!undamped) it.lambda *= 4;
+        if (it.lambda > MAX_DAMPING) return false;
+    }
+    return false;
+}
+
+/** Counts of what the constraints leave open, from the Jacobian rank at the solution. */
+function analyseFreedom(w: Workspace, it: Iterate): Pick<ConstraintSolveResult, 'degreesOfFreedom' | 'dependentEquations'> {
+    const equations = w.prog.residualCount;
+    if (w.nVars === 0) return { degreesOfFreedom: 0, dependentEquations: equations };
+    evaluateJacobian(w.prog, it.X, it.r, w.scratch);
+    const rank = jacobianRank(w.prog, w.nVars);
+    if (rank === null) return {};
+    return { degreesOfFreedom: w.nVars - rank, dependentEquations: equations - rank };
+}
+
+/** Constraint solver: damped Gauss-Newton (Levenberg-Marquardt) on a system of
+ *  normalised scalar residuals with a sparse finite-difference Jacobian.
+ *
+ *  Unlike the relaxation loop it replaced, information propagates through the
+ *  whole constraint graph in every step, so long chains and closed loops
+ *  converge in a handful of iterations rather than stalling at the iteration
+ *  cap. Under-constrained sketches get the minimum-movement solution (LM's
+ *  damped step is the least-squares / minimum-norm step), and the rank of the
+ *  Jacobian gives the remaining degrees of freedom. Entities are updated in
+ *  place; fixed points never move.
+ *
+ *  It is a local method: it finds the solution nearest the starting geometry.
+ *  A sketch that starts very far from any solution (say a closed chain drawn
+ *  straight and stretched far past its closing distance) can stall in a local
+ *  minimum, which is reported as `converged: false`. */
 export class ConstraintSolver {
-    private iterations: number = 100;
+    private maxIterations = MAX_ITERATIONS;
 
     solve(state: SolverState): ConstraintSolveResult {
-        let totalError = 0;
-        let ran = 0;
-        for (let i = 0; i < this.iterations; i++) {
-            ran = i + 1;
-            totalError = 0;
-            for (const constraint of state.constraints) {
-                totalError += this.solveConstraint(constraint, state.entities);
-            }
-            // If satisfied, break early? (Maybe keep it stable for dragging)
-            if (totalError < CONSTRAINT_RESIDUAL_TOL) break;
+        const prog = compileConstraints(state);
+        const nVars = prog.x0.length;
+        if (prog.residualCount === 0) {
+            return { converged: true, residual: 0, iterations: 0, degreesOfFreedom: nVars, dependentEquations: 0 };
         }
+
+        const w = createWorkspace(prog);
+        const X = Float64Array.from(prog.x0);
+        const r = new Float64Array(prog.residualCount);
+        evaluateResiduals(prog, X, r, w.scratch);
+        const it: Iterate = { X, r, cost: 0.5 * dot(r, r), lambda: 1e-3 };
+
+        let iterations = 0;
+        while (nVars > 0 && iterations < this.maxIterations && maxAbs(it.r) >= CONSTRAINT_RESIDUAL_TOL) {
+            iterations++;
+            // No descent direction left: stalled (or converged to numerical noise).
+            if (!levenbergMarquardtStep(w, it)) break;
+        }
+
+        for (let i = 0; i < nVars; i++) prog.writers[i](it.X[i]);
+        const residual = maxAbs(it.r);
         return {
-            converged: totalError < SKETCH_CONVERGENCE_RESIDUAL_TOL,
-            residual: totalError,
-            iterations: ran,
+            converged: residual < SKETCH_CONVERGENCE_RESIDUAL_TOL,
+            residual,
+            iterations,
+            ...analyseFreedom(w, it),
         };
-    }
-
-    private solveConstraint(constraint: Constraint, entities: Map<string, SketchEntity>): number {
-        switch (constraint.type) {
-            case 'COINCIDENT':
-                return this.solveCoincident(constraint, entities);
-            case 'DISTANCE':
-                return this.solveDistance(constraint, entities);
-            case 'HORIZONTAL':
-                return this.solveHorizontal(constraint, entities);
-            case 'VERTICAL':
-                return this.solveVertical(constraint, entities);
-            case 'PARALLEL':
-                return this.solveParallel(constraint, entities);
-            case 'PERPENDICULAR':
-                return this.solvePerpendicular(constraint, entities);
-            case 'TANGENT':
-                return this.solveTangent(constraint, entities);
-            case 'RADIUS':
-                return this.solveRadius(constraint, entities);
-            case 'ANGLE':
-                return this.solveAngle(constraint, entities);
-            case 'CONCENTRIC':
-                return this.solveConcentric(constraint, entities);
-            case 'SYMMETRIC':
-                return this.solveSymmetric(constraint, entities);
-            case 'EQUAL_LENGTH':
-                return this.solveConnect(constraint, entities); // Equal length logic
-            default:
-                // console.warn('Unsupported constraint type:', constraint.type);
-                return 0;
-        }
-    }
-
-    private getPoint(id: string, entities: Map<string, SketchEntity>): Point | null {
-        // Direct point
-        const entity = entities.get(id);
-        if (entity?.type === 'POINT') return entity;
-
-        // If entity is a line/circle, we might be referencing a sub-point, 
-        // but for now, we assume constraints link Points directly.
-        // A "Coincident" on an endpoint of a line should target the endpoint's ID, 
-        // which should be an independent Point entity in our model.
-        return null;
-    }
-
-    private solveCoincident(c: Constraint, entities: Map<string, SketchEntity>): number {
-        if (c.entities.length !== 2) return 0;
-        const p1 = this.getPoint(c.entities[0], entities);
-        const p2 = this.getPoint(c.entities[1], entities);
-
-        if (!p1 || !p2) return 0;
-
-        const dx = p2.x - p1.x;
-        const dy = p2.y - p1.y;
-        const distSq = dx * dx + dy * dy;
-
-        if (distSq < 0.000001) return 0; // Already coincident
-
-        // Move points towards each other (0.5 each if both free)
-        const factor = 0.5;
-
-        if (!p1.fixed && !p2.fixed) {
-            p1.x += dx * factor;
-            p1.y += dy * factor;
-            p2.x -= dx * factor;
-            p2.y -= dy * factor;
-        } else if (!p1.fixed) {
-            p1.x += dx;
-            p1.y += dy;
-        } else if (!p2.fixed) {
-            p2.x -= dx;
-            p2.y -= dy;
-        }
-
-        return distSq;
-    }
-
-    private solveDistance(c: Constraint, entities: Map<string, SketchEntity>): number {
-        if (c.entities.length !== 2 || c.value === undefined) return 0;
-        const p1 = this.getPoint(c.entities[0], entities);
-        const p2 = this.getPoint(c.entities[1], entities);
-        if (!p1 || !p2) return 0;
-
-        const dx = p2.x - p1.x;
-        const dy = p2.y - p1.y;
-        const currentDist = Math.sqrt(dx * dx + dy * dy);
-
-        if (Math.abs(currentDist - c.value) < 0.001) return 0;
-
-        const difference = (currentDist - c.value) / currentDist;
-        const moveX = dx * difference * 0.5;
-        const moveY = dy * difference * 0.5;
-
-        if (!p1.fixed && !p2.fixed) {
-            p1.x += moveX;
-            p1.y += moveY;
-            p2.x -= moveX;
-            p2.y -= moveY;
-        } else if (!p1.fixed) {
-            // P2 is fixed, P1 moves full difference away/towards
-            p1.x += dx * difference; // Check direction
-            p1.y += dy * difference;
-        } else if (!p2.fixed) {
-            p2.x -= dx * difference;
-            p2.y -= dy * difference;
-        }
-
-        return Math.abs(currentDist - c.value);
-    }
-
-    private solveHorizontal(c: Constraint, entities: Map<string, SketchEntity>): number {
-        // Enforce same Y
-        if (c.entities.length !== 2) return 0;
-        const p1 = this.getPoint(c.entities[0], entities);
-        const p2 = this.getPoint(c.entities[1], entities);
-        if (!p1 || !p2) return 0;
-
-        const dy = p2.y - p1.y;
-        if (Math.abs(dy) < 0.0001) return 0;
-
-        if (!p1.fixed && !p2.fixed) {
-            p1.y += dy * 0.5;
-            p2.y -= dy * 0.5;
-        } else if (!p1.fixed) {
-            p1.y += dy;
-        } else if (!p2.fixed) {
-            p2.y -= dy;
-        }
-        return Math.abs(dy);
-    }
-
-    private solveVertical(c: Constraint, entities: Map<string, SketchEntity>): number {
-        // Enforce same X
-        if (c.entities.length !== 2) return 0;
-        const p1 = this.getPoint(c.entities[0], entities);
-        const p2 = this.getPoint(c.entities[1], entities);
-        if (!p1 || !p2) return 0;
-
-        const dx = p2.x - p1.x;
-        if (Math.abs(dx) < 0.0001) return 0;
-
-        if (!p1.fixed && !p2.fixed) {
-            p1.x += dx * 0.5;
-            p2.x -= dx * 0.5;
-        } else if (!p1.fixed) {
-            p1.x += dx;
-        } else if (!p2.fixed) {
-            p2.x -= dx;
-        }
-        return Math.abs(dx);
-    }
-
-    private getLine(id: string, entities: Map<string, SketchEntity>): { line: Line, p1: Point, p2: Point } | null {
-        const entity = entities.get(id);
-        if (entity?.type !== 'LINE') return null;
-
-        const p1 = this.getPoint(entity.p1, entities);
-        const p2 = this.getPoint(entity.p2, entities);
-
-        if (!p1 || !p2) return null;
-        return { line: entity, p1, p2 };
-    }
-
-    private getCircle(id: string, entities: Map<string, SketchEntity>): { circle: Circle, center: Point } | null {
-        const entity = entities.get(id);
-        if (entity?.type !== 'CIRCLE') return null;
-        const center = this.getPoint(entity.center, entities);
-        if (!center) return null;
-        return { circle: entity, center };
-    }
-
-    private solveParallel(c: Constraint, entities: Map<string, SketchEntity>): number {
-        if (c.entities.length !== 2) return 0;
-        const l1 = this.getLine(c.entities[0], entities);
-        const l2 = this.getLine(c.entities[1], entities);
-
-        if (!l1 || !l2) return 0;
-
-        const dx1 = l1.p2.x - l1.p1.x;
-        const dy1 = l1.p2.y - l1.p1.y;
-        const dx2 = l2.p2.x - l2.p1.x;
-        const dy2 = l2.p2.y - l2.p1.y;
-
-        // Cross product of direction vectors should be 0
-        // (x1*y2 - x2*y1)
-        const cross = dx1 * dy2 - dx2 * dy1;
-
-        if (Math.abs(cross) < 0.001) return 0;
-
-        // Normalized vectors:
-        const len1 = Math.sqrt(dx1 * dx1 + dy1 * dy1);
-        const len2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
-        if (len1 < 0.001 || len2 < 0.001) return 0;
-
-        const ndx1 = dx1 / len1;
-        const ndy1 = dy1 / len1;
-        const ndx2 = dx2 / len2;
-        const ndy2 = dy2 / len2;
-
-        // sine of angle between them is close to cross product of normalized
-        const sinTheta = ndx1 * ndy2 - ndx2 * ndy1;
-
-        // We want to reduce sinTheta to 0.
-        // Move points perpendicular to their lines.
-        // Scale by length because moving an endpoint of a long line requires larger displacement for same angle.
-        // factor 0.5.
-
-        if (!l1.p1.fixed) {
-            const scale = len1 * 0.5 * sinTheta;
-            l1.p1.x += ndy1 * scale;
-            l1.p1.y -= ndx1 * scale;
-        }
-        if (!l1.p2.fixed) {
-            const scale = len1 * 0.5 * sinTheta;
-            l1.p2.x -= ndy1 * scale;
-            l1.p2.y += ndx1 * scale;
-        }
-
-        if (!l2.p1.fixed) {
-            const scale = len2 * 0.5 * sinTheta;
-            l2.p1.x -= ndy2 * scale;
-            l2.p1.y += ndx2 * scale;
-        }
-        if (!l2.p2.fixed) {
-            const scale = len2 * 0.5 * sinTheta;
-            l2.p2.x += ndy2 * scale;
-            l2.p2.y -= ndx2 * scale;
-        }
-
-        return Math.abs(cross);
-    }
-
-    private solvePerpendicular(c: Constraint, entities: Map<string, SketchEntity>): number {
-        if (c.entities.length !== 2) return 0;
-        const l1 = this.getLine(c.entities[0], entities);
-        const l2 = this.getLine(c.entities[1], entities);
-
-        if (!l1 || !l2) return 0;
-
-        const dx1 = l1.p2.x - l1.p1.x;
-        const dy1 = l1.p2.y - l1.p1.y;
-        const dx2 = l2.p2.x - l2.p1.x;
-        const dy2 = l2.p2.y - l2.p1.y;
-
-        // Dot product should be 0
-        const dot = dx1 * dx2 + dy1 * dy2;
-
-        if (Math.abs(dot) < 0.001) return 0;
-
-        const len1 = Math.sqrt(dx1 * dx1 + dy1 * dy1);
-        const len2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
-        if (len1 < 0.001 || len2 < 0.001) return 0;
-
-        // Normalize
-        const ndx1 = dx1 / len1;
-        const ndy1 = dy1 / len1;
-        const ndx2 = dx2 / len2;
-        const ndy2 = dy2 / len2;
-
-        // Cosine of angle is dot product of normalized
-        const cosTheta = ndx1 * ndx2 + ndy1 * ndy2;
-
-        // Rotate L1
-        if (!l1.p1.fixed) {
-            const scale = len1 * 0.5 * cosTheta;
-            l1.p1.x += ndy1 * scale;
-            l1.p1.y -= ndx1 * scale;
-        }
-        if (!l1.p2.fixed) {
-            const scale = len1 * 0.5 * cosTheta;
-            l1.p2.x -= ndy1 * scale;
-            l1.p2.y += ndx1 * scale;
-        }
-
-        // Rotate L2
-        if (!l2.p1.fixed) {
-            const scale = len2 * 0.5 * cosTheta;
-            l2.p1.x += ndy2 * scale;
-            l2.p1.y -= ndx2 * scale;
-        }
-        if (!l2.p2.fixed) {
-            const scale = len2 * 0.5 * cosTheta;
-            l2.p2.x -= ndy2 * scale;
-            l2.p2.y += ndx2 * scale;
-        }
-
-        return Math.abs(dot);
-    }
-
-    private solveTangent(c: Constraint, entities: Map<string, SketchEntity>): number {
-        if (c.entities.length !== 2) return 0;
-
-        // Check types
-        const e1 = entities.get(c.entities[0]);
-        const e2 = entities.get(c.entities[1]);
-
-        if (!e1 || !e2) return 0;
-
-        // Case 1: Circle and Line
-        let circleInfo: { circle: Circle, center: Point } | null = null;
-        let lineInfo: { line: Line, p1: Point, p2: Point } | null = null;
-
-        if (e1.type === 'CIRCLE' && e2.type === 'LINE') {
-            circleInfo = this.getCircle(c.entities[0], entities);
-            lineInfo = this.getLine(c.entities[1], entities);
-        } else if (e1.type === 'LINE' && e2.type === 'CIRCLE') {
-            lineInfo = this.getLine(c.entities[0], entities);
-            circleInfo = this.getCircle(c.entities[1], entities);
-        }
-
-        if (circleInfo && lineInfo) {
-            return this.solveTangentCircleLine(circleInfo, lineInfo);
-        }
-
-        // Case 2: Circle and Circle
-        if (e1.type === 'CIRCLE' && e2.type === 'CIRCLE') {
-            const c1 = this.getCircle(c.entities[0], entities);
-            const c2 = this.getCircle(c.entities[1], entities);
-            if (c1 && c2) return this.solveTangentCircleCircle(c1, c2);
-        }
-
-        return 0;
-    }
-
-    private solveTangentCircleLine(
-        c: { circle: Circle, center: Point },
-        l: { line: Line, p1: Point, p2: Point }
-    ): number {
-        // Distance from center to line should equal radius
-        const dx = l.p2.x - l.p1.x;
-        const dy = l.p2.y - l.p1.y;
-        const len = Math.sqrt(dx * dx + dy * dy);
-
-        if (len < 0.0001) return 0;
-
-        // Standard line eq: Ax + By + C = 0
-        // A = -dy, B = dx, C = dy*x1 - dx*y1
-        // Dist = |Ax0 + By0 + C| / sqrt(A^2 + B^2)
-
-        const A = -dy;
-        const B = dx;
-        const C_val = dy * l.p1.x - dx * l.p1.y;
-
-        const num = Math.abs(A * c.center.x + B * c.center.y + C_val);
-        const dist = num / len;
-
-        const err = dist - c.circle.radius;
-        if (Math.abs(err) < 0.001) return 0;
-
-        // Move center towards/away from line
-        // Normal vector to line: (A, B) normalized
-        // We want center to be at distance R.
-        // Vector from line to center (signed distance direction) is roughly...
-
-        // Let's project center onto line to find closest point P_closest
-        const t = ((c.center.x - l.p1.x) * dx + (c.center.y - l.p1.y) * dy) / (len * len);
-        const closestX = l.p1.x + t * dx;
-        const closestY = l.p1.y + t * dy;
-
-        const toCenterX = c.center.x - closestX;
-        const toCenterY = c.center.y - closestY;
-        const currentDistToLine = Math.sqrt(toCenterX * toCenterX + toCenterY * toCenterY);
-
-        if (currentDistToLine < 0.0001) {
-            // Center is ON the line. Push it out along the line normal.
-            // Normal is (-dy, dx) / len
-            const nx = -dy / len;
-            const ny = dx / len;
-            if (!c.center.fixed) {
-                c.center.x += nx * c.circle.radius;
-                c.center.y += ny * c.circle.radius;
-            }
-            return c.circle.radius;
-        }
-
-        const moveDist = c.circle.radius - currentDistToLine;
-        const moveX = (toCenterX / currentDistToLine) * moveDist * 0.5;
-        const moveY = (toCenterY / currentDistToLine) * moveDist * 0.5;
-
-        if (!c.center.fixed) {
-            c.center.x += moveX;
-            c.center.y += moveY;
-        }
-
-        // Also move line? (simplified: just move center for now, or push line)
-        // Pushing line is harder because it involves rotating or translating. 
-        // Translating line is easier.
-        if (!l.p1.fixed && !l.p2.fixed) {
-            l.p1.x -= moveX;
-            l.p1.y -= moveY;
-            l.p2.x -= moveX;
-            l.p2.y -= moveY;
-        }
-
-        return Math.abs(err);
-    }
-
-    private solveTangentCircleCircle(
-        c1: { circle: Circle, center: Point },
-        c2: { circle: Circle, center: Point }
-    ): number {
-        const dx = c2.center.x - c1.center.x;
-        const dy = c2.center.y - c1.center.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-
-        // Target distance is sum of radii (external tangent) 
-        // OR abs diff (internal). 
-        // Usually sketches default to external unless close to internal? 
-        // Let's assume external for now: R1 + R2.
-        const target = c1.circle.radius + c2.circle.radius;
-
-        const err = dist - target;
-        if (Math.abs(err) < 0.001) return 0;
-
-        if (dist < 0.0001) {
-            // Concentric center. Push apart.
-            if (!c2.center.fixed) c2.center.x += 1;
-            return Math.abs(err);
-        }
-
-        const moveFraction = err / dist * 0.5;
-        const moveX = dx * moveFraction;
-        const moveY = dy * moveFraction;
-
-        if (!c1.center.fixed && !c2.center.fixed) {
-            c1.center.x += moveX;
-            c1.center.y += moveY;
-            c2.center.x -= moveX;
-            c2.center.y -= moveY;
-        } else if (!c1.center.fixed) {
-            c1.center.x += moveX * 2;
-            c1.center.y += moveY * 2;
-        } else if (!c2.center.fixed) {
-            c2.center.x -= moveX * 2;
-            c2.center.y -= moveY * 2;
-        }
-
-        return Math.abs(err);
-    }
-
-    private solveRadius(c: Constraint, entities: Map<string, SketchEntity>): number {
-        if (c.entities.length !== 1 || c.value === undefined) return 0;
-        const circleInfo = this.getCircle(c.entities[0], entities);
-        if (!circleInfo) return 0;
-
-        const currentRadius = circleInfo.circle.radius;
-        const err = currentRadius - c.value;
-
-        if (Math.abs(err) < 0.001) return 0;
-
-        // Radius is a property of the circle entity itself, so we can just set it?
-        // But the solver should be iterative. However, radius is often a direct property.
-        // Let's "move" it towards target.
-        circleInfo.circle.radius -= err * 0.5;
-
-        return Math.abs(err);
-    }
-
-    private solveConcentric(c: Constraint, entities: Map<string, SketchEntity>): number {
-        if (c.entities.length !== 2) return 0;
-        const c1 = this.getCircle(c.entities[0], entities);
-        const c2 = this.getCircle(c.entities[1], entities);
-        if (!c1 || !c2) return 0;
-
-        return this.movePointsTogether(c1.center, c2.center);
-    }
-
-    private solveSymmetric(c: Constraint, entities: Map<string, SketchEntity>): number {
-        if (c.entities.length !== 3) return 0;
-        const p1 = this.getPoint(c.entities[0], entities);
-        const p2 = this.getPoint(c.entities[1], entities);
-        const axis = this.getLine(c.entities[2], entities);
-        if (!p1 || !p2 || !axis) return 0;
-
-        const reflectedP1 = this.reflectPointAcrossLine(p1, axis);
-        const reflectedP2 = this.reflectPointAcrossLine(p2, axis);
-        const errorToP2 = this.distanceBetween(p2, reflectedP1);
-        const errorToP1 = this.distanceBetween(p1, reflectedP2);
-
-        if (errorToP1 < 0.0001 && errorToP2 < 0.0001) return 0;
-        if (p1.fixed && p2.fixed) return errorToP1 + errorToP2;
-
-        if (p1.fixed) {
-            this.movePointTo(p2, reflectedP1);
-        } else if (p2.fixed) {
-            this.movePointTo(p1, reflectedP2);
-        } else {
-            this.movePointHalfwayTo(p1, reflectedP2);
-            this.movePointHalfwayTo(p2, reflectedP1);
-        }
-
-        return errorToP1 + errorToP2;
-    }
-
-    private solveAngle(c: Constraint, entities: Map<string, SketchEntity>): number {
-        // Absolute Angle (Single Line relative to X-axis)
-        if (c.entities.length === 1 && c.value !== undefined) {
-            const l = this.getLine(c.entities[0], entities);
-            if (!l) return 0;
-
-            const dx = l.p2.x - l.p1.x;
-            const dy = l.p2.y - l.p1.y;
-            const currentRad = Math.atan2(dy, dx);
-            const targetRad = c.value * (Math.PI / 180);
-
-            let err = targetRad - currentRad;
-            // Wrap error to [-PI, PI]
-            while (err > Math.PI) err -= 2 * Math.PI;
-            while (err < -Math.PI) err += 2 * Math.PI;
-
-            if (Math.abs(err) < 0.00001) return 0;
-
-            // Larger step for faster convergence
-            const correction = err * 0.5;
-            this.rotateLine(l, correction);
-
-            return Math.abs(err);
-        }
-
-        // Angle between two lines
-        if (c.entities.length !== 2 || c.value === undefined) return 0;
-        const l1 = this.getLine(c.entities[0], entities);
-        const l2 = this.getLine(c.entities[1], entities);
-        if (!l1 || !l2) return 0;
-
-        const dx1 = l1.p2.x - l1.p1.x;
-        const dy1 = l1.p2.y - l1.p1.y;
-        const dx2 = l2.p2.x - l2.p1.x;
-        const dy2 = l2.p2.y - l2.p1.y;
-
-        const len1 = Math.sqrt(dx1 * dx1 + dy1 * dy1);
-        const len2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
-
-        if (len1 < 0.001 || len2 < 0.001) return 0;
-
-        // Current angle via dot product
-        const dot = dx1 * dx2 + dy1 * dy2;
-        const cosCurrent = Math.max(-1, Math.min(1, dot / (len1 * len2)));
-        const currentAngle = Math.acos(cosCurrent); // Result in [0, PI]
-
-        // Target is in radians? Let's assume input is Degrees for user friendliness, converted to Radians?
-        // OR assume input is Radians. Let's assume Radians for internal solver.
-        // But usually constraint values are "degrees". Let's treat c.value as DEGREES.
-        const targetRad = c.value * (Math.PI / 180);
-
-        const err = currentAngle - targetRad;
-        if (Math.abs(err) < 0.001) return 0;
-
-        // We need to rotate lines.
-        // It's hard to know which way to rotate (b/c dot product is ambiguous sign).
-        // Cross product gives sign.
-        // It was used to check direction before loop but trusted region logic was simplified.
-
-        const correction = err * 0.5 * 0.1; // Small step
-
-        // Rotate vector (x,y) by theta:
-        // x' = x cos - y sin
-        // y' = x sin + y cos
-
-        // Rotate L1 p2 around p1? Or around center?
-        // Let's rotate around midpoint for stability or p1 if p1 fixed.
-        // Simplified: rotate around p1.
-
-        this.rotateLine(l1, correction);
-        this.rotateLine(l2, -correction);
-
-        return Math.abs(err);
-    }
-
-    private rotateLine(l: { line: Line, p1: Point, p2: Point }, angle: number) {
-        if (l.p1.fixed && l.p2.fixed) return;
-
-        const dx = l.p2.x - l.p1.x;
-        const dy = l.p2.y - l.p1.y;
-
-        const cos = Math.cos(angle);
-        const sin = Math.sin(angle);
-
-        const ndx = dx * cos - dy * sin;
-        const ndy = dx * sin + dy * cos;
-
-        // If p1 fixed, move p2
-        if (l.p1.fixed) {
-            l.p2.x = l.p1.x + ndx;
-            l.p2.y = l.p1.y + ndy;
-        }
-        // If p2 fixed, move p1
-        else if (l.p2.fixed) {
-            l.p1.x = l.p2.x - ndx;
-            l.p1.y = l.p2.y - ndy;
-        }
-        // Move both around midpoint
-        else {
-            const midX = (l.p1.x + l.p2.x) / 2;
-            const midY = (l.p1.y + l.p2.y) / 2;
-
-            // Re-calc half vectors
-            const hx = dx / 2;
-            const hy = dy / 2;
-
-            const nhx = hx * cos - hy * sin;
-            const nhy = hx * sin + hy * cos;
-
-            l.p2.x = midX + nhx;
-            l.p2.y = midY + nhy;
-            l.p1.x = midX - nhx;
-            l.p1.y = midY - nhy;
-        }
-    }
-
-    private movePointsTogether(p1: Point, p2: Point): number {
-        const dx = p2.x - p1.x;
-        const dy = p2.y - p1.y;
-        const error = Math.sqrt(dx * dx + dy * dy);
-
-        if (error < 0.0001) return 0;
-
-        if (!p1.fixed && !p2.fixed) {
-            p1.x += dx * 0.5;
-            p1.y += dy * 0.5;
-            p2.x -= dx * 0.5;
-            p2.y -= dy * 0.5;
-        } else if (!p1.fixed) {
-            p1.x += dx;
-            p1.y += dy;
-        } else if (!p2.fixed) {
-            p2.x -= dx;
-            p2.y -= dy;
-        }
-
-        return error;
-    }
-
-    private reflectPointAcrossLine(
-        point: Point,
-        axis: { line: Line, p1: Point, p2: Point }
-    ): { x: number; y: number } {
-        const dx = axis.p2.x - axis.p1.x;
-        const dy = axis.p2.y - axis.p1.y;
-        const lenSq = dx * dx + dy * dy;
-
-        if (lenSq < 0.000001) {
-            return { x: point.x, y: point.y };
-        }
-
-        const t = ((point.x - axis.p1.x) * dx + (point.y - axis.p1.y) * dy) / lenSq;
-        const projX = axis.p1.x + t * dx;
-        const projY = axis.p1.y + t * dy;
-
-        return {
-            x: 2 * projX - point.x,
-            y: 2 * projY - point.y
-        };
-    }
-
-    private distanceBetween(p: Point, target: { x: number; y: number }): number {
-        const dx = target.x - p.x;
-        const dy = target.y - p.y;
-        return Math.sqrt(dx * dx + dy * dy);
-    }
-
-    private movePointTo(p: Point, target: { x: number; y: number }) {
-        if (p.fixed) return;
-        p.x = target.x;
-        p.y = target.y;
-    }
-
-    private movePointHalfwayTo(p: Point, target: { x: number; y: number }) {
-        if (p.fixed) return;
-        p.x += (target.x - p.x) * 0.5;
-        p.y += (target.y - p.y) * 0.5;
-    }
-
-    private solveConnect(c: Constraint, entities: Map<string, SketchEntity>): number {
-        // Equal Length
-        if (c.entities.length !== 2) return 0;
-        const l1 = this.getLine(c.entities[0], entities);
-        const l2 = this.getLine(c.entities[1], entities);
-
-        if (!l1 && !l2) return 0; // Could be 2 circles?
-
-        if (l1 && l2) {
-            const dx1 = l1.p2.x - l1.p1.x;
-            const dy1 = l1.p2.y - l1.p1.y;
-            const len1 = Math.sqrt(dx1 * dx1 + dy1 * dy1);
-
-            const dx2 = l2.p2.x - l2.p1.x;
-            const dy2 = l2.p2.y - l2.p1.y;
-            const len2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
-
-            const diff = len1 - len2;
-            if (Math.abs(diff) < 0.001) return 0;
-
-            // Check fixed status
-            const l1Fixed = l1.p1.fixed && l1.p2.fixed;
-            const l2Fixed = l2.p1.fixed && l2.p2.fixed;
-
-            let targetLen = (len1 + len2) / 2;
-            if (l1Fixed) targetLen = len1;
-            else if (l2Fixed) targetLen = len2;
-
-            // Adjust l1
-            if (!l1Fixed) {
-                const f1 = targetLen / len1;
-                this.scaleLine(l1, f1);
-            }
-
-            // Adjust l2
-            if (!l2Fixed) {
-                const f2 = targetLen / len2;
-                this.scaleLine(l2, f2);
-            }
-
-            return Math.abs(diff);
-        }
-        return 0;
-    }
-
-    private scaleLine(l: { line: Line, p1: Point, p2: Point }, factor: number) {
-        const dx = l.p2.x - l.p1.x;
-        const dy = l.p2.y - l.p1.y;
-        const midX = (l.p1.x + l.p2.x) / 2;
-        const midY = (l.p1.y + l.p2.y) / 2;
-
-        const ndx = dx * factor;
-        const ndy = dy * factor;
-
-        if (l.p1.fixed) {
-            l.p2.x = l.p1.x + ndx;
-            l.p2.y = l.p1.y + ndy;
-        } else if (l.p2.fixed) {
-            l.p1.x = l.p2.x - ndx;
-            l.p1.y = l.p2.y - ndy;
-        } else {
-            l.p2.x = midX + ndx / 2;
-            l.p2.y = midY + ndy / 2;
-            l.p1.x = midX - ndx / 2;
-            l.p1.y = midY - ndy / 2;
-        }
     }
 }

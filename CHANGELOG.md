@@ -45,6 +45,8 @@
 
 ## Fixed
 
+- `solve_sketch` solves long chains and closed loops. The solver relaxed one constraint at a time, so a correction crept along a chain of constraints only a link or two per pass and 100 passes were not enough: a closed 50-vertex loop of equal edges, or a rectangle with 100 points along its sides, ended with edges up to 0.02 to 0.09 units off, and a smaller one could still be reported `converged: true` because the verdict tolerance (0.5) was loose. It now solves all constraints together (damped Gauss-Newton on normalised lengths and angles, with a sparse Jacobian): those sketches reach 1e-11 or better in 3 to 11 iterations. `residual` is now the worst remaining constraint violation (sketch units for lengths, radians for angles) and `converged` means it is under 1e-3. The result also carries `degreesOfFreedom` and `dependentEquations`. A sketch that starts very far from its solution, such as a closed chain drawn straight and stretched to 45 times the closing distance, can still stall in a local minimum and is reported as not converged.
+
 - STEP, STL (including per-part STL), DXF, 3MF and G-code exports now check the same tube routing rules and clearance as evaluation before writing fabrication output. Tube errors return no bytes and leave previous output untouched; warnings allow export. GLB and rendering remain available for inspection.
 
 - Static renders and turntables honor `PW_CDP_URL`, reuse the selected Chrome context, and refuse to launch another browser if that explicit attachment fails. Capture-tab cleanup and CDP disconnection are bounded.
