@@ -101,6 +101,39 @@ return a.model();`);
     await expect(exportGlb({scriptPath:FIXTURE,outPath:'/tmp/unused.glb',previewMesh:{tolerance,angularTolerance:.8}})).rejects.toThrow(/preview.*positive|preview.*finite/);
   });
 
+  it('exports display-only mesh parts with their world transforms', { timeout: 30000 }, async () => {
+    tmp = mkdtempSync(path.join(tmpdir(), 'glb-display-'));
+    // Minimal binary STL: one triangle, 10 mm legs in the XY plane.
+    const stl = Buffer.alloc(84 + 50);
+    stl.writeUInt32LE(1, 80);
+    for (const [i, value] of [0, 0, 1, 0, 0, 0, 10, 0, 0, 0, 10, 0].entries()) {
+      stl.writeFloatLE(value, 84 + i * 4);
+    }
+    writeFileSync(path.join(tmp, 'tri.stl'), stl);
+    const script = path.join(tmp, 'display-parts.kcad.ts');
+    const out = path.join(tmp, 'model.glb');
+    writeFileSync(script, `
+const model = assembly('display mesh assembly');
+const base = model.part('base', (await lib.meshFromSTL('./tri.stl')).color('#3b82f6'));
+const moved = model.part('moved', await lib.meshFromSTL('./tri.stl'));
+base.connector('base-a', { type: 'axis', origin: { kind: 'vec3', value: [10, 20, 30] }, axis: [0, 0, 1] });
+moved.connector('moved-a', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 0, 1] });
+model.mate('offset', 'base.base-a', 'moved.moved-a', 'revolute', { pose: 0, limitsDeg: [-180, 180] });
+return model.solvedModel({});
+`);
+    await exportGlb({ scriptPath: script, outPath: out });
+    const doc = await new NodeIO().read(out);
+    const meshes = doc.getRoot().listMeshes();
+    expect(meshes).toHaveLength(2);
+    for (const mesh of meshes) {
+      expect(mesh.listPrimitives()[0].getAttribute('POSITION')!.getCount()).toBe(3);
+    }
+    const translations = doc.getRoot().listNodes().map(node => node.getTranslation());
+    expect(
+      translations.some(t => Math.abs(t[0] - 10) < 1e-6 && Math.abs(t[1] - 20) < 1e-6 && Math.abs(t[2] - 30) < 1e-6),
+    ).toBe(true);
+  });
+
   it('rejects when the script file does not exist', async () => {
     tmp = mkdtempSync(path.join(tmpdir(), 'glb-'));
     await expect(

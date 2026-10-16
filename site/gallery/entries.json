@@ -25,6 +25,7 @@
       "createdAt": "2026-10-15",
       "appUrl": "https://app.kernelcad.com/studio?gallery=roboto-01",
       "meshopt": true,
+      "simplifyError": "0.005",
       "video": "../../docs/demos/gallery/roboto-01/demo.mp4"
     },
     {
