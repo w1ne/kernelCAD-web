@@ -88,4 +88,7 @@ for (const j of joints) {
   rp1.mate(j.name, j.parent + '.' + j.name + '_parent', j.child + '.' + j.name + '_child', 'revolute', { pose: j.pose, limitsDeg: j.limitsDeg, exposure: 'concealed' });
 }
 
+// Demo timeline: the waist swings through its URDF range while the mates carry the chain.
+animationView({ param: 'waist_yawDeg', from: -60, to: 60, durationMs: 4000, fps: 30 });
+
 return rp1.solvedModel({});
