@@ -215,4 +215,22 @@ describe('StatusBar', () => {
         expect(shown.textContent?.length).toBeLessThanOrEqual(96);
         expect(screen.queryByText(firstLine)).toBeNull();
     });
+
+    it('shows review errors and warnings instead of "No diagnostics"', () => {
+        const props = {
+            isComputing: false,
+            error: null,
+            geometryCount: 2,
+            selectedCount: 0,
+            viewMode3D: 'shaded' as const,
+            layoutMode: 'split' as const,
+            activeCommandLabel: null,
+        };
+        const { rerender } = render(<StatusBar {...props} reviewCounts={{ errors: 1, warnings: 2 }} />);
+        expect(screen.getByTestId('status-review-counts').textContent).toBe('1 error · 2 warnings');
+        expect(screen.queryByText('No diagnostics')).toBeNull();
+
+        rerender(<StatusBar {...props} reviewCounts={{ errors: 0, warnings: 0 }} />);
+        expect(screen.getByText('No diagnostics')).toBeDefined();
+    });
 });
