@@ -24,10 +24,6 @@
       "featured": false,
       "createdAt": "2026-10-15",
       "appUrl": "https://app.kernelcad.com/studio?gallery=roboto-01",
-      "previewMesh": {
-        "tolerance": 4,
-        "angularTolerance": 1.0
-      },
       "meshopt": true,
       "video": "../../docs/demos/gallery/roboto-01/demo.mp4"
     },
