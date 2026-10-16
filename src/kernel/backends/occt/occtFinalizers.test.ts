@@ -27,7 +27,7 @@ beforeAll(async () => {
 
 describe('installOcctFinalizers', () => {
   it('is installed by initOcct and is idempotent', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const oc = getOC() as any;
     const ctor = oc.gp_Pnt_3;
     installOcctFinalizers(oc);
@@ -35,7 +35,7 @@ describe('installOcctFinalizers', () => {
   });
 
   it('releases a constructed object that is dropped without delete()', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const oc = getOC() as any;
     const before = finalizedOcctObjectCount();
     (() => {
@@ -45,7 +45,7 @@ describe('installOcctFinalizers', () => {
   });
 
   it('releases a returned shape handle that is dropped without delete()', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const oc = getOC() as any;
     const maker = new oc.BRepPrimAPI_MakeBox_2(1, 2, 3);
     (() => {
@@ -57,7 +57,7 @@ describe('installOcctFinalizers', () => {
   });
 
   it('never releases an object that was deleted explicitly', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const oc = getOC() as any;
     // Settle anything pending from earlier tests first.
     await collectPast(finalizedOcctObjectCount());
