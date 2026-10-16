@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import * as replicad from 'replicad';
 import { getOC } from 'replicad';
+import { plausibleShellVolume, shapeVolume } from './shellVolume';
 import type { ShapeBackend, BackendTarget } from '../backend';
 import type { SceneBackend } from '../sceneBackend';
 import type { Vec3, PlaneSpec, CardinalPlane } from '../../../shared/intent/types';
@@ -736,21 +737,17 @@ export class OcctBackend implements ShapeBackend {
     // SewedShape returns a TopoDS_Shape (typically a shell, sometimes a
     // compound or single face depending on connectivity). Inspect the
     // shape type before forcing a Shell cast.
-    // TopAbs_ShapeEnum values: COMPOUND=0, COMPSOLID=1, SOLID=2, SHELL=3,
-    // FACE=4, WIRE=5, EDGE=6, VERTEX=7, SHAPE=8.
-    const shapeTypeRaw = sewedShape.ShapeType();
-    const shapeTypeVal = typeof shapeTypeRaw === 'object' && shapeTypeRaw !== null
-      ? (shapeTypeRaw as { value?: number }).value ?? shapeTypeRaw
-      : shapeTypeRaw;
+    // TopAbs_ShapeEnum members are string literals ('TopAbs_SHELL', ...).
+    const shapeTypeVal = sewedShape.ShapeType();
     let shell: unknown;
-    if (shapeTypeVal === 3) {
+    if (shapeTypeVal === oc.TopAbs_ShapeEnum.TopAbs_SHELL) {
       // SHELL — direct cast.
       shell = oc.TopoDS.Shell(sewedShape);
     } else {
       // Not a clean shell — sewing produced a compound or worse. Surface
       // as kernel-failed for the materialize lowerer to translate. The
       // most common cause is non-watertight mesh (open boundaries).
-      throw new Error(`OcctBackend.fromTriangleMesh: sewing produced shape type ${shapeTypeVal} (expected SHELL=3); mesh is likely not watertight.`);
+      throw new Error(`OcctBackend.fromTriangleMesh: sewing produced shape type ${shapeTypeVal} (expected TopAbs_SHELL); mesh is likely not watertight.`);
     }
     const makeSolid = new oc.BRepBuilderAPI_MakeSolid(shell);
     if (!makeSolid.IsDone()) {
@@ -1003,6 +1000,12 @@ export class OcctBackend implements ShapeBackend {
       throw new Error(`OcctBackend.shell: thickness must be positive (got ${thickness})`);
     }
     const result = this.shape.shell(thickness, (f) => f.inList([face])) as ReplicadShape3D;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- raw OCCT bindings are untyped
+    const oc = getOC() as any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- replicad wrapper
+    if (!plausibleShellVolume(shapeVolume(oc, (result as any).wrapped), shapeVolume(oc, (this.shape as any).wrapped), thickness)) {
+      throw new Error(`OcctBackend.shell: the ${thickness} mm wall did not hollow the body (OCCT returned it unchanged or empty)`);
+    }
     return new OcctBackend(result);
   }
 

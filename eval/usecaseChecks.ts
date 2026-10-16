@@ -136,7 +136,7 @@ export function isClosedSolid(shape: OcctBackend, solids = 1): boolean {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
   const analyzer = new oc.BRepCheck_Analyzer(shape.getReplicadShape().wrapped, true, false);
-  const valid = analyzer.IsValid_2();
+  const valid = analyzer.IsValid();
   analyzer.delete();
   if (!valid) return false;
   const mesh = meshShapeForExport(shape.getReplicadShape());

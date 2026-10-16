@@ -82,7 +82,7 @@ function openShellCount(oc: any, wrapped: any): { shells: number; open: number }
   const TopAbs = oc.TopAbs_ShapeEnum;
   let shells = 0;
   let open = 0;
-  const shellExp = new oc.TopExp_Explorer_2(wrapped, TopAbs.TopAbs_SHELL, TopAbs.TopAbs_SHAPE);
+  const shellExp = new oc.TopExp_Explorer(wrapped, TopAbs.TopAbs_SHELL, TopAbs.TopAbs_SHAPE);
   try {
     while (shellExp.More()) {
       shells++;
@@ -91,10 +91,10 @@ function openShellCount(oc: any, wrapped: any): { shells: number; open: number }
       // explorer composes orientation down from the shell, so a correctly
       // oriented closed shell uses each edge once FORWARD and once REVERSED.
       const buckets = new Map<number, Array<{ edge: any; fwd: number; rev: number }>>();
-      const edgeExp = new oc.TopExp_Explorer_2(shell, TopAbs.TopAbs_EDGE, TopAbs.TopAbs_SHAPE);
+      const edgeExp = new oc.TopExp_Explorer(shell, TopAbs.TopAbs_EDGE, TopAbs.TopAbs_SHAPE);
       try {
         while (edgeExp.More()) {
-          const edge = oc.TopoDS.Edge_1(edgeExp.Current());
+          const edge = oc.TopoDS.Edge(edgeExp.Current());
           if (!oc.BRep_Tool.Degenerated(edge)) {
             const h = edge.HashCode(2147483647) as number;
             const list = buckets.get(h) ?? [];
@@ -104,7 +104,7 @@ function openShellCount(oc: any, wrapped: any): { shells: number; open: number }
               list.push(entry);
               buckets.set(h, list);
             }
-            if (edge.Orientation_1() === oc.TopAbs_Orientation.TopAbs_REVERSED) entry.rev++;
+            if (edge.Orientation() === oc.TopAbs_Orientation.TopAbs_REVERSED) entry.rev++;
             else entry.fwd++;
           }
           edgeExp.Next();
@@ -126,7 +126,7 @@ function openShellCount(oc: any, wrapped: any): { shells: number; open: number }
 }
 
 function countSubShapes(oc: any, wrapped: any, kind: string): number {
-  const exp = new oc.TopExp_Explorer_2(wrapped, oc.TopAbs_ShapeEnum[kind], oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
+  const exp = new oc.TopExp_Explorer(wrapped, oc.TopAbs_ShapeEnum[kind], oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
   let n = 0;
   try {
     while (exp.More()) {
@@ -191,7 +191,7 @@ export function checkStepValidity(path: string): Promise<StepValidity> {
       if (result.solidCount === 0) result.errors.push('no solid body in the STEP (only shells, faces or wires)');
 
       const analyzer = new oc.BRepCheck_Analyzer(wrapped, true, false);
-      result.brepValid = analyzer.IsValid_2() as boolean;
+      result.brepValid = analyzer.IsValid() as boolean;
       analyzer.delete();
       if (!result.brepValid) {
         result.errors.push('BRepCheck_Analyzer reports topology errors (self-intersecting wire, edge off its surface, or similar)');

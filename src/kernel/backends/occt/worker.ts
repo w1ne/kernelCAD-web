@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import * as replicad from 'replicad';
 import { setOC } from 'replicad';
-import wasmUrl from 'replicad-opencascadejs/dist/replicad_single.wasm?url';
+import wasmUrl from 'replicad-opencascadejs/wasm?url';
 import { installOcctCompat } from './occtCompat';
 import { chamfer, extrude, fillet, makeCompound, sketchOnFace } from '../../../shared/worker/geometryHelpers';
 import { createSafeReplicad, SafeSketcher } from '../../../shared/worker/safeSketch';

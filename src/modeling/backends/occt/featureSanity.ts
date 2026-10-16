@@ -117,12 +117,13 @@ function readBox(shape: OcctBackend): Box | undefined {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     oc.BRepBndLib.Add((shape.getReplicadShape() as any).wrapped, box, true);
     if (box.IsVoid()) return undefined;
-    const gap = box.GetGap();
+    // Raw bounds without the tolerance gap (the box stores them apart).
+    box.SetGap(0);
     const lo = box.CornerMin();
     const hi = box.CornerMax();
     const out: Box = {
-      min: [lo.X() + gap, lo.Y() + gap, lo.Z() + gap],
-      max: [hi.X() - gap, hi.Y() - gap, hi.Z() - gap],
+      min: [lo.X(), lo.Y(), lo.Z()],
+      max: [hi.X(), hi.Y(), hi.Z()],
     };
     lo.delete();
     hi.delete();

@@ -361,7 +361,7 @@ export function isBoundaryEdge(shape: { faces: Face[] }, edge: Edge): boolean {
   if (adjacent.length !== 1) return adjacent.length === 0;
   try {
     const oc = getOC() as unknown as {
-      BRep_Tool: { IsClosed_2(e: unknown, f: unknown): boolean };
+      BRep_Tool: { IsClosed(e: unknown, f: unknown): boolean };
     };
     const faceEdge = ((adjacent[0] as unknown as { edges?: Edge[] }).edges ?? [])
       .find((we) => isSameEdge(we, edge));

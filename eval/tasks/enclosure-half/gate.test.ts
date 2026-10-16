@@ -28,11 +28,10 @@ async function build(file: string) {
   return model;
 }
 
-/** TopAbs_ShapeEnum: COMPOUND=0, COMPSOLID=1, SOLID=2, SHELL=3, FACE=4. */
-function shapeTypeValue(backend: OcctBackend): number {
+/** TopAbs_ShapeEnum member name of the shape ('TopAbs_SOLID', ...). */
+function shapeTypeName(backend: OcctBackend): unknown {
   const wrapped = (backend as unknown as { shape: { wrapped: { ShapeType(): unknown } } }).shape.wrapped;
-  const raw = wrapped.ShapeType();
-  return typeof raw === 'object' && raw !== null ? (raw.value ?? raw) : raw;
+  return wrapped.ShapeType();
 }
 
 describe('enclosure-half — Slice E integration gate', () => {
@@ -44,8 +43,8 @@ describe('enclosure-half — Slice E integration gate', () => {
     expect(errs).toEqual([]);
     const shell = model.rootShape as OcctBackend;
     expect(shell).toBeTruthy();
-    // SOLID (2): BRepBuilderAPI_Sewing → MakeSolid → BRepCheck_Analyzer valid.
-    expect(shapeTypeValue(shell)).toBe(2);
+    // SOLID: BRepBuilderAPI_Sewing → MakeSolid → BRepCheck_Analyzer valid.
+    expect(shapeTypeName(shell)).toBe('TopAbs_SOLID');
     expect(shell.volume()).toBeGreaterThan(0);
     // isClosed: watertight at the mesh half-edge level (every edge shared by
     // exactly two triangles) — zero naked edges, manifold.

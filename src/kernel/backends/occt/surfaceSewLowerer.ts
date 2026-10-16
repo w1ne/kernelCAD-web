@@ -97,18 +97,14 @@ export function lowerSurfaceSew(
 
   // Inspect the sewed shape type. TopAbs_ShapeEnum: COMPOUND=0, COMPSOLID=1,
   // SOLID=2, SHELL=3, FACE=4, WIRE=5, EDGE=6, VERTEX=7, SHAPE=8.
-  const shapeTypeRaw = sewedShape.ShapeType();
-  const shapeTypeVal =
-    typeof shapeTypeRaw === 'object' && shapeTypeRaw !== null
-      ? (shapeTypeRaw as { value?: number }).value ?? shapeTypeRaw
-      : shapeTypeRaw;
+  const shapeTypeVal = sewedShape.ShapeType();
 
   let isSolid = false;
   let solid: unknown;
 
   // Only a single closed shell can become a solid. If the sewing produced a
   // compound / single face / open multi-shell, skip the solid path.
-  if (shapeTypeVal === 3 && noFreeEdges) {
+  if (shapeTypeVal === oc.TopAbs_ShapeEnum.TopAbs_SHELL && noFreeEdges) {
     const shell = oc.TopoDS.Shell(sewedShape);
     const makeSolid = new oc.BRepBuilderAPI_MakeSolid(shell);
     if (makeSolid.IsDone()) {

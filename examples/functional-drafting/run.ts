@@ -36,7 +36,7 @@ async function geometry(file: string, out: string): Promise<void> {
   assert.equal(built.evaluation.exitCode, 0); assert.equal(built.evaluation.featureHealth.length, 0);
   const shape = built.model?.rootShape; assert.ok(shape instanceof OcctBackend);
   const analyzer = new (getOC().BRepCheck_Analyzer)(shape.getReplicadShape().wrapped, true, false);
-  let valid: boolean; try { valid = analyzer.IsValid_2(); } finally { analyzer.delete(); }
+  let valid: boolean; try { valid = analyzer.IsValid(); } finally { analyzer.delete(); }
   assert.ok(valid); assert.equal(shape.solidComponents().length, 1);
   const bbox = shape.boundingBox({ exact: true });
   const holes = recogniseDrawingFeatures(shape).holes;

@@ -21,6 +21,7 @@ import type { FaceHash, EdgeHash, HistoryMap } from '../../naming/evolutionRecor
 import type { FilletContinuity } from '../../../shared/intent/filletContinuityRecord';
 import { shellByOffsetSubtract } from './shellOffsetFallback';
 import { isValidShape } from './booleanRecovery';
+import { plausibleShellVolume, shapeVolume } from './shellVolume';
 
 export interface EdgeFeatureHistoryResult {
   /** The result TopoDS_Shape, ready to wrap in a new OcctBackend. */
@@ -378,27 +379,6 @@ export function shellWithHistory(
   } finally {
     facesToRemoveList.delete();
   }
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function shapeVolume(oc: any, shape: unknown): number {
-  const props = new oc.GProp_GProps();
-  try {
-    oc.BRepGProp.VolumeProperties(shape, props, false, false, false);
-    return Math.abs(props.Mass());
-  } catch {
-    return Number.NaN;
-  } finally {
-    props.delete();
-  }
-}
-
-/** A shell result must be a finite, positive-volume solid; an inward shell
- *  (thickness > 0) can only remove material. */
-function plausibleShellVolume(volume: number, bodyVolume: number, thickness: number): boolean {
-  if (!Number.isFinite(volume) || volume <= 0) return false;
-  if (thickness > 0 && Number.isFinite(bodyVolume) && volume > bodyVolume * (1 + 1e-6)) return false;
-  return true;
 }
 
 /** One `MakeThickSolidByJoin` attempt. Returns the built builder (caller

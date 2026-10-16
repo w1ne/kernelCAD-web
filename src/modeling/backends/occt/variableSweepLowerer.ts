@@ -336,12 +336,12 @@ function subdivideSpineAtStations(
   const u0 = adaptor.FirstParameter();
   const u1 = adaptor.LastParameter();
 
-  // Extract the edge's underlying curve. `BRep_Tool.Curve`'s output
-  // parameters are not marshalled by the binding, so the handle is returned
-  // directly; it carries no location, hence the explicit edge-location
-  // compensation for the (not currently produced) located-edge case.
+  // Extract the edge's underlying curve. `BRep_Tool.Curve` returns an
+  // envelope { returnValue, First, Last }; the curve carries no location,
+  // hence the explicit edge-location compensation for the (not currently
+  // produced) located-edge case.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let curve: any = oc.BRep_Tool.Curve(spineEdge, 0, 0);
+  let curve: any = oc.BRep_Tool.Curve(spineEdge, 0, 0)?.returnValue;
   if (!curve) {
     throw new Error(
       'lowerVariableSweep: cannot subdivide the spine for intermediate sections — BRep_Tool.Curve returned null (spine edge has no 3D curve).',

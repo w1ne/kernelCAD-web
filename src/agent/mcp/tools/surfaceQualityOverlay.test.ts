@@ -38,7 +38,7 @@ const CASES: Array<{ name: string; overlay: SurfaceQualityOverlay; code: string;
       files: {
         'overlay.kcad.ts': { size: 411, sha: '824375e07ff432f4459f8288cb0b166e63d904f1681bd2cf074eb7a05556e4e3' },
         'zebra-2.stl': { size: 284, sha: '8b029cfcb5ed5eb771b4061f56e889878a239c2d2de5e10b4433201e4ad4dc13' },
-        'zebra-4.stl': { size: 284, sha: '3dfe4bf26332aba90b95a7c3b7ba24316c102a5dac48a9852c820654bf3cadfb' },
+        'zebra-4.stl': { size: 284, sha: '70b1eaa3eeea3665f55127eb91a97c97de6fde1e266dba8e2fd629f172f34360' },
         'zebra-5.stl': { size: 284, sha: 'f3bfc8a1f6a43625a8ef0a4116cd51192f85dd4810f4553076e915c93dcee82d' },
       },
     },
@@ -54,8 +54,8 @@ const CASES: Array<{ name: string; overlay: SurfaceQualityOverlay; code: string;
         'zebra-0.stl': { size: 11484, sha: 'b7c991473f33c2e7a3ce84ebb103a84a4373d2d64a74f2397c17a66fc431095f' },
         'zebra-1.stl': { size: 4184, sha: 'bb6c1735b9fbe68d78728b43bf458087aa954a5fc47d05dde4e4d38548a1f0aa' },
         'zebra-2.stl': { size: 5334, sha: '0487d048c3cd0567815d39875d938b2220139eac84460e9b0a04d4399f884cb5' },
-        'zebra-3.stl': { size: 3184, sha: 'ec33e74fd91d9088b073a7e721e76771d0903accb09008a41655aba6380b30a8' },
-        'zebra-4.stl': { size: 4834, sha: '566f4ee0546820c1fb7e4700d761f5c8d2737256d224b8302a8a555b042a8131' },
+        'zebra-3.stl': { size: 3134, sha: '92074a6a57c9c58554a38beb356c9b6cf01f0ed2bd5bddcfcb57e158811a6566' },
+        'zebra-4.stl': { size: 4884, sha: 'bebd79ee574bae1a5aab37bab8d5790d40478042f7969e31fb376c4f6b016d8e' },
         'zebra-5.stl': { size: 5284, sha: '8d63140ac201a58fef0b6f7ca3e20f97258ac7d5df33bf92acf7705219110019' },
         'zebra-6.stl': { size: 3834, sha: '911ef4677d1b68418130416b9e5ca1d38f8080a07fa954ca7e86cdd98749c6ad' },
         'zebra-7.stl': { size: 11934, sha: '1af92fd3d3dd7238e84862478fea1959e10161881daab138cc0c732ca24c337b' },
@@ -83,7 +83,7 @@ const CASES: Array<{ name: string; overlay: SurfaceQualityOverlay; code: string;
       files: {
         'overlay.kcad.ts': { size: 300, sha: 'c23b01676f767ef2ef4461ff881ab2544e6331e6191e81d8519822fb8a7c6440' },
         'g1.stl': { size: 153684, sha: 'c4ac52dac856a0567a268022b94845d5995111626571b5a66b5412212583d90f' },
-        'ghost.stl': { size: 69084, sha: '708011b4c72ed58d3a41141e846cfb23a34e87bf848492c7beaed2cc1b7ec96d' },
+        'ghost.stl': { size: 69084, sha: '5a6dd4a5663215c6b3af6370fe45ab1fc74dee87e267393d38d5bda2d1e72cec' },
       },
     },
   },

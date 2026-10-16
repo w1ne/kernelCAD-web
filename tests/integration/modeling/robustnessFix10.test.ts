@@ -14,6 +14,7 @@ import { initOcct, OcctBackend } from '../../../src/kernel/backends/occt/occtBac
 import { shellWithHistory } from '../../../src/kernel/backends/occt/historyAwareEdgeFeatures';
 import { intersectWithHistory } from '../../../src/kernel/backends/occt/historyAwareBooleans';
 import { isValidShape, volumeOf } from '../../../src/kernel/backends/occt/booleanRecovery';
+import { plausibleShellVolume } from '../../../src/kernel/backends/occt/shellVolume';
 import { buildModel } from '../../../src/modeling/buildModel';
 import { probeMaxFeasible, floorToReadable } from '../../../src/modeling/backends/occt/lowerers/feasibilityProbe';
 import { shellFailureDiagnostic } from '../../../src/modeling/backends/occt/lowerers/shellDraft';
@@ -102,15 +103,21 @@ describe('FIX-10 shell after fillet-all', () => {
       faces.Append(top);
       const builder = new oc.BRepOffsetAPI_MakeThickSolid();
       const progress = new oc.Message_ProgressRange();
-      let done = false;
+      // A join mode "fails" when OCCT does not finish, or — as OCCT 8 does
+      // here — reports IsDone with an invalid solid (arc joins) or with the
+      // body returned unhollowed (intersection join).
+      let usable = false;
       try {
         builder.MakeThickSolidByJoin(solid, faces, -1.5, 1e-3, oc.BRepOffset_Mode.BRepOffset_Skin, intersection, false, join, false, progress);
         builder.Build(progress);
-        done = builder.IsDone();
+        if (builder.IsDone()) {
+          const out = builder.Shape();
+          usable = isValidShape(oc, out) && plausibleShellVolume(volumeOf(oc, out), body.volume(), 1.5);
+        }
       } catch {
-        done = false;
+        usable = false;
       }
-      expect(done).toBe(false);
+      expect(usable).toBe(false);
       builder.delete(); progress.delete(); faces.delete();
     }
     const r = shellWithHistory(body, [{ hash: topHash }], 1.5);

@@ -22,7 +22,7 @@
 // a placeholder that looks like geometry is how a broken example survives for
 // months.
 
-import wasmUrl from 'replicad-opencascadejs/dist/replicad_single.wasm?url';
+import wasmUrl from 'replicad-opencascadejs/wasm?url';
 import { initOcct } from '../../src/kernel/backends/occt/occtBackend';
 import { runScriptInBrowser } from '../../src/composition/browserRuntime';
 import {

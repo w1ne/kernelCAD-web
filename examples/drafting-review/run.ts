@@ -39,7 +39,7 @@ async function main(): Promise<void> {
     if (!(shape instanceof OcctBackend)) throw new Error(`${model}: expected an OCCT solid`);
     const analyzer = new (getOC().BRepCheck_Analyzer)(shape.getReplicadShape().wrapped, true, false);
     let valid: boolean;
-    try { valid = analyzer.IsValid_2(); } finally { analyzer.delete(); }
+    try { valid = analyzer.IsValid(); } finally { analyzer.delete(); }
     const geometry = { boundingBox: shape.boundingBox({ exact: true }), volumeMm3: shape.volume(), solidCount: shape.solidComponents().length,
       brepValid: valid, evaluation: built.evaluation, holes: recogniseDrawingFeatures(shape).holes };
     if (!valid || geometry.solidCount !== 1) throw new Error(`${model}: not one connected valid solid`);
