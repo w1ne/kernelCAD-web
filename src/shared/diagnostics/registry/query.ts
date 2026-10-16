@@ -28,7 +28,7 @@ export const QUERY_CODES = {
   },
   'query.evaluated-too-early': {
     hintTemplate:
-      'The query references an Id that does not exist in the scene at evaluation time. The op may not have been stamped yet, or the Id was misspelled. Verify with list_features, or move the query construction to after the op is stamped.',
+      'The query references an Id that does not exist in the scene at evaluation time. The op may not have been stamped yet, or the Id was misspelled. Verify with inspect({ of: \'features\' }), or move the query construction to after the op is stamped.',
     nextAction: { kind: 'rewrite-feature', guidance: 'verify the Id or reorder operations' },
     defaultSeverity: 'error',
     group: 'query',
@@ -36,7 +36,7 @@ export const QUERY_CODES = {
   },
   'query.unknown-id': {
     hintTemplate:
-      'The createdBy filter references an Id that does not exist. Verify the Id with list_features, or pin the upstream op via kc.id(\'<name>\') so the Id survives across reorderings.',
+      'The createdBy filter references an Id that does not exist. Verify the Id with inspect({ of: \'features\' }), or pin the upstream op via kc.id(\'<name>\') so the Id survives across reorderings.',
     nextAction: { kind: 'rewrite-feature', guidance: 'pin the upstream Id or rename the reference' },
     defaultSeverity: 'error',
     group: 'query',

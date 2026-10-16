@@ -5,6 +5,7 @@ import type { BackendTarget } from '../types/backendTarget';
 import type { DiagnosticCode } from './registry';
 import { NEXT_ACTIONS } from './registry';
 import type { NextAction } from './nextAction';
+import { refineSelectionNextAction, routeRetiredToolMentions } from './liveToolRouting';
 
 export type { BackendTarget };
 export type { DiagnosticCode };
@@ -40,8 +41,13 @@ export interface CompilerDiagnostic {
  * identity-op, leaving the explicitly-set value in place.
  */
 export function withNextAction(d: CompilerDiagnostic): CompilerDiagnostic {
-  if (d.nextAction !== undefined) return d;
-  return { ...d, nextAction: NEXT_ACTIONS[d.code] };
+  // Hand-built literals (tests, mocks, some emit paths) can arrive without a
+  // hint or message at runtime despite the type; route only real strings.
+  const message = typeof d.message === 'string' ? routeRetiredToolMentions(d.message) : d.message;
+  const hint = typeof d.hint === 'string' ? routeRetiredToolMentions(d.hint) : d.hint;
+  const nextAction = d.nextAction ?? refineSelectionNextAction(d.code, d.message, NEXT_ACTIONS[d.code]);
+  if (message === d.message && hint === d.hint && nextAction === d.nextAction) return d;
+  return { ...d, message, hint, nextAction };
 }
 
 /** Variadic form of {@link withNextAction} for the common case where a

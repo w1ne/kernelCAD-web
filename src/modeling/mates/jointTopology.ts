@@ -8,9 +8,12 @@ import type {
 import type { Connector } from './connector';
 import { parseConnectorRef, type MateLimitRange, type MateRecord } from './mate';
 import { isRegistryCompleteMechanicalJointIntent } from './mechanicalJointRegistry';
+import { collectFreePassiveMates } from './passiveJoints';
+import { solverGroundedPart } from './solverRoot';
 
 export type JointTopologyDiagnosticCode =
   | 'assembly.connectivity.floating-moving-part'
+  | 'assembly.connectivity.assumed-root'
   | 'assembly.connectivity.no-load-path'
   | 'assembly.joint-topology.connector-missing'
   | 'assembly.joint-topology.axis-invalid'
@@ -19,7 +22,10 @@ export type JointTopologyDiagnosticCode =
 
 export interface JointTopologyDiagnostic {
   readonly code: JointTopologyDiagnosticCode;
-  readonly severity: 'error';
+  /** 'warning' for a free passive joint's missing limit (see
+   *  passiveJoints.ts) and for any undeclared revolute support intent;
+   *  every other topology defect is 'error'. */
+  readonly severity: 'error' | 'warning';
   readonly message: string;
   readonly hint: string;
   readonly mateName?: string;
@@ -70,6 +76,7 @@ export function reviewJointTopology(arm: Assembly): JointTopologyReviewResult {
   const graph = new Map<string, Set<string>>();
   const movingParts = new Set<string>();
   const supportedRevoluteMates = collectSupportedRevoluteMates(arm, partsByName);
+  const passiveMates = collectFreePassiveMates(arm);
 
   for (const part of parts) {
     graph.set(part.name, new Set());
@@ -77,9 +84,21 @@ export function reviewJointTopology(arm: Assembly): JointTopologyReviewResult {
 
   const checkedMates = mates.filter((mate) => mate.type !== 'fastened');
 
-  collectMateTopologyDiagnostics(mates, partsByName, graph, movingParts, supportedRevoluteMates, diagnostics);
+  const derivedLimitMates = collectCoupledMatesWithLimitedSource(arm);
+  collectMateTopologyDiagnostics(mates, partsByName, graph, movingParts, { supportedRevoluteMates, passiveMates, derivedLimitMates }, diagnostics);
 
   const stableRoots = collectStableRoots(arm, partsByName);
+  // Nothing declared stable: the mate solver grounds solverGroundedPart()
+  // (parts[0]), so the reachability walk grounds the same part — a moving
+  // link disconnected from it still floats. With moving mates, say which
+  // part was assumed so an arm whose first part is a link can fix it.
+  if (stableRoots.size === 0) {
+    const assumed = solverGroundedPart(parts);
+    if (assumed !== undefined) {
+      stableRoots.add(assumed.name);
+      if (checkedMates.length > 0) diagnostics.push(assumedRootNote(assumed.name));
+    }
+  }
   const reachableFromRoots = findReachableParts(stableRoots, graph);
 
   collectFloatingMovingPartDiagnostics(movingParts, reachableFromRoots, stableRoots, diagnostics);
@@ -92,12 +111,23 @@ export function reviewJointTopology(arm: Assembly): JointTopologyReviewResult {
   };
 }
 
+function assumedRootNote(partName: string): JointTopologyDiagnostic {
+  return {
+    code: 'assembly.connectivity.assumed-root',
+    severity: 'warning',
+    partName,
+    stableParts: [partName],
+    message: `No stable root is declared; assuming the first part '${partName}' is grounded (the mate solver holds it still).`,
+    hint: `connectivity.assumed-root — if '${partName}' is the fixed base this is fine; otherwise list the base first in arm.add(...) order or declare arm.physicalUseCase(..., { stableParts: ['<base part>'] }).`,
+  };
+}
+
 function collectMateTopologyDiagnostics(
   mates: readonly MateRecord[],
   partsByName: ReadonlyMap<string, AssemblyPartStored>,
   graph: Map<string, Set<string>>,
   movingParts: Set<string>,
-  supportedRevoluteMates: ReadonlySet<string>,
+  mateSets: MateContractSets,
   diagnostics: JointTopologyDiagnostic[],
 ): void {
   for (const mate of mates) {
@@ -117,7 +147,7 @@ function collectMateTopologyDiagnostics(
     validateEndpointContract(mate, a, diagnostics);
     validateEndpointContract(mate, b, diagnostics);
     validateMateAxisAlignment(mate, a, b, diagnostics);
-    validateMateContract(mate, supportedRevoluteMates, diagnostics);
+    validateMateContract(mate, mateSets, diagnostics);
   }
 }
 
@@ -261,25 +291,57 @@ function validateMateAxisAlignment(
   }
 }
 
+interface MateContractSets {
+  readonly supportedRevoluteMates: ReadonlySet<string>;
+  /** Free passive mates: their missing limit / support intent is a 'warning'. */
+  readonly passiveMates: ReadonlySet<string>;
+  /** Coupled driven mates (arm.coupleMates) whose source chain ends in a
+   *  mate with finite limits: their travel is source × ratio + offset, so
+   *  they have a finite range without declaring their own. */
+  readonly derivedLimitMates: ReadonlySet<string>;
+}
+
+function collectCoupledMatesWithLimitedSource(arm: Assembly): ReadonlySet<string> {
+  const matesByName = new Map(arm.__mates().map((mate) => [mate.name, mate]));
+  const sourceOf = new Map(arm.__mateCouplings().map((coupling) => [coupling.driven, coupling.source]));
+  const out = new Set<string>();
+  for (const driven of sourceOf.keys()) {
+    const seen = new Set<string>([driven]);
+    let source = sourceOf.get(driven);
+    while (source !== undefined && !seen.has(source)) {
+      seen.add(source);
+      const mate = matesByName.get(source);
+      if (mate !== undefined && (isFiniteRange(mate.limitsDeg) || isFiniteRange(mate.limitsMm))) {
+        out.add(driven);
+        break;
+      }
+      source = sourceOf.get(source);
+    }
+  }
+  return out;
+}
+
 function validateMateContract(
   mate: MateRecord,
-  supportedRevoluteMates: ReadonlySet<string>,
+  { supportedRevoluteMates, passiveMates, derivedLimitMates }: MateContractSets,
   diagnostics: JointTopologyDiagnostic[],
 ): void {
-  if (ROTATIONAL_LIMIT_MATES.has(mate.type) && !isFiniteRange(mate.limitsDeg)) {
+  const severity = passiveMates.has(mate.name) ? 'warning' : 'error';
+  const limitDerived = derivedLimitMates.has(mate.name);
+  if (ROTATIONAL_LIMIT_MATES.has(mate.type) && !limitDerived && !isFiniteRange(mate.limitsDeg)) {
     diagnostics.push({
       code: 'assembly.joint-topology.missing-limit',
-      severity: 'error',
+      severity,
       mateName: mate.name,
       message: `Mate '${mate.name}' is type '${mate.type}' and needs finite limitsDeg.`,
       hint: `joint-topology.missing-limit — add limitsDeg: [minDeg, maxDeg] to '${mate.name}'.`,
     });
   }
 
-  if (mate.type === 'prismatic' && !isFiniteRange(mate.limitsMm)) {
+  if (mate.type === 'prismatic' && !limitDerived && !isFiniteRange(mate.limitsMm)) {
     diagnostics.push({
       code: 'assembly.joint-topology.missing-limit',
-      severity: 'error',
+      severity,
       mateName: mate.name,
       message: `Mate '${mate.name}' is prismatic and needs finite limitsMm.`,
       hint: `joint-topology.missing-limit — add limitsMm: [minMm, maxMm] to '${mate.name}'.`,
@@ -287,14 +349,30 @@ function validateMateContract(
   }
 
   if (mate.type === 'revolute' && !supportedRevoluteMates.has(mate.name)) {
-    diagnostics.push({
-      code: 'assembly.joint-topology.unsupported-axis',
-      severity: 'error',
-      mateName: mate.name,
-      message: `Revolute mate '${mate.name}' has no joint support intent declaring support.`,
-      hint: `joint-topology.unsupported-axis — add arm.jointSupport(..., { mate: '${mate.name}', shaft, supports, output }) for passive hinges, or arm.mechanicalJoint(..., { mate: '${mate.name}', actuator, shaft, supports, output }) for driven hinges, so the hinge axis has physical support intent.`,
-    });
+    diagnostics.push(unsupportedAxisNote(mate));
   }
+}
+
+/**
+ * A revolute mate with no jointSupport / mechanicalJoint declaration. Always
+ * a 'warning', never a blocker: whether the hinge is physically carried is
+ * decided from geometry by assembly.joint-axis.unbound and
+ * assembly.mechanical.revolute-unsupported / revolute-contact-missing. The
+ * declaration only records WHICH parts carry the axis (load-path
+ * certificates read it), so the hint spells out the exact call to add.
+ */
+function unsupportedAxisNote(mate: MateRecord): JointTopologyDiagnostic {
+  const ends = mateEndpointParts(mate);
+  const support = ends?.a ?? '<support part>';
+  const output = ends?.b ?? '<moving part>';
+  const example = `arm.jointSupport('${mate.name}-support', { mate: '${mate.name}', shaft: '${support}', supports: ['${support}'], output: '${output}' })`;
+  return {
+    code: 'assembly.joint-topology.unsupported-axis',
+    severity: 'warning',
+    mateName: mate.name,
+    message: `Revolute mate '${mate.name}' declares no joint support intent (informational; physical support is checked from geometry).`,
+    hint: `joint-topology.unsupported-axis — optional: record which parts carry the '${mate.name}' axis with ${example} (use the part that holds the pin/shaft as shaft and supports), or arm.mechanicalJoint(..., { mate: '${mate.name}', actuator, shaft, supports, output }) for a driven hinge.`,
+  };
 }
 
 function collectSupportedRevoluteMates(

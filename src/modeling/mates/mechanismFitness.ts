@@ -87,6 +87,17 @@ type AddBlockingReasonFn = (
   evidence?: unknown,
 ) => void;
 
+/** Error-severity findings block; warnings / info notes never do. */
+function addErrorReasons(
+  diagnostics: ReadonlyArray<{ readonly code: string; readonly severity: string; readonly message: string; readonly hint: string }>,
+  addBlockingReason: AddBlockingReasonFn,
+): void {
+  for (const diagnostic of diagnostics) {
+    if (diagnostic.severity !== 'error') continue;
+    addBlockingReason(diagnostic.code, diagnostic.message, diagnostic.hint, diagnostic);
+  }
+}
+
 function processMechanismDiagnostics(
   validatorDiagnostics: readonly ValidatorDiagnostic[],
   mechanicalPlausibilityDiagnostics: readonly MechanicalPlausibilityDiagnostic[],
@@ -142,14 +153,8 @@ function processMechanismDiagnostics(
     );
   }
 
-  for (const diagnostic of jointTopologyDiagnostics) {
-    addBlockingReason(
-      diagnostic.code,
-      diagnostic.message,
-      diagnostic.hint,
-      diagnostic,
-    );
-  }
+  // A free passive joint's missing limit / support intent is a 'warning'.
+  addErrorReasons(jointTopologyDiagnostics, addBlockingReason);
 
   for (const diagnostic of physicalUseCaseDiagnostics) {
     addBlockingReason(
@@ -162,15 +167,7 @@ function processMechanismDiagnostics(
 
   // KC-04 — a definitive mechanism-truth failure blocks. See the field doc
   // on `MechanismFitnessInput.mechanismTruthDiagnostics`.
-  for (const diagnostic of mechanismTruthDiagnostics) {
-    if (diagnostic.severity !== 'error') continue;
-    addBlockingReason(
-      diagnostic.code,
-      diagnostic.message,
-      diagnostic.hint,
-      diagnostic,
-    );
-  }
+  addErrorReasons(mechanismTruthDiagnostics, addBlockingReason);
 
   if (physicalUseCaseCount > 0 && physicalUseCaseDiagnostics.length === 0) {
     passedChecks.push(PASSED_CHECKS.physicalUseCaseDeclared);

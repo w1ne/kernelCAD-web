@@ -43,7 +43,7 @@ const HOLE_MISMATCH_CODE = `
   const arm = assembly('sweep-bracket');
   const h = param('HeightMm', 5);
   const a = box(20, 20, h).hole('top', { u: 0, v: 0, diameter: 5, depth: 'through' });
-  const b = box(20, 20, 5).hole('bottom', { u: 0, v: 0, diameter: 6, depth: 'through' });
+  const b = box(20, 20, 5).hole('bottom', { u: 0, v: 0, diameter: 12, depth: 'through' });
   arm.part('a', a).connector('h', {
     type: 'frame',
     origin: { kind: 'topology', query: { kind: 'face-center', name: 'top' } },
@@ -118,7 +118,7 @@ describe('sweepTolerance', () => {
   it('sweeps a ParamRef hole diameter and flips the mounting-holes gate at the mismatch threshold', async () => {
     const r = await sweepTolerance({
       code: HOLE_PARAM_CODE,
-      params: { HoleDia: { values: [5, 6] } },
+      params: { HoleDia: { values: [5, 12] } },
       gates: { interference: false, mountingHoles: true, jointAxis: false },
     });
     expect(r.combosEvaluated).toBe(2);
@@ -126,11 +126,11 @@ describe('sweepTolerance', () => {
       r.results.map((row) => [row.combo['HoleDia'], row.gates['mounting-holes']]),
     );
     expect(verdictByDia.get(5)).toBe('pass');
-    expect(verdictByDia.get(6)).toBe('fail');
+    expect(verdictByDia.get(12)).toBe('fail');
     expect(r.ok).toBe(false);
     const firstFail = r.firstFailure['mounting-holes'];
     expect(firstFail).toBeDefined();
-    expect(firstFail!.combo['HoleDia']).toBe(6);
+    expect(firstFail!.combo['HoleDia']).toBe(12);
     expect(
       firstFail!.diagnostics.some((d) => d.code === 'assembly.mounting-hole.mismatch'),
     ).toBe(true);

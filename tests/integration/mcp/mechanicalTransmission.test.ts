@@ -71,15 +71,18 @@ describe('mechanical transmission review', () => {
       expect(factCodes).toHaveLength(8);
       // The floating part also fails the evaluate-time union guard; review
       // continues past it, so both its error and review's own facts appear.
+      // The curls inherit grip's finite 0-30 deg through coupleMates, so
+      // they draw no joint-topology.missing-limit (only the advisory
+      // mate.limit-missing for the envelope sampler).
       expect(factCodes).toEqual(expect.arrayContaining([
         'assembly.joint-topology.unsupported-axis',
-        'assembly.joint-topology.missing-limit',
         'assembly.mate.limit-missing',
         'assembly.mechanical.part-disconnected',
         'assembly.transmission.missing-for-coupled-mate',
         'union.disconnected',
       ]));
       expect(factCodes).not.toContain('assembly.mounting-hole.mismatch');
+      expect(factCodes).not.toContain('assembly.joint-topology.missing-limit');
     }
   });
 

@@ -37,6 +37,7 @@ const ALLOWED_GROUPS = new Set([
   'authoring',
   'viewer',
   'union',
+  'script',
   'tube',
 ]);
 

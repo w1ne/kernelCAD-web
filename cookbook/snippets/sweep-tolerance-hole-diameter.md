@@ -34,14 +34,14 @@ const code = `
 
 const sweep = await kinematic.sweepTolerance({
   code,
-  params: { HoleDia: { values: [5, 6] } },
+  params: { HoleDia: { values: [5, 12] } },
   gates: { interference: false, mountingHoles: true, jointAxis: false },
 });
 if (sweep.source !== 'local') throw new Error('sweep: source !== local');
-if (sweep.ok) throw new Error('sweep: expected ok=false (HoleDia=6 mismatches)');
+if (sweep.ok) throw new Error('sweep: expected ok=false (HoleDia=12 mismatches)');
 const firstFail = sweep.firstFailure['mounting-holes'];
-if (!firstFail || firstFail.combo['HoleDia'] !== 6)
-  throw new Error('sweep: expected HoleDia=6 as the first mounting-holes failure');
+if (!firstFail || firstFail.combo['HoleDia'] !== 12)
+  throw new Error('sweep: expected HoleDia=12 as the first mounting-holes failure');
 
 return box(10, 10, 10);
 ```

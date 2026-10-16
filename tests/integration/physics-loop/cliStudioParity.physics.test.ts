@@ -18,20 +18,21 @@ import {
 
 describe('CLI / Studio parity for mechanism truth', () => {
   it(
-    'P6: clevis-hinge with --include-physics — CLI and Studio agree the bare hinge drops under gravity',
+    'P6: clevis-hinge with --include-physics — CLI and Studio agree on the bare hinge drop-test',
     async () => {
-      // The clevis-hinge fixture passes the kinematic-only gate but, as
-      // a single revolute joint with no spring or actuator, it cannot
-      // pass the drop-test. Asserting both surfaces emit the same
-      // `mechanism.drops-on-release` failure pins the new criterion's
-      // wiring at parity.
+      // The clevis-hinge fixture is a single revolute joint with no spring,
+      // actuator or declared load: it swings under gravity. Its limits are
+      // end stops, not a hold requirement, so the swing is a passive-joint
+      // info note (mechanism stays 'real'). Asserting both surfaces emit the
+      // same `mechanism.drops-on-release` entry pins the drop-test wiring at
+      // parity.
       const cliResult = await captureValidateJson({
         file: CLEVIS_HINGE_REAL_FIXTURE,
         includeInterference: true,
         includePhysics: true,
       });
       const cliCodes = sortedCodes(cliResult.mechanismFailures ?? []);
-      expect(cliResult.mechanism).toBe('broken');
+      expect(cliResult.mechanism).toBe('real');
       expect(cliCodes).toContain('mechanism.drops-on-release');
 
       const review = await reviewCadTool({
@@ -43,7 +44,7 @@ describe('CLI / Studio parity for mechanism truth', () => {
       const studioFailures = (review as { mechanismFailures?: Array<{ code: string }> })
         .mechanismFailures ?? [];
       const studioCodes = sortedCodes(studioFailures);
-      expect(studioMechanism).toBe('broken');
+      expect(studioMechanism).toBe(cliResult.mechanism);
       expect(studioCodes).toEqual(cliCodes);
     },
     180000,

@@ -39,6 +39,7 @@ import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic'
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
 import { runMcpScript } from '../runMcpScript';
 import type { ParamType } from '../../../shared/runtime/paramTable';
+import { normalizeDiffScriptsArgs } from './diffScriptsArgs';
 
 export interface DiffScriptsInput {
   /** Baseline script — path on disk. One of baseFile / baseCode is required. */
@@ -116,6 +117,10 @@ export interface DiffSideHeader {
   featureCount: number;
   partCount: number;
   isAssembly: boolean;
+  /** Error-severity diagnostics the side raised while still producing
+   *  geometry (a skipped fillet, a disconnected union). The diff is computed
+   *  from what DID build; these say what did not. Absent when clean. */
+  errors?: CompilerDiagnostic[];
 }
 
 export type DiffScriptsOutput =
@@ -166,6 +171,7 @@ export type DiffScriptsOutput =
 
 interface SideSummary {
   featureCount: number;
+  errors: CompilerDiagnostic[];
   isAssembly: boolean;
   parts: DiffPartStats[];
   interferencePairs: InterferencePair[];
@@ -178,27 +184,16 @@ type SideResult =
   | { ok: true; side: SideSummary }
   | { ok: false; error: string; errorCode?: string; diagnostics?: CompilerDiagnostic[] };
 
-export async function diffScriptsTool(input: DiffScriptsInput): Promise<DiffScriptsOutput> {
-  if (input.baseFile === undefined && input.baseCode === undefined) {
-    return {
-      ok: false,
-      side: 'base',
-      error: 'diff_scripts: must provide either { baseFile } or { baseCode } for the baseline script.',
-      errorCode: 'cli.invalid-args',
-    };
-  }
-  if (input.file === undefined && input.code === undefined) {
-    return {
-      ok: false,
-      side: 'revised',
-      error: 'diff_scripts: must provide either { file } or { code } for the revised script.',
-      errorCode: 'cli.invalid-args',
-    };
-  }
+export async function diffScriptsTool(
+  input: DiffScriptsInput | Record<string, unknown>,
+): Promise<DiffScriptsOutput> {
+  const args = normalizeDiffScriptsArgs(input as Record<string, unknown>);
+  if (!args.ok) return args;
+  const canonical = args.input;
 
-  const base = await evaluateSide({ file: input.baseFile, code: input.baseCode });
+  const base = await evaluateSide({ file: canonical.baseFile, code: canonical.baseCode });
   if (!base.ok) return { ...base, side: 'base' };
-  const revised = await evaluateSide({ file: input.file, code: input.code });
+  const revised = await evaluateSide({ file: canonical.file, code: canonical.code });
   if (!revised.ok) return { ...revised, side: 'revised' };
 
   const b = base.side;
@@ -209,8 +204,8 @@ export async function diffScriptsTool(input: DiffScriptsInput): Promise<DiffScri
 
   return {
     ok: true,
-    base: { featureCount: b.featureCount, partCount: b.parts.length, isAssembly: b.isAssembly },
-    revised: { featureCount: r.featureCount, partCount: r.parts.length, isAssembly: r.isAssembly },
+    base: sideHeader(b),
+    revised: sideHeader(r),
     parts,
     interference: {
       baseTotalMm3: b.interferenceTotalMm3,
@@ -222,6 +217,15 @@ export async function diffScriptsTool(input: DiffScriptsInput): Promise<DiffScri
     mates: diffByName(b.mates, r.mates),
     params: diffByName(b.params, r.params),
     ...(deeper !== undefined ? { deeperDiffAvailable: deeper } : {}),
+  };
+}
+
+function sideHeader(s: SideSummary): DiffSideHeader {
+  return {
+    featureCount: s.featureCount,
+    partCount: s.parts.length,
+    isAssembly: s.isAssembly,
+    ...(s.errors.length > 0 ? { errors: s.errors } : {}),
   };
 }
 
@@ -260,6 +264,9 @@ export function deeperDiffPointer(
 
 // ----- Per-side evaluation ---------------------------------------------------
 
+type LoweredRun = Awaited<ReturnType<RecomputeEngine['run']>>;
+type ScriptRun = Extract<Awaited<ReturnType<typeof runMcpScript>>, { ok: true }>['run'];
+
 async function evaluateSide(input: { file?: string; code?: string }): Promise<SideResult> {
   const script = await runMcpScript(input);
   if (!script.ok) {
@@ -268,15 +275,7 @@ async function evaluateSide(input: { file?: string; code?: string }): Promise<Si
   const { run } = script;
   const engine = new RecomputeEngine(createOcctLowerer(run.session));
   const result = await engine.run(run.records, { paramTable: run.paramTable });
-  const fatal = result.diagnostics.find((d) => d.severity === 'error');
-  if (fatal !== undefined) {
-    return {
-      ok: false,
-      error: fatal.message,
-      errorCode: fatal.code,
-      diagnostics: withNextActions(result.diagnostics),
-    };
-  }
+  const errors = withNextActions(result.diagnostics.filter((d) => d.severity === 'error'));
 
   const params: DiffParamSummary[] = run.session.params.list().map((entry) => ({
     name: entry.name,
@@ -287,65 +286,108 @@ async function evaluateSide(input: { file?: string; code?: string }): Promise<Si
     ...(entry.meta?.choices !== undefined ? { choices: entry.meta.choices } : {}),
   }));
 
-  const ret = run.returnValue;
-  if (ret instanceof Scene) {
-    const sourceId = ret.__sourceFeatureId();
-    const lowered = sourceId !== undefined ? result.shapes.get(sourceId) : undefined;
-    if (!lowered || !isSceneBackend(lowered)) {
-      return {
-        ok: false,
-        error: 'diff_scripts: the assembly scene did not lower successfully.',
-        errorCode: 'recompute.input.missing',
-        diagnostics: withNextActions(result.diagnostics),
-      };
-    }
-    // Same stats calls as `list_part_stats` so the numbers line up exactly.
-    const parts: DiffPartStats[] = sceneToWorldFrameParts(lowered).map((p) => ({
-      name: p.name,
-      volumeMm3: p.shape.volume(),
-      bbox: toBbox(p.shape.boundingBox({ exact: true })),
-    }));
-    const inter = detectInterferences(lowered, INTERFERENCE_EPSILON_MM3, new Set());
-    const arm = (run.session.assemblies as Map<string, Assembly>).get(ret.assemblyName);
-    const mates: DiffMateSummary[] = (arm?.__mates() ?? []).map((m) => ({
-      name: m.name,
-      type: m.type,
-      a: m.a,
-      b: m.b,
-      ...(m.pose !== undefined ? { pose: m.pose } : {}),
-      ...(m.limitsDeg !== undefined ? { limitsDeg: m.limitsDeg } : {}),
-      ...(m.limitsMm !== undefined ? { limitsMm: m.limitsMm } : {}),
-    }));
+  const side = run.returnValue instanceof Scene
+    ? sceneSide(run, result, run.returnValue, params)
+    : solidSide(run, result, params);
+  if (!side.ok) return { ...side, diagnostics: withNextActions(result.diagnostics) };
+  // An error that still left geometry to compare (a skipped fillet, a
+  // disconnected union) is reported beside the diff, not instead of it: the
+  // common "broken -> fixed" edit is exactly the one an agent wants to diff.
+  // Only a side with nothing to measure fails.
+  if (side.side.parts.length === 0 && errors.length > 0) {
+    return { ok: false, error: errors[0].message, errorCode: errors[0].code, diagnostics: withNextActions(result.diagnostics) };
+  }
+  return { ok: true, side: { ...side.side, errors } };
+}
+
+function sceneSide(
+  run: ScriptRun,
+  result: LoweredRun,
+  ret: Scene,
+  params: DiffParamSummary[],
+): { ok: true; side: Omit<SideSummary, 'errors'> } | { ok: false; error: string; errorCode: string } {
+  const sourceId = ret.__sourceFeatureId();
+  const lowered = sourceId !== undefined ? result.shapes.get(sourceId) : undefined;
+  if (!lowered || !isSceneBackend(lowered)) {
     return {
-      ok: true,
-      side: {
-        featureCount: run.records.length,
-        isAssembly: true,
-        parts,
-        interferencePairs: inter.pairs,
-        interferenceTotalMm3: inter.pairs.reduce((sum, p) => sum + p.volumeMm3, 0),
-        mates,
-        params,
-      },
+      ok: false,
+      error: 'diff_scripts: the assembly scene did not lower successfully.',
+      errorCode: 'recompute.input.missing',
     };
   }
+  // Same stats calls as `list_part_stats` so the numbers line up exactly.
+  const parts: DiffPartStats[] = sceneToWorldFrameParts(lowered).map((p) => ({
+    name: p.name,
+    volumeMm3: p.shape.volume(),
+    bbox: toBbox(p.shape.boundingBox({ exact: true })),
+  }));
+  const inter = detectInterferences(lowered, INTERFERENCE_EPSILON_MM3, new Set());
+  const arm = (run.session.assemblies as Map<string, Assembly>).get(ret.assemblyName);
+  const mates: DiffMateSummary[] = (arm?.__mates() ?? []).map((m) => ({
+    name: m.name,
+    type: m.type,
+    a: m.a,
+    b: m.b,
+    ...(m.pose !== undefined ? { pose: m.pose } : {}),
+    ...(m.limitsDeg !== undefined ? { limitsDeg: m.limitsDeg } : {}),
+    ...(m.limitsMm !== undefined ? { limitsMm: m.limitsMm } : {}),
+  }));
+  return {
+    ok: true,
+    side: {
+      featureCount: run.records.length,
+      isAssembly: true,
+      parts,
+      interferencePairs: inter.pairs,
+      interferenceTotalMm3: inter.pairs.reduce((sum, p) => sum + p.volumeMm3, 0),
+      mates,
+      params,
+    },
+  };
+}
 
-  // Single-shape (non-assembly) script: report the root return value as one
-  // pseudo-part so dimension/volume drift is still visible in the diff.
+/**
+ * The solid bodies a non-assembly script returned, by name. A single Shape is
+ * the "(root)" pseudo-part; an array `return [a, b]` is one body per element,
+ * named `body[i]` — before this, an array return diffed only its LAST
+ * feature, so a change to any other body read as "unchanged".
+ */
+export function returnedBodies(
+  returnValue: unknown,
+  shapes: ReadonlyMap<string, unknown>,
+  tailId: string | undefined,
+): Array<{ name: string; shape: OcctBackend }> {
+  if (Array.isArray(returnValue)) {
+    const out: Array<{ name: string; shape: OcctBackend }> = [];
+    returnValue.forEach((v, i) => {
+      const id = (v as { id?: unknown } | null)?.id;
+      const shape = typeof id === 'string' ? shapes.get(id) : undefined;
+      if (shape instanceof OcctBackend) out.push({ name: `body[${i}]`, shape });
+    });
+    if (out.length > 0) return out;
+  }
+  const rootId = resolveRootId(returnValue, tailId);
+  const rootShape = rootId !== undefined ? shapes.get(rootId) : undefined;
+  return rootShape instanceof OcctBackend ? [{ name: ROOT_PART_NAME, shape: rootShape }] : [];
+}
+
+function solidSide(
+  run: ScriptRun,
+  result: LoweredRun,
+  params: DiffParamSummary[],
+): { ok: true; side: Omit<SideSummary, 'errors'> } {
   const tailId = run.records.length > 0 ? run.records[run.records.length - 1].id : undefined;
-  const rootId = resolveRootId(ret, tailId);
-  const rootShape = rootId !== undefined ? result.shapes.get(rootId) : undefined;
   const parts: DiffPartStats[] = [];
-  if (rootShape instanceof OcctBackend) {
+  for (const body of returnedBodies(run.returnValue, result.shapes, tailId)) {
     try {
       parts.push({
-        name: ROOT_PART_NAME,
-        volumeMm3: rootShape.volume(),
-        bbox: toBbox(rootShape.boundingBox({ exact: true })),
+        name: body.name,
+        volumeMm3: body.shape.volume(),
+        bbox: toBbox(body.shape.boundingBox({ exact: true })),
       });
     } catch {
-      // Non-solid return (sketch/region/curve) — leave the parts list empty;
-      // the feature-count header still carries the structural signal.
+      // Non-solid return (sketch/region/curve) — leave it out; the
+      // feature-count header still carries the structural signal.
     }
   }
   return {

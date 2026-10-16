@@ -90,7 +90,7 @@ export interface RunFeaResult {
   summary?: FeaSummary;
   diagnostics: CompilerDiagnostic[];
   /** Absolute paths of the solver artifacts, for reproduction. */
-  artifacts: { geometryPath?: string; inpPath?: string; frdPath?: string; meshPath?: string };
+  artifacts: { geometryPath?: string; inpPath?: string; frdPath?: string; meshPath?: string; summaryPath?: string };
   /** Mesh + solved fields, for callers that render the field (the heatmap
    *  builder). Present only on a completed solve. */
   raw?: {
@@ -851,7 +851,8 @@ export async function runFeaStudy(
   );
   appendFeaSummaryDiagnostics(ctx, material, computed);
 
-  await writeFile(join(opts.outDir, 'fea-summary.json'), JSON.stringify(computed.summary, null, 2), 'utf8');
+  artifacts.summaryPath = join(opts.outDir, 'fea-summary.json');
+  await writeFile(artifacts.summaryPath, JSON.stringify(computed.summary, null, 2), 'utf8');
   return {
     ok: !diagnostics.some(d => d.severity === 'error'),
     summary: computed.summary,

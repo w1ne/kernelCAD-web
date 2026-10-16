@@ -489,7 +489,7 @@
       }
     },
     "feature.face-ref.not-resolvable": {
-      "template": "The referenced face was not found on the current shape; lineage returned zero hits and the stored snapshot has no match within tolerance. Pick one of the nearest candidate refs printed in the message (or call list_faces to enumerate every face that still exists), or apply this feature before the upstream op that removed the original.",
+      "template": "The referenced face was not found on the current shape; lineage returned zero hits and the stored snapshot has no match within tolerance. Pick one of the nearest candidate refs printed in the message (or call inspect({ of: 'faces' }) to enumerate every face that still exists), or apply this feature before the upstream op that removed the original.",
       "nextAction": {
         "kind": "reorder-pipeline",
         "guidance": "apply this feature before any transform"
@@ -524,10 +524,10 @@
       }
     },
     "feature.face-ref.snapshot-fallback-used": {
-      "template": "Lineage returned no hits; the entity was recovered by geometry snapshot. The resolution is provisional — re-emit list_faces or list_edges and update the ref to the lineage-stable form before further edits move the entity beyond tolerance.",
+      "template": "Lineage returned no hits; the entity was recovered by geometry snapshot. The resolution is provisional — re-emit inspect({ of: 'faces' }) or inspect({ of: 'edges' }) and update the ref to the lineage-stable form before further edits move the entity beyond tolerance.",
       "nextAction": {
         "kind": "rename",
-        "guidance": "update the ref to the lineage-stable form via list_faces / list_edges"
+        "guidance": "update the ref to the lineage-stable form via inspect({ of: 'faces' }) / inspect({ of: 'edges' })"
       }
     },
     "feature.hole.no-target-face": {
@@ -545,10 +545,13 @@
       }
     },
     "feature.selection.no-match": {
-      "template": "The query matched no edges/faces. Use list_edges, list_faces, or list_face_labels to inspect what exists, then relax the query.",
+      "template": "The query matched no edges/faces. Use inspect({ of: 'edges' }), inspect({ of: 'faces' }), or inspect({ of: 'face-labels' }) to inspect what exists, then relax the query.",
       "nextAction": {
-        "kind": "call-introspection-tool",
-        "tool": "list_edges"
+        "kind": "call-tool",
+        "tool": "inspect",
+        "args": {
+          "of": "edges"
+        }
       }
     },
     "feature.selection.ambiguous": {
@@ -559,10 +562,13 @@
       }
     },
     "feature.label.unknown-name": {
-      "template": "Label not found. Call list_face_labels to see available labels.",
+      "template": "Label not found. Call inspect({ of: 'face-labels' }) to see available labels.",
       "nextAction": {
-        "kind": "call-introspection-tool",
-        "tool": "list_face_labels"
+        "kind": "call-tool",
+        "tool": "inspect",
+        "args": {
+          "of": "face-labels"
+        }
       }
     },
     "feature.label.no-upstream-sketch": {
@@ -643,10 +649,13 @@
       }
     },
     "export.feature-not-found": {
-      "template": "The feature_id passed to export_model was not found. Use list_features to see available IDs.",
+      "template": "The feature_id passed to export was not found. Use inspect({ of: 'features' }) to see available IDs.",
       "nextAction": {
-        "kind": "call-introspection-tool",
-        "tool": "list_features"
+        "kind": "call-tool",
+        "tool": "inspect",
+        "args": {
+          "of": "features"
+        }
       }
     },
     "export.no-shape": {
@@ -684,7 +693,7 @@
       }
     },
     "export.part.not-found": {
-      "template": "The requested part name is not in the solved assembly. Pick one of the valid names listed in the message, or call list_part_stats to enumerate parts.",
+      "template": "The requested part name is not in the solved assembly. Pick one of the valid names listed in the message, or call inspect({ of: 'part-stats' }) to enumerate parts.",
       "nextAction": {
         "kind": "fix-arg",
         "field": "part"
@@ -719,7 +728,7 @@
       }
     },
     "export.urdf.closed-loop": {
-      "template": "URDF requires a tree topology (one parent per link); the assembly has a closed kinematic loop. Switch to export_model with format: 'sdf-gazebo' which supports closed loops natively, or restructure the mate graph to a spanning tree.",
+      "template": "URDF requires a tree topology (one parent per link); the assembly has a closed kinematic loop. Switch to export with format: 'sdf-gazebo' which supports closed loops natively, or restructure the mate graph to a spanning tree.",
       "nextAction": {
         "kind": "fix-arg",
         "field": "format"
@@ -733,7 +742,7 @@
       }
     },
     "export.srdf.acm-sparse-sampling": {
-      "template": "ACM derivation used fewer than 4 samples per mate; interior collisions may be missed. Increase options.samplesPerMate on export_model({ format: 'srdf', ... }) or set combinatorial: true.",
+      "template": "ACM derivation used fewer than 4 samples per mate; interior collisions may be missed. Increase options.samplesPerMate on export({ target: 'model', format: 'srdf', ... }) or set combinatorial: true.",
       "nextAction": {
         "kind": "fix-arg",
         "field": "samplesPerMate"
@@ -769,8 +778,11 @@
     "export.sdf-gazebo.dangling-link-ref": {
       "template": "A <joint> in the emitted SDF references a <link> that is not declared in the model. Verify every part on the mate-graph is also declared via arm.part(...).",
       "nextAction": {
-        "kind": "call-introspection-tool",
-        "tool": "inspect_robot"
+        "kind": "call-tool",
+        "tool": "inspect",
+        "args": {
+          "of": "robot"
+        }
       }
     },
     "export.sdf-gazebo.pose-unsolved": {
@@ -816,10 +828,13 @@
       }
     },
     "feature.pattern.source-not-found": {
-      "template": "The pattern source feature was not found. Verify the variable receiving .patternLinear / .patternCircular / .patternGrid is bound from an earlier feature, that the source feature is not suppressed, and that the source FeatureId matches what list_features reports.",
+      "template": "The pattern source feature was not found. Verify the variable receiving .patternLinear / .patternCircular / .patternGrid is bound from an earlier feature, that the source feature is not suppressed, and that the source FeatureId matches what inspect({ of: 'features' }) reports.",
       "nextAction": {
-        "kind": "call-introspection-tool",
-        "tool": "list_features"
+        "kind": "call-tool",
+        "tool": "inspect",
+        "args": {
+          "of": "features"
+        }
       }
     },
     "feature.pattern.count-out-of-range": {
@@ -837,7 +852,7 @@
       }
     },
     "feature.bend.edge-not-linear": {
-      "template": ".bend() requires a linear edge; the resolved edge is a curved geometry. Pick an edge that lies on a straight perimeter of the sheet (use list_edges to inspect).",
+      "template": ".bend() requires a linear edge; the resolved edge is a curved geometry. Pick an edge that lies on a straight perimeter of the sheet (use inspect({ of: 'edges' }) to inspect).",
       "nextAction": {
         "kind": "rewrite-feature",
         "guidance": "pick a linear edge on the sheet perimeter"
@@ -962,7 +977,7 @@
       }
     },
     "feature.material.face-label-no-match": {
-      "template": "Shape.material({ face: '<label>', ... }) referenced a label that no upstream feature declares via faceLabels. The whole-shape default material is used for all faces. Declare the label on the creating op (e.g. box(..., { faceLabels: { <label>: 'top' } })) and ensure no transform strips the lineage between the creator and the .material() call. Inspect available labels with list_face_labels.",
+      "template": "Shape.material({ face: '<label>', ... }) referenced a label that no upstream feature declares via faceLabels. The whole-shape default material is used for all faces. Declare the label on the creating op (e.g. box(..., { faceLabels: { <label>: 'top' } })) and ensure no transform strips the lineage between the creator and the .material() call. Inspect available labels with inspect({ of: 'face-labels' }).",
       "nextAction": {
         "kind": "fix-arg",
         "field": "face"
@@ -1186,10 +1201,10 @@
       }
     },
     "assembly.joint-topology.unsupported-axis": {
-      "template": "Declare arm.jointSupport(..., { mate, shaft, supports, output }) for passive hinges, or arm.mechanicalJoint(..., { mate, actuator, shaft, supports, output }) for driven hinges, so the revolute axis has physical support intent.",
+      "template": "Optional (informational): record which parts carry the hinge axis, e.g. arm.jointSupport('hinge-support', { mate: 'hinge', shaft: 'base', supports: ['base'], output: 'lid' }) for a passive hinge, or arm.mechanicalJoint(..., { mate, actuator, shaft, supports, output }) for a driven one. Physical support itself is checked from geometry (assembly.joint-axis.unbound, assembly.mechanical.revolute-unsupported).",
       "nextAction": {
         "kind": "rewrite-feature",
-        "guidance": "add jointSupport or mechanicalJoint intent for the revolute axis"
+        "guidance": "optionally add jointSupport or mechanicalJoint intent for the revolute axis"
       }
     },
     "assembly.joint-topology.connector-missing": {
@@ -1207,7 +1222,7 @@
       }
     },
     "assembly.mounting-hole.mismatch": {
-      "template": "Make the hole features on the two bound faces compatible: same kind (clearance ↔ threaded), same nominal diameter, same depth. Use list_face_labels to inspect available holes. This is an authoring-time signal; the merge gate is mechanism.disconnect which fires under motion at validate-time.",
+      "template": "Make the hole features on the two bound faces compatible: same kind (clearance ↔ threaded), same nominal diameter, same depth. Use inspect({ of: 'face-labels' }) to inspect available holes. This is an authoring-time signal; the merge gate is mechanism.disconnect which fires under motion at validate-time.",
       "nextAction": {
         "kind": "fix-arg",
         "field": "holeFeatures"
@@ -1228,7 +1243,7 @@
       }
     },
     "assembly.structure.unstructured-bodies": {
-      "template": "Wrap the loose bodies in assembly().part(name, shape) so each part carries identity, per-part stats, and review handles; name every returned shape. This is an authoring-time signal — a multi-body model with no part names loses inspect --focus, list_part_stats, and Studio per-part validity.",
+      "template": "Wrap the loose bodies in assembly().part(name, shape) so each part carries identity, per-part stats, and review handles; name every returned shape. This is an authoring-time signal — a multi-body model with no part names loses inspect --focus, inspect({ of: 'part-stats' }), and Studio per-part validity.",
       "nextAction": {
         "kind": "rewrite-feature",
         "guidance": "wrap each loose top-level body in a named assembly().part(name, shape)"
@@ -1361,7 +1376,7 @@
       }
     },
     "mechanism.orphan-part": {
-      "template": "Disconnected components in the assembly graph. Connect every orphan body with connectors + mates/joints: shafts/hinges/gears → partRef.connector(name, { type: 'axis', origin: { kind: 'vec3', value: [x,y,z] }, axis: [...] }) then arm.mate(name, 'a.conn', 'b.conn', 'revolute'); rigid mounts → type: 'frame' + mate(..., 'fastened'); or use arm.revolute/.prismatic/.ball/.fixed. Connector types are only frame|axis|planar|ball. Only a mechanism (an assembly with mates, joints, transmissions or a solvedModel call) needs every part linked; if a part is deliberately free (a loose accessory, a display or print-layout part), do not invent a mate — pass { skipMechanismCheck: true } to evaluate_script.",
+      "template": "Disconnected components in the assembly graph. Connect every orphan body with connectors + mates/joints: shafts/hinges/gears → partRef.connector(name, { type: 'axis', origin: { kind: 'vec3', value: [x,y,z] }, axis: [...] }) then arm.mate(name, 'a.conn', 'b.conn', 'revolute'); rigid mounts → type: 'frame' + mate(..., 'fastened'); or use arm.revolute/.prismatic/.ball/.fixed. Connector types are only frame|axis|planar|ball. Only a mechanism (an assembly with mates or joints) needs every part linked; if a part is deliberately free (a loose accessory, a display or print-layout part), do not invent a mate — pass { skipMechanismCheck: true } to evaluate_script.",
       "nextAction": {
         "kind": "rewrite-feature",
         "guidance": "connect disconnected bodies with axis+revolute (shafts/hinges/gears) or frame+fastened (rigid), or arm.revolute/.prismatic/.ball/.fixed joint primitives"
@@ -1576,7 +1591,7 @@
       }
     },
     "feature.surface-from-boundary.degenerate-patch": {
-      "template": "BRepOffsetAPI_MakeFilling could not produce a face. The boundary curves are likely coincident, self-intersecting, or topologically invalid. Inspect the curve sequence with list_features and visualize each Curve3D before retrying.",
+      "template": "BRepOffsetAPI_MakeFilling could not produce a face. The boundary curves are likely coincident, self-intersecting, or topologically invalid. Inspect the curve sequence with inspect({ of: 'features' }) and visualize each Curve3D before retrying.",
       "nextAction": {
         "kind": "rewrite-feature",
         "guidance": "rebuild the 4 boundary curves so they form a non-self-intersecting closed loop, then retry surfaceFromBoundary"
@@ -1735,8 +1750,10 @@
       "template": "Pass either an `id` (for a known catalog record) or a `query` (for fuzzy search). Both are missing in this call.",
       "nextAction": {
         "kind": "call-tool",
-        "tool": "list_part_categories",
-        "args": {}
+        "tool": "inspect",
+        "args": {
+          "of": "part-categories"
+        }
       }
     },
     "parts.fetch.offline-and-uncached": {
@@ -1797,28 +1814,28 @@
       }
     },
     "dfm.input.vendor-required": {
-      "template": "dfm_preflight requires a vendor identifier. Pass `vendor: \"sendcutsend\"` (or another supported vendor SKU listed in catalogs/sources-manifest.json).",
+      "template": "verify({ check: 'dfm-preflight' }) requires a vendor identifier. Pass `vendor: \"sendcutsend\"` (or another supported vendor SKU listed in catalogs/sources-manifest.json).",
       "nextAction": {
         "kind": "fix-arg",
         "field": "vendor"
       }
     },
     "dfm.input.material-required": {
-      "template": "dfm_preflight requires a material SKU. Pass `material: \"<sku>\"` (use list_part_categories or the vendor catalog.json to enumerate the supported SKUs).",
+      "template": "verify({ check: 'dfm-preflight' }) requires a material SKU. Pass `material: \"<sku>\"` (use inspect({ of: 'part-categories' }) or the vendor catalog.json to enumerate the supported SKUs).",
       "nextAction": {
         "kind": "fix-arg",
         "field": "material"
       }
     },
     "dfm.input.thickness-required": {
-      "template": "dfm_preflight requires a thickness. Pass `thicknessIn: <inches>` or `thicknessMm: <mm>`; pick a value from catalog[sku].thicknessesIn.",
+      "template": "verify({ check: 'dfm-preflight' }) requires a thickness. Pass `thicknessIn: <inches>` or `thicknessMm: <mm>`; pick a value from catalog[sku].thicknessesIn.",
       "nextAction": {
         "kind": "fix-arg",
         "field": "thicknessMm"
       }
     },
     "dfm.units.dxf-not-mm": {
-      "template": "DXF $INSUNITS header must be 4 (mm). Re-export from kernelCAD with the default unit, or pass `unit: \"mm\"` to export_model.",
+      "template": "DXF $INSUNITS header must be 4 (mm). Re-export from kernelCAD with the default unit, or pass `unit: \"mm\"` to export.",
       "nextAction": {
         "kind": "fix-arg",
         "field": "unit"
@@ -1910,7 +1927,7 @@
       }
     },
     "dfm.bend.layer-missing": {
-      "template": "DXF input has bend metadata in the source but no BEND layer in the DXF. Re-export with export_model({ format: \"dxf\" }); the writer auto-emits the BEND layer.",
+      "template": "DXF input has bend metadata in the source but no BEND layer in the DXF. Re-export with export({ target: \"model\", format: \"dxf\" }); the writer auto-emits the BEND layer.",
       "nextAction": {
         "kind": "fix-arg",
         "field": "format"
@@ -1945,7 +1962,7 @@
       }
     },
     "dfm.dxf.spline-present": {
-      "template": "DXF contains SPLINE entities on the cut layer. Re-export from kernelCAD (export_model emits LWPOLYLINE only).",
+      "template": "DXF contains SPLINE entities on the cut layer. Re-export from kernelCAD (export emits LWPOLYLINE only).",
       "nextAction": {
         "kind": "fix-arg",
         "field": "format"
@@ -2144,14 +2161,14 @@
       }
     },
     "query.evaluated-too-early": {
-      "template": "The query references an Id that does not exist in the scene at evaluation time. The op may not have been stamped yet, or the Id was misspelled. Verify with list_features, or move the query construction to after the op is stamped.",
+      "template": "The query references an Id that does not exist in the scene at evaluation time. The op may not have been stamped yet, or the Id was misspelled. Verify with inspect({ of: 'features' }), or move the query construction to after the op is stamped.",
       "nextAction": {
         "kind": "rewrite-feature",
         "guidance": "verify the Id or reorder operations"
       }
     },
     "query.unknown-id": {
-      "template": "The createdBy filter references an Id that does not exist. Verify the Id with list_features, or pin the upstream op via kc.id('<name>') so the Id survives across reorderings.",
+      "template": "The createdBy filter references an Id that does not exist. Verify the Id with inspect({ of: 'features' }), or pin the upstream op via kc.id('<name>') so the Id survives across reorderings.",
       "nextAction": {
         "kind": "rewrite-feature",
         "guidance": "pin the upstream Id or rename the reference"
@@ -2242,27 +2259,31 @@
       }
     },
     "animation.bake.geometry-param": {
-      "template": "A track param drives part GEOMETRY (a dimension, extrude depth, hole radius, …) rather than a mate pose, so Studio baked playback — which only re-applies rigid per-part world transforms — would show the wrong shape. Studio playback supports POSE-ONLY (mate-driven) timelines; render geometry-animating timelines with `kernelcad animate` (offline MP4 re-meshes every frame).",
+      "template": "A track param drives part GEOMETRY (a dimension, extrude depth, hole radius, …) rather than a mate pose, so Studio baked playback — which only re-applies rigid per-part world transforms — would show the wrong shape. Studio playback supports POSE-ONLY (mate-driven) timelines; render geometry-animating timelines with the capture_animation MCP tool or `kernelcad animate` (offline MP4 re-meshes every frame).",
       "nextAction": {
         "kind": "call-tool",
-        "tool": "kernelcad animate",
-        "args": {
-          "reason": "geometry-animating timeline"
-        }
+        "tool": "capture_animation",
+        "args": {}
       }
     },
     "drawing.datum.unresolved": {
-      "template": "A 'datum' annotation's face query matched zero or more than one face. Inspect the model with list_faces / list_face_labels, then tighten the query or add 'near'.",
+      "template": "A 'datum' annotation's face query matched zero or more than one face. Inspect the model with inspect({ of: 'faces' }) / inspect({ of: 'face-labels' }), then tighten the query or add 'near'.",
       "nextAction": {
-        "kind": "call-introspection-tool",
-        "tool": "list_faces"
+        "kind": "call-tool",
+        "tool": "inspect",
+        "args": {
+          "of": "faces"
+        }
       }
     },
     "drawing.tolerance.feature-unresolved": {
-      "template": "An 'fcf' (feature control frame) annotation's edge/face query could not be resolved. Inspect the model with list_edges / list_faces, then tighten the query or add 'near'.",
+      "template": "An 'fcf' (feature control frame) annotation's edge/face query could not be resolved. Inspect the model with inspect({ of: 'edges' }) / inspect({ of: 'faces' }), then tighten the query or add 'near'.",
       "nextAction": {
-        "kind": "call-introspection-tool",
-        "tool": "list_edges"
+        "kind": "call-tool",
+        "tool": "inspect",
+        "args": {
+          "of": "edges"
+        }
       }
     },
     "drawing.section.plane-misses-body": {
@@ -2282,8 +2303,11 @@
     "drawing.auto.datum-ambiguous": {
       "template": "autoAnnotate could not establish one or more datums from the part's planar faces (A = largest planar face, B / C = largest planar faces orthogonal to it). Declare the missing datum with shape.datum('B', faceQuery) or options.autoAnnotate.datums, then re-export.",
       "nextAction": {
-        "kind": "call-introspection-tool",
-        "tool": "list_faces"
+        "kind": "call-tool",
+        "tool": "inspect",
+        "args": {
+          "of": "faces"
+        }
       }
     },
     "drawing.auto.hole-unclassified": {
@@ -2387,14 +2411,14 @@
       }
     },
     "fea.study.fixed-unresolved": {
-      "template": "The study's `fixed` selector matched no face on the built shape, or the matched face did not bind to a meshed surface, so the part would be unconstrained. Call list_faces to see the available faces and refs, then pass a selector that matches one.",
+      "template": "The study's `fixed` selector matched no face on the built shape, or the matched face did not bind to a meshed surface, so the part would be unconstrained. Call inspect({ of: 'faces' }) to see the available faces and refs, then pass a selector that matches one.",
       "nextAction": {
         "kind": "fix-arg",
         "field": "feaStudy.fixed"
       }
     },
     "fea.study.load-unresolved": {
-      "template": "A study load's `faces` selector matched no face on the built shape, or the matched face did not bind to a meshed surface, so the declared force would be applied nowhere and the study would report a false pass. Call list_faces to see the available faces and refs, then pass a selector that matches one.",
+      "template": "A study load's `faces` selector matched no face on the built shape, or the matched face did not bind to a meshed surface, so the declared force would be applied nowhere and the study would report a false pass. Call inspect({ of: 'faces' }) to see the available faces and refs, then pass a selector that matches one.",
       "nextAction": {
         "kind": "fix-arg",
         "field": "feaStudy.loads[].faces"
@@ -2648,7 +2672,7 @@
     },
     "feature.face-ref.snapshot-fallback-used": {
       "kind": "rename",
-      "guidance": "update the ref to the lineage-stable form via list_faces / list_edges"
+      "guidance": "update the ref to the lineage-stable form via inspect({ of: 'faces' }) / inspect({ of: 'edges' })"
     },
     "feature.hole.no-target-face": {
       "kind": "rewrite-feature",
@@ -2659,16 +2683,22 @@
       "guidance": "name the upstream feature with .name() to lock the ref"
     },
     "feature.selection.no-match": {
-      "kind": "call-introspection-tool",
-      "tool": "list_edges"
+      "kind": "call-tool",
+      "tool": "inspect",
+      "args": {
+        "of": "edges"
+      }
     },
     "feature.selection.ambiguous": {
       "kind": "rewrite-feature",
       "guidance": "use the plural selector or tighten the query"
     },
     "feature.label.unknown-name": {
-      "kind": "call-introspection-tool",
-      "tool": "list_face_labels"
+      "kind": "call-tool",
+      "tool": "inspect",
+      "args": {
+        "of": "face-labels"
+      }
     },
     "feature.label.no-upstream-sketch": {
       "kind": "rewrite-feature",
@@ -2712,8 +2742,11 @@
       "kind": "inspect-message"
     },
     "export.feature-not-found": {
-      "kind": "call-introspection-tool",
-      "tool": "list_features"
+      "kind": "call-tool",
+      "tool": "inspect",
+      "args": {
+        "of": "features"
+      }
     },
     "export.no-shape": {
       "kind": "add-return"
@@ -2782,8 +2815,11 @@
       "field": "version"
     },
     "export.sdf-gazebo.dangling-link-ref": {
-      "kind": "call-introspection-tool",
-      "tool": "inspect_robot"
+      "kind": "call-tool",
+      "tool": "inspect",
+      "args": {
+        "of": "robot"
+      }
     },
     "export.sdf-gazebo.pose-unsolved": {
       "kind": "call-introspection-tool",
@@ -2810,8 +2846,11 @@
       "guidance": "rebuild the curve with the default clamped-uniform knot vector or hand-author a monotonic knot sequence"
     },
     "feature.pattern.source-not-found": {
-      "kind": "call-introspection-tool",
-      "tool": "list_features"
+      "kind": "call-tool",
+      "tool": "inspect",
+      "args": {
+        "of": "features"
+      }
     },
     "feature.pattern.count-out-of-range": {
       "kind": "fix-arg",
@@ -3022,7 +3061,7 @@
     },
     "assembly.joint-topology.unsupported-axis": {
       "kind": "rewrite-feature",
-      "guidance": "add jointSupport or mechanicalJoint intent for the revolute axis"
+      "guidance": "optionally add jointSupport or mechanicalJoint intent for the revolute axis"
     },
     "assembly.joint-topology.connector-missing": {
       "kind": "fix-arg",
@@ -3331,8 +3370,10 @@
     },
     "parts.input.id-or-query-required": {
       "kind": "call-tool",
-      "tool": "list_part_categories",
-      "args": {}
+      "tool": "inspect",
+      "args": {
+        "of": "part-categories"
+      }
     },
     "parts.fetch.offline-and-uncached": {
       "kind": "call-tool",
@@ -3628,18 +3669,22 @@
     },
     "animation.bake.geometry-param": {
       "kind": "call-tool",
-      "tool": "kernelcad animate",
-      "args": {
-        "reason": "geometry-animating timeline"
-      }
+      "tool": "capture_animation",
+      "args": {}
     },
     "drawing.datum.unresolved": {
-      "kind": "call-introspection-tool",
-      "tool": "list_faces"
+      "kind": "call-tool",
+      "tool": "inspect",
+      "args": {
+        "of": "faces"
+      }
     },
     "drawing.tolerance.feature-unresolved": {
-      "kind": "call-introspection-tool",
-      "tool": "list_edges"
+      "kind": "call-tool",
+      "tool": "inspect",
+      "args": {
+        "of": "edges"
+      }
     },
     "drawing.section.plane-misses-body": {
       "kind": "fix-arg",
@@ -3650,8 +3695,11 @@
       "guidance": "reorder annotations, change view, or add offset to separate overlapping callouts"
     },
     "drawing.auto.datum-ambiguous": {
-      "kind": "call-introspection-tool",
-      "tool": "list_faces"
+      "kind": "call-tool",
+      "tool": "inspect",
+      "args": {
+        "of": "faces"
+      }
     },
     "drawing.auto.hole-unclassified": {
       "kind": "rewrite-feature",

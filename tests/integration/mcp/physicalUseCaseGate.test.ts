@@ -321,7 +321,11 @@ describe('generic physical use-case gate', () => {
     }
   });
 
-  it('reports unsupported revolute topology for finite bare hinges', async () => {
+  it('reports undeclared revolute support as an advisory warning with the exact call to add', async () => {
+    // unsupported-axis is a declaration gap, not a defect: whether the hinge
+    // is carried is gated from geometry (joint-axis.unbound,
+    // mechanical.revolute-unsupported). It never blocks, and the hint
+    // spells out the jointSupport call for this mate.
     const result = await reviewCadTool({
       includePoseEnvelope: false,
       includeInterference: false,
@@ -336,20 +340,16 @@ describe('generic physical use-case gate', () => {
       `,
     });
 
-    expect(result.ok).toBe(false);
     expect(result.diagnostics).toEqual(expect.arrayContaining([
       expect.objectContaining({
         code: 'assembly.joint-topology.unsupported-axis',
-        severity: 'error',
+        severity: 'warning',
         mateName: 'yaw',
+        hint: expect.stringContaining("arm.jointSupport('yaw-support', { mate: 'yaw', shaft: 'base', supports: ['base'], output: 'link' })"),
       }),
     ]));
-    if (!result.ok) {
-      expect(result.fitness?.blockingReasons).toEqual(expect.arrayContaining([
-        expect.objectContaining({ code: 'assembly.joint-topology.unsupported-axis' }),
-      ]));
-      expect(result.suggestedRepairPrompt).toMatch(/assembly\.joint-topology\.unsupported-axis/);
-    }
+    expect((result.fitness?.blockingReasons ?? []).map((reason) => reason.code))
+      .not.toContain('assembly.joint-topology.unsupported-axis');
   });
 
   it('reports floating articulated load parts with no stable-root path', async () => {

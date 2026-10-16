@@ -98,7 +98,7 @@ describe('kc.kinematic.checkMountingHoleConsistency', () => {
       .hole('top', { u: 0, v: 0, diameter: 5, depth: 'through' });
     const b = kc
       .box(20, 20, 5)
-      .hole('bottom', { u: 0, v: 0, diameter: 6, depth: 'through' });
+      .hole('bottom', { u: 0, v: 0, diameter: 12, depth: 'through' });
     arm.part('a', a).connector('h', {
       type: 'frame',
       origin: {
