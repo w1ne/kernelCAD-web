@@ -73,6 +73,7 @@ const rp1 = assembly('roboto-01-rp1');
 // no transform is pre-baked into the mesh (that would double-place the chain).
 const paintFor = (name: string) => name.includes('ankle_roll') ? rubber
   : name.includes('hip') || name.includes('shoulder') || name.includes('elbow') || name.includes('ankle_pitch') ? anodized
+  : name === 'waist_yaw_link' ? shellWhite
   : name.includes('waist') ? graphite
   : name.includes('knee') || name.includes('wrist') ? graphite : shellWhite;
 const loadLink = async (name: string) =>
