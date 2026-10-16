@@ -70,5 +70,6 @@ from 23.777406229 mm² to 6.57e-11 mm² during seam repair. Bow-tie and
 1200-point self-intersecting profile cuts still return unchanged, valid target
 solids; the profile and certified no-op guards remain enabled. These are local
 Node repro results, not deployed or hardware acceptance. See the
-[recorded workflow demo](demos/smlib-guarded/video.mp4),
-[capture notes and sources](demos/smlib-guarded/README.md).
+[capture notes and sources](demos/smlib-guarded/README.md); bulky visual and
+machine-readable evidence is kept out of the repo at
+`/Volumes/LabWired/gb/smlib-evidence/docs/demos/smlib-guarded/`.

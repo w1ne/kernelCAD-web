@@ -115,13 +115,17 @@ describe('HeadlessKernel kernel option', () => {
 });
 
 describe('kernel capabilities list', () => {
-  it('hybrid smlib exposes the OCCT fallback feature set', () => {
+  it('SMLib capabilities list only kinds with native attempts', () => {
     const caps = buildKernelCapabilities();
     expect(caps.defaultKernel).toBe('occt');
     expect(caps.kernels.occt.available).toBe(true);
     expect(caps.kernels.occt.features).toEqual([...new OcctLowerer().supports].sort());
     expect(caps.kernels.occt.features.length).toBeGreaterThan(10);
-    expect(caps.kernels.smlib).toEqual({ available: true, target: 'export-smlib', features: caps.kernels.occt.features });
+    expect(caps.kernels.smlib).toEqual({
+      available: true,
+      target: 'export-smlib',
+      features: ['boolean', 'box', 'cylinder', 'extrude', 'fillet', 'importedStep', 'sphere'],
+    });
   });
 
   it('the checked-in generated file is up to date (run `npm run kernel:capabilities`)', () => {
