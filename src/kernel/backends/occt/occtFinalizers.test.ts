@@ -95,7 +95,7 @@ describe('OcctBackend.located', () => {
   });
 });
 
-describe('replicad transform fix', () => {
+describe('replicad leak fixes', () => {
   it('still moves shapes correctly', () => {
     const moved = replicad.makeBaseBox(10, 20, 30).translate(100, 0, 0).rotate(90, [0, 0, 0], [0, 0, 1]);
     try {
@@ -106,6 +106,16 @@ describe('replicad transform fix', () => {
       expect(max[2]).toBeCloseTo(30, 4);
     } finally {
       moved.delete();
+    }
+  });
+  it('still meshes shapes', () => {
+    const cylinder = replicad.makeCylinder(5, 20);
+    try {
+      const mesh = cylinder.mesh({ tolerance: 0.05, angularTolerance: 0.2 });
+      expect(mesh.triangles.length).toBeGreaterThan(0);
+      expect(mesh.vertices.length).toBeGreaterThan(0);
+    } finally {
+      cylinder.delete();
     }
   });
 });

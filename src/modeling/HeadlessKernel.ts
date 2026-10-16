@@ -4,7 +4,7 @@ import * as replicad from 'replicad';
 import opencascade from 'replicad-opencascadejs';
 import { normalizeUserScript } from '../shared/runtime/normalizeUserScript';
 import { installOcctFinalizers } from '../kernel/backends/occt/occtFinalizers';
-import { installReplicadTransformFix } from '../kernel/backends/occt/replicadTransformFix';
+import { installReplicadLeakFixes } from '../kernel/backends/occt/replicadLeakFixes';
 
 let isInitialized = false;
 
@@ -26,7 +26,7 @@ export async function initHeadless() {
     }
 
     installOcctFinalizers(OC as Record<string, unknown>);
-    installReplicadTransformFix();
+    installReplicadLeakFixes();
     replicad.setOC(OC);
     isInitialized = true;
 }
