@@ -160,7 +160,7 @@ export function detectInterferences(
   // translate / rotate mutate-and-destroy the source OCCT handle, so we
   // never touch the originals.
   const uncheckedPairs = listDisplayMeshPairs(scene.parts);
-  const transformed = scene.parts.filter((p) => p.shape instanceof OcctBackend).map((p) => {
+  const transformed: PosedPart[] = scene.parts.filter((p) => p.shape instanceof OcctBackend).map((p) => {
     const clone = (p.shape as OcctBackend).clone().applyTransform(p.worldTransform);
     return {
       name: p.name,
@@ -172,6 +172,34 @@ export function detectInterferences(
     };
   });
 
+  // The posed clones are deep copies of every part (BRepBuilderAPI_Transform
+  // copies the geometry). Free them when the probe is done: a verify sweep
+  // poses the scene once per sampled time, and leaving each pose's copies to
+  // the GC filled the WASM heap on mesh-heavy assemblies (the SO-100 arm
+  // aborted on pose 7 of 14 at 2.5 GB).
+  try {
+    return probeCandidates(transformed, epsilonMm3, ignored, diagnostics, uncheckedPairs);
+  } finally {
+    for (const part of transformed) part.shape.dispose();
+  }
+}
+
+interface PosedPart {
+  name: string;
+  shape: OcctBackend;
+  bbox: { min: [number, number, number]; max: [number, number, number] };
+  source: object;
+  poseKey: string;
+  frameBounds: Map<number, Bounds>;
+}
+
+function probeCandidates(
+  transformed: PosedPart[],
+  epsilonMm3: number,
+  ignored: ReadonlySet<string>,
+  diagnostics: CompilerDiagnostic[],
+  uncheckedPairs: CheckInterferenceResult['uncheckedPairs'],
+): CheckInterferenceResult {
   const pairs: InterferencePair[] = [];
   const candidates = collectInterferenceCandidates(transformed, ignored);
   for (const [i, j] of candidates) {

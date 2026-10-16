@@ -1062,15 +1062,21 @@ export class OcctBackend implements ShapeBackend {
         throw new Error('OcctBackend.intersectionVolume: the common boolean reported a failure.');
       }
       const shape = common.Shape();
-      const props = new oc.GProp_GProps_1();
-      oc.BRepGProp.VolumeProperties_1(shape, props, false, false, false);
-      const volumeMm3 = Math.abs(props.Mass());
-      props.delete();
-      const surface = new oc.GProp_GProps_1();
-      oc.BRepGProp.SurfaceProperties_1(shape, surface, false, false);
-      const areaMm2 = Math.abs(surface.Mass());
-      surface.delete();
-      return { volumeMm3, areaMm2 };
+      try {
+        const props = new oc.GProp_GProps_1();
+        oc.BRepGProp.VolumeProperties_1(shape, props, false, false, false);
+        const volumeMm3 = Math.abs(props.Mass());
+        props.delete();
+        const surface = new oc.GProp_GProps_1();
+        oc.BRepGProp.SurfaceProperties_1(shape, surface, false, false);
+        const areaMm2 = Math.abs(surface.Mass());
+        surface.delete();
+        return { volumeMm3, areaMm2 };
+      } finally {
+        // The handle holds a reference to the common solid; without this the
+        // result of every probe stays in the WASM heap until GC.
+        shape.delete();
+      }
     } finally {
       common.delete(); args.delete(); tools.delete(); progress.delete();
     }

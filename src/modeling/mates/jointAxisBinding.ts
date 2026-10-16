@@ -73,6 +73,9 @@ import { partAtFor, placementFromSceneMotion } from './partFrame';
 import type { MateType } from './mateTypes';
 import type { ValidatorDiagnostic } from './validator';
 
+/** A face of an OCCT part, typed through the backend so this module does not import replicad. */
+type Face = ReturnType<OcctBackend['getReplicadShape']>['faces'][number];
+
 /**
  * Tolerance (mm) for "intersection point lies inside face bounds" and for
  * "line is parallel to face plane." Matches spec §Gate 2's documented
@@ -359,29 +362,25 @@ function axisIntersectsShape(origin: Vec3, direction: Vec3, shape: ShapeBackend)
   // intersection parameter t, then test that the intersection point lies
   // within the face's world-space AABB padded by EPSILON_MM.
   const replicadShape = shape.getReplicadShape();
+  const faces = replicadShape.faces;
+  // The plane hit lies on the line, so it can only land inside a face's
+  // padded AABB when the line crosses that box. Testing the box first skips
+  // the centroid and normal evaluation (surface integration per face) for
+  // every face the line misses; on a 7k-facet STL part that was most of the
+  // build time. The result is the same as testing every face in order.
+  const missed: Face[] = [];
   let allFacesSkippedAsParallel = true;
-  for (const face of replicadShape.faces) {
-    const centerV = face.center;
-    const center: Vec3 = [centerV.x, centerV.y, centerV.z];
-    let normal: Vec3;
-    try {
-      const n = face.normalAt(centerV);
-      normal = [n.x, n.y, n.z];
-    } catch {
-      // Some non-planar face parameterizations can fail to evaluate a
-      // normal at the centroid. Defer to the next face — the AABB
-      // pre-filter already ruled out fully-disjoint lines.
-      continue;
-    }
-    const hit = intersectLineWithPlane(origin, direction, center, normal);
-    if (hit === undefined) {
-      // Line parallel to this face's centroid plane — keep iterating; if
-      // EVERY face is parallel-and-skipped, fall through to the cylindrical
-      // permissive branch below.
-      continue;
-    }
-    allFacesSkippedAsParallel = false;
+  for (const face of faces) {
     const faceBb = face.boundingBox.bounds;
+    if (!lineIntersectsAabb(origin, direction, faceBb[0] as Vec3, faceBb[1] as Vec3, EPSILON_MM)) {
+      missed.push(face);
+      continue;
+    }
+    const plane = facePlane(face);
+    if (plane === undefined) continue;
+    const hit = intersectLineWithPlane(origin, direction, plane.center, plane.normal);
+    if (hit === undefined) continue;
+    allFacesSkippedAsParallel = false;
     if (pointInAabb(hit, faceBb[0] as Vec3, faceBb[1] as Vec3, EPSILON_MM)) {
       return true;
     }
@@ -395,10 +394,30 @@ function axisIntersectsShape(origin: Vec3, direction: Vec3, shape: ShapeBackend)
   // configuration, but the AABB-pass tells us the line passes through the
   // part's swept volume. Accept rather than emit a false negative; matches
   // the spec's "false-positive tolerance on non-planar faces" decision.
-  if (allFacesSkippedAsParallel && replicadShape.faces.length > 0) {
-    return true;
+  // The faces whose box the line misses cannot hit, but they still decide
+  // whether every face was parallel.
+  if (!allFacesSkippedAsParallel || faces.length === 0) return false;
+  for (const face of missed) {
+    const plane = facePlane(face);
+    if (plane === undefined) continue;
+    if (intersectLineWithPlane(origin, direction, plane.center, plane.normal) !== undefined) return false;
   }
-  return false;
+  return true;
+}
+
+/**
+ * A face's centroid and the surface normal there, or undefined when the
+ * normal cannot be evaluated (some non-planar face parameterizations fail at
+ * the centroid; the caller defers to the next face).
+ */
+function facePlane(face: Face): { center: Vec3; normal: Vec3 } | undefined {
+  const centerV = face.center;
+  try {
+    const n = face.normalAt(centerV);
+    return { center: [centerV.x, centerV.y, centerV.z], normal: [n.x, n.y, n.z] };
+  } catch {
+    return undefined;
+  }
 }
 
 /**

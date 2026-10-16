@@ -64,6 +64,27 @@ export interface SurfaceSewResult {
  *   itself fails (OCCT exception). Callers (the dispatch arm) wrap and map
  *   into `feature.kernel-failed`.
  */
+/**
+ * Promote a closed shell to a solid, or null when MakeSolid fails or the
+ * result is not `BRepCheck_Analyzer`-valid (no inverted faces, consistent
+ * orientation). GeomControls=false: topology-only is enough for the closure
+ * question and far cheaper.
+ */
+export function promoteClosedShell(shell: unknown): unknown | null {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const oc = getOC() as any;
+  let solid: unknown | null = null;
+  const makeSolid = new oc.BRepBuilderAPI_MakeSolid_3(shell);
+  if (makeSolid.IsDone()) {
+    const candidate = makeSolid.Solid();
+    const analyzer = new oc.BRepCheck_Analyzer(candidate, false, false);
+    if (analyzer.IsValid_2()) solid = candidate;
+    analyzer.delete?.();
+  }
+  makeSolid.delete?.();
+  return solid;
+}
+
 export function lowerSurfaceSew(
   faces: readonly replicad.Face[],
   opts: LowerSurfaceSewOpts,
@@ -109,21 +130,8 @@ export function lowerSurfaceSew(
   // Only a single closed shell can become a solid. If the sewing produced a
   // compound / single face / open multi-shell, skip the solid path.
   if (shapeTypeVal === 3 && noFreeEdges) {
-    const shell = oc.TopoDS.Shell_1(sewedShape);
-    const makeSolid = new oc.BRepBuilderAPI_MakeSolid_3(shell);
-    if (makeSolid.IsDone()) {
-      const candidate = makeSolid.Solid();
-      // Confirm the promoted solid is geometrically valid (no inverted faces,
-      // consistent orientation). GeomControls=false (topology-only is enough
-      // for the closure question and far cheaper), parallel=false.
-      const analyzer = new oc.BRepCheck_Analyzer(candidate, false, false);
-      if (analyzer.IsValid_2()) {
-        isSolid = true;
-        solid = candidate;
-      }
-      analyzer.delete?.();
-    }
-    makeSolid.delete?.();
+    solid = promoteClosedShell(oc.TopoDS.Shell_1(sewedShape));
+    isSolid = solid !== null;
   }
 
   sewing.delete?.();
