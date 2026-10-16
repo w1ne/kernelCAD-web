@@ -1,0 +1,7 @@
+file 'gear-slide.png'
+duration 5
+file 'fillet-slide.png'
+duration 5
+file 'fallback-slide.png'
+duration 5
+file 'fallback-slide.png'

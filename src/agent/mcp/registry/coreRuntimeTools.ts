@@ -55,8 +55,7 @@ const evaluateScriptToolEntry: ToolRegistryEntry = {
           type: 'string',
           enum: ['occt', 'smlib'],
           description:
-            "Solid-modeling kernel. Default 'occt' (OpenCascade), the only kernel available today; " +
-            "'smlib' is reserved and currently returns ok:false with recompute.kernel.unavailable.",
+            "Solid-modeling kernel. Default 'occt' (OpenCascade); opt-in 'smlib' uses guarded candidates with explicit OCCT fallback diagnostics.",
         },
         skipMechanismCheck: {
           type: 'boolean',

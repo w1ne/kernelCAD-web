@@ -28,7 +28,9 @@ await esbuild.build({
   outfile: 'dist/cli/index.js',
   // pdfjs-dist loads its worker module relative to its own file at runtime,
   // so it must stay a real package import rather than being inlined.
-  external: ['commander', 'typescript', 'replicad', 'playwright', 'playwright-core', 'chromium-bidi', 'sharp', 'pdfjs-dist'],
+  // SMLib initializes WASM at module import and resolves it relative to its
+  // loader. Preserve the lazy package import and its installed asset layout.
+  external: ['@classcad/smlibwasm', 'commander', 'typescript', 'replicad', 'playwright', 'playwright-core', 'chromium-bidi', 'sharp', 'pdfjs-dist'],
   alias: {
     'verb-nurbs': verbNurbsPath,
   },

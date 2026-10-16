@@ -23,7 +23,7 @@
             "occt",
             "smlib"
           ],
-          "description": "Solid-modeling kernel. Default 'occt' (OpenCascade), the only kernel available today; 'smlib' is reserved and currently returns ok:false with recompute.kernel.unavailable."
+          "description": "Solid-modeling kernel. Default 'occt' (OpenCascade); opt-in 'smlib' uses guarded candidates with explicit OCCT fallback diagnostics."
         },
         "skipMechanismCheck": {
           "type": "boolean",
@@ -8813,7 +8813,7 @@
             "occt",
             "smlib"
           ],
-          "description": "Solid-modeling kernel forwarded to evaluate_script. Default 'occt'; 'smlib' is reserved and currently fails with recompute.kernel.unavailable."
+          "description": "Solid-modeling kernel forwarded to evaluate_script. Default 'occt'; opt-in 'smlib' uses guarded candidates with explicit OCCT fallback diagnostics."
         },
         "dryRun": {
           "type": "boolean",
