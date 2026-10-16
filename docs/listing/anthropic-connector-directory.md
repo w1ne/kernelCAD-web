@@ -12,7 +12,7 @@ The plugin bundle (`plugins/kernelcad`) is a separate submission. Submit the rem
 - [x] Public docs: https://kernelcad.com/docs/
 - [ ] Every tool tested in MCP Inspector and as a custom connector in Claude (the *Test & launch* step asks you to confirm)
 - [ ] Test credentials for a fully set-up account
-- [ ] Square PNG icon (rasterize `plugins/kernelcad/assets/logo.svg` for this form). Support contact: the GitHub issues page.
+- [x] Square PNG icon: `plugins/kernelcad/assets/logo.png` (512×512). Support contact: the GitHub issues page.
 - [ ] Allowed link URIs: kernelcad.com, plus the quote-service origins used by `fab_pack` (jlc3dp.com, jlccnc.com, pcbway.com, xometry.com, app.sendcutsend.com, craftcloud3d.com), if the widget opens links
 
 ## Listing copy
@@ -22,7 +22,7 @@ The plugin bundle (`plugins/kernelcad`) is a separate submission. Submit the rem
 **Tagline:** CAD in Claude: STEP, STL and drawings, no install
 
 **Description:**
-> Design real, editable CAD parts by describing them. kernelCAD builds parametric models on an OpenCASCADE B-rep kernel and returns rendered previews in the conversation, with the model open in the Studio 3D viewer. It checks assemblies for interference and exported meshes for watertightness, enforces any manufacturing rules a script declares, and reviews printability (FDM) and machinability (CNC) when you ask. Export STEP, STL, 3MF, GLB, DXF and dimensioned PDF drawings, or bring in your own STEP/STL file to build on. No install and no account needed to try. Sign in to save projects and share them in Studio.
+> Design real, editable CAD parts by describing them. kernelCAD builds parametric models on an OpenCASCADE B-rep kernel and shows them in 3D in the conversation. It checks assemblies for interference and exported meshes for watertightness, enforces any manufacturing rules a script declares, and reviews printability (FDM) and machinability (CNC) when you ask. Export STEP, STL, 3MF, GLB, DXF and dimensioned PDF drawings, or bring in your own STEP/STL file to build on. No install and no account needed to try. Sign in to save projects and share them in Studio.
 
 **Example prompts:**
 - "Design a wall bracket for a 25 mm pipe, 4 mm thick, two M5 screw holes."

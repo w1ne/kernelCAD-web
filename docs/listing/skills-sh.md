@@ -8,7 +8,7 @@ npx skills add w1ne/kernelCAD-web
 ```
 
 **Group description** (proposed for `skills.sh.json` → `groupings[0].description`):
-> Design, check and export real CAD parts: STEP/STL/drawings, rendered previews, automatic checks. Works with the hosted kernelCAD MCP, no install.
+> Design, check and export real CAD parts: STEP/STL/drawings, in-chat 3D, automatic checks. Works with the hosted kernelCAD MCP, no install.
 
 **Per-skill one-liners:**
 | Skill | One-liner |
