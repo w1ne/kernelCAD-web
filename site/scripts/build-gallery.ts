@@ -385,6 +385,7 @@ export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
       label: `entry ${entry.slug}`,
       maxBytes: GLB_SIZE_HARD_CAP,
       meshopt: entry.meshopt,
+      simplifyError: entry.simplifyError,
       // Gallery entries range from single-body models to 95-body assemblies, so a
       // fixed material floor would reject valid simple models. The invariant that
       // matters is that optimization does not FLATTEN whatever colours exist.
@@ -434,8 +435,8 @@ export async function buildGallery(opts: BuildGalleryOptions): Promise<void> {
 
     writeFileSync(dstPrompt, entry.prompt + '\n');
 
-    const { video, modelLocal, codeLocal, mechanismReview, previewMesh, compactBridge, ...rest } = entry;
-    void video; void modelLocal; void codeLocal; void mechanismReview; void previewMesh; void compactBridge;
+    const { video, modelLocal, codeLocal, mechanismReview, previewMesh, compactBridge, simplifyError, ...rest } = entry;
+    void video; void modelLocal; void codeLocal; void mechanismReview; void previewMesh; void compactBridge; void simplifyError;
     published.push({
       ...rest,
       videoUrl: `/gallery/${entry.slug}/video.mp4`,

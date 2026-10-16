@@ -79,6 +79,22 @@ function addSingleMesh(
 
 function addFeatureMesh(scene: ThreeScene, fm: FeatureMesh, named = false): void {
   if (fm.virtual) return;
+  // Display-only mesh bodies (lib.meshFromSTL) arrive as an indexed buffer in
+  // `mesh`, with no face geometry, and stay in their part's local frame: apply
+  // the part world transform like the Studio viewer does. Native (faces-based)
+  // parts are emitted already posed — same as the published gallery GLBs — so
+  // they are added as-is.
+  if (fm.mesh) {
+    addSingleMesh(scene, fm.mesh.positions, fm.mesh.normals, fm.mesh.indices, fm.color, fm.material);
+    const node = scene.children[scene.children.length - 1];
+    if (fm.transform !== undefined) {
+      node.matrixAutoUpdate = false;
+      node.matrix.fromArray(Array.from(fm.transform));
+      node.matrixWorldNeedsUpdate = true;
+    }
+    if (named && fm.displayName) node.name = fm.displayName;
+    return;
+  }
   const totalVerts = fm.faces.reduce((s, f) => s + f.vertices.length, 0);
   if (totalVerts === 0) return;
   const totalIndices = fm.faces.reduce((s, f) => s + f.indices.length, 0);

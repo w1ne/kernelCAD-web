@@ -26,6 +26,13 @@ const galleryEntryBaseSchema = z.object({
   }, 'modelOrientation must contain exactly three finite deg angles').optional(),
   previewMesh: z.object({tolerance: z.number().finite().positive(), angularTolerance: z.number().finite().positive()}).strict().optional(),
   meshopt: z.boolean().optional(),
+  /**
+   * gltf-transform simplification error for the web GLB, as a fraction of mesh
+   * extent. Entries whose source geometry is a dense display mesh (STL import)
+   * need a larger error than the default to fit the gallery size budget; native
+   * (B-rep) entries are coarsened at the source via `previewMesh` instead.
+   */
+  simplifyError: z.string().regex(/^\d*\.?\d+$/, 'simplifyError must be a positive decimal').optional(),
   compactBridge: z.boolean().optional(),
   modelLocal: z.string().min(1).nullable().default(null),
   code: z.string().url(),

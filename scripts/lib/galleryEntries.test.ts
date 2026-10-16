@@ -77,11 +77,13 @@ describe('parseGalleryEntries', () => {
   });
 
   it('retains only explicit validated asset options', () => {
-    const options={previewMesh:{tolerance:2.5,angularTolerance:.85},meshopt:true,compactBridge:true};
+    const options={previewMesh:{tolerance:2.5,angularTolerance:.85},meshopt:true,compactBridge:true,simplifyError:'0.005'};
     expect(parseGalleryEntries({entries:[{...validEntry,...options}]}).entries[0]).toMatchObject(options);
     expect(parseGalleryEntries({entries:[validEntry]}).entries[0]).not.toHaveProperty('meshopt');
     for(const previewMesh of [{tolerance:0,angularTolerance:.8},{tolerance:1,angularTolerance:Infinity}])
       expect(()=>parseGalleryEntries({entries:[{...validEntry,previewMesh}]})).toThrow();
+    for(const simplifyError of ['','-1','0.5x','big'])
+      expect(()=>parseGalleryEntries({entries:[{...validEntry,simplifyError}]})).toThrow();
   });
 
   it('rejects entries missing required slug', () => {
