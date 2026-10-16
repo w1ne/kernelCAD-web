@@ -5,7 +5,7 @@
     "url": "https://kernelcad.com"
   },
   "metadata": {
-    "description": "Design and review CAD models",
+    "description": "CAD parts, STEP and drawings",
     "version": "0.17.0"
   },
   "plugins": [

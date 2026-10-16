@@ -7,6 +7,40 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+/** ChatGPT / Codex plugin metadata under extensions.com.openai. The review and
+ *  publication blocks are emitted only when agent-plugin.config.json carries them. */
+export function openaiExtensions(cfg) {
+  const c = cfg.chatgpt ?? {};
+  const out = {
+    interface: {
+      displayName: cfg.displayName,
+      shortDescription: cfg.shortDescription,
+      longDescription: cfg.description,
+      developerName: cfg.author.name,
+      category: cfg.codexCategory,
+      capabilities: ['Read', 'Write'],
+      websiteURL: cfg.homepage,
+      supportURL: cfg.supportUrl,
+      defaultPrompt: cfg.defaultPrompts,
+      brandColor: cfg.brandColor,
+      ...(c.privacyPolicyUrl ? { privacyPolicyURL: c.privacyPolicyUrl } : {}),
+      ...(c.termsOfServiceUrl ? { termsOfServiceURL: c.termsOfServiceUrl } : {}),
+      ...(c.logo ? { logo: c.logo } : {}),
+      ...(c.composerIcon ? { composerIcon: c.composerIcon } : {}),
+    },
+  };
+  if (c.testCases) {
+    out.review = {
+      test_cases: [...c.testCases.positive, ...c.testCases.negative],
+      // Emitted only once the commerce decision is made (see chatgpt.commerceDecision).
+      ...(typeof c.commerce === 'boolean' ? { commerce: c.commerce } : {}),
+      ...(c.commerceDescription ? { commerce_description: c.commerceDescription } : {}),
+    };
+  }
+  if (c.releaseNotes) out.publication = { release_notes: c.releaseNotes };
+  return out;
+}
+
 export function buildManifests(cfg, version) {
   const m = cfg.mcp;
   const common = {
@@ -50,20 +84,7 @@ export function buildManifests(cfg, version) {
     $schema: 'https://agent-plugins.org/schemas/1.0.0/plugin.schema.json',
     ...common,
     extensions: {
-      'com.openai': {
-        interface: {
-          displayName: cfg.displayName,
-          shortDescription: cfg.shortDescription,
-          longDescription: cfg.description,
-          developerName: cfg.author.name,
-          category: cfg.codexCategory,
-          capabilities: ['Read', 'Write'],
-          websiteURL: cfg.homepage,
-          supportURL: cfg.supportUrl,
-          defaultPrompt: cfg.defaultPrompts,
-          brandColor: cfg.brandColor,
-        },
-      },
+      'com.openai': openaiExtensions(cfg),
     },
   };
   files[`${cfg.pluginDir}/mcp.json`] = {
