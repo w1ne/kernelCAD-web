@@ -6,7 +6,7 @@ Copy and metadata for listing kernelCAD in each directory. One file per director
 |---|---|---|---|
 | ChatGPT app / plugin directory | [chatgpt-directory.md](chatgpt-directory.md) | Plugin ZIP upload (Plugins → Upload new or existing plugin), after org verification | not listed |
 | Anthropic Connectors Directory | [anthropic-connector-directory.md](anthropic-connector-directory.md) | Developer portal: claude.ai/directory/manage → MCP connector | not listed |
-| Official MCP Registry | [mcp-registry.md](mcp-registry.md) + [server.json](server.json) | `mcp-publisher publish` | `server.json` at the repo root is stale (0.13.0) |
+| Official MCP Registry | [mcp-registry.md](mcp-registry.md) + [server.json](server.json) | `mcp-publisher publish` | `server.json` is 0.17.0 and remote only; the npm entry returns with 0.17.0 |
 | Smithery | [smithery.md](smithery.md) | smithery.ai/new with the server URL | not listed |
 | mcp.so | [mcp-so.md](mcp-so.md) | mcp.so submit form | not listed |
 | skills.sh | [skills-sh.md](skills-sh.md) | Public GitHub repo + `skills.sh.json` | grouping file exists |
@@ -19,13 +19,13 @@ Already listed: Glama (https://glama.ai/mcp/connectors/com.kernelcad/kernelcad) 
 
 - **No account needed to try.** The hosted server takes anonymous calls. Signing in (OAuth) only adds saved projects and Studio share links.
 - **Real CAD files.** Export STEP, STL, 3MF, GLB, OBJ, USD and DXF, plus engineering drawings as PDF or SVG with dimensions, hole callouts and a title block. You can also import your own STEP or STL.
-- **In-chat 3D.** The model renders inline in the chat, so you can review and mark it up without leaving the conversation.
+- **Rendered previews and a 3D view.** Each build returns rendered previews in the chat. `open_in_studio` opens the model in the Studio 3D viewer, where you can review and mark it up.
 - **Checks as you go.** Assemblies get interference and collision gates. Exported meshes are checked for watertightness. Manufacturing rules that a script declares with `dfmSpec` are enforced on every build. An on-demand DFM review covers FDM printing and CNC (overhangs, wall thickness, hole size, bridges, bed fit, undercuts, corner radius vs tool), and FEA is available too. Say that these checks flag likely problems. Never say that a build passing proves the part can be manufactured.
 - **Editable source.** Each model is a plain `.kcad.ts` script on an OpenCASCADE B-rep kernel. It's parametric and diffable, not a frozen mesh.
 
 ### Taglines
 - Short (≤ 60): `CAD in ChatGPT and Claude: STEP, STL, drawings, no install`
-- Registry (≤ 100, counted): `CAD in ChatGPT and Claude: editable parts, STEP/STL/drawings, in-chat 3D, automatic checks.` (91 chars)
+- Registry (≤ 100, counted): `CAD in ChatGPT and Claude: editable parts, STEP/STL/drawings, rendered previews, automatic checks.` (98 chars)
 - One-liner: *Describe a part and get an editable CAD model, a STEP file and a drawing in the same chat. kernelCAD checks the design for you as it builds.*
 
 ### Shared facts
@@ -49,9 +49,9 @@ Already listed: Glama (https://glama.ai/mcp/connectors/com.kernelcad/kernelcad) 
 - Don't write "every build is verified" or "guaranteed printable". The DFM gate only runs on rules a script declares, and `dfm_review` is a heuristic review.
 - Quote links send people to the vendor's own upload page. kernelCAD doesn't order or upload anything, and the copy must not say that it does.
 
-## Blockers to fix before submitting (code, not part of this docs PR)
-- **Tool titles.** Anthropic requires every tool to have a `title` as well as `readOnlyHint` / `destructiveHint`. `McpToolDefinition` in this repo has annotations but no `title`. Check whether kernelCAD-server adds titles; if it doesn't, add them.
-- **Root `server.json`** still says version 0.13.0 with npm 0.12.0, while package.json is at 0.17.0. Replace it with [server.json](server.json) at release time.
-- **ChatGPT plugin manifest.** `plugins/kernelcad/plugin.json` is missing the privacy and terms URLs, the icons, the review test cases and the demo recording URL. See [chatgpt-directory.md](chatgpt-directory.md).
-- **ChatGPT CSP.** Submission needs a content security policy for the widget's fetch domains. Confirm it's set on the hosted widget resource.
-- **Test credentials.** Both directories ask for a fully set-up demo account. Prepare one, even though anonymous use works.
+## Blockers before submitting (status as of 2026-10-16)
+- **Tool titles.** Done on the live server: all 73 tools carry a `title`, `annotations` and an output schema (checked 2026-10-16). This repo's contract fixture has no titles, because the hosted layer supplies them. Keep the two in step if the title source moves.
+- **Root `server.json`.** Fixed: 0.17.0, remote only. The npm package entry returns when 0.17.0 is published.
+- **ChatGPT plugin manifest.** Generated from `agent-plugin.config.json`: privacy and terms URLs, logo, 5 positive and 3 negative test cases, commerce, release notes. Still missing: four screenshots and a demo recording URL. See [chatgpt-directory.md](chatgpt-directory.md).
+- **ChatGPT CSP.** Still open. Confirm the content security policy for the widget's fetch domains on the hosted resource.
+- **Test credentials.** Still open. Both directories ask for a fully set-up demo account; prepare one, even though anonymous use works.
