@@ -27,6 +27,7 @@ import { isSceneBackend } from '../src/kernel/backends/sceneBackend';
 import { inspectStepBuffer, type StepInspectReport } from '../src/kernel/import/inspectStep';
 import type { CompilerDiagnostic } from '../src/shared/diagnostics/diagnostic';
 import type { DfmCheckReport } from '../src/modeling/runtime/dfm/runDfmChecks';
+import type { BuiltModel } from '../src/composition/buildModel';
 
 export type Vec3 = [number, number, number];
 
@@ -48,6 +49,8 @@ export interface UsecaseBuild {
   /** One entry per assembly part, or a single `body` for a plain shape. */
   parts: UsecasePart[];
   dfm?: DfmCheckReport;
+  /** The built model (records, return value) for checks that read intent. */
+  model?: BuiltModel;
 }
 
 export const near = (a: number, b: number, tol = TOL_MM): boolean => Math.abs(a - b) <= tol;
@@ -83,6 +86,7 @@ export async function buildUsecase(scriptPath: string, code?: string): Promise<U
     diagnostics: evaluation.diagnostics,
     parts,
     dfm: dfmReport,
+    ...(model !== undefined ? { model } : {}),
   };
 }
 
@@ -168,6 +172,12 @@ export interface HoleSpec {
   kind?: 'through' | 'blind';
   /** Cylindrical bore length (mm). */
   depth?: number;
+  /**
+   * Diameter tolerance for this hole (mm); defaults to the call's `tol`.
+   * Fits need tighter than the 0.1 mm position tolerance: a Ø4.4 hole
+   * passes a Ø4.5 spec at ±0.1, and a press seat is 0.1 over the bearing.
+   */
+  diameterTol?: number;
 }
 
 function unit(v: Vec3): Vec3 {
@@ -187,7 +197,7 @@ function holeMatches(h: CylindricalHole, spec: HoleSpec, tol: number): boolean {
   const d = unit(h.axisDirection);
   const parallel = Math.abs(a[0] * d[0] + a[1] * d[1] + a[2] * d[2]) > 1 - 1e-6;
   return parallel
-    && near(h.diameterMm, spec.diameter, tol)
+    && near(h.diameterMm, spec.diameter, spec.diameterTol ?? tol)
     && distToAxis(spec.at, h.axisOrigin, d) <= tol
     && (spec.kind === undefined || h.kind === spec.kind)
     && (spec.depth === undefined || near(h.depthMm, spec.depth, tol));

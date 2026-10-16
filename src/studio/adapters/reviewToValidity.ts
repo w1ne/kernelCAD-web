@@ -91,7 +91,10 @@ export function reviewToValidity(
 ): StudioValidity | null {
     if (review == null) return null;
 
-    const diagnostics: ValidatorDiagnostic[] = (review.diagnostics ?? []).map(diagnosticFromReview);
+    const diagnostics: ValidatorDiagnostic[] = [
+        ...(review.diagnostics ?? []).map(diagnosticFromReview),
+        ...mechanismOnlyDiagnostics(review),
+    ];
     const validated = reviewWasValidated(review);
 
     return {
@@ -116,6 +119,29 @@ function deriveStatus(review: ScriptReviewSummary): ValidatorStatus {
     if (repairMode && repairMode !== 'none') return 'error';
     const hasErrors = (review.diagnostics ?? []).some((d) => d.severity === 'error');
     return hasErrors ? 'error' : 'warning';
+}
+
+/**
+ * Rows for a broken verdict whose failures are not in `diagnostics`.
+ *
+ * A revision saved by hosted `open_in_studio` stores only
+ * `{ ok, mechanism, mechanismSummary }`. Without these rows the drawer
+ * said "error" over an empty list and the status bar said "No diagnostics".
+ */
+function mechanismOnlyDiagnostics(review: ScriptReviewSummary): ValidatorDiagnostic[] {
+    if (review.mechanism !== 'broken') return [];
+    const listed = new Set((review.diagnostics ?? []).map((d) => `${d.code}|${d.message}`));
+    const failures = review.mechanismSummary?.failures ?? [];
+    return failures
+        .filter((f) => !listed.has(`${f.code}|${f.reason}`))
+        .map((f) => ({
+            code: f.code as ValidatorDiagnosticCode,
+            severity: 'error' as const,
+            message: f.reason,
+            hint: '',
+            ...(f.joint ? { mateName: f.joint } : {}),
+            ...(f.part ? { partName: f.part } : {}),
+        }));
 }
 
 function diagnosticFromReview(d: NonNullable<ScriptReviewSummary['diagnostics']>[number]): ValidatorDiagnostic {

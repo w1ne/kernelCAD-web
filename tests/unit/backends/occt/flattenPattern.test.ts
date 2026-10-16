@@ -4,6 +4,7 @@ import { runScript } from '../../../../src/modeling/runtime/runScript';
 import { RecomputeEngine } from '../../../../src/modeling/compute/recomputeEngine';
 import { OcctLowerer } from '../../../../src/modeling/backends/occt/occtLowerer';
 import { flattenPattern } from '../../../../src/kernel/backends/occt/flattenPattern';
+import type { OcctBackend } from '../../../../src/kernel/backends/occt/occtBackend';
 
 describe('flattenPattern — single-bend roundtrip', () => {
   beforeAll(async () => { await initOcct(); });
@@ -50,7 +51,7 @@ describe('flattenPattern — single-bend roundtrip', () => {
     expect(region.bendLines.length).toBe(2);
   });
 
-  it('three-bend chain throws feature.flattenPattern.multi-bend-unsupported', async () => {
+  it('three-bend chain flattens: every bend line in flat-blank coordinates', async () => {
     const { records } = await runScript({
       code: `
         const s = path().moveTo(0, 0).lineTo(150, 0).lineTo(150, 60).lineTo(0, 60).close();
@@ -64,12 +65,81 @@ describe('flattenPattern — single-bend roundtrip', () => {
     });
     const engine = new RecomputeEngine(new OcctLowerer());
     await engine.run(records);
-    expect(() => flattenPattern(records))
-      .toThrow();
-    try {
-      flattenPattern(records);
-    } catch (e) {
-      expect((e as { code?: string }).code).toBe('feature.flattenPattern.multi-bend-unsupported');
-    }
+    const region = flattenPattern(records);
+    expect(region.bendLines.map((l) => l.start[0])).toEqual([40, 80, 120]);
+    const xs = region.outer.map((p) => p[0]);
+    expect(Math.max(...xs) - Math.min(...xs)).toBeCloseTo(150, 6);
+  });
+
+  it('a C-channel with lips (3 bends, lip on a folded flange) flattens to the 120 x 40 blank', async () => {
+    const { records } = await runScript({
+      code: `
+        const s = path().moveTo(0, 0).lineTo(120, 0).lineTo(120, 40).lineTo(0, 40).close();
+        return sheetMetal(s, { thickness: 1.5, kFactor: 0.4 })
+          .bend({ atX: 20 }, 90, 2).bend({ atX: 100 }, 90, 2).bend({ atX: 10 }, 90, 2);
+      `,
+      fileName: 'test.kcad.ts',
+    });
+    await new RecomputeEngine(new OcctLowerer()).run(records);
+    const region = flattenPattern(records);
+    expect(region.bendLines.map((l) => l.start[0])).toEqual([20, 100, 10]);
+    const xs = region.outer.map((p) => p[0]);
+    const ys = region.outer.map((p) => p[1]);
+    expect([Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)]).toEqual([120, 40]);
+  });
+
+  it('a chain whose fold failed has no flat pattern', async () => {
+    const { records } = await runScript({
+      code: `
+        const s = path().moveTo(0, 0).lineTo(100, 0).lineTo(100, 40).lineTo(0, 40).close();
+        return sheetMetal(s, { thickness: 1.5, kFactor: 0.4 })
+          .bend({ atX: 30 }, 90, 2).bend({ atX: 70 }, 90, 2).bend({ atX: 22 }, 90, 2).bend({ atX: 78 }, 90, 2);
+      `,
+      fileName: 'test.kcad.ts',
+    });
+    await new RecomputeEngine(new OcctLowerer()).run(records);
+    expect(() => flattenPattern(records)).toThrow(/bendRecord/);
+  });
+
+  it('round-trips a folded U-channel: flat length = flange lengths + bend allowances', async () => {
+    const { records } = await runScript({
+      code: `
+        const s = path().moveTo(0, 0).lineTo(100, 0).lineTo(100, 60).lineTo(0, 60).close();
+        return sheetMetal(s, { thickness: 2, kFactor: 0.4 }).bend({ atX: 25 }, 90, 2).bend({ atX: 75 }, 90, 2);
+      `,
+      fileName: 'test.kcad.ts',
+    });
+    const r = await new RecomputeEngine(new OcctLowerer()).run(records);
+    const folded = r.shapes.get(records[records.length - 1].id) as OcctBackend;
+    const bb = folded.boundingBox();
+    const t = 2, radius = 2;
+    // Flange lengths measured on the FOLDED solid: each flat run is the outer
+    // extent minus the outer bend corner(s) (inner radius + thickness).
+    const web = (bb.max[0] - bb.min[0]) - 2 * (radius + t);
+    const flange = (bb.max[2] - bb.min[2]) - (radius + t);
+    const ba = (Math.PI / 2) * (radius + 0.4 * t);
+    const region = flattenPattern(records);
+    const xs = region.outer.map(p => p[0]);
+    const flatLength = Math.max(...xs) - Math.min(...xs);
+    expect(web + 2 * flange + 2 * ba).toBeCloseTo(flatLength, 3);
+    expect(flatLength).toBeCloseTo(100, 6);
+    expect(region.bendLines.map(l => l.start[0])).toEqual([25, 75]);
+    expect(region.bendLines.every(l => l.end[0] === l.start[0])).toBe(true);
+  });
+
+  it('flattens a blank that was drilled before bending (lineage through hole records)', async () => {
+    const { records } = await runScript({
+      code: `
+        const s = path().moveTo(0, 0).lineTo(100, 0).lineTo(100, 60).lineTo(0, 60).close();
+        return sheetMetal(s, { thickness: 2, kFactor: 0.38 })
+          .hole({ byNormal: 'Z' }, { u: 30, v: 0, diameter: 6, depth: 'through' })
+          .bend({ atX: 50 }, 90, 3);
+      `,
+      fileName: 'test.kcad.ts',
+    });
+    await new RecomputeEngine(new OcctLowerer()).run(records);
+    const region = flattenPattern(records);
+    expect(region.bendLines).toHaveLength(1);
+    expect(region.bendLines[0].start[0]).toBe(50);
   });
 });

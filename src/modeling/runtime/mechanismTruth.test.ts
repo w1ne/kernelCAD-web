@@ -716,18 +716,14 @@ describe('mechanism truth — pose-sweep grounded loop (P0)', () => {
   // joints, transmissions or solvedModel call is independent bodies.
   // ───────────────────────────────────────────────────────────────────
 
-  it('a plain base + lid assembly with no mates is NOT broken (info note only)', async () => {
+  it('a plain base + lid assembly with no mates is NOT broken and gets no orphan-part', async () => {
     const { arm, kcad } = makeArm('enclosure');
     arm.part('base', kcad.box(60, 40, 20));
     arm.part('lid', kcad.box(60, 40, 3).translate(80, 0, 0));
     arm.model();
 
     const result = await checkMechanismTruth(arm);
-    const orphans = result.failures.filter((f) => f.code === 'mechanism.orphan-part');
-    expect(orphans.filter((f) => f.severity === 'error')).toEqual([]);
-    expect(orphans).toHaveLength(1);
-    expect(orphans[0].severity).toBe('info');
-    expect(orphans[0].message).toContain('independent bodies');
+    expect(result.failures.filter((f) => f.code === 'mechanism.orphan-part')).toEqual([]);
     expect(result.mechanism).toBe('real');
   }, 90000);
 
@@ -750,16 +746,17 @@ describe('mechanism truth — pose-sweep grounded loop (P0)', () => {
     expect(result.mechanism).toBe('broken');
   }, 90000);
 
-  it('a solvedModel call marks a mate-less multi-part assembly as a mechanism (orphans error)', async () => {
+  it('a solvedModel call alone does not make a mate-less assembly a mechanism (no orphan-part)', async () => {
+    // FIX-05: a print layout returned via solvedModel({}) has zero mates and
+    // zero joints — independent bodies, nothing claims they are linked.
     const { arm, kcad } = makeArm('declared-mechanism');
     arm.part('base', kcad.box(60, 40, 10));
     arm.part('arm', kcad.box(50, 10, 8).translate(0, 100, 0));
     await arm.solvedModel({});
 
-    const orphans = (await checkMechanismTruth(arm)).failures
-      .filter((f) => f.code === 'mechanism.orphan-part');
-    expect(orphans).toHaveLength(1);
-    expect(orphans[0].severity).toBe('error');
+    const result = await checkMechanismTruth(arm);
+    expect(result.failures.filter((f) => f.code === 'mechanism.orphan-part')).toEqual([]);
+    expect(result.mechanism).toBe('real');
   }, 90000);
 
   it('integration: RecomputeEngine.run plumbs the mechanism field via the mechanismCheck callback', async () => {

@@ -25,7 +25,33 @@ import type { FeaStudyMetadata } from '../../shared/intent/feaStudyRecord';
 import type { OcctBackend } from '../backends/occt/occtBackend';
 import { feaElementBudget, runFeaStudy, STRESS_ERROR_WARN_PERCENT, type RunFeaOptions, type RunFeaResult } from './runFea';
 import { detectFeaToolchain } from './toolchain';
+import { runInProcessFeaStudy } from './inProcess/runInProcessFea';
 import type { FeaRefinement, FeaRefinementPass, FeaRefinementStop, FeaSummary } from './types';
+
+export type FeaSolverChoice = 'auto' | 'calculix' | 'in-process';
+
+/** The in-process voxel solver runs when asked for, or under 'auto' when the
+ *  CalculiX + gmsh toolchain is absent. */
+export function shouldSolveInProcess(choice: FeaSolverChoice | undefined, toolchainOk: boolean): boolean {
+  return choice === 'in-process' || ((choice ?? 'auto') === 'auto' && !toolchainOk);
+}
+
+function solveInProcess(
+  shape: OcctBackend,
+  declared: FeaStudyMetadata,
+  owner: string,
+  records: readonly FeatureRecord[] | undefined,
+  opts: RefineFeaOptions,
+): Promise<RunFeaResult> {
+  const timeoutMs = opts.inProcessSolveTimeoutMs ?? opts.solveTimeoutMs;
+  return runInProcessFeaStudy(shape, declared, owner, records, {
+    outDir: opts.outDir,
+    ...(opts.paramTable !== undefined ? { paramTable: opts.paramTable } : {}),
+    ...(timeoutMs !== undefined ? { solveTimeoutMs: timeoutMs } : {}),
+    ...(opts.inProcessOnTimeout !== undefined ? { onTimeout: opts.inProcessOnTimeout } : {}),
+    ...(opts.inProcessTargetElements !== undefined ? { targetElements: opts.inProcessTargetElements } : {}),
+  });
+}
 
 /** Element size of the refinement pass relative to the first. */
 export const REFINE_RATIO = 0.75;
@@ -33,8 +59,19 @@ export const REFINE_RATIO = 0.75;
 export interface RefineFeaOptions extends RunFeaOptions {
   /** false: one solve at the study's meshSize, no refinement. Default true. */
   refine?: boolean;
+  /** 'auto' (default): CalculiX when the toolchain is installed, else the
+   *  in-process voxel solver. 'calculix': CalculiX or `fea.solver.unavailable`
+   *  (callers that need the tet stress field). 'in-process': always in-process. */
+  solver?: FeaSolverChoice;
   /** Override for tests; default KERNELCAD_FEA_MAX_ELEMENTS. */
   elementBudget?: number;
+  /** CG budget for the in-process solver only (solveTimeoutMs also bounds
+   *  CalculiX, so a short gate budget must not go through it). */
+  inProcessSolveTimeoutMs?: number;
+  /** See InProcessFeaOptions.onTimeout. */
+  inProcessOnTimeout?: 'error' | 'unverified';
+  /** In-process brick target when the study gives no meshSize. */
+  inProcessTargetElements?: number;
 }
 
 const passRecord = (s: FeaSummary): FeaRefinementPass => ({
@@ -124,8 +161,9 @@ export async function runFeaStudyRefined(
   records: readonly FeatureRecord[] | undefined,
   opts: RefineFeaOptions,
 ): Promise<RunFeaResult> {
-  if (opts.refine === false) return runFeaStudy(shape, declared, owner, records, opts);
   const toolchain = opts.toolchain ?? (await detectFeaToolchain(opts.cwd));
+  if (shouldSolveInProcess(opts.solver, toolchain.ok)) return solveInProcess(shape, declared, owner, records, opts);
+  if (opts.refine === false) return runFeaStudy(shape, declared, owner, records, { ...opts, toolchain });
   const first = await runFeaStudy(shape, declared, owner, records, { ...opts, toolchain });
   if (first.summary === undefined) return first;
   const firstResult = { ...first, summary: first.summary };

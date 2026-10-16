@@ -40,7 +40,7 @@ describe('OcctLowerer shell', () => {
     expect(errs[0].code).toBe('feature.invalid-args');
   });
 
-  it('emits feature.face-feature.face-ref-not-resolvable for transformed primitive', async () => {
+  it('opens the top of a lineage-less transformed primitive (box rule)', async () => {
     const base = OcctBackend.box(20, 20, 20).translate(5, 0, 0);
     const r: FeatureRecord = {
       id: 'shell_3', kind: 'shell',
@@ -53,8 +53,8 @@ describe('OcctLowerer shell', () => {
     };
     const result = await new OcctLowerer().lower(r, { byKey: { base } });
     const errs = result.diagnostics.filter(d => d.severity === 'error');
-    expect(errs).toHaveLength(1);
-    expect(errs[0].code).toBe('feature.face-ref.not-applicable');
+    expect(errs).toHaveLength(0);
+    expect(result.shape.volume()).toBeLessThan(8000);
   });
 
   it('emits feature.shell.failed when thickness is too large', async () => {

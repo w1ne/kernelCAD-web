@@ -77,7 +77,7 @@ export const FEA_CODES = {
   },
   'fea.study.fixed-unresolved': {
     hintTemplate:
-      'The study\'s `fixed` selector matched no face on the built shape, or the matched face did not bind to a meshed surface, so the part would be unconstrained. Call list_faces to see the available faces and refs, then pass a selector that matches one.',
+      'The study\'s `fixed` selector matched no face on the built shape, or the matched face did not bind to a meshed surface, so the part would be unconstrained. Call inspect({ of: \'faces\' }) to see the available faces and refs, then pass a selector that matches one.',
     nextAction: { kind: 'fix-arg', field: 'feaStudy.fixed' },
     defaultSeverity: 'error',
     group: 'fea',
@@ -86,7 +86,7 @@ export const FEA_CODES = {
   },
   'fea.study.load-unresolved': {
     hintTemplate:
-      'A study load\'s `faces` selector matched no face on the built shape, or the matched face did not bind to a meshed surface, so the declared force would be applied nowhere and the study would report a false pass. Call list_faces to see the available faces and refs, then pass a selector that matches one.',
+      'A study load\'s `faces` selector matched no face on the built shape, or the matched face did not bind to a meshed surface, so the declared force would be applied nowhere and the study would report a false pass. Call inspect({ of: \'faces\' }) to see the available faces and refs, then pass a selector that matches one.',
     nextAction: { kind: 'fix-arg', field: 'feaStudy.loads[].faces' },
     defaultSeverity: 'error',
     group: 'fea',

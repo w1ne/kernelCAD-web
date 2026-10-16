@@ -300,12 +300,21 @@ function renderStudioFooter(props: {
                 interferences={interferenceCount}
                 interferenceSummary={recompute.interferenceSummary}
                 recomputeMs={workbench.recomputeMs}
+                reviewCounts={reviewCountsOf(recompute.validity)}
                 mechanismSummary={workbench.scriptReview?.mechanismSummary}
             />
 
             {renderProjectManager(workbench)}
         </>
     );
+}
+
+function reviewCountsOf(validity: ReturnType<typeof useRecomputeResult>['validity']) {
+    if (!validity) return null;
+    return {
+        errors: validity.diagnostics.filter((d) => d.severity === 'error').length,
+        warnings: validity.diagnostics.filter((d) => d.severity === 'warning').length,
+    };
 }
 
 function renderProjectManager(workbench: ReturnType<typeof useWorkbench>) {

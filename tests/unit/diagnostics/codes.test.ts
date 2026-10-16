@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { DIAGNOSTIC_CODES, HINT_TEMPLATES } from '../../../src/shared/diagnostics/registry';
 
 describe('diagnostic catalogue invariants', () => {
-  it('codes are unique and include the sketch part-detection code', () => {
+  it('codes are unique and include the guarded kernel fallback code', () => {
     // 204 from develop (NURBS analytics, Query DSL, K1-K9 kinematic, assembly/mechanism gates)
     // + 6 parts catalog codes (parts.* — Slice C bundled parts catalog)
     // + 1 feature.emboss-text.boolean-noop (#393 silent no-op guard)
@@ -142,6 +142,13 @@ describe('diagnostic catalogue invariants', () => {
     expect(DIAGNOSTIC_CODES).toContain('tool.trace-from-image.part-detection-failed');
     expect(DIAGNOSTIC_CODES).toContain('feature.boolean.recovered');
     expect(DIAGNOSTIC_CODES).toContain('feature.shell.boolean-fallback');
+    expect(DIAGNOSTIC_CODES).toContain('feature.sheetMetal.crossing-bends');
+    expect(DIAGNOSTIC_CODES).toContain('feature.sheetMetal.fold-invalid');
+    expect(DIAGNOSTIC_CODES).toContain('assembly.mounting-hole.unverified');
+    expect(DIAGNOSTIC_CODES).toContain('assembly.mounting-hole.misaligned');
+    expect(DIAGNOSTIC_CODES).toContain('assembly.connectivity.assumed-root');
+    expect(DIAGNOSTIC_CODES).toContain('script.no-return');
+    expect(DIAGNOSTIC_CODES).toContain('recompute.kernel.guard-fallback');
   });
 
   it('every code has a non-empty hint template', () => {

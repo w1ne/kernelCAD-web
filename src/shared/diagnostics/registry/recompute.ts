@@ -4,6 +4,13 @@
 import type { DiagnosticCodeSpec } from './types';
 
 export const RECOMPUTE_CODES = {
+  'recompute.kernel.guard-fallback': {
+    hintTemplate: "Read the named guard and correct the input, or explicitly select kernel: 'occt'.",
+    nextAction: { kind: 'inspect-message' },
+    defaultSeverity: 'warn',
+    group: 'recompute',
+    description: 'An opt-in kernel guard rejected a candidate; the feature used its OCCT reference result.',
+  },
   // Pipeline (2)
   'recompute.input.missing': {
     hintTemplate:
@@ -28,6 +35,6 @@ export const RECOMPUTE_CODES = {
     nextAction: { kind: 'fix-arg', field: 'kernel' },
     defaultSeverity: 'error',
     group: 'recompute',
-    description: 'A model or tool call selected a solid-modeling kernel that is not wired in this build (e.g. smlib before its backend ships).',
+    description: 'A model or tool call selected a solid-modeling kernel that is not wired in this build.',
   },
 } as const satisfies Record<`recompute.${string}`, DiagnosticCodeSpec>;

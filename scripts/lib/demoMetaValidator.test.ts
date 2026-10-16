@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, it, expect } from 'vitest';
 import { validateDemoMeta } from './demoMetaValidator';
+import { isProofRequiredVersion } from './memorableBuildsCatalog';
 
 describe('validateDemoMeta', () => {
   const validBase = {
@@ -143,5 +144,61 @@ describe('validateDemoMeta', () => {
     expect(errs.some((e) => e.includes("missing key 'gitSha'"))).toBe(true);
     expect(errs.some((e) => e.includes("missing key 'capturedAt'"))).toBe(true);
     expect(errs.some((e) => e.includes("missing key 'taskId'"))).toBe(true);
+  });
+
+  describe('proof requirement (v0.18+)', () => {
+    const v018 = {
+      ...validBase,
+      module: 'v0.18',
+      heroArtifact: 'pi5-case-heat-set-inserts',
+      catalogSource: 'memorable-builds-policy/v0.18',
+      proof: {
+        userJob: 'Raspberry Pi 5 case with M2.5 heat-set inserts for a Bambu P1S',
+        kind: 'print-photo',
+        ref: 'docs/demos/v0.18/pi5-case/print.jpg',
+      },
+    };
+
+    it('accepts a functional hero with proof', () => {
+      expect(validateDemoMeta(v018, 'v0.18')).toEqual([]);
+    });
+
+    it('rejects a v0.18 hero without proof', () => {
+      const { proof: _proof, ...noProof } = v018;
+      const errs = validateDemoMeta(noProof, 'v0.18');
+      expect(errs.some((e) => e.includes("missing 'proof'"))).toBe(true);
+    });
+
+    it('rejects proof with an unknown kind, empty job or empty ref', () => {
+      const errs = validateDemoMeta({ ...v018, proof: { userJob: ' ', kind: 'render', ref: '' } }, 'v0.18');
+      expect(errs).toHaveLength(3);
+    });
+
+    it('does not require proof before v0.18', () => {
+      expect(validateDemoMeta(validBase, 'v0.21')).toEqual([]); // v0.2.1, not v0.21
+    });
+
+    it('requires proof for EVERY version from v0.18 on, not just a listed few', () => {
+      for (const v of ['v0.18', 'v0.19', 'v0.20', 'v0.22', 'v0.100', 'v1.0', 'v1.3', 'v2.0']) {
+        expect(isProofRequiredVersion(v), v).toBe(true);
+      }
+      for (const v of ['v0.1', 'v0.2', 'v0.21', 'v0.4.1', 'v0.9', 'v0.17', 'v0.17.9', 'next']) {
+        expect(isProofRequiredVersion(v), v).toBe(false);
+      }
+      // A post-v0.18 version without a catalog entry still fails (no catalog),
+      // and is never let through for lack of a proof rule.
+      expect(validateDemoMeta({ ...v018 }, 'v1.0').some((e) => e.includes("missing 'proof'"))).toBe(false);
+      const { proof: _p, ...noProof } = v018;
+      expect(validateDemoMeta({ ...noProof, heroArtifact: 'mechanical-music-box', catalogSource: 'x' }, 'v1.0')
+        .some((e) => e.includes("missing 'proof'"))).toBe(true);
+    });
+
+    it('checks that proof.ref exists when given a filesystem probe', () => {
+      const seen: string[] = [];
+      const missing = validateDemoMeta(v018, 'v0.18', { proofRefExists: (ref) => { seen.push(ref); return false; } });
+      expect(seen).toEqual(['docs/demos/v0.18/pi5-case/print.jpg']);
+      expect(missing).toEqual(["proof.ref 'docs/demos/v0.18/pi5-case/print.jpg' does not exist"]);
+      expect(validateDemoMeta(v018, 'v0.18', { proofRefExists: () => true })).toEqual([]);
+    });
   });
 });

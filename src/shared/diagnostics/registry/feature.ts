@@ -162,7 +162,7 @@ export const FEATURE_CODES = {
   // Face-ref state (6)
   'feature.face-ref.not-resolvable': {
     hintTemplate:
-      'The referenced face was not found on the current shape; lineage returned zero hits and the stored snapshot has no match within tolerance. Pick one of the nearest candidate refs printed in the message (or call list_faces to enumerate every face that still exists), or apply this feature before the upstream op that removed the original.',
+      'The referenced face was not found on the current shape; lineage returned zero hits and the stored snapshot has no match within tolerance. Pick one of the nearest candidate refs printed in the message (or call inspect({ of: \'faces\' }) to enumerate every face that still exists), or apply this feature before the upstream op that removed the original.',
     nextAction: { kind: 'reorder-pipeline', guidance: 'apply this feature before any transform' },
     defaultSeverity: 'error',
     group: 'feature',
@@ -205,8 +205,8 @@ export const FEATURE_CODES = {
   },
   'feature.face-ref.snapshot-fallback-used': {
     hintTemplate:
-      'Lineage returned no hits; the entity was recovered by geometry snapshot. The resolution is provisional — re-emit list_faces or list_edges and update the ref to the lineage-stable form before further edits move the entity beyond tolerance.',
-    nextAction: { kind: 'rename', guidance: 'update the ref to the lineage-stable form via list_faces / list_edges' },
+      'Lineage returned no hits; the entity was recovered by geometry snapshot. The resolution is provisional — re-emit inspect({ of: \'faces\' }) or inspect({ of: \'edges\' }) and update the ref to the lineage-stable form before further edits move the entity beyond tolerance.',
+    nextAction: { kind: 'rename', guidance: 'update the ref to the lineage-stable form via inspect({ of: \'faces\' }) / inspect({ of: \'edges\' })' },
     defaultSeverity: 'info',
     group: 'feature',
     description: 'A topology ref resolved via the geometry-snapshot fallback because the lineage path returned zero hits.',
@@ -240,8 +240,8 @@ export const FEATURE_CODES = {
   // Selection (2)
   'feature.selection.no-match': {
     hintTemplate:
-      'The query matched no edges/faces. Use list_edges, list_faces, or list_face_labels to inspect what exists, then relax the query.',
-    nextAction: { kind: 'call-introspection-tool', tool: 'list_edges' },
+      'The query matched no edges/faces. Use inspect({ of: \'edges\' }), inspect({ of: \'faces\' }), or inspect({ of: \'face-labels\' }) to inspect what exists, then relax the query.',
+    nextAction: { kind: 'call-tool', tool: 'inspect', args: { of: 'edges' } },
     defaultSeverity: 'error',
     group: 'feature',
     description: 'A face/edge query matched zero elements.',
@@ -256,8 +256,8 @@ export const FEATURE_CODES = {
   },
   // Label state (5)
   'feature.label.unknown-name': {
-    hintTemplate: 'Label not found. Call list_face_labels to see available labels.',
-    nextAction: { kind: 'call-introspection-tool', tool: 'list_face_labels' },
+    hintTemplate: 'Label not found. Call inspect({ of: \'face-labels\' }) to see available labels.',
+    nextAction: { kind: 'call-tool', tool: 'inspect', args: { of: 'face-labels' } },
     defaultSeverity: 'error',
     group: 'feature',
     description: 'A face/edge label was referenced that no upstream feature declares.',
@@ -302,8 +302,8 @@ export const FEATURE_CODES = {
   // Pattern (2) — W2.1
   'feature.pattern.source-not-found': {
     hintTemplate:
-      "The pattern source feature was not found. Verify the variable receiving .patternLinear / .patternCircular / .patternGrid is bound from an earlier feature, that the source feature is not suppressed, and that the source FeatureId matches what list_features reports.",
-    nextAction: { kind: 'call-introspection-tool', tool: 'list_features' },
+      "The pattern source feature was not found. Verify the variable receiving .patternLinear / .patternCircular / .patternGrid is bound from an earlier feature, that the source feature is not suppressed, and that the source FeatureId matches what inspect({ of: 'features' }) reports.",
+    nextAction: { kind: 'call-tool', tool: 'inspect', args: { of: 'features' } },
     defaultSeverity: 'error',
     group: 'feature',
     description: 'A pattern feature could not locate its source feature in the recompute graph.',
@@ -327,7 +327,7 @@ export const FEATURE_CODES = {
   },
   'feature.bend.edge-not-linear': {
     hintTemplate:
-      '.bend() requires a linear edge; the resolved edge is a curved geometry. Pick an edge that lies on a straight perimeter of the sheet (use list_edges to inspect).',
+      '.bend() requires a linear edge; the resolved edge is a curved geometry. Pick an edge that lies on a straight perimeter of the sheet (use inspect({ of: \'edges\' }) to inspect).',
     nextAction: { kind: 'rewrite-feature', guidance: 'pick a linear edge on the sheet perimeter' },
     defaultSeverity: 'error',
     group: 'feature',
@@ -343,6 +343,22 @@ export const FEATURE_CODES = {
     defaultSeverity: 'error',
     group: 'feature',
     description: '.flattenPattern() was called on a Shape with more than 2 bends, exceeding the slice-1 limit.',
+  },
+  'feature.sheetMetal.crossing-bends': {
+    hintTemplate:
+      'An { atX } and an { atY } bend line cross (bend lines span the whole blank). Notch the blank outline at the corner (corner relief, at least one bend allowance past each line) so each flange folds on its own, or fold the flanges as separate parts.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'add corner relief to the blank outline where the two bend lines cross' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'Two crossing .bend() lines meet at a corner that still holds material (no corner relief).',
+  },
+  'feature.sheetMetal.fold-invalid': {
+    hintTemplate:
+      'The folded sheet is not one closed solid with the conserved volume (input minus bend strip plus arc): flanges collide or the split took the wrong material. Check bend order, bend zones and corner relief.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'reorder or respace the bends so no flange folds into another' },
+    defaultSeverity: 'error',
+    group: 'feature',
+    description: 'A .bend() produced several solids, an invalid solid, or lost / overlapped material.',
   },
   // Draft (1) — Slice E Task 6/7
   'feature.draft.failed': {
@@ -468,7 +484,7 @@ export const FEATURE_CODES = {
   },
   'feature.material.face-label-no-match': {
     hintTemplate:
-      "Shape.material({ face: '<label>', ... }) referenced a label that no upstream feature declares via faceLabels. The whole-shape default material is used for all faces. Declare the label on the creating op (e.g. box(..., { faceLabels: { <label>: 'top' } })) and ensure no transform strips the lineage between the creator and the .material() call. Inspect available labels with list_face_labels.",
+      "Shape.material({ face: '<label>', ... }) referenced a label that no upstream feature declares via faceLabels. The whole-shape default material is used for all faces. Declare the label on the creating op (e.g. box(..., { faceLabels: { <label>: 'top' } })) and ensure no transform strips the lineage between the creator and the .material() call. Inspect available labels with inspect({ of: 'face-labels' }).",
     nextAction: { kind: 'fix-arg', field: 'face' },
     defaultSeverity: 'warn',
     group: 'feature',

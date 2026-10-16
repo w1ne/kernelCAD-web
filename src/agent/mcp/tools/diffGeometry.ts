@@ -46,7 +46,6 @@ import { isSceneBackend } from '../../../kernel/backends/sceneBackend';
 import { sceneToWorldFrameParts } from '../../../kernel/backends/occt/sceneToWorldFrame';
 import { detectCylindricalHoles } from '../../../kernel/backends/occt/holeDetection';
 import { meshDeviation } from '../../../modeling/runtime/meshDeviation';
-import { resolveRootId } from '../../../composition/buildModel';
 import type { RunScriptResult } from '../../../composition/runScript';
 import { Scene } from '../../../modeling/validation/scene';
 import { ParamTable } from '../../../shared/runtime/paramTable';
@@ -54,7 +53,7 @@ import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic'
 import { withNextActions } from '../../../shared/diagnostics/diagnostic';
 import { NEXT_ACTIONS } from '../../../shared/diagnostics/registry';
 import { runMcpScript } from '../runMcpScript';
-import { ROOT_PART_NAME } from './diffScripts';
+import { returnedBodies } from './diffScripts';
 import { renderDiffOverlay, type DiffOverlayRender } from './diffGeometryRender';
 
 export interface DiffGeometryInput {
@@ -406,9 +405,8 @@ function solidSideResult(
   returnValue: RunScriptResult['returnValue'],
 ): SideResult {
   const tailId = run.records.length > 0 ? run.records[run.records.length - 1].id : undefined;
-  const rootId = resolveRootId(returnValue, tailId);
-  const rootShape = rootId !== undefined ? result.shapes.get(rootId) : undefined;
-  if (!(rootShape instanceof OcctBackend)) {
+  const bodies = returnedBodies(returnValue, result.shapes, tailId);
+  if (bodies.length === 0) {
     return {
       ok: false,
       error: 'diff_geometry: the script did not return a solid Shape (or an assembly Scene) to compare.',
@@ -420,7 +418,7 @@ function solidSideResult(
     side: {
       featureCount: run.records.length,
       isAssembly: false,
-      bodies: [{ name: ROOT_PART_NAME, shape: rootShape }],
+      bodies,
     },
   };
 }

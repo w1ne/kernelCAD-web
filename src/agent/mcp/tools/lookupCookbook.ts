@@ -14,7 +14,10 @@ import { dirname, resolve } from 'node:path';
 import { loadSnippets, search } from '../../cookbook/index';
 
 export interface LookupCookbookInput {
-  query: string;
+  /** Natural-language query (BM25). One of `query` / `id` is required. */
+  query?: string;
+  /** Exact snippet id, as the skills cite it: `lookup_cookbook(<id>)`. */
+  id?: string;
   k?: number;
 }
 
@@ -63,17 +66,26 @@ export function getCookbookSnippets(): ReturnType<typeof loadSnippets> {
   return snippets();
 }
 
+function toHit(snippet: ReturnType<typeof loadSnippets>[number], score: number): CookbookHit {
+  return { id: snippet.id, title: snippet.title, when_to_use: snippet.when_to_use, body: snippet.body, score };
+}
+
 export async function lookupCookbookTool(input: LookupCookbookInput): Promise<LookupCookbookOutput> {
+  const id = typeof input.id === 'string' ? input.id.trim() : '';
+  if (id.length > 0) {
+    // The skills cite recipes as lookup_cookbook(<id>): resolve the id exactly,
+    // and fall back to ranking it as a query (hyphens read as words).
+    const exact = snippets().find((sn) => sn.id === id);
+    if (exact) return { ok: true, hits: [toHit(exact, 1)] };
+    const fallback = search(id.replace(/[-_]+/g, ' '), snippets(), input.k ?? 3).map((h) => toHit(h.snippet, h.score));
+    return fallback.length > 0
+      ? { ok: true, hits: fallback }
+      : { ok: false, error: `no cookbook snippet with id '${id}' (and nothing ranked for it as a query)` };
+  }
   if (typeof input.query !== 'string' || input.query.trim().length === 0) {
-    return { ok: false, error: 'query must be a non-empty string' };
+    return { ok: false, error: 'pass a non-empty query (natural language) or id (exact snippet id)' };
   }
   const k = input.k ?? 3;
-  const hits = search(input.query, snippets(), k).map((h) => ({
-    id: h.snippet.id,
-    title: h.snippet.title,
-    when_to_use: h.snippet.when_to_use,
-    body: h.snippet.body,
-    score: h.score,
-  }));
+  const hits = search(input.query, snippets(), k).map((h) => toHit(h.snippet, h.score));
   return { ok: true, hits };
 }

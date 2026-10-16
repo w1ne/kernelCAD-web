@@ -38,7 +38,7 @@ export const cookbookExecutionToolEntries: ToolRegistryEntry[] = [
             type: 'string',
             enum: ['occt', 'smlib'],
             description:
-              "Solid-modeling kernel forwarded to evaluate_script. Default 'occt'; 'smlib' is reserved and currently fails with recompute.kernel.unavailable.",
+              "Solid-modeling kernel forwarded to evaluate_script. Default 'occt'; opt-in 'smlib' uses guarded candidates with explicit OCCT fallback diagnostics.",
           },
           dryRun: {
             type: 'boolean',

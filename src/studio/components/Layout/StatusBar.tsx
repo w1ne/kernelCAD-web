@@ -25,6 +25,8 @@ interface StatusBarProps {
         capMm3: number;
     } | null;
     recomputeMs?: number;
+    /** Error / warning counts from the model review (not build errors). */
+    reviewCounts?: { errors: number; warnings: number } | null;
     /** Mechanism verdict of the loaded model; no badge for a static model. */
     mechanismSummary?: MechanismVerdictSummary | null;
 }
@@ -56,11 +58,25 @@ function StateIndicator({ error, isComputing }: { error: string | null; isComput
     );
 }
 
-function StateDiagnostics({ error }: { error: string | null }) {
-    return error ? (
-        <span className="truncate text-red-200 max-w-[48vw]">{compactError(error)}</span>
-    ) : (
-        <span className="truncate">No diagnostics</span>
+function StateDiagnostics({
+    error,
+    reviewCounts,
+}: {
+    error: string | null;
+    reviewCounts?: { errors: number; warnings: number } | null;
+}) {
+    if (error) return <span className="truncate text-red-200 max-w-[48vw]">{compactError(error)}</span>;
+    const errors = reviewCounts?.errors ?? 0;
+    const warnings = reviewCounts?.warnings ?? 0;
+    if (errors === 0 && warnings === 0) return <span className="truncate">No diagnostics</span>;
+    const parts = [
+        ...(errors > 0 ? [errors === 1 ? '1 error' : `${errors} errors`] : []),
+        ...(warnings > 0 ? [warnings === 1 ? '1 warning' : `${warnings} warnings`] : []),
+    ];
+    return (
+        <span data-testid="status-review-counts" className={`truncate ${errors > 0 ? 'text-red-200' : 'text-amber-200'}`}>
+            {parts.join(' · ')}
+        </span>
     );
 }
 
@@ -80,6 +96,7 @@ export function StatusBar({
     interferences,
     interferenceSummary,
     recomputeMs,
+    reviewCounts,
     mechanismSummary,
 }: StatusBarProps) {
     const bodyLabel = geometryCount === 1 ? '1 body' : `${geometryCount} bodies`;
@@ -112,7 +129,7 @@ export function StatusBar({
                         {directEditNotice}
                     </span>
                 )}
-                <StateDiagnostics error={error} />
+                <StateDiagnostics error={error} reviewCounts={reviewCounts} />
             </div>
             <div className="flex items-center gap-3 shrink-0 ml-auto">
                 <MotionBadge summary={mechanismSummary} />

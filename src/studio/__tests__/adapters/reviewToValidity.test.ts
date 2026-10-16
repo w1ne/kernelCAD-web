@@ -166,4 +166,40 @@ describe('reviewToMechanismBanner', () => {
             hint: '',
         });
     });
+
+    it('a stored broken verdict with no diagnostics still lists its failures', () => {
+        const summary = {
+            verdict: 'broken' as const,
+            maxLevel: 'error' as const,
+            statement: 'Mechanism broken: 1 failure',
+            checked: [],
+            skipped: [],
+            failures: [{
+                code: 'mechanism.motion-on-fixed-joint',
+                reason: "param shoulderDeg animates joint 'shoulder', but it is fastened",
+                joint: 'shoulder',
+            }],
+        };
+        const v = reviewToValidity({ ok: false, mechanism: 'broken', mechanismSummary: summary });
+        expect(v?.status).toBe('error');
+        expect(v?.diagnostics).toHaveLength(1);
+        expect(v?.diagnostics[0]).toMatchObject({
+            code: 'mechanism.motion-on-fixed-joint',
+            severity: 'error',
+            mateName: 'shoulder',
+        });
+
+        // Already listed in diagnostics: not added twice.
+        const listed = reviewToValidity({
+            ok: false,
+            mechanism: 'broken',
+            mechanismSummary: summary,
+            diagnostics: [{
+                code: 'mechanism.motion-on-fixed-joint',
+                severity: 'error',
+                message: summary.failures[0].reason,
+            }],
+        });
+        expect(listed?.diagnostics).toHaveLength(1);
+    });
 });

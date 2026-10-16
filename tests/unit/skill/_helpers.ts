@@ -11,19 +11,32 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
+const SKILLS_ROOT = resolvePath(__dirname, '../../../src/agent/skills');
+
 /**
- * Load all skill SKILL.md files from src/agent/skills/ and concatenate them.
- * Mirrors the logic in src/agent/cli/commands/skill.ts renderOnefile().
+ * One skill's documentation: its SKILL.md followed by its `references/*.md`
+ * (the lean-SKILL.md layout moves detail into reference files the skill links
+ * to; a drift sentinel must see both).
+ */
+export function loadSkillDocs(name: string): string {
+  const dir = join(SKILLS_ROOT, name);
+  const refsDir = join(dir, 'references');
+  const refs = existsSync(refsDir) && statSync(refsDir).isDirectory()
+    ? readdirSync(refsDir).filter((f) => f.endsWith('.md')).sort().map((f) => readFileSync(join(refsDir, f), 'utf8'))
+    : [];
+  return [readFileSync(join(dir, 'SKILL.md'), 'utf8'), ...refs].join('\n\n');
+}
+
+/**
+ * Load all skill SKILL.md files (plus their references) from src/agent/skills/
+ * and concatenate them. Mirrors src/agent/cli/commands/skill.ts renderOnefile().
  */
 export function loadCombinedSkillMd(): string {
-  const skillsRoot = resolvePath(__dirname, '../../../src/agent/skills');
-  const dirs = readdirSync(skillsRoot, { withFileTypes: true })
-    .filter((e) => e.isDirectory() && existsSync(join(skillsRoot, e.name, 'SKILL.md')))
+  const dirs = readdirSync(SKILLS_ROOT, { withFileTypes: true })
+    .filter((e) => e.isDirectory() && existsSync(join(SKILLS_ROOT, e.name, 'SKILL.md')))
     .map((e) => e.name)
     .sort();
-  return dirs
-    .map((name) => readFileSync(join(skillsRoot, name, 'SKILL.md'), 'utf8'))
-    .join('\n\n---\n\n');
+  return dirs.map((name) => loadSkillDocs(name)).join('\n\n---\n\n');
 }
 
 /**

@@ -5,7 +5,7 @@ import { Command } from 'commander';
 import { mkdirSync, copyFileSync, writeFileSync, existsSync, statSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { walkSkillTree } from '../lib/walkSkillTree';
+import { skillWithReferences, walkSkillTree } from '../lib/walkSkillTree';
 
 const here = dirname(fileURLToPath(import.meta.url));
 
@@ -29,6 +29,11 @@ export async function installCommand(target: string): Promise<void> {
     const dst = join(target, entry.relPath);
     mkdirSync(dirname(dst), { recursive: true });
     copyFileSync(entry.absPath, dst);
+    for (const ref of entry.references) {
+      const refDst = join(dirname(dst), ref.relPath);
+      mkdirSync(dirname(refDst), { recursive: true });
+      copyFileSync(ref.absPath, refDst);
+    }
   }
   // Soft-deprecation notice (Task D6 — pointing users at the new cross-agent flow).
   if (process.env.KERNELCAD_SUPPRESS_DEPRECATION !== '1') {
@@ -41,7 +46,7 @@ export async function installCommand(target: string): Promise<void> {
 export async function renderOnefile(): Promise<string> {
   const root = skillRoot();
   return walkSkillTree(root)
-    .map((e) => e.source)
+    .map((e) => skillWithReferences(e))
     .join('\n\n---\n\n');
 }
 

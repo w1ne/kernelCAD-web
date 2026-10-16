@@ -386,9 +386,10 @@ export class Assembly {
   }
 
   /** See `recordSolvedModel` in `assemblySolve.ts` for the full mate-aware
-   *  validate/lower pipeline this delegates to. */
+   *  validate/lower pipeline this delegates to. `poses` may be omitted:
+   *  every mate / joint then sits at its default pose (same as `{}`). */
   solvedModel(
-    poses: Poses,
+    poses?: Poses,
     opts?: SolvedModelOptions,
   ): Promise<Scene> {
     return recordSolvedModel(this.state, this, poses, opts);

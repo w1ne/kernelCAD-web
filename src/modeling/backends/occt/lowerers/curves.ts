@@ -12,6 +12,26 @@ import { lowerEmbossText as embossTextOntoFace } from '../embossTextLowerer';
 import { lowerProjectCurve as projectCurveOntoFace } from '../projectCurveLowerer';
 import { lowerVariableSweep as buildVariableSweepShape, type VariableSweepSectionLowered } from '../variableSweepLowerer';
 import { built, finished, noShape, type LowerContext, type LowerOutcome } from './context';
+import { HINT_TEMPLATES } from '../../../../shared/diagnostics/registry';
+import type { DiagnosticCode } from '../../../../shared/diagnostics/diagnostic';
+
+/** Lowerer warnings (built, but worth saying) as warn diagnostics. */
+function pushLowerWarnings(
+  ctx: LowerContext,
+  featureId: string,
+  warnings: readonly { code: DiagnosticCode; message: string }[] | undefined,
+): void {
+  for (const w of warnings ?? []) {
+    ctx.diagnostics.push({
+      target: 'export-occt',
+      code: w.code,
+      featureId,
+      severity: 'warn',
+      message: w.message,
+      hint: HINT_TEMPLATES[w.code].template,
+    });
+  }
+}
 
 /** `curve3d` — builds a Geom_BSplineCurve edge and parks it on
  *  `importedGeometry`; contributes no Shape. */
@@ -36,7 +56,8 @@ export function lowerCurve3d(ctx: LowerContext, r: FeatureRecord): LowerOutcome 
     return noShape();
   }
   try {
-    const { edge } = buildCurve3dEdge(m);
+    const { edge, warnings } = buildCurve3dEdge(m);
+    pushLowerWarnings(ctx, r.id, warnings);
     // Park the raw OCCT edge on the importedGeometry map. The map is
     // typed as ShapeBackend (the same slot fromSTEP / sdfMaterialize
     // use); curve3d stores a TopoDS_Edge instead, and the consumer
@@ -104,6 +125,7 @@ export function lowerVariableSweep(ctx: LowerContext, r: FeatureRecord): LowerOu
       // profile until its boundary touches the spine, which shifted every
       // centred profile sideways by its half-width.)
       placeProfiles: true,
+      onWarning: (w) => pushLowerWarnings(ctx, r.id, [w]),
     });
     return built(shape);
   } catch (e) {
@@ -155,7 +177,8 @@ function lowerUpstreamCurve3dSpine(
     return { attempted: true, edge: undefined };
   }
   try {
-    const { edge } = buildCurve3dEdge(cm);
+    const { edge, warnings } = buildCurve3dEdge(cm);
+    pushLowerWarnings(ctx, spineId, warnings);
     // Cache the edge on importedGeometry so subsequent recompute
     // passes (params.update) and other downstream consumers reuse
     // the lowered edge instead of rebuilding it.

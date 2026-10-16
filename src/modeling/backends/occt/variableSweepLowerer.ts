@@ -79,6 +79,9 @@ export interface LowerVariableSweepOpts {
    * its own half-width. Default: `false`.
    */
   placeProfiles?: boolean;
+  /** Built, but worth telling the author (e.g. a dropped closed-spine
+   *  section); the dispatch arm turns it into a warn diagnostic. */
+  onWarning?: (w: { code: 'feature.variable-sweep.closed-seam-section-dropped'; message: string }) => void;
 }
 
 /**
@@ -155,6 +158,24 @@ export function lowerVariableSweep(
   const oc = getOC() as any;
 
   validateSections(sections);
+  // On a closed spine (a ring band, a loop handle) t=0 and t=1 are the same
+  // point: the t=1 section is the seam, and handing OCCT two profiles at one
+  // vertex makes MakePipeShell fail to converge. Keep the t=0 profile only;
+  // the closed spine wire carries it round to close the solid.
+  const closedSpine = isClosedSpine(oc, spineEdge);
+  if (closedSpine) {
+    const first = sections.find((s) => s.t <= T_ENDPOINT_EPS);
+    const seam = sections.filter((s) => s.t >= 1 - T_ENDPOINT_EPS);
+    if (first !== undefined && seam.some((s) => !sameProfile(oc, first.profileWire, s.profileWire))) {
+      opts.onWarning?.({
+        code: 'feature.variable-sweep.closed-seam-section-dropped',
+        message:
+          'variableSweep on a closed spine: the t=1 section differs from the t=0 section, but both sit on the same seam station, ' +
+          'so the t=1 profile was dropped and the ring closes on the t=0 profile.',
+      });
+    }
+    sections = sections.filter((s) => s.t < 1 - T_ENDPOINT_EPS);
+  }
 
   // Stations strictly inside (0, 1) force the spine-subdivision pass. `t`
   // values within `T_ENDPOINT_EPS` of 0/1 are endpoint aliases (the capture
@@ -173,11 +194,11 @@ export function lowerVariableSweep(
   if (intermediateTs.length === 0) {
     // 2-section path — same anchor collection as the pre-subdivision code
     // (OCCT's `Add_2` only accepts spine-owned vertices).
-    const anchor = collectSpineAnchor(oc, spineEdge);
+    const anchor = collectSpineAnchor(oc, spineEdge, closedSpine);
     spineWire = anchor.spineWire;
     stationVertices = sections.map((s) => (s.t <= 0.5 ? anchor.firstVertex : anchor.lastVertex));
   } else {
-    spineWire = subdivideSpineAtStations(oc, spineEdge, intermediateTs);
+    spineWire = subdivideSpineAtStations(oc, spineEdge, intermediateTs, closedSpine);
     const adaptor = new oc.BRepAdaptor_Curve_2(spineEdge);
     const u0 = adaptor.FirstParameter();
     const u1 = adaptor.LastParameter();
@@ -308,6 +329,7 @@ function subdivideSpineAtStations(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   spineEdge: any,
   stations: number[],
+  closed = false,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): any {
   const adaptor = new oc.BRepAdaptor_Curve_2(spineEdge);
@@ -339,6 +361,9 @@ function subdivideSpineAtStations(
   const vertices: any[] = params.map(
     (u: number) => new oc.BRepBuilderAPI_MakeVertex(adaptor.Value(u)).Vertex(),
   );
+  // A closed spine must come back as a closed wire: the last edge ends on the
+  // SAME vertex the first starts from, not a coincident copy.
+  if (closed) vertices[vertices.length - 1] = vertices[0];
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const edges: any[] = [];
@@ -413,7 +438,55 @@ function matchStationVertex(
 
 // Wrap the spine edge in a TopoDS_Wire and snapshot its first/last vertices —
 // OCCT's `Add_2` only accepts spine-owned vertices.
-function collectSpineAnchor(oc: Oc, spineEdge: OcEdge): SpineAnchor {
+/** True when the spine edge starts and ends on the same point. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function isClosedSpine(oc: any, spineEdge: any): boolean {
+  const adaptor = new oc.BRepAdaptor_Curve_2(spineEdge);
+  const a = adaptor.Value(adaptor.FirstParameter());
+  const b = adaptor.Value(adaptor.LastParameter());
+  try {
+    return a.Distance(b) < STATION_MATCH_TOL;
+  } finally {
+    a.delete();
+    b.delete();
+    adaptor.delete();
+  }
+}
+
+/** Length and bbox extents of a wire: equal for the same profile, different
+ *  for a scaled or reshaped one (profiles are compared before placement). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function wireSignature(oc: any, wire: any): number[] | undefined {
+  const props = new oc.GProp_GProps_1();
+  const box = new oc.Bnd_Box_1();
+  try {
+    oc.BRepGProp.LinearProperties(wire, props, false, false);
+    oc.BRepBndLib.Add(wire, box, false);
+    const lo = box.CornerMin();
+    const hi = box.CornerMax();
+    const sig = [props.Mass(), hi.X() - lo.X(), hi.Y() - lo.Y(), hi.Z() - lo.Z(), lo.X(), lo.Y(), lo.Z()];
+    lo.delete();
+    hi.delete();
+    return sig;
+  } catch {
+    return undefined;
+  } finally {
+    props.delete();
+    box.delete();
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function sameProfile(oc: any, a: any, b: any): boolean {
+  if (a === b) return true;
+  const sa = wireSignature(oc, a);
+  const sb = wireSignature(oc, b);
+  if (sa === undefined || sb === undefined) return true; // cannot tell: stay quiet
+  const scale = Math.max(1, ...sa.map(Math.abs));
+  return sa.every((v, i) => Math.abs(v - sb[i]) <= 1e-6 * scale);
+}
+
+function collectSpineAnchor(oc: Oc, spineEdge: OcEdge, closed = false): SpineAnchor {
   const spineWire = new oc.BRepBuilderAPI_MakeWire_2(spineEdge).Wire();
 
   const spineVertices: SpineAnchor['firstVertex'][] = [];
@@ -425,6 +498,9 @@ function collectSpineAnchor(oc: Oc, spineEdge: OcEdge): SpineAnchor {
   while (exp.More()) {
     spineVertices.push(oc.TopoDS.Vertex_1(exp.Current()));
     exp.Next();
+  }
+  if (closed && spineVertices.length >= 1) {
+    return { spineWire, firstVertex: spineVertices[0], lastVertex: spineVertices[0] };
   }
   if (spineVertices.length < 2) {
     throw new Error(

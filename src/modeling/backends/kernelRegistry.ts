@@ -7,9 +7,8 @@
 // of constructing an OCCT lowerer directly, so a second kernel (SMLib) can be
 // added behind this seam without touching them.
 //
-// Today only 'occt' is registered. 'smlib' is a known KernelId with no
-// factory: selecting it throws KernelUnavailableError, which carries a
-// `recompute.kernel.unavailable` CompilerDiagnostic. No silent fallback.
+// OCCT remains the default. SMLib is an optional guarded backend: rejected
+// candidates retain the OCCT reference and emit an explicit fallback diagnostic.
 import type { FeatureLowerer, ShapeBackend } from '../../kernel/backends/backend';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { withNextAction } from '../../shared/diagnostics/diagnostic';
@@ -22,6 +21,7 @@ import {
   type KernelId,
 } from '../../shared/types/backendTarget';
 import { createOcctLowerer } from './occt/occtLowerer';
+import { createSmlibLowerer } from './smlib/smlibLowerer';
 
 /** Session state a lowerer is pre-wired with (same shape createOcctLowerer takes). */
 export interface LowererSession {
@@ -34,6 +34,7 @@ export type LowererFactory = (session?: LowererSession) => FeatureLowerer;
 
 const FACTORIES: Partial<Record<KernelId, LowererFactory>> = {
   occt: session => createOcctLowerer(session),
+  smlib: session => createSmlibLowerer(session),
 };
 
 /** Kernels that can actually build in this build (subset of KERNEL_IDS). */

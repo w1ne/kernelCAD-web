@@ -64,7 +64,7 @@ export interface MountingHoleMismatch {
   readonly sideA: MountingHoleSideState;
   readonly sideB: MountingHoleSideState;
   /** Short reason: 'diameter-mismatch' | 'no-hole-on-bound-face' |
-   *  'deferred'. Detail in the linked diagnostic.message. */
+   *  'misaligned'. Detail in the linked diagnostic.message. */
   readonly reason: string;
 }
 

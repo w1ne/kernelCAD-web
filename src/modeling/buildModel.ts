@@ -29,8 +29,8 @@ export interface BuildModelInput {
    *  resolves relative paths under the calling .kcad.ts file. */
   scriptDir?: string;
   /** Solid-modeling kernel to build on. Omitted = DEFAULT_KERNEL ('occt').
-   *  A kernel that is not available in this build (today: 'smlib') throws
-   *  KernelUnavailableError before any work is done. */
+   *  A kernel that is not available in this build throws KernelUnavailableError
+   *  before any work is done. */
   kernel?: KernelId;
 }
 
