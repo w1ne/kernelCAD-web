@@ -3,6 +3,7 @@
 import * as replicad from 'replicad';
 import opencascade from 'replicad-opencascadejs';
 import { normalizeUserScript } from '../shared/runtime/normalizeUserScript';
+import { installOcctFinalizers } from '../kernel/backends/occt/occtFinalizers';
 
 let isInitialized = false;
 
@@ -23,6 +24,7 @@ export async function initHeadless() {
         throw new Error("Could not find opencascade factory function");
     }
 
+    installOcctFinalizers(OC as Record<string, unknown>);
     replicad.setOC(OC);
     isInitialized = true;
 }
