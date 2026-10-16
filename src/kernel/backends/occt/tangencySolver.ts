@@ -139,10 +139,10 @@ function qualifiedCurve(oc: any, e: TangentEntitySpec, owned: any[]): any {
         `a tangency line entity has coincident from/to points (${e.x1.evaluated}, ${e.y1.evaluated}) — it defines no direction.`,
       );
     }
-    const origin = new oc.gp_Pnt2d_3(e.x1.evaluated, e.y1.evaluated);
-    const dir = new oc.gp_Dir2d_4(dx, dy);
-    const lin = new oc.gp_Lin2d_3(origin, dir);
-    geom = new oc.Geom2d_Line_2(lin);
+    const origin = new oc.gp_Pnt2d(e.x1.evaluated, e.y1.evaluated);
+    const dir = new oc.gp_Dir2d(dx, dy);
+    const lin = new oc.gp_Lin2d(origin, dir);
+    geom = new oc.Geom2d_Line(lin);
   } else {
     if (!(e.r.evaluated > 0)) {
       throw new TangencyError(
@@ -150,14 +150,14 @@ function qualifiedCurve(oc: any, e: TangentEntitySpec, owned: any[]): any {
         `a tangency circle entity has non-positive radius ${e.r.evaluated}.`,
       );
     }
-    const centre = new oc.gp_Pnt2d_3(e.cx.evaluated, e.cy.evaluated);
-    const xdir = new oc.gp_Dir2d_4(1, 0);
-    const ax = new oc.gp_Ax22d_3(centre, xdir, true);
-    const circ = new oc.gp_Circ2d_3(ax, e.r.evaluated);
-    geom = new oc.Geom2d_Circle_1(circ);
+    const centre = new oc.gp_Pnt2d(e.cx.evaluated, e.cy.evaluated);
+    const xdir = new oc.gp_Dir2d(1, 0);
+    const ax = new oc.gp_Ax22d(centre, xdir, true);
+    const circ = new oc.gp_Circ2d(ax, e.r.evaluated);
+    geom = new oc.Geom2d_Circle(circ);
   }
-  const handle = new oc.Handle_Geom2d_Curve_2(geom);
-  const adaptor = new oc.Geom2dAdaptor_Curve_2(handle);
+  const handle = geom;
+  const adaptor = new oc.Geom2dAdaptor_Curve(handle);
   const qual = new oc.Geom2dGcc_QualifiedCurve(adaptor, gccPosition(oc, e.side));
   owned.push(adaptor, qual);
   return qual;
@@ -253,11 +253,11 @@ export function solveTangentCircle(
     const solver: any = runSolver(() => (
       quals.length === 2
         // radius presence is validated at capture time; assert rather than guess.
-        ? new oc.Geom2dGcc_Circ2d2TanRad_1(quals[0], quals[1], radius as number, TANGENCY_TOLERANCE)
+        ? new oc.Geom2dGcc_Circ2d2TanRad(quals[0], quals[1], radius as number, TANGENCY_TOLERANCE)
         // Param1/2/3 are approximate-parameter seeds on each curve. For the
         // analytic curves we accept (line, circle) OCCT routes through GccAna
         // and enumerates every solution regardless, so 0 is a safe seed.
-        : new oc.Geom2dGcc_Circ2d3Tan_1(quals[0], quals[1], quals[2], TANGENCY_TOLERANCE, 0, 0, 0)
+        : new oc.Geom2dGcc_Circ2d3Tan(quals[0], quals[1], quals[2], TANGENCY_TOLERANCE, 0, 0, 0)
     ), listed);
     owned.push(solver);
 
@@ -316,7 +316,7 @@ export function solveTangentLine(
     const qb = qualifiedCurve(oc, b, owned);
     const listed = `${describeEntity(a)}; ${describeEntity(b)}`;
 
-    const solver = runSolver(() => new oc.Geom2dGcc_Lin2d2Tan_1(qa, qb, TANGENCY_TOLERANCE), listed);
+    const solver = runSolver(() => new oc.Geom2dGcc_Lin2d2Tan(qa, qb, TANGENCY_TOLERANCE), listed);
     owned.push(solver);
 
     if (!solver.IsDone()) {
@@ -333,21 +333,18 @@ export function solveTangentLine(
 
     // Solution geometry plus the two tangency points. `Tangency1/2` write
     // their gp_Pnt2d out-param in place; the two Standard_Real& out-params
-    // are passed as `{ current: 0 }` boxes, which is how embind surfaces
-    // primitive references (verified against the bundled wasm).
+    // come back in the returned envelope, which this solver does not need.
     interface LineCand { t1: [number, number]; t2: [number, number]; lx: number; ly: number; dx: number; dy: number }
     const candidates: LineCand[] = [];
     for (let i = 1; i <= n; i++) {
       const lin = solver.ThisSolution(i);
       const loc = lin.Location();
       const dir = lin.Direction();
-      const p1 = new oc.gp_Pnt2d_1();
-      const p2 = new oc.gp_Pnt2d_1();
+      const p1 = new oc.gp_Pnt2d();
+      const p2 = new oc.gp_Pnt2d();
       owned.push(p1, p2);
-      const parSol = { current: 0 };
-      const parArg = { current: 0 };
-      solver.Tangency1(i, parSol, parArg, p1);
-      solver.Tangency2(i, parSol, parArg, p2);
+      solver.Tangency1(i, 0, 0, p1);
+      solver.Tangency2(i, 0, 0, p2);
       candidates.push({
         t1: [p1.X(), p1.Y()],
         t2: [p2.X(), p2.Y()],

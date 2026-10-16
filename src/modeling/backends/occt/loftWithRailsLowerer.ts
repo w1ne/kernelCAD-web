@@ -21,10 +21,10 @@ export function railHitsSections(
 ): boolean {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
-  const adaptor = new oc.BRepAdaptor_Curve_2(railEdge);
+  const adaptor = new oc.BRepAdaptor_Curve(railEdge);
   const u0 = adaptor.FirstParameter();
   const u1 = adaptor.LastParameter();
-  const p = new oc.gp_Pnt_1();
+  const p = new oc.gp_Pnt();
   const samples: Array<[number, number, number]> = [];
   const n = 24;
   for (let i = 0; i <= n; i++) {
@@ -35,13 +35,13 @@ export function railHitsSections(
 
   for (const wire of sectionWires) {
     const verts: Array<[number, number, number]> = [];
-    const exp = new oc.TopExp_Explorer_2(
+    const exp = new oc.TopExp_Explorer(
       wire,
       oc.TopAbs_ShapeEnum.TopAbs_VERTEX,
       oc.TopAbs_ShapeEnum.TopAbs_SHAPE,
     );
     while (exp.More()) {
-      const v = oc.TopoDS.Vertex_1(exp.Current());
+      const v = oc.TopoDS.Vertex(exp.Current());
       const vp = oc.BRep_Tool.Pnt(v);
       verts.push([vp.X(), vp.Y(), vp.Z()]);
       exp.Next();
@@ -87,12 +87,12 @@ export function lowerLoftWithRails(
   if (sectionWires.length < 2) {
     throw new Error(`lowerLoftWithRails: need at least 2 sections; got ${sectionWires.length}.`);
   }
-  const spineWire = new oc.BRepBuilderAPI_MakeWire_2(spineEdge).Wire();
+  const spineWire = new oc.BRepBuilderAPI_MakeWire(spineEdge).Wire();
   const pipeShell = new oc.BRepOffsetAPI_MakePipeShell(spineWire);
-  pipeShell.SetMode_1(false);
+  pipeShell.SetMode(false);
   if (auxEdge) {
-    const auxWire = new oc.BRepBuilderAPI_MakeWire_2(auxEdge).Wire();
-    pipeShell.SetMode_5(
+    const auxWire = new oc.BRepBuilderAPI_MakeWire(auxEdge).Wire();
+    pipeShell.SetMode(
       auxWire,
       true,
       oc.BRepFill_TypeOfContact.BRepFill_ContactOnBorder,
@@ -100,9 +100,9 @@ export function lowerLoftWithRails(
   }
   pipeShell.SetTransitionMode(oc.BRepBuilderAPI_TransitionMode.BRepBuilderAPI_RoundCorner);
   for (const wire of sectionWires) {
-    pipeShell.Add_1(wire, true, true);
+    pipeShell.Add(wire, true, true);
   }
-  const progress = new oc.Message_ProgressRange_1();
+  const progress = new oc.Message_ProgressRange();
   pipeShell.Build(progress);
   if (!pipeShell.IsDone()) {
     throw new Error('BRepOffsetAPI_MakePipeShell::Build did not converge for a rail loft.');

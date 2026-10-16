@@ -85,11 +85,11 @@ function candidateFaces(
 /** Closest point on `face` to `p`, with its distance; undefined if OCCT fails. */
 function closestOnFace(oc: Oc, face: Face, p: Vec3): { dist: number; point: Vec3 } | undefined {
   const vertex = replicad.makeVertex(p);
-  const ext = new oc.BRepExtrema_DistShapeShape_1();
+  const ext = new oc.BRepExtrema_DistShapeShape();
   try {
     ext.LoadS1(vertex.wrapped);
     ext.LoadS2(face.wrapped);
-    const progress = new oc.Message_ProgressRange_1();
+    const progress = new oc.Message_ProgressRange();
     const ok = ext.Perform(progress);
     progress.delete();
     if (!ok || !ext.IsDone() || ext.NbSolution() < 1) return undefined;
@@ -107,7 +107,7 @@ interface CylinderFrame { origin: Vec3; dir: Vec3; radius: number }
 
 function cylinderOf(oc: Oc, face: Face): CylinderFrame | undefined {
   if (face.geomType !== 'CYLINDRE') return undefined;
-  const adaptor = new oc.BRepAdaptor_Surface_2(face.wrapped, true);
+  const adaptor = new oc.BRepAdaptor_Surface(face.wrapped, true);
   try {
     const cyl = adaptor.Cylinder();
     const ax = cyl.Position();

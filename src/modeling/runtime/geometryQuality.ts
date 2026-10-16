@@ -15,7 +15,7 @@ type Brep = ReturnType<OcctBackend['getReplicadShape']>;
 function countOutside(brep: Brep, type: string, avoid: string): number {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
-  const e = new oc.TopExp_Explorer_2(brep.wrapped, oc.TopAbs_ShapeEnum[type], oc.TopAbs_ShapeEnum[avoid]);
+  const e = new oc.TopExp_Explorer(brep.wrapped, oc.TopAbs_ShapeEnum[type], oc.TopAbs_ShapeEnum[avoid]);
   let n = 0;
   try {
     for (; e.More(); e.Next()) n++;

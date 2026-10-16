@@ -34,7 +34,7 @@ export function countFaces(shape: unknown): number {
 
 function countSubShapes(shape: unknown, kind: 'TopAbs_SOLID' | 'TopAbs_FACE'): number {
   const oc = getOC() as OC;
-  const ex = new oc.TopExp_Explorer_2(shape, oc.TopAbs_ShapeEnum[kind], oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
+  const ex = new oc.TopExp_Explorer(shape, oc.TopAbs_ShapeEnum[kind], oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
   let n = 0;
   try {
     while (ex.More()) { n++; ex.Next(); }
@@ -55,7 +55,7 @@ export function isTopologicallyValid(shape: unknown): boolean {
   let analyzer: OC;
   try {
     analyzer = new oc.BRepCheck_Analyzer(shape, false, false);
-    return Boolean(analyzer.IsValid_2());
+    return Boolean(analyzer.IsValid());
   } catch {
     return false;
   } finally {

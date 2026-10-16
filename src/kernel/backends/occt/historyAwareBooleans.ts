@@ -85,7 +85,7 @@ function collectSubshapeHashes(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     : (oc as any).TopAbs_ShapeEnum.TopAbs_EDGE;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const explorer = new (oc as any).TopExp_Explorer_2(
+  const explorer = new (oc as any).TopExp_Explorer(
     shape,
     enumValue,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -115,12 +115,12 @@ function listToHashes(oc: ReturnType<typeof getOC>, list: unknown): string[] {
   const result: string[] = [];
   // Make a copy so we can destructively iterate without mutating the caller's list.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const copy = new (oc as any).TopTools_ListOfShape_3(list);
+  const copy = new (oc as any).NCollection_List_TopoDS_Shape(list);
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     while (!(copy as any).IsEmpty()) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const s = (copy as any).First_1();
+      const s = (copy as any).First();
       result.push(shapeHash(oc, s));
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (copy as any).RemoveFirst();
@@ -174,9 +174,9 @@ export type BooleanOp = 'cut' | 'fuse' | 'intersect';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function newBuilder(o: any, op: BooleanOp): any {
   switch (op) {
-    case 'cut': return new o.BRepAlgoAPI_Cut_1();
-    case 'fuse': return new o.BRepAlgoAPI_Fuse_1();
-    case 'intersect': return new o.BRepAlgoAPI_Common_1();
+    case 'cut': return new o.BRepAlgoAPI_Cut();
+    case 'fuse': return new o.BRepAlgoAPI_Fuse();
+    case 'intersect': return new o.BRepAlgoAPI_Common();
   }
 }
 
@@ -258,13 +258,13 @@ function attemptBoolean(
 ): AttemptOutcome {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const o = oc as any;
-  const progress = new o.Message_ProgressRange_1();
-  const args = new o.TopTools_ListOfShape_1();
-  const toolList = new o.TopTools_ListOfShape_1();
+  const progress = new o.Message_ProgressRange();
+  const args = new o.NCollection_List_TopoDS_Shape();
+  const toolList = new o.NCollection_List_TopoDS_Shape();
   const builder = newBuilder(o, op);
   try {
-    args.Append_1(inputs[0]);
-    for (const t of inputs.slice(1)) toolList.Append_1(t);
+    args.Append(inputs[0]);
+    for (const t of inputs.slice(1)) toolList.Append(t);
     builder.SetArguments(args);
     builder.SetTools(toolList);
     builder.SetToFillHistory(true);

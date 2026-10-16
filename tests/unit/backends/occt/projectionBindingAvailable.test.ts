@@ -39,7 +39,7 @@ describe('OCCT capability: BRepProj_Projection', () => {
     // unbound types` on first call. That is precisely how
     // `GProp_GProps::MatrixOfInertia` stayed broken for its entire life via an
     // unbound `gp_Mat`. The projection below is the real proof.
-    expect(typeof oc.BRepProj_Projection_1).toBe('function');
+    expect(typeof oc.BRepProj_Projection).toBe('function');
   });
 
   it('projects an open wire onto a solid and yields wires', () => {
@@ -47,14 +47,14 @@ describe('OCCT capability: BRepProj_Projection', () => {
 
     // Target solid, and an OPEN two-point wire floating above it.
     const box = replicad.makeBaseBox(20, 20, 10) as any;
-    const edge = new oc.BRepBuilderAPI_MakeEdge_3(
-      new oc.gp_Pnt_3(-5, 0, 50),
-      new oc.gp_Pnt_3(5, 0, 50),
+    const edge = new oc.BRepBuilderAPI_MakeEdge(
+      new oc.gp_Pnt(-5, 0, 50),
+      new oc.gp_Pnt(5, 0, 50),
     ).Edge();
-    const wire = new oc.BRepBuilderAPI_MakeWire_2(edge).Wire();
+    const wire = new oc.BRepBuilderAPI_MakeWire(edge).Wire();
 
     // Cylindrical projection straight down onto the box.
-    const proj = new oc.BRepProj_Projection_1(wire, box.wrapped, new oc.gp_Dir_4(0, 0, -1));
+    const proj = new oc.BRepProj_Projection(wire, box.wrapped, new oc.gp_Dir(0, 0, -1));
 
     expect(proj.IsDone()).toBe(true);
     expect(proj.Shape()).toBeTruthy();

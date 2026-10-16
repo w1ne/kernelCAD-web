@@ -113,26 +113,29 @@ export function buildHelixSpine(spec: HelicalSweepSpec): unknown {
   // u is exactly the helix angle. World axial advance along +axis is then
   // v = handed · pitch · (u − startAngle) / 2π along N.
   const n = scale(spec.axis, handed);
-  const pnt = new oc.gp_Pnt_3(spec.origin[0], spec.origin[1], spec.origin[2]);
-  const dirN = new oc.gp_Dir_4(n[0], n[1], n[2]);
-  const dirX = new oc.gp_Dir_4(spec.refDir[0], spec.refDir[1], spec.refDir[2]);
-  const ax3 = new oc.gp_Ax3_3(pnt, dirN, dirX);
-  const surface = new oc.Handle_Geom_Surface_2(new oc.Geom_CylindricalSurface_1(ax3, spec.radius));
+  const pnt = new oc.gp_Pnt(spec.origin[0], spec.origin[1], spec.origin[2]);
+  const dirN = new oc.gp_Dir(n[0], n[1], n[2]);
+  const dirX = new oc.gp_Dir(spec.refDir[0], spec.refDir[1], spec.refDir[2]);
+  const ax3 = new oc.gp_Ax3(pnt, dirN, dirX);
+  const surface = new oc.Geom_CylindricalSurface(ax3, spec.radius);
   const edgeCount = Math.max(1, Math.ceil(spec.turns * EDGES_PER_TURN - 1e-9));
   const totalAngle = 2 * Math.PI * spec.turns;
-  const wire = new oc.BRepBuilderAPI_MakeWire_1();
+  const wire = new oc.BRepBuilderAPI_MakeWire();
   for (let i = 0; i < edgeCount; i++) {
     const a0 = (totalAngle * i) / edgeCount;
     const a1 = (totalAngle * (i + 1)) / edgeCount;
-    const p0 = new oc.gp_Pnt2d_3(spec.startAngle + a0, (handed * spec.pitch * a0) / (2 * Math.PI));
-    const p1 = new oc.gp_Pnt2d_3(spec.startAngle + a1, (handed * spec.pitch * a1) / (2 * Math.PI));
-    const seg = new oc.GCE2d_MakeSegment_1(p0, p1);
-    const curve = new oc.Handle_Geom2d_Curve_2(seg.Value().get());
-    const edgeMaker = new oc.BRepBuilderAPI_MakeEdge_30(curve, surface);
+    const p0 = new oc.gp_Pnt2d(spec.startAngle + a0, (handed * spec.pitch * a0) / (2 * Math.PI));
+    const p1 = new oc.gp_Pnt2d(spec.startAngle + a1, (handed * spec.pitch * a1) / (2 * Math.PI));
+    // Same curve GCE2d_MakeSegment builds: a line through p0 toward p1,
+    // trimmed to [0, |p1 - p0|].
+    const dir = new oc.gp_Dir2d(p1.X() - p0.X(), p1.Y() - p0.Y());
+    const line = new oc.Geom2d_Line(p0, dir);
+    const curve = new oc.Geom2d_TrimmedCurve(line, 0, p0.Distance(p1), true, true);
+    const edgeMaker = new oc.BRepBuilderAPI_MakeEdge(curve, surface);
     const edge = edgeMaker.Edge();
-    oc.BRepLib.BuildCurves3d_2(edge);
-    wire.Add_1(edge);
-    p0.delete(); p1.delete(); seg.delete(); curve.delete(); edgeMaker.delete();
+    oc.BRepLib.BuildCurves3d(edge);
+    wire.Add(edge);
+    p0.delete(); p1.delete(); dir.delete(); line.delete(); curve.delete(); edgeMaker.delete();
   }
   if (!wire.IsDone()) {
     wire.delete();
@@ -148,7 +151,7 @@ interface Box2 { xmin: number; xmax: number; ymin: number; ymax: number }
 function boundsOf(shape: unknown): Box2 {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
-  const box = new oc.Bnd_Box_1();
+  const box = new oc.Bnd_Box();
   oc.BRepBndLib.Add(shape, box, false);
   const lo = box.CornerMin();
   const hi = box.CornerMax();
@@ -214,24 +217,24 @@ export function sweepProfileAlongHelix(profileWireXY: unknown, spec: HelicalSwee
   if (spec.section !== 'transverse') checkAxialProfile(profileWireXY, spec);
 
   const place = profilePlacement(spec);
-  const fromAx3 = new oc.gp_Ax3_1();
-  const toPnt = new oc.gp_Pnt_3(place.origin[0], place.origin[1], place.origin[2]);
-  const toN = new oc.gp_Dir_4(place.normal[0], place.normal[1], place.normal[2]);
-  const toX = new oc.gp_Dir_4(place.xDir[0], place.xDir[1], place.xDir[2]);
-  const toAx3 = new oc.gp_Ax3_3(toPnt, toN, toX);
-  const trsf = new oc.gp_Trsf_1();
+  const fromAx3 = new oc.gp_Ax3();
+  const toPnt = new oc.gp_Pnt(place.origin[0], place.origin[1], place.origin[2]);
+  const toN = new oc.gp_Dir(place.normal[0], place.normal[1], place.normal[2]);
+  const toX = new oc.gp_Dir(place.xDir[0], place.xDir[1], place.xDir[2]);
+  const toAx3 = new oc.gp_Ax3(toPnt, toN, toX);
+  const trsf = new oc.gp_Trsf();
   trsf.SetDisplacement(fromAx3, toAx3);
-  const placer = new oc.BRepBuilderAPI_Transform_2(profileWireXY, trsf, true);
+  const placer = new oc.BRepBuilderAPI_Transform(profileWireXY, trsf, true);
   const profile = placer.Shape();
 
   const spine = buildHelixSpine(spec);
   const pipe = new oc.BRepOffsetAPI_MakePipeShell(spine);
-  const binormal = new oc.gp_Dir_4(spec.axis[0], spec.axis[1], spec.axis[2]);
-  pipe.SetMode_3(binormal);
+  const binormal = new oc.gp_Dir(spec.axis[0], spec.axis[1], spec.axis[2]);
+  pipe.SetMode(binormal);
   // WithContact=false, WithCorrection=false: keep the placement above; the
   // profile is deliberately NOT normal to the helix tangent.
-  pipe.Add_1(profile, false, false);
-  const progress = new oc.Message_ProgressRange_1();
+  pipe.Add(profile, false, false);
+  const progress = new oc.Message_ProgressRange();
   pipe.Build(progress);
   const cleanup = () => {
     progress.delete(); binormal.delete(); pipe.delete(); placer.delete(); trsf.delete();
@@ -247,14 +250,14 @@ export function sweepProfileAlongHelix(profileWireXY: unknown, spec: HelicalSwee
 
   // A clockwise profile yields an inside-out solid; flip it so volume is
   // positive and booleans see the right side as material.
-  const props = new oc.GProp_GProps_1();
-  oc.BRepGProp.VolumeProperties_1(solid, props, false, false, false);
+  const props = new oc.GProp_GProps();
+  oc.BRepGProp.VolumeProperties(solid, props, false, false, false);
   const volume = props.Mass();
   props.delete();
   if (volume < 0) solid = solid.Reversed();
 
   const analyzer = new oc.BRepCheck_Analyzer(solid, true, false);
-  const valid = analyzer.IsValid_2();
+  const valid = analyzer.IsValid();
   analyzer.delete();
   if (!valid || Math.abs(volume) < 1e-12) {
     throw new Error('helical sweep: OCCT produced an invalid or empty solid (BRepCheck failed).');
@@ -266,14 +269,14 @@ export function sweepProfileAlongHelix(profileWireXY: unknown, spec: HelicalSwee
 export function polygonWireXY(points: ReadonlyArray<readonly [number, number]>): unknown {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
-  const wire = new oc.BRepBuilderAPI_MakeWire_1();
+  const wire = new oc.BRepBuilderAPI_MakeWire();
   for (let i = 0; i < points.length; i++) {
     const a = points[i];
     const b = points[(i + 1) % points.length];
-    const pa = new oc.gp_Pnt_3(a[0], a[1], 0);
-    const pb = new oc.gp_Pnt_3(b[0], b[1], 0);
-    const maker = new oc.BRepBuilderAPI_MakeEdge_3(pa, pb);
-    wire.Add_1(maker.Edge());
+    const pa = new oc.gp_Pnt(a[0], a[1], 0);
+    const pb = new oc.gp_Pnt(b[0], b[1], 0);
+    const maker = new oc.BRepBuilderAPI_MakeEdge(pa, pb);
+    wire.Add(maker.Edge());
     maker.delete(); pa.delete(); pb.delete();
   }
   const out = wire.Wire();

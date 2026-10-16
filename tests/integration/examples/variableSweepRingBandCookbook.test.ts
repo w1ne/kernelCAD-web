@@ -61,7 +61,7 @@ describe(`${ID} snippet`, () => {
     const bores = faces
       .filter((f) => f.geomType === 'CYLINDRE')
       .map((f) => {
-        const cyl = new oc.BRepAdaptor_Surface_2(f.wrapped, true).Cylinder();
+        const cyl = new oc.BRepAdaptor_Surface(f.wrapped, true).Cylinder();
         const dir = cyl.Axis().Direction();
         return { r: cyl.Radius(), axisY: Math.abs(dir.Y()) };
       });

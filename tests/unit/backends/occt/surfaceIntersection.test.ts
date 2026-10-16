@@ -39,7 +39,7 @@ describe('surfaceIntersection OCCT math', () => {
     const expectedMinor = r;
     const expectedMajor = r / Math.cos(angle);
     for (const edge of edges) {
-      const adaptor = new oc.BRepAdaptor_Curve_2(edge);
+      const adaptor = new oc.BRepAdaptor_Curve(edge);
       const type = adaptor.GetType();
       if (type === oc.GeomAbs_CurveType.GeomAbs_Ellipse) {
         const el = adaptor.Ellipse();
@@ -54,10 +54,10 @@ describe('surfaceIntersection OCCT math', () => {
     if (!foundEllipse) {
       const pts: Vec3[] = [];
       for (const edge of edges) {
-        const adaptor = new oc.BRepAdaptor_Curve_2(edge);
+        const adaptor = new oc.BRepAdaptor_Curve(edge);
         const u0 = adaptor.FirstParameter();
         const u1 = adaptor.LastParameter();
-        const p = new oc.gp_Pnt_1();
+        const p = new oc.gp_Pnt();
         for (let i = 0; i <= 64; i++) {
           adaptor.D0(u0 + ((u1 - u0) * i) / 64, p);
           pts.push([p.X(), p.Y(), p.Z()]);
@@ -84,9 +84,9 @@ describe('surfaceIntersection OCCT math', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const oc = getOC() as any;
     const endpoints: Array<[number, number, number]> = [];
-    const p = new oc.gp_Pnt_1();
+    const p = new oc.gp_Pnt();
     for (const edge of edges) {
-      const adaptor = new oc.BRepAdaptor_Curve_2(edge);
+      const adaptor = new oc.BRepAdaptor_Curve(edge);
       const u0 = adaptor.FirstParameter();
       const u1 = adaptor.LastParameter();
       adaptor.D0(u0, p);

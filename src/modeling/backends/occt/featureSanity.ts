@@ -112,7 +112,7 @@ function volumeProblem(r: FeatureRecord, shape: OcctBackend, inputs: readonly Oc
 function readBox(shape: OcctBackend): Box | undefined {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
-  const box = new oc.Bnd_Box_1();
+  const box = new oc.Bnd_Box();
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     oc.BRepBndLib.Add((shape.getReplicadShape() as any).wrapped, box, true);

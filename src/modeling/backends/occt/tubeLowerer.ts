@@ -16,8 +16,8 @@ function sweptRod(path: TubePath, r: number): replicad.Shape3D {
   const spine = replicad.assembleWire(edges);
   const start: V3 = path.points[0];
   const profile = replicad.makeFace(replicad.assembleWire([replicad.makeCircle(r, start, path.startDir)]));
-  const pipe = new oc.BRepOffsetAPI_MakePipe_1(spine.wrapped, profile.wrapped);
-  pipe.Build(new oc.Message_ProgressRange_1());
+  const pipe = new oc.BRepOffsetAPI_MakePipe(spine.wrapped, profile.wrapped);
+  pipe.Build(new oc.Message_ProgressRange());
   if (!pipe.IsDone()) throw new Error('tube: BRepOffsetAPI_MakePipe did not finish.');
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return replicad.cast(pipe.Shape() as any) as replicad.Shape3D;

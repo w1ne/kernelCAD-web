@@ -394,7 +394,7 @@ function collectConcaveCylindricalFaces(
   const wrapped = (backend.getReplicadShape() as any).wrapped;
   const out: ConcaveCylFace[] = [];
 
-  const explorer = new oc.TopExp_Explorer_2(
+  const explorer = new oc.TopExp_Explorer(
     wrapped,
     oc.TopAbs_ShapeEnum.TopAbs_FACE,
     oc.TopAbs_ShapeEnum.TopAbs_SHAPE,
@@ -402,11 +402,11 @@ function collectConcaveCylindricalFaces(
   try {
     while (explorer.More()) {
       const raw = explorer.Current();
-      const face = oc.TopoDS.Face_1(raw);
-      const adaptor = new oc.BRepAdaptor_Surface_2(face, true);
+      const face = oc.TopoDS.Face(raw);
+      const adaptor = new oc.BRepAdaptor_Surface(face, true);
       try {
         const type = adaptor.GetType();
-        if (type.value === oc.GeomAbs_SurfaceType.GeomAbs_Cylinder.value) {
+        if (type === oc.GeomAbs_SurfaceType.GeomAbs_Cylinder) {
           const cyl = adaptor.Cylinder();
           const ax1 = cyl.Axis();
           const locP = ax1.Location();
@@ -421,16 +421,16 @@ function collectConcaveCylindricalFaces(
 
           // Concavity test at mid-UV. Natural normal n = d1u × d1v; face
           // orientation REVERSED flips it to the solid's outward normal.
-          const p = new oc.gp_Pnt_1();
-          const d1u = new oc.gp_Vec_1();
-          const d1v = new oc.gp_Vec_1();
+          const p = new oc.gp_Pnt();
+          const d1u = new oc.gp_Vec();
+          const d1v = new oc.gp_Vec();
           adaptor.D1((u1 + u2) / 2, (v1 + v2) / 2, p, d1u, d1v);
           let n = cross(
             [d1u.X(), d1u.Y(), d1u.Z()],
             [d1v.X(), d1v.Y(), d1v.Z()],
           );
-          const orientation = face.Orientation_1();
-          if (orientation.value === oc.TopAbs_Orientation.TopAbs_REVERSED.value) {
+          const orientation = face.Orientation();
+          if (orientation === oc.TopAbs_Orientation.TopAbs_REVERSED) {
             n = scale(n, -1);
           }
           const point: Vec3 = [p.X(), p.Y(), p.Z()];

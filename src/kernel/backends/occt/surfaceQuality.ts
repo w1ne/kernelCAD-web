@@ -136,15 +136,14 @@ function classify(maxG0: number, maxG1: number, maxG2: number): ContinuityClass 
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- replicad-opencascadejs has no exported OC type
-function occtClassFromShape(value: { value?: number } | number | undefined, oc: any): ContinuityClass | undefined {
+function occtClassFromShape(value: string | undefined, oc: any): ContinuityClass | undefined {
   if (value === undefined) return undefined;
-  const v = typeof value === 'number' ? value : value.value;
   const G = oc.GeomAbs_Shape;
-  if (v === G.GeomAbs_G2.value || v === G.GeomAbs_C2.value || v === G.GeomAbs_C3.value || v === G.GeomAbs_CN.value) {
+  if (value === G.GeomAbs_G2 || value === G.GeomAbs_C2 || value === G.GeomAbs_C3 || value === G.GeomAbs_CN) {
     return 'G2';
   }
-  if (v === G.GeomAbs_G1.value || v === G.GeomAbs_C1.value) return 'G1';
-  if (v === G.GeomAbs_C0.value) return 'G0';
+  if (value === G.GeomAbs_G1 || value === G.GeomAbs_C1) return 'G1';
+  if (value === G.GeomAbs_C0) return 'G0';
   return undefined;
 }
 
@@ -157,13 +156,13 @@ export function evalSurfaceProps(face: Face, u: number, v: number): SurfaceProps
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
   const raw = wrappedOf(face);
-  const adaptor = new oc.BRepAdaptor_Surface_2(raw, true);
-  const p = new oc.gp_Pnt_1();
-  const d1u = new oc.gp_Vec_1();
-  const d1v = new oc.gp_Vec_1();
-  const d2u = new oc.gp_Vec_1();
-  const d2v = new oc.gp_Vec_1();
-  const d2uv = new oc.gp_Vec_1();
+  const adaptor = new oc.BRepAdaptor_Surface(raw, true);
+  const p = new oc.gp_Pnt();
+  const d1u = new oc.gp_Vec();
+  const d1v = new oc.gp_Vec();
+  const d2u = new oc.gp_Vec();
+  const d2v = new oc.gp_Vec();
+  const d2uv = new oc.gp_Vec();
   try {
     adaptor.D2(u, v, p, d1u, d1v, d2u, d2v, d2uv);
     const Su: Vec3 = [d1u.X(), d1u.Y(), d1u.Z()];
@@ -214,7 +213,7 @@ function pcurveUv(edge: Edge, face: Face, t01: number): [number, number] | null 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
   try {
-    const c2d = new oc.BRepAdaptor_Curve2d_2(wrappedOf(edge), wrappedOf(face)) as {
+    const c2d = new oc.BRepAdaptor_Curve2d(wrappedOf(edge), wrappedOf(face)) as {
       FirstParameter: () => number;
       LastParameter: () => number;
       Value: (u: number) => { X: () => number; Y: () => number; delete?: () => void };
@@ -289,8 +288,8 @@ function storedOcctClass(edge: Edge, a: Face, b: Face): ContinuityClass | undefi
       const e = wrappedOf(edge);
       const f1 = wrappedOf(a);
       const f2 = wrappedOf(b);
-      if (!oc.BRep_Tool.HasContinuity_1(e, f1, f2)) return undefined;
-      return occtClassFromShape(oc.BRep_Tool.Continuity_1(e, f1, f2), oc);
+      if (!oc.BRep_Tool.HasContinuity(e, f1, f2)) return undefined;
+      return occtClassFromShape(oc.BRep_Tool.Continuity(e, f1, f2), oc);
     } catch {
       return undefined;
     }
@@ -404,7 +403,7 @@ type UvBounds = { u1: number; u2: number; v1: number; v2: number };
 function uvBounds(face: Face): UvBounds | null {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
-  const adaptor = new oc.BRepAdaptor_Surface_2(wrappedOf(face), true);
+  const adaptor = new oc.BRepAdaptor_Surface(wrappedOf(face), true);
   try {
     return {
       u1: adaptor.FirstUParameter(),

@@ -19,7 +19,7 @@
 // overloads (`Geom2dGcc_Circ2d2TanRad_2/_3`, `Geom2dGcc_Circ2d3Tan_2/_3/_4`)
 // take a `Handle_Geom2d_Point`, and neither `Geom2d_CartesianPoint` nor
 // `Handle_Geom2d_Point` is bound in the bundled wasm (`kcad-v0.25.0`) — they
-// appear in the .d.ts only as parameter types, and `oc.Geom2d_CartesianPoint_1`
+// appear in the .d.ts only as parameter types, and `oc.Geom2d_CartesianPoint`
 // is `undefined` at runtime. "Circle through a point tangent to a curve" is
 // therefore unavailable until the wasm exports the point classes; we say so
 // rather than approximating a point as a tiny circle.

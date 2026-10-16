@@ -25,7 +25,7 @@ async function lower(code: string) {
 function solidCount(shape: OcctBackend): number {
   const oc = replicad.getOC() as any;
   const wrapped = (shape.getReplicadShape() as unknown as { wrapped: unknown }).wrapped;
-  const ex = new oc.TopExp_Explorer_2(wrapped, oc.TopAbs_ShapeEnum.TopAbs_SOLID, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
+  const ex = new oc.TopExp_Explorer(wrapped, oc.TopAbs_ShapeEnum.TopAbs_SOLID, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
   let n = 0;
   for (; ex.More(); ex.Next()) n++;
   ex.delete();

@@ -17,34 +17,34 @@ import { lowerCurve3D } from '../../../../src/modeling/backends/occt/curve3dLowe
 function buildLineEdge(a: [number, number, number], b: [number, number, number]): any {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
-  const p1 = new oc.gp_Pnt_3(a[0], a[1], a[2]);
-  const p2 = new oc.gp_Pnt_3(b[0], b[1], b[2]);
-  return new oc.BRepBuilderAPI_MakeEdge_3(p1, p2).Edge();
+  const p1 = new oc.gp_Pnt(a[0], a[1], a[2]);
+  const p2 = new oc.gp_Pnt(b[0], b[1], b[2]);
+  return new oc.BRepBuilderAPI_MakeEdge(p1, p2).Edge();
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function buildRectWire(halfX: number, halfY: number, z: number): any {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
-  const p1 = new oc.gp_Pnt_3(-halfX, -halfY, z);
-  const p2 = new oc.gp_Pnt_3(halfX, -halfY, z);
-  const p3 = new oc.gp_Pnt_3(halfX, halfY, z);
-  const p4 = new oc.gp_Pnt_3(-halfX, halfY, z);
-  const e1 = new oc.BRepBuilderAPI_MakeEdge_3(p1, p2).Edge();
-  const e2 = new oc.BRepBuilderAPI_MakeEdge_3(p2, p3).Edge();
-  const e3 = new oc.BRepBuilderAPI_MakeEdge_3(p3, p4).Edge();
-  const e4 = new oc.BRepBuilderAPI_MakeEdge_3(p4, p1).Edge();
-  const wb = new oc.BRepBuilderAPI_MakeWire_5(e1, e2, e3, e4);
+  const p1 = new oc.gp_Pnt(-halfX, -halfY, z);
+  const p2 = new oc.gp_Pnt(halfX, -halfY, z);
+  const p3 = new oc.gp_Pnt(halfX, halfY, z);
+  const p4 = new oc.gp_Pnt(-halfX, halfY, z);
+  const e1 = new oc.BRepBuilderAPI_MakeEdge(p1, p2).Edge();
+  const e2 = new oc.BRepBuilderAPI_MakeEdge(p2, p3).Edge();
+  const e3 = new oc.BRepBuilderAPI_MakeEdge(p3, p4).Edge();
+  const e4 = new oc.BRepBuilderAPI_MakeEdge(p4, p1).Edge();
+  const wb = new oc.BRepBuilderAPI_MakeWire(e1, e2, e3, e4);
   return wb.Wire();
 }
 
 /** Circle wire of `radius` centered on the Z axis at height `z`. */
 function buildCircleWire(radius: number, z: number): any {
   const oc = getOC() as any;
-  const ax2 = new oc.gp_Ax2_3(new oc.gp_Pnt_3(0, 0, z), new oc.gp_Dir_4(0, 0, 1));
-  const circle = new oc.gp_Circ_2(ax2, radius);
-  const edge = new oc.BRepBuilderAPI_MakeEdge_8(circle).Edge();
-  return new oc.BRepBuilderAPI_MakeWire_2(edge).Wire();
+  const ax2 = new oc.gp_Ax2(new oc.gp_Pnt(0, 0, z), new oc.gp_Dir(0, 0, 1));
+  const circle = new oc.gp_Circ(ax2, radius);
+  const edge = new oc.BRepBuilderAPI_MakeEdge(circle).Edge();
+  return new oc.BRepBuilderAPI_MakeWire(edge).Wire();
 }
 
 describe('variableSweepLowerer', () => {
@@ -153,7 +153,7 @@ describe('variableSweepLowerer', () => {
 
   it('builds a 3-station sweep on a NURBS spine (subdivision path)', () => {
     // Same geometry, but the spine is a cubic NURBS edge like the ones
-    // `lowerCurve3D` produces — exercises `BRep_Tool.Curve_2` on a
+    // `lowerCurve3D` produces — exercises `BRep_Tool.Curve` on a
     // Geom_BSplineCurve rather than a Geom_Line.
     const spineEdge = lowerCurve3D({
       controlPoints: [

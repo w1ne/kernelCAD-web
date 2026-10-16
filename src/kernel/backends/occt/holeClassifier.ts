@@ -87,7 +87,7 @@ function isCoaxialCylinder(face: Face, bore: BoreFrame, axis: Vec3): boolean {
   let adaptor;
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    adaptor = new oc.BRepAdaptor_Surface_2((face as any).wrapped, true);
+    adaptor = new oc.BRepAdaptor_Surface((face as any).wrapped, true);
     const ax = adaptor.Cylinder().Axis();
     const d = ax.Direction();
     const l = ax.Location();

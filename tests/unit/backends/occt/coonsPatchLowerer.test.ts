@@ -50,10 +50,10 @@ describe('lowerCoonsPatch', () => {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const oc = getOC() as any;
-    const props = new oc.GProp_GProps_1();
+    const props = new oc.GProp_GProps();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const topoFace = (result.face as any).wrapped;
-    oc.BRepGProp.SurfaceProperties_1(topoFace, props, false, false);
+    oc.BRepGProp.SurfaceProperties(topoFace, props, false, false);
     const area = props.Mass();
     expect(area).toBeGreaterThan(0);
     // Expected area for a 10×10 square is 100 mm² — Coons-patch fitting

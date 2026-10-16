@@ -213,14 +213,14 @@ function firstEdgeOfSketchSpine(sketchInput: OcctBackend): unknown | undefined {
   const wire = face().outerWire();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = (replicad as any).getOC();
-  const exp = new oc.TopExp_Explorer_2(
+  const exp = new oc.TopExp_Explorer(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (wire as any).wrapped,
     oc.TopAbs_ShapeEnum.TopAbs_EDGE,
     oc.TopAbs_ShapeEnum.TopAbs_SHAPE,
   );
   if (exp.More()) {
-    return oc.TopoDS.Edge_1(exp.Current());
+    return oc.TopoDS.Edge(exp.Current());
   }
   return undefined;
 }

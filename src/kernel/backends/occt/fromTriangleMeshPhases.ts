@@ -72,18 +72,18 @@ export function addTriangleFaces(
       skipped++;
       continue;
     }
-    const p0 = new oc.gp_Pnt_3(ax, ay, az);
-    const p1 = new oc.gp_Pnt_3(bx, by, bz);
-    const p2 = new oc.gp_Pnt_3(cx, cy, cz);
-    const e01 = new oc.BRepBuilderAPI_MakeEdge_3(p0, p1);
-    const e12 = new oc.BRepBuilderAPI_MakeEdge_3(p1, p2);
-    const e20 = new oc.BRepBuilderAPI_MakeEdge_3(p2, p0);
+    const p0 = new oc.gp_Pnt(ax, ay, az);
+    const p1 = new oc.gp_Pnt(bx, by, bz);
+    const p2 = new oc.gp_Pnt(cx, cy, cz);
+    const e01 = new oc.BRepBuilderAPI_MakeEdge(p0, p1);
+    const e12 = new oc.BRepBuilderAPI_MakeEdge(p1, p2);
+    const e20 = new oc.BRepBuilderAPI_MakeEdge(p2, p0);
     const edge01 = e01.Edge();
     const edge12 = e12.Edge();
     const edge20 = e20.Edge();
-    const wireBuilder = new oc.BRepBuilderAPI_MakeWire_4(edge01, edge12, edge20);
+    const wireBuilder = new oc.BRepBuilderAPI_MakeWire(edge01, edge12, edge20);
     const wire = wireBuilder.Wire();
-    const faceBuilder = new oc.BRepBuilderAPI_MakeFace_15(wire, true);
+    const faceBuilder = new oc.BRepBuilderAPI_MakeFace(wire, true);
     sewing.Add(faceBuilder.Face());
     // OCCT WASM is heap-managed; release intermediates explicitly.
     p0.delete?.();

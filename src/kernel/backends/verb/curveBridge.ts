@@ -109,20 +109,20 @@ export function fromVerb(verbCurve: NurbsCurve): replicad.Edge {
   // ANY-non-unit-weight case as rational.
   const isRational = homogeneous.some((row) => row.length >= 4 && row[3] !== 1);
 
-  const cpArray = new oc.TColgp_Array1OfPnt_2(1, homogeneous.length);
-  const wArray = isRational ? new oc.TColStd_Array1OfReal_2(1, homogeneous.length) : null;
+  const cpArray = new oc.NCollection_Array1_gp_Pnt(1, homogeneous.length);
+  const wArray = isRational ? new oc.NCollection_Array1_double(1, homogeneous.length) : null;
   for (let i = 0; i < homogeneous.length; i++) {
     const w = homogeneous[i].length >= 4 ? homogeneous[i][3] : 1;
     const x = homogeneous[i][0] / w;
     const y = homogeneous[i][1] / w;
     const z = homogeneous[i][2] / w;
-    cpArray.SetValue(i + 1, new oc.gp_Pnt_3(x, y, z));
+    cpArray.SetValue(i + 1, new oc.gp_Pnt(x, y, z));
     if (wArray) wArray.SetValue(i + 1, w);
   }
 
   const decomposed = decomposeKnots(data.knots);
-  const kArray = new oc.TColStd_Array1OfReal_2(1, decomposed.knots.length);
-  const mArray = new oc.TColStd_Array1OfInteger_2(1, decomposed.mults.length);
+  const kArray = new oc.NCollection_Array1_double(1, decomposed.knots.length);
+  const mArray = new oc.NCollection_Array1_int(1, decomposed.mults.length);
   for (let i = 0; i < decomposed.knots.length; i++) {
     kArray.SetValue(i + 1, decomposed.knots[i]);
     mArray.SetValue(i + 1, decomposed.mults[i]);
@@ -132,8 +132,8 @@ export function fromVerb(verbCurve: NurbsCurve): replicad.Edge {
   let bspline: any;
   try {
     bspline = isRational
-      ? new oc.Geom_BSplineCurve_2(cpArray, wArray, kArray, mArray, degree, false, false)
-      : new oc.Geom_BSplineCurve_1(cpArray, kArray, mArray, degree, false);
+      ? new oc.Geom_BSplineCurve(cpArray, wArray, kArray, mArray, degree, false, false)
+      : new oc.Geom_BSplineCurve(cpArray, kArray, mArray, degree, false);
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     const knotPreview = data.knots.slice(0, 8).map((k) => k.toFixed(6)).join(', ');
@@ -145,8 +145,8 @@ export function fromVerb(verbCurve: NurbsCurve): replicad.Edge {
     );
   }
 
-  const handle = new oc.Handle_Geom_Curve_2(bspline);
-  const edgeBuilder = new oc.BRepBuilderAPI_MakeEdge_24(handle);
+  const handle = bspline;
+  const edgeBuilder = new oc.BRepBuilderAPI_MakeEdge(handle);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return new (replicad as any).Edge(edgeBuilder.Edge());
 }

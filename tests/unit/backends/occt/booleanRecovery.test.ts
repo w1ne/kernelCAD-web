@@ -31,16 +31,16 @@ const EXPECTED_FUSE = 8000 + Math.PI * 25 * 10;
 function exactFuse(a: OcctBackend, b: OcctBackend): { valid: boolean; warned: boolean; volume: number } {
    
   const o = getOC() as any;
-  const builder = new o.BRepAlgoAPI_Fuse_1();
-  const args = new o.TopTools_ListOfShape_1();
-  const tools = new o.TopTools_ListOfShape_1();
+  const builder = new o.BRepAlgoAPI_Fuse();
+  const args = new o.NCollection_List_TopoDS_Shape();
+  const tools = new o.NCollection_List_TopoDS_Shape();
    
-  args.Append_1((a.getReplicadShape() as any).wrapped);
+  args.Append((a.getReplicadShape() as any).wrapped);
    
-  tools.Append_1((b.getReplicadShape() as any).wrapped);
+  tools.Append((b.getReplicadShape() as any).wrapped);
   builder.SetArguments(args);
   builder.SetTools(tools);
-  const progress = new o.Message_ProgressRange_1();
+  const progress = new o.Message_ProgressRange();
   builder.Build(progress);
   const out = {
     valid: isValidShape(o, builder.Shape()),

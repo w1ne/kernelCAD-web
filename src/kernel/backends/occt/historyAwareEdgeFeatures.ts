@@ -56,7 +56,7 @@ function findEdgeByHash(
   bodyShape: unknown,
   hash: EdgeHash,
 ): unknown {
-  const explorer = new oc.TopExp_Explorer_2(
+  const explorer = new oc.TopExp_Explorer(
     bodyShape,
     oc.TopAbs_ShapeEnum.TopAbs_EDGE,
     oc.TopAbs_ShapeEnum.TopAbs_SHAPE,
@@ -70,7 +70,7 @@ function findEdgeByHash(
         // Downcast from TopoDS_Shape to TopoDS_Edge — required by BRepFilletAPI_MakeFillet::Add_2
         // and BRepFilletAPI_MakeChamfer::Add_2. TopExp_Explorer.Current() returns the generic
         // TopoDS_Shape base; OCCT's binding requires the concrete subtype.
-        found = oc.TopoDS.Edge_1(e);
+        found = oc.TopoDS.Edge(e);
         break;
       }
       explorer.Next();
@@ -92,11 +92,11 @@ function findEdgeByHash(
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function listToHashStrings(oc: any, list: any): string[] {
   const result: string[] = [];
-  const copy = new oc.TopTools_ListOfShape_3(list);
+  const copy = new oc.NCollection_List_TopoDS_Shape(list);
   try {
     while (!copy.IsEmpty()) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      result.push((copy.First_1() as any).HashCode(HASH_UPPER).toString(16));
+      result.push((copy.First() as any).HashCode(HASH_UPPER).toString(16));
       copy.RemoveFirst();
     }
   } finally {
@@ -121,7 +121,7 @@ function enumerateAndRecord(
   deleted: Set<string>,
 ): void {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const explorer = new oc.TopExp_Explorer_2(bodyShape, typeEnum as any, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
+  const explorer = new oc.TopExp_Explorer(bodyShape, typeEnum as any, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
   try {
     while (explorer.More()) {
       const sub = explorer.Current();
@@ -185,11 +185,11 @@ export function filletWithHistory(
     builder.SetContinuity(oc.GeomAbs_Shape.GeomAbs_G2, 1e-4);
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const progress = new (oc as any).Message_ProgressRange_1();
+  const progress = new (oc as any).Message_ProgressRange();
   try {
     for (const e of edges) {
       const edgeShape = findEdgeByHash(oc, bodyShape, e.hash);
-      builder.Add_2(radius, edgeShape);
+      builder.Add(radius, edgeShape);
     }
     builder.Build(progress);
     if (!builder.IsDone()) {
@@ -238,11 +238,11 @@ export function chamferWithHistory(
 
   const builder = new oc.BRepFilletAPI_MakeChamfer(bodyShape);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const progress = new (oc as any).Message_ProgressRange_1();
+  const progress = new (oc as any).Message_ProgressRange();
   try {
     for (const e of edges) {
       const edgeShape = findEdgeByHash(oc, bodyShape, e.hash);
-      builder.Add_2(distance, edgeShape);
+      builder.Add(distance, edgeShape);
     }
     builder.Build(progress);
     if (!builder.IsDone()) {
@@ -302,10 +302,10 @@ export function shellWithHistory(
 
   // Build the TopTools_ListOfShape of faces to remove by enumerating body faces
   // and matching by hash.
-  const facesToRemoveList = new oc.TopTools_ListOfShape_1();
+  const facesToRemoveList = new oc.NCollection_List_TopoDS_Shape();
   const removedFaces: unknown[] = [];
   const hashSet = new Set(facesToRemove.map(f => f.hash));
-  const faceExplorer = new oc.TopExp_Explorer_2(
+  const faceExplorer = new oc.TopExp_Explorer(
     bodyShape,
     oc.TopAbs_ShapeEnum.TopAbs_FACE,
     oc.TopAbs_ShapeEnum.TopAbs_SHAPE,
@@ -315,7 +315,7 @@ export function shellWithHistory(
       const f = faceExplorer.Current();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (hashSet.has((f as any).HashCode(HASH_UPPER).toString(16))) {
-        facesToRemoveList.Append_1(f);
+        facesToRemoveList.Append(f);
         removedFaces.push(f);
       }
       faceExplorer.Next();
@@ -382,9 +382,9 @@ export function shellWithHistory(
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function shapeVolume(oc: any, shape: unknown): number {
-  const props = new oc.GProp_GProps_1();
+  const props = new oc.GProp_GProps();
   try {
-    oc.BRepGProp.VolumeProperties_1(shape, props, false, false, false);
+    oc.BRepGProp.VolumeProperties(shape, props, false, false, false);
     return Math.abs(props.Mass());
   } catch {
     return Number.NaN;
@@ -413,7 +413,7 @@ function buildThickSolid(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): { builder: any; progress: any } | undefined {
   const builder = new oc.BRepOffsetAPI_MakeThickSolid();
-  const progress = new oc.Message_ProgressRange_1();
+  const progress = new oc.Message_ProgressRange();
   try {
     builder.MakeThickSolidByJoin(
       bodyShape,

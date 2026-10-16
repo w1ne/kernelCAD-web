@@ -90,7 +90,7 @@ function meshWholeShapeIfSmall(
   //                            theAngDeflection, isInParallel)
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return new (oc as any).BRepMesh_IncrementalMesh_2(
+    return new (oc as any).BRepMesh_IncrementalMesh(
       wrapped,
       deflection?.linear ?? 0.01, // linear deflection — scaled per-edge because isRelative=true,
             //   so absolute deflection is ~0.01 * edgeLength (e.g. 0.3 mm on a
@@ -133,7 +133,7 @@ function meshFacesIndividually(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (oc as any).BRepTools.Clean(fw, true);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const fm = new (oc as any).BRepMesh_IncrementalMesh_2(fw, linear, relative, angularRad, false);
+      const fm = new (oc as any).BRepMesh_IncrementalMesh(fw, linear, relative, angularRad, false);
       fm.delete();
     } catch {
       // Face left untriangulated; the read-back loop's fallback + the
@@ -171,7 +171,7 @@ function readFaceTriangulations(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (oc as any).BRepTools.Clean(fw, true);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const faceMesher = new (oc as any).BRepMesh_IncrementalMesh_2(fw, 0.02, false, 0.1, false);
+      const faceMesher = new (oc as any).BRepMesh_IncrementalMesh(fw, 0.02, false, 0.1, false);
       faceMesher.delete();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       tri = (face as any).triangulation(rawVertices.length / 3) as typeof tri;

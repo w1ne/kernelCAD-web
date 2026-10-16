@@ -100,16 +100,16 @@ function buildNurbsSegmentEdge(
   const oc = getOC() as any;
   const n = cmd.controlPoints.length;
   const degree = cmd.degree.evaluated;
-  const polesArr = new oc.TColgp_Array1OfPnt_2(1, n);
+  const polesArr = new oc.NCollection_Array1_gp_Pnt(1, n);
   for (let i = 0; i < n; i++) {
     const [px, py, pz] = liftCoord(plane, cmd.controlPoints[i].x.evaluated, cmd.controlPoints[i].y.evaluated);
-    polesArr.SetValue(i + 1, new oc.gp_Pnt_3(px, py, pz));
+    polesArr.SetValue(i + 1, new oc.gp_Pnt(px, py, pz));
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let weightsArr: any | undefined;
   if (cmd.weights !== undefined) {
-    weightsArr = new oc.TColStd_Array1OfReal_2(1, n);
+    weightsArr = new oc.NCollection_Array1_double(1, n);
     for (let i = 0; i < n; i++) weightsArr.SetValue(i + 1, cmd.weights[i].evaluated);
   }
 
@@ -117,19 +117,19 @@ function buildNurbsSegmentEdge(
     ? decomposeKnots(cmd.knots.map(k => k.evaluated))
     : clampedUniformKnots(n, degree);
 
-  const knotsArr = new oc.TColStd_Array1OfReal_2(1, decomposed.knots.length);
-  const multsArr = new oc.TColStd_Array1OfInteger_2(1, decomposed.mults.length);
+  const knotsArr = new oc.NCollection_Array1_double(1, decomposed.knots.length);
+  const multsArr = new oc.NCollection_Array1_int(1, decomposed.mults.length);
   for (let i = 0; i < decomposed.knots.length; i++) {
     knotsArr.SetValue(i + 1, decomposed.knots[i]);
     multsArr.SetValue(i + 1, decomposed.mults[i]);
   }
 
   const bspline = weightsArr !== undefined
-    ? new oc.Geom_BSplineCurve_2(polesArr, weightsArr, knotsArr, multsArr, degree, false, false)
-    : new oc.Geom_BSplineCurve_1(polesArr, knotsArr, multsArr, degree, false);
+    ? new oc.Geom_BSplineCurve(polesArr, weightsArr, knotsArr, multsArr, degree, false, false)
+    : new oc.Geom_BSplineCurve(polesArr, knotsArr, multsArr, degree, false);
 
-  const handle = new oc.Handle_Geom_Curve_2(bspline);
-  const edgeBuilder = new oc.BRepBuilderAPI_MakeEdge_24(handle);
+  const handle = bspline;
+  const edgeBuilder = new oc.BRepBuilderAPI_MakeEdge(handle);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return new (replicad as any).Edge(edgeBuilder.Edge());
 }
@@ -163,21 +163,21 @@ function buildHermiteG2Edge(
   };
   const bezier = solveHermiteG2(a, b);
 
-  const polesArr = new oc.TColgp_Array1OfPnt_2(1, 6);
+  const polesArr = new oc.NCollection_Array1_gp_Pnt(1, 6);
   for (let i = 0; i < 6; i++) {
     const [px, py, pz] = bezier[i];
-    polesArr.SetValue(i + 1, new oc.gp_Pnt_3(px, py, pz));
+    polesArr.SetValue(i + 1, new oc.gp_Pnt(px, py, pz));
   }
   const k = clampedUniformKnots(6, 5);
-  const knotsArr = new oc.TColStd_Array1OfReal_2(1, k.knots.length);
-  const multsArr = new oc.TColStd_Array1OfInteger_2(1, k.mults.length);
+  const knotsArr = new oc.NCollection_Array1_double(1, k.knots.length);
+  const multsArr = new oc.NCollection_Array1_int(1, k.mults.length);
   for (let i = 0; i < k.knots.length; i++) {
     knotsArr.SetValue(i + 1, k.knots[i]);
     multsArr.SetValue(i + 1, k.mults[i]);
   }
-  const bspline = new oc.Geom_BSplineCurve_1(polesArr, knotsArr, multsArr, 5, false);
-  const handle = new oc.Handle_Geom_Curve_2(bspline);
-  const edgeBuilder = new oc.BRepBuilderAPI_MakeEdge_24(handle);
+  const bspline = new oc.Geom_BSplineCurve(polesArr, knotsArr, multsArr, 5, false);
+  const handle = bspline;
+  const edgeBuilder = new oc.BRepBuilderAPI_MakeEdge(handle);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return new (replicad as any).Edge(edgeBuilder.Edge());
 }

@@ -143,7 +143,7 @@ function optimalBox(part: WorldFramePart): Box3 {
   const oc = getOC() as any;
   let box: OcBox | undefined;
   try {
-    const b: OcBox = new oc.Bnd_Box_1();
+    const b: OcBox = new oc.Bnd_Box();
     box = b;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- replicad wrapper
     oc.BRepBndLib.AddOptimal((part.shape.getReplicadShape() as any).wrapped, b, false, false);

@@ -87,10 +87,10 @@ export function lowerCurve3D(m: Curve3DMetadata): Curve3DLowerResult {
   const periodic = (m.closed ?? false) && m.knots !== undefined;
 
   // 1-indexed (1..n) per OCCT convention.
-  const polesArr = new oc.TColgp_Array1OfPnt_2(1, n);
+  const polesArr = new oc.NCollection_Array1_gp_Pnt(1, n);
   for (let i = 0; i < n; i++) {
     const [x, y, z] = closed.controlPoints[i];
-    polesArr.SetValue(i + 1, new oc.gp_Pnt_3(x, y, z));
+    polesArr.SetValue(i + 1, new oc.gp_Pnt(x, y, z));
   }
 
   // Weights — only when explicitly provided. Capture-layer guarantees length
@@ -98,7 +98,7 @@ export function lowerCurve3D(m: Curve3DMetadata): Curve3DLowerResult {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let weightsArr: any | undefined;
   if (closed.weights !== undefined) {
-    weightsArr = new oc.TColStd_Array1OfReal_2(1, n);
+    weightsArr = new oc.NCollection_Array1_double(1, n);
     for (let i = 0; i < n; i++) {
       weightsArr.SetValue(i + 1, closed.weights[i]);
     }
@@ -111,8 +111,8 @@ export function lowerCurve3D(m: Curve3DMetadata): Curve3DLowerResult {
     ? decomposeKnots(m.knots)
     : clampedUniformKnots(n, m.degree);
 
-  const knotsArr = new oc.TColStd_Array1OfReal_2(1, decomposed.knots.length);
-  const multsArr = new oc.TColStd_Array1OfInteger_2(1, decomposed.mults.length);
+  const knotsArr = new oc.NCollection_Array1_double(1, decomposed.knots.length);
+  const multsArr = new oc.NCollection_Array1_int(1, decomposed.mults.length);
   for (let i = 0; i < decomposed.knots.length; i++) {
     knotsArr.SetValue(i + 1, decomposed.knots[i]);
     multsArr.SetValue(i + 1, decomposed.mults[i]);
@@ -120,7 +120,7 @@ export function lowerCurve3D(m: Curve3DMetadata): Curve3DLowerResult {
 
   // Build Geom_BSplineCurve via the constructor matching the input shape.
   const bspline = weightsArr !== undefined
-    ? new oc.Geom_BSplineCurve_2(
+    ? new oc.Geom_BSplineCurve(
         polesArr,
         weightsArr,
         knotsArr,
@@ -129,7 +129,7 @@ export function lowerCurve3D(m: Curve3DMetadata): Curve3DLowerResult {
         periodic,
         false, // CheckRational — let OCCT trust the supplied weights as rational.
       )
-    : new oc.Geom_BSplineCurve_1(
+    : new oc.Geom_BSplineCurve(
         polesArr,
         knotsArr,
         multsArr,
@@ -139,8 +139,8 @@ export function lowerCurve3D(m: Curve3DMetadata): Curve3DLowerResult {
 
   // Wrap as TopoDS_Edge. BRepBuilderAPI_MakeEdge_24 takes a Handle_Geom_Curve;
   // Handle_Geom_Curve_2 wraps a raw Geom_Curve* pointer.
-  const handle = new oc.Handle_Geom_Curve_2(bspline);
-  const edgeBuilder = new oc.BRepBuilderAPI_MakeEdge_24(handle);
+  const handle = bspline;
+  const edgeBuilder = new oc.BRepBuilderAPI_MakeEdge(handle);
   const edge = edgeBuilder.Edge();
 
   const kink = seamKinkWarning(m, closed.controlPoints);

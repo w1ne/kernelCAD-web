@@ -729,7 +729,7 @@ export class OcctBackend implements ShapeBackend {
       throw new Error(`OcctBackend.fromTriangleMesh: all ${nTris} triangles were degenerate (zero-area within 1µm). Mesh has no usable geometry.`);
     }
 
-    sewing.Perform(new oc.Message_ProgressRange_1());
+    sewing.Perform(new oc.Message_ProgressRange());
     const sewedShape = sewing.SewedShape();
     sewing.delete?.();
 
@@ -745,14 +745,14 @@ export class OcctBackend implements ShapeBackend {
     let shell: unknown;
     if (shapeTypeVal === 3) {
       // SHELL — direct cast.
-      shell = oc.TopoDS.Shell_1(sewedShape);
+      shell = oc.TopoDS.Shell(sewedShape);
     } else {
       // Not a clean shell — sewing produced a compound or worse. Surface
       // as kernel-failed for the materialize lowerer to translate. The
       // most common cause is non-watertight mesh (open boundaries).
       throw new Error(`OcctBackend.fromTriangleMesh: sewing produced shape type ${shapeTypeVal} (expected SHELL=3); mesh is likely not watertight.`);
     }
-    const makeSolid = new oc.BRepBuilderAPI_MakeSolid_3(shell);
+    const makeSolid = new oc.BRepBuilderAPI_MakeSolid(shell);
     if (!makeSolid.IsDone()) {
       makeSolid.delete?.();
       throw new Error('OcctBackend.fromTriangleMesh: BRepBuilderAPI_MakeSolid failed (shell not closed)');
@@ -808,13 +808,13 @@ export class OcctBackend implements ShapeBackend {
     // uniform-only, so we drop into raw OCCT here).
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const oc = getOC() as any;
-    const gtrsf = new oc.gp_GTrsf_1();
+    const gtrsf = new oc.gp_GTrsf();
     gtrsf.SetValue(1, 1, sx);
     gtrsf.SetValue(2, 2, sy);
     gtrsf.SetValue(3, 3, sz);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const wrapped = (this.shape as any).wrapped;
-    const builder = new oc.BRepBuilderAPI_GTransform_2(wrapped, gtrsf, true);
+    const builder = new oc.BRepBuilderAPI_GTransform(wrapped, gtrsf, true);
     const resultShape = builder.Shape();
     const newShape = replicad.cast(resultShape) as ReplicadShape3D;
     builder.delete();
@@ -1046,14 +1046,14 @@ export class OcctBackend implements ShapeBackend {
   intersectionMetrics(other: OcctBackend): { volumeMm3: number; areaMm2: number } {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const oc = getOC() as any;
-    const progress = new oc.Message_ProgressRange_1();
-    const common = new oc.BRepAlgoAPI_Common_1();
-    const args = new oc.TopTools_ListOfShape_1();
-    const tools = new oc.TopTools_ListOfShape_1();
+    const progress = new oc.Message_ProgressRange();
+    const common = new oc.BRepAlgoAPI_Common();
+    const args = new oc.NCollection_List_TopoDS_Shape();
+    const tools = new oc.NCollection_List_TopoDS_Shape();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    args.Append_1((this.shape as any).wrapped);
+    args.Append((this.shape as any).wrapped);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    tools.Append_1((other.shape as any).wrapped);
+    tools.Append((other.shape as any).wrapped);
     common.SetArguments(args);
     common.SetTools(tools);
     common.Build(progress);
@@ -1062,12 +1062,12 @@ export class OcctBackend implements ShapeBackend {
         throw new Error('OcctBackend.intersectionVolume: the common boolean reported a failure.');
       }
       const shape = common.Shape();
-      const props = new oc.GProp_GProps_1();
-      oc.BRepGProp.VolumeProperties_1(shape, props, false, false, false);
+      const props = new oc.GProp_GProps();
+      oc.BRepGProp.VolumeProperties(shape, props, false, false, false);
       const volumeMm3 = Math.abs(props.Mass());
       props.delete();
-      const surface = new oc.GProp_GProps_1();
-      oc.BRepGProp.SurfaceProperties_1(shape, surface, false, false);
+      const surface = new oc.GProp_GProps();
+      oc.BRepGProp.SurfaceProperties(shape, surface, false, false);
       const areaMm2 = Math.abs(surface.Mass());
       surface.delete();
       return { volumeMm3, areaMm2 };
@@ -1087,19 +1087,34 @@ export class OcctBackend implements ShapeBackend {
       if (exact) return exact;
       // Empty / unmeshable shape — fall through to Bnd_Box.
     }
-    const bb = this.shape.boundingBox;
-    const [minP, maxP] = bb.bounds;
-    // OCCT's Bnd_Box inflates bounds by a tolerance gap; remove it so that
-    // exact-axis-aligned primitives report integral coordinates. NOTE: even
-    // gap-corrected, Bnd_Box stays padded on curved B-spline faces (control-
-    // point hull); pass { exact: true } for a tessellation-tight box.
-    const wrapped = (bb as unknown as { wrapped?: { GetGap?: () => number } }).wrapped;
-    const gap =
-      wrapped && typeof wrapped.GetGap === 'function' ? wrapped.GetGap() : 0;
-    return {
-      min: [minP[0] + gap, minP[1] + gap, minP[2] + gap] as Vec3,
-      max: [maxP[0] - gap, maxP[1] - gap, maxP[2] - gap] as Vec3,
-    };
+    // The cheap box: BRepBndLib::Add with triangulation, as replicad <1.0 did.
+    // replicad 1.x's `shape.boundingBox` runs AddOptimal (exact, ~11 ms per
+    // curved face), which callers that ask for the plain box must not pay.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- raw OCCT bindings are untyped
+    const oc = getOC() as any;
+    const box = new oc.Bnd_Box();
+    try {
+      oc.BRepBndLib.Add(this.shape.wrapped, box, true);
+      // Same failure as Bnd_Box::Get on an empty shape.
+      if (box.IsVoid()) throw new Error('Bnd_Box is void');
+      // OCCT's Bnd_Box inflates bounds by a tolerance gap; remove it so that
+      // exact-axis-aligned primitives report integral coordinates. The box
+      // keeps raw bounds and the gap apart, so zeroing the gap before reading
+      // the corners yields the raw bounds. NOTE: even gap-corrected, Bnd_Box
+      // stays padded on curved B-spline faces (control-point hull); pass
+      // { exact: true } for a tessellation-tight box.
+      box.SetGap(0);
+      const minP = box.CornerMin();
+      const maxP = box.CornerMax();
+      const out = {
+        min: [minP.X(), minP.Y(), minP.Z()] as Vec3,
+        max: [maxP.X(), maxP.Y(), maxP.Z()] as Vec3,
+      };
+      minP.delete(); maxP.delete();
+      return out;
+    } finally {
+      box.delete();
+    }
   }
 
   /** Fold the standard-mesher vertex AABB. Returns undefined when the
@@ -1161,14 +1176,14 @@ export class OcctBackend implements ShapeBackend {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const wrapped = (this.shape as any).wrapped;
     const components: OcctBackend[] = [];
-    const explorer = new oc.TopExp_Explorer_2(
+    const explorer = new oc.TopExp_Explorer(
       wrapped,
       oc.TopAbs_ShapeEnum.TopAbs_SOLID,
       oc.TopAbs_ShapeEnum.TopAbs_SHAPE,
     );
     try {
       while (explorer.More()) {
-        const solid = oc.TopoDS.Solid_1(explorer.Current());
+        const solid = oc.TopoDS.Solid(explorer.Current());
         components.push(new OcctBackend(replicad.cast(solid) as ReplicadShape3D));
         explorer.Next();
       }
@@ -1275,7 +1290,7 @@ export class OcctBackend implements ShapeBackend {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const wrapped = (this.shape as any).wrapped;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const explorer = new (oc as any).TopExp_Explorer_2(
+    const explorer = new (oc as any).TopExp_Explorer(
       wrapped,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (oc as any).TopAbs_ShapeEnum.TopAbs_FACE,
@@ -1305,7 +1320,7 @@ export class OcctBackend implements ShapeBackend {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const wrapped = (this.shape as any).wrapped;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const explorer = new (oc as any).TopExp_Explorer_2(
+    const explorer = new (oc as any).TopExp_Explorer(
       wrapped,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (oc as any).TopAbs_ShapeEnum.TopAbs_EDGE,
@@ -1355,7 +1370,7 @@ export class OcctBackend implements ShapeBackend {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const wrapped = (this.shape as any).wrapped;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const explorer = new (oc as any).TopExp_Explorer_2(
+    const explorer = new (oc as any).TopExp_Explorer(
       wrapped,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (oc as any).TopAbs_ShapeEnum.TopAbs_FACE,

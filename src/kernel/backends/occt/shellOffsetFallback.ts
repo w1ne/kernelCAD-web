@@ -41,7 +41,7 @@ export interface ShellFallbackResult {
 
 /** Smallest bbox extent of `shape`. */
 function minExtent(oc: OC, shape: unknown): number {
-  const box = new oc.Bnd_Box_1();
+  const box = new oc.Bnd_Box();
   try {
     oc.BRepBndLib.Add(shape, box, false);
     const a = box.CornerMin();
@@ -66,7 +66,7 @@ function offsetInward(
 ): { inner: unknown; faceMap: Map<string, string[]> } | undefined {
   for (const intersection of [false, true]) {
     const builder = new oc.BRepOffsetAPI_MakeOffsetShape();
-    const progress = new oc.Message_ProgressRange_1();
+    const progress = new oc.Message_ProgressRange();
     try {
       builder.PerformByJoin(
         bodyShape, -thickness, 1e-3, oc.BRepOffset_Mode.BRepOffset_Skin, intersection, false,
@@ -92,9 +92,9 @@ function offsetInward(
  *  boolean algorithm rejects as an operand. Promote it to an oriented solid. */
 function asSolid(oc: OC, shape: OC): unknown {
   if (shape.ShapeType() !== oc.TopAbs_ShapeEnum.TopAbs_SHELL) return shape;
-  const fixer = new oc.ShapeFix_Solid_1();
+  const fixer = new oc.ShapeFix_Solid();
   try {
-    return fixer.SolidFromShell(oc.TopoDS.Shell_1(shape));
+    return fixer.SolidFromShell(oc.TopoDS.Shell(shape));
   } finally {
     fixer.delete();
   }
@@ -104,15 +104,15 @@ function asSolid(oc: OC, shape: OC): unknown {
  *  offset builder records these as Generated (not Modified). */
 function offsetFaceMap(oc: OC, bodyShape: unknown, builder: OC): Map<string, string[]> {
   const out = new Map<string, string[]>();
-  const explorer = new oc.TopExp_Explorer_2(bodyShape, oc.TopAbs_ShapeEnum.TopAbs_FACE, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
+  const explorer = new oc.TopExp_Explorer(bodyShape, oc.TopAbs_ShapeEnum.TopAbs_FACE, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
   try {
     while (explorer.More()) {
       const face = explorer.Current();
       const list = builder.Generated(face);
       const hashes: string[] = [];
-      const copy = new oc.TopTools_ListOfShape_3(list);
+      const copy = new oc.NCollection_List_TopoDS_Shape(list);
       while (!copy.IsEmpty()) {
-        hashes.push(hashOf(copy.First_1()));
+        hashes.push(hashOf(copy.First()));
         copy.RemoveFirst();
       }
       copy.delete();
@@ -128,14 +128,13 @@ function offsetFaceMap(oc: OC, bodyShape: unknown, builder: OC): Map<string, str
 
 /** Outward normal of `face` at its UV mid-point (orientation-aware). */
 function outwardNormal(oc: OC, face: unknown): [number, number, number] {
-  const topoFace = oc.TopoDS.Face_1(face);
-  const uMin = { current: 0 }, uMax = { current: 0 }, vMin = { current: 0 }, vMax = { current: 0 };
-  oc.BRepTools.UVBounds_1(topoFace, uMin, uMax, vMin, vMax);
-  const p = new oc.gp_Pnt_1();
-  const n = new oc.gp_Vec_1();
-  const props = new oc.BRepGProp_Face_2(topoFace, false);
+  const topoFace = oc.TopoDS.Face(face);
+  const { UMin, UMax, VMin, VMax } = oc.BRepTools.UVBounds(topoFace);
+  const p = new oc.gp_Pnt();
+  const n = new oc.gp_Vec();
+  const props = new oc.BRepGProp_Face(topoFace, false);
   try {
-    props.Normal(0.5 * (uMin.current + uMax.current), 0.5 * (vMin.current + vMax.current), p, n);
+    props.Normal(0.5 * (UMin + UMax), 0.5 * (VMin + VMax), p, n);
     const len = n.Magnitude();
     return [n.X() / len, n.Y() / len, n.Z() / len];
   } finally {
@@ -148,8 +147,8 @@ function outwardNormal(oc: OC, face: unknown): [number, number, number] {
  *  cavity and exits beyond the outer skin. */
 function openingPrism(oc: OC, innerFace: unknown, normal: [number, number, number], thickness: number): unknown {
   const depth = 3 * thickness;
-  const dir = new oc.gp_Vec_4(normal[0] * depth, normal[1] * depth, normal[2] * depth);
-  const prism = new oc.BRepPrimAPI_MakePrism_1(oc.TopoDS.Face_1(innerFace), dir, true, true);
+  const dir = new oc.gp_Vec(normal[0] * depth, normal[1] * depth, normal[2] * depth);
+  const prism = new oc.BRepPrimAPI_MakePrism(oc.TopoDS.Face(innerFace), dir, true, true);
   try {
     return prism.Shape();
   } finally {
@@ -162,7 +161,7 @@ function openingPrism(oc: OC, innerFace: unknown, normal: [number, number, numbe
 function innerFacesOf(oc: OC, inner: unknown, generatedHashes: readonly string[]): unknown[] {
   const want = new Set(generatedHashes);
   const out: unknown[] = [];
-  const explorer = new oc.TopExp_Explorer_2(inner, oc.TopAbs_ShapeEnum.TopAbs_FACE, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
+  const explorer = new oc.TopExp_Explorer(inner, oc.TopAbs_ShapeEnum.TopAbs_FACE, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
   try {
     for (; explorer.More(); explorer.Next()) {
       const f = explorer.Current();
@@ -221,7 +220,7 @@ export function shellByOffsetSubtract(
 
 function faceHashesOf(oc: OC, shape: unknown): string[] {
   const out: string[] = [];
-  const explorer = new oc.TopExp_Explorer_2(shape, oc.TopAbs_ShapeEnum.TopAbs_FACE, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
+  const explorer = new oc.TopExp_Explorer(shape, oc.TopAbs_ShapeEnum.TopAbs_FACE, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
   try {
     for (; explorer.More(); explorer.Next()) out.push(hashOf(explorer.Current()));
   } finally {

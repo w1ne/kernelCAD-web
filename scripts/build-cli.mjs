@@ -52,7 +52,7 @@ await esbuild.build({
   },
 });
 
-copyFileSync('node_modules/replicad-opencascadejs/src/replicad_single.wasm', 'dist/cli/replicad_single.wasm');
+copyFileSync('node_modules/replicad-opencascadejs/dist/replicad_single.wasm', 'dist/cli/replicad_single.wasm');
 const { version } = JSON.parse(readFileSync('package.json', 'utf8'));
 copyPackageSkills('src/agent/skills', 'dist/cli/skills', version);
 // Bundling relocates profiles.ts beside index.js; its material files must follow it.

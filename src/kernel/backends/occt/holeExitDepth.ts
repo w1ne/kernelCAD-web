@@ -25,9 +25,9 @@ const along = (q: Vec3, origin: Vec3, axis: Vec3): number => dot(sub(q, origin),
 
 function edgeInterval(oc: Oc, edge: unknown, origin: Vec3, axis: Vec3): [number, number] {
   const ts: number[] = [];
-  const ex = new oc.TopExp_Explorer_2(edge, oc.TopAbs_ShapeEnum.TopAbs_VERTEX, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
+  const ex = new oc.TopExp_Explorer(edge, oc.TopAbs_ShapeEnum.TopAbs_VERTEX, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
   for (; ex.More(); ex.Next()) {
-    const pnt = oc.BRep_Tool.Pnt(oc.TopoDS.Vertex_1(ex.Current()));
+    const pnt = oc.BRep_Tool.Pnt(oc.TopoDS.Vertex(ex.Current()));
     ts.push(along([pnt.X(), pnt.Y(), pnt.Z()], origin, axis));
     pnt.delete();
   }
@@ -45,13 +45,13 @@ export function firstExitDepth(target: OcctBackend, origin: Vec3, axis: Vec3): n
   const bb = target.boundingBox();
   const reach = 2 * Math.hypot(bb.max[0] - bb.min[0], bb.max[1] - bb.min[1], bb.max[2] - bb.min[2]) + 1;
   const line = replicad.makeLine(add(origin, scale(axis, -0.05)), add(origin, scale(axis, reach)));
-  const progress = new oc.Message_ProgressRange_1();
-  const common = new oc.BRepAlgoAPI_Common_3((target.getReplicadShape() as unknown as { wrapped: unknown }).wrapped, line.wrapped, progress);
+  const progress = new oc.Message_ProgressRange();
+  const common = new oc.BRepAlgoAPI_Common((target.getReplicadShape() as unknown as { wrapped: unknown }).wrapped, line.wrapped, progress);
   try {
     common.Build(progress);
     if (common.HasErrors()) return undefined;
     const intervals: [number, number][] = [];
-    const ex = new oc.TopExp_Explorer_2(common.Shape(), oc.TopAbs_ShapeEnum.TopAbs_EDGE, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
+    const ex = new oc.TopExp_Explorer(common.Shape(), oc.TopAbs_ShapeEnum.TopAbs_EDGE, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
     for (; ex.More(); ex.Next()) intervals.push(edgeInterval(oc, ex.Current(), origin, axis));
     ex.delete();
     return exitFromIntervals(intervals);

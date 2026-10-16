@@ -35,13 +35,13 @@ describe('fast geometry replacements', () => {
     expect(scene.parts).toHaveLength(1);
     const raw = scene.parts[0].shape.getReplicadShape();
     const oc = getOC();
-    const explorer = new oc.TopExp_Explorer_2(raw.wrapped, oc.TopAbs_ShapeEnum.TopAbs_SOLID, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
+    const explorer = new oc.TopExp_Explorer(raw.wrapped, oc.TopAbs_ShapeEnum.TopAbs_SOLID, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
     let solidCount = 0;
     try { while (explorer.More()) { solidCount++; explorer.Next(); } }
     finally { explorer.delete(); }
     expect(solidCount).toBe(1);
     const checker = new oc.BRepCheck_Analyzer(raw.wrapped, true, false);
-    try { expect(checker.IsValid_2()).toBe(true); }
+    try { expect(checker.IsValid()).toBe(true); }
     finally { checker.delete(); }
     const { meshShapeForExport } = await import('../../../src/kernel/backends/occt/backendMesh');
     const mesh = meshShapeForExport(scene.parts[0].shape.getReplicadShape());

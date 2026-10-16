@@ -120,8 +120,8 @@ function halfSpaceBox(oc: Oc, point: Vec3, normal: Vec3, size: number): unknown 
     point[1] - (x[1] + y[1]) * size / 2,
     point[2] - (x[2] + y[2]) * size / 2,
   ];
-  const ax2 = new oc.gp_Ax2_2(new oc.gp_Pnt_3(...o), new oc.gp_Dir_4(...normal), new oc.gp_Dir_4(...x));
-  const box = new oc.BRepPrimAPI_MakeBox_5(ax2, size, size, size);
+  const ax2 = new oc.gp_Ax2(new oc.gp_Pnt(...o), new oc.gp_Dir(...normal), new oc.gp_Dir(...x));
+  const box = new oc.BRepPrimAPI_MakeBox(ax2, size, size, size);
   const shape = box.Shape();
   box.delete();
   ax2.delete();
@@ -129,8 +129,8 @@ function halfSpaceBox(oc: Oc, point: Vec3, normal: Vec3, size: number): unknown 
 }
 
 function cutShape(oc: Oc, shape: unknown, tool: unknown): unknown {
-  const progress = new oc.Message_ProgressRange_1();
-  const cut = new oc.BRepAlgoAPI_Cut_3(shape, tool, progress);
+  const progress = new oc.Message_ProgressRange();
+  const cut = new oc.BRepAlgoAPI_Cut(shape, tool, progress);
   cut.Build(progress);
   const out = cut.HasErrors() ? null : cut.Shape();
   cut.delete();
@@ -140,7 +140,7 @@ function cutShape(oc: Oc, shape: unknown, tool: unknown): unknown {
 }
 
 function toTrsf(oc: Oc, T: Rigid): unknown {
-  const trsf = new oc.gp_Trsf_1();
+  const trsf = new oc.gp_Trsf();
   const R = T.R;
   trsf.SetValues(R[0], R[1], R[2], T.t[0], R[3], R[4], R[5], T.t[1], R[6], R[7], R[8], T.t[2]);
   return trsf;
@@ -148,7 +148,7 @@ function toTrsf(oc: Oc, T: Rigid): unknown {
 
 function transformShape(oc: Oc, shape: unknown, T: Rigid): unknown {
   const trsf = toTrsf(oc, T) as { delete(): void };
-  const xf = new oc.BRepBuilderAPI_Transform_2(shape, trsf, true);
+  const xf = new oc.BRepBuilderAPI_Transform(shape, trsf, true);
   const out = xf.Shape();
   xf.delete();
   trsf.delete();
@@ -192,11 +192,11 @@ function fusePieces(pieces: replicad.Shape3D[]): replicad.Shape3D {
   for (let i = 1; i < pieces.length; i++) out = out.fuse(pieces[i]) as replicad.Shape3D;
   const solids = (out as unknown as { wrapped: unknown }).wrapped;
   const oc = getOC() as Oc;
-  const ex = new oc.TopExp_Explorer_2(solids, oc.TopAbs_ShapeEnum.TopAbs_SOLID, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
+  const ex = new oc.TopExp_Explorer(solids, oc.TopAbs_ShapeEnum.TopAbs_SOLID, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
   const found: unknown[] = [];
   for (; ex.More(); ex.Next()) found.push(ex.Current());
   ex.delete();
-  if (found.length === 1) return replicad.cast(oc.TopoDS.Solid_1(found[0])) as replicad.Shape3D;
+  if (found.length === 1) return replicad.cast(oc.TopoDS.Solid(found[0])) as replicad.Shape3D;
   return out;
 }
 
@@ -208,9 +208,9 @@ function cellTool(oc: Oc, cell: FlatCell, inp: BendInputs, pad: number): unknown
   const hi = (v: number, edge: number): number => (Math.abs(v - edge) < 1e-9 ? v + pad : v);
   const p0: Vec3 = [lo(cell.min[0], bx0), lo(cell.min[1], by0), inp.flat.z0 - pad];
   const p1: Vec3 = [hi(cell.max[0], bx1), hi(cell.max[1], by1), inp.flat.z0 + inp.thickness + pad];
-  const a = new oc.gp_Pnt_3(...p0);
-  const b = new oc.gp_Pnt_3(...p1);
-  const maker = new oc.BRepPrimAPI_MakeBox_4(a, b);
+  const a = new oc.gp_Pnt(...p0);
+  const b = new oc.gp_Pnt(...p1);
+  const maker = new oc.BRepPrimAPI_MakeBox(a, b);
   const flatBox = maker.Shape();
   maker.delete();
   a.delete();
@@ -219,10 +219,10 @@ function cellTool(oc: Oc, cell: FlatCell, inp: BendInputs, pad: number): unknown
 }
 
 function booleanOp(oc: Oc, kind: 'common' | 'cut', shape: unknown, tool: unknown): unknown {
-  const progress = new oc.Message_ProgressRange_1();
+  const progress = new oc.Message_ProgressRange();
   const op = kind === 'common'
-    ? new oc.BRepAlgoAPI_Common_3(shape, tool, progress)
-    : new oc.BRepAlgoAPI_Cut_3(shape, tool, progress);
+    ? new oc.BRepAlgoAPI_Common(shape, tool, progress)
+    : new oc.BRepAlgoAPI_Cut(shape, tool, progress);
   op.Build(progress);
   const out = op.HasErrors() ? null : op.Shape();
   op.delete();
@@ -232,9 +232,9 @@ function booleanOp(oc: Oc, kind: 'common' | 'cut', shape: unknown, tool: unknown
 }
 
 function solidsOf(oc: Oc, shape: unknown): unknown[] {
-  const ex = new oc.TopExp_Explorer_2(shape, oc.TopAbs_ShapeEnum.TopAbs_SOLID, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
+  const ex = new oc.TopExp_Explorer(shape, oc.TopAbs_ShapeEnum.TopAbs_SOLID, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
   const out: unknown[] = [];
-  for (; ex.More(); ex.Next()) out.push(oc.TopoDS.Solid_1(ex.Current()));
+  for (; ex.More(); ex.Next()) out.push(oc.TopoDS.Solid(ex.Current()));
   ex.delete();
   return out;
 }
@@ -309,7 +309,7 @@ function foldDefect(oc: Oc, folded: replicad.Shape3D, expectedVolume: number): s
   const solids = solidsOf(oc, wrapped).length;
   if (solids !== 1) return `the fold produced ${solids} separate solids instead of one`;
   const analyzer = new oc.BRepCheck_Analyzer(wrapped, true, false);
-  const valid = analyzer.IsValid_2();
+  const valid = analyzer.IsValid();
   analyzer.delete();
   if (!valid) return 'the folded solid is not a valid closed solid (BRepCheck failed)';
   const volume = volumeOf(wrapped);

@@ -83,11 +83,11 @@ describe('FIX-10 shell after fillet-all', () => {
     // The top face: the planar face centred at z=30 with area 50×30.
     let top: unknown;
     let topHash = '';
-    const ex = new oc.TopExp_Explorer_2(solid, oc.TopAbs_ShapeEnum.TopAbs_FACE, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
+    const ex = new oc.TopExp_Explorer(solid, oc.TopAbs_ShapeEnum.TopAbs_FACE, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
     for (; ex.More(); ex.Next()) {
       const f = ex.Current();
-      const p = new oc.GProp_GProps_1();
-      oc.BRepGProp.SurfaceProperties_1(f, p, false, false);
+      const p = new oc.GProp_GProps();
+      oc.BRepGProp.SurfaceProperties(f, p, false, false);
       if (Math.abs(p.CentreOfMass().Z() - 30) < 1e-6 && Math.abs(p.Mass() - 1500) < 1e-3) {
         top = f;
         topHash = f.HashCode(2147483647).toString(16);
@@ -98,10 +98,10 @@ describe('FIX-10 shell after fillet-all', () => {
     expect(top).toBeDefined();
     const J = oc.GeomAbs_JoinType;
     for (const [intersection, join] of [[false, J.GeomAbs_Arc], [true, J.GeomAbs_Arc], [true, J.GeomAbs_Intersection]]) {
-      const faces = new oc.TopTools_ListOfShape_1();
-      faces.Append_1(top);
+      const faces = new oc.NCollection_List_TopoDS_Shape();
+      faces.Append(top);
       const builder = new oc.BRepOffsetAPI_MakeThickSolid();
-      const progress = new oc.Message_ProgressRange_1();
+      const progress = new oc.Message_ProgressRange();
       let done = false;
       try {
         builder.MakeThickSolidByJoin(solid, faces, -1.5, 1e-3, oc.BRepOffset_Mode.BRepOffset_Skin, intersection, false, join, false, progress);

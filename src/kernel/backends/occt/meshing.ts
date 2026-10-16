@@ -432,13 +432,13 @@ function tryExtractCylinderViaOcjs(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const rawFace = (face as any)._wrapped ?? (face as any).occ ?? face;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const adaptor = new (OC as any).BRepAdaptor_Surface_2(rawFace, true);
+        const adaptor = new (OC as any).BRepAdaptor_Surface(rawFace, true);
         const type = adaptor.GetType();
 
         // Check if it is a cylinder (GeomAbs_Cylinder = 3)
         // We use the validation from geomType or the adaptor check
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const isCyl = (type.value === (OC as any).GeomAbs_SurfaceType.GeomAbs_Cylinder.value) ||
+        const isCyl = (type === (OC as any).GeomAbs_SurfaceType.GeomAbs_Cylinder) ||
           (geomType && geomType.toUpperCase().includes('CYL'));
 
         if (isCyl) {

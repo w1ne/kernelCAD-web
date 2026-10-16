@@ -3,6 +3,7 @@
 import * as replicad from 'replicad';
 import opencascade from 'replicad-opencascadejs';
 import { normalizeUserScript } from '../shared/runtime/normalizeUserScript';
+import { installOcctCompat } from '../kernel/backends/occt/occtCompat';
 
 let isInitialized = false;
 
@@ -23,6 +24,7 @@ export async function initHeadless() {
         throw new Error("Could not find opencascade factory function");
     }
 
+    installOcctCompat(OC);
     replicad.setOC(OC);
     isInitialized = true;
 }

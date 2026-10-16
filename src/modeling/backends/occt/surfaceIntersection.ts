@@ -18,25 +18,25 @@ export function sectionShapes(
 ): any[] {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
-  const section = new oc.BRepAlgoAPI_Section_3(shapeA, shapeB, false);
+  const section = new oc.BRepAlgoAPI_Section(shapeA, shapeB, false);
   try {
     section.ComputePCurveOn1(true);
     section.Approximation(true);
-    section.Build(new oc.Message_ProgressRange_1());
+    section.Build(new oc.Message_ProgressRange());
     if (!section.IsDone()) {
       throw new Error('BRepAlgoAPI_Section failed to build');
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const edges: any[] = [];
     const sectionShape = section.Shape();
-    const exp = new oc.TopExp_Explorer_2(
+    const exp = new oc.TopExp_Explorer(
       sectionShape,
       oc.TopAbs_ShapeEnum.TopAbs_EDGE,
       oc.TopAbs_ShapeEnum.TopAbs_SHAPE,
     );
     try {
       for (; exp.More(); exp.Next()) {
-        edges.push(oc.TopoDS.Edge_1(exp.Current()));
+        edges.push(oc.TopoDS.Edge(exp.Current()));
       }
     } finally {
       exp.delete();
@@ -57,25 +57,25 @@ export function edgeToCurve3DMetadata(
 ): Curve3DMetadata {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
-  const adaptor = new oc.BRepAdaptor_Curve_2(edge);
+  const adaptor = new oc.BRepAdaptor_Curve(edge);
   try {
     const type = adaptor.GetType();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let bs: any;
     if (type === oc.GeomAbs_CurveType.GeomAbs_BSplineCurve) {
       const handle = adaptor.BSpline();
-      bs = handle.get();
+      bs = handle;
     } else {
       const u0 = adaptor.FirstParameter();
       const u1 = adaptor.LastParameter();
       const n = 32;
-      const pts = new oc.TColgp_Array1OfPnt_2(1, n);
-      const p = new oc.gp_Pnt_1();
+      const pts = new oc.NCollection_Array1_gp_Pnt(1, n);
+      const p = new oc.gp_Pnt();
       for (let i = 0; i < n; i++) {
         adaptor.D0(u0 + ((u1 - u0) * i) / (n - 1), p);
-        pts.SetValue(i + 1, new oc.gp_Pnt_3(p.X(), p.Y(), p.Z()));
+        pts.SetValue(i + 1, new oc.gp_Pnt(p.X(), p.Y(), p.Z()));
       }
-      const fitter = new oc.GeomAPI_PointsToBSpline_2(
+      const fitter = new oc.GeomAPI_PointsToBSpline(
         pts,
         3,
         5,
@@ -85,7 +85,7 @@ export function edgeToCurve3DMetadata(
       if (!fitter.IsDone()) {
         throw new Error('GeomAPI_PointsToBSpline failed on a section edge');
       }
-      bs = fitter.Curve().get();
+      bs = fitter.Curve();
     }
     const nPoles = bs.NbPoles();
     const controlPoints: Vec3[] = [];

@@ -74,7 +74,7 @@ export function lazyEvalCurve(
     session.importedGeometry.set(id, edge as any);
   }
 
-  const adaptor = new oc.BRepAdaptor_Curve_2(edge);
+  const adaptor = new oc.BRepAdaptor_Curve(edge);
   const u0 = adaptor.FirstParameter();
   const u1 = adaptor.LastParameter();
 
@@ -84,14 +84,14 @@ export function lazyEvalCurve(
   };
 
   const evalPoint = (t: number): [number, number, number] => {
-    const p = new oc.gp_Pnt_1();
+    const p = new oc.gp_Pnt();
     adaptor.D0(paramAt(t), p);
     return [p.X(), p.Y(), p.Z()];
   };
 
   const evalTangent = (t: number): [number, number, number] => {
-    const p = new oc.gp_Pnt_1();
-    const v = new oc.gp_Vec_1();
+    const p = new oc.gp_Pnt();
+    const v = new oc.gp_Vec();
     adaptor.D1(paramAt(t), p, v);
     const mag = v.Magnitude();
     if (mag === 0) return [0, 0, 0];
@@ -116,7 +116,7 @@ export function lazyEvalCurve(
       return evalTangent(t);
     },
     length(): number {
-      const props = new oc.GProp_GProps_1();
+      const props = new oc.GProp_GProps();
       oc.BRepGProp.LinearProperties(edge, props, false, false);
       return props.Mass();
     },

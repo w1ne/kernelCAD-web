@@ -20,9 +20,9 @@ export interface SurfaceTrimLowerResult {
 export function faceArea(face: replicad.Face): number {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
-  const props = new oc.GProp_GProps_1();
+  const props = new oc.GProp_GProps();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  oc.BRepGProp.SurfaceProperties_1((face as any).wrapped, props, false, false);
+  oc.BRepGProp.SurfaceProperties((face as any).wrapped, props, false, false);
   const m = props.Mass();
   props.delete();
   return m;
@@ -30,8 +30,8 @@ export function faceArea(face: replicad.Face): number {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function shapeArea(oc: any, shape: any): number {
-  const props = new oc.GProp_GProps_1();
-  oc.BRepGProp.SurfaceProperties_1(shape, props, false, false);
+  const props = new oc.GProp_GProps();
+  oc.BRepGProp.SurfaceProperties(shape, props, false, false);
   const m = props.Mass();
   props.delete();
   return m;
@@ -50,11 +50,11 @@ export class NonPlanarTrimError extends Error {}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function collectSectionEdges(oc: any, baseShape: any, cutterShape: any): any[] {
-  const section = new oc.BRepAlgoAPI_Section_3(baseShape, cutterShape, false);
+  const section = new oc.BRepAlgoAPI_Section(baseShape, cutterShape, false);
   try {
     section.ComputePCurveOn1(true);
     section.Approximation(true);
-    section.Build(new oc.Message_ProgressRange_1());
+    section.Build(new oc.Message_ProgressRange());
     if (!section.IsDone()) {
       throw new Error('surfaceTrim: BRepAlgoAPI_Section failed to build');
     }
@@ -62,14 +62,14 @@ function collectSectionEdges(oc: any, baseShape: any, cutterShape: any): any[] {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const edges: any[] = [];
     const sectionShape = section.Shape();
-    const exp = new oc.TopExp_Explorer_2(
+    const exp = new oc.TopExp_Explorer(
       sectionShape,
       oc.TopAbs_ShapeEnum.TopAbs_EDGE,
       oc.TopAbs_ShapeEnum.TopAbs_SHAPE,
     );
     try {
       for (; exp.More(); exp.Next()) {
-        edges.push(oc.TopoDS.Edge_1(exp.Current()));
+        edges.push(oc.TopoDS.Edge(exp.Current()));
       }
     } finally {
       exp.delete();
@@ -108,13 +108,13 @@ export function lowerSurfaceTrim(
     throw new Error('surfaceTrim: no section curve — surfaces do not intersect');
   }
 
-  const splitter = new oc.BRepFeat_SplitShape_2(baseShape);
+  const splitter = new oc.BRepFeat_SplitShape(baseShape);
   try {
     splitter.SetCheckInterior(true);
     for (const edge of edges) {
-      splitter.Add_3(edge, baseShape);
+      splitter.Add(edge, baseShape);
     }
-    splitter.Build(new oc.Message_ProgressRange_1());
+    splitter.Build(new oc.Message_ProgressRange());
     if (!splitter.IsDone()) {
       throw new Error('surfaceTrim: BRepFeat_SplitShape failed to build');
     }
@@ -144,7 +144,7 @@ export function lowerSurfaceTrim(
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function extractFaces(oc: any, shape: any): any[] {
-  const exp = new oc.TopExp_Explorer_2(
+  const exp = new oc.TopExp_Explorer(
     shape,
     oc.TopAbs_ShapeEnum.TopAbs_FACE,
     oc.TopAbs_ShapeEnum.TopAbs_SHAPE,
@@ -153,7 +153,7 @@ function extractFaces(oc: any, shape: any): any[] {
   const faces: any[] = [];
   try {
     for (; exp.More(); exp.Next()) {
-      faces.push(oc.TopoDS.Face_1(exp.Current()));
+      faces.push(oc.TopoDS.Face(exp.Current()));
     }
   } finally {
     exp.delete();

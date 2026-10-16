@@ -38,7 +38,7 @@ function edgeNormals(edge: Edge, a: Face, b: Face): { smooth: boolean; side: Edg
   const oc = getOC() as any;
   const oriented = contains(a, edge);
   if (!oriented) return undefined;
-  const reversed = oriented.wrapped.Orientation_1().value === oc.TopAbs_Orientation.TopAbs_REVERSED.value;
+  const reversed = oriented.wrapped.Orientation() === oc.TopAbs_Orientation.TopAbs_REVERSED;
   let smooth = true;
   const signs: number[] = [];
   try {
@@ -63,7 +63,7 @@ function edgeNormals(edge: Edge, a: Face, b: Face): { smooth: boolean; side: Edg
 function analyticRadius(face: Face): number | null {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- installed OCCT API
   const oc = getOC() as any;
-  const adaptor = new oc.BRepAdaptor_Surface_2(face.wrapped, true);
+  const adaptor = new oc.BRepAdaptor_Surface(face.wrapped, true);
   try {
     const type = face.geomType;
     // Same angular-coverage exclusion as holeDetection: full bores/bosses
@@ -142,7 +142,7 @@ export function inspectEdgeBreaks(body: OcctBackend): { breaks: EdgeBreakFace[];
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const oc = getOC() as any;
       const degenerate = oc.BRep_Tool.Degenerated(edge.wrapped);
-      const seam = oc.BRep_Tool.IsClosed_2(edge.wrapped, faces[faceIndices[0]].wrapped);
+      const seam = oc.BRep_Tool.IsClosed(edge.wrapped, faces[faceIndices[0]].wrapped);
       return { edgeIndex, faceIndices, point, kind: degenerate ? 'degenerate' : seam ? 'seam' : 'unknown', side: 'unknown' };
     }
     const normals = faceIndices.length === 2 ? edgeNormals(edge, faces[faceIndices[0]], faces[faceIndices[1]]) : undefined;

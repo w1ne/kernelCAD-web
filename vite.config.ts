@@ -122,7 +122,7 @@ function kernelCadMeshEndpoint(): Plugin {
         // reads `__dirname` to locate its sibling WASM file. The CLI bundle
         // injects this in its esbuild banner; the Vite dev endpoint needs the
         // same shim before dynamically importing the meshing/build paths.
-        const occtPackageDir = resolve(repoRoot, 'node_modules/replicad-opencascadejs/src');
+        const occtPackageDir = resolve(repoRoot, 'node_modules/replicad-opencascadejs/dist');
         Object.assign(globalThis, {
           __dirname: occtPackageDir,
           __filename: resolve(occtPackageDir, 'replicad_single.js'),

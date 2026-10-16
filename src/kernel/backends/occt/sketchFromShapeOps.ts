@@ -64,15 +64,15 @@ export function sectionLoops(
   ) || 1;
   const half = diag * 1.5 + 100;
 
-  const origin = new oc.gp_Pnt_3(frame.origin[0], frame.origin[1], frame.origin[2]);
-  const normal = new oc.gp_Dir_4(frame.normal[0], frame.normal[1], frame.normal[2]);
-  const xDir = new oc.gp_Dir_4(frame.u[0], frame.u[1], frame.u[2]);
-  const ax3 = new oc.gp_Ax3_3(origin, normal, xDir);
-  const pln = new oc.gp_Pln_2(ax3);
-  const faceBuilder = new oc.BRepBuilderAPI_MakeFace_9(pln, -half, half, -half, half);
+  const origin = new oc.gp_Pnt(frame.origin[0], frame.origin[1], frame.origin[2]);
+  const normal = new oc.gp_Dir(frame.normal[0], frame.normal[1], frame.normal[2]);
+  const xDir = new oc.gp_Dir(frame.u[0], frame.u[1], frame.u[2]);
+  const ax3 = new oc.gp_Ax3(origin, normal, xDir);
+  const pln = new oc.gp_Pln(ax3);
+  const faceBuilder = new oc.BRepBuilderAPI_MakeFace(pln, -half, half, -half, half);
   const planeFace = faceBuilder.Face();
 
-  const section = new oc.BRepAlgoAPI_Section_3(
+  const section = new oc.BRepAlgoAPI_Section(
     backend.getReplicadShape().wrapped,
     planeFace,
     false,
@@ -80,7 +80,7 @@ export function sectionLoops(
   try {
     section.ComputePCurveOn1(true);
     section.Approximation(true);
-    section.Build(new oc.Message_ProgressRange_1());
+    section.Build(new oc.Message_ProgressRange());
     if (!section.IsDone()) {
       throw new Error('sketchFromShape: BRepAlgoAPI_Section failed to build');
     }

@@ -26,7 +26,7 @@ describe('curve3dLowerer', () => {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const oc = getOC() as any;
-    const props = new oc.GProp_GProps_1();
+    const props = new oc.GProp_GProps();
     oc.BRepGProp.LinearProperties(result.edge, props, false, false);
     const length = props.Mass();
     expect(Number.isFinite(length)).toBe(true);
@@ -50,7 +50,7 @@ describe('curve3dLowerer', () => {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const oc = getOC() as any;
-    const props = new oc.GProp_GProps_1();
+    const props = new oc.GProp_GProps();
     oc.BRepGProp.LinearProperties(result.edge, props, false, false);
     const length = props.Mass();
     expect(Number.isFinite(length)).toBe(true);

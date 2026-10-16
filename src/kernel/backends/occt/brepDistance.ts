@@ -15,11 +15,11 @@
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function brepExtremaDistance(oc: any, shapeA: any, shapeB: any): number | undefined {
-  const dist = new oc.BRepExtrema_DistShapeShape_1();
+  const dist = new oc.BRepExtrema_DistShapeShape();
   dist.LoadS1(shapeA);
   dist.LoadS2(shapeB);
   try {
-    const ok = dist.Perform(new oc.Message_ProgressRange_1());
+    const ok = dist.Perform(new oc.Message_ProgressRange());
     if (!ok || !dist.IsDone()) {
       return undefined;
     }
@@ -42,11 +42,11 @@ export interface BrepClosest {
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function brepExtremaClosest(oc: any, shapeA: any, shapeB: any): BrepClosest | undefined {
-  const dist = new oc.BRepExtrema_DistShapeShape_1();
+  const dist = new oc.BRepExtrema_DistShapeShape();
   dist.LoadS1(shapeA);
   dist.LoadS2(shapeB);
   try {
-    const ok = dist.Perform(new oc.Message_ProgressRange_1());
+    const ok = dist.Perform(new oc.Message_ProgressRange());
     if (!ok || !dist.IsDone() || dist.NbSolution() < 1) return undefined;
     const a = dist.PointOnShape1(1);
     const b = dist.PointOnShape2(1);

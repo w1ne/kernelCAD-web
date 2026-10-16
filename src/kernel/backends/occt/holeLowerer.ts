@@ -260,14 +260,14 @@ interface OneToolBuild {
 function fuseUnsimplified(a: replicad.Shape3D, b: replicad.Shape3D): replicad.Shape3D {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = (replicad as any).getOC();
-  const progress = new oc.Message_ProgressRange_1();
-  const fuse = new oc.BRepAlgoAPI_Fuse_1();
-  const args = new oc.TopTools_ListOfShape_1();
-  const tools = new oc.TopTools_ListOfShape_1();
+  const progress = new oc.Message_ProgressRange();
+  const fuse = new oc.BRepAlgoAPI_Fuse();
+  const args = new oc.NCollection_List_TopoDS_Shape();
+  const tools = new oc.NCollection_List_TopoDS_Shape();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  args.Append_1((a as any).wrapped);
+  args.Append((a as any).wrapped);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  tools.Append_1((b as any).wrapped);
+  tools.Append((b as any).wrapped);
   fuse.SetArguments(args);
   fuse.SetTools(tools);
   fuse.Build(progress);
@@ -459,24 +459,24 @@ export function buildCountersinkCone(
   const created: Array<{ delete(): void }> = [];
   const keep = <T extends { delete(): void }>(o: T): T => { created.push(o); return o; };
   try {
-    if (typeof oc.BRepPrimAPI_MakeRevol_2 !== 'function') {
+    if (typeof oc.BRepPrimAPI_MakeRevol !== 'function') {
       throw new Error('this OCCT build does not provide BRepPrimAPI_MakeRevol, so the countersink cone cannot be built.');
     }
-    const wire = keep(new oc.BRepBuilderAPI_MakeWire_1());
+    const wire = keep(new oc.BRepBuilderAPI_MakeWire());
     for (let i = 0; i < corners.length; i++) {
       const a = corners[i];
       const b = corners[(i + 1) % corners.length];
-      const pa = keep(new oc.gp_Pnt_3(a[0], a[1], a[2]));
-      const pb = keep(new oc.gp_Pnt_3(b[0], b[1], b[2]));
-      const edge = keep(new oc.BRepBuilderAPI_MakeEdge_3(pa, pb));
-      wire.Add_1(edge.Edge());
+      const pa = keep(new oc.gp_Pnt(a[0], a[1], a[2]));
+      const pb = keep(new oc.gp_Pnt(b[0], b[1], b[2]));
+      const edge = keep(new oc.BRepBuilderAPI_MakeEdge(pa, pb));
+      wire.Add(edge.Edge());
     }
-    const face = keep(new oc.BRepBuilderAPI_MakeFace_15(wire.Wire(), true));
+    const face = keep(new oc.BRepBuilderAPI_MakeFace(wire.Wire(), true));
     if (!face.IsDone()) throw new Error('the countersink profile face could not be built.');
-    const origin = keep(new oc.gp_Pnt_3(entryPoint[0], entryPoint[1], entryPoint[2]));
-    const dir = keep(new oc.gp_Dir_4(axisIntoBody[0], axisIntoBody[1], axisIntoBody[2]));
-    const axis = keep(new oc.gp_Ax1_2(origin, dir));
-    const revol = keep(new oc.BRepPrimAPI_MakeRevol_2(face.Face(), axis, true));
+    const origin = keep(new oc.gp_Pnt(entryPoint[0], entryPoint[1], entryPoint[2]));
+    const dir = keep(new oc.gp_Dir(axisIntoBody[0], axisIntoBody[1], axisIntoBody[2]));
+    const axis = keep(new oc.gp_Ax1(origin, dir));
+    const revol = keep(new oc.BRepPrimAPI_MakeRevol(face.Face(), axis, true));
     if (!revol.IsDone()) throw new Error('BRepPrimAPI_MakeRevol did not build the countersink cone.');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const cone = (replicad as any).cast(revol.Shape()) as replicad.Shape3D;

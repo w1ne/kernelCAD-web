@@ -88,7 +88,7 @@ export function lowerSurfaceSew(
     sewing.Add(faceTopo);
   }
 
-  sewing.Perform(new oc.Message_ProgressRange_1());
+  sewing.Perform(new oc.Message_ProgressRange());
   const sewedShape = sewing.SewedShape();
 
   // Watertightness signal (1): no free (single-face) boundary edges.
@@ -109,15 +109,15 @@ export function lowerSurfaceSew(
   // Only a single closed shell can become a solid. If the sewing produced a
   // compound / single face / open multi-shell, skip the solid path.
   if (shapeTypeVal === 3 && noFreeEdges) {
-    const shell = oc.TopoDS.Shell_1(sewedShape);
-    const makeSolid = new oc.BRepBuilderAPI_MakeSolid_3(shell);
+    const shell = oc.TopoDS.Shell(sewedShape);
+    const makeSolid = new oc.BRepBuilderAPI_MakeSolid(shell);
     if (makeSolid.IsDone()) {
       const candidate = makeSolid.Solid();
       // Confirm the promoted solid is geometrically valid (no inverted faces,
       // consistent orientation). GeomControls=false (topology-only is enough
       // for the closure question and far cheaper), parallel=false.
       const analyzer = new oc.BRepCheck_Analyzer(candidate, false, false);
-      if (analyzer.IsValid_2()) {
+      if (analyzer.IsValid()) {
         isSolid = true;
         solid = candidate;
       }

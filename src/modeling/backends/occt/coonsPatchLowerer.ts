@@ -36,7 +36,7 @@ function geomAbsFor(oc: any, c: 'C0' | 'C1' | 'C2'): unknown {
  * Build a Coons-patch face from a captured `CoonsPatchData` surface record.
  *
  * Direct OCCT call sequence (see audit doc — `Add_1` is the boundary-edge
- * variant; `Add_2..Add_5` exist but are reserved for tangency-to-neighbour
+ * variant; `Add_2..Add` exist but are reserved for tangency-to-neighbour
  * follow-ups):
  *
  *  1. Construct `BRepOffsetAPI_MakeFilling(Degree=3, NbPtsOnCur=15, NbIter=2,
@@ -51,7 +51,7 @@ function geomAbsFor(oc: any, c: 'C0' | 'C1' | 'C2'): unknown {
  *     `Add_1(edge, geomAbs(continuity[i]), true)` (IsBound=true).
  *  3. `Build(new Message_ProgressRange_1())`. If `IsDone()` is false, throw
  *     so the caller can attach `feature.surface-from-boundary.degenerate-patch`.
- *  4. Downcast `.Shape()` to `TopoDS_Face` via `oc.TopoDS.Face_1(shape)` and
+ *  4. Downcast `.Shape()` to `TopoDS_Face` via `oc.TopoDS.Face(shape)` and
  *     wrap in `new replicad.Face(...)` so the result flows through
  *     `thickenFace` / `faceToShape` identically to a `buildNurbsFace`
  *     result. The audit confirms `filling.Face()` is NOT exposed — the
@@ -110,15 +110,15 @@ export function lowerCoonsPatch(
       importedGeometry.set(curveId, edge as any);
     }
 
-    filling.Add_1(edge, geomAbsFor(oc, data.continuity[i]), true);
+    filling.Add(edge, geomAbsFor(oc, data.continuity[i]), true);
   }
 
-  filling.Build(new oc.Message_ProgressRange_1());
+  filling.Build(new oc.Message_ProgressRange());
   if (!filling.IsDone()) {
     throw new Error('BRepOffsetAPI_MakeFilling.IsDone() returned false');
   }
 
   const shape = filling.Shape();
-  const topoFace = oc.TopoDS.Face_1(shape);
+  const topoFace = oc.TopoDS.Face(shape);
   return { face: new replicad.Face(topoFace) };
 }

@@ -455,7 +455,7 @@ export class Sketch {
    *   first / last section to a single point (cone-like terminations).
    * - `opts.rails: Curve3D[]` constrains the loft to follow guide curves.
    *   First rail is the spine; a second rail is the auxiliary spine
-   *   (`BRepOffsetAPI_MakePipeShell.SetMode_5`). More than two rails, or a
+   *   (`BRepOffsetAPI_MakePipeShell.SetMode`). More than two rails, or a
    *   rail that misses a section, emit `feature.loft.rail-miss`.
    *
    * Returns a `Shape` (3D solid). Validation (section count, planes length)

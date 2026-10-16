@@ -167,7 +167,7 @@ export function edgeToSegments(edge: Edge, frame: PlaneFrame, curveTolerance: nu
   if (type === 'CIRCLE') {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const oc = getOC() as any;
-    const adaptor = new oc.BRepAdaptor_Curve_2(edge.wrapped);
+    const adaptor = new oc.BRepAdaptor_Curve(edge.wrapped);
     try {
       const circ = adaptor.Circle();
       const axis = circ.Axis().Direction();
@@ -183,9 +183,9 @@ export function edgeToSegments(edge: Edge, frame: PlaneFrame, curveTolerance: nu
           // end coincide), and it is frame-correct by construction.
           const u0 = adaptor.FirstParameter();
           const u1 = adaptor.LastParameter();
-          const p0 = new oc.gp_Pnt_1();
-          const p1 = new oc.gp_Pnt_1();
-          const v0 = new oc.gp_Vec_1();
+          const p0 = new oc.gp_Pnt();
+          const p1 = new oc.gp_Pnt();
+          const v0 = new oc.gp_Vec();
           adaptor.D1(u0, p0, v0);
           adaptor.D0((u0 + u1) / 2, p1);
           const startP: Vec3 = [p0.X(), p0.Y(), p0.Z()];

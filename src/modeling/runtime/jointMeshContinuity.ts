@@ -436,7 +436,7 @@ export function measureGapToBody(
     // point to the body's TopoDS_Shape.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const oc = getOC() as any;
-    const gp = new oc.gp_Pnt_3(pointWorld[0], pointWorld[1], pointWorld[2]);
+    const gp = new oc.gp_Pnt(pointWorld[0], pointWorld[1], pointWorld[2]);
     const mkVertex = new oc.BRepBuilderAPI_MakeVertex(gp);
     const vertex = mkVertex.Vertex();
     let value: number | undefined;

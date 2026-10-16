@@ -100,7 +100,7 @@ export interface LowerVariableSweepOpts {
  * wire's first vertex and `t=1` to its last vertex. Sections with
  * `t ∈ (0, 1)` trigger a spine-subdivision pass first:
  *
- *  1. `BRep_Tool.Curve_2` extracts the edge's underlying `Geom_Curve`.
+ *  1. `BRep_Tool.Curve` extracts the edge's underlying `Geom_Curve`.
  *  2. The curve is split into sub-edges over the parameter sub-ranges
  *     between consecutive stations via `BRepBuilderAPI_MakeEdge_29`
  *     (curve + shared end vertices + parameter bounds), so adjacent
@@ -139,11 +139,11 @@ export interface LowerVariableSweepOpts {
  *   underlying message.
  */
 type Oc = ReturnType<typeof getOC>;
-type OcEdge = ConstructorParameters<Oc['BRepBuilderAPI_MakeWire_2']>[0];
+type OcEdge = ConstructorParameters<Oc['BRepBuilderAPI_MakeWire']>[0];
 type OcPipeShell = InstanceType<Oc['BRepOffsetAPI_MakePipeShell']>;
 
 interface SpineAnchor {
-  spineWire: ReturnType<Oc['BRepBuilderAPI_MakeWire_2']['Wire']>;
+  spineWire: ReturnType<Oc['BRepBuilderAPI_MakeWire']['Wire']>;
   firstVertex: ReturnType<Oc['TopoDS']['Vertex_1']>;
   lastVertex: ReturnType<Oc['TopoDS']['Vertex_1']>;
 }
@@ -199,7 +199,7 @@ export function lowerVariableSweep(
     stationVertices = sections.map((s) => (s.t <= 0.5 ? anchor.firstVertex : anchor.lastVertex));
   } else {
     spineWire = subdivideSpineAtStations(oc, spineEdge, intermediateTs, closedSpine);
-    const adaptor = new oc.BRepAdaptor_Curve_2(spineEdge);
+    const adaptor = new oc.BRepAdaptor_Curve(spineEdge);
     const u0 = adaptor.FirstParameter();
     const u1 = adaptor.LastParameter();
     const wireVertices = exploreVertices(oc, spineWire);
@@ -227,7 +227,7 @@ export function lowerVariableSweep(
     : sections.map((s) => s.profileWire);
   addProfileSections(pipeShell, profileWires, stationVertices, withContact, withCorrection);
 
-  const progress = new oc.Message_ProgressRange_1();
+  const progress = new oc.Message_ProgressRange();
   pipeShell.Build(progress);
   if (!pipeShell.IsDone()) {
     throw new Error('BRepOffsetAPI_MakePipeShell::Build did not converge.');
@@ -293,13 +293,13 @@ function validateSections(sections: VariableSweepSectionLowered[]): void {
 function exploreVertices(oc: any, shape: any): any[] {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const vertices: any[] = [];
-  const exp = new oc.TopExp_Explorer_2(
+  const exp = new oc.TopExp_Explorer(
     shape,
     oc.TopAbs_ShapeEnum.TopAbs_VERTEX,
     oc.TopAbs_ShapeEnum.TopAbs_SHAPE,
   );
   while (exp.More()) {
-    const candidate = oc.TopoDS.Vertex_1(exp.Current());
+    const candidate = oc.TopoDS.Vertex(exp.Current());
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (!vertices.some((v: any) => v.IsSame(candidate))) {
       vertices.push(candidate);
@@ -332,24 +332,24 @@ function subdivideSpineAtStations(
   closed = false,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): any {
-  const adaptor = new oc.BRepAdaptor_Curve_2(spineEdge);
+  const adaptor = new oc.BRepAdaptor_Curve(spineEdge);
   const u0 = adaptor.FirstParameter();
   const u1 = adaptor.LastParameter();
 
-  // Extract the edge's underlying curve. `BRep_Tool.Curve_2`'s output
+  // Extract the edge's underlying curve. `BRep_Tool.Curve`'s output
   // parameters are not marshalled by the binding, so the handle is returned
   // directly; it carries no location, hence the explicit edge-location
   // compensation for the (not currently produced) located-edge case.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let curve: any = oc.BRep_Tool.Curve_2(spineEdge, 0, 0);
+  let curve: any = oc.BRep_Tool.Curve(spineEdge, 0, 0);
   if (!curve) {
     throw new Error(
-      'lowerVariableSweep: cannot subdivide the spine for intermediate sections — BRep_Tool.Curve_2 returned null (spine edge has no 3D curve).',
+      'lowerVariableSweep: cannot subdivide the spine for intermediate sections — BRep_Tool.Curve returned null (spine edge has no 3D curve).',
     );
   }
-  const location = spineEdge.Location_1();
+  const location = spineEdge.Location();
   if (!location.IsIdentity()) {
-    curve = curve.get().Transformed(location.Transformation());
+    curve = curve.Transformed(location.Transformation());
   }
 
   // u-parameters for [spine start, ...stations, spine end].
@@ -368,7 +368,7 @@ function subdivideSpineAtStations(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const edges: any[] = [];
   for (let i = 0; i + 1 < params.length; i++) {
-    const maker = new oc.BRepBuilderAPI_MakeEdge_29(
+    const maker = new oc.BRepBuilderAPI_MakeEdge(
       curve,
       vertices[i],
       vertices[i + 1],
@@ -383,9 +383,9 @@ function subdivideSpineAtStations(
     edges.push(maker.Edge());
   }
 
-  const wireMaker = new oc.BRepBuilderAPI_MakeWire_2(edges[0]);
+  const wireMaker = new oc.BRepBuilderAPI_MakeWire(edges[0]);
   for (let i = 1; i < edges.length; i++) {
-    wireMaker.Add_1(edges[i]);
+    wireMaker.Add(edges[i]);
   }
   if (!wireMaker.IsDone()) {
     throw new Error(
@@ -441,7 +441,7 @@ function matchStationVertex(
 /** True when the spine edge starts and ends on the same point. */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function isClosedSpine(oc: any, spineEdge: any): boolean {
-  const adaptor = new oc.BRepAdaptor_Curve_2(spineEdge);
+  const adaptor = new oc.BRepAdaptor_Curve(spineEdge);
   const a = adaptor.Value(adaptor.FirstParameter());
   const b = adaptor.Value(adaptor.LastParameter());
   try {
@@ -457,8 +457,8 @@ function isClosedSpine(oc: any, spineEdge: any): boolean {
  *  for a scaled or reshaped one (profiles are compared before placement). */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function wireSignature(oc: any, wire: any): number[] | undefined {
-  const props = new oc.GProp_GProps_1();
-  const box = new oc.Bnd_Box_1();
+  const props = new oc.GProp_GProps();
+  const box = new oc.Bnd_Box();
   try {
     oc.BRepGProp.LinearProperties(wire, props, false, false);
     oc.BRepBndLib.Add(wire, box, false);
@@ -487,16 +487,16 @@ function sameProfile(oc: any, a: any, b: any): boolean {
 }
 
 function collectSpineAnchor(oc: Oc, spineEdge: OcEdge, closed = false): SpineAnchor {
-  const spineWire = new oc.BRepBuilderAPI_MakeWire_2(spineEdge).Wire();
+  const spineWire = new oc.BRepBuilderAPI_MakeWire(spineEdge).Wire();
 
   const spineVertices: SpineAnchor['firstVertex'][] = [];
-  const exp = new oc.TopExp_Explorer_2(
+  const exp = new oc.TopExp_Explorer(
     spineWire,
     oc.TopAbs_ShapeEnum.TopAbs_VERTEX,
     oc.TopAbs_ShapeEnum.TopAbs_SHAPE,
   );
   while (exp.More()) {
-    spineVertices.push(oc.TopoDS.Vertex_1(exp.Current()));
+    spineVertices.push(oc.TopoDS.Vertex(exp.Current()));
     exp.Next();
   }
   if (closed && spineVertices.length >= 1) {
@@ -520,14 +520,14 @@ function collectSpineAnchor(oc: Oc, spineEdge: OcEdge, closed = false): SpineAnc
 function applyOrientationMode(oc: Oc, pipeShell: OcPipeShell, opts: LowerVariableSweepOpts): void {
   const orient = opts.orientation ?? 'corrected-frenet';
   if (orient === 'frenet') {
-    pipeShell.SetMode_1(true);
+    pipeShell.SetMode(true);
   } else if (orient === 'discrete') {
     pipeShell.SetDiscreteMode();
   } else if (typeof orient === 'object' && 'up' in orient) {
     const [ux, uy, uz] = orient.up;
-    pipeShell.SetMode_3(new oc.gp_Dir_4(ux, uy, uz));
+    pipeShell.SetMode(new oc.gp_Dir(ux, uy, uz));
   } else {
-    pipeShell.SetMode_1(false);
+    pipeShell.SetMode(false);
   }
 }
 
@@ -551,7 +551,7 @@ function addProfileSections(
   withCorrection: boolean,
 ): void {
   for (let i = 0; i < profileWires.length; i++) {
-    pipeShell.Add_2(profileWires[i], stationVertices[i], withContact, withCorrection);
+    pipeShell.Add(profileWires[i], stationVertices[i], withContact, withCorrection);
   }
 }
 
@@ -569,13 +569,13 @@ function placeProfilesAtStations(
   sections: VariableSweepSectionLowered[],
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): any[] {
-  const adaptor = new oc.BRepAdaptor_Curve_2(spineEdge);
+  const adaptor = new oc.BRepAdaptor_Curve(spineEdge);
   const u0 = adaptor.FirstParameter();
   const u1 = adaptor.LastParameter();
   return sections.map((s) => {
     const u = u0 + s.t * (u1 - u0);
-    const p = new oc.gp_Pnt_1();
-    const d1 = new oc.gp_Vec_1();
+    const p = new oc.gp_Pnt();
+    const d1 = new oc.gp_Vec();
     adaptor.D1(u, p, d1);
     const len = d1.Magnitude();
     if (!Number.isFinite(len) || len < 1e-12) {
@@ -586,22 +586,22 @@ function placeProfilesAtStations(
     const tx = d1.X() / len;
     const ty = d1.Y() / len;
     const tz = d1.Z() / len;
-    const trsf = new oc.gp_Trsf_1();
+    const trsf = new oc.gp_Trsf();
     // Minimal rotation +Z → tangent. Axis = Z × T = (-ty, tx, 0).
     const sinA = Math.hypot(tx, ty);
     if (sinA > 1e-12) {
       const angle = Math.atan2(sinA, tz);
-      const axis = new oc.gp_Ax1_2(new oc.gp_Pnt_3(0, 0, 0), new oc.gp_Dir_4(-ty / sinA, tx / sinA, 0));
-      trsf.SetRotation_1(axis, angle);
+      const axis = new oc.gp_Ax1(new oc.gp_Pnt(0, 0, 0), new oc.gp_Dir(-ty / sinA, tx / sinA, 0));
+      trsf.SetRotation(axis, angle);
     } else if (tz < 0) {
-      const axis = new oc.gp_Ax1_2(new oc.gp_Pnt_3(0, 0, 0), new oc.gp_Dir_4(1, 0, 0));
-      trsf.SetRotation_1(axis, Math.PI);
+      const axis = new oc.gp_Ax1(new oc.gp_Pnt(0, 0, 0), new oc.gp_Dir(1, 0, 0));
+      trsf.SetRotation(axis, Math.PI);
     }
-    const move = new oc.gp_Trsf_1();
-    move.SetTranslation_1(new oc.gp_Vec_4(p.X(), p.Y(), p.Z()));
+    const move = new oc.gp_Trsf();
+    move.SetTranslation(new oc.gp_Vec(p.X(), p.Y(), p.Z()));
     // Rotate about the origin first, then translate: T · R.
     const placed = move.Multiplied(trsf);
-    const transform = new oc.BRepBuilderAPI_Transform_2(s.profileWire, placed, true);
-    return oc.TopoDS.Wire_1(transform.Shape());
+    const transform = new oc.BRepBuilderAPI_Transform(s.profileWire, placed, true);
+    return oc.TopoDS.Wire(transform.Shape());
   });
 }

@@ -158,13 +158,13 @@ export function projectShapeForDrawing(
 
   // The OCCT handle owns this reference-counted algorithm. Registering both
   // the raw algorithm and its handle for deletion frees it twice when GC runs.
-  const algo = new oc.HLRBRep_Algo_1();
-  const algoHandle = r(new oc.Handle_HLRBRep_Algo_2(algo));
-  algo.Add_2(shape.wrapped, 0);
-  const projector = r(new oc.HLRAlgo_Projector_2(camera.wrapped));
-  algo.Projector_1(projector);
+  const algo = new oc.HLRBRep_Algo();
+  const algoHandle = r(algo);
+  algo.Add(shape.wrapped, 0);
+  const projector = r(new oc.HLRAlgo_Projector(camera.wrapped));
+  algo.Projector(projector);
   algo.Update();
-  algo.Hide_1();
+  algo.Hide();
   const hlrToShape = r(
     new oc.HLRBRep_HLRToShape(algoHandle),
   );
@@ -176,13 +176,13 @@ export function projectShapeForDrawing(
     for (const edge of cast(compound).edges) {
       r(edge);
       // HLR output edges carry only 2D curve records until rebuilt.
-      oc.BRepLib.BuildCurves3d_2(edge.wrapped);
-      const adaptor = r(new oc.BRepAdaptor_Curve_2(edge.wrapped));
-      const sampler = r(
-        new oc.GCPnts_TangentialDeflection_2(
-          adaptor, angTol, curveTol, 2, 1e-9, 1e-7,
-        ),
-      );
+      oc.BRepLib.BuildCurves3d(edge.wrapped);
+      const adaptor = r(new oc.BRepAdaptor_Curve(edge.wrapped));
+      // Three arguments only: OCCT's defaults (2 points, UTol 1e-9, MinLen
+      // 1e-7) are the values wanted, and a six-number call is ambiguous with
+      // the (C, U1, U2, Ang, Curv, MinPts) overload, which binds angTol and
+      // curveTol as the parameter range.
+      const sampler = r(new oc.GCPnts_TangentialDeflection(adaptor, angTol, curveTol));
       const n = sampler.NbPoints();
       if (n < 2) continue;
       const pl: Array<readonly [number, number]> = [];
@@ -197,11 +197,11 @@ export function projectShapeForDrawing(
   };
 
   return {
-    visibleSharp: grab(r(hlrToShape.VCompound_1())),
-    visibleOutline: grab(r(hlrToShape.OutLineVCompound_1())),
-    visibleSmooth: grab(r(hlrToShape.Rg1LineVCompound_1())),
-    hiddenSharp: withHidden ? grab(r(hlrToShape.HCompound_1())) : [],
-    hiddenOutline: withHidden ? grab(r(hlrToShape.OutLineHCompound_1())) : [],
-    hiddenSmooth: withHidden ? grab(r(hlrToShape.Rg1LineHCompound_1())) : [],
+    visibleSharp: grab(r(hlrToShape.VCompound())),
+    visibleOutline: grab(r(hlrToShape.OutLineVCompound())),
+    visibleSmooth: grab(r(hlrToShape.Rg1LineVCompound())),
+    hiddenSharp: withHidden ? grab(r(hlrToShape.HCompound())) : [],
+    hiddenOutline: withHidden ? grab(r(hlrToShape.OutLineHCompound())) : [],
+    hiddenSmooth: withHidden ? grab(r(hlrToShape.Rg1LineHCompound())) : [],
   };
 }

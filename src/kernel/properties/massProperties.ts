@@ -95,12 +95,12 @@ export function computeMassProperties(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
 
-  const props = new oc.GProp_GProps_1();
+  const props = new oc.GProp_GProps();
   // VolumeProperties_1(S, VProps, OnlyClosed, SkipShared, UseTriangulation).
   // OnlyClosed=false so open shells still contribute volume integration;
   // SkipShared/UseTriangulation=false matches the LinearProperties call in
   // curve3dEval.ts.
-  oc.BRepGProp.VolumeProperties_1(occtShape, props, false, false, false);
+  oc.BRepGProp.VolumeProperties(occtShape, props, false, false, false);
 
   const volumeMm3 = props.Mass();
   const massKg = volumeMm3 * MM3_TO_M3 * density;
@@ -178,10 +178,10 @@ function radiusOfGyrationAbout(
       'radiusOfGyration axis direction must be a non-zero vector; got [0, 0, 0].',
     );
   }
-  const p = new oc.gp_Pnt_3(origin[0], origin[1], origin[2]);
+  const p = new oc.gp_Pnt(origin[0], origin[1], origin[2]);
   // gp_Dir normalises, but a zero-length input would abort inside wasm rather
   // than throw a catchable JS error, hence the guard above.
-  const d = new oc.gp_Dir_4(direction[0], direction[1], direction[2]);
-  const axis = new oc.gp_Ax1_2(p, d);
+  const d = new oc.gp_Dir(direction[0], direction[1], direction[2]);
+  const axis = new oc.gp_Ax1(p, d);
   return props.RadiusOfGyration(axis);
 }

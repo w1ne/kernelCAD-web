@@ -311,7 +311,7 @@ function resolveTrimCutter(
     // type is wider than necessary because the accessor type is ShapeBackend.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const raw = ((back as OcctBackend).getReplicadShape() as any).wrapped;
-    const exp = new oc.TopExp_Explorer_2(
+    const exp = new oc.TopExp_Explorer(
       raw,
       oc.TopAbs_ShapeEnum.TopAbs_FACE,
       oc.TopAbs_ShapeEnum.TopAbs_SHAPE,
@@ -319,7 +319,7 @@ function resolveTrimCutter(
     if (!exp.More()) {
       throw new Error(`cutter feature ${fid} has no faces`);
     }
-    const topoFace = oc.TopoDS.Face_1(exp.Current());
+    const topoFace = oc.TopoDS.Face(exp.Current());
     return new replicad.Face(topoFace);
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);

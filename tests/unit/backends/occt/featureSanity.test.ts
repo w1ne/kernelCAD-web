@@ -45,8 +45,8 @@ describe('post-feature sanity gate', () => {
     // A face on an unbounded plane: OCCT's Bnd_Box for it is OPEN, i.e. the
     // ±1e100 box the dogfood inspect() reported.
     const oc = getOC() as any;
-    const plane = new oc.gp_Pln_3(new oc.gp_Pnt_3(0, 0, 0), new oc.gp_Dir_4(0, 0, 1));
-    const face = new oc.BRepBuilderAPI_MakeFace_3(plane).Face();
+    const plane = new oc.gp_Pln(new oc.gp_Pnt(0, 0, 0), new oc.gp_Dir(0, 0, 1));
+    const face = new oc.BRepBuilderAPI_MakeFace(plane).Face();
     const shape = new OcctBackend(cast(face) as never);
     const d = absurdGeometryDiagnostic(rec('variableSweep'), shape, []);
     expect(d?.code).toBe('feature.result.absurd-geometry');

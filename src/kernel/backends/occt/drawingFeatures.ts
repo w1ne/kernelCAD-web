@@ -188,7 +188,7 @@ function cylinderOf(face: Face): CylFace | null {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const adaptor = new oc.BRepAdaptor_Surface_2((face as any).wrapped, true);
+  const adaptor = new oc.BRepAdaptor_Surface((face as any).wrapped, true);
   try {
     const cyl = adaptor.Cylinder();
     const ax = cyl.Axis();

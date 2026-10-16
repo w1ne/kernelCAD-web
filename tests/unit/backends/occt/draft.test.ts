@@ -20,16 +20,16 @@ function faceAreas(rawShape: any): { area: number; cx: number; cy: number; cz: n
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
   const out: { area: number; cx: number; cy: number; cz: number }[] = [];
-  const exp = new oc.TopExp_Explorer_2(
+  const exp = new oc.TopExp_Explorer(
     rawShape,
     oc.TopAbs_ShapeEnum.TopAbs_FACE,
     oc.TopAbs_ShapeEnum.TopAbs_SHAPE,
   );
   try {
     while (exp.More()) {
-      const face = oc.TopoDS.Face_1(exp.Current());
-      const props = new oc.GProp_GProps_1();
-      oc.BRepGProp.SurfaceProperties_1(face, props, false, false);
+      const face = oc.TopoDS.Face(exp.Current());
+      const props = new oc.GProp_GProps();
+      oc.BRepGProp.SurfaceProperties(face, props, false, false);
       const com = props.CentreOfMass();
       out.push({ area: props.Mass(), cx: com.X(), cy: com.Y(), cz: com.Z() });
       props.delete();

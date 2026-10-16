@@ -62,7 +62,7 @@ export function recoveryPlans(op: 'cut' | 'fuse' | 'intersect', diagonal: number
 /** Diagonal of the combined axis-aligned bounding box of `shapes`. */
 export function combinedDiagonal(oc: ReturnType<typeof getOC>, shapes: readonly unknown[]): number {
   const o = oc as OC;
-  const box = new o.Bnd_Box_1();
+  const box = new o.Bnd_Box();
   try {
     for (const s of shapes) o.BRepBndLib.Add(s, box, false);
     if (box.IsVoid()) return 0;
@@ -80,9 +80,9 @@ export function combinedDiagonal(oc: ReturnType<typeof getOC>, shapes: readonly 
 /** Absolute volume of a shape; NaN when OCCT cannot integrate it. */
 export function volumeOf(oc: ReturnType<typeof getOC>, shape: unknown): number {
   const o = oc as OC;
-  const props = new o.GProp_GProps_1();
+  const props = new o.GProp_GProps();
   try {
-    o.BRepGProp.VolumeProperties_1(shape, props, false, false, false);
+    o.BRepGProp.VolumeProperties(shape, props, false, false, false);
     return Math.abs(props.Mass());
   } catch {
     return Number.NaN;
@@ -97,7 +97,7 @@ export function isValidShape(oc: ReturnType<typeof getOC>, shape: unknown): bool
   let analyzer: OC;
   try {
     analyzer = new o.BRepCheck_Analyzer(shape, true, false);
-    return Boolean(analyzer.IsValid_2());
+    return Boolean(analyzer.IsValid());
   } catch {
     return false;
   } finally {
@@ -152,14 +152,14 @@ function subshapeProps(
 ): SubshapeProps[] {
   const o = oc as OC;
   const typeEnum = kind === 'face' ? o.TopAbs_ShapeEnum.TopAbs_FACE : o.TopAbs_ShapeEnum.TopAbs_EDGE;
-  const explorer = new o.TopExp_Explorer_2(shape, typeEnum, o.TopAbs_ShapeEnum.TopAbs_SHAPE);
+  const explorer = new o.TopExp_Explorer(shape, typeEnum, o.TopAbs_ShapeEnum.TopAbs_SHAPE);
   const out: SubshapeProps[] = [];
   try {
     while (explorer.More()) {
       const sub = explorer.Current();
-      const props = new o.GProp_GProps_1();
+      const props = new o.GProp_GProps();
       try {
-        if (kind === 'face') o.BRepGProp.SurfaceProperties_1(sub, props, false, false);
+        if (kind === 'face') o.BRepGProp.SurfaceProperties(sub, props, false, false);
         else o.BRepGProp.LinearProperties(sub, props, false, false);
         const c = props.CentreOfMass();
         out.push({ hash: hashOf(sub), cx: c.X(), cy: c.Y(), cz: c.Z(), mass: props.Mass() });
@@ -210,8 +210,8 @@ export function rematchSubshapes(
  *  when ShapeFix throws. */
 export function shapeFix(oc: ReturnType<typeof getOC>, shape: unknown, precision: number): unknown {
   const o = oc as OC;
-  const fixer = new o.ShapeFix_Shape_2(shape);
-  const progress = new o.Message_ProgressRange_1();
+  const fixer = new o.ShapeFix_Shape(shape);
+  const progress = new o.Message_ProgressRange();
   try {
     fixer.SetPrecision(precision);
     fixer.SetMaxTolerance(Math.max(precision * 10, 1e-3));

@@ -61,19 +61,19 @@ function withScope<T>(fn: (track: <V extends Deletable>(v: V) => V) => T): T {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function addParts(oc: any, docHandle: any, parts: readonly StepAssemblyPart[]): void {
   withScope((track) => {
-    const main = track(docHandle.get().Main());
+    const main = track(docHandle.Main());
     const shapeToolHandle = track(oc.XCAFDoc_DocumentTool.ShapeTool(main));
     const colorToolHandle = track(oc.XCAFDoc_DocumentTool.ColorTool(main));
-    const shapeTool = shapeToolHandle.get();
-    const colorTool = colorToolHandle.get();
+    const shapeTool = shapeToolHandle;
+    const colorTool = colorToolHandle;
     for (const part of parts) {
       const label = track(shapeTool.NewShape());
       shapeTool.SetShape(label, part.shape);
-      const name = track(new oc.TCollection_ExtendedString_2(part.name, true));
-      track(oc.TDataStd_Name.Set_1(label, name));
+      const name = track(new oc.TCollection_ExtendedString(part.name, true));
+      track(oc.TDataStd_Name.Set(label, name));
       const [r, g, b] = rgbFromHex(part.color ?? '#f00');
-      const color = track(new oc.Quantity_ColorRGBA_5(r, g, b, 1));
-      colorTool.SetColor_3(label, color, oc.XCAFDoc_ColorType.XCAFDoc_ColorSurf);
+      const color = track(new oc.Quantity_ColorRGBA(r, g, b, 1));
+      colorTool.SetColor(label, color, oc.XCAFDoc_ColorType.XCAFDoc_ColorSurf);
     }
     shapeTool.UpdateAssemblies();
   });
@@ -84,18 +84,18 @@ function writeDocument(oc: any, docHandle: any, filename: string): boolean {
   return withScope((track) => {
     // Order matters on teardown (reverse): writer, then the session handle
     // that frees the session. The raw session is never deleted directly.
-    const sessionHandle = track(new oc.Handle_XSControl_WorkSession_2(new oc.XSControl_WorkSession()));
-    const writer = track(new oc.STEPCAFControl_Writer_2(sessionHandle, false));
+    const sessionHandle = track(new oc.XSControl_WorkSession());
+    const writer = track(new oc.STEPCAFControl_Writer(sessionHandle, false));
     writer.SetColorMode(true);
     writer.SetLayerMode(true);
     writer.SetNameMode(true);
-    oc.Interface_Static.SetIVal('write.surfacecurve.mode', true);
+    oc.Interface_Static.SetIVal('write.surfacecurve.mode', 1);
     oc.Interface_Static.SetIVal('write.precision.mode', 0);
     oc.Interface_Static.SetIVal('write.step.assembly', 2);
     oc.Interface_Static.SetIVal('write.step.schema', 5);
-    const progress = track(new oc.Message_ProgressRange_1());
-    writer.Transfer_1(docHandle, oc.STEPControl_StepModelType.STEPControl_AsIs, null, progress);
-    return writer.Write(filename) === oc.IFSelect_ReturnStatus.IFSelect_RetDone;
+    const progress = track(new oc.Message_ProgressRange());
+    // Perform = Transfer(doc, STEPControl_AsIs, no multi-file) + Write.
+    return writer.Perform(docHandle, filename, progress) === true;
   });
 }
 
@@ -108,8 +108,8 @@ export function writeStepAssembly(parts: readonly StepAssemblyPart[]): Uint8Arra
   const oc = getOC() as any;
   const filename = 'kernelcad-assembly.step';
   return withScope((track) => {
-    const format = track(new oc.TCollection_ExtendedString_2('XmlOcaf', true));
-    const docHandle = track(new oc.Handle_TDocStd_Document_2(new oc.TDocStd_Document(format)));
+    const format = track(new oc.TCollection_ExtendedString('XmlOcaf', true));
+    const docHandle = track(new oc.TDocStd_Document(format));
     oc.XCAFDoc_ShapeTool.SetAutoNaming(false);
     addParts(oc, docHandle, parts);
     if (!writeDocument(oc, docHandle, filename)) throw new Error('WRITE STEP FILE FAILED.');

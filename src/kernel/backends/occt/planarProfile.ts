@@ -86,9 +86,9 @@ function isCurvedSideFace(face: Face, n: Vec3): boolean {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
   const { uMin, uMax, vMin, vMax } = face.UVBounds;
-  const props = new oc.BRepGProp_Face_2(face.wrapped, false);
-  const p = new oc.gp_Pnt_1();
-  const vn = new oc.gp_Vec_1();
+  const props = new oc.BRepGProp_Face(face.wrapped, false);
+  const p = new oc.gp_Pnt();
+  const vn = new oc.gp_Vec();
   try {
     for (const fu of [0.1, 0.5, 0.9]) {
       for (const fv of [0.1, 0.5, 0.9]) {

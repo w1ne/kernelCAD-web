@@ -76,20 +76,20 @@ export function buildNurbsFace(opts: NurbsSurfaceInputs): replicad.Face {
   const dv = opts.degree.v;
 
   // 1-indexed (1..nU, 1..nV) per OCCT convention.
-  const poles = new oc.TColgp_Array2OfPnt_2(1, nU, 1, nV);
-  fillPoleGrid(poles, oc.gp_Pnt_3, opts.controls, nU, nV);
+  const poles = new oc.NCollection_Array2_gp_Pnt(1, nU, 1, nV);
+  fillPoleGrid(poles, oc.gp_Pnt, opts.controls, nU, nV);
 
   const uK = resolveKnots(opts.knots?.u, nU, du);
   const vK = resolveKnots(opts.knots?.v, nV, dv);
 
-  const uKnotsArr = new oc.TColStd_Array1OfReal_2(1, uK.knots.length);
+  const uKnotsArr = new oc.NCollection_Array1_double(1, uK.knots.length);
   fillNumericArray(uKnotsArr, uK.knots);
-  const vKnotsArr = new oc.TColStd_Array1OfReal_2(1, vK.knots.length);
+  const vKnotsArr = new oc.NCollection_Array1_double(1, vK.knots.length);
   fillNumericArray(vKnotsArr, vK.knots);
 
-  const uMultsArr = new oc.TColStd_Array1OfInteger_2(1, uK.mults.length);
+  const uMultsArr = new oc.NCollection_Array1_int(1, uK.mults.length);
   fillNumericArray(uMultsArr, uK.mults);
-  const vMultsArr = new oc.TColStd_Array1OfInteger_2(1, vK.mults.length);
+  const vMultsArr = new oc.NCollection_Array1_int(1, vK.mults.length);
   fillNumericArray(vMultsArr, vK.mults);
 
   const uPeriodic = opts.periodic?.u ?? false;
@@ -100,14 +100,14 @@ export function buildNurbsFace(opts: NurbsSurfaceInputs): replicad.Face {
     // Rational path: weights bound as TColStd_Array2OfReal (fork
     // kcad-v0.23.2+ exposes TColStd_Array2OfReal_2(lowerRow, upperRow,
     // lowerCol, upperCol)). 1-indexed SetValue mirrors the poles array.
-    const weightsArr = new oc.TColStd_Array2OfReal_2(1, nU, 1, nV);
+    const weightsArr = new oc.NCollection_Array2_double(1, nU, 1, nV);
     fillWeightGrid(weightsArr, opts.weights, nU, nV);
-    surf = new oc.Geom_BSplineSurface_2(
+    surf = new oc.Geom_BSplineSurface(
       poles, weightsArr, uKnotsArr, vKnotsArr, uMultsArr, vMultsArr,
       du, dv, uPeriodic, vPeriodic,
     );
   } else {
-    surf = new oc.Geom_BSplineSurface_1(
+    surf = new oc.Geom_BSplineSurface(
       poles, uKnotsArr, vKnotsArr, uMultsArr, vMultsArr,
       du, dv, uPeriodic, vPeriodic,
     );
@@ -115,8 +115,8 @@ export function buildNurbsFace(opts: NurbsSurfaceInputs): replicad.Face {
 
   // BRepBuilderAPI_MakeFace_8 wants Handle_Geom_Surface (base class), not the
   // specialized Handle_Geom_BSplineSurface. Use Handle_Geom_Surface_2.
-  const handle = new oc.Handle_Geom_Surface_2(surf);
-  const mkFace = new oc.BRepBuilderAPI_MakeFace_8(handle, 1e-6);
+  const handle = surf;
+  const mkFace = new oc.BRepBuilderAPI_MakeFace(handle, 1e-6);
   if (!mkFace.IsDone()) {
     throw new Error('BRepBuilderAPI_MakeFace_8 failed to build NURBS face');
   }
@@ -311,7 +311,7 @@ export function thickenFace(surface: replicad.Face | BuiltSurface, t: number): O
   }
 
   const thicker = new oc.BRepOffsetAPI_MakeThickSolid();
-  const progress = new oc.Message_ProgressRange_1();
+  const progress = new oc.Message_ProgressRange();
   // MakeThickSolidBySimple is the right API for "offset an open shell into a
   // closed solid". MakeThickSolidByJoin requires a solid input + a list of
   // faces to remove (the existing shell-feature path uses that for hollowing

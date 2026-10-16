@@ -94,15 +94,15 @@ describe('hole({ countersink })', () => {
   describe('a sub-feature that cannot be built', () => {
     let saved: any;
     afterEach(() => {
-      if (saved !== undefined) (getOC() as any).BRepPrimAPI_MakeRevol_2 = saved;
+      if (saved !== undefined) (getOC() as any).BRepPrimAPI_MakeRevol = saved;
       saved = undefined;
     });
 
     it('surfaces an error diagnostic instead of cutting a plain bore', async () => {
       // Force the cone build to fail the way a missing wasm binding did.
       const oc = getOC() as any;
-      saved = oc.BRepPrimAPI_MakeRevol_2;
-      oc.BRepPrimAPI_MakeRevol_2 = undefined;
+      saved = oc.BRepPrimAPI_MakeRevol;
+      oc.BRepPrimAPI_MakeRevol = undefined;
       const { result } = await lower(
         `return box(30, 30, 10, true).hole('top', { u: 0, v: 0, diameter: 4.5, depth: 'through', countersink: { diameter: 9 } });`,
       );

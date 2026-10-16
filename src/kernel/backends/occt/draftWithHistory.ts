@@ -48,11 +48,11 @@ export interface NeutralPlaneSpec {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function listToHashStrings(oc: any, list: any): string[] {
   const result: string[] = [];
-  const copy = new oc.TopTools_ListOfShape_3(list);
+  const copy = new oc.NCollection_List_TopoDS_Shape(list);
   try {
     while (!copy.IsEmpty()) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      result.push((copy.First_1() as any).HashCode(HASH_UPPER).toString(16));
+      result.push((copy.First() as any).HashCode(HASH_UPPER).toString(16));
       copy.RemoveFirst();
     }
   } finally {
@@ -78,7 +78,7 @@ function enumerateAndRecord(
   history: Map<string, string[]>,
 ): void {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const explorer = new oc.TopExp_Explorer_2(bodyShape, typeEnum as any, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
+  const explorer = new oc.TopExp_Explorer(bodyShape, typeEnum as any, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
   try {
     while (explorer.More()) {
       const sub = explorer.Current();
@@ -129,17 +129,17 @@ export function draftWithHistory(
     throw new Error('draftWithHistory: could not access .wrapped on body shape');
   }
 
-  const builder = new oc.BRepOffsetAPI_DraftAngle_2(bodyShape);
-  const dir = new oc.gp_Dir_4(pullDir[0], pullDir[1], pullDir[2]);
-  const planeNormal = new oc.gp_Dir_4(neutral.normal[0], neutral.normal[1], neutral.normal[2]);
-  const planeOrigin = new oc.gp_Pnt_3(neutral.point[0], neutral.point[1], neutral.point[2]);
-  const neutralPlane = new oc.gp_Pln_3(planeOrigin, planeNormal);
+  const builder = new oc.BRepOffsetAPI_DraftAngle(bodyShape);
+  const dir = new oc.gp_Dir(pullDir[0], pullDir[1], pullDir[2]);
+  const planeNormal = new oc.gp_Dir(neutral.normal[0], neutral.normal[1], neutral.normal[2]);
+  const planeOrigin = new oc.gp_Pnt(neutral.point[0], neutral.point[1], neutral.point[2]);
+  const neutralPlane = new oc.gp_Pln(planeOrigin, planeNormal);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const progress = new (oc as any).Message_ProgressRange_1();
+  const progress = new (oc as any).Message_ProgressRange();
 
   const hashSet = new Set(faces.map(f => f.hash));
   let added = 0;
-  const faceExplorer = new oc.TopExp_Explorer_2(
+  const faceExplorer = new oc.TopExp_Explorer(
     bodyShape,
     oc.TopAbs_ShapeEnum.TopAbs_FACE,
     oc.TopAbs_ShapeEnum.TopAbs_SHAPE,
@@ -150,7 +150,7 @@ export function draftWithHistory(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (hashSet.has((f as any).HashCode(HASH_UPPER).toString(16))) {
         // Downcast TopoDS_Shape → TopoDS_Face for Add(); Current() returns the base type.
-        const face = oc.TopoDS.Face_1(f);
+        const face = oc.TopoDS.Face(f);
         // Flag = true: the angle is measured from the pull direction (additive taper).
         builder.Add(face, dir, angleRad, neutralPlane, true);
         added++;

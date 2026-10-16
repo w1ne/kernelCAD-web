@@ -22,6 +22,6 @@ describe('worked drafting geometry', () => {
     const holes = recogniseDrawingFeatures(shape).holes;
     expect(holes.map(h => h.diameter).sort((a, b) => a - b)).toEqual(name === 'mounting-plate' ? [9, 9, 9, 9, 30] : [9, 9, 9, 9, 32]);
     const analyzer = new (getOC().BRepCheck_Analyzer)(shape.getReplicadShape().wrapped, true, false);
-    try { expect(analyzer.IsValid_2()).toBe(true); } finally { analyzer.delete(); }
+    try { expect(analyzer.IsValid()).toBe(true); } finally { analyzer.delete(); }
   }, 120000);
 });

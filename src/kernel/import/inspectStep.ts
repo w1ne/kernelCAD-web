@@ -146,14 +146,14 @@ export async function inspectStepBuffer(
   // Explode into solids. A single-solid import yields one TopAbs_SOLID;
   // a compound yields one per child.
   const solidBackends: OcctBackend[] = [];
-  const explorer = new oc.TopExp_Explorer_2(
+  const explorer = new oc.TopExp_Explorer(
     wrapped,
     oc.TopAbs_ShapeEnum.TopAbs_SOLID,
     oc.TopAbs_ShapeEnum.TopAbs_SHAPE,
   );
   try {
     while (explorer.More()) {
-      const solid = oc.TopoDS.Solid_1(explorer.Current());
+      const solid = oc.TopoDS.Solid(explorer.Current());
       solidBackends.push(
         new OcctBackend(replicad.cast(solid) as replicad.Shape3D),
       );
@@ -205,7 +205,7 @@ export async function inspectStepBuffer(
 function countFaces(oc: any, backend: OcctBackend): number {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const wrapped = (backend.getReplicadShape() as any).wrapped;
-  const explorer = new oc.TopExp_Explorer_2(
+  const explorer = new oc.TopExp_Explorer(
     wrapped,
     oc.TopAbs_ShapeEnum.TopAbs_FACE,
     oc.TopAbs_ShapeEnum.TopAbs_SHAPE,

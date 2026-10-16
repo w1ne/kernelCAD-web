@@ -13,7 +13,7 @@ import {
   OcctBackend,
   withOcctPoisonRecovery,
 } from './occtBackend';
-import { isOcctWasmPoisoned, WASM_POISON_MARKER } from './occtException';
+import { WASM_POISON_MARKER } from './occtException';
 
 describe('resetOcct — wasm poison recovery', () => {
   beforeAll(async () => {
@@ -35,35 +35,27 @@ describe('resetOcct — wasm poison recovery', () => {
     expect(box.isEmpty()).toBe(false);
   }, 120_000);
 
-  it('recovers sphere/box after a real embind double-free poison', async () => {
+  it('refuses an embind double delete without poisoning the heap', async () => {
     await initOcct();
-    // Reproduce the tangencySolver-class failure mode: delete a Geom handle
-    // and its underlying curve (double-free) which poisons the wasm heap.
+    // On OCCT 7 / replicad-opencascadejs <1.0 deleting a Geom handle and its
+    // curve freed the curve twice and poisoned the wasm heap (the
+    // tangencySolver-class failure). OCCT 8 bindings return the curve itself
+    // as the handle, so the second delete is a clean BindingError and the
+    // heap stays usable — no reset needed.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const oc = getOC() as any;
-    const origin = new oc.gp_Pnt2d_3(0, 0);
-    const dir = new oc.gp_Dir2d_4(1, 0);
-    const lin = new oc.gp_Lin2d_3(origin, dir);
-    const geom = new oc.Geom2d_Line_2(lin);
-    const handle = new oc.Handle_Geom2d_Curve_2(geom);
+    const origin = new oc.gp_Pnt2d(0, 0);
+    const dir = new oc.gp_Dir2d(1, 0);
+    const lin = new oc.gp_Lin2d(origin, dir);
+    const geom = new oc.Geom2d_Line(lin);
     geom.delete();
-    handle.delete();
-
-    let poisoned = false;
-    try {
-      OcctBackend.sphere(5);
-    } catch (e) {
-      poisoned = isOcctWasmPoisoned(e);
-      expect(poisoned).toBe(true);
-    }
-    expect(poisoned).toBe(true);
-
-    await resetOcct();
+    expect(() => geom.delete()).toThrow(/already deleted/);
 
     const sphere = OcctBackend.sphere(110);
     expect(sphere.volume()).toBeGreaterThan(0);
     const box = OcctBackend.box(10, 10, 10);
     expect(box.volume()).toBeCloseTo(1000, 0);
+    origin.delete(); dir.delete(); lin.delete();
   }, 120_000);
 
   it('withOcctPoisonRecovery resets and retries once', async () => {

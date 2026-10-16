@@ -432,7 +432,7 @@ export interface KernelCadApi {
    *
    * `opts.continuity` is either a single grade applied to all 4 edges, or an
    * array of 4 grades (one per edge). Maps to OCCT's `GeomAbs_C0/C1/C2` on
-   * `BRepOffsetAPI_MakeFilling.Add_1(edge, order, true)`. `opts.sampling`
+   * `BRepOffsetAPI_MakeFilling.Add(edge, order, true)`. `opts.sampling`
    * controls `NbPtsOnCur` (defaults to 15 at lower time).
    *
    * Returns a `Surface` peer to `Shape`. Use `.thicken(t)` to get a closed
