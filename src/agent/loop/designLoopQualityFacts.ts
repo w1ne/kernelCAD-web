@@ -2,13 +2,10 @@
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import type { ContactGraphResult } from '../../modeling/runtime/contactGraph';
 import {
+  countPattern,
   missingFilletFacts,
   stackedPrimitiveToyFacts,
 } from './revisionAssist';
-
-function countPattern(source: string, pattern: RegExp): number {
-  return source.match(pattern)?.length ?? 0;
-}
 
 export function scriptQualityFacts(
   source: string,

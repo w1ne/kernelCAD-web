@@ -67,7 +67,7 @@ export function isProductionIntentGoal(goal: string): boolean {
   return PRODUCTION_GOAL_RE.test(goal);
 }
 
-function countPattern(source: string, pattern: RegExp): number {
+export function countPattern(source: string, pattern: RegExp): number {
   return source.match(pattern)?.length ?? 0;
 }
 
