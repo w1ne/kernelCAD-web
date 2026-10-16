@@ -30,6 +30,7 @@ export type { RenderView };
 declare const window: {
   __demoPlayer?: {
     loadFeatureMeshes: (perFeature: unknown, bounds: unknown) => unknown;
+    updateFeatureTransforms: (transforms: unknown, bounds: unknown) => unknown;
     forceFullOpacity: () => void;
     showOnlyTailFeatures: () => void;
     applyObjectVisibilityFilter: (filter: HeadlessObjectFilter) => HeadlessObjectVisibility;
@@ -330,6 +331,24 @@ export async function loadFeatureMeshesIntoPage(
   await page.evaluate(
     ({ feats, b }) => window.__demoPlayer!.loadFeatureMeshes(feats, b),
     { feats: serialized, b: bounds },
+  );
+}
+
+/** Re-pose the already-loaded feature groups: sends only the per-feature
+ *  transforms (16 numbers each) instead of the full mesh payload. Callers must
+ *  have checked that the mesh buffers are unchanged since the last full load
+ *  (see `canReuseLoadedMeshes`). */
+export async function updateFeatureTransformsOnPage(
+  page: Page,
+  features: ReadonlyArray<{ featureId: string; transform?: readonly number[] }>,
+  bounds: unknown,
+): Promise<void> {
+  const transforms = features
+    .filter((f) => f.transform !== undefined && f.transform.length === 16)
+    .map((f) => ({ featureId: f.featureId, transform: [...(f.transform as readonly number[])] }));
+  await page.evaluate(
+    ({ t, b }) => window.__demoPlayer!.updateFeatureTransforms(t, b),
+    { t: transforms, b: bounds },
   );
 }
 

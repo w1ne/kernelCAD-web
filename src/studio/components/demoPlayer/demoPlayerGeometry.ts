@@ -164,6 +164,14 @@ export interface DemoPlayerWindow {
     perFeature: FeatureMeshSerialized[],
     bounds: { min: [number, number, number]; max: [number, number, number] },
   ): { groupCount: number };
+  /** Re-pose already-loaded feature groups without re-sending their geometry.
+   *  Each group's world transform (column-major 4x4) is replaced and recentred
+   *  with `bounds` exactly as `loadFeatureMeshes` does. Only valid while the
+   *  mesh buffers are unchanged since the last full load (rigid link motion). */
+  updateFeatureTransforms(
+    transforms: Array<{ featureId: string; transform: number[] }>,
+    bounds: { min: [number, number, number]; max: [number, number, number] },
+  ): { updated: number };
   /** Show or hide the reference-image overlay group (`__referenceImages`). */
   setReferenceImagesVisible(visible: boolean): void;
   /** Apply (or clear) an HDRI environment. Used by the CLI's

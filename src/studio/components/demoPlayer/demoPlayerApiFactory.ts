@@ -19,6 +19,7 @@ import { buildMaterialFromPBR, disposeMaterialDeep, DEFAULT_MESH_COLOR } from '.
 import { buildReferenceImagePlane } from './buildReferenceImagePlane';
 import { fitDistanceForBounds } from './cameraFit';
 import { buildIndexedDisplayMesh, disposeMeshResources } from './demoPlayerGeometry';
+import { updateFeatureTransforms } from './demoPlayerPose';
 import { applyPublishStage, capturePublishFrame, isStageHelper } from './publishStage';
 import {
   KCAD_FEATURE_GROUP_KEY,
@@ -956,6 +957,7 @@ export function createDemoPlayerWindowApi(deps: DemoPlayerApiDeps): DemoPlayerWi
     captureMaskPng: (maxSize) => captureMaskPng(deps, maxSize),
     captureInspectionChannels: (input) => captureInspectionChannels(deps, input),
     loadFeatureMeshes: (perFeature, bounds) => loadFeatureMeshes(deps, perFeature, bounds),
+    updateFeatureTransforms: (transforms, bounds) => updateFeatureTransforms(requireScene(deps), deps.centroidOffsetRef, transforms, bounds),
     setReferenceImagesVisible: (visible) => setReferenceImagesVisible(deps, visible),
     setRenderEnvironment: (spec) => setRenderEnvironment(deps, spec),
     setPublishStage: (spec) => applyPublishStage(requireScene(deps), spec),
