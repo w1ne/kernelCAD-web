@@ -115,14 +115,24 @@ export function validateThickness(t: number, featureId?: string): void {
 }
 
 /**
+ * The predecessor of a record on a sheet-metal chain: `inputs.base` for
+ * `.bend()` and most Shape-chain features, `inputs.target` for the face-local
+ * cutters (`.hole()`, `.holes()`, `.cutout()`), so a blank with holes or
+ * cutouts can still be bent.
+ */
+export function sheetMetalPredecessor(rec: FeatureRecord): string | undefined {
+  const ref = rec.inputs.base ?? rec.inputs.target;
+  return ref && ref.kind === 'feature' ? ref.id : undefined;
+}
+
+/**
  * Walk a FeatureRecord chain backward from `bend` to find the root
  * `sheetMetal` record. Returns undefined if the chain does not root at a
  * sheetMetal record (means the agent chained `.bend()` on a non-sheet-metal
  * Shape — surfaces as `feature.invalid-args` at lowering time).
  *
- * Walks via `inputs.base` (the predecessor link used by every Shape-chain
- * feature). Slice-1 sheet-metal records use `inputs.sketch` (root) and
- * `inputs.base` (bends) — see modules/api.ts and capture/proxy.ts.
+ * Walks via `sheetMetalPredecessor` (`inputs.base`, or `inputs.target` for
+ * holes / cutouts made on the blank before bending).
  */
 export function findRootSheetMetalRecord(
   bend: FeatureRecord,
@@ -132,9 +142,8 @@ export function findRootSheetMetalRecord(
   let cur: FeatureRecord | undefined = bend;
   while (cur) {
     if (cur.kind === 'sheetMetal') return cur;
-    const baseRef = cur.inputs.base;
-    if (!baseRef || baseRef.kind !== 'feature') return undefined;
-    cur = byId.get(baseRef.id);
+    const prev = sheetMetalPredecessor(cur);
+    cur = prev === undefined ? undefined : byId.get(prev);
   }
   return undefined;
 }

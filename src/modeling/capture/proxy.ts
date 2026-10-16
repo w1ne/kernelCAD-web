@@ -869,21 +869,30 @@ export class Shape {
    * its lineage to a `sheetMetal(...)` record (validated at lowering time;
    * non-sheet-metal callers see `feature.invalid-args`).
    *
-   * @param edgeRef the linear edge to fold around. Same selector shape as
-   *               `.fillet(edges, ...)`: an EdgeQuery, EdgeSegment[],
-   *               `{ face: <canonical|label> }`, or a string label name.
+   * @param edgeRef the bend line in FLAT-BLANK coordinates: `{ atX: x }`
+   *               (line x = const, runs along Y) or `{ atY: y }`; every bend
+   *               of a chain uses blank coordinates, even after earlier folds.
    * @param angle  fold angle in degrees. Positive = fold toward the sheet's
    *               +normal; negative = fold the other way.
-   * @param radius inner bend radius in mm. Recommended `radius >= 0.5 * thickness`
-   *               to avoid sewing failure (`feature.kernel-failed`).
+   * @param radius inner bend radius in mm. Recommended `radius >= 0.5 * thickness`.
+   *
+   * The shorter side of the blank across the line folds (ties: the +X / +Y
+   * side), so a web with a bend near each end keeps the web in place. The
+   * bend zone is the strip of width BA centred on the line; it becomes the
+   * arc and the flange keeps its holes and cutouts. Holes made on the flat
+   * blank before `.bend()` are carried into the folded flange.
    *
    * Bend-allowance math (K-factor):
    *   `BA = (pi * |angle| / 180) * (kFactor * thickness + radius)`
    *
    * Slice-1 lowering limits:
-   *   - edge must be linear (else `feature.bend.edge-not-linear`)
-   *   - at most 2 bends in the chain for `.flattenPattern()` (else
-   *     `feature.flattenPattern.multi-bend-unsupported`).
+   *   - the line must be `{ atX }` / `{ atY }` (else `feature.bend.edge-not-linear`)
+   *   - bend zones of parallel lines may not overlap (`feature.invalid-args`)
+   *   - crossing `{ atX }` / `{ atY }` lines need corner relief in the blank
+   *     outline (else `feature.sheetMetal.crossing-bends`)
+   *   - the folded result must be one closed solid with conserved volume
+   *     (else `feature.sheetMetal.fold-invalid`, e.g. lips folding into
+   *     each other).
    */
   bend(
     edgeRef: EdgeSelector | { face: FaceSelector | CanonicalFace | string } | CanonicalFace | string,
@@ -904,8 +913,7 @@ export class Shape {
 
   /**
    * W2.2: Return the unfolded 2D flat-pattern of this bent sheet-metal Shape
-   * as a `Region`. Slice-1 limit: at most 2 bends in the chain — third bend
-   * emits `feature.flattenPattern.multi-bend-unsupported`. Derived view;
+   * as a `Region`, for any number of bends. Derived view;
    * adds no FeatureRecord. Requires the shape to have been lowered at least
    * once (the bendRecord metadata is populated by the sheetMetalBend lowerer).
    */
@@ -930,6 +938,15 @@ export class Shape {
    * A bore centre off the face, a zero depth, or a bore that leaves material
    * on its axis fails the feature with `feature.hole.cut-missing`.
    * Use `depth: 'through'` to clip at the back face.
+   * On ANY face (a cylinder side for a set screw or cross pin, a cone, a
+   * fillet) place the hole by world point instead of `u`/`v`:
+   * `at: [x, y, z]` (projected onto the face) or, on a cylindrical face,
+   * `at: { angleDeg, z }`; the bore follows the inward face normal there
+   * unless `axis: [dx, dy, dz]` (into the body) is given, and `'through'`
+   * stops at the first exit along the axis (e.g. into a shaft bore).
+   * With a FaceQuery that matches several faces the one nearest `at` is used:
+   *   collar.hole({ ofSurfaceType: 'CYLINDER' }, { at: { angleDeg: 0, z: 5 },
+   *     diameter: 4, depth: 'through', thread: { pitch: 0.7 } })
    * Optional `counterbore` (wider shoulder) or `countersink` (cone) — the
    * two are mutually exclusive on a single hole.
    *
@@ -969,7 +986,8 @@ export class Shape {
           ? resolved.depth
           : 0;
     const centers: HoleCenter[] = [
-      { u: resolved.u, v: resolved.v, depthMm: holeDepth, axis: [0, 0, -1] },
+      // An `at` hole's face frame is centred on its entry point.
+      { u: resolved.at ? 0 : resolved.u, v: resolved.at ? 0 : resolved.v, depthMm: holeDepth, axis: [0, 0, -1] },
     ];
     const partName =
       (metadata as { partName?: string }).partName ?? holeShape.id;

@@ -7,7 +7,7 @@
 // hole logic next to its lowerer per spec §C.1 (no central classifier
 // switch). Behaviorally identical to slice-1's classifyHoleFace.
 
-import type { Face } from 'replicad';
+import { getOC, type Face } from 'replicad';
 import type { Vec3 } from '../../../shared/intent/types';
 
 export type HoleRefName =
@@ -78,6 +78,30 @@ function radiusFromBoreAxis(face: Face, bore: BoreFrame): number {
   return distanceToLine([c.x, c.y, c.z], bore.entryPoint, axis);
 }
 
+/** True when `face` is a cylinder whose axis is the bore axis (parallel, and
+ *  through the bore's entry point). Unknown geometry counts as coaxial so the
+ *  radius probe keeps deciding, as before. */
+function isCoaxialCylinder(face: Face, bore: BoreFrame, axis: Vec3): boolean {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const oc = getOC() as any;
+  let adaptor;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    adaptor = new oc.BRepAdaptor_Surface_2((face as any).wrapped, true);
+    const ax = adaptor.Cylinder().Axis();
+    const d = ax.Direction();
+    const l = ax.Location();
+    const dir: Vec3 = [d.X(), d.Y(), d.Z()];
+    const loc: Vec3 = [l.X(), l.Y(), l.Z()];
+    if (Math.abs(dot(normalize(dir), axis)) < PARALLEL_DOT_MIN) return false;
+    return distanceToLine(loc, bore.entryPoint, axis) < Math.max(RADIUS_TOL, bore.diameter * 1e-3);
+  } catch {
+    return true;
+  } finally {
+    adaptor?.delete();
+  }
+}
+
 function faceNormal(face: Face): Vec3 | null {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const fn = (face as any).normalAt;
@@ -123,6 +147,11 @@ function classifyCylindricalFace(
   center: Vec3,
   axis: Vec3,
 ): HoleRefName | null {
+  // Only a cylinder COAXIAL with the bore can be its wall. The OD of a
+  // cylinder body pierced by a radial set screw is a new (unlabelled) face
+  // too, and one of its edges is the set-screw rim — so the edge-radius probe
+  // alone named the coupler's outer surface the set screw's `wall-back`.
+  if (!isCoaxialCylinder(face, bore, axis)) return null;
   const r = radiusFromBoreAxis(face, bore);
   if (Math.abs(r - boreRadius) < RADIUS_TOL) {
     if (bore.through) {
