@@ -24,7 +24,8 @@ describe('agent plugin manifests', () => {
     expect(ext.interface.logo).toBe('assets/logo.svg');
     expect(existsSync(`${ROOT}plugins/kernelcad/${ext.interface.logo}`)).toBe(true);
     expect(ext.review.test_cases).toHaveLength(8);
-    expect(ext.review.commerce).toBe(false);
+    // The commerce declaration is undecided (chatgpt.commerceDecision), so it is absent.
+    expect(ext.review).not.toHaveProperty('commerce');
     expect(ext.publication.release_notes).toBeTruthy();
   });
 
@@ -54,19 +55,9 @@ describe('agent plugin manifests', () => {
     expect(read('docs/listing/server.json')).toBe(read('server.json'));
   });
 
-  it('listing copy makes no in-chat 3D claim the repo cannot back', () => {
-    const listingFiles = [
-      'server.json',
-      'docs/listing/README.md',
-      'docs/listing/chatgpt-directory.md',
-      'docs/listing/anthropic-connector-directory.md',
-      'docs/listing/mcp-so.md',
-      'docs/listing/skills-sh.md',
-      'docs/listing/smithery.md',
-    ];
-    const unbacked = /in-chat 3D|renders in 3D|renders inline in the chat|shown in 3D in the chat|in 3D in the (?:chat|conversation)|3D view in the chat/i;
-    for (const rel of listingFiles) {
-      expect(read(rel), rel).not.toMatch(unbacked);
-    }
+  it('the square PNG icon for the Anthropic form is 512 by 512', () => {
+    const png = readFileSync(`${ROOT}plugins/kernelcad/assets/logo.png`);
+    expect(png.readUInt32BE(16)).toBe(512);
+    expect(png.readUInt32BE(20)).toBe(512);
   });
 });

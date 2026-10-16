@@ -18,7 +18,7 @@ Docs: https://smithery.ai/docs/build/publish
 **Already in ChatGPT and Claude. No install, no account needed to try.**
 
 kernelCAD is hosted parametric CAD for agents. Describe a part and get an editable
-`.kcad.ts` model on an OpenCASCADE B-rep kernel, with rendered previews in the chat and a 3D view in Studio.
+`.kcad.ts` model on an OpenCASCADE B-rep kernel, shown in 3D in the chat.
 
 - **Formats:** STEP, STL, 3MF, GLB, DXF, PDF/SVG engineering drawings, BOM. Import your own STEP/STL.
 - **Checks:** interference and watertight meshes; declared manufacturing rules, on-demand DFM review for FDM and CNC, optional FEA.

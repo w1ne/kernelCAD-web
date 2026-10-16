@@ -32,7 +32,8 @@ export function openaiExtensions(cfg) {
   if (c.testCases) {
     out.review = {
       test_cases: [...c.testCases.positive, ...c.testCases.negative],
-      commerce: c.commerce ?? false,
+      // Emitted only once the commerce decision is made (see chatgpt.commerceDecision).
+      ...(typeof c.commerce === 'boolean' ? { commerce: c.commerce } : {}),
       ...(c.commerceDescription ? { commerce_description: c.commerceDescription } : {}),
     };
   }

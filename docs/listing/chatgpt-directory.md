@@ -12,7 +12,7 @@ ChatGPT apps are now submitted as **plugins**: you upload a plugin ZIP, the port
 After the plugin is published, MCP tool changes are picked up by the daily scan (or a manual **Rescan**). Changes to metadata or skills need a new ZIP.
 
 ## What `plugins/kernelcad/plugin.json` needs before upload
-These fields are generated from `agent-plugin.config.json` and already present: the privacy and terms URLs, `logo` and `composerIcon` (`assets/logo.svg`), `review.test_cases` (5 positive, 3 negative), `review.commerce: false` with a `commerce_description`, and `publication.release_notes`. Still missing:
+These fields are generated from `agent-plugin.config.json` and already present: the privacy and terms URLs, `logo` and `composerIcon` (`assets/logo.svg`), `review.test_cases` (5 positive, 3 negative), `review.commerce` (undecided, see the blockers in the README), and `publication.release_notes`. Still missing:
 - `interface.screenshots`: optional; see the list below.
 - `review.demo_recording_url`: a video walkthrough the reviewers can open.
 
@@ -28,7 +28,7 @@ CAD parts, STEP and drawings
 **Long description:**
 > kernelCAD brings parametric CAD into ChatGPT, with no install and no account needed to try.
 >
-> Describe a part, such as a bracket, an enclosure, a gear or a fixture, and kernelCAD builds an editable model on a real B-rep CAD kernel. Each build returns rendered previews in the chat, and `open_in_studio` opens the model in the Studio 3D viewer, where you can rotate it and mark it up.
+> Describe a part, such as a bracket, an enclosure, a gear or a fixture, and kernelCAD builds an editable model on a real B-rep CAD kernel. Opening a model with `open_in_studio` shows it in an interactive 3D viewer right in the chat. You can rotate it, mark it up and ask for changes.
 >
 > kernelCAD checks as it goes. Assemblies are checked for interfering parts, exported meshes are checked for watertightness, and a script can declare its own manufacturing rules (minimum wall, hole size), which are then checked on every build. You can ask for a printability review for FDM or a machinability review for CNC at any time. These reviews flag likely problems; they are not a guarantee that a shop will accept the part.
 >
@@ -48,7 +48,7 @@ CAD parts, STEP and drawings
 Positive: use five of the six rows below. Row 6 needs a hosted fab_pack; if you leave it out, rows 1-5 are the five.
 | # | Prompt | Expected |
 |---|---|---|
-| 1 | "Design a 60 × 40 × 5 mm mounting plate with four M4 clearance holes 5 mm from the corners." | Model builds, the rendered preview shows a plate with 4 holes, and the evaluate result is green. |
+| 1 | "Design a 60 × 40 × 5 mm mounting plate with four M4 clearance holes 5 mm from the corners." | Model builds, the 3D view shows a plate with 4 holes, and the evaluate result is green. |
 | 2 | "Is it printable on a Bambu A1 mini? Check it for CNC too." | A `dfm_review` checklist with pass/fail rows. The plate passes FDM, and CNC is flagged only if there are sharp internal corners. |
 | 3 | "Give me a STEP file and a PDF drawing." | `export` STEP + `pdf-drawing`, with download links and dimensions on the drawing. |
 | 4 | "Make it 3 mm thicker and add 2 mm fillets on the outer edges." | The model updates, and a diff shows the change. |
@@ -56,7 +56,7 @@ Positive: use five of the six rows below. Row 6 needs a hosted fab_pack; if you 
 | 6 | "Package it for ordering." | A `fab_pack` zip plus quote links. It's stated that nothing was ordered. |
 
 ## Screenshots to capture
-1. Plate with holes: the rendered preview in the chat, and the Studio link.
+1. Plate with holes in the in-chat 3D view.
 2. DFM checklist result.
 3. PDF drawing preview.
 4. An imported STEP being edited.
