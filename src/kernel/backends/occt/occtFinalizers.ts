@@ -17,7 +17,10 @@
 // releases the object if its handle becomes unreachable while still alive,
 // exactly as an explicit `.delete()` would (same reference count, same
 // destructor). An object deleted explicitly has a null pointer by then and is
-// skipped. Constructed objects are always owned by JavaScript.
+// skipped. Constructed objects are owned by JavaScript, with one exception:
+// a Standard_Transient (reference counted) may be adopted by an OCCT handle,
+// e.g. `new Handle_XSControl_WorkSession_2(new XSControl_WorkSession())`, and
+// the handle frees it. Those are never registered.
 //
 // Returned handles are covered only for value types OCCT returns by copy
 // (shapes, gp_* geometry, locations, boxes): replicad drops those too, e.g.
@@ -68,6 +71,11 @@ function className(handle: { $$?: { ptrType?: { registeredClass?: { name?: strin
   return handle.$$?.ptrType?.registeredClass?.name;
 }
 
+/** Standard_Transient subclasses inherit its reference-count methods. */
+function isTransientClass(ctor: { prototype?: object }): boolean {
+  return typeof (ctor.prototype as { DecrementRefCounter?: unknown } | undefined)?.DecrementRefCounter === 'function';
+}
+
 function isEmbindClass(value: unknown): value is new (...args: unknown[]) => object {
   if (typeof value !== 'function') return false;
   const proto = (value as { prototype?: { delete?: unknown; isDeleted?: unknown } }).prototype;
@@ -112,6 +120,7 @@ export function installOcctFinalizers(oc: Record<string | symbol, unknown>): voi
     if (!isEmbindClass(ctor)) continue;
     wrapReturns(ctor.prototype as Record<string, unknown>, wrapped, track);
     wrapReturns(ctor as unknown as Record<string, unknown>, wrapped, track);
+    if (isTransientClass(ctor)) continue;
     oc[key] = new Proxy(ctor, {
       construct(target, args, newTarget) {
         const handle = Reflect.construct(target, args, newTarget) as { $$?: EmbindHandleRecord };
