@@ -796,6 +796,44 @@ export class OcctBackend implements ShapeBackend {
     return rotated.translate(tx, ty, tz);
   }
 
+  /**
+   * The same shape placed by the rigid transform `t` through a
+   * `TopLoc_Location`: the result shares this shape's geometry instead of
+   * copying it, so it costs no memory and no copy time. Use it for read-only
+   * probes (bounding boxes, booleans, distances) of a posed part; OCCT applies
+   * the location everywhere. `applyTransform` deep-copies, which a 7k-face
+   * STL part pays at ~8 MB and ~0.15 s per call. This shape is not consumed.
+   */
+  located(t: import('../../../shared/runtime/se3').Transform): OcctBackend {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const oc = getOC() as any;
+    const m = t.toMat4();
+    const trsf = new oc.gp_Trsf_1();
+    const loc = (() => {
+      try {
+        // Column-major 4x4: rows of the 3x4 are (m0 m4 m8 m12), (m1 m5 m9 m13), (m2 m6 m10 m14).
+        trsf.SetValues(m[0], m[4], m[8], m[12], m[1], m[5], m[9], m[13], m[2], m[6], m[10], m[14]);
+        return new oc.TopLoc_Location_2(trsf);
+      } finally {
+        trsf.delete();
+      }
+    })();
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const moved = (this.shape as any).wrapped.Moved(loc, false);
+      return new OcctBackend(replicad.cast(moved) as ReplicadShape3D, this.kind, this.historyMap);
+    } finally {
+      loc.delete();
+    }
+  }
+
+  /** True when both are placements of the same underlying shape (TopoDS
+   *  `IsPartner`: same TShape, any location), e.g. pattern instances. */
+  sharesGeometryWith(other: OcctBackend): boolean {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return Boolean((this.shape as any).wrapped.IsPartner((other.shape as any).wrapped));
+  }
+
   scale(s: number | Vec3): OcctBackend {
     const sx = typeof s === 'number' ? s : s[0];
     const sy = typeof s === 'number' ? s : s[1];

@@ -5,6 +5,7 @@ import * as replicad from 'replicad';
 import opencascade from 'replicad-opencascadejs';
 import { describeOcctThrow, isOcctWasmPoisoned, WASM_POISON_MARKER } from './occtException';
 import { installOcctFinalizers } from './occtFinalizers';
+import { installReplicadTransformFix } from './replicadTransformFix';
 
 let initialized = false;
 
@@ -72,6 +73,7 @@ async function loadAndBindOcct(opts?: InitOcctOptions): Promise<void> {
     throw new Error('Could not find opencascade factory function');
   }
   installOcctFinalizers(OC as Record<string, unknown>);
+  installReplicadTransformFix();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   replicad.setOC(OC as any);
   initialized = true;

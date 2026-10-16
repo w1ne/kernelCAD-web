@@ -4,6 +4,7 @@ import * as replicad from 'replicad';
 import { setOC } from 'replicad';
 import wasmUrl from 'replicad-opencascadejs/src/replicad_single.wasm?url';
 import { installOcctFinalizers } from './occtFinalizers';
+import { installReplicadTransformFix } from './replicadTransformFix';
 import { chamfer, extrude, fillet, makeCompound, sketchOnFace } from '../../../shared/worker/geometryHelpers';
 import { createSafeReplicad, SafeSketcher } from '../../../shared/worker/safeSketch';
 import { withTemporaryGlobals } from '../../../shared/worker/withTemporaryGlobals';
@@ -62,6 +63,7 @@ async function init() {
       });
 
       installOcctFinalizers(OC as Record<string, unknown>);
+      installReplicadTransformFix();
       setOC(OC);
       isInitialized = true;
       if (DEBUG) console.log('Worker: OpenCascade initialized successfully');

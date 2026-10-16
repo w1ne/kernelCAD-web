@@ -25,6 +25,7 @@ import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import type { Vec3 } from '../../shared/intent/types';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { overlapThicknessMm } from './jointContactCap';
+import { Transform } from '../../shared/runtime/se3';
 
 /** A single (part_a, part_b) pair whose intersection has non-trivial volume. */
 export interface InterferencePair {
@@ -113,6 +114,21 @@ function measureOverlap(a: OcctBackend, b: OcctBackend): OverlapMetrics {
   return { volumeMm3: m.volumeMm3, thicknessMm: overlapThicknessMm(m.volumeMm3, m.areaMm2) };
 }
 
+/**
+ * Overlap of two posed parts. When both are placements of the same
+ * underlying shape (pattern instances), one is deep-copied so the boolean
+ * never gets two operands that share geometry.
+ */
+function measureOverlapOfPosed(a: PosedPart, b: PosedPart): OverlapMetrics {
+  if (!a.shape.sharesGeometryWith(b.shape)) return measureOverlap(a.shape, b.shape);
+  const copy = (b.source as OcctBackend).clone().applyTransform(b.worldTransform);
+  try {
+    return measureOverlap(a.shape, copy);
+  } finally {
+    copy.dispose();
+  }
+}
+
 function memoGet(a: object, b: object, key: string): OverlapMetrics | undefined {
   return intersectionVolumeMemo.get(a)?.get(b)?.get(key);
 }
@@ -155,28 +171,29 @@ export function detectInterferences(
   ignored: ReadonlySet<string>,
   diagnostics: CompilerDiagnostic[] = [],
 ): CheckInterferenceResult {
-  // Clone + apply each part's worldTransform once, up front. The same
-  // pattern the STEP exporter uses (`exportSceneToSTEPAsync`) — replicad's
-  // translate / rotate mutate-and-destroy the source OCCT handle, so we
-  // never touch the originals.
+  // Place each part at its worldTransform once, up front, through a
+  // location (`OcctBackend.located`): the posed shape shares the part's
+  // geometry, so posing costs no copy. A deep copy per part per sampled pose
+  // (applyTransform) cost ~8 MB and ~0.15 s for each 7k-face STL part of the
+  // SO-100 arm and, with GC-deferred frees, fragmented the WASM heap until
+  // OCCT aborted on pose 8 of 14. The originals are never touched.
   const uncheckedPairs = listDisplayMeshPairs(scene.parts);
   const transformed: PosedPart[] = scene.parts.filter((p) => p.shape instanceof OcctBackend).map((p) => {
-    const clone = (p.shape as OcctBackend).clone().applyTransform(p.worldTransform);
+    const posed = (p.shape as OcctBackend).located(p.worldTransform);
     return {
       name: p.name,
-      shape: clone,
-      bbox: clone.boundingBox(),
+      shape: posed,
+      bbox: posed.boundingBox(),
       source: p.shape as object,
+      worldTransform: p.worldTransform,
       poseKey: transformKey(p.worldTransform),
       frameBounds: new Map<number, Bounds>(),
     };
   });
 
-  // The posed clones are deep copies of every part (BRepBuilderAPI_Transform
-  // copies the geometry). Free them when the probe is done: a verify sweep
-  // poses the scene once per sampled time, and leaving each pose's copies to
-  // the GC filled the WASM heap on mesh-heavy assemblies (the SO-100 arm
-  // aborted on pose 7 of 14 at 2.5 GB).
+  // Free the posed handles when the probe is done rather than leaving them
+  // to the GC (they reference the parts' shapes and, after a boolean, any
+  // data OCCT attached to them).
   try {
     return probeCandidates(transformed, epsilonMm3, ignored, diagnostics, uncheckedPairs);
   } finally {
@@ -187,6 +204,7 @@ export function detectInterferences(
 interface PosedPart {
   name: string;
   shape: OcctBackend;
+  worldTransform: SceneBackend['parts'][number]['worldTransform'];
   bbox: { min: [number, number, number]; max: [number, number, number] };
   source: object;
   poseKey: string;
@@ -216,9 +234,9 @@ function probeCandidates(
           let bounds: Bounds;
           if (basis === null) bounds = paddedBounds(part.shape);
           else {
-            const rotated = part.shape.clone().rotate(basis.axis, basis.degrees);
+            const rotated = part.shape.located(Transform.rotationAxisAngleDeg(basis.axis, basis.degrees));
             try { bounds = paddedBounds(rotated); }
-            finally { rotated.getReplicadShape().delete(); }
+            finally { rotated.dispose(); }
           }
           part.frameBounds.set(frame, bounds);
           return bounds;
@@ -238,7 +256,7 @@ function probeCandidates(
     let vol: OverlapMetrics | undefined = memoGet(a.source, b.source, memoKey);
     try {
       if (vol === undefined) {
-        vol = measureOverlap(a.shape, b.shape);
+        vol = measureOverlapOfPosed(a, b);
         memoSet(a.source, b.source, memoKey, vol);
       }
     } catch (e) {
