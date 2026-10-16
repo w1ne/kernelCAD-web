@@ -21,6 +21,9 @@ const nativeMeasures = (part: Part): Measures => {
   const p = part.massProperties(1, 1e-8);
   return { volume: p.volume, area: p.area };
 };
+// Kinds for which lower() currently reaches a native SMLib build attempt.
+// Other kinds deliberately use the OCCT reference without a native attempt.
+const NATIVE_ATTEMPT_KINDS = ['box', 'cylinder', 'sphere', 'extrude', 'boolean', 'fillet', 'importedStep'] as const;
 
 /** Experimental hybrid lowerer. Native candidates are checked against a full
  * OCCT reference, then returned as OCCT-compatible shapes for existing naming,
@@ -32,7 +35,7 @@ export class SmlibLowerer implements FeatureLowerer {
   readonly guardRecords: KernelGuardRecord[] = [];
   constructor(session?: LowererSession) {
     this.reference = createOcctLowerer(session);
-    this.supports = this.reference.supports;
+    this.supports = new Set(NATIVE_ATTEMPT_KINDS);
   }
 
   async lower(record: FeatureRecord, inputs: ResolvedInputs): Promise<LowerResult> {
