@@ -17,11 +17,17 @@ radii (Wayfarer brow: 4 mm at temple, 8 mm at outer-top wing corner; bottle
 shoulders; controller grips), USE the variable-radius form:
 
 ```ts
+// Top rim at z = 12; the temple sits at x < 20, the outer wing at x > 20.
 shape.fillet([
-  { edges: { face: 'top', byNormal: '+Z' }, radius: 8 },
-  { edges: { face: 'top', byNormal: '+Z', region: 'temple' }, radius: 4 },
+  { edges: { atZ: 12, within: { xMin: 20 } }, radius: 8 },
+  { edges: { atZ: 12, within: { xMax: 20 } }, radius: 4 },
 ]);
 ```
+
+Each entry's `edges` is an EdgeQuery (`atX/atY/atZ`, `within`, `parallel`,
+`convex`, `minAngle`, …) or `{ face: <name or FaceQuery> }` alone. Unknown
+keys are an error — there is no `region:` key; narrow by position with
+`within` or `near`.
 
 Do NOT author with repeated single-radius `.fillet(r)` calls and live with a
 uniform-look body. The scorer detects the sharp vs. rounded corner curvature
@@ -173,9 +179,10 @@ const bodyFinished = bodyWithBores.chamfer(0.6);
 // transitions) were never going to chamfer at d=0.6 anyway.
 ```
 
-If you want only the LONG edges chamfered with no warning, scope the edge
-query: `chamfer(0.6, { face: 'top', minEdgeLength: 1.5 })` (when query
-extensions ship). Until then, accept the auto-skip; the warning is
+If you want only the LONG edges chamfered with no warning, select them by
+position or direction with an EdgeQuery (`chamfer(0.6, { atZ: 12, parallel: 'X' })`);
+there is no edge-length key, and `{ face }` takes no other key (an unknown
+key is an error). Otherwise accept the auto-skip; the warning is
 informational, not an error.
 
 ## Rule 9 — Score against 3D geometry, not photos (when available)

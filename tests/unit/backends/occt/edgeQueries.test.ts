@@ -302,3 +302,119 @@ describe('EdgeSegment.radius', () => {
     }
   });
 });
+
+// ---------------------------------------------------------------------------
+// FIX-03 — one selector vocabulary, no silent selector failures.
+// ---------------------------------------------------------------------------
+
+/** 40×40×10 plate with a 10×10×3 pocket centred on the top face. Top-face
+ *  edges at z=10: 4 outer perimeter edges + 4 pocket-rim edges. */
+function pocketedPlate(): OcctBackend {
+  return OcctBackend.box(40, 40, 10).subtract(OcctBackend.box(10, 10, 3).translate(15, 15, 7));
+}
+
+describe('FIX-03 EdgeQuery vocabulary', () => {
+  beforeAll(async () => { await initOcct(); });
+
+  it("parallel: 'Z' matches the same 4 vertical edges as parallel: [0,0,1]", () => {
+    const box = OcctBackend.box(10, 10, 5);
+    expect(resolveEdgeQuery(box, { parallel: 'Z' })).toHaveLength(4);
+    expect(resolveEdgeQuery(box, { parallel: '-Z' as never })).toHaveLength(4);
+  });
+
+  it('parallelTo is an alias of parallel on EdgeQuery', () => {
+    const box = OcctBackend.box(10, 10, 5);
+    expect(resolveEdgeQuery(box, { parallelTo: 'X', atZ: 5 })).toHaveLength(2);
+  });
+
+  it('within: { min, max } is honoured (only the 4 pocket-rim edges at z=10)', () => {
+    const plate = pocketedPlate();
+    expect(resolveEdgeQuery(plate, { atZ: 10 })).toHaveLength(8);
+    const rim = resolveEdgeQuery(plate, { atZ: 10, within: { min: [14, 14, 9], max: [26, 26, 11] } });
+    expect(rim).toHaveLength(4);
+  });
+
+  it('an empty / misspelt within region throws instead of matching every edge', () => {
+    const plate = pocketedPlate();
+    expect(() => resolveEdgeQuery(plate, { atZ: 10, within: {} })).toThrow(/within/);
+    expect(() => resolveEdgeQuery(plate, { within: { lo: [0, 0, 0] } } as never)).toThrow(/within/);
+  });
+
+  it('unknown keys and bad values throw feature.invalid-args', () => {
+    const box = OcctBackend.box(10, 10, 5);
+    expect(() => resolveEdgeQuery(box, { atz: 5 } as never)).toThrow(/unknown key/);
+    expect(() => resolveEdgeQuery(box, { parallel: 'up' } as never)).toThrow(/EdgeQuery: parallel/);
+  });
+
+  it('pocket-rim edges are classified convex (they used to read concave)', () => {
+    const plate = pocketedPlate();
+    const rim = selectEdges(plate, { atZ: 10, within: { min: [14, 14, 9], max: [26, 26, 11] } });
+    expect(rim).toHaveLength(4);
+    for (const e of rim) {
+      expect(e.convex).toBe(true);
+      expect(e.dihedralAngleDeg).toBeCloseTo(90, 6);
+    }
+    // Pocket-floor edges (z=7) are concave.
+    const floor = selectEdges(plate, { atZ: 7 });
+    expect(floor).toHaveLength(4);
+    for (const e of floor) expect(e.convex).toBe(false);
+    expect(resolveEdgeQuery(plate, { convex: true, atZ: 10 })).toHaveLength(8);
+    expect(resolveEdgeQuery(plate, { concave: true })).toHaveLength(8); // floor + 4 vertical pocket corners
+  });
+});
+
+describe('FIX-03 FaceQuery vocabulary', () => {
+  beforeAll(async () => { await initOcct(); });
+
+  it("ofSurfaceType: 'CYLINDER' matches the lateral face (OCCT calls it 'CYLINDRE')", () => {
+    const cyl = OcctBackend.cylinder(20, 5);
+    expect(resolveFaceQuery(cyl, { ofSurfaceType: 'CYLINDER' })).toHaveLength(1);
+    expect(resolveFaceQuery(cyl, { ofSurfaceType: 'CYLINDRE' as never })).toHaveLength(1);
+    expect(resolveFaceQuery(cyl, { ofSurfaceType: 'PLANE' })).toHaveLength(2);
+  });
+
+  it("accepts axis letters and the EdgeQuery spelling `parallel`", () => {
+    const box = OcctBackend.box(10, 10, 5);
+    expect(resolveFaceQuery(box, { parallelTo: 'Z' })).toHaveLength(2);
+    expect(resolveFaceQuery(box, { parallel: 'XY' })).toHaveLength(2);
+    expect(resolveFaceQuery(box, { parallel: [1, 0, 0] })).toHaveLength(2);
+  });
+
+  it('containsPoint filters by distance to the trimmed face (it used to match every face)', () => {
+    const box = OcctBackend.box(10, 10, 5);
+    expect(resolveFaceQuery(box, { containsPoint: [5, 5, 5] })).toHaveLength(1);
+    expect(resolveFaceQuery(box, { containsPoint: [50, 50, 50] })).toHaveLength(0);
+  });
+});
+
+describe('FIX-03 EdgeSegment circle data', () => {
+  beforeAll(async () => { await initOcct(); });
+
+  it('circular edges carry centre, axis-as-direction, unit normals and a real dihedral', () => {
+    const cyl = OcctBackend.cylinder(10, 4); // h=10, r=4
+    const circles = selectEdges(cyl, { ofCurveType: 'CIRCLE' });
+    expect(circles).toHaveLength(2);
+    for (const c of circles) {
+      expect(c.radius).toBeCloseTo(4, 6);
+      expect(c.center).toBeDefined();
+      expect(Math.hypot(c.center![0], c.center![1])).toBeLessThan(1e-6);
+      expect(Math.abs(c.axis![2])).toBeCloseTo(1, 9);
+      expect(c.direction).toEqual(c.axis);
+      expect(c.convex).toBe(true);
+      expect(c.dihedralAngleDeg).toBeCloseTo(90, 6);
+      expect(Math.hypot(...c.normalA!)).toBeCloseTo(1, 9);
+      expect(Math.hypot(...c.normalB!)).toBeCloseTo(1, 9);
+      expect(c.boundary).toBe(false);
+    }
+    const zs = circles.map((c) => c.center![2]).sort((a, b) => a - b);
+    expect(zs[0]).toBeCloseTo(0, 6);
+    expect(zs[1]).toBeCloseTo(10, 6);
+  });
+
+  it('the cylinder seam edge is not reported as an open boundary', () => {
+    const cyl = OcctBackend.cylinder(10, 4);
+    const seam = selectEdges(cyl, { ofCurveType: 'LINE' });
+    expect(seam).toHaveLength(1);
+    expect(seam[0].boundary).toBe(false);
+  });
+});

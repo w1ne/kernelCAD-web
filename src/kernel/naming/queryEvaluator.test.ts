@@ -170,6 +170,17 @@ describe('queryEvaluator.evaluate — Q3', () => {
     expect(planes.length).toBe(3);
   });
 
+  it('q.geometryType is alias-aware (CYLINDER ≡ OCCT CYLINDRE, BSPLINE_SURFACE ≡ BSPLINE)', () => {
+    const map: HistoryMap = new Map();
+    const base = { rootFeatureId: 'c-1', featureId: 'c-1', featureKind: 'cylinder' } as const;
+    map.set('h-wall', { ...base, rootHash: 'h-wall', canonicalName: 'wall', surfaceType: 'CYLINDRE' });
+    map.set('h-top', { ...base, rootHash: 'h-top', canonicalName: 'top', surfaceType: 'PLANE' });
+    map.set('h-skin', { ...base, rootHash: 'h-skin', canonicalName: 'skin', surfaceType: 'BSPLINE' });
+    const scene: QueryScene = { backend: makeStubBackend(map), featureId: 'c-1', records: [{ id: 'c-1' } as never] };
+    expect(evaluate(q.face().and(q.geometryType('CYLINDER')), scene).map((e) => e.handle)).toEqual(['h-wall']);
+    expect(evaluate(q.face().and(q.geometryType('BSPLINE_SURFACE')), scene).map((e) => e.handle)).toEqual(['h-skin']);
+  });
+
   it('q.union deduplicates by handle', () => {
     const scene = makeSceneWithLabelledLid();
     const lidQ = q.face().and(q.withLabel('lid'));

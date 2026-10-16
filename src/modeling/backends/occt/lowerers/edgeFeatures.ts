@@ -5,7 +5,7 @@ import type { Edge } from 'replicad';
 import * as replicad from 'replicad';
 import type { ShapeBackend } from '../../../../kernel/backends/backend';
 import { OcctBackend } from '../../../../kernel/backends/occt/occtBackend';
-import { edgeConvexity, edgeDihedralOnEdge } from '../../../../kernel/backends/occt/edgeQueries';
+import { computeDihedralPublic } from '../../../../kernel/backends/occt/edgeQueries';
 import { pickEdges } from '../../../../kernel/backends/occt/edgeSelection';
 import {
   chamferWithHistory,
@@ -403,7 +403,7 @@ function selectSharpEdgesForFillet(edgesResult: Edge[], base: OcctBackend): Edge
   const SMOOTH_THRESHOLD = 5; // degrees; edges with dihedral > (180 - threshold) are smooth
   let nullCount = 0;
   const sharpEdges = edgesResult.filter((e) => {
-    const d = edgeDihedralOnEdge(shapeForDihedral, e, { convexity: false });
+    const d = computeDihedralPublic(shapeForDihedral, e, { convexity: false });
     // null means the dihedral could not be computed — either the edge has only one
     // adjacent face, isSameEdge found no match, or normalAt threw a non-Error C++
     // exception (typical for cylinder cap edges sitting on the parametric U-seam
@@ -481,9 +481,9 @@ function volumeTrendOf(base: OcctBackend, edges: Edge[]): EdgeFeatureVolumeTrend
   let convex = 0;
   let concave = 0;
   for (const e of edges) {
-    const c = edgeConvexity(shape, e);
-    if (c === true) convex++;
-    else if (c === false) concave++;
+    const d = computeDihedralPublic(shape, e, { convexity: true });
+    if (d?.convex === true) convex++;
+    else if (d?.convex === false) concave++;
   }
   if (convex === edges.length) return 'decrease';
   if (concave === edges.length) return 'increase';

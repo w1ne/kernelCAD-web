@@ -6,14 +6,21 @@
 //
 // F-surface F2: each face summary now carries a stable `ref` string of the form
 // `@kc[<owner>/face/<refName>]` plus a `lineage` record describing how the ref
-// was derived. The legacy `id` field is retained one release with
-// `deprecated: true` per spec §3.6.
+// was derived. The positional `id` (`f<N>`) is kept alongside: it is what the
+// ref falls back to when a face has no canonical name or label. (A former
+// per-face `deprecated: true` marker was dropped — it flagged every face of
+// every listing, carrying no information.)
+//
+// Geometry fields are reported in agent-facing form: `surfaceType` uses the
+// public English names ('CYLINDER', not OCCT's 'CYLINDRE'), `area` is the
+// real BREP surface area, and `normal` is a unit vector.
 
 import { RecomputeEngine, type RecomputeResult } from '../../../modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../../modeling/backends/occt/occtLowerer';
 import { OcctBackend } from '../../../kernel/backends/occt/occtBackend';
-import { resolveFaceQuery, type FaceQuery } from '../../../kernel/backends/occt/edgeQueries';
-import type { Face, Vector } from 'replicad';
+import { faceUnitNormal, resolveFaceQuery, type FaceQuery } from '../../../kernel/backends/occt/edgeQueries';
+import { measureArea, type Face, type Vector } from 'replicad';
+import { publicSurfaceType } from '../../../shared/intent/queryNormalize';
 import { runMcpScript } from '../runMcpScript';
 import { formatTopoRef, type TopoKind } from '../../../kernel/naming';
 import type { FaceLineage } from '../../../kernel/naming/evolutionRecord';
@@ -39,17 +46,20 @@ export interface FaceLineageSummary {
 }
 
 export interface FaceSummary {
-  /** @deprecated — use `ref` instead. Removed in the release after F-surface. */
+  /** Positional id (`f<N>`) within this lowering. Prefer `ref` for anything
+   *  that must survive an upstream edit. */
   id: string;
-  /** Marker that the consumer should migrate to `ref`. */
-  deprecated: true;
   /** Stable string ref of the form `@kc[<owner>/face/<refName>]`. */
   ref: string;
   /** Resolution context for the ref. */
   lineage: FaceLineageSummary;
   centroid: [number, number, number];
+  /** Unit outward normal at the face's UV-centre. */
   normal: [number, number, number];
+  /** Public surface-type name: PLANE / CYLINDER / CONE / SPHERE / TORUS /
+   *  BSPLINE_SURFACE / … (OCCT's 'CYLINDRE' is reported as 'CYLINDER'). */
   surfaceType: string;
+  /** Surface area in mm². */
   area: number;
   label: string | null;
   /**
@@ -114,7 +124,7 @@ function summarizeLineage(lineage: FaceLineage | undefined, metadataLabel: strin
   if (featureKind !== undefined) summary.featureKind = featureKind;
   if (featureOrdinal !== undefined) summary.featureOrdinal = featureOrdinal;
   if (featureName !== undefined) summary.featureName = featureName;
-  if (surfaceType !== undefined) summary.surfaceType = surfaceType;
+  if (surfaceType !== undefined) summary.surfaceType = publicSurfaceType(surfaceType);
   return summary;
 }
 
@@ -125,10 +135,19 @@ function resolveFaceRefName(lineage: FaceLineage | undefined, metadataLabel: str
     ?? `f${idx >= 0 ? idx : 0}`;
 }
 
+/** BREP surface area; 0 only if OCCT cannot integrate the face. */
+function faceArea(f: Face): number {
+  try {
+    return measureArea(f);
+  } catch {
+    return 0;
+  }
+}
+
 function summarizeFace(
   f: Face,
   c: Vector,
-  n: Vector,
+  n: [number, number, number],
   idx: number,
   lineage: FaceLineage | undefined,
   metadataLabel: string | undefined,
@@ -140,13 +159,12 @@ function summarizeFace(
   const lineageSummary: FaceLineageSummary = summarizeLineage(lineage, metadataLabel);
   return {
     id: `f${idx >= 0 ? idx : 0}`,
-    deprecated: true,
     ref,
     lineage: lineageSummary,
     centroid: [c.x, c.y, c.z],
-    normal: [n.x, n.y, n.z],
-    surfaceType: (f as unknown as { geomType?: string }).geomType ?? 'UNKNOWN',
-    area: (f as unknown as { area?: number }).area ?? 0,
+    normal: n,
+    surfaceType: publicSurfaceType((f as unknown as { geomType?: string }).geomType),
+    area: faceArea(f),
     label: lineage?.labelName ?? metadataLabel ?? null,
     innerLoops: countInnerLoops(f),
   };
@@ -226,7 +244,7 @@ export async function listFacesTool(input: ListFacesInput): Promise<ListFacesOut
 
   const faces: FaceSummary[] = matchedFaces.map(f => {
     const c = f.center;
-    const n = f.normalAt();
+    const n = faceUnitNormal(f) ?? [0, 0, 0];
     const faceHash = faceHashOf(f);
     const idx = allHashes.indexOf(faceHash);
     const lineage = historyMap !== undefined ? historyMap.get(faceHash) : undefined;

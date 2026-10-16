@@ -12,6 +12,36 @@ export type BoundingRegion = {
   zMin?: number; zMax?: number;
 };
 
+/**
+ * Corner form of a {@link BoundingRegion}: `{ min: [x,y,z], max: [x,y,z] }`.
+ * Accepted wherever a BoundingRegion is (`EdgeQuery.within`,
+ * `FaceQuery.boundingBoxIn`) and normalised to the per-axis form before
+ * evaluation.
+ */
+export type BoundingBoxCorners = { min: Vec3; max: Vec3 };
+
+/** Principal axis name. Sign is accepted for readability; parallel /
+ *  perpendicular tests are sign-agnostic, `byNormal` is not. */
+export type AxisName = 'X' | 'Y' | 'Z' | '-X' | '-Y' | '-Z' | '+X' | '+Y' | '+Z';
+
+/** A direction: an axis name or an explicit (non-zero) vector. */
+export type DirectionSpec = AxisName | Vec3;
+
+/** Public surface-type names. OCCT's French `'CYLINDRE'` and the long
+ *  `*_SURFACE` spellings are accepted as aliases of the same type. */
+export type SurfaceTypeName =
+  | 'PLANE' | 'CYLINDER' | 'CONE' | 'SPHERE' | 'TORUS'
+  | 'BSPLINE' | 'BSPLINE_SURFACE' | 'BEZIER' | 'BEZIER_SURFACE'
+  | 'REVOLUTION' | 'REVOLUTION_SURFACE' | 'EXTRUSION' | 'EXTRUSION_SURFACE'
+  | 'OFFSET' | 'OFFSET_SURFACE' | 'OTHER' | 'OTHER_SURFACE'
+  | 'CYLINDRE';
+
+/** Public curve-type names (`'BSPLINE'` is an alias of `'BSPLINE_CURVE'`). */
+export type CurveTypeName =
+  | 'LINE' | 'CIRCLE' | 'ELLIPSE' | 'HYPERBOLA' | 'PARABOLA'
+  | 'BSPLINE' | 'BSPLINE_CURVE' | 'BEZIER' | 'BEZIER_CURVE'
+  | 'OFFSET' | 'OFFSET_CURVE' | 'OTHER' | 'OTHER_CURVE';
+
 export type EdgeQuery = {
   atZ?: number;
   atX?: number;
@@ -23,14 +53,21 @@ export type EdgeQuery = {
    * `selectEdge` uses `near` to pick a single result from multiple matches.
    */
   near?: Vec3;
-  within?: BoundingRegion;
-  parallel?: Vec3;
-  perpendicular?: Vec3;
+  /** Keep edges whose midpoint lies inside the region (per-axis bounds or
+   *  `{ min, max }` corners). An empty region is rejected, not ignored. */
+  within?: BoundingRegion | BoundingBoxCorners;
+  /** Edge (chord) direction parallel to this axis/vector. */
+  parallel?: DirectionSpec;
+  /** Alias of `parallel` (the FaceQuery spelling). */
+  parallelTo?: DirectionSpec;
+  perpendicular?: DirectionSpec;
+  /** Alias of `perpendicular`. */
+  perpendicularTo?: DirectionSpec;
   convex?: boolean;
   concave?: boolean;
   minAngle?: number;     // dihedral, degrees
   maxAngle?: number;
-  ofCurveType?: 'LINE' | 'CIRCLE' | 'BSPLINE';
+  ofCurveType?: CurveTypeName;
   tolerance?: number;     // default 1.0
   angleTolerance?: number; // default 10 (degrees)
 };
@@ -39,9 +76,13 @@ export type FaceQuery = {
   atZ?: number;
   atX?: number;
   atY?: number;
-  parallelTo?: 'XY' | 'YZ' | 'XZ' | Vec3;
+  /** Face NORMAL parallel to this axis/vector, or face parallel to the
+   *  named plane ('XY' ≡ normal along Z). */
+  parallelTo?: 'XY' | 'YZ' | 'XZ' | DirectionSpec;
+  /** Alias of `parallelTo` (the EdgeQuery spelling). */
+  parallel?: 'XY' | 'YZ' | 'XZ' | DirectionSpec;
   inPlane?: 'XY' | 'YZ' | 'XZ';
-  ofSurfaceType?: 'PLANE' | 'CYLINDER' | 'SPHERE' | 'CONE' | 'TORUS' | 'BSPLINE';
+  ofSurfaceType?: SurfaceTypeName;
   containsPoint?: Vec3;
   near?: Vec3;
   tolerance?: number;
@@ -49,7 +90,7 @@ export type FaceQuery = {
   byNormal?: 'X' | '-X' | 'Y' | '-Y' | 'Z' | '-Z';
   minArea?: number;
   maxArea?: number;
-  boundingBoxIn?: BoundingRegion;
+  boundingBoxIn?: BoundingRegion | BoundingBoxCorners;
 };
 
 export type EdgeSegment = {
@@ -67,6 +108,13 @@ export type EdgeSegment = {
    * bore lips, fillet rims, and hole mouths by size.
    */
   radius?: number;
+  /** Circle centre in mm, present ONLY when `curveType === 'CIRCLE'`. */
+  center?: Vec3;
+  /** Unit circle axis (normal of the circle's plane, right-handed with the
+   *  curve's parametrisation), present ONLY when `curveType === 'CIRCLE'`.
+   *  For circles `direction` carries the same axis — a chord direction is
+   *  meaningless (zero) on a full circle. */
+  axis?: Vec3;
   convex: boolean | null;
   dihedralAngleDeg: number | null;
   normalA: Vec3 | null;

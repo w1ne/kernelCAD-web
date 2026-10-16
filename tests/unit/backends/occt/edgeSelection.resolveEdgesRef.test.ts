@@ -44,16 +44,16 @@ describe('resolveEdgesRef characterisation', () => {
     const box = OcctBackend.box(20, 20, 20);
     const query = { atZ: 10, bogus: true } as EdgeQuery;
     const result = pickEdges(edgesRecord({ kind: 'query', query }), box, undefined);
-    expect(result).toEqual({
-      error: {
-        target: 'export-occt',
-        code: 'feature.invalid-args',
-        featureId: 'fillet_e1',
-        severity: 'error',
-        message: `EdgeQuery has unknown keys: bogus. Valid keys: atZ, atX, atY, near, within, parallel, perpendicular, convex, concave, minAngle, maxAngle, ofCurveType, tolerance, angleTolerance.`,
-        hint: 'Drop unknown keys from the EdgeQuery; check the EdgeQuery type for the valid key set.',
-      },
+    if (!('error' in result)) throw new Error('expected an invalid-args error');
+    expect(result.error).toMatchObject({
+      target: 'export-occt',
+      code: 'feature.invalid-args',
+      featureId: 'fillet_e1',
+      severity: 'error',
     });
+    expect(result.error.message).toContain('bogus');
+    expect(result.error.message).toContain('atZ, atX, atY, near, within, parallel, parallelTo');
+    expect(result.error.hint).toContain('invalid-args.selector.unknown-key');
   });
 
   it('valid query ref resolves through resolveEdgeQuery', () => {
