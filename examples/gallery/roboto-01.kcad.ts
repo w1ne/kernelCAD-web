@@ -89,6 +89,6 @@ for (const j of joints) {
 }
 
 // Demo timeline: the waist swings through its URDF range while the mates carry the chain.
-animationView({ param: 'waist_yawDeg', from: -60, to: 60, durationMs: 4000, fps: 30 });
+animationView({ param: 'waist_yawDeg', from: -60, to: 60, durationMs: 4000, fps: 15 });
 
 return rp1.solvedModel({});
