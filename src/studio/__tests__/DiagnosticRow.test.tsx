@@ -45,6 +45,21 @@ describe('DiagnosticRow', () => {
         expect(getByText('add a mate to output-horn')).toBeDefined();
     });
 
+    it('shows the message when the diagnostic has no hint', () => {
+        const { getByText } = render(
+            <DiagnosticRow
+                diagnostic={{
+                    code: 'mechanism.motion-on-fixed-joint',
+                    severity: 'error',
+                    message: "param shoulderDeg animates joint 'shoulder', but it is fastened",
+                    hint: '',
+                    mateName: 'shoulder',
+                }}
+            />,
+        );
+        expect(getByText("param shoulderDeg animates joint 'shoulder', but it is fastened")).toBeDefined();
+    });
+
     it('falls back to mateName when no partName', () => {
         const { getByText } = render(<DiagnosticRow diagnostic={mateDiag} />);
         expect(getByText('jaw-coupling')).toBeDefined();

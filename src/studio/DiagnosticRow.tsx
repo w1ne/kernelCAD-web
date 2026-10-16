@@ -33,6 +33,8 @@ function targetLabel(d: ValidatorDiagnostic): string {
 export const DiagnosticRow: React.FC<DiagnosticRowProps> = ({ diagnostic }) => {
     const { selectFeature } = useFeatureSelection();
     const target = targetLabel(diagnostic);
+    // The hint says what to do; a diagnostic with no hint still says what is wrong.
+    const detail = diagnostic.hint || diagnostic.message;
 
     const onJump = (): void => {
         selectFeature(routeDiagnosticToSelection(diagnostic));
@@ -60,7 +62,9 @@ export const DiagnosticRow: React.FC<DiagnosticRowProps> = ({ diagnostic }) => {
                 {diagnostic.code}
             </code>
             <span className="font-semibold text-gray-100 flex-shrink-0">{target}</span>
-            <span className="italic text-gray-400 truncate flex-1">{diagnostic.hint ? plainLine(diagnostic.hint) : ''}</span>
+            <span className="italic text-gray-400 truncate flex-1" title={detail || undefined}>
+                {detail ? plainLine(detail) : ''}
+            </span>
             <button
                 type="button"
                 aria-label={`Jump to ${target}`}
