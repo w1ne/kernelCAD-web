@@ -30,7 +30,6 @@ const HEAVY: ReadonlyMap<string, string> = new Map([
   ['examples/gallery/hand-coffee-grinder.kcad.ts', 'complex multi-part grinder assembly'],
   ['examples/gallery/meta-glasses-experiments/words-to-geometry-wayfarer.kcad.ts', '0.8 s local optical-frame feature chain'],
   ['examples/gallery/make-no-mistakes-keycap/model.kcad.ts', 'detailed keycap model'],
-  ['examples/gallery/roboto-01.kcad.ts', '25 full-detail imported STL links (1.3M triangles); fromSTL sewing takes ~10 min'],
   ['examples/gallery/turbojet-engine.kcad.ts', 'detailed multi-part turbine geometry'],
   ['examples/robot-arm/compact-supported-arm.kcad.ts', 'mesh-heavy robot assembly'],
   ['examples/robot-arm/desktop-3axis-mates.kcad.ts', 'mesh-heavy robot assembly'],

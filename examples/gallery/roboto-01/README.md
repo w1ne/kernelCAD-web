@@ -6,9 +6,9 @@ copies of the full-detail upstream files. Each of the 25 imported files is below
 (`IMPORT_MAX_BYTES`); they total 65,154,800 bytes (62.1 MiB). The upstream
 mesh directory has 31 files totaling 82,935,004 bytes (79.1 MiB). `MESH-SOURCES.txt` records source and bundled hashes. URDF visual
 origins are identity, and
-each link mesh is placed at its accumulated URDF link frame. The source STLs
-sew as open shells, so imports explicitly allow open meshes for visualization;
-volume and boolean behavior are therefore not asserted. Joint translations
+each link mesh is placed at its accumulated URDF link frame. The meshes are
+imported with `lib.meshFromSTL` as display-only bodies (indexed triangles, no BRep topology),
+so volume, booleans and mass properties are not available for them. Joint translations
 are converted from metres to millimetres, axes are preserved, and radians are
 converted to degrees. Joint pose parameters default to zero and remain editable
 within the published limits.

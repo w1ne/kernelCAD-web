@@ -1,7 +1,5 @@
 // RoboParty ROBOTO 01 (RP1), authored from the official 24-DoF URDF.
 // The 25 full-detail URDF visual STLs are bundled under roboto-01/meshes; see its NOTICE and MESH-SOURCES.txt.
-// Each mesh uses the URDF visual origin (identity); link frames are placed at
-// the accumulated URDF joint origins, matching the parent/child chain.
 // Source: https://github.com/Roboparty/RP1_description @ 84529a55649b5c9796d49093c266208c879f9f29
 // Hardware license attribution per Andrii's decision: CERN-OHL-W-2.0 from
 // https://github.com/Roboparty/rp1_hardware. See the adjacent NOTICE.
@@ -69,72 +67,22 @@ const joints: Joint[] = [
 
 const rp1 = assembly('roboto-01-rp1');
 
-type Mat3 = [V3, V3, V3];
-type Frame = { rot: Mat3; at: V3 };
-const IDENTITY: Mat3 = [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
-const WORLD: Frame = { rot: IDENTITY, at: [0, 0, 0] };
-const frames: Record<string, Frame> = { base_link: WORLD };
-function mul(a: Mat3, b: Mat3): Mat3 {
-  const cell = (r: number, c: number) => a[r][0] * b[0][c] + a[r][1] * b[1][c] + a[r][2] * b[2][c];
-  return [0, 1, 2].map((r) => [cell(r, 0), cell(r, 1), cell(r, 2)]) as Mat3;
-}
-function turn(m: Mat3, v: V3): V3 {
-  return m.map((row) => row[0] * v[0] + row[1] * v[1] + row[2] * v[2]) as V3;
-}
-function about(axis: 0 | 1 | 2, deg: number): Mat3 {
-  const a = deg * Math.PI / 180, c = Math.cos(a), s = Math.sin(a);
-  if (axis === 0) return [[1, 0, 0], [0, c, -s], [0, s, c]];
-  if (axis === 1) return [[c, 0, s], [0, 1, 0], [-s, 0, c]];
-  return [[c, -s, 0], [s, c, 0], [0, 0, 1]];
-}
-function rpyMatrix(rpy: V3): Mat3 { return mul(about(2, rpy[2]), mul(about(1, rpy[1]), about(0, rpy[0]))); }
-function axisTurn(axis: V3, deg: number): Mat3 {
-  const len = Math.hypot(axis[0], axis[1], axis[2]);
-  if (len === 0 || deg === 0) return IDENTITY;
-  const [x, y, z] = axis.map((v) => v / len) as V3;
-  const a = deg * Math.PI / 180, c = Math.cos(a), s = Math.sin(a), t = 1 - c;
-  return [
-    [t*x*x+c, t*x*y-s*z, t*x*z+s*y],
-    [t*x*y+s*z, t*y*y+c, t*y*z-s*x],
-    [t*x*z-s*y, t*y*z+s*x, t*z*z+c],
-  ];
-}
-function toWorld(frame: Frame, v: V3): V3 {
-  const r = turn(frame.rot, v);
-  return [frame.at[0] + r[0], frame.at[1] + r[1], frame.at[2] + r[2]];
-}
-function axisAngle(m: Mat3): { axis: V3; deg: number } {
-  const cos = Math.min(1, Math.max(-1, (m[0][0] + m[1][1] + m[2][2] - 1) / 2));
-  const angle = Math.acos(cos);
-  if (angle < 1e-9) return { axis: [0, 0, 1], deg: 0 };
-  const axis: V3 = [m[2][1] - m[1][2], m[0][2] - m[2][0], m[1][0] - m[0][1]];
-  const len = Math.hypot(...axis);
-  return { axis: axis.map((v) => v / len) as V3, deg: angle * 180 / Math.PI };
-}
+// Each mesh stays in its link frame: URDF visual origins are identity, so the
+// STL is already expressed relative to its link. The joint mates place every
+// child at its parent's joint origin and drive it with the pose parameters, so
+// no transform is pre-baked into the mesh (that would double-place the chain).
 const paintFor = (name: string) => name.includes('ankle_roll') ? rubber
   : name.includes('hip') || name.includes('shoulder') || name.includes('elbow') || name.includes('ankle_pitch') ? anodized
   : name.includes('waist') ? graphite
   : name.includes('knee') || name.includes('wrist') ? graphite : shellWhite;
-const loadLink = async (name: string, frame: Frame) => {
-  const mesh = (await lib.fromSTL(`./roboto-01/meshes/${name}.STL`, { allowOpen: true, maxTriangles: 500000 })).scale(1000).color(paintFor(name));
-  // URDF visual origins are zero; place the visual at its accumulated link frame.
-  const { axis, deg } = axisAngle(frame.rot);
-  const turned = deg === 0 ? mesh : mesh.rotate(axis, deg);
-  return turned.translate(frame.at[0], frame.at[1], frame.at[2]);
-};
+const loadLink = async (name: string) =>
+  (await lib.meshFromSTL(`./roboto-01/meshes/${name}.STL`)).scale(1000).color(paintFor(name));
 const refs: Record<string, ReturnType<typeof rp1.part>> = {
-  base_link: rp1.part('base_link', await loadLink('base_link', frames.base_link)),
+  base_link: rp1.part('base_link', await loadLink('base_link')),
 };
 for (const j of joints) {
-  const parentFrame = frames[j.parent];
-  const childFrame: Frame = {
-    rot: mul(parentFrame.rot, mul(rpyMatrix([0, 0, 0]), axisTurn(j.axis, typeof j.pose === 'number' ? j.pose : 0))),
-    at: toWorld(parentFrame, j.xyz),
-  };
-  frames[j.child] = childFrame;
-  refs[j.child] = rp1.part(j.child, await loadLink(j.child, childFrame));
-  // The child frame is anchored at the parent joint origin: the parent
-  // connector uses URDF xyz; child connector is local zero.
+  refs[j.child] = rp1.part(j.child, await loadLink(j.child));
+  // The parent connector sits at the URDF joint origin; the child connector is its local zero.
   refs[j.parent].connector(j.name + '_parent', { type: 'axis', origin: { kind: 'vec3', value: j.xyz }, axis: j.axis });
   refs[j.child].connector(j.name + '_child', { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: j.axis });
   rp1.mate(j.name, j.parent + '.' + j.name + '_parent', j.child + '.' + j.name + '_child', 'revolute', { pose: j.pose, limitsDeg: j.limitsDeg, exposure: 'concealed' });
