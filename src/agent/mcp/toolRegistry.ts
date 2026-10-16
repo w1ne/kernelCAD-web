@@ -25,13 +25,19 @@ import { fabricationToolEntries } from './registry/fabricationTools';
 import { manufacturingToolEntries } from './registry/manufacturingTools';
 import { rayPickToolEntries } from './registry/rayPickTools';
 import { nurbsToolEntries } from './registry/nurbsTools';
+import { surfaceBlendToolEntries } from './registry/surfaceBlendTools';
 import { wireRoutingToolEntries } from './registry/wireRoutingTools';
+import { handoffToolEntries } from './registry/handoffTools';
+import { explodeViewToolEntries } from './registry/explodeViewTools';
+import { partModelToolEntries } from './registry/partModelTools';
+import { bomToolEntries } from './registry/bomTools';
 import { referenceExportToolEntries } from './registry/referenceExportTools';
 import { referenceLedgerToolEntries } from './registry/referenceLedgerTools';
 import { reviewPipelineToolEntries } from './registry/reviewPipelineTools';
 import { sketchAssemblyToolEntries } from './registry/sketchAssemblyTools';
 import { mechanismSimToolEntries } from './registry/mechanismSimTools';
 import { meshReconstructToolEntries } from './registry/meshReconstructTools';
+import { meshBooleanToolEntries } from './registry/meshBooleanTools';
 import { cookbookExecutionToolEntries } from './registry/cookbookExecutionTools';
 import type { McpToolDefinition, ToolRegistryEntry } from './registry/types';
 export { runClosedLoop } from '../loop/closedLoop.js';
@@ -105,6 +111,12 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...nurbsToolEntries,
   ...pointCloudToolEntries,
   ...wireRoutingToolEntries,
+  ...handoffToolEntries,
+  ...meshBooleanToolEntries,
+  ...explodeViewToolEntries,
+  ...surfaceBlendToolEntries,
+  ...partModelToolEntries,
+  ...bomToolEntries,
 ];
 
 /** Merge the central MCP metadata maps onto a definition: behavioral hints

@@ -4,6 +4,7 @@ import type { DrawingReviewPlan } from '../../shared/intent/drawingReview';
 import type { FeatureId, PatternSpec, PlaneSpec, FeatureRef, EditableVec3 } from '../../shared/intent/types';
 import { isValidScaleSpec, isValidPlaneSpec, isValidEditableVec3, formatScalarForError } from '../../shared/intent/types';
 import { KernelError } from '../../shared/intent/kernelError';
+import { MeshBackend } from '../../kernel/backends/meshBackend';
 import { invalidArgs } from '../../shared/intent/invalidArgs';
 import type { ShapeTransform } from '../../shared/intent/featureRecord';
 import type { CaptureSession } from './captureSession';
@@ -53,6 +54,13 @@ export type EdgeSelector =
   | EdgeSegment
   | EdgeSegment[]
   | { face: CanonicalFace | string }
+  // A canonical face name / face label (all edges of that face), an
+  // `@kc[<feature>/edge/e<N>]` / `@kc[<feature>/face/<name>]` ref string as
+  // printed by inspect, or an `@kcq[...]` Query DSL string.
+  | CanonicalFace
+  | string
+  // Several `@kc[<feature>/edge/e<N>]` refs.
+  | string[]
   // Q8 — Query DSL value (kc.q.edge(...) etc) reaches every edge-feature
   // lowerer through the same {edges} slot. Captured at append-time and
   // dispatched through the Q3 evaluator at lower-time.
@@ -110,6 +118,7 @@ export class Shape {
   // record list. Invalidated by record-count growth (capture is append-only,
   // so length growth is the only signal we need today).
   private _loweredBackend?: import('../../kernel/backends/occt/occtBackend').OcctBackend;
+  private _loweredMeshBackend?: import('../../kernel/backends/meshBackend').MeshBackend;
   private _loweredAtRecordCount?: number;
   private _loweredAtTransformCount?: number;
 
@@ -1328,6 +1337,9 @@ export class Shape {
     // backend after a transform, producing silent incorrect results.
     const ownRecord = records.find(r => r.id === this.id);
     const transformCount = ownRecord?.transforms.length ?? 0;
+    if (this._loweredMeshBackend && this._loweredAtRecordCount === records.length && this._loweredAtTransformCount === transformCount) {
+      throw new Error('Display mesh bodies do not expose BRep topology; solid operations are unavailable.');
+    }
     if (
       this._loweredBackend &&
       this._loweredAtRecordCount === records.length &&
@@ -1338,6 +1350,12 @@ export class Shape {
     const { OcctBackend, initOcct } = await import('../../kernel/backends/occt/occtBackend');
     // Reuse the session's last full lower when nothing it depends on changed.
     const reused = this.session.reusableLoweredShape(this.id);
+    if (reused instanceof MeshBackend) {
+      this._loweredMeshBackend = reused;
+      this._loweredAtRecordCount = records.length;
+      this._loweredAtTransformCount = transformCount;
+      throw new Error('Shape.lower(): display mesh body has no BRep backend; solid operations are unavailable.');
+    }
     if (reused instanceof OcctBackend) {
       this._loweredBackend = reused;
       this._loweredAtRecordCount = records.length;
@@ -1346,7 +1364,7 @@ export class Shape {
     }
     const { RecomputeEngine } = await import('../compute/recomputeEngine');
     const { createOcctLowerer } = await import('../backends/occt/occtLowerer');
-    await initOcct();
+    if (!this.session.importedGeometry.has(this.id)) await initOcct();
     const engine = new RecomputeEngine(createOcctLowerer(this.session));
     const pending = this.session.snapshotFullLower(new Map());
     const r = await engine.run(
@@ -1369,9 +1387,7 @@ export class Shape {
     if (!shape) {
       throw new Error(`Shape.lower(): shape '${this.id}' not lowered (check upstream diagnostics).`);
     }
-    if (!(shape instanceof OcctBackend)) {
-      throw new Error(`Shape.lower(): shape '${this.id}' is not an OcctBackend.`);
-    }
+    if (!(shape instanceof OcctBackend)) throw new Error('Shape.lower(): display mesh body has no BRep backend; solid operations are unavailable.');
     this._loweredBackend = shape;
     this._loweredAtRecordCount = records.length;
     this._loweredAtTransformCount = transformCount;

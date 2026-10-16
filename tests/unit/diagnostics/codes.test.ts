@@ -140,6 +140,8 @@ describe('diagnostic catalogue invariants', () => {
     // + 1 kernel selection: recompute.kernel.unavailable = 363.
     expect(new Set(DIAGNOSTIC_CODES).size).toBe(DIAGNOSTIC_CODES.length);
     expect(DIAGNOSTIC_CODES).toContain('tool.trace-from-image.part-detection-failed');
+    expect(DIAGNOSTIC_CODES).toContain('feature.boolean.recovered');
+    expect(DIAGNOSTIC_CODES).toContain('feature.shell.boolean-fallback');
   });
 
   it('every code has a non-empty hint template', () => {

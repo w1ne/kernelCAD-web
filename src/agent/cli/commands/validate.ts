@@ -41,7 +41,7 @@ import {
 } from '../../../modeling/mates/mechanicalPlausibility';
 import { checkFastenedMateContact, type MechanismCoverage } from '../../../modeling/runtime/mechanismTruth';
 import { probeAssemblies } from '../../../modeling/runtime/mechanismProbe';
-import { checkMotionIntent } from '../../../modeling/runtime/motionIntent';
+import { captureMotionFailures } from '../../../modeling/runtime/motionLimits';
 import { needsMechanismVerdict, summarizeMechanism, type MechanismVerdictSummary } from '../../../modeling/runtime/mechanismVerdict';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 
@@ -263,7 +263,7 @@ async function runFastenedMateContact(
 ): Promise<MechanismProbe> {
   const assemblies = Array.from(run.session.assemblies.values()) as Assembly[];
   const notRun = 'the pose sweep did not run (pass --include-interference)';
-  const motion: CompilerDiagnostic[] = assemblies.flatMap((arm) => checkMotionIntent(arm));
+  const motion: CompilerDiagnostic[] = assemblies.flatMap((arm) => captureMotionFailures(arm));
   const verdict = (failures: CompilerDiagnostic[]): MechanismProbe =>
     withSummary(assemblies, { mechanism: failures.length > 0 ? 'broken' : 'unverified', failures }, notRun);
   if (!assemblies.some((arm) => arm.__mates().some((m) => m.type === 'fastened'))) return verdict(motion);

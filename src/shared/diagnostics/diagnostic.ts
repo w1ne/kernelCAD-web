@@ -24,6 +24,10 @@ export interface CompilerDiagnostic {
    *  construct diagnostics manually); always populated by the standard
    *  emit path. */
   nextAction?: NextAction;
+  /** Machine-readable facts the kernel measured while diagnosing (e.g. a
+   *  probed `maxFeasibleRadius`, the boolean `strategy` that succeeded).
+   *  Repair generators read these instead of re-deriving them. */
+  details?: Readonly<Record<string, number | string | boolean>>;
 }
 
 /**

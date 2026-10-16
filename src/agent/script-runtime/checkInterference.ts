@@ -108,7 +108,7 @@ export async function checkInterference(
   });
   const { scene, diagnostics } = await lowerScriptScene(run);
   if (scene === undefined) {
-    return { pairs: [], partCount: 0, comparisonCount: 0, diagnostics };
+    return { pairs: [], partCount: 0, comparisonCount: 0, diagnostics, uncheckedPairs: [], partial: false };
   }
   return detectInterferences(scene, epsilon, ignored, diagnostics);
 }

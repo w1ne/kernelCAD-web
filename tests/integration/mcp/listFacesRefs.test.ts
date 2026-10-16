@@ -34,12 +34,14 @@ describe('list_faces — @kc[...] ref emission (F-surface F2)', () => {
     expect(lidFace!.ref).toContain('/face/lid');
   });
 
-  it('preserves the legacy id field with deprecated: true', async () => {
+  it('keeps the positional id field without the per-face deprecated marker', async () => {
     const code = `return box(10, 10, 10);`;
     const r = await listFacesTool({ code });
     expect(r.ok).toBe(true);
     if (!r.ok || !r.faces) throw new Error('expected faces');
     expect(r.faces[0].id).toMatch(/^f\d+$/);
-    expect(r.faces[0].deprecated).toBe(true);
+    // FIX-03: `deprecated: true` flagged every face of every listing and
+    // carried no information; it was dropped.
+    expect('deprecated' in r.faces[0]).toBe(false);
   });
 });

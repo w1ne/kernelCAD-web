@@ -40,7 +40,7 @@
 
 import type { Assembly } from '../capture/assembly';
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
-import type { OcctBackend } from '../../kernel/backends/occt/occtBackend';
+import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import type { Transform } from '../../shared/runtime/se3';
 import { parseConnectorRef, type MateRecord } from '../mates/mate';
 import { CONTACT_THICKNESS_MM, isActionableOverlap, overlapThicknessMm } from './jointContactCap';
@@ -333,6 +333,9 @@ function brepOverlap(
   mb: WorldMesh,
 ): { volumeMm3: number; thicknessMm: number; at: [number, number, number]; cellMm: number } {
   const at = [0, 1, 2].map((k) => (Math.max(ma.min[k], mb.min[k]) + Math.min(ma.max[k], mb.max[k])) / 2) as [number, number, number];
+  if (!(a.shape instanceof OcctBackend) || !(b.shape instanceof OcctBackend)) {
+    return { volumeMm3: NaN, thicknessMm: NaN, at, cellMm: 0 };
+  }
   try {
     const wa = (a.shape as OcctBackend).clone().applyTransform(a.worldTransform);
     const wb = (b.shape as OcctBackend).clone().applyTransform(b.worldTransform);
@@ -349,6 +352,9 @@ function brepOverlap(
 export function restPosePenetrations(scene: SceneBackend): RestPenetration[] {
   const meshes: { name: string; mesh: WorldMesh; part: SceneBackend['parts'][number] }[] = [];
   for (const p of scene.parts) {
+    // Exact/closed-solid validation does not currently classify display-only
+    // triangle soups. Leave those pairs unchecked while retaining BRep checks.
+    if (!(p.shape instanceof OcctBackend)) continue;
     const mesh = worldMesh(p.shape as OcctBackend, p.worldTransform);
     if (mesh !== undefined) meshes.push({ name: p.name, mesh, part: p });
   }
@@ -402,6 +408,7 @@ export function restPoseMateGaps(
     const pa = byName.get(a);
     const pb = byName.get(b);
     if (pa === undefined || pb === undefined) continue;
+    if (!(pa.shape instanceof OcctBackend) || !(pb.shape instanceof OcctBackend)) continue;
     const key = a < b ? `${a}\u0000${b}` : `${b}\u0000${a}`;
     if (!seen.has(key)) {
       seen.set(key, measureBodyToBodyGap(

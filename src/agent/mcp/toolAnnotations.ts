@@ -71,15 +71,18 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   diff_geometry: READ_MAY_WRITE_ARTIFACTS,
   // Reads a mesh; writes the emitted script + ledger only when { out } is given.
   mesh_to_features: READ_MAY_WRITE_ARTIFACTS,
+  mesh_boolean: AUTHOR,
 
   // Read — but may fetch from a remote parts catalog (KERNELCAD_PARTS_BASE_URL).
   find_part: READ_REMOTE,
   fetch_part: READ_REMOTE,
+  fetch_part_model: READ_REMOTE,
 
   // Authoring — return modified source (side-effect-free, additive).
   set_param: AUTHOR,
   sweep_tolerance: READ,
   add_feature: AUTHOR,
+  apply_surface_blend: AUTHOR,
   add_surface: AUTHOR,
   add_curve: AUTHOR,
   add_path_segment: AUTHOR,
@@ -122,6 +125,7 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   import_step: AUTHOR_REMOTE,
   // Writes the pack files + zip locally; never contacts a vendor.
   fab_pack: WRITES_FILE,
+  explode_view: READ,
 
   // Renders the model to PNG views on the local filesystem — does not change the
   // design, but writes image files (same class as capture_animation).
@@ -136,4 +140,9 @@ export const TOOL_ANNOTATIONS: Record<string, ToolAnnotations> = {
   inspect_nurbs: READ,
   fit_plane: READ,
   route_wires: READ,
+  // Parses a provided handoff and returns a proposed authoring script.
+  import_handoff: AUTHOR,
+  inspect_assembly: READ,
+  // Writes a BOM CSV locally and returns Sheets-ready rows; never contacts a spreadsheet.
+  write_bom: WRITES_FILE,
 };
