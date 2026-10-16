@@ -193,7 +193,7 @@ export const ASSEMBLY_CODES = {
     group: 'assembly',
     description: 'An articulated mate (revolute/prismatic/cylindrical/pin_slot) has no declared limits; envelope review cannot verify its travel range.',
   },
-  // Assembly validator — joint-topology / connectivity (4)
+  // Assembly validator — joint-topology / connectivity (5)
   // Surfaced through validateAssemblyWithMates so evaluate_script still
   // reports limits/support/root issues when articulated closed-loop FK
   // returns did-not-converge (topology is independent of Newton).
@@ -208,6 +208,17 @@ export const ASSEMBLY_CODES = {
     group: 'assembly',
     description: 'A moving part has no mate-graph path to a stable root.',
   },
+  'assembly.connectivity.assumed-root': {
+    hintTemplate:
+      "No stable root is declared, so the first part is assumed grounded (the mate solver holds it still). Fine when it is the base; otherwise add the base first or declare physicalUseCase(...).stableParts.",
+    nextAction: {
+      kind: 'rewrite-feature',
+      guidance: 'declare the fixed base via physicalUseCase(...).stableParts, or add it as the first part',
+    },
+    defaultSeverity: 'warn',
+    group: 'assembly',
+    description: 'No stable root declared; the first part is assumed to be the grounded base.',
+  },
   'assembly.joint-topology.missing-limit': {
     hintTemplate:
       "Add limitsDeg:[min,max] (or limitsMm for prismatic) on this articulated mate so travel is finite and envelope/topology review can run.",
@@ -218,14 +229,14 @@ export const ASSEMBLY_CODES = {
   },
   'assembly.joint-topology.unsupported-axis': {
     hintTemplate:
-      "Declare arm.jointSupport(..., { mate, shaft, supports, output }) for passive hinges, or arm.mechanicalJoint(..., { mate, actuator, shaft, supports, output }) for driven hinges, so the revolute axis has physical support intent.",
+      "Optional (informational): record which parts carry the hinge axis, e.g. arm.jointSupport('hinge-support', { mate: 'hinge', shaft: 'base', supports: ['base'], output: 'lid' }) for a passive hinge, or arm.mechanicalJoint(..., { mate, actuator, shaft, supports, output }) for a driven one. Physical support itself is checked from geometry (assembly.joint-axis.unbound, assembly.mechanical.revolute-unsupported).",
     nextAction: {
       kind: 'rewrite-feature',
-      guidance: 'add jointSupport or mechanicalJoint intent for the revolute axis',
+      guidance: 'optionally add jointSupport or mechanicalJoint intent for the revolute axis',
     },
-    defaultSeverity: 'error',
+    defaultSeverity: 'warn',
     group: 'assembly',
-    description: 'A revolute mate has no joint-support / mechanical-joint intent declaring physical support.',
+    description: 'A revolute mate has no joint-support / mechanical-joint intent declaring which parts carry it (advisory; geometric support is gated separately).',
   },
   'assembly.joint-topology.connector-missing': {
     hintTemplate:
@@ -255,14 +266,30 @@ export const ASSEMBLY_CODES = {
     description: 'A physical-use-case load part has no mate-graph path to the use-case stable roots.',
   },
 
-  // Assembly validator — v0.7 kinematic-grounding gates (3)
+  // Assembly validator — v0.7 kinematic-grounding gates
   'assembly.mounting-hole.mismatch': {
     hintTemplate:
-      "Make the hole features on the two bound faces compatible: same kind (clearance ↔ threaded), same nominal diameter, same depth. Use list_face_labels to inspect available holes. This is an authoring-time signal; the merge gate is mechanism.disconnect which fires under motion at validate-time.",
+      "Make the hole features on the two bound faces compatible: same kind (clearance ↔ threaded), same nominal diameter, same depth. Use inspect({ of: 'face-labels' }) to inspect available holes. This is an authoring-time signal; the merge gate is mechanism.disconnect which fires under motion at validate-time.",
     nextAction: { kind: 'fix-arg', field: 'holeFeatures' },
     defaultSeverity: 'info',
     group: 'assembly',
     description: 'A fastened mate binds two faces whose hole features are incompatible (kind/diameter/depth mismatch).',
+  },
+  'assembly.mounting-hole.unverified': {
+    hintTemplate:
+      "Informational: the hole-record gate could not resolve which face this fastened-mate connector binds (a vec3 origin or a non-face-center query), so hole diameters were not compared by record. The geometric hole-alignment check still covers the mate. To compare hole() / holes() diameters as well, bind the connector with origin: { kind: 'topology', query: { kind: 'face-center', name: 'top' } }.",
+    nextAction: { kind: 'fix-arg', field: 'connectorOrigin' },
+    defaultSeverity: 'info',
+    group: 'assembly',
+    description: 'A fastened-mate side could not be bound to a face, so the hole-record compatibility check did not run for it (never a mismatch).',
+  },
+  'assembly.mounting-hole.misaligned': {
+    hintTemplate:
+      "Line the fastener holes up: the hole pattern on one part must sit coaxially over the pattern on the other (same pitch and offset). Move the hole positions (hole/holes u, v) on one part, or move the part so the patterns coincide; inspect({ of: 'step' }) or inspect({ of: 'assembly' }) shows hole positions.",
+    nextAction: { kind: 'fix-arg', field: 'holeFeatures' },
+    defaultSeverity: 'error',
+    group: 'assembly',
+    description: 'Two fastened parts each have a hole opening at their shared contact face next to each other but not coaxial, so no screw can pass through both.',
   },
   'assembly.joint-axis.unbound': {
     hintTemplate:
@@ -283,7 +310,7 @@ export const ASSEMBLY_CODES = {
   },
   'assembly.structure.unstructured-bodies': {
     hintTemplate:
-      'Wrap the loose bodies in assembly().part(name, shape) so each part carries identity, per-part stats, and review handles; name every returned shape. This is an authoring-time signal — a multi-body model with no part names loses inspect --focus, list_part_stats, and Studio per-part validity.',
+      'Wrap the loose bodies in assembly().part(name, shape) so each part carries identity, per-part stats, and review handles; name every returned shape. This is an authoring-time signal — a multi-body model with no part names loses inspect --focus, inspect({ of: \'part-stats\' }), and Studio per-part validity.',
     nextAction: {
       kind: 'rewrite-feature',
       guidance: 'wrap each loose top-level body in a named assembly().part(name, shape)',

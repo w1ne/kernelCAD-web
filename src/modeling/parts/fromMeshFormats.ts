@@ -22,13 +22,17 @@ import { OcctBackend, initOcct } from '../../kernel/backends/occt/occtBackend';
 import { importBrepBytes, BrepParseError } from '../../kernel/backends/occt/importBrep';
 import { importStlBytes, StlParseError } from '../../kernel/backends/occt/importStl';
 import { Shape } from '../capture/proxy';
+import { MeshBackend, decodeStlMesh } from '../../kernel/backends/meshBackend';
 import { KernelError } from '../../shared/intent/kernelError';
+import { invalidArgs } from '../../shared/intent/invalidArgs';
 import type { FromSTEPContext } from './fromSTEP';
+
+const IMPORT_MAX_BYTES = 50 * 1024 * 1024;
 
 /** Shared context shape with `lib.fromSTEP`. */
 export type FromFileContext = FromSTEPContext;
 
-function requirePath(path: string, fn: 'fromBREP' | 'fromSTL', ext: string): void {
+function requirePath(path: string, fn: 'fromBREP' | 'fromSTL' | 'meshFromSTL', ext: string): void {
   if (typeof path !== 'string' || path.length === 0) {
     throw new KernelError(
       'feature.invalid-args',
@@ -42,7 +46,7 @@ function requirePath(path: string, fn: 'fromBREP' | 'fromSTL', ext: string): voi
 async function readOrThrow(
   absPath: string,
   path: string,
-  fn: 'fromBREP' | 'fromSTL',
+  fn: 'fromBREP' | 'fromSTL' | 'meshFromSTL',
 ): Promise<Buffer> {
   try {
     return await readFile(absPath);
@@ -123,6 +127,29 @@ export interface FromSTLOptions {
   allowOpen?: boolean;
   /** Raise the triangle-count budget. See DEFAULT_MAX_TRIANGLES. */
   maxTriangles?: number;
+}
+
+/** Fast display-only STL import. Preserves every triangle without building BRep topology. */
+export async function meshFromSTL(ctx: FromFileContext, path: string): Promise<Shape> {
+  requirePath(path, 'meshFromSTL', '.stl');
+  const absPath = resolveScriptRelativePath(ctx.scriptDir, path);
+  const buf = await readOrThrow(absPath, path, 'meshFromSTL');
+  if (buf.byteLength > IMPORT_MAX_BYTES) {
+    invalidArgs({
+      api: 'lib.meshFromSTL(path)',
+      path: 'path',
+      gotText: `${absPath} (${buf.byteLength} bytes)`,
+      requires: 'an STL file no larger than 50 MiB (the per-file limit is 50 MiB)',
+      example: "lib.meshFromSTL('./parts/bracket.stl')",
+      hintSlug: 'invalid-args.lib.meshFromSTL.file-too-large',
+    });
+  }
+  let mesh: ReturnType<typeof decodeStlMesh>;
+  try { mesh = decodeStlMesh(buf); }
+  catch (e) { throw new KernelError('feature.kernel-failed', `lib.meshFromSTL: ${absPath} — ${e instanceof Error ? e.message : String(e)}`, undefined, 'kernel-failed.lib.meshFromSTL.parse — provide a readable ASCII or binary STL.'); }
+  const shape = ctx.session.createShape({ kind: 'importedMesh', params: {}, inputs: {}, metadata: { sourcePath: absPath, geometryKind: 'display-mesh', triangleCount: mesh.indices.length / 3 } });
+  ctx.session.importedGeometry.set(shape.id, new MeshBackend(mesh.positions, mesh.indices));
+  return shape;
 }
 
 /**

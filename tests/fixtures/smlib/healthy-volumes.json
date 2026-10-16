@@ -1,0 +1,122 @@
+[
+  {
+    "case": "sun_gear_nofillet_v2",
+    "runtime": "node",
+    "reference": 13177.865230034156,
+    "candidate": 13177.860159343458
+  },
+  {
+    "case": "sun_gear_v2",
+    "runtime": "node",
+    "reference": 13172.422275253488,
+    "candidate": 13172.41878380504
+  },
+  {
+    "case": "sun_gear_small_fillet_v2",
+    "runtime": "node",
+    "reference": 13176.503688367296,
+    "candidate": 13176.49941876096
+  },
+  {
+    "case": "gt2_base_v2",
+    "runtime": "node",
+    "reference": 1254.396091820636,
+    "candidate": 1254.3960918206415
+  },
+  {
+    "case": "gt2_pulley_tipfillet_v2",
+    "runtime": "node",
+    "reference": 1253.4161217688547,
+    "candidate": 1253.417765754457
+  },
+  {
+    "case": "gt2_pulley_tipfillet_small_v2",
+    "runtime": "node",
+    "reference": 1254.0405958134497,
+    "candidate": 1254.0406871482944
+  },
+  {
+    "case": "ring_gear_v2",
+    "runtime": "node",
+    "reference": 50319.0098284664,
+    "candidate": 50319.016699502776
+  },
+  {
+    "case": "gripper_jaw",
+    "runtime": "node",
+    "reference": 18432.976084607963,
+    "candidate": 18431.786910957824
+  },
+  {
+    "case": "arm_link",
+    "runtime": "node",
+    "reference": 25198.619520489323,
+    "candidate": 25198.619520489337
+  },
+  {
+    "case": "moving_jaw_step",
+    "runtime": "node",
+    "reference": 20213.356899294176,
+    "candidate": 20214.609618882507
+  },
+  {
+    "case": "sun_gear_nofillet_v2",
+    "runtime": "browser",
+    "reference": 13177.865230034156,
+    "candidate": 13177.860159343525
+  },
+  {
+    "case": "sun_gear_v2",
+    "runtime": "browser",
+    "reference": 13172.422266995152,
+    "candidate": 13172.418783806173
+  },
+  {
+    "case": "sun_gear_small_fillet_v2",
+    "runtime": "browser",
+    "reference": 13176.503690081126,
+    "candidate": 13176.499418760937
+  },
+  {
+    "case": "gt2_base_v2",
+    "runtime": "browser",
+    "reference": 1254.3960918206362,
+    "candidate": 1254.3960918206417
+  },
+  {
+    "case": "gt2_pulley_tipfillet_v2",
+    "runtime": "browser",
+    "reference": 1253.41707935332,
+    "candidate": 1253.4177657544565
+  },
+  {
+    "case": "gt2_pulley_tipfillet_small_v2",
+    "runtime": "browser",
+    "reference": 1254.040595889809,
+    "candidate": 1254.0406871482949
+  },
+  {
+    "case": "ring_gear_v2",
+    "runtime": "browser",
+    "reference": 50319.009828466355,
+    "candidate": 50319.01669950139
+  },
+  {
+    "case": "gripper_jaw",
+    "runtime": "browser",
+    "reference": 18432.976084607963,
+    "candidate": 18431.786910957824
+  },
+  {
+    "case": "arm_link",
+    "runtime": "browser",
+    "reference": 25198.619520489323,
+    "candidate": 25198.619520489337
+  },
+  {
+    "case": "moving_jaw_step",
+    "runtime": "browser",
+    "reference": 20213.356899294176,
+    "candidate": 20214.609618882492
+  }
+]

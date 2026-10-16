@@ -50,13 +50,28 @@ BA = (pi * |angle_deg| / 180) * (kFactor * thickness + radius)
 - `kFactor` = neutral-axis offset ratio. Typical values: 0.33-0.45 (mild steel / aluminum).
 - Slice 1 supports the K-factor formula only.
 
+## How a bend folds
+
+- The bend line is in FLAT-BLANK coordinates for every bend of a chain:
+  `.bend({ atX: 25 }, 90, 2).bend({ atX: 75 }, 90, 2)` is a U-channel, even
+  though the second line has moved by the time it folds.
+- The strip of width `BA` centred on the line becomes the arc (inner radius =
+  `radius`); the flange beyond it keeps its flat length, so the flat pattern
+  is exactly the blank (flange lengths + bend allowances).
+- The SHORTER side of the blank across the line folds (a tie folds the +X /
+  +Y side). A web with a bend near each end stays on the bench.
+- Holes and cutouts drilled in the flat blank before `.bend()` ride along
+  with their flange: `sheetMetal(...).holes({ byNormal: 'Z' }, ...).bend(...)`.
+- Parallel bend lines whose zones overlap fail with `feature.invalid-args`.
+
 ## Slice-1 limits
 
 - Bend axis derived from `{ atX }` / `{ atY }` EdgeQuery or `{ face: 'top' }`. Other selectors emit `feature.bend.edge-not-linear`.
 - `radius >= 0.5 * thickness` recommended; tighter bends emit `feature.kernel-failed`.
-- `flattenPattern()` supports at most 2 bends in the chain; 3+ emits `feature.flattenPattern.multi-bend-unsupported`.
+- `flattenPattern()` flattens any number of bends (a C-channel with lips is 4). A fold that collides with another flange or loses material fails with `feature.sheetMetal.fold-invalid` instead of producing a broken solid.
 - Sketch profiles must be polylines (`path().moveTo / lineTo / close`). Arcs in the profile are not supported by `flattenPattern()` in slice 1.
-- The lowering pipeline (slice 1) omits the curved bend section in favor of a sharp-corner fuse — agents see the rotation but not the radiused inside corner. The K-factor math still holds for flat-pattern recovery.
+- A hole that crosses the bend zone loses the part of it inside the zone (the arc is the sheet section at the zone start, revolved). Keep holes `>= BA/2 + radius` from the line.
+- Bend lines span the whole blank, so an `atX` and an `atY` bend always cross. That folds only when the blank outline has corner relief there — notch the corner at least one bend allowance past each line (e.g. `path().moveTo(0,0).lineTo(82,0).lineTo(82,18).lineTo(100,18)...` for bends at x = 85 and y = 15). Without relief: `feature.sheetMetal.crossing-bends`.
 
 ## MCP introspection
 
@@ -67,7 +82,8 @@ BA = (pi * |angle_deg| / 180) * (kFactor * thickness + radius)
 
 - `feature.sheetMetal.kfactor-invalid` (error) — `kFactor` not in `[0, 1]` or non-finite. Hint: pass a value in `[0, 1]`; typical 0.33-0.45.
 - `feature.bend.edge-not-linear` (error) — resolved bend axis cannot be derived from the selector. Hint: pick a straight perimeter edge; slice-1 supports `{ atX: <n> }`, `{ atY: <n> }`, or `{ face: 'top' }`.
-- `feature.flattenPattern.multi-bend-unsupported` (error) — chain has 3+ bends. Hint: flatten an upstream Shape with `<= 2` bends, or wait for slice 2.
+- `feature.sheetMetal.crossing-bends` (error) — an `atX` and an `atY` bend cross where the blank still has material. Hint: add corner relief to the outline.
+- `feature.sheetMetal.fold-invalid` (error) — the fold produced several solids, an invalid solid, or lost / overlapped material (flanges folding into each other). Hint: reorder or respace the bends.
 
 ## Verification gates
 
@@ -80,8 +96,8 @@ After authoring a sheet-metal part, run before reporting done:
 | G-radius-vs-thickness | Inner bend radius `>= 0.5 * thickness`; tighter bends fail and emit `feature.kernel-failed` |
 | G-bend-edge-linear | Every `.bend(...)` selector resolves to a straight edge (slice 1: `{ atX }`, `{ atY }`, or `{ face: 'top' }`) |
 | G-bend-table-exists | `inspect({ of: 'bend-table' })` returns one entry per `.bend(...)` call with non-negative bend allowance and a finite axis line |
-| G-flatten-roundtrip | `shape.flattenPattern()` produces a `Region` whose `outer` polyline area equals the source profile area within `1e-6` (chain has <= 2 bends in slice 1) |
-| G-flatten-bend-count | `flattenPattern()` chains have at most 2 bends — 3+ emits `feature.flattenPattern.multi-bend-unsupported` |
+| G-flatten-roundtrip | `shape.flattenPattern()` produces a `Region` whose `outer` polyline area equals the source profile area within `1e-6` |
+| G-fold-valid | No `feature.sheetMetal.fold-invalid` / `feature.sheetMetal.crossing-bends`: every fold is one closed solid with conserved volume |
 | G-profile-polyline | Sketch profile uses only `moveTo` / `lineTo` / `close` — no arcs (slice 1) |
 
 ## Mounting sheet on a frame
@@ -91,6 +107,6 @@ A sheet (flat panel or bent part) that sits on tubes or a frame touches them: pu
 ## Related skills
 
 - `kernelcad-authoring` — `path()` + `Sketch` shape this skill operates on; rotate / translate the bracket after folding.
-- `kernelcad-features` — fillet / chamfer / hole apply to the folded result; remember the slice-1 sharp-corner approximation when placing features on the inside corner.
+- `kernelcad-features` — fillet / chamfer / hole apply to the folded result, or drill the flat blank before `.bend()`.
 - `kernelcad-params` — `thickness`, `kFactor`, `angle`, `radius` all accept `Editable<number>`; wire to params for fab-iteration.
 - `kernelcad-mcp` — `flatten_pattern` and `inspect({ of: 'bend-table' })` are the inspection surface for downstream CAM / nesting tools.

@@ -94,7 +94,7 @@ Cut into a solid: bolt holes, pockets, slots, plain subtraction.
 |---|---|
 | `Shape.subtract(...others) => Shape` | Boolean difference (this minus others). |
 | `ParamRef.subtract(other: number \| ParamRef<number>) => ParamRef<number>` | Build a ParamRef whose value equals this ParamRef minus `other`. |
-| `Shape.hole(face: FaceSelector \| string, opts: { u, v, diameter, depth?: number \| "through", upToFace?: FaceRef, counterbore?: { diameter, depth }, countersink?: { diameter, angleDeg? }, thread?: { pitch, modeled?: boolean, clearance? } }) => Shape` | Drill a single hole. |
+| `Shape.hole(face: FaceSelector \| string, opts: { u, v, diameter, depth?: number \| "through", at?: Vec3 \| { angleDeg, z }, axis?: Vec3, upToFace?: FaceRef, counterbore?: { diameter, depth }, countersink?: { diameter, angleDeg? }, thread?: { pitch, modeled?: boolean, clearance? } }) => Shape` | Drill a single hole. |
 | `Shape.holes(face: FaceSelector \| string, opts: { positions: Array<{u,v}>, diameter, depth?, upToFace?, counterbore?, countersink?, thread? }) => Shape` | Drill N holes in one feature record. |
 | `Shape.threadedHole(face: FaceSelector \| string, opts: { u, v, spec: string, depth: number \| 'through', modeled?: boolean, clearance?, name? }) => Shape` | ISO metric tapped hole by designation (`spec: 'M6'` coarse, or `'M6x0.75'`). |
 | `Shape.cutout(profile: PathBuilder \| Sketch, opts: { face: FaceSelector \| string, depth?: number \| "through", upToFace?: FaceRef, depthMode?: "blind" \| "symmetric" }) => Shape` | Sketch-driven subtractive extrude for irregular shapes hole() can't express (slots, D-shapes, keyhole pockets). |
@@ -254,7 +254,7 @@ Bring in vendor geometry, and write models back out.
 
 | Call | What it does |
 |---|---|
-| `lib : { fromSTEP(path: string): Promise<Shape>; fromBREP(path: string): Promise<Shape>; fromSTL(path: string, opts?: { tolerance?: number; allowOpen?: boolean; maxTriangles?: number }): Promise<Shape>; fromDXF(path: string, opts?: { units?: LengthUnit; tolerance?: number }): Promise<Sketch[]>; fromSVG(path: string, opts?: { units?: LengthUnit; tolerance?: number; curveTolerance?: number }): Promise<Sketch[]>; findPart(query: string, opts?): Promise<FindPartResult>; fetchPart(idOrQuery: string, opts?): Promise<Shape>; standard: StandardParts }` | Parts library namespace. |
+| `lib : { fromSTEP(path: string): Promise<Shape>; fromBREP(path: string): Promise<Shape>; fromSTL(path: string, opts?: { tolerance?: number; allowOpen?: boolean; maxTriangles?: number }): Promise<Shape>; meshFromSTL(path: string): Promise<Shape>; fromDXF(path: string, opts?: { units?: LengthUnit; tolerance?: number }): Promise<Sketch[]>; fromSVG(path: string, opts?: { units?: LengthUnit; tolerance?: number; curveTolerance?: number }): Promise<Sketch[]>; findPart(query: string, opts?): Promise<FindPartResult>; fetchPart(idOrQuery: string, opts?): Promise<Shape>; standard: StandardParts }` | Parts library namespace. |
 | `Scene.toCompound() => Shape` | Groups bodies without booleaning. |
 
 ## Annotate & present

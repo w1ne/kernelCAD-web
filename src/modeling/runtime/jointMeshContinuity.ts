@@ -246,6 +246,7 @@ function buildSideRow(
   scenePart: SceneBackend['parts'][number],
   connector: MateConnector,
 ): JointMeshGapResult | undefined {
+  if (!(scenePart.shape instanceof OcctBackendClass)) return undefined;
   const gap = measureGapToBody(scenePart.shape as OcctBackend, scenePart.worldTransform, pivotWorld);
   if (gap === undefined) return undefined;
   return {
@@ -361,6 +362,7 @@ function measureMateBearingGap(
   const a = sceneByPartName.get(parentPartName);
   const b = sceneByPartName.get(childPartName);
   if (a === undefined || b === undefined) return undefined;
+  if (!(a.shape instanceof OcctBackendClass) || !(b.shape instanceof OcctBackendClass)) return undefined;
   const contact = measureBodyToBodyContact(
     a.shape as OcctBackend,
     a.worldTransform,

@@ -27,6 +27,9 @@ import type { CanonicalFace } from '../../../shared/intent/types';
 
 /** Tolerance (mm) for treating two cap centroids as distinct. */
 const TOL = 1e-4;
+/** Tolerance (mm) for a face centre lying on the bounding-box extreme. The
+ *  OCCT bbox carries a small enlargement gap, so this is looser than TOL. */
+const EXTREME_TOL = 1e-2;
 /** Slack on the |normal·axis| ≈ 1 test (≈0.8°). */
 const AXIS_SLACK = 1e-4;
 /** Off-axis component bound for treating a normal as axis-aligned. */
@@ -102,9 +105,12 @@ export function resolveCanonicalByGeometry(
   }
 
   // Cylinder-topology requires exactly two planar caps and at least one curved
-  // lateral face.
+  // lateral face. Anything else (an extruded gear / sketch prism, a flat
+  // sheet-metal blank) falls back to the box rule: the one planar face facing
+  // the named direction at the body's extreme along it.
   if (planar.length !== 2 || curvedCount < 1) {
-    return { kind: 'no-canonical-faces', faceCount: faces.length };
+    const extreme = extremePlanarFace(shape, planar, face);
+    return extreme ? { kind: 'resolved', face: extreme } : { kind: 'no-canonical-faces', faceCount: faces.length };
   }
 
   const n0 = normalOf(planar[0]);
@@ -135,6 +141,25 @@ export function resolveCanonicalByGeometry(
   const wantMax = spec.end === 'max';
   const firstWins = wantMax ? v0 > v1 : v0 < v1;
   return { kind: 'resolved', face: firstWins ? planar[0] : planar[1] };
+}
+
+/**
+ * Box semantics for a canonical name on an un-named solid: the UNIQUE planar
+ * face whose outward normal points along the name's direction ('top' = +Z)
+ * and whose centre sits on the bounding box's extreme plane along that axis.
+ * Null when there is none or more than one (then the name is ambiguous).
+ */
+function extremePlanarFace(shape: Shape3D, planar: readonly Face[], face: CanonicalFace): Face | null {
+  const spec = canonicalToAxisEnd(face);
+  const bb = shape.boundingBox.bounds as [[number, number, number], [number, number, number]];
+  const extreme = spec.end === 'max' ? bb[1][spec.axis] : bb[0][spec.axis];
+  const sign = spec.end === 'max' ? 1 : -1;
+  const hits = planar.filter((f) => {
+    const n = normalOf(f);
+    if (!n || axisOfNormal(n) !== spec.axis || Math.sign(n[spec.axis]) !== sign) return false;
+    return Math.abs(centerComponent(f, spec.axis) - extreme) < EXTREME_TOL;
+  });
+  return hits.length === 1 ? hits[0] : null;
 }
 
 function canonicalToAxisEnd(face: CanonicalFace): { axis: Axis; end: 'min' | 'max' } {

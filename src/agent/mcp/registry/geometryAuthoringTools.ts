@@ -414,13 +414,24 @@ export const geometryAuthoringToolEntries: ToolRegistryEntry[] = [
     definition: {
       name: 'add_variable_sweep',
       description:
-        "Use this when you need an organic swept solid whose cross-section changes along its length — a tapering body, horn, bottle, fairing, or duct — authored as a variable-section sweep along a spine. " +
-        "Insert a `variableSweep(spine, sections, opts?)` declaration into the user's .kcad.ts immediately before the last top-level return. The result is a Shape — chain `.translate(...)`, `.union(...)`, etc. via `add_feature`. `spine_binding` references an existing variable (Curve3D / Sketch / Vec3[]) in the source; each `sections[i].profile_binding` references an existing Sketch. Sections must be strictly increasing in `t` and span [0, 1]; first t=0, last t=1. Orientation is not exposed by this MCP tool until runtime orientation support is wired. Validates every binding exists in the source via regex before inserting (fast structured error vs capture-time stack). Returns the modified code + diagnostics. Side-effect-free.",
+        "Use this when you need an organic swept solid whose cross-section changes along its length — a tapering body, horn, bottle, handle, ring band, fairing, or duct — authored as a variable-section sweep along a spine. " +
+        "Inserts `variableSweep(spine, sections, opts?)` into the .kcad.ts `code` immediately before the last top-level return (an empty `code` starts a new script that returns the sweep). " +
+        "Spine: EITHER `spine_points` ([[x,y,z], ...] in mm, interpolated with spline3d; `spine_closed: true` closes the loop for a ring) OR `spine_binding` (an existing Curve3D / Sketch / Vec3[] variable). " +
+        "Each section: `t` in [0, 1] plus a profile — inline `radius` (circle) or `width` + `height` (rectangle), or `profile_binding` (an existing Sketch); profiles are centred on the spine and turned to face along it. " +
+        "Sections are strictly increasing in t, first t=0, last t=1 (omit t on every section to space them evenly). On a closed spine t=1 is the seam and reuses the t=0 profile. " +
+        "Example: { code, spine_points: [[0,0,0],[0,10,30],[0,0,60]], sections: [{ t: 0, radius: 8 }, { t: 0.5, radius: 10 }, { t: 1, radius: 4 }] }. " +
+        "Returns the modified code, diagnostics from re-evaluating it, and `sweep` { volumeMm3, bbox } measured from the built solid (ok:false when the sweep built nothing). The result is a Shape binding: return it, or chain `.union(...)` etc. via add_feature. Orientation is not exposed by this MCP tool until runtime orientation support is wired. Side-effect-free.",
       inputSchema: {
         type: 'object',
         properties: {
-          code: { type: 'string', description: 'The .kcad.ts source code.' },
-          spine_binding: { type: 'string', description: 'Existing variable name for a Curve3D / Sketch / Vec3[] declared earlier in the source.' },
+          code: { type: 'string', description: 'The .kcad.ts source code ("" for a new script).' },
+          spine_points: {
+            type: 'array',
+            description: 'Inline spine: at least 2 [x, y, z] points in mm, interpolated with spline3d. Use this OR spine_binding.',
+            items: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 },
+          },
+          spine_closed: { type: 'boolean', description: 'With spine_points: close the spline into a loop (ring band, loop handle).' },
+          spine_binding: { type: 'string', description: 'Existing variable name for a Curve3D / Sketch / Vec3[] declared earlier in the source. Use this OR spine_points.' },
           sections: {
             type: 'array',
             description: 'Varying cross-sections along the spine; at least 2 entries, strictly increasing in `t`, first t=0, last t=1.',
@@ -428,16 +439,18 @@ export const geometryAuthoringToolEntries: ToolRegistryEntry[] = [
               type: 'object',
               properties: {
                 t: { type: 'number', description: 'Spine parameter in [0, 1].' },
-                profile_binding: { type: 'string', description: 'Existing Sketch variable name for this section.' },
+                radius: { type: 'number', description: 'Inline circular profile radius, mm.' },
+                width: { type: 'number', description: 'Inline rectangular profile width, mm (with height).' },
+                height: { type: 'number', description: 'Inline rectangular profile height, mm (with width).' },
+                profile_binding: { type: 'string', description: 'Existing Sketch variable name for this section (instead of radius / width+height).' },
               },
-              required: ['t', 'profile_binding'],
             },
           },
           closed: { type: 'boolean', description: 'Optional closed-sweep flag.' },
           continuity: { type: 'string', enum: ['C0', 'C1', 'C2'], description: "Inter-section continuity; default 'C1'." },
           binding_name: { type: 'string', description: 'JS const name for the new Shape binding (default: _sweep_<N>).' },
         },
-        required: ['code', 'spine_binding', 'sections'],
+        required: ['code', 'sections'],
       },
     },
     handler: input => addVariableSweepTool(input as unknown as Parameters<typeof addVariableSweepTool>[0]),

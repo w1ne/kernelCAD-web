@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { KernelError } from '../../shared/intent/kernelError';
+import { invalidArgs } from '../../shared/intent/invalidArgs';
 import { formatScalarForError } from '../../shared/intent/types';
 import type { FeatureId, Vec3 } from '../../shared/intent/types';
 import type { Connector } from '../mates/connector';
@@ -468,6 +469,8 @@ async function computeInterferencesForGate(
     return [];
   }
 
+  // Mesh-involving pairs are reported as unchecked by detectInterferences;
+  // BRep-BRep pairs are still checked in mixed assemblies.
   const result = detectInterferences(lowered, 0.01, new Set<string>());
   return result.pairs;
 }
@@ -536,6 +539,28 @@ export interface SolvedModelOptions {
  *  and rejects unknown `externalLoads` keys. Split out of `recordSolvedModel`
  *  to keep its branching complexity under the quality-ratchet budget; no
  *  behavior change from the inline version it replaces. */
+/**
+ * `solvedModel()` / `solvedModel(undefined)` / `solvedModel(null)` mean the
+ * default pose (`{}`); anything else that is not a `{ mateOrJoint: value }`
+ * map is a coded invalid-args error instead of a TypeError from deep inside
+ * the pose walk ("Cannot convert undefined or null to object").
+ */
+function normalizeSolvedModelPoses(poses: Poses | undefined | null): Poses {
+  if (poses === undefined || poses === null) return {};
+  if (typeof poses !== 'object' || Array.isArray(poses)) {
+    invalidArgs({
+      api: 'assembly.solvedModel(poses?, opts?)',
+      path: 'poses',
+      got: poses,
+      showType: true,
+      requires: 'an object mapping mate/joint names to pose values, or nothing for the default pose',
+      hintSlug: 'invalid-args.solvedModel.pose-shape',
+      example: 'arm.solvedModel({ hinge: 30 })',
+    });
+  }
+  return poses;
+}
+
 function applySolvedModelEntryChecks(state: AssemblyState, opts?: SolvedModelOptions): void {
   if (state.parts.length === 0) {
     throw new KernelError(
@@ -824,9 +849,10 @@ function finalizeSolvedModelScene(
 export function recordSolvedModel(
   state: AssemblyState,
   arm: Assembly,
-  poses: Poses,
+  posesArg: Poses | undefined,
   opts?: SolvedModelOptions,
 ): Promise<Scene> {
+  const poses = normalizeSolvedModelPoses(posesArg);
   applySolvedModelEntryChecks(state, opts);
   // Internal re-posing callers (mechanism truth, pose envelope) pass
   // `validate: 'off'`; only an author-facing call marks a mechanism.

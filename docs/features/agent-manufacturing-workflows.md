@@ -20,6 +20,24 @@ Small visual demonstrations, recorded from executed local workflows:
 These clips replay actual captures and retained results. The new docs pages are local
 previews pending deployment; the existing Claude setup is a public website readback.
 
+## LabWired BOM to Google Sheets or CSV
+
+`write_bom` accepts the LabWired `labwired-kernelcad-handoff/0.1` object as `handoff`,
+`handoff_json`, or `handoff_path`. It creates one row per handoff ref with quantity,
+part, MPN, source, unit price and notes, then merges matching optional
+`catalog_parts` by ref or catalog id. Unmatched catalog parts are retained as extra
+rows, which supports adding KernelCAD fasteners and priced catalog entries.
+
+`write_bom` writes CSV under `artifacts/bom/` (or `output_path`) and returns the path,
+CSV contents, `headers` and `sheets_rows`. Callers can consume the tabular values
+without a Google API integration. Text cells beginning with spreadsheet formula
+prefixes are apostrophe-prefixed in both CSV and Sheets-ready rows. Existing output
+files are preserved unless `overwrite: true` is passed. Handoff input must use exactly
+one of `handoff`, `handoff_json`, or `handoff_path`. The [BOM walkthrough
+bundle](../demos/sheets-bom/README.md) uses the supplied drawbot handoff and demonstrates
+local merge and CSV fallback only; no Google Sheet was connected or written during
+validation.
+
 ## G-code export receipts
 
 ```json

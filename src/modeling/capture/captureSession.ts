@@ -30,6 +30,7 @@ import type {
 import { ParamTable, type SerializedParamTable } from '../../shared/runtime/paramTable';
 import type { SoftWarning } from '../../shared/runtime/softWarning';
 import { collectParamRefs } from '../../shared/runtime/resolveParams';
+import { paramRefsToParams } from '../../shared/runtime/editableHelpers';
 import type { Editable } from '../../shared/runtime/paramRef';
 import {
   captureCallSite,
@@ -680,7 +681,9 @@ export class CaptureSession {
       id,
       kind: spec.kind,
       params: spec.params,
-      inputs: spec.inputs,
+      // A numeric param() inside a selector query ({ atZ: h }) becomes a
+      // Param: pre-resolved like every other param, tracked below.
+      inputs: paramRefsToParams(spec.inputs, this.paramTable),
       transforms: [],
       suppressed: false,
       metadata: spec.metadata,
@@ -691,6 +694,7 @@ export class CaptureSession {
     // params + metadata for any Param-shaped object with `paramRef` set.
     const refs = new Set<string>();
     for (const refName of collectParamRefs(r.params)) refs.add(refName);
+    for (const refName of collectParamRefs(r.inputs)) refs.add(refName);
     if (r.metadata !== undefined) {
       for (const refName of collectParamRefs(r.metadata)) refs.add(refName);
     }
@@ -749,6 +753,11 @@ export class CaptureSession {
   }
 
   boolean(op: 'union' | 'difference' | 'intersection', base: Shape, cutters: Shape[]): Shape {
+    for (const shape of [base, ...cutters]) {
+      if (shape.id && this.records.find(r => r.id === shape.id)?.kind === 'importedMesh') {
+        throw new Error(`Display mesh bodies do not support ${op} booleans; convert to BRep explicitly when solid operations are needed.`);
+      }
+    }
     // Validate all input shapes belong to this session.
     if (!this.records.some(r => r.id === base.id)) {
       throw new Error(`boolean: base shape '${base.id}' is not from this CaptureSession`);
@@ -1020,6 +1029,7 @@ export class CaptureSession {
       for (const record of session.records) {
         const refs = new Set<string>();
         for (const name of collectParamRefs(record.params)) refs.add(name);
+        for (const name of collectParamRefs(record.inputs)) refs.add(name);
         if (record.metadata !== undefined) {
           for (const name of collectParamRefs(record.metadata)) refs.add(name);
         }

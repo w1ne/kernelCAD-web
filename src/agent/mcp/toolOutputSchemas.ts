@@ -25,10 +25,16 @@ import { SCENE_SUMMARY_SCHEMA } from './sceneSummarySchema';
 export { SCENE_SUMMARY_SCHEMA } from './sceneSummarySchema';
 import { VERIFY_OUTPUT_SCHEMA } from './verificationOutputSchema';
 import { MESH_RECONSTRUCT_OUTPUT_SCHEMAS } from './registry/meshReconstructTools.outputSchemas';
+import { MESH_BOOLEAN_OUTPUT_SCHEMAS } from './registry/meshBooleanTools.outputSchemas';
 import { IMPORT_OUTPUT_SCHEMAS } from './registry/importTools.outputSchemas';
 import { FABRICATION_OUTPUT_SCHEMAS } from './registry/fabricationTools.outputSchemas';
+import { FEA_OUTPUT_SCHEMAS } from './registry/feaTools.outputSchemas';
 import { MANUFACTURING_OUTPUT_SCHEMAS } from './registry/manufacturingTools.outputSchemas';
 import { NURBS_OUTPUT_SCHEMAS } from './registry/nurbsTools.outputSchemas';
+import { EXPLODE_VIEW_OUTPUT_SCHEMAS } from './registry/explodeViewTools.outputSchemas';
+import { SURFACE_BLEND_OUTPUT_SCHEMAS } from './registry/surfaceBlendTools.outputSchemas';
+import { PART_MODEL_OUTPUT_SCHEMAS } from './registry/partModelTools.outputSchemas';
+import { BOM_OUTPUT_SCHEMAS } from './registry/bomTools.outputSchemas';
 
 export type { JSONSchemaObject } from './toolOutputSchemaParts';
 import { MECHANISM_SUMMARY, SELECTION, SOURCE_EDIT, TUBE_JOINT, type JSONSchemaObject } from './toolOutputSchemaParts';
@@ -147,8 +153,8 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
     type: 'object',
     properties: {
       ok: { type: 'boolean' },
-      base: { type: 'object', additionalProperties: true, description: 'Baseline summary { featureCount, partCount, isAssembly } (success).' },
-      revised: { type: 'object', additionalProperties: true, description: 'Revision summary { featureCount, partCount, isAssembly } (success).' },
+      base: { type: 'object', additionalProperties: true, description: 'Baseline summary { featureCount, partCount, isAssembly, errors? } (success); errors lists error diagnostics that still left geometry to diff.' },
+      revised: { type: 'object', additionalProperties: true, description: 'Revision summary { featureCount, partCount, isAssembly, errors? } (success).' },
       parts: { type: 'object', additionalProperties: true, description: 'Per-part added/removed/renamed/changed/unchanged (success).' },
       interference: { type: 'object', additionalProperties: true, description: 'Total interference-volume delta + per-pair detail (success).' },
       mates: { type: 'object', additionalProperties: true, description: 'Mate-graph changes (success).' },
@@ -211,6 +217,7 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
   },
 
   ...MESH_RECONSTRUCT_OUTPUT_SCHEMAS,
+  ...MESH_BOOLEAN_OUTPUT_SCHEMAS,
 
 
   // Merged dispatcher (selected by `of`): union of ~18 reader outputs. All
@@ -782,40 +789,7 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
     required: ['ok', 'images', 'diagnostics'],
     additionalProperties: true,
   },
-  run_fea: {
-    type: 'object',
-    properties: {
-      ok: { type: 'boolean', description: 'False when the study violated its declared minSafetyFactor, a selector did not resolve, or the solver toolchain is missing.' },
-      summary: {
-        type: 'object',
-        additionalProperties: true,
-        description: 'Solved evidence: maxVonMisesMPa, maxVonMisesAt, maxDisplacementMm, maxDisplacementAt, minSafetyFactor (+ minSafetyFactorRequired), nodeCount/elementCount/meshSizeMm, quality (minSICN, meanSICN, lowQualityCount), maxStressErrorPercent (high-stress region), trust { meshTrusted, reasons }, hotSpots [{ region, maxVonMisesMPa, nodeId, at, safetyFactor }]; the stress values, safety factor and hot spots exclude the support zone next to fixed-face edges (governingField), whose clamp-singular raw peak is reported as peakAtSupportMPa / peakAtSupportAt / peakAtSupportRegion with supportAdjacentNodeCount and supportZoneRadiusMm; appliedForceN / reactionForceN / equilibriumResidual, meshMs / solveMs.',
-      },
-      images: { type: 'array', items: { type: 'string' }, description: 'Absolute PNG paths of the rendered stress heatmap.' },
-      legend: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'Heatmap colour bands { color, fromMPa, toMPa } — the scale the PNGs are drawn on.' },
-      out_dir: { type: 'string', description: 'Directory holding the summary JSON, solver deck and heatmap PNGs.' },
-      artifacts: { type: 'object', additionalProperties: true, description: 'Absolute paths of the BREP geometry handoff, .inp deck, .frd results and mesh JSON, for hand reproduction.' },
-      diagnostics: { type: 'array', items: { type: 'object', additionalProperties: true }, description: 'fea.* diagnostics raised by the run.' },
-      error: { type: 'string' },
-      errorCode: { type: 'string' },
-    },
-    required: ['ok'],
-    additionalProperties: true,
-  },
-  fea_summary: {
-    type: 'object',
-    properties: {
-      ok: { type: 'boolean' },
-      summary: { type: 'object', additionalProperties: true, description: 'Stored summary of a previous run_fea in output_dir, when present.' },
-      toolchain: { type: 'object', additionalProperties: true, description: '{ available, ccx?, gmshVersion?, missing[], hint? } — whether a study can run here and how to fix it if not.' },
-      materials: { type: 'object', additionalProperties: true, description: 'Named grade -> { E (MPa), nu, yield (MPa) }.' },
-      material_names: { type: 'array', items: { type: 'string' }, description: 'Accepted material grade names.' },
-      error: { type: 'string' },
-      errorCode: { type: 'string' },
-    },
-    required: ['ok', 'toolchain', 'materials', 'material_names'],
-    additionalProperties: true,
-  },
+  ...FEA_OUTPUT_SCHEMAS,
   fit_plane: {
     type: 'object',
     properties: {
@@ -834,4 +808,27 @@ export const TOOL_OUTPUT_SCHEMAS: Record<string, JSONSchemaObject> = {
   ...FABRICATION_OUTPUT_SCHEMAS,
   ...MANUFACTURING_OUTPUT_SCHEMAS,
   ...NURBS_OUTPUT_SCHEMAS,
+  ...SURFACE_BLEND_OUTPUT_SCHEMAS,
+  ...PART_MODEL_OUTPUT_SCHEMAS,
+  ...BOM_OUTPUT_SCHEMAS,
+  route_wires: {
+    type: 'object',
+    properties: {
+      ok: { type: 'boolean' }, routes: { type: 'array', items: { type: 'object', properties: { id: { type: 'string' }, route_found: { type: 'boolean' }, route_failure: { type: 'string' }, length_mm: { type: ['number', 'null'] }, bend_count: { type: ['integer', 'null'] }, points_mm: { type: 'array', items: { type: 'array', items: { type: 'number' } } }, collisions: { type: 'array', items: { type: 'string' } }, clearance_violations: { type: 'array', items: { type: 'string' } } }, additionalProperties: true } },
+      warnings: { type: 'array', items: { type: 'string' } },
+      unresolved_wire_count: { type: 'integer' }, clearance_mm: { type: 'number' }, requested_bend_radius_mm: { type: 'number' },
+    }, required: ['ok', 'routes', 'warnings', 'unresolved_wire_count'], additionalProperties: true,
+    },
+  import_handoff: {
+    type: 'object', properties: {
+      ok: { type: 'boolean' }, device: { type: 'string' }, part_count: { type: 'number' }, wire_mate_count: { type: 'number' },
+      cutout_hints: { type: 'array', items: { type: 'object', additionalProperties: true, description: 'Connector-face cutout hints { ref, feature, face?, cutout_mm }; descriptive input dimensions, not applied wall cuts.' } },
+      script: { type: 'string', description: 'Evaluable .kcad.ts assembly script with bbox placeholder parts and named anchors.' },
+      warnings: { type: 'array', items: { type: 'string' } }, error: { type: 'string' },
+    }, required: ['ok', 'warnings'], additionalProperties: true,
+  },
+  inspect_assembly: {
+    type: 'object', properties: { ok: { type: 'boolean' } }, required: ['ok'], additionalProperties: true,
+  },
+  ...EXPLODE_VIEW_OUTPUT_SCHEMAS,
 };

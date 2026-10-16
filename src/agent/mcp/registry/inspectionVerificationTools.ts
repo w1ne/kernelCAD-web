@@ -91,7 +91,7 @@ const verifyToolEntry: ToolRegistryEntry = {
     name: 'verify',
     description:
       'Use this when you need to check a design against a rule set. One verifier, selected by `check`:\n' +
-      "- 'assembly' — mate-aware assembly validator on the active session (run evaluate_script first).\n" +
+      "- 'assembly' — static assembly review ({ file | code }, or the session evaluate_script left): mate validator, default-pose interference, joint topology, mechanical plausibility. ok:false with `blocking[]` exactly when review_cad's blocking rules fire on these findings; review_cad also sweeps joint ranges and runs physics.\n" +
       "- 'urdf' — structural validity of a .urdf file ({ urdf_path }).\n" +
       "- 'dfm' — print-readiness gates declared by dfmSpec() ({ file | code }).\n" +
       "- 'dfm-preflight' — sheet-metal flat pattern vs a job-shop's ordering rules ({ vendor, material, thicknessIn|thicknessMm, ... }). Returns the vendor's catalog source pages as `sources`; when `disclosure` is present, show it with those links.\n" +
@@ -100,22 +100,23 @@ const verifyToolEntry: ToolRegistryEntry = {
       "- 'reachable' — inverse-kinematics reachability for an end-effector ({ tip_link, target_position, ... }).\n" +
       "- 'geometry-quality' — one solid body's BREP tiny faces and short edges (ids, locations, mm²/mm), plus sampled mirror symmetry about centroid XY/YZ/XZ and principal inertia planes ({ file | code, feature_id?, tiny_face_area_mm2?, tiny_face_relative?, short_edge_length_mm?, symmetry_tolerance_mm?, mesh_deflection_mm?, asserted_plane?: { origin, normal } }). Relative area is a fraction of total surface area; thresholds are ORed. Candidate planes are discovery; only an asserted plane gates symmetry. Approximate sampled tessellation, not exact BREP proof.\n" +
       "- 'fastener-installation' — measured explicit catalog-screw installation stations on lowered assembly BREP ({ file | code, fasteners:[{ part, against, engagementPart?, minEngagementMm?, maxProtrusionMm? }], toleranceMm?, angleToleranceDeg? }). Reports annular bearing gap, bore axis/diameter/overlap and receiver geometric engagement/protrusion. Unknown or zero coverage cannot pass. Simplified threads do not certify torque, preload or strength.\n" +
-      "- 'mounting-holes' — fastened mates expose matching hole diameters on both sides.\n" +
+      "- 'mounting-holes' — fastened mates: hole pairs one screw can use (equal, or clearance over a tap drill / hole({ thread }) of the same metric size; hole-free faces are a rigid bond) and fastener holes meeting at the contact face are coaxial. Sides it cannot resolve are info, never mismatches.\n" +
       "- 'load-capacity' — will it hold? Closed-form Euler-Bernoulli beam check ({ loads, materials, ... }), or mode:'fea' to solve the script's feaStudy (quadratic-tet FEA, CalculiX) — both return { ok, safetyFactor, elements[{ partName, stressPa, yieldPa, safetyFactor }], failures[], diagnostics }; fea adds the threshold, the stress regions as @kc[...] faces with their location, and fea { peakStressPa, maxDisplacementMm, meshTrusted, peakAtSupportPa, refinement }; it refines the mesh automatically until the stress is trusted (refine: false for one solve).\n" +
       "- 'static-hold' — gravitational holding torque/force at a sampled pose grid vs each actuated joint's declared actuator capacity ({ joint?, pose?, gravity?, min_torque_margin_pct?, range_samples? }).\n" +
       "- 'body-likeness' — publish gate for organic/car bodies: cheap AABB↔wheel checks plus required agent still verdicts (side-body-over-wheels, side-cabin-aft, rear-haunch, ortho-proportions-vs-reference). Pass { body_bbox | code/file+body_feature_id, wheels?, cabin_bbox?, still_verdicts?, require_stills? }. Full CV silhouette matching is NOT implemented — agents must inspect ortho PNGs/Studio and supply still_verdicts before claiming success.\n" +
+      "- 'edge-radius' — general edge-break specification on final BREP ({ file | code, min_radius_mm?, max_radius_mm?, require_edge_break?: 'external'|'internal'|'all', feature_id?, assembly?, parts?, edges?, faces? }). Reports sharp convex/concave edges, analytic cylindrical/toroidal fillet radii and spherical junctions, and heuristic planar chamfer strips. Radius bounds apply only to fillets; selectors/points are part-local. Unknown/empty coverage cannot pass.\n" +
       'All params except `check` are check-specific and forwarded verbatim; each check fails closed on its own missing required params.',
     inputSchema: {
       type: 'object',
       properties: {
         check: {
           type: 'string',
-          enum: ['assembly', 'urdf', 'dfm', 'dfm-preflight', 'swept-collision', 'reachable', 'mounting-holes', 'load-capacity', 'static-hold', 'body-likeness', 'fastener-installation', 'geometry-quality', 'assembly-path'],
+          enum: ['assembly', 'urdf', 'dfm', 'dfm-preflight', 'swept-collision', 'reachable', 'mounting-holes', 'load-capacity', 'static-hold', 'body-likeness', 'fastener-installation', 'geometry-quality', 'assembly-path', 'edge-radius'],
           description: 'Which verification to run.',
         },
-        file: { type: 'string', description: 'Path to a .kcad.ts script (assembly/dfm/dfm-preflight/swept-collision/reachable/mounting-holes/load-capacity/static-hold/geometry-quality).' },
+        file: { type: 'string', description: 'Path to a .kcad.ts script (assembly/dfm/dfm-preflight/swept-collision/reachable/mounting-holes/load-capacity/static-hold/geometry-quality/edge-radius).' },
         code: { type: 'string', description: 'Inline kernelCAD script source (same checks as `file`).' },
-        feature_id: { type: 'string', description: "check:'geometry-quality' — body feature to measure; defaults to script return." },
+        feature_id: { type: 'string', description: "check:'geometry-quality' — body feature to measure; defaults to script return. check:'edge-radius' — lowered feature; default the returned model." },
         tiny_face_area_mm2: { type: 'number', minimum: 0, default: 0.01, description: "check:'geometry-quality' — flag faces strictly below this absolute area; zero disables." },
         tiny_face_relative: { type: 'number', minimum: 0, maximum: 1, default: 0, description: "check:'geometry-quality' — fraction of total BREP surface area, ORed with absolute threshold." },
         short_edge_length_mm: { type: 'number', minimum: 0, default: 0.1, description: "check:'geometry-quality' — flag edges strictly below this length; zero disables." },
@@ -130,6 +131,12 @@ const verifyToolEntry: ToolRegistryEntry = {
           },
         },
         assembly: { type: 'string', description: 'Assembly name; defaults to the first captured assembly.' },
+        min_radius_mm: { type: 'number', minimum: 0, description: "check:'edge-radius' — minimum fillet radius in mm (does not imply sharp-edge prohibition)." },
+        max_radius_mm: { type: 'number', minimum: 0, description: "check:'edge-radius' — maximum fillet radius in mm; must be >= min_radius_mm." },
+        require_edge_break: { type: 'string', enum: ['external', 'internal', 'all'], description: "check:'edge-radius' — prohibit sharp convex/external, concave/internal, or all edges." },
+        parts: { type: 'array', minItems: 1, uniqueItems: true, items: { type: 'string', minLength: 1 }, description: "check:'edge-radius' — explicit assembly part names (default all)." },
+        edges: { description: "check:'edge-radius' — EdgeQuery or @kc[...] edge ref(s); intersected with faces. Query near sorts, it does not filter." },
+        faces: { description: "check:'edge-radius' — FaceQuery or @kc[...] face ref(s); includes incident edges and fillets on selected faces." },
         fasteners: {
           type: 'array', description: "check:'fastener-installation' — explicit named stations; empty means no coverage.",
           items: { type: 'object', additionalProperties: false, properties: {
@@ -166,7 +173,7 @@ const verifyToolEntry: ToolRegistryEntry = {
         seed: { type: 'object', description: "check:'reachable' — numeric IK seed pose (joint name -> deg/mm)." },
         loads: { type: 'object', description: "check:'load-capacity' — partName -> { force?: [Fx,Fy,Fz] N, torque?: [Tx,Ty,Tz] N*m }." },
         materials: { type: 'object', description: "check:'load-capacity' — partName -> material declaration." },
-        mode: { type: 'string', enum: ['stub', 'beam', 'fea'], description: "check:'load-capacity' — 'beam' (default), 'stub', or 'fea' (solve the script's feaStudy; needs the CalculiX + gmsh toolchain)." },
+        mode: { type: 'string', enum: ['stub', 'beam', 'fea'], description: "check:'load-capacity' — 'beam' (default), 'stub', or 'fea' (solve the script's feaStudy: CalculiX + gmsh when installed, else the in-process voxel estimate)." },
         safety_factor_threshold: { type: 'number', description: "check:'load-capacity' — pass/fail safety-factor floor (default 1.5; mode 'fea': the study's minSafetyFactor when declared)." },
         study: { type: 'string', description: "check:'load-capacity' mode:'fea' — feaStudy name (default: the last declared one)." },
         mesh_size: { type: 'number', description: "check:'load-capacity' mode:'fea' — element size override, mm." },
@@ -255,19 +262,25 @@ const queryToolEntry: ToolRegistryEntry = {
     name: 'query',
     description:
       "Use this when you need to resolve or inspect topology against a script's lowered geometry. " +
-      "Selected by `mode` (default 'evaluate'):\n" +
-      "- 'evaluate' — inspect a Query (@kc[...] ref, @kcq[...] DSL, or { ast }); returns matched entities. Pass expect:'unique' to assert exactly-one.\n" +
-      "- 'resolve' — resolve a single @kc[...] / @kcq[...] ref to one entity ({ ref }).\n" +
-      "- 'lineage' — walk the HistoryMap for a named face ref ({ feature_id, ref }).\n" +
-      'All params except `mode` are forwarded verbatim.',
+      "Pass the script as `code` (inline; works on a hosted server) or `file`. Selected by `mode` (default 'evaluate'):\n" +
+      "- 'evaluate' — list the faces a Query matches ({ query }). Pass expect:'unique' to assert exactly-one.\n" +
+      "- 'resolve' — resolve one ref to one face ({ ref }).\n" +
+      "- 'lineage' — the creating/modifying history of a face ({ ref }; feature_id defaults to the last feature).\n" +
+      'Query forms (faces only; edge/vertex kinds return query.unsupported-entity-type):\n' +
+      "- a bare face label: 'top', 'bottom', 'left', 'right', 'front', 'back', or a hole/cutout slot like 'wall'.\n" +
+      "- @kc[<feature-id>/face/<label>] — feature ids are the ones refs print, e.g. '@kc[box_1/face/top]', '@kc[hole_1/face/wall]'.\n" +
+      '- @kcq[face(<filter>, ...)] — filters AND together: createdBy("box_1"), withLabel("top"), geometryType(PLANE|CYLINDER|CONE|SPHERE|TORUS|BSPLINE_SURFACE), ' +
+      'closestTo([x,y,z]) or closestTo([x,y,z], k), containsPoint([x,y,z]); combine with union(a, b), intersection(a, b), subtraction(a, b). ' +
+      "Example: '@kcq[face(geometryType(CYLINDER), closestTo([0,0,10]))]'.\n" +
+      'Each matched face comes back with its canonical @kc ref, centroid, normal and area.',
     inputSchema: {
       type: 'object',
       properties: {
         mode: { type: 'string', enum: ['evaluate', 'resolve', 'lineage'], description: "Resolution mode (default 'evaluate')." },
         file: { type: 'string', description: 'Path to a .kcad.ts script file.' },
         code: { type: 'string', description: 'Inline kernelCAD script source.' },
-        query: { description: "mode:'evaluate' — Query input: @kc[...] / @kcq[...] string or { ast } object." },
-        ref: { type: 'string', description: "mode:'resolve'|'lineage' — topology ref string." },
+        query: { description: "mode:'evaluate' — Query: a bare face label ('top'), an @kc[<feature-id>/face/<label>] ref, an @kcq[face(...)] expression, or { ast }." },
+        ref: { type: 'string', description: "mode:'resolve'|'lineage' — one face: '@kc[box_1/face/top]', '@kcq[...]', or '<feature-id>.<label>' (lineage)." },
         expect: { type: 'string', enum: ['any', 'unique'], description: "mode:'evaluate' — 'unique' asserts exactly-one." },
         feature_id: { type: 'string', description: 'Optional FeatureId; defaults to the last lowered shape (use "auto" for lineage).' },
       },

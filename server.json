@@ -1,22 +1,14 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "com.kernelcad/kernelcad",
-  "description": "Agent-first CAD: editable .kcad.ts source, deterministic review, OpenCASCADE kernel.",
+  "title": "kernelCAD",
+  "description": "CAD in ChatGPT and Claude: editable parts, STEP/STL/drawings, in-chat 3D, automatic checks.",
   "repository": {
     "url": "https://github.com/w1ne/kernelCAD-web",
     "source": "github"
   },
-  "version": "0.13.0",
-  "packages": [
-    {
-      "registryType": "npm",
-      "identifier": "kernelcad",
-      "version": "0.12.0",
-      "transport": {
-        "type": "stdio"
-      }
-    }
-  ],
+  "websiteUrl": "https://kernelcad.com/",
+  "version": "0.17.0",
   "remotes": [
     {
       "type": "streamable-http",

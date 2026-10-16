@@ -4,7 +4,7 @@
 // Sectioned access to the kernelcad-authoring SKILL.md for the
 // `lookup_authoring_skill` MCP tool.
 //
-// The full SKILL.md is ~108k characters — more than an MCP client's response
+// The full skill is ~140k characters — more than an MCP client's response
 // limit, so returning it whole broke the very first call an agent makes. The
 // default answer is now a short index (one line per section) plus the
 // essential quick-start; the agent pulls the sections it needs by `section`
@@ -13,6 +13,15 @@
 // kernelCAD-server hosts the tool and imports this module through the
 // vendored bundle (src/agent/mcp/toolRegistry.ts re-exports it), so the
 // server and the SKILL.md share one parser.
+//
+// SKILL.md is the lean core (units, rules, intent → API routing, the finish
+// checklist); the full reference lives in kernelcad-authoring/references/*.md.
+// The server passes only SKILL.md, so the references are embedded at build
+// time (authoringReferences.gen.ts, scripts/buildAuthoringReferences.ts) and
+// merged here: every reference section is addressable by the same ids as
+// when it lived in SKILL.md.
+
+import { AUTHORING_REFERENCES, type AuthoringReference } from './authoringReferences.gen';
 
 export interface AuthoringSkillSection {
   /** Slug of the heading, e.g. `coordinate-system`. */
@@ -26,6 +35,8 @@ export interface AuthoringSkillSection {
   text: string;
   /** One-line summary: the first prose sentence under the heading. */
   summary: string;
+  /** File the section lives in, relative to the skill dir (`SKILL.md` or `references/<x>.md`). */
+  file?: string;
 }
 
 export interface LookupAuthoringSkillInput {
@@ -48,7 +59,7 @@ export interface LookupAuthoringSkillResult {
 /** Sections inlined in the default answer: what an agent needs before its
  *  first script (units and axes, the return rule, params, overlap rule, and
  *  which API serves a manufacturing intent such as a tapped hole or a gear). */
-const QUICK_START_SECTIONS = ['coordinate-system', 'conventions', 'manufacturing-intent-api'];
+const QUICK_START_SECTIONS = ['coordinate-system', 'conventions', 'manufacturing-intent-api', 'before-you-finish'];
 /** `##` sections large enough that the index lists their `###` parts too. */
 const INDEX_EXPANDED_SECTIONS = new Set(['api-surface', 'materials']);
 /** Cap on one search answer so a broad query cannot blow the limit again. */
@@ -137,6 +148,37 @@ export function parseAuthoringSkill(markdown: string): {
   return { preamble, sections };
 }
 
+/**
+ * Parse SKILL.md plus the reference files into one section list. A reference
+ * section whose id SKILL.md already has is skipped, so a host that still
+ * passes an older all-in-one SKILL.md gets no duplicate ids.
+ */
+export function parseWithReferences(
+  markdown: string,
+  references: readonly AuthoringReference[] = AUTHORING_REFERENCES,
+): { preamble: string; sections: AuthoringSkillSection[]; full: string } {
+  const { preamble, sections } = parseAuthoringSkill(markdown);
+  const merged = sections.map((s) => ({ ...s, file: 'SKILL.md' }));
+  const seen = new Set(merged.map((s) => s.id));
+  const parts = [markdown];
+  for (const ref of references) {
+    const fresh = parseAuthoringSkill(ref.markdown).sections.filter((s) => !seen.has(s.id));
+    if (fresh.length === 0) continue;
+    for (const s of fresh) seen.add(s.id);
+    merged.push(...fresh.map((s) => ({ ...s, file: ref.file })));
+    parts.push(ref.markdown);
+  }
+  return { preamble, sections: merged, full: parts.join('\n\n') };
+}
+
+/** SKILL.md plus every reference file: the whole authoring skill as one body. */
+export function fullAuthoringSkill(
+  markdown: string,
+  references: readonly AuthoringReference[] = AUTHORING_REFERENCES,
+): string {
+  return parseWithReferences(markdown, references).full;
+}
+
 function buildIndex(sections: AuthoringSkillSection[]): string {
   const rows: string[] = [];
   for (const s of sections) {
@@ -184,23 +226,51 @@ function searchSections(sections: AuthoringSkillSection[], query: string): Autho
   return scored.filter((x) => x.score > 0).sort((a, b) => b.score - a.score).map((x) => x.s);
 }
 
+/** The `query` answer: the best few matching sections' text, capped. */
+function searchAnswer(sections: AuthoringSkillSection[], query: string): LookupAuthoringSkillResult {
+  const hits = searchSections(sections, query);
+  if (hits.length === 0) {
+    return {
+      mode: 'not-found',
+      text: `Nothing in the authoring skill matches '${query}'. Sections:\n\n${buildIndex(sections)}`,
+    };
+  }
+  const picked: AuthoringSkillSection[] = [];
+  let size = 0;
+  for (const h of hits.slice(0, 3)) {
+    if (picked.length > 0 && size + h.text.length > SEARCH_BODY_CAP) break;
+    picked.push(h);
+    size += h.text.length;
+  }
+  const more = hits.slice(picked.length, picked.length + 5).map((h) => `\`${h.id}\``);
+  const body = picked.map((h) => (h.text.length > SEARCH_BODY_CAP ? `${h.text.slice(0, SEARCH_BODY_CAP)}\n…(truncated — pass section: '${h.id}' for the rest)` : h.text));
+  return {
+    mode: 'search',
+    text: body.join('\n\n---\n\n') + (more.length > 0 ? `\n\n---\nMore matches: ${more.join(', ')}` : ''),
+    sections: picked.map((h) => h.id),
+  };
+}
+
 /**
  * Answer a `lookup_authoring_skill` call against the SKILL.md body.
  *
  * - no args → index of sections (id, title, size, one-line summary) plus the
- *   quick-start (preamble, coordinate system, conventions), under ~8k chars;
- * - `section` / `topic` → that section's full text (`'all'` → whole body);
+ *   quick-start (preamble, coordinate system, conventions, intent routing,
+ *   finish checklist), under INDEX_CHAR_BUDGET chars;
+ * - `section` / `topic` → that section's full text (`'all'` → SKILL.md plus
+ *   every reference file);
  * - `query` → the best-matching sections' text, capped, plus the ids of the
  *   next matches.
  */
 export function lookupAuthoringSkill(
   markdown: string,
   input: LookupAuthoringSkillInput = {},
+  references: readonly AuthoringReference[] = AUTHORING_REFERENCES,
 ): LookupAuthoringSkillResult {
-  const { preamble, sections } = parseAuthoringSkill(markdown);
+  const { preamble, sections, full } = parseWithReferences(markdown, references);
   const key = input.section ?? input.topic;
   if (key !== undefined && key.trim().toLowerCase() === 'all') {
-    return { mode: 'all', text: markdown };
+    return { mode: 'all', text: full };
   }
   if (key !== undefined && key.trim() !== '') {
     const hit = findSection(sections, key);
@@ -211,27 +281,7 @@ export function lookupAuthoringSkill(
     };
   }
   if (input.query !== undefined && input.query.trim() !== '') {
-    const hits = searchSections(sections, input.query);
-    if (hits.length === 0) {
-      return {
-        mode: 'not-found',
-        text: `Nothing in the authoring skill matches '${input.query}'. Sections:\n\n${buildIndex(sections)}`,
-      };
-    }
-    const picked: AuthoringSkillSection[] = [];
-    let size = 0;
-    for (const h of hits.slice(0, 3)) {
-      if (picked.length > 0 && size + h.text.length > SEARCH_BODY_CAP) break;
-      picked.push(h);
-      size += h.text.length;
-    }
-    const more = hits.slice(picked.length, picked.length + 5).map((h) => `\`${h.id}\``);
-    const body = picked.map((h) => (h.text.length > SEARCH_BODY_CAP ? `${h.text.slice(0, SEARCH_BODY_CAP)}\n…(truncated — pass section: '${h.id}' for the rest)` : h.text));
-    return {
-      mode: 'search',
-      text: body.join('\n\n---\n\n') + (more.length > 0 ? `\n\n---\nMore matches: ${more.join(', ')}` : ''),
-      sections: picked.map((h) => h.id),
-    };
+    return searchAnswer(sections, input.query);
   }
 
   const quick = QUICK_START_SECTIONS
@@ -244,19 +294,23 @@ export function lookupAuthoringSkill(
       ...quick,
       '## Sections',
       "Pull a section with `lookup_authoring_skill({ section: '<id>' })`, search with `{ query: '...' }`, or get everything with `{ section: 'all' }` (~" +
-        `${Math.round(markdown.length / 1000)}k chars).`,
+        `${Math.round(full.length / 1000)}k chars).`,
       buildIndex(sections),
     ].join('\n\n'),
   };
 }
 
+/** Ceiling on the no-argument answer (quick-start + index); the tool
+ *  description quotes it and the size test enforces it. */
+export const INDEX_CHAR_BUDGET = 16_000;
+
 /** Tool description for `lookup_authoring_skill` (hosted by kernelCAD-server). */
 export const LOOKUP_AUTHORING_SKILL_DESCRIPTION = [
   'Return the kernelcad-authoring skill — conventions for writing .kcad.ts scripts (API surface, parameters, evaluation contract, common pitfalls) — in sections.',
   '',
-  'Call with NO arguments first: you get the quick-start (units, axes, the return rule, conventions) and an index of every section with a one-line summary (under ~8k chars). Then pull what you need: `{ section: "<id>" }` returns one section (e.g. "top-level-functions", "materials", "dfm-gates-print-readiness"); `{ query: "fillet after subtract" }` returns the best-matching sections. `{ section: "all" }` returns the full ~108k-char SKILL.md — only if your client accepts large responses.',
+  'Call with NO arguments first: you get the quick-start (units, axes, the return rule, the rules that prevent most failures, the intent → API routing table, the "Before you finish" checklist) and an index of every section with a one-line summary (under ' + `${INDEX_CHAR_BUDGET / 1000}k` + ' chars). Then pull what you need: `{ section: "<id>" }` returns one section (e.g. "top-level-functions", "materials", "dfm-gates-print-readiness"); `{ query: "fillet after subtract" }` returns the best-matching sections. `{ section: "all" }` returns the full ~140k-char skill (SKILL.md plus its reference files) — only if your client accepts large responses.',
   '',
-  'Clients that list resources can also read `kernelcad://skills/authoring` (the full body).',
+  'Clients that list resources can also read `kernelcad://skills/authoring` (the SKILL.md core).',
   '',
   'OUTPUT: { uri, mimeType, mode, text, sections? } — `mode` is index | section | search | all | not-found.',
 ].join('\n');
@@ -267,7 +321,7 @@ export const LOOKUP_AUTHORING_SKILL_INPUT_SCHEMA = {
   properties: {
     section: {
       type: 'string',
-      description: "Section id from the index (e.g. 'top-level-functions'), or 'all' for the full SKILL.md.",
+      description: "Section id from the index (e.g. 'top-level-functions'), or 'all' for the full skill.",
     },
     topic: {
       type: 'string',

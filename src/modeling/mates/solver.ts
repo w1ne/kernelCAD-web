@@ -58,6 +58,7 @@ import { atPlacement, resolvedPartAt } from './partFrame';
 import type { MatePose, MateRecord } from './mate';
 import { parseConnectorRef } from './mate';
 import type { MateType } from './mateTypes';
+import { solverGroundedPart } from './solverRoot';
 
 export type SolveStatus =
   | 'solved'
@@ -80,6 +81,10 @@ export interface SolveResult {
   /** Loop solver iteration count when relevant (0 on tree topologies and on
    *  fastened-only loops which classify without Newton iteration). */
   iterations?: number;
+  /** Closed loops only: how far apart each loop-closing mate's two connector
+   *  origins sit (mm) at the returned poses. Tree mates are satisfied by the
+   *  FK walk itself, so they never appear here. */
+  loopResiduals?: ReadonlyArray<{ readonly mate: string; readonly mm: number }>;
 }
 
 /** Adjacency edge: which mate connects this node to a neighbor, and from
@@ -383,7 +388,8 @@ function walkResolvedMateTree(
   partByName: ReadonlyMap<string, ResolvedMatePart>,
   numericPoses: NumericPoses,
 ): { worldTByName: Map<string, Transform>; placedNames: Set<string> } {
-  const root = parts[0];
+  const root = solverGroundedPart(parts);
+  if (root === undefined) return { worldTByName: new Map(), placedNames: new Set() };
   const worldTByName = new Map<string, Transform>();
   worldTByName.set(root.name, Transform.identity());
   const queue: string[] = [root.name];
@@ -552,7 +558,7 @@ async function walkSpanningTree(
 
   const queue: string[] = [];
   const visited = new Set<string>();
-  let nextRoot: AssemblyPartStored | undefined = parts[0];
+  let nextRoot: AssemblyPartStored | undefined = solverGroundedPart(parts);
   while (nextRoot !== undefined) {
     worldT.set(nextRoot.name, rest(nextRoot));
     visited.add(nextRoot.name);
@@ -636,51 +642,47 @@ async function loopSolve(
   // ARE the solution. Robot-description export opts in so a closed 4-bar
   // ships real per-link poses instead of a refusal; other consumers keep
   // the conservative default.
-  const hasNonFastened = allMates.some((m) => m.type !== 'fastened');
-  if (hasNonFastened && opts?.acceptConsistentArticulatedLoops !== true) {
-    return {
-      status: 'did-not-converge',
-      poses: initialPoses,
-      iterations: 0,
-    };
-  }
-
   // Fastened-only loop (or opted-in articulated loop): with zero free DOFs
   // — or an articulated configuration we only accept when already closed —
   // the residual decides in a single evaluation. The N-R helpers from
   // `../numeric/jacobian.ts` are imported and unit-tested there; they get
-  // wired in here in T7.x for the articulated path.
-  const residual = await computeLoopResidual(loopMates, partByName, initialPoses);
-  const rNorm = norm2(residual);
+  // wired in here in T7.x for the articulated path. The residual is also
+  // reported per mate on every loop result, so a caller can name the mate
+  // that does not close.
+  const hasNonFastened = allMates.some((m) => m.type !== 'fastened');
+  const conservative = hasNonFastened && opts?.acceptConsistentArticulatedLoops !== true;
+  let residual: number[];
+  try {
+    residual = await computeLoopResidual(loopMates, partByName, initialPoses);
+  } catch (e) {
+    // The articulated default never needed the residual; keep its old answer.
+    if (conservative) return { status: 'did-not-converge', poses: initialPoses, iterations: 0 };
+    throw e;
+  }
+  const loopResiduals = loopMates.map((m, i) => ({
+    mate: m.name,
+    mm: Math.hypot(residual[3 * i], residual[3 * i + 1], residual[3 * i + 2]),
+  }));
+  const base = { poses: initialPoses, iterations: 0, loopResiduals };
 
-  if (rNorm < SOLVER.RESIDUAL_TOL) {
-    return {
-      status: 'redundant-ok',
-      poses: initialPoses,
-      iterations: 0,
-    };
+  if (conservative) return { status: 'did-not-converge', ...base };
+
+  if (norm2(residual) < SOLVER.RESIDUAL_TOL) {
+    return { status: 'redundant-ok', ...base };
   }
 
   if (hasNonFastened) {
     // Opted-in articulated loop that does NOT close at the resolved poses:
     // free DOFs exist that a Newton-Raphson pass could adjust (T7.x), so
     // report 'did-not-converge' rather than 'over-constrained'.
-    return {
-      status: 'did-not-converge',
-      poses: initialPoses,
-      iterations: 0,
-    };
+    return { status: 'did-not-converge', ...base };
   }
 
   // Fastened-only loop with non-zero residual: there's no free DOF to
   // adjust, so Newton can't reduce the residual — the mate geometry itself
   // disagrees. (See `SOLVER.OVER_*` JSDoc above for why we don't apply the
   // factor on the fastened-only path.)
-  return {
-    status: 'over-constrained',
-    poses: initialPoses,
-    iterations: 0,
-  };
+  return { status: 'over-constrained', ...base };
 }
 
 // Newton-Raphson machinery (T7.x, articulated loops). For reference the

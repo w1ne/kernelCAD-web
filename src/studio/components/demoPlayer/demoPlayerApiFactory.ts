@@ -15,10 +15,13 @@ import type { ReferenceImageMetadata } from '../../../shared/intent/referenceIma
 import type { RenderEnvironmentSpec } from '../../../shared/intent/renderEnvironmentRecord';
 import type { CameraTargetMetadata } from '../../../shared/intent/cameraTargetRecord';
 import { applyEnvironment } from '../../../shared/render/environment';
+import { installDefaultRoomEnvironment } from './defaultRoomEnvironment';
 import { buildMaterialFromPBR, disposeMaterialDeep, DEFAULT_MESH_COLOR } from './buildMaterialFromPBR';
 import { buildReferenceImagePlane } from './buildReferenceImagePlane';
 import { fitDistanceForBounds } from './cameraFit';
-import { disposeMeshResources } from './demoPlayerGeometry';
+import { buildIndexedDisplayMesh, disposeMeshResources } from './demoPlayerGeometry';
+import { updateFeatureTransforms } from './demoPlayerPose';
+import { dumpScene } from './demoPlayerDiagnostics';
 import { applyPublishStage, capturePublishFrame, isStageHelper } from './publishStage';
 import {
   KCAD_FEATURE_GROUP_KEY,
@@ -651,6 +654,7 @@ function buildGeometryGroup(ser: FeatureMeshSerialized): THREE.Group {
   if (fm.assemblyPartName !== undefined) group.userData.assemblyPartName = fm.assemblyPartName;
   group.visible = true;
   const pbrForFaces = resolveFacePbr(fm);
+  if (fm.mesh) group.add(buildIndexedDisplayMesh(fm.featureId, fm.mesh, buildMaterialFromPBR(pbrForFaces)));
   for (const face of fm.faces) {
     // Per-face material override (Shape.material({ face: '<label>', ... }))
     // takes precedence over the shape-level default. Unmatched faces fall
@@ -797,6 +801,14 @@ function applyGlassEnvironmentIfNeeded(
   });
   const effectiveEnv: RenderEnvironmentSpec | null =
     renderEnvSpec ?? (anyGlass ? { preset: 'studio' } : null);
+  // No declared environment: light every default render with the same
+  // synchronous procedural room (deterministic, no .hdr download). Metals
+  // reflect only the environment, so without it they render near-black —
+  // but installing it only when a metal was on screen made every OTHER part
+  // ~3–4× brighter in that render (an ABS box read RGB ~30 alone and ~120
+  // next to a steel part). One environment for all default renders keeps a
+  // finish's brightness independent of what else is in the scene.
+  const defaultRoom = effectiveEnv === null;
 
   // Apply HDRI / IBL environment if the script declared one (or if the
   // auto-glass fallback above kicked in). Async, but we don't await —
@@ -808,6 +820,8 @@ function applyGlassEnvironmentIfNeeded(
     void applyEnvironment(ctx.renderer, ctx.scene, effectiveEnv).then(() => {
       ctx.renderer.render(ctx.scene, ctx.camera);
     });
+    // applyEnvironment(null) clears synchronously, before its first await.
+    if (defaultRoom) installDefaultRoomEnvironment(ctx.renderer, ctx.scene);
   } catch (e) {
     console.warn(
       '[kernelcad] applyEnvironment failed; glass will render flat:',
@@ -878,59 +892,6 @@ async function setRenderEnvironment(deps: DemoPlayerApiDeps, spec: RenderEnviron
   ctx.renderer.render(ctx.scene, ctx.camera);
 }
 
-function dumpScene(deps: DemoPlayerApiDeps): ReturnType<DemoPlayerWindow['dumpScene']> {
-  const scene = deps.sceneRef.current?.scene;
-  const camera = deps.sceneRef.current?.camera;
-  if (!scene || !camera) {
-    return {
-      childCount: 0, meshCount: 0,
-      cameraPos: [0, 0, 0] as [number, number, number],
-      cameraLookingAt: [0, 0, 0] as [number, number, number],
-      sampleOpacities: [],
-      samplePolygonOffsets: [],
-      kcadGroupMatrices: [],
-    };
-  }
-  let meshCount = 0;
-  const sampleOpacities: number[] = [];
-  const samplePolygonOffsets: Array<{ enabled: boolean; factor: number; units: number }> = [];
-  const kcadGroupMatrices: number[][] = [];
-  scene.traverse((obj) => {
-    if (obj instanceof THREE.Mesh) {
-      meshCount++;
-      const mat = obj.material as THREE.MeshStandardMaterial;
-      if (sampleOpacities.length < 5) sampleOpacities.push(mat.opacity);
-      if (samplePolygonOffsets.length < 5) {
-        samplePolygonOffsets.push({
-          enabled: mat.polygonOffset,
-          factor: mat.polygonOffsetFactor,
-          units: mat.polygonOffsetUnits,
-        });
-      }
-    }
-  });
-  for (const child of scene.children) {
-    if (child instanceof THREE.Group && child.userData[KCAD_FEATURE_GROUP_KEY]) {
-      kcadGroupMatrices.push(child.matrix.toArray());
-    }
-  }
-  const lookDir = new THREE.Vector3();
-  camera.getWorldDirection(lookDir);
-  const lookAt: [number, number, number] = [
-    camera.position.x + lookDir.x,
-    camera.position.y + lookDir.y,
-    camera.position.z + lookDir.z,
-  ];
-  return {
-    childCount: scene.children.length,
-    meshCount,
-    cameraPos: [camera.position.x, camera.position.y, camera.position.z],
-    cameraLookingAt: lookAt,
-    sampleOpacities,
-    samplePolygonOffsets,
-    kcadGroupMatrices,
-  };
-}
 
 /** Builds the `window.__demoPlayer` API object from the page's refs/setters. */
 export function createDemoPlayerWindowApi(deps: DemoPlayerApiDeps): DemoPlayerWindow {
@@ -955,10 +916,11 @@ export function createDemoPlayerWindowApi(deps: DemoPlayerApiDeps): DemoPlayerWi
     captureMaskPng: (maxSize) => captureMaskPng(deps, maxSize),
     captureInspectionChannels: (input) => captureInspectionChannels(deps, input),
     loadFeatureMeshes: (perFeature, bounds) => loadFeatureMeshes(deps, perFeature, bounds),
+    updateFeatureTransforms: (transforms, bounds) => updateFeatureTransforms(requireScene(deps), deps.centroidOffsetRef, transforms, bounds),
     setReferenceImagesVisible: (visible) => setReferenceImagesVisible(deps, visible),
     setRenderEnvironment: (spec) => setRenderEnvironment(deps, spec),
     setPublishStage: (spec) => applyPublishStage(requireScene(deps), spec),
     capturePublishFrame: (req) => capturePublishFrame(requireScene(deps), req),
-    dumpScene: () => dumpScene(deps),
+    dumpScene: () => dumpScene(deps.sceneRef),
   };
 }

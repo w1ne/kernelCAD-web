@@ -4,6 +4,7 @@ import type { DrawingReviewPlan } from '../../shared/intent/drawingReview';
 import type { FeatureId, PatternSpec, PlaneSpec, FeatureRef, EditableVec3 } from '../../shared/intent/types';
 import { isValidScaleSpec, isValidPlaneSpec, isValidEditableVec3, formatScalarForError } from '../../shared/intent/types';
 import { KernelError } from '../../shared/intent/kernelError';
+import { MeshBackend } from '../../kernel/backends/meshBackend';
 import { invalidArgs } from '../../shared/intent/invalidArgs';
 import type { ShapeTransform } from '../../shared/intent/featureRecord';
 import type { CaptureSession } from './captureSession';
@@ -53,6 +54,13 @@ export type EdgeSelector =
   | EdgeSegment
   | EdgeSegment[]
   | { face: CanonicalFace | string }
+  // A canonical face name / face label (all edges of that face), an
+  // `@kc[<feature>/edge/e<N>]` / `@kc[<feature>/face/<name>]` ref string as
+  // printed by inspect, or an `@kcq[...]` Query DSL string.
+  | CanonicalFace
+  | string
+  // Several `@kc[<feature>/edge/e<N>]` refs.
+  | string[]
   // Q8 — Query DSL value (kc.q.edge(...) etc) reaches every edge-feature
   // lowerer through the same {edges} slot. Captured at append-time and
   // dispatched through the Q3 evaluator at lower-time.
@@ -110,6 +118,7 @@ export class Shape {
   // record list. Invalidated by record-count growth (capture is append-only,
   // so length growth is the only signal we need today).
   private _loweredBackend?: import('../../kernel/backends/occt/occtBackend').OcctBackend;
+  private _loweredMeshBackend?: import('../../kernel/backends/meshBackend').MeshBackend;
   private _loweredAtRecordCount?: number;
   private _loweredAtTransformCount?: number;
 
@@ -860,21 +869,30 @@ export class Shape {
    * its lineage to a `sheetMetal(...)` record (validated at lowering time;
    * non-sheet-metal callers see `feature.invalid-args`).
    *
-   * @param edgeRef the linear edge to fold around. Same selector shape as
-   *               `.fillet(edges, ...)`: an EdgeQuery, EdgeSegment[],
-   *               `{ face: <canonical|label> }`, or a string label name.
+   * @param edgeRef the bend line in FLAT-BLANK coordinates: `{ atX: x }`
+   *               (line x = const, runs along Y) or `{ atY: y }`; every bend
+   *               of a chain uses blank coordinates, even after earlier folds.
    * @param angle  fold angle in degrees. Positive = fold toward the sheet's
    *               +normal; negative = fold the other way.
-   * @param radius inner bend radius in mm. Recommended `radius >= 0.5 * thickness`
-   *               to avoid sewing failure (`feature.kernel-failed`).
+   * @param radius inner bend radius in mm. Recommended `radius >= 0.5 * thickness`.
+   *
+   * The shorter side of the blank across the line folds (ties: the +X / +Y
+   * side), so a web with a bend near each end keeps the web in place. The
+   * bend zone is the strip of width BA centred on the line; it becomes the
+   * arc and the flange keeps its holes and cutouts. Holes made on the flat
+   * blank before `.bend()` are carried into the folded flange.
    *
    * Bend-allowance math (K-factor):
    *   `BA = (pi * |angle| / 180) * (kFactor * thickness + radius)`
    *
    * Slice-1 lowering limits:
-   *   - edge must be linear (else `feature.bend.edge-not-linear`)
-   *   - at most 2 bends in the chain for `.flattenPattern()` (else
-   *     `feature.flattenPattern.multi-bend-unsupported`).
+   *   - the line must be `{ atX }` / `{ atY }` (else `feature.bend.edge-not-linear`)
+   *   - bend zones of parallel lines may not overlap (`feature.invalid-args`)
+   *   - crossing `{ atX }` / `{ atY }` lines need corner relief in the blank
+   *     outline (else `feature.sheetMetal.crossing-bends`)
+   *   - the folded result must be one closed solid with conserved volume
+   *     (else `feature.sheetMetal.fold-invalid`, e.g. lips folding into
+   *     each other).
    */
   bend(
     edgeRef: EdgeSelector | { face: FaceSelector | CanonicalFace | string } | CanonicalFace | string,
@@ -895,8 +913,7 @@ export class Shape {
 
   /**
    * W2.2: Return the unfolded 2D flat-pattern of this bent sheet-metal Shape
-   * as a `Region`. Slice-1 limit: at most 2 bends in the chain — third bend
-   * emits `feature.flattenPattern.multi-bend-unsupported`. Derived view;
+   * as a `Region`, for any number of bends. Derived view;
    * adds no FeatureRecord. Requires the shape to have been lowered at least
    * once (the bendRecord metadata is populated by the sheetMetalBend lowerer).
    */
@@ -921,6 +938,15 @@ export class Shape {
    * A bore centre off the face, a zero depth, or a bore that leaves material
    * on its axis fails the feature with `feature.hole.cut-missing`.
    * Use `depth: 'through'` to clip at the back face.
+   * On ANY face (a cylinder side for a set screw or cross pin, a cone, a
+   * fillet) place the hole by world point instead of `u`/`v`:
+   * `at: [x, y, z]` (projected onto the face) or, on a cylindrical face,
+   * `at: { angleDeg, z }`; the bore follows the inward face normal there
+   * unless `axis: [dx, dy, dz]` (into the body) is given, and `'through'`
+   * stops at the first exit along the axis (e.g. into a shaft bore).
+   * With a FaceQuery that matches several faces the one nearest `at` is used:
+   *   collar.hole({ ofSurfaceType: 'CYLINDER' }, { at: { angleDeg: 0, z: 5 },
+   *     diameter: 4, depth: 'through', thread: { pitch: 0.7 } })
    * Optional `counterbore` (wider shoulder) or `countersink` (cone) — the
    * two are mutually exclusive on a single hole.
    *
@@ -960,7 +986,8 @@ export class Shape {
           ? resolved.depth
           : 0;
     const centers: HoleCenter[] = [
-      { u: resolved.u, v: resolved.v, depthMm: holeDepth, axis: [0, 0, -1] },
+      // An `at` hole's face frame is centred on its entry point.
+      { u: resolved.at ? 0 : resolved.u, v: resolved.at ? 0 : resolved.v, depthMm: holeDepth, axis: [0, 0, -1] },
     ];
     const partName =
       (metadata as { partName?: string }).partName ?? holeShape.id;
@@ -1328,6 +1355,9 @@ export class Shape {
     // backend after a transform, producing silent incorrect results.
     const ownRecord = records.find(r => r.id === this.id);
     const transformCount = ownRecord?.transforms.length ?? 0;
+    if (this._loweredMeshBackend && this._loweredAtRecordCount === records.length && this._loweredAtTransformCount === transformCount) {
+      throw new Error('Display mesh bodies do not expose BRep topology; solid operations are unavailable.');
+    }
     if (
       this._loweredBackend &&
       this._loweredAtRecordCount === records.length &&
@@ -1338,6 +1368,12 @@ export class Shape {
     const { OcctBackend, initOcct } = await import('../../kernel/backends/occt/occtBackend');
     // Reuse the session's last full lower when nothing it depends on changed.
     const reused = this.session.reusableLoweredShape(this.id);
+    if (reused instanceof MeshBackend) {
+      this._loweredMeshBackend = reused;
+      this._loweredAtRecordCount = records.length;
+      this._loweredAtTransformCount = transformCount;
+      throw new Error('Shape.lower(): display mesh body has no BRep backend; solid operations are unavailable.');
+    }
     if (reused instanceof OcctBackend) {
       this._loweredBackend = reused;
       this._loweredAtRecordCount = records.length;
@@ -1346,7 +1382,7 @@ export class Shape {
     }
     const { RecomputeEngine } = await import('../compute/recomputeEngine');
     const { createOcctLowerer } = await import('../backends/occt/occtLowerer');
-    await initOcct();
+    if (!this.session.importedGeometry.has(this.id)) await initOcct();
     const engine = new RecomputeEngine(createOcctLowerer(this.session));
     const pending = this.session.snapshotFullLower(new Map());
     const r = await engine.run(
@@ -1369,9 +1405,7 @@ export class Shape {
     if (!shape) {
       throw new Error(`Shape.lower(): shape '${this.id}' not lowered (check upstream diagnostics).`);
     }
-    if (!(shape instanceof OcctBackend)) {
-      throw new Error(`Shape.lower(): shape '${this.id}' is not an OcctBackend.`);
-    }
+    if (!(shape instanceof OcctBackend)) throw new Error('Shape.lower(): display mesh body has no BRep backend; solid operations are unavailable.');
     this._loweredBackend = shape;
     this._loweredAtRecordCount = records.length;
     this._loweredAtTransformCount = transformCount;

@@ -22,8 +22,9 @@ import { DIAGNOSTIC_REGISTRY } from '../../shared/diagnostics/registry';
 const codes = (src: string) => lintAuthoringIntent(src).map((d) => d.code);
 
 // M4 bracket, holes cut by subtracting cylinders (the dominant real pattern).
+// The intent is in CODE (a string literal); comments never count.
 const M4_BRACKET = `
-// Wall bracket, 4x M4 screws
+const label = 'Wall bracket, 4x M4 tapped screws';
 const t = param('thickness', 5);
 const plate = box(60, 40, t);
 const hole1 = cylinder(t + 2, 2.25).translate(10, 10, -1);
@@ -56,7 +57,7 @@ return gear;
 
 // Bent bracket faked with two boxes.
 const FAKE_BEND = `
-// sheet metal L bracket, 1.5 mm steel
+const spec = 'sheet metal L bracket, 1.5 mm steel';
 const leg1 = box(80, 30, 1.5);
 const leg2 = box(80, 1.5, 40).translate(0, 28.5, 0);
 return leg1.union(leg2);
@@ -64,7 +65,7 @@ return leg1.union(leg2);
 
 // Snap-fit lid: hand-typed clearance, printed in PLA, no dfmSpec.
 const SNAP_FIT = `
-// Snap-fit lid for a PLA box (Bambu A1)
+const printer = 'Bambu A1, PLA';
 const printClearance = param('printClearance', 0.2, { min: 0, max: 1 });
 const wall = 2;
 const box1 = box(50, 40, 20).shell(['top'], wall);
@@ -104,11 +105,11 @@ describe('intent lint — fires on hand-built intent', () => {
     expect(codes(HAND_INVOLUTE)).toEqual(['authoring.prefer-api.gear']);
   });
 
-  it('bend faked with two boxes + "sheet metal" comment → sheet-metal', () => {
+  it('bend faked with two boxes + "sheet metal" in code → sheet-metal', () => {
     expect(codes(FAKE_BEND)).toEqual(['authoring.prefer-api.sheet-metal']);
   });
 
-  it('printClearance param + PLA comment, no dfmSpec → fdm-clearance', () => {
+  it('printClearance param + PLA in code, no dfmSpec → fdm-clearance', () => {
     expect(codes(SNAP_FIT)).toEqual(['authoring.prefer-api.fdm-clearance']);
   });
 
@@ -118,7 +119,7 @@ describe('intent lint — fires on hand-built intent', () => {
   });
 
   it('explicit "tapped" with a plain hole() still fires the thread rule', () => {
-    const src = `// tapped M3 holes\nreturn box(20, 20, 5).hole('top', { u: 0, v: 0, diameter: 2.5, depth: 'through' });`;
+    const src = `const note = 'tapped M3 holes';\nreturn box(20, 20, 5).hole('top', { u: 0, v: 0, diameter: 2.5, depth: 'through' });`;
     expect(codes(src)).toEqual(['authoring.prefer-api.thread']);
   });
 
@@ -195,7 +196,7 @@ return cylinder(12, 15).union(box(4, 30, 12).translate(-2, -15, 0));`;
   });
 
   it('thread words + a fastener-sized subtracted cylinder → thread', () => {
-    const src = `// tapped M3 boss
+    const src = `const note = 'tapped M3 boss';
 return cylinder(10, 5).subtract(cylinder(12, 1.25).translate(0, 0, -1));`;
     expect(codes(src)).toEqual(['authoring.prefer-api.thread']);
   });
@@ -255,43 +256,68 @@ return s;`;
   });
 });
 
-describe('intent lint — a comment that negates its own mention is skipped', () => {
+describe('intent lint — comments are ignored (TS scanner strips them first)', () => {
   const PLAIN_SCREW_HOLE = `return box(30, 20, 5).hole('top', { u: 0, v: 0, diameter: 3.4, depth: 'through' });`;
-  const NEGATIONS = [
-    '// Screws are cylinder stand-ins, NOT a swept 60° V-thread.',
-    '// Clearance hole only, no thread.',
-    '// The thread is not modelled.',
-    '// This script does not model the thread.',
-    "// Thread callout is schematic only.",
-    '// Thread shown for reference only.',
-    '// Not a real tapped hole;\n// the insert is pressed in.',
+  const CLEARANCE_BRACKET = `
+const t = 5;
+let body = box(60, 40, t);
+for (const [x, y] of [[10, 10], [50, 10], [10, 30], [50, 30]]) {
+  body = body.subtract(cylinder(t + 2, 1.7).translate(x, y, -1));
+}
+return body;`;
+
+  it('FIX-05: "M3" only in a comment does not fire the thread rule', () => {
+    const src = `// 4x M3 mounting holes for the Pi standoffs\n${CLEARANCE_BRACKET}`;
+    expect(codes(src)).not.toContain('authoring.prefer-api.thread');
+    // The structural rule still fires: the code really cuts holes by cylinder.
+    expect(codes(src)).toContain('authoring.prefer-api.hole-by-cylinder');
+  });
+
+  const COMMENT_ONLY_INTENT = [
+    '// tapped M3 holes',
+    '/* involute gear, 20 teeth */',
+    '// sheet metal bracket, k-factor 0.44',
+    '// printed in PLA on a Prusa',
+    '/**\n * Thread: M4 x 0.7, heat-set insert\n */',
+    'return box(1, 1, 1); // tapped M6 trailing comment',
   ];
-  for (const comment of NEGATIONS) {
-    it(`silent on: ${comment.replace(/\n/g, ' ')}`, () => {
+  for (const comment of COMMENT_ONLY_INTENT) {
+    it(`silent on comment-only intent: ${comment.replace(/\n/g, ' ')}`, () => {
       expect(codes(`${comment}\n${PLAIN_SCREW_HOLE}`)).toEqual([]);
     });
   }
 
-  it('a negated sentence does not hide a positive one in the same comment', () => {
-    const src = `// The nut is not modelled. The bore is tapped M3.\n${PLAIN_SCREW_HOLE}`;
-    expect(codes(src)).toEqual(['authoring.prefer-api.thread']);
+  it('comments are blanked in place (offsets and line count unchanged)', () => {
+    const src = `const a = 1; // M3 thread\n/* gear\n teeth */ const b = 2;`;
+    const { code } = readSource(src);
+    expect(code).toHaveLength(src.length);
+    expect(code.split('\n')).toHaveLength(3);
+    expect(code).not.toMatch(/M3|thread|gear|teeth/);
+    expect(code).toContain('const a = 1;');
+    expect(code).toContain('const b = 2;');
   });
 
-  it('a negation runs across // lines of one comment', () => {
-    const src = `// Screws are heads + clearance shanks — NOT a swept\n// 60° V-thread (see the bolt snippet).\n${PLAIN_SCREW_HOLE}`;
-    expect(readSource(src).prose).not.toMatch(/thread/i);
-    expect(codes(src)).toEqual([]);
-  });
-
-  it('tslot-frame-fastener-bom: the "NOT a V-thread" disclaimer gets no thread hint', () => {
+  it('tslot-frame-fastener-bom: its "NOT a V-thread" comment gets no thread hint', () => {
     const body = loadSnippets().find((s) => s.id === 'tslot-frame-fastener-bom')!.body;
     expect(body).toMatch(/V-thread/);
     expect(codes(body)).not.toContain('authoring.prefer-api.thread');
   });
 
-  it('a "//" inside a string is not a comment', () => {
-    const src = `const url = 'https://example.com/thread';\nreturn box(1, 1, 1);`;
-    expect(readSource(src).code).toContain('https://example.com/thread');
+  it('"//" inside a string, template or regex literal is not a comment', () => {
+    const src = [
+      "const url = 'https://example.com/thread';",
+      'const t = `tapped // M3 ${1 + 1}`;',
+      'const re = /a\\/\\/b/;',
+      'return box(1, 1, 1);',
+    ].join('\n');
+    const { code } = readSource(src);
+    expect(code).toContain('https://example.com/thread');
+    expect(code).toContain('`tapped // M3 ${1 + 1}`');
+    expect(code).toContain('/a\\/\\/b/');
+  });
+
+  it('a palette token is not intent', () => {
+    expect(readSource("return b.color('gear');").prose).not.toContain('gear');
   });
 });
 

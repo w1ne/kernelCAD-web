@@ -5,6 +5,8 @@ description: Edge and face features — fillet, chamfer, shell, face refs throug
 
 # kernelCAD — edge and face features
 
+For a general edge-break or radius specification, use `verify({ check: 'edge-radius', file, min_radius_mm?, max_radius_mm?, require_edge_break?: 'external'|'internal'|'all', edges?, faces? })`. It inspects final BREP, reports per-face fillet radii and sharp edges, and treats planar chamfer strips heuristically without claiming a radius. See `docs/guide/edge-radius-check.md`.
+
 ## Face refs through operations
 
 Canonical face refs (`{ face: 'top' }`, etc.) work transparently across transforms (`.translate`, `.rotate`, `.scale`, `.reflect`, `.mirror`) and unambiguous booleans (`.subtract`, `.union`, `.intersect`). The kernel walks each face's lineage back to its originating primitive and forward through history.
@@ -187,6 +189,27 @@ Convert a world point: `u = worldU - centreU`, `v = worldV - centreV`.
 // Hole wanted at world X 0, Z 45.5:
 plate.hole('front', { u: 0, v: 45.5 - 32.5, diameter: 3.4, depth: 'through' });
 ```
+
+### Holes on curved faces (set screws, cross pins)
+
+The (u, v) frame only exists on planar faces. On a cylinder side, a cone or
+any other face, place a single `hole` by world point instead:
+
+```typescript
+// Radial M4 set screw through the wall of a Ø22 collar (axis Z) into its bore.
+collar.hole({ ofSurfaceType: 'CYLINDER' }, {
+  at: { angleDeg: 0, z: 5 },   // angle about the cylinder axis from +X, axial world z
+  diameter: 4, depth: 'through', thread: { pitch: 0.7 }, name: 'setScrew',
+});
+// Any face, world point (projected onto the face, within 0.5 mm), optional tilted axis:
+shaft.hole({ ofSurfaceType: 'CYLINDER' }, { at: [0, 5, 15], axis: [0, -1, -0.2], diameter: 2, depth: 6 });
+```
+
+The bore runs along the inward face normal at the point unless `axis` (into
+the body) is given; `'through'` stops where the axis first leaves material
+(into the shaft bore, not out the far side); a FaceQuery matching several
+faces uses the one nearest `at`. Refs, counterbore, countersink and thread
+work as for `{ u, v }` holes. No spot-face flat is needed.
 
 Every bore of `hole` / `holes` is checked. A centre off the face, a zero depth,
 or material left on the bore axis fails the feature with

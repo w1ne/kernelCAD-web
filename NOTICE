@@ -1,0 +1,25 @@
+smlibwasm
+Copyright (c) 2026 AWV Informatik AG. Licensed under the MIT License (see LICENSE).
+
+The WebAssembly module (wasm/smlibwasm.wasm and its loader wasm/smlibwasm.mjs) contains the
+SMLib solid modeling kernel and its SM_API wrapper from USD BRep, compiled with Emscripten,
+and code taken from USD BRep's Python bindings (SmPyLib):
+
+  USD BRep
+  Copyright (c) 2020-2026, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+  Licensed under the Apache License, Version 2.0.
+  https://github.com/NVIDIA-Omniverse/usd-brep
+
+The Apache License 2.0 text is in LICENSE.usd-brep. A few USD BRep source files are
+compiled from copies modified by AWV Informatik AG to fix defects; the copies, each with a
+notice of what was changed, are in third_party/patches of the smlibpy repository
+(https://github.com/awv-informatik/smlibpy), whose third_party/patches/README.md lists the
+changes.
+
+The default font of Text, Lato Regular, is included unmodified (in dist/_fonts.js):
+
+  Lato
+  Copyright (c) 2010-2013 by tyPoland Lukasz Dziedzic with Reserved Font Name "Lato".
+  Licensed under the SIL Open Font License, Version 1.1.
+
+The license text is in fonts/OFL.txt.

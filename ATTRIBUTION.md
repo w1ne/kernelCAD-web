@@ -77,3 +77,14 @@ hand edits.
 | Used in | Source | Author and changes | License | Provenance |
 | --- | --- | --- | --- | --- |
 | `examples/from-reference/hatchback/hatchback.kcad.ts`, cookbook `automotive-body-envelope` | `hatchback` from [osrf/gazebo_models](https://github.com/osrf/gazebo_models) (commit `8163eb4b`) | Copyright 2012 Nathan Koenig (Open Source Robotics Foundation); modified: measured and re-modelled, mesh not included | [CC-BY 3.0](https://creativecommons.org/licenses/by/3.0/) | [`PROVENANCE.md`](examples/from-reference/hatchback/PROVENANCE.md) |
+
+## Opt-in solid-modeling dependency
+
+`@classcad/smlibwasm` is pinned to 0.3.1. The ClassCAD JavaScript bindings are
+MIT-licensed (Copyright 2026 AWV Informatik AG); the bundled USD BRep/SMLib
+core is Apache-2.0 (Copyright 2020–2026 NVIDIA CORPORATION & AFFILIATES).
+The package also contains unmodified Lato Regular under OFL-1.1, with Reserved
+Font Name “Lato” (Copyright 2010–2013 tyPoland Lukasz Dziedzic).
+See [NOTICE](NOTICE) and [retained license texts](licenses/smlibwasm/).
+The kernel loads only when explicitly selected; kernelCAD does not ship native
+experimental core patches.

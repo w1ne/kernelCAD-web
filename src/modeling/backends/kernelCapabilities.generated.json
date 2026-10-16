@@ -31,6 +31,7 @@
         "hole",
         "holes",
         "importedBrep",
+        "importedMesh",
         "importedStep",
         "importedStl",
         "loft",
@@ -57,9 +58,17 @@
       ]
     },
     "smlib": {
-      "available": false,
+      "available": true,
       "target": "export-smlib",
-      "features": []
+      "features": [
+        "boolean",
+        "box",
+        "cylinder",
+        "extrude",
+        "fillet",
+        "importedStep",
+        "sphere"
+      ]
     }
   }
 }

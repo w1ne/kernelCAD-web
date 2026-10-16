@@ -35,6 +35,12 @@ export async function runDistGenerate({ repoRoot, outDir }) {
     const dst = join(outDir, 'skills', dir, 'SKILL.md');
     mkdirSync(dirname(dst), { recursive: true });
     copyFileSync(entry.absPath, dst);
+    // Progressive-disclosure files the SKILL.md links to (references/*.md).
+    for (const ref of entry.references) {
+      const refDst = join(dirname(dst), ref.relPath);
+      mkdirSync(dirname(refDst), { recursive: true });
+      copyFileSync(ref.absPath, refDst);
+    }
   }
 
   // 3. VERSION.

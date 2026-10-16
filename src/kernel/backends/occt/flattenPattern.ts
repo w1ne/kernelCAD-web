@@ -10,8 +10,8 @@
 // This is a JS-side inverse-rotation walker that does NOT touch OCCT. The
 // spec's original plan was to use `BRepFeat_MakeRevolutionForm`; that class
 // is absent from the bundled `replicad-opencascadejs` WASM build, so slice 1
-// uses the K-factor neutral-axis identity instead. For slice-1 single-/
-// two-bend roundtrips, the recovered outline equals the original sketch
+// uses the K-factor neutral-axis identity instead. For any bend chain
+// (bend lines are recorded in flat-blank coordinates), the recovered outline equals the original sketch
 // outline modulo floating-point noise — no per-bend un-rotation arithmetic
 // is needed.
 
@@ -30,18 +30,19 @@ import { makeRegion, type Region, type BendLineRecord, type Vec2 } from '../../.
  *   - `feature.invalid-args`: chain does not root at a sheetMetal record,
  *     bendRecord metadata missing (shape not lowered yet), or sketch
  *     polyline cannot be extracted.
- *   - `feature.flattenPattern.multi-bend-unsupported`: chain has 3+ bends.
  */
 export function flattenPattern(
   records: readonly FeatureRecord[],
   terminalId?: string,
+  opts: { holes?: readonly Vec2[][] } = {},
 ): Region {
   const { recById, terminal } = resolveFlattenTerminal(records, terminalId);
   const { root, chain } = walkFlattenLineage(recById, terminal);
-  const bendRecords = collectBendRecords(chain, terminal);
+  const bendRecords = collectBendRecords(chain);
   const outer = resolveSketchOutline(recById, root, terminal);
-  // Slice-1 polylines have no holes; reserved for future slices.
-  const holes: Vec2[][] = [];
+  // Holes / cutouts live only in the lowered blank solid; the caller reads
+  // them back (flatBlankInnerLoops on the `flatBlankRecordId` shape).
+  const holes: Vec2[][] = (opts.holes ?? []).map((h) => h.slice());
   const bendLines = buildBendLines(bendRecords);
 
   // The flat blank length is the sketch's original outline plus, for each
@@ -49,13 +50,32 @@ export function flattenPattern(
   // section. Because the sheet was originally flat with that exact outline
   // length, the K-factor neutral-axis identity means the recovered outer
   // wire is the original outline modulo float noise — no per-bend
-  // un-rotation arithmetic needed for slice-1 single-/two-bend roundtrips.
+  // un-rotation arithmetic needed for any number of bends.
   return makeRegion({
     plane: { origin: [0, 0, 0], normal: [0, 0, 1] },
     outer,
     holes,
     bendLines,
   });
+}
+
+/**
+ * Id of the record holding the flat blank as it was just before the first
+ * bend (the sheetMetal root plus any holes / cutouts made on it) — the shape
+ * whose top face carries the flat pattern's inner loops. Same lineage walk
+ * and errors as {@link flattenPattern}.
+ */
+export function flatBlankRecordId(records: readonly FeatureRecord[], terminalId?: string): string {
+  const { recById, terminal } = resolveFlattenTerminal(records, terminalId);
+  const { chain } = walkFlattenLineage(recById, terminal);
+  // chain is terminal-first; the blank is the last record before the
+  // root-most bend.
+  let blank = chain[chain.length - 1];
+  for (let i = chain.length - 1; i >= 0; i--) {
+    if (chain[i].kind === 'sheetMetalBend') break;
+    blank = chain[i];
+  }
+  return blank.id;
 }
 
 /** Resolve the record map and the terminal (caller's choice, or last record). */
@@ -97,7 +117,9 @@ function walkFlattenLineage(
   while (cur) {
     chain.push(cur);
     if (cur.kind === 'sheetMetal') break;
-    const baseRef = cur.inputs.base;
+    // `.bend()` chains via inputs.base; holes / cutouts made on the blank
+    // before bending chain via inputs.target.
+    const baseRef = cur.inputs.base ?? cur.inputs.target;
     if (!baseRef || baseRef.kind !== 'feature') break;
     cur = recById.get(baseRef.id);
   }
@@ -113,19 +135,13 @@ function walkFlattenLineage(
   return { root, chain };
 }
 
-/** Reverse to root-first ordering and enforce the slice-1 bend limit. */
-function collectBendRecords(chain: FeatureRecord[], terminal: FeatureRecord): FeatureRecord[] {
+/** Reverse to root-first ordering. Any number of bends flattens: every bend
+ *  line is recorded in flat-blank coordinates and the fold lowering only
+ *  persists a bendRecord when the folded solid passed its volume / closure
+ *  check, so a chain whose fold failed stops at the unlowered check below. */
+function collectBendRecords(chain: FeatureRecord[]): FeatureRecord[] {
   chain.reverse();
-  const bendRecords = chain.filter(r => r.kind === 'sheetMetalBend');
-  if (bendRecords.length > 2) {
-    throw new KernelError(
-      'feature.flattenPattern.multi-bend-unsupported',
-      `flattenPattern: slice-1 supports at most 2 bends; got ${bendRecords.length}.`,
-      terminal.id,
-      `flattenPattern.multi-bend-unsupported — chain has ${bendRecords.length} bends; flatten an upstream Shape with <= 2 bends, or wait for slice 2.`,
-    );
-  }
-  return bendRecords;
+  return chain.filter(r => r.kind === 'sheetMetalBend');
 }
 
 /** Recover the original sketch outline from the sheetMetal root's sketch input. */

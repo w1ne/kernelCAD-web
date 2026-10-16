@@ -25,11 +25,13 @@
 // which calls `solveMates(arm)` (see `./solver.ts`) and translates the
 // `SolveStatus` into mate-aware diagnostic codes.
 
+import { movingDofs, unlimitedDofs } from './mateLimits';
 import type { Assembly } from '../capture/assembly';
 import type { FeatureRecord } from '../../shared/intent/featureRecord';
 import type { Vec3 } from '../../shared/intent/types';
 import type { DiagnosticCode } from '../../shared/diagnostics/registry';
 import type { InterferencePair } from '../runtime/detectInterferences';
+import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import { validateJointAxisBindingWithCache } from './jointAxisBinding';
 import { validateJointConventionMix } from './jointConventionMix';
 import { validateJointLoadCapacity } from './jointLoadCapacity';
@@ -38,6 +40,7 @@ import { parseConnectorRef } from './mate';
 import { describeOverlap, isActionableOverlap } from '../runtime/jointContactCap';
 import { validateMatePhysicalRealization } from './matePhysicalRealization';
 import { validateMountingHoleConsistency } from './mountingHoleConsistency';
+import { validateMountingHoleAlignment } from './mountingHoleAlignment';
 import type { ConnectorWorkspace, PoseEnvelopeReviewResult } from './poseEnvelope';
 import { reviewJointTopology } from './jointTopology';
 import { solveMates, type SolveResult, type SolveStatus } from './solver';
@@ -89,12 +92,15 @@ export type ValidatorDiagnosticCode = Extract<
   | 'assembly.pose-envelope.connector-unresolved'
   | 'assembly.mate.limit-missing'
   | 'assembly.connectivity.floating-moving-part'
+  | 'assembly.connectivity.assumed-root'
   | 'assembly.connectivity.no-load-path'
   | 'assembly.joint-topology.missing-limit'
   | 'assembly.joint-topology.unsupported-axis'
   | 'assembly.joint-topology.connector-missing'
   | 'assembly.joint-topology.axis-invalid'
   | 'assembly.mounting-hole.mismatch'
+  | 'assembly.mounting-hole.unverified'
+  | 'assembly.mounting-hole.misaligned'
   | 'assembly.joint-axis.unbound'
   | 'assembly.joint.child-modeled-in-place'
   | 'assembly.joint.load-exceeded'
@@ -145,6 +151,15 @@ export interface ValidatorResult {
 
 export interface ValidateAssemblyInput {
   readonly records: readonly FeatureRecord[];
+  /**
+   * Whether the assembly declares ANY connectivity (a joint or a mate). When
+   * it declares none, its parts are independent bodies (a base + lid print
+   * layout, a kit of parts) — valid as-is, the same policy as
+   * mechanism.orphan-part — so the floating / orphan checks are skipped.
+   * Defaults to "the records carry a joint or mate edge"; the mate-aware
+   * validator passes the assembly's own mate list, which records may lack.
+   */
+  readonly connectivityDeclared?: boolean;
   /** Optional: results from `checkInterference()`. Folded into the
    *  diagnostic stream as `assembly.interference.overlap` items. */
   readonly interferencePairs?: readonly InterferencePair[];
@@ -198,12 +213,16 @@ export function validateAssembly(input: ValidateAssemblyInput): ValidatorResult 
   // Build an undirected adjacency map: part name -> set of neighbour names.
   const adj = buildPartAdjacency(parts, joints, mateEdges);
 
-  // Check 1 — floating parts (zero joints).
-  diagnostics.push(...collectFloatingDiagnostics(parts, adj));
-
-  // Check 2 — orphan from main component. Skip when there are <2 parts
-  // (single-part assemblies are trivially connected).
-  diagnostics.push(...collectOrphanDiagnostics(parts, adj));
+  // Checks 1–2 only apply once the author declared connectivity: an
+  // assembly with zero joints and zero mates is a set of independent bodies.
+  const connectivityDeclared = input.connectivityDeclared ?? (joints.length > 0 || mateEdges.length > 0);
+  if (connectivityDeclared) {
+    // Check 1 — floating parts (zero joints).
+    diagnostics.push(...collectFloatingDiagnostics(parts, adj));
+    // Check 2 — orphan from main component. Skip when there are <2 parts
+    // (single-part assemblies are trivially connected).
+    diagnostics.push(...collectOrphanDiagnostics(parts, adj));
+  }
 
   // Check 3 — interference (promoted from checkInterference). Errors,
   // not warnings, because solid bodies sharing volume is mechanically
@@ -551,6 +570,7 @@ export async function validateAssemblyWithMates(
   });
   const base = validateAssembly({
     records,
+    ...(arm.__mates().length > 0 || arm.__joints().length > 0 ? { connectivityDeclared: true } : {}),
     ...(interferencePairs !== undefined ? { interferencePairs } : {}),
     ...(ignoreInterference !== undefined ? { ignore: ignoreInterference } : {}),
   });
@@ -647,11 +667,17 @@ export async function validateAssemblyWithMates(
   //    construction.
   diagnostics.push(...validateJointLoadCapacity(arm, externalLoads));
   diagnostics.push(...validateMountingHoleConsistency(arm));
+  // Gate 2 first: its single scene lowering hands the mounting-hole
+  // alignment check every part's local shape, so that check does not lower
+  // each fastened part again (a full extra recompute on boolean-heavy parts).
   const axisBindingResult = await validateJointAxisBindingWithCache(arm);
+  if (solveStatus === 'solved' || solveStatus === 'redundant-ok') {
+    diagnostics.push(...await validateMountingHoleAlignment(arm, solveResult?.poses, axisBindingResult.localShapes));
+  }
   diagnostics.push(...axisBindingResult.diagnostics);
   diagnostics.push(...await validateJointVisualExposure({
     arm,
-    loweredShapes: axisBindingResult.worldShapes,
+    loweredShapes: new Map([...axisBindingResult.worldShapes].filter((entry): entry is [string, OcctBackend] => entry[1] instanceof OcctBackend)),
     worldTransforms: axisBindingResult.worldTransforms,
   }));
 
@@ -665,7 +691,7 @@ export async function validateAssemblyWithMates(
   if (interferencePairs !== undefined) {
     diagnostics.push(...await validateMatePhysicalRealization(
       arm,
-      axisBindingResult.worldShapes,
+      new Map([...axisBindingResult.worldShapes].filter((entry): entry is [string, OcctBackend] => entry[1] instanceof OcctBackend)),
       axisBindingResult.worldTransforms,
     ));
   }
@@ -842,7 +868,7 @@ function foldJointTopologyDiagnostics(
   for (const d of review.diagnostics) {
     diagnostics.push({
       code: d.code as ValidatorDiagnosticCode,
-      severity: 'error',
+      severity: d.severity,
       message: d.message,
       hint: d.hint,
       ...(d.partName !== undefined ? { partName: d.partName } : {}),
@@ -856,8 +882,10 @@ function emitMissingLimitWarnings(
   mates: ReturnType<Assembly['__mates']>,
 ): void {
   for (const mate of mates) {
-    if (mate.type === 'fastened' || mate.type === 'planar' || mate.type === 'ball') continue;
-    if (mate.limitsDeg !== undefined || mate.limitsMm !== undefined) continue;
+    // Warn only when no moving DOF is limited; a partly limited mate is
+    // reported per DOF by the mechanism verdict (`unlimitedDofs`).
+    const dofs = movingDofs(mate.type);
+    if (dofs.length === 0 || unlimitedDofs(mate).length < dofs.length) continue;
     diagnostics.push({
       code: 'assembly.mate.limit-missing',
       severity: 'warning',

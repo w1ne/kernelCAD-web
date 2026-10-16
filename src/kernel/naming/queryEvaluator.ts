@@ -28,6 +28,7 @@ import type {
   EntityMarker,
 } from './query';
 import { __installEvaluatorDelegates } from './query';
+import { sameGeometryType } from '../../shared/intent/queryNormalize';
 import {
   parseTopoRef,
   formatTopoRef,
@@ -38,6 +39,7 @@ import {
   throwQueryOverDetermined,
   throwQueryUnknownId,
   throwQueryUnknownLabel,
+  throwQueryUnknownOwner,
   throwQueryUnsupportedEntityType,
   throwQueryCompositionStrictFailure,
   throwQueryTypeMismatch,
@@ -172,18 +174,18 @@ function evalFilterAst(
   switch (ast.op) {
     case 'containsPoint':
       return filterContainsPoint(
-        evalAst(ast.query, scene, lenient, originatingQuery),
+        filterCandidates(ast.query, scene, lenient, originatingQuery),
         ast.point,
       );
     case 'closestTo':
       return filterClosestTo(
-        evalAst(ast.query, scene, lenient, originatingQuery),
+        filterCandidates(ast.query, scene, lenient, originatingQuery),
         ast.point,
         ast.k,
       );
     case 'geometryType':
       return filterGeometryType(
-        evalAst(ast.query, scene, lenient, originatingQuery),
+        filterCandidates(ast.query, scene, lenient, originatingQuery),
         ast.geomType,
         scene,
       );
@@ -198,6 +200,23 @@ function evalFilterAst(
     case 'fromString':
       return resolveFromString(ast.ref, scene, originatingQuery);
   }
+}
+
+/** Candidate set for a spatial/geometric filter. The `{ op: 'nothing' }`
+ *  placeholder the bare factories (and the @kcq[face(geometryType(PLANE))]
+ *  string form) put in `query` means "the surrounding context" — every face
+ *  — exactly as withLabel / withFeatureName already read it. Evaluating it
+ *  literally made `face(geometryType(PLANE))` and `face(closestTo([..]))`
+ *  match nothing on every model. */
+function filterCandidates(
+  sub: QueryAst,
+  scene: QueryScene,
+  lenient: boolean,
+  originatingQuery: Query<unknown>,
+): ResolvedEntity[] {
+  return sub.op === 'nothing'
+    ? collectAllOfKind('face', scene, originatingQuery)
+    : evalAst(sub, scene, lenient, originatingQuery);
 }
 
 // ---------------------------------------------------------------------------
@@ -293,12 +312,7 @@ function filterWithLabel(
   // resolves to the bare `withLabel` AST node (op === 'withLabel' wrapping
   // `nothing`), default the candidate set to every face on the scene; the
   // chainable .and() path supplies a real candidate set instead.
-  const candidates =
-    subAst.op === 'nothing' || subAst.op === 'withLabel' ||
-    subAst.op === 'withFeatureName' || subAst.op === 'closestTo' ||
-    subAst.op === 'containsPoint' || subAst.op === 'geometryType'
-      ? collectAllOfKind('face', scene, originatingQuery)
-      : evalAst(subAst, scene, lenient, originatingQuery);
+  const candidates = labelFilterCandidates(subAst, scene, lenient, originatingQuery);
   const knownLabels = collectKnownLabels(scene);
   const hits = candidates.filter((e) => entityHasLabel(e, label, scene));
   if (hits.length === 0 && !knownLabels.has(label) && !lenient) {
@@ -314,13 +328,50 @@ function filterWithFeatureName(
   lenient: boolean,
   originatingQuery: Query<unknown>,
 ): ResolvedEntity[] {
-  const candidates =
-    subAst.op === 'nothing' || subAst.op === 'withLabel' ||
-    subAst.op === 'withFeatureName' || subAst.op === 'closestTo' ||
+  const candidates = labelFilterCandidates(subAst, scene, lenient, originatingQuery);
+  const hits = candidates.filter((e) => entityHasFeatureName(e, name, scene));
+  if (hits.length === 0 && !lenient) {
+    const owners = collectKnownOwners(scene);
+    if (!owners.has(name)) throwQueryUnknownOwner(originatingQuery, scene, name, [...owners]);
+  }
+  return hits;
+}
+
+/**
+ * Candidate set for withLabel / withFeatureName. A bare spatial/geometric
+ * factory (or `nothing`) stands for "every face"; a nested withLabel /
+ * withFeatureName is a real filter and is evaluated (it supplies its own
+ * every-face default), so `@kc[hA/face/wall]` — withLabel(withFeatureName)
+ * — is scoped to hA instead of returning every hole's wall.
+ */
+function labelFilterCandidates(
+  subAst: QueryAst,
+  scene: QueryScene,
+  lenient: boolean,
+  originatingQuery: Query<unknown>,
+): ResolvedEntity[] {
+  return subAst.op === 'nothing' || subAst.op === 'closestTo' ||
     subAst.op === 'containsPoint' || subAst.op === 'geometryType'
-      ? collectAllOfKind('face', scene, originatingQuery)
-      : evalAst(subAst, scene, lenient, originatingQuery);
-  return candidates.filter((e) => entityHasFeatureName(e, name, scene));
+    ? collectAllOfKind('face', scene, originatingQuery)
+    : evalAst(subAst, scene, lenient, originatingQuery);
+}
+
+/** The owner names a face answers to: its agent-chosen feature name, the id
+ *  of the feature that created/labelled it, and the owner its printed
+ *  `@kc[<owner>/face/<label>]` ref carries. */
+function ownersOf(lineage: FaceLineage): string[] {
+  const out = [lineage.featureName ?? lineage.rootFeatureId];
+  if (lineage.featureName !== undefined) out.push(lineage.featureName);
+  if (lineage.featureId !== undefined) out.push(lineage.featureId);
+  return out;
+}
+
+function collectKnownOwners(scene: QueryScene): Set<string> {
+  const out = new Set<string>();
+  for (const [, lineage] of scene.backend.historyMap ?? []) {
+    for (const o of ownersOf(lineage)) out.add(o);
+  }
+  return out;
 }
 
 function collectKnownLabels(scene: QueryScene): Set<string> {
@@ -343,7 +394,7 @@ function entityHasLabel(e: ResolvedEntity, label: string, scene: QueryScene): bo
 function entityHasFeatureName(e: ResolvedEntity, name: string, scene: QueryScene): boolean {
   if (e.kind !== 'face') return false;
   const lineage = scene.backend.historyMap?.get(e.handle as FaceHash);
-  return lineage?.featureName === name;
+  return lineage !== undefined && ownersOf(lineage).includes(name);
 }
 
 // ---------------------------------------------------------------------------
@@ -400,12 +451,9 @@ function matchesGeometryType(
   requested: GeometryType,
 ): boolean {
   if (!surfaceType) return false;
-  if (surfaceType === requested) return true;
-  // OCCT's 'CYLINDRE' vs the public-API 'CYLINDER'.
-  if (surfaceType === 'CYLINDRE' && requested === 'CYLINDER') return true;
-  // OCCT's 'BSPLINE' covers BSPLINE_SURFACE on faces.
-  if (surfaceType === 'BSPLINE' && requested === 'BSPLINE_SURFACE') return true;
-  return false;
+  // Alias-aware: OCCT 'CYLINDRE' ≡ public 'CYLINDER', 'BSPLINE' ≡
+  // 'BSPLINE_SURFACE', and so on (see shared/intent/queryNormalize.ts).
+  return sameGeometryType(surfaceType, requested);
 }
 
 function filterNth(input: ResolvedEntity[], index: number): ResolvedEntity[] {

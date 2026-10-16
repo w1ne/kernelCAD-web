@@ -11,15 +11,10 @@ ChatGPT apps are now submitted as **plugins**: you upload a plugin ZIP, the port
 
 After the plugin is published, MCP tool changes are picked up by the daily scan (or a manual **Rescan**). Changes to metadata or skills need a new ZIP.
 
-## What `plugins/kernelcad/plugin.json` still needs before upload
-Under `extensions.com.openai`, it currently has `interface` only. Add:
-- `interface.privacyPolicyURL` and `interface.termsOfServiceURL`. They are required for MCP review, alongside `websiteURL` and `supportURL`.
-- `interface.logo` and `interface.composerIcon`: square PNG/SVG images of at least 48 px, saved in `assets/`.
+## What `plugins/kernelcad/plugin.json` needs before upload
+These fields are generated from `agent-plugin.config.json` and already present: the privacy and terms URLs, `logo` and `composerIcon` (`assets/logo.svg`), `review.test_cases` (5 positive, 3 negative), `review.commerce` (undecided, see the blockers in the README), and `publication.release_notes`. Still missing:
 - `interface.screenshots`: optional; see the list below.
-- `review.test_cases`: exactly **5 positive** cases (description, prompt, tools_triggered, expected_behavior) and **3 negative** cases. Use the table below.
 - `review.demo_recording_url`: a video walkthrough the reviewers can open.
-- `review.commerce: false`, plus a `commerce_description` saying that quote links only open vendor pages.
-- `publication.release_notes`.
 
 Use the copy below for the `interface` text fields. `shortDescription` must be 30 characters or fewer.
 
@@ -33,7 +28,7 @@ CAD parts, STEP and drawings
 **Long description:**
 > kernelCAD brings parametric CAD into ChatGPT, with no install and no account needed to try.
 >
-> Describe a part, such as a bracket, an enclosure, a gear or a fixture, and kernelCAD builds an editable model on a real B-rep CAD kernel. The model renders in 3D right in the chat. You can rotate it, mark it up and ask for changes.
+> Describe a part, such as a bracket, an enclosure, a gear or a fixture, and kernelCAD builds an editable model on a real B-rep CAD kernel. Opening a model with `open_in_studio` shows it in an interactive 3D viewer right in the chat. You can rotate it, mark it up and ask for changes.
 >
 > kernelCAD checks as it goes. Assemblies are checked for interfering parts, exported meshes are checked for watertightness, and a script can declare its own manufacturing rules (minimum wall, hole size), which are then checked on every build. You can ask for a printability review for FDM or a machinability review for CNC at any time. These reviews flag likely problems; they are not a guarantee that a shop will accept the part.
 >

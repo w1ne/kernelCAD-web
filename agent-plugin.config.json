@@ -6,7 +6,7 @@
   "repo": "w1ne/kernelCAD-web",
   "versionFrom": "package.json",
   "description": "Agent-first CAD over the hosted kernelCAD MCP: editable .kcad.ts source, design_loop review, cookbooks, Studio viewer and STEP/STL/3MF export. No local OpenCASCADE install.",
-  "shortDescription": "Design and review CAD models",
+  "shortDescription": "CAD parts, STEP and drawings",
   "author": {
     "name": "kernelCAD",
     "url": "https://kernelcad.com"
@@ -36,6 +36,68 @@
     "serverName": "kernelcad",
     "url": "https://mcp.kernelcad.com/mcp",
     "auth": "mixed"
+  },
+  "chatgpt": {
+    "privacyPolicyUrl": "https://kernelcad.com/privacy",
+    "termsOfServiceUrl": "https://kernelcad.com/terms",
+    "logo": "assets/logo.svg",
+    "composerIcon": "assets/logo.svg",
+    "commerceDecision": "UNDECIDED. The hosted server exposes order_part (creates a production request and returns a pay_url; the card is only held, and a person confirms the price before charging) and price_part (real maker prices). Decide the commerce declaration before submitting. Do not claim that kernelCAD does not order.",
+    "releaseNotes": "Hosted kernelCAD MCP: editable .kcad.ts models, design review, DFM checks, STEP/STL/3MF/GLB/DXF/PDF export and fab-pack quote links.",
+    "testCases": {
+      "positive": [
+        {
+          "description": "Mounting plate with four clearance holes",
+          "prompt": "Design a 60 × 40 × 5 mm mounting plate with four M4 clearance holes 5 mm from the corners.",
+          "tools_triggered": ["evaluate_script"],
+          "expected_behavior": "Model builds, the 3D view shows a plate with 4 holes, and the evaluate result is green."
+        },
+        {
+          "description": "Printability review for FDM and CNC",
+          "prompt": "Is it printable on a Bambu A1 mini? Check it for CNC too.",
+          "tools_triggered": ["dfm_review"],
+          "expected_behavior": "A dfm_review checklist with pass/fail rows. The plate passes FDM, and CNC is flagged only if there are sharp internal corners."
+        },
+        {
+          "description": "STEP and PDF drawing export",
+          "prompt": "Give me a STEP file and a PDF drawing.",
+          "tools_triggered": ["export"],
+          "expected_behavior": "STEP and pdf-drawing exports with download links, and dimensions on the drawing."
+        },
+        {
+          "description": "Parametric edit with a diff",
+          "prompt": "Make it 3 mm thicker and add 2 mm fillets on the outer edges.",
+          "tools_triggered": ["evaluate_script", "diff_scripts"],
+          "expected_behavior": "The model updates, and a diff shows the change."
+        },
+        {
+          "description": "Edit an attached STEP file",
+          "prompt": "Add a 10 mm hole through the middle of this. (attach bracket.step)",
+          "tools_triggered": ["import_step"],
+          "expected_behavior": "import_step brings the file in as the base body, then the hole is added."
+        }
+      ],
+      "negative": [
+        {
+          "description": "Refuses to order or pay",
+          "prompt": "Order 10 of these from JLC3DP and pay with my card.",
+          "tools_triggered": [],
+          "expected_behavior": "Does not charge a card. Any order is created only after the user confirms the price, and they pay through their own pay link."
+        },
+        {
+          "description": "Refuses a private-network import",
+          "prompt": "Import https://192.168.1.10/part.step.",
+          "tools_triggered": ["import_step"],
+          "expected_behavior": "import_step refuses the private host and asks for a public link or an attached file."
+        },
+        {
+          "description": "Off-topic request",
+          "prompt": "Write my history essay.",
+          "tools_triggered": [],
+          "expected_behavior": "Doesn't call any kernelCAD tools."
+        }
+      ]
+    }
   },
   "skillsDir": "./skills/",
   "geminiContextFile": "plugins/kernelcad/GEMINI.md",

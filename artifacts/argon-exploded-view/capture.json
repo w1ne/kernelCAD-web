@@ -1,0 +1,48 @@
+{
+  "command": "capture_animation({ file, output_path, fps: 12, no_verify: true })",
+  "file": "/Users/andrii/worktrees/kcw-ar-4/artifacts/argon-exploded-view/drawbot-exploded.kcad.ts",
+  "output_path": "/Users/andrii/worktrees/kcw-ar-4/artifacts/argon-exploded-view/drawbot-exploded.mp4",
+  "fps": 12,
+  "no_verify": true,
+  "result": {
+    "ok": false,
+    "frame_count": 0,
+    "duration_ms": 2400,
+    "fps": 12,
+    "verified": false,
+    "collisions": [],
+    "diagnostics": [
+      {
+        "target": "export-occt",
+        "code": "cli.export-exception",
+        "severity": "error",
+        "message": "captureAnimation: listen EPERM: operation not permitted 127.0.0.1",
+        "hint": "Read the diagnostic message; common causes are a missing playwright chromium or an unavailable render surface (run `npm run build:player` once to bundle the static player, or start `npm run dev`).",
+        "nextAction": {
+          "kind": "inspect-message"
+        }
+      }
+    ],
+    "verify_skipped": true,
+    "error": "captureAnimation: listen EPERM: operation not permitted 127.0.0.1",
+    "errorCode": "cli.export-exception",
+    "errorHint": "Read the diagnostic message; common causes are a missing playwright chromium or an unavailable render surface (run `npm run build:player` once to bundle the static player, or start `npm run dev`).",
+    "failure_kind": "environment"
+  },
+  "provenance": "Local capture_animation run; fixed camera; schematic bbox proxies from handoff.",
+  "planVisualization": {
+    "source": "artifacts/argon-exploded-view/render-plan-demo.py",
+    "command": "python3 artifacts/argon-exploded-view/render-plan-demo.py",
+    "output_path": "artifacts/argon-exploded-view/explode-plan.mp4",
+    "settings": {
+      "codec": "H.264",
+      "pixel_format": "yuv420p",
+      "width": 1600,
+      "height": 900,
+      "fps": 30,
+      "duration_seconds": 3.4
+    },
+    "verification": "Planner values came from explode_view using tests/fixtures/argon/handoff-drawbot.json; MP4 is a schematic plan visualization, not a CAD render or collision/fit validation."
+  },
+  "capture_animation_note": "Actual capture_animation invocation was attempted with no_verify=true. It failed in local rendering setup with listen EPERM on 127.0.0.1; result.failure_kind=environment. No browser was launched or duplicated."
+}

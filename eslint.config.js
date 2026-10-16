@@ -20,7 +20,7 @@ const replicadImportBaseline = JSON.parse(
 const layerImportRegex = (layer) => `^(\\.\\./)+${layer}(/|$)|(^|/)src/${layer}(/|$)`;
 
 export default defineConfig([
-  globalIgnores(['**/dist/**', 'eval/runs/**', 'eval/benchmarks/cadgenbench/runs/**', 'eval/benchmarks/cadgenbench/.cache/**', '.claude/worktrees/**', '.worktrees/**']),
+  globalIgnores(['.scratch/**', '**/dist/**', 'eval/runs/**', 'eval/benchmarks/cadgenbench/runs/**', 'eval/benchmarks/cadgenbench/.cache/**', '.claude/worktrees/**', '.worktrees/**']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [

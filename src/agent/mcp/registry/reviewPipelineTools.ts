@@ -245,7 +245,7 @@ export const reviewPipelineToolEntries: ToolRegistryEntry[] = [
       description:
         'Use this when you need the unfolded flat pattern of a bent sheet-metal part. ' +
         'Return the unfolded 2D flat-pattern of a bent sheet-metal Shape as a Region ' +
-        '(outer polyline + holes + bend lines + sketch plane). Slice 1: at most 2 bends. ' +
+        '(outer polyline + holes + bend lines + sketch plane). Any number of parallel bends; crossing bends need corner relief. ' +
         'Pass { file } or { code }; optional { featureId } to pick a specific Shape.',
       inputSchema: {
         type: 'object',

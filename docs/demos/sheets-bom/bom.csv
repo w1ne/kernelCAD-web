@@ -1,0 +1,10 @@
+ref,qty,part,MPN,source,unit price,notes
+A1,1,esp32,ESP32-DevKitC-32E,LabWired:esp32,,estimated
+A2,1,a4988,Pololu 1182 (A4988 carrier),LabWired:a4988,,estimated
+A3,1,a4988,Pololu 1182 (A4988 carrier),LabWired:a4988,,estimated
+M1,1,NEMA 17 stepper motor,17HS4401,LabWired:nema17; KernelCAD:KernelCAD catalog,12.5,estimated
+M2,1,nema17,17HS4401,LabWired:nema17,,estimated
+M3,1,servo,TowerPro SG90,LabWired:servo,,estimated
+J1,1,dc-barrel-jack,,LabWired:dc-barrel-jack,,missing
+,1,M3 heat-set insert,M3-HSI,KernelCAD:KernelCAD catalog,0.08,Catalog addition
+,1,M3 × 8 mm screw,ISO 7380 M3x8,KernelCAD:KernelCAD catalog,0.03,Catalog addition

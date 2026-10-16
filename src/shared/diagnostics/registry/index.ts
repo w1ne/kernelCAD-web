@@ -46,6 +46,7 @@ import { INSPECT_CODES } from './inspect';
 import { AUTHORING_CODES } from './authoring';
 import { VIEWER_CODES } from './viewer';
 import { UNION_CODES } from './union';
+import { SCRIPT_CODES } from './script';
 import { TUBE_CODES } from './tube';
 
 export type { DiagnosticGroup, DiagnosticSeverityLevel, DiagnosticCodeSpec } from './types';
@@ -77,6 +78,7 @@ export const DIAGNOSTIC_REGISTRY = {
   ...AUTHORING_CODES,
   ...VIEWER_CODES,
   ...UNION_CODES,
+  ...SCRIPT_CODES,
   ...TUBE_CODES,
 } as const satisfies Record<string, DiagnosticCodeSpec>;
 

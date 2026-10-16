@@ -9,7 +9,8 @@ import { readFileSync } from 'node:fs';
 import { runScript } from '../../../composition/runScript';
 import { RecomputeEngine } from '../../../modeling/compute/recomputeEngine';
 import { OcctLowerer } from '../../../modeling/backends/occt/occtLowerer';
-import { flattenPattern } from '../../../kernel/backends/occt/flattenPattern';
+import { initOcct } from '../../../kernel/backends/occt/occtBackend';
+import { flattenPatternWithHoles } from '../../../modeling/sheetMetalFlatPattern';
 import type { CompilerDiagnostic } from '../../../shared/diagnostics/diagnostic';
 import type { Vec3 } from '../../../shared/intent/types';
 import type { Vec2 } from '../../../shared/intent/region';
@@ -71,9 +72,13 @@ export async function flattenPatternTool(input: FlattenPatternInput): Promise<Fl
       }],
     };
   }
+  // flatten_pattern can be the first call in a process: lowering the
+  // sketch needs the OCCT module loaded.
+  await initOcct();
   let records;
+  let paramTable;
   try {
-    ({ records } = await runScript({ code, fileName: input.file ?? 'inline.kcad.ts' }));
+    ({ records, paramTable } = await runScript({ code, fileName: input.file ?? 'inline.kcad.ts' }));
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     return {
@@ -88,9 +93,9 @@ export async function flattenPatternTool(input: FlattenPatternInput): Promise<Fl
     };
   }
   const engine = new RecomputeEngine(new OcctLowerer());
-  const r = await engine.run(records);
+  const r = await engine.run(records, { paramTable });
   try {
-    const region = flattenPattern(records, input.featureId);
+    const region = await flattenPatternWithHoles(records, input.featureId, r.shapes, paramTable);
     return {
       ok: true,
       region: {

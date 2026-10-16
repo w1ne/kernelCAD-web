@@ -1,9 +1,22 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach, vi } from 'vitest';
 import { homedir } from 'node:os';
 import { tmpdir } from 'node:os';
 import { mkdtempSync, symlinkSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { validateOutputPath } from '../../../src/agent/script-runtime/safeOutputPath';
+
+// Tilde paths resolve through HOME. Pin HOME to a private temp directory so the
+// tests do not depend on who runs them: as root, HOME is /root, which the
+// system-path deny-list rejects before the user-config checks run.
+let fakeHome = '';
+beforeAll(() => {
+  fakeHome = mkdtempSync(join(tmpdir(), 'kcad-home-'));
+  vi.stubEnv('HOME', fakeHome);
+});
+afterAll(() => {
+  vi.unstubAllEnvs();
+  rmSync(fakeHome, { recursive: true, force: true });
+});
 
 describe('validateOutputPath', () => {
   describe('accepts safe paths', () => {

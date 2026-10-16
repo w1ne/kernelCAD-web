@@ -7,7 +7,6 @@ import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { withNextActions } from '../../shared/diagnostics/diagnostic';
 import {
   summarizeMechanismFitness,
-  type MechanismBlockingReason,
   type MechanismFitnessResult,
 } from '../../modeling/mates/mechanismFitness';
 import type { GripperApertureRequest } from '../../modeling/mates/gripperAperture';
@@ -19,8 +18,9 @@ import {
   type MechanicalPlausibilityDiagnostic,
 } from '../../modeling/mates/mechanicalPlausibility';
 import { checkFastenedMateContact, checkMechanismTruth, type MechanismCoverage } from '../../modeling/runtime/mechanismTruth';
-import { checkMotionIntent } from '../../modeling/runtime/motionIntent';
+import { captureMotionFailures } from '../../modeling/runtime/motionLimits';
 import { needsMechanismVerdict, summarizeMechanism, type MechanismVerdictSummary } from '../../modeling/runtime/mechanismVerdict';
+import { checkOrphanParts } from '../../modeling/runtime/mechanismOrphan';
 import {
   reviewMechanicalIntent,
   type MechanicalIntentDiagnostic,
@@ -53,6 +53,8 @@ import { isSceneBackend } from '../../kernel/backends/sceneBackend';
 import { analyzeContactGraph, type ContactGraphResult } from '../../modeling/runtime/contactGraph';
 import type { BuiltModel } from '../../composition/buildModel';
 import { clearActiveMcpSession, setActiveMcpSession } from '../mcp/activeSession';
+import { partOnlyReview } from './partOnlyReview';
+import { buildSuggestedRepairPrompt } from './reviewRepairPrompt';
 
 export interface ReviewCadInput {
   file?: string;
@@ -222,7 +224,7 @@ export type ReviewCadOutput = ReviewTimingReport & (
       geometry?: ContactGraphResult;
     });
 
-type ReviewDiagnostic =
+export type ReviewDiagnostic =
   | CompilerDiagnostic
   | ValidatorDiagnostic
   | PoseEnvelopeDiagnostic
@@ -275,20 +277,7 @@ export async function runReviewPipeline(input: ReviewCadInput): Promise<ReviewCa
   activateReviewSession(model);
 
   const { arm, missingAssemblyMessage } = runSelectAssemblyStage(model, input);
-  if (!arm) {
-    // Defence in depth: evaluation errors (e.g. union.* on an assembly that
-    // is not the selected one) are never dropped here.
-    const evaluationErrors = withNextActions(evaluation.diagnostics.filter((d) => d.severity === 'error'));
-    return {
-      ...clock.report(),
-      ok: false,
-      errorCode: 'review.no-assembly',
-      featureCount: evaluation.featureCount,
-      diagnostics: evaluationErrors,
-      repairContext: await buildRepairContext(undefined, evaluationErrors, undefined, input),
-      suggestedRepairPrompt: `${missingAssemblyMessage} Return arm.model() or arm.solvedModel(...) from a script that calls assembly(...).`,
-    };
-  }
+  if (!arm) return reviewWithoutAssembly(clock.report(), evaluation, model, input, missingAssemblyMessage);
 
   const defaultPoseGeometry = await clock.time('default-pose-geometry', async () => runDefaultPoseGeometryStage(model, input));
   const mechanicalReview = await clock.time('mechanical-review', () => runMechanicalReviewStage(
@@ -599,7 +588,7 @@ function fastenedMateContactStage(
   const notRunReason = 'the pose sweep did not run in this review (includeInterference was off, or the review time budget was spent)';
   // Motion intent vs joint type is capture-only, so even the cheap path
   // reports an animation or drive on a fastened joint.
-  const motion = checkMotionIntent(arm);
+  const motion = captureMotionFailures(arm);
   try {
     const scene = model.rootShape ?? model.tailShape;
     const contact = scene && isSceneBackend(scene) ? checkFastenedMateContact(arm, scene) : [];
@@ -661,22 +650,80 @@ async function runMechanismTruthStage(
   }
 }
 
+/** The lowered scene a review reads default-pose interferences from. */
+type ReviewScene = Pick<BuiltModel, 'rootShape' | 'tailShape'>;
+
+type MechanicalReview = Awaited<ReturnType<typeof runMechanicalReviewStage>>;
+
+/** The static (no motion) findings of a mechanical review, in the shape the
+ *  ONE blocking rule set — {@link summarizeMechanismFitness} — consumes. */
+function staticFitnessInput(mechanicalReview: MechanicalReview) {
+  return {
+    validatorDiagnostics: mechanicalReview.validator.diagnostics,
+    mechanicalPlausibilityDiagnostics: mechanicalReview.mechanicalPlausibility.diagnostics,
+    mechanicalIntentDiagnostics: mechanicalReview.mechanicalIntent.diagnostics,
+    mechanicalTransmissionDiagnostics: mechanicalReview.mechanicalTransmission.diagnostics,
+    jointTopologyDiagnostics: mechanicalReview.jointTopology.diagnostics,
+  };
+}
+
+/** Result of {@link runStaticAssemblyReview}. */
+export interface StaticAssemblyReview {
+  readonly validator: MechanicalReview['validator'];
+  /** Every static finding: joint topology, validator (incl. default-pose
+   *  interference), mechanical plausibility / intent / transmission, and
+   *  parts no mate links into a mated assembly (mechanism.orphan-part). */
+  readonly diagnostics: readonly ReviewDiagnostic[];
+  /** Same blocking rules review_cad applies to these findings. */
+  readonly fitness: MechanismFitnessResult;
+}
+
+/**
+ * The static half of review_cad: the same default-pose interference
+ * detection, the same mechanical-review stage and the same blocking rules
+ * ({@link summarizeMechanismFitness}) and the graph-only orphan-part check,
+ * without the pose-envelope sweep and the mechanism-truth motion probes. `verify({ check: 'assembly' })` runs
+ * this, so anything it blocks on review_cad blocks on too.
+ */
+export async function runStaticAssemblyReview(
+  arm: Assembly,
+  scene: ReviewScene,
+  epsilonMm3?: number,
+): Promise<StaticAssemblyReview> {
+  const rawInterferencePairs = safeDetectDefaultPoseInterferences(scene, epsilonMm3);
+  const mechanicalReview = await runMechanicalReviewStage(arm, {}, rawInterferencePairs, true);
+  // The graph-only mechanism-truth criterion (a part no mate links into a
+  // mated assembly); the motion criteria stay with review_cad.
+  const orphanParts = withNextActions(checkOrphanParts(arm));
+  return {
+    validator: mechanicalReview.validator,
+    diagnostics: [
+      ...mechanicalReview.jointTopology.diagnostics,
+      ...mechanicalReview.validator.diagnostics,
+      ...mechanicalReview.mechanicalPlausibility.diagnostics,
+      ...mechanicalReview.mechanicalIntent.diagnostics,
+      ...mechanicalReview.mechanicalTransmission.diagnostics,
+      ...orphanParts,
+    ],
+    fitness: summarizeMechanismFitness({
+      ...staticFitnessInput(mechanicalReview),
+      mechanismTruthDiagnostics: orphanParts,
+    }),
+  };
+}
+
 async function runFitnessAndRepairStage(input: {
   arm: Assembly;
   diagnostics: readonly ReviewDiagnostic[];
   input: ReviewCadInput;
   mechanism: MechanismVerdict;
   mechanismFailures: readonly CompilerDiagnostic[];
-  mechanicalReview: Awaited<ReturnType<typeof runMechanicalReviewStage>>;
+  mechanicalReview: MechanicalReview;
   physicalUseCases: Awaited<ReturnType<typeof runPhysicalUseCaseStage>>;
   poseEnvelope: PoseEnvelopeReviewResult | undefined;
 }): Promise<{ fitness: MechanismFitnessResult; ok: boolean; repairContext: RepairContext }> {
   const fitness = summarizeMechanismFitness({
-    validatorDiagnostics: input.mechanicalReview.validator.diagnostics,
-    mechanicalPlausibilityDiagnostics: input.mechanicalReview.mechanicalPlausibility.diagnostics,
-    mechanicalIntentDiagnostics: input.mechanicalReview.mechanicalIntent.diagnostics,
-    mechanicalTransmissionDiagnostics: input.mechanicalReview.mechanicalTransmission.diagnostics,
-    jointTopologyDiagnostics: input.mechanicalReview.jointTopology.diagnostics,
+    ...staticFitnessInput(input.mechanicalReview),
     mechanismTruthDiagnostics: input.mechanismFailures,
     physicalUseCaseDiagnostics: input.physicalUseCases.diagnostics,
     physicalUseCaseCount: input.physicalUseCases.checkedUseCaseCount,
@@ -710,6 +757,41 @@ async function runFitnessAndRepairStage(input: {
  * script's return value and never lets a kernel failure sink the whole review
  * — geometry is simply reported as undefined in that case.
  */
+/** No assembly selected. A script that captured none is a single part: the
+ *  evaluate stage already ran the part-level checks (build, union guard, DFM
+ *  gates), so report that verdict. A named assembly that does not exist is
+ *  still review.no-assembly. */
+async function reviewWithoutAssembly(
+  timing: ReviewTimingReport,
+  evaluation: { featureCount: number; diagnostics: CompilerDiagnostic[] },
+  model: BuiltModel,
+  input: ReviewCadInput,
+  missingAssemblyMessage: string,
+): Promise<ReviewCadOutput> {
+  if (input.assembly === undefined && model.session.assemblies.size === 0) {
+    const diagnostics = withNextActions(evaluation.diagnostics);
+    return partOnlyReview({
+      timing,
+      featureCount: evaluation.featureCount,
+      diagnostics,
+      repairContext: await buildRepairContext(undefined, diagnostics, undefined, input),
+      geometry: safeAnalyzeContactGraph(model),
+    });
+  }
+  // Defence in depth: evaluation errors (e.g. union.* on an assembly that
+  // is not the selected one) are never dropped here.
+  const evaluationErrors = withNextActions(evaluation.diagnostics.filter((d) => d.severity === 'error'));
+  return {
+    ...timing,
+    ok: false,
+    errorCode: 'review.no-assembly',
+    featureCount: evaluation.featureCount,
+    diagnostics: evaluationErrors,
+    repairContext: await buildRepairContext(undefined, evaluationErrors, undefined, input),
+    suggestedRepairPrompt: `${missingAssemblyMessage} Return arm.model() or arm.solvedModel(...) from a script that calls assembly(...).`,
+  };
+}
+
 function safeAnalyzeContactGraph(model: BuiltModel): ContactGraphResult | undefined {
   try {
     const tail = model.rootShape ?? model.tailShape;
@@ -759,7 +841,7 @@ function mergeConnectorRefs(
  * continue to surface the real problem.
  */
 function safeDetectDefaultPoseInterferences(
-  model: BuiltModel,
+  model: ReviewScene,
   epsilonMm3?: number,
 ): InterferencePair[] {
   try {
@@ -772,11 +854,15 @@ function safeDetectDefaultPoseInterferences(
   }
 }
 
-async function evaluateForReview(input: EvaluateInput) {
+/** Evaluate a script the way review_cad does: the solvedModel validate
+ *  gate defaults to 'warn' so findings are reported, not thrown. */
+export async function evaluateForReview(input: EvaluateInput) {
+  // Forced, not defaulted: evaluate_script's applyEvaluateDefaults() leaves
+  // 'error' set for the rest of the process, which made a long-lived MCP
+  // server's review stop at the first validator error instead of reporting
+  // every finding with its blocking verdict.
   const priorDefault = process.env.KERNELCAD_VALIDATE_DEFAULT;
-  if (priorDefault === undefined) {
-    process.env.KERNELCAD_VALIDATE_DEFAULT = 'warn';
-  }
+  process.env.KERNELCAD_VALIDATE_DEFAULT = 'warn';
   try {
     return await evaluateAndBuildScript(input);
   } finally {
@@ -915,93 +1001,4 @@ async function buildRepairContext(
     preserveInterfaces: input.preserveInterfaces ?? [],
     designGoal: input.designGoal ?? '',
   };
-}
-
-interface RepairFactCandidate {
-  code: string;
-  fact: string;
-}
-
-function collectRepairFactCandidates(
-  blockingReasons: readonly MechanismBlockingReason[],
-  diagnostics: readonly ReviewDiagnostic[],
-): RepairFactCandidate[] {
-  // Filter out non-actionable informational diagnostics. The prompt has a
-  // bounded evidence budget, so make room for every distinct blocker before
-  // repeating lower-level instances of the same diagnostic code.
-  const actionableDiagnostics = diagnostics.filter((d) =>
-    'severity' in d ? d.severity !== 'info' : true,
-  );
-  return [
-    ...blockingReasons.map((reason) => ({
-      code: reason.code,
-      fact: `- ${reason.code}: ${reason.message} Hint: ${reason.repairHint}`,
-    })),
-    ...actionableDiagnostics.map((diagnostic) => {
-      const scoped = 'sampleName' in diagnostic && diagnostic.sampleName
-        ? ` [${diagnostic.sampleName}]`
-        : '';
-      return {
-        code: diagnostic.code,
-        fact: `- ${diagnostic.code}${scoped}: ${diagnostic.message} Hint: ${diagnostic.hint}`,
-      };
-    }),
-  ];
-}
-
-function selectBoundedRepairFacts(factCandidates: readonly RepairFactCandidate[]): string[] {
-  const facts: string[] = [];
-  const includedCodes = new Set<string>();
-  const includedFacts = new Set<string>();
-
-  // First pass: a concise causal map. A missing transmission, for example,
-  // must remain visible even when several support diagnostics precede it.
-  for (const candidate of factCandidates) {
-    if (facts.length === 8) break;
-    if (includedCodes.has(candidate.code)) continue;
-    facts.push(candidate.fact);
-    includedCodes.add(candidate.code);
-    includedFacts.add(candidate.fact);
-  }
-  // Second pass: add mate- or pose-specific detail when the bounded prompt
-  // still has room, without repeating the same evidence verbatim.
-  for (const candidate of factCandidates) {
-    if (facts.length === 8) break;
-    if (includedFacts.has(candidate.fact)) continue;
-    facts.push(candidate.fact);
-    includedFacts.add(candidate.fact);
-  }
-  return facts;
-}
-
-function buildRepairDirective(fitness: MechanismFitnessResult | undefined): string {
-  return fitness === undefined
-    ? ''
-    : `\nRepair mode: ${fitness.repairMode}\nDirective: ${fitness.repairDirective}\n`;
-}
-
-function buildDesignContextBlock(
-  input?: Pick<ReviewCadInput, 'designGoal' | 'preserveInterfaces'>,
-): string {
-  const designContext = [
-    input?.designGoal ? `Design goal: ${input.designGoal}` : undefined,
-    input?.preserveInterfaces?.length ? `Preserve interfaces: ${input.preserveInterfaces.join(', ')}` : undefined,
-  ].filter((line): line is string => line !== undefined);
-  return designContext.length === 0 ? '' : `\n${designContext.join('\n')}\n`;
-}
-
-function buildSuggestedRepairPrompt(
-  diagnostics: readonly ReviewDiagnostic[],
-  fitness?: MechanismFitnessResult,
-  input?: Pick<ReviewCadInput, 'designGoal' | 'preserveInterfaces'>,
-): string {
-  const blockingReasons = fitness?.blockingReasons ?? [];
-  if (diagnostics.length === 0 && blockingReasons.length === 0) {
-    return 'No structured diagnostics were produced. Re-run review_cad after returning an assembly scene from the script.';
-  }
-  const factCandidates = collectRepairFactCandidates(blockingReasons, diagnostics);
-  const facts = selectBoundedRepairFacts(factCandidates);
-  const repairDirective = buildRepairDirective(fitness);
-  const designBlock = buildDesignContextBlock(input);
-  return `Repair the kernelCAD script using these deterministic review facts:${repairDirective}${designBlock}\n${facts.join('\n')}`;
 }

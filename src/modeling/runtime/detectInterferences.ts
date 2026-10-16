@@ -21,7 +21,7 @@
 // instead of inferring overlap visually from a render.
 
 import type { SceneBackend } from '../../kernel/backends/sceneBackend';
-import type { OcctBackend } from '../../kernel/backends/occt/occtBackend';
+import { OcctBackend } from '../../kernel/backends/occt/occtBackend';
 import type { Vec3 } from '../../shared/intent/types';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { overlapThicknessMm } from './jointContactCap';
@@ -42,6 +42,9 @@ export interface CheckInterferenceResult {
   readonly partCount: number;
   readonly comparisonCount: number;
   readonly diagnostics: CompilerDiagnostic[];
+  /** Mesh-involving pairs were not checked because exact intersection requires BRep. */
+  readonly uncheckedPairs: Array<{ readonly a: string; readonly b: string; readonly reason: 'display-mesh' }>;
+  readonly partial: boolean;
 }
 
 /** The subset of a transformed part the candidate pass reads: its name (for
@@ -128,6 +131,24 @@ function memoSet(a: object, b: object, key: string, vol: OverlapMetrics): void {
   byPose.set(key, vol);
 }
 
+/** Pairs involving a non-BRep (display mesh) part: exact intersection needs
+ *  BRep, so these are reported as unchecked instead of silently skipped. */
+function listDisplayMeshPairs(
+  parts: ReadonlyArray<{ readonly name: string; readonly shape: unknown }>,
+): CheckInterferenceResult['uncheckedPairs'] {
+  const pairs: CheckInterferenceResult['uncheckedPairs'] = [];
+  for (let i = 0; i < parts.length; i++) {
+    for (let j = i + 1; j < parts.length; j++) {
+      const a = parts[i]!;
+      const b = parts[j]!;
+      if (!(a.shape instanceof OcctBackend) || !(b.shape instanceof OcctBackend)) {
+        pairs.push({ a: a.name, b: b.name, reason: 'display-mesh' });
+      }
+    }
+  }
+  return pairs;
+}
+
 export function detectInterferences(
   scene: SceneBackend,
   epsilonMm3: number,
@@ -138,7 +159,8 @@ export function detectInterferences(
   // pattern the STEP exporter uses (`exportSceneToSTEPAsync`) — replicad's
   // translate / rotate mutate-and-destroy the source OCCT handle, so we
   // never touch the originals.
-  const transformed = scene.parts.map((p) => {
+  const uncheckedPairs = listDisplayMeshPairs(scene.parts);
+  const transformed = scene.parts.filter((p) => p.shape instanceof OcctBackend).map((p) => {
     const clone = (p.shape as OcctBackend).clone().applyTransform(p.worldTransform);
     return {
       name: p.name,
@@ -211,6 +233,8 @@ export function detectInterferences(
     partCount: transformed.length,
     comparisonCount: candidates.length,
     diagnostics,
+    uncheckedPairs,
+    partial: uncheckedPairs.length > 0,
   };
 }
 

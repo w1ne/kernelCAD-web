@@ -20,13 +20,20 @@ this polyline loft.
 
 Reach for this loft when you want a **boxy demo body** that changes cross-section
 along an axis. Sketch a closed polyline profile for each station, loft a solid
-through the stack, soften the long edges with a fillet, then hollow it into a
-shell by opening one end-cap face.
+through the stack, hollow it into a shell by opening one end-cap face, then
+soften the long edges with a fillet.
 
-The four long edges run parallel to the loft axis (`+Z` here), so select them
-with `{ parallel: [0, 0, 1] }`. The end-cap you open for the shell is the
-`+Z`-facing face, selected with `{ byNormal: 'Z' }` — a `FaceQuery`, because a
-lofted body has no canonical `'top'`/`'bottom'` face for `.shell()` to resolve.
+Shell FIRST, fillet second. Offsetting the lofted B-spline sides of an
+already-filleted body is where OCCT's thick-solid struggles: every join mode
+fails and the shell falls back to a slow offset-and-subtract (~50 s). Shelling
+the plain loft takes ~2 s and the fillet afterwards rounds the outer edges and
+the matching inner corners in one pass.
+
+The long edges run parallel to the loft axis (`+Z` here), so select them with
+`{ parallel: [0, 0, 1] }` — after the shell that is the four outer edges and
+the four inner ones. The end-cap you open for the shell is the `+Z`-facing
+face, selected with `{ byNormal: 'Z' }` — a `FaceQuery`, because a lofted body
+has no canonical `'top'`/`'bottom'` face for `.shell()` to resolve.
 
 ```typescript
 // 1. Cross-section profiles at stations along the +Z axis (nose -> mid -> tail).
@@ -47,11 +54,12 @@ const tail = section(30, 20);   // station at z = 110
 //    spacing takes a plain number (mm) — not a param() ref.
 const body = nose.loft([mid, tail], { spacing: 55 });
 
-// 3. Soften the four long edges that run along the body axis, then hollow the
-//    body into a shell by opening the tail end-cap (the +Z-facing face).
+// 3. Hollow the body into a shell by opening the tail end-cap (the +Z-facing
+//    face), then soften the long edges that run along the body axis (outer
+//    edges and the inner corners of the wall).
 return body
-  .fillet(4, { parallel: [0, 0, 1] })
-  .shell(2.5, { face: { byNormal: 'Z' } });
+  .shell(2.5, { face: { byNormal: 'Z' } })
+  .fillet(4, { parallel: [0, 0, 1] });
 ```
 
 Gotchas: order the sections along the axis (station 0, 1, 2, …) — out-of-order

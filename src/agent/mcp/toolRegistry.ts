@@ -25,12 +25,19 @@ import { fabricationToolEntries } from './registry/fabricationTools';
 import { manufacturingToolEntries } from './registry/manufacturingTools';
 import { rayPickToolEntries } from './registry/rayPickTools';
 import { nurbsToolEntries } from './registry/nurbsTools';
+import { surfaceBlendToolEntries } from './registry/surfaceBlendTools';
+import { wireRoutingToolEntries } from './registry/wireRoutingTools';
+import { handoffToolEntries } from './registry/handoffTools';
+import { explodeViewToolEntries } from './registry/explodeViewTools';
+import { partModelToolEntries } from './registry/partModelTools';
+import { bomToolEntries } from './registry/bomTools';
 import { referenceExportToolEntries } from './registry/referenceExportTools';
 import { referenceLedgerToolEntries } from './registry/referenceLedgerTools';
 import { reviewPipelineToolEntries } from './registry/reviewPipelineTools';
 import { sketchAssemblyToolEntries } from './registry/sketchAssemblyTools';
 import { mechanismSimToolEntries } from './registry/mechanismSimTools';
 import { meshReconstructToolEntries } from './registry/meshReconstructTools';
+import { meshBooleanToolEntries } from './registry/meshBooleanTools';
 import { cookbookExecutionToolEntries } from './registry/cookbookExecutionTools';
 import type { McpToolDefinition, ToolRegistryEntry } from './registry/types';
 export { runClosedLoop } from '../loop/closedLoop.js';
@@ -103,6 +110,13 @@ export const TOOL_REGISTRY: ToolRegistryEntry[] = [
   ...rayPickToolEntries,
   ...nurbsToolEntries,
   ...pointCloudToolEntries,
+  ...wireRoutingToolEntries,
+  ...handoffToolEntries,
+  ...meshBooleanToolEntries,
+  ...explodeViewToolEntries,
+  ...surfaceBlendToolEntries,
+  ...partModelToolEntries,
+  ...bomToolEntries,
 ];
 
 /** Merge the central MCP metadata maps onto a definition: behavioral hints
@@ -167,4 +181,21 @@ export async function callMcpTool(name: string, input: Record<string, unknown>):
  */
 export function getToolDefinition(name: string): McpToolDefinition | undefined {
   return toolDefinitions.get(name);
+}
+
+/**
+ * Look up a registered tool by name: its merged definition (annotations +
+ * output schema, exactly as in {@link TOOLS}) and its handler.
+ *
+ * Name-keyed access for consumers (kernelCAD-server) that today index
+ * TOOL_REGISTRY / TOOLS by position: resolving by name does not depend on
+ * the registry order, so a consumer that switches to this lookup no longer
+ * needs the order frozen.
+ *
+ * @returns the entry, or undefined when no tool by that name is registered
+ */
+export function getToolByName(name: string): ToolRegistryEntry | undefined {
+  const definition = toolDefinitions.get(name);
+  const handler = toolHandlers.get(name);
+  return definition !== undefined && handler !== undefined ? { definition, handler } : undefined;
 }

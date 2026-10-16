@@ -57,24 +57,22 @@ import { initOcct } from '../../kernel/backends/occt/occtBackend';
 import { createOcctLowerer } from '../backends/occt/occtLowerer';
 import { RecomputeEngine } from '../compute/recomputeEngine';
 import { solveMates } from '../mates/solver';
-import { collectRegistryDrivenMates } from '../mates/mechanicalJointRegistry';
 import { detectInterferences, pairKey } from './detectInterferences';
 import { describeOverlap, formatOverlapMm3, isActionableOverlap, overlapRuleText, INTERPENETRATION_EPSILON_MM3 } from './jointContactCap';
 import { reposedLoweredAssemblyScene } from '../mates/loweredAssemblyScene';
 import { resolvedPartAt } from '../mates/partFrame';
 import { expandCoupledPoses } from '../mates/coupledPoses';
-import type { NumericPoses } from '../capture/forwardKinematics';
 import { parseConnectorRef, type MateRecord } from '../mates/mate';
 import { checkOrphanParts } from './mechanismOrphan';
-import { checkMotionIntent } from './motionIntent';
+import { checkMotionIntent, hasMotionIntent } from './motionIntent';
+import { checkMotionLimits } from './motionLimits';
+import { checkMateClosure, type ClosureSample } from './mateClosure';
 import {
   REST_MATE_CONTACT_TOLERANCE_MM,
   restPoseMateGaps,
   restPosePenetrations,
 } from './restPoseContact';
 import type { RestMateGap } from './restPoseContact';
-import { assemblyToMjcf } from './mjcfExport';
-import { loadMujocoSession } from './mujocoSession';
 import {
   checkJointMeshContinuity,
   JOINT_BEARING_AXIS_RADIUS_MM,
@@ -84,6 +82,8 @@ import {
   checkTendonBodyIntersectAtPose,
   TENDON_BODY_CLEARANCE_MM,
 } from './tendonBodyIntersect';
+import { makeFailure, type PoseSample, type SolvedSample } from './mechanismTruthShared';
+import { runPhysicsCriteria } from './mechanismTruthPhysics';
 
 /**
  * Number of pose samples per articulated mate. Currently 3 (min, mid, max
@@ -198,6 +198,12 @@ export interface MechanismCoverage {
   readonly sweep: boolean;
   /** True when gravity hold + drop-on-release (MuJoCo) ran. */
   readonly physics: boolean;
+  /** Animated joints whose animation keys were checked against their limits. */
+  readonly limitsChecked: number;
+  /** True when every mate's connector gap was measured at every solved pose. */
+  readonly matesChecked: boolean;
+  /** Moving DOFs nobody limited: "joint 'x' offset has no limits, range not checked". */
+  readonly skipped: readonly string[];
 }
 
 /**
@@ -229,29 +235,7 @@ export interface MechanismTruthOptions {
   readonly sweepBudget?: number;
 }
 
-/**
- * A single-joint-at-a-time pose sample. `mateName` is `undefined` for the
- * rest-pose baseline.
- */
-interface PoseSample {
-  readonly name: string;
-  readonly mateName: string | undefined;
-  readonly poses: NumericPoses;
-}
 
-/**
- * Per-pose solver output cache. Keeps the (sample, transforms, scene)
- * triple together so the individual criterion runs don't re-solve
- * `solvedModel` for the same pose.
- */
-interface SolvedSample {
-  readonly sample: PoseSample;
-  readonly transforms: ReadonlyMap<string, Transform>;
-  /** Lazily computed — only loaded when criterion 2 needs the lowered
-   *  scene. The solveMates pass that produces `transforms` does NOT lower
-   *  BREP, so cheap criteria short-circuit before paying for the lower. */
-  scene?: SceneBackend;
-}
 
 /**
  * One full BREP lower shared by every pose in a sweep. A scene's part
@@ -354,6 +338,11 @@ export async function checkMechanismTruth(
   // Motion intent vs joint type — capture-only, no BREP. An animation or a
   // drive on a fastened joint is 'broken' whatever the sweep finds.
   failures.push(...checkMotionIntent(arm));
+  // Joint ranges along the animation (capture-only). Only a model that
+  // claims to move gets range notes; a static one stays quiet.
+  const moving = hasMotionIntent(arm);
+  const limits = moving ? checkMotionLimits(arm) : { failures: [], skipped: [], checked: 0 };
+  failures.push(...limits.failures);
 
   // Pose sampling: rest + per-articulated-mate single-joint sweep.
   const samples = buildPoseSamples(arm);
@@ -362,10 +351,12 @@ export async function checkMechanismTruth(
   // edge list and per-part transforms are everything criteria 1 + 4 need;
   // criteria 2 + 3 will lazily lower BREP per-sample below.
   const solved: SolvedSample[] = [];
+  const closure: ClosureSample[] = [];
   for (const sample of samples) {
     try {
       const r = await solveMates(arm, sample.poses);
       solved.push({ sample, transforms: r.poses });
+      closure.push({ name: sample.name, status: r.status, ...(r.loopResiduals ? { loopResiduals: r.loopResiduals } : {}) });
     } catch {
       // A solver throw at a sampled pose is itself a mechanism failure,
       // but it's already surfaced by the pose-envelope review path. Skip
@@ -374,10 +365,16 @@ export async function checkMechanismTruth(
     }
   }
 
+  // Per-mate satisfaction at every solved pose (loop mates; tree mates are
+  // placed by the FK walk). Moving models only: a static rigid loop keeps
+  // its existing validator surface.
+  if (moving) failures.push(...checkMateClosure(closure));
+
   const joints = arm.__mates().filter((m) => m.type !== 'fastened').length;
   const fastened = arm.__mates().length - joints;
+  const scope = { fastened, limitsChecked: limits.checked, matesChecked: moving && solved.length > 0, skipped: limits.skipped };
   if (solved.length === 0) {
-    const coverage = { poses: 0, joints, fastened, sweep: false, physics: false };
+    const coverage = { poses: 0, joints, ...scope, sweep: false, physics: false };
     return { mechanism: failures.length === 0 ? 'real' : 'broken', failures, coverage };
   }
 
@@ -451,7 +448,7 @@ export async function checkMechanismTruth(
   const hasDefinitiveFailure = failures.some((d) => d.severity === 'error');
   const mechanism: 'real' | 'broken' | 'unverified' =
     hasDefinitiveFailure ? 'broken' : sweepSkipped ? 'unverified' : 'real';
-  const coverage = { poses: solved.length, joints, fastened, sweep: !sweepSkipped, physics: opts.physicsCheck === true };
+  const coverage = { poses: solved.length, joints, ...scope, sweep: !sweepSkipped, physics: opts.physicsCheck === true };
   return { mechanism, failures, coverage };
 }
 
@@ -845,7 +842,11 @@ async function checkDofMismatch(
   arm: Assembly,
   loweredBase: LoweredSceneBase,
 ): Promise<CompilerDiagnostic[]> {
-  const revoluteMates = arm.__mates().filter((m) => m.type === 'revolute');
+  // A coupled (driven) mate never moves on its own: perturbing it alone
+  // turns a meshing gear into a collision. Its motion is exercised through
+  // its source mate's micro-pose, which expandCoupledPoses propagates.
+  const coupledDriven = new Set(arm.__mateCouplings().map((coupling) => coupling.driven));
+  const revoluteMates = arm.__mates().filter((m) => m.type === 'revolute' && !coupledDriven.has(m.name));
   if (revoluteMates.length === 0) return [];
 
   // Same symmetric `solvedModel({ ignore })` silencing the interpenetration
@@ -856,32 +857,11 @@ async function checkDofMismatch(
 
   const out: CompilerDiagnostic[] = [];
   for (const mate of revoluteMates) {
-    // Three micro-poses around 0°.
-    const microPoses = [-DOF_MISMATCH_MICRO_POSE_DEG, 0, DOF_MISMATCH_MICRO_POSE_DEG];
-    const overlapCounts: number[] = [];
-    for (const p of microPoses) {
-      try {
-        const overrides = expandCoupledPoses(
-          arm.__mates(), arm.__mateCouplings(), { [mate.name]: p },
-        );
-        const r = await solveMates(arm, overrides);
-        const sample: SolvedSample = {
-          sample: { name: `${mate.name}:µ${p}`, mateName: mate.name, poses: overrides },
-          transforms: r.poses,
-        };
-        const scene = await lowerSceneForSample(arm, sample, loweredBase);
-        if (scene === undefined) {
-          overlapCounts.push(-1);
-          continue;
-        }
-        const result = detectInterferences(
-          scene, INTERPENETRATION_EPSILON_MM3, ignored,
-        );
-        overlapCounts.push(result.pairs.length);
-      } catch {
-        overlapCounts.push(-1);
-      }
-    }
+    // Micro-poses around 0° that lie inside the declared travel: a lid
+    // resting on its end stop must not be pushed through the stop.
+    const microPoses = microPosesWithinLimits(mate);
+    if (microPoses.length < 2) continue;
+    const overlapCounts = await microPoseOverlapCounts(arm, mate, microPoses, loweredBase, ignored);
 
     // If any micro-pose failed to solve / lower, skip the mate (the
     // failure already surfaces via other criteria / the pose-envelope).
@@ -894,13 +874,63 @@ async function checkDofMismatch(
       out.push(makeFailure(
         'mechanism.dof-mismatch',
         `Mate '${mate.name}' declares a revolute joint but the geometric overlap topology around the axis changes ` +
-        `under a ${DOF_MISMATCH_MICRO_POSE_DEG}° micro-pose (counts at -ε, 0, +ε: ${overlapCounts.join(', ')}). ` +
+        `under a ${DOF_MISMATCH_MICRO_POSE_DEG}° micro-pose (counts at ${microPoses.map(formatMicroPose).join(', ')}: ${overlapCounts.join(', ')}). ` +
         `Re-check the mate axis, the connector frames on both parts, and the mate type.`,
       ));
     }
   }
 
   return out;
+}
+
+/** {-ε, 0, +ε}, minus any excursion outside the mate's declared limitsDeg. */
+function microPosesWithinLimits(mate: MateRecord): number[] {
+  const microPoses = [-DOF_MISMATCH_MICRO_POSE_DEG, 0, DOF_MISMATCH_MICRO_POSE_DEG];
+  const limits = mate.limitsDeg;
+  if (!Array.isArray(limits) || limits.length !== 2 || !limits.every(Number.isFinite)) return microPoses;
+  const [min, max] = limits as readonly [number, number];
+  return microPoses.filter((p) => p >= min - 1e-9 && p <= max + 1e-9);
+}
+
+function formatMicroPose(p: number): string {
+  if (p === 0) return '0';
+  return p < 0 ? '-ε' : '+ε';
+}
+
+/** Interference-pair count at each micro-pose of `mate`; -1 where the pose
+ *  failed to solve or lower. */
+async function microPoseOverlapCounts(
+  arm: Assembly,
+  mate: MateRecord,
+  microPoses: readonly number[],
+  loweredBase: LoweredSceneBase,
+  ignored: ReadonlySet<string>,
+): Promise<number[]> {
+  const overlapCounts: number[] = [];
+  for (const p of microPoses) {
+    try {
+      const overrides = expandCoupledPoses(
+        arm.__mates(), arm.__mateCouplings(), { [mate.name]: p },
+      );
+      const r = await solveMates(arm, overrides);
+      const sample: SolvedSample = {
+        sample: { name: `${mate.name}:µ${p}`, mateName: mate.name, poses: overrides },
+        transforms: r.poses,
+      };
+      const scene = await lowerSceneForSample(arm, sample, loweredBase);
+      if (scene === undefined) {
+        overlapCounts.push(-1);
+        continue;
+      }
+      const result = detectInterferences(
+        scene, INTERPENETRATION_EPSILON_MM3, ignored,
+      );
+      overlapCounts.push(result.pairs.length);
+    } catch {
+      overlapCounts.push(-1);
+    }
+  }
+  return overlapCounts;
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -1134,343 +1164,6 @@ async function lowerAssemblySceneForPose(
   return lowered;
 }
 
-// ─────────────────────────────────────────────────────────────────────────
-// Criteria 5 + 6 — physics (MuJoCo)
-// ─────────────────────────────────────────────────────────────────────────
-
-/**
- * Joint angle drift tolerance for the drop-test (criterion 6). 5° in
- * radians. Per the plan §thresholds; a joint that drifts more than 5°
- * from rest under 0.5 s of gravity is judged as "the mechanism doesn't
- * hold its declared pose."
- */
-const DROP_TEST_JOINT_DRIFT_RAD = (5 * Math.PI) / 180;
-
-/**
- * World position drift tolerance for the drop-test (criterion 6).
- * 50 mm = 0.05 m. A body that translates more than this in 0.5 s under
- * gravity is judged as "loose / ejected."
- */
-const DROP_TEST_BODY_DRIFT_M = 0.05;
-
-/**
- * Drop-test duration in seconds. The plan specifies 0.5 s at dt=1 ms
- * (500 steps). Fast enough that the drop-test stays bounded (~50 ms
- * wall-clock per assembly on typical hardware) yet long enough that
- * an underbraced mechanism visibly falls.
- */
-const DROP_TEST_DURATION_S = 0.5;
-const DROP_TEST_DT_S = 0.001;
-
-/**
- * Run criteria 5 + 6 against the assembly. Loads MuJoCo, emits the
- * MJCF once, then runs:
- *   - per-pose inverse-dynamics (criterion 5) to check that the
- *     required holding torque is finite at every sampled pose. A
- *     non-finite torque means the mechanism has a singular Jacobian
- *     at that pose (e.g. a redundant constraint, a collapsing
- *     parallelogram, a free-fall body) — the mechanism is impossible
- *     to hold against gravity.
- *   - drop-on-release (criterion 6) from rest with all actuators at
- *     zero force; fail if joints drift > 5° or bodies translate > 50 mm.
- *
- * Joint torque CAPACITY checking (the spec's optional
- * `capacityNm` per mate) is NOT implemented in this slice. The plan
- * declares it out of scope: the joint-capacity API doesn't exist yet
- * (only declared on the legacy `maxLoad` shape which a future slice
- * will reshape). For now, criterion 5 reports a finite-torque failure
- * only.
- */
-async function runPhysicsCriteria(
-  arm: Assembly,
-  solved: readonly SolvedSample[],
-): Promise<CompilerDiagnostic[]> {
-  const out: CompilerDiagnostic[] = [];
-
-  let mjcfResult: Awaited<ReturnType<typeof assemblyToMjcf>>;
-  try {
-    mjcfResult = await assemblyToMjcf(arm);
-  } catch (e) {
-    // Closed-loop graphs or other emitter failures. The kinematic
-    // criteria already surface their own failures; don't double-fail
-    // here. Surface a single hint that physics couldn't run.
-    const msg = e instanceof Error ? e.message : String(e);
-    out.push(makeFailure(
-      'mechanism.unstable-under-gravity',
-      `Could not run the physics gate: ${msg}. The kinematic checks (criteria 1-4) still apply.`,
-    ));
-    return out;
-  }
-
-  let session: Awaited<ReturnType<typeof loadMujocoSession>>;
-  try {
-    session = await loadMujocoSession(
-      mjcfResult.mjcf,
-      mjcfResult.bodyOrder,
-      mjcfResult.jointOrder,
-    );
-  } catch (e) {
-    // MuJoCo XML parse error. Treat the same as a converter error.
-    const msg = e instanceof Error ? e.message : String(e);
-    out.push(makeFailure(
-      'mechanism.unstable-under-gravity',
-      `Could not load the assembly in MuJoCo: ${msg}. The MJCF emitter produced XML the engine rejected — file a follow-up issue with the MJCF dump if this surfaces on a previously-passing example.`,
-    ));
-    return out;
-  }
-
-  try {
-    // Mechanisms with zero DOFs (all-fastened or single-part) skip the
-    // physics check; gravity has nothing to act on dynamically.
-    if (session.nq === 0) return out;
-
-    // ── Criterion 5: static equilibrium at every sampled pose ──────────
-    out.push(...await runStaticEquilibrium(session, solved, mjcfResult.jointOrder));
-
-    // ── Criterion 6: drop-on-release from rest ─────────────────────────
-    out.push(...await runDropOnRelease(session, mjcfResult.jointOrder, arm));
-  } finally {
-    session.dispose();
-  }
-
-  return out;
-}
-
-/**
- * Per the plan §Task 4: at each sampled pose, run mj_inverse with
- * qvel=0 / qacc=0 and report any joint whose required holding torque
- * is non-finite (NaN / Infinity / very large).
- *
- * Mapping kernelCAD's `solved.transforms` poses to MuJoCo's qpos vector
- * is direct for revolute / prismatic mates (one qpos slot per mate),
- * but the kernelCAD `NumericPoses` map is keyed by mate name, not by
- * the qpos index. We use `jointOrder` from the MJCF emitter to walk
- * mate-by-mate and look up each mate's pose value.
- */
-async function runStaticEquilibrium(
-  session: Awaited<ReturnType<typeof loadMujocoSession>>,
-  solved: readonly SolvedSample[],
-  jointOrder: readonly { mjcfName: string; mateName: string }[],
-): Promise<CompilerDiagnostic[]> {
-  const out: CompilerDiagnostic[] = [];
-
-  for (const s of solved) {
-    const qpos = jointOrderToQpos(jointOrder, s.sample.poses);
-    if (qpos === undefined) continue; // mate-name mismatch; skip
-    try {
-      session.setPose(qpos);
-      const { qfrc, allFinite } = session.inverseDynamics();
-      if (!allFinite) {
-        // Locate the worst joint to name it in the diagnostic.
-        let worstIdx = 0;
-        let worstVal = 0;
-        for (let i = 0; i < qfrc.length; i++) {
-          const v = qfrc[i];
-          if (!Number.isFinite(v)) {
-            worstIdx = i;
-            worstVal = v;
-            break;
-          }
-          if (Math.abs(v) > Math.abs(worstVal)) {
-            worstIdx = i;
-            worstVal = v;
-          }
-        }
-        const mate = jointOrder[worstIdx]?.mateName ?? `joint#${worstIdx}`;
-        out.push(makeFailure(
-          'mechanism.unstable-under-gravity',
-          `Mate '${mate}' requires a non-finite torque (${formatTorque(worstVal)} N·m) ` +
-          `to hold pose '${s.sample.name}'. The mechanism has a singular configuration ` +
-          `at this pose — it cannot be held against gravity. Verify part masses, joint axes, and that the chain doesn't have a redundant constraint.`,
-        ));
-        // One failure per pose is enough; the agent doesn't need every
-        // joint's torque in addition to the smoking-gun one.
-        break;
-      }
-    } catch (e) {
-      // mj_inverse can throw on truly degenerate models (e.g. zero
-      // mass everywhere). Surface as the same failure code.
-      const msg = e instanceof Error ? e.message : String(e);
-      out.push(makeFailure(
-        'mechanism.unstable-under-gravity',
-        `Could not compute required torques at pose '${s.sample.name}': ${msg}.`,
-      ));
-      break;
-    }
-  }
-
-  return out;
-}
-
-/**
- * Per the plan §Task 5: from REST pose, simulate 0.5 s under gravity
- * with all actuators at zero force. Report:
- *   - any joint that drifts more than 5° (DROP_TEST_JOINT_DRIFT_RAD)
- *   - any body that translates more than 50 mm (DROP_TEST_BODY_DRIFT_M)
- *
- * Both failure shapes use the `mechanism.drops-on-release` code so the
- * agent surfaces a single diagnostic group; the per-failure message
- * carries the specific joint / body and the magnitude.
- */
-
-
-function allArticulatedMatesDriven(
-  jointOrder: readonly { mateName: string }[],
-  drivenMates: ReadonlySet<string>,
-): boolean {
-  return jointOrder.length > 0 && jointOrder.every((j) => drivenMates.has(j.mateName));
-}
-
-function dropTestJointDriftFailure(
-  finalQpos: readonly number[],
-  restQpos: readonly number[],
-  jointOrder: readonly { mjcfName: string; mateName: string }[],
-  drivenMates: ReadonlySet<string>,
-): CompilerDiagnostic | undefined {
-  let worstJointIdx = -1;
-  let worstJointDriftRad = 0;
-  for (let i = 0; i < finalQpos.length && i < restQpos.length; i++) {
-    const drift = Math.abs(finalQpos[i] - restQpos[i]);
-    if (drift > worstJointDriftRad) {
-      worstJointDriftRad = drift;
-      worstJointIdx = i;
-    }
-  }
-  if (worstJointDriftRad <= DROP_TEST_JOINT_DRIFT_RAD) return undefined;
-  const mate = jointOrder[worstJointIdx]?.mateName ?? `joint#${worstJointIdx}`;
-  if (drivenMates.has(mate)) return undefined;
-  const driftDeg = (worstJointDriftRad * 180) / Math.PI;
-  return makeFailure(
-    'mechanism.drops-on-release',
-    `Mate '${mate}' drifted ${driftDeg.toFixed(1)}° from rest in ${DROP_TEST_DURATION_S.toFixed(1)} s under gravity ` +
-    `(threshold ${(DROP_TEST_JOINT_DRIFT_RAD * 180 / Math.PI).toFixed(0)}°). The mechanism does not hold its declared rest pose without a brake or actuator — add arm.tendon(...) across this joint, or declare it actively driven via arm.mechanicalJoint(...).`,
-  );
-}
-
-function dropTestBodyDriftFailure(
-  finalXpos: ReadonlyMap<string, readonly [number, number, number]>,
-  restXpos: ReadonlyMap<string, readonly [number, number, number]>,
-): CompilerDiagnostic | undefined {
-  let worstBody: string | undefined;
-  let worstBodyDriftM = 0;
-  for (const [name, pos] of finalXpos) {
-    const rest = restXpos.get(name);
-    if (rest === undefined) continue;
-    const d = Math.hypot(pos[0] - rest[0], pos[1] - rest[1], pos[2] - rest[2]);
-    if (d > worstBodyDriftM) {
-      worstBodyDriftM = d;
-      worstBody = name;
-    }
-  }
-  if (worstBodyDriftM <= DROP_TEST_BODY_DRIFT_M || worstBody === undefined) return undefined;
-  const driftMm = worstBodyDriftM * 1000;
-  return makeFailure(
-    'mechanism.drops-on-release',
-    `Body '${worstBody}' translated ${driftMm.toFixed(0)} mm in ${DROP_TEST_DURATION_S.toFixed(1)} s under gravity ` +
-    `(threshold ${(DROP_TEST_BODY_DRIFT_M * 1000).toFixed(0)} mm). The mechanism does not hold this body in place — likely an ejected child of a 0-DOF mate or a free body the mate graph thinks is grounded but isn't.`,
-  );
-}
-
-async function runDropOnRelease(
-  session: Awaited<ReturnType<typeof loadMujocoSession>>,
-  jointOrder: readonly { mjcfName: string; mateName: string }[],
-  arm: Assembly,
-): Promise<CompilerDiagnostic[]> {
-  // Actively-driven hinges (complete mechanicalJoint intent) are treated as
-  // held by an actuator. MuJoCo emission still has no position motors, so we
-  // honour the authoring contract here rather than demanding a tendon on every
-  // servo joint. Passive jointSupport hinges still need arm.tendon(...).
-  const drivenMates = collectRegistryDrivenMates(arm);
-  if (allArticulatedMatesDriven(jointOrder, drivenMates)) return [];
-
-  // Reset to the model's qpos0 — criterion 5 left the session at its
-  // last-sampled pose. The drop-test's premise is "from REST".
-  const restPose = new Array(session.nq).fill(0);
-  session.setPose(restPose);
-  session.forward();
-  const restQpos = session.getQpos().slice();
-  const restXpos = new Map<string, [number, number, number]>();
-  for (const [name, pos] of session.xposNow()) {
-    restXpos.set(name, [pos[0], pos[1], pos[2]]);
-  }
-
-  try {
-    const { qpos: finalQpos, xpos: finalXpos } = session.step(
-      DROP_TEST_DURATION_S,
-      DROP_TEST_DT_S,
-    );
-    const out: CompilerDiagnostic[] = [];
-    const jointFail = dropTestJointDriftFailure(finalQpos, restQpos, jointOrder, drivenMates);
-    if (jointFail !== undefined) out.push(jointFail);
-    const bodyFail = dropTestBodyDriftFailure(finalXpos, restXpos);
-    if (bodyFail !== undefined) out.push(bodyFail);
-    return out;
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
-    return [makeFailure(
-      'mechanism.drops-on-release',
-      `The drop-test simulation failed: ${msg}. The mechanism diverged numerically under gravity — likely an unstable mass / inertia / linkage combination. Verify density declarations and joint axes.`,
-    )];
-  }
-}
-
-/**
- * Translate a kernelCAD `NumericPoses` map (keyed by mate name) into
- * a flat qpos array matching the MuJoCo model's joint order.
- *
- * For revolute / cylindrical / pin_slot the kernelCAD pose value is in
- * degrees; MJCF converts to radians. For prismatic it's in mm; MJCF
- * converts to metres. Anything we don't recognize (ball mates) defaults
- * to 0 — drop-test will exercise it, criterion 5's "is it finite" check
- * will still gate it.
- *
- * Returns `undefined` if the joint-name-to-mate-name lookup fails;
- * caller skips the pose silently. The MJCF emitter is the only producer
- * of these names so this should only happen in test scaffolds that
- * inject hand-built poses with the wrong keys.
- */
-function jointOrderToQpos(
-  jointOrder: readonly { mjcfName: string; mateName: string }[],
-  poses: NumericPoses,
-): number[] | undefined {
-  const out: number[] = [];
-  for (const j of jointOrder) {
-    const v = poses[j.mateName];
-    if (v === undefined) {
-      out.push(0); // unposed mate → default joint angle 0
-      continue;
-    }
-    if (typeof v === 'number') {
-      // Defer the unit conversion to a heuristic — if the value's
-      // magnitude is > 2π, it's almost certainly degrees (the v0.6
-      // kernelCAD convention) so convert. Otherwise treat as radians.
-      // This is good enough for the v0.7 corpus where mate poses are
-      // ALWAYS the user-provided degrees value; the MJCF emitter has
-      // already lowered the limits, so MuJoCo's internal qpos is in
-      // radians.
-      out.push(Math.abs(v) > 2 * Math.PI ? (v * Math.PI) / 180 : v);
-    } else if (Array.isArray(v)) {
-      // Ball joint pose triple → 4 quaternion slots in MuJoCo's qpos.
-      // For the v0.7 corpus we don't exercise ball mates, so default
-      // to identity. A future slice (when ball mates appear in the
-      // physics gate) can wire the Euler-to-quat conversion here.
-      out.push(1, 0, 0, 0);
-    } else {
-      out.push(0);
-    }
-  }
-  return out;
-}
-
-function formatTorque(v: number): string {
-  if (!Number.isFinite(v)) return v > 0 ? '+Infinity' : v < 0 ? '-Infinity' : 'NaN';
-  return v.toFixed(2);
-}
-
-// ─────────────────────────────────────────────────────────────────────────
-// Helpers
-// ─────────────────────────────────────────────────────────────────────────
-
 /**
  * Build the LOUD non-fatal diagnostic for a skipped (over-budget) BREP
  * pose-sweep. Severity 'warn' so it carries the 'unverified' verdict with
@@ -1502,26 +1195,3 @@ function makeBudgetExceeded(
   };
 }
 
-function makeFailure(
-  code:
-    | 'mechanism.disconnect'
-    | 'mechanism.interpenetration'
-    | 'mechanism.dof-mismatch'
-    | 'mechanism.orphan-part'
-    | 'mechanism.unstable-under-gravity'
-    | 'mechanism.drops-on-release'
-    | 'mechanism.joint-mesh-gap'
-    | 'mechanism.tendon-body-intersect'
-    | 'mechanism.rest-interpenetration'
-    | 'mechanism.mate-gap',
-  message: string,
-): CompilerDiagnostic {
-  return {
-    target: 'export-occt',
-    code,
-    severity: 'error',
-    message,
-    hint: HINT_TEMPLATES[code].template,
-    nextAction: HINT_TEMPLATES[code].nextAction,
-  };
-}

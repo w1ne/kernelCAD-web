@@ -18,8 +18,10 @@ import type { FaceQuery } from './queryTypes';
 import type { FeatureId } from './types';
 
 /** How a study names faces. Either a `FaceQuery` (the same selector object
- *  `list_faces` / `.shell()` / `.hole()` take) or a `@kc[...]` topology-ref
- *  string as returned by `list_faces`. One vocabulary, no third syntax. */
+ *  `list_faces` / `.shell()` / `.hole()` take) or a string: a `@kc[...]`
+ *  topology ref as returned by `list_faces`, a bare face label ('bottom'),
+ *  which must match exactly one face, or an `@kcq[...]` Query, which binds
+ *  every face it selects. */
 export type FeaFaceSelector = FaceQuery | string;
 
 /** Explicit material properties, for a grade outside the named table.

@@ -28,10 +28,12 @@ import { verifyAnimation, type AnimationCollision } from '../../modeling/animati
 import {
   HEADLESS_VIEWPORT,
   loadFeatureMeshesIntoPage,
+  updateFeatureTransformsOnPage,
   openDemoPlayerPage,
   type DemoPlayerPageHandle,
   type HeadlessObjectFilter,
 } from './headlessRender';
+import { canReuseLoadedMeshes } from './rigidFrameReuse';
 import type {
   CaptureAnimationOpts,
   CaptureAnimationResult,
@@ -478,12 +480,18 @@ async function renderFramePhase(params: {
   verifyFields: VerifyFieldsFn;
   partialNote: string;
   abortFfmpeg: () => Promise<void>;
-}): Promise<{ png: Buffer } | { failure: CaptureAnimationResult }> {
-  const { frame, i, page, meshing, opts, bounds, written, durationMs, fps, stashedWarns, verifyFields, partialNote, abortFfmpeg } = params;
+  loadedFeatures: MeshResult['features'] | undefined;
+}): Promise<{ png: Buffer; loadedFeatures: MeshResult['features'] } | { failure: CaptureAnimationResult }> {
+  const { frame, i, page, meshing, opts, bounds, written, durationMs, fps, stashedWarns, verifyFields, partialNote, abortFfmpeg, loadedFeatures } = params;
   // (b) browser render ops — ENVIRONMENT fault.
   let png: Buffer;
   try {
-    await loadFeatureMeshesIntoPage(page, meshing.features.map(serializeForBridge), bounds ?? meshing.bounds);
+    if (canReuseLoadedMeshes(loadedFeatures, meshing.features)) {
+      // Geometry is already in the page: send only the 16-value transforms.
+      await updateFeatureTransformsOnPage(page, meshing.features, bounds ?? meshing.bounds);
+    } else {
+      await loadFeatureMeshesIntoPage(page, meshing.features.map(serializeForBridge), bounds ?? meshing.bounds);
+    }
     if (opts.backdrop !== undefined) {
       await page.evaluate(
         (background) => window.__demoPlayer!.setPublishStage({ background, shadow: false }),
@@ -526,7 +534,7 @@ async function renderFramePhase(params: {
       },
     };
   }
-  return { png };
+  return { png, loadedFeatures: meshing.features };
 }
 
 export async function writeFrameOutputPhase(params: {
@@ -646,6 +654,9 @@ export async function runFrameLoopPhase(params: {
   const partialNote = framesDir !== undefined
     ? `The ${written} frame PNG(s) already written to ${framesDir} were kept.`
     : 'The partial MP4 was deleted.';
+  // Features last loaded into the page. A frame whose mesh buffers match these
+  // only needs a transform update (see rigidFrameReuse.ts).
+  let loadedFeatures: MeshResult['features'] | undefined;
   for (let i = 0; i < frames.length; i += 1) {
     const frame = frames[i];
     const meshResult = await updateFrameModelPhase({
@@ -654,8 +665,10 @@ export async function runFrameLoopPhase(params: {
     if ('failure' in meshResult) return meshResult;
     const renderResult = await renderFramePhase({
       frame, i, page, meshing: meshResult.meshing, opts, bounds: lockedBounds, written, durationMs, fps, stashedWarns, verifyFields, partialNote, abortFfmpeg,
+      loadedFeatures,
     });
     if ('failure' in renderResult) return renderResult;
+    loadedFeatures = renderResult.loadedFeatures;
     const writeResult = await writeFrameOutputPhase({
       frame, i, framesDir, ffmpeg, png: renderResult.png, written, durationMs, fps, stashedWarns, verifyFields, abortFfmpeg,
     });

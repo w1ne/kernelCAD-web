@@ -45,21 +45,20 @@ describe('pickEdges', () => {
     expect(result.length).toBe(1); // cylinder top is one circular edge
   });
 
-  it('returns error when face filter is on a non-primitive (boolean result)', () => {
+  it('resolves the top-face edges of a lineage-less boolean result by the box rule', () => {
     const box = OcctBackend.box(20, 20, 20);
     const cyl = OcctBackend.cylinder(20, 5).translate(10, 10, -1);
     const bool = box.subtract(cyl); // result has no kind tag
     const result = pickEdges(filletWithFace('bool_1', 'top'), bool, undefined);
-    if (!('error' in result)) throw new Error('expected error, got edges');
-    expect(result.error.code).toBe('feature.face-ref.not-applicable');
-    expect(result.error.severity).toBe('error');
+    if ('error' in result) throw new Error(result.error.message);
+    expect(result).toHaveLength(4); // the blind bore stops 1 mm under the top
   });
 
-  it('returns error when face filter is on a transformed primitive', () => {
+  it('resolves the top-face edges of a lineage-less transformed primitive', () => {
     const box = OcctBackend.box(20, 20, 20).translate(5, 0, 0); // transform drops kind tag
     const result = pickEdges(filletWithFace('box_1', 'top'), box, undefined);
-    if (!('error' in result)) throw new Error('expected error, got edges');
-    expect(result.error.code).toBe('feature.face-ref.not-applicable');
+    if ('error' in result) throw new Error(result.error.message);
+    expect(result).toHaveLength(4);
   });
 
   it('returns error when canonical face is not applicable to this primitive', () => {

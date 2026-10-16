@@ -39,7 +39,7 @@ export const MECHANISM_CODES = {
   },
   'mechanism.orphan-part': {
     hintTemplate:
-      "Disconnected components in the assembly graph. Connect every orphan body with connectors + mates/joints: shafts/hinges/gears → partRef.connector(name, { type: 'axis', origin: { kind: 'vec3', value: [x,y,z] }, axis: [...] }) then arm.mate(name, 'a.conn', 'b.conn', 'revolute'); rigid mounts → type: 'frame' + mate(..., 'fastened'); or use arm.revolute/.prismatic/.ball/.fixed. Connector types are only frame|axis|planar|ball. Only a mechanism (an assembly with mates, joints, transmissions or a solvedModel call) needs every part linked; if a part is deliberately free (a loose accessory, a display or print-layout part), do not invent a mate — pass { skipMechanismCheck: true } to evaluate_script.",
+      "Disconnected components in the assembly graph. Connect every orphan body with connectors + mates/joints: shafts/hinges/gears → partRef.connector(name, { type: 'axis', origin: { kind: 'vec3', value: [x,y,z] }, axis: [...] }) then arm.mate(name, 'a.conn', 'b.conn', 'revolute'); rigid mounts → type: 'frame' + mate(..., 'fastened'); or use arm.revolute/.prismatic/.ball/.fixed. Connector types are only frame|axis|planar|ball. Only a mechanism (an assembly with mates or joints) needs every part linked; if a part is deliberately free (a loose accessory, a display or print-layout part), do not invent a mate — pass { skipMechanismCheck: true } to evaluate_script.",
     nextAction: {
       kind: 'rewrite-feature',
       guidance:
@@ -47,7 +47,7 @@ export const MECHANISM_CODES = {
     },
     defaultSeverity: 'error',
     group: 'mechanism',
-    description: 'A part declared on a mechanism (an assembly with mates, joints, transmissions or a solvedModel call) is not reachable from any other part via mate, joint-primitive, or connect edges — the assembly graph has disconnected components. Diagnostics list every disconnected body id and suggest connector types. A plain multi-part assembly with no mates is independent bodies, not a mechanism: it gets one info note, not an error.',
+    description: 'A part declared on a mechanism (an assembly with at least one mate or joint) is not reachable from any other part via mate, joint-primitive, or connect edges — the assembly graph has disconnected components. Diagnostics list every disconnected body id and suggest connector types. A multi-part assembly with no mates and no joints is independent bodies, not a mechanism: the check does not run and nothing is emitted.',
   },
   // Physics-grounded loop — T3 slice (post-condition trust gate). Emitted by
   // `mechanismTruth.ts` when the BREP pose-sweep work estimate exceeds the
@@ -68,6 +68,17 @@ export const MECHANISM_CODES = {
     defaultSeverity: 'error',
     group: 'mechanism',
     description: 'The model declares motion (an animationView track that changes a param, a mechanicalJoint drive or a transmission) on a joint that is fastened, or an animated param moves a fastened part only through its geometry while no articulated joint takes that param as its pose.',
+  },
+  // Per-mate satisfaction along the sweep (`mateClosure.ts`). A loop that
+  // does not close at rest keeps the solver's own codes; this one is for a
+  // loop that closes at rest and comes apart when a joint moves.
+  'mechanism.mate-unsatisfied': {
+    hintTemplate:
+      "A loop-closing mate comes apart when a joint moves: the joint cannot move on its own. Couple the joints that must move together (arm.coupleMates), or cut the loop into an open chain so each joint is free, and keep the mate connectors on the shared axis.",
+    nextAction: { kind: 'fix-arg', field: 'mateConnectorOrigin' },
+    defaultSeverity: 'error',
+    group: 'mechanism',
+    description: "At a swept pose a loop-closing mate's two connector origins sit more than 0.01 mm apart although they meet at rest: the declared motion breaks the mate.",
   },
   'mechanism.unverified-budget-exceeded': {
     hintTemplate:

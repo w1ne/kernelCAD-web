@@ -32,7 +32,17 @@ describe('two-finger coupled gripper example', () => {
     expect(scene.part('right-finger').connectors?.some((connector) => connector.name === 'tip')).toBe(true);
   }, 120_000);
 
-  it('is rejected until its legacy pin-axis joints model finite supported hinges', async () => {
+  it('with interference checks off, its hinges only draw advisory findings', async () => {
+    // Evidence (2026-10-11): the geometric hinge-support checks
+    // (assembly.joint-axis.unbound, assembly.mechanical.revolute-unsupported,
+    // assembly.mechanical.revolute-contact-missing) report nothing for this
+    // gripper — each hinge connector lies on palm and finger material and
+    // the bodies touch along the axis. They touch because the finger boxes
+    // are sunk 2.5 mm into the palm plate (365.6 mm³ shared per finger, no
+    // pin, no bore): that defect is an INTERFERENCE, owned by the
+    // interference gate, which this call switches off. What is left is
+    // advisory: no declared support intent, no limits on the coupled curls
+    // (they inherit grip's 0-40 deg through coupleMates).
     const result = await reviewCadTool({
       file: EXAMPLE_PATH,
       includeInterference: false,
@@ -40,12 +50,25 @@ describe('two-finger coupled gripper example', () => {
       gripperAperture: { left: 'left-finger.tip', right: 'right-finger.tip' },
     });
 
-    expect(result.ok).toBe(false);
-    expect(result.diagnostics).toEqual(expect.arrayContaining([
-      expect.objectContaining({ code: 'assembly.joint-topology.missing-limit' }),
-      expect.objectContaining({ code: 'assembly.joint-topology.unsupported-axis' }),
-    ]));
+    const advisory = result.diagnostics.filter((d) =>
+      d.code === 'assembly.joint-topology.unsupported-axis' || d.code === 'assembly.mate.limit-missing');
+    expect(advisory.map((d) => `${d.code}/${d.severity}`).sort()).toEqual([
+      'assembly.joint-topology.unsupported-axis/warning',
+      'assembly.joint-topology.unsupported-axis/warning',
+      'assembly.joint-topology.unsupported-axis/warning',
+      'assembly.mate.limit-missing/warning',
+      'assembly.mate.limit-missing/warning',
+    ]);
+    expect(result.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
   }, 180_000);
+
+  it('is rejected by the interference check: the finger hinges are sunk into the palm (issue #354)', async () => {
+    const result = await reviewCadTool({ file: EXAMPLE_PATH, includeInterference: true });
+    expect(result.ok).toBe(false);
+    const overlaps = result.diagnostics.filter((d) => d.code === 'assembly.interference.overlap' && d.severity === 'error');
+    expect(overlaps.map((d) => d.message).join('\n')).toMatch(/'palm' and 'left-finger' overlap by 365\.\d+ mm³/);
+    expect(overlaps.map((d) => d.message).join('\n')).toMatch(/'palm' and 'right-finger' overlap by 365\.\d+ mm³/);
+  }, 240_000);
 
   // P3 physics-loop sweep (2026-06-01): two-finger-coupled-gripper
   // uses vec3 pin-axis connectors instead of joint.clevis(...), so the

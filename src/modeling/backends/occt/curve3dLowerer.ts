@@ -19,6 +19,41 @@ export interface Curve3DLowerResult {
   /** OCCT `TopoDS_Edge` wrapping a `Geom_BSplineCurve`. */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   edge: any;
+  /** Built, but worth telling the author (the caller turns these into
+   *  diagnostics on its own feature). */
+  warnings?: Curve3DLowerWarning[];
+}
+
+export interface Curve3DLowerWarning {
+  code: 'feature.curve3d.closed-seam-kink';
+  message: string;
+}
+
+/** Seam legs within this angle count as parallel (a smooth, C1 seam). */
+const SEAM_PARALLEL_DEG = 0.5;
+
+/**
+ * A closed curve without knots is a clamped curve whose last pole repeats
+ * the first: smooth at the seam only when the net's first and last legs are
+ * collinear. Degree 1 is a polyline, cornered everywhere by design.
+ */
+function seamKinkWarning(m: Curve3DMetadata, pts: readonly (readonly number[])[]): Curve3DLowerWarning | undefined {
+  if (m.closed !== true || m.knots !== undefined || m.degree < 2 || pts.length < 3) return undefined;
+  const n = pts.length;
+  const a = [0, 1, 2].map((k) => pts[1][k] - pts[0][k]);
+  const b = [0, 1, 2].map((k) => pts[n - 1][k] - pts[n - 2][k]);
+  const la = Math.hypot(a[0], a[1], a[2]);
+  const lb = Math.hypot(b[0], b[1], b[2]);
+  if (la < 1e-12 || lb < 1e-12) return undefined;
+  const cos = (a[0] * b[0] + a[1] * b[1] + a[2] * b[2]) / (la * lb);
+  const angle = (Math.acos(Math.min(1, Math.max(-1, cos))) * 180) / Math.PI;
+  if (angle <= SEAM_PARALLEL_DEG) return undefined;
+  return {
+    code: 'feature.curve3d.closed-seam-kink',
+    message:
+      `closed nurbsCurve (degree ${m.degree}, no knots): the seam at [${pts[0].map((v) => Number(v.toFixed(3))).join(', ')}] ` +
+      `is a ${angle.toFixed(1)}° corner (C0) — the first and last legs of the control net are not collinear.`,
+  };
 }
 
 /**
@@ -43,13 +78,18 @@ export interface Curve3DLowerResult {
 export function lowerCurve3D(m: Curve3DMetadata): Curve3DLowerResult {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const oc = getOC() as any;
-  const n = m.controlPoints.length;
-  const periodic = m.closed ?? false;
+  const closed = closeControlNet(m);
+  const n = closed.controlPoints.length;
+  // A clamped knot vector cannot describe a periodic curve (OCCT throws), so a
+  // `closed` curve without explicit knots is built as a clamped curve whose
+  // first and last poles coincide: geometrically closed, and C1 at the seam
+  // when the net's end tangents match (spline3d's closed net does).
+  const periodic = (m.closed ?? false) && m.knots !== undefined;
 
   // 1-indexed (1..n) per OCCT convention.
   const polesArr = new oc.TColgp_Array1OfPnt_2(1, n);
   for (let i = 0; i < n; i++) {
-    const [x, y, z] = m.controlPoints[i];
+    const [x, y, z] = closed.controlPoints[i];
     polesArr.SetValue(i + 1, new oc.gp_Pnt_3(x, y, z));
   }
 
@@ -57,10 +97,10 @@ export function lowerCurve3D(m: Curve3DMetadata): Curve3DLowerResult {
   // matches and every weight is finite and positive.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let weightsArr: any | undefined;
-  if (m.weights !== undefined) {
+  if (closed.weights !== undefined) {
     weightsArr = new oc.TColStd_Array1OfReal_2(1, n);
     for (let i = 0; i < n; i++) {
-      weightsArr.SetValue(i + 1, m.weights[i]);
+      weightsArr.SetValue(i + 1, closed.weights[i]);
     }
   }
 
@@ -103,5 +143,20 @@ export function lowerCurve3D(m: Curve3DMetadata): Curve3DLowerResult {
   const edgeBuilder = new oc.BRepBuilderAPI_MakeEdge_24(handle);
   const edge = edgeBuilder.Edge();
 
-  return { edge };
+  const kink = seamKinkWarning(m, closed.controlPoints);
+  return kink ? { edge, warnings: [kink] } : { edge };
+}
+
+/** For a `closed` curve with no explicit knots, append the first pole (and
+ *  weight) when the net does not already end where it starts, so the clamped
+ *  curve closes on itself. Every other curve passes through untouched. */
+function closeControlNet(m: Curve3DMetadata): Pick<Curve3DMetadata, 'controlPoints' | 'weights'> {
+  if (m.closed !== true || m.knots !== undefined) return m;
+  const first = m.controlPoints[0];
+  const last = m.controlPoints[m.controlPoints.length - 1];
+  if (first.every((v, k) => Math.abs(v - last[k]) < 1e-9)) return m;
+  return {
+    controlPoints: [...m.controlPoints, first],
+    ...(m.weights !== undefined ? { weights: [...m.weights, m.weights[0]] } : {}),
+  };
 }
