@@ -1,6 +1,37 @@
 {
   "entries": [
     {
+      "slug": "roboto-01",
+      "title": "RoboParty ROBOTO 01 — 24-DoF Humanoid",
+      "author": {
+        "handle": "RoboParty",
+        "url": "https://github.com/Roboparty"
+      },
+      "version": "v0.17",
+      "prompt": "Kinematic assembly from RoboParty RP1 24-DoF URDF with 25 referenced STL visual link meshes, editable joint parameters and locally evaluated FK.",
+      "source": "curated",
+      "codeLocal": "../../examples/gallery/roboto-01.kcad.ts",
+      "code": "https://github.com/w1ne/kernelCAD-web/blob/develop/examples/gallery/roboto-01.kcad.ts",
+      "tags": [
+        "humanoid",
+        "robotics",
+        "URDF",
+        "kinematics",
+        "24-DoF",
+        "STL",
+        "assembly"
+      ],
+      "featured": false,
+      "createdAt": "2026-10-15",
+      "appUrl": "https://app.kernelcad.com/studio?gallery=roboto-01",
+      "previewMesh": {
+        "tolerance": 4,
+        "angularTolerance": 1.0
+      },
+      "meshopt": true,
+      "video": "../../docs/demos/gallery/roboto-01/demo.mp4"
+    },
+    {
       "slug": "hand-coffee-grinder",
       "title": "Dual-Bearing Hand Coffee Grinder",
       "author": {
@@ -65,7 +96,7 @@
     },
     {
       "slug": "make-no-mistakes-keycap",
-      "title": "MAKE NO MISTAKES \u2014 2.0u Keycap",
+      "title": "MAKE NO MISTAKES — 2.0u Keycap",
       "author": {
         "handle": "w1ne",
         "url": "https://github.com/w1ne"
@@ -151,7 +182,7 @@
         "url": "https://x.com/kernelcad"
       },
       "version": "v0.12.0",
-      "prompt": "Design a compact countertop spice dispenser in a \u00d888 \u00d7 110 mm mug format that doses a measured ~0.5 ml on demand. Use a six-chamber drum that indexes one chamber pitch over a single metering station, plus a separate pocket metering disc that fills, swings to an enclosed drop chute, dwells, and returns. Keep the dose path enclosed, the electronics bay isolated, and deliver the full dispense cycle as a looping cutaway animation with collision-free motion.",
+      "prompt": "Design a compact countertop spice dispenser in a Ø88 × 110 mm mug format that doses a measured ~0.5 ml on demand. Use a six-chamber drum that indexes one chamber pitch over a single metering station, plus a separate pocket metering disc that fills, swings to an enclosed drop chute, dwells, and returns. Keep the dose path enclosed, the electronics bay isolated, and deliver the full dispense cycle as a looping cutaway animation with collision-free motion.",
       "source": "curated",
       "video": "../../docs/demos/v0.12/spice-dispenser-carousel/demo.mp4",
       "codeLocal": "../../examples/spice-dispenser-carousel.kcad.ts",
@@ -170,13 +201,13 @@
     },
     {
       "slug": "meta-glasses",
-      "title": "Ray-Ban Meta \u2014 Full Wayfarer-Style Smart Glasses",
+      "title": "Ray-Ban Meta — Full Wayfarer-Style Smart Glasses",
       "author": {
         "handle": "kernelcad",
         "url": "https://x.com/kernelcad"
       },
       "version": "v0.11.0",
-      "prompt": "# Build full Ray-Ban Meta \u2014 Wayfarer-style smart glasses\n\nReproduce a complete pair of Ray-Ban Meta-style Wayfarer smart glasses as a kernelCAD `.kcad.ts` gallery model. Build the full physical product, not a front-face facade.\n\nTargets:\n\n- Chunky glossy black acetate Wayfarer frame with winged upper corners, tapered lower cheeks, and a narrow bridge/nose notch.\n- Two trapezoidal smoked lens inserts seated into shallow frame rebates.\n- Asymmetric smart-glasses hardware: recessed camera on the left upper outer corner and privacy LED on the opposite upper outer corner.\n- Full temples/arms with hinge blocks, hinge barrels, thick electronics housings, tapered rear sections, and downward ear bends.\n- Production details that belong on the object: right-side touch-control strip, dark lens/camera glass materials, and visible hinge hardware.\n\nReturn named physical parts so the gallery GLB exposes frame, lenses, camera, LED, hinges, and temples. Z-up, millimetres.",
+      "prompt": "# Build full Ray-Ban Meta — Wayfarer-style smart glasses\n\nReproduce a complete pair of Ray-Ban Meta-style Wayfarer smart glasses as a kernelCAD `.kcad.ts` gallery model. Build the full physical product, not a front-face facade.\n\nTargets:\n\n- Chunky glossy black acetate Wayfarer frame with winged upper corners, tapered lower cheeks, and a narrow bridge/nose notch.\n- Two trapezoidal smoked lens inserts seated into shallow frame rebates.\n- Asymmetric smart-glasses hardware: recessed camera on the left upper outer corner and privacy LED on the opposite upper outer corner.\n- Full temples/arms with hinge blocks, hinge barrels, thick electronics housings, tapered rear sections, and downward ear bends.\n- Production details that belong on the object: right-side touch-control strip, dark lens/camera glass materials, and visible hinge hardware.\n\nReturn named physical parts so the gallery GLB exposes frame, lenses, camera, LED, hinges, and temples. Z-up, millimetres.",
       "source": "curated",
       "video": "../../docs/demos/gallery/meta-glasses/demo.mp4",
       "codeLocal": "../../examples/gallery/meta-glasses.kcad.ts",
@@ -203,7 +234,7 @@
         "url": "https://x.com/kernelcad"
       },
       "version": "v0.7.1",
-      "prompt": "# Task: Grid Heat-Sink Fin Array\n\nBuild a flat heat-sink base and a grid-patterned fin array unioned onto it.\n\nFunctional requirements:\n\n- Base: 100 \u00d7 100 \u00d7 3 mm plate, anchored at origin so it spans `[0, 100] \u00d7 [0, 100] \u00d7 [0, 3]`.\n- One source fin: 3 \u00d7 25 \u00d7 12 mm box. Translate it so its bottom face sits on the base top (z = 3) and its corner anchors at (0, 0, 3).\n- Pattern the fin in a grid:\n  - x direction `[1, 0, 0]`, 8 instances, spacing 12 mm.\n  - y direction `[0, 1, 0]`, 3 instances, spacing 30 mm.\n- Union the fin grid onto the base.\n\nReturn the heat sink.\n\nZ-up, millimetres, degrees.",
+      "prompt": "# Task: Grid Heat-Sink Fin Array\n\nBuild a flat heat-sink base and a grid-patterned fin array unioned onto it.\n\nFunctional requirements:\n\n- Base: 100 × 100 × 3 mm plate, anchored at origin so it spans `[0, 100] × [0, 100] × [0, 3]`.\n- One source fin: 3 × 25 × 12 mm box. Translate it so its bottom face sits on the base top (z = 3) and its corner anchors at (0, 0, 3).\n- Pattern the fin in a grid:\n  - x direction `[1, 0, 0]`, 8 instances, spacing 12 mm.\n  - y direction `[0, 1, 0]`, 3 instances, spacing 30 mm.\n- Union the fin grid onto the base.\n\nReturn the heat sink.\n\nZ-up, millimetres, degrees.",
       "source": "curated",
       "video": "../../docs/demos/v0.7.1/grid-heat-sink-fin-array/demo.mp4",
       "codeLocal": "../../eval/tasks/grid-heat-sink-fin-array/solution-expert.kcad.ts",
@@ -227,7 +258,7 @@
         "url": "https://x.com/kernelcad"
       },
       "version": "v0.6.4",
-      "prompt": "# Raised Logo Extrusion (v0.6.4 \u2014 sketch.text)\n\nBuild a square base 60 \u00d7 60 \u00d7 2 mm with the text \"KC\" extruded 1.5 mm upward as a raised relief, centered on the base, rotated 15\u00b0 counter-clockwise for visual interest. Glyph cap height 20 mm.\n\nUse `sketch.text(\"KC\", { size: 20, align: 'center', position: [30, 30], rotation: 15 })` and chain `.extrude(1.5)`; then union with the base.",
+      "prompt": "# Raised Logo Extrusion (v0.6.4 — sketch.text)\n\nBuild a square base 60 × 60 × 2 mm with the text \"KC\" extruded 1.5 mm upward as a raised relief, centered on the base, rotated 15° counter-clockwise for visual interest. Glyph cap height 20 mm.\n\nUse `sketch.text(\"KC\", { size: 20, align: 'center', position: [30, 30], rotation: 15 })` and chain `.extrude(1.5)`; then union with the base.",
       "source": "curated",
       "video": "../../docs/demos/v0.6.4/raised-logo-extrusion/demo.mp4",
       "codeLocal": "../../eval/tasks/raised-logo-extrusion/solution-expert.kcad.ts",

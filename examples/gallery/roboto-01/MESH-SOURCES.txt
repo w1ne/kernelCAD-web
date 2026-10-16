@@ -1,0 +1,104 @@
+Derived visual STL mesh provenance
+Source RP1_description commit 84529a55649b5c9796d49093c266208c879f9f29
+Source license per project decision: CERN-OHL-W-2.0; see NOTICE.
+Bundled files are byte-for-byte original upstream meshes.
+base_link.STL
+  sha256 96ba7521e6b638bf66445a8ce84c83f5e2201921adb6567c8c77186224a6f5fd
+  bytes 5980484
+  triangles 119608
+left_ankle_pitch_link.STL
+  sha256 c28d2191ab8158921dc4c97f5c601463481c742982e68fe592c77086ac4ba659
+  bytes 63484
+  triangles 1268
+left_ankle_roll_link.STL
+  sha256 a30eadc6293bc01a9ba609e0ec0dd73128c7960d7ce84028cf9f208b77797d94
+  bytes 1222184
+  triangles 24442
+left_elbow_link.STL
+  sha256 a6139de9ee93f7a569966d32e05e2077658ed3fdb0af2ce97543f8568da153fe
+  bytes 3225884
+  triangles 64516
+left_hip_pitch_link.STL
+  sha256 4d3f42a4993546abf9db8548bf7fbd8c07d9b8ac1d1245aedbd7797473168161
+  bytes 1472784
+  triangles 29454
+left_hip_roll_link.STL
+  sha256 182e1c17450bbb0d7b23475bb40454eccb58c241a6a7956676d6856448257166
+  bytes 3652884
+  triangles 73056
+left_hip_yaw_link.STL
+  sha256 bdcd41e5bb648954bfafc842e5514b0c21facd4257c57d94edd5b48ba0986a20
+  bytes 2761684
+  triangles 55232
+left_knee_link.STL
+  sha256 c8773f8d663ca19fdad9bcf65c4e5b103205fcf71f8439177a66a639b08cacd9
+  bytes 8297884
+  triangles 165956
+left_shoulder_pitch_link.STL
+  sha256 762489f4151581769d5282a44ed7a0713729f58232b3c9572396a5ffdaacfda0
+  bytes 1521784
+  triangles 30434
+left_shoulder_roll_link.STL
+  sha256 ee1c70a7e3174fa128627138c5bc45448fa6be70e78aa8f68a6fdafe56b25834
+  bytes 2014584
+  triangles 40290
+left_shoulder_yaw_link.STL
+  sha256 7da2c2a19afe6b735bfce0b90cc13db2866025bfb1226b57e967ec3513127481
+  bytes 1724984
+  triangles 34498
+left_wrist_link.STL
+  sha256 af04c47d6f3a1d523514622c580d14194c8fce5fa495958763d118eff9546a08
+  bytes 1585184
+  triangles 31702
+right_ankle_pitch_link.STL
+  sha256 16cfa42efb30637bd69dad2507c87488e9c6a95570872081d55dec61b851c6de
+  bytes 63484
+  triangles 1268
+right_ankle_roll_link.STL
+  sha256 c6652d79355e217bd2bb4214847c1d14b40bb898c8ee47d8d346beefd6ead6b8
+  bytes 1222184
+  triangles 24442
+right_elbow_link.STL
+  sha256 e491173c87a43ef56a75b73e28f9c3245797866a7ea843176cc406287f4bc94d
+  bytes 3225984
+  triangles 64518
+right_hip_pitch_link.STL
+  sha256 10b922378deb7e1457faadf84534e94163c90c0fe2fcf7d1247b5da48f2405dc
+  bytes 1476784
+  triangles 29534
+right_hip_roll_link.STL
+  sha256 0404dcc006d0e90c3f6c3443dfc8f898a773a0ff4be8af23f2452e0f7d0b42fc
+  bytes 3652884
+  triangles 73056
+right_hip_yaw_link.STL
+  sha256 ca3a44857304d91cf12f8feee2f8a080082e57280d451287d9abb38533f5b827
+  bytes 3002184
+  triangles 60042
+right_knee_link.STL
+  sha256 948de10cde0b1dba834b18a021c691169c57276f22c8e36acd741580bd7f7886
+  bytes 8283084
+  triangles 165660
+right_shoulder_pitch_link.STL
+  sha256 4b5bd60dcbcf303a0cc38d18d08cb95c16dba069238db98e38b3c4f5b88b4d38
+  bytes 1521484
+  triangles 30428
+right_shoulder_roll_link.STL
+  sha256 b7dc61883819e8d2844227250e8e4c1a522b227ad83b3f8383580a342b2a734d
+  bytes 2133184
+  triangles 42662
+right_shoulder_yaw_link.STL
+  sha256 08a19c5bd9120ef84531b5cd63b8891658cad2fc7c5df46fe5c4087fae4c6c96
+  bytes 1725284
+  triangles 34504
+right_wrist_link.STL
+  sha256 dc2258b2fbd505f06feaae8224fb6bcf2cae8a4813c0e4f009a9270f81df4d4b
+  bytes 1586584
+  triangles 31730
+waist_roll_link.STL
+  sha256 8b952cde7a96d389b99ae0ad926ba1c7f380f3335857f9ab2831d6fa622a5f08
+  bytes 1237784
+  triangles 24754
+waist_yaw_link.STL
+  sha256 701f20ba36f352680f7abbdca836dfaedadc3f0182a0096b6a1595059293a425
+  bytes 2500084
+  triangles 50000
