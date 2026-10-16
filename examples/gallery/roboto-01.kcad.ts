@@ -76,8 +76,14 @@ const paintFor = (name: string) => name.includes('ankle_roll') ? rubber
   : name === 'waist_yaw_link' ? shellWhite
   : name.includes('waist') ? graphite
   : name.includes('knee') || name.includes('wrist') ? graphite : shellWhite;
+// Each link is sewn from its upstream STL into a kernelCAD B-rep shell. The
+// upstream visual meshes are not watertight (open seams, duplicated and
+// inconsistently oriented triangles), so they are accepted as open shells
+// (allowOpen): they render, export and carry the true triangles as faces, but
+// booleans and volume are undefined on them. tolerance 0.01 (STL units, metres)
+// closes the hairline seams between triangles without merging distinct features.
 const loadLink = async (name: string) =>
-  (await lib.meshFromSTL(`./roboto-01/meshes/${name}.STL`)).scale(1000).color(paintFor(name));
+  (await lib.fromSTL(`./roboto-01/meshes/${name}.STL`, { tolerance: 0.01, allowOpen: true })).scale(1000).color(paintFor(name));
 const refs: Record<string, ReturnType<typeof rp1.part>> = {
   base_link: rp1.part('base_link', await loadLink('base_link')),
 };
