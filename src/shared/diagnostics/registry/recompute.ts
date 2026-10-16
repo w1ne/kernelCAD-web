@@ -35,6 +35,6 @@ export const RECOMPUTE_CODES = {
     nextAction: { kind: 'fix-arg', field: 'kernel' },
     defaultSeverity: 'error',
     group: 'recompute',
-    description: 'A model or tool call selected a solid-modeling kernel that is not wired in this build (e.g. smlib before its backend ships).',
+    description: 'A model or tool call selected a solid-modeling kernel that is not wired in this build.',
   },
 } as const satisfies Record<`recompute.${string}`, DiagnosticCodeSpec>;

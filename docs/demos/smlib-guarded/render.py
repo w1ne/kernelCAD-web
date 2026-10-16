@@ -69,10 +69,10 @@ slide('fillet','Guarded constant-radius fillet',[
 ])
 slide('fallback','Legacy STEP: fallback is explicit',[
     '1. Import original legacy GT2 STEP',
-    '2. Rewrite STEP with OCCT before SMLib',
-    '3. Check whole-import volume + area',
+    '2. SMLib 0.3.1 reads 1613.939 mm³',
+    '3. Check normalized import volume + area',
     '4. Re-export candidate; check again',
-    'VOLUME_MISMATCH: +0.438083%',
+    'STEP round-trip mismatch: +0.438083%',
     'Returned shape is the OCCT reference',
     'Named warning + guard record retained',
 ])

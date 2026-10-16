@@ -7,9 +7,8 @@
 // of constructing an OCCT lowerer directly, so a second kernel (SMLib) can be
 // added behind this seam without touching them.
 //
-// Today only 'occt' is registered. 'smlib' is a known KernelId with no
-// factory: selecting it throws KernelUnavailableError, which carries a
-// `recompute.kernel.unavailable` CompilerDiagnostic. No silent fallback.
+// OCCT remains the default. SMLib is an optional guarded backend: rejected
+// candidates retain the OCCT reference and emit an explicit fallback diagnostic.
 import type { FeatureLowerer, ShapeBackend } from '../../kernel/backends/backend';
 import type { CompilerDiagnostic } from '../../shared/diagnostics/diagnostic';
 import { withNextAction } from '../../shared/diagnostics/diagnostic';

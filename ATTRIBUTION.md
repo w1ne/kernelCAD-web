@@ -80,7 +80,7 @@ hand edits.
 
 ## Opt-in solid-modeling dependency
 
-`@classcad/smlibwasm` is pinned to 0.2.3. The ClassCAD JavaScript bindings are
+`@classcad/smlibwasm` is pinned to 0.3.1. The ClassCAD JavaScript bindings are
 MIT-licensed (Copyright 2026 AWV Informatik AG); the bundled USD BRep/SMLib
 core is Apache-2.0 (Copyright 2020–2026 NVIDIA CORPORATION & AFFILIATES).
 The package also contains unmodified Lato Regular under OFL-1.1, with Reserved

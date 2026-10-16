@@ -71,9 +71,9 @@ export class SmlibLowerer implements FeatureLowerer {
           throw new GuardError('STEP_IMPORT_INVARIANT', 'Expected one closed solid');
         }
         const part = bodies[0];
-        // 0.2.3 hides the pre-seam body. Compare the whole import against the
-        // normalized OCCT producer at repair tolerance; this is conservative
-        // and cannot isolate seam repair from reconstruction drift.
+        // The published importer hides the pre-seam body, so compare the whole
+        // import with the normalized OCCT producer at repair tolerance. This
+        // conservative check cannot isolate seam repair from reconstruction drift.
         try { repairInvariant(before, nativeMeasures(part)); }
         catch (e) { throw new GuardError('STEP_IMPORT_INVARIANT', e instanceof Error ? e.message : String(e)); }
         return part;

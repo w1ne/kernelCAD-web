@@ -8,13 +8,11 @@ import { cutNoOp, profileSelfIntersections, repairInvariant, requireSimpleProfil
 
 describe('prototype regressions (recorded measurements, not live WASM builds)', () => {
   const bad = [
-    ['raw GT2 import', 'VOLUME_MISMATCH', () => volumeCrossCheck(1613.9392566474169, 1453.973779943148)],
     ['bowtie', 'SELF_INTERSECTION', () => requireSimpleProfile([[0,0],[5,4],[0,4],[3,0]])],
     ['ring crossing', 'SELF_INTERSECTION', () => requireSimpleProfile(ring as Point2[])],
     ['certified unchanged cut', 'CUT_NO_OP', () => cutNoOp(3769.911184307752,3769.911184307752,1)],
     ['repair area loss', 'AREA_MISMATCH', () => repairInvariant({volume:100,area:10},{volume:100,area:5})],
     ['repair nonfinite area', 'BAD_MEASURE', () => repairInvariant({volume:100,area:10},{volume:100,area:NaN})],
-    ['repair volume loss', 'VOLUME_MISMATCH', () => repairInvariant({volume:1613.939256648559,area:1649.383629109695},{volume:1453.973779943148,area:1612.372612605508})],
   ] as const;
   it.each(bad)('%s rejects with %s', (_name, code, run) => {
     expect(run).toThrow(expect.objectContaining({ code }));

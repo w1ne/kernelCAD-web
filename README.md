@@ -231,7 +231,8 @@ share face/edge picks with your MCP agent. Open the same script in Studio and
 use its session token; picks expire on model rebuild.
 
 For opt-in kernel selection and fallback diagnostics, see the
-[experimental guarded SMLib kernel guide](docs/smlib-kernel.md).
+[experimental guarded SMLib kernel guide](docs/smlib-kernel.md) and its
+[workflow demo bundle](docs/demos/smlib-guarded/README.md).
 
 ## Contributing
 

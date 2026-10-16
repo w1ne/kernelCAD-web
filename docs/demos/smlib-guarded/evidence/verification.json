@@ -1,29 +1,55 @@
 {
-  "date": "2026-10-14",
-  "implementationRevision": "f9bb076e7f8c3e602188196409f8b61f20f45dc1",
-  "tsc-b": "passed",
-  "lint": {
-    "errors": 0,
-    "warnings": 29,
-    "newWarnings": 0
+  "date": "2026-10-16",
+  "kernelPackage": "@classcad/smlibwasm@0.3.1",
+  "node": "v22.23.2",
+  "localRepros": {
+    "gt2RawStep": {
+      "volumeMm3": 1613.9392566476522,
+      "valid": true,
+      "faces": 49,
+      "status": "0.3.0 full-file volume loss no longer reproduces"
+    },
+    "isolatedTorusFace": {
+      "areaBeforeMm2": 23.777406229245948,
+      "areaAfterMm2": 6.574804589654093e-11,
+      "status": "seam-repair area collapse still reproduces"
+    },
+    "bowtieCut": {
+      "targetVolumeMm3": 3769.9111843077517,
+      "resultVolumeMm3": 3769.9111843077517,
+      "resultValid": true,
+      "status": "unchanged difference still reproduces"
+    },
+    "ring1200Cut": {
+      "targetVolumeMm3": 154415.56210924557,
+      "resultVolumeMm3": 154415.56210924554,
+      "pointCount": 1200,
+      "resultValid": true,
+      "status": "unchanged difference within floating-point noise still reproduces"
+    }
   },
-  "modifiedAreaCiTests": {
-    "files": 57,
-    "testsPassed": 465
+  "demo": {
+    "capture": "passed with the current integration and 0.3.1 package",
+    "renderer": "passed from captured returned meshes",
+    "video": "H.264, 1280x720, 24 fps, 20 seconds; visually inspected at 2, 7 and 12 seconds",
+    "fallback": "candidate STEP round-trip mismatch +0.438083%; OCCT reference returned"
   },
-  "newSmlibTestsPassed": 39,
-  "prototypeRecordedChecks": {
-    "bad": 7,
-    "healthy": 20
-  },
-  "cliBuild": "passed",
-  "qcBuild": "passed; all 94 cookbook bodies evaluate",
-  "defaultOcctFingerprintTests": "passed",
-  "pristineNpmTarballComparison": "all 74 packaged files identical to evaluated install",
-  "appBundle": "unchanged node:path dirname failure reproduced with original #937 registry",
-  "lazyBundle": "86-byte runtime dynamically imports separate SMLib/WASM chunk",
   "deployed": false,
   "hardwareAccepted": false,
-  "diskFreeGiB": 14,
-  "sourceReview": "important findings repaired; second source review no remaining important findings"
+  "quality": {
+    "typecheck": "passed (tsc -b --noEmit and site typecheck; route generator emitted four pre-existing non-route warnings)",
+    "lint": {
+      "status": "passed",
+      "errors": 0,
+      "warnings": 37,
+      "newSmlibWarnings": 0
+    },
+    "focusedTests": {
+      "status": "passed",
+      "files": 7,
+      "tests": 55,
+      "command": "vitest run tests/unit/modeling/smlib tests/unit/modeling/kernelRegistry.test.ts tests/integration/kernel/kernelSelection.test.ts"
+    },
+    "capabilitiesGenerator": "passed"
+  }
 }
