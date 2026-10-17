@@ -34,6 +34,8 @@ import type { FromSTLOptions } from './parts/fromMeshFormats';
 import type { FetchPartOpts } from './parts/fetchPart';
 import type { FindPartOpts, FindPartResult } from './parts/findPart';
 import type { StandardParts } from './parts/standardParts';
+import type { PartRequest, StackRequest } from './parts/familyTable';
+import type { PlacedStack } from './parts/placePart';
 import type { FromDXFOptions, FromSVGOptions } from './parts/fromVectorFormats';
 import type { ShapeList } from './selection/shapeList';
 import type { MaterializeOpts } from './sdf/materialize';
@@ -123,6 +125,10 @@ export interface PartsLib {
   fromSVG(path: string, opts?: FromSVGOptions): Promise<Sketch[]>;
   findPart(query: string, opts?: FindPartOpts): Promise<FindPartResult>;
   fetchPart(idOrQuery: string, opts?: FetchPartOpts): Promise<Shape>;
+  /** One call for every fastener family. Builds an envelope when no STEP file is present. */
+  part(request: PartRequest): Promise<Shape>;
+  /** Socket head, washer under the head, and for mode 'bolt' a washer and nut on the far side. */
+  stack(request: StackRequest): Promise<PlacedStack>;
   standard: StandardParts;
 }
 

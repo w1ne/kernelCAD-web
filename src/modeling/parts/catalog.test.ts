@@ -139,3 +139,45 @@ describe('bundled SG90 discovery', () => {
     });
   });
 });
+
+describe('user catalog overlay', () => {
+  let prev: string | undefined;
+  let dir: string;
+
+  beforeEach(() => {
+    prev = process.env.KERNELCAD_PARTS_DIR;
+    dir = mkdtempSync(join(tmpdir(), 'kc-user-parts-'));
+    mkdirSync(join(dir, 'socket-head-cap-screw'), { recursive: true });
+    writeFileSync(join(dir, 'socket-head-cap-screw', 'shop-m5x16.step'), 'stub');
+    writeFileSync(join(dir, 'index.json'), JSON.stringify({
+      schemaVersion: 1,
+      records: [{
+        id: 'shop-m5x16',
+        name: 'Shop M5x16',
+        category: 'fastener',
+        family: 'socket-head-cap-screw',
+        standard: 'ISO 4762',
+        tags: ['shop'],
+        attributes: { thread: 'M5', lengthMm: 16 },
+        sha256: 'abc',
+        source: 'local-catalog',
+        license: 'MIT',
+        connectors: ['head-bearing'],
+      }],
+    }));
+    process.env.KERNELCAD_PARTS_DIR = dir;
+  });
+
+  afterEach(() => {
+    if (prev === undefined) delete process.env.KERNELCAD_PARTS_DIR;
+    else process.env.KERNELCAD_PARTS_DIR = prev;
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('a dropped-in catalog overrides the bundled records and keeps the seed', () => {
+    const cat = loadCatalog();
+    const shop = resolveById(cat, 'shop-m5x16');
+    expect(shop?.stepPath).toMatch(/shop-m5x16\.step$/);
+    expect(resolveById(cat, 'iso-4762-m2x4')).toBeDefined();
+  });
+});

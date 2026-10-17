@@ -30,6 +30,8 @@ import type { FromDXFOptions, FromSVGOptions } from './fromVectorFormats';
 import type { FetchPartOpts } from './fetchPart';
 import type { FindPartOpts, FindPartResult } from './findPart';
 import type { StandardParts } from './standardParts';
+import type { PartRequest, StackRequest } from './familyTable';
+import type { PlacedStack } from './placePart';
 
 export interface HostPartsCtx {
   session: CaptureSession;
@@ -117,6 +119,16 @@ export async function fetchPartViaHost(
  * Using a Proxy rather than a hand-listed key map means this cannot drift as
  * parts are added to `StandardParts`.
  */
+export async function partViaHost(ctx: HostPartsCtx, request: PartRequest): Promise<Shape> {
+  const { placePart } = await import('./placePart');
+  return placePart(ctx, request);
+}
+
+export async function stackViaHost(ctx: HostPartsCtx, request: StackRequest): Promise<PlacedStack> {
+  const { placeStack } = await import('./placePart');
+  return placeStack(ctx, request);
+}
+
 export function standardPartsViaHost(ctx: HostPartsCtx): StandardParts {
   const cache = new Map<string, unknown>();
   const target = {} as Record<string, unknown>;

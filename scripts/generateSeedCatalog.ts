@@ -19,6 +19,18 @@ import type {
   ConnectorEntry,
   ConnectorManifest,
 } from '../src/shared/parts/connectorManifest';
+import {
+  BHCS_HEAD,
+  BHCS_LENGTHS,
+  FLATHEAD_HEAD,
+  FLATHEAD_LENGTHS,
+  FLAT_WASHER,
+  HEX_NUT,
+  LOCK_NUT,
+  LOCK_WASHER,
+  SHCS_HEAD,
+  SHCS_LENGTHS,
+} from '../src/modeling/parts/familyTable';
 
 // -----------------------------------------------------------------------------
 // Types
@@ -54,67 +66,6 @@ export interface GenerateResult {
 function threadSlug(t: string): string {
   return t.toLowerCase().replace('.', '-');
 }
-
-// M-series ISO 4762 head dims (approximations, sufficient for envelope geometry).
-// d = nominal thread diameter, D = head diameter, K = head height.
-const SHCS_HEAD: Record<string, { D: number; K: number }> = {
-  M2: { D: 3.8, K: 2.0 },
-  M2_5: { D: 4.5, K: 2.5 },
-  M3: { D: 5.5, K: 3.0 },
-  M4: { D: 7.0, K: 4.0 },
-  M5: { D: 8.5, K: 5.0 },
-  M6: { D: 10.0, K: 6.0 },
-};
-
-// ISO 7380 button head dims.
-const BHCS_HEAD: Record<string, { D: number; K: number }> = {
-  M3: { D: 5.7, K: 1.65 },
-  M4: { D: 7.6, K: 2.2 },
-  M5: { D: 9.5, K: 2.75 },
-};
-
-// ISO 10642 flat countersunk dims.
-const FLATHEAD_HEAD: Record<string, { D: number; K: number }> = {
-  M3: { D: 6.72, K: 1.86 },
-  M4: { D: 8.96, K: 2.48 },
-  M5: { D: 11.2, K: 3.1 },
-};
-
-// ISO 4032 hex-nut dims (across-flats S, height m).
-const HEX_NUT: Record<string, { S: number; m: number }> = {
-  M2: { S: 4, m: 1.6 },
-  M2_5: { S: 5, m: 2 },
-  M3: { S: 5.5, m: 2.4 },
-  M4: { S: 7, m: 3.2 },
-  M5: { S: 8, m: 4.0 },
-  M6: { S: 10, m: 5.0 },
-};
-
-const LOCK_NUT: Record<string, { S: number; m: number }> = {
-  M3: { S: 5.5, m: 4.0 },
-  M4: { S: 7, m: 5.0 },
-  M5: { S: 8, m: 6.0 },
-};
-
-const FLAT_WASHER: Record<
-  string,
-  { Dout: number; Din: number; t: number }
-> = {
-  M2: { Dout: 5, Din: 2.2, t: 0.3 },
-  M3: { Dout: 7, Din: 3.2, t: 0.5 },
-  M4: { Dout: 9, Din: 4.3, t: 0.8 },
-  M5: { Dout: 10, Din: 5.3, t: 1.0 },
-  M6: { Dout: 12, Din: 6.4, t: 1.6 },
-};
-
-const LOCK_WASHER: Record<
-  string,
-  { Dout: number; Din: number; t: number }
-> = {
-  M3: { Dout: 6.2, Din: 3.1, t: 0.8 },
-  M4: { Dout: 7.6, Din: 4.1, t: 1.0 },
-  M5: { Dout: 9.2, Din: 5.1, t: 1.2 },
-};
 
 const HEATSET_INSERT: Record<
   string,
@@ -333,7 +284,7 @@ async function jstXhStep(args: {
 
 function socketHeadCapScrew(): SeedFamily {
   const threads: Array<keyof typeof SHCS_HEAD> = ['M2', 'M2_5', 'M3', 'M4', 'M5', 'M6'];
-  const lengths = [4, 5, 6, 8, 10, 12, 14, 16, 18, 20, 25, 30, 35, 40, 45, 50];
+  const lengths = SHCS_LENGTHS;
   const variants = threads.flatMap((t) =>
     lengths.map((l) => ({ thread: t.replace('_', '.'), lengthMm: l })),
   );
@@ -381,7 +332,7 @@ function socketHeadCapScrew(): SeedFamily {
 
 function buttonHeadCapScrew(): SeedFamily {
   const threads: Array<keyof typeof BHCS_HEAD> = ['M3', 'M4', 'M5'];
-  const lengths = [5, 6, 8, 10, 12, 14, 16, 18, 20, 25];
+  const lengths = BHCS_LENGTHS;
   const variants = threads.flatMap((t) =>
     lengths.map((l) => ({ thread: t, lengthMm: l })),
   );
@@ -428,7 +379,7 @@ function buttonHeadCapScrew(): SeedFamily {
 
 function flatHeadCountersunk(): SeedFamily {
   const threads: Array<keyof typeof FLATHEAD_HEAD> = ['M3', 'M4', 'M5'];
-  const lengths = [6, 8, 10, 12, 14, 16, 18, 20, 25];
+  const lengths = FLATHEAD_LENGTHS;
   const variants = threads.flatMap((t) =>
     lengths.map((l) => ({ thread: t, lengthMm: l })),
   );

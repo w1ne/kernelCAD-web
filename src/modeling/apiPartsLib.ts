@@ -12,6 +12,8 @@ import {
   meshFromSTLViaHost,
   findPartViaHost,
   fetchPartViaHost,
+  partViaHost,
+  stackViaHost,
   standardPartsViaHost,
   fromDXFViaHost,
   fromSVGViaHost,
@@ -36,6 +38,16 @@ export function makePartsLib(ctx: ApiContext): Pick<KernelCadApi, 'lib'> {
           { session, ...(ctx.scriptDir !== undefined ? { scriptDir: ctx.scriptDir } : {}) },
           idOrQuery,
           opts ?? {},
+        ),
+      part: (request) =>
+        partViaHost(
+          { session, ...(ctx.scriptDir !== undefined ? { scriptDir: ctx.scriptDir } : {}) },
+          request,
+        ),
+      stack: (request) =>
+        stackViaHost(
+          { session, ...(ctx.scriptDir !== undefined ? { scriptDir: ctx.scriptDir } : {}) },
+          request,
         ),
       standard: standardPartsViaHost({
         session,
