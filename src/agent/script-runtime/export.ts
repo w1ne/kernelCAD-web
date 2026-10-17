@@ -8,7 +8,7 @@ import { runScript } from '../../composition/runScript';
 import { RecomputeEngine } from '../../modeling/compute/recomputeEngine';
 import { createOcctLowerer } from '../../modeling/backends/occt/occtLowerer';
 import { meshShapeForExport, type OcctBackend } from '../../kernel/backends/occt/occtBackend';
-import { encodeBinaryStl } from '../../kernel/backends/occt/exportStlBinary';
+import { partStlBytes } from '../../kernel/backends/occt/partFileExport';
 import { verifyWatertight, type WatertightReport } from '../../kernel/backends/occt/meshHeal';
 import type { DrawingAnnotation } from '../../kernel/backends/occt/drawingAnnotations';
 import type { DraftingProfile, DraftingProfileId, DrawingAnnotationOverride } from '../../shared/intent/drafting';
@@ -625,11 +625,10 @@ export async function runAndExportParts(input: ExportPartsInput): Promise<Export
   for (const p of selected) {
     const mesh = meshShapeForExport(p.shape.getReplicadShape());
     const report = verifyWatertight(mesh);
-    const buf = encodeBinaryStl({ vertices: mesh.vertices, triangles: mesh.triangles });
     parts.push({
       name: p.name,
       fileSafeName: fileSafePartName(p.name),
-      bytes: Uint8Array.from(buf),
+      bytes: partStlBytes(p.shape, mesh),
       report,
       triangleCount: mesh.triangles.length / 3,
     });
