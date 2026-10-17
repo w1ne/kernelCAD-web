@@ -438,12 +438,14 @@ function tryExtractPlaneFromPlaneRecord(face: unknown, p: UnknownRecord): FaceGe
   return { origin: anchoredOrigin, normal, xDir: xDir ?? undefined, yDir: yDir ?? undefined };
 }
 
-export function tryExtractPlaneFromFace(face: unknown): FaceGeometry['plane'] {
+export function tryExtractPlaneFromFace(face: unknown, knownPlanar = false): FaceGeometry['plane'] {
   if (!isRecord(face)) return undefined;
-  const geomType = getString(face, 'geomType');
-  if (!geomType) return undefined;
-  const geomTypeUpper = geomType.toUpperCase();
-  if (geomTypeUpper !== 'PLANE' && geomTypeUpper !== 'PLANAR') return undefined;
+  if (!knownPlanar) {
+    const geomType = getString(face, 'geomType');
+    if (!geomType) return undefined;
+    const geomTypeUpper = geomType.toUpperCase();
+    if (geomTypeUpper !== 'PLANE' && geomTypeUpper !== 'PLANAR') return undefined;
+  }
 
   const p =
     (isRecord(face.planarPlane) ? face.planarPlane : null) ??
@@ -565,13 +567,14 @@ function cylinderFromFaceProperties(face: UnknownRecord): FaceGeometry['cylinder
   return undefined;
 }
 
-function tryExtractCylinderFromFace(face: unknown): FaceGeometry['cylinder'] {
+function tryExtractCylinderFromFace(face: unknown, knownCylinder = false): FaceGeometry['cylinder'] {
   if (!isRecord(face)) return undefined;
 
-  // Check geomType
-  const geomType = getString(face, 'geomType');
+  // `geomType` builds a BRepAdaptor. Callers that already classified the face
+  // pass `knownCylinder` so this hot path does not build a second one.
+  const geomType = knownCylinder ? 'CYLINDER' : getString(face, 'geomType');
 
-  if (geomType && !isCylinderGeomType(geomType)) {
+  if (!knownCylinder && geomType && !isCylinderGeomType(geomType)) {
     return undefined;
   }
 
@@ -641,8 +644,6 @@ export function meshFaceToGeometry(
   return faceGeometryFromArrays(face, faceId, arrays.vertices, arrays.triangles, arrays.normals);
 }
 
-/** Read a triangulation that `shape._mesh` already wrote. Returns null when
- *  the face has no triangulation, so the caller can fall back to `face.mesh()`. */
 /** One IncrementalMesh for the solid, then a read-back per face. */
 function collectFaceGeometries(shape: unknown, faces: unknown[], options: MeshOptions): FaceGeometry[] {
   let meshedWhole = false;
@@ -688,6 +689,33 @@ function meshFaceFromExistingTriangulation(face: unknown, faceId: number): FaceG
   return faceGeometryFromArrays(face, faceId, vertices, triangles, normals);
 }
 
+type SurfaceKind = 'plane' | 'cylinder' | 'other' | 'unknown';
+
+/** One `geomType` read per face. The getter builds a BRepAdaptor, so the
+ *  plane and cylinder probes must not each read it again. */
+function surfaceKind(face: unknown): SurfaceKind {
+  const geomType = getString(face, 'geomType');
+  if (!geomType) return 'unknown';
+  const t = geomType.toUpperCase();
+  if (t === 'PLANE' || t === 'PLANAR') return 'plane';
+  if (isCylinderGeomType(geomType)) return 'cylinder';
+  return 'other';
+}
+
+function faceMetadata(face: unknown): {
+  plane: FaceGeometry['plane'];
+  cylinder: FaceGeometry['cylinder'];
+} {
+  const kind = surfaceKind(face);
+  if (kind === 'plane') return { plane: tryExtractPlaneFromFace(face, true), cylinder: undefined };
+  if (kind === 'cylinder') return { plane: undefined, cylinder: tryExtractCylinderFromFace(face, true) };
+  if (kind === 'other') return { plane: undefined, cylinder: undefined };
+  return {
+    plane: tryExtractPlaneFromFace(face),
+    cylinder: tryExtractCylinderFromFace(face),
+  };
+}
+
 function faceGeometryFromArrays(
   face: unknown,
   faceId: number,
@@ -695,7 +723,7 @@ function faceGeometryFromArrays(
   triangles: number[],
   normals: number[],
 ): FaceGeometry {
-  const plane = tryExtractPlaneFromFace(face);
+  const { plane, cylinder } = faceMetadata(face);
   if (plane) {
     recenterPlaneOntoVertices(plane, vertices);
   }
@@ -706,7 +734,7 @@ function faceGeometryFromArrays(
     normals: new Float32Array(normals),
     faceId,
     plane,
-    cylinder: tryExtractCylinderFromFace(face),
+    cylinder,
   };
 }
 

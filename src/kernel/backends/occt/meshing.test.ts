@@ -99,6 +99,22 @@ describe('meshShape', () => {
     expect(triCount(compound!)).toBeGreaterThan(0);
   });
 
+  it('marks every box face as a plane and does not invent a cylinder on a sphere', () => {
+    const box = meshShape(replicad.makeBaseBox(10, 10, 10), FINE_MESH_OPTIONS);
+    expect(box).not.toBeNull();
+    expect(box!.faces.length).toBe(6);
+    for (const face of box!.faces) {
+      expect(face.plane).toBeDefined();
+      expect(face.cylinder).toBeUndefined();
+    }
+    const sphere = meshShape(replicad.makeSphere(12), FINE_MESH_OPTIONS);
+    expect(sphere).not.toBeNull();
+    for (const face of sphere!.faces) {
+      expect(face.plane).toBeUndefined();
+      expect(face.cylinder).toBeUndefined();
+    }
+  });
+
   it('planar face axes match makePlaneFromFace', () => {
     const reference = replicad.makeBaseBox(10, 20, 30);
     const meshed = meshShape(replicad.makeBaseBox(10, 20, 30), FINE_MESH_OPTIONS);
