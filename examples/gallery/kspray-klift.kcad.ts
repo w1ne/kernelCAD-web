@@ -37,7 +37,8 @@ const C = {
   gunBlue: '#1769aa', gunSilver: '#c5cdd1',
   ivory: '#e8e4d9', alu: '#aeb8bd', black: '#15191c', rubber: '#202326',
   red: '#d7222b', blue: '#315c72', glass: '#315c72',
-  wall: '#e9e0d4', wallFace: '#f2ebdf', mask: '#cfe3ea', ground: '#d8d4cc',
+  wall: '#e9e0d4', wallFace: '#f2ebdf', mask: '#eef7fb', ground: '#d8d4cc',
+  windowFrame: '#f5f2ec', sill: '#dcd6cb',
   fork: '#7d8290', pin: '#262a31',
 };
 
@@ -150,8 +151,8 @@ lowerGeom = lowerGeom
   .union(roundedBox(80, 30, 40, 8, L1 - 160, -180, 100, C.dark))
   .union(roundedBox(80, 30, 40, 8, L1 - 160, 180, -100, C.dark))
   .union(roundedBox(80, 30, 40, 8, L1 - 160, -180, -100, C.dark))
-  .union(roundedBox(80, 50, 240, 10, L1 - 160, 145, 0, C.dark))
-  .union(roundedBox(80, 50, 240, 10, L1 - 160, -145, 0, C.dark))
+  .union(roundedBox(55, 50, 240, 10, L1 - 172.5, 145, 0, C.dark))
+  .union(roundedBox(55, 50, 240, 10, L1 - 172.5, -145, 0, C.dark))
   .union(yCylinder(HUB_Y * 2, HUB_R, L1, 0, 0, C.pin))
   .union(yCylinder(30, HUB_R + 12, L1, HUB_Y + 15, 0, C.fork))
   .union(yCylinder(30, HUB_R + 12, L1, -(HUB_Y + 15), 0, C.fork));
@@ -183,8 +184,8 @@ upperGeom = upperGeom
   .union(roundedBox(80, 30, 40, 8, L2 - 160, -180, 100, C.dark))
   .union(roundedBox(80, 30, 40, 8, L2 - 160, 180, -100, C.dark))
   .union(roundedBox(80, 30, 40, 8, L2 - 160, -180, -100, C.dark))
-  .union(roundedBox(80, 50, 240, 10, L2 - 160, 145, 0, C.dark))
-  .union(roundedBox(80, 50, 240, 10, L2 - 160, -145, 0, C.dark))
+  .union(roundedBox(55, 50, 240, 10, L2 - 172.5, 145, 0, C.dark))
+  .union(roundedBox(55, 50, 240, 10, L2 - 172.5, -145, 0, C.dark))
   .union(yCylinder(HUB_Y * 2, HUB_R, L2, 0, 0, C.pin))
   .union(yCylinder(30, HUB_R + 12, L2, HUB_Y + 15, 0, C.fork))
   .union(yCylinder(30, HUB_R + 12, L2, -(HUB_Y + 15), 0, C.fork));
@@ -283,9 +284,17 @@ let facadeGeom = roundedBox(120, 3600, 5600, 6, 60, 0, 2800, C.wall)
 for (const sy of [-1, 1]) {
   const wy = sy * 850;
   facadeGeom = facadeGeom
-    .union(roundedBox(30, 1000, 1400, 8, -15, wy, 4400, C.glass))
-    .union(roundedBox(10, 1040, 1440, 6, -35, wy, 4400, C.mask))
-    .union(roundedBox(24, 120, 40, 6, -47, wy - 430, 3840, C.alu));
+    // recessed dark glass inside a proud light frame
+    .union(roundedBox(26, 980, 1380, 8, -20, wy, 4200, C.glass))
+    .union(roundedBox(60, 1120, 70, 8, -45, wy, 4200 + 715, C.windowFrame))
+    .union(roundedBox(60, 1120, 70, 8, -45, wy, 4200 - 715, C.windowFrame))
+    .union(roundedBox(60, 70, 1360, 8, -45, wy - 525, 4200, C.windowFrame))
+    .union(roundedBox(60, 70, 1360, 8, -45, wy + 525, 4200, C.windowFrame))
+    // sprayed-on peelable mask film over the pane, bright so it reads grey-on-grey
+    .union(roundedBox(14, 1000, 1390, 6, -62, wy, 4200, C.mask))
+    .union(roundedBox(24, 130, 46, 6, -72, wy - 420, 3560, C.alu))
+    // sill
+    .union(roundedBox(120, 1180, 40, 8, -60, wy, 3480, C.sill));
 }
 const facade = lift.part('facade', facadeGeom);
 facade.connector('wallFoot', frameConnector([0, 0, 0]));
