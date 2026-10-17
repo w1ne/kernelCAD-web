@@ -5,7 +5,7 @@ import { ChevronDown, Loader2 } from 'lucide-react';
 import { useWorkbench } from '../../context/WorkbenchContext';
 import { useStudioChrome } from '../../context/StudioChromeContext';
 import { useSourceTitle } from '../../sourceTitle';
-import { COMPACT_HEADER_QUERY, NARROW_QUERY, useIsNarrow } from '../../hooks/useIsNarrow';
+import { COMPACT_HEADER_QUERY, PHONE_QUERY, useIsNarrow } from '../../hooks/useIsNarrow';
 import { useRegisterCommands, type Command } from '../../hooks/useCommandRegistry';
 import { downloadBlob, exportViaServer, type StudioExportFormat } from '../../exportViaServer';
 import { hasPlanarSource } from '../../exportFormats';
@@ -32,7 +32,7 @@ function MenuRow({ label, children }: { label: string; children: ReactNode }) {
     return (
         <div className="flex flex-col gap-1.5 px-1 py-1.5">
             <span className="text-2xs font-medium uppercase tracking-wider text-fg-3">{label}</span>
-            <div className="flex flex-wrap items-center gap-1 max-md:[&_a]:min-h-touch max-md:[&_button]:min-h-touch">{children}</div>
+            <div className="flex flex-wrap items-center gap-1 phone:[&_a]:min-h-touch phone:[&_button]:min-h-touch">{children}</div>
         </div>
     );
 }
@@ -100,7 +100,7 @@ function ProjectSwitcher({ name, hideName, onOpen }: { name: string; hideName: b
             onClick={onOpen}
             aria-label="Open project manager"
             title="Switch or manage projects"
-            className="focus-ring flex h-control-sm min-w-0 shrink items-center gap-2 rounded-control px-1.5 text-fg transition-colors duration-80 hover:bg-surface-2 max-md:h-touch max-md:min-w-touch max-md:justify-center"
+            className="focus-ring flex h-control-sm min-w-0 shrink items-center gap-2 rounded-control px-1.5 text-fg transition-colors duration-80 hover:bg-surface-2 phone:h-touch phone:min-w-touch phone:justify-center"
         >
             <KernelcadMark />
             {!hideName && <span className="max-w-[140px] truncate text-ui font-medium sm:max-w-[220px]">{name}</span>}
@@ -211,7 +211,7 @@ export function Header() {
     const narrow = useIsNarrow(COMPACT_HEADER_QUERY);
     // On a phone the row holds the project, the route's title, ⋯ and the
     // account; the route's controls and Send feedback move into ⋯.
-    const phone = useIsNarrow(NARROW_QUERY);
+    const phone = useIsNarrow(PHONE_QUERY);
     const actions = useHeaderFileActions(code, documentName);
     const modified = !viewerMode && activeProject != null && code !== activeProject.code;
 

@@ -42,7 +42,7 @@ function SignInControl({ hideFeedback }: { hideFeedback: boolean }) {
                 href={signInHref()}
                 title="Sign in to use the agent and save projects"
                 data-testid="header-sign-in"
-                className={`${buttonClass('secondary', 'sm')} no-underline max-md:h-touch`}
+                className={`${buttonClass('secondary', 'sm')} no-underline phone:h-touch`}
             >
                 Sign in
             </a>
@@ -189,7 +189,7 @@ function UserMenuInner({ hideFeedback }: { hideFeedback: boolean }) {
                 ref={triggerRef}
                 type="button"
                 onClick={toggleOpen}
-                className="focus-ring flex h-control-sm max-md:h-touch items-center gap-1 rounded-full pl-0.5 pr-1.5 text-fg-2 transition-colors duration-80 hover:bg-surface-2 hover:text-fg"
+                className="focus-ring flex h-control-sm phone:h-touch items-center gap-1 rounded-full pl-0.5 pr-1.5 text-fg-2 transition-colors duration-80 hover:bg-surface-2 hover:text-fg"
                 aria-label="Account menu"
                 aria-haspopup="menu"
                 aria-expanded={open}

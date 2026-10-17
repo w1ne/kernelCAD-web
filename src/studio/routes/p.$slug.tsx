@@ -443,11 +443,11 @@ function StudioProjectView({ slug, project, session, live, claim, onUpgrade, his
     <div className="flex items-center gap-2 min-w-0">
       <a
         href={modelPageHref(slug)}
-        className="inline-flex shrink-0 items-center justify-center gap-1 rounded px-1.5 py-0.5 text-xs text-gray-300 hover:bg-[#333] hover:text-white max-md:size-touch max-md:p-0"
+        className="inline-flex shrink-0 items-center justify-center gap-1 rounded px-1.5 py-0.5 text-xs text-gray-300 hover:bg-[#333] hover:text-white phone:size-touch phone:p-0"
         title="Simplified view, for a fast look or an embed-style page"
         data-testid="open-fast-view"
       >
-        <ArrowLeft className="size-3 max-md:size-4" aria-hidden="true" />
+        <ArrowLeft className="size-3 phone:size-4" aria-hidden="true" />
         <span className="max-md:sr-only">View</span>
       </a>
       {/* The Studio header's own project label shows the title on wide
