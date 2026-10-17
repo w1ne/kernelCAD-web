@@ -175,6 +175,46 @@ function refName(ref: unknown, namesById: Map<string, string>): string | undefin
   return namesById.get(r.id) ?? r.id;
 }
 
+type WorldAxis = (partName: string, local: Vec3 | undefined) => Vec3 | undefined;
+
+function withAxis(a: string, b: string, axis: Vec3 | undefined): ExplodeLayoutLink {
+  return axis ? { a, b, axis } : { a, b };
+}
+
+function mateLinks(meta: Record<string, unknown>, namesById: Map<string, string>, worldAxis: WorldAxis): ExplodeLayoutLink[] {
+  const mates = Array.isArray(meta.mates) ? (meta.mates as { a?: unknown; b?: unknown }[]) : [];
+  const axes = connectorAxes(meta as { connectorsByPartId?: Record<string, readonly EncodedConnector[]> }, namesById);
+  const out: ExplodeLayoutLink[] = [];
+  for (const m of mates) {
+    const a = safeRef(m.a);
+    const b = safeRef(m.b);
+    if (!a || !b) continue;
+    const axis = worldAxis(a.partName, axes.get(`${a.partName}.${a.connectorName}`))
+      ?? worldAxis(b.partName, axes.get(`${b.partName}.${b.connectorName}`));
+    out.push(withAxis(a.partName, b.partName, axis));
+  }
+  return out;
+}
+
+function jointLink(rec: FeatureRecord, namesById: Map<string, string>, worldAxis: WorldAxis): ExplodeLayoutLink[] {
+  const a = refName(rec.inputs?.a, namesById);
+  const b = refName(rec.inputs?.b, namesById);
+  if (!a || !b) return [];
+  return [withAxis(a, b, worldAxis(a, readVec3((rec.metadata as { axis?: unknown } | undefined)?.axis)))];
+}
+
+function connectLink(meta: Record<string, unknown>, worldAxis: WorldAxis): ExplodeLayoutLink[] {
+  const ea = meta.a as { partName?: unknown; axis?: unknown } | undefined;
+  const eb = meta.b as { partName?: unknown } | undefined;
+  if (typeof ea?.partName !== 'string' || typeof eb?.partName !== 'string') return [];
+  return [withAxis(ea.partName, eb.partName, worldAxis(ea.partName, readVec3(ea.axis)))];
+}
+
+function placementLink(meta: Record<string, unknown>): ExplodeLayoutLink[] {
+  const to = (meta.placedBy as { to?: { partName?: unknown } } | undefined)?.to?.partName;
+  return typeof meta.partName === 'string' && typeof to === 'string' ? [{ a: to, b: meta.partName }] : [];
+}
+
 /** Mate, joint and placement links between assembly parts, with the world
  *  axis of the mate where the connector declares one. */
 export function explodeLinks(
@@ -182,43 +222,23 @@ export function explodeLinks(
   matrices: ReadonlyMap<string, number[] | undefined>,
 ): ExplodeLayoutLink[] {
   const namesById = partNamesById(records);
-  const links: ExplodeLayoutLink[] = [];
-  const worldAxis = (partName: string, local: Vec3 | undefined): Vec3 | undefined =>
-    local ? applyDirection(matrices.get(partName), local) : undefined;
-
-  for (const rec of records) {
+  const worldAxis: WorldAxis = (partName, local) => (local ? applyDirection(matrices.get(partName), local) : undefined);
+  return records.flatMap((rec) => {
     const meta = (rec.metadata ?? {}) as Record<string, unknown>;
-    if (rec.kind === 'solvedAssembly' || rec.kind === 'assemblyModel') {
-      const mates = Array.isArray(meta.mates) ? (meta.mates as { a?: unknown; b?: unknown }[]) : [];
-      const axes = connectorAxes(meta as { connectorsByPartId?: Record<string, readonly EncodedConnector[]> }, namesById);
-      for (const m of mates) {
-        const a = safeRef(m.a);
-        const b = safeRef(m.b);
-        if (!a || !b) continue;
-        const axisA = axes.get(`${a.partName}.${a.connectorName}`);
-        const axisB = axes.get(`${b.partName}.${b.connectorName}`);
-        const axis = worldAxis(a.partName, axisA) ?? worldAxis(b.partName, axisB);
-        links.push({ a: a.partName, b: b.partName, ...(axis ? { axis } : {}) });
-      }
-    } else if (rec.kind === 'assemblyJoint') {
-      const a = refName(rec.inputs?.a, namesById);
-      const b = refName(rec.inputs?.b, namesById);
-      if (!a || !b) continue;
-      const axis = worldAxis(a, readVec3(meta.axis));
-      links.push({ a, b, ...(axis ? { axis } : {}) });
-    } else if (rec.kind === 'assemblyConnect') {
-      const a = (meta.a as { partName?: unknown } | undefined)?.partName;
-      const b = (meta.b as { partName?: unknown } | undefined)?.partName;
-      if (typeof a !== 'string' || typeof b !== 'string') continue;
-      const axis = worldAxis(a, readVec3((meta.a as { axis?: unknown }).axis));
-      links.push({ a, b, ...(axis ? { axis } : {}) });
-    } else if (rec.kind === 'assemblyPart') {
-      const self = typeof meta.partName === 'string' ? meta.partName : undefined;
-      const to = (meta.placedBy as { to?: { partName?: unknown } } | undefined)?.to?.partName;
-      if (self && typeof to === 'string') links.push({ a: to, b: self });
+    switch (rec.kind) {
+      case 'solvedAssembly':
+      case 'assemblyModel':
+        return mateLinks(meta, namesById, worldAxis);
+      case 'assemblyJoint':
+        return jointLink(rec, namesById, worldAxis);
+      case 'assemblyConnect':
+        return connectLink(meta, worldAxis);
+      case 'assemblyPart':
+        return placementLink(meta);
+      default:
+        return [];
     }
-  }
-  return links;
+  });
 }
 
 export function layoutForView(
