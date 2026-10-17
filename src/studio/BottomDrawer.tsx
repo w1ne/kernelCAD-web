@@ -78,6 +78,9 @@ export interface MobileDrawerProps {
     /** Tab-panel wiring from the tab bar that owns the sheet. */
     readonly panelId?: string;
     readonly labelledBy?: string;
+    /** A phone held sideways: the sheet docks beside the model at full
+     *  height, because a bottom sheet would leave the model a thin strip. */
+    readonly side?: boolean;
     readonly children?: ReactNode;
 }
 
@@ -91,7 +94,7 @@ export interface MobileDrawerProps {
  * WebGL canvas above.
  */
 export const MobileDrawer: React.FC<MobileDrawerProps> = ({
-    title, onClose, onBack, backLabel = 'Back', snap, onSnap, fill = false, panelId, labelledBy, children,
+    title, onClose, onBack, backLabel = 'Back', snap, onSnap, fill = false, panelId, labelledBy, side = false, children,
 }) => {
     const titleId = React.useId();
     const [drag, setDrag] = useState<number | null>(null);
@@ -110,10 +113,13 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
             }}
             // The handle measures from the bottom of the window; the tab bar
             // sits below the sheet, so take it off to keep the edge under the finger.
-            style={{ height: `calc(${fraction * 100}dvh - var(--kc-tabbar-h, 0px))` }}
-            className="relative flex max-h-[calc(100%-4rem)] min-h-32 shrink-0 flex-col rounded-t-sheet border-t border-border bg-surface-1 text-fg shadow-e3"
+            style={side ? undefined : { height: `calc(${fraction * 100}dvh - var(--kc-tabbar-h, 0px))` }}
+            data-side={side ? 'true' : undefined}
+            className={side
+                ? 'relative flex h-full w-[min(26rem,50%)] shrink-0 flex-col border-l border-border bg-surface-1 text-fg shadow-e3'
+                : 'relative flex max-h-[calc(100%-4rem)] min-h-32 shrink-0 flex-col rounded-t-sheet border-t border-border bg-surface-1 text-fg shadow-e3'}
         >
-            <SheetHandle snapPoints={DEFAULT_SNAPS} snap={snap} onSnap={onSnap} onDrag={setDrag} />
+            {!side && <SheetHandle snapPoints={DEFAULT_SNAPS} snap={snap} onSnap={onSnap} onDrag={setDrag} />}
             <header className="flex h-11 shrink-0 items-center gap-1 border-b border-border px-1">
                 {onBack && (
                     <IconButton
