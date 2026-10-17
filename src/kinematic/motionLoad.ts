@@ -29,7 +29,8 @@ import type { NumericPoses } from '../modeling/capture/forwardKinematics';
 import type { FeatureId } from '../shared/intent/types';
 import type { SceneBackend } from '../kernel/backends/sceneBackend';
 import { isSceneBackend } from '../kernel/backends/sceneBackend';
-import { initOcct } from '../kernel/backends/occt/occtBackend';
+import { initOcct, OcctBackend } from '../kernel/backends/occt/occtBackend';
+import { boxDistanceToAxis, nearestAxialContact, type AxialSpan } from '../kernel/backends/occt/axialContact';
 import { createOcctLowerer } from '../modeling/backends/occt/occtLowerer';
 import { RecomputeEngine } from '../modeling/compute/recomputeEngine';
 import { solveMates } from '../modeling/mates/solver';
@@ -88,6 +89,9 @@ export interface MotionLoadSupportPeak {
   readonly part: string;
   /** Distance from the joint origin along the axis, mm. */
   readonly stationMm: number;
+  /** Where the station comes from: the actuator (joint origin), the
+   *  support's connector on the axis, or its material nearest the axis. */
+  readonly stationFrom: SupportStationSource;
   readonly peakRadialN: number;
   /** Peak bending moment the support reacts at its station, N·mm. */
   readonly peakBendingNmm: number;
@@ -151,7 +155,10 @@ const LIMITATIONS = [
   'tree mate graphs only; a joint inside a closed loop is not resolved',
   'accelerations come from finite differences of the timeline; a keyframed track has velocity steps at its keys, so peaks depend on sampleMs',
   'two coaxial supports are simple supports; three or more are indeterminate and not split',
+  'a support bears at its connector on the joint axis, else at the axial span of its material nearest the axis; an ambiguous station is not split',
 ] as const;
+
+export type SupportStationSource = 'actuator' | 'connector' | 'contact';
 
 interface PartFrameSample { readonly comM: V3; readonly rot: M3 }
 interface Sample { readonly tMs?: number; readonly pose: NumericPoses; readonly placements: ReadonlyMap<string, Transform>; readonly frames: Map<string, PartFrameSample> }
@@ -163,9 +170,9 @@ export async function checkMotionLoad(arm: Assembly, opts: MotionLoadOpts = {}):
   const diagnostics: KinematicDiagnostic[] = [];
   const prepared = await prepareStudy(arm, opts, mode);
   if (typeof prepared === 'string') return emptyResult(mode, quasiStatic, prepared, diagnostics);
-  const { intents, masses, samples } = prepared;
+  const { intents, masses, samples, scene, restPlacements } = prepared;
   const kin = quasiStatic ? undefined : finiteDifferences(samples, masses, stepSeconds(samples, opts.sampleMs));
-  const ctx: JointCtx = { arm, masses, samples, kin, gravity: (opts.gravity ?? DEFAULT_GRAVITY) as V3, loads: opts.loads ?? [], mode };
+  const ctx: JointCtx = { arm, masses, samples, kin, gravity: (opts.gravity ?? DEFAULT_GRAVITY) as V3, loads: opts.loads ?? [], mode, scene, restPlacements };
   const joints: MotionLoadJointResult[] = [];
   for (const intent of intents) {
     const r = await studyJoint(ctx, intent, opts.supports?.[intent.name] ?? intent.supports, diagnostics);
@@ -178,6 +185,9 @@ interface PreparedStudy {
   readonly intents: MechanicalJointIntentRecord[];
   readonly masses: Map<string, PartMassLocal>;
   readonly samples: Sample[];
+  /** The lowered rest scene and the rest-pose mate placements. */
+  readonly scene: SceneBackend;
+  readonly restPlacements: ReadonlyMap<string, Transform>;
 }
 
 /** Lower, weigh and sample; a string is the reason the study cannot run. */
@@ -190,7 +200,13 @@ async function prepareStudy(arm: Assembly, opts: MotionLoadOpts, mode: 'tracks' 
   const poses = mode === 'range' ? rangePoses(arm, intents, opts.rangeSamples) : trackPoses(arm, opts.sampleMs);
   const samples = await solveSamples(arm, scene, masses, poses);
   if (samples.length === 0) return 'Loads not checked: the mates did not solve at any sampled pose.';
-  return { intents, masses, samples };
+  let restPlacements: ReadonlyMap<string, Transform>;
+  try {
+    restPlacements = (await solveMates(arm, {})).poses;
+  } catch {
+    return 'Loads not checked: the mates did not solve at the rest pose.';
+  }
+  return { intents, masses, samples, scene, restPlacements };
 }
 
 /** Timeline step between the first two samples, s. */
@@ -371,6 +387,8 @@ interface JointCtx {
   readonly gravity: V3;
   readonly loads: readonly MotionLoadExternalLoad[];
   readonly mode: 'tracks' | 'range';
+  readonly scene: SceneBackend;
+  readonly restPlacements: ReadonlyMap<string, Transform>;
 }
 
 /** Parts reachable from `start` without entering `blocked`. */
@@ -460,38 +478,168 @@ async function studyJoint(ctx: JointCtx, intent: MechanicalJointIntentRecord, su
   }
   const frame = await jointFrame(ctx.arm, mate, tree.parentPart);
   if (frame === undefined) return undefined;
+  const anchors = await supportAnchors(ctx, intent, supports, tree.parentPart, tree.downstream, frame);
+  const unresolved = anchors.filter((a): a is UnresolvedAnchor => a.from === 'unresolved');
+  for (const a of unresolved) {
+    diagnostics.push(diag('mechanism.load.not-resolved', 'warn', `Joint '${intent.name}': support '${a.name}' — ${a.reason}, so the support split is not reported. Name the part that bears on the shaft, or add a connector on the joint axis where '${a.name}' bears.`, intent.name));
+  }
+  const resolved = anchors.filter((a): a is ResolvedAnchor => a.from !== 'unresolved');
   const series: MotionLoadSample[] = [];
-  const supportPeaks = new Map<string, { stationMm: number; radial: number; bending: number }>();
+  const supportPeaks = new Map<string, { stationMm: number; from: SupportStationSource; radial: number; bending: number }>();
   let indeterminate = false;
   for (let k = 0; k < ctx.samples.length; k++) {
     const pT = placementOf(ctx, k, tree.parentPart);
     const origin = scale(pT.point(frame.originLocal), MM);
     const axis = unit(pT.axisDir(frame.axisLocal));
     const w = subtreeJointWrench(bodiesAt(ctx, k, tree.downstream), origin, ctx.gravity, loadsAt(ctx, k, tree.downstream));
-    const stations = supportStations(ctx, k, intent, supports, origin, axis);
+    const stations = supportStations(ctx, k, resolved, origin, axis);
     const split = splitJointLoad(w, axis, stations);
     if (split.supports === undefined) indeterminate = true;
     for (const s of split.supports ?? []) {
-      const prev = supportPeaks.get(s.name) ?? { stationMm: s.stationM / MM, radial: 0, bending: 0 };
-      supportPeaks.set(s.name, { stationMm: prev.stationMm, radial: Math.max(prev.radial, s.radialN), bending: Math.max(prev.bending, s.bendingNm / MM) });
+      const from = resolved.find((a) => a.name === s.name)!.from;
+      const prev = supportPeaks.get(s.name) ?? { stationMm: s.stationM / MM, from, radial: 0, bending: 0 };
+      supportPeaks.set(s.name, { ...prev, radial: Math.max(prev.radial, s.radialN), bending: Math.max(prev.bending, s.bendingNm / MM) });
     }
     const s = ctx.samples[k];
     series.push({ ...(s.tMs !== undefined ? { tMs: s.tMs } : {}), pose: s.pose, torqueNm: split.torqueNm, axialN: split.axialN, radialN: split.radialN, bendingNmm: split.bendingAtOriginNm / MM });
   }
-  return jointResult(intent, mate, supports, tree.downstream, ctx, series, indeterminate ? undefined : supportPeaks, diagnostics);
+  const split = unresolved.length > 0 || indeterminate ? undefined : supportPeaks;
+  return jointResult(intent, mate, supports, tree.downstream, ctx, series, split, { indeterminate, unresolved: unresolved.map((a) => a.name) }, diagnostics);
 }
 
-function supportStations(ctx: JointCtx, k: number, intent: MechanicalJointIntentRecord, supports: readonly string[], origin: V3, axis: V3): SupportStation[] {
-  const seen = new Set<string>();
-  const out: SupportStation[] = [];
-  for (const name of supports) {
-    if (seen.has(name)) continue;
-    seen.add(name);
-    if (name === intent.actuator) { out.push({ name, stationM: 0 }); continue; }
-    const f = ctx.samples[k].frames.get(name);
-    out.push({ name, stationM: f === undefined ? 0 : dot(sub(f.comM, origin), axis) });
+/** A support's bearing point, fixed in its part frame (the frame mate
+ *  placements move), or the reason it has none. */
+interface ResolvedAnchor { readonly name: string; readonly from: SupportStationSource; readonly localMm?: V3 }
+interface UnresolvedAnchor { readonly name: string; readonly from: 'unresolved'; readonly reason: string }
+type SupportAnchor = ResolvedAnchor | UnresolvedAnchor;
+
+/** Connector origin closer than this to the joint axis lies on it, mm. */
+const ON_AXIS_TOLERANCE_MM = 0.1;
+/** Two stations closer than this are one, mm. */
+const STATION_TOLERANCE_MM = 0.5;
+
+/**
+ * Where each support bears on the shaft, at the rest pose:
+ *   - the actuator at the joint origin (station 0);
+ *   - else the support's connector on the joint axis (one station);
+ *   - else the middle of the axial span of its material nearest the axis
+ *     (`nearestAxialContact`: a bushing's bore, a plate's hole wall).
+ * A whole multi-feature body used to bear at its centroid projected on the
+ * axis, which can sit far from where it touches the shaft. Two separate
+ * spans at the nearest radius, or no material near the axis, leave the
+ * station unresolved: a warning, not a number.
+ */
+async function supportAnchors(
+  ctx: JointCtx, intent: MechanicalJointIntentRecord, supports: readonly string[], parentPart: string,
+  downstream: ReadonlySet<string>, frame: { originLocal: V3; axisLocal: V3 },
+): Promise<SupportAnchor[]> {
+  const restParent = ctx.restPlacements.get(parentPart) ?? Transform.identity();
+  const origin = restParent.point(frame.originLocal) as V3;
+  const axis = unit(restParent.axisDir(frame.axisLocal));
+  let shaft: AxialSpan | undefined | null = null;
+  const out: SupportAnchor[] = [];
+  for (const name of new Set(supports)) {
+    if (name === intent.actuator) { out.push({ name, from: 'actuator' }); continue; }
+    const part = ctx.arm.__parts().find((p) => p.name === name) as AssemblyPartStored | undefined;
+    if (part === undefined) { out.push({ name, from: 'unresolved', reason: 'is not a part of the assembly' }); continue; }
+    const placement = ctx.restPlacements.get(name) ?? Transform.identity();
+    const onAxis = await connectorStations(ctx, part, placement, origin, axis);
+    if (onAxis.length === 1) { out.push({ name, from: 'connector', localMm: onAxis[0]! }); continue; }
+    if (shaft === null) shaft = shaftSpan(ctx, downstream, origin, axis);
+    out.push(contactAnchor(ctx, name, placement, origin, axis, shaft));
   }
   return out;
+}
+
+/** A shaft is near its axis: material of the moving side within this
+ *  radius of the joint axis is the shaft a support can bear on, mm. */
+const SHAFT_RADIUS_MM = 5;
+/** A support bears on the shaft only with material this close to the
+ *  joint axis, mm (a bushing bore, a bearing seat, a hole wall). */
+const SUPPORT_CONTACT_RADIUS_MM = 10;
+
+/** Axial extent of the moving side's material near the joint axis (the
+ *  shaft, the horn, the rod). A support bears on the shaft, so its contact
+ *  is searched only there: a base plate under the servo is on the axis but
+ *  touches no shaft. Undefined when nothing of the moving side is near the
+ *  axis. */
+function shaftSpan(ctx: JointCtx, downstream: ReadonlySet<string>, origin: V3, axis: V3): AxialSpan | undefined {
+  let from = Infinity;
+  let to = -Infinity;
+  for (const sp of ctx.scene.parts) {
+    if (!downstream.has(sp.name) || !(sp.shape instanceof OcctBackend)) continue;
+    const world = sp.shape.located(sp.worldTransform);
+    try {
+      if (boxDistanceToAxis(world.boundingBox(), origin, axis) > SHAFT_RADIUS_MM) continue;
+      const near = nearestAxialContact(world, origin, axis, { maxRadiusMm: SHAFT_RADIUS_MM });
+      for (const s of near?.spans ?? []) {
+        from = Math.min(from, s.fromMm);
+        to = Math.max(to, s.toMm);
+      }
+    } catch {
+      // A part the probe cannot cut does not define the shaft.
+    } finally {
+      world.dispose();
+    }
+  }
+  return Number.isFinite(from) && Number.isFinite(to) && to > from ? { fromMm: from, toMm: to } : undefined;
+}
+
+/** Local origins of `part`'s connectors on the joint axis, one per
+ *  distinct station. */
+async function connectorStations(ctx: JointCtx, part: AssemblyPartStored, placement: Transform, origin: V3, axis: V3): Promise<V3[]> {
+  const found: Array<{ local: V3; t: number }> = [];
+  for (const c of part.mateConnectors) {
+    let local: V3;
+    try {
+      local = (await resolveConnectorOrigin(part.originalShape, c.origin, ctx.arm.__session().getRecords())).value as V3;
+    } catch {
+      continue;
+    }
+    const d = sub(placement.point(local) as V3, origin);
+    const t = dot(d, axis);
+    const radial = Math.hypot(d[0] - axis[0] * t, d[1] - axis[1] * t, d[2] - axis[2] * t);
+    if (radial > ON_AXIS_TOLERANCE_MM) continue;
+    if (found.some((f) => Math.abs(f.t - t) <= STATION_TOLERANCE_MM)) continue;
+    found.push({ local, t });
+  }
+  return found.map((f) => f.local);
+}
+
+function contactAnchor(ctx: JointCtx, name: string, placement: Transform, origin: V3, axis: V3, shaft: AxialSpan | undefined): SupportAnchor {
+  const sp = ctx.scene.parts.find((p) => p.name === name);
+  if (sp === undefined || !(sp.shape instanceof OcctBackend)) {
+    return { name, from: 'unresolved', reason: 'has no BRep geometry to find where it touches the shaft' };
+  }
+  const world = sp.shape.located(sp.worldTransform);
+  let contact: ReturnType<typeof nearestAxialContact>;
+  try {
+    contact = nearestAxialContact(world, origin, axis, { maxRadiusMm: SUPPORT_CONTACT_RADIUS_MM, ...(shaft === undefined ? {} : { within: shaft }) });
+  } catch {
+    contact = undefined;
+  } finally {
+    world.dispose();
+  }
+  if (contact === undefined || contact.spans.length === 0) {
+    const where = shaft === undefined ? '' : ` along the shaft (${fmt(shaft.fromMm)}..${fmt(shaft.toMm)} mm on the axis)`;
+    return { name, from: 'unresolved', reason: `has no material near the joint axis (within ${SUPPORT_CONTACT_RADIUS_MM} mm)${where}` };
+  }
+  if (contact.spans.length > 1) {
+    const spans = contact.spans.map((s) => `${fmt(s.fromMm)}..${fmt(s.toMm)}`).join(', ');
+    return { name, from: 'unresolved', reason: `touches the axis at ${contact.spans.length} separate stations (${spans} mm along the axis, within ${fmt(contact.radiusMm)} mm of it), so its station is ambiguous` };
+  }
+  const span = contact.spans[0]!;
+  const t = (span.fromMm + span.toMm) / 2;
+  const world0: V3 = [origin[0] + axis[0] * t, origin[1] + axis[1] * t, origin[2] + axis[2] * t];
+  return { name, from: 'contact', localMm: placement.inverse().point(world0) as V3 };
+}
+
+function supportStations(ctx: JointCtx, k: number, anchors: readonly ResolvedAnchor[], origin: V3, axis: V3): SupportStation[] {
+  return anchors.map((a) => {
+    if (a.localMm === undefined) return { name: a.name, stationM: 0 };
+    const p = scale(placementOf(ctx, k, a.name).point(a.localMm) as V3, MM);
+    return { name: a.name, stationM: dot(sub(p, origin), axis) };
+  });
 }
 
 function peakAbs(series: readonly MotionLoadSample[], key: 'torqueNm' | 'axialN' | 'radialN' | 'bendingNmm'): number {
@@ -500,18 +648,18 @@ function peakAbs(series: readonly MotionLoadSample[], key: 'torqueNm' | 'axialN'
 
 function jointResult(
   intent: MechanicalJointIntentRecord, mate: MateRecord, supports: readonly string[], downstream: ReadonlySet<string>,
-  ctx: JointCtx, series: MotionLoadSample[], supportPeaks: Map<string, { stationMm: number; radial: number; bending: number }> | undefined,
-  diagnostics: KinematicDiagnostic[],
+  ctx: JointCtx, series: MotionLoadSample[], supportPeaks: Map<string, { stationMm: number; from: SupportStationSource; radial: number; bending: number }> | undefined,
+  notSplit: { indeterminate: boolean; unresolved: readonly string[] }, diagnostics: KinematicDiagnostic[],
 ): MotionLoadJointResult {
   const peakTorqueNm = peakAbs(series, 'torqueNm');
   const worst = series.reduce((w, s) => (Math.abs(s.torqueNm) > Math.abs(w.torqueNm) ? s : w), series[0]);
   const worstSideLoad = series.reduce((w, s) => (s.bendingNmm > w.bendingNmm ? s : w), series[0]);
-  const supportLoads = supportPeaks === undefined ? undefined : [...supportPeaks].map(([part, p]) => ({ part, stationMm: round(p.stationMm), peakRadialN: p.radial, peakBendingNmm: p.bending }));
+  const supportLoads = supportPeaks === undefined ? undefined : [...supportPeaks].map(([part, p]) => ({ part, stationMm: round(p.stationMm), stationFrom: p.from, peakRadialN: p.radial, peakBendingNmm: p.bending }));
   const actuatorRadial = supportLoads?.find((s) => s.part === intent.actuator)?.peakRadialN ?? peakAbs(series, 'radialN');
   const peakAxialN = peakAbs(series, 'axialN');
   // No torque about the axis (e.g. gravity on a vertical axis): the margin is unbounded, so it is omitted.
   const torqueMargin = intent.torqueNm === undefined || !(peakTorqueNm > 1e-9) ? undefined : intent.torqueNm / peakTorqueNm;
-  const { maxLevel, messages } = jointVerdict(intent, torqueMargin, peakTorqueNm, actuatorRadial, peakAxialN, supportLoads === undefined, diagnostics);
+  const { maxLevel, messages } = jointVerdict(intent, torqueMargin, peakTorqueNm, actuatorRadial, peakAxialN, notSplit, diagnostics);
   return {
     joint: intent.name, mate: mate.name, actuator: intent.actuator, supports: [...supports],
     downstreamParts: [...downstream], downstreamMassKg: [...downstream].reduce((m, n) => m + (ctx.masses.get(n)?.mass ?? 0), 0),
@@ -527,7 +675,7 @@ function jointResult(
 
 function jointVerdict(
   intent: MechanicalJointIntentRecord, margin: number | undefined, peakTorqueNm: number, actuatorRadialN: number, peakAxialN: number,
-  indeterminate: boolean, diagnostics: KinematicDiagnostic[],
+  notSplit: { indeterminate: boolean; unresolved: readonly string[] }, diagnostics: KinematicDiagnostic[],
 ): { maxLevel: 'ok' | 'warning' | 'error'; messages: string[] } {
   const messages: string[] = [];
   let level: 'ok' | 'warning' | 'error' = 'ok';
@@ -559,7 +707,11 @@ function jointVerdict(
       messages.push(`${j}: ${label} load on '${intent.actuator}' ${fmt(value)} N is within its ${fmt(limit)} N rating.`);
     }
   }
-  if (indeterminate) {
+  if (notSplit.unresolved.length > 0) {
+    // The per-support warning names each support and was pushed already.
+    raise('warning');
+    messages.push(`${j}: the station of support ${notSplit.unresolved.map((n) => `'${n}'`).join(', ')} on the shaft is ambiguous or unknown; the support split is not reported.`);
+  } else if (notSplit.indeterminate) {
     raise('warning');
     messages.push(`${j}: three or more supports, or two at one station; the support split is indeterminate in a rigid model and is not reported.`);
     diagnostics.push(diag('mechanism.load.not-resolved', 'warn', messages[messages.length - 1], j));
