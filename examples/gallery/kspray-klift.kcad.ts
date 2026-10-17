@@ -56,11 +56,7 @@ const BORE_R = 100;        // child collar bore (joint clearance, declared to th
 const COLLAR_R = 140;      // child collar outer radius
 const HUB_Y = 200;         // pin hub half-width (spans the cheek plates)
 const COLLAR_Y = 160;      // child collar half-width
-const PLATE_Y0 = 150;      // child cheek plates: y band inner
-const PLATE_Y1 = 175;      // child cheek plates: y band outer
-const PPLATE_Y = 185;      // parent side can carry plain washers at the pin ends
 const BEAM_GAP = 150;      // beam ends stop this far short of the pivot
-const STUB = 55;           // connecting stub half-section (beam end -> pivot)
 
 setCameraTarget(1100, 0, 2700);
 
