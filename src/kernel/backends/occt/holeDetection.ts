@@ -65,11 +65,10 @@ export interface HoleDetectionResult {
   ambiguousCylinderCount: number;
 }
 
-/** Radius (mm) of the probe sphere used for the point-in-solid test.
- *  `BRepClass3d_SolidClassifier` is not exposed by the wasm bindings we
- *  ship, so "point inside material" is approximated by a tiny-sphere
- *  boolean intersection (same primitive the joint-mesh-continuity gate
- *  uses). Small enough not to graze nearby walls; large enough to avoid
+/** Radius (mm) of the probe sphere used for the point-in-solid test:
+ *  "point inside material" means a sphere of this radius meets the body,
+ *  measured with BRepExtrema_DistShapeShape (a tiny-sphere boolean is the
+ *  fallback). Small enough not to graze nearby walls; large enough to avoid
  *  OCCT boolean degeneracy on a point-like primitive. */
 export const PROBE_SPHERE_RADIUS_MM = 0.05;
 
@@ -136,6 +135,79 @@ export function probePointInsideMaterial(
   backend: OcctBackend,
   point: readonly [number, number, number],
 ): boolean {
+  // A probe sphere of radius r at `point` meets material exactly when the
+  // point is inside a solid or lies within r of the boundary.
+  // BRepExtrema_DistShapeShape answers both (InnerSolution and Value) without
+  // a boolean against the whole body; the per-probe booleans took 18 s of the
+  // planetary gear stage's pdf-drawing. The boolean stays as the fallback.
+  const viaDistance = probeByDistance(backend, point);
+  if (viaDistance !== undefined) return viaDistance;
+  return probeByBoolean(backend, point);
+}
+
+function probeByDistance(backend: OcctBackend, point: readonly [number, number, number]): boolean | undefined {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const oc = getOC() as any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const body = (backend.getReplicadShape() as any).wrapped;
+  const pnt = new oc.gp_Pnt_3(point[0], point[1], point[2]);
+  const makeVertex = new oc.BRepBuilderAPI_MakeVertex(pnt);
+  const vertex = makeVertex.Vertex();
+  try {
+    const nearBoundary = distanceQuery(oc, vertex, body, (q) => q.Value() < PROBE_SPHERE_RADIUS_MM);
+    if (nearBoundary !== false) return nearBoundary;
+    // InnerSolution is only reported when the other shape is itself a
+    // solid, not a compound or shell holding one, so test each solid.
+    const solids = new oc.TopExp_Explorer_2(body, oc.TopAbs_ShapeEnum.TopAbs_SOLID, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
+    try {
+      for (; solids.More(); solids.Next()) {
+        const solid = solids.Current();
+        try {
+          const inside = distanceQuery(oc, vertex, solid, (q) => q.InnerSolution());
+          if (inside !== false) return inside;
+        } finally {
+          solid.delete();
+        }
+      }
+    } finally {
+      solids.delete();
+    }
+    return false;
+  } finally {
+    vertex.delete();
+    makeVertex.delete();
+    pnt.delete();
+  }
+}
+
+/** `test` applied to a completed vertex-to-shape distance query; undefined
+ *  when OCCT cannot complete it. */
+function distanceQuery(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  oc: any,
+  vertex: unknown,
+  shape: unknown,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  test: (query: any) => boolean,
+): boolean | undefined {
+  // The flag/algo constructor overloads need the Extrema_ExtFlag enum,
+  // which the bindings do not export; the defaults (MINMAX, Grad) are fine.
+  const query = new oc.BRepExtrema_DistShapeShape_1();
+  const progress = new oc.Message_ProgressRange_1();
+  try {
+    query.LoadS1(vertex);
+    query.LoadS2(shape);
+    if (!query.Perform(progress) || !query.IsDone()) return undefined;
+    return test(query);
+  } catch {
+    return undefined;
+  } finally {
+    progress.delete();
+    query.delete();
+  }
+}
+
+function probeByBoolean(backend: OcctBackend, point: readonly [number, number, number]): boolean {
   const probe = OcctBackend.sphere(PROBE_SPHERE_RADIUS_MM).translate(
     point[0],
     point[1],

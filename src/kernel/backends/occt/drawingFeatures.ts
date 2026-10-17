@@ -611,16 +611,74 @@ function chamferFromStrip(
   return { legs, edgeDir: canonicalAxis(l1.dir), midPoint, normal: info.normal };
 }
 
-function recogniseChamfers(faces: Face[], planarByIndex: Map<number, PlanarFaceInfo>, checkpoint?: () => void): ChamferFeature[] {
-  const out: ChamferFeature[] = [];
-  const faceEdges = faces.map(f => (f as unknown as { edges: Edge[] }).edges);
-  const neighbourAcross = (faceIdx: number, edge: Edge): number => {
-    for (let j = 0; j < faces.length; j++) {
-      if (j === faceIdx) continue;
-      if (faceEdges[j].some(e => isSameEdge(e, edge))) return j;
+/** `isSameEdge`'s per-axis endpoint tolerance. */
+const EDGE_POINT_TOL = 1e-6;
+
+interface IndexedEdge {
+  face: number;
+  edge: Edge;
+  a: V3;
+  b: V3;
+}
+
+/**
+ * `neighbourAcross(faceIdx, edge)`: the lowest-index other face with an edge
+ * `isSameEdge` matches, -1 if none. Same answer as testing every edge of every
+ * face, but each edge's endpoints are read from OCCT once and indexed on a
+ * grid of the endpoint tolerance, so only edges whose endpoints already match
+ * reach `isSameEdge`. The full scan was O(faces x edges) OCCT reads per query
+ * (each endpoint read builds a curve adaptor): 72 s and a WASM heap at its
+ * 2 GB ceiling for the 2,556-face planetary gear stage's pdf-drawing.
+ */
+function makeNeighbourAcross(faceEdges: Edge[][]): (faceIdx: number, edge: Edge) => number {
+  const cell = (c: number): number => Math.floor(c / EDGE_POINT_TOL);
+  const cellKey = (x: number, y: number, z: number): string => `${x},${y},${z}`;
+  const grid = new Map<string, IndexedEdge[]>();
+  faceEdges.forEach((edges, face) => {
+    for (const edge of edges) {
+      const entry: IndexedEdge = { face, edge, a: vec(edge.startPoint), b: vec(edge.endPoint) };
+      const k = cellKey(cell(entry.a[0]), cell(entry.a[1]), cell(entry.a[2]));
+      const bucket = grid.get(k);
+      if (bucket) bucket.push(entry);
+      else grid.set(k, [entry]);
+    }
+  });
+  const near = (p: V3, q: V3): boolean =>
+    Math.abs(p[0] - q[0]) < EDGE_POINT_TOL && Math.abs(p[1] - q[1]) < EDGE_POINT_TOL && Math.abs(p[2] - q[2]) < EDGE_POINT_TOL;
+  /** Indexed edges whose start point is within tolerance of `p`. */
+  const startingNear = (p: V3, out: IndexedEdge[]): void => {
+    const [cx, cy, cz] = [cell(p[0]), cell(p[1]), cell(p[2])];
+    for (let dx = -1; dx <= 1; dx += 1) {
+      for (let dy = -1; dy <= 1; dy += 1) {
+        for (let dz = -1; dz <= 1; dz += 1) {
+          for (const entry of grid.get(cellKey(cx + dx, cy + dy, cz + dz)) ?? []) {
+            if (near(entry.a, p)) out.push(entry);
+          }
+        }
+      }
+    }
+  };
+  return (faceIdx, edge) => {
+    const qa = vec(edge.startPoint);
+    const qb = vec(edge.endPoint);
+    const found: IndexedEdge[] = [];
+    // isSameEdge accepts either orientation, so a match starts at qa or qb.
+    startingNear(qa, found);
+    startingNear(qb, found);
+    const candidates = found
+      .filter(c => c.face !== faceIdx && ((near(c.a, qa) && near(c.b, qb)) || (near(c.a, qb) && near(c.b, qa))))
+      .sort((x, y) => x.face - y.face);
+    for (const c of candidates) {
+      if (isSameEdge(c.edge, edge)) return c.face;
     }
     return -1;
   };
+}
+
+function recogniseChamfers(faces: Face[], planarByIndex: Map<number, PlanarFaceInfo>, checkpoint?: () => void): ChamferFeature[] {
+  const out: ChamferFeature[] = [];
+  const faceEdges = faces.map(f => (f as unknown as { edges: Edge[] }).edges);
+  const neighbourAcross = makeNeighbourAcross(faceEdges);
 
   for (const [idx, info] of planarByIndex) {
     checkpoint?.();
