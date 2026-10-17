@@ -1,0 +1,56 @@
+{
+  "bundleVersion": 1,
+  "scriptPath": "/home/andrii/Projects/kernelCAD/examples/parts/bolt-stack.kcad.ts",
+  "generatedAt": "2026-10-17T16:48:20.364Z",
+  "requestedChannels": [
+    "rgb"
+  ],
+  "emittedChannels": [
+    "rgb"
+  ],
+  "viewport": {
+    "width": 1024,
+    "height": 1024
+  },
+  "views": [
+    "front",
+    "right",
+    "top",
+    "iso"
+  ],
+  "bounds": {
+    "min": [
+      -34,
+      -11,
+      3
+    ],
+    "max": [
+      34,
+      11,
+      26
+    ]
+  },
+  "command": {
+    "name": "kernelcad render inspect",
+    "channels": [
+      "rgb"
+    ],
+    "views": [
+      "front",
+      "right",
+      "top",
+      "iso"
+    ]
+  },
+  "caveats": [
+    "Channels are view-dependent and reflect the same camera, visibility filter, tail-feature filtering, and reference-image visibility used for RGB."
+  ],
+  "channels": {
+    "rgb": {
+      "front": "channels/rgb/front.png",
+      "right": "channels/rgb/right.png",
+      "top": "channels/rgb/top.png",
+      "iso": "channels/rgb/iso.png"
+    }
+  }
+}
