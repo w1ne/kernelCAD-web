@@ -10,6 +10,8 @@ export interface PlacedEdge {
 export interface HitEdge extends PlacedEdge {
   sheet: [[number, number], [number, number]];
   label: string;
+  /** False when `from`/`to` are not model coordinates. */
+  model: boolean;
 }
 
 export interface TaggedView {
@@ -17,8 +19,12 @@ export interface TaggedView {
   tx: number;
   ty: number;
   s: number;
-  /** Model-2D segments, y up: x0 y0 x1 y1. */
+  /** Model-2D segments, y up: x0 y0 x1 y1. Sheet-only edges store `[sheetX, -sheetY]`. */
   segments: ReadonlyArray<readonly [number, number, number, number]>;
+  /** False when the sheet has no model transform and segments are sheet coordinates. */
+  modelSpace?: boolean;
+  /** Sheet millimetres per model millimetre. Used for sheet-only edges. */
+  drawingScale?: number;
 }
 
 type SheetSvg = {
@@ -83,13 +89,13 @@ export function edgeNearPoint(views: readonly TaggedView[], sheetX: number, shee
   let best: HitEdge | null = null;
   for (const view of views) {
     for (const [x0, y0, x1, y1] of view.segments) {
-      const horizontal = Math.abs(x1 - x0) >= Math.abs(y1 - y0);
-      const measured = horizontal ? Math.abs(x1 - x0) : Math.abs(y1 - y0);
-      if (measured < 0.5) continue;
       const ax = view.tx + view.s * x0;
       const ay = view.ty - view.s * y0;
       const bx = view.tx + view.s * x1;
       const by = view.ty - view.s * y1;
+      const sheetLen = Math.hypot(bx - ax, by - ay);
+      const measured = view.modelSpace === false ? sheetLen / (view.drawingScale || 1) : Math.hypot(x1 - x0, y1 - y0);
+      if (measured < 0.5) continue;
       const dist = distanceToSegment(sheetX, sheetY, ax, ay, bx, by);
       if (dist > bestDist || (best && dist >= bestDist)) continue;
       bestDist = dist;
@@ -99,6 +105,7 @@ export function edgeNearPoint(views: readonly TaggedView[], sheetX: number, shee
         to: pointOnViewPlane(view.view, x1, y1),
         sheet: [[ax, ay], [bx, by]],
         label: formatDimValue(measured),
+        model: view.modelSpace !== false,
       };
     }
   }

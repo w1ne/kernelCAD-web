@@ -51,7 +51,7 @@ export const DrawingSheetViewport = forwardRef(function DrawingSheetViewport({
   }), []);
   const drawn = injectEdgeDimensions(sheetMarkup(svg), [
     ...placed,
-    ...(place.hover ? [{ id: 'hover', view: place.hover.view, from: place.hover.from, to: place.hover.to, gap: place.hover.gap, hover: true }] : []),
+    ...(place.hover ? [{ id: 'hover', view: place.hover.view, from: place.hover.from, to: place.hover.to, gap: place.hover.gap, hover: true, ...(place.hover.model ? {} : { sheet: place.hover.sheet }) }] : []),
   ]);
   const onClick = (event: ReactMouseEvent<HTMLDivElement>) => {
     if (place.placeClick(event) !== 'select') return;

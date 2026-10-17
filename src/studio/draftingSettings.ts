@@ -44,8 +44,8 @@ export function draftingOptionsForSource(settings: DraftingSettings | undefined,
     draftingProfile: settings.draftingProfile,
     autoAnnotate: { dimensioningStyle: settings.dimensioningStyle, ...(matches && settings.datums ? { datums: settings.datums } : {}) },
     ...(matches ? { annotationOverrides: settings.annotationOverrides } : {}),
-    ...(matches && settings.placedDimensions?.length ? {
-      placedAnnotations: settings.placedDimensions.map((dimension) => ({
+    ...(matches && settings.placedDimensions?.some((dimension) => !dimension.sheet) ? {
+      placedAnnotations: settings.placedDimensions.filter((dimension) => !dimension.sheet).map((dimension) => ({
         id: dimension.id, kind: 'linear' as const, view: dimension.view, from: dimension.from, to: dimension.to,
         edgeGap: dimension.gap ?? 8,
       })),

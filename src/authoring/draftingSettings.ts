@@ -12,6 +12,8 @@ export interface PlacedLinearDimension {
   to: [number, number, number];
   /** Signed sheet-mm offset from the edge to the dimension line. */
   gap?: number;
+  /** Sheet endpoints when the preview did not carry a model transform. */
+  sheet?: [[number, number], [number, number]];
 }
 
 export interface DraftingSettings {
@@ -55,6 +57,10 @@ export const DraftingSettingsSchema = z.object({
     from: z.tuple([z.number().finite(), z.number().finite(), z.number().finite()]),
     to: z.tuple([z.number().finite(), z.number().finite(), z.number().finite()]),
     gap: z.number().finite().optional(),
+    sheet: z.tuple([
+      z.tuple([z.number().finite(), z.number().finite()]),
+      z.tuple([z.number().finite(), z.number().finite()]),
+    ]).optional(),
   })).optional(),
   datums: z.array(z.object({ label: z.string().regex(/^(?![IOQ])[A-Z](?![IOQ])[A-Z]?$/),
     face: z.record(z.string(), z.unknown()) })).optional(),

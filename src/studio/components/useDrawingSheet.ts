@@ -2,6 +2,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import { fitSheet, frameRect, MIN_SCALE, zoomAt, type SheetView } from './drawingSheetCamera';
 import { signedEdgeGap } from '../../kernel/backends/occt/drawingLayout';
+import { edgesFromMarkup } from './edgeDimensionSheet';
 import { clientToSheet, edgeNearPoint, readTaggedViews, type HitEdge, type PlacedEdge, type TaggedView } from './drawingSheetHit';
 
 interface Drag { id: number; x: number; y: number; ox: number; oy: number }
@@ -88,7 +89,8 @@ export function useSheetCamera(
   useLayoutEffect(() => {
     const svgEl = hostRef.current?.querySelector('svg');
     const vp = viewportRef.current;
-    taggedRef.current = hostRef.current ? readTaggedViews(hostRef.current) : [];
+    const tagged = hostRef.current ? readTaggedViews(hostRef.current) : [];
+    taggedRef.current = tagged.length > 0 ? tagged : edgesFromMarkup(svg);
     if (!svgEl || !vp) return;
     const size = applySheetSize(svgEl);
     setView(fitSheet(vp.clientWidth || 640, vp.clientHeight || 480, size.w, size.h));
@@ -101,7 +103,7 @@ export function useSheetCamera(
 
 export function useSheetPlace(
   hostRef: Host, viewRef: ViewRef, taggedRef: TaggedRef, setView: (view: SheetView) => void,
-  svg: string, onPlaceEdge?: (edge: PlacedEdge & { gap: number }) => void,
+  svg: string, onPlaceEdge?: (edge: PlacedEdge & { gap: number; sheet?: HitEdge['sheet'] }) => void,
 ) {
   const drag = useRef<Drag | null>(null);
   const panned = useRef(false);
@@ -146,7 +148,10 @@ export function useSheetPlace(
     if (!placing) return 'select' as const;
     const edge = hitAt(hostRef.current, event.clientX, event.clientY, viewRef.current.scale, taggedRef.current);
     if (edge && onPlaceEdge) {
-      onPlaceEdge({ view: edge.view, from: edge.from, to: edge.to, gap: gapAt(hostRef, event.clientX, event.clientY, edge) });
+      const gap = gapAt(hostRef, event.clientX, event.clientY, edge);
+      onPlaceEdge(edge.model
+        ? { view: edge.view, from: edge.from, to: edge.to, gap }
+        : { view: edge.view, from: [0, 0, 0], to: [0, 0, 0], gap, sheet: edge.sheet });
       setHover(null);
     }
     return 'placed' as const;
