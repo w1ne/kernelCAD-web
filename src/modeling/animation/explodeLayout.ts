@@ -16,9 +16,11 @@
  *  2. A breadth-first walk from the root gives each child one parent. A child
  *     moves away from its parent along the link axis (the mate normal) when
  *     one is known, else along the line between the two part centres.
+ *     A child inside the parent's span along the axis (a washer on a pin)
+ *     moves away from the grandparent instead, so stacks open outward.
  *  3. Siblings that move in the same direction are spread as a stack: each
- *     level of the stack moves just clear of the parent, or of the level
- *     before it, plus one gap (6 % of the assembly diagonal).
+ *     level of the stack moves clear of the parent, or of the level before
+ *     it, plus one gap (6 % of the assembly diagonal).
  *  4. A child carries its own subtree: offset(child) = offset(parent) + step.
  *  5. Parts with no links, and the roots of the smaller groups, move radially
  *     away from the assembly centre.
@@ -156,25 +158,32 @@ function pickRoot(group: readonly string[], byKey: Map<string, ExplodeLayoutPart
   return best;
 }
 
-/** Direction a child moves away from its parent. */
+/** Direction a child moves away from its parent. `grandparent` is the
+ *  parent's own parent (undefined under a root). */
 function childDirection(
   child: ExplodeLayoutPart,
   parent: ExplodeLayoutPart,
   axis: Vec3 | undefined,
   center: Vec3,
+  grandparent: ExplodeLayoutPart | undefined,
 ): Vec3 {
   const away = sub(child.center, parent.center);
   const fromCenter = sub(child.center, center);
   if (axis) {
-    // Sign: the side of the parent the child sits on. A child centred on the
-    // parent along the axis (a shaft through a hub) uses the assembly centre,
-    // then +axis.
     const tol = 1e-6 * (1 + length(child.size) + length(parent.size));
-    const s = dot(away, axis);
-    if (Math.abs(s) > tol) return s > 0 ? axis : scale(axis, -1);
-    const c = dot(fromCenter, axis);
-    if (Math.abs(c) > tol) return c > 0 ? axis : scale(axis, -1);
-    return axis;
+    const side = (v: Vec3): Vec3 | undefined => {
+      const d = dot(v, axis);
+      if (Math.abs(d) <= tol) return undefined;
+      return d > 0 ? axis : scale(axis, -1);
+    };
+    // A child whose centre lies inside the parent's span along the axis (a
+    // horn on a servo shaft, a washer on a pin) moves away from the
+    // grandparent instead, so a stack opens outward and not back inside.
+    const inside = Math.abs(dot(away, axis)) < extentAlong(parent.size, axis) / 2;
+    return (inside && grandparent ? side(sub(child.center, grandparent.center)) : undefined)
+      ?? side(away)
+      ?? side(fromCenter)
+      ?? axis;
   }
   return unit(away) ?? unit(fromCenter) ?? UP;
 }
@@ -210,14 +219,20 @@ function stackSteps(parent: ExplodeLayoutPart, children: readonly Step[], gap: n
     const levels: Step[][] = [];
     for (const s of sorted) {
       const level = levels[levels.length - 1];
-      const joins = level
-        && lo(s) - lo(level[0]!) <= levelTol
+      // Same height: starts close to the level's first part and overlaps it
+      // along the direction (parts stacked end to end never share a level).
+      const first = level?.[0];
+      const joins = level && first
+        && lo(s) - lo(first) <= levelTol
+        && lo(s) < lo(first) + first.extent - 1e-9
         && level.every((m) => !boxesOverlap(m.part, s.part));
       if (joins) level.push(s); else levels.push([s]);
     }
     let frontier = extentAlong(parent.size, g[0]!.dir) / 2;
     for (const level of levels) {
-      const shift = Math.max(0, frontier + gap - Math.min(...level.map(lo)));
+      // Clear the parent (or the level before) and add one gap, so parts
+      // that already sit apart still move.
+      const shift = Math.max(0, frontier - Math.min(...level.map(lo))) + gap;
       for (const m of level) out.set(m.key, shift);
       frontier = Math.max(...level.map((m) => lo(m) + m.extent + shift));
     }
@@ -260,7 +275,8 @@ export function explodeLayout(
         if (visited.has(n.key)) continue;
         visited.add(n.key);
         const child = byKey.get(n.key)!;
-        const dir = childDirection(child, parent, n.axis, center);
+        const grandKey = parents.get(parentKey);
+        const dir = childDirection(child, parent, n.axis, center, grandKey === undefined ? undefined : byKey.get(grandKey));
         steps.push({
           key: n.key,
           part: child,
@@ -284,5 +300,6 @@ export function explodeLayout(
 export function offsetAt(layout: ExplodeLayout, key: string, factor: number): Vec3 {
   const o = layout.offsets.get(key) ?? ZERO;
   const f = Number.isFinite(factor) ? Math.max(0, factor) : 0;
-  return scale(o, f);
+  // `+ 0` turns -0 into 0.
+  return [o[0] * f + 0, o[1] * f + 0, o[2] * f + 0];
 }
