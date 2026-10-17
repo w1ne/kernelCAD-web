@@ -4,7 +4,7 @@
 // One fastener table. The catalog generator, lib.standard, and lib.part all
 // read these rows. Adding a size is a row, not a new function.
 
-import { KernelError } from '../../shared/intent/kernelError';
+import { invalidArgs } from '../../shared/intent/invalidArgs';
 import type { ConnectorEntry } from '../../shared/parts/connectorManifestSchema';
 
 export const SHCS_LENGTHS = [4, 5, 6, 8, 10, 12, 14, 16, 18, 20, 25, 30, 35, 40, 45, 50] as const;
@@ -107,13 +107,35 @@ export interface StackPlan {
   members: StackMemberPlan[];
 }
 
-const FAMILIES: Record<string, {
+interface HeadDims { D: number; K: number }
+interface NutDims { S: number; m: number }
+interface WasherDims { Dout: number; Din: number; t: number }
+
+interface ScrewFamily {
   standard: string;
   idPrefix: string;
-  kind: PartKind;
-  threads: Record<string, unknown>;
-  lengths?: readonly number[];
-}> = {
+  kind: 'screw';
+  threads: Record<string, HeadDims>;
+  lengths: readonly number[];
+}
+interface NutFamily {
+  standard: string;
+  idPrefix: string;
+  kind: 'nut';
+  threads: Record<string, NutDims>;
+}
+interface WasherFamily {
+  standard: string;
+  idPrefix: string;
+  kind: 'washer';
+  threads: Record<string, WasherDims>;
+}
+type FamilySpec = ScrewFamily | NutFamily | WasherFamily;
+
+const PART_EXAMPLE = "lib.part({ family: 'socket-head-cap-screw', thread: 'M5', lengthMm: 16 })";
+const STACK_EXAMPLE = "lib.stack({ thread: 'M5', gripMm: 10, mode: 'bolt' })";
+
+const FAMILIES: Record<string, FamilySpec> = {
   'socket-head-cap-screw': { standard: 'ISO 4762', idPrefix: 'iso-4762', kind: 'screw', threads: SHCS_HEAD, lengths: SHCS_LENGTHS },
   'button-head-cap-screw': { standard: 'ISO 7380', idPrefix: 'iso-7380', kind: 'screw', threads: BHCS_HEAD, lengths: BHCS_LENGTHS },
   'flat-head-countersunk': { standard: 'ISO 10642', idPrefix: 'iso-10642', kind: 'screw', threads: FLATHEAD_HEAD, lengths: FLATHEAD_LENGTHS },
@@ -133,182 +155,230 @@ export function threadSlug(thread: string): string {
 
 function nominalOf(thread: string): number {
   const n = Number.parseFloat(thread.slice(1));
-  if (!Number.isFinite(n) || n <= 0) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `Thread '${thread}' is not a metric size like M5.`,
-      undefined,
-      'Pass a thread such as M3, M4, or M5.',
-    );
-  }
-  return n;
+  if (Number.isFinite(n) && n > 0) return n;
+  invalidArgs({
+    api: 'lib.part({ family, thread, lengthMm })',
+    path: 'thread',
+    got: thread,
+    requires: 'a metric size like M3, M4, or M5',
+    example: PART_EXAMPLE,
+  });
 }
 
-function requireFamily(family: string) {
+function requireFamily(family: string): FamilySpec {
   const spec = FAMILIES[family];
-  if (!spec) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `Unknown part family '${family}'. Known families: ${Object.keys(FAMILIES).join(', ')}.`,
-      undefined,
-      'Use a family from lib.part, for example socket-head-cap-screw.',
-    );
-  }
-  return spec;
+  if (spec) return spec;
+  invalidArgs({
+    api: 'lib.part({ family, thread, lengthMm })',
+    path: 'family',
+    got: family,
+    requires: `one of: ${Object.keys(FAMILIES).join(', ')}`,
+    example: PART_EXAMPLE,
+  });
 }
 
-export function resolvePart(request: PartRequest): ResolvedPart {
-  const spec = requireFamily(request.family);
-  if (!request.thread) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `lib.part family '${request.family}' needs a thread.`,
-      undefined,
-      'Pass thread: "M5".',
-    );
-  }
-  const key = threadKey(request.thread);
-  const dims = spec.threads[key] as
-    | { D: number; K: number }
-    | { S: number; m: number }
-    | { Dout: number; Din: number; t: number }
-    | undefined;
-  if (!dims) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `${request.family} has no ${request.thread}. Stocked threads: ${Object.keys(spec.threads).map((k) => k.replace('_', '.')).join(', ')}.`,
-      undefined,
-      'Pick one of the stocked threads.',
-    );
-  }
-  const nominalMm = nominalOf(request.thread);
-  let lengthMm = 0;
-  if (spec.kind === 'screw') {
-    if (request.lengthMm === undefined) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `${request.family} ${request.thread} needs lengthMm.`,
-        undefined,
-        `Stocked lengths: ${(spec.lengths ?? []).join(', ')}.`,
-      );
-    }
-    lengthMm = nearestStocked(spec.lengths ?? [], request.lengthMm, `${request.family} ${request.thread}`);
-  }
+function stockedThreads(threads: Record<string, unknown>): string {
+  return Object.keys(threads).map((key) => key.replace('_', '.')).join(', ');
+}
 
-  const id = spec.kind === 'screw'
-    ? `${spec.idPrefix}-${threadSlug(request.thread)}x${lengthMm}`
-    : `${spec.idPrefix}-${threadSlug(request.thread)}`;
+function requireThread(request: PartRequest, stocked: string): string {
+  if (request.thread) return request.thread;
+  invalidArgs({
+    api: 'lib.part({ family, thread, lengthMm })',
+    path: 'thread',
+    gotText: 'omitted',
+    requires: `a stocked thread for ${request.family}: ${stocked}`,
+    example: PART_EXAMPLE,
+  });
+}
 
-  if (spec.kind === 'screw' && 'D' in dims) {
-    return {
-      id,
-      name: `${request.thread} × ${lengthMm} ${request.family} (${spec.standard})`,
-      family: request.family,
-      standard: spec.standard,
-      category: 'fastener',
-      kind: 'screw',
-      thread: request.thread,
-      lengthMm,
-      nominalMm,
-      headDiameterMm: dims.D,
-      headHeightMm: dims.K,
-      acrossFlatsMm: 0,
-      innerDiameterMm: 0,
-      tags: ['screw', 'metric', request.thread],
-      connectors: [
-        { name: 'head-bearing', type: 'frame', origin: [0, 0, 0], normal: [0, 0, -1] },
-        { name: 'thread-tip', type: 'axis', origin: [0, 0, -lengthMm], axis: [0, 0, 1] },
-        { name: 'head-top', type: 'frame', origin: [0, 0, dims.K], normal: [0, 0, 1] },
-      ],
-    };
-  }
-  if (spec.kind === 'nut' && 'S' in dims) {
-    return {
-      id,
-      name: `${request.thread} ${request.family} (${spec.standard})`,
-      family: request.family,
-      standard: spec.standard,
-      category: 'fastener',
-      kind: 'nut',
-      thread: request.thread,
-      lengthMm: 0,
-      nominalMm,
-      headDiameterMm: 0,
-      headHeightMm: dims.m,
-      acrossFlatsMm: dims.S,
-      innerDiameterMm: nominalMm,
-      tags: ['nut', 'metric', request.thread],
-      connectors: [
-        { name: 'mating-face', type: 'frame', origin: [0, 0, 0], normal: [0, 0, -1] },
-        { name: 'top-face', type: 'frame', origin: [0, 0, dims.m], normal: [0, 0, 1] },
-        { name: 'inner-bore', type: 'axis', origin: [0, 0, 0], axis: [0, 0, 1] },
-      ],
-    };
-  }
-  const washer = dims as { Dout: number; Din: number; t: number };
+function requireRow<T>(threads: Record<string, T>, thread: string, family: string): T {
+  const dims = threads[threadKey(thread)];
+  if (dims) return dims;
+  invalidArgs({
+    api: 'lib.part({ family, thread, lengthMm })',
+    path: 'thread',
+    got: thread,
+    requires: `a stocked thread for ${family}: ${stockedThreads(threads)}`,
+    example: PART_EXAMPLE,
+  });
+}
+
+function exactStocked(lengths: readonly number[], requested: number, label: string): number {
+  if (lengths.some((length) => length === requested)) return requested;
+  invalidArgs({
+    api: 'lib.part({ family, thread, lengthMm })',
+    path: 'lengthMm',
+    got: requested,
+    requires: `a stocked length for ${label}: ${lengths.join(', ')}`,
+    unit: 'mm',
+    example: PART_EXAMPLE,
+  });
+}
+
+function screwLength(lengths: readonly number[], request: PartRequest, thread: string): number {
+  if (request.lengthMm !== undefined) return exactStocked(lengths, request.lengthMm, `${request.family} ${thread}`);
+  invalidArgs({
+    api: 'lib.part({ family, thread, lengthMm })',
+    path: 'lengthMm',
+    gotText: 'omitted',
+    requires: `a stocked length for ${request.family} ${thread}: ${lengths.join(', ')}`,
+    unit: 'mm',
+    example: PART_EXAMPLE,
+  });
+}
+
+function partId(spec: FamilySpec, thread: string, lengthMm: number): string {
+  const slug = threadSlug(thread);
+  return spec.kind === 'screw' ? `${spec.idPrefix}-${slug}x${lengthMm}` : `${spec.idPrefix}-${slug}`;
+}
+
+function screwPart(
+  request: PartRequest,
+  spec: ScrewFamily,
+  dims: HeadDims,
+  thread: string,
+  nominalMm: number,
+): ResolvedPart {
+  const lengthMm = screwLength(spec.lengths, request, thread);
   return {
-    id,
-    name: `${request.thread} ${request.family} (${spec.standard})`,
+    id: partId(spec, thread, lengthMm),
+    name: `${thread} × ${lengthMm} ${request.family} (${spec.standard})`,
     family: request.family,
     standard: spec.standard,
     category: 'fastener',
-    kind: 'washer',
-    thread: request.thread,
+    kind: 'screw',
+    thread,
+    lengthMm,
+    nominalMm,
+    headDiameterMm: dims.D,
+    headHeightMm: dims.K,
+    acrossFlatsMm: 0,
+    innerDiameterMm: 0,
+    tags: ['screw', 'metric', thread],
+    connectors: [
+      { name: 'head-bearing', type: 'frame', origin: [0, 0, 0], normal: [0, 0, -1] },
+      { name: 'thread-tip', type: 'axis', origin: [0, 0, -lengthMm], axis: [0, 0, 1] },
+      { name: 'head-top', type: 'frame', origin: [0, 0, dims.K], normal: [0, 0, 1] },
+    ],
+  };
+}
+
+function nutPart(
+  request: PartRequest,
+  spec: NutFamily,
+  dims: NutDims,
+  thread: string,
+  nominalMm: number,
+): ResolvedPart {
+  return {
+    id: partId(spec, thread, 0),
+    name: `${thread} ${request.family} (${spec.standard})`,
+    family: request.family,
+    standard: spec.standard,
+    category: 'fastener',
+    kind: 'nut',
+    thread,
     lengthMm: 0,
     nominalMm,
-    headDiameterMm: washer.Dout,
-    headHeightMm: washer.t,
-    acrossFlatsMm: 0,
-    innerDiameterMm: washer.Din,
-    tags: ['washer', 'metric', request.thread],
+    headDiameterMm: 0,
+    headHeightMm: dims.m,
+    acrossFlatsMm: dims.S,
+    innerDiameterMm: nominalMm,
+    tags: ['nut', 'metric', thread],
     connectors: [
       { name: 'mating-face', type: 'frame', origin: [0, 0, 0], normal: [0, 0, -1] },
-      { name: 'top-face', type: 'frame', origin: [0, 0, washer.t], normal: [0, 0, 1] },
+      { name: 'top-face', type: 'frame', origin: [0, 0, dims.m], normal: [0, 0, 1] },
       { name: 'inner-bore', type: 'axis', origin: [0, 0, 0], axis: [0, 0, 1] },
     ],
   };
 }
 
-function nearestStocked(lengths: readonly number[], requested: number, label: string): number {
-  if (lengths.some((length) => length === requested)) return requested;
-  throw new KernelError(
-    'feature.invalid-args',
-    `Length ${requested} is not stocked for ${label}. Stocked lengths: ${lengths.join(', ')}.`,
-    undefined,
-    'Pass a stocked length, or use lib.stack so the grip picks the next stocked length.',
-  );
+function washerPart(
+  request: PartRequest,
+  spec: WasherFamily,
+  dims: WasherDims,
+  thread: string,
+  nominalMm: number,
+): ResolvedPart {
+  return {
+    id: partId(spec, thread, 0),
+    name: `${thread} ${request.family} (${spec.standard})`,
+    family: request.family,
+    standard: spec.standard,
+    category: 'fastener',
+    kind: 'washer',
+    thread,
+    lengthMm: 0,
+    nominalMm,
+    headDiameterMm: dims.Dout,
+    headHeightMm: dims.t,
+    acrossFlatsMm: 0,
+    innerDiameterMm: dims.Din,
+    tags: ['washer', 'metric', thread],
+    connectors: [
+      { name: 'mating-face', type: 'frame', origin: [0, 0, 0], normal: [0, 0, -1] },
+      { name: 'top-face', type: 'frame', origin: [0, 0, dims.t], normal: [0, 0, 1] },
+      { name: 'inner-bore', type: 'axis', origin: [0, 0, 0], axis: [0, 0, 1] },
+    ],
+  };
+}
+
+export function resolvePart(request: PartRequest): ResolvedPart {
+  const spec = requireFamily(request.family);
+  const thread = requireThread(request, stockedThreads(spec.threads));
+  const nominalMm = nominalOf(thread);
+  if (spec.kind === 'screw') {
+    return screwPart(request, spec, requireRow(spec.threads, thread, request.family), thread, nominalMm);
+  }
+  if (spec.kind === 'nut') {
+    return nutPart(request, spec, requireRow(spec.threads, thread, request.family), thread, nominalMm);
+  }
+  return washerPart(request, spec, requireRow(spec.threads, thread, request.family), thread, nominalMm);
 }
 
 function shortestAtLeast(lengths: readonly number[], needed: number, label: string): number {
   const hit = lengths.find((length) => length + 1e-9 >= needed);
   if (hit !== undefined) return hit;
-  throw new KernelError(
-    'feature.invalid-args',
-    `No stocked length for ${label} reaches ${needed} mm. Longest stocked length: ${lengths[lengths.length - 1]}.`,
-    undefined,
-    'Shorten the grip or pick a larger family.',
-  );
+  const longest = lengths[lengths.length - 1];
+  invalidArgs({
+    api: 'lib.stack({ thread, gripMm, mode })',
+    path: 'gripMm',
+    got: needed,
+    requires: `a grip that an ${label} can reach; longest stocked length is ${longest}`,
+    unit: 'mm',
+    example: STACK_EXAMPLE,
+  });
+}
+
+function stackMode(mode: StackRequest['mode']): 'screw' | 'bolt' {
+  const resolved = mode ?? 'bolt';
+  if (resolved === 'screw' || resolved === 'bolt') return resolved;
+  invalidArgs({
+    api: 'lib.stack({ thread, gripMm, mode })',
+    path: 'mode',
+    got: mode,
+    requires: '"screw" or "bolt"',
+    example: STACK_EXAMPLE,
+  });
+}
+
+function positiveGrip(gripMm: number): number {
+  if (gripMm > 0) return gripMm;
+  invalidArgs({
+    api: 'lib.stack({ thread, gripMm, mode })',
+    path: 'gripMm',
+    got: gripMm,
+    requires: 'the thickness the screw passes through, greater than 0',
+    unit: 'mm',
+    example: STACK_EXAMPLE,
+  });
 }
 
 /** Screw, washer under the head, and for mode 'bolt' a washer and nut on the far side. */
 export function planStack(request: StackRequest): StackPlan {
-  const mode = request.mode ?? 'bolt';
-  if (mode !== 'screw' && mode !== 'bolt') {
-    throw new KernelError(
-      'feature.invalid-args',
-      `lib.stack mode must be 'screw' or 'bolt'.`,
-      undefined,
-      "Pass mode: 'bolt' for a washer and nut on the back.",
-    );
-  }
-  if (!(request.gripMm > 0)) {
-    throw new KernelError(
-      'feature.invalid-args',
-      'lib.stack needs gripMm, the thickness the screw passes through.',
-      undefined,
-      'Pass gripMm: 10 for a 10 mm plate.',
-    );
-  }
+  const mode = stackMode(request.mode);
+  const gripMm = positiveGrip(request.gripMm);
   const washer = mode === 'bolt'
     ? resolvePart({ family: 'flat-washer', thread: request.thread })
     : undefined;
@@ -317,7 +387,7 @@ export function planStack(request: StackRequest): StackPlan {
     : undefined;
   const washerT = washer?.headHeightMm ?? 0;
   const nutT = nut?.headHeightMm ?? 0;
-  const needed = request.gripMm + (mode === 'bolt' ? washerT + nutT : 0);
+  const needed = gripMm + (mode === 'bolt' ? washerT + nutT : 0);
   const lengthMm = shortestAtLeast(SHCS_LENGTHS, needed, `socket-head-cap-screw ${request.thread}`);
   const screw = resolvePart({
     family: 'socket-head-cap-screw',
@@ -325,13 +395,11 @@ export function planStack(request: StackRequest): StackPlan {
     lengthMm,
   });
   const members: StackMemberPlan[] = [];
-  if (washer) {
-    members.push({ role: 'head-washer', part: washer, offsetZ: 0 });
-  }
+  if (washer) members.push({ role: 'head-washer', part: washer, offsetZ: 0 });
   members.push({ role: 'screw', part: screw, offsetZ: washerT });
   if (washer && nut) {
-    members.push({ role: 'tail-washer', part: washer, offsetZ: -(request.gripMm + washerT) });
-    members.push({ role: 'nut', part: nut, offsetZ: -(request.gripMm + washerT + nutT) });
+    members.push({ role: 'tail-washer', part: washer, offsetZ: -(gripMm + washerT) });
+    members.push({ role: 'nut', part: nut, offsetZ: -(gripMm + washerT + nutT) });
   }
   return { lengthMm, members };
 }
