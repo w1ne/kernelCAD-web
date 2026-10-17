@@ -384,49 +384,9 @@ export async function checkMechanismTruth(
   const loweredBase: LoweredSceneBase = {};
   failures.push(...(await checkRestCriteria(arm, solved, loweredBase)));
 
-  // The estimate reads the rest scene the rest criteria just lowered. With
-  // no rest scene there is nothing to re-pose, the sweep would measure
-  // nothing, and the rest criteria already marked the mechanism broken.
-  const sweepBudget = effectiveSweepBudget(opts.sweepBudget);
-  const sweepEstimate = loweredBase.scene === undefined ? undefined : await estimateArmSweepWork(arm, solved, loweredBase.scene);
-  // A budget of 0 is the documented force-skip seam, even for zero work.
-  const sweepSkipped = sweepEstimate === undefined || sweepBudget <= 0 || sweepEstimate.work > sweepBudget;
-
-  if (sweepEstimate === undefined) {
-    // Rest lower failed: reported by checkRestCriteria (joint-mesh-gap).
-  } else if (sweepSkipped) {
-    // LOUD skip (T3): the over-budget skip used to emit ONLY a console.warn
-    // and push nothing into `failures`, so the resulting 'unverified'
-    // verdict carried no machine-readable signal — an agent saw "not
-    // broken" and moved on. Push a structured, non-fatal diagnostic
-    // carrying the work estimate, the (auto-scaled) budget, and the part
-    // count so 'unverified' is evidence, not silence. Severity 'warn':
-    // "couldn't verify" must NOT make `ok: false` on its own (that's
-    // reserved for a definitive 'broken', including a rest-pose
-    // joint-mesh gap above).
-    failures.push(makeBudgetExceeded(sweepEstimate, sweepBudget));
-  } else {
-    // `loweredBase` was populated above (the rest sample's full lower);
-    // every other pose re-poses it with that sample's `solveMates`
-    // transforms instead of re-lowering the whole assembly.
-
-    // Criterion 2 (mechanism.interpenetration) — per-pose BREP sweep.
-    failures.push(...(await checkInterpenetration(arm, solved, loweredBase)));
-
-    // Criterion 3 (mechanism.dof-mismatch) — pragmatic micro-pose check.
-    // Note: this is the spec's open-question #2 ("DoF-mismatch is
-    // geometric"); the pragmatic shape used here is connected-component
-    // count stability under ±ε around the declared axis. Skipped when the
-    // assembly has no revolute mates.
-    failures.push(...(await checkDofMismatch(arm, loweredBase)));
-
-    // Criterion 8 (mechanism.tendon-body-intersect) — a balance tendon's
-    // routed path must not cut through a non-anchor body at any sampled
-    // pose. The static authoring backstop for "the spring goes through the
-    // arm"; MuJoCo wrap routing (Slice 2 MJCF) is the runtime side, this is
-    // the design-time gate. No-op for assemblies with no tendons.
-    failures.push(...(await checkTendonBodyIntersectCriterion(arm, solved, loweredBase)));
-  }
+  const sweep = await runPoseSweep(arm, solved, loweredBase, effectiveSweepBudget(opts.sweepBudget));
+  failures.push(...sweep.failures);
+  const sweepSkipped = sweep.skipped;
 
   // Criteria 5 + 6 (physics) — gated on `opts.physicsCheck`. The MuJoCo
   // session is shared between the two passes so the ~9 MB WASM module
@@ -449,6 +409,56 @@ export async function checkMechanismTruth(
     hasDefinitiveFailure ? 'broken' : sweepSkipped ? 'unverified' : 'real';
   const coverage = { poses: solved.length, joints, ...scope, sweep: !sweepSkipped, physics: opts.physicsCheck === true };
   return { mechanism, failures, coverage };
+}
+
+/**
+ * The budgeted BREP pose sweep (criteria 2, 3, 8). The estimate reads the
+ * rest scene the rest criteria lowered. With no rest scene there is nothing
+ * to re-pose, the sweep would measure nothing, and the rest criteria
+ * already marked the mechanism broken.
+ */
+async function runPoseSweep(
+  arm: Assembly,
+  solved: SolvedSample[],
+  loweredBase: LoweredSceneBase,
+  sweepBudget: number,
+): Promise<{ failures: CompilerDiagnostic[]; skipped: boolean }> {
+  if (loweredBase.scene === undefined) return { failures: [], skipped: true };
+  const sweepEstimate = await estimateArmSweepWork(arm, solved, loweredBase.scene);
+  // A budget of 0 is the documented force-skip seam, even for zero work.
+  if (sweepBudget <= 0 || sweepEstimate.work > sweepBudget) {
+    // LOUD skip (T3): the over-budget skip used to emit ONLY a console.warn
+    // and push nothing into `failures`, so the resulting 'unverified'
+    // verdict carried no machine-readable signal — an agent saw "not
+    // broken" and moved on. Push a structured, non-fatal diagnostic
+    // carrying the work estimate, the budget, and the part count so
+    // 'unverified' is evidence, not silence. Severity 'warn': "couldn't
+    // verify" must NOT make `ok: false` on its own (that's reserved for a
+    // definitive 'broken', including a rest-pose joint-mesh gap).
+    return { failures: [makeBudgetExceeded(sweepEstimate, sweepBudget)], skipped: true };
+  }
+  const failures: CompilerDiagnostic[] = [];
+  // `loweredBase` holds the rest sample's full lower; every other pose
+  // re-poses it with that sample's `solveMates` transforms instead of
+  // re-lowering the whole assembly.
+
+  // Criterion 2 (mechanism.interpenetration) — per-pose BREP sweep.
+  failures.push(...(await checkInterpenetration(arm, solved, loweredBase)));
+
+  // Criterion 3 (mechanism.dof-mismatch) — pragmatic micro-pose check.
+  // Note: this is the spec's open-question #2 ("DoF-mismatch is
+  // geometric"); the pragmatic shape used here is connected-component
+  // count stability under ±ε around the declared axis. Skipped when the
+  // assembly has no revolute mates.
+  failures.push(...(await checkDofMismatch(arm, loweredBase)));
+
+  // Criterion 8 (mechanism.tendon-body-intersect) — a balance tendon's
+  // routed path must not cut through a non-anchor body at any sampled
+  // pose. The static authoring backstop for "the spring goes through the
+  // arm"; MuJoCo wrap routing (Slice 2 MJCF) is the runtime side, this is
+  // the design-time gate. No-op for assemblies with no tendons.
+  failures.push(...(await checkTendonBodyIntersectCriterion(arm, solved, loweredBase)));
+  return { failures, skipped: false };
 }
 
 /**
