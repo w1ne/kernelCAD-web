@@ -12,6 +12,8 @@ import { buildValiditySuggestions, type ValiditySuggestionCard } from '../adapte
 import { useShellStore, shellStore } from '../store/useShellStore';
 import { actionableInterferences, countChecks, groupChecks, type InterferenceFinding } from '../logic/checksModel';
 import { ChecksSection, ChecksSummary, FindingsList, InterferenceList, MechanismBanner, type FindingActions } from './checks/ChecksParts';
+import { MotionBadge } from '../components/motion/MotionBadge';
+import type { MechanismVerdictSummary } from '../../modeling/runtime/mechanismVerdict';
 import { SuggestionCard, WorkflowSummary } from './checks/SuggestionCard';
 import { draftRepair } from './checks/draftRepair';
 import {
@@ -32,7 +34,9 @@ const SUGGESTION_LIMIT = 3;
  */
 export function ValidityTab(): JSX.Element {
     const result = useRecomputeResult();
+    const workbench = useContext(WorkbenchContext);
     const { validity, mechanismBanner, suggestedRepairPrompt, repairEvidence } = result;
+    const mechanismSummary = workbench?.scriptReview?.mechanismSummary;
     const { selectFeature } = useFeatureSelection();
     const { agentRepairWorkflow } = useShellStore();
     const run = useRunChecks();
@@ -85,6 +89,7 @@ export function ValidityTab(): JSX.Element {
                 onRun={run.onRun}
                 running={run.running}
             />
+            {mechanismSummary != null && <MotionCoverage summary={mechanismSummary} />}
             {mechanismBanner != null && <MechanismBanner entries={mechanismBanner.entries} />}
             {workflowView.summary != null && (
                 <div className="px-3">
@@ -117,6 +122,34 @@ export function ValidityTab(): JSX.Element {
                 </ChecksSection>
             )}
         </div>
+    );
+}
+
+/** The viewer's motion verdict, written out: what held, what was skipped, and the load line. */
+function MotionCoverage({ summary }: { summary: MechanismVerdictSummary }): JSX.Element {
+    return (
+        <ChecksSection
+            title="Motion"
+            testId="checks-motion"
+            aside={<MotionBadge summary={summary} side="bottom" />}
+        >
+            <div className="flex flex-col gap-2 px-3 text-ui text-fg-2">
+                <p data-testid="checks-motion-statement">{summary.statement}</p>
+                {summary.checked.length > 0 && (
+                    <ul data-testid="checks-motion-checked" className="list-disc pl-4">
+                        {summary.checked.map((line) => <li key={line}>{line}</li>)}
+                    </ul>
+                )}
+                {summary.skipped.length > 0 && (
+                    <ul data-testid="checks-motion-skipped" className="list-disc pl-4">
+                        {summary.skipped.map((line) => <li key={line}>{line}</li>)}
+                    </ul>
+                )}
+                {summary.loads != null && (
+                    <p data-testid="checks-motion-loads">{summary.loads.statement}</p>
+                )}
+            </div>
+        </ChecksSection>
     );
 }
 

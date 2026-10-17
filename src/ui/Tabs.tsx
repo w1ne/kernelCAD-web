@@ -28,6 +28,8 @@ export interface TabsProps {
 export function Tabs({ id, label, items, value, onChange, maxVisible, className }: TabsProps): JSX.Element {
     const listRef = useRef<HTMLDivElement>(null);
     const { shown, overflow } = splitTabs(items, value, maxVisible);
+    // No cap: every view stays in the row and the strip scrolls. A cap folds
+    // the rest into More.
 
     const focusTab = (tid: string): void => {
         onChange(tid);
@@ -49,8 +51,8 @@ export function Tabs({ id, label, items, value, onChange, maxVisible, className 
     const selectedShown = shown.some((t) => t.id === value);
 
     return (
-        <div className={cx('flex items-end gap-1 border-b border-border', className)}>
-            <div ref={listRef} role="tablist" aria-label={label} className="flex min-w-0 items-end gap-1" onKeyDown={onKeyDown}>
+        <div className={cx('flex items-end gap-1 border-b border-border', maxVisible == null && 'overflow-x-auto', className)}>
+            <div ref={listRef} role="tablist" aria-label={label} className={cx('flex items-end gap-1', maxVisible == null ? 'w-max' : 'min-w-0')} onKeyDown={onKeyDown}>
                 {shown.map((t, i) => {
                     const selected = t.id === value;
                     return (

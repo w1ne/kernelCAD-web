@@ -48,7 +48,7 @@ export interface MechanismLoadsLine {
   readonly maxLevel: MechanismMaxLevel;
   /** e.g. "loads: min torque margin 2.7x (shoulder)". */
   readonly statement: string;
-  /** Compact per-joint data for the Studio Loads panel. */
+  /** Compact per-joint data for the Loads panel on Studio's Joints tab. */
   readonly joints?: readonly MechanismLoadsJoint[];
 }
 

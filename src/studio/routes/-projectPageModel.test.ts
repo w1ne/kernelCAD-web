@@ -16,6 +16,7 @@ import {
   projectOwnership,
   relativeTime,
   resumePrompt,
+  modelPageHref,
   signInHref,
   studioHref,
 } from './-projectPageModel';
@@ -184,7 +185,8 @@ describe('continue in chat', () => {
 
 describe('URLs', () => {
   it('builds the Studio, sign-in and poster URLs', () => {
-    expect(studioHref('a b')).toBe('/p/a%20b?view=studio');
+    expect(studioHref('a b')).toBe('/p/a%20b');
+    expect(modelPageHref('a b')).toBe('/p/a%20b?view=view');
     expect(signInHref('abc')).toBe('/signin?next=%2Fp%2Fabc');
     expect(posterUrl('https://api.example', 'abc')).toBe('https://api.example/api/v1/projects/abc/og.png');
   });

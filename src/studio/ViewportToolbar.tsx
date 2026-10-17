@@ -4,9 +4,9 @@
 // The toolbar that floats over the top of the viewport: Run, Validate,
 // Section, Mark for agent, the camera and the display options. It replaces
 // the second chrome row, so the model gets that height back.
-import { useLayoutEffect, useMemo, useRef, type JSX } from 'react';
+import { useCallback, useLayoutEffect, useMemo, useRef, useState, type JSX, type PointerEvent as ReactPointerEvent, type RefObject } from 'react';
 import {
-    Box, Check, Circle, Eye, Grid3x3, Image as ImageIcon, LayoutGrid, Maximize, Moon, PenLine, Play, Scissors,
+    Box, Check, Circle, Eye, Grid3x3, GripVertical, Image as ImageIcon, LayoutGrid, Maximize, Moon, PenLine, Play, Scissors,
     ShieldCheck, Sparkles, Sun, SquareDashed,
 } from 'lucide-react';
 import { Button } from '../ui/Button';
@@ -21,7 +21,7 @@ import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { viewTargetRequests } from './hooks/studioNavigation';
 import { useIsNarrow } from './hooks/useIsNarrow';
 import { OrderButton } from './OrderButton';
-import { CORNER_INSET_VAR } from './components/viewer/cornerControls';
+import { CORNER_INSET_VAR, TOOL_DOCK_SLOT_ID, registerToolDock } from './components/viewer/cornerControls';
 
 const ICON = { className: 'size-4', strokeWidth: 1.75 } as const;
 
@@ -207,6 +207,66 @@ function OptionalToggles(props: ViewportToolbarProps): JSX.Element {
     );
 }
 
+const TOOLBAR_PLACE_KEY = 'kernelcad:toolbar-place';
+
+interface ToolbarPlace { left: number; top: number }
+
+function readToolbarPlace(): ToolbarPlace | null {
+    try {
+        const raw = localStorage.getItem(TOOLBAR_PLACE_KEY);
+        if (!raw) return null;
+        const place = JSON.parse(raw) as ToolbarPlace;
+        if (typeof place.left === 'number' && typeof place.top === 'number') return place;
+    } catch {
+        // A bad stored place falls back to the centered default.
+    }
+    return null;
+}
+
+/** Drag the grip to park the toolbar. A double-click puts it back on top. */
+function useToolbarDrag(barRef: RefObject<HTMLDivElement | null>) {
+    const [place, setPlace] = useState<ToolbarPlace | null>(readToolbarPlace);
+    const drag = useRef<{ ox: number; oy: number } | null>(null);
+
+    const onGripDown = useCallback((event: ReactPointerEvent<HTMLButtonElement>) => {
+        const bar = barRef.current;
+        const host = bar?.parentElement;
+        if (!bar || !host || event.button !== 0) return;
+        event.preventDefault();
+        const barBox = bar.getBoundingClientRect();
+        drag.current = { ox: event.clientX - barBox.left, oy: event.clientY - barBox.top };
+        try { event.currentTarget.setPointerCapture(event.pointerId); } catch { /* not every test host implements capture */ }
+        const move = (ev: PointerEvent) => {
+            const current = barRef.current;
+            const parent = current?.parentElement;
+            if (!current || !parent || !drag.current) return;
+            const h = parent.getBoundingClientRect();
+            const b = current.getBoundingClientRect();
+            const left = Math.min(Math.max(8, ev.clientX - h.left - drag.current.ox), Math.max(8, h.width - b.width - 8));
+            const top = Math.min(Math.max(8, ev.clientY - h.top - drag.current.oy), Math.max(8, h.height - b.height - 8));
+            setPlace({ left, top });
+        };
+        const up = () => {
+            drag.current = null;
+            window.removeEventListener('pointermove', move);
+            window.removeEventListener('pointerup', up);
+            setPlace((current) => {
+                if (current) localStorage.setItem(TOOLBAR_PLACE_KEY, JSON.stringify(current));
+                return current;
+            });
+        };
+        window.addEventListener('pointermove', move);
+        window.addEventListener('pointerup', up);
+    }, [barRef]);
+
+    const reset = useCallback(() => {
+        localStorage.removeItem(TOOLBAR_PLACE_KEY);
+        setPlace(null);
+    }, []);
+
+    return { place, onGripDown, reset };
+}
+
 /** Width of the top-left control cluster (Measure + Dimensions, left-3..left-14+w-9). */
 const CORNER_CONTROLS_RIGHT_PX = 104;
 
@@ -247,6 +307,7 @@ export function ViewportToolbar(props: ViewportToolbarProps): JSX.Element {
     const size = narrow ? 'touch' : 'sm';
     useRunShortcut(onRun);
     const ref = useCornerInset();
+    const { place, onGripDown, reset } = useToolbarDrag(ref);
 
     return (
         <div
@@ -254,12 +315,30 @@ export function ViewportToolbar(props: ViewportToolbarProps): JSX.Element {
             role="toolbar"
             aria-label="Model tools"
             data-testid="studio-toolbar"
+            data-placed={place ? 'true' : 'false'}
             data-theme="dark"
             // Above the marking overlay (z 1000): "Mark for agent" must stay
             // clickable to save the mark and leave marking mode. It wraps
             // rather than spill past a phone screen or a narrow split pane.
-            className="pointer-events-auto absolute left-1/2 top-3 z-[1001] flex w-max max-w-[calc(100%-1.5rem)] -translate-x-1/2 flex-wrap items-center justify-center gap-0.5 max-md:gap-0 rounded-panel border border-border bg-surface-1/95 p-1 shadow-e1 backdrop-blur-sm"
+            // A stored place drops the centered anchor so the grip can park it.
+            style={place ? { left: place.left, top: place.top } : undefined}
+            className={cx(
+                'pointer-events-auto absolute z-[1001] flex w-max max-w-[calc(100%-1.5rem)] flex-wrap items-center justify-center gap-0.5 max-md:gap-0 rounded-panel border border-border bg-surface-1/95 p-1 shadow-e1 backdrop-blur-sm',
+                place ? '' : 'left-1/2 top-3 -translate-x-1/2',
+            )}
         >
+            <button
+                type="button"
+                aria-label="Move tools"
+                title="Drag to move. Double-click to put back."
+                data-testid="toolbar-move"
+                className="cursor-grab touch-none rounded-control px-0.5 text-fg-3 hover:bg-surface-2 hover:text-fg active:cursor-grabbing"
+                onPointerDown={onGripDown}
+                onDoubleClick={reset}
+            >
+                <GripVertical className="size-4" aria-hidden="true" />
+            </button>
+            <div id={TOOL_DOCK_SLOT_ID} ref={registerToolDock} className="contents" data-testid="toolbar-viewer-tools" />
             <RunControl onRun={onRun} runNeeded={runNeeded} size={size} />
             <IconButton
                 label="Validate"

@@ -181,6 +181,38 @@ describe('Checks tab', () => {
         expect(executeGeometry).toHaveBeenCalledWith('return box(1,1,1);');
     });
 
+    it('writes out the motion verdict the viewer badge only hinted', () => {
+        mockUseRecomputeResult.mockReturnValue(result(validity([])));
+        render(
+            <WorkbenchContext.Provider
+                value={{
+                    code: 'x',
+                    executeGeometry: vi.fn(),
+                    isComputing: false,
+                    scriptReview: {
+                        ok: true,
+                        mechanism: 'real',
+                        mechanismSummary: {
+                            verdict: 'real',
+                            maxLevel: 'ok',
+                            statement: 'Motion checked. Range of shoulder not limited.',
+                            checked: ['shoulder reaches its poses', 'elbow reaches its poses'],
+                            skipped: ['Range of shoulder not limited', 'Range of lift not limited'],
+                            failures: [],
+                            loads: { maxLevel: 'ok', statement: 'loads: min torque margin 2.70x (shoulder).' },
+                        },
+                    },
+                } as unknown as WorkbenchContextType}
+            >
+                <ValidityTab />
+            </WorkbenchContext.Provider>,
+        );
+        expect(screen.getByTestId('checks-motion-statement').textContent).toContain('Motion checked');
+        expect(screen.getByTestId('checks-motion-checked').textContent).toContain('elbow reaches its poses');
+        expect(screen.getByTestId('checks-motion-skipped').textContent).toContain('Range of lift not limited');
+        expect(screen.getByTestId('checks-motion-loads').textContent).toContain('2.70x');
+    });
+
     it('offers Run checks as the main action when nothing validated yet', () => {
         const executeGeometry = vi.fn(async () => {});
         mockUseRecomputeResult.mockReturnValue(result(validity([], false)));

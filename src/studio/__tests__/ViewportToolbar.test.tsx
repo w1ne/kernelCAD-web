@@ -41,6 +41,22 @@ function renderToolbar(overrides: Partial<Parameters<typeof ViewportToolbar>[0]>
 }
 
 describe('ViewportToolbar', () => {
+    it('drags from the grip and double-click puts it back', () => {
+        localStorage.clear();
+        renderToolbar();
+        const bar = screen.getByTestId('studio-toolbar');
+        expect(bar.getAttribute('data-placed')).toBe('false');
+        const grip = screen.getByTestId('toolbar-move');
+        fireEvent.pointerDown(grip, { button: 0, clientX: 40, clientY: 20, pointerId: 1 });
+        fireEvent.pointerMove(window, { clientX: 200, clientY: 120, pointerId: 1 });
+        fireEvent.pointerUp(window, { pointerId: 1 });
+        expect(bar.getAttribute('data-placed')).toBe('true');
+        expect(bar.style.left).not.toBe('');
+        fireEvent.doubleClick(grip);
+        expect(bar.getAttribute('data-placed')).toBe('false');
+        expect(localStorage.getItem('kernelcad:toolbar-place')).toBeNull();
+    });
+
     it('is one floating toolbar over the viewport', () => {
         renderToolbar();
         const bar = screen.getByRole('toolbar', { name: 'Model tools' });

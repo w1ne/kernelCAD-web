@@ -4,7 +4,7 @@ import { Ruler } from 'lucide-react';
 import { CORNER_TOP } from '../cornerControls';
 
 /** Viewer toolbar toggle for the Measure tool. */
-export function MeasureButton({ active, onToggle }: { active: boolean; onToggle: () => void }) {
+export function MeasureButton({ active, onToggle, docked = false }: { active: boolean; onToggle: () => void; docked?: boolean }) {
   return (
     <button
       type="button"
@@ -13,15 +13,18 @@ export function MeasureButton({ active, onToggle }: { active: boolean; onToggle:
       aria-pressed={active}
       title="Measure (click two points, Esc clears)"
       onClick={onToggle}
-      style={CORNER_TOP}
+      style={docked ? undefined : CORNER_TOP}
       className={
-        'absolute left-3 z-20 flex h-9 w-9 items-center justify-center rounded-md border shadow-lg backdrop-blur transition focus:outline-none focus:ring-2 focus:ring-accent ' +
+        (docked
+          ? 'inline-flex size-10 items-center justify-center rounded-md border shadow-lg backdrop-blur '
+          : 'absolute left-3 z-20 flex h-9 w-9 items-center justify-center rounded-md border shadow-lg backdrop-blur ') +
+        'transition focus:outline-none focus:ring-2 focus:ring-accent ' +
         (active
           ? 'border-warn bg-warn text-on-accent'
           : 'border-border bg-surface-1 text-fg hover:bg-surface-2')
       }
     >
-      <Ruler size={18} aria-hidden="true" />
+      <Ruler size={docked ? 20 : 18} aria-hidden="true" />
     </button>
   );
 }

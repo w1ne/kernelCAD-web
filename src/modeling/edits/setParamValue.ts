@@ -222,6 +222,38 @@ export type ParseParamDeclarationResult =
  * we do not guess at what an expression evaluates to from source text
  * alone; the evaluation-based check remains the source of truth for those.
  */
+export interface DeclaredParamSummary {
+  readonly name: string;
+  /** Source text of the default, so the model tree can show it without running the script. */
+  readonly defaultText: string;
+}
+
+/** Every `param()` in source order. A repeated name keeps the first call. */
+export function listDeclaredParams(code: string): DeclaredParamSummary[] {
+  const out: DeclaredParamSummary[] = [];
+  const seen = new Set<string>();
+  let i = 0;
+  while (i < code.length) {
+    const j = code.indexOf('param(', i);
+    if (j < 0) break;
+    const charBefore = j > 0 ? code[j - 1] : ' ';
+    if (/[A-Za-z0-9_$]/.test(charBefore)) { i = j + 6; continue; }
+    let p = skipWhitespace(code, j + 'param('.length);
+    const name = readParamName(code, p);
+    if (!name) { i = j + 1; continue; }
+    p = skipWhitespace(code, name.end);
+    if (code[p] !== ',') { i = j + 1; continue; }
+    p = skipWhitespace(code, p + 1);
+    const valueEnd = scanArgEnd(code, p);
+    if (!seen.has(name.name)) {
+      seen.add(name.name);
+      out.push({ name: name.name, defaultText: code.slice(p, valueEnd).trim() });
+    }
+    i = Math.max(valueEnd, j + 1);
+  }
+  return out;
+}
+
 export function parseParamDeclaration(code: string, paramName: string): ParseParamDeclarationResult {
   const found = findParamCall(code, paramName);
   if (!found.ok) return { ok: false, error: found.error };

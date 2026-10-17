@@ -7,7 +7,7 @@ import type { ExplodedView } from './useExplodedView';
 /** Viewer toolbar toggle for the exploded view, with the explode-distance
  *  slider under it while it is on. `left` is the button's Tailwind left class,
  *  so it sits after whichever corner buttons the viewer shows. */
-export function ExplodeButton({ view, left }: { view: ExplodedView; left: string }) {
+export function ExplodeButton({ view, left, docked = false }: { view: ExplodedView; left: string; docked?: boolean }) {
     const pct = Math.round(view.amount * 100);
     return (
         <>
@@ -19,21 +19,26 @@ export function ExplodeButton({ view, left }: { view: ExplodedView; left: string
                 aria-pressed={view.on}
                 title={view.on ? 'Collapse the exploded view' : 'Exploded view'}
                 onClick={view.toggle}
-                style={CORNER_TOP}
+                style={docked ? undefined : CORNER_TOP}
                 className={
-                    `absolute ${left} z-20 flex h-9 w-9 items-center justify-center rounded-md border shadow-lg backdrop-blur transition focus:outline-none focus:ring-2 focus:ring-accent ` +
+                    (docked
+                        ? 'inline-flex size-10 items-center justify-center rounded-md border shadow-lg backdrop-blur '
+                        : `absolute ${left} z-20 flex h-9 w-9 items-center justify-center rounded-md border shadow-lg backdrop-blur `) +
+                    'transition focus:outline-none focus:ring-2 focus:ring-accent ' +
                     (view.on
                         ? 'border-warn bg-warn text-on-accent'
                         : 'border-border bg-surface-1 text-fg hover:bg-surface-2')
                 }
             >
-                <Boxes size={18} aria-hidden="true" />
+                <Boxes size={docked ? 20 : 18} aria-hidden="true" />
             </button>
             {view.on ? (
                 <label
                     data-testid="explode-slider-panel"
-                    style={CORNER_BELOW_TOP}
-                    className={`absolute ${left} z-20 flex items-center gap-2 rounded-md border border-border bg-surface-1 px-2 py-1 text-2xs text-fg-2 shadow-lg backdrop-blur`}
+                    style={docked ? undefined : CORNER_BELOW_TOP}
+                    className={docked
+                        ? 'flex items-center gap-2 px-1 text-2xs text-fg-2'
+                        : `absolute ${left} z-20 flex items-center gap-2 rounded-md border border-border bg-surface-1 px-2 py-1 text-2xs text-fg-2 shadow-lg backdrop-blur`}
                 >
                     <span>Explode</span>
                     <input

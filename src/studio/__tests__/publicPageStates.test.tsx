@@ -146,7 +146,7 @@ describe('/p/<slug> page states', () => {
             fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
         });
         expect(api.fetchProjectBySlug).toHaveBeenCalledTimes(2);
-        expect(screen.getByTestId('project-side-panel')).toBeTruthy();
+        expect(screen.getByTestId('studio-app')).toBeTruthy();
     });
 
     it('shows a failed request with its cause and a retry', async () => {
@@ -158,13 +158,27 @@ describe('/p/<slug> page states', () => {
         expect(screen.getByRole('button', { name: 'Try again' })).toBeTruthy();
     });
 
-    it('opens the model page named after the project title, not the workbench', async () => {
+    it('opens the design named after the project title', async () => {
         api.fetchProjectBySlug.mockResolvedValue(ROW);
         renderPage('/p/$slug', { slug: 'pipe-clamp' });
 
-        expect(await screen.findByTestId('project-side-panel')).toBeTruthy();
-        expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Pipe clamp bracket');
-        expect(screen.queryByTestId('studio-app')).toBeNull();
+        const app = await screen.findByTestId('studio-app');
+        expect(app.getAttribute('data-project-name')).toBe('Pipe clamp bracket');
+        expect(screen.queryByTestId('project-side-panel')).toBeNull();
+    });
+
+    it('opens the simplified viewer only when the link asks for it', async () => {
+        window.history.replaceState(null, '', '/p/pipe-clamp?view=view');
+        try {
+            api.fetchProjectBySlug.mockResolvedValue(ROW);
+            renderPage('/p/$slug', { slug: 'pipe-clamp' });
+
+            expect(await screen.findByTestId('project-side-panel')).toBeTruthy();
+            expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Pipe clamp bracket');
+            expect(screen.queryByTestId('studio-app')).toBeNull();
+        } finally {
+            window.history.replaceState(null, '', '/');
+        }
     });
 
     it('opens the full Studio named after the project title with ?view=studio', async () => {

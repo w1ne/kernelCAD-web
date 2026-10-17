@@ -254,9 +254,11 @@ export interface ActivityBarProps {
 
 /** The pane state: the Agent pane follows the persisted `agentRailOpen`;
  *  the other panes are per visit. One pane is open at a time. */
-function useLeftPane(showAgent: boolean) {
+function useLeftPane(showAgent: boolean, startOnTree: boolean) {
     const { agentRailOpen } = useShellStore();
-    const [otherPane, setOtherPane] = useState<Exclude<LeftPaneId, 'agent'> | null>(null);
+    // The shared design opens on the model tree, the way a CAD browser is
+    // already there. The editable Studio still starts with the panes closed.
+    const [otherPane, setOtherPane] = useState<Exclude<LeftPaneId, 'agent'> | null>(startOnTree ? 'tree' : null);
     const active: LeftPaneId | null = showAgent && agentRailOpen ? 'agent' : otherPane;
     const open = useCallback((id: LeftPaneId) => {
         if (id === 'agent') {
@@ -281,7 +283,7 @@ export function ActivityBar({ enableAgent, enableConnect, viewerMode }: Activity
 
     const items = useActivityItems(showAgent, viewerMode);
 
-    const { active, open, close } = useLeftPane(showAgent);
+    const { active, open, close } = useLeftPane(showAgent, viewerMode);
     useActivityCommands(items, open, enableConnect, signedIn);
 
     // On a phone the pane covers the model, so it opens only on request,

@@ -4,13 +4,11 @@
  * /p/<slug> — the page a shared model link opens (most visitors arrive here
  * from a chat with their agent).
  *
- * Default: the model-first page (`ViewerPageShell`). A stored mesh paints as
- * the final model; a side panel (a bottom sheet on a phone)
- * holds the title and checks, the customizer, one Download, "Keep this
- * model", "Continue in chat", and share / remix / report / revisions.
+ * Default: the one design, the Studio workbench. Parameters, joints, loads
+ * and the code live in that window. `?view=studio` is the same page.
  *
- * `?view=studio`: the full Studio workbench on the same project, for owners
- * who want the code, the inspector and the tools.
+ * `?view=view`: the simplified viewer, for a fast look. Embedding uses
+ * `/embed/<slug>`.
  */
 import { createFileRoute } from '@tanstack/react-router';
 import { useCallback, useEffect, useState, useSyncExternalStore, type JSX, type ReactNode } from 'react';
@@ -26,7 +24,7 @@ import {
   type ProjectRow,
 } from '../../funnel/lib/apiClient';
 import { useProjectLiveUpdates, type LoadState, type ProjectLiveUpdates } from './-useProjectLiveUpdates';
-import { StudioModelCustomizer } from '../customizer/StudioModelCustomizer';
+import { StudioCommandPalette } from '../components/CommandPalette';
 import { PageState, type PageStateAction } from '../components/Shared/PageState';
 import { plainLine } from '../plainLine';
 import { WorkbenchProvider } from '../context/WorkbenchContext';
@@ -47,7 +45,7 @@ import {
 } from './-ProjectSidePanel';
 import { Badge, Button, buttonClass, cx } from '../../ui';
 import {
-  STUDIO_VIEW,
+  isFastView,
   isLive,
   modelPageHref,
   posterUrl,
@@ -168,34 +166,36 @@ function ProjectPage() {
       />
     );
   }
-  // A historical `?version=` must not flash the latest model while its
-  // source is still loading.
-  if (readView() === STUDIO_VIEW) {
-    if (loadState !== 'ready' || !project) {
-      return <ProjectLoadPage state={loadState === 'ready' ? 'loading' : loadState} err={live.err} onRetry={live.retry} />;
-    }
+  // The simplified viewer is opt-in. Everything else, including old
+  // `?view=studio` links, is the one design.
+  if (isFastView(readView())) {
     return (
-      <StudioProjectView
+      <ModelFirstPage
         slug={slug}
-        project={project}
         session={session}
         live={live}
         claim={claim}
         onUpgrade={onUpgrade}
+        view={project}
         historical={share.historical}
+        pinned={share.requested != null}
       />
     );
   }
+  // A historical `?version=` must not flash the latest model while its
+  // source is still loading.
+  if (loadState !== 'ready' || !project) {
+    return <ProjectLoadPage state={loadState === 'ready' ? 'loading' : loadState} err={live.err} onRetry={live.retry} />;
+  }
   return (
-    <ModelFirstPage
+    <StudioProjectView
       slug={slug}
+      project={project}
       session={session}
       live={live}
       claim={claim}
       onUpgrade={onUpgrade}
-      view={project}
       historical={share.historical}
-      pinned={share.requested != null}
     />
   );
 }
@@ -444,11 +444,11 @@ function StudioProjectView({ slug, project, session, live, claim, onUpgrade, his
       <a
         href={modelPageHref(slug)}
         className="inline-flex shrink-0 items-center gap-1 rounded px-1.5 py-0.5 text-xs text-gray-300 hover:bg-[#333] hover:text-white"
-        title="Back to the model page"
-        data-testid="back-to-model-page"
+        title="Simplified view, for a fast look or an embed-style page"
+        data-testid="open-fast-view"
       >
         <ArrowLeft size={12} aria-hidden="true" />
-        <span className="hidden md:inline">Model page</span>
+        <span className="hidden md:inline">View</span>
       </a>
       {/* The Studio header's own project label shows the title on wide
           screens; below `lg` the Header drops that label for this one.
@@ -475,6 +475,7 @@ function StudioProjectView({ slug, project, session, live, claim, onUpgrade, his
 
   const headerRight: ReactNode = (
     <div className="flex items-center gap-2 min-w-0">
+      <StudioCommandPalette />
       <ProjectClaimControl
         project={project}
         session={session}
@@ -498,7 +499,6 @@ function StudioProjectView({ slug, project, session, live, claim, onUpgrade, his
         projectName={project.title}
         liveCode={historical ? undefined : live.liveCode}
         viewerMode
-        viewportOverlay={<StudioModelCustomizer slug={slug} hints={project.parameters} />}
         headerLeft={headerLeft}
         headerRight={headerRight}
       />
