@@ -16,7 +16,7 @@
 
 // ---- pose parameters ------------------------------------------------------
 const lowerDeg = param('lowerDeg', 70, {
-  min: 60, max: 80,
+  min: 68, max: 72,
   description: 'Lower-boom elevation relative to the base (deg).',
 });
 const upperRelDeg = param('upperRelDeg', -40, {
@@ -42,7 +42,7 @@ const C = {
 };
 
 // ---- scene constants ------------------------------------------------------
-const WALL_X = 3500;
+const WALL_X = 3700;
 const P0: [number, number, number] = [-800, 0, 1100];   // base <-> lower boom
 const L1 = 2600;                                        // lower boom length
 const L2 = 2200;                                        // upper boom length
@@ -88,10 +88,6 @@ function axisConnector(origin: [number, number, number], axis: [number, number, 
 function childHinge(body: ReturnType<typeof box>) {
   return body
     .union(yCylinder(COLLAR_Y * 2, COLLAR_R, 0, 0, 0, C.fork))
-    .union(roundedBox(65, PLATE_Y1 - PLATE_Y0, 420, 8, 132, (PLATE_Y0 + PLATE_Y1) / 2, 0, C.alu))
-    .union(roundedBox(65, PLATE_Y1 - PLATE_Y0, 420, 8, 132, -(PLATE_Y0 + PLATE_Y1) / 2, 0, C.alu))
-    .union(roundedBox(70, 55, 420, 8, 185, 150, 0, C.alu))
-    .union(roundedBox(70, 55, 420, 8, 185, -150, 0, C.alu))
     .subtract(yCylinder(COLLAR_Y * 2 + 60, BORE_R, 0, 0, 0, C.dark));   // drilled clearance bore
 }
 
@@ -103,11 +99,13 @@ const lift = assembly('K-Spray K-Lift boom workcell concept');
 let baseGeom = roundedBox(3000, 1400, 420, 90, -100, 0, 470, C.frame)
   .union(roundedBox(2860, 1280, 60, 20, -100, 0, 690, C.alu))
   .union(roundedBox(600, 1200, 240, 40, 1050, 0, 590, C.dark))
-  .union(roundedBox(720, 640, 280, 40, P0[0], 0, 840, C.frame))
+  .union(roundedBox(720, 640, 240, 40, P0[0], 0, 835, C.frame))
   .union(roundedBox(420, 520, 280, 30, P0[0] - 470, 0, 840, C.blue))
   .union(zCylinder(120, 470, P0[0], 0, 740, C.dark))
-  // Shoulder pin boss: stub from the turret top to the pivot + the pin hub.
-  .union(roundedBox(STUB * 2, STUB * 2, 200, 10, P0[0], 0, P0[2] - 100, C.dark))
+  // Shoulder pin boss: a narrow neck rises through the collar bore to the
+  // pin hub, so it can never touch the collar's solid ring.
+  .union(roundedBox(120, 30, 175, 10, P0[0], 180, P0[2] - 72, C.dark))
+  .union(roundedBox(120, 30, 175, 10, P0[0], -180, P0[2] - 72, C.dark))
   .union(yCylinder(HUB_Y * 2, HUB_R, P0[0], 0, P0[2], C.pin))
   .union(yCylinder(30, HUB_R + 12, P0[0], HUB_Y + 15, P0[2], C.fork))
   .union(yCylinder(30, HUB_R + 12, P0[0], -(HUB_Y + 15), P0[2], C.fork));
@@ -145,11 +143,16 @@ base.connector('lowerPivot', {
 // PART: lower-boom — child collar at P0, beam, parent pin hardware at tip.
 // ===========================================================================
 let lowerGeom = childHinge(
-  roundedBox(L1 - 2 * BEAM_GAP, 240, 260, 28, (L1) / 2, 0, 0, C.frame)
-    .union(roundedBox(500, 200, 60, 12, 520, 0, 160, C.alu)),
+  roundedBox(L1 - 2 * BEAM_GAP, 240, 160, 24, (L1) / 2, 0, 0, C.frame)
+    .union(roundedBox(500, 200, 50, 12, 520, 0, 105, C.alu)),
 );
 lowerGeom = lowerGeom
-  .union(roundedBox(STUB * 2, STUB * 2, 300, 10, L1 - 150, 0, 0, C.dark))
+  .union(roundedBox(60, 30, 200, 10, L1 - 90, 180, 0, C.alu))
+  .union(roundedBox(60, 30, 200, 10, L1 - 90, -180, 0, C.alu))
+  .union(roundedBox(80, 75, 40, 8, L1 - 160, 180, 100, C.dark))
+  .union(roundedBox(80, 75, 40, 8, L1 - 160, -180, 100, C.dark))
+  .union(roundedBox(80, 75, 40, 8, L1 - 160, 180, -100, C.dark))
+  .union(roundedBox(80, 75, 40, 8, L1 - 160, -180, -100, C.dark))
   .union(yCylinder(HUB_Y * 2, HUB_R, L1, 0, 0, C.pin))
   .union(yCylinder(30, HUB_R + 12, L1, HUB_Y + 15, 0, C.fork))
   .union(yCylinder(30, HUB_R + 12, L1, -(HUB_Y + 15), 0, C.fork));
@@ -171,11 +174,16 @@ lowerBoom.connector('tipPivot', {
 // PART: upper-boom — child collar at P1, beam, parent pin hardware at tip.
 // ===========================================================================
 let upperGeom = childHinge(
-  roundedBox(L2 - 2 * BEAM_GAP, 240, 260, 28, L2 / 2, 0, 0, C.frame)
-    .union(roundedBox(420, 170, 50, 10, L2 - 460, 0, 130, C.alu)),
+  roundedBox(L2 - 2 * BEAM_GAP, 240, 160, 24, L2 / 2, 0, 0, C.frame)
+    .union(roundedBox(420, 170, 45, 10, L2 - 460, 0, 102, C.alu)),
 );
 upperGeom = upperGeom
-  .union(roundedBox(STUB * 2, STUB * 2, 300, 10, L2 - 150, 0, 0, C.dark))
+  .union(roundedBox(60, 30, 200, 10, L2 - 90, 180, 0, C.alu))
+  .union(roundedBox(60, 30, 200, 10, L2 - 90, -180, 0, C.alu))
+  .union(roundedBox(80, 75, 40, 8, L2 - 160, 180, 100, C.dark))
+  .union(roundedBox(80, 75, 40, 8, L2 - 160, -180, 100, C.dark))
+  .union(roundedBox(80, 75, 40, 8, L2 - 160, 180, -100, C.dark))
+  .union(roundedBox(80, 75, 40, 8, L2 - 160, -180, -100, C.dark))
   .union(yCylinder(HUB_Y * 2, HUB_R, L2, 0, 0, C.pin))
   .union(yCylinder(30, HUB_R + 12, L2, HUB_Y + 15, 0, C.fork))
   .union(yCylinder(30, HUB_R + 12, L2, -(HUB_Y + 15), 0, C.fork));
@@ -197,12 +205,12 @@ upperBoom.connector('platformPivot', {
 // PART: platform — level basket + workcell structure, child collar at pivot.
 // ===========================================================================
 let platformGeom = childHinge(
-  roundedBox(1070, 800, 60, 16, 595, 0, -155, C.alu)
+  roundedBox(990, 800, 60, 16, 635, 0, -155, C.alu)
     .union(roundedBox(1140, 36, 36, 10, 595, 0, -218, C.dark))
     .union(roundedBox(90, 120, 1000, 12, RAIL_X, 0, 375, C.dark))
-    .union(roundedBox(290, 300, 300, 30, 205, -240, 25, C.blue))
-    .union(roundedBox(270, 280, 24, 8, 205, -240, 187, C.alu))
-    .union(zCylinder(24, 30, 350, -240, 187, C.red)),
+    .union(roundedBox(290, 300, 300, 30, 305, -240, 25, C.blue))
+    .union(roundedBox(270, 280, 24, 8, 305, -240, 187, C.alu))
+    .union(zCylinder(24, 30, 430, -240, 187, C.red)),
 );
 for (const px of [150, 1050]) for (const sy of [-1, 1]) {
   platformGeom = platformGeom.union(zCylinder(900, 16, px, sy * 340, -125 + 450, C.alu));
@@ -219,6 +227,7 @@ platform.connector('platformPivot', {
   jointClearanceRadius: BORE_R,
 });
 platform.connector('railAxis', axisConnector([RAIL_X, 0, RAIL_BASE_Z], [0, 0, 1]));
+platform.connector('tapeMountFace', frameConnector([680, -360, RAIL_BASE_Z]));
 
 // ===========================================================================
 // PART: carriage — C-channel in a clearance fit on the rail, gun, wrist,
@@ -241,6 +250,23 @@ const carriage = lift.part('carriage',
     .union(roundedBox(20, 40, 30, 4, 348, 0, 110, C.glass))
     .union(roundedBox(60, 44, 40, 6, 160, 90, 90, C.dark)));
 carriage.connector('slideAxis', axisConnector([0, 0, 0], [0, 0, 1]));
+
+// ===========================================================================
+// PART: tape-applicator — robotic taping head (compliant roller + tape spool
+// + cutter) on the platform deck beside the workcell. Applies edge tape
+// where a sprayed mask cannot end cleanly (FerRobotics ATK-class duty).
+// Authored with its mount face at the origin.
+// ===========================================================================
+const tapeApplicator = lift.part('tape-applicator',
+  roundedBox(220, 130, 80, 12, 0, 0, 40, C.dark)
+    .union(roundedBox(70, 70, 240, 10, 0, 0, 120, C.alu))
+    .union(roundedBox(200, 70, 70, 10, 95, 0, 240, C.alu))
+    .union(roundedBox(150, 110, 150, 16, 200, 0, 240, C.orange))
+    .union(yCylinder(170, 62, 280, 0, 210, C.alu))
+    .union(yCylinder(120, 75, 200, 0, 330, C.blue))
+    .union(roundedBox(30, 110, 60, 8, 280, 0, 300, C.dark))
+    .union(roundedBox(120, 60, 40, 8, 120, 0, 60, C.orange)));
+tapeApplicator.connector('mountFace', frameConnector([0, 0, 0]));
 
 // ===========================================================================
 // SCENE PARTS — ground and facade (wall + recessed windows + mask film).
@@ -268,7 +294,7 @@ lift.mate('base-on-ground', 'base.groundFace', 'ground.baseFace', 'fastened');
 lift.mate('facade-on-ground', 'ground.wallFoot', 'facade.wallFoot', 'fastened');
 lift.mate('lower-boom-pivot', 'base.lowerPivot', 'lower-boom.basePivot', 'revolute', {
   pose: lowerDeg,
-  limitsDeg: [60, 80],
+  limitsDeg: [68, 72],
 });
 lift.mate('upper-boom-pivot', 'lower-boom.tipPivot', 'upper-boom.lowerPivot', 'revolute', {
   pose: upperRelDeg,
@@ -282,6 +308,7 @@ lift.mate('carriage-slide', 'platform.railAxis', 'carriage.slideAxis', 'prismati
   pose: carriageMm,
   limitsMm: [260, 760],
 });
+lift.mate('tape-applicator-mount', 'platform.tapeMountFace', 'tape-applicator.mountFace', 'fastened');
 
 // ===========================================================================
 // ANIMATION — working pose -> two spray passes -> stow low -> back to work.
@@ -326,3 +353,17 @@ animationView({
 });
 
 return lift.model();
+
+// ===========================================================================
+// SOURCES — the masking/technology stack this concept points at:
+//   - FerRobotics Active Taping Kit (robotic tape applicator, aerospace/
+//     automotive): https://www.ferrobotics.com/en/services/products/active-taping-kit-atk-robotic-masking-tape-applicator-end-effector
+//   - Protectapeel (airless spray-on peelable masking, construction glass):
+//     https://protectapeel.com/index.php/2026/08/25/protect-windows-during-construction
+//   - Skudo Glass Advanced (sprayable peelable window protection):
+//     https://www.skudousa.com/products/glass-advanced
+//   - Dymax SpeedMask + MTU Aero Engines automated masking case:
+//     https://dymax.com/resources/case-studies/automated-masking-system-revolutionizes-surface-treatment-processing
+//   - Fraunhofer IFAM (robot-guided adhesive film placement):
+//     https://www.ifam.fraunhofer.de/en/technologies/automated-application-adhesive-tapes.html
+// ===========================================================================
