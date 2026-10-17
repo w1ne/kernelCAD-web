@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
-import { useRef, useState, useSyncExternalStore } from 'react';
+import { useContext, useRef, useState, useSyncExternalStore } from 'react';
 import type { JSX, KeyboardEvent, PointerEvent, ReactNode } from 'react';
 import { TabPanel } from '../ui';
 import type { TabId } from './types';
@@ -18,7 +18,7 @@ import {
 } from './logic/inspectorWidth';
 import { InspectorTabs } from './InspectorTabs';
 import { LoadsPanel } from './components/motion/LoadsPanel';
-import { useWorkbench } from './context/WorkbenchContext';
+import { WorkbenchContext } from './context/WorkbenchContext';
 import { useInspectorTabRequests } from './hooks/studioNavigation';
 
 interface InspectorProps {
@@ -27,7 +27,7 @@ interface InspectorProps {
 
 export function Inspector({ tabSlots }: InspectorProps): JSX.Element {
     const result = useRecomputeResult();
-    const { scriptReview } = useWorkbench();
+    const scriptReview = useContext(WorkbenchContext)?.scriptReview;
     const { inspectorOpen } = useShellStore();
     const visibleTabs = getVisibleTabs(result);
 
