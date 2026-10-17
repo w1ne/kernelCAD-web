@@ -171,19 +171,18 @@ or File > Save As > STEP AP214. Import that file with `lib.fromCAD`.
 
 ## Progress (2026-10-17, assembly poses)
 
-The whole-robot STEP was not produced by SolidWorks on this Mac. The poses were
-read from the public `RP1.3.4整机.SLDASM` instead. Each component `swTransform`
-is a rigid 4×4. Translation is metres.
+The poses come from `RP1.3.4整机.SLDASM`. Each `swTransform` is a row-vector
+4×4. Child pose is `local * parent`. Translation is metres.
 
-`examples/robots/rp1/rp1-7dof.kcad.ts` places 206 STEP instances from those
-poses. `evaluate --json` on the earlier 220-instance file returned `ok: true`,
-441 features, no diagnostics. Files that OCCT cannot read, and files whose
-point span is many metres, are left out. See the example README.
+Composing them as column-vector matrices put the mirrored foot on the opposite
+side of the ground plane. The row-vector composition puts both shoes at the
+same height, 254 mm apart.
 
-A publish render of the feet, forearms, wrists, waist, and hip sides shows
-those parts apart in the assembly pose. It does not show a closed robot. The
-large body shells are in the omitted set. Revolute mates are not in the script
-yet.
+`examples/robots/rp1/rp1-7dof.kcad.ts` places the STEP parts with that pose.
+`YCL.M000663` (thigh body) still does not import. A render of the feet, shins,
+lower thighs, hip sides, and waist shows a leg standing on two shoes. The shin
+meets the shoe. The missing thigh body is the gap under the hip yokes.
+Revolute mates are not in the script yet.
 
 ## Open questions for the user
 
