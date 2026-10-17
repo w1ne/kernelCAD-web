@@ -62,6 +62,25 @@ function turnAngle(a: Pt2, b: Pt2, c: Pt2): number {
   return Math.acos(cos);
 }
 
+function vertexTurn(pts: Pt2[], index: number, closed: boolean): number | null {
+  if (!closed) {
+    if (index <= 0 || index >= pts.length - 1) return null;
+    return turnAngle(pts[index - 1], pts[index], pts[index + 1]);
+  }
+  const ring = pts.length - 1;
+  if (ring < 2) return null;
+  const i = index === pts.length - 1 ? 0 : index;
+  return turnAngle(pts[(i - 1 + ring) % ring], pts[i], pts[(i + 1) % ring]);
+}
+
+/** A lone segment between two gentle turns is a curve facet, not an edge. */
+function curveFacet(pts: Pt2[], a: number, b: number, closed: boolean): boolean {
+  if (b !== a + 1) return false;
+  const entry = vertexTurn(pts, a, closed);
+  const exit = vertexTurn(pts, b, closed);
+  return entry !== null && exit !== null && entry < GENTLE_TURN && exit < GENTLE_TURN;
+}
+
 /**
  * Straight runs inside one projected polyline. A face outline is one closed
  * path, so each side has to be split out before a click can dimension it.
@@ -76,38 +95,21 @@ export function straightSpans(pl: Polyline2, tolerance = 0.08): [Pt2, Pt2][] {
   }
   if (pts.length < 2) return [];
   const closed = Math.hypot(pts[0][0] - pts[pts.length - 1][0], pts[0][1] - pts[pts.length - 1][1]) <= 1e-6;
-  const ring = closed ? pts.length - 1 : 0;
-  const turnAt = (index: number): number | null => {
-    if (closed) {
-      if (ring < 2) return null;
-      const i = index === pts.length - 1 ? 0 : index;
-      return turnAngle(pts[(i - 1 + ring) % ring], pts[i], pts[(i + 1) % ring]);
-    }
-    if (index <= 0 || index >= pts.length - 1) return null;
-    return turnAngle(pts[index - 1], pts[index], pts[index + 1]);
-  };
   const runs: [number, number][] = [];
   let start = 0;
   let prev = 1;
-  const flush = (end: number) => { runs.push([start, end]); };
   for (let i = 2; i < pts.length; i++) {
     if (continuesLine(pts[start], pts[prev], pts[i], tolerance)) { prev = i; continue; }
-    flush(prev);
+    runs.push([start, prev]);
     start = prev;
     prev = i;
   }
-  flush(prev);
+  runs.push([start, prev]);
   const spans: [Pt2, Pt2][] = [];
   for (const [a, b] of runs) {
-    const from = pts[a];
-    const to = pts[b];
-    if (Math.hypot(to[0] - from[0], to[1] - from[1]) < 0.5) continue;
-    if (b === a + 1) {
-      const entry = turnAt(a);
-      const exit = turnAt(b);
-      if (entry !== null && exit !== null && entry < GENTLE_TURN && exit < GENTLE_TURN) continue;
-    }
-    spans.push([from, to]);
+    if (Math.hypot(pts[b][0] - pts[a][0], pts[b][1] - pts[a][1]) < 0.5) continue;
+    if (curveFacet(pts, a, b, closed)) continue;
+    spans.push([pts[a], pts[b]]);
   }
   return spans;
 }

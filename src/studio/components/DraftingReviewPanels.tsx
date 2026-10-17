@@ -8,7 +8,7 @@ import { BUTTON, INPUT } from './draftingReviewStyles';
 export function DrawingPreviewPane({ state, sheetRef }: { state: DraftingReviewState; sheetRef: RefObject<DrawingSheetHandle | null> }) {
   const { stale, resetSourceChoices, drawing: { preview }, annotations } = state;
   const { missing } = annotations;
-  return <div className="relative flex h-full min-h-[320px] min-w-0 flex-col bg-[#c8ccd1]">
+  return <div className="relative flex h-full min-h-[320px] min-w-0 flex-col bg-guide-grey">
     {(stale || missing.length > 0 || preview) && <div className="flex shrink-0 flex-col gap-2 bg-surface-2/95 p-3">
       {stale && <div className="flex flex-col gap-2"><p role="status" className="text-ui text-warn">Source changed. Saved annotation, datum and decision overrides were withheld; review the new drawing.</p>
         <button type="button" className={`${BUTTON} self-start`} onClick={resetSourceChoices}>Reset source-bound choices</button></div>}

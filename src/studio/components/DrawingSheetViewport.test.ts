@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 import { describe, expect, it } from 'vitest';
-import { fitSheet, frameRect, sheetMarkup, zoomAt } from './DrawingSheetViewport';
+import { fitSheet, frameRect, sheetMarkup, zoomAt } from './drawingSheetCamera';
 import { clientToSheet, edgeNearPoint, type TaggedView } from './drawingSheetHit';
 
 describe('drawing sheet camera', () => {
