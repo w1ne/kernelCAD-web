@@ -9,6 +9,7 @@
 
 import { fetchPartHost, type FetchPartCtx } from './fetchPart';
 import type { Shape } from '../capture/proxy';
+import { resolvePart } from './familyTable';
 
 export type MetricThread = 'M2' | 'M2.5' | 'M3' | 'M4' | 'M5' | 'M6';
 
@@ -55,15 +56,19 @@ export function createStandardParts(ctx: FetchPartCtx): StandardParts {
     fetchPartHost(ctx, id, { strict: true }).then((r) => r.shape);
   return {
     boltSHCS: ({ thread, lengthMm }) =>
-      fetch(`iso-4762-${threadSlug(thread)}x${lengthMm}`),
+      fetch(resolvePart({ family: 'socket-head-cap-screw', thread, lengthMm }).id),
     boltBHCS: ({ thread, lengthMm }) =>
-      fetch(`iso-7380-${threadSlug(thread)}x${lengthMm}`),
+      fetch(resolvePart({ family: 'button-head-cap-screw', thread, lengthMm }).id),
     boltFlatHead: ({ thread, lengthMm }) =>
-      fetch(`iso-10642-${threadSlug(thread)}x${lengthMm}`),
-    nutHex: ({ thread }) => fetch(`iso-4032-${threadSlug(thread)}`),
-    nutLock: ({ thread }) => fetch(`din-985-${threadSlug(thread)}`),
-    washerFlat: ({ thread }) => fetch(`iso-7089-${threadSlug(thread)}`),
-    washerLock: ({ thread }) => fetch(`din-127b-${threadSlug(thread)}`),
+      fetch(resolvePart({ family: 'flat-head-countersunk', thread, lengthMm }).id),
+    nutHex: ({ thread }) =>
+      fetch(resolvePart({ family: 'hex-nut', thread }).id),
+    nutLock: ({ thread }) =>
+      fetch(resolvePart({ family: 'lock-nut', thread }).id),
+    washerFlat: ({ thread }) =>
+      fetch(resolvePart({ family: 'flat-washer', thread }).id),
+    washerLock: ({ thread }) =>
+      fetch(resolvePart({ family: 'lock-washer', thread }).id),
     heatSetInsert: ({ thread, lengthMm }) =>
       fetch(
         `heatset-${threadSlug(thread)}-l${String(lengthMm).replace('.', '-')}`,

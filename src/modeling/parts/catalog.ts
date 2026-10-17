@@ -62,12 +62,29 @@ function findAssetsDir(leaf: string): string | undefined {
   return undefined;
 }
 
+/**
+ * Extra catalog a project or a user can drop in. `KERNELCAD_PARTS_DIR` wins,
+ * then `~/.kernelcad/parts` when that directory has an index.json. Records
+ * here override the generated catalog and the committed seed.
+ */
+export function userCatalogDir(): string | undefined {
+  const fromEnv = process.env.KERNELCAD_PARTS_DIR;
+  if (fromEnv && existsSync(join(fromEnv, 'index.json'))) return fromEnv;
+  const home = process.env.HOME;
+  if (!home) return undefined;
+  const homeDir = join(home, '.kernelcad', 'parts');
+  return existsSync(join(homeDir, 'index.json')) ? homeDir : undefined;
+}
+
 export function loadCatalog(dir?: string): Catalog {
   if (dir !== undefined) return loadCatalogFromDir(dir);
-  return mergeCatalogs(
+  const bundled = mergeCatalogs(
     loadCatalogFromDir(defaultCatalogDir()),
     loadCatalogFromDir(bundledSeedDir()),
   );
+  const userDir = userCatalogDir();
+  if (!userDir) return bundled;
+  return mergeCatalogs(loadCatalogFromDir(userDir), bundled);
 }
 
 function loadCatalogFromDir(dir: string): Catalog {
