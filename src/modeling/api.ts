@@ -88,10 +88,11 @@ export interface PartsLib {
    * Import a CAD file by extension. `.step`/`.stp` and `.brep` are read as
    * `fromSTEP`/`fromBREP` do. `.FCStd` (FreeCAD) is read natively: each body's
    * shape is taken from the archive and its placement applied. Parasolid
-   * (`.x_t`, `.x_b`) is read by parasolid-kit. `opts.sourceUnit` is the unit
-   * of that file's coordinates (default millimetres); the reader does not
-   * guess. SolidWorks (`.sldprt`, `.sldasm`) and IGES (`.igs`) go through
-   * the converter named by `KERNELCAD_CAD_CONVERTER`, which must write STEP.
+   * (`.x_t`, `.x_b`) is read in-process by the linked parasolid-core reader.
+   * `opts.sourceUnit` is the unit of that file's coordinates (default
+   * millimetres); the reader does not guess. SolidWorks (`.sldprt`,
+   * `.sldasm`) and IGES (`.igs`) go through the converter named by
+   * `KERNELCAD_CAD_CONVERTER`, which must write STEP.
    */
   fromCAD(path: string, opts?: { sourceUnit?: 'm' | 'cm' | 'mm' | 'in' | 'ft' }): Promise<Shape>;
   /**

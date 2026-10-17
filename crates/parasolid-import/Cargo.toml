@@ -1,0 +1,22 @@
+[package]
+name = "parasolid-import"
+version = "0.1.0"
+edition = "2021"
+publish = false
+license = "MIT"
+description = "In-process Parasolid reader for kernelCAD, linked against parasolid-core."
+
+# parasolid-core is MIT AND Apache-2.0. Its license texts are in ./third-party.
+
+[lib]
+name = "parasolid_import"
+crate-type = ["cdylib"]
+
+[dependencies]
+parasolid-core = "=0.3.7"
+serde_json = "1"
+
+[profile.release]
+lto = true
+opt-level = "s"
+codegen-units = 1

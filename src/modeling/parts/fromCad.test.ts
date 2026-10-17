@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, it, expect, beforeAll, afterEach } from 'vitest';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { zipSync, strToU8 } from 'fflate';
@@ -13,8 +14,8 @@ import {
   quaternionToAxisAngle,
   readFcstdBackend,
   convertToStep,
-  readParasolidStep,
 } from './fromCad';
+import { readParasolidBytes } from './parasolid/native';
 
 const Q_ZERO: [number, number, number, number] = [0, 0, 0, 1];
 const Q_Z90 = [0, 0, Math.SQRT1_2, Math.SQRT1_2];
@@ -161,44 +162,19 @@ describe('fromCAD dispatch', () => {
   });
 });
 
-describe('readParasolidStep', () => {
-  const withKit = async (bin: string | undefined, run: () => Promise<unknown>) => {
-    const prev = process.env.PARASOLID_KIT;
-    if (bin === undefined) delete process.env.PARASOLID_KIT;
-    else process.env.PARASOLID_KIT = bin;
-    try {
-      return await run();
-    } finally {
-      if (prev === undefined) delete process.env.PARASOLID_KIT;
-      else process.env.PARASOLID_KIT = prev;
-    }
-  };
-
-  it('asks parasolid-kit to write STEP in millimetres and returns those bytes', async () => {
-    const input = join(dir, 'link.x_t');
-    const step = await boxStep(4, 5, 6);
-    writeFileSync(input, 'not-read-by-the-fake-kit');
-    const fake = join(dir, 'fake-parasolid-kit.sh');
-    // argv: export-step --source-unit <u> --output-unit mm <input> <output>
-    writeFileSync(fake, `#!/bin/sh\ncp ${JSON.stringify(join(dir, 'link-step.step'))} "$7"\n`);
-    writeFileSync(join(dir, 'link-step.step'), step);
-    const { chmodSync } = await import('node:fs');
-    chmodSync(fake, 0o755);
-    const out = await withKit(fake, () => readParasolidStep(input, 'mm'));
-    expect(Buffer.from(out as Buffer).toString('latin1')).toContain('ISO-10303-21');
+describe('in-process Parasolid reader', () => {
+  it('reads a transmit header inside the process and names the missing schema', async () => {
+    const bytes = readFileSync(fileURLToPath(new URL('./parasolid/schema-header.x_t', import.meta.url)));
+    const model = await readParasolidBytes(new Uint8Array(bytes));
+    expect(model.ok).toBe(false);
+    expect(model.code).toBe('schema.missing_base_schema');
+    expect(model.schemaKey).toBe('SCH_3201255_32001_13006');
   });
 
-  it('names the schema when parasolid-kit rejects the file', async () => {
-    const input = join(dir, 'robot.x_t');
-    writeFileSync(input, 'x');
-    const fake = join(dir, 'fake-parasolid-reject.sh');
-    writeFileSync(
-      fake,
-      '#!/bin/sh\necho \'{"message":"schema.missing_base_schema","diagnostic":{"details":{"schema":"13006"}}}\' >&2\nexit 2\n',
-    );
-    const { chmodSync } = await import('node:fs');
-    chmodSync(fake, 0o755);
-    await expect(withKit(fake, () => readParasolidStep(input, 'm'))).rejects.toThrow(/sch_13006/);
+  it('rejects a buffer that is not a Parasolid transmit', async () => {
+    const model = await readParasolidBytes(new Uint8Array([1, 2, 3, 4]));
+    expect(model.ok).toBe(false);
+    expect(model.code).toBeTruthy();
   });
 });
 

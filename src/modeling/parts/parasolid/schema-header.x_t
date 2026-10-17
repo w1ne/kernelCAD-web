@@ -1,0 +1,30 @@
+**ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz**************************
+**PARASOLID !"#$%&'()*+,-./:;<=>?@[\]^_`{|}~0123456789**************************
+**PART1;
+MC=AMD64;
+MC_MODEL=Intel64 Family 6 Model 198 Stepping 2, GenuineIntel;
+MC_ID=unknown;
+OS=Windows_NT;
+OS_RELEASE=unknown;
+FRU=Parasolid Version 32.1, build 255,  1- 1-2021;
+APPL=SOLIDWORKS 2021-2021301;
+SITE=;
+USER=unknown;
+FORMAT=text;
+GUISE=transmit;
+KEY=RP1.3.4整机;
+FILE=RP1.3.4整机.x_t;
+DATE=Thu Oct 15 14:36:14 2026;
+**PART2;
+SCH=SCH_3201255_32001;
+USFLD_SIZE=0;
+**PART3;
+**END_OF_HEADER*****************************************************************
+T51 : TRANSMIT FILE created by modeller version 320125523 SCH_3201255_32001_1300
+6229 0 10 20 CCCCCCCI4 mesh1006 0 I8 polyline1008 0 CCCCCCCCCCA16 mesh_offset_da
+ta206 0 Z1 13 2 3 0 0 0 0 0 0 0 1e3 1e-8 0 0 4 1 0 1 5 0 81 255 1 2 13 6 1 0 0 0
+ 0 0 70 11 CI9 list_type0 0 1 uI10 notransmit0 0 1 lCCCDCCDI12 finger_index0 0 1
+ dI12 finger_block1012 0 CZ3 0 4 T1 0 0 1 20 1 7 7 11 255 5 11 0 1 8 9 1 10 0 0
+ 0 10 8 63 11 12 0 0 0 0 0 0 0 1e3 1e-8 5 13 14 1 0 1 15 0 100 255 9 12 5 0 0 -2
+19830268666521e-30 -143432354155133e-28 1 1 58392119499636e-21 222023940902775e-
+30 -

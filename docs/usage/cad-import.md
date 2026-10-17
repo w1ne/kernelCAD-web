@@ -14,7 +14,7 @@ return robot.color('#a8b3bd');
 | `.step`, `.stp` | Native. Same as `lib.fromSTEP`. |
 | `.brep` | Native. Same as `lib.fromBREP`. |
 | `.FCStd` (FreeCAD) | Native. The document is read directly, with no FreeCAD install. |
-| `.x_t`, `.x_b`, `.xt` (Parasolid) | parasolid-kit. It must be on `PATH`, or `PARASOLID_KIT` names the executable. |
+| `.x_t`, `.x_b`, `.xt` (Parasolid) | Native. parasolid-core is linked into kernelCAD. No install and no `PATH` entry. |
 | `.sldprt`, `.sldasm` (SolidWorks) | Through a converter you configure (below). |
 | `.igs`, `.iges` (IGES) | Through a converter you configure. |
 
@@ -30,21 +30,26 @@ FreeCAD `Placement`. Bodies are combined into one compound.
 
 ## Parasolid (`.x_t`, `.x_b`)
 
-`lib.fromCAD` runs [parasolid-kit](https://github.com/monozukuri-ai/parasolid-kit),
-which writes STEP. kernelCAD then reads that STEP. Pass the file's coordinate
-unit; the reader does not infer it. The default is millimetres.
+`lib.fromCAD` reads Parasolid inside the kernelCAD process. The reader is
+[parasolid-core](https://github.com/monozukuri-ai/parasolid-kit), compiled into
+`src/modeling/parts/parasolid/parasolid_import.wasm` from
+`crates/parasolid-import`. There is no external program.
+
+Pass the file's coordinate unit. The reader does not infer it. The default is
+millimetres.
 
 ```ts
 const part = await lib.fromCAD('./parts/link.x_t', { sourceUnit: 'm' });
 ```
 
-parasolid-kit accepts an exact built-in schema profile, or a Siemens catalog
-you pass it. It does not substitute a nearby profile. A file whose schema key
-is outside that set fails with the key named in the error.
+parasolid-core accepts an exact built-in schema profile. It does not substitute
+a nearby profile. A file whose schema key is outside that set fails with the
+key named in the error. Planar faces are sewn into a solid. Other surface
+kinds are read and then reported, rather than replaced with a mesh.
 
 ## SolidWorks and IGES (converter)
 
-These formats are not read by parasolid-kit. Point
+These formats are not read by the Parasolid reader. Point
 `KERNELCAD_CAD_CONVERTER` at any command that writes a STEP file:
 
 ```sh
