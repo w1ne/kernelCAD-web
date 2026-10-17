@@ -103,6 +103,7 @@ const verifyToolEntry: ToolRegistryEntry = {
       "- 'mounting-holes' — fastened mates: hole pairs one screw can use (equal, or clearance over a tap drill / hole({ thread }) of the same metric size; hole-free faces are a rigid bond) and fastener holes meeting at the contact face are coaxial. Sides it cannot resolve are info, never mismatches.\n" +
       "- 'load-capacity' — will it hold? Closed-form Euler-Bernoulli beam check ({ loads, materials, ... }), or mode:'fea' to solve the script's feaStudy (quadratic-tet FEA, CalculiX) — both return { ok, safetyFactor, elements[{ partName, stressPa, yieldPa, safetyFactor }], failures[], diagnostics }; fea adds the threshold, the stress regions as @kc[...] faces with their location, and fea { peakStressPa, maxDisplacementMm, meshTrusted, peakAtSupportPa, refinement }; it refines the mesh automatically until the stress is trusted (refine: false for one solve).\n" +
       "- 'static-hold' — gravitational holding torque/force at a sampled pose grid vs each actuated joint's declared actuator capacity ({ joint?, pose?, gravity?, min_torque_margin_pct?, range_samples? }).\n" +
+      "- 'motion-load' — loads on each driven joint (mechanicalJoint on a revolute mate) while the model moves: gravity, inertia from the animationView tracks (finite differences), optional external forces. Mass and inertia come from the solids and density/material, or a part's massKg. Returns per joint peak torque vs the mechanicalJoint torqueNm (margin; < 1x error, < 2x warning), axial / radial force and bending moment on the actuator shaft (checked only against radialLimitN / axialLimitN; without them 'no rating, not checked'), the radial load on each of up to two coaxial supports, the worst pose and a torque-vs-time series ({ file | code, motion_mode?: 'tracks'|'range', sample_ms?, range_samples?, quasi_static?, gravity?, motion_loads?: [{ part, point, force, fromMs?, toMs? }], supports?: { joint: [parts] }, series_points? }). Pass supports to compare with and without a bushing. Rigid bodies, tree mate graphs, no friction.\n" +
       "- 'body-likeness' — publish gate for organic/car bodies: cheap AABB↔wheel checks plus required agent still verdicts (side-body-over-wheels, side-cabin-aft, rear-haunch, ortho-proportions-vs-reference). Pass { body_bbox | code/file+body_feature_id, wheels?, cabin_bbox?, still_verdicts?, require_stills? }. Full CV silhouette matching is NOT implemented — agents must inspect ortho PNGs/Studio and supply still_verdicts before claiming success.\n" +
       "- 'edge-radius' — general edge-break specification on final BREP ({ file | code, min_radius_mm?, max_radius_mm?, require_edge_break?: 'external'|'internal'|'all', feature_id?, assembly?, parts?, edges?, faces? }). Reports sharp convex/concave edges, analytic cylindrical/toroidal fillet radii and spherical junctions, and heuristic planar chamfer strips. Radius bounds apply only to fillets; selectors/points are part-local. Unknown/empty coverage cannot pass.\n" +
       'All params except `check` are check-specific and forwarded verbatim; each check fails closed on its own missing required params.',
@@ -111,7 +112,7 @@ const verifyToolEntry: ToolRegistryEntry = {
       properties: {
         check: {
           type: 'string',
-          enum: ['assembly', 'urdf', 'dfm', 'dfm-preflight', 'swept-collision', 'reachable', 'mounting-holes', 'load-capacity', 'static-hold', 'body-likeness', 'fastener-installation', 'geometry-quality', 'assembly-path', 'edge-radius'],
+          enum: ['assembly', 'urdf', 'dfm', 'dfm-preflight', 'swept-collision', 'reachable', 'mounting-holes', 'load-capacity', 'static-hold', 'motion-load', 'body-likeness', 'fastener-installation', 'geometry-quality', 'assembly-path', 'edge-radius'],
           description: 'Which verification to run.',
         },
         file: { type: 'string', description: 'Path to a .kcad.ts script (assembly/dfm/dfm-preflight/swept-collision/reachable/mounting-holes/load-capacity/static-hold/geometry-quality/edge-radius).' },
@@ -182,7 +183,23 @@ const verifyToolEntry: ToolRegistryEntry = {
         pose: { description: "check:'static-hold' — explicit pose (joint name -> deg/mm) or array of poses; omit to sample a grid across the evaluated joint's range." },
         gravity: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3, description: "check:'static-hold' — gravity vector, m/s^2, world frame (default [0, 0, -9.81])." },
         min_torque_margin_pct: { type: 'number', description: "check:'static-hold' — safety-margin floor as a percent of actuator capacity (default 20)." },
-        range_samples: { type: 'number', description: "check:'static-hold' — grid density per evaluated joint when `pose` is omitted (default 9)." },
+        range_samples: { type: 'number', description: "check:'static-hold' — grid density per evaluated joint when `pose` is omitted (default 9). check:'motion-load' motion_mode:'range' — grid points per joint (default 5)." },
+        motion_mode: { type: 'string', enum: ['tracks', 'range'], description: "check:'motion-load' — 'tracks' (default): along the animationView timeline with inertia; 'range': quasi-static grid over each driven joint's limits." },
+        sample_ms: { type: 'number', description: "check:'motion-load' — timeline sample step, ms (default 20). Inertia peaks depend on it at keyframe velocity steps." },
+        quasi_static: { type: 'boolean', description: "check:'motion-load' — drop velocity/acceleration terms (gravity and external loads only)." },
+        motion_loads: {
+          type: 'array',
+          description: "check:'motion-load' — external forces: [{ part, point: [x,y,z] mm in the part's modeled frame, force: [Fx,Fy,Fz] N world, fromMs?, toMs? }].",
+          items: { type: 'object', required: ['part', 'point', 'force'], properties: {
+            part: { type: 'string' },
+            point: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 },
+            force: { type: 'array', items: { type: 'number' }, minItems: 3, maxItems: 3 },
+            fromMs: { type: 'number' },
+            toMs: { type: 'number' },
+          } },
+        },
+        supports: { type: 'object', description: "check:'motion-load' — mechanicalJoint name -> support part names to use instead of the declared supports (compare with / without a bushing)." },
+        series_points: { type: 'number', description: "check:'motion-load' — max torque-vs-time points per joint in the result (default 120; 0 omits the series)." },
         body_bbox: { type: 'object', description: "check:'body-likeness' — body AABB { min:[x,y,z], max:[x,y,z] } in mm." },
         body_feature_id: { type: 'string', description: "check:'body-likeness' — FeatureId to read body AABB from when body_bbox omitted." },
         cabin_bbox: { type: 'object', description: "check:'body-likeness' — optional cabin/greenhouse AABB for automated cabin-aft." },

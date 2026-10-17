@@ -664,13 +664,15 @@ function resolvePartMaterialAndValidateOpts(
       );
     }
   }
-  if (opts.massKg !== undefined && (!Number.isFinite(opts.massKg) || opts.massKg <= 0)) {
-    throw new KernelError(
-      'feature.invalid-args',
-      `assembly part '${name}': massKg must be a positive finite number; got ${formatScalarForError(opts.massKg)}.`,
-      shape.id,
-      'Pass massKg: <kg> (an SG90 servo is 0.009), or omit it to compute mass from volume and density.',
-    );
+  if (opts.massKg !== undefined && (typeof opts.massKg !== 'number' || !Number.isFinite(opts.massKg) || opts.massKg <= 0)) {
+    invalidArgs({
+      api: `assembly.part('${name}', shape, { massKg })`,
+      path: 'opts.massKg',
+      got: opts.massKg,
+      requires: 'a positive finite mass in kg',
+      example: `arm.part('${name}', shape, { massKg: 0.009 })`,
+      featureId: shape.id,
+    });
   }
   // Named material: seeds a density default AND a default finish. Resolve it
   // FIRST — an unknown name throws here (naming the valid materials) before

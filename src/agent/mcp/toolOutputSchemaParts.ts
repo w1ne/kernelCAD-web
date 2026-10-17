@@ -74,5 +74,15 @@ export const MECHANISM_SUMMARY: Record<string, unknown> = {
         properties: { code: { type: 'string' }, reason: { type: 'string' }, joint: { type: 'string' }, part: { type: 'string' } },
       },
     },
+    loads: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['maxLevel', 'statement'],
+      description: "Motion-load line, present when a mechanicalJoint declares torqueNm. Full table: verify({ check: 'motion-load' }).",
+      properties: {
+        maxLevel: { type: 'string', enum: ['ok', 'warning', 'error'] },
+        statement: { type: 'string' },
+      },
+    },
   },
 };

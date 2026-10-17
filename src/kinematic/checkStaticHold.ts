@@ -35,7 +35,8 @@ import { initOcct } from '../kernel/backends/occt/occtBackend';
 import { createOcctLowerer } from '../modeling/backends/occt/occtLowerer';
 import { RecomputeEngine } from '../modeling/compute/recomputeEngine';
 import { isSceneBackend } from '../kernel/backends/sceneBackend';
-import { tryResolveMaterial } from '../modeling/properties/materialLibrary';
+import { localPartMass, type PartMassLocal } from './partMass';
+import { subtreeJointWrench, type BodyLoadState } from './rigidBodyLoads';
 import { DIAGNOSTIC_REGISTRY, type DiagnosticCode } from '../shared/diagnostics/registry';
 import { Transform } from '../shared/runtime/se3';
 import type {
@@ -56,13 +57,7 @@ const DEFAULT_MARGIN_PCT = 20;
 const DEFAULT_RANGE_SAMPLES = 9;
 const DEFAULT_REVOLUTE_LIMITS: readonly [number, number] = [-180, 180];
 const DEFAULT_PRISMATIC_LIMITS: readonly [number, number] = [0, 100];
-const DEFAULT_DENSITY = 1000;
 const MM_TO_M = 1e-3;
-
-interface PartMassLocal {
-  readonly mass: number;
-  readonly comLocalMm: V3;
-}
 
 /**
  * Static-hold check. Evaluates every actuated joint with a declared
@@ -219,9 +214,7 @@ async function lowerPartMasses(
   for (const scenePart of lowered.parts) {
     const part = partByName.get(scenePart.name);
     if (part === undefined) continue;
-    const density = resolvePartDensity(part);
-    const mp = scenePart.shape.massProperties(density);
-    massByPartId.set(part.id, { mass: mp.mass, comLocalMm: mp.com });
+    massByPartId.set(part.id, localPartMass(part, scenePart));
   }
 
   return { zeroPoses, massByPartId };
@@ -297,17 +290,16 @@ function computeWorstRequired(
     const originWorldM = scaleVec(parentT.point(joint.origin), MM_TO_M);
 
     if (joint.kind === 'revolute') {
-      let momentSum: V3 = [0, 0, 0];
+      // Quasi-static case of the shared joint-load calculator (motion-load).
+      const bodies: BodyLoadState[] = [];
       for (const partId of downstream) {
         const massLocal = massByPartId.get(partId);
         if (!massLocal) continue;
         const partWorldT = worldT.get(partId) ?? Transform.identity();
-        const comWorldM = scaleVec(partWorldT.point(massLocal.comLocalMm), MM_TO_M);
-        const rM = subVec(comWorldM, originWorldM);
-        const forceN = scaleVec(gravity, massLocal.mass);
-        momentSum = addVec(momentSum, cross(rM, forceN));
+        bodies.push({ massKg: massLocal.mass, comM: scaleVec(partWorldT.point(massLocal.comLocalMm), MM_TO_M) });
       }
-      const required = Math.abs(dot(momentSum, axisWorld));
+      const w = subtreeJointWrench(bodies, originWorldM, gravity);
+      const required = Math.abs(dot(w.momentNm, axisWorld));
       if (required > worstRequired) {
         worstRequired = required;
         worstPose = pose;
@@ -363,15 +355,6 @@ function emitHoldDiagnostics(
 // ─────────────────────────────────────────────────────────────────────────
 // Helpers.
 // ─────────────────────────────────────────────────────────────────────────
-
-function resolvePartDensity(part: AssemblyPartStored): number {
-  if (part.density !== undefined) return part.density;
-  if (part.material !== undefined) {
-    const resolved = tryResolveMaterial(part.material);
-    if (resolved.ok) return resolved.material.density;
-  }
-  return DEFAULT_DENSITY;
-}
 
 function downstreamPartIds(
   parts: readonly AssemblyPartStored[],
@@ -452,19 +435,9 @@ function normalize(v: V3): V3 {
 function scaleVec(v: V3, s: number): V3 {
   return [v[0] * s, v[1] * s, v[2] * s];
 }
-function subVec(a: V3, b: V3): V3 {
-  return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
-}
 function addVec(a: V3, b: V3): V3 {
   return [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
 }
 function dot(a: V3, b: V3): number {
   return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
-}
-function cross(a: V3, b: V3): V3 {
-  return [
-    a[1] * b[2] - a[2] * b[1],
-    a[2] * b[0] - a[0] * b[2],
-    a[0] * b[1] - a[1] * b[0],
-  ];
 }

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import { invalidArgs } from '../../shared/intent/invalidArgs';
 import { KernelError } from '../../shared/intent/kernelError';
 import { makePhysicalUseCaseRecord, type PhysicalUseCaseOptions } from '../mates/physicalUseCase';
 import type {
@@ -191,12 +192,14 @@ function validateJointRatings(name: string, opts: MechanicalJointIntentOpts): vo
     const v = opts[key];
     if (v === undefined) continue;
     if (typeof v !== 'number' || !Number.isFinite(v) || v <= 0) {
-      throw new KernelError(
-        'feature.invalid-args',
-        `assembly.mechanicalJoint.invalid-rating: mechanical joint intent '${name}' ${key} must be a positive finite number; got ${String(v)}.`,
-        undefined,
-        `invalid-args.assembly.mechanical-joint-invalid-rating — pass ${key} as a positive number (torqueNm in N·m, limits in N), or omit it.`,
-      );
+      invalidArgs({
+        api: `assembly.mechanicalJoint('${name}', { ${key} })`,
+        path: `opts.${key}`,
+        got: v,
+        requires: key === 'torqueNm' ? 'a positive rated torque in N·m' : 'a positive rated load in N',
+        example: `arm.mechanicalJoint('${name}', { mate, actuator, shaft, supports, output, ${key}: ${key === 'torqueNm' ? '0.176' : '20'} })`,
+        unit: key === 'torqueNm' ? 'N·m' : 'N',
+      });
     }
   }
 }

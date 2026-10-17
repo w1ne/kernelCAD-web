@@ -10,6 +10,7 @@ import { checkReachableTool } from './checkReachable';
 import { checkMountingHoleConsistencyTool } from './checkMountingHoleConsistency';
 import { checkLoadCapacityTool } from './checkLoadCapacity';
 import { checkStaticHoldTool } from './checkStaticHold';
+import { checkMotionLoadTool } from './checkMotionLoad';
 import { checkBodyLikenessTool } from './checkBodyLikeness';
 import { checkFastenerInstallationTool } from './checkFastenerInstallation';
 import { checkGeometryQualityTool } from './checkGeometryQuality';
@@ -27,6 +28,7 @@ export type VerifyCheck =
   | 'mounting-holes'
   | 'load-capacity'
   | 'static-hold'
+  | 'motion-load'
   | 'body-likeness'
   | 'fastener-installation'
   | 'geometry-quality'
@@ -82,6 +84,8 @@ export function verifyTool(input: VerifyInput): Promise<unknown> {
       return checkLoadCapacityTool(rest as Parameters<typeof checkLoadCapacityTool>[0]);
     case 'static-hold':
       return checkStaticHoldTool(rest as unknown as Parameters<typeof checkStaticHoldTool>[0]);
+    case 'motion-load':
+      return checkMotionLoadTool(rest as unknown as Parameters<typeof checkMotionLoadTool>[0]);
     case 'fastener-installation':
       return checkFastenerInstallationTool(rest as unknown as Parameters<typeof checkFastenerInstallationTool>[0]);
     case 'edge-radius':
@@ -94,7 +98,7 @@ export function verifyTool(input: VerifyInput): Promise<unknown> {
       return Promise.reject(
         new Error(
           `Unknown verify check: ${String(check)}. Valid: assembly, urdf, dfm, ` +
-            `dfm-preflight, swept-collision, reachable, mounting-holes, load-capacity, static-hold, body-likeness, fastener-installation, geometry-quality, assembly-path, edge-radius.`,
+            `dfm-preflight, swept-collision, reachable, mounting-holes, load-capacity, static-hold, motion-load, body-likeness, fastener-installation, geometry-quality, assembly-path, edge-radius.`,
         ),
       );
   }

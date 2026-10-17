@@ -21,6 +21,8 @@ import { summarizeScene, unavailableSceneSummary, type SceneSummary } from '../.
 import { Scene } from '../../../modeling/validation/scene';
 import type { Assembly } from '../../../modeling/capture/assembly';
 import { probeAssemblies } from '../../../modeling/runtime/mechanismProbe';
+import { checkMotionLoad } from '../../../kinematic/motionLoad';
+import { withLoadsLine, type MechanismLoadsLine } from '../../../modeling/runtime/mechanismVerdict';
 import type { MechanismCoverage } from '../../../modeling/runtime/mechanismTruth';
 import {
   needsMechanismVerdict,
@@ -199,7 +201,10 @@ export async function evaluateScriptTool(
   // recompute path (Studio's per-keystroke lower) deliberately does NOT run
   // this sweep and is untouched here.
   const { mechanism, mechanismFailures, coverage } = await probeSceneMechanism(model, buildSucceeded, input.skipMechanismCheck);
-  const mechanismSummary = sceneMechanismSummary(model, buildSucceeded, { mechanism, mechanismFailures, coverage });
+  const loads = await sceneMotionLoads(model, buildSucceeded, mechanism);
+  const baseSummary = sceneMechanismSummary(model, buildSucceeded, { mechanism, mechanismFailures, coverage });
+  const mechanismSummary = baseSummary !== undefined && loads !== undefined ? withLoadsLine(baseSummary, loads.line) : baseSummary;
+  if (loads !== undefined) mechanismFailures.push(...loads.diagnostics);
 
   // Merge mechanism diagnostics into the surfaced list (de-duped against
   // what's already there by reference). Derive `ok` honestly: a 'broken'
@@ -365,6 +370,28 @@ async function probeSceneMechanism(
     mechanismFailures: [...probe.failures],
     ...(probe.coverage !== undefined ? { coverage: probe.coverage } : {}),
   };
+}
+
+/** Motion-load line for the badge, only when a mechanicalJoint declares a
+ *  torqueNm rating (the study costs one lowering plus a solve per sample). */
+async function sceneMotionLoads(
+  model: BuildOutcome['model'],
+  buildSucceeded: boolean,
+  mechanism: SceneMechanism['mechanism'],
+): Promise<{ line: MechanismLoadsLine; diagnostics: CompilerDiagnostic[] } | undefined> {
+  if (!buildSucceeded || model === undefined || mechanism === undefined) return undefined;
+  const assemblies = Array.from(model.session.assemblies.values()) as Assembly[];
+  const rated = assemblies.find((a) => a.__mechanicalJointIntents().some((i) => i.torqueNm !== undefined));
+  if (rated === undefined) return undefined;
+  try {
+    const r = await checkMotionLoad(rated);
+    const diagnostics = r.diagnostics
+      .filter((d) => d.severity !== 'info')
+      .map((d): CompilerDiagnostic => ({ target: 'export-occt', code: d.code, severity: d.severity, message: d.message, hint: d.hint, ...(d.nextAction !== undefined ? { nextAction: d.nextAction } : {}) } as CompilerDiagnostic));
+    return { line: { maxLevel: r.maxLevel, statement: r.statement.replace(/^Loads checked: /, 'loads: ') }, diagnostics };
+  } catch (e) {
+    return { line: { maxLevel: 'warning', statement: `loads: not checked (${e instanceof Error ? e.message : String(e)}).` }, diagnostics: [] };
+  }
 }
 
 /** The plain verdict, only for a model that claims to move. An opted-out

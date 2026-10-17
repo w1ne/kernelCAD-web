@@ -39,6 +39,20 @@ export interface MechanismVerdictSummary {
   readonly skipped: readonly string[];
   /** Error-severity mechanism failures. Empty unless verdict is 'broken'. */
   readonly failures: readonly MechanismVerdictFailure[];
+  /** Motion-load result in one line, when a mechanicalJoint declares a
+   *  torqueNm rating. The full table is verify({ check: 'motion-load' }). */
+  readonly loads?: MechanismLoadsLine;
+}
+
+export interface MechanismLoadsLine {
+  readonly maxLevel: MechanismMaxLevel;
+  /** e.g. "loads: min torque margin 2.7x (shoulder)". */
+  readonly statement: string;
+}
+
+/** Append the short loads line to the verdict (badge text). */
+export function withLoadsLine(summary: MechanismVerdictSummary, loads: MechanismLoadsLine): MechanismVerdictSummary {
+  return { ...summary, statement: `${summary.statement} ${loads.statement}`, loads };
 }
 
 export interface MechanismVerdictInput {
