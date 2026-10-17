@@ -118,4 +118,37 @@ describe('replicad leak fixes', () => {
       cylinder.delete();
     }
   });
+  it('still reads face triangulations with location, orientation and normals', () => {
+    const part = replicad
+      .makeBaseBox(10, 10, 10)
+      .cut(replicad.makeCylinder(3, 30).translate(0, 0, -5))
+      .translate(100, 0, 0)
+      .rotate(30, [0, 0, 0], [0, 0, 1]);
+    try {
+      const mesh = part.mesh({ tolerance: 0.01, angularTolerance: 0.1 });
+      const v = mesh.vertices;
+      const n = mesh.normals;
+      let checked = 0;
+      for (let t = 0; t < mesh.triangles.length; t += 3) {
+        const [a, b, c] = [mesh.triangles[t] * 3, mesh.triangles[t + 1] * 3, mesh.triangles[t + 2] * 3];
+        const u = [v[b] - v[a], v[b + 1] - v[a + 1], v[b + 2] - v[a + 2]];
+        const w = [v[c] - v[a], v[c + 1] - v[a + 1], v[c + 2] - v[a + 2]];
+        const cross = [u[1] * w[2] - u[2] * w[1], u[2] * w[0] - u[0] * w[2], u[0] * w[1] - u[1] * w[0]];
+        if (Math.hypot(...cross) < 1e-9) continue;
+        const dot = cross[0] * (n[a] + n[b] + n[c]) + cross[1] * (n[a + 1] + n[b + 1] + n[c + 1]) + cross[2] * (n[a + 2] + n[b + 2] + n[c + 2]);
+        expect(dot).toBeGreaterThan(0);
+        checked += 1;
+      }
+      expect(checked).toBeGreaterThan(50);
+      const [min, max] = part.boundingBox.bounds;
+      for (let i = 0; i < v.length; i += 3) {
+        for (let k = 0; k < 3; k += 1) {
+          expect(v[i + k]).toBeGreaterThan(min[k] - 1e-3);
+          expect(v[i + k]).toBeLessThan(max[k] + 1e-3);
+        }
+      }
+    } finally {
+      part.delete();
+    }
+  });
 });
