@@ -36,6 +36,7 @@ import { DRAWING_VIEW_NAMES as VIEW_NAMES, isFrontOnlyDrawing, selectedDrawingLa
 import { OcctBackend } from './occtBackend';
 import {
   makeDrawingCamera,
+  prepareShapeForDrawing,
   projectShapeForDrawing,
 } from './drawingProjection';
 import {
@@ -252,6 +253,31 @@ const VIEW_LABELS: Record<DrawingViewName, string> = {
 };
 
 /**
+ * Classify and dedup one projected view. Class order is the dedup priority:
+ * visible full-weight first, then tangent, then hidden — a coincident segment
+ * lands once, in its strongest role.
+ */
+function styleProjectedView(raw: ReturnType<typeof projectShapeForDrawing>): StyledView {
+  const [vSharp, vOutline, vSmooth, hSharp, hOutline] = dedupPolylineClasses([
+    raw.visibleSharp,
+    raw.visibleOutline,
+    raw.visibleSmooth,
+    raw.hiddenSharp,
+    raw.hiddenOutline,
+    // hiddenSmooth deliberately dropped — tangent hidden lines are noise.
+  ]);
+  const view: StyledView = {
+    visible: [...vSharp, ...vOutline],
+    tangent: vSmooth,
+    hidden: [...hSharp, ...hOutline],
+    box: { x: 0, y: 0, w: 1, h: 1 },
+  };
+  const box = viewBoxOfPolylines([view.visible, view.tangent, view.hidden]);
+  if (box) view.box = box;
+  return view;
+}
+
+/**
  * Project, classify and dedup the sheet's standard views — exactly the view
  * stage `exportSvgDrawing` draws. Class order is the dedup priority: visible
  * full-weight first, then tangent, then hidden — a coincident segment lands
@@ -264,28 +290,17 @@ export function projectDrawingViews(
   names: readonly DrawingViewName[] = VIEW_NAMES,
 ): Record<DrawingViewName, StyledDrawingView> {
   const styled = {} as Record<DrawingViewName, StyledView>;
-  for (const name of names) {
-    const camera = makeDrawingCamera(name);
-    const raw = projectShapeForDrawing(shape, camera, {
-      withHidden: name !== 'iso',
-    });
-    const [vSharp, vOutline, vSmooth, hSharp, hOutline] = dedupPolylineClasses([
-      raw.visibleSharp,
-      raw.visibleOutline,
-      raw.visibleSmooth,
-      raw.hiddenSharp,
-      raw.hiddenOutline,
-      // hiddenSmooth deliberately dropped — tangent hidden lines are noise.
-    ]);
-    const view: StyledView = {
-      visible: [...vSharp, ...vOutline],
-      tangent: vSmooth,
-      hidden: [...hSharp, ...hOutline],
-      box: { x: 0, y: 0, w: 1, h: 1 },
-    };
-    const box = viewBoxOfPolylines([view.visible, view.tangent, view.hidden]);
-    if (box) view.box = box;
-    styled[name] = view;
+  const source = prepareShapeForDrawing(shape);
+  try {
+    for (const name of names) {
+      const camera = makeDrawingCamera(name);
+      const raw = source.project(camera, {
+        withHidden: name !== 'iso',
+      });
+      styled[name] = styleProjectedView(raw);
+    }
+  } finally {
+    source.dispose();
   }
   return styled;
 }
@@ -553,29 +568,19 @@ function projectSheetViews(
   explodedShape: AnyShape | undefined,
 ): Record<DrawingViewName, StyledView> {
   const styled = {} as Record<DrawingViewName, StyledView>;
-  for (const name of VIEW_NAMES) {
-    const camera = makeDrawingCamera(name);
-    const source = name === 'iso' && explodedShape !== undefined ? explodedShape : shape;
-    const raw = projectShapeForDrawing(source, camera, {
-      withHidden: name !== 'iso',
-    });
-    const [vSharp, vOutline, vSmooth, hSharp, hOutline] = dedupPolylineClasses([
-      raw.visibleSharp,
-      raw.visibleOutline,
-      raw.visibleSmooth,
-      raw.hiddenSharp,
-      raw.hiddenOutline,
-      // hiddenSmooth deliberately dropped — tangent hidden lines are noise.
-    ]);
-    const view: StyledView = {
-      visible: [...vSharp, ...vOutline],
-      tangent: vSmooth,
-      hidden: [...hSharp, ...hOutline],
-      box: { x: 0, y: 0, w: 1, h: 1 },
-    };
-    const box = viewBoxOfPolylines([view.visible, view.tangent, view.hidden]);
-    if (box) view.box = box;
-    styled[name] = view;
+  // One preparation serves every view of the assembled shape.
+  const assembled = prepareShapeForDrawing(shape);
+  try {
+    for (const name of VIEW_NAMES) {
+      const camera = makeDrawingCamera(name);
+      const options = { withHidden: name !== 'iso' };
+      const raw = name === 'iso' && explodedShape !== undefined
+        ? projectShapeForDrawing(explodedShape, camera, options)
+        : assembled.project(camera, options);
+      styled[name] = styleProjectedView(raw);
+    }
+  } finally {
+    assembled.dispose();
   }
   return styled;
 }

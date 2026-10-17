@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 //
-// Regression: after wasm heap poison (embind double-free), even sphere()/box()
+// Regression: after wasm heap poison (a stale or corrupted object), even sphere()/box()
 // fail with RuntimeError OOB in a long-lived Node process. resetOcct() must
 // reload the OCCT module so subsequent primitives succeed.
 
@@ -35,26 +35,26 @@ describe('resetOcct — wasm poison recovery', () => {
     expect(box.isEmpty()).toBe(false);
   }, 120_000);
 
-  it('recovers sphere/box after a real embind double-free poison', async () => {
+  it('recovers sphere/box after a wasm trap on a corrupted object', async () => {
     await initOcct();
-    // Reproduce the tangencySolver-class failure mode: delete a Geom handle
-    // and its underlying curve (double-free) which poisons the wasm heap.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // Production poison was a stale object whose memory had been reused (an
+    // embind double-free): its next virtual call trapped. A double free only
+    // corrupts the heap by chance, depending on allocator state, so reproduce
+    // the trap directly: point a live curve's vtable outside the heap and
+    // make a virtual call on it.
     const oc = getOC() as any;
     const origin = new oc.gp_Pnt2d_3(0, 0);
     const dir = new oc.gp_Dir2d_4(1, 0);
     const lin = new oc.gp_Lin2d_3(origin, dir);
     const geom = new oc.Geom2d_Line_2(lin);
     const handle = new oc.Handle_Geom2d_Curve_2(geom);
-    geom.delete();
-    handle.delete();
+    new Uint32Array(oc.HEAP8.buffer)[geom.$$.ptr >>> 2] = 0xfffffff0;
 
     let poisoned = false;
     try {
-      OcctBackend.sphere(5);
+      handle.get().FirstParameter();
     } catch (e) {
       poisoned = isOcctWasmPoisoned(e);
-      expect(poisoned).toBe(true);
     }
     expect(poisoned).toBe(true);
 

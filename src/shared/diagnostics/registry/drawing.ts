@@ -82,6 +82,14 @@ export const DRAWING_CODES = {
     group: 'drawing',
     description: 'Automatic drawing annotation found a cylindrical bore that is not a simple, counterbored or countersunk hole along a principal view axis.',
   },
+  'drawing.auto.mesh-facets-skipped': {
+    hintTemplate:
+      'autoAnnotate left the triangle facets of a mesh-derived part (lib.fromSTL / fromOBJ / from3MF) out of hole, radius, chamfer and planar-face recognition: facets are not designed features. Use lib.fromSTEP for a part that needs automatic callouts, or dimension it with options.annotations entries.',
+    nextAction: { kind: 'rewrite-feature', guidance: 'import the part with lib.fromSTEP, or add options.annotations entries for its dimensions' },
+    defaultSeverity: 'info',
+    group: 'drawing',
+    description: 'Automatic drawing annotation skipped the triangle facets of a mesh-derived (STL/OBJ/3MF) body.',
+  },
   'drawing.balloons.bom-unavailable': {
     hintTemplate:
       'Balloons and the parts-list table are filled from inspect({ of: \'bom\' }). Return assembly.model() with named parts, or omit balloons/partsList.',

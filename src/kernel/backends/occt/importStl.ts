@@ -55,7 +55,8 @@
 import * as replicad from 'replicad';
 import { getOC } from 'replicad';
 import { OcctBackend } from './occtBackend';
-import { lowerSurfaceSew } from './surfaceSewLowerer';
+import { lowerSurfaceSew, promoteClosedShell } from './surfaceSewLowerer';
+import { buildManifoldShells, manifoldTopology, readStlTriangles, weldTriangles } from './stlTopology';
 import { countStlTriangles, STL_DEFAULT_MAX_TRIANGLES } from '../../../shared/mesh/stlInfo';
 
 /** Why an STL byte payload could not be turned into geometry. */
@@ -163,6 +164,49 @@ function readStlShell(bytes: Uint8Array): unknown | null {
 }
 
 /**
+ * Fast path (see stlTopology.ts): a mesh that welds into a closed, consistently
+ * oriented 2-manifold is built with shared topology directly, skipping
+ * `StlAPI_Reader` and sewing. One connected component is promoted to a solid
+ * under the same MakeSolid + BRepCheck rule as the sewing path; several
+ * components come back as a compound of closed shells, which is what sewing
+ * returns for them. Null when the mesh needs the sewing path.
+ */
+function importManifoldStl(
+  bytes: Uint8Array,
+  tolerance: number,
+): { backend: OcctBackend; isSolid: boolean } | null {
+  const soup = readStlTriangles(bytes);
+  if (!soup) return null;
+  const mesh = weldTriangles(soup, tolerance);
+  if (!mesh) return null;
+  const topo = manifoldTopology(mesh);
+  if (!topo) return null;
+  const built = buildManifoldShells(mesh, topo);
+  if (!built) return null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const oc = getOC() as any;
+  if (built.shells.length === 1) {
+    const shell = built.shells[0];
+    const solid = promoteClosedShell(shell);
+    if (solid !== null) (shell as { delete?: () => void }).delete?.();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const wrapped = replicad.cast((solid ?? shell) as any) as replicad.Shape3D;
+    return { backend: new OcctBackend(wrapped), isSolid: solid !== null };
+  }
+  const compound = new oc.TopoDS_Compound();
+  const builder = new oc.TopoDS_Builder();
+  builder.MakeCompound(compound);
+  for (const shell of built.shells) {
+    builder.Add(compound, shell);
+    (shell as { delete?: () => void }).delete?.();
+  }
+  builder.delete?.();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const wrapped = replicad.cast(compound as any) as replicad.Shape3D;
+  return { backend: new OcctBackend(wrapped), isSolid: false };
+}
+
+/**
  * Parse STL bytes (ASCII or binary) into geometry, reporting honestly whether
  * the triangles actually closed into a solid.
  *
@@ -195,6 +239,10 @@ export function importStlBytes(
     );
   }
 
+  const tolerance = opts.tolerance ?? 1e-6;
+  const fast = importManifoldStl(buf, tolerance);
+  if (fast) return { ...fast, triangleCount };
+
   const shellTopo = readStlShell(buf);
   if (shellTopo === null) {
     throw new StlParseError('parse', 'StlAPI_Reader could not read the payload as STL');
@@ -213,7 +261,7 @@ export function importStlBytes(
     throw new StlParseError('parse', 'STL read produced no faces');
   }
 
-  const sewn = lowerSurfaceSew(faces, { tolerance: opts.tolerance ?? 1e-6 });
+  const sewn = lowerSurfaceSew(faces, { tolerance });
 
   // Release the raw triangle shell now that it has been sewn. Without this,
   // every import pins its full facet soup in the wasm heap until GC happens

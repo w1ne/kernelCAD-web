@@ -53,7 +53,7 @@ import type { AutoAnnotateKind, AutoAnnotateOptions, Iso2768Class, NormalisedOpt
 import type { AutoDrawingInput, AutoDrawingResult } from './drawingAuto/contracts';
 import type { RenderCtx } from './drawingAuto/renderContext';
 import { addViewCaptions, buildObstacles, collectHoleGroups, collectLinearDimensions } from './drawingAuto/collectPhases';
-import { finalise, unclassifiedHolesDiagnostic } from './drawingAuto/finalise';
+import { finalise, meshFacetsDiagnostic, unclassifiedHolesDiagnostic } from './drawingAuto/finalise';
 import {
   placeDatumSymbols,
   placeFlatnessOnA,
@@ -213,6 +213,7 @@ export function renderAutoDrawing(input: AutoDrawingInput): AutoDrawingResult {
 
   // --- unclassified holes -------------------------------------------------
   unclassifiedHolesDiagnostic(ctx);
+  meshFacetsDiagnostic(ctx);
 
   // --- final collision pass -------------------------------------------------
   return finalise(ctx);

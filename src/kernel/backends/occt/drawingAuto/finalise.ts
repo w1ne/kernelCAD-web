@@ -27,6 +27,19 @@ export function unclassifiedHolesDiagnostic(ctx: RenderCtx): void {
   }
 }
 
+export function meshFacetsDiagnostic(ctx: RenderCtx): void {
+  const skipped = ctx.model.meshFacetsSkipped ?? 0;
+  if (!ctx.opts.enabled || skipped === 0) return;
+  ctx.diagnostics.push({
+    target: 'export-occt',
+    code: 'drawing.auto.mesh-facets-skipped',
+    severity: 'info',
+    message: `svg-drawing autoAnnotate skipped ${skipped} triangle facets of a mesh-derived part; they carry no designed holes, radii or chamfers to call out.`,
+    hint: 'Use lib.fromSTEP for parts that need automatic callouts, or dimension them with options.annotations entries.',
+    nextAction: NEXT_ACTIONS['drawing.auto.mesh-facets-skipped'],
+  });
+}
+
 export function finalise(ctx: RenderCtx): AutoDrawingResult {
   const { placed, byKind, diagnostics, svg, annotations, bottomReserve, opts, include, datums } = ctx;
   let overlapped = 0;

@@ -3,6 +3,8 @@
 import * as replicad from 'replicad';
 import opencascade from 'replicad-opencascadejs';
 import { normalizeUserScript } from '../shared/runtime/normalizeUserScript';
+import { installOcctFinalizers } from '../kernel/backends/occt/occtFinalizers';
+import { installReplicadLeakFixes } from '../kernel/backends/occt/replicadLeakFixes';
 
 let isInitialized = false;
 
@@ -23,6 +25,8 @@ export async function initHeadless() {
         throw new Error("Could not find opencascade factory function");
     }
 
+    installOcctFinalizers(OC as Record<string, unknown>);
+    installReplicadLeakFixes();
     replicad.setOC(OC);
     isInitialized = true;
 }

@@ -16,6 +16,7 @@ import { encodeBinaryStl } from './exportStlBinary';
 import { verifyWatertight, type WatertightReport } from './meshHeal';
 import { isOcctInitialized } from './backendInit';
 import { meshShapeForExport } from './backendMesh';
+import { locateShape } from './occtPlacement';
 import { validateTriangleMesh, addTriangleFaces } from './fromTriangleMeshPhases';
 import { resolveColor } from '../../../shared/render/palette';
 import { type PBRMaterial } from '../../../shared/intent/material';
@@ -796,6 +797,19 @@ export class OcctBackend implements ShapeBackend {
     return rotated.translate(tx, ty, tz);
   }
 
+  /** Placed by rigid `t` through a TopoDS location, sharing this geometry
+   *  instead of copying it (occtPlacement.ts). Not consumed. */
+  located(t: import('../../../shared/runtime/se3').Transform): OcctBackend {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return new OcctBackend(replicad.cast(locateShape((this.shape as any).wrapped, t) as any) as ReplicadShape3D);
+  }
+
+  /** Same underlying shape (TopoDS `IsPartner`), e.g. pattern instances. */
+  sharesGeometryWith(other: OcctBackend): boolean {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return Boolean((this.shape as any).wrapped.IsPartner((other.shape as any).wrapped));
+  }
+
   scale(s: number | Vec3): OcctBackend {
     const sx = typeof s === 'number' ? s : s[0];
     const sy = typeof s === 'number' ? s : s[1];
@@ -1062,15 +1076,21 @@ export class OcctBackend implements ShapeBackend {
         throw new Error('OcctBackend.intersectionVolume: the common boolean reported a failure.');
       }
       const shape = common.Shape();
-      const props = new oc.GProp_GProps_1();
-      oc.BRepGProp.VolumeProperties_1(shape, props, false, false, false);
-      const volumeMm3 = Math.abs(props.Mass());
-      props.delete();
-      const surface = new oc.GProp_GProps_1();
-      oc.BRepGProp.SurfaceProperties_1(shape, surface, false, false);
-      const areaMm2 = Math.abs(surface.Mass());
-      surface.delete();
-      return { volumeMm3, areaMm2 };
+      try {
+        const props = new oc.GProp_GProps_1();
+        oc.BRepGProp.VolumeProperties_1(shape, props, false, false, false);
+        const volumeMm3 = Math.abs(props.Mass());
+        props.delete();
+        const surface = new oc.GProp_GProps_1();
+        oc.BRepGProp.SurfaceProperties_1(shape, surface, false, false);
+        const areaMm2 = Math.abs(surface.Mass());
+        surface.delete();
+        return { volumeMm3, areaMm2 };
+      } finally {
+        // The handle holds a reference to the common solid; without this the
+        // result of every probe stays in the WASM heap until GC.
+        shape.delete();
+      }
     } finally {
       common.delete(); args.delete(); tools.delete(); progress.delete();
     }
