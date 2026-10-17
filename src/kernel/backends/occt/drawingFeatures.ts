@@ -127,6 +127,33 @@ export interface DrawingFeatureModel {
   unclassified: UnclassifiedBore[];
   radii: RadiusFeature[];
   chamfers: ChamferFeature[];
+  /** Triangle facets of a mesh-derived body left out of recognition. */
+  meshFacetsSkipped?: number;
+}
+
+/**
+ * A body with more than this many triangular planar faces came from a mesh
+ * (lib.fromSTL / fromOBJ / from3MF): those faces are facets, not designed
+ * features, so they are not recognised. The SO-100 arm's 65k STL facets
+ * took 50 s and ~760 MB of JS heap to classify into nothing usable.
+ */
+export const MESH_FACET_MIN = 2000;
+
+/** Indices of triangular faces when there are more than MESH_FACET_MIN of
+ *  them, else an empty set. */
+function meshFacetIndices(faces: Face[]): Set<number> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const oc = getOC() as any;
+  const triangles = new Set<number>();
+  faces.forEach((face, index) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const edges = new oc.TopExp_Explorer_2((face as any).wrapped, oc.TopAbs_ShapeEnum.TopAbs_EDGE, oc.TopAbs_ShapeEnum.TopAbs_SHAPE);
+    let n = 0;
+    for (; edges.More() && n < 4; edges.Next()) n += 1;
+    edges.delete();
+    if (n === 3) triangles.add(index);
+  });
+  return triangles.size > MESH_FACET_MIN ? triangles : new Set();
 }
 
 // ---------------------------------------------------------------------------
@@ -630,19 +657,45 @@ interface IndexedEdge {
  * (each endpoint read builds a curve adaptor): 72 s and a WASM heap at its
  * 2 GB ceiling for the 2,556-face planetary gear stage's pdf-drawing.
  */
-function makeNeighbourAcross(faceEdges: Edge[][]): (faceIdx: number, edge: Edge) => number {
+/** Per-face edge lists, read lazily. */
+interface FaceEdgeLists {
+  readonly length: number;
+  at(face: number): Edge[];
+}
+
+function makeNeighbourAcross(faceEdges: FaceEdgeLists): (faceIdx: number, edge: Edge) => number {
   const cell = (c: number): number => Math.floor(c / EDGE_POINT_TOL);
   const cellKey = (x: number, y: number, z: number): string => `${x},${y},${z}`;
+  // Built on the first query: a body with no chamfer candidates never pays
+  // for reading every edge.
+  let built: Map<string, IndexedEdge[]> | undefined;
+  const index = (): Map<string, IndexedEdge[]> => (built ??= buildEdgeGrid(faceEdges, cell, cellKey));
+  return makeLookup(index, cell, cellKey);
+}
+
+function buildEdgeGrid(
+  faceEdges: FaceEdgeLists,
+  cell: (c: number) => number,
+  cellKey: (x: number, y: number, z: number) => string,
+): Map<string, IndexedEdge[]> {
   const grid = new Map<string, IndexedEdge[]>();
-  faceEdges.forEach((edges, face) => {
-    for (const edge of edges) {
+  for (let face = 0; face < faceEdges.length; face += 1) {
+    for (const edge of faceEdges.at(face)) {
       const entry: IndexedEdge = { face, edge, a: vec(edge.startPoint), b: vec(edge.endPoint) };
       const k = cellKey(cell(entry.a[0]), cell(entry.a[1]), cell(entry.a[2]));
       const bucket = grid.get(k);
       if (bucket) bucket.push(entry);
       else grid.set(k, [entry]);
     }
-  });
+  }
+  return grid;
+}
+
+function makeLookup(
+  index: () => Map<string, IndexedEdge[]>,
+  cell: (c: number) => number,
+  cellKey: (x: number, y: number, z: number) => string,
+): (faceIdx: number, edge: Edge) => number {
   const near = (p: V3, q: V3): boolean =>
     Math.abs(p[0] - q[0]) < EDGE_POINT_TOL && Math.abs(p[1] - q[1]) < EDGE_POINT_TOL && Math.abs(p[2] - q[2]) < EDGE_POINT_TOL;
   /** Indexed edges whose start point is within tolerance of `p`. */
@@ -651,7 +704,7 @@ function makeNeighbourAcross(faceEdges: Edge[][]): (faceIdx: number, edge: Edge)
     for (let dx = -1; dx <= 1; dx += 1) {
       for (let dy = -1; dy <= 1; dy += 1) {
         for (let dz = -1; dz <= 1; dz += 1) {
-          for (const entry of grid.get(cellKey(cx + dx, cy + dy, cz + dz)) ?? []) {
+          for (const entry of index().get(cellKey(cx + dx, cy + dy, cz + dz)) ?? []) {
             if (near(entry.a, p)) out.push(entry);
           }
         }
@@ -677,12 +730,23 @@ function makeNeighbourAcross(faceEdges: Edge[][]): (faceIdx: number, edge: Edge)
 
 function recogniseChamfers(faces: Face[], planarByIndex: Map<number, PlanarFaceInfo>, checkpoint?: () => void): ChamferFeature[] {
   const out: ChamferFeature[] = [];
-  const faceEdges = faces.map(f => (f as unknown as { edges: Edge[] }).edges);
+  // Edge lists are read per face on demand: most faces are never a chamfer
+  // candidate, and a mesh-derived body has tens of thousands.
+  const edgeCache = new Map<number, Edge[]>();
+  const edgesOf = (i: number): Edge[] => {
+    let edges = edgeCache.get(i);
+    if (!edges) {
+      edges = (faces[i] as unknown as { edges: Edge[] }).edges;
+      edgeCache.set(i, edges);
+    }
+    return edges;
+  };
+  const faceEdges = { length: faces.length, at: edgesOf };
   const neighbourAcross = makeNeighbourAcross(faceEdges);
 
   for (const [idx, info] of planarByIndex) {
     checkpoint?.();
-    const strip = chamferStripSegs(faceEdges[idx]);
+    const strip = chamferStripSegs(edgesOf(idx));
     if (!strip) continue;
     const [l1, l2] = strip;
     const feature = chamferFromStrip(idx, info, l1, l2, planarByIndex, neighbourAcross);
@@ -717,8 +781,10 @@ export function recogniseDrawingFeatures(backend: OcctBackend, options: Recognis
   const cones: ConeFace[] = [];
   const tori: Face[] = [];
 
+  const facets = meshFacetIndices(faces);
   faces.forEach((face, index) => {
     options.checkpoint?.();
+    if (facets.has(index)) return;
     const type = (face as unknown as { geomType?: string }).geomType;
     if (type === 'PLANE') {
       const n = unit(vec(face.normalAt()));
@@ -756,5 +822,6 @@ export function recogniseDrawingFeatures(backend: OcctBackend, options: Recognis
     unclassified: wantHoles ? unclassified : [],
     radii,
     chamfers,
+    ...(facets.size > 0 ? { meshFacetsSkipped: facets.size } : {}),
   };
 }
