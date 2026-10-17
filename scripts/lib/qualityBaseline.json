@@ -36,12 +36,6 @@
     "value": 28
   },
   {
-    "rule": "complexity",
-    "file": "src/reference/profile.ts",
-    "symbol": "Function 'traceProfile'",
-    "value": 40
-  },
-  {
     "rule": "max-lines-per-function",
     "file": "src/dynamics/run.ts",
     "symbol": "Function 'parseScenario'",
