@@ -21,6 +21,7 @@ import { summarizeScene, unavailableSceneSummary, type SceneSummary } from '../.
 import { Scene } from '../../../modeling/validation/scene';
 import type { Assembly } from '../../../modeling/capture/assembly';
 import { probeAssemblies } from '../../../modeling/runtime/mechanismProbe';
+import { connectorsInSolidDiagnostics } from '../../../modeling/mates/mechanicalPlausibility';
 import { checkMotionLoad } from '../../../kinematic/motionLoad';
 import { thinSeries } from './checkMotionLoad';
 import { withLoadsLine, type MechanismLoadsLine } from '../../../modeling/runtime/mechanismVerdict';
@@ -209,12 +210,10 @@ export async function evaluateScriptTool(
   // mechanism makes ok:false; 'unverified' keeps the build/dfm outcome (it
   // is "couldn't verify", not "broken") while still surfacing its loud
   // diagnostic + verdict.
-  const baseDiagnostics = withNextActions(r.diagnostics);
-  const mergedDiagnostics =
-    mechanismFailures.length > 0
-      ? [...baseDiagnostics, ...withNextActions(mechanismFailures)]
-      : baseDiagnostics;
-  const ok = r.exitCode === 0 && mechanism !== 'broken';
+  // Publish gate = review gate: a mate connector far from its part's
+  // material is a review_cad error, so it is an evaluate_script error too.
+  const connectorErrors = await connectorGate(model, buildSucceeded && input.skipMechanismCheck !== true);
+  const { mergedDiagnostics, ok } = gateOutcome(r, mechanism, [...mechanismFailures, ...connectorErrors], connectorErrors.length > 0);
   const tubes = tubesOutput(tubeReport);
   const reviewHint = hasArticulatedMates(model) ? MATES_REVIEW_HINT : undefined;
   const viewer = await publishBuiltViewer(model, buildSucceeded, { mechanism, mechanismFailures, mechanismSummary });
@@ -368,6 +367,35 @@ async function probeSceneMechanism(
     mechanismFailures: [...probe.failures],
     ...(probe.coverage !== undefined ? { coverage: probe.coverage } : {}),
   };
+}
+
+/** Surfaced diagnostics and `ok`: a broken mechanism or a gate error fails. */
+function gateOutcome(
+  r: { diagnostics: CompilerDiagnostic[]; exitCode: number },
+  mechanism: SceneMechanism['mechanism'],
+  gateFailures: CompilerDiagnostic[],
+  gateError: boolean,
+): { mergedDiagnostics: CompilerDiagnostic[]; ok: boolean } {
+  const base = withNextActions(r.diagnostics);
+  return {
+    mergedDiagnostics: gateFailures.length > 0 ? [...base, ...withNextActions(gateFailures)] : base,
+    ok: r.exitCode === 0 && mechanism !== 'broken' && !gateError,
+  };
+}
+
+/** `assembly.mechanical.connector-not-in-solid` errors of every captured
+ *  assembly, with review_cad's rule and severity. One bounding box per mated
+ *  part. skipMechanismCheck opts out of it with the rest of the mechanism
+ *  gate. */
+async function connectorGate(model: BuildOutcome['model'], buildSucceeded: boolean): Promise<CompilerDiagnostic[]> {
+  if (!buildSucceeded || model === undefined) return [];
+  const out: CompilerDiagnostic[] = [];
+  for (const arm of model.session.assemblies.values() as Iterable<Assembly>) {
+    for (const d of await connectorsInSolidDiagnostics(arm)) {
+      out.push({ target: 'export-occt', code: d.code, severity: 'error', message: d.message, hint: d.hint });
+    }
+  }
+  return out;
 }
 
 /** The verdict plus the short loads line; load diagnostics join the probe's failures. */
