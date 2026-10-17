@@ -120,6 +120,8 @@ export interface MotionLoadJointResult {
   readonly peakBendingNmm: number;
   readonly radialLimitN?: number;
   readonly axialLimitN?: number;
+  /** Sample with the largest bending moment about the joint origin. */
+  readonly worstSideLoad: MotionLoadSample;
   /** Per-support peaks; absent when the split is indeterminate. */
   readonly supportLoads?: readonly MotionLoadSupportPeak[];
   readonly worst: MotionLoadSample;
@@ -482,10 +484,12 @@ function jointResult(
 ): MotionLoadJointResult {
   const peakTorqueNm = peakAbs(series, 'torqueNm');
   const worst = series.reduce((w, s) => (Math.abs(s.torqueNm) > Math.abs(w.torqueNm) ? s : w), series[0]);
+  const worstSideLoad = series.reduce((w, s) => (s.bendingNmm > w.bendingNmm ? s : w), series[0]);
   const supportLoads = supportPeaks === undefined ? undefined : [...supportPeaks].map(([part, p]) => ({ part, stationMm: round(p.stationMm), peakRadialN: p.radial, peakBendingNmm: p.bending }));
   const actuatorRadial = supportLoads?.find((s) => s.part === intent.actuator)?.peakRadialN ?? peakAbs(series, 'radialN');
   const peakAxialN = peakAbs(series, 'axialN');
-  const torqueMargin = intent.torqueNm === undefined ? undefined : peakTorqueNm > 0 ? intent.torqueNm / peakTorqueNm : Infinity;
+  // No torque about the axis (e.g. gravity on a vertical axis): the margin is unbounded, so it is omitted.
+  const torqueMargin = intent.torqueNm === undefined || !(peakTorqueNm > 1e-9) ? undefined : intent.torqueNm / peakTorqueNm;
   const { maxLevel, messages } = jointVerdict(intent, torqueMargin, peakTorqueNm, actuatorRadial, peakAxialN, supportLoads === undefined, diagnostics);
   return {
     joint: intent.name, mate: mate.name, actuator: intent.actuator, supports: [...supports],
@@ -496,7 +500,7 @@ function jointResult(
     ...(intent.radialLimitN !== undefined ? { radialLimitN: intent.radialLimitN } : {}),
     ...(intent.axialLimitN !== undefined ? { axialLimitN: intent.axialLimitN } : {}),
     ...(supportLoads !== undefined ? { supportLoads } : {}),
-    worst, series, maxLevel, messages,
+    worst, worstSideLoad, series, maxLevel, messages,
   };
 }
 
@@ -508,7 +512,9 @@ function jointVerdict(
   let level: 'ok' | 'warning' | 'error' = 'ok';
   const raise = (l: 'warning' | 'error'): void => { if (level !== 'error') level = l; };
   const j = intent.name;
-  if (margin === undefined) {
+  if (margin === undefined && intent.torqueNm !== undefined) {
+    messages.push(`${j}: no torque about the joint axis in the sampled poses (peak ${fmt(peakTorqueNm * 1000)} N·mm); the ${fmt(intent.torqueNm * 1000)} N·mm rating is not loaded.`);
+  } else if (margin === undefined) {
     messages.push(`${j}: peak torque ${fmt(peakTorqueNm * 1000)} N·mm; no torqueNm rating, torque not checked.`);
   } else if (margin < MARGIN_ERROR) {
     raise('error');
@@ -519,7 +525,7 @@ function jointVerdict(
     messages.push(`${j}: torque margin ${fmt(margin)}x is below 2x (peak ${fmt(peakTorqueNm * 1000)} N·mm, rating ${fmt(intent.torqueNm! * 1000)} N·mm).`);
     diagnostics.push(diag('mechanism.load.torque-margin-low', 'warn', messages[messages.length - 1], j));
   } else {
-    messages.push(`${j}: torque margin ${margin === Infinity ? 'unbounded' : `${fmt(margin)}x`} (peak ${fmt(peakTorqueNm * 1000)} N·mm).`);
+    messages.push(`${j}: torque margin ${fmt(margin)}x (peak ${fmt(peakTorqueNm * 1000)} N·mm).`);
   }
   for (const [label, value, limit] of [['radial', actuatorRadialN, intent.radialLimitN], ['axial', peakAxialN, intent.axialLimitN]] as const) {
     if (limit === undefined) {
@@ -549,7 +555,7 @@ function summarize(mode: 'tracks' | 'range', quasiStatic: boolean, samples: numb
   const min = rated.reduce<MotionLoadJointResult | undefined>((m, j) => (m === undefined || j.torqueMargin! < m.torqueMargin! ? j : m), undefined);
   const statement = min === undefined
     ? `Loads computed on ${joints.length} joint(s); no torque rating declared, torque not checked.`
-    : `Loads checked: min torque margin ${min.torqueMargin === Infinity ? 'unbounded' : `${fmt(min.torqueMargin!)}x`} (${min.joint}).`;
+    : `Loads checked: min torque margin ${fmt(min.torqueMargin!)}x (${min.joint}).`;
   return {
     ok: maxLevel !== 'error', source: 'local', mode, quasiStatic, samples,
     totalMassKg: [...masses.values()].reduce((m, p) => m + p.mass, 0),

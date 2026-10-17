@@ -39,7 +39,9 @@ const DEFAULT_SERIES_POINTS = 120;
 
 export async function checkMotionLoadTool(input: CheckMotionLoadInput): Promise<CheckMotionLoadOutput> {
   const { evaluation, model } = await evaluateAndBuildScript(input);
-  if (evaluation.exitCode !== 0 || !model) {
+  // A built model with gate errors (DFM, mounting holes, ...) still has the
+  // geometry and mates the load study needs; only a failed build stops it.
+  if (!model || model.session.assemblies.size === 0) {
     return { ok: false, source: 'local', error: evaluation.diagnostics[0]?.message ?? 'Script evaluation failed.', errorCode: evaluation.diagnostics[0]?.code };
   }
   const assemblies = model.session.assemblies as Map<string, Assembly>;
@@ -60,7 +62,12 @@ export async function checkMotionLoadTool(input: CheckMotionLoadInput): Promise<
     ...(input.supports !== undefined ? { supports: input.supports } : {}),
   });
   const points = input.series_points ?? DEFAULT_SERIES_POINTS;
-  return { ...result, joints: result.joints.map((j) => thinSeries(j, points)) };
+  const gateErrors = evaluation.exitCode !== 0 ? evaluation.diagnostics.filter((d) => d.severity === 'error').length : 0;
+  return {
+    ...result,
+    joints: result.joints.map((j) => thinSeries(j, points)),
+    ...(gateErrors > 0 ? { messages: [...result.messages, `The script has ${gateErrors} other error diagnostic(s) (run evaluate_script); loads were computed on the built geometry.`] } : {}),
+  };
 }
 
 /** Keep at most `points` evenly spaced samples, always including the worst. */
@@ -72,5 +79,6 @@ export function thinSeries(j: MotionLoadJointResult, points: number): MotionLoad
   for (let i = 0; i < points; i++) kept.add(Math.floor(i * stride));
   kept.add(j.series.length - 1);
   kept.add(j.series.indexOf(j.worst));
+  kept.add(j.series.indexOf(j.worstSideLoad));
   return { ...j, series: [...kept].filter((i) => i >= 0).sort((a, b) => a - b).map((i) => j.series[i]) };
 }

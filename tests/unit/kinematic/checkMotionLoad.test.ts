@@ -16,6 +16,7 @@ import { runScript } from '../../../src/composition/runScript';
 import { checkMotionLoad } from '../../../src/kinematic/motionLoad';
 import { splitJointLoad, subtreeJointWrench } from '../../../src/kinematic/rigidBodyLoads';
 import type { Assembly } from '../../../src/modeling/capture/assembly';
+import { verifyTool } from '../../../src/agent/mcp/tools/verify';
 
 const L = 0.3, W = 0.02, H = 0.01, RHO = 7850, G = 9.81;
 const M = RHO * L * W * H;
@@ -27,7 +28,7 @@ function script(opts: { torqueNm?: string; ease?: string; durationMs?: number; d
   return `
 const a = param('a', 0, { min: -90, max: 90 });
 const arm = assembly('pendulum');
-const wall = arm.part('wall', box(40, 40, 40, true).translate(0, 0, 0), { density: 1000 });
+const wall = arm.part('wall', box(40, 40, 40, true).translate(-20, 0, 0), { density: 1000 });
 const bar = arm.part('bar', box(300, 20, 10, true).translate(150, 0, 0), { density: ${RHO} });
 ${opts.extra ?? ''}
 const d = { type: 'axis', origin: { kind: 'vec3', value: [0, 0, 0] }, axis: [0, 1, 0] };
@@ -118,6 +119,22 @@ describe('checkMotionLoad — hand-calculated pendulum', () => {
     expect(r.samples).toBe(5);
     expect(r.joints[0].series.map((s) => s.pose['hinge'])).toEqual([-90, -45, 0, 45, 90]);
     expect(r.joints[0].worst.pose['hinge']).toBe(0);
+  }, 120_000);
+});
+
+describe("verify({ check: 'motion-load' })", () => {
+  beforeAll(async () => { await initOcct(); }, 60_000);
+
+  it('routes to the study, thins the series and keeps the worst sample', async () => {
+    const r = await verifyTool({ check: 'motion-load', code: script({ torqueNm: '2' }), quasi_static: true, sample_ms: 5, series_points: 10 }) as {
+      ok: boolean; statement: string; joints: Array<{ series: unknown[]; worst: unknown; peakTorqueNm: number }>;
+    };
+    expect(r.ok, JSON.stringify(r).slice(0, 600)).toBe(true);
+    expect(r.statement).toMatch(/^Loads checked: min torque margin \d/);
+    const j = r.joints[0];
+    expect(j.series.length).toBeLessThanOrEqual(13);
+    expect(j.series).toContain(j.worst);
+    expect(j.peakTorqueNm).toBeCloseTo(M * G * L / 2, 4);
   }, 120_000);
 });
 
