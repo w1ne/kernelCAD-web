@@ -46,6 +46,7 @@ import {
   shiftOrthographicViews,
   dimensionToSvg,
   formatDimValue,
+  straightSpans,
   viewBoxOfPolylines,
   type DrawingSheetSize,
   type DrawingViewName,
@@ -145,6 +146,9 @@ export interface SvgDrawingOptions extends DrawingReviewOptions {
    * Unresolvable annotations throw rather than silently vanishing.
    */
   annotations?: readonly DrawingAnnotation[];
+  /** Dimensions placed from the sheet. Merged after authored or declared
+   *  annotations by the export entry; the renderer just draws `annotations`. */
+  placedAnnotations?: readonly DrawingAnnotation[];
   /**
    * Section views: a real half-space cut through the assembled body,
    * projected through the axis's own camera, with the true cut cross-
@@ -235,11 +239,16 @@ function pathGroup(
   polylines: Polyline2[],
   placement: ViewPlacement,
   scale: number,
+  view?: DrawingViewName,
 ): string {
   const paths = polylines
     .map(pl => `<path d="${bakePath(pl, placement, scale)}"/>`)
     .join('');
-  return `<g class="${cls}" ${style}>${paths}</g>`;
+  const spans = cls === 'visible' && view !== 'iso' ? polylines.flatMap((pl) => straightSpans(pl)) : [];
+  const edges = spans.length
+    ? ` data-kc-edges="${spans.map(([a, b]) => [a[0], a[1], b[0], b[1]].map(round3).join(' ')).join(';')}"`
+    : '';
+  return `<g class="${cls}" ${style}${edges}>${paths}</g>`;
 }
 
 const esc = (s: string): string =>
@@ -927,11 +936,11 @@ function renderViewGroups(
       `y="${round3(p.box.y + p.box.h + labelOffset)}" font-size="2.6" text-anchor="middle" ` +
       `fill="#555" stroke="none">${name === 'iso' && explodedShape !== undefined ? 'ISOMETRIC — EXPLODED' : VIEW_LABELS[name]}</text>`;
     return (
-      `<g id="view-${name}" data-view="${name}" fill="none" stroke="#000" ` +
+      `<g id="view-${name}" data-view="${name}" data-kc-tx="${round3(p.tx)}" data-kc-ty="${round3(p.ty)}" data-kc-s="${round3(s)}" fill="none" stroke="#000" ` +
       `stroke-linecap="round" stroke-linejoin="round">` +
       pathGroup('hidden', 'stroke-width="0.25" stroke-dasharray="1.6 0.8"', v.hidden, p, s) +
       pathGroup('tangent', 'stroke-width="0.13"', v.tangent, p, s) +
-      pathGroup('visible', 'stroke-width="0.5"', v.visible, p, s) +
+      pathGroup('visible', 'stroke-width="0.5"', v.visible, p, s, name) +
       label +
       `</g>`
     );
