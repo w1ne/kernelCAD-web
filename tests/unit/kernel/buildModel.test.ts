@@ -8,6 +8,7 @@ import {
 } from '../../../src/modeling/buildModel';
 import { meshFeaturesPerFeature } from '../../../src/modeling/capture/featureMeshing';
 import type { OcctBackend } from '../../../src/kernel/backends/occt/occtBackend';
+import { COARSE_MESH_OPTIONS } from '../../../src/kernel/backends/occt/meshing';
 import * as occtLowererModule from '../../../src/modeling/backends/occt/occtLowerer';
 
 describe('buildModel', () => {
@@ -188,6 +189,36 @@ describe('modelForEditedMesh', () => {
     expect(again?.faces).toBe(fillet!.faces);
     expect(second.features.length).toBeGreaterThan(first.features.length);
     expect(second.failedFeatureIds).toEqual([]);
+  });
+
+  it('refines a coarse preview pass to display quality without re-lowering', async () => {
+    const triangles = (mesh: { faces: { indices: Uint32Array }[] }) =>
+      mesh.faces.reduce((n, f) => n + f.indices.length / 3, 0);
+
+    const prev = await buildModel({ fileName: 'm.kcad.ts', code: PREFIX });
+    const preview = await meshFeaturesPerFeature(
+      prev.records, prev.session.paramTable, prev.session,
+      { previewMeshOptions: COARSE_MESH_OPTIONS },
+    );
+    const coarse = preview.features.find(f => f.featureKind === 'fillet')!;
+    expect(coarse).toBeDefined();
+
+    // The route's display pass re-runs `modelForEditedMesh` with the SAME
+    // code: every shape must be reused (zero lowering), and the coarse cache
+    // entry must be re-meshed at display quality instead of re-emitted.
+    const { loweredIds, restore } = instrumentLoweredIds();
+    try {
+      const next = await modelForEditedMesh(prev, { fileName: 'm.kcad.ts', code: PREFIX });
+      expect([...loweredIds]).toEqual([]);
+
+      const display = await meshFeaturesPerFeature(next.records, next.session.paramTable, next.session);
+      const refined = display.features.find(f => f.featureId === coarse.featureId)!;
+      expect(refined.faces).not.toBe(coarse.faces);
+      expect(triangles(refined)).toBeGreaterThan(triangles(coarse));
+      expect(display.failedFeatureIds).toEqual([]);
+    } finally {
+      restore();
+    }
   });
 });
 

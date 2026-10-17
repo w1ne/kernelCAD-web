@@ -249,6 +249,10 @@ function kernelCadMeshEndpoint(): Plugin {
           const url = new URL(req.url ?? '', 'http://localhost');
           const script = url.searchParams.get('script');
           const sessionToken = url.searchParams.get('session');
+          // `quality=coarse` (query or POST body) meshes the response at the
+          // coarse preview tier — the Studio edit loop's fast first paint.
+          // Omitted / anything else = display quality.
+          let previewQuality: string | null = url.searchParams.get('quality');
           // POST { source } meshes ARBITRARY edited code through the node
           // kernel — the path the Studio editor uses on localhost dev when
           // the in-browser worker can't run the modern assembly/joint/tendon
@@ -263,12 +267,13 @@ function kernelCadMeshEndpoint(): Plugin {
 
           ensureOcctShims();
 
-          const [{ loadScriptFeatures }, { meshFeaturesPerFeature }, { serializeForBridge }, { runScript }, { resolveRootId, modelForEditedMesh }] = await Promise.all([
+          const [{ loadScriptFeatures }, { meshFeaturesPerFeature }, { serializeForBridge }, { runScript }, { resolveRootId, modelForEditedMesh }, { COARSE_MESH_OPTIONS }] = await Promise.all([
             import('./src/modeling/runtime/scriptLoader'),
             import('./src/modeling/capture/featureMeshing'),
             import('./src/modeling/capture/featureMeshSerialize'),
             import('./src/composition/runScript'),
             import('./src/composition/buildModel'),
+            import('./src/kernel/backends/occt/meshing'),
           ]);
 
           // Slice 2E.bridge: with a session token, mesh against the pooled
@@ -293,7 +298,7 @@ function kernelCadMeshEndpoint(): Plugin {
             // runScript carries no extra trust boundary.
             const chunks: Buffer[] = [];
             for await (const chunk of req) chunks.push(chunk as Buffer);
-            let parsedBody: { source?: unknown; params?: unknown };
+            let parsedBody: { source?: unknown; params?: unknown; quality?: unknown };
             try {
               parsedBody = JSON.parse(Buffer.concat(chunks).toString('utf-8') || '{}');
             } catch {
@@ -309,6 +314,7 @@ function kernelCadMeshEndpoint(): Plugin {
               return;
             }
             source = parsedBody.source;
+            if (typeof parsedBody.quality === 'string') previewQuality = parsedBody.quality;
             const hasParamOverrides = !!parsedBody.params && typeof parsedBody.params === 'object';
             // Typing in the editor is usually an append. Reuse the previous
             // build's solids and triangle meshes when the prefix is provably
@@ -387,6 +393,7 @@ function kernelCadMeshEndpoint(): Plugin {
             rootId = resolveRootId(loaded.returnValue, records.at(-1)?.id);
           }
 
+          const previewMeshOptions = previewQuality === 'coarse' ? COARSE_MESH_OPTIONS : undefined;
           const meshing = await meshFeaturesPerFeature(
             records,
             paramTable,
@@ -395,6 +402,7 @@ function kernelCadMeshEndpoint(): Plugin {
             // carries the `cachedFeatureMeshes` / `cachedAssemblyPartMeshes`
             // maps populated by this pass and reused on the next.
             meshSession as Parameters<typeof meshFeaturesPerFeature>[2],
+            { previewMeshOptions },
           );
           if (meshing.failedFeatureIds.length > 0) {
             res.statusCode = 500;

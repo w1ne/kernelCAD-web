@@ -12,7 +12,9 @@ import type {
 
 import {
     WorkerResponseSchema,
-    isSuccessResponse
+    isSuccessResponse,
+    isErrorResponse,
+    isExecutePreviewResponse
 } from './workerTypes';
 import { isOcctWasmPoisoned } from '../occt/wasmPoison';
 
@@ -40,6 +42,9 @@ type PendingMessage = {
     resolve: (val: unknown) => void;
     reject: (err: unknown) => void;
     timeoutId: ReturnType<typeof setTimeout>;
+    /** Optional fast first-paint frame receiver (EXECUTE_PREVIEW). The
+     *  request stays pending until the final SUCCESS/ERROR arrives. */
+    onPreview?: (result: ExecutionResult) => void;
 };
 
 export interface GeometryEngineDiagnostics {
@@ -216,7 +221,7 @@ export class GeometryEngine {
             if (response.id === 'init') {
                 if (isSuccessResponse(response)) {
                     this.completeInitialization();
-                } else {
+                } else if (isErrorResponse(response)) {
                     this.failInitialization(new Error(response.error));
                 }
                 return;
@@ -224,6 +229,19 @@ export class GeometryEngine {
 
             const { id } = response;
             const pending = this.pendingMessages.get(id);
+
+            // Fast first-paint frame: hand it to the request's preview handler
+            // and keep the request pending for the final SUCCESS. A throwing
+            // preview handler must not kill the worker (protocol-violation
+            // path below) — geometry is already on its way.
+            if (isExecutePreviewResponse(response)) {
+                try {
+                    pending?.onPreview?.(response.geometries);
+                } catch (err) {
+                    console.error('Worker preview handler threw:', err);
+                }
+                return;
+            }
 
             if (pending) {
                 clearTimeout(pending.timeoutId);
@@ -255,7 +273,10 @@ export class GeometryEngine {
     /**
      * Post a message to the worker and await response
      */
-    private async postToWorkerOnce<T>(message: WorkerRequest): Promise<T> {
+    private async postToWorkerOnce<T>(
+        message: WorkerRequest,
+        onPreview?: (result: ExecutionResult) => void,
+    ): Promise<T> {
         await this.initialize();
         return new Promise<T>((resolve, reject) => {
             const id = message.id;
@@ -269,22 +290,26 @@ export class GeometryEngine {
             this.pendingMessages.set(id, {
                 resolve: (val: unknown) => resolve(val as T),
                 reject,
-                timeoutId
+                timeoutId,
+                ...(onPreview ? { onPreview } : {}),
             });
             this.worker?.postMessage(message);
         });
     }
 
-    private async postToWorker<T>(message: WorkerRequest): Promise<T> {
+    private async postToWorker<T>(
+        message: WorkerRequest,
+        onPreview?: (result: ExecutionResult) => void,
+    ): Promise<T> {
         try {
-            return await this.postToWorkerOnce<T>(message);
+            return await this.postToWorkerOnce<T>(message, onPreview);
         } catch (e) {
             // Soft RuntimeError from the worker leaves the worker's OCCT heap poisoned
             // (the host only sees an ERROR response — no onerror crash). Terminate and
             // respawn so the next attempt gets a fresh wasm module, then retry once.
             if (!isOcctWasmPoisoned(e)) throw e;
             this.terminate('OCCT wasm poisoned in geometry worker; recycling.');
-            return await this.postToWorkerOnce<T>(message);
+            return await this.postToWorkerOnce<T>(message, onPreview);
         }
     }
 
@@ -295,10 +320,23 @@ export class GeometryEngine {
 
     /**
      * Execute CAD code
+     *
+     * `opts.quality: 'coarse'` asks the worker to post a coarse first-paint
+     * frame (`opts.onPreview`) before the final display result. The script
+     * runs exactly once; only tessellation happens twice, so heavy geometry
+     * (booleans, fillets) is not paid for twice.
      */
-    public executeCode(code: string): Promise<ExecutionResult> {
+    public executeCode(
+        code: string,
+        opts?: { quality?: 'coarse'; onPreview?: (result: ExecutionResult) => void },
+    ): Promise<ExecutionResult> {
         const id = this.nextRequestId();
-        return this.postToWorker<ExecutionResult>({ type: 'EXECUTE', id, code });
+        return this.postToWorker<ExecutionResult>({
+            type: 'EXECUTE',
+            id,
+            code,
+            ...(opts?.quality === 'coarse' ? { meshQuality: 'coarse' as const } : {}),
+        }, opts?.onPreview);
     }
 
     /**
@@ -324,6 +362,9 @@ export const geometryEngine = GeometryEngine.getInstance();
 // Export standalone functions for backward compatibility if needed, 
 // but preferred usage is via the class instance or Context.
 export const init = () => geometryEngine.initialize();
-export const executeCode = (code: string) => geometryEngine.executeCode(code);
+export const executeCode = (
+    code: string,
+    opts?: { quality?: 'coarse'; onPreview?: (result: ExecutionResult) => void },
+) => geometryEngine.executeCode(code, opts);
 export const exportSTEP = (code: string) => geometryEngine.exportSTEP(code);
 export const exportSTL = (code: string) => geometryEngine.exportSTL(code);
