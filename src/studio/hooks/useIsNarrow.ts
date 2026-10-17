@@ -13,6 +13,12 @@ export const NARROW_QUERY = '(max-width: 767px)';
  *  a breakpoint earlier, at Tailwind's `lg`. */
 export const COMPACT_HEADER_QUERY = '(max-width: 1023px)';
 
+/** A phone in either orientation: narrow, or a short touch screen (a phone
+ *  held sideways is ~900 px wide but only ~400 px tall). The Studio uses the
+ *  phone shell, touch-size tools and the phone camera fit for it. A desktop
+ *  window that is short but has a mouse keeps the desktop layout. */
+export const PHONE_QUERY = '(max-width: 767px), (max-height: 520px) and (pointer: coarse)';
+
 function mediaQueryList(query: string): MediaQueryList | null {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return null;
     return window.matchMedia(query);
