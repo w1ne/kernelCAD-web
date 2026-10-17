@@ -17,6 +17,7 @@ import { SceneTab } from './tabs/SceneTab';
 import { CodeTab } from './tabs/CodeTab';
 import { ParamsTab } from './tabs/ParamsTab';
 import { JointsTab } from './tabs/JointsTab';
+import { PartsTab } from './tabs/PartsTab';
 import { ValidityTab } from './tabs/ValidityTab';
 import { ExportTab } from './tabs/ExportTab';
 import { AnimationTab } from './components/animation/AnimationTab';
@@ -407,6 +408,7 @@ function buildTabSlots() {
         code: <CodeTab />,
         params: <ParamsTab />,
         joints: <JointsTab />,
+        parts: <PartsTab />,
         validity: <ValidityTab />,
         export: <ExportTab />,
         animation: <AnimationTab />,
