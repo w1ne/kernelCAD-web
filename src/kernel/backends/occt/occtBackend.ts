@@ -1006,6 +1006,11 @@ export class OcctBackend implements ShapeBackend {
     return new OcctBackend(result);
   }
 
+  /** Combine several bodies into one compound, each keeping its own placement. */
+  static compound(bodies: OcctBackend[]): OcctBackend {
+    return new OcctBackend(replicad.compoundShapes(bodies.map((b) => b.shape)) as ReplicadShape3D);
+  }
+
   union(other: ShapeBackend): OcctBackend {
     const o = (other as OcctBackend).shape;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -27,7 +27,6 @@ import { tmpdir } from 'node:os';
 import { extname, join } from 'node:path';
 import { promisify } from 'node:util';
 import { unzipSync, strFromU8 } from 'fflate';
-import { compoundShapes } from 'replicad';
 import { resolveScriptRelativePath } from '../../shared/runtime/scriptRelativePath';
 import { OcctBackend, initOcct } from '../../kernel/backends/occt/occtBackend';
 import { importBrepBytes, BrepParseError } from '../../kernel/backends/occt/importBrep';
@@ -169,9 +168,7 @@ export async function readFcstdBackend(bytes: Uint8Array, label: string): Promis
     return placeBody(backend, root.placement);
   });
 
-  return bodiesOut.length === 1
-    ? bodiesOut[0]
-    : new OcctBackend(compoundShapes(bodiesOut.map((b) => b.getReplicadShape())) as never);
+  return bodiesOut.length === 1 ? bodiesOut[0] : OcctBackend.compound(bodiesOut);
 }
 
 /**
