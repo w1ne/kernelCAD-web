@@ -85,6 +85,28 @@ function mergeSpans(spans: AxialSpan[], gapMm: number): AxialSpan[] {
   return out;
 }
 
+/** Axial range of box `b` on the line `origin + t·u` (clipped to
+ *  `within`) and its farthest corner from the line. */
+function axialExtent(
+  b: { min: Vec3; max: Vec3 }, origin: Readonly<Vec3>, u: Readonly<Vec3>, within: AxialSpan | undefined,
+): { tMin: number; tMax: number; farthest: number } | undefined {
+  let tMin = Infinity;
+  let tMax = -Infinity;
+  let farthest = 0;
+  for (const p of corners(b)) {
+    const d = sub(p, origin);
+    const t = dot(d, u);
+    tMin = Math.min(tMin, t);
+    tMax = Math.max(tMax, t);
+    farthest = Math.max(farthest, norm(sub(d, [u[0] * t, u[1] * t, u[2] * t])));
+  }
+  if (within !== undefined) {
+    tMin = Math.max(tMin, within.fromMm);
+    tMax = Math.min(tMax, within.toMm);
+  }
+  return Number.isFinite(tMin) && Number.isFinite(tMax) && tMax > tMin ? { tMin, tMax, farthest } : undefined;
+}
+
 /** Distance from the line `origin + t·u` (u unit) to the nearest point of
  *  box `b`, a lower bound for any material in the box. */
 export function boxDistanceToAxis(b: { min: Vec3; max: Vec3 }, origin: Readonly<Vec3>, axis: Readonly<Vec3>): number {
@@ -114,22 +136,9 @@ export function nearestAxialContact(
   const len = norm(axis);
   if (!(len > 0)) return undefined;
   const u: Vec3 = [axis[0] / len, axis[1] / len, axis[2] / len];
-  const box = shape.boundingBox();
-  let tMin = Infinity;
-  let tMax = -Infinity;
-  let farthest = 0;
-  for (const p of corners(box)) {
-    const d = sub(p, origin);
-    const t = dot(d, u);
-    tMin = Math.min(tMin, t);
-    tMax = Math.max(tMax, t);
-    farthest = Math.max(farthest, norm(sub(d, [u[0] * t, u[1] * t, u[2] * t])));
-  }
-  if (opts.within !== undefined) {
-    tMin = Math.max(tMin, opts.within.fromMm);
-    tMax = Math.min(tMax, opts.within.toMm);
-  }
-  if (!Number.isFinite(tMin) || !Number.isFinite(tMax) || tMax <= tMin) return undefined;
+  const extent = axialExtent(shape.boundingBox(), origin, u, opts.within);
+  if (extent === undefined) return undefined;
+  const { tMin, tMax, farthest } = extent;
   const maxR = opts.maxRadiusMm ?? farthest;
   const frame = toAxisFrame(origin, u);
   const pad = opts.within === undefined ? 1 : 0;
