@@ -96,6 +96,10 @@ export interface MjcfExportResult {
      * deltas back to kernelCAD part names.
      */
     readonly bodyOrder: readonly string[];
+    /** One line per part whose inertia the emitter had to correct (a
+     *  non-positive principal moment, or principal moments that break
+     *  A + B >= C), with the before / after principal moments. */
+    readonly inertiaNotes: readonly string[];
 }
 
 /**
@@ -113,7 +117,7 @@ export async function assemblyToMjcf(arm: Assembly): Promise<MjcfExportResult> {
 
     const { partByName, childrenByParent, roots } = buildMateTree(parts, mates);
 
-    const { inertials, collisionMeshes } = await buildPartAssets(parts);
+    const { inertials, collisionMeshes, inertiaNotes } = await buildPartAssets(parts);
 
     const resolvedMateAxes = await resolveMateFrames(mates, partByName);
 
@@ -163,7 +167,7 @@ export async function assemblyToMjcf(arm: Assembly): Promise<MjcfExportResult> {
         '',
     ].join('\n');
 
-    return { mjcf, jointOrder, bodyOrder };
+    return { mjcf, jointOrder, bodyOrder, inertiaNotes };
 }
 
 interface MateTree {
@@ -233,31 +237,40 @@ function buildMateTree(parts: readonly AssemblyPartStored[], mates: readonly Mat
 async function buildPartAssets(parts: readonly AssemblyPartStored[]): Promise<{
     inertials: Map<string, InertiaSpec>;
     collisionMeshes: Map<string, { vertex: string; assetName: string }>;
+    inertiaNotes: string[];
 }> {
     const inertials = new Map<string, InertiaSpec>();
     const collisionMeshes = new Map<string, { vertex: string; assetName: string }>();
+    const inertiaNotes: string[] = [];
     for (const p of parts) {
         let lowered: OcctBackend | undefined;
         try {
             lowered = (await p.originalShape.lower()) as OcctBackend;
             const density = p.density ?? DEFAULT_DENSITY_KG_M3;
             const mp = lowered.massProperties(density);
-            const massKg = Math.max(1e-6, mp.mass);
-            // Diagonal inertia in MuJoCo's body frame; for our default
-            // we feed back the full 6 (ixx, ixy, ixz, iyy, iyz, izz).
-            // MuJoCo's <inertial> takes diaginertia OR fullinertia; we
-            // use fullinertia to preserve the off-diagonal terms.
+            // A declared `massKg` (catalog / datasheet mass) wins over
+            // volume × density: CoM and inertia come from the geometry,
+            // scaled to that mass (as the static-hold / motion-load checks
+            // do in kinematic/partMass.ts).
+            const k = p.massKg !== undefined && p.massKg > 0 && mp.mass > 0 ? p.massKg / mp.mass : 1;
+            const massKg = Math.max(1e-6, mp.mass * k);
+            const scaled = mp.inertia6.map((v) => v * k) as unknown as [number, number, number, number, number, number];
+            // MuJoCo's <inertial> takes diaginertia OR fullinertia; we use
+            // fullinertia to preserve the off-diagonal terms.
             //
-            // The raw tensor from a degenerate / very-thin / rank-deficient
-            // BREP can fail to be symmetric positive-definite (a near-zero
-            // or slightly-negative principal moment), and MuJoCo rejects it
-            // with "inertia must have positive eigenvalues" at compile time,
-            // bricking the whole physics gate. Regularize to SPD here,
-            // mirroring the mass floor on the line above.
+            // MuJoCo rejects a body whose principal moments are not all
+            // positive ("inertia must have positive eigenvalues") or break
+            // the triangle inequality ("inertia must satisfy A + B >= C").
+            // A thin plate sits exactly on that boundary (perpendicular
+            // axis theorem: C = A + B), so round-off alone can break it.
+            // One bad part bricks the whole physics gate, so correct the
+            // tensor to the nearest valid one and log a note.
+            const valid = validInertia6(scaled);
+            if (valid.note !== undefined) inertiaNotes.push(`${p.name}: ${valid.note}`);
             inertials.set(p.name, {
                 massKg,
                 comLocalMm: mp.com,
-                inertia6: regularizeInertia6(mp.inertia6),
+                inertia6: valid.inertia6,
             });
         } catch {
             // Fall back to a unit inertia tensor (1 kg point mass at the
@@ -284,7 +297,7 @@ async function buildPartAssets(parts: readonly AssemblyPartStored[]): Promise<{
             }
         }
     }
-    return { inertials, collisionMeshes };
+    return { inertials, collisionMeshes, inertiaNotes };
 }
 
 // Resolve mate connector frames (origin + axis) in PARENT-LOCAL
@@ -478,7 +491,7 @@ function emitWorldbodyBlocks(
         const comM = inertial.comLocalMm.map((v) => v * MM_TO_M);
         const [ixx, ixy, ixz, iyy, iyz, izz] = inertial.inertia6;
         lines.push(
-            `${indent}  <inertial pos="${comM.map(fmtNum).join(' ')}" mass="${fmtNum(inertial.massKg)}" fullinertia="${[ixx, iyy, izz, ixy, ixz, iyz].map(fmtNum).join(' ')}"/>`,
+            `${indent}  <inertial pos="${comM.map(fmtNum).join(' ')}" mass="${fmtNum(inertial.massKg)}" fullinertia="${[ixx, iyy, izz, ixy, ixz, iyz].map(fmtInertia).join(' ')}"/>`,
         );
 
         // Joint from parent (if any). MJCF nests the joint INSIDE the
@@ -796,6 +809,14 @@ function mjcfWrapGeomName(partName: string, wrapName: string): string {
  */
 const WRAP_GEOM_INFINITE_HALF_LEN_MM = 1000;
 
+/** Inertia components keep 10 significant digits. `fmtNum`'s 6 fixed
+ *  decimals leave a 1e-4 kg·m² moment 3 digits, enough rounding to push a
+ *  thin plate (C = A + B) past MuJoCo's A + B >= C check. */
+function fmtInertia(n: number): string {
+    if (!Number.isFinite(n) || n === 0) return '0';
+    return n.toExponential(9);
+}
+
 function fmtNum(n: number): string {
     // 6-decimal fixed for readability; scientific notation for
     // values that lose precision in fixed form.
@@ -917,6 +938,55 @@ export function regularizeInertia6(
         lam[1] * vectors[r][1] * vectors[c][1] +
         lam[2] * vectors[r][2] * vectors[c][2];
     return [m(0, 0), m(0, 1), m(0, 2), m(1, 1), m(1, 2), m(2, 2)];
+}
+
+/**
+ * Relative margin kept inside MuJoCo's triangle inequality: after the
+ * correction the largest principal moment is at most (1 - margin) × the
+ * sum of the other two. Covers the 10-digit serialization and MuJoCo's own
+ * eigen round-off; far below anything a drop test can see.
+ */
+const INERTIA_TRIANGLE_MARGIN = 1e-6;
+
+/**
+ * The nearest inertia tensor MuJoCo accepts: positive principal moments
+ * (`regularizeInertia6`) that satisfy A + B >= C for every ordering.
+ * When the largest moment C exceeds A + B, the two smaller moments grow by
+ * half the excess each (C is the moment a thin plate gets right; the
+ * in-plane ones lose the thickness term), with the principal axes kept.
+ * A valid tensor comes back unchanged, with no note.
+ */
+export function validInertia6(
+    inertia6: readonly [number, number, number, number, number, number],
+): { inertia6: [number, number, number, number, number, number]; note?: string } {
+    const spd = regularizeInertia6(inertia6);
+    const [ixx, ixy, ixz, iyy, iyz, izz] = spd;
+    const { values, vectors } = jacobiEigenSymmetric3([
+        [ixx, ixy, ixz],
+        [ixy, iyy, iyz],
+        [ixz, iyz, izz],
+    ]);
+    const order = [0, 1, 2].sort((a, b) => values[a] - values[b]);
+    const [lo, mid, hi] = order as [number, number, number];
+    const excess = values[hi] - (1 - INERTIA_TRIANGLE_MARGIN) * (values[lo] + values[mid]);
+    const spdChanged = spd.some((v, i) => v !== finiteOrZero(inertia6[i]!));
+    const fmt = (v: readonly number[]): string => [...v].sort((a, b) => a - b).map((x) => x.toExponential(4)).join(', ');
+    if (excess <= 0) {
+        return spdChanged
+            ? { inertia6: spd, note: `principal moments floored to positive (${fmt(values)} kg·m²)` }
+            : { inertia6: spd };
+    }
+    const lam = [...values] as [number, number, number];
+    lam[lo] += excess / 2;
+    lam[mid] += excess / 2;
+    const m = (r: number, c: number): number =>
+        lam[0] * vectors[r][0] * vectors[c][0] +
+        lam[1] * vectors[r][1] * vectors[c][1] +
+        lam[2] * vectors[r][2] * vectors[c][2];
+    return {
+        inertia6: [m(0, 0), m(0, 1), m(0, 2), m(1, 1), m(1, 2), m(2, 2)],
+        note: `principal moments ${fmt(values)} kg·m² break A + B >= C; corrected to ${fmt(lam)} kg·m²`,
+    };
 }
 
 function finiteOrZero(n: number): number {
