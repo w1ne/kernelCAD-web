@@ -16,7 +16,7 @@ describe('validateOutputPath', () => {
     it('accepts /tmp/ paths', () => {
       const r = validateOutputPath('/tmp/test.stl');
       expect(r.ok).toBe(true);
-      expect(r.resolved).toBe('/tmp/test.stl');
+      expect(r.resolved).toMatch(/^(\/private)?\/tmp\/test\.stl$/);
     });
 
     it('accepts ~/projects/foo.stl', () => {

@@ -37,6 +37,8 @@
     "build:player": "vite build -c vite.player.config.ts",
     "dist:skills": "npx tsx scripts/distGenerate.mjs",
     "eval": "npx tsx eval/run.ts",
+    "eval:corpus": "KCAD_CORPUS=1 NODE_OPTIONS='--max-old-space-size=8192' vitest run eval",
+    "test:slow": "KCAD_SLOW=1 npm test",
     "eval:ab": "npx tsx scripts/evalAb.ts",
     "portfolio:attempt": "npx tsx scripts/portfolioAttempt.ts",
     "cookbook:validate": "npx tsx scripts/cookbookValidate.ts",

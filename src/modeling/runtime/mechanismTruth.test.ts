@@ -37,7 +37,7 @@ function makeArm(name = 'rig'): { arm: Assembly; kcad: ReturnType<typeof createA
   return { arm: kcad.assembly(name), kcad, session };
 }
 
-describe('mechanism truth — pose-sweep grounded loop (P0)', () => {
+describe.skipIf(!process.env.KCAD_SLOW)('mechanism truth — pose-sweep grounded loop (P0)', () => {
   it('1. joint.clevis hinge at all sampled poses → mechanism: real', async () => {
     // The joint.clevis primitive emits forks + tongue + pin geometry
     // that physically constrain the parent and child under any pose in

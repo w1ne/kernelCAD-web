@@ -36,7 +36,7 @@ async function loadMujocoInNode(): Promise<unknown> {
     });
 }
 
-describe('P11 Slice 1 — MuJoCo sees collision contacts on non-adjacent interpenetrating bodies', () => {
+describe.skipIf(!process.env.KCAD_SLOW)('P11 Slice 1 — MuJoCo sees collision contacts on non-adjacent interpenetrating bodies', () => {
     it('three-body chain with A↔C overlap reports ncon > 0; joint-adjacent A↔B and B↔C excluded', async () => {
         // Build a three-cube chain A — hinge — B — hinge — C where:
         //   - A and B are joint-adjacent (one revolute mate)

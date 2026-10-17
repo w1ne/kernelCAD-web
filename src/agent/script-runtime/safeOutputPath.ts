@@ -29,6 +29,7 @@ export interface ValidateOutputPathResult {
 
 const DANGEROUS_SYSTEM_PREFIXES = [
   '/etc/',
+  '/private/etc/',
   '/proc/',
   '/sys/',
   '/dev/',
@@ -132,12 +133,12 @@ function canonicalize(absolutePath: string): string {
   while (current !== '/' && current !== '.' && !existsSync(current)) {
     const parent = dirname(current);
     if (parent === current) break; // reached root
-    trailingParts.unshift(current.slice(parent.length + 1)); // segment after parent's slash
+    trailingParts.unshift(parent === '/' ? current.slice(1) : current.slice(parent.length + 1)); // segment after parent's slash
     current = parent;
   }
   if (existsSync(current)) {
     const realParent = realpathSync(current);
-    return trailingParts.length > 0 ? `${realParent}/${trailingParts.join('/')}` : realParent;
+    return trailingParts.length > 0 ? `${realParent === '/' ? '' : realParent}/${trailingParts.join('/')}` : realParent;
   }
   // No existing ancestor found; fallback to the input (should not happen on a real FS).
   return absolutePath;
