@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
 import { describe, expect, it } from 'vitest';
-import { explodeLayout, offsetAt, type ExplodeLayoutLink, type ExplodeLayoutPart, type Vec3 } from './explodeLayout';
+import { explodeLayout, inferContactLinks, offsetAt, type ExplodeLayoutLink, type ExplodeLayoutPart, type Vec3 } from './explodeLayout';
 
 const part = (key: string, center: Vec3, size: Vec3): ExplodeLayoutPart => ({ key, center, size });
 
@@ -151,3 +151,33 @@ describe('explodeLayout', () => {
     expect(explodeLayout([], []).offsets.size).toBe(0);
   });
 });
+
+describe('inferContactLinks', () => {
+  it('links a touching stack along the axis it separates on, as a tree', () => {
+    const links = inferContactLinks(stack);
+    // One link per part except the root: a spanning tree, no cycles.
+    expect(links).toHaveLength(stack.length - 1);
+    for (const l of links) expect(l.axis).toEqual([0, 0, 1]);
+    const layout = explodeLayout(stack, links);
+    expect(layout.root).toBe('plate');
+    for (const k of ['pin', 'washer-1', 'washer-2', 'washer-3']) expect(layout.offsets.get(k)![2]).toBeGreaterThan(0);
+    // Inferred links are a guess: a washer can hang off the plate while its
+    // neighbour hangs off the pin. The stack still opens up a lot.
+    const before = overlapping(stack, () => [0, 0, 0]).length;
+    expect(overlapping(stack, (k) => offsetAt(layout, k, 1)).length).toBeLessThan(before / 2);
+  });
+
+  it('leaves parts that touch nothing unlinked', () => {
+    const far = part('far', [500, 0, 0], [2, 2, 2]);
+    const links = inferContactLinks([plate, far]);
+    expect(links).toEqual([]);
+  });
+
+  it('negative control: without links the stack does not open', () => {
+    // Radial alone moves the coaxial washers along the same line from the
+    // centre; the overlap check must see that they still collide.
+    const radial = explodeLayout(stack, []);
+    expect(overlapping(stack, (k) => offsetAt(radial, k, 1)).length).toBeGreaterThan(0);
+  });
+});
+

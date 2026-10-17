@@ -303,3 +303,48 @@ export function offsetAt(layout: ExplodeLayout, key: string, factor: number): Ve
   // `+ 0` turns -0 into 0.
   return [o[0] * f + 0, o[1] * f + 0, o[2] * f + 0];
 }
+
+/**
+ * Links inferred from touching boxes, for meshes that carry no mate data
+ * (a stored mesh artifact). Every pair of touching boxes is a candidate; the
+ * links kept are a maximum spanning forest by overlap (Kruskal, deterministic),
+ * so each part hangs off the neighbour it overlaps most and the walk from the
+ * biggest part reaches everything that touches. A link's axis is the one with
+ * the least penetration: the way the two boxes come apart most easily. Mated
+ * stacks of plates, servos and screws are usually axis-aligned, so this
+ * recovers most of them.
+ */
+export function inferContactLinks(parts: readonly ExplodeLayoutPart[]): ExplodeLayoutLink[] {
+  const { diagonal } = assemblyCenter(parts);
+  const tol = 0.005 * diagonal;
+  const pairs: { i: number; j: number; score: number; axis: Vec3 }[] = [];
+  for (let i = 0; i < parts.length; i++) {
+    for (let j = i + 1; j < parts.length; j++) {
+      const a = parts[i]!;
+      const b = parts[j]!;
+      const pen = [0, 1, 2].map((k) => (a.size[k]! + b.size[k]!) / 2 - Math.abs(a.center[k]! - b.center[k]!));
+      if (pen.some((d) => d < -tol)) continue;
+      const k = pen.indexOf(Math.min(...pen));
+      pairs.push({
+        i, j,
+        score: pen.reduce((acc, d) => acc * Math.max(d, tol), 1),
+        axis: [k === 0 ? 1 : 0, k === 1 ? 1 : 0, k === 2 ? 1 : 0],
+      });
+    }
+  }
+  pairs.sort((x, y) => y.score - x.score || x.i - y.i || x.j - y.j);
+  const parent = parts.map((_, i) => i);
+  const find = (x: number): number => {
+    while (parent[x] !== x) { parent[x] = parent[parent[x]!]!; x = parent[x]!; }
+    return x;
+  };
+  const links: ExplodeLayoutLink[] = [];
+  for (const pr of pairs) {
+    const ri = find(pr.i);
+    const rj = find(pr.j);
+    if (ri === rj) continue;
+    parent[ri] = rj;
+    links.push({ a: parts[pr.i]!.key, b: parts[pr.j]!.key, axis: pr.axis });
+  }
+  return links;
+}
