@@ -186,7 +186,6 @@ export function detectInterferences(
       bbox: posed.boundingBox(),
       source: p.shape as object,
       worldTransform: p.worldTransform,
-      poseKey: transformKey(p.worldTransform),
       frameBounds: new Map<number, Bounds>(),
     };
   });
@@ -207,7 +206,6 @@ interface PosedPart {
   worldTransform: SceneBackend['parts'][number]['worldTransform'];
   bbox: { min: [number, number, number]; max: [number, number, number] };
   source: object;
-  poseKey: string;
   frameBounds: Map<number, Bounds>;
 }
 
@@ -252,7 +250,13 @@ function probeCandidates(
     }
     if (boundedBelowThreshold) continue;
 
-    const memoKey = `${a.poseKey}|${b.poseKey}`;
+    // Key on the RELATIVE pose of b in a's frame: the overlap of two rigid
+    // bodies depends only on where one sits relative to the other. Parts
+    // fastened into one rigid cluster keep their relative pose at every
+    // sampled pose, so the sweep measures each such pair once instead of
+    // once per pose; a pair whose relative pose changed still misses the
+    // memo and is measured again.
+    const memoKey = transformKey(a.worldTransform.inverse().compose(b.worldTransform));
     let vol: OverlapMetrics | undefined = memoGet(a.source, b.source, memoKey);
     try {
       if (vol === undefined) {

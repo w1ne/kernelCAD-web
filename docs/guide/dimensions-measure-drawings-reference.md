@@ -4,7 +4,7 @@ You can read the size of a part straight off the 3D view, measure anything you c
 
 ## The Dimensions toggle
 
-Two buttons sit top-left of the 3D viewer: Measure is the ruler button, and Dimensions is the button with the ruler-and-ticks icon next to it. It is there in Studio, on shared `/p/<slug>` pages and in the ChatGPT viewer.
+Two buttons sit top-left of the 3D viewer: Measure is the ruler button, and Dimensions is the button with the ruler-and-ticks icon next to it (assemblies also get [Exploded view](#exploded-view)). It is there in Studio, on shared `/p/<slug>` pages and in the ChatGPT viewer.
 
 ![Dimensions on, dark theme](../screenshots/dims-on-dark.png)
 
@@ -98,6 +98,14 @@ return bracket;
 The viewer shows `hole spacing X 40`, `hole spacing Y 18`, `thickness 6` and `bolt hole Ø5`. Because the model declares dimensions, the toggle starts on.
 
 Agents use the same call in source. `evaluate_script` returns the declared dimension values, so an agent can check them without looking at the picture.
+
+## Exploded view
+
+An assembly with two or more parts gets a third button, Exploded view (the stacked-boxes icon), next to Dimensions. Click it and the parts move apart in a short animation; a slider under the button sets the distance from 0 to 100 %. Click it again to put the parts back.
+
+Parts move along their mates. A part fastened or jointed to another moves away from it along the mate's connector axis, and it takes the parts attached to it along. Parts mated to the same parent in the same direction spread as a stack, nearest first. The biggest part stays where it is. When the loaded mesh carries no mate information (for example a stored mesh on a shared page), kernelCAD links parts whose boxes touch and moves each one off its neighbour along the axis where they come apart most easily. Parts that touch nothing move out from the assembly centre.
+
+The exploded view only changes the picture. It does not change the script, the parameters or the saved model, and it turns itself off when the model moves for another reason: an animation plays, a joint is dragged, or a parameter or the code changes.
 
 ## Drawing (PDF)
 

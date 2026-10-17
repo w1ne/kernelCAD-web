@@ -64,6 +64,7 @@ import { resolvedPartAt } from '../mates/partFrame';
 import { expandCoupledPoses } from '../mates/coupledPoses';
 import { parseConnectorRef, type MateRecord } from '../mates/mate';
 import { checkOrphanParts } from './mechanismOrphan';
+import { estimateSweepWork, type SweepWorkEstimate } from './sweepWork';
 import { checkMotionIntent, hasMotionIntent } from './motionIntent';
 import { checkMotionLimits } from './motionLimits';
 import { checkMateClosure, type ClosureSample } from './mateClosure';
@@ -94,47 +95,41 @@ import { runPhysicsCriteria } from './mechanismTruthPhysics';
 export const POSE_SAMPLE_COUNT_PER_MATE = 3;
 
 /**
- * Deterministic work budget for the BREP-lowering criteria (2
- * interpenetration, 3 dof-mismatch, 8 tendon-body-intersect). Those
- * criteria lower the whole assembly once per pose sample and run
- * pairwise BREP overlap, so cost grows as `(distinct pose lowers) ×
- * parts`. Criterion 7 (joint-mesh-gap) is NOT in that sweep: it probes
- * the rest pose only, and a disconnected link must still fail when the
- * sweep is skipped. On a dense assembly the pose sweep is a Cartesian
- * blow-up: the Gearfinity planetary stage (24 parts × 13 pose
- * samples + 4 revolute mates × 3 dof micro-poses) timed the
- * `validate --include-interference` CLI out past 5 minutes (issue #348).
+ * Deterministic work budget for the BREP pose sweep (criteria 2
+ * interpenetration, 3 dof-mismatch, 8 tendon-body-intersect). Criterion 7
+ * (joint-mesh-gap) is NOT in the sweep: it probes the rest pose only, and a
+ * disconnected link must still fail when the sweep is skipped.
  *
- * `estimateSweepWork` computes `(solved.length + revoluteMates × 3) ×
- * parts` BEFORE any lowering — purely from the assembly graph, so the
- * decision is deterministic and machine-independent (no wall-clock that
- * could silently truncate a healthy example on a slow CI box). When the
- * estimate exceeds this budget the BREP sweep is SKIPPED and the verdict
- * degrades to `'unverified'`: the mechanism is neither certified real
- * (we never checked articulated overlap) nor broken (we found no
- * defect). Rest-pose static interference is still caught by the legacy
- * `validateAssembly` interference surface on the `validate` path, which
- * runs independently of this probe.
+ * The sweep lowers the assembly once and re-poses it per sample; its cost
+ * is the pairwise boolean overlap probes. `estimateSweepWork`
+ * (`./sweepWork`) counts the probes the sweep would run: part pairs whose
+ * bounding boxes touch at a relative pose not seen before. Parts in one
+ * rigid cluster (fastened together) keep their relative pose, so they cost
+ * one probe for the whole sweep. Each probe is weighted by the face count
+ * of its two parts. The estimate reads only the rest scene, FK transforms
+ * and bounding boxes, so it is deterministic and machine-independent.
  *
- * Sized so every example that currently runs the live sweep clears it
- * with ~2× margin (densest live example ≈ 143 work units) while the
- * intractable Gearfinity stage (≈ 600) degrades. Raise it (or the
- * per-call `sweepBudget` override) if a genuinely tractable larger
- * assembly should be swept in full.
+ * Calibration (2026-10, Apple M-series Mac under heavy load; boolean time
+ * of criteria 2 + 3): 0.1–0.5 ms per work unit on every measured assembly
+ * except the 34-part ratchet stool (4.7 ms/unit, 915 units).
+ *   - DRAW 01 v7 drawing robot, 71 parts / 5 clusters: 18 061 units, ~4–6 s
+ *   - desktop-3axis-mates arm, 16 parts: 7 328 units, ~1 s
+ *   - spice-dispenser carousel, 11 parts: 6 087 units, ~3.4 s
+ *   - Gearfinity planetary stage, 24 parts of gear teeth: 94 127 units, ~44 s
+ * 40 000 lets every measured assembly up to DRAW 01 sweep with 2× margin
+ * (≤ ~20 s of booleans at the worst measured rate) and skips the Gearfinity
+ * stage, whose rest criteria alone take over a minute. When the estimate
+ * exceeds the budget the sweep is SKIPPED and the verdict degrades to
+ * `'unverified'` with a `mechanism.unverified-budget-exceeded` diagnostic.
+ * Not counted: criterion 8 (tendon routing), a no-op without tendons.
  */
-export const BREP_SWEEP_BUDGET = 300;
+export const BREP_SWEEP_BUDGET = 40_000;
 
 /**
- * Resolve the BREP-sweep budget. The fixed {@link BREP_SWEEP_BUDGET} is NOT
- * auto-scaled to part count: the per-work-unit cost is ~0.9 s (a 24-part
- * Gearfinity-class sweep is ~600–900 work units ≈ 5–13 min), so 300 is
- * deliberately calibrated to the largest sweep that completes in tractable
- * time. Raising it to "verify bigger assemblies" instead makes the sweep
- * RUN for 10+ minutes and hang the caller / CI — heavy assemblies must skip
- * LOUDLY (via `mechanism.unverified-budget-exceeded`), not grind. The proper
- * lever for verifying larger assemblies is caching the lowered scene across
- * poses (v2), not a bigger budget. A caller `override` is the escape hatch /
- * test seam (e.g. `Infinity` forces a full sweep, `0` forces the skip path).
+ * Resolve the BREP-sweep budget. The fixed {@link BREP_SWEEP_BUDGET} is
+ * calibrated from measured sweep times (see its doc); it does not scale
+ * with the assembly. A caller `override` is the escape hatch / test seam
+ * (`Infinity` forces a full sweep, `0` forces the skip path).
  */
 export function effectiveSweepBudget(override?: number): number {
   return override ?? BREP_SWEEP_BUDGET;
@@ -378,56 +373,20 @@ export async function checkMechanismTruth(
     return { mechanism: failures.length === 0 ? 'real' : 'broken', failures, coverage };
   }
 
-  // BREP-sweep budget gate (issue #348). Criteria 2/3/8 each lower the
-  // whole assembly per pose sample — a Cartesian cost that explodes on
-  // dense mechanisms (Gearfinity: 24 parts × 13 samples + 4 mates × 3 dof
-  // micro-poses ≈ 600 work units, > 5 min). Estimate the work from the
-  // assembly graph (no lowering) and skip that sweep when it's intractable;
-  // the verdict then degrades to 'unverified' rather than timing out.
+  // BREP-sweep budget gate (issue #348). Criteria 2/3/8 re-pose the rest
+  // scene per pose sample and probe pairwise overlap. Estimate the probes
+  // from the rest scene (FK + bounding boxes, no boolean) and skip the
+  // sweep when it is intractable; the verdict then degrades to
+  // 'unverified' rather than timing out.
   // Criterion 7 is not part of the sweep: one rest lower is enough to
   // tell a floating end-effector from a connected chain, and skipping it
   // let a disconnected claw pass as 'unverified' (ok: true).
-  const partCount = arm.__parts().length;
-  const sweepBudget = effectiveSweepBudget(opts.sweepBudget);
-  const sweepWork = estimateSweepWork(arm, solved.length);
-  const sweepSkipped = sweepWork > sweepBudget;
-
   const loweredBase: LoweredSceneBase = {};
   failures.push(...(await checkRestCriteria(arm, solved, loweredBase)));
 
-  if (sweepSkipped) {
-    // LOUD skip (T3): the over-budget skip used to emit ONLY a console.warn
-    // and push nothing into `failures`, so the resulting 'unverified'
-    // verdict carried no machine-readable signal — an agent saw "not
-    // broken" and moved on. Push a structured, non-fatal diagnostic
-    // carrying the work estimate, the (auto-scaled) budget, and the part
-    // count so 'unverified' is evidence, not silence. Severity 'warn':
-    // "couldn't verify" must NOT make `ok: false` on its own (that's
-    // reserved for a definitive 'broken', including a rest-pose
-    // joint-mesh gap above).
-    failures.push(makeBudgetExceeded(sweepWork, sweepBudget, partCount, solved.length));
-  } else {
-    // `loweredBase` was populated above (the rest sample's full lower);
-    // every other pose re-poses it with that sample's `solveMates`
-    // transforms instead of re-lowering the whole assembly.
-
-    // Criterion 2 (mechanism.interpenetration) — per-pose BREP sweep.
-    failures.push(...(await checkInterpenetration(arm, solved, loweredBase)));
-
-    // Criterion 3 (mechanism.dof-mismatch) — pragmatic micro-pose check.
-    // Note: this is the spec's open-question #2 ("DoF-mismatch is
-    // geometric"); the pragmatic shape used here is connected-component
-    // count stability under ±ε around the declared axis. Skipped when the
-    // assembly has no revolute mates.
-    failures.push(...(await checkDofMismatch(arm, loweredBase)));
-
-    // Criterion 8 (mechanism.tendon-body-intersect) — a balance tendon's
-    // routed path must not cut through a non-anchor body at any sampled
-    // pose. The static authoring backstop for "the spring goes through the
-    // arm"; MuJoCo wrap routing (Slice 2 MJCF) is the runtime side, this is
-    // the design-time gate. No-op for assemblies with no tendons.
-    failures.push(...(await checkTendonBodyIntersectCriterion(arm, solved, loweredBase)));
-  }
+  const sweep = await runPoseSweep(arm, solved, loweredBase, effectiveSweepBudget(opts.sweepBudget));
+  failures.push(...sweep.failures);
+  const sweepSkipped = sweep.skipped;
 
   // Criteria 5 + 6 (physics) — gated on `opts.physicsCheck`. The MuJoCo
   // session is shared between the two passes so the ~9 MB WASM module
@@ -453,18 +412,90 @@ export async function checkMechanismTruth(
 }
 
 /**
- * Deterministic, lowering-free estimate of the BREP-sweep cost in "work
- * units" (one unit ≈ lowering one part at one pose). Criterion 2 lowers
- * `solvedSampleCount` poses; criterion 3 lowers `revoluteMates × 3`
- * dof micro-poses; both scale with the part count (per-lower cost +
- * pairwise overlap). Used by {@link checkMechanismTruth} to decide
- * whether the sweep fits {@link BREP_SWEEP_BUDGET}. See issue #348.
+ * The budgeted BREP pose sweep (criteria 2, 3, 8). The estimate reads the
+ * rest scene the rest criteria lowered. With no rest scene there is nothing
+ * to re-pose, the sweep would measure nothing, and the rest criteria
+ * already marked the mechanism broken.
  */
-function estimateSweepWork(arm: Assembly, solvedSampleCount: number): number {
-  const partCount = arm.__parts().length;
-  const revoluteCount = arm.__mates().filter((m) => m.type === 'revolute').length;
-  const lowerCount = solvedSampleCount + revoluteCount * POSE_SAMPLE_COUNT_PER_MATE;
-  return lowerCount * partCount;
+async function runPoseSweep(
+  arm: Assembly,
+  solved: SolvedSample[],
+  loweredBase: LoweredSceneBase,
+  sweepBudget: number,
+): Promise<{ failures: CompilerDiagnostic[]; skipped: boolean }> {
+  if (loweredBase.scene === undefined) return { failures: [], skipped: true };
+  const sweepEstimate = await estimateArmSweepWork(arm, solved, loweredBase.scene);
+  // A budget of 0 is the documented force-skip seam, even for zero work.
+  if (sweepBudget <= 0 || sweepEstimate.work > sweepBudget) {
+    // LOUD skip (T3): the over-budget skip used to emit ONLY a console.warn
+    // and push nothing into `failures`, so the resulting 'unverified'
+    // verdict carried no machine-readable signal — an agent saw "not
+    // broken" and moved on. Push a structured, non-fatal diagnostic
+    // carrying the work estimate, the budget, and the part count so
+    // 'unverified' is evidence, not silence. Severity 'warn': "couldn't
+    // verify" must NOT make `ok: false` on its own (that's reserved for a
+    // definitive 'broken', including a rest-pose joint-mesh gap).
+    return { failures: [makeBudgetExceeded(sweepEstimate, sweepBudget)], skipped: true };
+  }
+  const failures: CompilerDiagnostic[] = [];
+  // `loweredBase` holds the rest sample's full lower; every other pose
+  // re-poses it with that sample's `solveMates` transforms instead of
+  // re-lowering the whole assembly.
+
+  // Criterion 2 (mechanism.interpenetration) — per-pose BREP sweep.
+  failures.push(...(await checkInterpenetration(arm, solved, loweredBase)));
+
+  // Criterion 3 (mechanism.dof-mismatch) — pragmatic micro-pose check.
+  // Note: this is the spec's open-question #2 ("DoF-mismatch is
+  // geometric"); the pragmatic shape used here is connected-component
+  // count stability under ±ε around the declared axis. Skipped when the
+  // assembly has no revolute mates.
+  failures.push(...(await checkDofMismatch(arm, loweredBase)));
+
+  // Criterion 8 (mechanism.tendon-body-intersect) — a balance tendon's
+  // routed path must not cut through a non-anchor body at any sampled
+  // pose. The static authoring backstop for "the spring goes through the
+  // arm"; MuJoCo wrap routing (Slice 2 MJCF) is the runtime side, this is
+  // the design-time gate. No-op for assemblies with no tendons.
+  failures.push(...(await checkTendonBodyIntersectCriterion(arm, solved, loweredBase)));
+  return { failures, skipped: false };
+}
+
+/**
+ * Estimate of the BREP-sweep cost (see `./sweepWork`) from the rest scene
+ * re-posed at every solved sample and dof micro-pose: FK (`solveMates`)
+ * and bounding boxes only, no boolean. Used by {@link checkMechanismTruth}
+ * to decide whether the sweep fits {@link BREP_SWEEP_BUDGET}. See issue #348.
+ */
+async function estimateArmSweepWork(
+  arm: Assembly,
+  solved: readonly SolvedSample[],
+  restScene: SceneBackend,
+): Promise<SweepWorkEstimate> {
+  const poses: Array<ReadonlyMap<string, Transform>> = solved
+    .filter((s) => s.sample.name !== 'rest')
+    .map((s) => s.transforms);
+  const coupledDriven = new Set(arm.__mateCouplings().map((c) => c.driven));
+  for (const mate of arm.__mates()) {
+    if (mate.type !== 'revolute' || coupledDriven.has(mate.name)) continue;
+    for (const p of microPosesWithinLimits(mate)) {
+      if (p === 0) continue;
+      try {
+        const overrides = expandCoupledPoses(arm.__mates(), arm.__mateCouplings(), { [mate.name]: p });
+        poses.push((await solveMates(arm, overrides)).poses);
+      } catch {
+        // checkDofMismatch skips a micro-pose that does not solve.
+      }
+    }
+  }
+  const scenes: SceneBackend[] = [restScene];
+  for (const transforms of poses) {
+    // A pose the re-pose helper refuses is fully re-lowered by the sweep;
+    // its pairs are not counted here (rare: an incomplete pose map).
+    const scene = reposedLoweredAssemblyScene(arm, restScene, transforms);
+    if (scene !== undefined) scenes.push(scene);
+  }
+  return estimateSweepWork(scenes);
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -1171,21 +1202,21 @@ async function lowerAssemblySceneForPose(
  * {@link checkMechanismTruth}).
  */
 function makeBudgetExceeded(
-  sweepWork: number,
+  estimate: SweepWorkEstimate,
   sweepBudget: number,
-  partCount: number,
-  poseSampleCount: number,
 ): CompilerDiagnostic {
   const code = 'mechanism.unverified-budget-exceeded';
+  const { work, candidates, parts, clusters, lowers } = estimate;
   return {
     target: 'export-occt',
     code,
     severity: 'warn',
     message:
       `The articulated BREP pose-sweep (collision/dof/tendon criteria) was SKIPPED: ` +
-      `estimated work ${sweepWork} exceeds the budget ${sweepBudget} ` +
-      `(${partCount} part${partCount === 1 ? '' : 's'} × ${poseSampleCount} solved pose ` +
-      `sample${poseSampleCount === 1 ? '' : 's'} + revolute dof micro-poses). The mechanism ` +
+      `estimated work ${work} exceeds the budget ${sweepBudget} ` +
+      `(${parts} part${parts === 1 ? '' : 's'} in ${clusters} rigid cluster${clusters === 1 ? '' : 's'}, ` +
+      `${lowers} pose${lowers === 1 ? '' : 's'}, ${candidates} pair overlap probe${candidates === 1 ? '' : 's'}; ` +
+      `work is the summed face count of the probed pairs). The mechanism ` +
       `is NOT certified collision-free across its travel. Rest-pose joint-mesh ` +
       `continuity still ran — a link that does not meet its body is 'broken', ` +
       `not unverified. Reduce the part/pose count, verify a tractable ` +

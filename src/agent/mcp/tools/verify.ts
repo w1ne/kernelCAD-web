@@ -10,6 +10,7 @@ import { checkReachableTool } from './checkReachable';
 import { checkMountingHoleConsistencyTool } from './checkMountingHoleConsistency';
 import { checkLoadCapacityTool } from './checkLoadCapacity';
 import { checkStaticHoldTool } from './checkStaticHold';
+import { checkMotionLoadTool } from './checkMotionLoad';
 import { checkBodyLikenessTool } from './checkBodyLikeness';
 import { checkFastenerInstallationTool } from './checkFastenerInstallation';
 import { checkGeometryQualityTool } from './checkGeometryQuality';
@@ -27,6 +28,7 @@ export type VerifyCheck =
   | 'mounting-holes'
   | 'load-capacity'
   | 'static-hold'
+  | 'motion-load'
   | 'body-likeness'
   | 'fastener-installation'
   | 'geometry-quality'
@@ -53,49 +55,37 @@ export interface VerifyInput {
  * Pure routing layer: dispatches on `check` and forwards all other params to
  * the underlying verifier unchanged. The verifiers' behavior is untouched.
  */
+type Handler = (rest: Record<string, unknown>) => Promise<unknown>;
+const call = <T extends (arg: never) => unknown>(fn: T): Handler => (rest) => Promise.resolve(fn(rest as never) as unknown);
+
+const HANDLERS: Record<VerifyCheck, Handler> = {
+  'geometry-quality': call(checkGeometryQualityTool),
+  'assembly-path': call(checkAssemblyPathTool),
+  assembly: call(validateAssemblyTool),
+  urdf: call(validateUrdfTool),
+  dfm: call(dfmCheckTool),
+  'dfm-preflight': call(dfmPreflightTool),
+  'swept-collision': call(checkSweptCollisionTool),
+  reachable: call(checkReachableTool),
+  'mounting-holes': call(checkMountingHoleConsistencyTool),
+  'load-capacity': call(checkLoadCapacityTool),
+  'static-hold': call(checkStaticHoldTool),
+  'motion-load': call(checkMotionLoadTool),
+  'fastener-installation': call(checkFastenerInstallationTool),
+  'edge-radius': call(checkEdgeRadiusTool),
+  'body-likeness': call(checkBodyLikenessTool),
+};
+
 export function verifyTool(input: VerifyInput): Promise<unknown> {
   const { check, ...rest } = input;
-  switch (check) {
-    case 'geometry-quality':
-      return checkGeometryQualityTool(rest as Parameters<typeof checkGeometryQualityTool>[0]);
-    case 'assembly-path':
-      return checkAssemblyPathTool(rest as Parameters<typeof checkAssemblyPathTool>[0]);
-    case 'assembly':
-      return validateAssemblyTool(rest as unknown as Parameters<typeof validateAssemblyTool>[0]);
-    case 'urdf':
-      return validateUrdfTool(rest as unknown as Parameters<typeof validateUrdfTool>[0]);
-    case 'dfm':
-      return dfmCheckTool(rest as Parameters<typeof dfmCheckTool>[0]);
-    case 'dfm-preflight':
-      return dfmPreflightTool(
-        rest as unknown as Parameters<typeof dfmPreflightTool>[0],
-      ) as Promise<unknown>;
-    case 'swept-collision':
-      return checkSweptCollisionTool(rest as Parameters<typeof checkSweptCollisionTool>[0]);
-    case 'reachable':
-      return checkReachableTool(rest as unknown as Parameters<typeof checkReachableTool>[0]);
-    case 'mounting-holes':
-      return checkMountingHoleConsistencyTool(
-        rest as Parameters<typeof checkMountingHoleConsistencyTool>[0],
-      );
-    case 'load-capacity':
-      return checkLoadCapacityTool(rest as Parameters<typeof checkLoadCapacityTool>[0]);
-    case 'static-hold':
-      return checkStaticHoldTool(rest as unknown as Parameters<typeof checkStaticHoldTool>[0]);
-    case 'fastener-installation':
-      return checkFastenerInstallationTool(rest as unknown as Parameters<typeof checkFastenerInstallationTool>[0]);
-    case 'edge-radius':
-      return checkEdgeRadiusTool(rest as Parameters<typeof checkEdgeRadiusTool>[0]);
-    case 'body-likeness':
-      return checkBodyLikenessTool(rest as unknown as Parameters<typeof checkBodyLikenessTool>[0]);
-    default:
-      // Reject (not sync-throw) so the function honors its Promise return type
-      // for every input — callers can rely on `.catch(...)`.
-      return Promise.reject(
-        new Error(
-          `Unknown verify check: ${String(check)}. Valid: assembly, urdf, dfm, ` +
-            `dfm-preflight, swept-collision, reachable, mounting-holes, load-capacity, static-hold, body-likeness, fastener-installation, geometry-quality, assembly-path, edge-radius.`,
-        ),
-      );
-  }
+  const handler = Object.prototype.hasOwnProperty.call(HANDLERS, check) ? HANDLERS[check] : undefined;
+  if (handler !== undefined) return handler(rest);
+  // Reject (not sync-throw) so the function honors its Promise return type
+  // for every input — callers can rely on `.catch(...)`.
+  return Promise.reject(
+    new Error(
+      `Unknown verify check: ${String(check)}. Valid: assembly, urdf, dfm, ` +
+        `dfm-preflight, swept-collision, reachable, mounting-holes, load-capacity, static-hold, motion-load, body-likeness, fastener-installation, geometry-quality, assembly-path, edge-radius.`,
+    ),
+  );
 }

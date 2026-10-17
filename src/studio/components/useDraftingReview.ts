@@ -3,8 +3,11 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { DRAFTING_PROFILES, type DraftingProfile, type DrawingAnnotationOverride } from '../../shared/intent/drafting';
 import { DraftingSettingsSchema } from '../../authoring/draftingSettings';
 import type { DrawingReportAnnotation } from '../../kernel/backends/occt/drawingAuto/contracts';
-import { draftingCriteriaFingerprint, effectiveDecisionResolutions, draftingOptionsForSource, loadDraftingProfiles, saveDraftingProfile, sourceFingerprint, type DraftingSettings, type StudioDrawingOptions } from '../draftingSettings';
+import { draftingCriteriaFingerprint, effectiveDecisionResolutions, draftingOptionsForSource, loadDraftingProfiles, placedDimensionId, saveDraftingProfile, sourceFingerprint, type DraftingSettings, type StudioDrawingOptions } from '../draftingSettings';
+import type { PlacedLinearDimension } from '../../authoring/draftingSettings';
+import { svgSheetsToPdf } from '../../kernel/export/pdf/svgSheetToPdf';
 import { downloadBlob, exportErrorText, exportViaServer, isExportAbort, previewDrawingViaServer, type DrawingPreviewResult } from '../exportViaServer';
+import { injectEdgeDimensions } from './edgeDimensionSheet';
 import { useFunctionalDrawingReview } from './useFunctionalDrawingReview';
 import { useExportTask } from '../hooks/useExportTask';
 
@@ -20,6 +23,7 @@ function initialSettings(code: string, settings?: DraftingSettings): DraftingSet
   return { sourceFingerprint: sourceFingerprint(code), draftingProfile: settings?.draftingProfile ?? 'general',
     dimensioningStyle: settings?.dimensioningStyle ?? 'baseline', annotationOverrides: sameSource ? settings.annotationOverrides : {},
     ...(sameSource && settings.datums ? { datums: settings.datums } : {}),
+    ...(sameSource && settings.placedDimensions?.length ? { placedDimensions: settings.placedDimensions } : {}),
     ...(sameSource && effectiveDecisionResolutions(settings) ? { decisionResolutions: effectiveDecisionResolutions(settings), decisionCriteriaFingerprint: settings.decisionCriteriaFingerprint } : {}) };
 }
 
@@ -166,8 +170,27 @@ export function useDraftingReview({ code, settings, onChange }: DraftingReviewPr
     if (!functional.reviewed) return;
     return task.start('Reviewed drawing (PDF)', (transport) => exportViaServer('pdf-drawing', code, { ...transport, drawingOptions: { ...choiceState.options, requireCompleteReview: true } }), downloadBlob);
   };
-  const exportPdf = () => task.start('Drawing (PDF)', (transport) => exportViaServer('pdf-drawing', code, { ...transport, drawingOptions: choiceState.options }), downloadBlob);
-  return { drawing, profiles, annotations, functional, task, stale, resetSourceChoices, error, exportPdf, exportReviewedPdf };
+  const exportPdf = () => {
+    const placed = choiceState.choices.placedDimensions ?? [];
+    const svg = drawing.preview?.svg;
+    if (svg && placed.length > 0) {
+      const marked = injectEdgeDimensions(svg, placed);
+      const bytes = svgSheetsToPdf([marked], { title: 'Drawing', creator: 'kernelCAD' });
+      downloadBlob(new Blob([Uint8Array.from(bytes)], { type: 'application/pdf' }), 'drawing.pdf');
+      return;
+    }
+    return task.start('Drawing (PDF)', (transport) => exportViaServer('pdf-drawing', code, { ...transport, drawingOptions: choiceState.options }), downloadBlob);
+  };
+  const placeEdge = (edge: Omit<PlacedLinearDimension, 'id'>) => {
+    const id = placedDimensionId(edge.view, edge.from, edge.to);
+    const placedDimensions = [...(choiceState.choices.placedDimensions ?? []).filter((d) => d.id !== id), { ...edge, id }];
+    update({ ...choiceState.choices, placedDimensions });
+  };
+  const removePlaced = (id: string) => {
+    update({ ...choiceState.choices, placedDimensions: (choiceState.choices.placedDimensions ?? []).filter((d) => d.id !== id) });
+  };
+  return { drawing, profiles, annotations, functional, task, stale, resetSourceChoices, error, exportPdf, exportReviewedPdf,
+    placed: choiceState.choices.placedDimensions ?? [], placeEdge, removePlaced };
 }
 
 export type DraftingReviewState = ReturnType<typeof useDraftingReview>;

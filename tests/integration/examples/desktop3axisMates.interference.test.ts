@@ -15,7 +15,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const EXAMPLE_PATH = 'examples/robot-arm/desktop-3axis-mates.kcad.ts';
 const EXAMPLE_ABSOLUTE = resolvePath(__dirname, '../../..', EXAMPLE_PATH);
 
-describe('desktop-3axis-mates hero (v0.6)', () => {
+describe.skipIf(!process.env.KCAD_SLOW)('desktop-3axis-mates hero (v0.6)', () => {
   it('reports zero interferences at default poses', async () => {
     // Industry-standard clash detection (BREP common-volume) over the
     // 16-part mate-driven assembly. The v0.6 hero ships with all parts

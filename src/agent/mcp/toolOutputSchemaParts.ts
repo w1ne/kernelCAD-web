@@ -74,5 +74,20 @@ export const MECHANISM_SUMMARY: Record<string, unknown> = {
         properties: { code: { type: 'string' }, reason: { type: 'string' }, joint: { type: 'string' }, part: { type: 'string' } },
       },
     },
+    loads: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['maxLevel', 'statement'],
+      description: "Motion-load line, present when a mechanicalJoint declares torqueNm. Full table: verify({ check: 'motion-load' }).",
+      properties: {
+        maxLevel: { type: 'string', enum: ['ok', 'warning', 'error'] },
+        statement: { type: 'string' },
+        joints: {
+          type: 'array',
+          description: 'Compact per-joint loads for the Studio Loads panel: peaks, support radial loads, and [tMs, torqueNm] pairs.',
+          items: { type: 'object', additionalProperties: true, required: ['joint', 'peakTorqueNm'] },
+        },
+      },
+    },
   },
 };

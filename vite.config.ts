@@ -242,6 +242,8 @@ function kernelCadMeshEndpoint(): Plugin {
         }
       }
 
+      let lastEditedModel: import('./src/modeling/buildModel').BuiltModel | undefined;
+
       server.middlewares.use('/__kernelcad/mesh', async (req, res) => {
         try {
           const url = new URL(req.url ?? '', 'http://localhost');
@@ -261,7 +263,7 @@ function kernelCadMeshEndpoint(): Plugin {
 
           ensureOcctShims();
 
-          const [{ loadScriptFeatures }, { meshFeaturesPerFeature }, { serializeForBridge }, { runScript }, { resolveRootId }] = await Promise.all([
+          const [{ loadScriptFeatures }, { meshFeaturesPerFeature }, { serializeForBridge }, { runScript }, { resolveRootId, modelForEditedMesh }] = await Promise.all([
             import('./src/modeling/runtime/scriptLoader'),
             import('./src/modeling/capture/featureMeshing'),
             import('./src/modeling/capture/featureMeshSerialize'),
@@ -307,6 +309,23 @@ function kernelCadMeshEndpoint(): Plugin {
               return;
             }
             source = parsedBody.source;
+            const hasParamOverrides = !!parsedBody.params && typeof parsedBody.params === 'object';
+            // Typing in the editor is usually an append. Reuse the previous
+            // build's solids and triangle meshes when the prefix is provably
+            // unchanged. A slider override is a different build and does not
+            // seed the next edit.
+            if (!hasParamOverrides) {
+              const next = await modelForEditedMesh(lastEditedModel, {
+                code: source,
+                fileName: 'studio-edit.kcad.ts',
+                scriptDir: resolve(repoRoot, 'examples'),
+              });
+              lastEditedModel = next;
+              records = next.records;
+              paramTable = next.session.paramTable;
+              meshSession = next.session as unknown as typeof meshSession;
+              rootId = next.rootId;
+            } else {
             // Compile straight from the source string (no file). scriptDir =
             // examples root so any relative asset paths resolve the same way
             // a shipped example would.
@@ -332,6 +351,8 @@ function kernelCadMeshEndpoint(): Plugin {
             }
             meshSession = run.session as unknown as typeof meshSession;
             rootId = resolveRootId(run.returnValue, records.at(-1)?.id);
+            lastEditedModel = undefined;
+            }
           } else if (sessionToken) {
             const bundle = await getPoolBundle();
             const entry = bundle.pool.get(sessionToken);

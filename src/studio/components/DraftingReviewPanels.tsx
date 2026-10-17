@@ -1,19 +1,32 @@
 // SPDX-License-Identifier: MIT
+import type { RefObject } from 'react';
 import type { DraftingProfile, DimensioningStyle, DraftingView } from '../../shared/intent/drafting';
 import type { DraftingReviewState } from './useDraftingReview';
+import { DrawingSheetViewport, type DrawingSheetHandle } from './DrawingSheetViewport';
 import { BUTTON, INPUT } from './draftingReviewStyles';
 
-export function DrawingPreviewPane({ state }: { state: DraftingReviewState }) {
-  const { stale, resetSourceChoices, drawing: { preview, previewUrl }, annotations: { missing } } = state;
-  return <div className="flex min-h-[260px] flex-col gap-3 bg-surface-2 p-3">
-    {stale && <div className="flex flex-col gap-2"><p role="status" className="text-ui text-warn">Source changed. Saved annotation, datum and decision overrides were withheld; review the new drawing.</p>
-      <button type="button" className={`${BUTTON} self-start`} onClick={resetSourceChoices}>Reset source-bound choices</button></div>}
-    {missing.length > 0 && <p role="status" className="text-ui text-warn">Overrides no longer match: {missing.join(', ')}. Reset those overrides before release.</p>}
-    {previewUrl ? <img src={previewUrl} alt="Engineering drawing preview" className="w-full bg-white" />
-      : <p className="my-auto text-center text-ui text-fg-3">Generate the sheet to review dimensions and callouts.</p>}
-    {preview?.drawingReport && <p className="text-ui text-fg-2">{preview.drawingReport.placed} placed · {preview.drawingReport.overlapped} crowded · {preview.drawingReport.suppressed ?? 0} hidden</p>}
-    {preview && !preview.drawingReport && <p className="text-ui text-warn">No annotation report was returned. Generate another preview to review its callouts.</p>}
-    {preview?.diagnostics.map((d, i) => <p key={`${d.code}:${i}`} className="text-2xs text-warn">{d.message}</p>)}
+export function DrawingPreviewPane({ state, sheetRef }: { state: DraftingReviewState; sheetRef: RefObject<DrawingSheetHandle | null> }) {
+  const { stale, resetSourceChoices, drawing: { preview }, annotations } = state;
+  const { missing } = annotations;
+  return <div className="relative flex h-full min-h-[320px] min-w-0 flex-col bg-guide-grey">
+    {(stale || missing.length > 0 || preview) && <div className="flex shrink-0 flex-col gap-2 bg-surface-2/95 p-3">
+      {stale && <div className="flex flex-col gap-2"><p role="status" className="text-ui text-warn">Source changed. Saved annotation, datum and decision overrides were withheld; review the new drawing.</p>
+        <button type="button" className={`${BUTTON} self-start`} onClick={resetSourceChoices}>Reset source-bound choices</button></div>}
+      {missing.length > 0 && <p role="status" className="text-ui text-warn">Overrides no longer match: {missing.join(', ')}. Reset those overrides before release.</p>}
+      {preview?.drawingReport && <p className="text-ui text-fg-2">{preview.drawingReport.placed} placed · {preview.drawingReport.overlapped} crowded · {preview.drawingReport.suppressed ?? 0} hidden</p>}
+      {preview && !preview.drawingReport && <p className="text-ui text-warn">No annotation report was returned. Generate another preview to review its callouts.</p>}
+      {preview?.diagnostics.map((d, i) => <p key={`${d.code}:${i}`} className="text-2xs text-warn">{d.message}</p>)}
+    </div>}
+    {preview?.svg
+      ? <div className="relative min-h-0 flex-1">
+          <DrawingSheetViewport ref={sheetRef} svg={preview.svg} selectedId={annotations.selected} onSelect={annotations.setSelected} onPlaceEdge={state.placeEdge} placed={state.placed} />
+          {annotations.annotation && <aside aria-label="Annotation" className="absolute right-3 top-3 z-10 max-h-[calc(100%-4.5rem)] w-72 overflow-auto rounded-panel border border-border bg-surface-1 p-3 text-fg shadow-2xl">
+            <h3 className="font-medium">{annotations.annotation.kind} · {annotations.annotation.view}</h3>
+            <p className="mb-2 text-2xs text-fg-3">Edits apply to the PDF now. Refresh the sheet to see the new placement.</p>
+            <AnnotationEditor state={annotations} />
+          </aside>}
+        </div>
+      : <p className="m-auto text-center text-ui text-fg-3">Generate the sheet to review dimensions and callouts.</p>}
   </div>;
 }
 
@@ -55,10 +68,10 @@ export function ProfileControls({ state }: { state: DraftingReviewState['profile
   </>;
 }
 
-function AnnotationList({ state }: { state: DraftingReviewState['annotations'] }) {
+function AnnotationList({ state, onShow }: { state: DraftingReviewState['annotations']; onShow?: (id: string) => void }) {
   const { annotations, selected, setSelected } = state;
-  return <ul className="flex max-h-48 flex-col gap-1 overflow-auto">{annotations.map((a) => <li key={a.id}>
-    <button type="button" className={`${BUTTON} w-full text-left ${a.id === selected ? 'bg-surface-3' : ''}`} onClick={() => setSelected(a.id)}>
+  return <ul className="flex max-h-72 flex-col gap-1 overflow-auto">{annotations.map((a) => <li key={a.id}>
+    <button type="button" className={`${BUTTON} w-full text-left ${a.id === selected ? 'bg-surface-3' : ''}`} onClick={() => { setSelected(a.id); onShow?.(a.id); }}>
       <span className="block">{a.text || a.originalText || a.kind}{a.suppressed ? ' (hidden)' : ''}</span>
       <span className="text-2xs text-fg-3">{a.view} · {a.source}{a.overlapped ? ' · crowded' : ''}</span>
     </button></li>)}</ul>;
@@ -67,7 +80,7 @@ function AnnotationList({ state }: { state: DraftingReviewState['annotations'] }
 function AnnotationEditor({ state }: { state: DraftingReviewState['annotations'] }) {
   const { annotation, override, annotationText, editAnnotation, resetAnnotation } = state;
   if (!annotation) return null;
-  return <div className="mt-3 flex flex-col gap-2">
+  return <div className="flex flex-col gap-2">
     <label><input type="checkbox" checked={override.suppress ?? annotation.suppressed ?? false} onChange={(e) => editAnnotation({ suppress: e.target.checked })} /> Hide annotation</label>
     <label>Annotation text<input className={INPUT} disabled={['datum', 'flatness', 'tolerance', 'fcf'].includes(annotation.kind)} value={override.text ?? annotationText} onChange={(e) => editAnnotation({ text: e.target.value })} /></label>
     <label>Annotation view<select className={INPUT} value={override.view ?? annotation.view} onChange={(e) => editAnnotation({ view: e.target.value as DraftingView })}>
@@ -78,11 +91,23 @@ function AnnotationEditor({ state }: { state: DraftingReviewState['annotations']
   </div>;
 }
 
-export function AnnotationControls({ state }: { state: DraftingReviewState['annotations'] }) {
+export function AnnotationControls({ state, placed, onRemovePlaced, onShow }: {
+  state: DraftingReviewState['annotations'];
+  placed: DraftingReviewState['placed'];
+  onRemovePlaced: (id: string) => void;
+  onShow?: (id: string) => void;
+}) {
   return <div className="border-t border-border pt-3">
     <h3 className="mb-2 font-medium">Annotations</h3>
-    <AnnotationList state={state} />
-    <AnnotationEditor state={state} />
+    <p className="mb-2 text-2xs text-fg-3">Dimension, then click a straight edge in the front, top, or left view. The size is drawn on that edge and included in the PDF.</p>
+    <AnnotationList state={state} onShow={onShow} />
+    {placed.length > 0 && <ul className="mt-2 flex flex-col gap-1">
+      {placed.map((dimension) => <li key={dimension.id}>
+        <button type="button" className={`${BUTTON} w-full text-left`} onClick={() => onRemovePlaced(dimension.id)}>
+          {dimension.view} edge · remove
+        </button>
+      </li>)}
+    </ul>}
     {state.missing.length > 0 && <button type="button" className={`${BUTTON} mt-2`} onClick={state.clearMissing}>Clear missing overrides</button>}
   </div>;
 }

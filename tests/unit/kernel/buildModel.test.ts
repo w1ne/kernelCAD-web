@@ -2,9 +2,11 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   buildModel,
   buildModelFromFile,
+  modelForEditedMesh,
   rebuildModelIncremental,
   updateModelParams,
 } from '../../../src/modeling/buildModel';
+import { meshFeaturesPerFeature } from '../../../src/modeling/capture/featureMeshing';
 import type { OcctBackend } from '../../../src/kernel/backends/occt/occtBackend';
 import * as occtLowererModule from '../../../src/modeling/backends/occt/occtLowerer';
 
@@ -160,6 +162,34 @@ function instrumentLoweredIds(): { loweredIds: Set<string>; restore: () => void 
 
 // Captured BEFORE any spy replaces the export, so the spy can call through.
 const realCreateOcctLowerer = occtLowererModule.createOcctLowerer;
+
+describe('modelForEditedMesh', () => {
+  const PREFIX = `
+    const base = box(20, 20, 5);
+    const rounded = base.fillet(1);
+    return rounded;
+  `;
+  const APPENDED = `
+    const base = box(20, 20, 5);
+    const rounded = base.fillet(1);
+    const post = box(4, 4, 30);
+    return rounded.union(post);
+  `;
+
+  it('reuses the prefix triangle mesh when the script only appends', async () => {
+    const prev = await buildModel({ fileName: 'm.kcad.ts', code: PREFIX });
+    const first = await meshFeaturesPerFeature(prev.records, prev.session.paramTable, prev.session);
+    const fillet = first.features.find(f => f.featureKind === 'fillet');
+    expect(fillet).toBeDefined();
+
+    const next = await modelForEditedMesh(prev, { fileName: 'm.kcad.ts', code: APPENDED });
+    const second = await meshFeaturesPerFeature(next.records, next.session.paramTable, next.session);
+    const again = second.features.find(f => f.featureId === fillet!.featureId);
+    expect(again?.faces).toBe(fillet!.faces);
+    expect(second.features.length).toBeGreaterThan(first.features.length);
+    expect(second.failedFeatureIds).toEqual([]);
+  });
+});
 
 describe('rebuildModelIncremental', () => {
   const PREFIX = `

@@ -75,6 +75,65 @@ describe('meshShape', () => {
     expect(result!.edges).toBeInstanceOf(Float32Array);
     expect(result!.edges!.length).toBeGreaterThan(0);
   });
+
+  it('one solid mesh matches per-face triangle counts', () => {
+    const perShape = replicad.makeBaseBox(10, 20, 30);
+    let perTris = 0;
+    let perFaces = 0;
+    perShape.faces.forEach((face, faceId) => {
+      const geometry = meshFaceToGeometry(face, faceId, FINE_MESH_OPTIONS);
+      if (!geometry) return;
+      perFaces += 1;
+      perTris += geometry.indices.length / 3;
+    });
+    const once = meshShape(replicad.makeBaseBox(10, 20, 30), FINE_MESH_OPTIONS);
+    expect(once).not.toBeNull();
+    expect(once!.faces).toHaveLength(perFaces);
+    expect(triCount(once!)).toBe(perTris);
+
+    const parts = [];
+    for (let i = 0; i < 4; i++) parts.push(replicad.makeBaseBox(8, 8, 8).translate(i * 12, 0, 0));
+    const compound = meshShape(replicad.compoundShapes(parts), FINE_MESH_OPTIONS);
+    expect(compound).not.toBeNull();
+    expect(compound!.faces).toHaveLength(24);
+    expect(triCount(compound!)).toBeGreaterThan(0);
+  });
+
+  it('marks every box face as a plane and does not invent a cylinder on a sphere', () => {
+    const box = meshShape(replicad.makeBaseBox(10, 10, 10), FINE_MESH_OPTIONS);
+    expect(box).not.toBeNull();
+    expect(box!.faces.length).toBe(6);
+    for (const face of box!.faces) {
+      expect(face.plane).toBeDefined();
+      expect(face.cylinder).toBeUndefined();
+    }
+    const sphere = meshShape(replicad.makeSphere(12), FINE_MESH_OPTIONS);
+    expect(sphere).not.toBeNull();
+    for (const face of sphere!.faces) {
+      expect(face.plane).toBeUndefined();
+      expect(face.cylinder).toBeUndefined();
+    }
+  });
+
+  it('planar face axes match makePlaneFromFace', () => {
+    const reference = replicad.makeBaseBox(10, 20, 30);
+    const meshed = meshShape(replicad.makeBaseBox(10, 20, 30), FINE_MESH_OPTIONS);
+    expect(meshed).not.toBeNull();
+    reference.faces.forEach((face, i) => {
+      const made = replicad.makePlaneFromFace(face);
+      const plane = meshed!.faces[i]?.plane;
+      expect(plane).toBeDefined();
+      expect(plane!.normal[0]).toBeCloseTo(made.zDir.x, 5);
+      expect(plane!.normal[1]).toBeCloseTo(made.zDir.y, 5);
+      expect(plane!.normal[2]).toBeCloseTo(made.zDir.z, 5);
+      expect(plane!.xDir![0]).toBeCloseTo(made.xDir.x, 5);
+      expect(plane!.xDir![1]).toBeCloseTo(made.xDir.y, 5);
+      expect(plane!.xDir![2]).toBeCloseTo(made.xDir.z, 5);
+      expect(plane!.yDir![0]).toBeCloseTo(made.yDir.x, 5);
+      expect(plane!.yDir![1]).toBeCloseTo(made.yDir.y, 5);
+      expect(plane!.yDir![2]).toBeCloseTo(made.yDir.z, 5);
+    });
+  });
 });
 
 /** A minimal face-shaped stub: `meshFaceToGeometry` only needs `mesh()` to

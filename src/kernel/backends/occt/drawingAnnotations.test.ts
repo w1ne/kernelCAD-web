@@ -274,9 +274,15 @@ describe('exportSvgDrawing annotations', () => {
       'utf8',
     );
     const opts = { format: 'svg-drawing' as const, modelName: 'plate' };
-    expect(decode(exportSvgDrawing(plate(), opts))).toBe(golden);
+    // `data-kc-edges` and the view transform mark straight edges for the
+    // dimension tool. They do not change the geometry the golden fixture records.
+    const geometry = (svg: string) => svg.replace(/ data-kc-(?:tx|ty|s|edges)="[^"]*"/g, '');
+    const raw = decode(exportSvgDrawing(plate(), opts));
+    expect(raw).toContain('data-view="front"');
+    expect(raw).toContain('data-kc-edges=');
+    expect(geometry(raw)).toBe(golden);
     // An explicitly empty array must take the same path as an absent one.
-    expect(decode(exportSvgDrawing(plate(), { ...opts, annotations: [] }))).toBe(golden);
+    expect(geometry(decode(exportSvgDrawing(plate(), { ...opts, annotations: [] })))).toBe(golden);
     // Sanity: the golden really does carry the three bbox dimensions.
     expect((golden.match(/class="dim"/g) ?? []).length).toBe(3);
     expect(golden).toContain('>60</text>');
@@ -298,6 +304,19 @@ describe('exportSvgDrawing annotations', () => {
     expect(svg).toContain('>BREAK EDGES</text>');
     // The height/depth bbox dims are gone.
     expect(svg).not.toContain('>40</text>');
+  });
+
+  it('draws a placed edge dimension beside that edge', () => {
+    const svg = decode(exportSvgDrawing(plate(), {
+      format: 'svg-drawing',
+      annotations: [{ kind: 'linear', id: 'width', from: [0, 0, 0], to: [60, 0, 0], view: 'front', edgeGap: 14 }],
+    }));
+    const front = svg.slice(svg.indexOf('id="view-front"'), svg.indexOf('id="view-top"'));
+    const ty = Number(/data-kc-ty="([^"]+)"/.exec(front)?.[1]);
+    const y = Math.round((ty + 14) * 1000) / 1000;
+    expect(svg).toContain('data-kc-annotation-id="authored:width"');
+    expect(svg).toContain(`y1="${y}"`);
+    expect(svg).toContain('>60</text>');
   });
 
   it('renders diameter and radius callouts off a circular edge query', () => {

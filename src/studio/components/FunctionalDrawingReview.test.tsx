@@ -48,7 +48,7 @@ describe('functional drawing review', () => {
     vi.mocked(exporter.previewDrawingViaServer).mockResolvedValue(preview({ ...complete, status: 'not-declared' }));
     render(<DraftingReview code="model" onChange={() => {}} onClose={() => {}} />);
     fireEvent.click(button('Generate preview'));
-    await screen.findByRole('img', { name: 'Engineering drawing preview' });
+    await screen.findByRole('region', { name: 'Engineering drawing preview' });
     expect(screen.queryByRole('button', { name: 'Mark reviewed' })).toBeNull();
   });
   it('records only explicit nonempty decision intent and provenance under the engine key', async () => {
