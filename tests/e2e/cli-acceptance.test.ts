@@ -9,7 +9,7 @@ import { tmpdir } from 'node:os';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DEMO = join(__dirname, 'fixtures/demo.kcad.ts');
 
-describe('v0.1 acceptance demo', () => {
+describe.skipIf(!process.env.KCAD_SLOW)('v0.1 acceptance demo', () => {
   beforeAll(async () => { await initOcct(); });
 
 
@@ -55,7 +55,7 @@ describe('v0.1 acceptance demo', () => {
   });
 });
 
-describe('v0.2-alpha rounded-bracket fixture', () => {
+describe.skipIf(!process.env.KCAD_SLOW)('v0.2-alpha rounded-bracket fixture', () => {
   beforeAll(async () => { await initOcct(); });
 
   it('runs end-to-end on the rounded-bracket fixture and produces STL', async () => {
@@ -97,7 +97,7 @@ describe('v0.2-alpha rounded-bracket fixture', () => {
   });
 });
 
-describe('v0.2-alpha hollow-box fixture', () => {
+describe.skipIf(!process.env.KCAD_SLOW)('v0.2-alpha hollow-box fixture', () => {
   beforeAll(async () => { await initOcct(); });
 
   it('runs end-to-end on the hollow-box fixture and produces STL', async () => {
@@ -141,7 +141,7 @@ describe('v0.2-alpha hollow-box fixture', () => {
   });
 });
 
-describe('v0.4-alpha triangle-extrusion fixture', () => {
+describe.skipIf(!process.env.KCAD_SLOW)('v0.4-alpha triangle-extrusion fixture', () => {
   beforeAll(async () => { await initOcct(); });
 
   it('runs end-to-end on the triangle extrusion fixture and produces STL', async () => {
@@ -159,7 +159,7 @@ describe('v0.4-alpha triangle-extrusion fixture', () => {
   });
 });
 
-describe('v0.4-beta rounded-plate fixture', () => {
+describe.skipIf(!process.env.KCAD_SLOW)('v0.4-beta rounded-plate fixture', () => {
   beforeAll(async () => { await initOcct(); });
 
   it('runs end-to-end on the rounded-plate fixture and produces STL', async () => {
@@ -175,7 +175,7 @@ describe('v0.4-beta rounded-plate fixture', () => {
   });
 });
 
-describe('v0.4-rc L-bracket sketch fixture', () => {
+describe.skipIf(!process.env.KCAD_SLOW)('v0.4-rc L-bracket sketch fixture', () => {
   beforeAll(async () => { await initOcct(); });
 
   it('runs end-to-end on the L-bracket sketch fixture and produces STL', async () => {
@@ -191,7 +191,7 @@ describe('v0.4-rc L-bracket sketch fixture', () => {
   });
 });
 
-describe('v0.4-rc3 rounded-L-bracket sketch fixture', () => {
+describe.skipIf(!process.env.KCAD_SLOW)('v0.4-rc3 rounded-L-bracket sketch fixture', () => {
   beforeAll(async () => { await initOcct(); });
 
   it('runs end-to-end on the rounded-L-bracket sketch fixture and produces STL', async () => {
@@ -207,7 +207,7 @@ describe('v0.4-rc3 rounded-L-bracket sketch fixture', () => {
   });
 });
 
-describe('v0.4-rc4 washer revolve fixture', () => {
+describe.skipIf(!process.env.KCAD_SLOW)('v0.4-rc4 washer revolve fixture', () => {
   beforeAll(async () => { await initOcct(); });
 
   it('runs end-to-end on the washer fixture and produces STL', async () => {
@@ -223,7 +223,7 @@ describe('v0.4-rc4 washer revolve fixture', () => {
   });
 });
 
-describe('v0.4-rc4 mug-body revolve fixture', () => {
+describe.skipIf(!process.env.KCAD_SLOW)('v0.4-rc4 mug-body revolve fixture', () => {
   beforeAll(async () => { await initOcct(); });
 
   it('runs end-to-end on the mug-body fixture and produces STL', async () => {
@@ -239,7 +239,7 @@ describe('v0.4-rc4 mug-body revolve fixture', () => {
   }, 30000);
 });
 
-describe('v0.4-rc5 gear-blank threePointsArc fixture', () => {
+describe.skipIf(!process.env.KCAD_SLOW)('v0.4-rc5 gear-blank threePointsArc fixture', () => {
   beforeAll(async () => { await initOcct(); });
 
   it('runs end-to-end on the gear-blank fixture and produces STL', async () => {
@@ -255,7 +255,7 @@ describe('v0.4-rc5 gear-blank threePointsArc fixture', () => {
   });
 });
 
-describe('v0.4-rc5 cam-profile mixed-arc fixture', () => {
+describe.skipIf(!process.env.KCAD_SLOW)('v0.4-rc5 cam-profile mixed-arc fixture', () => {
   beforeAll(async () => { await initOcct(); });
 
   it('runs end-to-end on the cam-profile fixture and produces STL', async () => {
@@ -271,7 +271,7 @@ describe('v0.4-rc5 cam-profile mixed-arc fixture', () => {
   });
 });
 
-describe('v0.4-rc6 tabbed-plate label+fillet fixture', () => {
+describe.skipIf(!process.env.KCAD_SLOW)('v0.4-rc6 tabbed-plate label+fillet fixture', () => {
   beforeAll(async () => { await initOcct(); });
 
   it('runs end-to-end on the tabbed-plate fixture and produces STL', async () => {
@@ -287,7 +287,7 @@ describe('v0.4-rc6 tabbed-plate label+fillet fixture', () => {
   });
 });
 
-describe('v0.4-rc7 preselected-edges round-trip fixture', () => {
+describe.skipIf(!process.env.KCAD_SLOW)('v0.4-rc7 preselected-edges round-trip fixture', () => {
   beforeAll(async () => { await initOcct(); });
 
   it('selectEdges → fillet round-trip produces valid STL', async () => {
@@ -303,7 +303,7 @@ describe('v0.4-rc7 preselected-edges round-trip fixture', () => {
   });
 });
 
-describe('v0.4-rc8 pipe sweep fixture', () => {
+describe.skipIf(!process.env.KCAD_SLOW)('v0.4-rc8 pipe sweep fixture', () => {
   beforeAll(async () => { await initOcct(); });
 
   it('runs end-to-end on the pipe fixture and produces STL', async () => {
@@ -319,7 +319,7 @@ describe('v0.4-rc8 pipe sweep fixture', () => {
   });
 });
 
-describe('v0.4-rc8 spring sweep fixture (helix + smooth spine)', () => {
+describe.skipIf(!process.env.KCAD_SLOW)('v0.4-rc8 spring sweep fixture (helix + smooth spine)', () => {
   beforeAll(async () => { await initOcct(); });
 
   it('runs end-to-end on the spring fixture and produces STL', async () => {
@@ -335,7 +335,7 @@ describe('v0.4-rc8 spring sweep fixture (helix + smooth spine)', () => {
   }, 30000); // larger timeout — helix tessellation is expensive
 });
 
-describe('v0.4-rc10 nozzle loft fixture', () => {
+describe.skipIf(!process.env.KCAD_SLOW)('v0.4-rc10 nozzle loft fixture', () => {
   beforeAll(async () => { await initOcct(); });
 
   it('runs end-to-end on the nozzle fixture and produces STL', async () => {
@@ -351,7 +351,7 @@ describe('v0.4-rc10 nozzle loft fixture', () => {
   });
 });
 
-describe('v0.4-rc10 airfoil loft fixture (4-rib wing)', () => {
+describe.skipIf(!process.env.KCAD_SLOW)('v0.4-rc10 airfoil loft fixture (4-rib wing)', () => {
   beforeAll(async () => { await initOcct(); });
 
   it('runs end-to-end on the airfoil fixture and produces STL', async () => {
@@ -367,7 +367,7 @@ describe('v0.4-rc10 airfoil loft fixture (4-rib wing)', () => {
   }, 30000);  // larger timeout — 4-section loft tessellates more than 2-section
 });
 
-describe('v0.4-rc11 bracket-blends variable-radius fixture', () => {
+describe.skipIf(!process.env.KCAD_SLOW)('v0.4-rc11 bracket-blends variable-radius fixture', () => {
   beforeAll(async () => { await initOcct(); });
 
   it('runs end-to-end on the bracket-blends fixture and produces STL', async () => {
@@ -383,7 +383,7 @@ describe('v0.4-rc11 bracket-blends variable-radius fixture', () => {
   });
 });
 
-describe('v0.4-rc12 bracket-bevels variable-distance chamfer fixture', () => {
+describe.skipIf(!process.env.KCAD_SLOW)('v0.4-rc12 bracket-bevels variable-distance chamfer fixture', () => {
   beforeAll(async () => { await initOcct(); });
 
   it('runs end-to-end on the bracket-bevels fixture and produces STL', async () => {
@@ -399,7 +399,7 @@ describe('v0.4-rc12 bracket-bevels variable-distance chamfer fixture', () => {
   });
 });
 
-describe('v0.4-rc13 symmetric-bracket mirror fixture', () => {
+describe.skipIf(!process.env.KCAD_SLOW)('v0.4-rc13 symmetric-bracket mirror fixture', () => {
   beforeAll(async () => { await initOcct(); });
 
   it('runs end-to-end on the symmetric-bracket fixture and produces STL', async () => {

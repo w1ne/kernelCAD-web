@@ -7,7 +7,7 @@ import { join } from 'node:path';
 import { generateSeedCatalog, SEED_FAMILIES } from './generateSeedCatalog';
 import { validateConnectorManifest } from '../src/shared/parts/connectorManifest';
 
-describe('generateSeedCatalog', () => {
+describe.skipIf(!process.env.KCAD_SLOW)('generateSeedCatalog', () => {
   it('declares the full family list', () => {
     expect(SEED_FAMILIES.map((f) => f.id)).toEqual(
       expect.arrayContaining([

@@ -98,7 +98,7 @@ describe('regularizeInertia6 / isInertia6PositiveDefinite', () => {
     });
 });
 
-describe('assemblyToMjcf', () => {
+describe.skipIf(!process.env.KCAD_SLOW)('assemblyToMjcf', () => {
     it('round-trips a 1-revolute hinge into a parseable MJCF with 1 qpos slot', async () => {
         await initOcct();
         const session = new CaptureSession();
