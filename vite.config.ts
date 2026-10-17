@@ -865,6 +865,79 @@ function kernelCadMeshEndpoint(): Plugin {
           }));
         }
       });
+
+      // BOM dev endpoint (BOM order spec, S2): a thin delegate to
+      // `inspectBomTool` so the Studio Parts tab fetches the same numbers as
+      // `inspect({ of: 'bom' })`. The rows carry capture-time fields
+      // (process / processSource) that cannot be recomputed browser-side.
+      server.middlewares.use('/__kernelcad/bom', async (req, res) => {
+        try {
+          const url = new URL(req.url ?? '', 'http://localhost');
+
+          // POST { source } inspects ARBITRARY edited code (the Studio
+          // Parts-tab candidate path) through the same inspectBomTool the
+          // GET path uses. The `script` query param is optional here: it
+          // only anchors relative asset resolution, so a missing/unknown
+          // script falls back to the examples root instead of 400ing.
+          if ((req.method ?? 'GET').toUpperCase() === 'POST') {
+            const { readBody } = await import('./src/server/middleware/httpUtil');
+            let parsedBody: { source?: unknown };
+            try {
+              parsedBody = JSON.parse(
+                (await readBody(req as unknown as NodeJS.ReadableStream, 1_000_000)) || '{}',
+              );
+            } catch (error) {
+              const message = error instanceof Error ? error.message : String(error);
+              if (/too large/.test(message)) {
+                res.statusCode = 413;
+                res.setHeader('content-type', 'application/json');
+                res.end(JSON.stringify({ error: message }));
+                return;
+              }
+              res.statusCode = 400;
+              res.setHeader('content-type', 'application/json');
+              res.end(JSON.stringify({ error: 'POST body must be JSON { source: string }' }));
+              return;
+            }
+            if (typeof parsedBody.source !== 'string' || parsedBody.source.length === 0) {
+              res.statusCode = 400;
+              res.setHeader('content-type', 'application/json');
+              res.end(JSON.stringify({ error: 'POST body must include a non-empty "source" string' }));
+              return;
+            }
+            // Same Emscripten shim the mesh/review paths need: the BOM
+            // request can be the first one hitting the node kernel.
+            ensureOcctShims();
+            const { inspectBomTool } = await import('./src/agent/mcp/tools/inspectBom');
+            const bom = await inspectBomTool({ code: parsedBody.source });
+            res.statusCode = 200;
+            res.setHeader('content-type', 'application/json');
+            res.end(JSON.stringify(bom));
+            return;
+          }
+
+          const scriptPath = resolveExampleScript(url.searchParams.get('script'));
+          if (!scriptPath) {
+            res.statusCode = 400;
+            res.setHeader('content-type', 'application/json');
+            res.end(JSON.stringify({ error: 'script must be a repo examples/*.kcad.ts file' }));
+            return;
+          }
+
+          ensureOcctShims();
+          const { inspectBomTool } = await import('./src/agent/mcp/tools/inspectBom');
+          const bom = await inspectBomTool({ file: scriptPath });
+          res.statusCode = 200;
+          res.setHeader('content-type', 'application/json');
+          res.end(JSON.stringify(bom));
+        } catch (error) {
+          res.statusCode = 500;
+          res.setHeader('content-type', 'application/json');
+          res.end(JSON.stringify({
+            error: error instanceof Error ? error.message : String(error),
+          }));
+        }
+      });
     },
   };
 }
