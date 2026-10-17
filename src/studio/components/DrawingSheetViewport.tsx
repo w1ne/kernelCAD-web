@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 import { forwardRef, useImperativeHandle, useLayoutEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent, type Ref } from 'react';
 import { BUTTON } from './draftingReviewStyles';
-import { sheetMarkup, sheetViewBox, zoomAt, type SheetView } from './drawingSheetCamera';
-import { GhostOverlay } from './drawingSheetGhost';
+import { sheetMarkup, zoomAt, type SheetView } from './drawingSheetCamera';
+import { injectEdgeDimensions, type SheetEdgeDim } from './edgeDimensionSheet';
 import type { PlacedEdge, TaggedView } from './drawingSheetHit';
 import { frameAnnotation, useSheetCamera, useSheetPlace } from './useDrawingSheet';
 
@@ -27,12 +27,13 @@ function onSheetKey(event: ReactKeyboardEvent<HTMLDivElement>, zoomBy: (factor: 
  * straight edges the exporter stored on `data-kc-edges`.
  */
 export const DrawingSheetViewport = forwardRef(function DrawingSheetViewport({
-  svg, selectedId, onSelect, onPlaceEdge,
+  svg, selectedId, onSelect, onPlaceEdge, placed = [],
 }: {
   svg: string;
   selectedId: string | null;
   onSelect: (id: string) => void;
-  onPlaceEdge?: (edge: PlacedEdge) => void;
+  onPlaceEdge?: (edge: PlacedEdge & { gap: number }) => void;
+  placed?: readonly SheetEdgeDim[];
 }, ref: Ref<DrawingSheetHandle>) {
   const viewport = useRef<HTMLDivElement>(null);
   const host = useRef<HTMLDivElement>(null);
@@ -48,8 +49,10 @@ export const DrawingSheetViewport = forwardRef(function DrawingSheetViewport({
       if (next) setView(next);
     },
   }), []);
-  const box = sheetViewBox(svg);
-  const marks = place.hover ? [...place.ghosts, place.hover] : place.ghosts;
+  const drawn = injectEdgeDimensions(sheetMarkup(svg), [
+    ...placed,
+    ...(place.hover ? [{ id: 'hover', view: place.hover.view, from: place.hover.from, to: place.hover.to, gap: place.hover.gap, hover: true, ...(place.hover.model ? {} : { sheet: place.hover.sheet }) }] : []),
+  ]);
   const onClick = (event: ReactMouseEvent<HTMLDivElement>) => {
     if (place.placeClick(event) !== 'select') return;
     const id = (event.target as Element).closest?.('[data-kc-annotation-id]')?.getAttribute('data-kc-annotation-id');
@@ -77,8 +80,7 @@ export const DrawingSheetViewport = forwardRef(function DrawingSheetViewport({
     >
       <style>{SELECTED}</style>
       <div className="relative" style={{ transform: `translate(${view.x}px, ${view.y}px) scale(${view.scale})`, transformOrigin: '0 0' }}>
-        <div ref={host} dangerouslySetInnerHTML={{ __html: sheetMarkup(svg) }} />
-        {marks.length > 0 && box && <GhostOverlay box={box} ghosts={marks} />}
+        <div ref={host} dangerouslySetInnerHTML={{ __html: drawn }} />
       </div>
     </div>
     <div className="absolute bottom-3 left-3 flex gap-1">

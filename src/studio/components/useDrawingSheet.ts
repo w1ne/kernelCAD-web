@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: MIT
 import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import { fitSheet, frameRect, MIN_SCALE, zoomAt, type SheetView } from './drawingSheetCamera';
+import { signedEdgeGap } from '../../kernel/backends/occt/drawingLayout';
+import { edgesFromMarkup } from './edgeDimensionSheet';
 import { clientToSheet, edgeNearPoint, readTaggedViews, type HitEdge, type PlacedEdge, type TaggedView } from './drawingSheetHit';
 
-interface Ghost { a: [number, number]; b: [number, number]; label: string }
 interface Drag { id: number; x: number; y: number; ox: number; oy: number }
+type Hover = HitEdge & { gap: number };
 type Host = { current: HTMLDivElement | null };
 type ViewRef = { current: SheetView };
 type TaggedRef = { current: TaggedView[] };
@@ -45,8 +47,12 @@ function hitAt(root: ParentNode | null, clientX: number, clientY: number, scale:
   return edgeNearPoint(views, point.x, point.y, 8 / Math.max(scale, MIN_SCALE));
 }
 
-function asGhost(hit: HitEdge): Ghost {
-  return { a: [hit.sheet[0][0], hit.sheet[0][1]], b: [hit.sheet[1][0], hit.sheet[1][1]], label: hit.label };
+function gapAt(host: Host, clientX: number, clientY: number, edge: HitEdge): number {
+  const svg = host.current?.querySelector('svg');
+  if (!svg || svg.tagName.toLowerCase() !== 'svg') return 8;
+  const point = clientToSheet(svg as SVGSVGElement, clientX, clientY);
+  if (!point) return 8;
+  return signedEdgeGap(edge.sheet[0], edge.sheet[1], [point.x, point.y]);
 }
 
 export function useSheetCamera(
@@ -83,7 +89,8 @@ export function useSheetCamera(
   useLayoutEffect(() => {
     const svgEl = hostRef.current?.querySelector('svg');
     const vp = viewportRef.current;
-    taggedRef.current = hostRef.current ? readTaggedViews(hostRef.current) : [];
+    const tagged = hostRef.current ? readTaggedViews(hostRef.current) : [];
+    taggedRef.current = tagged.length > 0 ? tagged : edgesFromMarkup(svg);
     if (!svgEl || !vp) return;
     const size = applySheetSize(svgEl);
     setView(fitSheet(vp.clientWidth || 640, vp.clientHeight || 480, size.w, size.h));
@@ -96,24 +103,23 @@ export function useSheetCamera(
 
 export function useSheetPlace(
   hostRef: Host, viewRef: ViewRef, taggedRef: TaggedRef, setView: (view: SheetView) => void,
-  svg: string, onPlaceEdge?: (edge: PlacedEdge) => void,
+  svg: string, onPlaceEdge?: (edge: PlacedEdge & { gap: number; sheet?: HitEdge['sheet'] }) => void,
 ) {
   const drag = useRef<Drag | null>(null);
   const panned = useRef(false);
   const [dragging, setDragging] = useState(false);
   const [placing, setPlacing] = useState(false);
-  const [ghosts, setGhosts] = useState<Ghost[]>([]);
-  const [hover, setHover] = useState<Ghost | null>(null);
+  const [hover, setHover] = useState<Hover | null>(null);
   const [seenSvg, setSeenSvg] = useState(svg);
   if (seenSvg !== svg) {
     setSeenSvg(svg);
-    setGhosts([]);
     setHover(null);
   }
 
   const previewEdge = (clientX: number, clientY: number) => {
     const hit = hitAt(hostRef.current, clientX, clientY, viewRef.current.scale, taggedRef.current);
-    setHover((current) => sameGhost(current, hit) ? current : hit ? asGhost(hit) : null);
+    const gap = hit ? gapAt(hostRef, clientX, clientY, hit) : 0;
+    setHover((current) => current && hit && current.gap === gap && current.label === hit.label && current.sheet[0][0] === hit.sheet[0][0] && current.sheet[1][0] === hit.sheet[1][0] ? current : hit ? { ...hit, gap } : null);
   };
   const onPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (event.button !== 0 && event.button !== 1) return;
@@ -142,19 +148,16 @@ export function useSheetPlace(
     if (!placing) return 'select' as const;
     const edge = hitAt(hostRef.current, event.clientX, event.clientY, viewRef.current.scale, taggedRef.current);
     if (edge && onPlaceEdge) {
-      onPlaceEdge({ view: edge.view, from: edge.from, to: edge.to });
-      setGhosts((current) => [...current, asGhost(edge)]);
+      const gap = gapAt(hostRef, event.clientX, event.clientY, edge);
+      onPlaceEdge(edge.model
+        ? { view: edge.view, from: edge.from, to: edge.to, gap }
+        : { view: edge.view, from: [0, 0, 0], to: [0, 0, 0], gap, sheet: edge.sheet });
+      setHover(null);
     }
     return 'placed' as const;
   };
 
-  return { dragging, placing, setPlacing, ghosts, hover, setHover, onPointerDown, onPointerMove, endDrag, placeClick };
-}
-
-function sameGhost(current: Ghost | null, hit: HitEdge | null): boolean {
-  if (!current || !hit) return !current && !hit;
-  const next = asGhost(hit);
-  return current.label === next.label && current.a[0] === next.a[0] && current.a[1] === next.a[1] && current.b[0] === next.b[0] && current.b[1] === next.b[1];
+  return { dragging, placing, setPlacing, hover, setHover, onPointerDown, onPointerMove, endDrag, placeClick };
 }
 
 function moved(event: ReactPointerEvent<HTMLDivElement>, drag: Drag): boolean {

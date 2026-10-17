@@ -306,6 +306,19 @@ describe('exportSvgDrawing annotations', () => {
     expect(svg).not.toContain('>40</text>');
   });
 
+  it('draws a placed edge dimension beside that edge', () => {
+    const svg = decode(exportSvgDrawing(plate(), {
+      format: 'svg-drawing',
+      annotations: [{ kind: 'linear', id: 'width', from: [0, 0, 0], to: [60, 0, 0], view: 'front', edgeGap: 14 }],
+    }));
+    const front = svg.slice(svg.indexOf('id="view-front"'), svg.indexOf('id="view-top"'));
+    const ty = Number(/data-kc-ty="([^"]+)"/.exec(front)?.[1]);
+    const y = Math.round((ty + 14) * 1000) / 1000;
+    expect(svg).toContain('data-kc-annotation-id="authored:width"');
+    expect(svg).toContain(`y1="${y}"`);
+    expect(svg).toContain('>60</text>');
+  });
+
   it('renders diameter and radius callouts off a circular edge query', () => {
     const svg = decode(exportSvgDrawing(plate(), {
       format: 'svg-drawing',

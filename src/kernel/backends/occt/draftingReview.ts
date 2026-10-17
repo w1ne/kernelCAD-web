@@ -99,7 +99,7 @@ export function authoredAnnotationIds(annotations: readonly DrawingAnnotation[])
       counts.set(id, 1);
       return id;
     }
-    const geometry = Object.fromEntries(Object.entries(a).filter(([key]) => !['view', 'text', 'prefix', 'offset', 'id'].includes(key)));
+    const geometry = Object.fromEntries(Object.entries(a).filter(([key]) => !['view', 'text', 'prefix', 'offset', 'edgeGap', 'id'].includes(key)));
     const base = `authored:${encodeURIComponent(canonical(geometry))}`;
     const count = counts.get(base) ?? 0;
     counts.set(base, count + 1);

@@ -51,6 +51,7 @@ import {
 import {
   angularDimensionToSvg,
   dimensionToSvg,
+  edgeDimensionSvg,
   formatDimValue,
   leaderNoteToSvg,
   radialDimensionToSvg,
@@ -103,6 +104,8 @@ export type DrawingAnnotation =
       text?: string;
       prefix?: string;
       offset?: number;
+      /** Signed sheet-mm distance from the edge. Set when the dimension was placed on an edge. */
+      edgeGap?: number;
       /** Appended to the label: `± 0.1`, `+0.2/−0.05`, or a fit class like `'H7'`. */
       tol?: DimensionTolerance;
     }
@@ -807,10 +810,22 @@ function fcfAnnotationSvg(
   );
 }
 
+function edgePlacedSvg(
+  a: Extract<DrawingAnnotation, { kind: 'linear' }>,
+  ctx: AnnotationRenderContext,
+): string {
+  const model0 = resolveAnchor(ctx.parts, a.from, `${ctx.role}.from`);
+  const model1 = resolveAnchor(ctx.parts, a.to, `${ctx.role}.to`);
+  const m0 = projectPointForDrawing(model0, ctx.view);
+  const m1 = projectPointForDrawing(model1, ctx.view);
+  const measured = Math.hypot(m1[0] - m0[0], m1[1] - m0[1]);
+  return edgeDimensionSvg(ctx.toSheet(model0), ctx.toSheet(model1), dimLabel(a, formatDimValue(measured)), a.edgeGap ?? 0);
+}
+
 function renderAnnotationSvg(a: DrawingAnnotation, ctx: AnnotationRenderContext): string {
   switch (a.kind) {
     case 'linear':
-      return linearAnnotationSvg(a, ctx);
+      return a.edgeGap === undefined ? linearAnnotationSvg(a, ctx) : edgePlacedSvg(a, ctx);
 
     case 'radius':
     case 'diameter':

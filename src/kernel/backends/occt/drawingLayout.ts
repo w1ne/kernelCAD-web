@@ -26,6 +26,15 @@ const ORTHO_BASIS: Record<'front' | 'top' | 'left', { x: Pt3; y: Pt3 }> = {
   left: { x: [0, -1, 0], y: [0, 0, 1] },
 };
 
+/** Model point in an orthographic view's 2D frame (y up). Inverse of `pointOnViewPlane`. */
+export function orthoModelPoint(view: 'front' | 'top' | 'left', p: Pt3): Pt2 {
+  const b = ORTHO_BASIS[view];
+  return [
+    p[0] * b.x[0] + p[1] * b.x[1] + p[2] * b.x[2],
+    p[0] * b.y[0] + p[1] * b.y[1] + p[2] * b.y[2],
+  ];
+}
+
 /** Lift a model-2D point back onto the view plane through the origin. */
 export function pointOnViewPlane(view: 'front' | 'top' | 'left', mx: number, my: number): [number, number, number] {
   const b = ORTHO_BASIS[view];
@@ -621,6 +630,66 @@ export function dimensionToSvg(d: LinearDimension, textHeight = 3.2): string {
     parts.join('') +
     `</g>`
   );
+}
+
+const EDGE_GAP_MIN = 8;
+
+/** Signed sheet-mm offset from an edge to the pointer, at least `min` off the line. */
+export function signedEdgeGap(a: Pt2, b: Pt2, p: Pt2, min = EDGE_GAP_MIN): number {
+  const dx = b[0] - a[0];
+  const dy = b[1] - a[1];
+  const len = Math.hypot(dx, dy);
+  if (len < 1e-9) return min;
+  const dist = ((p[0] - a[0]) * -dy + (p[1] - a[1]) * dx) / len;
+  if (Math.abs(dist) < min) return dist < 0 ? -min : min;
+  return dist;
+}
+
+function edgeFrame(a: Pt2, b: Pt2, gap: number): { a2: Pt2; b2: Pt2; n: Pt2; s: number; ux: number; uy: number } | null {
+  const dx = b[0] - a[0];
+  const dy = b[1] - a[1];
+  const len = Math.hypot(dx, dy);
+  if (len < 1e-6) return null;
+  const ux = dx / len;
+  const uy = dy / len;
+  const n: Pt2 = [-uy, ux];
+  const gapN = Math.abs(gap) < EDGE_GAP_MIN ? (gap < 0 ? -EDGE_GAP_MIN : EDGE_GAP_MIN) : gap;
+  const s = gapN >= 0 ? 1 : -1;
+  return {
+    a2: [a[0] + n[0] * gapN, a[1] + n[1] * gapN],
+    b2: [b[0] + n[0] * gapN, b[1] + n[1] * gapN],
+    n, s, ux, uy,
+  };
+}
+
+function readableAngle(dx: number, dy: number): number {
+  let deg = Math.atan2(dy, dx) * 180 / Math.PI;
+  if (deg > 90 || deg < -90) deg += deg > 0 ? -180 : 180;
+  return deg;
+}
+
+function escDim(label: string): string {
+  return label.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+/**
+ * Dimension parallel to an edge, `gap` sheet mm off it (sign picks the side).
+ * The sheet preview and the PDF both draw this fragment.
+ */
+export function edgeDimensionSvg(a: Pt2, b: Pt2, label: string, gap: number): string {
+  const frame = edgeFrame(a, b, gap);
+  if (!frame) return '';
+  const { a2, b2, n, s, ux, uy } = frame;
+  const ext = (p: Pt2, q: Pt2) =>
+    `<line x1="${fmt(p[0] + n[0] * s)}" y1="${fmt(p[1] + n[1] * s)}" x2="${fmt(q[0] + n[0] * s * 1.5)}" y2="${fmt(q[1] + n[1] * s * 1.5)}"/>`;
+  const mid: Pt2 = [(a2[0] + b2[0]) / 2 + n[0] * s * 2.2, (a2[1] + b2[1]) / 2 + n[1] * s * 2.2];
+  const deg = readableAngle(b[0] - a[0], b[1] - a[1]);
+  return `<g class="dim" fill="none" stroke="#000" stroke-width="0.18">` +
+    ext(a, a2) + ext(b, b2) +
+    `<line x1="${fmt(a2[0])}" y1="${fmt(a2[1])}" x2="${fmt(b2[0])}" y2="${fmt(b2[1])}"/>` +
+    arrowhead(a2, -ux, -uy) + arrowhead(b2, ux, uy) +
+    `<text x="${fmt(mid[0])}" y="${fmt(mid[1])}" font-size="3.2" text-anchor="middle" fill="#000" stroke="none" transform="rotate(${fmt(deg)} ${fmt(mid[0])} ${fmt(mid[1])})">${escDim(label)}</text>` +
+    `</g>`;
 }
 
 // ---------------------------------------------------------------------------
