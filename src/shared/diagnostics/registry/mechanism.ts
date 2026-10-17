@@ -154,4 +154,37 @@ export const MECHANISM_CODES = {
     group: 'mechanism',
     description: 'At the rest pose the two parts joined by a mate are separated by more than the contact tolerance — the joint is declared but nothing physically seats one part on the other.',
   },
+  // Motion-load study (`src/kinematic/motionLoad.ts`, verify({ check: 'motion-load' })).
+  'mechanism.load.torque-exceeded': {
+    hintTemplate:
+      "The peak joint torque along the motion is above the actuator's declared torqueNm (margin below 1x). Use a stronger actuator, lighten or shorten the links it moves, or slow the motion (lower accelerations).",
+    nextAction: { kind: 'rewrite-feature', guidance: 'stronger actuator, lighter/shorter links, or slower motion' },
+    defaultSeverity: 'error',
+    group: 'mechanism',
+    description: 'A mechanicalJoint with a torqueNm rating needs more torque than the rating at some sampled pose of the motion-load study (gravity, inertia and declared external loads).',
+  },
+  'mechanism.load.torque-margin-low': {
+    hintTemplate:
+      "The actuator holds the motion, but with less than a 2x torque margin. Real servos lose torque with voltage, temperature and wear; aim for 2x or more.",
+    nextAction: { kind: 'rewrite-feature', guidance: 'raise the actuator torque or reduce the load to reach a 2x margin' },
+    defaultSeverity: 'warn',
+    group: 'mechanism',
+    description: 'A mechanicalJoint torque margin (rated torqueNm / peak torque) is between 1x and 2x in the motion-load study.',
+  },
+  'mechanism.load.side-load-exceeded': {
+    hintTemplate:
+      "The radial or axial load on the actuator output shaft is above its declared radialLimitN / axialLimitN. Add a coaxial support (a bushing or bearing on the far side of the link) and list it in the mechanicalJoint supports, or reduce the overhung load.",
+    nextAction: { kind: 'rewrite-feature', guidance: 'add a coaxial support and list it in mechanicalJoint supports' },
+    defaultSeverity: 'error',
+    group: 'mechanism',
+    description: 'The motion-load study found a radial or axial actuator-shaft load above the rating declared on the mechanicalJoint.',
+  },
+  'mechanism.load.not-resolved': {
+    hintTemplate:
+      "The motion-load study could not split this joint's load: the mate is inside a closed loop, or the joint lists three or more supports (or two at the same axial station), which a rigid model cannot split. List at most two coaxial supports at different heights, or treat the numbers as not checked.",
+    nextAction: { kind: 'fix-arg', field: 'supports' },
+    defaultSeverity: 'warn',
+    group: 'mechanism',
+    description: 'A driven joint load could not be resolved over its supports in the motion-load study (closed loop or a statically indeterminate support set).',
+  },
 } as const satisfies Record<`mechanism.${string}`, DiagnosticCodeSpec>;

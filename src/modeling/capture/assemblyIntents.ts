@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 Andrii Shylenko and kernelCAD contributors
+import { invalidArgs } from '../../shared/intent/invalidArgs';
 import { KernelError } from '../../shared/intent/kernelError';
 import { makePhysicalUseCaseRecord, type PhysicalUseCaseOptions } from '../mates/physicalUseCase';
 import type {
@@ -184,6 +185,31 @@ function validateRequiredSupport(
   }
 }
 
+const JOINT_RATING_KEYS = ['torqueNm', 'radialLimitN', 'axialLimitN'] as const;
+
+function validateJointRatings(name: string, opts: MechanicalJointIntentOpts): void {
+  for (const key of JOINT_RATING_KEYS) {
+    const v = opts[key];
+    if (v === undefined) continue;
+    if (typeof v !== 'number' || !Number.isFinite(v) || v <= 0) {
+      invalidArgs({
+        api: `assembly.mechanicalJoint('${name}', { ${key} })`,
+        path: `opts.${key}`,
+        got: v,
+        requires: key === 'torqueNm' ? 'a positive rated torque in N·m' : 'a positive rated load in N',
+        example: `arm.mechanicalJoint('${name}', { mate, actuator, shaft, supports, output, ${key}: ${key === 'torqueNm' ? '0.176' : '20'} })`,
+        unit: key === 'torqueNm' ? 'N·m' : 'N',
+      });
+    }
+  }
+}
+
+function jointRatings(opts: MechanicalJointIntentOpts): Partial<Record<(typeof JOINT_RATING_KEYS)[number], number>> {
+  const out: Partial<Record<(typeof JOINT_RATING_KEYS)[number], number>> = {};
+  for (const key of JOINT_RATING_KEYS) if (opts[key] !== undefined) out[key] = opts[key];
+  return out;
+}
+
 export function recordMechanicalJoint(state: AssemblyState, name: string, opts: MechanicalJointIntentOpts): void {
   validateMechanicalIntentName('name', name);
   if (state.mechanicalJointIntents.some((intent) => intent.name === name)) {
@@ -210,6 +236,7 @@ export function recordMechanicalJoint(state: AssemblyState, name: string, opts: 
     validateMechanicalIntentName('supports[]', support);
   }
   validateRequiredSupport('assembly.mechanicalJoint', 'invalid-args.assembly.mechanical-joint', opts.requiredSupport);
+  validateJointRatings(name, opts);
 
   state.mechanicalJointIntents.push({
     name,
@@ -218,6 +245,7 @@ export function recordMechanicalJoint(state: AssemblyState, name: string, opts: 
     shaft: opts.shaft,
     supports: [...opts.supports],
     output: opts.output,
+    ...jointRatings(opts),
     ...(opts.requiredSupport !== undefined ? {
       requiredSupport: {
         ...opts.requiredSupport,

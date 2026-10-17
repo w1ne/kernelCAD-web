@@ -203,6 +203,11 @@ export interface AssemblyPartOpts {
    *  `feature.invalid-args` naming the valid materials — never a silent
    *  fallback to water density or a default finish. */
   material?: string;
+  /** Known part mass in kg (catalog or datasheet, e.g. an SG90 is 0.009).
+   *  Mass-based checks (`verify({ check: 'motion-load' })`) use it instead of
+   *  volume x density; the centre of mass and inertia still come from the
+   *  geometry, scaled to this mass. */
+  massKg?: number;
   /** Beam cross-section for closed-form Euler-Bernoulli load checking via
    *  `kc.kinematic.checkLoadCapacity({ mode: 'beam' })`. Without this
    *  declaration the beam path fires K7 `kinematic.load.beam-not-applicable`
@@ -221,6 +226,15 @@ export interface MechanicalJointIntentOpts {
   readonly supports: readonly string[];
   readonly output: string;
   readonly requiredSupport?: MechanicalJointSupportRequirement;
+  /** Actuator rated (stall) torque in N·m. `verify({ check: 'motion-load' })`
+   *  compares the peak joint torque with it. SG90: about 0.176 (1.8 kgf·cm). */
+  readonly torqueNm?: number;
+  /** Rated radial (side) load on the actuator output shaft, N. Without it the
+   *  side load is reported but not checked. */
+  readonly radialLimitN?: number;
+  /** Rated axial load on the actuator output shaft, N. Without it the axial
+   *  load is reported but not checked. */
+  readonly axialLimitN?: number;
 }
 
 export interface MechanicalJointIntentRecord extends MechanicalJointIntentOpts {
@@ -386,6 +400,8 @@ export interface AssemblyPartStored extends AssemblyPartRef {
    *  this field records which named material was assigned, for BOM / export
    *  provenance. Undefined when no material name was given. */
   readonly material?: string;
+  /** Declared part mass in kg, copied from `AssemblyPartOpts.massKg`. */
+  readonly massKg?: number;
   /** Beam cross-section, copied from `AssemblyPartOpts.crossSection`. Read
    *  by `kc.kinematic.checkLoadCapacity({ mode: 'beam' })`. Undefined when
    *  the script did not declare a cross-section on `arm.part(...)`. */

@@ -33,6 +33,7 @@ import { ProjectViewerActions } from './-ProjectViewerActions';
 import { ServerRevisionList } from './-ServerRevisionHistory';
 import { ResumePrompt } from './-ResumePrompt';
 import { MotionBadge } from '../components/motion/MotionBadge';
+import { LoadsPanel } from '../components/motion/LoadsPanel';
 import {
   FORMAT_HINTS,
   configuredSource,
@@ -253,6 +254,7 @@ function Summary({ project, ownership, now }: {
         )}
       </div>
       {size && <p className="font-mono text-code text-fg-2" data-testid="model-size">{size}</p>}
+      <LoadsPanel loads={scriptReview?.mechanismSummary?.loads} />
     </section>
   );
 }

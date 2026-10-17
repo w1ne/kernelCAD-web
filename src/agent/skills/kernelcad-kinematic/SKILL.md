@@ -93,6 +93,7 @@ named assembly off the script's session, and dispatch to the facade.
 - `verify({ check: 'reachable' })` — wraps the facade; accepts `file|code`, `tip_link`, `target_position`, `target_orientation`, `prefer_solver`, `max_iterations`, `seed`
 - `verify({ check: 'load-capacity' })` — wraps the facade; accepts `file|code`, `loads`, `materials`, `mode`, `safety_factor_threshold`
 - `verify({ check: 'static-hold' })` — wraps the facade; accepts `file|code`, `joint`, `pose`, `gravity`, `min_torque_margin_pct`, `range_samples`
+- `verify({ check: 'motion-load' })` — mate assemblies: loads on every `mechanicalJoint` along the animationView tracks (gravity + inertia + external forces passed as motion_loads), or quasi-static over the joint limits (motion_mode: 'range'). Reports peak torque vs `torqueNm` (margin < 1x error, < 2x warning), actuator-shaft axial / radial / bending loads (checked only against `radialLimitN` / `axialLimitN`), the radial load per support (up to two coaxial supports), the worst pose and a torque-vs-time series. Same calculator as static-hold. Use `supports: { '<joint>': ['servo'] }` to see the shaft side load without a bushing. Declare a purchased part's mass with `arm.part(name, shape, { massKg })`.
 - `sweep_tolerance` — standalone tool (not a `verify` check — it surveys an envelope rather than gating one state); accepts `file|code`, `params`, `gates`
 - `verify({ check: 'assembly' })` (extended) — composes the four `verify`-routed checks when called with `gates: ['kinematic']`
 
@@ -117,6 +118,9 @@ call to confirm.
 | `assembly.joint.static-hold.exceeded` | `rewrite-feature` | Increase the actuator torque/force to the value named in the message, or shorten/lighten the downstream link |
 | `assembly.joint.static-hold.margin-low` | `rewrite-feature` | Increase the actuator torque/force for the requested margin, or shorten/lighten the downstream link |
 | `kinematic.static-hold.no-actuator-declared` | `fix-arg` (`actuator`) | Add `actuator: { torqueNm }` (revolute) / `{ forceN }` (prismatic) to the joint declaration |
+| `mechanism.load.torque-exceeded` / `mechanism.load.torque-margin-low` | `rewrite-feature` | Stronger actuator, lighter/shorter links, or slower motion (aim for 2x) |
+| `mechanism.load.side-load-exceeded` | `rewrite-feature` | Add a coaxial bushing/bearing and list it in the mechanicalJoint `supports` |
+| `mechanism.load.not-resolved` | `fix-arg` (`supports`) | At most two coaxial supports at different heights; no closed loop through the joint |
 | `kinematic.sweep-tolerance.combo-cap-exceeded` | `fix-arg` (`params`) | Narrow the swept ranges/values, or split the sweep into multiple calls |
 
 ## Trade-off note on K2 sparse-sampling

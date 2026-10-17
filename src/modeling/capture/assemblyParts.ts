@@ -635,6 +635,20 @@ function applyMaterialFinishDefault(
   }
 }
 
+/** `massKg`, when given, must be a positive finite mass. */
+function validateMassKg(name: string, shape: Shape, massKg: number | undefined): void {
+  if (massKg !== undefined && (typeof massKg !== 'number' || !Number.isFinite(massKg) || massKg <= 0)) {
+    invalidArgs({
+      api: `assembly.part('${name}', shape, { massKg })`,
+      path: 'opts.massKg',
+      got: massKg,
+      requires: 'a positive finite mass in kg',
+      example: `arm.part('${name}', shape, { massKg: 0.009 })`,
+      featureId: shape.id,
+    });
+  }
+}
+
 /** Validate `opts.at` / `opts.density` / `opts.material` / `opts.crossSection` /
  *  `opts.role`, and resolve the effective density + finish from a named
  *  material. Split out of `recordPartInternal` to keep its branching
@@ -664,6 +678,7 @@ function resolvePartMaterialAndValidateOpts(
       );
     }
   }
+  validateMassKg(name, shape, opts.massKg);
   // Named material: seeds a density default AND a default finish. Resolve it
   // FIRST — an unknown name throws here (naming the valid materials) before
   // any part record is minted, so a typo never silently produces a
@@ -781,6 +796,7 @@ export function recordPartInternal(
     ...(opts.connect !== undefined ? { connectParentId: opts.connect.to.partId } : {}),
     ...(effectiveDensity !== undefined ? { density: effectiveDensity } : {}),
     ...(resolvedMaterial !== undefined ? { material: resolvedMaterial.name } : {}),
+    ...(opts.massKg !== undefined ? { massKg: opts.massKg } : {}),
     ...(opts.crossSection !== undefined ? { crossSection: opts.crossSection } : {}),
     ...(opts.role !== undefined ? { role: opts.role } : {}),
   };
