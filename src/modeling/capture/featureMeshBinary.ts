@@ -135,6 +135,9 @@ function normalizeRecord(
   trailer?: MeshBinaryTrailer,
 ): NormalizedRecord {
   const { faces: rawFaces, mesh: rawMesh, edges: rawEdges, ...feature } = input;
+  // Re-encoding a decoded feature carries its old fingerprint; the hash below is recomputed
+  // from the geometry, so keep the stale copy out of the meta — one authoritative hash.
+  delete (feature as { fingerprint?: string }).fingerprint;
   const faces = (rawFaces as Array<FaceGeometryInput | FaceGeometry>).map(normalizeFace);
   const uvFaces = faces.filter(
     (face): face is NormalizedFace & { uv: Float32Array } => face.uv !== undefined,
@@ -312,10 +315,17 @@ function rebuildFeature(bytes: Uint8Array, meta: DecodedMeta, slices: BufferSlic
   };
 }
 
+/** Decodes a bin1 container. `bytes` must start at a 4-byte-aligned byteOffset
+ *  (`byteOffset % 4 === 0`): decoded geometry comes back as zero-copy typed-array views over
+ *  `bytes.buffer`, which cannot start at a misaligned offset. Copy (`.slice()`) a misaligned
+ *  region before decoding it. */
 export function decodeMeshBinary(bytes: Uint8Array): {
   features: FeatureMeshSerializedInput[];
   trailer?: MeshBinaryTrailer;
 } {
+  if (bytes.byteOffset % 4 !== 0) {
+    throw new Error(`featureMeshBinary: byteOffset must be 4-byte aligned (got ${bytes.byteOffset})`);
+  }
   if (bytes.byteLength < 12) throw new Error('featureMeshBinary: truncated container header');
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   if (view.getUint32(0, true) !== MESH_BIN_MAGIC) {
