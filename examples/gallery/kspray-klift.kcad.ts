@@ -84,6 +84,7 @@ function axisConnector(origin: [number, number, number], axis: [number, number, 
 function childHinge(body: ReturnType<typeof box>) {
   return body
     .union(yCylinder(COLLAR_Y * 2, COLLAR_R, 0, 0, 0, C.fork))
+    .union(roundedBox(50, 120, 120, 10, 135, 0, 0, C.fork))   // neck: collar -> own body
     .subtract(yCylinder(COLLAR_Y * 2 + 60, BORE_R, 0, 0, 0, C.dark));   // drilled clearance bore
 }
 
@@ -145,10 +146,12 @@ let lowerGeom = childHinge(
 lowerGeom = lowerGeom
   .union(roundedBox(60, 30, 200, 10, L1 - 90, 180, 0, C.alu))
   .union(roundedBox(60, 30, 200, 10, L1 - 90, -180, 0, C.alu))
-  .union(roundedBox(80, 75, 40, 8, L1 - 160, 180, 100, C.dark))
-  .union(roundedBox(80, 75, 40, 8, L1 - 160, -180, 100, C.dark))
-  .union(roundedBox(80, 75, 40, 8, L1 - 160, 180, -100, C.dark))
-  .union(roundedBox(80, 75, 40, 8, L1 - 160, -180, -100, C.dark))
+  .union(roundedBox(80, 30, 40, 8, L1 - 160, 180, 100, C.dark))
+  .union(roundedBox(80, 30, 40, 8, L1 - 160, -180, 100, C.dark))
+  .union(roundedBox(80, 30, 40, 8, L1 - 160, 180, -100, C.dark))
+  .union(roundedBox(80, 30, 40, 8, L1 - 160, -180, -100, C.dark))
+  .union(roundedBox(80, 50, 240, 10, L1 - 160, 145, 0, C.dark))
+  .union(roundedBox(80, 50, 240, 10, L1 - 160, -145, 0, C.dark))
   .union(yCylinder(HUB_Y * 2, HUB_R, L1, 0, 0, C.pin))
   .union(yCylinder(30, HUB_R + 12, L1, HUB_Y + 15, 0, C.fork))
   .union(yCylinder(30, HUB_R + 12, L1, -(HUB_Y + 15), 0, C.fork));
@@ -176,10 +179,12 @@ let upperGeom = childHinge(
 upperGeom = upperGeom
   .union(roundedBox(60, 30, 200, 10, L2 - 90, 180, 0, C.alu))
   .union(roundedBox(60, 30, 200, 10, L2 - 90, -180, 0, C.alu))
-  .union(roundedBox(80, 75, 40, 8, L2 - 160, 180, 100, C.dark))
-  .union(roundedBox(80, 75, 40, 8, L2 - 160, -180, 100, C.dark))
-  .union(roundedBox(80, 75, 40, 8, L2 - 160, 180, -100, C.dark))
-  .union(roundedBox(80, 75, 40, 8, L2 - 160, -180, -100, C.dark))
+  .union(roundedBox(80, 30, 40, 8, L2 - 160, 180, 100, C.dark))
+  .union(roundedBox(80, 30, 40, 8, L2 - 160, -180, 100, C.dark))
+  .union(roundedBox(80, 30, 40, 8, L2 - 160, 180, -100, C.dark))
+  .union(roundedBox(80, 30, 40, 8, L2 - 160, -180, -100, C.dark))
+  .union(roundedBox(80, 50, 240, 10, L2 - 160, 145, 0, C.dark))
+  .union(roundedBox(80, 50, 240, 10, L2 - 160, -145, 0, C.dark))
   .union(yCylinder(HUB_Y * 2, HUB_R, L2, 0, 0, C.pin))
   .union(yCylinder(30, HUB_R + 12, L2, HUB_Y + 15, 0, C.fork))
   .union(yCylinder(30, HUB_R + 12, L2, -(HUB_Y + 15), 0, C.fork));
@@ -202,7 +207,7 @@ upperBoom.connector('platformPivot', {
 // ===========================================================================
 let platformGeom = childHinge(
   roundedBox(990, 800, 60, 16, 635, 0, -155, C.alu)
-    .union(roundedBox(1140, 36, 36, 10, 595, 0, -218, C.dark))
+    .union(roundedBox(1140, 36, 36, 10, 595, 0, -192, C.dark))
     .union(roundedBox(90, 120, 1000, 12, RAIL_X, 0, 375, C.dark))
     .union(roundedBox(290, 300, 300, 30, 305, -240, 25, C.blue))
     .union(roundedBox(270, 280, 24, 8, 305, -240, 187, C.alu))
@@ -212,6 +217,8 @@ for (const px of [150, 1050]) for (const sy of [-1, 1]) {
   platformGeom = platformGeom.union(zCylinder(900, 16, px, sy * 340, -125 + 450, C.alu));
 }
 platformGeom = platformGeom
+  .union(roundedBox(60, 35, 185, 10, 130, 142.5, -92.5, C.alu))
+  .union(roundedBox(60, 35, 185, 10, 130, -142.5, -92.5, C.alu))
   .union(roundedBox(980, 22, 22, 8, 600, 340, 775, C.alu))
   .union(roundedBox(980, 22, 22, 8, 600, -340, 775, C.alu))
   .union(roundedBox(22, 700, 22, 8, 150, 0, 775, C.alu));
@@ -241,10 +248,10 @@ const carriage = lift.part('carriage',
     .union(roundedBox(30, 460, 380, 10, 560, 0, -20, C.alu))
     .union(roundedBox(110, 60, 380, 12, 500, 210, -20, C.alu))
     .union(roundedBox(110, 60, 380, 12, 500, -210, -20, C.alu))
-    .union(roundedBox(26, 420, 90, 6, 600, 0, -210, C.black))
-    .union(roundedBox(90, 60, 50, 8, 300, 0, 110, C.dark))
-    .union(roundedBox(20, 40, 30, 4, 348, 0, 110, C.glass))
-    .union(roundedBox(60, 44, 40, 6, 160, 90, 90, C.dark)));
+    .union(roundedBox(38, 420, 90, 6, 594, 0, -210, C.black))
+    .union(roundedBox(90, 60, 50, 8, 300, 0, 90, C.dark))
+    .union(roundedBox(20, 40, 30, 4, 348, 0, 90, C.glass))
+    .union(roundedBox(60, 44, 40, 6, 160, 90, 60, C.dark)));
 carriage.connector('slideAxis', axisConnector([0, 0, 0], [0, 0, 1]));
 
 // ===========================================================================
