@@ -18,7 +18,7 @@ const evaluateScriptToolEntry: ToolRegistryEntry = {
       'also returns a parts summary { count, names } AND runs the mechanism-truth gate by ' +
       'default: the `mechanism` field reports real/broken/unverified and a broken mechanism ' +
       '(disconnected components / mechanism.orphan-part, self-collision, fastened drift, ' +
-      'dof-mismatch) makes ok:false with the failures in diagnostics — a mechanism (any mate or ' +
+      'dof-mismatch) makes ok:false with the failures in diagnostics, as does a mate connector more than 6 mm outside its part bounding box (assembly.mechanical.connector-not-in-solid, the same error review_cad reports) — a mechanism (any mate or ' +
       'joint) needs every part linked by connectors + mates/joints ' +
       '(axis+revolute for shafts/hinges/gears; frame+fastened for rigid; or ' +
       'arm.revolute/.prismatic/.ball/.fixed). A plain multi-part assembly with no mates (base + lid, ' +
