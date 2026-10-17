@@ -443,21 +443,18 @@ function StudioProjectView({ slug, project, session, live, claim, onUpgrade, his
     <div className="flex items-center gap-2 min-w-0">
       <a
         href={modelPageHref(slug)}
-        className="inline-flex shrink-0 items-center gap-1 rounded px-1.5 py-0.5 text-xs text-gray-300 hover:bg-[#333] hover:text-white"
+        className="inline-flex shrink-0 items-center justify-center gap-1 rounded px-1.5 py-0.5 text-xs text-gray-300 hover:bg-[#333] hover:text-white phone:size-touch phone:p-0"
         title="Simplified view, for a fast look or an embed-style page"
         data-testid="open-fast-view"
       >
-        <ArrowLeft size={12} aria-hidden="true" />
-        <span className="hidden md:inline">View</span>
+        <ArrowLeft className="size-3 phone:size-4" aria-hidden="true" />
+        <span className="max-md:sr-only">View</span>
       </a>
       {/* The Studio header's own project label shows the title on wide
-          screens; below `lg` the Header drops that label for this one.
-          The header row is shared with the privacy/share buttons, the overflow
-          menu and the account slot, so on a phone the title truncates down to
-          nothing (`min-w-0`, not a pixel floor) and drops out entirely under
-          400px — otherwise it pushes the live badge past the header's clip and
-          the badge renders as a sliver of green border. */}
-      <span className="hidden min-[400px]:inline lg:hidden text-xs text-gray-200 font-medium truncate min-w-0 max-w-[160px] md:max-w-[280px]" title={project.title}>
+          screens; below `lg` the Header drops that label for this one. On a
+          phone the route's other controls live in the header's ⋯ menu, so the
+          title takes the free width and truncates. */}
+      <span className="lg:hidden text-xs text-gray-200 font-medium truncate min-w-0 max-w-[160px] max-md:max-w-none md:max-w-[280px]" title={project.title}>
         {project.title}
       </span>
       <span className="hidden lg:inline-flex shrink-0 whitespace-nowrap text-2xs uppercase tracking-widest text-gray-500 font-mono px-1.5 py-0.5 rounded border border-[#333]">

@@ -178,8 +178,11 @@ function SceneTabPartsPanel({
                                     type="button"
                                     data-testid={`part-visibility-${partName}`}
                                     title={isHidden ? 'Show part' : 'Hide part'}
+                                    aria-label={`${isHidden ? 'Show' : 'Hide'} ${partName}`}
                                     onClick={(e) => { e.stopPropagation(); toggleVisibility?.(partName); }}
-                                    className={`p-1 rounded hover:bg-[#333] transition-all ${isHidden ? 'opacity-100' : 'opacity-40 group-hover:opacity-100'}`}
+                                    // A touch screen has no hover: the eye is always
+                                    // shown, with a 44 px target that does not grow the row.
+                                    className={`p-1 rounded hover:bg-[#333] transition-all pointer-coarse:-my-3 pointer-coarse:inline-flex pointer-coarse:size-touch pointer-coarse:items-center pointer-coarse:justify-center pointer-coarse:opacity-100 ${isHidden ? 'opacity-100' : 'opacity-40 group-hover:opacity-100'}`}
                                 >
                                     {isHidden ? <EyeOff size={12} className="text-gray-600" /> : <Eye size={12} className="text-blue-400" />}
                                 </button>

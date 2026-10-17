@@ -132,6 +132,32 @@ const DISCONNECTED_COMPONENT_GAP_TOL_MM = 0.05;
 const MAX_COMPONENTS_FOR_EXACT_CLUSTERING = 1000;
 const MAX_VERTICES_FOR_EXACT_CLUSTERING = 50_000;
 
+/**
+ * Only the mate-connector-in-solid rule of {@link reviewMechanicalPlausibility}
+ * (same code, same tolerance, same `error` severity), for the publish gate
+ * (`evaluate_script`): a gate must not pass what review flags as an error.
+ * Costs one local bounding box per mated part (the lowered BREPs are cached),
+ * no meshing.
+ */
+export async function connectorsInSolidDiagnostics(arm: Assembly): Promise<ConnectorNotInSolidDiagnostic[]> {
+  const partsByName = new Map(arm.__parts().map((part) => [part.name, part]));
+  const boundsByPartName = new Map<string, Bbox>();
+  const localBoundsFor = async (partName: string): Promise<Bbox | undefined> => {
+    const part = partsByName.get(partName);
+    if (part === undefined) return undefined;
+    let bbox = boundsByPartName.get(part.name);
+    if (bbox === undefined) {
+      bbox = (await part.originalShape.lower()).boundingBox();
+      boundsByPartName.set(part.name, bbox);
+    }
+    return bbox;
+  };
+  const context = { partsByName, localBoundsFor };
+  const diagnostics: MechanicalPlausibilityDiagnostic[] = [];
+  for (const mate of arm.__mates()) await checkMateConnectorsInSolid(context, mate, diagnostics);
+  return diagnostics.filter((d): d is ConnectorNotInSolidDiagnostic => d.code === 'assembly.mechanical.connector-not-in-solid');
+}
+
 export async function reviewMechanicalPlausibility(
   arm: Assembly,
 ): Promise<MechanicalPlausibilityResult> {
@@ -291,7 +317,7 @@ async function collectMateDiagnostics(
 }
 
 async function checkMateConnectorsInSolid(
-  context: PlausibilityContext,
+  context: Pick<PlausibilityContext, 'partsByName' | 'localBoundsFor'>,
   mate: Mate,
   diagnostics: MechanicalPlausibilityDiagnostic[],
 ): Promise<number> {
