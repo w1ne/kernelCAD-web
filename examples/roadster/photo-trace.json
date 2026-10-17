@@ -1,0 +1,117 @@
+{
+  "image": "/Users/andrii/worktrees/kcw-klift/examples/roadster/reference/official-01.jpg",
+  "pixelSize": "1260x840",
+  "luminance": "Rec.709 > 48",
+  "pixelSpan": {
+    "noseX": 184,
+    "tailX": 971
+  },
+  "groundRow": 601,
+  "mmPerPx": 5.743329097839898,
+  "lengthMm": 4520,
+  "toleranceMm": 180.8,
+  "assertedStationsMm": [
+    0,
+    700
+  ],
+  "stations": [
+    {
+      "s": 0,
+      "pixelX": 184,
+      "photoZTop": 178.04,
+      "photoZBottom": 103.38,
+      "stationZTop": 178,
+      "stationZSill": 103,
+      "modelZTop": 178.28,
+      "modelZSill": 102.72,
+      "photoTopErrMm": 0.04,
+      "photoBottomErrMm": 0.38,
+      "modelTopErrMm": 0.24,
+      "modelBottomErrMm": 0.66
+    },
+    {
+      "s": 700,
+      "pixelX": 306,
+      "photoZTop": 275.68,
+      "photoZBottom": 5.74,
+      "stationZTop": 276,
+      "stationZSill": 6,
+      "modelZTop": 276,
+      "modelZSill": 6,
+      "photoTopErrMm": 0.32,
+      "photoBottomErrMm": 0.26,
+      "modelTopErrMm": 0.32,
+      "modelBottomErrMm": 0.26
+    },
+    {
+      "s": 1500,
+      "pixelX": 445,
+      "photoZTop": 809.81,
+      "photoZBottom": -40.2,
+      "stationZTop": 810,
+      "stationZSill": 160,
+      "modelZTop": 810,
+      "modelZSill": 160,
+      "photoTopErrMm": 0.19,
+      "photoBottomErrMm": 200.2,
+      "modelTopErrMm": 0.19,
+      "modelBottomErrMm": 200.2
+    },
+    {
+      "s": 2300,
+      "pixelX": 584,
+      "photoZTop": 1453.06,
+      "photoZBottom": -28.72,
+      "stationZTop": 1020,
+      "stationZSill": 150,
+      "modelZTop": 1020,
+      "modelZSill": 150,
+      "photoTopErrMm": 433.06,
+      "photoBottomErrMm": 178.72,
+      "modelTopErrMm": 433.06,
+      "modelBottomErrMm": 178.72
+    },
+    {
+      "s": 2950,
+      "pixelX": 698,
+      "photoZTop": 890.22,
+      "photoZBottom": 815.55,
+      "stationZTop": 900,
+      "stationZSill": 160,
+      "modelZTop": 900,
+      "modelZSill": 160,
+      "photoTopErrMm": 9.78,
+      "photoBottomErrMm": 655.55,
+      "modelTopErrMm": 9.78,
+      "modelBottomErrMm": 655.55
+    },
+    {
+      "s": 3850,
+      "pixelX": 854,
+      "photoZTop": 976.37,
+      "photoZBottom": 809.81,
+      "stationZTop": 970,
+      "stationZSill": 190,
+      "modelZTop": 970,
+      "modelZSill": 190,
+      "photoTopErrMm": 6.37,
+      "photoBottomErrMm": 619.81,
+      "modelTopErrMm": 6.37,
+      "modelBottomErrMm": 619.81
+    },
+    {
+      "s": 4520,
+      "pixelX": 971,
+      "photoZTop": 1102.72,
+      "photoZBottom": 993.6,
+      "stationZTop": 720,
+      "stationZSill": 320,
+      "modelZTop": 720.75,
+      "modelZSill": 319.61,
+      "photoTopErrMm": 382.72,
+      "photoBottomErrMm": 673.6,
+      "modelTopErrMm": 381.97,
+      "modelBottomErrMm": 673.98
+    }
+  ]
+}

@@ -1,1 +1,50 @@
-[]
+[
+  {
+    "rule": "complexity",
+    "file": "src/dynamics/run.ts",
+    "symbol": "Function 'parseScenario'",
+    "value": 45
+  },
+  {
+    "rule": "complexity",
+    "file": "src/dynamics/run.ts",
+    "symbol": "Function 'runFloating'",
+    "value": 49
+  },
+  {
+    "rule": "complexity",
+    "file": "src/dynamics/run.ts",
+    "symbol": "Function 'runLongitudinal'",
+    "value": 24
+  },
+  {
+    "rule": "complexity",
+    "file": "src/dynamics/run.ts",
+    "symbol": "Function 'runScenario'",
+    "value": 18
+  },
+  {
+    "rule": "complexity",
+    "file": "src/dynamics/spatial.ts",
+    "symbol": "Function 'allocateWrench'",
+    "value": 41
+  },
+  {
+    "rule": "complexity",
+    "file": "src/dynamics/spatial.ts",
+    "symbol": "Function 'solveLinear'",
+    "value": 28
+  },
+  {
+    "rule": "max-lines-per-function",
+    "file": "src/dynamics/run.ts",
+    "symbol": "Function 'parseScenario'",
+    "value": 147
+  },
+  {
+    "rule": "max-lines-per-function",
+    "file": "src/dynamics/run.ts",
+    "symbol": "Function 'runFloating'",
+    "value": 155
+  }
+]

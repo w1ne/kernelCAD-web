@@ -29,6 +29,7 @@ import { skillCommand } from './commands/skill';
 import { statsCommand } from './commands/stats';
 import { telemetryCommand } from './commands/telemetry';
 import { validateCommand } from './commands/validate';
+import { dynamicsCommand } from './commands/dynamics';
 
 // Mesh-heavy commands (parts/export/render/…) OOM at the default ~2 GB heap
 // (gap #11). Re-exec once with a larger heap before commander parses anything;
@@ -78,6 +79,7 @@ program.addCommand(skillCommand());
 program.addCommand(statsCommand());
 program.addCommand(telemetryCommand());
 program.addCommand(validateCommand());
+program.addCommand(dynamicsCommand());
 
 program.parseAsync(process.argv).catch(err => {
   console.error(err);
